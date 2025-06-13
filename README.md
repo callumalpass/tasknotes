@@ -1,6 +1,6 @@
 # TaskNotes for Obsidian
 
-![Version](https://img.shields.io/badge/version-3.0.0-blue)
+![Downloads](https://img.shields.io/github/downloads/callumalpass/tasknotes/main.js)
 
 TaskNotes is a comprehensive task and note management plugin for Obsidian with integrated calendar views and daily notes.
 
@@ -97,21 +97,14 @@ All data is stored as YAML frontmatter in Markdown files, making it:
 - Portable and future-proof as plain text files
 - Version control friendly
 
-## Installation
+## Quick Start
 
-### From Obsidian Community Plugins
+### First Steps
 
-1. Open Obsidian Settings
-2. Go to Community Plugins and turn off Safe Mode
-3. Click Browse and search for "TaskNotes"
-4. Install the plugin and enable it
-
-### Manual Installation
-
-1. Download the latest release from the GitHub releases page
-2. Extract the files to your Obsidian vault's plugins folder: `<vault>/.obsidian/plugins/tasknotes/`
-3. Reload Obsidian
-4. Go to Settings > Community Plugins and enable "TaskNotes"
+1. **Create your first task**: Use `Ctrl/Cmd + Shift + T` or the command palette
+2. **Open a view**: Try the Calendar View to visualize your tasks
+3. **Configure settings**: Customize TaskNotes to match your workflow
+4. **Read the docs**: Visit our [Getting Started guide](https://callumalpass.github.io/chronosync/getting-started/) for detailed tutorials
 
 ## Usage
 
@@ -137,7 +130,6 @@ TaskNotes provides intuitive controls to interact with your tasks across multipl
 - Dynamic grouping by status, priority, or context
 - Search filtering across all columns
 - Real-time updates when tasks are moved between columns
-- Collapsible columns for better space management
 
 **Recurring Tasks:**
 - Enhanced visual distinction with special styling and indicators
@@ -164,12 +156,10 @@ TaskNotes allows you to archive tasks to keep your task list clean while preserv
 
 TaskNotes adds several commands to Obsidian's command palette:
 
-- **Open Dashboard/Calendar View**: Opens the main TaskNotes dashboard
 - **Create New Task**: Opens a modal to create a new task
 - **Go to Today's Note**: Navigates to or creates today's daily note
 - **Start Pomodoro Timer**: Starts the Pomodoro timer (with task selection if none selected)
 - **Open Pomodoro Statistics**: Opens the dedicated Pomodoro statistics view
-- **Open [View] in New Window**: Opens any TaskNotes view in a separate popout window
 - **Stop Active Timer**: Stops any currently running time tracking or Pomodoro session
 
 ### Folder Structure
@@ -179,7 +169,6 @@ TaskNotes uses the following folder structure by default (configurable in settin
 - `TaskNotes/Daily/`: Daily notes (YYYY-MM-DD.md)
 - `TaskNotes/Tasks/`: Task files
 - `TaskNotes/Notes/`: General notes
-- `TaskNotes/Home.md`: Home note
 
 ## Customization Guide
 
@@ -334,29 +323,15 @@ Define custom priority levels with weight-based sorting:
 - Visual progress circle with enhanced timer display
 - Session history tracking and persistent statistics
 
-## Development
-
-### Prerequisites
-
-- [NodeJS](https://nodejs.org/) v16 or later
-- [npm](https://www.npmjs.com/)
-
-### Setup
-
-1. Clone this repository
-2. Run `npm install` to install dependencies
-3. Run `npm run dev` to start the development build process
-
-### Building
-
-- `npm run dev`: Builds the plugin and watches for changes
-- `npm run build`: Builds the plugin for production
-
 ## Credits
 
-This plugin uses [FullCalendar.io](https://fullcalendar.io/) for its calendar components, providing the robust calendar functionality that powers TaskNotes' calendar views.
+This plugin uses [FullCalendar.io](https://fullcalendar.io/) for its calendar components.
+
+## Documentation
+
+For comprehensive documentation including detailed guides, tutorials, and API reference:
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
