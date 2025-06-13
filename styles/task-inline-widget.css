@@ -41,13 +41,13 @@
 
 /* Status indicator dot */
 .tasknotes-plugin .task-inline-preview__status-dot {
-    color: var(--current-status-color, var(--text-muted));
+    color: var(--status-color, #666);
     margin-right: 4px;
 }
 
 /* Priority indicator dot */
 .tasknotes-plugin .task-inline-preview__priority-dot {
-    color: var(--priority-color, var(--text-muted));
+    color: var(--priority-color, #666);
     margin-right: 4px;
 }
 
@@ -208,18 +208,19 @@ span.tasknotes-plugin.task-inline-preview.task-inline-preview--completed,
     margin-right: 1px;
 }
 
-/* Priority colors using CSS variables set by PriorityManager */
-.tasknotes-plugin .task-inline-preview--priority-high .task-inline-preview__priority-dot {
-    color: var(--priority-high-color, var(--color-red));
+/* Priority border colors */
+.tasknotes-plugin .task-inline-preview.task-inline-preview--priority-high {
+    border-left-color: var(--color-red);
+    border-left-width: 4px;
 }
 
-.tasknotes-plugin .task-inline-preview--priority-normal .task-inline-preview__priority-dot,
-.tasknotes-plugin .task-inline-preview--priority-medium .task-inline-preview__priority-dot {
-    color: var(--priority-normal-color, var(--color-orange));
+.tasknotes-plugin .task-inline-preview.task-inline-preview--priority-medium {
+    border-left-color: var(--color-orange);
+    border-left-width: 3px;
 }
 
-.tasknotes-plugin .task-inline-preview--priority-low .task-inline-preview__priority-dot {
-    color: var(--priority-low-color, var(--color-blue));
+.tasknotes-plugin .task-inline-preview.task-inline-preview--priority-low {
+    border-left-color: var(--color-blue);
 }
 
 /* Pencil menu icon */

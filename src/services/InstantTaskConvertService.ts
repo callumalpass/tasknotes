@@ -257,7 +257,16 @@ export class InstantTaskConvertService {
 
             // Create link text with hyphen prefix (preserve original indentation)
             const originalIndentation = currentLineContent.match(/^(\s*)/)?.[1] || '';
-            const linkText = `${originalIndentation}- [[${file.path}|${sanitizedTitle}]]`;
+            
+            // Check if title contains Obsidian links - if so, use simple link without alias
+            // to avoid nested link structure like [[file|title with [[other link]]]]
+            // Also check for other potentially problematic characters in link aliases
+            const containsObsidianLinks = /\[\[.*?\]\]/.test(sanitizedTitle);
+            const containsProblematicChars = /[|#^]/.test(sanitizedTitle); // Obsidian link syntax characters
+            
+            const linkText = (containsObsidianLinks || containsProblematicChars)
+                ? `${originalIndentation}- [[${file.path}]]`
+                : `${originalIndentation}- [[${file.path}|${sanitizedTitle}]]`;
             
             // Validate the generated link text
             if (linkText.length > 500) { // Reasonable limit for link text

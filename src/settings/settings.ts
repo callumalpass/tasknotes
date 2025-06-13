@@ -673,6 +673,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 		helpContainer.createEl('h4', { text: 'Template variables:' });
 		const helpList = helpContainer.createEl('ul');
 		helpList.createEl('li', { text: '{{title}} - Task title' });
+		helpList.createEl('li', { text: '{{details}} - User-provided details from modal' });
 		helpList.createEl('li', { text: '{{date}} - Current date (YYYY-MM-DD)' });
 		helpList.createEl('li', { text: '{{time}} - Current time (HH:MM)' });
 		helpList.createEl('li', { text: '{{priority}} - Task priority' });
@@ -684,7 +685,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 		helpList.createEl('li', { text: '{{scheduledDate}} - Task scheduled date' });
 		
 		helpContainer.createEl('p', { 
-			text: 'Variables are replaced when the task is created. Use the same format as daily note templates.',
+			text: 'Template is applied when the task is created with all final values from the form. Use {{details}} to include user content from the Details field. Variables use the same format as daily note templates.',
 			cls: 'settings-help-note'
 		});
 	}

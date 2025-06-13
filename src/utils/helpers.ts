@@ -324,6 +324,9 @@ function processTaskTemplateVariables(template: string, taskData: any): string {
 	// {{scheduledDate}} - Scheduled date
 	result = result.replace(/\{\{scheduledDate\}\}/g, taskData.scheduledDate || '');
 	
+	// {{details}} - User-provided details/description
+	result = result.replace(/\{\{details\}\}/g, taskData.details || '');
+	
 	// {{date}} and {{date:format}} - Current date
 	result = result.replace(/\{\{date(?::([^}]+))?\}\}/g, (match, formatStr) => {
 		if (formatStr) {

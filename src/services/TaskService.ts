@@ -1,11 +1,11 @@
-import { TFile, Notice } from 'obsidian';
+import { TFile, Notice, normalizePath } from 'obsidian';
 import { format } from 'date-fns';
 import * as YAML from 'yaml';
 import TaskNotesPlugin from '../main';
 import { TaskInfo, TimeEntry, EVENT_TASK_UPDATED, EVENT_TASK_DELETED } from '../types';
 import { getCurrentTimestamp, getCurrentDateString } from '../utils/dateUtils';
 import { generateTaskFilename, generateUniqueFilename, FilenameContext } from '../utils/filenameGenerator';
-import { ensureFolderExists } from '../utils/helpers';
+import { ensureFolderExists, generateTaskBodyFromTemplate } from '../utils/helpers';
 
 export interface TaskCreationData extends Partial<TaskInfo> {
     details?: string; // Optional details/description for file content
@@ -88,13 +88,16 @@ export class TaskService {
             // Tags are handled separately (not via field mapper)
             frontmatter.tags = tagsArray;
 
+            // Apply body template (which handles both template processing and details)
+            const bodyContent = await this.applyBodyTemplate(taskData);
+            
             // Prepare file content
             const yamlHeader = YAML.stringify(frontmatter);
             let content = `---\n${yamlHeader}---\n\n`;
             
-            // Add details if provided
-            if (taskData.details && taskData.details.trim()) {
-                content += `${taskData.details.trim()}\n\n`;
+            // Add processed body content if any
+            if (bodyContent && bodyContent.trim()) {
+                content += `${bodyContent.trim()}\n\n`;
             }
 
             // Create the file
@@ -127,6 +130,58 @@ export class TaskService {
             });
             
             throw new Error(`Failed to create task: ${errorMessage}`);
+        }
+    }
+
+    /**
+     * Apply body template to task content if enabled in settings
+     */
+    private async applyBodyTemplate(taskData: TaskCreationData): Promise<string> {
+        const defaults = this.plugin.settings.taskCreationDefaults;
+        
+        // Check if body template is enabled and configured
+        if (!defaults.useBodyTemplate || !defaults.bodyTemplate?.trim()) {
+            // No template configured, return details as-is or empty string
+            return taskData.details?.trim() || '';
+        }
+        
+        try {
+            // Normalize the template path and ensure it has .md extension
+            let templatePath = normalizePath(defaults.bodyTemplate.trim());
+            if (!templatePath.endsWith('.md')) {
+                templatePath += '.md';
+            }
+            
+            // Try to load the template file
+            const templateFile = this.plugin.app.vault.getAbstractFileByPath(templatePath);
+            if (templateFile instanceof TFile) {
+                const templateContent = await this.plugin.app.vault.read(templateFile);
+                
+                // Prepare task data for template variables (with all final values)
+                const templateTaskData = {
+                    title: taskData.title || '',
+                    priority: taskData.priority || '',
+                    status: taskData.status || '',
+                    contexts: Array.isArray(taskData.contexts) ? taskData.contexts : [],
+                    tags: Array.isArray(taskData.tags) ? taskData.tags : [],
+                    timeEstimate: taskData.timeEstimate || 0,
+                    dueDate: taskData.due || '',
+                    scheduledDate: taskData.scheduled || '',
+                    details: taskData.details || '' // Include user's details for {{details}} variable
+                };
+                
+                return generateTaskBodyFromTemplate(templateContent, templateTaskData);
+            } else {
+                // Template file not found, log error and return details as-is
+                console.warn(`Task body template not found: ${templatePath}`);
+                new Notice(`Task body template not found: ${templatePath}`);
+                return taskData.details?.trim() || '';
+            }
+        } catch (error) {
+            // Error reading template, log error and return details as-is
+            console.error('Error reading task body template:', error);
+            new Notice(`Error reading task body template: ${defaults.bodyTemplate}`);
+            return taskData.details?.trim() || '';
         }
     }
 
