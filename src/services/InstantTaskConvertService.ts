@@ -168,7 +168,7 @@ export class InstantTaskConvertService {
             scheduled: scheduledDate,
             contexts: contextsArray.length > 0 ? contextsArray : undefined,
             tags: tagsArray,
-            details: `# ${title}\n\n<!-- Add task details below -->`,
+            details: '', // Let body template system handle content generation
             dateCreated: getCurrentTimestamp(),
             dateModified: getCurrentTimestamp()
         };
@@ -249,24 +249,19 @@ export class InstantTaskConvertService {
                 return { success: false, error: 'Line is no longer a valid task.' };
             }
 
-            // Sanitize title for link creation
-            const sanitizedTitle = this.sanitizeTitle(title);
-            if (!sanitizedTitle) {
-                return { success: false, error: 'Cannot create link with empty title.' };
-            }
-
             // Create link text with hyphen prefix (preserve original indentation)
             const originalIndentation = currentLineContent.match(/^(\s*)/)?.[1] || '';
             
-            // Check if title contains Obsidian links - if so, use simple link without alias
-            // to avoid nested link structure like [[file|title with [[other link]]]]
-            // Also check for other potentially problematic characters in link aliases
-            const containsObsidianLinks = /\[\[.*?\]\]/.test(sanitizedTitle);
-            const containsProblematicChars = /[|#^]/.test(sanitizedTitle); // Obsidian link syntax characters
+            // Get the current file context for relative link generation
+            const currentFile = this.plugin.app.workspace.getActiveFile();
+            const sourcePath = currentFile?.path || '';
             
-            const linkText = (containsObsidianLinks || containsProblematicChars)
-                ? `${originalIndentation}- [[${file.path}]]`
-                : `${originalIndentation}- [[${file.path}|${sanitizedTitle}]]`;
+            // Use Obsidian's native link text generation - this handles all edge cases
+            // including proper path resolution, user preferences, and avoids nested link issues
+            const obsidianLinkText = this.plugin.app.metadataCache.fileToLinktext(file, sourcePath);
+            
+            // Create the final line with proper indentation
+            const linkText = `${originalIndentation}- [[${obsidianLinkText}]]`;
             
             // Validate the generated link text
             if (linkText.length > 500) { // Reasonable limit for link text
