@@ -18,8 +18,8 @@ TaskNotes focuses on time-based organization and task management, storing all da
 - Tasks stored as individual Markdown files with YAML frontmatter
 - Flexible filename formats: task title, zettelkasten ID, timestamp, or custom templates with live preview
 - Task properties include: title, status, priority, due date, scheduled date, contexts, tags, time estimates, and time tracking data
-- **Instant Task Conversion**: Convert checkbox tasks into dedicated TaskNotes with inline convert buttons
-- **Interactive Task Link Overlays**: Preview and interact with tasks directly in the editor via wikilink overlays
+- Instant Task Conversion: Convert checkbox tasks into dedicated TaskNotes with inline convert buttons
+- Interactive Task Link Overlays: Preview and interact with tasks directly in the editor via wikilink overlays
 - Support for recurring tasks (daily, weekly, monthly, yearly) with per-date completion tracking
 - Enhanced recurring task UI with visual indicators and date-specific completion controls
 - Built-in time tracking with multiple sessions per task
@@ -29,11 +29,11 @@ TaskNotes focuses on time-based organization and task management, storing all da
 - Context menu interactions for quick task property changes
 
 ### Calendar Integration
-- **Advanced Calendar Views**: Full-featured month view with comprehensive task and note display
-- **Mini Calendar Views**: Compact calendar options for space-efficient layouts
-- **Unscheduled Tasks Modal**: Dedicated interface for managing tasks without dates
-- **ICS Subscription Support**: Subscribe to external ICS/iCal calendar feeds with configurable refresh intervals
-- **Clickable Date Navigation**: Click calendar dates to create or navigate to daily notes directly
+- Advanced Calendar Views: Full-featured month view with comprehensive task and note display
+- Mini Calendar Views: Compact calendar options for space-efficient layouts
+- Unscheduled Tasks Modal: Dedicated interface for managing tasks without dates
+- ICS Subscription Support: Subscribe to external ICS/iCal calendar feeds with configurable refresh intervals
+- Clickable Date Navigation: Click calendar dates to create or navigate to daily notes directly
 - Month view with agenda display showing tasks and notes
 - Visual indicators for daily notes and due tasks
 - Keyboard navigation and date selection synchronized across all views
