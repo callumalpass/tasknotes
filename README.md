@@ -39,12 +39,6 @@ TaskNotes focuses on time-based organization and task management, storing all da
 - Keyboard navigation and date selection synchronized across all views
 - Color coding based on priority, note presence, or daily activities
 
-### Daily Notes
-- Automatic creation with configurable custom templates
-- Template support for Obsidian variables ({{title}}, {{date}}, {{date:format}}, etc.)
-- YAML frontmatter tracking: date, tags, important flag
-- Click calendar dates to create or navigate to daily notes
-
 ### Time Management
 - Integrated time tracking for tasks with start/stop functionality
 - Time entries stored in YAML with timestamps and durations
