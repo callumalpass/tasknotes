@@ -212,7 +212,7 @@ export class InstantTaskConvertService {
         
         // Capture parent note information (current active file)
         const currentFile = this.plugin.app.workspace.getActiveFile();
-        const parentNote = currentFile ? currentFile.basename : '';
+        const parentNote = currentFile ? this.plugin.app.fileManager.generateMarkdownLink(currentFile, currentFile.path) : '';
         
         // Parse due and scheduled dates from task (if present)
         const parsedDueDate = this.sanitizeDate(parsedData.dueDate);

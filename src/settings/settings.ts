@@ -707,10 +707,10 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 		helpList.createEl('li', { text: '{{timeEstimate}} - Time estimate in minutes' });
 		helpList.createEl('li', { text: '{{dueDate}} - Task due date' });
 		helpList.createEl('li', { text: '{{scheduledDate}} - Task scheduled date' });
-		helpList.createEl('li', { text: '{{parentNote}} - Parent note name (only for instant convert)' });
+		helpList.createEl('li', { text: '{{parentNote}} - Parent note link (only for instant convert)' });
 		
 		helpContainer.createEl('p', { 
-			text: 'Template is applied when the task is created with all final values from the form. Use {{details}} to include user content from the Details field.\n{{parentNote}} will resolve to the name of the note where a checkbox task was converted to a tasknote (empty for manually created tasks). Variables use the same format as daily note templates.',
+			text: 'Template is applied when the task is created with all final values from the form. Use {{details}} to include user content from the Details field.\n{{parentNote}} will resolve to a link (wikilink or markdown, based on your Obsidian settings) to the note where a checkbox task was converted to a tasknote (empty for manually created tasks). Variables use the same format as daily note templates.',
 			cls: 'settings-help-note'
 		});
 	}
