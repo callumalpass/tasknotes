@@ -572,3 +572,248 @@
 .theme-dark .tasknotes-plugin .settings-view__item-row {
     border-color: var(--tn-border-color-hover);
 }
+
+/* ================================================
+   ICS SUBSCRIPTION FORM STYLES
+   ================================================ */
+
+/* ICS Form Containers */
+.tasknotes-plugin .ics-add-subscription-form {
+    margin-top: var(--tn-spacing-md);
+    padding: var(--tn-spacing-md);
+    background: var(--tn-bg-secondary);
+    border: 1px solid var(--tn-border-color);
+    border-radius: var(--tn-radius-md);
+}
+
+.tasknotes-plugin .ics-form-row {
+    display: flex;
+    align-items: center;
+    gap: var(--tn-spacing-md);
+    margin-bottom: var(--tn-spacing-md);
+}
+
+.tasknotes-plugin .ics-form-row:last-child {
+    margin-bottom: 0;
+}
+
+.tasknotes-plugin .ics-form-row-multi {
+    flex-wrap: wrap;
+    gap: var(--tn-spacing-lg);
+}
+
+.tasknotes-plugin .ics-form-row-hidden {
+    display: none;
+}
+
+/* ICS Form Labels */
+.tasknotes-plugin .ics-form-label {
+    font-weight: var(--tn-font-weight-medium);
+    color: var(--tn-text-normal);
+    white-space: nowrap;
+    min-width: 80px;
+}
+
+/* ICS Form Inputs */
+.tasknotes-plugin .ics-form-input {
+    flex: 1;
+    padding: var(--tn-spacing-sm);
+    border: 1px solid var(--tn-border-color);
+    border-radius: var(--tn-radius-sm);
+    background: var(--tn-bg-primary);
+    color: var(--tn-text-normal);
+    font-size: var(--tn-font-size-sm);
+}
+
+.tasknotes-plugin .ics-form-select {
+    flex: 1;
+    padding: var(--tn-spacing-sm);
+    border: 1px solid var(--tn-border-color);
+    border-radius: var(--tn-radius-sm);
+    background: var(--tn-bg-primary);
+    color: var(--tn-text-normal);
+    font-size: var(--tn-font-size-sm);
+}
+
+.tasknotes-plugin .ics-form-number {
+    width: 80px;
+    padding: var(--tn-spacing-sm);
+    border: 1px solid var(--tn-border-color);
+    border-radius: var(--tn-radius-sm);
+    background: var(--tn-bg-primary);
+    color: var(--tn-text-normal);
+    font-size: var(--tn-font-size-sm);
+}
+
+.tasknotes-plugin .ics-form-color {
+    width: 40px;
+    height: 32px;
+    border: 1px solid var(--tn-border-color);
+    border-radius: var(--tn-radius-sm);
+    background: var(--tn-bg-primary);
+    cursor: pointer;
+}
+
+/* ICS Form Groups */
+.tasknotes-plugin .ics-form-group {
+    display: flex;
+    align-items: center;
+    gap: var(--tn-spacing-sm);
+}
+
+/* ICS Form Checkboxes */
+.tasknotes-plugin .ics-form-checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: var(--tn-spacing-xs);
+    cursor: pointer;
+    font-size: var(--tn-font-size-sm);
+    color: var(--tn-text-normal);
+}
+
+.tasknotes-plugin .ics-form-checkbox {
+    margin: 0;
+}
+
+/* ICS Form Buttons */
+.tasknotes-plugin .ics-form-button {
+    padding: var(--tn-spacing-sm) var(--tn-spacing-lg);
+    background: var(--tn-interactive-accent);
+    color: var(--tn-text-on-accent);
+    border: none;
+    border-radius: var(--tn-radius-sm);
+    font-size: var(--tn-font-size-sm);
+    font-weight: var(--tn-font-weight-medium);
+    cursor: pointer;
+    transition: background-color var(--tn-transition-fast);
+}
+
+.tasknotes-plugin .ics-form-button:hover {
+    background: var(--tn-interactive-accent-hover);
+}
+
+.tasknotes-plugin .ics-form-button:disabled {
+    background: var(--tn-bg-muted);
+    color: var(--tn-text-muted);
+    cursor: not-allowed;
+}
+
+/* ================================================
+   ICS SUBSCRIPTION LIST STYLES
+   ================================================ */
+
+/* ICS Subscription Row */
+.tasknotes-plugin .ics-subscription-row {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--tn-spacing-md);
+    padding: var(--tn-spacing-md);
+    background: var(--tn-bg-secondary);
+    border: 1px solid var(--tn-border-color);
+    border-radius: var(--tn-radius-md);
+    margin-bottom: var(--tn-spacing-sm);
+}
+
+/* ICS Subscription Info */
+.tasknotes-plugin .ics-subscription-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.tasknotes-plugin .ics-subscription-name {
+    font-weight: var(--tn-font-weight-medium);
+    color: var(--tn-text-normal);
+    margin-bottom: var(--tn-spacing-xs);
+    display: flex;
+    align-items: center;
+    gap: var(--tn-spacing-sm);
+}
+
+.tasknotes-plugin .ics-subscription-type-badge {
+    display: inline-block;
+    padding: 2px 6px;
+    font-size: 10px;
+    font-weight: var(--tn-font-weight-bold);
+    text-transform: uppercase;
+    border-radius: var(--tn-radius-xs);
+    line-height: 1;
+}
+
+.tasknotes-plugin .ics-subscription-type-badge.remote {
+    background: var(--tn-color-blue-bg);
+    color: var(--tn-color-blue);
+}
+
+.tasknotes-plugin .ics-subscription-type-badge.local {
+    background: var(--tn-color-green-bg);
+    color: var(--tn-color-green);
+}
+
+.tasknotes-plugin .ics-subscription-url {
+    font-size: var(--tn-font-size-sm);
+    color: var(--tn-text-muted);
+    margin-bottom: var(--tn-spacing-xs);
+    word-break: break-all;
+}
+
+.tasknotes-plugin .ics-subscription-meta {
+    font-size: var(--tn-font-size-xs);
+    color: var(--tn-text-faint);
+}
+
+.tasknotes-plugin .ics-subscription-error {
+    font-size: var(--tn-font-size-xs);
+    color: var(--tn-color-red);
+    margin-top: var(--tn-spacing-xs);
+}
+
+/* ICS Subscription Actions */
+.tasknotes-plugin .ics-subscription-actions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--tn-spacing-xs);
+    align-items: flex-end;
+}
+
+.tasknotes-plugin .ics-subscription-toggle,
+.tasknotes-plugin .ics-subscription-refresh,
+.tasknotes-plugin .ics-subscription-delete {
+    padding: var(--tn-spacing-xs) var(--tn-spacing-sm);
+    border: 1px solid var(--tn-border-color);
+    border-radius: var(--tn-radius-sm);
+    font-size: var(--tn-font-size-xs);
+    cursor: pointer;
+    transition: all var(--tn-transition-fast);
+    white-space: nowrap;
+}
+
+.tasknotes-plugin .ics-subscription-toggle.enabled {
+    background: var(--tn-color-green-bg);
+    color: var(--tn-color-green);
+    border-color: var(--tn-color-green);
+}
+
+.tasknotes-plugin .ics-subscription-toggle.disabled {
+    background: var(--tn-bg-muted);
+    color: var(--tn-text-muted);
+}
+
+.tasknotes-plugin .ics-subscription-refresh {
+    background: var(--tn-bg-primary);
+    color: var(--tn-text-normal);
+}
+
+.tasknotes-plugin .ics-subscription-refresh:hover {
+    background: var(--tn-interactive-hover);
+}
+
+.tasknotes-plugin .ics-subscription-delete {
+    background: var(--tn-color-red-bg);
+    color: var(--tn-color-red);
+    border-color: var(--tn-color-red);
+}
+
+.tasknotes-plugin .ics-subscription-delete:hover {
+    background: var(--tn-color-red);
+    color: var(--tn-text-on-accent);
+}

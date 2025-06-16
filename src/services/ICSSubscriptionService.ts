@@ -1,4 +1,4 @@
-import { Notice, requestUrl } from 'obsidian';
+import { Notice, requestUrl, TFile } from 'obsidian';
 import * as ICAL from 'ical.js';
 import { format, parseISO } from 'date-fns';
 import { ICSSubscription, ICSEvent, ICSCache } from '../types';
@@ -10,6 +10,7 @@ export class ICSSubscriptionService extends EventEmitter {
     private subscriptions: ICSSubscription[] = [];
     private cache: Map<string, ICSCache> = new Map();
     private refreshTimers: Map<string, NodeJS.Timeout> = new Map();
+    private fileWatchers: Map<string, () => void> = new Map(); // For local file change tracking
 
     constructor(plugin: TaskNotesPlugin) {
         super();
@@ -20,10 +21,14 @@ export class ICSSubscriptionService extends EventEmitter {
         // Load subscriptions from plugin data
         await this.loadSubscriptions();
         
-        // Start refresh timers for enabled subscriptions
+        // Start refresh timers and file watchers for enabled subscriptions
         this.subscriptions.forEach(subscription => {
             if (subscription.enabled) {
-                this.startRefreshTimer(subscription);
+                if (subscription.type === 'remote') {
+                    this.startRefreshTimer(subscription);
+                } else if (subscription.type === 'local') {
+                    this.startFileWatcher(subscription);
+                }
             }
         });
 
@@ -66,9 +71,15 @@ export class ICSSubscriptionService extends EventEmitter {
         await this.saveSubscriptions();
 
         if (newSubscription.enabled) {
-            this.startRefreshTimer(newSubscription);
-            // Immediately fetch the subscription
-            await this.fetchSubscription(newSubscription.id);
+            if (newSubscription.type === 'remote') {
+                this.startRefreshTimer(newSubscription);
+                // Immediately fetch the subscription
+                await this.fetchSubscription(newSubscription.id);
+            } else if (newSubscription.type === 'local') {
+                this.startFileWatcher(newSubscription);
+                // Immediately read the local file
+                await this.fetchSubscription(newSubscription.id);
+            }
         }
 
         this.emit('data-changed');
@@ -87,14 +98,20 @@ export class ICSSubscriptionService extends EventEmitter {
 
         await this.saveSubscriptions();
 
-        // Update refresh timer
+        // Update refresh timer or file watcher
         this.stopRefreshTimer(id);
+        this.stopFileWatcher(id);
         if (updatedSubscription.enabled) {
-            this.startRefreshTimer(updatedSubscription);
+            if (updatedSubscription.type === 'remote') {
+                this.startRefreshTimer(updatedSubscription);
+            } else if (updatedSubscription.type === 'local') {
+                this.startFileWatcher(updatedSubscription);
+            }
         }
 
-        // Clear cache if URL changed
-        if (updates.url && updates.url !== oldSubscription.url) {
+        // Clear cache if URL or file path changed
+        if ((updates.url && updates.url !== oldSubscription.url) || 
+            (updates.filePath && updates.filePath !== oldSubscription.filePath)) {
             this.cache.delete(id);
         }
 
@@ -112,6 +129,7 @@ export class ICSSubscriptionService extends EventEmitter {
 
         // Clean up
         this.stopRefreshTimer(id);
+        this.stopFileWatcher(id);
         this.cache.delete(id);
 
         this.emit('data-changed');
@@ -124,16 +142,33 @@ export class ICSSubscriptionService extends EventEmitter {
         }
 
         try {
-            const response = await requestUrl({
-                url: subscription.url,
-                method: 'GET',
-                headers: {
-                    'Accept': 'text/calendar,application/calendar+xml,text/plain',
-                    'User-Agent': 'TaskNotes-Plugin/1.0'
-                }
-            });
+            let icsData: string;
 
-            const icsData = response.text;
+            if (subscription.type === 'remote') {
+                if (!subscription.url) {
+                    throw new Error('Remote subscription missing URL');
+                }
+
+                const response = await requestUrl({
+                    url: subscription.url,
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'text/calendar,application/calendar+xml,text/plain',
+                        'User-Agent': 'TaskNotes-Plugin/1.0'
+                    }
+                });
+
+                icsData = response.text;
+            } else if (subscription.type === 'local') {
+                if (!subscription.filePath) {
+                    throw new Error('Local subscription missing file path');
+                }
+
+                icsData = await this.readLocalICSFile(subscription.filePath);
+            } else {
+                throw new Error('Unknown subscription type');
+            }
+
             const events = this.parseICS(icsData, subscription.id);
 
             // Update cache
@@ -162,10 +197,14 @@ export class ICSSubscriptionService extends EventEmitter {
             });
 
             // Show user notification for errors with more helpful message
-            if (errorMessage.includes('404')) {
-                new Notice(`Calendar "${subscription.name}" not found (404). Please check the ICS URL is correct and the calendar is publicly accessible.`);
+            if (subscription.type === 'remote') {
+                if (errorMessage.includes('404')) {
+                    new Notice(`Calendar "${subscription.name}" not found (404). Please check the ICS URL is correct and the calendar is publicly accessible.`);
+                } else {
+                    new Notice(`Failed to fetch remote calendar "${subscription.name}": ${errorMessage}`);
+                }
             } else {
-                new Notice(`Failed to fetch calendar "${subscription.name}": ${errorMessage}`);
+                new Notice(`Failed to read local calendar "${subscription.name}": ${errorMessage}`);
             }
         }
     }
@@ -295,6 +334,75 @@ export class ICSSubscriptionService extends EventEmitter {
         }
     }
 
+    private async readLocalICSFile(filePath: string): Promise<string> {
+        try {
+            const file = this.plugin.app.vault.getAbstractFileByPath(filePath);
+            if (!file || !(file instanceof TFile)) {
+                throw new Error(`File not found: ${filePath}`);
+            }
+
+            if (file.extension !== 'ics') {
+                throw new Error(`File is not an ICS file: ${filePath}`);
+            }
+
+            return await this.plugin.app.vault.cachedRead(file);
+        } catch (error) {
+            throw new Error(`Failed to read local ICS file "${filePath}": ${error instanceof Error ? error.message : String(error)}`);
+        }
+    }
+
+    private startFileWatcher(subscription: ICSSubscription): void {
+        if (!subscription.filePath) {
+            return;
+        }
+
+        this.stopFileWatcher(subscription.id);
+
+        // Register file watcher with Obsidian's vault
+        const watcherCallback = (file: TFile, oldPath?: string) => {
+            if (file.path === subscription.filePath || oldPath === subscription.filePath) {
+                // Debounce file changes to avoid excessive updates
+                setTimeout(() => {
+                    this.fetchSubscription(subscription.id);
+                }, 1000);
+            }
+        };
+
+        // Register event handlers for file modifications
+        const modifyRef = this.plugin.app.vault.on('modify', watcherCallback);
+        const renameRef = this.plugin.app.vault.on('rename', watcherCallback);
+        const deleteRef = this.plugin.app.vault.on('delete', (file) => {
+            if (file.path === subscription.filePath) {
+                this.updateSubscription(subscription.id, {
+                    lastError: 'Local ICS file was deleted'
+                });
+            }
+        });
+
+        // Store cleanup function
+        this.fileWatchers.set(subscription.id, () => {
+            this.plugin.app.vault.offref(modifyRef);
+            this.plugin.app.vault.offref(renameRef);
+            this.plugin.app.vault.offref(deleteRef);
+        });
+
+        // Set up periodic refresh for local files (less frequent than remote)
+        const intervalMs = subscription.refreshInterval * 60 * 1000;
+        const timer = setInterval(() => {
+            this.fetchSubscription(subscription.id);
+        }, intervalMs);
+        
+        this.refreshTimers.set(subscription.id, timer);
+    }
+
+    private stopFileWatcher(id: string): void {
+        const cleanup = this.fileWatchers.get(id);
+        if (cleanup) {
+            cleanup();
+            this.fileWatchers.delete(id);
+        }
+    }
+
     async refreshSubscription(id: string): Promise<void> {
         await this.fetchSubscription(id);
     }
@@ -327,10 +435,21 @@ export class ICSSubscriptionService extends EventEmitter {
         this.refreshTimers.forEach(timer => clearInterval(timer));
         this.refreshTimers.clear();
         
+        // Clear all file watchers
+        this.fileWatchers.forEach(cleanup => cleanup());
+        this.fileWatchers.clear();
+        
         // Clear cache
         this.cache.clear();
         
         // Clear event listeners
         this.removeAllListeners();
+    }
+
+    // Helper method to suggest local ICS files
+    getLocalICSFiles(): TFile[] {
+        return this.plugin.app.vault.getFiles()
+            .filter(file => file.extension === 'ics')
+            .sort((a, b) => a.path.localeCompare(b.path));
     }
 }

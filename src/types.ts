@@ -292,10 +292,12 @@ export interface ViewPreferences {
 export interface ICSSubscription {
 	id: string;
 	name: string;
-	url: string;
+	url?: string; // Optional for local files
+	filePath?: string; // Path to local ICS file
+	type: 'remote' | 'local'; // Type of ICS source
 	color: string;
 	enabled: boolean;
-	refreshInterval: number; // minutes
+	refreshInterval: number; // minutes (for remote) or check interval (for local)
 	lastFetched?: string; // ISO timestamp
 	lastError?: string;
 }

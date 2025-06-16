@@ -990,9 +990,16 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 		// Add subscription form
 		new Setting(container)
 			.setName('Add calendar subscription')
-			.setDesc('Subscribe to an external calendar feed');
+			.setDesc('Subscribe to an external calendar feed or add a local ICS file');
 		
 		const addForm = container.createDiv('ics-add-subscription-form');
+		
+		// Type selection
+		const typeRow = addForm.createDiv('ics-form-row');
+		typeRow.createEl('label', { text: 'Source type:', cls: 'ics-form-label' });
+		const typeSelect = typeRow.createEl('select', { cls: 'ics-form-select' });
+		typeSelect.createEl('option', { value: 'remote', text: 'Remote URL' });
+		typeSelect.createEl('option', { value: 'local', text: 'Local file' });
 		
 		// Name input
 		const nameRow = addForm.createDiv('ics-form-row');
@@ -1003,13 +1010,47 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 			cls: 'ics-form-input'
 		});
 		
-		// URL input
+		// URL input (for remote)
 		const urlRow = addForm.createDiv('ics-form-row');
 		urlRow.createEl('label', { text: 'ICS URL:', cls: 'ics-form-label' });
 		const urlInput = urlRow.createEl('input', {
 			type: 'url',
 			placeholder: 'https://example.com/calendar.ics',
 			cls: 'ics-form-input'
+		});
+		
+		// Local file selection (for local)
+		const fileRow = addForm.createDiv('ics-form-row ics-form-row-hidden');
+		fileRow.createEl('label', { text: 'ICS file:', cls: 'ics-form-label' });
+		const fileSelect = fileRow.createEl('select', { cls: 'ics-form-select' });
+		
+		// Function to update available ICS files
+		const updateLocalFiles = () => {
+			fileSelect.empty();
+			fileSelect.createEl('option', { value: '', text: 'Select an ICS file...' });
+			
+			const icsFiles = this.plugin.icsSubscriptionService?.getLocalICSFiles() || [];
+			icsFiles.forEach(file => {
+				fileSelect.createEl('option', { value: file.path, text: file.path });
+			});
+			
+			if (icsFiles.length === 0) {
+				fileSelect.createEl('option', { value: '', text: 'No .ics files found in vault', attr: { disabled: 'true' } });
+			}
+		};
+		
+		// Initial update
+		updateLocalFiles();
+		
+		// Type change handler
+		typeSelect.addEventListener('change', () => {
+			const isRemote = typeSelect.value === 'remote';
+			urlRow.style.display = isRemote ? 'flex' : 'none';
+			fileRow.style.display = isRemote ? 'none' : 'flex';
+			
+			if (!isRemote) {
+				updateLocalFiles();
+			}
 		});
 		
 		// Color and settings row
@@ -1055,13 +1096,25 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 		
 		addButton.addEventListener('click', async () => {
 			const name = nameInput.value.trim();
+			const type = typeSelect.value as 'remote' | 'local';
 			const url = urlInput.value.trim();
+			const filePath = fileSelect.value.trim();
 			const color = colorInput.value;
 			const refreshInterval = parseInt(intervalInput.value);
 			const enabled = enabledCheckbox.checked;
 			
-			if (!name || !url) {
-				new Notice('Name and URL are required');
+			if (!name) {
+				new Notice('Name is required');
+				return;
+			}
+			
+			if (type === 'remote' && !url) {
+				new Notice('URL is required for remote subscriptions');
+				return;
+			}
+			
+			if (type === 'local' && !filePath) {
+				new Notice('Please select a local ICS file');
 				return;
 			}
 			
@@ -1074,18 +1127,29 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 				addButton.textContent = 'Adding...';
 				addButton.disabled = true;
 				
-				await this.plugin.icsSubscriptionService!.addSubscription({
-					name, url, color, refreshInterval, enabled
-				});
+				const subscriptionData = {
+					name,
+					type,
+					color,
+					refreshInterval,
+					enabled,
+					...(type === 'remote' ? { url } : { filePath })
+				};
 				
-				new Notice(`Added subscription "${name}"`);
+				await this.plugin.icsSubscriptionService!.addSubscription(subscriptionData);
+				
+				new Notice(`Added ${type} subscription "${name}"`);
 				
 				// Clear the form
 				nameInput.value = '';
 				urlInput.value = '';
+				fileSelect.value = '';
 				colorInput.value = '#3788d8';
 				intervalInput.value = '60';
 				enabledCheckbox.checked = true;
+				typeSelect.value = 'remote';
+				urlRow.style.display = 'flex';
+				fileRow.style.display = 'none';
 				
 				// Refresh the subscription list
 				this.renderActiveTab();
@@ -1123,20 +1187,30 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 		
 		// Help section
 		const helpContainer = container.createDiv('settings-help-section');
-		helpContainer.createEl('h4', { text: 'How to get calendar subscription URLs:' });
-		const helpList = helpContainer.createEl('ul');
-		helpList.createEl('li', { text: 'Google Calendar: Settings → Calendar settings → Integrate calendar → Secret address in iCal format' });
-		helpList.createEl('li', { text: 'Outlook/Office 365: Calendar settings → Share calendar → Publish a calendar → ICS format' });
-		helpList.createEl('li', { text: 'Apple iCloud: Calendar.app → File → Export → Export as .ics file' });
-		helpList.createEl('li', { text: 'Other services: Look for "Calendar subscription", "ICS feed", "iCal URL", or "Webcal" options' });
+		helpContainer.createEl('h4', { text: 'Calendar sources:' });
+		
+		// Remote URLs section
+		helpContainer.createEl('h5', { text: 'Remote calendar URLs:' });
+		const urlHelpList = helpContainer.createEl('ul');
+		urlHelpList.createEl('li', { text: 'Google Calendar: Settings → Calendar settings → Integrate calendar → Secret address in iCal format' });
+		urlHelpList.createEl('li', { text: 'Outlook/Office 365: Calendar settings → Share calendar → Publish a calendar → ICS format' });
+		urlHelpList.createEl('li', { text: 'Other services: Look for "Calendar subscription", "ICS feed", "iCal URL", or "Webcal" options' });
+		
+		// Local files section
+		helpContainer.createEl('h5', { text: 'Local ICS files:' });
+		const fileHelpList = helpContainer.createEl('ul');
+		fileHelpList.createEl('li', { text: 'Place .ics files anywhere in your vault' });
+		fileHelpList.createEl('li', { text: 'Export from Apple Calendar: File → Export → Export as .ics file' });
+		fileHelpList.createEl('li', { text: 'Export from Google Calendar: Settings → Export → Download your data' });
+		fileHelpList.createEl('li', { text: 'Files are automatically watched for changes and refreshed' });
 		
 		helpContainer.createEl('p', { 
-			text: 'Important: For Google Calendar, you must use the "Secret address" (private URL) from your calendar settings, not the public URL. The calendar must be set to "Make available to public" for the secret URL to work.',
+			text: 'Important: For Google Calendar remote URLs, you must use the "Secret address" (private URL) from your calendar settings. The calendar must be set to "Make available to public" for the secret URL to work.',
 			cls: 'settings-help-note'
 		});
 		
 		helpContainer.createEl('p', { 
-			text: 'Note: Only read-only access is supported. You cannot edit external calendar events from within TaskNotes.',
+			text: 'Note: Only read-only access is supported. You cannot edit calendar events from within TaskNotes.',
 			cls: 'settings-help-note'
 		});
 	}
@@ -1937,7 +2011,16 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 			// Subscription info
 			const infoContainer = subRow.createDiv('ics-subscription-info');
 			const nameEl = infoContainer.createEl('div', { cls: 'ics-subscription-name', text: subscription.name });
-			const urlEl = infoContainer.createEl('div', { cls: 'ics-subscription-url', text: subscription.url });
+			
+			// Type badge
+			const typeBadge = nameEl.createEl('span', { 
+				cls: `ics-subscription-type-badge ${subscription.type}`,
+				text: subscription.type === 'remote' ? 'URL' : 'FILE'
+			});
+			
+			// Source (URL or file path)
+			const sourceText = subscription.type === 'remote' ? subscription.url : subscription.filePath;
+			const sourceEl = infoContainer.createEl('div', { cls: 'ics-subscription-url', text: sourceText || 'Unknown source' });
 			const metaEl = infoContainer.createEl('div', { cls: 'ics-subscription-meta' });
 			
 			// Meta information
