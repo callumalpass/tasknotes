@@ -2,27 +2,165 @@ import { format, parse, parseISO, isSameDay, isBefore, isValid, startOfDay, addD
 
 /**
  * Smart date parsing that detects timezone info and handles appropriately
+ * Supports various date formats including space-separated datetime and ISO week formats
  */
 export function parseDate(dateString: string): Date {
     if (!dateString) {
-        throw new Error('Date string cannot be empty');
+        const error = new Error('Date string cannot be empty');
+        console.error('Date parsing error:', { dateString, error: error.message });
+        throw error;
     }
     
-    // Check if the string contains timezone information
-    if (dateString.includes('T') || dateString.includes('Z') || dateString.match(/[+-]\d{2}:\d{2}$/)) {
-        // Has timezone info - parse as-is to preserve timezone
-        const parsed = parseISO(dateString);
-        if (!isValid(parsed)) {
-            throw new Error(`Invalid timezone-aware date: ${dateString}`);
+    // Trim whitespace
+    const trimmed = dateString.trim();
+    
+    try {
+        // Handle incomplete time format (e.g., "T00:00" without date)
+        if (trimmed.startsWith('T') && /^T\d{2}:\d{2}(:\d{2})?/.test(trimmed)) {
+            const error = new Error(`Invalid date format - time without date: ${dateString}`);
+            console.warn('Date parsing error - incomplete time format:', { 
+                original: dateString, 
+                trimmed, 
+                error: error.message 
+            });
+            throw error;
         }
-        return parsed;
-    } else {
-        // Date-only string - parse in local timezone
-        const parsed = parse(dateString, 'yyyy-MM-dd', new Date());
-        if (!isValid(parsed)) {
-            throw new Error(`Invalid date-only string: ${dateString}`);
+        
+        // Handle ISO week format (e.g., "2025-W02")
+        if (/^\d{4}-W\d{2}$/.test(trimmed)) {
+            const [year, week] = trimmed.split('-W');
+            const yearNum = parseInt(year, 10);
+            const weekNum = parseInt(week, 10);
+            
+            if (isNaN(yearNum) || isNaN(weekNum)) {
+                const error = new Error(`Invalid numeric values in ISO week format: ${dateString}`);
+                console.warn('Date parsing error - invalid ISO week numbers:', { 
+                    original: dateString, 
+                    year, 
+                    week, 
+                    yearNum, 
+                    weekNum 
+                });
+                throw error;
+            }
+            
+            if (weekNum < 1 || weekNum > 53) {
+                const error = new Error(`Invalid week number in ISO week format: ${dateString} (week must be 1-53)`);
+                console.warn('Date parsing error - week number out of range:', { 
+                    original: dateString, 
+                    weekNum, 
+                    error: error.message 
+                });
+                throw error;
+            }
+            
+            // Calculate the date of the first day of the specified week
+            // ISO week starts on Monday
+            const jan4 = new Date(yearNum, 0, 4); // January 4th is always in week 1
+            const jan4Day = jan4.getDay(); // 0 = Sunday, 1 = Monday, etc.
+            const mondayOfWeek1 = new Date(jan4);
+            mondayOfWeek1.setDate(jan4.getDate() - (jan4Day === 0 ? 6 : jan4Day - 1));
+            
+            const targetWeekMonday = new Date(mondayOfWeek1);
+            targetWeekMonday.setDate(mondayOfWeek1.getDate() + (weekNum - 1) * 7);
+            
+            if (!isValid(targetWeekMonday)) {
+                const error = new Error(`Failed to calculate date from ISO week format: ${dateString}`);
+                console.error('Date parsing error - ISO week calculation failed:', { 
+                    original: dateString, 
+                    yearNum, 
+                    weekNum, 
+                    jan4: jan4.toISOString(), 
+                    targetWeekMonday: targetWeekMonday.toString() 
+                });
+                throw error;
+            }
+            
+            console.debug('Successfully parsed ISO week format:', { 
+                original: dateString, 
+                result: targetWeekMonday.toISOString() 
+            });
+            return targetWeekMonday;
         }
-        return parsed;
+        
+        // Handle space-separated datetime format (e.g., "2025-02-23 20:28:49")
+        if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}(:\d{2})?/.test(trimmed)) {
+            // Convert space to 'T' to make it ISO format
+            const isoFormat = trimmed.replace(' ', 'T');
+            const parsed = parseISO(isoFormat);
+            
+            if (!isValid(parsed)) {
+                const error = new Error(`Invalid space-separated datetime: ${dateString}`);
+                console.warn('Date parsing error - space-separated datetime invalid:', { 
+                    original: dateString, 
+                    converted: isoFormat, 
+                    error: error.message 
+                });
+                throw error;
+            }
+            
+            console.debug('Successfully parsed space-separated datetime:', { 
+                original: dateString, 
+                converted: isoFormat, 
+                result: parsed.toISOString() 
+            });
+            return parsed;
+        }
+        
+        // Check if the string contains timezone information (original logic)
+        if (trimmed.includes('T') || trimmed.includes('Z') || trimmed.match(/[+-]\d{2}:\d{2}$/)) {
+            // Has timezone info - parse as-is to preserve timezone
+            const parsed = parseISO(trimmed);
+            if (!isValid(parsed)) {
+                const error = new Error(`Invalid timezone-aware date: ${dateString}`);
+                console.warn('Date parsing error - timezone-aware format invalid:', { 
+                    original: dateString, 
+                    trimmed, 
+                    error: error.message 
+                });
+                throw error;
+            }
+            
+            console.debug('Successfully parsed timezone-aware date:', { 
+                original: dateString, 
+                result: parsed.toISOString() 
+            });
+            return parsed;
+        } else {
+            // Date-only string - parse in local timezone
+            const parsed = parse(trimmed, 'yyyy-MM-dd', new Date());
+            if (!isValid(parsed)) {
+                const error = new Error(`Invalid date-only string: ${dateString} (expected format: yyyy-MM-dd)`);
+                console.warn('Date parsing error - date-only format invalid:', { 
+                    original: dateString, 
+                    trimmed, 
+                    expectedFormat: 'yyyy-MM-dd', 
+                    error: error.message 
+                });
+                throw error;
+            }
+            
+            console.debug('Successfully parsed date-only string:', { 
+                original: dateString, 
+                result: parsed.toISOString() 
+            });
+            return parsed;
+        }
+    } catch (error) {
+        // If error is already one of our custom errors, re-throw it
+        if (error instanceof Error && error.message.includes('Invalid date')) {
+            throw error;
+        }
+        
+        // For unexpected errors, wrap them with context
+        const wrappedError = new Error(`Unexpected error parsing date "${dateString}": ${error instanceof Error ? error.message : String(error)}`);
+        console.error('Unexpected date parsing error:', { 
+            original: dateString, 
+            trimmed, 
+            error: error instanceof Error ? error.message : String(error),
+            stack: error instanceof Error ? error.stack : undefined
+        });
+        throw wrappedError;
     }
 }
 
