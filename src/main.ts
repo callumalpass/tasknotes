@@ -120,18 +120,18 @@ export default class TaskNotesPlugin extends Plugin {
 
 		await this.loadSettings();
 		
-		// Initialize customization services
+		// Initialize only essential services that are needed for app registration
 		this.fieldMapper = new FieldMapper(this.settings.fieldMapping);
 		this.statusManager = new StatusManager(this.settings.customStatuses);
 		this.priorityManager = new PriorityManager(this.settings.customPriorities);
 		
-		// Initialize performance optimization utilities
+		// Initialize performance optimization utilities (lightweight)
 		this.requestDeduplicator = new RequestDeduplicator();
 		this.predictivePrefetcher = new PredictivePrefetcher(this.requestDeduplicator);
 		this.domReconciler = new DOMReconciler();
 		this.uiStateManager = new UIStateManager();
 		
-		// Initialize unified cache manager FIRST
+		// Initialize cache manager but don't start expensive initialization yet
 		this.cacheManager = new CacheManager(
 			this.app.vault,
 			this.settings.taskTag,
@@ -139,45 +139,15 @@ export default class TaskNotesPlugin extends Plugin {
 			this.fieldMapper
 		);
 		
-		// Initialize cache and wait for completion
-		await perfMonitor.measure('cache-initialization', async () => {
-			await this.cacheManager.initializeCache();
-		});
-		
-		// Listen for delayed cache initialization completion
-		this.cacheManager.subscribe('cache-initialized', (data) => {
-			if (data.taskCount > 0) {
-				// Notify all views to refresh
-				this.notifyDataChanged();
-			}
-		});
-		
-		// Initialize business logic services AFTER cache manager
+		// Initialize business logic services (lightweight constructors)
 		this.taskService = new TaskService(this);
-		
-		// Initialize FilterService AFTER cache manager is ready
 		this.filterService = new FilterService(
 			this.cacheManager,
 			this.statusManager,
 			this.priorityManager
 		);
-		
-		// Initialize FilterService and set up event listeners
-		this.filterService.initialize();
-		
-		// Initialize ViewStateManager
 		this.viewStateManager = new ViewStateManager();
-		
-		// Initialize Pomodoro service
-		this.pomodoroService = new PomodoroService(this);
-		await this.pomodoroService.initialize();
-		
-		// Initialize drag and drop manager
 		this.dragDropManager = new DragDropManager(this);
-		
-		// Initialize ICS subscription service
-		this.icsSubscriptionService = new ICSSubscriptionService(this);
-		await this.icsSubscriptionService.initialize();
 		
 		// Inject dynamic styles for custom statuses and priorities
 		this.injectCustomStyles();
@@ -216,33 +186,8 @@ export default class TaskNotesPlugin extends Plugin {
 			(leaf) => new KanbanView(leaf, this)
 		);
 		
-		// Initialize editor services
-		const { TaskLinkDetectionService } = await import('./services/TaskLinkDetectionService');
-		this.taskLinkDetectionService = new TaskLinkDetectionService(this);
-		
-		const { InstantTaskConvertService } = await import('./services/InstantTaskConvertService');
-		this.instantTaskConvertService = new InstantTaskConvertService(this);
-		
-		// Register editor extensions
+		// Register essential editor extensions (lightweight)
 		this.registerEditorExtension(createTaskLinkOverlay(this));
-		
-		const { createInstantConvertButtons } = await import('./editor/InstantConvertButtons');
-		this.registerEditorExtension(createInstantConvertButtons(this));
-		
-		// Set up global event listener for task updates to refresh editor decorations
-		this.taskUpdateListenerForEditor = this.emitter.on(EVENT_TASK_UPDATED, (data) => {
-			// Trigger decoration refresh in all active markdown views using proper state effects
-			this.app.workspace.iterateRootLeaves((leaf) => {
-				if (leaf.view.getViewType() === 'markdown') {
-					const editor = (leaf.view as any).editor;
-					if (editor && editor.cm) {
-						// Use the proper CodeMirror state effect pattern
-						// The TaskService emits events with 'path' property, not 'taskPath'
-						dispatchTaskUpdate(editor.cm, data?.path);
-					}
-				}
-			});
-		});
 		
 		// Add ribbon icon
 		this.addRibbonIcon('calendar-days', 'Open calendar', async () => {
@@ -256,8 +201,78 @@ export default class TaskNotesPlugin extends Plugin {
 		this.addSettingTab(new TaskNotesSettingTab(this.app, this));
 
 
+		// Defer expensive initialization until layout is ready
+		this.app.workspace.onLayoutReady(() => {
+			this.initializeAfterLayoutReady();
+		});
+		
 		// At the very end of onload, resolve the promise to signal readiness
 		this.resolveReady();
+	}
+
+	/**
+	 * Initialize expensive operations after layout is ready
+	 */
+	private async initializeAfterLayoutReady(): Promise<void> {
+		try {
+			// Initialize cache and wait for completion
+			await perfMonitor.measure('cache-initialization', async () => {
+				await this.cacheManager.initializeCache();
+			});
+			
+			// Listen for delayed cache initialization completion
+			this.cacheManager.subscribe('cache-initialized', (data) => {
+				if (data.taskCount > 0) {
+					// Notify all views to refresh
+					this.notifyDataChanged();
+				}
+			});
+			
+			// Initialize FilterService and set up event listeners
+			this.filterService.initialize();
+			
+			// Initialize Pomodoro service
+			this.pomodoroService = new PomodoroService(this);
+			await this.pomodoroService.initialize();
+			
+			// Initialize ICS subscription service
+			this.icsSubscriptionService = new ICSSubscriptionService(this);
+			await this.icsSubscriptionService.initialize();
+			
+			// Initialize editor services (async imports)
+			const { TaskLinkDetectionService } = await import('./services/TaskLinkDetectionService');
+			this.taskLinkDetectionService = new TaskLinkDetectionService(this);
+			
+			const { InstantTaskConvertService } = await import('./services/InstantTaskConvertService');
+			this.instantTaskConvertService = new InstantTaskConvertService(this);
+			
+			// Register additional editor extensions
+			const { createInstantConvertButtons } = await import('./editor/InstantConvertButtons');
+			this.registerEditorExtension(createInstantConvertButtons(this));
+			
+			// Set up global event listener for task updates to refresh editor decorations
+			this.taskUpdateListenerForEditor = this.emitter.on(EVENT_TASK_UPDATED, (data) => {
+				// Check if layout is ready before processing events
+				if (!this.app.workspace.layoutReady) {
+					return;
+				}
+				
+				// Trigger decoration refresh in all active markdown views using proper state effects
+				this.app.workspace.iterateRootLeaves((leaf) => {
+					// Use instanceof check for deferred view compatibility
+					if (leaf.view && leaf.view.getViewType() === 'markdown') {
+						const editor = (leaf.view as any).editor;
+						if (editor && editor.cm) {
+							// Use the proper CodeMirror state effect pattern
+							dispatchTaskUpdate(editor.cm, data?.path);
+						}
+					}
+				});
+			});
+			
+		} catch (error) {
+			console.error('Error during post-layout initialization:', error);
+		}
 	}
 
 	/**
@@ -642,6 +657,13 @@ export default class TaskNotesPlugin extends Plugin {
 	getLeafOfType(viewType: string): WorkspaceLeaf | null {
 		const { workspace } = this.app;
 		const leaves = workspace.getLeavesOfType(viewType);
+		// Find the first leaf with an actually loaded view (not deferred)
+		for (const leaf of leaves) {
+			if (leaf.view && leaf.view.getViewType() === viewType) {
+				return leaf;
+			}
+		}
+		// If no loaded view found, return the first leaf (might be deferred)
 		return leaves.length > 0 ? leaves[0] : null;
 	}
 	

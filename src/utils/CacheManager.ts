@@ -106,7 +106,7 @@ export class CacheManager {
             : [];
         this.fieldMapper = fieldMapper || null;
         
-        this.registerFileEvents();
+        // Don't register file events in constructor - they will be registered during initialization
     }
     
     /**
@@ -528,6 +528,9 @@ export class CacheManager {
     
     private async performInitialization(): Promise<void> {
         const start = performance.now();
+        
+        // Register file events first
+        this.registerFileEvents();
         
         // Clear existing caches
         this.clearAllCaches();
