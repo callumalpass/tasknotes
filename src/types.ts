@@ -18,6 +18,9 @@ export const EVENT_POMODORO_START = 'pomodoro-start';
 export const EVENT_POMODORO_COMPLETE = 'pomodoro-complete';
 export const EVENT_POMODORO_INTERRUPT = 'pomodoro-interrupt';
 export const EVENT_POMODORO_TICK = 'pomodoro-tick';
+export const EVENT_TIMEBLOCKING_TOGGLED = 'timeblocking-toggled';
+export const EVENT_TIMEBLOCK_UPDATED = 'timeblock-updated';
+export const EVENT_TIMEBLOCK_DELETED = 'timeblock-deleted';
 
 // Calendar colorization modes
 export type ColorizeMode = 'tasks' | 'notes' | 'daily';
@@ -101,6 +104,17 @@ export interface TimeEntry {
 	description?: string; // Optional description of what was worked on
 }
 
+// Timeblocking types
+export interface TimeBlock {
+	id: string; // Unique identifier for the timeblock
+	title: string; // Display title for the timeblock
+	startTime: string; // Start time in HH:MM format
+	endTime: string; // End time in HH:MM format
+	attachments?: string[]; // Optional array of markdown links to tasks/notes
+	color?: string; // Optional hex color for display
+	description?: string; // Optional description
+}
+
 // Note types
 export interface NoteInfo {
 	title: string;
@@ -149,6 +163,14 @@ export interface NoteFrontmatter {
 	dateCreated: string;
 	dateModified?: string;
 	tags?: string[];
+}
+
+export interface DailyNoteFrontmatter {
+	title?: string;
+	dateCreated?: string;
+	dateModified?: string;
+	tags?: string[];
+	timeblocks?: TimeBlock[]; // Timeblocks for the day
 }
 
 // Event handler types
@@ -280,6 +302,7 @@ export interface CalendarViewPreferences {
 	showTimeEntries: boolean;
 	showRecurring: boolean;
 	showICSEvents: boolean;
+	showTimeblocks?: boolean;
 	headerCollapsed?: boolean;
 }
 

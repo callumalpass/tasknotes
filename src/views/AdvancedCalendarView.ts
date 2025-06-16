@@ -16,8 +16,10 @@ import {
     ADVANCED_CALENDAR_VIEW_TYPE,
     EVENT_DATA_CHANGED,
     EVENT_TASK_UPDATED,
+    EVENT_TIMEBLOCKING_TOGGLED,
     TaskInfo,
     TimeEntry,
+    TimeBlock,
     FilterQuery,
     CalendarViewPreferences,
     ICSEvent
@@ -25,6 +27,7 @@ import {
 import { TaskCreationModal } from '../modals/TaskCreationModal';
 import { TaskEditModal } from '../modals/TaskEditModal';
 import { UnscheduledTasksSelectorModal, ScheduleTaskOptions } from '../modals/UnscheduledTasksSelectorModal';
+import { TimeblockCreationModal } from '../modals/TimeblockCreationModal';
 import { FilterBar } from '../ui/FilterBar';
 import { showTaskContextMenu } from '../ui/TaskCard';
 import { 
@@ -37,7 +40,10 @@ import {
 } from '../utils/dateUtils';
 import { 
     isRecurringTaskDueOn, 
-    getEffectiveTaskStatus 
+    getEffectiveTaskStatus,
+    extractTimeblocksFromNote,
+    timeblockToCalendarEvent,
+    updateTimeblockInDailyNote
 } from '../utils/helpers';
 
 interface CalendarEvent {
@@ -49,15 +55,18 @@ interface CalendarEvent {
     backgroundColor?: string;
     borderColor?: string;
     textColor?: string;
+    editable?: boolean;
     extendedProps: {
         taskInfo?: TaskInfo;
         icsEvent?: ICSEvent;
-        eventType: 'scheduled' | 'due' | 'timeEntry' | 'recurring' | 'ics';
+        timeblock?: TimeBlock;
+        eventType: 'scheduled' | 'due' | 'timeEntry' | 'recurring' | 'ics' | 'timeblock';
         isCompleted?: boolean;
         isRecurringInstance?: boolean;
         instanceDate?: string; // YYYY-MM-DD for this specific occurrence
         recurringTemplateTime?: string; // Original scheduled time
         subscriptionName?: string; // For ICS events
+        attachments?: string[]; // For timeblocks
     };
 }
 
@@ -76,6 +85,7 @@ export class AdvancedCalendarView extends ItemView {
     private showTimeEntries: boolean;
     private showRecurring: boolean;
     private showICSEvents: boolean;
+    private showTimeblocks: boolean;
     
     // Mobile collapsible header state
     private headerCollapsed: boolean = true;
@@ -90,6 +100,7 @@ export class AdvancedCalendarView extends ItemView {
         this.showTimeEntries = this.plugin.settings.calendarViewSettings.defaultShowTimeEntries;
         this.showRecurring = this.plugin.settings.calendarViewSettings.defaultShowRecurring;
         this.showICSEvents = this.plugin.settings.calendarViewSettings.defaultShowICSEvents;
+        this.showTimeblocks = this.plugin.settings.calendarViewSettings.defaultShowTimeblocks;
         
         // Initialize with default filter query
         this.currentQuery = {
@@ -136,6 +147,7 @@ export class AdvancedCalendarView extends ItemView {
             this.showTimeEntries = savedPreferences.showTimeEntries;
             this.showRecurring = savedPreferences.showRecurring;
             this.showICSEvents = savedPreferences.showICSEvents ?? this.plugin.settings.calendarViewSettings.defaultShowICSEvents;
+            this.showTimeblocks = savedPreferences.showTimeblocks ?? this.plugin.settings.calendarViewSettings.defaultShowTimeblocks;
             this.headerCollapsed = savedPreferences.headerCollapsed ?? true;
         }
         
@@ -234,65 +246,8 @@ export class AdvancedCalendarView extends ItemView {
         // View toggles
         const toggles = controlsSection.createDiv({ cls: 'advanced-calendar-view__toggles' });
         
-        // Scheduled Tasks toggle
-        const scheduledToggle = this.createToggle(
-            toggles,
-            'Scheduled tasks',
-            this.showScheduled,
-            (enabled) => {
-                this.showScheduled = enabled;
-                this.saveViewPreferences();
-                this.refreshEvents();
-            }
-        );
-        
-        // Due Dates toggle
-        const dueToggle = this.createToggle(
-            toggles,
-            'Due dates',
-            this.showDue,
-            (enabled) => {
-                this.showDue = enabled;
-                this.saveViewPreferences();
-                this.refreshEvents();
-            }
-        );
-        
-        // Time Entries toggle
-        const timeEntriesToggle = this.createToggle(
-            toggles,
-            'Time entries',
-            this.showTimeEntries,
-            (enabled) => {
-                this.showTimeEntries = enabled;
-                this.saveViewPreferences();
-                this.refreshEvents();
-            }
-        );
-        
-        // Recurring Tasks toggle
-        const recurringToggle = this.createToggle(
-            toggles,
-            'Recurring tasks',
-            this.showRecurring,
-            (enabled) => {
-                this.showRecurring = enabled;
-                this.saveViewPreferences();
-                this.refreshEvents();
-            }
-        );
-        
-        // ICS Events toggle
-        const icsToggle = this.createToggle(
-            toggles,
-            'Calendar subscriptions',
-            this.showICSEvents,
-            (enabled) => {
-                this.showICSEvents = enabled;
-                this.saveViewPreferences();
-                this.refreshEvents();
-            }
-        );
+        // Create all view toggles
+        this.createViewToggles(toggles);
         
         // Schedule Tasks button
         const scheduleTasksBtn = controlsSection.createEl('button', {
@@ -302,6 +257,14 @@ export class AdvancedCalendarView extends ItemView {
         scheduleTasksBtn.addEventListener('click', () => {
             this.openScheduleTasksModal();
         });
+        
+        // Add help text for timeblock creation if enabled
+        if (this.plugin.settings.calendarViewSettings.enableTimeblocking) {
+            const helpText = controlsSection.createDiv({ 
+                cls: 'advanced-calendar-view__help-text'
+            });
+            helpText.innerHTML = '💡 <strong>Timeblocks:</strong> Hold Shift + drag to create • Drag to move • Resize edges to adjust duration';
+        }
     }
     
     private updateHeaderVisibility() {
@@ -313,6 +276,111 @@ export class AdvancedCalendarView extends ItemView {
         // Update FullCalendar header toolbar visibility
         if (this.calendar) {
             this.calendar.setOption('headerToolbar', this.getHeaderToolbarConfig());
+        }
+    }
+
+    private renderViewToggles() {
+        // Re-render the controls section to update toggle visibility
+        const controlsSection = this.contentEl.querySelector('.advanced-calendar-view__controls');
+        if (controlsSection) {
+            // Clear existing toggles
+            const togglesContainer = controlsSection.querySelector('.advanced-calendar-view__toggles');
+            if (togglesContainer) {
+                togglesContainer.empty();
+                
+                // Re-create toggles
+                this.createViewToggles(togglesContainer as HTMLElement);
+            }
+            
+            // Update help text visibility
+            const existingHelpText = controlsSection.querySelector('.advanced-calendar-view__help-text');
+            if (existingHelpText) {
+                existingHelpText.remove();
+            }
+            
+            // Add help text if timeblocking is enabled
+            if (this.plugin.settings.calendarViewSettings.enableTimeblocking) {
+                const helpText = controlsSection.createDiv({ 
+                    cls: 'advanced-calendar-view__help-text'
+                });
+                helpText.innerHTML = '💡 <strong>Timeblocks:</strong> Hold Shift + drag to create • Drag to move • Resize edges to adjust duration';
+            }
+        }
+    }
+
+    private createViewToggles(toggles: HTMLElement) {
+        // Scheduled Tasks toggle
+        this.createToggle(
+            toggles,
+            'Scheduled tasks',
+            this.showScheduled,
+            (enabled) => {
+                this.showScheduled = enabled;
+                this.saveViewPreferences();
+                this.refreshEvents();
+            }
+        );
+        
+        // Due Dates toggle
+        this.createToggle(
+            toggles,
+            'Due dates',
+            this.showDue,
+            (enabled) => {
+                this.showDue = enabled;
+                this.saveViewPreferences();
+                this.refreshEvents();
+            }
+        );
+        
+        // Time Entries toggle
+        this.createToggle(
+            toggles,
+            'Time entries',
+            this.showTimeEntries,
+            (enabled) => {
+                this.showTimeEntries = enabled;
+                this.saveViewPreferences();
+                this.refreshEvents();
+            }
+        );
+        
+        // Recurring Tasks toggle
+        this.createToggle(
+            toggles,
+            'Recurring tasks',
+            this.showRecurring,
+            (enabled) => {
+                this.showRecurring = enabled;
+                this.saveViewPreferences();
+                this.refreshEvents();
+            }
+        );
+        
+        // ICS Events toggle
+        this.createToggle(
+            toggles,
+            'Calendar subscriptions',
+            this.showICSEvents,
+            (enabled) => {
+                this.showICSEvents = enabled;
+                this.saveViewPreferences();
+                this.refreshEvents();
+            }
+        );
+        
+        // Timeblocks toggle (only show if timeblocking is enabled)
+        if (this.plugin.settings.calendarViewSettings.enableTimeblocking) {
+            this.createToggle(
+                toggles,
+                'Timeblocks',
+                this.showTimeblocks,
+                (enabled) => {
+                    this.showTimeblocks = enabled;
+                    this.saveViewPreferences();
+                    this.refreshEvents();
+                }
+            );
         }
     }
     
@@ -459,6 +527,7 @@ export class AdvancedCalendarView extends ItemView {
             showTimeEntries: this.showTimeEntries,
             showRecurring: this.showRecurring,
             showICSEvents: this.showICSEvents,
+            showTimeblocks: this.showTimeblocks,
             headerCollapsed: this.headerCollapsed
         };
         this.plugin.viewStateManager.setViewPreferences(ADVANCED_CALENDAR_VIEW_TYPE, preferences);
@@ -549,6 +618,16 @@ export class AdvancedCalendarView extends ItemView {
             console.error('Error getting calendar events:', error);
         }
         
+        // Add timeblock events if enabled
+        if (this.showTimeblocks && this.plugin.settings.calendarViewSettings.enableTimeblocking) {
+            try {
+                const timeblockEvents = await this.getTimeblockEvents();
+                events.push(...timeblockEvents);
+            } catch (error) {
+                console.error('Error getting timeblock events:', error);
+            }
+        }
+        
         return events;
     }
 
@@ -582,6 +661,7 @@ export class AdvancedCalendarView extends ItemView {
             backgroundColor: 'transparent',
             borderColor: borderColor,
             textColor: borderColor,
+            editable: true, // Tasks are also editable
             extendedProps: {
                 taskInfo: task,
                 eventType: 'scheduled',
@@ -623,6 +703,7 @@ export class AdvancedCalendarView extends ItemView {
             backgroundColor: fadedBackground,
             borderColor: borderColor,
             textColor: borderColor,
+            editable: false, // Due events are not editable via drag (different from scheduled)
             extendedProps: {
                 taskInfo: task,
                 eventType: 'due',
@@ -660,6 +741,7 @@ export class AdvancedCalendarView extends ItemView {
                 backgroundColor: '#9E9E9E',
                 borderColor: '#757575',
                 textColor: '#FFFFFF',
+                editable: false, // Time entries are read-only
                 extendedProps: {
                     taskInfo: task,
                     eventType: 'timeEntry' as const,
@@ -690,6 +772,7 @@ export class AdvancedCalendarView extends ItemView {
                 backgroundColor: backgroundColor,
                 borderColor: borderColor,
                 textColor: borderColor,
+                editable: false, // ICS events are not editable
                 extendedProps: {
                     icsEvent: icsEvent,
                     eventType: 'ics',
@@ -774,6 +857,7 @@ export class AdvancedCalendarView extends ItemView {
             backgroundColor: backgroundColor,
             borderColor: borderColor,
             textColor: borderColor,
+            editable: true, // Recurring tasks are editable
             extendedProps: {
                 taskInfo: task,
                 eventType: 'recurring',
@@ -787,8 +871,26 @@ export class AdvancedCalendarView extends ItemView {
 
     // Event handlers
     handleDateSelect(selectInfo: any) {
-        const { start, end, allDay } = selectInfo;
+        const { start, end, allDay, jsEvent } = selectInfo;
         
+        // Check if timeblocking is enabled and Shift key is held
+        const isTimeblockMode = this.plugin.settings.calendarViewSettings.enableTimeblocking && 
+                               this.showTimeblocks && 
+                               jsEvent && jsEvent.shiftKey;
+        
+        if (isTimeblockMode) {
+            // Create timeblock
+            this.handleTimeblockCreation(start, end, allDay);
+        } else {
+            // Create task (default behavior)
+            this.handleTaskCreation(start, end, allDay);
+        }
+        
+        // Clear selection
+        this.calendar?.unselect();
+    }
+    
+    private handleTaskCreation(start: Date, end: Date, allDay: boolean) {
         // Pre-populate with selected date/time
         const scheduledDate = allDay 
             ? format(start, 'yyyy-MM-dd')
@@ -804,9 +906,26 @@ export class AdvancedCalendarView extends ItemView {
         });
         
         modal.open();
+    }
+    
+    private handleTimeblockCreation(start: Date, end: Date, allDay: boolean) {
+        // Don't create timeblocks for all-day selections
+        if (allDay) {
+            new Notice('Timeblocks must have specific times. Please select a time range in week or day view.');
+            return;
+        }
         
-        // Clear selection
-        this.calendar?.unselect();
+        const date = format(start, 'yyyy-MM-dd');
+        const startTime = format(start, 'HH:mm');
+        const endTime = format(end, 'HH:mm');
+        
+        const modal = new TimeblockCreationModal(this.app, this.plugin, {
+            date,
+            startTime,
+            endTime
+        });
+        
+        modal.open();
     }
 
     /**
@@ -850,12 +969,69 @@ export class AdvancedCalendarView extends ItemView {
         }
     }
 
+    async getTimeblockEvents(): Promise<CalendarEvent[]> {
+        const events: CalendarEvent[] = [];
+        
+        try {
+            // Check if Daily Notes plugin is enabled
+            if (!appHasDailyNotesPluginLoaded()) {
+                return events;
+            }
+            
+            // Get calendar's visible date range
+            const calendarView = this.calendar?.view;
+            if (!calendarView) return events;
+            
+            const visibleStart = calendarView.activeStart;
+            const visibleEnd = calendarView.activeEnd;
+            
+            // Get all daily notes
+            const allDailyNotes = getAllDailyNotes();
+            
+            // Iterate through each day in the visible range
+            const currentDate = new Date(visibleStart);
+            while (currentDate <= visibleEnd) {
+                const dateString = format(currentDate, 'yyyy-MM-dd');
+                const moment = (window as any).moment(currentDate);
+                const dailyNote = getDailyNote(moment, allDailyNotes);
+                
+                if (dailyNote) {
+                    try {
+                        const content = await this.app.vault.read(dailyNote);
+                        const timeblocks = extractTimeblocksFromNote(content, dailyNote.path);
+                        
+                        // Convert timeblocks to calendar events
+                        for (const timeblock of timeblocks) {
+                            const calendarEvent = timeblockToCalendarEvent(timeblock, dateString);
+                            events.push(calendarEvent);
+                        }
+                    } catch (error) {
+                        console.error(`Error reading daily note ${dailyNote.path}:`, error);
+                    }
+                }
+                
+                // Move to next day
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+        } catch (error) {
+            console.error('Error getting timeblock events:', error);
+        }
+        
+        return events;
+    }
+
     handleEventClick(clickInfo: any) {
-        const { taskInfo, icsEvent, eventType, isRecurringInstance, subscriptionName } = clickInfo.event.extendedProps;
+        const { taskInfo, icsEvent, timeblock, eventType, isRecurringInstance, subscriptionName } = clickInfo.event.extendedProps;
         const jsEvent = clickInfo.jsEvent;
         
         if (eventType === 'timeEntry') {
             // Time entries are read-only, just show info
+            return;
+        }
+        
+        if (eventType === 'timeblock') {
+            // Timeblocks are read-only for now, could add editing later
+            this.showTimeblockInfo(timeblock, clickInfo.event.start);
             return;
         }
         
@@ -880,11 +1056,17 @@ export class AdvancedCalendarView extends ItemView {
     }
 
     async handleEventDrop(dropInfo: any) {
-        const { taskInfo, eventType, isRecurringInstance, recurringTemplateTime } = dropInfo.event.extendedProps;
+        const { taskInfo, timeblock, eventType, isRecurringInstance, recurringTemplateTime, originalDate } = dropInfo.event.extendedProps;
         
         if (eventType === 'timeEntry' || eventType === 'ics') {
             // Time entries and ICS events cannot be moved
             dropInfo.revert();
+            return;
+        }
+        
+        // Handle timeblock drops
+        if (eventType === 'timeblock') {
+            await this.handleTimeblockDrop(dropInfo, timeblock, originalDate);
             return;
         }
         
@@ -923,11 +1105,54 @@ export class AdvancedCalendarView extends ItemView {
         }
     }
 
+    private async handleTimeblockDrop(dropInfo: any, timeblock: TimeBlock, originalDate: string): Promise<void> {
+        try {
+            const newStart = dropInfo.event.start;
+            const newEnd = dropInfo.event.end;
+            
+            // Calculate new date and times
+            const newDate = format(newStart, 'yyyy-MM-dd');
+            const newStartTime = format(newStart, 'HH:mm');
+            const newEndTime = format(newEnd, 'HH:mm');
+            
+            // Update timeblock in daily notes
+            await updateTimeblockInDailyNote(
+                this.app,
+                timeblock.id,
+                originalDate,
+                newDate,
+                newStartTime,
+                newEndTime
+            );
+            
+            // Refresh calendar to show updated timeblock
+            this.refreshEvents();
+            
+            // Show success message
+            if (originalDate !== newDate) {
+                new Notice(`Moved timeblock "${timeblock.title}" to ${newDate}`);
+            } else {
+                new Notice(`Updated timeblock "${timeblock.title}" time`);
+            }
+            
+        } catch (error) {
+            console.error('Error moving timeblock:', error);
+            new Notice(`Failed to move timeblock: ${error.message}`);
+            dropInfo.revert();
+        }
+    }
+
     async handleEventResize(resizeInfo: any) {
-        const { taskInfo, eventType } = resizeInfo.event.extendedProps;
+        const { taskInfo, timeblock, eventType, originalDate } = resizeInfo.event.extendedProps;
+        
+        if (eventType === 'timeblock') {
+            // Handle timeblock resize
+            await this.handleTimeblockResize(resizeInfo, timeblock, originalDate);
+            return;
+        }
         
         if (eventType !== 'scheduled') {
-            // Only scheduled events can be resized (not timeEntry, ics, due, or recurring)
+            // Only scheduled events and timeblocks can be resized (not timeEntry, ics, due, or recurring)
             resizeInfo.revert();
             return;
         }
@@ -943,6 +1168,54 @@ export class AdvancedCalendarView extends ItemView {
             
         } catch (error) {
             console.error('Error updating task duration:', error);
+            resizeInfo.revert();
+        }
+    }
+
+    private async handleTimeblockResize(resizeInfo: any, timeblock: TimeBlock, originalDate: string): Promise<void> {
+        try {
+            const start = resizeInfo.event.start;
+            const end = resizeInfo.event.end;
+            
+            if (!start || !end) {
+                resizeInfo.revert();
+                return;
+            }
+            
+            // Calculate new times
+            const newStartTime = format(start, 'HH:mm');
+            const newEndTime = format(end, 'HH:mm');
+            
+            // Validate that end is after start
+            const [startHour, startMin] = newStartTime.split(':').map(Number);
+            const [endHour, endMin] = newEndTime.split(':').map(Number);
+            const startMinutes = startHour * 60 + startMin;
+            const endMinutes = endHour * 60 + endMin;
+            
+            if (endMinutes <= startMinutes) {
+                new Notice('End time must be after start time');
+                resizeInfo.revert();
+                return;
+            }
+            
+            // Update timeblock in daily note (same date, just time change)
+            await updateTimeblockInDailyNote(
+                this.app,
+                timeblock.id,
+                originalDate,
+                originalDate, // Same date
+                newStartTime,
+                newEndTime
+            );
+            
+            // Refresh calendar
+            this.refreshEvents();
+            
+            new Notice(`Updated timeblock "${timeblock.title}" duration`);
+            
+        } catch (error) {
+            console.error('Error resizing timeblock:', error);
+            new Notice(`Failed to resize timeblock: ${error.message}`);
             resizeInfo.revert();
         }
     }
@@ -1040,15 +1313,19 @@ export class AdvancedCalendarView extends ItemView {
             return;
         }
         
-        const { taskInfo, icsEvent, eventType, isCompleted, isRecurringInstance, instanceDate, subscriptionName } = arg.event.extendedProps;
+        const { taskInfo, icsEvent, timeblock, eventType, isCompleted, isRecurringInstance, instanceDate, subscriptionName } = arg.event.extendedProps;
         
-        // Handle ICS events differently
+        // Set common event type attribute for all events
+        arg.el.setAttribute('data-event-type', eventType || 'unknown');
+        
+        // Handle ICS events
         if (eventType === 'ics') {
             // Add visual styling for ICS events
             arg.el.style.borderStyle = 'solid';
             arg.el.style.borderWidth = '2px';
             arg.el.setAttribute('data-ics-event', 'true');
             arg.el.setAttribute('data-subscription', subscriptionName || 'Unknown');
+            arg.el.classList.add('fc-ics-event');
             
             // Add tooltip with subscription name
             arg.el.title = `${icsEvent?.title || 'Event'} (from ${subscriptionName || 'Calendar subscription'})`;
@@ -1062,9 +1339,52 @@ export class AdvancedCalendarView extends ItemView {
             return;
         }
         
+        // Handle timeblock events
+        if (eventType === 'timeblock') {
+            // Add data attributes for timeblocks
+            arg.el.setAttribute('data-timeblock-id', timeblock?.id || '');
+            
+            // Add visual styling for timeblocks
+            arg.el.style.borderStyle = 'solid';
+            arg.el.style.borderWidth = '2px';
+            arg.el.classList.add('fc-timeblock-event');
+            
+            // Ensure timeblocks are editable (can be dragged/resized)
+            if (arg.event.setProp) {
+                arg.event.setProp('editable', true);
+            }
+            
+            // Add tooltip
+            const attachmentCount = timeblock?.attachments?.length || 0;
+            const tooltipText = `${timeblock?.title || 'Timeblock'}${timeblock?.description ? ` - ${timeblock.description}` : ''}${attachmentCount > 0 ? ` (${attachmentCount} attachment${attachmentCount > 1 ? 's' : ''})` : ''}`;
+            arg.el.title = tooltipText;
+            
+            return;
+        }
+        
         // Handle task events
         if (!taskInfo || !taskInfo.path) {
             return;
+        }
+        
+        // Add data attributes for tasks
+        arg.el.setAttribute('data-task-path', taskInfo.path);
+        arg.el.classList.add('fc-task-event');
+        
+        // Set editable based on event type
+        if (arg.event.setProp) {
+            switch (eventType) {
+                case 'scheduled':
+                case 'recurring':
+                    arg.event.setProp('editable', true);
+                    break;
+                case 'due':
+                case 'timeEntry':
+                    arg.event.setProp('editable', false);
+                    break;
+                default:
+                    arg.event.setProp('editable', true);
+            }
         }
         
         // Apply visual styling for recurring instances
@@ -1075,6 +1395,7 @@ export class AdvancedCalendarView extends ItemView {
             
             // Add recurring badge (already in title with 🔄)
             arg.el.setAttribute('data-recurring', 'true');
+            arg.el.classList.add('fc-recurring-event');
             
             // Apply dimmed appearance for completed instances
             if (isCompleted) {
@@ -1091,6 +1412,7 @@ export class AdvancedCalendarView extends ItemView {
                 // Fallback: apply to the entire event element
                 arg.el.style.textDecoration = 'line-through';
             }
+            arg.el.classList.add('fc-completed-event');
         }
         
         // Add context menu event listener (not for time entries)
@@ -1139,6 +1461,15 @@ export class AdvancedCalendarView extends ItemView {
             });
             this.listeners.push(icsDataListener);
         }
+        
+        // Listen for timeblocking toggle changes
+        const timeblockingToggleListener = this.plugin.emitter.on(EVENT_TIMEBLOCKING_TOGGLED, (enabled: boolean) => {
+            // Update visibility and refresh if timeblocking was enabled
+            this.showTimeblocks = enabled && this.plugin.settings.calendarViewSettings.defaultShowTimeblocks;
+            this.refreshEvents();
+            this.renderViewToggles(); // Re-render toggle buttons
+        });
+        this.listeners.push(timeblockingToggleListener);
     }
 
     async refreshEvents() {
@@ -1235,6 +1566,96 @@ export class AdvancedCalendarView extends ItemView {
                 cls: 'external-link'
             });
             linkEl.setAttribute('target', '_blank');
+        }
+        
+        // Close button
+        const buttonContainer = modalContent.createDiv('modal-button-container');
+        const closeButton = buttonContainer.createEl('button', { text: 'Close' });
+        
+        document.body.appendChild(modal);
+        
+        const handleClose = () => {
+            modal.remove();
+        };
+        
+        closeButton.addEventListener('click', handleClose);
+        modalBg.addEventListener('click', handleClose);
+        
+        modal.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                handleClose();
+            }
+        });
+        
+        setTimeout(() => closeButton.focus(), 50);
+    }
+
+    private showTimeblockInfo(timeblock: TimeBlock, eventDate: Date): void {
+        const modal = document.createElement('div');
+        modal.className = 'modal-container';
+        
+        const modalBg = modal.createDiv('modal-bg');
+        const modalContent = modal.createDiv('modal');
+        
+        modalContent.createDiv('modal-title').textContent = 'Timeblock Details';
+        
+        const content = modalContent.createDiv('modal-content');
+        
+        // Timeblock title
+        const titleSection = content.createDiv();
+        titleSection.createEl('strong', { text: 'Title: ' });
+        titleSection.createSpan({ text: timeblock.title });
+        
+        // Date and time
+        const dateSection = content.createDiv();
+        dateSection.createEl('strong', { text: 'Time: ' });
+        const dateText = `${eventDate.toLocaleDateString()} from ${timeblock.startTime} to ${timeblock.endTime}`;
+        dateSection.createSpan({ text: dateText });
+        
+        // Description
+        if (timeblock.description) {
+            const descSection = content.createDiv();
+            descSection.createEl('strong', { text: 'Description: ' });
+            const descEl = descSection.createDiv({ cls: 'timeblock-description' });
+            descEl.textContent = timeblock.description;
+        }
+        
+        // Attachments
+        if (timeblock.attachments && timeblock.attachments.length > 0) {
+            const attachSection = content.createDiv();
+            attachSection.createEl('strong', { text: 'Attachments: ' });
+            const attachList = attachSection.createDiv({ cls: 'timeblock-attachments' });
+            
+            for (const attachment of timeblock.attachments) {
+                const attachItem = attachList.createDiv({ cls: 'timeblock-attachment-item' });
+                
+                // Parse markdown link and create clickable element
+                const linkMatch = attachment.match(/\[\[([^\]]+)\]\]|\[([^\]]+)\]\(([^)]+)\)/);
+                if (linkMatch) {
+                    const linkText = linkMatch[1] || linkMatch[2] || attachment;
+                    const linkPath = linkMatch[1] || linkMatch[3] || attachment;
+                    
+                    const linkEl = attachItem.createEl('a', {
+                        text: linkText,
+                        cls: 'internal-link'
+                    });
+                    
+                    linkEl.addEventListener('click', async (e) => {
+                        e.preventDefault();
+                        // Try to open the linked file
+                        const file = this.app.vault.getAbstractFileByPath(linkPath + '.md') || 
+                                   this.app.vault.getAbstractFileByPath(linkPath);
+                        if (file instanceof TFile) {
+                            await this.app.workspace.getLeaf(false).openFile(file);
+                            handleClose();
+                        } else {
+                            new Notice(`File not found: ${linkPath}`);
+                        }
+                    });
+                } else {
+                    attachItem.createSpan({ text: attachment });
+                }
+            }
         }
         
         // Close button

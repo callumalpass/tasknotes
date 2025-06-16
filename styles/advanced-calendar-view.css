@@ -48,6 +48,139 @@
     background-color: var(--background-modifier-hover) !important;
 }
 
+/* Timeblock Help Text */
+.advanced-calendar-view__help-text {
+    font-size: 0.85em;
+    color: var(--text-muted);
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    background: var(--background-secondary);
+    border-radius: 4px;
+    border-left: 3px solid var(--color-accent);
+}
+
+/* Event Type Specific Styles */
+
+/* Timeblock Events */
+.fc-timeblock-event,
+.fc-event[data-event-type="timeblock"] {
+    opacity: 0.9;
+    border-radius: 6px;
+    border-width: 2px !important;
+    border-style: solid !important;
+}
+
+.fc-timeblock-event:hover,
+.fc-event[data-event-type="timeblock"]:hover {
+    opacity: 1;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    transform: translateY(-1px);
+}
+
+/* Task Events */
+.fc-task-event {
+    border-radius: 4px;
+    border-width: 1px !important;
+}
+
+.fc-task-event:hover {
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+/* ICS Events */
+.fc-ics-event {
+    border-radius: 4px;
+    border-width: 2px !important;
+    border-style: solid !important;
+}
+
+.fc-ics-event:hover {
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+/* Recurring Events */
+.fc-recurring-event {
+    border-style: dashed !important;
+}
+
+/* Completed Events */
+.fc-completed-event {
+    opacity: 0.7;
+}
+
+/* Timeblock Modal Styles */
+.timeblock-creation-modal .modal-content {
+    max-width: 500px;
+}
+
+.timeblock-date-display {
+    margin-bottom: 1rem;
+    padding: 0.75rem;
+    background: var(--background-secondary);
+    border-radius: 6px;
+    text-align: center;
+}
+
+.timeblock-time-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.timeblock-modal-buttons {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+    margin-top: 1.5rem;
+}
+
+.timeblock-help-text {
+    font-size: 0.85em;
+    color: var(--text-muted);
+    margin-top: 1rem;
+    padding: 0.75rem;
+    background: var(--background-secondary);
+    border-radius: 4px;
+    line-height: 1.4;
+}
+
+.timeblock-help-text code {
+    background: var(--background-primary);
+    padding: 0.2em 0.4em;
+    border-radius: 3px;
+    font-size: 0.9em;
+}
+
+/* Timeblock Info Modal */
+.timeblock-description {
+    max-height: 100px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    font-size: 0.9em;
+    margin-top: 0.25rem;
+    padding: 0.5rem;
+    background: var(--background-secondary);
+    border-radius: 4px;
+}
+
+.timeblock-attachments {
+    margin-top: 0.5rem;
+}
+
+.timeblock-attachment-item {
+    margin-bottom: 0.25rem;
+}
+
+.timeblock-attachment-item .internal-link {
+    color: var(--link-color);
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.timeblock-attachment-item .internal-link:hover {
+    text-decoration: underline;
+}
+
 /* ICS Subscription Settings */
 .ics-subscription-row {
     display: flex;

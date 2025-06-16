@@ -1,6 +1,7 @@
 import { normalizePath, TFile, Vault } from 'obsidian';
 import { format, parseISO, startOfDay, isBefore, isSameDay as isSameDayFns } from 'date-fns';
-import { TimeInfo, TaskInfo, TimeEntry } from '../types';
+import * as YAML from 'yaml';
+import { TimeInfo, TaskInfo, TimeEntry, TimeBlock, DailyNoteFrontmatter } from '../types';
 import { YAMLCache } from './YAMLCache';
 import { FieldMapper } from '../services/FieldMapper';
 import { DEFAULT_FIELD_MAPPING } from '../settings/settings';
@@ -515,5 +516,303 @@ export function extractNoteInfo(content: string, path: string, file?: TFile): {t
 	}
 	
 	return { title, tags, path, createdDate, lastModified };
+}
+
+/**
+ * Validates a timeblock object against the expected schema
+ */
+export function validateTimeBlock(timeblock: any): timeblock is TimeBlock {
+	if (!timeblock || typeof timeblock !== 'object') {
+		return false;
+	}
+	
+	// Required fields
+	if (!timeblock.id || typeof timeblock.id !== 'string') {
+		return false;
+	}
+	
+	if (!timeblock.title || typeof timeblock.title !== 'string') {
+		return false;
+	}
+	
+	if (!timeblock.startTime || typeof timeblock.startTime !== 'string') {
+		return false;
+	}
+	
+	if (!timeblock.endTime || typeof timeblock.endTime !== 'string') {
+		return false;
+	}
+	
+	// Validate time format (HH:MM)
+	const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
+	if (!timeRegex.test(timeblock.startTime) || !timeRegex.test(timeblock.endTime)) {
+		return false;
+	}
+	
+	// Ensure end time is after start time
+	const [startHour, startMin] = timeblock.startTime.split(':').map(Number);
+	const [endHour, endMin] = timeblock.endTime.split(':').map(Number);
+	const startMinutes = startHour * 60 + startMin;
+	const endMinutes = endHour * 60 + endMin;
+	
+	if (endMinutes <= startMinutes) {
+		return false;
+	}
+	
+	// Optional fields validation
+	if (timeblock.attachments && !Array.isArray(timeblock.attachments)) {
+		return false;
+	}
+	
+	if (timeblock.attachments) {
+		for (const attachment of timeblock.attachments) {
+			if (typeof attachment !== 'string') {
+				return false;
+			}
+			// Optional: validate markdown link format (basic check)
+			// Could be [[WikiLink]] or [Text](path) format
+			if (!attachment.trim()) {
+				return false;
+			}
+		}
+	}
+	
+	if (timeblock.color && typeof timeblock.color !== 'string') {
+		return false;
+	}
+	
+	if (timeblock.description && typeof timeblock.description !== 'string') {
+		return false;
+	}
+	
+	return true;
+}
+
+/**
+ * Extracts and validates timeblocks from daily note frontmatter
+ */
+export function extractTimeblocksFromNote(content: string, path: string): TimeBlock[] {
+	try {
+		const frontmatter = YAMLCache.extractFrontmatter(content, path) as DailyNoteFrontmatter;
+		
+		if (!frontmatter || !frontmatter.timeblocks || !Array.isArray(frontmatter.timeblocks)) {
+			return [];
+		}
+		
+		const validTimeblocks: TimeBlock[] = [];
+		
+		for (const timeblock of frontmatter.timeblocks) {
+			if (validateTimeBlock(timeblock)) {
+				validTimeblocks.push(timeblock);
+			} else {
+				console.warn(`Invalid timeblock in ${path}:`, timeblock);
+			}
+		}
+		
+		return validTimeblocks;
+	} catch (error) {
+		console.error(`Error extracting timeblocks from ${path}:`, error);
+		return [];
+	}
+}
+
+/**
+ * Converts a timeblock to a calendar event format
+ */
+export function timeblockToCalendarEvent(timeblock: TimeBlock, date: string): any {
+	const startDateTime = `${date}T${timeblock.startTime}:00`;
+	const endDateTime = `${date}T${timeblock.endTime}:00`;
+	
+	return {
+		id: `timeblock-${timeblock.id}`,
+		title: timeblock.title,
+		start: startDateTime,
+		end: endDateTime,
+		allDay: false,
+		backgroundColor: timeblock.color || '#6366f1', // Default indigo color
+		borderColor: timeblock.color || '#4f46e5',
+		editable: true, // Enable drag and drop for timeblocks
+		eventType: 'timeblock', // Mark as timeblock for FullCalendar
+		extendedProps: {
+			type: 'timeblock',
+			eventType: 'timeblock',
+			timeblock: timeblock,
+			originalDate: date, // Store original date for tracking moves
+			description: timeblock.description,
+			attachments: timeblock.attachments || []
+		}
+	};
+}
+
+/**
+ * Generates a unique ID for a new timeblock
+ */
+export function generateTimeblockId(): string {
+	return `tb-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+}
+
+/**
+ * Updates a timeblock in a daily note's frontmatter
+ */
+export async function updateTimeblockInDailyNote(
+	app: any,
+	timeblockId: string,
+	oldDate: string,
+	newDate: string,
+	newStartTime: string,
+	newEndTime: string
+): Promise<void> {
+	const { 
+		createDailyNote, 
+		getDailyNote, 
+		getAllDailyNotes, 
+		appHasDailyNotesPluginLoaded 
+	} = await import('obsidian-daily-notes-interface');
+	
+	if (!appHasDailyNotesPluginLoaded()) {
+		throw new Error('Daily Notes plugin is not enabled');
+	}
+
+	const allDailyNotes = getAllDailyNotes();
+	
+	// Get the timeblock from the old date
+	const oldMoment = (window as any).moment(oldDate);
+	const oldDailyNote = getDailyNote(oldMoment, allDailyNotes);
+	
+	if (!oldDailyNote) {
+		throw new Error(`Daily note for ${oldDate} not found`);
+	}
+
+	const oldContent = await app.vault.read(oldDailyNote);
+	const timeblocks = extractTimeblocksFromNote(oldContent, oldDailyNote.path);
+	
+	// Find the timeblock to move
+	const timeblockIndex = timeblocks.findIndex(tb => tb.id === timeblockId);
+	if (timeblockIndex === -1) {
+		throw new Error(`Timeblock ${timeblockId} not found`);
+	}
+	
+	const timeblock = timeblocks[timeblockIndex];
+	
+	// If moving to same date, just update times
+	if (oldDate === newDate) {
+		await updateTimeblockTimes(app, oldDailyNote, timeblockId, newStartTime, newEndTime);
+		return;
+	}
+	
+	// Remove from old date
+	await removeTimeblockFromDailyNote(app, oldDailyNote, timeblockId);
+	
+	// Add to new date with updated times
+	const updatedTimeblock: TimeBlock = {
+		...timeblock,
+		startTime: newStartTime,
+		endTime: newEndTime
+	};
+	
+	await addTimeblockToDailyNote(app, newDate, updatedTimeblock);
+}
+
+/**
+ * Updates timeblock times within the same daily note
+ */
+async function updateTimeblockTimes(
+	app: any,
+	dailyNote: any,
+	timeblockId: string,
+	newStartTime: string,
+	newEndTime: string
+): Promise<void> {
+	const content = await app.vault.read(dailyNote);
+	const frontmatter = YAMLCache.extractFrontmatter(content, dailyNote.path) || {};
+	
+	if (!frontmatter.timeblocks || !Array.isArray(frontmatter.timeblocks)) {
+		throw new Error('No timeblocks found in frontmatter');
+	}
+	
+	// Update the timeblock
+	const timeblockIndex = frontmatter.timeblocks.findIndex((tb: any) => tb.id === timeblockId);
+	if (timeblockIndex === -1) {
+		throw new Error(`Timeblock ${timeblockId} not found`);
+	}
+	
+	frontmatter.timeblocks[timeblockIndex].startTime = newStartTime;
+	frontmatter.timeblocks[timeblockIndex].endTime = newEndTime;
+	
+	// Save back to file
+	await updateDailyNoteFrontmatter(app, dailyNote, frontmatter, content);
+}
+
+/**
+ * Removes a timeblock from a daily note
+ */
+async function removeTimeblockFromDailyNote(app: any, dailyNote: any, timeblockId: string): Promise<void> {
+	const content = await app.vault.read(dailyNote);
+	const frontmatter = YAMLCache.extractFrontmatter(content, dailyNote.path) || {};
+	
+	if (!frontmatter.timeblocks || !Array.isArray(frontmatter.timeblocks)) {
+		return; // No timeblocks to remove
+	}
+	
+	// Remove the timeblock
+	frontmatter.timeblocks = frontmatter.timeblocks.filter((tb: any) => tb.id !== timeblockId);
+	
+	// Save back to file
+	await updateDailyNoteFrontmatter(app, dailyNote, frontmatter, content);
+}
+
+/**
+ * Adds a timeblock to a daily note (creating the note if needed)
+ */
+async function addTimeblockToDailyNote(app: any, date: string, timeblock: TimeBlock): Promise<void> {
+	const { createDailyNote, getDailyNote, getAllDailyNotes } = 
+		await import('obsidian-daily-notes-interface');
+	
+	const moment = (window as any).moment(date);
+	const allDailyNotes = getAllDailyNotes();
+	let dailyNote = getDailyNote(moment, allDailyNotes);
+	
+	if (!dailyNote) {
+		dailyNote = await createDailyNote(moment);
+	}
+	
+	const content = await app.vault.read(dailyNote);
+	const frontmatter = YAMLCache.extractFrontmatter(content, dailyNote.path) || {};
+	
+	if (!frontmatter.timeblocks) {
+		frontmatter.timeblocks = [];
+	}
+	
+	frontmatter.timeblocks.push(timeblock);
+	
+	// Save back to file
+	await updateDailyNoteFrontmatter(app, dailyNote, frontmatter, content);
+}
+
+/**
+ * Updates daily note frontmatter while preserving body content
+ */
+async function updateDailyNoteFrontmatter(app: any, dailyNote: any, frontmatter: any, originalContent: string): Promise<void> {
+	
+	// Get body content (everything after frontmatter)
+	let bodyContent = originalContent;
+	if (originalContent.startsWith('---')) {
+		const endOfFrontmatter = originalContent.indexOf('---', 3);
+		if (endOfFrontmatter !== -1) {
+			bodyContent = originalContent.substring(endOfFrontmatter + 3);
+		}
+	}
+	
+	// Convert frontmatter back to YAML
+	const frontmatterText = YAML.stringify(frontmatter);
+	
+	// Reconstruct file content
+	const newContent = `---\n${frontmatterText}---${bodyContent}`;
+	
+	// Write back to file
+	await app.vault.modify(dailyNote, newContent);
+	
+	// Clear cache for this file
+	YAMLCache.clearCacheEntry(dailyNote.path);
 }
 

@@ -73,6 +73,9 @@ export interface CalendarViewSettings {
 	defaultShowTimeEntries: boolean;
 	defaultShowRecurring: boolean;
 	defaultShowICSEvents: boolean;
+	// Timeblocking settings
+	enableTimeblocking: boolean;
+	defaultShowTimeblocks: boolean;
 	// Calendar behavior
 	nowIndicator: boolean;
 	selectMirror: boolean;
@@ -197,6 +200,9 @@ export const DEFAULT_CALENDAR_VIEW_SETTINGS: CalendarViewSettings = {
 	defaultShowTimeEntries: false,
 	defaultShowRecurring: true,
 	defaultShowICSEvents: true,
+	// Timeblocking settings
+	enableTimeblocking: false, // Disabled by default - toggleable feature
+	defaultShowTimeblocks: true,
 	// Calendar behavior
 	nowIndicator: true,
 	selectMirror: true,
@@ -944,6 +950,43 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 						await this.plugin.saveSettings();
 					});
 			});
+
+		// Timeblocking section
+		new Setting(container).setName('Timeblocking').setHeading();
+
+		new Setting(container)
+			.setName('Enable timeblocking')
+			.setDesc('Enable timeblock functionality for lightweight scheduling in daily notes')
+			.addToggle(toggle => {
+				toggle.toggleEl.setAttribute('aria-label', 'Enable timeblocking feature');
+				return toggle
+					.setValue(this.plugin.settings.calendarViewSettings.enableTimeblocking)
+					.onChange(async (value) => {
+						this.plugin.settings.calendarViewSettings.enableTimeblocking = value;
+						await this.plugin.saveSettings();
+						// Refresh calendar views to show/hide timeblock functionality
+						this.plugin.emitter.emit('timeblocking-toggled', value);
+					});
+			});
+
+		new Setting(container)
+			.setName('Show timeblocks')
+			.setDesc('Display timeblocks from daily notes by default')
+			.addToggle(toggle => {
+				toggle.toggleEl.setAttribute('aria-label', 'Show timeblocks by default');
+				return toggle
+					.setValue(this.plugin.settings.calendarViewSettings.defaultShowTimeblocks)
+					.setDisabled(!this.plugin.settings.calendarViewSettings.enableTimeblocking)
+					.onChange(async (value) => {
+						this.plugin.settings.calendarViewSettings.defaultShowTimeblocks = value;
+						await this.plugin.saveSettings();
+					});
+			});
+
+		container.createEl('p', {
+			text: 'Timeblocks are defined in daily note frontmatter using the "timeblocks" field. Each timeblock can have a title, start time, end time, and optional attachments as markdown links to tasks or notes.',
+			cls: 'settings-help-note'
+		});
 
 		// Calendar behavior section
 		new Setting(container).setName('Calendar behavior').setHeading();
