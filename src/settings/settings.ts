@@ -33,6 +33,8 @@ export interface TaskNotesSettings {
 	enableTaskLinkOverlay: boolean;
 	enableInstantTaskConvert: boolean;
 	useDefaultsOnInstantConvert: boolean;
+	// Performance settings
+	disableNoteIndexing: boolean;
 	// Customization settings
 	fieldMapping: FieldMapping;
 	customStatuses: StatusConfig[];
@@ -232,6 +234,8 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	enableTaskLinkOverlay: true,
 	enableInstantTaskConvert: true,
 	useDefaultsOnInstantConvert: false,
+	// Performance defaults
+	disableNoteIndexing: false,
 	// Customization defaults
 	fieldMapping: DEFAULT_FIELD_MAPPING,
 	customStatuses: DEFAULT_STATUSES,
@@ -263,6 +267,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 			{ id: 'task-defaults', name: 'Task defaults' },
 			{ id: 'general', name: 'Inline tasks' },
 			{ id: 'calendar', name: 'Calendar' },
+			{ id: 'performance', name: 'Performance' },
 			{ id: 'field-mapping', name: 'Field mapping' },
 			{ id: 'statuses', name: 'Statuses' },
 			{ id: 'priorities', name: 'Priorities' },
@@ -347,6 +352,9 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 			case 'calendar':
 				this.renderCalendarTab();
 				break;
+			case 'performance':
+				this.renderPerformanceTab();
+				break;
 			case 'field-mapping':
 				this.renderFieldMappingTab();
 				break;
@@ -411,7 +419,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 						await this.plugin.saveSettings();
 					});
 			});
-		
+
 		// Help section
 		const helpContainer = container.createDiv('settings-help-section');
 		helpContainer.createEl('h4', { text: 'How inline task features work:' });
@@ -1213,6 +1221,34 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 			text: 'Note: Only read-only access is supported. You cannot edit calendar events from within TaskNotes.',
 			cls: 'settings-help-note'
 		});
+	}
+	
+	private renderPerformanceTab(): void {
+		const container = this.tabContents['performance'];
+		
+		// Performance settings
+		new Setting(container).setName('Performance settings').setHeading();
+		
+		container.createEl('p', { 
+			text: 'Configure performance-related settings that affect plugin responsiveness.',
+			cls: 'settings-help-note'
+		});
+
+		new Setting(container)
+			.setName('Disable note indexing')
+			.setDesc('Disable indexing and caching of non-task notes to improve performance in large vaults. Note: This will disable the Notes view and notes display in the Agenda view. Requires plugin restart to take effect.')
+			.addToggle(toggle => {
+				toggle.toggleEl.setAttribute('aria-label', 'Disable note indexing for better performance');
+				return toggle
+					.setValue(this.plugin.settings.disableNoteIndexing)
+					.onChange(async (value) => {
+						this.plugin.settings.disableNoteIndexing = value;
+						await this.plugin.saveSettings();
+						
+						// Show notice about restart requirement
+						new Notice('Note indexing setting changed. Please restart Obsidian or reload the plugin for changes to take effect.');
+					});
+			});
 	}
 	
 	private renderFieldMappingTab(): void {

@@ -181,14 +181,26 @@ export class NotesView extends ItemView {
             const emptyState = notesList.createDiv({ cls: 'notes-view__empty' });
             const emptyIcon = emptyState.createDiv({ cls: 'notes-view__empty-icon' });
             setIcon(emptyIcon, 'file-text');
-            emptyState.createEl('h3', {
-                text: 'No Notes Found',
-                cls: 'notes-view__empty-title'
-            });
-            emptyState.createEl('p', {
-                text: 'No notes found for the selected date. Try selecting a different date or create some notes.',
-                cls: 'notes-view__empty-description'
-            });
+            
+            if (this.plugin.settings.disableNoteIndexing) {
+                emptyState.createEl('h3', {
+                    text: 'Note Indexing Disabled',
+                    cls: 'notes-view__empty-title'
+                });
+                emptyState.createEl('p', {
+                    text: 'Note indexing has been disabled in settings for better performance. To view notes, enable note indexing in Settings > TaskNotes > General > Performance settings and restart the plugin.',
+                    cls: 'notes-view__empty-description'
+                });
+            } else {
+                emptyState.createEl('h3', {
+                    text: 'No Notes Found',
+                    cls: 'notes-view__empty-title'
+                });
+                emptyState.createEl('p', {
+                    text: 'No notes found for the selected date. Try selecting a different date or create some notes.',
+                    cls: 'notes-view__empty-description'
+                });
+            }
         } else {
             // Create a div to hold all note items
             const notesContainer = notesList.createDiv({ cls: 'notes-view__container' });
@@ -260,6 +272,11 @@ export class NotesView extends ItemView {
             // Set loading state
             this.isNotesLoading = true;
             this.updateLoadingState();
+            
+            // Check if note indexing is disabled
+            if (this.plugin.settings.disableNoteIndexing) {
+                return [];
+            }
             
             // Use the CacheManager to get notes information for the specific date
             const notes = await this.plugin.cacheManager.getNotesForDate(this.plugin.selectedDate, forceRefresh);

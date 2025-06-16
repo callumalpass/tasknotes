@@ -307,19 +307,21 @@ export class AgendaView extends ItemView {
             this.refresh();
         });
         
-        // Show notes toggle
-        const notesToggle = rightControls.createEl('label', { cls: 'agenda-view__toggle' });
-        const notesCheckbox = notesToggle.createEl('input', { 
-            type: 'checkbox',
-            cls: 'agenda-view__toggle-checkbox'
-        });
-        notesCheckbox.checked = this.showNotes;
-        notesToggle.createSpan({ text: 'Show notes' });
-        
-        notesCheckbox.addEventListener('change', () => {
-            this.showNotes = notesCheckbox.checked;
-            this.refresh();
-        });
+        // Show notes toggle (only show if note indexing is enabled)
+        if (!this.plugin.settings.disableNoteIndexing) {
+            const notesToggle = rightControls.createEl('label', { cls: 'agenda-view__toggle' });
+            const notesCheckbox = notesToggle.createEl('input', { 
+                type: 'checkbox',
+                cls: 'agenda-view__toggle-checkbox'
+            });
+            notesCheckbox.checked = this.showNotes;
+            notesToggle.createSpan({ text: 'Show notes' });
+            
+            notesCheckbox.addEventListener('change', () => {
+                this.showNotes = notesCheckbox.checked;
+                this.refresh();
+            });
+        }
     }
     
     /**
@@ -334,7 +336,7 @@ export class AgendaView extends ItemView {
      * Add notes to agenda data by fetching notes for each specific date
      */
     private async addNotesToAgendaData(agendaData: Array<{date: Date; tasks: TaskInfo[]}>): Promise<Array<{date: Date; tasks: TaskInfo[]; notes: NoteInfo[]}>> {
-        if (!this.showNotes) {
+        if (!this.showNotes || this.plugin.settings.disableNoteIndexing) {
             return agendaData.map(dayData => ({ ...dayData, notes: [] }));
         }
 

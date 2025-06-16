@@ -136,7 +136,8 @@ export default class TaskNotesPlugin extends Plugin {
 			this.app.vault,
 			this.settings.taskTag,
 			this.settings.excludedFolders,
-			this.fieldMapper
+			this.fieldMapper,
+			this.settings.disableNoteIndexing
 		);
 		
 		// Initialize business logic services (lightweight constructors)
@@ -452,7 +453,8 @@ export default class TaskNotesPlugin extends Plugin {
 		this.cacheManager.updateConfig(
 			this.settings.taskTag,
 			this.settings.excludedFolders,
-			this.fieldMapper
+			this.fieldMapper,
+			this.settings.disableNoteIndexing
 		);
 		
 		// Update custom styles

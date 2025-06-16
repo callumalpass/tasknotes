@@ -52,6 +52,7 @@ export class CacheManager {
     private taskTag: string;
     private excludedFolders: string[];
     private fieldMapper: FieldMapper | null = null;
+    private disableNoteIndexing: boolean;
     
     // Cache settings
     private static readonly FILE_CACHE_TTL = 2 * 60 * 1000; // 2 minutes
@@ -97,7 +98,8 @@ export class CacheManager {
         vault: Vault, 
         taskTag: string, 
         excludedFolders: string = '', 
-        fieldMapper?: FieldMapper
+        fieldMapper?: FieldMapper,
+        disableNoteIndexing: boolean = false
     ) {
         this.vault = vault;
         this.taskTag = taskTag;
@@ -105,6 +107,7 @@ export class CacheManager {
             ? excludedFolders.split(',').map(folder => folder.trim())
             : [];
         this.fieldMapper = fieldMapper || null;
+        this.disableNoteIndexing = disableNoteIndexing;
         
         // Don't register file events in constructor - they will be registered during initialization
     }
@@ -403,6 +406,11 @@ export class CacheManager {
      * Get notes for a specific date
      */
     async getNotesForDate(date: Date, forceRefresh = false): Promise<NoteInfo[]> {
+        // Return empty array if note indexing is disabled
+        if (this.disableNoteIndexing) {
+            return [];
+        }
+        
         // Ensure cache is initialized first
         await this.ensureInitialized();
         const dateStr = format(date, 'yyyy-MM-dd'); // CORRECT: Uses local timezone
@@ -448,11 +456,13 @@ export class CacheManager {
             hasArchived: boolean
         }>();
         
-        // Aggregate notes by date
-        for (const [dateStr, notePaths] of this.notesByDate) {
-            const date = parseDate(dateStr);
-            if (date >= startOfMonth && date <= endOfMonth) {
-                notesMap.set(dateStr, notePaths.size);
+        // Aggregate notes by date (only if note indexing is enabled)
+        if (!this.disableNoteIndexing) {
+            for (const [dateStr, notePaths] of this.notesByDate) {
+                const date = parseDate(dateStr);
+                if (date >= startOfMonth && date <= endOfMonth) {
+                    notesMap.set(dateStr, notePaths.size);
+                }
             }
         }
         
@@ -678,7 +688,7 @@ export class CacheManager {
             // Process as task or note
             if (isTask) {
                 await this.getTaskInfo(file.path, true);
-            } else {
+            } else if (!this.disableNoteIndexing) {
                 await this.getNoteInfo(file.path, true);
             }
             
@@ -1245,7 +1255,8 @@ export class CacheManager {
     updateConfig(
         taskTag?: string,
         excludedFolders?: string,
-        fieldMapper?: FieldMapper
+        fieldMapper?: FieldMapper,
+        disableNoteIndexing?: boolean
     ): void {
         if (taskTag !== undefined) this.taskTag = taskTag;
         if (excludedFolders !== undefined) {
@@ -1255,6 +1266,9 @@ export class CacheManager {
         }
         if (fieldMapper !== undefined) {
             this.fieldMapper = fieldMapper;
+        }
+        if (disableNoteIndexing !== undefined) {
+            this.disableNoteIndexing = disableNoteIndexing;
         }
     }
     
@@ -1448,6 +1462,11 @@ export class CacheManager {
      */
     async getAllNotes(): Promise<NoteInfo[]> {
         try {
+            // Return empty array if note indexing is disabled
+            if (this.disableNoteIndexing) {
+                return [];
+            }
+            
             await this.ensureInitialized();
             return Array.from(this.noteInfoCache.values());
         } catch (error) {
