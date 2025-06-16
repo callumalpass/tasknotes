@@ -1,7 +1,6 @@
 import { normalizePath, TFile, Vault } from 'obsidian';
 import { format, parseISO, startOfDay, isBefore, isSameDay as isSameDayFns } from 'date-fns';
 import { TimeInfo, TaskInfo, TimeEntry } from '../types';
-import * as YAML from 'yaml';
 import { YAMLCache } from './YAMLCache';
 import { FieldMapper } from '../services/FieldMapper';
 import { DEFAULT_FIELD_MAPPING } from '../settings/settings';

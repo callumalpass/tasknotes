@@ -1,3 +1,4 @@
+import { parseYaml } from 'obsidian';
 import * as YAML from 'yaml';
 
 /**
@@ -34,7 +35,7 @@ export class YAMLCache {
         
         // Otherwise parse and cache the result
         try {
-            const result = YAML.parse(content);
+            const result = parseYaml(content);
             
             this.cache.set(cacheKey, {
                 data: result,

@@ -1,4 +1,4 @@
-import { TFile, Vault, normalizePath } from 'obsidian';
+import { TFile, Vault, normalizePath, parseYaml } from 'obsidian';
 import { TaskInfo, NoteInfo, IndexedFile, FileEventHandlers } from '../types';
 import { extractNoteInfo, extractTaskInfo, debounce } from './helpers';
 import { FieldMapper } from '../services/FieldMapper';
@@ -204,7 +204,7 @@ export class CacheManager {
         }
         
         try {
-            const result = YAML.parse(content);
+            const result = parseYaml(content);
             this.stats.yamlParses++;
             
             this.yamlCache.set(cacheKey, {

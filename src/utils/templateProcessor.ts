@@ -1,4 +1,5 @@
 import { format } from 'date-fns';
+import { parseYaml } from 'obsidian';
 import * as YAML from 'yaml';
 
 export interface TemplateData {
@@ -86,7 +87,7 @@ function processTemplateFrontmatter(frontmatterContent: string, taskData: Templa
         const processedYamlText = processTemplateVariables(frontmatterContent, taskData);
         
         // Then parse the processed YAML
-        const parsedFrontmatter = YAML.parse(processedYamlText);
+        const parsedFrontmatter = parseYaml(processedYamlText);
         
         // Return empty object if parsing failed or result is not an object
         if (typeof parsedFrontmatter !== 'object' || parsedFrontmatter === null) {

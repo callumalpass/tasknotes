@@ -1,4 +1,4 @@
-import { TFile, Notice, normalizePath } from 'obsidian';
+import { TFile, Notice, normalizePath, stringifyYaml } from 'obsidian';
 import { format } from 'date-fns';
 import * as YAML from 'yaml';
 import TaskNotesPlugin from '../main';
@@ -98,7 +98,7 @@ export class TaskService {
             const finalFrontmatter = mergeTemplateFrontmatter(frontmatter, templateResult.frontmatter);
             
             // Prepare file content
-            const yamlHeader = YAML.stringify(finalFrontmatter);
+            const yamlHeader = stringifyYaml(finalFrontmatter);
             let content = `---\n${yamlHeader}---\n\n`;
             
             // Add processed body content if any
