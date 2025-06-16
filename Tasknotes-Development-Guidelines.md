@@ -12,6 +12,7 @@ The architecture of this plugin is built on several key principles:
 *   **Event-Driven Communication:** Components are decoupled. Instead of calling each other directly, they emit and listen for events via a central `EventEmitter`. This allows new components to be added without modifying existing ones.
 *   **Performance First:** The architecture is designed to be highly performant, especially for users with large vaults. This is achieved through aggressive caching, request deduplication, and an efficient DOM reconciliation strategy.
 *   **Configuration-Driven:** Core functionalities like statuses, priorities, and field names are not hard-coded. They are managed by dedicated services (`StatusManager`, `PriorityManager`, `FieldMapper`) that interpret user settings, making the plugin highly customizable.
+*   **Obsidian Optimization Compliance:** The plugin follows Obsidian's best practices for load time optimization and deferred view compatibility, ensuring fast startup and smooth integration with the latest Obsidian versions.
 
 ## 2. High-Level Architecture Diagram
 
@@ -179,3 +180,282 @@ Let's trace the flow of changing a task's priority from a `TaskCard`.
     *   **Editor (`TaskLinkOverlay.ts`)**: The global listener in `main.ts` dispatches a `taskUpdateEffect` to all open editors. The `TaskLinkField` sees this effect and redraws any `TaskLinkWidget`s for the affected task path.
 
 This entire flow happens almost instantaneously, giving the user immediate feedback while ensuring data integrity and consistency across the entire plugin. By following this pattern, you ensure your new features will be robust and well-integrated.
+
+## 6. Performance Optimization & Obsidian Best Practices
+
+### 6.1. Plugin Load Time Optimization
+
+Following Obsidian's performance guidelines is crucial for user experience. The plugin implements several key optimizations:
+
+**Load Time Pattern:**
+```typescript
+async onload() {
+    // Essential initialization only
+    await this.loadSettings();
+    this.initializeLightweightServices();
+    
+    // Register view types and commands
+    this.registerViews();
+    this.addCommands();
+    
+    // Defer expensive operations
+    this.app.workspace.onLayoutReady(() => {
+        this.initializeAfterLayoutReady();
+    });
+}
+
+private async initializeAfterLayoutReady() {
+    // Cache initialization
+    await this.cacheManager.initializeCache();
+    
+    // Heavy service initialization
+    await this.pomodoroService.initialize();
+    
+    // Editor services with async imports
+    const { TaskLinkDetectionService } = await import('./services/TaskLinkDetectionService');
+}
+```
+
+**Developer Best Practices:**
+*   **Keep `onload()` lightweight**: Only include essential setup (settings, service constructors, view registration)
+*   **Defer expensive operations**: Move cache initialization, file processing, and heavy imports to `onLayoutReady`
+*   **Use async imports**: Load large services dynamically to reduce initial bundle size
+*   **Avoid vault events in constructors**: Register file watchers after layout is ready
+
+### 6.2. Deferred View Compatibility
+
+The plugin is compatible with Obsidian v1.7.2+ deferred views:
+
+**View Implementation Pattern:**
+```typescript
+export class MyView extends ItemView {
+    constructor(leaf: WorkspaceLeaf, plugin: TaskNotesPlugin) {
+        super(leaf);
+        this.plugin = plugin;
+        // Lightweight constructor only
+    }
+    
+    async onOpen() {
+        // Wait for plugin readiness
+        await this.plugin.onReady();
+        
+        // Initialize view after plugin is ready
+        this.initializeView();
+    }
+}
+```
+
+**Workspace Iteration Best Practices:**
+```typescript
+// Good - Handle deferred views
+workspace.iterateRootLeaves((leaf) => {
+    if (leaf.view && leaf.view.getViewType() === 'markdown') {
+        // Safe to access view
+    }
+});
+
+// Good - Use proper instanceof checks
+const leaves = workspace.getLeavesOfType('my-view');
+for (const leaf of leaves) {
+    if (leaf.view instanceof MyCustomView) {
+        // View is loaded and ready
+    }
+}
+
+// Bad - Assumes view is loaded
+workspace.iterateAllLeaves(leaf => {
+    if (leaf.view.getViewType() === 'my-view') {
+        let view = leaf.view as MyCustomView; // May fail with deferred views
+    }
+});
+```
+
+### 6.3. File System Event Handling
+
+File system events must be handled carefully to avoid performance issues during Obsidian startup:
+
+**Proper Event Registration:**
+```typescript
+// In CacheManager.performInitialization() - called after layout ready
+private registerFileEvents(): void {
+    this.vault.on('modify', this.eventHandlers.modify);
+    this.vault.on('create', this.eventHandlers.create);
+    // Handle layout readiness check
+    const handleCreate = (file) => {
+        if (!this.app.workspace.layoutReady) {
+            return; // Ignore events during startup
+        }
+        this.processFileCreate(file);
+    };
+}
+```
+
+**Developer Best Practices:**
+*   **Never register vault events in constructors**: Always defer until `onLayoutReady`
+*   **Check layout readiness**: Ignore file events during Obsidian's initialization
+*   **Use debouncing**: Prevent excessive processing of rapid file changes
+
+## 7. External Data Integration
+
+### 7.1. ICS Calendar Integration Architecture
+
+The plugin supports both remote ICS subscriptions and local ICS files through a unified service architecture:
+
+**Service Structure:**
+```typescript
+interface ICSSubscription {
+    id: string;
+    name: string;
+    type: 'remote' | 'local';
+    url?: string;      // For remote subscriptions
+    filePath?: string; // For local files
+    color: string;
+    enabled: boolean;
+    refreshInterval: number;
+}
+```
+
+**Implementation Pattern:**
+```typescript
+async fetchSubscription(id: string): Promise<void> {
+    const subscription = this.getSubscription(id);
+    
+    let icsData: string;
+    if (subscription.type === 'remote') {
+        icsData = await this.fetchRemoteICS(subscription.url);
+    } else {
+        icsData = await this.readLocalICS(subscription.filePath);
+    }
+    
+    const events = this.parseICS(icsData);
+    this.updateCache(id, events);
+}
+```
+
+### 7.2. File Watching for Local Resources
+
+Local ICS files are automatically monitored for changes:
+
+**File Watcher Pattern:**
+```typescript
+private startFileWatcher(subscription: ICSSubscription): void {
+    const modifyRef = this.plugin.app.vault.on('modify', (file) => {
+        if (file.path === subscription.filePath) {
+            // Debounce changes
+            setTimeout(() => this.refreshSubscription(subscription.id), 1000);
+        }
+    });
+    
+    // Store cleanup function
+    this.fileWatchers.set(subscription.id, () => {
+        this.plugin.app.vault.offref(modifyRef);
+    });
+}
+```
+
+**Developer Best Practices:**
+*   **Debounce file changes**: Prevent excessive refreshes on rapid file modifications
+*   **Store cleanup references**: Always provide proper cleanup in `destroy()` methods
+*   **Handle file deletion**: Gracefully handle cases where watched files are removed
+*   **Unified interface**: Keep local and remote data sources compatible through consistent interfaces
+
+### 7.3. Adding New External Data Sources
+
+When integrating new external data sources (APIs, file formats, etc.):
+
+1.  **Create a dedicated service**: Follow the pattern of `ICSSubscriptionService`
+2.  **Use subscription model**: Allow multiple sources of the same type
+3.  **Implement caching**: Cache parsed data with expiration
+4.  **Add to settings UI**: Provide user configuration interface
+5.  **Handle errors gracefully**: Show meaningful error messages to users
+6.  **Support both local and remote**: When possible, support both local files and remote URLs
+
+## 8. Error Handling & Data Validation
+
+### 8.1. Date/Time Error Prevention
+
+The plugin implements robust date parsing to handle various formats:
+
+**Safe Date Parsing Pattern:**
+```typescript
+// Always use dateUtils for parsing
+import { parseDate, validateDateInput } from '../utils/dateUtils';
+
+// Good
+try {
+    const date = parseDate(dateString);
+    // Process date
+} catch (error) {
+    // Handle invalid date
+}
+
+// Bad - Direct Date constructor
+const date = new Date(dateString); // May create unexpected results
+```
+
+**Supported Date Formats:**
+*   ISO datetime: `2025-02-23T20:28:49`
+*   Space-separated: `2025-02-23 20:28:49`
+*   Date-only: `2025-02-23`
+*   ISO week: `2025-W02`
+
+### 8.2. Type Safety & Validation
+
+**Interface Extension Pattern:**
+```typescript
+// When adding new optional properties
+interface TaskInfo {
+    // ... existing properties
+    newProperty?: string; // Always optional for backward compatibility
+}
+
+// Provide defaults in service layer
+const taskWithDefaults = {
+    ...existingTask,
+    newProperty: existingTask.newProperty || defaultValue
+};
+```
+
+**Developer Best Practices:**
+*   **Make new properties optional**: Ensures backward compatibility
+*   **Validate external data**: Always validate data from external sources
+*   **Provide meaningful errors**: Help users understand what went wrong
+*   **Graceful degradation**: Continue functioning when optional features fail
+
+## 9. Testing & Quality Assurance
+
+### 9.1. Manual Testing Checklist
+
+When implementing new features, test these scenarios:
+
+**Plugin Load Testing:**
+*   [ ] Clean Obsidian startup (no existing plugin data)
+*   [ ] Startup with existing plugin data
+*   [ ] Startup with large vaults (1000+ files)
+*   [ ] Hot reload during development
+
+**View Testing:**
+*   [ ] View opens correctly when deferred
+*   [ ] View responds to data changes
+*   [ ] View handles no data gracefully
+*   [ ] View cleanup on close
+
+**Data Integration Testing:**
+*   [ ] External data source failures
+*   [ ] File watcher behavior
+*   [ ] Cache invalidation
+*   [ ] Concurrent data updates
+
+### 9.2. Performance Testing
+
+**Load Time Metrics:**
+*   Plugin should add <100ms to Obsidian startup
+*   Views should render within 200ms of opening
+*   File operations should not block UI
+
+**Memory Usage:**
+*   Monitor cache size with large datasets
+*   Ensure proper cleanup of event listeners
+*   Check for memory leaks in long-running sessions
+
+This comprehensive architecture ensures the plugin remains performant, maintainable, and compatible with Obsidian's evolution while providing robust external data integration capabilities.
