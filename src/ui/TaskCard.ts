@@ -749,7 +749,9 @@ class DeleteTaskConfirmationModal extends Modal {
         contentEl.createEl('h2', { text: 'Delete Task' });
         
         const description = contentEl.createEl('p');
-        description.innerHTML = `Are you sure you want to delete the task "<strong>${this.task.title}</strong>"?`;
+        description.appendText('Are you sure you want to delete the task "');
+        description.createEl('strong', { text: this.task.title });
+        description.appendText('"?');
         
         const warningText = contentEl.createEl('p', { 
             cls: 'mod-warning',

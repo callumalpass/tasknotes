@@ -1454,20 +1454,22 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 				// Create confirmation dialog
 				const confirmModal = document.createElement('div');
 				confirmModal.className = 'modal-container mod-confirmation';
-				confirmModal.innerHTML = `
-					<div class="modal-bg"></div>
-					<div class="modal">
-						<div class="modal-title">Delete Status</div>
-						<div class="modal-content">
-							<p>Are you sure you want to delete the status "${status.label}"?</p>
-							<p>This action cannot be undone and may affect existing tasks.</p>
-						</div>
-						<div class="modal-button-container">
-							<button class="mod-cta" data-action="delete">Delete</button>
-							<button data-action="cancel">Cancel</button>
-						</div>
-					</div>
-				`;
+				
+				// Build modal structure programmatically
+				const modalBg = confirmModal.createDiv('modal-bg');
+				const modal = confirmModal.createDiv('modal');
+				
+				modal.createDiv('modal-title').textContent = 'Delete Status';
+				
+				const modalContent = modal.createDiv('modal-content');
+				modalContent.createEl('p').textContent = `Are you sure you want to delete the status "${status.label}"?`;
+				modalContent.createEl('p').textContent = 'This action cannot be undone and may affect existing tasks.';
+				
+				const buttonContainer = modal.createDiv('modal-button-container');
+				const deleteButton = buttonContainer.createEl('button', { cls: 'mod-cta', text: 'Delete' });
+				deleteButton.dataset.action = 'delete';
+				const cancelButton = buttonContainer.createEl('button', { text: 'Cancel' });
+				cancelButton.dataset.action = 'cancel';
 				
 				document.body.appendChild(confirmModal);
 				
@@ -1647,20 +1649,22 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 				// Create confirmation dialog
 				const confirmModal = document.createElement('div');
 				confirmModal.className = 'modal-container mod-confirmation';
-				confirmModal.innerHTML = `
-					<div class="modal-bg"></div>
-					<div class="modal">
-						<div class="modal-title">Delete Priority</div>
-						<div class="modal-content">
-							<p>Are you sure you want to delete the priority "${priority.label}"?</p>
-							<p>This action cannot be undone and may affect existing tasks.</p>
-						</div>
-						<div class="modal-button-container">
-							<button class="mod-cta" data-action="delete">Delete</button>
-							<button data-action="cancel">Cancel</button>
-						</div>
-					</div>
-				`;
+				
+				// Build modal structure programmatically
+				const modalBg = confirmModal.createDiv('modal-bg');
+				const modal = confirmModal.createDiv('modal');
+				
+				modal.createDiv('modal-title').textContent = 'Delete Priority';
+				
+				const modalContent = modal.createDiv('modal-content');
+				modalContent.createEl('p').textContent = `Are you sure you want to delete the priority "${priority.label}"?`;
+				modalContent.createEl('p').textContent = 'This action cannot be undone and may affect existing tasks.';
+				
+				const buttonContainer = modal.createDiv('modal-button-container');
+				const deleteButton = buttonContainer.createEl('button', { cls: 'mod-cta', text: 'Delete' });
+				deleteButton.dataset.action = 'delete';
+				const cancelButton = buttonContainer.createEl('button', { text: 'Cancel' });
+				cancelButton.dataset.action = 'cancel';
 				
 				document.body.appendChild(confirmModal);
 				
@@ -2099,8 +2103,8 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 	}
 
 	private showInlineEditForm(subscription: any, rowElement: HTMLElement): void {
-		// Save the original content
-		const originalContent = rowElement.innerHTML;
+		// Store reference to original row content for restoration
+		const originalChildren = Array.from(rowElement.children);
 		
 		// Clear the row and create edit form
 		rowElement.empty();
@@ -2207,8 +2211,10 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 		
 		// Cancel handler
 		cancelButton.addEventListener('click', () => {
-			rowElement.innerHTML = originalContent;
+			rowElement.empty();
 			rowElement.removeClass('ics-subscription-editing');
+			// Restore original children
+			originalChildren.forEach(child => rowElement.appendChild(child));
 			// Re-attach event listeners by re-rendering
 			this.renderActiveTab();
 		});

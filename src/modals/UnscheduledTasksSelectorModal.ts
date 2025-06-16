@@ -111,7 +111,7 @@ export class UnscheduledTasksSelectorModal extends FuzzySuggestModal<TaskInfo> {
         const titleEl = contentEl.createDiv({ 
             cls: 'unscheduled-tasks-selector__title'
         });
-        titleEl.innerHTML = this.highlight(item, task.title);
+        this.renderHighlightedText(titleEl, item, task.title);
         
         // Create metadata container
         const metaEl = contentEl.createDiv({ cls: 'unscheduled-tasks-selector__meta' });
@@ -160,26 +160,28 @@ export class UnscheduledTasksSelectorModal extends FuzzySuggestModal<TaskInfo> {
         setIcon(scheduleIcon, 'calendar-plus');
     }
 
-    private highlight(item: FuzzyMatch<TaskInfo>, text: string): string {
+    private renderHighlightedText(container: HTMLElement, item: FuzzyMatch<TaskInfo>, text: string): void {
+        container.empty();
         const matches = item.match.matches;
         if (!matches || matches.length === 0) {
-            return text;
+            container.textContent = text;
+            return;
         }
         
-        let result = '';
         let lastIndex = 0;
-        
         for (const match of matches) {
             // Add text before the match
-            result += text.slice(lastIndex, match[0]);
+            if (match[0] > lastIndex) {
+                container.appendText(text.slice(lastIndex, match[0]));
+            }
             // Add highlighted match
-            result += `<mark>${text.slice(match[0], match[1] + 1)}</mark>`;
+            container.createEl('mark', { text: text.slice(match[0], match[1] + 1) });
             lastIndex = match[1] + 1;
         }
-        
         // Add remaining text
-        result += text.slice(lastIndex);
-        return result;
+        if (lastIndex < text.length) {
+            container.appendText(text.slice(lastIndex));
+        }
     }
 
     onChooseItem(task: TaskInfo, evt: MouseEvent | KeyboardEvent): void {
