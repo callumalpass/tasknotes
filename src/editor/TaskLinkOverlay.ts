@@ -323,11 +323,11 @@ function getTaskInfoSync(filePath: string, plugin: TaskNotesPlugin): any {
         // Use the same cached data access pattern as the views
         // This gets the most up-to-date cached task info (updated immediately after any changes)
         const cacheManager = plugin.cacheManager;
-        if (!cacheManager || !cacheManager.getCachedTaskInfo) {
+        if (!cacheManager || !cacheManager.getCachedTaskInfoSync) {
             return null;
         }
         
-        const taskInfo = cacheManager.getCachedTaskInfo(filePath);
+        const taskInfo = cacheManager.getCachedTaskInfoSync(filePath);
         
         // Basic validation of task info structure
         if (taskInfo && typeof taskInfo === 'object' && taskInfo.title) {

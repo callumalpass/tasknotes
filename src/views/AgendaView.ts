@@ -1,4 +1,4 @@
-import { Notice, TFile, ItemView, WorkspaceLeaf, Menu } from 'obsidian';
+import { Notice, TFile, ItemView, WorkspaceLeaf, Menu, EventRef } from 'obsidian';
 import format from 'date-fns/format';
 import addDays from 'date-fns/addDays';
 import startOfWeek from 'date-fns/startOfWeek';
@@ -37,7 +37,8 @@ export class AgendaView extends ItemView {
     private currentQuery: FilterQuery;
     
     // Event listeners
-    private listeners: (() => void)[] = [];
+    private listeners: EventRef[] = [];
+    private functionListeners: (() => void)[] = [];
     
     constructor(leaf: WorkspaceLeaf, plugin: TaskNotesPlugin) {
         super(leaf);
@@ -63,8 +64,10 @@ export class AgendaView extends ItemView {
     
     registerEvents(): void {
         // Clean up any existing listeners
-        this.listeners.forEach(unsubscribe => unsubscribe());
+        this.listeners.forEach(listener => this.plugin.emitter.offref(listener));
         this.listeners = [];
+        this.functionListeners.forEach(unsubscribe => unsubscribe());
+        this.functionListeners = [];
         
         // Listen for data changes
         const dataListener = this.plugin.emitter.on(EVENT_DATA_CHANGED, () => {
@@ -92,7 +95,7 @@ export class AgendaView extends ItemView {
         const filterDataListener = this.plugin.filterService.on('data-changed', () => {
             this.refresh();
         });
-        this.listeners.push(filterDataListener);
+        this.functionListeners.push(filterDataListener);
     }
     
     getViewType(): string {
@@ -143,7 +146,8 @@ export class AgendaView extends ItemView {
     
     async onClose() {
         // Remove event listeners
-        this.listeners.forEach(unsubscribe => unsubscribe());
+        this.listeners.forEach(listener => this.plugin.emitter.offref(listener));
+        this.functionListeners.forEach(unsubscribe => unsubscribe());
         
         // Clean up FilterBar
         if (this.filterBar) {

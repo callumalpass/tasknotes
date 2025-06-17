@@ -1,4 +1,4 @@
-import { ItemView, WorkspaceLeaf, Notice } from 'obsidian';
+import { ItemView, WorkspaceLeaf, Notice, EventRef } from 'obsidian';
 import TaskNotesPlugin from '../main';
 import { 
     POMODORO_VIEW_TYPE,
@@ -35,7 +35,7 @@ export class PomodoroView extends ItemView {
     } = { pomodoros: null, streak: null, minutes: null };
     
     // Event listeners
-    private listeners: (() => void)[] = [];
+    private listeners: EventRef[] = [];
     
     constructor(leaf: WorkspaceLeaf, plugin: TaskNotesPlugin) {
         super(leaf);
@@ -59,7 +59,7 @@ export class PomodoroView extends ItemView {
     
     registerEvents(): void {
         // Clean up any existing listeners
-        this.listeners.forEach(unsubscribe => unsubscribe());
+        this.listeners.forEach(listener => this.plugin.emitter.offref(listener));
         this.listeners = [];
         
         // Listen for pomodoro events
@@ -93,7 +93,7 @@ export class PomodoroView extends ItemView {
     
     async onClose() {
         // Remove event listeners
-        this.listeners.forEach(unsubscribe => unsubscribe());
+        this.listeners.forEach(listener => this.plugin.emitter.offref(listener));
         
         // Clear cached references to prevent memory leaks
         this.timerDisplay = null;

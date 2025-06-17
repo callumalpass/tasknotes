@@ -1,4 +1,4 @@
-import { Notice, TFile, ItemView, WorkspaceLeaf, setIcon } from 'obsidian';
+import { Notice, TFile, ItemView, WorkspaceLeaf, setIcon, EventRef } from 'obsidian';
 import format from 'date-fns/format';
 import TaskNotesPlugin from '../main';
 import { 
@@ -21,7 +21,7 @@ export class NotesView extends ItemView {
     private isNotesLoading: boolean = false;
     
     // Event listeners
-    private listeners: (() => void)[] = [];
+    private listeners: EventRef[] = [];
     
     constructor(leaf: WorkspaceLeaf, plugin: TaskNotesPlugin) {
         super(leaf);
@@ -45,7 +45,7 @@ export class NotesView extends ItemView {
     
     registerEvents(): void {
         // Clean up any existing listeners
-        this.listeners.forEach(unsubscribe => unsubscribe());
+        this.listeners.forEach(listener => this.plugin.emitter.offref(listener));
         this.listeners = [];
         
         // Listen for date selection changes - force a full refresh when date changes
@@ -69,7 +69,7 @@ export class NotesView extends ItemView {
     
     async onClose() {
         // Remove event listeners
-        this.listeners.forEach(unsubscribe => unsubscribe());
+        this.listeners.forEach(listener => this.plugin.emitter.offref(listener));
         this.contentEl.empty();
     }
     
@@ -279,7 +279,7 @@ export class NotesView extends ItemView {
             }
             
             // Use the CacheManager to get notes information for the specific date
-            const notes = await this.plugin.cacheManager.getNotesForDate(this.plugin.selectedDate, forceRefresh);
+            const notes = await this.plugin.cacheManager.getNotesForDate(this.plugin.selectedDate);
             
             // Include all notes (both regular notes and daily notes)
             const filteredNotes = notes;

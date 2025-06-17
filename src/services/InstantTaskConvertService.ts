@@ -29,11 +29,6 @@ export class InstantTaskConvertService {
             const currentLine = selectionInfo.taskLine;
             const details = selectionInfo.details;
             
-            // Debug logging
-            console.log('InstantConvert - lineNumber:', lineNumber);
-            console.log('InstantConvert - selection:', editor.getSelection());
-            console.log('InstantConvert - selectionInfo:', selectionInfo);
-            console.log('InstantConvert - details:', details);
             
             // Parse the current line for Tasks plugin format
             const taskLineInfo = TasksPluginParser.parseTaskLine(currentLine);

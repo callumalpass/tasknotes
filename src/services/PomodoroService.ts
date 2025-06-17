@@ -189,7 +189,7 @@ export class PomodoroService {
             }
         }
         
-        this.plugin.emitter.emit(EVENT_POMODORO_START, { session, task });
+        this.plugin.emitter.trigger(EVENT_POMODORO_START, { session, task });
         new Notice(`Pomodoro started${task ? ` for: ${task.title}` : ''}`);
     }
 
@@ -252,7 +252,7 @@ export class PomodoroService {
         // Stop time tracking on the task if applicable
         if (this.state.currentSession && this.state.currentSession.taskPath) {
             try {
-                const task = await this.plugin.cacheManager.getTaskInfo(this.state.currentSession.taskPath, true);
+                const task = await this.plugin.cacheManager.getTaskInfo(this.state.currentSession.taskPath);
                 if (task) {
                     await this.plugin.taskService.stopTimeTracking(task);
                 }
@@ -264,7 +264,7 @@ export class PomodoroService {
         await this.saveState();
         
         // Emit event to update UI
-        this.plugin.emitter.emit(EVENT_POMODORO_TICK, { 
+        this.plugin.emitter.trigger(EVENT_POMODORO_TICK, { 
             timeRemaining: this.state.timeRemaining,
             session: this.state.currentSession 
         });
@@ -293,7 +293,7 @@ export class PomodoroService {
         // Start a new time tracking session on the task if applicable
         if (this.state.currentSession && this.state.currentSession.taskPath) {
             try {
-                const task = await this.plugin.cacheManager.getTaskInfo(this.state.currentSession.taskPath, true);
+                const task = await this.plugin.cacheManager.getTaskInfo(this.state.currentSession.taskPath);
                 if (task) {
                     await this.plugin.taskService.startTimeTracking(task);
                 }
@@ -306,7 +306,7 @@ export class PomodoroService {
         }
         
         // Emit event to update UI
-        this.plugin.emitter.emit(EVENT_POMODORO_TICK, { 
+        this.plugin.emitter.trigger(EVENT_POMODORO_TICK, { 
             timeRemaining: this.state.timeRemaining,
             session: this.state.currentSession 
         });
@@ -338,12 +338,12 @@ export class PomodoroService {
             await this.addSessionToHistory(this.state.currentSession);
         }
 
-        this.plugin.emitter.emit(EVENT_POMODORO_INTERRUPT, { session: this.state.currentSession });
+        this.plugin.emitter.trigger(EVENT_POMODORO_INTERRUPT, { session: this.state.currentSession });
 
         // Stop time tracking on the task if applicable (only if it was running)
         if (this.state.currentSession && this.state.currentSession.taskPath && wasRunning) {
             try {
-                const task = await this.plugin.cacheManager.getTaskInfo(this.state.currentSession.taskPath, true);
+                const task = await this.plugin.cacheManager.getTaskInfo(this.state.currentSession.taskPath);
                 if (task) {
                     await this.plugin.taskService.stopTimeTracking(task);
                 }
@@ -359,7 +359,7 @@ export class PomodoroService {
         await this.saveState();
         
         // Emit tick event to update UI with reset timer
-        this.plugin.emitter.emit(EVENT_POMODORO_TICK, { 
+        this.plugin.emitter.trigger(EVENT_POMODORO_TICK, { 
             timeRemaining: this.state.timeRemaining,
             session: this.state.currentSession 
         });
@@ -382,7 +382,7 @@ export class PomodoroService {
                 this.state.timeRemaining--;
                 
                 // Emit tick event for UI updates
-                this.plugin.emitter.emit(EVENT_POMODORO_TICK, { 
+                this.plugin.emitter.trigger(EVENT_POMODORO_TICK, { 
                     timeRemaining: this.state.timeRemaining,
                     session: this.state.currentSession 
                 });
@@ -468,7 +468,7 @@ export class PomodoroService {
             // Stop time tracking on task if applicable
             if (session.taskPath) {
                 try {
-                    const task = await this.plugin.cacheManager.getTaskInfo(session.taskPath, true);
+                    const task = await this.plugin.cacheManager.getTaskInfo(session.taskPath);
                     if (task) {
                         await this.plugin.taskService.stopTimeTracking(task);
                     }
@@ -499,7 +499,7 @@ export class PomodoroService {
         await this.addSessionToHistory(session);
 
         // Emit completion event
-        this.plugin.emitter.emit(EVENT_POMODORO_COMPLETE, { 
+        this.plugin.emitter.trigger(EVENT_POMODORO_COMPLETE, { 
             session, 
             nextType: session.type === 'work' 
                 ? (shouldTakeLongBreak ? 'long-break' : 'short-break')
@@ -684,7 +684,7 @@ export class PomodoroService {
         await this.saveState();
 
         // Emit tick event to update UI
-        this.plugin.emitter.emit(EVENT_POMODORO_TICK, { 
+        this.plugin.emitter.trigger(EVENT_POMODORO_TICK, { 
             timeRemaining: this.state.timeRemaining,
             session: this.state.currentSession 
         });

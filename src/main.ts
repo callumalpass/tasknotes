@@ -47,8 +47,7 @@ import {
 	calculateTotalTimeSpent,
 	getActiveTimeEntry
 } from './utils/helpers';
-import { EventEmitter } from './utils/EventEmitter';
-import { CacheManager } from './utils/CacheManager';
+import { NativeMetadataCacheManager } from './utils/NativeMetadataCacheManager';
 import { RequestDeduplicator, PredictivePrefetcher } from './utils/RequestDeduplicator';
 import { DOMReconciler, UIStateManager } from './utils/DOMReconciler';
 import { perfMonitor } from './utils/PerformanceMonitor';
@@ -73,11 +72,9 @@ export default class TaskNotesPlugin extends Plugin {
 	// Shared state between views
 	selectedDate: Date = new Date();
 	
-	// Event emitter for view communication
-	emitter = new EventEmitter();
-	
-	// Unified cache manager
-	cacheManager: CacheManager;
+	// Native metadata cache manager (also handles events)
+	cacheManager: NativeMetadataCacheManager;
+	emitter: NativeMetadataCacheManager;
 	
 	// Performance optimization utilities
 	requestDeduplicator: RequestDeduplicator;
@@ -108,8 +105,8 @@ export default class TaskNotesPlugin extends Plugin {
 	// ICS subscription service
 	icsSubscriptionService: ICSSubscriptionService;
 	
-	// Event listener cleanup
-	private taskUpdateListenerForEditor: (() => void) | null = null;
+	// Event listener cleanup  
+	private taskUpdateListenerForEditor: any = null;
 	
 	// Initialization guard to prevent duplicate initialization
 	private initializationComplete = false;
@@ -133,15 +130,17 @@ export default class TaskNotesPlugin extends Plugin {
 		this.domReconciler = new DOMReconciler();
 		this.uiStateManager = new UIStateManager();
 		
-		// Initialize cache manager but don't start expensive initialization yet
-		this.cacheManager = new CacheManager(
+		// Initialize native metadata cache manager
+		this.cacheManager = new NativeMetadataCacheManager(
 			this.app,
-			this.app.vault,
 			this.settings.taskTag,
 			this.settings.excludedFolders,
 			this.fieldMapper,
 			this.settings.disableNoteIndexing
 		);
+		
+		// Use same instance for event emitting
+		this.emitter = this.cacheManager;
 		
 		// Initialize business logic services (lightweight constructors)
 		this.taskService = new TaskService(this);
@@ -225,17 +224,14 @@ export default class TaskNotesPlugin extends Plugin {
 		this.initializationComplete = true;
 		
 		try {
-			// Initialize cache and wait for completion
+			// Initialize native cache system
 			await perfMonitor.measure('cache-initialization', async () => {
-				await this.cacheManager.initializeCache();
+				await this.cacheManager.initialize();
 			});
 			
-			// Listen for delayed cache initialization completion
-			this.cacheManager.subscribe('cache-initialized', (data) => {
-				if (data.taskCount > 0) {
-					// Notify all views to refresh
-					this.notifyDataChanged();
-				}
+			// Listen for cache initialization completion
+			this.cacheManager.on('cache-initialized', (data: any) => {
+				this.notifyDataChanged();
 			});
 			
 			// Initialize FilterService and set up event listeners
@@ -261,7 +257,7 @@ export default class TaskNotesPlugin extends Plugin {
 			this.registerEditorExtension(createInstantConvertButtons(this));
 			
 			// Set up global event listener for task updates to refresh editor decorations
-			this.taskUpdateListenerForEditor = this.emitter.on(EVENT_TASK_UPDATED, (data) => {
+			this.taskUpdateListenerForEditor = this.emitter.on(EVENT_TASK_UPDATED, (data: any) => {
 				// Check if layout is ready before processing events
 				if (!this.app.workspace.layoutReady) {
 					return;
@@ -304,7 +300,7 @@ export default class TaskNotesPlugin extends Plugin {
 	 */
 	setSelectedDate(date: Date): void {
 		this.selectedDate = date;
-		this.emitter.emit(EVENT_DATE_SELECTED, date);
+		this.emitter.trigger(EVENT_DATE_SELECTED, date);
 	}
 	
 	/**
@@ -314,11 +310,9 @@ export default class TaskNotesPlugin extends Plugin {
 	 * @param triggerRefresh Whether to trigger a full UI refresh (default true)
 	 */
 	notifyDataChanged(filePath?: string, force: boolean = false, triggerRefresh: boolean = true): void {
-		// Clear cache entries for unified cache manager
+		// Clear cache entries for native cache manager
 		if (filePath) {
 			this.cacheManager.clearCacheEntry(filePath);
-			
-			// YAML parsing cache is now handled by CacheManager
 			
 			// Clear task link detection cache for this file
 			if (this.taskLinkDetectionService) {
@@ -338,7 +332,7 @@ export default class TaskNotesPlugin extends Plugin {
 		if (triggerRefresh) {
 			// Use requestAnimationFrame for better UI timing instead of setTimeout
 			requestAnimationFrame(() => {
-				this.emitter.emit(EVENT_DATA_CHANGED);
+				this.emitter.trigger(EVENT_DATA_CHANGED);
 			});
 		}
 	}
@@ -380,7 +374,7 @@ export default class TaskNotesPlugin extends Plugin {
 			this.viewStateManager.cleanup();
 		}
 		
-		// Clean up unified cache manager
+		// Clean up native cache manager
 		if (this.cacheManager) {
 			this.cacheManager.destroy();
 		}
@@ -407,11 +401,13 @@ export default class TaskNotesPlugin extends Plugin {
 		
 		// Clean up task update listener for editor
 		if (this.taskUpdateListenerForEditor) {
-			this.taskUpdateListenerForEditor();
+			this.emitter.off(EVENT_TASK_UPDATED, this.taskUpdateListenerForEditor);
 		}
 		
-		// Clean up the event emitter
-		this.emitter.removeAllListeners();
+		// Clean up the event emitter (native Events class)
+		if (this.emitter && typeof this.emitter.off === 'function') {
+			// Native Events cleanup happens automatically
+		}
 		
 		// Reset initialization flag for potential reload
 		this.initializationComplete = false;
@@ -419,6 +415,11 @@ export default class TaskNotesPlugin extends Plugin {
 
 	async loadSettings() {
 		const loadedData = await this.loadData();
+		
+		// Migration: Remove old useNativeMetadataCache setting if it exists
+		if (loadedData && 'useNativeMetadataCache' in loadedData) {
+			delete loadedData.useNativeMetadataCache;
+		}
 		
 		// Deep merge settings with proper migration for nested objects
 		this.settings = {
@@ -444,6 +445,8 @@ export default class TaskNotesPlugin extends Plugin {
 			// Save the migrated settings to include new field mappings
 			await this.saveData(this.settings);
 		}
+		
+		// Cache setting migration is no longer needed (native cache only)
 	}
 
 	async saveSettings() {
@@ -728,14 +731,8 @@ export default class TaskNotesPlugin extends Plugin {
 					const year = date.getFullYear();
 					const month = date.getMonth();
 					
-					// Rebuild the daily notes cache for this month
-					try {
-						await this.cacheManager.rebuildDailyNotesCache(year, month);
-						// Notify views that data has changed to trigger a UI refresh
-						this.notifyDataChanged(dailyNote.path, false, true);
-					} catch (e) {
-						console.error('Error rebuilding daily notes cache:', e);
-					}
+					// Notify views that data has changed to trigger a UI refresh
+					this.notifyDataChanged(dailyNote.path, false, true);
 				}
 			}
 		} catch (error) {
@@ -916,7 +913,7 @@ private injectCustomStyles(): void {
 	 */
 	async openTaskEditModal(task: TaskInfo) {
 		// Always fetch fresh task data from file system to ensure we have the latest values
-		const freshTask = await this.cacheManager.getTaskInfo(task.path, true);
+		const freshTask = await this.cacheManager.getTaskInfo(task.path);
 		const taskToEdit = freshTask || task; // Fallback to original if file read fails
 		
 		new TaskEditModal(this.app, this, taskToEdit).open();
@@ -954,11 +951,7 @@ private injectCustomStyles(): void {
 			const loadingNotice = new Notice('Refreshing TaskNotes cache...', 0);
 			
 			// Clear all caches
-			this.cacheManager.clearAllCaches();
-			// YAML cache is now handled by CacheManager
-			
-			// Re-initialize the cache
-			await this.cacheManager.initializeCache();
+			await this.cacheManager.clearAllCaches();
 			
 			// Notify all views to refresh
 			this.notifyDataChanged(undefined, true, true);

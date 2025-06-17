@@ -1,4 +1,4 @@
-import { ItemView, WorkspaceLeaf, TFile, Notice } from 'obsidian';
+import { ItemView, WorkspaceLeaf, TFile, Notice, EventRef } from 'obsidian';
 import format from 'date-fns/format';
 import startOfDay from 'date-fns/startOfDay';
 import endOfDay from 'date-fns/endOfDay';
@@ -66,7 +66,8 @@ interface CalendarEvent {
 export class AdvancedCalendarView extends ItemView {
     plugin: TaskNotesPlugin;
     private calendar: Calendar | null = null;
-    private listeners: (() => void)[] = [];
+    private listeners: EventRef[] = [];
+    private functionListeners: (() => void)[] = [];
     
     // Filter system
     private filterBar: FilterBar | null = null;
@@ -570,7 +571,7 @@ export class AdvancedCalendarView extends ItemView {
         
         // Get priority-based color for border
         const priorityConfig = this.plugin.priorityManager.getPriorityConfig(task.priority);
-        const borderColor = priorityConfig?.color || '#6B73FF';
+        const borderColor = priorityConfig?.color || 'var(--color-accent)';
         
         // Check if task is completed
         const isCompleted = this.plugin.statusManager.isCompletedStatus(task.status);
@@ -608,7 +609,7 @@ export class AdvancedCalendarView extends ItemView {
         
         // Get priority-based color with faded background
         const priorityConfig = this.plugin.priorityManager.getPriorityConfig(task.priority);
-        const borderColor = priorityConfig?.color || '#FF5722';
+        const borderColor = priorityConfig?.color || 'var(--color-orange)';
         
         // Create faded background color from priority color
         const fadedBackground = this.hexToRgba(borderColor, 0.15);
@@ -659,9 +660,9 @@ export class AdvancedCalendarView extends ItemView {
                 start: entry.startTime,
                 end: entry.endTime!,
                 allDay: false,
-                backgroundColor: '#9E9E9E',
-                borderColor: '#757575',
-                textColor: '#FFFFFF',
+                backgroundColor: 'var(--color-base-50)',
+                borderColor: 'var(--color-base-40)',
+                textColor: 'var(--text-on-accent)',
                 extendedProps: {
                     taskInfo: task,
                     eventType: 'timeEntry' as const,
@@ -758,7 +759,7 @@ export class AdvancedCalendarView extends ItemView {
         
         // Get priority-based color for border
         const priorityConfig = this.plugin.priorityManager.getPriorityConfig(task.priority);
-        const borderColor = priorityConfig?.color || '#6B73FF';
+        const borderColor = priorityConfig?.color || 'var(--color-accent)';
         
         // Check if this instance is completed
         const isInstanceCompleted = task.complete_instances?.includes(instanceDate) || false;
@@ -951,7 +952,6 @@ export class AdvancedCalendarView extends ItemView {
 
     async handleExternalDrop(dropInfo: any) {
         try {
-            console.log('FullCalendar external drop triggered', dropInfo);
             
             // Get task path from drag data transfer
             let taskPath: string | undefined;
@@ -960,13 +960,11 @@ export class AdvancedCalendarView extends ItemView {
             if (dropInfo.dataTransfer) {
                 taskPath = dropInfo.dataTransfer.getData('text/plain') || 
                           dropInfo.dataTransfer.getData('application/x-task-path');
-                console.log('Task path from dataTransfer:', taskPath);
             }
             
             // Fallback to element data attribute
             if (!taskPath && dropInfo.draggedEl) {
                 taskPath = dropInfo.draggedEl.dataset.taskPath;
-                console.log('Task path from element dataset:', taskPath);
             }
             
             if (!taskPath) {
@@ -1001,7 +999,6 @@ export class AdvancedCalendarView extends ItemView {
             // Update the task's scheduled date
             await this.plugin.taskService.updateProperty(task, 'scheduled', scheduledDate);
             
-            console.log(`Task "${task.title}" scheduled for ${scheduledDate}`);
             
             // Show success feedback
             new Notice(`Task "${task.title}" scheduled for ${format(dropDate, dropInfo.allDay ? 'MMM d, yyyy' : 'MMM d, yyyy h:mm a')}`);
@@ -1031,7 +1028,6 @@ export class AdvancedCalendarView extends ItemView {
      * We prevent this since we handle the task scheduling ourselves
      */
     handleEventReceive(info: any) {
-        console.log('FullCalendar eventReceive triggered, removing placeholder event:', info);
         // Remove the automatically created event since we handle scheduling ourselves
         info.event.remove();
     }
@@ -1113,8 +1109,10 @@ export class AdvancedCalendarView extends ItemView {
 
     registerEvents(): void {
         // Clean up any existing listeners
-        this.listeners.forEach(unsubscribe => unsubscribe());
+        this.listeners.forEach(listener => this.plugin.emitter.offref(listener));
         this.listeners = [];
+        this.functionListeners.forEach(unsubscribe => unsubscribe());
+        this.functionListeners = [];
         
         // Listen for data changes
         const dataListener = this.plugin.emitter.on(EVENT_DATA_CHANGED, () => {
@@ -1132,14 +1130,14 @@ export class AdvancedCalendarView extends ItemView {
         const filterDataListener = this.plugin.filterService.on('data-changed', () => {
             this.refreshEvents();
         });
-        this.listeners.push(filterDataListener);
+        this.functionListeners.push(filterDataListener);
         
         // Listen for ICS subscription changes
         if (this.plugin.icsSubscriptionService) {
             const icsDataListener = this.plugin.icsSubscriptionService.on('data-changed', () => {
                 this.refreshEvents();
             });
-            this.listeners.push(icsDataListener);
+            this.functionListeners.push(icsDataListener);
         }
     }
 
@@ -1151,7 +1149,8 @@ export class AdvancedCalendarView extends ItemView {
 
     async onClose() {
         // Remove event listeners
-        this.listeners.forEach(unsubscribe => unsubscribe());
+        this.listeners.forEach(listener => this.plugin.emitter.offref(listener));
+        this.functionListeners.forEach(unsubscribe => unsubscribe());
         
         // Clean up FilterBar
         if (this.filterBar) {
