@@ -112,6 +112,9 @@ export default class TaskNotesPlugin extends Plugin {
 	// Event listener cleanup
 	private taskUpdateListenerForEditor: (() => void) | null = null;
 	
+	// Initialization guard to prevent duplicate initialization
+	private initializationComplete = false;
+	
 	async onload() {
 		// Create the promise and store its resolver
 		this.readyPromise = new Promise(resolve => {
@@ -215,6 +218,12 @@ export default class TaskNotesPlugin extends Plugin {
 	 * Initialize expensive operations after layout is ready
 	 */
 	private async initializeAfterLayoutReady(): Promise<void> {
+		// Guard against multiple initialization calls
+		if (this.initializationComplete) {
+			return;
+		}
+		this.initializationComplete = true;
+		
 		try {
 			// Initialize cache and wait for completion
 			await perfMonitor.measure('cache-initialization', async () => {
@@ -404,6 +413,9 @@ export default class TaskNotesPlugin extends Plugin {
 		
 		// Clean up the event emitter
 		this.emitter.removeAllListeners();
+		
+		// Reset initialization flag for potential reload
+		this.initializationComplete = false;
 	}
 
 	async loadSettings() {
