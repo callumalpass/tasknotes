@@ -2,7 +2,7 @@ import { EditorView, WidgetType } from '@codemirror/view';
 import { TFile, setIcon } from 'obsidian';
 import { TaskInfo } from '../types';
 import TaskNotesPlugin from '../main';
-import format from 'date-fns/format';
+import { format } from 'date-fns';
 import { parseDate, formatDateTimeForDisplay, hasTimeComponent } from '../utils/dateUtils';
 
 export class TaskLinkWidget extends WidgetType {

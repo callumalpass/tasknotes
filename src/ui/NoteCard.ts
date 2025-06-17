@@ -1,4 +1,4 @@
-import format from 'date-fns/format';
+import { format } from 'date-fns';
 import { TFile } from 'obsidian';
 import { NoteInfo } from '../types';
 import TaskNotesPlugin from '../main';

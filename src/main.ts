@@ -1,5 +1,5 @@
 import { Notice, Plugin, TFile, WorkspaceLeaf, normalizePath, Editor } from 'obsidian';
-import format from 'date-fns/format';
+import { format } from 'date-fns';
 import * as YAML from 'yaml';
 import { 
 	createDailyNote, 

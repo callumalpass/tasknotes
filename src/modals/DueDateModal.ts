@@ -1,6 +1,5 @@
 import { App, Modal, Setting, setIcon } from 'obsidian';
-import format from 'date-fns/format';
-import add from 'date-fns/add';
+import { format, add } from 'date-fns';
 import { TaskInfo } from '../types';
 import TaskNotesPlugin from '../main';
 import { 

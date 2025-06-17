@@ -1,7 +1,5 @@
 import { ItemView, WorkspaceLeaf, TFile, Notice, EventRef } from 'obsidian';
-import format from 'date-fns/format';
-import startOfDay from 'date-fns/startOfDay';
-import endOfDay from 'date-fns/endOfDay';
+import { format, startOfDay, endOfDay } from 'date-fns';
 import { Calendar } from '@fullcalendar/core';
 import { 
     createDailyNote, 

@@ -1,5 +1,5 @@
 import { Notice, TFile } from 'obsidian';
-import format from 'date-fns/format';
+import { format } from 'date-fns';
 import TaskNotesPlugin from '../main';
 import { 
     createDailyNote, 

@@ -1,5 +1,5 @@
 import { Notice, TFile, ItemView, WorkspaceLeaf, setIcon, EventRef } from 'obsidian';
-import format from 'date-fns/format';
+import { format } from 'date-fns';
 import TaskNotesPlugin from '../main';
 import { 
     NOTES_VIEW_TYPE, 

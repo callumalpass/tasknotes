@@ -1,5 +1,5 @@
 import { Notice, TFile, ItemView, WorkspaceLeaf, normalizePath, EventRef } from 'obsidian';
-import format from 'date-fns/format';
+import { format } from 'date-fns';
 import TaskNotesPlugin from '../main';
 import { getAllDailyNotes, getDailyNote } from 'obsidian-daily-notes-interface';
 import { 

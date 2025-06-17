@@ -1,5 +1,5 @@
 import { normalizePath, TFile, Vault } from 'obsidian';
-import format from 'date-fns/format';
+import { format } from 'date-fns';
 import { TimeInfo, TaskInfo, TimeEntry } from '../types';
 import { App } from 'obsidian';
 import { FieldMapper } from '../services/FieldMapper';

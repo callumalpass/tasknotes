@@ -1,4 +1,4 @@
-import format from 'date-fns/format';
+import { format } from 'date-fns';
 import { parseYaml } from 'obsidian';
 import * as YAML from 'yaml';
 

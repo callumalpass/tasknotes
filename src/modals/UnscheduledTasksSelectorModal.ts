@@ -1,5 +1,5 @@
 import { App, FuzzySuggestModal, FuzzyMatch, Notice, setIcon } from 'obsidian';
-import format from 'date-fns/format';
+import { format } from 'date-fns';
 import { TaskInfo } from '../types';
 import { isPastDate, isToday, hasTimeComponent, getDatePart, parseDate } from '../utils/dateUtils';
 import TaskNotesPlugin from '../main';
