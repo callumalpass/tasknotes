@@ -927,11 +927,8 @@ private injectCustomStyles(): void {
 	 * Opens the task edit modal for a specific task
 	 */
 	async openTaskEditModal(task: TaskInfo) {
-		// Always fetch fresh task data from file system to ensure we have the latest values
-		const freshTask = await this.cacheManager.getTaskInfo(task.path);
-		const taskToEdit = freshTask || task; // Fallback to original if file read fails
-		
-		new TaskEditModal(this.app, this, taskToEdit).open();
+		// With native cache, task data is always current - no need to refetch
+		new TaskEditModal(this.app, this, task).open();
 	}
 
 	/**
