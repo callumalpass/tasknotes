@@ -1,5 +1,5 @@
 import { Notice, Plugin, TFile, WorkspaceLeaf, normalizePath, Editor } from 'obsidian';
-import { format } from 'date-fns';
+import format from 'date-fns/format';
 import * as YAML from 'yaml';
 import { 
 	createDailyNote, 
@@ -48,7 +48,6 @@ import {
 	getActiveTimeEntry
 } from './utils/helpers';
 import { EventEmitter } from './utils/EventEmitter';
-import { YAMLCache } from './utils/YAMLCache';
 import { CacheManager } from './utils/CacheManager';
 import { RequestDeduplicator, PredictivePrefetcher } from './utils/RequestDeduplicator';
 import { DOMReconciler, UIStateManager } from './utils/DOMReconciler';
@@ -136,6 +135,7 @@ export default class TaskNotesPlugin extends Plugin {
 		
 		// Initialize cache manager but don't start expensive initialization yet
 		this.cacheManager = new CacheManager(
+			this.app,
 			this.app.vault,
 			this.settings.taskTag,
 			this.settings.excludedFolders,
@@ -318,8 +318,7 @@ export default class TaskNotesPlugin extends Plugin {
 		if (filePath) {
 			this.cacheManager.clearCacheEntry(filePath);
 			
-			// Clear YAML parsing cache
-			YAMLCache.clearCacheEntry(filePath);
+			// YAML parsing cache is now handled by CacheManager
 			
 			// Clear task link detection cache for this file
 			if (this.taskLinkDetectionService) {
@@ -956,7 +955,7 @@ private injectCustomStyles(): void {
 			
 			// Clear all caches
 			this.cacheManager.clearAllCaches();
-			YAMLCache.clearCache();
+			// YAML cache is now handled by CacheManager
 			
 			// Re-initialize the cache
 			await this.cacheManager.initializeCache();

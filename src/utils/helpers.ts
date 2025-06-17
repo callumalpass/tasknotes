@@ -1,7 +1,7 @@
 import { normalizePath, TFile, Vault } from 'obsidian';
-import { format, parseISO, startOfDay, isBefore, isSameDay as isSameDayFns } from 'date-fns';
+import format from 'date-fns/format';
 import { TimeInfo, TaskInfo, TimeEntry } from '../types';
-import { YAMLCache } from './YAMLCache';
+import { App } from 'obsidian';
 import { FieldMapper } from '../services/FieldMapper';
 import { DEFAULT_FIELD_MAPPING } from '../settings/settings';
 import { isBeforeDateSafe, getTodayString, parseDate, isSameDateSafe } from './dateUtils';
@@ -262,69 +262,66 @@ export function isSameDay(date1: Date, date2: Date): boolean {
  * Extracts task information from a task file's content using field mapping
  */
 export function extractTaskInfo(
+	app: App,
 	content: string, 
 	path: string, 
+	file: TFile,
 	fieldMapper?: FieldMapper
 ): TaskInfo | null {
 	
-	// Try to extract task info from frontmatter
-	if (content.startsWith('---')) {
-		const endOfFrontmatter = content.indexOf('---', 3);
-		if (endOfFrontmatter !== -1) {
-			// Use our cached YAML parser
-			const yaml = YAMLCache.extractFrontmatter(content, path);
+	// Try to extract task info from frontmatter using native metadata cache
+	const metadata = app.metadataCache.getFileCache(file);
+	const yaml = metadata?.frontmatter;
+	
+	if (yaml) {
+		if (fieldMapper) {
+			// Use field mapper to extract task info
+			const mappedTask = fieldMapper.mapFromFrontmatter(yaml, path);
 			
-			if (yaml) {
-				if (fieldMapper) {
-					// Use field mapper to extract task info
-					const mappedTask = fieldMapper.mapFromFrontmatter(yaml, path);
-					
-					// Ensure required fields have defaults
-					const taskInfo: TaskInfo = {
-						title: mappedTask.title || 'Untitled task',
-						status: mappedTask.status || 'open',
-						priority: mappedTask.priority || 'normal',
-						due: mappedTask.due,
-						scheduled: mappedTask.scheduled,
-						path,
-						archived: mappedTask.archived || false,
-						tags: mappedTask.tags || [],
-						contexts: mappedTask.contexts || [],
-						recurrence: mappedTask.recurrence,
-						complete_instances: mappedTask.complete_instances,
-						completedDate: mappedTask.completedDate,
-						timeEstimate: mappedTask.timeEstimate,
-						timeEntries: mappedTask.timeEntries,
-						dateCreated: mappedTask.dateCreated,
-						dateModified: mappedTask.dateModified
-					};
-					
-					return taskInfo;
-				} else {
-					// Fallback to default field mapping
-					const defaultMapper = new FieldMapper(DEFAULT_FIELD_MAPPING);
-					const mappedTask = defaultMapper.mapFromFrontmatter(yaml, path);
-					
-					return {
-						title: mappedTask.title || 'Untitled task',
-						status: mappedTask.status || 'open',
-						priority: mappedTask.priority || 'normal',
-						due: mappedTask.due,
-						scheduled: mappedTask.scheduled,
-						path,
-						archived: mappedTask.archived || false,
-						tags: mappedTask.tags || [],
-						contexts: mappedTask.contexts || [],
-						recurrence: mappedTask.recurrence,
-						complete_instances: mappedTask.complete_instances,
-						completedDate: mappedTask.completedDate,
-						timeEstimate: mappedTask.timeEstimate,
-						timeEntries: mappedTask.timeEntries,
-						dateCreated: mappedTask.dateCreated,
-						dateModified: mappedTask.dateModified
-					};
-				}
-			}
+			// Ensure required fields have defaults
+			const taskInfo: TaskInfo = {
+				title: mappedTask.title || 'Untitled task',
+				status: mappedTask.status || 'open',
+				priority: mappedTask.priority || 'normal',
+				due: mappedTask.due,
+				scheduled: mappedTask.scheduled,
+				path,
+				archived: mappedTask.archived || false,
+				tags: mappedTask.tags || [],
+				contexts: mappedTask.contexts || [],
+				recurrence: mappedTask.recurrence,
+				complete_instances: mappedTask.complete_instances,
+				completedDate: mappedTask.completedDate,
+				timeEstimate: mappedTask.timeEstimate,
+				timeEntries: mappedTask.timeEntries,
+				dateCreated: mappedTask.dateCreated,
+				dateModified: mappedTask.dateModified
+			};
+			
+			return taskInfo;
+		} else {
+			// Fallback to default field mapping
+			const defaultMapper = new FieldMapper(DEFAULT_FIELD_MAPPING);
+			const mappedTask = defaultMapper.mapFromFrontmatter(yaml, path);
+			
+			return {
+				title: mappedTask.title || 'Untitled task',
+				status: mappedTask.status || 'open',
+				priority: mappedTask.priority || 'normal',
+				due: mappedTask.due,
+				scheduled: mappedTask.scheduled,
+				path,
+				archived: mappedTask.archived || false,
+				tags: mappedTask.tags || [],
+				contexts: mappedTask.contexts || [],
+				recurrence: mappedTask.recurrence,
+				complete_instances: mappedTask.complete_instances,
+				completedDate: mappedTask.completedDate,
+				timeEstimate: mappedTask.timeEstimate,
+				timeEntries: mappedTask.timeEntries,
+				dateCreated: mappedTask.dateCreated,
+				dateModified: mappedTask.dateModified
+			};
 		}
 	}
 	
@@ -452,31 +449,31 @@ export function shouldUseRecurringTaskUI(task: TaskInfo): boolean {
 /**
  * Extracts note information from a note file's content
  */
-export function extractNoteInfo(content: string, path: string, file?: TFile): {title: string, tags: string[], path: string, createdDate?: string, lastModified?: number} | null {
+export function extractNoteInfo(app: App, content: string, path: string, file?: TFile): {title: string, tags: string[], path: string, createdDate?: string, lastModified?: number} | null {
 	let title = path.split('/').pop()?.replace('.md', '') || 'Untitled';
 	let tags: string[] = [];
 	let createdDate: string | undefined = undefined;
 	let lastModified: number | undefined = file?.stat.mtime;
 	
-	// Try to extract note info from frontmatter
-	if (content.startsWith('---')) {
-		// Use our cached YAML parser
-		const yaml = YAMLCache.extractFrontmatter(content, path);
+	// Try to extract note info from frontmatter using native metadata cache
+	if (file) {
+		const metadata = app.metadataCache.getFileCache(file);
+		const frontmatter = metadata?.frontmatter;
 		
-		if (yaml) {
-			if (yaml.title) {
-				title = yaml.title;
+		if (frontmatter) {
+			if (frontmatter.title) {
+				title = frontmatter.title;
 			}
 			
-			if (yaml.tags && Array.isArray(yaml.tags)) {
-				tags = yaml.tags;
+			if (frontmatter.tags && Array.isArray(frontmatter.tags)) {
+				tags = frontmatter.tags;
 			}
 			
 			// Extract creation date from dateCreated or date field
-			if (yaml.dateCreated) {
-				createdDate = yaml.dateCreated;
-			} else if (yaml.date) {
-				createdDate = yaml.date;
+			if (frontmatter.dateCreated) {
+				createdDate = frontmatter.dateCreated;
+			} else if (frontmatter.date) {
+				createdDate = frontmatter.date;
 			}
 		}
 	}

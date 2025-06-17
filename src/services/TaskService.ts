@@ -1,5 +1,5 @@
 import { TFile, Notice, normalizePath, stringifyYaml } from 'obsidian';
-import { format } from 'date-fns';
+import format from 'date-fns/format';
 import * as YAML from 'yaml';
 import TaskNotesPlugin from '../main';
 import { TaskInfo, TimeEntry, EVENT_TASK_UPDATED, EVENT_TASK_DELETED } from '../types';

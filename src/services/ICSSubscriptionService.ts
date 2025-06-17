@@ -1,6 +1,5 @@
 import { Notice, requestUrl, TFile } from 'obsidian';
 import * as ICAL from 'ical.js';
-import { format, parseISO } from 'date-fns';
 import { ICSSubscription, ICSEvent, ICSCache } from '../types';
 import { EventEmitter } from '../utils/EventEmitter';
 import TaskNotesPlugin from '../main';

@@ -1,5 +1,10 @@
 import { Notice, TFile, ItemView, WorkspaceLeaf, Menu } from 'obsidian';
-import { format, addDays, startOfWeek, endOfWeek, isToday, isSameDay, isBefore, parseISO } from 'date-fns';
+import format from 'date-fns/format';
+import addDays from 'date-fns/addDays';
+import startOfWeek from 'date-fns/startOfWeek';
+import endOfWeek from 'date-fns/endOfWeek';
+import isToday from 'date-fns/isToday';
+import isSameDay from 'date-fns/isSameDay';
 import TaskNotesPlugin from '../main';
 import { 
     AGENDA_VIEW_TYPE,

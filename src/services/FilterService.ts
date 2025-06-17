@@ -4,7 +4,8 @@ import { StatusManager } from './StatusManager';
 import { PriorityManager } from './PriorityManager';
 import { EventEmitter } from '../utils/EventEmitter';
 import { isRecurringTaskDueOn, isTaskOverdue } from '../utils/helpers';
-import { format, isToday, isBefore, parseISO } from 'date-fns';
+import format from 'date-fns/format';
+import isToday from 'date-fns/isToday';
 import { 
     parseDate, 
     getTodayString, 

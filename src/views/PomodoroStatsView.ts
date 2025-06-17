@@ -1,5 +1,8 @@
 import { ItemView, WorkspaceLeaf } from 'obsidian';
-import { format, subDays, startOfWeek, endOfWeek, startOfDay } from 'date-fns';
+import format from 'date-fns/format';
+import startOfWeek from 'date-fns/startOfWeek';
+import endOfWeek from 'date-fns/endOfWeek';
+import startOfDay from 'date-fns/startOfDay';
 import TaskNotesPlugin from '../main';
 import { 
     POMODORO_STATS_VIEW_TYPE,

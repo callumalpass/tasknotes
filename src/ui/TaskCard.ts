@@ -1,4 +1,4 @@
-import { format } from 'date-fns';
+import format from 'date-fns/format';
 import { TFile, Menu, setIcon, Notice, Modal, App } from 'obsidian';
 import { TaskInfo } from '../types';
 import TaskNotesPlugin from '../main';

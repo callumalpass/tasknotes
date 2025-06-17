@@ -1,4 +1,12 @@
-import { format, parse, parseISO, isSameDay, isBefore, isValid, startOfDay, addDays as addDaysFns, endOfDay, isBefore as isBeforeFns } from 'date-fns';
+import format from 'date-fns/format';
+import parse from 'date-fns/parse';
+import parseISO from 'date-fns/parseISO';
+import isSameDay from 'date-fns/isSameDay';
+import isBefore from 'date-fns/isBefore';
+import isValid from 'date-fns/isValid';
+import startOfDay from 'date-fns/startOfDay';
+import addDaysFns from 'date-fns/addDays';
+import endOfDay from 'date-fns/endOfDay';
 
 /**
  * Smart date parsing that detects timezone info and handles appropriately
@@ -476,7 +484,7 @@ export function isBeforeDateTimeAware(date1: string, date2: string): boolean {
         
         // If both have time, direct comparison
         if (hasTimeComponent(date1) && hasTimeComponent(date2)) {
-            return isBeforeFns(d1, d2);
+            return isBefore(d1, d2);
         }
         
         // If neither has time, compare dates only
@@ -488,7 +496,7 @@ export function isBeforeDateTimeAware(date1: string, date2: string): boolean {
         const d1Normalized = hasTimeComponent(date1) ? d1 : endOfDay(d1);
         const d2Normalized = hasTimeComponent(date2) ? d2 : endOfDay(d2);
         
-        return isBeforeFns(d1Normalized, d2Normalized);
+        return isBefore(d1Normalized, d2Normalized);
     } catch (error) {
         console.error('Error comparing dates time-aware:', { date1, date2, error });
         return false;
@@ -507,7 +515,7 @@ export function isOverdueTimeAware(dateString: string): boolean {
         
         // If task has time, compare with current date/time
         if (hasTimeComponent(dateString)) {
-            return isBeforeFns(taskDate, now);
+            return isBefore(taskDate, now);
         }
         
         // If task is date-only, it's overdue if the date is before today

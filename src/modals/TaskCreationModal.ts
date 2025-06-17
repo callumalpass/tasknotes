@@ -1,5 +1,5 @@
 import { App, Notice, TFile, Setting, Editor, MarkdownView, normalizePath } from 'obsidian';
-import { format } from 'date-fns';
+import format from 'date-fns/format';
 import TaskNotesPlugin from '../main';
 import { BaseTaskModal } from './BaseTaskModal';
 import { MINI_CALENDAR_VIEW_TYPE, TaskInfo } from '../types';

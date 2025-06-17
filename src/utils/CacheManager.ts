@@ -1,10 +1,9 @@
-import { TFile, Vault, normalizePath, parseYaml } from 'obsidian';
+import { TFile, Vault, normalizePath, parseYaml, App } from 'obsidian';
 import { TaskInfo, NoteInfo, IndexedFile, FileEventHandlers } from '../types';
 import { extractNoteInfo, extractTaskInfo, debounce } from './helpers';
 import { FieldMapper } from '../services/FieldMapper';
-import { YAMLCache } from './YAMLCache';
 import * as YAML from 'yaml';
-import { format } from 'date-fns';
+import format from 'date-fns/format';
 import { 
     getAllDailyNotes, 
     getDailyNote 
@@ -27,6 +26,7 @@ import {
  * file reads and provides instant data access for UI components.
  */
 export class CacheManager {
+    private app: App;
     private vault: Vault;
     
     // Core cache structures
@@ -95,12 +95,14 @@ export class CacheManager {
     private delayedInitializationScheduled: boolean = false;
     
     constructor(
+        app: App,
         vault: Vault, 
         taskTag: string, 
         excludedFolders: string = '', 
         fieldMapper?: FieldMapper,
         disableNoteIndexing: boolean = false
     ) {
+        this.app = app;
         this.vault = vault;
         this.taskTag = taskTag;
         this.excludedFolders = excludedFolders 
@@ -226,20 +228,11 @@ export class CacheManager {
     }
     
     /**
-     * Extract and parse frontmatter from markdown content
+     * Extract frontmatter using native metadata cache (replaced manual parsing)
      */
-    extractFrontmatter(content: string, cacheKey: string): any {
-        if (!content.startsWith('---')) {
-            return null;
-        }
-        
-        const endOfFrontmatter = content.indexOf('---', 3);
-        if (endOfFrontmatter === -1) {
-            return null;
-        }
-        
-        const frontmatter = content.substring(3, endOfFrontmatter);
-        return this.parseYAML(frontmatter, cacheKey);
+    getFrontmatter(file: TFile): any {
+        const metadata = this.app.metadataCache.getFileCache(file);
+        return metadata?.frontmatter || null;
     }
     
     /**
@@ -257,7 +250,12 @@ export class CacheManager {
         if (forceRefresh) {
             this.taskInfoCache.delete(path);
             this.yamlCache.delete(path);
-            YAMLCache.clearCacheEntry(path);
+            // YAMLCache functionality now integrated into CacheManager
+        }
+        
+        const file = this.vault.getAbstractFileByPath(path);
+        if (!(file instanceof TFile)) {
+            return null;
         }
         
         const content = await this.getFileContent(path, forceRefresh);
@@ -265,7 +263,7 @@ export class CacheManager {
             return null;
         }
         try {
-            const taskInfo = extractTaskInfo(content, path, this.fieldMapper || undefined);
+            const taskInfo = extractTaskInfo(this.app, content, path, file, this.fieldMapper || undefined);
             
             if (taskInfo) {
                 this.taskInfoCache.set(path, taskInfo);
@@ -301,7 +299,7 @@ export class CacheManager {
         }
         
         try {
-            const noteInfo = extractNoteInfo(content, path, file);
+            const noteInfo = extractNoteInfo(this.app, content, path, file);
             
             if (noteInfo) {
                 this.noteInfoCache.set(path, noteInfo);
@@ -669,8 +667,9 @@ export class CacheManager {
             const content = await this.getFileContent(file.path, true);
             if (!content) return;
             
-            // Check if this is a task file
-            const frontmatter = this.extractFrontmatter(content, file.path);
+            // Check if this is a task file using native metadata cache
+            const metadata = this.app.metadataCache.getFileCache(file);
+            const frontmatter = metadata?.frontmatter;
             const isTask = frontmatter?.tags?.includes(this.taskTag);
             
             
@@ -1115,8 +1114,7 @@ export class CacheManager {
         this.taskInfoCache.delete(path);
         this.noteInfoCache.delete(path);
         this.indexedFilesCache.delete(path);
-        // Also clear the YAMLCache static cache
-        YAMLCache.clearCacheEntry(path);
+        // YAMLCache functionality now integrated into CacheManager
     }
     
     /**
