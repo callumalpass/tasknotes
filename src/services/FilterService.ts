@@ -1,5 +1,5 @@
 import { FilterQuery, TaskInfo, TaskSortKey, TaskGroupKey, SortDirection } from '../types';
-import { NativeMetadataCacheManager } from '../utils/NativeMetadataCacheManager';
+import { MinimalNativeCache } from '../utils/MinimalNativeCache';
 import { StatusManager } from './StatusManager';
 import { PriorityManager } from './PriorityManager';
 import { EventEmitter } from '../utils/EventEmitter';
@@ -25,12 +25,12 @@ import {
  * Provides performance-optimized data retrieval using CacheManager indexes.
  */
 export class FilterService extends EventEmitter {
-    private cacheManager: NativeMetadataCacheManager;
+    private cacheManager: MinimalNativeCache;
     private statusManager: StatusManager;
     private priorityManager: PriorityManager;
 
     constructor(
-        cacheManager: NativeMetadataCacheManager,
+        cacheManager: MinimalNativeCache,
         statusManager: StatusManager,
         priorityManager: PriorityManager
     ) {

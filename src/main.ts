@@ -47,7 +47,7 @@ import {
 	calculateTotalTimeSpent,
 	getActiveTimeEntry
 } from './utils/helpers';
-import { NativeMetadataCacheManager } from './utils/NativeMetadataCacheManager';
+import { MinimalNativeCache } from './utils/MinimalNativeCache';
 import { RequestDeduplicator, PredictivePrefetcher } from './utils/RequestDeduplicator';
 import { DOMReconciler, UIStateManager } from './utils/DOMReconciler';
 import { perfMonitor } from './utils/PerformanceMonitor';
@@ -72,9 +72,9 @@ export default class TaskNotesPlugin extends Plugin {
 	// Shared state between views
 	selectedDate: Date = new Date();
 	
-	// Native metadata cache manager (also handles events)
-	cacheManager: NativeMetadataCacheManager;
-	emitter: NativeMetadataCacheManager;
+	// Minimal native cache manager (also handles events)
+	cacheManager: MinimalNativeCache;
+	emitter: MinimalNativeCache;
 	
 	// Performance optimization utilities
 	requestDeduplicator: RequestDeduplicator;
@@ -130,8 +130,8 @@ export default class TaskNotesPlugin extends Plugin {
 		this.domReconciler = new DOMReconciler();
 		this.uiStateManager = new UIStateManager();
 		
-		// Initialize native metadata cache manager
-		this.cacheManager = new NativeMetadataCacheManager(
+		// Initialize minimal native cache manager
+		this.cacheManager = new MinimalNativeCache(
 			this.app,
 			this.settings.taskTag,
 			this.settings.excludedFolders,
