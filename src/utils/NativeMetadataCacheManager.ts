@@ -50,7 +50,7 @@ export class NativeMetadataCacheManager extends Events {
     
     // Initialization state
     private initialized: boolean = false;
-    private initializing: boolean = false;
+    private indexesBuilt: boolean = false;
     
     constructor(
         app: App,
@@ -71,41 +71,20 @@ export class NativeMetadataCacheManager extends Events {
     
     /**
      * Initialize the cache manager by setting up native event listeners
-     * and building initial indexes
+     * Indexes are built lazily when first accessed for optimal startup performance
      */
-    async initialize(): Promise<void> {
-        if (this.initialized || this.initializing) {
+    initialize(): void {
+        if (this.initialized) {
             return;
         }
         
-        this.initializing = true;
+        // Set up native metadata cache event listeners (lightweight)
+        this.setupNativeEventListeners();
         
-        // Add timeout to prevent infinite hangs
-        const initTimeout = setTimeout(() => {
-            this.initializing = false;
-            throw new Error('NativeMetadataCacheManager initialization timed out after 10 seconds');
-        }, 10000);
+        this.initialized = true;
         
-        try {
-            // Set up native metadata cache event listeners
-            this.setupNativeEventListeners();
-            
-            // Build initial indexes from current metadata cache state
-            await this.buildInitialIndexes();
-            
-            this.initialized = true;
-            this.initializing = false;
-            
-            clearTimeout(initTimeout);
-            // Emit initialization complete event
-            this.trigger('cache-initialized', this.getStats());
-            
-        } catch (error) {
-            clearTimeout(initTimeout);
-            this.initializing = false;
-            console.error('Failed to initialize NativeMetadataCacheManager:', error);
-            throw error;
-        }
+        // Emit initialization complete event (no heavy work done)
+        this.trigger('cache-initialized', { message: 'Native cache ready - indexes will be built on demand' });
     }
     
     /**
@@ -135,37 +114,58 @@ export class NativeMetadataCacheManager extends Events {
     }
     
     /**
-     * Build initial indexes from current metadata cache state
+     * Lazily build indexes when first accessed (non-blocking)
+     * This happens in the background after the first request
      */
-    private async buildInitialIndexes(): Promise<void> {
-        const startTime = performance.now();
-        
-        // Clear all indexes
-        this.clearAllIndexes();
-        
-        // Get all markdown files and process them
-        const markdownFiles = this.app.vault.getMarkdownFiles();
-        const validFiles = markdownFiles.filter(file => this.isValidFile(file.path));
-        
-        // Process files sequentially to avoid potential Promise.all issues
-        for (let i = 0; i < validFiles.length; i++) {
-            const file = validFiles[i];
-            
-            try {
-                await this.processFileForIndexing(file);
-            } catch (error) {
-                console.error(`Error processing file ${file.path}:`, error);
-                // Continue with next file
-            }
-            
-            // Yield control every 10 files to prevent blocking
-            if (i % 10 === 0) {
-                await new Promise(resolve => setTimeout(resolve, 1));
-            }
+    private ensureIndexesBuilt(): void {
+        if (this.indexesBuilt) {
+            return;
         }
         
-        const endTime = performance.now();
-        this.stats.fileProcessingTime = endTime - startTime;
+        this.indexesBuilt = true;
+        
+        // Build indexes in the background without blocking
+        this.buildIndexesInBackground();
+    }
+    
+    /**
+     * Build indexes in background without blocking the main thread
+     */
+    private async buildIndexesInBackground(): Promise<void> {
+        try {
+            const startTime = performance.now();
+            
+            // Get all markdown files and process them
+            const markdownFiles = this.app.vault.getMarkdownFiles();
+            const validFiles = markdownFiles.filter(file => this.isValidFile(file.path));
+            
+            // Process files in small batches to avoid blocking
+            const batchSize = 20;
+            for (let i = 0; i < validFiles.length; i += batchSize) {
+                const batch = validFiles.slice(i, i + batchSize);
+                
+                // Process batch
+                for (const file of batch) {
+                    try {
+                        await this.processFileForIndexing(file);
+                    } catch (error) {
+                        console.error(`Error processing file ${file.path}:`, error);
+                    }
+                }
+                
+                // Yield control after each batch to prevent blocking
+                await new Promise(resolve => setTimeout(resolve, 1));
+            }
+            
+            const endTime = performance.now();
+            this.stats.fileProcessingTime = endTime - startTime;
+            
+            // Emit completion event
+            this.trigger('indexes-built', this.getStats());
+            
+        } catch (error) {
+            console.error('Error building indexes in background:', error);
+        }
     }
     
     /**
@@ -326,6 +326,7 @@ export class NativeMetadataCacheManager extends Events {
      * Get all tasks for a specific date
      */
     getTasksForDate(date: string): string[] {
+        this.ensureIndexesBuilt();
         this.stats.computedIndexHits++;
         const taskPaths = this.tasksByDate.get(date) || new Set();
         return Array.from(taskPaths);
@@ -624,9 +625,10 @@ export class NativeMetadataCacheManager extends Events {
         this.fieldMapper = fieldMapper;
         this.disableNoteIndexing = disableNoteIndexing;
         
-        // Trigger reindexing with new configuration if already initialized
+        // Clear indexes and mark for rebuild with new configuration
         if (this.initialized) {
-            this.buildInitialIndexes();
+            this.clearAllIndexes();
+            this.indexesBuilt = false;
         }
     }
     
@@ -638,6 +640,7 @@ export class NativeMetadataCacheManager extends Events {
      * Get task paths by status using computed index
      */
     getTaskPathsByStatus(status: string): string[] {
+        this.ensureIndexesBuilt();
         this.stats.computedIndexHits++;
         const taskPaths = this.tasksByStatus.get(status) || new Set();
         return Array.from(taskPaths);
@@ -647,6 +650,7 @@ export class NativeMetadataCacheManager extends Events {
      * Get task paths by priority using computed index
      */
     getTaskPathsByPriority(priority: string): string[] {
+        this.ensureIndexesBuilt();
         this.stats.computedIndexHits++;
         const taskPaths = this.tasksByPriority.get(priority) || new Set();
         return Array.from(taskPaths);
@@ -656,6 +660,7 @@ export class NativeMetadataCacheManager extends Events {
      * Get all available statuses
      */
     getAllStatuses(): string[] {
+        this.ensureIndexesBuilt();
         return Array.from(this.tasksByStatus.keys()).sort();
     }
     
@@ -663,6 +668,7 @@ export class NativeMetadataCacheManager extends Events {
      * Get all available priorities
      */
     getAllPriorities(): string[] {
+        this.ensureIndexesBuilt();
         return Array.from(this.tasksByPriority.keys()).sort();
     }
     
@@ -670,6 +676,7 @@ export class NativeMetadataCacheManager extends Events {
      * Get all tags from tasks
      */
     getAllTags(): string[] {
+        this.ensureIndexesBuilt();
         return Array.from(this.allTags).sort();
     }
     
@@ -677,6 +684,7 @@ export class NativeMetadataCacheManager extends Events {
      * Get all contexts from tasks
      */
     getAllContexts(): string[] {
+        this.ensureIndexesBuilt();
         return Array.from(this.allContexts).sort();
     }
     
@@ -684,6 +692,7 @@ export class NativeMetadataCacheManager extends Events {
      * Get all task paths
      */
     getAllTaskPaths(): Set<string> {
+        this.ensureIndexesBuilt();
         const taskPaths = new Set<string>();
         // Collect all paths from task indexes
         for (const statusSet of this.tasksByStatus.values()) {
@@ -696,6 +705,7 @@ export class NativeMetadataCacheManager extends Events {
      * Get task paths by date
      */
     getTaskPathsByDate(dateStr: string): Set<string> {
+        this.ensureIndexesBuilt();
         return this.tasksByDate.get(dateStr) || new Set();
     }
     
@@ -703,6 +713,7 @@ export class NativeMetadataCacheManager extends Events {
      * Get overdue task paths
      */
     getOverdueTaskPaths(): Set<string> {
+        this.ensureIndexesBuilt();
         return new Set(this.overdueTasks);
     }
     
@@ -816,10 +827,11 @@ export class NativeMetadataCacheManager extends Events {
     }
     
     /**
-     * Clear all caches and rebuild
+     * Clear all caches and mark for lazy rebuild
      */
     async clearAllCaches(): Promise<void> {
         this.clearAllIndexes();
-        await this.buildInitialIndexes();
+        this.indexesBuilt = false;
+        // Indexes will be rebuilt lazily when next accessed
     }
 }

@@ -152,45 +152,7 @@ export default class TaskNotesPlugin extends Plugin {
 		this.viewStateManager = new ViewStateManager();
 		this.dragDropManager = new DragDropManager(this);
 		
-		// Inject dynamic styles for custom statuses and priorities
-		this.injectCustomStyles();
-
-		// Register view types
-		this.registerView(
-			MINI_CALENDAR_VIEW_TYPE,
-			(leaf) => new MiniCalendarView(leaf, this)
-		);
-		this.registerView(
-			ADVANCED_CALENDAR_VIEW_TYPE,
-			(leaf) => new AdvancedCalendarView(leaf, this)
-		);
-		this.registerView(
-			TASK_LIST_VIEW_TYPE,
-			(leaf) => new TaskListView(leaf, this)
-		);
-		this.registerView(
-			NOTES_VIEW_TYPE,
-			(leaf) => new NotesView(leaf, this)
-		);
-		this.registerView(
-			AGENDA_VIEW_TYPE,
-			(leaf) => new AgendaView(leaf, this)
-		);
-		this.registerView(
-			POMODORO_VIEW_TYPE,
-			(leaf) => new PomodoroView(leaf, this)
-		);
-		this.registerView(
-			POMODORO_STATS_VIEW_TYPE,
-			(leaf) => new PomodoroStatsView(leaf, this)
-		);
-		this.registerView(
-			KANBAN_VIEW_TYPE,
-			(leaf) => new KanbanView(leaf, this)
-		);
-		
-		// Register essential editor extensions (lightweight)
-		this.registerEditorExtension(createTaskLinkOverlay(this));
+		// Note: View registration and heavy operations moved to onLayoutReady
 		
 		// Add ribbon icon
 		this.addRibbonIcon('calendar-days', 'Open calendar', async () => {
@@ -224,61 +186,110 @@ export default class TaskNotesPlugin extends Plugin {
 		this.initializationComplete = true;
 		
 		try {
-			// Initialize native cache system
-			await perfMonitor.measure('cache-initialization', async () => {
-				await this.cacheManager.initialize();
-			});
+			// Inject dynamic styles for custom statuses and priorities
+			this.injectCustomStyles();
+
+			// Register view types (now safe after layout ready)
+			this.registerView(
+				MINI_CALENDAR_VIEW_TYPE,
+				(leaf) => new MiniCalendarView(leaf, this)
+			);
+			this.registerView(
+				ADVANCED_CALENDAR_VIEW_TYPE,
+				(leaf) => new AdvancedCalendarView(leaf, this)
+			);
+			this.registerView(
+				TASK_LIST_VIEW_TYPE,
+				(leaf) => new TaskListView(leaf, this)
+			);
+			this.registerView(
+				NOTES_VIEW_TYPE,
+				(leaf) => new NotesView(leaf, this)
+			);
+			this.registerView(
+				AGENDA_VIEW_TYPE,
+				(leaf) => new AgendaView(leaf, this)
+			);
+			this.registerView(
+				POMODORO_VIEW_TYPE,
+				(leaf) => new PomodoroView(leaf, this)
+			);
+			this.registerView(
+				POMODORO_STATS_VIEW_TYPE,
+				(leaf) => new PomodoroStatsView(leaf, this)
+			);
+			this.registerView(
+				KANBAN_VIEW_TYPE,
+				(leaf) => new KanbanView(leaf, this)
+			);
 			
-			// Listen for cache initialization completion
-			this.cacheManager.on('cache-initialized', (data: any) => {
-				this.notifyDataChanged();
-			});
+			// Register essential editor extensions (now safe after layout ready)
+			this.registerEditorExtension(createTaskLinkOverlay(this));
 			
-			// Initialize FilterService and set up event listeners
+			// Initialize native cache system (lightweight - no index building)
+			this.cacheManager.initialize();
+			
+			// Initialize FilterService and set up event listeners (lightweight)
 			this.filterService.initialize();
 			
-			// Initialize Pomodoro service
-			this.pomodoroService = new PomodoroService(this);
-			await this.pomodoroService.initialize();
-			
-			// Initialize ICS subscription service
-			this.icsSubscriptionService = new ICSSubscriptionService(this);
-			await this.icsSubscriptionService.initialize();
-			
-			// Initialize editor services (async imports)
-			const { TaskLinkDetectionService } = await import('./services/TaskLinkDetectionService');
-			this.taskLinkDetectionService = new TaskLinkDetectionService(this);
-			
-			const { InstantTaskConvertService } = await import('./services/InstantTaskConvertService');
-			this.instantTaskConvertService = new InstantTaskConvertService(this);
-			
-			// Register additional editor extensions
-			const { createInstantConvertButtons } = await import('./editor/InstantConvertButtons');
-			this.registerEditorExtension(createInstantConvertButtons(this));
-			
-			// Set up global event listener for task updates to refresh editor decorations
-			this.taskUpdateListenerForEditor = this.emitter.on(EVENT_TASK_UPDATED, (data: any) => {
-				// Check if layout is ready before processing events
-				if (!this.app.workspace.layoutReady) {
-					return;
-				}
-				
-				// Trigger decoration refresh in all active markdown views using proper state effects
-				this.app.workspace.iterateRootLeaves((leaf) => {
-					// Use instanceof check for deferred view compatibility
-					if (leaf.view && leaf.view.getViewType() === 'markdown') {
-						const editor = (leaf.view as any).editor;
-						if (editor && editor.cm) {
-							// Use the proper CodeMirror state effect pattern
-							dispatchTaskUpdate(editor.cm, data?.path);
-						}
-					}
-				});
-			});
+			// Defer heavy service initialization until needed
+			this.initializeServicesLazily();
 			
 		} catch (error) {
 			console.error('Error during post-layout initialization:', error);
 		}
+	}
+
+	/**
+	 * Initialize heavy services lazily in the background
+	 */
+	private initializeServicesLazily(): void {
+		// Use setTimeout to defer initialization to next tick
+		setTimeout(async () => {
+			try {
+				// Initialize Pomodoro service
+				this.pomodoroService = new PomodoroService(this);
+				await this.pomodoroService.initialize();
+				
+				// Initialize ICS subscription service
+				this.icsSubscriptionService = new ICSSubscriptionService(this);
+				await this.icsSubscriptionService.initialize();
+				
+				// Initialize editor services (async imports)
+				const { TaskLinkDetectionService } = await import('./services/TaskLinkDetectionService');
+				this.taskLinkDetectionService = new TaskLinkDetectionService(this);
+				
+				const { InstantTaskConvertService } = await import('./services/InstantTaskConvertService');
+				this.instantTaskConvertService = new InstantTaskConvertService(this);
+				
+				// Register additional editor extensions
+				const { createInstantConvertButtons } = await import('./editor/InstantConvertButtons');
+				this.registerEditorExtension(createInstantConvertButtons(this));
+				
+				// Set up global event listener for task updates to refresh editor decorations
+				this.taskUpdateListenerForEditor = this.emitter.on(EVENT_TASK_UPDATED, (data: any) => {
+					// Check if layout is ready before processing events
+					if (!this.app.workspace.layoutReady) {
+						return;
+					}
+					
+					// Trigger decoration refresh in all active markdown views using proper state effects
+					this.app.workspace.iterateRootLeaves((leaf) => {
+						// Use instanceof check for deferred view compatibility
+						if (leaf.view && leaf.view.getViewType() === 'markdown') {
+							const editor = (leaf.view as any).editor;
+							if (editor && editor.cm) {
+								// Use the proper CodeMirror state effect pattern
+								dispatchTaskUpdate(editor.cm, data?.path);
+							}
+						}
+					});
+				});
+				
+			} catch (error) {
+				console.error('Error during lazy service initialization:', error);
+			}
+		}, 10); // Small delay to ensure startup completes first
 	}
 
 	/**
@@ -442,8 +453,12 @@ export default class TaskNotesPlugin extends Plugin {
 		);
 		
 		if (hasNewFields) {
-			// Save the migrated settings to include new field mappings
-			await this.saveData(this.settings);
+			// Save the migrated settings to include new field mappings (non-blocking)
+			setTimeout(() => {
+				this.saveData(this.settings).catch(error => {
+					console.error('Failed to save migrated settings:', error);
+				});
+			}, 100);
 		}
 		
 		// Cache setting migration is no longer needed (native cache only)
