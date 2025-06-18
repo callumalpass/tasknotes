@@ -422,6 +422,9 @@ export class MinimalNativeCache extends Events {
         const metadata = this.app.metadataCache.getFileCache(file);
         if (!metadata?.frontmatter) return null;
         
+        // Check if the note has the task tag
+        if (!metadata.frontmatter.tags?.includes(this.taskTag)) return null;
+        
         return this.extractTaskInfoFromNative(path, metadata.frontmatter);
     }
     
