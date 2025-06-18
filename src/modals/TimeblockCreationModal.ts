@@ -1,10 +1,11 @@
-import { App, Modal, Setting, Notice, TFile } from 'obsidian';
+import { App, Modal, Setting, Notice, TFile, TAbstractFile } from 'obsidian';
 import { format } from 'date-fns';
 import * as YAML from 'yaml';
 import TaskNotesPlugin from '../main';
 import { TimeBlock, DailyNoteFrontmatter } from '../types';
 import { generateTimeblockId } from '../utils/helpers';
 import { YAMLCache } from '../utils/YAMLCache';
+import { AttachmentSelectModal } from './AttachmentSelectModal';
 import { 
     createDailyNote, 
     getDailyNote, 
@@ -29,7 +30,10 @@ export class TimeblockCreationModal extends Modal {
     private endTimeInput: HTMLInputElement;
     private descriptionInput: HTMLTextAreaElement;
     private colorInput: HTMLInputElement;
-    private attachmentsInput: HTMLTextAreaElement;
+    
+    // Attachment management
+    private selectedAttachments: TAbstractFile[] = [];
+    private attachmentsList: HTMLElement;
     
     constructor(app: App, plugin: TaskNotesPlugin, options: TimeblockCreationOptions) {
         super(app);
@@ -111,24 +115,23 @@ export class TimeblockCreationModal extends Modal {
             });
 
         // Attachments (optional)
-        new Setting(contentEl)
+        const attachmentSetting = new Setting(contentEl)
             .setName('Attachments')
-            .setDesc('Markdown links to tasks or notes (one per line)')
-            .addTextArea(text => {
-                this.attachmentsInput = text.inputEl;
-                text.setPlaceholder('[[TaskNotes/Tasks/my-task]]\n[[Projects/Important Project]]')
-                    .setValue('');
-                this.attachmentsInput.rows = 3;
+            .setDesc('Files or notes to link to this timeblock')
+            .addButton(button => {
+                button.setButtonText('Add Attachment')
+                    .setTooltip('Select a file or note using fuzzy search')
+                    .onClick(() => {
+                        const modal = new AttachmentSelectModal(this.app, (file) => {
+                            this.addAttachment(file);
+                        });
+                        modal.open();
+                    });
             });
 
-        // Help text for attachments
-        const helpText = contentEl.createDiv({ cls: 'timeblock-help-text' });
-        helpText.innerHTML = `
-            <strong>Attachment formats:</strong><br>
-            • Wiki links: <code>[[Page Name]]</code><br>
-            • Markdown links: <code>[Display Text](path/to/file.md)</code><br>
-            • One link per line
-        `;
+        // Attachments list container
+        this.attachmentsList = contentEl.createDiv({ cls: 'timeblock-attachments-list' });
+        this.renderAttachmentsList(); // Initialize empty state
 
         // Buttons
         const buttonContainer = contentEl.createDiv({ cls: 'timeblock-modal-buttons' });
@@ -181,21 +184,13 @@ export class TimeblockCreationModal extends Modal {
             const endTime = this.endTimeInput.value;
             const description = this.descriptionInput.value.trim();
             const color = this.colorInput.value;
-            const attachmentsText = this.attachmentsInput.value.trim();
-
             if (!title || !startTime || !endTime) {
                 new Notice('Please fill in all required fields');
                 return;
             }
 
-            // Parse attachments
-            const attachments: string[] = [];
-            if (attachmentsText) {
-                const lines = attachmentsText.split('\n')
-                    .map(line => line.trim())
-                    .filter(line => line.length > 0);
-                attachments.push(...lines);
-            }
+            // Convert selected attachments to wikilinks
+            const attachments: string[] = this.selectedAttachments.map(file => `[[${file.path}]]`);
 
             // Create timeblock object
             const timeblock: TimeBlock = {
@@ -284,6 +279,63 @@ export class TimeblockCreationModal extends Modal {
         
         // Clear cache for this file to ensure fresh parsing
         YAMLCache.clearCacheEntry(dailyNote.path);
+    }
+
+    private addAttachment(file: TAbstractFile): void {
+        // Avoid duplicates
+        if (this.selectedAttachments.some(existing => existing.path === file.path)) {
+            new Notice(`"${file.name}" is already attached`);
+            return;
+        }
+
+        this.selectedAttachments.push(file);
+        this.renderAttachmentsList();
+        new Notice(`Added "${file.name}" as attachment`);
+    }
+
+    private removeAttachment(file: TAbstractFile): void {
+        this.selectedAttachments = this.selectedAttachments.filter(
+            existing => existing.path !== file.path
+        );
+        this.renderAttachmentsList();
+        new Notice(`Removed "${file.name}" from attachments`);
+    }
+
+    private renderAttachmentsList(): void {
+        this.attachmentsList.empty();
+
+        if (this.selectedAttachments.length === 0) {
+            const emptyState = this.attachmentsList.createDiv({ cls: 'timeblock-attachments-empty' });
+            emptyState.textContent = 'No attachments added yet';
+            return;
+        }
+
+        this.selectedAttachments.forEach(file => {
+            const attachmentItem = this.attachmentsList.createDiv({ cls: 'timeblock-attachment-item' });
+            
+            // Info container
+            const infoEl = attachmentItem.createDiv({ cls: 'timeblock-attachment-info' });
+            
+            // File name
+            const nameEl = infoEl.createSpan({ cls: 'timeblock-attachment-name' });
+            nameEl.textContent = file.name;
+            
+            // File path (if different from name)
+            if (file.path !== file.name) {
+                const pathEl = infoEl.createDiv({ cls: 'timeblock-attachment-path' });
+                pathEl.textContent = file.path;
+            }
+            
+            // Remove button
+            const removeBtn = attachmentItem.createEl('button', { 
+                cls: 'timeblock-attachment-remove',
+                text: '×'
+            });
+            removeBtn.title = 'Remove attachment';
+            removeBtn.addEventListener('click', () => {
+                this.removeAttachment(file);
+            });
+        });
     }
 
     onClose() {
