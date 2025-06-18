@@ -225,6 +225,69 @@ export class MinimalNativeCache extends Events {
     async getCalendarData(year: number, month: number): Promise<any> {
         const taskData = new Map();
         const noteData = new Map();
+        const dailyNotesSet = new Set<string>();
+        
+        // Get all markdown files for note counting
+        const markdownFiles = this.app.vault.getMarkdownFiles()
+            .filter(file => this.isValidFile(file.path));
+        
+        // Use Obsidian's daily notes interface for daily notes detection
+        try {
+            const { getAllDailyNotes } = require('obsidian-daily-notes-interface');
+            const allDailyNotes = getAllDailyNotes();
+            
+            for (const [dateStr, file] of Object.entries(allDailyNotes)) {
+                dailyNotesSet.add(dateStr);
+            }
+        } catch (e) {
+            // Daily notes interface not available, fallback to filename pattern matching
+        }
+        
+        // Process all files to extract date information for notes
+        for (const file of markdownFiles) {
+            const metadata = this.app.metadataCache.getFileCache(file);
+            if (!metadata?.frontmatter) continue;
+            
+            const frontmatter = metadata.frontmatter;
+            const isTask = frontmatter.tags?.includes(this.taskTag);
+            
+            if (!isTask && !this.disableNoteIndexing) {
+                // This is a note - extract date information
+                let noteDate: string | null = null;
+                
+                // Try to extract date from frontmatter
+                if (frontmatter.dateCreated || frontmatter.date) {
+                    const dateValue = frontmatter.dateCreated || frontmatter.date;
+                    try {
+                        const parsed = new Date(dateValue);
+                        if (!isNaN(parsed.getTime())) {
+                            noteDate = parsed.toISOString().split('T')[0];
+                        }
+                    } catch (e) {
+                        // Ignore invalid dates
+                    }
+                }
+                
+                // Check if it's a daily note by filename pattern (fallback)
+                if (!noteDate) {
+                    const fileName = file.basename;
+                    // Common daily note patterns: YYYY-MM-DD, YYYY-MM-DD HH-mm-ss, etc.
+                    const dateMatch = fileName.match(/(\d{4}-\d{2}-\d{2})/);
+                    if (dateMatch) {
+                        noteDate = dateMatch[1];
+                        dailyNotesSet.add(noteDate);
+                    }
+                }
+                
+                if (noteDate) {
+                    // Increment note count for this date
+                    const currentCount = noteData.get(noteDate) || 0;
+                    noteData.set(noteDate, currentCount + 1);
+                }
+            }
+        }
+        
+        // Build task data for the requested month
         const daysInMonth = new Date(year, month + 1, 0).getDate();
         
         for (let day = 1; day <= daysInMonth; day++) {
@@ -237,15 +300,23 @@ export class MinimalNativeCache extends Events {
                     taskPaths.map(path => this.getTaskInfo(path))
                 );
                 const validTasks = tasks.filter(task => task !== null) as TaskInfo[];
+                
                 if (validTasks.length > 0) {
-                    taskData.set(dateKey, validTasks);
+                    // Create task summary info for calendar coloring
+                    const taskSummary = {
+                        count: validTasks.length,
+                        hasDue: validTasks.some(task => task.due && !task.scheduled),
+                        hasScheduled: validTasks.some(task => task.scheduled),
+                        hasCompleted: validTasks.some(task => task.status === 'completed' || task.status === 'done'),
+                        hasArchived: validTasks.some(task => task.archived === true),
+                        tasks: validTasks
+                    };
+                    taskData.set(dateKey, taskSummary);
                 }
             }
-            
-            // Notes handled by daily notes interface - no custom indexing needed
         }
         
-        return { tasks: taskData, notes: noteData, dailyNotes: noteData };
+        return { tasks: taskData, notes: noteData, dailyNotes: dailyNotesSet };
     }
     
     /**
