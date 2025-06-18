@@ -1,10 +1,8 @@
-import { App, Modal, Setting, Notice, TFile, TAbstractFile } from 'obsidian';
+import { App, Modal, Setting, Notice, TFile, TAbstractFile, parseYaml, stringifyYaml } from 'obsidian';
 import { format } from 'date-fns';
-import * as YAML from 'yaml';
 import TaskNotesPlugin from '../main';
 import { TimeBlock, DailyNoteFrontmatter } from '../types';
 import { generateTimeblockId } from '../utils/helpers';
-import { YAMLCache } from '../utils/YAMLCache';
 import { AttachmentSelectModal } from './AttachmentSelectModal';
 import { 
     createDailyNote, 
@@ -214,8 +212,8 @@ export class TimeblockCreationModal extends Modal {
             // Save to daily note
             await this.saveTimeblockToDailyNote(timeblock);
 
-            // Refresh calendar views
-            this.plugin.emitter.emit('data-changed');
+            // Refresh calendar views  
+            this.plugin.emitter.trigger('data-changed');
 
             new Notice(`Timeblock "${title}" created successfully`);
             this.close();
@@ -254,7 +252,7 @@ export class TimeblockCreationModal extends Modal {
                 bodyContent = content.substring(endOfFrontmatter + 3);
                 
                 try {
-                    frontmatter = YAMLCache.parse(frontmatterText, dailyNote.path) || {};
+                    frontmatter = parseYaml(frontmatterText) || {};
                 } catch (error) {
                     console.error('Error parsing existing frontmatter:', error);
                     frontmatter = {};
@@ -269,7 +267,7 @@ export class TimeblockCreationModal extends Modal {
         frontmatter.timeblocks.push(timeblock);
 
         // Convert frontmatter back to YAML
-        const frontmatterText = YAML.stringify(frontmatter);
+        const frontmatterText = stringifyYaml(frontmatter);
 
         // Reconstruct file content
         const newContent = `---\n${frontmatterText}---${bodyContent}`;
@@ -277,8 +275,7 @@ export class TimeblockCreationModal extends Modal {
         // Write back to file
         await this.app.vault.modify(dailyNote, newContent);
         
-        // Clear cache for this file to ensure fresh parsing
-        YAMLCache.clearCacheEntry(dailyNote.path);
+        // The native metadata cache will automatically update
     }
 
     private addAttachment(file: TAbstractFile): void {

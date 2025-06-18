@@ -973,7 +973,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 						this.plugin.settings.calendarViewSettings.enableTimeblocking = value;
 						await this.plugin.saveSettings();
 						// Refresh calendar views to show/hide timeblock functionality
-						this.plugin.emitter.emit('timeblocking-toggled', value);
+						this.plugin.emitter.trigger('timeblocking-toggled', value);
 					});
 			});
 
