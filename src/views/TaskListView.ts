@@ -1,4 +1,4 @@
-import { Notice, TFile, ItemView, WorkspaceLeaf } from 'obsidian';
+import { Notice, TFile, ItemView, WorkspaceLeaf, EventRef } from 'obsidian';
 import TaskNotesPlugin from '../main';
 import { 
     TASK_LIST_VIEW_TYPE, 
@@ -37,7 +37,8 @@ export class TaskListView extends ItemView {
     private taskElements: Map<string, HTMLElement> = new Map();
     
     // Event listeners
-    private listeners: (() => void)[] = [];
+    private listeners: EventRef[] = [];
+    private functionListeners: (() => void)[] = [];
     
     constructor(leaf: WorkspaceLeaf, plugin: TaskNotesPlugin) {
         super(leaf);
@@ -74,8 +75,10 @@ export class TaskListView extends ItemView {
     
     registerEvents(): void {
         // Clean up any existing listeners
-        this.listeners.forEach(unsubscribe => unsubscribe());
+        this.listeners.forEach(listener => this.plugin.emitter.offref(listener));
         this.listeners = [];
+        this.functionListeners.forEach(unsubscribe => unsubscribe());
+        this.functionListeners = [];
         
         // Listen for data changes
         const dataListener = this.plugin.emitter.on(EVENT_DATA_CHANGED, () => {
@@ -125,7 +128,7 @@ export class TaskListView extends ItemView {
         const filterDataListener = this.plugin.filterService.on('data-changed', () => {
             this.refreshTasks();
         });
-        this.listeners.push(filterDataListener);
+        this.functionListeners.push(filterDataListener);
     }
     
     async onOpen() {
@@ -176,7 +179,8 @@ export class TaskListView extends ItemView {
     
     async onClose() {
         // Remove event listeners
-        this.listeners.forEach(unsubscribe => unsubscribe());
+        this.listeners.forEach(listener => this.plugin.emitter.offref(listener));
+        this.functionListeners.forEach(unsubscribe => unsubscribe());
         
         // Clean up FilterBar
         if (this.filterBar) {

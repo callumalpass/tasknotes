@@ -321,7 +321,7 @@ export function createTaskCard(task: TaskInfo, plugin: TaskNotesPlugin, options:
 export async function showTaskContextMenu(event: MouseEvent, taskPath: string, plugin: TaskNotesPlugin, targetDate: Date) {
     try {
         // Always fetch fresh task data - ignore any stale captured data
-        const task = await plugin.cacheManager.getTaskInfo(taskPath, true);
+        const task = await plugin.cacheManager.getTaskInfo(taskPath);
         if (!task) {
             console.error(`No task found for path: ${taskPath}`);
             return;

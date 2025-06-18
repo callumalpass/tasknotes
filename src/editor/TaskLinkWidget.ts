@@ -154,9 +154,8 @@ export class TaskLinkWidget extends WidgetType {
                     this.plugin.app.workspace.getLeaf(false).openFile(file);
                 }
             } else {
-                // Left-click: Open edit modal with fresh data
-                const freshTask = await this.plugin.cacheManager.getTaskInfo(this.taskInfo.path, true);
-                await this.plugin.openTaskEditModal(freshTask || this.taskInfo);
+                // Left-click: Open edit modal
+                await this.plugin.openTaskEditModal(this.taskInfo);
             }
         });
         
@@ -204,9 +203,8 @@ export class TaskLinkWidget extends WidgetType {
             await showTaskContextMenu(event, this.taskInfo.path, this.plugin, targetDate);
         } catch (error) {
             console.error(`Error showing context menu for task ${this.taskInfo.path}:`, error);
-            // Fallback to edit modal with fresh data
-            const freshTask = await this.plugin.cacheManager.getTaskInfo(this.taskInfo.path, true);
-            await this.plugin.openTaskEditModal(freshTask || this.taskInfo);
+            // Fallback to edit modal
+            await this.plugin.openTaskEditModal(this.taskInfo);
         }
     }
 

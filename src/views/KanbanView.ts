@@ -1,4 +1,4 @@
-import { ItemView, WorkspaceLeaf, Notice, Menu } from 'obsidian';
+import { ItemView, WorkspaceLeaf, Notice, Menu, EventRef } from 'obsidian';
 import TaskNotesPlugin from '../main';
 import { 
     KANBAN_VIEW_TYPE, 
@@ -24,7 +24,8 @@ export class KanbanView extends ItemView {
     private previousGroupKey: string | null = null;
 
     // Event listeners
-    private listeners: (() => void)[] = [];
+    private listeners: EventRef[] = [];
+    private functionListeners: (() => void)[] = [];
 
     constructor(leaf: WorkspaceLeaf, plugin: TaskNotesPlugin) {
         super(leaf);
@@ -62,8 +63,10 @@ export class KanbanView extends ItemView {
     }
 
     registerEvents(): void {
-        this.listeners.forEach(unsubscribe => unsubscribe());
+        this.listeners.forEach(listener => this.plugin.emitter.offref(listener));
         this.listeners = [];
+        this.functionListeners.forEach(unsubscribe => unsubscribe());
+        this.functionListeners = [];
 
         const dataListener = this.plugin.emitter.on(EVENT_DATA_CHANGED, () => this.refresh());
         this.listeners.push(dataListener);
@@ -103,7 +106,7 @@ export class KanbanView extends ItemView {
         const filterDataListener = this.plugin.filterService.on('data-changed', () => {
             this.refresh();
         });
-        this.listeners.push(filterDataListener);
+        this.functionListeners.push(filterDataListener);
     }
 
     async onOpen() {
@@ -123,7 +126,8 @@ export class KanbanView extends ItemView {
     }
 
     async onClose() {
-        this.listeners.forEach(unsubscribe => unsubscribe());
+        this.listeners.forEach(listener => this.plugin.emitter.offref(listener));
+        this.functionListeners.forEach(unsubscribe => unsubscribe());
         if (this.refreshTimeout) {
             clearTimeout(this.refreshTimeout);
             this.refreshTimeout = null;
@@ -554,7 +558,7 @@ export class KanbanView extends ItemView {
 
             if (taskPath && targetColumnId && targetColumnId !== 'uncategorized') {
                 // Get task from cache since we no longer maintain local tasks array
-                const task = this.plugin.cacheManager.getCachedTaskInfo(taskPath);
+                const task = await this.plugin.cacheManager.getCachedTaskInfo(taskPath);
                 if (task) {
                     try {
                         // Map current grouping to actual TaskInfo property

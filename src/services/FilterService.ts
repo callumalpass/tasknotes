@@ -1,10 +1,10 @@
 import { FilterQuery, TaskInfo, TaskSortKey, TaskGroupKey, SortDirection } from '../types';
-import { CacheManager } from '../utils/CacheManager';
+import { MinimalNativeCache } from '../utils/MinimalNativeCache';
 import { StatusManager } from './StatusManager';
 import { PriorityManager } from './PriorityManager';
 import { EventEmitter } from '../utils/EventEmitter';
 import { isRecurringTaskDueOn, isTaskOverdue } from '../utils/helpers';
-import { format, isToday, isBefore, parseISO } from 'date-fns';
+import { format, isToday } from 'date-fns';
 import { 
     parseDate, 
     getTodayString, 
@@ -24,12 +24,12 @@ import {
  * Provides performance-optimized data retrieval using CacheManager indexes.
  */
 export class FilterService extends EventEmitter {
-    private cacheManager: CacheManager;
+    private cacheManager: MinimalNativeCache;
     private statusManager: StatusManager;
     private priorityManager: PriorityManager;
 
     constructor(
-        cacheManager: CacheManager,
+        cacheManager: MinimalNativeCache,
         statusManager: StatusManager,
         priorityManager: PriorityManager
     ) {
@@ -64,7 +64,8 @@ export class FilterService extends EventEmitter {
     private async getInitialTaskSet(query: FilterQuery): Promise<Set<string>> {
         // Strategy 1: Use specific status index
         if (query.statuses && query.statuses.length === 1) {
-            const statusPaths = this.cacheManager.getTaskPathsByStatus(query.statuses[0]);
+            const statusPathsArray = this.cacheManager.getTaskPathsByStatus(query.statuses[0]);
+            const statusPaths = new Set(statusPathsArray);
             if (statusPaths.size > 0) {
                 return statusPaths;
             }
@@ -72,8 +73,8 @@ export class FilterService extends EventEmitter {
             // Multiple statuses: combine their index sets
             const combinedPaths = new Set<string>();
             for (const status of query.statuses) {
-                const statusPaths = this.cacheManager.getTaskPathsByStatus(status);
-                statusPaths.forEach(path => combinedPaths.add(path));
+                const statusPathsArray = this.cacheManager.getTaskPathsByStatus(status);
+                statusPathsArray.forEach(path => combinedPaths.add(path));
             }
             if (combinedPaths.size > 0) {
                 return combinedPaths;
@@ -82,7 +83,8 @@ export class FilterService extends EventEmitter {
 
         // Strategy 2: Use priority index if specific priorities requested
         if (query.priorities && query.priorities.length === 1) {
-            const priorityPaths = this.cacheManager.getTaskPathsByPriority(query.priorities[0]);
+            const priorityPathsArray = this.cacheManager.getTaskPathsByPriority(query.priorities[0]);
+            const priorityPaths = new Set(priorityPathsArray);
             if (priorityPaths.size > 0) {
                 return priorityPaths;
             }
@@ -613,7 +615,7 @@ export class FilterService extends EventEmitter {
         return {
             statuses: this.cacheManager.getAllStatuses(),
             priorities: this.cacheManager.getAllPriorities(),
-            contexts: await this.cacheManager.getAllContexts()
+            contexts: this.cacheManager.getAllContexts()
         };
     }
 
@@ -657,15 +659,15 @@ export class FilterService extends EventEmitter {
      * Subscribe to cache changes and emit refresh events
      */
     initialize(): void {
-        this.cacheManager.subscribe('file-updated', () => {
+        this.cacheManager.on('file-updated', () => {
             this.emit('data-changed');
         });
         
-        this.cacheManager.subscribe('file-added', () => {
+        this.cacheManager.on('file-added', () => {
             this.emit('data-changed');
         });
         
-        this.cacheManager.subscribe('file-deleted', () => {
+        this.cacheManager.on('file-deleted', () => {
             this.emit('data-changed');
         });
     }

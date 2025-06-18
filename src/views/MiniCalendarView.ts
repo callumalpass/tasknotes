@@ -1,4 +1,4 @@
-import { Notice, TFile, ItemView, WorkspaceLeaf, normalizePath } from 'obsidian';
+import { Notice, TFile, ItemView, WorkspaceLeaf, normalizePath, EventRef } from 'obsidian';
 import { format } from 'date-fns';
 import TaskNotesPlugin from '../main';
 import { getAllDailyNotes, getDailyNote } from 'obsidian-daily-notes-interface';
@@ -34,7 +34,7 @@ export class MiniCalendarView extends ItemView {
     private displayedYear: number;
     
     // Event listeners
-    private listeners: (() => void)[] = [];
+    private listeners: EventRef[] = [];
     
     // Performance optimizations
     private monthCalculationCache: Map<string, { actualMonth: number; dateObj: Date; dateKey: string }> = new Map();
@@ -58,7 +58,7 @@ export class MiniCalendarView extends ItemView {
     
     registerEvents(): void {
         // Clean up any existing listeners
-        this.listeners.forEach(unsubscribe => unsubscribe());
+        this.listeners.forEach(listener => this.plugin.emitter.offref(listener));
         this.listeners = [];
         
         // Listen for data changes
@@ -200,7 +200,7 @@ export class MiniCalendarView extends ItemView {
   
     async onClose() {
         // Remove event listeners
-        this.listeners.forEach(unsubscribe => unsubscribe());
+        this.listeners.forEach(listener => this.plugin.emitter.offref(listener));
         
         // Clean up caches and references
         this.monthCalculationCache.clear();
@@ -917,8 +917,12 @@ export class MiniCalendarView extends ItemView {
         
         if (!MiniCalendarView.dailyNotesInitialized) {
             // Use the targeted rebuild method instead of rebuilding the entire index
-            dailyNotesCache = await this.plugin.cacheManager.rebuildDailyNotesCache(currentYear, currentMonth);
+            await this.plugin.cacheManager.rebuildDailyNotesCache(currentYear, currentMonth);
             MiniCalendarView.dailyNotesInitialized = true;
+            
+            // Get calendar data after rebuild
+            const calendarData = await this.plugin.cacheManager.getCalendarData(currentYear, currentMonth);
+            dailyNotesCache = calendarData.dailyNotes;
         } else {
             // Get calendar data from file indexer
             const calendarData = await this.plugin.cacheManager.getCalendarData(currentYear, currentMonth);
@@ -1302,7 +1306,6 @@ source: 'tasknotes-calendar',
                 // Update the task's due date
                 await this.plugin.taskService.updateProperty(task, 'due', dueDate);
                 
-                console.log(`Task "${task.title}" due date set to ${dueDate}`);
                 
                 // Show success feedback
                 new Notice(`Task "${task.title}" due date set to ${format(dayDate, 'MMM d, yyyy')}`);

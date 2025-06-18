@@ -1,4 +1,4 @@
-import { Notice, TFile, ItemView, WorkspaceLeaf, setIcon } from 'obsidian';
+import { Notice, TFile, ItemView, WorkspaceLeaf, setIcon, EventRef } from 'obsidian';
 import { format } from 'date-fns';
 import TaskNotesPlugin from '../main';
 import { 
@@ -21,7 +21,7 @@ export class NotesView extends ItemView {
     private isNotesLoading: boolean = false;
     
     // Event listeners
-    private listeners: (() => void)[] = [];
+    private listeners: EventRef[] = [];
     
     constructor(leaf: WorkspaceLeaf, plugin: TaskNotesPlugin) {
         super(leaf);
@@ -45,7 +45,7 @@ export class NotesView extends ItemView {
     
     registerEvents(): void {
         // Clean up any existing listeners
-        this.listeners.forEach(unsubscribe => unsubscribe());
+        this.listeners.forEach(listener => this.plugin.emitter.offref(listener));
         this.listeners = [];
         
         // Listen for date selection changes - force a full refresh when date changes
@@ -69,7 +69,7 @@ export class NotesView extends ItemView {
     
     async onClose() {
         // Remove event listeners
-        this.listeners.forEach(unsubscribe => unsubscribe());
+        this.listeners.forEach(listener => this.plugin.emitter.offref(listener));
         this.contentEl.empty();
     }
     
@@ -181,14 +181,26 @@ export class NotesView extends ItemView {
             const emptyState = notesList.createDiv({ cls: 'notes-view__empty' });
             const emptyIcon = emptyState.createDiv({ cls: 'notes-view__empty-icon' });
             setIcon(emptyIcon, 'file-text');
-            emptyState.createEl('h3', {
-                text: 'No Notes Found',
-                cls: 'notes-view__empty-title'
-            });
-            emptyState.createEl('p', {
-                text: 'No notes found for the selected date. Try selecting a different date or create some notes.',
-                cls: 'notes-view__empty-description'
-            });
+            
+            if (this.plugin.settings.disableNoteIndexing) {
+                emptyState.createEl('h3', {
+                    text: 'Note Indexing Disabled',
+                    cls: 'notes-view__empty-title'
+                });
+                emptyState.createEl('p', {
+                    text: 'Note indexing has been disabled in settings for better performance. To view notes, enable note indexing in Settings > TaskNotes > General > Performance settings and restart the plugin.',
+                    cls: 'notes-view__empty-description'
+                });
+            } else {
+                emptyState.createEl('h3', {
+                    text: 'No Notes Found',
+                    cls: 'notes-view__empty-title'
+                });
+                emptyState.createEl('p', {
+                    text: 'No notes found for the selected date. Try selecting a different date or create some notes.',
+                    cls: 'notes-view__empty-description'
+                });
+            }
         } else {
             // Create a div to hold all note items
             const notesContainer = notesList.createDiv({ cls: 'notes-view__container' });
@@ -261,8 +273,13 @@ export class NotesView extends ItemView {
             this.isNotesLoading = true;
             this.updateLoadingState();
             
+            // Check if note indexing is disabled
+            if (this.plugin.settings.disableNoteIndexing) {
+                return [];
+            }
+            
             // Use the CacheManager to get notes information for the specific date
-            const notes = await this.plugin.cacheManager.getNotesForDate(this.plugin.selectedDate, forceRefresh);
+            const notes = await this.plugin.cacheManager.getNotesForDate(this.plugin.selectedDate);
             
             // Include all notes (both regular notes and daily notes)
             const filteredNotes = notes;

@@ -47,9 +47,7 @@ import {
 	calculateTotalTimeSpent,
 	getActiveTimeEntry
 } from './utils/helpers';
-import { EventEmitter } from './utils/EventEmitter';
-import { YAMLCache } from './utils/YAMLCache';
-import { CacheManager } from './utils/CacheManager';
+import { MinimalNativeCache } from './utils/MinimalNativeCache';
 import { RequestDeduplicator, PredictivePrefetcher } from './utils/RequestDeduplicator';
 import { DOMReconciler, UIStateManager } from './utils/DOMReconciler';
 import { perfMonitor } from './utils/PerformanceMonitor';
@@ -74,11 +72,9 @@ export default class TaskNotesPlugin extends Plugin {
 	// Shared state between views
 	selectedDate: Date = new Date();
 	
-	// Event emitter for view communication
-	emitter = new EventEmitter();
-	
-	// Unified cache manager
-	cacheManager: CacheManager;
+	// Minimal native cache manager (also handles events)
+	cacheManager: MinimalNativeCache;
+	emitter: MinimalNativeCache;
 	
 	// Performance optimization utilities
 	requestDeduplicator: RequestDeduplicator;
@@ -109,8 +105,11 @@ export default class TaskNotesPlugin extends Plugin {
 	// ICS subscription service
 	icsSubscriptionService: ICSSubscriptionService;
 	
-	// Event listener cleanup
-	private taskUpdateListenerForEditor: (() => void) | null = null;
+	// Event listener cleanup  
+	private taskUpdateListenerForEditor: any = null;
+	
+	// Initialization guard to prevent duplicate initialization
+	private initializationComplete = false;
 	
 	async onload() {
 		// Create the promise and store its resolver
@@ -131,13 +130,17 @@ export default class TaskNotesPlugin extends Plugin {
 		this.domReconciler = new DOMReconciler();
 		this.uiStateManager = new UIStateManager();
 		
-		// Initialize cache manager but don't start expensive initialization yet
-		this.cacheManager = new CacheManager(
-			this.app.vault,
+		// Initialize minimal native cache manager
+		this.cacheManager = new MinimalNativeCache(
+			this.app,
 			this.settings.taskTag,
 			this.settings.excludedFolders,
-			this.fieldMapper
+			this.fieldMapper,
+			this.settings.disableNoteIndexing
 		);
+		
+		// Use same instance for event emitting
+		this.emitter = this.cacheManager;
 		
 		// Initialize business logic services (lightweight constructors)
 		this.taskService = new TaskService(this);
@@ -149,45 +152,7 @@ export default class TaskNotesPlugin extends Plugin {
 		this.viewStateManager = new ViewStateManager();
 		this.dragDropManager = new DragDropManager(this);
 		
-		// Inject dynamic styles for custom statuses and priorities
-		this.injectCustomStyles();
-
-		// Register view types
-		this.registerView(
-			MINI_CALENDAR_VIEW_TYPE,
-			(leaf) => new MiniCalendarView(leaf, this)
-		);
-		this.registerView(
-			ADVANCED_CALENDAR_VIEW_TYPE,
-			(leaf) => new AdvancedCalendarView(leaf, this)
-		);
-		this.registerView(
-			TASK_LIST_VIEW_TYPE,
-			(leaf) => new TaskListView(leaf, this)
-		);
-		this.registerView(
-			NOTES_VIEW_TYPE,
-			(leaf) => new NotesView(leaf, this)
-		);
-		this.registerView(
-			AGENDA_VIEW_TYPE,
-			(leaf) => new AgendaView(leaf, this)
-		);
-		this.registerView(
-			POMODORO_VIEW_TYPE,
-			(leaf) => new PomodoroView(leaf, this)
-		);
-		this.registerView(
-			POMODORO_STATS_VIEW_TYPE,
-			(leaf) => new PomodoroStatsView(leaf, this)
-		);
-		this.registerView(
-			KANBAN_VIEW_TYPE,
-			(leaf) => new KanbanView(leaf, this)
-		);
-		
-		// Register essential editor extensions (lightweight)
-		this.registerEditorExtension(createTaskLinkOverlay(this));
+		// Note: View registration and heavy operations moved to onLayoutReady
 		
 		// Add ribbon icon
 		this.addRibbonIcon('calendar-days', 'Open calendar', async () => {
@@ -214,65 +179,117 @@ export default class TaskNotesPlugin extends Plugin {
 	 * Initialize expensive operations after layout is ready
 	 */
 	private async initializeAfterLayoutReady(): Promise<void> {
+		// Guard against multiple initialization calls
+		if (this.initializationComplete) {
+			return;
+		}
+		this.initializationComplete = true;
+		
 		try {
-			// Initialize cache and wait for completion
-			await perfMonitor.measure('cache-initialization', async () => {
-				await this.cacheManager.initializeCache();
-			});
+			// Inject dynamic styles for custom statuses and priorities
+			this.injectCustomStyles();
+
+			// Register view types (now safe after layout ready)
+			this.registerView(
+				MINI_CALENDAR_VIEW_TYPE,
+				(leaf) => new MiniCalendarView(leaf, this)
+			);
+			this.registerView(
+				ADVANCED_CALENDAR_VIEW_TYPE,
+				(leaf) => new AdvancedCalendarView(leaf, this)
+			);
+			this.registerView(
+				TASK_LIST_VIEW_TYPE,
+				(leaf) => new TaskListView(leaf, this)
+			);
+			this.registerView(
+				NOTES_VIEW_TYPE,
+				(leaf) => new NotesView(leaf, this)
+			);
+			this.registerView(
+				AGENDA_VIEW_TYPE,
+				(leaf) => new AgendaView(leaf, this)
+			);
+			this.registerView(
+				POMODORO_VIEW_TYPE,
+				(leaf) => new PomodoroView(leaf, this)
+			);
+			this.registerView(
+				POMODORO_STATS_VIEW_TYPE,
+				(leaf) => new PomodoroStatsView(leaf, this)
+			);
+			this.registerView(
+				KANBAN_VIEW_TYPE,
+				(leaf) => new KanbanView(leaf, this)
+			);
 			
-			// Listen for delayed cache initialization completion
-			this.cacheManager.subscribe('cache-initialized', (data) => {
-				if (data.taskCount > 0) {
-					// Notify all views to refresh
-					this.notifyDataChanged();
-				}
-			});
+			// Register essential editor extensions (now safe after layout ready)
+			this.registerEditorExtension(createTaskLinkOverlay(this));
 			
-			// Initialize FilterService and set up event listeners
+			// Initialize native cache system (lightweight - no index building)
+			this.cacheManager.initialize();
+			
+			// Initialize FilterService and set up event listeners (lightweight)
 			this.filterService.initialize();
 			
-			// Initialize Pomodoro service
-			this.pomodoroService = new PomodoroService(this);
-			await this.pomodoroService.initialize();
-			
-			// Initialize ICS subscription service
-			this.icsSubscriptionService = new ICSSubscriptionService(this);
-			await this.icsSubscriptionService.initialize();
-			
-			// Initialize editor services (async imports)
-			const { TaskLinkDetectionService } = await import('./services/TaskLinkDetectionService');
-			this.taskLinkDetectionService = new TaskLinkDetectionService(this);
-			
-			const { InstantTaskConvertService } = await import('./services/InstantTaskConvertService');
-			this.instantTaskConvertService = new InstantTaskConvertService(this);
-			
-			// Register additional editor extensions
-			const { createInstantConvertButtons } = await import('./editor/InstantConvertButtons');
-			this.registerEditorExtension(createInstantConvertButtons(this));
-			
-			// Set up global event listener for task updates to refresh editor decorations
-			this.taskUpdateListenerForEditor = this.emitter.on(EVENT_TASK_UPDATED, (data) => {
-				// Check if layout is ready before processing events
-				if (!this.app.workspace.layoutReady) {
-					return;
-				}
-				
-				// Trigger decoration refresh in all active markdown views using proper state effects
-				this.app.workspace.iterateRootLeaves((leaf) => {
-					// Use instanceof check for deferred view compatibility
-					if (leaf.view && leaf.view.getViewType() === 'markdown') {
-						const editor = (leaf.view as any).editor;
-						if (editor && editor.cm) {
-							// Use the proper CodeMirror state effect pattern
-							dispatchTaskUpdate(editor.cm, data?.path);
-						}
-					}
-				});
-			});
+			// Defer heavy service initialization until needed
+			this.initializeServicesLazily();
 			
 		} catch (error) {
 			console.error('Error during post-layout initialization:', error);
 		}
+	}
+
+	/**
+	 * Initialize heavy services lazily in the background
+	 */
+	private initializeServicesLazily(): void {
+		// Use setTimeout to defer initialization to next tick
+		setTimeout(async () => {
+			try {
+				// Initialize Pomodoro service
+				this.pomodoroService = new PomodoroService(this);
+				await this.pomodoroService.initialize();
+				
+				// Initialize ICS subscription service
+				this.icsSubscriptionService = new ICSSubscriptionService(this);
+				await this.icsSubscriptionService.initialize();
+				
+				// Initialize editor services (async imports)
+				const { TaskLinkDetectionService } = await import('./services/TaskLinkDetectionService');
+				this.taskLinkDetectionService = new TaskLinkDetectionService(this);
+				
+				const { InstantTaskConvertService } = await import('./services/InstantTaskConvertService');
+				this.instantTaskConvertService = new InstantTaskConvertService(this);
+				
+				// Register additional editor extensions
+				const { createInstantConvertButtons } = await import('./editor/InstantConvertButtons');
+				this.registerEditorExtension(createInstantConvertButtons(this));
+				
+				// Set up global event listener for task updates to refresh editor decorations
+				this.taskUpdateListenerForEditor = this.emitter.on(EVENT_TASK_UPDATED, (data: any) => {
+					// Check if layout is ready before processing events
+					if (!this.app.workspace.layoutReady) {
+						return;
+					}
+					
+					// Trigger decoration refresh in all active markdown views using proper state effects
+					this.app.workspace.iterateRootLeaves((leaf) => {
+						// Use instanceof check for deferred view compatibility
+						if (leaf.view && leaf.view.getViewType() === 'markdown') {
+							const editor = (leaf.view as any).editor;
+							if (editor && editor.cm) {
+								// Use the proper CodeMirror state effect pattern
+								dispatchTaskUpdate(editor.cm, data?.path);
+							}
+						}
+					});
+				});
+				
+			} catch (error) {
+				console.error('Error during lazy service initialization:', error);
+			}
+		}, 10); // Small delay to ensure startup completes first
 	}
 
 	/**
@@ -294,7 +311,7 @@ export default class TaskNotesPlugin extends Plugin {
 	 */
 	setSelectedDate(date: Date): void {
 		this.selectedDate = date;
-		this.emitter.emit(EVENT_DATE_SELECTED, date);
+		this.emitter.trigger(EVENT_DATE_SELECTED, date);
 	}
 	
 	/**
@@ -304,12 +321,9 @@ export default class TaskNotesPlugin extends Plugin {
 	 * @param triggerRefresh Whether to trigger a full UI refresh (default true)
 	 */
 	notifyDataChanged(filePath?: string, force: boolean = false, triggerRefresh: boolean = true): void {
-		// Clear cache entries for unified cache manager
+		// Clear cache entries for native cache manager
 		if (filePath) {
 			this.cacheManager.clearCacheEntry(filePath);
-			
-			// Clear YAML parsing cache
-			YAMLCache.clearCacheEntry(filePath);
 			
 			// Clear task link detection cache for this file
 			if (this.taskLinkDetectionService) {
@@ -329,7 +343,7 @@ export default class TaskNotesPlugin extends Plugin {
 		if (triggerRefresh) {
 			// Use requestAnimationFrame for better UI timing instead of setTimeout
 			requestAnimationFrame(() => {
-				this.emitter.emit(EVENT_DATA_CHANGED);
+				this.emitter.trigger(EVENT_DATA_CHANGED);
 			});
 		}
 	}
@@ -371,7 +385,7 @@ export default class TaskNotesPlugin extends Plugin {
 			this.viewStateManager.cleanup();
 		}
 		
-		// Clean up unified cache manager
+		// Clean up native cache manager
 		if (this.cacheManager) {
 			this.cacheManager.destroy();
 		}
@@ -398,15 +412,25 @@ export default class TaskNotesPlugin extends Plugin {
 		
 		// Clean up task update listener for editor
 		if (this.taskUpdateListenerForEditor) {
-			this.taskUpdateListenerForEditor();
+			this.emitter.off(EVENT_TASK_UPDATED, this.taskUpdateListenerForEditor);
 		}
 		
-		// Clean up the event emitter
-		this.emitter.removeAllListeners();
+		// Clean up the event emitter (native Events class)
+		if (this.emitter && typeof this.emitter.off === 'function') {
+			// Native Events cleanup happens automatically
+		}
+		
+		// Reset initialization flag for potential reload
+		this.initializationComplete = false;
 	}
 
 	async loadSettings() {
 		const loadedData = await this.loadData();
+		
+		// Migration: Remove old useNativeMetadataCache setting if it exists
+		if (loadedData && 'useNativeMetadataCache' in loadedData) {
+			delete loadedData.useNativeMetadataCache;
+		}
 		
 		// Deep merge settings with proper migration for nested objects
 		this.settings = {
@@ -429,9 +453,15 @@ export default class TaskNotesPlugin extends Plugin {
 		);
 		
 		if (hasNewFields) {
-			// Save the migrated settings to include new field mappings
-			await this.saveData(this.settings);
+			// Save the migrated settings to include new field mappings (non-blocking)
+			setTimeout(() => {
+				this.saveData(this.settings).catch(error => {
+					console.error('Failed to save migrated settings:', error);
+				});
+			}, 100);
 		}
+		
+		// Cache setting migration is no longer needed (native cache only)
 	}
 
 	async saveSettings() {
@@ -452,7 +482,8 @@ export default class TaskNotesPlugin extends Plugin {
 		this.cacheManager.updateConfig(
 			this.settings.taskTag,
 			this.settings.excludedFolders,
-			this.fieldMapper
+			this.fieldMapper,
+			this.settings.disableNoteIndexing
 		);
 		
 		// Update custom styles
@@ -715,14 +746,8 @@ export default class TaskNotesPlugin extends Plugin {
 					const year = date.getFullYear();
 					const month = date.getMonth();
 					
-					// Rebuild the daily notes cache for this month
-					try {
-						await this.cacheManager.rebuildDailyNotesCache(year, month);
-						// Notify views that data has changed to trigger a UI refresh
-						this.notifyDataChanged(dailyNote.path, false, true);
-					} catch (e) {
-						console.error('Error rebuilding daily notes cache:', e);
-					}
+					// Notify views that data has changed to trigger a UI refresh
+					this.notifyDataChanged(dailyNote.path, false, true);
 				}
 			}
 		} catch (error) {
@@ -902,11 +927,8 @@ private injectCustomStyles(): void {
 	 * Opens the task edit modal for a specific task
 	 */
 	async openTaskEditModal(task: TaskInfo) {
-		// Always fetch fresh task data from file system to ensure we have the latest values
-		const freshTask = await this.cacheManager.getTaskInfo(task.path, true);
-		const taskToEdit = freshTask || task; // Fallback to original if file read fails
-		
-		new TaskEditModal(this.app, this, taskToEdit).open();
+		// With native cache, task data is always current - no need to refetch
+		new TaskEditModal(this.app, this, task).open();
 	}
 
 	/**
@@ -941,11 +963,7 @@ private injectCustomStyles(): void {
 			const loadingNotice = new Notice('Refreshing TaskNotes cache...', 0);
 			
 			// Clear all caches
-			this.cacheManager.clearAllCaches();
-			YAMLCache.clearCache();
-			
-			// Re-initialize the cache
-			await this.cacheManager.initializeCache();
+			await this.cacheManager.clearAllCaches();
 			
 			// Notify all views to refresh
 			this.notifyDataChanged(undefined, true, true);

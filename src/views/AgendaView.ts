@@ -1,5 +1,5 @@
-import { Notice, TFile, ItemView, WorkspaceLeaf, Menu } from 'obsidian';
-import { format, addDays, startOfWeek, endOfWeek, isToday, isSameDay, isBefore, parseISO } from 'date-fns';
+import { Notice, TFile, ItemView, WorkspaceLeaf, Menu, EventRef } from 'obsidian';
+import { format, addDays, startOfWeek, endOfWeek, isToday, isSameDay } from 'date-fns';
 import TaskNotesPlugin from '../main';
 import { 
     AGENDA_VIEW_TYPE,
@@ -32,7 +32,8 @@ export class AgendaView extends ItemView {
     private currentQuery: FilterQuery;
     
     // Event listeners
-    private listeners: (() => void)[] = [];
+    private listeners: EventRef[] = [];
+    private functionListeners: (() => void)[] = [];
     
     constructor(leaf: WorkspaceLeaf, plugin: TaskNotesPlugin) {
         super(leaf);
@@ -58,8 +59,10 @@ export class AgendaView extends ItemView {
     
     registerEvents(): void {
         // Clean up any existing listeners
-        this.listeners.forEach(unsubscribe => unsubscribe());
+        this.listeners.forEach(listener => this.plugin.emitter.offref(listener));
         this.listeners = [];
+        this.functionListeners.forEach(unsubscribe => unsubscribe());
+        this.functionListeners = [];
         
         // Listen for data changes
         const dataListener = this.plugin.emitter.on(EVENT_DATA_CHANGED, () => {
@@ -87,7 +90,7 @@ export class AgendaView extends ItemView {
         const filterDataListener = this.plugin.filterService.on('data-changed', () => {
             this.refresh();
         });
-        this.listeners.push(filterDataListener);
+        this.functionListeners.push(filterDataListener);
     }
     
     getViewType(): string {
@@ -138,7 +141,8 @@ export class AgendaView extends ItemView {
     
     async onClose() {
         // Remove event listeners
-        this.listeners.forEach(unsubscribe => unsubscribe());
+        this.listeners.forEach(listener => this.plugin.emitter.offref(listener));
+        this.functionListeners.forEach(unsubscribe => unsubscribe());
         
         // Clean up FilterBar
         if (this.filterBar) {
@@ -307,19 +311,21 @@ export class AgendaView extends ItemView {
             this.refresh();
         });
         
-        // Show notes toggle
-        const notesToggle = rightControls.createEl('label', { cls: 'agenda-view__toggle' });
-        const notesCheckbox = notesToggle.createEl('input', { 
-            type: 'checkbox',
-            cls: 'agenda-view__toggle-checkbox'
-        });
-        notesCheckbox.checked = this.showNotes;
-        notesToggle.createSpan({ text: 'Show notes' });
-        
-        notesCheckbox.addEventListener('change', () => {
-            this.showNotes = notesCheckbox.checked;
-            this.refresh();
-        });
+        // Show notes toggle (only show if note indexing is enabled)
+        if (!this.plugin.settings.disableNoteIndexing) {
+            const notesToggle = rightControls.createEl('label', { cls: 'agenda-view__toggle' });
+            const notesCheckbox = notesToggle.createEl('input', { 
+                type: 'checkbox',
+                cls: 'agenda-view__toggle-checkbox'
+            });
+            notesCheckbox.checked = this.showNotes;
+            notesToggle.createSpan({ text: 'Show notes' });
+            
+            notesCheckbox.addEventListener('change', () => {
+                this.showNotes = notesCheckbox.checked;
+                this.refresh();
+            });
+        }
     }
     
     /**
@@ -334,7 +340,7 @@ export class AgendaView extends ItemView {
      * Add notes to agenda data by fetching notes for each specific date
      */
     private async addNotesToAgendaData(agendaData: Array<{date: Date; tasks: TaskInfo[]}>): Promise<Array<{date: Date; tasks: TaskInfo[]; notes: NoteInfo[]}>> {
-        if (!this.showNotes) {
+        if (!this.showNotes || this.plugin.settings.disableNoteIndexing) {
             return agendaData.map(dayData => ({ ...dayData, notes: [] }));
         }
 

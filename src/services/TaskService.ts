@@ -127,7 +127,7 @@ export class TaskService {
             await this.plugin.cacheManager.updateTaskInfoInCache(file.path, taskInfo);
 
             // Emit task created event
-            this.plugin.emitter.emit(EVENT_TASK_UPDATED, {
+            this.plugin.emitter.trigger(EVENT_TASK_UPDATED, {
                 path: file.path,
                 updatedTask: taskInfo
             });
@@ -244,7 +244,7 @@ export class TaskService {
             }
             
             // Get fresh task data to prevent overwrites
-            const freshTask = await this.plugin.cacheManager.getTaskInfo(task.path, true) || task;
+            const freshTask = await this.plugin.cacheManager.getTaskInfo(task.path) || task;
             
             // Step 1: Construct new state in memory using fresh data
             const updatedTask = { ...freshTask } as Record<string, any>;
@@ -305,7 +305,7 @@ export class TaskService {
             
             // Step 4: Notify system of change
             try {
-                this.plugin.emitter.emit(EVENT_TASK_UPDATED, {
+                this.plugin.emitter.trigger(EVENT_TASK_UPDATED, {
                     path: task.path,
                     originalTask: task,
                     updatedTask: updatedTask as TaskInfo
@@ -400,7 +400,7 @@ export class TaskService {
         await this.plugin.cacheManager.updateTaskInfoInCache(task.path, updatedTask);
         
         // Step 4: Notify system of change
-        this.plugin.emitter.emit(EVENT_TASK_UPDATED, {
+        this.plugin.emitter.trigger(EVENT_TASK_UPDATED, {
             path: task.path,
             originalTask: task,
             updatedTask: updatedTask
@@ -457,7 +457,7 @@ export class TaskService {
         await this.plugin.cacheManager.updateTaskInfoInCache(task.path, updatedTask);
         
         // Step 4: Notify system of change
-        this.plugin.emitter.emit(EVENT_TASK_UPDATED, {
+        this.plugin.emitter.trigger(EVENT_TASK_UPDATED, {
             path: task.path,
             originalTask: task,
             updatedTask: updatedTask
@@ -520,7 +520,7 @@ export class TaskService {
         await this.plugin.cacheManager.updateTaskInfoInCache(task.path, updatedTask);
         
         // Step 4: Notify system of change
-        this.plugin.emitter.emit(EVENT_TASK_UPDATED, {
+        this.plugin.emitter.trigger(EVENT_TASK_UPDATED, {
             path: task.path,
             originalTask: task,
             updatedTask: updatedTask
@@ -634,7 +634,7 @@ export class TaskService {
             
             // Step 4: Notify system of change
             try {
-                this.plugin.emitter.emit(EVENT_TASK_UPDATED, {
+                this.plugin.emitter.trigger(EVENT_TASK_UPDATED, {
                     path: originalTask.path,
                     originalTask: originalTask,
                     updatedTask: updatedTask
@@ -680,7 +680,7 @@ export class TaskService {
             this.plugin.cacheManager.clearCacheEntry(task.path);
 
             // Step 3: Emit task deleted event
-            this.plugin.emitter.emit(EVENT_TASK_DELETED, {
+            this.plugin.emitter.trigger(EVENT_TASK_DELETED, {
                 path: task.path,
                 deletedTask: task
             });
@@ -762,7 +762,7 @@ export class TaskService {
         await this.plugin.cacheManager.updateTaskInfoInCache(task.path, updatedTask);
         
         // Step 4: Notify system of change
-        this.plugin.emitter.emit(EVENT_TASK_UPDATED, {
+        this.plugin.emitter.trigger(EVENT_TASK_UPDATED, {
             path: task.path,
             originalTask: task,
             updatedTask: updatedTask
