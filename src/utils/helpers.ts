@@ -1,11 +1,32 @@
-import { normalizePath, TFile, Vault, App } from 'obsidian';
+import { normalizePath, TFile, Vault, App, parseYaml, stringifyYaml } from 'obsidian';
 import { format, parseISO, startOfDay, isBefore, isSameDay as isSameDayFns } from 'date-fns';
-import * as YAML from 'yaml';
 import { TimeInfo, TaskInfo, TimeEntry, TimeBlock, DailyNoteFrontmatter } from '../types';
 import { FieldMapper } from '../services/FieldMapper';
 import { DEFAULT_FIELD_MAPPING } from '../settings/settings';
 import { isBeforeDateSafe, getTodayString, parseDate, isSameDateSafe } from './dateUtils';
 // import { RegexOptimizer } from './RegexOptimizer'; // Temporarily disabled
+
+/**
+ * Extracts frontmatter from a markdown file content using Obsidian's native parser
+ */
+function extractFrontmatter(content: string): any {
+	if (!content.startsWith('---')) {
+		return {};
+	}
+	
+	const endOfFrontmatter = content.indexOf('---', 3);
+	if (endOfFrontmatter === -1) {
+		return {};
+	}
+	
+	const frontmatterText = content.substring(3, endOfFrontmatter);
+	try {
+		return parseYaml(frontmatterText) || {};
+	} catch (error) {
+		console.error('Error parsing frontmatter:', error);
+		return {};
+	}
+}
 
 /**
  * Creates a debounced version of a function
@@ -589,7 +610,7 @@ export function validateTimeBlock(timeblock: any): timeblock is TimeBlock {
  */
 export function extractTimeblocksFromNote(content: string, path: string): TimeBlock[] {
 	try {
-		const frontmatter = YAMLCache.extractFrontmatter(content, path) as DailyNoteFrontmatter;
+		const frontmatter = extractFrontmatter(content) as DailyNoteFrontmatter;
 		
 		if (!frontmatter || !frontmatter.timeblocks || !Array.isArray(frontmatter.timeblocks)) {
 			return [];
@@ -720,7 +741,7 @@ async function updateTimeblockTimes(
 	newEndTime: string
 ): Promise<void> {
 	const content = await app.vault.read(dailyNote);
-	const frontmatter = YAMLCache.extractFrontmatter(content, dailyNote.path) || {};
+	const frontmatter = extractFrontmatter(content) || {};
 	
 	if (!frontmatter.timeblocks || !Array.isArray(frontmatter.timeblocks)) {
 		throw new Error('No timeblocks found in frontmatter');
@@ -744,7 +765,7 @@ async function updateTimeblockTimes(
  */
 async function removeTimeblockFromDailyNote(app: any, dailyNote: any, timeblockId: string): Promise<void> {
 	const content = await app.vault.read(dailyNote);
-	const frontmatter = YAMLCache.extractFrontmatter(content, dailyNote.path) || {};
+	const frontmatter = extractFrontmatter(content) || {};
 	
 	if (!frontmatter.timeblocks || !Array.isArray(frontmatter.timeblocks)) {
 		return; // No timeblocks to remove
@@ -773,7 +794,7 @@ async function addTimeblockToDailyNote(app: any, date: string, timeblock: TimeBl
 	}
 	
 	const content = await app.vault.read(dailyNote);
-	const frontmatter = YAMLCache.extractFrontmatter(content, dailyNote.path) || {};
+	const frontmatter = extractFrontmatter(content) || {};
 	
 	if (!frontmatter.timeblocks) {
 		frontmatter.timeblocks = [];
@@ -800,7 +821,7 @@ async function updateDailyNoteFrontmatter(app: any, dailyNote: any, frontmatter:
 	}
 	
 	// Convert frontmatter back to YAML
-	const frontmatterText = YAML.stringify(frontmatter);
+	const frontmatterText = stringifyYaml(frontmatter);
 	
 	// Reconstruct file content
 	const newContent = `---\n${frontmatterText}---${bodyContent}`;
@@ -808,7 +829,6 @@ async function updateDailyNoteFrontmatter(app: any, dailyNote: any, frontmatter:
 	// Write back to file
 	await app.vault.modify(dailyNote, newContent);
 	
-	// Clear cache for this file
-	YAMLCache.clearCacheEntry(dailyNote.path);
+	// Native metadata cache will automatically update
 }
 
