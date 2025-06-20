@@ -321,7 +321,7 @@ export class InstantTaskConvertService {
      * Sanitize priority input
      */
     private sanitizePriority(priority: string): string {
-        const validPriorities = this.priorityManager.getAllConfigs().map(p => p.value);
+        const validPriorities = this.priorityManager.getAllPriorities().map((p: any) => p.value);
         return validPriorities.includes(priority) ? priority : '';
     }
 
@@ -329,7 +329,7 @@ export class InstantTaskConvertService {
      * Sanitize status input
      */
     private sanitizeStatus(status: string): string {
-        const validStatuses = this.statusManager.getAllConfigs().map(s => s.value);
+        const validStatuses = this.statusManager.getAllStatuses().map((s: any) => s.value);
         return validStatuses.includes(status) ? status : '';
     }
 

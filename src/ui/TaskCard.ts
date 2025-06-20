@@ -330,6 +330,19 @@ export async function showTaskContextMenu(event: MouseEvent, taskPath: string, p
         
         const menu = new Menu();
         
+        // Quick Actions item (command palette style)
+        menu.addItem((item) => {
+            item.setTitle('Quick actions...');
+            item.setIcon('zap');
+            item.onClick(async () => {
+                const { TaskActionPaletteModal } = await import('../modals/TaskActionPaletteModal');
+                const modal = new TaskActionPaletteModal(plugin.app, task, plugin, targetDate);
+                modal.open();
+            });
+        });
+        
+        menu.addSeparator();
+        
         // For recurring tasks, only show non-completion statuses
         // For regular tasks, show all statuses
         const availableStatuses = task.recurrence 
