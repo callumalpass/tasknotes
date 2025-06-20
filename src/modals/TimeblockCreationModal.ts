@@ -44,7 +44,7 @@ export class TimeblockCreationModal extends Modal {
         contentEl.empty();
         contentEl.addClass('timeblock-creation-modal');
 
-        contentEl.createEl('h2', { text: 'Create Timeblock' });
+        contentEl.createEl('h2', { text: 'Create timeblock' });
 
         // Date display (read-only)
         const dateDisplay = contentEl.createDiv({ cls: 'timeblock-date-display' });
@@ -58,7 +58,7 @@ export class TimeblockCreationModal extends Modal {
             .setDesc('Title for your timeblock')
             .addText(text => {
                 this.titleInput = text.inputEl;
-                text.setPlaceholder('e.g., Deep Work Session')
+                text.setPlaceholder('e.g., Deep work session')
                     .setValue(this.options.prefilledTitle || '')
                     .onChange(() => this.validateForm());
                 // Focus on title input
@@ -69,7 +69,7 @@ export class TimeblockCreationModal extends Modal {
         const timeContainer = contentEl.createDiv({ cls: 'timeblock-time-container' });
         
         new Setting(timeContainer)
-            .setName('Start Time')
+            .setName('Start time')
             .setDesc('When the timeblock starts')
             .addText(text => {
                 this.startTimeInput = text.inputEl;
@@ -80,7 +80,7 @@ export class TimeblockCreationModal extends Modal {
             });
 
         new Setting(timeContainer)
-            .setName('End Time')
+            .setName('End time')
             .setDesc('When the timeblock ends')
             .addText(text => {
                 this.endTimeInput = text.inputEl;
@@ -138,7 +138,7 @@ export class TimeblockCreationModal extends Modal {
         cancelButton.addEventListener('click', () => this.close());
 
         const createButton = buttonContainer.createEl('button', { 
-            text: 'Create Timeblock',
+            text: 'Create timeblock',
             cls: 'mod-cta timeblock-create-button'
         });
         createButton.addEventListener('click', () => this.handleSubmit());

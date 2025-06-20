@@ -268,10 +268,6 @@ export default class TaskNotesPlugin extends Plugin {
 				
 				// Set up global event listener for task updates to refresh editor decorations
 				this.taskUpdateListenerForEditor = this.emitter.on(EVENT_TASK_UPDATED, (data: any) => {
-					// Check if layout is ready before processing events
-					if (!this.app.workspace.layoutReady) {
-						return;
-					}
 					
 					// Trigger decoration refresh in all active markdown views using proper state effects
 					this.app.workspace.iterateRootLeaves((leaf) => {

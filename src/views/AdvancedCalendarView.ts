@@ -1,4 +1,6 @@
 import { ItemView, WorkspaceLeaf, TFile, Notice, EventRef, Menu } from 'obsidian';
+import { ICSEventInfoModal } from '../modals/ICSEventInfoModal';
+import { TimeblockInfoModal } from '../modals/TimeblockInfoModal';
 import { format, startOfDay, endOfDay } from 'date-fns';
 import { Calendar } from '@fullcalendar/core';
 import { 
@@ -1484,185 +1486,13 @@ export class AdvancedCalendarView extends ItemView {
     }
 
     private showICSEventInfo(icsEvent: ICSEvent, subscriptionName?: string): void {
-        const modal = document.createElement('div');
-        modal.className = 'modal-container';
-        
-        const modalBg = modal.createDiv('modal-bg');
-        const modalContent = modal.createDiv('modal');
-        
-        modalContent.createDiv('modal-title').textContent = 'Calendar Event Details';
-        
-        const content = modalContent.createDiv('modal-content');
-        
-        // Event title
-        const titleSection = content.createDiv();
-        titleSection.createEl('strong', { text: 'Title: ' });
-        titleSection.createSpan({ text: icsEvent.title || 'Untitled Event' });
-        
-        // Subscription source
-        if (subscriptionName) {
-            const sourceSection = content.createDiv();
-            sourceSection.createEl('strong', { text: 'Source: ' });
-            sourceSection.createSpan({ text: subscriptionName });
-        }
-        
-        // Date/time
-        const dateSection = content.createDiv();
-        dateSection.createEl('strong', { text: 'Date: ' });
-        const startDate = new Date(icsEvent.start);
-        let dateText = startDate.toLocaleDateString();
-        if (!icsEvent.allDay) {
-            dateText += ` at ${startDate.toLocaleTimeString()}`;
-            if (icsEvent.end) {
-                const endDate = new Date(icsEvent.end);
-                dateText += ` - ${endDate.toLocaleTimeString()}`;
-            }
-        } else if (icsEvent.end) {
-            const endDate = new Date(icsEvent.end);
-            const endDateStr = endDate.toLocaleDateString();
-            if (endDateStr !== dateText) {
-                dateText += ` - ${endDateStr}`;
-            }
-        }
-        dateSection.createSpan({ text: dateText });
-        
-        // Description
-        if (icsEvent.description) {
-            const descSection = content.createDiv();
-            descSection.createEl('strong', { text: 'Description: ' });
-            const descEl = descSection.createDiv({ cls: 'ics-event-description' });
-            descEl.textContent = icsEvent.description;
-        }
-        
-        // Location
-        if (icsEvent.location) {
-            const locationSection = content.createDiv();
-            locationSection.createEl('strong', { text: 'Location: ' });
-            locationSection.createSpan({ text: icsEvent.location });
-        }
-        
-        // URL
-        if (icsEvent.url) {
-            const urlSection = content.createDiv();
-            urlSection.createEl('strong', { text: 'URL: ' });
-            const linkEl = urlSection.createEl('a', {
-                href: icsEvent.url,
-                text: icsEvent.url,
-                cls: 'external-link'
-            });
-            linkEl.setAttribute('target', '_blank');
-        }
-        
-        // Close button
-        const buttonContainer = modalContent.createDiv('modal-button-container');
-        const closeButton = buttonContainer.createEl('button', { text: 'Close' });
-        
-        document.body.appendChild(modal);
-        
-        const handleClose = () => {
-            modal.remove();
-        };
-        
-        closeButton.addEventListener('click', handleClose);
-        modalBg.addEventListener('click', handleClose);
-        
-        modal.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                handleClose();
-            }
-        });
-        
-        setTimeout(() => closeButton.focus(), 50);
+        const modal = new ICSEventInfoModal(this.app, icsEvent, subscriptionName);
+        modal.open();
     }
 
     private showTimeblockInfo(timeblock: TimeBlock, eventDate: Date): void {
-        const modal = document.createElement('div');
-        modal.className = 'modal-container';
-        
-        const modalBg = modal.createDiv('modal-bg');
-        const modalContent = modal.createDiv('modal');
-        
-        modalContent.createDiv('modal-title').textContent = 'Timeblock Details';
-        
-        const content = modalContent.createDiv('modal-content');
-        
-        // Timeblock title
-        const titleSection = content.createDiv();
-        titleSection.createEl('strong', { text: 'Title: ' });
-        titleSection.createSpan({ text: timeblock.title });
-        
-        // Date and time
-        const dateSection = content.createDiv();
-        dateSection.createEl('strong', { text: 'Time: ' });
-        const dateText = `${eventDate.toLocaleDateString()} from ${timeblock.startTime} to ${timeblock.endTime}`;
-        dateSection.createSpan({ text: dateText });
-        
-        // Description
-        if (timeblock.description) {
-            const descSection = content.createDiv();
-            descSection.createEl('strong', { text: 'Description: ' });
-            const descEl = descSection.createDiv({ cls: 'timeblock-description' });
-            descEl.textContent = timeblock.description;
-        }
-        
-        // Attachments
-        if (timeblock.attachments && timeblock.attachments.length > 0) {
-            const attachSection = content.createDiv();
-            attachSection.createEl('strong', { text: 'Attachments: ' });
-            const attachList = attachSection.createDiv({ cls: 'timeblock-attachments' });
-            
-            for (const attachment of timeblock.attachments) {
-                const attachItem = attachList.createDiv({ cls: 'timeblock-attachment-item' });
-                
-                // Parse markdown link and create clickable element
-                const linkMatch = attachment.match(/\[\[([^\]]+)\]\]|\[([^\]]+)\]\(([^)]+)\)/);
-                if (linkMatch) {
-                    const linkText = linkMatch[1] || linkMatch[2] || attachment;
-                    const linkPath = linkMatch[1] || linkMatch[3] || attachment;
-                    
-                    const linkEl = attachItem.createEl('a', {
-                        text: linkText,
-                        cls: 'internal-link'
-                    });
-                    
-                    linkEl.addEventListener('click', async (e) => {
-                        e.preventDefault();
-                        // Try to open the linked file
-                        const file = this.app.vault.getAbstractFileByPath(linkPath + '.md') || 
-                                   this.app.vault.getAbstractFileByPath(linkPath);
-                        if (file instanceof TFile) {
-                            await this.app.workspace.getLeaf(false).openFile(file);
-                            handleClose();
-                        } else {
-                            new Notice(`File not found: ${linkPath}`);
-                        }
-                    });
-                } else {
-                    attachItem.createSpan({ text: attachment });
-                }
-            }
-        }
-        
-        // Close button
-        const buttonContainer = modalContent.createDiv('modal-button-container');
-        const closeButton = buttonContainer.createEl('button', { text: 'Close' });
-        
-        document.body.appendChild(modal);
-        
-        const handleClose = () => {
-            modal.remove();
-        };
-        
-        closeButton.addEventListener('click', handleClose);
-        modalBg.addEventListener('click', handleClose);
-        
-        modal.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                handleClose();
-            }
-        });
-        
-        setTimeout(() => closeButton.focus(), 50);
+        const modal = new TimeblockInfoModal(this.app, timeblock, eventDate);
+        modal.open();
     }
 
     private showICSEventContextMenu(jsEvent: MouseEvent, icsEvent: ICSEvent, subscriptionName?: string): void {
