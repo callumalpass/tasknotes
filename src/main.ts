@@ -260,7 +260,7 @@ export default class TaskNotesPlugin extends Plugin {
 				this.taskLinkDetectionService = new TaskLinkDetectionService(this);
 				
 				const { InstantTaskConvertService } = await import('./services/InstantTaskConvertService');
-				this.instantTaskConvertService = new InstantTaskConvertService(this);
+				this.instantTaskConvertService = new InstantTaskConvertService(this, this.statusManager, this.priorityManager);
 				
 				// Register additional editor extensions
 				const { createInstantConvertButtons } = await import('./editor/InstantConvertButtons');

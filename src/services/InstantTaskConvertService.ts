@@ -3,12 +3,22 @@ import TaskNotesPlugin from '../main';
 import { TasksPluginParser, ParsedTaskData } from '../utils/TasksPluginParser';
 import { getCurrentTimestamp } from '../utils/dateUtils';
 import { calculateDefaultDate } from '../utils/helpers';
+import { StatusManager } from './StatusManager';
+import { PriorityManager } from './PriorityManager';
 
 export class InstantTaskConvertService {
     private plugin: TaskNotesPlugin;
+    private statusManager: StatusManager;
+    private priorityManager: PriorityManager;
 
-    constructor(plugin: TaskNotesPlugin) {
+    constructor(
+        plugin: TaskNotesPlugin,
+        statusManager: StatusManager,
+        priorityManager: PriorityManager
+    ) {
         this.plugin = plugin;
+        this.statusManager = statusManager;
+        this.priorityManager = priorityManager;
     }
 
     /**
@@ -311,7 +321,7 @@ export class InstantTaskConvertService {
      * Sanitize priority input
      */
     private sanitizePriority(priority: string): string {
-        const validPriorities = ['none', 'low', 'normal', 'medium', 'high'];
+        const validPriorities = this.priorityManager.getAllConfigs().map(p => p.value);
         return validPriorities.includes(priority) ? priority : '';
     }
 
@@ -319,7 +329,7 @@ export class InstantTaskConvertService {
      * Sanitize status input
      */
     private sanitizeStatus(status: string): string {
-        const validStatuses = ['none', 'open', 'in-progress', 'done', 'scheduled'];
+        const validStatuses = this.statusManager.getAllConfigs().map(s => s.value);
         return validStatuses.includes(status) ? status : '';
     }
 
