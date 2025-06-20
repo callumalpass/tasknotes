@@ -2047,8 +2047,26 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 				text: 'Delete',
 				cls: 'ics-subscription-delete'
 			});
-			deleteButton.addEventListener('click', () => {
-				this.showDeleteSubscriptionConfirmation(subscription);
+			deleteButton.addEventListener('click', async () => {
+				// Show confirmation dialog using the existing, correct modal
+				const confirmed = await showConfirmationModal(this.app, {
+					title: 'Delete Subscription',
+					message: `Are you sure you want to delete the subscription "${subscription.name}"? This action cannot be undone.`,
+					confirmText: 'Delete',
+					cancelText: 'Cancel',
+					isDestructive: true
+				});
+
+				if (confirmed) {
+					try {
+						await this.plugin.icsSubscriptionService!.removeSubscription(subscription.id);
+						new Notice(`Deleted subscription "${subscription.name}"`);
+						this.renderActiveTab();
+					} catch (error) {
+						console.error('Error deleting subscription:', error);
+						new Notice('Failed to delete subscription');
+					}
+				}
 			});
 		});
 	}
@@ -2175,53 +2193,4 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 	}
 
 
-	private showDeleteSubscriptionConfirmation(subscription: any): void {
-		const modal = document.createElement('div');
-		modal.className = 'modal-container mod-confirmation';
-		
-		const modalBg = modal.createDiv('modal-bg');
-		const modalContent = modal.createDiv('modal');
-		
-		modalContent.createDiv('modal-title').textContent = 'Delete Subscription';
-		
-		const content = modalContent.createDiv('modal-content');
-		content.createEl('p', { text: `Are you sure you want to delete the subscription "${subscription.name}"?` });
-		content.createEl('p', { text: 'This action cannot be undone.' });
-		
-		const buttonContainer = modalContent.createDiv('modal-button-container');
-		const deleteButton = buttonContainer.createEl('button', { cls: 'mod-cta', text: 'Delete' });
-		const cancelButton = buttonContainer.createEl('button', { text: 'Cancel' });
-		
-		document.body.appendChild(modal);
-		
-		const handleDelete = async () => {
-			try {
-				await this.plugin.icsSubscriptionService!.removeSubscription(subscription.id);
-				new Notice(`Deleted subscription "${subscription.name}"`);
-				modal.remove();
-				this.renderActiveTab();
-			} catch (error) {
-				console.error('Error deleting subscription:', error);
-				new Notice('Failed to delete subscription');
-			}
-		};
-		
-		const handleCancel = () => {
-			modal.remove();
-		};
-		
-		deleteButton.addEventListener('click', handleDelete);
-		cancelButton.addEventListener('click', handleCancel);
-		modalBg.addEventListener('click', handleCancel);
-		
-		// Handle escape key
-		modal.addEventListener('keydown', (e) => {
-			if (e.key === 'Escape') {
-				handleCancel();
-			}
-		});
-		
-		// Focus delete button
-		setTimeout(() => deleteButton.focus(), 50);
-	}
 }
