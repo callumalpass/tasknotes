@@ -285,7 +285,7 @@ export default class TaskNotesPlugin extends Plugin {
 				// Set up workspace event listener for active leaf changes to refresh task overlays
 				this.registerEvent(this.app.workspace.on('active-leaf-change', (leaf) => {
 					// Small delay to ensure editor is fully initialized
-					setTimeout(() => {
+					window.setTimeout(() => {
 						if (leaf && leaf.view && leaf.view.getViewType() === 'markdown') {
 							const editor = (leaf.view as any).editor;
 							if (editor && editor.cm) {
@@ -294,6 +294,21 @@ export default class TaskNotesPlugin extends Plugin {
 							}
 						}
 					}, 50);
+				}));
+				
+				// Set up workspace event listener for layout changes to detect mode switches
+				this.registerEvent(this.app.workspace.on('layout-change', () => {
+					// Small delay to ensure mode switch is complete
+					window.setTimeout(() => {
+						const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
+						if (activeView) {
+							const editor = (activeView as any).editor;
+							if (editor && editor.cm) {
+								// Refresh overlays when switching to Live Preview mode
+								dispatchTaskUpdate(editor.cm);
+							}
+						}
+					}, 100);
 				}));
 				
 			} catch (error) {
