@@ -7,6 +7,7 @@ import { ParsedTaskData } from '../utils/TasksPluginParser';
 import { getCurrentTimestamp, hasTimeComponent, getDatePart, getTimePart } from '../utils/dateUtils';
 import { generateTaskFilename, FilenameContext } from '../utils/filenameGenerator';
 import { calculateDefaultDate } from '../utils/helpers';
+import { NaturalLanguageParser, ParsedTaskData as NLParsedTaskData } from '../services/NaturalLanguageParser';
 
 export interface TaskConversionOptions {
 	parsedData?: ParsedTaskData;
@@ -28,11 +29,23 @@ export class TaskCreationModal extends BaseTaskModal {
 	
 	// Pre-populated values
 	private prePopulatedValues: Partial<TaskInfo>;
+
+	// Natural language parsing
+	private nlParser: NaturalLanguageParser;
+	private nlInputContainer: HTMLElement | null = null;
+	private nlPreviewContainer: HTMLElement | null = null;
+	private detailedFormContainer: HTMLElement | null = null;
+	private isDetailedFormVisible: boolean = false;
+	private filenamePreviewContainer: HTMLElement | null = null;
   
 	constructor(app: App, plugin: TaskNotesPlugin, prePopulatedValues?: Partial<TaskInfo>, conversionOptions?: TaskConversionOptions) {
 		super(app, plugin);
 		this.prePopulatedValues = prePopulatedValues || {};
 		this.conversionOptions = conversionOptions || {};
+		this.nlParser = new NaturalLanguageParser(
+			plugin.settings.customStatuses,
+			plugin.settings.customPriorities
+		);
 	}
 
 	protected async initializeFormData(): Promise<void> {
@@ -178,9 +191,20 @@ export class TaskCreationModal extends BaseTaskModal {
 
 		// Cache autocomplete data
 		this.cacheAutocompleteData();
+
+		// Natural language input (if enabled)
+		if (this.plugin.settings.enableNaturalLanguageInput) {
+			this.createNaturalLanguageInput(contentEl);
+		}
+
+		// Create container for detailed form
+		this.detailedFormContainer = contentEl.createDiv({ cls: 'detailed-form-container' });
+		if (this.plugin.settings.enableNaturalLanguageInput) {
+			this.detailedFormContainer.style.display = 'none';
+		}
 		
 		// Title with character count and filename preview updates
-		this.createFormGroup(contentEl, 'Title', (container) => {
+		this.createFormGroup(this.detailedFormContainer, 'Title', (container) => {
 			const inputContainer = container.createDiv({ cls: 'modal-form__input-container' });
 			const input = inputContainer.createEl('input', { 
 				type: 'text',
@@ -214,15 +238,20 @@ export class TaskCreationModal extends BaseTaskModal {
 		});
 		
 		// Filename preview
-		this.createFormGroup(contentEl, 'Filename preview', (container) => {
+		this.filenamePreviewContainer = this.createFormGroup(contentEl, 'Filename preview', (container) => {
 			this.filenamePreview = container.createDiv({ 
 				cls: 'task-creation-modal__preview',
 				text: 'Enter a title to see filename preview...'
 			});
 		});
+
+		// Hide filename preview if natural language input is enabled
+		if (this.plugin.settings.enableNaturalLanguageInput) {
+			this.filenamePreviewContainer.style.display = 'none';
+		}
 		
 		// Details
-		this.createFormGroup(contentEl, 'Details', (container) => {
+		this.createFormGroup(this.detailedFormContainer, 'Details', (container) => {
 			const textarea = container.createEl('textarea', {
 				cls: 'modal-form__input modal-form__input--textarea',
 				attr: { 
@@ -242,17 +271,17 @@ export class TaskCreationModal extends BaseTaskModal {
 		});
 		
 		// Due Date
-		this.createFormGroup(contentEl, 'Due date', (container) => {
+		this.createFormGroup(this.detailedFormContainer, 'Due date', (container) => {
 			this.createDueDateInputWithRef(container);
 		});
 		
 		// Scheduled Date
-		this.createFormGroup(contentEl, 'Scheduled date', (container) => {
+		this.createFormGroup(this.detailedFormContainer, 'Scheduled date', (container) => {
 			this.createScheduledDateInput(container);
 		});
 		
 		// Priority
-		this.createFormGroup(contentEl, 'Priority', (container) => {
+		this.createFormGroup(this.detailedFormContainer, 'Priority', (container) => {
 			this.createPriorityDropdown(container);
 			// Add filename preview update listener
 			const select = container.querySelector('select');
@@ -264,7 +293,7 @@ export class TaskCreationModal extends BaseTaskModal {
 		});
 		
 		// Status
-		this.createFormGroup(contentEl, 'Status', (container) => {
+		this.createFormGroup(this.detailedFormContainer, 'Status', (container) => {
 			this.createStatusDropdown(container);
 			// Add filename preview update listener
 			const select = container.querySelector('select');
@@ -276,7 +305,7 @@ export class TaskCreationModal extends BaseTaskModal {
 		});
 		
 		// Contexts with autocomplete
-		this.createFormGroup(contentEl, 'Contexts', (container) => {
+		this.createFormGroup(this.detailedFormContainer, 'Contexts', (container) => {
 			this.createAutocompleteInput(
 				container,
 				'contexts',
@@ -286,7 +315,7 @@ export class TaskCreationModal extends BaseTaskModal {
 		});
 		
 		// Tags with autocomplete
-		this.createFormGroup(contentEl, 'Tags', (container) => {
+		this.createFormGroup(this.detailedFormContainer, 'Tags', (container) => {
 			this.createAutocompleteInput(
 				container,
 				'tags',
@@ -296,17 +325,17 @@ export class TaskCreationModal extends BaseTaskModal {
 		});
 		
 		// Time Estimate
-		this.createFormGroup(contentEl, 'Time estimate', (container) => {
+		this.createFormGroup(this.detailedFormContainer, 'Time estimate', (container) => {
 			this.createTimeEstimateInput(container);
 		});
 		
 		// Recurrence
-		this.createFormGroup(contentEl, 'Recurrence', (container) => {
+		this.createFormGroup(this.detailedFormContainer, 'Recurrence', (container) => {
 			this.createRecurrenceDropdown(container);
 		});
 		
 		// Action buttons
-		this.createActionButtons(contentEl);
+		this.createActionButtons(this.detailedFormContainer);
 		
 		// Keyboard shortcuts
 		contentEl.addEventListener('keydown', (e) => {
@@ -551,5 +580,420 @@ export class TaskCreationModal extends BaseTaskModal {
 		
 		// Get reference to the date input for compatibility
 		this.dueDateInput = container.querySelector('input[type="date"]') as HTMLInputElement;
+	}
+
+	/**
+	 * Create natural language input section
+	 */
+	private createNaturalLanguageInput(contentEl: HTMLElement): void {
+		this.nlInputContainer = contentEl.createDiv({ cls: 'nl-input-container' });
+		
+		// Create input field
+		this.createFormGroup(this.nlInputContainer, 'Quick input', (container) => {
+			const inputContainer = container.createDiv({ cls: 'modal-form__input-container' });
+			const textarea = inputContainer.createEl('textarea', {
+				cls: 'modal-form__input modal-form__input--textarea nl-input',
+				attr: {
+					placeholder: 'Type your task naturally... (e.g., "Buy groceries tomorrow 3pm high priority @home #errands")\nAdd details on the next line...',
+					rows: '3'
+				}
+			});
+
+			// Parse button
+			const buttonContainer = inputContainer.createDiv({ cls: 'nl-button-container' });
+			const parseButton = buttonContainer.createEl('button', {
+				cls: 'mod-cta nl-parse-button',
+				text: 'Parse & fill form'
+			});
+
+			const showDetailButton = buttonContainer.createEl('button', {
+				cls: 'nl-show-detail-button',
+				text: 'Show detailed options'
+			});
+
+			// Add spacing between buttons
+			buttonContainer.style.display = 'flex';
+			buttonContainer.style.gap = '8px';
+			buttonContainer.style.marginTop = '8px';
+
+			// Event listeners
+			textarea.addEventListener('input', () => {
+				const input = textarea.value.trim();
+				if (input) {
+					this.updateNaturalLanguagePreview(input);
+				} else {
+					this.clearNaturalLanguagePreview();
+				}
+			});
+
+			parseButton.addEventListener('click', () => {
+				const input = textarea.value.trim();
+				if (input) {
+					this.parseAndFillForm(input);
+				}
+			});
+
+			showDetailButton.addEventListener('click', () => {
+				this.toggleDetailedForm();
+			});
+
+			// Parse on Enter (with Ctrl/Cmd)
+			textarea.addEventListener('keydown', (e) => {
+				if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+					e.preventDefault();
+					const input = textarea.value.trim();
+					if (input) {
+						this.parseAndFillForm(input);
+					}
+				}
+			});
+		});
+
+		// Create preview container
+		this.nlPreviewContainer = this.nlInputContainer.createDiv({ cls: 'nl-preview-container' });
+		this.nlPreviewContainer.style.display = 'none';
+
+		// Focus the textarea when natural language input is enabled
+		setTimeout(() => {
+			const nlTextarea = this.nlInputContainer?.querySelector('.nl-input') as HTMLTextAreaElement;
+			if (nlTextarea) {
+				nlTextarea.focus();
+			}
+		}, 100);
+	}
+
+	/**
+	 * Update natural language preview
+	 */
+	private updateNaturalLanguagePreview(input: string): void {
+		if (!this.nlPreviewContainer) return;
+
+		const parsed = this.nlParser.parseInput(input);
+		const previewText = this.nlParser.getPreviewText(parsed);
+
+		if (previewText && parsed.title) {
+			this.nlPreviewContainer.empty();
+			this.nlPreviewContainer.createEl('div', {
+				cls: 'nl-preview-label',
+				text: 'Parsed data:'
+			});
+			this.nlPreviewContainer.createEl('div', {
+				cls: 'nl-preview-text',
+				text: previewText
+			});
+			this.nlPreviewContainer.style.display = 'block';
+		} else {
+			this.nlPreviewContainer.style.display = 'none';
+		}
+	}
+
+	/**
+	 * Clear natural language preview
+	 */
+	private clearNaturalLanguagePreview(): void {
+		if (this.nlPreviewContainer) {
+			this.nlPreviewContainer.style.display = 'none';
+		}
+	}
+
+	/**
+	 * Parse input and fill form fields
+	 */
+	private parseAndFillForm(input: string): void {
+		const parsed = this.nlParser.parseInput(input);
+		
+		// Fill form fields with parsed data
+		this.applyParsedData(parsed);
+		
+		// Show detailed form
+		this.showDetailedForm();
+		
+		// Clear natural language input
+		const nlTextarea = this.nlInputContainer?.querySelector('.nl-input') as HTMLTextAreaElement;
+		if (nlTextarea) {
+			nlTextarea.value = '';
+		}
+		this.clearNaturalLanguagePreview();
+	}
+
+	/**
+	 * Apply parsed data to form fields
+	 */
+	private applyParsedData(parsed: NLParsedTaskData): void {
+		// Apply title
+		if (parsed.title) {
+			this.title = parsed.title;
+			const titleInput = this.detailedFormContainer?.querySelector('.modal-form__input--title') as HTMLInputElement;
+			if (titleInput) {
+				titleInput.value = parsed.title;
+				titleInput.dispatchEvent(new Event('input'));
+			}
+		}
+
+		// Apply details
+		if (parsed.details) {
+			this.details = parsed.details;
+			
+			// Find details form group and textarea
+			const detailsFormGroups = Array.from(this.detailedFormContainer?.querySelectorAll('.modal-form__group') || []);
+			const detailsGroup = detailsFormGroups.find(group => {
+				const label = group.querySelector('.modal-form__label');
+				return label?.textContent?.includes('Details');
+			});
+			
+			if (detailsGroup) {
+				const textarea = detailsGroup.querySelector('textarea') as HTMLTextAreaElement;
+				if (textarea) {
+					textarea.value = this.details;
+					textarea.dispatchEvent(new Event('input'));
+				}
+			}
+		}
+
+		// Apply due date and time
+		if (parsed.dueDate) {
+			this.dueDate = parsed.dueTime ? `${parsed.dueDate} ${parsed.dueTime}` : parsed.dueDate;
+			
+			// Find due date form group and inputs
+			const dueDateFormGroups = Array.from(this.detailedFormContainer?.querySelectorAll('.modal-form__group') || []);
+			const dueDateGroup = dueDateFormGroups.find(group => {
+				const label = group.querySelector('.modal-form__label');
+				return label?.textContent?.includes('Due date');
+			});
+			
+			if (dueDateGroup) {
+				const dateInput = dueDateGroup.querySelector('input[type="date"]') as HTMLInputElement;
+				const timeInput = dueDateGroup.querySelector('input[type="time"]') as HTMLInputElement;
+				
+				if (dateInput) {
+					dateInput.value = parsed.dueDate;
+					dateInput.dispatchEvent(new Event('change'));
+				}
+				if (timeInput && parsed.dueTime) {
+					timeInput.value = parsed.dueTime;
+					timeInput.dispatchEvent(new Event('change'));
+				}
+			}
+		}
+
+		// Apply scheduled date and time
+		if (parsed.scheduledDate) {
+			this.scheduledDate = parsed.scheduledTime ? `${parsed.scheduledDate} ${parsed.scheduledTime}` : parsed.scheduledDate;
+			
+			// Find scheduled date form group and inputs
+			const scheduledDateFormGroups = Array.from(this.detailedFormContainer?.querySelectorAll('.modal-form__group') || []);
+			const scheduledDateGroup = scheduledDateFormGroups.find(group => {
+				const label = group.querySelector('.modal-form__label');
+				return label?.textContent?.includes('Scheduled date');
+			});
+			
+			if (scheduledDateGroup) {
+				const dateInput = scheduledDateGroup.querySelector('input[type="date"]') as HTMLInputElement;
+				const timeInput = scheduledDateGroup.querySelector('input[type="time"]') as HTMLInputElement;
+				
+				if (dateInput) {
+					dateInput.value = parsed.scheduledDate;
+					dateInput.dispatchEvent(new Event('change'));
+				}
+				if (timeInput && parsed.scheduledTime) {
+					timeInput.value = parsed.scheduledTime;
+					timeInput.dispatchEvent(new Event('change'));
+				}
+			}
+		}
+
+		// Apply priority
+		if (parsed.priority) {
+			this.priority = parsed.priority;
+			
+			// Find priority form group and select
+			const priorityFormGroups = Array.from(this.detailedFormContainer?.querySelectorAll('.modal-form__group') || []);
+			const priorityGroup = priorityFormGroups.find(group => {
+				const label = group.querySelector('.modal-form__label');
+				return label?.textContent?.includes('Priority');
+			});
+			
+			if (priorityGroup) {
+				const select = priorityGroup.querySelector('select') as HTMLSelectElement;
+				if (select) {
+					select.value = parsed.priority;
+					select.dispatchEvent(new Event('change'));
+				}
+			}
+		}
+
+		// Apply status
+		if (parsed.status) {
+			this.status = parsed.status;
+			
+			// Find status form group and select
+			const statusFormGroups = Array.from(this.detailedFormContainer?.querySelectorAll('.modal-form__group') || []);
+			const statusGroup = statusFormGroups.find(group => {
+				const label = group.querySelector('.modal-form__label');
+				return label?.textContent?.includes('Status');
+			});
+			
+			if (statusGroup) {
+				const select = statusGroup.querySelector('select') as HTMLSelectElement;
+				if (select) {
+					select.value = parsed.status;
+					select.dispatchEvent(new Event('change'));
+				}
+			}
+		}
+
+		// Apply contexts
+		if (parsed.contexts.length > 0) {
+			this.contexts = parsed.contexts.join(', ');
+			
+			// Find contexts form group and input
+			const contextsFormGroups = Array.from(this.detailedFormContainer?.querySelectorAll('.modal-form__group') || []);
+			const contextsGroup = contextsFormGroups.find(group => {
+				const label = group.querySelector('.modal-form__label');
+				return label?.textContent?.includes('Contexts');
+			});
+			
+			if (contextsGroup) {
+				const input = contextsGroup.querySelector('input[type="text"]') as HTMLInputElement;
+				if (input) {
+					input.value = this.contexts;
+					input.dispatchEvent(new Event('input'));
+				}
+			}
+		}
+
+		// Apply tags
+		if (parsed.tags.length > 0) {
+			this.tags = parsed.tags.join(', ');
+			
+			// Find tags form group and input
+			const tagsFormGroups = Array.from(this.detailedFormContainer?.querySelectorAll('.modal-form__group') || []);
+			const tagsGroup = tagsFormGroups.find(group => {
+				const label = group.querySelector('.modal-form__label');
+				return label?.textContent?.includes('Tags');
+			});
+			
+			if (tagsGroup) {
+				const input = tagsGroup.querySelector('input[type="text"]') as HTMLInputElement;
+				if (input) {
+					input.value = this.tags;
+					input.dispatchEvent(new Event('input'));
+				}
+			}
+		}
+
+		// Apply time estimate
+		if (parsed.estimate) {
+			this.timeEstimate = parsed.estimate;
+			
+			// Find time estimate form group and input
+			const estimateFormGroups = Array.from(this.detailedFormContainer?.querySelectorAll('.modal-form__group') || []);
+			const estimateGroup = estimateFormGroups.find(group => {
+				const label = group.querySelector('.modal-form__label');
+				return label?.textContent?.includes('Time estimate');
+			});
+			
+			if (estimateGroup) {
+				const input = estimateGroup.querySelector('input[type="number"]') as HTMLInputElement;
+				if (input) {
+					input.value = parsed.estimate.toString();
+					input.dispatchEvent(new Event('input'));
+				}
+			}
+		}
+
+		// Apply recurrence
+		if (parsed.recurrence) {
+			this.recurrence = parsed.recurrence as any;
+			
+			// Find recurrence form group and select
+			const recurrenceFormGroups = Array.from(this.detailedFormContainer?.querySelectorAll('.modal-form__group') || []);
+			const recurrenceGroup = recurrenceFormGroups.find(group => {
+				const label = group.querySelector('.modal-form__label');
+				return label?.textContent?.includes('Recurrence');
+			});
+			
+			if (recurrenceGroup) {
+				const select = recurrenceGroup.querySelector('select') as HTMLSelectElement;
+				if (select) {
+					select.value = parsed.recurrence;
+					select.dispatchEvent(new Event('change'));
+				}
+			}
+		}
+
+		// Apply days of the week for weekly recurrence
+		if (parsed.daysOfWeek && parsed.daysOfWeek.length > 0) {
+			this.daysOfWeek = parsed.daysOfWeek;
+			
+			// Find and check the appropriate day checkboxes
+			setTimeout(() => {
+				if (parsed.daysOfWeek) {
+					for (const day of parsed.daysOfWeek) {
+						const checkbox = this.detailedFormContainer?.querySelector(`input[type="checkbox"][value="${day}"]`) as HTMLInputElement;
+						if (checkbox) {
+							checkbox.checked = true;
+							checkbox.dispatchEvent(new Event('change'));
+						}
+					}
+				}
+			}, 100); // Small delay to ensure the recurrence UI has been updated
+		}
+
+		// Update filename preview
+		this.updateFilenamePreview();
+	}
+
+	/**
+	 * Toggle detailed form visibility
+	 */
+	private toggleDetailedForm(): void {
+		if (this.isDetailedFormVisible) {
+			this.hideDetailedForm();
+		} else {
+			this.showDetailedForm();
+		}
+	}
+
+	/**
+	 * Show detailed form
+	 */
+	private showDetailedForm(): void {
+		if (this.detailedFormContainer) {
+			this.detailedFormContainer.style.display = 'block';
+			this.isDetailedFormVisible = true;
+			
+			// Show filename preview when detailed form is shown
+			if (this.filenamePreviewContainer) {
+				this.filenamePreviewContainer.style.display = 'block';
+			}
+			
+			// Update button text
+			const showDetailButton = this.nlInputContainer?.querySelector('.nl-show-detail-button') as HTMLButtonElement;
+			if (showDetailButton) {
+				showDetailButton.textContent = 'Hide detailed options';
+			}
+		}
+	}
+
+	/**
+	 * Hide detailed form
+	 */
+	private hideDetailedForm(): void {
+		if (this.detailedFormContainer) {
+			this.detailedFormContainer.style.display = 'none';
+			this.isDetailedFormVisible = false;
+			
+			// Hide filename preview when detailed form is hidden (only if natural language is enabled)
+			if (this.plugin.settings.enableNaturalLanguageInput && this.filenamePreviewContainer) {
+				this.filenamePreviewContainer.style.display = 'none';
+			}
+			
+			// Update button text
+			const showDetailButton = this.nlInputContainer?.querySelector('.nl-show-detail-button') as HTMLButtonElement;
+			if (showDetailButton) {
+				showDetailButton.textContent = 'Show detailed options';
+			}
+		}
 	}
 }

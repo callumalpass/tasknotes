@@ -35,6 +35,7 @@ export interface TaskNotesSettings {
 	enableTaskLinkOverlay: boolean;
 	enableInstantTaskConvert: boolean;
 	useDefaultsOnInstantConvert: boolean;
+	enableNaturalLanguageInput: boolean;
 	// Performance settings
 	disableNoteIndexing: boolean;
 	// Customization settings
@@ -242,6 +243,7 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	enableTaskLinkOverlay: true,
 	enableInstantTaskConvert: true,
 	useDefaultsOnInstantConvert: false,
+	enableNaturalLanguageInput: true,
 	// Performance defaults
 	disableNoteIndexing: false,
 	// Customization defaults
@@ -424,6 +426,19 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 					.setValue(this.plugin.settings.useDefaultsOnInstantConvert)
 					.onChange(async (value) => {
 						this.plugin.settings.useDefaultsOnInstantConvert = value;
+						await this.plugin.saveSettings();
+					});
+			});
+
+		new Setting(container)
+			.setName('Enable natural language task input')
+			.setDesc('Show a smart input field in task creation modal that can parse natural language like "Buy groceries tomorrow 3pm high priority @home #errands"')
+			.addToggle(toggle => {
+				toggle.toggleEl.setAttribute('aria-label', 'Enable natural language task input');
+				return toggle
+					.setValue(this.plugin.settings.enableNaturalLanguageInput)
+					.onChange(async (value) => {
+						this.plugin.settings.enableNaturalLanguageInput = value;
 						await this.plugin.saveSettings();
 					});
 			});

@@ -127,7 +127,7 @@
 .tasknotes-plugin .task-card__context-menu:hover {
     color: var(--tn-text-normal);
     background: var(--tn-interactive-hover);
-    transform: scale(1.1);
+    /* transform: scale(1.1); */
 }
 
 .tasknotes-plugin .task-card__context-menu:active {

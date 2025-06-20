@@ -1,0 +1,215 @@
+/* Task Action Palette Modal */
+
+.task-action-palette-modal {
+    --palette-item-height: 60px;
+    --palette-icon-size: 18px;
+    --palette-gap: 12px;
+    --palette-border-radius: 8px;
+}
+
+/* Override default modal width for the action palette */
+.task-action-palette-modal .modal {
+    width: min(600px, 90vw);
+    max-height: 70vh;
+}
+
+/* Suggestion item styling */
+.task-action-palette__suggestion {
+    display: flex;
+    align-items: center;
+    gap: var(--palette-gap);
+    padding: var(--palette-gap);
+    border-radius: var(--palette-border-radius);
+    min-height: var(--palette-item-height);
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.task-action-palette__suggestion:hover {
+    background-color: var(--background-modifier-hover);
+}
+
+.suggestion-item.is-selected .task-action-palette__suggestion {
+    background-color: var(--background-modifier-accent);
+    color: var(--text-on-accent);
+}
+
+/* Icon styling */
+.task-action-palette__icon {
+    flex-shrink: 0;
+    width: var(--palette-icon-size);
+    height: var(--palette-icon-size);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+}
+
+.suggestion-item.is-selected .task-action-palette__icon {
+    color: var(--text-on-accent);
+}
+
+.task-action-palette__icon svg {
+    width: var(--palette-icon-size);
+    height: var(--palette-icon-size);
+}
+
+/* Content area */
+.task-action-palette__content {
+    flex: 1;
+    min-width: 0; /* Allow text to truncate */
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+/* Title styling */
+.task-action-palette__title {
+    font-weight: 500;
+    font-size: var(--font-ui-medium);
+    line-height: 1.3;
+    color: var(--text-normal);
+    margin: 0;
+}
+
+.suggestion-item.is-selected .task-action-palette__title {
+    color: var(--text-on-accent);
+}
+
+/* Description styling */
+.task-action-palette__description {
+    font-size: var(--font-ui-small);
+    line-height: 1.3;
+    color: var(--text-muted);
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.suggestion-item.is-selected .task-action-palette__description {
+    color: var(--text-on-accent-inverted);
+    opacity: 0.8;
+}
+
+/* Badge area */
+.task-action-palette__badge {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+}
+
+/* Category badge styling */
+.task-action-palette__category {
+    font-size: var(--font-ui-smaller);
+    padding: 3px 8px;
+    border-radius: calc(var(--palette-border-radius) / 2);
+    background-color: var(--background-modifier-border);
+    color: var(--text-muted);
+    text-transform: capitalize;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+}
+
+.suggestion-item.is-selected .task-action-palette__category {
+    background-color: var(--text-on-accent);
+    color: var(--text-accent);
+    opacity: 0.9;
+}
+
+/* Category-specific colors */
+.task-action-palette__category--status {
+    background-color: var(--color-blue-rgb);
+    color: white;
+}
+
+.task-action-palette__category--priority {
+    background-color: var(--color-orange-rgb);
+    color: white;
+}
+
+.task-action-palette__category--dates {
+    background-color: var(--color-green-rgb);
+    color: white;
+}
+
+.task-action-palette__category--tracking {
+    background-color: var(--color-purple-rgb);
+    color: white;
+}
+
+.task-action-palette__category--organization {
+    background-color: var(--color-yellow-rgb);
+    color: white;
+}
+
+.task-action-palette__category--other {
+    background-color: var(--text-muted);
+    color: white;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+    .task-action-palette-modal .modal {
+        width: 95vw;
+        max-height: 80vh;
+    }
+    
+    .task-action-palette__suggestion {
+        padding: 8px;
+        gap: 8px;
+        min-height: 50px;
+    }
+    
+    .task-action-palette__description {
+        font-size: var(--font-ui-smaller);
+    }
+    
+    .task-action-palette__category {
+        font-size: 10px;
+        padding: 2px 6px;
+    }
+}
+
+/* Dark theme adjustments */
+.theme-dark .task-action-palette__category--status {
+    background-color: rgba(var(--color-blue-rgb), 0.8);
+}
+
+.theme-dark .task-action-palette__category--priority {
+    background-color: rgba(var(--color-orange-rgb), 0.8);
+}
+
+.theme-dark .task-action-palette__category--dates {
+    background-color: rgba(var(--color-green-rgb), 0.8);
+}
+
+.theme-dark .task-action-palette__category--tracking {
+    background-color: rgba(var(--color-purple-rgb), 0.8);
+}
+
+.theme-dark .task-action-palette__category--organization {
+    background-color: rgba(var(--color-yellow-rgb), 0.8);
+}
+
+/* Focus and accessibility */
+.task-action-palette__suggestion:focus-visible {
+    outline: 2px solid var(--interactive-accent);
+    outline-offset: 2px;
+}
+
+/* Animation for smooth appearance */
+.task-action-palette-modal .suggestion-container {
+    animation: fadeInUp 0.2s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
