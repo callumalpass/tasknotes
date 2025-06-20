@@ -52,7 +52,9 @@ export class TaskService {
                 title: title,
                 priority: priority,
                 status: status,
-                date: new Date()
+                date: new Date(),
+                dueDate: taskData.due,
+                scheduledDate: taskData.scheduled
             };
 
             const baseFilename = generateTaskFilename(filenameContext, this.plugin.settings);

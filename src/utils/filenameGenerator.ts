@@ -7,6 +7,8 @@ export interface FilenameContext {
     priority: string;
     status: string;
     date?: Date;
+    dueDate?: string; // YYYY-MM-DD format
+    scheduledDate?: string; // YYYY-MM-DD format
 }
 
 /**
@@ -130,7 +132,9 @@ function generateCustomFilename(
             day: format(date, 'dd'),
             hour: format(date, 'HH'),
             minute: format(date, 'mm'),
-            second: format(date, 'ss')
+            second: format(date, 'ss'),
+            dueDate: context.dueDate || '',
+            scheduledDate: context.scheduledDate || ''
         };
         
         let result = template;

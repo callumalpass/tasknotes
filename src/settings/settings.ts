@@ -513,17 +513,22 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 		if (this.plugin.settings.taskFilenameFormat === 'custom') {
 			new Setting(container)
 				.setName('Custom filename template')
-				.setDesc('Template for custom filenames. Available variables: {title}, {date}, {time}, {priority}, {status}, {timestamp}, etc.')
+				.setDesc('Template for custom filenames. Available variables: {title}, {date}, {time}, {priority}, {status}, {timestamp}, {dueDate}, {scheduledDate}, etc.')
 				.addText(text => {
 					text.inputEl.setAttribute('aria-label', 'Custom filename template with variables');
 					return text
-						.setPlaceholder('{date}-{title}')
+						.setPlaceholder('{date}-{title}-{dueDate}')
 						.setValue(this.plugin.settings.customFilenameTemplate)
 						.onChange(async (value) => {
 							this.plugin.settings.customFilenameTemplate = value;
 							await this.plugin.saveSettings();
 						});
 				});
+
+			container.createEl('p', {
+				text: 'Note: {dueDate} and {scheduledDate} are in YYYY-MM-DD format and will be empty if not set.',
+				cls: 'settings-help-note'
+			});
 		}
 		
 		// Basic defaults section

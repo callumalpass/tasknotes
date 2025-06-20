@@ -358,7 +358,9 @@ export class TaskCreationModal extends BaseTaskModal {
 				title: this.title,
 				priority: this.priority,
 				status: this.status,
-				date: new Date()
+				date: new Date(),
+				dueDate: this.dueDate,
+				scheduledDate: this.scheduledDate
 			};
 			
 			const filename = generateTaskFilename(filenameContext, this.plugin.settings);
