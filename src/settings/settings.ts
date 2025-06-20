@@ -430,18 +430,6 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 					});
 			});
 
-		new Setting(container)
-			.setName('Enable natural language task input')
-			.setDesc('Show a smart input field in task creation modal that can parse natural language like "Buy groceries tomorrow 3pm high priority @home #errands"')
-			.addToggle(toggle => {
-				toggle.toggleEl.setAttribute('aria-label', 'Enable natural language task input');
-				return toggle
-					.setValue(this.plugin.settings.enableNaturalLanguageInput)
-					.onChange(async (value) => {
-						this.plugin.settings.enableNaturalLanguageInput = value;
-						await this.plugin.saveSettings();
-					});
-			});
 
 		// Help section
 		const helpContainer = container.createDiv('settings-help-section');
@@ -548,6 +536,19 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 		
 		// Basic defaults section
 		new Setting(container).setName('Basic defaults').setHeading();
+		
+		new Setting(container)
+			.setName('Enable natural language task input')
+			.setDesc('Show a smart input field in task creation modal that can parse natural language like "Buy groceries tomorrow 3pm high priority @home #errands"')
+			.addToggle(toggle => {
+				toggle.toggleEl.setAttribute('aria-label', 'Enable natural language task input');
+				return toggle
+					.setValue(this.plugin.settings.enableNaturalLanguageInput)
+					.onChange(async (value) => {
+						this.plugin.settings.enableNaturalLanguageInput = value;
+						await this.plugin.saveSettings();
+					});
+			});
 		
 		new Setting(container)
 			.setName('Default task status')
