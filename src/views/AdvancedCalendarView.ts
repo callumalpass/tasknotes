@@ -259,13 +259,6 @@ export class AdvancedCalendarView extends ItemView {
             this.openScheduleTasksModal();
         });
         
-        // Add help text for timeblock creation if enabled
-        if (this.plugin.settings.calendarViewSettings.enableTimeblocking) {
-            const helpText = controlsSection.createDiv({ 
-                cls: 'advanced-calendar-view__help-text'
-            });
-            helpText.innerHTML = '💡 <strong>Timeblocks:</strong> Hold Shift + drag to create • Drag to move • Resize edges to adjust duration';
-        }
     }
     
     private updateHeaderVisibility() {
@@ -299,13 +292,6 @@ export class AdvancedCalendarView extends ItemView {
                 existingHelpText.remove();
             }
             
-            // Add help text if timeblocking is enabled
-            if (this.plugin.settings.calendarViewSettings.enableTimeblocking) {
-                const helpText = controlsSection.createDiv({ 
-                    cls: 'advanced-calendar-view__help-text'
-                });
-                helpText.innerHTML = '💡 <strong>Timeblocks:</strong> Hold Shift + drag to create • Drag to move • Resize edges to adjust duration';
-            }
         }
     }
 

@@ -998,6 +998,11 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 			cls: 'settings-help-note'
 		});
 
+		container.createEl('p', {
+			text: '💡 Tip: In the calendar view, hold Shift + drag to create timeblocks • Drag to move • Resize edges to adjust duration',
+			cls: 'settings-help-note'
+		});
+
 		// Calendar behavior section
 		new Setting(container).setName('Calendar behavior').setHeading();
 
