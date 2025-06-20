@@ -20,6 +20,18 @@ export function createTaskLinkField(plugin: TaskNotesPlugin) {
     
     return StateField.define<DecorationSet>({
         create(state): DecorationSet {
+            // Build decorations immediately when the state field is created
+            // This ensures overlays appear when returning to a note
+            try {
+                if (plugin?.settings?.enableTaskLinkOverlay) {
+                    const isLivePreview = state.field(editorLivePreviewField);
+                    if (isLivePreview) {
+                        return buildTaskLinkDecorations(state, plugin, activeWidgets);
+                    }
+                }
+            } catch (error) {
+                console.debug('Error building initial decorations:', error);
+            }
             return Decoration.none;
         },
         

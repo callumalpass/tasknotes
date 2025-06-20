@@ -1,4 +1,4 @@
-import { Notice, Plugin, TFile, WorkspaceLeaf, normalizePath, Editor } from 'obsidian';
+import { Notice, Plugin, TFile, WorkspaceLeaf, normalizePath, Editor, MarkdownView } from 'obsidian';
 import { format } from 'date-fns';
 import * as YAML from 'yaml';
 import { 
@@ -281,6 +281,20 @@ export default class TaskNotesPlugin extends Plugin {
 						}
 					});
 				});
+				
+				// Set up workspace event listener for active leaf changes to refresh task overlays
+				this.registerEvent(this.app.workspace.on('active-leaf-change', (leaf) => {
+					// Small delay to ensure editor is fully initialized
+					setTimeout(() => {
+						if (leaf && leaf.view && leaf.view.getViewType() === 'markdown') {
+							const editor = (leaf.view as any).editor;
+							if (editor && editor.cm) {
+								// Dispatch task update to refresh overlays when returning to a note
+								dispatchTaskUpdate(editor.cm);
+							}
+						}
+					}, 50);
+				}));
 				
 			} catch (error) {
 				console.error('Error during lazy service initialization:', error);
