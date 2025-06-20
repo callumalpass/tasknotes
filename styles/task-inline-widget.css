@@ -81,8 +81,8 @@
     opacity: 0.8;
 }
 
-.tasknotes-plugin .task-inline-preview__pencil:hover {
-    opacity: 1 !important;
+body .tasknotes-plugin .task-inline-preview:hover .task-inline-preview__pencil:hover {
+    opacity: 1;
 }
 
 /* Hover state */
@@ -91,73 +91,73 @@
 }
 
 /* Completed task styling with maximum specificity */
-span.tasknotes-plugin.task-inline-preview.task-inline-preview--completed span.task-inline-preview__title,
-.tasknotes-plugin.task-inline-preview.task-inline-preview--completed .task-inline-preview__title,
-.tasknotes-plugin .task-inline-preview--completed .task-inline-preview__title {
-    text-decoration: line-through !important;
-    opacity: 0.7 !important;
-    color: var(--text-muted) !important;
+body .tasknotes-plugin span.task-inline-preview.task-inline-preview--completed span.task-inline-preview__title,
+body .tasknotes-plugin.task-inline-preview.task-inline-preview--completed .task-inline-preview__title,
+body .tasknotes-plugin .task-inline-preview--completed .task-inline-preview__title {
+    text-decoration: line-through;
+    opacity: 0.7;
+    color: var(--text-muted);
 }
 
-span.tasknotes-plugin.task-inline-preview.task-inline-preview--completed,
-.tasknotes-plugin.task-inline-preview.task-inline-preview--completed,
-.tasknotes-plugin .task-inline-preview--completed {
-    opacity: 0.8 !important;
+body .tasknotes-plugin span.task-inline-preview.task-inline-preview--completed,
+body .tasknotes-plugin.task-inline-preview.task-inline-preview--completed,
+body .tasknotes-plugin .task-inline-preview--completed {
+    opacity: 0.8;
 }
 
 /* =================================================================
    INSTANT CONVERT BUTTON STYLES
    ================================================================= */
 
-/* Convert button for checkbox tasks - High specificity and !important to override browser defaults */
-.tasknotes-plugin button.instant-convert-button {
+/* Convert button for checkbox tasks - High specificity to override browser defaults */
+body .tasknotes-plugin button.instant-convert-button {
     /* Layout */
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     
     /* Sizing */
-    width: 15px !important;
-    height: 15px !important;
-    margin-left: 8px !important;
-    padding: 0 !important;
+    width: 15px;
+    height: 15px;
+    margin-left: 8px;
+    padding: 0;
     
     /* Visual styling */
-    background: transparent !important;
-    color: var(--text-muted) !important;
-    border: none !important;
-    border-radius: 3px !important;
+    background: transparent;
+    color: var(--text-muted);
+    border: none;
+    border-radius: 3px;
     
     /* Interactivity */
-    cursor: pointer !important;
-    opacity: 0.6 !important;
-    transition: all 0.15s ease !important;
+    cursor: pointer;
+    opacity: 0.6;
+    transition: all 0.15s ease;
     
     /* Reset button styles */
-    font-family: inherit !important;
-    font-size: inherit !important;
-    line-height: 1 !important;
-    box-sizing: border-box !important;
-    outline: none !important;
-    text-decoration: none !important;
-    vertical-align: baseline !important;
+    font-family: inherit;
+    font-size: inherit;
+    line-height: 1;
+    box-sizing: border-box;
+    outline: none;
+    text-decoration: none;
+    vertical-align: baseline;
 }
 
-.tasknotes-plugin button.instant-convert-button:hover {
-    background: var(--interactive-accent) !important;
-    color: var(--text-on-accent) !important;
-    opacity: 1 !important;
-    transform: scale(1.1) !important;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+body .tasknotes-plugin button.instant-convert-button:hover {
+    background: var(--interactive-accent);
+    color: var(--text-on-accent);
+    opacity: 1;
+    transform: scale(1.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-.tasknotes-plugin button.instant-convert-button:active {
-    transform: scale(0.95) !important;
+body .tasknotes-plugin button.instant-convert-button:active {
+    transform: scale(0.95);
 }
 
-.tasknotes-plugin button.instant-convert-button:focus {
-    outline: 2px solid var(--interactive-accent) !important;
-    outline-offset: 1px !important;
+body .tasknotes-plugin button.instant-convert-button:focus {
+    outline: 2px solid var(--interactive-accent);
+    outline-offset: 1px;
 }
 
 /* Icon inside the convert button */

@@ -1,4 +1,4 @@
-import { ItemView, WorkspaceLeaf, TFile, Notice, EventRef } from 'obsidian';
+import { ItemView, WorkspaceLeaf, TFile, Notice, EventRef, Menu } from 'obsidian';
 import { format, startOfDay, endOfDay } from 'date-fns';
 import { Calendar } from '@fullcalendar/core';
 import { 
@@ -1680,80 +1680,42 @@ export class AdvancedCalendarView extends ItemView {
     }
 
     private showICSEventContextMenu(jsEvent: MouseEvent, icsEvent: ICSEvent, subscriptionName?: string): void {
-        // Simple context menu with limited options
-        const menu = document.createElement('div');
-        menu.className = 'ics-event-context-menu';
-        menu.style.position = 'fixed';
-        menu.style.left = jsEvent.clientX + 'px';
-        menu.style.top = jsEvent.clientY + 'px';
-        menu.style.zIndex = '10000';
-        menu.style.backgroundColor = 'var(--background-primary)';
-        menu.style.border = '1px solid var(--background-modifier-border)';
-        menu.style.borderRadius = '4px';
-        menu.style.padding = '4px 0';
-        menu.style.minWidth = '120px';
-        menu.style.boxShadow = '0 2px 8px rgba(0,0,0,0.15)';
-        
+        const menu = new Menu();
+
         // Show details option
-        const showDetailsItem = menu.createDiv();
-        showDetailsItem.className = 'ics-context-menu-item';
-        showDetailsItem.style.padding = '6px 12px';
-        showDetailsItem.style.cursor = 'pointer';
-        showDetailsItem.textContent = 'Show details';
-        showDetailsItem.addEventListener('click', () => {
-            this.showICSEventInfo(icsEvent, subscriptionName);
-            menu.remove();
-        });
-        
+        menu.addItem((item) =>
+            item
+                .setTitle("Show details")
+                .setIcon("info")
+                .onClick(() => {
+                    this.showICSEventInfo(icsEvent, subscriptionName);
+                })
+        );
+
         // Copy title option
-        const copyTitleItem = menu.createDiv();
-        copyTitleItem.className = 'ics-context-menu-item';
-        copyTitleItem.style.padding = '6px 12px';
-        copyTitleItem.style.cursor = 'pointer';
-        copyTitleItem.textContent = 'Copy title';
-        copyTitleItem.addEventListener('click', () => {
-            navigator.clipboard.writeText(icsEvent.title);
-            new Notice('Event title copied to clipboard');
-            menu.remove();
-        });
-        
+        menu.addItem((item) =>
+            item
+                .setTitle("Copy title")
+                .setIcon("copy")
+                .onClick(() => {
+                    navigator.clipboard.writeText(icsEvent.title);
+                    new Notice('Event title copied to clipboard');
+                })
+        );
+
         // Copy URL option (if available)
         if (icsEvent.url) {
-            const copyUrlItem = menu.createDiv();
-            copyUrlItem.className = 'ics-context-menu-item';
-            copyUrlItem.style.padding = '6px 12px';
-            copyUrlItem.style.cursor = 'pointer';
-            copyUrlItem.textContent = 'Copy URL';
-            copyUrlItem.addEventListener('click', () => {
-                navigator.clipboard.writeText(icsEvent.url!);
-                new Notice('Event URL copied to clipboard');
-                menu.remove();
-            });
+            menu.addItem((item) =>
+                item
+                    .setTitle("Copy URL")
+                    .setIcon("link")
+                    .onClick(() => {
+                        navigator.clipboard.writeText(icsEvent.url!);
+                        new Notice('Event URL copied to clipboard');
+                    })
+            );
         }
-        
-        document.body.appendChild(menu);
-        
-        // Handle menu item hover effects
-        const menuItems = menu.querySelectorAll('.ics-context-menu-item');
-        menuItems.forEach(item => {
-            item.addEventListener('mouseenter', () => {
-                (item as HTMLElement).style.backgroundColor = 'var(--background-modifier-hover)';
-            });
-            item.addEventListener('mouseleave', () => {
-                (item as HTMLElement).style.backgroundColor = 'transparent';
-            });
-        });
-        
-        // Close menu when clicking outside
-        const closeMenu = (e: MouseEvent) => {
-            if (!menu.contains(e.target as Node)) {
-                menu.remove();
-                document.removeEventListener('click', closeMenu);
-            }
-        };
-        
-        setTimeout(() => {
-            document.addEventListener('click', closeMenu);
-        }, 0);
+
+        menu.showAtMouseEvent(jsEvent);
     }
 }

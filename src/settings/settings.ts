@@ -3,6 +3,8 @@ import TaskNotesPlugin from '../main';
 import { FieldMapping, StatusConfig, PriorityConfig } from '../types';
 import { StatusManager } from '../services/StatusManager';
 import { PriorityManager } from '../services/PriorityManager';
+import { showConfirmationModal } from '../modals/ConfirmationModal';
+import { showStorageLocationConfirmationModal } from '../modals/StorageLocationConfirmationModal';
 
 export interface TaskNotesSettings {
 	tasksFolder: string;  // Now just a default location for new tasks
@@ -1530,42 +1532,23 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 					return;
 				}
 				
-				// Create confirmation dialog
-				const confirmModal = document.createElement('div');
-				confirmModal.className = 'modal-container mod-confirmation';
-				
-				// Build modal structure programmatically
-				const modalBg = confirmModal.createDiv('modal-bg');
-				const modal = confirmModal.createDiv('modal');
-				
-				modal.createDiv('modal-title').textContent = 'Delete Status';
-				
-				const modalContent = modal.createDiv('modal-content');
-				modalContent.createEl('p').textContent = `Are you sure you want to delete the status "${status.label}"?`;
-				modalContent.createEl('p').textContent = 'This action cannot be undone and may affect existing tasks.';
-				
-				const buttonContainer = modal.createDiv('modal-button-container');
-				const deleteButton = buttonContainer.createEl('button', { cls: 'mod-cta', text: 'Delete' });
-				deleteButton.dataset.action = 'delete';
-				const cancelButton = buttonContainer.createEl('button', { text: 'Cancel' });
-				cancelButton.dataset.action = 'cancel';
-				
-				document.body.appendChild(confirmModal);
-				
-				confirmModal.addEventListener('click', async (e) => {
-					const target = e.target as HTMLElement;
-					if (target.dataset.action === 'delete') {
-						const statusIndex = this.plugin.settings.customStatuses.findIndex(s => s.id === status.id);
-						if (statusIndex !== -1) {
-							this.plugin.settings.customStatuses.splice(statusIndex, 1);
-							await this.plugin.saveSettings();
-							this.renderActiveTab();
-						}
-						confirmModal.remove();
-					} else if (target.dataset.action === 'cancel' || target.classList.contains('modal-bg')) {
-						confirmModal.remove();
-					}
+				// Show confirmation dialog using Obsidian's Modal API
+				const confirmed = await showConfirmationModal(this.app, {
+					title: 'Delete Status',
+					message: `Are you sure you want to delete the status "${status.label}"?\n\nThis action cannot be undone and may affect existing tasks.`,
+					confirmText: 'Delete',
+					cancelText: 'Cancel',
+					isDestructive: true
 				});
+				
+				if (confirmed) {
+					const statusIndex = this.plugin.settings.customStatuses.findIndex(s => s.id === status.id);
+					if (statusIndex !== -1) {
+						this.plugin.settings.customStatuses.splice(statusIndex, 1);
+						await this.plugin.saveSettings();
+						this.renderActiveTab();
+					}
+				}
 			});
 		});
 	}
@@ -1725,42 +1708,23 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 					return;
 				}
 				
-				// Create confirmation dialog
-				const confirmModal = document.createElement('div');
-				confirmModal.className = 'modal-container mod-confirmation';
-				
-				// Build modal structure programmatically
-				const modalBg = confirmModal.createDiv('modal-bg');
-				const modal = confirmModal.createDiv('modal');
-				
-				modal.createDiv('modal-title').textContent = 'Delete Priority';
-				
-				const modalContent = modal.createDiv('modal-content');
-				modalContent.createEl('p').textContent = `Are you sure you want to delete the priority "${priority.label}"?`;
-				modalContent.createEl('p').textContent = 'This action cannot be undone and may affect existing tasks.';
-				
-				const buttonContainer = modal.createDiv('modal-button-container');
-				const deleteButton = buttonContainer.createEl('button', { cls: 'mod-cta', text: 'Delete' });
-				deleteButton.dataset.action = 'delete';
-				const cancelButton = buttonContainer.createEl('button', { text: 'Cancel' });
-				cancelButton.dataset.action = 'cancel';
-				
-				document.body.appendChild(confirmModal);
-				
-				confirmModal.addEventListener('click', async (e) => {
-					const target = e.target as HTMLElement;
-					if (target.dataset.action === 'delete') {
-						const priorityIndex = this.plugin.settings.customPriorities.findIndex(p => p.id === priority.id);
-						if (priorityIndex !== -1) {
-							this.plugin.settings.customPriorities.splice(priorityIndex, 1);
-							await this.plugin.saveSettings();
-							this.renderActiveTab();
-						}
-						confirmModal.remove();
-					} else if (target.dataset.action === 'cancel' || target.classList.contains('modal-bg')) {
-						confirmModal.remove();
-					}
+				// Show confirmation dialog using Obsidian's Modal API
+				const confirmed = await showConfirmationModal(this.app, {
+					title: 'Delete Priority',
+					message: `Are you sure you want to delete the priority "${priority.label}"?\n\nThis action cannot be undone and may affect existing tasks.`,
+					confirmText: 'Delete',
+					cancelText: 'Cancel',
+					isDestructive: true
 				});
+				
+				if (confirmed) {
+					const priorityIndex = this.plugin.settings.customPriorities.findIndex(p => p.id === priority.id);
+					if (priorityIndex !== -1) {
+						this.plugin.settings.customPriorities.splice(priorityIndex, 1);
+						await this.plugin.saveSettings();
+						this.renderActiveTab();
+					}
+				}
 			});
 		});
 	}
@@ -1932,8 +1896,8 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 							const data = await this.plugin.loadData();
 							const hasExistingData = data?.pomodoroHistory && Array.isArray(data.pomodoroHistory) && data.pomodoroHistory.length > 0;
 							
-							// Show confirmation dialog
-							const confirmed = await this.showStorageLocationConfirmation(hasExistingData);
+							// Show confirmation dialog using Obsidian's Modal API
+							const confirmed = await showStorageLocationConfirmationModal(this.app, hasExistingData);
 							if (!confirmed) {
 								dropdown.setValue('plugin'); // Reset to plugin storage if user cancels
 								return;
@@ -1956,108 +1920,6 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 				}));
 	}
 
-	/**
-	 * Show confirmation dialog for switching to daily notes storage
-	 */
-	private async showStorageLocationConfirmation(hasExistingData: boolean): Promise<boolean> {
-		return new Promise((resolve) => {
-			const modal = document.createElement('div');
-			modal.className = 'modal-container mod-confirmation';
-			
-			// Create modal background
-			const modalBg = modal.createDiv('modal-bg');
-			
-			// Create modal content container
-			const modalContent = modal.createDiv('modal');
-			
-			// Create title
-			const title = hasExistingData ? 'Migrate pomodoro data?' : 'Switch to daily notes storage?';
-			modalContent.createDiv('modal-title').textContent = title;
-			
-			// Create content area
-			const content = modalContent.createDiv('modal-content');
-			
-			// Main message
-			const message = hasExistingData 
-				? 'This will migrate your existing pomodoro session data to daily notes frontmatter. The data will be grouped by date and stored in each daily note.'
-				: 'Pomodoro session data will be stored in daily notes frontmatter instead of the plugin data file.';
-			const messageP = content.createEl('p');
-			const strongMessage = messageP.createEl('strong');
-			strongMessage.textContent = message;
-			
-			content.createEl('br');
-			
-			// "What this means" section
-			content.createEl('p').textContent = 'What this means:';
-			const warningsList = content.createEl('ul');
-			
-			const warnings = [
-				'Daily Notes core plugin must remain enabled',
-				'Data will be stored in your daily notes frontmatter',
-				hasExistingData ? 'Existing plugin data will be migrated and then cleared' : 'Future sessions will be saved to daily notes',
-				'This provides better data longevity with your notes'
-			];
-			
-			warnings.forEach(warning => {
-				const listItem = warningsList.createEl('li');
-				listItem.textContent = `• ${warning}`;
-			});
-			
-			content.createEl('br');
-			
-			// Final warning/note
-			const finalNote = content.createEl('p');
-			if (hasExistingData) {
-				const strongWarning = finalNote.createEl('strong');
-				strongWarning.textContent = '⚠️ Make sure you have backups if needed. This change cannot be automatically undone.';
-			} else {
-				finalNote.textContent = 'You can switch back to plugin storage at any time in the future.';
-			}
-			
-			// Create buttons
-			const buttonContainer = modalContent.createDiv('modal-button-container');
-			const confirmButton = buttonContainer.createEl('button', { cls: 'mod-cta' });
-			confirmButton.textContent = hasExistingData ? 'Migrate data' : 'Switch storage';
-			confirmButton.setAttribute('data-action', 'confirm');
-			
-			const cancelButton = buttonContainer.createEl('button');
-			cancelButton.textContent = 'Cancel';
-			cancelButton.setAttribute('data-action', 'cancel');
-
-			document.body.appendChild(modal);
-
-			const handleClick = (e: Event) => {
-				const target = e.target as HTMLElement;
-				if (target.dataset.action === 'confirm') {
-					modal.remove();
-					resolve(true);
-				} else if (target.dataset.action === 'cancel' || target.classList.contains('modal-bg')) {
-					modal.remove();
-					resolve(false);
-				}
-			};
-
-			modal.addEventListener('click', handleClick);
-
-			// Handle escape key
-			const handleKeydown = (e: KeyboardEvent) => {
-				if (e.key === 'Escape') {
-					modal.remove();
-					document.removeEventListener('keydown', handleKeydown);
-					resolve(false);
-				}
-			};
-			document.addEventListener('keydown', handleKeydown);
-
-			// Focus the confirm button
-			setTimeout(() => {
-				const confirmButton = modal.querySelector('[data-action="confirm"]') as HTMLElement;
-				if (confirmButton) {
-					confirmButton.focus();
-				}
-			}, 50);
-		});
-	}
 
 
 	private renderSubscriptionList(container: HTMLElement): void {
