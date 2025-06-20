@@ -95,7 +95,7 @@ export class MinimalNativeCache extends Events {
         if (this.indexesBuilt) return;
         
         this.indexesBuilt = true;
-        setTimeout(() => this.buildEssentialIndexes(), 1);
+        window.setTimeout(() => this.buildEssentialIndexes(), 1);
     }
     
     /**
@@ -123,7 +123,7 @@ export class MinimalNativeCache extends Events {
                 }
                 
                 // Yield control between batches
-                await new Promise(resolve => setTimeout(resolve, 1));
+                await new Promise(resolve => window.setTimeout(resolve, 1));
             }
             
             this.trigger('indexes-built', { 

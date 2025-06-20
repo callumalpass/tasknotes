@@ -87,7 +87,7 @@ export class KanbanView extends ItemView {
                     
                     // Add update animation for real user updates
                     taskElement.classList.add('task-card--updated');
-                    setTimeout(() => {
+                    window.setTimeout(() => {
                         taskElement.classList.remove('task-card--updated');
                     }, 1000);
                 } catch (error) {
@@ -129,7 +129,7 @@ export class KanbanView extends ItemView {
         this.listeners.forEach(listener => this.plugin.emitter.offref(listener));
         this.functionListeners.forEach(unsubscribe => unsubscribe());
         if (this.refreshTimeout) {
-            clearTimeout(this.refreshTimeout);
+            window.clearTimeout(this.refreshTimeout);
             this.refreshTimeout = null;
         }
         
@@ -488,7 +488,7 @@ export class KanbanView extends ItemView {
                 e.dataTransfer.setData('text/plain', task.path);
                 e.dataTransfer.effectAllowed = 'move';
             }
-            setTimeout(() => card.classList.add('task-card--dragging'), 0);
+            window.setTimeout(() => card.classList.add('task-card--dragging'), 0);
         });
 
         card.addEventListener('dragend', () => {
@@ -806,12 +806,12 @@ export class KanbanView extends ItemView {
     }
 
     // Debounced refresh to avoid multiple rapid refreshes
-    private refreshTimeout: NodeJS.Timeout | null = null;
+    private refreshTimeout: number | null = null;
     private debounceRefresh() {
         if (this.refreshTimeout) {
-            clearTimeout(this.refreshTimeout);
+            window.clearTimeout(this.refreshTimeout);
         }
-        this.refreshTimeout = setTimeout(() => {
+        this.refreshTimeout = window.setTimeout(() => {
             this.refresh();
             this.refreshTimeout = null;
         }, 150);

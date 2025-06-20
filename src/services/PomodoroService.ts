@@ -27,11 +27,11 @@ import { getSessionDuration } from '../utils/pomodoroUtils';
 
 export class PomodoroService {
     private plugin: TaskNotesPlugin;
-    private timerInterval: NodeJS.Timeout | null = null;
+    private timerInterval: number | null = null;
     private state: PomodoroState;
     private stateFile = 'pomodoro-state.json';
     private activeAudioContexts: Set<AudioContext> = new Set();
-    private cleanupTimeouts: Set<NodeJS.Timeout> = new Set();
+    private cleanupTimeouts: Set<number> = new Set();
     private visibilityChangeHandler: (() => void) | null = null;
 
     constructor(plugin: TaskNotesPlugin) {
@@ -377,7 +377,7 @@ export class PomodoroService {
             console.error('Failed to save state when starting timer:', error);
         });
         
-        this.timerInterval = setInterval(async () => {
+        this.timerInterval = window.setInterval(async () => {
             if (this.state.timeRemaining > 0) {
                 this.state.timeRemaining--;
                 
@@ -403,7 +403,7 @@ export class PomodoroService {
 
     private stopTimer() {
         if (this.timerInterval) {
-            clearInterval(this.timerInterval);
+            window.clearInterval(this.timerInterval);
             this.timerInterval = null;
         }
     }
@@ -528,10 +528,10 @@ export class PomodoroService {
 
         // Auto-start next session if configured
         if (session.type === 'work' && this.plugin.settings.pomodoroAutoStartBreaks) {
-            const timeout = setTimeout(() => this.startBreak(shouldTakeLongBreak), 1000);
+            const timeout = window.setTimeout(() => this.startBreak(shouldTakeLongBreak), 1000);
             this.cleanupTimeouts.add(timeout);
         } else if (session.type !== 'work' && this.plugin.settings.pomodoroAutoStartWork) {
-            const timeout = setTimeout(() => this.startPomodoro(), 1000);
+            const timeout = window.setTimeout(() => this.startPomodoro(), 1000);
             this.cleanupTimeouts.add(timeout);
         }
     }
@@ -617,7 +617,7 @@ export class PomodoroService {
             this.activeAudioContexts.add(audioContext);
             
             // Second beep
-            const beepTimeout = setTimeout(() => {
+            const beepTimeout = window.setTimeout(() => {
                 try {
                     const osc2 = audioContext.createOscillator();
                     osc2.connect(gainNode);
@@ -632,7 +632,7 @@ export class PomodoroService {
             this.cleanupTimeouts.add(beepTimeout);
             
             // Clean up audio context after sounds complete
-            const cleanupTimeout = setTimeout(() => {
+            const cleanupTimeout = window.setTimeout(() => {
                 this.activeAudioContexts.delete(audioContext);
                 audioContext.close().catch(() => {});
             }, 300);
@@ -829,7 +829,7 @@ export class PomodoroService {
         
         // Clean up all timeouts
         for (const timeout of this.cleanupTimeouts) {
-            clearTimeout(timeout);
+            window.clearTimeout(timeout);
         }
         this.cleanupTimeouts.clear();
         

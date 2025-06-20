@@ -340,7 +340,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 		this.display(); // Re-render the entire settings tab
 		
 		// Focus the newly active tab button
-		setTimeout(() => {
+		window.setTimeout(() => {
 			const activeTabButton = this.containerEl.querySelector(`#tab-button-${tabId}`) as HTMLElement;
 			if (activeTabButton) {
 				activeTabButton.focus();
@@ -2204,7 +2204,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 		});
 		
 		// Focus the name input
-		setTimeout(() => nameInput.focus(), 50);
+		window.setTimeout(() => nameInput.focus(), 50);
 	}
 
 

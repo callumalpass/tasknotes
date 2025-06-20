@@ -197,7 +197,7 @@ export function updateNoteCard(element: HTMLElement, note: NoteInfo, plugin: Tas
     
     // Add update animation
     element.classList.add('note-card--updated');
-    setTimeout(() => {
+    window.setTimeout(() => {
         element.classList.remove('note-card--updated');
     }, 1000);
 }

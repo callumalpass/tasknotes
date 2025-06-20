@@ -148,7 +148,7 @@ export abstract class BaseTaskModal extends Modal {
         });
 
         input.addEventListener('blur', () => {
-            setTimeout(() => this.hideSuggestions(container), 200);
+            window.setTimeout(() => this.hideSuggestions(container), 200);
         });
 
         input.addEventListener('keydown', (e) => {

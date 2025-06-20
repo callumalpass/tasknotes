@@ -7,7 +7,7 @@
 export class DOMReconciler {
     private updateQueue: (() => void)[] = [];
     private isProcessing = false;
-    private activeTimeouts: Set<NodeJS.Timeout> = new Set();
+    private activeTimeouts: Set<number> = new Set();
     
     /**
      * Schedule a DOM update to be processed in the next animation frame
@@ -156,7 +156,7 @@ export class DOMReconciler {
     animateUpdate(element: HTMLElement, animation: 'flash' | 'pulse' | 'fade-in', duration = 1500): void {
         element.classList.add(`task-${animation}`);
         
-        const timeout = setTimeout(() => {
+        const timeout = window.setTimeout(() => {
             element.classList.remove(`task-${animation}`);
             this.activeTimeouts.delete(timeout);
         }, duration);
@@ -258,7 +258,7 @@ export class DOMReconciler {
         
         // Clear all active timeouts
         for (const timeout of this.activeTimeouts) {
-            clearTimeout(timeout);
+            window.clearTimeout(timeout);
         }
         this.activeTimeouts.clear();
     }

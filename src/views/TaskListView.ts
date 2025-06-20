@@ -109,7 +109,7 @@ export class TaskListView extends ItemView {
                     
                     // Add update animation for real user updates
                     taskElement.classList.add('task-updated');
-                    setTimeout(() => {
+                    window.setTimeout(() => {
                         taskElement.classList.remove('task-updated');
                     }, 1000);
                 } catch (error) {
@@ -167,7 +167,7 @@ export class TaskListView extends ItemView {
             if (this.plugin.cacheManager && this.plugin.cacheManager.isInitialized()) {
                 await this.refresh();
             } else if (attempts < maxAttempts) {
-                setTimeout(checkReady, 100);
+                window.setTimeout(checkReady, 100);
             } else {
                 // Timeout - try to refresh anyway
                 console.warn('TaskListView: Cache initialization timeout, attempting to load anyway');

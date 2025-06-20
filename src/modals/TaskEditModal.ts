@@ -56,7 +56,7 @@ export class TaskEditModal extends BaseTaskModal {
             // Auto-focus on the title field for immediate editing
             const input = container.querySelector('input');
             if (input) {
-                setTimeout(() => input.focus(), 50);
+                window.setTimeout(() => input.focus(), 50);
             }
         });
 

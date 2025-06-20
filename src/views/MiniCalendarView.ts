@@ -1205,10 +1205,10 @@ export class MiniCalendarView extends ItemView {
      * Simple debounce utility
      */
     private debounce(func: Function, wait: number): () => void {
-        let timeout: NodeJS.Timeout;
+        let timeout: number;
         return (...args: any[]) => {
-            clearTimeout(timeout);
-            timeout = setTimeout(() => func.apply(this, args), wait);
+            window.clearTimeout(timeout);
+            timeout = window.setTimeout(() => func.apply(this, args), wait);
         };
     }
     

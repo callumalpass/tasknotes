@@ -94,7 +94,7 @@ export class DueDateModal extends Modal {
         });
         
         // Focus the date input
-        setTimeout(() => this.dueDateInput.focus(), 100);
+        window.setTimeout(() => this.dueDateInput.focus(), 100);
 
         // Quick date buttons
         const quickDatesContainer = contentEl.createDiv({ cls: 'modal-form__group' });
@@ -202,7 +202,7 @@ export class DueDateModal extends Modal {
             this.dueDateInput.setAttribute('aria-invalid', 'true');
             this.dueDateInput.setAttribute('aria-describedby', 'due-date-error');
             errorEl.setAttribute('id', 'due-date-error');
-            setTimeout(() => {
+            window.setTimeout(() => {
                 errorEl.remove();
                 this.dueDateInput.removeAttribute('aria-invalid');
                 this.dueDateInput.removeAttribute('aria-describedby');
@@ -224,7 +224,7 @@ export class DueDateModal extends Modal {
                 text: 'Failed to update due date. Please try again.',
                 cls: 'modal-form__error'
             });
-            setTimeout(() => errorEl.remove(), 3000);
+            window.setTimeout(() => errorEl.remove(), 3000);
         }
     }
 

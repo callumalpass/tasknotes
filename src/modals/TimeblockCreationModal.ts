@@ -62,7 +62,7 @@ export class TimeblockCreationModal extends Modal {
                     .setValue(this.options.prefilledTitle || '')
                     .onChange(() => this.validateForm());
                 // Focus on title input
-                setTimeout(() => this.titleInput.focus(), 100);
+                window.setTimeout(() => this.titleInput.focus(), 100);
             });
 
         // Time range

@@ -8,7 +8,7 @@ export class ICSSubscriptionService extends EventEmitter {
     private plugin: TaskNotesPlugin;
     private subscriptions: ICSSubscription[] = [];
     private cache: Map<string, ICSCache> = new Map();
-    private refreshTimers: Map<string, NodeJS.Timeout> = new Map();
+    private refreshTimers: Map<string, number> = new Map();
     private fileWatchers: Map<string, () => void> = new Map(); // For local file change tracking
 
     constructor(plugin: TaskNotesPlugin) {
@@ -361,7 +361,7 @@ export class ICSSubscriptionService extends EventEmitter {
         const watcherCallback = (file: TFile, oldPath?: string) => {
             if (file.path === subscription.filePath || oldPath === subscription.filePath) {
                 // Debounce file changes to avoid excessive updates
-                setTimeout(() => {
+                window.setTimeout(() => {
                     this.fetchSubscription(subscription.id);
                 }, 1000);
             }
@@ -387,7 +387,7 @@ export class ICSSubscriptionService extends EventEmitter {
 
         // Set up periodic refresh for local files (less frequent than remote)
         const intervalMs = subscription.refreshInterval * 60 * 1000;
-        const timer = setInterval(() => {
+        const timer = window.setInterval(() => {
             this.fetchSubscription(subscription.id);
         }, intervalMs);
         
@@ -410,7 +410,7 @@ export class ICSSubscriptionService extends EventEmitter {
         this.stopRefreshTimer(subscription.id);
         
         const intervalMs = subscription.refreshInterval * 60 * 1000; // Convert minutes to milliseconds
-        const timer = setInterval(() => {
+        const timer = window.setInterval(() => {
             this.fetchSubscription(subscription.id);
         }, intervalMs);
         
@@ -420,7 +420,7 @@ export class ICSSubscriptionService extends EventEmitter {
     private stopRefreshTimer(id: string): void {
         const timer = this.refreshTimers.get(id);
         if (timer) {
-            clearInterval(timer);
+            window.clearInterval(timer);
             this.refreshTimers.delete(id);
         }
     }
@@ -431,7 +431,7 @@ export class ICSSubscriptionService extends EventEmitter {
 
     destroy(): void {
         // Clear all timers
-        this.refreshTimers.forEach(timer => clearInterval(timer));
+        this.refreshTimers.forEach(timer => window.clearInterval(timer));
         this.refreshTimers.clear();
         
         // Clear all file watchers

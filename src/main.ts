@@ -245,7 +245,7 @@ export default class TaskNotesPlugin extends Plugin {
 	 */
 	private initializeServicesLazily(): void {
 		// Use setTimeout to defer initialization to next tick
-		setTimeout(async () => {
+		window.setTimeout(async () => {
 			try {
 				// Initialize Pomodoro service
 				this.pomodoroService = new PomodoroService(this);
@@ -450,7 +450,7 @@ export default class TaskNotesPlugin extends Plugin {
 		
 		if (hasNewFields) {
 			// Save the migrated settings to include new field mappings (non-blocking)
-			setTimeout(() => {
+			window.setTimeout(() => {
 				this.saveData(this.settings).catch(error => {
 					console.error('Failed to save migrated settings:', error);
 				});

@@ -89,7 +89,7 @@ export class StorageLocationConfirmationModal extends Modal {
         });
 
         // Focus the confirm button
-        setTimeout(() => {
+        window.setTimeout(() => {
             confirmButton.focus();
         }, 50);
     }

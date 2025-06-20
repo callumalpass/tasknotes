@@ -35,14 +35,14 @@ export function debounce<T extends (...args: any[]) => any>(
     func: T,
     wait: number
 ): (...args: Parameters<T>) => void {
-    let timeout: ReturnType<typeof setTimeout> | null = null;
+    let timeout: number | null = null;
     
     return function debounced(...args: Parameters<T>) {
         if (timeout) {
-            clearTimeout(timeout);
+            window.clearTimeout(timeout);
         }
         
-        timeout = setTimeout(() => {
+        timeout = window.setTimeout(() => {
             func(...args);
             timeout = null;
         }, wait);

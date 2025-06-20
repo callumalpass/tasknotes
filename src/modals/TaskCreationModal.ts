@@ -46,6 +46,11 @@ export class TaskCreationModal extends BaseTaskModal {
 			plugin.settings.customStatuses,
 			plugin.settings.customPriorities
 		);
+		
+		// If this is a task conversion, start with detailed form visible
+		if (this.conversionOptions.parsedData) {
+			this.isDetailedFormVisible = true;
+		}
 	}
 
 	protected async initializeFormData(): Promise<void> {
@@ -199,7 +204,7 @@ export class TaskCreationModal extends BaseTaskModal {
 
 		// Create container for detailed form
 		this.detailedFormContainer = contentEl.createDiv({ cls: 'detailed-form-container' });
-		if (this.plugin.settings.enableNaturalLanguageInput) {
+		if (this.plugin.settings.enableNaturalLanguageInput && !this.conversionOptions.parsedData) {
 			this.detailedFormContainer.style.display = 'none';
 		}
 		
@@ -234,7 +239,7 @@ export class TaskCreationModal extends BaseTaskModal {
 			});
 			
 			// Auto-focus on the title field
-			setTimeout(() => input.focus(), 50);
+			window.setTimeout(() => input.focus(), 50);
 		});
 		
 		// Filename preview
@@ -245,8 +250,8 @@ export class TaskCreationModal extends BaseTaskModal {
 			});
 		});
 
-		// Hide filename preview if natural language input is enabled
-		if (this.plugin.settings.enableNaturalLanguageInput) {
+		// Hide filename preview if natural language input is enabled and not converting a task
+		if (this.plugin.settings.enableNaturalLanguageInput && !this.conversionOptions.parsedData) {
 			this.filenamePreviewContainer.style.display = 'none';
 		}
 		
@@ -613,7 +618,7 @@ export class TaskCreationModal extends BaseTaskModal {
 
 			const showDetailButton = buttonContainer.createEl('button', {
 				cls: 'nl-show-detail-button',
-				text: 'Show detailed options'
+				text: this.isDetailedFormVisible ? 'Hide detailed options' : 'Show detailed options'
 			});
 
 			// Add spacing between buttons
@@ -659,7 +664,7 @@ export class TaskCreationModal extends BaseTaskModal {
 					e.preventDefault();
 					e.stopPropagation();
 					// Use setTimeout to avoid async issues
-					setTimeout(async () => {
+					window.setTimeout(async () => {
 						await this.quickCreateTask(input);
 					}, 0);
 				}
@@ -676,13 +681,15 @@ export class TaskCreationModal extends BaseTaskModal {
 		this.nlPreviewContainer = this.nlInputContainer.createDiv({ cls: 'nl-preview-container' });
 		this.nlPreviewContainer.style.display = 'none';
 
-		// Focus the textarea when natural language input is enabled
-		setTimeout(() => {
-			const nlTextarea = this.nlInputContainer?.querySelector('.nl-input') as HTMLTextAreaElement;
-			if (nlTextarea) {
-				nlTextarea.focus();
-			}
-		}, 100);
+		// Focus the textarea when natural language input is enabled (but not for conversions)
+		if (!this.isDetailedFormVisible) {
+			window.setTimeout(() => {
+				const nlTextarea = this.nlInputContainer?.querySelector('.nl-input') as HTMLTextAreaElement;
+				if (nlTextarea) {
+					nlTextarea.focus();
+				}
+			}, 100);
+		}
 	}
 
 	/**
@@ -959,7 +966,7 @@ export class TaskCreationModal extends BaseTaskModal {
 			this.daysOfWeek = parsed.daysOfWeek;
 			
 			// Find and check the appropriate day checkboxes with longer delay and fallback selectors
-			setTimeout(() => {
+			window.setTimeout(() => {
 				if (parsed.daysOfWeek) {
 					for (const day of parsed.daysOfWeek) {
 						// Try multiple selectors to find the checkbox
@@ -1074,7 +1081,7 @@ export class TaskCreationModal extends BaseTaskModal {
 			this.applyParsedData(parsed);
 			
 			// Wait for form population to complete (especially for days of week)
-			await new Promise(resolve => setTimeout(resolve, 350));
+			await new Promise(resolve => window.setTimeout(resolve, 350));
 			
 			// Use the existing form submission logic
 			await this.handleSubmit();

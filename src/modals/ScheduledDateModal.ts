@@ -94,7 +94,7 @@ export class ScheduledDateModal extends Modal {
         });
         
         // Focus the date input
-        setTimeout(() => this.scheduledDateInput.focus(), 100);
+        window.setTimeout(() => this.scheduledDateInput.focus(), 100);
 
         // Quick date buttons
         const quickDatesContainer = contentEl.createDiv({ cls: 'modal-form__group' });
@@ -203,7 +203,7 @@ export class ScheduledDateModal extends Modal {
             this.scheduledDateInput.setAttribute('aria-invalid', 'true');
             this.scheduledDateInput.setAttribute('aria-describedby', 'scheduled-date-error');
             errorEl.setAttribute('id', 'scheduled-date-error');
-            setTimeout(() => {
+            window.setTimeout(() => {
                 errorEl.remove();
                 this.scheduledDateInput.removeAttribute('aria-invalid');
                 this.scheduledDateInput.removeAttribute('aria-describedby');
@@ -225,7 +225,7 @@ export class ScheduledDateModal extends Modal {
                 text: 'Failed to update scheduled date. Please try again.',
                 cls: 'modal-form__error'
             });
-            setTimeout(() => errorEl.remove(), 3000);
+            window.setTimeout(() => errorEl.remove(), 3000);
         }
     }
 
