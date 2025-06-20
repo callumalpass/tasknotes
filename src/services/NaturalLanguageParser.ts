@@ -507,35 +507,42 @@ export class NaturalLanguageParser {
 	}
 
 	/**
-	 * Get preview text for parsed data
+	 * Get preview data for parsed data (without icons - icons will be added in UI)
 	 */
-	getPreviewText(parsed: ParsedTaskData): string {
-		const parts: string[] = [];
+	getPreviewData(parsed: ParsedTaskData): Array<{ icon: string; text: string }> {
+		const parts: Array<{ icon: string; text: string }> = [];
 		
-		if (parsed.title) parts.push(`📝 "${parsed.title}"`);
-		if (parsed.details) parts.push(`📄 Details: "${parsed.details.substring(0, 50)}${parsed.details.length > 50 ? '...' : ''}"`);
+		if (parsed.title) parts.push({ icon: 'edit-3', text: `"${parsed.title}"` });
+		if (parsed.details) parts.push({ icon: 'file-text', text: `Details: "${parsed.details.substring(0, 50)}${parsed.details.length > 50 ? '...' : ''}"` });
 		if (parsed.dueDate) {
 			const dateStr = parsed.dueTime ? `${parsed.dueDate} ${parsed.dueTime}` : parsed.dueDate;
-			parts.push(`📅 Due: ${dateStr}`);
+			parts.push({ icon: 'calendar', text: `Due: ${dateStr}` });
 		}
 		if (parsed.scheduledDate) {
 			const dateStr = parsed.scheduledTime ? `${parsed.scheduledDate} ${parsed.scheduledTime}` : parsed.scheduledDate;
-			parts.push(`🗓️ Scheduled: ${dateStr}`);
+			parts.push({ icon: 'calendar-clock', text: `Scheduled: ${dateStr}` });
 		}
-		if (parsed.priority) parts.push(`⚡ Priority: ${parsed.priority}`);
-		if (parsed.status) parts.push(`🔄 Status: ${parsed.status}`);
-		if (parsed.contexts.length > 0) parts.push(`📍 Contexts: ${parsed.contexts.map(c => '@' + c).join(', ')}`);
-		if (parsed.tags.length > 0) parts.push(`🏷️ Tags: ${parsed.tags.map(t => '#' + t).join(', ')}`);
+		if (parsed.priority) parts.push({ icon: 'alert-triangle', text: `Priority: ${parsed.priority}` });
+		if (parsed.status) parts.push({ icon: 'activity', text: `Status: ${parsed.status}` });
+		if (parsed.contexts.length > 0) parts.push({ icon: 'map-pin', text: `Contexts: ${parsed.contexts.map(c => '@' + c).join(', ')}` });
+		if (parsed.tags.length > 0) parts.push({ icon: 'tag', text: `Tags: ${parsed.tags.map(t => '#' + t).join(', ')}` });
 		if (parsed.recurrence) {
 			let recurrenceText = parsed.recurrence;
 			if (parsed.daysOfWeek && parsed.daysOfWeek.length > 0) {
 				recurrenceText += ` (${parsed.daysOfWeek.join(', ')})`;
 			}
-			parts.push(`🔄 Recurrence: ${recurrenceText}`);
+			parts.push({ icon: 'repeat', text: `Recurrence: ${recurrenceText}` });
 		}
-		if (parsed.estimate) parts.push(`⏱️ Estimate: ${parsed.estimate}min`);
+		if (parsed.estimate) parts.push({ icon: 'clock', text: `Estimate: ${parsed.estimate}min` });
 		
-		return parts.join(' • ');
+		return parts;
+	}
+
+	/**
+	 * Get preview text for parsed data (fallback without icons)
+	 */
+	getPreviewText(parsed: ParsedTaskData): string {
+		return this.getPreviewData(parsed).map(part => part.text).join(' • ');
 	}
 
 	/**

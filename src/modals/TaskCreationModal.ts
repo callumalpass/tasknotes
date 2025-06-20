@@ -1,4 +1,4 @@
-import { App, Notice, TFile, Setting, Editor, MarkdownView, normalizePath } from 'obsidian';
+import { App, Notice, TFile, Setting, Editor, MarkdownView, normalizePath, setIcon } from 'obsidian';
 import { format } from 'date-fns';
 import TaskNotesPlugin from '../main';
 import { BaseTaskModal } from './BaseTaskModal';
@@ -594,15 +594,20 @@ export class TaskCreationModal extends BaseTaskModal {
 			const textarea = inputContainer.createEl('textarea', {
 				cls: 'modal-form__input modal-form__input--textarea nl-input',
 				attr: {
-					placeholder: 'Type your task naturally... (e.g., "Buy groceries tomorrow 3pm high priority @home #errands")\nAdd details on the next line...',
-					rows: '3'
+					placeholder: 'Type your task naturally... (e.g., "Buy groceries tomorrow 3pm high priority @home #errands")\nAdd details on the next line...\n\nCtrl+Enter: Quick create • Shift+Enter: Parse & fill form',
+					rows: '4'
 				}
 			});
 
 			// Parse button
 			const buttonContainer = inputContainer.createDiv({ cls: 'nl-button-container' });
+			const quickCreateButton = buttonContainer.createEl('button', {
+				cls: 'mod-cta nl-quick-create-button',
+				text: 'Quick create'
+			});
+
 			const parseButton = buttonContainer.createEl('button', {
-				cls: 'mod-cta nl-parse-button',
+				cls: 'nl-parse-button',
 				text: 'Parse & fill form'
 			});
 
@@ -626,6 +631,13 @@ export class TaskCreationModal extends BaseTaskModal {
 				}
 			});
 
+			quickCreateButton.addEventListener('click', async () => {
+				const input = textarea.value.trim();
+				if (input) {
+					await this.quickCreateTask(input);
+				}
+			});
+
 			parseButton.addEventListener('click', () => {
 				const input = textarea.value.trim();
 				if (input) {
@@ -637,14 +649,25 @@ export class TaskCreationModal extends BaseTaskModal {
 				this.toggleDetailedForm();
 			});
 
-			// Parse on Enter (with Ctrl/Cmd)
+			// Keyboard shortcuts
 			textarea.addEventListener('keydown', (e) => {
+				const input = textarea.value.trim();
+				if (!input) return;
+
+				// Ctrl/Cmd + Enter = Quick create
 				if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
 					e.preventDefault();
-					const input = textarea.value.trim();
-					if (input) {
-						this.parseAndFillForm(input);
-					}
+					e.stopPropagation();
+					// Use setTimeout to avoid async issues
+					setTimeout(async () => {
+						await this.quickCreateTask(input);
+					}, 0);
+				}
+				// Shift + Enter = Parse and fill form
+				else if (e.key === 'Enter' && e.shiftKey) {
+					e.preventDefault();
+					e.stopPropagation();
+					this.parseAndFillForm(input);
 				}
 			});
 		});
@@ -669,18 +692,27 @@ export class TaskCreationModal extends BaseTaskModal {
 		if (!this.nlPreviewContainer) return;
 
 		const parsed = this.nlParser.parseInput(input);
-		const previewText = this.nlParser.getPreviewText(parsed);
+		const previewData = this.nlParser.getPreviewData(parsed);
 
-		if (previewText && parsed.title) {
+		if (previewData.length > 0 && parsed.title) {
 			this.nlPreviewContainer.empty();
 			this.nlPreviewContainer.createEl('div', {
 				cls: 'nl-preview-label',
 				text: 'Parsed data:'
 			});
-			this.nlPreviewContainer.createEl('div', {
-				cls: 'nl-preview-text',
-				text: previewText
+			
+			const previewContent = this.nlPreviewContainer.createEl('div', {
+				cls: 'nl-preview-text'
 			});
+
+			// Create each preview item with proper icon on new lines
+			previewData.forEach((item, index) => {
+				const itemContainer = previewContent.createDiv({ cls: 'nl-preview-item' });
+				const iconEl = itemContainer.createSpan({ cls: 'nl-preview-icon' });
+				setIcon(iconEl, item.icon);
+				itemContainer.createSpan({ text: ` ${item.text}`, cls: 'nl-preview-text-content' });
+			});
+
 			this.nlPreviewContainer.style.display = 'block';
 		} else {
 			this.nlPreviewContainer.style.display = 'none';
@@ -926,18 +958,49 @@ export class TaskCreationModal extends BaseTaskModal {
 		if (parsed.daysOfWeek && parsed.daysOfWeek.length > 0) {
 			this.daysOfWeek = parsed.daysOfWeek;
 			
-			// Find and check the appropriate day checkboxes
+			// Find and check the appropriate day checkboxes with longer delay and fallback selectors
 			setTimeout(() => {
 				if (parsed.daysOfWeek) {
 					for (const day of parsed.daysOfWeek) {
-						const checkbox = this.detailedFormContainer?.querySelector(`input[type="checkbox"][value="${day}"]`) as HTMLInputElement;
+						// Try multiple selectors to find the checkbox
+						let checkbox = this.detailedFormContainer?.querySelector(`input[aria-label="Include ${day} in weekly recurrence"]`) as HTMLInputElement;
+						
+						// Fallback: try finding by looking for labels containing the day name
+						if (!checkbox) {
+							const labels = this.detailedFormContainer?.querySelectorAll('.modal-form__day-label');
+							for (const label of Array.from(labels || [])) {
+								if (label.textContent === day) {
+									const forId = label.getAttribute('for');
+									if (forId) {
+										checkbox = document.getElementById(forId) as HTMLInputElement;
+										break;
+									}
+								}
+							}
+						}
+						
+						// Fallback: try finding any checkbox in a container with the day name
+						if (!checkbox) {
+							const dayContainers = this.detailedFormContainer?.querySelectorAll('.modal-form__day-checkbox');
+							for (const container of Array.from(dayContainers || [])) {
+								const label = container.querySelector('.modal-form__day-label');
+								if (label?.textContent === day) {
+									checkbox = container.querySelector('input[type="checkbox"]') as HTMLInputElement;
+									break;
+								}
+							}
+						}
+						
 						if (checkbox) {
 							checkbox.checked = true;
 							checkbox.dispatchEvent(new Event('change'));
+							console.log(`Successfully checked ${day} checkbox`);
+						} else {
+							console.warn(`Could not find checkbox for ${day}`);
 						}
 					}
 				}
-			}, 100); // Small delay to ensure the recurrence UI has been updated
+			}, 300); // Longer delay to ensure the recurrence UI has been updated
 		}
 
 		// Update filename preview
@@ -994,6 +1057,37 @@ export class TaskCreationModal extends BaseTaskModal {
 			if (showDetailButton) {
 				showDetailButton.textContent = 'Show detailed options';
 			}
+		}
+	}
+
+	/**
+	 * Quick create task from natural language input
+	 */
+	private async quickCreateTask(input: string): Promise<void> {
+		try {
+			// Disable the modal's form to prevent multiple submissions
+			const formElements = this.containerEl.querySelectorAll('input, button, textarea, select');
+			formElements.forEach(el => (el as HTMLElement).style.pointerEvents = 'none');
+
+			// Parse the input and populate form fields
+			const parsed = this.nlParser.parseInput(input);
+			this.applyParsedData(parsed);
+			
+			// Wait for form population to complete (especially for days of week)
+			await new Promise(resolve => setTimeout(resolve, 350));
+			
+			// Use the existing form submission logic
+			await this.handleSubmit();
+			
+			// Close the modal
+			this.close();
+		} catch (error) {
+			console.error('Error during quick task creation:', error);
+			new Notice('Failed to create task. Please try using the detailed form.');
+			
+			// Re-enable form elements on error
+			const formElements = this.containerEl.querySelectorAll('input, button, textarea, select');
+			formElements.forEach(el => (el as HTMLElement).style.pointerEvents = 'auto');
 		}
 	}
 }
