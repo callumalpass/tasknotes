@@ -1,0 +1,177 @@
+import { MarkdownPostProcessor } from 'obsidian';
+import TaskNotesPlugin from '../main';
+import { TaskLinkWidget } from './TaskLinkWidget';
+
+/**
+ * Markdown post processor that adds task previews to wikilinks in reading mode
+ */
+export class ReadingModeTaskLinkProcessor {
+    private plugin: TaskNotesPlugin;
+
+    constructor(plugin: TaskNotesPlugin) {
+        this.plugin = plugin;
+    }
+
+    /**
+     * Create the markdown post processor function
+     */
+    createPostProcessor(): MarkdownPostProcessor {
+        return (el: HTMLElement, ctx) => {
+            // Only process if task link overlay is enabled
+            if (!this.plugin.settings.enableTaskLinkOverlay) {
+                return;
+            }
+
+            // Find all wikilinks in the rendered content
+            const wikilinks = el.querySelectorAll('a.internal-link');
+            
+            for (const link of Array.from(wikilinks)) {
+                this.processWikilink(link as HTMLAnchorElement, ctx.sourcePath);
+            }
+        };
+    }
+
+    /**
+     * Process a single wikilink to check if it should be replaced with a task preview
+     */
+    private async processWikilink(linkEl: HTMLAnchorElement, sourcePath: string): Promise<void> {
+        try {
+            // Get the link path from the href attribute
+            const href = linkEl.getAttribute('href');
+            if (!href) return;
+
+            // Parse the link path - Obsidian internal links use format like "app://obsidian.md/path"
+            // or just the file path directly
+            let linkPath = href;
+            if (href.startsWith('app://')) {
+                // Extract path from app:// URL
+                const url = new URL(href);
+                linkPath = decodeURIComponent(url.pathname);
+                // Remove leading slash if present
+                if (linkPath.startsWith('/')) {
+                    linkPath = linkPath.substring(1);
+                }
+            }
+
+            // Resolve the link path to get the actual file
+            const resolvedPath = this.resolveLinkPath(linkPath, sourcePath);
+            if (!resolvedPath) return;
+
+            // Check if this file is a task
+            const taskInfo = this.getTaskInfo(resolvedPath);
+            if (!taskInfo) return;
+
+            // Create a task widget and replace the link
+            await this.replaceWithTaskWidget(linkEl, taskInfo, linkPath);
+
+        } catch (error) {
+            console.debug('Error processing wikilink in reading mode:', error);
+        }
+    }
+
+    /**
+     * Resolve a link path to an actual file path
+     */
+    private resolveLinkPath(linkPath: string, sourcePath: string): string | null {
+        try {
+            // Sanitize link path to prevent directory traversal
+            const sanitizedLinkPath = linkPath.replace(/\.\./g, '').trim();
+            if (!sanitizedLinkPath) return null;
+
+            // Use Obsidian's metadata cache to resolve the link
+            const file = this.plugin.app.metadataCache.getFirstLinkpathDest(sanitizedLinkPath, sourcePath);
+            return file?.path || null;
+        } catch (error) {
+            console.debug('Error resolving link path:', linkPath, error);
+            return null;
+        }
+    }
+
+    /**
+     * Get task info for a file path
+     */
+    private getTaskInfo(filePath: string): any {
+        try {
+            // Validate file path
+            if (!filePath || typeof filePath !== 'string' || filePath.trim().length === 0) {
+                return null;
+            }
+
+            // Use the cache manager to get task info
+            const cacheManager = this.plugin.cacheManager;
+            if (!cacheManager || !cacheManager.getCachedTaskInfoSync) {
+                return null;
+            }
+
+            const taskInfo = cacheManager.getCachedTaskInfoSync(filePath);
+
+            // Basic validation of task info structure
+            if (taskInfo && typeof taskInfo === 'object' && taskInfo.title) {
+                return taskInfo;
+            }
+
+            return null;
+        } catch (error) {
+            console.debug('Error getting task info for:', filePath, error);
+            return null;
+        }
+    }
+
+    /**
+     * Replace a wikilink with a task widget
+     */
+    private async replaceWithTaskWidget(linkEl: HTMLAnchorElement, taskInfo: any, originalLinkPath: string): Promise<void> {
+        try {
+            // Get the original link text for display
+            const originalText = linkEl.textContent || `[[${originalLinkPath}]]`;
+            
+            // Parse display text if it's a piped link
+            let displayText: string | undefined;
+            const linkContent = linkEl.textContent || '';
+            if (linkContent !== originalLinkPath && linkContent !== taskInfo.title) {
+                displayText = linkContent;
+            }
+
+            // Create a task widget instance
+            const widget = new TaskLinkWidget(taskInfo, this.plugin, originalText, displayText);
+
+            // Create the DOM element for reading mode
+            const widgetElement = this.createReadingModeWidget(widget, taskInfo, originalText, displayText);
+
+            // Replace the original link with the widget
+            linkEl.parentNode?.replaceChild(widgetElement, linkEl);
+
+        } catch (error) {
+            console.error('Error replacing wikilink with task widget:', error);
+        }
+    }
+
+    /**
+     * Create a DOM element for the task widget in reading mode
+     * This reuses the TaskLinkWidget's toDOM method but adapts it for reading mode context
+     */
+    private createReadingModeWidget(widget: TaskLinkWidget, taskInfo: any, originalText: string, displayText?: string): HTMLElement {
+        // Create a mock EditorView object with minimal required properties
+        // This allows us to reuse the existing TaskLinkWidget.toDOM method
+        const mockEditorView = {
+            // Add any minimal properties needed by toDOM if required
+            // The current implementation doesn't seem to use the view parameter extensively
+        } as any;
+
+        // Use the existing toDOM method to create the widget element
+        const element = widget.toDOM(mockEditorView);
+
+        // Add reading mode specific class
+        element.classList.add('task-inline-preview--reading-mode');
+
+        return element;
+    }
+}
+
+/**
+ * Factory function to create the post processor
+ */
+export function createReadingModeTaskLinkProcessor(plugin: TaskNotesPlugin): MarkdownPostProcessor {
+    const processor = new ReadingModeTaskLinkProcessor(plugin);
+    return processor.createPostProcessor();
+}

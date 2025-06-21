@@ -59,6 +59,7 @@ import { FilterService } from './services/FilterService';
 import { ViewStateManager } from './services/ViewStateManager';
 import { TasksPluginParser } from './utils/TasksPluginParser';
 import { createTaskLinkOverlay, dispatchTaskUpdate } from './editor/TaskLinkOverlay';
+import { createReadingModeTaskLinkProcessor } from './editor/ReadingModeTaskLinkProcessor';
 import { DragDropManager } from './utils/DragDropManager';
 import { ICSSubscriptionService } from './services/ICSSubscriptionService';
 
@@ -225,6 +226,9 @@ export default class TaskNotesPlugin extends Plugin {
 			
 			// Register essential editor extensions (now safe after layout ready)
 			this.registerEditorExtension(createTaskLinkOverlay(this));
+			
+			// Register reading mode task link processor
+			this.registerMarkdownPostProcessor(createReadingModeTaskLinkProcessor(this));
 			
 			// Initialize native cache system (lightweight - no index building)
 			this.cacheManager.initialize();
