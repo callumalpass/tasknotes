@@ -340,48 +340,44 @@ export class NaturalLanguageParser {
 		const result: Partial<ParsedTaskData> = {};
 		let workingText = text;
 
-		// Patterns for explicit due dates
-		const duePatterns = [
-			/\bdue\s+(on\s+)?(.*?)(?=\s|$|[,.;!?])/i,
-			/\bdeadline\s+(on\s+)?(.*?)(?=\s|$|[,.;!?])/i,
-			/\bmust\s+be\s+done\s+(by\s+)?(.*?)(?=\s|$|[,.;!?])/i
+		// Patterns that identify trigger words and their positions
+		const triggerPatterns = [
+			{ type: 'due', regex: /\b(due\s+(?:on\s+)?|deadline\s+(?:on\s+)?|must\s+be\s+done\s+(?:by\s+)?)/i },
+			{ type: 'scheduled', regex: /\b(scheduled\s+(?:for\s+)?|start\s+(?:on\s+)?|begin\s+(?:on\s+)?|work\s+on\s+)/i }
 		];
 
-		// Patterns for explicit scheduled dates  
-		const scheduledPatterns = [
-			/\b(?:scheduled\s+(?:for\s+)?|start\s+(?:on\s+)?|begin\s+(?:on\s+)?|work\s+on\s+)(.*?)(?=\s|$|[,.;!?])/i
-		];
-
-		// Check for explicit due date patterns
-		for (const pattern of duePatterns) {
-			const match = workingText.match(pattern);
+		// Process each trigger pattern
+		for (const triggerPattern of triggerPatterns) {
+			const match = workingText.match(triggerPattern.regex);
 			if (match) {
-				const dateText = match[2] || match[1];
-				const parsedDate = this.parseFlexibleDate(dateText.trim());
-				if (parsedDate) {
-					result.dueDate = parsedDate.date;
-					if (parsedDate.time) {
-						result.dueTime = parsedDate.time;
+				// Get the position where the date text starts (after the trigger)
+				const triggerEnd = match.index! + match[0].length;
+				const remainingText = workingText.substring(triggerEnd);
+				
+				// Use chrono-node to parse from this position onward
+				const chronoParsed = this.parseChronoFromPosition(remainingText);
+				
+				if (chronoParsed.success) {
+					// Assign to the correct field based on trigger type
+					if (triggerPattern.type === 'due') {
+						result.dueDate = chronoParsed.date;
+						if (chronoParsed.time) {
+							result.dueTime = chronoParsed.time;
+						}
+					} else {
+						result.scheduledDate = chronoParsed.date;
+						if (chronoParsed.time) {
+							result.scheduledTime = chronoParsed.time;
+						}
 					}
-					workingText = workingText.replace(match[0], '').trim();
-					break; // Only match first due date
-				}
-			}
-		}
-
-		// Check for explicit scheduled date patterns
-		for (const pattern of scheduledPatterns) {
-			const match = workingText.match(pattern);
-			if (match) {
-				const dateText = match[1];
-				const parsedDate = this.parseFlexibleDate(dateText.trim());
-				if (parsedDate) {
-					result.scheduledDate = parsedDate.date;
-					if (parsedDate.time) {
-						result.scheduledTime = parsedDate.time;
+					
+					// Remove the entire matched expression (trigger + date) from working text
+					workingText = workingText.replace(triggerPattern.regex, '');
+					if (chronoParsed.matchedText) {
+						workingText = workingText.replace(chronoParsed.matchedText, '');
 					}
-					workingText = workingText.replace(match[0], '').trim();
-					break; // Only match first scheduled date
+					workingText = workingText.trim();
+					break; // Only match first occurrence
 				}
 			}
 		}
@@ -390,29 +386,47 @@ export class NaturalLanguageParser {
 	}
 
 	/**
-	 * Parse a flexible date string using chrono-node
+	 * Use chrono-node to parse date starting from a specific position
 	 */
-	private parseFlexibleDate(dateText: string): { date: string; time?: string } | null {
+	private parseChronoFromPosition(text: string): { 
+		success: boolean; 
+		date?: string; 
+		time?: string; 
+		matchedText?: string 
+	} {
 		try {
-			const parsed = chrono.parseDate(dateText, new Date(), { forwardDate: true });
-			if (parsed && isValid(parsed)) {
-				const result: { date: string; time?: string } = {
-					date: format(parsed, 'yyyy-MM-dd')
-				};
+			// Parse the text starting from the beginning
+			const parsed = chrono.parse(text, new Date(), { forwardDate: true });
+			
+			if (parsed.length > 0) {
+				const firstMatch = parsed[0];
 				
-				// Check if the original text included time information
-				const chronoParsed = chrono.parse(dateText, new Date(), { forwardDate: true });
-				if (chronoParsed.length > 0 && chronoParsed[0].start?.isCertain('hour')) {
-					result.time = format(parsed, 'HH:mm');
+				// Ensure the match starts at or near the beginning of the text
+				if (firstMatch.index <= 3) { // Allow for a few characters of whitespace/prepositions
+					const parsedDate = firstMatch.start.date();
+					if (isValid(parsedDate)) {
+						const result: any = {
+							success: true,
+							date: format(parsedDate, 'yyyy-MM-dd'),
+							matchedText: firstMatch.text
+						};
+						
+						// Check if time is included and certain
+						if (firstMatch.start.isCertain('hour')) {
+							result.time = format(parsedDate, 'HH:mm');
+						}
+						
+						return result;
+					}
 				}
-				
-				return result;
 			}
 		} catch (error) {
-			// Ignore parsing errors
+			console.debug('Error parsing date with chrono:', error);
 		}
-		return null;
+		
+		return { success: false };
 	}
+
 
 	/**
 	 * Extract dates and times from text using chrono-node as primary parser
