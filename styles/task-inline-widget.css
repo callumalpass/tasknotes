@@ -36,19 +36,42 @@
 
 /* Task title */
 .tasknotes-plugin .task-inline-preview__title {
-    margin-right: 6px;
+    margin-right: 12px;
 }
 
-/* Status indicator dot */
+/* Status indicator dot - match task card styling */
 .tasknotes-plugin .task-inline-preview__status-dot {
-    color: var(--status-color, #666);
-    margin-right: 4px;
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    margin-right: 6px;
+    margin-left: 0;
+    border: 2px solid var(--tn-border-color);
+    background-color: transparent;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    position: relative;
+    vertical-align: middle;
+    flex-shrink: 0;
 }
 
-/* Priority indicator dot */
+.tasknotes-plugin .task-inline-preview__status-dot:hover {
+    border-color: var(--tn-text-muted);
+}
+
+/* Priority indicator dot - filled solid circle */
 .tasknotes-plugin .task-inline-preview__priority-dot {
-    color: var(--priority-color, #666);
-    margin-right: 4px;
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 6px;
+    margin-left: 0;
+    background-color: var(--tn-text-muted);
+    border: none;
+    vertical-align: middle;
+    flex-shrink: 0;
 }
 
 /* Date info styling */
@@ -178,12 +201,16 @@
    ADDITIONAL INLINE TASK PREVIEW ELEMENTS
    ================================================================= */
 
-/* Status indicator dot */
-.tasknotes-plugin .task-inline-preview__status-dot {
-    width: 8px;
-    height: 8px;
-    margin-left: 3px;
-    flex-shrink: 0;
+/* Completed status styling - filled circle with checkmark */
+.tasknotes-plugin .task-inline-preview--completed .task-inline-preview__status-dot {
+    background-color: var(--current-status-color, var(--tn-color-success));
+    border-color: var(--current-status-color, var(--tn-color-success));
+    color: var(--tn-text-on-accent);
+    font-size: 9px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 /* Task title */
@@ -195,6 +222,7 @@
     color: var(--text-normal);
     font-weight: 500;
     margin: 0;
+    margin-right: 12px;
     min-width: 0; /* Allow flex shrinking */
     max-width: 300px; /* Allow longer task names */
 }
@@ -297,8 +325,8 @@
     }
     
     .tasknotes-plugin .task-inline-preview__status-dot {
-        width: 10px;
-        height: 10px;
+        width: 16px;
+        height: 16px;
     }
     
     .tasknotes-plugin .task-inline-preview__menu-icon {

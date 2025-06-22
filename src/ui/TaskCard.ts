@@ -119,7 +119,46 @@ export function createTaskCard(task: TaskInfo, plugin: TaskNotesPlugin, options:
     // Status indicator dot
     const statusDot = card.createEl('span', { cls: 'task-card__status-dot' });
     if (statusConfig) {
-        statusDot.style.backgroundColor = statusConfig.color;
+        statusDot.style.borderColor = statusConfig.color;
+    }
+    
+    // Add click handler to cycle through statuses
+    statusDot.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        try {
+            if (task.recurrence) {
+                // For recurring tasks, toggle completion for the target date
+                await plugin.toggleRecurringTaskComplete(task, targetDate);
+            } else {
+                // For regular tasks, cycle to next status
+                // Get fresh task data to ensure we have the latest status
+                const freshTask = await plugin.cacheManager.getTaskInfo(task.path);
+                if (!freshTask) {
+                    new Notice('Task not found');
+                    return;
+                }
+                
+                const currentStatus = freshTask.status || 'open';
+                const nextStatus = plugin.statusManager.getNextStatus(currentStatus);
+                await plugin.updateTaskProperty(freshTask, 'status', nextStatus);
+            }
+        } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            console.error('Error cycling task status:', {
+                error: errorMessage,
+                taskPath: task.path
+            });
+            new Notice(`Failed to update task status: ${errorMessage}`);
+        }
+    });
+    
+    // Priority indicator dot
+    if (task.priority && priorityConfig) {
+        const priorityDot = card.createEl('span', { 
+            cls: 'task-card__priority-dot',
+            attr: { 'aria-label': `Priority: ${priorityConfig.label}` }
+        });
+        priorityDot.style.borderColor = priorityConfig.color;
     }
     
     // Recurring task indicator
@@ -601,7 +640,26 @@ export function updateTaskCard(element: HTMLElement, task: TaskInfo, plugin: Tas
     // Update status dot
     const statusDot = element.querySelector('.task-card__status-dot') as HTMLElement;
     if (statusDot && statusConfig) {
-        statusDot.style.backgroundColor = statusConfig.color;
+        statusDot.style.borderColor = statusConfig.color;
+    }
+    
+    // Update priority indicator
+    const existingPriorityDot = element.querySelector('.task-card__priority-dot') as HTMLElement;
+    if (task.priority && priorityConfig && !existingPriorityDot) {
+        // Add priority dot if task has priority but no dot exists
+        const priorityDot = element.createEl('span', { 
+            cls: 'task-card__priority-dot',
+            attr: { 'aria-label': `Priority: ${priorityConfig.label}` }
+        });
+        priorityDot.style.borderColor = priorityConfig.color;
+        statusDot?.insertAdjacentElement('afterend', priorityDot);
+    } else if (!task.priority && existingPriorityDot) {
+        // Remove priority dot if task no longer has priority
+        existingPriorityDot.remove();
+    } else if (task.priority && priorityConfig && existingPriorityDot) {
+        // Update existing priority dot
+        existingPriorityDot.style.borderColor = priorityConfig.color;
+        existingPriorityDot.setAttribute('aria-label', `Priority: ${priorityConfig.label}`);
     }
     
     // Update recurring indicator

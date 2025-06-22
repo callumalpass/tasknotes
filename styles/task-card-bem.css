@@ -11,24 +11,36 @@
     gap: 0;
     position: relative;
     
-    /* Spacing & Sizing */
-    padding: var(--tn-spacing-md) var(--tn-spacing-lg);
-    margin-bottom: var(--tn-spacing-xs);
+    /* Spacing & Sizing - Todoist compact style */
+    padding: 8px 16px;
+    margin-bottom: 1px;
     
-    /* Visual Styling */
-    background-color: var(--tn-bg-primary);
+    /* Visual Styling - Todoist minimal style */
+    background-color: transparent;
     border: none;
     border-radius: 0;
-    border-left: 3px solid transparent; /* For priority indication */
     
-    /* Interactions */
+    /* Interactions & Accessibility - Simplified */
     cursor: pointer;
     transition: background-color var(--tn-transition-fast);
     will-change: background-color;
+    outline: none;
+    role: listitem;
+    tabindex: 0;
 }
 
 .tasknotes-plugin .task-card:hover {
     background-color: var(--tn-interactive-hover);
+}
+
+.tasknotes-plugin .task-card:focus {
+    background-color: var(--tn-interactive-hover);
+    outline: 1px solid var(--tn-border-color);
+    outline-offset: -1px;
+}
+
+.tasknotes-plugin .task-card:focus:not(:focus-visible) {
+    outline: none;
 }
 
 .tasknotes-plugin .task-card:last-child {
@@ -50,49 +62,176 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: var(--tn-spacing-xs);
+    gap: 2px;
     min-width: 0;
 }
 
 .tasknotes-plugin .task-card__title {
-    font-size: var(--tn-font-size-lg);
-    font-weight: var(--tn-font-weight-normal);
+    font-size: 14px;
+    font-weight: 400;
     line-height: 1.3;
     color: var(--tn-text-normal);
     margin: 0;
     word-wrap: break-word;
     word-break: break-word;
     white-space: normal;
-    transition: color var(--tn-transition-fast);
+    transition: color 0.2s ease;
 }
 
 .tasknotes-plugin .task-card__metadata {
-    font-size: var(--tn-font-size-xs);
+    font-size: 12px;
     color: var(--tn-text-muted);
     line-height: 1.2;
     margin: 0;
+    font-weight: 400;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 2px;
+}
+
+.tasknotes-plugin .task-card__metadata-item {
+    display: flex;
+    align-items: center;
+    gap: var(--tn-spacing-xs);
+    white-space: nowrap;
+}
+
+.tasknotes-plugin .task-card__metadata-separator {
+    color: var(--tn-text-faint);
+    opacity: 0.5;
+    font-size: 0.8em;
+}
+
+.tasknotes-plugin .task-card__tag {
+    background: var(--tn-bg-secondary);
+    color: var(--tn-text-muted);
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 400;
+    border: none;
+    white-space: nowrap;
+}
+
+.tasknotes-plugin .task-card__due-date {
+    color: var(--tn-color-success);
+    font-size: 11px;
+    font-weight: 400;
+    padding: 1px 4px;
+    border-radius: 2px;
+    background: color-mix(in srgb, var(--tn-color-success) 15%, var(--tn-bg-primary));
+}
+
+.tasknotes-plugin .task-card__due-date--overdue {
+    color: var(--tn-color-error);
+    background: color-mix(in srgb, var(--tn-color-error) 15%, var(--tn-bg-primary));
+}
+
+.tasknotes-plugin .task-card__due-date--today {
+    color: var(--tn-color-warning);
+    background: color-mix(in srgb, var(--tn-color-warning) 15%, var(--tn-bg-primary));
+}
+
+.tasknotes-plugin .task-card__priority-badge {
+    display: none; /* Hide priority badges in favor of dots */
+}
+
+/* Simplified info display - no progressive disclosure for Todoist style */
+
+/* Drag handle indicator */
+.tasknotes-plugin .task-card__drag-handle {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 20px;
+    background: repeating-linear-gradient(
+        to bottom,
+        var(--tn-text-faint) 0px,
+        var(--tn-text-faint) 2px,
+        transparent 2px,
+        transparent 4px
+    );
+    opacity: 0;
+    transition: opacity var(--tn-transition-fast);
+    border-radius: 2px;
+}
+
+.tasknotes-plugin .task-card[draggable="true"]:hover .task-card__drag-handle {
+    opacity: 0.5;
+}
+
+.tasknotes-plugin .task-card[draggable="true"]:active .task-card__drag-handle {
+    opacity: 0.8;
+}
+
+/* Container queries for adaptive layouts */
+@container (max-width: 300px) {
+    .tasknotes-plugin .task-card {
+        padding: var(--tn-spacing-sm) var(--tn-spacing-md);
+    }
+    
+    .tasknotes-plugin .task-card__quick-actions {
+        gap: 2px;
+    }
+    
+    .tasknotes-plugin .task-card__quick-action {
+        width: 20px;
+        height: 20px;
+    }
+    
+    .tasknotes-plugin .task-card__metadata {
+        gap: var(--tn-spacing-xs);
+    }
 }
 
 .tasknotes-plugin .task-card__status-dot {
     display: inline-block;
-    width: 6px;
-    height: 6px;
-    border-radius: var(--tn-radius-full);
-    margin-right: var(--tn-spacing-sm);
-    margin-top: 4px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    margin-right: 8px;
     flex-shrink: 0;
-    background-color: var(--tn-text-muted);
-    transition: background-color var(--tn-transition-fast);
+    border: 2px solid var(--tn-border-color);
+    background-color: transparent;
+    transition: all 0.2s ease;
+    align-self: center;
+    cursor: pointer;
+    position: relative;
+}
+
+.tasknotes-plugin .task-card__status-dot:hover {
+    border-color: var(--tn-text-muted);
+}
+
+/* Completed status - transparent background, colored border */
+.tasknotes-plugin .task-card--completed .task-card__status-dot {
+    background-color: transparent;
+    border-color: var(--current-status-color, var(--tn-color-success));
+}
+
+.tasknotes-plugin .task-card--completed .task-card__status-dot::before {
+    content: '✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: var(--tn-text-normal);
+    font-size: 10px;
+    font-weight: bold;
 }
 
 .tasknotes-plugin .task-card__recurring-indicator {
     position: absolute;
-    top: var(--tn-spacing-md);
-    right: 32px;
-    width: 14px;
-    height: 14px;
+    top: 8px;
+    right: 28px;
+    width: 12px;
+    height: 12px;
     color: var(--tn-text-muted);
-    opacity: 0.7;
+    opacity: 0.8;
     z-index: 1;
     display: none; /* Hidden by default, shown via modifier */
     align-items: center;
@@ -106,29 +245,24 @@
 
 .tasknotes-plugin .task-card__context-menu {
     position: absolute;
-    top: var(--tn-spacing-md);
-    right: var(--tn-spacing-md);
+    top: 8px;
+    right: 8px;
     width: 16px;
     height: 16px;
-    color: var(--tn-text-muted);
+    color: var(--tn-text-faint);
     cursor: pointer;
     opacity: 0;
-    transition: all var(--tn-transition-fast);
+    transition: opacity 0.2s ease;
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 10;
-    border-radius: var(--tn-radius-xs);
+    border-radius: 2px;
 }
 
 .tasknotes-plugin .task-card__context-menu:hover {
-    color: var(--tn-text-normal);
+    color: var(--tn-text-muted);
     background: var(--tn-interactive-hover);
-    /* transform: scale(1.1); */
-}
-
-.tasknotes-plugin .task-card__context-menu:active {
-    transform: scale(0.95);
 }
 
 .tasknotes-plugin .task-card:hover .task-card__context-menu {
@@ -140,14 +274,16 @@
     height: 14px;
 }
 
+/* Quick actions removed for Todoist-style simplicity */
+
 
 /* =================================================================
    TASKCARD MODIFIERS (BEM --modifier)
    ================================================================= */
 
-/* Completion State */
+/* Completion State - Use theme colors */
 .tasknotes-plugin .task-card--completed {
-    opacity: 0.7;
+    opacity: 0.6;
 }
 
 .tasknotes-plugin .task-card--completed .task-card__title {
@@ -189,91 +325,150 @@
     display: flex;
 }
 
-/* Priority Modifiers - Use CSS variables set dynamically by TaskCard.ts */
-.tasknotes-plugin .task-card {
-    border-left-color: var(--priority-color, transparent);
+/* Priority indicators - Use user's priority settings */
+.tasknotes-plugin .task-card__priority-dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    margin-right: 6px;
+    flex-shrink: 0;
+    align-self: center;
+    background-color: var(--priority-color, transparent);
 }
 
-/* Fallback priority colors for common priorities */
-.tasknotes-plugin .task-card--priority-high {
-    border-left-color: var(--priority-high-color, var(--tn-color-error));
+/* Dynamic priority colors using CSS variables set by PriorityManager */
+.tasknotes-plugin .task-card[data-priority] .task-card__priority-dot {
+    background-color: var(--current-priority-color, var(--tn-text-muted));
 }
 
-.tasknotes-plugin .task-card--priority-normal,
-.tasknotes-plugin .task-card--priority-medium {
-    border-left-color: var(--priority-normal-color, var(--tn-interactive-accent));
+/* Fallback priority colors using existing system */
+.tasknotes-plugin .task-card--priority-high .task-card__priority-dot {
+    background-color: var(--priority-high-color, var(--tn-color-error));
 }
 
-.tasknotes-plugin .task-card--priority-low {
-    border-left-color: var(--priority-low-color, var(--tn-text-muted));
+.tasknotes-plugin .task-card--priority-medium .task-card__priority-dot,
+.tasknotes-plugin .task-card--priority-normal .task-card__priority-dot {
+    background-color: var(--priority-normal-color, var(--tn-interactive-accent));
 }
 
-/* Status Modifiers - Dynamic status colors using CSS custom properties */
+.tasknotes-plugin .task-card--priority-low .task-card__priority-dot {
+    background-color: var(--priority-low-color, var(--tn-text-muted));
+}
+
+/* Status colors - Use dynamic status colors from user settings */
 .tasknotes-plugin .task-card[data-status] .task-card__status-dot {
-    background-color: var(--current-status-color, var(--tn-text-muted));
+    border-color: var(--current-status-color, var(--tn-border-color));
 }
 
-/* Specific status modifiers for common statuses */
-.tasknotes-plugin .task-card--status-open .task-card__status-dot {
-    background-color: var(--status-open-color, var(--tn-color-error));
+/* Completed statuses - transparent background, colored border */
+.tasknotes-plugin .task-card--completed .task-card__status-dot {
+    background-color: transparent;
+    border-color: var(--current-status-color, var(--tn-color-success));
 }
 
-.tasknotes-plugin .task-card--status-in-progress .task-card__status-dot {
-    background-color: var(--status-in-progress-color, var(--tn-color-warning));
-}
-
-.tasknotes-plugin .task-card--status-done .task-card__status-dot {
-    background-color: var(--status-done-color, var(--tn-color-success));
-}
-
-/* Update Animation */
+/* Minimal animations - Use theme colors */
 .tasknotes-plugin .task-card--updated {
-    animation: task-card-update 1.2s ease-out;
-}
-
-@keyframes task-card-update {
-    0% {
-        box-shadow: 0 0 0 0 color-mix(in srgb, var(--tn-interactive-accent) 40%, transparent);
-        border-color: var(--tn-border-color);
-    }
-    50% {
-        box-shadow: 0 0 0 2px color-mix(in srgb, var(--tn-interactive-accent) 30%, transparent);
-        border-left-color: var(--tn-interactive-accent);
-    }
-    100% {
-        box-shadow: 0 0 0 0 color-mix(in srgb, var(--tn-interactive-accent) 0%, transparent);
-        border-color: var(--tn-border-color);
-    }
+    background-color: var(--tn-interactive-hover);
+    transition: background-color 0.3s ease;
 }
 
 /* =================================================================
    RESPONSIVE DESIGN
    ================================================================= */
 
-/* Touch-specific adjustments */
+/* Mobile & Touch Devices - Use theme colors */
 @media (pointer: coarse) {
     .tasknotes-plugin .task-card {
-        padding: var(--tn-spacing-lg) var(--tn-spacing-xl);
+        padding: 12px 16px;
         min-height: 44px;
-    }
-    
-    .tasknotes-plugin .task-card:hover {
-        transform: none;
+        margin-bottom: 2px;
     }
     
     .tasknotes-plugin .task-card:active {
-        transform: scale(0.98);
-        transition: transform 0.1s;
+        background-color: var(--tn-interactive-hover);
     }
     
+    /* Larger touch targets */
     .tasknotes-plugin .task-card__context-menu {
-        width: 20px;
-        height: 20px;
+        width: 24px;
+        height: 24px;
+        opacity: 1;
     }
     
     .tasknotes-plugin .task-card__context-menu svg {
         width: 16px;
         height: 16px;
+    }
+    
+    /* Larger status dots for touch */
+    .tasknotes-plugin .task-card__status-dot {
+        width: 18px;
+        height: 18px;
+    }
+}
+
+/* High density displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    .tasknotes-plugin .task-card {
+        border-left-width: 1px;
+    }
+    
+    .tasknotes-plugin .task-card::before {
+        width: 1px;
+    }
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+    .tasknotes-plugin .task-card,
+    .tasknotes-plugin .task-card *,
+    .tasknotes-plugin .task-card::before,
+    .tasknotes-plugin .task-card::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+    
+    .tasknotes-plugin .task-card--dragging {
+        animation: none;
+    }
+}
+
+/* Print styles */
+@media print {
+    .tasknotes-plugin .task-card {
+        break-inside: avoid;
+        page-break-inside: avoid;
+        background: white !important;
+        box-shadow: none !important;
+        border: 1px solid #ccc !important;
+    }
+    
+    .tasknotes-plugin .task-card__quick-actions,
+    .tasknotes-plugin .task-card__context-menu,
+    .tasknotes-plugin .task-card__enhanced-info {
+        display: none !important;
+    }
+}
+
+/* Compact mode for smaller screens - Todoist style */
+@media (max-width: 768px) {
+    .tasknotes-plugin .task-card {
+        padding: 10px 14px;
+    }
+    
+    .tasknotes-plugin .task-card__content {
+        gap: 1px;
+    }
+    
+    .tasknotes-plugin .task-card__title {
+        font-size: 13px;
+    }
+    
+    .tasknotes-plugin .task-card__metadata {
+        font-size: 11px;
     }
 }
 
@@ -382,23 +577,85 @@
    TASKCARD DRAG AND DROP STATES
    ================================================================= */
 
-/* General dragging state for task cards */
-.tasknotes-plugin .task-card--dragging {
-    opacity: 0.5;
-    transform: rotate(3deg) scale(0.95);
-    cursor: grabbing;
-    z-index: 1000;
-    pointer-events: none;
-    box-shadow: var(--tn-shadow-elevated);
+/* Draggable task cards */
+.tasknotes-plugin .task-card[draggable="true"] {
+    transition: all var(--tn-transition-fast);
 }
 
-/* Drag cursor for draggable task cards */
 .tasknotes-plugin .task-card[draggable="true"]:hover {
     cursor: grab;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px color-mix(in srgb, var(--tn-shadow-color) 15%, transparent);
 }
 
 .tasknotes-plugin .task-card[draggable="true"]:active {
     cursor: grabbing;
+    transform: scale(0.98) rotate(1deg);
+}
+
+/* Enhanced dragging state */
+.tasknotes-plugin .task-card--dragging {
+    opacity: 0.8;
+    transform: rotate(5deg) scale(1.02);
+    cursor: grabbing;
+    z-index: 1000;
+    pointer-events: none;
+    box-shadow: 0 8px 32px color-mix(in srgb, var(--tn-shadow-color) 30%, transparent),
+                0 0 0 1px color-mix(in srgb, var(--tn-interactive-accent) 50%, transparent);
+    transition: none;
+    animation: drag-pulse 2s infinite ease-in-out;
+}
+
+@keyframes drag-pulse {
+    0%, 100% {
+        box-shadow: 0 8px 32px color-mix(in srgb, var(--tn-shadow-color) 30%, transparent),
+                    0 0 0 1px color-mix(in srgb, var(--tn-interactive-accent) 50%, transparent);
+    }
+    50% {
+        box-shadow: 0 12px 40px color-mix(in srgb, var(--tn-shadow-color) 40%, transparent),
+                    0 0 0 2px color-mix(in srgb, var(--tn-interactive-accent) 70%, transparent);
+    }
+}
+
+/* Drag preview ghost */
+.tasknotes-plugin .task-card--drag-ghost {
+    opacity: 0.3;
+    transform: scale(0.95);
+    transition: all var(--tn-transition-fast);
+    pointer-events: none;
+    filter: blur(1px);
+}
+
+/* Drop zone feedback */
+.tasknotes-plugin .task-card--drop-target {
+    border: 2px dashed var(--tn-interactive-accent);
+    background: color-mix(in srgb, var(--tn-interactive-accent) 5%, var(--tn-bg-primary));
+    transform: scale(1.02);
+    transition: all var(--tn-transition-fast);
+}
+
+.tasknotes-plugin .task-card--drop-target::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: var(--tn-radius-sm);
+    background: linear-gradient(
+        45deg,
+        transparent 25%,
+        color-mix(in srgb, var(--tn-interactive-accent) 10%, transparent) 25%,
+        color-mix(in srgb, var(--tn-interactive-accent) 10%, transparent) 50%,
+        transparent 50%,
+        transparent 75%,
+        color-mix(in srgb, var(--tn-interactive-accent) 10%, transparent) 75%
+    );
+    background-size: 8px 8px;
+    animation: drop-zone-shimmer 1s linear infinite;
+    z-index: -1;
+}
+
+@keyframes drop-zone-shimmer {
+    0% { background-position: 0 0; }
+    100% { background-position: 8px 8px; }
 }
 
 

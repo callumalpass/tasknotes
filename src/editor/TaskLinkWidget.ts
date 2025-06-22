@@ -4,6 +4,7 @@ import { TaskInfo } from '../types';
 import TaskNotesPlugin from '../main';
 import { format } from 'date-fns';
 import { parseDate, formatDateTimeForDisplay, hasTimeComponent } from '../utils/dateUtils';
+import { dispatchTaskUpdate } from './TaskLinkOverlay';
 
 export class TaskLinkWidget extends WidgetType {
     private taskInfo: TaskInfo;
@@ -36,35 +37,77 @@ export class TaskLinkWidget extends WidgetType {
         
         // Build inline content with proper DOM creation using CSS classes
         
+        // Status indicator dot (BEFORE text, styled like task cards)
+        const statusConfig = this.plugin.statusManager.getStatusConfig(this.taskInfo.status);
+        const statusDot = container.createEl('span', { 
+            cls: 'task-inline-preview__status-dot',
+            attr: { title: `Status: ${this.taskInfo.status}` }
+        });
+        if (statusConfig) {
+            statusDot.style.borderColor = statusConfig.color;
+        }
+        
+        // Add click handler to cycle through statuses
+        statusDot.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            try {
+                // Get fresh task data to ensure we have the latest status
+                const freshTask = await this.plugin.cacheManager.getTaskInfo(this.taskInfo.path);
+                if (!freshTask) {
+                    return;
+                }
+                
+                const currentStatus = freshTask.status || 'open';
+                const nextStatus = this.plugin.statusManager.getNextStatus(currentStatus);
+                await this.plugin.updateTaskProperty(freshTask, 'status', nextStatus);
+                
+                // Update the widget's internal task data
+                this.taskInfo.status = nextStatus;
+                
+                // Immediately update the visual elements
+                const nextStatusConfig = this.plugin.statusManager.getStatusConfig(nextStatus);
+                if (nextStatusConfig) {
+                    statusDot.style.borderColor = nextStatusConfig.color;
+                }
+                
+                // Update completion styling
+                const isCompleted = this.plugin.statusManager.isCompletedStatus(nextStatus);
+                if (isCompleted) {
+                    container.classList.add('task-inline-preview--completed');
+                } else {
+                    container.classList.remove('task-inline-preview--completed');
+                }
+                
+                // Also trigger the system refresh for consistency
+                setTimeout(() => {
+                    dispatchTaskUpdate(view, this.taskInfo.path);
+                }, 50);
+            } catch (error) {
+                console.error('Error cycling task status in inline widget:', error);
+            }
+        });
+        
+        // Note: No checkmark for inline widgets - keep simple circle design
+        
+        // Priority indicator dot (after status, BEFORE text)
+        if (this.taskInfo.priority) {
+            const priorityConfig = this.plugin.priorityManager.getPriorityConfig(this.taskInfo.priority);
+            if (priorityConfig) {
+                const priorityDot = container.createEl('span', { 
+                    cls: 'task-inline-preview__priority-dot',
+                    attr: { title: `Priority: ${priorityConfig.label}` }
+                });
+                priorityDot.style.backgroundColor = priorityConfig.color;
+            }
+        }
+        
         // Task title (allow longer text)
         const titleText = this.taskInfo.title.length > 80 ? this.taskInfo.title.slice(0, 77) + '...' : this.taskInfo.title;
         const titleSpan = container.createEl('span', { 
             cls: 'task-inline-preview__title',
             text: titleText 
         });
-        
-        // Status indicator dot (after text)
-        const statusConfig = this.plugin.statusManager.getStatusConfig(this.taskInfo.status);
-        const statusColor = statusConfig?.color || '#666';
-        const statusDot = container.createEl('span', { 
-            cls: 'task-inline-preview__status-dot',
-            text: '●',
-            attr: { title: `Status: ${this.taskInfo.status}` }
-        });
-        statusDot.style.setProperty('--status-color', statusColor);
-        
-        // Priority indicator dot (after status, for all priorities)
-        if (this.taskInfo.priority) {
-            const priorityConfig = this.plugin.priorityManager.getPriorityConfig(this.taskInfo.priority);
-            if (priorityConfig) {
-                const priorityDot = container.createEl('span', { 
-                    cls: 'task-inline-preview__priority-dot',
-                    text: '●',
-                    attr: { title: `Priority: ${priorityConfig.label}` }
-                });
-                priorityDot.style.setProperty('--priority-color', priorityConfig.color);
-            }
-        }
 
         // Due date info with calendar icon
         if (this.taskInfo.due) {
