@@ -5,6 +5,7 @@ import { getCurrentTimestamp } from '../utils/dateUtils';
 import { calculateDefaultDate } from '../utils/helpers';
 import { StatusManager } from './StatusManager';
 import { PriorityManager } from './PriorityManager';
+import { dispatchTaskUpdate } from '../editor/TaskLinkOverlay';
 
 export class InstantTaskConvertService {
     private plugin: TaskNotesPlugin;
@@ -83,6 +84,9 @@ export class InstantTaskConvertService {
             }
             
             new Notice(`Task converted: ${taskLineInfo.parsedData.title}`);
+            
+            // Trigger immediate refresh of task link overlays to show the inline widget
+            await this.refreshTaskLinkOverlays(editor, file);
             
         } catch (error) {
             console.error('Error during instant task conversion:', error);
@@ -479,6 +483,71 @@ export class InstantTaskConvertService {
         } catch (error) {
             console.error('Error replacing task lines:', error);
             return { success: false, error: `Failed to replace lines: ${error.message}` };
+        }
+    }
+
+    /**
+     * Refresh task link overlays to immediately show the inline widget for the newly created task
+     */
+    private async refreshTaskLinkOverlays(editor: Editor, taskFile: TFile): Promise<void> {
+        try {
+            // Force metadata cache to update for the new file
+            // This ensures the cache has the latest task info before we trigger the overlay refresh
+            await this.forceMetadataCacheUpdate(taskFile);
+            
+            // Small delay to allow the editor to process the line replacement and cache update
+            setTimeout(() => {
+                try {
+                    // Access the CodeMirror instance from the editor
+                    const cmEditor = (editor as any).cm;
+                    if (cmEditor) {
+                        // Preserve cursor position before dispatching update
+                        const cursorPos = editor.getCursor();
+                        
+                        // Dispatch task update to trigger immediate refresh of task link overlays
+                        dispatchTaskUpdate(cmEditor, taskFile.path);
+                        
+                        // Restore cursor position after a brief delay
+                        setTimeout(() => {
+                            try {
+                                editor.setCursor(cursorPos);
+                            } catch (error) {
+                                console.debug('Error restoring cursor position:', error);
+                            }
+                        }, 10);
+                    }
+                } catch (error) {
+                    console.debug('Error dispatching task update for overlays:', error);
+                }
+            }, 100);
+        } catch (error) {
+            console.debug('Error refreshing task link overlays:', error);
+        }
+    }
+
+    /**
+     * Force Obsidian's metadata cache to update for a newly created file
+     */
+    private async forceMetadataCacheUpdate(file: TFile): Promise<void> {
+        try {
+            // Read the file content to trigger metadata parsing
+            await this.plugin.app.vault.cachedRead(file);
+            
+            // Force metadata cache to process the file
+            // This is a workaround to ensure the cache is immediately updated
+            if (this.plugin.app.metadataCache.getFileCache(file) === null) {
+                // If cache is still null, trigger a manual update
+                // by reading the file again with a small delay
+                setTimeout(async () => {
+                    try {
+                        await this.plugin.app.vault.cachedRead(file);
+                    } catch (error) {
+                        console.debug('Error in delayed cache update:', error);
+                    }
+                }, 10);
+            }
+        } catch (error) {
+            console.debug('Error forcing metadata cache update:', error);
         }
     }
 }
