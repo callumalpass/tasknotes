@@ -13,29 +13,26 @@
     
     /* Spacing & Sizing */
     padding: var(--tn-spacing-md) var(--tn-spacing-lg);
-    margin-bottom: 0;
+    margin-bottom: var(--tn-spacing-xs);
     
     /* Visual Styling */
     background-color: var(--tn-bg-primary);
     border: none;
-    border-bottom: 1px solid var(--tn-border-color);
     border-radius: 0;
     border-left: 3px solid transparent; /* For priority indication */
     
     /* Interactions */
     cursor: pointer;
-    transition: background-color var(--tn-transition-fast),
-                border-color var(--tn-transition-fast),
-                transform var(--tn-transition-fast),
-                box-shadow var(--tn-transition-fast),
-                opacity var(--tn-transition-fast);
-    will-change: transform, box-shadow;
+    transition: background-color var(--tn-transition-fast);
+    will-change: background-color;
 }
 
 .tasknotes-plugin .task-card:hover {
     background-color: var(--tn-interactive-hover);
-    transform: translateY(-1px);
-    box-shadow: var(--tn-shadow-light);
+}
+
+.tasknotes-plugin .task-card:last-child {
+    margin-bottom: 0;
 }
 
 /* Remove border radius for cleaner list appearance */

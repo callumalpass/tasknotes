@@ -373,38 +373,6 @@
    KANBAN TASK CARDS
    ================================================ */
 
-/* Task Card Container in Kanban */
-.tasknotes-plugin .kanban-view__column-body .task-card {
-    margin-bottom: 0;
-    transition: all var(--tn-transition-fast);
-}
-
-.tasknotes-plugin .kanban-view__column-body .task-card:last-child {
-    margin-bottom: 0;
-}
-
-.tasknotes-plugin .kanban-view__column-body .task-card--dragging {
-    opacity: 0.5;
-    transform: rotate(5deg);
-    cursor: grabbing;
-    z-index: 1000;
-    pointer-events: none;
-}
-
-.tasknotes-plugin .kanban-view__column-body .task-card--updated {
-    animation: taskUpdated 1s ease-out;
-}
-
-@keyframes taskUpdated {
-    0% {
-        background: color-mix(in srgb, var(--tn-interactive-accent) 0.2, var(--tn-bg-primary));
-        transform: scale(1.02);
-    }
-    100% {
-        background: var(--tn-bg-primary);
-        transform: scale(1);
-    }
-}
 
 /* ================================================
    RESPONSIVE DESIGN

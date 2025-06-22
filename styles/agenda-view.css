@@ -350,11 +350,6 @@
     gap: var(--tn-spacing-xs);
 }
 
-.tasknotes-plugin .agenda-view__day-content--flat .task-card,
-.tasknotes-plugin .agenda-view__day-content--flat .note-card {
-    border-left: 3px solid var(--tn-interactive-accent);
-    padding-left: var(--tn-spacing-sm);
-}
 
 /* Empty States */
 .tasknotes-plugin .agenda-view__empty {
@@ -414,11 +409,6 @@
     box-shadow: var(--tn-shadow-light);
 }
 
-/* Agenda View Specific Card Overrides */
-.tasknotes-plugin .agenda-view .task-card,
-.tasknotes-plugin .agenda-view .note-card {
-    margin-bottom: 0;
-}
 
 .tasknotes-plugin .agenda-view .tasks-container {
     margin-bottom: var(--tn-spacing-xs);

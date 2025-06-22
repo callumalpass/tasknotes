@@ -82,14 +82,6 @@
     min-height: 0;
 }
 
-/* Ensure task cards in task list have proper spacing */
-.tasknotes-plugin .task-list .task-card {
-    margin-bottom: var(--tn-spacing-xs);
-}
-
-.tasknotes-plugin .task-list .task-card:last-child {
-    margin-bottom: 0;
-}
 
 /* Loading Indicator */
 .tasknotes-plugin .task-list-view__loading {
