@@ -44,7 +44,8 @@ export class TaskCreationModal extends BaseTaskModal {
 		this.conversionOptions = conversionOptions || {};
 		this.nlParser = new NaturalLanguageParser(
 			plugin.settings.customStatuses,
-			plugin.settings.customPriorities
+			plugin.settings.customPriorities,
+			plugin.settings.nlpDefaultToScheduled
 		);
 		
 		// If this is a task conversion, start with detailed form visible

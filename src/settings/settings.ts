@@ -36,6 +36,7 @@ export interface TaskNotesSettings {
 	enableInstantTaskConvert: boolean;
 	useDefaultsOnInstantConvert: boolean;
 	enableNaturalLanguageInput: boolean;
+	nlpDefaultToScheduled: boolean;
 	// Performance settings
 	disableNoteIndexing: boolean;
 	// Customization settings
@@ -244,6 +245,7 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	enableInstantTaskConvert: true,
 	useDefaultsOnInstantConvert: true,
 	enableNaturalLanguageInput: true,
+	nlpDefaultToScheduled: true,
 	// Performance defaults
 	disableNoteIndexing: false,
 	// Customization defaults
@@ -546,6 +548,19 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 					.setValue(this.plugin.settings.enableNaturalLanguageInput)
 					.onChange(async (value) => {
 						this.plugin.settings.enableNaturalLanguageInput = value;
+						await this.plugin.saveSettings();
+					});
+			});
+
+		new Setting(container)
+			.setName('Default date type for natural language input')
+			.setDesc('When dates are mentioned without "due" or "scheduled" keywords (e.g., "task friday"), default to scheduled date. When disabled, defaults to due date.')
+			.addToggle(toggle => {
+				toggle.toggleEl.setAttribute('aria-label', 'Default to scheduled date for natural language input');
+				return toggle
+					.setValue(this.plugin.settings.nlpDefaultToScheduled)
+					.onChange(async (value) => {
+						this.plugin.settings.nlpDefaultToScheduled = value;
 						await this.plugin.saveSettings();
 					});
 			});

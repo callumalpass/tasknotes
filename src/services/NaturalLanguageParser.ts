@@ -24,10 +24,12 @@ export interface ParsedTaskData {
 export class NaturalLanguageParser {
 	private statusConfigs: StatusConfig[];
 	private priorityConfigs: PriorityConfig[];
+	private defaultToScheduled: boolean;
 
-	constructor(statusConfigs: StatusConfig[] = [], priorityConfigs: PriorityConfig[] = []) {
+	constructor(statusConfigs: StatusConfig[] = [], priorityConfigs: PriorityConfig[] = [], defaultToScheduled: boolean = true) {
 		this.statusConfigs = statusConfigs;
 		this.priorityConfigs = priorityConfigs;
+		this.defaultToScheduled = defaultToScheduled;
 	}
 
 	
@@ -82,7 +84,24 @@ export class NaturalLanguageParser {
 			workingText = statusResult.remainingText;
 		}
 
-		// Extract recurrence
+		// Extract explicit due/scheduled date patterns first
+		const explicitDateResult = this.extractExplicitDates(workingText);
+		Object.assign(result, explicitDateResult.dates);
+		workingText = explicitDateResult.remainingText;
+
+		// Extract dates and times using chrono-node (primary parser for remaining dates)
+		const dateTimeResult = this.extractDatesAndTimesWithChrono(workingText);
+		Object.assign(result, dateTimeResult.dateTime);
+		workingText = dateTimeResult.remainingText;
+
+		// Extract time estimate
+		const estimateResult = this.extractTimeEstimate(workingText);
+		if (estimateResult.estimate) {
+			result.estimate = estimateResult.estimate;
+			workingText = estimateResult.remainingText;
+		}
+
+		// Extract recurrence AFTER date parsing to avoid conflicts
 		const recurrenceResult = this.extractRecurrence(workingText);
 		if (recurrenceResult.recurrence) {
 			result.recurrence = recurrenceResult.recurrence;
@@ -92,18 +111,6 @@ export class NaturalLanguageParser {
 			result.daysOfWeek = recurrenceResult.daysOfWeek;
 		}
 
-		// Extract time estimate
-		const estimateResult = this.extractTimeEstimate(workingText);
-		if (estimateResult.estimate) {
-			result.estimate = estimateResult.estimate;
-			workingText = estimateResult.remainingText;
-		}
-
-		// Extract dates and times using chrono-node
-		const dateTimeResult = this.extractDatesAndTimesWithChrono(workingText);
-		Object.assign(result, dateTimeResult.dateTime);
-		workingText = dateTimeResult.remainingText;
-
 		// Whatever remains is the title
 		result.title = workingText.trim();
 
@@ -112,7 +119,8 @@ export class NaturalLanguageParser {
 			result.details = details;
 		}
 
-		return result;
+		// Validate and cleanup the final result
+		return this.validateAndCleanupResult(result);
 	}
 
 
@@ -210,9 +218,10 @@ export class NaturalLanguageParser {
 
 
 	/**
-	 * Extract recurrence from text (legacy method)
+	 * Extract recurrence from text (improved to avoid conflicts with date parsing)
 	 */
 	private extractRecurrence(text: string): { recurrence?: string; daysOfWeek?: string[]; remainingText: string } {
+		// More specific recurrence patterns that avoid ambiguity
 		const recurrencePatterns = [
 			{ regex: /\b(daily|every day|each day)\b/i, value: 'daily' },
 			{ regex: /\b(weekly|every week|each week)\b/i, value: 'weekly' },
@@ -220,37 +229,59 @@ export class NaturalLanguageParser {
 			{ regex: /\b(yearly|annually|every year|each year)\b/i, value: 'yearly' }
 		];
 
-		// Check for specific day patterns first
-		const dayPattern = /\bevery (monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/i;
-		const dayMatch = text.match(dayPattern);
-		if (dayMatch) {
-			const dayName = dayMatch[1].toLowerCase();
+		// Check for "every [weekday]" patterns - more specific to avoid conflicts
+		const everyDayPattern = /\bevery\s+(monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/i;
+		const everyDayMatch = text.match(everyDayPattern);
+		if (everyDayMatch) {
+			const dayName = everyDayMatch[1].toLowerCase();
 			const capitalizedDay = dayName.charAt(0).toUpperCase() + dayName.slice(1);
 			return {
 				recurrence: 'weekly',
 				daysOfWeek: [capitalizedDay],
-				remainingText: text.replace(dayPattern, '').trim()
+				remainingText: text.replace(everyDayPattern, '').trim()
 			};
 		}
 
-		// Check for short day patterns (mondays, tuesdays, etc.)
-		const shortDayPattern = /\b(mon|tue|wed|thu|fri|sat|sun)days?\b/i;
-		const shortDayMatch = text.match(shortDayPattern);
-		if (shortDayMatch) {
-			const shortDay = shortDayMatch[1].toLowerCase();
+		// Check for plural day patterns (mondays, tuesdays, etc.) - but be more specific
+		const pluralDayPattern = /\b(mondays|tuesdays|wednesdays|thursdays|fridays|saturdays|sundays)\b/i;
+		const pluralDayMatch = text.match(pluralDayPattern);
+		if (pluralDayMatch) {
+			const pluralDay = pluralDayMatch[1].toLowerCase();
 			const dayMapping: Record<string, string> = {
-				'mon': 'Monday',
-				'tue': 'Tuesday', 
-				'wed': 'Wednesday',
-				'thu': 'Thursday',
-				'fri': 'Friday',
-				'sat': 'Saturday',
-				'sun': 'Sunday'
+				'mondays': 'Monday',
+				'tuesdays': 'Tuesday', 
+				'wednesdays': 'Wednesday',
+				'thursdays': 'Thursday',
+				'fridays': 'Friday',
+				'saturdays': 'Saturday',
+				'sundays': 'Sunday'
 			};
+			
+			const mappedDay = dayMapping[pluralDay];
+			if (mappedDay) {
+				return {
+					recurrence: 'weekly',
+					daysOfWeek: [mappedDay],
+					remainingText: text.replace(pluralDayPattern, '').trim()
+				};
+			}
+		}
+
+		// Check for "every other" patterns
+		const everyOtherPattern = /\bevery\s+other\s+(day|week|month|year)\b/i;
+		const everyOtherMatch = text.match(everyOtherPattern);
+		if (everyOtherMatch) {
+			const period = everyOtherMatch[1].toLowerCase();
+			const periodMapping: Record<string, string> = {
+				'day': 'daily',
+				'week': 'weekly',
+				'month': 'monthly',
+				'year': 'yearly'
+			};
+			
 			return {
-				recurrence: 'weekly',
-				daysOfWeek: [dayMapping[shortDay]],
-				remainingText: text.replace(shortDayPattern, '').trim()
+				recurrence: periodMapping[period] || 'weekly',
+				remainingText: text.replace(everyOtherPattern, '').trim()
 			};
 		}
 
@@ -300,7 +331,91 @@ export class NaturalLanguageParser {
 	}
 
 	/**
-	 * Extract dates and times from text using chrono-node
+	 * Extract explicit due/scheduled date patterns
+	 */
+	private extractExplicitDates(text: string): {
+		dates: Partial<ParsedTaskData>;
+		remainingText: string;
+	} {
+		const result: Partial<ParsedTaskData> = {};
+		let workingText = text;
+
+		// Patterns for explicit due dates
+		const duePatterns = [
+			/\bdue\s+(on\s+)?(.*?)(?=\s|$|[,.;!?])/i,
+			/\bdeadline\s+(on\s+)?(.*?)(?=\s|$|[,.;!?])/i,
+			/\bmust\s+be\s+done\s+(by\s+)?(.*?)(?=\s|$|[,.;!?])/i
+		];
+
+		// Patterns for explicit scheduled dates  
+		const scheduledPatterns = [
+			/\b(?:scheduled\s+(?:for\s+)?|start\s+(?:on\s+)?|begin\s+(?:on\s+)?|work\s+on\s+)(.*?)(?=\s|$|[,.;!?])/i
+		];
+
+		// Check for explicit due date patterns
+		for (const pattern of duePatterns) {
+			const match = workingText.match(pattern);
+			if (match) {
+				const dateText = match[2] || match[1];
+				const parsedDate = this.parseFlexibleDate(dateText.trim());
+				if (parsedDate) {
+					result.dueDate = parsedDate.date;
+					if (parsedDate.time) {
+						result.dueTime = parsedDate.time;
+					}
+					workingText = workingText.replace(match[0], '').trim();
+					break; // Only match first due date
+				}
+			}
+		}
+
+		// Check for explicit scheduled date patterns
+		for (const pattern of scheduledPatterns) {
+			const match = workingText.match(pattern);
+			if (match) {
+				const dateText = match[1];
+				const parsedDate = this.parseFlexibleDate(dateText.trim());
+				if (parsedDate) {
+					result.scheduledDate = parsedDate.date;
+					if (parsedDate.time) {
+						result.scheduledTime = parsedDate.time;
+					}
+					workingText = workingText.replace(match[0], '').trim();
+					break; // Only match first scheduled date
+				}
+			}
+		}
+
+		return { dates: result, remainingText: workingText };
+	}
+
+	/**
+	 * Parse a flexible date string using chrono-node
+	 */
+	private parseFlexibleDate(dateText: string): { date: string; time?: string } | null {
+		try {
+			const parsed = chrono.parseDate(dateText, new Date(), { forwardDate: true });
+			if (parsed && isValid(parsed)) {
+				const result: { date: string; time?: string } = {
+					date: format(parsed, 'yyyy-MM-dd')
+				};
+				
+				// Check if the original text included time information
+				const chronoParsed = chrono.parse(dateText, new Date(), { forwardDate: true });
+				if (chronoParsed.length > 0 && chronoParsed[0].start?.isCertain('hour')) {
+					result.time = format(parsed, 'HH:mm');
+				}
+				
+				return result;
+			}
+		} catch (error) {
+			// Ignore parsing errors
+		}
+		return null;
+	}
+
+	/**
+	 * Extract dates and times from text using chrono-node as primary parser
 	 */
 	private extractDatesAndTimesWithChrono(text: string): { 
 		dateTime: Partial<ParsedTaskData>; 
@@ -310,29 +425,83 @@ export class NaturalLanguageParser {
 		let workingText = text;
 
 		try {
-			// Use chrono-node to parse natural language dates
-			const parsed = chrono.parse(text);
+			// Configure chrono for better parsing
+			const customChrono = chrono.casual.clone();
+			
+			// Parse all dates found in the text
+			const parsed = customChrono.parse(text, new Date(), { forwardDate: true });
 			
 			if (parsed.length > 0) {
-				const firstDate = parsed[0];
+				// Process the first (most confident) date match
+				const primaryDate = parsed[0];
 				
-				if (firstDate.start) {
-					const startDate = firstDate.start.date();
+				if (primaryDate.start) {
+					const startDate = primaryDate.start.date();
 					if (isValid(startDate)) {
-						result.dueDate = format(startDate, 'yyyy-MM-dd');
-						
-						// Check if time is included
-						if (firstDate.start.isCertain('hour')) {
-							result.dueTime = format(startDate, 'HH:mm');
+						// Apply default behavior: scheduled by default, due if setting changed
+						if (this.defaultToScheduled) {
+							result.scheduledDate = format(startDate, 'yyyy-MM-dd');
+							
+							// Extract time if present and certain
+							if (primaryDate.start.isCertain('hour') && primaryDate.start.isCertain('minute')) {
+								result.scheduledTime = format(startDate, 'HH:mm');
+							} else if (primaryDate.start.isCertain('hour')) {
+								// If only hour is certain, assume minute is 0
+								result.scheduledTime = format(startDate, 'HH:00');
+							}
+						} else {
+							result.dueDate = format(startDate, 'yyyy-MM-dd');
+							
+							// Extract time if present and certain
+							if (primaryDate.start.isCertain('hour') && primaryDate.start.isCertain('minute')) {
+								result.dueTime = format(startDate, 'HH:mm');
+							} else if (primaryDate.start.isCertain('hour')) {
+								// If only hour is certain, assume minute is 0
+								result.dueTime = format(startDate, 'HH:00');
+							}
+						}
+					}
+					
+					// Handle end date for ranges
+					if (primaryDate.end) {
+						const endDate = primaryDate.end.date();
+						if (isValid(endDate) && endDate.getTime() !== startDate.getTime()) {
+							// For ranges, start is always scheduled, end is always due
+							if (this.defaultToScheduled) {
+								// Start date is already in scheduledDate, end date becomes due
+								result.dueDate = format(endDate, 'yyyy-MM-dd');
+								
+								if (primaryDate.end.isCertain('hour') && primaryDate.end.isCertain('minute')) {
+									result.dueTime = format(endDate, 'HH:mm');
+								} else if (primaryDate.end.isCertain('hour')) {
+									result.dueTime = format(endDate, 'HH:00');
+								}
+							} else {
+								// Start date is already in dueDate, end date becomes scheduled
+								result.scheduledDate = format(endDate, 'yyyy-MM-dd');
+								
+								if (primaryDate.end.isCertain('hour') && primaryDate.end.isCertain('minute')) {
+									result.scheduledTime = format(endDate, 'HH:mm');
+								} else if (primaryDate.end.isCertain('hour')) {
+									result.scheduledTime = format(endDate, 'HH:00');
+								}
+							}
 						}
 					}
 					
 					// Remove the matched date text from working text
-					const dateText = firstDate.text;
-					workingText = workingText.replace(dateText, '').trim();
+					// Use the exact text that chrono matched
+					const dateText = primaryDate.text;
+					const dateIndex = primaryDate.index;
+					
+					// Remove the date text more precisely
+					workingText = text.substring(0, dateIndex) + 
+								 text.substring(dateIndex + dateText.length);
+					workingText = workingText.replace(/\s+/g, ' ').trim();
 				}
 			}
 		} catch (error) {
+			console.debug('Chrono-node parsing failed, using fallback:', error);
 			// Fallback to legacy date extraction if chrono fails
 			const legacyResult = this.extractDatesAndTimes(workingText);
 			Object.assign(result, legacyResult.dateTime);
@@ -532,7 +701,7 @@ export class NaturalLanguageParser {
 	}
 
 	/**
-	 * Get the next occurrence of a weekday
+	 * Get the next occurrence of a weekday with improved logic
 	 */
 	private getNextWeekday(dayName: string, forceNext = false): Date {
 		const weekdays = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
@@ -556,6 +725,61 @@ export class NaturalLanguageParser {
 		}
 		
 		return startOfDay(addDays(today, daysToAdd));
+	}
+
+	/**
+	 * Enhanced validation and cleanup for parsed results
+	 */
+	private validateAndCleanupResult(result: ParsedTaskData): ParsedTaskData {
+		// Ensure title is not empty
+		if (!result.title || result.title.trim().length === 0) {
+			result.title = 'Untitled Task';
+		}
+
+		// Validate date formats
+		if (result.dueDate && !this.isValidDateString(result.dueDate)) {
+			delete result.dueDate;
+		}
+		if (result.scheduledDate && !this.isValidDateString(result.scheduledDate)) {
+			delete result.scheduledDate;
+		}
+
+		// Validate time formats
+		if (result.dueTime && !this.isValidTimeString(result.dueTime)) {
+			delete result.dueTime;
+		}
+		if (result.scheduledTime && !this.isValidTimeString(result.scheduledTime)) {
+			delete result.scheduledTime;
+		}
+
+		// Ensure arrays are properly initialized
+		result.tags = result.tags || [];
+		result.contexts = result.contexts || [];
+		
+		// Remove duplicate tags and contexts
+		result.tags = [...new Set(result.tags)];
+		result.contexts = [...new Set(result.contexts)];
+
+		return result;
+	}
+
+	/**
+	 * Validate date string format (YYYY-MM-DD)
+	 */
+	private isValidDateString(dateString: string): boolean {
+		const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+		if (!dateRegex.test(dateString)) return false;
+		
+		const date = new Date(dateString);
+		return isValid(date);
+	}
+
+	/**
+	 * Validate time string format (HH:MM)
+	 */
+	private isValidTimeString(timeString: string): boolean {
+		const timeRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
+		return timeRegex.test(timeString);
 	}
 
 	/**
