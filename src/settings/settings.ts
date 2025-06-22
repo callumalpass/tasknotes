@@ -393,9 +393,9 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 		
 		new Setting(container)
 			.setName('Task link overlay')
-			.setDesc('Replace wikilinks to task files with interactive task cards in live preview mode')
+			.setDesc('Replace wikilinks to task files with interactive task cards in both live preview and reading modes')
 			.addToggle(toggle => {
-				toggle.toggleEl.setAttribute('aria-label', 'Enable task link overlay in live preview mode');
+				toggle.toggleEl.setAttribute('aria-label', 'Enable task link overlay in live preview and reading modes');
 				return toggle
 					.setValue(this.plugin.settings.enableTaskLinkOverlay)
 					.onChange(async (value) => {
