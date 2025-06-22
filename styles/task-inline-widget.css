@@ -58,6 +58,8 @@
 
 .tasknotes-plugin .task-inline-preview__status-dot:hover {
     border-color: var(--tn-text-muted);
+    box-shadow: 0 0 6px rgba(100, 149, 237, 0.4);
+    transform: scale(1.1);
 }
 
 /* Priority indicator dot - filled solid circle */

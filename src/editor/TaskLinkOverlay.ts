@@ -70,7 +70,19 @@ export function createTaskLinkField(plugin: TaskNotesPlugin) {
                 if (transaction.docChanged || hasTaskUpdateEffect) {
                     // Clear active widgets cache on task updates to ensure fresh widgets are created
                     if (hasTaskUpdateEffect) {
-                        activeWidgets.clear();
+                        // Get the specific task path that was updated
+                        const taskUpdateData = transaction.effects.find(effect => effect.is(taskUpdateEffect))?.value;
+                        if (taskUpdateData?.taskPath) {
+                            // Clear only widgets for the specific task that was updated
+                            for (const [key, widget] of activeWidgets.entries()) {
+                                if (key.includes(taskUpdateData.taskPath)) {
+                                    activeWidgets.delete(key);
+                                }
+                            }
+                        } else {
+                            // If no specific path, clear all widgets
+                            activeWidgets.clear();
+                        }
                     }
                     return buildTaskLinkDecorations(transaction.state, plugin, activeWidgets);
                 }
@@ -202,15 +214,18 @@ function buildTaskLinkDecorations(state: any, plugin: TaskNotesPlugin, activeWid
                     
                     // Create or reuse widget instance
                     const widgetKey = `${resolvedPath}-${wikilink.start}-${wikilink.end}`;
-                    let widget = activeWidgets.get(widgetKey);
                     
-                    // Always create a new widget to compare against the cached one
+                    // Always create a new widget with the current task info
                     const newWidget = new TaskLinkWidget(taskInfo, plugin, wikilink.match, parsed.displayText);
                     
-                    if (!widget || !widget.eq(newWidget)) {
-                        widget = newWidget;
-                        activeWidgets.set(widgetKey, widget);
+                    // Check if we need to update the cached widget
+                    const cachedWidget = activeWidgets.get(widgetKey);
+                    if (!cachedWidget || !cachedWidget.eq(newWidget)) {
+                        activeWidgets.set(widgetKey, newWidget);
                     }
+                    
+                    // Use the new widget to ensure fresh data
+                    const widget = activeWidgets.get(widgetKey);
 
                     // Create a replacement decoration that replaces the wikilink with our widget
                     const decoration = Decoration.replace({
@@ -365,9 +380,19 @@ export { taskUpdateEffect };
 
 // Helper function to dispatch task update effects to an editor view
 export function dispatchTaskUpdate(view: EditorView, taskPath?: string): void {
-    view.dispatch({
-        effects: [taskUpdateEffect.of({ taskPath })]
-    });
+    // Validate that view is a proper EditorView with dispatch method
+    if (!view || typeof view.dispatch !== 'function') {
+        console.warn('Invalid EditorView passed to dispatchTaskUpdate:', view);
+        return;
+    }
+    
+    try {
+        view.dispatch({
+            effects: [taskUpdateEffect.of({ taskPath })]
+        });
+    } catch (error) {
+        console.error('Error dispatching task update:', error);
+    }
 }
 
 // Export the service for use elsewhere

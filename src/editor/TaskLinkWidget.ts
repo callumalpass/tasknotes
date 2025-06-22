@@ -45,6 +45,14 @@ export class TaskLinkWidget extends WidgetType {
         });
         if (statusConfig) {
             statusDot.style.borderColor = statusConfig.color;
+            
+            // Fill the circle if the task is completed
+            const isCompleted = this.plugin.statusManager.isCompletedStatus(this.taskInfo.status);
+            if (isCompleted) {
+                statusDot.style.backgroundColor = statusConfig.color;
+            } else {
+                statusDot.style.backgroundColor = 'transparent';
+            }
         }
         
         // Add click handler to cycle through statuses
@@ -75,20 +83,27 @@ export class TaskLinkWidget extends WidgetType {
                 const isCompleted = this.plugin.statusManager.isCompletedStatus(nextStatus);
                 if (isCompleted) {
                     container.classList.add('task-inline-preview--completed');
+                    // Fill the circle for completed status
+                    if (nextStatusConfig) {
+                        statusDot.style.backgroundColor = nextStatusConfig.color;
+                    }
                 } else {
                     container.classList.remove('task-inline-preview--completed');
+                    // Make the circle transparent for non-completed status
+                    statusDot.style.backgroundColor = 'transparent';
                 }
                 
                 // Also trigger the system refresh for consistency
                 setTimeout(() => {
-                    dispatchTaskUpdate(view, this.taskInfo.path);
+                    // Validate that view is a proper EditorView with dispatch method
+                    if (view && typeof view.dispatch === 'function') {
+                        dispatchTaskUpdate(view, this.taskInfo.path);
+                    }
                 }, 50);
             } catch (error) {
                 console.error('Error cycling task status in inline widget:', error);
             }
         });
-        
-        // Note: No checkmark for inline widgets - keep simple circle design
         
         // Priority indicator dot (after status, BEFORE text)
         if (this.taskInfo.priority) {

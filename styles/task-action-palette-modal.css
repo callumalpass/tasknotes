@@ -88,8 +88,8 @@
 }
 
 .suggestion-item.is-selected .task-action-palette__description {
-    color: var(--text-on-accent-inverted);
-    opacity: 0.8;
+    color: var(--text-on-accent);
+    opacity: 0.7;
 }
 
 /* Badge area */
@@ -117,35 +117,35 @@
     opacity: 0.9;
 }
 
-/* Category-specific colors */
+/* Category-specific colors - theme aware */
 .task-action-palette__category--status {
-    background-color: var(--color-blue-rgb);
-    color: white;
+    background-color: var(--color-blue);
+    color: var(--text-on-accent);
 }
 
 .task-action-palette__category--priority {
-    background-color: var(--color-orange-rgb);
-    color: white;
+    background-color: var(--color-orange);
+    color: var(--text-on-accent);
 }
 
 .task-action-palette__category--dates {
-    background-color: var(--color-green-rgb);
-    color: white;
+    background-color: var(--color-green);
+    color: var(--text-on-accent);
 }
 
 .task-action-palette__category--tracking {
-    background-color: var(--color-purple-rgb);
-    color: white;
+    background-color: var(--color-purple);
+    color: var(--text-on-accent);
 }
 
 .task-action-palette__category--organization {
-    background-color: var(--color-yellow-rgb);
-    color: white;
+    background-color: var(--color-yellow);
+    color: var(--text-normal);
 }
 
 .task-action-palette__category--other {
-    background-color: var(--text-muted);
-    color: white;
+    background-color: var(--background-modifier-border);
+    color: var(--text-muted);
 }
 
 /* Responsive adjustments */
@@ -171,26 +171,6 @@
     }
 }
 
-/* Dark theme adjustments */
-.theme-dark .task-action-palette__category--status {
-    background-color: rgba(var(--color-blue-rgb), 0.8);
-}
-
-.theme-dark .task-action-palette__category--priority {
-    background-color: rgba(var(--color-orange-rgb), 0.8);
-}
-
-.theme-dark .task-action-palette__category--dates {
-    background-color: rgba(var(--color-green-rgb), 0.8);
-}
-
-.theme-dark .task-action-palette__category--tracking {
-    background-color: rgba(var(--color-purple-rgb), 0.8);
-}
-
-.theme-dark .task-action-palette__category--organization {
-    background-color: rgba(var(--color-yellow-rgb), 0.8);
-}
 
 /* Focus and accessibility */
 .task-action-palette__suggestion:focus-visible {

@@ -280,7 +280,9 @@ export default class TaskNotesPlugin extends Plugin {
 							const editor = (leaf.view as any).editor;
 							if (editor && editor.cm) {
 								// Use the proper CodeMirror state effect pattern
-								dispatchTaskUpdate(editor.cm, data?.path);
+								// Pass the updated task path to ensure specific widget refreshing
+								const taskPath = data?.path || data?.updatedTask?.path;
+								dispatchTaskUpdate(editor.cm, taskPath);
 							}
 						}
 					});

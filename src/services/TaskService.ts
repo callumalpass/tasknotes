@@ -708,7 +708,10 @@ export class TaskService {
             throw new Error(`Cannot find task file: ${task.path}`);
         }
 
-        if (!task.recurrence) {
+        // Get fresh task data to ensure we have the latest completion state
+        const freshTask = await this.plugin.cacheManager.getTaskInfo(task.path) || task;
+        
+        if (!freshTask.recurrence) {
             throw new Error('Task is not recurring');
         }
 
@@ -716,13 +719,13 @@ export class TaskService {
         const targetDate = date || this.plugin.selectedDate;
         const dateStr = format(targetDate, 'yyyy-MM-dd');
         
-        // Check current completion status for this date
-        const completeInstances = Array.isArray(task.complete_instances) ? task.complete_instances : [];
+        // Check current completion status for this date using fresh data
+        const completeInstances = Array.isArray(freshTask.complete_instances) ? freshTask.complete_instances : [];
         const currentComplete = completeInstances.includes(dateStr);
         const newComplete = !currentComplete;
         
-        // Step 1: Construct new state in memory
-        const updatedTask = { ...task };
+        // Step 1: Construct new state in memory using fresh data
+        const updatedTask = { ...freshTask };
         updatedTask.dateModified = getCurrentTimestamp();
         
         if (newComplete) {
@@ -761,12 +764,12 @@ export class TaskService {
         });
         
         // Step 3: Proactively update cache
-        await this.plugin.cacheManager.updateTaskInfoInCache(task.path, updatedTask);
+        await this.plugin.cacheManager.updateTaskInfoInCache(freshTask.path, updatedTask);
         
         // Step 4: Notify system of change
         this.plugin.emitter.trigger(EVENT_TASK_UPDATED, {
-            path: task.path,
-            originalTask: task,
+            path: freshTask.path,
+            originalTask: freshTask,
             updatedTask: updatedTask
         });
         

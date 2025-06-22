@@ -128,7 +128,37 @@ export function createTaskCard(task: TaskInfo, plugin: TaskNotesPlugin, options:
         try {
             if (task.recurrence) {
                 // For recurring tasks, toggle completion for the target date
-                await plugin.toggleRecurringTaskComplete(task, targetDate);
+                const updatedTask = await plugin.toggleRecurringTaskComplete(task, targetDate);
+                
+                // Immediately update the visual state of the status dot
+                const newEffectiveStatus = getEffectiveTaskStatus(updatedTask, targetDate);
+                const newStatusConfig = plugin.statusManager.getStatusConfig(newEffectiveStatus);
+                const isNowCompleted = plugin.statusManager.isCompletedStatus(newEffectiveStatus);
+                
+                // Update status dot border color
+                if (newStatusConfig) {
+                    statusDot.style.borderColor = newStatusConfig.color;
+                }
+                
+                // Update the card's completion state and classes
+                const cardClasses = ['task-card'];
+                if (isNowCompleted) {
+                    cardClasses.push('task-card--completed');
+                }
+                if (task.archived) cardClasses.push('task-card--archived');
+                if (plugin.getActiveTimeSession(task)) cardClasses.push('task-card--actively-tracked');
+                if (task.recurrence) cardClasses.push('task-card--recurring');
+                if (task.priority) cardClasses.push(`task-card--priority-${task.priority}`);
+                if (newEffectiveStatus) cardClasses.push(`task-card--status-${newEffectiveStatus}`);
+                
+                card.className = cardClasses.join(' ');
+                card.dataset.status = newEffectiveStatus;
+                
+                // Update the title completion styling
+                const titleEl = card.querySelector('.task-card__title') as HTMLElement;
+                if (titleEl) {
+                    titleEl.classList.toggle('completed', isNowCompleted);
+                }
             } else {
                 // For regular tasks, cycle to next status
                 // Get fresh task data to ensure we have the latest status
