@@ -303,7 +303,7 @@
 /* Selected and today */
 .tasknotes-plugin .calendar-view__day--today.calendar-view__day--selected,
 .tasknotes-plugin .mini-calendar-view__day--today.mini-calendar-view__day--selected {
-    box-shadow: 0 0 0 2px var(--tn-interactive-accent);
+    box-shadow: none;
 }
 
 /* Calendar Day - Outside Month */

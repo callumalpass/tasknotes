@@ -211,7 +211,6 @@
 
 .tasknotes-plugin .kanban-view__column--dragover {
     border-color: var(--tn-interactive-accent);
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--tn-interactive-accent) 0.2, transparent);
     transform: scale(1.02);
     box-shadow: var(--tn-shadow-medium);
 }

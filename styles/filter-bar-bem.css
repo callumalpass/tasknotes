@@ -46,8 +46,8 @@
 
 .tasknotes-plugin .filter-bar__search-input:focus {
     outline: none;
-    border-color: var(--tn-interactive-accent);
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--tn-interactive-accent) 20%, transparent);
+    border-color: var(--interactive-accent);
+    box-shadow: none;
 }
 
 .tasknotes-plugin .filter-bar__search-input::placeholder {
@@ -93,8 +93,8 @@
 
 .tasknotes-plugin .filter-bar__select:focus {
     outline: none;
-    border-color: var(--tn-interactive-accent);
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--tn-interactive-accent) 20%, transparent);
+    border-color: var(--interactive-accent);
+    box-shadow: none;
 }
 
 .tasknotes-plugin .filter-bar__select:hover {
@@ -122,7 +122,7 @@
 .tasknotes-plugin .filter-bar__sort-direction:focus {
     outline: none;
     border-color: var(--tn-interactive-accent);
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--tn-interactive-accent) 20%, transparent);
+    box-shadow: none;
 }
 
 /* Advanced filters toggle button */
@@ -277,7 +277,7 @@
 .tasknotes-plugin .filter-bar__date-input:focus {
     outline: none;
     border-color: var(--tn-interactive-accent);
-    box-shadow: 0 0 0 1px var(--tn-interactive-accent);
+    box-shadow: none;
 }
 
 .tasknotes-plugin .filter-bar__date-clear {

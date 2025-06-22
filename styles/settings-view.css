@@ -204,8 +204,7 @@
 
 .tasknotes-plugin .settings-view__table-input:focus {
     outline: none;
-    border-color: var(--tn-interactive-accent);
-    box-shadow: 0 0 0 2px rgba(var(--tn-interactive-accent-rgb, 66, 165, 245), 0.2);
+    border-color: var(--interactive-accent);
 }
 
 /* ================================================
@@ -294,8 +293,7 @@
 
 .tasknotes-plugin .settings-view__input:focus {
     outline: none;
-    border-color: var(--tn-interactive-accent);
-    box-shadow: 0 0 0 2px rgba(var(--tn-interactive-accent-rgb, 66, 165, 245), 0.2);
+    border-color: var(--interactive-accent);
 }
 
 /* Specific Input Types */
@@ -539,8 +537,7 @@
 .tasknotes-plugin .settings-view__delete-button:focus,
 .tasknotes-plugin .settings-view__add-button:focus,
 .tasknotes-plugin .settings-view__reset-button:focus {
-    outline: 2px solid var(--tn-interactive-accent);
-    outline-offset: 2px;
+    outline: none;
 }
 
 /* High contrast mode support */

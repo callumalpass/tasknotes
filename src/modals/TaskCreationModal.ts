@@ -593,88 +593,88 @@ export class TaskCreationModal extends BaseTaskModal {
 	private createNaturalLanguageInput(contentEl: HTMLElement): void {
 		this.nlInputContainer = contentEl.createDiv({ cls: 'nl-input-container' });
 		
-		// Create input field
-		this.createFormGroup(this.nlInputContainer, 'Quick input', (container) => {
-			const inputContainer = container.createDiv({ cls: 'modal-form__input-container' });
-			const textarea = inputContainer.createEl('textarea', {
-				cls: 'modal-form__input modal-form__input--textarea nl-input',
-				attr: {
-					placeholder: 'Type your task naturally... (e.g., "Buy groceries tomorrow 3pm high priority @home #errands")\nAdd details on the next line...\n\nCtrl+Enter: Quick create • Shift+Enter: Parse & fill form',
-					rows: '4'
-				}
-			});
+		// Create minimalist input field without label
+		const inputContainer = this.nlInputContainer.createDiv({ cls: 'modal-form__input-container' });
+		const textarea = inputContainer.createEl('textarea', {
+			cls: 'modal-form__input modal-form__input--textarea nl-input',
+			attr: {
+				placeholder: 'Buy groceries tomorrow 3pm @home #errands\nAdd details on the next line\n',
+				rows: '3'
+			}
+		});
 
-			// Parse button
-			const buttonContainer = inputContainer.createDiv({ cls: 'nl-button-container' });
-			const quickCreateButton = buttonContainer.createEl('button', {
-				cls: 'mod-cta nl-quick-create-button',
-				text: 'Quick create'
-			});
+		// Minimal button container
+		const buttonContainer = inputContainer.createDiv({ 
+			cls: 'nl-button-container',
+			attr: { style: 'display: flex; gap: 6px; margin-top: 6px; align-items: center;' }
+		});
+		
+		const quickCreateButton = buttonContainer.createEl('button', {
+			cls: 'mod-cta nl-quick-create-button',
+			text: 'Create'
+		});
 
-			const parseButton = buttonContainer.createEl('button', {
-				cls: 'nl-parse-button',
-				text: 'Parse & fill form'
-			});
+		const parseButton = buttonContainer.createEl('button', {
+			cls: 'nl-parse-button',
+			text: 'Fill form'
+		});
 
-			const showDetailButton = buttonContainer.createEl('button', {
-				cls: 'nl-show-detail-button',
-				text: this.isDetailedFormVisible ? 'Hide detailed options' : 'Show detailed options'
-			});
+		const showDetailButton = buttonContainer.createEl('button', {
+			cls: 'nl-show-detail-button',
+			text: this.isDetailedFormVisible ? '−' : '+',
+			attr: { title: this.isDetailedFormVisible ? 'Hide detailed options' : 'Show detailed options' }
+		});
 
-			// Add spacing between buttons
-			buttonContainer.style.display = 'flex';
-			buttonContainer.style.gap = '8px';
-			buttonContainer.style.marginTop = '8px';
+		// Event listeners
+		textarea.addEventListener('input', () => {
+			const input = textarea.value.trim();
+			if (input) {
+				this.updateNaturalLanguagePreview(input);
+			} else {
+				this.clearNaturalLanguagePreview();
+			}
+		});
 
-			// Event listeners
-			textarea.addEventListener('input', () => {
-				const input = textarea.value.trim();
-				if (input) {
-					this.updateNaturalLanguagePreview(input);
-				} else {
-					this.clearNaturalLanguagePreview();
-				}
-			});
+		quickCreateButton.addEventListener('click', async () => {
+			const input = textarea.value.trim();
+			if (input) {
+				await this.quickCreateTask(input);
+			}
+		});
 
-			quickCreateButton.addEventListener('click', async () => {
-				const input = textarea.value.trim();
-				if (input) {
+		parseButton.addEventListener('click', () => {
+			const input = textarea.value.trim();
+			if (input) {
+				this.parseAndFillForm(input);
+			}
+		});
+
+		showDetailButton.addEventListener('click', () => {
+			this.toggleDetailedForm();
+			showDetailButton.textContent = this.isDetailedFormVisible ? '−' : '+';
+			showDetailButton.setAttribute('title', this.isDetailedFormVisible ? 'Hide detailed options' : 'Show detailed options');
+		});
+
+		// Keyboard shortcuts
+		textarea.addEventListener('keydown', (e) => {
+			const input = textarea.value.trim();
+			if (!input) return;
+
+			// Ctrl/Cmd + Enter = Quick create
+			if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+				e.preventDefault();
+				e.stopPropagation();
+				// Use setTimeout to avoid async issues
+				window.setTimeout(async () => {
 					await this.quickCreateTask(input);
-				}
-			});
-
-			parseButton.addEventListener('click', () => {
-				const input = textarea.value.trim();
-				if (input) {
-					this.parseAndFillForm(input);
-				}
-			});
-
-			showDetailButton.addEventListener('click', () => {
-				this.toggleDetailedForm();
-			});
-
-			// Keyboard shortcuts
-			textarea.addEventListener('keydown', (e) => {
-				const input = textarea.value.trim();
-				if (!input) return;
-
-				// Ctrl/Cmd + Enter = Quick create
-				if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
-					e.preventDefault();
-					e.stopPropagation();
-					// Use setTimeout to avoid async issues
-					window.setTimeout(async () => {
-						await this.quickCreateTask(input);
-					}, 0);
-				}
-				// Shift + Enter = Parse and fill form
-				else if (e.key === 'Enter' && e.shiftKey) {
-					e.preventDefault();
-					e.stopPropagation();
-					this.parseAndFillForm(input);
-				}
-			});
+				}, 0);
+			}
+			// Shift + Enter = Parse and fill form
+			else if (e.key === 'Enter' && e.shiftKey) {
+				e.preventDefault();
+				e.stopPropagation();
+				this.parseAndFillForm(input);
+			}
 		});
 
 		// Create preview container
@@ -703,10 +703,7 @@ export class TaskCreationModal extends BaseTaskModal {
 
 		if (previewData.length > 0 && parsed.title) {
 			this.nlPreviewContainer.empty();
-			this.nlPreviewContainer.createEl('div', {
-				cls: 'nl-preview-label',
-				text: 'Parsed data:'
-			});
+			// No label for preview - let the content speak for itself
 			
 			const previewContent = this.nlPreviewContainer.createEl('div', {
 				cls: 'nl-preview-text'
@@ -1041,7 +1038,8 @@ export class TaskCreationModal extends BaseTaskModal {
 			// Update button text
 			const showDetailButton = this.nlInputContainer?.querySelector('.nl-show-detail-button') as HTMLButtonElement;
 			if (showDetailButton) {
-				showDetailButton.textContent = 'Hide detailed options';
+				showDetailButton.textContent = '−';
+				showDetailButton.setAttribute('title', 'Hide detailed options');
 			}
 		}
 	}
@@ -1062,7 +1060,8 @@ export class TaskCreationModal extends BaseTaskModal {
 			// Update button text
 			const showDetailButton = this.nlInputContainer?.querySelector('.nl-show-detail-button') as HTMLButtonElement;
 			if (showDetailButton) {
-				showDetailButton.textContent = 'Show detailed options';
+				showDetailButton.textContent = '+';
+				showDetailButton.setAttribute('title', 'Show detailed options');
 			}
 		}
 	}
