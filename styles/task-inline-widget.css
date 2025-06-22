@@ -10,8 +10,10 @@
 
 /* Standalone inline task preview widget */
 .tasknotes-plugin .task-inline-preview {
-    /* Layout - simple inline */
-    display: inline;
+    /* Layout - inline flexbox for proper element alignment */
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
     white-space: nowrap;
     
     /* Typography - match editor font */
@@ -19,7 +21,7 @@
     font-family: var(--editor-font-family, var(--font-interface));
     
     /* Visual styling - clean text appearance */
-    padding: 0;
+    padding: 2px 4px;
     
     /* Interactivity */
     cursor: pointer;
@@ -27,6 +29,10 @@
     /* Prevent text selection issues */
     user-select: none;
     -webkit-user-select: none;
+    
+    /* Ensure proper vertical alignment with text */
+    vertical-align: baseline;
+    line-height: 1.4;
 }
 
 /* Hide when cursor is on the same line */
@@ -34,10 +40,6 @@
     display: none;
 }
 
-/* Task title */
-.tasknotes-plugin .task-inline-preview__title {
-    margin-right: 12px;
-}
 
 /* Status indicator dot - match task card styling */
 .tasknotes-plugin .task-inline-preview__status-dot {
@@ -45,15 +47,14 @@
     width: 14px;
     height: 14px;
     border-radius: 50%;
-    margin-right: 6px;
-    margin-left: 0;
     border: 2px solid var(--tn-border-color);
     background-color: transparent;
     transition: all 0.2s ease;
     cursor: pointer;
     position: relative;
-    vertical-align: middle;
     flex-shrink: 0;
+    margin-right: 6px; /* More gap between status and priority */
+    vertical-align: middle;
 }
 
 .tasknotes-plugin .task-inline-preview__status-dot:hover {
@@ -68,20 +69,20 @@
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    margin-right: 6px;
-    margin-left: 0;
     background-color: var(--tn-text-muted);
     border: none;
-    vertical-align: middle;
     flex-shrink: 0;
+    vertical-align: middle;
+    margin-right: 6px; /* Gap between priority and title */
 }
 
 /* Date info styling */
 .tasknotes-plugin .task-inline-preview__date {
-    margin-right: 4px;
     opacity: 0.7;
     font-size: 0.9em;
     transition: opacity 0.15s ease;
+    flex-shrink: 0;
+    vertical-align: middle;
 }
 
 /* Clickable date styling */
@@ -103,8 +104,9 @@
     display: inline-block;
     width: 12px;
     height: 12px;
-    margin-right: 10px; /* Increased from 8px to 10px for better spacing */
+    margin-right: 6px;
     transition: opacity 0.15s ease;
+    vertical-align: middle;
 }
 
 .tasknotes-plugin .task-inline-preview__date--clickable:hover .task-inline-preview__date-icon {
@@ -116,13 +118,14 @@
 .tasknotes-plugin .task-inline-preview__pencil {
     opacity: 0.4;
     cursor: pointer;
-    margin-left: 4px;
     display: inline-block;
     width: 12px;
     height: 12px;
     border-radius: 3px;
     padding: 1px 3px;
     transition: all 0.15s ease;
+    flex-shrink: 0;
+    vertical-align: middle;
 }
 
 .tasknotes-plugin .task-inline-preview:hover .task-inline-preview__pencil {
@@ -242,16 +245,16 @@
 
 /* Task title */
 .tasknotes-plugin .task-inline-preview__title {
-    flex: 1;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
     color: var(--text-normal);
     font-weight: 500;
     margin: 0;
-    margin-right: 12px;
     min-width: 0; /* Allow flex shrinking */
-    max-width: 300px; /* Allow longer task names */
+    max-width: 250px; /* Give more room for task titles */
+    flex-shrink: 1; /* Allow shrinking if needed */
+    vertical-align: middle;
 }
 
 /* Priority indicator */
@@ -346,8 +349,8 @@
 @media (max-width: 768px) {
     .tasknotes-plugin .task-inline-preview {
         max-width: 200px;
-        padding: 4px 8px;
-        gap: 4px;
+        padding: 2px 4px;
+        gap: 6px;
         font-size: calc(var(--editor-font-size, 16px) * 0.9);
     }
     
@@ -371,10 +374,10 @@
     /* Ensure proper display in reading mode context */
     display: inline-flex;
     align-items: center;
-    gap: 4px;
+    gap: 8px;
     
     /* Better visual integration with reading mode */
-    padding: 2px 6px;
+    padding: 3px 8px;
     border-radius: 4px;
     background-color: var(--background-modifier-hover);
     border: 1px solid var(--background-modifier-border);
