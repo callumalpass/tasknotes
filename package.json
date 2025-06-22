@@ -1,6 +1,6 @@
 {
 	"name": "tasknotes",
-	"version": "3.5.0",
+	"version": "3.7.0",
 	"description": "Note-based task management with calendar, pomodoro and time-tracking integration.",
 	"main": "main.js",
 	"scripts": {
@@ -30,6 +30,7 @@
 		"@fullcalendar/interaction": "^6.1.17",
 		"@fullcalendar/multimonth": "^6.1.17",
 		"@fullcalendar/timegrid": "^6.1.17",
+		"chrono-node": "^2.7.5",
 		"date-fns": "^2.30.0",
 		"ical.js": "^1.5.0",
 		"obsidian-daily-notes-interface": "^0.9.4",
