@@ -242,7 +242,7 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	// Editor defaults
 	enableTaskLinkOverlay: true,
 	enableInstantTaskConvert: true,
-	useDefaultsOnInstantConvert: false,
+	useDefaultsOnInstantConvert: true,
 	enableNaturalLanguageInput: true,
 	// Performance defaults
 	disableNoteIndexing: false,
