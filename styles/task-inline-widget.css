@@ -109,6 +109,13 @@
     vertical-align: middle;
 }
 
+/* Fix Lucide icon alignment within date icons */
+.tasknotes-plugin .task-inline-preview__date-icon svg {
+    vertical-align: top;
+    width: 12px;
+    height: 12px;
+}
+
 .tasknotes-plugin .task-inline-preview__date--clickable:hover .task-inline-preview__date-icon {
     opacity: 1;
     filter: brightness(1.3);
@@ -126,6 +133,13 @@
     transition: all 0.15s ease;
     flex-shrink: 0;
     vertical-align: middle;
+}
+
+/* Fix Lucide icon alignment within pencil icon */
+.tasknotes-plugin .task-inline-preview__pencil svg {
+    vertical-align: top;
+    width: 12px;
+    height: 12px;
 }
 
 .tasknotes-plugin .task-inline-preview:hover .task-inline-preview__pencil {
