@@ -1,5 +1,6 @@
 import { format, parse, addDays, addWeeks, addMonths, addYears, startOfDay, isValid } from 'date-fns';
 import { StatusConfig, PriorityConfig } from '../types';
+import * as chrono from 'chrono-node';
 
 export interface ParsedTaskData {
 	title: string;
@@ -28,6 +29,7 @@ export class NaturalLanguageParser {
 		this.statusConfigs = statusConfigs;
 		this.priorityConfigs = priorityConfigs;
 	}
+
 	
 	/**
 	 * Parse natural language input into structured task data
@@ -97,8 +99,8 @@ export class NaturalLanguageParser {
 			workingText = estimateResult.remainingText;
 		}
 
-		// Extract dates and times
-		const dateTimeResult = this.extractDatesAndTimes(workingText);
+		// Extract dates and times using chrono-node
+		const dateTimeResult = this.extractDatesAndTimesWithChrono(workingText);
 		Object.assign(result, dateTimeResult.dateTime);
 		workingText = dateTimeResult.remainingText;
 
@@ -113,8 +115,9 @@ export class NaturalLanguageParser {
 		return result;
 	}
 
+
 	/**
-	 * Extract priority from text
+	 * Extract priority from text (legacy method)
 	 */
 	private extractPriority(text: string): { priority?: string; remainingText: string } {
 		// Build patterns from user's custom priority configurations
@@ -158,8 +161,9 @@ export class NaturalLanguageParser {
 		return { remainingText: text };
 	}
 
+
 	/**
-	 * Extract status from text
+	 * Extract status from text (legacy method)
 	 */
 	private extractStatus(text: string): { status?: string; remainingText: string } {
 		// Build patterns from user's custom status configurations
@@ -204,8 +208,9 @@ export class NaturalLanguageParser {
 		return { remainingText: text };
 	}
 
+
 	/**
-	 * Extract recurrence from text
+	 * Extract recurrence from text (legacy method)
 	 */
 	private extractRecurrence(text: string): { recurrence?: string; daysOfWeek?: string[]; remainingText: string } {
 		const recurrencePatterns = [
@@ -263,8 +268,9 @@ export class NaturalLanguageParser {
 		return { remainingText: text };
 	}
 
+
 	/**
-	 * Extract time estimate from text
+	 * Extract time estimate from text (legacy method)
 	 */
 	private extractTimeEstimate(text: string): { estimate?: number; remainingText: string } {
 		const estimatePatterns = [
@@ -294,7 +300,53 @@ export class NaturalLanguageParser {
 	}
 
 	/**
-	 * Extract dates and times from text
+	 * Extract dates and times from text using chrono-node
+	 */
+	private extractDatesAndTimesWithChrono(text: string): { 
+		dateTime: Partial<ParsedTaskData>; 
+		remainingText: string 
+	} {
+		const result: Partial<ParsedTaskData> = {};
+		let workingText = text;
+
+		try {
+			// Use chrono-node to parse natural language dates
+			const parsed = chrono.parse(text);
+			
+			if (parsed.length > 0) {
+				const firstDate = parsed[0];
+				
+				if (firstDate.start) {
+					const startDate = firstDate.start.date();
+					if (isValid(startDate)) {
+						result.dueDate = format(startDate, 'yyyy-MM-dd');
+						
+						// Check if time is included
+						if (firstDate.start.isCertain('hour')) {
+							result.dueTime = format(startDate, 'HH:mm');
+						}
+					}
+					
+					// Remove the matched date text from working text
+					const dateText = firstDate.text;
+					workingText = workingText.replace(dateText, '').trim();
+				}
+			}
+		} catch (error) {
+			// Fallback to legacy date extraction if chrono fails
+			const legacyResult = this.extractDatesAndTimes(workingText);
+			Object.assign(result, legacyResult.dateTime);
+			workingText = legacyResult.remainingText;
+		}
+
+		return {
+			dateTime: result,
+			remainingText: workingText
+		};
+	}
+
+	/**
+	 * Extract dates and times from text (legacy method)
 	 */
 	private extractDatesAndTimes(text: string): { 
 		dateTime: Partial<ParsedTaskData>; 

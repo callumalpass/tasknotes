@@ -15,6 +15,7 @@ const CSS_FILES = [
     'styles/modal-bem.css',          // Modal components with proper BEM scoping
     'styles/task-selector-modal.css', // TaskSelectorModal component with proper BEM scoping
     'styles/unscheduled-tasks-selector-modal.css', // UnscheduledTasksSelectorModal component with proper BEM scoping
+    'styles/task-action-palette-modal.css', // TaskActionPaletteModal component with proper BEM scoping
     
     // BEM View Files
     'styles/task-list-view.css',     // TaskListView component with proper BEM scoping
@@ -25,10 +26,7 @@ const CSS_FILES = [
     'styles/notes-view.css',         // NotesView component with proper BEM scoping
     'styles/pomodoro-view.css',      // PomodoroView component with proper BEM scoping
     'styles/pomodoro-stats-view.css', // PomodoroStatsView component with proper BEM scoping
-    'styles/settings-view.css',      // SettingsView component with proper BEM scoping
-    
-    // Legacy Support (minimal)
-    'styles/components.css'          // Reusable UI components and utilities
+    'styles/settings-view.css'       // SettingsView component with proper BEM scoping
 ];
 
 const MAIN_CSS_TEMPLATE = `/* TaskNotes Plugin Styles */
@@ -60,9 +58,6 @@ const MAIN_CSS_TEMPLATE = `/* TaskNotes Plugin Styles */
    - styles/pomodoro-view.css: PomodoroView component with proper BEM scoping
    - styles/pomodoro-stats-view.css: PomodoroStatsView component with proper BEM scoping
    - styles/settings-view.css: SettingsView component with proper BEM scoping
-   
-   Legacy Support:
-   - styles/components.css: Reusable UI components, utilities, and modals
    
    Run 'npm run build-css' to regenerate this file.
 */
