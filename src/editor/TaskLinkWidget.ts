@@ -141,14 +141,27 @@ export class TaskLinkWidget extends WidgetType {
             });
             
             const dueDateSpan = container.createEl('span', {
-                cls: 'task-inline-preview__date task-inline-preview__date--due',
-                attr: { title: `Due: ${tooltipText}` }
+                cls: 'task-inline-preview__date task-inline-preview__date--due task-inline-preview__date--clickable',
+                attr: { title: `Due: ${tooltipText} (click to change)` }
             });
             
             const calendarIcon = dueDateSpan.createEl('span', { cls: 'task-inline-preview__date-icon' });
             setIcon(calendarIcon, 'calendar');
             
             dueDateSpan.appendText(displayText);
+            
+            // Add click handler to open due date modal
+            dueDateSpan.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                try {
+                    const { DueDateModal } = await import('../modals/DueDateModal');
+                    const modal = new DueDateModal(this.plugin.app, this.taskInfo, this.plugin);
+                    modal.open();
+                } catch (error) {
+                    console.error('Error opening due date modal:', error);
+                }
+            });
         }
 
         // Scheduled date info with clock icon
@@ -168,14 +181,27 @@ export class TaskLinkWidget extends WidgetType {
             });
             
             const scheduledSpan = container.createEl('span', {
-                cls: 'task-inline-preview__date task-inline-preview__date--scheduled',
-                attr: { title: `Scheduled: ${tooltipText}` }
+                cls: 'task-inline-preview__date task-inline-preview__date--scheduled task-inline-preview__date--clickable',
+                attr: { title: `Scheduled: ${tooltipText} (click to change)` }
             });
             
             const clockIcon = scheduledSpan.createEl('span', { cls: 'task-inline-preview__date-icon' });
             setIcon(clockIcon, 'clock');
             
             scheduledSpan.appendText(displayText);
+            
+            // Add click handler to open scheduled date modal
+            scheduledSpan.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                try {
+                    const { ScheduledDateModal } = await import('../modals/ScheduledDateModal');
+                    const modal = new ScheduledDateModal(this.plugin.app, this.taskInfo, this.plugin);
+                    modal.open();
+                } catch (error) {
+                    console.error('Error opening scheduled date modal:', error);
+                }
+            });
         }
         
         // Add Lucide pencil icon
