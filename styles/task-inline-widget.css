@@ -308,6 +308,63 @@
 }
 
 /* =================================================================
+   READING MODE SPECIFIC STYLES
+   ================================================================= */
+
+/* Reading mode task preview adjustments */
+.tasknotes-plugin .task-inline-preview--reading-mode {
+    /* Ensure proper display in reading mode context */
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    
+    /* Better visual integration with reading mode */
+    padding: 2px 6px;
+    border-radius: 4px;
+    background-color: var(--background-modifier-hover);
+    border: 1px solid var(--background-modifier-border);
+    
+    /* Smooth transitions */
+    transition: all 0.15s ease;
+}
+
+.tasknotes-plugin .task-inline-preview--reading-mode:hover {
+    background-color: var(--background-modifier-hover-active);
+    border-color: var(--interactive-accent);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Reading mode title styling */
+.tasknotes-plugin .task-inline-preview--reading-mode .task-inline-preview__title {
+    font-weight: 500;
+    color: var(--text-normal);
+}
+
+/* Reading mode date styling */
+.tasknotes-plugin .task-inline-preview--reading-mode .task-inline-preview__date {
+    font-size: 0.85em;
+    opacity: 0.8;
+}
+
+/* Reading mode icon adjustments */
+.tasknotes-plugin .task-inline-preview--reading-mode .task-inline-preview__date-icon {
+    width: 11px;
+    height: 11px;
+    margin-right: 3px;
+}
+
+.tasknotes-plugin .task-inline-preview--reading-mode .task-inline-preview__pencil {
+    width: 11px;
+    height: 11px;
+    opacity: 0.5;
+}
+
+.tasknotes-plugin .task-inline-preview--reading-mode:hover .task-inline-preview__pencil {
+    opacity: 0.9;
+}
+
+/* =================================================================
    TASK INLINE PREVIEW DRAG AND DROP STATES
    ================================================================= */
 
