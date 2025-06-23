@@ -323,9 +323,17 @@ export class NaturalLanguageParser {
                     return `FREQ=${freqMap[period]};INTERVAL=2`;
                 }
             },
-            // "every [weekday]" (e.g., "every monday", "tuesdays")
+            // "every [weekday]" - ONLY with explicit "every" keyword
             {
-                regex: /\b(?:every\s+)?(mondays|tuesdays|wednesdays|thursdays|fridays|saturdays|sundays|monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/i,
+                regex: /\bevery\s+(monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/i,
+                handler: (match: RegExpMatchArray) => {
+                    const day = match[1].toUpperCase().substring(0, 2);
+                    return `FREQ=WEEKLY;BYDAY=${day}`;
+                }
+            },
+            // Plural weekdays (e.g., "mondays", "tuesdays") - only plurals indicate recurrence
+            {
+                regex: /\b(mondays|tuesdays|wednesdays|thursdays|fridays|saturdays|sundays)\b/i,
                 handler: (match: RegExpMatchArray) => {
                     const day = match[1].replace(/s$/, '').toUpperCase().substring(0, 2);
                     return `FREQ=WEEKLY;BYDAY=${day}`;
