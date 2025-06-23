@@ -49,6 +49,9 @@ jest.mock('date-fns', () => ({
       return d.toISOString().split('T')[0];
     } else if (formatStr === 'MMM d, yyyy') {
       return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    } else if (formatStr === 'MMM d, yyyy h:mm a') {
+      return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) + ' ' + 
+             d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
     } else if (formatStr === 'h:mm a') {
       return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
     } else if (formatStr === 'HH:mm') {
