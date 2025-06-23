@@ -976,9 +976,6 @@ export class TaskCreationModal extends BaseTaskModal {
 			} else {
 				// Legacy handling for simple recurrence patterns - add to details
 				let recurrenceText = `Recurrence: ${parsed.recurrence}`;
-				if (parsed.daysOfWeek && parsed.daysOfWeek.length > 0) {
-					recurrenceText += ` on ${parsed.daysOfWeek.join(', ')}`;
-				}
 				this.details = this.details ? `${recurrenceText}\n${this.details}` : recurrenceText;
 				
 				// Update details field if it exists
