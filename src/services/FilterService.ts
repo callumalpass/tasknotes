@@ -3,7 +3,7 @@ import { MinimalNativeCache } from '../utils/MinimalNativeCache';
 import { StatusManager } from './StatusManager';
 import { PriorityManager } from './PriorityManager';
 import { EventEmitter } from '../utils/EventEmitter';
-import { isRecurringTaskDueOn, isTaskOverdue } from '../utils/helpers';
+import { isDueByRRule, shouldShowRecurringTaskOnDate, generateRecurringInstances, isTaskOverdue } from '../utils/helpers';
 import { format, isToday } from 'date-fns';
 import { 
     parseDate, 
@@ -139,7 +139,7 @@ export class FilterService extends EventEmitter {
                 if (task && task.recurrence && !task.due) {
                     // Check if this recurring task should appear on any date in the range
                     for (let date = new Date(start); date <= end; date.setDate(date.getDate() + 1)) {
-                        if (isRecurringTaskDueOn(task, date)) {
+                        if (isDueByRRule(task, date)) {
                             pathsInRange.add(task.path);
                             break; // No need to check more dates once we find a match
                         }
@@ -288,7 +288,7 @@ export class FilterService extends EventEmitter {
                 // Check each date in range to see if recurring task should appear
                 let appearsInRange = false;
                 for (let date = new Date(startDate); date <= endDate; date.setDate(date.getDate() + 1)) {
-                    if (isRecurringTaskDueOn(task, date)) {
+                    if (isDueByRRule(task, date)) {
                         appearsInRange = true;
                         break;
                     }
@@ -449,7 +449,7 @@ export class FilterService extends EventEmitter {
 
         // For recurring tasks, check if due on the target date
         if (task.recurrence) {
-            if (isRecurringTaskDueOn(task, referenceDate)) {
+            if (isDueByRRule(task, referenceDate)) {
                 // If due on target date, determine which group based on target date vs today
                 const referenceDateStr = format(referenceDate, 'yyyy-MM-dd');
                 return this.getDateGroupFromDateString(referenceDateStr);
@@ -730,7 +730,7 @@ export class FilterService extends EventEmitter {
         return allTasks.filter(task => {
             // Handle recurring tasks
             if (task.recurrence) {
-                return isRecurringTaskDueOn(task, date);
+                return isDueByRRule(task, date);
             }
             
             // Handle regular tasks with due dates for this specific date

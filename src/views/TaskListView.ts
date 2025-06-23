@@ -9,7 +9,9 @@ import {
 } from '../types';
 import { 
     isTaskOverdue,
-    isRecurringTaskDueOn,
+    isDueByRRule,
+    shouldShowRecurringTaskOnDate,
+    generateRecurringInstances,
     getEffectiveTaskStatus,
     calculateTotalTimeSpent
 } from '../utils/helpers';
@@ -225,21 +227,7 @@ export class TaskListView extends ItemView {
         //     cls: 'task-list-view__title'
         // });
         
-        // Add actions
-        const actionsContainer = headerContainer.createDiv({ cls: 'detail-view-actions' });
-        
-        const addTaskButton = actionsContainer.createEl('button', { 
-            text: 'New task', 
-            cls: 'add-task-button tasknotes-button tasknotes-button-primary',
-            attr: {
-                'aria-label': 'Create new task',
-                'title': 'Create new task'
-            }
-        });
-        
-        addTaskButton.addEventListener('click', () => {
-            this.plugin.openTaskCreationModal();
-        });
+        // Actions container removed - no buttons needed
     }
     
     async createTasksContent(container: HTMLElement) {

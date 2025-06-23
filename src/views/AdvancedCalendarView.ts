@@ -44,7 +44,6 @@ import {
     isDueByRRule,
     generateRecurringInstances,
     shouldShowRecurringTaskOnDate,
-    isRecurringTaskDueOn, 
     getEffectiveTaskStatus,
     extractTimeblocksFromNote,
     timeblockToCalendarEvent,
@@ -571,22 +570,39 @@ export class AdvancedCalendarView extends ItemView {
             const visibleEnd = calendarView?.activeEnd || endOfDay(new Date());
             
             for (const task of allTasks) {
-                // Handle recurring tasks
-                if (this.showRecurring && task.recurrence && task.scheduled) {
-                    const recurringEvents = this.generateRecurringTaskInstances(task, visibleStart, visibleEnd);
-                    events.push(...recurringEvents);
+                // Apply different rules for recurring vs non-recurring tasks
+                if (task.recurrence) {
+                    // Recurring tasks: require scheduled date (scheduled date determines recurrence start)
+                    if (!task.scheduled) {
+                        continue;
+                    }
+                    
+                    // Handle recurring tasks
+                    if (this.showRecurring) {
+                        const recurringEvents = this.generateRecurringTaskInstances(task, visibleStart, visibleEnd);
+                        events.push(...recurringEvents);
+                    }
                 } else {
-                    // Add non-recurring scheduled events (only if not recurring)
-                    if (this.showScheduled && task.scheduled && !task.recurrence) {
+                    // Non-recurring tasks: show on scheduled date OR due date
+                    const hasScheduled = !!task.scheduled;
+                    const hasDue = !!task.due;
+                    
+                    // Skip if neither scheduled nor due date exists
+                    if (!hasScheduled && !hasDue) {
+                        continue;
+                    }
+                    
+                    // Add scheduled event if task has scheduled date
+                    if (this.showScheduled && hasScheduled) {
                         const scheduledEvent = this.createScheduledEvent(task);
                         if (scheduledEvent) events.push(scheduledEvent);
                     }
-                }
-                
-                // Add due events (only if no scheduled event exists to avoid duplicates)
-                if (this.showDue && task.due && !task.scheduled) {
-                    const dueEvent = this.createDueEvent(task);
-                    if (dueEvent) events.push(dueEvent);
+                    
+                    // Add due event if task has due date and no scheduled date (to avoid duplicates)
+                    if (this.showDue && hasDue && !hasScheduled) {
+                        const dueEvent = this.createDueEvent(task);
+                        if (dueEvent) events.push(dueEvent);
+                    }
                 }
                 
                 // Add time entry events
@@ -789,11 +805,6 @@ export class AdvancedCalendarView extends ItemView {
         const recurringDates = generateRecurringInstances(task, startDate, endDate);
         
         for (const date of recurringDates) {
-            // Stop if past due date
-            if (task.due && date > parseDate(task.due)) {
-                break;
-            }
-
             const instanceDate = format(date, 'yyyy-MM-dd');
             const eventStart = `${instanceDate}T${templateTime}`;
             

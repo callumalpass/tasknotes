@@ -616,6 +616,10 @@ export abstract class BaseTaskModal extends Modal {
             const timeValue = (e.target as HTMLInputElement).value;
             this.updateDueDateValue(dateInput.value, timeValue);
         });
+
+        // Add help text for due date
+        this.createHelpText(container, 
+            'Task deadline for reference. This is separate from recurrence end dates - it appears in task info but doesn\'t control when recurring instances stop.');
     }
     
     private updateDueDateValue(dateValue: string, timeValue: string): void {
@@ -679,7 +683,7 @@ export abstract class BaseTaskModal extends Modal {
 
         // Add help text for scheduled date
         this.createHelpText(container, 
-            'When you plan to work on this task. For recurring tasks, this sets the time template - the date part is ignored and instances will appear based on the recurrence pattern.');
+            'When you plan to work on this task.');
     }
     
     private updateScheduledDateValue(dateValue: string, timeValue: string): void {
@@ -770,7 +774,7 @@ export abstract class BaseTaskModal extends Modal {
 
         // Add help text for recurrence
         this.createHelpText(container, 
-            'Create recurring instances of this task. Set a scheduled date to define the time template. Use the due date to limit when recurrence stops.');
+            'Create recurring instances of this task. Note: Recurring tasks will only appear in calendar views when they have a scheduled date. The scheduled date determines when the recurrence pattern starts and what time the recurring instances appear.');
     }
 
     private createFrequencyDropdown(container: HTMLElement): void {
@@ -805,22 +809,27 @@ export abstract class BaseTaskModal extends Modal {
         select.addEventListener('change', (e) => {
             this.frequencyMode = (e.target as HTMLSelectElement).value as any;
             
-            // Update interval container visibility
-            const intervalContainer = container.parentElement?.querySelector('.modal-form__interval-container') as HTMLElement;
+            // Update interval container visibility - look in the same container, not parent
+            const intervalContainer = container.querySelector('.modal-form__interval-container') as HTMLElement;
             if (intervalContainer) {
                 if (this.frequencyMode === 'NONE') {
                     intervalContainer.style.display = 'none';
                 } else {
                     intervalContainer.style.display = 'block';
+                    // Update the interval input value and unit when frequency changes
+                    const intervalInput = intervalContainer.querySelector('.modal-form__input--interval') as HTMLInputElement;
                     const unitSpan = intervalContainer.querySelector('.modal-form__interval-unit') as HTMLElement;
+                    if (intervalInput) {
+                        intervalInput.value = this.rruleInterval.toString();
+                    }
                     if (unitSpan) {
                         this.updateIntervalUnit(unitSpan);
                     }
                 }
             }
             
-            // Update end condition container visibility
-            const endContainer = container.parentElement?.querySelector('.modal-form__end-condition') as HTMLElement;
+            // Update end condition container visibility - look in the same container, not parent
+            const endContainer = container.querySelector('.modal-form__end-condition') as HTMLElement;
             if (endContainer) {
                 if (this.frequencyMode === 'NONE') {
                     endContainer.style.display = 'none';
@@ -829,7 +838,7 @@ export abstract class BaseTaskModal extends Modal {
                 }
             }
             
-            const optionsContainer = container.parentElement?.querySelector('.modal-form__rrule-options') as HTMLElement;
+            const optionsContainer = container.querySelector('.modal-form__rrule-options') as HTMLElement;
             if (optionsContainer) {
                 this.updateRRuleFrequencyOptions(optionsContainer);
             }
@@ -838,14 +847,10 @@ export abstract class BaseTaskModal extends Modal {
     }
 
     private createIntervalInput(container: HTMLElement): void {
-        // Create interval container but hide initially if no frequency is selected
+        // Create interval container and always create the input elements
         const intervalContainer = container.createDiv({ cls: 'modal-form__interval-container' });
         
-        if (this.frequencyMode === 'NONE') {
-            intervalContainer.style.display = 'none';
-            return;
-        }
-        
+        // Always create the input elements, even if initially hidden
         intervalContainer.createSpan({ text: 'Every ', cls: 'modal-form__interval-label' });
         
         const input = intervalContainer.createEl('input', {
@@ -867,9 +872,14 @@ export abstract class BaseTaskModal extends Modal {
             this.updateIntervalUnit(unitSpan);
             this.updateRRuleString();
         });
+        
+        // Hide initially if no frequency is selected
+        if (this.frequencyMode === 'NONE') {
+            intervalContainer.style.display = 'none';
+        }
     }
 
-    private updateIntervalUnit(unitSpan: HTMLElement): void {
+    protected updateIntervalUnit(unitSpan: HTMLElement): void {
         const interval = this.rruleInterval;
         const isPlural = interval !== 1;
         
@@ -891,7 +901,7 @@ export abstract class BaseTaskModal extends Modal {
         }
     }
 
-    private updateRRuleFrequencyOptions(container: HTMLElement): void {
+    protected updateRRuleFrequencyOptions(container: HTMLElement): void {
         container.empty();
 
         switch (this.frequencyMode) {
@@ -1189,7 +1199,7 @@ export abstract class BaseTaskModal extends Modal {
         });
         untilRadio.checked = this.endMode === 'until';
         untilContainer.createEl('label', { 
-            text: 'On ', 
+            text: 'On specific date: ', 
             attr: { 'for': untilId }
         });
 
@@ -1226,6 +1236,10 @@ export abstract class BaseTaskModal extends Modal {
         });
 
         countContainer.createSpan({ text: ' occurrences', cls: 'modal-form__count-label' });
+
+        // Add help text for end conditions
+        this.createHelpText(endContainer, 
+            'The "until date" is when recurring instances stop being generated. This is separate from the task\'s due date, which is just metadata.');
 
         // Event listeners
         neverRadio.addEventListener('change', () => {
@@ -1288,14 +1302,14 @@ export abstract class BaseTaskModal extends Modal {
     private updateRRuleString(): void {
         this.recurrenceRule = this.generateRRuleString();
         
-        // Update summary if it exists
-        const summaryEl = (document.querySelector('.modal-form__rrule-text') as HTMLElement);
+        // Update summary if it exists - use modal-specific selector
+        const summaryEl = this.contentEl.querySelector('.modal-form__rrule-text') as HTMLElement;
         if (summaryEl) {
             summaryEl.textContent = this.getRRuleHumanText();
         }
         
-        // Update interval container if frequency changed
-        const modalContainer = document.querySelector('.modal-form__interval-container');
+        // Update interval container if frequency changed - use modal-specific selector
+        const modalContainer = this.contentEl.querySelector('.modal-form__interval-container') as HTMLElement;
         if (modalContainer) {
             const unitSpan = modalContainer.querySelector('.modal-form__interval-unit') as HTMLElement;
             if (unitSpan) {

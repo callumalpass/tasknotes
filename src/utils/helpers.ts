@@ -400,18 +400,10 @@ export function isDueByRRule(task: TaskInfo, date: Date): boolean {
 				return false;
 			}
 			
-			// Determine the end condition (until) from the due date
-			let until: Date | undefined;
-			if (task.due) {
-				until = parseDate(task.due);
-			}
-			
-			// Parse the rrule string and create RRule object with dynamic options
+			// Parse the rrule string and create RRule object
+			// The rrule string should contain all recurrence information including any UNTIL dates
 			const rruleOptions = RRule.parseString(task.recurrence);
 			rruleOptions.dtstart = dtstart;
-			if (until) {
-				rruleOptions.until = until;
-			}
 			
 			const rrule = new RRule(rruleOptions);
 			
@@ -549,18 +541,10 @@ export function generateRecurringInstances(task: TaskInfo, startDate: Date, endD
 				return [];
 			}
 			
-			// Determine the end condition (until) from the due date
-			let until: Date | undefined;
-			if (task.due) {
-				until = parseDate(task.due);
-			}
-			
-			// Parse the rrule string and create RRule object with dynamic options
+			// Parse the rrule string and create RRule object
+			// The rrule string should contain all recurrence information including any UNTIL dates
 			const rruleOptions = RRule.parseString(task.recurrence);
 			rruleOptions.dtstart = dtstart;
-			if (until) {
-				rruleOptions.until = until;
-			}
 			
 			const rrule = new RRule(rruleOptions);
 			

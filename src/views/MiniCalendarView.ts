@@ -17,7 +17,9 @@ import {
     extractTaskInfo, 
     isSameDay, 
     parseTime,
-    isRecurringTaskDueOn
+    isDueByRRule,
+    shouldShowRecurringTaskOnDate,
+    generateRecurringInstances
 } from '../utils/helpers';
 import { perfMonitor } from '../utils/PerformanceMonitor';
 import { createSafeDate, normalizeDateString } from '../utils/dateUtils';

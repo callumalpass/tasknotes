@@ -10,7 +10,7 @@ import {
     NoteInfo,
     FilterQuery
 } from '../types';
-import { isRecurringTaskDueOn, calculateTotalTimeSpent } from '../utils/helpers';
+import { isDueByRRule, shouldShowRecurringTaskOnDate, generateRecurringInstances, calculateTotalTimeSpent } from '../utils/helpers';
 import { createTaskCard, updateTaskCard } from '../ui/TaskCard';
 import { createNoteCard } from '../ui/NoteCard';
 import { FilterBar } from '../ui/FilterBar';

@@ -339,13 +339,14 @@ export class TaskCreationModal extends BaseTaskModal {
 			this.createTimeEstimateInput(container);
 		});
 		
-		// Recurrence
+		// Recurrence - create in detailedFormContainer like other fields
 		this.createFormGroup(this.detailedFormContainer, 'Recurrence', (container) => {
 			this.createRRuleBuilder(container);
 		});
 		
 		// Action buttons
 		this.createActionButtons(this.detailedFormContainer);
+		
 		
 		// Keyboard shortcuts
 		contentEl.addEventListener('keydown', (e) => {
@@ -979,6 +980,7 @@ export class TaskCreationModal extends BaseTaskModal {
 				this.filenamePreviewContainer.style.display = 'block';
 			}
 			
+			
 			// Update button text
 			const showDetailButton = this.nlInputContainer?.querySelector('.nl-show-detail-button') as HTMLButtonElement;
 			if (showDetailButton) {
@@ -987,6 +989,7 @@ export class TaskCreationModal extends BaseTaskModal {
 			}
 		}
 	}
+
 
 	/**
 	 * Hide detailed form
@@ -1000,6 +1003,7 @@ export class TaskCreationModal extends BaseTaskModal {
 			if (this.plugin.settings.enableNaturalLanguageInput && this.filenamePreviewContainer) {
 				this.filenamePreviewContainer.style.display = 'none';
 			}
+			
 			
 			// Update button text
 			const showDetailButton = this.nlInputContainer?.querySelector('.nl-show-detail-button') as HTMLButtonElement;

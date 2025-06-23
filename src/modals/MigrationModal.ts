@@ -153,15 +153,20 @@ export function showMigrationPrompt(app: App, migrationService: MigrationService
     
     const container = notice.noticeEl.createDiv();
     container.style.display = 'flex';
-    container.style.alignItems = 'center';
-    container.style.gap = '10px';
+    container.style.flexDirection = 'column';
+    container.style.gap = '12px';
+    container.style.padding = '8px';
     
     const message = container.createSpan();
     message.textContent = 'TaskNotes has an updated recurrence system. Migrate your existing recurring tasks to continue using them.';
+    message.style.lineHeight = '1.4';
+    message.style.marginBottom = '4px';
     
     const buttonContainer = container.createDiv();
     buttonContainer.style.display = 'flex';
-    buttonContainer.style.gap = '5px';
+    buttonContainer.style.gap = '8px';
+    buttonContainer.style.justifyContent = 'flex-end';
+    buttonContainer.style.alignItems = 'center';
     
     const migrateButton = buttonContainer.createEl('button', {
         text: 'Migrate Now',

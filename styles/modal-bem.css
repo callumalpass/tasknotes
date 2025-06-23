@@ -358,6 +358,159 @@
     margin-bottom: var(--tn-spacing-md);
 }
 
+/* Interval Input Components */
+.tasknotes-plugin .modal-form__interval-container {
+    display: flex;
+    align-items: center;
+    gap: var(--tn-spacing-sm);
+    margin: var(--tn-spacing-md) 0;
+    padding: var(--tn-spacing-md);
+    background: var(--tn-bg-secondary);
+    border: 1px solid var(--tn-border-color);
+    border-radius: var(--tn-radius-sm);
+}
+
+.tasknotes-plugin .modal-form__interval-label {
+    font-size: var(--tn-font-size-md);
+    color: var(--tn-text-normal);
+    font-weight: var(--tn-font-weight-medium);
+    white-space: nowrap;
+}
+
+.tasknotes-plugin .modal-form__input--interval {
+    width: 80px !important;
+    min-width: 60px;
+    flex-shrink: 0;
+    text-align: center;
+}
+
+.tasknotes-plugin .modal-form__interval-unit {
+    font-size: var(--tn-font-size-md);
+    color: var(--tn-text-normal);
+    font-weight: var(--tn-font-weight-medium);
+    white-space: nowrap;
+}
+
+/* RRule Options Container */
+.tasknotes-plugin .modal-form__rrule-options {
+    margin: var(--tn-spacing-md) 0;
+}
+
+/* RRule Labels */
+.tasknotes-plugin .modal-form__rrule-label {
+    display: block;
+    font-size: var(--tn-font-size-md);
+    font-weight: var(--tn-font-weight-medium);
+    color: var(--tn-text-normal);
+    margin-bottom: var(--tn-spacing-sm);
+}
+
+/* Monthly and Yearly Options */
+.tasknotes-plugin .modal-form__monthly-mode,
+.tasknotes-plugin .modal-form__yearly-options {
+    display: flex;
+    flex-direction: column;
+    gap: var(--tn-spacing-md);
+}
+
+.tasknotes-plugin .modal-form__radio-option {
+    display: flex;
+    align-items: center;
+    gap: var(--tn-spacing-sm);
+    flex-wrap: nowrap;
+}
+
+.tasknotes-plugin .modal-form__radio-option input[type="radio"] {
+    width: auto;
+    height: auto;
+    flex: none;
+    margin: 0;
+}
+
+.tasknotes-plugin .modal-form__select--position,
+.tasknotes-plugin .modal-form__select--weekday,
+.tasknotes-plugin .modal-form__select--month {
+    width: auto;
+    min-width: 120px;
+    flex-shrink: 0;
+}
+
+.tasknotes-plugin .modal-form__input--day {
+    width: 60px;
+    text-align: center;
+}
+
+.tasknotes-plugin .modal-form__yearly-label {
+    font-size: var(--tn-font-size-md);
+    color: var(--tn-text-normal);
+    white-space: nowrap;
+}
+
+/* =====================================================================
+   DETAILED FORM CONTAINER (TaskCreationModal specific)
+   ===================================================================== */
+
+.tasknotes-plugin .detailed-form-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--tn-spacing-lg);
+    width: 100%;
+    box-sizing: border-box;
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.2s ease-in-out;
+}
+
+.tasknotes-plugin .detailed-form-container.hidden {
+    display: none;
+}
+
+
+
+
+/* End Condition Options */
+.tasknotes-plugin .modal-form__end-condition {
+    margin: var(--tn-spacing-md) 0;
+    padding: var(--tn-spacing-md);
+    background: var(--tn-bg-secondary);
+    border: 1px solid var(--tn-border-color);
+    border-radius: var(--tn-radius-sm);
+}
+
+.tasknotes-plugin .modal-form__end-options {
+    display: flex;
+    flex-direction: column;
+    gap: var(--tn-spacing-sm);
+    margin-top: var(--tn-spacing-md);
+}
+
+.tasknotes-plugin .modal-form__input--count {
+    width: 80px;
+    text-align: center;
+}
+
+.tasknotes-plugin .modal-form__count-label {
+    font-size: var(--tn-font-size-md);
+    color: var(--tn-text-normal);
+    white-space: nowrap;
+}
+
+/* RRule Summary */
+.tasknotes-plugin .modal-form__rrule-summary {
+    margin-top: var(--tn-spacing-md);
+    padding: var(--tn-spacing-md);
+    background: var(--tn-bg-primary);
+    border: 1px solid var(--tn-border-color);
+    border-radius: var(--tn-radius-sm);
+}
+
+.tasknotes-plugin .modal-form__rrule-text {
+    font-size: var(--tn-font-size-sm);
+    color: var(--tn-text-muted);
+    font-style: italic;
+    line-height: 1.4;
+}
+
 /* Days of Week Grid */
 .tasknotes-plugin .modal-form__days-grid {
     display: grid;
@@ -381,6 +534,9 @@
 .tasknotes-plugin .modal-form__day-input {
     margin: 0;
     cursor: pointer;
+    width: auto;
+    height: auto;
+    flex: none;
 }
 
 .tasknotes-plugin .modal-form__day-label {
@@ -512,6 +668,7 @@
 /* =====================================================================
    TASK CREATION MODAL SPECIFIC
    ===================================================================== */
+
 
 .tasknotes-plugin .task-creation-modal__preview {
     padding: var(--tn-spacing-md) var(--tn-spacing-lg);
