@@ -88,6 +88,8 @@ export interface CalendarViewSettings {
 	nowIndicator: boolean;
 	selectMirror: boolean;
 	weekNumbers: boolean;
+	// Today highlighting
+	showTodayHighlight: boolean;
 }
 
 // Default field mapping maintains backward compatibility
@@ -214,7 +216,9 @@ export const DEFAULT_CALENDAR_VIEW_SETTINGS: CalendarViewSettings = {
 	// Calendar behavior
 	nowIndicator: true,
 	selectMirror: true,
-	weekNumbers: false
+	weekNumbers: false,
+	// Today highlighting
+	showTodayHighlight: true
 };
 
 export const DEFAULT_SETTINGS: TaskNotesSettings = {
@@ -1068,6 +1072,19 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 					.setValue(this.plugin.settings.calendarViewSettings.selectMirror)
 					.onChange(async (value) => {
 						this.plugin.settings.calendarViewSettings.selectMirror = value;
+						await this.plugin.saveSettings();
+					});
+			});
+
+		new Setting(container)
+			.setName('Highlight today')
+			.setDesc('Highlight the current date with a background color in calendar views')
+			.addToggle(toggle => {
+				toggle.toggleEl.setAttribute('aria-label', 'Highlight today');
+				return toggle
+					.setValue(this.plugin.settings.calendarViewSettings.showTodayHighlight)
+					.onChange(async (value) => {
+						this.plugin.settings.calendarViewSettings.showTodayHighlight = value;
 						await this.plugin.saveSettings();
 					});
 			});

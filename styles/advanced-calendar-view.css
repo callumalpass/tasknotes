@@ -847,3 +847,22 @@
         padding: 0.25rem 0.5rem;
     }
 }
+
+/* Today highlighting disabled */
+.hide-today-highlight .fc-unthemed td.fc-today {
+    background: inherit;
+}
+
+.hide-today-highlight .fc-daygrid-day.fc-day-today {
+    background: inherit !important;
+    border: none !important;
+}
+
+.hide-today-highlight .fc-daygrid-day.fc-day-today .fc-daygrid-day-number {
+    font-weight: 400;
+    color: var(--text-normal);
+}
+
+.hide-today-highlight .fc-daygrid-day.fc-day-today::before {
+    display: none;
+}

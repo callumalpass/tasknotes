@@ -460,6 +460,9 @@ export class AdvancedCalendarView extends ItemView {
 
         const calendarSettings = this.plugin.settings.calendarViewSettings;
         
+        // Apply today highlight setting
+        this.updateTodayHighlight();
+        
         this.calendar = new Calendar(calendarEl, {
             plugins: [dayGridPlugin, timeGridPlugin, multiMonthPlugin, interactionPlugin],
             initialView: calendarSettings.defaultView,
@@ -1465,6 +1468,12 @@ export class AdvancedCalendarView extends ItemView {
             this.renderViewToggles(); // Re-render toggle buttons
         });
         this.listeners.push(timeblockingToggleListener);
+
+        // Listen for settings changes to update today highlight
+        const settingsListener = this.plugin.emitter.on('settings-changed', () => {
+            this.updateTodayHighlight();
+        });
+        this.listeners.push(settingsListener);
     }
 
     async refreshEvents() {
@@ -1542,5 +1551,17 @@ export class AdvancedCalendarView extends ItemView {
         }
 
         menu.showAtMouseEvent(jsEvent);
+    }
+
+    private updateTodayHighlight() {
+        const calendarContainer = this.contentEl.querySelector('.advanced-calendar-view__calendar-container');
+        if (!calendarContainer) return;
+
+        const showTodayHighlight = this.plugin.settings.calendarViewSettings.showTodayHighlight;
+        if (showTodayHighlight) {
+            calendarContainer.removeClass('hide-today-highlight');
+        } else {
+            calendarContainer.addClass('hide-today-highlight');
+        }
     }
 }

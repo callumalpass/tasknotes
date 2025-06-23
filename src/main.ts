@@ -590,6 +590,9 @@ export default class TaskNotesPlugin extends Plugin {
 		
 		// If settings have changed, notify views to refresh their data
 		this.notifyDataChanged();
+		
+		// Emit settings-changed event for specific settings updates
+		this.emitter.trigger('settings-changed', this.settings);
 	}
 
 	addCommands() {
