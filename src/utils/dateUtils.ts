@@ -128,13 +128,28 @@ export function parseDate(dateString: string): Date {
             return parsed;
         } else {
             // Date-only string - parse in local timezone
-            const parsed = parse(trimmed, 'yyyy-MM-dd', new Date());
-            if (!isValid(parsed)) {
+            // Use direct Date constructor to avoid timezone issues
+            const dateMatch = trimmed.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+            if (!dateMatch) {
                 const error = new Error(`Invalid date-only string: ${dateString} (expected format: yyyy-MM-dd)`);
                 console.warn('Date parsing error - date-only format invalid:', { 
                     original: dateString, 
                     trimmed, 
                     expectedFormat: 'yyyy-MM-dd', 
+                    error: error.message 
+                });
+                throw error;
+            }
+            
+            const [, year, month, day] = dateMatch;
+            const parsed = new Date(parseInt(year, 10), parseInt(month, 10) - 1, parseInt(day, 10));
+            
+            if (!isValid(parsed) || parsed.getFullYear() !== parseInt(year, 10) || 
+                parsed.getMonth() !== parseInt(month, 10) - 1 || parsed.getDate() !== parseInt(day, 10)) {
+                const error = new Error(`Invalid date values: ${dateString}`);
+                console.warn('Date parsing error - invalid date values:', { 
+                    original: dateString, 
+                    year, month, day,
                     error: error.message 
                 });
                 throw error;
@@ -208,6 +223,17 @@ export function normalizeDateString(dateString: string): string {
     }
     
     try {
+        // For timezone-aware strings, extract just the date part directly
+        if (dateString.includes('T') || dateString.includes('Z') || dateString.match(/[+-]\d{2}:\d{2}$/)) {
+            // Extract date part before 'T' or timezone marker
+            const datePart = dateString.split('T')[0];
+            // Validate that it's a proper YYYY-MM-DD format
+            if (/^\d{4}-\d{2}-\d{2}$/.test(datePart)) {
+                return datePart;
+            }
+        }
+        
+        // For non-timezone strings, parse and format
         const parsed = parseDate(dateString);
         if (isValid(parsed)) {
             return format(parsed, 'yyyy-MM-dd');
