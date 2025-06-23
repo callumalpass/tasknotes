@@ -27,7 +27,7 @@ export const TaskAssertions = {
         pass: true,
       };
     } else {
-      const missing = [];
+      const missing: string[] = [];
       if (typeof received?.title !== 'string' || received.title.length === 0) missing.push('title');
       if (typeof received?.status !== 'string') missing.push('status');
       if (typeof received?.priority !== 'string') missing.push('priority');
@@ -90,7 +90,7 @@ export const TaskAssertions = {
    */
   toHaveTimeTracking: (received: TaskInfo): jest.CustomMatcherResult => {
     const hasEntries = received.timeEntries && received.timeEntries.length > 0;
-    const hasEstimate = received.timeEstimate && received.timeEstimate > 0;
+    const hasEstimate = received.timeEstimate !== undefined && received.timeEstimate > 0;
     const pass = hasEntries || hasEstimate;
     
     return {

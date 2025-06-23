@@ -213,5 +213,4 @@ export const RRuleTestUtils = {
 };
 
 // Export all the constants and classes
-export { Frequency as default };
 export default RRule;

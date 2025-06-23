@@ -11,11 +11,10 @@
  * - Error handling and edge cases
  */
 
-import { TFile } from 'obsidian';
 import { TaskService, TaskCreationData } from '../../../src/services/TaskService';
 import { TaskInfo, TimeEntry } from '../../../src/types';
 import { TaskFactory, PluginFactory, FileSystemFactory } from '../../helpers/mock-factories';
-import { MockObsidian } from '../../__mocks__/obsidian';
+import { MockObsidian, TFile } from '../../__mocks__/obsidian';
 
 // Mock external dependencies
 jest.mock('../../../src/utils/dateUtils', () => ({

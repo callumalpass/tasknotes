@@ -16,8 +16,7 @@ import {
   ICSEvent,
   TimeBlock
 } from '../../src/types';
-import { MockObsidian } from '../__mocks__/obsidian';
-import { TFile } from 'obsidian';
+import { MockObsidian, TFile } from '../__mocks__/obsidian';
 
 // Task-related factories
 export const TaskFactory = {

@@ -101,6 +101,11 @@ export interface TaskInfo {
 	dateModified?: string; // Last modification date (ISO timestamp)
 }
 
+export interface TaskCreationData extends Partial<TaskInfo> {
+    details?: string; // Optional details/description for file content
+    parentNote?: string; // Optional parent note name/path for template variable
+}
+
 export interface TimeEntry {
 	startTime: string; // ISO timestamp
 	endTime?: string; // ISO timestamp, undefined if currently running

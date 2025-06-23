@@ -196,9 +196,13 @@ class MockVaultFileSystem {
 // Global mock file system instance
 const mockFileSystem = new MockVaultFileSystem();
 
-// TFile mock class
+// TFile mock class  
 export class TFile {
-  constructor(public path: string) {}
+  public path: string;
+  
+  constructor(path?: string) {
+    this.path = path || '';
+  }
 
   get name(): string {
     return this.path.split('/').pop() || '';

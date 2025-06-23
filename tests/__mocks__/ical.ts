@@ -5,7 +5,7 @@
 
 // Mock ICAL component types
 export const ICAL = {
-  Event: 'vevent',
+  EventType: 'vevent',
   Calendar: 'vcalendar',
   Timezone: 'vtimezone',
   
