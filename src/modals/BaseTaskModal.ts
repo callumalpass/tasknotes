@@ -60,7 +60,12 @@ export abstract class BaseTaskModal extends Modal {
 
     // Get existing contexts from cache for instant autocomplete
     async getExistingContexts(): Promise<string[]> {
-        return await this.plugin.cacheManager.getAllContexts();
+        try {
+            return await this.plugin.cacheManager.getAllContexts();
+        } catch (error) {
+            console.error('Failed to get existing contexts:', error);
+            return this.existingContexts; // Return cached data as fallback
+        }
     }
 
     // Get existing tags from cache for instant autocomplete  
@@ -344,7 +349,7 @@ export abstract class BaseTaskModal extends Modal {
             if (!suggestionsList) return;
 
             const suggestions = suggestionsList.querySelectorAll('.modal-form__suggestion');
-            let selectedIndex = Array.from(suggestions).findIndex(el => el.hasClass('modal-form__suggestion--selected'));
+            let selectedIndex = Array.from(suggestions).findIndex(el => el.classList.contains('modal-form__suggestion--selected'));
 
             if (e.key === 'ArrowDown') {
                 e.preventDefault();
@@ -449,7 +454,7 @@ export abstract class BaseTaskModal extends Modal {
     protected updateSelectedSuggestion(suggestions: NodeListOf<Element>, selectedIndex: number): void {
         suggestions.forEach((suggestion, index) => {
             if (index === selectedIndex) {
-                suggestion.addClass('modal-form__suggestion--selected');
+                suggestion.classList.add('modal-form__suggestion--selected');
                 suggestion.setAttribute('aria-selected', 'true');
                 // Update aria-activedescendant on the input
                 const input = suggestion.closest('.modal-form__input-container')?.querySelector('input');
@@ -457,7 +462,7 @@ export abstract class BaseTaskModal extends Modal {
                     input.setAttribute('aria-activedescendant', suggestion.id);
                 }
             } else {
-                suggestion.removeClass('modal-form__suggestion--selected');
+                suggestion.classList.remove('modal-form__suggestion--selected');
                 suggestion.setAttribute('aria-selected', 'false');
             }
         });

@@ -70,14 +70,8 @@ export class TaskCreationModal extends BaseTaskModal {
 			// Apply default due date
 			this.dueDate = calculateDefaultDate(defaults.defaultDueDate);
 			
-			// Apply scheduled date: prioritize selected calendar date, then use configured default
-			if (this.plugin.selectedDate) {
-				// If calendar date is selected, always use it (preserve existing behavior)
-				this.scheduledDate = format(this.plugin.selectedDate, 'yyyy-MM-dd');
-			} else {
-				// No calendar date selected, use the configured default
-				this.scheduledDate = calculateDefaultDate(defaults.defaultScheduledDate);
-			}
+			// Apply default scheduled date based on user settings
+			this.scheduledDate = calculateDefaultDate(defaults.defaultScheduledDate);
 			
 			// Apply default contexts and tags
 			this.contexts = defaults.defaultContexts || '';
