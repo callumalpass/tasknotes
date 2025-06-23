@@ -109,7 +109,7 @@ export class NaturalLanguageParser {
         const tagMatches = text.match(/#\w+/g);
         if (tagMatches) {
             result.tags.push(...tagMatches.map(tag => tag.substring(1)));
-            return text.replace(/#\w+/g, '').replace(/\s+/g, ' ').trim();
+            return this.cleanupWhitespace(text.replace(/#\w+/g, ''));
         }
         return text;
     }
@@ -119,7 +119,7 @@ export class NaturalLanguageParser {
         const contextMatches = text.match(/@\w+/g);
         if (contextMatches) {
             result.contexts.push(...contextMatches.map(context => context.substring(1)));
-            return text.replace(/@\w+/g, '').replace(/\s+/g, ' ').trim();
+            return this.cleanupWhitespace(text.replace(/@\w+/g, ''));
         }
         return text;
     }
@@ -134,10 +134,11 @@ export class NaturalLanguageParser {
                 { regex: new RegExp(`\\b${this.escapeRegex(config.label)}\\b`, 'i'), value: config.value }
             ]);
         }
-        // Fallback patterns
+        // Fallback patterns - order matters, most specific first
         return [
             { regex: /\b(urgent|critical|highest)\b/i, value: 'urgent' },
-            { regex: /\b(high|important)\b/i, value: 'high' },
+            { regex: /\b(high)\b/i, value: 'high' },
+            { regex: /\b(important)\b/i, value: 'high' },
             { regex: /\b(medium|normal)\b/i, value: 'normal' },
             { regex: /\b(low|minor)\b/i, value: 'low' }
         ];
@@ -145,12 +146,23 @@ export class NaturalLanguageParser {
 
     /** Extracts priority using pre-compiled patterns. */
     private extractPriority(text: string, result: ParsedTaskData): string {
+        let foundMatch: { pattern: RegexPattern; index: number } | null = null;
+        
+        // Find the first occurrence in the text
         for (const pattern of this.priorityPatterns) {
-            if (pattern.regex.test(text)) {
-                result.priority = pattern.value;
-                return text.replace(pattern.regex, '').replace(/\s+/g, ' ').trim();
+            const match = text.match(pattern.regex);
+            if (match && match.index !== undefined) {
+                if (!foundMatch || match.index < foundMatch.index) {
+                    foundMatch = { pattern, index: match.index };
+                }
             }
         }
+        
+        if (foundMatch) {
+            result.priority = foundMatch.pattern.value;
+            return this.cleanupWhitespace(text.replace(foundMatch.pattern.regex, ''));
+        }
+        
         return text;
     }
 
@@ -179,7 +191,7 @@ export class NaturalLanguageParser {
         for (const pattern of this.statusPatterns) {
             if (pattern.regex.test(text)) {
                 result.status = pattern.value;
-                return text.replace(pattern.regex, '').replace(/\s+/g, ' ').trim();
+                return this.cleanupWhitespace(text.replace(pattern.regex, ''));
             }
         }
         return text;
@@ -227,7 +239,7 @@ export class NaturalLanguageParser {
                     if (chronoParsed.matchedText) {
                         workingText = workingText.replace(chronoParsed.matchedText, '');
                     }
-                    workingText = workingText.replace(/\s+/g, ' ').trim();
+                    workingText = this.cleanupWhitespace(workingText);
                     break; // Only match first occurrence
                 }
             }
@@ -353,7 +365,7 @@ export class NaturalLanguageParser {
                 // Validate the rrule string before setting it
                 if (this.isValidRRuleString(rruleString)) {
                     result.recurrence = rruleString;
-                    return text.replace(pattern.regex, '').trim();
+                    return this.cleanupWhitespace(text.replace(pattern.regex, ''));
                 }
             }
         }
@@ -401,7 +413,7 @@ export class NaturalLanguageParser {
             const match = workingText.match(pattern.regex);
             if (match) {
                 totalEstimate += pattern.handler(match);
-                workingText = workingText.replace(pattern.regex, '').trim();
+                workingText = this.cleanupWhitespace(workingText.replace(pattern.regex, ''));
             }
         }
 
@@ -466,7 +478,7 @@ export class NaturalLanguageParser {
             }
 
             // Clean the parsed date text from the string
-            workingText = workingText.replace(dateText, '').replace(/\s+/g, ' ').trim();
+            workingText = this.cleanupWhitespace(workingText.replace(dateText, ''));
 
         } catch (error) {
             console.debug('Chrono-node parsing failed:', error);
@@ -500,6 +512,11 @@ export class NaturalLanguageParser {
     private isValidDateString = (dateString: string): boolean => /^\d{4}-\d{2}-\d{2}$/.test(dateString);
     private isValidTimeString = (timeString: string): boolean => /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/.test(timeString);
     private escapeRegex = (str: string): string => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    
+    /** Cleans up whitespace after text extraction */
+    private cleanupWhitespace = (text: string): string => {
+        return text.replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '').trim();
+    };
 
     /**
      * Generates a user-friendly preview of the parsed data.
