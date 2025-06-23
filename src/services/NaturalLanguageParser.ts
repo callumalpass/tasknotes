@@ -109,7 +109,7 @@ export class NaturalLanguageParser {
         const tagMatches = text.match(/#\w+/g);
         if (tagMatches) {
             result.tags.push(...tagMatches.map(tag => tag.substring(1)));
-            return text.replace(/#\w+/g, '').trim();
+            return text.replace(/#\w+/g, '').replace(/\s+/g, ' ').trim();
         }
         return text;
     }
@@ -119,7 +119,7 @@ export class NaturalLanguageParser {
         const contextMatches = text.match(/@\w+/g);
         if (contextMatches) {
             result.contexts.push(...contextMatches.map(context => context.substring(1)));
-            return text.replace(/@\w+/g, '').trim();
+            return text.replace(/@\w+/g, '').replace(/\s+/g, ' ').trim();
         }
         return text;
     }
@@ -148,7 +148,7 @@ export class NaturalLanguageParser {
         for (const pattern of this.priorityPatterns) {
             if (pattern.regex.test(text)) {
                 result.priority = pattern.value;
-                return text.replace(pattern.regex, '').trim();
+                return text.replace(pattern.regex, '').replace(/\s+/g, ' ').trim();
             }
         }
         return text;
@@ -179,7 +179,7 @@ export class NaturalLanguageParser {
         for (const pattern of this.statusPatterns) {
             if (pattern.regex.test(text)) {
                 result.status = pattern.value;
-                return text.replace(pattern.regex, '').trim();
+                return text.replace(pattern.regex, '').replace(/\s+/g, ' ').trim();
             }
         }
         return text;
@@ -227,7 +227,7 @@ export class NaturalLanguageParser {
                     if (chronoParsed.matchedText) {
                         workingText = workingText.replace(chronoParsed.matchedText, '');
                     }
-                    workingText = workingText.trim();
+                    workingText = workingText.replace(/\s+/g, ' ').trim();
                     break; // Only match first occurrence
                 }
             }

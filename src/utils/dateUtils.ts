@@ -203,9 +203,16 @@ export function getTodayString(): string {
  * Normalize a date string to YYYY-MM-DD format for storage/comparison
  */
 export function normalizeDateString(dateString: string): string {
+    if (!dateString) {
+        return dateString;
+    }
+    
     try {
         const parsed = parseDate(dateString);
-        return format(parsed, 'yyyy-MM-dd');
+        if (isValid(parsed)) {
+            return format(parsed, 'yyyy-MM-dd');
+        }
+        return dateString;
     } catch (error) {
         console.error('Error normalizing date string:', { dateString, error });
         return dateString; // Return original if parsing fails
@@ -346,9 +353,16 @@ export function parseTimestamp(timestampString: string): Date {
  * Format timestamp for display in user's timezone
  */
 export function formatTimestampForDisplay(timestampString: string, formatString: string = 'MMM d, yyyy h:mm a'): string {
+    if (!timestampString) {
+        return timestampString;
+    }
+    
     try {
         const parsed = parseTimestamp(timestampString);
-        return format(parsed, formatString);
+        if (isValid(parsed)) {
+            return format(parsed, formatString);
+        }
+        return timestampString;
     } catch (error) {
         console.error('Error formatting timestamp for display:', { timestampString, error });
         return timestampString; // Return original if formatting fails
