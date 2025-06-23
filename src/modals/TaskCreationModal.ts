@@ -586,7 +586,7 @@ export class TaskCreationModal extends BaseTaskModal {
 		const textarea = inputContainer.createEl('textarea', {
 			cls: 'modal-form__input modal-form__input--textarea nl-input',
 			attr: {
-				placeholder: 'Buy groceries tomorrow 3pm @home #errands\nAdd details on the next line\n',
+				placeholder: 'Buy groceries tomorrow at 3 in the afternoon @home #errands\n\nAdd details here...\n',
 				rows: '3'
 			}
 		});
