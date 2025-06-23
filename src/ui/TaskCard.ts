@@ -2,7 +2,7 @@ import { format } from 'date-fns';
 import { TFile, Menu, setIcon, Notice, Modal, App } from 'obsidian';
 import { TaskInfo } from '../types';
 import TaskNotesPlugin from '../main';
-import { calculateTotalTimeSpent, isRecurringTaskDueOn, getEffectiveTaskStatus, shouldUseRecurringTaskUI, getRecurringTaskCompletionText } from '../utils/helpers';
+import { calculateTotalTimeSpent, isDueByRRule, shouldShowRecurringTaskOnDate, getEffectiveTaskStatus, shouldUseRecurringTaskUI, getRecurringTaskCompletionText } from '../utils/helpers';
 import { 
     isSameDateSafe, 
     isBeforeDateSafe, 
