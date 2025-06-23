@@ -41,6 +41,9 @@ import {
     parseDate 
 } from '../utils/dateUtils';
 import { 
+    isDueByRRule,
+    generateRecurringInstances,
+    shouldShowRecurringTaskOnDate,
     isRecurringTaskDueOn, 
     getEffectiveTaskStatus,
     extractTimeblocksFromNote,
@@ -570,7 +573,7 @@ export class AdvancedCalendarView extends ItemView {
             for (const task of allTasks) {
                 // Handle recurring tasks
                 if (this.showRecurring && task.recurrence && task.scheduled) {
-                    const recurringEvents = this.generateRecurringInstances(task, visibleStart, visibleEnd);
+                    const recurringEvents = this.generateRecurringTaskInstances(task, visibleStart, visibleEnd);
                     events.push(...recurringEvents);
                 } else {
                     // Add non-recurring scheduled events (only if not recurring)
@@ -774,7 +777,7 @@ export class AdvancedCalendarView extends ItemView {
         }
     }
 
-    generateRecurringInstances(task: TaskInfo, startDate: Date, endDate: Date): CalendarEvent[] {
+    generateRecurringTaskInstances(task: TaskInfo, startDate: Date, endDate: Date): CalendarEvent[] {
         if (!task.recurrence || !task.scheduled) {
             return [];
         }
@@ -782,28 +785,23 @@ export class AdvancedCalendarView extends ItemView {
         const instances: CalendarEvent[] = [];
         const templateTime = this.getRecurringTime(task);
         
-        // Iterate through each day in the visible range
-        const currentDate = new Date(startDate);
-        while (currentDate <= endDate) {
-            // Check if this recurring task should appear on this date
-            if (isRecurringTaskDueOn(task, currentDate)) {
-                // Stop if past due date
-                if (task.due && currentDate > parseDate(task.due)) {
-                    break;
-                }
-
-                const instanceDate = format(currentDate, 'yyyy-MM-dd');
-                const eventStart = `${instanceDate}T${templateTime}`;
-                
-                // Create the recurring event instance
-                const recurringEvent = this.createRecurringEvent(task, eventStart, instanceDate, templateTime);
-                if (recurringEvent) {
-                    instances.push(recurringEvent);
-                }
+        // Use the new helper function to generate recurring dates
+        const recurringDates = generateRecurringInstances(task, startDate, endDate);
+        
+        for (const date of recurringDates) {
+            // Stop if past due date
+            if (task.due && date > parseDate(task.due)) {
+                break;
             }
+
+            const instanceDate = format(date, 'yyyy-MM-dd');
+            const eventStart = `${instanceDate}T${templateTime}`;
             
-            // Move to next day
-            currentDate.setDate(currentDate.getDate() + 1);
+            // Create the recurring event instance
+            const recurringEvent = this.createRecurringEvent(task, eventStart, instanceDate, templateTime);
+            if (recurringEvent) {
+                instances.push(recurringEvent);
+            }
         }
 
         return instances;
