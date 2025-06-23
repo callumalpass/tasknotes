@@ -161,9 +161,41 @@ export default class TaskNotesPlugin extends Plugin {
 		
 		// Note: View registration and heavy operations moved to onLayoutReady
 		
-		// Add ribbon icon
-		this.addRibbonIcon('calendar-days', 'Open calendar', async () => {
+		// Add ribbon icons
+		this.addRibbonIcon('calendar-days', 'Open mini calendar', async () => {
 			await this.activateCalendarView();
+		});
+		
+		this.addRibbonIcon('calendar', 'Open advanced calendar', async () => {
+			await this.activateAdvancedCalendarView();
+		});
+		
+		this.addRibbonIcon('check-square', 'Open task list', async () => {
+			await this.activateTasksView();
+		});
+		
+		this.addRibbonIcon('sticky-note', 'Open notes', async () => {
+			await this.activateNotesView();
+		});
+		
+		this.addRibbonIcon('list', 'Open agenda', async () => {
+			await this.activateAgendaView();
+		});
+		
+		this.addRibbonIcon('columns-3', 'Open kanban board', async () => {
+			await this.activateKanbanView();
+		});
+		
+		this.addRibbonIcon('timer', 'Open pomodoro', async () => {
+			await this.activatePomodoroView();
+		});
+		
+		this.addRibbonIcon('bar-chart-3', 'Open pomodoro stats', async () => {
+			await this.activatePomodoroStatsView();
+		});
+		
+		this.addRibbonIcon('plus', 'Create new task', () => {
+			this.openTaskCreationModal();
 		});
 
 		// Add commands
