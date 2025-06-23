@@ -276,6 +276,7 @@ describe('TaskService', () => {
 
     it('should not set completion date for recurring tasks', async () => {
       const recurringTask = TaskFactory.createTask({ recurrence: 'FREQ=DAILY' });
+      mockPlugin.cacheManager.getTaskInfo.mockResolvedValue(recurringTask);
       
       const result = await taskService.updateProperty(recurringTask, 'status', 'done');
 

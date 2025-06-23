@@ -17,6 +17,7 @@ import {
   TimeBlock
 } from '../../src/types';
 import { MockObsidian } from '../__mocks__/obsidian';
+import { TFile } from 'obsidian';
 
 // Task-related factories
 export const TaskFactory = {
@@ -336,14 +337,14 @@ export const PluginFactory = {
     const mockApp = {
       vault: {
         create: jest.fn().mockImplementation((path, content) => {
-          const mockFile = { path, name: path.split('/').pop(), basename: path.split('/').pop()?.replace(/\.md$/, ''), extension: 'md' };
+          const mockFile = new TFile(path);
           return Promise.resolve(mockFile);
         }),
         modify: jest.fn().mockResolvedValue(undefined),
         delete: jest.fn().mockResolvedValue(undefined),
         read: jest.fn().mockResolvedValue(''),
         getAbstractFileByPath: jest.fn().mockImplementation((path) => {
-          return { path, name: path.split('/').pop(), basename: path.split('/').pop()?.replace(/\.md$/, ''), extension: 'md' };
+          return new TFile(path);
         }),
         adapter: {
           exists: jest.fn().mockResolvedValue(true),
@@ -393,14 +394,48 @@ export const PluginFactory = {
         off: jest.fn()
       },
       fieldMapper: {
-        mapToFrontmatter: jest.fn().mockReturnValue({}),
-        mapFromFrontmatter: jest.fn().mockReturnValue({})
+        mapToFrontmatter: jest.fn().mockImplementation((taskData, taskTag) => {
+          // Create a basic frontmatter mapping from the task data
+          const frontmatter: any = {};
+          Object.keys(taskData).forEach(key => {
+            if (taskData[key] !== undefined && key !== 'path' && key !== 'tags') {
+              frontmatter[key] = taskData[key];
+            }
+          });
+          return frontmatter;
+        }),
+        mapFromFrontmatter: jest.fn().mockReturnValue({}),
+        toUserField: jest.fn().mockImplementation((field) => field),
+        getMapping: jest.fn().mockReturnValue({
+          archiveTag: 'archived',
+          title: 'title',
+          status: 'status',
+          priority: 'priority',
+          due: 'due',
+          scheduled: 'scheduled',
+          contexts: 'contexts',
+          timeEstimate: 'timeEstimate',
+          completedDate: 'completedDate',
+          dateCreated: 'dateCreated',
+          dateModified: 'dateModified',
+          recurrence: 'recurrence',
+          timeEntries: 'timeEntries',
+          completeInstances: 'complete_instances',
+          pomodoros: 'pomodoros'
+        })
       },
       cacheManager: {
-        updateTaskInfoInCache: jest.fn(),
+        updateTaskInfoInCache: jest.fn().mockResolvedValue(undefined),
         removeFromCache: jest.fn(),
-        getTaskInfo: jest.fn()
+        getTaskInfo: jest.fn().mockResolvedValue(null),
+        clearCacheEntry: jest.fn()
       },
+      statusManager: {
+        isCompletedStatus: jest.fn((status) => status === 'done' || status === 'completed'),
+        getCompletedStatuses: jest.fn(() => ['done', 'completed'])
+      },
+      getActiveTimeSession: jest.fn().mockReturnValue(null),
+      selectedDate: new Date(),
       ...overrides
     };
 

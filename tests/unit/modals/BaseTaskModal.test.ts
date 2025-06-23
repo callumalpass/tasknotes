@@ -59,6 +59,87 @@ describe('BaseTaskModal', () => {
     jest.clearAllMocks();
     MockObsidian.reset();
     
+    // Mock RRule constructor and toString to work properly with instance data
+    const mockRRule = jest.requireActual('../../../tests/__mocks__/rrule.ts');
+    
+    // Store original static methods before overriding
+    const originalRRule = RRule;
+    const originalFromString = RRule.fromString;
+    
+    // Mock the constructor to properly set instance data
+    (RRule as any) = jest.fn().mockImplementation(function(this: any, options: any = {}) {
+      this.options = options;
+      return this;
+    });
+    
+    // Restore static methods
+    (RRule as any).fromString = originalFromString;
+    Object.assign(RRule, originalRRule);
+    
+    // Set up the prototype with proper toString method
+    (RRule as any).prototype.toString = function(this: any) {
+      // Manually implement the toString logic
+      if (!this.options) {
+        return 'FREQ=DAILY;INTERVAL=1';
+      }
+      
+      const { freq, interval = 1, byweekday, bymonthday, bymonth, bysetpos, until, count } = this.options;
+      let result = '';
+      
+      const Frequency = mockRRule.Frequency;
+      switch (freq) {
+        case Frequency.DAILY:
+          result = 'FREQ=DAILY';
+          break;
+        case Frequency.WEEKLY:
+          result = 'FREQ=WEEKLY';
+          break;
+        case Frequency.MONTHLY:
+          result = 'FREQ=MONTHLY';
+          break;
+        case Frequency.YEARLY:
+          result = 'FREQ=YEARLY';
+          break;
+        default:
+          return 'FREQ=DAILY;INTERVAL=1';
+      }
+
+      if (interval && interval > 1) {
+        result += `;INTERVAL=${interval}`;
+      }
+
+      if (byweekday && byweekday.length > 0) {
+        const dayMap = ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'];
+        const days = byweekday.map((w: any) => dayMap[w.weekday || w]).filter(Boolean);
+        if (days.length > 0) {
+          result += `;BYDAY=${days.join(',')}`;
+        }
+      }
+
+      if (bymonthday && bymonthday.length > 0) {
+        result += `;BYMONTHDAY=${bymonthday.join(',')}`;
+      }
+
+      if (bymonth && bymonth.length > 0) {
+        result += `;BYMONTH=${bymonth.join(',')}`;
+      }
+
+      if (bysetpos && bysetpos.length > 0) {
+        result += `;BYSETPOS=${bysetpos.join(',')}`;
+      }
+
+      if (until) {
+        const dateStr = until.toISOString().split('T')[0].replace(/-/g, '');
+        result += `;UNTIL=${dateStr}`;
+      }
+
+      if (count) {
+        result += `;COUNT=${count}`;
+      }
+
+      return result;
+    };
+    
     // Create DOM container
     document.body.innerHTML = '';
     container = document.createElement('div');
@@ -320,9 +401,11 @@ describe('BaseTaskModal', () => {
     });
 
     it('should handle generation errors gracefully', () => {
-      // Mock RRule constructor to throw error
-      const OriginalRRule = RRule;
-      (global as any).RRule = jest.fn().mockImplementation(() => {
+      // Store the original RRule to restore it after the test
+      const originalRRule = RRule;
+      
+      // Override the working RRule mock to throw an error
+      (RRule as any) = jest.fn().mockImplementation(() => {
         throw new Error('RRule creation failed');
       });
       
@@ -332,8 +415,9 @@ describe('BaseTaskModal', () => {
       expect(rruleString).toBe('');
       expect(console.error).toHaveBeenCalled();
       
-      // Restore original RRule
-      (global as any).RRule = OriginalRRule;
+      // Restore the original RRule for subsequent tests
+      (global as any).RRule = originalRRule;
+      Object.assign(RRule, originalRRule);
     });
   });
 
@@ -566,9 +650,9 @@ describe('BaseTaskModal', () => {
 
   describe('Error Handling', () => {
     it('should handle errors in RRule parsing gracefully', () => {
-      // Mock RRule.fromString to throw error
-      const mockRRule = require('rrule').RRule;
-      mockRRule.fromString.mockImplementationOnce(() => {
+      // Mock RRule.fromString to throw error for this test
+      const originalFromString = RRule.fromString;
+      RRule.fromString = jest.fn().mockImplementationOnce(() => {
         throw new Error('Invalid RRule');
       });
       
@@ -576,6 +660,9 @@ describe('BaseTaskModal', () => {
       
       expect((modal as any).frequencyMode).toBe('NONE');
       expect(console.error).toHaveBeenCalled();
+      
+      // Restore original fromString
+      RRule.fromString = originalFromString;
     });
 
     it('should handle errors in suggestion fetching', async () => {

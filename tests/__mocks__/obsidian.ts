@@ -403,7 +403,8 @@ export class Workspace {
 
   getLeaf(newLeaf: boolean = true): any {
     return {
-      open: jest.fn().mockResolvedValue(undefined)
+      open: jest.fn().mockResolvedValue(undefined),
+      openFile: jest.fn().mockResolvedValue(undefined)
     };
   }
 
@@ -514,6 +515,7 @@ export class Modal extends Component {
   titleEl: HTMLElement;
   contentEl: HTMLElement;
   modalEl: HTMLElement;
+  containerEl: HTMLElement;
 
   constructor(app: App) {
     super();
@@ -521,10 +523,84 @@ export class Modal extends Component {
     this.titleEl = document.createElement('div');
     this.contentEl = document.createElement('div');
     this.modalEl = document.createElement('div');
+    this.containerEl = this.contentEl; // For compatibility with older APIs
+    
+    // Add Obsidian DOM methods to contentEl
+    this.contentEl.addClass = function(...classes: string[]) {
+      this.classList.add(...classes);
+      return this;
+    };
+    this.contentEl.removeClass = function(...classes: string[]) {
+      this.classList.remove(...classes);
+      return this;
+    };
+    this.contentEl.createEl = function<T extends keyof HTMLElementTagNameMap>(tag: T, attrs?: any): HTMLElementTagNameMap[T] {
+      const el = document.createElement(tag);
+      if (attrs) {
+        if (attrs.cls) {
+          if (Array.isArray(attrs.cls)) {
+            el.classList.add(...attrs.cls);
+          } else {
+            el.classList.add(attrs.cls);
+          }
+        }
+        if (attrs.text) {
+          el.textContent = attrs.text;
+        }
+        if (attrs.attr) {
+          Object.entries(attrs.attr).forEach(([key, value]) => {
+            el.setAttribute(key, String(value));
+          });
+        }
+        if (attrs.href) {
+          (el as any).href = attrs.href;
+        }
+        if (attrs.type) {
+          (el as any).type = attrs.type;
+        }
+        if (attrs.value) {
+          (el as any).value = attrs.value;
+        }
+      }
+      this.appendChild(el);
+      
+      // Add the same DOM methods to the created element
+      if (!el.addClass) {
+        el.addClass = this.addClass;
+        el.removeClass = this.removeClass;
+        el.createEl = this.createEl;
+        el.createDiv = this.createDiv;
+        el.empty = this.empty;
+      }
+      
+      return el;
+    };
+    this.contentEl.createDiv = function(attrs?: any): HTMLDivElement {
+      return this.createEl('div', attrs);
+    };
+    this.contentEl.empty = function() {
+      this.innerHTML = '';
+      return this;
+    };
+    
+    // Copy methods to containerEl as well
+    this.containerEl.addClass = this.contentEl.addClass;
+    this.containerEl.removeClass = this.contentEl.removeClass;
+    this.containerEl.createEl = this.contentEl.createEl;
+    this.containerEl.createDiv = this.contentEl.createDiv;
+    this.containerEl.empty = this.contentEl.empty;
   }
 
-  open(): void {}
-  close(): void {}
+  open(): void {
+    this.onOpen();
+  }
+  
+  close(): void {
+    this.onClose();
+  }
+  
+  onOpen(): void {}
+  onClose(): void {}
 }
 
 // ItemView mock class
@@ -551,18 +627,43 @@ export class ItemView extends Component {
 
 // Setting mock class
 export class Setting {
-  constructor(containerEl: HTMLElement) {}
+  containerEl: HTMLElement;
+  nameEl: HTMLElement;
+  descEl: HTMLElement;
+  controlEl: HTMLElement;
+  settingEl: HTMLElement;
+  
+  constructor(containerEl: HTMLElement) {
+    this.containerEl = containerEl;
+    this.settingEl = document.createElement('div');
+    this.nameEl = document.createElement('div');
+    this.descEl = document.createElement('div'); 
+    this.controlEl = document.createElement('div');
+    this.containerEl.appendChild(this.settingEl);
+  }
   
   setName(name: string): Setting {
+    this.nameEl.textContent = name;
     return this;
   }
   
   setDesc(desc: string): Setting {
+    this.descEl.textContent = desc;
+    return this;
+  }
+  
+  setHeading(): Setting {
+    if (this.settingEl.addClass) {
+      this.settingEl.addClass('setting-item-heading');
+    } else {
+      this.settingEl.classList.add('setting-item-heading');
+    }
     return this;
   }
   
   addText(callback: (text: any) => void): Setting {
     const mockText = {
+      inputEl: document.createElement('input'),
       setPlaceholder: (placeholder: string) => mockText,
       setValue: (value: string) => mockText,
       onChange: (callback: (value: string) => void) => mockText,
@@ -573,6 +674,7 @@ export class Setting {
   
   addToggle(callback: (toggle: any) => void): Setting {
     const mockToggle = {
+      toggleEl: document.createElement('div'),
       setValue: (value: boolean) => mockToggle,
       onChange: (callback: (value: boolean) => void) => mockToggle,
     };
@@ -582,11 +684,23 @@ export class Setting {
   
   addDropdown(callback: (dropdown: any) => void): Setting {
     const mockDropdown = {
+      selectEl: document.createElement('select'),
       addOptions: (options: Record<string, string>) => mockDropdown,
       setValue: (value: string) => mockDropdown,
       onChange: (callback: (value: string) => void) => mockDropdown,
     };
     callback(mockDropdown);
+    return this;
+  }
+  
+  addButton(callback: (button: any) => void): Setting {
+    const mockButton = {
+      buttonEl: document.createElement('button'),
+      setButtonText: (text: string) => mockButton,
+      setCta: () => mockButton,
+      onClick: (callback: () => void) => mockButton,
+    };
+    callback(mockButton);
     return this;
   }
 }
@@ -620,10 +734,44 @@ export function parseYaml(text: string): any {
   return require('yaml').parse(text);
 }
 
-export class Notice {
-  constructor(message: string, timeout?: number) {
-    console.log(`Notice: ${message}`);
+export const Notice = jest.fn().mockImplementation((message: string, timeout?: number) => {
+  // Mock Notice for testing - just track that it was called
+  return {};
+});
+
+// Menu mock class
+export class Menu {
+  private items: any[] = [];
+  
+  addItem(callback: (item: any) => void): void {
+    const mockItem = {
+      setTitle: jest.fn().mockReturnThis(),
+      setIcon: jest.fn().mockReturnThis(),
+      onClick: jest.fn().mockReturnThis(),
+      setSection: jest.fn().mockReturnThis(),
+    };
+    callback(mockItem);
+    this.items.push(mockItem);
   }
+  
+  addSeparator(): void {
+    this.items.push({ type: 'separator' });
+  }
+  
+  showAtMouseEvent(event: MouseEvent): void {
+    // Mock implementation
+  }
+  
+  showAtPosition(position: { x: number; y: number }): void {
+    // Mock implementation
+  }
+}
+
+// Icon utilities
+export function setIcon(element: HTMLElement, iconName: string): void {
+  // Mock implementation - just add a class or data attribute
+  element.setAttribute('data-icon', iconName);
+  element.classList.add('has-icon');
 }
 
 // Events system
@@ -665,6 +813,11 @@ export const MockObsidian = {
   createMockApp: () => {
     return new App();
   },
+  
+  // Export class constructors for testing
+  Menu,
+  Notice,
+  setIcon,
 };
 
 // Default export for compatibility
@@ -683,10 +836,12 @@ export default {
   ItemView,
   Setting,
   PluginSettingTab,
+  Menu,
   normalizePath,
   stringifyYaml,
   parseYaml,
   Notice,
   Events,
+  setIcon,
   MockObsidian,
 };

@@ -1,8 +1,8 @@
 /**
- * Mock for rrule library
- * Used for recurrence rule handling in TaskNotes plugin
+ * Mock for the rrule module
  */
 
+// Frequency constants that match the real RRule
 export enum Frequency {
   YEARLY = 0,
   MONTHLY = 1,
@@ -13,332 +13,205 @@ export enum Frequency {
   SECONDLY = 6
 }
 
-export enum Weekday {
-  MO = 0,
-  TU = 1,
-  WE = 2,
-  TH = 3,
-  FR = 4,
-  SA = 5,
-  SU = 6
+// Weekday mock class
+export class Weekday {
+  weekday: number;
+  n?: number;
+
+  constructor(weekday: number, n?: number) {
+    this.weekday = weekday;
+    this.n = n;
+  }
+
+  static MO = new Weekday(0);
+  static TU = new Weekday(1);
+  static WE = new Weekday(2);
+  static TH = new Weekday(3);
+  static FR = new Weekday(4);
+  static SA = new Weekday(5);
+  static SU = new Weekday(6);
 }
 
-export interface RRuleOptions {
-  freq: Frequency;
-  interval?: number;
-  wkst?: Weekday;
-  count?: number;
-  until?: Date;
-  dtstart?: Date;
-  bysetpos?: number[];
-  bymonth?: number[];
-  bymonthday?: number[];
-  byyearday?: number[];
-  byweekno?: number[];
-  byweekday?: (Weekday | [Weekday, number])[];
-  byhour?: number[];
-  byminute?: number[];
-  bysecond?: number[];
-}
-
-// Mock RRule class
 export class RRule {
-  private options: RRuleOptions;
-  private static FREQ_NAMES = ['YEARLY', 'MONTHLY', 'WEEKLY', 'DAILY', 'HOURLY', 'MINUTELY', 'SECONDLY'];
-  private static WEEKDAY_NAMES = ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'];
+  static WEEKLY = Frequency.WEEKLY;
+  static DAILY = Frequency.DAILY;
+  static MONTHLY = Frequency.MONTHLY;
+  static YEARLY = Frequency.YEARLY;
+  static HOURLY = Frequency.HOURLY;
+  static MINUTELY = Frequency.MINUTELY;
+  static SECONDLY = Frequency.SECONDLY;
 
-  constructor(options: RRuleOptions) {
-    this.options = { ...options };
+  static MO = Weekday.MO;
+  static TU = Weekday.TU;
+  static WE = Weekday.WE;
+  static TH = Weekday.TH;
+  static FR = Weekday.FR;
+  static SA = Weekday.SA;
+  static SU = Weekday.SU;
+
+  public options: any;
+
+  constructor(options: any = {}) {
+    this.options = options;
+  }
+  
+  get origOptions() {
+    return this.options;
   }
 
-  // Generate dates based on rule
-  all(iterator?: (date: Date, index: number) => boolean): Date[] {
-    const results: Date[] = [];
-    const start = this.options.dtstart || new Date();
-    let current = new Date(start);
-    
-    // Simple mock implementation for common cases
-    const count = this.options.count || 10;
-    
-    for (let i = 0; i < count; i++) {
-      if (iterator && !iterator(current, i)) {
-        break;
-      }
-      
-      results.push(new Date(current));
-      
-      // Advance date based on frequency
-      switch (this.options.freq) {
-        case Frequency.DAILY:
-          current.setDate(current.getDate() + (this.options.interval || 1));
-          break;
-        case Frequency.WEEKLY:
-          current.setDate(current.getDate() + (this.options.interval || 1) * 7);
-          break;
-        case Frequency.MONTHLY:
-          current.setMonth(current.getMonth() + (this.options.interval || 1));
-          break;
-        case Frequency.YEARLY:
-          current.setFullYear(current.getFullYear() + (this.options.interval || 1));
-          break;
-      }
-      
-      // Check until date
-      if (this.options.until && current > this.options.until) {
-        break;
-      }
-    }
-    
-    return results;
+  between(start: Date, end: Date): Date[] {
+    // Simple mock - return empty array or test dates
+    return [];
   }
 
-  // Get next occurrence after given date
-  after(date: Date, inc: boolean = false): Date | null {
-    const start = this.options.dtstart || new Date();
-    if (date < start) {
-      return start;
-    }
-    
-    let current = new Date(inc ? date : date.getTime() + 1);
-    
-    // Simple implementation - find next occurrence
-    for (let i = 0; i < 366; i++) { // Max 1 year lookout
-      if (this.matches(current)) {
-        return current;
-      }
-      current.setDate(current.getDate() + 1);
-      
-      if (this.options.until && current > this.options.until) {
-        return null;
-      }
-    }
-    
+  after(date: Date): Date | null {
     return null;
   }
 
-  // Get previous occurrence before given date
-  before(date: Date, inc: boolean = false): Date | null {
-    const start = this.options.dtstart || new Date();
-    if (date <= start) {
-      return inc && this.matches(date) ? date : null;
-    }
-    
-    let current = new Date(inc ? date : date.getTime() - 1);
-    
-    // Simple implementation - find previous occurrence
-    for (let i = 0; i < 366; i++) { // Max 1 year lookback
-      if (current < start) {
-        return null;
-      }
-      
-      if (this.matches(current)) {
-        return current;
-      }
-      current.setDate(current.getDate() - 1);
-    }
-    
+  before(date: Date): Date | null {
     return null;
   }
 
-  // Check if date matches rule
-  private matches(date: Date): boolean {
-    const start = this.options.dtstart || new Date();
-    
-    // Check if date is on or after start date
-    if (date < start) {
-      return false;
-    }
-    
-    // Check until date
-    if (this.options.until && date > this.options.until) {
-      return false;
-    }
-    
-    // Calculate days since start
-    const daysSinceStart = Math.floor((date.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
-    
-    // Check frequency and interval
-    switch (this.options.freq) {
-      case Frequency.DAILY:
-        return daysSinceStart % (this.options.interval || 1) === 0;
-      case Frequency.WEEKLY:
-        return daysSinceStart % ((this.options.interval || 1) * 7) === 0;
-      case Frequency.MONTHLY:
-        // Simplified monthly check
-        const monthsDiff = (date.getFullYear() - start.getFullYear()) * 12 + 
-                          (date.getMonth() - start.getMonth());
-        return monthsDiff % (this.options.interval || 1) === 0 && 
-               date.getDate() === start.getDate();
-      case Frequency.YEARLY:
-        // Simplified yearly check
-        const yearsDiff = date.getFullYear() - start.getFullYear();
-        return yearsDiff % (this.options.interval || 1) === 0 &&
-               date.getMonth() === start.getMonth() &&
-               date.getDate() === start.getDate();
-      default:
-        return false;
-    }
-  }
-
-  // Convert to string representation
   toString(): string {
-    const parts: string[] = [];
-    
-    parts.push(`FREQ=${RRule.FREQ_NAMES[this.options.freq]}`);
-    
-    if (this.options.interval && this.options.interval > 1) {
-      parts.push(`INTERVAL=${this.options.interval}`);
+    if (!this.options) {
+      return 'FREQ=DAILY;INTERVAL=1';
     }
     
-    if (this.options.count) {
-      parts.push(`COUNT=${this.options.count}`);
-    }
+    const { freq, interval = 1, byweekday, bymonthday, bymonth, bysetpos, until, count } = this.options;
+    let result = '';
     
-    if (this.options.until) {
-      const until = this.options.until.toISOString().split('T')[0].replace(/-/g, '');
-      parts.push(`UNTIL=${until}`);
-    }
-    
-    if (this.options.byweekday && this.options.byweekday.length > 0) {
-      const weekdays = this.options.byweekday.map(wd => 
-        typeof wd === 'number' ? RRule.WEEKDAY_NAMES[wd] : RRule.WEEKDAY_NAMES[wd[0]]
-      );
-      parts.push(`BYDAY=${weekdays.join(',')}`);
-    }
-    
-    return parts.join(';');
-  }
-
-  // Convert options to object
-  origOptions(): RRuleOptions {
-    return { ...this.options };
-  }
-
-  // Convert to human readable text
-  toText(): string {
-    switch (this.options.freq) {
+    switch (freq) {
       case Frequency.DAILY:
-        if (this.options.interval && this.options.interval > 1) {
-          return `every ${this.options.interval} days`;
-        }
-        return 'every day';
+        result = 'FREQ=DAILY';
+        break;
       case Frequency.WEEKLY:
-        if (this.options.interval && this.options.interval > 1) {
-          return `every ${this.options.interval} weeks`;
-        }
-        return 'every week';
+        result = 'FREQ=WEEKLY';
+        break;
       case Frequency.MONTHLY:
-        if (this.options.interval && this.options.interval > 1) {
-          return `every ${this.options.interval} months`;
-        }
-        return 'every month';
+        result = 'FREQ=MONTHLY';
+        break;
       case Frequency.YEARLY:
-        if (this.options.interval && this.options.interval > 1) {
-          return `every ${this.options.interval} years`;
-        }
-        return 'every year';
+        result = 'FREQ=YEARLY';
+        break;
       default:
-        return 'unknown recurrence';
+        return 'FREQ=DAILY;INTERVAL=1';
     }
-  }
 
-  // Static methods
-  static fromString(str: string): RRule {
-    const options: Partial<RRuleOptions> = {};
-    const parts = str.split(';');
-    
-    for (const part of parts) {
-      const [key, value] = part.split('=');
-      
-      switch (key) {
-        case 'FREQ':
-          options.freq = RRule.FREQ_NAMES.indexOf(value);
-          break;
-        case 'INTERVAL':
-          options.interval = parseInt(value);
-          break;
-        case 'COUNT':
-          options.count = parseInt(value);
-          break;
-        case 'UNTIL':
-          // Parse UNTIL date (YYYYMMDD format)
-          const year = parseInt(value.substr(0, 4));
-          const month = parseInt(value.substr(4, 2)) - 1;
-          const day = parseInt(value.substr(6, 2));
-          options.until = new Date(year, month, day);
-          break;
-        case 'BYDAY':
-          options.byweekday = value.split(',').map(wd => {
-            const index = RRule.WEEKDAY_NAMES.indexOf(wd);
-            return index >= 0 ? index : 0;
-          });
-          break;
+    if (interval && interval > 1) {
+      result += `;INTERVAL=${interval}`;
+    }
+
+    if (byweekday && byweekday.length > 0) {
+      const dayMap = ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'];
+      const days = byweekday.map((w: any) => dayMap[w.weekday || w]).filter(Boolean);
+      if (days.length > 0) {
+        result += `;BYDAY=${days.join(',')}`;
       }
     }
-    
-    return new RRule(options as RRuleOptions);
+
+    if (bymonthday && bymonthday.length > 0) {
+      result += `;BYMONTHDAY=${bymonthday.join(',')}`;
+    }
+
+    if (bymonth && bymonth.length > 0) {
+      result += `;BYMONTH=${bymonth.join(',')}`;
+    }
+
+    if (bysetpos && bysetpos.length > 0) {
+      result += `;BYSETPOS=${bysetpos.join(',')}`;
+    }
+
+    if (until) {
+      const dateStr = until.toISOString().split('T')[0].replace(/-/g, '');
+      result += `;UNTIL=${dateStr}`;
+    }
+
+    if (count) {
+      result += `;COUNT=${count}`;
+    }
+
+    return result;
   }
 
-  static fromText(text: string): RRule {
-    // Simple text parsing for common cases
-    const lowerText = text.toLowerCase();
+  static fromString = jest.fn((str: string): RRule => {
+    // Parse the RRule string and create a mock rule with corresponding options
+    const options: any = {};
     
-    if (lowerText.includes('daily')) {
-      return new RRule({ freq: Frequency.DAILY });
-    } else if (lowerText.includes('weekly')) {
-      return new RRule({ freq: Frequency.WEEKLY });
-    } else if (lowerText.includes('monthly')) {
-      return new RRule({ freq: Frequency.MONTHLY });
-    } else if (lowerText.includes('yearly')) {
-      return new RRule({ freq: Frequency.YEARLY });
+    if (str.includes('FREQ=DAILY')) options.freq = Frequency.DAILY;
+    else if (str.includes('FREQ=WEEKLY')) options.freq = Frequency.WEEKLY;
+    else if (str.includes('FREQ=MONTHLY')) options.freq = Frequency.MONTHLY;
+    else if (str.includes('FREQ=YEARLY')) options.freq = Frequency.YEARLY;
+    else {
+      // Throw error for invalid rrule string to test error handling
+      throw new Error('Invalid RRule string');
     }
     
-    // Default to daily
-    return new RRule({ freq: Frequency.DAILY });
+    const intervalMatch = str.match(/INTERVAL=(\d+)/);
+    if (intervalMatch) options.interval = parseInt(intervalMatch[1]);
+    
+    const bydayMatch = str.match(/BYDAY=([^;]+)/);
+    if (bydayMatch) {
+      const dayMap: Record<string, number> = { MO: 0, TU: 1, WE: 2, TH: 3, FR: 4, SA: 5, SU: 6 };
+      options.byweekday = bydayMatch[1].split(',').map(day => ({ weekday: dayMap[day] }));
+    }
+    
+    const bysetposMatch = str.match(/BYSETPOS=([^;]+)/);
+    if (bysetposMatch) {
+      options.bysetpos = bysetposMatch[1].split(',').map(p => parseInt(p));
+    }
+    
+    const bymonthdayMatch = str.match(/BYMONTHDAY=([^;]+)/);
+    if (bymonthdayMatch) {
+      options.bymonthday = bymonthdayMatch[1].split(',').map(d => parseInt(d));
+    }
+    
+    const bymonthMatch = str.match(/BYMONTH=([^;]+)/);
+    if (bymonthMatch) {
+      options.bymonth = bymonthMatch[1].split(',').map(m => parseInt(m));
+    }
+    
+    const untilMatch = str.match(/UNTIL=([^;]+)/);
+    if (untilMatch) {
+      const dateStr = untilMatch[1];
+      // Parse YYYYMMDD format
+      const year = parseInt(dateStr.substring(0, 4));
+      const month = parseInt(dateStr.substring(4, 6)) - 1; // JS months are 0-based
+      const day = parseInt(dateStr.substring(6, 8));
+      options.until = new Date(year, month, day);
+    }
+    
+    const countMatch = str.match(/COUNT=(\d+)/);
+    if (countMatch) {
+      options.count = parseInt(countMatch[1]);
+    }
+    
+    const rule = new RRule(options);
+    rule.toText = jest.fn(() => {
+      if (str.includes('FREQ=DAILY')) return 'every day';
+      if (str.includes('FREQ=WEEKLY')) return 'every week';
+      if (str.includes('FREQ=MONTHLY')) return 'every month';
+      if (str.includes('FREQ=YEARLY')) return 'every year';
+      return 'Invalid recurrence rule';
+    });
+    return rule;
+  });
+
+  toText(): string {
+    if (this.options?.freq === Frequency.DAILY) return 'every day';
+    if (this.options?.freq === Frequency.WEEKLY) return 'every week';
+    if (this.options?.freq === Frequency.MONTHLY) return 'every month';
+    if (this.options?.freq === Frequency.YEARLY) return 'every year';
+    return 'unknown recurrence';
   }
 }
 
-// Export constants
-export const FREQ = Frequency;
-export const WEEKDAYS = Weekday;
-
-// Mock utilities for testing
+// Mock test utilities
 export const RRuleTestUtils = {
-  createRule: (options: Partial<RRuleOptions>) => {
-    return new RRule({ freq: Frequency.DAILY, ...options });
-  },
-  
-  createDailyRule: (interval: number = 1, count?: number) => {
-    return new RRule({ 
-      freq: Frequency.DAILY, 
-      interval, 
-      count,
-      dtstart: new Date()
-    });
-  },
-  
-  createWeeklyRule: (interval: number = 1, count?: number) => {
-    return new RRule({ 
-      freq: Frequency.WEEKLY, 
-      interval, 
-      count,
-      dtstart: new Date()
-    });
-  },
-  
-  createMonthlyRule: (interval: number = 1, count?: number) => {
-    return new RRule({ 
-      freq: Frequency.MONTHLY, 
-      interval, 
-      count,
-      dtstart: new Date()
-    });
-  },
-  
   reset: () => {
-    // Reset any mock state if needed
+    jest.clearAllMocks();
   }
 };
 
-// Default export
+// Export all the constants and classes
+export { Frequency as default };
 export default RRule;

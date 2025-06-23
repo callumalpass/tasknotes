@@ -7,10 +7,12 @@ export interface ParsedResult {
   start: {
     date(): Date;
     get(component: string): number;
+    isCertain(component: string): boolean;
   };
   end?: {
     date(): Date;
     get(component: string): number;
+    isCertain(component: string): boolean;
   };
   text: string;
   index: number;
@@ -27,7 +29,8 @@ const createMockParsedResult = (
   text: string,
   date: Date,
   index: number = 0,
-  endDate?: Date
+  endDate?: Date,
+  certainComponents: string[] = []
 ): ParsedResult => ({
   start: {
     date: () => date,
@@ -40,7 +43,8 @@ const createMockParsedResult = (
         case 'minute': return date.getMinutes();
         default: return 0;
       }
-    }
+    },
+    isCertain: (component: string) => certainComponents.includes(component)
   },
   end: endDate ? {
     date: () => endDate,
@@ -53,7 +57,8 @@ const createMockParsedResult = (
         case 'minute': return endDate.getMinutes();
         default: return 0;
       }
-    }
+    },
+    isCertain: (component: string) => certainComponents.includes(component)
   } : undefined,
   text,
   index
@@ -98,10 +103,18 @@ const mockChrono = {
           continue;
         }
         
+        // Determine certain components based on pattern
+        let certainComponents: string[] = ['year', 'month', 'day'];
+        if (pattern.regex.toString().includes('hour|time|am|pm')) {
+          certainComponents.push('hour', 'minute');
+        }
+        
         results.push(createMockParsedResult(
           match[0],
           targetDate,
-          match.index || 0
+          match.index || 0,
+          undefined,
+          certainComponents
         ));
       }
     }
@@ -161,6 +174,10 @@ export const ChronoTestUtils = {
 
   // Create mock result for testing
   createResult: createMockParsedResult,
+  
+  // Create mock result with certain components for testing
+  createResultWithCertainty: (text: string, date: Date, index: number = 0, endDate?: Date, certainComponents: string[] = []) => 
+    createMockParsedResult(text, date, index, endDate, certainComponents),
 };
 
 // Export as default to match chrono-node structure

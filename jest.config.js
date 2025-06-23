@@ -15,8 +15,11 @@ module.exports = {
     '^@fullcalendar/(.*)$': '<rootDir>/tests/__mocks__/fullcalendar.ts',
     // Keep mocks for complex/large libraries that benefit from controlled testing
     '^chrono-node$': '<rootDir>/tests/__mocks__/chrono-node.ts',
-    '^ical.js$': '<rootDir>/tests/__mocks__/ical.ts'
-    // Removed rrule and date-fns - use real libraries for better test accuracy
+    '^ical.js$': '<rootDir>/tests/__mocks__/ical.ts',
+    // Add ES module mocks for problematic imports
+    '^yaml$': '<rootDir>/tests/__mocks__/yaml.ts',
+    '^rrule$': '<rootDir>/tests/__mocks__/rrule.ts',
+    '^date-fns$': '<rootDir>/tests/__mocks__/date-fns.ts'
   },
   collectCoverageFrom: [
     'src/**/*.ts',

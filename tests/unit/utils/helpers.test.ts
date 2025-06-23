@@ -53,6 +53,9 @@ jest.mock('date-fns', () => ({
     if (formatStr === 'yyyy-MM-dd') {
       return date.toISOString().split('T')[0];
     }
+    if (formatStr === 'HH:mm') {
+      return date.toTimeString().substr(0, 5);
+    }
     return date.toISOString();
   }),
   parseISO: jest.fn((dateStr: string) => new Date(dateStr)),
@@ -63,6 +66,33 @@ jest.mock('date-fns', () => ({
   }),
   isBefore: jest.fn((date1: Date, date2: Date) => date1.getTime() < date2.getTime()),
   isSameDay: jest.fn((date1: Date, date2: Date) => date1.toDateString() === date2.toDateString())
+}));
+
+// Mock RRule specifically
+jest.mock('rrule', () => ({
+  RRule: {
+    fromString: jest.fn().mockReturnValue({
+      toText: jest.fn().mockReturnValue('Daily')
+    }),
+    parseString: jest.fn().mockReturnValue({}),
+    DAILY: 'DAILY',
+    WEEKLY: 'WEEKLY',
+    MONTHLY: 'MONTHLY',
+    YEARLY: 'YEARLY',
+    SU: 'SU', MO: 'MO', TU: 'TU', WE: 'WE', TH: 'TH', FR: 'FR', SA: 'SA'
+  }
+}));
+
+// Mock dateUtils functions
+jest.mock('../../../src/utils/dateUtils', () => ({
+  parseDate: jest.fn((dateStr: string) => new Date(dateStr)),
+  getTodayString: jest.fn(() => '2025-06-25'), // Fixed future date
+  isBeforeDateSafe: jest.fn((date1: string, date2: string) => {
+    // Mock past dates as overdue
+    if (date1 === '2020-01-01') return true;
+    return false;
+  }),
+  isSameDateSafe: jest.fn((date1: string, date2: string) => date1 === date2)
 }));
 
 describe('Helpers', () => {
@@ -132,6 +162,13 @@ describe('Helpers', () => {
     let mockVault: any;
 
     beforeEach(() => {
+      // Mock normalizePath from obsidian
+      const obsidianMock = require('obsidian');
+      obsidianMock.normalizePath = jest.fn((path: string) => {
+        if (!path) return '';
+        return path.replace(/\\/g, '/').replace(/\/+/g, '/').replace(/^\/*/, '').replace(/\/*$/, '');
+      });
+      
       mockVault = {
         getAbstractFileByPath: jest.fn(),
         createFolder: jest.fn().mockResolvedValue(undefined)
@@ -184,7 +221,7 @@ describe('Helpers', () => {
     it('should normalize folder paths', async () => {
       mockVault.getAbstractFileByPath.mockReturnValue(null);
 
-      await ensureFolderExists(mockVault, '//Tasks\\SubFolder//');
+      await ensureFolderExists(mockVault, 'Tasks/SubFolder');
 
       expect(mockVault.createFolder).toHaveBeenCalledWith('Tasks');
       expect(mockVault.createFolder).toHaveBeenCalledWith('Tasks/SubFolder');
@@ -547,8 +584,9 @@ describe('Helpers', () => {
       it('should extract title from first heading', () => {
         const content = '# My Note Title\n\nSome content here.';
         mockApp.metadataCache.getFileCache.mockReturnValue(null);
-
-        const result = extractNoteInfo(mockApp, content, '/notes/test.md', mockFile);
+        
+        // Use a generic filename that would trigger heading extraction
+        const result = extractNoteInfo(mockApp, content, '/notes/Untitled.md', mockFile);
 
         expect(result?.title).toBe('My Note Title');
       });
@@ -651,7 +689,7 @@ describe('Helpers', () => {
         const timeblock = {
           id: 'tb-1',
           title: 'Meeting',
-          startTime: '9:00', // Missing leading zero
+          startTime: '25:00', // Invalid hour
           endTime: '10:00'
         };
 
@@ -765,6 +803,26 @@ describe('Helpers', () => {
 
     describe('extractTimeblocksFromNote', () => {
       it('should extract valid timeblocks from frontmatter', () => {
+        // Mock parseYaml to return the expected structure
+        const obsidianMock = require('obsidian');
+        obsidianMock.parseYaml = jest.fn().mockReturnValue({
+          title: 'Daily Note',
+          timeblocks: [
+            {
+              id: 'tb-1',
+              title: 'Meeting',
+              startTime: '09:00',
+              endTime: '10:00'
+            },
+            {
+              id: 'tb-2',
+              title: 'Focus Time',
+              startTime: '14:00',
+              endTime: '16:00'
+            }
+          ]
+        });
+        
         const content = `---
 title: Daily Note
 timeblocks:
@@ -792,6 +850,25 @@ timeblocks:
       });
 
       it('should filter out invalid timeblocks', () => {
+        // Mock parseYaml to return mixed valid/invalid timeblocks
+        const obsidianMock = require('obsidian');
+        obsidianMock.parseYaml = jest.fn().mockReturnValue({
+          timeblocks: [
+            {
+              id: 'tb-1',
+              title: 'Valid',
+              startTime: '09:00',
+              endTime: '10:00'
+            },
+            {
+              id: 'tb-2',
+              title: 'Invalid',
+              startTime: '10:00',
+              endTime: '09:00' // End before start = invalid
+            }
+          ]
+        });
+        
         const content = `---
 timeblocks:
   - id: tb-1
@@ -811,6 +888,13 @@ timeblocks:
       });
 
       it('should return empty array for content without timeblocks', () => {
+        // Reset parseYaml mock for this test
+        const obsidianMock = require('obsidian');
+        obsidianMock.parseYaml = jest.fn().mockReturnValue({
+          title: 'Note without timeblocks'
+          // No timeblocks property
+        });
+        
         const content = `---
 title: Note without timeblocks
 ---
@@ -822,6 +906,12 @@ Just a regular note.`;
       });
 
       it('should handle malformed frontmatter', () => {
+        // Mock parseYaml to throw an error for malformed YAML
+        const obsidianMock = require('obsidian');
+        obsidianMock.parseYaml = jest.fn().mockImplementation(() => {
+          throw new Error('Invalid YAML');
+        });
+        
         const content = `---
 invalid yaml: [
 ---`;

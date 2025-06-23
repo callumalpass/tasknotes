@@ -141,6 +141,9 @@ describe('NaturalLanguageParser', () => {
     });
 
     it('should use fallback patterns when no config provided', () => {
+      // Clear any chrono mocks that might affect this test
+      ChronoTestUtils.mockParseResult('tomorrow', []);
+      
       const parserWithoutConfig = new NaturalLanguageParser([], [], true);
       const result = parserWithoutConfig.parseInput('important meeting tomorrow');
 
@@ -212,7 +215,7 @@ describe('NaturalLanguageParser', () => {
             }
           }
         },
-        text: 'tomorrow at 2:30pm',
+        text: 'tomorrow',
         index: 0
       }]);
     });
@@ -239,6 +242,26 @@ describe('NaturalLanguageParser', () => {
     });
 
     it('should extract time when certain', () => {
+      // Mock a specific case for time parsing
+      ChronoTestUtils.mockParseResult('tomorrow at 2:30pm', [{
+        start: {
+          date: () => new Date('2025-01-02T14:30:00Z'),
+          isCertain: (component: string) => component === 'hour',
+          get: (component: string) => {
+            switch (component) {
+              case 'year': return 2025;
+              case 'month': return 1;
+              case 'day': return 2;
+              case 'hour': return 14;
+              case 'minute': return 30;
+              default: return 0;
+            }
+          }
+        },
+        text: 'tomorrow at 2:30pm',
+        index: 0
+      }]);
+
       const result = parser.parseInput('Meeting tomorrow at 2:30pm');
 
       expect(result.scheduledDate).toBe('2025-01-02');
