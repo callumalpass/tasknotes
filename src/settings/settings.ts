@@ -43,6 +43,8 @@ export interface TaskNotesSettings {
 	fieldMapping: FieldMapping;
 	customStatuses: StatusConfig[];
 	customPriorities: PriorityConfig[];
+	// Migration tracking
+	recurrenceMigrated?: boolean;
 }
 
 export interface TaskCreationDefaults {
@@ -251,7 +253,9 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	// Customization defaults
 	fieldMapping: DEFAULT_FIELD_MAPPING,
 	customStatuses: DEFAULT_STATUSES,
-	customPriorities: DEFAULT_PRIORITIES
+	customPriorities: DEFAULT_PRIORITIES,
+	// Migration defaults
+	recurrenceMigrated: false
 };
 
 

@@ -62,6 +62,8 @@ import { createTaskLinkOverlay, dispatchTaskUpdate } from './editor/TaskLinkOver
 import { createReadingModeTaskLinkProcessor } from './editor/ReadingModeTaskLinkProcessor';
 import { DragDropManager } from './utils/DragDropManager';
 import { ICSSubscriptionService } from './services/ICSSubscriptionService';
+import { MigrationService } from './services/MigrationService';
+import { showMigrationPrompt } from './modals/MigrationModal';
 
 export default class TaskNotesPlugin extends Plugin {
 	settings: TaskNotesSettings;
@@ -105,6 +107,9 @@ export default class TaskNotesPlugin extends Plugin {
 	
 	// ICS subscription service
 	icsSubscriptionService: ICSSubscriptionService;
+	
+	// Migration service
+	migrationService: MigrationService;
 	
 	// Event listener cleanup  
 	private taskUpdateListenerForEditor: any = null;
@@ -152,6 +157,7 @@ export default class TaskNotesPlugin extends Plugin {
 		);
 		this.viewStateManager = new ViewStateManager();
 		this.dragDropManager = new DragDropManager(this);
+		this.migrationService = new MigrationService(this.app);
 		
 		// Note: View registration and heavy operations moved to onLayoutReady
 		
@@ -317,6 +323,9 @@ export default class TaskNotesPlugin extends Plugin {
 					}, 100);
 				}));
 				
+				// Check for migration needs (after all services are initialized)
+				await this.checkMigrationNeeds();
+				
 			} catch (error) {
 				console.error('Error during lazy service initialization:', error);
 			}
@@ -333,6 +342,33 @@ export default class TaskNotesPlugin extends Plugin {
 		}
 		
 		await this.readyPromise;
+	}
+	
+	/**
+	 * Check if migration is needed and show prompt
+	 */
+	private async checkMigrationNeeds(): Promise<void> {
+		try {
+			// Check if migration has already been completed or dismissed this session
+			if (this.settings.recurrenceMigrated === true) {
+				return;
+			}
+			
+			// Check if migration is needed
+			const needsMigration = await this.migrationService.needsMigration();
+			if (needsMigration) {
+				// Show migration prompt after a small delay to ensure UI is ready
+				window.setTimeout(() => {
+					showMigrationPrompt(this.app, this.migrationService);
+				}, 1000);
+			} else {
+				// No migration needed - mark as migrated to prevent future checks
+				this.settings.recurrenceMigrated = true;
+				await this.saveSettings();
+			}
+		} catch (error) {
+			console.error('Error checking migration needs:', error);
+		}
 	}
 	
 	// Methods for updating shared state and emitting events

@@ -1,5 +1,6 @@
 import { App, Notice, TFile, Setting, Editor, MarkdownView, normalizePath, setIcon } from 'obsidian';
 import { format } from 'date-fns';
+import { RRule } from 'rrule';
 import TaskNotesPlugin from '../main';
 import { BaseTaskModal } from './BaseTaskModal';
 import { MINI_CALENDAR_VIEW_TYPE, TaskInfo } from '../types';
@@ -88,7 +89,14 @@ export class TaskCreationModal extends BaseTaskModal {
 			}
 			
 			// Apply default recurrence
-			this.recurrence = defaults.defaultRecurrence || 'none';
+			if (defaults.defaultRecurrence && defaults.defaultRecurrence !== 'none') {
+				// For now, just set to no recurrence by default - rrule defaults can be added later
+				this.frequencyMode = 'NONE';
+				this.recurrenceRule = '';
+			} else {
+				this.frequencyMode = 'NONE';
+				this.recurrenceRule = '';
+			}
 		}
 		
 		// Apply pre-populated values if provided (overrides defaults)
@@ -149,28 +157,24 @@ export class TaskCreationModal extends BaseTaskModal {
 			this.details = `Completed on: ${data.doneDate}\n${this.details}`.trim();
 		}
 		
-		// Handle recurrence
+		// Handle recurrence - for now, convert basic patterns to details
+		// Full rrule support for conversions can be added later
 		if (data.recurrence && data.recurrence !== 'none') {
-			// Map parsed recurrence to valid BaseTaskModal types
-			const validRecurrenceTypes: ('none' | 'daily' | 'weekly' | 'monthly' | 'yearly')[] = 
-				['none', 'daily', 'weekly', 'monthly', 'yearly'];
-			
-			if (validRecurrenceTypes.includes(data.recurrence as any)) {
-				this.recurrence = data.recurrence as 'none' | 'daily' | 'weekly' | 'monthly' | 'yearly';
-			} else {
-				// For custom recurrence patterns, add to details instead
-				this.details = `Recurrence: ${data.recurrence}\n${this.details}`.trim();
-			}
+			this.details = `Recurrence: ${data.recurrence}\n${this.details}`.trim();
 			
 			if (data.recurrenceData) {
+				const recurrenceDetails = [];
 				if (data.recurrenceData.days_of_week) {
-					this.daysOfWeek = data.recurrenceData.days_of_week;
+					recurrenceDetails.push(`Days: ${data.recurrenceData.days_of_week.join(', ')}`);
 				}
 				if (data.recurrenceData.day_of_month) {
-					this.dayOfMonth = data.recurrenceData.day_of_month.toString();
+					recurrenceDetails.push(`Day of month: ${data.recurrenceData.day_of_month}`);
 				}
 				if (data.recurrenceData.month_of_year) {
-					this.monthOfYear = data.recurrenceData.month_of_year.toString();
+					recurrenceDetails.push(`Month: ${data.recurrenceData.month_of_year}`);
+				}
+				if (recurrenceDetails.length > 0) {
+					this.details = `${recurrenceDetails.join(', ')}\n${this.details}`.trim();
 				}
 			}
 		}
@@ -337,7 +341,7 @@ export class TaskCreationModal extends BaseTaskModal {
 		
 		// Recurrence
 		this.createFormGroup(this.detailedFormContainer, 'Recurrence', (container) => {
-			this.createRecurrenceDropdown(container);
+			this.createRRuleBuilder(container);
 		});
 		
 		// Action buttons
@@ -483,23 +487,25 @@ export class TaskCreationModal extends BaseTaskModal {
 		}
 
 		// Validate recurrence fields
-		if (this.recurrence === 'weekly' && this.daysOfWeek.length === 0) {
+		if (this.frequencyMode === 'WEEKLY' && this.rruleByWeekday.length === 0) {
 			new Notice('Please select at least one day for weekly recurrence');
 			return false;
 		}
 
-		if (this.recurrence === 'monthly' && (!this.dayOfMonth || parseInt(this.dayOfMonth) < 1 || parseInt(this.dayOfMonth) > 31)) {
-			new Notice('Please enter a valid day of month (1-31)');
-			return false;
-		}
-
-		if (this.recurrence === 'yearly') {
-			if (!this.monthOfYear || !this.dayOfMonth) {
-				new Notice('Please select month and day for yearly recurrence');
+		if (this.frequencyMode === 'MONTHLY') {
+			if (this.monthlyMode === 'day' && this.rruleByMonthday.length === 0) {
+				new Notice('Please specify a day for monthly recurrence');
 				return false;
 			}
-			if (parseInt(this.dayOfMonth) < 1 || parseInt(this.dayOfMonth) > 31) {
-				new Notice('Please enter a valid day of month (1-31)');
+			if (this.monthlyMode === 'weekday' && (this.rruleByWeekday.length === 0 || this.rruleBySetpos.length === 0)) {
+				new Notice('Please specify both position and weekday for monthly recurrence');
+				return false;
+			}
+		}
+
+		if (this.frequencyMode === 'YEARLY') {
+			if (this.rruleByMonth.length === 0 || this.rruleByMonthday.length === 0) {
+				new Notice('Please specify both month and day for yearly recurrence');
 				return false;
 			}
 		}
@@ -537,29 +543,9 @@ export class TaskCreationModal extends BaseTaskModal {
 			dateModified: getCurrentTimestamp()
 		};
 
-		// Add recurrence data
-		if (this.recurrence !== 'none') {
-			taskData.recurrence = {
-				frequency: this.recurrence
-			};
-
-			if (this.recurrence === 'weekly' && this.daysOfWeek.length > 0) {
-				// Convert full names to abbreviations for storage
-				taskData.recurrence.days_of_week = this.convertFullNamesToAbbreviations(this.daysOfWeek);
-			}
-
-			if (this.recurrence === 'monthly' && this.dayOfMonth) {
-				taskData.recurrence.day_of_month = parseInt(this.dayOfMonth);
-			}
-
-			if (this.recurrence === 'yearly') {
-				if (this.monthOfYear) {
-					taskData.recurrence.month_of_year = parseInt(this.monthOfYear);
-				}
-				if (this.dayOfMonth) {
-					taskData.recurrence.day_of_month = parseInt(this.dayOfMonth);
-				}
-			}
+		// Add recurrence data as rrule string
+		if (this.recurrenceRule && this.recurrenceRule.trim()) {
+			taskData.recurrence = this.recurrenceRule;
 		}
 
 		// Use the centralized task creation service
@@ -939,73 +925,30 @@ export class TaskCreationModal extends BaseTaskModal {
 			}
 		}
 
-		// Apply recurrence
-		if (parsed.recurrence) {
-			this.recurrence = parsed.recurrence as any;
+		// Apply recurrence - simplified for now with new rrule system
+		// Complex natural language recurrence parsing can be added later
+		if (parsed.recurrence && parsed.recurrence !== 'none') {
+			// For now, just add recurrence info to details
+			let recurrenceText = `Recurrence: ${parsed.recurrence}`;
+			if (parsed.daysOfWeek && parsed.daysOfWeek.length > 0) {
+				recurrenceText += ` on ${parsed.daysOfWeek.join(', ')}`;
+			}
+			this.details = this.details ? `${recurrenceText}\n${this.details}` : recurrenceText;
 			
-			// Find recurrence form group and select
-			const recurrenceFormGroups = Array.from(this.detailedFormContainer?.querySelectorAll('.modal-form__group') || []);
-			const recurrenceGroup = recurrenceFormGroups.find(group => {
+			// Update details field if it exists
+			const detailsFormGroups = Array.from(this.detailedFormContainer?.querySelectorAll('.modal-form__group') || []);
+			const detailsGroup = detailsFormGroups.find(group => {
 				const label = group.querySelector('.modal-form__label');
-				return label?.textContent?.includes('Recurrence');
+				return label?.textContent?.includes('Details');
 			});
 			
-			if (recurrenceGroup) {
-				const select = recurrenceGroup.querySelector('select') as HTMLSelectElement;
-				if (select) {
-					select.value = parsed.recurrence;
-					select.dispatchEvent(new Event('change'));
+			if (detailsGroup) {
+				const textarea = detailsGroup.querySelector('textarea') as HTMLTextAreaElement;
+				if (textarea) {
+					textarea.value = this.details;
+					textarea.dispatchEvent(new Event('input'));
 				}
 			}
-		}
-
-		// Apply days of the week for weekly recurrence
-		if (parsed.daysOfWeek && parsed.daysOfWeek.length > 0) {
-			this.daysOfWeek = parsed.daysOfWeek;
-			
-			// Find and check the appropriate day checkboxes with longer delay and fallback selectors
-			window.setTimeout(() => {
-				if (parsed.daysOfWeek) {
-					for (const day of parsed.daysOfWeek) {
-						// Try multiple selectors to find the checkbox
-						let checkbox = this.detailedFormContainer?.querySelector(`input[aria-label="Include ${day} in weekly recurrence"]`) as HTMLInputElement;
-						
-						// Fallback: try finding by looking for labels containing the day name
-						if (!checkbox) {
-							const labels = this.detailedFormContainer?.querySelectorAll('.modal-form__day-label');
-							for (const label of Array.from(labels || [])) {
-								if (label.textContent === day) {
-									const forId = label.getAttribute('for');
-									if (forId) {
-										checkbox = document.getElementById(forId) as HTMLInputElement;
-										break;
-									}
-								}
-							}
-						}
-						
-						// Fallback: try finding any checkbox in a container with the day name
-						if (!checkbox) {
-							const dayContainers = this.detailedFormContainer?.querySelectorAll('.modal-form__day-checkbox');
-							for (const container of Array.from(dayContainers || [])) {
-								const label = container.querySelector('.modal-form__day-label');
-								if (label?.textContent === day) {
-									checkbox = container.querySelector('input[type="checkbox"]') as HTMLInputElement;
-									break;
-								}
-							}
-						}
-						
-						if (checkbox) {
-							checkbox.checked = true;
-							checkbox.dispatchEvent(new Event('change'));
-							console.log(`Successfully checked ${day} checkbox`);
-						} else {
-							console.warn(`Could not find checkbox for ${day}`);
-						}
-					}
-				}
-			}, 300); // Longer delay to ensure the recurrence UI has been updated
 		}
 
 		// Update filename preview

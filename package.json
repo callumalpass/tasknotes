@@ -34,6 +34,7 @@
 		"date-fns": "^2.30.0",
 		"ical.js": "^1.5.0",
 		"obsidian-daily-notes-interface": "^0.9.4",
+		"rrule": "^2.8.1",
 		"yaml": "^2.3.1"
 	}
 }

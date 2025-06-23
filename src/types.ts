@@ -72,6 +72,9 @@ export interface TimeInfo {
 }
 
 // Task types
+/**
+ * @deprecated Use rrule string instead. This interface will be removed in a future version.
+ */
 export interface RecurrenceInfo {
 	frequency: 'daily' | 'weekly' | 'monthly' | 'yearly';
 	days_of_week?: string[];  // For weekly recurrence: ['mon', 'tue', etc.]
@@ -89,7 +92,7 @@ export interface TaskInfo {
 	archived: boolean;
 	tags?: string[];
 	contexts?: string[];
-	recurrence?: RecurrenceInfo;
+	recurrence?: string | RecurrenceInfo | undefined; // RFC 5545 recurrence rule string or legacy RecurrenceInfo object
 	complete_instances?: string[]; // Array of dates (YYYY-MM-DD) when recurring task was completed
 	completedDate?: string; // Date (YYYY-MM-DD) when task was marked as done
 	timeEstimate?: number; // Estimated time in minutes
@@ -151,7 +154,7 @@ export interface TaskFrontmatter {
 	tags: string[];
 	priority: 'low' | 'normal' | 'high';
 	contexts?: string[];
-	recurrence?: RecurrenceInfo;
+	recurrence?: string | RecurrenceInfo | undefined; // RFC 5545 recurrence rule string or legacy RecurrenceInfo object
 	complete_instances?: string[];
 	completedDate?: string;
 	timeEstimate?: number;
@@ -236,7 +239,7 @@ export interface FieldMapping {
 	completedDate: string;
 	dateCreated: string;
 	dateModified: string;
-	recurrence: string;
+	recurrence: string;  // RFC 5545 recurrence rule string or legacy RecurrenceInfo object
 	archiveTag: string;  // For the archive tag in the tags array
 	timeEntries: string;
 	completeInstances: string;

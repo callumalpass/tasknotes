@@ -1,5 +1,6 @@
 import { normalizePath, TFile, Vault, App, parseYaml, stringifyYaml } from 'obsidian';
 import { format, parseISO, startOfDay, isBefore, isSameDay as isSameDayFns } from 'date-fns';
+import { RRule } from 'rrule';
 import { TimeInfo, TaskInfo, TimeEntry, TimeBlock, DailyNoteFrontmatter } from '../types';
 import { FieldMapper } from '../services/FieldMapper';
 import { DEFAULT_FIELD_MAPPING } from '../settings/settings';
@@ -377,10 +378,68 @@ export function isTaskOverdue(task: {due?: string; scheduled?: string}): boolean
 }
 
 /**
- * Checks if a recurring task is due on a specific date
+ * Checks if a recurring task is due on a specific date using RFC 5545 rrule
+ */
+export function isDueByRRule(task: TaskInfo, date: Date): boolean {
+	// If no recurrence, non-recurring task is always shown
+	if (!task.recurrence) {
+		return true;
+	}
+	
+	// If recurrence is a string (rrule format), process it
+	if (typeof task.recurrence === 'string') {
+		try {
+			// Determine the anchor date (dtstart) for the recurrence
+			let dtstart: Date;
+			if (task.scheduled) {
+				dtstart = parseDate(task.scheduled);
+			} else if (task.dateCreated) {
+				dtstart = parseDate(task.dateCreated);
+			} else {
+				// If no anchor date available, task cannot generate recurring instances
+				return false;
+			}
+			
+			// Determine the end condition (until) from the due date
+			let until: Date | undefined;
+			if (task.due) {
+				until = parseDate(task.due);
+			}
+			
+			// Parse the rrule string and create RRule object with dynamic options
+			const rruleOptions = RRule.parseString(task.recurrence);
+			rruleOptions.dtstart = dtstart;
+			if (until) {
+				rruleOptions.until = until;
+			}
+			
+			const rrule = new RRule(rruleOptions);
+			
+			// Check if the target date is an occurrence
+			const targetDateStart = startOfDay(date);
+			const occurrences = rrule.between(targetDateStart, new Date(targetDateStart.getTime() + 24 * 60 * 60 * 1000 - 1), true);
+			
+			return occurrences.length > 0;
+		} catch (error) {
+			console.error('Error evaluating rrule:', error, { task: task.title, recurrence: task.recurrence });
+			// Fall back to legacy recurrence handling on error
+			return isRecurringTaskDueOn(task, date);
+		}
+	}
+	
+	// If recurrence is an object (legacy format), use legacy handler
+	return isRecurringTaskDueOn(task, date);
+}
+
+/**
+ * Checks if a recurring task is due on a specific date (legacy implementation)
+ * @deprecated Use isDueByRRule instead
  */
 export function isRecurringTaskDueOn(task: any, date: Date): boolean {
 	if (!task.recurrence) return true; // Non-recurring tasks are always shown
+	
+	// If recurrence is a string (rrule), this legacy function can't handle it
+	if (typeof task.recurrence === 'string') return true;
 	
 	const frequency = task.recurrence.frequency;
 	const targetDate = parseDate(format(date, 'yyyy-MM-dd'));
@@ -445,7 +504,7 @@ export function getEffectiveTaskStatus(task: any, date: Date): string {
 export function shouldShowRecurringTaskOnDate(task: TaskInfo, targetDate: Date): boolean {
 	if (!task.recurrence) return true; // Non-recurring tasks are always shown
 	
-	return isRecurringTaskDueOn(task, targetDate);
+	return isDueByRRule(task, targetDate);
 }
 
 /**
@@ -465,6 +524,126 @@ export function getRecurringTaskCompletionText(task: TaskInfo, targetDate: Date)
  */
 export function shouldUseRecurringTaskUI(task: TaskInfo): boolean {
 	return !!task.recurrence;
+}
+
+/**
+ * Generates recurring task instances within a date range using rrule
+ */
+export function generateRecurringInstances(task: TaskInfo, startDate: Date, endDate: Date): Date[] {
+	// If no recurrence, return empty array
+	if (!task.recurrence) {
+		return [];
+	}
+	
+	// If recurrence is a string (rrule format), use rrule
+	if (typeof task.recurrence === 'string') {
+		try {
+			// Determine the anchor date (dtstart) for the recurrence
+			let dtstart: Date;
+			if (task.scheduled) {
+				dtstart = parseDate(task.scheduled);
+			} else if (task.dateCreated) {
+				dtstart = parseDate(task.dateCreated);
+			} else {
+				// If no anchor date available, task cannot generate recurring instances
+				return [];
+			}
+			
+			// Determine the end condition (until) from the due date
+			let until: Date | undefined;
+			if (task.due) {
+				until = parseDate(task.due);
+			}
+			
+			// Parse the rrule string and create RRule object with dynamic options
+			const rruleOptions = RRule.parseString(task.recurrence);
+			rruleOptions.dtstart = dtstart;
+			if (until) {
+				rruleOptions.until = until;
+			}
+			
+			const rrule = new RRule(rruleOptions);
+			
+			// Generate occurrences within the date range
+			return rrule.between(startDate, endDate, true);
+		} catch (error) {
+			console.error('Error generating recurring instances:', error, { task: task.title, recurrence: task.recurrence });
+			// Fall back to legacy method on error
+		}
+	}
+	
+	// Fall back to legacy method (for object recurrence or errors)
+	const instances: Date[] = [];
+	const current = new Date(startDate);
+	
+	while (current <= endDate) {
+		if (isRecurringTaskDueOn(task, current)) {
+			instances.push(new Date(current));
+		}
+		current.setDate(current.getDate() + 1);
+	}
+	
+	return instances;
+}
+
+/**
+ * Converts legacy RecurrenceInfo to RFC 5545 rrule string
+ * Used for migration from old recurrence format
+ */
+export function convertLegacyRecurrenceToRRule(recurrence: any): string {
+	if (!recurrence || !recurrence.frequency) {
+		throw new Error('Invalid recurrence object');
+	}
+	
+	try {
+		let rruleOptions: any = {};
+		
+		switch (recurrence.frequency) {
+			case 'daily':
+				rruleOptions.freq = RRule.DAILY;
+				break;
+			case 'weekly':
+				rruleOptions.freq = RRule.WEEKLY;
+				if (recurrence.days_of_week && Array.isArray(recurrence.days_of_week)) {
+					// Map day abbreviations to RRule weekday constants
+					const dayMap: { [key: string]: any } = {
+						'sun': RRule.SU,
+						'mon': RRule.MO,
+						'tue': RRule.TU,
+						'wed': RRule.WE,
+						'thu': RRule.TH,
+						'fri': RRule.FR,
+						'sat': RRule.SA
+					};
+					rruleOptions.byweekday = recurrence.days_of_week.map((day: string) => dayMap[day.toLowerCase()]).filter(Boolean);
+				}
+				break;
+			case 'monthly':
+				rruleOptions.freq = RRule.MONTHLY;
+				if (recurrence.day_of_month) {
+					rruleOptions.bymonthday = [recurrence.day_of_month];
+				}
+				break;
+			case 'yearly':
+				rruleOptions.freq = RRule.YEARLY;
+				if (recurrence.month_of_year) {
+					rruleOptions.bymonth = [recurrence.month_of_year];
+				}
+				if (recurrence.day_of_month) {
+					rruleOptions.bymonthday = [recurrence.day_of_month];
+				}
+				break;
+			default:
+				throw new Error(`Unsupported frequency: ${recurrence.frequency}`);
+		}
+		
+		// Create RRule object and return string representation
+		const rrule = new RRule(rruleOptions);
+		return rrule.toString();
+	} catch (error) {
+		console.error('Error converting legacy recurrence to rrule:', error, { recurrence });
+		throw error;
+	}
 }
 
 /**

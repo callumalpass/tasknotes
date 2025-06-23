@@ -1,4 +1,5 @@
 import { App, Modal } from 'obsidian';
+import { RRule, Frequency, Weekday } from 'rrule';
 import TaskNotesPlugin from '../main';
 import { 
     normalizeDateString, 
@@ -22,10 +23,22 @@ export abstract class BaseTaskModal extends Modal {
     contexts: string = '';
     tags: string = '';
     timeEstimate: number = 0;
-    recurrence: 'none' | 'daily' | 'weekly' | 'monthly' | 'yearly' = 'none';
-    daysOfWeek: string[] = [];
-    dayOfMonth: string = '';
-    monthOfYear: string = '';
+    
+    // RRule-based recurrence properties
+    recurrenceRule: string = ''; // The actual rrule string
+    rruleFreq: Frequency | null = null;
+    rruleInterval: number = 1;
+    rruleByWeekday: Weekday[] = [];
+    rruleByMonthday: number[] = [];
+    rruleByMonth: number[] = [];
+    rruleBySetpos: number[] = []; // For nth weekday of month patterns
+    rruleUntil: Date | null = null;
+    rruleCount: number | null = null;
+    
+    // UI state properties
+    protected frequencyMode: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY' | 'NONE' = 'NONE';
+    protected monthlyMode: 'day' | 'weekday' = 'day';
+    protected endMode: 'never' | 'until' | 'count' = 'never';
     
     // Time-related properties
     protected dueTimeInput?: HTMLInputElement;
@@ -84,6 +97,181 @@ export abstract class BaseTaskModal extends Modal {
         };
         
         return fullNames.map(name => dayMap[name]).filter(Boolean);
+    }
+
+    // RRule helper methods
+    protected parseRRuleString(rruleString: string): void {
+        if (!rruleString) {
+            this.resetRRuleProperties();
+            return;
+        }
+
+        try {
+            const rule = RRule.fromString(rruleString);
+            const options = rule.options;
+
+            // Set frequency mode
+            switch (options.freq) {
+                case Frequency.DAILY:
+                    this.frequencyMode = 'DAILY';
+                    break;
+                case Frequency.WEEKLY:
+                    this.frequencyMode = 'WEEKLY';
+                    break;
+                case Frequency.MONTHLY:
+                    this.frequencyMode = 'MONTHLY';
+                    break;
+                case Frequency.YEARLY:
+                    this.frequencyMode = 'YEARLY';
+                    break;
+                default:
+                    this.frequencyMode = 'NONE';
+                    return;
+            }
+
+            // Set interval
+            this.rruleInterval = options.interval || 1;
+
+            // Set weekdays for weekly recurrence
+            if (options.byweekday) {
+                this.rruleByWeekday = Array.isArray(options.byweekday) 
+                    ? (options.byweekday as number[]).map(wd => ({ weekday: wd })) as Weekday[]
+                    : [{ weekday: options.byweekday as number } as Weekday];
+            }
+
+            // Set monthday for monthly/yearly recurrence
+            if (options.bymonthday) {
+                this.rruleByMonthday = Array.isArray(options.bymonthday) 
+                    ? options.bymonthday
+                    : [options.bymonthday];
+            }
+
+            // Set month for yearly recurrence
+            if (options.bymonth) {
+                this.rruleByMonth = Array.isArray(options.bymonth) 
+                    ? options.bymonth
+                    : [options.bymonth];
+            }
+
+            // Set setpos for nth weekday patterns
+            if (options.bysetpos) {
+                this.rruleBySetpos = Array.isArray(options.bysetpos) 
+                    ? options.bysetpos
+                    : [options.bysetpos];
+            }
+
+            // Set end conditions
+            if (options.until) {
+                this.endMode = 'until';
+                this.rruleUntil = options.until;
+            } else if (options.count) {
+                this.endMode = 'count';
+                this.rruleCount = options.count;
+            } else {
+                this.endMode = 'never';
+            }
+
+            // Determine monthly mode
+            if (this.frequencyMode === 'MONTHLY') {
+                if (this.rruleByWeekday.length > 0 && this.rruleBySetpos.length > 0) {
+                    this.monthlyMode = 'weekday';
+                } else {
+                    this.monthlyMode = 'day';
+                }
+            }
+
+        } catch (error) {
+            console.error('Error parsing rrule string:', error);
+            this.resetRRuleProperties();
+        }
+    }
+
+    protected generateRRuleString(): string {
+        if (this.frequencyMode === 'NONE') {
+            return '';
+        }
+
+        try {
+            const options: any = {
+                freq: this.getFrequencyConstant(),
+                interval: this.rruleInterval || 1
+            };
+
+            // Add frequency-specific options
+            switch (this.frequencyMode) {
+                case 'WEEKLY':
+                    if (this.rruleByWeekday.length > 0) {
+                        options.byweekday = this.rruleByWeekday;
+                    }
+                    break;
+                case 'MONTHLY':
+                    if (this.monthlyMode === 'day' && this.rruleByMonthday.length > 0) {
+                        options.bymonthday = this.rruleByMonthday;
+                    } else if (this.monthlyMode === 'weekday' && this.rruleByWeekday.length > 0 && this.rruleBySetpos.length > 0) {
+                        options.byweekday = this.rruleByWeekday;
+                        options.bysetpos = this.rruleBySetpos;
+                    }
+                    break;
+                case 'YEARLY':
+                    if (this.rruleByMonth.length > 0) {
+                        options.bymonth = this.rruleByMonth;
+                    }
+                    if (this.rruleByMonthday.length > 0) {
+                        options.bymonthday = this.rruleByMonthday;
+                    }
+                    break;
+            }
+
+            // Add end conditions
+            if (this.endMode === 'until' && this.rruleUntil) {
+                options.until = this.rruleUntil;
+            } else if (this.endMode === 'count' && this.rruleCount) {
+                options.count = this.rruleCount;
+            }
+
+            const rule = new RRule(options);
+            return rule.toString();
+        } catch (error) {
+            console.error('Error generating rrule string:', error);
+            return '';
+        }
+    }
+
+    private getFrequencyConstant(): Frequency {
+        switch (this.frequencyMode) {
+            case 'DAILY': return Frequency.DAILY;
+            case 'WEEKLY': return Frequency.WEEKLY;
+            case 'MONTHLY': return Frequency.MONTHLY;
+            case 'YEARLY': return Frequency.YEARLY;
+            default: return Frequency.DAILY;
+        }
+    }
+
+    private resetRRuleProperties(): void {
+        this.frequencyMode = 'NONE';
+        this.rruleInterval = 1;
+        this.rruleByWeekday = [];
+        this.rruleByMonthday = [];
+        this.rruleByMonth = [];
+        this.rruleBySetpos = [];
+        this.rruleUntil = null;
+        this.rruleCount = null;
+        this.monthlyMode = 'day';
+        this.endMode = 'never';
+    }
+
+    protected getRRuleHumanText(): string {
+        if (!this.recurrenceRule) {
+            return 'No recurrence';
+        }
+
+        try {
+            const rule = RRule.fromString(this.recurrenceRule);
+            return rule.toText();
+        } catch (error) {
+            console.error('Error generating human text for rrule:', error);
+            return 'Invalid recurrence rule';
+        }
     }
 
     protected createFormGroup(container: HTMLElement, label: string, inputCallback: (container: HTMLElement) => void): HTMLElement {
@@ -563,22 +751,44 @@ export abstract class BaseTaskModal extends Modal {
         });
     }
 
-    protected createRecurrenceDropdown(container: HTMLElement): void {
-        const selectId = `recurrence-select-${Math.random().toString(36).substr(2, 9)}`;
+    protected createRRuleBuilder(container: HTMLElement): void {
+        // Frequency dropdown
+        this.createFrequencyDropdown(container);
+        
+        // Interval input
+        this.createIntervalInput(container);
+        
+        // Options container for frequency-specific settings
+        const optionsContainer = container.createDiv({ cls: 'modal-form__rrule-options' });
+        this.updateRRuleFrequencyOptions(optionsContainer);
+        
+        // End condition options
+        this.createEndConditionOptions(container);
+        
+        // Human-readable summary
+        this.createRRuleSummary(container);
+
+        // Add help text for recurrence
+        this.createHelpText(container, 
+            'Create recurring instances of this task. Set a scheduled date to define the time template. Use the due date to limit when recurrence stops.');
+    }
+
+    private createFrequencyDropdown(container: HTMLElement): void {
+        const selectId = `frequency-select-${Math.random().toString(36).substr(2, 9)}`;
         const select = container.createEl('select', { 
             cls: 'modal-form__select',
             attr: {
                 'id': selectId,
-                'aria-label': 'Task recurrence pattern'
+                'aria-label': 'Recurrence frequency'
             }
         });
 
         const options = [
-            { value: 'none', text: 'No recurrence' },
-            { value: 'daily', text: 'Daily' },
-            { value: 'weekly', text: 'Weekly' },
-            { value: 'monthly', text: 'Monthly' },
-            { value: 'yearly', text: 'Yearly' }
+            { value: 'NONE', text: 'No recurrence' },
+            { value: 'DAILY', text: 'Daily' },
+            { value: 'WEEKLY', text: 'Weekly' },
+            { value: 'MONTHLY', text: 'Monthly' },
+            { value: 'YEARLY', text: 'Yearly' }
         ];
 
         options.forEach(option => {
@@ -587,114 +797,320 @@ export abstract class BaseTaskModal extends Modal {
                 text: option.text
             });
 
-            if (option.value === this.recurrence) {
+            if (option.value === this.frequencyMode) {
                 optionEl.selected = true;
             }
         });
 
         select.addEventListener('change', (e) => {
-            this.recurrence = (e.target as HTMLSelectElement).value as any;
-            this.updateRecurrenceOptions(container.parentElement!);
+            this.frequencyMode = (e.target as HTMLSelectElement).value as any;
+            
+            // Update interval container visibility
+            const intervalContainer = container.parentElement?.querySelector('.modal-form__interval-container') as HTMLElement;
+            if (intervalContainer) {
+                if (this.frequencyMode === 'NONE') {
+                    intervalContainer.style.display = 'none';
+                } else {
+                    intervalContainer.style.display = 'block';
+                    const unitSpan = intervalContainer.querySelector('.modal-form__interval-unit') as HTMLElement;
+                    if (unitSpan) {
+                        this.updateIntervalUnit(unitSpan);
+                    }
+                }
+            }
+            
+            // Update end condition container visibility
+            const endContainer = container.parentElement?.querySelector('.modal-form__end-condition') as HTMLElement;
+            if (endContainer) {
+                if (this.frequencyMode === 'NONE') {
+                    endContainer.style.display = 'none';
+                } else {
+                    endContainer.style.display = 'block';
+                }
+            }
+            
+            const optionsContainer = container.parentElement?.querySelector('.modal-form__rrule-options') as HTMLElement;
+            if (optionsContainer) {
+                this.updateRRuleFrequencyOptions(optionsContainer);
+            }
+            this.updateRRuleString();
+        });
+    }
+
+    private createIntervalInput(container: HTMLElement): void {
+        // Create interval container but hide initially if no frequency is selected
+        const intervalContainer = container.createDiv({ cls: 'modal-form__interval-container' });
+        
+        if (this.frequencyMode === 'NONE') {
+            intervalContainer.style.display = 'none';
+            return;
+        }
+        
+        intervalContainer.createSpan({ text: 'Every ', cls: 'modal-form__interval-label' });
+        
+        const input = intervalContainer.createEl('input', {
+            type: 'number',
+            cls: 'modal-form__input modal-form__input--interval',
+            attr: { 
+                min: '1', 
+                max: '999',
+                value: this.rruleInterval.toString()
+            }
         });
 
-        // Add help text for recurrence
-        this.createHelpText(container, 
-            'Create recurring instances of this task. Set a scheduled date to define the time template. Use the due date to limit when recurrence stops.');
+        const unitSpan = intervalContainer.createSpan({ cls: 'modal-form__interval-unit' });
+        this.updateIntervalUnit(unitSpan);
+
+        input.addEventListener('input', (e) => {
+            const value = parseInt((e.target as HTMLInputElement).value) || 1;
+            this.rruleInterval = Math.max(1, Math.min(999, value));
+            this.updateIntervalUnit(unitSpan);
+            this.updateRRuleString();
+        });
     }
 
-    protected updateRecurrenceOptions(container: HTMLElement): void {
-        const existingOptions = container.querySelector('.modal-form__recurrence-options');
-        if (existingOptions) {
-            existingOptions.remove();
+    private updateIntervalUnit(unitSpan: HTMLElement): void {
+        const interval = this.rruleInterval;
+        const isPlural = interval !== 1;
+        
+        switch (this.frequencyMode) {
+            case 'DAILY':
+                unitSpan.textContent = isPlural ? 'days' : 'day';
+                break;
+            case 'WEEKLY':
+                unitSpan.textContent = isPlural ? 'weeks' : 'week';
+                break;
+            case 'MONTHLY':
+                unitSpan.textContent = isPlural ? 'months' : 'month';
+                break;
+            case 'YEARLY':
+                unitSpan.textContent = isPlural ? 'years' : 'year';
+                break;
+            default:
+                unitSpan.textContent = '';
         }
+    }
 
-        if (this.recurrence === 'none') return;
+    private updateRRuleFrequencyOptions(container: HTMLElement): void {
+        container.empty();
 
-        const optionsContainer = container.createDiv({ cls: 'modal-form__recurrence-options' });
-
-        switch (this.recurrence) {
-            case 'weekly':
-                this.createDaysOfWeekSelector(optionsContainer);
+        switch (this.frequencyMode) {
+            case 'WEEKLY':
+                this.createWeeklyOptions(container);
                 break;
-            case 'monthly':
-                this.createDayOfMonthSelector(optionsContainer);
+            case 'MONTHLY':
+                this.createMonthlyOptions(container);
                 break;
-            case 'yearly':
-                this.createYearlySelector(optionsContainer);
+            case 'YEARLY':
+                this.createYearlyOptions(container);
                 break;
         }
     }
 
-    protected createDaysOfWeekSelector(container: HTMLElement): void {
+    private createWeeklyOptions(container: HTMLElement): void {
         const label = container.createEl('label', { 
-            text: 'Days of week:', 
-            cls: 'modal-form__recurrence-label' 
+            text: 'On these days:', 
+            cls: 'modal-form__rrule-label' 
         });
 
         const daysContainer = container.createDiv({ cls: 'modal-form__days-grid' });
 
-        const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+        const days = [
+            { name: 'Monday', weekday: RRule.MO },
+            { name: 'Tuesday', weekday: RRule.TU },
+            { name: 'Wednesday', weekday: RRule.WE },
+            { name: 'Thursday', weekday: RRule.TH },
+            { name: 'Friday', weekday: RRule.FR },
+            { name: 'Saturday', weekday: RRule.SA },
+            { name: 'Sunday', weekday: RRule.SU }
+        ];
 
         days.forEach(day => {
             const dayContainer = daysContainer.createDiv({ cls: 'modal-form__day-checkbox' });
-            const checkboxId = `day-${day.toLowerCase()}-${Math.random().toString(36).substr(2, 9)}`;
+            const checkboxId = `day-${day.name.toLowerCase()}-${Math.random().toString(36).substr(2, 9)}`;
             
             const checkbox = dayContainer.createEl('input', {
                 type: 'checkbox',
                 cls: 'modal-form__day-input',
                 attr: {
                     'id': checkboxId,
-                    'aria-label': `Include ${day} in weekly recurrence`
+                    'aria-label': `Include ${day.name} in weekly recurrence`
                 }
             });
 
-            checkbox.checked = this.daysOfWeek.includes(day);
+            checkbox.checked = this.rruleByWeekday.some(wd => wd.weekday === day.weekday.weekday);
 
             dayContainer.createEl('label', { 
-                text: day, 
+                text: day.name.substring(0, 3), 
                 cls: 'modal-form__day-label',
                 attr: { 'for': checkboxId }
             });
 
             checkbox.addEventListener('change', (e) => {
                 if ((e.target as HTMLInputElement).checked) {
-                    if (!this.daysOfWeek.includes(day)) {
-                        this.daysOfWeek.push(day);
+                    if (!this.rruleByWeekday.some(wd => wd.weekday === day.weekday.weekday)) {
+                        this.rruleByWeekday.push(day.weekday);
                     }
                 } else {
-                    this.daysOfWeek = this.daysOfWeek.filter(d => d !== day);
+                    this.rruleByWeekday = this.rruleByWeekday.filter(wd => wd.weekday !== day.weekday.weekday);
                 }
+                this.updateRRuleString();
             });
         });
     }
 
-    protected createDayOfMonthSelector(container: HTMLElement): void {
-        const label = container.createEl('label', { 
-            text: 'Day of month:', 
-            cls: 'modal-form__recurrence-label' 
+    private createMonthlyOptions(container: HTMLElement): void {
+        const modeContainer = container.createDiv({ cls: 'modal-form__monthly-mode' });
+        
+        // Radio buttons for monthly mode
+        const dayModeId = `monthly-day-${Math.random().toString(36).substr(2, 9)}`;
+        const weekdayModeId = `monthly-weekday-${Math.random().toString(36).substr(2, 9)}`;
+
+        const dayModeContainer = modeContainer.createDiv({ cls: 'modal-form__radio-option' });
+        const dayModeRadio = dayModeContainer.createEl('input', {
+            type: 'radio',
+            value: 'day',
+            attr: { 'id': dayModeId, 'name': 'monthly-mode' }
+        });
+        dayModeRadio.checked = this.monthlyMode === 'day';
+        
+        const dayModeLabel = dayModeContainer.createEl('label', { 
+            text: 'On day ', 
+            attr: { 'for': dayModeId }
         });
 
-        const input = container.createEl('input', {
+        const dayInput = dayModeContainer.createEl('input', {
             type: 'number',
-            cls: 'modal-form__input',
-            attr: { min: '1', max: '31' }
+            cls: 'modal-form__input modal-form__input--day',
+            attr: { 
+                min: '1', 
+                max: '31',
+                value: this.rruleByMonthday.length > 0 ? this.rruleByMonthday[0].toString() : '1'
+            }
         });
 
-        input.value = this.dayOfMonth;
+        const weekdayModeContainer = modeContainer.createDiv({ cls: 'modal-form__radio-option' });
+        const weekdayModeRadio = weekdayModeContainer.createEl('input', {
+            type: 'radio',
+            value: 'weekday',
+            attr: { 'id': weekdayModeId, 'name': 'monthly-mode' }
+        });
+        weekdayModeRadio.checked = this.monthlyMode === 'weekday';
 
-        input.addEventListener('change', (e) => {
-            this.dayOfMonth = (e.target as HTMLInputElement).value;
+        weekdayModeContainer.createEl('label', { 
+            text: 'On the ', 
+            attr: { 'for': weekdayModeId }
+        });
+
+        const positionSelect = weekdayModeContainer.createEl('select', { cls: 'modal-form__select modal-form__select--position' });
+        const positions = [
+            { value: '1', text: 'first' },
+            { value: '2', text: 'second' },
+            { value: '3', text: 'third' },
+            { value: '4', text: 'fourth' },
+            { value: '-1', text: 'last' }
+        ];
+
+        positions.forEach(pos => {
+            const option = positionSelect.createEl('option', {
+                value: pos.value,
+                text: pos.text
+            });
+            if (this.rruleBySetpos.length > 0 && this.rruleBySetpos[0].toString() === pos.value) {
+                option.selected = true;
+            }
+        });
+
+        const weekdaySelect = weekdayModeContainer.createEl('select', { cls: 'modal-form__select modal-form__select--weekday' });
+        const weekdays = [
+            { value: RRule.MO.weekday.toString(), text: 'Monday' },
+            { value: RRule.TU.weekday.toString(), text: 'Tuesday' },
+            { value: RRule.WE.weekday.toString(), text: 'Wednesday' },
+            { value: RRule.TH.weekday.toString(), text: 'Thursday' },
+            { value: RRule.FR.weekday.toString(), text: 'Friday' },
+            { value: RRule.SA.weekday.toString(), text: 'Saturday' },
+            { value: RRule.SU.weekday.toString(), text: 'Sunday' }
+        ];
+
+        weekdays.forEach(wd => {
+            const option = weekdaySelect.createEl('option', {
+                value: wd.value,
+                text: wd.text
+            });
+            if (this.rruleByWeekday.length > 0 && this.rruleByWeekday[0].weekday.toString() === wd.value) {
+                option.selected = true;
+            }
+        });
+
+        // Event listeners
+        dayModeRadio.addEventListener('change', () => {
+            if (dayModeRadio.checked) {
+                this.monthlyMode = 'day';
+                this.rruleByMonthday = [parseInt(dayInput.value) || 1];
+                this.rruleByWeekday = [];
+                this.rruleBySetpos = [];
+                this.updateRRuleString();
+            }
+        });
+
+        weekdayModeRadio.addEventListener('change', () => {
+            if (weekdayModeRadio.checked) {
+                this.monthlyMode = 'weekday';
+                this.rruleByMonthday = [];
+                this.updateMonthlyWeekdayRule(positionSelect.value, weekdaySelect.value);
+                this.updateRRuleString();
+            }
+        });
+
+        dayInput.addEventListener('change', (e) => {
+            if (this.monthlyMode === 'day') {
+                const value = parseInt((e.target as HTMLInputElement).value) || 1;
+                this.rruleByMonthday = [Math.max(1, Math.min(31, value))];
+                this.updateRRuleString();
+            }
+        });
+
+        positionSelect.addEventListener('change', (e) => {
+            if (this.monthlyMode === 'weekday') {
+                this.updateMonthlyWeekdayRule((e.target as HTMLSelectElement).value, weekdaySelect.value);
+                this.updateRRuleString();
+            }
+        });
+
+        weekdaySelect.addEventListener('change', (e) => {
+            if (this.monthlyMode === 'weekday') {
+                this.updateMonthlyWeekdayRule(positionSelect.value, (e.target as HTMLSelectElement).value);
+                this.updateRRuleString();
+            }
         });
     }
 
-    protected createYearlySelector(container: HTMLElement): void {
-        const monthLabel = container.createEl('label', { 
-            text: 'Month:', 
-            cls: 'modal-form__recurrence-label' 
-        });
+    private updateMonthlyWeekdayRule(position: string, weekday: string): void {
+        this.rruleBySetpos = [parseInt(position)];
+        const weekdayNum = parseInt(weekday);
+        
+        // Map weekday numbers to RRule weekday objects
+        const weekdayMap: Record<number, Weekday> = {
+            0: RRule.MO,
+            1: RRule.TU,
+            2: RRule.WE,
+            3: RRule.TH,
+            4: RRule.FR,
+            5: RRule.SA,
+            6: RRule.SU
+        };
+        
+        if (weekdayMap[weekdayNum]) {
+            this.rruleByWeekday = [weekdayMap[weekdayNum]];
+        }
+    }
 
-        const monthSelect = container.createEl('select', { cls: 'modal-form__select' });
-
+    private createYearlyOptions(container: HTMLElement): void {
+        const yearlyContainer = container.createDiv({ cls: 'modal-form__yearly-options' });
+        
+        yearlyContainer.createSpan({ text: 'In ', cls: 'modal-form__yearly-label' });
+        
+        const monthSelect = yearlyContainer.createEl('select', { cls: 'modal-form__select modal-form__select--month' });
         const months = [
             'January', 'February', 'March', 'April', 'May', 'June',
             'July', 'August', 'September', 'October', 'November', 'December'
@@ -705,31 +1121,187 @@ export abstract class BaseTaskModal extends Modal {
                 value: (index + 1).toString(),
                 text: month
             });
-
-            if ((index + 1).toString() === this.monthOfYear) {
+            if (this.rruleByMonth.length > 0 && this.rruleByMonth[0] === index + 1) {
                 option.selected = true;
             }
         });
 
-        monthSelect.addEventListener('change', (e) => {
-            this.monthOfYear = (e.target as HTMLSelectElement).value;
-        });
+        yearlyContainer.createSpan({ text: ' on day ', cls: 'modal-form__yearly-label' });
 
-        const dayLabel = container.createEl('label', { 
-            text: 'Day:', 
-            cls: 'modal-form__recurrence-label' 
-        });
-
-        const dayInput = container.createEl('input', {
+        const dayInput = yearlyContainer.createEl('input', {
             type: 'number',
-            cls: 'modal-form__input',
-            attr: { min: '1', max: '31' }
+            cls: 'modal-form__input modal-form__input--day',
+            attr: { 
+                min: '1', 
+                max: '31',
+                value: this.rruleByMonthday.length > 0 ? this.rruleByMonthday[0].toString() : '1'
+            }
         });
 
-        dayInput.value = this.dayOfMonth;
+        monthSelect.addEventListener('change', (e) => {
+            const value = parseInt((e.target as HTMLSelectElement).value);
+            this.rruleByMonth = [value];
+            this.updateRRuleString();
+        });
 
         dayInput.addEventListener('change', (e) => {
-            this.dayOfMonth = (e.target as HTMLInputElement).value;
+            const value = parseInt((e.target as HTMLInputElement).value) || 1;
+            this.rruleByMonthday = [Math.max(1, Math.min(31, value))];
+            this.updateRRuleString();
         });
     }
+
+    private createEndConditionOptions(container: HTMLElement): void {
+        const endContainer = container.createDiv({ cls: 'modal-form__end-condition' });
+        
+        if (this.frequencyMode === 'NONE') {
+            endContainer.style.display = 'none';
+        }
+        
+        endContainer.createEl('label', { 
+            text: 'Ends:', 
+            cls: 'modal-form__rrule-label' 
+        });
+
+        const endOptionsContainer = endContainer.createDiv({ cls: 'modal-form__end-options' });
+
+        // Never radio button
+        const neverContainer = endOptionsContainer.createDiv({ cls: 'modal-form__radio-option' });
+        const neverId = `end-never-${Math.random().toString(36).substr(2, 9)}`;
+        const neverRadio = neverContainer.createEl('input', {
+            type: 'radio',
+            value: 'never',
+            attr: { 'id': neverId, 'name': 'end-mode' }
+        });
+        neverRadio.checked = this.endMode === 'never';
+        neverContainer.createEl('label', { 
+            text: 'Never', 
+            attr: { 'for': neverId }
+        });
+
+        // Until date radio button
+        const untilContainer = endOptionsContainer.createDiv({ cls: 'modal-form__radio-option' });
+        const untilId = `end-until-${Math.random().toString(36).substr(2, 9)}`;
+        const untilRadio = untilContainer.createEl('input', {
+            type: 'radio',
+            value: 'until',
+            attr: { 'id': untilId, 'name': 'end-mode' }
+        });
+        untilRadio.checked = this.endMode === 'until';
+        untilContainer.createEl('label', { 
+            text: 'On ', 
+            attr: { 'for': untilId }
+        });
+
+        const untilDateInput = untilContainer.createEl('input', {
+            type: 'date',
+            cls: 'modal-form__input modal-form__input--date',
+            attr: {
+                value: this.rruleUntil ? this.rruleUntil.toISOString().split('T')[0] : ''
+            }
+        });
+
+        // After count radio button
+        const countContainer = endOptionsContainer.createDiv({ cls: 'modal-form__radio-option' });
+        const countId = `end-count-${Math.random().toString(36).substr(2, 9)}`;
+        const countRadio = countContainer.createEl('input', {
+            type: 'radio',
+            value: 'count',
+            attr: { 'id': countId, 'name': 'end-mode' }
+        });
+        countRadio.checked = this.endMode === 'count';
+        countContainer.createEl('label', { 
+            text: 'After ', 
+            attr: { 'for': countId }
+        });
+
+        const countInput = countContainer.createEl('input', {
+            type: 'number',
+            cls: 'modal-form__input modal-form__input--count',
+            attr: { 
+                min: '1', 
+                max: '999',
+                value: this.rruleCount?.toString() || '1'
+            }
+        });
+
+        countContainer.createSpan({ text: ' occurrences', cls: 'modal-form__count-label' });
+
+        // Event listeners
+        neverRadio.addEventListener('change', () => {
+            if (neverRadio.checked) {
+                this.endMode = 'never';
+                this.rruleUntil = null;
+                this.rruleCount = null;
+                this.updateRRuleString();
+            }
+        });
+
+        untilRadio.addEventListener('change', () => {
+            if (untilRadio.checked) {
+                this.endMode = 'until';
+                this.rruleCount = null;
+                if (untilDateInput.value) {
+                    this.rruleUntil = new Date(untilDateInput.value);
+                }
+                this.updateRRuleString();
+            }
+        });
+
+        countRadio.addEventListener('change', () => {
+            if (countRadio.checked) {
+                this.endMode = 'count';
+                this.rruleUntil = null;
+                this.rruleCount = parseInt(countInput.value) || 1;
+                this.updateRRuleString();
+            }
+        });
+
+        untilDateInput.addEventListener('change', (e) => {
+            if (this.endMode === 'until') {
+                const value = (e.target as HTMLInputElement).value;
+                this.rruleUntil = value ? new Date(value) : null;
+                this.updateRRuleString();
+            }
+        });
+
+        countInput.addEventListener('change', (e) => {
+            if (this.endMode === 'count') {
+                const value = parseInt((e.target as HTMLInputElement).value) || 1;
+                this.rruleCount = Math.max(1, Math.min(999, value));
+                this.updateRRuleString();
+            }
+        });
+    }
+
+    private createRRuleSummary(container: HTMLElement): void {
+        const summaryContainer = container.createDiv({ cls: 'modal-form__rrule-summary' });
+        const summary = summaryContainer.createDiv({ 
+            cls: 'modal-form__rrule-text',
+            text: this.getRRuleHumanText()
+        });
+        
+        // Store reference for updating
+        (container as any).__rruleSummary = summary;
+    }
+
+    private updateRRuleString(): void {
+        this.recurrenceRule = this.generateRRuleString();
+        
+        // Update summary if it exists
+        const summaryEl = (document.querySelector('.modal-form__rrule-text') as HTMLElement);
+        if (summaryEl) {
+            summaryEl.textContent = this.getRRuleHumanText();
+        }
+        
+        // Update interval container if frequency changed
+        const modalContainer = document.querySelector('.modal-form__interval-container');
+        if (modalContainer) {
+            const unitSpan = modalContainer.querySelector('.modal-form__interval-unit') as HTMLElement;
+            if (unitSpan) {
+                this.updateIntervalUnit(unitSpan);
+            }
+        }
+    }
+
 }

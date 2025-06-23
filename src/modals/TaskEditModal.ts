@@ -1,4 +1,5 @@
 import { App, Notice, TFile, Setting } from 'obsidian';
+import { RRule } from 'rrule';
 import TaskNotesPlugin from '../main';
 import { BaseTaskModal } from './BaseTaskModal';
 import { TaskInfo } from '../types';
@@ -27,13 +28,79 @@ export class TaskEditModal extends BaseTaskModal {
         this.tags = this.task.tags ? this.task.tags.filter(tag => tag !== this.plugin.settings.taskTag).join(', ') : '';
         // Preserve the original time estimate value, ensuring it's not reset to 0
         this.timeEstimate = this.task.timeEstimate !== undefined ? this.task.timeEstimate : 0;
-        this.recurrence = this.task.recurrence?.frequency || 'none';
-        
+        // Handle recurrence - support both new rrule strings and old RecurrenceInfo objects
         if (this.task.recurrence) {
-            // Convert stored abbreviations to full names for UI display
-            this.daysOfWeek = this.convertAbbreviationsToFullNames(this.task.recurrence.days_of_week || []);
-            this.dayOfMonth = this.task.recurrence.day_of_month?.toString() || '';
-            this.monthOfYear = this.task.recurrence.month_of_year?.toString() || '';
+            if (typeof this.task.recurrence === 'string') {
+                // New rrule string format
+                this.recurrenceRule = this.task.recurrence;
+                this.parseRRuleString(this.task.recurrence);
+            } else if (typeof this.task.recurrence === 'object' && this.task.recurrence.frequency) {
+                // Legacy RecurrenceInfo object - convert to rrule
+                this.convertLegacyRecurrenceToRRule(this.task.recurrence);
+            }
+        } else {
+            // No recurrence
+            this.frequencyMode = 'NONE';
+            this.recurrenceRule = '';
+        }
+    }
+
+    private convertLegacyRecurrenceToRRule(recurrence: any): void {
+        try {
+            // Map legacy frequency to new format
+            switch (recurrence.frequency) {
+                case 'daily':
+                    this.frequencyMode = 'DAILY';
+                    this.rruleInterval = 1;
+                    break;
+                case 'weekly':
+                    this.frequencyMode = 'WEEKLY';
+                    this.rruleInterval = 1;
+                    if (recurrence.days_of_week && recurrence.days_of_week.length > 0) {
+                        // Convert legacy day abbreviations to RRule weekdays
+                        const dayMap: Record<string, any> = {
+                            'mon': RRule.MO,
+                            'tue': RRule.TU,
+                            'wed': RRule.WE,
+                            'thu': RRule.TH,
+                            'fri': RRule.FR,
+                            'sat': RRule.SA,
+                            'sun': RRule.SU
+                        };
+                        this.rruleByWeekday = recurrence.days_of_week
+                            .map((day: string) => dayMap[day.toLowerCase()])
+                            .filter((wd: any) => wd);
+                    }
+                    break;
+                case 'monthly':
+                    this.frequencyMode = 'MONTHLY';
+                    this.rruleInterval = 1;
+                    this.monthlyMode = 'day';
+                    if (recurrence.day_of_month) {
+                        this.rruleByMonthday = [recurrence.day_of_month];
+                    }
+                    break;
+                case 'yearly':
+                    this.frequencyMode = 'YEARLY';
+                    this.rruleInterval = 1;
+                    if (recurrence.month_of_year) {
+                        this.rruleByMonth = [recurrence.month_of_year];
+                    }
+                    if (recurrence.day_of_month) {
+                        this.rruleByMonthday = [recurrence.day_of_month];
+                    }
+                    break;
+                default:
+                    this.frequencyMode = 'NONE';
+                    return;
+            }
+
+            // Generate the rrule string from the converted data
+            this.recurrenceRule = this.generateRRuleString();
+        } catch (error) {
+            console.error('Error converting legacy recurrence to rrule:', error);
+            this.frequencyMode = 'NONE';
+            this.recurrenceRule = '';
         }
     }
 
@@ -107,7 +174,7 @@ export class TaskEditModal extends BaseTaskModal {
 
         // Recurrence
         this.createFormGroup(contentEl, 'Recurrence', (container) => {
-            this.createRecurrenceDropdown(container);
+            this.createRRuleBuilder(container);
         });
 
         // Metadata footer
@@ -203,23 +270,25 @@ export class TaskEditModal extends BaseTaskModal {
         }
 
         // Validate recurrence fields
-        if (this.recurrence === 'weekly' && this.daysOfWeek.length === 0) {
+        if (this.frequencyMode === 'WEEKLY' && this.rruleByWeekday.length === 0) {
             new Notice('Please select at least one day for weekly recurrence');
             return;
         }
 
-        if (this.recurrence === 'monthly' && (!this.dayOfMonth || parseInt(this.dayOfMonth) < 1 || parseInt(this.dayOfMonth) > 31)) {
-            new Notice('Please enter a valid day of month (1-31)');
-            return;
-        }
-
-        if (this.recurrence === 'yearly') {
-            if (!this.monthOfYear || !this.dayOfMonth) {
-                new Notice('Please select month and day for yearly recurrence');
+        if (this.frequencyMode === 'MONTHLY') {
+            if (this.monthlyMode === 'day' && this.rruleByMonthday.length === 0) {
+                new Notice('Please specify a day for monthly recurrence');
                 return;
             }
-            if (parseInt(this.dayOfMonth) < 1 || parseInt(this.dayOfMonth) > 31) {
-                new Notice('Please enter a valid day of month (1-31)');
+            if (this.monthlyMode === 'weekday' && (this.rruleByWeekday.length === 0 || this.rruleBySetpos.length === 0)) {
+                new Notice('Please specify both position and weekday for monthly recurrence');
+                return;
+            }
+        }
+
+        if (this.frequencyMode === 'YEARLY') {
+            if (this.rruleByMonth.length === 0 || this.rruleByMonthday.length === 0) {
+                new Notice('Please specify both month and day for yearly recurrence');
                 return;
             }
         }
@@ -280,17 +349,13 @@ export class TaskEditModal extends BaseTaskModal {
             }
 
             // Check for changes in recurrence
-            const currentRecurrence = this.recurrence !== 'none' ? {
-                frequency: this.recurrence,
-                days_of_week: this.recurrence === 'weekly' ? this.convertFullNamesToAbbreviations(this.daysOfWeek) : undefined,
-                day_of_month: (this.recurrence === 'monthly' || this.recurrence === 'yearly') && this.dayOfMonth ? parseInt(this.dayOfMonth) : undefined,
-                month_of_year: this.recurrence === 'yearly' && this.monthOfYear ? parseInt(this.monthOfYear) : undefined
-            } : undefined;
+            const currentRecurrenceRule = this.recurrenceRule || '';
+            const originalRecurrenceRule = typeof this.task.recurrence === 'string' 
+                ? this.task.recurrence 
+                : '';
             
-            const originalRecurrence = this.task.recurrence;
-            const recurrenceChanged = JSON.stringify(currentRecurrence) !== JSON.stringify(originalRecurrence);
-            if (recurrenceChanged) {
-                updates.recurrence = currentRecurrence;
+            if (currentRecurrenceRule !== originalRecurrenceRule) {
+                updates.recurrence = currentRecurrenceRule || undefined;
             }
 
             // If no changes detected, show message and return

@@ -195,7 +195,7 @@ export function createTaskCard(task: TaskInfo, plugin: TaskNotesPlugin, options:
     if (task.recurrence) {
         const recurringIndicator = card.createEl('div', { 
             cls: 'task-card__recurring-indicator',
-            attr: { 'aria-label': `Recurring: ${task.recurrence.frequency}` }
+            attr: { 'aria-label': `Recurring: ${task.recurrence && typeof task.recurrence === 'object' ? task.recurrence.frequency : 'rrule'}` }
         });
         
         // Use Obsidian's built-in rotate-ccw icon for recurring tasks
@@ -238,7 +238,8 @@ export function createTaskCard(task: TaskInfo, plugin: TaskNotesPlugin, options:
     
     // Recurrence info (if recurring)
     if (task.recurrence) {
-        metadataItems.push(`Recurring: ${task.recurrence.frequency}`);
+        const frequencyDisplay = task.recurrence && typeof task.recurrence === 'object' ? task.recurrence.frequency : 'rrule';
+        metadataItems.push(`Recurring: ${frequencyDisplay}`);
     }
     
     // Due date (if has due date)
@@ -698,7 +699,7 @@ export function updateTaskCard(element: HTMLElement, task: TaskInfo, plugin: Tas
         // Add recurring indicator if task is now recurring but didn't have one
         const recurringIndicator = element.createEl('span', { 
             cls: 'task-card__recurring-indicator',
-            attr: { 'aria-label': `Recurring: ${task.recurrence.frequency}` }
+            attr: { 'aria-label': `Recurring: ${task.recurrence && typeof task.recurrence === 'object' ? task.recurrence.frequency : 'rrule'}` }
         });
         statusDot?.insertAdjacentElement('afterend', recurringIndicator);
     } else if (!task.recurrence && existingRecurringIndicator) {
@@ -706,7 +707,8 @@ export function updateTaskCard(element: HTMLElement, task: TaskInfo, plugin: Tas
         existingRecurringIndicator.remove();
     } else if (task.recurrence && existingRecurringIndicator) {
         // Update existing recurring indicator
-        existingRecurringIndicator.setAttribute('aria-label', `Recurring: ${task.recurrence.frequency}`);
+        const frequencyDisplay = task.recurrence && typeof task.recurrence === 'object' ? task.recurrence.frequency : 'rrule';
+        existingRecurringIndicator.setAttribute('aria-label', `Recurring: ${frequencyDisplay}`);
     }
     
     // Update title
@@ -723,7 +725,8 @@ export function updateTaskCard(element: HTMLElement, task: TaskInfo, plugin: Tas
         
         // Recurrence info (if recurring)
         if (task.recurrence) {
-            metadataItems.push(`Recurring: ${task.recurrence.frequency}`);
+            const frequencyDisplay = task.recurrence && typeof task.recurrence === 'object' ? task.recurrence.frequency : 'rrule';
+            metadataItems.push(`Recurring: ${frequencyDisplay}`);
         }
         
         // Due date (if has due date)
