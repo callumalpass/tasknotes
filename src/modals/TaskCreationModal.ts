@@ -926,28 +926,74 @@ export class TaskCreationModal extends BaseTaskModal {
 			}
 		}
 
-		// Apply recurrence - simplified for now with new rrule system
-		// Complex natural language recurrence parsing can be added later
+		// Apply recurrence - now supports rrule strings
 		if (parsed.recurrence && parsed.recurrence !== 'none') {
-			// For now, just add recurrence info to details
-			let recurrenceText = `Recurrence: ${parsed.recurrence}`;
-			if (parsed.daysOfWeek && parsed.daysOfWeek.length > 0) {
-				recurrenceText += ` on ${parsed.daysOfWeek.join(', ')}`;
-			}
-			this.details = this.details ? `${recurrenceText}\n${this.details}` : recurrenceText;
-			
-			// Update details field if it exists
-			const detailsFormGroups = Array.from(this.detailedFormContainer?.querySelectorAll('.modal-form__group') || []);
-			const detailsGroup = detailsFormGroups.find(group => {
-				const label = group.querySelector('.modal-form__label');
-				return label?.textContent?.includes('Details');
-			});
-			
-			if (detailsGroup) {
-				const textarea = detailsGroup.querySelector('textarea') as HTMLTextAreaElement;
-				if (textarea) {
-					textarea.value = this.details;
-					textarea.dispatchEvent(new Event('input'));
+			// If it's an rrule string, parse it and populate the recurrence UI
+			if (parsed.recurrence.startsWith('FREQ=')) {
+				this.recurrenceRule = parsed.recurrence;
+				this.parseRRuleString(parsed.recurrence);
+				
+				// Update the recurrence UI by triggering the frequency dropdown change
+				const recurrenceFormGroups = Array.from(this.detailedFormContainer?.querySelectorAll('.modal-form__group') || []);
+				const recurrenceGroup = recurrenceFormGroups.find(group => {
+					const label = group.querySelector('.modal-form__label');
+					return label?.textContent?.includes('Recurrence');
+				});
+				
+				if (recurrenceGroup) {
+					// Find and update the frequency dropdown
+					const frequencySelect = recurrenceGroup.querySelector('select') as HTMLSelectElement;
+					if (frequencySelect) {
+						frequencySelect.value = this.frequencyMode;
+						frequencySelect.dispatchEvent(new Event('change'));
+					}
+					
+					// After the frequency change event processes, update the interval input
+					window.setTimeout(() => {
+						const intervalInput = recurrenceGroup.querySelector('.modal-form__input--interval') as HTMLInputElement;
+						if (intervalInput) {
+							intervalInput.value = this.rruleInterval.toString();
+						}
+						
+						// Update weekday checkboxes for weekly recurrence
+						if (this.frequencyMode === 'WEEKLY' && this.rruleByWeekday.length > 0) {
+							const dayCheckboxes = recurrenceGroup.querySelectorAll('.modal-form__day-input') as NodeListOf<HTMLInputElement>;
+							dayCheckboxes.forEach(checkbox => {
+								const dayLabel = checkbox.parentElement?.querySelector('.modal-form__day-label')?.textContent;
+								if (dayLabel) {
+									const fullDayName = this.getDayNameFromAbbreviation(dayLabel);
+									const isSelected = this.rruleByWeekday.some(wd => {
+										const dayNum = wd.weekday;
+										const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+										return dayNames[dayNum] === fullDayName;
+									});
+									checkbox.checked = isSelected;
+								}
+							});
+						}
+					}, 100);
+				}
+			} else {
+				// Legacy handling for simple recurrence patterns - add to details
+				let recurrenceText = `Recurrence: ${parsed.recurrence}`;
+				if (parsed.daysOfWeek && parsed.daysOfWeek.length > 0) {
+					recurrenceText += ` on ${parsed.daysOfWeek.join(', ')}`;
+				}
+				this.details = this.details ? `${recurrenceText}\n${this.details}` : recurrenceText;
+				
+				// Update details field if it exists
+				const detailsFormGroups = Array.from(this.detailedFormContainer?.querySelectorAll('.modal-form__group') || []);
+				const detailsGroup = detailsFormGroups.find(group => {
+					const label = group.querySelector('.modal-form__label');
+					return label?.textContent?.includes('Details');
+				});
+				
+				if (detailsGroup) {
+					const textarea = detailsGroup.querySelector('textarea') as HTMLTextAreaElement;
+					if (textarea) {
+						textarea.value = this.details;
+						textarea.dispatchEvent(new Event('input'));
+					}
 				}
 			}
 		}
@@ -1012,6 +1058,22 @@ export class TaskCreationModal extends BaseTaskModal {
 				showDetailButton.setAttribute('title', 'Show detailed options');
 			}
 		}
+	}
+
+	/**
+	 * Convert day abbreviation to full day name
+	 */
+	private getDayNameFromAbbreviation(abbr: string): string {
+		const dayMap: Record<string, string> = {
+			'MON': 'Monday',
+			'TUE': 'Tuesday',
+			'WED': 'Wednesday',
+			'THU': 'Thursday',
+			'FRI': 'Friday',
+			'SAT': 'Saturday',
+			'SUN': 'Sunday'
+		};
+		return dayMap[abbr.toUpperCase()] || abbr;
 	}
 
 	/**

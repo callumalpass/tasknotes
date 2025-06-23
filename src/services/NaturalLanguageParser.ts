@@ -1,6 +1,7 @@
 import { format, parse, addDays, addWeeks, addMonths, addYears, startOfDay, isValid } from 'date-fns';
 import { StatusConfig, PriorityConfig } from '../types';
 import * as chrono from 'chrono-node';
+import { RRule, Frequency, Weekday } from 'rrule';
 
 export interface ParsedTaskData {
 	title: string;
@@ -89,6 +90,16 @@ export class NaturalLanguageParser {
 		Object.assign(result, explicitDateResult.dates);
 		workingText = explicitDateResult.remainingText;
 
+		// Extract recurrence BEFORE date parsing to prevent chrono from consuming recurrence keywords
+		const recurrenceResult = this.extractRecurrence(workingText);
+		if (recurrenceResult.recurrence) {
+			result.recurrence = recurrenceResult.recurrence;
+			workingText = recurrenceResult.remainingText;
+		}
+		if (recurrenceResult.daysOfWeek) {
+			result.daysOfWeek = recurrenceResult.daysOfWeek;
+		}
+
 		// Extract dates and times using chrono-node (primary parser for remaining dates)
 		const dateTimeResult = this.extractDatesAndTimesWithChrono(workingText);
 		Object.assign(result, dateTimeResult.dateTime);
@@ -99,16 +110,6 @@ export class NaturalLanguageParser {
 		if (estimateResult.estimate) {
 			result.estimate = estimateResult.estimate;
 			workingText = estimateResult.remainingText;
-		}
-
-		// Extract recurrence AFTER date parsing to avoid conflicts
-		const recurrenceResult = this.extractRecurrence(workingText);
-		if (recurrenceResult.recurrence) {
-			result.recurrence = recurrenceResult.recurrence;
-			workingText = recurrenceResult.remainingText;
-		}
-		if (recurrenceResult.daysOfWeek) {
-			result.daysOfWeek = recurrenceResult.daysOfWeek;
 		}
 
 		// Whatever remains is the title
@@ -218,52 +219,64 @@ export class NaturalLanguageParser {
 
 
 	/**
-	 * Extract recurrence from text (improved to avoid conflicts with date parsing)
+	 * Extract recurrence from text and generate rrule strings
 	 */
 	private extractRecurrence(text: string): { recurrence?: string; daysOfWeek?: string[]; remainingText: string } {
-		// More specific recurrence patterns that avoid ambiguity
-		const recurrencePatterns = [
-			{ regex: /\b(daily|every day|each day)\b/i, value: 'daily' },
-			{ regex: /\b(weekly|every week|each week)\b/i, value: 'weekly' },
-			{ regex: /\b(monthly|every month|each month)\b/i, value: 'monthly' },
-			{ regex: /\b(yearly|annually|every year|each year)\b/i, value: 'yearly' }
-		];
+		// Check for "every [ordinal] [weekday]" patterns (e.g., "every second monday")
+		const everyOrdinalDayPattern = /\bevery\s+(first|second|third|fourth|last)\s+(monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/i;
+		const everyOrdinalDayMatch = text.match(everyOrdinalDayPattern);
+		if (everyOrdinalDayMatch) {
+			const ordinal = everyOrdinalDayMatch[1].toLowerCase();
+			const dayName = everyOrdinalDayMatch[2].toLowerCase();
+			const rruleDay = this.convertDayToRRuleFormat(dayName);
+			const position = this.convertOrdinalToPosition(ordinal);
+			const rruleString = `FREQ=MONTHLY;BYDAY=${rruleDay};BYSETPOS=${position}`;
+			return {
+				recurrence: rruleString,
+				remainingText: text.replace(everyOrdinalDayPattern, '').trim()
+			};
+		}
 
 		// Check for "every [weekday]" patterns - more specific to avoid conflicts
 		const everyDayPattern = /\bevery\s+(monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/i;
 		const everyDayMatch = text.match(everyDayPattern);
 		if (everyDayMatch) {
 			const dayName = everyDayMatch[1].toLowerCase();
-			const capitalizedDay = dayName.charAt(0).toUpperCase() + dayName.slice(1);
-			return {
-				recurrence: 'weekly',
-				daysOfWeek: [capitalizedDay],
-				remainingText: text.replace(everyDayPattern, '').trim()
-			};
+			const rruleDay = this.convertDayToRRuleFormat(dayName);
+			if (rruleDay) {
+				const rruleString = `FREQ=WEEKLY;BYDAY=${rruleDay}`;
+				return {
+					recurrence: rruleString,
+					remainingText: text.replace(everyDayPattern, '').trim()
+				};
+			}
 		}
 
-		// Check for plural day patterns (mondays, tuesdays, etc.) - but be more specific
+		// Check for plural day patterns (mondays, tuesdays, etc.)
 		const pluralDayPattern = /\b(mondays|tuesdays|wednesdays|thursdays|fridays|saturdays|sundays)\b/i;
 		const pluralDayMatch = text.match(pluralDayPattern);
 		if (pluralDayMatch) {
 			const pluralDay = pluralDayMatch[1].toLowerCase();
 			const dayMapping: Record<string, string> = {
-				'mondays': 'Monday',
-				'tuesdays': 'Tuesday', 
-				'wednesdays': 'Wednesday',
-				'thursdays': 'Thursday',
-				'fridays': 'Friday',
-				'saturdays': 'Saturday',
-				'sundays': 'Sunday'
+				'mondays': 'monday',
+				'tuesdays': 'tuesday', 
+				'wednesdays': 'wednesday',
+				'thursdays': 'thursday',
+				'fridays': 'friday',
+				'saturdays': 'saturday',
+				'sundays': 'sunday'
 			};
 			
 			const mappedDay = dayMapping[pluralDay];
 			if (mappedDay) {
-				return {
-					recurrence: 'weekly',
-					daysOfWeek: [mappedDay],
-					remainingText: text.replace(pluralDayPattern, '').trim()
-				};
+				const rruleDay = this.convertDayToRRuleFormat(mappedDay);
+				if (rruleDay) {
+					const rruleString = `FREQ=WEEKLY;BYDAY=${rruleDay}`;
+					return {
+						recurrence: rruleString,
+						remainingText: text.replace(pluralDayPattern, '').trim()
+					};
+				}
 			}
 		}
 
@@ -272,31 +285,110 @@ export class NaturalLanguageParser {
 		const everyOtherMatch = text.match(everyOtherPattern);
 		if (everyOtherMatch) {
 			const period = everyOtherMatch[1].toLowerCase();
-			const periodMapping: Record<string, string> = {
-				'day': 'daily',
-				'week': 'weekly',
-				'month': 'monthly',
-				'year': 'yearly'
-			};
-			
+			const rruleString = this.generateEveryOtherRRule(period);
 			return {
-				recurrence: periodMapping[period] || 'weekly',
+				recurrence: rruleString,
 				remainingText: text.replace(everyOtherPattern, '').trim()
 			};
 		}
+
+		// Check for "every N [period]" patterns (e.g., "every 3 days", "every 2 weeks")
+		const everyNPattern = /\bevery\s+(\d+)\s+(days?|weeks?|months?|years?)\b/i;
+		const everyNMatch = text.match(everyNPattern);
+		if (everyNMatch) {
+			const interval = parseInt(everyNMatch[1]);
+			const period = everyNMatch[2].toLowerCase();
+			const rruleString = this.generateIntervalRRule(period, interval);
+			return {
+				recurrence: rruleString,
+				remainingText: text.replace(everyNPattern, '').trim()
+			};
+		}
+
+		// More specific recurrence patterns that avoid ambiguity
+		const recurrencePatterns = [
+			{ regex: /\b(daily|every day|each day)\b/i, rrule: 'FREQ=DAILY' },
+			{ regex: /\b(weekly|every week|each week)\b/i, rrule: 'FREQ=WEEKLY' },
+			{ regex: /\b(monthly|every month|each month)\b/i, rrule: 'FREQ=MONTHLY' },
+			{ regex: /\b(yearly|annually|every year|each year)\b/i, rrule: 'FREQ=YEARLY' }
+		];
 
 		// Check for general recurrence patterns
 		for (const pattern of recurrencePatterns) {
 			const match = text.match(pattern.regex);
 			if (match) {
 				return {
-					recurrence: pattern.value,
+					recurrence: pattern.rrule,
 					remainingText: text.replace(pattern.regex, '').trim()
 				};
 			}
 		}
 
 		return { remainingText: text };
+	}
+
+	/**
+	 * Convert day names to RRule BYDAY format
+	 */
+	private convertDayToRRuleFormat(dayName: string): string {
+		const dayMapping: Record<string, string> = {
+			'monday': 'MO',
+			'tuesday': 'TU',
+			'wednesday': 'WE',
+			'thursday': 'TH',
+			'friday': 'FR',
+			'saturday': 'SA',
+			'sunday': 'SU'
+		};
+		return dayMapping[dayName.toLowerCase()] || '';
+	}
+
+	/**
+	 * Convert ordinal words to position numbers for BYSETPOS
+	 */
+	private convertOrdinalToPosition(ordinal: string): number {
+		const ordinalMapping: Record<string, number> = {
+			'first': 1,
+			'second': 2,
+			'third': 3,
+			'fourth': 4,
+			'last': -1
+		};
+		return ordinalMapping[ordinal.toLowerCase()] || 1;
+	}
+
+	/**
+	 * Generate rrule for "every other" patterns
+	 */
+	private generateEveryOtherRRule(period: string): string {
+		const periodMapping: Record<string, string> = {
+			'day': 'FREQ=DAILY;INTERVAL=2',
+			'week': 'FREQ=WEEKLY;INTERVAL=2',
+			'month': 'FREQ=MONTHLY;INTERVAL=2',
+			'year': 'FREQ=YEARLY;INTERVAL=2'
+		};
+		return periodMapping[period] || 'FREQ=WEEKLY;INTERVAL=2';
+	}
+
+	/**
+	 * Generate rrule for interval patterns (e.g., "every 3 days")
+	 */
+	private generateIntervalRRule(period: string, interval: number): string {
+		// Normalize period (remove 's' if plural)
+		const normalizedPeriod = period.replace(/s$/, '');
+		
+		switch (normalizedPeriod) {
+			case 'day':
+				return `FREQ=DAILY;INTERVAL=${interval}`;
+			case 'week':
+				return `FREQ=WEEKLY;INTERVAL=${interval}`;
+			case 'month':
+				return `FREQ=MONTHLY;INTERVAL=${interval}`;
+			case 'year':
+				return `FREQ=YEARLY;INTERVAL=${interval}`;
+			default:
+				return `FREQ=DAILY;INTERVAL=${interval}`;
+		}
 	}
 
 
@@ -818,9 +910,28 @@ export class NaturalLanguageParser {
 		if (parsed.tags.length > 0) parts.push({ icon: 'tag', text: `Tags: ${parsed.tags.map(t => '#' + t).join(', ')}` });
 		if (parsed.recurrence) {
 			let recurrenceText = parsed.recurrence;
+			
+			// If it's an rrule string, convert to human-readable text
+			if (parsed.recurrence.startsWith('FREQ=')) {
+				try {
+					// Validate the rrule string before parsing
+					if (this.isValidRRuleString(parsed.recurrence)) {
+						const rule = RRule.fromString(parsed.recurrence);
+						recurrenceText = rule.toText();
+					} else {
+						recurrenceText = 'Invalid recurrence pattern';
+					}
+				} catch (error) {
+					console.debug('Error parsing rrule for preview:', error);
+					recurrenceText = 'Invalid recurrence pattern';
+				}
+			}
+			
+			// Legacy support for daysOfWeek (shouldn't be used with new rrule format)
 			if (parsed.daysOfWeek && parsed.daysOfWeek.length > 0) {
 				recurrenceText += ` (${parsed.daysOfWeek.join(', ')})`;
 			}
+			
 			parts.push({ icon: 'repeat', text: `Recurrence: ${recurrenceText}` });
 		}
 		if (parsed.estimate) parts.push({ icon: 'clock', text: `Estimate: ${parsed.estimate}min` });
@@ -833,6 +944,26 @@ export class NaturalLanguageParser {
 	 */
 	getPreviewText(parsed: ParsedTaskData): string {
 		return this.getPreviewData(parsed).map(part => part.text).join(' • ');
+	}
+
+	/**
+	 * Validate an rrule string to prevent parsing errors
+	 */
+	private isValidRRuleString(rruleString: string): boolean {
+		// Check for empty or undefined BYDAY values
+		if (rruleString.includes('BYDAY=undefined') || rruleString.includes('BYDAY=;') || rruleString.includes('BYDAY=')) {
+			const byDayMatch = rruleString.match(/BYDAY=([^;]*)/);
+			if (byDayMatch && (!byDayMatch[1] || byDayMatch[1] === 'undefined' || byDayMatch[1].trim() === '')) {
+				return false;
+			}
+		}
+		
+		// Check for basic FREQ requirement
+		if (!rruleString.includes('FREQ=')) {
+			return false;
+		}
+		
+		return true;
 	}
 
 	/**
