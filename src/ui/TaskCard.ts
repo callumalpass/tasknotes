@@ -2,7 +2,7 @@ import { format } from 'date-fns';
 import { TFile, Menu, setIcon, Notice, Modal, App } from 'obsidian';
 import { TaskInfo } from '../types';
 import TaskNotesPlugin from '../main';
-import { calculateTotalTimeSpent, isDueByRRule, shouldShowRecurringTaskOnDate, getEffectiveTaskStatus, shouldUseRecurringTaskUI, getRecurringTaskCompletionText } from '../utils/helpers';
+import { calculateTotalTimeSpent, isDueByRRule, shouldShowRecurringTaskOnDate, getEffectiveTaskStatus, shouldUseRecurringTaskUI, getRecurringTaskCompletionText, getRecurrenceDisplayText } from '../utils/helpers';
 import { 
     isSameDateSafe, 
     isBeforeDateSafe, 
@@ -195,7 +195,7 @@ export function createTaskCard(task: TaskInfo, plugin: TaskNotesPlugin, options:
     if (task.recurrence) {
         const recurringIndicator = card.createEl('div', { 
             cls: 'task-card__recurring-indicator',
-            attr: { 'aria-label': `Recurring: ${task.recurrence && typeof task.recurrence === 'object' ? task.recurrence.frequency : 'rrule'}` }
+            attr: { 'aria-label': `Recurring: ${getRecurrenceDisplayText(task.recurrence)}` }
         });
         
         // Use Obsidian's built-in rotate-ccw icon for recurring tasks
@@ -238,7 +238,7 @@ export function createTaskCard(task: TaskInfo, plugin: TaskNotesPlugin, options:
     
     // Recurrence info (if recurring)
     if (task.recurrence) {
-        const frequencyDisplay = task.recurrence && typeof task.recurrence === 'object' ? task.recurrence.frequency : 'rrule';
+        const frequencyDisplay = getRecurrenceDisplayText(task.recurrence);
         metadataItems.push(`Recurring: ${frequencyDisplay}`);
     }
     
@@ -699,7 +699,7 @@ export function updateTaskCard(element: HTMLElement, task: TaskInfo, plugin: Tas
         // Add recurring indicator if task is now recurring but didn't have one
         const recurringIndicator = element.createEl('span', { 
             cls: 'task-card__recurring-indicator',
-            attr: { 'aria-label': `Recurring: ${task.recurrence && typeof task.recurrence === 'object' ? task.recurrence.frequency : 'rrule'}` }
+            attr: { 'aria-label': `Recurring: ${getRecurrenceDisplayText(task.recurrence)}` }
         });
         statusDot?.insertAdjacentElement('afterend', recurringIndicator);
     } else if (!task.recurrence && existingRecurringIndicator) {
@@ -707,7 +707,7 @@ export function updateTaskCard(element: HTMLElement, task: TaskInfo, plugin: Tas
         existingRecurringIndicator.remove();
     } else if (task.recurrence && existingRecurringIndicator) {
         // Update existing recurring indicator
-        const frequencyDisplay = task.recurrence && typeof task.recurrence === 'object' ? task.recurrence.frequency : 'rrule';
+        const frequencyDisplay = getRecurrenceDisplayText(task.recurrence);
         existingRecurringIndicator.setAttribute('aria-label', `Recurring: ${frequencyDisplay}`);
     }
     
@@ -725,7 +725,7 @@ export function updateTaskCard(element: HTMLElement, task: TaskInfo, plugin: Tas
         
         // Recurrence info (if recurring)
         if (task.recurrence) {
-            const frequencyDisplay = task.recurrence && typeof task.recurrence === 'object' ? task.recurrence.frequency : 'rrule';
+            const frequencyDisplay = getRecurrenceDisplayText(task.recurrence);
             metadataItems.push(`Recurring: ${frequencyDisplay}`);
         }
         

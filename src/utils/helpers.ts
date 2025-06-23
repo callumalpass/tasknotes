@@ -631,6 +631,37 @@ export function convertLegacyRecurrenceToRRule(recurrence: any): string {
 }
 
 /**
+ * Converts rrule string or RecurrenceInfo to human-readable text
+ */
+export function getRecurrenceDisplayText(recurrence: string | any): string {
+	if (!recurrence) {
+		return '';
+	}
+	
+	try {
+		// Handle rrule string format
+		if (typeof recurrence === 'string' && recurrence.includes('FREQ=')) {
+			const rrule = RRule.fromString(recurrence);
+			return rrule.toText();
+		}
+		
+		// Handle legacy RecurrenceInfo object
+		if (typeof recurrence === 'object' && recurrence.frequency) {
+			// Convert to rrule first, then get text
+			const rruleString = convertLegacyRecurrenceToRRule(recurrence);
+			const rrule = RRule.fromString(rruleString);
+			return rrule.toText();
+		}
+		
+		// Fallback for unknown format
+		return 'rrule';
+	} catch (error) {
+		console.error('Error converting recurrence to display text:', error, { recurrence });
+		return 'rrule';
+	}
+}
+
+/**
  * Extracts note information from a note file's content
  */
 export function extractNoteInfo(app: App, content: string, path: string, file?: TFile): {title: string, tags: string[], path: string, createdDate?: string, lastModified?: number} | null {
