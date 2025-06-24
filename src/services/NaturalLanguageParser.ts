@@ -16,6 +16,7 @@ export interface ParsedTaskData {
     contexts: string[];
     recurrence?: string;
     estimate?: number; // in minutes
+    isCompleted?: boolean;
 }
 
 interface RegexPattern {
