@@ -205,37 +205,18 @@
     white-space: nowrap;
 }
 
-/* Select dropdowns */
-.tasknotes-plugin .filter-bar__select {
-    padding: var(--tn-spacing-xs) var(--tn-spacing-lg) var(--tn-spacing-xs) var(--tn-spacing-sm);
-    border: 1px solid var(--tn-border-color);
-    border-radius: var(--tn-radius-sm);
-    background: var(--tn-bg-primary);
-    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='%23666' d='M4.427 6.427L8 10l3.573-3.573a.5.5 0 0 1 .708.708l-4 4a.5.5 0 0 1-.708 0l-4-4a.5.5 0 1 1 .708-.708z'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right var(--tn-spacing-xs) center;
-    background-size: 12px;
-    color: var(--tn-text-normal);
-    font-size: var(--tn-font-size-sm);
+/* Dropdown container for DropdownComponent */
+.tasknotes-plugin .filter-bar__dropdown-container {
     min-width: 100px;
-    cursor: pointer;
-    transition: border-color var(--tn-transition-fast), background-color var(--tn-transition-fast);
-    appearance: none;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    box-shadow: none;
 }
 
-.tasknotes-plugin .filter-bar__select:focus {
-    outline: none;
-    border-color: var(--interactive-accent);
-    box-shadow: none;
+/* Remove drop shadow from Obsidian DropdownComponent but keep border */
+.tasknotes-plugin .filter-bar__dropdown-container .dropdown {
+    box-shadow: none !important;
+    border: 1px solid var(--tn-border-color) !important;
 }
 
-.tasknotes-plugin .filter-bar__select:hover {
-    border-color: var(--tn-border-color-hover);
-    background-color: var(--tn-interactive-hover);
-}
+/* The DropdownComponent will handle all the styling automatically */
 
 /* Sort direction button */
 .tasknotes-plugin .filter-bar__sort-direction {
@@ -329,10 +310,6 @@
     font-weight: var(--tn-font-weight-semibold);
 }
 
-.tasknotes-plugin .filter-bar__advanced-item .filter-bar__select {
-    min-width: auto;
-    width: 100%;
-}
 
 /* =================================================================
    FILTER BAR FORM ELEMENTS
@@ -527,7 +504,7 @@
         justify-content: space-between;
     }
     
-    .tasknotes-plugin .filter-bar__select {
+    .tasknotes-plugin .filter-bar__dropdown-container {
         min-width: auto;
         flex: 1;
         margin-left: var(--tn-spacing-sm);
@@ -556,20 +533,43 @@
         padding: var(--tn-spacing-xs);
     }
     
+    /* Reorganize controls layout for smallest screens */
+    .tasknotes-plugin .filter-bar__controls {
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--tn-spacing-sm);
+    }
+    
+    .tasknotes-plugin .filter-bar__controls-left {
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--tn-spacing-sm);
+        width: 100%;
+    }
+    
     .tasknotes-plugin .filter-bar__sort,
     .tasknotes-plugin .filter-bar__group {
         flex-direction: column;
         align-items: stretch;
         gap: var(--tn-spacing-xs);
+        width: 100%;
     }
     
     .tasknotes-plugin .filter-bar__label {
         font-size: var(--tn-font-size-xs);
     }
     
-    .tasknotes-plugin .filter-bar__select {
+    .tasknotes-plugin .filter-bar__dropdown-container {
         margin-left: 0;
         width: 100%;
+    }
+    
+    /* Position advanced filters button to the right of group controls */
+    .tasknotes-plugin .filter-bar__advanced-toggle {
+        align-self: flex-end;
+        width: auto;
+        margin-top: calc(-1 * (var(--tn-spacing-sm) + 32px)); /* Align with group dropdown */
+        margin-right: 0;
     }
 }
 
@@ -600,7 +600,6 @@
 /* Touch-specific adjustments */
 @media (pointer: coarse) {
     .tasknotes-plugin .filter-bar__search-input,
-    .tasknotes-plugin .filter-bar__select,
     .tasknotes-plugin .filter-bar__sort-direction,
     .tasknotes-plugin .filter-bar__advanced-toggle,
     .tasknotes-plugin .filter-bar__date-input,
@@ -620,7 +619,6 @@
     }
     
     .tasknotes-plugin .filter-bar__search-input,
-    .tasknotes-plugin .filter-bar__select,
     .tasknotes-plugin .filter-bar__sort-direction,
     .tasknotes-plugin .filter-bar__advanced-toggle,
     .tasknotes-plugin .filter-bar__date-input {
@@ -631,7 +629,6 @@
 /* Reduced motion support */
 @media (prefers-reduced-motion: reduce) {
     .tasknotes-plugin .filter-bar__search-input,
-    .tasknotes-plugin .filter-bar__select,
     .tasknotes-plugin .filter-bar__sort-direction,
     .tasknotes-plugin .filter-bar__advanced-toggle,
     .tasknotes-plugin .filter-bar__date-input,

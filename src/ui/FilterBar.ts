@@ -1,6 +1,6 @@
 import { FilterQuery, FilterBarConfig, TaskSortKey, TaskGroupKey, SortDirection } from '../types';
 import { EventEmitter } from '../utils/EventEmitter';
-import { setIcon } from 'obsidian';
+import { setIcon, DropdownComponent } from 'obsidian';
 
 /**
  * Reusable filtering UI component that provides consistent filtering controls
@@ -18,8 +18,8 @@ export class FilterBar extends EventEmitter {
 
     // UI Elements
     private searchInput?: HTMLInputElement;
-    private sortSelect?: HTMLSelectElement;
-    private groupSelect?: HTMLSelectElement;
+    private sortDropdown?: DropdownComponent;
+    private groupDropdown?: DropdownComponent;
     private advancedFiltersButton?: HTMLButtonElement;
     private advancedFiltersPanel?: HTMLElement;
     private archivedToggle?: HTMLInputElement;
@@ -212,22 +212,24 @@ export class FilterBar extends EventEmitter {
         // Add label first
         sortContainer.createSpan({ text: 'Sort:', cls: 'filter-bar__label' });
         
-        // Sort key dropdown
-        this.sortSelect = sortContainer.createEl('select', {
-            cls: 'filter-bar__select'
-        });
-
+        // Create dropdown container for proper styling
+        const dropdownContainer = sortContainer.createDiv('filter-bar__dropdown-container');
+        
+        // Sort key dropdown using DropdownComponent
+        this.sortDropdown = new DropdownComponent(dropdownContainer);
+        
         const sortKeys = this.config.allowedSortKeys || ['due', 'priority', 'title'];
+        const sortOptions: Record<string, string> = {};
         sortKeys.forEach(key => {
-            this.sortSelect!.createEl('option', {
-                value: key,
-                text: this.getSortKeyLabel(key)
+            sortOptions[key] = this.getSortKeyLabel(key);
+        });
+        
+        this.sortDropdown
+            .addOptions(sortOptions)
+            .setValue(this.currentQuery.sortKey)
+            .onChange((value) => {
+                this.updateQueryField('sortKey', value as TaskSortKey);
             });
-        });
-
-        this.sortSelect.addEventListener('change', () => {
-            this.updateQueryField('sortKey', this.sortSelect!.value as TaskSortKey);
-        });
 
         // Sort direction button
         const sortDirectionBtn = sortContainer.createEl('button', {
@@ -249,21 +251,24 @@ export class FilterBar extends EventEmitter {
         
         groupContainer.createSpan({ text: 'Group:', cls: 'filter-bar__label' });
 
-        this.groupSelect = groupContainer.createEl('select', {
-            cls: 'filter-bar__select'
-        });
-
+        // Create dropdown container for proper styling
+        const dropdownContainer = groupContainer.createDiv('filter-bar__dropdown-container');
+        
+        // Group dropdown using DropdownComponent
+        this.groupDropdown = new DropdownComponent(dropdownContainer);
+        
         const groupKeys = this.config.allowedGroupKeys || ['none', 'status', 'priority', 'context', 'due'];
+        const groupOptions: Record<string, string> = {};
         groupKeys.forEach(key => {
-            this.groupSelect!.createEl('option', {
-                value: key,
-                text: this.getGroupKeyLabel(key)
+            groupOptions[key] = this.getGroupKeyLabel(key);
+        });
+        
+        this.groupDropdown
+            .addOptions(groupOptions)
+            .setValue(this.currentQuery.groupKey)
+            .onChange((value) => {
+                this.updateQueryField('groupKey', value as TaskGroupKey);
             });
-        });
-
-        this.groupSelect.addEventListener('change', () => {
-            this.updateQueryField('groupKey', this.groupSelect!.value as TaskGroupKey);
-        });
     }
 
     /**
@@ -560,12 +565,12 @@ export class FilterBar extends EventEmitter {
             this.searchInput.value = this.currentQuery.searchQuery || '';
         }
 
-        if (this.sortSelect) {
-            this.sortSelect.value = this.currentQuery.sortKey;
+        if (this.sortDropdown) {
+            this.sortDropdown.setValue(this.currentQuery.sortKey);
         }
 
-        if (this.groupSelect) {
-            this.groupSelect.value = this.currentQuery.groupKey;
+        if (this.groupDropdown) {
+            this.groupDropdown.setValue(this.currentQuery.groupKey);
         }
 
         // Update date range inputs
@@ -677,23 +682,6 @@ export class FilterBar extends EventEmitter {
         this.rebuildContextCheckboxes();
     }
 
-    /**
-     * Helper to rebuild select options while preserving selection
-     */
-    private rebuildSelectOptions(select: HTMLSelectElement | undefined, options: string[], currentSelection?: string[]): void {
-        if (!select) return;
-
-        const selectedValues = currentSelection || [];
-        select.empty();
-
-        options.forEach(option => {
-            const optionEl = select.createEl('option', {
-                value: option,
-                text: option
-            });
-            optionEl.selected = selectedValues.includes(option);
-        });
-    }
 
     /**
      * Rebuild status checkboxes while preserving selection
