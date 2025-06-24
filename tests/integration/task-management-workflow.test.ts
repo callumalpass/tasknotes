@@ -14,11 +14,13 @@
 
 import { TaskEditModal } from '../../src/modals/TaskEditModal';
 import { TaskService } from '../../src/services/TaskService';
-import { CacheManager } from '../../src/services/CacheManager';
 import { TestEnvironment, WorkflowTester } from '../helpers/integration-helpers';
 import { TaskFactory } from '../helpers/mock-factories';
 import { TaskInfo } from '../../src/types';
-import { MockObsidian, TFile, Notice } from '../__mocks__/obsidian';
+import { MockObsidian, TFile } from '../__mocks__/obsidian';
+
+// Import Notice from global scope
+declare const Notice: jest.MockedFunction<any>;
 
 // Mock external dependencies
 jest.mock('obsidian');
@@ -41,17 +43,7 @@ jest.mock('../../src/utils/dateUtils', () => ({
   isOverdueTimeAware: jest.fn((date) => date?.includes('2020-01-01'))
 }));
 
-jest.mock('../../src/utils/helpers', () => ({
-  getEffectiveTaskStatus: jest.fn((task, date) => {
-    if (task.recurrence && task.complete_instances?.includes('2025-01-15')) {
-      return 'done';
-    }
-    return task.status || 'open';
-  }),
-  calculateTotalTimeSpent: jest.fn((entries) => 
-    entries?.reduce((sum: number, entry: any) => sum + (entry.duration || 30), 0) || 0
-  )
-}));
+// Utility functions are mocked via module mapping in jest.config.js
 
 describe('Task Management Workflow Integration', () => {
   let testEnv: TestEnvironment;

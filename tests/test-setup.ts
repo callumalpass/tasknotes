@@ -171,6 +171,11 @@ if (!global.fetch) {
   );
 }
 
+// Make Notice globally available for tests
+global.Notice = jest.fn().mockImplementation((message: string, timeout?: number) => {
+  return {};
+});
+
 // Set up date mocking utilities
 jest.mock('date-fns', () => ({
   ...jest.requireActual('date-fns'),

@@ -168,7 +168,8 @@ describe('TaskCreationModal - Fixed Implementation', () => {
         title: 'Converted Task',
         priority: 'high',
         status: 'open',
-        dueDate: '2025-01-20'
+        dueDate: '2025-01-20',
+        isCompleted: false
       };
 
       const conversionOptions: TaskConversionOptions = {
@@ -237,7 +238,8 @@ describe('TaskCreationModal - Fixed Implementation', () => {
 
     it('should handle missing optional fields in parsed data', () => {
       const parsedData: ParsedTaskData = {
-        title: 'Minimal Task'
+        title: 'Minimal Task',
+        isCompleted: false
       };
 
       (modal as any).conversionOptions = { parsedData };

@@ -19,7 +19,11 @@ module.exports = {
     // Add ES module mocks for problematic imports
     '^yaml$': '<rootDir>/tests/__mocks__/yaml.ts',
     '^rrule$': '<rootDir>/tests/__mocks__/rrule.ts',
-    '^date-fns$': '<rootDir>/tests/__mocks__/date-fns.ts'
+    '^date-fns$': '<rootDir>/tests/__mocks__/date-fns.ts',
+    // Mock utility modules
+    '^../../src/utils/helpers$': '<rootDir>/tests/__mocks__/utils.ts',
+    '^../../src/utils/filenameGenerator$': '<rootDir>/tests/__mocks__/utils.ts',
+    '^../../src/utils/dateUtils$': '<rootDir>/tests/__mocks__/utils.ts'
   },
   collectCoverageFrom: [
     'src/**/*.ts',

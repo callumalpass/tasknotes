@@ -364,9 +364,50 @@ export const PluginFactory = {
       },
       workspace: {
         getActiveView: jest.fn(),
+        getLeavesOfType: jest.fn().mockReturnValue([]),
+        getViewsOfType: jest.fn().mockReturnValue([]),
+        detachLeavesOfType: jest.fn(),
+        iterateAllLeaves: jest.fn().mockImplementation((callback) => {
+          // Mock implementation - iterate over no leaves by default
+        }),
+        getLeaf: jest.fn().mockReturnValue({
+          open: jest.fn().mockResolvedValue(undefined),
+          openFile: jest.fn().mockResolvedValue(undefined)
+        }),
         on: jest.fn(),
-        off: jest.fn()
+        off: jest.fn(),
+        trigger: jest.fn()
       }
+    };
+
+    const mockCache = {
+      // Core MinimalNativeCache methods
+      initialize: jest.fn(),
+      getAllTasks: jest.fn().mockResolvedValue([]),
+      getTaskInfo: jest.fn().mockResolvedValue(null),
+      updateTaskInfoInCache: jest.fn(),
+      removeFromCache: jest.fn().mockResolvedValue(undefined),
+      getAllTags: jest.fn().mockReturnValue([]),
+      getAllContexts: jest.fn().mockReturnValue([]),
+      getAllStatuses: jest.fn().mockReturnValue(['open', 'in-progress', 'done']),
+      getAllPriorities: jest.fn().mockReturnValue(['low', 'normal', 'high']),
+      getTasksForDate: jest.fn().mockReturnValue([]),
+      getTaskPathsByStatus: jest.fn().mockReturnValue([]),
+      clearCacheEntry: jest.fn(),
+      clearAllCaches: jest.fn().mockResolvedValue(undefined),
+      isInitialized: jest.fn().mockReturnValue(true),
+      destroy: jest.fn(),
+      
+      // Backward compatibility methods for tests
+      refreshTaskCache: jest.fn().mockResolvedValue(undefined),
+      updateContextsCache: jest.fn().mockResolvedValue(undefined),
+      updateTagsCache: jest.fn().mockResolvedValue(undefined),
+      rebuildCache: jest.fn().mockResolvedValue(undefined),
+      
+      // Event system
+      on: jest.fn(),
+      off: jest.fn(),
+      trigger: jest.fn()
     };
 
     const mockSettings = {
@@ -423,18 +464,101 @@ export const PluginFactory = {
           pomodoros: 'pomodoros'
         })
       },
-      cacheManager: {
-        updateTaskInfoInCache: jest.fn().mockResolvedValue(undefined),
-        removeFromCache: jest.fn(),
-        getTaskInfo: jest.fn().mockResolvedValue(null),
-        clearCacheEntry: jest.fn()
+      cacheManager: mockCache,
+      taskService: {
+        createTask: jest.fn().mockImplementation(async (taskData) => {
+          const file = new TFile(taskData.path || '/tasks/test-task.md');
+          return { 
+            success: true, 
+            file,
+            task: { ...taskData, path: file.path }
+          };
+        }),
+        updateTask: jest.fn().mockImplementation(async (taskOrPath, updates) => {
+          const path = typeof taskOrPath === 'string' ? taskOrPath : taskOrPath.path;
+          const file = new TFile(path);
+          return { 
+            success: true, 
+            file,
+            task: { ...updates, path }
+          };
+        }),
+        updateTaskProperty: jest.fn().mockImplementation(async (taskOrPath, property, value) => {
+          const path = typeof taskOrPath === 'string' ? taskOrPath : taskOrPath.path;
+          const file = new TFile(path);
+          return { 
+            success: true, 
+            file,
+            task: { path, [property]: value }
+          };
+        }),
+        deleteTask: jest.fn().mockImplementation(async (task) => {
+          return { success: true };
+        })
+      },
+      nlParser: {
+        parseInput: jest.fn().mockImplementation((input) => {
+          // Basic parsing simulation
+          const result = {
+            title: input.replace(/@\w+/g, '').replace(/#\w+/g, '').trim(),
+            contexts: input.match(/@(\w+)/g)?.map(c => c.slice(1)) || [],
+            tags: input.match(/#(\w+)/g)?.map(t => t.slice(1)) || [],
+            due: null,
+            priority: 'normal',
+            status: 'open'
+          };
+          
+          // Simple date parsing
+          if (input.includes('tomorrow')) {
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            result.due = tomorrow.toISOString().split('T')[0];
+            
+            if (input.includes('3pm')) {
+              result.due = `${result.due}T15:00`;
+            }
+          }
+          
+          return result;
+        })
       },
       statusManager: {
         isCompletedStatus: jest.fn((status) => status === 'done' || status === 'completed'),
-        getCompletedStatuses: jest.fn(() => ['done', 'completed'])
+        getCompletedStatuses: jest.fn(() => ['done', 'completed']),
+        getNextStatus: jest.fn((currentStatus) => {
+          const statusMap = {
+            'open': 'in-progress',
+            'in-progress': 'done',
+            'done': 'open'
+          };
+          return statusMap[currentStatus] || 'in-progress';
+        }),
+        getAllStatuses: jest.fn(() => ['open', 'in-progress', 'done'])
       },
       getActiveTimeSession: jest.fn().mockReturnValue(null),
       selectedDate: new Date(),
+      
+      // Calendar integration methods that are missing from test failures
+      toggleRecurringTaskComplete: jest.fn().mockImplementation(async (task, targetDate) => {
+        return { success: true, taskUpdated: true };
+      }),
+      updateTimeblockInDailyNote: jest.fn().mockImplementation(async (app, timeblockId, oldDate, newDate, newStartTime, newEndTime) => {
+        return { success: true, updated: true };
+      }),
+      
+      // Task archiving methods
+      toggleTaskArchive: jest.fn().mockImplementation(async (task) => {
+        return { success: true, taskArchived: !task.archived };
+      }),
+      
+      // Time tracking methods
+      startTimeTracking: jest.fn().mockImplementation(async (task) => {
+        return { success: true, sessionStarted: true };
+      }),
+      stopTimeTracking: jest.fn().mockImplementation(async (task) => {
+        return { success: true, sessionEnded: true };
+      }),
+      
       ...overrides
     };
 

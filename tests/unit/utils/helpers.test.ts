@@ -507,7 +507,52 @@ describe('Helpers', () => {
         mockApp.metadataCache.getFileCache.mockReturnValue({ frontmatter });
 
         const mockFieldMapper = {
-          mapFromFrontmatter: jest.fn().mockReturnValue(frontmatter)
+          mapping: {
+            title: 'title',
+            status: 'status',
+            priority: 'priority',
+            due: 'due',
+            scheduled: 'scheduled',
+            contexts: 'contexts',
+            timeEstimate: 'timeEstimate',
+            completedDate: 'completedDate',
+            dateCreated: 'dateCreated',
+            dateModified: 'dateModified',
+            recurrence: 'recurrence',
+            archiveTag: 'archived',
+            timeEntries: 'timeEntries',
+            completeInstances: 'complete_instances',
+            pomodoros: 'pomodoros'
+          },
+          mapFromFrontmatter: jest.fn().mockReturnValue(frontmatter),
+          mapToFrontmatter: jest.fn().mockImplementation((taskData) => {
+            const frontmatter: any = {};
+            Object.keys(taskData).forEach(key => {
+              if (taskData[key] !== undefined && key !== 'path' && key !== 'tags') {
+                frontmatter[key] = taskData[key];
+              }
+            });
+            return frontmatter;
+          }),
+          toUserField: jest.fn().mockImplementation((field) => field),
+          updateMapping: jest.fn(),
+          getMapping: jest.fn().mockReturnValue({
+            title: 'title',
+            status: 'status',
+            priority: 'priority',
+            due: 'due',
+            scheduled: 'scheduled',
+            contexts: 'contexts',
+            timeEstimate: 'timeEstimate',
+            completedDate: 'completedDate',
+            dateCreated: 'dateCreated',
+            dateModified: 'dateModified',
+            recurrence: 'recurrence',
+            archiveTag: 'archived',
+            timeEntries: 'timeEntries',
+            completeInstances: 'complete_instances',
+            pomodoros: 'pomodoros'
+          })
         };
 
         const result = extractTaskInfo(mockApp, '', '/tasks/test.md', mockFile, mockFieldMapper);

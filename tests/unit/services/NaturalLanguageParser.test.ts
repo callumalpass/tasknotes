@@ -288,10 +288,32 @@ describe('NaturalLanguageParser', () => {
       ChronoTestUtils.mockParseResult('from tomorrow to next friday', [{
         start: {
           date: () => new Date('2025-01-02T09:00:00Z'),
+          get: (component: string) => {
+            const date = new Date('2025-01-02T09:00:00Z');
+            switch (component) {
+              case 'year': return date.getFullYear();
+              case 'month': return date.getMonth() + 1;
+              case 'day': return date.getDate();
+              case 'hour': return date.getHours();
+              case 'minute': return date.getMinutes();
+              default: return 0;
+            }
+          },
           isCertain: (component: string) => component === 'hour'
         },
         end: {
           date: () => new Date('2025-01-06T17:00:00Z'),
+          get: (component: string) => {
+            const date = new Date('2025-01-06T17:00:00Z');
+            switch (component) {
+              case 'year': return date.getFullYear();
+              case 'month': return date.getMonth() + 1;
+              case 'day': return date.getDate();
+              case 'hour': return date.getHours();
+              case 'minute': return date.getMinutes();
+              default: return 0;
+            }
+          },
           isCertain: (component: string) => component === 'hour'
         },
         text: 'from tomorrow to next friday',
@@ -450,6 +472,16 @@ describe('NaturalLanguageParser', () => {
       ChronoTestUtils.mockParseResult('tomorrow', [{
         start: {
           date: () => tomorrow,
+          get: (component: string) => {
+            switch (component) {
+              case 'year': return tomorrow.getFullYear();
+              case 'month': return tomorrow.getMonth() + 1;
+              case 'day': return tomorrow.getDate();
+              case 'hour': return tomorrow.getHours();
+              case 'minute': return tomorrow.getMinutes();
+              default: return 0;
+            }
+          },
           isCertain: () => false
         },
         text: 'tomorrow',
@@ -480,7 +512,21 @@ describe('NaturalLanguageParser', () => {
       const input = 'Task scheduled for tomorrow due next week';
       
       ChronoTestUtils.mockParseResult('tomorrow', [{
-        start: { date: () => new Date('2025-01-02T00:00:00Z'), isCertain: () => false },
+        start: { 
+          date: () => new Date('2025-01-02T00:00:00Z'), 
+          get: (component: string) => {
+            const date = new Date('2025-01-02T00:00:00Z');
+            switch (component) {
+              case 'year': return date.getFullYear();
+              case 'month': return date.getMonth() + 1;
+              case 'day': return date.getDate();
+              case 'hour': return date.getHours();
+              case 'minute': return date.getMinutes();
+              default: return 0;
+            }
+          },
+          isCertain: () => false 
+        },
         text: 'tomorrow',
         index: 0
       }]);
