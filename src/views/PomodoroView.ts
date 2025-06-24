@@ -1,4 +1,4 @@
-import { ItemView, WorkspaceLeaf, Notice, EventRef } from 'obsidian';
+import { ItemView, WorkspaceLeaf, Notice, EventRef, Setting } from 'obsidian';
 import TaskNotesPlugin from '../main';
 import { 
     POMODORO_VIEW_TYPE,
@@ -247,10 +247,9 @@ export class PomodoroView extends ItemView {
         // Statistics
         const statsSection = container.createDiv({ cls: 'pomodoro-view__stats-section' });
         const statsHeader = statsSection.createDiv({ cls: 'pomodoro-view__stats-header' });
-        statsHeader.createEl('h3', {
-            text: 'Today\'s progress',
-            cls: 'pomodoro-view__stats-title'
-        });
+        new Setting(statsHeader)
+            .setName('Today\'s progress')
+            .setHeading();
         
         const viewStatsButton = statsHeader.createEl('button', {
             cls: 'pomodoro-view__view-stats-button',

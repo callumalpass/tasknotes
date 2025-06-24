@@ -44,7 +44,9 @@ export class TimeblockCreationModal extends Modal {
         contentEl.empty();
         contentEl.addClass('timeblock-creation-modal');
 
-        contentEl.createEl('h2', { text: 'Create timeblock' });
+        new Setting(contentEl)
+            .setName('Create timeblock')
+            .setHeading();
 
         // Date display (read-only)
         const dateDisplay = contentEl.createDiv({ cls: 'timeblock-date-display' });

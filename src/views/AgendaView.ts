@@ -1,4 +1,4 @@
-import { Notice, TFile, ItemView, WorkspaceLeaf, Menu, EventRef } from 'obsidian';
+import { Notice, TFile, ItemView, WorkspaceLeaf, Menu, EventRef, Setting } from 'obsidian';
 import { format, addDays, startOfWeek, endOfWeek, isToday, isSameDay } from 'date-fns';
 import TaskNotesPlugin from '../main';
 import { 
@@ -453,10 +453,9 @@ export class AgendaView extends ItemView {
         if (!hasAnyItems) {
             container.empty();
             const emptyMessage = container.createDiv({ cls: 'agenda-view__empty' });
-            emptyMessage.createEl('h3', { 
-                text: 'No items scheduled',
-                cls: 'agenda-view__empty-title'
-            });
+            new Setting(emptyMessage)
+                .setName('No items scheduled')
+                .setHeading();
             emptyMessage.createEl('p', { 
                 text: 'No items scheduled for this period.',
                 cls: 'agenda-view__empty-description'
@@ -498,10 +497,9 @@ export class AgendaView extends ItemView {
         if (allItems.length === 0) {
             container.empty();
             const emptyMessage = container.createDiv({ cls: 'agenda-view__empty' });
-            emptyMessage.createEl('h3', { 
-                text: 'No items found',
-                cls: 'agenda-view__empty-title'
-            });
+            new Setting(emptyMessage)
+                .setName('No items found')
+                .setHeading();
             emptyMessage.createEl('p', { 
                 text: 'No items found for the selected period.',
                 cls: 'agenda-view__empty-description'

@@ -1,4 +1,4 @@
-import { App, Modal } from 'obsidian';
+import { App, Modal, Setting } from 'obsidian';
 
 export interface ConfirmationModalOptions {
     title: string;
@@ -36,7 +36,9 @@ export class ConfirmationModal extends Modal {
         const { contentEl } = this;
         contentEl.empty();
 
-        contentEl.createEl('h2', { text: this.options.title });
+        new Setting(contentEl)
+            .setName(this.options.title)
+            .setHeading();
         
         const description = contentEl.createEl('p', { text: this.options.message });
 

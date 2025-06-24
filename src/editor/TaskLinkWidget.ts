@@ -2,8 +2,7 @@ import { EditorView, WidgetType } from '@codemirror/view';
 import { TFile, setIcon } from 'obsidian';
 import { TaskInfo } from '../types';
 import TaskNotesPlugin from '../main';
-import { format } from 'date-fns';
-import { parseDate, formatDateTimeForDisplay, hasTimeComponent } from '../utils/dateUtils';
+import { formatDateTimeForDisplay } from '../utils/dateUtils';
 import { dispatchTaskUpdate } from './TaskLinkOverlay';
 
 export class TaskLinkWidget extends WidgetType {
@@ -119,7 +118,7 @@ export class TaskLinkWidget extends WidgetType {
         
         // Task title (allow longer text)
         const titleText = this.taskInfo.title.length > 80 ? this.taskInfo.title.slice(0, 77) + '...' : this.taskInfo.title;
-        const titleSpan = container.createEl('span', { 
+        container.createEl('span', { 
             cls: 'task-inline-preview__title',
             text: titleText 
         });

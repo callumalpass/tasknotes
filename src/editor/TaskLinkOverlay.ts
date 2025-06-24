@@ -3,12 +3,13 @@ import {
     Decoration,
     DecorationSet,
     EditorView,
+    WidgetType,
 } from '@codemirror/view';
 import { editorLivePreviewField, MarkdownView } from 'obsidian';
 import TaskNotesPlugin from '../main';
-import { TaskLinkDetectionService, TaskLinkInfo } from '../services/TaskLinkDetectionService';
+import { TaskInfo } from '../types';
+import { TaskLinkDetectionService } from '../services/TaskLinkDetectionService';
 import { TaskLinkWidget } from './TaskLinkWidget';
-import { EVENT_TASK_UPDATED } from '../types';
 
 // Define a state effect for task updates
 const taskUpdateEffect = StateEffect.define<{ taskPath?: string }>();
@@ -74,7 +75,7 @@ export function createTaskLinkField(plugin: TaskNotesPlugin) {
                         const taskUpdateData = transaction.effects.find(effect => effect.is(taskUpdateEffect))?.value;
                         if (taskUpdateData?.taskPath) {
                             // Clear only widgets for the specific task that was updated
-                            for (const [key, widget] of activeWidgets.entries()) {
+                            for (const [key] of activeWidgets.entries()) {
                                 if (key.includes(taskUpdateData.taskPath)) {
                                     activeWidgets.delete(key);
                                 }
@@ -105,7 +106,7 @@ export function createTaskLinkField(plugin: TaskNotesPlugin) {
     });
 }
 
-function buildTaskLinkDecorations(state: any, plugin: TaskNotesPlugin, activeWidgets: Map<string, TaskLinkWidget>): DecorationSet {
+function buildTaskLinkDecorations(state: { doc: { toString(): string; length: number } }, plugin: TaskNotesPlugin, activeWidgets: Map<string, TaskLinkWidget>): DecorationSet {
     const builder = new RangeSetBuilder<Decoration>();
     
     // Validate inputs
@@ -224,12 +225,9 @@ function buildTaskLinkDecorations(state: any, plugin: TaskNotesPlugin, activeWid
                         activeWidgets.set(widgetKey, newWidget);
                     }
                     
-                    // Use the new widget to ensure fresh data
-                    const widget = activeWidgets.get(widgetKey);
-
                     // Create a replacement decoration that replaces the wikilink with our widget
                     const decoration = Decoration.replace({
-                        widget: widget as any,
+                        widget: activeWidgets.get(widgetKey) as WidgetType,
                         inclusive: true
                     });
 
@@ -323,7 +321,7 @@ function resolveLinkPathSync(linkPath: string, sourcePath: string, plugin: TaskN
     }
 }
 
-function getTaskInfoSync(filePath: string, plugin: TaskNotesPlugin): any {
+function getTaskInfoSync(filePath: string, plugin: TaskNotesPlugin): TaskInfo | null {
     // Validate inputs
     if (!filePath || typeof filePath !== 'string' || filePath.trim().length === 0) {
         return null;
@@ -341,7 +339,7 @@ function getTaskInfoSync(filePath: string, plugin: TaskNotesPlugin): any {
         }
         
         // Check for invalid characters
-        const invalidChars = /[<>:"|?*\x00-\x1f\x7f]/;
+        const invalidChars = /[<>:"|?*\x00-\x1F\x7F]/;
         if (invalidChars.test(filePath)) {
             console.debug('File path contains invalid characters:', filePath);
             return null;

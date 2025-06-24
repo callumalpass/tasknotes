@@ -156,7 +156,7 @@ export class DOMReconciler {
     animateUpdate(element: HTMLElement, animation: 'flash' | 'pulse' | 'fade-in', duration = 1500): void {
         element.classList.add(`task-${animation}`);
         
-        const timeout = window.setTimeout(() => {
+        const timeout = setTimeout(() => {
             element.classList.remove(`task-${animation}`);
             this.activeTimeouts.delete(timeout);
         }, duration);
@@ -258,7 +258,7 @@ export class DOMReconciler {
         
         // Clear all active timeouts
         for (const timeout of this.activeTimeouts) {
-            window.clearTimeout(timeout);
+            clearTimeout(timeout);
         }
         this.activeTimeouts.clear();
     }

@@ -1,4 +1,4 @@
-import { App, Modal } from 'obsidian';
+import { App, Modal, Setting } from 'obsidian';
 
 export interface TimeBlock {
     title: string;
@@ -26,7 +26,9 @@ export class TimeblockInfoModal extends Modal {
         const { contentEl } = this;
         contentEl.empty();
 
-        contentEl.createEl('h2', { text: 'Timeblock Details' });
+        new Setting(contentEl)
+            .setName('Timeblock Details')
+            .setHeading();
         
         const content = contentEl.createDiv();
         content.style.display = 'flex';

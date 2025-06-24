@@ -1,4 +1,4 @@
-import { Notice, TFile, ItemView, WorkspaceLeaf, setIcon, EventRef } from 'obsidian';
+import { Notice, TFile, ItemView, WorkspaceLeaf, setIcon, EventRef, Setting } from 'obsidian';
 import { format } from 'date-fns';
 import TaskNotesPlugin from '../main';
 import { 
@@ -115,10 +115,9 @@ export class NotesView extends ItemView {
         // Display selected date
         const formattedDate = format(this.plugin.selectedDate, 'EEEE, MMMM d, yyyy');
         const titleContainer = headerContainer.createDiv();
-        titleContainer.createEl('h2', {
-            text: 'Notes',
-            cls: 'notes-view__title'
-        });
+        new Setting(titleContainer)
+            .setName('Notes')
+            .setHeading();
         titleContainer.createEl('div', {
             text: formattedDate,
             cls: 'notes-view__date'
@@ -183,19 +182,17 @@ export class NotesView extends ItemView {
             setIcon(emptyIcon, 'file-text');
             
             if (this.plugin.settings.disableNoteIndexing) {
-                emptyState.createEl('h3', {
-                    text: 'Note Indexing Disabled',
-                    cls: 'notes-view__empty-title'
-                });
+                new Setting(emptyState)
+                    .setName('Note Indexing Disabled')
+                    .setHeading();
                 emptyState.createEl('p', {
                     text: 'Note indexing has been disabled in settings for better performance. To view notes, enable note indexing in Settings > TaskNotes > General > Performance settings and restart the plugin.',
                     cls: 'notes-view__empty-description'
                 });
             } else {
-                emptyState.createEl('h3', {
-                    text: 'No Notes Found',
-                    cls: 'notes-view__empty-title'
-                });
+                new Setting(emptyState)
+                    .setName('No Notes Found')
+                    .setHeading();
                 emptyState.createEl('p', {
                     text: 'No notes found for the selected date. Try selecting a different date or create some notes.',
                     cls: 'notes-view__empty-description'

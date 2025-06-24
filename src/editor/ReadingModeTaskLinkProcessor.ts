@@ -1,5 +1,7 @@
 import { MarkdownPostProcessor } from 'obsidian';
+import { EditorView } from '@codemirror/view';
 import TaskNotesPlugin from '../main';
+import { TaskInfo } from '../types';
 import { TaskLinkWidget } from './TaskLinkWidget';
 
 /**
@@ -90,7 +92,7 @@ export class ReadingModeTaskLinkProcessor {
     /**
      * Get task info for a file path
      */
-    private getTaskInfo(filePath: string): any {
+    private getTaskInfo(filePath: string): TaskInfo | null {
         try {
             // Validate file path
             if (!filePath || typeof filePath !== 'string' || filePath.trim().length === 0) {
@@ -120,7 +122,7 @@ export class ReadingModeTaskLinkProcessor {
     /**
      * Replace a wikilink with a task widget
      */
-    private async replaceWithTaskWidget(linkEl: HTMLAnchorElement, taskInfo: any, originalLinkPath: string): Promise<void> {
+    private async replaceWithTaskWidget(linkEl: HTMLAnchorElement, taskInfo: TaskInfo, originalLinkPath: string): Promise<void> {
         try {
             // Get the original link text for display
             const originalText = linkEl.textContent || `[[${originalLinkPath}]]`;
@@ -150,13 +152,13 @@ export class ReadingModeTaskLinkProcessor {
      * Create a DOM element for the task widget in reading mode
      * This reuses the TaskLinkWidget's toDOM method but adapts it for reading mode context
      */
-    private createReadingModeWidget(widget: TaskLinkWidget, taskInfo: any, originalText: string, displayText?: string): HTMLElement {
+    private createReadingModeWidget(widget: TaskLinkWidget, taskInfo: TaskInfo, originalText: string, displayText?: string): HTMLElement {
         // Create a mock EditorView object with minimal required properties
         // This allows us to reuse the existing TaskLinkWidget.toDOM method
         const mockEditorView = {
             // Add any minimal properties needed by toDOM if required
             // The current implementation doesn't seem to use the view parameter extensively
-        } as any;
+        } as EditorView;
 
         // Use the existing toDOM method to create the widget element
         const element = widget.toDOM(mockEditorView);

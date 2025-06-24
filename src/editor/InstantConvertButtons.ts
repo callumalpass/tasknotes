@@ -102,13 +102,13 @@ class ConvertButtonWidget extends WidgetType {
     /**
      * Validate editor state and line number
      */
-    private validateEditorState(editor: any): boolean {
+    private validateEditorState(editor: unknown): boolean {
         if (!editor) {
             console.warn('Editor not available for task conversion');
             return false;
         }
 
-        const totalLines = editor.lineCount();
+        const totalLines = (editor as any).lineCount();
         if (this.lineNumber >= totalLines) {
             console.warn(`Line number ${this.lineNumber} is out of bounds (total lines: ${totalLines})`);
             return false;
@@ -116,7 +116,7 @@ class ConvertButtonWidget extends WidgetType {
 
         // Verify the line still contains a task
         try {
-            const currentLine = editor.getLine(this.lineNumber);
+            const currentLine = (editor as any).getLine(this.lineNumber);
             if (!currentLine) {
                 console.warn(`Cannot read line ${this.lineNumber}`);
                 return false;
@@ -177,7 +177,7 @@ export function createInstantConvertField(plugin: TaskNotesPlugin) {
     });
 }
 
-function buildConvertButtonDecorations(state: any, plugin: TaskNotesPlugin): DecorationSet {
+function buildConvertButtonDecorations(state: { doc: { lines: number; line(n: number): { text: string; to: number } } }, plugin: TaskNotesPlugin): DecorationSet {
     const builder = new RangeSetBuilder<Decoration>();
     const doc = state.doc;
     

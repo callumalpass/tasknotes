@@ -377,7 +377,7 @@ export class PomodoroService {
             console.error('Failed to save state when starting timer:', error);
         });
         
-        this.timerInterval = window.setInterval(async () => {
+        this.timerInterval = setInterval(async () => {
             if (this.state.timeRemaining > 0) {
                 this.state.timeRemaining--;
                 
@@ -403,7 +403,7 @@ export class PomodoroService {
 
     private stopTimer() {
         if (this.timerInterval) {
-            window.clearInterval(this.timerInterval);
+            clearInterval(this.timerInterval);
             this.timerInterval = null;
         }
     }
@@ -528,10 +528,10 @@ export class PomodoroService {
 
         // Auto-start next session if configured
         if (session.type === 'work' && this.plugin.settings.pomodoroAutoStartBreaks) {
-            const timeout = window.setTimeout(() => this.startBreak(shouldTakeLongBreak), 1000);
+            const timeout = setTimeout(() => this.startBreak(shouldTakeLongBreak), 1000);
             this.cleanupTimeouts.add(timeout);
         } else if (session.type !== 'work' && this.plugin.settings.pomodoroAutoStartWork) {
-            const timeout = window.setTimeout(() => this.startPomodoro(), 1000);
+            const timeout = setTimeout(() => this.startPomodoro(), 1000);
             this.cleanupTimeouts.add(timeout);
         }
     }
@@ -617,7 +617,7 @@ export class PomodoroService {
             this.activeAudioContexts.add(audioContext);
             
             // Second beep
-            const beepTimeout = window.setTimeout(() => {
+            const beepTimeout = setTimeout(() => {
                 try {
                     const osc2 = audioContext.createOscillator();
                     osc2.connect(gainNode);
@@ -632,7 +632,7 @@ export class PomodoroService {
             this.cleanupTimeouts.add(beepTimeout);
             
             // Clean up audio context after sounds complete
-            const cleanupTimeout = window.setTimeout(() => {
+            const cleanupTimeout = setTimeout(() => {
                 this.activeAudioContexts.delete(audioContext);
                 audioContext.close().catch(() => {});
             }, 300);
@@ -829,7 +829,7 @@ export class PomodoroService {
         
         // Clean up all timeouts
         for (const timeout of this.cleanupTimeouts) {
-            window.clearTimeout(timeout);
+            clearTimeout(timeout);
         }
         this.cleanupTimeouts.clear();
         

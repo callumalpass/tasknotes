@@ -1,4 +1,4 @@
-import { App, Modal } from 'obsidian';
+import { App, Modal, Setting } from 'obsidian';
 
 /**
  * Specialized confirmation modal for storage location changes
@@ -25,7 +25,9 @@ export class StorageLocationConfirmationModal extends Modal {
 
         // Create title
         const title = this.hasExistingData ? 'Migrate pomodoro data?' : 'Switch to daily notes storage?';
-        contentEl.createEl('h2', { text: title });
+        new Setting(contentEl)
+            .setName(title)
+            .setHeading();
         
         // Main message
         const message = this.hasExistingData 

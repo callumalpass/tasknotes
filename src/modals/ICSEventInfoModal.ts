@@ -1,4 +1,4 @@
-import { App, Modal } from 'obsidian';
+import { App, Modal, Setting } from 'obsidian';
 
 export interface ICSEvent {
     title: string;
@@ -27,7 +27,9 @@ export class ICSEventInfoModal extends Modal {
         const { contentEl } = this;
         contentEl.empty();
 
-        contentEl.createEl('h2', { text: 'Calendar Event Details' });
+        new Setting(contentEl)
+            .setName('Calendar Event Details')
+            .setHeading();
         
         const content = contentEl.createDiv();
         content.style.display = 'flex';

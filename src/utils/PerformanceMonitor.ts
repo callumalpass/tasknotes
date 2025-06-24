@@ -1,3 +1,5 @@
+import { Platform } from 'obsidian';
+
 /**
  * Performance Monitor
  * 
@@ -346,7 +348,13 @@ export class PerformanceMonitor {
         const data = {
             timestamp: new Date().toISOString(),
             stats: this.getAllStats(),
-            userAgent: navigator.userAgent,
+            platform: {
+                isDesktop: Platform.isDesktop,
+                isMobile: Platform.isMobile,
+                isWin: Platform.isWin,
+                isMacOS: Platform.isMacOS,
+                isLinux: Platform.isLinux
+            },
             memoryInfo: ('memory' in performance) ? (performance as any).memory : null
         };
         

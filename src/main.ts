@@ -1,4 +1,4 @@
-import { Notice, Plugin, TFile, WorkspaceLeaf, normalizePath, Editor, MarkdownView } from 'obsidian';
+import { Notice, Plugin, WorkspaceLeaf, Editor, MarkdownView } from 'obsidian';
 import { format } from 'date-fns';
 import * as YAML from 'yaml';
 import { 
@@ -112,7 +112,7 @@ export default class TaskNotesPlugin extends Plugin {
 	migrationService: MigrationService;
 	
 	// Event listener cleanup  
-	private taskUpdateListenerForEditor: any = null;
+	private taskUpdateListenerForEditor: import('obsidian').EventRef | null = null;
 	
 	// Initialization guard to prevent duplicate initialization
 	private initializationComplete = false;
@@ -287,7 +287,7 @@ export default class TaskNotesPlugin extends Plugin {
 	 */
 	private initializeServicesLazily(): void {
 		// Use setTimeout to defer initialization to next tick
-		window.setTimeout(async () => {
+		setTimeout(async () => {
 			try {
 				// Initialize Pomodoro service
 				this.pomodoroService = new PomodoroService(this);
@@ -309,18 +309,18 @@ export default class TaskNotesPlugin extends Plugin {
 				this.registerEditorExtension(createInstantConvertButtons(this));
 				
 				// Set up global event listener for task updates to refresh editor decorations
-				this.taskUpdateListenerForEditor = this.emitter.on(EVENT_TASK_UPDATED, (data: any) => {
+				this.taskUpdateListenerForEditor = this.emitter.on(EVENT_TASK_UPDATED, (data: { path?: string; updatedTask?: TaskInfo }) => {
 					
 					// Trigger decoration refresh in all active markdown views using proper state effects
 					this.app.workspace.iterateRootLeaves((leaf) => {
 						// Use instanceof check for deferred view compatibility
 						if (leaf.view && leaf.view.getViewType() === 'markdown') {
-							const editor = (leaf.view as any).editor;
-							if (editor && editor.cm) {
+							const editor = (leaf.view as MarkdownView).editor;
+							if (editor && (editor as any).cm) {
 								// Use the proper CodeMirror state effect pattern
 								// Pass the updated task path to ensure specific widget refreshing
 								const taskPath = data?.path || data?.updatedTask?.path;
-								dispatchTaskUpdate(editor.cm, taskPath);
+								dispatchTaskUpdate((editor as any).cm, taskPath);
 							}
 						}
 					});
@@ -329,12 +329,12 @@ export default class TaskNotesPlugin extends Plugin {
 				// Set up workspace event listener for active leaf changes to refresh task overlays
 				this.registerEvent(this.app.workspace.on('active-leaf-change', (leaf) => {
 					// Small delay to ensure editor is fully initialized
-					window.setTimeout(() => {
+					setTimeout(() => {
 						if (leaf && leaf.view && leaf.view.getViewType() === 'markdown') {
-							const editor = (leaf.view as any).editor;
-							if (editor && editor.cm) {
+							const editor = (leaf.view as MarkdownView).editor;
+							if (editor && (editor as any).cm) {
 								// Dispatch task update to refresh overlays when returning to a note
-								dispatchTaskUpdate(editor.cm);
+								dispatchTaskUpdate((editor as any).cm);
 							}
 						}
 					}, 50);
@@ -343,13 +343,13 @@ export default class TaskNotesPlugin extends Plugin {
 				// Set up workspace event listener for layout changes to detect mode switches
 				this.registerEvent(this.app.workspace.on('layout-change', () => {
 					// Small delay to ensure mode switch is complete
-					window.setTimeout(() => {
+					setTimeout(() => {
 						const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
 						if (activeView) {
-							const editor = (activeView as any).editor;
-							if (editor && editor.cm) {
+							const editor = activeView.editor;
+							if (editor && (editor as any).cm) {
 								// Refresh overlays when switching to Live Preview mode
-								dispatchTaskUpdate(editor.cm);
+								dispatchTaskUpdate((editor as any).cm);
 							}
 						}
 					}, 100);
@@ -390,7 +390,7 @@ export default class TaskNotesPlugin extends Plugin {
 			const needsMigration = await this.migrationService.needsMigration();
 			if (needsMigration) {
 				// Show migration prompt after a small delay to ensure UI is ready
-				window.setTimeout(() => {
+				setTimeout(() => {
 					showMigrationPrompt(this.app, this.migrationService);
 				}, 1000);
 			} else {
@@ -511,7 +511,7 @@ export default class TaskNotesPlugin extends Plugin {
 		
 		// Clean up task update listener for editor
 		if (this.taskUpdateListenerForEditor) {
-			this.emitter.off(EVENT_TASK_UPDATED, this.taskUpdateListenerForEditor);
+			this.emitter.offref(this.taskUpdateListenerForEditor);
 		}
 		
 		// Clean up the event emitter (native Events class)
@@ -553,7 +553,7 @@ export default class TaskNotesPlugin extends Plugin {
 		
 		if (hasNewFields) {
 			// Save the migrated settings to include new field mappings (non-blocking)
-			window.setTimeout(() => {
+			setTimeout(() => {
 				this.saveData(this.settings).catch(error => {
 					console.error('Failed to save migrated settings:', error);
 				});

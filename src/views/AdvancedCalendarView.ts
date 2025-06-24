@@ -1463,9 +1463,13 @@ export class AdvancedCalendarView extends ItemView {
             item
                 .setTitle("Copy title")
                 .setIcon("copy")
-                .onClick(() => {
-                    navigator.clipboard.writeText(icsEvent.title);
-                    new Notice('Event title copied to clipboard');
+                .onClick(async () => {
+                    try {
+                        await navigator.clipboard.writeText(icsEvent.title);
+                        new Notice('Event title copied to clipboard');
+                    } catch (error) {
+                        new Notice('Failed to copy to clipboard');
+                    }
                 })
         );
 
@@ -1475,9 +1479,13 @@ export class AdvancedCalendarView extends ItemView {
                 item
                     .setTitle("Copy URL")
                     .setIcon("link")
-                    .onClick(() => {
-                        navigator.clipboard.writeText(icsEvent.url!);
-                        new Notice('Event URL copied to clipboard');
+                    .onClick(async () => {
+                        try {
+                            await navigator.clipboard.writeText(icsEvent.url!);
+                            new Notice('Event URL copied to clipboard');
+                        } catch (error) {
+                            new Notice('Failed to copy to clipboard');
+                        }
                     })
             );
         }

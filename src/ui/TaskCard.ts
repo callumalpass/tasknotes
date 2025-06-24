@@ -574,9 +574,14 @@ export async function showTaskContextMenu(event: MouseEvent, taskPath: string, p
         menu.addItem((item) => {
             item.setTitle('Copy task title');
             item.setIcon('copy');
-            item.onClick(() => {
+            item.onClick(async () => {
                 // Use the fresh task data that showTaskContextMenu just fetched
-                navigator.clipboard.writeText(task.title);
+                try {
+                    await navigator.clipboard.writeText(task.title);
+                    new Notice('Task title copied to clipboard');
+                } catch (error) {
+                    new Notice('Failed to copy to clipboard');
+                }
             });
         });
         

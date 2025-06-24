@@ -237,8 +237,12 @@ export class TaskActionPaletteModal extends FuzzySuggestModal<TaskAction> {
                 keywords: ['copy', 'clipboard', 'title'],
                 isApplicable: () => true,
                 execute: async (task) => {
-                    await navigator.clipboard.writeText(task.title);
-                    new Notice('Task title copied to clipboard');
+                    try {
+                        await navigator.clipboard.writeText(task.title);
+                        new Notice('Task title copied to clipboard');
+                    } catch (error) {
+                        new Notice('Failed to copy to clipboard');
+                    }
                 }
             },
             {
@@ -250,11 +254,15 @@ export class TaskActionPaletteModal extends FuzzySuggestModal<TaskAction> {
                 keywords: ['copy', 'link', 'wikilink', 'reference'],
                 isApplicable: () => true,
                 execute: async (task) => {
-                    const file = this.plugin.app.vault.getAbstractFileByPath(task.path);
-                    if (file) {
-                        const linkText = this.plugin.app.metadataCache.fileToLinktext(file as any, '');
-                        await navigator.clipboard.writeText(`[[${linkText}]]`);
-                        new Notice('Task link copied to clipboard');
+                    try {
+                        const file = this.plugin.app.vault.getAbstractFileByPath(task.path);
+                        if (file) {
+                            const linkText = this.plugin.app.metadataCache.fileToLinktext(file as any, '');
+                            await navigator.clipboard.writeText(`[[${linkText}]]`);
+                            new Notice('Task link copied to clipboard');
+                        }
+                    } catch (error) {
+                        new Notice('Failed to copy to clipboard');
                     }
                 }
             },

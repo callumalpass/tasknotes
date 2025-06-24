@@ -20,7 +20,9 @@ export class MigrationModal extends Modal {
         // Get migration count
         this.migrationCount = await this.migrationService.getMigrationCount();
 
-        contentEl.createEl('h2', { text: 'Recurrence System Migration' });
+        new Setting(contentEl)
+            .setName('Recurrence System Migration')
+            .setHeading();
 
         contentEl.createEl('p', { 
             text: 'TaskNotes has an updated, more powerful recurrence system based on the RFC 5545 standard. This migration will convert your existing recurring tasks to use the new format.'
@@ -48,7 +50,9 @@ export class MigrationModal extends Modal {
 
         // Warning section
         const warningEl = contentEl.createDiv('migration-warning');
-        warningEl.createEl('h3', { text: '⚠️ Important Notes' });
+        new Setting(warningEl)
+            .setName('⚠️ Important Notes')
+            .setHeading();
         
         const warningList = warningEl.createEl('ul');
         warningList.createEl('li', { text: 'We strongly recommend backing up your vault before proceeding.' });
@@ -58,7 +62,9 @@ export class MigrationModal extends Modal {
 
         // Benefits section
         const benefitsEl = contentEl.createDiv('migration-benefits');
-        benefitsEl.createEl('h3', { text: '✨ What You Get' });
+        new Setting(benefitsEl)
+            .setName('✨ What You Get')
+            .setHeading();
         
         const benefitsList = benefitsEl.createEl('ul');
         benefitsList.createEl('li', { text: 'More powerful recurrence patterns (e.g., "every other Tuesday", "last Friday of the month")' });
@@ -70,7 +76,9 @@ export class MigrationModal extends Modal {
         const progressEl = contentEl.createDiv('migration-progress');
         progressEl.style.display = 'none';
         
-        const progressTitle = progressEl.createEl('h3', { text: 'Migration Progress' });
+        new Setting(progressEl)
+            .setName('Migration Progress')
+            .setHeading();
         const progressBar = progressEl.createEl('progress');
         progressBar.max = this.migrationCount;
         progressBar.value = 0;
@@ -111,7 +119,9 @@ export class MigrationModal extends Modal {
 
                 if (result.errors.length > 0) {
                     const errorEl = progressEl.createDiv('migration-errors');
-                    errorEl.createEl('h4', { text: '⚠️ Errors Encountered' });
+                    new Setting(errorEl)
+                        .setName('⚠️ Errors Encountered')
+                        .setHeading();
                     const errorList = errorEl.createEl('ul');
                     
                     result.errors.forEach(error => {
