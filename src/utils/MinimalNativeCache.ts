@@ -31,15 +31,15 @@ export class MinimalNativeCache extends Events {
     private overdueTasks: Set<string> = new Set(); // overdue task paths
     
     // Initialization state
-    private initialized: boolean = false;
-    private indexesBuilt: boolean = false;
+    private initialized = false;
+    private indexesBuilt = false;
     
     constructor(
         app: App,
         taskTag: string,
-        excludedFolders: string = '',
+        excludedFolders = '',
         fieldMapper?: FieldMapper,
-        disableNoteIndexing: boolean = false
+        disableNoteIndexing = false
     ) {
         super();
         this.app = app;
@@ -308,7 +308,7 @@ export class MinimalNativeCache extends Events {
                         hasDue: validTasks.some(task => task.due && !task.scheduled),
                         hasScheduled: validTasks.some(task => task.scheduled),
                         hasCompleted: validTasks.some(task => task.status === 'completed' || task.status === 'done'),
-                        hasArchived: validTasks.some(task => task.archived === true),
+                        hasArchived: validTasks.some(task => task.archived),
                         tasks: validTasks
                     };
                     taskData.set(dateKey, taskSummary);
@@ -641,7 +641,7 @@ export class MinimalNativeCache extends Events {
         taskTag: string,
         excludedFolders: string,
         fieldMapper?: FieldMapper,
-        disableNoteIndexing: boolean = false
+        disableNoteIndexing = false
     ): void {
         this.taskTag = taskTag;
         this.excludedFolders = excludedFolders 

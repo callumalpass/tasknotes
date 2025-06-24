@@ -87,7 +87,7 @@ export class AdvancedCalendarView extends ItemView {
     private showTimeblocks: boolean;
     
     // Mobile collapsible header state
-    private headerCollapsed: boolean = true;
+    private headerCollapsed = true;
 
     constructor(leaf: WorkspaceLeaf, plugin: TaskNotesPlugin) {
         super(leaf);

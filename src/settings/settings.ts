@@ -265,7 +265,7 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 
 export class TaskNotesSettingTab extends PluginSettingTab {
 	plugin: TaskNotesPlugin;
-	private activeTab: string = 'task-defaults';
+	private activeTab = 'task-defaults';
 	private tabContents: Record<string, HTMLElement> = {};
   
 	constructor(app: App, plugin: TaskNotesPlugin) {

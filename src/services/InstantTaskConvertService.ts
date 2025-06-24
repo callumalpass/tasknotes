@@ -220,7 +220,7 @@ export class InstantTaskConvertService {
     /**
      * Create a task file using default settings and parsed data
      */
-    private async createTaskFile(parsedData: ParsedTaskData, details: string = ''): Promise<TFile> {
+    private async createTaskFile(parsedData: ParsedTaskData, details = ''): Promise<TFile> {
         // Sanitize and validate input data
         const title = this.sanitizeTitle(parsedData.title) || 'Untitled Task';
         

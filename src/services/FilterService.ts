@@ -716,7 +716,7 @@ export class FilterService extends EventEmitter {
     async getTasksForDate(
         date: Date, 
         baseQuery: FilterQuery,
-        includeOverdue: boolean = false
+        includeOverdue = false
     ): Promise<TaskInfo[]> {
         const dateStr = format(date, 'yyyy-MM-dd');
         const isViewingToday = isTodayUtil(dateStr);
@@ -773,7 +773,7 @@ export class FilterService extends EventEmitter {
     async getAgendaData(
         dates: Date[], 
         baseQuery: Omit<FilterQuery, 'dateRange' | 'includeOverdue'>,
-        showOverdueOnToday: boolean = false
+        showOverdueOnToday = false
     ): Promise<Array<{date: Date; tasks: TaskInfo[]}>> {
         // Build the complete query with date range
         const dateRange = FilterService.createDateRangeFromDates(dates);
@@ -814,7 +814,7 @@ export class FilterService extends EventEmitter {
     async getFlatAgendaData(
         dates: Date[], 
         baseQuery: Omit<FilterQuery, 'dateRange' | 'includeOverdue'>,
-        showOverdueOnToday: boolean = false
+        showOverdueOnToday = false
     ): Promise<Array<TaskInfo & {agendaDate: Date}>> {
         const groupedData = await this.getAgendaData(dates, baseQuery, showOverdueOnToday);
         

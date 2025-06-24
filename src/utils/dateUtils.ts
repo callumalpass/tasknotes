@@ -313,7 +313,7 @@ export function isPastDate(dateString: string): boolean {
 /**
  * Format a date string for user display
  */
-export function formatDateForDisplay(dateString: string, formatString: string = 'MMM d, yyyy'): string {
+export function formatDateForDisplay(dateString: string, formatString = 'MMM d, yyyy'): string {
     try {
         const parsed = parseDate(dateString);
         return format(parsed, formatString);
@@ -378,7 +378,7 @@ export function parseTimestamp(timestampString: string): Date {
 /**
  * Format timestamp for display in user's timezone
  */
-export function formatTimestampForDisplay(timestampString: string, formatString: string = 'MMM d, yyyy h:mm a'): string {
+export function formatTimestampForDisplay(timestampString: string, formatString = 'MMM d, yyyy h:mm a'): string {
     if (!timestampString) {
         return timestampString;
     }

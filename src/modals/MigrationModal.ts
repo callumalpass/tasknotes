@@ -6,7 +6,7 @@ import { MigrationService } from '../services/MigrationService';
  */
 export class MigrationModal extends Modal {
     private migrationService: MigrationService;
-    private migrationCount: number = 0;
+    private migrationCount = 0;
 
     constructor(app: App, migrationService: MigrationService) {
         super(app);

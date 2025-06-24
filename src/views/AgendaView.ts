@@ -21,10 +21,10 @@ export class AgendaView extends ItemView {
     plugin: TaskNotesPlugin;
     
     // View settings
-    private daysToShow: number = 7;
-    private groupByDate: boolean = true;
-    private showOverdueOnToday: boolean = false;
-    private showNotes: boolean = true;
+    private daysToShow = 7;
+    private groupByDate = true;
+    private showOverdueOnToday = false;
+    private showNotes = true;
     private startDate: Date;
     
     // Filter system

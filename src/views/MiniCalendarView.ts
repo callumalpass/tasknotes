@@ -18,7 +18,7 @@ import { createSafeDate, normalizeDateString } from '../utils/dateUtils';
 
 export class MiniCalendarView extends ItemView {
     // Static property to track initialization status for daily notes
-    static dailyNotesInitialized: boolean = false;
+    static dailyNotesInitialized = false;
     
     plugin: TaskNotesPlugin;
     colorizeMode: ColorizeMode = 'tasks';
@@ -33,7 +33,7 @@ export class MiniCalendarView extends ItemView {
     // Performance optimizations
     private monthCalculationCache: Map<string, { actualMonth: number; dateObj: Date; dateKey: string }> = new Map();
     private debouncedRefresh: (() => void) | null = null;
-    private currentCacheKey: string = '';
+    private currentCacheKey = '';
     private calendarDayElements: NodeListOf<Element> | null = null;
     private elementToDateMap: Map<Element, { date: number; dateKey: string }> = new Map();
   

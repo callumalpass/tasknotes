@@ -17,7 +17,7 @@ export class RequestDeduplicator {
     async execute<T>(
         key: string,
         requestFn: () => Promise<T>,
-        ttl: number = 5000
+        ttl = 5000
     ): Promise<T> {
         // Check if request is already in flight
         if (this.inFlightRequests.has(key)) {

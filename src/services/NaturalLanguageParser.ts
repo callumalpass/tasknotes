@@ -34,7 +34,7 @@ export class NaturalLanguageParser {
     private readonly priorityPatterns: RegexPattern[];
     private readonly defaultToScheduled: boolean;
 
-    constructor(statusConfigs: StatusConfig[] = [], priorityConfigs: PriorityConfig[] = [], defaultToScheduled: boolean = true) {
+    constructor(statusConfigs: StatusConfig[] = [], priorityConfigs: PriorityConfig[] = [], defaultToScheduled = true) {
         this.defaultToScheduled = defaultToScheduled;
         
         // Pre-compile regex patterns for performance

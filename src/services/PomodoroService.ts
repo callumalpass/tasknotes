@@ -193,7 +193,7 @@ export class PomodoroService {
         new Notice(`Pomodoro started${task ? ` for: ${task.title}` : ''}`);
     }
 
-    async startBreak(isLongBreak: boolean = false) {
+    async startBreak(isLongBreak = false) {
         if (this.state.isRunning) {
             new Notice('A timer is already running');
             return;

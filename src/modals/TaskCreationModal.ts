@@ -3,7 +3,7 @@ import TaskNotesPlugin from '../main';
 import { BaseTaskModal } from './BaseTaskModal';
 import { MINI_CALENDAR_VIEW_TYPE, TaskInfo } from '../types';
 import { ParsedTaskData } from '../utils/TasksPluginParser';
-import { getCurrentTimestamp } from '../utils/dateUtils';
+import { getCurrentTimestamp, getDatePart } from '../utils/dateUtils';
 import { generateTaskFilename, FilenameContext } from '../utils/filenameGenerator';
 import { calculateDefaultDate } from '../utils/helpers';
 import { NaturalLanguageParser, ParsedTaskData as NLParsedTaskData } from '../services/NaturalLanguageParser';
@@ -17,7 +17,7 @@ export interface TaskConversionOptions {
 }
 
 export class TaskCreationModal extends BaseTaskModal {
-	details: string = '';
+	details = '';
 	
 	// UI elements for filename preview
 	private filenamePreview: HTMLElement | null = null;
@@ -34,7 +34,7 @@ export class TaskCreationModal extends BaseTaskModal {
 	private nlInputContainer: HTMLElement | null = null;
 	private nlPreviewContainer: HTMLElement | null = null;
 	private detailedFormContainer: HTMLElement | null = null;
-	private isDetailedFormVisible: boolean = false;
+	private isDetailedFormVisible = false;
 	private filenamePreviewContainer: HTMLElement | null = null;
   
 	constructor(app: App, plugin: TaskNotesPlugin, prePopulatedValues?: Partial<TaskInfo>, conversionOptions?: TaskConversionOptions) {
