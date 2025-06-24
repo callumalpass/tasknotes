@@ -444,7 +444,7 @@ describe('Calendar and View Synchronization Integration', () => {
         { viewType: 'timeline', refresh: jest.fn(), updateTimeline: jest.fn() }
       ];
 
-      testEnv.mockApp.workspace.iterateAllLeaves.mockImplementation((callback) => {
+      testEnv.mockApp.workspace.iterateAllLeaves.mockImplementation((callback: (leaf: { view: any }) => void) => {
         mockViews.forEach(view => {
           callback({ view });
         });
@@ -492,7 +492,7 @@ describe('Calendar and View Synchronization Integration', () => {
         })
       };
 
-      testEnv.mockApp.workspace.iterateAllLeaves.mockImplementation((callback) => {
+      testEnv.mockApp.workspace.iterateAllLeaves.mockImplementation((callback: (leaf: { view: any }) => void) => {
         callback({ view: mockListView });
         callback({ view: mockCalendarView });
       });
@@ -528,7 +528,7 @@ describe('Calendar and View Synchronization Integration', () => {
         refresh: jest.fn().mockRejectedValue(new Error('Calendar refresh failed'))
       };
 
-      testEnv.mockApp.workspace.iterateAllLeaves.mockImplementation((callback) => {
+      testEnv.mockApp.workspace.iterateAllLeaves.mockImplementation((callback: (leaf: { view: any }) => void) => {
         callback({ view: mockWorkingView });
         callback({ view: mockFailingView });
       });
