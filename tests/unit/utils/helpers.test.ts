@@ -507,25 +507,8 @@ describe('Helpers', () => {
         mockApp.metadataCache.getFileCache.mockReturnValue({ frontmatter });
 
         const mockFieldMapper = {
-          mapping: {
-            title: 'title',
-            status: 'status',
-            priority: 'priority',
-            due: 'due',
-            scheduled: 'scheduled',
-            contexts: 'contexts',
-            timeEstimate: 'timeEstimate',
-            completedDate: 'completedDate',
-            dateCreated: 'dateCreated',
-            dateModified: 'dateModified',
-            recurrence: 'recurrence',
-            archiveTag: 'archived',
-            timeEntries: 'timeEntries',
-            completeInstances: 'complete_instances',
-            pomodoros: 'pomodoros'
-          },
           mapFromFrontmatter: jest.fn().mockReturnValue(frontmatter),
-          mapToFrontmatter: jest.fn().mockImplementation((taskData) => {
+          mapToFrontmatter: jest.fn().mockImplementation((taskData: any) => {
             const frontmatter: any = {};
             Object.keys(taskData).forEach(key => {
               if (taskData[key] !== undefined && key !== 'path' && key !== 'tags') {
@@ -534,7 +517,7 @@ describe('Helpers', () => {
             });
             return frontmatter;
           }),
-          toUserField: jest.fn().mockImplementation((field) => field),
+          toUserField: jest.fn().mockImplementation((field: string) => field),
           updateMapping: jest.fn(),
           getMapping: jest.fn().mockReturnValue({
             title: 'title',
@@ -553,7 +536,7 @@ describe('Helpers', () => {
             completeInstances: 'complete_instances',
             pomodoros: 'pomodoros'
           })
-        };
+        } as any;
 
         const result = extractTaskInfo(mockApp, '', '/tasks/test.md', mockFile, mockFieldMapper);
 

@@ -501,9 +501,9 @@ export const PluginFactory = {
           // Basic parsing simulation
           const result = {
             title: input.replace(/@\w+/g, '').replace(/#\w+/g, '').trim(),
-            contexts: input.match(/@(\w+)/g)?.map(c => c.slice(1)) || [],
-            tags: input.match(/#(\w+)/g)?.map(t => t.slice(1)) || [],
-            due: null,
+            contexts: input.match(/@(\w+)/g)?.map((c: string) => c.slice(1)) || [],
+            tags: input.match(/#(\w+)/g)?.map((t: string) => t.slice(1)) || [],
+            due: null as string | null,
             priority: 'normal',
             status: 'open'
           };
@@ -526,7 +526,7 @@ export const PluginFactory = {
         isCompletedStatus: jest.fn((status) => status === 'done' || status === 'completed'),
         getCompletedStatuses: jest.fn(() => ['done', 'completed']),
         getNextStatus: jest.fn((currentStatus) => {
-          const statusMap = {
+          const statusMap: Record<string, string> = {
             'open': 'in-progress',
             'in-progress': 'done',
             'done': 'open'

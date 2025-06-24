@@ -39,7 +39,7 @@ export const calculateDefaultDate = jest.fn().mockImplementation((option: string
   }
 });
 
-export const debounce = jest.fn().mockImplementation((func: Function, wait: number) => {
+export const debounce = jest.fn().mockImplementation((func: (...args: any[]) => any, wait: number) => {
   return jest.fn().mockImplementation(func);
 });
 

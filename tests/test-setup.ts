@@ -4,26 +4,18 @@
  */
 
 // Mock global objects and APIs that would normally be provided by Obsidian
-global.window = global.window || {};
-global.document = global.document || {};
+(global as any).window = global.window || {};
+(global as any).document = global.document || {};
 
 // Store the original createElement to avoid recursion
 const originalCreateElement = document.createElement;
 
 // Enhanced DOM mocking for Obsidian's HTMLElement extensions
-function createMockElement(tagName: string = 'div'): HTMLElement {
-  const element = originalCreateElement.call(document, tagName) as HTMLElement & {
-    createEl: (tagName: string, options?: any, callback?: (el: HTMLElement) => void) => HTMLElement;
-    createDiv: (options?: any, callback?: (el: HTMLElement) => void) => HTMLElement;
-    createSpan: (options?: any, callback?: (el: HTMLElement) => void) => HTMLElement;
-    setText: (text: string) => HTMLElement;
-    addClass: (className: string) => HTMLElement;
-    removeClass: (className: string) => HTMLElement;
-    toggleClass: (className: string, add?: boolean) => HTMLElement;
-  };
+function createMockElement(tagName: string = 'div'): any {
+  const element = originalCreateElement.call(document, tagName) as any;
 
   // Mock Obsidian's createEl method
-  element.createEl = function(tagName: string, options: any = {}, callback?: (el: HTMLElement) => void): HTMLElement {
+  element.createEl = function(this: any, tagName: string, options: any = {}, callback?: (el: any) => void): any {
     const child = createMockElement(tagName);
     
     // Handle options object
@@ -74,35 +66,35 @@ function createMockElement(tagName: string = 'div'): HTMLElement {
   };
 
   // Mock createDiv as a convenience method
-  element.createDiv = function(options: any = {}, callback?: (el: HTMLElement) => void): HTMLElement {
+  element.createDiv = function(this: any, options: any = {}, callback?: (el: any) => void): any {
     return this.createEl('div', options, callback);
   };
 
   // Mock createSpan as a convenience method
-  element.createSpan = function(options: any = {}, callback?: (el: HTMLElement) => void): HTMLElement {
+  element.createSpan = function(this: any, options: any = {}, callback?: (el: any) => void): any {
     return this.createEl('span', options, callback);
   };
 
   // Mock setText method
-  element.setText = function(text: string): HTMLElement {
+  element.setText = function(this: any, text: string): any {
     this.textContent = text;
     return this;
   };
 
   // Mock addClass method
-  element.addClass = function(className: string): HTMLElement {
+  element.addClass = function(this: any, className: string): any {
     this.classList.add(className);
     return this;
   };
 
   // Mock removeClass method
-  element.removeClass = function(className: string): HTMLElement {
+  element.removeClass = function(this: any, className: string): any {
     this.classList.remove(className);
     return this;
   };
 
   // Mock toggleClass method
-  element.toggleClass = function(className: string, add?: boolean): HTMLElement {
+  element.toggleClass = function(this: any, className: string, add?: boolean): any {
     if (add !== undefined) {
       this.classList.toggle(className, add);
     } else {
@@ -144,11 +136,16 @@ if (!global.ResizeObserver) {
 // Mock IntersectionObserver for visibility detection
 if (!global.IntersectionObserver) {
   global.IntersectionObserver = class IntersectionObserver {
+    root = null;
+    rootMargin = '';
+    thresholds = [];
+    
     constructor() {}
     observe() {}
     unobserve() {}
     disconnect() {}
-  };
+    takeRecords() { return []; }
+  } as any;
 }
 
 // Mock URL constructor for URL handling
@@ -156,7 +153,10 @@ if (!global.URL) {
   global.URL = class URL {
     constructor(public href: string, public base?: string) {}
     toString() { return this.href; }
-  };
+    
+    static createObjectURL() { return ''; }
+    static revokeObjectURL() {}
+  } as any;
 }
 
 // Mock fetch for HTTP requests
@@ -172,7 +172,7 @@ if (!global.fetch) {
 }
 
 // Make Notice globally available for tests
-global.Notice = jest.fn().mockImplementation((message: string, timeout?: number) => {
+(global as any).Notice = jest.fn().mockImplementation((message: string, timeout?: number) => {
   return {};
 });
 

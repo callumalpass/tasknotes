@@ -109,12 +109,14 @@ export interface TaskInfo {
 export interface TaskCreationData extends Partial<TaskInfo> {
     details?: string; // Optional details/description for file content
     parentNote?: string; // Optional parent note name/path for template variable
+    folder?: string; // Optional folder path for task file creation
 }
 
 export interface TimeEntry {
 	startTime: string; // ISO timestamp
 	endTime?: string; // ISO timestamp, undefined if currently running
 	description?: string; // Optional description of what was worked on
+	duration?: number; // Duration in minutes (calculated or manually set)
 }
 
 // Timeblocking types

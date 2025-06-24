@@ -63,6 +63,13 @@ export class TestEnvironment {
   /**
    * Get the mock app instance
    */
+  getMockApp(): any {
+    return this.mockPlugin.app;
+  }
+
+  /**
+   * Get the mock app instance as a property for easier access in tests
+   */
   get mockApp(): any {
     return this.mockPlugin.app;
   }
@@ -127,7 +134,7 @@ export class TestEnvironment {
     }
     
     // Generate filename - mock the function call
-    const filename = `${taskData.title.toLowerCase().replace(/\s+/g, '-')}`;
+    const filename = `${taskData.title?.toLowerCase().replace(/\s+/g, '-') || 'untitled'}`;
 
     const task = TaskFactory.createTask({
       title: taskData.title,
@@ -213,9 +220,9 @@ export class TestEnvironment {
   }
 
   /**
-   * Get task by path
+   * Get task by path from file system
    */
-  getTaskByPath(path: string): TaskInfo | null {
+  private getTaskByPathFromFileSystem(path: string): TaskInfo | null {
     const fileSystem = MockObsidian.getFileSystem();
     if (!fileSystem) {
       console.warn('MockObsidian file system is not available');
@@ -1196,8 +1203,8 @@ export class WorkflowTester {
       await helpers.ensureFolderExists(this.environment.mockPlugin.app.vault, folderPath);
       
       // Spy on generateTaskFilename
-      const generateTaskFilenameSpy = jest.spyOn(filenameGenerator, 'generateTaskFilename').mockImplementation((taskData, settings) => {
-        return taskData.title
+      const generateTaskFilenameSpy = jest.spyOn(filenameGenerator, 'generateTaskFilename').mockImplementation((taskData: any, settings: any) => {
+        return (taskData.title || 'untitled')
           .toLowerCase()
           .replace(/[<>:"|?*\\/\[\]]/g, '') // Remove invalid characters
           .replace(/\s+/g, '-') // Replace spaces with dashes
@@ -1215,7 +1222,7 @@ export class WorkflowTester {
       
       // Spy on generateTaskBodyFromTemplate if template is configured
       if (template) {
-        const generateTaskBodyFromTemplateSpy = jest.spyOn(helpers, 'generateTaskBodyFromTemplate').mockImplementation((template, taskData) => {
+        const generateTaskBodyFromTemplateSpy = jest.spyOn(helpers, 'generateTaskBodyFromTemplate').mockImplementation((template: any, taskData: any) => {
           return `# ${taskData.title}\n\n${taskData.details || 'Task content here.'}`;
         });
         helpers.generateTaskBodyFromTemplate(template, {
@@ -1339,7 +1346,7 @@ export class WorkflowTester {
         error: new Error('Expected conversion error'),
         taskFile: null,
         originalTextReplaced: false,
-        linkText: null
+        linkText: undefined
       };
     }
 

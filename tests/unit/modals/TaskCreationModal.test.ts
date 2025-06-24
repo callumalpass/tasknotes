@@ -8,7 +8,12 @@
 import { TaskCreationModal, TaskConversionOptions } from '../../../src/modals/TaskCreationModal';
 import { TaskInfo } from '../../../src/types';
 import { ParsedTaskData } from '../../../src/utils/TasksPluginParser';
-import { MockObsidian, App, Notice, TFile } from '../../__mocks__/obsidian';
+import { MockObsidian, Notice, TFile } from '../../__mocks__/obsidian';
+import type { App } from 'obsidian';
+
+// Type helper to safely cast mock App to real App type
+// @ts-ignore: Mock App type is compatible at runtime despite TypeScript warnings
+const createMockApp = (mockApp: any): App => mockApp as unknown as App;
 
 // Use real libraries instead of mocks
 import { format } from 'date-fns';
@@ -86,7 +91,7 @@ describe('TaskCreationModal - Fixed Implementation', () => {
     MockObsidian.reset();
 
     // Mock app
-    mockApp = MockObsidian.createMockApp();
+    mockApp = createMockApp(MockObsidian.createMockApp());
 
     // Mock plugin with all required properties
     mockPlugin = {
@@ -142,7 +147,7 @@ describe('TaskCreationModal - Fixed Implementation', () => {
 
   describe('Modal Initialization', () => {
     it('should initialize modal with default values', () => {
-      modal = new TaskCreationModal(mockApp, mockPlugin);
+      modal = new TaskCreationModal(createMockApp(mockApp), mockPlugin);
       expect(modal).toBeInstanceOf(TaskCreationModal);
       expect(modal.title).toBe('');
       expect((modal as any).details).toBe('');
@@ -159,7 +164,7 @@ describe('TaskCreationModal - Fixed Implementation', () => {
         contexts: ['work', 'urgent']
       };
 
-      modal = new TaskCreationModal(mockApp, mockPlugin, prePopulatedValues);
+      modal = new TaskCreationModal(createMockApp(mockApp), mockPlugin, prePopulatedValues);
       expect(modal).toBeInstanceOf(TaskCreationModal);
     });
 
@@ -178,12 +183,12 @@ describe('TaskCreationModal - Fixed Implementation', () => {
         lineNumber: 5
       };
 
-      modal = new TaskCreationModal(mockApp, mockPlugin, {}, conversionOptions);
+      modal = new TaskCreationModal(createMockApp(mockApp), mockPlugin, {}, conversionOptions);
       expect(modal).toBeInstanceOf(TaskCreationModal);
     });
 
     it('should initialize form data with defaults', async () => {
-      modal = new TaskCreationModal(mockApp, mockPlugin);
+      modal = new TaskCreationModal(createMockApp(mockApp), mockPlugin);
       
       await (modal as any).initializeFormData();
 
@@ -201,7 +206,7 @@ describe('TaskCreationModal - Fixed Implementation', () => {
         defaultTimeEstimate: 60
       };
 
-      modal = new TaskCreationModal(mockApp, mockPlugin);
+      modal = new TaskCreationModal(createMockApp(mockApp), mockPlugin);
       await (modal as any).initializeFormData();
 
       expect((modal as any).dueDate).toBe('2025-01-16');
@@ -213,7 +218,7 @@ describe('TaskCreationModal - Fixed Implementation', () => {
 
   describe('Form Population', () => {
     beforeEach(() => {
-      modal = new TaskCreationModal(mockApp, mockPlugin);
+      modal = new TaskCreationModal(createMockApp(mockApp), mockPlugin);
     });
 
     it('should populate form from pre-populated values', () => {
@@ -253,7 +258,7 @@ describe('TaskCreationModal - Fixed Implementation', () => {
 
   describe('Form Validation', () => {
     beforeEach(() => {
-      modal = new TaskCreationModal(mockApp, mockPlugin);
+      modal = new TaskCreationModal(createMockApp(mockApp), mockPlugin);
     });
 
     it('should validate required title field', async () => {
@@ -291,7 +296,7 @@ describe('TaskCreationModal - Fixed Implementation', () => {
 
   describe('Task Creation', () => {
     beforeEach(() => {
-      modal = new TaskCreationModal(mockApp, mockPlugin);
+      modal = new TaskCreationModal(createMockApp(mockApp), mockPlugin);
     });
 
     it('should create task with valid data', async () => {
@@ -379,7 +384,7 @@ describe('TaskCreationModal - Fixed Implementation', () => {
         lineNumber: 5
       };
 
-      modal = new TaskCreationModal(mockApp, mockPlugin, {}, conversionOptions);
+      modal = new TaskCreationModal(createMockApp(mockApp), mockPlugin, {}, conversionOptions);
       (modal as any).title = 'Converted Task';
       (modal as any).frequencyMode = 'NONE';
       
@@ -395,7 +400,7 @@ describe('TaskCreationModal - Fixed Implementation', () => {
 
   describe('Cache Operations', () => {
     beforeEach(() => {
-      modal = new TaskCreationModal(mockApp, mockPlugin);
+      modal = new TaskCreationModal(createMockApp(mockApp), mockPlugin);
     });
 
     it('should get existing contexts', async () => {
@@ -444,11 +449,11 @@ describe('TaskCreationModal - Fixed Implementation', () => {
 
   describe('Error Handling', () => {
     beforeEach(() => {
-      modal = new TaskCreationModal(mockApp, mockPlugin);
+      modal = new TaskCreationModal(createMockApp(mockApp), mockPlugin);
     });
 
     it('should handle quick create task errors gracefully', async () => {
-      const modal = new TaskCreationModal(mockApp as any, mockPlugin as any);
+      const modal = new TaskCreationModal(createMockApp(mockApp), mockPlugin as any);
       // Mock containerEl for error handling
       modal.containerEl = {
         querySelectorAll: jest.fn().mockReturnValue([])

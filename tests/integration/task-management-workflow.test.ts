@@ -434,7 +434,7 @@ describe('Task Management Workflow Integration', () => {
       const task2 = TaskFactory.createTask({ title: 'Task 2' });
 
       // Mock active session for task1
-      testEnv.mockPlugin.getActiveTimeSession.mockImplementation((task) => {
+      testEnv.mockPlugin.getActiveTimeSession.mockImplementation((task: TaskInfo) => {
         if (task.path === task1.path) {
           return { startTime: '2025-01-15T10:00:00Z' };
         }
@@ -561,7 +561,7 @@ describe('Task Management Workflow Integration', () => {
         { viewType: 'kanban', refresh: jest.fn() }
       ];
 
-      testEnv.mockApp.workspace.iterateAllLeaves.mockImplementation((callback) => {
+      testEnv.mockApp.workspace.iterateAllLeaves.mockImplementation((callback: (leaf: any) => void) => {
         mockViews.forEach(view => {
           callback({ view });
         });

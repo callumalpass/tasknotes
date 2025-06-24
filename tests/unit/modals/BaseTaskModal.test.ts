@@ -14,7 +14,11 @@
 
 import { BaseTaskModal } from '../../../src/modals/BaseTaskModal';
 import { RRule, Frequency } from 'rrule';
-import { MockObsidian, App } from '../../__mocks__/obsidian';
+import { MockObsidian } from '../../__mocks__/obsidian';
+import type { App } from 'obsidian';
+
+// Type helper to safely cast mock App to real App type
+const createMockApp = (mockApp: any): App => mockApp as unknown as App;
 
 // Mock external dependencies
 jest.mock('obsidian');
@@ -146,7 +150,7 @@ describe('BaseTaskModal', () => {
     document.body.appendChild(container);
     
     // Mock app
-    mockApp = MockObsidian.createMockApp();
+    mockApp = createMockApp(MockObsidian.createMockApp());
     
     // Mock plugin
     mockPlugin = {
@@ -168,7 +172,8 @@ describe('BaseTaskModal', () => {
       }
     };
     
-    modal = new TestTaskModal(mockApp, mockPlugin);
+    // @ts-ignore: Mock App type is compatible at runtime despite TypeScript warnings
+    modal = new TestTaskModal(createMockApp(mockApp), mockPlugin);
     
     // Mock console methods
     jest.spyOn(console, 'error').mockImplementation(() => {});
@@ -198,7 +203,7 @@ describe('BaseTaskModal', () => {
     });
 
     it('should initialize form data when called', async () => {
-      await modal.initializeFormData();
+      await (modal as any).initializeFormData();
       
       expect(modal.title).toBe('Test Task');
       expect(modal.priority).toBe('normal');
