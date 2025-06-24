@@ -199,6 +199,8 @@ const mockFileSystem = new MockVaultFileSystem();
 // TFile mock class  
 export class TFile {
   public path: string;
+  public vault: any = null;
+  public parent: any = null;
   
   constructor(path?: string) {
     this.path = path || '';
@@ -220,13 +222,22 @@ export class TFile {
     return lastDot > 0 ? name.substring(lastDot + 1) : '';
   }
 
+  private _stat: any = null;
+
   get stat() {
+    if (this._stat) {
+      return this._stat;
+    }
     const file = mockFileSystem.getFile(this.path);
     return file?.stat || {
       ctime: Date.now(),
       mtime: Date.now(),
       size: 0,
     };
+  }
+
+  set stat(value: any) {
+    this._stat = value;
   }
 }
 
@@ -401,9 +412,9 @@ export class Workspace {
     // Mock implementation
   }
 
-  getLeavesOfType(type: string): any[] {
+  getLeavesOfType = jest.fn((type: string): any[] => {
     return this.getViewsOfType(type);
-  }
+  });
 
   getLeaf(newLeaf: boolean = true): any {
     return {
@@ -432,6 +443,28 @@ export class App {
   metadataCache = new MetadataCache();
   fileManager = new FileManager();
   workspace = new Workspace();
+  
+  // Required Obsidian App properties
+  keymap = new Keymap();
+  scope = new Scope();
+  
+  lastEvent: any = null;
+  
+  loadLocalStorage = jest.fn((key: string) => {
+    try {
+      return JSON.parse(localStorage.getItem(`obsidian-app-${key}`) || 'null');
+    } catch {
+      return null;
+    }
+  });
+  
+  saveLocalStorage = jest.fn((key: string, data: unknown | null) => {
+    if (data === null) {
+      localStorage.removeItem(`obsidian-app-${key}`);
+    } else {
+      localStorage.setItem(`obsidian-app-${key}`, JSON.stringify(data));
+    }
+  });
 
   constructor() {
     // Set up cross-references
@@ -744,10 +777,9 @@ export const Notice = jest.fn().mockImplementation((message: string, timeout?: n
 });
 
 // Menu mock class
-export class Menu {
-  private items: any[] = [];
-  
-  addItem(callback: (item: any) => void): void {
+export const Menu = jest.fn().mockImplementation(() => ({
+  items: [],
+  addItem: jest.fn().mockImplementation(function(this: any, callback: (item: any) => void) {
     const mockItem = {
       setTitle: jest.fn().mockReturnThis(),
       setIcon: jest.fn().mockReturnThis(),
@@ -756,26 +788,42 @@ export class Menu {
     };
     callback(mockItem);
     this.items.push(mockItem);
-  }
-  
-  addSeparator(): void {
+  }),
+  addSeparator: jest.fn().mockImplementation(function(this: any) {
     this.items.push({ type: 'separator' });
-  }
-  
-  showAtMouseEvent(event: MouseEvent): void {
-    // Mock implementation
-  }
-  
-  showAtPosition(position: { x: number; y: number }): void {
-    // Mock implementation
-  }
-}
+  }),
+  showAtMouseEvent: jest.fn(),
+  showAtPosition: jest.fn(),
+}));
 
 // Icon utilities
 export function setIcon(element: HTMLElement, iconName: string): void {
   // Mock implementation - just add a class or data attribute
   element.setAttribute('data-icon', iconName);
   element.classList.add('has-icon');
+}
+
+// Keymap mock class
+export class Keymap {
+  pushScope = jest.fn();
+  popScope = jest.fn();
+  bindKey = jest.fn();
+  unbindKey = jest.fn();
+  setDefaultBindings = jest.fn();
+  getBinding = jest.fn();
+  isModifierEvent = jest.fn(() => false);
+}
+
+// Scope mock class
+export class Scope {
+  keys: any[] = [];
+  
+  constructor(parent?: Scope) {
+    // Mock constructor
+  }
+  
+  register = jest.fn();
+  unregister = jest.fn();
 }
 
 // Events system
@@ -841,6 +889,8 @@ export default {
   Setting,
   PluginSettingTab,
   Menu,
+  Keymap,
+  Scope,
   normalizePath,
   stringifyYaml,
   parseYaml,
