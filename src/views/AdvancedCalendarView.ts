@@ -227,12 +227,21 @@ export class AdvancedCalendarView extends ItemView {
                 showAdvancedFilters: true,
                 showDateRangePicker: false, // Calendar provides date navigation
                 allowedSortKeys: [],
-                allowedGroupKeys: []
+                allowedGroupKeys: [],
+                showViewOptions: true // Enable view options in FilterBar
             }
         );
         
         // Initialize FilterBar
         await this.filterBar.initialize();
+        
+        // Set up view options if supported
+        if (this.filterBar.setViewOptions) {
+            this.filterBar.setViewOptions(
+                this.getViewOptionsConfig(),
+                (optionId: string, enabled: boolean) => this.onViewOptionChange(optionId, enabled)
+            );
+        }
         
         // Set up cache refresh mechanism for FilterBar
         this.filterBar.setupCacheRefresh(this.plugin.cacheManager, this.plugin.filterService);
@@ -245,23 +254,6 @@ export class AdvancedCalendarView extends ItemView {
             this.refreshEvents();
         });
         
-        // Controls section - view toggles and button
-        const controlsSection = mainRow.createDiv({ cls: 'advanced-calendar-view__controls' });
-        
-        // View toggles
-        const toggles = controlsSection.createDiv({ cls: 'advanced-calendar-view__toggles' });
-        
-        // Create all view toggles
-        this.createViewToggles(toggles);
-        
-        // Schedule Tasks button
-        const scheduleTasksBtn = controlsSection.createEl('button', {
-            text: 'Schedule tasks',
-            cls: 'advanced-calendar-view__schedule-tasks-btn'
-        });
-        scheduleTasksBtn.addEventListener('click', () => {
-            this.openScheduleTasksModal();
-        });
         
     }
     
@@ -277,100 +269,64 @@ export class AdvancedCalendarView extends ItemView {
         }
     }
 
-    private renderViewToggles() {
-        // Re-render the controls section to update toggle visibility
-        const controlsSection = this.contentEl.querySelector('.advanced-calendar-view__controls');
-        if (controlsSection) {
-            // Clear existing toggles
-            const togglesContainer = controlsSection.querySelector('.advanced-calendar-view__toggles');
-            if (togglesContainer) {
-                togglesContainer.empty();
-                
-                // Re-create toggles
-                this.createViewToggles(togglesContainer as HTMLElement);
-            }
-            
-            // Update help text visibility
-            const existingHelpText = controlsSection.querySelector('.advanced-calendar-view__help-text');
-            if (existingHelpText) {
-                existingHelpText.remove();
-            }
-            
+    private renderViewOptions() {
+        // Update view options in the FilterBar
+        if (this.filterBar && this.filterBar.setViewOptions) {
+            this.filterBar.setViewOptions(
+                this.getViewOptionsConfig(),
+                (optionId: string, enabled: boolean) => this.onViewOptionChange(optionId, enabled)
+            );
         }
     }
 
-    private createViewToggles(toggles: HTMLElement) {
-        // Scheduled Tasks toggle
-        this.createToggle(
-            toggles,
-            'Scheduled tasks',
-            this.showScheduled,
-            (enabled) => {
-                this.showScheduled = enabled;
-                this.saveViewPreferences();
-                this.refreshEvents();
-            }
-        );
+    // View options handling for FilterBar integration
+    getViewOptionsConfig() {
+        const options = [
+            { id: 'scheduled', label: 'Scheduled tasks', value: this.showScheduled },
+            { id: 'due', label: 'Due dates', value: this.showDue },
+            { id: 'timeEntries', label: 'Time entries', value: this.showTimeEntries },
+            { id: 'recurring', label: 'Recurring tasks', value: this.showRecurring },
+            { id: 'icsEvents', label: 'Calendar subscriptions', value: this.showICSEvents }
+        ];
         
-        // Due Dates toggle
-        this.createToggle(
-            toggles,
-            'Due dates',
-            this.showDue,
-            (enabled) => {
-                this.showDue = enabled;
-                this.saveViewPreferences();
-                this.refreshEvents();
-            }
-        );
-        
-        // Time Entries toggle
-        this.createToggle(
-            toggles,
-            'Time entries',
-            this.showTimeEntries,
-            (enabled) => {
-                this.showTimeEntries = enabled;
-                this.saveViewPreferences();
-                this.refreshEvents();
-            }
-        );
-        
-        // Recurring Tasks toggle
-        this.createToggle(
-            toggles,
-            'Recurring tasks',
-            this.showRecurring,
-            (enabled) => {
-                this.showRecurring = enabled;
-                this.saveViewPreferences();
-                this.refreshEvents();
-            }
-        );
-        
-        // ICS Events toggle
-        this.createToggle(
-            toggles,
-            'Calendar subscriptions',
-            this.showICSEvents,
-            (enabled) => {
-                this.showICSEvents = enabled;
-                this.saveViewPreferences();
-                this.refreshEvents();
-            }
-        );
-        
-        // Timeblocks toggle (only show if timeblocking is enabled)
+        // Add timeblocks option if enabled
         if (this.plugin.settings.calendarViewSettings.enableTimeblocking) {
-            this.createToggle(
-                toggles,
-                'Timeblocks',
-                this.showTimeblocks,
-                (enabled) => {
-                    this.showTimeblocks = enabled;
-                    this.saveViewPreferences();
-                    this.refreshEvents();
-                }
+            options.push({ id: 'timeblocks', label: 'Timeblocks', value: this.showTimeblocks });
+        }
+        
+        return options;
+    }
+    
+    onViewOptionChange(optionId: string, enabled: boolean) {
+        switch (optionId) {
+            case 'scheduled':
+                this.showScheduled = enabled;
+                break;
+            case 'due':
+                this.showDue = enabled;
+                break;
+            case 'timeEntries':
+                this.showTimeEntries = enabled;
+                break;
+            case 'recurring':
+                this.showRecurring = enabled;
+                break;
+            case 'icsEvents':
+                this.showICSEvents = enabled;
+                break;
+            case 'timeblocks':
+                this.showTimeblocks = enabled;
+                break;
+        }
+        
+        this.saveViewPreferences();
+        this.refreshEvents();
+        
+        // Update the view options in FilterBar to reflect the change
+        if (this.filterBar && this.filterBar.setViewOptions) {
+            this.filterBar.setViewOptions(
+                this.getViewOptionsConfig(),
+                (optionId: string, enabled: boolean) => this.onViewOptionChange(optionId, enabled)
             );
         }
     }
@@ -388,31 +344,7 @@ export class AdvancedCalendarView extends ItemView {
         };
     }
 
-    createToggle(
-        container: HTMLElement, 
-        label: string, 
-        initialValue: boolean, 
-        onChange: (enabled: boolean) => void
-    ): HTMLElement {
-        const toggleContainer = container.createDiv({ cls: 'advanced-calendar-view__toggle' });
-        
-        const checkbox = toggleContainer.createEl('input', {
-            type: 'checkbox',
-            cls: 'advanced-calendar-view__toggle-input'
-        });
-        checkbox.checked = initialValue;
-        
-        const labelEl = toggleContainer.createEl('label', {
-            text: label,
-            cls: 'advanced-calendar-view__toggle-label'
-        });
-        
-        checkbox.addEventListener('change', () => {
-            onChange(checkbox.checked);
-        });
-        
-        return toggleContainer;
-    }
+    
 
     openScheduleTasksModal() {
         const modal = new UnscheduledTasksSelectorModal(
@@ -1465,7 +1397,7 @@ export class AdvancedCalendarView extends ItemView {
             // Update visibility and refresh if timeblocking was enabled
             this.showTimeblocks = enabled && this.plugin.settings.calendarViewSettings.defaultShowTimeblocks;
             this.refreshEvents();
-            this.renderViewToggles(); // Re-render toggle buttons
+            this.renderViewOptions(); // Re-render view options dropdown
         });
         this.listeners.push(timeblockingToggleListener);
 

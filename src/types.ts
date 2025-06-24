@@ -61,8 +61,13 @@ export interface FilterBarConfig {
 	showSortBy?: boolean;
 	showAdvancedFilters?: boolean;
 	showDateRangePicker?: boolean;
+	showViewOptions?: boolean;
 	allowedSortKeys?: TaskSortKey[];
 	allowedGroupKeys?: TaskGroupKey[];
+	customButtons?: Array<{
+		id: string;
+		onCreate: (container: HTMLElement) => void;
+	}>;
 }
 
 // Time and date related types

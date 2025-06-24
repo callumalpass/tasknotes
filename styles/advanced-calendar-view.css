@@ -516,30 +516,6 @@
     flex-shrink: 0;
 }
 
-.advanced-calendar-view__toggles {
-    display: flex;
-    gap: 1.25rem;
-    align-items: center;
-}
-
-.advanced-calendar-view__toggle {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-}
-
-.advanced-calendar-view__toggle-input {
-    margin: 0;
-    accent-color: var(--interactive-accent);
-}
-
-.advanced-calendar-view__toggle-label {
-    font-size: 0.85rem;
-    color: var(--text-normal);
-    cursor: pointer;
-    font-weight: 400;
-}
-
 .advanced-calendar-view__schedule-tasks-btn {
     padding: 0.4rem 0.8rem;
     background: var(--interactive-accent);
@@ -828,11 +804,6 @@
         gap: 0.75rem;
     }
     
-    .advanced-calendar-view__toggles {
-        flex-wrap: wrap;
-        gap: 0.75rem;
-        justify-content: center;
-    }
     
     .advanced-calendar-view__schedule-tasks-btn {
         align-self: center;

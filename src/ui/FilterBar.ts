@@ -28,6 +28,10 @@ export class FilterBar extends EventEmitter {
     private dateRangeEndInput?: HTMLInputElement;
     private controlsContainer?: HTMLElement;
     private settingsButton?: HTMLButtonElement;
+    private viewOptionsDropdown?: HTMLElement;
+    private viewOptionsButton?: HTMLButtonElement;
+    private viewOptionsConfig?: { id: string; label: string; value: boolean }[];
+    private viewOptionsCallback?: (optionId: string, enabled: boolean) => void;
 
     constructor(
         container: HTMLElement,
@@ -45,6 +49,7 @@ export class FilterBar extends EventEmitter {
             showSortBy: true,
             showAdvancedFilters: true,
             showDateRangePicker: false, // Default to false to avoid breaking existing views
+            showViewOptions: false, // Default to false to avoid breaking existing views
             allowedSortKeys: ['due', 'priority', 'title'],
             allowedGroupKeys: ['none', 'status', 'priority', 'context', 'due'],
             ...config
@@ -147,6 +152,10 @@ export class FilterBar extends EventEmitter {
         if (this.config.showGroupBy) {
             this.renderGroupControls(controlsLeft);
         }
+        
+        if (this.config.showViewOptions) {
+            this.renderViewOptionsControls(controlsLeft);
+        }
 
         // Advanced filters button (anchored to right)
         if (this.config.showAdvancedFilters) {
@@ -184,8 +193,18 @@ export class FilterBar extends EventEmitter {
             this.updateQueryField('searchQuery', this.searchInput!.value || undefined);
         });
 
+        // Right side buttons container
+        const rightButtonsContainer = searchRow.createDiv('filter-bar__right-buttons');
+
+        // Render custom buttons first
+        if (this.config.customButtons) {
+            for (const customButton of this.config.customButtons) {
+                customButton.onCreate(rightButtonsContainer);
+            }
+        }
+
         // Settings button for controls - positioned to the right of search bar
-        this.settingsButton = searchRow.createEl('button', {
+        this.settingsButton = rightButtonsContainer.createEl('button', {
             cls: 'filter-bar__settings-button',
             attr: { 'aria-label': 'Toggle filter settings' }
         });
@@ -824,6 +843,131 @@ export class FilterBar extends EventEmitter {
         
         if (this.settingsButton) {
             this.settingsButton.classList.toggle('filter-bar__settings-button--active', !isVisible);
+        }
+    }
+
+    /**
+     * Set up view options configuration
+     */
+    setViewOptions(
+        options: { id: string; label: string; value: boolean }[],
+        callback: (optionId: string, enabled: boolean) => void
+    ): void {
+        this.viewOptionsConfig = options;
+        this.viewOptionsCallback = callback;
+        
+        // Update the dropdown if it exists
+        if (this.viewOptionsDropdown) {
+            this.updateViewOptionsDropdown();
+        }
+    }
+
+    /**
+     * Render view options controls
+     */
+    private renderViewOptionsControls(parent: HTMLElement): void {
+        const viewContainer = parent.createDiv('filter-bar__view-options');
+        
+        viewContainer.createSpan({ text: 'View:', cls: 'filter-bar__label' });
+        
+        // Create dropdown button
+        this.viewOptionsButton = viewContainer.createEl('button', {
+            text: 'Options',
+            cls: 'filter-bar__view-options-btn'
+        });
+        
+        // Create dropdown menu (initially hidden)
+        this.viewOptionsDropdown = viewContainer.createDiv({ 
+            cls: 'filter-bar__view-options-menu filter-bar__view-options-menu--hidden' 
+        });
+        
+        // Toggle dropdown on button click
+        this.viewOptionsButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isHidden = this.viewOptionsDropdown!.classList.contains('filter-bar__view-options-menu--hidden');
+            if (isHidden) {
+                this.viewOptionsDropdown!.classList.remove('filter-bar__view-options-menu--hidden');
+            } else {
+                this.viewOptionsDropdown!.classList.add('filter-bar__view-options-menu--hidden');
+            }
+        });
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (viewContainer && !viewContainer.contains(e.target as Node)) {
+                this.viewOptionsDropdown?.classList.add('filter-bar__view-options-menu--hidden');
+            }
+        });
+        
+        // Initial update
+        this.updateViewOptionsDropdown();
+    }
+    
+    /**
+     * Update view options dropdown with current config
+     */
+    private updateViewOptionsDropdown(): void {
+        if (!this.viewOptionsDropdown || !this.viewOptionsConfig) return;
+        
+        this.viewOptionsDropdown.empty();
+        
+        // Create checkboxes for each option
+        this.viewOptionsConfig.forEach(option => {
+            const optionContainer = this.viewOptionsDropdown!.createDiv({ cls: 'filter-bar__view-option' });
+            
+            const label = optionContainer.createEl('label', {
+                cls: 'filter-bar__view-option-label'
+            });
+
+            const checkbox = label.createEl('input', {
+                type: 'checkbox',
+                cls: 'filter-bar__view-option-checkbox'
+            });
+            checkbox.checked = option.value;
+            
+            label.createSpan({ text: option.label });
+            
+            checkbox.addEventListener('change', () => {
+                if (this.viewOptionsCallback) {
+                    this.viewOptionsCallback(option.id, checkbox.checked);
+                }
+                this.updateViewOptionsButtonText();
+            });
+            
+            // Allow clicking anywhere on the option to toggle
+            optionContainer.addEventListener('click', (e) => {
+                if (e.target !== checkbox) {
+                    checkbox.checked = !checkbox.checked;
+                    if (this.viewOptionsCallback) {
+                        this.viewOptionsCallback(option.id, checkbox.checked);
+                    }
+                    this.updateViewOptionsButtonText();
+                }
+            });
+        });
+        
+        this.updateViewOptionsButtonText();
+    }
+    
+    /**
+     * Update view options button text based on active options
+     */
+    private updateViewOptionsButtonText(): void {
+        if (!this.viewOptionsButton || !this.viewOptionsConfig) return;
+        
+        const activeOptions = this.viewOptionsConfig.filter(option => option.value);
+        
+        if (activeOptions.length === 0) {
+            this.viewOptionsButton.textContent = 'Options (None)';
+        } else if (activeOptions.length === 1) {
+            // Shorten common labels for button display
+            const shortLabel = activeOptions[0].label
+                .replace('Scheduled tasks', 'Scheduled')
+                .replace('Calendar subscriptions', 'Subscriptions')
+                .replace('Time entries', 'Time');
+            this.viewOptionsButton.textContent = `Options (${shortLabel})`;
+        } else {
+            this.viewOptionsButton.textContent = `Options (${activeOptions.length} selected)`;
         }
     }
 
