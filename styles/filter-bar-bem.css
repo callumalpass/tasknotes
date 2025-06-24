@@ -18,30 +18,46 @@
    FILTER BAR ELEMENTS (BEM __element)
    ================================================================= */
 
-/* Main controls row containing search, sort, group controls */
-.tasknotes-plugin .filter-bar__main {
+/* Search row - flexbox container for search and settings button */
+.tasknotes-plugin .filter-bar__search-row {
     display: flex;
     align-items: center;
-    gap: var(--tn-spacing-md);
-    flex-wrap: wrap;
+    gap: var(--tn-spacing-sm);
+    margin-bottom: var(--tn-spacing-sm);
 }
 
-/* Search section */
+/* Search section - now part of flexbox */
 .tasknotes-plugin .filter-bar__search {
     position: relative;
     flex: 1;
-    min-width: 200px;
+}
+
+/* Search icon positioned on the left */
+.tasknotes-plugin .filter-bar__search-icon {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--tn-text-muted);
+    pointer-events: none;
+    z-index: 1;
+    width: 14px;
+    height: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .tasknotes-plugin .filter-bar__search-input {
     width: 100%;
-    padding: var(--tn-spacing-xs) var(--tn-spacing-md);
+    padding: var(--tn-spacing-sm) var(--tn-spacing-md) var(--tn-spacing-sm) 32px;
     border: 1px solid var(--tn-border-color);
     border-radius: var(--tn-radius-sm);
     background: var(--tn-bg-primary);
     color: var(--tn-text-normal);
-    font-size: var(--tn-font-size-lg);
+    font-size: var(--tn-font-size-md);
     transition: all var(--tn-transition-fast);
+    box-shadow: none;
 }
 
 .tasknotes-plugin .filter-bar__search-input:focus {
@@ -54,11 +70,122 @@
     color: var(--tn-text-muted);
 }
 
-/* Controls container for sort, group, and action buttons */
+/* Settings button for controls - now a flexbox item */
+.tasknotes-plugin .filter-bar__settings-button {
+    /* Reset button defaults */
+    margin: 0;
+    padding: var(--tn-spacing-sm);
+    width: auto;
+    height: auto;
+    
+    /* Visual styling - default state: black icon, no background */
+    background: none;
+    border: 1px solid var(--tn-border-color);
+    border-radius: var(--tn-radius-sm);
+    outline: none;
+    box-shadow: none;
+    color: var(--tn-text-normal);
+    
+    /* Layout */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    
+    /* Interaction */
+    cursor: pointer;
+    transition: all var(--tn-transition-fast);
+    
+    /* Force no movement on active */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    
+    /* Position relative for active indicator */
+    position: relative;
+}
+
+/* Hover state when NOT active: darken background slightly */
+.tasknotes-plugin .filter-bar__settings-button:hover:not(.filter-bar__settings-button--active) {
+    color: var(--tn-text-normal);
+    background: var(--tn-interactive-hover);
+    border-color: var(--tn-border-color-hover);
+}
+
+/* Active state: purple background with white icon */
+.tasknotes-plugin .filter-bar__settings-button--active {
+    color: var(--text-on-accent);
+    background: var(--tn-interactive-accent);
+    border-color: var(--tn-interactive-accent);
+}
+
+/* Active + Hover state: darker purple background with white icon */
+.tasknotes-plugin .filter-bar__settings-button--active:hover {
+    color: var(--text-on-accent);
+    background: var(--tn-interactive-accent-hover);
+    border-color: var(--tn-interactive-accent);
+}
+
+/* Focus state: same as hover state for keyboard navigation */
+.tasknotes-plugin .filter-bar__settings-button:focus:not(.filter-bar__settings-button--active) {
+    color: var(--tn-text-normal);
+    background: var(--tn-interactive-hover);
+    border-color: var(--tn-border-color-hover);
+    outline: none;
+    box-shadow: none;
+}
+
+/* Focus state when active: keep the active styling */
+.tasknotes-plugin .filter-bar__settings-button:focus.filter-bar__settings-button--active {
+    color: var(--text-on-accent);
+    background: var(--tn-interactive-accent);
+    border-color: var(--tn-interactive-accent);
+    outline: none;
+    box-shadow: none;
+}
+
+/* Remove conflicting active state */
+.tasknotes-plugin .filter-bar__settings-button:active {
+    /* Let the --active class handle the styling */
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+/* Controls container */
+.tasknotes-plugin .filter-bar__controls-container {
+    background: var(--tn-bg-secondary);
+    border: 1px solid var(--tn-border-color);
+    border-radius: var(--tn-radius-md);
+    padding: var(--tn-spacing-md);
+    transition: all var(--tn-transition-fast);
+    margin-top: var(--tn-spacing-xs);
+    animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 .tasknotes-plugin .filter-bar__controls {
     display: flex;
     align-items: center;
-    gap: var(--tn-spacing-md);
+    gap: var(--tn-spacing-lg);
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+
+/* Group sort and group controls together */
+.tasknotes-plugin .filter-bar__controls-left {
+    display: flex;
+    align-items: center;
+    gap: var(--tn-spacing-lg);
     flex-wrap: wrap;
 }
 
@@ -78,28 +205,18 @@
     white-space: nowrap;
 }
 
-/* Select dropdowns */
-.tasknotes-plugin .filter-bar__select {
-    padding: 6px 10px;
-    border: 1px solid var(--tn-border-color);
-    border-radius: var(--tn-radius-sm);
-    background: var(--tn-bg-primary);
-    color: var(--tn-text-normal);
-    font-size: var(--tn-font-size-md);
+/* Dropdown container for DropdownComponent */
+.tasknotes-plugin .filter-bar__dropdown-container {
     min-width: 100px;
-    cursor: pointer;
-    transition: all var(--tn-transition-fast);
 }
 
-.tasknotes-plugin .filter-bar__select:focus {
-    outline: none;
-    border-color: var(--interactive-accent);
-    box-shadow: none;
+/* Remove drop shadow from Obsidian DropdownComponent but keep border */
+.tasknotes-plugin .filter-bar__dropdown-container .dropdown {
+    box-shadow: none !important;
+    border: 1px solid var(--tn-border-color) !important;
 }
 
-.tasknotes-plugin .filter-bar__select:hover {
-    border-color: var(--tn-border-color-hover);
-}
+/* The DropdownComponent will handle all the styling automatically */
 
 /* Sort direction button */
 .tasknotes-plugin .filter-bar__sort-direction {
@@ -110,9 +227,10 @@
     color: var(--tn-text-normal);
     font-size: var(--tn-font-size-md);
     cursor: pointer;
-    transition: all var(--tn-transition-fast);
+    transition: border-color var(--tn-transition-fast), background-color var(--tn-transition-fast);
     min-width: 32px;
     text-align: center;
+    box-shadow: none;
 }
 
 .tasknotes-plugin .filter-bar__sort-direction:hover {
@@ -134,11 +252,13 @@
     color: var(--tn-text-muted);
     font-size: var(--tn-font-size-md);
     cursor: pointer;
-    transition: all var(--tn-transition-fast);
+    transition: border-color var(--tn-transition-fast), background-color var(--tn-transition-fast), color var(--tn-transition-fast);
     display: flex;
     align-items: center;
-    gap: var(--tn-spacing-xs);
+    justify-content: center;
     white-space: nowrap;
+    position: relative;
+    box-shadow: none;
 }
 
 .tasknotes-plugin .filter-bar__advanced-toggle:hover {
@@ -147,16 +267,22 @@
 }
 
 .tasknotes-plugin .filter-bar__active-indicator {
+    position: absolute;
+    top: -8px;
+    right: -8px;
     background: var(--tn-interactive-accent);
     color: var(--text-on-accent);
-    border-radius: var(--tn-radius-full);
-    padding: 1px 5px;
+    border-radius: 50%;
     font-size: 10px;
-    font-weight: var(--tn-font-weight-medium);
-    margin-left: 4px;
+    font-weight: var(--tn-font-weight-bold);
     line-height: 1;
-    min-width: 14px;
-    text-align: center;
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--tn-bg-secondary);
+    box-shadow: none;
 }
 
 /* =================================================================
@@ -166,27 +292,24 @@
 /* Advanced filters panel - treated as sub-component */
 .tasknotes-plugin .filter-bar__advanced {
     border-top: 1px solid var(--tn-border-color);
-    padding-top: var(--tn-spacing-sm);
-    margin-top: var(--tn-spacing-sm);
+    padding-top: var(--tn-spacing-lg);
+    margin-top: var(--tn-spacing-lg);
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: var(--tn-spacing-md);
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: var(--tn-spacing-lg);
 }
 
 .tasknotes-plugin .filter-bar__advanced-item {
     display: flex;
     flex-direction: column;
-    gap: var(--tn-spacing-xs);
+    gap: var(--tn-spacing-sm);
 }
 
 .tasknotes-plugin .filter-bar__advanced-item .filter-bar__label {
-    margin-bottom: 4px;
+    margin-bottom: var(--tn-spacing-xs);
+    font-weight: var(--tn-font-weight-semibold);
 }
 
-.tasknotes-plugin .filter-bar__advanced-item .filter-bar__select {
-    min-width: auto;
-    width: 100%;
-}
 
 /* =================================================================
    FILTER BAR FORM ELEMENTS
@@ -196,12 +319,12 @@
 .tasknotes-plugin .filter-bar__checkbox-group {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: var(--tn-spacing-xs);
     max-height: 150px;
     overflow-y: auto;
     border: 1px solid var(--tn-border-color);
     border-radius: var(--tn-radius-sm);
-    padding: 6px;
+    padding: var(--tn-spacing-sm);
     background: var(--tn-bg-primary);
 }
 
@@ -213,12 +336,12 @@
 .tasknotes-plugin .filter-bar__checkbox-label {
     display: flex;
     align-items: center;
-    gap: var(--tn-spacing-xs);
+    gap: var(--tn-spacing-sm);
     cursor: pointer;
     font-size: var(--tn-font-size-sm);
     color: var(--tn-text-normal);
     user-select: none;
-    padding: 4px 6px;
+    padding: var(--tn-spacing-xs) var(--tn-spacing-sm);
     border-radius: var(--tn-radius-sm);
     transition: background-color var(--tn-transition-fast);
     width: 100%;
@@ -271,7 +394,8 @@
     color: var(--tn-text-normal);
     font-size: var(--tn-font-size-sm);
     min-width: 120px;
-    transition: all var(--tn-transition-fast);
+    transition: border-color var(--tn-transition-fast);
+    box-shadow: none;
 }
 
 .tasknotes-plugin .filter-bar__date-input:focus {
@@ -289,6 +413,7 @@
     font-size: var(--tn-font-size-sm);
     cursor: pointer;
     transition: background-color var(--tn-transition-fast);
+    box-shadow: none;
 }
 
 .tasknotes-plugin .filter-bar__date-clear:hover {
@@ -297,7 +422,6 @@
 
 .tasknotes-plugin .filter-bar__date-clear:active {
     background-color: var(--tn-interactive-hover);
-    transform: scale(0.98);
 }
 
 /* =================================================================
@@ -330,51 +454,65 @@
 .tasknotes-plugin .agenda-filter-bar-container,
 .tasknotes-plugin .kanban-filter-bar-container {
     margin-bottom: var(--tn-spacing-md);
-    padding: var(--tn-spacing-md);
-    background: var(--tn-bg-secondary);
-    border: 1px solid var(--tn-border-color);
-    border-radius: var(--tn-radius-md);
-    box-shadow: var(--tn-shadow-light);
+    padding: 0; /* Remove padding since search is now outside */
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    box-shadow: none; /* Remove heavy shadows */
+}
+
+/* Controls container hidden state - IMPORTANT: This must be !important to override responsive rules */
+.tasknotes-plugin .filter-bar__controls-container--hidden {
+    display: none !important;
 }
 
 /* =================================================================
    RESPONSIVE DESIGN
    ================================================================= */
 
+/* Show toggle button on smaller screens */
+@media (min-width: 769px) {
+    .tasknotes-plugin .filter-bar__controls-toggle {
+        display: none;
+    }
+}
+
 /* Mobile and tablet responsiveness */
 @media (max-width: 768px) {
     .tasknotes-plugin .filter-bar-container,
     .tasknotes-plugin .agenda-filter-bar-container,
     .tasknotes-plugin .kanban-filter-bar-container {
-        padding: var(--tn-spacing-sm);
+        padding: 0;
     }
     
-    .tasknotes-plugin .filter-bar__main {
+    /* When settings button is active, show controls */
+    .tasknotes-plugin .filter-bar__settings-button--active ~ .filter-bar__controls-container,
+    .tasknotes-plugin .filter-bar__controls-container:not(.filter-bar__controls-container--hidden) {
+        display: block;
+        margin-top: var(--tn-spacing-sm);
+    }
+    
+    .tasknotes-plugin .filter-bar__controls {
         flex-direction: column;
         align-items: stretch;
         gap: var(--tn-spacing-sm);
     }
     
-    .tasknotes-plugin .filter-bar__search {
-        min-width: auto;
-        width: 100%;
-    }
-    
-    .tasknotes-plugin .filter-bar__controls {
-        justify-content: space-between;
-        flex-wrap: wrap;
-        gap: var(--tn-spacing-sm);
-    }
-    
     .tasknotes-plugin .filter-bar__sort,
     .tasknotes-plugin .filter-bar__group {
-        flex: 1;
-        min-width: 0;
+        width: 100%;
+        justify-content: space-between;
     }
     
-    .tasknotes-plugin .filter-bar__select {
+    .tasknotes-plugin .filter-bar__dropdown-container {
         min-width: auto;
+        flex: 1;
+        margin-left: var(--tn-spacing-sm);
+    }
+    
+    .tasknotes-plugin .filter-bar__advanced-toggle {
         width: 100%;
+        justify-content: center;
     }
     
     .tasknotes-plugin .filter-bar__advanced {
@@ -384,13 +522,54 @@
 }
 
 @media (max-width: 480px) {
+    .tasknotes-plugin .filter-bar__search-input {
+        font-size: var(--tn-font-size-sm);
+        padding: var(--tn-spacing-sm);
+        padding-right: 45px;
+    }
+    
+    .tasknotes-plugin .filter-bar__controls-toggle {
+        right: var(--tn-spacing-xs);
+        padding: var(--tn-spacing-xs);
+    }
+    
+    /* Reorganize controls layout for smallest screens */
     .tasknotes-plugin .filter-bar__controls {
         flex-direction: column;
+        align-items: stretch;
+        gap: var(--tn-spacing-sm);
+    }
+    
+    .tasknotes-plugin .filter-bar__controls-left {
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--tn-spacing-sm);
+        width: 100%;
     }
     
     .tasknotes-plugin .filter-bar__sort,
     .tasknotes-plugin .filter-bar__group {
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--tn-spacing-xs);
         width: 100%;
+    }
+    
+    .tasknotes-plugin .filter-bar__label {
+        font-size: var(--tn-font-size-xs);
+    }
+    
+    .tasknotes-plugin .filter-bar__dropdown-container {
+        margin-left: 0;
+        width: 100%;
+    }
+    
+    /* Position advanced filters button to the right of group controls */
+    .tasknotes-plugin .filter-bar__advanced-toggle {
+        align-self: flex-end;
+        width: auto;
+        margin-top: calc(-1 * (var(--tn-spacing-sm) + 32px)); /* Align with group dropdown */
+        margin-right: 0;
     }
 }
 
@@ -421,7 +600,6 @@
 /* Touch-specific adjustments */
 @media (pointer: coarse) {
     .tasknotes-plugin .filter-bar__search-input,
-    .tasknotes-plugin .filter-bar__select,
     .tasknotes-plugin .filter-bar__sort-direction,
     .tasknotes-plugin .filter-bar__advanced-toggle,
     .tasknotes-plugin .filter-bar__date-input,
@@ -441,7 +619,6 @@
     }
     
     .tasknotes-plugin .filter-bar__search-input,
-    .tasknotes-plugin .filter-bar__select,
     .tasknotes-plugin .filter-bar__sort-direction,
     .tasknotes-plugin .filter-bar__advanced-toggle,
     .tasknotes-plugin .filter-bar__date-input {
@@ -452,7 +629,6 @@
 /* Reduced motion support */
 @media (prefers-reduced-motion: reduce) {
     .tasknotes-plugin .filter-bar__search-input,
-    .tasknotes-plugin .filter-bar__select,
     .tasknotes-plugin .filter-bar__sort-direction,
     .tasknotes-plugin .filter-bar__advanced-toggle,
     .tasknotes-plugin .filter-bar__date-input,
@@ -460,4 +636,3 @@
         transition: none;
     }
 }
-

@@ -1,5 +1,6 @@
 import { FilterQuery, FilterBarConfig, TaskSortKey, TaskGroupKey, SortDirection } from '../types';
 import { EventEmitter } from '../utils/EventEmitter';
+import { setIcon, DropdownComponent } from 'obsidian';
 
 /**
  * Reusable filtering UI component that provides consistent filtering controls
@@ -17,14 +18,16 @@ export class FilterBar extends EventEmitter {
 
     // UI Elements
     private searchInput?: HTMLInputElement;
-    private sortSelect?: HTMLSelectElement;
-    private groupSelect?: HTMLSelectElement;
+    private sortDropdown?: DropdownComponent;
+    private groupDropdown?: DropdownComponent;
     private advancedFiltersButton?: HTMLButtonElement;
     private advancedFiltersPanel?: HTMLElement;
     private archivedToggle?: HTMLInputElement;
     private activeFiltersIndicator?: HTMLElement;
     private dateRangeStartInput?: HTMLInputElement;
     private dateRangeEndInput?: HTMLInputElement;
+    private controlsContainer?: HTMLElement;
+    private settingsButton?: HTMLButtonElement;
 
     constructor(
         container: HTMLElement,
@@ -125,26 +128,27 @@ export class FilterBar extends EventEmitter {
         this.container.empty();
         this.container.addClass('filter-bar');
 
-        // Main controls row
-        const mainRow = this.container.createDiv('filter-bar__main');
-
-        // Search input
+        // Search input (outside of any cards)
         if (this.config.showSearch) {
-            this.renderSearchInput(mainRow);
+            this.renderSearchInput(this.container);
         }
 
-        // Sort and group controls
-        const controlsGroup = mainRow.createDiv('filter-bar__controls');
+        // Controls container (sort, group, filter) - hidden by default
+        this.controlsContainer = this.container.createDiv('filter-bar__controls-container filter-bar__controls-container--hidden');
+        const controlsGroup = this.controlsContainer.createDiv('filter-bar__controls');
+        
+        // Left side controls (sort and group)
+        const controlsLeft = controlsGroup.createDiv('filter-bar__controls-left');
         
         if (this.config.showSortBy) {
-            this.renderSortControls(controlsGroup);
+            this.renderSortControls(controlsLeft);
         }
 
         if (this.config.showGroupBy) {
-            this.renderGroupControls(controlsGroup);
+            this.renderGroupControls(controlsLeft);
         }
 
-        // Advanced filters button
+        // Advanced filters button (anchored to right)
         if (this.config.showAdvancedFilters) {
             this.renderAdvancedFiltersButton(controlsGroup);
         }
@@ -159,7 +163,16 @@ export class FilterBar extends EventEmitter {
      * Render search input
      */
     private renderSearchInput(parent: HTMLElement): void {
-        const searchContainer = parent.createDiv('filter-bar__search');
+        // Create flexbox container for search bar and settings button
+        const searchRow = parent.createDiv('filter-bar__search-row');
+        
+        const searchContainer = searchRow.createDiv('filter-bar__search');
+        
+        // Add search icon to the left
+        const searchIcon = searchContainer.createEl('span', {
+            cls: 'filter-bar__search-icon'
+        });
+        setIcon(searchIcon, 'search');
         
         this.searchInput = searchContainer.createEl('input', {
             type: 'text',
@@ -169,6 +182,24 @@ export class FilterBar extends EventEmitter {
 
         this.searchInput.addEventListener('input', () => {
             this.updateQueryField('searchQuery', this.searchInput!.value || undefined);
+        });
+
+        // Settings button for controls - positioned to the right of search bar
+        this.settingsButton = searchRow.createEl('button', {
+            cls: 'filter-bar__settings-button',
+            attr: { 'aria-label': 'Toggle filter settings' }
+        });
+
+        // Add settings icon to button using Obsidian's setIcon
+        setIcon(this.settingsButton, 'sliders-horizontal');
+
+        // Active filters indicator on settings button
+        this.activeFiltersIndicator = this.settingsButton.createSpan({
+            cls: 'filter-bar__active-indicator filter-bar__active-indicator--hidden'
+        });
+
+        this.settingsButton.addEventListener('click', () => {
+            this.toggleControlsVisibility();
         });
     }
 
@@ -181,22 +212,24 @@ export class FilterBar extends EventEmitter {
         // Add label first
         sortContainer.createSpan({ text: 'Sort:', cls: 'filter-bar__label' });
         
-        // Sort key dropdown
-        this.sortSelect = sortContainer.createEl('select', {
-            cls: 'filter-bar__select'
-        });
-
+        // Create dropdown container for proper styling
+        const dropdownContainer = sortContainer.createDiv('filter-bar__dropdown-container');
+        
+        // Sort key dropdown using DropdownComponent
+        this.sortDropdown = new DropdownComponent(dropdownContainer);
+        
         const sortKeys = this.config.allowedSortKeys || ['due', 'priority', 'title'];
+        const sortOptions: Record<string, string> = {};
         sortKeys.forEach(key => {
-            const option = this.sortSelect!.createEl('option', {
-                value: key,
-                text: this.getSortKeyLabel(key)
+            sortOptions[key] = this.getSortKeyLabel(key);
+        });
+        
+        this.sortDropdown
+            .addOptions(sortOptions)
+            .setValue(this.currentQuery.sortKey)
+            .onChange((value) => {
+                this.updateQueryField('sortKey', value as TaskSortKey);
             });
-        });
-
-        this.sortSelect.addEventListener('change', () => {
-            this.updateQueryField('sortKey', this.sortSelect!.value as TaskSortKey);
-        });
 
         // Sort direction button
         const sortDirectionBtn = sortContainer.createEl('button', {
@@ -218,21 +251,24 @@ export class FilterBar extends EventEmitter {
         
         groupContainer.createSpan({ text: 'Group:', cls: 'filter-bar__label' });
 
-        this.groupSelect = groupContainer.createEl('select', {
-            cls: 'filter-bar__select'
-        });
-
+        // Create dropdown container for proper styling
+        const dropdownContainer = groupContainer.createDiv('filter-bar__dropdown-container');
+        
+        // Group dropdown using DropdownComponent
+        this.groupDropdown = new DropdownComponent(dropdownContainer);
+        
         const groupKeys = this.config.allowedGroupKeys || ['none', 'status', 'priority', 'context', 'due'];
+        const groupOptions: Record<string, string> = {};
         groupKeys.forEach(key => {
-            this.groupSelect!.createEl('option', {
-                value: key,
-                text: this.getGroupKeyLabel(key)
+            groupOptions[key] = this.getGroupKeyLabel(key);
+        });
+        
+        this.groupDropdown
+            .addOptions(groupOptions)
+            .setValue(this.currentQuery.groupKey)
+            .onChange((value) => {
+                this.updateQueryField('groupKey', value as TaskGroupKey);
             });
-        });
-
-        this.groupSelect.addEventListener('change', () => {
-            this.updateQueryField('groupKey', this.groupSelect!.value as TaskGroupKey);
-        });
     }
 
     /**
@@ -318,8 +354,11 @@ export class FilterBar extends EventEmitter {
     private renderAdvancedFiltersButton(parent: HTMLElement): void {
         this.advancedFiltersButton = parent.createEl('button', {
             cls: 'filter-bar__advanced-toggle',
-            text: 'Filters'
+            attr: { 'aria-label': 'Toggle advanced filters' }
         });
+
+        // Add funnel icon to advanced filters button using Obsidian's setIcon
+        setIcon(this.advancedFiltersButton, 'filter');
 
         this.activeFiltersIndicator = this.advancedFiltersButton.createSpan({
             cls: 'filter-bar__active-indicator filter-bar__active-indicator--hidden'
@@ -334,7 +373,8 @@ export class FilterBar extends EventEmitter {
      * Render advanced filters panel
      */
     private renderAdvancedFiltersPanel(): void {
-        this.advancedFiltersPanel = this.container.createDiv('filter-bar__advanced');
+        // Render the advanced panel inside the controls container
+        this.advancedFiltersPanel = this.controlsContainer!.createDiv('filter-bar__advanced');
         this.advancedFiltersPanel.addClass('filter-bar__advanced--hidden');
 
         // Status filter
@@ -525,12 +565,12 @@ export class FilterBar extends EventEmitter {
             this.searchInput.value = this.currentQuery.searchQuery || '';
         }
 
-        if (this.sortSelect) {
-            this.sortSelect.value = this.currentQuery.sortKey;
+        if (this.sortDropdown) {
+            this.sortDropdown.setValue(this.currentQuery.sortKey);
         }
 
-        if (this.groupSelect) {
-            this.groupSelect.value = this.currentQuery.groupKey;
+        if (this.groupDropdown) {
+            this.groupDropdown.setValue(this.currentQuery.groupKey);
         }
 
         // Update date range inputs
@@ -605,7 +645,7 @@ export class FilterBar extends EventEmitter {
         if (this.currentQuery.dateRange) activeCount++;
 
         if (activeCount > 0) {
-            this.activeFiltersIndicator.textContent = `(${activeCount})`;
+            this.activeFiltersIndicator.textContent = `${activeCount}`;
             this.activeFiltersIndicator.classList.remove('filter-bar__active-indicator--hidden');
         } else {
             this.activeFiltersIndicator.classList.add('filter-bar__active-indicator--hidden');
@@ -642,23 +682,6 @@ export class FilterBar extends EventEmitter {
         this.rebuildContextCheckboxes();
     }
 
-    /**
-     * Helper to rebuild select options while preserving selection
-     */
-    private rebuildSelectOptions(select: HTMLSelectElement | undefined, options: string[], currentSelection?: string[]): void {
-        if (!select) return;
-
-        const selectedValues = currentSelection || [];
-        select.empty();
-
-        options.forEach(option => {
-            const optionEl = select.createEl('option', {
-                value: option,
-                text: option
-            });
-            optionEl.selected = selectedValues.includes(option);
-        });
-    }
 
     /**
      * Rebuild status checkboxes while preserving selection
@@ -787,6 +810,21 @@ export class FilterBar extends EventEmitter {
             'scheduled': 'Scheduled date'
         };
         return labels[key] || key;
+    }
+
+
+    /**
+     * Toggle controls container visibility
+     */
+    private toggleControlsVisibility(): void {
+        if (!this.controlsContainer) return;
+
+        const isVisible = !this.controlsContainer.classList.contains('filter-bar__controls-container--hidden');
+        this.controlsContainer.classList.toggle('filter-bar__controls-container--hidden', isVisible);
+        
+        if (this.settingsButton) {
+            this.settingsButton.classList.toggle('filter-bar__settings-button--active', !isVisible);
+        }
     }
 
     /**
