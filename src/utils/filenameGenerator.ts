@@ -185,9 +185,12 @@ function sanitizeForFilename(input: string): string {
             // Replace multiple spaces with single space
             .replace(/\s+/g, ' ')
             // Remove characters that are problematic in filenames (but keep spaces!)
-            .replace(/[<>:"/\\|?*\x00-\x1f\x7f]/g, '')
-            // Remove control characters and other dangerous chars
-            .replace(/[\u0000-\u001f\u007f-\u009f]/g, '')
+            .replace(/[<>:"/\\|?*]/g, '')
+            // Remove control characters separately
+            .replace(/./g, char => {
+                const code = char.charCodeAt(0);
+                return (code <= 31 || (code >= 127 && code <= 159)) ? '' : char;
+            })
             // Remove leading/trailing dots
             .replace(/^\.+|\.+$/g, '')
             // Limit length to reasonable size (100 chars leaves room for extensions)

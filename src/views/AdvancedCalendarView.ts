@@ -20,7 +20,6 @@ import {
     EVENT_TASK_UPDATED,
     EVENT_TIMEBLOCKING_TOGGLED,
     TaskInfo,
-    TimeEntry,
     TimeBlock,
     FilterQuery,
     CalendarViewPreferences,
@@ -36,15 +35,10 @@ import {
     hasTimeComponent, 
     getDatePart, 
     getTimePart,
-    combineDateAndTime,
-    getCurrentDateTimeString,
     parseDate 
 } from '../utils/dateUtils';
 import { 
-    isDueByRRule,
     generateRecurringInstances,
-    shouldShowRecurringTaskOnDate,
-    getEffectiveTaskStatus,
     extractTimeblocksFromNote,
     timeblockToCalendarEvent,
     updateTimeblockInDailyNote
@@ -182,7 +176,7 @@ export class AdvancedCalendarView extends ItemView {
         await this.createHeader(mainContainer);
         
         // Create calendar container (now full width)
-        const calendarContainer = mainContainer.createDiv({ 
+        mainContainer.createDiv({ 
             cls: 'advanced-calendar-view__calendar-container',
             attr: { id: 'advanced-calendar' }
         });
@@ -660,9 +654,9 @@ export class AdvancedCalendarView extends ItemView {
         hex = hex.replace('#', '');
         
         // Parse hex color
-        const r = parseInt(hex.substr(0, 2), 16);
-        const g = parseInt(hex.substr(2, 2), 16);
-        const b = parseInt(hex.substr(4, 2), 16);
+        const r = parseInt(hex.substring(0, 2), 16);
+        const g = parseInt(hex.substring(2, 4), 16);
+        const b = parseInt(hex.substring(4, 6), 16);
         
         return `rgba(${r}, ${g}, ${b}, ${alpha})`;
     }
@@ -779,7 +773,7 @@ export class AdvancedCalendarView extends ItemView {
         
         // Visual styling for recurring instances
         const backgroundColor = isInstanceCompleted ? 'rgba(0,0,0,0.3)' : 'transparent';
-        const textDecoration = isInstanceCompleted ? 'line-through' : 'none';
+        // Text decoration handled in renderEvent hook
         
         return {
             id: `recurring-${task.path}-${instanceDate}`,
@@ -954,7 +948,7 @@ export class AdvancedCalendarView extends ItemView {
     }
 
     handleEventClick(clickInfo: any) {
-        const { taskInfo, icsEvent, timeblock, eventType, isRecurringInstance, subscriptionName } = clickInfo.event.extendedProps;
+        const { taskInfo, icsEvent, timeblock, eventType, subscriptionName } = clickInfo.event.extendedProps;
         const jsEvent = clickInfo.jsEvent;
         
         if (eventType === 'timeEntry') {
@@ -989,7 +983,7 @@ export class AdvancedCalendarView extends ItemView {
     }
 
     async handleEventDrop(dropInfo: any) {
-        const { taskInfo, timeblock, eventType, isRecurringInstance, recurringTemplateTime, originalDate } = dropInfo.event.extendedProps;
+        const { taskInfo, timeblock, eventType, isRecurringInstance, originalDate } = dropInfo.event.extendedProps;
         
         if (eventType === 'timeEntry' || eventType === 'ics') {
             // Time entries and ICS events cannot be moved

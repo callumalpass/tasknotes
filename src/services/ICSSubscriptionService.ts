@@ -426,7 +426,7 @@ export class ICSSubscriptionService extends EventEmitter {
     }
 
     private generateId(): string {
-        return 'ics_' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
+        return 'ics_' + Math.random().toString(36).substring(2, 11) + Date.now().toString(36);
     }
 
     destroy(): void {

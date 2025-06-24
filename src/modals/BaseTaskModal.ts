@@ -2,32 +2,29 @@ import { App, Modal } from 'obsidian';
 import { RRule, Frequency, Weekday } from 'rrule';
 import TaskNotesPlugin from '../main';
 import { 
-    normalizeDateString, 
     validateDateInput,
-    hasTimeComponent,
     getDatePart,
     getTimePart,
-    combineDateAndTime,
-    validateDateTimeInput
+    combineDateAndTime
 } from '../utils/dateUtils';
 
 export abstract class BaseTaskModal extends Modal {
     plugin: TaskNotesPlugin;
     
     // Form field properties
-    title: string = '';
-    dueDate: string = '';
-    scheduledDate: string = '';
-    priority: string = 'normal';
-    status: string = 'open';
-    contexts: string = '';
-    tags: string = '';
-    timeEstimate: number = 0;
+    title = '';
+    dueDate = '';
+    scheduledDate = '';
+    priority = 'normal';
+    status = 'open';
+    contexts = '';
+    tags = '';
+    timeEstimate = 0;
     
     // RRule-based recurrence properties
-    recurrenceRule: string = ''; // The actual rrule string
+    recurrenceRule = ''; // The actual rrule string
     rruleFreq: Frequency | null = null;
-    rruleInterval: number = 1;
+    rruleInterval = 1;
     rruleByWeekday: Weekday[] = [];
     rruleByMonthday: number[] = [];
     rruleByMonth: number[] = [];
@@ -61,7 +58,7 @@ export abstract class BaseTaskModal extends Modal {
     // Get existing contexts from cache for instant autocomplete
     async getExistingContexts(): Promise<string[]> {
         try {
-            return await this.plugin.cacheManager.getAllContexts();
+            return this.plugin.cacheManager.getAllContexts();
         } catch (error) {
             console.error('Failed to get existing contexts:', error);
             return this.existingContexts; // Return cached data as fallback
@@ -70,7 +67,7 @@ export abstract class BaseTaskModal extends Modal {
 
     // Get existing tags from cache for instant autocomplete  
     async getExistingTags(): Promise<string[]> {
-        const allTags = await this.plugin.cacheManager.getAllTags();
+        const allTags = this.plugin.cacheManager.getAllTags();
         // Filter out the default task tag
         return allTags.filter(tag => tag !== this.plugin.settings.taskTag);
     }
@@ -197,7 +194,7 @@ export abstract class BaseTaskModal extends Modal {
         }
 
         try {
-            const options: any = {
+            const options: Partial<import('rrule').Options> = {
                 freq: this.getFrequencyConstant(),
                 interval: this.rruleInterval || 1
             };
@@ -281,8 +278,8 @@ export abstract class BaseTaskModal extends Modal {
 
     protected createFormGroup(container: HTMLElement, label: string, inputCallback: (container: HTMLElement) => void): HTMLElement {
         const formGroup = container.createDiv({ cls: 'modal-form__group' });
-        const labelId = `form-label-${Math.random().toString(36).substr(2, 9)}`;
-        const labelEl = formGroup.createEl('label', { 
+        const labelId = `form-label-${Math.random().toString(36).substring(2, 11)}`;
+        formGroup.createEl('label', { 
             text: label, 
             cls: 'modal-form__label',
             attr: { 'id': labelId }
@@ -299,8 +296,8 @@ export abstract class BaseTaskModal extends Modal {
         getSuggestionsFn: () => Promise<string[]> | string[], 
         onChangeFn: (value: string) => void
     ): Promise<void> {
-        const inputId = `autocomplete-${fieldName}-${Math.random().toString(36).substr(2, 9)}`;
-        const listboxId = `listbox-${fieldName}-${Math.random().toString(36).substr(2, 9)}`;
+        const inputId = `autocomplete-${fieldName}-${Math.random().toString(36).substring(2, 11)}`;
+        const listboxId = `listbox-${fieldName}-${Math.random().toString(36).substring(2, 11)}`;
         
         const input = container.createEl('input', {
             type: 'text',
@@ -341,7 +338,7 @@ export abstract class BaseTaskModal extends Modal {
         });
 
         input.addEventListener('blur', () => {
-            window.setTimeout(() => this.hideSuggestions(container), 200);
+            setTimeout(() => this.hideSuggestions(container), 200);
         });
 
         input.addEventListener('keydown', (e) => {
@@ -389,7 +386,7 @@ export abstract class BaseTaskModal extends Modal {
             cls: 'modal-form__suggestions',
             attr: {
                 'role': 'listbox',
-                'id': listboxId || `suggestions-${Math.random().toString(36).substr(2, 9)}`,
+                'id': listboxId || `suggestions-${Math.random().toString(36).substring(2, 11)}`,
                 'aria-label': 'Suggestions'
             }
         });
@@ -483,7 +480,7 @@ export abstract class BaseTaskModal extends Modal {
     }
 
     protected createTitleInputWithCounter(container: HTMLElement, maxLength: number): void {
-        const inputId = `title-input-${Math.random().toString(36).substr(2, 9)}`;
+        const inputId = `title-input-${Math.random().toString(36).substring(2, 11)}`;
         const titleInput = container.createEl('input', {
             type: 'text',
             cls: 'modal-form__input modal-form__input--title',
@@ -525,7 +522,7 @@ export abstract class BaseTaskModal extends Modal {
     }
 
     protected createPriorityDropdown(container: HTMLElement): void {
-        const selectId = `priority-select-${Math.random().toString(36).substr(2, 9)}`;
+        const selectId = `priority-select-${Math.random().toString(36).substring(2, 11)}`;
         const select = container.createEl('select', { 
             cls: 'modal-form__select',
             attr: {
@@ -551,7 +548,7 @@ export abstract class BaseTaskModal extends Modal {
     }
 
     protected createStatusDropdown(container: HTMLElement): void {
-        const selectId = `status-select-${Math.random().toString(36).substr(2, 9)}`;
+        const selectId = `status-select-${Math.random().toString(36).substring(2, 11)}`;
         const select = container.createEl('select', { 
             cls: 'modal-form__select',
             attr: {
@@ -706,7 +703,7 @@ export abstract class BaseTaskModal extends Modal {
 
     protected createTimeEstimateInput(container: HTMLElement): void {
         const inputContainer = container.createDiv({ cls: 'modal-form__time-estimate' });
-        const inputId = `time-estimate-input-${Math.random().toString(36).substr(2, 9)}`;
+        const inputId = `time-estimate-input-${Math.random().toString(36).substring(2, 11)}`;
         
         const input = inputContainer.createEl('input', {
             type: 'number',
@@ -754,7 +751,7 @@ export abstract class BaseTaskModal extends Modal {
     }
 
     protected createHelpText(container: HTMLElement, text: string): void {
-        const helpText = container.createDiv({ 
+        container.createDiv({ 
             cls: 'modal-form__help-text',
             text: text
         });
@@ -783,7 +780,7 @@ export abstract class BaseTaskModal extends Modal {
     }
 
     private createFrequencyDropdown(container: HTMLElement): void {
-        const selectId = `frequency-select-${Math.random().toString(36).substr(2, 9)}`;
+        const selectId = `frequency-select-${Math.random().toString(36).substring(2, 11)}`;
         const select = container.createEl('select', { 
             cls: 'modal-form__select',
             attr: {
@@ -923,7 +920,7 @@ export abstract class BaseTaskModal extends Modal {
     }
 
     private createWeeklyOptions(container: HTMLElement): void {
-        const label = container.createEl('label', { 
+        container.createEl('label', { 
             text: 'On these days:', 
             cls: 'modal-form__rrule-label' 
         });
@@ -942,7 +939,7 @@ export abstract class BaseTaskModal extends Modal {
 
         days.forEach(day => {
             const dayContainer = daysContainer.createDiv({ cls: 'modal-form__day-checkbox' });
-            const checkboxId = `day-${day.name.toLowerCase()}-${Math.random().toString(36).substr(2, 9)}`;
+            const checkboxId = `day-${day.name.toLowerCase()}-${Math.random().toString(36).substring(2, 11)}`;
             
             const checkbox = dayContainer.createEl('input', {
                 type: 'checkbox',
@@ -978,8 +975,8 @@ export abstract class BaseTaskModal extends Modal {
         const modeContainer = container.createDiv({ cls: 'modal-form__monthly-mode' });
         
         // Radio buttons for monthly mode
-        const dayModeId = `monthly-day-${Math.random().toString(36).substr(2, 9)}`;
-        const weekdayModeId = `monthly-weekday-${Math.random().toString(36).substr(2, 9)}`;
+        const dayModeId = `monthly-day-${Math.random().toString(36).substring(2, 11)}`;
+        const weekdayModeId = `monthly-weekday-${Math.random().toString(36).substring(2, 11)}`;
 
         const dayModeContainer = modeContainer.createDiv({ cls: 'modal-form__radio-option' });
         const dayModeRadio = dayModeContainer.createEl('input', {
@@ -989,7 +986,7 @@ export abstract class BaseTaskModal extends Modal {
         });
         dayModeRadio.checked = this.monthlyMode === 'day';
         
-        const dayModeLabel = dayModeContainer.createEl('label', { 
+        dayModeContainer.createEl('label', { 
             text: 'On day ', 
             attr: { 'for': dayModeId }
         });
@@ -1182,7 +1179,7 @@ export abstract class BaseTaskModal extends Modal {
 
         // Never radio button
         const neverContainer = endOptionsContainer.createDiv({ cls: 'modal-form__radio-option' });
-        const neverId = `end-never-${Math.random().toString(36).substr(2, 9)}`;
+        const neverId = `end-never-${Math.random().toString(36).substring(2, 11)}`;
         const neverRadio = neverContainer.createEl('input', {
             type: 'radio',
             value: 'never',
@@ -1196,7 +1193,7 @@ export abstract class BaseTaskModal extends Modal {
 
         // Until date radio button
         const untilContainer = endOptionsContainer.createDiv({ cls: 'modal-form__radio-option' });
-        const untilId = `end-until-${Math.random().toString(36).substr(2, 9)}`;
+        const untilId = `end-until-${Math.random().toString(36).substring(2, 11)}`;
         const untilRadio = untilContainer.createEl('input', {
             type: 'radio',
             value: 'until',
@@ -1218,7 +1215,7 @@ export abstract class BaseTaskModal extends Modal {
 
         // After count radio button
         const countContainer = endOptionsContainer.createDiv({ cls: 'modal-form__radio-option' });
-        const countId = `end-count-${Math.random().toString(36).substr(2, 9)}`;
+        const countId = `end-count-${Math.random().toString(36).substring(2, 11)}`;
         const countRadio = countContainer.createEl('input', {
             type: 'radio',
             value: 'count',
@@ -1301,7 +1298,7 @@ export abstract class BaseTaskModal extends Modal {
         });
         
         // Store reference for updating
-        (container as any).__rruleSummary = summary;
+        (container as HTMLElement & { __rruleSummary?: HTMLElement }).__rruleSummary = summary;
     }
 
     private updateRRuleString(): void {

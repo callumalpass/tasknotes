@@ -1,4 +1,4 @@
-import { ItemView, WorkspaceLeaf, Notice, Menu, EventRef } from 'obsidian';
+import { ItemView, WorkspaceLeaf, Notice, EventRef } from 'obsidian';
 import TaskNotesPlugin from '../main';
 import { 
     KANBAN_VIEW_TYPE, 

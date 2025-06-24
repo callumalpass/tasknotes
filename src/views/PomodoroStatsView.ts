@@ -43,7 +43,7 @@ export class PomodoroStatsView extends ItemView {
             .filter(period => period.endTime) // Only completed periods
             .reduce((total, period) => {
                 const start = new Date(period.startTime);
-                const end = new Date(period.endTime!);
+                const end = period.endTime ? new Date(period.endTime) : new Date();
                 const durationMs = end.getTime() - start.getTime();
                 return total + Math.round(durationMs / (1000 * 60)); // Convert to minutes
             }, 0);

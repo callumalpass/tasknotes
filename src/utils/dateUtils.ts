@@ -1,4 +1,4 @@
-import { format, parse, parseISO, isSameDay, isBefore, isValid, startOfDay, addDays as addDaysFns, endOfDay } from 'date-fns';
+import { format, parseISO, isSameDay, isBefore, isValid, startOfDay, addDays as addDaysFns, endOfDay } from 'date-fns';
 
 /**
  * Smart date parsing that detects timezone info and handles appropriately

@@ -1,6 +1,6 @@
 import { format } from 'date-fns';
 import { parseYaml } from 'obsidian';
-import * as YAML from 'yaml';
+// YAML not needed in template processor
 
 export interface TemplateData {
     title: string;

@@ -1,4 +1,4 @@
-import { App, FuzzySuggestModal, TFile, TFolder, TAbstractFile } from 'obsidian';
+import { App, FuzzySuggestModal, TAbstractFile, SearchResult } from 'obsidian';
 
 export class AttachmentSelectModal extends FuzzySuggestModal<TAbstractFile> {
     private onChoose: (file: TAbstractFile) => void;
@@ -22,7 +22,7 @@ export class AttachmentSelectModal extends FuzzySuggestModal<TAbstractFile> {
         return `${file.name} ${file.path}`;
     }
 
-    renderSuggestion(value: { item: TAbstractFile; match: any }, el: HTMLElement) {
+    renderSuggestion(value: { item: TAbstractFile; match: SearchResult }, el: HTMLElement) {
         const file = value.item;
         el.empty();
         

@@ -40,7 +40,7 @@ export class ConfirmationModal extends Modal {
             .setName(this.options.title)
             .setHeading();
         
-        const description = contentEl.createEl('p', { text: this.options.message });
+        contentEl.createEl('p', { text: this.options.message });
 
         const buttonContainer = contentEl.createEl('div', { cls: 'modal-button-container' });
         buttonContainer.style.display = 'flex';

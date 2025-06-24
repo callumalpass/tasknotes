@@ -1,11 +1,9 @@
-import { App, Notice, TFile, Setting, Editor, MarkdownView, normalizePath, setIcon } from 'obsidian';
-import { format } from 'date-fns';
-import { RRule } from 'rrule';
+import { App, Notice, TFile, Setting, Editor, setIcon } from 'obsidian';
 import TaskNotesPlugin from '../main';
 import { BaseTaskModal } from './BaseTaskModal';
 import { MINI_CALENDAR_VIEW_TYPE, TaskInfo } from '../types';
 import { ParsedTaskData } from '../utils/TasksPluginParser';
-import { getCurrentTimestamp, hasTimeComponent, getDatePart, getTimePart } from '../utils/dateUtils';
+import { getCurrentTimestamp } from '../utils/dateUtils';
 import { generateTaskFilename, FilenameContext } from '../utils/filenameGenerator';
 import { calculateDefaultDate } from '../utils/helpers';
 import { NaturalLanguageParser, ParsedTaskData as NLParsedTaskData } from '../services/NaturalLanguageParser';

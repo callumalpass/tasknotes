@@ -1,4 +1,4 @@
-import { Notice, TFile, ItemView, WorkspaceLeaf, Menu, EventRef, Setting } from 'obsidian';
+import { TFile, ItemView, WorkspaceLeaf, EventRef, Setting } from 'obsidian';
 import { format, addDays, startOfWeek, endOfWeek, isToday, isSameDay } from 'date-fns';
 import TaskNotesPlugin from '../main';
 import { 
@@ -10,12 +10,12 @@ import {
     NoteInfo,
     FilterQuery
 } from '../types';
-import { isDueByRRule, shouldShowRecurringTaskOnDate, generateRecurringInstances, calculateTotalTimeSpent } from '../utils/helpers';
+// No helper functions needed from helpers
 import { createTaskCard, updateTaskCard } from '../ui/TaskCard';
 import { createNoteCard } from '../ui/NoteCard';
 import { FilterBar } from '../ui/FilterBar';
 import { FilterService } from '../services/FilterService';
-import { parseDate } from '../utils/dateUtils';
+// No date utils needed
 
 export class AgendaView extends ItemView {
     plugin: TaskNotesPlugin;
@@ -184,7 +184,7 @@ export class AgendaView extends ItemView {
         });
         
         // Current period display (large, styled like tasks view date)
-        const currentPeriodDisplay = headerContent.createDiv({ 
+        headerContent.createDiv({ 
             cls: 'agenda-view__period-title',
             text: this.getCurrentPeriodText()
         });
@@ -642,7 +642,7 @@ export class AgendaView extends ItemView {
         
         // Add date if not grouping by date
         if (!this.groupByDate && date) {
-            const dateSpan = noteCard.createSpan({ 
+            noteCard.createSpan({ 
                 cls: 'agenda-view__note-date', 
                 text: format(date, 'MMM d') 
             });

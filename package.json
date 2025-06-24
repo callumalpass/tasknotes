@@ -41,6 +41,7 @@
 		"typescript": "4.7.4"
 	},
 	"dependencies": {
+		"@codemirror/view": "^6.37.2",
 		"@fullcalendar/core": "^6.1.17",
 		"@fullcalendar/daygrid": "^6.1.17",
 		"@fullcalendar/interaction": "^6.1.17",

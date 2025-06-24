@@ -1,4 +1,4 @@
-import { Notice, TFile, ItemView, WorkspaceLeaf, setIcon, EventRef, Setting } from 'obsidian';
+import { TFile, ItemView, WorkspaceLeaf, setIcon, EventRef, Setting } from 'obsidian';
 import { format } from 'date-fns';
 import TaskNotesPlugin from '../main';
 import { 
@@ -18,7 +18,7 @@ export class NotesView extends ItemView {
     // Removed redundant local caching - CacheManager is the single source of truth
     
     // Loading states
-    private isNotesLoading: boolean = false;
+    private isNotesLoading = false;
     
     // Event listeners
     private listeners: EventRef[] = [];
@@ -73,7 +73,7 @@ export class NotesView extends ItemView {
         this.contentEl.empty();
     }
     
-    async refresh(forceFullRefresh: boolean = false) {
+    async refresh(forceFullRefresh = false) {
         // Force refresh is handled by CacheManager
         
         // Try to preserve scroll position if not forcing full refresh
@@ -99,7 +99,7 @@ export class NotesView extends ItemView {
         }
     }
     
-    async render(forceRefresh: boolean = false) {
+    async render(forceRefresh = false) {
         const container = this.contentEl.createDiv({ cls: 'tasknotes-plugin notes-view' });
         
         // Create header with current date information
@@ -156,7 +156,7 @@ export class NotesView extends ItemView {
         });
     }
     
-    async createNotesContent(container: HTMLElement, forceRefresh: boolean = false) {
+    async createNotesContent(container: HTMLElement, forceRefresh = false) {
         // Notes list
         const notesList = container.createDiv({ cls: 'notes-view__list' });
         
@@ -264,7 +264,7 @@ export class NotesView extends ItemView {
         }
     }
     
-    async getNotesForView(forceRefresh: boolean = false): Promise<NoteInfo[]> {
+    async getNotesForView(forceRefresh = false): Promise<NoteInfo[]> {
         try {
             // Set loading state
             this.isNotesLoading = true;

@@ -1,6 +1,6 @@
 import { Extension, RangeSetBuilder, StateField, Transaction } from '@codemirror/state';
 import { Decoration, DecorationSet, EditorView, WidgetType } from '@codemirror/view';
-import { setIcon, MarkdownView } from 'obsidian';
+import { setIcon, MarkdownView, Editor } from 'obsidian';
 import TaskNotesPlugin from '../main';
 import { TasksPluginParser } from '../utils/TasksPluginParser';
 
@@ -108,7 +108,7 @@ class ConvertButtonWidget extends WidgetType {
             return false;
         }
 
-        const totalLines = (editor as any).lineCount();
+        const totalLines = (editor as Editor).lineCount();
         if (this.lineNumber >= totalLines) {
             console.warn(`Line number ${this.lineNumber} is out of bounds (total lines: ${totalLines})`);
             return false;
@@ -116,7 +116,7 @@ class ConvertButtonWidget extends WidgetType {
 
         // Verify the line still contains a task
         try {
-            const currentLine = (editor as any).getLine(this.lineNumber);
+            const currentLine = (editor as Editor).getLine(this.lineNumber);
             if (!currentLine) {
                 console.warn(`Cannot read line ${this.lineNumber}`);
                 return false;

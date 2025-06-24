@@ -1,4 +1,4 @@
-import { Notice, TFile, ItemView, WorkspaceLeaf, EventRef } from 'obsidian';
+import { TFile, ItemView, WorkspaceLeaf, EventRef } from 'obsidian';
 import TaskNotesPlugin from '../main';
 import { 
     TASK_LIST_VIEW_TYPE, 
@@ -7,14 +7,7 @@ import {
     EVENT_TASK_UPDATED,
     FilterQuery
 } from '../types';
-import { 
-    isTaskOverdue,
-    isDueByRRule,
-    shouldShowRecurringTaskOnDate,
-    generateRecurringInstances,
-    getEffectiveTaskStatus,
-    calculateTotalTimeSpent
-} from '../utils/helpers';
+// No helper functions needed from helpers
 import { perfMonitor } from '../utils/PerformanceMonitor';
 import { createTaskCard, updateTaskCard } from '../ui/TaskCard';
 import { FilterBar } from '../ui/FilterBar';
@@ -29,7 +22,7 @@ export class TaskListView extends ItemView {
     // Removed redundant local caching - CacheManager is the single source of truth
     
     // Loading states
-    private isTasksLoading: boolean = false;
+    private isTasksLoading = false;
     
     // Filter system
     private filterBar: FilterBar | null = null;
@@ -193,7 +186,7 @@ export class TaskListView extends ItemView {
         this.contentEl.empty();
     }
     
-    async refresh(forceFullRefresh: boolean = false) {
+    async refresh(forceFullRefresh = false) {
         return perfMonitor.measure('task-list-refresh', async () => {
             // If forcing a full refresh, clear the task elements tracking
             if (forceFullRefresh) {
@@ -219,7 +212,7 @@ export class TaskListView extends ItemView {
     }
     
     createHeader(container: HTMLElement) {
-        const headerContainer = container.createDiv({ cls: 'detail-view-header task-list-header' });
+        container.createDiv({ cls: 'detail-view-header task-list-header' });
         
         // // Display view title
         // headerContainer.createEl('h2', {
@@ -266,8 +259,8 @@ export class TaskListView extends ItemView {
         this.filterBar.on('queryChange', async (newQuery: FilterQuery) => {
             this.currentQuery = newQuery;
             // Save the filter state
-            await this.plugin.viewStateManager.setFilterState(TASK_LIST_VIEW_TYPE, newQuery);
-            this.refreshTasks();
+            this.plugin.viewStateManager.setFilterState(TASK_LIST_VIEW_TYPE, newQuery);
+            await this.refreshTasks();
         });
         
         

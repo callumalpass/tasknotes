@@ -4,12 +4,9 @@ import { TaskInfo } from '../types';
 import TaskNotesPlugin from '../main';
 import { 
     validateDateTimeInput, 
-    hasTimeComponent, 
     getDatePart, 
     getTimePart,
-    combineDateAndTime,
-    addDaysToDateTime,
-    getCurrentDateTimeString 
+    combineDateAndTime
 } from '../utils/dateUtils';
 
 export class ScheduledDateModal extends Modal {

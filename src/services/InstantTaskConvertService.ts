@@ -182,8 +182,13 @@ export class InstantTaskConvertService {
         }
 
         // Validate against dangerous characters for file operations
-        const dangerousChars = /[<>:"/\\|?*\x00-\x1f\x7f]/;
-        if (dangerousChars.test(parsedData.title)) {
+        const basicDangerousChars = /[<>:"/\\|?*]/;
+        const hasControlChars = parsedData.title.split('').some(char => {
+            const code = char.charCodeAt(0);
+            return code <= 31 || code === 127;
+        });
+        
+        if (basicDangerousChars.test(parsedData.title) || hasControlChars) {
             return { isValid: false, error: 'Task title contains invalid characters for file operations.' };
         }
 

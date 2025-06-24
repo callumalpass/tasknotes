@@ -1,7 +1,11 @@
 {
     "root": true,
     "parser": "@typescript-eslint/parser",
-    "env": { "node": true },
+    "env": { 
+        "node": true, 
+        "browser": true, 
+        "es6": true 
+    },
     "plugins": [
       "@typescript-eslint",
       "obsidianmd"
@@ -23,5 +27,13 @@
       "no-prototype-builtins": "off",
       "@typescript-eslint/no-empty-function": "off",
       "obsidianmd/settings-tab": "off"
-    } 
+    },
+    "overrides": [
+      {
+        "files": ["src/editor/**/*.ts"],
+        "rules": {
+          "import/no-extraneous-dependencies": "off"
+        }
+      }
+    ] 
   }

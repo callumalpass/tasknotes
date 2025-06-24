@@ -103,7 +103,7 @@ export class ICSEventInfoModal extends Modal {
         });
 
         // Focus the close button
-        window.setTimeout(() => closeButton.focus(), 50);
+        setTimeout(() => closeButton.focus(), 50);
     }
 
     onClose() {

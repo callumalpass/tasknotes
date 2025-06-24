@@ -7,6 +7,7 @@ import {
     EVENT_POMODORO_INTERRUPT,
     EVENT_POMODORO_TICK,
     PomodoroSession,
+    PomodoroState,
     TaskInfo
 } from '../types';
 import { TaskSelectorModal } from '../modals/TaskSelectorModal';
@@ -225,7 +226,7 @@ export class PomodoroView extends ItemView {
         
         // Quick start actions (grouped together)
         const quickStartSection = controlSection.createDiv({ cls: 'pomodoro-view__quick-start-section' });
-        const quickStartLabel = quickStartSection.createDiv({ cls: 'pomodoro-view__section-label', text: 'Quick start' });
+        quickStartSection.createDiv({ cls: 'pomodoro-view__section-label', text: 'Quick start' });
         
         const quickActions = quickStartSection.createDiv({ cls: 'pomodoro-view__quick-actions' });
         
@@ -278,8 +279,8 @@ export class PomodoroView extends ItemView {
         // Add event listeners
         this.registerDomEvent(this.startButton, 'click', async () => {
             // Prevent double clicks
-            if (this.startButton!.hasClass('is-loading')) return;
-            this.startButton!.addClass('pomodoro-view__start-button--loading');
+            if (this.startButton?.hasClass('is-loading')) return;
+            this.startButton?.addClass('pomodoro-view__start-button--loading');
             
             try {
                 const state = this.plugin.pomodoroService.getState();
@@ -289,7 +290,7 @@ export class PomodoroView extends ItemView {
                     await this.plugin.pomodoroService.startPomodoro(this.currentSelectedTask || undefined);
                 }
             } finally {
-                this.startButton!.removeClass('pomodoro-view__start-button--loading');
+                this.startButton?.removeClass('pomodoro-view__start-button--loading');
             }
         });
         
@@ -540,7 +541,7 @@ export class PomodoroView extends ItemView {
         }
     }
     
-    private updateProgress(state: any) {
+    private updateProgress(state: PomodoroState) {
         if (!this.progressCircle || !state.currentSession) {
             // No session active, reset progress
             if (this.progressCircle) {

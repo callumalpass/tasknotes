@@ -859,7 +859,7 @@ export function timeblockToCalendarEvent(timeblock: TimeBlock, date: string): an
  * Generates a unique ID for a new timeblock
  */
 export function generateTimeblockId(): string {
-	return `tb-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+	return `tb-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
 }
 
 /**

@@ -1,6 +1,6 @@
 import { TFile, Notice, normalizePath, stringifyYaml } from 'obsidian';
 import { format } from 'date-fns';
-import * as YAML from 'yaml';
+// YAML not needed in this service
 import TaskNotesPlugin from '../main';
 import { TaskInfo, TimeEntry, EVENT_TASK_UPDATED, EVENT_TASK_DELETED } from '../types';
 import { getCurrentTimestamp, getCurrentDateString } from '../utils/dateUtils';

@@ -1,4 +1,4 @@
-import { Notice, TFile, ItemView, WorkspaceLeaf, normalizePath, EventRef } from 'obsidian';
+import { Notice, TFile, ItemView, WorkspaceLeaf, EventRef } from 'obsidian';
 import { format } from 'date-fns';
 import TaskNotesPlugin from '../main';
 import { getAllDailyNotes, getDailyNote } from 'obsidian-daily-notes-interface';
@@ -8,18 +8,10 @@ import {
     EVENT_DATE_SELECTED,
     EVENT_TASK_UPDATED,
     TaskInfo, 
-    NoteInfo, 
-    TimeInfo,
     ColorizeMode,
 } from '../types';
 import { 
-    extractNoteInfo, 
-    extractTaskInfo, 
-    isSameDay, 
-    parseTime,
-    isDueByRRule,
-    shouldShowRecurringTaskOnDate,
-    generateRecurringInstances
+    isSameDay
 } from '../utils/helpers';
 import { perfMonitor } from '../utils/PerformanceMonitor';
 import { createSafeDate, normalizeDateString } from '../utils/dateUtils';
@@ -326,7 +318,7 @@ export class MiniCalendarView extends ItemView {
         });
         
         // Find and select the new date element
-        const newDateStr = format(newDate, 'yyyy-MM-dd');
+        // Will select based on aria-label
         allDays.forEach(day => {
             const dayEl = day as HTMLElement;
             const ariaLabel = dayEl.getAttribute('aria-label') || '';
@@ -435,7 +427,7 @@ export class MiniCalendarView extends ItemView {
         });
         
         // Current Month Display
-        const monthDisplay = navSection.createDiv({ 
+        navSection.createDiv({ 
             cls: 'mini-calendar-view__month-display',
             text: format(this.plugin.selectedDate, 'MMMM yyyy')
         });
@@ -489,7 +481,7 @@ export class MiniCalendarView extends ItemView {
         const gridContainer = container.createDiv({ cls: 'mini-calendar-view__grid-container' });
 
         // Add skip link for accessibility
-        const skipLink = gridContainer.createEl('a', {
+        gridContainer.createEl('a', {
             cls: 'a11y-skip-link',
             text: 'Skip to calendar content',
             attr: {
@@ -1059,12 +1051,7 @@ export class MiniCalendarView extends ItemView {
         // Use document fragment for batch DOM updates
         const elementsToUpdate: { element: HTMLElement; dateKey: string }[] = [];
         
-        // Filter dates that are not in the current visible month
-        const relevantDates = dates.filter(dateKey => {
-            const targetDate = new Date(dateKey);
-            return targetDate.getFullYear() === currentYear && 
-                   Math.abs(targetDate.getMonth() - currentMonth) <= 1;
-        });
+        // Note: Only updating visible elements based on cached map
         
         // Build list of elements to update using the cached map
         for (const [element, dateInfo] of this.elementToDateMap) {

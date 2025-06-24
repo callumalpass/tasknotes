@@ -1,6 +1,6 @@
 import { Notice, Plugin, WorkspaceLeaf, Editor, MarkdownView } from 'obsidian';
+import { EditorView } from '@codemirror/view';
 import { format } from 'date-fns';
-import * as YAML from 'yaml';
 import { 
 	createDailyNote, 
 	getDailyNote, 
@@ -21,11 +21,8 @@ import {
 	POMODORO_VIEW_TYPE,
 	POMODORO_STATS_VIEW_TYPE,
 	KANBAN_VIEW_TYPE,
-	TimeInfo,
 	TaskInfo,
-	TimeEntry,
 	EVENT_DATE_SELECTED,
-	EVENT_TAB_CHANGED,
 	EVENT_DATA_CHANGED,
 	EVENT_TASK_UPDATED
 } from './types';
@@ -41,10 +38,7 @@ import { TaskCreationModal, TaskConversionOptions } from './modals/TaskCreationM
 import { TaskEditModal } from './modals/TaskEditModal';
 import { PomodoroService } from './services/PomodoroService';
 import { 
-	ensureFolderExists, 
-	extractTaskInfo,
 	formatTime,
-	calculateTotalTimeSpent,
 	getActiveTimeEntry
 } from './utils/helpers';
 import { MinimalNativeCache } from './utils/MinimalNativeCache';
@@ -316,11 +310,11 @@ export default class TaskNotesPlugin extends Plugin {
 						// Use instanceof check for deferred view compatibility
 						if (leaf.view && leaf.view.getViewType() === 'markdown') {
 							const editor = (leaf.view as MarkdownView).editor;
-							if (editor && (editor as any).cm) {
+							if (editor && (editor as Editor & { cm?: EditorView }).cm) {
 								// Use the proper CodeMirror state effect pattern
 								// Pass the updated task path to ensure specific widget refreshing
 								const taskPath = data?.path || data?.updatedTask?.path;
-								dispatchTaskUpdate((editor as any).cm, taskPath);
+								dispatchTaskUpdate((editor as Editor & { cm: EditorView }).cm, taskPath);
 							}
 						}
 					});
@@ -332,9 +326,9 @@ export default class TaskNotesPlugin extends Plugin {
 					setTimeout(() => {
 						if (leaf && leaf.view && leaf.view.getViewType() === 'markdown') {
 							const editor = (leaf.view as MarkdownView).editor;
-							if (editor && (editor as any).cm) {
+							if (editor && (editor as Editor & { cm?: EditorView }).cm) {
 								// Dispatch task update to refresh overlays when returning to a note
-								dispatchTaskUpdate((editor as any).cm);
+								dispatchTaskUpdate((editor as Editor & { cm: EditorView }).cm);
 							}
 						}
 					}, 50);
@@ -347,9 +341,9 @@ export default class TaskNotesPlugin extends Plugin {
 						const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
 						if (activeView) {
 							const editor = activeView.editor;
-							if (editor && (editor as any).cm) {
+							if (editor && (editor as Editor & { cm?: EditorView }).cm) {
 								// Refresh overlays when switching to Live Preview mode
-								dispatchTaskUpdate((editor as any).cm);
+								dispatchTaskUpdate((editor as Editor & { cm: EditorView }).cm);
 							}
 						}
 					}, 100);
@@ -419,7 +413,7 @@ export default class TaskNotesPlugin extends Plugin {
 	 * @param force Whether to force a full cache rebuild
 	 * @param triggerRefresh Whether to trigger a full UI refresh (default true)
 	 */
-	notifyDataChanged(filePath?: string, force: boolean = false, triggerRefresh: boolean = true): void {
+	notifyDataChanged(filePath?: string, force = false, triggerRefresh = true): void {
 		// Clear cache entries for native cache manager
 		if (filePath) {
 			this.cacheManager.clearCacheEntry(filePath);
@@ -720,7 +714,7 @@ export default class TaskNotesPlugin extends Plugin {
 		// Cache management commands
 		this.addCommand({
 			id: 'refresh-cache',
-			name: 'Refresh TaskNotes cache',
+			name: 'Refresh cache',
 			callback: async () => {
 				await this.refreshCache();
 			}
@@ -818,7 +812,7 @@ export default class TaskNotesPlugin extends Plugin {
 			}
 
 			// Convert date to moment for the API
-			const moment = (window as any).moment(date);
+			const moment = (window as Window & { moment: (date: Date) => any }).moment(date);
 			
 			// Get all daily notes to check if one exists for this date
 			const allDailyNotes = getAllDailyNotes();
@@ -844,9 +838,7 @@ export default class TaskNotesPlugin extends Plugin {
 				
 				// If we created a new daily note, refresh the cache to ensure it shows up in views
 				if (noteWasCreated) {
-					// Get the year and month from the date for cache rebuilding
-					const year = date.getFullYear();
-					const month = date.getMonth();
+					// Note: Cache rebuilding happens automatically on data change notification
 					
 					// Notify views that data has changed to trigger a UI refresh
 					this.notifyDataChanged(dailyNote.path, false, true);
@@ -886,7 +878,7 @@ private injectCustomStyles(): void {
 	document.head.appendChild(styleEl);
 }
 
-	async updateTaskProperty(task: TaskInfo, property: keyof TaskInfo, value: any, options: { silent?: boolean } = {}): Promise<TaskInfo> {
+	async updateTaskProperty(task: TaskInfo, property: keyof TaskInfo, value: TaskInfo[keyof TaskInfo], options: { silent?: boolean } = {}): Promise<TaskInfo> {
 		try {
 			const updatedTask = await this.taskService.updateProperty(task, property, value, options);
 			

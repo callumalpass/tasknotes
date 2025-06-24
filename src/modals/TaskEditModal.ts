@@ -3,7 +3,7 @@ import { RRule } from 'rrule';
 import TaskNotesPlugin from '../main';
 import { BaseTaskModal } from './BaseTaskModal';
 import { TaskInfo } from '../types';
-import { formatTimestampForDisplay, normalizeDateString, hasTimeComponent, getDatePart, getTimePart } from '../utils/dateUtils';
+import { formatTimestampForDisplay } from '../utils/dateUtils';
 
 export class TaskEditModal extends BaseTaskModal {
     task: TaskInfo;

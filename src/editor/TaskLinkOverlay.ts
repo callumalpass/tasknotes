@@ -339,8 +339,13 @@ function getTaskInfoSync(filePath: string, plugin: TaskNotesPlugin): TaskInfo | 
         }
         
         // Check for invalid characters
-        const invalidChars = /[<>:"|?*\x00-\x1F\x7F]/;
-        if (invalidChars.test(filePath)) {
+        const basicInvalidChars = /[<>:"|?*]/;
+        const hasControlChars = filePath.split('').some(char => {
+            const code = char.charCodeAt(0);
+            return code <= 31 || code === 127;
+        });
+        
+        if (basicInvalidChars.test(filePath) || hasControlChars) {
             console.debug('File path contains invalid characters:', filePath);
             return null;
         }
