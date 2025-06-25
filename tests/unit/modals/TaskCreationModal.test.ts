@@ -121,8 +121,8 @@ describe('TaskCreationModal - Fixed Implementation', () => {
         nlpDefaultToScheduled: false
       },
       cacheManager: {
-        getAllContexts: jest.fn().mockResolvedValue(['work', 'home', 'urgent']),
-        getAllTags: jest.fn().mockResolvedValue(['task', 'important', 'review'])
+        getAllContexts: jest.fn().mockReturnValue(['work', 'home', 'urgent']),
+        getAllTags: jest.fn().mockReturnValue(['task', 'important', 'review'])
       },
       taskService: {
         createTask: jest.fn().mockResolvedValue({

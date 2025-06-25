@@ -167,8 +167,8 @@ describe('BaseTaskModal', () => {
         ]
       },
       cacheManager: {
-        getAllContexts: jest.fn().mockResolvedValue(['work', 'home', 'urgent']),
-        getAllTags: jest.fn().mockResolvedValue(['task', 'important', 'review'])
+        getAllContexts: jest.fn().mockReturnValue(['work', 'home', 'urgent']),
+        getAllTags: jest.fn().mockReturnValue(['task', 'important', 'review'])
       }
     };
     
@@ -671,7 +671,9 @@ describe('BaseTaskModal', () => {
     });
 
     it('should handle errors in suggestion fetching', async () => {
-      mockPlugin.cacheManager.getAllContexts.mockRejectedValue(new Error('Cache error'));
+      mockPlugin.cacheManager.getAllContexts.mockImplementation(() => {
+        throw new Error('Cache error');
+      });
       
       const contexts = await modal.getExistingContexts();
       

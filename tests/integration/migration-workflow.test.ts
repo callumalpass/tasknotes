@@ -94,10 +94,12 @@ describe('Migration Workflow Integration', () => {
       expect(progressUpdates).toHaveLength(3);
 
       // Verify no more migration needed
+      // Clear the previous mock implementation and set up post-migration state
+      mockMetadataCache.getFileCache.mockClear();
       mockMetadataCache.getFileCache.mockImplementation((file: TFile) => ({
         frontmatter: {
           title: file.name.replace('.md', ''),
-          recurrence: 'FREQ=DAILY' // All migrated
+          recurrence: 'FREQ=DAILY' // All migrated to string format
         }
       }));
       
