@@ -23,7 +23,6 @@
 	"author": "",
 	"license": "MIT",
 	"devDependencies": {
-		"@types/date-fns": "^2.5.3",
 		"@types/jest": "^29.5.8",
 		"@types/node": "^16.11.6",
 		"@types/yaml": "^1.9.6",
