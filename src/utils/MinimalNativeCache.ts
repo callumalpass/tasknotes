@@ -1,5 +1,5 @@
 import { TFile, App, Events } from 'obsidian';
-import { TaskInfo } from '../types';
+import { TaskInfo, NoteInfo } from '../types';
 import { FieldMapper } from '../services/FieldMapper';
 import { 
     getTodayString, 
@@ -438,9 +438,85 @@ export class MinimalNativeCache extends Events {
         return this.getTaskInfo(path);
     }
     
-    async getNotesForDate(date: Date): Promise<any[]> {
-        // Use Obsidian's daily notes interface instead of custom indexing
-        return [];
+    async getNotesForDate(date: Date): Promise<NoteInfo[]> {
+        // Check if note indexing is disabled
+        if (this.disableNoteIndexing) {
+            return [];
+        }
+        
+        const targetDateStr = date.toISOString().split('T')[0]; // YYYY-MM-DD format
+        const notes: NoteInfo[] = [];
+        
+        // Get all markdown files excluding task files and excluded folders
+        const markdownFiles = this.app.vault.getMarkdownFiles()
+            .filter(file => this.isValidFile(file.path));
+        
+        for (const file of markdownFiles) {
+            const metadata = this.app.metadataCache.getFileCache(file);
+            if (!metadata?.frontmatter) continue;
+            
+            const frontmatter = metadata.frontmatter;
+            const isTask = frontmatter.tags?.includes(this.taskTag);
+            
+            // Skip task files - we only want notes
+            if (isTask) continue;
+            
+            let noteDate: string | null = null;
+            
+            // Try to extract date from frontmatter
+            if (frontmatter.dateCreated || frontmatter.date) {
+                const dateValue = frontmatter.dateCreated || frontmatter.date;
+                try {
+                    const parsed = new Date(dateValue);
+                    if (!isNaN(parsed.getTime())) {
+                        noteDate = parsed.toISOString().split('T')[0];
+                    }
+                } catch (e) {
+                    // Ignore invalid dates
+                }
+            }
+            
+            // Check if it's a daily note by filename pattern (fallback)
+            if (!noteDate) {
+                const fileName = file.basename;
+                // Common daily note patterns: YYYY-MM-DD, YYYY-MM-DD HH-mm-ss, etc.
+                const dateMatch = fileName.match(/(\d{4}-\d{2}-\d{2})/);
+                if (dateMatch) {
+                    noteDate = dateMatch[1];
+                }
+            }
+            
+            // If we found a date and it matches our target date, include this note
+            if (noteDate === targetDateStr) {
+                // Extract tags from frontmatter or metadata
+                let tags: string[] = [];
+                if (frontmatter.tags) {
+                    if (Array.isArray(frontmatter.tags)) {
+                        tags = frontmatter.tags.filter(tag => typeof tag === 'string');
+                    } else if (typeof frontmatter.tags === 'string') {
+                        tags = [frontmatter.tags];
+                    }
+                }
+                
+                // Also include tags from Obsidian's tag parsing
+                if (metadata.tags) {
+                    const obsidianTags = metadata.tags.map(tag => tag.tag.replace('#', ''));
+                    tags = [...new Set([...tags, ...obsidianTags])];
+                }
+                
+                const noteInfo: NoteInfo = {
+                    title: file.basename,
+                    tags: tags,
+                    path: file.path,
+                    createdDate: noteDate,
+                    lastModified: file.stat.mtime
+                };
+                
+                notes.push(noteInfo);
+            }
+        }
+        
+        return notes;
     }
     
     async getTaskInfoForDate(date: Date): Promise<TaskInfo[]> {
