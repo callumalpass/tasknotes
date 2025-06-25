@@ -1,4 +1,3 @@
-import { format } from 'date-fns';
 import { TFile } from 'obsidian';
 import { NoteInfo } from '../types';
 import TaskNotesPlugin from '../main';
@@ -51,7 +50,7 @@ export function createNoteCard(note: NoteInfo, plugin: TaskNotesPlugin, options:
     
     // Daily note badge (if enabled and applicable)
     if (opts.showDailyNoteBadge && isDailyNote) {
-        const dailyBadge = item.createSpan({ 
+        item.createSpan({ 
             cls: 'note-card__badge',
             text: 'Daily',
             attr: { title: 'Daily note' }
@@ -62,7 +61,7 @@ export function createNoteCard(note: NoteInfo, plugin: TaskNotesPlugin, options:
     const contentContainer = item.createDiv({ cls: 'note-card__content' });
     
     // Title
-    const title = contentContainer.createDiv({ 
+    contentContainer.createDiv({ 
         cls: 'note-card__title',
         text: note.title
     });
@@ -70,7 +69,7 @@ export function createNoteCard(note: NoteInfo, plugin: TaskNotesPlugin, options:
     // Tags section (separate from other metadata)
     if (opts.showTags && note.tags && note.tags.length > 0) {
         // Divider line
-        const divider = contentContainer.createEl('div', { cls: 'note-card__divider' });
+        contentContainer.createEl('div', { cls: 'note-card__divider' });
         
         // Tags line
         const tagsToShow = note.tags.slice(0, opts.maxTags);
@@ -81,7 +80,7 @@ export function createNoteCard(note: NoteInfo, plugin: TaskNotesPlugin, options:
             tagsText += ` +${note.tags.length - opts.maxTags}`;
         }
         
-        const tagsLine = contentContainer.createEl('div', { 
+        contentContainer.createEl('div', { 
             cls: 'note-card__tags-text',
             text: tagsText
         });
@@ -92,7 +91,7 @@ export function createNoteCard(note: NoteInfo, plugin: TaskNotesPlugin, options:
         const dateStr = note.createdDate.indexOf('T') > 0 
             ? formatDateForDisplay(note.createdDate, 'MMM d, yyyy h:mm a') 
             : note.createdDate;
-        const dateEl = contentContainer.createDiv({ 
+        contentContainer.createDiv({ 
             cls: 'note-card__metadata',
             text: `Created: ${dateStr}`,
             attr: { title: `Created: ${dateStr}` }
@@ -100,7 +99,7 @@ export function createNoteCard(note: NoteInfo, plugin: TaskNotesPlugin, options:
     }
     
     if (opts.showPath) {
-        const pathEl = contentContainer.createDiv({ 
+        contentContainer.createDiv({ 
             cls: 'note-card__metadata',
             text: note.path,
             attr: { title: `Path: ${note.path}` }

@@ -885,8 +885,9 @@ private injectCustomStyles(): void {
 			// Provide user feedback unless silent
 			if (!options.silent) {
 				if (property === 'status') {
-					const statusConfig = this.statusManager.getStatusConfig(value);
-					new Notice(`Task marked as '${statusConfig?.label || value}'`);
+					const statusValue = typeof value === 'string' ? value : String(value);
+					const statusConfig = this.statusManager.getStatusConfig(statusValue);
+					new Notice(`Task marked as '${statusConfig?.label || statusValue}'`);
 				} else {
 					new Notice(`Task ${property} updated`);
 				}

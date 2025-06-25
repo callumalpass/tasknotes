@@ -2020,14 +2020,14 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 			const nameEl = infoContainer.createEl('div', { cls: 'ics-subscription-name', text: subscription.name });
 			
 			// Type badge
-			const typeBadge = nameEl.createEl('span', { 
+			nameEl.createEl('span', { 
 				cls: `ics-subscription-type-badge ${subscription.type}`,
 				text: subscription.type === 'remote' ? 'URL' : 'FILE'
 			});
 			
 			// Source (URL or file path)
 			const sourceText = subscription.type === 'remote' ? subscription.url : subscription.filePath;
-			const sourceEl = infoContainer.createEl('div', { cls: 'ics-subscription-url', text: sourceText || 'Unknown source' });
+			infoContainer.createEl('div', { cls: 'ics-subscription-url', text: sourceText || 'Unknown source' });
 			const metaEl = infoContainer.createEl('div', { cls: 'ics-subscription-meta' });
 			
 			// Meta information
@@ -2036,7 +2036,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 			metaEl.textContent = refreshText + lastFetched;
 			
 			if (subscription.lastError) {
-				const errorEl = infoContainer.createEl('div', { cls: 'ics-subscription-error', text: `Error: ${subscription.lastError}` });
+				infoContainer.createEl('div', { cls: 'ics-subscription-error', text: `Error: ${subscription.lastError}` });
 			}
 			
 			// Actions

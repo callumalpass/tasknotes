@@ -1,4 +1,4 @@
-import { App, FuzzySuggestModal, FuzzyMatch, Notice, setIcon } from 'obsidian';
+import { App, FuzzySuggestModal, FuzzyMatch, setIcon } from 'obsidian';
 import { format } from 'date-fns';
 import { TaskInfo } from '../types';
 import { isPastDate, isToday, hasTimeComponent, getDatePart, parseDate } from '../utils/dateUtils';
@@ -118,7 +118,7 @@ export class UnscheduledTasksSelectorModal extends FuzzySuggestModal<TaskInfo> {
         
         // Priority indicator
         if (task.priority) {
-            const priorityEl = metaEl.createSpan({
+            metaEl.createSpan({
                 text: task.priority.toUpperCase(),
                 cls: `unscheduled-tasks-selector__priority priority-${task.priority.toLowerCase()}`
             });
@@ -149,7 +149,7 @@ export class UnscheduledTasksSelectorModal extends FuzzySuggestModal<TaskInfo> {
         
         // Time estimate if exists
         if (task.timeEstimate) {
-            const timeEl = metaEl.createSpan({
+            metaEl.createSpan({
                 text: `~${task.timeEstimate}min`,
                 cls: 'unscheduled-tasks-selector__time-estimate'
             });

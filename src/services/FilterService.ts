@@ -3,19 +3,16 @@ import { MinimalNativeCache } from '../utils/MinimalNativeCache';
 import { StatusManager } from './StatusManager';
 import { PriorityManager } from './PriorityManager';
 import { EventEmitter } from '../utils/EventEmitter';
-import { isDueByRRule, shouldShowRecurringTaskOnDate, generateRecurringInstances, isTaskOverdue } from '../utils/helpers';
+import { isDueByRRule } from '../utils/helpers';
 import { format, isToday } from 'date-fns';
 import { 
-    parseDate, 
     getTodayString, 
     isBeforeDateSafe, 
     isSameDateSafe, 
     startOfDayForDateString, 
-    isPastDate, 
     isToday as isTodayUtil,
     isBeforeDateTimeAware,
     isOverdueTimeAware,
-    hasTimeComponent,
     getDatePart
 } from '../utils/dateUtils';
 
@@ -571,7 +568,7 @@ export class FilterService extends EventEmitter {
                 });
                 break;
                 
-            case 'due':
+            case 'due': {
                 // Sort by logical due date order
                 const dueDateOrder = ['Overdue', 'Today', 'Tomorrow', 'This week', 'Later', 'No due date'];
                 sortedKeys = Array.from(groups.keys()).sort((a, b) => {
@@ -580,8 +577,9 @@ export class FilterService extends EventEmitter {
                     return indexA - indexB;
                 });
                 break;
+            }
                 
-            case 'scheduled':
+            case 'scheduled': {
                 // Sort by logical scheduled date order
                 const scheduledDateOrder = ['Past scheduled', 'Today', 'Tomorrow', 'This week', 'Later', 'No scheduled date'];
                 sortedKeys = Array.from(groups.keys()).sort((a, b) => {
@@ -590,6 +588,7 @@ export class FilterService extends EventEmitter {
                     return indexA - indexB;
                 });
                 break;
+            }
                 
             default:
                 // Alphabetical sort for contexts and others

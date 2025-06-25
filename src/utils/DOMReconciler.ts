@@ -158,10 +158,10 @@ export class DOMReconciler {
         
         const timeout = setTimeout(() => {
             element.classList.remove(`task-${animation}`);
-            this.activeTimeouts.delete(timeout);
+            this.activeTimeouts.delete(timeout as unknown as number);
         }, duration);
         
-        this.activeTimeouts.add(timeout);
+        this.activeTimeouts.add(timeout as unknown as number);
     }
     
     /**
@@ -226,7 +226,7 @@ export class DOMReconciler {
     /**
      * Create optimistic updates that can be reverted on error
      */
-    createOptimisticUpdate<T>(
+    createOptimisticUpdate(
         element: HTMLElement,
         updateFn: (element: HTMLElement) => void,
         revertFn: (element: HTMLElement) => void

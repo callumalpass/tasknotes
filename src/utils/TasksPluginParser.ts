@@ -38,7 +38,7 @@ export class TasksPluginParser {
 		HIGH_PRIORITY: /⏫/g,
 		MEDIUM_PRIORITY: /🔼/g,
 		LOW_PRIORITY: /⏬/g,
-		RECURRENCE: /🔁\s*([^📅⏳🛫➕✅⏫🔼⏬🔁]+?)(?=\s*[📅⏳🛫➕✅⏫🔼⏬🔁]|$)/g
+		RECURRENCE: /🔁\s*([^📅⏳🛫➕✅⏫🔼⏬🔁]+?)(?=\s*[📅⏳🛫➕✅⏫🔼⏬🔁]|$)/gu
 	};
 
 	// Checkbox pattern for markdown tasks
@@ -78,7 +78,7 @@ export class TasksPluginParser {
 		}
 
 		try {
-			const [, prefix, checkState, middle, taskContent] = checkboxMatch;
+			const [, , checkState, , taskContent] = checkboxMatch;
 			
 			// Validate extracted parts
 			if (typeof checkState !== 'string' || typeof taskContent !== 'string') {

@@ -1,8 +1,7 @@
 import { TFile, App, Events } from 'obsidian';
-import { TaskInfo, NoteInfo } from '../types';
+import { TaskInfo } from '../types';
 import { FieldMapper } from '../services/FieldMapper';
 import { 
-    parseDate, 
     getTodayString, 
     isBeforeDateSafe, 
     getDatePart
@@ -236,7 +235,7 @@ export class MinimalNativeCache extends Events {
             const { getAllDailyNotes } = require('obsidian-daily-notes-interface');
             const allDailyNotes = getAllDailyNotes();
             
-            for (const [dateStr, file] of Object.entries(allDailyNotes)) {
+            for (const [dateStr] of Object.entries(allDailyNotes)) {
                 dailyNotesSet.add(dateStr);
             }
         } catch (e) {

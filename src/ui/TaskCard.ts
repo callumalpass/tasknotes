@@ -2,14 +2,8 @@ import { format } from 'date-fns';
 import { TFile, Menu, setIcon, Notice, Modal, App } from 'obsidian';
 import { TaskInfo } from '../types';
 import TaskNotesPlugin from '../main';
-import { calculateTotalTimeSpent, isDueByRRule, shouldShowRecurringTaskOnDate, getEffectiveTaskStatus, shouldUseRecurringTaskUI, getRecurringTaskCompletionText, getRecurrenceDisplayText } from '../utils/helpers';
+import { calculateTotalTimeSpent, getEffectiveTaskStatus, getRecurrenceDisplayText } from '../utils/helpers';
 import { 
-    isSameDateSafe, 
-    isBeforeDateSafe, 
-    getTodayString, 
-    formatDateForDisplay, 
-    isToday, 
-    isPastDate,
     formatDateTimeForDisplay,
     isTodayTimeAware,
     isOverdueTimeAware
@@ -862,7 +856,7 @@ class DeleteTaskConfirmationModal extends Modal {
         description.createEl('strong', { text: this.task.title });
         description.appendText('"?');
         
-        const warningText = contentEl.createEl('p', { 
+        contentEl.createEl('p', { 
             cls: 'mod-warning',
             text: 'This action cannot be undone. The task file will be permanently deleted.' 
         });

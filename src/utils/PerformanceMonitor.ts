@@ -140,8 +140,8 @@ export class PerformanceMonitor {
     /**
      * Get all recorded metrics
      */
-    getAllStats(): Record<string, ReturnType<typeof this.getStats>> {
-        const result: Record<string, ReturnType<typeof this.getStats>> = {};
+    getAllStats(): Record<string, ReturnType<PerformanceMonitor['getStats']>> {
+        const result: Record<string, ReturnType<PerformanceMonitor['getStats']>> = {};
         
         for (const [name] of this.metrics) {
             result[name] = this.getStats(name);

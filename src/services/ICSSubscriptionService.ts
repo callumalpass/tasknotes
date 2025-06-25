@@ -391,7 +391,7 @@ export class ICSSubscriptionService extends EventEmitter {
             this.fetchSubscription(subscription.id);
         }, intervalMs);
         
-        this.refreshTimers.set(subscription.id, timer);
+        this.refreshTimers.set(subscription.id, timer as unknown as number);
     }
 
     private stopFileWatcher(id: string): void {
@@ -414,7 +414,7 @@ export class ICSSubscriptionService extends EventEmitter {
             this.fetchSubscription(subscription.id);
         }, intervalMs);
         
-        this.refreshTimers.set(subscription.id, timer);
+        this.refreshTimers.set(subscription.id, timer as unknown as number);
     }
 
     private stopRefreshTimer(id: string): void {

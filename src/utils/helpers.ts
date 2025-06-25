@@ -1,10 +1,10 @@
 import { normalizePath, TFile, Vault, App, parseYaml, stringifyYaml } from 'obsidian';
-import { format, parseISO, startOfDay, isBefore, isSameDay as isSameDayFns } from 'date-fns';
+import { format, startOfDay } from 'date-fns';
 import { RRule } from 'rrule';
 import { TimeInfo, TaskInfo, TimeEntry, TimeBlock, DailyNoteFrontmatter } from '../types';
 import { FieldMapper } from '../services/FieldMapper';
 import { DEFAULT_FIELD_MAPPING } from '../settings/settings';
-import { isBeforeDateSafe, getTodayString, parseDate, isSameDateSafe } from './dateUtils';
+import { isBeforeDateSafe, getTodayString, parseDate } from './dateUtils';
 // import { RegexOptimizer } from './RegexOptimizer'; // Temporarily disabled
 
 /**
@@ -414,13 +414,55 @@ export function isDueByRRule(task: TaskInfo, date: Date): boolean {
 			return occurrences.length > 0;
 		} catch (error) {
 			console.error('Error evaluating rrule:', error, { task: task.title, recurrence: task.recurrence });
-			// Fall back to legacy recurrence handling on error
-			return isRecurringTaskDueOn(task, date);
+			// Fall back to treating as non-recurring on error
+			return true;
 		}
 	}
 	
-	// If recurrence is an object (legacy format), use legacy handler
-	return isRecurringTaskDueOn(task, date);
+	// If recurrence is an object (legacy format), handle it inline
+	// Legacy recurrence object handling
+	const frequency = task.recurrence.frequency;
+	const targetDate = parseDate(format(date, 'yyyy-MM-dd'));
+	const dayOfWeek = targetDate.getDay();
+	const dayOfMonth = targetDate.getDate();
+	const monthOfYear = targetDate.getMonth() + 1; // JavaScript months are 0-indexed
+	// Map JavaScript's day of week (0-6, where 0 is Sunday) to our day abbreviations
+	const weekdayMap = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+	
+	switch (frequency) {
+		case 'daily':
+			return true;
+		case 'weekly': {
+			// Check if the day of week is in the specified days
+			const daysOfWeek = task.recurrence.days_of_week || [];
+			return daysOfWeek.includes(weekdayMap[dayOfWeek]);
+		}
+		case 'monthly':
+			// Check if the day of month matches
+			return dayOfMonth === task.recurrence.day_of_month;
+		case 'yearly': {
+			// Check if it's the specific day of month in the correct month
+			// First check if we have explicit month_of_year in recurrence
+			if (task.recurrence.month_of_year && task.recurrence.day_of_month) {
+				return dayOfMonth === task.recurrence.day_of_month && 
+						monthOfYear === task.recurrence.month_of_year;
+			}
+			// Fall back to using the original due date
+			else if (task.due) {
+				try {
+					const originalDueDate = parseDate(task.due); // Safe parsing
+					return originalDueDate.getDate() === dayOfMonth && 
+							originalDueDate.getMonth() === targetDate.getMonth();
+				} catch (error) {
+					console.error(`Error parsing due date ${task.due}:`, error);
+					return false;
+				}
+			}
+			return false;
+		}
+		default:
+			return false;
+	}
 }
 
 /**
@@ -444,10 +486,11 @@ export function isRecurringTaskDueOn(task: any, date: Date): boolean {
 	switch (frequency) {
 		case 'daily':
 			return true;
-		case 'weekly':
+		case 'weekly': {
 			// Check if the day of week is in the specified days
 			const daysOfWeek = task.recurrence.days_of_week || [];
 			return daysOfWeek.includes(weekdayMap[dayOfWeek]);
+		}
 		case 'monthly':
 			// Check if the day of month matches
 			return dayOfMonth === task.recurrence.day_of_month;
@@ -561,7 +604,7 @@ export function generateRecurringInstances(task: TaskInfo, startDate: Date, endD
 	const current = new Date(startDate);
 	
 	while (current <= endDate) {
-		if (isRecurringTaskDueOn(task, current)) {
+		if (isDueByRRule(task, current)) {
 			instances.push(new Date(current));
 		}
 		current.setDate(current.getDate() + 1);
@@ -874,7 +917,6 @@ export async function updateTimeblockInDailyNote(
 	newEndTime: string
 ): Promise<void> {
 	const { 
-		createDailyNote, 
 		getDailyNote, 
 		getAllDailyNotes, 
 		appHasDailyNotesPluginLoaded 

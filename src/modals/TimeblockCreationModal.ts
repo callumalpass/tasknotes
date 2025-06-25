@@ -1,5 +1,4 @@
-import { App, Modal, Setting, Notice, TFile, TAbstractFile, parseYaml, stringifyYaml } from 'obsidian';
-import { format } from 'date-fns';
+import { App, Modal, Setting, Notice, TAbstractFile, parseYaml, stringifyYaml } from 'obsidian';
 import TaskNotesPlugin from '../main';
 import { TimeBlock, DailyNoteFrontmatter } from '../types';
 import { generateTimeblockId } from '../utils/helpers';
@@ -115,7 +114,7 @@ export class TimeblockCreationModal extends Modal {
             });
 
         // Attachments (optional)
-        const attachmentSetting = new Setting(contentEl)
+        new Setting(contentEl)
             .setName('Attachments')
             .setDesc('Files or notes to link to this timeblock')
             .addButton(button => {

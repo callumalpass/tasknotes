@@ -17,11 +17,8 @@ import {
     EVENT_POMODORO_COMPLETE, 
     EVENT_POMODORO_INTERRUPT, 
     EVENT_POMODORO_TICK,
-    EVENT_TASK_UPDATED,
-    TaskInfo,
-    TimeEntry
+    TaskInfo
 } from '../types';
-import { ensureFolderExists } from '../utils/helpers';
 import { getCurrentTimestamp } from '../utils/dateUtils';
 import { getSessionDuration } from '../utils/pomodoroUtils';
 
@@ -398,7 +395,7 @@ export class PomodoroService {
             if (this.state.timeRemaining <= 0) {
                 await this.completePomodoro();
             }
-        }, 1000); // Update every second
+        }, 1000) as unknown as number; // Update every second
     }
 
     private stopTimer() {
@@ -528,10 +525,10 @@ export class PomodoroService {
 
         // Auto-start next session if configured
         if (session.type === 'work' && this.plugin.settings.pomodoroAutoStartBreaks) {
-            const timeout = setTimeout(() => this.startBreak(shouldTakeLongBreak), 1000);
+            const timeout = setTimeout(() => this.startBreak(shouldTakeLongBreak), 1000) as unknown as number;
             this.cleanupTimeouts.add(timeout);
         } else if (session.type !== 'work' && this.plugin.settings.pomodoroAutoStartWork) {
-            const timeout = setTimeout(() => this.startPomodoro(), 1000);
+            const timeout = setTimeout(() => this.startPomodoro(), 1000) as unknown as number;
             this.cleanupTimeouts.add(timeout);
         }
     }
@@ -581,7 +578,6 @@ export class PomodoroService {
                 // Update existing daily note
                 await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
                     const pomodoroField = this.plugin.fieldMapper.toUserField('pomodoros');
-                    const oldCount = frontmatter[pomodoroField] || 0;
                     if (!frontmatter[pomodoroField]) {
                         frontmatter[pomodoroField] = 0;
                     }
@@ -629,14 +625,14 @@ export class PomodoroService {
                     console.error('Failed to play second beep:', error);
                 }
             }, 150);
-            this.cleanupTimeouts.add(beepTimeout);
+            this.cleanupTimeouts.add(beepTimeout as unknown as number);
             
             // Clean up audio context after sounds complete
             const cleanupTimeout = setTimeout(() => {
                 this.activeAudioContexts.delete(audioContext);
                 audioContext.close().catch(() => {});
             }, 300);
-            this.cleanupTimeouts.add(cleanupTimeout);
+            this.cleanupTimeouts.add(cleanupTimeout as unknown as number);
         } catch (error) {
             console.error('Failed to play completion sound:', error);
         }
@@ -893,7 +889,7 @@ export class PomodoroService {
             const pomodoroField = this.plugin.fieldMapper.toUserField('pomodoros');
 
             // Read from each daily note
-            for (const [dateUID, file] of Object.entries(allDailyNotes)) {
+            for (const [, file] of Object.entries(allDailyNotes)) {
                 try {
                     const cache = this.plugin.app.metadataCache.getFileCache(file);
                     const frontmatter = cache?.frontmatter;

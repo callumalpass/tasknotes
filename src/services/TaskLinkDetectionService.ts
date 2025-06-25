@@ -1,4 +1,4 @@
-import { TFile, TAbstractFile } from 'obsidian';
+import { TFile } from 'obsidian';
 import { TaskInfo } from '../types';
 import TaskNotesPlugin from '../main';
 

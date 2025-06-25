@@ -557,7 +557,7 @@ export class PomodoroView extends ItemView {
         }
         
         // Calculate progress
-        const totalDuration = state.currentSession.duration * 60; // Convert to seconds
+        const totalDuration = state.currentSession.plannedDuration * 60; // Convert to seconds
         const elapsed = totalDuration - state.timeRemaining;
         const progress = Math.max(0, Math.min(1, elapsed / totalDuration));
         

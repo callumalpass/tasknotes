@@ -1193,7 +1193,7 @@ export class MiniCalendarView extends ItemView {
     /**
      * Simple debounce utility
      */
-    private debounce(func: Function, wait: number): () => void {
+    private debounce(func: () => void, wait: number): () => void {
         let timeout: number;
         return (...args: any[]) => {
             window.clearTimeout(timeout);

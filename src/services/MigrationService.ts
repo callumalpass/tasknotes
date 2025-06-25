@@ -1,4 +1,4 @@
-import { App, Notice, TFile, parseYaml, stringifyYaml } from 'obsidian';
+import { App, TFile, parseYaml, stringifyYaml } from 'obsidian';
 import { convertLegacyRecurrenceToRRule } from '../utils/helpers';
 
 /**

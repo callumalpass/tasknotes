@@ -1,4 +1,4 @@
-import { App, FuzzySuggestModal, Notice, FuzzyMatch } from 'obsidian';
+import { App, FuzzySuggestModal, FuzzyMatch } from 'obsidian';
 import { TaskInfo } from '../types';
 import { isPastDate, isToday } from '../utils/dateUtils';
 

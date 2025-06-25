@@ -97,7 +97,7 @@ export interface TaskInfo {
 	archived: boolean;
 	tags?: string[];
 	contexts?: string[];
-	recurrence?: string | RecurrenceInfo | undefined; // RFC 5545 recurrence rule string or legacy RecurrenceInfo object
+	recurrence?: string | RecurrenceInfo | undefined; // RFC 5545 recurrence rule string (preferred) or legacy RecurrenceInfo object (deprecated)
 	complete_instances?: string[]; // Array of dates (YYYY-MM-DD) when recurring task was completed
 	completedDate?: string; // Date (YYYY-MM-DD) when task was marked as done
 	timeEstimate?: number; // Estimated time in minutes
@@ -166,7 +166,7 @@ export interface TaskFrontmatter {
 	tags: string[];
 	priority: 'low' | 'normal' | 'high';
 	contexts?: string[];
-	recurrence?: string | RecurrenceInfo | undefined; // RFC 5545 recurrence rule string or legacy RecurrenceInfo object
+	recurrence?: string | RecurrenceInfo | undefined; // RFC 5545 recurrence rule string (preferred) or legacy RecurrenceInfo object (deprecated)
 	complete_instances?: string[];
 	completedDate?: string;
 	timeEstimate?: number;

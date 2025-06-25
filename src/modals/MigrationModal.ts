@@ -161,7 +161,7 @@ export class MigrationModal extends Modal {
 export function showMigrationPrompt(app: App, migrationService: MigrationService): void {
     const notice = new Notice('', 0); // Persistent notice
     
-    const container = notice.noticeEl.createDiv();
+    const container = notice.messageEl.createDiv();
     container.style.display = 'flex';
     container.style.flexDirection = 'column';
     container.style.gap = '12px';
