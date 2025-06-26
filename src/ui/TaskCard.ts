@@ -6,8 +6,13 @@ import { calculateTotalTimeSpent, getEffectiveTaskStatus, getRecurrenceDisplayTe
 import { 
     formatDateTimeForDisplay,
     isTodayTimeAware,
-    isOverdueTimeAware
+    isOverdueTimeAware,
+    getDatePart,
+    getTimePart
 } from '../utils/dateUtils';
+import { DateContextMenu } from '../components/DateContextMenu';
+import { StatusContextMenu } from '../components/StatusContextMenu';
+import { PriorityContextMenu } from '../components/PriorityContextMenu';
 
 export interface TaskCardOptions {
     showDueDate: boolean;
@@ -116,7 +121,7 @@ export function createTaskCard(task: TaskInfo, plugin: TaskNotesPlugin, options:
         statusDot.style.borderColor = statusConfig.color;
     }
     
-    // Add click handler to cycle through statuses
+    // Add click handler to cycle through statuses (original functionality)
     statusDot.addEventListener('click', async (e) => {
         e.stopPropagation();
         try {
@@ -175,7 +180,7 @@ export function createTaskCard(task: TaskInfo, plugin: TaskNotesPlugin, options:
             new Notice(`Failed to update task status: ${errorMessage}`);
         }
     });
-    
+
     // Priority indicator dot
     if (task.priority && priorityConfig) {
         const priorityDot = card.createEl('span', { 
@@ -183,6 +188,24 @@ export function createTaskCard(task: TaskInfo, plugin: TaskNotesPlugin, options:
             attr: { 'aria-label': `Priority: ${priorityConfig.label}` }
         });
         priorityDot.style.borderColor = priorityConfig.color;
+
+        // Add click context menu for priority
+        priorityDot.addEventListener('click', (e) => {
+            e.stopPropagation(); // Don't trigger card click
+            const menu = new PriorityContextMenu({
+                currentValue: task.priority,
+                onSelect: async (newPriority) => {
+                    try {
+                        await plugin.updateTaskProperty(task, 'priority', newPriority);
+                    } catch (error) {
+                        console.error('Error updating priority:', error);
+                        new Notice('Failed to update priority');
+                    }
+                },
+                plugin: plugin
+            });
+            menu.show(e as MouseEvent);
+        });
     }
     
     // Recurring task indicator
@@ -228,19 +251,22 @@ export function createTaskCard(task: TaskInfo, plugin: TaskNotesPlugin, options:
     
     // Second line: Metadata
     const metadataLine = contentContainer.createEl('div', { cls: 'task-card__metadata' });
-    const metadataItems: string[] = [];
+    const metadataElements: HTMLElement[] = [];
     
     // Recurrence info (if recurring)
     if (task.recurrence) {
         const frequencyDisplay = getRecurrenceDisplayText(task.recurrence);
-        metadataItems.push(`Recurring: ${frequencyDisplay}`);
+        const recurringSpan = metadataLine.createEl('span');
+        recurringSpan.textContent = `Recurring: ${frequencyDisplay}`;
+        metadataElements.push(recurringSpan);
     }
     
-    // Due date (if has due date)
+    // Due date (if has due date) - with hover menu
     if (task.due) {
         const isDueToday = isTodayTimeAware(task.due);
         const isDueOverdue = isOverdueTimeAware(task.due);
         
+        let dueDateText = '';
         if (isDueToday) {
             // For today, show time if available
             const timeDisplay = formatDateTimeForDisplay(task.due, {
@@ -249,9 +275,9 @@ export function createTaskCard(task: TaskInfo, plugin: TaskNotesPlugin, options:
                 showTime: true
             });
             if (timeDisplay.trim() === '') {
-                metadataItems.push('Due: Today');
+                dueDateText = 'Due: Today';
             } else {
-                metadataItems.push(`Due: Today at ${timeDisplay}`);
+                dueDateText = `Due: Today at ${timeDisplay}`;
             }
         } else if (isDueOverdue) {
             // For overdue, show date and time if available
@@ -260,7 +286,7 @@ export function createTaskCard(task: TaskInfo, plugin: TaskNotesPlugin, options:
                 timeFormat: 'h:mm a',
                 showTime: true
             });
-            metadataItems.push(`Due: ${display} (overdue)`);
+            dueDateText = `Due: ${display} (overdue)`;
         } else {
             // For future dates, show date and time if available
             const display = formatDateTimeForDisplay(task.due, {
@@ -268,15 +294,49 @@ export function createTaskCard(task: TaskInfo, plugin: TaskNotesPlugin, options:
                 timeFormat: 'h:mm a',
                 showTime: true
             });
-            metadataItems.push(`Due: ${display}`);
+            dueDateText = `Due: ${display}`;
         }
+
+        const dueDateSpan = metadataLine.createEl('span', { 
+            cls: 'task-card__metadata-date task-card__metadata-date--due',
+            text: dueDateText
+        });
+
+        // Add click context menu for due date
+        dueDateSpan.addEventListener('click', (e) => {
+            e.stopPropagation(); // Don't trigger card click
+            const menu = new DateContextMenu({
+                currentValue: getDatePart(task.due || ''),
+                currentTime: getTimePart(task.due || ''),
+                onSelect: async (dateValue, timeValue) => {
+                    try {
+                        let finalValue: string | undefined;
+                        if (!dateValue) {
+                            finalValue = undefined;
+                        } else if (timeValue) {
+                            finalValue = `${dateValue}T${timeValue}`;
+                        } else {
+                            finalValue = dateValue;
+                        }
+                        await plugin.updateTaskProperty(task, 'due', finalValue);
+                    } catch (error) {
+                        console.error('Error updating due date:', error);
+                        new Notice('Failed to update due date');
+                    }
+                }
+            });
+            menu.show(e as MouseEvent);
+        });
+
+        metadataElements.push(dueDateSpan);
     }
     
-    // Scheduled date (if has scheduled date)
+    // Scheduled date (if has scheduled date) - with hover menu
     if (task.scheduled) {
         const isScheduledToday = isTodayTimeAware(task.scheduled);
         const isScheduledPast = isOverdueTimeAware(task.scheduled);
         
+        let scheduledDateText = '';
         if (isScheduledToday) {
             // For today, show time if available
             const timeDisplay = formatDateTimeForDisplay(task.scheduled, {
@@ -285,9 +345,9 @@ export function createTaskCard(task: TaskInfo, plugin: TaskNotesPlugin, options:
                 showTime: true
             });
             if (timeDisplay.trim() === '') {
-                metadataItems.push('Scheduled: Today');
+                scheduledDateText = 'Scheduled: Today';
             } else {
-                metadataItems.push(`Scheduled: Today at ${timeDisplay}`);
+                scheduledDateText = `Scheduled: Today at ${timeDisplay}`;
             }
         } else if (isScheduledPast) {
             // For past dates, show date and time if available
@@ -296,7 +356,7 @@ export function createTaskCard(task: TaskInfo, plugin: TaskNotesPlugin, options:
                 timeFormat: 'h:mm a',
                 showTime: true
             });
-            metadataItems.push(`Scheduled: ${display} (past)`);
+            scheduledDateText = `Scheduled: ${display} (past)`;
         } else {
             // For future dates, show date and time if available
             const display = formatDateTimeForDisplay(task.scheduled, {
@@ -304,13 +364,48 @@ export function createTaskCard(task: TaskInfo, plugin: TaskNotesPlugin, options:
                 timeFormat: 'h:mm a',
                 showTime: true
             });
-            metadataItems.push(`Scheduled: ${display}`);
+            scheduledDateText = `Scheduled: ${display}`;
         }
+
+        const scheduledSpan = metadataLine.createEl('span', { 
+            cls: 'task-card__metadata-date task-card__metadata-date--scheduled',
+            text: scheduledDateText
+        });
+
+        // Add click context menu for scheduled date
+        scheduledSpan.addEventListener('click', (e) => {
+            e.stopPropagation(); // Don't trigger card click
+            const menu = new DateContextMenu({
+                currentValue: getDatePart(task.scheduled || ''),
+                currentTime: getTimePart(task.scheduled || ''),
+                onSelect: async (dateValue, timeValue) => {
+                    try {
+                        let finalValue: string | undefined;
+                        if (!dateValue) {
+                            finalValue = undefined;
+                        } else if (timeValue) {
+                            finalValue = `${dateValue}T${timeValue}`;
+                        } else {
+                            finalValue = dateValue;
+                        }
+                        await plugin.updateTaskProperty(task, 'scheduled', finalValue);
+                    } catch (error) {
+                        console.error('Error updating scheduled date:', error);
+                        new Notice('Failed to update scheduled date');
+                    }
+                }
+            });
+            menu.show(e as MouseEvent);
+        });
+
+        metadataElements.push(scheduledSpan);
     }
     
     // Contexts (if has contexts)
     if (task.contexts && task.contexts.length > 0) {
-        metadataItems.push(`@${task.contexts.join(', @')}`);
+        const contextsSpan = metadataLine.createEl('span');
+        contextsSpan.textContent = `@${task.contexts.join(', @')}`;
+        metadataElements.push(contextsSpan);
     }
     
     // Time tracking (if has time estimate or logged time)
@@ -323,12 +418,22 @@ export function createTaskCard(task: TaskInfo, plugin: TaskNotesPlugin, options:
         if (task.timeEstimate) {
             timeInfo.push(`${plugin.formatTime(task.timeEstimate)} estimated`);
         }
-        metadataItems.push(timeInfo.join(', '));
+        const timeSpan = metadataLine.createEl('span');
+        timeSpan.textContent = timeInfo.join(', ');
+        metadataElements.push(timeSpan);
     }
     
-    // Populate metadata line
-    if (metadataItems.length > 0) {
-        metadataLine.textContent = metadataItems.join(' • ');
+    // Add separators between metadata elements
+    if (metadataElements.length > 0) {
+        // Insert separators between elements
+        for (let i = 1; i < metadataElements.length; i++) {
+            const separator = metadataLine.createEl('span', { 
+                cls: 'task-card__metadata-separator',
+                text: ' • ' 
+            });
+            // Insert separator before each element (except first)
+            metadataElements[i].insertAdjacentElement('beforebegin', separator);
+        }
     } else {
         metadataLine.style.display = 'none';
     }
