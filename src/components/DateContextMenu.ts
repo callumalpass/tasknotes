@@ -1,4 +1,4 @@
-import { Menu } from 'obsidian';
+import { Menu, setIcon } from 'obsidian';
 
 export interface DateOption {
     label: string;
@@ -138,98 +138,181 @@ export class DateContextMenu {
     }
 
     private showDateTimePicker(): void {
-        // Create a simple date & time picker modal
+        const modal = this.createModal();
+        
+        // Create title with icon
+        const header = this.createHeader();
+        
+        // Create date input section
+        const dateSection = this.createDateSection();
+        
+        // Create time input section
+        const timeSection = this.createTimeSection();
+        
+        // Create action buttons
+        const buttonSection = this.createButtonSection();
+        
+        // Assemble modal
+        modal.appendChild(header);
+        modal.appendChild(dateSection.container);
+        modal.appendChild(timeSection.container);
+        modal.appendChild(buttonSection.container);
+        
+        document.body.appendChild(modal);
+        
+        // Set up event handlers
+        this.setupModalEventHandlers(modal, dateSection.input, timeSection.input, buttonSection.selectButton);
+        
+        // Focus the date input
+        setTimeout(() => {
+            dateSection.input.focus();
+        }, 100);
+    }
+
+    private createModal(): HTMLElement {
         const modal = document.createElement('div');
         modal.className = 'date-picker-modal';
-        modal.style.position = 'fixed';
-        modal.style.top = '50%';
-        modal.style.left = '50%';
-        modal.style.transform = 'translate(-50%, -50%)';
-        modal.style.background = 'var(--background-primary)';
-        modal.style.border = '1px solid var(--background-modifier-border)';
-        modal.style.borderRadius = 'var(--radius-m)';
-        modal.style.padding = 'var(--size-4-4)';
-        modal.style.boxShadow = 'var(--shadow-l)';
-        modal.style.zIndex = '1000';
-        modal.style.minWidth = '320px';
+        return modal;
+    }
 
-        // Create title
+    private createHeader(): HTMLElement {
+        const header = document.createElement('div');
+        header.className = 'date-picker-modal__header';
+
+        // Calendar icon
+        const icon = document.createElement('div');
+        icon.className = 'date-picker-modal__header-icon';
+        setIcon(icon, 'calendar');
+
         const title = document.createElement('h3');
-        title.textContent = 'Set Date & Time';
-        title.style.margin = '0 0 var(--size-4-3) 0';
-        title.style.fontSize = 'var(--font-ui-medium)';
-        title.style.fontWeight = '600';
+        title.className = 'date-picker-modal__header-title';
+        title.textContent = 'Set date & time';
 
-        // Create date input
-        const dateLabel = document.createElement('label');
-        dateLabel.textContent = 'Date:';
-        dateLabel.style.display = 'block';
-        dateLabel.style.marginBottom = 'var(--size-4-1)';
-        dateLabel.style.fontSize = 'var(--font-ui-small)';
-        dateLabel.style.fontWeight = '500';
-        dateLabel.style.color = 'var(--text-muted)';
+        header.appendChild(icon);
+        header.appendChild(title);
+        return header;
+    }
 
-        const dateInput = document.createElement('input');
-        dateInput.type = 'date';
-        dateInput.style.width = '100%';
-        dateInput.style.padding = 'var(--size-4-2)';
-        dateInput.style.border = '1px solid var(--background-modifier-border)';
-        dateInput.style.borderRadius = 'var(--radius-s)';
-        dateInput.style.marginBottom = 'var(--size-4-3)';
-        
-        // Set current value if available
-        if (this.options.currentValue && this.options.currentValue.trim()) {
-            dateInput.value = this.options.currentValue;
+    private createDateSection(): { container: HTMLElement; input: HTMLInputElement } {
+        const container = document.createElement('div');
+        container.className = 'date-picker-modal__section';
+
+        const label = this.createInputLabel('calendar', 'Date');
+        const inputContainer = this.createInputContainer();
+        const input = this.createDateInput();
+
+        if (this.options.currentValue?.trim()) {
+            input.value = this.options.currentValue;
         }
 
-        // Create time input
-        const timeLabel = document.createElement('label');
-        timeLabel.textContent = 'Time (optional):';
-        timeLabel.style.display = 'block';
-        timeLabel.style.marginBottom = 'var(--size-4-1)';
-        timeLabel.style.fontSize = 'var(--font-ui-small)';
-        timeLabel.style.fontWeight = '500';
-        timeLabel.style.color = 'var(--text-muted)';
+        inputContainer.appendChild(input);
+        container.appendChild(label);
+        container.appendChild(inputContainer);
 
-        const timeInput = document.createElement('input');
-        timeInput.type = 'time';
-        timeInput.style.width = '100%';
-        timeInput.style.padding = 'var(--size-4-2)';
-        timeInput.style.border = '1px solid var(--background-modifier-border)';
-        timeInput.style.borderRadius = 'var(--radius-s)';
-        timeInput.style.marginBottom = 'var(--size-4-3)';
+        return { container, input };
+    }
 
-        // Set current time if available
-        if (this.options.currentTime && this.options.currentTime.trim()) {
-            timeInput.value = this.options.currentTime;
+    private createTimeSection(): { container: HTMLElement; input: HTMLInputElement } {
+        const container = document.createElement('div');
+        container.className = 'date-picker-modal__section date-picker-modal__section--buttons';
+
+        const label = this.createInputLabel('clock', 'Time (optional)');
+        const inputContainer = this.createInputContainer();
+        const input = this.createTimeInput();
+
+        if (this.options.currentTime?.trim()) {
+            input.value = this.options.currentTime;
         }
 
-        // Create buttons container
-        const buttonsContainer = document.createElement('div');
-        buttonsContainer.style.display = 'flex';
-        buttonsContainer.style.gap = 'var(--size-4-2)';
-        buttonsContainer.style.justifyContent = 'flex-end';
+        inputContainer.appendChild(input);
+        container.appendChild(label);
+        container.appendChild(inputContainer);
 
-        // Create buttons
-        const selectButton = document.createElement('button');
-        selectButton.textContent = 'Select';
-        selectButton.style.padding = 'var(--size-4-1) var(--size-4-3)';
-        selectButton.style.background = 'var(--interactive-accent)';
-        selectButton.style.color = 'var(--text-on-accent)';
-        selectButton.style.border = 'none';
-        selectButton.style.borderRadius = 'var(--radius-s)';
-        selectButton.style.cursor = 'pointer';
+        return { container, input };
+    }
 
-        const cancelButton = document.createElement('button');
-        cancelButton.textContent = 'Cancel';
-        cancelButton.style.padding = 'var(--size-4-1) var(--size-4-3)';
-        cancelButton.style.background = 'var(--background-secondary)';
-        cancelButton.style.color = 'var(--text-normal)';
-        cancelButton.style.border = '1px solid var(--background-modifier-border)';
-        cancelButton.style.borderRadius = 'var(--radius-s)';
-        cancelButton.style.cursor = 'pointer';
+    private createInputLabel(iconName: string, text: string): HTMLElement {
+        const label = document.createElement('label');
+        label.className = 'date-picker-modal__label';
 
-        // Add event listeners
+        const icon = document.createElement('div');
+        icon.className = 'date-picker-modal__label-icon';
+        setIcon(icon, iconName === 'calendar' ? 'calendar' : 'clock');
+
+        const labelText = document.createElement('span');
+        labelText.textContent = text;
+
+        label.appendChild(icon);
+        label.appendChild(labelText);
+        return label;
+    }
+
+    private createInputContainer(): HTMLElement {
+        const container = document.createElement('div');
+        container.className = 'date-picker-modal__input-container';
+        return container;
+    }
+
+    private createDateInput(): HTMLInputElement {
+        const input = document.createElement('input');
+        input.type = 'date';
+        input.className = 'date-picker-modal__input';
+        this.addPickerClickHandler(input);
+        return input;
+    }
+
+    private createTimeInput(): HTMLInputElement {
+        const input = document.createElement('input');
+        input.type = 'time';
+        input.className = 'date-picker-modal__input';
+        this.addPickerClickHandler(input);
+        return input;
+    }
+
+
+    private addPickerClickHandler(input: HTMLInputElement): void {
+        input.addEventListener('click', () => {
+            if ('showPicker' in input) {
+                try {
+                    (input as any).showPicker();
+                } catch (error) {
+                    input.focus();
+                }
+            } else {
+                input.focus();
+            }
+        });
+    }
+
+    private createButtonSection(): { container: HTMLElement; selectButton: HTMLButtonElement } {
+        const container = document.createElement('div');
+        container.className = 'date-picker-modal__buttons';
+
+        const cancelButton = this.createButton('Cancel', false);
+        const selectButton = this.createButton('Select', true);
+
+        container.appendChild(cancelButton);
+        container.appendChild(selectButton);
+
+        return { container, selectButton };
+    }
+
+    private createButton(text: string, isPrimary: boolean): HTMLButtonElement {
+        const button = document.createElement('button');
+        button.textContent = text;
+        button.className = isPrimary 
+            ? 'date-picker-modal__button date-picker-modal__button--primary'
+            : 'date-picker-modal__button date-picker-modal__button--secondary';
+        return button;
+    }
+
+    private setupModalEventHandlers(
+        modal: HTMLElement, 
+        dateInput: HTMLInputElement, 
+        timeInput: HTMLInputElement, 
+        selectButton: HTMLButtonElement
+    ): void {
+        // Select button click
         selectButton.addEventListener('click', () => {
             if (dateInput.value) {
                 this.options.onSelect(dateInput.value, timeInput.value || null);
@@ -237,11 +320,13 @@ export class DateContextMenu {
             document.body.removeChild(modal);
         });
 
+        // Cancel button click
+        const cancelButton = modal.querySelector('.date-picker-modal__button--secondary') as HTMLButtonElement;
         cancelButton.addEventListener('click', () => {
             document.body.removeChild(modal);
         });
 
-        // Handle escape key
+        // Escape key
         const handleEscape = (e: KeyboardEvent) => {
             if (e.key === 'Escape') {
                 document.body.removeChild(modal);
@@ -250,7 +335,7 @@ export class DateContextMenu {
         };
         document.addEventListener('keydown', handleEscape);
 
-        // Handle Enter key in inputs
+        // Enter key in inputs
         const handleEnter = (e: KeyboardEvent) => {
             if (e.key === 'Enter') {
                 e.preventDefault();
@@ -261,22 +346,18 @@ export class DateContextMenu {
         dateInput.addEventListener('keydown', handleEnter);
         timeInput.addEventListener('keydown', handleEnter);
 
-        // Assemble modal
-        buttonsContainer.appendChild(cancelButton);
-        buttonsContainer.appendChild(selectButton);
+        // Click outside to close
+        const handleClickOutside = (e: MouseEvent) => {
+            if (!modal.contains(e.target as Node)) {
+                document.body.removeChild(modal);
+                document.removeEventListener('click', handleClickOutside);
+                document.removeEventListener('keydown', handleEscape);
+            }
+        };
         
-        modal.appendChild(title);
-        modal.appendChild(dateLabel);
-        modal.appendChild(dateInput);
-        modal.appendChild(timeLabel);
-        modal.appendChild(timeInput);
-        modal.appendChild(buttonsContainer);
-        
-        document.body.appendChild(modal);
-
-        // Focus the date input
+        // Add slight delay to prevent immediate closure
         setTimeout(() => {
-            dateInput.focus();
+            document.addEventListener('click', handleClickOutside);
         }, 100);
     }
 }

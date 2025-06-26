@@ -4,6 +4,7 @@ import { DateContextMenu } from '../components/DateContextMenu';
 import { PriorityContextMenu } from '../components/PriorityContextMenu';
 import { StatusContextMenu } from '../components/StatusContextMenu';
 import { RecurrenceContextMenu } from '../components/RecurrenceContextMenu';
+import { getDatePart, getTimePart, combineDateAndTime } from '../utils/dateUtils';
 
 export abstract class MinimalistTaskModal extends Modal {
     plugin: TaskNotesPlugin;
@@ -430,14 +431,25 @@ export abstract class MinimalistTaskModal extends Modal {
         const currentValue = type === 'due' ? this.dueDate : this.scheduledDate;
         
         const menu = new DateContextMenu({
-            currentValue: currentValue || undefined, // Ensure we pass undefined instead of empty string
+            currentValue: currentValue ? getDatePart(currentValue) : undefined,
+            currentTime: currentValue ? getTimePart(currentValue) : undefined,
             onSelect: (value: string | null, time: string | null) => {
-                if (type === 'due') {
-                    this.dueDate = value || '';
-                    // TODO: Handle time component - could store in separate field or combine with date
+                if (value) {
+                    // Combine date and time if both are provided
+                    const finalValue = time ? combineDateAndTime(value, time) : value;
+                    
+                    if (type === 'due') {
+                        this.dueDate = finalValue;
+                    } else {
+                        this.scheduledDate = finalValue;
+                    }
                 } else {
-                    this.scheduledDate = value || '';
-                    // TODO: Handle time component - could store in separate field or combine with date
+                    // Clear the date
+                    if (type === 'due') {
+                        this.dueDate = '';
+                    } else {
+                        this.scheduledDate = '';
+                    }
                 }
                 this.updateDateIconState();
             }
