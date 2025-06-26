@@ -267,6 +267,48 @@
 
 /* Quick actions removed for Todoist-style simplicity */
 
+/* =====================================================================
+   HOVER CONTEXT MENU INTERACTIONS
+   ===================================================================== */
+
+
+/* Enhanced priority dot hover for context menu */
+.tasknotes-plugin .task-card__priority-dot {
+    transition: all 0.2s ease;
+}
+
+.tasknotes-plugin .task-card__priority-dot:hover {
+    transform: scale(1.2);
+    border-width: 3px;
+    box-shadow: 0 0 0 2px rgba(var(--interactive-accent-rgb), 0.2);
+}
+
+/* Hoverable date text elements */
+.tasknotes-plugin .task-card__metadata-date {
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-radius: var(--radius-s);
+    padding: 2px 4px;
+    margin: -2px -4px;
+    position: relative;
+}
+
+.tasknotes-plugin .task-card__metadata-date:hover {
+    background: var(--background-modifier-hover);
+    color: var(--interactive-accent);
+    text-decoration: underline;
+}
+
+.tasknotes-plugin .task-card__metadata-date--due:hover {
+    background: rgba(220, 38, 127, 0.1);
+    color: var(--color-red);
+}
+
+.tasknotes-plugin .task-card__metadata-date--scheduled:hover {
+    background: rgba(8, 109, 221, 0.1);
+    color: var(--color-blue);
+}
+
 
 /* =================================================================
    TASKCARD MODIFIERS (BEM --modifier)
