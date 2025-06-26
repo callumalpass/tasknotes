@@ -101,28 +101,6 @@ export class MinimalistTaskEditModal extends MinimalistTaskModal {
         this.createActionButtons(container);
     }
 
-    protected createDetailsSection(container: HTMLElement): void {
-        this.detailsContainer = container.createDiv('details-container');
-        // Always visible for edit modal since isExpanded = true
-
-        // Title field (appears on expansion)
-        const titleLabel = this.detailsContainer.createDiv('detail-label');
-        titleLabel.textContent = 'Title';
-        
-        this.titleInput = this.detailsContainer.createEl('input', {
-            type: 'text',
-            cls: 'title-input-detailed',
-            placeholder: 'Task title...'
-        });
-        
-        this.titleInput.value = this.title;
-        this.titleInput.addEventListener('input', (e) => {
-            this.title = (e.target as HTMLInputElement).value;
-        });
-
-        // Additional form fields (contexts, tags, etc.)
-        this.createAdditionalFields(this.detailsContainer);
-    }
 
     private createMetadataSection(container: HTMLElement): void {
         this.metadataContainer = container.createDiv('metadata-container');
@@ -260,43 +238,6 @@ export class MinimalistTaskEditModal extends MinimalistTaskModal {
         return changes;
     }
 
-    protected createActionButtons(container: HTMLElement): void {
-        const buttonContainer = container.createDiv('button-container');
-
-        // Open note button (left side)
-        const openNoteButton = buttonContainer.createEl('button', {
-            cls: 'open-note-button',
-            text: 'Open note'
-        });
-        
-        openNoteButton.addEventListener('click', async () => {
-            await this.openTaskNote();
-        });
-
-        // Spacer to push Save/Cancel to the right
-        const spacer = buttonContainer.createDiv('button-spacer');
-
-        // Save button
-        const saveButton = buttonContainer.createEl('button', {
-            cls: 'save-button',
-            text: 'Save'
-        });
-        
-        saveButton.addEventListener('click', async () => {
-            await this.handleSave();
-            this.close();
-        });
-
-        // Cancel button
-        const cancelButton = buttonContainer.createEl('button', {
-            cls: 'cancel-button',
-            text: 'Cancel'
-        });
-        
-        cancelButton.addEventListener('click', () => {
-            this.close();
-        });
-    }
 
     private async openTaskNote(): Promise<void> {
         try {
