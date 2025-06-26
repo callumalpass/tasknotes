@@ -1,0 +1,294 @@
+/* =====================================================================
+   DATE PICKER MODAL - Enhanced Input Styling
+   ===================================================================== */
+
+/* Date picker modal container */
+.date-picker-modal {
+    font-family: var(--font-interface);
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--background-primary);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: var(--radius-m);
+    padding: var(--size-4-4);
+    box-shadow: var(--shadow-l);
+    z-index: 1000;
+    min-width: 320px;
+    max-width: 400px;
+}
+
+/* Modal header */
+.date-picker-modal__header {
+    display: flex;
+    align-items: center;
+    gap: var(--size-4-2);
+    margin-bottom: var(--size-4-4);
+    padding-bottom: var(--size-4-2);
+    border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.date-picker-modal__header-icon {
+    color: var(--interactive-accent);
+    display: flex;
+    align-items: center;
+}
+
+.date-picker-modal__header-title {
+    margin: 0;
+    font-size: var(--font-ui-large);
+    font-weight: 600;
+    color: var(--text-normal);
+}
+
+/* Input sections */
+.date-picker-modal__section {
+    margin-bottom: var(--size-4-3);
+}
+
+.date-picker-modal__section--buttons {
+    margin-bottom: var(--size-4-4);
+}
+
+.date-picker-modal__label {
+    display: flex;
+    align-items: center;
+    gap: var(--size-4-1);
+    margin-bottom: var(--size-4-2);
+    font-size: var(--font-ui-small);
+    font-weight: 500;
+    color: var(--text-muted);
+}
+
+.date-picker-modal__label-icon {
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+}
+
+.date-picker-modal__input-container {
+    position: relative;
+}
+
+.date-picker-modal__input {
+    width: 100%;
+    padding: var(--size-4-3) var(--size-4-2);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: var(--radius-s);
+    background: var(--background-primary);
+    color: var(--text-normal);
+    font-size: var(--font-ui-medium);
+    cursor: pointer;
+    color-scheme: dark light;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.date-picker-modal__input:focus {
+    border-color: var(--interactive-accent);
+    box-shadow: 0 0 0 2px rgba(var(--interactive-accent), 0.2);
+}
+
+.date-picker-modal__input:hover {
+    border-color: var(--background-modifier-border-hover);
+}
+
+/* Button section */
+.date-picker-modal__buttons {
+    display: flex;
+    gap: var(--size-4-2);
+    justify-content: flex-end;
+    padding-top: var(--size-4-3);
+    border-top: 1px solid var(--background-modifier-border);
+}
+
+.date-picker-modal__button {
+    padding: var(--size-4-2) var(--size-4-4);
+    border-radius: var(--radius-s);
+    cursor: pointer;
+    font-size: var(--font-ui-medium);
+    font-weight: 500;
+    transition: all 0.2s ease;
+    border: none;
+}
+
+.date-picker-modal__button--primary {
+    background: var(--interactive-accent);
+    color: var(--text-on-accent);
+}
+
+.date-picker-modal__button--primary:hover {
+    background: var(--interactive-accent-hover);
+    transform: translateY(-1px);
+}
+
+.date-picker-modal__button--secondary {
+    background: var(--background-secondary);
+    color: var(--text-normal);
+    border: 1px solid var(--background-modifier-border);
+}
+
+.date-picker-modal__button--secondary:hover {
+    background: var(--background-modifier-hover);
+}
+
+/* Enhanced date and time input styling */
+.date-picker-modal input[type="date"],
+.date-picker-modal input[type="time"] {
+    /* Reset browser defaults */
+    -webkit-appearance: none;
+    -moz-appearance: textfield;
+    appearance: none;
+    
+    /* Make the entire input clickable */
+    position: relative;
+    overflow: hidden;
+    
+    /* Ensure consistent sizing */
+    box-sizing: border-box;
+    height: 44px;
+    line-height: 1.4;
+}
+
+/* Date input specific styling */
+.date-picker-modal input[type="date"] {
+    /* Improve positioning consistency */
+    position: relative;
+    /* Ensure text is properly aligned */
+    text-align: left;
+    /* Add padding to make room for icon on the right */
+    padding-right: 32px;
+}
+
+/* Webkit browsers (Chrome, Safari, Edge) */
+.date-picker-modal input[type="date"]::-webkit-datetime-edit,
+.date-picker-modal input[type="date"]::-webkit-datetime-edit-fields-wrapper,
+.date-picker-modal input[type="date"]::-webkit-datetime-edit-text,
+.date-picker-modal input[type="date"]::-webkit-datetime-edit-month-field,
+.date-picker-modal input[type="date"]::-webkit-datetime-edit-day-field,
+.date-picker-modal input[type="date"]::-webkit-datetime-edit-year-field {
+    /* Make the date text clickable */
+    cursor: pointer;
+    color: var(--text-normal);
+    font-size: var(--font-ui-medium);
+    font-family: var(--font-interface);
+}
+
+.date-picker-modal input[type="date"]::-webkit-calendar-picker-indicator {
+    /* Position the calendar icon on the right, consistently with time input */
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    opacity: 0.7;
+    width: 16px;
+    height: 16px;
+    background: none;
+    color: var(--text-muted);
+    /* Ensure the icon is clickable */
+    pointer-events: auto;
+}
+
+.date-picker-modal input[type="date"]:hover::-webkit-calendar-picker-indicator {
+    opacity: 1;
+    color: var(--text-normal);
+}
+
+/* Time input specific styling - add consistent padding */
+.date-picker-modal input[type="time"] {
+    /* Add padding to make room for icon on the right */
+    padding-right: 32px;
+    text-align: left;
+}
+
+.date-picker-modal input[type="time"]::-webkit-datetime-edit,
+.date-picker-modal input[type="time"]::-webkit-datetime-edit-fields-wrapper,
+.date-picker-modal input[type="time"]::-webkit-datetime-edit-text,
+.date-picker-modal input[type="time"]::-webkit-datetime-edit-hour-field,
+.date-picker-modal input[type="time"]::-webkit-datetime-edit-minute-field,
+.date-picker-modal input[type="time"]::-webkit-datetime-edit-ampm-field {
+    /* Make the time text clickable */
+    cursor: pointer;
+    color: var(--text-normal);
+    font-size: var(--font-ui-medium);
+    font-family: var(--font-interface);
+}
+
+.date-picker-modal input[type="time"]::-webkit-calendar-picker-indicator {
+    /* Position the clock icon on the right, same as date input */
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    opacity: 0.7;
+    width: 16px;
+    height: 16px;
+    background: none;
+    color: var(--text-muted);
+    /* Ensure the icon is clickable */
+    pointer-events: auto;
+}
+
+.date-picker-modal input[type="time"]:hover::-webkit-calendar-picker-indicator {
+    opacity: 1;
+    color: var(--text-normal);
+}
+
+/* Firefox specific styling */
+@-moz-document url-prefix() {
+    .date-picker-modal input[type="date"],
+    .date-picker-modal input[type="time"] {
+        /* Firefox doesn't have the same issue but ensure consistency */
+        cursor: pointer;
+    }
+}
+
+/* Focus states */
+.date-picker-modal input[type="date"]:focus,
+.date-picker-modal input[type="time"]:focus {
+    outline: none;
+    border-color: var(--interactive-accent);
+    box-shadow: 0 0 0 2px rgba(var(--interactive-accent), 0.2);
+}
+
+/* Hover states */
+.date-picker-modal input[type="date"]:hover,
+.date-picker-modal input[type="time"]:hover {
+    border-color: var(--background-modifier-border-hover);
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .date-picker-modal input[type="date"],
+    .date-picker-modal input[type="time"] {
+        color-scheme: dark;
+    }
+}
+
+/* Light mode support */
+@media (prefers-color-scheme: light) {
+    .date-picker-modal input[type="date"],
+    .date-picker-modal input[type="time"] {
+        color-scheme: light;
+    }
+}
+
+/* Accessibility improvements */
+.date-picker-modal input[type="date"]:focus-visible,
+.date-picker-modal input[type="time"]:focus-visible {
+    outline: 2px solid var(--interactive-accent);
+    outline-offset: 2px;
+}
+
+/* Ensure consistent appearance across browsers */
+.date-picker-modal input[type="date"]::-ms-clear,
+.date-picker-modal input[type="time"]::-ms-clear {
+    display: none;
+}
+
+.date-picker-modal input[type="date"]::-ms-reveal,
+.date-picker-modal input[type="time"]::-ms-reveal {
+    display: none;
+}

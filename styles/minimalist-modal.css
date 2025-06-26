@@ -211,6 +211,39 @@
 }
 
 /* =====================================================================
+   OPEN NOTE BUTTON (IN BUTTON BAR)
+   ===================================================================== */
+
+.tasknotes-plugin .open-note-button {
+    padding: var(--size-4-2) var(--size-4-3);
+    font-size: var(--font-ui-medium);
+    font-weight: 500;
+    border: 1px solid var(--interactive-accent);
+    border-radius: var(--radius-s);
+    background: transparent;
+    color: var(--interactive-accent);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 80px;
+}
+
+.tasknotes-plugin .open-note-button:hover {
+    background: var(--interactive-accent);
+    color: var(--text-on-accent);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.tasknotes-plugin .open-note-button:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.tasknotes-plugin .button-spacer {
+    flex: 1;
+}
+
+/* =====================================================================
    ACTION BUTTONS
    ===================================================================== */
 

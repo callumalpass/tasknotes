@@ -30,7 +30,7 @@ export class MinimalistTaskCreationModal extends MinimalistTaskModal {
     }
 
     getModalTitle(): string {
-        return 'Create Task';
+        return 'Create task';
     }
 
     protected createModalContent(): void {
