@@ -4,7 +4,8 @@ import { FieldMapper } from '../services/FieldMapper';
 import { 
     getTodayString, 
     isBeforeDateSafe, 
-    getDatePart
+    getDatePart,
+    parseDate
 } from './dateUtils';
 
 /**
@@ -444,7 +445,7 @@ export class MinimalNativeCache extends Events {
             return [];
         }
         
-        const targetDateStr = date.toISOString().split('T')[0]; // YYYY-MM-DD format
+		const targetDateStr = getDatePart(date.toISOString()); // YYYY-MM-DD format
         const notes: NoteInfo[] = [];
         
         // Get all markdown files excluding task files and excluded folders
@@ -463,26 +464,28 @@ export class MinimalNativeCache extends Events {
             
             let noteDate: string | null = null;
             
-            // Try to extract date from frontmatter
+            // Try to extract date from frontmatter using parseDate
             if (frontmatter.dateCreated || frontmatter.date) {
                 const dateValue = frontmatter.dateCreated || frontmatter.date;
                 try {
-                    const parsed = new Date(dateValue);
-                    if (!isNaN(parsed.getTime())) {
-                        noteDate = parsed.toISOString().split('T')[0];
-                    }
+                    const parsed = parseDate(dateValue);
+                    noteDate = getDatePart(parsed.toISOString());
                 } catch (e) {
-                    // Ignore invalid dates
+                    // Ignore invalid dates or parsing errors
                 }
             }
             
-            // Check if it's a daily note by filename pattern (fallback)
+            // If not found in frontmatter, try to extract from filename using parseDate
             if (!noteDate) {
                 const fileName = file.basename;
-                // Common daily note patterns: YYYY-MM-DD, YYYY-MM-DD HH-mm-ss, etc.
                 const dateMatch = fileName.match(/(\d{4}-\d{2}-\d{2})/);
                 if (dateMatch) {
-                    noteDate = dateMatch[1];
+                    try {
+                        const parsed = parseDate(dateMatch[1]);
+                        noteDate = getDatePart(parsed.toISOString());
+                    } catch (e) {
+                        // Ignore invalid dates or parsing errors
+                    }
                 }
             }
             

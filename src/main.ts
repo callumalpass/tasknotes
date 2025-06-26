@@ -35,7 +35,8 @@ import { PomodoroView } from './views/PomodoroView';
 import { PomodoroStatsView } from './views/PomodoroStatsView';
 import { KanbanView } from './views/KanbanView';
 import { TaskCreationModal, TaskConversionOptions } from './modals/TaskCreationModal';
-import { TaskEditModal } from './modals/TaskEditModal';
+import { MinimalistTaskCreationModal } from './modals/MinimalistTaskCreationModal';
+import { MinimalistTaskEditModal } from './modals/MinimalistTaskEditModal';
 import { PomodoroService } from './services/PomodoroService';
 import { 
 	formatTime,
@@ -950,7 +951,7 @@ private injectCustomStyles(): void {
 	}
 	
 	openTaskCreationModal(prePopulatedValues?: Partial<TaskInfo>) {
-		new TaskCreationModal(this.app, this, prePopulatedValues).open();
+		new MinimalistTaskCreationModal(this.app, this, { prePopulatedValues }).open();
 	}
 
 
@@ -1023,7 +1024,7 @@ private injectCustomStyles(): void {
 	 */
 	async openTaskEditModal(task: TaskInfo) {
 		// With native cache, task data is always current - no need to refetch
-		new TaskEditModal(this.app, this, task).open();
+		new MinimalistTaskEditModal(this.app, this, { task }).open();
 	}
 
 	/**
@@ -1113,8 +1114,55 @@ private injectCustomStyles(): void {
 				prefilledDetails: details
 			};
 			
-			// Open TaskCreationModal with pre-populated data
-			new TaskCreationModal(this.app, this, undefined, conversionOptions).open();
+			// Convert the TaskConversionOptions to the new format expected by MinimalistTaskCreationModal
+			const prePopulatedValues: Partial<TaskInfo> = {};
+			
+			if (conversionOptions.parsedData) {
+				if (conversionOptions.parsedData.title) prePopulatedValues.title = conversionOptions.parsedData.title;
+				if (conversionOptions.parsedData.dueDate) prePopulatedValues.due = conversionOptions.parsedData.dueDate;
+				if (conversionOptions.parsedData.scheduledDate) prePopulatedValues.scheduled = conversionOptions.parsedData.scheduledDate;
+				if (conversionOptions.parsedData.priority) prePopulatedValues.priority = conversionOptions.parsedData.priority;
+				if (conversionOptions.parsedData.status) prePopulatedValues.status = conversionOptions.parsedData.status;
+				if (conversionOptions.parsedData.recurrence) prePopulatedValues.recurrence = conversionOptions.parsedData.recurrence;
+			}
+
+			// Open MinimalistTaskCreationModal with pre-populated data and conversion callback
+			const modal = new MinimalistTaskCreationModal(this.app, this, {
+				prePopulatedValues,
+				onTaskCreated: (taskInfo: TaskInfo) => {
+					// Handle the task conversion completion - replace the original task line
+					if (conversionOptions.editor && conversionOptions.lineNumber !== undefined) {
+						const editor = conversionOptions.editor;
+						const lineNumber = conversionOptions.lineNumber;
+						
+						// Create the task link
+						const taskLink = `[[${taskInfo.path.replace(/\.md$/, '')}]]`;
+						
+						// Replace the current line with the task link
+						const currentLine = editor.getLine(lineNumber);
+						const leadingWhitespace = currentLine.match(/^(\s*)/)?.[1] || '';
+						const newLine = `${leadingWhitespace}${taskLink}`;
+						
+						editor.setLine(lineNumber, newLine);
+						
+						// Remove any selected content if there was a selection
+						if (conversionOptions.selectionInfo && 
+							conversionOptions.selectionInfo.startLine !== conversionOptions.selectionInfo.endLine) {
+							// Remove the additional selected lines
+							const linesToRemove = conversionOptions.selectionInfo.endLine - conversionOptions.selectionInfo.startLine;
+							for (let i = 0; i < linesToRemove; i++) {
+								// Always remove the line after our converted line
+								editor.replaceRange('', 
+									{ line: lineNumber + 1, ch: 0 }, 
+									{ line: lineNumber + 2, ch: 0 }
+								);
+							}
+						}
+					}
+				}
+			});
+			
+			modal.open();
 			
 		} catch (error) {
 			console.error('Error converting task:', error);

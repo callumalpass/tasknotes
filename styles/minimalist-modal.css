@@ -1,0 +1,464 @@
+/* =====================================================================
+   MINIMALIST TASK MODAL - Google Keep/Todoist Inspired
+   ===================================================================== */
+
+.tasknotes-plugin .minimalist-task-modal {
+    /* Modal container adjustments */
+}
+
+.tasknotes-plugin .minimalist-task-modal .modal-content {
+    padding: 0;
+    border-radius: var(--radius-l);
+    box-shadow: var(--shadow-l);
+    min-width: 480px;
+    max-width: 600px;
+}
+
+.tasknotes-plugin .minimalist-modal-container {
+    padding: var(--size-4-4);
+}
+
+/* =====================================================================
+   TITLE INPUT - PRIMARY FOCUS
+   ===================================================================== */
+
+.tasknotes-plugin .title-input-container {
+    margin-bottom: var(--size-4-3);
+}
+
+.tasknotes-plugin .title-input {
+    width: 100%;
+    padding: var(--size-4-2) var(--size-4-1);
+    font-size: var(--font-ui-large);
+    font-weight: 500;
+    line-height: 1.4;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--text-normal);
+    resize: none;
+    min-height: 44px;
+    transition: all 0.2s ease;
+}
+
+.tasknotes-plugin .title-input::placeholder {
+    color: var(--text-muted);
+    font-weight: 400;
+}
+
+.tasknotes-plugin .title-input:focus {
+    background: var(--background-modifier-hover);
+    border-radius: var(--radius-s);
+}
+
+/* =====================================================================
+   ACTION BAR - ICON-BASED CONTROLS
+   ===================================================================== */
+
+.tasknotes-plugin .action-bar {
+    display: flex;
+    align-items: center;
+    gap: var(--size-4-1);
+    margin-bottom: var(--size-4-3);
+    padding: var(--size-4-1) 0;
+}
+
+.tasknotes-plugin .action-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-s);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.tasknotes-plugin .action-icon:hover {
+    background: var(--background-modifier-hover);
+    transform: translateY(-1px);
+}
+
+.tasknotes-plugin .action-icon .icon {
+    width: 16px;
+    height: 16px;
+    color: var(--text-muted);
+    transition: color 0.2s ease;
+}
+
+.tasknotes-plugin .action-icon:hover .icon {
+    color: var(--text-normal);
+}
+
+/* Active state for icons when they have values - only show the dot */
+.tasknotes-plugin .action-icon.has-value {
+    /* Remove full background colorization */
+}
+
+.tasknotes-plugin .action-icon.has-value::after {
+    content: '';
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    width: 8px;
+    height: 8px;
+    background: var(--color-accent);
+    border: 2px solid var(--background-primary);
+    border-radius: 50%;
+}
+
+/* =====================================================================
+   DETAILS SECTION - PROGRESSIVE DISCLOSURE
+   ===================================================================== */
+
+.tasknotes-plugin .details-container {
+    transition: all 0.3s ease;
+    transform-origin: top;
+}
+
+.tasknotes-plugin .detail-label {
+    font-size: var(--font-ui-small);
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-bottom: var(--size-4-1);
+    margin-top: var(--size-4-3);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.tasknotes-plugin .detail-label:first-child {
+    margin-top: 0;
+}
+
+.tasknotes-plugin .title-input-detailed {
+    width: 100%;
+    padding: var(--size-4-2);
+    font-size: var(--font-ui-medium);
+    font-weight: 500;
+    line-height: 1.4;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: var(--radius-s);
+    background: var(--background-secondary);
+    color: var(--text-normal);
+    transition: all 0.2s ease;
+}
+
+.tasknotes-plugin .title-input-detailed:focus {
+    outline: none;
+    border-color: var(--interactive-accent);
+    background: var(--background-primary);
+}
+
+.tasknotes-plugin .title-input-detailed::placeholder {
+    color: var(--text-muted);
+}
+
+.tasknotes-plugin .details-input {
+    width: 100%;
+    min-height: 80px;
+    padding: var(--size-4-2);
+    font-size: var(--font-ui-medium);
+    line-height: 1.5;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: var(--radius-s);
+    background: var(--background-secondary);
+    color: var(--text-normal);
+    resize: vertical;
+    transition: all 0.2s ease;
+}
+
+.tasknotes-plugin .details-input:focus {
+    outline: none;
+    border-color: var(--interactive-accent);
+    background: var(--background-primary);
+}
+
+.tasknotes-plugin .details-input::placeholder {
+    color: var(--text-muted);
+}
+
+/* =====================================================================
+   ADDITIONAL FIELDS - SETTINGS STYLE
+   ===================================================================== */
+
+.tasknotes-plugin .details-container .setting-item {
+    border: none;
+    padding: var(--size-4-2) 0;
+}
+
+.tasknotes-plugin .details-container .setting-item-name {
+    font-size: var(--font-ui-small);
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.tasknotes-plugin .details-container .setting-item-control input {
+    background: var(--background-secondary);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: var(--radius-s);
+    padding: var(--size-4-1) var(--size-4-2);
+    font-size: var(--font-ui-medium);
+    transition: all 0.2s ease;
+}
+
+.tasknotes-plugin .details-container .setting-item-control input:focus {
+    border-color: var(--interactive-accent);
+    background: var(--background-primary);
+    outline: none;
+}
+
+/* =====================================================================
+   ACTION BUTTONS
+   ===================================================================== */
+
+.tasknotes-plugin .button-container {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--size-4-2);
+    margin-top: var(--size-4-4);
+    padding-top: var(--size-4-3);
+    border-top: 1px solid var(--background-modifier-border);
+}
+
+.tasknotes-plugin .save-button {
+    padding: var(--size-4-2) var(--size-4-4);
+    font-size: var(--font-ui-medium);
+    font-weight: 600;
+    border: none;
+    border-radius: var(--radius-s);
+    background: var(--interactive-accent);
+    color: var(--text-on-accent);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 80px;
+}
+
+.tasknotes-plugin .save-button:hover {
+    background: var(--interactive-accent-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.tasknotes-plugin .cancel-button {
+    padding: var(--size-4-2) var(--size-4-4);
+    font-size: var(--font-ui-medium);
+    font-weight: 500;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: var(--radius-s);
+    background: var(--background-primary);
+    color: var(--text-normal);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 80px;
+}
+
+.tasknotes-plugin .cancel-button:hover {
+    background: var(--background-modifier-hover);
+    border-color: var(--interactive-accent);
+}
+
+/* =====================================================================
+   MODAL EXPANSION ANIMATION
+   ===================================================================== */
+
+.tasknotes-plugin .minimalist-task-modal .modal-content {
+    transition: all 0.3s ease;
+}
+
+.tasknotes-plugin .minimalist-task-modal.expanded .modal-content {
+    min-height: 400px;
+}
+
+/* =====================================================================
+   RESPONSIVE DESIGN
+   ===================================================================== */
+
+@media (max-width: 600px) {
+    .tasknotes-plugin .minimalist-task-modal .modal-content {
+        min-width: 90vw;
+        max-width: 90vw;
+    }
+    
+    .tasknotes-plugin .minimalist-modal-container {
+        padding: var(--size-4-3);
+    }
+    
+    .tasknotes-plugin .action-bar {
+        flex-wrap: wrap;
+        gap: var(--size-4-2);
+    }
+    
+    .tasknotes-plugin .button-container {
+        flex-direction: column;
+    }
+    
+    .tasknotes-plugin .save-button,
+    .tasknotes-plugin .cancel-button {
+        width: 100%;
+    }
+}
+
+/* =====================================================================
+   ACCESSIBILITY ENHANCEMENTS
+   ===================================================================== */
+
+.tasknotes-plugin .action-icon:focus-visible {
+    outline: 2px solid var(--interactive-accent);
+    outline-offset: 2px;
+}
+
+.tasknotes-plugin .title-input:focus-visible,
+.tasknotes-plugin .details-input:focus-visible {
+    outline: 2px solid var(--interactive-accent);
+    outline-offset: 1px;
+}
+
+/* =====================================================================
+   METADATA SECTION - FOR EDIT MODAL
+   ===================================================================== */
+
+.tasknotes-plugin .metadata-container {
+    margin-top: var(--size-4-3);
+    padding-top: var(--size-4-3);
+    border-top: 1px solid var(--background-modifier-border);
+}
+
+.tasknotes-plugin .metadata-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--size-4-1);
+}
+
+.tasknotes-plugin .metadata-item {
+    display: flex;
+    align-items: center;
+    font-size: var(--font-ui-small);
+}
+
+.tasknotes-plugin .metadata-key {
+    color: var(--text-muted);
+    font-weight: 500;
+    min-width: 80px;
+}
+
+.tasknotes-plugin .metadata-value {
+    color: var(--text-normal);
+    font-family: var(--font-monospace);
+}
+
+/* =====================================================================
+   AUTOCOMPLETE STYLING
+   ===================================================================== */
+
+.tasknotes-plugin .autocomplete-suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--background-primary);
+    border: 1px solid var(--background-modifier-border);
+    border-top: none;
+    border-radius: 0 0 var(--radius-s) var(--radius-s);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.tasknotes-plugin .autocomplete-suggestion {
+    padding: 8px 12px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--background-modifier-border-hover);
+    font-size: var(--font-ui-small);
+    color: var(--text-normal);
+    transition: background-color 0.1s ease;
+}
+
+.tasknotes-plugin .autocomplete-suggestion:hover {
+    background: var(--background-modifier-hover);
+}
+
+.tasknotes-plugin .autocomplete-suggestion:last-child {
+    border-bottom: none;
+}
+
+/* =====================================================================
+   NLP INPUT STYLING UPDATES
+   ===================================================================== */
+
+.tasknotes-plugin .nl-input {
+    width: 100%;
+    padding: var(--size-4-3) var(--size-4-2);
+    font-weight: 400;
+    line-height: 1.5;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: var(--radius-s);
+    background: var(--background-secondary);
+    color: var(--text-normal);
+    resize: vertical;
+    min-height: 80px;
+    transition: all 0.2s ease;
+}
+
+.tasknotes-plugin .nl-input:focus {
+    outline: none;
+    border-color: var(--interactive-accent);
+    background: var(--background-primary);
+    box-shadow: 0 0 0 2px rgba(var(--interactive-accent-rgb), 0.2);
+}
+
+.tasknotes-plugin .nl-input::placeholder {
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+.tasknotes-plugin .nl-preview-container {
+    margin-top: var(--size-4-2);
+    padding: var(--size-4-2);
+    background: var(--background-primary-alt);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: var(--radius-s);
+    display: none;
+}
+
+.tasknotes-plugin .nl-preview-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: var(--size-4-1);
+    font-size: var(--font-ui-small);
+}
+
+.tasknotes-plugin .nl-preview-item:last-child {
+    margin-bottom: 0;
+}
+
+.tasknotes-plugin .nl-preview-label {
+    min-width: 80px;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-right: var(--size-4-2);
+}
+
+.tasknotes-plugin .nl-preview-value {
+    color: var(--text-normal);
+    flex: 1;
+}
+
+/* =====================================================================
+   DARK MODE ADJUSTMENTS
+   ===================================================================== */
+
+.theme-dark .tasknotes-plugin .minimalist-task-modal .modal-content {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.theme-dark .tasknotes-plugin .action-icon.has-value::after {
+    border-color: var(--background-primary-alt);
+}
+
+.theme-dark .tasknotes-plugin .autocomplete-suggestions {
+    box-shadow: 0 2px 16px rgba(0, 0, 0, 0.3);
+}
