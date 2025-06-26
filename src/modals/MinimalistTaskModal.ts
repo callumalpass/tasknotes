@@ -170,19 +170,21 @@ export abstract class MinimalistTaskModal extends Modal {
             this.title = (e.target as HTMLInputElement).value;
         });
 
-        // Details textarea
-        const detailsLabel = this.detailsContainer.createDiv('detail-label');
-        detailsLabel.textContent = 'Details';
-        
-        this.detailsInput = this.detailsContainer.createEl('textarea', {
-            cls: 'details-input',
-            placeholder: 'Add more details...'
-        });
-        
-        this.detailsInput.value = this.details;
-        this.detailsInput.addEventListener('input', (e) => {
-            this.details = (e.target as HTMLTextAreaElement).value;
-        });
+        // Details textarea (only for creation modals, not edit modals)
+        if (this.getModalTitle() !== 'Edit task') {
+            const detailsLabel = this.detailsContainer.createDiv('detail-label');
+            detailsLabel.textContent = 'Details';
+            
+            this.detailsInput = this.detailsContainer.createEl('textarea', {
+                cls: 'details-input',
+                placeholder: 'Add more details...'
+            });
+            
+            this.detailsInput.value = this.details;
+            this.detailsInput.addEventListener('input', (e) => {
+                this.details = (e.target as HTMLTextAreaElement).value;
+            });
+        }
 
         // Additional form fields (contexts, tags, etc.) can be added here
         this.createAdditionalFields(this.detailsContainer);
@@ -387,6 +389,21 @@ export abstract class MinimalistTaskModal extends Modal {
 
     protected createActionButtons(container: HTMLElement): void {
         const buttonContainer = container.createDiv('button-container');
+
+        // Add "Open note" button for edit modals only
+        if (this.getModalTitle() === 'Edit task') {
+            const openNoteButton = buttonContainer.createEl('button', {
+                cls: 'open-note-button',
+                text: 'Open note'
+            });
+            
+            openNoteButton.addEventListener('click', async () => {
+                await (this as any).openTaskNote();
+            });
+
+            // Spacer to push Save/Cancel to the right
+            buttonContainer.createDiv('button-spacer');
+        }
 
         // Save button
         const saveButton = buttonContainer.createEl('button', {
