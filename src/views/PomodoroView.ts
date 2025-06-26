@@ -327,40 +327,21 @@ export class PomodoroView extends ItemView {
     
     private async openTaskSelector() {
         try {
-            // Get tasks for today and the next few days
-            const today = new Date();
-            const tasks: TaskInfo[] = [];
-            
-            // Get tasks from today and next 7 days
-            for (let i = 0; i < 7; i++) {
-                const date = new Date(today);
-                date.setDate(today.getDate() + i);
-                
-                try {
-                    const dayTasks = await this.plugin.cacheManager.getTaskInfoForDate(date);
-                    tasks.push(...dayTasks);
-                } catch (error) {
-                    // Error getting tasks for date
-                }
-            }
-            
-            // Remove duplicates
-            const uniqueTasks = tasks.filter((task, index, arr) => 
-                arr.findIndex(t => t.path === task.path) === index
-            );
-            
-            if (uniqueTasks.length === 0) {
-                new Notice('No tasks found. Create some tasks first.');
+            const allTasks = await this.plugin.cacheManager.getAllTasks();
+            const unarchivedTasks = allTasks.filter(task => !task.archived);
+
+            if (unarchivedTasks.length === 0) {
+                new Notice('No unarchived tasks found. Create some tasks first.');
                 return;
             }
-            
+
             // Open task selector modal
-            const modal = new TaskSelectorModal(this.app, uniqueTasks, (selectedTask) => {
+            const modal = new TaskSelectorModal(this.app, unarchivedTasks, (selectedTask) => {
                 this.selectTask(selectedTask);
             });
-            
+
             modal.open();
-            
+
         } catch (error) {
             console.error('Error opening task selector:', error);
             new Notice('Failed to load tasks');
