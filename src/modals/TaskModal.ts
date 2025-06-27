@@ -6,7 +6,7 @@ import { StatusContextMenu } from '../components/StatusContextMenu';
 import { RecurrenceContextMenu } from '../components/RecurrenceContextMenu';
 import { getDatePart, getTimePart, combineDateAndTime } from '../utils/dateUtils';
 
-export abstract class MinimalistTaskModal extends Modal {
+export abstract class TaskModal extends Modal {
     plugin: TaskNotesPlugin;
     
     // Core task properties

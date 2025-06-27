@@ -34,9 +34,9 @@ import { AgendaView } from './views/AgendaView';
 import { PomodoroView } from './views/PomodoroView';
 import { PomodoroStatsView } from './views/PomodoroStatsView';
 import { KanbanView } from './views/KanbanView';
-import { TaskCreationModal, TaskConversionOptions } from './modals/TaskCreationModal';
-import { MinimalistTaskCreationModal } from './modals/MinimalistTaskCreationModal';
-import { MinimalistTaskEditModal } from './modals/MinimalistTaskEditModal';
+import { TaskConversionOptions } from './types/taskConversion';
+import { TaskCreationModal } from './modals/TaskCreationModal';
+import { TaskEditModal } from './modals/TaskEditModal';
 import { PomodoroService } from './services/PomodoroService';
 import { 
 	formatTime,
@@ -951,7 +951,7 @@ private injectCustomStyles(): void {
 	}
 	
 	openTaskCreationModal(prePopulatedValues?: Partial<TaskInfo>) {
-		new MinimalistTaskCreationModal(this.app, this, { prePopulatedValues }).open();
+		new TaskCreationModal(this.app, this, { prePopulatedValues }).open();
 	}
 
 
@@ -1024,7 +1024,7 @@ private injectCustomStyles(): void {
 	 */
 	async openTaskEditModal(task: TaskInfo) {
 		// With native cache, task data is always current - no need to refetch
-		new MinimalistTaskEditModal(this.app, this, { task }).open();
+		new TaskEditModal(this.app, this, { task }).open();
 	}
 
 	/**
@@ -1114,7 +1114,7 @@ private injectCustomStyles(): void {
 				prefilledDetails: details
 			};
 			
-			// Convert the TaskConversionOptions to the new format expected by MinimalistTaskCreationModal
+			// Convert the TaskConversionOptions to the new format expected by TaskCreationModal
 			const prePopulatedValues: Partial<TaskInfo> = {};
 			
 			if (conversionOptions.parsedData) {
@@ -1126,8 +1126,8 @@ private injectCustomStyles(): void {
 				if (conversionOptions.parsedData.recurrence) prePopulatedValues.recurrence = conversionOptions.parsedData.recurrence;
 			}
 
-			// Open MinimalistTaskCreationModal with pre-populated data and conversion callback
-			const modal = new MinimalistTaskCreationModal(this.app, this, {
+			// Open TaskCreationModal with pre-populated data and conversion callback
+			const modal = new TaskCreationModal(this.app, this, {
 				prePopulatedValues,
 				onTaskCreated: (taskInfo: TaskInfo) => {
 					// Handle the task conversion completion - replace the original task line

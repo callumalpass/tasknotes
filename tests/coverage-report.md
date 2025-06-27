@@ -20,7 +20,7 @@ This document provides a comprehensive analysis of the test suite implementation
 - ✅ **TaskCard.test.ts** - Task card rendering, interactions, status updates
 
 #### Modals (`tests/unit/modals/`)
-- ✅ **BaseTaskModal.test.ts** - Base modal functionality, form utilities, RRule handling
+- ✅ **TaskModal.test.ts** - Base modal functionality, form utilities, RRule handling
 - ✅ **TaskCreationModal.test.ts** - Task creation, validation, natural language processing
 
 ### 2. Integration Tests (`tests/integration/`)

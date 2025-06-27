@@ -25,8 +25,8 @@ import {
     CalendarViewPreferences,
     ICSEvent
 } from '../types';
-import { MinimalistTaskCreationModal } from '../modals/MinimalistTaskCreationModal';
-import { MinimalistTaskEditModal } from '../modals/MinimalistTaskEditModal';
+import { TaskCreationModal } from '../modals/TaskCreationModal';
+import { TaskEditModal } from '../modals/TaskEditModal';
 import { UnscheduledTasksSelectorModal, ScheduleTaskOptions } from '../modals/UnscheduledTasksSelectorModal';
 import { TimeblockCreationModal } from '../modals/TimeblockCreationModal';
 import { FilterBar } from '../ui/FilterBar';
@@ -827,7 +827,7 @@ export class AdvancedCalendarView extends ItemView {
             ? 60 // Default 1 hour for all-day events
             : Math.round((end.getTime() - start.getTime()) / (1000 * 60)); // Duration in minutes
         
-        const modal = new MinimalistTaskCreationModal(this.app, this.plugin, {
+        const modal = new TaskCreationModal(this.app, this.plugin, {
             prePopulatedValues: {
                 scheduled: scheduledDate,
                 timeEstimate: timeEstimate > 0 ? timeEstimate : 60
@@ -979,7 +979,7 @@ export class AdvancedCalendarView extends ItemView {
             }
         } else if (jsEvent.button === 0) {
             // Left click only: Open edit modal
-            const editModal = new MinimalistTaskEditModal(this.app, this.plugin, { task: taskInfo });
+            const editModal = new TaskEditModal(this.app, this.plugin, { task: taskInfo });
             editModal.open();
         }
     }

@@ -5,7 +5,8 @@
  * Jest interference issues and provide robust, reliable tests.
  */
 
-import { TaskCreationModal, TaskConversionOptions } from '../../../src/modals/TaskCreationModal';
+import { TaskCreationModal } from '../../../src/modals/TaskCreationModal';
+import { TaskConversionOptions } from '../../../src/types/taskConversion';
 import { TaskInfo } from '../../../src/types';
 import { ParsedTaskData } from '../../../src/utils/TasksPluginParser';
 import { MockObsidian, Notice, TFile } from '../../__mocks__/obsidian';

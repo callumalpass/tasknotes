@@ -1,379 +1,267 @@
-import { App, Notice, TFile, Setting } from 'obsidian';
-import { RRule } from 'rrule';
+import { App, Notice } from 'obsidian';
 import TaskNotesPlugin from '../main';
-import { BaseTaskModal } from './BaseTaskModal';
+import { TaskModal } from './TaskModal';
 import { TaskInfo } from '../types';
+import { getCurrentTimestamp } from '../utils/dateUtils';
 import { formatTimestampForDisplay } from '../utils/dateUtils';
 
-export class TaskEditModal extends BaseTaskModal {
+export interface TaskEditOptions {
     task: TaskInfo;
+    onTaskUpdated?: (task: TaskInfo) => void;
+}
 
-    constructor(app: App, plugin: TaskNotesPlugin, task: TaskInfo) {
+export class TaskEditModal extends TaskModal {
+    private task: TaskInfo;
+    private options: TaskEditOptions;
+    private metadataContainer: HTMLElement;
+
+    constructor(app: App, plugin: TaskNotesPlugin, options: TaskEditOptions) {
         super(app, plugin);
-        this.task = task;
+        this.task = options.task;
+        this.options = options;
     }
 
-    protected async initializeFormData(): Promise<void> {
-        // With native cache, task data is always current - no need to refetch
+    getModalTitle(): string {
+        return 'Edit task';
+    }
+
+    async initializeFormData(): Promise<void> {
         // Initialize form fields with current task data
         this.title = this.task.title;
-        // Initialize date and time components properly
         this.dueDate = this.task.due || '';
         this.scheduledDate = this.task.scheduled || '';
-        // Time components will be handled by the input fields automatically
-        
         this.priority = this.task.priority;
         this.status = this.task.status;
         this.contexts = this.task.contexts ? this.task.contexts.join(', ') : '';
-        this.tags = this.task.tags ? this.task.tags.filter(tag => tag !== this.plugin.settings.taskTag).join(', ') : '';
-        // Preserve the original time estimate value, ensuring it's not reset to 0
-        this.timeEstimate = this.task.timeEstimate !== undefined ? this.task.timeEstimate : 0;
+        this.tags = this.task.tags 
+            ? this.task.tags.filter(tag => tag !== this.plugin.settings.taskTag).join(', ') 
+            : '';
+        this.timeEstimate = this.task.timeEstimate || 0;
+        
         // Handle recurrence - support both new rrule strings and old RecurrenceInfo objects
         if (this.task.recurrence) {
             if (typeof this.task.recurrence === 'string') {
-                // New rrule string format
                 this.recurrenceRule = this.task.recurrence;
-                this.parseRRuleString(this.task.recurrence);
             } else if (typeof this.task.recurrence === 'object' && this.task.recurrence.frequency) {
-                // Legacy RecurrenceInfo object - convert to rrule
-                this.convertLegacyRecurrenceToRRule(this.task.recurrence);
+                // Legacy recurrence object - convert to string representation for display
+                this.recurrenceRule = this.convertLegacyRecurrenceToString(this.task.recurrence);
             }
         } else {
-            // No recurrence
-            this.frequencyMode = 'NONE';
             this.recurrenceRule = '';
         }
     }
 
-    private convertLegacyRecurrenceToRRule(recurrence: any): void {
-        try {
-            // Map legacy frequency to new format
-            switch (recurrence.frequency) {
-                case 'daily':
-                    this.frequencyMode = 'DAILY';
-                    this.rruleInterval = 1;
-                    break;
-                case 'weekly':
-                    this.frequencyMode = 'WEEKLY';
-                    this.rruleInterval = 1;
-                    if (recurrence.days_of_week && recurrence.days_of_week.length > 0) {
-                        // Convert legacy day abbreviations to RRule weekdays
-                        const dayMap: Record<string, any> = {
-                            'mon': RRule.MO,
-                            'tue': RRule.TU,
-                            'wed': RRule.WE,
-                            'thu': RRule.TH,
-                            'fri': RRule.FR,
-                            'sat': RRule.SA,
-                            'sun': RRule.SU
-                        };
-                        this.rruleByWeekday = recurrence.days_of_week
-                            .map((day: string) => dayMap[day.toLowerCase()])
-                            .filter((wd: any) => wd);
-                    }
-                    break;
-                case 'monthly':
-                    this.frequencyMode = 'MONTHLY';
-                    this.rruleInterval = 1;
-                    this.monthlyMode = 'day';
-                    if (recurrence.day_of_month) {
-                        this.rruleByMonthday = [recurrence.day_of_month];
-                    }
-                    break;
-                case 'yearly':
-                    this.frequencyMode = 'YEARLY';
-                    this.rruleInterval = 1;
-                    if (recurrence.month_of_year) {
-                        this.rruleByMonth = [recurrence.month_of_year];
-                    }
-                    if (recurrence.day_of_month) {
-                        this.rruleByMonthday = [recurrence.day_of_month];
-                    }
-                    break;
-                default:
-                    this.frequencyMode = 'NONE';
-                    return;
-            }
-
-            // Generate the rrule string from the converted data
-            this.recurrenceRule = this.generateRRuleString();
-        } catch (error) {
-            console.error('Error converting legacy recurrence to rrule:', error);
-            this.frequencyMode = 'NONE';
-            this.recurrenceRule = '';
+    private convertLegacyRecurrenceToString(recurrence: any): string {
+        // Convert legacy recurrence object to a readable string
+        // This is for display purposes in the edit modal
+        if (!recurrence.frequency) return '';
+        
+        let recurrenceText = recurrence.frequency;
+        
+        if (recurrence.frequency === 'weekly' && recurrence.days_of_week) {
+            recurrenceText += ` on ${recurrence.days_of_week.join(', ')}`;
         }
+        
+        if (recurrence.frequency === 'monthly' && recurrence.day_of_month) {
+            recurrenceText += ` on day ${recurrence.day_of_month}`;
+        }
+        
+        return recurrenceText;
     }
 
-    async onOpen() {
+    onOpen() {
+        this.containerEl.addClass('tasknotes-plugin', 'minimalist-task-modal');
+        this.titleEl.textContent = this.getModalTitle();
+        
+        this.initializeFormData().then(() => {
+            this.createModalContent();
+            // Update icon states after creating the action bar
+            this.updateIconStates();
+            this.focusTitleInput();
+        });
+    }
+
+    protected createModalContent(): void {
         const { contentEl } = this;
-        contentEl.addClass('tasknotes-plugin', 'task-edit-modal');
-        new Setting(contentEl)
-            .setName('Edit task')
-            .setHeading();
+        contentEl.empty();
 
-        // Initialize form data and cache autocomplete data
-        await this.initializeFormData();
-        this.existingContexts = await this.getExistingContexts();
-        this.existingTags = await this.getExistingTags();
+        // Create main container
+        const container = contentEl.createDiv('minimalist-modal-container');
 
-        // Title with character count
-        this.createFormGroup(contentEl, 'Title', (container) => {
-            this.createTitleInputWithCounter(container, 200);
-            
-            // Auto-focus on the title field for immediate editing
-            const input = container.querySelector('input');
-            if (input) {
-                window.setTimeout(() => input.focus(), 50);
-            }
-        });
+        // Create action bar with icons  
+        this.createActionBar(container);
 
-        // Due Date
-        this.createFormGroup(contentEl, 'Due date', (container) => {
-            this.createDueDateInput(container);
-        });
+        // Create expanded details section (always expanded for editing)
+        this.createDetailsSection(container);
 
-        // Scheduled Date
-        this.createFormGroup(contentEl, 'Scheduled date', (container) => {
-            this.createScheduledDateInput(container);
-        });
+        // Create metadata section (for edit modal)
+        this.createMetadataSection(container);
 
-        // Priority
-        this.createFormGroup(contentEl, 'Priority', (container) => {
-            this.createPriorityDropdown(container);
-        });
-
-        // Status
-        this.createFormGroup(contentEl, 'Status', (container) => {
-            this.createStatusDropdown(container);
-        });
-
-        // Contexts with autocomplete
-        this.createFormGroup(contentEl, 'Contexts', (container) => {
-            this.createAutocompleteInput(
-                container,
-                'contexts',
-                () => this.existingContexts,
-                (value) => { this.contexts = value; }
-            );
-        });
-
-        // Tags with autocomplete
-        this.createFormGroup(contentEl, 'Tags', (container) => {
-            this.createAutocompleteInput(
-                container,
-                'tags',
-                () => this.existingTags,
-                (value) => { this.tags = value; }
-            );
-        });
-
-        // Time Estimate
-        this.createFormGroup(contentEl, 'Time estimate', (container) => {
-            this.createTimeEstimateInput(container);
-        });
-
-        // Recurrence
-        this.createFormGroup(contentEl, 'Recurrence', (container) => {
-            this.createRRuleBuilder(container);
-        });
-
-        // Metadata footer
-        this.createMetadataFooter(contentEl);
-
-        // Action buttons
-        this.createActionButtons(contentEl);
-
-        // Keyboard shortcuts
-        contentEl.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                this.close();
-            } else if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
-                e.preventDefault();
-                this.saveTask();
-            }
-        });
+        // Create save/cancel buttons
+        this.createActionButtons(container);
     }
 
-    protected createActionButtons(container: HTMLElement): void {
-        const buttonContainer = container.createDiv({ cls: 'modal-form__buttons' });
-        
-        // Open Note button
-        const openButton = buttonContainer.createEl('button', { 
-            text: 'Open note', 
-            cls: 'modal-form__button modal-form__button--tertiary' 
-        });
-        openButton.addEventListener('click', () => {
-            this.openNote();
-        });
 
-        // Save button
-        const saveButton = buttonContainer.createEl('button', { 
-            text: 'Save', 
-            cls: 'modal-form__button modal-form__button--primary' 
-        });
-        saveButton.addEventListener('click', () => {
-            this.saveTask();
-        });
+    private createMetadataSection(container: HTMLElement): void {
+        this.metadataContainer = container.createDiv('metadata-container');
         
-        // Cancel button
-        const cancelButton = buttonContainer.createEl('button', { 
-            text: 'Cancel', 
-            cls: 'modal-form__button modal-form__button--secondary' 
-        });
-        cancelButton.addEventListener('click', () => {
-            this.close();
-        });
-    }
-
-    protected async handleSubmit(): Promise<void> {
-        await this.saveTask();
-    }
-
-    private createMetadataFooter(container: HTMLElement): void {
-        const footer = container.createDiv({ cls: 'task-edit-modal__metadata' });
+        const metadataLabel = this.metadataContainer.createDiv('detail-label');
+        metadataLabel.textContent = 'Task Information';
         
-        const metadataContainer = footer.createDiv({ cls: 'task-edit-modal__metadata-container' });
+        const metadataContent = this.metadataContainer.createDiv('metadata-content');
         
+        // Created date
         if (this.task.dateCreated) {
-            metadataContainer.createDiv({
-                cls: 'task-edit-modal__metadata-item',
-                text: `Created: ${formatTimestampForDisplay(this.task.dateCreated, 'MMM d, yyyy \'at\' h:mm a')}`
-            });
+            const createdDiv = metadataContent.createDiv('metadata-item');
+            createdDiv.createSpan('metadata-key').textContent = 'Created: ';
+            createdDiv.createSpan('metadata-value').textContent = formatTimestampForDisplay(this.task.dateCreated);
         }
         
+        // Modified date
         if (this.task.dateModified) {
-            metadataContainer.createDiv({
-                cls: 'task-edit-modal__metadata-item',
-                text: `Modified: ${formatTimestampForDisplay(this.task.dateModified, 'MMM d, yyyy \'at\' h:mm a')}`
-            });
+            const modifiedDiv = metadataContent.createDiv('metadata-item');
+            modifiedDiv.createSpan('metadata-key').textContent = 'Modified: ';
+            modifiedDiv.createSpan('metadata-value').textContent = formatTimestampForDisplay(this.task.dateModified);
+        }
+        
+        // File path (if available)
+        if (this.task.path) {
+            const pathDiv = metadataContent.createDiv('metadata-item');
+            pathDiv.createSpan('metadata-key').textContent = 'File: ';
+            pathDiv.createSpan('metadata-value').textContent = this.task.path;
         }
     }
 
-    private openNote(): void {
-        const file = this.app.vault.getAbstractFileByPath(this.task.path);
-        if (file instanceof TFile) {
-            this.app.workspace.getLeaf(false).openFile(file);
-            this.close();
-        }
-    }
-
-    async saveTask() {
-        // Validate required fields
-        if (!this.title || !this.title.trim()) {
-            new Notice('Title is required');
+    async handleSave(): Promise<void> {
+        if (!this.validateForm()) {
+            new Notice('Please enter a task title');
             return;
-        }
-
-        if (this.title.length > 200) {
-            new Notice('Title is too long (max 200 characters)');
-            return;
-        }
-
-        // Validate recurrence fields
-        if (this.frequencyMode === 'WEEKLY' && this.rruleByWeekday.length === 0) {
-            new Notice('Please select at least one day for weekly recurrence');
-            return;
-        }
-
-        if (this.frequencyMode === 'MONTHLY') {
-            if (this.monthlyMode === 'day' && this.rruleByMonthday.length === 0) {
-                new Notice('Please specify a day for monthly recurrence');
-                return;
-            }
-            if (this.monthlyMode === 'weekday' && (this.rruleByWeekday.length === 0 || this.rruleBySetpos.length === 0)) {
-                new Notice('Please specify both position and weekday for monthly recurrence');
-                return;
-            }
-        }
-
-        if (this.frequencyMode === 'YEARLY') {
-            if (this.rruleByMonth.length === 0 || this.rruleByMonthday.length === 0) {
-                new Notice('Please specify both month and day for yearly recurrence');
-                return;
-            }
         }
 
         try {
-            // Prepare contexts and tags arrays
-            const contextsArray = this.contexts ? this.contexts.split(',').map(c => c.trim()).filter(c => c) : [];
-            const tagsArray = this.tags ? this.tags.split(',').map(t => t.trim()).filter(t => t) : [];
+            const changes = this.getChanges();
             
-            // Add task tag if not present
-            if (!tagsArray.includes(this.plugin.settings.taskTag)) {
-                tagsArray.unshift(this.plugin.settings.taskTag);
-            }
-
-            // Detect changes by comparing current form values with original task
-            const updates: Partial<TaskInfo> = {};
-
-            // Check for changes in simple fields
-            if (this.title !== this.task.title) {
-                updates.title = this.title;
-            }
-            if (this.priority !== this.task.priority) {
-                updates.priority = this.priority;
-            }
-            if (this.status !== this.task.status) {
-                updates.status = this.status;
-            }
-            // Check for changes in date fields (compare full datetime values)
-            const currentDueDate = this.dueDate || '';
-            const originalDueDate = this.task.due || '';
-            if (currentDueDate !== originalDueDate) {
-                updates.due = this.dueDate || undefined;
-            }
-            
-            const currentScheduledDate = this.scheduledDate || '';
-            const originalScheduledDate = this.task.scheduled || '';
-            if (currentScheduledDate !== originalScheduledDate) {
-                updates.scheduled = this.scheduledDate || undefined;
-            }
-            
-            // Check time estimate with proper handling of undefined vs 0
-            const originalTimeEstimate = this.task.timeEstimate !== undefined ? this.task.timeEstimate : 0;
-            if (this.timeEstimate !== originalTimeEstimate) {
-                updates.timeEstimate = this.timeEstimate > 0 ? this.timeEstimate : undefined;
-            }
-
-            // Check for changes in contexts array
-            const originalContexts = this.task.contexts || [];
-            const arraysEqual = (a: string[], b: string[]) => a.length === b.length && a.every((val, index) => val === b[index]);
-            if (!arraysEqual(contextsArray, originalContexts)) {
-                updates.contexts = contextsArray.length > 0 ? contextsArray : undefined;
-            }
-
-            // Check for changes in tags array
-            const originalTags = this.task.tags || [];
-            if (!arraysEqual(tagsArray, originalTags)) {
-                updates.tags = tagsArray;
-            }
-
-            // Check for changes in recurrence
-            const currentRecurrenceRule = this.recurrenceRule || '';
-            const originalRecurrenceRule = typeof this.task.recurrence === 'string' 
-                ? this.task.recurrence 
-                : '';
-            
-            if (currentRecurrenceRule !== originalRecurrenceRule) {
-                updates.recurrence = currentRecurrenceRule || undefined;
-            }
-
-            // If no changes detected, show message and return
-            if (Object.keys(updates).length === 0) {
-                new Notice('No changes detected');
+            if (Object.keys(changes).length === 0) {
+                new Notice('No changes to save');
                 this.close();
                 return;
             }
 
-            // Call the centralized update service with current task state
-            await this.plugin.taskService.updateTask(this.task, updates);
+            const updatedTask = await this.plugin.taskService.updateTask(this.task, changes);
 
-            new Notice('Task updated successfully');
-            this.close();
+            new Notice(`Task "${updatedTask.title}" updated successfully`);
+            
+            if (this.options.onTaskUpdated) {
+                this.options.onTaskUpdated(updatedTask);
+            }
 
         } catch (error) {
-            console.error('Failed to save task:', error);
-            new Notice('Failed to save task. Please try again.');
+            console.error('Failed to update task:', error);
+            new Notice('Failed to update task: ' + error.message);
         }
     }
+
+    private getChanges(): Partial<TaskInfo> {
+        const changes: Partial<TaskInfo> = {};
+
+        // Check for changes and only include modified fields
+        if (this.title.trim() !== this.task.title) {
+            changes.title = this.title.trim();
+        }
+
+        if (this.dueDate !== (this.task.due || '')) {
+            changes.due = this.dueDate || undefined;
+        }
+
+        if (this.scheduledDate !== (this.task.scheduled || '')) {
+            changes.scheduled = this.scheduledDate || undefined;
+        }
+
+        if (this.priority !== this.task.priority) {
+            changes.priority = this.priority;
+        }
+
+        if (this.status !== this.task.status) {
+            changes.status = this.status;
+        }
+
+        // Parse and compare contexts
+        const newContexts = this.contexts
+            .split(',')
+            .map(c => c.trim())
+            .filter(c => c.length > 0);
+        const oldContexts = this.task.contexts || [];
+        
+        if (JSON.stringify(newContexts.sort()) !== JSON.stringify(oldContexts.sort())) {
+            changes.contexts = newContexts.length > 0 ? newContexts : undefined;
+        }
+
+        // Parse and compare tags
+        const newTags = this.tags
+            .split(',')
+            .map(t => t.trim())
+            .filter(t => t.length > 0);
+        
+        // Add the task tag if it's not already present
+        if (this.plugin.settings.taskTag && !newTags.includes(this.plugin.settings.taskTag)) {
+            newTags.push(this.plugin.settings.taskTag);
+        }
+        
+        const oldTags = this.task.tags || [];
+        
+        if (JSON.stringify(newTags.sort()) !== JSON.stringify(oldTags.sort())) {
+            changes.tags = newTags.length > 0 ? newTags : undefined;
+        }
+
+        // Compare time estimate
+        const newTimeEstimate = this.timeEstimate > 0 ? this.timeEstimate : undefined;
+        const oldTimeEstimate = this.task.timeEstimate;
+        
+        if (newTimeEstimate !== oldTimeEstimate) {
+            changes.timeEstimate = newTimeEstimate;
+        }
+
+        // Compare recurrence
+        const oldRecurrence = typeof this.task.recurrence === 'string' 
+            ? this.task.recurrence 
+            : '';
+            
+        if (this.recurrenceRule !== oldRecurrence) {
+            changes.recurrence = this.recurrenceRule || undefined;
+        }
+
+        // Always update modified timestamp if there are changes
+        if (Object.keys(changes).length > 0) {
+            changes.dateModified = getCurrentTimestamp();
+        }
+
+        return changes;
+    }
+
+
+    private async openTaskNote(): Promise<void> {
+        try {
+            // Get the file from the task path
+            const file = this.app.vault.getAbstractFileByPath(this.task.path);
+            
+            if (!file) {
+                new Notice(`Could not find task file: ${this.task.path}`);
+                return;
+            }
+
+            // Open the file in a new leaf
+            const leaf = this.app.workspace.getLeaf(true);
+            await leaf.openFile(file as any);
+            
+            // Close the modal
+            this.close();
+            
+        } catch (error) {
+            console.error('Failed to open task note:', error);
+            new Notice('Failed to open task note');
+        }
+    }
+
+    // Start expanded for edit modal - override parent property
+    protected isExpanded = true;
 }

@@ -234,7 +234,7 @@ Let's say you want to add a `complexity: 'simple' | 'medium' | 'hard'` property 
 4.  **Update `TaskService.ts`**:
     *   In `createTask`, handle the new property, possibly applying a default value.
     *   In `updateTask`, ensure the new property can be updated.
-5.  **Update `BaseTaskModal.ts`**: Add a dropdown or input field to `TaskCreationModal` and `TaskEditModal` to allow users to set the complexity.
+5.  **Update `TaskModal.ts`**: Add a dropdown or input field to `TaskCreationModal` and `TaskEditModal` to allow users to set the complexity.
 6.  **Update `TaskCard.ts`**: In `createTaskCard` and `updateTaskCard`, add logic to display the new complexity information (e.g., an icon or text in the metadata line).
 7.  **Update `FilterService.ts` (Optional)**: If you want to filter by complexity frequently:
     *   Consider whether an index is needed (probably not - compute on-demand)

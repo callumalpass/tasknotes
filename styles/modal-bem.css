@@ -117,8 +117,6 @@
    BASE MODAL CONTAINER STYLES
    ===================================================================== */
 
-.tasknotes-plugin .task-creation-modal,
-.tasknotes-plugin .task-edit-modal,
 .tasknotes-plugin .due-date-modal,
 .tasknotes-plugin .scheduled-date-modal,
 .tasknotes-plugin .task-selector-modal {
@@ -134,8 +132,6 @@
    MODAL HEADERS AND HEADINGS
    ===================================================================== */
 
-.tasknotes-plugin .task-creation-modal .setting-item-heading,
-.tasknotes-plugin .task-edit-modal .setting-item-heading,
 .tasknotes-plugin .due-date-modal .setting-item-heading,
 .tasknotes-plugin .scheduled-date-modal .setting-item-heading {
     font-size: var(--tn-font-size-xl);
@@ -665,61 +661,7 @@
     color: var(--tn-text-normal);
 }
 
-/* =====================================================================
-   TASK CREATION MODAL SPECIFIC
-   ===================================================================== */
 
-
-.tasknotes-plugin .task-creation-modal__preview {
-    padding: var(--tn-spacing-md) var(--tn-spacing-lg);
-    background: var(--tn-bg-secondary);
-    border: 1px solid var(--tn-border-color);
-    border-radius: var(--tn-radius-sm);
-    font-size: var(--tn-font-size-sm);
-    font-family: var(--font-monospace);
-    color: var(--tn-text-muted);
-    margin-top: var(--tn-spacing-md);
-    word-break: break-all;
-}
-
-.tasknotes-plugin .task-creation-modal__preview--valid {
-    background: rgba(var(--tn-interactive-success), 0.1);
-    border-color: var(--tn-interactive-success);
-    color: var(--tn-text-normal);
-}
-
-.tasknotes-plugin .task-creation-modal__preview--error {
-    background: rgba(var(--tn-color-error), 0.1);
-    border-color: var(--tn-color-error);
-    color: var(--tn-color-error);
-}
-
-/* =====================================================================
-   TASK EDIT MODAL SPECIFIC
-   ===================================================================== */
-
-.tasknotes-plugin .task-edit-modal__metadata {
-    margin-top: var(--tn-spacing-xxl);
-    padding-top: var(--tn-spacing-lg);
-    border-top: 1px solid var(--tn-border-color);
-}
-
-.tasknotes-plugin .task-edit-modal__metadata-container {
-    display: flex;
-    flex-direction: column;
-    gap: var(--tn-spacing-md);
-}
-
-.tasknotes-plugin .task-edit-modal__metadata-item {
-    font-size: var(--tn-font-size-sm);
-    color: var(--tn-text-muted);
-    line-height: 1.4;
-    padding: var(--tn-spacing-md) var(--tn-spacing-lg);
-    background: var(--tn-bg-secondary);
-    border: 1px solid var(--tn-border-color);
-    border-radius: var(--tn-radius-sm);
-    font-weight: var(--tn-font-weight-normal);
-}
 
 /* =====================================================================
    QUICK DATE MODALS SPECIFIC
@@ -844,8 +786,6 @@
    ===================================================================== */
 
 @media (max-width: 768px) {
-    .tasknotes-plugin .task-creation-modal,
-    .tasknotes-plugin .task-edit-modal,
     .tasknotes-plugin .due-date-modal,
     .tasknotes-plugin .scheduled-date-modal {
         padding: var(--tn-spacing-lg);
