@@ -78,6 +78,7 @@ export interface CalendarViewSettings {
 	// Default event type visibility
 	defaultShowScheduled: boolean;
 	defaultShowDue: boolean;
+	defaultShowDueWhenScheduled: boolean;
 	defaultShowTimeEntries: boolean;
 	defaultShowRecurring: boolean;
 	defaultShowICSEvents: boolean;
@@ -207,6 +208,7 @@ export const DEFAULT_CALENDAR_VIEW_SETTINGS: CalendarViewSettings = {
 	// Default event type visibility
 	defaultShowScheduled: true,
 	defaultShowDue: true,
+	defaultShowDueWhenScheduled: true,
 	defaultShowTimeEntries: false,
 	defaultShowRecurring: true,
 	defaultShowICSEvents: true,
@@ -962,6 +964,19 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 					.setValue(this.plugin.settings.calendarViewSettings.defaultShowDue)
 					.onChange(async (value) => {
 						this.plugin.settings.calendarViewSettings.defaultShowDue = value;
+						await this.plugin.saveSettings();
+					});
+			});
+
+		new Setting(container)
+			.setName('Show due dates when scheduled')
+			.setDesc('Display due dates even for tasks that already have scheduled dates')
+			.addToggle(toggle => {
+				toggle.toggleEl.setAttribute('aria-label', 'Show due dates when scheduled dates exist');
+				return toggle
+					.setValue(this.plugin.settings.calendarViewSettings.defaultShowDueWhenScheduled)
+					.onChange(async (value) => {
+						this.plugin.settings.calendarViewSettings.defaultShowDueWhenScheduled = value;
 						await this.plugin.saveSettings();
 					});
 			});
