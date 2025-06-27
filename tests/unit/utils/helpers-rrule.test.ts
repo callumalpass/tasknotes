@@ -554,6 +554,120 @@ describe('RRule Helper Functions', () => {
       const result = generateRecurringInstances(task, startDate, endDate);
       expect(result).toEqual([]);
     });
+
+    describe('timezone-safe dtstart handling', () => {
+      it('should use UTC dtstart for scheduled date to avoid timezone shifts', () => {
+        const task = TaskFactory.createTask({
+          recurrence: 'FREQ=MONTHLY;BYDAY=-1FR',
+          scheduled: '2025-06-26' // Thursday, should anchor to UTC midnight
+        });
+
+        const mockRRuleInstance = {
+          between: jest.fn(() => [new Date('2025-06-27T00:00:00.000Z')])
+        };
+        mockRRule.mockReturnValue(mockRRuleInstance as any);
+        mockRRule.parseString = jest.fn(() => ({ freq: 1, byweekday: [-1 * 5] }));
+
+        const startDate = new Date('2025-06-01');
+        const endDate = new Date('2025-06-30');
+
+        generateRecurringInstances(task, startDate, endDate);
+
+        // Verify RRule was created with UTC dtstart
+        const rruleCall = mockRRule.mock.calls[0];
+        expect(rruleCall).toBeDefined();
+        const options = rruleCall[0];
+        expect(options.dtstart).toEqual(new Date('2025-06-26T00:00:00.000Z'));
+      });
+
+      it('should use UTC dtstart for dateCreated fallback', () => {
+        const task = TaskFactory.createTask({
+          recurrence: 'FREQ=WEEKLY;BYDAY=FR',
+          dateCreated: '2025-06-25T10:30:00.000Z', // Should extract date part for UTC
+          scheduled: undefined
+        });
+
+        const mockRRuleInstance = {
+          between: jest.fn(() => [])
+        };
+        mockRRule.mockReturnValue(mockRRuleInstance as any);
+        mockRRule.parseString = jest.fn(() => ({ freq: 2, byweekday: [4] }));
+
+        const startDate = new Date('2025-06-01');
+        const endDate = new Date('2025-06-30');
+
+        generateRecurringInstances(task, startDate, endDate);
+
+        // Verify RRule uses dateCreated as UTC dtstart
+        const rruleCall = mockRRule.mock.calls[0];
+        const options = rruleCall[0];
+        expect(options.dtstart).toEqual(new Date('2025-06-25T00:00:00.000Z'));
+      });
+
+      it('should generate consistent results with isDueByRRule for same task', () => {
+        const task = TaskFactory.createTask({
+          recurrence: 'FREQ=MONTHLY;BYDAY=-1FR',
+          scheduled: '2025-06-26'
+        });
+
+        // Setup mock for generateRecurringInstances
+        const expectedOccurrence = new Date('2025-06-27T00:00:00.000Z');
+        const mockRRuleInstance = {
+          between: jest.fn(() => [expectedOccurrence])
+        };
+        mockRRule.mockReturnValue(mockRRuleInstance as any);
+        mockRRule.parseString = jest.fn(() => ({ freq: 1, byweekday: [-1 * 5] }));
+
+        // Test generateRecurringInstances
+        const startDate = new Date('2025-06-27');
+        const endDate = new Date('2025-06-27');
+        const instances = generateRecurringInstances(task, startDate, endDate);
+
+        // Clear mocks for isDueByRRule test
+        jest.clearAllMocks();
+        
+        // Setup mock for isDueByRRule (slightly different mock pattern)
+        const mockRRuleInstance2 = {
+          between: jest.fn((start: Date, end: Date) => {
+            const target = new Date('2025-06-27T00:00:00.000Z');
+            return (start <= target && target <= end) ? [target] : [];
+          })
+        };
+        mockRRule.mockReturnValue(mockRRuleInstance2 as any);
+        mockRRule.parseString = jest.fn(() => ({ freq: 1, byweekday: [-1 * 5] }));
+
+        // Test isDueByRRule
+        const testDate = new Date('2025-06-27');
+        const isDue = isDueByRRule(task, testDate);
+
+        // Both methods should agree: if generateRecurringInstances returns instances
+        // for a date, isDueByRRule should return true for that date
+        expect(instances.length > 0).toBe(isDue);
+      });
+
+      it('should handle datetime strings by extracting date part for dtstart', () => {
+        const task = TaskFactory.createTask({
+          recurrence: 'FREQ=DAILY',
+          scheduled: '2025-06-26T15:30:00' // Should use date part only
+        });
+
+        const mockRRuleInstance = {
+          between: jest.fn(() => [])
+        };
+        mockRRule.mockReturnValue(mockRRuleInstance as any);
+        mockRRule.parseString = jest.fn(() => ({ freq: 3 }));
+
+        const startDate = new Date('2025-06-26');
+        const endDate = new Date('2025-06-26');
+
+        generateRecurringInstances(task, startDate, endDate);
+
+        // Verify dtstart uses date part only in UTC
+        const rruleCall = mockRRule.mock.calls[0];
+        const options = rruleCall[0];
+        expect(options.dtstart).toEqual(new Date('2025-06-26T00:00:00.000Z'));
+      });
+    });
   });
 
   describe('getRecurrenceDisplayText', () => {
@@ -636,6 +750,189 @@ describe('RRule Helper Functions', () => {
 
       expect(mockRRule.fromString).toHaveBeenCalledWith(complexRRule);
       expect(result).toBe('monthly on the 15th until December 31, 2024');
+    });
+  });
+
+  describe('RRULE Timezone Safety', () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    describe('isDueByRRule timezone-aware behavior', () => {
+      it('should handle monthly last Friday pattern correctly across timezones', () => {
+        const task = TaskFactory.createTask({
+          title: 'Monthly Last Friday Task',
+          recurrence: 'FREQ=MONTHLY;BYDAY=-1FR;COUNT=15',
+          scheduled: '2025-06-26' // Thursday, should generate last Friday of month
+        });
+
+        // Mock RRule to return last Friday of June 2025 (June 27th)
+        const mockRRuleInstance = {
+          between: jest.fn((start: Date, end: Date) => {
+            // Check if the date range includes June 27, 2025 (last Friday)
+            const targetDate = new Date('2025-06-27T00:00:00.000Z');
+            if (start <= targetDate && targetDate <= end) {
+              return [targetDate];
+            }
+            return [];
+          })
+        };
+        
+        mockRRule.mockReturnValue(mockRRuleInstance as any);
+        mockRRule.parseString = jest.fn(() => ({ freq: 1, byweekday: [-1 * 5] })); // -1FR
+
+        // Test that it shows on Friday, not Saturday
+        const fridayDate = new Date('2025-06-27'); // Friday
+        const saturdayDate = new Date('2025-06-28'); // Saturday
+
+        const shouldShowFriday = isDueByRRule(task, fridayDate);
+        const shouldShowSaturday = isDueByRRule(task, saturdayDate);
+
+        expect(shouldShowFriday).toBe(true);
+        expect(shouldShowSaturday).toBe(false);
+      });
+
+      it('should use UTC dates for dtstart to avoid timezone shifts', () => {
+        const task = TaskFactory.createTask({
+          recurrence: 'FREQ=WEEKLY;BYDAY=FR',
+          scheduled: '2025-06-26' // Thursday scheduled
+        });
+
+        const mockRRuleInstance = {
+          between: jest.fn(() => [])
+        };
+        
+        mockRRule.mockReturnValue(mockRRuleInstance as any);
+        mockRRule.parseString = jest.fn(() => ({ freq: 2, byweekday: [4] })); // Friday
+
+        const testDate = new Date('2025-06-27');
+        isDueByRRule(task, testDate);
+
+        // Verify RRule was created with UTC dtstart
+        const rruleCall = mockRRule.mock.calls[0];
+        expect(rruleCall).toBeDefined();
+        const options = rruleCall[0];
+        expect(options.dtstart).toEqual(new Date('2025-06-26T00:00:00.000Z'));
+      });
+
+      it('should handle dateCreated as fallback anchor date', () => {
+        const task = TaskFactory.createTask({
+          recurrence: 'FREQ=DAILY',
+          dateCreated: '2025-06-25T10:30:00.000Z', // No scheduled date
+          scheduled: undefined
+        });
+
+        const mockRRuleInstance = {
+          between: jest.fn(() => [])
+        };
+        
+        mockRRule.mockReturnValue(mockRRuleInstance as any);
+        mockRRule.parseString = jest.fn(() => ({ freq: 3 }));
+
+        const testDate = new Date('2025-06-26');
+        isDueByRRule(task, testDate);
+
+        // Verify RRule uses dateCreated as UTC dtstart
+        const rruleCall = mockRRule.mock.calls[0];
+        const options = rruleCall[0];
+        expect(options.dtstart).toEqual(new Date('2025-06-25T00:00:00.000Z'));
+      });
+
+      it('should return false when no anchor date available', () => {
+        const task = TaskFactory.createTask({
+          recurrence: 'FREQ=DAILY',
+          scheduled: undefined,
+          dateCreated: undefined
+        });
+
+        const testDate = new Date('2025-06-26');
+        const result = isDueByRRule(task, testDate);
+
+        expect(result).toBe(false);
+        expect(mockRRule).not.toHaveBeenCalled();
+      });
+
+      it('should handle timezone-aware target date calculation', () => {
+        const task = TaskFactory.createTask({
+          recurrence: 'FREQ=DAILY',
+          scheduled: '2025-06-26'
+        });
+
+        const mockRRuleInstance = {
+          between: jest.fn(() => [])
+        };
+        
+        mockRRule.mockReturnValue(mockRRuleInstance as any);
+        mockRRule.parseString = jest.fn(() => ({ freq: 3 }));
+
+        const testDate = new Date('2025-06-27T15:30:00'); // Afternoon time
+        isDueByRRule(task, testDate);
+
+        // Verify between() was called with UTC date range
+        expect(mockRRuleInstance.between).toHaveBeenCalledWith(
+          new Date('2025-06-27T00:00:00.000Z'),
+          new Date('2025-06-27T23:59:59.999Z'),
+          true
+        );
+      });
+
+      it('should handle RRULE parsing errors gracefully', () => {
+        const task = TaskFactory.createTask({
+          recurrence: 'INVALID_RRULE_STRING',
+          scheduled: '2025-06-26'
+        });
+
+        mockRRule.parseString = jest.fn(() => {
+          throw new Error('Invalid RRULE');
+        });
+
+        const testDate = new Date('2025-06-27');
+        const result = isDueByRRule(task, testDate);
+
+        // Should fall back to treating as non-recurring (return true)
+        expect(result).toBe(true);
+      });
+    });
+
+    describe('Real-world timezone scenarios', () => {
+      it('should handle DST transitions correctly', () => {
+        // Test around DST transition dates
+        const task = TaskFactory.createTask({
+          recurrence: 'FREQ=WEEKLY;BYDAY=SU',
+          scheduled: '2025-03-09' // Day before DST in 2025
+        });
+
+        const mockRRuleInstance = {
+          between: jest.fn(() => [new Date('2025-03-16T00:00:00.000Z')])
+        };
+        
+        mockRRule.mockReturnValue(mockRRuleInstance as any);
+        mockRRule.parseString = jest.fn(() => ({ freq: 2, byweekday: [6] }));
+
+        const testDate = new Date('2025-03-16'); // Sunday after DST
+        const result = isDueByRRule(task, testDate);
+
+        expect(result).toBe(true);
+      });
+
+      it('should handle year boundary crossings', () => {
+        const task = TaskFactory.createTask({
+          recurrence: 'FREQ=MONTHLY;BYMONTHDAY=31',
+          scheduled: '2024-12-31'
+        });
+
+        const mockRRuleInstance = {
+          between: jest.fn(() => [new Date('2025-01-31T00:00:00.000Z')])
+        };
+        
+        mockRRule.mockReturnValue(mockRRuleInstance as any);
+        mockRRule.parseString = jest.fn(() => ({ freq: 1, bymonthday: [31] }));
+
+        const testDate = new Date('2025-01-31');
+        const result = isDueByRRule(task, testDate);
+
+        expect(result).toBe(true);
+      });
     });
   });
 });

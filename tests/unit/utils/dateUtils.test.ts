@@ -37,7 +37,8 @@ import {
   isTodayTimeAware,
   validateDateTimeInput,
   getCurrentDateTimeString,
-  addDaysToDateTime
+  addDaysToDateTime,
+  createUTCDateForRRule
 } from '../../../src/utils/dateUtils';
 
 // Use improved date-fns mock that behaves more like the real library
@@ -609,6 +610,72 @@ describe('DateUtils', () => {
       
       const finalState = Object.keys(global).length;
       expect(finalState).toBe(initialState);
+    });
+  });
+
+  describe('createUTCDateForRRule', () => {
+    it('should create UTC date at midnight for date-only strings', () => {
+      const result = createUTCDateForRRule('2025-06-26');
+      
+      expect(result.toISOString()).toBe('2025-06-26T00:00:00.000Z');
+      expect(result.getUTCDate()).toBe(26);
+      expect(result.getUTCMonth()).toBe(5); // June is month 5 (0-based)
+      expect(result.getUTCFullYear()).toBe(2025);
+      expect(result.getUTCDay()).toBe(4); // Thursday
+    });
+
+    it('should preserve day of week in UTC', () => {
+      const testCases = [
+        { date: '2025-06-26', expectedDay: 4 }, // Thursday
+        { date: '2025-06-27', expectedDay: 5 }, // Friday
+        { date: '2025-06-28', expectedDay: 6 }, // Saturday
+        { date: '2025-06-29', expectedDay: 0 }, // Sunday
+      ];
+
+      testCases.forEach(({ date, expectedDay }) => {
+        const result = createUTCDateForRRule(date);
+        expect(result.getUTCDay()).toBe(expectedDay);
+      });
+    });
+
+    it('should handle datetime strings by extracting date part', () => {
+      const testCases = [
+        '2025-06-26T15:30:00',
+        '2025-06-26T00:00:00Z',
+        '2025-06-26 15:30:00',
+      ];
+
+      testCases.forEach(dateString => {
+        const result = createUTCDateForRRule(dateString);
+        expect(result.toISOString()).toBe('2025-06-26T00:00:00.000Z');
+      });
+    });
+
+    it('should handle edge cases', () => {
+      // Leap year
+      const leapYear = createUTCDateForRRule('2024-02-29');
+      expect(leapYear.toISOString()).toBe('2024-02-29T00:00:00.000Z');
+
+      // Year boundaries
+      const yearStart = createUTCDateForRRule('2025-01-01');
+      expect(yearStart.toISOString()).toBe('2025-01-01T00:00:00.000Z');
+
+      const yearEnd = createUTCDateForRRule('2025-12-31');
+      expect(yearEnd.toISOString()).toBe('2025-12-31T00:00:00.000Z');
+    });
+
+    it('should throw error for invalid date formats', () => {
+      const invalidDates = [
+        '',
+        'invalid',
+        '2025-13-01', // Invalid month
+        '2025-02-30', // Invalid day for February
+        '25-06-26',   // Wrong year format
+      ];
+
+      invalidDates.forEach(dateString => {
+        expect(() => createUTCDateForRRule(dateString)).toThrow();
+      });
     });
   });
 });

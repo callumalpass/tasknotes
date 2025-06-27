@@ -636,3 +636,26 @@ export function addDaysToDateTime(dateString: string, days: number): string {
         throw error;
     }
 }
+
+/**
+ * Create a UTC date at midnight for RRULE dtstart to avoid timezone issues
+ * This ensures that the day of the week is preserved correctly for recurrence calculations
+ */
+export function createUTCDateForRRule(dateString: string): Date {
+    try {
+        // Extract just the date part to avoid any time/timezone complications
+        const datePart = getDatePart(dateString);
+        const dateMatch = datePart.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+        
+        if (!dateMatch) {
+            throw new Error(`Invalid date format for RRULE: ${dateString}`);
+        }
+        
+        const [, year, month, day] = dateMatch;
+        // Create UTC date at midnight to preserve the correct day of week
+        return new Date(Date.UTC(parseInt(year, 10), parseInt(month, 10) - 1, parseInt(day, 10)));
+    } catch (error) {
+        console.error('Error creating UTC date for RRULE:', { dateString, error });
+        throw error;
+    }
+}

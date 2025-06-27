@@ -1,10 +1,10 @@
 import { normalizePath, TFile, Vault, App, parseYaml, stringifyYaml } from 'obsidian';
-import { format, startOfDay } from 'date-fns';
+import { format } from 'date-fns';
 import { RRule } from 'rrule';
 import { TimeInfo, TaskInfo, TimeEntry, TimeBlock, DailyNoteFrontmatter } from '../types';
 import { FieldMapper } from '../services/FieldMapper';
 import { DEFAULT_FIELD_MAPPING } from '../settings/settings';
-import { isBeforeDateSafe, getTodayString, parseDate } from './dateUtils';
+import { isBeforeDateSafe, getTodayString, parseDate, startOfDayForDateString, createUTCDateForRRule } from './dateUtils';
 // import { RegexOptimizer } from './RegexOptimizer'; // Temporarily disabled
 
 /**
@@ -390,11 +390,12 @@ export function isDueByRRule(task: TaskInfo, date: Date): boolean {
 	if (typeof task.recurrence === 'string') {
 		try {
 			// Determine the anchor date (dtstart) for the recurrence
+			// Use UTC date to avoid timezone issues with day-of-week calculations
 			let dtstart: Date;
 			if (task.scheduled) {
-				dtstart = parseDate(task.scheduled);
+				dtstart = createUTCDateForRRule(task.scheduled);
 			} else if (task.dateCreated) {
-				dtstart = parseDate(task.dateCreated);
+				dtstart = createUTCDateForRRule(task.dateCreated);
 			} else {
 				// If no anchor date available, task cannot generate recurring instances
 				return false;
@@ -408,7 +409,8 @@ export function isDueByRRule(task: TaskInfo, date: Date): boolean {
 			const rrule = new RRule(rruleOptions);
 			
 			// Check if the target date is an occurrence
-			const targetDateStart = startOfDay(date);
+			// Use UTC date to match the dtstart timezone
+			const targetDateStart = createUTCDateForRRule(format(date, 'yyyy-MM-dd'));
 			const occurrences = rrule.between(targetDateStart, new Date(targetDateStart.getTime() + 24 * 60 * 60 * 1000 - 1), true);
 			
 			return occurrences.length > 0;
@@ -574,11 +576,12 @@ export function generateRecurringInstances(task: TaskInfo, startDate: Date, endD
 	if (typeof task.recurrence === 'string') {
 		try {
 			// Determine the anchor date (dtstart) for the recurrence
+			// Use UTC date to avoid timezone issues with day-of-week calculations
 			let dtstart: Date;
 			if (task.scheduled) {
-				dtstart = parseDate(task.scheduled);
+				dtstart = createUTCDateForRRule(task.scheduled);
 			} else if (task.dateCreated) {
-				dtstart = parseDate(task.dateCreated);
+				dtstart = createUTCDateForRRule(task.dateCreated);
 			} else {
 				// If no anchor date available, task cannot generate recurring instances
 				return [];
