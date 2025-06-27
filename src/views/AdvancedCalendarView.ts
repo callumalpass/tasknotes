@@ -527,8 +527,8 @@ export class AdvancedCalendarView extends ItemView {
                         if (scheduledEvent) events.push(scheduledEvent);
                     }
                     
-                    // Add due event if task has due date and no scheduled date (to avoid duplicates)
-                    if (this.showDue && hasDue && !hasScheduled) {
+                    // Add due event if task has due date (allowing duplicates with scheduled dates)
+                    if (this.showDue && hasDue) {
                         const dueEvent = this.createDueEvent(task);
                         if (dueEvent) events.push(dueEvent);
                     }
