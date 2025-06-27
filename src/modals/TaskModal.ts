@@ -195,7 +195,7 @@ export abstract class TaskModal extends Modal {
         new Setting(container)
             .setName('Contexts')
             .addText(text => {
-                text.setPlaceholder('@context1, @context2')
+                text.setPlaceholder('context1, context2')
                     .setValue(this.contexts)
                     .onChange(value => {
                         this.contexts = value;
@@ -209,7 +209,7 @@ export abstract class TaskModal extends Modal {
         new Setting(container)
             .setName('Tags')
             .addText(text => {
-                text.setPlaceholder('#tag1, #tag2')
+                text.setPlaceholder('tag1, tag2')
                     .setValue(this.tags)
                     .onChange(value => {
                         this.tags = value;
