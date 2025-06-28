@@ -1,8 +1,10 @@
-import { Extension, RangeSetBuilder, StateField, Transaction, StateEffect } from '@codemirror/state';
+import { Extension, RangeSetBuilder, StateEffect } from '@codemirror/state';
 import {
     Decoration,
     DecorationSet,
     EditorView,
+    ViewPlugin,
+    ViewUpdate,
     WidgetType,
 } from '@codemirror/view';
 import { editorLivePreviewField, MarkdownView } from 'obsidian';
@@ -14,99 +16,88 @@ import { TaskLinkWidget } from './TaskLinkWidget';
 // Define a state effect for task updates
 const taskUpdateEffect = StateEffect.define<{ taskPath?: string }>();
 
-// Create a state field factory that takes the plugin as a parameter
-export function createTaskLinkField(plugin: TaskNotesPlugin) {
+// Create a ViewPlugin factory that takes the plugin as a parameter
+export function createTaskLinkViewPlugin(plugin: TaskNotesPlugin) {
     // Track widget instances for updates
     const activeWidgets = new Map<string, TaskLinkWidget>();
     
-    return StateField.define<DecorationSet>({
-        create(state): DecorationSet {
-            // Build decorations immediately when the state field is created
-            // This ensures overlays appear when returning to a note
-            try {
-                if (plugin?.settings?.enableTaskLinkOverlay) {
-                    const isLivePreview = state.field(editorLivePreviewField);
-                    if (isLivePreview) {
-                        return buildTaskLinkDecorations(state, plugin, activeWidgets);
-                    }
-                }
-            } catch (error) {
-                console.debug('Error building initial decorations:', error);
-            }
-            return Decoration.none;
-        },
-        
-        update(oldState: DecorationSet, transaction: Transaction): DecorationSet {
-            // Validate inputs
-            if (!plugin || !transaction) {
-                return Decoration.none;
-            }
-            
-            if (!transaction.state) {
-                console.warn('Invalid transaction state in task link overlay update');
-                return Decoration.none;
-            }
-        
+    return ViewPlugin.fromClass(class {
+        decorations: DecorationSet;
+
+        constructor(view: EditorView) {
+            this.decorations = this.buildDecorations(view);
+        }
+
+        update(update: ViewUpdate) {
             // Only process if overlay is enabled in settings
-            if (!plugin.settings || !plugin.settings.enableTaskLinkOverlay) {
-                return Decoration.none;
+            if (!plugin?.settings?.enableTaskLinkOverlay) {
+                this.decorations = Decoration.none;
+                return;
             }
 
             // Only process in Live Preview mode
             try {
-                const isLivePreview = transaction.state.field(editorLivePreviewField);
+                const isLivePreview = update.state.field(editorLivePreviewField);
                 if (!isLivePreview) {
-                    return Decoration.none;
+                    this.decorations = Decoration.none;
+                    return;
                 }
             } catch (error) {
                 console.debug('Error checking live preview mode:', error);
-                return Decoration.none;
+                this.decorations = Decoration.none;
+                return;
             }
 
-            try {
-                // Check for task update effects
-                const hasTaskUpdateEffect = transaction.effects.some(effect => effect.is(taskUpdateEffect));
-                
-                // Check if selection (cursor position) has changed
-                const selectionChanged = transaction.selection || 
-                    (transaction.startState.selection.main.head !== transaction.state.selection.main.head);
-                
-                // Rebuild decorations on document changes, task update effects, OR selection changes
-                if (transaction.docChanged || hasTaskUpdateEffect || selectionChanged) {
-                    // Clear active widgets cache on task updates to ensure fresh widgets are created
-                    if (hasTaskUpdateEffect) {
-                        // Get the specific task path that was updated
-                        const taskUpdateData = transaction.effects.find(effect => effect.is(taskUpdateEffect))?.value;
-                        if (taskUpdateData?.taskPath) {
-                            // Clear only widgets for the specific task that was updated
-                            for (const [key] of activeWidgets.entries()) {
-                                if (key.includes(taskUpdateData.taskPath)) {
-                                    activeWidgets.delete(key);
-                                }
+            // Check for task update effects
+            const hasTaskUpdateEffect = update.transactions.some(tr => 
+                tr.effects.some(effect => effect.is(taskUpdateEffect))
+            );
+            
+            // Rebuild decorations on document changes, task updates, or selection changes
+            if (update.docChanged || update.selectionSet || hasTaskUpdateEffect) {
+                // Clear active widgets cache on task updates to ensure fresh widgets are created
+                if (hasTaskUpdateEffect) {
+                    // Get the specific task path that was updated
+                    const taskUpdateData = update.transactions
+                        .flatMap(tr => tr.effects)
+                        .find(effect => effect.is(taskUpdateEffect))?.value;
+                        
+                    if (taskUpdateData?.taskPath) {
+                        // Clear only widgets for the specific task that was updated
+                        for (const [key] of activeWidgets.entries()) {
+                            if (key.includes(taskUpdateData.taskPath)) {
+                                activeWidgets.delete(key);
                             }
-                        } else {
-                            // If no specific path, clear all widgets
-                            activeWidgets.clear();
                         }
+                    } else {
+                        // If no specific path, clear all widgets
+                        activeWidgets.clear();
                     }
-                    return buildTaskLinkDecorations(transaction.state, plugin, activeWidgets);
+                }
+                this.decorations = this.buildDecorations(update.view);
+            }
+        }
+
+        buildDecorations(view: EditorView): DecorationSet {
+            try {
+                if (!plugin?.settings?.enableTaskLinkOverlay) {
+                    return Decoration.none;
                 }
 
-                // For other transactions, just map the existing decorations
-                if (oldState !== Decoration.none) {
-                    return oldState.map(transaction.changes);
+                // Only process in Live Preview mode
+                const isLivePreview = view.state.field(editorLivePreviewField);
+                if (!isLivePreview) {
+                    return Decoration.none;
                 }
 
-                return oldState;
+                return buildTaskLinkDecorations(view.state, plugin, activeWidgets);
             } catch (error) {
-                console.error('Error updating task link overlay decorations:', error);
+                console.error('Error building task link decorations:', error);
                 return Decoration.none;
             }
-        },
-        
-        provide(field: StateField<DecorationSet>): Extension {
-            return EditorView.decorations.from(field);
-        },
+        }
+    }, {
+        decorations: v => v.decorations
     });
 }
 
@@ -386,9 +377,9 @@ function getTaskInfoSync(filePath: string, plugin: TaskNotesPlugin): TaskInfo | 
 
 
 export function createTaskLinkOverlay(plugin: TaskNotesPlugin): Extension {
-    const stateField = createTaskLinkField(plugin);
+    const viewPlugin = createTaskLinkViewPlugin(plugin);
     
-    return stateField;
+    return viewPlugin;
 }
 
 // Export the effect and utility function for triggering updates
