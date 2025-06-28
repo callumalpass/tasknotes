@@ -336,7 +336,7 @@ export class PomodoroView extends ItemView {
             }
 
             // Open task selector modal
-            const modal = new TaskSelectorModal(this.app, unarchivedTasks, (selectedTask) => {
+            const modal = new TaskSelectorModal(this.app, this.plugin, unarchivedTasks, (selectedTask) => {
                 this.selectTask(selectedTask);
             });
 

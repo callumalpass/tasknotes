@@ -40,7 +40,7 @@ export class TaskLinkWidget extends WidgetType {
         const statusConfig = this.plugin.statusManager.getStatusConfig(this.taskInfo.status);
         const statusDot = container.createEl('span', { 
             cls: 'task-inline-preview__status-dot',
-            attr: { title: `Status: ${this.taskInfo.status}` }
+            attr: { title: `Status: ${statusConfig ? statusConfig.label : this.taskInfo.status}` }
         });
         if (statusConfig) {
             statusDot.style.borderColor = statusConfig.color;

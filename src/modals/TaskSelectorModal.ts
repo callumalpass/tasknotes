@@ -1,13 +1,16 @@
 import { App, FuzzySuggestModal, FuzzyMatch } from 'obsidian';
 import { TaskInfo } from '../types';
 import { isPastDate, isToday } from '../utils/dateUtils';
+import type TaskNotesPlugin from '../main';
 
 export class TaskSelectorModal extends FuzzySuggestModal<TaskInfo> {
     private tasks: TaskInfo[];
     private onChooseTask: (task: TaskInfo | null) => void;
+    private plugin: TaskNotesPlugin;
 
-    constructor(app: App, tasks: TaskInfo[], onChooseTask: (task: TaskInfo | null) => void) {
+    constructor(app: App, plugin: TaskNotesPlugin, tasks: TaskInfo[], onChooseTask: (task: TaskInfo | null) => void) {
         super(app);
+        this.plugin = plugin;
         this.tasks = tasks;
         this.onChooseTask = onChooseTask;
         
@@ -29,9 +32,9 @@ export class TaskSelectorModal extends FuzzySuggestModal<TaskInfo> {
     }
 
     getItems(): TaskInfo[] {
-        // Filter out completed and archived tasks, sort by due date and priority
+        // Filter  archived tasks, sort by due date and priority
         return this.tasks
-            .filter(task => task.status !== 'done' && !task.archived)
+            .filter(task => !task.archived)
             .sort((a, b) => {
                 // Sort by due date first (tasks with due dates come first)
                 if (a.due && !b.due) return -1;
@@ -118,9 +121,10 @@ export class TaskSelectorModal extends FuzzySuggestModal<TaskInfo> {
         
         // Status
         if (task.status !== 'open') {
+            const statusConfig = this.plugin.statusManager.getStatusConfig(task.status);
             metaDiv.createSpan({ 
                 cls: `task-selector-modal__status`,
-                text: task.status 
+                text: statusConfig ? statusConfig.label : task.status 
             });
         }
     }

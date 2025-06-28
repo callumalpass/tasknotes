@@ -398,7 +398,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 		const container = this.tabContents['general'];
 		
 		// Inline task settings
-		new Setting(container).setName('Inline task settings').setHeading();
+		new Setting(container).setName('Inline tasks').setHeading();
 		
 		container.createEl('p', { 
 			text: 'Configure how TaskNotes integrates with your editor and existing Markdown tasks.',
