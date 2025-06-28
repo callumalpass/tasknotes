@@ -991,7 +991,13 @@ export class FilterBar extends EventEmitter {
                     return;
                 }
                 
-                // Toggle the checkbox
+                // If clicking on the label or its children, let the native label behavior handle it
+                if (e.target === label || label.contains(e.target as Node)) {
+                    // The native label behavior will toggle the checkbox and trigger the change event
+                    return;
+                }
+                
+                // For clicks outside the label (but inside the container), manually toggle
                 checkbox.checked = !checkbox.checked;
                 
                 // Trigger the change event
@@ -1107,7 +1113,13 @@ export class FilterBar extends EventEmitter {
                     return;
                 }
                 
-                // Toggle the checkbox
+                // If clicking on the label or its children, let the native label behavior handle it
+                if (e.target === label || label.contains(e.target as Node)) {
+                    // The native label behavior will toggle the checkbox and trigger the change event
+                    return;
+                }
+                
+                // For clicks outside the label (but inside the container), manually toggle
                 checkbox.checked = !checkbox.checked;
                 
                 // Trigger the change event
