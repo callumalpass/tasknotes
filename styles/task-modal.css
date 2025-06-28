@@ -448,6 +448,82 @@
     font-style: italic;
 }
 
+/* =====================================================================
+   RECURRING CALENDAR COMPONENT - BEM & MINIMALIST
+   ===================================================================== */
+
+.tasknotes-plugin .recurring-calendar {
+    margin-left: var(--size-4-2);
+    font-size: var(--font-ui-small);
+}
+
+.tasknotes-plugin .recurring-calendar__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--size-4-1);
+}
+
+.tasknotes-plugin .recurring-calendar__nav {
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 14px;
+    padding: 2px 4px;
+    transition: color 0.1s ease;
+}
+
+.tasknotes-plugin .recurring-calendar__nav:hover {
+    color: var(--text-normal);
+}
+
+.tasknotes-plugin .recurring-calendar__month {
+    font-size: var(--font-ui-small);
+    color: var(--text-normal);
+    font-weight: 500;
+}
+
+.tasknotes-plugin .recurring-calendar__grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+}
+
+.tasknotes-plugin .recurring-calendar__day {
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    color: var(--text-faint);
+    border-radius: 2px;
+}
+
+.tasknotes-plugin .recurring-calendar__day--faded {
+    color: var(--text-faint);
+    opacity: 0.4;
+}
+
+.tasknotes-plugin .recurring-calendar__day--recurring {
+    color: var(--text-normal);
+    border: 1px solid var(--text-muted);
+    cursor: pointer;
+    transition: all 0.1s ease;
+}
+
+.tasknotes-plugin .recurring-calendar__day--recurring:hover {
+    border-color: var(--interactive-accent);
+    color: var(--interactive-accent);
+}
+
+.tasknotes-plugin .recurring-calendar__day--completed {
+    background: var(--interactive-accent);
+    color: var(--text-on-accent);
+    border-color: var(--interactive-accent);
+}
+
 .tasknotes-plugin .nl-preview-container {
     margin-top: var(--size-4-2);
     padding: var(--size-4-2);

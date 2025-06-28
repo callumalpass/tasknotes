@@ -1,9 +1,11 @@
-import { App, Notice } from 'obsidian';
+import { App, Notice, TFile } from 'obsidian';
 import TaskNotesPlugin from '../main';
 import { TaskModal } from './TaskModal';
 import { TaskInfo } from '../types';
 import { getCurrentTimestamp } from '../utils/dateUtils';
 import { formatTimestampForDisplay } from '../utils/dateUtils';
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, getDay, startOfWeek, endOfWeek } from 'date-fns';
+import { generateRecurringInstances, extractTaskInfo } from '../utils/helpers';
 
 export interface TaskEditOptions {
     task: TaskInfo;
@@ -14,12 +16,15 @@ export class TaskEditModal extends TaskModal {
     private task: TaskInfo;
     private options: TaskEditOptions;
     private metadataContainer: HTMLElement;
+    private completedInstancesChanges: Set<string> = new Set();
+    private calendarWrapper: HTMLElement | null = null;
 
     constructor(app: App, plugin: TaskNotesPlugin, options: TaskEditOptions) {
         super(app, plugin);
         this.task = options.task;
         this.options = options;
     }
+
 
     getModalTitle(): string {
         return 'Edit task';
@@ -69,7 +74,13 @@ export class TaskEditModal extends TaskModal {
         return recurrenceText;
     }
 
-    onOpen() {
+    async onOpen() {
+        // Clear any previous completion changes
+        this.completedInstancesChanges.clear();
+        
+        // Refresh task data from file before opening
+        await this.refreshTaskData();
+        
         this.containerEl.addClass('tasknotes-plugin', 'minimalist-task-modal');
         this.titleEl.textContent = this.getModalTitle();
         
@@ -79,6 +90,38 @@ export class TaskEditModal extends TaskModal {
             this.updateIconStates();
             this.focusTitleInput();
         });
+    }
+
+    private async refreshTaskData(): Promise<void> {
+        try {
+            // Get the file from the path
+            const file = this.app.vault.getAbstractFileByPath(this.task.path);
+            if (!file || !(file instanceof TFile)) {
+                console.warn('Could not find file for task:', this.task.path);
+                return;
+            }
+
+            // Read the file content
+            const content = await this.app.vault.read(file);
+            
+            // Extract fresh task info
+            const freshTaskInfo = extractTaskInfo(
+                this.app,
+                content,
+                this.task.path,
+                file,
+                this.plugin.fieldMapper
+            );
+
+            if (freshTaskInfo) {
+                // Update task data with fresh information
+                this.task = freshTaskInfo;
+                this.options.task = freshTaskInfo;
+            }
+        } catch (error) {
+            console.warn('Could not refresh task data:', error);
+            // Continue with existing task data if refresh fails
+        }
     }
 
     protected createModalContent(): void {
@@ -129,6 +172,121 @@ export class TaskEditModal extends TaskModal {
             const pathDiv = metadataContent.createDiv('metadata-item');
             pathDiv.createSpan('metadata-key').textContent = 'File: ';
             pathDiv.createSpan('metadata-value').textContent = this.task.path;
+        }
+
+        // Recurring task completion calendar
+        if (this.task.recurrence) {
+            this.createRecurringCalendar(metadataContent);
+        }
+    }
+
+    private createRecurringCalendar(container: HTMLElement): void {
+        const calendarDiv = container.createDiv('metadata-item');
+        calendarDiv.createSpan('metadata-key').textContent = 'Completions: ';
+        
+        this.calendarWrapper = calendarDiv.createDiv('recurring-calendar');
+        
+        // Show current month by default, or the month with most recent completions
+        const currentDate = new Date();
+        const mostRecentCompletion = this.task.complete_instances && this.task.complete_instances.length > 0 
+            ? new Date(Math.max(...this.task.complete_instances.map(d => new Date(d + 'T00:00:00').getTime())))
+            : currentDate;
+        
+        this.renderCalendarMonth(this.calendarWrapper, mostRecentCompletion);
+    }
+    
+    private renderCalendarMonth(container: HTMLElement, displayDate: Date): void {
+        container.empty();
+        
+        // Minimalist header
+        const header = container.createDiv('recurring-calendar__header');
+        const prevButton = header.createEl('button', { 
+            cls: 'recurring-calendar__nav',
+            text: '‹'
+        });
+        const monthLabel = header.createSpan('recurring-calendar__month');
+        monthLabel.textContent = format(displayDate, 'MMM yyyy');
+        const nextButton = header.createEl('button', { 
+            cls: 'recurring-calendar__nav',
+            text: '›'
+        });
+        
+        // Minimalist grid
+        const grid = container.createDiv('recurring-calendar__grid');
+        
+        // Get all dates to display (including padding from previous/next month)
+        const monthStart = startOfMonth(displayDate);
+        const monthEnd = endOfMonth(displayDate);
+        const calendarStart = startOfWeek(monthStart);
+        const calendarEnd = endOfWeek(monthEnd);
+        const allDays = eachDayOfInterval({ start: calendarStart, end: calendarEnd });
+        
+        // Generate recurring instances for this month (with some buffer)
+        const bufferStart = startOfMonth(displayDate);
+        bufferStart.setMonth(bufferStart.getMonth() - 1);
+        const bufferEnd = endOfMonth(displayDate);
+        bufferEnd.setMonth(bufferEnd.getMonth() + 1);
+        
+        const recurringDates = generateRecurringInstances(this.task, bufferStart, bufferEnd);
+        const recurringDateStrings = new Set(recurringDates.map(d => format(d, 'yyyy-MM-dd')));
+        
+        // Get current completed instances (original + changes)
+        const completedInstances = new Set(this.task.complete_instances || []);
+        this.completedInstancesChanges.forEach(dateStr => {
+            if (completedInstances.has(dateStr)) {
+                completedInstances.delete(dateStr);
+            } else {
+                completedInstances.add(dateStr);
+            }
+        });
+        
+        // Render each day (no headers, just numbers)
+        allDays.forEach(day => {
+            const dayStr = format(day, 'yyyy-MM-dd');
+            const isCurrentMonth = isSameMonth(day, displayDate);
+            const isRecurring = recurringDateStrings.has(dayStr);
+            const isCompleted = completedInstances.has(dayStr);
+            
+            const dayElement = grid.createDiv('recurring-calendar__day');
+            dayElement.textContent = format(day, 'd');
+            
+            // Apply BEM modifier classes
+            if (!isCurrentMonth) {
+                dayElement.addClass('recurring-calendar__day--faded');
+            }
+            if (isRecurring) {
+                dayElement.addClass('recurring-calendar__day--recurring');
+                if (isCompleted) {
+                    dayElement.addClass('recurring-calendar__day--completed');
+                }
+                
+                // Make clickable
+                dayElement.addEventListener('click', () => {
+                    this.toggleCompletedInstance(dayStr);
+                    this.renderCalendarMonth(container, displayDate);
+                });
+            }
+        });
+        
+        // Navigation event handlers
+        prevButton.addEventListener('click', () => {
+            const prevMonth = new Date(displayDate);
+            prevMonth.setMonth(prevMonth.getMonth() - 1);
+            this.renderCalendarMonth(container, prevMonth);
+        });
+        
+        nextButton.addEventListener('click', () => {
+            const nextMonth = new Date(displayDate);
+            nextMonth.setMonth(nextMonth.getMonth() + 1);
+            this.renderCalendarMonth(container, nextMonth);
+        });
+    }
+    
+    private toggleCompletedInstance(dateStr: string): void {
+        if (this.completedInstancesChanges.has(dateStr)) {
+            this.completedInstancesChanges.delete(dateStr);
+        } else {
+            this.completedInstancesChanges.add(dateStr);
         }
     }
 
@@ -228,6 +386,19 @@ export class TaskEditModal extends TaskModal {
             
         if (this.recurrenceRule !== oldRecurrence) {
             changes.recurrence = this.recurrenceRule || undefined;
+        }
+
+        // Apply completed instances changes
+        if (this.completedInstancesChanges.size > 0) {
+            const currentCompleted = new Set(this.task.complete_instances || []);
+            this.completedInstancesChanges.forEach(dateStr => {
+                if (currentCompleted.has(dateStr)) {
+                    currentCompleted.delete(dateStr);
+                } else {
+                    currentCompleted.add(dateStr);
+                }
+            });
+            changes.complete_instances = Array.from(currentCompleted);
         }
 
         // Always update modified timestamp if there are changes
