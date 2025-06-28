@@ -437,7 +437,12 @@ export class AdvancedCalendarView extends ItemView {
             events: this.getCalendarEvents.bind(this)
         });
 
-        this.calendar.render();
+        // Defer rendering to next frame to avoid forced reflow during window transitions
+        requestAnimationFrame(() => {
+            if (this.calendar) {
+                this.calendar.render();
+            }
+        });
     }
 
     private saveViewPreferences(): void {
