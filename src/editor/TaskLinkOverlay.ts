@@ -67,8 +67,12 @@ export function createTaskLinkField(plugin: TaskNotesPlugin) {
                 // Check for task update effects
                 const hasTaskUpdateEffect = transaction.effects.some(effect => effect.is(taskUpdateEffect));
                 
-                // Rebuild decorations on document changes OR task update effects
-                if (transaction.docChanged || hasTaskUpdateEffect) {
+                // Check if selection (cursor position) has changed
+                const selectionChanged = transaction.selection || 
+                    (transaction.startState.selection.main.head !== transaction.state.selection.main.head);
+                
+                // Rebuild decorations on document changes, task update effects, OR selection changes
+                if (transaction.docChanged || hasTaskUpdateEffect || selectionChanged) {
                     // Clear active widgets cache on task updates to ensure fresh widgets are created
                     if (hasTaskUpdateEffect) {
                         // Get the specific task path that was updated
@@ -88,7 +92,7 @@ export function createTaskLinkField(plugin: TaskNotesPlugin) {
                     return buildTaskLinkDecorations(transaction.state, plugin, activeWidgets);
                 }
 
-                // For other transactions (cursor moves, etc.), just map the existing decorations
+                // For other transactions, just map the existing decorations
                 if (oldState !== Decoration.none) {
                     return oldState.map(transaction.changes);
                 }
@@ -106,7 +110,7 @@ export function createTaskLinkField(plugin: TaskNotesPlugin) {
     });
 }
 
-function buildTaskLinkDecorations(state: { doc: { toString(): string; length: number } }, plugin: TaskNotesPlugin, activeWidgets: Map<string, TaskLinkWidget>): DecorationSet {
+function buildTaskLinkDecorations(state: { doc: { toString(): string; length: number }; selection?: { main: { head: number; anchor: number } } }, plugin: TaskNotesPlugin, activeWidgets: Map<string, TaskLinkWidget>): DecorationSet {
     const builder = new RangeSetBuilder<Decoration>();
     
     // Validate inputs
@@ -162,6 +166,9 @@ function buildTaskLinkDecorations(state: { doc: { toString(): string; length: nu
             return builder.finish();
         }
         
+        // Get cursor position to check if it overlaps with any wikilinks
+        const cursorPos = state.selection?.main.head;
+        
         const wikilinks = detectionService.findWikilinks(text);
         
         // Validate wikilinks result
@@ -210,6 +217,12 @@ function buildTaskLinkDecorations(state: { doc: { toString(): string; length: nu
                     // Validate task info
                     if (!taskInfo.title || typeof taskInfo.title !== 'string') {
                         console.debug('Invalid task info for:', resolvedPath);
+                        continue;
+                    }
+                    
+                    // Check if cursor is within this wikilink range - if so, skip decoration to show plain text
+                    if (cursorPos !== undefined && cursorPos >= wikilink.start && cursorPos <= wikilink.end) {
+                        console.debug('Cursor is within wikilink range, skipping decoration to show plain text');
                         continue;
                     }
                     
