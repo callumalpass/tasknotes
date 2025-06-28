@@ -47,6 +47,8 @@ export class TaskListView extends ItemView {
             priorities: undefined,
             dateRange: undefined,
             showArchived: false,
+            showRecurrent: true,
+            showCompleted: false,
             sortKey: 'due',
             sortDirection: 'asc',
             groupKey: 'none'
@@ -244,6 +246,7 @@ export class TaskListView extends ItemView {
                 showSortBy: true,
                 showAdvancedFilters: true,
                 showDateRangePicker: true,
+                showShowDropdown: true,
                 allowedSortKeys: ['due', 'scheduled', 'priority', 'title'],
                 allowedGroupKeys: ['none', 'status', 'priority', 'context', 'due', 'scheduled']
             }
@@ -254,6 +257,27 @@ export class TaskListView extends ItemView {
         
         // Set up cache refresh mechanism for FilterBar
         this.filterBar.setupCacheRefresh(this.plugin.cacheManager, this.plugin.filterService);
+        
+        // Set up show options configuration
+        this.filterBar.setShowOptions([
+            { id: 'showArchived', label: 'Archived tasks', value: this.currentQuery.showArchived },
+            { id: 'showRecurrent', label: 'Recurrent tasks', value: this.currentQuery.showRecurrent ?? true },
+            { id: 'showCompleted', label: 'Completed tasks', value: this.currentQuery.showCompleted ?? false }
+        ], (optionId: keyof FilterQuery, enabled: boolean) => {
+            // Update the specific show option in the query
+            if (optionId === 'showArchived') {
+                this.currentQuery.showArchived = enabled;
+            } else if (optionId === 'showRecurrent') {
+                this.currentQuery.showRecurrent = enabled;
+            } else if (optionId === 'showCompleted') {
+                this.currentQuery.showCompleted = enabled;
+            }
+            
+            // Update the FilterBar with the new query
+            this.filterBar?.updateQuery(this.currentQuery);
+            
+            this.refreshTasks();
+        });
         
         // Listen for filter changes
         this.filterBar.on('queryChange', async (newQuery: FilterQuery) => {

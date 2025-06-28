@@ -325,6 +325,21 @@ export class FilterService extends EventEmitter {
             }
         }
 
+        // Show options filters
+        
+        // Show recurrent tasks filter
+        if (query.showRecurrent === false && task.recurrence) {
+            return false;
+        }
+        
+        // Show completed tasks filter
+        if (query.showCompleted === false) {
+            // Check if task is completed using StatusManager (user-defined completion statuses)
+            if (this.statusManager.isCompletedStatus(task.status) || task.completedDate) {
+                return false;
+            }
+        }
+
         return true;
     }
 

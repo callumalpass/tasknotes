@@ -4,7 +4,7 @@ import { TaskModal } from './TaskModal';
 import { TaskInfo } from '../types';
 import { getCurrentTimestamp } from '../utils/dateUtils';
 import { formatTimestampForDisplay } from '../utils/dateUtils';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, getDay, startOfWeek, endOfWeek } from 'date-fns';
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, startOfWeek, endOfWeek } from 'date-fns';
 import { generateRecurringInstances, extractTaskInfo } from '../utils/helpers';
 
 export interface TaskEditOptions {

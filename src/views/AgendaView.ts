@@ -23,8 +23,6 @@ export class AgendaView extends ItemView {
     // View settings
     private daysToShow = 7;
     private groupByDate = true;
-    private showOverdueOnToday = false;
-    private showNotes = true;
     private startDate: Date;
     
     // Filter system
@@ -48,6 +46,10 @@ export class AgendaView extends ItemView {
             priorities: undefined,
             dateRange: this.getDateRange(),
             showArchived: false,
+            showRecurrent: true,
+            showCompleted: false,
+            showNotes: true,
+            showOverdueOnToday: false,
             sortKey: 'scheduled',
             sortDirection: 'asc',
             groupKey: 'none' // Agenda groups by date internally
@@ -225,8 +227,23 @@ export class AgendaView extends ItemView {
                 showGroupBy: false, // Agenda groups by date internally
                 showSortBy: true,
                 showAdvancedFilters: true,
+                showShowDropdown: true, // Enable the new show dropdown
                 allowedSortKeys: ['due', 'scheduled', 'priority', 'title'],
-                allowedGroupKeys: ['none'] // Only none allowed since we group by date
+                allowedGroupKeys: ['none'], // Only none allowed since we group by date
+                customButtons: [
+                    {
+                        id: 'period-selector',
+                        onCreate: (container: HTMLElement) => {
+                            this.renderPeriodSelector(container);
+                        }
+                    },
+                    {
+                        id: 'today-button', 
+                        onCreate: (container: HTMLElement) => {
+                            this.renderTodayButton(container);
+                        }
+                    }
+                ]
             }
         );
         
@@ -236,6 +253,39 @@ export class AgendaView extends ItemView {
         // Set up cache refresh mechanism for FilterBar
         this.filterBar.setupCacheRefresh(this.plugin.cacheManager, this.plugin.filterService);
         
+        // Set up show options configuration
+        const showOptions: { id: keyof FilterQuery; label: string; value: boolean }[] = [
+            { id: 'showArchived', label: 'Archived tasks', value: this.currentQuery.showArchived },
+            { id: 'showRecurrent', label: 'Recurrent tasks', value: this.currentQuery.showRecurrent ?? true },
+            { id: 'showCompleted', label: 'Completed tasks', value: this.currentQuery.showCompleted ?? false },
+            { id: 'showOverdueOnToday', label: 'Overdue on today', value: this.currentQuery.showOverdueOnToday ?? false }
+        ];
+        
+        // Only add "Show notes" option if note indexing is enabled
+        if (!this.plugin.settings.disableNoteIndexing) {
+            showOptions.push({ id: 'showNotes', label: 'Show notes', value: this.currentQuery.showNotes ?? true });
+        }
+        
+        this.filterBar.setShowOptions(showOptions, (optionId: keyof FilterQuery, enabled: boolean) => {
+            // Update the specific show option in the query
+            if (optionId === 'showArchived') {
+                this.currentQuery.showArchived = enabled;
+            } else if (optionId === 'showRecurrent') {
+                this.currentQuery.showRecurrent = enabled;
+            } else if (optionId === 'showCompleted') {
+                this.currentQuery.showCompleted = enabled;
+            } else if (optionId === 'showNotes') {
+                this.currentQuery.showNotes = enabled;
+            } else if (optionId === 'showOverdueOnToday') {
+                this.currentQuery.showOverdueOnToday = enabled;
+            }
+            
+            // Update the FilterBar with the new query
+            this.filterBar?.updateQuery(this.currentQuery);
+            
+            this.refresh();
+        });
+        
         // Listen for filter changes
         this.filterBar.on('queryChange', async (newQuery: FilterQuery) => {
             this.currentQuery = newQuery;
@@ -244,14 +294,13 @@ export class AgendaView extends ItemView {
             await this.plugin.viewStateManager.setFilterState(AGENDA_VIEW_TYPE, queryToSave);
             this.refresh();
         });
-        
-        // Settings section with period selector, today button, and toggles
-        const settingsSection = controlsContainer.createDiv({ cls: 'agenda-view__settings' });
-        
-        // Left side: Period selector and Today button
-        const leftControls = settingsSection.createDiv({ cls: 'agenda-view__settings-left' });
-        
-        const periodSelect = leftControls.createEl('select', { cls: 'agenda-view__period-select' });
+    }
+    
+    /**
+     * Render period selector as custom button in FilterBar
+     */
+    private renderPeriodSelector(container: HTMLElement): void {
+        const periodSelect = container.createEl('select', { cls: 'agenda-view__period-select' });
         const periods = [
             { value: '7', text: '7 days' },
             { value: '14', text: '14 days' },
@@ -283,8 +332,13 @@ export class AgendaView extends ItemView {
             
             this.refresh();
         });
-        
-        const todayButton = leftControls.createEl('button', {
+    }
+    
+    /**
+     * Render today button as custom button in FilterBar
+     */
+    private renderTodayButton(container: HTMLElement): void {
+        const todayButton = container.createEl('button', {
             text: 'Today',
             cls: 'agenda-view__today-button'
         });
@@ -293,39 +347,6 @@ export class AgendaView extends ItemView {
             this.startDate = new Date();
             this.refresh();
         });
-        
-        // Right side: Toggles
-        const rightControls = settingsSection.createDiv({ cls: 'agenda-view__settings-right' });
-        
-        // Show overdue tasks toggle
-        const overdueToggle = rightControls.createEl('label', { cls: 'agenda-view__toggle' });
-        const overdueCheckbox = overdueToggle.createEl('input', { 
-            type: 'checkbox',
-            cls: 'agenda-view__toggle-checkbox'
-        });
-        overdueCheckbox.checked = this.showOverdueOnToday;
-        overdueToggle.createSpan({ text: 'Overdue on today' });
-        
-        overdueCheckbox.addEventListener('change', () => {
-            this.showOverdueOnToday = overdueCheckbox.checked;
-            this.refresh();
-        });
-        
-        // Show notes toggle (only show if note indexing is enabled)
-        if (!this.plugin.settings.disableNoteIndexing) {
-            const notesToggle = rightControls.createEl('label', { cls: 'agenda-view__toggle' });
-            const notesCheckbox = notesToggle.createEl('input', { 
-                type: 'checkbox',
-                cls: 'agenda-view__toggle-checkbox'
-            });
-            notesCheckbox.checked = this.showNotes;
-            notesToggle.createSpan({ text: 'Show notes' });
-            
-            notesCheckbox.addEventListener('change', () => {
-                this.showNotes = notesCheckbox.checked;
-                this.refresh();
-            });
-        }
     }
     
     /**
@@ -340,7 +361,7 @@ export class AgendaView extends ItemView {
      * Add notes to agenda data by fetching notes for each specific date
      */
     private async addNotesToAgendaData(agendaData: Array<{date: Date; tasks: TaskInfo[]}>): Promise<Array<{date: Date; tasks: TaskInfo[]; notes: NoteInfo[]}>> {
-        if (!this.showNotes || this.plugin.settings.disableNoteIndexing) {
+        if (!this.currentQuery.showNotes || this.plugin.settings.disableNoteIndexing) {
             return agendaData.map(dayData => ({ ...dayData, notes: [] }));
         }
 
@@ -372,11 +393,13 @@ export class AgendaView extends ItemView {
                     contexts: this.currentQuery.contexts,
                     priorities: this.currentQuery.priorities,
                     showArchived: this.currentQuery.showArchived,
+                    showRecurrent: this.currentQuery.showRecurrent,
+                    showCompleted: this.currentQuery.showCompleted,
                     sortKey: this.currentQuery.sortKey,
                     sortDirection: this.currentQuery.sortDirection,
                     groupKey: this.currentQuery.groupKey
                 },
-                this.showOverdueOnToday
+                this.currentQuery.showOverdueOnToday
             );
             
             // Get notes separately and add them to the agenda data

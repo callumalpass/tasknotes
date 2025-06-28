@@ -388,6 +388,106 @@
 }
 
 /* =================================================================
+   FILTER BAR SHOW OPTIONS SUB-COMPONENT
+   ================================================================= */
+
+/* Show options component (like view options but unified) */
+.tasknotes-plugin .filter-bar__show-options {
+    display: flex;
+    align-items: center;
+    gap: var(--tn-spacing-xs);
+    position: relative;
+}
+
+/* Show options button */
+.tasknotes-plugin .filter-bar__show-options-btn {
+    padding: 6px 12px;
+    border: 1px solid var(--tn-border-color);
+    border-radius: var(--tn-radius-sm);
+    background: var(--tn-bg-primary);
+    color: var(--tn-text-normal);
+    font-size: var(--tn-font-size-sm);
+    cursor: pointer;
+    transition: border-color var(--tn-transition-fast), background-color var(--tn-transition-fast);
+    white-space: nowrap;
+    box-shadow: none;
+    min-width: 100px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--tn-spacing-xs);
+}
+
+.tasknotes-plugin .filter-bar__show-options-btn::after {
+    content: '▼';
+    font-size: 0.7rem;
+    color: var(--tn-text-muted);
+    flex-shrink: 0;
+}
+
+.tasknotes-plugin .filter-bar__show-options-btn:hover {
+    background: var(--tn-interactive-hover);
+}
+
+.tasknotes-plugin .filter-bar__show-options-btn:focus {
+    outline: none;
+    border-color: var(--tn-interactive-accent);
+    box-shadow: none;
+}
+
+/* Show options dropdown menu */
+.tasknotes-plugin .filter-bar__show-options-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 1000;
+    min-width: 200px;
+    background: var(--tn-bg-primary);
+    border: 1px solid var(--tn-border-color);
+    border-radius: var(--tn-radius-sm);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    padding: var(--tn-spacing-xs) 0;
+    margin-top: 2px;
+    animation: slideDown 0.15s ease-out;
+}
+
+.tasknotes-plugin .filter-bar__show-options-menu--hidden {
+    display: none;
+}
+
+/* Individual show option */
+.tasknotes-plugin .filter-bar__show-option {
+    display: block;
+    margin: 0;
+    cursor: pointer;
+}
+
+.tasknotes-plugin .filter-bar__show-option:hover {
+    background: var(--tn-interactive-hover);
+}
+
+.tasknotes-plugin .filter-bar__show-option-label {
+    display: flex;
+    align-items: center;
+    gap: var(--tn-spacing-sm);
+    padding: var(--tn-spacing-xs) var(--tn-spacing-sm);
+    cursor: pointer;
+    font-size: var(--tn-font-size-sm);
+    color: var(--tn-text-normal);
+    user-select: none;
+    width: 100%;
+    margin: 0;
+    border: none;
+    background: none;
+}
+
+.tasknotes-plugin .filter-bar__show-option-checkbox {
+    margin: 0;
+    flex-shrink: 0;
+}
+
+/* =================================================================
    FILTER BAR ADVANCED PANEL SUB-COMPONENT
    ================================================================= */
 
@@ -602,6 +702,7 @@
     
     .tasknotes-plugin .filter-bar__sort,
     .tasknotes-plugin .filter-bar__group,
+    .tasknotes-plugin .filter-bar__show-options,
     .tasknotes-plugin .filter-bar__view-options {
         width: 100%;
         justify-content: space-between;
@@ -652,6 +753,7 @@
     
     .tasknotes-plugin .filter-bar__sort,
     .tasknotes-plugin .filter-bar__group,
+    .tasknotes-plugin .filter-bar__show-options,
     .tasknotes-plugin .filter-bar__view-options {
         flex-direction: column;
         align-items: stretch;
@@ -659,7 +761,8 @@
         width: 100%;
     }
     
-    /* On mobile, make view options dropdown full width */
+    /* On mobile, make dropdowns full width */
+    .tasknotes-plugin .filter-bar__show-options-menu,
     .tasknotes-plugin .filter-bar__view-options-menu {
         left: 0;
         right: 0;
@@ -714,8 +817,12 @@
     .tasknotes-plugin .filter-bar__search-input,
     .tasknotes-plugin .filter-bar__sort-direction,
     .tasknotes-plugin .filter-bar__advanced-toggle,
+    .tasknotes-plugin .filter-bar__show-options-btn,
+    .tasknotes-plugin .filter-bar__view-options-btn,
     .tasknotes-plugin .filter-bar__date-input,
-    .tasknotes-plugin .filter-bar__date-clear {
+    .tasknotes-plugin .filter-bar__date-clear,
+    .tasknotes-plugin .filter-bar__right-buttons .agenda-view__period-select,
+    .tasknotes-plugin .filter-bar__right-buttons .agenda-view__today-button {
         min-height: 44px;
         padding-top: var(--tn-spacing-sm);
         padding-bottom: var(--tn-spacing-sm);
@@ -743,8 +850,62 @@
     .tasknotes-plugin .filter-bar__search-input,
     .tasknotes-plugin .filter-bar__sort-direction,
     .tasknotes-plugin .filter-bar__advanced-toggle,
+    .tasknotes-plugin .filter-bar__show-options-btn,
+    .tasknotes-plugin .filter-bar__view-options-btn,
     .tasknotes-plugin .filter-bar__date-input,
-    .tasknotes-plugin .filter-bar__date-clear {
+    .tasknotes-plugin .filter-bar__date-clear,
+    .tasknotes-plugin .filter-bar__right-buttons .agenda-view__period-select,
+    .tasknotes-plugin .filter-bar__right-buttons .agenda-view__today-button {
         transition: none;
     }
+}
+
+/* =================================================================
+   AGENDA VIEW CUSTOM BUTTONS IN FILTER BAR
+   ================================================================= */
+
+/* Period selector styling when used as custom button in FilterBar */
+.tasknotes-plugin .filter-bar__right-buttons .agenda-view__period-select {
+    padding: 6px 12px;
+    border: 1px solid var(--tn-border-color);
+    border-radius: var(--tn-radius-sm);
+    background: var(--tn-bg-primary);
+    color: var(--tn-text-normal);
+    font-size: var(--tn-font-size-sm);
+    cursor: pointer;
+    transition: border-color var(--tn-transition-fast), background-color var(--tn-transition-fast);
+    min-width: 100px;
+    margin-left: var(--tn-spacing-xs);
+}
+
+.tasknotes-plugin .filter-bar__right-buttons .agenda-view__period-select:hover {
+    background: var(--tn-interactive-hover);
+}
+
+.tasknotes-plugin .filter-bar__right-buttons .agenda-view__period-select:focus {
+    outline: none;
+    border-color: var(--tn-interactive-accent);
+}
+
+/* Today button styling when used as custom button in FilterBar */
+.tasknotes-plugin .filter-bar__right-buttons .agenda-view__today-button {
+    padding: 6px 12px;
+    border: 1px solid var(--tn-border-color);
+    border-radius: var(--tn-radius-sm);
+    background: var(--tn-bg-primary);
+    color: var(--tn-text-normal);
+    font-size: var(--tn-font-size-sm);
+    cursor: pointer;
+    transition: border-color var(--tn-transition-fast), background-color var(--tn-transition-fast);
+    white-space: nowrap;
+    margin-left: var(--tn-spacing-xs);
+}
+
+.tasknotes-plugin .filter-bar__right-buttons .agenda-view__today-button:hover {
+    background: var(--tn-interactive-hover);
+}
+
+.tasknotes-plugin .filter-bar__right-buttons .agenda-view__today-button:focus {
+    outline: none;
+    border-color: var(--tn-interactive-accent);
 }

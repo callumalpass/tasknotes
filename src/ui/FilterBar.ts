@@ -32,6 +32,12 @@ export class FilterBar extends EventEmitter {
     private viewOptionsButton?: HTMLButtonElement;
     private viewOptionsConfig?: { id: string; label: string; value: boolean }[];
     private viewOptionsCallback?: (optionId: string, enabled: boolean) => void;
+    
+    // Show dropdown elements (new unified dropdown)
+    private showDropdown?: HTMLElement;
+    private showButton?: HTMLButtonElement;
+    private showDropdownConfig?: { id: keyof FilterQuery; label: string; value: boolean }[];
+    private showDropdownCallback?: (optionId: keyof FilterQuery, enabled: boolean) => void;
 
     constructor(
         container: HTMLElement,
@@ -50,6 +56,7 @@ export class FilterBar extends EventEmitter {
             showAdvancedFilters: true,
             showDateRangePicker: false, // Default to false to avoid breaking existing views
             showViewOptions: false, // Default to false to avoid breaking existing views
+            showShowDropdown: false, // Default to false to avoid breaking existing views
             allowedSortKeys: ['due', 'priority', 'title'],
             allowedGroupKeys: ['none', 'status', 'priority', 'context', 'due'],
             ...config
@@ -151,6 +158,10 @@ export class FilterBar extends EventEmitter {
 
         if (this.config.showGroupBy) {
             this.renderGroupControls(controlsLeft);
+        }
+        
+        if (this.config.showShowDropdown) {
+            this.renderShowDropdownControls(controlsLeft);
         }
         
         if (this.config.showViewOptions) {
@@ -410,8 +421,10 @@ export class FilterBar extends EventEmitter {
             this.renderDateRangeFilter();
         }
 
-        // Archived toggle (after date range)
-        this.renderArchivedToggle();
+        // Archived toggle (after date range) - only if not using show dropdown
+        if (!this.config.showShowDropdown) {
+            this.renderArchivedToggle();
+        }
     }
 
     /**
@@ -633,8 +646,39 @@ export class FilterBar extends EventEmitter {
             this.archivedToggle.checked = this.currentQuery.showArchived;
         }
 
+        // Update show dropdown checkboxes
+        this.updateShowDropdownCheckboxes();
+
         this.updateSortDirectionButton();
         this.updateActiveFiltersIndicator();
+    }
+
+    /**
+     * Update show dropdown checkboxes to reflect current query
+     */
+    private updateShowDropdownCheckboxes(): void {
+        if (!this.showDropdown || !this.showDropdownConfig) return;
+
+        // Update checkboxes based on current query values
+        this.showDropdownConfig.forEach(option => {
+            const checkbox = this.showDropdown!.querySelector(`input[data-option-id="${option.id}"]`) as HTMLInputElement;
+            if (checkbox) {
+                // Get the current value from the query (only for show options which are boolean)
+                const currentValue = this.currentQuery[option.id] as boolean | undefined;
+                
+                // Set checkbox state based on current query value
+                if (option.id === 'showRecurrent') {
+                    checkbox.checked = currentValue ?? true;
+                } else if (option.id === 'showNotes') {
+                    checkbox.checked = currentValue ?? true;
+                } else {
+                    checkbox.checked = currentValue ?? false;
+                }
+            }
+        });
+
+        // Update the button text
+        this.updateShowButtonText();
     }
 
     /**
@@ -662,6 +706,12 @@ export class FilterBar extends EventEmitter {
         if (this.currentQuery.contexts && this.currentQuery.contexts.length > 0) activeCount++;
         if (this.currentQuery.showArchived) activeCount++;
         if (this.currentQuery.dateRange) activeCount++;
+        
+        // Count show options (only if not default values)
+        if (this.currentQuery.showRecurrent) activeCount++;
+        if (this.currentQuery.showCompleted) activeCount++;
+        if (this.currentQuery.showNotes) activeCount++;
+        if (this.currentQuery.showOverdueOnToday) activeCount++;
 
         if (activeCount > 0) {
             this.activeFiltersIndicator.textContent = `${activeCount}`;
@@ -936,13 +986,16 @@ export class FilterBar extends EventEmitter {
             
             // Allow clicking anywhere on the option to toggle
             optionContainer.addEventListener('click', (e) => {
-                if (e.target !== checkbox) {
-                    checkbox.checked = !checkbox.checked;
-                    if (this.viewOptionsCallback) {
-                        this.viewOptionsCallback(option.id, checkbox.checked);
-                    }
-                    this.updateViewOptionsButtonText();
+                // Prevent double-toggle when clicking directly on the checkbox
+                if (e.target === checkbox) {
+                    return;
                 }
+                
+                // Toggle the checkbox
+                checkbox.checked = !checkbox.checked;
+                
+                // Trigger the change event
+                checkbox.dispatchEvent(new Event('change'));
             });
         });
         
@@ -968,6 +1021,144 @@ export class FilterBar extends EventEmitter {
             this.viewOptionsButton.textContent = `Options (${shortLabel})`;
         } else {
             this.viewOptionsButton.textContent = `Options (${activeOptions.length} selected)`;
+        }
+    }
+
+    /**
+     * Render show dropdown controls
+     */
+    private renderShowDropdownControls(parent: HTMLElement): void {
+        const showContainer = parent.createDiv('filter-bar__show-options');
+        
+        showContainer.createSpan({ text: 'Show:', cls: 'filter-bar__label' });
+        
+        // Create dropdown button
+        this.showButton = showContainer.createEl('button', {
+            text: 'Options',
+            cls: 'filter-bar__show-options-btn'
+        });
+        
+        // Create dropdown menu (initially hidden)
+        this.showDropdown = showContainer.createDiv({ 
+            cls: 'filter-bar__show-options-menu filter-bar__show-options-menu--hidden' 
+        });
+        
+        // Toggle dropdown on button click
+        this.showButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isHidden = this.showDropdown!.classList.contains('filter-bar__show-options-menu--hidden');
+            if (isHidden) {
+                this.showDropdown!.classList.remove('filter-bar__show-options-menu--hidden');
+            } else {
+                this.showDropdown!.classList.add('filter-bar__show-options-menu--hidden');
+            }
+        });
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (showContainer && !showContainer.contains(e.target as Node)) {
+                this.showDropdown?.classList.add('filter-bar__show-options-menu--hidden');
+            }
+        });
+        
+        // Initial update
+        this.updateShowDropdown();
+    }
+    
+    /**
+     * Update show dropdown with current config
+     */
+    private updateShowDropdown(): void {
+        if (!this.showDropdown || !this.showDropdownConfig) return;
+        
+        this.showDropdown.empty();
+        
+        // Create checkboxes for each option
+        this.showDropdownConfig.forEach(option => {
+            const optionContainer = this.showDropdown!.createDiv({ cls: 'filter-bar__show-option' });
+            
+            const label = optionContainer.createEl('label', {
+                cls: 'filter-bar__show-option-label'
+            });
+
+            const checkbox = label.createEl('input', {
+                type: 'checkbox',
+                cls: 'filter-bar__show-option-checkbox'
+            });
+            checkbox.setAttribute('data-option-id', option.id);
+            checkbox.checked = option.value;
+            
+            label.createSpan({ text: option.label });
+            
+            checkbox.addEventListener('change', () => {
+                // Update the config value to match checkbox state
+                option.value = checkbox.checked;
+                
+                if (this.showDropdownCallback) {
+                    this.showDropdownCallback(option.id, checkbox.checked);
+                }
+                this.updateShowButtonText();
+            });
+            
+            // Allow clicking anywhere on the option to toggle
+            optionContainer.addEventListener('click', (e) => {
+                // Prevent double-toggle when clicking directly on the checkbox
+                if (e.target === checkbox) {
+                    return;
+                }
+                
+                // Toggle the checkbox
+                checkbox.checked = !checkbox.checked;
+                
+                // Trigger the change event
+                checkbox.dispatchEvent(new Event('change'));
+            });
+        });
+        
+        this.updateShowButtonText();
+    }
+    
+    /**
+     * Update show dropdown button text based on active options
+     */
+    private updateShowButtonText(): void {
+        if (!this.showButton || !this.showDropdownConfig) return;
+        
+        // Get active options by checking actual checkbox states
+        const activeOptions = this.showDropdownConfig.filter(option => {
+            const checkbox = this.showDropdown?.querySelector(`input[data-option-id="${option.id}"]`) as HTMLInputElement;
+            return checkbox?.checked || false;
+        });
+        
+        if (activeOptions.length === 0) {
+            this.showButton.textContent = 'Show (None)';
+        } else if (activeOptions.length === 1) {
+            // Shorten common labels for button display
+            const shortLabel = activeOptions[0].label
+                .replace('Archived tasks', 'Archived')
+                .replace('Recurrent tasks', 'Recurrent')
+                .replace('Completed tasks', 'Completed')
+                .replace('Show notes', 'Notes')
+                .replace('Overdue on today', 'Overdue');
+            this.showButton.textContent = `Show (${shortLabel})`;
+        } else {
+            this.showButton.textContent = `Show (${activeOptions.length} selected)`;
+        }
+    }
+    
+    /**
+     * Set up show dropdown configuration
+     */
+    setShowOptions(
+        options: { id: keyof FilterQuery; label: string; value: boolean }[],
+        callback: (optionId: keyof FilterQuery, enabled: boolean) => void
+    ): void {
+        this.showDropdownConfig = options;
+        this.showDropdownCallback = callback;
+        
+        // Update the dropdown if it exists
+        if (this.showDropdown) {
+            this.updateShowDropdown();
         }
     }
 

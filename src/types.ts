@@ -47,6 +47,12 @@ export interface FilterQuery {
 	includeOverdue?: boolean; // Include overdue tasks in addition to date range
 	showArchived: boolean;
 	
+	// Show options (moved from view-specific settings)
+	showRecurrent?: boolean;
+	showCompleted?: boolean;
+	showNotes?: boolean; // For agenda view
+	showOverdueOnToday?: boolean; // For agenda view
+	
 	// Sorting
 	sortKey: TaskSortKey;
 	sortDirection: SortDirection;
@@ -61,7 +67,8 @@ export interface FilterBarConfig {
 	showSortBy?: boolean;
 	showAdvancedFilters?: boolean;
 	showDateRangePicker?: boolean;
-	showViewOptions?: boolean;
+	showViewOptions?: boolean; // Legacy calendar view options
+	showShowDropdown?: boolean; // New unified show dropdown
 	allowedSortKeys?: TaskSortKey[];
 	allowedGroupKeys?: TaskGroupKey[];
 	customButtons?: Array<{
