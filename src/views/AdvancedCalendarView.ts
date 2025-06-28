@@ -74,6 +74,10 @@ export class AdvancedCalendarView extends ItemView {
     private listeners: EventRef[] = [];
     private functionListeners: (() => void)[] = [];
     
+    // Resize handling
+    private resizeObserver: ResizeObserver | null = null;
+    private resizeTimeout: number | null = null;
+    
     // Filter system
     private filterBar: FilterBar | null = null;
     private currentQuery: FilterQuery;
@@ -441,6 +445,8 @@ export class AdvancedCalendarView extends ItemView {
         requestAnimationFrame(() => {
             if (this.calendar) {
                 this.calendar.render();
+                // Set up resize handling after initial render
+                this.setupResizeHandling();
             }
         });
     }
@@ -456,6 +462,49 @@ export class AdvancedCalendarView extends ItemView {
             headerCollapsed: this.headerCollapsed
         };
         this.plugin.viewStateManager.setViewPreferences(ADVANCED_CALENDAR_VIEW_TYPE, preferences);
+    }
+
+    private setupResizeHandling(): void {
+        if (!this.calendar) return;
+
+        // Debounced resize handler to prevent excessive updates
+        const debouncedResize = () => {
+            if (this.resizeTimeout) {
+                window.clearTimeout(this.resizeTimeout);
+            }
+            this.resizeTimeout = window.setTimeout(() => {
+                if (this.calendar) {
+                    this.calendar.updateSize();
+                }
+            }, 150);
+        };
+
+        // Use ResizeObserver to detect container size changes
+        if (window.ResizeObserver) {
+            this.resizeObserver = new ResizeObserver(debouncedResize);
+            const calendarContainer = this.contentEl.querySelector('.advanced-calendar-view__calendar-container');
+            if (calendarContainer) {
+                this.resizeObserver.observe(calendarContainer);
+            }
+        }
+
+        // Also listen for workspace layout changes (Obsidian-specific)
+        const layoutChangeListener = this.plugin.app.workspace.on('layout-change', debouncedResize);
+        this.listeners.push(layoutChangeListener);
+
+        // Listen for window resize as fallback
+        const windowResizeListener = () => debouncedResize();
+        window.addEventListener('resize', windowResizeListener);
+        this.functionListeners.push(() => window.removeEventListener('resize', windowResizeListener));
+
+        // Listen for active leaf changes that might affect calendar size
+        const activeLeafListener = this.plugin.app.workspace.on('active-leaf-change', (leaf) => {
+            if (leaf === this.leaf) {
+                // Small delay to ensure layout is settled
+                setTimeout(debouncedResize, 100);
+            }
+        });
+        this.listeners.push(activeLeafListener);
     }
 
     private getSlotLabelInterval(slotDuration: string): string {
@@ -1420,6 +1469,17 @@ export class AdvancedCalendarView extends ItemView {
     }
 
     async onClose() {
+        // Clean up resize handling
+        if (this.resizeObserver) {
+            this.resizeObserver.disconnect();
+            this.resizeObserver = null;
+        }
+        
+        if (this.resizeTimeout) {
+            window.clearTimeout(this.resizeTimeout);
+            this.resizeTimeout = null;
+        }
+        
         // Remove event listeners
         this.listeners.forEach(listener => this.plugin.emitter.offref(listener));
         this.functionListeners.forEach(unsubscribe => unsubscribe());
