@@ -452,8 +452,13 @@
    RECURRING CALENDAR COMPONENT - BEM & MINIMALIST
    ===================================================================== */
 
+.tasknotes-plugin .metadata-item--calendar {
+    flex-direction: column;
+    align-items: flex-start;
+}
+
 .tasknotes-plugin .recurring-calendar {
-    margin-left: var(--size-4-2);
+    margin-top: var(--size-4-1);
     font-size: var(--font-ui-small);
 }
 

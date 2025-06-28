@@ -181,9 +181,13 @@ export class TaskEditModal extends TaskModal {
     }
 
     private createRecurringCalendar(container: HTMLElement): void {
-        const calendarDiv = container.createDiv('metadata-item');
-        calendarDiv.createSpan('metadata-key').textContent = 'Completions: ';
+        const calendarDiv = container.createDiv('metadata-item metadata-item--calendar');
         
+        // Label on its own line
+        const labelDiv = calendarDiv.createDiv('metadata-key');
+        labelDiv.textContent = 'Completions:';
+        
+        // Calendar on separate line
         this.calendarWrapper = calendarDiv.createDiv('recurring-calendar');
         
         // Show current month by default, or the month with most recent completions
