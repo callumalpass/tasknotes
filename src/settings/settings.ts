@@ -630,7 +630,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 			.addText(text => {
 				text.inputEl.setAttribute('aria-label', 'Default contexts for new tasks');
 				return text
-					.setPlaceholder('@work, @personal')
+					.setPlaceholder('work, personal')
 					.setValue(this.plugin.settings.taskCreationDefaults.defaultContexts)
 					.onChange(async (value) => {
 						this.plugin.settings.taskCreationDefaults.defaultContexts = value;
@@ -644,7 +644,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 			.addText(text => {
 				text.inputEl.setAttribute('aria-label', 'Default tags for new tasks');
 				return text
-					.setPlaceholder('#project, #urgent')
+					.setPlaceholder('project, urgent')
 					.setValue(this.plugin.settings.taskCreationDefaults.defaultTags)
 					.onChange(async (value) => {
 						this.plugin.settings.taskCreationDefaults.defaultTags = value;
