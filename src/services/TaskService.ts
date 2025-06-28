@@ -2,16 +2,11 @@ import { TFile, Notice, normalizePath, stringifyYaml } from 'obsidian';
 import { format } from 'date-fns';
 // YAML not needed in this service
 import TaskNotesPlugin from '../main';
-import { TaskInfo, TimeEntry, EVENT_TASK_UPDATED, EVENT_TASK_DELETED } from '../types';
+import { TaskInfo, TimeEntry, EVENT_TASK_UPDATED, EVENT_TASK_DELETED, TaskCreationData } from '../types';
 import { getCurrentTimestamp, getCurrentDateString } from '../utils/dateUtils';
 import { generateTaskFilename, generateUniqueFilename, FilenameContext } from '../utils/filenameGenerator';
 import { ensureFolderExists } from '../utils/helpers';
 import { processTemplate, mergeTemplateFrontmatter, TemplateData } from '../utils/templateProcessor';
-
-export interface TaskCreationData extends Partial<TaskInfo> {
-    details?: string; // Optional details/description for file content
-    parentNote?: string; // Optional parent note name/path for template variable
-}
 
 export class TaskService {
     constructor(private plugin: TaskNotesPlugin) {}
@@ -59,9 +54,23 @@ export class TaskService {
 
             const baseFilename = generateTaskFilename(filenameContext, this.plugin.settings);
             
-            // Use default folder from task creation defaults if specified, otherwise use general tasks folder
-            const defaultFolder = this.plugin.settings.taskCreationDefaults.defaultFolder;
-            const folder = (defaultFolder && defaultFolder.trim()) ? defaultFolder.trim() : this.plugin.settings.tasksFolder || '';
+            // Determine folder based on creation context
+            let folder = '';
+            if (taskData.creationContext === 'inline-conversion') {
+                // For inline conversion, use the inline task folder setting with variable support
+                const inlineFolder = this.plugin.settings.inlineTaskConvertFolder || '';
+                if (inlineFolder.includes('{{currentNotePath}}')) {
+                    // Get current file's folder path
+                    const currentFile = this.plugin.app.workspace.getActiveFile();
+                    const currentFolderPath = currentFile?.parent?.path || '';
+                    folder = inlineFolder.replace(/\{\{currentNotePath\}\}/g, currentFolderPath);
+                } else {
+                    folder = inlineFolder;
+                }
+            } else {
+                // For manual creation and other contexts, use the general tasks folder
+                folder = this.plugin.settings.tasksFolder || '';
+            }
             
             // Ensure folder exists
             if (folder) {

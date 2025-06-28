@@ -37,6 +37,8 @@ export interface TaskNotesSettings {
 	useDefaultsOnInstantConvert: boolean;
 	enableNaturalLanguageInput: boolean;
 	nlpDefaultToScheduled: boolean;
+	// Inline task conversion settings
+	inlineTaskConvertFolder: string; // Folder for inline task conversion, supports {{currentNotePath}}
 	// Performance settings
 	disableNoteIndexing: boolean;
 	// Customization settings
@@ -53,7 +55,6 @@ export interface TaskCreationDefaults {
 	defaultTags: string;      // Comma-separated list
 	defaultTimeEstimate: number; // minutes, 0 = no default
 	defaultRecurrence: 'none' | 'daily' | 'weekly' | 'monthly' | 'yearly';
-	defaultFolder: string;    // Override default tasks folder for new tasks
 	// Date defaults
 	defaultDueDate: 'none' | 'today' | 'tomorrow' | 'next-week';
 	defaultScheduledDate: 'none' | 'today' | 'tomorrow' | 'next-week';
@@ -185,7 +186,6 @@ export const DEFAULT_TASK_CREATION_DEFAULTS: TaskCreationDefaults = {
 	defaultTags: '',
 	defaultTimeEstimate: 0,
 	defaultRecurrence: 'none',
-	defaultFolder: '',
 	defaultDueDate: 'none',
 	defaultScheduledDate: 'today',
 	bodyTemplate: '',
@@ -254,6 +254,8 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	useDefaultsOnInstantConvert: true,
 	enableNaturalLanguageInput: true,
 	nlpDefaultToScheduled: true,
+	// Inline task conversion defaults
+	inlineTaskConvertFolder: '{{currentNotePath}}',
 	// Performance defaults
 	disableNoteIndexing: false,
 	// Customization defaults
@@ -442,6 +444,19 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 					});
 			});
 
+		new Setting(container)
+			.setName('Inline task folder')
+			.setDesc('Folder for converted inline tasks. Use {{currentNotePath}} to place tasks in the same folder as the note.')
+			.addText(text => {
+				text.inputEl.setAttribute('aria-label', 'Folder for inline task conversion');
+				return text
+					.setPlaceholder('{{currentNotePath}}')
+					.setValue(this.plugin.settings.inlineTaskConvertFolder)
+					.onChange(async (value) => {
+						this.plugin.settings.inlineTaskConvertFolder = value;
+						await this.plugin.saveSettings();
+					});
+			});
 
 		// Help section
 		const helpContainer = container.createDiv('settings-help-section');
@@ -666,20 +681,6 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 					.setValue(this.plugin.settings.taskCreationDefaults.defaultRecurrence)
 					.onChange(async (value: any) => {
 						this.plugin.settings.taskCreationDefaults.defaultRecurrence = value;
-						await this.plugin.saveSettings();
-					});
-			});
-
-		new Setting(container)
-			.setName('Default folder')
-			.setDesc('Override default tasks folder for new tasks (leave empty to use general tasks folder)')
-			.addText(text => {
-				text.inputEl.setAttribute('aria-label', 'Default folder for new tasks');
-				return text
-					.setPlaceholder('TaskNotes/Projects')
-					.setValue(this.plugin.settings.taskCreationDefaults.defaultFolder)
-					.onChange(async (value) => {
-						this.plugin.settings.taskCreationDefaults.defaultFolder = value;
 						await this.plugin.saveSettings();
 					});
 			});

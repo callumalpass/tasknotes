@@ -109,7 +109,7 @@ export interface TaskInfo {
 export interface TaskCreationData extends Partial<TaskInfo> {
     details?: string; // Optional details/description for file content
     parentNote?: string; // Optional parent note name/path for template variable
-    folder?: string; // Optional folder path for task file creation
+    creationContext?: 'inline-conversion' | 'manual-creation' | 'api' | 'import'; // Context for folder determination
 }
 
 export interface TimeEntry {

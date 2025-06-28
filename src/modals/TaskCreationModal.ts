@@ -343,6 +343,7 @@ export class TaskCreationModal extends TaskModal {
             tags: tagList.length > 0 ? tagList : undefined,
             timeEstimate: this.timeEstimate > 0 ? this.timeEstimate : undefined,
             recurrence: this.recurrenceRule || undefined,
+            creationContext: 'manual-creation', // Mark as manual creation for folder logic
             dateCreated: now,
             dateModified: now
         };

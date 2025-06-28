@@ -41,9 +41,7 @@ import {
     generateRecurringInstances,
     extractTimeblocksFromNote,
     timeblockToCalendarEvent,
-    updateTimeblockInDailyNote,
-    calculateDuration,
-    formatTime
+    updateTimeblockInDailyNote
 } from '../utils/helpers';
 
 interface CalendarEvent {

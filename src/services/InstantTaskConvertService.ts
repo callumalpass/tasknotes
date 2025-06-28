@@ -1,7 +1,8 @@
 import { Editor, TFile, Notice, EditorPosition } from 'obsidian';
 import TaskNotesPlugin from '../main';
 import { TasksPluginParser, ParsedTaskData } from '../utils/TasksPluginParser';
-import { NaturalLanguageParser, ParsedTaskData as NLParsedTaskData } from './NaturalLanguageParser';
+import { NaturalLanguageParser } from './NaturalLanguageParser';
+import { TaskCreationData } from '../types';
 import { getCurrentTimestamp } from '../utils/dateUtils';
 import { calculateDefaultDate } from '../utils/helpers';
 import { StatusManager } from './StatusManager';
@@ -315,7 +316,7 @@ export class InstantTaskConvertService {
         }
 
         // Create TaskCreationData object with all the data
-        const taskData: import('./TaskService').TaskCreationData = {
+        const taskData: TaskCreationData = {
             title: title,
             status: status,
             priority: priority,
@@ -327,6 +328,7 @@ export class InstantTaskConvertService {
             recurrence: recurrence,
             details: details, // Use provided details from selection
             parentNote: parentNote, // Include parent note for template variable
+            creationContext: 'inline-conversion', // Mark as inline conversion for folder logic
             dateCreated: getCurrentTimestamp(),
             dateModified: getCurrentTimestamp()
         };
