@@ -1,6 +1,7 @@
 import { Editor, TFile, Notice, EditorPosition } from 'obsidian';
 import TaskNotesPlugin from '../main';
 import { TasksPluginParser, ParsedTaskData } from '../utils/TasksPluginParser';
+import { NaturalLanguageParser, ParsedTaskData as NLParsedTaskData } from './NaturalLanguageParser';
 import { getCurrentTimestamp } from '../utils/dateUtils';
 import { calculateDefaultDate } from '../utils/helpers';
 import { StatusManager } from './StatusManager';
@@ -11,6 +12,7 @@ export class InstantTaskConvertService {
     private plugin: TaskNotesPlugin;
     private statusManager: StatusManager;
     private priorityManager: PriorityManager;
+    private nlParser: NaturalLanguageParser;
 
     constructor(
         plugin: TaskNotesPlugin,
@@ -20,6 +22,11 @@ export class InstantTaskConvertService {
         this.plugin = plugin;
         this.statusManager = statusManager;
         this.priorityManager = priorityManager;
+        this.nlParser = new NaturalLanguageParser(
+            plugin.settings.customStatuses,
+            plugin.settings.customPriorities,
+            plugin.settings.nlpDefaultToScheduled
+        );
     }
 
     /**
@@ -41,7 +48,9 @@ export class InstantTaskConvertService {
             const details = selectionInfo.details;
             
             
-            // Parse the current line for Tasks plugin format
+            // Parse the current line for Tasks plugin format, with NLP fallback
+            let parsedData: ParsedTaskData;
+            
             const taskLineInfo = TasksPluginParser.parseTaskLine(currentLine);
             
             if (!taskLineInfo.isTaskLine) {
@@ -49,28 +58,38 @@ export class InstantTaskConvertService {
                 return;
             }
             
-            if (taskLineInfo.error) {
-                new Notice(`Error parsing task: ${taskLineInfo.error}`);
+            if (taskLineInfo.error || !taskLineInfo.parsedData) {
+                new Notice(`Error parsing task: ${taskLineInfo.error || 'No data extracted'}`);
                 return;
             }
             
-            if (!taskLineInfo.parsedData) {
-                new Notice('Failed to parse task data from current line.');
-                return;
+            // Check if Tasks plugin parsing was sufficient (has meaningful metadata)
+            const hasMetadata = this.hasUsefulMetadata(taskLineInfo.parsedData);
+            
+            if (!hasMetadata && this.plugin.settings.enableNaturalLanguageInput) {
+                // Fallback to NLP if Tasks plugin parsing only extracted basic title
+                const nlpResult = this.tryNLPFallback(currentLine, details || '');
+                if (nlpResult) {
+                    parsedData = nlpResult;
+                } else {
+                    parsedData = taskLineInfo.parsedData;
+                }
+            } else {
+                parsedData = taskLineInfo.parsedData;
             }
 
-            // Validate task data before proceeding
-            const taskValidation = this.validateTaskData(taskLineInfo.parsedData);
+            // Validate final parsed data before proceeding
+            const taskValidation = this.validateTaskData(parsedData);
             if (!taskValidation.isValid) {
                 new Notice(taskValidation.error || 'Invalid task data.');
                 return;
             }
 
             // Create the task file with default settings and details
-            const file = await this.createTaskFile(taskLineInfo.parsedData, details);
+            const file = await this.createTaskFile(parsedData, details);
             
             // Replace the original line(s) with a link (includes race condition protection)
-            const replaceResult = await this.replaceOriginalTaskLines(editor, selectionInfo, file, taskLineInfo.parsedData.title);
+            const replaceResult = await this.replaceOriginalTaskLines(editor, selectionInfo, file, parsedData.title);
             
             if (!replaceResult.success) {
                 new Notice(replaceResult.error || 'Failed to replace task line.');
@@ -83,7 +102,7 @@ export class InstantTaskConvertService {
                 return;
             }
             
-            new Notice(`Task converted: ${taskLineInfo.parsedData.title}`);
+            new Notice(`Task converted: ${parsedData.title}`);
             
             // Trigger immediate refresh of task link overlays to show the inline widget
             await this.refreshTaskLinkOverlays(editor, file);
@@ -488,5 +507,77 @@ export class InstantTaskConvertService {
         } catch (error) {
             console.debug('Error forcing metadata cache update:', error);
         }
+    }
+
+    /**
+     * Check if parsed data contains useful metadata beyond just the title
+     */
+    private hasUsefulMetadata(data: ParsedTaskData): boolean {
+        return !!(
+            data.dueDate ||
+            data.scheduledDate ||
+            data.startDate ||
+            data.priority ||
+            data.status ||
+            data.recurrence ||
+            data.createdDate ||
+            data.doneDate
+        );
+    }
+
+    /**
+     * Attempt to parse the task using Natural Language Processing as a fallback
+     */
+    private tryNLPFallback(taskLine: string, details: string): ParsedTaskData | null {
+        try {
+            // Extract the task content (remove checkbox syntax)
+            const taskContent = this.extractTaskContent(taskLine);
+            if (!taskContent.trim()) {
+                return null;
+            }
+
+            // Combine task line and details for NLP parsing
+            const fullInput = details.trim().length > 0 
+                ? `${taskContent}\n${details}`
+                : taskContent;
+
+            // Parse using NLP
+            const nlpResult = this.nlParser.parseInput(fullInput);
+            
+            if (!nlpResult.title?.trim()) {
+                return null;
+            }
+
+            // Convert NLP result to TasksPlugin ParsedTaskData format
+            const parsedData: ParsedTaskData = {
+                title: nlpResult.title.trim(),
+                isCompleted: nlpResult.isCompleted || false,
+                status: nlpResult.status,
+                priority: nlpResult.priority,
+                dueDate: nlpResult.dueDate,
+                scheduledDate: nlpResult.scheduledDate,
+                recurrence: nlpResult.recurrence,
+                // TasksPlugin specific fields that NLP doesn't have
+                startDate: undefined,
+                createdDate: undefined,
+                doneDate: undefined,
+                recurrenceData: undefined
+            };
+
+            return parsedData;
+            
+        } catch (error) {
+            console.debug('NLP fallback parsing failed:', error);
+            return null;
+        }
+    }
+
+    /**
+     * Extract task content from a checkbox line, removing the checkbox syntax
+     */
+    private extractTaskContent(line: string): string {
+        // Remove checkbox markers like "- [ ]", "1. [ ]", etc.
+        const cleanLine = line.replace(/^\s*(?:[-*+]|\d+\.)\s*\[[ xX]\]\s*/, '');
+        return cleanLine.trim();
     }
 }
