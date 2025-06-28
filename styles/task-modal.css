@@ -460,6 +460,7 @@
 .tasknotes-plugin .recurring-calendar {
     margin-top: var(--size-4-1);
     font-size: var(--font-ui-small);
+    align-self: center;
 }
 
 .tasknotes-plugin .recurring-calendar__header {
