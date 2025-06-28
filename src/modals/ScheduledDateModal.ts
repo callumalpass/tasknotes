@@ -27,15 +27,11 @@ export class ScheduledDateModal extends Modal {
         contentEl.addClass('tasknotes-plugin');
         
         // Set up modal accessibility
-        this.titleEl.setText('Set Scheduled Date');
+        this.titleEl.setText('Set scheduled date');
         this.titleEl.setAttribute('id', 'scheduled-date-modal-title');
         this.containerEl.setAttribute('aria-labelledby', 'scheduled-date-modal-title');
         this.containerEl.setAttribute('role', 'dialog');
         this.containerEl.setAttribute('aria-modal', 'true');
-
-        new Setting(contentEl)
-            .setName('Set scheduled date')
-            .setHeading();
 
         // Task title display
         contentEl.createEl('p', { 

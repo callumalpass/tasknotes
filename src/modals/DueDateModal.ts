@@ -27,15 +27,11 @@ export class DueDateModal extends Modal {
         contentEl.addClass('tasknotes-plugin');
         
         // Set up modal accessibility
-        this.titleEl.setText('Set Due Date');
+        this.titleEl.setText('Set due date');
         this.titleEl.setAttribute('id', 'due-date-modal-title');
         this.containerEl.setAttribute('aria-labelledby', 'due-date-modal-title');
         this.containerEl.setAttribute('role', 'dialog');
         this.containerEl.setAttribute('aria-modal', 'true');
-
-        new Setting(contentEl)
-            .setName('Set due date')
-            .setHeading();
 
         // Task title display
         contentEl.createEl('p', { 
