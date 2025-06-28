@@ -480,16 +480,6 @@ export class MiniCalendarView extends ItemView {
         // Create container for the calendar grid
         const gridContainer = container.createDiv({ cls: 'mini-calendar-view__grid-container' });
 
-        // Add skip link for accessibility
-        gridContainer.createEl('a', {
-            cls: 'a11y-skip-link',
-            text: 'Skip to calendar content',
-            attr: {
-                href: '#calendar-grid',
-                'aria-label': 'Skip to calendar content'
-            }
-        });
-        
         // Get the currently selected date
         const selectedDate = this.plugin.selectedDate;
         
