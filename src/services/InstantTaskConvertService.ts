@@ -353,75 +353,6 @@ export class InstantTaskConvertService {
     }
 
 
-    /**
-     * Replace the original Tasks Plugin line with a link to the new TaskNote
-     * Includes race condition protection and validation
-     */
-    private async replaceOriginalTaskLine(
-        editor: Editor, 
-        lineNumber: number, 
-        file: TFile, 
-        title: string,
-        originalLineContent: string
-    ): Promise<{ success: boolean; error?: string }> {
-        try {
-            // Validate inputs
-            if (!editor || !file) {
-                return { success: false, error: 'Invalid editor or file reference.' };
-            }
-
-            // Check if line number is still valid (race condition protection)
-            const currentLineCount = editor.lineCount();
-            if (lineNumber < 0 || lineNumber >= currentLineCount) {
-                return { success: false, error: `Line number ${lineNumber} is no longer valid (current line count: ${currentLineCount}).` };
-            }
-
-            // Verify the line content hasn't changed (race condition protection)
-            const currentLineContent = editor.getLine(lineNumber);
-            if (currentLineContent !== originalLineContent) {
-                return { success: false, error: 'Line content has changed since parsing. Please try again.' };
-            }
-
-            // Re-validate that the line is still a task (additional safety)
-            const taskLineInfo = TasksPluginParser.parseTaskLine(currentLineContent);
-            if (!taskLineInfo.isTaskLine) {
-                return { success: false, error: 'Line is no longer a valid task.' };
-            }
-
-            // Create link text preserving original list format and indentation
-            const originalIndentation = currentLineContent.match(/^(\s*)/)?.[1] || '';
-            const listPrefix = currentLineContent.match(/^\s*((?:[-*+]|\d+\.)\s+)/)?.[1] || '- ';
-            
-            // Get the current file context for relative link generation
-            const currentFile = this.plugin.app.workspace.getActiveFile();
-            const sourcePath = currentFile?.path || '';
-            
-            // Use Obsidian's native link text generation - this handles all edge cases
-            // including proper path resolution, user preferences, and avoids nested link issues
-            // The third parameter (omitMdExtension) set to true removes the .md extension
-            const obsidianLinkText = this.plugin.app.metadataCache.fileToLinktext(file, sourcePath, true);
-            
-            // Create the final line with proper indentation and original list format
-            const linkText = `${originalIndentation}${listPrefix}[[${obsidianLinkText}]]`;
-            
-            // Validate the generated link text
-            if (linkText.length > 500) { // Reasonable limit for link text
-                return { success: false, error: 'Generated link text is too long.' };
-            }
-            
-            // Replace the entire line with the link
-            const lineStart: EditorPosition = { line: lineNumber, ch: 0 };
-            const lineEnd: EditorPosition = { line: lineNumber, ch: currentLineContent.length };
-            
-            editor.replaceRange(linkText, lineStart, lineEnd);
-            
-            return { success: true };
-            
-        } catch (error) {
-            console.error('Error replacing task line:', error);
-            return { success: false, error: `Failed to replace line: ${error.message}` };
-        }
-    }
 
     /**
      * Replace the original task lines (including multi-line selection) with a link to the new TaskNote
@@ -460,8 +391,10 @@ export class InstantTaskConvertService {
                 return { success: false, error: 'First line is no longer a valid task.' };
             }
 
-            // Create link text with proper indentation from the first line
+            // Create link text preserving original list format and indentation from the first line
             const originalIndentation = originalContent[0].match(/^(\s*)/)?.[1] || '';
+            const listPrefixMatch = originalContent[0].match(/^\s*((?:[-*+]|\d+\.)\s+)\[/);
+            const listPrefix = listPrefixMatch?.[1] || '- ';
             
             // Get the current file context for relative link generation
             const currentFile = this.plugin.app.workspace.getActiveFile();
@@ -470,8 +403,8 @@ export class InstantTaskConvertService {
             // Use Obsidian's native link text generation
             const obsidianLinkText = this.plugin.app.metadataCache.fileToLinktext(file, sourcePath, true);
             
-            // Create the final line with proper indentation
-            const linkText = `${originalIndentation}- [[${obsidianLinkText}]]`;
+            // Create the final line with proper indentation and original list format
+            const linkText = `${originalIndentation}${listPrefix}[[${obsidianLinkText}]]`;
             
             // Validate the generated link text
             if (linkText.length > 500) { // Reasonable limit for link text

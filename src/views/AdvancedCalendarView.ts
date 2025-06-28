@@ -41,7 +41,9 @@ import {
     generateRecurringInstances,
     extractTimeblocksFromNote,
     timeblockToCalendarEvent,
-    updateTimeblockInDailyNote
+    updateTimeblockInDailyNote,
+    calculateDuration,
+    formatTime
 } from '../utils/helpers';
 
 interface CalendarEvent {
@@ -1343,8 +1345,8 @@ export class AdvancedCalendarView extends ItemView {
             arg.el.classList.add('fc-completed-event');
         }
         
-        // Add context menu event listener (not for time entries)
-        if (eventType !== 'timeEntry') {
+        // Add context menu event listener (only for task events, not for time entries or ICS events)
+        if (eventType !== 'timeEntry' && eventType !== 'ics' && taskInfo) {
             arg.el.addEventListener("contextmenu", (jsEvent: MouseEvent) => {
                 jsEvent.preventDefault();
                 jsEvent.stopPropagation();
