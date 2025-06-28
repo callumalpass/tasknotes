@@ -388,8 +388,9 @@ export class InstantTaskConvertService {
                 return { success: false, error: 'Line is no longer a valid task.' };
             }
 
-            // Create link text with hyphen prefix (preserve original indentation)
+            // Create link text preserving original list format and indentation
             const originalIndentation = currentLineContent.match(/^(\s*)/)?.[1] || '';
+            const listPrefix = currentLineContent.match(/^\s*((?:[-*+]|\d+\.)\s+)/)?.[1] || '- ';
             
             // Get the current file context for relative link generation
             const currentFile = this.plugin.app.workspace.getActiveFile();
@@ -400,8 +401,8 @@ export class InstantTaskConvertService {
             // The third parameter (omitMdExtension) set to true removes the .md extension
             const obsidianLinkText = this.plugin.app.metadataCache.fileToLinktext(file, sourcePath, true);
             
-            // Create the final line with proper indentation
-            const linkText = `${originalIndentation}- [[${obsidianLinkText}]]`;
+            // Create the final line with proper indentation and original list format
+            const linkText = `${originalIndentation}${listPrefix}[[${obsidianLinkText}]]`;
             
             // Validate the generated link text
             if (linkText.length > 500) { // Reasonable limit for link text

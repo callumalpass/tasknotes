@@ -41,8 +41,8 @@ export class TasksPluginParser {
 		RECURRENCE: /🔁\s*([^📅⏳🛫➕✅⏫🔼⏬🔁]+?)(?=\s*[📅⏳🛫➕✅⏫🔼⏬🔁]|$)/gu
 	};
 
-	// Checkbox pattern for markdown tasks
-	private static readonly CHECKBOX_PATTERN = /^(\s*[-*+]\s+\[)([ xX])(\]\s+)(.*)/;
+	// Checkbox pattern for markdown tasks (supports both bullet points and numbered lists)
+	private static readonly CHECKBOX_PATTERN = /^(\s*(?:[-*+]|\d+\.)\s+\[)([ xX])(\]\s+)(.*)/;
 
 	/**
 	 * Parse a line of text to extract Tasks plugin format data
