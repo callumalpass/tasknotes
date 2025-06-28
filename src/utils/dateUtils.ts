@@ -451,6 +451,12 @@ export function combineDateAndTime(dateString: string, timeString: string): stri
         // Parse the date part
         const datePart = getDatePart(dateString);
         
+        // Validate that we got a valid date part (YYYY-MM-DD format)
+        if (!datePart || !/^\d{4}-\d{2}-\d{2}$/.test(datePart)) {
+            console.warn('Invalid date part from dateString:', { dateString, datePart });
+            return dateString;
+        }
+        
         // Validate time format (HH:mm)
         if (!/^\d{2}:\d{2}$/.test(timeString)) {
             console.warn('Invalid time format, expected HH:mm:', timeString);
