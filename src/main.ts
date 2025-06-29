@@ -37,6 +37,7 @@ import { KanbanView } from './views/KanbanView';
 import { TaskConversionOptions } from './types/taskConversion';
 import { TaskCreationModal } from './modals/TaskCreationModal';
 import { TaskEditModal } from './modals/TaskEditModal';
+import { TaskSelectorModal } from './modals/TaskSelectorModal';
 import { PomodoroService } from './services/PomodoroService';
 import { 
 	formatTime,
@@ -673,6 +674,14 @@ export default class TaskNotesPlugin extends Plugin {
 			}
 		});
 
+		this.addCommand({
+			id: 'insert-tasknote-link',
+			name: 'Insert tasknote link',
+			editorCallback: (editor: Editor) => {
+				this.insertTaskNoteLink(editor);
+			}
+		});
+
 		// Note commands
 		this.addCommand({
 			id: 'go-to-today',
@@ -1167,6 +1176,47 @@ private injectCustomStyles(): void {
 		} catch (error) {
 			console.error('Error converting task:', error);
 			new Notice('Failed to convert task. Please try again.');
+		}
+	}
+
+	/**
+	 * Insert a wikilink to a selected tasknote at the current cursor position
+	 */
+	async insertTaskNoteLink(editor: Editor): Promise<void> {
+		try {
+			// Get all tasks
+			const allTasks = await this.cacheManager.getAllTasks();
+			const unarchivedTasks = allTasks.filter(task => !task.archived);
+			
+			// Open task selector modal
+			const modal = new TaskSelectorModal(this.app, this, unarchivedTasks, (selectedTask) => {
+				if (selectedTask) {
+					// Create wikilink using Obsidian's API
+					const file = this.app.vault.getAbstractFileByPath(selectedTask.path);
+					if (file) {
+						const linkText = this.app.metadataCache.fileToLinktext(file as any, '');
+						const wikilink = `[[${linkText}|${selectedTask.title}]]`;
+						
+						// Insert at cursor position
+						const cursor = editor.getCursor();
+						editor.replaceRange(wikilink, cursor);
+						
+						// Move cursor to end of inserted text
+						const newCursor = {
+							line: cursor.line,
+							ch: cursor.ch + wikilink.length
+						};
+						editor.setCursor(newCursor);
+					} else {
+						new Notice('Failed to create link - file not found');
+					}
+				}
+			});
+			
+			modal.open();
+		} catch (error) {
+			console.error('Error inserting tasknote link:', error);
+			new Notice('Failed to insert tasknote link');
 		}
 	}
 
