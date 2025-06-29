@@ -373,13 +373,14 @@
 /* Priority indicators - Use user's priority settings */
 .tasknotes-plugin .task-card__priority-dot {
     display: inline-block;
-    width: 8px;
-    height: 8px;
+    width: 10px;
+    height: 10px;
     border-radius: 50%;
     margin-right: 6px;
     flex-shrink: 0;
     align-self: center;
     background-color: var(--priority-color, transparent);
+    cursor: pointer;
 }
 
 /* Dynamic priority colors using CSS variables set by PriorityManager */

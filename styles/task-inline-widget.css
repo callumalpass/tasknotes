@@ -54,7 +54,7 @@
     position: relative;
     flex-shrink: 0;
     margin-right: 6px; /* More gap between status and priority */
-    vertical-align: middle;
+    vertical-align: baseline;
 }
 
 .tasknotes-plugin .task-inline-preview__status-dot:hover {
@@ -66,14 +66,15 @@
 /* Priority indicator dot - filled solid circle */
 .tasknotes-plugin .task-inline-preview__priority-dot {
     display: inline-block;
-    width: 8px;
-    height: 8px;
+    width: 10px;
+    height: 10px;
     border-radius: 50%;
     background-color: var(--tn-text-muted);
     border: none;
     flex-shrink: 0;
-    vertical-align: middle;
+    vertical-align: baseline;
     margin-right: 6px; /* Gap between priority and title */
+    cursor: pointer;
 }
 
 /* Date info styling */
@@ -82,7 +83,7 @@
     font-size: 0.9em;
     transition: opacity 0.15s ease;
     flex-shrink: 0;
-    vertical-align: middle;
+    vertical-align: baseline;
 }
 
 /* Clickable date styling */
@@ -107,12 +108,12 @@
     margin-left: 6px;
     margin-right: 6px;
     transition: opacity 0.15s ease;
-    vertical-align: middle;
+    vertical-align: baseline;
 }
 
 /* Fix Lucide icon alignment within date icons */
 .tasknotes-plugin .task-inline-preview__date-icon svg {
-    vertical-align: top;
+    vertical-align: baseline;
     width: 12px;
     height: 12px;
 }
@@ -133,13 +134,13 @@
     padding: 1px 3px;
     transition: all 0.15s ease;
     flex-shrink: 0;
-    vertical-align: middle;
+    vertical-align: baseline;
     margin-right: 2px;
 }
 
 /* Fix Lucide icon alignment within recurring indicator */
 .tasknotes-plugin .task-inline-preview__recurring-indicator svg {
-    vertical-align: top;
+    vertical-align: baseline;
     width: 12px;
     height: 12px;
 }
@@ -166,12 +167,12 @@
     padding: 1px 3px;
     transition: all 0.15s ease;
     flex-shrink: 0;
-    vertical-align: middle;
+    vertical-align: baseline;
 }
 
 /* Fix Lucide icon alignment within pencil icon */
 .tasknotes-plugin .task-inline-preview__pencil svg {
-    vertical-align: top;
+    vertical-align: baseline;
     width: 12px;
     height: 12px;
 }
@@ -308,7 +309,7 @@
     min-width: 0; /* Allow flex shrinking */
     max-width: 250px; /* Give more room for task titles */
     flex-shrink: 1; /* Allow shrinking if needed */
-    vertical-align: middle;
+    vertical-align: baseline;
     cursor: pointer;
     transition: color 0.15s ease;
     border-radius: 2px;
