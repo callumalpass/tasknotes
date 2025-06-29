@@ -262,18 +262,23 @@ export class TaskEditModal extends TaskModal {
             if (!isCurrentMonth) {
                 dayElement.addClass('recurring-calendar__day--faded');
             }
+            
+            // Make all dates clickable
+            dayElement.addClass('recurring-calendar__day--clickable');
+            
             if (isRecurring) {
                 dayElement.addClass('recurring-calendar__day--recurring');
-                if (isCompleted) {
-                    dayElement.addClass('recurring-calendar__day--completed');
-                }
-                
-                // Make clickable
-                dayElement.addEventListener('click', () => {
-                    this.toggleCompletedInstance(dayStr);
-                    this.renderCalendarMonth(container, displayDate);
-                });
             }
+            
+            if (isCompleted) {
+                dayElement.addClass('recurring-calendar__day--completed');
+            }
+            
+            // Make all dates clickable
+            dayElement.addEventListener('click', () => {
+                this.toggleCompletedInstance(dayStr);
+                this.renderCalendarMonth(container, displayDate);
+            });
         });
         
         // Navigation event handlers

@@ -528,22 +528,35 @@
     opacity: 0.4;
 }
 
+.tasknotes-plugin .recurring-calendar__day--clickable {
+    cursor: pointer;
+    transition: all 0.1s ease;
+}
+
+.tasknotes-plugin .recurring-calendar__day--clickable:hover {
+    background: var(--background-modifier-hover);
+    color: var(--text-normal);
+}
+
 .tasknotes-plugin .recurring-calendar__day--recurring {
     color: var(--text-normal);
     border: 1px solid var(--text-muted);
-    cursor: pointer;
-    transition: all 0.1s ease;
 }
 
 .tasknotes-plugin .recurring-calendar__day--recurring:hover {
     border-color: var(--interactive-accent);
     color: var(--interactive-accent);
+    background: var(--background-modifier-hover);
 }
 
 .tasknotes-plugin .recurring-calendar__day--completed {
     background: var(--interactive-accent);
     color: var(--text-on-accent);
-    border-color: var(--interactive-accent);
+    border: 1px solid var(--interactive-accent);
+}
+
+.tasknotes-plugin .recurring-calendar__day--completed:hover {
+    background: var(--interactive-accent-hover);
 }
 
 .tasknotes-plugin .nl-preview-container {
