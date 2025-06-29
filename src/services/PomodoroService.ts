@@ -485,7 +485,9 @@ export class PomodoroService {
         if (session.type === 'work') {
             try {
                 const stats = await this.getTodayStats();
-                shouldTakeLongBreak = stats.pomodorosCompleted % this.plugin.settings.pomodoroLongBreakInterval === 0;
+                // Add 1 to account for the current session that will be added to history
+                const totalCompleted = stats.pomodorosCompleted + 1;
+                shouldTakeLongBreak = totalCompleted % this.plugin.settings.pomodoroLongBreakInterval === 0;
             } catch (error) {
                 console.error('Failed to calculate break type:', error);
                 shouldTakeLongBreak = false;
