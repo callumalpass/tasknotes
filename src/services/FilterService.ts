@@ -741,7 +741,7 @@ export class FilterService extends EventEmitter {
             baseQuery
         );
 
-        return allTasks.filter(task => {
+        const tasksForDate = allTasks.filter(task => {
             // Handle recurring tasks
             if (task.recurrence) {
                 return isDueByRRule(task, date);
@@ -778,6 +778,9 @@ export class FilterService extends EventEmitter {
             
             return false;
         });
+
+        // Apply sorting to the filtered tasks for this date
+        return this.sortTasks(tasksForDate, baseQuery.sortKey, baseQuery.sortDirection);
     }
 
     /**
