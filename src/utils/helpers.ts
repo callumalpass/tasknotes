@@ -4,7 +4,7 @@ import { RRule } from 'rrule';
 import { TimeInfo, TaskInfo, TimeEntry, TimeBlock, DailyNoteFrontmatter } from '../types';
 import { FieldMapper } from '../services/FieldMapper';
 import { DEFAULT_FIELD_MAPPING } from '../settings/settings';
-import { isBeforeDateSafe, getTodayString, parseDate, startOfDayForDateString, createUTCDateForRRule } from './dateUtils';
+import { isBeforeDateSafe, getTodayString, parseDate, createUTCDateForRRule } from './dateUtils';
 // import { RegexOptimizer } from './RegexOptimizer'; // Temporarily disabled
 
 /**

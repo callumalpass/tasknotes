@@ -11,7 +11,6 @@ import {
     getTimePart
 } from '../utils/dateUtils';
 import { DateContextMenu } from '../components/DateContextMenu';
-import { StatusContextMenu } from '../components/StatusContextMenu';
 import { PriorityContextMenu } from '../components/PriorityContextMenu';
 import { RecurrenceContextMenu } from '../components/RecurrenceContextMenu';
 

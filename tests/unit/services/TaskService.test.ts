@@ -114,7 +114,7 @@ describe('TaskService', () => {
     });
 
     it('should handle default folder configuration', async () => {
-      mockPlugin.settings.taskCreationDefaults.defaultFolder = 'Projects/Tasks';
+      mockPlugin.settings.tasksFolder = 'Projects/Tasks';
       
       const taskData: TaskCreationData = {
         title: 'Folder Test Task'

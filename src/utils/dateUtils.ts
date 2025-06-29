@@ -658,8 +658,31 @@ export function createUTCDateForRRule(dateString: string): Date {
         }
         
         const [, year, month, day] = dateMatch;
+        const yearNum = parseInt(year, 10);
+        const monthNum = parseInt(month, 10);
+        const dayNum = parseInt(day, 10);
+        
+        // Validate date values
+        if (monthNum < 1 || monthNum > 12) {
+            throw new Error(`Invalid month in date: ${dateString}`);
+        }
+        
+        if (dayNum < 1 || dayNum > 31) {
+            throw new Error(`Invalid day in date: ${dateString}`);
+        }
+        
         // Create UTC date at midnight to preserve the correct day of week
-        return new Date(Date.UTC(parseInt(year, 10), parseInt(month, 10) - 1, parseInt(day, 10)));
+        const utcDate = new Date(Date.UTC(yearNum, monthNum - 1, dayNum));
+        
+        // Additional validation: check if the resulting date matches input
+        // This catches cases like Feb 30th, which would roll over to March
+        if (utcDate.getUTCFullYear() !== yearNum || 
+            utcDate.getUTCMonth() !== monthNum - 1 || 
+            utcDate.getUTCDate() !== dayNum) {
+            throw new Error(`Invalid date values: ${dateString}`);
+        }
+        
+        return utcDate;
     } catch (error) {
         console.error('Error creating UTC date for RRULE:', { dateString, error });
         throw error;

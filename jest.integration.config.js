@@ -13,7 +13,8 @@ module.exports = {
   moduleNameMapper: {
     // Only mock Obsidian and UI libraries - use real date/parsing libraries
     '^obsidian$': '<rootDir>/tests/__mocks__/obsidian.ts',
-    '^@fullcalendar/(.*)$': '<rootDir>/tests/__mocks__/fullcalendar.ts'
+    '^@fullcalendar/(.*)$': '<rootDir>/tests/__mocks__/fullcalendar.ts',
+    '^yaml$': '<rootDir>/tests/__mocks__/yaml.ts'
     // chrono-node, rrule, ical.js, date-fns will use real implementations
   },
   // Integration tests may need more time for complex workflows
