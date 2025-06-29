@@ -13,6 +13,7 @@ import {
 import { DateContextMenu } from '../components/DateContextMenu';
 import { StatusContextMenu } from '../components/StatusContextMenu';
 import { PriorityContextMenu } from '../components/PriorityContextMenu';
+import { RecurrenceContextMenu } from '../components/RecurrenceContextMenu';
 
 export interface TaskCardOptions {
     showDueDate: boolean;
@@ -212,11 +213,32 @@ export function createTaskCard(task: TaskInfo, plugin: TaskNotesPlugin, options:
     if (task.recurrence) {
         const recurringIndicator = card.createEl('div', { 
             cls: 'task-card__recurring-indicator',
-            attr: { 'aria-label': `Recurring: ${getRecurrenceDisplayText(task.recurrence)}` }
+            attr: { 
+                'aria-label': `Recurring: ${getRecurrenceDisplayText(task.recurrence)} (click to change)`,
+                'title': `Recurring: ${getRecurrenceDisplayText(task.recurrence)} (click to change)`
+            }
         });
         
         // Use Obsidian's built-in rotate-ccw icon for recurring tasks
         setIcon(recurringIndicator, 'rotate-ccw');
+        
+        // Add click context menu for recurrence
+        recurringIndicator.addEventListener('click', (e) => {
+            e.stopPropagation(); // Don't trigger card click
+            const menu = new RecurrenceContextMenu({
+                currentValue: typeof task.recurrence === 'string' ? task.recurrence : undefined,
+                onSelect: async (newRecurrence: string | null) => {
+                    try {
+                        await plugin.updateTaskProperty(task, 'recurrence', newRecurrence || undefined);
+                    } catch (error) {
+                        console.error('Error updating recurrence:', error);
+                        new Notice('Failed to update recurrence');
+                    }
+                },
+                app: plugin.app
+            });
+            menu.show(e as MouseEvent);
+        });
     }
     
     // Main content container

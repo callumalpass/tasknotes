@@ -217,21 +217,33 @@
 
 .tasknotes-plugin .task-card__recurring-indicator {
     position: absolute;
-    top: 8px;
-    right: 28px;
-    width: 12px;
-    height: 12px;
+    top: 6px;
+    right: 26px;
+    width: 16px;
+    height: 16px;
     color: var(--tn-text-muted);
     opacity: 0.8;
     z-index: 1;
     display: none; /* Hidden by default, shown via modifier */
     align-items: center;
     justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-radius: 3px;
+    padding: 2px;
+    margin: -2px;
+}
+
+.tasknotes-plugin .task-card__recurring-indicator:hover {
+    opacity: 1;
+    color: var(--interactive-accent);
+    background: var(--background-modifier-hover);
+    transform: scale(1.1);
 }
 
 .tasknotes-plugin .task-card__recurring-indicator svg {
-    width: 12px;
-    height: 12px;
+    width: 100%;
+    height: 100%;
 }
 
 .tasknotes-plugin .task-card__context-menu {
