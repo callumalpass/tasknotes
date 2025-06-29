@@ -1,5 +1,8 @@
 blank_issues_enabled: false
 contact_links:
+  - name: Ask a Question
+    url: https://github.com/callumalpass/tasknotes/issues/new?template=question.yml
+    about: Ask a question about TaskNotes
   - name: Documentation
     url: https://callumalpass.github.io/tasknotes/
     about: Check the official TaskNotes documentation for guides and troubleshooting

@@ -1,77 +1,43 @@
 name: Bug Report
-description: Report a bug or issue with TaskNotes
+description: Something isn't working as expected? Let us know!
 title: "[Bug]: "
 labels: ["bug"]
 body:
   - type: markdown
     attributes:
       value: |
-        Thanks for taking the time to report a bug! Please fill out the information below to help us understand and fix the issue.
-
-  - type: textarea
-    id: obsidian-debug-info
-    attributes:
-      label: Obsidian Debug Info
-      description: |
-        Please paste your Obsidian debug info here. You can get this from:
-        **Command palette** → **Show Debug Info** → Copy the output
-      placeholder: |
-        Paste your debug info here...
-        
-        Example:
-        Obsidian version: v1.4.16
-        Installer version: v1.4.13
-        Insider build toggle: off
-        Live preview: on
-        Legacy editor: off
-        Base theme: dark
-        Community theme: none
-        Snippets enabled: 0
-        Restricted mode: off
-        Plugins installed: 15
-        Plugins enabled: 12
-        ...
-    validations:
-      required: false
+        We're sorry to hear you're running into an issue! Thanks for taking the time to report it.
+        Please fill out the details below. The more info you provide, the faster we can help.
 
   - type: textarea
     id: bug-description
     attributes:
-      label: Bug Description
-      description: Describe the bug and provide steps to reproduce it
+      label: What's the bug?
+      description: "A clear and concise description of what the bug is. If you can, please include steps to reproduce it."
       placeholder: |
-        1. Go to...
-        2. Click on...
-        3. See error...
+        What happened? For example:
+        1. I opened the calendar view...
+        2. I tried to drag a task to a new date...
+        3. The task disappeared and an error popped up.
     validations:
-      required: false
+      required: true
 
   - type: textarea
     id: expected-behavior
     attributes:
-      label: Expected Behavior
-      description: What did you expect to happen?
-      placeholder: Describe what you expected to happen...
-    validations:
-      required: false
-
-  - type: textarea
-    id: actual-behavior
-    attributes:
-      label: Actual Behavior
-      description: What actually happened?
-      placeholder: Describe what actually happened...
+      label: What did you expect to happen?
+      description: A clear and concise description of what you expected to happen.
     validations:
       required: false
 
   - type: dropdown
     id: feature-context
     attributes:
-      label: Feature Context
-      description: Which TaskNotes feature is affected?
+      label: Which part of TaskNotes is affected?
+      description: If you know, which feature is related to the bug?
       options:
-        - Task Management (creating, editing, status changes)
-        - Calendar View (month view, navigation)
+        - Task Management
+        - Calendar View
         - Mini Calendar
         - Task List View
         - Kanban Board
@@ -79,17 +45,29 @@ body:
         - Notes View
         - Pomodoro Timer
         - Time Tracking
-        - Editor Integration (task conversion, previews)
-        - Settings/Configuration
-        - Other (please specify in description)
+        - Editor Integration
+        - Settings
+        - Other
     validations:
       required: false
 
   - type: textarea
     id: screenshots
     attributes:
-      label: Screenshots
+      label: Screenshots or Screen Recordings
       description: |
-        If applicable, add screenshots to help explain the problem.
-        You can drag and drop images here or paste them directly.
-      placeholder: Drag and drop screenshots here or paste them...
+        If applicable, add screenshots or a screen recording to help explain the problem. It's often the best way to show what's going on!
+        You can drag and drop images or GIF's here.
+      placeholder: Drag and drop screenshots here...
+
+  - type: textarea
+    id: obsidian-debug-info
+    attributes:
+      label: Technical Details (Optional)
+      description: |
+        If you're comfortable, you can provide your Obsidian debug info. This can help us pinpoint the problem faster.
+        You can get this from: **Command palette** → **Show Debug Info** → Copy the output.
+      placeholder: |
+        Paste your debug info here...
+    validations:
+      required: false
