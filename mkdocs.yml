@@ -1,0 +1,72 @@
+site_name: TaskNotes Documentation
+site_url: https://callumalpass.github.io/tasknotes/
+site_description: Comprehensive task and note management with calendar integration for Obsidian
+site_author: Callum Alpass
+repo_name: callumalpass/tasknotes
+repo_url: https://github.com/callumalpass/tasknotes
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: deep purple
+      accent: purple
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: deep purple
+      accent: purple
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  font:
+    text: Roboto
+    code: Roboto Mono
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.path
+    - navigation.top
+    - search.highlight
+    - search.share
+    - content.code.copy
+
+nav:
+  - Home: index.md
+  - Core Concepts: core-concepts.md
+  - Views:
+    - Overview: views.md
+    - Task List View: views/task-view.md
+    - Notes View: views/notes-view.md
+    - Agenda View: views/agenda-view.md
+    - Kanban View: views/kanban-view.md
+    - Calendar Views: views/calendar-views.md
+    - Pomodoro View: views/pomodoro-view.md
+  - Features:
+    - Overview: features.md
+    - Task Management: features/task-management.md
+    - Inline Task Integration: features/inline-tasks.md
+    - Time Tracking: features/time-tracking.md
+    - Natural Language Processing: features/natural-language.md
+    - Calendar Integration: features/calendar-integration.md
+  - Creating and Editing Tasks: creating-editing-tasks.md
+  - Settings:
+    - Overview: settings.md
+    - Task Defaults: settings/task-defaults.md
+    - Inline Task Settings: settings/inline-task-settings.md
+    - Calendar Settings: settings/calendar-settings.md
+    - Advanced Settings: settings/advanced-settings.md
+  - Concepts and Rationale: concepts-rationale.md
+  - Troubleshooting: troubleshooting.md
+
+markdown_extensions:
+  - admonition
+  - codehilite
+  - toc:
+      permalink: true
+  - attr_list
+
+extra_css:
+  - stylesheets/extra.css

@@ -5,6 +5,10 @@ A task and note management plugin with calendar views and daily notes.
 ![Downloads](https://img.shields.io/github/downloads/callumalpass/tasknotes/main.js)
 ![Screenshot of biblib Obsidian plugin](https://github.com/callumalpass/tasknotes/blob/main/media/2025-06-15_23-32-16.png)
 
+## Documentation
+
+**[Complete Documentation](https://callumalpass.github.io/tasknotes/)** - Comprehensive guide covering all features, configuration options, and usage examples.
+
 ## Rationale
 
 TaskNotes uses YAML frontmatter to store task data, providing several benefits. YAML is a standard format compatible with many tools, ensuring long-term data stability in line with Obsidian's file-over-app philosophy. The frontmatter approach makes it trivial to add custom fields like "assigned-to" or "attachments" that integrate seamlessly with other tools like Obsidian Bases. This extensibility has made it easy to add features like time-tracking, which would be difficult to implement cleanly in other task formats. The one-note-per-task approach enables you to add unstructured content in the note body for descriptions and progress notes. Each task becomes a full participant in your knowledge graph, leveraging native Obsidian features like backlinking and graph visualization. This creates a complete history and context for every task in one place.
