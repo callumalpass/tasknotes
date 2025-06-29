@@ -1,67 +1,45 @@
 # Features
 
-TaskNotes provides a comprehensive set of features for task and note management within Obsidian. These features integrate with your existing vault structure while adding specialized functionality for organized productivity workflows.
+TaskNotes is a comprehensive task and note management plugin for Obsidian, offering a rich set of features designed to enhance your productivity and streamline your workflow. From robust task management and seamless inline integration to powerful time tracking and calendar synchronization, TaskNotes provides the tools you need to take control of your tasks and ideas.
 
-## Overview
+## Task Management
 
-TaskNotes features can be grouped into several categories:
+At its core, TaskNotes provides a powerful and flexible system for managing your tasks. You can create, edit, and organize tasks with a wide range of properties, including:
 
-**Task Management**: Core functionality for creating, editing, and organizing tasks using individual note files with YAML frontmatter.
+- **Status and Priority**: Customize your workflow with configurable status and priority levels.
+- **Scheduling**: Set due dates and scheduled dates to keep your work on track.
+- **Organization**: Use contexts and tags to categorize and group your tasks.
+- **Planning**: Estimate the time required for tasks and set up recurring patterns for repeating tasks.
+- **Tracking**: Keep a record of your work with automatic creation and modification dates.
 
-**Inline Integration**: Features that integrate tasks directly into your regular note-taking workflow, including widgets and conversion tools.
+For more detailed information, see the [Task Management](features/task-management.md) documentation.
 
-**Time Management**: Built-in time tracking and pomodoro timer functionality for measuring and improving productivity.
+## Inline Task Integration
 
-**Calendar Integration**: Support for external calendar systems and comprehensive scheduling capabilities.
+TaskNotes seamlessly integrates with the Obsidian editor, allowing you to manage your tasks without leaving your notes. Key features include:
 
-**Natural Language Processing**: Intelligent parsing of natural language input to create structured tasks quickly.
+- **Task Link Overlays**: Interactive widgets that provide at-a-glance task information and allow for quick edits.
+- **Instant Task Conversion**: Convert checkbox tasks into full-fledged TaskNotes with a single click.
+- **Natural Language Processing**: Create tasks using conversational language, with automatic parsing of dates, priorities, and other details.
 
-**Workflow Customization**: Extensive customization options for statuses, priorities, field names, and visual appearance.
+For more detailed information, see the [Inline Task Integration](features/inline-tasks.md) documentation.
 
-## Core Capabilities
+## Time Management
 
-### Task Data Storage
-Tasks are stored as individual Markdown files with YAML frontmatter containing structured metadata. This approach ensures your data remains accessible and portable while enabling sophisticated task management features.
+TaskNotes includes a suite of time management tools to help you stay focused and productive. These features include:
 
-### Real-Time Synchronization
-All views and features maintain real-time synchronization through an event-driven architecture. Changes made in one view immediately appear in all other open views without requiring manual refresh.
+- **Time Tracking**: A built-in time tracker that allows you to record the time you spend on each task.
+- **Pomodoro Timer**: A fully-featured pomodoro timer to help you work in focused intervals.
+- **Productivity Analytics**: Detailed statistics and visualizations to help you understand your work habits and improve your productivity.
 
-### Multi-View Support
-Eight specialized view types provide different perspectives on the same underlying task data, allowing you to choose the most appropriate interface for your current workflow needs.
+For more detailed information, see the [Time Management](features/time-tracking.md) documentation.
 
-### Integration with Obsidian
-TaskNotes leverages Obsidian's native features including metadata cache, file system events, and plugin architecture to provide optimal performance and compatibility with other plugins.
+## Calendar Integration
 
-## Feature Categories
+TaskNotes offers robust calendar integration, allowing you to visualize your tasks and schedule your work effectively. Key features include:
 
-The following sections provide detailed documentation for each major feature category:
+- **ICS Calendar Subscriptions**: Subscribe to external calendar feeds from Google Calendar, Outlook, and other services.
+- **Advanced Calendar View**: A full-featured calendar with multiple view modes, drag-and-drop scheduling, and time-blocking capabilities.
+- **Time-blocking**: Create focused work periods and link them to your tasks for integrated planning.
 
-- **[Task Management](features/task-management.md)**: Creating, editing, and organizing tasks
-- **[Inline Task Integration](features/inline-tasks.md)**: Editor widgets and conversion features  
-- **[Time Tracking](features/time-tracking.md)**: Built-in time measurement and session management
-- **[Natural Language Processing](features/natural-language.md)**: Smart parsing of task descriptions
-- **[Calendar Integration](features/calendar-integration.md)**: External calendar support and scheduling
-
-## Performance Considerations
-
-TaskNotes is designed to handle large numbers of tasks efficiently:
-
-**Minimal Caching**: Uses Obsidian's native metadata cache as the primary data source, supplemented by minimal indexing for performance-critical operations.
-
-**Incremental Updates**: Only processes changed tasks rather than rescanning entire datasets.
-
-**Lazy Loading**: Heavy operations are deferred until actually needed by the user interface.
-
-**Memory Management**: Proper cleanup and lifecycle management prevent memory leaks during extended use.
-
-## Customization Options
-
-TaskNotes provides extensive customization capabilities:
-
-**Field Mapping**: Customize YAML property names to match your existing vault structure.
-
-**Status and Priority Systems**: Define custom statuses and priorities with colors and behaviors.
-
-**Visual Styling**: All views respect Obsidian themes and support additional CSS customization.
-
-**Workflow Configuration**: Adjust default values, templates, and automation behaviors to match your specific needs.
+For more detailed information, see the [Calendar Integration](features/calendar-integration.md) documentation.

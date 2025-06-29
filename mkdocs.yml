@@ -38,29 +38,25 @@ theme:
 nav:
   - Home: index.md
   - Core Concepts: core-concepts.md
+  - Features:
+    - Overview: features.md
+    - Task Management: features/task-management.md
+    - Inline Task Integration: features/inline-tasks.md
+    - Time Management: features/time-management.md
+    - Calendar Integration: features/calendar-integration.md
   - Views:
     - Overview: views.md
     - Task List View: views/task-view.md
     - Notes View: views/notes-view.md
     - Agenda View: views/agenda-view.md
     - Kanban View: views/kanban-view.md
-    - Calendar Views: views/calendar-views.md
     - Pomodoro View: views/pomodoro-view.md
-  - Features:
-    - Overview: features.md
-    - Task Management: features/task-management.md
-    - Inline Task Integration: features/inline-tasks.md
-    - Time Tracking: features/time-tracking.md
-    - Natural Language Processing: features/natural-language.md
-    - Calendar Integration: features/calendar-integration.md
-  - Creating and Editing Tasks: creating-editing-tasks.md
   - Settings:
     - Overview: settings.md
     - Task Defaults: settings/task-defaults.md
     - Inline Task Settings: settings/inline-task-settings.md
     - Calendar Settings: settings/calendar-settings.md
     - Advanced Settings: settings/advanced-settings.md
-  - Concepts and Rationale: concepts-rationale.md
   - Troubleshooting: troubleshooting.md
 
 markdown_extensions:

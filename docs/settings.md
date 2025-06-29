@@ -1,73 +1,27 @@
 # Settings
 
-TaskNotes provides extensive configuration options through a tabbed settings interface. The settings system allows you to customize every aspect of the plugin's behavior, from basic task defaults to advanced field mapping and visual customization.
+TaskNotes provides a wide range of settings to customize its behavior and appearance. The settings are organized into several categories, each controlling a different aspect of the plugin.
 
-## Settings Organization
+## Task Defaults
 
-The settings interface is organized into eight main categories:
+These settings control the default properties for new tasks, such as the default status, priority, and folder location. You can also configure templates for new tasks, and set up filename generation patterns.
 
-**Task Defaults**: Core task settings, folder management, and default values for new tasks
-**Inline Tasks**: Editor integration settings for task widgets and conversion features
-**Calendar**: Calendar view configurations, time settings, and display preferences
-**Performance**: Options to optimize plugin performance for large vaults
-**Field Mapping**: Customize YAML property names to match your existing vault structure
-**Statuses**: Define custom status workflows with colors and completion behavior
-**Priorities**: Configure priority levels with weights and visual styling
-**Pomodoro**: Timer settings, automation options, and session management
+For more detailed information, see the [Task Defaults](settings/task-defaults.md) documentation.
 
-## Configuration Approach
+## Inline Task Settings
 
-TaskNotes settings follow these principles:
+These settings control the behavior of TaskNotes' inline task management features, such as the Task Link Overlay and Instant Task Conversion. You can also configure the natural language processor from this section.
 
-**Sensible Defaults**: All settings include default values that work well for most users
-**Immediate Application**: Most setting changes take effect immediately without requiring restart
-**Validation**: Input validation prevents invalid configurations and provides clear error messages
-**Flexibility**: Extensive customization options accommodate different workflows and vault structures
+For more detailed information, see the [Inline Task Settings](settings/inline-task-settings.md) documentation.
 
-## Core Settings Categories
+## Calendar Settings
 
-### Task Management Configuration
+These settings control the appearance and behavior of the calendar views, including the default view mode, time slot duration, and event visibility. You can also manage your external calendar subscriptions from this section.
 
-Settings that control how tasks are created, stored, and organized:
+For more detailed information, see the [Calendar Settings](settings/calendar-settings.md) documentation.
 
-- Default folder location for new tasks
-- Task identification tags and exclusion rules  
-- Filename generation patterns and templates
-- Default values for task properties
+## Advanced Settings
 
-### Editor Integration Settings
+These settings provide more advanced customization options, such as field mapping, custom status and priority workflows, and performance tuning. You can also configure the Pomodoro timer from this section.
 
-Controls for how TaskNotes integrates with your note editing workflow:
-
-- Task link widget display options
-- Instant conversion button behavior
-- Natural language processing features
-- Integration with task creation defaults
-
-### Calendar and Scheduling
-
-Configuration for calendar views and time-based features:
-
-- Default calendar view modes and navigation
-- Time slot duration and working hours
-- External calendar subscription management
-- Timeblocking functionality
-
-### Advanced Customization
-
-Settings for users who need specialized configurations:
-
-- Custom YAML property names through field mapping
-- Status and priority system customization
-- Performance optimization for large vaults
-- Pomodoro timer and productivity features
-
-## Detailed Settings Documentation
-
-The following sections provide comprehensive documentation for each settings category:
-
-- **[Task Defaults](settings/task-defaults.md)**: Folder management, default values, and template configuration
-- **[Inline Task Settings](settings/inline-task-settings.md)**: Editor integration and conversion options
-- **[Calendar Settings](settings/calendar-settings.md)**: Calendar views, time configuration, and external calendar integration
-- **[Advanced Settings](settings/advanced-settings.md)**: Field mapping, custom statuses/priorities, and performance options
-
+For more detailed information, see the [Advanced Settings](settings/advanced-settings.md) documentation.
