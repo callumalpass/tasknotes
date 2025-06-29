@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Documentation
+    url: https://callumalpass.github.io/tasknotes/
+    about: Check the official TaskNotes documentation for guides and troubleshooting
+  - name: GitHub Discussions
+    url: https://github.com/callumalpass/tasknotes/discussions
+    about: Ask questions, share ideas, or discuss TaskNotes with the community
