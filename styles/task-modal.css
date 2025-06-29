@@ -449,6 +449,21 @@
 }
 
 /* =====================================================================
+   COMPLETIONS CALENDAR SECTION
+   ===================================================================== */
+
+.tasknotes-plugin .completions-calendar-container {
+    margin-top: var(--size-4-3);
+    padding-top: var(--size-4-3);
+    border-top: 1px solid var(--background-modifier-border);
+}
+
+.tasknotes-plugin .completions-calendar-content {
+    max-width: 200px;
+    margin: 0 auto;
+}
+
+/* =====================================================================
    RECURRING CALENDAR COMPONENT - BEM & MINIMALIST
    ===================================================================== */
 
@@ -460,7 +475,8 @@
 .tasknotes-plugin .recurring-calendar {
     margin-top: var(--size-4-1);
     font-size: var(--font-ui-small);
-    align-self: center;
+    width: 100%;
+    max-width: 200px;
 }
 
 .tasknotes-plugin .recurring-calendar__header {

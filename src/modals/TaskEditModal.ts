@@ -137,6 +137,9 @@ export class TaskEditModal extends TaskModal {
         // Create expanded details section (always expanded for editing)
         this.createDetailsSection(container);
 
+        // Create completions calendar section (for recurring tasks)
+        this.createCompletionsCalendarSection(container);
+
         // Create metadata section (for edit modal)
         this.createMetadataSection(container);
 
@@ -144,6 +147,18 @@ export class TaskEditModal extends TaskModal {
         this.createActionButtons(container);
     }
 
+    private createCompletionsCalendarSection(container: HTMLElement): void {
+        // Only show calendar for recurring tasks
+        if (this.task.recurrence) {
+            const calendarContainer = container.createDiv('completions-calendar-container');
+            
+            const calendarLabel = calendarContainer.createDiv('detail-label');
+            calendarLabel.textContent = 'Completions';
+            
+            const calendarContent = calendarContainer.createDiv('completions-calendar-content');
+            this.createRecurringCalendar(calendarContent);
+        }
+    }
 
     private createMetadataSection(container: HTMLElement): void {
         this.metadataContainer = container.createDiv('metadata-container');
@@ -173,22 +188,11 @@ export class TaskEditModal extends TaskModal {
             pathDiv.createSpan('metadata-key').textContent = 'File: ';
             pathDiv.createSpan('metadata-value').textContent = this.task.path;
         }
-
-        // Recurring task completion calendar
-        if (this.task.recurrence) {
-            this.createRecurringCalendar(metadataContent);
-        }
     }
 
     private createRecurringCalendar(container: HTMLElement): void {
-        const calendarDiv = container.createDiv('metadata-item metadata-item--calendar');
-        
-        // Label on its own line
-        const labelDiv = calendarDiv.createDiv('metadata-key');
-        labelDiv.textContent = 'Completions:';
-        
-        // Calendar on separate line
-        this.calendarWrapper = calendarDiv.createDiv('recurring-calendar');
+        // Calendar wrapper
+        this.calendarWrapper = container.createDiv('recurring-calendar');
         
         // Show current month by default, or the month with most recent completions
         const currentDate = new Date();
