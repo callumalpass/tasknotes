@@ -348,7 +348,7 @@ export class TaskLinkWidget extends WidgetType {
             attr: { 'title': 'Task options' },
             text: ''
         });
-        setIcon(pencilIcon, 'pencil');
+        setIcon(pencilIcon, 'ellipsis-vertical');
         
         // Store data for interactions
         container.dataset.taskPath = this.taskInfo.path;

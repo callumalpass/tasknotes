@@ -157,7 +157,7 @@
 
 /* Pencil icon styling */
 .tasknotes-plugin .task-inline-preview__pencil {
-    opacity: 0.4;
+    opacity: 0;
     cursor: pointer;
     display: inline-block;
     width: 12px;
@@ -198,6 +198,12 @@
     text-decoration: line-through;
     opacity: 0.7;
     color: var(--text-muted);
+}
+
+/* Completed task title hover effect */
+.tasknotes-plugin .task-inline-preview--completed .task-inline-preview__title:hover {
+    color: var(--interactive-accent);
+    opacity: 0.9;
 }
 
 .tasknotes-plugin span.task-inline-preview.task-inline-preview--completed,
@@ -303,6 +309,17 @@
     max-width: 250px; /* Give more room for task titles */
     flex-shrink: 1; /* Allow shrinking if needed */
     vertical-align: middle;
+    cursor: pointer;
+    transition: color 0.15s ease;
+    border-radius: 2px;
+    padding: 1px 2px;
+    margin: -1px -2px;
+}
+
+/* Task title hover effect */
+.tasknotes-plugin .task-inline-preview__title:hover {
+    color: var(--interactive-accent);
+    background-color: var(--background-modifier-hover);
 }
 
 /* Priority indicator */

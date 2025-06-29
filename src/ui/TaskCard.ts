@@ -253,8 +253,8 @@ export function createTaskCard(task: TaskInfo, plugin: TaskNotesPlugin, options:
         }
     });
     
-    // Use Obsidian's built-in pencil icon
-    setIcon(contextIcon, 'pencil');
+    // Use Obsidian's built-in ellipsis-vertical icon
+    setIcon(contextIcon, 'ellipsis-vertical');
     
     contextIcon.addEventListener('click', async (e) => {
         e.stopPropagation();
