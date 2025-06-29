@@ -25,7 +25,7 @@ body:
         - Mobile Support
         - Other (please specify in description)
     validations:
-      required: true
+      required: false
 
   - type: textarea
     id: problem-statement
@@ -40,7 +40,7 @@ body:
         - "There's no way to bulk edit multiple tasks at once"
         - "I need to track time spent on subtasks separately"
     validations:
-      required: true
+      required: false
 
   - type: textarea
     id: proposed-solution
@@ -55,7 +55,7 @@ body:
         - How would users interact with it?
         - What would the workflow look like?
     validations:
-      required: true
+      required: false
 
   - type: textarea
     id: use-case-examples
@@ -70,7 +70,7 @@ body:
         - "During my daily review, this would help me..."
         - "When working on a project, I could..."
     validations:
-      required: true
+      required: false
 
   - type: dropdown
     id: priority-impact
@@ -83,7 +83,7 @@ body:
         - Medium - This would be a nice improvement
         - Low - This would be a minor convenience
     validations:
-      required: true
+      required: false
 
   - type: textarea
     id: additional-context

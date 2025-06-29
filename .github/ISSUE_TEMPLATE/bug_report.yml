@@ -14,7 +14,7 @@ body:
       label: Obsidian Debug Info
       description: |
         Please paste your Obsidian debug info here. You can get this from:
-        **Help** → **Debug Info** → Copy the entire output
+        **Command palette** → **Show Debug Info** → Copy the output
       placeholder: |
         Paste your debug info here...
         
@@ -32,7 +32,7 @@ body:
         Plugins enabled: 12
         ...
     validations:
-      required: true
+      required: false
 
   - type: textarea
     id: bug-description
@@ -44,7 +44,7 @@ body:
         2. Click on...
         3. See error...
     validations:
-      required: true
+      required: false
 
   - type: textarea
     id: expected-behavior
@@ -53,7 +53,7 @@ body:
       description: What did you expect to happen?
       placeholder: Describe what you expected to happen...
     validations:
-      required: true
+      required: false
 
   - type: textarea
     id: actual-behavior
@@ -62,7 +62,7 @@ body:
       description: What actually happened?
       placeholder: Describe what actually happened...
     validations:
-      required: true
+      required: false
 
   - type: dropdown
     id: feature-context
@@ -83,7 +83,7 @@ body:
         - Settings/Configuration
         - Other (please specify in description)
     validations:
-      required: true
+      required: false
 
   - type: textarea
     id: screenshots
