@@ -208,14 +208,16 @@ export class TaskCreationModal extends TaskModal {
         if (parsed.priority) this.priority = parsed.priority;
         if (parsed.dueDate) this.dueDate = parsed.dueDate;
         if (parsed.scheduledDate) this.scheduledDate = parsed.scheduledDate;
-        if (parsed.contexts) this.contexts = parsed.contexts.join(', ');
-        if (parsed.tags) this.tags = parsed.tags.join(', ');
+        if (parsed.contexts && parsed.contexts.length > 0) this.contexts = parsed.contexts.join(', ');
+        if (parsed.tags && parsed.tags.length > 0) this.tags = parsed.tags.join(', ');
         if (parsed.details) this.details = parsed.details;
         if (parsed.recurrence) this.recurrenceRule = parsed.recurrence;
 
         // Update form inputs if they exist
         if (this.titleInput) this.titleInput.value = this.title;
         if (this.detailsInput) this.detailsInput.value = this.details;
+        if (this.contextsInput) this.contextsInput.value = this.contexts;
+        if (this.tagsInput) this.tagsInput.value = this.tags;
         
         // Update icon states
         this.updateIconStates();

@@ -24,6 +24,8 @@ export abstract class TaskModal extends Modal {
     // UI elements
     protected titleInput: HTMLInputElement;
     protected detailsInput: HTMLTextAreaElement;
+    protected contextsInput: HTMLInputElement;
+    protected tagsInput: HTMLInputElement;
     protected actionBar: HTMLElement;
     protected detailsContainer: HTMLElement;
     protected isExpanded = false;
@@ -201,6 +203,9 @@ export abstract class TaskModal extends Modal {
                         this.contexts = value;
                     });
                 
+                // Store reference to input element
+                this.contextsInput = text.inputEl;
+                
                 // Add autocomplete functionality
                 this.setupAutocomplete(text.inputEl, 'contexts');
             });
@@ -214,6 +219,9 @@ export abstract class TaskModal extends Modal {
                     .onChange(value => {
                         this.tags = value;
                     });
+                
+                // Store reference to input element
+                this.tagsInput = text.inputEl;
                 
                 // Add autocomplete functionality
                 this.setupAutocomplete(text.inputEl, 'tags');
