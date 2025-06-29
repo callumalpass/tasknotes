@@ -5,33 +5,35 @@ site_author: Callum Alpass
 repo_name: callumalpass/tasknotes
 repo_url: https://github.com/callumalpass/tasknotes
 
+# Configuration
 theme:
-  name: material
-  palette:
-    - scheme: default
-      primary: deep purple
-      accent: purple
-      toggle:
-        icon: material/brightness-7
-        name: Switch to dark mode
-    - scheme: slate
-      primary: deep purple
-      accent: purple
-      toggle:
-        icon: material/brightness-4
-        name: Switch to light mode
-  font:
-    text: Roboto
-    code: Roboto Mono
+  name: material # Use the Material theme 
+  # You can add theme-specific features here later, like palettes, fonts, logos, etc.
   features:
-    - navigation.tabs
-    - navigation.sections
-    - navigation.expand
-    - navigation.path
-    - navigation.top
-    - search.highlight
-    - search.share
-    - content.code.copy
+   # - navigation.tabs
+   - search.suggest
+  font:
+   text: Crimson Text
+  palette:
+  - media: "(prefers-color-scheme)"
+    accent: purple
+    primary: white
+    toggle:
+     icon: material/brightness-auto
+     name: Switch to light mode
+  - media: "(prefers-color-scheme: light)"
+    scheme: default
+    accent: purple
+    primary: white
+    toggle:
+      icon: material/toggle-switch
+      name: Switch to dark mode
+  - media: "(prefers-color-scheme: dark)"
+    scheme: slate
+    accent: purple
+    primary: black
+    toggle:
+      icon: material/toggle-switch-off-outline
 
 nav:
   - Home: index.md

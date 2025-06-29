@@ -48,7 +48,7 @@ The filter bar provides several ways to narrow down the displayed tasks:
 
 ## Sorting and Grouping
 
-**Sorting**: Click column headers to sort by that field. Click again to reverse the sort order. Available sort fields include:
+**Sorting**: 
 - Title (alphabetical)
 - Status (by configured status order)
 - Priority (by configured priority weight)
@@ -69,7 +69,6 @@ The filter bar provides several ways to narrow down the displayed tasks:
 **Direct Editing**: 
 - Click task titles to open the full task note
 - Click status or priority indicators to cycle through options
-- Some fields support inline editing when clicked
 
 **Context Menus**: Right-click any task for additional actions:
 - Open in new tab or split pane
@@ -95,7 +94,6 @@ The filter bar provides several ways to narrow down the displayed tasks:
 
 The Task View is optimized for large numbers of tasks:
 
-- **Virtual Scrolling**: Only visible rows are rendered, maintaining performance with thousands of tasks
 - **Efficient Filtering**: Filters use indexed data for fast response
 - **Incremental Updates**: Only changed tasks are re-rendered when data updates
 
