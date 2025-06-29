@@ -1,6 +1,6 @@
 # Task List View
 
-The Task List View provides a comprehensive, list-based interface for viewing and managing your tasks. It displays all of your tasks in a scrollable list, with powerful filtering, sorting, and grouping capabilities.
+The Task List View provides a list-based interface for viewing and managing your tasks. It displays your tasks in a scrollable list, with filtering, sorting, and grouping capabilities.
 
 ## Filtering, Sorting, and Grouping
 

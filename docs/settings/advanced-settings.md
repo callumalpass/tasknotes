@@ -1,10 +1,10 @@
 # Advanced Settings
 
-These settings provide more advanced customization options, such as field mapping, custom status and priority workflows, and performance tuning.
+These settings provide customization options, such as field mapping, custom status and priority workflows, and performance tuning.
 
 ## Field Mapping
 
-**Field Mapping** allows you to customize the YAML property names that TaskNotes uses for its internal properties. This is useful for integrating with other plugins or for matching your existing vault structure. You can map all of the core task properties, including title, status, priority, and due date, as well as more advanced properties like time estimates and recurrence patterns.
+**Field Mapping** allows you to customize the YAML property names that TaskNotes uses for its internal properties. This can be used for integrating with other plugins or for matching your existing vault structure. You can map all of the core task properties, including title, status, priority, and due date, as well as other properties like time estimates and recurrence patterns.
 
 ## Custom Status System
 
@@ -16,7 +16,7 @@ You can also create a **Custom Priority System**. You can define as many priorit
 
 ## Performance Settings
 
-TaskNotes includes several **Performance Settings** to help you optimize the plugin for large vaults. You can disable the indexing of non-task notes, which can improve performance in vaults with a large number of notes.
+TaskNotes includes **Performance Settings** to optimize the plugin for large vaults. You can disable the indexing of non-task notes, which can improve performance in vaults with a large number of notes.
 
 ## Pomodoro Timer Settings
 

@@ -4,7 +4,7 @@ The Notes View displays your vault notes organized by date, allowing you to brow
 
 ## Interface Layout
 
-The Notes View consists of a date navigation header and a list of note cards. Each note card displays key information about the note, such as its title, path, and creation date.
+The Notes View consists of a date navigation header and a list of note cards. Each note card displays information about the note, such as its title, path, and creation date.
 
 ## Note Actions
 

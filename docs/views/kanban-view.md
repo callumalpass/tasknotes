@@ -1,6 +1,6 @@
 # Kanban View
 
-The Kanban View displays tasks as cards in columns, where each column represents a different status. This provides a visual way to manage your workflow, similar to tools like Trello or Jira.
+The Kanban View displays tasks as cards in columns, where each column represents a different status. This provides a visual way to manage your workflow.
 
 ## Interface Layout
 

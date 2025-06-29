@@ -7,53 +7,53 @@ A task and note management plugin with calendar views and daily notes.
 
 ## Documentation
 
-**[Complete Documentation](https://callumalpass.github.io/tasknotes/)** - Comprehensive guide covering all features, configuration options, and usage examples.
+**[Documentation](https://callumalpass.github.io/tasknotes/)**
 
 ## Rationale
 
-TaskNotes uses YAML frontmatter to store task data, providing several benefits. YAML is a standard format compatible with many tools, ensuring long-term data stability in line with Obsidian's file-over-app philosophy. The frontmatter approach makes it trivial to add custom fields like "assigned-to" or "attachments" that integrate seamlessly with other tools like Obsidian Bases. This extensibility has made it easy to add features like time-tracking, which would be difficult to implement cleanly in other task formats. The one-note-per-task approach enables you to add unstructured content in the note body for descriptions and progress notes. Each task becomes a full participant in your knowledge graph, leveraging native Obsidian features like backlinking and graph visualization. This creates a complete history and context for every task in one place.
+TaskNotes uses YAML frontmatter to store task data. YAML is a standard format that is compatible with many tools, which aligns with Obsidian's file-over-app philosophy. The frontmatter approach allows for the addition of custom fields, such as "assigned-to" or "attachments," which can be integrated with other tools like Obsidian Bases. This extensibility has been used to add features like time-tracking. The one-note-per-task approach allows for the inclusion of unstructured content in the note body for descriptions and progress notes. Each task can be linked to other notes in the vault, which allows for the use of Obsidian's backlinking and graph visualization features.
 
 ## Core Features
 
 ### Task Management
-- Individual Markdown files with YAML frontmatter
-- Properties: title, status, priority, due date, scheduled date, contexts, tags, time estimates
-- Recurring tasks with per-date completion tracking
-- Time tracking with multiple sessions per task
-- Archive functionality using tags
-- Advanced filtering and grouping options
+- Tasks are stored as individual Markdown files with YAML frontmatter.
+- Properties include: title, status, priority, due date, scheduled date, contexts, tags, and time estimates.
+- Recurring tasks are supported, with per-date completion tracking.
+- Time tracking is available, with multiple sessions per task.
+- An archive function is provided, which uses tags.
+- Filtering and grouping options are available.
 
 ### Calendar Integration
-- Month view with task and note display
-- Mini calendar for compact layouts
-- ICS/iCal subscription support
-- Direct navigation to daily notes
+- A month view is provided, which displays tasks and notes.
+- A mini calendar is available for compact layouts.
+- Subscriptions to ICS/iCal feeds are supported.
+- Direct navigation to daily notes is available.
 
 ### Time Management
-- Built-in time tracking with start/stop functionality
-- Pomodoro timer with task integration
-- Session history and statistics
+- A time tracking feature is included, with start/stop functionality.
+- A Pomodoro timer is available, with task integration.
+- Session history and statistics are provided.
 
 ### Editor Integration
-- Interactive task previews on wikilinks
-- One-click checkbox-to-task conversion
-- Template support with parent note context
+- Interactive task previews are available for wikilinks.
+- A one-click checkbox-to-task conversion feature is included.
+- Template support is provided, with parent note context.
 
 ### Views
-- **Calendar**: Month view with agenda
-- **Task List**: Filtering and grouping
-- **Kanban**: Drag-and-drop task management
-- **Agenda**: Daily task and note overview
-- **Notes**: Date-based note browser
-- **Pomodoro**: Timer with statistics
+- **Calendar**: A month view with an agenda.
+- **Task List**: A view with filtering and grouping options.
+- **Kanban**: A view with drag-and-drop task management.
+- **Agenda**: A daily task and note overview.
+- **Notes**: A date-based note browser.
+- **Pomodoro**: A timer with statistics.
 
 ## Configuration
 
 ### Customization
-- **Field Mapping**: Customize YAML property names to match existing workflows
-- **Custom Statuses**: Define task statuses with colors and completion behavior
-- **Custom Priorities**: Create priority levels with weight-based sorting
-- **Templates**: Configure daily note templates with Obsidian variables
+- **Field Mapping**: YAML property names can be customized to match existing workflows.
+- **Custom Statuses**: Task statuses can be defined, with colors and completion behavior.
+- **Custom Priorities**: Priority levels can be created, with weight-based sorting.
+- **Templates**: Daily note templates can be configured with Obsidian variables.
 
 ## YAML Structure
 
@@ -73,9 +73,7 @@ timeEntries:
 ### Recurring Task
 ```yaml
 title: "Weekly meeting"
-recurrence:
-  frequency: "weekly"
-  days_of_week: ["mon"]
+recurrence: "FREQ=WEEKLY;BYDAY=MO"
 complete_instances: ["2024-01-08"]
 ```
 
@@ -86,4 +84,3 @@ This plugin uses [FullCalendar.io](https://fullcalendar.io/) for its calendar co
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-

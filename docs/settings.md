@@ -1,6 +1,6 @@
 # Settings
 
-TaskNotes provides a wide range of settings to customize its behavior and appearance. The settings are organized into several categories, each controlling a different aspect of the plugin.
+TaskNotes provides a variety of settings to customize its behavior and appearance. The settings are organized into several categories, each controlling a different aspect of the plugin.
 
 ## Task Defaults
 
