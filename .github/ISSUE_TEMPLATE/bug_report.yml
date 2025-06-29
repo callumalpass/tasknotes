@@ -1,0 +1,98 @@
+name: Bug Report
+description: Report a bug or issue with TaskNotes
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug! Please fill out the information below to help us understand and fix the issue.
+
+  - type: textarea
+    id: obsidian-debug-info
+    attributes:
+      label: Obsidian Debug Info
+      description: |
+        Please paste your Obsidian debug info here. You can get this from:
+        **Help** → **Debug Info** → Copy the entire output
+      placeholder: |
+        Paste your debug info here...
+        
+        Example:
+        Obsidian version: v1.4.16
+        Installer version: v1.4.13
+        Operating system: Darwin 22.6.0
+        Login status: logged in
+        Catalyst license: none
+        Insider build toggle: off
+        Live preview: on
+        Legacy editor: off
+        Base theme: dark
+        Community theme: none
+        Snippets enabled: 0
+        Restricted mode: off
+        Plugins installed: 15
+        Plugins enabled: 12
+        ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: bug-description
+    attributes:
+      label: Bug Description
+      description: Describe the bug and provide steps to reproduce it
+      placeholder: |
+        1. Go to...
+        2. Click on...
+        3. See error...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected Behavior
+      description: What did you expect to happen?
+      placeholder: Describe what you expected to happen...
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual-behavior
+    attributes:
+      label: Actual Behavior
+      description: What actually happened?
+      placeholder: Describe what actually happened...
+    validations:
+      required: true
+
+  - type: dropdown
+    id: feature-context
+    attributes:
+      label: Feature Context
+      description: Which TaskNotes feature is affected?
+      options:
+        - Task Management (creating, editing, status changes)
+        - Calendar View (month view, navigation)
+        - Mini Calendar
+        - Task List View
+        - Kanban Board
+        - Agenda View
+        - Notes View
+        - Pomodoro Timer
+        - Time Tracking
+        - Editor Integration (task conversion, previews)
+        - Settings/Configuration
+        - Other (please specify in description)
+    validations:
+      required: true
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots
+      description: |
+        If applicable, add screenshots to help explain the problem.
+        You can drag and drop images here or paste them directly.
+      placeholder: Drag and drop screenshots here or paste them...
