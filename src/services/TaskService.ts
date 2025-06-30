@@ -551,12 +551,67 @@ export class TaskService {
             if (!(file instanceof TFile)) {
                 throw new Error(`Cannot find task file: ${originalTask.path}`);
             }
-            
-            // Step 1: Construct new state in memory by merging updates with original task
-            const updatedTask = { ...originalTask, ...updates };
-            updatedTask.dateModified = getCurrentTimestamp();
-            
-            // Handle derivative changes for status updates
+
+            const isRenameNeeded = this.plugin.settings.storeTitleInFilename && updates.title && updates.title !== originalTask.title;
+            let newPath = originalTask.path;
+
+            if (isRenameNeeded) {
+                const parentPath = file.parent ? file.parent.path : '';
+                const newFilename = await generateUniqueFilename(updates.title!, parentPath, this.plugin.app.vault);
+                newPath = parentPath ? `${parentPath}/${newFilename}.md` : `${newFilename}.md`;
+            }
+
+            // Step 1: Persist frontmatter changes to the file at its original path
+            await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
+                const completeTaskData: Partial<TaskInfo> = {
+                    ...originalTask,
+                    ...updates,
+                    dateModified: getCurrentTimestamp()
+                };
+
+                const mappedFrontmatter = this.plugin.fieldMapper.mapToFrontmatter(
+                    completeTaskData,
+                    this.plugin.settings.taskTag,
+                    this.plugin.settings.storeTitleInFilename
+                );
+
+                Object.keys(mappedFrontmatter).forEach(key => {
+                    if (mappedFrontmatter[key] !== undefined) {
+                        frontmatter[key] = mappedFrontmatter[key];
+                    }
+                });
+
+                if (updates.hasOwnProperty('due') && updates.due === undefined) delete frontmatter[this.plugin.fieldMapper.toUserField('due')];
+                if (updates.hasOwnProperty('scheduled') && updates.scheduled === undefined) delete frontmatter[this.plugin.fieldMapper.toUserField('scheduled')];
+                if (updates.hasOwnProperty('contexts') && updates.contexts === undefined) delete frontmatter[this.plugin.fieldMapper.toUserField('contexts')];
+                if (updates.hasOwnProperty('timeEstimate') && updates.timeEstimate === undefined) delete frontmatter[this.plugin.fieldMapper.toUserField('timeEstimate')];
+                if (updates.hasOwnProperty('completedDate') && updates.completedDate === undefined) delete frontmatter[this.plugin.fieldMapper.toUserField('completedDate')];
+                if (updates.hasOwnProperty('recurrence') && updates.recurrence === undefined) delete frontmatter[this.plugin.fieldMapper.toUserField('recurrence')];
+
+                if (this.plugin.settings.storeTitleInFilename) {
+                    delete frontmatter[this.plugin.fieldMapper.toUserField('title')];
+                }
+
+                if (updates.hasOwnProperty('tags')) {
+                    frontmatter.tags = updates.tags;
+                } else if (originalTask.tags) {
+                    frontmatter.tags = originalTask.tags;
+                }
+            });
+
+            // Step 2: Rename the file if needed, after frontmatter is updated
+            if (isRenameNeeded) {
+                await this.plugin.app.fileManager.renameFile(file, newPath);
+            }
+
+            // Step 3: Construct the final authoritative state
+            const updatedTask: TaskInfo = {
+                ...originalTask,
+                ...updates,
+                path: newPath,
+                dateModified: getCurrentTimestamp()
+            };
+
             if (updates.status !== undefined && !originalTask.recurrence) {
                 if (this.plugin.statusManager.isCompletedStatus(updates.status)) {
                     if (!originalTask.completedDate) {
@@ -566,99 +621,20 @@ export class TaskService {
                     updatedTask.completedDate = undefined;
                 }
             }
-            
-            // Preserve complete_instances for recurring tasks
-            if (originalTask.complete_instances) {
-                updatedTask.complete_instances = originalTask.complete_instances;
+
+            // Step 4: Update cache
+            if (isRenameNeeded) {
+                this.plugin.cacheManager.clearCacheEntry(originalTask.path);
             }
-            
-            // Step 2: Persist to file
-            await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
-                // Create updated TaskInfo object for field mapping - include ALL current task data to preserve fields
-                const completeTaskData: Partial<TaskInfo> = {
-                    ...originalTask,  // Start with all current fields
-                    ...updates,       // Apply only the changes
-                    dateModified: updatedTask.dateModified
-                };
-                
-                // Handle completion date for status changes
-                if (updates.status !== undefined && !originalTask.recurrence) {
-                    if (this.plugin.statusManager.isCompletedStatus(updates.status)) {
-                        if (!originalTask.completedDate) {
-                            completeTaskData.completedDate = getCurrentDateString();
-                        }
-                    } else {
-                        completeTaskData.completedDate = undefined;
-                    }
-                }
-                
-                // Use field mapper to convert ALL task data to frontmatter with proper field mapping
-                const mappedFrontmatter = this.plugin.fieldMapper.mapToFrontmatter(completeTaskData, this.plugin.settings.taskTag, this.plugin.settings.storeTitleInFilename);
-                
-                // Apply mapped frontmatter properties, preserving any existing non-task properties
-                // The FieldMapper only includes task-related fields, so this is safe
-                Object.keys(mappedFrontmatter).forEach(key => {
-                    if (mappedFrontmatter[key] !== undefined) {
-                        frontmatter[key] = mappedFrontmatter[key];
-                    }
-                });
-                
-                // Remove fields that are explicitly set to undefined in updates
-                if (updates.hasOwnProperty('due') && updates.due === undefined) {
-                    delete frontmatter[this.plugin.fieldMapper.toUserField('due')];
-                }
-                if (updates.hasOwnProperty('scheduled') && updates.scheduled === undefined) {
-                    delete frontmatter[this.plugin.fieldMapper.toUserField('scheduled')];
-                }
-                if (updates.hasOwnProperty('contexts') && updates.contexts === undefined) {
-                    delete frontmatter[this.plugin.fieldMapper.toUserField('contexts')];
-                }
-                if (updates.hasOwnProperty('timeEstimate') && updates.timeEstimate === undefined) {
-                    delete frontmatter[this.plugin.fieldMapper.toUserField('timeEstimate')];
-                }
-                if (updates.hasOwnProperty('completedDate') && updates.completedDate === undefined) {
-                    delete frontmatter[this.plugin.fieldMapper.toUserField('completedDate')];
-                }
-                if (updates.hasOwnProperty('recurrence') && updates.recurrence === undefined) {
-                    delete frontmatter[this.plugin.fieldMapper.toUserField('recurrence')];
-                }
-                
-                // Tags are handled separately (not via field mapper) - preserve existing tags if not being updated
-                if (updates.hasOwnProperty('tags')) {
-                    frontmatter.tags = updates.tags;
-                } else if (originalTask.tags) {
-                    // Preserve existing tags if not being updated
-                    frontmatter.tags = originalTask.tags;
-                }
+            await this.plugin.cacheManager.updateTaskInfoInCache(newPath, updatedTask);
+
+            // Step 5: Notify system of change
+            this.plugin.emitter.trigger(EVENT_TASK_UPDATED, {
+                path: newPath,
+                originalTask: originalTask,
+                updatedTask: updatedTask
             });
-            
-            // Step 3: Proactively update cache
-            try {
-                await this.plugin.cacheManager.updateTaskInfoInCache(originalTask.path, updatedTask);
-            } catch (cacheError) {
-                // Cache errors shouldn't break the operation, just log them
-                console.error('Error updating task cache:', {
-                    error: cacheError instanceof Error ? cacheError.message : String(cacheError),
-                    taskPath: originalTask.path
-                });
-            }
-            
-            // Step 4: Notify system of change
-            try {
-                this.plugin.emitter.trigger(EVENT_TASK_UPDATED, {
-                    path: originalTask.path,
-                    originalTask: originalTask,
-                    updatedTask: updatedTask
-                });
-            } catch (eventError) {
-                console.error('Error emitting task update event:', {
-                    error: eventError instanceof Error ? eventError.message : String(eventError),
-                    taskPath: originalTask.path
-                });
-                // Event emission errors shouldn't break the operation
-            }
-            
-            // Step 5: Return authoritative data
+
             return updatedTask;
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : String(error);
