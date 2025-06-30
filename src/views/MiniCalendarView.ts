@@ -493,8 +493,10 @@ export class MiniCalendarView extends ItemView {
         // Get the last day of the month
         const lastDayOfMonth = new Date(currentYear, currentMonth + 1, 0);
         
+        const firstDaySetting = this.plugin.settings.calendarViewSettings.firstDay || 0;
+        
         // Get the day of the week for the first day (0-6, 0 is Sunday)
-        const firstDayOfWeek = firstDayOfMonth.getDay();
+        const firstDayOfWeek = (firstDayOfMonth.getDay() - firstDaySetting + 7) % 7;
         
         // Create the calendar grid with ARIA role
         const calendarGrid = gridContainer.createDiv({ 
@@ -516,9 +518,10 @@ export class MiniCalendarView extends ItemView {
         
         // Day names
         const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        const reorderedDayNames = [...dayNames.slice(firstDaySetting), ...dayNames.slice(0, firstDaySetting)];
         
         // Add day headers with ARIA roles
-        dayNames.forEach((dayName, index) => {
+        reorderedDayNames.forEach((dayName, index) => {
             calendarHeader.createDiv({ 
                 text: dayName, 
                 cls: 'mini-calendar-view__day-header',
@@ -590,7 +593,7 @@ export class MiniCalendarView extends ItemView {
         const today = new Date();
         for (let i = 1; i <= daysThisMonth; i++) {
             // Start a new row every 7 days (once per week)
-            if ((i + daysFromPrevMonth) % 7 === 1) {
+            if ((i + daysFromPrevMonth - 1) % 7 === 0 && i > 1) {
                 currentWeekRow = calendarGrid.createDiv({
                     cls: 'mini-calendar-view__week',
                     attr: { 'role': 'row' }
@@ -643,7 +646,7 @@ export class MiniCalendarView extends ItemView {
         // Days from next month
         for (let i = 1; i <= daysFromNextMonth; i++) {
             // Start a new row every 7 days (once per week)
-            if ((i + daysFromPrevMonth + daysThisMonth) % 7 === 1) {
+            if ((i + daysFromPrevMonth + daysThisMonth - 1) % 7 === 0 && i > 1) {
                 currentWeekRow = calendarGrid.createDiv({
                     cls: 'mini-calendar-view__week',
                     attr: { 'role': 'row' }
