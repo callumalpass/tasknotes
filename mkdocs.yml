@@ -46,7 +46,7 @@ nav:
     - Calendar Integration: features/calendar-integration.md
   - Views:
     - Overview: views.md
-    - Task List View: views/task-view.md
+    - Task List View: views/task-list.md
     - Notes View: views/notes-view.md
     - Agenda View: views/agenda-view.md
     - Kanban View: views/kanban-view.md
