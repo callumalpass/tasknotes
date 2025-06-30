@@ -538,43 +538,45 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 					});
 			});
 
-		new Setting(container)
-			.setName('Filename format')
-			.setDesc('How task filenames should be generated')
-			.addDropdown(dropdown => {
-				dropdown.selectEl.setAttribute('aria-label', 'Task filename generation format');
-				return dropdown
-					.addOption('title', 'Task title')
-					.addOption('zettel', 'Zettelkasten format (YYMMDD + base36 seconds since midnight)')
-					.addOption('timestamp', 'Full timestamp (YYYY-MM-DD-HHMMSS)')
-					.addOption('custom', 'Custom template')
-					.setValue(this.plugin.settings.taskFilenameFormat)
-					.onChange(async (value: any) => {
-						this.plugin.settings.taskFilenameFormat = value;
-						await this.plugin.saveSettings();
-						this.renderActiveTab(); // Re-render to update visibility
-					});
-			});
-
-		if (this.plugin.settings.taskFilenameFormat === 'custom') {
+		if (!this.plugin.settings.storeTitleInFilename) {
 			new Setting(container)
-				.setName('Custom filename template')
-				.setDesc('Template for custom filenames. Available variables: {title}, {date}, {time}, {priority}, {status}, {timestamp}, {dueDate}, {scheduledDate}, etc.')
-				.addText(text => {
-					text.inputEl.setAttribute('aria-label', 'Custom filename template with variables');
-					return text
-						.setPlaceholder('{date}-{title}-{dueDate}')
-						.setValue(this.plugin.settings.customFilenameTemplate)
-						.onChange(async (value) => {
-							this.plugin.settings.customFilenameTemplate = value;
+				.setName('Filename format')
+				.setDesc('How task filenames should be generated')
+				.addDropdown(dropdown => {
+					dropdown.selectEl.setAttribute('aria-label', 'Task filename generation format');
+					return dropdown
+						.addOption('title', 'Task title')
+						.addOption('zettel', 'Zettelkasten format (YYMMDD + base36 seconds since midnight)')
+						.addOption('timestamp', 'Full timestamp (YYYY-MM-DD-HHMMSS)')
+						.addOption('custom', 'Custom template')
+						.setValue(this.plugin.settings.taskFilenameFormat)
+						.onChange(async (value: any) => {
+							this.plugin.settings.taskFilenameFormat = value;
 							await this.plugin.saveSettings();
+							this.renderActiveTab(); // Re-render to update visibility
 						});
 				});
 
-			container.createEl('p', {
-				text: 'Note: {dueDate} and {scheduledDate} are in YYYY-MM-DD format and will be empty if not set.',
-				cls: 'settings-help-note'
-			});
+			if (this.plugin.settings.taskFilenameFormat === 'custom') {
+				new Setting(container)
+					.setName('Custom filename template')
+					.setDesc('Template for custom filenames. Available variables: {title}, {date}, {time}, {priority}, {status}, {timestamp}, {dueDate}, {scheduledDate}, etc.')
+					.addText(text => {
+						text.inputEl.setAttribute('aria-label', 'Custom filename template with variables');
+						return text
+							.setPlaceholder('{date}-{title}-{dueDate}')
+							.setValue(this.plugin.settings.customFilenameTemplate)
+							.onChange(async (value) => {
+								this.plugin.settings.customFilenameTemplate = value;
+								await this.plugin.saveSettings();
+							});
+					});
+
+				container.createEl('p', {
+					text: 'Note: {dueDate} and {scheduledDate} are in YYYY-MM-DD format and will be empty if not set.',
+					cls: 'settings-help-note'
+				});
+			}
 		}
 		
 		// Basic defaults section
