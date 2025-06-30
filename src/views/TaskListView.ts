@@ -551,6 +551,8 @@ export class TaskListView extends ItemView {
         switch (groupName) {
             case 'all':
                 return 'All tasks';
+            case 'no-status':
+                return 'No status assigned';
             default:
                 return groupName;
         }
