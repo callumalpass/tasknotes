@@ -110,7 +110,8 @@ export class TaskEditModal extends TaskModal {
                 content,
                 this.task.path,
                 file,
-                this.plugin.fieldMapper
+                this.plugin.fieldMapper,
+                this.plugin.settings.storeTitleInFilename
             );
 
             if (freshTaskInfo) {

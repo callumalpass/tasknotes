@@ -114,7 +114,15 @@ describe('Migration Workflow Integration', () => {
         createMockTaskFile('task3.md', 'Good Task 2', { frequency: 'weekly' })
       ];
 
-      setupMockVault(taskFiles);
+      // Setup metadata cache to indicate these files have legacy recurrence
+      mockMetadataCache.getFileCache.mockImplementation((file: TFile) => ({
+        frontmatter: {
+          title: file.name.replace('.md', ''),
+          recurrence: { frequency: 'daily' } // Legacy format to trigger migration
+        }
+      }));
+
+      mockVault.getMarkdownFiles.mockReturnValue(taskFiles);
       
       // Make the second file read fail to simulate error
       mockVault.read.mockImplementation((file: TFile) => {
@@ -139,7 +147,15 @@ describe('Migration Workflow Integration', () => {
         createMockTaskFile('task2.md', 'Task 2', { frequency: 'weekly' })
       ];
 
-      setupMockVault(taskFiles);
+      // Setup mock metadata cache to indicate these files have legacy recurrence
+      mockMetadataCache.getFileCache.mockImplementation((file: TFile) => ({
+        frontmatter: {
+          title: file.name.replace('.md', ''),
+          recurrence: { frequency: 'daily' } // Legacy format to trigger migration
+        }
+      }));
+
+      mockVault.getMarkdownFiles.mockReturnValue(taskFiles);
       
       // First file read succeeds, second fails
       mockVault.read
@@ -158,7 +174,15 @@ describe('Migration Workflow Integration', () => {
         createMockTaskFile('task1.md', 'Task 1', { frequency: 'daily' })
       ];
 
-      setupMockVault(taskFiles);
+      // Setup mock metadata cache to indicate this file has legacy recurrence
+      mockMetadataCache.getFileCache.mockImplementation((file: TFile) => ({
+        frontmatter: {
+          title: file.name.replace('.md', ''),
+          recurrence: { frequency: 'daily' } // Legacy format to trigger migration
+        }
+      }));
+
+      mockVault.getMarkdownFiles.mockReturnValue(taskFiles);
       
       // Return content without proper frontmatter to trigger malformed error
       mockVault.read.mockResolvedValue(`---
@@ -253,9 +277,13 @@ Task content`);
       const file = new TFile('tasks/no-frontmatter.md');
 
       mockVault.getMarkdownFiles.mockReturnValue([file]);
+      
+      // Setup metadata cache to indicate this file has legacy recurrence (so it gets processed)
       mockMetadataCache.getFileCache.mockReturnValue({
         frontmatter: { recurrence: { frequency: 'daily' } }
       });
+      
+      // But when read, the file has no frontmatter
       mockVault.read.mockResolvedValue('# Just content, no frontmatter');
 
       const result = await migrationService.performMigration();
@@ -325,6 +353,13 @@ Task content here.`;
     // Clear previous mocks and setup fresh
     jest.clearAllMocks();
     
+    // Create the actual mock files in the filesystem
+    taskFiles.forEach(file => {
+      const title = file.name.replace('.md', '');
+      const content = createTaskFileContent(title, { frequency: 'daily' });
+      MockObsidian.createTestFile(file.path, content);
+    });
+    
     mockVault.getMarkdownFiles.mockReturnValue(taskFiles);
     
     mockMetadataCache.getFileCache.mockImplementation((file: TFile) => ({
@@ -334,9 +369,14 @@ Task content here.`;
       }
     }));
 
-    mockVault.read.mockImplementation((file: TFile) => {
-      const title = file.name.replace('.md', '');
-      return Promise.resolve(createTaskFileContent(title, { frequency: 'daily' }));
+    mockVault.read.mockImplementation(async (file: TFile) => {
+      try {
+        return MockObsidian.getFileSystem().read(file.path);
+      } catch (error) {
+        // If file doesn't exist in mock filesystem, create default content
+        const title = file.name.replace('.md', '');
+        return createTaskFileContent(title, { frequency: 'daily' });
+      }
     });
 
     mockVault.modify.mockResolvedValue(undefined);

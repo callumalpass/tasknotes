@@ -288,7 +288,8 @@ export function extractTaskInfo(
 	content: string, 
 	path: string, 
 	file: TFile,
-	fieldMapper?: FieldMapper
+	fieldMapper?: FieldMapper,
+	storeTitleInFilename?: boolean
 ): TaskInfo | null {
 	
 	// Try to extract task info from frontmatter using native metadata cache
@@ -298,7 +299,7 @@ export function extractTaskInfo(
 	if (yaml) {
 		if (fieldMapper) {
 			// Use field mapper to extract task info
-			const mappedTask = fieldMapper.mapFromFrontmatter(yaml, path, this.plugin.settings.storeTitleInFilename);
+			const mappedTask = fieldMapper.mapFromFrontmatter(yaml, path, storeTitleInFilename);
 			
 			// Ensure required fields have defaults
 			const taskInfo: TaskInfo = {
@@ -324,7 +325,7 @@ export function extractTaskInfo(
 		} else {
 			// Fallback to default field mapping
 			const defaultMapper = new FieldMapper(DEFAULT_FIELD_MAPPING);
-			const mappedTask = defaultMapper.mapFromFrontmatter(yaml, path, this.plugin.settings.storeTitleInFilename);
+			const mappedTask = defaultMapper.mapFromFrontmatter(yaml, path, storeTitleInFilename);
 			
 			return {
 				title: mappedTask.title || 'Untitled task',

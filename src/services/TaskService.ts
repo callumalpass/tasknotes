@@ -626,14 +626,30 @@ export class TaskService {
             if (isRenameNeeded) {
                 this.plugin.cacheManager.clearCacheEntry(originalTask.path);
             }
-            await this.plugin.cacheManager.updateTaskInfoInCache(newPath, updatedTask);
+            try {
+                await this.plugin.cacheManager.updateTaskInfoInCache(newPath, updatedTask);
+            } catch (cacheError) {
+                // Cache errors shouldn't break the operation, just log them
+                console.error('Error updating task cache:', {
+                    error: cacheError instanceof Error ? cacheError.message : String(cacheError),
+                    taskPath: newPath
+                });
+            }
 
             // Step 5: Notify system of change
-            this.plugin.emitter.trigger(EVENT_TASK_UPDATED, {
-                path: newPath,
-                originalTask: originalTask,
-                updatedTask: updatedTask
-            });
+            try {
+                this.plugin.emitter.trigger(EVENT_TASK_UPDATED, {
+                    path: newPath,
+                    originalTask: originalTask,
+                    updatedTask: updatedTask
+                });
+            } catch (eventError) {
+                console.error('Error emitting task update event:', {
+                    error: eventError instanceof Error ? eventError.message : String(eventError),
+                    taskPath: newPath
+                });
+                // Event emission errors shouldn't break the operation
+            }
 
             return updatedTask;
         } catch (error) {

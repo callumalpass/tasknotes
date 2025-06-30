@@ -307,6 +307,12 @@ export class Vault {
     return mockFileSystem.getFiles().map(file => new TFile(file.path));
   }
 
+  getMarkdownFiles(): TFile[] {
+    return mockFileSystem.getFiles()
+      .filter(file => file.extension === 'md')
+      .map(file => new TFile(file.path));
+  }
+
   adapter = {
     exists: (path: string) => mockFileSystem.exists(path),
     mkdir: jest.fn().mockResolvedValue(undefined),
