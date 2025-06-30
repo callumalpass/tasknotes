@@ -48,6 +48,8 @@ export interface TaskNotesSettings {
 	customPriorities: PriorityConfig[];
 	// Migration tracking
 	recurrenceMigrated?: boolean;
+	// Status bar settings
+	showTrackedTasksInStatusBar: boolean;
 }
 
 export interface TaskCreationDefaults {
@@ -265,7 +267,9 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	customStatuses: DEFAULT_STATUSES,
 	customPriorities: DEFAULT_PRIORITIES,
 	// Migration defaults
-	recurrenceMigrated: false
+	recurrenceMigrated: false,
+	// Status bar defaults
+	showTrackedTasksInStatusBar: false
 };
 
 
@@ -457,6 +461,26 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 					.onChange(async (value) => {
 						this.plugin.settings.inlineTaskConvertFolder = value;
 						await this.plugin.saveSettings();
+					});
+			});
+
+		// Status bar settings section
+		new Setting(container).setName('Status bar').setHeading();
+
+		new Setting(container)
+			.setName('Show tracked tasks in status bar')
+			.setDesc('Display currently tracked tasks (with active time tracking) in the status bar at the bottom of the app')
+			.addToggle(toggle => {
+				toggle.toggleEl.setAttribute('aria-label', 'Show tracked tasks in status bar');
+				return toggle
+					.setValue(this.plugin.settings.showTrackedTasksInStatusBar)
+					.onChange(async (value) => {
+						this.plugin.settings.showTrackedTasksInStatusBar = value;
+						await this.plugin.saveSettings();
+						// Update status bar visibility immediately
+						if (this.plugin.statusBarService) {
+							this.plugin.statusBarService.updateVisibility();
+						}
 					});
 			});
 

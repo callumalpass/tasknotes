@@ -60,6 +60,7 @@ import { DragDropManager } from './utils/DragDropManager';
 import { ICSSubscriptionService } from './services/ICSSubscriptionService';
 import { MigrationService } from './services/MigrationService';
 import { showMigrationPrompt } from './modals/MigrationModal';
+import { StatusBarService } from './services/StatusBarService';
 
 export default class TaskNotesPlugin extends Plugin {
 	settings: TaskNotesSettings;
@@ -106,6 +107,9 @@ export default class TaskNotesPlugin extends Plugin {
 	
 	// Migration service
 	migrationService: MigrationService;
+	
+	// Status bar service
+	statusBarService: StatusBarService;
 	
 	// Event listener cleanup  
 	private taskUpdateListenerForEditor: import('obsidian').EventRef | null = null;
@@ -155,6 +159,7 @@ export default class TaskNotesPlugin extends Plugin {
 		this.viewStateManager = new ViewStateManager();
 		this.dragDropManager = new DragDropManager(this);
 		this.migrationService = new MigrationService(this.app);
+		this.statusBarService = new StatusBarService(this);
 		
 		// Note: View registration and heavy operations moved to onLayoutReady
 		
@@ -271,6 +276,9 @@ export default class TaskNotesPlugin extends Plugin {
 			// Initialize FilterService and set up event listeners (lightweight)
 			this.filterService.initialize();
 			
+			// Initialize status bar service
+			this.statusBarService.initialize();
+			
 			// Defer heavy service initialization until needed
 			this.initializeServicesLazily();
 			
@@ -352,6 +360,9 @@ export default class TaskNotesPlugin extends Plugin {
 					}, 100);
 				}));
 				
+				// Set up status bar event listeners for real-time updates
+				this.setupStatusBarEventListeners();
+				
 				// Check for migration needs (after all services are initialized)
 				await this.checkMigrationNeeds();
 				
@@ -371,6 +382,55 @@ export default class TaskNotesPlugin extends Plugin {
 		}
 		
 		await this.readyPromise;
+	}
+	
+	/**
+	 * Set up event listeners for status bar updates
+	 */
+	private setupStatusBarEventListeners(): void {
+		if (!this.statusBarService) {
+			return;
+		}
+		
+		// Listen for task updates that might affect time tracking
+		this.registerEvent(this.emitter.on(EVENT_TASK_UPDATED, () => {
+			// Small delay to ensure task state changes are fully propagated
+			setTimeout(() => {
+				this.statusBarService.requestUpdate();
+			}, 100);
+		}));
+		
+		// Listen for general data changes
+		this.registerEvent(this.emitter.on(EVENT_DATA_CHANGED, () => {
+			// Small delay to ensure data changes are fully propagated
+			setTimeout(() => {
+				this.statusBarService.requestUpdate();
+			}, 100);
+		}));
+		
+		// Listen for Pomodoro events if Pomodoro service is available
+		if (this.pomodoroService) {
+			// Listen for Pomodoro start events
+			this.registerEvent(this.emitter.on('pomodoro-start', () => {
+				setTimeout(() => {
+					this.statusBarService.requestUpdate();
+				}, 100);
+			}));
+			
+			// Listen for Pomodoro stop events
+			this.registerEvent(this.emitter.on('pomodoro-stop', () => {
+				setTimeout(() => {
+					this.statusBarService.requestUpdate();
+				}, 100);
+			}));
+			
+			// Listen for Pomodoro state changes
+			this.registerEvent(this.emitter.on('pomodoro-state-changed', () => {
+				setTimeout(() => {
+					this.statusBarService.requestUpdate();
+				}, 100);
+			}));
+		}
 	}
 	
 	/**
@@ -481,6 +541,11 @@ export default class TaskNotesPlugin extends Plugin {
 			this.viewStateManager.cleanup();
 		}
 		
+		// Clean up status bar service
+		if (this.statusBarService) {
+			this.statusBarService.destroy();
+		}
+		
 		// Clean up native cache manager
 		if (this.cacheManager) {
 			this.cacheManager.destroy();
@@ -585,6 +650,11 @@ export default class TaskNotesPlugin extends Plugin {
 		
 		// Update custom styles
 		this.injectCustomStyles();
+		
+		// Update status bar service visibility
+		if (this.statusBarService) {
+			this.statusBarService.updateVisibility();
+		}
 		
 		// If settings have changed, notify views to refresh their data
 		this.notifyDataChanged();
@@ -975,6 +1045,14 @@ private injectCustomStyles(): void {
 		try {
 			const updatedTask = await this.taskService.startTimeTracking(task);
 			new Notice('Time tracking started');
+			
+			// Update status bar after a small delay to ensure task state is persisted
+			if (this.statusBarService) {
+				setTimeout(() => {
+					this.statusBarService.requestUpdate();
+				}, 50);
+			}
+			
 			return updatedTask;
 		} catch (error) {
 			console.error('Failed to start time tracking:', error);
@@ -994,6 +1072,14 @@ private injectCustomStyles(): void {
 		try {
 			const updatedTask = await this.taskService.stopTimeTracking(task);
 			new Notice('Time tracking stopped');
+			
+			// Update status bar after a small delay to ensure task state is persisted
+			if (this.statusBarService) {
+				setTimeout(() => {
+					this.statusBarService.requestUpdate();
+				}, 50);
+			}
+			
 			return updatedTask;
 		} catch (error) {
 			console.error('Failed to stop time tracking:', error);

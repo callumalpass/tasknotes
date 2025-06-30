@@ -28,7 +28,8 @@ const CSS_FILES = [
     'styles/notes-view.css',         // NotesView component with proper BEM scoping
     'styles/pomodoro-view.css',      // PomodoroView component with proper BEM scoping
     'styles/pomodoro-stats-view.css', // PomodoroStatsView component with proper BEM scoping
-    'styles/settings-view.css'       // SettingsView component with proper BEM scoping
+    'styles/settings-view.css',      // SettingsView component with proper BEM scoping
+    'styles/status-bar.css'          // StatusBar component with proper BEM scoping
 ];
 
 const MAIN_CSS_TEMPLATE = `/* TaskNotes Plugin Styles */
