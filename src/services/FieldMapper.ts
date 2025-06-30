@@ -16,7 +16,7 @@ export class FieldMapper {
     /**
      * Convert frontmatter object using mapping to internal task data
      */
-    mapFromFrontmatter(frontmatter: any, filePath: string): Partial<TaskInfo> {
+    mapFromFrontmatter(frontmatter: any, filePath: string, storeTitleInFilename?: boolean): Partial<TaskInfo> {
         if (!frontmatter) return {};
 
         const mapped: Partial<TaskInfo> = {
@@ -26,6 +26,11 @@ export class FieldMapper {
         // Map each field if it exists in frontmatter
         if (frontmatter[this.mapping.title] !== undefined) {
             mapped.title = frontmatter[this.mapping.title];
+        } else if (storeTitleInFilename) {
+            const filename = filePath.split('/').pop()?.replace('.md', '');
+            if (filename) {
+                mapped.title = filename;
+            }
         }
         
         if (frontmatter[this.mapping.status] !== undefined) {
@@ -95,12 +100,16 @@ export class FieldMapper {
     /**
      * Convert internal task data to frontmatter using mapping
      */
-    mapToFrontmatter(taskData: Partial<TaskInfo>, taskTag?: string): any {
+    mapToFrontmatter(taskData: Partial<TaskInfo>, taskTag?: string, storeTitleInFilename?: boolean): any {
         const frontmatter: any = {};
 
         // Map each field if it exists in task data
         if (taskData.title !== undefined) {
             frontmatter[this.mapping.title] = taskData.title;
+        }
+        
+        if (storeTitleInFilename) {
+            delete frontmatter[this.mapping.title];
         }
         
         if (taskData.status !== undefined) {

@@ -43,6 +43,10 @@ export function generateTaskFilename(
         throw new Error('Invalid date provided in context');
     }
     
+    if (settings.storeTitleInFilename) {
+        return sanitizeForFilename(context.title);
+    }
+    
     try {
         switch (settings.taskFilenameFormat) {
             case 'title':

@@ -298,7 +298,7 @@ export function extractTaskInfo(
 	if (yaml) {
 		if (fieldMapper) {
 			// Use field mapper to extract task info
-			const mappedTask = fieldMapper.mapFromFrontmatter(yaml, path);
+			const mappedTask = fieldMapper.mapFromFrontmatter(yaml, path, this.plugin.settings.storeTitleInFilename);
 			
 			// Ensure required fields have defaults
 			const taskInfo: TaskInfo = {
@@ -324,7 +324,7 @@ export function extractTaskInfo(
 		} else {
 			// Fallback to default field mapping
 			const defaultMapper = new FieldMapper(DEFAULT_FIELD_MAPPING);
-			const mappedTask = defaultMapper.mapFromFrontmatter(yaml, path);
+			const mappedTask = defaultMapper.mapFromFrontmatter(yaml, path, this.plugin.settings.storeTitleInFilename);
 			
 			return {
 				title: mappedTask.title || 'Untitled task',

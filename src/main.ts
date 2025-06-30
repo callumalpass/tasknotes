@@ -138,7 +138,8 @@ export default class TaskNotesPlugin extends Plugin {
 			this.settings.taskTag,
 			this.settings.excludedFolders,
 			this.fieldMapper,
-			this.settings.disableNoteIndexing
+			this.settings.disableNoteIndexing,
+			this.settings.storeTitleInFilename
 		);
 		
 		// Use same instance for event emitting
@@ -578,7 +579,8 @@ export default class TaskNotesPlugin extends Plugin {
 			this.settings.taskTag,
 			this.settings.excludedFolders,
 			this.fieldMapper,
-			this.settings.disableNoteIndexing
+			this.settings.disableNoteIndexing,
+			this.settings.storeTitleInFilename
 		);
 		
 		// Update custom styles

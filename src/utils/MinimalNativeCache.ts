@@ -24,6 +24,7 @@ export class MinimalNativeCache extends Events {
     private excludedFolders: string[];
     private fieldMapper?: FieldMapper;
     private disableNoteIndexing: boolean;
+    private storeTitleInFilename: boolean;
     
     // Only essential indexes - everything else computed on-demand
     private tasksByDate: Map<string, Set<string>> = new Map(); // YYYY-MM-DD -> task paths
@@ -39,7 +40,8 @@ export class MinimalNativeCache extends Events {
         taskTag: string,
         excludedFolders = '',
         fieldMapper?: FieldMapper,
-        disableNoteIndexing = false
+        disableNoteIndexing = false,
+        storeTitleInFilename = false
     ) {
         super();
         this.app = app;
@@ -49,6 +51,7 @@ export class MinimalNativeCache extends Events {
             : [];
         this.fieldMapper = fieldMapper;
         this.disableNoteIndexing = disableNoteIndexing;
+        this.storeTitleInFilename = storeTitleInFilename;
     }
     
     /**
@@ -660,7 +663,7 @@ export class MinimalNativeCache extends Events {
         if (!this.fieldMapper) return null;
         
         try {
-            const mappedTask = this.fieldMapper.mapFromFrontmatter(frontmatter, path);
+            const mappedTask = this.fieldMapper.mapFromFrontmatter(frontmatter, path, this.storeTitleInFilename);
             
             return {
                 title: mappedTask.title || 'Untitled task',
@@ -719,7 +722,8 @@ export class MinimalNativeCache extends Events {
         taskTag: string,
         excludedFolders: string,
         fieldMapper?: FieldMapper,
-        disableNoteIndexing = false
+        disableNoteIndexing = false,
+        storeTitleInFilename = false
     ): void {
         this.taskTag = taskTag;
         this.excludedFolders = excludedFolders 
@@ -727,6 +731,7 @@ export class MinimalNativeCache extends Events {
             : [];
         this.fieldMapper = fieldMapper;
         this.disableNoteIndexing = disableNoteIndexing;
+        this.storeTitleInFilename = storeTitleInFilename;
         
         if (this.initialized) {
             this.clearAllIndexes();

@@ -96,7 +96,7 @@ export class TaskService {
             };
 
             // Use field mapper to convert to frontmatter with proper field mapping
-            const frontmatter = this.plugin.fieldMapper.mapToFrontmatter(completeTaskData, this.plugin.settings.taskTag);
+            const frontmatter = this.plugin.fieldMapper.mapToFrontmatter(completeTaskData, this.plugin.settings.taskTag, this.plugin.settings.storeTitleInFilename);
             
             // Tags are handled separately (not via field mapper)
             frontmatter.tags = tagsArray;
@@ -593,7 +593,7 @@ export class TaskService {
                 }
                 
                 // Use field mapper to convert ALL task data to frontmatter with proper field mapping
-                const mappedFrontmatter = this.plugin.fieldMapper.mapToFrontmatter(completeTaskData, this.plugin.settings.taskTag);
+                const mappedFrontmatter = this.plugin.fieldMapper.mapToFrontmatter(completeTaskData, this.plugin.settings.taskTag, this.plugin.settings.storeTitleInFilename);
                 
                 // Apply mapped frontmatter properties, preserving any existing non-task properties
                 // The FieldMapper only includes task-related fields, so this is safe

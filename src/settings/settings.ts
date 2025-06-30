@@ -15,6 +15,7 @@ export interface TaskNotesSettings {
 	taskOrgFiltersCollapsed: boolean;  // Save collapse state of task organization filters
 	// Task filename settings
 	taskFilenameFormat: 'title' | 'zettel' | 'timestamp' | 'custom';
+	storeTitleInFilename: boolean;
 	customFilenameTemplate: string; // Template for custom format
 	// Task creation defaults
 	taskCreationDefaults: TaskCreationDefaults;
@@ -232,6 +233,7 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	taskOrgFiltersCollapsed: false,  // Default to expanded
 	// Task filename defaults
 	taskFilenameFormat: 'zettel',  // Keep existing behavior as default
+	storeTitleInFilename: false,
 	customFilenameTemplate: '{title}',  // Simple title template
 	// Task creation defaults
 	taskCreationDefaults: DEFAULT_TASK_CREATION_DEFAULTS,
@@ -521,6 +523,20 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 		
 		// Task filename settings
 		new Setting(container).setName('Task filenames').setHeading();
+
+		new Setting(container)
+			.setName('Store title exclusively in filename')
+			.setDesc("When enabled, the task's title will be used as the filename, and the 'title' property will be removed from the frontmatter. This is a significant data storage change that simplifies frontmatter but disables all other filename templating options. Existing tasks will not be affected, but new tasks will follow this rule.")
+			.addToggle(toggle => {
+				toggle.toggleEl.setAttribute('aria-label', 'Store title exclusively in filename');
+				return toggle
+					.setValue(this.plugin.settings.storeTitleInFilename)
+					.onChange(async (value) => {
+						this.plugin.settings.storeTitleInFilename = value;
+						await this.plugin.saveSettings();
+						this.renderActiveTab(); // Re-render to show/hide other options
+					});
+			});
 
 		new Setting(container)
 			.setName('Filename format')
