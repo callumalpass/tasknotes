@@ -267,7 +267,7 @@ export abstract class TaskModal extends Modal {
             currentSuggestions = existingItems
                 .filter(item => item && typeof item === 'string')
                 .filter(item => 
-                    item.toLowerCase().includes(currentQuery.toLowerCase()) &&
+                    (item || '').toLowerCase().includes((currentQuery || '').toLowerCase()) &&
                     !currentValues.slice(0, -1).includes(item)
                 )
                 .slice(0, 10);

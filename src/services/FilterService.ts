@@ -236,9 +236,9 @@ export class FilterService extends EventEmitter {
         // Search query filter
         if (query.searchQuery) {
             const searchTerm = query.searchQuery.toLowerCase();
-            const titleMatch = task.title.toLowerCase().includes(searchTerm);
+            const titleMatch = (task.title || '').toLowerCase().includes(searchTerm);
             const contextMatch = task.contexts?.some(context => 
-                context.toLowerCase().includes(searchTerm)
+                context && typeof context === 'string' && context.toLowerCase().includes(searchTerm)
             ) || false;
             
             if (!titleMatch && !contextMatch) {

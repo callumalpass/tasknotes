@@ -120,7 +120,7 @@ export class UnscheduledTasksSelectorModal extends FuzzySuggestModal<TaskInfo> {
         if (task.priority) {
             metaEl.createSpan({
                 text: task.priority.toUpperCase(),
-                cls: `unscheduled-tasks-selector__priority priority-${task.priority.toLowerCase()}`
+                cls: `unscheduled-tasks-selector__priority priority-${(task.priority || 'normal').toLowerCase()}`
             });
         }
         
