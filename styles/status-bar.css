@@ -1,0 +1,63 @@
+/* TaskNotes Status Bar Styles */
+
+.tasknotes-status-bar {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: transparent;
+    transition: background-color 0.2s ease;
+    min-width: 0; /* Allow text truncation */
+}
+
+.tasknotes-status-bar:hover {
+    background: var(--background-modifier-hover);
+}
+
+.tasknotes-status-icon {
+    font-size: 12px;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+.tasknotes-status-text {
+    font-size: 12px;
+    line-height: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--text-muted);
+    max-width: 200px; /* Limit width to prevent status bar from being too wide */
+}
+
+.tasknotes-status-bar:hover .tasknotes-status-text {
+    color: var(--text-normal);
+}
+
+/* Responsive behavior for smaller screens */
+@media (max-width: 768px) {
+    .tasknotes-status-text {
+        max-width: 120px;
+    }
+}
+
+/* Dark theme adjustments */
+.theme-dark .tasknotes-status-bar {
+    color: var(--text-muted);
+}
+
+.theme-dark .tasknotes-status-bar:hover {
+    background: var(--background-modifier-hover);
+    color: var(--text-normal);
+}
+
+/* Light theme adjustments */
+.theme-light .tasknotes-status-bar {
+    color: var(--text-muted);
+}
+
+.theme-light .tasknotes-status-bar:hover {
+    background: var(--background-modifier-hover);
+    color: var(--text-normal);
+}
