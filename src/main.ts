@@ -34,7 +34,6 @@ import { AgendaView } from './views/AgendaView';
 import { PomodoroView } from './views/PomodoroView';
 import { PomodoroStatsView } from './views/PomodoroStatsView';
 import { KanbanView } from './views/KanbanView';
-import { TaskConversionOptions } from './types/taskConversion';
 import { TaskCreationModal } from './modals/TaskCreationModal';
 import { TaskEditModal } from './modals/TaskEditModal';
 import { TaskSelectorModal } from './modals/TaskSelectorModal';
@@ -53,7 +52,6 @@ import { PriorityManager } from './services/PriorityManager';
 import { TaskService } from './services/TaskService';
 import { FilterService } from './services/FilterService';
 import { ViewStateManager } from './services/ViewStateManager';
-import { TasksPluginParser } from './utils/TasksPluginParser';
 import { createTaskLinkOverlay, dispatchTaskUpdate } from './editor/TaskLinkOverlay';
 import { createReadingModeTaskLinkProcessor } from './editor/ReadingModeTaskLinkProcessor';
 import { DragDropManager } from './utils/DragDropManager';
@@ -741,8 +739,8 @@ export default class TaskNotesPlugin extends Plugin {
 		this.addCommand({
 			id: 'convert-to-tasknote',
 			name: 'Convert task to TaskNote',
-			editorCallback: (editor: Editor) => {
-				this.convertTaskToTaskNote(editor);
+			editorCallback: async (editor: Editor) => {
+				await this.convertTaskToTaskNote(editor);
 			}
 		});
 
@@ -1175,91 +1173,18 @@ private injectCustomStyles(): void {
 	 * Convert any checkbox task on current line to TaskNotes task
 	 * Supports multi-line selection where additional lines become task details
 	 */
-	convertTaskToTaskNote(editor: Editor): void {
+	async convertTaskToTaskNote(editor: Editor): Promise<void> {
 		try {
 			const cursor = editor.getCursor();
 			
-			// Extract selection information (same logic as instant convert)
-			const selectionInfo = this.extractSelectionInfoForCommand(editor, cursor.line);
-			const currentLine = selectionInfo.taskLine;
-			const details = selectionInfo.details;
-			
-			// Parse the current line for Tasks plugin format
-			const taskLineInfo = TasksPluginParser.parseTaskLine(currentLine);
-			
-			if (!taskLineInfo.isTaskLine) {
-				new Notice('Current line is not a task. Place cursor on a line with a checkbox task.');
+			// Check if instant convert service is available
+			if (!this.instantTaskConvertService) {
+				new Notice('Task conversion service not available. Please try again.');
 				return;
 			}
 			
-			if (taskLineInfo.error) {
-				new Notice(`Error parsing task: ${taskLineInfo.error}`);
-				return;
-			}
-			
-			if (!taskLineInfo.parsedData) {
-				new Notice('Failed to parse task data from current line.');
-				return;
-			}
-			
-			// Prepare conversion options with details
-			const conversionOptions: TaskConversionOptions = {
-				parsedData: taskLineInfo.parsedData,
-				editor: editor,
-				lineNumber: cursor.line,
-				selectionInfo: selectionInfo,
-				prefilledDetails: details
-			};
-			
-			// Convert the TaskConversionOptions to the new format expected by TaskCreationModal
-			const prePopulatedValues: Partial<TaskInfo> = {};
-			
-			if (conversionOptions.parsedData) {
-				if (conversionOptions.parsedData.title) prePopulatedValues.title = conversionOptions.parsedData.title;
-				if (conversionOptions.parsedData.dueDate) prePopulatedValues.due = conversionOptions.parsedData.dueDate;
-				if (conversionOptions.parsedData.scheduledDate) prePopulatedValues.scheduled = conversionOptions.parsedData.scheduledDate;
-				if (conversionOptions.parsedData.priority) prePopulatedValues.priority = conversionOptions.parsedData.priority;
-				if (conversionOptions.parsedData.status) prePopulatedValues.status = conversionOptions.parsedData.status;
-				if (conversionOptions.parsedData.recurrence) prePopulatedValues.recurrence = conversionOptions.parsedData.recurrence;
-			}
-
-			// Open TaskCreationModal with pre-populated data and conversion callback
-			const modal = new TaskCreationModal(this.app, this, {
-				prePopulatedValues,
-				onTaskCreated: (taskInfo: TaskInfo) => {
-					// Handle the task conversion completion - replace the original task line
-					if (conversionOptions.editor && conversionOptions.lineNumber !== undefined) {
-						const editor = conversionOptions.editor;
-						const lineNumber = conversionOptions.lineNumber;
-						
-						// Create the task link
-						const taskLink = `[[${taskInfo.path.replace(/\.md$/, '')}]]`;
-						
-						// Replace the current line with the task link
-						const currentLine = editor.getLine(lineNumber);
-						const leadingWhitespace = currentLine.match(/^(\s*)/)?.[1] || '';
-						const newLine = `${leadingWhitespace}${taskLink}`;
-						
-						editor.setLine(lineNumber, newLine);
-						
-						// Remove any selected content if there was a selection
-						if (conversionOptions.selectionInfo && 
-							conversionOptions.selectionInfo.startLine !== conversionOptions.selectionInfo.endLine) {
-							// Remove the additional selected lines
-							const linesToRemove = conversionOptions.selectionInfo.endLine - conversionOptions.selectionInfo.startLine;
-							for (let i = 0; i < linesToRemove; i++) {
-								// Always remove the line after our converted line
-								editor.replaceRange('', 
-									{ line: lineNumber + 1, ch: 0 }, 
-									{ line: lineNumber + 2, ch: 0 }
-								);
-							}
-						}
-					}
-				}
-			});
-			
-			modal.open();
+			// Use the instant convert service for immediate conversion without modal
+			await this.instantTaskConvertService.instantConvertTask(editor, cursor.line);
 			
 		} catch (error) {
 			console.error('Error converting task:', error);
