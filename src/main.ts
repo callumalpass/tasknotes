@@ -752,6 +752,14 @@ export default class TaskNotesPlugin extends Plugin {
 			}
 		});
 
+		this.addCommand({
+			id: 'quick-actions-current-task',
+			name: 'Quick actions for current task',
+			callback: async () => {
+				await this.openQuickActionsForCurrentTask();
+			}
+		});
+
 		// Note commands
 		this.addCommand({
 			id: 'go-to-today',
@@ -1274,6 +1282,36 @@ private injectCustomStyles(): void {
 				endLine: lineNumber,
 				originalContent: [taskLine]
 			};
+		}
+	}
+
+	/**
+	 * Open Quick Actions for the currently active TaskNote
+	 */
+	async openQuickActionsForCurrentTask(): Promise<void> {
+		try {
+			// Get currently active file
+			const activeFile = this.app.workspace.getActiveFile();
+			if (!activeFile) {
+				new Notice('No file is currently open');
+				return;
+			}
+
+			// Check if it's a TaskNote
+			const taskInfo = await this.cacheManager.getTaskInfo(activeFile.path);
+			if (!taskInfo) {
+				new Notice('Current file is not a TaskNote');
+				return;
+			}
+
+			// Open TaskActionPaletteModal with detected task
+			const { TaskActionPaletteModal } = await import('./modals/TaskActionPaletteModal');
+			const modal = new TaskActionPaletteModal(this.app, taskInfo, this, this.selectedDate);
+			modal.open();
+
+		} catch (error) {
+			console.error('Error opening quick actions:', error);
+			new Notice('Failed to open quick actions');
 		}
 	}
 
