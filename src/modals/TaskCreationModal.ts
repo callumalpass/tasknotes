@@ -65,7 +65,7 @@ export class TaskCreationModal extends TaskModal {
         this.nlInput = nlContainer.createEl('textarea', {
             cls: 'nl-input',
             attr: {
-                placeholder: 'Buy groceries tomorrow at 3pm @home #errands\n\nAdd details here...',
+                placeholder: 'Buy groceries tomorrow at 3pm @home +shopping #errands\n\nAdd details here...',
                 rows: '3'
             }
         });
@@ -209,6 +209,7 @@ export class TaskCreationModal extends TaskModal {
         if (parsed.dueDate) this.dueDate = parsed.dueDate;
         if (parsed.scheduledDate) this.scheduledDate = parsed.scheduledDate;
         if (parsed.contexts && parsed.contexts.length > 0) this.contexts = parsed.contexts.join(', ');
+        if (parsed.projects && parsed.projects.length > 0) this.projects = parsed.projects.join(', ');
         if (parsed.tags && parsed.tags.length > 0) this.tags = parsed.tags.join(', ');
         if (parsed.details) this.details = parsed.details;
         if (parsed.recurrence) this.recurrenceRule = parsed.recurrence;
@@ -217,6 +218,7 @@ export class TaskCreationModal extends TaskModal {
         if (this.titleInput) this.titleInput.value = this.title;
         if (this.detailsInput) this.detailsInput.value = this.details;
         if (this.contextsInput) this.contextsInput.value = this.contexts;
+        if (this.projectsInput) this.projectsInput.value = this.projects;
         if (this.tagsInput) this.tagsInput.value = this.tags;
         
         // Update icon states
@@ -249,8 +251,9 @@ export class TaskCreationModal extends TaskModal {
         // Apply default scheduled date based on user settings
         this.scheduledDate = calculateDefaultDate(defaults.defaultScheduledDate);
         
-        // Apply default contexts and tags
+        // Apply default contexts, projects, and tags
         this.contexts = defaults.defaultContexts || '';
+        this.projects = defaults.defaultProjects || '';
         this.tags = defaults.defaultTags || '';
         
         // Apply default time estimate
@@ -272,6 +275,9 @@ export class TaskCreationModal extends TaskModal {
         if (values.status !== undefined) this.status = values.status;
         if (values.contexts !== undefined) {
             this.contexts = values.contexts.join(', ');
+        }
+        if (values.projects !== undefined) {
+            this.projects = values.projects.join(', ');
         }
         if (values.tags !== undefined) {
             this.tags = values.tags.filter(tag => tag !== this.plugin.settings.taskTag).join(', ');
@@ -319,11 +325,16 @@ export class TaskCreationModal extends TaskModal {
     private buildTaskData(): Partial<TaskInfo> {
         const now = getCurrentTimestamp();
         
-        // Parse contexts and tags
+        // Parse contexts, projects, and tags
         const contextList = this.contexts
             .split(',')
             .map(c => c.trim())
             .filter(c => c.length > 0);
+            
+        const projectList = this.projects
+            .split(',')
+            .map(p => p.trim())
+            .filter(p => p.length > 0);
             
         const tagList = this.tags
             .split(',')
@@ -342,6 +353,7 @@ export class TaskCreationModal extends TaskModal {
             priority: this.priority,
             status: this.status,
             contexts: contextList.length > 0 ? contextList : undefined,
+            projects: projectList.length > 0 ? projectList : undefined,
             tags: tagList.length > 0 ? tagList : undefined,
             timeEstimate: this.timeEstimate > 0 ? this.timeEstimate : undefined,
             recurrence: this.recurrenceRule || undefined,

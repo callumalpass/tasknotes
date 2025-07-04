@@ -55,6 +55,7 @@ export interface TaskNotesSettings {
 export interface TaskCreationDefaults {
 	// Pre-fill options
 	defaultContexts: string;  // Comma-separated list
+	defaultProjects: string;  // Comma-separated list
 	defaultTags: string;      // Comma-separated list
 	defaultTimeEstimate: number; // minutes, 0 = no default
 	defaultRecurrence: 'none' | 'daily' | 'weekly' | 'monthly' | 'yearly';
@@ -105,6 +106,7 @@ export const DEFAULT_FIELD_MAPPING: FieldMapping = {
 	due: 'due',
 	scheduled: 'scheduled',
 	contexts: 'contexts',
+	projects: 'projects',
 	timeEstimate: 'timeEstimate',
 	completedDate: 'completedDate',
 	dateCreated: 'dateCreated',
@@ -186,6 +188,7 @@ export const DEFAULT_PRIORITIES: PriorityConfig[] = [
 
 export const DEFAULT_TASK_CREATION_DEFAULTS: TaskCreationDefaults = {
 	defaultContexts: '',
+	defaultProjects: '',
 	defaultTags: '',
 	defaultTimeEstimate: 0,
 	defaultRecurrence: 'none',
@@ -681,6 +684,20 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 			});
 
 		new Setting(container)
+			.setName('Default projects')
+			.setDesc('Default projects for new tasks (comma-separated)')
+			.addText(text => {
+				text.inputEl.setAttribute('aria-label', 'Default projects for new tasks');
+				return text
+					.setPlaceholder('shopping, learning')
+					.setValue(this.plugin.settings.taskCreationDefaults.defaultProjects)
+					.onChange(async (value) => {
+						this.plugin.settings.taskCreationDefaults.defaultProjects = value;
+						await this.plugin.saveSettings();
+					});
+			});
+
+		new Setting(container)
 			.setName('Default tags')
 			.setDesc('Default tags for new tasks (comma-separated)')
 			.addText(text => {
@@ -808,6 +825,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 		helpList.createEl('li', { text: '{{priority}} - Task priority' });
 		helpList.createEl('li', { text: '{{status}} - Task status' });
 		helpList.createEl('li', { text: '{{contexts}} - Task contexts' });
+		helpList.createEl('li', { text: '{{projects}} - Task projects' });
 		helpList.createEl('li', { text: '{{tags}} - Task tags' });
 		helpList.createEl('li', { text: '{{timeEstimate}} - Time estimate in minutes' });
 		helpList.createEl('li', { text: '{{dueDate}} - Task due date' });
