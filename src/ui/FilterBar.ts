@@ -14,6 +14,7 @@ export class FilterBar extends EventEmitter {
         statuses: string[];
         priorities: string[];
         contexts: string[];
+        projects: string[];
     };
 
     // UI Elements
@@ -42,13 +43,18 @@ export class FilterBar extends EventEmitter {
     constructor(
         container: HTMLElement,
         initialQuery: FilterQuery,
-        filterOptions: { statuses: string[]; priorities: string[]; contexts: string[] },
+        filterOptions: { statuses: string[]; priorities: string[]; contexts: string[]; projects: string[] },
         config: FilterBarConfig = {}
     ) {
         super();
         this.container = container;
         this.currentQuery = { ...initialQuery };
-        this.filterOptions = filterOptions;
+        this.filterOptions = {
+            statuses: filterOptions.statuses || [],
+            priorities: filterOptions.priorities || [],
+            contexts: filterOptions.contexts || [],
+            projects: filterOptions.projects || []
+        };
         this.config = {
             showSearch: true,
             showGroupBy: true,
@@ -121,8 +127,13 @@ export class FilterBar extends EventEmitter {
     /**
      * Update available filter options
      */
-    updateFilterOptions(options: { statuses: string[]; priorities: string[]; contexts: string[] }): void {
-        this.filterOptions = options;
+    updateFilterOptions(options: { statuses: string[]; priorities: string[]; contexts: string[]; projects: string[] }): void {
+        this.filterOptions = {
+            statuses: options.statuses || [],
+            priorities: options.priorities || [],
+            contexts: options.contexts || [],
+            projects: options.projects || []
+        };
         this.rebuildAdvancedFilters();
     }
 
@@ -416,6 +427,9 @@ export class FilterBar extends EventEmitter {
         // Context filter
         this.renderContextFilter();
 
+        // Project filter
+        this.renderProjectFilter();
+
         // Date range filter
         if (this.config.showDateRangePicker) {
             this.renderDateRangeFilter();
@@ -553,6 +567,49 @@ export class FilterBar extends EventEmitter {
     }
 
     /**
+     * Render project filter
+     */
+    private renderProjectFilter(): void {
+        const projectContainer = this.advancedFiltersPanel!.createDiv('filter-bar__advanced-item');
+        projectContainer.createSpan({ text: 'Project:', cls: 'filter-bar__label' });
+
+        const projectCheckboxContainer = projectContainer.createDiv('filter-bar__checkbox-group');
+
+        // Debug: Log project options
+        console.debug('FilterBar: Rendering project filter with options:', this.filterOptions.projects);
+
+        this.filterOptions.projects.forEach(project => {
+            const checkboxWrapper = projectCheckboxContainer.createDiv('filter-bar__checkbox-wrapper');
+            
+            const label = checkboxWrapper.createEl('label', {
+                cls: 'filter-bar__checkbox-label'
+            });
+
+            const checkbox = label.createEl('input', {
+                type: 'checkbox',
+                value: project,
+                cls: 'filter-bar__checkbox'
+            });
+
+            label.createSpan({ text: project });
+
+            checkbox.addEventListener('change', () => {
+                this.updateProjectFilter();
+            });
+        });
+    }
+
+    /**
+     * Update project filter based on checkbox selections
+     */
+    private updateProjectFilter(): void {
+        const projectContainer = this.advancedFiltersPanel?.querySelector('.filter-bar__advanced-item:nth-child(4)');
+        const checkboxes = projectContainer?.querySelectorAll('input[type="checkbox"]:checked') as NodeListOf<HTMLInputElement>;
+        const selectedProjects = Array.from(checkboxes || []).map(cb => cb.value);
+        this.updateQueryField('projects', selectedProjects.length > 0 ? selectedProjects : undefined);
+    }
+
+    /**
      * Render archived toggle
      */
     private renderArchivedToggle(): void {
@@ -642,6 +699,13 @@ export class FilterBar extends EventEmitter {
             checkbox.checked = (this.currentQuery.contexts || []).includes(checkbox.value);
         });
 
+        // Update project checkboxes
+        const projectContainer = this.advancedFiltersPanel?.querySelector('.filter-bar__advanced-item:nth-child(4)');
+        const projectCheckboxes = projectContainer?.querySelectorAll('input[type="checkbox"]') as NodeListOf<HTMLInputElement>;
+        projectCheckboxes?.forEach(checkbox => {
+            checkbox.checked = (this.currentQuery.projects || []).includes(checkbox.value);
+        });
+
         if (this.archivedToggle) {
             this.archivedToggle.checked = this.currentQuery.showArchived;
         }
@@ -704,6 +768,7 @@ export class FilterBar extends EventEmitter {
         if (this.currentQuery.statuses && this.currentQuery.statuses.length > 0) activeCount++;
         if (this.currentQuery.priorities && this.currentQuery.priorities.length > 0) activeCount++;
         if (this.currentQuery.contexts && this.currentQuery.contexts.length > 0) activeCount++;
+        if (this.currentQuery.projects && this.currentQuery.projects.length > 0) activeCount++;
         if (this.currentQuery.showArchived) activeCount++;
         if (this.currentQuery.dateRange) activeCount++;
         
@@ -749,6 +814,9 @@ export class FilterBar extends EventEmitter {
         
         // Rebuild context checkboxes
         this.rebuildContextCheckboxes();
+        
+        // Rebuild project checkboxes
+        this.rebuildProjectCheckboxes();
     }
 
 
@@ -854,6 +922,39 @@ export class FilterBar extends EventEmitter {
     }
 
     /**
+     * Rebuild project checkboxes while preserving selection
+     */
+    private rebuildProjectCheckboxes(): void {
+        const projectContainer = this.advancedFiltersPanel?.querySelector('.filter-bar__advanced-item:nth-child(4) .filter-bar__checkbox-group');
+        if (!projectContainer) return;
+
+        const selectedProjects = this.currentQuery.projects || [];
+        projectContainer.empty();
+
+        this.filterOptions.projects.forEach(project => {
+            const checkboxWrapper = projectContainer.createDiv('filter-bar__checkbox-wrapper');
+            
+            const label = checkboxWrapper.createEl('label', {
+                cls: 'filter-bar__checkbox-label'
+            });
+
+            const checkbox = label.createEl('input', {
+                type: 'checkbox',
+                value: project,
+                cls: 'filter-bar__checkbox'
+            });
+
+            checkbox.checked = selectedProjects.includes(project);
+
+            label.createSpan({ text: project });
+
+            checkbox.addEventListener('change', () => {
+                this.updateProjectFilter();
+            });
+        });
+    }
+
+    /**
      * Get human-readable label for sort key
      */
     private getSortKeyLabel(key: TaskSortKey): string {
@@ -875,6 +976,7 @@ export class FilterBar extends EventEmitter {
             'status': 'Status',
             'priority': 'Priority',
             'context': 'Context',
+            'project': 'Project',
             'due': 'Due date',
             'scheduled': 'Scheduled date'
         };

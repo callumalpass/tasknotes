@@ -188,7 +188,7 @@ export class KanbanView extends ItemView {
                 showDateRangePicker: true,
                 showShowDropdown: true,
                 allowedSortKeys: ['priority', 'title', 'due', 'scheduled'],
-                allowedGroupKeys: ['status', 'priority', 'context']
+                allowedGroupKeys: ['status', 'priority', 'context', 'project']
             }
         );
         
@@ -603,6 +603,11 @@ export class KanbanView extends ItemView {
                                 // For contexts, set as array with single value
                                 valueToSet = [targetColumnId];
                                 break;
+                            case 'project':
+                                propertyToUpdate = 'projects';
+                                // For projects, set as array with single value
+                                valueToSet = targetColumnId === 'No Project' ? [] : [targetColumnId];
+                                break;
                             default:
                                 throw new Error(`Unsupported groupBy: ${this.currentQuery.groupKey}`);
                         }
@@ -849,6 +854,8 @@ export class KanbanView extends ItemView {
                 return this.plugin.priorityManager.getPriorityConfig(id)?.label || id;
             case 'context':
                 return id === 'uncategorized' ? 'Uncategorized' : `@${id}`;
+            case 'project':
+                return id === 'No Project' ? 'No Project' : `+${id}`;
             case 'due':
                 return id;
             case 'none':
@@ -879,6 +886,11 @@ export class KanbanView extends ItemView {
             case 'context':
                 if (columnId !== 'uncategorized') {
                     prePopulatedValues.contexts = [columnId];
+                }
+                break;
+            case 'project':
+                if (columnId !== 'No Project') {
+                    prePopulatedValues.projects = [columnId];
                 }
                 break;
         }

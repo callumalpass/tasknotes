@@ -240,8 +240,11 @@ export class FilterService extends EventEmitter {
             const contextMatch = task.contexts?.some(context => 
                 context && typeof context === 'string' && context.toLowerCase().includes(searchTerm)
             ) || false;
+            const projectMatch = task.projects?.some(project => 
+                project && typeof project === 'string' && project.toLowerCase().includes(searchTerm)
+            ) || false;
             
-            if (!titleMatch && !contextMatch) {
+            if (!titleMatch && !contextMatch && !projectMatch) {
                 return false;
             }
         }
@@ -265,6 +268,15 @@ export class FilterService extends EventEmitter {
         if (query.contexts && query.contexts.length > 0) {
             if (!task.contexts || !query.contexts.some(context => 
                 task.contexts!.includes(context)
+            )) {
+                return false;
+            }
+        }
+
+        // Project filter
+        if (query.projects && query.projects.length > 0) {
+            if (!task.projects || !query.projects.some(project => 
+                task.projects!.includes(project)
             )) {
                 return false;
             }
@@ -416,35 +428,56 @@ export class FilterService extends EventEmitter {
         const groups = new Map<string, TaskInfo[]>();
 
         for (const task of tasks) {
-            let groupValue: string;
+            // For projects, handle multiple groups per task
+            if (groupKey === 'project') {
+                if (task.projects && task.projects.length > 0) {
+                    // Add task to each project group
+                    for (const project of task.projects) {
+                        if (!groups.has(project)) {
+                            groups.set(project, []);
+                        }
+                        groups.get(project)!.push(task);
+                    }
+                } else {
+                    // Task has no projects - add to "No Project" group
+                    const noProjectGroup = 'No Project';
+                    if (!groups.has(noProjectGroup)) {
+                        groups.set(noProjectGroup, []);
+                    }
+                    groups.get(noProjectGroup)!.push(task);
+                }
+            } else {
+                // For all other grouping types, use single group assignment
+                let groupValue: string;
 
-            switch (groupKey) {
-                case 'status':
-                    groupValue = task.status || 'no-status';
-                    break;
-                case 'priority':
-                    groupValue = task.priority || 'unknown';
-                    break;
-                case 'context':
-                    // For multiple contexts, put task in first context or 'none'
-                    groupValue = (task.contexts && task.contexts.length > 0) 
-                        ? task.contexts[0] 
-                        : 'none';
-                    break;
-                case 'due':
-                    groupValue = this.getDueDateGroup(task, targetDate);
-                    break;
-                case 'scheduled':
-                    groupValue = this.getScheduledDateGroup(task, targetDate);
-                    break;
-                default:
-                    groupValue = 'unknown';
-            }
+                switch (groupKey) {
+                    case 'status':
+                        groupValue = task.status || 'no-status';
+                        break;
+                    case 'priority':
+                        groupValue = task.priority || 'unknown';
+                        break;
+                    case 'context':
+                        // For multiple contexts, put task in first context or 'none'
+                        groupValue = (task.contexts && task.contexts.length > 0) 
+                            ? task.contexts[0] 
+                            : 'none';
+                        break;
+                    case 'due':
+                        groupValue = this.getDueDateGroup(task, targetDate);
+                        break;
+                    case 'scheduled':
+                        groupValue = this.getScheduledDateGroup(task, targetDate);
+                        break;
+                    default:
+                        groupValue = 'unknown';
+                }
 
-            if (!groups.has(groupValue)) {
-                groups.set(groupValue, []);
+                if (!groups.has(groupValue)) {
+                    groups.set(groupValue, []);
+                }
+                groups.get(groupValue)!.push(task);
             }
-            groups.get(groupValue)!.push(task);
         }
 
         return this.sortGroups(groups, groupKey);
@@ -605,6 +638,15 @@ export class FilterService extends EventEmitter {
                 break;
             }
                 
+            case 'project':
+                // Sort projects alphabetically with "No Project" at the end
+                sortedKeys = Array.from(groups.keys()).sort((a, b) => {
+                    if (a === 'No Project') return 1;
+                    if (b === 'No Project') return -1;
+                    return a.localeCompare(b);
+                });
+                break;
+                
             default:
                 // Alphabetical sort for contexts and others
                 sortedKeys = Array.from(groups.keys()).sort();
@@ -625,12 +667,19 @@ export class FilterService extends EventEmitter {
         statuses: string[];
         priorities: string[];
         contexts: string[];
+        projects: string[];
     }> {
-        return {
+        const options = {
             statuses: this.cacheManager.getAllStatuses(),
             priorities: this.cacheManager.getAllPriorities(),
-            contexts: this.cacheManager.getAllContexts()
+            contexts: this.cacheManager.getAllContexts(),
+            projects: this.cacheManager.getAllProjects()
         };
+        
+        // Debug: Log filter options
+        console.debug('FilterService: getFilterOptions returning:', options);
+        
+        return options;
     }
 
     /**
@@ -641,6 +690,7 @@ export class FilterService extends EventEmitter {
             searchQuery: undefined,
             statuses: undefined,
             contexts: undefined,
+            projects: undefined,
             priorities: undefined,
             dateRange: undefined,
             showArchived: false,
@@ -660,6 +710,7 @@ export class FilterService extends EventEmitter {
             searchQuery: query.searchQuery || defaultQuery.searchQuery,
             statuses: query.statuses || defaultQuery.statuses,
             contexts: query.contexts || defaultQuery.contexts,
+            projects: query.projects || defaultQuery.projects,
             priorities: query.priorities || defaultQuery.priorities,
             dateRange: query.dateRange || defaultQuery.dateRange,
             showArchived: query.showArchived ?? defaultQuery.showArchived,
