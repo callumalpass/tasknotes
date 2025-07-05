@@ -22,8 +22,8 @@ This feature is recommended for users who prefer a minimalist approach to their 
 
 ## Default Task Properties
 
-You can set the **Default Status** and **Default Priority** for new tasks, as well as the **Default Due Date** and **Default Scheduled Date**. You can also specify default **Contexts** and **Tags** that will be automatically added to new tasks.
+You can set the **Default Status** and **Default Priority** for new tasks, as well as the **Default Due Date** and **Default Scheduled Date**. You can also specify default **Contexts**, **Projects**, and **Tags** that will be automatically added to new tasks.
 
 ## Template System
 
-TaskNotes supports **Templates** for both the YAML frontmatter and the body of your task notes. You can use templates to pre-fill common values, add boilerplate text, and create a consistent structure for your tasks. Templates can also include variables, such as `{{title}}`, `{{date}}`, and `{{parentNote}}`, which will be automatically replaced with the appropriate values when a new task is created.
+TaskNotes supports **Templates** for both the YAML frontmatter and the body of your task notes. You can use templates to pre-fill common values, add boilerplate text, and create a consistent structure for your tasks. Templates can also include variables, such as `{{title}}`, `{{date}}`, `{{parentNote}}`, and `{{projects}}`, which will be automatically replaced with the appropriate values when a new task is created.

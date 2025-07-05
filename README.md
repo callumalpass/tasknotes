@@ -17,7 +17,8 @@ TaskNotes uses YAML frontmatter to store task data. YAML is a standard format th
 
 ### Task Management
 - Individual Markdown files with YAML frontmatter
-- Properties: title, status, priority, due date, scheduled date, contexts, tags, time estimates
+- Properties: title, status, priority, due date, scheduled date, contexts, projects, tags, time estimates
+- Project organization using note-based linking
 - Recurring tasks with per-date completion tracking
 - Time tracking with multiple sessions per task
 - Archive function using tags
@@ -64,6 +65,7 @@ status: "in-progress"
 due: "2024-01-20"
 priority: "high"
 contexts: ["work"]
+projects: ["[[Website Redesign]]"]
 timeEstimate: 120
 timeEntries:
   - startTime: "2024-01-15T10:30:00"

@@ -30,5 +30,5 @@ TaskNotes does not enforce a specific task management methodology. It provides a
 
 - **Getting Things Done (GTD)**: Contexts, status workflows, and calendar integration can be used to support GTD principles.
 - **Timeboxing and Time-blocking**: Calendar integration and time tracking features can be used for time-based planning.
-- **Project-based Organization**: Tags, contexts, and linking capabilities can be used for project-centric workflows.
+- **Project-based Organization**: The projects feature, along with tags, contexts, and linking capabilities, can be used for project-centric workflows.
 - **Kanban and Agile**: The Kanban view and customizable status systems can be used to support agile development processes and other visual workflows.

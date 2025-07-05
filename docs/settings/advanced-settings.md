@@ -4,7 +4,7 @@ These settings provide customization options, such as field mapping, custom stat
 
 ## Field Mapping
 
-**Field Mapping** allows you to customize the YAML property names that TaskNotes uses for its internal properties. This can be used for integrating with other plugins or for matching your existing vault structure. You can map all of the core task properties, including title, status, priority, and due date, as well as other properties like time estimates and recurrence patterns.
+**Field Mapping** allows you to customize the YAML property names that TaskNotes uses for its internal properties. This can be used for integrating with other plugins or for matching your existing vault structure. You can map all of the core task properties, including title, status, priority, due date, contexts, and projects, as well as other properties like time estimates and recurrence patterns.
 
 ## Custom Status System
 

@@ -20,12 +20,33 @@ Each task in TaskNotes is a Markdown file with a YAML frontmatter block that sto
 - **Due Date**: The date by which the task must be completed.
 - **Scheduled Date**: The date on which you plan to work on the task.
 - **Contexts**: Location or tool-based groupings (e.g., "@home", "@work").
+- **Projects**: Links to project notes in your vault that the task belongs to.
 - **Tags**: Standard Obsidian tags for categorization.
 - **Time Estimate**: The estimated time required to complete the task, in minutes.
 - **Recurrence**: The pattern for repeating tasks, using the RRule standard.
 - **Time Entries**: An array of recorded work sessions, with start and stop times.
 
 You can also add your own custom fields to the YAML frontmatter, and use the **Field Mapping** feature to map them to TaskNotes' internal properties.
+
+## Projects
+
+TaskNotes supports organizing tasks into projects using note-based linking. Projects are represented as links to actual notes in your vault, allowing you to leverage Obsidian's linking and backlinking features for project management.
+
+### Project Assignment
+
+Tasks can be assigned to one or more projects through the task creation or editing interface. When creating or editing a task, click the "Add Project" button to open the project selection modal. This modal provides fuzzy search functionality to quickly find and select project notes from your vault.
+
+### Project Links
+
+Projects are stored as wikilinks in the task's frontmatter (e.g., `projects: ["[[Project A]]", "[[Project B]]"]`). These links are clickable in the task interface and will navigate directly to the project notes when clicked. Any note in your vault can serve as a project note simply by being linked from a task's projects field.
+
+### Organization and Filtering
+
+Tasks can be filtered and grouped by their associated projects in all task views. The FilterBar includes project-specific filters, and tasks can be grouped by project in the Task List and Kanban views. Tasks assigned to multiple projects will appear in each relevant project group, providing flexibility in project-based organization.
+
+### Template Integration
+
+Projects support template variables for automated workflows. The `{{projects}}` template variable can be used in task templates, and the `{{parentNote}}` variable will format project links as YAML list items when creating tasks from project notes.
 
 ## File Management and Templates
 
