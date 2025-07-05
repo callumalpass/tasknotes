@@ -429,6 +429,13 @@ export function createTaskCard(task: TaskInfo, plugin: TaskNotesPlugin, options:
         metadataElements.push(contextsSpan);
     }
     
+    // Projects (if has projects)
+    if (task.projects && task.projects.length > 0) {
+        const projectsSpan = metadataLine.createEl('span');
+        renderProjectLinks(projectsSpan, task.projects, plugin);
+        metadataElements.push(projectsSpan);
+    }
+    
     // Time tracking (if has time estimate or logged time)
     const timeSpent = calculateTotalTimeSpent(task.timeEntries || []);
     if (task.timeEstimate || timeSpent > 0) {
@@ -834,12 +841,16 @@ export function updateTaskCard(element: HTMLElement, task: TaskInfo, plugin: Tas
     // Update metadata line
     const metadataLine = element.querySelector('.task-card__metadata') as HTMLElement;
     if (metadataLine) {
-        const metadataItems: string[] = [];
+        // Clear the metadata line and rebuild with DOM elements to support project links
+        metadataLine.innerHTML = '';
+        const metadataElements: HTMLElement[] = [];
         
         // Recurrence info (if recurring)
         if (task.recurrence) {
             const frequencyDisplay = getRecurrenceDisplayText(task.recurrence);
-            metadataItems.push(`Recurring: ${frequencyDisplay}`);
+            const recurringSpan = metadataLine.createEl('span');
+            recurringSpan.textContent = `Recurring: ${frequencyDisplay}`;
+            metadataElements.push(recurringSpan);
         }
         
         // Due date (if has due date)
@@ -847,6 +858,7 @@ export function updateTaskCard(element: HTMLElement, task: TaskInfo, plugin: Tas
             const isDueToday = isTodayTimeAware(task.due);
             const isDueOverdue = isOverdueTimeAware(task.due);
             
+            let dueDateText = '';
             if (isDueToday) {
                 // For today, show time if available
                 const timeDisplay = formatDateTimeForDisplay(task.due, {
@@ -855,9 +867,9 @@ export function updateTaskCard(element: HTMLElement, task: TaskInfo, plugin: Tas
                     showTime: true
                 });
                 if (timeDisplay.trim() === '') {
-                    metadataItems.push('Due: Today');
+                    dueDateText = 'Due: Today';
                 } else {
-                    metadataItems.push(`Due: Today at ${timeDisplay}`);
+                    dueDateText = `Due: Today at ${timeDisplay}`;
                 }
             } else if (isDueOverdue) {
                 // For overdue, show date and time if available
@@ -866,7 +878,7 @@ export function updateTaskCard(element: HTMLElement, task: TaskInfo, plugin: Tas
                     timeFormat: 'h:mm a',
                     showTime: true
                 });
-                metadataItems.push(`Due: ${display} (overdue)`);
+                dueDateText = `Due: ${display} (overdue)`;
             } else {
                 // For future dates, show date and time if available
                 const display = formatDateTimeForDisplay(task.due, {
@@ -874,8 +886,14 @@ export function updateTaskCard(element: HTMLElement, task: TaskInfo, plugin: Tas
                     timeFormat: 'h:mm a',
                     showTime: true
                 });
-                metadataItems.push(`Due: ${display}`);
+                dueDateText = `Due: ${display}`;
             }
+
+            const dueDateSpan = metadataLine.createEl('span', { 
+                cls: 'task-card__metadata-date task-card__metadata-date--due',
+                text: dueDateText
+            });
+            metadataElements.push(dueDateSpan);
         }
         
         // Scheduled date (if has scheduled date)
@@ -883,6 +901,7 @@ export function updateTaskCard(element: HTMLElement, task: TaskInfo, plugin: Tas
             const isScheduledToday = isTodayTimeAware(task.scheduled);
             const isScheduledPast = isOverdueTimeAware(task.scheduled);
             
+            let scheduledDateText = '';
             if (isScheduledToday) {
                 // For today, show time if available
                 const timeDisplay = formatDateTimeForDisplay(task.scheduled, {
@@ -891,9 +910,9 @@ export function updateTaskCard(element: HTMLElement, task: TaskInfo, plugin: Tas
                     showTime: true
                 });
                 if (timeDisplay.trim() === '') {
-                    metadataItems.push('Scheduled: Today');
+                    scheduledDateText = 'Scheduled: Today';
                 } else {
-                    metadataItems.push(`Scheduled: Today at ${timeDisplay}`);
+                    scheduledDateText = `Scheduled: Today at ${timeDisplay}`;
                 }
             } else if (isScheduledPast) {
                 // For past dates, show date and time if available
@@ -902,7 +921,7 @@ export function updateTaskCard(element: HTMLElement, task: TaskInfo, plugin: Tas
                     timeFormat: 'h:mm a',
                     showTime: true
                 });
-                metadataItems.push(`Scheduled: ${display} (past)`);
+                scheduledDateText = `Scheduled: ${display} (past)`;
             } else {
                 // For future dates, show date and time if available
                 const display = formatDateTimeForDisplay(task.scheduled, {
@@ -910,13 +929,28 @@ export function updateTaskCard(element: HTMLElement, task: TaskInfo, plugin: Tas
                     timeFormat: 'h:mm a',
                     showTime: true
                 });
-                metadataItems.push(`Scheduled: ${display}`);
+                scheduledDateText = `Scheduled: ${display}`;
             }
+
+            const scheduledSpan = metadataLine.createEl('span', { 
+                cls: 'task-card__metadata-date task-card__metadata-date--scheduled',
+                text: scheduledDateText
+            });
+            metadataElements.push(scheduledSpan);
         }
         
         // Contexts (if has contexts)
         if (task.contexts && task.contexts.length > 0) {
-            metadataItems.push(`@${task.contexts.join(', @')}`);
+            const contextsSpan = metadataLine.createEl('span');
+            contextsSpan.textContent = `@${task.contexts.join(', @')}`;
+            metadataElements.push(contextsSpan);
+        }
+        
+        // Projects (if has projects) - use specialized rendering for links
+        if (task.projects && task.projects.length > 0) {
+            const projectsSpan = metadataLine.createEl('span');
+            renderProjectLinks(projectsSpan, task.projects, plugin);
+            metadataElements.push(projectsSpan);
         }
         
         // Time tracking (if has time estimate or logged time)
@@ -929,12 +963,22 @@ export function updateTaskCard(element: HTMLElement, task: TaskInfo, plugin: Tas
             if (task.timeEstimate) {
                 timeInfo.push(`${plugin.formatTime(task.timeEstimate)} estimated`);
             }
-            metadataItems.push(timeInfo.join(', '));
+            const timeSpan = metadataLine.createEl('span');
+            timeSpan.textContent = timeInfo.join(', ');
+            metadataElements.push(timeSpan);
         }
         
-        // Update metadata line
-        if (metadataItems.length > 0) {
-            metadataLine.textContent = metadataItems.join(' • ');
+        // Add separators between metadata elements
+        if (metadataElements.length > 0) {
+            // Insert separators between elements
+            for (let i = 1; i < metadataElements.length; i++) {
+                const separator = metadataLine.createEl('span', { 
+                    cls: 'task-card__metadata-separator',
+                    text: ' • ' 
+                });
+                // Insert separator before each element (except first)
+                metadataElements[i].insertAdjacentElement('beforebegin', separator);
+            }
             metadataLine.style.display = '';
         } else {
             metadataLine.style.display = 'none';
@@ -1034,5 +1078,93 @@ export async function showDeleteConfirmationModal(task: TaskInfo, plugin: TaskNo
             }
         );
         modal.open();
+    });
+}
+
+/**
+ * Check if a project string is in wikilink format [[Note Name]]
+ */
+function isWikilinkProject(project: string): boolean {
+    return project.startsWith('[[') && project.endsWith(']]');
+}
+
+/**
+ * Render project links in a container element, handling both plain text and wikilink projects
+ */
+function renderProjectLinks(container: HTMLElement, projects: string[], plugin: TaskNotesPlugin): void {
+    container.innerHTML = '';
+    
+    projects.forEach((project, index) => {
+        if (index > 0) {
+            const separator = document.createTextNode(', ');
+            container.appendChild(separator);
+        }
+        
+        const plusText = document.createTextNode('+');
+        container.appendChild(plusText);
+        
+        if (isWikilinkProject(project)) {
+            // Extract the note name from [[Note Name]]
+            const noteName = project.slice(2, -2);
+            
+            // Create a clickable link
+            const linkEl = container.createEl('a', {
+                cls: 'task-card__project-link internal-link',
+                text: noteName,
+                attr: { 
+                    'data-href': noteName,
+                    'role': 'button',
+                    'tabindex': '0'
+                }
+            });
+            
+            // Add click handler to open the note
+            linkEl.addEventListener('click', async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                try {
+                    // Resolve the link to get the actual file
+                    const file = plugin.app.metadataCache.getFirstLinkpathDest(noteName, '');
+                    if (file instanceof TFile) {
+                        // Open the file in the current leaf
+                        await plugin.app.workspace.getLeaf(false).openFile(file);
+                    } else {
+                        // File not found, show notice
+                        new Notice(`Note "${noteName}" not found`);
+                    }
+                } catch (error) {
+                    console.error('Error opening project link:', error);
+                    new Notice(`Failed to open note "${noteName}"`);
+                }
+            });
+            
+            // Add keyboard support for accessibility
+            linkEl.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    linkEl.click();
+                }
+            });
+            
+            // Add hover preview for the project link
+            linkEl.addEventListener('mouseover', (event) => {
+                const file = plugin.app.metadataCache.getFirstLinkpathDest(noteName, '');
+                if (file instanceof TFile) {
+                    plugin.app.workspace.trigger('hover-link', {
+                        event,
+                        source: 'tasknotes-project-link',
+                        hoverParent: container,
+                        targetEl: linkEl,
+                        linktext: noteName,
+                        sourcePath: file.path
+                    });
+                }
+            });
+        } else {
+            // Plain text project
+            const textNode = document.createTextNode(project);
+            container.appendChild(textNode);
+        }
     });
 }

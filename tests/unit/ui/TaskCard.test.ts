@@ -134,6 +134,8 @@ describe('TaskCard Component', () => {
       openFile: jest.fn()
     });
     mockApp.workspace.trigger = jest.fn();
+    mockApp.metadataCache = mockApp.metadataCache || {};
+    mockApp.metadataCache.getFirstLinkpathDest = jest.fn();
     
     // Mock console methods
     jest.spyOn(console, 'error').mockImplementation(() => {});
@@ -266,6 +268,80 @@ describe('TaskCard Component', () => {
       expect(metadataLine?.textContent).toContain('@work, @urgent');
       expect(metadataLine?.textContent).toContain('30m spent');
       expect(metadataLine?.textContent).toContain('60m estimated');
+    });
+
+    it('should create clickable project links for wikilink projects', () => {
+      const task = TaskFactory.createTask({
+        projects: ['[[Project A]]', '[[Project B]]', 'regular-project']
+      });
+
+      const card = createTaskCard(task, mockPlugin);
+      const metadataLine = card.querySelector('.task-card__metadata');
+
+      // Check that project links are rendered
+      expect(metadataLine?.textContent).toContain('+Project A');
+      expect(metadataLine?.textContent).toContain('+Project B');
+      expect(metadataLine?.textContent).toContain('+regular-project');
+      
+      // Check that wikilink projects have clickable links
+      const projectLinks = card.querySelectorAll('.task-card__project-link');
+      expect(projectLinks.length).toBe(2); // Only wikilink projects should have clickable links
+      
+      // Check link properties
+      expect(projectLinks[0].textContent).toBe('Project A');
+      expect(projectLinks[0].getAttribute('data-href')).toBe('Project A');
+      expect(projectLinks[0].classList.contains('internal-link')).toBe(true);
+      
+      expect(projectLinks[1].textContent).toBe('Project B');
+      expect(projectLinks[1].getAttribute('data-href')).toBe('Project B');
+      expect(projectLinks[1].classList.contains('internal-link')).toBe(true);
+    });
+
+    it('should handle project link clicks and open files', async () => {
+      const task = TaskFactory.createTask({
+        projects: ['[[Test Project]]']
+      });
+
+      const mockFile = new TFile('test-project.md');
+      mockPlugin.app.metadataCache.getFirstLinkpathDest = jest.fn().mockReturnValue(mockFile);
+
+      const card = createTaskCard(task, mockPlugin);
+      const projectLink = card.querySelector('.task-card__project-link') as HTMLElement;
+
+      expect(projectLink).toBeTruthy();
+      
+      // Simulate click
+      const clickEvent = new MouseEvent('click', { bubbles: true });
+      projectLink.dispatchEvent(clickEvent);
+
+      // Wait for async operations
+      await new Promise(resolve => setTimeout(resolve, 0));
+
+      expect(mockPlugin.app.metadataCache.getFirstLinkpathDest).toHaveBeenCalledWith('Test Project', '');
+      expect(mockPlugin.app.workspace.getLeaf).toHaveBeenCalledWith(false);
+    });
+
+    it('should show notice when project link file not found', async () => {
+      const task = TaskFactory.createTask({
+        projects: ['[[Nonexistent Project]]']
+      });
+
+      mockPlugin.app.metadataCache.getFirstLinkpathDest = jest.fn().mockReturnValue(null);
+
+      const card = createTaskCard(task, mockPlugin);
+      const projectLink = card.querySelector('.task-card__project-link') as HTMLElement;
+
+      expect(projectLink).toBeTruthy();
+      
+      // Simulate click
+      const clickEvent = new MouseEvent('click', { bubbles: true });
+      projectLink.dispatchEvent(clickEvent);
+
+      // Wait for async operations
+      await new Promise(resolve => setTimeout(resolve, 0));
+
+      expect(mockPlugin.app.metadataCache.getFirstLinkpathDest).toHaveBeenCalledWith('Nonexistent Project', '');
+      expect(Notice).toHaveBeenCalledWith('Note "Nonexistent Project" not found');
     });
 
     it('should hide metadata line when no metadata available', () => {

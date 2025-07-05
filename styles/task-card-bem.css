@@ -321,6 +321,42 @@
     color: var(--color-blue);
 }
 
+/* Project links */
+.tasknotes-plugin .task-card__project-link {
+    color: var(--interactive-accent);
+    text-decoration: none;
+    transition: all 0.2s ease;
+    border-radius: var(--radius-s);
+    padding: 1px 2px;
+    margin: -1px -2px;
+    cursor: pointer;
+    display: inline-block;
+    position: relative;
+    z-index: 1;
+}
+
+.tasknotes-plugin .task-card__project-link:hover,
+.tasknotes-plugin .task-card__project-link:focus {
+    background: var(--background-modifier-hover);
+    text-decoration: underline;
+    color: var(--interactive-accent-hover);
+    outline: none;
+}
+
+.tasknotes-plugin .task-card__project-link:focus {
+    box-shadow: 0 0 0 2px var(--interactive-accent);
+}
+
+.tasknotes-plugin .task-card__project-link.internal-link {
+    /* Ensure consistent styling with Obsidian's internal links */
+    color: var(--link-color);
+}
+
+.tasknotes-plugin .task-card__project-link.internal-link:hover,
+.tasknotes-plugin .task-card__project-link.internal-link:focus {
+    color: var(--link-color-hover);
+}
+
 
 /* =================================================================
    TASKCARD MODIFIERS (BEM --modifier)
