@@ -6,25 +6,6 @@
 // Mock for src/utils/helpers.ts
 export const ensureFolderExists = jest.fn().mockResolvedValue(undefined);
 
-export const generateTaskBodyFromTemplate = jest.fn().mockImplementation((template: string, data: any) => {
-  // Simple template processing for tests
-  if (!data || !data.title) {
-    return 'Default task content';
-  }
-  
-  return `# ${data.title}
-
-${data.details || 'No details provided'}
-
----
-Priority: ${data.priority || 'normal'}
-Status: ${data.status || 'open'}
-${data.dueDate ? `Due: ${data.dueDate}` : ''}
-${data.scheduledDate ? `Scheduled: ${data.scheduledDate}` : ''}
-${data.contexts?.length ? `Contexts: ${data.contexts.join(', ')}` : ''}
-${data.tags?.length ? `Tags: ${data.tags.join(', ')}` : ''}
-`;
-});
 
 export const calculateDefaultDate = jest.fn().mockImplementation((option: string) => {
   switch (option) {
@@ -147,7 +128,6 @@ export const isSameDateSafe = jest.fn((date1: string, date2: string) => date1 ==
 // Default export for compatibility
 export default {
   ensureFolderExists,
-  generateTaskBodyFromTemplate,
   calculateDefaultDate,
   debounce,
   calculateDuration,

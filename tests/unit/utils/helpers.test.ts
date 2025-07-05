@@ -20,7 +20,6 @@ import {
   getActiveTimeEntry,
   formatTime,
   parseTime,
-  generateTaskBodyFromTemplate,
   calculateDefaultDate,
   isSameDay,
   extractTaskInfo,
@@ -414,46 +413,6 @@ describe('Helpers', () => {
   });
 
   describe('Template Processing', () => {
-    describe('generateTaskBodyFromTemplate', () => {
-      it('should process template variables', () => {
-        const template = 'Task: {{title}}\nPriority: {{priority}}\nDue: {{dueDate}}';
-        const taskData = {
-          title: 'Test Task',
-          priority: 'high',
-          dueDate: '2025-01-15'
-        };
-
-        const result = generateTaskBodyFromTemplate(template, taskData);
-        expect(result).toBe('Task: Test Task\nPriority: high\nDue: 2025-01-15');
-      });
-
-      it('should handle missing variables', () => {
-        const template = 'Task: {{title}}\nPriority: {{priority}}';
-        const taskData = { title: 'Test Task' };
-
-        const result = generateTaskBodyFromTemplate(template, taskData);
-        expect(result).toBe('Task: Test Task\nPriority: ');
-      });
-
-      it('should process arrays as comma-separated values', () => {
-        const template = 'Contexts: {{contexts}}\nTags: {{tags}}';
-        const taskData = {
-          contexts: ['work', 'urgent'],
-          tags: ['task', 'important']
-        };
-
-        const result = generateTaskBodyFromTemplate(template, taskData);
-        expect(result).toBe('Contexts: work, urgent\nTags: task, important');
-      });
-
-      it('should include date and time variables', () => {
-        const template = 'Created: {{date}} at {{time}}';
-        const taskData = {};
-
-        const result = generateTaskBodyFromTemplate(template, taskData);
-        expect(result).toMatch(/Created: \d{4}-\d{2}-\d{2} at \d{2}:\d{2}/);
-      });
-    });
 
     describe('calculateDefaultDate', () => {
       it('should return empty for none option', () => {

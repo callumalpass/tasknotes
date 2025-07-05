@@ -186,60 +186,6 @@ export function parseTime(timeStr: string): TimeInfo | null {
 
 
 
-/**
- * Generate task body content from template, similar to daily note templates
- */
-export function generateTaskBodyFromTemplate(templateContent: string, taskData: any): string {
-	return processTaskTemplateVariables(templateContent, taskData);
-}
-
-/**
- * Process task template variables like {{title}}, {{priority}}, {{status}}, etc.
- */
-function processTaskTemplateVariables(template: string, taskData: any): string {
-	let result = template;
-	const now = new Date();
-	
-	// {{title}} - Task title
-	result = result.replace(/\{\{title\}\}/g, taskData.title || '');
-	
-	// {{priority}} - Task priority
-	result = result.replace(/\{\{priority\}\}/g, taskData.priority || '');
-	
-	// {{status}} - Task status
-	result = result.replace(/\{\{status\}\}/g, taskData.status || '');
-	
-	// {{contexts}} - Task contexts (comma-separated)
-	const contexts = Array.isArray(taskData.contexts) ? taskData.contexts.join(', ') : (taskData.contexts || '');
-	result = result.replace(/\{\{contexts\}\}/g, contexts);
-	
-	// {{tags}} - Task tags (comma-separated)
-	const tags = Array.isArray(taskData.tags) ? taskData.tags.join(', ') : (taskData.tags || '');
-	result = result.replace(/\{\{tags\}\}/g, tags);
-	
-	// {{timeEstimate}} - Time estimate in minutes
-	result = result.replace(/\{\{timeEstimate\}\}/g, taskData.timeEstimate?.toString() || '');
-	
-	// {{dueDate}} - Due date
-	result = result.replace(/\{\{dueDate\}\}/g, taskData.dueDate || '');
-	
-	// {{scheduledDate}} - Scheduled date
-	result = result.replace(/\{\{scheduledDate\}\}/g, taskData.scheduledDate || '');
-	
-	// {{details}} - User-provided details/description
-	result = result.replace(/\{\{details\}\}/g, taskData.details || '');
-	
-	// {{parentNote}} - Parent note name/path where task was created
-	result = result.replace(/\{\{parentNote\}\}/g, taskData.parentNote ? `\n- ${taskData.parentNote}` : '');
-	
-	// {{date}} - Current date (basic format only)
-	result = result.replace(/\{\{date\}\}/g, format(now, 'yyyy-MM-dd'));
-	
-	// {{time}} - Current time (basic format only)
-	result = result.replace(/\{\{time\}\}/g, format(now, 'HH:mm'));
-	
-	return result;
-}
 
 /**
  * Calculate default date based on configuration option
