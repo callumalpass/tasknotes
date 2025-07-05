@@ -46,7 +46,7 @@ Tasks can be filtered and grouped by their associated projects in all task views
 
 ### Template Integration
 
-Projects support template variables for automated workflows. The `{{projects}}` template variable can be used in task templates, and the `{{parentNote}}` variable will format project links as YAML list items when creating tasks from project notes.
+Projects support template variables for automated workflows. The `{{parentNote}}` variable will format project links as YAML list items when creating tasks from project notes.
 
 ## File Management and Templates
 

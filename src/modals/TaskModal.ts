@@ -200,6 +200,24 @@ export abstract class TaskModal extends Modal {
     }
 
     protected createAdditionalFields(container: HTMLElement): void {
+        // Projects - now using note selection instead of text input
+        new Setting(container)
+            .setName('Projects')
+            .addButton(button => {
+                button.setButtonText('Add Project')
+                    .setTooltip('Select a project note using fuzzy search')
+                    .onClick(() => {
+                        const modal = new ProjectSelectModal(this.app, (file) => {
+                            this.addProject(file);
+                        });
+                        modal.open();
+                    });
+            });
+
+        // Projects list container
+        this.projectsList = container.createDiv({ cls: 'task-projects-list' });
+        this.renderProjectsList(); // Initialize empty state
+
         // Contexts input with autocomplete
         new Setting(container)
             .setName('Contexts')
@@ -216,25 +234,6 @@ export abstract class TaskModal extends Modal {
                 // Add autocomplete functionality
                 this.setupAutocomplete(text.inputEl, 'contexts');
             });
-
-        // Projects - now using note selection instead of text input
-        new Setting(container)
-            .setName('Projects')
-            .setDesc('Link to project notes')
-            .addButton(button => {
-                button.setButtonText('Add Project')
-                    .setTooltip('Select a project note using fuzzy search')
-                    .onClick(() => {
-                        const modal = new ProjectSelectModal(this.app, (file) => {
-                            this.addProject(file);
-                        });
-                        modal.open();
-                    });
-            });
-
-        // Projects list container
-        this.projectsList = container.createDiv({ cls: 'task-projects-list' });
-        this.renderProjectsList(); // Initialize empty state
 
         // Tags input with autocomplete
         new Setting(container)
@@ -827,8 +826,6 @@ export abstract class TaskModal extends Modal {
         this.projectsList.empty();
 
         if (this.selectedProjectFiles.length === 0) {
-            const emptyState = this.projectsList.createDiv({ cls: 'task-projects-empty' });
-            emptyState.textContent = 'No projects selected';
             return;
         }
 

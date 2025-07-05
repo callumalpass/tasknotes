@@ -249,9 +249,8 @@ export class TaskCreationModal extends TaskModal {
         // Apply default scheduled date based on user settings
         this.scheduledDate = calculateDefaultDate(defaults.defaultScheduledDate);
         
-        // Apply default contexts, projects, and tags
+        // Apply default contexts and tags
         this.contexts = defaults.defaultContexts || '';
-        this.projects = defaults.defaultProjects || '';
         this.tags = defaults.defaultTags || '';
         
         // Apply default time estimate
