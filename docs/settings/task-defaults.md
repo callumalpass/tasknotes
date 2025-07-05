@@ -27,3 +27,18 @@ You can set the **Default Status** and **Default Priority** for new tasks, as we
 ## Template System
 
 TaskNotes supports **Templates** for both the YAML frontmatter and the body of your task notes. You can use templates to pre-fill common values, add boilerplate text, and create a consistent structure for your tasks. Templates can also include variables, such as `{{title}}`, `{{date}}`, and `{{parentNote}}`, which will be automatically replaced with the appropriate values when a new task is created.
+
+The `{{parentNote}}` variable is particularly useful for project organization. When used in a template like:
+
+```yaml
+projects: {{parentNote}}
+```
+
+It will resolve to:
+
+```yaml
+projects:
+- [[Project Name]]
+```
+
+This formatting makes it easy to automatically assign tasks to the project note they were created from during instant conversion.
