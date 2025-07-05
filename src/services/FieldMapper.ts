@@ -1,4 +1,5 @@
 import { FieldMapping, TaskInfo } from '../types';
+import { validateCompleteInstances } from '../utils/dateUtils';
 
 /**
  * Service for mapping between internal field names and user-configured property names
@@ -55,6 +56,12 @@ export class FieldMapper {
             mapped.contexts = Array.isArray(contexts) ? contexts : [contexts];
         }
         
+        if (frontmatter[this.mapping.projects] !== undefined) {
+            const projects = frontmatter[this.mapping.projects];
+            // Ensure projects is always an array
+            mapped.projects = Array.isArray(projects) ? projects : [projects];
+        }
+        
         if (frontmatter[this.mapping.timeEstimate] !== undefined) {
             mapped.timeEstimate = frontmatter[this.mapping.timeEstimate];
         }
@@ -80,7 +87,8 @@ export class FieldMapper {
         }
         
         if (frontmatter[this.mapping.completeInstances] !== undefined) {
-            mapped.complete_instances = frontmatter[this.mapping.completeInstances];
+            // Validate and clean the complete_instances array
+            mapped.complete_instances = validateCompleteInstances(frontmatter[this.mapping.completeInstances]);
         }
 
         // Handle tags array (includes archive tag)
@@ -130,6 +138,10 @@ export class FieldMapper {
         
         if (taskData.contexts !== undefined) {
             frontmatter[this.mapping.contexts] = taskData.contexts;
+        }
+        
+        if (taskData.projects !== undefined) {
+            frontmatter[this.mapping.projects] = taskData.projects;
         }
         
         if (taskData.timeEstimate !== undefined) {

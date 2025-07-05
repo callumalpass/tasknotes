@@ -65,7 +65,7 @@ export class TaskCreationModal extends TaskModal {
         this.nlInput = nlContainer.createEl('textarea', {
             cls: 'nl-input',
             attr: {
-                placeholder: 'Buy groceries tomorrow at 3pm @home +shopping #errands\n\nAdd details here...',
+                placeholder: 'Buy groceries tomorrow at 3pm @home #errands\n\nAdd details here...',
                 rows: '3'
             }
         });
@@ -209,7 +209,6 @@ export class TaskCreationModal extends TaskModal {
         if (parsed.dueDate) this.dueDate = parsed.dueDate;
         if (parsed.scheduledDate) this.scheduledDate = parsed.scheduledDate;
         if (parsed.contexts && parsed.contexts.length > 0) this.contexts = parsed.contexts.join(', ');
-        if (parsed.projects && parsed.projects.length > 0) this.projects = parsed.projects.join(', ');
         if (parsed.tags && parsed.tags.length > 0) this.tags = parsed.tags.join(', ');
         if (parsed.details) this.details = parsed.details;
         if (parsed.recurrence) this.recurrenceRule = parsed.recurrence;
@@ -218,7 +217,6 @@ export class TaskCreationModal extends TaskModal {
         if (this.titleInput) this.titleInput.value = this.title;
         if (this.detailsInput) this.detailsInput.value = this.details;
         if (this.contextsInput) this.contextsInput.value = this.contexts;
-        if (this.projectsInput) this.projectsInput.value = this.projects;
         if (this.tagsInput) this.tagsInput.value = this.tags;
         
         // Update icon states
@@ -277,7 +275,7 @@ export class TaskCreationModal extends TaskModal {
             this.contexts = values.contexts.join(', ');
         }
         if (values.projects !== undefined) {
-            this.projects = values.projects.join(', ');
+            this.initializeProjectsFromStrings(values.projects);
         }
         if (values.tags !== undefined) {
             this.tags = values.tags.filter(tag => tag !== this.plugin.settings.taskTag).join(', ');

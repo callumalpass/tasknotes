@@ -30,7 +30,7 @@ export type CalendarDisplayMode = 'month' | 'agenda';
 
 // Task sorting and grouping types
 export type TaskSortKey = 'due' | 'scheduled' | 'priority' | 'title';
-export type TaskGroupKey = 'none' | 'priority' | 'context' | 'due' | 'scheduled' | 'status';
+export type TaskGroupKey = 'none' | 'priority' | 'context' | 'project' | 'due' | 'scheduled' | 'status';
 export type SortDirection = 'asc' | 'desc';
 
 // Unified filtering system types
@@ -39,6 +39,7 @@ export interface FilterQuery {
 	searchQuery?: string;
 	statuses?: string[]; // Multiple status selection support
 	contexts?: string[];
+	projects?: string[];
 	priorities?: string[];
 	dateRange?: {
 		start: string; // YYYY-MM-DD
@@ -104,6 +105,7 @@ export interface TaskInfo {
 	archived: boolean;
 	tags?: string[];
 	contexts?: string[];
+	projects?: string[];
 	recurrence?: string | RecurrenceInfo | undefined; // RFC 5545 recurrence rule string (preferred) or legacy RecurrenceInfo object (deprecated)
 	complete_instances?: string[]; // Array of dates (YYYY-MM-DD) when recurring task was completed
 	completedDate?: string; // Date (YYYY-MM-DD) when task was marked as done
@@ -173,6 +175,7 @@ export interface TaskFrontmatter {
 	tags: string[];
 	priority: 'low' | 'normal' | 'high';
 	contexts?: string[];
+	projects?: string[];
 	recurrence?: string | RecurrenceInfo | undefined; // RFC 5545 recurrence rule string (preferred) or legacy RecurrenceInfo object (deprecated)
 	complete_instances?: string[];
 	completedDate?: string;
@@ -254,6 +257,7 @@ export interface FieldMapping {
 	due: string;
 	scheduled: string;
 	contexts: string;
+	projects: string;
 	timeEstimate: string;
 	completedDate: string;
 	dateCreated: string;

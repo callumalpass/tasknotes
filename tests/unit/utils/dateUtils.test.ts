@@ -38,7 +38,8 @@ import {
   validateDateTimeInput,
   getCurrentDateTimeString,
   addDaysToDateTime,
-  createUTCDateForRRule
+  createUTCDateForRRule,
+  validateCompleteInstances
 } from '../../../src/utils/dateUtils';
 
 // Use improved date-fns mock that behaves more like the real library
@@ -676,6 +677,62 @@ describe('DateUtils', () => {
       invalidDates.forEach(dateString => {
         expect(() => createUTCDateForRRule(dateString)).toThrow();
       });
+    });
+  });
+
+  describe('validateCompleteInstances', () => {
+    it('should return valid YYYY-MM-DD dates', () => {
+      const input = ['2025-01-01', '2025-02-15', '2025-12-31'];
+      const result = validateCompleteInstances(input);
+      expect(result).toEqual(['2025-01-01', '2025-02-15', '2025-12-31']);
+    });
+
+    it('should filter out invalid time-only entries like T00:00', () => {
+      const input = ['2025-01-01', 'T00:00', '2025-02-15', 'T12:30', '2025-12-31'];
+      const result = validateCompleteInstances(input);
+      expect(result).toEqual(['2025-01-01', '2025-02-15', '2025-12-31']);
+    });
+
+    it('should filter out invalid date formats', () => {
+      const input = ['2025-01-01', 'invalid-date', '2025/02/15', '01-01-2025', '2025-12-31'];
+      const result = validateCompleteInstances(input);
+      expect(result).toEqual(['2025-01-01', '2025-12-31']);
+    });
+
+    it('should filter out non-string entries', () => {
+      const input = ['2025-01-01', null, undefined, 123, {}, '2025-12-31'];
+      const result = validateCompleteInstances(input);
+      expect(result).toEqual(['2025-01-01', '2025-12-31']);
+    });
+
+    it('should filter out empty strings', () => {
+      const input = ['2025-01-01', '', '   ', '2025-12-31'];
+      const result = validateCompleteInstances(input);
+      expect(result).toEqual(['2025-01-01', '2025-12-31']);
+    });
+
+    it('should return empty array for non-array input', () => {
+      expect(validateCompleteInstances(null)).toEqual([]);
+      expect(validateCompleteInstances(undefined)).toEqual([]);
+      expect(validateCompleteInstances('not-an-array')).toEqual([]);
+      expect(validateCompleteInstances(123)).toEqual([]);
+    });
+
+    it('should trim whitespace from valid entries', () => {
+      const input = ['  2025-01-01  ', ' 2025-02-15 ', '2025-12-31'];
+      const result = validateCompleteInstances(input);
+      expect(result).toEqual(['2025-01-01', '2025-02-15', '2025-12-31']);
+    });
+
+    it('should return empty array for empty input array', () => {
+      const result = validateCompleteInstances([]);
+      expect(result).toEqual([]);
+    });
+
+    it('should filter out all invalid entries returning empty array', () => {
+      const input = ['T00:00', 'T12:30', 'invalid-date', '', null];
+      const result = validateCompleteInstances(input);
+      expect(result).toEqual([]);
     });
   });
 });

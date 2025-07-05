@@ -1465,6 +1465,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 			['due', 'Due date'],
 			['scheduled', 'Scheduled date'],
 			['contexts', 'Contexts'],
+			['projects', 'Projects'],
 			['timeEstimate', 'Time estimate'],
 				['completedDate', 'Completed date'],
 			['dateCreated', 'Created date'],

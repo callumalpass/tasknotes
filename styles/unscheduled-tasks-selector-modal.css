@@ -80,6 +80,39 @@
     border-radius: 8px;
 }
 
+.unscheduled-tasks-selector__contexts {
+    font-size: 0.75rem;
+    color: var(--text-accent);
+    background: var(--background-modifier-border);
+    padding: 0.125rem 0.375rem;
+    border-radius: 8px;
+}
+
+.unscheduled-tasks-selector__projects {
+    font-size: 0.75rem;
+    color: var(--text-accent);
+    background: var(--background-modifier-border);
+    padding: 0.125rem 0.375rem;
+    border-radius: 8px;
+}
+
+/* Project Links - for [[Note Name]] format projects */
+.unscheduled-tasks-selector__project-link {
+    color: var(--link-color);
+    text-decoration: none;
+    transition: all 0.2s ease;
+    border-radius: 4px;
+    padding: 1px 2px;
+    margin: -1px -2px;
+    cursor: pointer;
+}
+
+.unscheduled-tasks-selector__project-link:hover {
+    background: var(--background-modifier-hover);
+    text-decoration: underline;
+    color: var(--link-color-hover);
+}
+
 .unscheduled-tasks-selector__schedule-icon {
     color: var(--text-muted);
     opacity: 0.7;

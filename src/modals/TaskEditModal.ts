@@ -38,6 +38,14 @@ export class TaskEditModal extends TaskModal {
         this.priority = this.task.priority;
         this.status = this.task.status;
         this.contexts = this.task.contexts ? this.task.contexts.join(', ') : '';
+        
+        // Initialize projects using the new method that handles both old and new formats
+        if (this.task.projects && this.task.projects.length > 0) {
+            this.initializeProjectsFromStrings(this.task.projects);
+        } else {
+            this.projects = '';
+        }
+        
         this.tags = this.task.tags 
             ? this.task.tags.filter(tag => tag !== this.plugin.settings.taskTag).join(', ') 
             : '';
@@ -197,9 +205,18 @@ export class TaskEditModal extends TaskModal {
         
         // Show current month by default, or the month with most recent completions
         const currentDate = new Date();
-        const mostRecentCompletion = this.task.complete_instances && this.task.complete_instances.length > 0 
-            ? new Date(Math.max(...this.task.complete_instances.map(d => new Date(d + 'T00:00:00').getTime())))
-            : currentDate;
+        let mostRecentCompletion = currentDate;
+        
+        if (this.task.complete_instances && this.task.complete_instances.length > 0) {
+            const validCompletions = this.task.complete_instances
+                .filter(d => d && typeof d === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(d.trim())) // Only valid YYYY-MM-DD dates
+                .map(d => new Date(d + 'T00:00:00').getTime())
+                .filter(time => !isNaN(time)); // Filter out invalid dates
+                
+            if (validCompletions.length > 0) {
+                mostRecentCompletion = new Date(Math.max(...validCompletions));
+            }
+        }
         
         this.renderCalendarMonth(this.calendarWrapper, mostRecentCompletion);
     }
@@ -366,6 +383,17 @@ export class TaskEditModal extends TaskModal {
         
         if (JSON.stringify(newContexts.sort()) !== JSON.stringify(oldContexts.sort())) {
             changes.contexts = newContexts.length > 0 ? newContexts : undefined;
+        }
+
+        // Parse and compare projects
+        const newProjects = this.projects
+            .split(',')
+            .map(p => p.trim())
+            .filter(p => p.length > 0);
+        const oldProjects = this.task.projects || [];
+        
+        if (JSON.stringify(newProjects.sort()) !== JSON.stringify(oldProjects.sort())) {
+            changes.projects = newProjects.length > 0 ? newProjects : undefined;
         }
 
         // Parse and compare tags

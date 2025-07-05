@@ -3,7 +3,7 @@ import { format } from 'date-fns';
 // YAML not needed in this service
 import TaskNotesPlugin from '../main';
 import { TaskInfo, TimeEntry, EVENT_TASK_UPDATED, EVENT_TASK_DELETED, TaskCreationData } from '../types';
-import { getCurrentTimestamp, getCurrentDateString } from '../utils/dateUtils';
+import { getCurrentTimestamp, getCurrentDateString, validateCompleteInstances } from '../utils/dateUtils';
 import { generateTaskFilename, generateUniqueFilename, FilenameContext } from '../utils/filenameGenerator';
 import { ensureFolderExists } from '../utils/helpers';
 import { processTemplate, mergeTemplateFrontmatter, TemplateData } from '../utils/templateProcessor';
@@ -33,8 +33,9 @@ export class TaskService {
             const dateCreated = taskData.dateCreated || getCurrentTimestamp();
             const dateModified = taskData.dateModified || getCurrentTimestamp();
 
-            // Prepare contexts and tags arrays
+            // Prepare contexts, projects, and tags arrays
             const contextsArray = taskData.contexts || [];
+            const projectsArray = taskData.projects || [];
             const tagsArray = taskData.tags || [this.plugin.settings.taskTag];
             
             // Ensure task tag is always included
@@ -89,6 +90,7 @@ export class TaskService {
                 due: taskData.due || undefined,
                 scheduled: taskData.scheduled || undefined,
                 contexts: contextsArray.length > 0 ? contextsArray : undefined,
+                projects: projectsArray.length > 0 ? projectsArray : undefined,
                 timeEstimate: taskData.timeEstimate && taskData.timeEstimate > 0 ? taskData.timeEstimate : undefined,
                 dateCreated: dateCreated,
                 dateModified: dateModified,

@@ -1,7 +1,8 @@
-import { App, FuzzySuggestModal, FuzzyMatch, setIcon } from 'obsidian';
+import { App, FuzzySuggestModal, FuzzyMatch, setIcon, TFile, Notice } from 'obsidian';
 import { format } from 'date-fns';
 import { TaskInfo } from '../types';
 import { isPastDate, isToday, hasTimeComponent, getDatePart, parseDate } from '../utils/dateUtils';
+import { filterEmptyProjects } from '../utils/helpers';
 import TaskNotesPlugin from '../main';
 
 export interface ScheduleTaskOptions {
@@ -155,6 +156,19 @@ export class UnscheduledTasksSelectorModal extends FuzzySuggestModal<TaskInfo> {
             });
         }
         
+        // Contexts if exists
+        if (task.contexts && task.contexts.length > 0) {
+            const contextsEl = metaEl.createSpan({ cls: 'unscheduled-tasks-selector__contexts' });
+            contextsEl.textContent = `@${task.contexts.join(', @')}`;
+        }
+        
+        // Projects if exists
+        const filteredProjects = filterEmptyProjects(task.projects || []);
+        if (filteredProjects.length > 0) {
+            const projectsEl = metaEl.createSpan({ cls: 'unscheduled-tasks-selector__projects' });
+            renderProjectLinksForSelector(projectsEl, filteredProjects, this.plugin);
+        }
+        
         // Add schedule icon
         const scheduleIcon = contentEl.createDiv({ cls: 'unscheduled-tasks-selector__schedule-icon' });
         setIcon(scheduleIcon, 'calendar-plus');
@@ -194,4 +208,60 @@ export class UnscheduledTasksSelectorModal extends FuzzySuggestModal<TaskInfo> {
         const el = this.resultContainerEl.createDiv({ cls: 'unscheduled-tasks-selector__no-results' });
         el.setText('No unscheduled tasks found. All tasks are either scheduled, completed, or archived.');
     }
+}
+
+/**
+ * Check if a project string is in wikilink format [[Note Name]]
+ */
+function isWikilinkProject(project: string): boolean {
+    return project.startsWith('[[') && project.endsWith(']]');
+}
+
+/**
+ * Render project links in a container element for selector modals
+ */
+function renderProjectLinksForSelector(container: HTMLElement, projects: string[], plugin: TaskNotesPlugin): void {
+    container.innerHTML = '';
+    
+    projects.forEach((project, index) => {
+        if (index > 0) {
+            const separator = document.createTextNode(', ');
+            container.appendChild(separator);
+        }
+        
+        const plusText = document.createTextNode('+');
+        container.appendChild(plusText);
+        
+        if (isWikilinkProject(project)) {
+            // Extract the note name from [[Note Name]]
+            const noteName = project.slice(2, -2);
+            
+            // Create a clickable link
+            const linkEl = container.createEl('a', {
+                cls: 'unscheduled-tasks-selector__project-link internal-link',
+                text: noteName,
+                attr: { 'data-href': noteName }
+            });
+            
+            // Add click handler to open the note
+            linkEl.addEventListener('click', async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // Resolve the link to get the actual file
+                const file = plugin.app.metadataCache.getFirstLinkpathDest(noteName, '');
+                if (file instanceof TFile) {
+                    // Open the file in the current leaf
+                    await plugin.app.workspace.getLeaf(false).openFile(file);
+                } else {
+                    // File not found, show notice
+                    new Notice(`Note "${noteName}" not found`);
+                }
+            });
+        } else {
+            // Plain text project
+            const textNode = document.createTextNode(project);
+            container.appendChild(textNode);
+        }
+    });
 }

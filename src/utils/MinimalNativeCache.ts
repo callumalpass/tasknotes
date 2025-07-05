@@ -7,6 +7,7 @@ import {
     getDatePart,
     parseDate
 } from './dateUtils';
+import { filterEmptyProjects } from './helpers';
 
 /**
  * Ultra-minimal cache manager that leverages Obsidian's native metadata cache
@@ -66,6 +67,14 @@ export class MinimalNativeCache extends Events {
         this.setupNativeEventListeners();
         this.initialized = true;
         this.trigger('cache-initialized', { message: 'Minimal native cache ready' });
+    }
+    
+    /**
+     * Get the Obsidian app instance
+     * Needed for external services to access app APIs
+     */
+    getApp(): App {
+        return this.app;
     }
     
     /**
@@ -411,6 +420,217 @@ export class MinimalNativeCache extends Events {
         return Array.from(contexts).sort();
     }
     
+    /**
+     * Get all projects by computing on-demand
+     * Extracts project names from [[Note Name]] links in task project fields
+     * Returns actual project note names/paths that exist as links in tasks
+     */
+    getAllProjects(): string[] {
+        const projects = new Set<string>();
+        const markdownFiles = this.app.vault.getMarkdownFiles()
+            .filter(file => this.isValidFile(file.path));
+        
+        for (const file of markdownFiles) {
+            const metadata = this.app.metadataCache.getFileCache(file);
+            if (metadata?.frontmatter?.tags?.includes(this.taskTag)) {
+                const taskInfo = this.extractTaskInfoFromNative(file.path, metadata.frontmatter);
+                const filteredProjects = filterEmptyProjects(taskInfo?.projects || []);
+                if (filteredProjects.length > 0) {
+                    filteredProjects.forEach(project => {
+                        const extractedProjects = this.extractProjectNamesFromValue(project, file.path);
+                        extractedProjects.forEach(projectName => projects.add(projectName));
+                    });
+                }
+            }
+        }
+        
+        return Array.from(projects).sort();
+    }
+    
+    /**
+     * Get detailed project information including file paths and existence status
+     * Returns an object with project metadata for more advanced use cases
+     */
+    getAllProjectsWithDetails(): Array<{
+        name: string;
+        isLinkedNote: boolean;
+        filePath?: string;
+        exists: boolean;
+        usageCount: number;
+    }> {
+        const projectMap = new Map<string, {
+            name: string;
+            isLinkedNote: boolean;
+            filePath?: string;
+            exists: boolean;
+            usageCount: number;
+        }>();
+        
+        const markdownFiles = this.app.vault.getMarkdownFiles()
+            .filter(file => this.isValidFile(file.path));
+        
+        for (const file of markdownFiles) {
+            const metadata = this.app.metadataCache.getFileCache(file);
+            if (metadata?.frontmatter?.tags?.includes(this.taskTag)) {
+                const taskInfo = this.extractTaskInfoFromNative(file.path, metadata.frontmatter);
+                const filteredProjects = filterEmptyProjects(taskInfo?.projects || []);
+                if (filteredProjects.length > 0) {
+                    filteredProjects.forEach(project => {
+                        const projectDetails = this.extractProjectDetailsFromValue(project, file.path);
+                        projectDetails.forEach(detail => {
+                            const existing = projectMap.get(detail.name);
+                            if (existing) {
+                                existing.usageCount++;
+                            } else {
+                                projectMap.set(detail.name, { ...detail, usageCount: 1 });
+                            }
+                        });
+                    });
+                }
+            }
+        }
+        
+        return Array.from(projectMap.values()).sort((a, b) => a.name.localeCompare(b.name));
+    }
+    
+    /**
+     * Get all project notes that exist as files in the vault
+     * This returns only projects that are linked notes and actually exist as files
+     */
+    getAllProjectFiles(): Array<{
+        name: string;
+        path: string;
+        usageCount: number;
+    }> {
+        const projectDetails = this.getAllProjectsWithDetails();
+        return projectDetails
+            .filter(project => project.isLinkedNote && project.exists && project.filePath)
+            .map(project => ({
+                name: project.name,
+                path: project.filePath!,
+                usageCount: project.usageCount
+            }));
+    }
+    
+    /**
+     * Extract project names from a project field value
+     * Handles both [[Note Name]] links and plain strings
+     * Returns an array of project names that should be included in the project list
+     */
+    private extractProjectNamesFromValue(projectValue: string, sourcePath: string): string[] {
+        if (!projectValue) return [];
+        
+        const projects: string[] = [];
+        
+        // Check if this is a [[link]] format
+        const linkMatch = projectValue.match(/^\[\[([^\]]+)\]\]$/);
+        if (linkMatch) {
+            const linkPath = linkMatch[1];
+            
+            // Handle both relative and absolute link paths
+            let resolvedFile;
+            
+            // First try to resolve as-is (handles absolute paths and relative paths from vault root)
+            resolvedFile = this.app.metadataCache.getFirstLinkpathDest(linkPath, '');
+            
+            // If not found, try resolving relative to the source file's directory
+            if (!resolvedFile) {
+                const sourceDir = sourcePath.substring(0, sourcePath.lastIndexOf('/'));
+                resolvedFile = this.app.metadataCache.getFirstLinkpathDest(linkPath, sourceDir);
+            }
+            
+            if (resolvedFile) {
+                // Return the actual note name (basename without extension)
+                projects.push(resolvedFile.basename);
+            } else {
+                // If the linked file doesn't exist, still include the link text
+                // This handles cases where the project note hasn't been created yet
+                // but the link exists in the project field
+                const noteName = linkPath.split('/').pop()?.replace(/\.md$/, '') || linkPath;
+                projects.push(noteName);
+            }
+        } else {
+            // This is a plain string project name
+            // Only include it if it's not empty and not just whitespace
+            const trimmed = projectValue.trim();
+            if (trimmed) {
+                projects.push(trimmed);
+            }
+        }
+        
+        return projects;
+    }
+    
+    /**
+     * Extract detailed project information from a project field value
+     * Returns project metadata including file paths and existence status
+     */
+    private extractProjectDetailsFromValue(projectValue: string, sourcePath: string): Array<{
+        name: string;
+        isLinkedNote: boolean;
+        filePath?: string;
+        exists: boolean;
+    }> {
+        if (!projectValue) return [];
+        
+        const projects: Array<{
+            name: string;
+            isLinkedNote: boolean;
+            filePath?: string;
+            exists: boolean;
+        }> = [];
+        
+        // Check if this is a [[link]] format
+        const linkMatch = projectValue.match(/^\[\[([^\]]+)\]\]$/);
+        if (linkMatch) {
+            const linkPath = linkMatch[1];
+            
+            // Handle both relative and absolute link paths
+            let resolvedFile;
+            
+            // First try to resolve as-is (handles absolute paths and relative paths from vault root)
+            resolvedFile = this.app.metadataCache.getFirstLinkpathDest(linkPath, '');
+            
+            // If not found, try resolving relative to the source file's directory
+            if (!resolvedFile) {
+                const sourceDir = sourcePath.substring(0, sourcePath.lastIndexOf('/'));
+                resolvedFile = this.app.metadataCache.getFirstLinkpathDest(linkPath, sourceDir);
+            }
+            
+            if (resolvedFile) {
+                // Return the actual note name and file path
+                projects.push({
+                    name: resolvedFile.basename,
+                    isLinkedNote: true,
+                    filePath: resolvedFile.path,
+                    exists: true
+                });
+            } else {
+                // If the linked file doesn't exist, still include the link info
+                const noteName = linkPath.split('/').pop()?.replace(/\.md$/, '') || linkPath;
+                projects.push({
+                    name: noteName,
+                    isLinkedNote: true,
+                    filePath: undefined,
+                    exists: false
+                });
+            }
+        } else {
+            // This is a plain string project name
+            const trimmed = projectValue.trim();
+            if (trimmed) {
+                projects.push({
+                    name: trimmed,
+                    isLinkedNote: false,
+                    filePath: undefined,
+                    exists: false
+                });
+            }
+        }
+        
+        return projects;
+    }
+    
     // ========================================
     // BACKWARD COMPATIBILITY METHODS
     // ========================================
@@ -675,6 +895,7 @@ export class MinimalNativeCache extends Events {
                 archived: mappedTask.archived || false,
                 tags: mappedTask.tags || [],
                 contexts: mappedTask.contexts || [],
+                projects: mappedTask.projects || [],
                 recurrence: mappedTask.recurrence,
                 complete_instances: mappedTask.complete_instances,
                 completedDate: mappedTask.completedDate,

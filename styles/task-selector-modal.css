@@ -104,6 +104,52 @@
 }
 
 /* ================================================
+   PROJECTS SECTION
+   ================================================ */
+
+/* Projects Container */
+.task-selector-modal__projects {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 2px;
+}
+
+/* Individual Project Tags */
+.task-selector-modal__project-tag {
+    padding: 2px 4px;
+    border-radius: var(--tn-border-radius-sm);
+    background-color: var(--tn-color-project-bg, var(--background-modifier-border));
+    color: var(--tn-color-project, var(--text-accent));
+    font-size: var(--tn-font-size-xs);
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.task-selector-modal__project-tag::before {
+    content: '+';
+    opacity: 0.7;
+    margin-right: 1px;
+}
+
+/* Project Links - for [[Note Name]] format projects */
+.task-selector-modal__project-link {
+    color: var(--link-color);
+    text-decoration: none;
+    transition: all 0.2s ease;
+    border-radius: var(--tn-border-radius-sm);
+    padding: 1px 2px;
+    margin: -1px -2px;
+    cursor: pointer;
+}
+
+.task-selector-modal__project-link:hover {
+    background: var(--background-modifier-hover);
+    text-decoration: underline;
+    color: var(--link-color-hover);
+}
+
+/* ================================================
    STATUS DISPLAY
    ================================================ */
 
@@ -129,6 +175,10 @@
 }
 
 .theme-dark .task-selector-modal__context-tag {
+    background-color: var(--background-modifier-form-field);
+}
+
+.theme-dark .task-selector-modal__project-tag {
     background-color: var(--background-modifier-form-field);
 }
 

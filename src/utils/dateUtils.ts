@@ -616,6 +616,42 @@ export function validateDateTimeInput(dateValue: string, timeValue?: string): bo
 }
 
 /**
+ * Validates and filters a complete_instances array to contain only valid YYYY-MM-DD dates
+ * This prevents issues with invalid time-only entries like "T00:00"
+ */
+export function validateCompleteInstances(instances: any[]): string[] {
+    if (!Array.isArray(instances)) {
+        return [];
+    }
+    
+    return instances
+        .filter(instance => {
+            // Must be a non-empty string
+            if (typeof instance !== 'string' || !instance.trim()) {
+                return false;
+            }
+            
+            const trimmed = instance.trim();
+            
+            // Must match YYYY-MM-DD format exactly
+            if (!/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+                console.warn('Invalid complete_instances entry (not YYYY-MM-DD format):', instance);
+                return false;
+            }
+            
+            // Must be a valid date
+            try {
+                const parsed = parseDate(trimmed);
+                return true;
+            } catch (error) {
+                console.warn('Invalid complete_instances entry (date parsing failed):', instance, error);
+                return false;
+            }
+        })
+        .map(instance => instance.trim());
+}
+
+/**
  * Get current date+time in local timezone as YYYY-MM-DDTHH:mm format
  */
 export function getCurrentDateTimeString(): string {

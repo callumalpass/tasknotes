@@ -1,6 +1,7 @@
-import { App, FuzzySuggestModal, FuzzyMatch } from 'obsidian';
+import { App, FuzzySuggestModal, FuzzyMatch, TFile, Notice } from 'obsidian';
 import { TaskInfo } from '../types';
 import { isPastDate, isToday } from '../utils/dateUtils';
+import { filterEmptyProjects } from '../utils/helpers';
 import type TaskNotesPlugin from '../main';
 
 export class TaskSelectorModal extends FuzzySuggestModal<TaskInfo> {
@@ -67,6 +68,10 @@ export class TaskSelectorModal extends FuzzySuggestModal<TaskInfo> {
         if (task.contexts && task.contexts.length > 0) {
             text += ` ${task.contexts.join(' ')}`;
         }
+        const filteredProjects = filterEmptyProjects(task.projects || []);
+        if (filteredProjects.length > 0) {
+            text += ` ${filteredProjects.join(' ')}`;
+        }
         return text;
     }
 
@@ -114,8 +119,56 @@ export class TaskSelectorModal extends FuzzySuggestModal<TaskInfo> {
                 if (index > 0) contextsSpan.createSpan({ text: ', ' });
                 contextsSpan.createSpan({ 
                     cls: 'task-selector-modal__context-tag',
-                    text: context 
+                    text: `@${context}` 
                 });
+            });
+        }
+        
+        // Projects
+        const filteredProjects = filterEmptyProjects(task.projects || []);
+        if (filteredProjects.length > 0) {
+            const projectsSpan = metaDiv.createSpan({ cls: 'task-selector-modal__projects' });
+            filteredProjects.forEach((project, index) => {
+                if (index > 0) projectsSpan.createSpan({ text: ', ' });
+                
+                const plusText = document.createTextNode('+');
+                projectsSpan.appendChild(plusText);
+                
+                if (isWikilinkProject(project)) {
+                    // Extract the note name from [[Note Name]]
+                    const noteName = project.slice(2, -2);
+                    
+                    // Create a clickable link
+                    const linkEl = projectsSpan.createEl('a', {
+                        cls: 'task-selector-modal__project-link internal-link',
+                        text: noteName,
+                        attr: { 'data-href': noteName }
+                    });
+                    
+                    // Add click handler to open the note
+                    linkEl.addEventListener('click', async (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        
+                        // Resolve the link to get the actual file
+                        const file = this.plugin.app.metadataCache.getFirstLinkpathDest(noteName, '');
+                        if (file instanceof TFile) {
+                            // Open the file in the current leaf
+                            await this.plugin.app.workspace.getLeaf(false).openFile(file);
+                            // Close this modal after opening the file
+                            this.close();
+                        } else {
+                            // File not found, show notice
+                            new Notice(`Note "${noteName}" not found`);
+                        }
+                    });
+                } else {
+                    // Plain text project
+                    projectsSpan.createSpan({ 
+                        cls: 'task-selector-modal__project-tag',
+                        text: project
+                    });
+                }
             });
         }
         
@@ -138,4 +191,11 @@ export class TaskSelectorModal extends FuzzySuggestModal<TaskInfo> {
         // If user closed without selecting, call callback with null
         // Note: This will be called even after selection, but the callback should handle that gracefully
     }
+}
+
+/**
+ * Check if a project string is in wikilink format [[Note Name]]
+ */
+function isWikilinkProject(project: string): boolean {
+    return project.startsWith('[[') && project.endsWith(']]');
 }

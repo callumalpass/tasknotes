@@ -3,7 +3,7 @@ import { MinimalNativeCache } from '../utils/MinimalNativeCache';
 import { StatusManager } from './StatusManager';
 import { PriorityManager } from './PriorityManager';
 import { EventEmitter } from '../utils/EventEmitter';
-import { isDueByRRule } from '../utils/helpers';
+import { isDueByRRule, filterEmptyProjects } from '../utils/helpers';
 import { format, isToday } from 'date-fns';
 import { 
     getTodayString, 
@@ -240,9 +240,10 @@ export class FilterService extends EventEmitter {
             const contextMatch = task.contexts?.some(context => 
                 context && typeof context === 'string' && context.toLowerCase().includes(searchTerm)
             ) || false;
-            const projectMatch = task.projects?.some(project => 
-                project && typeof project === 'string' && project.toLowerCase().includes(searchTerm)
-            ) || false;
+            const filteredProjectsForSearch = filterEmptyProjects(task.projects || []);
+            const projectMatch = filteredProjectsForSearch.some(project => 
+                project.toLowerCase().includes(searchTerm)
+            );
             
             if (!titleMatch && !contextMatch && !projectMatch) {
                 return false;
@@ -275,9 +276,22 @@ export class FilterService extends EventEmitter {
 
         // Project filter
         if (query.projects && query.projects.length > 0) {
-            if (!task.projects || !query.projects.some(project => 
-                task.projects!.includes(project)
-            )) {
+            const filteredProjects = filterEmptyProjects(task.projects || []);
+            if (filteredProjects.length === 0) {
+                return false;
+            }
+            
+            // Extract project names from task project values (handling [[links]])
+            const taskProjectNames = filteredProjects.flatMap(projectValue => 
+                this.extractProjectNamesFromTaskValue(projectValue, task.path)
+            );
+            
+            // Check if any selected project matches any extracted project name
+            const hasMatchingProject = query.projects.some(selectedProject => 
+                taskProjectNames.includes(selectedProject)
+            );
+            
+            if (!hasMatchingProject) {
                 return false;
             }
         }
@@ -430,9 +444,10 @@ export class FilterService extends EventEmitter {
         for (const task of tasks) {
             // For projects, handle multiple groups per task
             if (groupKey === 'project') {
-                if (task.projects && task.projects.length > 0) {
+                const filteredProjects = filterEmptyProjects(task.projects || []);
+                if (filteredProjects.length > 0) {
                     // Add task to each project group
-                    for (const project of task.projects) {
+                    for (const project of filteredProjects) {
                         if (!groups.has(project)) {
                             groups.set(project, []);
                         }
@@ -898,5 +913,38 @@ export class FilterService extends EventEmitter {
         }
 
         return flatData;
+    }
+
+    /**
+     * Extract project names from a task project value, handling [[link]] format
+     * This mirrors the logic from MinimalNativeCache.extractProjectNamesFromValue
+     */
+    private extractProjectNamesFromTaskValue(projectValue: string, sourcePath: string): string[] {
+        if (!projectValue || projectValue.trim() === '' || projectValue === '""') {
+            return [];
+        }
+
+        // Remove quotes if the value is wrapped in them
+        const cleanValue = projectValue.replace(/^"(.*)"$/, '$1');
+        
+        // Check if it's a wikilink format
+        const linkMatch = cleanValue.match(/^\[\[(.+?)\]\]$/);
+        if (linkMatch) {
+            const linkPath = linkMatch[1];
+            
+            // Try to resolve the link using Obsidian's API through cache manager
+            const resolvedFile = this.cacheManager.getApp().metadataCache.getFirstLinkpathDest(linkPath, sourcePath);
+            if (resolvedFile) {
+                // Return the basename of the resolved file
+                return [resolvedFile.basename];
+            } else {
+                // If file doesn't exist, extract the display name from the link
+                const displayName = linkPath.includes('/') ? linkPath.split('/').pop() : linkPath;
+                return displayName ? [displayName] : [];
+            }
+        } else {
+            // Plain text project (backward compatibility)
+            return [cleanValue];
+        }
     }
 }

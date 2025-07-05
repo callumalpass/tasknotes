@@ -646,6 +646,21 @@ export class Modal extends Component {
   onClose(): void {}
 }
 
+// FuzzySuggestModal mock class
+export abstract class FuzzySuggestModal<T> extends Modal {
+  constructor(app: App) {
+    super(app);
+  }
+
+  abstract getItems(): T[];
+  abstract getItemText(item: T): string;
+  abstract onChooseItem(item: T, evt: MouseEvent | KeyboardEvent): void;
+
+  // Mock methods for fuzzy search functionality
+  setPlaceholder(placeholder: string): void {}
+  setInstructions(instructions: Array<{command: string, purpose: string}>): void {}
+}
+
 // ItemView mock class
 export class ItemView extends Component {
   app: App;
@@ -891,6 +906,7 @@ export default {
   Plugin,
   Component,
   Modal,
+  FuzzySuggestModal,
   ItemView,
   Setting,
   PluginSettingTab,

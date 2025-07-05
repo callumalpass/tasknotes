@@ -2,7 +2,7 @@ import { format } from 'date-fns';
 import { TFile, Menu, setIcon, Notice, Modal, App } from 'obsidian';
 import { TaskInfo } from '../types';
 import TaskNotesPlugin from '../main';
-import { calculateTotalTimeSpent, getEffectiveTaskStatus, getRecurrenceDisplayText } from '../utils/helpers';
+import { calculateTotalTimeSpent, getEffectiveTaskStatus, getRecurrenceDisplayText, filterEmptyProjects } from '../utils/helpers';
 import { 
     formatDateTimeForDisplay,
     isTodayTimeAware,
@@ -430,9 +430,10 @@ export function createTaskCard(task: TaskInfo, plugin: TaskNotesPlugin, options:
     }
     
     // Projects (if has projects)
-    if (task.projects && task.projects.length > 0) {
+    const filteredProjects = filterEmptyProjects(task.projects || []);
+    if (filteredProjects.length > 0) {
         const projectsSpan = metadataLine.createEl('span');
-        renderProjectLinks(projectsSpan, task.projects, plugin);
+        renderProjectLinks(projectsSpan, filteredProjects, plugin);
         metadataElements.push(projectsSpan);
     }
     
@@ -947,9 +948,10 @@ export function updateTaskCard(element: HTMLElement, task: TaskInfo, plugin: Tas
         }
         
         // Projects (if has projects) - use specialized rendering for links
-        if (task.projects && task.projects.length > 0) {
+        const filteredProjects = filterEmptyProjects(task.projects || []);
+        if (filteredProjects.length > 0) {
             const projectsSpan = metadataLine.createEl('span');
-            renderProjectLinks(projectsSpan, task.projects, plugin);
+            renderProjectLinks(projectsSpan, filteredProjects, plugin);
             metadataElements.push(projectsSpan);
         }
         

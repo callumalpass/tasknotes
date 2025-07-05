@@ -230,7 +230,7 @@ function processTaskTemplateVariables(template: string, taskData: any): string {
 	result = result.replace(/\{\{details\}\}/g, taskData.details || '');
 	
 	// {{parentNote}} - Parent note name/path where task was created
-	result = result.replace(/\{\{parentNote\}\}/g, taskData.parentNote || '');
+	result = result.replace(/\{\{parentNote\}\}/g, taskData.parentNote ? `\n- ${taskData.parentNote}` : '');
 	
 	// {{date}} - Current date (basic format only)
 	result = result.replace(/\{\{date\}\}/g, format(now, 'yyyy-MM-dd'));
@@ -1070,5 +1070,35 @@ async function updateDailyNoteFrontmatter(app: any, dailyNote: any, frontmatter:
 	await app.vault.modify(dailyNote, newContent);
 	
 	// Native metadata cache will automatically update
+}
+
+/**
+ * Filters out empty or whitespace-only project strings
+ * This prevents empty projects from rendering as '+ ' in the UI
+ */
+export function filterEmptyProjects(projects: string[]): string[] {
+	if (!projects || !Array.isArray(projects)) {
+		return [];
+	}
+	
+	return projects.filter(project => {
+		// Return false for null, undefined, or non-string values
+		if (typeof project !== 'string') {
+			return false;
+		}
+		
+		// Return false for empty strings or whitespace-only strings
+		const trimmed = project.trim();
+		if (trimmed.length === 0) {
+			return false;
+		}
+		
+		// Return false for quoted empty strings like '""' or "''"
+		if (trimmed === '""' || trimmed === "''") {
+			return false;
+		}
+		
+		return true;
+	});
 }
 

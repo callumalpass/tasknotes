@@ -1,10 +1,11 @@
-import { App, Modal, Setting, setIcon } from 'obsidian';
+import { App, Modal, Setting, setIcon, TAbstractFile, TFile } from 'obsidian';
 import TaskNotesPlugin from '../main';
 import { DateContextMenu } from '../components/DateContextMenu';
 import { PriorityContextMenu } from '../components/PriorityContextMenu';
 import { StatusContextMenu } from '../components/StatusContextMenu';
 import { RecurrenceContextMenu } from '../components/RecurrenceContextMenu';
 import { getDatePart, getTimePart, combineDateAndTime } from '../utils/dateUtils';
+import { ProjectSelectModal } from './ProjectSelectModal';
 
 export abstract class TaskModal extends Modal {
     plugin: TaskNotesPlugin;
@@ -17,15 +18,21 @@ export abstract class TaskModal extends Modal {
     protected priority = 'normal';
     protected status = 'open';
     protected contexts = '';
+    protected projects = '';
     protected tags = '';
     protected timeEstimate = 0;
     protected recurrenceRule = '';
+    
+    // Project link storage
+    protected selectedProjectFiles: TAbstractFile[] = [];
     
     // UI elements
     protected titleInput: HTMLInputElement;
     protected detailsInput: HTMLTextAreaElement;
     protected contextsInput: HTMLInputElement;
+    protected projectsInput: HTMLInputElement;
     protected tagsInput: HTMLInputElement;
+    protected projectsList: HTMLElement;
     protected actionBar: HTMLElement;
     protected detailsContainer: HTMLElement;
     protected isExpanded = false;
@@ -209,6 +216,25 @@ export abstract class TaskModal extends Modal {
                 // Add autocomplete functionality
                 this.setupAutocomplete(text.inputEl, 'contexts');
             });
+
+        // Projects - now using note selection instead of text input
+        new Setting(container)
+            .setName('Projects')
+            .setDesc('Link to project notes')
+            .addButton(button => {
+                button.setButtonText('Add Project')
+                    .setTooltip('Select a project note using fuzzy search')
+                    .onClick(() => {
+                        const modal = new ProjectSelectModal(this.app, (file) => {
+                            this.addProject(file);
+                        });
+                        modal.open();
+                    });
+            });
+
+        // Projects list container
+        this.projectsList = container.createDiv({ cls: 'task-projects-list' });
+        this.renderProjectsList(); // Initialize empty state
 
         // Tags input with autocomplete
         new Setting(container)
@@ -731,6 +757,107 @@ export abstract class TaskModal extends Modal {
             this.titleInput.focus();
             this.titleInput.select();
         }, 100);
+    }
+
+    protected addProject(file: TAbstractFile): void {
+        // Avoid duplicates
+        if (this.selectedProjectFiles.some(existing => existing.path === file.path)) {
+            return;
+        }
+
+        this.selectedProjectFiles.push(file);
+        this.updateProjectsFromFiles();
+        this.renderProjectsList();
+    }
+
+    protected removeProject(file: TAbstractFile): void {
+        this.selectedProjectFiles = this.selectedProjectFiles.filter(
+            existing => existing.path !== file.path
+        );
+        this.updateProjectsFromFiles();
+        this.renderProjectsList();
+    }
+
+    protected updateProjectsFromFiles(): void {
+        // Convert selected files to markdown links using generateMarkdownLink
+        const currentFile = this.app.workspace.getActiveFile();
+        const sourcePath = currentFile?.path || '';
+        
+        this.projects = this.selectedProjectFiles.map(file => {
+            // fileToLinktext expects TFile, so cast safely since we know these are markdown files
+            const linkText = this.app.metadataCache.fileToLinktext(file as TFile, sourcePath, true);
+            return `[[${linkText}]]`;
+        }).join(', ');
+    }
+
+    protected initializeProjectsFromStrings(projects: string[]): void {
+        // Convert project strings to files
+        // This handles both old plain string projects and new [[link]] format
+        this.selectedProjectFiles = [];
+        
+        for (const projectString of projects) {
+            // Check if it's a wiki link format
+            const linkMatch = projectString.match(/^\[\[([^\]]+)\]\]$/);
+            if (linkMatch) {
+                const linkPath = linkMatch[1];
+                const file = this.app.metadataCache.getFirstLinkpathDest(linkPath, '');
+                if (file) {
+                    this.selectedProjectFiles.push(file);
+                }
+            } else {
+                // For backwards compatibility, try to find a file with this name
+                const files = this.app.vault.getMarkdownFiles();
+                const matchingFile = files.find(f => 
+                    f.basename === projectString || 
+                    f.name === projectString + '.md'
+                );
+                if (matchingFile) {
+                    this.selectedProjectFiles.push(matchingFile);
+                }
+            }
+        }
+        
+        this.updateProjectsFromFiles();
+        this.renderProjectsList();
+    }
+
+    protected renderProjectsList(): void {
+        if (!this.projectsList) return;
+        
+        this.projectsList.empty();
+
+        if (this.selectedProjectFiles.length === 0) {
+            const emptyState = this.projectsList.createDiv({ cls: 'task-projects-empty' });
+            emptyState.textContent = 'No projects selected';
+            return;
+        }
+
+        this.selectedProjectFiles.forEach(file => {
+            const projectItem = this.projectsList.createDiv({ cls: 'task-project-item' });
+            
+            // Info container
+            const infoEl = projectItem.createDiv({ cls: 'task-project-info' });
+            
+            // File name
+            const nameEl = infoEl.createSpan({ cls: 'task-project-name' });
+            nameEl.textContent = file.name;
+            
+            // File path (if different from name)
+            if (file.path !== file.name) {
+                const pathEl = infoEl.createDiv({ cls: 'task-project-path' });
+                pathEl.textContent = file.path;
+            }
+            
+            // Remove button
+            const removeBtn = projectItem.createEl('button', { 
+                cls: 'task-project-remove',
+                text: '×'
+            });
+            removeBtn.title = 'Remove project';
+            removeBtn.addEventListener('click', () => {
+                this.removeProject(file);
+            });
+        });
     }
 
     protected validateForm(): boolean {

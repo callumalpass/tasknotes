@@ -606,3 +606,97 @@
 .theme-dark .tasknotes-plugin .autocomplete-suggestions {
     box-shadow: 0 2px 16px rgba(0, 0, 0, 0.3);
 }
+
+/* =====================================================================
+   PROJECT SELECTION UI
+   ===================================================================== */
+
+.tasknotes-plugin .task-projects-list {
+    margin-top: var(--size-4-2);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: var(--radius-s);
+    max-height: 150px;
+    overflow-y: auto;
+}
+
+.tasknotes-plugin .task-projects-empty {
+    padding: var(--size-4-3);
+    text-align: center;
+    color: var(--text-muted);
+    font-style: italic;
+    font-size: var(--font-ui-small);
+}
+
+.tasknotes-plugin .task-project-item {
+    display: flex;
+    align-items: center;
+    padding: var(--size-4-2);
+    border-bottom: 1px solid var(--background-modifier-border-hover);
+    gap: var(--size-4-2);
+}
+
+.tasknotes-plugin .task-project-item:last-child {
+    border-bottom: none;
+}
+
+.tasknotes-plugin .task-project-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.tasknotes-plugin .task-project-name {
+    display: block;
+    font-weight: var(--font-weight-medium);
+    color: var(--text-normal);
+    font-size: var(--font-ui-small);
+}
+
+.tasknotes-plugin .task-project-path {
+    font-size: var(--font-ui-smaller);
+    color: var(--text-muted);
+    margin-top: 2px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.tasknotes-plugin .task-project-remove {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.tasknotes-plugin .task-project-remove:hover {
+    background-color: var(--background-modifier-error);
+    color: var(--text-on-accent);
+}
+
+/* =====================================================================
+   PROJECT SELECT MODAL
+   ===================================================================== */
+
+.tasknotes-plugin .project-suggestion {
+    display: flex;
+    flex-direction: column;
+}
+
+.tasknotes-plugin .project-name {
+    font-weight: var(--font-weight-medium);
+    color: var(--text-normal);
+}
+
+.tasknotes-plugin .project-path {
+    font-size: var(--font-ui-smaller);
+    color: var(--text-muted);
+    margin-top: 2px;
+}
