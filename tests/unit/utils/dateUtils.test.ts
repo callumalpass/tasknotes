@@ -39,7 +39,9 @@ import {
   getCurrentDateTimeString,
   addDaysToDateTime,
   createUTCDateForRRule,
-  validateCompleteInstances
+  validateCompleteInstances,
+  normalizeCalendarBoundariesToUTC,
+  formatUTCDateForCalendar
 } from '../../../src/utils/dateUtils';
 
 // Use improved date-fns mock that behaves more like the real library
@@ -733,6 +735,314 @@ describe('DateUtils', () => {
       const input = ['T00:00', 'T12:30', 'invalid-date', '', null];
       const result = validateCompleteInstances(input);
       expect(result).toEqual([]);
+    });
+  });
+
+  describe('Calendar Timezone Utilities', () => {
+    describe('normalizeCalendarBoundariesToUTC', () => {
+      it('should convert local date boundaries to UTC midnight', () => {
+        const startDate = new Date('2025-01-15T10:30:00');
+        const endDate = new Date('2025-01-17T14:45:00');
+        
+        const { utcStart, utcEnd } = normalizeCalendarBoundariesToUTC(startDate, endDate);
+        
+        expect(utcStart.toISOString()).toBe('2025-01-15T00:00:00.000Z');
+        expect(utcEnd.toISOString()).toBe('2025-01-17T00:00:00.000Z');
+      });
+
+      it('should handle timezone boundaries correctly', () => {
+        // Test with dates that could be problematic across timezones
+        const startDate = new Date('2025-06-15T23:30:00-07:00'); // 11:30 PM PDT
+        const endDate = new Date('2025-06-16T01:30:00-07:00');   // 1:30 AM PDT next day
+        
+        const { utcStart, utcEnd } = normalizeCalendarBoundariesToUTC(startDate, endDate);
+        
+        // The function normalizes to UTC midnight based on the local date representation
+        // PDT -07:00 times convert to UTC and the date is extracted from that
+        expect(utcStart.toISOString()).toBe('2025-06-16T00:00:00.000Z');
+        expect(utcEnd.toISOString()).toBe('2025-06-16T00:00:00.000Z');
+      });
+
+      it('should preserve date boundaries across DST transitions', () => {
+        // March DST transition in US (spring forward)
+        const dstStart = new Date('2025-03-09T02:30:00-05:00'); // EST before DST
+        const dstEnd = new Date('2025-03-09T03:30:00-04:00');   // EDT after DST
+        
+        const { utcStart, utcEnd } = normalizeCalendarBoundariesToUTC(dstStart, dstEnd);
+        
+        expect(utcStart.toISOString()).toBe('2025-03-09T00:00:00.000Z');
+        expect(utcEnd.toISOString()).toBe('2025-03-09T00:00:00.000Z');
+      });
+
+      it('should handle month boundaries correctly', () => {
+        const monthEnd = new Date('2025-01-31T23:59:59');
+        const monthStart = new Date('2025-02-01T00:00:01');
+        
+        const { utcStart, utcEnd } = normalizeCalendarBoundariesToUTC(monthEnd, monthStart);
+        
+        expect(utcStart.toISOString()).toBe('2025-01-31T00:00:00.000Z');
+        expect(utcEnd.toISOString()).toBe('2025-02-01T00:00:00.000Z');
+      });
+
+      it('should handle year boundaries correctly', () => {
+        const yearEnd = new Date('2024-12-31T23:59:59');
+        const yearStart = new Date('2025-01-01T00:00:01');
+        
+        const { utcStart, utcEnd } = normalizeCalendarBoundariesToUTC(yearEnd, yearStart);
+        
+        expect(utcStart.toISOString()).toBe('2024-12-31T00:00:00.000Z');
+        expect(utcEnd.toISOString()).toBe('2025-01-01T00:00:00.000Z');
+      });
+    });
+
+    describe('formatUTCDateForCalendar', () => {
+      it('should format UTC dates to YYYY-MM-DD without timezone shift', () => {
+        const utcDate = new Date('2025-01-15T00:00:00.000Z');
+        
+        const result = formatUTCDateForCalendar(utcDate);
+        
+        expect(result).toBe('2025-01-15');
+      });
+
+      it('should handle UTC dates at different times of day', () => {
+        const testCases = [
+          { input: '2025-01-15T00:00:00.000Z', expected: '2025-01-15' },
+          { input: '2025-01-15T12:00:00.000Z', expected: '2025-01-15' },
+          { input: '2025-01-15T23:59:59.999Z', expected: '2025-01-15' }
+        ];
+
+        testCases.forEach(({ input, expected }) => {
+          const utcDate = new Date(input);
+          const result = formatUTCDateForCalendar(utcDate);
+          expect(result).toBe(expected);
+        });
+      });
+
+      it('should handle edge case dates correctly', () => {
+        const testCases = [
+          { input: '2025-01-01T00:00:00.000Z', expected: '2025-01-01' }, // Year start
+          { input: '2025-12-31T00:00:00.000Z', expected: '2025-12-31' }, // Year end
+          { input: '2024-02-29T00:00:00.000Z', expected: '2024-02-29' }, // Leap year
+          { input: '2025-02-28T00:00:00.000Z', expected: '2025-02-28' }  // Non-leap year
+        ];
+
+        testCases.forEach(({ input, expected }) => {
+          const utcDate = new Date(input);
+          const result = formatUTCDateForCalendar(utcDate);
+          expect(result).toBe(expected);
+        });
+      });
+
+      it('should pad single-digit months and days with zeros', () => {
+        const testCases = [
+          { input: '2025-01-01T00:00:00.000Z', expected: '2025-01-01' },
+          { input: '2025-01-09T00:00:00.000Z', expected: '2025-01-09' },
+          { input: '2025-09-01T00:00:00.000Z', expected: '2025-09-01' },
+          { input: '2025-09-09T00:00:00.000Z', expected: '2025-09-09' }
+        ];
+
+        testCases.forEach(({ input, expected }) => {
+          const utcDate = new Date(input);
+          const result = formatUTCDateForCalendar(utcDate);
+          expect(result).toBe(expected);
+        });
+      });
+
+      it('should gracefully handle invalid dates with fallback', () => {
+        const invalidDate = new Date('invalid');
+        
+        // Should not throw and should provide a fallback
+        expect(() => formatUTCDateForCalendar(invalidDate)).not.toThrow();
+        
+        const result = formatUTCDateForCalendar(invalidDate);
+        // Fallback should be ISO string date part
+        expect(typeof result).toBe('string');
+      });
+    });
+  });
+
+  // Issue #129: Ensure recurring tasks show consistent dates across all views
+  describe('Issue #129: Timezone Consistency Across Views', () => {
+    describe('Calendar View and Edit Modal Consistency', () => {
+      it('should generate consistent date strings between calendar and edit modal', () => {
+        // Simulate a recurring task starting on 2025-07-07 (Monday)
+        const startDate = createUTCDateForRRule('2025-07-07');
+        
+        // Test that both calendar and edit modal use the same date formatting
+        const calendarDate = formatUTCDateForCalendar(startDate);
+        const editModalDate = formatUTCDateForCalendar(startDate);
+        
+        expect(calendarDate).toBe('2025-07-07');
+        expect(editModalDate).toBe('2025-07-07');
+        expect(calendarDate).toBe(editModalDate);
+      });
+
+      it('should handle US/CST timezone consistently', () => {
+        // Issue #129 specifically mentions US/CST timezone
+        // Test dates that could be problematic in CST (-06:00 standard, -05:00 daylight)
+        const testDates = [
+          '2025-07-07', // Summer (CDT -05:00)
+          '2025-01-07', // Winter (CST -06:00)
+          '2025-03-09', // DST transition
+          '2025-11-02'  // DST transition
+        ];
+
+        testDates.forEach(dateStr => {
+          const utcDate = createUTCDateForRRule(dateStr);
+          const formattedDate = formatUTCDateForCalendar(utcDate);
+          
+          // Date should remain consistent regardless of timezone
+          expect(formattedDate).toBe(dateStr);
+        });
+      });
+
+      it('should normalize calendar boundaries consistently across timezones', () => {
+        // Test calendar view boundaries that caused issues in #129
+        const viewStart = new Date('2025-07-06T23:00:00-05:00'); // 11 PM CDT
+        const viewEnd = new Date('2025-07-08T01:00:00-05:00');   // 1 AM CDT
+
+        const { utcStart, utcEnd } = normalizeCalendarBoundariesToUTC(viewStart, viewEnd);
+        
+        // Should normalize to UTC midnight of the respective dates
+        expect(utcStart.toISOString()).toBe('2025-07-07T00:00:00.000Z');
+        expect(utcEnd.toISOString()).toBe('2025-07-08T00:00:00.000Z');
+      });
+    });
+
+    describe('Recurring Task Instance Generation', () => {
+      it('should generate consistent recurring instances across different views', () => {
+        // Test case from issue #129: task set for 7/7 Monday showing as 7/6 in some views
+        const startDate = createUTCDateForRRule('2025-07-07');
+        
+        // Simulate generating recurring instances for different views
+        const calendarInstances = [startDate];
+        const editModalInstances = [startDate];
+        
+        // Both should format to the same date string
+        const calendarDates = calendarInstances.map(d => formatUTCDateForCalendar(d));
+        const editModalDates = editModalInstances.map(d => formatUTCDateForCalendar(d));
+        
+        expect(calendarDates).toEqual(['2025-07-07']);
+        expect(editModalDates).toEqual(['2025-07-07']);
+        expect(calendarDates).toEqual(editModalDates);
+      });
+
+      it('should handle off-by-one date errors in different timezones', () => {
+        // Test potential off-by-one errors mentioned in issue #129
+        const testCases = [
+          {
+            timezone: 'US/Central',
+            date: '2025-07-07',
+            description: 'CST timezone from issue #129'
+          },
+          {
+            timezone: 'US/Pacific', 
+            date: '2025-07-07',
+            description: 'PST timezone edge case'
+          },
+          {
+            timezone: 'US/Eastern',
+            date: '2025-07-07', 
+            description: 'EST timezone edge case'
+          }
+        ];
+
+        testCases.forEach(({ date, description }) => {
+          const utcDate = createUTCDateForRRule(date);
+          const formattedDate = formatUTCDateForCalendar(utcDate);
+          
+          expect(formattedDate).toBe(date);
+        });
+      });
+    });
+
+    describe('Calendar Boundary Edge Cases', () => {
+      it('should handle calendar month boundaries without date shifting', () => {
+        // Test month boundaries that could cause issues
+        const monthEndDates = [
+          '2025-01-31', // January end
+          '2025-02-28', // February end (non-leap year)
+          '2025-04-30', // April end
+          '2025-12-31'  // Year end
+        ];
+
+        monthEndDates.forEach(dateStr => {
+          const utcDate = createUTCDateForRRule(dateStr);
+          const formattedDate = formatUTCDateForCalendar(utcDate);
+          
+          expect(formattedDate).toBe(dateStr);
+        });
+      });
+
+      it('should handle DST transitions consistently', () => {
+        // Test DST transitions - verify that dates are properly normalized even with timezone shifts
+        const dstTestCases = [
+          {
+            description: 'Spring forward DST',
+            startDate: new Date('2025-03-09T10:00:00-05:00'), // EST
+            endDate: new Date('2025-03-09T14:00:00-05:00')    // EST
+          },
+          {
+            description: 'Fall back DST',
+            startDate: new Date('2025-11-02T10:00:00-05:00'), // EST
+            endDate: new Date('2025-11-02T14:00:00-05:00')    // EST
+          }
+        ];
+
+        dstTestCases.forEach(({ description, startDate, endDate }) => {
+          const { utcStart, utcEnd } = normalizeCalendarBoundariesToUTC(startDate, endDate);
+          
+          // The function should normalize to UTC midnight regardless of timezone shifts
+          expect(utcStart.getUTCHours()).toBe(0);
+          expect(utcStart.getUTCMinutes()).toBe(0);
+          expect(utcStart.getUTCSeconds()).toBe(0);
+          
+          expect(utcEnd.getUTCHours()).toBe(0);
+          expect(utcEnd.getUTCMinutes()).toBe(0);
+          expect(utcEnd.getUTCSeconds()).toBe(0);
+          
+          // Verify that dates are properly formatted for calendar display
+          const startDateStr = formatUTCDateForCalendar(utcStart);
+          const endDateStr = formatUTCDateForCalendar(utcEnd);
+          
+          expect(startDateStr).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+          expect(endDateStr).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+        });
+      });
+    });
+
+    describe('Cross-View Date Consistency', () => {
+      it('should maintain consistent date display across Tasks view, Calendar view, and Edit modal', () => {
+        // Simulate the scenario described in issue #129
+        const recurringTaskDate = '2025-07-07'; // Monday
+        
+        // All views should use the same date utilities
+        const tasksViewDate = formatUTCDateForCalendar(createUTCDateForRRule(recurringTaskDate));
+        const calendarViewDate = formatUTCDateForCalendar(createUTCDateForRRule(recurringTaskDate));
+        const editModalDate = formatUTCDateForCalendar(createUTCDateForRRule(recurringTaskDate));
+        
+        // All three views should show the same date
+        expect(tasksViewDate).toBe('2025-07-07');
+        expect(calendarViewDate).toBe('2025-07-07');
+        expect(editModalDate).toBe('2025-07-07');
+        
+        // Verify all are identical
+        expect(tasksViewDate).toBe(calendarViewDate);
+        expect(calendarViewDate).toBe(editModalDate);
+      });
+
+      it('should handle completion instances consistently', () => {
+        // Test that completion instances are handled the same way across views
+        const completionDates = ['2025-07-07', '2025-07-14', '2025-07-21'];
+        
+        completionDates.forEach(dateStr => {
+          const utcDate = createUTCDateForRRule(dateStr);
+          const formattedDate = formatUTCDateForCalendar(utcDate);
+          
+          // Should maintain the original date
+          expect(formattedDate).toBe(dateStr);
+        });
+      });
     });
   });
 });

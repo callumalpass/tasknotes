@@ -724,3 +724,43 @@ export function createUTCDateForRRule(dateString: string): Date {
         throw error;
     }
 }
+
+/**
+ * Convert FullCalendar's date boundaries to UTC for consistent RRULE processing
+ * This prevents off-by-one errors when calendar view boundaries don't align with RRule timezone
+ */
+export function normalizeCalendarBoundariesToUTC(startDate: Date, endDate: Date): { utcStart: Date, utcEnd: Date } {
+    try {
+        // Convert calendar boundaries to YYYY-MM-DD format first to normalize
+        const startDateStr = format(startDate, 'yyyy-MM-dd');
+        const endDateStr = format(endDate, 'yyyy-MM-dd');
+        
+        // Create UTC dates at midnight for consistent boundary handling
+        const utcStart = createUTCDateForRRule(startDateStr);
+        const utcEnd = createUTCDateForRRule(endDateStr);
+        
+        return { utcStart, utcEnd };
+    } catch (error) {
+        console.error('Error normalizing calendar boundaries to UTC:', { startDate, endDate, error });
+        throw error;
+    }
+}
+
+/**
+ * Format a UTC date from RRule back to YYYY-MM-DD string without timezone conversion
+ * This prevents the date from shifting when displayed on calendar
+ */
+export function formatUTCDateForCalendar(utcDate: Date): string {
+    try {
+        // Use UTC methods to extract date components without timezone conversion
+        const year = utcDate.getUTCFullYear();
+        const month = String(utcDate.getUTCMonth() + 1).padStart(2, '0');
+        const day = String(utcDate.getUTCDate()).padStart(2, '0');
+        
+        return `${year}-${month}-${day}`;
+    } catch (error) {
+        console.error('Error formatting UTC date for calendar:', { utcDate, error });
+        // Fallback to ISO string date part extraction
+        return utcDate.toISOString().split('T')[0];
+    }
+}

@@ -35,7 +35,9 @@ import {
     hasTimeComponent, 
     getDatePart, 
     getTimePart,
-    parseDate 
+    parseDate,
+    normalizeCalendarBoundariesToUTC,
+    formatUTCDateForCalendar
 } from '../utils/dateUtils';
 import { 
     generateRecurringInstances,
@@ -549,8 +551,11 @@ export class AdvancedCalendarView extends ItemView {
             
             // Get calendar's visible date range for recurring task generation
             const calendarView = this.calendar?.view;
-            const visibleStart = calendarView?.activeStart || startOfDay(new Date());
-            const visibleEnd = calendarView?.activeEnd || endOfDay(new Date());
+            const rawVisibleStart = calendarView?.activeStart || startOfDay(new Date());
+            const rawVisibleEnd = calendarView?.activeEnd || endOfDay(new Date());
+            
+            // Normalize FullCalendar boundaries to UTC to prevent timezone mismatches with RRule
+            const { utcStart: visibleStart, utcEnd: visibleEnd } = normalizeCalendarBoundariesToUTC(rawVisibleStart, rawVisibleEnd);
             
             for (const task of allTasks) {
                 // Apply different rules for recurring vs non-recurring tasks
@@ -792,7 +797,8 @@ export class AdvancedCalendarView extends ItemView {
         const recurringDates = generateRecurringInstances(task, startDate, endDate);
         
         for (const date of recurringDates) {
-            const instanceDate = format(date, 'yyyy-MM-dd');
+            // Use UTC-safe formatting to prevent off-by-one date shifts
+            const instanceDate = formatUTCDateForCalendar(date);
             const eventStart = `${instanceDate}T${templateTime}`;
             
             // Create the recurring event instance

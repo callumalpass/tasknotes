@@ -758,6 +758,126 @@ describe('RRule Helper Functions', () => {
       jest.clearAllMocks();
     });
 
+    it('should prevent off-by-one errors in generateRecurringInstances', () => {
+      const task = TaskFactory.createTask({
+        recurrence: 'FREQ=DAILY',
+        scheduled: '2025-01-15'
+      });
+
+      // Mock UTC dates at midnight (simulating our fixed implementation)
+      const mockUTCDates = [
+        new Date('2025-01-15T00:00:00.000Z'),
+        new Date('2025-01-16T00:00:00.000Z'),
+        new Date('2025-01-17T00:00:00.000Z')
+      ];
+
+      const mockRRuleInstance = {
+        between: jest.fn(() => mockUTCDates)
+      };
+      mockRRule.mockReturnValue(mockRRuleInstance as any);
+      mockRRule.parseString = jest.fn(() => ({ freq: 3 }));
+
+      // Simulate normalized UTC calendar boundaries
+      const utcStart = new Date('2025-01-15T00:00:00.000Z');
+      const utcEnd = new Date('2025-01-17T00:00:00.000Z');
+
+      const result = generateRecurringInstances(task, utcStart, utcEnd);
+
+      // Verify UTC dates are returned without timezone shifts
+      expect(result).toHaveLength(3);
+      expect(result[0].toISOString()).toBe('2025-01-15T00:00:00.000Z');
+      expect(result[1].toISOString()).toBe('2025-01-16T00:00:00.000Z');
+      expect(result[2].toISOString()).toBe('2025-01-17T00:00:00.000Z');
+
+      // Verify RRule was called with UTC boundaries
+      expect(mockRRuleInstance.between).toHaveBeenCalledWith(utcStart, utcEnd, true);
+    });
+
+    it('should handle weekly recurrence without day-of-week shifts', () => {
+      const task = TaskFactory.createTask({
+        recurrence: 'FREQ=WEEKLY;BYDAY=MO',
+        scheduled: '2025-01-13' // Monday
+      });
+
+      // Mock returns only Mondays in UTC
+      const mockMondayDates = [
+        new Date('2025-01-13T00:00:00.000Z'), // Monday
+        new Date('2025-01-20T00:00:00.000Z'), // Monday
+        new Date('2025-01-27T00:00:00.000Z')  // Monday
+      ];
+
+      const mockRRuleInstance = {
+        between: jest.fn(() => mockMondayDates)
+      };
+      mockRRule.mockReturnValue(mockRRuleInstance as any);
+      mockRRule.parseString = jest.fn(() => ({ freq: 2, byweekday: [0] }));
+
+      const utcStart = new Date('2025-01-13T00:00:00.000Z');
+      const utcEnd = new Date('2025-01-27T00:00:00.000Z');
+
+      const result = generateRecurringInstances(task, utcStart, utcEnd);
+
+      // All results should be Mondays (weekday 1 in UTC)
+      result.forEach(date => {
+        expect(date.getUTCDay()).toBe(1); // Monday in UTC
+      });
+
+      expect(result).toHaveLength(3);
+    });
+
+    it('should handle month boundary recurring events correctly', () => {
+      const task = TaskFactory.createTask({
+        recurrence: 'FREQ=DAILY',
+        scheduled: '2025-01-31'
+      });
+
+      // Mock dates crossing month boundary
+      const mockCrossBoundaryDates = [
+        new Date('2025-01-30T00:00:00.000Z'),
+        new Date('2025-01-31T00:00:00.000Z'), // Last day of January
+        new Date('2025-02-01T00:00:00.000Z'), // First day of February
+        new Date('2025-02-02T00:00:00.000Z')
+      ];
+
+      const mockRRuleInstance = {
+        between: jest.fn(() => mockCrossBoundaryDates)
+      };
+      mockRRule.mockReturnValue(mockRRuleInstance as any);
+
+      const utcStart = new Date('2025-01-30T00:00:00.000Z');
+      const utcEnd = new Date('2025-02-02T00:00:00.000Z');
+
+      const result = generateRecurringInstances(task, utcStart, utcEnd);
+
+      // Verify month transition is handled correctly
+      expect(result[1].getUTCMonth()).toBe(0); // January (0-indexed)
+      expect(result[1].getUTCDate()).toBe(31);
+      expect(result[2].getUTCMonth()).toBe(1); // February (0-indexed)
+      expect(result[2].getUTCDate()).toBe(1);
+    });
+
+    it('should use createUTCDateForRRule for dtstart to prevent timezone issues', () => {
+      const task = TaskFactory.createTask({
+        recurrence: 'FREQ=DAILY',
+        scheduled: '2025-01-15T14:30:00' // With time component
+      });
+
+      const mockRRuleInstance = {
+        between: jest.fn(() => [new Date('2025-01-15T00:00:00.000Z')])
+      };
+      mockRRule.mockReturnValue(mockRRuleInstance as any);
+
+      generateRecurringInstances(task, new Date(), new Date());
+
+      // Verify RRule was called with UTC midnight dtstart, not with the time component
+      expect(mockRRule).toHaveBeenCalledWith(expect.objectContaining({
+        dtstart: expect.any(Date)
+      }));
+
+      const dtstart = mockRRule.mock.calls[0][0].dtstart;
+      expect(dtstart.toISOString()).toBe('2025-01-15T00:00:00.000Z');
+    });
+
     describe('isDueByRRule timezone-aware behavior', () => {
       it('should handle monthly last Friday pattern correctly across timezones', () => {
         const task = TaskFactory.createTask({
