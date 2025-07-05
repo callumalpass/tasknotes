@@ -107,7 +107,7 @@ export class TaskService {
             const templateResult = await this.applyTemplate(taskData);
             
             // Merge template frontmatter with base frontmatter
-            // Template frontmatter takes precedence over base frontmatter
+            // User-defined values take precedence over template frontmatter
             const finalFrontmatter = mergeTemplateFrontmatter(frontmatter, templateResult.frontmatter);
             
             // Prepare file content

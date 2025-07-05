@@ -160,14 +160,15 @@ function processTemplateVariables(template: string, taskData: TemplateData): str
 
 /**
  * Merge template frontmatter with task frontmatter
- * Template frontmatter takes precedence over default task frontmatter
+ * User-defined values take precedence over template frontmatter
  */
 export function mergeTemplateFrontmatter(
     baseFrontmatter: Record<string, any>, 
     templateFrontmatter: Record<string, any>
 ): Record<string, any> {
+    // User-defined values (baseFrontmatter) take precedence over template values
     return {
-        ...baseFrontmatter,
-        ...templateFrontmatter
+        ...templateFrontmatter,
+        ...baseFrontmatter
     };
 }
