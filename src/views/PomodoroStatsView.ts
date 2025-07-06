@@ -155,8 +155,10 @@ export class PomodoroStatsView extends ItemView {
         if (!this.weekStatsEl) return;
         
         const today = new Date();
-        const weekStart = startOfWeek(today, { weekStartsOn: 1 }); // Monday
-        const weekEnd = endOfWeek(today, { weekStartsOn: 1 });
+        const firstDaySetting = this.plugin.settings.calendarViewSettings.firstDay || 0;
+        const weekStartOptions = { weekStartsOn: firstDaySetting as 0 | 1 | 2 | 3 | 4 | 5 | 6 };
+        const weekStart = startOfWeek(today, weekStartOptions);
+        const weekEnd = endOfWeek(today, weekStartOptions);
         
         const stats = await this.calculateStatsForRange(weekStart, weekEnd);
         this.renderStatsGrid(this.weekStatsEl, stats);

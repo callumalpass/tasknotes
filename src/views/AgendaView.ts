@@ -710,8 +710,10 @@ export class AgendaView extends ItemView {
         
         if (this.daysToShow === -1) {
             // Week view - show current week based on startDate
-            const weekStart = startOfWeek(this.startDate, { weekStartsOn: 0 }); // Sunday
-            const weekEnd = endOfWeek(this.startDate, { weekStartsOn: 0 });
+            const firstDaySetting = this.plugin.settings.calendarViewSettings.firstDay || 0;
+            const weekStartOptions = { weekStartsOn: firstDaySetting as 0 | 1 | 2 | 3 | 4 | 5 | 6 };
+            const weekStart = startOfWeek(this.startDate, weekStartOptions);
+            const weekEnd = endOfWeek(this.startDate, weekStartOptions);
             
             let currentDate = weekStart;
             while (currentDate <= weekEnd) {

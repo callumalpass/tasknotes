@@ -243,8 +243,13 @@ export class TaskEditModal extends TaskModal {
         // Get all dates to display (including padding from previous/next month)
         const monthStart = startOfMonth(displayDate);
         const monthEnd = endOfMonth(displayDate);
-        const calendarStart = startOfWeek(monthStart);
-        const calendarEnd = endOfWeek(monthEnd);
+        
+        // Respect the week start setting from calendar view settings
+        const firstDaySetting = this.plugin.settings.calendarViewSettings.firstDay || 0;
+        const weekStartOptions = { weekStartsOn: firstDaySetting as 0 | 1 | 2 | 3 | 4 | 5 | 6 };
+        
+        const calendarStart = startOfWeek(monthStart, weekStartOptions);
+        const calendarEnd = endOfWeek(monthEnd, weekStartOptions);
         const allDays = eachDayOfInterval({ start: calendarStart, end: calendarEnd });
         
         // Generate recurring instances for this month (with some buffer)
