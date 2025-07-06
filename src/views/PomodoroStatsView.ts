@@ -13,6 +13,7 @@ export class PomodoroStatsView extends ItemView {
     plugin: TaskNotesPlugin;
     
     // UI elements
+    private overviewStatsEl: HTMLElement | null = null;
     private todayStatsEl: HTMLElement | null = null;
     private weekStatsEl: HTMLElement | null = null;
     private recentSessionsEl: HTMLElement | null = null;
@@ -76,6 +77,13 @@ export class PomodoroStatsView extends ItemView {
             this.refreshStats();
         });
         
+        // Overview section (like TickTick)
+        const overviewSection = container.createDiv({ cls: 'pomodoro-stats-section pomodoro-stats-view__section' });
+        new Setting(overviewSection)
+            .setName('Overview')
+            .setHeading();
+        this.overviewStatsEl = overviewSection.createDiv({ cls: 'pomodoro-overview-grid pomodoro-stats-view__overview-grid' });
+        
         // Today's stats
         const todaySection = container.createDiv({ cls: 'pomodoro-stats-section pomodoro-stats-view__section' });
         new Setting(todaySection)
@@ -111,6 +119,7 @@ export class PomodoroStatsView extends ItemView {
     private async refreshStats() {
         try {
             await Promise.all([
+                this.updateOverviewStats(),
                 this.updateTodayStats(),
                 this.updateWeekStats(),
                 this.updateOverallStats(),
@@ -119,6 +128,20 @@ export class PomodoroStatsView extends ItemView {
         } catch (error) {
             console.error('Failed to refresh stats:', error);
         }
+    }
+    
+    private async updateOverviewStats() {
+        if (!this.overviewStatsEl) return;
+        
+        const todayStats = await this.plugin.pomodoroService.getTodayStats();
+        const overallStats = await this.calculateOverallStatsFromHistory();
+        
+        const today = new Date();
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yesterdayStats = await this.calculateStatsForRange(yesterday, yesterday);
+        
+        this.renderOverviewStats(this.overviewStatsEl, todayStats, overallStats, yesterdayStats);
     }
     
     private async updateTodayStats() {
@@ -145,6 +168,11 @@ export class PomodoroStatsView extends ItemView {
         const history = await this.plugin.pomodoroService.getSessionHistory();
         const stats = this.calculateOverallStats(history);
         this.renderStatsGrid(this.overallStatsEl, stats);
+    }
+    
+    private async calculateOverallStatsFromHistory(): Promise<PomodoroHistoryStats> {
+        const history = await this.plugin.pomodoroService.getSessionHistory();
+        return this.calculateOverallStats(history);
     }
     
     private async updateRecentSessions() {
@@ -189,6 +217,56 @@ export class PomodoroStatsView extends ItemView {
         }
     }
     
+    private renderOverviewStats(container: HTMLElement, todayStats: PomodoroHistoryStats, overallStats: PomodoroHistoryStats, yesterdayStats: PomodoroHistoryStats) {
+        container.empty();
+        
+        // Format time duration in hours and minutes
+        const formatTime = (minutes: number): string => {
+            if (minutes < 60) return `${minutes}m`;
+            const hours = Math.floor(minutes / 60);
+            const mins = minutes % 60;
+            return mins > 0 ? `${hours}h${mins}m` : `${hours}h`;
+        };
+        
+        // Calculate changes from yesterday
+        const pomodoroChange = todayStats.pomodorosCompleted - yesterdayStats.pomodorosCompleted;
+        const timeChange = todayStats.totalMinutes - yesterdayStats.totalMinutes;
+        
+        // Today's Pomos
+        const todayPomosCard = container.createDiv({ cls: 'pomodoro-overview-card pomodoro-stats-view__overview-card' });
+        const todayPomosValue = todayPomosCard.createDiv({ cls: 'overview-value pomodoro-stats-view__overview-value' });
+        todayPomosValue.textContent = todayStats.pomodorosCompleted.toString();
+        todayPomosCard.createDiv({ cls: 'overview-label pomodoro-stats-view__overview-label', text: "Today's Pomos" });
+        if (pomodoroChange !== 0) {
+            const changeEl = todayPomosCard.createDiv({ cls: 'overview-change pomodoro-stats-view__overview-change' });
+            changeEl.textContent = `${pomodoroChange > 0 ? '+' : ''}${pomodoroChange} from yesterday`;
+            changeEl.addClass(pomodoroChange > 0 ? 'positive' : 'negative');
+        }
+        
+        // Total Pomos
+        const totalPomosCard = container.createDiv({ cls: 'pomodoro-overview-card pomodoro-stats-view__overview-card' });
+        const totalPomosValue = totalPomosCard.createDiv({ cls: 'overview-value pomodoro-stats-view__overview-value' });
+        totalPomosValue.textContent = overallStats.pomodorosCompleted.toString();
+        totalPomosCard.createDiv({ cls: 'overview-label pomodoro-stats-view__overview-label', text: 'Total Pomos' });
+        
+        // Today's Focus
+        const todayFocusCard = container.createDiv({ cls: 'pomodoro-overview-card pomodoro-stats-view__overview-card' });
+        const todayFocusValue = todayFocusCard.createDiv({ cls: 'overview-value pomodoro-stats-view__overview-value' });
+        todayFocusValue.textContent = formatTime(todayStats.totalMinutes);
+        todayFocusCard.createDiv({ cls: 'overview-label pomodoro-stats-view__overview-label', text: "Today's Focus" });
+        if (timeChange !== 0) {
+            const changeEl = todayFocusCard.createDiv({ cls: 'overview-change pomodoro-stats-view__overview-change' });
+            changeEl.textContent = `${formatTime(Math.abs(timeChange))} ${timeChange > 0 ? 'more' : 'less'} than yesterday`;
+            changeEl.addClass(timeChange > 0 ? 'positive' : 'negative');
+        }
+        
+        // Total Focus Duration
+        const totalFocusCard = container.createDiv({ cls: 'pomodoro-overview-card pomodoro-stats-view__overview-card' });
+        const totalFocusValue = totalFocusCard.createDiv({ cls: 'overview-value pomodoro-stats-view__overview-value' });
+        totalFocusValue.textContent = formatTime(overallStats.totalMinutes);
+        totalFocusCard.createDiv({ cls: 'overview-label pomodoro-stats-view__overview-label', text: 'Total Focus Duration' });
+    }
+
     private renderStatsGrid(container: HTMLElement, stats: PomodoroHistoryStats) {
         container.empty();
         
