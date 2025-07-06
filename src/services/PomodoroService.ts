@@ -475,10 +475,7 @@ export class PomodoroService {
             }
         }
 
-        // Update daily note with pomodoro count for work sessions
-        if (session.type === 'work') {
-            await this.updateDailyNotePomodoroCount();
-        }
+        // Daily note update is now handled by addSessionToHistory method
 
         // Determine next session based on session history
         let shouldTakeLongBreak = false;
@@ -518,79 +515,44 @@ export class PomodoroService {
             this.playCompletionSound();
         }
 
-        // Clear current session
+        // Clear current session and set up for next session
         this.state.currentSession = undefined;
         this.state.isRunning = false;
-        this.state.timeRemaining = 0;
+        
+        // Set up appropriate timer for next session
+        if (session.type === 'work') {
+            // After work session, prepare break timer
+            const breakDuration = shouldTakeLongBreak 
+                ? this.plugin.settings.pomodoroLongBreakDuration 
+                : this.plugin.settings.pomodoroShortBreakDuration;
+            this.state.timeRemaining = breakDuration * 60;
+            
+            // Auto-start break if configured, otherwise just prepare the timer
+            if (this.plugin.settings.pomodoroAutoStartBreaks) {
+                const timeout = setTimeout(() => this.startBreak(shouldTakeLongBreak), 1000) as unknown as number;
+                this.cleanupTimeouts.add(timeout);
+            }
+        } else {
+            // After break session, prepare work timer
+            this.state.timeRemaining = this.plugin.settings.pomodoroWorkDuration * 60;
+            
+            // Auto-start work if configured, otherwise just prepare the timer
+            if (this.plugin.settings.pomodoroAutoStartWork) {
+                const timeout = setTimeout(() => this.startPomodoro(), 1000) as unknown as number;
+                this.cleanupTimeouts.add(timeout);
+            }
+        }
         
         await this.saveState();
-
-        // Auto-start next session if configured
-        if (session.type === 'work' && this.plugin.settings.pomodoroAutoStartBreaks) {
-            const timeout = setTimeout(() => this.startBreak(shouldTakeLongBreak), 1000) as unknown as number;
-            this.cleanupTimeouts.add(timeout);
-        } else if (session.type !== 'work' && this.plugin.settings.pomodoroAutoStartWork) {
-            const timeout = setTimeout(() => this.startPomodoro(), 1000) as unknown as number;
-            this.cleanupTimeouts.add(timeout);
-        }
+        
+        // Emit tick event to update UI with new timer duration
+        this.plugin.emitter.trigger(EVENT_POMODORO_TICK, {
+            timeRemaining: this.state.timeRemaining,
+            session: this.state.currentSession
+        });
     }
 
 
-    private async updateDailyNotePomodoroCount() {
-        try {
-            // Check if Daily Notes plugin is enabled
-            if (!appHasDailyNotesPluginLoaded()) {
-                console.warn('Daily Notes core plugin is not enabled, skipping pomodoro update');
-                return;
-            }
-
-            // Convert date to moment for the API
-            const moment = (window as any).moment(new Date());
-            
-            // Get all daily notes to check if one exists for today
-            const allDailyNotes = getAllDailyNotes();
-            let file = getDailyNote(moment, allDailyNotes);
-            
-            if (!file) {
-                // Daily note does not exist, create it using the core plugin
-                try {
-                    file = await createDailyNote(moment);
-                    // Created daily note with 1 pomodoro
-                } catch (createError: any) {
-                    if (createError.message.includes('File already exists')) {
-                        // File was created between our check and create attempt
-                        // Daily note was created by another process, try to get it again
-                        file = getDailyNote(moment, getAllDailyNotes());
-                        if (file instanceof TFile) {
-                            await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
-                                const pomodoroField = this.plugin.fieldMapper.toUserField('pomodoros');
-                                if (!frontmatter[pomodoroField] || typeof frontmatter[pomodoroField] !== 'number') {
-                                    frontmatter[pomodoroField] = 0;
-                                }
-                                frontmatter[pomodoroField]++;
-                                // Updated pomodoro count
-                            });
-                        }
-                    } else {
-                        throw createError;
-                    }
-                }
-            } else {
-                // Daily note exists, updating pomodoro count
-                // Update existing daily note
-                await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
-                    const pomodoroField = this.plugin.fieldMapper.toUserField('pomodoros');
-                    if (!frontmatter[pomodoroField]) {
-                        frontmatter[pomodoroField] = 0;
-                    }
-                    frontmatter[pomodoroField]++;
-                    // Updated pomodoro count
-                });
-            }
-        } catch (error) {
-            console.error('Failed to update daily note pomodoros:', error);
-        }
-    }
 
     private playCompletionSound() {
         try {
@@ -643,6 +605,33 @@ export class PomodoroService {
     // Public getters
     getState(): PomodoroState {
         return { ...this.state };
+    }
+
+    adjustSessionTime(newTimeInSeconds: number): void {
+        if (this.state.currentSession) {
+            this.state.timeRemaining = newTimeInSeconds;
+            this.state.currentSession.plannedDuration = Math.ceil(newTimeInSeconds / 60);
+            this.saveState();
+            
+            // Emit tick event to update UI
+            this.plugin.emitter.trigger(EVENT_POMODORO_TICK, {
+                timeRemaining: this.state.timeRemaining,
+                session: this.state.currentSession
+            });
+        }
+    }
+
+    adjustPreparedTimer(newTimeInSeconds: number): void {
+        if (!this.state.currentSession) {
+            this.state.timeRemaining = newTimeInSeconds;
+            this.saveState();
+            
+            // Emit tick event to update UI
+            this.plugin.emitter.trigger(EVENT_POMODORO_TICK, {
+                timeRemaining: this.state.timeRemaining,
+                session: this.state.currentSession
+            });
+        }
     }
 
     isRunning(): boolean {
@@ -768,9 +757,15 @@ export class PomodoroService {
         };
 
         try {
-            const history = await this.getSessionHistory();
-            history.push(historyEntry);
-            await this.saveSessionHistory(history);
+            if (this.plugin.settings.pomodoroStorageLocation === 'daily-notes') {
+                // For daily notes, add only this session to the appropriate daily note
+                await this.addSingleSessionToDailyNote(historyEntry);
+            } else {
+                // For plugin storage, add to the full history
+                const history = await this.getSessionHistory();
+                history.push(historyEntry);
+                await this.saveSessionHistory(history);
+            }
         } catch (error) {
             console.error('Failed to add session to history:', error);
         }
@@ -934,6 +929,40 @@ export class PomodoroService {
     }
 
     /**
+     * Add a single session to the appropriate daily note
+     */
+    private async addSingleSessionToDailyNote(session: PomodoroSessionHistory): Promise<void> {
+        try {
+            const sessionDate = new Date(session.startTime);
+            const moment = (window as any).moment(sessionDate);
+            
+            // Get or create daily note
+            const allDailyNotes = getAllDailyNotes();
+            let dailyNote = getDailyNote(moment, allDailyNotes);
+            
+            if (!dailyNote) {
+                dailyNote = await createDailyNote(moment);
+            }
+
+            // Update frontmatter
+            const pomodoroField = this.plugin.fieldMapper.toUserField('pomodoros');
+            
+            await this.plugin.app.fileManager.processFrontMatter(dailyNote, (frontmatter) => {
+                // Get existing sessions
+                const existingSessions = frontmatter[pomodoroField] || [];
+                const existingIds = new Set(existingSessions.map((s: any) => s.id));
+                
+                // Only add session if it doesn't already exist
+                if (!existingIds.has(session.id)) {
+                    frontmatter[pomodoroField] = [...existingSessions, session];
+                }
+            });
+        } catch (error) {
+            console.error(`Failed to add session to daily note:`, error);
+        }
+    }
+
+    /**
      * Update a specific daily note with pomodoro sessions
      */
     private async updateDailyNotePomodoros(dateStr: string, sessions: PomodoroSessionHistory[]): Promise<void> {
@@ -953,7 +982,16 @@ export class PomodoroService {
             const pomodoroField = this.plugin.fieldMapper.toUserField('pomodoros');
             
             await this.plugin.app.fileManager.processFrontMatter(dailyNote, (frontmatter) => {
-                frontmatter[pomodoroField] = sessions;
+                // Get existing sessions and append new ones
+                const existingSessions = frontmatter[pomodoroField] || [];
+                const existingIds = new Set(existingSessions.map((s: any) => s.id));
+                
+                // Only add sessions that don't already exist
+                const newSessions = sessions.filter(session => !existingIds.has(session.id));
+                
+                if (newSessions.length > 0) {
+                    frontmatter[pomodoroField] = [...existingSessions, ...newSessions];
+                }
             });
         } catch (error) {
             console.error(`Failed to update daily note for ${dateStr}:`, error);
