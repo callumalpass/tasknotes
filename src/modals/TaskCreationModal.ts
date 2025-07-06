@@ -6,6 +6,7 @@ import { getCurrentTimestamp } from '../utils/dateUtils';
 import { generateTaskFilename, FilenameContext } from '../utils/filenameGenerator';
 import { calculateDefaultDate } from '../utils/helpers';
 import { NaturalLanguageParser, ParsedTaskData as NLParsedTaskData } from '../services/NaturalLanguageParser';
+import { combineDateAndTime } from '../utils/dateUtils';
 
 export interface TaskCreationOptions {
     prePopulatedValues?: Partial<TaskInfo>;
@@ -206,8 +207,17 @@ export class TaskCreationModal extends TaskModal {
         if (parsed.title) this.title = parsed.title;
         if (parsed.status) this.status = parsed.status;
         if (parsed.priority) this.priority = parsed.priority;
-        if (parsed.dueDate) this.dueDate = parsed.dueDate;
-        if (parsed.scheduledDate) this.scheduledDate = parsed.scheduledDate;
+        
+        // Handle due date with time
+        if (parsed.dueDate) {
+            this.dueDate = parsed.dueTime ? combineDateAndTime(parsed.dueDate, parsed.dueTime) : parsed.dueDate;
+        }
+        
+        // Handle scheduled date with time
+        if (parsed.scheduledDate) {
+            this.scheduledDate = parsed.scheduledTime ? combineDateAndTime(parsed.scheduledDate, parsed.scheduledTime) : parsed.scheduledDate;
+        }
+        
         if (parsed.contexts && parsed.contexts.length > 0) this.contexts = parsed.contexts.join(', ');
         if (parsed.tags && parsed.tags.length > 0) this.tags = parsed.tags.join(', ');
         if (parsed.details) this.details = parsed.details;
