@@ -46,10 +46,10 @@ Tasks can be filtered and grouped by their associated projects in all task views
 
 ### Template Integration
 
-Projects support template variables for automated workflows. The `{{parentNote}}` variable will format the parent note link as a YAML list item (with newline and dash prefix, e.g., `\n- [[Note Name]]`) when creating tasks from project notes through instant conversion.
+Projects support template variables for automated workflows. The `{{parentNote}}` variable inserts the parent note as a properly formatted markdown link. For project organization, it's recommended to use it as a YAML list item (e.g., `project:\n  - {{parentNote}}`) to align with the projects system behavior when creating tasks from project notes through instant conversion.
 
 ## File Management and Templates
 
 TaskNotes provides a system for managing your task files. You can specify a **Default Tasks Folder** where all new tasks will be created, and you can choose from a variety of **Filename Generation** patterns, including title-based, timestamp-based, and Zettelkasten-style.
 
-TaskNotes also supports **Templates** for both the YAML frontmatter and the body of your task notes. You can use templates to pre-fill common values, add boilerplate text, and create a consistent structure for your tasks. Templates can also include variables, such as `{{title}}`, `{{date}}`, and `{{parentNote}}` (which formats as a YAML list item with newline and dash prefix), which will be automatically replaced with the appropriate values when a new task is created.
+TaskNotes also supports **Templates** for both the YAML frontmatter and the body of your task notes. You can use templates to pre-fill common values, add boilerplate text, and create a consistent structure for your tasks. Templates can also include variables, such as `{{title}}`, `{{date}}`, and `{{parentNote}}` (which inserts the parent note as a properly formatted markdown link), which will be automatically replaced with the appropriate values when a new task is created.

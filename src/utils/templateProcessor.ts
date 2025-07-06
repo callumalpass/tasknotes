@@ -83,8 +83,8 @@ function parseTemplateSections(templateContent: string): { frontmatter: string |
  */
 function processTemplateFrontmatter(frontmatterContent: string, taskData: TemplateData): Record<string, any> {
     try {
-        // First, process template variables in the raw YAML text
-        const processedYamlText = processTemplateVariables(frontmatterContent, taskData);
+        // First, process template variables in the raw YAML text with YAML-safe replacements
+        const processedYamlText = processTemplateVariablesForYaml(frontmatterContent, taskData);
         
         // Then parse the processed YAML
         const parsedFrontmatter = parseYaml(processedYamlText);
@@ -107,6 +107,87 @@ function processTemplateFrontmatter(frontmatterContent: string, taskData: Templa
  */
 function processTemplateBody(bodyContent: string, taskData: TemplateData): string {
     return processTemplateVariables(bodyContent, taskData);
+}
+
+/**
+ * Process template variables for YAML frontmatter with proper quoting
+ * This version ensures that values that could break YAML parsing are properly quoted
+ */
+function processTemplateVariablesForYaml(template: string, taskData: TemplateData): string {
+    let result = template;
+    const now = new Date();
+    
+    // {{title}} - Task title (quote if contains special characters)
+    const title = taskData.title || '';
+    const quotedTitle = needsYamlQuoting(title) ? `"${escapeYamlString(title)}"` : title;
+    result = result.replace(/\{\{title\}\}/g, quotedTitle);
+    
+    // {{priority}} - Task priority
+    result = result.replace(/\{\{priority\}\}/g, taskData.priority || '');
+    
+    // {{status}} - Task status
+    result = result.replace(/\{\{status\}\}/g, taskData.status || '');
+    
+    // {{contexts}} - Task contexts (comma-separated)
+    const contexts = Array.isArray(taskData.contexts) ? taskData.contexts.join(', ') : '';
+    result = result.replace(/\{\{contexts\}\}/g, contexts);
+    
+    // {{tags}} - Task tags (comma-separated)
+    const tags = Array.isArray(taskData.tags) ? taskData.tags.join(', ') : '';
+    result = result.replace(/\{\{tags\}\}/g, tags);
+    
+    // {{timeEstimate}} - Time estimate in minutes
+    result = result.replace(/\{\{timeEstimate\}\}/g, taskData.timeEstimate?.toString() || '');
+    
+    // {{dueDate}} - Due date
+    result = result.replace(/\{\{dueDate\}\}/g, taskData.dueDate || '');
+    
+    // {{scheduledDate}} - Scheduled date
+    result = result.replace(/\{\{scheduledDate\}\}/g, taskData.scheduledDate || '');
+    
+    // {{details}} - User-provided details/description
+    result = result.replace(/\{\{details\}\}/g, taskData.details || '');
+    
+    // {{parentNote}} - Parent note name/path - ALWAYS quote for YAML safety
+    const parentNote = taskData.parentNote || '';
+    const quotedParentNote = parentNote ? `"${escapeYamlString(parentNote)}"` : '';
+    result = result.replace(/\{\{parentNote\}\}/g, quotedParentNote);
+    
+    // {{date}} - Current date (basic format only)
+    result = result.replace(/\{\{date\}\}/g, format(now, 'yyyy-MM-dd'));
+    
+    // {{time}} - Current time (basic format only)
+    result = result.replace(/\{\{time\}\}/g, format(now, 'HH:mm'));
+    
+    return result;
+}
+
+/**
+ * Check if a string needs YAML quoting
+ */
+function needsYamlQuoting(str: string): boolean {
+    if (!str) return false;
+    
+    // Check for characters that have special meaning in YAML
+    const yamlSpecialChars = /[\[\]{}:>|*&!%#`@,]/;
+    const startsWithSpecial = /^[-?]/;
+    const looksLikeNumber = /^\d+\.?\d*$/;
+    const looksLikeBoolean = /^(true|false|yes|no|on|off)$/i;
+    
+    return yamlSpecialChars.test(str) || 
+           startsWithSpecial.test(str) || 
+           looksLikeNumber.test(str) || 
+           looksLikeBoolean.test(str);
+}
+
+/**
+ * Escape a string for safe use in YAML quotes
+ */
+function escapeYamlString(str: string): string {
+    if (!str) return '';
+    
+    // Escape backslashes and double quotes
+    return str.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
 }
 
 /**
@@ -147,7 +228,7 @@ function processTemplateVariables(template: string, taskData: TemplateData): str
     result = result.replace(/\{\{details\}\}/g, taskData.details || '');
     
     // {{parentNote}} - Parent note name/path where task was created
-    result = result.replace(/\{\{parentNote\}\}/g, taskData.parentNote ? `\n- ${taskData.parentNote}` : '');
+    result = result.replace(/\{\{parentNote\}\}/g, taskData.parentNote || '');
     
     // {{date}} - Current date (basic format only)
     result = result.replace(/\{\{date\}\}/g, format(now, 'yyyy-MM-dd'));
