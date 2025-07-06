@@ -590,7 +590,7 @@ export class TaskService {
                 if (updates.hasOwnProperty('completedDate') && updates.completedDate === undefined) delete frontmatter[this.plugin.fieldMapper.toUserField('completedDate')];
                 if (updates.hasOwnProperty('recurrence') && updates.recurrence === undefined) delete frontmatter[this.plugin.fieldMapper.toUserField('recurrence')];
 
-                if (this.plugin.settings.storeTitleInFilename) {
+                if (isRenameNeeded) {
                     delete frontmatter[this.plugin.fieldMapper.toUserField('title')];
                 }
 
