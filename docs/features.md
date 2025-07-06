@@ -43,3 +43,13 @@ TaskNotes includes calendar integration features, such as:
 - **Time-blocking**: A feature to create focused work periods and link them to your tasks.
 
 For more detailed information, see the [Calendar Integration](features/calendar-integration.md) documentation.
+
+## Workflows
+
+TaskNotes can be configured to support various workflows and use cases. Common workflows include:
+
+- **Habit Tracking**: Using recurring tasks with completion tracking via the calendar interface
+- **Project Management**: Organizing tasks with project links and filtering
+- **Time Management**: Combining time tracking, Pomodoro sessions, and scheduling
+
+For detailed workflow examples, see the [Workflows](workflows.md) documentation.
