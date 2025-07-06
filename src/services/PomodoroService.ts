@@ -26,7 +26,6 @@ export class PomodoroService {
     private plugin: TaskNotesPlugin;
     private timerInterval: number | null = null;
     private state: PomodoroState;
-    private stateFile = 'pomodoro-state.json';
     private activeAudioContexts: Set<AudioContext> = new Set();
     private cleanupTimeouts: Set<number> = new Set();
     private visibilityChangeHandler: (() => void) | null = null;
@@ -170,6 +169,7 @@ export class PomodoroService {
         this.state.currentSession = session;
         this.state.isRunning = true;
         this.state.timeRemaining = session.plannedDuration * 60; // Convert to seconds
+        this.state.nextSessionType = undefined; // Clear next session type since we're starting a session
 
         await this.saveState();
         this.startTimer();
@@ -223,6 +223,7 @@ export class PomodoroService {
         this.state.currentSession = session;
         this.state.isRunning = true;
         this.state.timeRemaining = session.plannedDuration * 60;
+        this.state.nextSessionType = undefined; // Clear next session type since we're starting a session
 
         await this.saveState();
         this.startTimer();
@@ -418,17 +419,35 @@ export class PomodoroService {
                 return;
             }
             
-            const elapsed = Math.floor((now - startTime) / 1000);
             const totalDuration = this.state.currentSession.plannedDuration * 60;
             
             // Account for paused time by using actual time remaining from state
             // rather than calculating from start time when session was paused
             if (!this.state.isRunning && this.state.timeRemaining > 0) {
-                // Session was paused, use stored time remaining
+                // Session was paused, use stored time remaining (don't recalculate)
                 this.state.timeRemaining = Math.min(this.state.timeRemaining, totalDuration);
-            } else {
-                // Session was running, calculate based on elapsed time
-                this.state.timeRemaining = Math.max(0, totalDuration - elapsed);
+            } else if (this.state.isRunning) {
+                // For running sessions, calculate elapsed time based on active periods
+                // to handle pause/resume and time adjustments correctly
+                const activePeriods = this.state.currentSession.activePeriods || [];
+                let totalActiveSeconds = 0;
+                
+                for (const period of activePeriods) {
+                    if (period.endTime) {
+                        // Completed period
+                        const start = new Date(period.startTime).getTime();
+                        const end = new Date(period.endTime).getTime();
+                        totalActiveSeconds += Math.floor((end - start) / 1000);
+                    } else {
+                        // Current running period
+                        const start = new Date(period.startTime).getTime();
+                        const now = Date.now();
+                        totalActiveSeconds += Math.floor((now - start) / 1000);
+                    }
+                }
+                
+                // Calculate time remaining based on actual active time
+                this.state.timeRemaining = Math.max(0, totalDuration - totalActiveSeconds);
             }
             
             if (this.state.timeRemaining > 0 && this.state.isRunning) {
@@ -526,6 +545,7 @@ export class PomodoroService {
                 ? this.plugin.settings.pomodoroLongBreakDuration 
                 : this.plugin.settings.pomodoroShortBreakDuration;
             this.state.timeRemaining = breakDuration * 60;
+            this.state.nextSessionType = shouldTakeLongBreak ? 'long-break' : 'short-break';
             
             // Auto-start break if configured, otherwise just prepare the timer
             if (this.plugin.settings.pomodoroAutoStartBreaks) {
@@ -535,6 +555,7 @@ export class PomodoroService {
         } else {
             // After break session, prepare work timer
             this.state.timeRemaining = this.plugin.settings.pomodoroWorkDuration * 60;
+            this.state.nextSessionType = 'work';
             
             // Auto-start work if configured, otherwise just prepare the timer
             if (this.plugin.settings.pomodoroAutoStartWork) {
@@ -551,8 +572,6 @@ export class PomodoroService {
             session: this.state.currentSession
         });
     }
-
-
 
     private playCompletionSound() {
         try {
@@ -607,10 +626,35 @@ export class PomodoroService {
         return { ...this.state };
     }
 
-    adjustSessionTime(newTimeInSeconds: number): void {
+    adjustSessionTime(adjustmentSeconds: number): void {
         if (this.state.currentSession) {
-            this.state.timeRemaining = newTimeInSeconds;
-            this.state.currentSession.plannedDuration = Math.ceil(newTimeInSeconds / 60);
+            const oldTimeRemaining = this.state.timeRemaining;
+            
+            // Apply the adjustment directly to timeRemaining
+            this.state.timeRemaining = Math.max(1, this.state.timeRemaining + adjustmentSeconds);
+            
+            // Calculate the new total duration based on how much time has actually elapsed
+            const activePeriods = this.state.currentSession.activePeriods || [];
+            let totalActiveSeconds = 0;
+            
+            for (const period of activePeriods) {
+                if (period.endTime) {
+                    // Completed period
+                    const start = new Date(period.startTime).getTime();
+                    const end = new Date(period.endTime).getTime();
+                    totalActiveSeconds += Math.floor((end - start) / 1000);
+                } else if (this.state.isRunning) {
+                    // Current running period
+                    const start = new Date(period.startTime).getTime();
+                    const now = Date.now();
+                    totalActiveSeconds += Math.floor((now - start) / 1000);
+                }
+            }
+            
+            // New planned duration = elapsed time + remaining time
+            const newTotalSeconds = totalActiveSeconds + this.state.timeRemaining;
+            this.state.currentSession.plannedDuration = Math.ceil(newTotalSeconds / 60);
+            
             this.saveState();
             
             // Emit tick event to update UI
@@ -725,19 +769,6 @@ export class PomodoroService {
         }
     }
 
-    /**
-     * Calculate actual duration in minutes from active periods
-     */
-    private calculateActualDuration(activePeriods: PomodoroTimePeriod[]): number {
-        return activePeriods
-            .filter(period => period.endTime) // Only completed periods
-            .reduce((total, period) => {
-                const start = new Date(period.startTime);
-                const end = new Date(period.endTime!);
-                const durationMs = end.getTime() - start.getTime();
-                return total + Math.round(durationMs / (1000 * 60)); // Convert to minutes
-            }, 0);
-    }
 
     async addSessionToHistory(session: PomodoroSession): Promise<void> {
         if (!session.endTime) {

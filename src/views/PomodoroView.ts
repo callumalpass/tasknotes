@@ -34,9 +34,7 @@ export class PomodoroView extends ItemView {
     // Cache stat elements to avoid innerHTML
     private statElements: {
         pomodoros: HTMLElement | null;
-        streak: HTMLElement | null; 
-        minutes: HTMLElement | null;
-    } = { pomodoros: null, streak: null, minutes: null };
+    } = { pomodoros: null };
     
     // Event listeners
     private listeners: EventRef[] = [];
@@ -111,7 +109,7 @@ export class PomodoroView extends ItemView {
         this.statsDisplay = null;
         this.taskSelectButton = null;
         this.currentSelectedTask = null;
-        this.statElements = { pomodoros: null, streak: null, minutes: null };
+        this.statElements = { pomodoros: null };
         
         this.contentEl.empty();
     }
@@ -235,9 +233,14 @@ export class PomodoroView extends ItemView {
         this.statsDisplay = statsSection.createDiv({ cls: 'pomodoro-view__stats' });
         
         // Create minimal stat elements
-        const pomodoroStat = this.statsDisplay.createDiv({ cls: 'pomodoro-view__stat' });
+        const pomodoroStat = this.statsDisplay.createDiv({ cls: 'pomodoro-view__stat pomodoro-view__stat--clickable' });
         this.statElements.pomodoros = pomodoroStat.createSpan({ cls: 'pomodoro-view__stat-value', text: '0' });
         pomodoroStat.createSpan({ cls: 'pomodoro-view__stat-label', text: 'completed today' });
+        
+        // Make the stat clickable to open stats view
+        this.registerDomEvent(pomodoroStat, 'click', () => {
+            this.plugin.activatePomodoroStatsView();
+        });
         
         // Add event listeners
         this.registerDomEvent(this.startButton, 'click', async () => {
@@ -249,15 +252,13 @@ export class PomodoroView extends ItemView {
                 if (state.currentSession && !state.isRunning) {
                     await this.plugin.pomodoroService.resumePomodoro();
                 } else {
-                    // Determine what to start based on current timer value
-                    const shortBreakDuration = this.plugin.settings.pomodoroShortBreakDuration * 60;
-                    const longBreakDuration = this.plugin.settings.pomodoroLongBreakDuration * 60;
-                    
-                    if (state.timeRemaining === shortBreakDuration) {
-                        this.plugin.pomodoroService.startBreak(false); // Short break
-                    } else if (state.timeRemaining === longBreakDuration) {
-                        this.plugin.pomodoroService.startBreak(true); // Long break
+                    // No active session - start the type indicated by nextSessionType
+                    if (state.nextSessionType === 'short-break') {
+                        await this.plugin.pomodoroService.startBreak(false);
+                    } else if (state.nextSessionType === 'long-break') {
+                        await this.plugin.pomodoroService.startBreak(true);
                     } else {
+                        // Default to work session
                         await this.plugin.pomodoroService.startPomodoro(this.currentSelectedTask || undefined);
                     }
                 }
@@ -279,18 +280,18 @@ export class PomodoroView extends ItemView {
             if (state.currentSession) {
                 // Currently in a break session, stop it
                 this.plugin.pomodoroService.stopPomodoro();
-            } else {
-                // Ready to start break but user wants to skip, go directly to work
+            } else if (state.nextSessionType === 'short-break' || state.nextSessionType === 'long-break') {
+                // Break is prepared but user wants to skip, clear the break and prepare work
                 this.plugin.pomodoroService.startPomodoro(this.currentSelectedTask || undefined);
             }
         });
         
         this.registerDomEvent(this.addTimeButton, 'click', () => {
-            this.adjustSessionTime(30);
+            this.adjustSessionTime(60);
         });
         
         this.registerDomEvent(this.subtractTimeButton, 'click', () => {
-            this.adjustSessionTime(-30);
+            this.adjustSessionTime(-60);
         });
         
         this.registerDomEvent(this.taskSelectButton, 'click', async () => {
@@ -417,7 +418,6 @@ export class PomodoroView extends ItemView {
         this.updateTimer(state.timeRemaining);
         this.updateProgress(state);
         
-        
         // Update status
         if (this.statusDisplay) {
             if (state.isRunning && state.currentSession) {
@@ -478,20 +478,16 @@ export class PomodoroView extends ItemView {
                 this.pauseButton.addClass('pomodoro-view__pause-button--hidden');
                 this.stopButton.removeClass('pomodoro-view__stop-button--hidden');
             } else {
-                // Idle - check if we're in post-completion state
+                // Idle - no active session
                 this.startButton.removeClass('pomodoro-view__start-button--hidden');
                 
-                // Determine what type of session to start next based on timer value
-                const workDuration = this.plugin.settings.pomodoroWorkDuration * 60;
-                const shortBreakDuration = this.plugin.settings.pomodoroShortBreakDuration * 60;
-                const longBreakDuration = this.plugin.settings.pomodoroLongBreakDuration * 60;
-                
-                if (state.timeRemaining === shortBreakDuration || state.timeRemaining === longBreakDuration) {
-                    // Timer is set to break duration, show start break
-                    this.startButton.textContent = state.timeRemaining === longBreakDuration ? 'Start Long Break' : 'Start Short Break';
+                // Set button text based on next session type
+                if (state.nextSessionType === 'short-break') {
+                    this.startButton.textContent = 'Start Short Break';
+                } else if (state.nextSessionType === 'long-break') {
+                    this.startButton.textContent = 'Start Long Break';
                 } else {
-                    // Timer is set to work duration or other, show start work
-                    this.startButton.textContent = state.timeRemaining === workDuration ? 'Start' : 'Start Work';
+                    this.startButton.textContent = 'Start';
                 }
                 
                 this.pauseButton.addClass('pomodoro-view__pause-button--hidden');
@@ -501,19 +497,15 @@ export class PomodoroView extends ItemView {
         
         // Update skip break button visibility
         if (this.skipBreakButton) {
-            // Show skip break when:
-            // 1. Currently in a break session
-            // 2. Timer is ready to start a break (post work completion)
-            const workDuration = this.plugin.settings.pomodoroWorkDuration * 60;
-            const shortBreakDuration = this.plugin.settings.pomodoroShortBreakDuration * 60;
-            const longBreakDuration = this.plugin.settings.pomodoroLongBreakDuration * 60;
-            const isBreakTimerReady = !state.currentSession && (state.timeRemaining === shortBreakDuration || state.timeRemaining === longBreakDuration);
+            // Show skip break button when:
+            // 1. There's an active break session, OR
+            // 2. A break is prepared to start (nextSessionType is a break)
+            const isActiveBreak = state.currentSession && (state.currentSession.type === 'short-break' || state.currentSession.type === 'long-break');
+            const isBreakPrepared = !state.currentSession && (state.nextSessionType === 'short-break' || state.nextSessionType === 'long-break');
             
-            if ((state.currentSession && (state.currentSession.type === 'short-break' || state.currentSession.type === 'long-break')) || isBreakTimerReady) {
+            if (isActiveBreak || isBreakPrepared) {
                 this.skipBreakButton.removeClass('pomodoro-view__skip-break-button--hidden');
-                if (isBreakTimerReady) {
-                    this.skipBreakButton.textContent = 'Skip break';
-                }
+                this.skipBreakButton.textContent = 'Skip break';
             } else {
                 this.skipBreakButton.addClass('pomodoro-view__skip-break-button--hidden');
             }
@@ -588,16 +580,6 @@ export class PomodoroView extends ItemView {
         // Progress based on actual active time vs current planned duration
         const progress = Math.max(0, Math.min(1, totalActiveSeconds / totalDuration));
         
-        // Debug logging
-        console.log('Circle progress:', { 
-            totalDuration: totalDuration/60, 
-            timeRemaining: state.timeRemaining/60, 
-            actualActiveTime: totalActiveSeconds/60, 
-            activePeriods: activePeriods.length,
-            isRunning: state.isRunning,
-            progress: Math.round(progress * 100) + '%'
-        });
-        
         // Calculate stroke-dashoffset (progress goes clockwise)
         const offset = circumference - (progress * circumference);
         
@@ -638,14 +620,12 @@ export class PomodoroView extends ItemView {
     private adjustSessionTime(seconds: number) {
         const state = this.plugin.pomodoroService.getState();
         
-        // Allow adjustment at any time - calculate new time
-        const newTime = Math.max(60, state.timeRemaining + seconds); // Minimum 1 minute
-        
         if (state.currentSession) {
-            // Session exists (running or paused), adjust the current session
-            this.plugin.pomodoroService.adjustSessionTime(newTime);
+            // Session exists (running or paused), pass the adjustment amount directly
+            this.plugin.pomodoroService.adjustSessionTime(seconds);
         } else {
-            // No session (ready to start), adjust the prepared timer
+            // No session (ready to start), adjust the prepared timer with absolute value
+            const newTime = Math.max(60, state.timeRemaining + seconds); // Minimum 1 minute
             this.plugin.pomodoroService.adjustPreparedTimer(newTime);
         }
         

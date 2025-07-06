@@ -458,6 +458,18 @@
     text-align: center;
 }
 
+.tasknotes-plugin .pomodoro-view__stat--clickable {
+    cursor: pointer;
+    padding: var(--tn-spacing-xs);
+    border-radius: var(--tn-radius-sm);
+    transition: all var(--tn-transition-fast);
+}
+
+.tasknotes-plugin .pomodoro-view__stat--clickable:hover {
+    background: var(--tn-interactive-hover);
+    transform: translateY(-1px);
+}
+
 .tasknotes-plugin .pomodoro-view__stat-value {
     font-size: var(--tn-font-size-lg);
     font-weight: var(--tn-font-weight-bold);
@@ -549,8 +561,9 @@
 .tasknotes-plugin .pomodoro-view__pause-button:focus,
 .tasknotes-plugin .pomodoro-view__stop-button:focus,
 .tasknotes-plugin .pomodoro-view__skip-break-button:focus,
-.tasknotes-plugin .pomodoro-view__time-adjust-button:focus,
 .tasknotes-plugin .pomodoro-view__task-select-button:focus {
     outline: 2px solid var(--tn-interactive-accent);
     outline-offset: 2px;
 }
+
+/* Time adjust buttons have their own focus styling above */

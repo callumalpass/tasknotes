@@ -228,6 +228,7 @@ export interface PomodoroState {
 	isRunning: boolean;
 	currentSession?: PomodoroSession;
 	timeRemaining: number; // seconds
+	nextSessionType?: 'work' | 'short-break' | 'long-break'; // What type of session to start next when no current session
 }
 
 export interface PomodoroSessionHistory {
