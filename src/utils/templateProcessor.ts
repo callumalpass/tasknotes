@@ -169,7 +169,7 @@ function needsYamlQuoting(str: string): boolean {
     if (!str) return false;
     
     // Check for characters that have special meaning in YAML
-    const yamlSpecialChars = /[\[\]{}:>|*&!%#`@,]/;
+    const yamlSpecialChars = /[[\]{}:>|*&!%#`@,]/;
     const startsWithSpecial = /^[-?]/;
     const looksLikeNumber = /^\d+\.?\d*$/;
     const looksLikeBoolean = /^(true|false|yes|no|on|off)$/i;

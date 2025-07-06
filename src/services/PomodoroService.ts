@@ -1,4 +1,4 @@
-import { Notice, TFile } from 'obsidian';
+import { Notice } from 'obsidian';
 import { format } from 'date-fns';
 import TaskNotesPlugin from '../main';
 import { 
@@ -12,7 +12,6 @@ import {
     PomodoroState,
     PomodoroSessionHistory,
     PomodoroHistoryStats,
-    PomodoroTimePeriod,
     EVENT_POMODORO_START, 
     EVENT_POMODORO_COMPLETE, 
     EVENT_POMODORO_INTERRUPT, 
@@ -628,8 +627,7 @@ export class PomodoroService {
 
     adjustSessionTime(adjustmentSeconds: number): void {
         if (this.state.currentSession) {
-            const oldTimeRemaining = this.state.timeRemaining;
-            
+                
             // Apply the adjustment directly to timeRemaining
             this.state.timeRemaining = Math.max(1, this.state.timeRemaining + adjustmentSeconds);
             

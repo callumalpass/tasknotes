@@ -376,6 +376,7 @@ export class FilterService extends EventEmitter {
         return tasks.sort((a, b) => {
             let comparison = 0;
 
+            // Primary sort criteria
             switch (sortKey) {
                 case 'due':
                     comparison = this.compareDates(a.due, b.due);
@@ -389,6 +390,11 @@ export class FilterService extends EventEmitter {
                 case 'title':
                     comparison = a.title.localeCompare(b.title);
                     break;
+            }
+
+            // If primary criteria are equal, apply fallback sorting
+            if (comparison === 0) {
+                comparison = this.applyFallbackSorting(a, b, sortKey);
             }
 
             return direction === 'desc' ? -comparison : comparison;
@@ -429,6 +435,45 @@ export class FilterService extends EventEmitter {
         
         // Higher weight = higher priority, so reverse for ascending order
         return weightB - weightA;
+    }
+
+    /**
+     * Apply fallback sorting criteria when primary sort yields equal values
+     * Order: scheduled date → due date → priority → title
+     */
+    private applyFallbackSorting(a: TaskInfo, b: TaskInfo, primarySortKey: TaskSortKey): number {
+        // Define fallback order: scheduled → due → priority → title
+        const fallbackOrder: TaskSortKey[] = ['scheduled', 'due', 'priority', 'title'];
+        
+        // Remove the primary sort key from fallbacks to avoid redundant comparison
+        const fallbacks = fallbackOrder.filter(key => key !== primarySortKey);
+        
+        for (const fallbackKey of fallbacks) {
+            let comparison = 0;
+            
+            switch (fallbackKey) {
+                case 'scheduled':
+                    comparison = this.compareDates(a.scheduled, b.scheduled);
+                    break;
+                case 'due':
+                    comparison = this.compareDates(a.due, b.due);
+                    break;
+                case 'priority':
+                    comparison = this.comparePriorities(a.priority, b.priority);
+                    break;
+                case 'title':
+                    comparison = a.title.localeCompare(b.title);
+                    break;
+            }
+            
+            // Return first non-zero comparison
+            if (comparison !== 0) {
+                return comparison;
+            }
+        }
+        
+        // All criteria equal
+        return 0;
     }
 
     /**

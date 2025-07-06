@@ -47,7 +47,8 @@ jest.mock('../../../src/utils/helpers', () => ({
   }),
   shouldUseRecurringTaskUI: jest.fn((task) => !!task.recurrence),
   getRecurringTaskCompletionText: jest.fn(() => 'Not completed for this date'),
-  getRecurrenceDisplayText: jest.fn((recurrence) => 'Daily')
+  getRecurrenceDisplayText: jest.fn((recurrence) => 'Daily'),
+  filterEmptyProjects: jest.fn((projects) => projects?.filter(p => p && p.trim()) || [])
 }));
 
 jest.mock('../../../src/utils/dateUtils', () => ({
@@ -57,7 +58,9 @@ jest.mock('../../../src/utils/dateUtils', () => ({
     if (options?.dateFormat === '') return '2:30 PM';
     if (date === '2025-01-15T14:30:00') return 'Jan 15, 2025 2:30 PM';
     return 'Jan 15, 2025';
-  })
+  }),
+  getDatePart: jest.fn((date) => date?.split('T')[0] || ''),
+  getTimePart: jest.fn((date) => date?.includes('T') ? date.split('T')[1]?.split(':').slice(0, 2).join(':') : null)
 }));
 
 describe('TaskCard Component', () => {

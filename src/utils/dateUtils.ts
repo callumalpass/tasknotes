@@ -641,7 +641,7 @@ export function validateCompleteInstances(instances: any[]): string[] {
             
             // Must be a valid date
             try {
-                const parsed = parseDate(trimmed);
+                parseDate(trimmed);
                 return true;
             } catch (error) {
                 console.warn('Invalid complete_instances entry (date parsing failed):', instance, error);
