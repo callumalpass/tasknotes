@@ -480,6 +480,79 @@ export class TaskEditModal extends TaskModal {
         }
     }
 
+    private async archiveTask(): Promise<void> {
+        try {
+            const updatedTask = await this.plugin.taskService.toggleArchive(this.task);
+            
+            // Update the task reference
+            this.task = updatedTask;
+            
+            // Notify parent component if callback exists
+            if (this.options.onTaskUpdated) {
+                this.options.onTaskUpdated(updatedTask);
+            }
+            
+            // Show success message
+            const actionText = updatedTask.archived ? 'archived' : 'unarchived';
+            new Notice(`Task ${actionText} successfully`);
+            
+            // Close the modal
+            this.close();
+            
+        } catch (error) {
+            console.error('Failed to archive task:', error);
+            new Notice('Failed to archive task');
+        }
+    }
+
+    protected createActionButtons(container: HTMLElement): void {
+        const buttonContainer = container.createDiv('button-container');
+
+        // Add "Open note" button
+        const openNoteButton = buttonContainer.createEl('button', {
+            cls: 'open-note-button',
+            text: 'Open note'
+        });
+        
+        openNoteButton.addEventListener('click', async () => {
+            await this.openTaskNote();
+        });
+
+        // Add "Archive" button
+        const archiveButton = buttonContainer.createEl('button', {
+            cls: 'archive-button',
+            text: this.task.archived ? 'Unarchive' : 'Archive'
+        });
+        
+        archiveButton.addEventListener('click', async () => {
+            await this.archiveTask();
+        });
+
+        // Spacer to push Save/Cancel to the right
+        buttonContainer.createDiv('button-spacer');
+
+        // Save button
+        const saveButton = buttonContainer.createEl('button', {
+            cls: 'save-button',
+            text: 'Save'
+        });
+        
+        saveButton.addEventListener('click', async () => {
+            await this.handleSave();
+            this.close();
+        });
+
+        // Cancel button
+        const cancelButton = buttonContainer.createEl('button', {
+            cls: 'cancel-button',
+            text: 'Cancel'
+        });
+        
+        cancelButton.addEventListener('click', () => {
+            this.close();
+        });
+    }
+
     // Start expanded for edit modal - override parent property
     protected isExpanded = true;
 }
