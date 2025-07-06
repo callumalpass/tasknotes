@@ -34,6 +34,42 @@ export const DEFAULT_TASK_CARD_OPTIONS: TaskCardOptions = {
 };
 
 /**
+ * Helper function to attach date context menu click handlers
+ */
+function attachDateClickHandler(
+    span: HTMLElement, 
+    task: TaskInfo, 
+    plugin: TaskNotesPlugin, 
+    dateType: 'due' | 'scheduled'
+): void {
+    span.addEventListener('click', (e) => {
+        e.stopPropagation(); // Don't trigger card click
+        const currentValue = dateType === 'due' ? task.due : task.scheduled;
+        const menu = new DateContextMenu({
+            currentValue: getDatePart(currentValue || ''),
+            currentTime: getTimePart(currentValue || ''),
+            onSelect: async (dateValue, timeValue) => {
+                try {
+                    let finalValue: string | undefined;
+                    if (!dateValue) {
+                        finalValue = undefined;
+                    } else if (timeValue) {
+                        finalValue = `${dateValue}T${timeValue}`;
+                    } else {
+                        finalValue = dateValue;
+                    }
+                    await plugin.updateTaskProperty(task, dateType, finalValue);
+                } catch (error) {
+                    console.error(`Error updating ${dateType} date:`, error);
+                    new Notice(`Failed to update ${dateType} date`);
+                }
+            }
+        });
+        menu.show(e as MouseEvent);
+    });
+}
+
+/**
  * Create a minimalist, unified task card element
  */
 export function createTaskCard(task: TaskInfo, plugin: TaskNotesPlugin, options: Partial<TaskCardOptions> = {}): HTMLElement {
@@ -324,30 +360,7 @@ export function createTaskCard(task: TaskInfo, plugin: TaskNotesPlugin, options:
         });
 
         // Add click context menu for due date
-        dueDateSpan.addEventListener('click', (e) => {
-            e.stopPropagation(); // Don't trigger card click
-            const menu = new DateContextMenu({
-                currentValue: getDatePart(task.due || ''),
-                currentTime: getTimePart(task.due || ''),
-                onSelect: async (dateValue, timeValue) => {
-                    try {
-                        let finalValue: string | undefined;
-                        if (!dateValue) {
-                            finalValue = undefined;
-                        } else if (timeValue) {
-                            finalValue = `${dateValue}T${timeValue}`;
-                        } else {
-                            finalValue = dateValue;
-                        }
-                        await plugin.updateTaskProperty(task, 'due', finalValue);
-                    } catch (error) {
-                        console.error('Error updating due date:', error);
-                        new Notice('Failed to update due date');
-                    }
-                }
-            });
-            menu.show(e as MouseEvent);
-        });
+        attachDateClickHandler(dueDateSpan, task, plugin, 'due');
 
         metadataElements.push(dueDateSpan);
     }
@@ -394,30 +407,7 @@ export function createTaskCard(task: TaskInfo, plugin: TaskNotesPlugin, options:
         });
 
         // Add click context menu for scheduled date
-        scheduledSpan.addEventListener('click', (e) => {
-            e.stopPropagation(); // Don't trigger card click
-            const menu = new DateContextMenu({
-                currentValue: getDatePart(task.scheduled || ''),
-                currentTime: getTimePart(task.scheduled || ''),
-                onSelect: async (dateValue, timeValue) => {
-                    try {
-                        let finalValue: string | undefined;
-                        if (!dateValue) {
-                            finalValue = undefined;
-                        } else if (timeValue) {
-                            finalValue = `${dateValue}T${timeValue}`;
-                        } else {
-                            finalValue = dateValue;
-                        }
-                        await plugin.updateTaskProperty(task, 'scheduled', finalValue);
-                    } catch (error) {
-                        console.error('Error updating scheduled date:', error);
-                        new Notice('Failed to update scheduled date');
-                    }
-                }
-            });
-            menu.show(e as MouseEvent);
-        });
+        attachDateClickHandler(scheduledSpan, task, plugin, 'scheduled');
 
         metadataElements.push(scheduledSpan);
     }
@@ -894,6 +884,10 @@ export function updateTaskCard(element: HTMLElement, task: TaskInfo, plugin: Tas
                 cls: 'task-card__metadata-date task-card__metadata-date--due',
                 text: dueDateText
             });
+            
+            // Re-attach click context menu for due date
+            attachDateClickHandler(dueDateSpan, task, plugin, 'due');
+            
             metadataElements.push(dueDateSpan);
         }
         
@@ -937,6 +931,10 @@ export function updateTaskCard(element: HTMLElement, task: TaskInfo, plugin: Tas
                 cls: 'task-card__metadata-date task-card__metadata-date--scheduled',
                 text: scheduledDateText
             });
+            
+            // Re-attach click context menu for scheduled date
+            attachDateClickHandler(scheduledSpan, task, plugin, 'scheduled');
+            
             metadataElements.push(scheduledSpan);
         }
         
