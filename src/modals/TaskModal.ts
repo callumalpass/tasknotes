@@ -1,4 +1,4 @@
-import { App, Modal, Setting, setIcon, TAbstractFile, TFile } from 'obsidian';
+import { App, Modal, Setting, setIcon, TAbstractFile, TFile, AbstractInputSuggest } from 'obsidian';
 import TaskNotesPlugin from '../main';
 import { DateContextMenu } from '../components/DateContextMenu';
 import { PriorityContextMenu } from '../components/PriorityContextMenu';
@@ -232,7 +232,7 @@ export abstract class TaskModal extends Modal {
                 this.contextsInput = text.inputEl;
                 
                 // Add autocomplete functionality
-                this.setupAutocomplete(text.inputEl, 'contexts');
+                new ContextSuggest(this.app, text.inputEl, this.plugin);
             });
 
         // Tags input with autocomplete
@@ -249,7 +249,7 @@ export abstract class TaskModal extends Modal {
                 this.tagsInput = text.inputEl;
                 
                 // Add autocomplete functionality
-                this.setupAutocomplete(text.inputEl, 'tags');
+                new TagSuggest(this.app, text.inputEl, this.plugin);
             });
 
         // Time estimate
@@ -264,162 +264,6 @@ export abstract class TaskModal extends Modal {
             });
     }
 
-    private setupAutocomplete(inputEl: HTMLInputElement, type: 'contexts' | 'tags'): void {
-        let currentSuggestions: string[] = [];
-        let suggestionContainer: HTMLElement | null = null;
-        let selectedIndex = -1;
-
-        const showSuggestions = async (query: string) => {
-            if (!query) {
-                hideSuggestions();
-                return;
-            }
-
-            // Get existing items based on type
-            const existingItems = type === 'contexts' 
-                ? await this.plugin.cacheManager.getAllContexts()
-                : await this.plugin.cacheManager.getAllTags();
-
-            // Filter suggestions based on current input
-            const currentValues = inputEl.value.split(',').map(v => v.trim());
-            const currentQuery = currentValues[currentValues.length - 1];
-            
-            if (!currentQuery) {
-                hideSuggestions();
-                return;
-            }
-
-            currentSuggestions = existingItems
-                .filter(item => item && typeof item === 'string')
-                .filter(item => 
-                    (item || '').toLowerCase().includes((currentQuery || '').toLowerCase()) &&
-                    !currentValues.slice(0, -1).includes(item)
-                )
-                .slice(0, 10);
-
-            if (currentSuggestions.length === 0) {
-                hideSuggestions();
-                return;
-            }
-
-            // Create suggestion container
-            if (!suggestionContainer) {
-                // Make the input's parent container relative to position suggestions correctly
-                const parentContainer = inputEl.closest('.setting-item-control') as HTMLElement;
-                if (parentContainer) {
-                    parentContainer.style.position = 'relative';
-                }
-                
-                suggestionContainer = inputEl.parentElement!.createDiv('autocomplete-suggestions');
-                suggestionContainer.style.position = 'absolute';
-                suggestionContainer.style.top = '100%';
-                suggestionContainer.style.left = '0';
-                suggestionContainer.style.right = '0';
-                suggestionContainer.style.backgroundColor = 'var(--background-primary)';
-                suggestionContainer.style.border = '1px solid var(--background-modifier-border)';
-                suggestionContainer.style.borderTop = 'none';
-                suggestionContainer.style.borderRadius = '0 0 var(--radius-s) var(--radius-s)';
-                suggestionContainer.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)';
-                suggestionContainer.style.zIndex = '1000';
-                suggestionContainer.style.maxHeight = '200px';
-                suggestionContainer.style.overflowY = 'auto';
-            }
-
-            suggestionContainer.empty();
-            selectedIndex = -1;
-
-            currentSuggestions.forEach((suggestion, index) => {
-                const suggestionEl = suggestionContainer!.createDiv('autocomplete-suggestion');
-                suggestionEl.textContent = suggestion;
-                suggestionEl.style.padding = '8px 12px';
-                suggestionEl.style.cursor = 'pointer';
-                suggestionEl.style.borderBottom = '1px solid var(--background-modifier-border-hover)';
-                suggestionEl.style.fontSize = 'var(--font-ui-small)';
-
-                suggestionEl.addEventListener('click', () => {
-                    selectSuggestion(suggestion);
-                });
-
-                suggestionEl.addEventListener('mouseenter', () => {
-                    selectedIndex = index;
-                    updateSelectedSuggestion();
-                });
-            });
-        };
-
-        const hideSuggestions = () => {
-            if (suggestionContainer) {
-                suggestionContainer.remove();
-                suggestionContainer = null;
-            }
-            selectedIndex = -1;
-        };
-
-        const selectSuggestion = (suggestion: string) => {
-            const currentValues = inputEl.value.split(',').map(v => v.trim());
-            currentValues[currentValues.length - 1] = suggestion;
-            inputEl.value = currentValues.join(', ') + ', ';
-            
-            if (type === 'contexts') {
-                this.contexts = inputEl.value.trim();
-            } else {
-                this.tags = inputEl.value.trim();
-            }
-            
-            hideSuggestions();
-            inputEl.focus();
-        };
-
-        const updateSelectedSuggestion = () => {
-            if (!suggestionContainer) return;
-            
-            const suggestions = suggestionContainer.querySelectorAll('.autocomplete-suggestion');
-            suggestions.forEach((el, index) => {
-                if (index === selectedIndex) {
-                    (el as HTMLElement).style.backgroundColor = 'var(--background-modifier-hover)';
-                } else {
-                    (el as HTMLElement).style.backgroundColor = 'transparent';
-                }
-            });
-        };
-
-        // Event listeners
-        inputEl.addEventListener('input', (e) => {
-            const target = e.target as HTMLInputElement;
-            showSuggestions(target.value);
-        });
-
-        inputEl.addEventListener('keydown', (e) => {
-            if (!suggestionContainer || currentSuggestions.length === 0) return;
-
-            switch (e.key) {
-                case 'ArrowDown':
-                    e.preventDefault();
-                    selectedIndex = Math.min(selectedIndex + 1, currentSuggestions.length - 1);
-                    updateSelectedSuggestion();
-                    break;
-                case 'ArrowUp':
-                    e.preventDefault();
-                    selectedIndex = Math.max(selectedIndex - 1, -1);
-                    updateSelectedSuggestion();
-                    break;
-                case 'Enter':
-                    if (selectedIndex >= 0) {
-                        e.preventDefault();
-                        selectSuggestion(currentSuggestions[selectedIndex]);
-                    }
-                    break;
-                case 'Escape':
-                    hideSuggestions();
-                    break;
-            }
-        });
-
-        inputEl.addEventListener('blur', () => {
-            // Delay hiding to allow clicking on suggestions
-            setTimeout(() => hideSuggestions(), 200);
-        });
-    }
 
     protected createActionButtons(container: HTMLElement): void {
         const buttonContainer = container.createDiv('button-container');
@@ -859,5 +703,89 @@ export abstract class TaskModal extends Modal {
 
     protected validateForm(): boolean {
         return this.title.trim().length > 0;
+    }
+}
+
+/**
+ * Context suggestion provider using AbstractInputSuggest
+ */
+class ContextSuggest extends AbstractInputSuggest<string> {
+    private plugin: TaskNotesPlugin;
+    private input: HTMLInputElement;
+    
+    constructor(app: App, inputEl: HTMLInputElement, plugin: TaskNotesPlugin) {
+        super(app, inputEl);
+        this.plugin = plugin;
+        this.input = inputEl;
+    }
+    
+    protected async getSuggestions(query: string): Promise<string[]> {
+        // Handle comma-separated values
+        const currentValues = this.input.value.split(',').map((v: string) => v.trim());
+        const currentQuery = currentValues[currentValues.length - 1];
+        
+        if (!currentQuery) return [];
+        
+        const contexts = await this.plugin.cacheManager.getAllContexts();
+        return contexts
+            .filter(context => context && typeof context === 'string')
+            .filter(context => 
+                context.toLowerCase().includes(currentQuery.toLowerCase()) &&
+                !currentValues.slice(0, -1).includes(context)
+            )
+            .slice(0, 10);
+    }
+    
+    public renderSuggestion(context: string, el: HTMLElement): void {
+        el.textContent = context;
+    }
+    
+    public selectSuggestion(context: string): void {
+        const currentValues = this.input.value.split(',').map((v: string) => v.trim());
+        currentValues[currentValues.length - 1] = context;
+        this.input.value = currentValues.join(', ') + ', ';
+        this.input.focus();
+    }
+}
+
+/**
+ * Tag suggestion provider using AbstractInputSuggest
+ */
+class TagSuggest extends AbstractInputSuggest<string> {
+    private plugin: TaskNotesPlugin;
+    private input: HTMLInputElement;
+    
+    constructor(app: App, inputEl: HTMLInputElement, plugin: TaskNotesPlugin) {
+        super(app, inputEl);
+        this.plugin = plugin;
+        this.input = inputEl;
+    }
+    
+    protected async getSuggestions(query: string): Promise<string[]> {
+        // Handle comma-separated values
+        const currentValues = this.input.value.split(',').map((v: string) => v.trim());
+        const currentQuery = currentValues[currentValues.length - 1];
+        
+        if (!currentQuery) return [];
+        
+        const tags = await this.plugin.cacheManager.getAllTags();
+        return tags
+            .filter(tag => tag && typeof tag === 'string')
+            .filter(tag => 
+                tag.toLowerCase().includes(currentQuery.toLowerCase()) &&
+                !currentValues.slice(0, -1).includes(tag)
+            )
+            .slice(0, 10);
+    }
+    
+    public renderSuggestion(tag: string, el: HTMLElement): void {
+        el.textContent = tag;
+    }
+    
+    public selectSuggestion(tag: string): void {
+        const currentValues = this.input.value.split(',').map((v: string) => v.trim());
+        currentValues[currentValues.length - 1] = tag;
+        this.input.value = currentValues.join(', ') + ', ';
+        this.input.focus();
     }
 }

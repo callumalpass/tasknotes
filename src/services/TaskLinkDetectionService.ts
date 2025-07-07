@@ -1,4 +1,4 @@
-import { TFile, parseInternalLink } from 'obsidian';
+import { TFile, parseLinktext } from 'obsidian';
 import { TaskInfo } from '../types';
 import TaskNotesPlugin from '../main';
 
@@ -84,10 +84,10 @@ export class TaskLinkDetectionService {
         const content = wikilinkText.slice(2, -2).trim();
         if (!content) return null;
 
-        const parsed = parseInternalLink(content);
+        const parsed = parseLinktext(content);
         return {
             linkPath: parsed.path,
-            displayText: parsed.alias || undefined
+            displayText: content.includes('|') ? content.split('|')[1].trim() : undefined
         };
     }
 
