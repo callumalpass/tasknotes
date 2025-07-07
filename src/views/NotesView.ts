@@ -183,7 +183,7 @@ export class NotesView extends ItemView {
             
             if (this.plugin.settings.disableNoteIndexing) {
                 new Setting(emptyState)
-                    .setName('Note Indexing Disabled')
+                    .setName('Note indexing disabled')
                     .setHeading();
                 emptyState.createEl('p', {
                     text: 'Note indexing has been disabled in settings for better performance. To view notes, enable note indexing in Settings > TaskNotes > General > Performance settings and restart the plugin.',
@@ -191,7 +191,7 @@ export class NotesView extends ItemView {
                 });
             } else {
                 new Setting(emptyState)
-                    .setName('No Notes Found')
+                    .setName('No notes found')
                     .setHeading();
                 emptyState.createEl('p', {
                     text: 'No notes found for the selected date. Try selecting a different date or create some notes.',

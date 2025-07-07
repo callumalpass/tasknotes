@@ -21,7 +21,7 @@ export class MigrationModal extends Modal {
         this.migrationCount = await this.migrationService.getMigrationCount();
 
         new Setting(contentEl)
-            .setName('Recurrence System Migration')
+            .setName('Recurrence system migration')
             .setHeading();
 
         contentEl.createEl('p', { 
@@ -51,7 +51,7 @@ export class MigrationModal extends Modal {
         // Warning section
         const warningEl = contentEl.createDiv('migration-warning');
         new Setting(warningEl)
-            .setName('⚠️ Important Notes')
+            .setName('⚠️ Important notes')
             .setHeading();
         
         const warningList = warningEl.createEl('ul');
@@ -77,7 +77,7 @@ export class MigrationModal extends Modal {
         progressEl.style.display = 'none';
         
         new Setting(progressEl)
-            .setName('Migration Progress')
+            .setName('Migration progress')
             .setHeading();
         const progressBar = progressEl.createEl('progress');
         progressBar.max = this.migrationCount;

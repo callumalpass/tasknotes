@@ -34,7 +34,7 @@ export class TaskActionPaletteModal extends FuzzySuggestModal<TaskAction> {
         ]);
         
         // Set modal title for accessibility
-        this.titleEl.setText(`Quick Actions: ${task.title}`);
+        this.titleEl.setText(`Quick actions: ${task.title}`);
         this.titleEl.setAttribute('id', 'task-action-palette-title');
         
         // Set aria attributes on the modal

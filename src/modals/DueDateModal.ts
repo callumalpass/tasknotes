@@ -41,7 +41,7 @@ export class DueDateModal extends Modal {
 
         // Due date and time input
         const dateTimeSetting = new Setting(contentEl)
-            .setName('Due Date & Time')
+            .setName('Due date & time')
             .setDesc('Enter due date and optional time (leave time empty for date-only)');
 
         // Create a container for the date and time inputs

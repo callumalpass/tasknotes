@@ -28,7 +28,7 @@ export class ICSEventInfoModal extends Modal {
         contentEl.empty();
 
         new Setting(contentEl)
-            .setName('Calendar Event Details')
+            .setName('Calendar event details')
             .setHeading();
         
         const content = contentEl.createDiv();
