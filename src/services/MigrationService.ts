@@ -1,4 +1,4 @@
-import { App, TFile, parseYaml, stringifyYaml } from 'obsidian';
+import { App, TFile } from 'obsidian';
 import { convertLegacyRecurrenceToRRule } from '../utils/helpers';
 
 /**
@@ -106,48 +106,22 @@ export class MigrationService {
      * Migrate a single file from legacy recurrence to rrule
      */
     private async migrateFile(file: TFile): Promise<void> {
-        const content = await this.app.vault.read(file);
-        
-        // Extract frontmatter
-        if (!content.startsWith('---')) {
-            throw new Error('No frontmatter found');
-        }
+        await this.app.fileManager.processFrontMatter(file, (frontmatter) => {
+            // Check if migration is needed (recurrence should be an object)
+            if (!frontmatter.recurrence || typeof frontmatter.recurrence !== 'object') {
+                return; // Already migrated or no recurrence
+            }
 
-        const endOfFrontmatter = content.indexOf('---', 3);
-        if (endOfFrontmatter === -1) {
-            throw new Error('Malformed frontmatter');
-        }
-
-        const frontmatterText = content.substring(3, endOfFrontmatter);
-        const bodyContent = content.substring(endOfFrontmatter + 3);
-
-        let frontmatter: any;
-        try {
-            frontmatter = parseYaml(frontmatterText) || {};
-        } catch (error) {
-            throw new Error(`Failed to parse YAML: ${error instanceof Error ? error.message : String(error)}`);
-        }
-
-        // Check if migration is needed (recurrence should be an object)
-        if (!frontmatter.recurrence || typeof frontmatter.recurrence !== 'object') {
-            return; // Already migrated or no recurrence
-        }
-
-        // Convert legacy recurrence to rrule string
-        try {
-            const rruleString = convertLegacyRecurrenceToRRule(frontmatter.recurrence);
-            
-            // Replace the recurrence object with the rrule string
-            frontmatter.recurrence = rruleString;
-            
-            // Convert back to YAML and update file
-            const newFrontmatterText = stringifyYaml(frontmatter);
-            const newContent = `---\n${newFrontmatterText}---${bodyContent}`;
-            
-            await this.app.vault.modify(file, newContent);
-        } catch (error) {
-            throw new Error(`Failed to convert recurrence to rrule: ${error instanceof Error ? error.message : String(error)}`);
-        }
+            // Convert legacy recurrence to rrule string
+            try {
+                const rruleString = convertLegacyRecurrenceToRRule(frontmatter.recurrence);
+                
+                // Replace the recurrence object with the rrule string
+                frontmatter.recurrence = rruleString;
+            } catch (error) {
+                throw new Error(`Failed to convert recurrence to rrule: ${error instanceof Error ? error.message : String(error)}`);
+            }
+        });
     }
 
     /**
