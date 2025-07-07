@@ -1,4 +1,4 @@
-import { Notice, TFile, ItemView, WorkspaceLeaf, EventRef } from 'obsidian';
+import { Notice, TFile, ItemView, WorkspaceLeaf, EventRef, debounce } from 'obsidian';
 import { format } from 'date-fns';
 import TaskNotesPlugin from '../main';
 import { getAllDailyNotes, getDailyNote } from 'obsidian-daily-notes-interface';
@@ -1177,22 +1177,12 @@ export class MiniCalendarView extends ItemView {
      */
     private initializeDebouncedRefresh(): void {
         if (!this.debouncedRefresh) {
-            this.debouncedRefresh = this.debounce(() => {
+            this.debouncedRefresh = debounce(() => {
                 this.refresh();
             }, 150); // 150ms debounce for calendar refreshes
         }
     }
     
-    /**
-     * Simple debounce utility
-     */
-    private debounce(func: () => void, wait: number): () => void {
-        let timeout: number;
-        return (...args: any[]) => {
-            window.clearTimeout(timeout);
-            timeout = window.setTimeout(() => func.apply(this, args), wait);
-        };
-    }
     
     // Helper methods for date calculations
     getViewStartDate(): Date {

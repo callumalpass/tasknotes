@@ -1,4 +1,4 @@
-import { TFile, App, Events } from 'obsidian';
+import { TFile, App, Events, EventRef } from 'obsidian';
 import { TaskInfo, NoteInfo } from '../types';
 import { FieldMapper } from '../services/FieldMapper';
 import { 
@@ -35,6 +35,9 @@ export class MinimalNativeCache extends Events {
     // Initialization state
     private initialized = false;
     private indexesBuilt = false;
+    
+    // Event listeners for cleanup
+    private eventListeners: EventRef[] = [];
     
     constructor(
         app: App,
@@ -81,23 +84,30 @@ export class MinimalNativeCache extends Events {
      * Set up native event listeners for real-time updates
      */
     private setupNativeEventListeners(): void {
-        this.app.metadataCache.on('changed', (file, data, cache) => {
-            if (file instanceof TFile && file.extension === 'md' && this.isValidFile(file.path)) {
-                this.handleFileChanged(file, cache);
-            }
-        });
+        // Store event listeners for proper cleanup
+        this.eventListeners.push(
+            this.app.metadataCache.on('changed', (file, data, cache) => {
+                if (file instanceof TFile && file.extension === 'md' && this.isValidFile(file.path)) {
+                    this.handleFileChanged(file, cache);
+                }
+            })
+        );
         
-        this.app.metadataCache.on('deleted', (file, prevCache) => {
-            if (file instanceof TFile && file.extension === 'md') {
-                this.handleFileDeleted(file.path);
-            }
-        });
+        this.eventListeners.push(
+            this.app.metadataCache.on('deleted', (file, prevCache) => {
+                if (file instanceof TFile && file.extension === 'md') {
+                    this.handleFileDeleted(file.path);
+                }
+            })
+        );
         
-        this.app.vault.on('rename', (file, oldPath) => {
-            if (file instanceof TFile && file.extension === 'md') {
-                this.handleFileRenamed(file, oldPath);
-            }
-        });
+        this.eventListeners.push(
+            this.app.vault.on('rename', (file, oldPath) => {
+                if (file instanceof TFile && file.extension === 'md') {
+                    this.handleFileRenamed(file, oldPath);
+                }
+            })
+        );
     }
     
     /**
@@ -1007,6 +1017,12 @@ export class MinimalNativeCache extends Events {
     }
     
     destroy(): void {
+        // Clean up event listeners
+        this.eventListeners.forEach(listener => {
+            this.app.metadataCache.offref(listener);
+        });
+        this.eventListeners = [];
+        
         this.clearAllIndexes();
         this.initialized = false;
         this.indexesBuilt = false;
