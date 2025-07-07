@@ -154,7 +154,7 @@ export default class TaskNotesPlugin extends Plugin {
 			this.statusManager,
 			this.priorityManager
 		);
-		this.viewStateManager = new ViewStateManager();
+		this.viewStateManager = new ViewStateManager(this.app);
 		this.dragDropManager = new DragDropManager(this);
 		this.migrationService = new MigrationService(this.app);
 		this.statusBarService = new StatusBarService(this);

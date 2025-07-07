@@ -1,5 +1,6 @@
 import { FilterQuery, ViewFilterState, ViewPreferences } from '../types';
 import { EventEmitter } from '../utils/EventEmitter';
+import { App } from 'obsidian';
 
 /**
  * Manages view-specific state like filter preferences across the application
@@ -9,8 +10,11 @@ export class ViewStateManager extends EventEmitter {
     private viewPreferences: ViewPreferences = {};
     private storageKey = 'tasknotes-view-filter-state';
     private preferencesStorageKey = 'tasknotes-view-preferences';
-    constructor() {
+    private app: App;
+    
+    constructor(app: App) {
         super();
+        this.app = app;
         this.loadFromStorage();
         this.loadPreferencesFromStorage();
     }
@@ -88,7 +92,7 @@ export class ViewStateManager extends EventEmitter {
      */
     private loadFromStorage(): void {
         try {
-            const stored = localStorage.getItem(this.storageKey);
+            const stored = this.app.loadLocalStorage(this.storageKey);
             if (stored) {
                 this.filterState = JSON.parse(stored);
             }
@@ -103,7 +107,7 @@ export class ViewStateManager extends EventEmitter {
      */
     private saveToStorage(): void {
         try {
-            localStorage.setItem(this.storageKey, JSON.stringify(this.filterState));
+            this.app.saveLocalStorage(this.storageKey, JSON.stringify(this.filterState));
         } catch (error) {
             console.warn('Failed to save view filter state to storage:', error);
         }
@@ -114,7 +118,7 @@ export class ViewStateManager extends EventEmitter {
      */
     private loadPreferencesFromStorage(): void {
         try {
-            const stored = localStorage.getItem(this.preferencesStorageKey);
+            const stored = this.app.loadLocalStorage(this.preferencesStorageKey);
             if (stored) {
                 this.viewPreferences = JSON.parse(stored);
             }
@@ -129,7 +133,7 @@ export class ViewStateManager extends EventEmitter {
      */
     private savePreferencesToStorage(): void {
         try {
-            localStorage.setItem(this.preferencesStorageKey, JSON.stringify(this.viewPreferences));
+            this.app.saveLocalStorage(this.preferencesStorageKey, JSON.stringify(this.viewPreferences));
         } catch (error) {
             console.warn('Failed to save view preferences to storage:', error);
         }
