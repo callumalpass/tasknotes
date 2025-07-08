@@ -7,7 +7,7 @@ import {
     ViewUpdate,
     WidgetType,
 } from '@codemirror/view';
-import { editorLivePreviewField, MarkdownView } from 'obsidian';
+import { editorLivePreviewField, MarkdownView, parseLinktext } from 'obsidian';
 import TaskNotesPlugin from '../main';
 import { TaskInfo } from '../types';
 import { TaskLinkDetectionService } from '../services/TaskLinkDetectionService';
@@ -274,20 +274,17 @@ function parseWikilinkSync(wikilinkText: string): { linkPath: string; displayTex
         return null;
     }
 
-    const pipeIndex = content.indexOf('|');
-    if (pipeIndex !== -1) {
-        const linkPath = content.slice(0, pipeIndex).trim();
-        const displayText = content.slice(pipeIndex + 1).trim();
-        
-        // Validate both parts
-        if (!linkPath || !displayText) {
-            return null;
-        }
-        
-        return { linkPath, displayText };
+    const parsed = parseLinktext(content);
+    
+    // Validate the path
+    if (!parsed.path) {
+        return null;
     }
-
-    return { linkPath: content };
+    
+    return {
+        linkPath: parsed.path,
+        displayText: parsed.subpath || undefined
+    };
 }
 
 function resolveLinkPathSync(linkPath: string, sourcePath: string, plugin: TaskNotesPlugin): string | null {

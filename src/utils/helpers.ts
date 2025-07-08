@@ -29,26 +29,6 @@ function extractFrontmatter(content: string): any {
 	}
 }
 
-/**
- * Creates a debounced version of a function
- */
-export function debounce<T extends (...args: any[]) => any>(
-    func: T,
-    wait: number
-): (...args: Parameters<T>) => void {
-    let timeout: number | null = null;
-    
-    return function debounced(...args: Parameters<T>) {
-        if (timeout) {
-            window.clearTimeout(timeout);
-        }
-        
-        timeout = window.setTimeout(() => {
-            func(...args);
-            timeout = null;
-        }, wait);
-    };
-}
 
 /**
  * Ensures a folder and its parent folders exist

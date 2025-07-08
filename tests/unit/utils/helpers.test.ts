@@ -13,7 +13,6 @@
  */
 
 import {
-  debounce,
   ensureFolderExists,
   calculateDuration,
   calculateTotalTimeSpent,
@@ -109,53 +108,6 @@ describe('Helpers', () => {
     jest.restoreAllMocks();
   });
 
-  describe('debounce', () => {
-    it('should delay function execution', (done) => {
-      const mockFn = jest.fn();
-      const debouncedFn = debounce(mockFn, 100);
-
-      debouncedFn('arg1', 'arg2');
-      expect(mockFn).not.toHaveBeenCalled();
-
-      setTimeout(() => {
-        expect(mockFn).toHaveBeenCalledWith('arg1', 'arg2');
-        done();
-      }, 150);
-    });
-
-    it('should cancel previous calls when called rapidly', (done) => {
-      const mockFn = jest.fn();
-      const debouncedFn = debounce(mockFn, 100);
-
-      debouncedFn('call1');
-      debouncedFn('call2');
-      debouncedFn('call3');
-
-      setTimeout(() => {
-        expect(mockFn).toHaveBeenCalledTimes(1);
-        expect(mockFn).toHaveBeenCalledWith('call3');
-        done();
-      }, 150);
-    });
-
-    it('should handle multiple separate calls', (done) => {
-      const mockFn = jest.fn();
-      const debouncedFn = debounce(mockFn, 50);
-
-      debouncedFn('first');
-      
-      setTimeout(() => {
-        debouncedFn('second');
-      }, 100);
-
-      setTimeout(() => {
-        expect(mockFn).toHaveBeenCalledTimes(2);
-        expect(mockFn).toHaveBeenNthCalledWith(1, 'first');
-        expect(mockFn).toHaveBeenNthCalledWith(2, 'second');
-        done();
-      }, 200);
-    });
-  });
 
   describe('ensureFolderExists', () => {
     let mockVault: any;

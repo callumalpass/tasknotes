@@ -1,4 +1,4 @@
-import { ItemView, WorkspaceLeaf, Notice, EventRef } from 'obsidian';
+import { ItemView, WorkspaceLeaf, Notice, EventRef, debounce } from 'obsidian';
 import TaskNotesPlugin from '../main';
 import { 
     KANBAN_VIEW_TYPE, 
@@ -130,10 +130,6 @@ export class KanbanView extends ItemView {
     async onClose() {
         this.listeners.forEach(listener => this.plugin.emitter.offref(listener));
         this.functionListeners.forEach(unsubscribe => unsubscribe());
-        if (this.refreshTimeout) {
-            window.clearTimeout(this.refreshTimeout);
-            this.refreshTimeout = null;
-        }
         
         // Clean up FilterBar
         if (this.filterBar) {
@@ -835,16 +831,9 @@ export class KanbanView extends ItemView {
     }
 
     // Debounced refresh to avoid multiple rapid refreshes
-    private refreshTimeout: number | null = null;
-    private debounceRefresh() {
-        if (this.refreshTimeout) {
-            window.clearTimeout(this.refreshTimeout);
-        }
-        this.refreshTimeout = window.setTimeout(() => {
-            this.refresh();
-            this.refreshTimeout = null;
-        }, 150);
-    }
+    private debouncedRefresh = debounce(() => {
+        this.refresh();
+    }, 150);
 
     private formatColumnTitle(id: string, groupBy: TaskGroupKey): string {
         switch (groupBy) {

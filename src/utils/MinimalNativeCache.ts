@@ -1,4 +1,4 @@
-import { TFile, App, Events, EventRef } from 'obsidian';
+import { TFile, App, Events, EventRef, parseLinktext } from 'obsidian';
 import { TaskInfo, NoteInfo } from '../types';
 import { FieldMapper } from '../services/FieldMapper';
 import { 
@@ -533,9 +533,10 @@ export class MinimalNativeCache extends Events {
         const projects: string[] = [];
         
         // Check if this is a [[link]] format
-        const linkMatch = projectValue.match(/^\[\[([^\]]+)\]\]$/);
-        if (linkMatch) {
-            const linkPath = linkMatch[1];
+        if (projectValue.startsWith('[[') && projectValue.endsWith(']]')) {
+            const linkContent = projectValue.slice(2, -2);
+            const parsed = parseLinktext(linkContent);
+            const linkPath = parsed.path;
             
             // Handle both relative and absolute link paths
             let resolvedFile;
@@ -591,9 +592,10 @@ export class MinimalNativeCache extends Events {
         }> = [];
         
         // Check if this is a [[link]] format
-        const linkMatch = projectValue.match(/^\[\[([^\]]+)\]\]$/);
-        if (linkMatch) {
-            const linkPath = linkMatch[1];
+        if (projectValue.startsWith('[[') && projectValue.endsWith(']]')) {
+            const linkContent = projectValue.slice(2, -2);
+            const parsed = parseLinktext(linkContent);
+            const linkPath = parsed.path;
             
             // Handle both relative and absolute link paths
             let resolvedFile;

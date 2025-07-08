@@ -20,9 +20,6 @@ export const calculateDefaultDate = jest.fn().mockImplementation((option: string
   }
 });
 
-export const debounce = jest.fn().mockImplementation((func: (...args: any[]) => any, wait: number) => {
-  return jest.fn().mockImplementation(func);
-});
 
 export const calculateDuration = jest.fn().mockImplementation((start: string, end: string) => {
   const startTime = new Date(start).getTime();
@@ -129,7 +126,6 @@ export const isSameDateSafe = jest.fn((date1: string, date2: string) => date1 ==
 export default {
   ensureFolderExists,
   calculateDefaultDate,
-  debounce,
   calculateDuration,
   calculateTotalTimeSpent,
   formatTime,

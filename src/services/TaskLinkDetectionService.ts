@@ -87,7 +87,7 @@ export class TaskLinkDetectionService {
         const parsed = parseLinktext(content);
         return {
             linkPath: parsed.path,
-            displayText: content.includes('|') ? content.split('|')[1].trim() : undefined
+            displayText: parsed.subpath || undefined
         };
     }
 

@@ -1,4 +1,5 @@
 import { FilterQuery, TaskInfo, TaskSortKey, TaskGroupKey, SortDirection } from '../types';
+import { parseLinktext } from 'obsidian';
 import { MinimalNativeCache } from '../utils/MinimalNativeCache';
 import { StatusManager } from './StatusManager';
 import { PriorityManager } from './PriorityManager';
@@ -973,18 +974,18 @@ export class FilterService extends EventEmitter {
         const cleanValue = projectValue.replace(/^"(.*)"$/, '$1');
         
         // Check if it's a wikilink format
-        const linkMatch = cleanValue.match(/^\[\[(.+?)\]\]$/);
-        if (linkMatch) {
-            const linkPath = linkMatch[1];
+        if (cleanValue.startsWith('[[') && cleanValue.endsWith(']]')) {
+            const linkContent = cleanValue.slice(2, -2);
+            const parsed = parseLinktext(linkContent);
             
             // Try to resolve the link using Obsidian's API through cache manager
-            const resolvedFile = this.cacheManager.getApp().metadataCache.getFirstLinkpathDest(linkPath, sourcePath);
+            const resolvedFile = this.cacheManager.getApp().metadataCache.getFirstLinkpathDest(parsed.path, sourcePath);
             if (resolvedFile) {
                 // Return the basename of the resolved file
                 return [resolvedFile.basename];
             } else {
-                // If file doesn't exist, extract the display name from the link
-                const displayName = linkPath.includes('/') ? linkPath.split('/').pop() : linkPath;
+                // If file doesn't exist, use the display text or path
+                const displayName = parsed.subpath || (parsed.path.includes('/') ? parsed.path.split('/').pop() : parsed.path);
                 return displayName ? [displayName] : [];
             }
         } else {
