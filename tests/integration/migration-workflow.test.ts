@@ -124,13 +124,14 @@ describe('Migration Workflow Integration', () => {
 
       mockVault.getMarkdownFiles.mockReturnValue(taskFiles);
       
-      // Make the second file read fail to simulate error
-      mockVault.read.mockImplementation((file: TFile) => {
+      // Mock processFrontMatter to fail for the second file
+      mockApp.fileManager.processFrontMatter = jest.fn().mockImplementation(async (file: TFile, fn: (frontmatter: any) => void) => {
         if (file.path === 'tasks/task2.md') {
-          return Promise.reject(new Error('File read error'));
+          throw new Error('File read error');
         }
-        const title = file.name.replace('.md', '');
-        return Promise.resolve(createTaskFileContent(title, { frequency: 'daily' }));
+        // For other files, call the function with mock frontmatter
+        const frontmatter = { recurrence: { frequency: 'daily' } };
+        fn(frontmatter);
       });
 
       const result = await migrationService.performMigration();
@@ -157,10 +158,15 @@ describe('Migration Workflow Integration', () => {
 
       mockVault.getMarkdownFiles.mockReturnValue(taskFiles);
       
-      // First file read succeeds, second fails
-      mockVault.read
-        .mockResolvedValueOnce(createTaskFileContent('Task 1', { frequency: 'daily' }))
-        .mockRejectedValueOnce(new Error('File not found'));
+      // Mock processFrontMatter to fail for the second file
+      mockApp.fileManager.processFrontMatter = jest.fn().mockImplementation(async (file: TFile, fn: (frontmatter: any) => void) => {
+        if (file.path === 'tasks/task2.md') {
+          throw new Error('File not found');
+        }
+        // For other files, call the function with mock frontmatter
+        const frontmatter = { recurrence: { frequency: 'daily' } };
+        fn(frontmatter);
+      });
 
       const result = await migrationService.performMigration();
 
@@ -184,13 +190,17 @@ describe('Migration Workflow Integration', () => {
 
       mockVault.getMarkdownFiles.mockReturnValue(taskFiles);
       
-      // Return content without proper frontmatter to trigger malformed error
-      mockVault.read.mockResolvedValue(`---
-title: Task 1
-recurrence:
-  frequency: daily
-# Missing closing frontmatter marker causes error
-Task content`);
+      // Mock processFrontMatter and override convertLegacyRecurrenceToRRule to fail
+      mockApp.fileManager.processFrontMatter = jest.fn().mockImplementation(async (file: TFile, fn: (frontmatter: any) => void) => {
+        // Override just for this call
+        const originalMock = mockConvertLegacyRecurrenceToRRule;
+        mockConvertLegacyRecurrenceToRRule.mockImplementationOnce(() => {
+          throw new Error('Invalid recurrence format');
+        });
+        
+        const frontmatter = { recurrence: { frequency: 'daily' } };
+        fn(frontmatter);
+      });
 
       const result = await migrationService.performMigration();
 
@@ -283,8 +293,10 @@ Task content`);
         frontmatter: { recurrence: { frequency: 'daily' } }
       });
       
-      // But when read, the file has no frontmatter
-      mockVault.read.mockResolvedValue('# Just content, no frontmatter');
+      // Mock processFrontMatter to simulate no frontmatter 
+      mockApp.fileManager.processFrontMatter = jest.fn().mockImplementation(async (file: TFile, fn: (frontmatter: any) => void) => {
+        throw new Error('No frontmatter found');
+      });
 
       const result = await migrationService.performMigration();
 
