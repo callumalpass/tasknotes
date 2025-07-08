@@ -216,7 +216,7 @@ export abstract class TaskModal extends Modal {
 
         // Projects list container
         this.projectsList = container.createDiv({ cls: 'task-projects-list' });
-        this.renderProjectsList(); // Initialize empty state
+        // Don't render immediately - will be rendered after form data is initialized
 
         // Contexts input with autocomplete
         new Setting(container)
@@ -661,7 +661,7 @@ export abstract class TaskModal extends Modal {
         }
         
         this.updateProjectsFromFiles();
-        this.renderProjectsList();
+        // Don't render immediately - let the caller decide when to render
     }
 
     protected renderProjectsList(): void {

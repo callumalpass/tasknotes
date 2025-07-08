@@ -285,6 +285,7 @@ export class TaskCreationModal extends TaskModal {
         }
         if (values.projects !== undefined) {
             this.initializeProjectsFromStrings(values.projects);
+            this.renderProjectsList();
         }
         if (values.tags !== undefined) {
             this.tags = values.tags.filter(tag => tag !== this.plugin.settings.taskTag).join(', ');

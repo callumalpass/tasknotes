@@ -44,6 +44,7 @@ export class TaskEditModal extends TaskModal {
             this.initializeProjectsFromStrings(this.task.projects);
         } else {
             this.projects = '';
+            this.selectedProjectFiles = [];
         }
         
         this.tags = this.task.tags 
@@ -94,6 +95,8 @@ export class TaskEditModal extends TaskModal {
         
         this.initializeFormData().then(() => {
             this.createModalContent();
+            // Render projects list after modal content is created
+            this.renderProjectsList();
             // Update icon states after creating the action bar
             this.updateIconStates();
             this.focusTitleInput();
