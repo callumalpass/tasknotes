@@ -87,10 +87,13 @@ export class FilterBar extends EventEmitter {
      * Should be called by views that want FilterBar to auto-refresh
      */
     setupCacheRefresh(cacheManager: any, filterService: any): void {
+        // Store reference to filterService for use in archive change refresh
+        this.filterService = filterService;
+        
         // Listen for cache initialization events (for delayed initialization)
         const cacheListener = cacheManager.subscribe('cache-initialized', async () => {
             try {
-                const newFilterOptions = await filterService.getFilterOptions();
+                const newFilterOptions = await filterService.getFilterOptions(this.currentQuery);
                 this.updateFilterOptions(newFilterOptions);
             } catch (error) {
                 console.error('FilterBar: Error refreshing filter options after cache initialization:', error);
@@ -100,7 +103,7 @@ export class FilterBar extends EventEmitter {
         // Listen for filter service data changes
         const filterDataListener = filterService.on('data-changed', async () => {
             try {
-                const newFilterOptions = await filterService.getFilterOptions();
+                const newFilterOptions = await filterService.getFilterOptions(this.currentQuery);
                 this.updateFilterOptions(newFilterOptions);
             } catch (error) {
                 console.error('FilterBar: Error refreshing filter options after data change:', error);
@@ -115,6 +118,21 @@ export class FilterBar extends EventEmitter {
     }
 
     private cacheRefreshListeners: (() => void)[] = [];
+    private filterService: any = null;
+
+    /**
+     * Refresh filter options when archive setting changes
+     */
+    private async refreshFilterOptionsForArchiveChange(): Promise<void> {
+        if (!this.filterService) return;
+        
+        try {
+            const newFilterOptions = await this.filterService.getFilterOptions(this.currentQuery);
+            this.updateFilterOptions(newFilterOptions);
+        } catch (error) {
+            console.error('FilterBar: Error refreshing filter options after archive change:', error);
+        }
+    }
 
     /**
      * Update the current query and refresh UI
@@ -640,6 +658,11 @@ export class FilterBar extends EventEmitter {
         // Update specific UI elements based on the field that changed
         if (field === 'sortDirection') {
             this.updateSortDirectionButton();
+        }
+        
+        // If showArchived changed, refresh filter options to show/hide archived contexts/projects
+        if (field === 'showArchived') {
+            this.refreshFilterOptionsForArchiveChange();
         }
         
         this.updateActiveFiltersIndicator();

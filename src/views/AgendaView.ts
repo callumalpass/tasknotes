@@ -215,7 +215,7 @@ export class AgendaView extends ItemView {
         await this.waitForCacheReady();
         
         // Get filter options from FilterService
-        const filterOptions = await this.plugin.filterService.getFilterOptions();
+        const filterOptions = await this.plugin.filterService.getFilterOptions(this.currentQuery);
         
         // Create FilterBar with Agenda configuration
         this.filterBar = new FilterBar(

@@ -233,7 +233,7 @@ export class TaskListView extends ItemView {
         await this.waitForCacheReady();
         
         // Get filter options from FilterService
-        const filterOptions = await this.plugin.filterService.getFilterOptions();
+        const filterOptions = await this.plugin.filterService.getFilterOptions(this.currentQuery);
         
         // Create FilterBar with TaskListView configuration
         this.filterBar = new FilterBar(

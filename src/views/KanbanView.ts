@@ -169,7 +169,7 @@ export class KanbanView extends ItemView {
         const filterBarContainer = header.createDiv({ cls: 'kanban-view__filter-container' });
         
         // Get filter options from FilterService
-        const filterOptions = await this.plugin.filterService.getFilterOptions();
+        const filterOptions = await this.plugin.filterService.getFilterOptions(this.currentQuery);
         
         // Create FilterBar with Kanban configuration
         this.filterBar = new FilterBar(
@@ -208,6 +208,9 @@ export class KanbanView extends ItemView {
             
             this.loadAndRenderBoard();
         });
+        
+        // Set up cache refresh for dynamic filter updates
+        this.filterBar.setupCacheRefresh(this.plugin.cacheManager, this.plugin.filterService);
         
         // Listen for filter changes
         this.filterBar.on('queryChange', async (newQuery: FilterQuery) => {

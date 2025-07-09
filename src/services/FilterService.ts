@@ -723,24 +723,47 @@ export class FilterService extends EventEmitter {
 
     /**
      * Get available filter options for building FilterBar UI
+     * Filters contexts and projects based on whether archived tasks are shown
      */
-    async getFilterOptions(): Promise<{
+    async getFilterOptions(query?: FilterQuery): Promise<{
         statuses: string[];
         priorities: string[];
         contexts: string[];
         projects: string[];
     }> {
-        const options = {
+        const allOptions = {
             statuses: this.cacheManager.getAllStatuses(),
             priorities: this.cacheManager.getAllPriorities(),
             contexts: this.cacheManager.getAllContexts(),
             projects: this.cacheManager.getAllProjects()
         };
         
-        // Debug: Log filter options
-        console.debug('FilterService: getFilterOptions returning:', options);
+        // If showArchived is false, filter out contexts/projects that only exist in archived tasks
+        if (query && !query.showArchived) {
+            const visibleContexts = new Set<string>();
+            const visibleProjects = new Set<string>();
+            
+            // Get all non-archived tasks and collect their contexts/projects
+            const allTasks = await this.cacheManager.getAllTasks();
+            const nonArchivedTasks = allTasks.filter(task => !task.archived);
+            
+            nonArchivedTasks.forEach(task => {
+                if (task.contexts) {
+                    task.contexts.forEach(context => visibleContexts.add(context));
+                }
+                if (task.projects) {
+                    task.projects.forEach(project => visibleProjects.add(project));
+                }
+            });
+            
+            allOptions.contexts = Array.from(visibleContexts).sort();
+            allOptions.projects = Array.from(visibleProjects).sort();
+        }
         
-        return options;
+        // Debug: Log filter options
+        console.debug('FilterService: getFilterOptions returning:', allOptions);
+        
+        return allOptions;
     }
 
     /**
