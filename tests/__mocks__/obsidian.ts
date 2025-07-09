@@ -661,6 +661,21 @@ export abstract class FuzzySuggestModal<T> extends Modal {
   setInstructions(instructions: Array<{command: string, purpose: string}>): void {}
 }
 
+// AbstractInputSuggest mock class
+export abstract class AbstractInputSuggest<T> {
+  constructor(app: App, inputEl: HTMLInputElement) {
+    // Mock constructor
+  }
+
+  abstract getSuggestions(query: string): T[];
+  abstract renderSuggestion(suggestion: T, el: HTMLElement): void;
+  abstract selectSuggestion(suggestion: T, evt: MouseEvent | KeyboardEvent): void;
+
+  // Mock methods
+  open(): void {}
+  close(): void {}
+}
+
 // ItemView mock class
 export class ItemView extends Component {
   app: App;
@@ -817,6 +832,24 @@ export const Menu = jest.fn().mockImplementation(() => ({
   showAtPosition: jest.fn(),
 }));
 
+// Mock parseLinktext function based on official Obsidian API
+export function parseLinktext(linktext: string): { path: string; subpath: string } {
+  // Handle subpath syntax: [[path#subpath]]
+  const hashIndex = linktext.indexOf('#');
+  if (hashIndex !== -1) {
+    return {
+      path: linktext.slice(0, hashIndex).trim(),
+      subpath: linktext.slice(hashIndex + 1).trim()
+    };
+  }
+  
+  // Simple path: [[path]]
+  return {
+    path: linktext.trim(),
+    subpath: ''
+  };
+}
+
 // Icon utilities
 export function setIcon(element: HTMLElement, iconName: string): void {
   // Mock implementation - just add a class or data attribute
@@ -907,6 +940,7 @@ export default {
   Component,
   Modal,
   FuzzySuggestModal,
+  AbstractInputSuggest,
   ItemView,
   Setting,
   PluginSettingTab,
@@ -919,5 +953,6 @@ export default {
   Notice,
   Events,
   setIcon,
+  parseLinktext,
   MockObsidian,
 };

@@ -274,6 +274,31 @@ function parseWikilinkSync(wikilinkText: string): { linkPath: string; displayTex
         return null;
     }
 
+    // First check for alias syntax: [[path|alias]]
+    const pipeIndex = content.indexOf('|');
+    if (pipeIndex !== -1) {
+        const pathPart = content.slice(0, pipeIndex).trim();
+        const aliasPart = content.slice(pipeIndex + 1).trim();
+        
+        if (!pathPart || !aliasPart) {
+            return null;
+        }
+        
+        // Parse the path part for subpaths/headings
+        const parsed = parseLinktext(pathPart);
+        
+        // Validate the path
+        if (!parsed.path) {
+            return null;
+        }
+        
+        return {
+            linkPath: parsed.path,
+            displayText: aliasPart
+        };
+    }
+
+    // No alias, use parseLinktext for path and subpath
     const parsed = parseLinktext(content);
     
     // Validate the path

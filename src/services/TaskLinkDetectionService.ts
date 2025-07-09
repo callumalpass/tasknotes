@@ -84,6 +84,23 @@ export class TaskLinkDetectionService {
         const content = wikilinkText.slice(2, -2).trim();
         if (!content) return null;
 
+        // First check for alias syntax: [[path|alias]]
+        const pipeIndex = content.indexOf('|');
+        if (pipeIndex !== -1) {
+            const pathPart = content.slice(0, pipeIndex).trim();
+            const aliasPart = content.slice(pipeIndex + 1).trim();
+            
+            if (!pathPart || !aliasPart) return null;
+            
+            // Parse the path part for subpaths/headings
+            const parsed = parseLinktext(pathPart);
+            return {
+                linkPath: parsed.path,
+                displayText: aliasPart
+            };
+        }
+
+        // No alias, use parseLinktext for path and subpath
         const parsed = parseLinktext(content);
         return {
             linkPath: parsed.path,
