@@ -364,6 +364,27 @@ export class MinimalNativeCache extends Events {
      */
     getAllStatuses(): string[] {
         this.ensureIndexesBuilt();
+        
+        // If indexes aren't built yet, try to get statuses synchronously
+        if (this.tasksByStatus.size === 0 && this.indexesBuilt) {
+            console.debug('MinimalNativeCache: Indexes marked as built but tasksByStatus is empty, computing statuses synchronously');
+            const statuses = new Set<string>();
+            const markdownFiles = this.app.vault.getMarkdownFiles()
+                .filter(file => this.isValidFile(file.path));
+            
+            for (const file of markdownFiles) {
+                const metadata = this.app.metadataCache.getFileCache(file);
+                if (metadata?.frontmatter?.tags?.includes(this.taskTag)) {
+                    const taskInfo = this.extractTaskInfoFromNative(file.path, metadata.frontmatter);
+                    if (taskInfo?.status) {
+                        statuses.add(taskInfo.status);
+                    }
+                }
+            }
+            
+            return Array.from(statuses).sort();
+        }
+        
         return Array.from(this.tasksByStatus.keys()).sort();
     }
     

@@ -173,7 +173,7 @@ class ProjectNoteDecorationsPlugin implements PluginValue {
     private projectService: ProjectSubtasksService;
     private eventListeners: EventRef[] = [];
     private view: EditorView;
-    private version: number = 0;
+    private version = 0;
     
     constructor(view: EditorView, private plugin: TaskNotesPlugin) {
         this.view = view;
@@ -318,6 +318,11 @@ class ProjectNoteDecorationsPlugin implements PluginValue {
         const builder = new RangeSetBuilder<Decoration>();
         
         try {
+            // Check if project subtasks widget is enabled
+            if (!this.plugin.settings.showProjectSubtasks) {
+                return builder.finish();
+            }
+            
             // Only show in live preview mode, not source mode
             if (!view.state.field(editorLivePreviewField)) {
                 return builder.finish();

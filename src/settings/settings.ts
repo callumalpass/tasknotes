@@ -50,6 +50,8 @@ export interface TaskNotesSettings {
 	recurrenceMigrated?: boolean;
 	// Status bar settings
 	showTrackedTasksInStatusBar: boolean;
+	// Project subtasks widget settings
+	showProjectSubtasks: boolean;
 }
 
 export interface TaskCreationDefaults {
@@ -270,7 +272,9 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	// Migration defaults
 	recurrenceMigrated: false,
 	// Status bar defaults
-	showTrackedTasksInStatusBar: false
+	showTrackedTasksInStatusBar: false,
+	// Project subtasks widget defaults
+	showProjectSubtasks: true
 };
 
 
@@ -482,6 +486,21 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 						if (this.plugin.statusBarService) {
 							this.plugin.statusBarService.updateVisibility();
 						}
+					});
+			});
+
+		new Setting(container)
+			.setName('Show project subtasks widget')
+			.setDesc('Display a collapsible widget showing all tasks that reference the current note as a project')
+			.addToggle(toggle => {
+				toggle.toggleEl.setAttribute('aria-label', 'Show project subtasks widget');
+				return toggle
+					.setValue(this.plugin.settings.showProjectSubtasks)
+					.onChange(async (value) => {
+						this.plugin.settings.showProjectSubtasks = value;
+						await this.plugin.saveSettings();
+						// Refresh all open editors to apply the change
+						this.plugin.notifyDataChanged();
 					});
 			});
 

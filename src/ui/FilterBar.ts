@@ -93,6 +93,7 @@ export class FilterBar extends EventEmitter {
         // Listen for cache initialization events (for delayed initialization)
         const cacheListener = cacheManager.subscribe('cache-initialized', async () => {
             try {
+                console.debug('FilterBar: Cache initialized, refreshing filter options');
                 const newFilterOptions = await filterService.getFilterOptions(this.currentQuery);
                 this.updateFilterOptions(newFilterOptions);
             } catch (error) {
@@ -100,9 +101,21 @@ export class FilterBar extends EventEmitter {
             }
         });
 
+        // Listen for indexes-built events (when essential indexes are ready)
+        const indexesBuiltListener = cacheManager.subscribe('indexes-built', async () => {
+            try {
+                console.debug('FilterBar: Indexes built, refreshing filter options');
+                const newFilterOptions = await filterService.getFilterOptions(this.currentQuery);
+                this.updateFilterOptions(newFilterOptions);
+            } catch (error) {
+                console.error('FilterBar: Error refreshing filter options after indexes built:', error);
+            }
+        });
+
         // Listen for filter service data changes
         const filterDataListener = filterService.on('data-changed', async () => {
             try {
+                console.debug('FilterBar: Data changed, refreshing filter options with current query:', this.currentQuery);
                 const newFilterOptions = await filterService.getFilterOptions(this.currentQuery);
                 this.updateFilterOptions(newFilterOptions);
             } catch (error) {
@@ -114,7 +127,7 @@ export class FilterBar extends EventEmitter {
         if (!this.cacheRefreshListeners) {
             this.cacheRefreshListeners = [];
         }
-        this.cacheRefreshListeners.push(cacheListener, filterDataListener);
+        this.cacheRefreshListeners.push(cacheListener, indexesBuiltListener, filterDataListener);
     }
 
     private cacheRefreshListeners: (() => void)[] = [];
@@ -138,7 +151,14 @@ export class FilterBar extends EventEmitter {
      * Update the current query and refresh UI
      */
     updateQuery(query: FilterQuery): void {
+        const oldShowArchived = this.currentQuery.showArchived;
         this.currentQuery = { ...query };
+        
+        // If showArchived changed, refresh filter options
+        if (oldShowArchived !== this.currentQuery.showArchived) {
+            this.refreshFilterOptionsForArchiveChange();
+        }
+        
         this.updateUI();
     }
 
@@ -146,6 +166,7 @@ export class FilterBar extends EventEmitter {
      * Update available filter options
      */
     updateFilterOptions(options: { statuses: string[]; priorities: string[]; contexts: string[]; projects: string[] }): void {
+        console.debug('FilterBar: Updating filter options with:', options);
         this.filterOptions = {
             statuses: options.statuses || [],
             priorities: options.priorities || [],
