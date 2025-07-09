@@ -1,0 +1,128 @@
+/* 
+ * Project Note Subtasks Component
+ * 
+ * Styles for the subtask display area that appears in project notes
+ * via CodeMirror decorations in live preview mode. Uses BEM methodology.
+ */
+
+.tasknotes-plugin .project-note-subtasks {
+    display: block !important;
+    width: 100% !important;
+    margin: 1.5em 0;
+    padding: 1em;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: var(--radius-s);
+    background-color: var(--background-secondary);
+    clear: both;
+    position: relative;
+    z-index: 1;
+}
+
+.tasknotes-plugin .project-note-subtasks__title {
+    display: flex;
+    align-items: center;
+    font-size: 1.1em;
+    font-weight: 600;
+    margin: 0 0 0.8em 0;
+    color: var(--text-normal);
+    cursor: pointer;
+    user-select: none;
+    transition: color 0.2s ease;
+}
+
+.tasknotes-plugin .project-note-subtasks__title:hover {
+    color: var(--text-accent);
+}
+
+.tasknotes-plugin .project-note-subtasks__title::before {
+    content: "▼";
+    margin-right: 0.5em;
+    font-size: 0.8em;
+    transition: transform 0.2s ease;
+    color: var(--text-muted);
+}
+
+.tasknotes-plugin .project-note-subtasks__title.collapsed::before {
+    transform: rotate(-90deg);
+}
+
+.tasknotes-plugin .project-note-subtasks__list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
+    overflow: hidden;
+    transition: max-height 0.3s ease, opacity 0.3s ease;
+    max-height: 1000px;
+    opacity: 1;
+}
+
+.tasknotes-plugin .project-note-subtasks__list.collapsed {
+    max-height: 0;
+    opacity: 0;
+    margin: 0;
+    padding: 0;
+}
+
+.tasknotes-plugin .project-note-subtasks__task {
+    /* Task card wrapper */
+    margin-bottom: 0.3em;
+}
+
+.tasknotes-plugin .project-note-subtasks__task .task-card {
+    /* Enhance task card for subtask display */
+    background-color: var(--background-primary);
+    border-left: 3px solid var(--accent-color);
+    padding: 0.6em 0.8em;
+    border-radius: var(--radius-s);
+    transition: all 0.2s ease;
+}
+
+.tasknotes-plugin .project-note-subtasks__task .task-card:hover {
+    transform: translateX(2px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.tasknotes-plugin .project-note-subtasks__task .task-card--completed {
+    opacity: 0.7;
+    border-left-color: var(--text-muted);
+}
+
+.tasknotes-plugin .project-note-subtasks__task .task-card--completed:hover {
+    opacity: 0.9;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .tasknotes-plugin .project-note-subtasks {
+        margin: 1em 0;
+        padding: 0.8em;
+    }
+    
+    .tasknotes-plugin .project-note-subtasks__title {
+        font-size: 1em;
+        margin-bottom: 0.6em;
+    }
+    
+    .tasknotes-plugin .project-note-subtasks__list {
+        gap: 0.3em;
+    }
+    
+    .tasknotes-plugin .project-note-subtasks__task .task-card {
+        padding: 0.5em 0.6em;
+    }
+}
+
+/* Dark mode adjustments */
+.theme-dark .tasknotes-plugin .project-note-subtasks {
+    background-color: var(--background-secondary);
+    border-color: var(--background-modifier-border);
+}
+
+.theme-dark .tasknotes-plugin .project-note-subtasks__task .task-card {
+    background-color: var(--background-primary);
+    border-left-color: var(--accent-color);
+}
+
+.theme-dark .tasknotes-plugin .project-note-subtasks__task .task-card--completed {
+    border-left-color: var(--text-muted);
+}
