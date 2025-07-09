@@ -752,7 +752,12 @@ export class FilterService extends EventEmitter {
                     task.contexts.forEach(context => visibleContexts.add(context));
                 }
                 if (task.projects) {
-                    task.projects.forEach(project => visibleProjects.add(project));
+                    const filteredProjects = filterEmptyProjects(task.projects);
+                    filteredProjects.forEach(project => {
+                        // Extract clean project names using the same logic as getAllProjects()
+                        const extractedProjectNames = this.extractProjectNamesFromTaskValue(project, task.path);
+                        extractedProjectNames.forEach(projectName => visibleProjects.add(projectName));
+                    });
                 }
             });
             
@@ -761,6 +766,7 @@ export class FilterService extends EventEmitter {
         }
         
         // Debug: Log filter options
+        console.debug('FilterService: getFilterOptions called with query:', query);
         console.debug('FilterService: getFilterOptions returning:', allOptions);
         
         return allOptions;
