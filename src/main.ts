@@ -54,7 +54,7 @@ import { FilterService } from './services/FilterService';
 import { ViewStateManager } from './services/ViewStateManager';
 import { createTaskLinkOverlay, dispatchTaskUpdate } from './editor/TaskLinkOverlay';
 import { createReadingModeTaskLinkProcessor } from './editor/ReadingModeTaskLinkProcessor';
-import { createProjectNoteDecorations } from './editor/ProjectNoteDecorations';
+import { createProjectNoteDecorations, dispatchProjectSubtasksUpdate } from './editor/ProjectNoteDecorations';
 import { DragDropManager } from './utils/DragDropManager';
 import { ICSSubscriptionService } from './services/ICSSubscriptionService';
 import { MigrationService } from './services/MigrationService';
@@ -328,6 +328,9 @@ export default class TaskNotesPlugin extends Plugin {
 								// Pass the updated task path to ensure specific widget refreshing
 								const taskPath = data?.path || data?.updatedTask?.path;
 								dispatchTaskUpdate((editor as Editor & { cm: EditorView }).cm, taskPath);
+								
+								// Also update project subtasks widgets
+								dispatchProjectSubtasksUpdate((editor as Editor & { cm: EditorView }).cm);
 							}
 						}
 					});
@@ -342,6 +345,9 @@ export default class TaskNotesPlugin extends Plugin {
 							if (editor && (editor as Editor & { cm?: EditorView }).cm) {
 								// Dispatch task update to refresh overlays when returning to a note
 								dispatchTaskUpdate((editor as Editor & { cm: EditorView }).cm);
+								
+								// Also update project subtasks widgets
+								dispatchProjectSubtasksUpdate((editor as Editor & { cm: EditorView }).cm);
 							}
 						}
 					}, 50);
@@ -357,6 +363,9 @@ export default class TaskNotesPlugin extends Plugin {
 							if (editor && (editor as Editor & { cm?: EditorView }).cm) {
 								// Refresh overlays when switching to Live Preview mode
 								dispatchTaskUpdate((editor as Editor & { cm: EditorView }).cm);
+								
+								// Also update project subtasks widgets
+								dispatchProjectSubtasksUpdate((editor as Editor & { cm: EditorView }).cm);
 							}
 						}
 					}, 100);

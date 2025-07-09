@@ -1,25 +1,54 @@
 import { Decoration, DecorationSet, EditorView, PluginSpec, PluginValue, ViewPlugin, ViewUpdate, WidgetType } from '@codemirror/view';
-import { Extension, RangeSetBuilder } from '@codemirror/state';
+import { Extension, RangeSetBuilder, StateEffect } from '@codemirror/state';
 import { TFile, editorLivePreviewField, EventRef } from 'obsidian';
 import TaskNotesPlugin from '../main';
 import { TaskInfo, EVENT_DATA_CHANGED, EVENT_TASK_UPDATED, EVENT_TASK_DELETED } from '../types';
 import { createTaskCard } from '../ui/TaskCard';
 import { ProjectSubtasksService } from '../services/ProjectSubtasksService';
 
+// Define a state effect for project subtasks updates
+const projectSubtasksUpdateEffect = StateEffect.define<{ forceUpdate?: boolean }>();
+
 class ProjectSubtasksWidget extends WidgetType {
-    constructor(private plugin: TaskNotesPlugin, private tasks: TaskInfo[]) {
+    constructor(private plugin: TaskNotesPlugin, private tasks: TaskInfo[], private version: number = 0) {
         super();
+    }
+    
+    // Override eq to ensure widget updates when tasks change
+    eq(other: ProjectSubtasksWidget): boolean {
+        return this.version === other.version && 
+               this.tasks.length === other.tasks.length &&
+               this.tasks.every((task, index) => {
+                   const otherTask = other.tasks[index];
+                   return task.title === otherTask.title && 
+                          task.status === otherTask.status &&
+                          task.priority === otherTask.priority &&
+                          task.due === otherTask.due &&
+                          task.path === otherTask.path;
+               });
     }
 
     toDOM(view: EditorView): HTMLElement {
         const container = document.createElement('div');
-        container.className = 'tasknotes-plugin project-note-subtasks';
+        container.className = 'tasknotes-plugin project-note-subtasks project-subtasks-widget';
         
         // Force block display and full width for inline widget
         container.style.display = 'block';
         container.style.width = '100%';
         container.style.clear = 'both';
         container.style.position = 'relative';
+        container.style.isolation = 'isolate'; // Create stacking context
+        container.style.zIndex = '10'; // Ensure widget is above cursor
+        
+        // Prevent cursor and editing issues
+        container.style.userSelect = 'none';
+        container.style.cursor = 'default';
+        container.style.caretColor = 'transparent';
+        container.style.outline = 'none';
+        container.style.pointerEvents = 'auto';
+        container.setAttribute('contenteditable', 'false');
+        container.setAttribute('spellcheck', 'false');
+        container.setAttribute('data-widget-type', 'project-subtasks');
         
         // Add title with collapsible functionality
         const titleEl = container.createEl('h3', {
@@ -144,6 +173,7 @@ class ProjectNoteDecorationsPlugin implements PluginValue {
     private projectService: ProjectSubtasksService;
     private eventListeners: EventRef[] = [];
     private view: EditorView;
+    private version: number = 0;
     
     constructor(view: EditorView, private plugin: TaskNotesPlugin) {
         this.view = view;
@@ -161,7 +191,12 @@ class ProjectNoteDecorationsPlugin implements PluginValue {
         // Store the updated view reference
         this.view = update.view;
         
-        if (update.docChanged || update.viewportChanged) {
+        // Check for project subtasks update effects
+        const hasUpdateEffect = update.transactions.some(tr => 
+            tr.effects.some(effect => effect.is(projectSubtasksUpdateEffect))
+        );
+        
+        if (update.docChanged || update.viewportChanged || hasUpdateEffect) {
             this.decorations = this.buildDecorations(update.view);
         }
         
@@ -231,20 +266,51 @@ class ProjectNoteDecorationsPlugin implements PluginValue {
         );
     }
     
+    private dispatchUpdate() {
+        // Increment version and dispatch update effect
+        this.version++;
+        if (this.view && typeof this.view.dispatch === 'function') {
+            try {
+                this.view.dispatch({
+                    effects: [projectSubtasksUpdateEffect.of({ forceUpdate: true })]
+                });
+            } catch (error) {
+                console.error('Error dispatching project subtasks update:', error);
+            }
+        }
+    }
+    
     private async loadTasksForCurrentFile(view: EditorView) {
         const file = this.plugin.app.workspace.getActiveFile();
         
         if (file instanceof TFile) {
             try {
-                this.cachedTasks = await this.projectService.getTasksLinkedToProject(file);
+                const newTasks = await this.projectService.getTasksLinkedToProject(file);
                 
-                this.decorations = this.buildDecorations(view);
-                view.requestMeasure();
+                // Check if tasks actually changed
+                const tasksChanged = newTasks.length !== this.cachedTasks.length ||
+                    newTasks.some((newTask, index) => {
+                        const oldTask = this.cachedTasks[index];
+                        return !oldTask || 
+                               newTask.title !== oldTask.title ||
+                               newTask.status !== oldTask.status ||
+                               newTask.priority !== oldTask.priority ||
+                               newTask.due !== oldTask.due ||
+                               newTask.path !== oldTask.path;
+                    });
+                
+                if (tasksChanged) {
+                    this.cachedTasks = newTasks;
+                    this.dispatchUpdate();
+                }
             } catch (error) {
                 console.error('Error loading tasks for project note:', error);
             }
         } else {
-            this.cachedTasks = [];
+            if (this.cachedTasks.length > 0) {
+                this.cachedTasks = [];
+                this.dispatchUpdate();
+            }
         }
     }
 
@@ -278,8 +344,8 @@ class ProjectNoteDecorationsPlugin implements PluginValue {
             }
             
             const widget = Decoration.widget({
-                widget: new ProjectSubtasksWidget(this.plugin, this.cachedTasks),
-                side: 1  // Place widget after the position
+                widget: new ProjectSubtasksWidget(this.plugin, this.cachedTasks, this.version),
+                side: -1  // Place widget before the position to avoid cursor
             });
             
             builder.add(insertPos, insertPos, widget);
@@ -313,16 +379,28 @@ class ProjectNoteDecorationsPlugin implements PluginValue {
                 
                 // Check for frontmatter end
                 if (inFrontmatter && text === '---') {
-                    insertionPos = line.to;
                     inFrontmatter = false;
                     
-                    // Look for next line to insert after frontmatter
-                    if (lineNum < doc.lines) {
-                        const nextLine = doc.line(lineNum + 1);
-                        if (nextLine.text.trim() === '') {
-                            insertionPos = nextLine.to;
+                    // Look for next non-empty line to insert before it
+                    for (let nextLineNum = lineNum + 1; nextLineNum <= Math.min(doc.lines, lineNum + 5); nextLineNum++) {
+                        try {
+                            const nextLine = doc.line(nextLineNum);
+                            const nextText = nextLine.text.trim();
+                            
+                            if (nextText === '') {
+                                continue; // Skip empty lines
+                            }
+                            
+                            // Found first content line, insert at the beginning of this line
+                            insertionPos = nextLine.from;
+                            return insertionPos;
+                        } catch (error) {
+                            break;
                         }
                     }
+                    
+                    // If no content found, insert after frontmatter
+                    insertionPos = line.to;
                     break;
                 }
                 
@@ -370,4 +448,23 @@ export function createProjectNoteDecorations(plugin: TaskNotesPlugin): Extension
         },
         projectNoteDecorationsSpec
     );
+}
+
+/**
+ * Helper function to dispatch project subtasks update effects to an editor view
+ */
+export function dispatchProjectSubtasksUpdate(view: EditorView): void {
+    // Validate that view is a proper EditorView with dispatch method
+    if (!view || typeof view.dispatch !== 'function') {
+        console.warn('Invalid EditorView passed to dispatchProjectSubtasksUpdate:', view);
+        return;
+    }
+    
+    try {
+        view.dispatch({
+            effects: [projectSubtasksUpdateEffect.of({ forceUpdate: true })]
+        });
+    } catch (error) {
+        console.error('Error dispatching project subtasks update:', error);
+    }
 }

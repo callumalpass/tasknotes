@@ -16,6 +16,76 @@
     clear: both;
     position: relative;
     z-index: 1;
+    
+    /* Prevent cursor and editing issues */
+    pointer-events: auto;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    cursor: default;
+    
+    /* Prevent contenteditable behavior */
+    -webkit-user-modify: read-only;
+    -moz-user-modify: read-only;
+    
+    /* Ensure no text cursor appears */
+    caret-color: transparent;
+    outline: none;
+}
+
+/* Hide CodeMirror cursor when it's adjacent to our widget */
+.cm-line:has(.project-note-subtasks) .cm-cursor,
+.cm-line:has(.project-note-subtasks) + .cm-line .cm-cursor {
+    display: none !important;
+}
+
+/* Alternative approach - hide cursor specifically around widget */
+.project-note-subtasks + .cm-cursor,
+.project-note-subtasks ~ .cm-cursor {
+    display: none !important;
+}
+
+/* Hide cursor when widget is in focus context */
+.cm-focused .cm-line:has(.project-note-subtasks) .cm-cursor {
+    display: none !important;
+}
+
+/* More specific cursor hiding using new class and data attribute */
+.cm-line:has(.project-subtasks-widget) .cm-cursor,
+.cm-line:has([data-widget-type="project-subtasks"]) .cm-cursor {
+    display: none !important;
+}
+
+/* Hide any cursor that appears after our widget */
+.project-subtasks-widget ~ .cm-cursor,
+[data-widget-type="project-subtasks"] ~ .cm-cursor {
+    display: none !important;
+}
+
+/* Ensure widget creates proper isolation from editor cursor */
+.project-subtasks-widget {
+    isolation: isolate;
+    z-index: 10;
+    position: relative;
+}
+
+/* Hide cursor in the entire editor when widget is present and focused */
+.cm-editor:has(.project-subtasks-widget) .cm-cursor {
+    opacity: 0 !important;
+    visibility: hidden !important;
+}
+
+/* Comprehensive cursor hiding - use as fallback */
+.cm-content:has(.project-subtasks-widget) .cm-cursor,
+.cm-scroller:has(.project-subtasks-widget) .cm-cursor {
+    display: none !important;
+}
+
+/* Target cursor by position relative to widget */
+.project-subtasks-widget + * .cm-cursor,
+.project-subtasks-widget ~ * .cm-cursor {
+    display: none !important;
 }
 
 .tasknotes-plugin .project-note-subtasks__title {
@@ -27,7 +97,16 @@
     color: var(--text-normal);
     cursor: pointer;
     user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
     transition: color 0.2s ease;
+    
+    /* Prevent text cursor and editing */
+    caret-color: transparent;
+    outline: none;
+    -webkit-user-modify: read-only;
+    -moz-user-modify: read-only;
 }
 
 .tasknotes-plugin .project-note-subtasks__title:hover {
@@ -54,6 +133,13 @@
     transition: max-height 0.3s ease, opacity 0.3s ease;
     max-height: 1000px;
     opacity: 1;
+    
+    /* Prevent cursor and selection issues */
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    caret-color: transparent;
 }
 
 .tasknotes-plugin .project-note-subtasks__list.collapsed {
@@ -66,6 +152,13 @@
 .tasknotes-plugin .project-note-subtasks__task {
     /* Task card wrapper */
     margin-bottom: 0.3em;
+    
+    /* Prevent cursor and selection issues */
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    caret-color: transparent;
 }
 
 .tasknotes-plugin .project-note-subtasks__task .task-card {
