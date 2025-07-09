@@ -20,6 +20,7 @@ TaskNotes integrates with the Obsidian editor, which allows you to manage your t
 
 - **Task Link Overlays**: Interactive widgets that display task information and allow for quick edits.
 - **Instant Task Conversion**: A feature to convert checkbox tasks into TaskNotes.
+- **Project Subtasks Widget**: A collapsible widget that displays tasks linked to the current project note.
 - **Natural Language Processing**: A feature to create tasks from conversational language, with automatic parsing of dates, priorities, and other details.
 
 For more detailed information, see the [Inline Task Integration](features/inline-tasks.md) documentation.
