@@ -732,7 +732,6 @@ export class AgendaView extends ItemView {
             }
         }
         
-        console.debug('AgendaView: getAgendaDates returning:', dates.map(d => ({ date: d.toISOString(), formatted: format(d, 'yyyy-MM-dd') })));
         return dates;
     }
     

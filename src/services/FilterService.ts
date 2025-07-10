@@ -914,7 +914,6 @@ export class FilterService extends EventEmitter {
                 // Check if due date is overdue (show on today)
                 if (task.due && getDatePart(task.due) !== dateStr) {
                     if (isOverdueTimeAware(task.due)) {
-                        console.debug('FilterService: Task matched as overdue by due date:', { taskPath: task.path, taskDue: task.due, dateStr });
                         return true;
                     }
                 }
@@ -922,7 +921,6 @@ export class FilterService extends EventEmitter {
                 // Check if scheduled date is overdue (show on today)
                 if (task.scheduled && getDatePart(task.scheduled) !== dateStr) {
                     if (isOverdueTimeAware(task.scheduled)) {
-                        console.debug('FilterService: Task matched as overdue by scheduled date:', { taskPath: task.path, taskScheduled: task.scheduled, dateStr });
                         return true;
                     }
                 }
