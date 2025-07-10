@@ -717,16 +717,22 @@ export class AgendaView extends ItemView {
             
             let currentDate = weekStart;
             while (currentDate <= weekEnd) {
-                dates.push(new Date(currentDate));
+                // Normalize to start of day to ensure consistent date handling
+                const normalizedDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
+                dates.push(normalizedDate);
                 currentDate = addDays(currentDate, 1);
             }
         } else {
             // Fixed number of days starting from startDate
             for (let i = 0; i < this.daysToShow; i++) {
-                dates.push(addDays(this.startDate, i));
+                const targetDate = addDays(this.startDate, i);
+                // Normalize to start of day to ensure consistent date handling
+                const normalizedDate = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate());
+                dates.push(normalizedDate);
             }
         }
         
+        console.debug('AgendaView: getAgendaDates returning:', dates.map(d => ({ date: d.toISOString(), formatted: format(d, 'yyyy-MM-dd') })));
         return dates;
     }
     

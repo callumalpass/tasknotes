@@ -873,8 +873,11 @@ export class FilterService extends EventEmitter {
         baseQuery: FilterQuery,
         includeOverdue = false
     ): Promise<TaskInfo[]> {
+        // Normalize to the date string first to avoid timezone boundary issues
         const dateStr = format(date, 'yyyy-MM-dd');
+        const normalizedDate = startOfDayForDateString(dateStr);
         const isViewingToday = isTodayUtil(dateStr);
+        
         
         // Get tasks using existing query logic but apply date-specific filtering
         const allTasks = await this.filterTasksByQuery(
@@ -885,19 +888,25 @@ export class FilterService extends EventEmitter {
         const tasksForDate = allTasks.filter(task => {
             // Handle recurring tasks
             if (task.recurrence) {
-                return isDueByRRule(task, date);
+                return isDueByRRule(task, normalizedDate);
             }
             
             // Handle regular tasks with due dates for this specific date
-            // Use date part comparison to support both date-only and datetime formats
-            if (task.due && getDatePart(task.due) === dateStr) {
-                return true;
+            // Use robust date comparison to handle timezone edge cases
+            if (task.due) {
+                const taskDueDatePart = getDatePart(task.due);
+                if (taskDueDatePart === dateStr) {
+                    return true;
+                }
             }
             
             // Handle regular tasks with scheduled dates for this specific date  
-            // Use date part comparison to support both date-only and datetime formats
-            if (task.scheduled && getDatePart(task.scheduled) === dateStr) {
-                return true;
+            // Use robust date comparison to handle timezone edge cases
+            if (task.scheduled) {
+                const taskScheduledDatePart = getDatePart(task.scheduled);
+                if (taskScheduledDatePart === dateStr) {
+                    return true;
+                }
             }
             
             // If showing overdue tasks and this is today, include overdue tasks on today
@@ -905,6 +914,7 @@ export class FilterService extends EventEmitter {
                 // Check if due date is overdue (show on today)
                 if (task.due && getDatePart(task.due) !== dateStr) {
                     if (isOverdueTimeAware(task.due)) {
+                        console.debug('FilterService: Task matched as overdue by due date:', { taskPath: task.path, taskDue: task.due, dateStr });
                         return true;
                     }
                 }
@@ -912,6 +922,7 @@ export class FilterService extends EventEmitter {
                 // Check if scheduled date is overdue (show on today)
                 if (task.scheduled && getDatePart(task.scheduled) !== dateStr) {
                     if (isOverdueTimeAware(task.scheduled)) {
+                        console.debug('FilterService: Task matched as overdue by scheduled date:', { taskPath: task.path, taskScheduled: task.scheduled, dateStr });
                         return true;
                     }
                 }
