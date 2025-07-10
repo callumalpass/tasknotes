@@ -33,7 +33,7 @@ TaskNotes includes time management tools, such as:
 - **Pomodoro Timer**: A Pomodoro timer to work in focused intervals.
 - **Productivity Analytics**: Statistics and visualizations to show your work habits.
 
-For more detailed information, see the [Time Management](features/time-tracking.md) documentation.
+For more detailed information, see the [Time Management](features/time-management.md) documentation.
 
 ## Calendar Integration
 

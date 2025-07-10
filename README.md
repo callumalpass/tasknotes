@@ -29,16 +29,16 @@ Since each task is a full note, you can write detailed descriptions, jot down th
 
 ### Task Management
 - Individual Markdown files with YAML frontmatter
-- Properties: title, status, priority, due date, scheduled date, contexts, projects, tags, time estimates
+- Properties: title, status, priority, due date, scheduled date, contexts, projects, tags, time estimates, completion date
 - Project organization using note-based linking
 - Recurring tasks with per-date completion tracking
 - Time tracking with multiple sessions per task
-- Archive function using tags
+- Archive function using tags 
 - Filtering and grouping options
 
 ### Calendar Integration
 - Month view displaying tasks and notes
-- Mini calendar for compact layouts
+- Mini calendar view for compact layouts
 - ICS/iCal feed subscriptions
 - Direct navigation to daily notes
 
@@ -49,7 +49,7 @@ Since each task is a full note, you can write detailed descriptions, jot down th
 
 ### Editor Integration
 - Interactive task previews for wikilinks
-- One-click checkbox-to-task conversion
+- Checkbox-to-task conversion
 - Template support with parent note context
 
 ### Views
@@ -80,8 +80,8 @@ contexts: ["work"]
 projects: ["[[Website Redesign]]"]
 timeEstimate: 120
 timeEntries:
-  - startTime: "2024-01-15T10:30:00"
-    endTime: "2024-01-15T11:15:00"
+  - startTime: "2024-01-15T10:30:00Z"
+    endTime: "2024-01-15T11:15:00Z"
 ```
 
 ### Recurring Task

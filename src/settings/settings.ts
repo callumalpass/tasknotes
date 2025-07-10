@@ -238,7 +238,7 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	taskOrgFiltersCollapsed: false,  // Default to expanded
 	// Task filename defaults
 	taskFilenameFormat: 'zettel',  // Keep existing behavior as default
-	storeTitleInFilename: false,
+	storeTitleInFilename: true,
 	customFilenameTemplate: '{title}',  // Simple title template
 	// Task creation defaults
 	taskCreationDefaults: DEFAULT_TASK_CREATION_DEFAULTS,
@@ -536,7 +536,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 
 		new Setting(container)
 			.setName('Store title exclusively in filename')
-			.setDesc("When enabled, the task's title will be used as the filename, and the 'title' property will be removed from the frontmatter. This is a significant data storage change that simplifies frontmatter but disables all other filename templating options. Existing tasks will not be affected, but new tasks will follow this rule.")
+			.setDesc("When disabled, the task's title will be stored in the note frontmatter. You will be able to define custom templates for the filename of the task, but these will not be updated by the TaskNotes plugin after task creation. Moving the title into the frontmatter is a significant storage change and care must be taken when mixing tasks with their titles in the filename, and those with their titles in the frontmatter. Toggling this option will not affect existing tasks; it will affect tasks on creation and edit.")
 			.addToggle(toggle => {
 				toggle.toggleEl.setAttribute('aria-label', 'Store title exclusively in filename');
 				return toggle
