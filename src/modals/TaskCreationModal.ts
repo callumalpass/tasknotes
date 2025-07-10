@@ -54,6 +54,12 @@ export class TaskCreationModal extends TaskModal {
 
         // Create collapsible details section
         this.createDetailsSection(container);
+        
+        // Re-render projects list if pre-populated values were applied
+        if (this.options.prePopulatedValues && this.options.prePopulatedValues.projects) {
+            console.log('TaskCreationModal: Re-rendering projects list after UI creation');
+            this.renderProjectsList();
+        }
 
         // Create save/cancel buttons
         this.createActionButtons(container);
@@ -270,6 +276,7 @@ export class TaskCreationModal extends TaskModal {
         
         // Apply pre-populated values if provided (overrides defaults)
         if (this.options.prePopulatedValues) {
+            console.log('TaskCreationModal: Applying pre-populated values:', this.options.prePopulatedValues);
             this.applyPrePopulatedValues(this.options.prePopulatedValues);
         }
     }
@@ -284,6 +291,7 @@ export class TaskCreationModal extends TaskModal {
             this.contexts = values.contexts.join(', ');
         }
         if (values.projects !== undefined) {
+            console.log('TaskCreationModal: Initializing projects from strings:', values.projects);
             this.initializeProjectsFromStrings(values.projects);
             this.renderProjectsList();
         }

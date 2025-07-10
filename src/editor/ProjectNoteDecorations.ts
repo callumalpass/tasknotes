@@ -37,9 +37,25 @@ class ProjectSubtasksWidget extends WidgetType {
         container.setAttribute('data-widget-type', 'project-subtasks');
         
         // Add title with collapsible functionality
-        const titleEl = container.createEl('h3', {
+        const titleContainer = container.createEl('div', {
+            cls: 'project-note-subtasks__header'
+        });
+        
+        const titleEl = titleContainer.createEl('h3', {
             text: `Subtasks (${this.tasks.length})`,
             cls: 'project-note-subtasks__title'
+        });
+        
+        // Add new subtask button
+        const newSubtaskBtn = titleContainer.createEl('button', {
+            text: 'New',
+            cls: 'project-note-subtasks__new-btn'
+        });
+        
+        newSubtaskBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            this.createNewSubtask();
         });
         
         // Create task list container
@@ -89,6 +105,24 @@ class ProjectSubtasksWidget extends WidgetType {
         });
         
         return container;
+    }
+
+    private createNewSubtask(): void {
+        // Get current file to use as project reference
+        const currentFile = this.plugin.app.workspace.getActiveFile();
+        if (!currentFile) {
+            return;
+        }
+        
+        // Create wikilink format for the project reference
+        const projectReference = `[[${currentFile.basename}]]`;
+        
+        console.log('Creating new subtask with project:', projectReference);
+        
+        // Open task creation modal with project pre-populated
+        this.plugin.openTaskCreationModal({
+            projects: [projectReference]
+        });
     }
 
     private sortTasks(tasks: TaskInfo[]): TaskInfo[] {

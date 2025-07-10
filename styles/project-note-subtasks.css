@@ -87,12 +87,19 @@
     display: none !important;
 }
 
+.tasknotes-plugin .project-note-subtasks__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 0 0 0.8em 0;
+}
+
 .tasknotes-plugin .project-note-subtasks__title {
     display: flex;
     align-items: center;
     font-size: 1.1em;
     font-weight: 600;
-    margin: 0 0 0.8em 0;
+    margin: 0;
     color: var(--text-normal);
     cursor: pointer;
     user-select: none;
@@ -106,6 +113,25 @@
     outline: none;
     -webkit-user-modify: read-only;
     -moz-user-modify: read-only;
+}
+
+.tasknotes-plugin .project-note-subtasks__new-btn {
+    background: none;
+    color: var(--text-muted);
+    border: none;
+    padding: 0.2em 0.4em;
+    font-size: 0.8em;
+    font-weight: 400;
+    cursor: pointer;
+    transition: color 0.2s ease;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+.tasknotes-plugin .project-note-subtasks__new-btn:hover {
+    color: var(--text-normal);
 }
 
 .tasknotes-plugin .project-note-subtasks__title:hover {
