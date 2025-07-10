@@ -336,7 +336,7 @@ class ProjectNoteDecorationsPlugin implements PluginValue {
             
             const widget = Decoration.widget({
                 widget: new ProjectSubtasksWidget(this.plugin, this.cachedTasks, this.version),
-                side: -1  // Place widget before the position to avoid cursor
+                side: 1  // Place widget after the position so cursor can't go past it
             });
             
             builder.add(insertPos, insertPos, widget);
@@ -352,69 +352,8 @@ class ProjectNoteDecorationsPlugin implements PluginValue {
     private findInsertionPosition(view: EditorView, doc: any): number {
         if (doc.lines === 0) return 0;
         
-        // Find the end of frontmatter if it exists
-        let insertionPos = 0;
-        let inFrontmatter = false;
-        
-        for (let lineNum = 1; lineNum <= Math.min(doc.lines, 20); lineNum++) {
-            try {
-                const line = doc.line(lineNum);
-                const text = line.text.trim();
-                
-                // Check for frontmatter start
-                if (lineNum === 1 && text === '---') {
-                    inFrontmatter = true;
-                    insertionPos = line.to;
-                    continue;
-                }
-                
-                // Check for frontmatter end
-                if (inFrontmatter && text === '---') {
-                    inFrontmatter = false;
-                    
-                    // Look for next non-empty line to insert before it
-                    for (let nextLineNum = lineNum + 1; nextLineNum <= Math.min(doc.lines, lineNum + 5); nextLineNum++) {
-                        try {
-                            const nextLine = doc.line(nextLineNum);
-                            const nextText = nextLine.text.trim();
-                            
-                            if (nextText === '') {
-                                continue; // Skip empty lines
-                            }
-                            
-                            // Found first content line, insert at the beginning of this line
-                            insertionPos = nextLine.from;
-                            return insertionPos;
-                        } catch (error) {
-                            break;
-                        }
-                    }
-                    
-                    // If no content found, insert after frontmatter
-                    insertionPos = line.to;
-                    break;
-                }
-                
-                // If we're in frontmatter, continue
-                if (inFrontmatter) {
-                    insertionPos = line.to;
-                    continue;
-                }
-                
-                // If no frontmatter, insert at the beginning
-                if (lineNum === 1) {
-                    insertionPos = 0;
-                    break;
-                }
-                
-            } catch (error) {
-                // If we can't read a line, fall back to previous position
-                break;
-            }
-        }
-        
-        // If we went through all lines or hit an error, insert at the end of processed content
-        return Math.max(0, insertionPos);
+        // Insert at the very end of the document
+        return doc.length;
     }
 
 }

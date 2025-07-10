@@ -10,7 +10,7 @@
     width: 100% !important;
     margin: 1.5em 0 2em 0;
     padding: 1em;
-    border: 1px solid var(--background-modifier-border-hover);
+    border: 1px dashed var(--background-modifier-border-hover);
     border-radius: var(--radius-s);
     clear: both;
     position: relative;
@@ -130,7 +130,6 @@
     gap: 0.5em;
     overflow: hidden;
     transition: max-height 0.3s ease, opacity 0.3s ease;
-    max-height: 1000px;
     opacity: 1;
     
     /* Prevent cursor and selection issues */
