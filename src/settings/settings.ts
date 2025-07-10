@@ -302,11 +302,11 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 			{ id: 'task-defaults', name: 'Task defaults' },
 			{ id: 'general', name: 'Inline tasks' },
 			{ id: 'calendar', name: 'Calendar' },
-			{ id: 'performance', name: 'Performance' },
 			{ id: 'field-mapping', name: 'Field mapping' },
 			{ id: 'statuses', name: 'Statuses' },
 			{ id: 'priorities', name: 'Priorities' },
-			{ id: 'pomodoro', name: 'Pomodoro' }
+			{ id: 'pomodoro', name: 'Pomodoro' },
+			{ id: 'misc', name: 'Misc' }
 		];
 		
 		tabs.forEach(tab => {
@@ -387,9 +387,6 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 			case 'calendar':
 				this.renderCalendarTab();
 				break;
-			case 'performance':
-				this.renderPerformanceTab();
-				break;
 			case 'field-mapping':
 				this.renderFieldMappingTab();
 				break;
@@ -401,6 +398,9 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 				break;
 			case 'pomodoro':
 				this.renderPomodoroTab();
+				break;
+			case 'misc':
+				this.renderMiscTab();
 				break;
 		}
 	}
@@ -469,40 +469,6 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 					});
 			});
 
-		// Status bar settings section
-		new Setting(container).setName('Status bar').setHeading();
-
-		new Setting(container)
-			.setName('Show tracked tasks in status bar')
-			.setDesc('Display currently tracked tasks (with active time tracking) in the status bar at the bottom of the app')
-			.addToggle(toggle => {
-				toggle.toggleEl.setAttribute('aria-label', 'Show tracked tasks in status bar');
-				return toggle
-					.setValue(this.plugin.settings.showTrackedTasksInStatusBar)
-					.onChange(async (value) => {
-						this.plugin.settings.showTrackedTasksInStatusBar = value;
-						await this.plugin.saveSettings();
-						// Update status bar visibility immediately
-						if (this.plugin.statusBarService) {
-							this.plugin.statusBarService.updateVisibility();
-						}
-					});
-			});
-
-		new Setting(container)
-			.setName('Show project subtasks widget')
-			.setDesc('Display a collapsible widget showing all tasks that reference the current note as a project')
-			.addToggle(toggle => {
-				toggle.toggleEl.setAttribute('aria-label', 'Show project subtasks widget');
-				return toggle
-					.setValue(this.plugin.settings.showProjectSubtasks)
-					.onChange(async (value) => {
-						this.plugin.settings.showProjectSubtasks = value;
-						await this.plugin.saveSettings();
-						// Refresh all open editors to apply the change
-						this.plugin.notifyDataChanged();
-					});
-			});
 
 		// Help section
 		const helpContainer = container.createDiv('settings-help-section');
@@ -1409,17 +1375,52 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 		});
 	}
 	
-	private renderPerformanceTab(): void {
-		const container = this.tabContents['performance'];
+	private renderMiscTab(): void {
+		const container = this.tabContents['misc'];
 		
-		// Performance settings
-		new Setting(container).setName('Performance settings').setHeading();
+		// Misc settings
+		new Setting(container).setName('Miscellaneous settings').setHeading();
 		
 		container.createEl('p', { 
-			text: 'Configure performance-related settings that affect plugin responsiveness.',
+			text: 'Configure various plugin features and display options.',
 			cls: 'settings-help-note'
 		});
 
+		// Status bar toggle
+		new Setting(container)
+			.setName('Show tracked tasks in status bar')
+			.setDesc('Display currently tracked tasks (with active time tracking) in the status bar at the bottom of the app')
+			.addToggle(toggle => {
+				toggle.toggleEl.setAttribute('aria-label', 'Show tracked tasks in status bar');
+				return toggle
+					.setValue(this.plugin.settings.showTrackedTasksInStatusBar)
+					.onChange(async (value) => {
+						this.plugin.settings.showTrackedTasksInStatusBar = value;
+						await this.plugin.saveSettings();
+						// Update status bar visibility immediately
+						if (this.plugin.statusBarService) {
+							this.plugin.statusBarService.updateVisibility();
+						}
+					});
+			});
+
+		// Project subtasks widget toggle
+		new Setting(container)
+			.setName('Show project subtasks widget')
+			.setDesc('Display a collapsible widget showing all tasks that reference the current note as a project')
+			.addToggle(toggle => {
+				toggle.toggleEl.setAttribute('aria-label', 'Show project subtasks widget');
+				return toggle
+					.setValue(this.plugin.settings.showProjectSubtasks)
+					.onChange(async (value) => {
+						this.plugin.settings.showProjectSubtasks = value;
+						await this.plugin.saveSettings();
+						// Refresh all open editors to apply the change
+						this.plugin.notifyDataChanged();
+					});
+			});
+
+		// Notes indexing toggle
 		new Setting(container)
 			.setName('Disable note indexing')
 			.setDesc('Disable indexing and caching of non-task notes to improve performance in large vaults. Note: This will disable the Notes view and notes display in the Agenda view. Requires plugin restart to take effect.')

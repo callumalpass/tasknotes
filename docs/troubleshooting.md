@@ -61,7 +61,7 @@ This section covers common issues and their solutions when using TaskNotes.
 **Solutions**:
 1. Disable unused event types in calendar view toggles
 2. Increase ICS subscription refresh intervals
-3. Consider disabling note indexing if you don't use the Notes view
+3. Consider disabling note indexing in Misc settings if you don't use the Notes view
 4. Reduce the number of external calendar subscriptions
 
 ### Natural Language Parsing Not Working
@@ -131,7 +131,7 @@ This section covers common issues and their solutions when using TaskNotes.
 ### Slow View Loading
 
 **Solutions**:
-1. Disable note indexing if you don't use the Notes view
+1. Disable note indexing in Misc settings if you don't use the Notes view
 2. Reduce the number of external calendar subscriptions
 3. Exclude large folders from note processing
 4. Consider using simpler status and priority configurations
