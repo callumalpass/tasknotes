@@ -1,6 +1,6 @@
 # TaskNotes for Obsidian
 
-A task and note management plugin with calendar views and daily notes.
+A task management plugin where each task is stored as an individual note with YAML frontmatter and calendar integration.
 
 ![Downloads](https://img.shields.io/github/downloads/callumalpass/tasknotes/main.js)
 ![Screenshot of biblib Obsidian plugin](https://github.com/callumalpass/tasknotes/blob/main/media/2025-06-15_23-32-16.png)
@@ -9,9 +9,21 @@ A task and note management plugin with calendar views and daily notes.
 
 **[Documentation](https://callumalpass.github.io/tasknotes/)**
 
+## Overview
+
+TaskNotes treats each task as an individual Markdown file with YAML frontmatter containing the task's metadata (due date, status, priority, etc.) and the note body for additional context, descriptions, or progress notes. This creates a flexible system where tasks can be as simple or detailed as needed.
+
+The plugin includes several views: calendar, kanban boards, filtered task lists, and a daily agenda. Tasks can link to projects using Obsidian's note linking. Recurring tasks track completion per instance.
+
+You can track time on tasks with start/stop buttons and view session history. There's also a pomodoro timer that connects to tasks, with configurable work/break periods and stats.
+
 ## Rationale
 
-TaskNotes uses YAML frontmatter to store task data. YAML is a standard format that is compatible with many tools, which aligns with Obsidian's file-over-app philosophy. The frontmatter approach allows for the addition of custom fields, such as "assigned-to" or "attachments," which can be integrated with other tools like Obsidian Bases. This extensibility has been used to add features like time-tracking. The one-note-per-task approach allows for the inclusion of unstructured content in the note body for descriptions and progress notes. Each task can be linked to other notes in the vault, which allows for the use of Obsidian's backlinking and graph visualization features.
+Using YAML frontmatter for task storage has multiple benefits. YAML is a standard data format that works with many tools, so you can easily extract and transform your task data into other formats. This keeps your data portable and aligns with Obsidian's file-over-app philosophy.
+
+The frontmatter is also extensible—you can add custom fields like "assigned-to" or "attachments" and use other tools like Obsidian Bases to work with that data. This flexibility made it easy to add features like time-tracking, which is tricky in other task formats where there's no obvious place to store timing information.
+
+Since each task is a full note, you can write detailed descriptions, jot down thoughts as you work, and connect tasks to other notes through Obsidian's linking and graph features. The frontmatter compatibility with Bases also means you can use that plugin for different views and bulk operations if you want.
 
 ## Core Features
 
