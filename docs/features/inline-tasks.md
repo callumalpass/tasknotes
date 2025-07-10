@@ -21,7 +21,7 @@ The widget includes:
 - **Real-time Updates**: The widget updates automatically when tasks are added, modified, or deleted.
 - **Smart Positioning**: The widget appears after frontmatter and properties but before the main note content.
 
-The widget can be enabled or disabled in the plugin settings under "Show project subtasks widget".
+The widget can be enabled or disabled in the plugin settings in the Misc tab under "Show project subtasks widget".
 
 ## Natural Language Processing
 

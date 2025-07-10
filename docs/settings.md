@@ -22,6 +22,12 @@ For more detailed information, see the [Calendar Settings](settings/calendar-set
 
 ## Advanced Settings
 
-These settings provide more advanced customization options, such as field mapping, custom status and priority workflows, and performance tuning. You can also configure the Pomodoro timer from this section.
+These settings provide more advanced customization options, such as field mapping, custom status and priority workflows. You can also configure the Pomodoro timer from this section.
 
 For more detailed information, see the [Advanced Settings](settings/advanced-settings.md) documentation.
+
+## Misc Settings
+
+These settings control various plugin features and display options, including status bar visibility, project subtasks widget, and performance tuning.
+
+For more detailed information, see the [Misc Settings](settings/misc-settings.md) documentation.
