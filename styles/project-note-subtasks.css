@@ -5,14 +5,13 @@
  * via CodeMirror decorations in live preview mode. Uses BEM methodology.
  */
 
-.tasknotes-plugin .project-note-subtasks {
+.project-note-subtasks.project-subtasks-widget {
     display: block !important;
     width: 100% !important;
-    margin: 1.5em 0;
+    margin: 1.5em 0 2em 0;
     padding: 1em;
-    border: 1px solid var(--background-modifier-border);
+    border: 1px solid var(--background-modifier-border-hover);
     border-radius: var(--radius-s);
-    background-color: var(--background-secondary);
     clear: both;
     position: relative;
     z-index: 1;

@@ -32,20 +32,6 @@ class ProjectSubtasksWidget extends WidgetType {
         const container = document.createElement('div');
         container.className = 'tasknotes-plugin project-note-subtasks project-subtasks-widget';
         
-        // Force block display and full width for inline widget
-        container.style.display = 'block';
-        container.style.width = '100%';
-        container.style.clear = 'both';
-        container.style.position = 'relative';
-        container.style.isolation = 'isolate'; // Create stacking context
-        container.style.zIndex = '10'; // Ensure widget is above cursor
-        
-        // Prevent cursor and editing issues
-        container.style.userSelect = 'none';
-        container.style.cursor = 'default';
-        container.style.caretColor = 'transparent';
-        container.style.outline = 'none';
-        container.style.pointerEvents = 'auto';
         container.setAttribute('contenteditable', 'false');
         container.setAttribute('spellcheck', 'false');
         container.setAttribute('data-widget-type', 'project-subtasks');
