@@ -744,6 +744,9 @@ class ContextSuggest extends AbstractInputSuggest<string> {
         const currentValues = this.input.value.split(',').map((v: string) => v.trim());
         currentValues[currentValues.length - 1] = context;
         this.input.value = currentValues.join(', ') + ', ';
+        
+        // Trigger input event to update internal state
+        this.input.dispatchEvent(new Event('input', { bubbles: true }));
         this.input.focus();
     }
 }
@@ -786,6 +789,9 @@ class TagSuggest extends AbstractInputSuggest<string> {
         const currentValues = this.input.value.split(',').map((v: string) => v.trim());
         currentValues[currentValues.length - 1] = tag;
         this.input.value = currentValues.join(', ') + ', ';
+        
+        // Trigger input event to update internal state
+        this.input.dispatchEvent(new Event('input', { bubbles: true }));
         this.input.focus();
     }
 }
