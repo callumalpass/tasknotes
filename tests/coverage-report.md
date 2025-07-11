@@ -11,10 +11,14 @@ This document provides a comprehensive analysis of the test suite implementation
 #### Services (`tests/unit/services/`)
 - ✅ **TaskService.test.ts** - Complete CRUD operations, file management, error handling
 - ✅ **NaturalLanguageParser.test.ts** - Input parsing, date extraction, pattern recognition
+- ✅ **task-service-completion.test.ts** - Task completion functionality, recurring task handling (Issue #160)
 
 #### Utilities (`tests/unit/utils/`)
 - ✅ **dateUtils.test.ts** - Date parsing, formatting, timezone handling, validation
 - ✅ **helpers.test.ts** - Helper functions, time calculations, file operations
+
+#### Issue-Specific Tests (`tests/unit/issues/`)
+- ✅ **issue-160-off-by-one-completions.test.ts** - Comprehensive tests for GitHub issue #160 off-by-one date bugs
 
 #### UI Components (`tests/unit/ui/`)
 - ✅ **TaskCard.test.ts** - Task card rendering, interactions, status updates

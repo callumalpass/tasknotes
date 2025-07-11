@@ -59,9 +59,50 @@ export class RRule {
     return this.options;
   }
 
-  between(start: Date, end: Date): Date[] {
-    // Simple mock - return empty array or test dates
-    return [];
+  between(start: Date, end: Date, inclusive: boolean = false): Date[] {
+    // Mock implementation that generates dates based on the recurrence rule
+    const dates: Date[] = [];
+    
+    if (!this.options || !this.options.dtstart) {
+      return dates;
+    }
+    
+    const { freq, byweekday, dtstart } = this.options;
+    
+    if (freq === Frequency.WEEKLY && byweekday && byweekday.length > 0) {
+      // For weekly recurrence, generate dates that match the specified weekdays
+      const current = new Date(start);
+      current.setUTCHours(0, 0, 0, 0);
+      
+      while (current <= end) {
+        const dayOfWeek = current.getUTCDay();
+        
+        // Check if this day matches any of the specified weekdays
+        const matchesWeekday = byweekday.some((wd: any) => {
+          const targetDay = wd.weekday !== undefined ? wd.weekday : wd;
+          // Convert Sunday=0 to Sunday=6 for our comparison
+          const adjustedDayOfWeek = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+          return targetDay === adjustedDayOfWeek;
+        });
+        
+        if (matchesWeekday && current >= start) {
+          dates.push(new Date(current));
+        }
+        
+        current.setUTCDate(current.getUTCDate() + 1);
+      }
+    } else if (freq === Frequency.DAILY) {
+      // For daily recurrence, generate all dates in the range
+      const current = new Date(start);
+      current.setUTCHours(0, 0, 0, 0);
+      
+      while (current <= end) {
+        dates.push(new Date(current));
+        current.setUTCDate(current.getUTCDate() + 1);
+      }
+    }
+    
+    return dates;
   }
 
   after(date: Date): Date | null {
@@ -133,8 +174,8 @@ export class RRule {
     return result;
   }
 
-  static fromString = jest.fn((str: string): RRule => {
-    // Parse the RRule string and create a mock rule with corresponding options
+  static parseString = jest.fn((str: string): any => {
+    // Parse the RRule string and return options object
     const options: any = {};
     
     if (str.includes('FREQ=DAILY')) options.freq = Frequency.DAILY;
@@ -184,6 +225,13 @@ export class RRule {
     if (countMatch) {
       options.count = parseInt(countMatch[1]);
     }
+    
+    return options;
+  });
+
+  static fromString = jest.fn((str: string): RRule => {
+    // Parse the RRule string and create a mock rule with corresponding options
+    const options = RRule.parseString(str);
     
     const rule = new RRule(options);
     rule.toText = jest.fn(() => {
