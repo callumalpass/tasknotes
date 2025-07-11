@@ -2,9 +2,9 @@ import { App, Notice, TFile } from 'obsidian';
 import TaskNotesPlugin from '../main';
 import { TaskModal } from './TaskModal';
 import { TaskInfo } from '../types';
-import { getCurrentTimestamp, createUTCDateForRRule, formatUTCDateForCalendar } from '../utils/dateUtils';
+import { getCurrentTimestamp, createUTCDateForRRule, formatUTCDateForCalendar, generateUTCCalendarDates, getUTCStartOfWeek, getUTCEndOfWeek, getUTCStartOfMonth, getUTCEndOfMonth } from '../utils/dateUtils';
 import { formatTimestampForDisplay } from '../utils/dateUtils';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, startOfWeek, endOfWeek } from 'date-fns';
+import { format, isSameMonth } from 'date-fns';
 import { generateRecurringInstances, extractTaskInfo } from '../utils/helpers';
 
 export interface TaskEditOptions {
@@ -251,22 +251,22 @@ export class TaskEditModal extends TaskModal {
         const grid = container.createDiv('recurring-calendar__grid');
         
         // Get all dates to display (including padding from previous/next month)
-        const monthStart = startOfMonth(displayDate);
-        const monthEnd = endOfMonth(displayDate);
+        // Use UTC dates consistently to avoid timezone issues
+        const monthStart = getUTCStartOfMonth(displayDate);
+        const monthEnd = getUTCEndOfMonth(displayDate);
         
         // Respect the week start setting from calendar view settings
         const firstDaySetting = this.plugin.settings.calendarViewSettings.firstDay || 0;
-        const weekStartOptions = { weekStartsOn: firstDaySetting as 0 | 1 | 2 | 3 | 4 | 5 | 6 };
         
-        const calendarStart = startOfWeek(monthStart, weekStartOptions);
-        const calendarEnd = endOfWeek(monthEnd, weekStartOptions);
-        const allDays = eachDayOfInterval({ start: calendarStart, end: calendarEnd });
+        const calendarStart = getUTCStartOfWeek(monthStart, firstDaySetting);
+        const calendarEnd = getUTCEndOfWeek(monthEnd, firstDaySetting);
+        const allDays = generateUTCCalendarDates(calendarStart, calendarEnd);
         
         // Generate recurring instances for this month (with some buffer)
-        const bufferStart = startOfMonth(displayDate);
-        bufferStart.setMonth(bufferStart.getMonth() - 1);
-        const bufferEnd = endOfMonth(displayDate);
-        bufferEnd.setMonth(bufferEnd.getMonth() + 1);
+        const bufferStart = getUTCStartOfMonth(displayDate);
+        bufferStart.setUTCMonth(bufferStart.getUTCMonth() - 1);
+        const bufferEnd = getUTCEndOfMonth(displayDate);
+        bufferEnd.setUTCMonth(bufferEnd.getUTCMonth() + 1);
         
         const recurringDates = generateRecurringInstances(this.task, bufferStart, bufferEnd);
         const recurringDateStrings = new Set(recurringDates.map(d => formatUTCDateForCalendar(d)));

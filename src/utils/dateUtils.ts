@@ -764,3 +764,63 @@ export function formatUTCDateForCalendar(utcDate: Date): string {
         return utcDate.toISOString().split('T')[0];
     }
 }
+
+/**
+ * Generate UTC dates for calendar display, avoiding timezone issues
+ * This replaces date-fns calendar generation with consistent UTC dates
+ */
+export function generateUTCCalendarDates(startDate: Date, endDate: Date): Date[] {
+    const dates: Date[] = [];
+    
+    // Convert to UTC date strings and back to ensure consistent UTC dates
+    const startDateStr = formatUTCDateForCalendar(startDate);
+    const endDateStr = formatUTCDateForCalendar(endDate);
+    
+    const current = createUTCDateForRRule(startDateStr);
+    const end = createUTCDateForRRule(endDateStr);
+    
+    while (current <= end) {
+        dates.push(new Date(current));
+        current.setUTCDate(current.getUTCDate() + 1);
+    }
+    
+    return dates;
+}
+
+/**
+ * Get the start of week for a UTC date, returning a UTC date
+ */
+export function getUTCStartOfWeek(date: Date, weekStartsOn: number = 1): Date {
+    const utcDate = createUTCDateForRRule(formatUTCDateForCalendar(date));
+    const dayOfWeek = utcDate.getUTCDay();
+    const diff = (dayOfWeek - weekStartsOn + 7) % 7;
+    const startOfWeek = new Date(utcDate);
+    startOfWeek.setUTCDate(startOfWeek.getUTCDate() - diff);
+    return startOfWeek;
+}
+
+/**
+ * Get the end of week for a UTC date, returning a UTC date
+ */
+export function getUTCEndOfWeek(date: Date, weekStartsOn: number = 1): Date {
+    const startOfWeek = getUTCStartOfWeek(date, weekStartsOn);
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setUTCDate(endOfWeek.getUTCDate() + 6);
+    return endOfWeek;
+}
+
+/**
+ * Get the start of month for a UTC date, returning a UTC date
+ */
+export function getUTCStartOfMonth(date: Date): Date {
+    const utcDate = createUTCDateForRRule(formatUTCDateForCalendar(date));
+    return new Date(Date.UTC(utcDate.getUTCFullYear(), utcDate.getUTCMonth(), 1));
+}
+
+/**
+ * Get the end of month for a UTC date, returning a UTC date
+ */
+export function getUTCEndOfMonth(date: Date): Date {
+    const utcDate = createUTCDateForRRule(formatUTCDateForCalendar(date));
+    return new Date(Date.UTC(utcDate.getUTCFullYear(), utcDate.getUTCMonth() + 1, 0));
+}
