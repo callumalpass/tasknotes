@@ -1762,17 +1762,17 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 		const sortedPriorities = [...this.plugin.settings.customPriorities].sort((a, b) => b.weight - a.weight);
 		
 		sortedPriorities.forEach((priority, index) => {
-			const priorityRow = container.createDiv('settings-item-row');
+			const priorityRow = container.createDiv('settings-item-row settings-view__item-row');
 			
 			// Color indicator
-			const colorIndicator = priorityRow.createDiv('settings-color-indicator');
+			const colorIndicator = priorityRow.createDiv('settings-color-indicator settings-view__color-indicator');
 			colorIndicator.style.setProperty('--indicator-color', priority.color);
 			
 			// Priority value input
 			const valueInput = priorityRow.createEl('input', {
 				type: 'text',
 				value: priority.value,
-				cls: 'settings-input value-input',
+				cls: 'settings-input value-input settings-view__input settings-view__input--value',
 				attr: {
 					'aria-label': `Priority value for ${priority.label}`,
 					'id': `priority-value-${priority.id}`
@@ -1783,7 +1783,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 			const labelInput = priorityRow.createEl('input', {
 				type: 'text',
 				value: priority.label,
-				cls: 'settings-input label-input',
+				cls: 'settings-input label-input settings-view__input settings-view__input--label',
 				attr: {
 					'aria-label': `Display label for ${priority.label} priority`,
 					'id': `priority-label-${priority.id}`
@@ -1794,7 +1794,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 			const colorInput = priorityRow.createEl('input', {
 				type: 'color',
 				value: priority.color,
-				cls: 'settings-input color-input',
+				cls: 'settings-input color-input settings-view__input settings-view__input--color',
 				attr: {
 					'aria-label': `Color for ${priority.label} priority`,
 					'id': `priority-color-${priority.id}`
@@ -1805,7 +1805,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 			const weightInput = priorityRow.createEl('input', {
 				type: 'number',
 				value: priority.weight.toString(),
-				cls: 'settings-input weight-input',
+				cls: 'settings-input weight-input settings-view__input settings-view__input--weight',
 				attr: { 
 					min: '0', 
 					step: '1',
@@ -1817,7 +1817,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 			// Delete button
 			const deleteButton = priorityRow.createEl('button', {
 				text: 'Delete',
-				cls: 'settings-delete-button'
+				cls: 'settings-delete-button settings-view__delete-button'
 			});
 			
 			// Event listeners
