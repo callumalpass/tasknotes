@@ -391,6 +391,7 @@ export class AgendaView extends ItemView {
                     searchQuery: this.currentQuery.searchQuery,
                     statuses: this.currentQuery.statuses,
                     contexts: this.currentQuery.contexts,
+                    projects: this.currentQuery.projects,
                     priorities: this.currentQuery.priorities,
                     showArchived: this.currentQuery.showArchived,
                     showRecurrent: this.currentQuery.showRecurrent,
