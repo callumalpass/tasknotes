@@ -41,7 +41,14 @@ export class TaskEditModal extends TaskModal {
         
         // Initialize projects using the new method that handles both old and new formats
         if (this.task.projects && this.task.projects.length > 0) {
-            this.initializeProjectsFromStrings(this.task.projects);
+            // Filter out null, undefined, or empty strings before checking if we have valid projects
+            const validProjects = this.task.projects.filter(p => p && typeof p === 'string' && p.trim() !== '');
+            if (validProjects.length > 0) {
+                this.initializeProjectsFromStrings(this.task.projects);
+            } else {
+                this.projects = '';
+                this.selectedProjectFiles = [];
+            }
         } else {
             this.projects = '';
             this.selectedProjectFiles = [];

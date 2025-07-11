@@ -639,6 +639,11 @@ export abstract class TaskModal extends Modal {
         this.selectedProjectFiles = [];
         
         for (const projectString of projects) {
+            // Skip null, undefined, or empty strings
+            if (!projectString || typeof projectString !== 'string' || projectString.trim() === '') {
+                continue;
+            }
+            
             // Check if it's a wiki link format
             const linkMatch = projectString.match(/^\[\[([^\]]+)\]\]$/);
             if (linkMatch) {

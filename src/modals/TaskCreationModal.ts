@@ -292,7 +292,11 @@ export class TaskCreationModal extends TaskModal {
         }
         if (values.projects !== undefined) {
             console.log('TaskCreationModal: Initializing projects from strings:', values.projects);
-            this.initializeProjectsFromStrings(values.projects);
+            // Filter out null, undefined, or empty strings before checking if we have valid projects
+            const validProjects = values.projects.filter(p => p && typeof p === 'string' && p.trim() !== '');
+            if (validProjects.length > 0) {
+                this.initializeProjectsFromStrings(values.projects);
+            }
             this.renderProjectsList();
         }
         if (values.tags !== undefined) {
