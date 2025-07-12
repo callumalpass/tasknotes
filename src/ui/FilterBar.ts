@@ -278,20 +278,10 @@ export class FilterBar extends EventEmitter {
         this.renderViewOptions(mainFilterBox);
     }
 
-    private handleDocumentClick = (event: MouseEvent): void => {
-        const target = event.target as HTMLElement;
-        const isClickInsideFilterBox = this.container.querySelector('.filter-bar__main-box')?.contains(target);
-        const isClickOnFilterToggle = this.container.querySelector('.filter-bar__filter-toggle')?.contains(target);
-
-        if (!isClickInsideFilterBox && !isClickOnFilterToggle) {
-            if (this.sectionStates.filterBox) {
-                this.toggleMainFilterBox();
-            }
-        }
-    };
+    // Removed handleDocumentClick - filter box now stays open until button is clicked again
 
     /**
-     * Toggle the main filter box
+     * Toggle the main filter box (only closes/opens via button click)
      */
     private toggleMainFilterBox(): void {
         this.sectionStates.filterBox = !this.sectionStates.filterBox;
@@ -306,12 +296,7 @@ export class FilterBar extends EventEmitter {
             filterToggle.classList.toggle('filter-bar__filter-toggle--active', this.sectionStates.filterBox);
         }
 
-        // Add or remove the document click listener
-        if (this.sectionStates.filterBox) {
-            document.addEventListener('mousedown', this.handleDocumentClick);
-        } else {
-            document.removeEventListener('mousedown', this.handleDocumentClick);
-        }
+        // No document click listener - filter stays open until button is clicked again
     }
 
     private async deleteView(view: SavedView): Promise<void> {
@@ -1045,14 +1030,12 @@ export class FilterBar extends EventEmitter {
                 this.container.empty();
             }
             this.removeAllListeners();
-            // Ensure the document click listener is removed on destroy
-            document.removeEventListener('mousedown', this.handleDocumentClick);
+            // No document click listener to remove anymore
         } catch (error) {
             console.error('Error destroying FilterBar:', error);
             // Still try to clean up listeners even if DOM cleanup fails
             try {
                 this.removeAllListeners();
-                document.removeEventListener('mousedown', this.handleDocumentClick);
             } catch (cleanupError) {
                 console.error('Error during FilterBar cleanup fallback:', cleanupError);
             }

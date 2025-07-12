@@ -1,6 +1,7 @@
 import { FilterQuery, ViewFilterState, ViewPreferences, SavedView } from '../types';
 import { EventEmitter } from '../utils/EventEmitter';
 import { App } from 'obsidian';
+import type TaskNotesPlugin from '../main';
 
 /**
  * Manages view-specific state like filter preferences across the application
@@ -13,13 +14,23 @@ export class ViewStateManager extends EventEmitter {
     private preferencesStorageKey = 'tasknotes-view-preferences';
     private savedViewsStorageKey = 'tasknotes-saved-views';
     private app: App;
+    private plugin: TaskNotesPlugin;
     
-    constructor(app: App) {
+    constructor(app: App, plugin: TaskNotesPlugin) {
         super();
         this.app = app;
+        this.plugin = plugin;
         this.loadFromStorage();
         this.loadPreferencesFromStorage();
-        this.loadSavedViewsFromStorage();
+        // Note: migrateAndLoadSavedViews() is async and called separately during initialization
+        this.savedViews = [...this.plugin.settings.savedViews];
+    }
+
+    /**
+     * Initialize saved views with migration support (call this after construction)
+     */
+    async initializeSavedViews(): Promise<void> {
+        await this.migrateAndLoadSavedViews();
     }
 
     /**
@@ -171,7 +182,7 @@ export class ViewStateManager extends EventEmitter {
         };
 
         this.savedViews.push(view);
-        this.saveSavedViewsToStorage();
+        this.saveSavedViewsToPluginData();
         this.emit('saved-views-changed', this.savedViews);
         
         return view;
@@ -191,7 +202,7 @@ export class ViewStateManager extends EventEmitter {
             ...updates
         };
 
-        this.saveSavedViewsToStorage();
+        this.saveSavedViewsToPluginData();
         this.emit('saved-views-changed', this.savedViews);
     }
 
@@ -205,7 +216,7 @@ export class ViewStateManager extends EventEmitter {
         }
 
         this.savedViews.splice(viewIndex, 1);
-        this.saveSavedViewsToStorage();
+        this.saveSavedViewsToPluginData();
         this.emit('saved-views-changed', this.savedViews);
     }
 
@@ -221,7 +232,7 @@ export class ViewStateManager extends EventEmitter {
      */
     clearAllSavedViews(): void {
         this.savedViews = [];
-        this.saveSavedViewsToStorage();
+        this.saveSavedViewsToPluginData();
         this.emit('saved-views-changed', this.savedViews);
     }
 
@@ -233,28 +244,48 @@ export class ViewStateManager extends EventEmitter {
     }
 
     /**
-     * Load saved views from localStorage
+     * Migrate saved views from localStorage to plugin data, then load from plugin data
      */
-    private loadSavedViewsFromStorage(): void {
+    private async migrateAndLoadSavedViews(): Promise<void> {
         try {
-            const stored = this.app.loadLocalStorage(this.savedViewsStorageKey);
-            if (stored) {
-                this.savedViews = JSON.parse(stored);
+            // First, load from plugin data (primary source)
+            this.savedViews = [...this.plugin.settings.savedViews];
+            
+            // Check if we need to migrate from localStorage
+            const localStorageData = this.app.loadLocalStorage(this.savedViewsStorageKey);
+            if (localStorageData && this.savedViews.length === 0) {
+                console.log('TaskNotes: Migrating saved views from localStorage to plugin data...');
+                
+                // Parse localStorage data
+                const localStorageViews: SavedView[] = JSON.parse(localStorageData);
+                
+                // Migrate to plugin data
+                this.savedViews = [...localStorageViews];
+                await this.saveSavedViewsToPluginData();
+                
+                // Clear localStorage after successful migration
+                this.app.saveLocalStorage(this.savedViewsStorageKey, null);
+                
+                console.log(`TaskNotes: Successfully migrated ${localStorageViews.length} saved views to plugin data.`);
             }
         } catch (error) {
-            console.warn('Failed to load saved views from storage:', error);
+            console.warn('Failed to load/migrate saved views:', error);
             this.savedViews = [];
         }
     }
 
     /**
-     * Save saved views to localStorage
+     * Save saved views to plugin data (data.json)
      */
-    private saveSavedViewsToStorage(): void {
+    private async saveSavedViewsToPluginData(): Promise<void> {
         try {
-            this.app.saveLocalStorage(this.savedViewsStorageKey, JSON.stringify(this.savedViews));
+            // Update the plugin settings
+            this.plugin.settings.savedViews = [...this.savedViews];
+            
+            // Save to data.json
+            await this.plugin.saveSettings();
         } catch (error) {
-            console.warn('Failed to save saved views to storage:', error);
+            console.warn('Failed to save saved views to plugin data:', error);
         }
     }
 
@@ -263,26 +294,36 @@ export class ViewStateManager extends EventEmitter {
     // ============================================================================
 
     /**
-     * Detect if migration is needed (no saved views structure exists)
+     * Detect if migration is needed (saved views exist in localStorage but not in plugin data)
      */
     needsMigration(): boolean {
-        const stored = this.app.loadLocalStorage(this.savedViewsStorageKey);
-        return !stored;
+        const localStorageData = this.app.loadLocalStorage(this.savedViewsStorageKey);
+        const hasLocalStorageData = !!localStorageData;
+        const hasPluginData = this.plugin.settings.savedViews && this.plugin.settings.savedViews.length > 0;
+        
+        // Migration is needed if there's localStorage data but no plugin data
+        return hasLocalStorageData && !hasPluginData;
     }
 
     /**
      * Perform one-time migration from legacy filter system
      */
-    performMigration(): void {
-        // Clear any old filter states since we're starting fresh
-        this.clearAllFilterStates();
-        
-        // Initialize empty saved views
-        this.savedViews = [];
-        this.saveSavedViewsToStorage();
-        
-        // Emit migration complete event
-        this.emit('migration-complete');
+    async performMigration(): Promise<void> {
+        try {
+            // Clear any old filter states since we're starting fresh
+            this.clearAllFilterStates();
+            
+            // Migration of saved views is handled in migrateAndLoadSavedViews()
+            await this.migrateAndLoadSavedViews();
+            
+            // Emit migration complete event
+            this.emit('migration-complete');
+        } catch (error) {
+            console.error('Error during ViewStateManager migration:', error);
+            // Fallback: ensure we have empty saved views
+            this.savedViews = [];
+            await this.saveSavedViewsToPluginData();
+        }
     }
 
     /**

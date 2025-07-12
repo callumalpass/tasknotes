@@ -159,7 +159,7 @@ export default class TaskNotesPlugin extends Plugin {
 			this.statusManager,
 			this.priorityManager
 		);
-		this.viewStateManager = new ViewStateManager(this.app);
+		this.viewStateManager = new ViewStateManager(this.app, this);
 		this.dragDropManager = new DragDropManager(this);
 		this.migrationService = new MigrationService(this.app);
 		this.statusBarService = new StatusBarService(this);
@@ -459,10 +459,13 @@ export default class TaskNotesPlugin extends Plugin {
 		try {
 			console.log('TaskNotes: Starting early migration check...');
 			
-			// Perform view state migration first (this is silent and fast)
+			// Initialize saved views (handles migration if needed)
+			await this.viewStateManager.initializeSavedViews();
+			
+			// Perform view state migration if needed (this is silent and fast)
 			if (this.viewStateManager.needsMigration()) {
 				console.log('TaskNotes: Performing view state migration...');
-				this.viewStateManager.performMigration();
+				await this.viewStateManager.performMigration();
 			}
 			
 			// Check if recurrence migration has already been completed

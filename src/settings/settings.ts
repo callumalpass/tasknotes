@@ -1,6 +1,6 @@
 import { App, PluginSettingTab, Setting, Notice, setIcon } from 'obsidian';
 import TaskNotesPlugin from '../main';
-import { FieldMapping, StatusConfig, PriorityConfig } from '../types';
+import { FieldMapping, StatusConfig, PriorityConfig, SavedView } from '../types';
 import { StatusManager } from '../services/StatusManager';
 import { PriorityManager } from '../services/PriorityManager';
 import { showConfirmationModal } from '../modals/ConfirmationModal';
@@ -52,6 +52,8 @@ export interface TaskNotesSettings {
 	showTrackedTasksInStatusBar: boolean;
 	// Project subtasks widget settings
 	showProjectSubtasks: boolean;
+	// Saved filter views
+	savedViews: SavedView[];
 }
 
 export interface TaskCreationDefaults {
@@ -274,7 +276,9 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	// Status bar defaults
 	showTrackedTasksInStatusBar: false,
 	// Project subtasks widget defaults
-	showProjectSubtasks: true
+	showProjectSubtasks: true,
+	// Saved filter views defaults
+	savedViews: []
 };
 
 
