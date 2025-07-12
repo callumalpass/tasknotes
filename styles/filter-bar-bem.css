@@ -17,7 +17,8 @@
     display: flex;
     align-items: center;
     gap: var(--tn-spacing-sm);
-    position: relative;
+    position: relative; /* Set as positioning context for the dropdown */
+    z-index: 10; /* Ensure this container is on top of the filter box below */
 }
 
 .tasknotes-plugin .filter-bar__filter-toggle {
@@ -123,9 +124,9 @@
 .tasknotes-plugin .filter-bar__view-selector-dropdown {
     position: absolute;
     top: 100%;
-    left: 40px; /* Offset from the filter icon */
+    right: 0; /* Align to the right of the container */
     min-width: 200px;
-    z-index: 1000;
+    z-index: 1000; /* Ensure it's on top */
     background: var(--background-primary);
     border: 1px solid var(--background-modifier-border);
     border-radius: var(--radius-s);
@@ -439,6 +440,7 @@
     font-size: var(--font-ui-small);
     color: var(--text-muted);
     font-weight: 500;
+    text-align: right;
     min-width: 50px; /* More flexible width */
     padding-right: var(--tn-spacing-sm);
 }
