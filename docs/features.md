@@ -14,6 +14,17 @@ TaskNotes provides a system for managing tasks. You can create, edit, and organi
 
 For more detailed information, see the [Task Management](features/task-management.md) documentation.
 
+## Filtering and Views
+
+TaskNotes provides comprehensive filtering capabilities through a hierarchical query builder. The FilterBar is available in multiple views and supports:
+
+- **Quick Search**: Instant text-based filtering
+- **Query Builder**: Complex hierarchical filter conditions with AND/OR logic
+- **Saved Views**: Named filter configurations for quick access
+- **Sorting and Grouping**: Multiple options for organizing task display
+
+For more detailed information, see the [Filtering and Views](features/filtering-and-views.md) documentation.
+
 ## Inline Task Integration
 
 TaskNotes integrates with the Obsidian editor, which allows you to manage your tasks from within your notes. Key features include:
