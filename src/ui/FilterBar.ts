@@ -187,7 +187,6 @@ export class FilterBar extends EventEmitter {
      * Render the complete FilterBar UI
      */
     private render(): void {
-        console.log('FilterBar: Starting render(), current filterOptions projects count:', this.filterOptions.projects.length);
         this.container.empty();
         this.container.addClass('advanced-filter-bar');
 
@@ -196,7 +195,6 @@ export class FilterBar extends EventEmitter {
 
         // 2. Main Filter Box (collapsible)
         this.renderMainFilterBox();
-        console.log('FilterBar: Finished render(), current filterOptions projects count:', this.filterOptions.projects.length);
     }
 
     /**
@@ -596,8 +594,6 @@ export class FilterBar extends EventEmitter {
                 break;
         }
 
-        console.log(`FilterBar: Rendering ${propertyDef.id} dropdown with ${options.length} options:`, options);
-
         options.forEach(option => {
             dropdown.addOption(option, option);
         });
@@ -970,10 +966,6 @@ export class FilterBar extends EventEmitter {
      * Update filter options (called when new properties/contexts/tags are added)
      */
     updateFilterOptions(newFilterOptions: FilterOptions): void {
-        console.log('FilterBar: Updating filter options', {
-            old: this.filterOptions,
-            new: newFilterOptions
-        });
         this.filterOptions = newFilterOptions;
         // Re-render the UI to pick up new options
         this.updateUI();
@@ -990,7 +982,6 @@ export class FilterBar extends EventEmitter {
      * Force refresh filter options from the cache (for debugging)
      */
     async forceRefreshOptions(filterService: any): Promise<void> {
-        console.log('FilterBar: Force refreshing options');
         const newOptions = await filterService.getFilterOptions();
         this.updateFilterOptions(newOptions);
     }
