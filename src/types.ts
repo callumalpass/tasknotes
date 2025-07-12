@@ -40,9 +40,9 @@ export type SortDirection = 'asc' | 'desc';
 export interface FilterCondition {
 	type: 'condition';
 	id: string; // Unique ID for DOM management
-	property: string; // The field to filter on (e.g., 'status', 'due', 'file.ctime')
-	operator: string; // The comparison operator (e.g., 'is', 'contains')
-	value: any; // The value for comparison
+	property: FilterProperty; // The field to filter on (e.g., 'status', 'due', 'file.ctime')
+	operator: FilterOperator; // The comparison operator (e.g., 'is', 'contains')
+	value: string | string[] | number | boolean | null; // The value for comparison
 }
 
 // A logical grouping of conditions or other groups
@@ -50,8 +50,11 @@ export interface FilterGroup {
 	type: 'group';
 	id: string; // Unique ID for DOM management and state tracking
 	conjunction: 'and' | 'or'; // How children are evaluated
-	children: (FilterCondition | FilterGroup)[]; // The contents of the group
+	children: FilterNode[]; // The contents of the group
 }
+
+// Union type for filter nodes
+export type FilterNode = FilterCondition | FilterGroup;
 
 // The main query structure, a single root group with display properties
 export interface FilterQuery extends FilterGroup {
@@ -168,12 +171,21 @@ export interface FilterBarConfig {
 	showDateRangePicker?: boolean;
 	showViewOptions?: boolean; // Legacy calendar view options
 	showShowDropdown?: boolean; // New unified show dropdown
-	allowedSortKeys?: TaskSortKey[];
-	allowedGroupKeys?: TaskGroupKey[];
-	customButtons?: Array<{
-		id: string;
-		onCreate: (container: HTMLElement) => void;
-	}>;
+	allowedSortKeys?: readonly TaskSortKey[];
+	allowedGroupKeys?: readonly TaskGroupKey[];
+	customButtons?: readonly FilterBarCustomButton[];
+}
+
+export interface FilterBarCustomButton {
+	id: string;
+	onCreate: (container: HTMLElement) => void;
+}
+
+export interface FilterOptions {
+	statuses: readonly string[];
+	priorities: readonly string[];
+	contexts: readonly string[];
+	projects: readonly string[];
 }
 
 // Time and date related types

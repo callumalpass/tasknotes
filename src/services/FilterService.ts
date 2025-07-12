@@ -1,9 +1,10 @@
-import { FilterQuery, TaskInfo, TaskSortKey, TaskGroupKey, SortDirection, FilterCondition, FilterGroup, FilterProperty, FilterOperator, FILTER_PROPERTIES, FILTER_OPERATORS } from '../types';
+import { FilterQuery, TaskInfo, TaskSortKey, TaskGroupKey, SortDirection, FilterCondition, FilterGroup, FilterNode, FilterProperty, FilterOperator, FilterOptions, FILTER_PROPERTIES, FILTER_OPERATORS } from '../types';
 import { parseLinktext } from 'obsidian';
 import { MinimalNativeCache } from '../utils/MinimalNativeCache';
 import { StatusManager } from './StatusManager';
 import { PriorityManager } from './PriorityManager';
 import { EventEmitter } from '../utils/EventEmitter';
+import { FilterUtils, FilterValidationError, FilterEvaluationError, TaskPropertyValue } from '../utils/FilterUtils';
 import { isDueByRRule, filterEmptyProjects } from '../utils/helpers';
 import { format, isToday } from 'date-fns';
 import { 
@@ -42,20 +43,32 @@ export class FilterService extends EventEmitter {
      * Handles the new advanced FilterQuery structure with nested conditions and groups
      */
     async getGroupedTasks(query: FilterQuery, targetDate?: Date): Promise<Map<string, TaskInfo[]>> {
-        // Get all tasks (we can optimize this later with smarter indexing)
-        let allTaskPaths = this.cacheManager.getAllTaskPaths();
-        
-        // Convert paths to TaskInfo objects
-        const allTasks = await this.pathsToTaskInfos(Array.from(allTaskPaths));
-        
-        // Filter tasks using the new recursive evaluation
-        const filteredTasks = allTasks.filter(task => this.evaluateFilterNode(query, task));
-        
-        // Sort the filtered results
-        const sortedTasks = this.sortTasks(filteredTasks, query.sortKey || 'due', query.sortDirection || 'asc');
-        
-        // Group the sorted results
-        return this.groupTasks(sortedTasks, query.groupKey || 'none', targetDate);
+        try {
+            // Validate the query structure
+            FilterUtils.validateFilterNode(query);
+            
+            // Get all tasks (we can optimize this later with smarter indexing)
+            let allTaskPaths = this.cacheManager.getAllTaskPaths();
+            
+            // Convert paths to TaskInfo objects
+            const allTasks = await this.pathsToTaskInfos(Array.from(allTaskPaths));
+            
+            // Filter tasks using the new recursive evaluation
+            const filteredTasks = allTasks.filter(task => this.evaluateFilterNode(query, task));
+            
+            // Sort the filtered results
+            const sortedTasks = this.sortTasks(filteredTasks, query.sortKey || 'due', query.sortDirection || 'asc');
+            
+            // Group the sorted results
+            return this.groupTasks(sortedTasks, query.groupKey || 'none', targetDate);
+        } catch (error) {
+            if (error instanceof FilterValidationError || error instanceof FilterEvaluationError) {
+                console.error('Filter error:', error.message, { nodeId: error.nodeId, field: (error as FilterValidationError).field });
+                // Return empty results rather than throwing - let UI handle gracefully
+                return new Map<string, TaskInfo[]>();
+            }
+            throw error;
+        }
     }
 
     /**
@@ -120,214 +133,17 @@ export class FilterService extends EventEmitter {
         const { property, operator, value } = condition;
         
         // Get the actual value from the task
-        const taskValue = this.getTaskPropertyValue(task, property);
+        let taskValue: TaskPropertyValue = FilterUtils.getTaskPropertyValue(task, property as FilterProperty);
+        
+        // Handle special case for status.isCompleted
+        if (property === 'status.isCompleted') {
+            taskValue = this.statusManager.isCompletedStatus(task.status);
+        }
         
         // Apply the operator
-        return this.applyOperator(taskValue, operator as FilterOperator, value);
+        return FilterUtils.applyOperator(taskValue, operator as FilterOperator, value, condition.id);
     }
 
-    /**
-     * Get the value of a specific property from a task
-     */
-    private getTaskPropertyValue(task: TaskInfo, property: string): any {
-        switch (property) {
-            case 'title':
-                return task.title;
-            case 'status':
-                return task.status;
-            case 'priority':
-                return task.priority;
-            case 'tags':
-                return task.tags || [];
-            case 'contexts':
-                return task.contexts || [];
-            case 'projects':
-                return task.projects || [];
-            case 'due':
-                return task.due;
-            case 'scheduled':
-                return task.scheduled;
-            case 'completedDate':
-                return task.completedDate;
-            case 'file.ctime':
-                return task.dateCreated;
-            case 'file.mtime':
-                return task.dateModified;
-            case 'archived':
-                return task.archived;
-            case 'timeEstimate':
-                return task.timeEstimate;
-            case 'recurrence':
-                return task.recurrence;
-            case 'status.isCompleted':
-                return this.statusManager.isCompletedStatus(task.status);
-            default:
-                return undefined;
-        }
-    }
-
-    /**
-     * Apply a filter operator to compare task value with condition value
-     */
-    private applyOperator(taskValue: any, operator: FilterOperator, conditionValue: any): boolean {
-        switch (operator) {
-            case 'is':
-                return this.isEqual(taskValue, conditionValue);
-            case 'is-not':
-                return !this.isEqual(taskValue, conditionValue);
-            case 'contains':
-                return this.contains(taskValue, conditionValue);
-            case 'does-not-contain':
-                return !this.contains(taskValue, conditionValue);
-            case 'is-before':
-                return this.isBefore(taskValue, conditionValue);
-            case 'is-after':
-                return this.isAfter(taskValue, conditionValue);
-            case 'is-on-or-before':
-                return this.isOnOrBefore(taskValue, conditionValue);
-            case 'is-on-or-after':
-                return this.isOnOrAfter(taskValue, conditionValue);
-            case 'is-empty':
-                return this.isEmpty(taskValue);
-            case 'is-not-empty':
-                return !this.isEmpty(taskValue);
-            case 'is-checked':
-                return taskValue === true;
-            case 'is-not-checked':
-                return taskValue !== true;
-            case 'is-greater-than':
-                return this.isGreaterThan(taskValue, conditionValue);
-            case 'is-less-than':
-                return this.isLessThan(taskValue, conditionValue);
-            default:
-                return true;
-        }
-    }
-
-    /**
-     * Equality comparison that handles arrays and different value types
-     */
-    private isEqual(taskValue: any, conditionValue: any): boolean {
-        if (Array.isArray(taskValue)) {
-            if (Array.isArray(conditionValue)) {
-                // Both arrays: check if any task value matches any condition value
-                return taskValue.some(tv => conditionValue.includes(tv));
-            } else {
-                // Task has array, condition is single value
-                return taskValue.includes(conditionValue);
-            }
-        } else {
-            if (Array.isArray(conditionValue)) {
-                // Task has single value, condition is array
-                return conditionValue.includes(taskValue);
-            } else {
-                // Both single values
-                return taskValue === conditionValue;
-            }
-        }
-    }
-
-    /**
-     * Contains comparison for text and arrays
-     */
-    private contains(taskValue: any, conditionValue: any): boolean {
-        if (Array.isArray(taskValue)) {
-            if (Array.isArray(conditionValue)) {
-                // Both arrays: check if any condition value is contained in task values
-                return conditionValue.some(cv => taskValue.includes(cv));
-            } else {
-                // Task has array, condition is single value
-                return taskValue.includes(conditionValue);
-            }
-        } else if (typeof taskValue === 'string') {
-            if (Array.isArray(conditionValue)) {
-                // Task has string, condition is array
-                return conditionValue.some(cv => taskValue.toLowerCase().includes(cv.toLowerCase()));
-            } else {
-                // Both strings
-                return taskValue.toLowerCase().includes(conditionValue.toLowerCase());
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Date comparison: is task value before condition value
-     */
-    private isBefore(taskValue: any, conditionValue: any): boolean {
-        if (!taskValue || !conditionValue) return false;
-        try {
-            return isBeforeDateTimeAware(taskValue, conditionValue);
-        } catch {
-            return false;
-        }
-    }
-
-    /**
-     * Date comparison: is task value after condition value
-     */
-    private isAfter(taskValue: any, conditionValue: any): boolean {
-        if (!taskValue || !conditionValue) return false;
-        try {
-            return isBeforeDateTimeAware(conditionValue, taskValue);
-        } catch {
-            return false;
-        }
-    }
-
-    /**
-     * Date comparison: is task value on or before condition value
-     */
-    private isOnOrBefore(taskValue: any, conditionValue: any): boolean {
-        if (!taskValue || !conditionValue) return false;
-        try {
-            return isBeforeDateTimeAware(taskValue, conditionValue) || isSameDateSafe(getDatePart(taskValue), getDatePart(conditionValue));
-        } catch {
-            return false;
-        }
-    }
-
-    /**
-     * Date comparison: is task value on or after condition value  
-     */
-    private isOnOrAfter(taskValue: any, conditionValue: any): boolean {
-        if (!taskValue || !conditionValue) return false;
-        try {
-            return isBeforeDateTimeAware(conditionValue, taskValue) || isSameDateSafe(getDatePart(taskValue), getDatePart(conditionValue));
-        } catch {
-            return false;
-        }
-    }
-
-    /**
-     * Check if value is empty (null, undefined, empty string, empty array)
-     */
-    private isEmpty(value: any): boolean {
-        if (value === null || value === undefined) return true;
-        if (typeof value === 'string') return value.trim() === '';
-        if (Array.isArray(value)) return value.length === 0;
-        return false;
-    }
-
-    /**
-     * Numeric comparison: is task value greater than condition value
-     */
-    private isGreaterThan(taskValue: any, conditionValue: any): boolean {
-        const taskNum = typeof taskValue === 'number' ? taskValue : parseFloat(taskValue);
-        const conditionNum = typeof conditionValue === 'number' ? conditionValue : parseFloat(conditionValue);
-        if (isNaN(taskNum) || isNaN(conditionNum)) return false;
-        return taskNum > conditionNum;
-    }
-
-    /**
-     * Numeric comparison: is task value less than condition value
-     */
-    private isLessThan(taskValue: any, conditionValue: any): boolean {
-        const taskNum = typeof taskValue === 'number' ? taskValue : parseFloat(taskValue);
-        const conditionNum = typeof conditionValue === 'number' ? conditionValue : parseFloat(conditionValue);
-        if (isNaN(taskNum) || isNaN(conditionNum)) return false;
-        return taskNum < conditionNum;
-    }
 
 
     /**
@@ -785,12 +601,7 @@ export class FilterService extends EventEmitter {
     /**
      * Get available filter options for building FilterBar UI
      */
-    async getFilterOptions(): Promise<{
-        statuses: string[];
-        priorities: string[];
-        contexts: string[];
-        projects: string[];
-    }> {
+    async getFilterOptions(): Promise<FilterOptions> {
         const allOptions = {
             statuses: this.cacheManager.getAllStatuses(),
             priorities: this.cacheManager.getAllPriorities(),
@@ -807,7 +618,7 @@ export class FilterService extends EventEmitter {
     createDefaultQuery(): FilterQuery {
         return {
             type: 'group',
-            id: this.generateId(),
+            id: FilterUtils.generateId(),
             conjunction: 'and',
             children: [],
             sortKey: 'due',
@@ -816,12 +627,6 @@ export class FilterService extends EventEmitter {
         };
     }
 
-    /**
-     * Generate a unique ID for filter nodes
-     */
-    private generateId(): string {
-        return Math.random().toString(36).substr(2, 9);
-    }
 
 
     /**
@@ -842,7 +647,7 @@ export class FilterService extends EventEmitter {
                 case 'showCompleted':
                     condition = {
                         type: 'condition',
-                        id: this.generateId(),
+                        id: FilterUtils.generateId(),
                         property: 'status.isCompleted',
                         operator: 'is-not-checked',
                         value: null
@@ -851,7 +656,7 @@ export class FilterService extends EventEmitter {
                 case 'showArchived':
                     condition = {
                         type: 'condition',
-                        id: this.generateId(),
+                        id: FilterUtils.generateId(),
                         property: 'archived',
                         operator: 'is-not-checked',
                         value: null
@@ -860,7 +665,7 @@ export class FilterService extends EventEmitter {
                 case 'showRecurrent':
                     condition = {
                         type: 'condition',
-                        id: this.generateId(),
+                        id: FilterUtils.generateId(),
                         property: 'recurrence',
                         operator: 'is-empty',
                         value: null

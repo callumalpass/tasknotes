@@ -12,7 +12,7 @@
     margin-bottom: var(--tn-spacing-lg);
 }
 
-/* Top Controls (Filter Icon + Templates Button) */
+/* Top Controls (Filter Icon + Search + Templates Button) */
 .tasknotes-plugin .filter-bar__top-controls {
     display: flex;
     align-items: center;
@@ -81,6 +81,30 @@
     transform: translateY(0);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     transition-duration: 0.1s;
+}
+
+/* Search Input */
+.tasknotes-plugin .filter-bar__search-input {
+    flex: 1;
+    padding: var(--tn-spacing-xs) var(--tn-spacing-sm);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: var(--radius-s);
+    background: var(--background-primary);
+    color: var(--text-normal);
+    font-size: var(--font-ui-small);
+    transition: all 0.2s ease;
+    min-width: 200px;
+}
+
+.tasknotes-plugin .filter-bar__search-input:focus {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 1px;
+    border-color: var(--color-accent);
+}
+
+.tasknotes-plugin .filter-bar__search-input::placeholder {
+    color: var(--text-muted);
+    font-style: italic;
 }
 
 /* Main Filter Box (collapsible) */

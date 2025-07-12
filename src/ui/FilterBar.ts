@@ -1,6 +1,7 @@
-import { FilterQuery, SavedView, FilterCondition, FilterGroup, TaskSortKey, TaskGroupKey, SortDirection, FilterProperty, FilterOperator, FILTER_PROPERTIES, FILTER_OPERATORS, PropertyDefinition, OperatorDefinition } from '../types';
+import { FilterQuery, SavedView, FilterCondition, FilterGroup, FilterNode, TaskSortKey, TaskGroupKey, SortDirection, FilterProperty, FilterOperator, FILTER_PROPERTIES, FILTER_OPERATORS, PropertyDefinition, OperatorDefinition, FilterOptions } from '../types';
 import { EventEmitter } from '../utils/EventEmitter';
 import { setIcon, DropdownComponent, debounce } from 'obsidian';
+import { FilterUtils } from '../utils/FilterUtils';
 
 /**
  * Advanced FilterBar component implementing the new query builder system
@@ -9,16 +10,12 @@ import { setIcon, DropdownComponent, debounce } from 'obsidian';
 export class FilterBar extends EventEmitter {
     private container: HTMLElement;
     private currentQuery: FilterQuery;
-    private savedViews: SavedView[] = [];
-    private filterOptions: {
-        statuses: string[];
-        priorities: string[];
-        contexts: string[];
-        projects: string[];
-    };
+    private savedViews: readonly SavedView[] = [];
+    private filterOptions: FilterOptions;
 
     // Debouncing for input fields
     private debouncedEmitQueryChange: () => void;
+    private debouncedHandleSearchInput: () => void;
 
     // UI Elements
     private viewSelectorButton?: HTMLButtonElement;
@@ -26,6 +23,8 @@ export class FilterBar extends EventEmitter {
     private filterBuilder?: HTMLElement;
     private displaySection?: HTMLElement;
     private viewOptionsContainer?: HTMLElement;
+    private searchInput?: HTMLInputElement;
+    private isUserTyping = false;
 
     // Collapse states
     private sectionStates = {
@@ -38,22 +37,22 @@ export class FilterBar extends EventEmitter {
     constructor(
         container: HTMLElement,
         initialQuery: FilterQuery,
-        filterOptions: { statuses: string[]; priorities: string[]; contexts: string[]; projects: string[] }
+        filterOptions: FilterOptions
     ) {
         super();
         this.container = container;
         this.currentQuery = { ...initialQuery };
-        this.filterOptions = {
-            statuses: filterOptions.statuses || [],
-            priorities: filterOptions.priorities || [],
-            contexts: filterOptions.contexts || [],
-            projects: filterOptions.projects || []
-        };
+        this.filterOptions = filterOptions;
 
         // Initialize debounced query change emission (300ms delay)
         this.debouncedEmitQueryChange = debounce(() => {
             this.emit('queryChange', { ...this.currentQuery });
         }, 300);
+
+        // Initialize debounced search input handling (800ms delay to reduce lag)
+        this.debouncedHandleSearchInput = debounce(() => {
+            this.handleSearchInput();
+        }, 800);
 
         this.render();
         this.updateUI();
@@ -68,9 +67,68 @@ export class FilterBar extends EventEmitter {
     }
 
     /**
+     * Handle search input changes
+     */
+    private handleSearchInput(): void {
+        try {
+            const searchTerm = this.searchInput?.value.trim() || '';
+            
+            // Remove existing search conditions
+            this.removeSearchConditions();
+            
+            // Add new search condition if term is not empty
+            if (searchTerm) {
+                this.addSearchCondition(searchTerm);
+            }
+            
+            // Update only the filter builder to show the search condition
+            this.updateFilterBuilder();
+            
+            // Emit query change 
+            this.emit('queryChange', { ...this.currentQuery });
+            
+            // Reset typing flag after a delay
+            setTimeout(() => {
+                this.isUserTyping = false;
+            }, 1000);
+        } catch (error) {
+            console.error('Error handling search input:', error);
+        }
+    }
+
+    /**
+     * Remove existing search conditions from the query
+     */
+    private removeSearchConditions(): void {
+        this.currentQuery.children = this.currentQuery.children.filter(child => {
+            if (child.type === 'condition') {
+                return !(child.property === 'title' && child.operator === 'contains' && 
+                        child.id.startsWith('search_'));
+            }
+            return true;
+        });
+    }
+
+    /**
+     * Add a search condition to the query
+     */
+    private addSearchCondition(searchTerm: string): void {
+        const searchCondition: FilterCondition = {
+            type: 'condition',
+            id: `search_${FilterUtils.generateId()}`,
+            property: 'title',
+            operator: 'contains',
+            value: searchTerm
+        };
+        
+        // Add search condition at the beginning
+        this.currentQuery.children.unshift(searchCondition);
+    }
+
+    /**
      * Update saved views list
      */
-    updateSavedViews(views: SavedView[]): void {
+    updateSavedViews(views: readonly SavedView[]): void {
         console.log('FilterBar: Updating saved views:', views); // Debug
         this.savedViews = views;
         this.renderViewSelectorDropdown();
@@ -83,12 +141,6 @@ export class FilterBar extends EventEmitter {
         return { ...this.currentQuery };
     }
 
-    /**
-     * Generate a unique ID for filter nodes
-     */
-    private generateId(): string {
-        return Math.random().toString(36).substr(2, 9);
-    }
 
     /**
      * Render the complete FilterBar UI
@@ -105,7 +157,7 @@ export class FilterBar extends EventEmitter {
     }
 
     /**
-     * Render the top controls (filter toggle + templates button)
+     * Render the top controls (filter toggle + search + templates button)
      */
     private renderTopControls(): void {
         const topControls = this.container.createDiv('filter-bar__top-controls');
@@ -116,6 +168,16 @@ export class FilterBar extends EventEmitter {
             attr: { 'aria-label': 'Toggle filter' }
         });
         setIcon(filterToggle, 'filter');
+
+        // Search input
+        this.searchInput = topControls.createEl('input', {
+            type: 'text',
+            cls: 'filter-bar__search-input',
+            attr: { 
+                placeholder: 'Search tasks...',
+                'aria-label': 'Search tasks'
+            }
+        });
 
         // Templates button
         this.viewSelectorButton = topControls.createEl('button', {
@@ -131,6 +193,19 @@ export class FilterBar extends EventEmitter {
         // Event listeners
         filterToggle.addEventListener('click', () => {
             this.toggleMainFilterBox();
+        });
+
+        this.searchInput.addEventListener('input', () => {
+            this.isUserTyping = true;
+            this.debouncedHandleSearchInput();
+        });
+
+        this.searchInput.addEventListener('focus', () => {
+            this.isUserTyping = true;
+        });
+
+        this.searchInput.addEventListener('blur', () => {
+            this.isUserTyping = false;
         });
 
         this.viewSelectorButton.addEventListener('click', () => {
@@ -346,7 +421,7 @@ export class FilterBar extends EventEmitter {
     /**
      * Render a filter node (condition or group)
      */
-    private renderFilterNode(parent: HTMLElement, node: FilterCondition | FilterGroup, parentGroup: FilterGroup, index: number, depth: number): void {
+    private renderFilterNode(parent: HTMLElement, node: FilterNode, parentGroup: FilterGroup, index: number, depth: number): void {
         if (node.type === 'condition') {
             this.renderFilterCondition(parent, node, parentGroup, index, depth);
         } else if (node.type === 'group') {
@@ -417,7 +492,7 @@ export class FilterBar extends EventEmitter {
         });
 
         operatorSelect.addEventListener('change', () => {
-            condition.operator = operatorSelect.value;
+            condition.operator = operatorSelect.value as FilterOperator;
             this.renderValueInput(valueContainer, condition);
             this.emitQueryChange();
         });
@@ -483,11 +558,11 @@ export class FilterBar extends EventEmitter {
         const input = container.createEl('input', {
             type: 'text',
             cls: 'filter-bar__value-input',
-            value: condition.value || ''
+            value: String(condition.value || '')
         });
 
         input.addEventListener('input', () => {
-            condition.value = input.value;
+            condition.value = input.value || null;
             this.debouncedEmitQueryChange();
         });
     }
@@ -506,7 +581,7 @@ export class FilterBar extends EventEmitter {
             text: 'Select...'
         });
 
-        let options: string[] = [];
+        let options: readonly string[] = [];
         switch (propertyDef.id) {
             case 'status':
                 options = this.filterOptions.statuses;
@@ -533,7 +608,7 @@ export class FilterBar extends EventEmitter {
         });
 
         // Set current value
-        select.value = condition.value || '';
+        select.value = String(condition.value || '');
 
         select.addEventListener('change', () => {
             condition.value = select.value || null;
@@ -548,11 +623,11 @@ export class FilterBar extends EventEmitter {
         const input = container.createEl('input', {
             type: 'date',
             cls: 'filter-bar__value-input',
-            value: condition.value || ''
+            value: String(condition.value || '')
         });
 
         input.addEventListener('change', () => {
-            condition.value = input.value;
+            condition.value = input.value || null;
             this.emitQueryChange(); // Date changes are immediate, no need for debouncing
         });
     }
@@ -564,11 +639,11 @@ export class FilterBar extends EventEmitter {
         const input = container.createEl('input', {
             type: 'number',
             cls: 'filter-bar__value-input',
-            value: condition.value || ''
+            value: String(condition.value || '')
         });
 
         input.addEventListener('input', () => {
-            condition.value = parseFloat(input.value) || null;
+            condition.value = input.value ? parseFloat(input.value) : null;
             this.debouncedEmitQueryChange();
         });
     }
@@ -773,7 +848,7 @@ export class FilterBar extends EventEmitter {
     private addFilterCondition(group: FilterGroup): void {
         const condition: FilterCondition = {
             type: 'condition',
-            id: this.generateId(),
+            id: FilterUtils.generateId(),
             property: 'title',
             operator: 'contains',
             value: ''
@@ -790,7 +865,7 @@ export class FilterBar extends EventEmitter {
     private addFilterGroup(group: FilterGroup): void {
         const newGroup: FilterGroup = {
             type: 'group',
-            id: this.generateId(),
+            id: FilterUtils.generateId(),
             conjunction: 'and',
             children: []
         };
@@ -977,8 +1052,51 @@ export class FilterBar extends EventEmitter {
      * Update UI to reflect current query state
      */
     private updateUI(): void {
+        // Sync search input with current query
+        this.syncSearchInput();
+        
         // Re-render everything to ensure consistency
         this.render();
+    }
+
+    /**
+     * Update only the filter builder section without re-rendering search input
+     */
+    private updateFilterBuilder(): void {
+        if (this.filterBuilder) {
+            // Store current search input value and focus state
+            const currentValue = this.searchInput?.value;
+            const hasFocus = this.searchInput === document.activeElement;
+            
+            this.filterBuilder.empty();
+            this.renderFilterGroup(this.filterBuilder, this.currentQuery, 0);
+            
+            // Restore search input value and focus if needed
+            if (this.searchInput && currentValue !== undefined) {
+                this.searchInput.value = currentValue;
+                if (hasFocus) {
+                    this.searchInput.focus();
+                }
+            }
+        }
+    }
+
+    /**
+     * Sync the search input with the current query state
+     */
+    private syncSearchInput(): void {
+        if (!this.searchInput || this.isUserTyping) return;
+        
+        // Find search condition in current query
+        const searchCondition = this.currentQuery.children.find(child => 
+            child.type === 'condition' && 
+            child.property === 'title' && 
+            child.operator === 'contains' &&
+            child.id.startsWith('search_')
+        ) as FilterCondition | undefined;
+        
+        // Update search input value only if user is not actively typing
+        this.searchInput.value = String(searchCondition?.value || '');
     }
 
     /**
