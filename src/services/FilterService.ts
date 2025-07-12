@@ -1,4 +1,4 @@
-import { FilterQuery, TaskInfo, TaskSortKey, TaskGroupKey, SortDirection } from '../types';
+import { FilterQuery, TaskInfo, TaskSortKey, TaskGroupKey, SortDirection, FilterCondition, FilterGroup, FilterProperty, FilterOperator, FILTER_PROPERTIES, FILTER_OPERATORS } from '../types';
 import { parseLinktext } from 'obsidian';
 import { MinimalNativeCache } from '../utils/MinimalNativeCache';
 import { StatusManager } from './StatusManager';
@@ -39,71 +39,296 @@ export class FilterService extends EventEmitter {
 
     /**
      * Main method to get filtered, sorted, and grouped tasks
-     * Uses performance-optimized strategy starting with smallest dataset
+     * Handles the new advanced FilterQuery structure with nested conditions and groups
      */
     async getGroupedTasks(query: FilterQuery, targetDate?: Date): Promise<Map<string, TaskInfo[]>> {
-        // Step 1: Get initial task set using best available index
-        let initialTaskPaths = await this.getInitialTaskSet(query);
+        // Get all tasks (we can optimize this later with smarter indexing)
+        let allTaskPaths = this.cacheManager.getAllTaskPaths();
         
-        // Step 2: Convert paths to TaskInfo objects with filtering
-        const filteredTasks = await this.filterTasksByQuery(initialTaskPaths, query);
+        // Convert paths to TaskInfo objects
+        const allTasks = await this.pathsToTaskInfos(Array.from(allTaskPaths));
         
-        // Step 3: Sort the filtered results
-        const sortedTasks = this.sortTasks(filteredTasks, query.sortKey, query.sortDirection);
+        // Filter tasks using the new recursive evaluation
+        const filteredTasks = allTasks.filter(task => this.evaluateFilterNode(query, task));
         
-        // Step 4: Group the sorted results
-        return this.groupTasks(sortedTasks, query.groupKey, targetDate);
+        // Sort the filtered results
+        const sortedTasks = this.sortTasks(filteredTasks, query.sortKey || 'due', query.sortDirection || 'asc');
+        
+        // Group the sorted results
+        return this.groupTasks(sortedTasks, query.groupKey || 'none', targetDate);
     }
 
     /**
-     * Get the smallest possible initial dataset using CacheManager indexes
-     * Priority order: status > priority > date > all tasks
+     * Convert task paths to TaskInfo objects
      */
-    private async getInitialTaskSet(query: FilterQuery): Promise<Set<string>> {
-        // Strategy 1: Use specific status index
-        if (query.statuses && query.statuses.length === 1) {
-            const statusPathsArray = this.cacheManager.getTaskPathsByStatus(query.statuses[0]);
-            const statusPaths = new Set(statusPathsArray);
-            if (statusPaths.size > 0) {
-                return statusPaths;
-            }
-        } else if (query.statuses && query.statuses.length > 1) {
-            // Multiple statuses: combine their index sets
-            const combinedPaths = new Set<string>();
-            for (const status of query.statuses) {
-                const statusPathsArray = this.cacheManager.getTaskPathsByStatus(status);
-                statusPathsArray.forEach(path => combinedPaths.add(path));
-            }
-            if (combinedPaths.size > 0) {
-                return combinedPaths;
-            }
-        }
-
-        // Strategy 2: Use priority index if specific priorities requested
-        if (query.priorities && query.priorities.length === 1) {
-            const priorityPathsArray = this.cacheManager.getTaskPathsByPriority(query.priorities[0]);
-            const priorityPaths = new Set(priorityPathsArray);
-            if (priorityPaths.size > 0) {
-                return priorityPaths;
-            }
-        }
-
-        // Strategy 3: Use date range if specified (with optional overdue tasks)
-        if (query.dateRange) {
-            const dateRangePaths = await this.getTaskPathsInDateRange(query.dateRange.start, query.dateRange.end);
+    private async pathsToTaskInfos(paths: string[]): Promise<TaskInfo[]> {
+        const tasks: TaskInfo[] = [];
+        const batchSize = 50;
+        
+        for (let i = 0; i < paths.length; i += batchSize) {
+            const batch = paths.slice(i, i + batchSize);
+            const batchTasks = await Promise.all(
+                batch.map(path => this.cacheManager.getCachedTaskInfo(path))
+            );
             
-            // If includeOverdue is true, combine with overdue tasks
-            if (query.includeOverdue) {
-                const overduePaths = this.getOverdueTaskPaths();
-                return this.combineTaskPathSets([dateRangePaths, overduePaths]);
+            for (const task of batchTasks) {
+                if (task) {
+                    tasks.push(task);
+                }
             }
-            
-            return dateRangePaths;
         }
-
-        // Strategy 4: Fallback to all tasks
-        return this.cacheManager.getAllTaskPaths();
+        
+        return tasks;
     }
+
+    /**
+     * Recursively evaluate a filter node (group or condition) against a task
+     * Returns true if the task matches the filter criteria
+     */
+    private evaluateFilterNode(node: FilterGroup | FilterCondition, task: TaskInfo): boolean {
+        if (node.type === 'condition') {
+            return this.evaluateCondition(node, task);
+        } else if (node.type === 'group') {
+            return this.evaluateGroup(node, task);
+        }
+        return true; // Default to true if unknown node type
+    }
+
+    /**
+     * Evaluate a filter group against a task
+     */
+    private evaluateGroup(group: FilterGroup, task: TaskInfo): boolean {
+        if (group.children.length === 0) {
+            return true; // Empty group matches everything
+        }
+
+        if (group.conjunction === 'and') {
+            // All children must match
+            return group.children.every(child => this.evaluateFilterNode(child, task));
+        } else if (group.conjunction === 'or') {
+            // At least one child must match
+            return group.children.some(child => this.evaluateFilterNode(child, task));
+        }
+
+        return true; // Default to true if unknown conjunction
+    }
+
+    /**
+     * Evaluate a single filter condition against a task
+     */
+    private evaluateCondition(condition: FilterCondition, task: TaskInfo): boolean {
+        const { property, operator, value } = condition;
+        
+        // Get the actual value from the task
+        const taskValue = this.getTaskPropertyValue(task, property);
+        
+        // Apply the operator
+        return this.applyOperator(taskValue, operator as FilterOperator, value);
+    }
+
+    /**
+     * Get the value of a specific property from a task
+     */
+    private getTaskPropertyValue(task: TaskInfo, property: string): any {
+        switch (property) {
+            case 'title':
+                return task.title;
+            case 'status':
+                return task.status;
+            case 'priority':
+                return task.priority;
+            case 'tags':
+                return task.tags || [];
+            case 'contexts':
+                return task.contexts || [];
+            case 'projects':
+                return task.projects || [];
+            case 'due':
+                return task.due;
+            case 'scheduled':
+                return task.scheduled;
+            case 'completedDate':
+                return task.completedDate;
+            case 'file.ctime':
+                return task.dateCreated;
+            case 'file.mtime':
+                return task.dateModified;
+            case 'archived':
+                return task.archived;
+            case 'timeEstimate':
+                return task.timeEstimate;
+            case 'recurrence':
+                return task.recurrence;
+            case 'status.isCompleted':
+                return this.statusManager.isCompletedStatus(task.status);
+            default:
+                return undefined;
+        }
+    }
+
+    /**
+     * Apply a filter operator to compare task value with condition value
+     */
+    private applyOperator(taskValue: any, operator: FilterOperator, conditionValue: any): boolean {
+        switch (operator) {
+            case 'is':
+                return this.isEqual(taskValue, conditionValue);
+            case 'is-not':
+                return !this.isEqual(taskValue, conditionValue);
+            case 'contains':
+                return this.contains(taskValue, conditionValue);
+            case 'does-not-contain':
+                return !this.contains(taskValue, conditionValue);
+            case 'is-before':
+                return this.isBefore(taskValue, conditionValue);
+            case 'is-after':
+                return this.isAfter(taskValue, conditionValue);
+            case 'is-on-or-before':
+                return this.isOnOrBefore(taskValue, conditionValue);
+            case 'is-on-or-after':
+                return this.isOnOrAfter(taskValue, conditionValue);
+            case 'is-empty':
+                return this.isEmpty(taskValue);
+            case 'is-not-empty':
+                return !this.isEmpty(taskValue);
+            case 'is-checked':
+                return taskValue === true;
+            case 'is-not-checked':
+                return taskValue !== true;
+            case 'is-greater-than':
+                return this.isGreaterThan(taskValue, conditionValue);
+            case 'is-less-than':
+                return this.isLessThan(taskValue, conditionValue);
+            default:
+                return true;
+        }
+    }
+
+    /**
+     * Equality comparison that handles arrays and different value types
+     */
+    private isEqual(taskValue: any, conditionValue: any): boolean {
+        if (Array.isArray(taskValue)) {
+            if (Array.isArray(conditionValue)) {
+                // Both arrays: check if any task value matches any condition value
+                return taskValue.some(tv => conditionValue.includes(tv));
+            } else {
+                // Task has array, condition is single value
+                return taskValue.includes(conditionValue);
+            }
+        } else {
+            if (Array.isArray(conditionValue)) {
+                // Task has single value, condition is array
+                return conditionValue.includes(taskValue);
+            } else {
+                // Both single values
+                return taskValue === conditionValue;
+            }
+        }
+    }
+
+    /**
+     * Contains comparison for text and arrays
+     */
+    private contains(taskValue: any, conditionValue: any): boolean {
+        if (Array.isArray(taskValue)) {
+            if (Array.isArray(conditionValue)) {
+                // Both arrays: check if any condition value is contained in task values
+                return conditionValue.some(cv => taskValue.includes(cv));
+            } else {
+                // Task has array, condition is single value
+                return taskValue.includes(conditionValue);
+            }
+        } else if (typeof taskValue === 'string') {
+            if (Array.isArray(conditionValue)) {
+                // Task has string, condition is array
+                return conditionValue.some(cv => taskValue.toLowerCase().includes(cv.toLowerCase()));
+            } else {
+                // Both strings
+                return taskValue.toLowerCase().includes(conditionValue.toLowerCase());
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Date comparison: is task value before condition value
+     */
+    private isBefore(taskValue: any, conditionValue: any): boolean {
+        if (!taskValue || !conditionValue) return false;
+        try {
+            return isBeforeDateTimeAware(taskValue, conditionValue);
+        } catch {
+            return false;
+        }
+    }
+
+    /**
+     * Date comparison: is task value after condition value
+     */
+    private isAfter(taskValue: any, conditionValue: any): boolean {
+        if (!taskValue || !conditionValue) return false;
+        try {
+            return isBeforeDateTimeAware(conditionValue, taskValue);
+        } catch {
+            return false;
+        }
+    }
+
+    /**
+     * Date comparison: is task value on or before condition value
+     */
+    private isOnOrBefore(taskValue: any, conditionValue: any): boolean {
+        if (!taskValue || !conditionValue) return false;
+        try {
+            return isBeforeDateTimeAware(taskValue, conditionValue) || isSameDateSafe(getDatePart(taskValue), getDatePart(conditionValue));
+        } catch {
+            return false;
+        }
+    }
+
+    /**
+     * Date comparison: is task value on or after condition value  
+     */
+    private isOnOrAfter(taskValue: any, conditionValue: any): boolean {
+        if (!taskValue || !conditionValue) return false;
+        try {
+            return isBeforeDateTimeAware(conditionValue, taskValue) || isSameDateSafe(getDatePart(taskValue), getDatePart(conditionValue));
+        } catch {
+            return false;
+        }
+    }
+
+    /**
+     * Check if value is empty (null, undefined, empty string, empty array)
+     */
+    private isEmpty(value: any): boolean {
+        if (value === null || value === undefined) return true;
+        if (typeof value === 'string') return value.trim() === '';
+        if (Array.isArray(value)) return value.length === 0;
+        return false;
+    }
+
+    /**
+     * Numeric comparison: is task value greater than condition value
+     */
+    private isGreaterThan(taskValue: any, conditionValue: any): boolean {
+        const taskNum = typeof taskValue === 'number' ? taskValue : parseFloat(taskValue);
+        const conditionNum = typeof conditionValue === 'number' ? conditionValue : parseFloat(conditionValue);
+        if (isNaN(taskNum) || isNaN(conditionNum)) return false;
+        return taskNum > conditionNum;
+    }
+
+    /**
+     * Numeric comparison: is task value less than condition value
+     */
+    private isLessThan(taskValue: any, conditionValue: any): boolean {
+        const taskNum = typeof taskValue === 'number' ? taskValue : parseFloat(taskValue);
+        const conditionNum = typeof conditionValue === 'number' ? conditionValue : parseFloat(conditionValue);
+        if (isNaN(taskNum) || isNaN(conditionNum)) return false;
+        return taskNum < conditionNum;
+    }
+
 
     /**
      * Get task paths within a date range
@@ -167,31 +392,6 @@ export class FilterService extends EventEmitter {
         return combined;
     }
 
-    /**
-     * Filter task paths to TaskInfo objects based on query criteria
-     */
-    private async filterTasksByQuery(taskPaths: Set<string>, query: FilterQuery): Promise<TaskInfo[]> {
-        const filteredTasks: TaskInfo[] = [];
-        
-        // Process paths in batches for better performance
-        const batchSize = 50;
-        const pathArray = Array.from(taskPaths);
-
-        for (let i = 0; i < pathArray.length; i += batchSize) {
-            const batch = pathArray.slice(i, i + batchSize);
-            const batchTasks = await Promise.all(
-                batch.map(path => this.cacheManager.getCachedTaskInfo(path))
-            );
-
-            for (const task of batchTasks) {
-                if (task && this.matchesQuery(task, query)) {
-                    filteredTasks.push(task);
-                }
-            }
-        }
-
-        return filteredTasks;
-    }
 
     /**
      * Check if a date string falls within a date range (inclusive)
@@ -230,145 +430,6 @@ export class FilterService extends EventEmitter {
         }
     }
 
-    /**
-     * Check if a task matches the filter query
-     */
-    private matchesQuery(task: TaskInfo, query: FilterQuery): boolean {
-        // Search query filter
-        if (query.searchQuery) {
-            const searchTerm = query.searchQuery.toLowerCase();
-            const titleMatch = (task.title || '').toLowerCase().includes(searchTerm);
-            const contextMatch = task.contexts?.some(context => 
-                context && typeof context === 'string' && context.toLowerCase().includes(searchTerm)
-            ) || false;
-            const filteredProjectsForSearch = filterEmptyProjects(task.projects || []);
-            const projectMatch = filteredProjectsForSearch.some(project => 
-                project.toLowerCase().includes(searchTerm)
-            );
-            
-            if (!titleMatch && !contextMatch && !projectMatch) {
-                return false;
-            }
-        }
-
-        // Status filter (if not already used for initial set)
-        if (query.statuses && query.statuses.length > 0) {
-            // Check if task status is in the selected statuses
-            if (!query.statuses.includes(task.status)) {
-                return false;
-            }
-        }
-
-        // Priority filter (if not already used for initial set)
-        if (query.priorities && query.priorities.length > 0) {
-            if (!query.priorities.includes(task.priority)) {
-                return false;
-            }
-        }
-
-        // Context filter
-        if (query.contexts && query.contexts.length > 0) {
-            if (!task.contexts || !query.contexts.some(context => 
-                task.contexts!.includes(context)
-            )) {
-                return false;
-            }
-        }
-
-        // Project filter
-        if (query.projects && query.projects.length > 0) {
-            const filteredProjects = filterEmptyProjects(task.projects || []);
-            if (filteredProjects.length === 0) {
-                return false;
-            }
-            
-            // Extract project names from task project values (handling [[links]])
-            const taskProjectNames = filteredProjects.flatMap(projectValue => 
-                this.extractProjectNamesFromTaskValue(projectValue, task.path)
-            );
-            
-            // Check if any selected project matches any extracted project name
-            const hasMatchingProject = query.projects.some(selectedProject => 
-                taskProjectNames.includes(selectedProject)
-            );
-            
-            if (!hasMatchingProject) {
-                return false;
-            }
-        }
-
-        // Archived filter
-        if (!query.showArchived && task.archived) {
-            return false;
-        }
-
-        // Date range filter (if not already used for initial set)
-        if (query.dateRange) {
-            // For recurring tasks without due dates, check if they appear on any date in range
-            if (task.recurrence && !task.due) {
-                const startDate = new Date(query.dateRange.start);
-                const endDate = new Date(query.dateRange.end);
-                
-                // Check each date in range to see if recurring task should appear
-                let appearsInRange = false;
-                for (let date = new Date(startDate); date <= endDate; date.setDate(date.getDate() + 1)) {
-                    if (isDueByRRule(task, date)) {
-                        appearsInRange = true;
-                        break;
-                    }
-                }
-                
-                if (!appearsInRange) {
-                    return false;
-                }
-            }
-            // For tasks with due dates or scheduled dates, check if either falls within range
-            else if (task.due || task.scheduled) {
-                let inRange = false;
-                
-                // Check due date
-                if (task.due) {
-                    if (query.includeOverdue && isOverdueTimeAware(task.due)) {
-                        // This is an overdue task and we want to include overdue tasks
-                        inRange = true;
-                    } else if (this.isDateInRange(task.due, query.dateRange.start, query.dateRange.end)) {
-                        inRange = true;
-                    }
-                }
-                
-                // Check scheduled date if due date doesn't qualify
-                if (!inRange && task.scheduled) {
-                    if (query.includeOverdue && isOverdueTimeAware(task.scheduled)) {
-                        // This is an overdue scheduled task and we want to include overdue tasks
-                        inRange = true;
-                    } else if (this.isDateInRange(task.scheduled, query.dateRange.start, query.dateRange.end)) {
-                        inRange = true;
-                    }
-                }
-                
-                if (!inRange) {
-                    return false;
-                }
-            }
-        }
-
-        // Show options filters
-        
-        // Show recurrent tasks filter
-        if (query.showRecurrent === false && task.recurrence) {
-            return false;
-        }
-        
-        // Show completed tasks filter
-        if (query.showCompleted === false) {
-            // Check if task is completed using StatusManager (user-defined completion statuses)
-            if (this.statusManager.isCompletedStatus(task.status) || task.completedDate) {
-                return false;
-            }
-        }
-
-        return true;
-    }
 
     /**
      * Sort tasks by specified criteria
@@ -723,9 +784,8 @@ export class FilterService extends EventEmitter {
 
     /**
      * Get available filter options for building FilterBar UI
-     * Filters contexts and projects based on whether archived tasks are shown
      */
-    async getFilterOptions(query?: FilterQuery): Promise<{
+    async getFilterOptions(): Promise<{
         statuses: string[];
         priorities: string[];
         contexts: string[];
@@ -738,56 +798,106 @@ export class FilterService extends EventEmitter {
             projects: this.cacheManager.getAllProjects()
         };
         
-        // If showArchived is false, filter out contexts/projects that only exist in archived tasks
-        if (query && !query.showArchived) {
-            const visibleContexts = new Set<string>();
-            const visibleProjects = new Set<string>();
-            
-            // Get all non-archived tasks and collect their contexts/projects
-            const allTasks = await this.cacheManager.getAllTasks();
-            const nonArchivedTasks = allTasks.filter(task => !task.archived);
-            
-            nonArchivedTasks.forEach(task => {
-                if (task.contexts) {
-                    task.contexts.forEach(context => visibleContexts.add(context));
-                }
-                if (task.projects) {
-                    const filteredProjects = filterEmptyProjects(task.projects);
-                    filteredProjects.forEach(project => {
-                        // Extract clean project names using the same logic as getAllProjects()
-                        const extractedProjectNames = this.extractProjectNamesFromTaskValue(project, task.path);
-                        extractedProjectNames.forEach(projectName => visibleProjects.add(projectName));
-                    });
-                }
-            });
-            
-            allOptions.contexts = Array.from(visibleContexts).sort();
-            allOptions.projects = Array.from(visibleProjects).sort();
-        }
-        
-        // Debug: Log filter options
-        console.debug('FilterService: getFilterOptions called with query:', query);
-        console.debug('FilterService: getFilterOptions returning:', allOptions);
-        
         return allOptions;
     }
 
     /**
-     * Create a default filter query
+     * Create a default filter query with the new structure
      */
     createDefaultQuery(): FilterQuery {
         return {
-            searchQuery: undefined,
-            statuses: undefined,
-            contexts: undefined,
-            projects: undefined,
-            priorities: undefined,
-            dateRange: undefined,
-            showArchived: false,
+            type: 'group',
+            id: this.generateId(),
+            conjunction: 'and',
+            children: [],
             sortKey: 'due',
             sortDirection: 'asc',
             groupKey: 'none'
         };
+    }
+
+    /**
+     * Generate a unique ID for filter nodes
+     */
+    private generateId(): string {
+        return Math.random().toString(36).substr(2, 9);
+    }
+
+
+    /**
+     * Add quick toggle conditions (Show Completed, Show Archived, Hide Recurring)
+     * These are syntactic sugar that programmatically modify the root query
+     */
+    addQuickToggleCondition(query: FilterQuery, toggle: 'showCompleted' | 'showArchived' | 'showRecurrent', enabled: boolean): FilterQuery {
+        const newQuery = JSON.parse(JSON.stringify(query)); // Deep clone
+
+        // Remove existing condition for this toggle if it exists
+        this.removeQuickToggleCondition(newQuery, toggle);
+
+        // Add new condition if toggle is disabled (meaning we want to filter out)
+        if (!enabled) {
+            let condition: FilterCondition;
+            
+            switch (toggle) {
+                case 'showCompleted':
+                    condition = {
+                        type: 'condition',
+                        id: this.generateId(),
+                        property: 'status.isCompleted',
+                        operator: 'is',
+                        value: false
+                    };
+                    break;
+                case 'showArchived':
+                    condition = {
+                        type: 'condition',
+                        id: this.generateId(),
+                        property: 'archived',
+                        operator: 'is-not-checked',
+                        value: null
+                    };
+                    break;
+                case 'showRecurrent':
+                    condition = {
+                        type: 'condition',
+                        id: this.generateId(),
+                        property: 'recurrence',
+                        operator: 'is-empty',
+                        value: null
+                    };
+                    break;
+            }
+            
+            newQuery.children.push(condition);
+        }
+
+        return newQuery;
+    }
+
+    /**
+     * Remove quick toggle condition from query
+     */
+    private removeQuickToggleCondition(query: FilterQuery, toggle: 'showCompleted' | 'showArchived' | 'showRecurrent'): void {
+        let propertyToRemove: string;
+        
+        switch (toggle) {
+            case 'showCompleted':
+                propertyToRemove = 'status.isCompleted';
+                break;
+            case 'showArchived':
+                propertyToRemove = 'archived';
+                break;
+            case 'showRecurrent':
+                propertyToRemove = 'recurrence';
+                break;
+        }
+
+        query.children = query.children.filter(child => {
+            if (child.type === 'condition') {
+                return child.property !== propertyToRemove;
+            }
+            return true;
+        });
     }
 
     /**
@@ -797,13 +907,12 @@ export class FilterService extends EventEmitter {
         const defaultQuery = this.createDefaultQuery();
         
         return {
-            searchQuery: query.searchQuery || defaultQuery.searchQuery,
-            statuses: query.statuses || defaultQuery.statuses,
-            contexts: query.contexts || defaultQuery.contexts,
-            projects: query.projects || defaultQuery.projects,
-            priorities: query.priorities || defaultQuery.priorities,
-            dateRange: query.dateRange || defaultQuery.dateRange,
-            showArchived: query.showArchived ?? defaultQuery.showArchived,
+            ...defaultQuery,
+            ...query,
+            type: 'group',
+            id: query.id || defaultQuery.id,
+            conjunction: query.conjunction || defaultQuery.conjunction,
+            children: query.children || defaultQuery.children,
             sortKey: query.sortKey || defaultQuery.sortKey,
             sortDirection: query.sortDirection || defaultQuery.sortDirection,
             groupKey: query.groupKey || defaultQuery.groupKey
@@ -879,13 +988,12 @@ export class FilterService extends EventEmitter {
         const isViewingToday = isTodayUtil(dateStr);
         
         
-        // Get tasks using existing query logic but apply date-specific filtering
-        const allTasks = await this.filterTasksByQuery(
-            await this.getInitialTaskSet(baseQuery), 
-            baseQuery
-        );
+        // Get all tasks and filter using new system
+        const allTaskPaths = this.cacheManager.getAllTaskPaths();
+        const allTasks = await this.pathsToTaskInfos(Array.from(allTaskPaths));
+        const filteredTasks = allTasks.filter(task => this.evaluateFilterNode(baseQuery, task));
 
-        const tasksForDate = allTasks.filter(task => {
+        const tasksForDate = filteredTasks.filter(task => {
             // Handle recurring tasks
             if (task.recurrence) {
                 return isDueByRRule(task, normalizedDate);
@@ -930,38 +1038,25 @@ export class FilterService extends EventEmitter {
         });
 
         // Apply sorting to the filtered tasks for this date
-        return this.sortTasks(tasksForDate, baseQuery.sortKey, baseQuery.sortDirection);
+        return this.sortTasks(tasksForDate, baseQuery.sortKey || 'due', baseQuery.sortDirection || 'asc');
     }
 
     /**
      * Get agenda data grouped by dates for agenda views
-     * Centralizes all the complex agenda filtering logic
+     * Simplified for new filter system
      */
     async getAgendaData(
         dates: Date[], 
-        baseQuery: Omit<FilterQuery, 'dateRange' | 'includeOverdue'>,
+        baseQuery: FilterQuery,
         showOverdueOnToday = false
     ): Promise<Array<{date: Date; tasks: TaskInfo[]}>> {
-        // Build the complete query with date range
-        const dateRange = FilterService.createDateRangeFromDates(dates);
-        
-        // Always include overdue tasks in the initial set if today is in the date range,
-        // but control their display per-date in getTasksForDate
-        const includeOverdue = FilterService.shouldIncludeOverdueForRange(dates, showOverdueOnToday);
-        
-        const completeQuery: FilterQuery = {
-            ...baseQuery,
-            dateRange,
-            includeOverdue
-        };
-
         const agendaData: Array<{date: Date; tasks: TaskInfo[]}> = [];
 
         // Get tasks for each date
         for (const date of dates) {
             const tasksForDate = await this.getTasksForDate(
                 date, 
-                completeQuery, 
+                baseQuery, 
                 showOverdueOnToday && isToday(date)
             );
             
@@ -980,7 +1075,7 @@ export class FilterService extends EventEmitter {
      */
     async getFlatAgendaData(
         dates: Date[], 
-        baseQuery: Omit<FilterQuery, 'dateRange' | 'includeOverdue'>,
+        baseQuery: FilterQuery,
         showOverdueOnToday = false
     ): Promise<Array<TaskInfo & {agendaDate: Date}>> {
         const groupedData = await this.getAgendaData(dates, baseQuery, showOverdueOnToday);

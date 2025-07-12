@@ -29,7 +29,7 @@ import { TaskCreationModal } from '../modals/TaskCreationModal';
 import { TaskEditModal } from '../modals/TaskEditModal';
 import { UnscheduledTasksSelectorModal, ScheduleTaskOptions } from '../modals/UnscheduledTasksSelectorModal';
 import { TimeblockCreationModal } from '../modals/TimeblockCreationModal';
-import { FilterBar } from '../ui/FilterBar';
+// import { FilterBar } from '../ui/FilterBar';
 import { showTaskContextMenu } from '../ui/TaskCard';
 import { 
     hasTimeComponent, 
@@ -81,7 +81,7 @@ export class AdvancedCalendarView extends ItemView {
     private resizeTimeout: number | null = null;
     
     // Filter system
-    private filterBar: FilterBar | null = null;
+    // private filterBar: FilterBar | null = null;
     private currentQuery: FilterQuery;
     
     // View toggles (keeping for calendar-specific display options)
@@ -107,14 +107,12 @@ export class AdvancedCalendarView extends ItemView {
         this.showICSEvents = this.plugin.settings.calendarViewSettings.defaultShowICSEvents;
         this.showTimeblocks = this.plugin.settings.calendarViewSettings.defaultShowTimeblocks;
         
-        // Initialize with default filter query
+        // Initialize with default query - will be properly set when plugin services are ready
         this.currentQuery = {
-            searchQuery: undefined,
-            statuses: undefined,
-            contexts: undefined,
-            priorities: undefined,
-            dateRange: undefined,
-            showArchived: false,
+            type: 'group',
+            id: 'temp',
+            conjunction: 'and',
+            children: [],
             sortKey: 'due',
             sortDirection: 'asc',
             groupKey: 'none'
@@ -209,50 +207,13 @@ export class AdvancedCalendarView extends ItemView {
             cls: `advanced-calendar-view__main-row ${this.headerCollapsed ? 'collapsed' : 'expanded'}`
         });
         
-        // Create FilterBar container
+        // TODO: Temporarily disabled FilterBar for AdvancedCalendarView during migration
+        // Will be re-enabled after FilterBar stabilization
+        /*
         const filterBarContainer = mainRow.createDiv({ cls: 'filter-bar-container' });
-        
-        // Get filter options from FilterService
-        const filterOptions = await this.plugin.filterService.getFilterOptions(this.currentQuery);
-        
-        // Create FilterBar with AdvancedCalendarView configuration
-        this.filterBar = new FilterBar(
-            filterBarContainer,
-            this.currentQuery,
-            filterOptions,
-            {
-                showSearch: true,
-                showGroupBy: false, // Calendar doesn't need grouping
-                showSortBy: false,  // Calendar sorts by date
-                showAdvancedFilters: true,
-                showDateRangePicker: false, // Calendar provides date navigation
-                allowedSortKeys: [],
-                allowedGroupKeys: [],
-                showViewOptions: true // Enable view options in FilterBar
-            }
-        );
-        
-        // Initialize FilterBar
-        await this.filterBar.initialize();
-        
-        // Set up view options if supported
-        if (this.filterBar.setViewOptions) {
-            this.filterBar.setViewOptions(
-                this.getViewOptionsConfig(),
-                (optionId: string, enabled: boolean) => this.onViewOptionChange(optionId, enabled)
-            );
-        }
-        
-        // Set up cache refresh mechanism for FilterBar
-        this.filterBar.setupCacheRefresh(this.plugin.cacheManager, this.plugin.filterService);
-        
-        // Listen for filter changes
-        this.filterBar.on('queryChange', async (newQuery: FilterQuery) => {
-            this.currentQuery = newQuery;
-            // Save the filter state
-            await this.plugin.viewStateManager.setFilterState(ADVANCED_CALENDAR_VIEW_TYPE, newQuery);
-            this.refreshEvents();
-        });
+        const filterOptions = await this.plugin.filterService.getFilterOptions();
+        this.filterBar = new FilterBar(filterBarContainer, this.currentQuery, filterOptions);
+        */
         
         
     }
@@ -270,13 +231,10 @@ export class AdvancedCalendarView extends ItemView {
     }
 
     private renderViewOptions() {
-        // Update view options in the FilterBar
-        if (this.filterBar && this.filterBar.setViewOptions) {
-            this.filterBar.setViewOptions(
-                this.getViewOptionsConfig(),
-                (optionId: string, enabled: boolean) => this.onViewOptionChange(optionId, enabled)
-            );
-        }
+        // TODO: Re-enable when FilterBar is restored
+        // if (this.filterBar && this.filterBar.setViewOptions) {
+        //     this.filterBar.setViewOptions(this.getViewOptionsConfig(), ...);
+        // }
     }
 
     // View options handling for FilterBar integration
@@ -322,13 +280,10 @@ export class AdvancedCalendarView extends ItemView {
         this.saveViewPreferences();
         this.refreshEvents();
         
-        // Update the view options in FilterBar to reflect the change
-        if (this.filterBar && this.filterBar.setViewOptions) {
-            this.filterBar.setViewOptions(
-                this.getViewOptionsConfig(),
-                (optionId: string, enabled: boolean) => this.onViewOptionChange(optionId, enabled)
-            );
-        }
+        // TODO: Re-enable when FilterBar is restored
+        // if (this.filterBar && this.filterBar.setViewOptions) {
+        //     this.filterBar.setViewOptions(this.getViewOptionsConfig(), ...);
+        // }
     }
     
     private getHeaderToolbarConfig() {
@@ -1490,11 +1445,11 @@ export class AdvancedCalendarView extends ItemView {
         this.listeners.forEach(listener => this.plugin.emitter.offref(listener));
         this.functionListeners.forEach(unsubscribe => unsubscribe());
         
-        // Clean up FilterBar
-        if (this.filterBar) {
-            this.filterBar.destroy();
-            this.filterBar = null;
-        }
+        // TODO: Re-enable when FilterBar is restored
+        // if (this.filterBar) {
+        //     this.filterBar.destroy();
+        //     this.filterBar = null;
+        // }
         
         // Destroy calendar
         if (this.calendar) {

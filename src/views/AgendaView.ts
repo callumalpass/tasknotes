@@ -15,7 +15,7 @@ import { createTaskCard, updateTaskCard } from '../ui/TaskCard';
 import { createNoteCard } from '../ui/NoteCard';
 import { FilterBar } from '../ui/FilterBar';
 import { FilterService } from '../services/FilterService';
-// No date utils needed
+import { getDatePart } from '../utils/dateUtils';
 
 export class AgendaView extends ItemView {
     plugin: TaskNotesPlugin;
@@ -24,6 +24,8 @@ export class AgendaView extends ItemView {
     private daysToShow = 7;
     private groupByDate = true;
     private startDate: Date;
+    private showOverdueOnToday = true;
+    private showNotes = true;
     
     // Filter system
     private filterBar: FilterBar | null = null;
@@ -38,18 +40,12 @@ export class AgendaView extends ItemView {
         this.plugin = plugin;
         this.startDate = new Date(plugin.selectedDate);
         
-        // Initialize with default query (will be updated in onOpen after plugin is ready)
+        // Initialize with default query - will be properly set when plugin services are ready
         this.currentQuery = {
-            searchQuery: undefined,
-            statuses: undefined,
-            contexts: undefined,
-            priorities: undefined,
-            dateRange: this.getDateRange(),
-            showArchived: false,
-            showRecurrent: true,
-            showCompleted: false,
-            showNotes: true,
-            showOverdueOnToday: false,
+            type: 'group',
+            id: 'temp',
+            conjunction: 'and',
+            children: [],
             sortKey: 'scheduled',
             sortDirection: 'asc',
             groupKey: 'none' // Agenda groups by date internally
@@ -115,11 +111,7 @@ export class AgendaView extends ItemView {
         // ViewStateManager loads synchronously now
         const savedQuery = this.plugin.viewStateManager.getFilterState(AGENDA_VIEW_TYPE);
         if (savedQuery) {
-            // Preserve our current date range but use saved filters
-            this.currentQuery = {
-                ...savedQuery,
-                dateRange: this.getDateRange()
-            };
+            this.currentQuery = savedQuery;
         }
         
         const contentEl = this.contentEl;
@@ -214,86 +206,85 @@ export class AgendaView extends ItemView {
         // Wait for cache to be initialized with actual data
         await this.waitForCacheReady();
         
-        // Get filter options from FilterService
-        const filterOptions = await this.plugin.filterService.getFilterOptions(this.currentQuery);
+        // Initialize with default query from FilterService
+        this.currentQuery = this.plugin.filterService.createDefaultQuery();
+        this.currentQuery.sortKey = 'scheduled';
+        this.currentQuery.sortDirection = 'asc';
+        this.currentQuery.groupKey = 'none';
         
-        // Create FilterBar with Agenda configuration
+        // Load saved filter state if it exists
+        const savedQuery = this.plugin.viewStateManager.getFilterState(AGENDA_VIEW_TYPE);
+        if (savedQuery) {
+            this.currentQuery = savedQuery;
+        }
+        
+        // Get filter options from FilterService
+        const filterOptions = await this.plugin.filterService.getFilterOptions();
+        
+        // Create new FilterBar
         this.filterBar = new FilterBar(
             filterBarContainer,
             this.currentQuery,
-            filterOptions,
-            {
-                showSearch: true,
-                showGroupBy: false, // Agenda groups by date internally
-                showSortBy: true,
-                showAdvancedFilters: true,
-                showShowDropdown: true, // Enable the new show dropdown
-                allowedSortKeys: ['due', 'scheduled', 'priority', 'title'],
-                allowedGroupKeys: ['none'], // Only none allowed since we group by date
-                customButtons: [
-                    {
-                        id: 'period-selector',
-                        onCreate: (container: HTMLElement) => {
-                            this.renderPeriodSelector(container);
-                        }
-                    },
-                    {
-                        id: 'today-button', 
-                        onCreate: (container: HTMLElement) => {
-                            this.renderTodayButton(container);
-                        }
-                    }
-                ]
-            }
+            filterOptions
         );
         
-        // Initialize FilterBar (placeholder for future cache-ready initialization)
-        await this.filterBar.initialize();
+        // Get saved views for the FilterBar
+        const savedViews = this.plugin.viewStateManager.getSavedViews();
+        this.filterBar.updateSavedViews(savedViews);
         
-        // Set up cache refresh mechanism for FilterBar
-        this.filterBar.setupCacheRefresh(this.plugin.cacheManager, this.plugin.filterService);
-        
-        // Set up show options configuration
-        const showOptions: { id: keyof FilterQuery; label: string; value: boolean }[] = [
-            { id: 'showArchived', label: 'Archived tasks', value: this.currentQuery.showArchived },
-            { id: 'showRecurrent', label: 'Recurrent tasks', value: this.currentQuery.showRecurrent ?? true },
-            { id: 'showCompleted', label: 'Completed tasks', value: this.currentQuery.showCompleted ?? false },
-            { id: 'showOverdueOnToday', label: 'Overdue on today', value: this.currentQuery.showOverdueOnToday ?? false }
-        ];
-        
-        // Only add "Show notes" option if note indexing is enabled
-        if (!this.plugin.settings.disableNoteIndexing) {
-            showOptions.push({ id: 'showNotes', label: 'Show notes', value: this.currentQuery.showNotes ?? true });
-        }
-        
-        this.filterBar.setShowOptions(showOptions, (optionId: keyof FilterQuery, enabled: boolean) => {
-            // Update the specific show option in the query
-            if (optionId === 'showArchived') {
-                this.currentQuery.showArchived = enabled;
-            } else if (optionId === 'showRecurrent') {
-                this.currentQuery.showRecurrent = enabled;
-            } else if (optionId === 'showCompleted') {
-                this.currentQuery.showCompleted = enabled;
-            } else if (optionId === 'showNotes') {
-                this.currentQuery.showNotes = enabled;
-            } else if (optionId === 'showOverdueOnToday') {
-                this.currentQuery.showOverdueOnToday = enabled;
-            }
-            
-            // Update the FilterBar with the new query
-            this.filterBar?.updateQuery(this.currentQuery);
-            
-            this.refresh();
+        // Listen for saved view events
+        this.filterBar.on('saveView', ({ name, query }) => {
+            this.plugin.viewStateManager.saveView(name, query);
+            const updatedViews = this.plugin.viewStateManager.getSavedViews();
+            this.filterBar?.updateSavedViews(updatedViews);
         });
+        
+        this.filterBar.on('manageViews', () => {
+            console.log('Manage views requested');
+        });
+        
         
         // Listen for filter changes
         this.filterBar.on('queryChange', async (newQuery: FilterQuery) => {
             this.currentQuery = newQuery;
             // Save the filter state (but always update date range based on current view)
-            const queryToSave = { ...newQuery, dateRange: this.getDateRange() };
+            const queryToSave = newQuery;
             await this.plugin.viewStateManager.setFilterState(AGENDA_VIEW_TYPE, queryToSave);
             this.refresh();
         });
+
+        // Set up view-specific options
+        this.setupViewOptions();
+    }
+
+    /**
+     * Set up view-specific options for the FilterBar
+     */
+    private setupViewOptions(): void {
+        if (!this.filterBar) return;
+
+        const options = [
+            {
+                id: 'showOverdueOnToday',
+                label: 'Show overdue on today',
+                value: this.showOverdueOnToday,
+                onChange: (value: boolean) => {
+                    this.showOverdueOnToday = value;
+                    this.refresh();
+                }
+            },
+            {
+                id: 'showNotes',
+                label: 'Show notes',
+                value: this.showNotes,
+                onChange: (value: boolean) => {
+                    this.showNotes = value;
+                    this.refresh();
+                }
+            }
+        ];
+
+        this.filterBar.setViewOptions(options);
     }
     
     /**
@@ -327,8 +318,7 @@ export class AgendaView extends ItemView {
                 this.daysToShow = parseInt(value);
             }
             
-            // Update the date range in the query
-            this.currentQuery.dateRange = this.getDateRange();
+            // Date range is handled internally by getAgendaDates()
             
             this.refresh();
         });
@@ -361,7 +351,7 @@ export class AgendaView extends ItemView {
      * Add notes to agenda data by fetching notes for each specific date
      */
     private async addNotesToAgendaData(agendaData: Array<{date: Date; tasks: TaskInfo[]}>): Promise<Array<{date: Date; tasks: TaskInfo[]; notes: NoteInfo[]}>> {
-        if (!this.currentQuery.showNotes || this.plugin.settings.disableNoteIndexing) {
+        if (this.plugin.settings.disableNoteIndexing || !this.showNotes) {
             return agendaData.map(dayData => ({ ...dayData, notes: [] }));
         }
 
@@ -384,24 +374,35 @@ export class AgendaView extends ItemView {
         try {
             const dates = this.getAgendaDates();
             
-            // Use FilterService for all agenda filtering logic
-            const agendaData = await this.plugin.filterService.getAgendaData(
-                dates,
-                {
-                    searchQuery: this.currentQuery.searchQuery,
-                    statuses: this.currentQuery.statuses,
-                    contexts: this.currentQuery.contexts,
-                    projects: this.currentQuery.projects,
-                    priorities: this.currentQuery.priorities,
-                    showArchived: this.currentQuery.showArchived,
-                    showRecurrent: this.currentQuery.showRecurrent,
-                    showCompleted: this.currentQuery.showCompleted,
-                    sortKey: this.currentQuery.sortKey,
-                    sortDirection: this.currentQuery.sortDirection,
-                    groupKey: this.currentQuery.groupKey
-                },
-                this.currentQuery.showOverdueOnToday
-            );
+            // Use FilterService to get grouped tasks, then filter for agenda dates
+            const agendaData: Array<{date: Date; tasks: TaskInfo[]}> = [];
+            
+            for (const date of dates) {
+                const groupedTasks = await this.plugin.filterService.getGroupedTasks(this.currentQuery, date);
+                const tasksForDate = Array.from(groupedTasks.values()).flat().filter(task => {
+                    // Filter tasks that are scheduled or due on this specific date
+                    const taskDate = task.scheduled || task.due;
+                    if (!taskDate) return false;
+                    
+                    const taskDateStr = getDatePart(taskDate);
+                    const targetDateStr = format(date, 'yyyy-MM-dd');
+                    const todayStr = format(new Date(), 'yyyy-MM-dd');
+                    
+                    // Show task if it matches the target date
+                    if (taskDateStr === targetDateStr) {
+                        return true;
+                    }
+                    
+                    // Show overdue tasks on today if option is enabled
+                    if (this.showOverdueOnToday && targetDateStr === todayStr && taskDateStr < todayStr) {
+                        return true;
+                    }
+                    
+                    return false;
+                });
+                
+                agendaData.push({ date, tasks: tasksForDate });
+            }
             
             // Get notes separately and add them to the agenda data
             const agendaDataWithNotes = await this.addNotesToAgendaData(agendaData);
@@ -745,8 +746,7 @@ export class AgendaView extends ItemView {
             this.startDate = addDays(this.startDate, -this.daysToShow);
         }
         
-        // Update the date range in the query
-        this.currentQuery.dateRange = this.getDateRange();
+        // Date range is handled internally by getAgendaDates()
         
         this.updatePeriodDisplay();
         this.refresh();
@@ -761,8 +761,7 @@ export class AgendaView extends ItemView {
             this.startDate = addDays(this.startDate, this.daysToShow);
         }
         
-        // Update the date range in the query
-        this.currentQuery.dateRange = this.getDateRange();
+        // Date range is handled internally by getAgendaDates()
         
         this.updatePeriodDisplay();
         this.refresh();

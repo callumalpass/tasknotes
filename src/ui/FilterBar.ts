@@ -1,15 +1,15 @@
-import { FilterQuery, FilterBarConfig, TaskSortKey, TaskGroupKey, SortDirection } from '../types';
+import { FilterQuery, SavedView, FilterCondition, FilterGroup, TaskSortKey, TaskGroupKey, SortDirection, FilterProperty, FilterOperator, FILTER_PROPERTIES, FILTER_OPERATORS, PropertyDefinition, OperatorDefinition } from '../types';
 import { EventEmitter } from '../utils/EventEmitter';
-import { setIcon, DropdownComponent } from 'obsidian';
+import { setIcon, DropdownComponent, debounce } from 'obsidian';
 
 /**
- * Reusable filtering UI component that provides consistent filtering controls
- * across all task views. Emits FilterQuery updates when user interacts with controls.
+ * Advanced FilterBar component implementing the new query builder system
+ * Provides hierarchical filtering with groups, conditions, and saved views
  */
 export class FilterBar extends EventEmitter {
     private container: HTMLElement;
-    private config: FilterBarConfig;
     private currentQuery: FilterQuery;
+    private savedViews: SavedView[] = [];
     private filterOptions: {
         statuses: string[];
         priorities: string[];
@@ -17,34 +17,28 @@ export class FilterBar extends EventEmitter {
         projects: string[];
     };
 
+    // Debouncing for input fields
+    private debouncedEmitQueryChange: () => void;
+
     // UI Elements
-    private searchInput?: HTMLInputElement;
-    private sortDropdown?: DropdownComponent;
-    private groupDropdown?: DropdownComponent;
-    private advancedFiltersButton?: HTMLButtonElement;
-    private advancedFiltersPanel?: HTMLElement;
-    private archivedToggle?: HTMLInputElement;
-    private activeFiltersIndicator?: HTMLElement;
-    private dateRangeStartInput?: HTMLInputElement;
-    private dateRangeEndInput?: HTMLInputElement;
-    private controlsContainer?: HTMLElement;
-    private settingsButton?: HTMLButtonElement;
-    private viewOptionsDropdown?: HTMLElement;
-    private viewOptionsButton?: HTMLButtonElement;
-    private viewOptionsConfig?: { id: string; label: string; value: boolean }[];
-    private viewOptionsCallback?: (optionId: string, enabled: boolean) => void;
-    
-    // Show dropdown elements (new unified dropdown)
-    private showDropdown?: HTMLElement;
-    private showButton?: HTMLButtonElement;
-    private showDropdownConfig?: { id: keyof FilterQuery; label: string; value: boolean }[];
-    private showDropdownCallback?: (optionId: keyof FilterQuery, enabled: boolean) => void;
+    private viewSelectorButton?: HTMLButtonElement;
+    private viewSelectorDropdown?: HTMLElement;
+    private filterBuilder?: HTMLElement;
+    private displaySection?: HTMLElement;
+    private viewOptionsContainer?: HTMLElement;
+
+    // Collapse states
+    private sectionStates = {
+        filterBox: true,    // Entire filter box - expanded by default
+        filters: true,      // This view section - expanded by default
+        display: true,      // Display & Organization - expanded by default
+        viewOptions: false  // View Options - collapsed by default
+    };
 
     constructor(
         container: HTMLElement,
         initialQuery: FilterQuery,
-        filterOptions: { statuses: string[]; priorities: string[]; contexts: string[]; projects: string[] },
-        config: FilterBarConfig = {}
+        filterOptions: { statuses: string[]; priorities: string[]; contexts: string[]; projects: string[] }
     ) {
         super();
         this.container = container;
@@ -55,125 +49,31 @@ export class FilterBar extends EventEmitter {
             contexts: filterOptions.contexts || [],
             projects: filterOptions.projects || []
         };
-        this.config = {
-            showSearch: true,
-            showGroupBy: true,
-            showSortBy: true,
-            showAdvancedFilters: true,
-            showDateRangePicker: false, // Default to false to avoid breaking existing views
-            showViewOptions: false, // Default to false to avoid breaking existing views
-            showShowDropdown: false, // Default to false to avoid breaking existing views
-            allowedSortKeys: ['due', 'priority', 'title'],
-            allowedGroupKeys: ['none', 'status', 'priority', 'context', 'due'],
-            ...config
-        };
+
+        // Initialize debounced query change emission (300ms delay)
+        this.debouncedEmitQueryChange = debounce(() => {
+            this.emit('queryChange', { ...this.currentQuery });
+        }, 300);
 
         this.render();
         this.updateUI();
     }
 
     /**
-     * Async initialization method that waits for cache readiness
-     * Call this after constructor to ensure filter options are populated
-     */
-    async initialize(): Promise<void> {
-        // This method can be used by views to ensure cache-dependent initialization
-        // is complete before showing the FilterBar
-        return Promise.resolve();
-    }
-
-    /**
-     * Set up refresh mechanism to update filter options when cache changes
-     * Should be called by views that want FilterBar to auto-refresh
-     */
-    setupCacheRefresh(cacheManager: any, filterService: any): void {
-        // Store reference to filterService for use in archive change refresh
-        this.filterService = filterService;
-        
-        // Listen for cache initialization events (for delayed initialization)
-        const cacheListener = cacheManager.subscribe('cache-initialized', async () => {
-            try {
-                console.debug('FilterBar: Cache initialized, refreshing filter options');
-                const newFilterOptions = await filterService.getFilterOptions(this.currentQuery);
-                this.updateFilterOptions(newFilterOptions);
-            } catch (error) {
-                console.error('FilterBar: Error refreshing filter options after cache initialization:', error);
-            }
-        });
-
-        // Listen for indexes-built events (when essential indexes are ready)
-        const indexesBuiltListener = cacheManager.subscribe('indexes-built', async () => {
-            try {
-                console.debug('FilterBar: Indexes built, refreshing filter options');
-                const newFilterOptions = await filterService.getFilterOptions(this.currentQuery);
-                this.updateFilterOptions(newFilterOptions);
-            } catch (error) {
-                console.error('FilterBar: Error refreshing filter options after indexes built:', error);
-            }
-        });
-
-        // Listen for filter service data changes
-        const filterDataListener = filterService.on('data-changed', async () => {
-            try {
-                console.debug('FilterBar: Data changed, refreshing filter options with current query:', this.currentQuery);
-                const newFilterOptions = await filterService.getFilterOptions(this.currentQuery);
-                this.updateFilterOptions(newFilterOptions);
-            } catch (error) {
-                console.error('FilterBar: Error refreshing filter options after data change:', error);
-            }
-        });
-
-        // Store listeners for cleanup
-        if (!this.cacheRefreshListeners) {
-            this.cacheRefreshListeners = [];
-        }
-        this.cacheRefreshListeners.push(cacheListener, indexesBuiltListener, filterDataListener);
-    }
-
-    private cacheRefreshListeners: (() => void)[] = [];
-    private filterService: any = null;
-
-    /**
-     * Refresh filter options when archive setting changes
-     */
-    private async refreshFilterOptionsForArchiveChange(): Promise<void> {
-        if (!this.filterService) return;
-        
-        try {
-            const newFilterOptions = await this.filterService.getFilterOptions(this.currentQuery);
-            this.updateFilterOptions(newFilterOptions);
-        } catch (error) {
-            console.error('FilterBar: Error refreshing filter options after archive change:', error);
-        }
-    }
-
-    /**
      * Update the current query and refresh UI
      */
     updateQuery(query: FilterQuery): void {
-        const oldShowArchived = this.currentQuery.showArchived;
         this.currentQuery = { ...query };
-        
-        // If showArchived changed, refresh filter options
-        if (oldShowArchived !== this.currentQuery.showArchived) {
-            this.refreshFilterOptionsForArchiveChange();
-        }
-        
         this.updateUI();
     }
 
     /**
-     * Update available filter options
+     * Update saved views list
      */
-    updateFilterOptions(options: { statuses: string[]; priorities: string[]; contexts: string[]; projects: string[] }): void {
-        console.debug('FilterBar: Updating filter options with:', options);
-        this.filterOptions = {
-            statuses: options.statuses || [],
-            priorities: options.priorities || [],
-            contexts: options.contexts || [],
-            projects: options.projects || []
-        };
-        this.rebuildAdvancedFilters();
+    updateSavedViews(views: SavedView[]): void {
+        console.log('FilterBar: Updating saved views:', views); // Debug
+        this.savedViews = views;
+        this.renderViewSelectorDropdown();
     }
 
     /**
@@ -184,609 +84,729 @@ export class FilterBar extends EventEmitter {
     }
 
     /**
+     * Generate a unique ID for filter nodes
+     */
+    private generateId(): string {
+        return Math.random().toString(36).substr(2, 9);
+    }
+
+    /**
      * Render the complete FilterBar UI
      */
     private render(): void {
         this.container.empty();
-        this.container.addClass('filter-bar');
+        this.container.addClass('advanced-filter-bar');
 
-        // Search input (outside of any cards)
-        if (this.config.showSearch) {
-            this.renderSearchInput(this.container);
+        // 1. Top Controls (Filter Icon + Templates Button)
+        this.renderTopControls();
+
+        // 2. Main Filter Box (collapsible)
+        this.renderMainFilterBox();
+    }
+
+    /**
+     * Render the top controls (filter toggle + templates button)
+     */
+    private renderTopControls(): void {
+        const topControls = this.container.createDiv('filter-bar__top-controls');
+
+        // Filter toggle icon
+        const filterToggle = topControls.createEl('button', {
+            cls: `filter-bar__filter-toggle ${this.sectionStates.filterBox ? 'filter-bar__filter-toggle--active' : ''}`,
+            attr: { 'aria-label': 'Toggle filter' }
+        });
+        setIcon(filterToggle, 'filter');
+
+        // Templates button
+        this.viewSelectorButton = topControls.createEl('button', {
+            text: 'Filter templates',
+            cls: 'filter-bar__templates-button'
+        });
+
+        // Templates dropdown
+        this.viewSelectorDropdown = topControls.createDiv({
+            cls: 'filter-bar__view-selector-dropdown filter-bar__view-selector-dropdown--hidden'
+        });
+
+        // Event listeners
+        filterToggle.addEventListener('click', () => {
+            this.toggleMainFilterBox();
+        });
+
+        this.viewSelectorButton.addEventListener('click', () => {
+            this.toggleViewSelectorDropdown();
+        });
+
+        this.renderViewSelectorDropdown();
+    }
+
+    /**
+     * Render the main filter box (collapsible)
+     */
+    private renderMainFilterBox(): void {
+        const mainFilterBox = this.container.createDiv('filter-bar__main-box');
+        if (!this.sectionStates.filterBox) {
+            mainFilterBox.addClass('filter-bar__main-box--collapsed');
         }
 
-        // Controls container (sort, group, filter) - hidden by default
-        this.controlsContainer = this.container.createDiv('filter-bar__controls-container filter-bar__controls-container--hidden');
-        const controlsGroup = this.controlsContainer.createDiv('filter-bar__controls');
+        // 1. Filter Builder (This view section)
+        this.renderFilterBuilder(mainFilterBox);
+
+        // 2. Display & Organization
+        this.renderDisplaySection(mainFilterBox);
+
+        // 3. View-Specific Options
+        this.renderViewOptions(mainFilterBox);
+    }
+
+    /**
+     * Toggle the main filter box
+     */
+    private toggleMainFilterBox(): void {
+        this.sectionStates.filterBox = !this.sectionStates.filterBox;
+        const mainBox = this.container.querySelector('.filter-bar__main-box');
+        const filterToggle = this.container.querySelector('.filter-bar__filter-toggle');
         
-        // Left side controls (sort and group)
-        const controlsLeft = controlsGroup.createDiv('filter-bar__controls-left');
-        
-        if (this.config.showSortBy) {
-            this.renderSortControls(controlsLeft);
-        }
-
-        if (this.config.showGroupBy) {
-            this.renderGroupControls(controlsLeft);
+        if (mainBox) {
+            mainBox.classList.toggle('filter-bar__main-box--collapsed', !this.sectionStates.filterBox);
         }
         
-        if (this.config.showShowDropdown) {
-            this.renderShowDropdownControls(controlsLeft);
-        }
-        
-        if (this.config.showViewOptions) {
-            this.renderViewOptionsControls(controlsLeft);
-        }
-
-        // Advanced filters button (anchored to right)
-        if (this.config.showAdvancedFilters) {
-            this.renderAdvancedFiltersButton(controlsGroup);
-        }
-
-        // Advanced filters panel (initially hidden)
-        if (this.config.showAdvancedFilters) {
-            this.renderAdvancedFiltersPanel();
+        if (filterToggle) {
+            filterToggle.classList.toggle('filter-bar__filter-toggle--active', this.sectionStates.filterBox);
         }
     }
 
     /**
-     * Render search input
+     * Render the view selector dropdown content
      */
-    private renderSearchInput(parent: HTMLElement): void {
-        // Create flexbox container for search bar and settings button
-        const searchRow = parent.createDiv('filter-bar__search-row');
-        
-        const searchContainer = searchRow.createDiv('filter-bar__search');
-        
-        // Add search icon to the left
-        const searchIcon = searchContainer.createEl('span', {
-            cls: 'filter-bar__search-icon'
-        });
-        setIcon(searchIcon, 'search');
-        
-        this.searchInput = searchContainer.createEl('input', {
-            type: 'text',
-            placeholder: 'Search tasks...',
-            cls: 'filter-bar__search-input'
+    private renderViewSelectorDropdown(): void {
+        if (!this.viewSelectorDropdown) return;
+
+        this.viewSelectorDropdown.empty();
+
+        // This view section
+        const thisViewSection = this.viewSelectorDropdown.createDiv('filter-bar__view-section');
+        thisViewSection.createDiv({
+            text: 'Current filter',
+            cls: 'filter-bar__view-section-header'
         });
 
-        this.searchInput.addEventListener('input', () => {
-            this.updateQueryField('searchQuery', this.searchInput!.value || undefined);
+        const saveCurrentButton = thisViewSection.createEl('button', {
+            text: 'Save current view...',
+            cls: 'filter-bar__view-action'
+        });
+        saveCurrentButton.addEventListener('click', () => {
+            this.showSaveViewDialog();
         });
 
-        // Right side buttons container
-        const rightButtonsContainer = searchRow.createDiv('filter-bar__right-buttons');
-
-        // Render custom buttons first
-        if (this.config.customButtons) {
-            for (const customButton of this.config.customButtons) {
-                customButton.onCreate(rightButtonsContainer);
-            }
-        }
-
-        // Settings button for controls - positioned to the right of search bar
-        this.settingsButton = rightButtonsContainer.createEl('button', {
-            cls: 'filter-bar__settings-button',
-            attr: { 'aria-label': 'Toggle filter settings' }
-        });
-
-        // Add settings icon to button using Obsidian's setIcon
-        setIcon(this.settingsButton, 'sliders-horizontal');
-
-        // Active filters indicator on settings button
-        this.activeFiltersIndicator = this.settingsButton.createSpan({
-            cls: 'filter-bar__active-indicator filter-bar__active-indicator--hidden'
-        });
-
-        this.settingsButton.addEventListener('click', () => {
-            this.toggleControlsVisibility();
-        });
-    }
-
-    /**
-     * Render sort controls
-     */
-    private renderSortControls(parent: HTMLElement): void {
-        const sortContainer = parent.createDiv('filter-bar__sort');
-        
-        // Add label first
-        sortContainer.createSpan({ text: 'Sort:', cls: 'filter-bar__label' });
-        
-        // Create dropdown container for proper styling
-        const dropdownContainer = sortContainer.createDiv('filter-bar__dropdown-container');
-        
-        // Sort key dropdown using DropdownComponent
-        this.sortDropdown = new DropdownComponent(dropdownContainer);
-        
-        const sortKeys = this.config.allowedSortKeys || ['due', 'priority', 'title'];
-        const sortOptions: Record<string, string> = {};
-        sortKeys.forEach(key => {
-            sortOptions[key] = this.getSortKeyLabel(key);
-        });
-        
-        this.sortDropdown
-            .addOptions(sortOptions)
-            .setValue(this.currentQuery.sortKey)
-            .onChange((value) => {
-                this.updateQueryField('sortKey', value as TaskSortKey);
+        // Saved views section
+        if (this.savedViews.length > 0) {
+            const savedViewsSection = this.viewSelectorDropdown.createDiv('filter-bar__view-section');
+            savedViewsSection.createDiv({
+                text: 'Saved views',
+                cls: 'filter-bar__view-section-header'
             });
 
-        // Sort direction button
-        const sortDirectionBtn = sortContainer.createEl('button', {
+            this.savedViews.forEach(view => {
+                const viewItemContainer = savedViewsSection.createDiv({
+                    cls: 'filter-bar__view-item-container'
+                });
+                
+                const viewItem = viewItemContainer.createEl('button', {
+                    text: view.name,
+                    cls: 'filter-bar__view-item'
+                });
+                viewItem.addEventListener('click', () => {
+                    this.loadSavedView(view);
+                });
+
+                const deleteBtn = viewItemContainer.createEl('button', {
+                    text: '×',
+                    cls: 'filter-bar__view-delete'
+                });
+                deleteBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (confirm(`Delete view "${view.name}"?`)) {
+                        this.emit('deleteView', view.id);
+                    }
+                });
+            });
+
+        }
+    }
+
+    /**
+     * Render the filter builder section
+     */
+    private renderFilterBuilder(container: HTMLElement): void {
+        const section = container.createDiv('filter-bar__section');
+
+        // Collapsible header
+        const header = section.createDiv('filter-bar__section-header');
+        if (!this.sectionStates.filters) {
+            header.addClass('filter-bar__section-header--collapsed');
+        }
+        
+        const title = header.createSpan({
+            text: 'Filter',
+            cls: 'filter-bar__section-title'
+        });
+
+        // Content
+        const content = section.createDiv('filter-bar__section-content');
+        if (!this.sectionStates.filters) {
+            content.addClass('filter-bar__section-content--collapsed');
+        }
+
+        this.filterBuilder = content.createDiv('filter-bar__filter-builder');
+
+        // Render the root group
+        this.renderFilterGroup(this.filterBuilder, this.currentQuery, 0);
+
+        // Add click handler for toggle
+        header.addEventListener('click', () => {
+            this.toggleSection('filters', header, content);
+        });
+    }
+
+    /**
+     * Render a filter group (recursive)
+     */
+    private renderFilterGroup(parent: HTMLElement, group: FilterGroup, depth: number, parentGroup?: FilterGroup, groupIndex?: number): void {
+        const groupContainer = parent.createDiv('filter-bar__group');
+        groupContainer.style.marginLeft = `${depth * 20}px`;
+
+        // Group header with conjunction and delete button
+        const groupHeader = groupContainer.createDiv('filter-bar__group-header');
+        
+        // Conjunction dropdown
+        const conjunctionContainer = groupHeader.createDiv('filter-bar__conjunction');
+        
+        const conjunctionLabel = depth === 0 ? 'All' : (group.conjunction === 'and' ? 'All' : 'Any');
+        const conjunctionSelect = conjunctionContainer.createEl('select', {
+            cls: 'filter-bar__conjunction-select'
+        });
+
+        const allOption = conjunctionSelect.createEl('option', { value: 'and', text: depth === 0 ? 'All' : 'All' });
+        const anyOption = conjunctionSelect.createEl('option', { value: 'or', text: depth === 0 ? 'Any' : 'Any' });
+        conjunctionSelect.value = group.conjunction;
+
+        conjunctionContainer.createSpan({
+            text: 'of the following are true:',
+            cls: 'filter-bar__conjunction-text'
+        });
+
+        conjunctionSelect.addEventListener('change', () => {
+            group.conjunction = conjunctionSelect.value as 'and' | 'or';
+            this.emitQueryChange();
+        });
+
+        // Delete button for non-root groups
+        if (depth > 0 && parentGroup && groupIndex !== undefined) {
+            const deleteGroupButton = groupHeader.createEl('button', {
+                cls: 'filter-bar__delete-button',
+                attr: { 'aria-label': 'Delete filter group' }
+            });
+            setIcon(deleteGroupButton, 'trash-2');
+            
+            deleteGroupButton.addEventListener('click', () => {
+                this.removeFilterGroup(parentGroup, groupIndex);
+            });
+        }
+
+        // Render children
+        const childrenContainer = groupContainer.createDiv('filter-bar__children');
+        group.children.forEach((child, index) => {
+            this.renderFilterNode(childrenContainer, child, group, index, depth + 1);
+        });
+
+        // Action buttons
+        const actionsContainer = groupContainer.createDiv('filter-bar__group-actions');
+        
+        const addFilterButton = actionsContainer.createEl('button', {
+            text: '+ Add filter',
+            cls: 'filter-bar__action-button'
+        });
+        addFilterButton.addEventListener('click', () => {
+            this.addFilterCondition(group);
+        });
+
+        const addGroupButton = actionsContainer.createEl('button', {
+            text: '+ Add filter group',
+            cls: 'filter-bar__action-button'
+        });
+        addGroupButton.addEventListener('click', () => {
+            this.addFilterGroup(group);
+        });
+    }
+
+    /**
+     * Render a filter node (condition or group)
+     */
+    private renderFilterNode(parent: HTMLElement, node: FilterCondition | FilterGroup, parentGroup: FilterGroup, index: number, depth: number): void {
+        if (node.type === 'condition') {
+            this.renderFilterCondition(parent, node, parentGroup, index, depth);
+        } else if (node.type === 'group') {
+            this.renderFilterGroup(parent, node, depth, parentGroup, index);
+        }
+    }
+
+    /**
+     * Render a filter condition
+     */
+    private renderFilterCondition(parent: HTMLElement, condition: FilterCondition, parentGroup: FilterGroup, index: number, depth: number): void {
+        const conditionContainer = parent.createDiv('filter-bar__condition');
+        conditionContainer.style.marginLeft = `${depth * 20}px`;
+
+        // Prefix (where/and/or)
+        const prefix = conditionContainer.createSpan({
+            text: index === 0 ? 'where' : parentGroup.conjunction,
+            cls: 'filter-bar__condition-prefix'
+        });
+
+        // Property dropdown
+        const propertySelect = conditionContainer.createEl('select', {
+            cls: 'filter-bar__property-select'
+        });
+        
+        FILTER_PROPERTIES.forEach(prop => {
+            const option = propertySelect.createEl('option', {
+                value: prop.id,
+                text: prop.label
+            });
+        });
+        propertySelect.value = condition.property;
+
+        // Operator dropdown
+        const operatorSelect = conditionContainer.createEl('select', {
+            cls: 'filter-bar__operator-select'
+        });
+        this.updateOperatorOptions(operatorSelect, condition.property as FilterProperty);
+        operatorSelect.value = condition.operator;
+
+        // Value input
+        const valueContainer = conditionContainer.createDiv('filter-bar__value-container');
+        this.renderValueInput(valueContainer, condition);
+
+        // Delete button
+        const deleteButton = conditionContainer.createEl('button', {
+            cls: 'filter-bar__delete-button',
+            attr: { 'aria-label': 'Delete condition' }
+        });
+        setIcon(deleteButton, 'trash-2');
+
+        // Event listeners
+        propertySelect.addEventListener('change', () => {
+            condition.property = propertySelect.value;
+            this.updateOperatorOptions(operatorSelect, condition.property as FilterProperty);
+            this.renderValueInput(valueContainer, condition);
+            this.emitQueryChange();
+        });
+
+        operatorSelect.addEventListener('change', () => {
+            condition.operator = operatorSelect.value;
+            this.renderValueInput(valueContainer, condition);
+            this.emitQueryChange();
+        });
+
+        deleteButton.addEventListener('click', () => {
+            this.removeFilterCondition(parentGroup, index);
+        });
+    }
+
+    /**
+     * Update operator options based on selected property
+     */
+    private updateOperatorOptions(select: HTMLSelectElement, property: FilterProperty): void {
+        select.empty();
+        
+        const propertyDef = FILTER_PROPERTIES.find(p => p.id === property);
+        if (!propertyDef) return;
+
+        propertyDef.supportedOperators.forEach(operatorId => {
+            const operatorDef = FILTER_OPERATORS.find(op => op.id === operatorId);
+            if (operatorDef) {
+                select.createEl('option', {
+                    value: operatorDef.id,
+                    text: operatorDef.label
+                });
+            }
+        });
+    }
+
+    /**
+     * Render value input based on property and operator
+     */
+    private renderValueInput(container: HTMLElement, condition: FilterCondition): void {
+        container.empty();
+
+        const propertyDef = FILTER_PROPERTIES.find(p => p.id === condition.property);
+        const operatorDef = FILTER_OPERATORS.find(op => op.id === condition.operator);
+        
+        if (!propertyDef || !operatorDef || !operatorDef.requiresValue) {
+            return; // No value input needed
+        }
+
+        switch (propertyDef.valueInputType) {
+            case 'text':
+                this.renderTextInput(container, condition);
+                break;
+            case 'multi-select':
+                this.renderMultiSelectInput(container, condition, propertyDef);
+                break;
+            case 'date':
+                this.renderDateInput(container, condition);
+                break;
+            case 'number':
+                this.renderNumberInput(container, condition);
+                break;
+        }
+    }
+
+    /**
+     * Render text input
+     */
+    private renderTextInput(container: HTMLElement, condition: FilterCondition): void {
+        const input = container.createEl('input', {
+            type: 'text',
+            cls: 'filter-bar__value-input',
+            value: condition.value || ''
+        });
+
+        input.addEventListener('input', () => {
+            condition.value = input.value;
+            this.debouncedEmitQueryChange();
+        });
+    }
+
+    /**
+     * Render multi-select input
+     */
+    private renderMultiSelectInput(container: HTMLElement, condition: FilterCondition, propertyDef: PropertyDefinition): void {
+        const selectContainer = container.createDiv('filter-bar__multi-select');
+        
+        let options: string[] = [];
+        switch (propertyDef.id) {
+            case 'status':
+                options = this.filterOptions.statuses;
+                break;
+            case 'priority':
+                options = this.filterOptions.priorities;
+                break;
+            case 'contexts':
+                options = this.filterOptions.contexts;
+                break;
+            case 'projects':
+                options = this.filterOptions.projects;
+                break;
+        }
+
+        options.forEach(option => {
+            const checkboxWrapper = selectContainer.createDiv('filter-bar__checkbox-wrapper');
+            
+            const label = checkboxWrapper.createEl('label', {
+                cls: 'filter-bar__checkbox-label'
+            });
+
+            const checkbox = label.createEl('input', {
+                type: 'checkbox',
+                value: option,
+                cls: 'filter-bar__checkbox'
+            });
+
+            if (Array.isArray(condition.value)) {
+                checkbox.checked = condition.value.includes(option);
+            } else if (condition.value) {
+                checkbox.checked = condition.value === option;
+            }
+
+            label.createSpan({ text: option });
+
+            checkbox.addEventListener('change', () => {
+                this.updateMultiSelectValue(condition, selectContainer);
+                this.emitQueryChange();
+            });
+        });
+    }
+
+    /**
+     * Update multi-select value based on checkbox states
+     */
+    private updateMultiSelectValue(condition: FilterCondition, container: HTMLElement): void {
+        const checkboxes = container.querySelectorAll('input[type="checkbox"]:checked') as NodeListOf<HTMLInputElement>;
+        const selectedValues = Array.from(checkboxes).map(cb => cb.value);
+        condition.value = selectedValues.length > 0 ? selectedValues : null;
+    }
+
+    /**
+     * Render date input
+     */
+    private renderDateInput(container: HTMLElement, condition: FilterCondition): void {
+        const input = container.createEl('input', {
+            type: 'date',
+            cls: 'filter-bar__value-input',
+            value: condition.value || ''
+        });
+
+        input.addEventListener('change', () => {
+            condition.value = input.value;
+            this.emitQueryChange(); // Date changes are immediate, no need for debouncing
+        });
+    }
+
+    /**
+     * Render number input
+     */
+    private renderNumberInput(container: HTMLElement, condition: FilterCondition): void {
+        const input = container.createEl('input', {
+            type: 'number',
+            cls: 'filter-bar__value-input',
+            value: condition.value || ''
+        });
+
+        input.addEventListener('input', () => {
+            condition.value = parseFloat(input.value) || null;
+            this.debouncedEmitQueryChange();
+        });
+    }
+
+    /**
+     * Render display & organization section
+     */
+    private renderDisplaySection(container: HTMLElement): void {
+        const section = container.createDiv('filter-bar__section');
+
+        // Collapsible header
+        const header = section.createDiv('filter-bar__section-header');
+        if (!this.sectionStates.display) {
+            header.addClass('filter-bar__section-header--collapsed');
+        }
+        
+        const title = header.createSpan({
+            text: 'Display & Organization',
+            cls: 'filter-bar__section-title'
+        });
+
+        // Content
+        const content = section.createDiv('filter-bar__section-content');
+        if (!this.sectionStates.display) {
+            content.addClass('filter-bar__section-content--collapsed');
+        }
+
+        this.displaySection = content;
+        const controls = this.displaySection.createDiv('filter-bar__display-controls');
+
+        // Sort control
+        const sortContainer = controls.createDiv('filter-bar__sort-container');
+        sortContainer.createSpan({ text: 'Sort by:', cls: 'filter-bar__label' });
+
+        const sortSelect = sortContainer.createEl('select', {
+            cls: 'filter-bar__sort-select'
+        });
+
+        const sortOptions = [
+            { value: 'due', label: 'Due Date' },
+            { value: 'scheduled', label: 'Scheduled Date' },
+            { value: 'priority', label: 'Priority' },
+            { value: 'title', label: 'Title' }
+        ];
+
+        sortOptions.forEach(option => {
+            sortSelect.createEl('option', {
+                value: option.value,
+                text: option.label
+            });
+        });
+
+        sortSelect.value = this.currentQuery.sortKey || 'due';
+
+        const sortDirectionButton = sortContainer.createEl('button', {
             cls: 'filter-bar__sort-direction',
             attr: { 'aria-label': 'Toggle sort direction' }
         });
 
-        sortDirectionBtn.addEventListener('click', () => {
-            const newDirection: SortDirection = this.currentQuery.sortDirection === 'asc' ? 'desc' : 'asc';
-            this.updateQueryField('sortDirection', newDirection);
-        });
-    }
+        // Group control
+        const groupContainer = controls.createDiv('filter-bar__group-container');
+        groupContainer.createSpan({ text: 'Group by:', cls: 'filter-bar__label' });
 
-    /**
-     * Render group controls
-     */
-    private renderGroupControls(parent: HTMLElement): void {
-        const groupContainer = parent.createDiv('filter-bar__group');
-        
-        groupContainer.createSpan({ text: 'Group:', cls: 'filter-bar__label' });
-
-        // Create dropdown container for proper styling
-        const dropdownContainer = groupContainer.createDiv('filter-bar__dropdown-container');
-        
-        // Group dropdown using DropdownComponent
-        this.groupDropdown = new DropdownComponent(dropdownContainer);
-        
-        const groupKeys = this.config.allowedGroupKeys || ['none', 'status', 'priority', 'context', 'due'];
-        const groupOptions: Record<string, string> = {};
-        groupKeys.forEach(key => {
-            groupOptions[key] = this.getGroupKeyLabel(key);
+        const groupSelect = groupContainer.createEl('select', {
+            cls: 'filter-bar__group-select'
         });
-        
-        this.groupDropdown
-            .addOptions(groupOptions)
-            .setValue(this.currentQuery.groupKey)
-            .onChange((value) => {
-                this.updateQueryField('groupKey', value as TaskGroupKey);
+
+        const groupOptions = [
+            { value: 'none', label: 'None' },
+            { value: 'status', label: 'Status' },
+            { value: 'priority', label: 'Priority' },
+            { value: 'context', label: 'Context' },
+            { value: 'project', label: 'Project' },
+            { value: 'due', label: 'Due Date' },
+            { value: 'scheduled', label: 'Scheduled Date' }
+        ];
+
+        groupOptions.forEach(option => {
+            groupSelect.createEl('option', {
+                value: option.value,
+                text: option.label
             });
-    }
-
-    /**
-     * Render date range filter in advanced filters panel
-     */
-    private renderDateRangeFilter(): void {
-        const dateRangeContainer = this.advancedFiltersPanel!.createDiv('filter-bar__advanced-item');
-        dateRangeContainer.createSpan({ text: 'Date range:', cls: 'filter-bar__label' });
-
-        const dateInputsContainer = dateRangeContainer.createDiv('filter-bar__date-inputs');
-
-        // Start date input
-        const startContainer = dateInputsContainer.createDiv('filter-bar__date-input-container');
-        startContainer.createSpan({ text: 'From:', cls: 'filter-bar__date-label' });
-        this.dateRangeStartInput = startContainer.createEl('input', {
-            type: 'date',
-            cls: 'filter-bar__date-input'
         });
 
-        // End date input
-        const endContainer = dateInputsContainer.createDiv('filter-bar__date-input-container');
-        endContainer.createSpan({ text: 'To:', cls: 'filter-bar__date-label' });
-        this.dateRangeEndInput = endContainer.createEl('input', {
-            type: 'date',
-            cls: 'filter-bar__date-input'
-        });
-
-        // Clear button
-        const clearButton = dateInputsContainer.createEl('button', {
-            cls: 'filter-bar__date-clear',
-            text: 'Clear',
-            attr: { 'aria-label': 'Clear date range' }
-        });
+        groupSelect.value = this.currentQuery.groupKey || 'none';
 
         // Event listeners
-        this.dateRangeStartInput.addEventListener('change', () => {
-            this.updateDateRange();
+        sortSelect.addEventListener('change', () => {
+            this.currentQuery.sortKey = sortSelect.value as TaskSortKey;
+            this.emitQueryChange();
         });
 
-        this.dateRangeEndInput.addEventListener('change', () => {
-            this.updateDateRange();
-        });
-
-        clearButton.addEventListener('click', () => {
-            this.clearDateRange();
-        });
-    }
-
-    /**
-     * Update date range in query
-     */
-    private updateDateRange(): void {
-        const startDate = this.dateRangeStartInput?.value;
-        const endDate = this.dateRangeEndInput?.value;
-
-        if (startDate && endDate) {
-            this.updateQueryField('dateRange', {
-                start: startDate,
-                end: endDate
-            });
-        } else if (!startDate && !endDate) {
-            this.updateQueryField('dateRange', undefined);
-        }
-        // If only one date is set, don't update the range yet
-    }
-
-    /**
-     * Clear date range inputs and query
-     */
-    private clearDateRange(): void {
-        if (this.dateRangeStartInput) {
-            this.dateRangeStartInput.value = '';
-        }
-        if (this.dateRangeEndInput) {
-            this.dateRangeEndInput.value = '';
-        }
-        this.updateQueryField('dateRange', undefined);
-    }
-
-    /**
-     * Render advanced filters button
-     */
-    private renderAdvancedFiltersButton(parent: HTMLElement): void {
-        this.advancedFiltersButton = parent.createEl('button', {
-            cls: 'filter-bar__advanced-toggle',
-            attr: { 'aria-label': 'Toggle advanced filters' }
-        });
-
-        // Add funnel icon to advanced filters button using Obsidian's setIcon
-        setIcon(this.advancedFiltersButton, 'filter');
-
-        this.activeFiltersIndicator = this.advancedFiltersButton.createSpan({
-            cls: 'filter-bar__active-indicator filter-bar__active-indicator--hidden'
-        });
-
-        this.advancedFiltersButton.addEventListener('click', () => {
-            this.toggleAdvancedFilters();
-        });
-    }
-
-    /**
-     * Render advanced filters panel
-     */
-    private renderAdvancedFiltersPanel(): void {
-        // Render the advanced panel inside the controls container
-        this.advancedFiltersPanel = this.controlsContainer!.createDiv('filter-bar__advanced');
-        this.advancedFiltersPanel.addClass('filter-bar__advanced--hidden');
-
-        // Status filter
-        this.renderStatusFilter();
-
-        // Priority filter
-        this.renderPriorityFilter();
-
-        // Context filter
-        this.renderContextFilter();
-
-        // Project filter
-        this.renderProjectFilter();
-
-        // Date range filter
-        if (this.config.showDateRangePicker) {
-            this.renderDateRangeFilter();
-        }
-
-        // Archived toggle (after date range) - only if not using show dropdown
-        if (!this.config.showShowDropdown) {
-            this.renderArchivedToggle();
-        }
-    }
-
-    /**
-     * Render status filter
-     */
-    private renderStatusFilter(): void {
-        const statusContainer = this.advancedFiltersPanel!.createDiv('filter-bar__advanced-item');
-        statusContainer.createSpan({ text: 'Status:', cls: 'filter-bar__label' });
-
-        const statusCheckboxContainer = statusContainer.createDiv('filter-bar__checkbox-group');
-
-
-        // Add specific status options
-        this.filterOptions.statuses.forEach(status => {
-            const checkboxWrapper = statusCheckboxContainer.createDiv('filter-bar__checkbox-wrapper');
-            
-            const label = checkboxWrapper.createEl('label', {
-                cls: 'filter-bar__checkbox-label'
-            });
-
-            const checkbox = label.createEl('input', {
-                type: 'checkbox',
-                value: status,
-                cls: 'filter-bar__checkbox'
-            });
-
-            label.createSpan({ text: status });
-
-            checkbox.addEventListener('change', () => {
-                this.updateStatusFilter();
-            });
-        });
-    }
-
-    /**
-     * Update status filter based on checkbox selections
-     */
-    private updateStatusFilter(): void {
-        const statusContainer = this.advancedFiltersPanel?.querySelector('.filter-bar__advanced-item:nth-child(1)');
-        const checkboxes = statusContainer?.querySelectorAll('input[type="checkbox"]:checked') as NodeListOf<HTMLInputElement>;
-        const selectedStatuses = Array.from(checkboxes || []).map(cb => cb.value);
-        
-        // If no statuses selected, show all (undefined). Otherwise, filter by selected statuses.
-        this.updateQueryField('statuses', selectedStatuses.length > 0 ? selectedStatuses : undefined);
-    }
-
-
-    /**
-     * Render priority filter
-     */
-    private renderPriorityFilter(): void {
-        const priorityContainer = this.advancedFiltersPanel!.createDiv('filter-bar__advanced-item');
-        priorityContainer.createSpan({ text: 'Priority:', cls: 'filter-bar__label' });
-
-        const priorityCheckboxContainer = priorityContainer.createDiv('filter-bar__checkbox-group');
-
-        this.filterOptions.priorities.forEach(priority => {
-            const checkboxWrapper = priorityCheckboxContainer.createDiv('filter-bar__checkbox-wrapper');
-            
-            const label = checkboxWrapper.createEl('label', {
-                cls: 'filter-bar__checkbox-label'
-            });
-
-            const checkbox = label.createEl('input', {
-                type: 'checkbox',
-                value: priority,
-                cls: 'filter-bar__checkbox'
-            });
-
-            label.createSpan({ text: priority });
-
-            checkbox.addEventListener('change', () => {
-                this.updatePriorityFilter();
-            });
-        });
-    }
-
-    /**
-     * Update priority filter based on checkbox selections
-     */
-    private updatePriorityFilter(): void {
-        const priorityContainer = this.advancedFiltersPanel?.querySelector('.filter-bar__advanced-item:nth-child(2)');
-        const checkboxes = priorityContainer?.querySelectorAll('input[type="checkbox"]:checked') as NodeListOf<HTMLInputElement>;
-        const selectedPriorities = Array.from(checkboxes || []).map(cb => cb.value);
-        this.updateQueryField('priorities', selectedPriorities.length > 0 ? selectedPriorities : undefined);
-    }
-
-    /**
-     * Render context filter
-     */
-    private renderContextFilter(): void {
-        const contextContainer = this.advancedFiltersPanel!.createDiv('filter-bar__advanced-item');
-        contextContainer.createSpan({ text: 'Context:', cls: 'filter-bar__label' });
-
-        const contextCheckboxContainer = contextContainer.createDiv('filter-bar__checkbox-group');
-
-        this.filterOptions.contexts.forEach(context => {
-            const checkboxWrapper = contextCheckboxContainer.createDiv('filter-bar__checkbox-wrapper');
-            
-            const label = checkboxWrapper.createEl('label', {
-                cls: 'filter-bar__checkbox-label'
-            });
-
-            const checkbox = label.createEl('input', {
-                type: 'checkbox',
-                value: context,
-                cls: 'filter-bar__checkbox'
-            });
-
-            label.createSpan({ text: context });
-
-            checkbox.addEventListener('change', () => {
-                this.updateContextFilter();
-            });
-        });
-    }
-
-    /**
-     * Update context filter based on checkbox selections
-     */
-    private updateContextFilter(): void {
-        const contextContainer = this.advancedFiltersPanel?.querySelector('.filter-bar__advanced-item:nth-child(3)');
-        const checkboxes = contextContainer?.querySelectorAll('input[type="checkbox"]:checked') as NodeListOf<HTMLInputElement>;
-        const selectedContexts = Array.from(checkboxes || []).map(cb => cb.value);
-        this.updateQueryField('contexts', selectedContexts.length > 0 ? selectedContexts : undefined);
-    }
-
-    /**
-     * Render project filter
-     */
-    private renderProjectFilter(): void {
-        const projectContainer = this.advancedFiltersPanel!.createDiv('filter-bar__advanced-item');
-        projectContainer.createSpan({ text: 'Project:', cls: 'filter-bar__label' });
-
-        const projectCheckboxContainer = projectContainer.createDiv('filter-bar__checkbox-group');
-
-        // Debug: Log project options
-        console.debug('FilterBar: Rendering project filter with options:', this.filterOptions.projects);
-
-        this.filterOptions.projects.forEach(project => {
-            const checkboxWrapper = projectCheckboxContainer.createDiv('filter-bar__checkbox-wrapper');
-            
-            const label = checkboxWrapper.createEl('label', {
-                cls: 'filter-bar__checkbox-label'
-            });
-
-            const checkbox = label.createEl('input', {
-                type: 'checkbox',
-                value: project,
-                cls: 'filter-bar__checkbox'
-            });
-
-            label.createSpan({ text: project });
-
-            checkbox.addEventListener('change', () => {
-                this.updateProjectFilter();
-            });
-        });
-    }
-
-    /**
-     * Update project filter based on checkbox selections
-     */
-    private updateProjectFilter(): void {
-        const projectContainer = this.advancedFiltersPanel?.querySelector('.filter-bar__advanced-item:nth-child(4)');
-        const checkboxes = projectContainer?.querySelectorAll('input[type="checkbox"]:checked') as NodeListOf<HTMLInputElement>;
-        const selectedProjects = Array.from(checkboxes || []).map(cb => cb.value);
-        this.updateQueryField('projects', selectedProjects.length > 0 ? selectedProjects : undefined);
-    }
-
-    /**
-     * Render archived toggle
-     */
-    private renderArchivedToggle(): void {
-        const archivedContainer = this.advancedFiltersPanel!.createDiv('filter-bar__advanced-item');
-        
-        const label = archivedContainer.createEl('label', {
-            cls: 'filter-bar__checkbox-label'
-        });
-
-        this.archivedToggle = label.createEl('input', {
-            type: 'checkbox',
-            cls: 'filter-bar__checkbox'
-        });
-
-        label.createSpan({ text: 'Show archived' });
-
-        this.archivedToggle.addEventListener('change', () => {
-            this.updateQueryField('showArchived', this.archivedToggle!.checked);
-        });
-    }
-
-    /**
-     * Update a specific field in the query and emit change event
-     */
-    private updateQueryField<K extends keyof FilterQuery>(field: K, value: FilterQuery[K]): void {
-        this.currentQuery[field] = value;
-        
-        // Update specific UI elements based on the field that changed
-        if (field === 'sortDirection') {
+        sortDirectionButton.addEventListener('click', () => {
+            this.currentQuery.sortDirection = this.currentQuery.sortDirection === 'asc' ? 'desc' : 'asc';
             this.updateSortDirectionButton();
-        }
-        
-        // If showArchived changed, refresh filter options to show/hide archived contexts/projects
-        if (field === 'showArchived') {
-            this.refreshFilterOptionsForArchiveChange();
-        }
-        
-        this.updateActiveFiltersIndicator();
-        this.emit('queryChange', { ...this.currentQuery });
-    }
-
-    /**
-     * Update UI elements to reflect current query
-     */
-    private updateUI(): void {
-        if (this.searchInput) {
-            this.searchInput.value = this.currentQuery.searchQuery || '';
-        }
-
-        if (this.sortDropdown) {
-            this.sortDropdown.setValue(this.currentQuery.sortKey);
-        }
-
-        if (this.groupDropdown) {
-            this.groupDropdown.setValue(this.currentQuery.groupKey);
-        }
-
-        // Update date range inputs
-        if (this.dateRangeStartInput && this.dateRangeEndInput) {
-            if (this.currentQuery.dateRange) {
-                this.dateRangeStartInput.value = this.currentQuery.dateRange.start;
-                this.dateRangeEndInput.value = this.currentQuery.dateRange.end;
-            } else {
-                this.dateRangeStartInput.value = '';
-                this.dateRangeEndInput.value = '';
-            }
-        }
-
-        // Update status checkboxes
-        const statusContainer = this.advancedFiltersPanel?.querySelector('.filter-bar__advanced-item:nth-child(1)');
-        const statusCheckboxes = statusContainer?.querySelectorAll('input[type="checkbox"]') as NodeListOf<HTMLInputElement>;
-        statusCheckboxes?.forEach(checkbox => {
-            if (this.currentQuery.statuses) {
-                checkbox.checked = this.currentQuery.statuses.includes(checkbox.value);
-            } else {
-                // If no statuses selected, no checkboxes should be checked (show all)
-                checkbox.checked = false;
-            }
+            this.emitQueryChange();
         });
 
-        // Update priority checkboxes
-        const priorityContainer = this.advancedFiltersPanel?.querySelector('.filter-bar__advanced-item:nth-child(2)');
-        const priorityCheckboxes = priorityContainer?.querySelectorAll('input[type="checkbox"]') as NodeListOf<HTMLInputElement>;
-        priorityCheckboxes?.forEach(checkbox => {
-            checkbox.checked = (this.currentQuery.priorities || []).includes(checkbox.value);
+        groupSelect.addEventListener('change', () => {
+            this.currentQuery.groupKey = groupSelect.value as TaskGroupKey;
+            this.emitQueryChange();
         });
-
-        // Update context checkboxes
-        const contextContainer = this.advancedFiltersPanel?.querySelector('.filter-bar__advanced-item:nth-child(3)');
-        const contextCheckboxes = contextContainer?.querySelectorAll('input[type="checkbox"]') as NodeListOf<HTMLInputElement>;
-        contextCheckboxes?.forEach(checkbox => {
-            checkbox.checked = (this.currentQuery.contexts || []).includes(checkbox.value);
-        });
-
-        // Update project checkboxes
-        const projectContainer = this.advancedFiltersPanel?.querySelector('.filter-bar__advanced-item:nth-child(4)');
-        const projectCheckboxes = projectContainer?.querySelectorAll('input[type="checkbox"]') as NodeListOf<HTMLInputElement>;
-        projectCheckboxes?.forEach(checkbox => {
-            checkbox.checked = (this.currentQuery.projects || []).includes(checkbox.value);
-        });
-
-        if (this.archivedToggle) {
-            this.archivedToggle.checked = this.currentQuery.showArchived;
-        }
-
-        // Update show dropdown checkboxes
-        this.updateShowDropdownCheckboxes();
 
         this.updateSortDirectionButton();
-        this.updateActiveFiltersIndicator();
+
+        // Add click handler for toggle
+        header.addEventListener('click', () => {
+            this.toggleSection('display', header, content);
+        });
     }
 
     /**
-     * Update show dropdown checkboxes to reflect current query
+     * Remove a filter group from its parent
      */
-    private updateShowDropdownCheckboxes(): void {
-        if (!this.showDropdown || !this.showDropdownConfig) return;
+    private removeFilterGroup(parentGroup: FilterGroup, index: number): void {
+        parentGroup.children.splice(index, 1);
+        this.updateUI();
+        this.emitQueryChange();
+    }
 
-        // Update checkboxes based on current query values
-        this.showDropdownConfig.forEach(option => {
-            const checkbox = this.showDropdown!.querySelector(`input[data-option-id="${option.id}"]`) as HTMLInputElement;
-            if (checkbox) {
-                // Get the current value from the query (only for show options which are boolean)
-                const currentValue = this.currentQuery[option.id] as boolean | undefined;
-                
-                // Set checkbox state based on current query value
-                if (option.id === 'showRecurrent') {
-                    checkbox.checked = currentValue ?? true;
-                } else if (option.id === 'showNotes') {
-                    checkbox.checked = currentValue ?? true;
-                } else {
-                    checkbox.checked = currentValue ?? false;
-                }
-            }
+    /**
+     * Render view-specific options
+     */
+    private renderViewOptions(container: HTMLElement): void {
+        const section = container.createDiv('filter-bar__section');
+
+        // Collapsible header
+        const header = section.createDiv('filter-bar__section-header');
+        if (!this.sectionStates.viewOptions) {
+            header.addClass('filter-bar__section-header--collapsed');
+        }
+        
+        const title = header.createSpan({
+            text: 'View Options',
+            cls: 'filter-bar__section-title'
         });
 
-        // Update the button text
-        this.updateShowButtonText();
+        // Content
+        const content = section.createDiv('filter-bar__section-content');
+        if (!this.sectionStates.viewOptions) {
+            content.addClass('filter-bar__section-content--collapsed');
+        }
+
+        // Store reference to content for view-specific population
+        this.viewOptionsContainer = content.createDiv('filter-bar__view-options');
+
+        // Add click handler for toggle
+        header.addEventListener('click', () => {
+            this.toggleSection('viewOptions', header, content);
+        });
+
+        // This will be populated by the view component as needed
+    }
+
+    /**
+     * Set view-specific options (called by view components)
+     */
+    setViewOptions(options: Array<{id: string, label: string, value: boolean, onChange: (value: boolean) => void}>): void {
+        if (!this.viewOptionsContainer) return;
+
+        this.viewOptionsContainer.empty();
+
+        if (options.length === 0) {
+            // Hide the section if no options
+            const section = this.viewOptionsContainer.parentElement?.parentElement;
+            if (section) {
+                section.style.setProperty('display', 'none');
+            }
+            return;
+        } else {
+            // Show the section if we have options
+            const section = this.viewOptionsContainer.parentElement?.parentElement;
+            if (section) {
+                section.style.removeProperty('display');
+            }
+        }
+
+        options.forEach(option => {
+            const optionContainer = this.viewOptionsContainer!.createDiv('filter-bar__view-option');
+            
+            const label = optionContainer.createEl('label', {
+                cls: 'filter-bar__view-option-label'
+            });
+
+            const checkbox = label.createEl('input', {
+                type: 'checkbox',
+                cls: 'filter-bar__view-option-checkbox'
+            });
+            checkbox.checked = option.value;
+
+            label.createSpan({
+                text: option.label,
+                cls: 'filter-bar__view-option-text'
+            });
+
+            checkbox.addEventListener('change', () => {
+                option.onChange(checkbox.checked);
+            });
+        });
+    }
+
+    /**
+     * Add a new filter condition to a group
+     */
+    private addFilterCondition(group: FilterGroup): void {
+        const condition: FilterCondition = {
+            type: 'condition',
+            id: this.generateId(),
+            property: 'title',
+            operator: 'contains',
+            value: ''
+        };
+        
+        group.children.push(condition);
+        this.render();
+        this.emitQueryChange();
+    }
+
+    /**
+     * Add a new filter group to a group
+     */
+    private addFilterGroup(group: FilterGroup): void {
+        const newGroup: FilterGroup = {
+            type: 'group',
+            id: this.generateId(),
+            conjunction: 'and',
+            children: []
+        };
+        
+        group.children.push(newGroup);
+        this.render();
+        this.emitQueryChange();
+    }
+
+    /**
+     * Remove a filter condition from a group
+     */
+    private removeFilterCondition(group: FilterGroup, index: number): void {
+        group.children.splice(index, 1);
+        this.render();
+        this.emitQueryChange();
     }
 
     /**
@@ -801,535 +821,177 @@ export class FilterBar extends EventEmitter {
     }
 
     /**
-     * Update active filters indicator
+     * Toggle view selector dropdown
      */
-    private updateActiveFiltersIndicator(): void {
-        if (!this.activeFiltersIndicator) return;
-
-        let activeCount = 0;
+    private toggleViewSelectorDropdown(): void {
+        if (!this.viewSelectorDropdown) return;
         
-        if (this.currentQuery.searchQuery) activeCount++;
-        if (this.currentQuery.statuses && this.currentQuery.statuses.length > 0) activeCount++;
-        if (this.currentQuery.priorities && this.currentQuery.priorities.length > 0) activeCount++;
-        if (this.currentQuery.contexts && this.currentQuery.contexts.length > 0) activeCount++;
-        if (this.currentQuery.projects && this.currentQuery.projects.length > 0) activeCount++;
-        if (this.currentQuery.showArchived) activeCount++;
-        if (this.currentQuery.dateRange) activeCount++;
+        const isHidden = this.viewSelectorDropdown.classList.contains('filter-bar__view-selector-dropdown--hidden');
+        this.viewSelectorDropdown.classList.toggle('filter-bar__view-selector-dropdown--hidden', !isHidden);
+    }
+
+    /**
+     * Toggle a collapsible section
+     */
+    private toggleSection(sectionKey: keyof typeof this.sectionStates, header: HTMLElement, content: HTMLElement): void {
+        this.sectionStates[sectionKey] = !this.sectionStates[sectionKey];
+        const isExpanded = this.sectionStates[sectionKey];
         
-        // Count show options (only if not default values)
-        if (this.currentQuery.showRecurrent) activeCount++;
-        if (this.currentQuery.showCompleted) activeCount++;
-        if (this.currentQuery.showNotes) activeCount++;
-        if (this.currentQuery.showOverdueOnToday) activeCount++;
-
-        if (activeCount > 0) {
-            this.activeFiltersIndicator.textContent = `${activeCount}`;
-            this.activeFiltersIndicator.classList.remove('filter-bar__active-indicator--hidden');
-        } else {
-            this.activeFiltersIndicator.classList.add('filter-bar__active-indicator--hidden');
-        }
+        header.classList.toggle('filter-bar__section-header--collapsed', !isExpanded);
+        content.classList.toggle('filter-bar__section-content--collapsed', !isExpanded);
     }
 
     /**
-     * Toggle advanced filters panel visibility
+     * Show save view dialog
      */
-    private toggleAdvancedFilters(): void {
-        if (!this.advancedFiltersPanel) return;
+    private showSaveViewDialog(): void {
+        // Create a simple modal for name input
+        const modal = document.createElement('div');
+        modal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+        `;
 
-        const isVisible = !this.advancedFiltersPanel.classList.contains('filter-bar__advanced--hidden');
-        this.advancedFiltersPanel.classList.toggle('filter-bar__advanced--hidden', isVisible);
-        
-        if (this.advancedFiltersButton) {
-            this.advancedFiltersButton.classList.toggle('filter-bar__advanced-toggle--active', !isVisible);
-        }
-    }
+        const content = document.createElement('div');
+        content.style.cssText = `
+            background: var(--background-primary);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: var(--shadow-s);
+            border: 1px solid var(--background-modifier-border);
+            min-width: 300px;
+        `;
 
-    /**
-     * Rebuild advanced filters when options change
-     */
-    private rebuildAdvancedFilters(): void {
-        if (!this.advancedFiltersPanel) return;
+        const title = document.createElement('h3');
+        title.textContent = 'Save View';
+        title.style.marginBottom = '16px';
 
-        // Rebuild status checkboxes
-        this.rebuildStatusCheckboxes();
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.placeholder = 'Enter view name...';
+        input.style.cssText = `
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--background-modifier-border);
+            border-radius: 4px;
+            background: var(--background-primary);
+            color: var(--text-normal);
+            margin-bottom: 16px;
+        `;
 
-        // Rebuild priority checkboxes
-        this.rebuildPriorityCheckboxes();
-        
-        // Rebuild context checkboxes
-        this.rebuildContextCheckboxes();
-        
-        // Rebuild project checkboxes
-        this.rebuildProjectCheckboxes();
-    }
+        const buttons = document.createElement('div');
+        buttons.style.cssText = `
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+        `;
 
+        const cancelBtn = document.createElement('button');
+        cancelBtn.textContent = 'Cancel';
+        cancelBtn.style.cssText = `
+            padding: 6px 12px;
+            border: 1px solid var(--background-modifier-border);
+            border-radius: 4px;
+            background: var(--background-primary);
+            color: var(--text-normal);
+            cursor: pointer;
+        `;
 
-    /**
-     * Rebuild status checkboxes while preserving selection
-     */
-    private rebuildStatusCheckboxes(): void {
-        const statusContainer = this.advancedFiltersPanel?.querySelector('.filter-bar__advanced-item:nth-child(1) .filter-bar__checkbox-group');
-        if (!statusContainer) return;
+        const saveBtn = document.createElement('button');
+        saveBtn.textContent = 'Save';
+        saveBtn.style.cssText = `
+            padding: 6px 12px;
+            border: 1px solid var(--color-accent);
+            border-radius: 4px;
+            background: var(--color-accent);
+            color: white;
+            cursor: pointer;
+        `;
 
-        const selectedStatuses = this.currentQuery.statuses || [];
-        statusContainer.empty();
-
-
-        // Add specific status options
-        this.filterOptions.statuses.forEach(status => {
-            const checkboxWrapper = statusContainer.createDiv('filter-bar__checkbox-wrapper');
-            
-            const label = checkboxWrapper.createEl('label', {
-                cls: 'filter-bar__checkbox-label'
-            });
-
-            const checkbox = label.createEl('input', {
-                type: 'checkbox',
-                value: status,
-                cls: 'filter-bar__checkbox'
-            });
-
-            checkbox.checked = selectedStatuses.includes(status);
-
-            label.createSpan({ text: status });
-
-            checkbox.addEventListener('change', () => {
-                this.updateStatusFilter();
-            });
-        });
-    }
-
-    /**
-     * Rebuild priority checkboxes while preserving selection
-     */
-    private rebuildPriorityCheckboxes(): void {
-        const priorityContainer = this.advancedFiltersPanel?.querySelector('.filter-bar__advanced-item:nth-child(2) .filter-bar__checkbox-group');
-        if (!priorityContainer) return;
-
-        const selectedPriorities = this.currentQuery.priorities || [];
-        priorityContainer.empty();
-
-        this.filterOptions.priorities.forEach(priority => {
-            const checkboxWrapper = priorityContainer.createDiv('filter-bar__checkbox-wrapper');
-            
-            const label = checkboxWrapper.createEl('label', {
-                cls: 'filter-bar__checkbox-label'
-            });
-
-            const checkbox = label.createEl('input', {
-                type: 'checkbox',
-                value: priority,
-                cls: 'filter-bar__checkbox'
-            });
-
-            checkbox.checked = selectedPriorities.includes(priority);
-
-            label.createSpan({ text: priority });
-
-            checkbox.addEventListener('change', () => {
-                this.updatePriorityFilter();
-            });
-        });
-    }
-
-    /**
-     * Rebuild context checkboxes while preserving selection
-     */
-    private rebuildContextCheckboxes(): void {
-        const contextContainer = this.advancedFiltersPanel?.querySelector('.filter-bar__advanced-item:nth-child(3) .filter-bar__checkbox-group');
-        if (!contextContainer) return;
-
-        const selectedContexts = this.currentQuery.contexts || [];
-        contextContainer.empty();
-
-        this.filterOptions.contexts.forEach(context => {
-            const checkboxWrapper = contextContainer.createDiv('filter-bar__checkbox-wrapper');
-            
-            const label = checkboxWrapper.createEl('label', {
-                cls: 'filter-bar__checkbox-label'
-            });
-
-            const checkbox = label.createEl('input', {
-                type: 'checkbox',
-                value: context,
-                cls: 'filter-bar__checkbox'
-            });
-
-            checkbox.checked = selectedContexts.includes(context);
-
-            label.createSpan({ text: context });
-
-            checkbox.addEventListener('change', () => {
-                this.updateContextFilter();
-            });
-        });
-    }
-
-    /**
-     * Rebuild project checkboxes while preserving selection
-     */
-    private rebuildProjectCheckboxes(): void {
-        const projectContainer = this.advancedFiltersPanel?.querySelector('.filter-bar__advanced-item:nth-child(4) .filter-bar__checkbox-group');
-        if (!projectContainer) return;
-
-        const selectedProjects = this.currentQuery.projects || [];
-        projectContainer.empty();
-
-        this.filterOptions.projects.forEach(project => {
-            const checkboxWrapper = projectContainer.createDiv('filter-bar__checkbox-wrapper');
-            
-            const label = checkboxWrapper.createEl('label', {
-                cls: 'filter-bar__checkbox-label'
-            });
-
-            const checkbox = label.createEl('input', {
-                type: 'checkbox',
-                value: project,
-                cls: 'filter-bar__checkbox'
-            });
-
-            checkbox.checked = selectedProjects.includes(project);
-
-            label.createSpan({ text: project });
-
-            checkbox.addEventListener('change', () => {
-                this.updateProjectFilter();
-            });
-        });
-    }
-
-    /**
-     * Get human-readable label for sort key
-     */
-    private getSortKeyLabel(key: TaskSortKey): string {
-        const labels: Record<TaskSortKey, string> = {
-            'due': 'Due date',
-            'scheduled': 'Scheduled date',
-            'priority': 'Priority',
-            'title': 'Title'
+        const closeModal = () => {
+            document.body.removeChild(modal);
         };
-        return labels[key] || key;
-    }
 
-    /**
-     * Get human-readable label for group key
-     */
-    private getGroupKeyLabel(key: TaskGroupKey): string {
-        const labels: Record<TaskGroupKey, string> = {
-            'none': 'None',
-            'status': 'Status',
-            'priority': 'Priority',
-            'context': 'Context',
-            'project': 'Project',
-            'due': 'Due date',
-            'scheduled': 'Scheduled date'
+        const saveView = () => {
+            const name = input.value.trim();
+            if (name) {
+                console.log('FilterBar: Emitting saveView event:', name, this.currentQuery); // Debug
+                this.emit('saveView', { name, query: this.currentQuery });
+                closeModal();
+                // Close the dropdown as well
+                this.toggleViewSelectorDropdown();
+            } else {
+                input.focus();
+            }
         };
-        return labels[key] || key;
-    }
 
-
-    /**
-     * Toggle controls container visibility
-     */
-    private toggleControlsVisibility(): void {
-        if (!this.controlsContainer) return;
-
-        const isVisible = !this.controlsContainer.classList.contains('filter-bar__controls-container--hidden');
-        this.controlsContainer.classList.toggle('filter-bar__controls-container--hidden', isVisible);
+        cancelBtn.addEventListener('click', closeModal);
+        saveBtn.addEventListener('click', saveView);
         
-        if (this.settingsButton) {
-            this.settingsButton.classList.toggle('filter-bar__settings-button--active', !isVisible);
-        }
-    }
-
-    /**
-     * Set up view options configuration
-     */
-    setViewOptions(
-        options: { id: string; label: string; value: boolean }[],
-        callback: (optionId: string, enabled: boolean) => void
-    ): void {
-        this.viewOptionsConfig = options;
-        this.viewOptionsCallback = callback;
-        
-        // Update the dropdown if it exists
-        if (this.viewOptionsDropdown) {
-            this.updateViewOptionsDropdown();
-        }
-    }
-
-    /**
-     * Render view options controls
-     */
-    private renderViewOptionsControls(parent: HTMLElement): void {
-        const viewContainer = parent.createDiv('filter-bar__view-options');
-        
-        viewContainer.createSpan({ text: 'View:', cls: 'filter-bar__label' });
-        
-        // Create dropdown button
-        this.viewOptionsButton = viewContainer.createEl('button', {
-            text: 'Options',
-            cls: 'filter-bar__view-options-btn'
-        });
-        
-        // Create dropdown menu (initially hidden)
-        this.viewOptionsDropdown = viewContainer.createDiv({ 
-            cls: 'filter-bar__view-options-menu filter-bar__view-options-menu--hidden' 
-        });
-        
-        // Toggle dropdown on button click
-        this.viewOptionsButton.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const isHidden = this.viewOptionsDropdown!.classList.contains('filter-bar__view-options-menu--hidden');
-            if (isHidden) {
-                this.viewOptionsDropdown!.classList.remove('filter-bar__view-options-menu--hidden');
-            } else {
-                this.viewOptionsDropdown!.classList.add('filter-bar__view-options-menu--hidden');
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                saveView();
+            } else if (e.key === 'Escape') {
+                e.preventDefault();
+                closeModal();
             }
         });
-        
-        // Close dropdown when clicking outside
-        document.addEventListener('click', (e) => {
-            if (viewContainer && !viewContainer.contains(e.target as Node)) {
-                this.viewOptionsDropdown?.classList.add('filter-bar__view-options-menu--hidden');
-            }
-        });
-        
-        // Initial update
-        this.updateViewOptionsDropdown();
-    }
-    
-    /**
-     * Update view options dropdown with current config
-     */
-    private updateViewOptionsDropdown(): void {
-        if (!this.viewOptionsDropdown || !this.viewOptionsConfig) return;
-        
-        this.viewOptionsDropdown.empty();
-        
-        // Create checkboxes for each option
-        this.viewOptionsConfig.forEach(option => {
-            const optionContainer = this.viewOptionsDropdown!.createDiv({ cls: 'filter-bar__view-option' });
-            
-            const label = optionContainer.createEl('label', {
-                cls: 'filter-bar__view-option-label'
-            });
 
-            const checkbox = label.createEl('input', {
-                type: 'checkbox',
-                cls: 'filter-bar__view-option-checkbox'
-            });
-            checkbox.checked = option.value;
-            
-            label.createSpan({ text: option.label });
-            
-            checkbox.addEventListener('change', () => {
-                if (this.viewOptionsCallback) {
-                    this.viewOptionsCallback(option.id, checkbox.checked);
-                }
-                this.updateViewOptionsButtonText();
-            });
-            
-            // Allow clicking anywhere on the option to toggle
-            optionContainer.addEventListener('click', (e) => {
-                // Prevent double-toggle when clicking directly on the checkbox
-                if (e.target === checkbox) {
-                    return;
-                }
-                
-                // If clicking on the label or its children, let the native label behavior handle it
-                if (e.target === label || label.contains(e.target as Node)) {
-                    // The native label behavior will toggle the checkbox and trigger the change event
-                    return;
-                }
-                
-                // For clicks outside the label (but inside the container), manually toggle
-                checkbox.checked = !checkbox.checked;
-                
-                // Trigger the change event
-                checkbox.dispatchEvent(new Event('change'));
-            });
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeModal();
         });
-        
-        this.updateViewOptionsButtonText();
+
+        buttons.appendChild(cancelBtn);
+        buttons.appendChild(saveBtn);
+        content.appendChild(title);
+        content.appendChild(input);
+        content.appendChild(buttons);
+        modal.appendChild(content);
+        document.body.appendChild(modal);
+
+        // Focus the input
+        setTimeout(() => input.focus(), 100);
     }
-    
+
+
     /**
-     * Update view options button text based on active options
+     * Load a saved view
      */
-    private updateViewOptionsButtonText(): void {
-        if (!this.viewOptionsButton || !this.viewOptionsConfig) return;
-        
-        const activeOptions = this.viewOptionsConfig.filter(option => option.value);
-        
-        if (activeOptions.length === 0) {
-            this.viewOptionsButton.textContent = 'Options (None)';
-        } else if (activeOptions.length === 1) {
-            // Shorten common labels for button display
-            const shortLabel = activeOptions[0].label
-                .replace('Scheduled tasks', 'Scheduled')
-                .replace('Calendar subscriptions', 'Subscriptions')
-                .replace('Time entries', 'Time');
-            this.viewOptionsButton.textContent = `Options (${shortLabel})`;
-        } else {
-            this.viewOptionsButton.textContent = `Options (${activeOptions.length} selected)`;
-        }
+    private loadSavedView(view: SavedView): void {
+        this.currentQuery = { ...view.query };
+        this.render();
+        this.emitQueryChange();
+        this.toggleViewSelectorDropdown();
     }
 
     /**
-     * Render show dropdown controls
+     * Update UI to reflect current query state
      */
-    private renderShowDropdownControls(parent: HTMLElement): void {
-        const showContainer = parent.createDiv('filter-bar__show-options');
-        
-        showContainer.createSpan({ text: 'Show:', cls: 'filter-bar__label' });
-        
-        // Create dropdown button
-        this.showButton = showContainer.createEl('button', {
-            text: 'Options',
-            cls: 'filter-bar__show-options-btn'
-        });
-        
-        // Create dropdown menu (initially hidden)
-        this.showDropdown = showContainer.createDiv({ 
-            cls: 'filter-bar__show-options-menu filter-bar__show-options-menu--hidden' 
-        });
-        
-        // Toggle dropdown on button click
-        this.showButton.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const isHidden = this.showDropdown!.classList.contains('filter-bar__show-options-menu--hidden');
-            if (isHidden) {
-                this.showDropdown!.classList.remove('filter-bar__show-options-menu--hidden');
-            } else {
-                this.showDropdown!.classList.add('filter-bar__show-options-menu--hidden');
-            }
-        });
-        
-        // Close dropdown when clicking outside
-        document.addEventListener('click', (e) => {
-            if (showContainer && !showContainer.contains(e.target as Node)) {
-                this.showDropdown?.classList.add('filter-bar__show-options-menu--hidden');
-            }
-        });
-        
-        // Initial update
-        this.updateShowDropdown();
+    private updateUI(): void {
+        // Re-render everything to ensure consistency
+        this.render();
     }
-    
-    /**
-     * Update show dropdown with current config
-     */
-    private updateShowDropdown(): void {
-        if (!this.showDropdown || !this.showDropdownConfig) return;
-        
-        this.showDropdown.empty();
-        
-        // Create checkboxes for each option
-        this.showDropdownConfig.forEach(option => {
-            const optionContainer = this.showDropdown!.createDiv({ cls: 'filter-bar__show-option' });
-            
-            const label = optionContainer.createEl('label', {
-                cls: 'filter-bar__show-option-label'
-            });
 
-            const checkbox = label.createEl('input', {
-                type: 'checkbox',
-                cls: 'filter-bar__show-option-checkbox'
-            });
-            checkbox.setAttribute('data-option-id', option.id);
-            checkbox.checked = option.value;
-            
-            label.createSpan({ text: option.label });
-            
-            checkbox.addEventListener('change', () => {
-                // Update the config value to match checkbox state
-                option.value = checkbox.checked;
-                
-                if (this.showDropdownCallback) {
-                    this.showDropdownCallback(option.id, checkbox.checked);
-                }
-                this.updateShowButtonText();
-            });
-            
-            // Allow clicking anywhere on the option to toggle
-            optionContainer.addEventListener('click', (e) => {
-                // Prevent double-toggle when clicking directly on the checkbox
-                if (e.target === checkbox) {
-                    return;
-                }
-                
-                // If clicking on the label or its children, let the native label behavior handle it
-                if (e.target === label || label.contains(e.target as Node)) {
-                    // The native label behavior will toggle the checkbox and trigger the change event
-                    return;
-                }
-                
-                // For clicks outside the label (but inside the container), manually toggle
-                checkbox.checked = !checkbox.checked;
-                
-                // Trigger the change event
-                checkbox.dispatchEvent(new Event('change'));
-            });
-        });
-        
-        this.updateShowButtonText();
-    }
-    
     /**
-     * Update show dropdown button text based on active options
+     * Emit query change event
      */
-    private updateShowButtonText(): void {
-        if (!this.showButton || !this.showDropdownConfig) return;
-        
-        // Get active options by checking actual checkbox states
-        const activeOptions = this.showDropdownConfig.filter(option => {
-            const checkbox = this.showDropdown?.querySelector(`input[data-option-id="${option.id}"]`) as HTMLInputElement;
-            return checkbox?.checked || false;
-        });
-        
-        if (activeOptions.length === 0) {
-            this.showButton.textContent = 'Show (None)';
-        } else if (activeOptions.length === 1) {
-            // Shorten common labels for button display
-            const shortLabel = activeOptions[0].label
-                .replace('Archived tasks', 'Archived')
-                .replace('Recurrent tasks', 'Recurrent')
-                .replace('Completed tasks', 'Completed')
-                .replace('Show notes', 'Notes')
-                .replace('Overdue on today', 'Overdue');
-            this.showButton.textContent = `Show (${shortLabel})`;
-        } else {
-            this.showButton.textContent = `Show (${activeOptions.length} selected)`;
-        }
-    }
-    
-    /**
-     * Set up show dropdown configuration
-     */
-    setShowOptions(
-        options: { id: keyof FilterQuery; label: string; value: boolean }[],
-        callback: (optionId: keyof FilterQuery, enabled: boolean) => void
-    ): void {
-        this.showDropdownConfig = options;
-        this.showDropdownCallback = callback;
-        
-        // Update the dropdown if it exists
-        if (this.showDropdown) {
-            this.updateShowDropdown();
-        }
+    private emitQueryChange(): void {
+        this.emit('queryChange', { ...this.currentQuery });
     }
 
     /**
      * Destroy and clean up the FilterBar
      */
     destroy(): void {
-        // Clean up cache refresh listeners
-        if (this.cacheRefreshListeners) {
-            this.cacheRefreshListeners.forEach(unsubscribe => unsubscribe());
-            this.cacheRefreshListeners = [];
-        }
-        
         this.container.empty();
         this.removeAllListeners();
     }

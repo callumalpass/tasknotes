@@ -5,7 +5,8 @@ import {
     TaskInfo, 
     EVENT_DATA_CHANGED,
     EVENT_TASK_UPDATED,
-    FilterQuery
+    FilterQuery,
+    SavedView
 } from '../types';
 // No helper functions needed from helpers
 import { perfMonitor } from '../utils/PerformanceMonitor';
@@ -39,16 +40,12 @@ export class TaskListView extends ItemView {
         super(leaf);
         this.plugin = plugin;
         
-        // Initialize with default query (will be updated in onOpen after plugin is ready)
+        // Initialize with default query - will be properly set when plugin services are ready
         this.currentQuery = {
-            searchQuery: undefined,
-            statuses: undefined,
-            contexts: undefined,
-            priorities: undefined,
-            dateRange: undefined,
-            showArchived: false,
-            showRecurrent: true,
-            showCompleted: false,
+            type: 'group',
+            id: 'temp',
+            conjunction: 'and',
+            children: [],
             sortKey: 'due',
             sortDirection: 'asc',
             groupKey: 'none'
@@ -133,13 +130,19 @@ export class TaskListView extends ItemView {
             // Wait for the plugin to be fully initialized before proceeding
             await this.plugin.onReady();
             
-            // Wait for ViewStateManager initialization and load saved filter state
-            // ViewStateManager loads synchronously now
+            // Check if migration is needed
+            if (this.plugin.viewStateManager.needsMigration()) {
+                console.log('TaskListView: Performing migration to new filter system');
+                this.plugin.viewStateManager.performMigration();
+            }
+            
+            // Initialize with default query from FilterService
+            this.currentQuery = this.plugin.filterService.createDefaultQuery();
+            
+            // Load saved filter state if it exists (will be empty after migration)
             const savedQuery = this.plugin.viewStateManager.getFilterState(TASK_LIST_VIEW_TYPE);
             if (savedQuery) {
                 this.currentQuery = savedQuery;
-            } else if (this.plugin.filterService) {
-                this.currentQuery = this.plugin.filterService.createDefaultQuery();
             }
             
             await this.refresh();
@@ -232,51 +235,45 @@ export class TaskListView extends ItemView {
         // Wait for cache to be initialized with actual data
         await this.waitForCacheReady();
         
-        // Get filter options from FilterService
-        const filterOptions = await this.plugin.filterService.getFilterOptions(this.currentQuery);
+        // Initialize with default query from FilterService
+        this.currentQuery = this.plugin.filterService.createDefaultQuery();
         
-        // Create FilterBar with TaskListView configuration
+        // Load saved filter state if it exists
+        const savedQuery = this.plugin.viewStateManager.getFilterState(TASK_LIST_VIEW_TYPE);
+        if (savedQuery) {
+            this.currentQuery = savedQuery;
+        }
+        
+        // Get filter options from FilterService
+        const filterOptions = await this.plugin.filterService.getFilterOptions();
+        
+        // Create new FilterBar with simplified constructor
         this.filterBar = new FilterBar(
             filterBarContainer,
             this.currentQuery,
-            filterOptions,
-            {
-                showSearch: true,
-                showGroupBy: true,
-                showSortBy: true,
-                showAdvancedFilters: true,
-                showDateRangePicker: true,
-                showShowDropdown: true,
-                allowedSortKeys: ['due', 'scheduled', 'priority', 'title'],
-                allowedGroupKeys: ['none', 'status', 'priority', 'context', 'project', 'due', 'scheduled']
-            }
+            filterOptions
         );
         
-        // Initialize FilterBar (placeholder for future cache-ready initialization)
-        await this.filterBar.initialize();
+        // Get saved views for the FilterBar
+        const savedViews = this.plugin.viewStateManager.getSavedViews();
+        this.filterBar.updateSavedViews(savedViews);
         
-        // Set up cache refresh mechanism for FilterBar
-        this.filterBar.setupCacheRefresh(this.plugin.cacheManager, this.plugin.filterService);
+        // Listen for saved view events
+        this.filterBar.on('saveView', ({ name, query }) => {
+            console.log('TaskListView: Received saveView event:', name, query); // Debug
+            const savedView = this.plugin.viewStateManager.saveView(name, query);
+            console.log('TaskListView: Saved view result:', savedView); // Debug
+            const updatedViews = this.plugin.viewStateManager.getSavedViews();
+            console.log('TaskListView: Updated views from manager:', updatedViews); // Debug
+            this.filterBar?.updateSavedViews(updatedViews);
+        });
         
-        // Set up show options configuration
-        this.filterBar.setShowOptions([
-            { id: 'showArchived', label: 'Archived tasks', value: this.currentQuery.showArchived },
-            { id: 'showRecurrent', label: 'Recurrent tasks', value: this.currentQuery.showRecurrent ?? true },
-            { id: 'showCompleted', label: 'Completed tasks', value: this.currentQuery.showCompleted ?? false }
-        ], (optionId: keyof FilterQuery, enabled: boolean) => {
-            // Update the specific show option in the query
-            if (optionId === 'showArchived') {
-                this.currentQuery.showArchived = enabled;
-            } else if (optionId === 'showRecurrent') {
-                this.currentQuery.showRecurrent = enabled;
-            } else if (optionId === 'showCompleted') {
-                this.currentQuery.showCompleted = enabled;
-            }
-            
-            // Update the FilterBar with the new query
-            this.filterBar?.updateQuery(this.currentQuery);
-            
-            this.refreshTasks();
+        this.filterBar.on('deleteView', (viewId: string) => {
+            console.log('TaskListView: Received deleteView event:', viewId); // Debug
+            this.plugin.viewStateManager.deleteView(viewId);
+            const updatedViews = this.plugin.viewStateManager.getSavedViews();
+            console.log('TaskListView: Updated views after deletion:', updatedViews); // Debug
+            this.filterBar?.updateSavedViews(updatedViews);
         });
         
         // Listen for filter changes

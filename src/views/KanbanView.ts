@@ -31,23 +31,19 @@ export class KanbanView extends ItemView {
         super(leaf);
         this.plugin = plugin;
         
-        // Initialize with default query (will be updated in onOpen after plugin is ready)
+        // Initialize with default query - will be properly set when plugin services are ready
         this.currentQuery = {
-            searchQuery: undefined,
-            statuses: undefined,
-            contexts: undefined,
-            priorities: undefined,
-            dateRange: undefined,
-            showArchived: false,
-            showRecurrent: true,
-            showCompleted: false,
+            type: 'group',
+            id: 'temp',
+            conjunction: 'and',
+            children: [],
             sortKey: 'priority',
             sortDirection: 'desc',
             groupKey: 'status' // Kanban default grouping
         };
         
         // Initialize previous group key to current state to avoid clearing on first load
-        this.previousGroupKey = this.currentQuery.groupKey;
+        this.previousGroupKey = this.currentQuery.groupKey || null;
         
         this.registerEvents();
     }
@@ -120,7 +116,7 @@ export class KanbanView extends ItemView {
         const savedQuery = this.plugin.viewStateManager.getFilterState(KANBAN_VIEW_TYPE);
         if (savedQuery) {
             this.currentQuery = savedQuery;
-            this.previousGroupKey = this.currentQuery.groupKey;
+            this.previousGroupKey = this.currentQuery.groupKey || null;
         }
         
         this.contentEl.empty();
@@ -168,49 +164,42 @@ export class KanbanView extends ItemView {
         // FilterBar container
         const filterBarContainer = header.createDiv({ cls: 'kanban-view__filter-container' });
         
-        // Get filter options from FilterService
-        const filterOptions = await this.plugin.filterService.getFilterOptions(this.currentQuery);
+        // Initialize with default query from FilterService
+        this.currentQuery = this.plugin.filterService.createDefaultQuery();
+        this.currentQuery.sortKey = 'priority';
+        this.currentQuery.sortDirection = 'desc';
+        this.currentQuery.groupKey = 'status';
         
-        // Create FilterBar with Kanban configuration
+        // Load saved filter state if it exists
+        const savedQuery = this.plugin.viewStateManager.getFilterState(KANBAN_VIEW_TYPE);
+        if (savedQuery) {
+            this.currentQuery = savedQuery;
+        }
+        
+        // Get filter options from FilterService
+        const filterOptions = await this.plugin.filterService.getFilterOptions();
+        
+        // Create new FilterBar
         this.filterBar = new FilterBar(
             filterBarContainer,
             this.currentQuery,
-            filterOptions,
-            {
-                showSearch: true,
-                showGroupBy: true, // Allow changing grouping field
-                showSortBy: true,
-                showAdvancedFilters: true,
-                showDateRangePicker: true,
-                showShowDropdown: true,
-                allowedSortKeys: ['priority', 'title', 'due', 'scheduled'],
-                allowedGroupKeys: ['status', 'priority', 'context', 'project']
-            }
+            filterOptions
         );
         
-        // Set up show options configuration
-        this.filterBar.setShowOptions([
-            { id: 'showArchived', label: 'Archived tasks', value: this.currentQuery.showArchived },
-            { id: 'showRecurrent', label: 'Recurrent tasks', value: this.currentQuery.showRecurrent ?? true },
-            { id: 'showCompleted', label: 'Completed tasks', value: this.currentQuery.showCompleted ?? false }
-        ], (optionId: keyof FilterQuery, enabled: boolean) => {
-            // Update the specific show option in the query
-            if (optionId === 'showArchived') {
-                this.currentQuery.showArchived = enabled;
-            } else if (optionId === 'showRecurrent') {
-                this.currentQuery.showRecurrent = enabled;
-            } else if (optionId === 'showCompleted') {
-                this.currentQuery.showCompleted = enabled;
-            }
-            
-            // Update the FilterBar with the new query
-            this.filterBar?.updateQuery(this.currentQuery);
-            
-            this.loadAndRenderBoard();
+        // Get saved views for the FilterBar
+        const savedViews = this.plugin.viewStateManager.getSavedViews();
+        this.filterBar.updateSavedViews(savedViews);
+        
+        // Listen for saved view events
+        this.filterBar.on('saveView', ({ name, query }) => {
+            this.plugin.viewStateManager.saveView(name, query);
+            const updatedViews = this.plugin.viewStateManager.getSavedViews();
+            this.filterBar?.updateSavedViews(updatedViews);
         });
         
-        // Set up cache refresh for dynamic filter updates
-        this.filterBar.setupCacheRefresh(this.plugin.cacheManager, this.plugin.filterService);
+        this.filterBar.on('manageViews', () => {
+            console.log('Manage views requested');
+        });
         
         // Listen for filter changes
         this.filterBar.on('queryChange', async (newQuery: FilterQuery) => {
@@ -267,7 +256,7 @@ export class KanbanView extends ItemView {
         if (!this.boardContainer) return;
         
         // Check if grouping type has changed - if so, clear the board completely
-        const currentGroupKey = this.currentQuery.groupKey;
+        const currentGroupKey = this.currentQuery.groupKey || null;
         if (this.previousGroupKey !== null && this.previousGroupKey !== currentGroupKey) {
             this.boardContainer.empty();
             this.columnOrder = [];
@@ -351,7 +340,7 @@ export class KanbanView extends ItemView {
         this.addColumnDragHandlers(headerEl);
         
         // Title line
-        const title = this.formatColumnTitle(columnId, this.currentQuery.groupKey);
+        const title = this.formatColumnTitle(columnId, this.currentQuery.groupKey || 'none');
         headerEl.createEl('div', { text: title, cls: 'kanban-view__column-title' });
         
         // Count line
@@ -699,7 +688,7 @@ export class KanbanView extends ItemView {
         this.addColumnDragHandlers(headerEl);
         
         // Title line
-        const title = this.formatColumnTitle(columnId, this.currentQuery.groupKey);
+        const title = this.formatColumnTitle(columnId, this.currentQuery.groupKey || 'none');
         headerEl.createEl('div', { text: title, cls: 'kanban-view__column-title' });
         
         // Count line

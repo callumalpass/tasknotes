@@ -1,4 +1,4 @@
-import { FilterQuery, ViewFilterState, ViewPreferences } from '../types';
+import { FilterQuery, ViewFilterState, ViewPreferences, SavedView } from '../types';
 import { EventEmitter } from '../utils/EventEmitter';
 import { App } from 'obsidian';
 
@@ -8,8 +8,10 @@ import { App } from 'obsidian';
 export class ViewStateManager extends EventEmitter {
     private filterState: ViewFilterState = {};
     private viewPreferences: ViewPreferences = {};
+    private savedViews: SavedView[] = [];
     private storageKey = 'tasknotes-view-filter-state';
     private preferencesStorageKey = 'tasknotes-view-preferences';
+    private savedViewsStorageKey = 'tasknotes-saved-views';
     private app: App;
     
     constructor(app: App) {
@@ -17,6 +19,7 @@ export class ViewStateManager extends EventEmitter {
         this.app = app;
         this.loadFromStorage();
         this.loadPreferencesFromStorage();
+        this.loadSavedViewsFromStorage();
     }
 
     /**
@@ -145,7 +148,142 @@ export class ViewStateManager extends EventEmitter {
     getAllFilterStates(): ViewFilterState {
         return { ...this.filterState };
     }
-    
+
+    // ============================================================================
+    // SAVED VIEWS MANAGEMENT
+    // ============================================================================
+
+    /**
+     * Get all saved views
+     */
+    getSavedViews(): SavedView[] {
+        return [...this.savedViews];
+    }
+
+    /**
+     * Save a new view
+     */
+    saveView(name: string, query: FilterQuery): SavedView {
+        const view: SavedView = {
+            id: this.generateId(),
+            name,
+            query: { ...query }
+        };
+
+        this.savedViews.push(view);
+        this.saveSavedViewsToStorage();
+        this.emit('saved-views-changed', this.savedViews);
+        
+        return view;
+    }
+
+    /**
+     * Update an existing saved view
+     */
+    updateView(viewId: string, updates: Partial<SavedView>): void {
+        const viewIndex = this.savedViews.findIndex(v => v.id === viewId);
+        if (viewIndex === -1) {
+            throw new Error(`Saved view with ID ${viewId} not found`);
+        }
+
+        this.savedViews[viewIndex] = {
+            ...this.savedViews[viewIndex],
+            ...updates
+        };
+
+        this.saveSavedViewsToStorage();
+        this.emit('saved-views-changed', this.savedViews);
+    }
+
+    /**
+     * Delete a saved view
+     */
+    deleteView(viewId: string): void {
+        const viewIndex = this.savedViews.findIndex(v => v.id === viewId);
+        if (viewIndex === -1) {
+            throw new Error(`Saved view with ID ${viewId} not found`);
+        }
+
+        this.savedViews.splice(viewIndex, 1);
+        this.saveSavedViewsToStorage();
+        this.emit('saved-views-changed', this.savedViews);
+    }
+
+    /**
+     * Get a saved view by ID
+     */
+    getSavedView(viewId: string): SavedView | undefined {
+        return this.savedViews.find(v => v.id === viewId);
+    }
+
+    /**
+     * Clear all saved views
+     */
+    clearAllSavedViews(): void {
+        this.savedViews = [];
+        this.saveSavedViewsToStorage();
+        this.emit('saved-views-changed', this.savedViews);
+    }
+
+    /**
+     * Generate a unique ID for saved views
+     */
+    private generateId(): string {
+        return Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
+    }
+
+    /**
+     * Load saved views from localStorage
+     */
+    private loadSavedViewsFromStorage(): void {
+        try {
+            const stored = this.app.loadLocalStorage(this.savedViewsStorageKey);
+            if (stored) {
+                this.savedViews = JSON.parse(stored);
+            }
+        } catch (error) {
+            console.warn('Failed to load saved views from storage:', error);
+            this.savedViews = [];
+        }
+    }
+
+    /**
+     * Save saved views to localStorage
+     */
+    private saveSavedViewsToStorage(): void {
+        try {
+            this.app.saveLocalStorage(this.savedViewsStorageKey, JSON.stringify(this.savedViews));
+        } catch (error) {
+            console.warn('Failed to save saved views to storage:', error);
+        }
+    }
+
+    // ============================================================================
+    // MIGRATION AND LEGACY SUPPORT
+    // ============================================================================
+
+    /**
+     * Detect if migration is needed (no saved views structure exists)
+     */
+    needsMigration(): boolean {
+        const stored = this.app.loadLocalStorage(this.savedViewsStorageKey);
+        return !stored;
+    }
+
+    /**
+     * Perform one-time migration from legacy filter system
+     */
+    performMigration(): void {
+        // Clear any old filter states since we're starting fresh
+        this.clearAllFilterStates();
+        
+        // Initialize empty saved views
+        this.savedViews = [];
+        this.saveSavedViewsToStorage();
+        
+        // Emit migration complete event
+        this.emit('migration-complete');
+    }
 
     /**
      * Clean up event listeners and clear state

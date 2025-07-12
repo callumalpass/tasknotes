@@ -33,34 +33,132 @@ export type TaskSortKey = 'due' | 'scheduled' | 'priority' | 'title';
 export type TaskGroupKey = 'none' | 'priority' | 'context' | 'project' | 'due' | 'scheduled' | 'status';
 export type SortDirection = 'asc' | 'desc';
 
-// Unified filtering system types
-export interface FilterQuery {
-	// Filtering
-	searchQuery?: string;
-	statuses?: string[]; // Multiple status selection support
-	contexts?: string[];
-	projects?: string[];
-	priorities?: string[];
-	dateRange?: {
-		start: string; // YYYY-MM-DD
-		end: string;   // YYYY-MM-DD
-	};
-	includeOverdue?: boolean; // Include overdue tasks in addition to date range
-	showArchived: boolean;
-	
-	// Show options (moved from view-specific settings)
-	showRecurrent?: boolean;
-	showCompleted?: boolean;
-	showNotes?: boolean; // For agenda view
-	showOverdueOnToday?: boolean; // For agenda view
-	
-	// Sorting
-	sortKey: TaskSortKey;
-	sortDirection: SortDirection;
 
-	// Grouping
-	groupKey: TaskGroupKey;
+// New Advanced Filtering System Types
+
+// A single filter rule
+export interface FilterCondition {
+	type: 'condition';
+	id: string; // Unique ID for DOM management
+	property: string; // The field to filter on (e.g., 'status', 'due', 'file.ctime')
+	operator: string; // The comparison operator (e.g., 'is', 'contains')
+	value: any; // The value for comparison
 }
+
+// A logical grouping of conditions or other groups
+export interface FilterGroup {
+	type: 'group';
+	id: string; // Unique ID for DOM management and state tracking
+	conjunction: 'and' | 'or'; // How children are evaluated
+	children: (FilterCondition | FilterGroup)[]; // The contents of the group
+}
+
+// The main query structure, a single root group with display properties
+export interface FilterQuery extends FilterGroup {
+	sortKey?: TaskSortKey;
+	sortDirection?: SortDirection;
+	groupKey?: TaskGroupKey;
+}
+
+// A named, persistent configuration that encapsulates the entire state
+export interface SavedView {
+	id: string; // Unique ID for the view
+	name: string; // User-defined name (e.g., "High-Priority Work")
+	query: FilterQuery; // The complete configuration, including filters, sorting, and grouping
+}
+
+// Property and operator definitions for the advanced filtering system
+export type FilterProperty = 
+	// Text properties
+	| 'title'
+	// Select properties
+	| 'status' | 'priority' | 'tags' | 'contexts' | 'projects'
+	// Date properties
+	| 'due' | 'scheduled' | 'completedDate' | 'file.ctime' | 'file.mtime'
+	// Boolean properties
+	| 'archived'
+	// Numeric properties
+	| 'timeEstimate'
+	// Special properties
+	| 'recurrence' | 'status.isCompleted';
+
+export type FilterOperator = 
+	// Basic comparison
+	| 'is' | 'is-not'
+	// Text operators
+	| 'contains' | 'does-not-contain'
+	// Date operators
+	| 'is-before' | 'is-after' | 'is-on-or-before' | 'is-on-or-after'
+	// Existence operators
+	| 'is-empty' | 'is-not-empty'
+	// Boolean operators
+	| 'is-checked' | 'is-not-checked'
+	// Numeric operators
+	| 'is-greater-than' | 'is-less-than';
+
+// Property metadata for UI generation
+export interface PropertyDefinition {
+	id: FilterProperty;
+	label: string;
+	category: 'text' | 'select' | 'date' | 'boolean' | 'numeric' | 'special';
+	supportedOperators: FilterOperator[];
+	valueInputType: 'text' | 'multi-select' | 'date' | 'number' | 'none';
+}
+
+// Predefined property definitions
+export const FILTER_PROPERTIES: PropertyDefinition[] = [
+	// Text properties
+	{ id: 'title', label: 'Title', category: 'text', supportedOperators: ['is', 'is-not', 'contains', 'does-not-contain', 'is-empty', 'is-not-empty'], valueInputType: 'text' },
+	
+	// Select properties
+	{ id: 'status', label: 'Status', category: 'select', supportedOperators: ['is', 'is-not', 'contains', 'does-not-contain', 'is-empty', 'is-not-empty'], valueInputType: 'multi-select' },
+	{ id: 'priority', label: 'Priority', category: 'select', supportedOperators: ['is', 'is-not', 'contains', 'does-not-contain', 'is-empty', 'is-not-empty'], valueInputType: 'multi-select' },
+	{ id: 'tags', label: 'Tags', category: 'select', supportedOperators: ['is', 'is-not', 'contains', 'does-not-contain', 'is-empty', 'is-not-empty'], valueInputType: 'multi-select' },
+	{ id: 'contexts', label: 'Contexts', category: 'select', supportedOperators: ['is', 'is-not', 'contains', 'does-not-contain', 'is-empty', 'is-not-empty'], valueInputType: 'multi-select' },
+	{ id: 'projects', label: 'Projects', category: 'select', supportedOperators: ['is', 'is-not', 'contains', 'does-not-contain', 'is-empty', 'is-not-empty'], valueInputType: 'multi-select' },
+	
+	// Date properties
+	{ id: 'due', label: 'Due Date', category: 'date', supportedOperators: ['is', 'is-not', 'is-before', 'is-after', 'is-on-or-before', 'is-on-or-after', 'is-empty', 'is-not-empty'], valueInputType: 'date' },
+	{ id: 'scheduled', label: 'Scheduled Date', category: 'date', supportedOperators: ['is', 'is-not', 'is-before', 'is-after', 'is-on-or-before', 'is-on-or-after', 'is-empty', 'is-not-empty'], valueInputType: 'date' },
+	{ id: 'completedDate', label: 'Completed Date', category: 'date', supportedOperators: ['is', 'is-not', 'is-before', 'is-after', 'is-on-or-before', 'is-on-or-after', 'is-empty', 'is-not-empty'], valueInputType: 'date' },
+	{ id: 'file.ctime', label: 'Created Date', category: 'date', supportedOperators: ['is', 'is-not', 'is-before', 'is-after', 'is-on-or-before', 'is-on-or-after', 'is-empty', 'is-not-empty'], valueInputType: 'date' },
+	{ id: 'file.mtime', label: 'Modified Date', category: 'date', supportedOperators: ['is', 'is-not', 'is-before', 'is-after', 'is-on-or-before', 'is-on-or-after', 'is-empty', 'is-not-empty'], valueInputType: 'date' },
+	
+	// Boolean properties
+	{ id: 'archived', label: 'Archived', category: 'boolean', supportedOperators: ['is-checked', 'is-not-checked'], valueInputType: 'none' },
+	
+	// Numeric properties
+	{ id: 'timeEstimate', label: 'Time Estimate', category: 'numeric', supportedOperators: ['is', 'is-not', 'is-greater-than', 'is-less-than'], valueInputType: 'number' },
+	
+	// Special properties
+	{ id: 'recurrence', label: 'Recurrence', category: 'special', supportedOperators: ['is-empty', 'is-not-empty'], valueInputType: 'none' },
+	{ id: 'status.isCompleted', label: 'Is Completed', category: 'special', supportedOperators: ['is'], valueInputType: 'none' }
+];
+
+// Operator metadata for UI generation
+export interface OperatorDefinition {
+	id: FilterOperator;
+	label: string;
+	requiresValue: boolean;
+}
+
+// Predefined operator definitions
+export const FILTER_OPERATORS: OperatorDefinition[] = [
+	{ id: 'is', label: 'is', requiresValue: true },
+	{ id: 'is-not', label: 'is not', requiresValue: true },
+	{ id: 'contains', label: 'contains', requiresValue: true },
+	{ id: 'does-not-contain', label: 'does not contain', requiresValue: true },
+	{ id: 'is-before', label: 'is before', requiresValue: true },
+	{ id: 'is-after', label: 'is after', requiresValue: true },
+	{ id: 'is-on-or-before', label: 'is on or before', requiresValue: true },
+	{ id: 'is-on-or-after', label: 'is on or after', requiresValue: true },
+	{ id: 'is-empty', label: 'is empty', requiresValue: false },
+	{ id: 'is-not-empty', label: 'is not empty', requiresValue: false },
+	{ id: 'is-checked', label: 'is checked', requiresValue: false },
+	{ id: 'is-not-checked', label: 'is not checked', requiresValue: false },
+	{ id: 'is-greater-than', label: 'is greater than', requiresValue: true },
+	{ id: 'is-less-than', label: 'is less than', requiresValue: true }
+];
 
 export interface FilterBarConfig {
 	showSearch?: boolean;
