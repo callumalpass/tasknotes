@@ -182,8 +182,8 @@ export interface FilterBarCustomButton {
 }
 
 export interface FilterOptions {
-	statuses: readonly string[];
-	priorities: readonly string[];
+	statuses: readonly StatusConfig[];
+	priorities: readonly PriorityConfig[];
 	contexts: readonly string[];
 	projects: readonly string[];
 }

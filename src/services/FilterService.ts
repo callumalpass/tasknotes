@@ -616,8 +616,8 @@ export class FilterService extends EventEmitter {
      */
     async getFilterOptions(): Promise<FilterOptions> {
         const allOptions = {
-            statuses: this.cacheManager.getAllStatuses(),
-            priorities: this.cacheManager.getAllPriorities(),
+            statuses: this.statusManager.getAllStatuses(),
+            priorities: this.priorityManager.getAllPriorities(),
             contexts: this.cacheManager.getAllContexts(),
             projects: this.cacheManager.getAllProjects()
         };
