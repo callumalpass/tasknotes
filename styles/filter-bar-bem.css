@@ -19,6 +19,7 @@
     gap: var(--tn-spacing-sm);
     position: relative; /* Set as positioning context for the dropdown */
     z-index: 10; /* Ensure this container is on top of the filter box below */
+    isolation: isolate; /* Create a new stacking context */
 }
 
 .tasknotes-plugin .filter-bar__filter-toggle {
@@ -91,30 +92,35 @@
     font-style: italic;
 }
 
-/* Main Filter Box (collapsible) */
+/* Main Filter Box (collapsible popup) */
 .tasknotes-plugin .filter-bar__main-box {
+    position: absolute;
+    top: calc(100% + 4px); /* Position below the top controls with a small gap */
+    left: 0; /* Align to left edge near the filter button */
+    right: 10px; /* Add some margin from the right edge */
+    width: auto; /* Let it size itself */
+    max-width: 600px; /* Maximum preferred width */
+    min-width: 300px; /* Minimum usable width */
+    z-index: 1000; /* High z-index */
     display: flex;
     flex-direction: column;
     gap: var(--tn-spacing-lg);
     padding: var(--tn-spacing-lg);
-    background: var(--background-secondary); /* Slightly different background */
+    background: var(--background-secondary);
     border: 1px solid var(--background-modifier-border);
-    border-radius: var(--radius-s);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: var(--radius-m);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     opacity: 1;
-    transform: translateY(0);
-    max-height: 2000px; /* Large enough to accommodate content */
-    overflow: hidden;
+    transform: translateY(0) scale(1);
+    max-height: 80vh;
+    overflow-y: auto;
 }
 
 .tasknotes-plugin .filter-bar__main-box--collapsed {
     opacity: 0;
-    transform: translateY(-10px);
-    max-height: 0;
-    padding-top: 0;
-    padding-bottom: 0;
-    margin-bottom: 0;
-    border-width: 0;
+    transform: translateY(-10px) scale(0.98);
+    pointer-events: none; /* Prevent interaction when hidden */
 }
 
 /* =================================================================
@@ -154,11 +160,11 @@
 }
 
 .tasknotes-plugin .filter-bar__view-section-header {
-    font-weight: 600;
+    font-weight: 500; /* Lighter weight */
     font-size: var(--font-ui-smaller);
     color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    text-transform: none; /* Normal case */
+    letter-spacing: 0; /* Natural spacing */
     margin-bottom: var(--tn-spacing-xs);
 }
 
@@ -310,11 +316,11 @@
 }
 
 .tasknotes-plugin .filter-bar__section-title {
-    font-weight: 600;
-    font-size: var(--font-ui-small);
-    color: var(--text-normal);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    font-weight: 500; /* Slightly lighter */
+    font-size: var(--font-ui-small); /* Consistent size */
+    color: var(--text-muted); /* Muted for subtlety */
+    text-transform: none; /* Normal case */
+    letter-spacing: 0; /* Natural spacing */
 }
 
 .tasknotes-plugin .filter-bar__section-content {
@@ -352,7 +358,7 @@
     flex-direction: column;
     gap: var(--tn-spacing-sm);
     padding: var(--tn-spacing-md);
-    background: var(--background-secondary);
+    background: var(--background-primary);
     border: 1px solid var(--background-modifier-border); /* Subtle border for grouping */
     border-radius: var(--radius-m);
     position: relative;
@@ -383,13 +389,20 @@
     gap: var(--tn-spacing-sm);
 }
 
-.tasknotes-plugin .filter-bar__conjunction-select {
+.tasknotes-plugin .filter-bar__conjunction .dropdown {
+    border: none;
+    background: transparent;
+    box-shadow: none;
     padding: var(--tn-spacing-xs) var(--tn-spacing-sm);
-    border: 1px solid var(--background-modifier-border);
-    border-radius: var(--radius-s);
-    background: var(--background-primary);
+    height: 28px;
     color: var(--text-normal);
     font-size: var(--font-ui-small);
+    border-radius: var(--radius-s);
+    transition: background-color 0.2s ease;
+}
+
+.tasknotes-plugin .filter-bar__conjunction .dropdown:hover {
+    background-color: var(--background-modifier-hover);
 }
 
 .tasknotes-plugin .filter-bar__conjunction-text {
@@ -539,23 +552,23 @@
 }
 
 .tasknotes-plugin .filter-bar__action-button {
-    padding: var(--tn-spacing-xs) 0;
-    background: none;
+    padding: var(--tn-spacing-xs);
+    background: transparent;
     border: none;
     box-shadow: none;
     color: var(--text-muted);
     cursor: pointer;
     font-size: var(--font-ui-small);
-    transition: color 0.2s ease;
+    border-radius: var(--radius-s);
+    transition: all 0.2s ease;
     display: flex;
     align-items: center;
     gap: var(--tn-spacing-xs);
 }
 
 .tasknotes-plugin .filter-bar__action-button:hover {
+    background-color: var(--background-modifier-hover);
     color: var(--text-normal);
-    background: none;
-    border: none;
 }
 
 .tasknotes-plugin .filter-bar__action-button svg {
@@ -587,36 +600,44 @@
     font-weight: 500;
 }
 
-.tasknotes-plugin .filter-bar__sort-select,
-.tasknotes-plugin .filter-bar__group-select {
+.tasknotes-plugin .filter-bar__sort-container .dropdown,
+.tasknotes-plugin .filter-bar__group-container .dropdown {
+    border: none;
+    background: transparent;
+    box-shadow: none;
     padding: var(--tn-spacing-xs) var(--tn-spacing-sm);
-    border: 1px solid var(--background-modifier-border);
-    border-radius: var(--radius-s);
-    background: var(--background-primary);
+    height: 28px;
     color: var(--text-normal);
     font-size: var(--font-ui-small);
     min-width: 120px;
-    height: 30px; /* Consistent height */
+    border-radius: var(--radius-s);
+    transition: background-color 0.2s ease;
+}
+
+.tasknotes-plugin .filter-bar__sort-container .dropdown:hover,
+.tasknotes-plugin .filter-bar__group-container .dropdown:hover {
+    background-color: var(--background-modifier-hover);
 }
 
 .tasknotes-plugin .filter-bar__sort-direction {
-    padding: var(--tn-spacing-xs);
-    background: transparent;
     border: none;
+    background: transparent;
+    box-shadow: none;
+    padding: var(--tn-spacing-xs);
+    height: 28px;
+    width: 30px;
     border-radius: var(--radius-s);
     color: var(--text-muted);
     cursor: pointer;
     font-size: var(--font-ui-small);
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 30px; /* Consistent height */
-    height: 30px; /* Consistent height */
 }
 
 .tasknotes-plugin .filter-bar__sort-direction:hover {
-    background: var(--interactive-hover);
+    background-color: var(--background-modifier-hover);
     color: var(--text-normal);
 }
 
