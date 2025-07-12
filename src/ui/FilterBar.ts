@@ -63,6 +63,7 @@ export class FilterBar extends EventEmitter {
     private viewOptionsContainer?: HTMLElement;
     private searchInput?: TextComponent;
     private isUserTyping = false;
+    private viewOptionsConfig: Array<{id: string, label: string, value: boolean, onChange: (value: boolean) => void}> | null = null;
 
     // Collapse states
     private sectionStates = {
@@ -701,53 +702,50 @@ export class FilterBar extends EventEmitter {
      */
     private renderViewOptions(container: HTMLElement): void {
         const section = container.createDiv('filter-bar__section');
-        // Hide the section by default. It will be shown if setViewOptions is called with options.
-        section.addClass('filter-bar__section--hidden');
-
-        // Collapsible header
-        const header = section.createDiv('filter-bar__section-header');
+        this.viewOptionsContainer = section.createDiv('filter-bar__view-options-container');
         
-        const titleWrapper = header.createDiv('filter-bar__section-header-main');
-        titleWrapper.createSpan({
-            text: 'View Options',
-            cls: 'filter-bar__section-title'
-        });
-
-        // Content
-        const content = section.createDiv('filter-bar__section-content');
-        if (!this.sectionStates.viewOptions) {
-            content.addClass('filter-bar__section-content--collapsed');
-        }
-
-        // Store reference to content for view-specific population
-        this.viewOptionsContainer = content.createDiv('filter-bar__view-options');
-
-        // Add click handler for toggle
-        titleWrapper.addEventListener('click', () => {
-            this.toggleSection('viewOptions', header, content);
-        });
+        // Initial population of view options
+        this.populateViewOptions();
     }
 
     /**
      * Set view-specific options (called by view components)
      */
     setViewOptions(options: Array<{id: string, label: string, value: boolean, onChange: (value: boolean) => void}>): void {
+        this.viewOptionsConfig = options;
+        this.populateViewOptions();
+    }
+
+    /**
+     * Populate the view options container with the stored config
+     */
+    private populateViewOptions(): void {
         if (!this.viewOptionsContainer) return;
 
-        const section = this.viewOptionsContainer.closest('.filter-bar__section');
-        if (!section) return;
-
         this.viewOptionsContainer.empty();
+        const options = this.viewOptionsConfig;
 
-        if (options.length === 0) {
-            section.classList.add('filter-bar__section--hidden');
+        if (!options || options.length === 0) {
+            this.viewOptionsContainer.addClass('filter-bar__section--hidden');
             return;
-        } else {
-            section.classList.remove('filter-bar__section--hidden');
+        }
+        
+        this.viewOptionsContainer.removeClass('filter-bar__section--hidden');
+
+        const header = this.viewOptionsContainer.createDiv('filter-bar__section-header');
+        const titleWrapper = header.createDiv('filter-bar__section-header-main');
+        titleWrapper.createSpan({
+            text: 'View Options',
+            cls: 'filter-bar__section-title'
+        });
+
+        const content = this.viewOptionsContainer.createDiv('filter-bar__section-content');
+        if (!this.sectionStates.viewOptions) {
+            content.addClass('filter-bar__section-content--collapsed');
         }
 
         options.forEach(option => {
-            const optionContainer = this.viewOptionsContainer!.createDiv('filter-bar__view-option');
+            const optionContainer = content.createDiv('filter-bar__view-option');
             
             const label = optionContainer.createEl('label', {
                 cls: 'filter-bar__view-option-label'
@@ -767,6 +765,10 @@ export class FilterBar extends EventEmitter {
             checkbox.addEventListener('change', () => {
                 option.onChange(checkbox.checked);
             });
+        });
+
+        titleWrapper.addEventListener('click', () => {
+            this.toggleSection('viewOptions', header, content);
         });
     }
 

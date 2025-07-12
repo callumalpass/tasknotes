@@ -223,6 +223,7 @@ export class AgendaView extends ItemView {
         
         // Create new FilterBar
         this.filterBar = new FilterBar(
+            this.app,
             filterBarContainer,
             this.currentQuery,
             filterOptions
@@ -808,6 +809,8 @@ export class AgendaView extends ItemView {
     async refresh() {
         const container = this.contentEl.querySelector('.agenda-view') as HTMLElement;
         if (container) {
+            // Re-apply view options to ensure they persist through refreshes
+            this.setupViewOptions();
             // Use DOMReconciler for efficient updates
             await this.renderAgendaContent(container);
         }
