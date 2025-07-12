@@ -119,7 +119,7 @@ export class FilterBar extends EventEmitter {
 
         // Templates button
         this.viewSelectorButton = topControls.createEl('button', {
-            text: 'Filter templates',
+            text: 'Views',
             cls: 'filter-bar__templates-button'
         });
 
@@ -184,23 +184,13 @@ export class FilterBar extends EventEmitter {
 
         this.viewSelectorDropdown.empty();
 
-        // This view section
-        const thisViewSection = this.viewSelectorDropdown.createDiv('filter-bar__view-section');
-        thisViewSection.createDiv({
-            text: 'Current filter',
-            cls: 'filter-bar__view-section-header'
-        });
-
-        const saveCurrentButton = thisViewSection.createEl('button', {
-            text: 'Save current view...',
-            cls: 'filter-bar__view-action'
-        });
-        saveCurrentButton.addEventListener('click', () => {
-            this.showSaveViewDialog();
-        });
-
         // Saved views section
-        if (this.savedViews.length > 0) {
+        if (this.savedViews.length === 0) {
+            this.viewSelectorDropdown.createDiv({
+                text: 'No saved views',
+                cls: 'filter-bar__view-empty-message'
+            });
+        } else {
             const savedViewsSection = this.viewSelectorDropdown.createDiv('filter-bar__view-section');
             savedViewsSection.createDiv({
                 text: 'Saved views',
@@ -231,7 +221,6 @@ export class FilterBar extends EventEmitter {
                     }
                 });
             });
-
         }
     }
 
@@ -247,10 +236,18 @@ export class FilterBar extends EventEmitter {
             header.addClass('filter-bar__section-header--collapsed');
         }
         
-        const title = header.createSpan({
+        const titleWrapper = header.createDiv('filter-bar__section-header-main');
+        const title = titleWrapper.createSpan({
             text: 'Filter',
             cls: 'filter-bar__section-title'
         });
+
+        const actionsWrapper = header.createDiv('filter-bar__section-header-actions');
+        const saveButton = actionsWrapper.createEl('button', {
+            cls: 'filter-bar__save-button',
+            attr: { 'aria-label': 'Save current filter as view' }
+        });
+        setIcon(saveButton, 'save');
 
         // Content
         const content = section.createDiv('filter-bar__section-content');
@@ -263,9 +260,14 @@ export class FilterBar extends EventEmitter {
         // Render the root group
         this.renderFilterGroup(this.filterBuilder, this.currentQuery, 0);
 
-        // Add click handler for toggle
-        header.addEventListener('click', () => {
+        // Add click handlers
+        titleWrapper.addEventListener('click', () => {
             this.toggleSection('filters', header, content);
+        });
+
+        saveButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.showSaveViewDialog();
         });
     }
 
@@ -298,6 +300,7 @@ export class FilterBar extends EventEmitter {
 
         conjunctionSelect.addEventListener('change', () => {
             group.conjunction = conjunctionSelect.value as 'and' | 'or';
+            this.updateUI();
             this.emitQueryChange();
         });
 
@@ -397,9 +400,19 @@ export class FilterBar extends EventEmitter {
 
         // Event listeners
         propertySelect.addEventListener('change', () => {
-            condition.property = propertySelect.value;
-            this.updateOperatorOptions(operatorSelect, condition.property as FilterProperty);
-            this.renderValueInput(valueContainer, condition);
+            const newPropertyId = propertySelect.value as FilterProperty;
+            condition.property = newPropertyId;
+
+            const propertyDef = FILTER_PROPERTIES.find(p => p.id === newPropertyId);
+            if (propertyDef && propertyDef.supportedOperators.length > 0) {
+                const newOperator = propertyDef.supportedOperators[0];
+                condition.operator = newOperator;
+
+                const operatorDef = FILTER_OPERATORS.find(op => op.id === newOperator);
+                condition.value = operatorDef?.requiresValue ? '' : null;
+            }
+            
+            this.updateUI();
             this.emitQueryChange();
         });
 

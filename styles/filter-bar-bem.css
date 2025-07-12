@@ -217,9 +217,18 @@
     background: var(--background-modifier-hover);
 }
 
+.tasknotes-plugin .filter-bar__view-empty-message {
+    padding: var(--tn-spacing-sm);
+    color: var(--text-muted);
+    font-style: italic;
+    font-size: var(--font-ui-small);
+    text-align: center;
+}
+
 /* =================================================================
    COLLAPSIBLE FILTER SECTIONS
    ================================================================= */
+
 .tasknotes-plugin .filter-bar__section {
     margin-bottom: var(--tn-spacing-md);
 }
@@ -231,22 +240,27 @@
 .tasknotes-plugin .filter-bar__section-header {
     display: flex;
     align-items: center;
-    padding: var(--tn-spacing-sm) var(--tn-spacing-md);
+    justify-content: space-between;
     background: var(--interactive-normal);
     border: 1px solid var(--background-modifier-border);
     border-radius: var(--radius-s);
-    cursor: pointer;
-    user-select: none;
     transition: all 0.2s ease;
     margin-bottom: 2px;
 }
 
-.tasknotes-plugin .filter-bar__section-header:hover {
-    background: var(--interactive-hover);
-    border-color: var(--background-modifier-border-hover);
+.tasknotes-plugin .filter-bar__section-header-main {
+    display: flex;
+    align-items: center;
+    flex-grow: 1;
+    cursor: pointer;
+    padding: var(--tn-spacing-sm) var(--tn-spacing-md);
 }
 
-.tasknotes-plugin .filter-bar__section-header::before {
+.tasknotes-plugin .filter-bar__section-header-main:hover {
+    background: var(--interactive-hover);
+}
+
+.tasknotes-plugin .filter-bar__section-header-main::before {
     content: "▼";
     margin-right: var(--tn-spacing-xs);
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -254,8 +268,35 @@
     color: var(--text-muted);
 }
 
-.tasknotes-plugin .filter-bar__section-header--collapsed::before {
+.tasknotes-plugin .filter-bar__section-header--collapsed .filter-bar__section-header-main::before {
     transform: rotate(-90deg);
+}
+
+.tasknotes-plugin .filter-bar__section-header-actions {
+    padding-right: var(--tn-spacing-sm);
+}
+
+.tasknotes-plugin .filter-bar__save-button {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: var(--radius-s);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.tasknotes-plugin .filter-bar__save-button:hover {
+    background: var(--interactive-hover);
+    color: var(--text-normal);
+}
+
+.tasknotes-plugin .filter-bar__save-button svg {
+    width: 16px;
+    height: 16px;
 }
 
 .tasknotes-plugin .filter-bar__section-title {
