@@ -24,7 +24,14 @@ class ProjectSubtasksWidget extends WidgetType {
                           task.status === otherTask.status &&
                           task.priority === otherTask.priority &&
                           task.due === otherTask.due &&
-                          task.path === otherTask.path;
+                          task.scheduled === otherTask.scheduled &&
+                          task.path === otherTask.path &&
+                          JSON.stringify(task.contexts || []) === JSON.stringify(otherTask.contexts || []) &&
+                          JSON.stringify(task.projects || []) === JSON.stringify(otherTask.projects || []) &&
+                          JSON.stringify(task.tags || []) === JSON.stringify(otherTask.tags || []) &&
+                          task.timeEstimate === otherTask.timeEstimate &&
+                          task.recurrence === otherTask.recurrence &&
+                          JSON.stringify(task.complete_instances || []) === JSON.stringify(otherTask.complete_instances || []);
                });
     }
 
@@ -116,8 +123,6 @@ class ProjectSubtasksWidget extends WidgetType {
         
         // Create wikilink format for the project reference
         const projectReference = `[[${currentFile.basename}]]`;
-        
-        console.log('Creating new subtask with project:', projectReference);
         
         // Open task creation modal with project pre-populated
         this.plugin.openTaskCreationModal({

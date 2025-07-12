@@ -613,7 +613,7 @@
 
 .tasknotes-plugin .task-projects-list {
     margin-top: var(--size-4-2);
-    border: 1px solid var(--background-modifier-border);
+    border: none;
     border-radius: var(--radius-s);
     max-height: 150px;
     overflow-y: auto;
@@ -624,6 +624,7 @@
     text-align: center;
     color: var(--text-muted);
     font-style: italic;
+    border: none;
     font-size: var(--font-ui-small);
 }
 
@@ -631,12 +632,14 @@
     display: flex;
     align-items: center;
     padding: var(--size-4-2);
-    border-bottom: 1px solid var(--background-modifier-border-hover);
+    border: none;
     gap: var(--size-4-2);
+    border-radius: var(--radius-s);
+    transition: background-color 0.2s ease;
 }
 
-.tasknotes-plugin .task-project-item:last-child {
-    border-bottom: none;
+.tasknotes-plugin .task-project-item:hover {
+    background-color: var(--background-modifier-hover);
 }
 
 .tasknotes-plugin .task-project-info {
@@ -688,6 +691,15 @@
 .tasknotes-plugin .project-suggestion {
     display: flex;
     flex-direction: column;
+    padding: var(--size-4-2);
+    border: none;
+    border-radius: var(--radius-s);
+    transition: background-color 0.2s ease;
+    cursor: pointer;
+}
+
+.tasknotes-plugin .project-suggestion:hover {
+    background-color: var(--background-modifier-hover);
 }
 
 .tasknotes-plugin .project-name {
