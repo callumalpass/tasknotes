@@ -44,8 +44,8 @@ export class FilterService extends EventEmitter {
      */
     async getGroupedTasks(query: FilterQuery, targetDate?: Date): Promise<Map<string, TaskInfo[]>> {
         try {
-            // Validate the query structure
-            FilterUtils.validateFilterNode(query);
+            // Use non-strict validation to allow incomplete filters during building
+            FilterUtils.validateFilterNode(query, false);
             
             // Get all tasks (we can optimize this later with smarter indexing)
             let allTaskPaths = this.cacheManager.getAllTaskPaths();
@@ -115,12 +115,25 @@ export class FilterService extends EventEmitter {
             return true; // Empty group matches everything
         }
 
+        // Filter out incomplete conditions - they should be completely ignored
+        const completeChildren = group.children.filter(child => {
+            if (child.type === 'condition') {
+                return FilterUtils.isFilterNodeComplete(child);
+            }
+            return true; // Groups are always evaluated (they may contain complete conditions)
+        });
+
+        // If no complete children, return true (no active filters)
+        if (completeChildren.length === 0) {
+            return true;
+        }
+
         if (group.conjunction === 'and') {
-            // All children must match
-            return group.children.every(child => this.evaluateFilterNode(child, task));
+            // All complete children must match
+            return completeChildren.every(child => this.evaluateFilterNode(child, task));
         } else if (group.conjunction === 'or') {
-            // At least one child must match
-            return group.children.some(child => this.evaluateFilterNode(child, task));
+            // At least one complete child must match
+            return completeChildren.some(child => this.evaluateFilterNode(child, task));
         }
 
         return true; // Default to true if unknown conjunction

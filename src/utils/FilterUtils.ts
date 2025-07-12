@@ -39,7 +39,7 @@ export class FilterUtils {
     /**
      * Validate a filter node (group or condition)
      */
-    static validateFilterNode(node: FilterGroup | FilterCondition): void {
+    static validateFilterNode(node: FilterGroup | FilterCondition, strict = true): void {
         if (!node || typeof node !== 'object') {
             throw new FilterValidationError('Filter node must be an object');
         }
@@ -49,9 +49,9 @@ export class FilterUtils {
         }
 
         if (node.type === 'condition') {
-            this.validateCondition(node);
+            this.validateCondition(node, strict);
         } else if (node.type === 'group') {
-            this.validateGroup(node);
+            this.validateGroup(node, strict);
         } else {
             throw new FilterValidationError(`Unknown filter node type: ${(node as any).type}`, undefined, (node as any).id);
         }
@@ -60,7 +60,7 @@ export class FilterUtils {
     /**
      * Validate a filter condition
      */
-    private static validateCondition(condition: FilterCondition): void {
+    private static validateCondition(condition: FilterCondition, strict = true): void {
         if (!condition.property || typeof condition.property !== 'string') {
             throw new FilterValidationError('Condition must have a valid property', 'property', condition.id);
         }
@@ -80,20 +80,23 @@ export class FilterUtils {
         }
 
         // Validate value based on operator requirements
-        const requiresValue = this.operatorRequiresValue(condition.operator as FilterOperator);
-        if (requiresValue && (condition.value === null || condition.value === undefined || condition.value === '')) {
-            throw new FilterValidationError(
-                `Operator '${condition.operator}' requires a value`,
-                'value',
-                condition.id
-            );
+        // In non-strict mode, skip value validation to allow incomplete conditions during filter building
+        if (strict) {
+            const requiresValue = this.operatorRequiresValue(condition.operator as FilterOperator);
+            if (requiresValue && (condition.value === null || condition.value === undefined || condition.value === '')) {
+                throw new FilterValidationError(
+                    `Operator '${condition.operator}' requires a value`,
+                    'value',
+                    condition.id
+                );
+            }
         }
     }
 
     /**
      * Validate a filter group
      */
-    private static validateGroup(group: FilterGroup): void {
+    private static validateGroup(group: FilterGroup, strict = true): void {
         if (!group.conjunction || !['and', 'or'].includes(group.conjunction)) {
             throw new FilterValidationError('Group must have a valid conjunction (and/or)', 'conjunction', group.id);
         }
@@ -105,7 +108,7 @@ export class FilterUtils {
         // Recursively validate children
         group.children.forEach((child, index) => {
             try {
-                this.validateFilterNode(child);
+                this.validateFilterNode(child, strict);
             } catch (error) {
                 if (error instanceof FilterValidationError) {
                     throw new FilterValidationError(
@@ -153,6 +156,18 @@ export class FilterUtils {
         };
 
         return operatorMap[property] || [];
+    }
+
+    /**
+     * Check if a filter node is complete (has all required values)
+     */
+    static isFilterNodeComplete(node: FilterGroup | FilterCondition): boolean {
+        try {
+            this.validateFilterNode(node, true); // Use strict validation
+            return true;
+        } catch (error) {
+            return false;
+        }
     }
 
     /**
