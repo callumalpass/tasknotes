@@ -29,7 +29,7 @@ import { TaskCreationModal } from '../modals/TaskCreationModal';
 import { TaskEditModal } from '../modals/TaskEditModal';
 import { UnscheduledTasksSelectorModal, ScheduleTaskOptions } from '../modals/UnscheduledTasksSelectorModal';
 import { TimeblockCreationModal } from '../modals/TimeblockCreationModal';
-// import { FilterBar } from '../ui/FilterBar';
+import { FilterBar } from '../ui/FilterBar';
 import { showTaskContextMenu } from '../ui/TaskCard';
 import { 
     hasTimeComponent, 
@@ -81,7 +81,7 @@ export class AdvancedCalendarView extends ItemView {
     private resizeTimeout: number | null = null;
     
     // Filter system
-    // private filterBar: FilterBar | null = null;
+    private filterBar: FilterBar | null = null;
     private currentQuery: FilterQuery;
     
     // View toggles (keeping for calendar-specific display options)
@@ -207,13 +207,54 @@ export class AdvancedCalendarView extends ItemView {
             cls: `advanced-calendar-view__main-row ${this.headerCollapsed ? 'collapsed' : 'expanded'}`
         });
         
-        // TODO: Temporarily disabled FilterBar for AdvancedCalendarView during migration
-        // Will be re-enabled after FilterBar stabilization
-        /*
+        // Create FilterBar section
         const filterBarContainer = mainRow.createDiv({ cls: 'filter-bar-container' });
+        
+        // Wait for cache to be initialized with actual data
+        await this.waitForCacheReady();
+        
+        // Get filter options from FilterService
         const filterOptions = await this.plugin.filterService.getFilterOptions();
-        this.filterBar = new FilterBar(this.app, filterBarContainer, this.currentQuery, filterOptions);
-        */
+        
+        // Create new FilterBar
+        this.filterBar = new FilterBar(
+            this.app,
+            filterBarContainer,
+            this.currentQuery,
+            filterOptions
+        );
+        
+        // Get saved views for the FilterBar
+        const savedViews = this.plugin.viewStateManager.getSavedViews();
+        this.filterBar.updateSavedViews(savedViews);
+        
+        // Listen for saved view events
+        this.filterBar.on('saveView', ({ name, query }) => {
+            this.plugin.viewStateManager.saveView(name, query);
+        });
+        
+        this.filterBar.on('deleteView', (viewId: string) => {
+            this.plugin.viewStateManager.deleteView(viewId);
+        });
+
+        // Listen for global saved views changes
+        this.plugin.viewStateManager.on('saved-views-changed', (updatedViews) => {
+            this.filterBar?.updateSavedViews(updatedViews);
+        });
+        
+        this.filterBar.on('manageViews', () => {
+            console.log('Manage views requested');
+        });
+        
+        // Listen for filter changes
+        this.filterBar.on('queryChange', async (newQuery: FilterQuery) => {
+            this.currentQuery = newQuery;
+            await this.plugin.viewStateManager.setFilterState(ADVANCED_CALENDAR_VIEW_TYPE, newQuery);
+            this.refreshEvents();
+        });
+
+        // Set up view-specific options
+        this.setupViewOptions();
         
         
     }
@@ -230,11 +271,74 @@ export class AdvancedCalendarView extends ItemView {
         }
     }
 
-    private renderViewOptions() {
-        // TODO: Re-enable when FilterBar is restored
-        // if (this.filterBar && this.filterBar.setViewOptions) {
-        //     this.filterBar.setViewOptions(this.getViewOptionsConfig(), ...);
-        // }
+    private setupViewOptions(): void {
+        if (!this.filterBar) return;
+
+        const options = [
+            {
+                id: 'icsEvents',
+                label: 'Calendar subscriptions',
+                value: this.showICSEvents,
+                onChange: (value: boolean) => {
+                    this.showICSEvents = value;
+                    this.saveViewPreferences();
+                    this.refreshEvents();
+                }
+            },
+            {
+                id: 'timeEntries',
+                label: 'Time entries',
+                value: this.showTimeEntries,
+                onChange: (value: boolean) => {
+                    this.showTimeEntries = value;
+                    this.saveViewPreferences();
+                    this.refreshEvents();
+                }
+            },
+            {
+                id: 'timeblocks',
+                label: 'Timeblocks',
+                value: this.showTimeblocks,
+                onChange: (value: boolean) => {
+                    this.showTimeblocks = value;
+                    this.saveViewPreferences();
+                    this.refreshEvents();
+                }
+            },
+            {
+                id: 'scheduled',
+                label: 'Scheduled dates',
+                value: this.showScheduled,
+                onChange: (value: boolean) => {
+                    this.showScheduled = value;
+                    this.saveViewPreferences();
+                    this.refreshEvents();
+                }
+            },
+            {
+                id: 'due',
+                label: 'Due dates',
+                value: this.showDue,
+                onChange: (value: boolean) => {
+                    this.showDue = value;
+                    this.saveViewPreferences();
+                    this.refreshEvents();
+                }
+            }
+        ];
+        
+        // Only add timeblocks option if enabled
+        if (this.plugin.settings.calendarViewSettings.enableTimeblocking) {
+            // timeblocks option is already included above
+        } else {
+            // Remove timeblocks option if timeblocking is disabled
+            const timeblockIndex = options.findIndex(opt => opt.id === 'timeblocks');
+            if (timeblockIndex !== -1) {
+                options.splice(timeblockIndex, 1);
+            }
+        }
+
+        this.filterBar.setViewOptions(options);
     }
 
     // View options handling for FilterBar integration
@@ -280,10 +384,8 @@ export class AdvancedCalendarView extends ItemView {
         this.saveViewPreferences();
         this.refreshEvents();
         
-        // TODO: Re-enable when FilterBar is restored
-        // if (this.filterBar && this.filterBar.setViewOptions) {
-        //     this.filterBar.setViewOptions(this.getViewOptionsConfig(), ...);
-        // }
+        // Update FilterBar view options to reflect the change
+        this.setupViewOptions();
     }
     
     private getHeaderToolbarConfig() {
@@ -543,12 +645,8 @@ export class AdvancedCalendarView extends ItemView {
                     
                     // Add due event if task has due date
                     if (this.showDue && hasDue) {
-                        // Check if we should show due dates when scheduled dates exist
-                        const showDueWhenScheduled = this.plugin.settings.calendarViewSettings.defaultShowDueWhenScheduled;
-                        if (!hasScheduled || showDueWhenScheduled) {
-                            const dueEvent = this.createDueEvent(task);
-                            if (dueEvent) events.push(dueEvent);
-                        }
+                        const dueEvent = this.createDueEvent(task);
+                        if (dueEvent) events.push(dueEvent);
                     }
                 }
                 
@@ -1412,7 +1510,7 @@ export class AdvancedCalendarView extends ItemView {
             // Update visibility and refresh if timeblocking was enabled
             this.showTimeblocks = enabled && this.plugin.settings.calendarViewSettings.defaultShowTimeblocks;
             this.refreshEvents();
-            this.renderViewOptions(); // Re-render view options dropdown
+            this.setupViewOptions(); // Re-render view options
         });
         this.listeners.push(timeblockingToggleListener);
 
@@ -1445,11 +1543,11 @@ export class AdvancedCalendarView extends ItemView {
         this.listeners.forEach(listener => this.plugin.emitter.offref(listener));
         this.functionListeners.forEach(unsubscribe => unsubscribe());
         
-        // TODO: Re-enable when FilterBar is restored
-        // if (this.filterBar) {
-        //     this.filterBar.destroy();
-        //     this.filterBar = null;
-        // }
+        // Clean up FilterBar
+        if (this.filterBar) {
+            this.filterBar.destroy();
+            this.filterBar = null;
+        }
         
         // Destroy calendar
         if (this.calendar) {
@@ -1529,5 +1627,23 @@ export class AdvancedCalendarView extends ItemView {
         } else {
             calendarContainer.addClass('hide-today-highlight');
         }
+    }
+    
+    /**
+     * Wait for cache to be ready with actual data
+     */
+    private async waitForCacheReady(): Promise<void> {
+        // First check if cache is already initialized
+        if (this.plugin.cacheManager.isInitialized()) {
+            return;
+        }
+        
+        // If not initialized, wait for the cache-initialized event
+        return new Promise((resolve) => {
+            const unsubscribe = this.plugin.cacheManager.subscribe('cache-initialized', () => {
+                unsubscribe();
+                resolve();
+            });
+        });
     }
 }
