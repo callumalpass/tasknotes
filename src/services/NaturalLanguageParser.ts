@@ -107,10 +107,10 @@ export class NaturalLanguageParser {
 
     /** Extracts #tags from the text and adds them to the result object. */
     private extractTags(text: string, result: ParsedTaskData): string {
-        const tagMatches = text.match(/#\w+/g);
+        const tagMatches = text.match(/#[\w/]+/g);
         if (tagMatches) {
             result.tags.push(...tagMatches.map(tag => tag.substring(1)));
-            return this.cleanupWhitespace(text.replace(/#\w+/g, ''));
+            return this.cleanupWhitespace(text.replace(/#[\w/]+/g, ''));
         }
         return text;
     }

@@ -123,6 +123,36 @@ describe('NaturalLanguageParser', () => {
       expect(result.tags).toEqual(['work']);
       expect(result.contexts).toEqual(['office']);
     });
+
+    it('should extract nested tags with forward slashes', () => {
+      const result = parser.parseInput('Complete #project/backend #feature/auth task');
+
+      expect(result.tags).toEqual(['project/backend', 'feature/auth']);
+      expect(result.title).toBe('Complete task');
+    });
+
+    it('should extract mixed regular and nested tags', () => {
+      const result = parser.parseInput('Review #documentation #code/frontend #bugfix');
+
+      expect(result.tags).toEqual(['documentation', 'code/frontend', 'bugfix']);
+      expect(result.title).toBe('Review');
+    });
+
+    it('should handle deeply nested tags', () => {
+      const result = parser.parseInput('Fix #project/mobile/ios/authentication issue');
+
+      expect(result.tags).toEqual(['project/mobile/ios/authentication']);
+      expect(result.title).toBe('Fix issue');
+    });
+
+    it('should handle nested tags with contexts and other elements', () => {
+      const result = parser.parseInput('urgent Meeting #project/planning @work due tomorrow');
+
+      expect(result.tags).toEqual(['project/planning']);
+      expect(result.contexts).toEqual(['work']);
+      expect(result.priority).toBe('urgent');
+      expect(result.title).toBe('Meeting');
+    });
   });
 
   describe('Priority Extraction', () => {
