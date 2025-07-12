@@ -181,6 +181,7 @@ export class KanbanView extends ItemView {
         
         // Create new FilterBar
         this.filterBar = new FilterBar(
+            this.app,
             filterBarContainer,
             this.currentQuery,
             filterOptions

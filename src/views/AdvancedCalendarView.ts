@@ -212,7 +212,7 @@ export class AdvancedCalendarView extends ItemView {
         /*
         const filterBarContainer = mainRow.createDiv({ cls: 'filter-bar-container' });
         const filterOptions = await this.plugin.filterService.getFilterOptions();
-        this.filterBar = new FilterBar(filterBarContainer, this.currentQuery, filterOptions);
+        this.filterBar = new FilterBar(this.app, filterBarContainer, this.currentQuery, filterOptions);
         */
         
         

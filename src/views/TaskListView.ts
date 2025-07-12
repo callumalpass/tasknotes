@@ -249,6 +249,7 @@ export class TaskListView extends ItemView {
         
         // Create new FilterBar with simplified constructor
         this.filterBar = new FilterBar(
+            this.app,
             filterBarContainer,
             this.currentQuery,
             filterOptions

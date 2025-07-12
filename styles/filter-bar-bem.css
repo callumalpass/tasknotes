@@ -403,27 +403,43 @@
     margin-left: 0;
 }
 
+.tasknotes-plugin .filter-bar__condition .dropdown,
+.tasknotes-plugin .filter-bar__condition .text-input {
+    border: none;
+    background: transparent;
+    box-shadow: none;
+    padding: var(--tn-spacing-xs);
+    height: 28px;
+    max-width: 200px;
+    flex: 1;
+}
+
+.tasknotes-plugin .filter-bar__condition .dropdown:hover,
+.tasknotes-plugin .filter-bar__condition .text-input:hover {
+    background-color: var(--background-modifier-hover);
+}
+
 .tasknotes-plugin .filter-bar__condition {
     display: flex;
     align-items: center;
     gap: var(--tn-spacing-sm);
     padding: var(--tn-spacing-xs) 0; /* Let parent padding handle horizontal space */
     background: transparent; /* No background */
-    border: none; /* No border */
+    border: 1px; /* No border */
     border-radius: 0;
     flex-wrap: wrap;
-    transition: none;
+    transition: background-color 0.2s ease;
 }
 
 .tasknotes-plugin .filter-bar__condition:hover {
-    background-color: transparent; /* No hover effect */
+    background-color: var(--background-modifier-hover);
 }
 
 .tasknotes-plugin .filter-bar__condition-prefix {
     font-size: var(--font-ui-small);
     color: var(--text-muted);
     font-weight: 500;
-    min-width: auto; /* More flexible width */
+    min-width: 50px; /* More flexible width */
     padding-right: var(--tn-spacing-sm);
 }
 
@@ -434,7 +450,7 @@
     border-radius: var(--radius-s);
     color: var(--text-normal);
     font-size: var(--font-ui-small);
-    min-width: 100px;
+	width: auto;
     height: 28px;
     transition: background-color 0.2s ease;
 }
@@ -452,25 +468,29 @@
     outline: none;
 }
 
+/* A more specific rule to override default component styles within the value container */
+.tasknotes-plugin .filter-bar__value-container .text-input,
+.tasknotes-plugin .filter-bar__value-container .dropdown .select-input {
+    border: none;
+    background: transparent;
+    box-shadow: none;
+    padding: 0;
+    height: 26px;
+}
+
+.tasknotes-plugin .filter-bar__value-container .text-input:focus {
+    box-shadow: none;
+}
+
 .tasknotes-plugin .filter-bar__value-container {
     display: flex;
     align-items: center;
     gap: 0; /* No gap for combined look */
     flex: 1;
-    min-width: 150px;
-    border: 1px solid var(--background-modifier-border);
+	width: 100%;
     border-radius: var(--radius-s);
     padding: 0 var(--tn-spacing-xs);
     transition: all 0.2s ease;
-}
-
-.tasknotes-plugin .filter-bar__value-container:hover {
-    border-color: var(--background-modifier-border-hover);
-}
-
-.tasknotes-plugin .filter-bar__value-container:focus-within {
-    border-color: var(--color-accent);
-    box-shadow: 0 0 0 1px var(--color-accent);
 }
 
 .tasknotes-plugin .filter-bar__value-input {
@@ -730,3 +750,4 @@
         border-width: 2px;
     }
 }
+

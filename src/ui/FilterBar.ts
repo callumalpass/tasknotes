@@ -577,9 +577,25 @@ export class FilterBar extends EventEmitter {
             dropdown.addOption(option, option);
         });
 
-        dropdown.setValue(String(condition.value || ''));
+        // Handle project link syntax for setting the initial value
+        if (propertyDef.id === 'projects') {
+            const currentValue = String(condition.value || '');
+            if (currentValue.startsWith('[[') && currentValue.endsWith(']]')) {
+                const cleanValue = currentValue.substring(2, currentValue.length - 2);
+                dropdown.setValue(cleanValue);
+            } else {
+                dropdown.setValue(currentValue);
+            }
+        } else {
+            dropdown.setValue(String(condition.value || ''));
+        }
+
         dropdown.onChange((value) => {
-            condition.value = value || null;
+            if (propertyDef.id === 'projects' && value) {
+                condition.value = `[[${value}]]`;
+            } else {
+                condition.value = value || null;
+            }
             this.emitQueryChange();
         });
     }
