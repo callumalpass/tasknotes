@@ -731,7 +731,7 @@ class ContextSuggest extends AbstractInputSuggest<string> {
         
         if (!currentQuery) return [];
         
-        const contexts = await this.plugin.cacheManager.getAllContexts();
+        const contexts = this.plugin.cacheManager.getAllContexts();
         return contexts
             .filter(context => context && typeof context === 'string')
             .filter(context => 
@@ -776,7 +776,7 @@ class TagSuggest extends AbstractInputSuggest<string> {
         
         if (!currentQuery) return [];
         
-        const tags = await this.plugin.cacheManager.getAllTags();
+        const tags = this.plugin.cacheManager.getAllTags();
         return tags
             .filter(tag => tag && typeof tag === 'string')
             .filter(tag => 
