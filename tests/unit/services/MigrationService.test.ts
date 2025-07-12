@@ -210,8 +210,8 @@ recurrence:
                 }
             });
 
-            // Make vault.read reject to simulate file read error
-            mockVault.read.mockRejectedValue(new Error('File read error'));
+            // Make processFrontMatter reject to simulate file read error
+            mockApp.fileManager.processFrontMatter = jest.fn().mockRejectedValue(new Error('File read error'));
 
             const result = await migrationService.performMigration();
 
@@ -232,13 +232,8 @@ recurrence:
                 }
             });
 
-            // Return content that will cause frontmatter parsing to fail
-            mockVault.read.mockResolvedValue(`---
-title: Test Task
-recurrence:
-  frequency: daily
-# Missing closing frontmatter marker
-Task Content`);
+            // Make processFrontMatter reject to simulate malformed YAML
+            mockApp.fileManager.processFrontMatter = jest.fn().mockRejectedValue(new Error('YAMLParseError: malformed YAML'));
 
             const result = await migrationService.performMigration();
 
@@ -257,7 +252,8 @@ Task Content`);
                 }
             });
 
-            mockVault.read.mockResolvedValue('# Task Content without frontmatter');
+            // Make processFrontMatter reject to simulate no frontmatter
+            mockApp.fileManager.processFrontMatter = jest.fn().mockRejectedValue(new Error('No frontmatter found'));
 
             const result = await migrationService.performMigration();
 

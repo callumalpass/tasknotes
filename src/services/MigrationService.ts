@@ -81,14 +81,13 @@ export class MigrationService {
                     progressCallback(i + 1, total, file.name);
                 }
 
-                try {
-                    await this.migrateFile(file);
+                await this.migrateFile(file).then(() => {
                     success++;
-                } catch (error) {
+                }).catch(error => {
                     const errorMsg = `Failed to migrate ${file.path}: ${error instanceof Error ? error.message : String(error)}`;
                     errors.push(errorMsg);
                     console.error(errorMsg, error);
-                }
+                });
 
                 // Add small delay to prevent UI freezing
                 if (i % 10 === 0) {

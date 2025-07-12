@@ -132,6 +132,7 @@ describe('Migration Workflow Integration', () => {
         // For other files, call the function with mock frontmatter
         const frontmatter = { recurrence: { frequency: 'daily' } };
         fn(frontmatter);
+        return Promise.resolve();
       });
 
       const result = await migrationService.performMigration();
@@ -166,6 +167,7 @@ describe('Migration Workflow Integration', () => {
         // For other files, call the function with mock frontmatter
         const frontmatter = { recurrence: { frequency: 'daily' } };
         fn(frontmatter);
+        return Promise.resolve();
       });
 
       const result = await migrationService.performMigration();
@@ -200,6 +202,7 @@ describe('Migration Workflow Integration', () => {
         
         const frontmatter = { recurrence: { frequency: 'daily' } };
         fn(frontmatter);
+        return Promise.resolve();
       });
 
       const result = await migrationService.performMigration();

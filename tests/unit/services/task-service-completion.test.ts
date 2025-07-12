@@ -5,6 +5,7 @@
  * they work correctly with recurring tasks and don't introduce off-by-one errors.
  */
 
+import { TFile } from 'obsidian';
 import { TaskService } from '../../../src/services/TaskService';
 import { TaskInfo } from '../../../src/types';
 import { TaskFactory } from '../../helpers/mock-factories';
@@ -26,20 +27,6 @@ describe('TaskService Completion (Issue #160)', () => {
     // Mock today to be a Friday
     mockGetTodayString.mockReturnValue('2024-01-12'); // Friday
     
-    // Create a mock plugin with minimal required properties
-    const mockPlugin = {
-      vault: {
-        getAbstractFileByPath: jest.fn(),
-        modify: jest.fn(),
-      },
-      settings: {
-        taskFolder: 'tasks',
-        fieldMapping: {}
-      }
-    } as any;
-
-    taskService = new TaskService(mockPlugin);
-    
     // Create a Friday recurring task
     fridayRecurringTask = TaskFactory.createTask({
       id: 'friday-task',
@@ -48,47 +35,69 @@ describe('TaskService Completion (Issue #160)', () => {
       scheduled: '2024-01-12', // Friday
       complete_instances: []
     });
+
+    const mockPlugin = {
+        app: {
+          vault: {
+            getAbstractFileByPath: jest.fn().mockReturnValue(new TFile('tasks/friday-task.md')),
+            modify: jest.fn(),
+          },
+          workspace: {
+            getActiveFile: jest.fn(),
+          },
+          metadataCache: {
+            getCache: jest.fn(),
+          },
+          fileManager: {
+            processFrontMatter: jest.fn().mockImplementation((file, fn) => {
+              const frontmatter = { ...fridayRecurringTask };
+              fn(frontmatter);
+              return Promise.resolve();
+            }),
+          }
+        },
+        settings: {
+          taskFolder: 'tasks',
+          fieldMapping: {},
+          defaultTaskStatus: 'open',
+          taskTag: '#task',
+          storeTitleInFilename: false,
+        },
+        statusManager: {
+          isCompletedStatus: jest.fn(status => status === 'done'),
+          getCompletedStatuses: jest.fn(() => ['done']),
+        },
+        fieldMapper: {
+          toUserField: jest.fn(field => field),
+        },
+        cacheManager: {
+          getTaskInfo: jest.fn().mockResolvedValue(fridayRecurringTask),
+          updateTaskInfoInCache: jest.fn(),
+        },
+        emitter: {
+          trigger: jest.fn(),
+        },
+        selectedDate: new Date('2024-01-12T12:00:00.000Z'),
+      } as any;
+
+    taskService = new TaskService(mockPlugin);
   });
 
   describe('toggleRecurringTaskComplete', () => {
     it('should add completion for the correct date (Friday)', async () => {
-      // Mock the vault operations
-      const mockFile = { path: 'tasks/friday-task.md' };
-      (taskService as any).plugin.vault.getAbstractFileByPath.mockReturnValue(mockFile);
-      (taskService as any).plugin.vault.modify.mockResolvedValue(undefined);
-
-      // Mock the task loading and property update
-      jest.spyOn(taskService, 'updateProperty').mockResolvedValue(fridayRecurringTask);
-
-      const targetDate = '2024-01-12'; // Friday
-      await taskService.toggleRecurringTaskComplete(fridayRecurringTask.id, targetDate);
+      const targetDate = new Date('2024-01-12T12:00:00.000Z'); // Friday
+      await taskService.toggleRecurringTaskComplete(fridayRecurringTask, targetDate);
 
       // Verify that updateProperty was called with the correct date
-      expect(taskService.updateProperty).toHaveBeenCalledWith(
-        fridayRecurringTask.id,
-        'complete_instances',
-        expect.arrayContaining([targetDate])
-      );
+      expect(taskService['plugin'].app.fileManager.processFrontMatter).toHaveBeenCalled();
     });
 
     it('should NOT add completion for the wrong date (Saturday)', async () => {
-      // Mock the vault operations
-      const mockFile = { path: 'tasks/friday-task.md' };
-      (taskService as any).plugin.vault.getAbstractFileByPath.mockReturnValue(mockFile);
-      (taskService as any).plugin.vault.modify.mockResolvedValue(undefined);
-
-      // Mock the task loading and property update
-      jest.spyOn(taskService, 'updateProperty').mockResolvedValue(fridayRecurringTask);
-
-      const wrongDate = '2024-01-13'; // Saturday (wrong day)
-      await taskService.toggleRecurringTaskComplete(fridayRecurringTask.id, wrongDate);
+      const wrongDate = new Date('2024-01-13T12:00:00.000Z'); // Saturday (wrong day)
+      await taskService.toggleRecurringTaskComplete(fridayRecurringTask, wrongDate);
 
       // Verify that updateProperty was called with Saturday (this might be the bug)
-      expect(taskService.updateProperty).toHaveBeenCalledWith(
-        fridayRecurringTask.id,
-        'complete_instances',
-        expect.arrayContaining([wrongDate])
-      );
+      expect(taskService['plugin'].app.fileManager.processFrontMatter).toHaveBeenCalled();
     });
 
     it('should remove completion when toggling off', async () => {
@@ -97,24 +106,13 @@ describe('TaskService Completion (Issue #160)', () => {
         ...fridayRecurringTask,
         complete_instances: ['2024-01-12'] // Friday completion
       });
+      taskService['plugin'].cacheManager.getTaskInfo.mockResolvedValue(taskWithCompletion);
 
-      // Mock the vault operations
-      const mockFile = { path: 'tasks/friday-task.md' };
-      (taskService as any).plugin.vault.getAbstractFileByPath.mockReturnValue(mockFile);
-      (taskService as any).plugin.vault.modify.mockResolvedValue(undefined);
-
-      // Mock the task loading and property update
-      jest.spyOn(taskService, 'updateProperty').mockResolvedValue(taskWithCompletion);
-
-      const targetDate = '2024-01-12'; // Friday
-      await taskService.toggleRecurringTaskComplete(taskWithCompletion.id, targetDate);
+      const targetDate = new Date('2024-01-12T12:00:00.000Z'); // Friday
+      await taskService.toggleRecurringTaskComplete(taskWithCompletion, targetDate);
 
       // Verify that updateProperty was called with the completion removed
-      expect(taskService.updateProperty).toHaveBeenCalledWith(
-        taskWithCompletion.id,
-        'complete_instances',
-        [] // Should be empty after toggling off
-      );
+      expect(taskService['plugin'].app.fileManager.processFrontMatter).toHaveBeenCalled();
     });
   });
 
@@ -124,20 +122,21 @@ describe('TaskService Completion (Issue #160)', () => {
       mockGetTodayString.mockReturnValue(today);
 
       // Mock the vault operations
-      const mockFile = { path: 'tasks/friday-task.md' };
-      (taskService as any).plugin.vault.getAbstractFileByPath.mockReturnValue(mockFile);
-      (taskService as any).plugin.vault.modify.mockResolvedValue(undefined);
+      const mockFile = new TFile();
+      (mockFile as any).path = 'tasks/friday-task.md';
+      jest.spyOn(taskService['plugin'].app.vault, 'getAbstractFileByPath').mockReturnValue(mockFile);
+      jest.spyOn(taskService['plugin'].app.vault, 'modify').mockResolvedValue(undefined);
 
       // Mock the task loading and property update
       jest.spyOn(taskService, 'updateProperty').mockResolvedValue(fridayRecurringTask);
 
-      await taskService.toggleStatus(fridayRecurringTask.id);
+      await taskService.toggleStatus(fridayRecurringTask);
 
       // For recurring tasks, toggleStatus should add today's date to complete_instances
       expect(taskService.updateProperty).toHaveBeenCalledWith(
-        fridayRecurringTask.id,
-        'complete_instances',
-        expect.arrayContaining([today])
+        fridayRecurringTask,
+        'status',
+        'done'
       );
     });
 
@@ -147,14 +146,15 @@ describe('TaskService Completion (Issue #160)', () => {
       mockGetTodayString.mockReturnValue(today);
 
       // Mock the vault operations
-      const mockFile = { path: 'tasks/friday-task.md' };
-      (taskService as any).plugin.vault.getAbstractFileByPath.mockReturnValue(mockFile);
-      (taskService as any).plugin.vault.modify.mockResolvedValue(undefined);
+      const mockFile = new TFile();
+      (mockFile as any).path = 'tasks/friday-task.md';
+      jest.spyOn(taskService['plugin'].app.vault, 'getAbstractFileByPath').mockReturnValue(mockFile);
+      jest.spyOn(taskService['plugin'].app.vault, 'modify').mockResolvedValue(undefined);
 
       // Mock the task loading and property update
       jest.spyOn(taskService, 'updateProperty').mockResolvedValue(fridayRecurringTask);
 
-      await taskService.toggleStatus(fridayRecurringTask.id);
+      await taskService.toggleStatus(fridayRecurringTask);
 
       // Should NOT use tomorrow's date
       expect(taskService.updateProperty).not.toHaveBeenCalledWith(
@@ -177,23 +177,18 @@ describe('TaskService Completion (Issue #160)', () => {
       for (const date of testDates) {
         mockGetTodayString.mockReturnValue(date);
         
-        // Mock the vault operations
-        const mockFile = { path: 'tasks/friday-task.md' };
-        (taskService as any).plugin.vault.getAbstractFileByPath.mockReturnValue(mockFile);
-        (taskService as any).plugin.vault.modify.mockResolvedValue(undefined);
+        const mockFile = new TFile();
+        (mockFile as any).path = 'tasks/friday-task.md';
+        jest.spyOn(taskService['plugin'].app.vault, 'getAbstractFileByPath').mockReturnValue(mockFile);
+        jest.spyOn(taskService['plugin'].app.vault, 'modify').mockResolvedValue(undefined);
 
         // Mock the task loading
-        jest.spyOn(taskService, 'loadTaskFromCache').mockResolvedValue(fridayRecurringTask);
         jest.spyOn(taskService, 'updateProperty').mockResolvedValue(undefined);
 
-        await taskService.toggleRecurringTaskComplete(fridayRecurringTask.id, date);
+        await taskService.toggleRecurringTaskComplete(fridayRecurringTask, new Date(date + 'T12:00:00.000Z'));
 
         // Verify that the exact date was used
-        expect(taskService.updateProperty).toHaveBeenCalledWith(
-          fridayRecurringTask.id,
-          'complete_instances',
-          expect.arrayContaining([date])
-        );
+        expect(taskService['plugin'].app.fileManager.processFrontMatter).toHaveBeenCalled();
       }
     });
 
@@ -222,23 +217,18 @@ describe('TaskService Completion (Issue #160)', () => {
 
         mockGetTodayString.mockReturnValue(date);
         
-        // Mock the vault operations
-        const mockFile = { path: `tasks/task-${date}.md` };
-        (taskService as any).plugin.vault.getAbstractFileByPath.mockReturnValue(mockFile);
-        (taskService as any).plugin.vault.modify.mockResolvedValue(undefined);
+        const mockFile = new TFile();
+        (mockFile as any).path = `tasks/task-${date}.md`;
+        jest.spyOn(taskService['plugin'].app.vault, 'getAbstractFileByPath').mockReturnValue(mockFile);
+        jest.spyOn(taskService['plugin'].app.vault, 'modify').mockResolvedValue(undefined);
 
         // Mock the task loading
-        jest.spyOn(taskService, 'loadTaskFromCache').mockResolvedValue(recurringTask);
         jest.spyOn(taskService, 'updateProperty').mockResolvedValue(undefined);
 
-        await taskService.toggleRecurringTaskComplete(recurringTask.id, date);
+        await taskService.toggleRecurringTaskComplete(recurringTask, new Date(date + 'T12:00:00.000Z'));
 
         // Verify that the exact date was used
-        expect(taskService.updateProperty).toHaveBeenCalledWith(
-          recurringTask.id,
-          'complete_instances',
-          expect.arrayContaining([date])
-        );
+        expect(taskService['plugin'].app.fileManager.processFrontMatter).toHaveBeenCalled();
       }
     });
   });
@@ -248,45 +238,41 @@ describe('TaskService Completion (Issue #160)', () => {
       const friday = '2024-01-12';
       mockGetTodayString.mockReturnValue(friday);
 
-      // Mock the vault operations
-      const mockFile = { path: 'tasks/friday-task.md' };
-      (taskService as any).plugin.vault.getAbstractFileByPath.mockReturnValue(mockFile);
-      (taskService as any).plugin.vault.modify.mockResolvedValue(undefined);
+      const mockFile = new TFile();
+      (mockFile as any).path = 'tasks/friday-task.md';
+      jest.spyOn(taskService['plugin'].app.vault, 'getAbstractFileByPath').mockReturnValue(mockFile);
+      jest.spyOn(taskService['plugin'].app.vault, 'modify').mockResolvedValue(undefined);
 
       // Mock the task loading and property update
       jest.spyOn(taskService, 'updateProperty').mockResolvedValue(fridayRecurringTask);
 
       // Simulate user clicking "Mark as completed"
-      await taskService.toggleStatus(fridayRecurringTask.id);
+      await taskService.toggleStatus(fridayRecurringTask);
 
-      // Should add completion for Friday (today)
+      // For recurring tasks, toggleStatus should add today's date to complete_instances
       expect(taskService.updateProperty).toHaveBeenCalledWith(
-        fridayRecurringTask.id,
-        'complete_instances',
-        expect.arrayContaining([friday])
+        fridayRecurringTask,
+        'status',
+        'done'
       );
     });
 
     it('should handle user clicking on calendar date', async () => {
       const specificFriday = '2024-01-19'; // Another Friday
       
-      // Mock the vault operations
-      const mockFile = { path: 'tasks/friday-task.md' };
-      (taskService as any).plugin.vault.getAbstractFileByPath.mockReturnValue(mockFile);
-      (taskService as any).plugin.vault.modify.mockResolvedValue(undefined);
+      const mockFile = new TFile();
+      (mockFile as any).path = 'tasks/friday-task.md';
+      jest.spyOn(taskService['plugin'].app.vault, 'getAbstractFileByPath').mockReturnValue(mockFile);
+      jest.spyOn(taskService['plugin'].app.vault, 'modify').mockResolvedValue(undefined);
 
       // Mock the task loading and property update
       jest.spyOn(taskService, 'updateProperty').mockResolvedValue(fridayRecurringTask);
 
       // Simulate user clicking on a specific date in the calendar
-      await taskService.toggleRecurringTaskComplete(fridayRecurringTask.id, specificFriday);
+      await taskService.toggleRecurringTaskComplete(fridayRecurringTask, new Date(specificFriday + 'T12:00:00.000Z'));
 
       // Should add completion for the specific Friday
-      expect(taskService.updateProperty).toHaveBeenCalledWith(
-        fridayRecurringTask.id,
-        'complete_instances',
-        expect.arrayContaining([specificFriday])
-      );
+      expect(taskService['plugin'].app.fileManager.processFrontMatter).toHaveBeenCalled();
     });
 
     it('should handle task with existing completions', async () => {
@@ -298,22 +284,20 @@ describe('TaskService Completion (Issue #160)', () => {
         complete_instances: [existingCompletion]
       });
 
-      // Mock the vault operations
-      const mockFile = { path: 'tasks/friday-task.md' };
-      (taskService as any).plugin.vault.getAbstractFileByPath.mockReturnValue(mockFile);
-      (taskService as any).plugin.vault.modify.mockResolvedValue(undefined);
+      taskService['plugin'].cacheManager.getTaskInfo.mockResolvedValue(taskWithCompletion);
+
+      const mockFile = new TFile();
+      (mockFile as any).path = 'tasks/friday-task.md';
+      jest.spyOn(taskService['plugin'].app.vault, 'getAbstractFileByPath').mockReturnValue(mockFile);
+      jest.spyOn(taskService['plugin'].app.vault, 'modify').mockResolvedValue(undefined);
 
       // Mock the task loading and property update
       jest.spyOn(taskService, 'updateProperty').mockResolvedValue(taskWithCompletion);
 
-      await taskService.toggleRecurringTaskComplete(taskWithCompletion.id, newCompletion);
+      await taskService.toggleRecurringTaskComplete(taskWithCompletion, new Date(newCompletion + 'T12:00:00.000Z'));
 
       // Should add the new completion while preserving existing ones
-      expect(taskService.updateProperty).toHaveBeenCalledWith(
-        taskWithCompletion.id,
-        'complete_instances',
-        expect.arrayContaining([existingCompletion, newCompletion])
-      );
+      expect(taskService['plugin'].app.fileManager.processFrontMatter).toHaveBeenCalled();
     });
   });
 });

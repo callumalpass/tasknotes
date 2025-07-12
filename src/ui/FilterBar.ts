@@ -2,6 +2,7 @@ import { App, ButtonComponent, debounce, DropdownComponent, Modal, setIcon, Text
 import { FilterCondition, FilterGroup, FilterNode, FilterOptions, FilterOperator, FilterProperty, FilterQuery, FILTER_OPERATORS, FILTER_PROPERTIES, PropertyDefinition, SavedView, TaskGroupKey, TaskSortKey } from '../types';
 import { EventEmitter } from '../utils/EventEmitter';
 import { FilterUtils } from '../utils/FilterUtils';
+import { showConfirmationModal } from '../modals/ConfirmationModal';
 
 class SaveViewModal extends Modal {
     private name: string;
@@ -170,7 +171,6 @@ export class FilterBar extends EventEmitter {
      * Update saved views list
      */
     updateSavedViews(views: readonly SavedView[]): void {
-        console.log('FilterBar: Updating saved views:', views); // Debug
         this.savedViews = views;
         this.renderViewSelectorDropdown();
     }
@@ -311,8 +311,13 @@ export class FilterBar extends EventEmitter {
                     .setIcon('trash-2')
                     .setClass('filter-bar__view-delete')
                     .setTooltip('Delete view')
-                    .onClick(() => {
-                        if (confirm(`Delete view "${view.name}"?`)) {
+                    .onClick(async () => {
+                        const confirmed = await showConfirmationModal(this.app, {
+                            title: 'Delete View',
+                            message: `Are you sure you want to delete the view "${view.name}"?`,
+                            isDestructive: true
+                        });
+                        if (confirmed) {
                             this.emit('deleteView', view.id);
                         }
                     });
@@ -408,18 +413,20 @@ export class FilterBar extends EventEmitter {
         // Action buttons
         const actionsContainer = groupContainer.createDiv('filter-bar__group-actions');
         
-        new ButtonComponent(actionsContainer)
+        const addFilterBtn = new ButtonComponent(actionsContainer)
             .setIcon('plus')
             .setButtonText('Add filter')
             .setClass('filter-bar__action-button')
+            .setClass('filter-bar__add-filter')
             .onClick(() => {
                 this.addFilterCondition(group);
             });
 
-        new ButtonComponent(actionsContainer)
+        const addGroupBtn = new ButtonComponent(actionsContainer)
             .setIcon('plus-circle')
             .setButtonText('Add filter group')
             .setClass('filter-bar__action-button')
+            .setClass('filter-bar__add-group')
             .onClick(() => {
                 this.addFilterGroup(group);
             });

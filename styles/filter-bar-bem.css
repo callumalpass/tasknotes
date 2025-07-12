@@ -753,3 +753,23 @@
     }
 }
 
+/* =================================================================
+   BUTTON ICONS VIA CSS PSEUDO-ELEMENTS
+   ================================================================= */
+
+/* Add filter button - plus sign */
+.tasknotes-plugin .filter-bar__add-filter::before {
+    content: "+ ";
+    margin-right: 4px;
+    font-weight: bold;
+    color: var(--color-accent);
+}
+
+/* Add filter group button - plus sign in circle */
+.tasknotes-plugin .filter-bar__add-group::before {
+    content: "⊕ ";
+    margin-right: 4px;
+    font-weight: bold;
+    color: var(--color-accent);
+}
+

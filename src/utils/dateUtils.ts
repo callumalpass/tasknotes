@@ -790,7 +790,7 @@ export function generateUTCCalendarDates(startDate: Date, endDate: Date): Date[]
 /**
  * Get the start of week for a UTC date, returning a UTC date
  */
-export function getUTCStartOfWeek(date: Date, weekStartsOn: number = 1): Date {
+export function getUTCStartOfWeek(date: Date, weekStartsOn = 1): Date {
     const utcDate = createUTCDateForRRule(formatUTCDateForCalendar(date));
     const dayOfWeek = utcDate.getUTCDay();
     const diff = (dayOfWeek - weekStartsOn + 7) % 7;
@@ -802,7 +802,7 @@ export function getUTCStartOfWeek(date: Date, weekStartsOn: number = 1): Date {
 /**
  * Get the end of week for a UTC date, returning a UTC date
  */
-export function getUTCEndOfWeek(date: Date, weekStartsOn: number = 1): Date {
+export function getUTCEndOfWeek(date: Date, weekStartsOn = 1): Date {
     const startOfWeek = getUTCStartOfWeek(date, weekStartsOn);
     const endOfWeek = new Date(startOfWeek);
     endOfWeek.setUTCDate(endOfWeek.getUTCDate() + 6);
