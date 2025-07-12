@@ -1480,14 +1480,26 @@ export class AdvancedCalendarView extends ItemView {
         this.functionListeners = [];
         
         // Listen for data changes
-        const dataListener = this.plugin.emitter.on(EVENT_DATA_CHANGED, () => {
+        const dataListener = this.plugin.emitter.on(EVENT_DATA_CHANGED, async () => {
             this.refreshEvents();
+            // Update FilterBar options when data changes (new properties, contexts, etc.)
+            if (this.filterBar) {
+                console.log('AdvancedCalendarView: Updating FilterBar options due to data change');
+                const updatedFilterOptions = await this.plugin.filterService.getFilterOptions();
+                console.log('AdvancedCalendarView: Got updated options with projects count:', updatedFilterOptions.projects.length);
+                this.filterBar.updateFilterOptions(updatedFilterOptions);
+            }
         });
         this.listeners.push(dataListener);
         
         // Listen for task updates
-        const taskUpdateListener = this.plugin.emitter.on(EVENT_TASK_UPDATED, () => {
+        const taskUpdateListener = this.plugin.emitter.on(EVENT_TASK_UPDATED, async () => {
             this.refreshEvents();
+            // Update FilterBar options when tasks are updated (may have new properties, contexts, etc.)
+            if (this.filterBar) {
+                const updatedFilterOptions = await this.plugin.filterService.getFilterOptions();
+                this.filterBar.updateFilterOptions(updatedFilterOptions);
+            }
         });
         this.listeners.push(taskUpdateListener);
         
