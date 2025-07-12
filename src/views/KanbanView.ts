@@ -67,10 +67,17 @@ export class KanbanView extends ItemView {
         this.functionListeners.forEach(unsubscribe => unsubscribe());
         this.functionListeners = [];
 
-        const dataListener = this.plugin.emitter.on(EVENT_DATA_CHANGED, () => this.refresh());
+        const dataListener = this.plugin.emitter.on(EVENT_DATA_CHANGED, async () => {
+            this.refresh();
+            // Update FilterBar options when data changes (new properties, contexts, etc.)
+            if (this.filterBar) {
+                const updatedFilterOptions = await this.plugin.filterService.getFilterOptions();
+                this.filterBar.updateFilterOptions(updatedFilterOptions);
+            }
+        });
         this.listeners.push(dataListener);
 
-        const taskUpdateListener = this.plugin.emitter.on(EVENT_TASK_UPDATED, ({ path, originalTask, updatedTask }) => {
+        const taskUpdateListener = this.plugin.emitter.on(EVENT_TASK_UPDATED, async ({ path, originalTask, updatedTask }) => {
             if (!path || !updatedTask) return;
             
             // Check if this task is currently visible in our view
@@ -97,6 +104,12 @@ export class KanbanView extends ItemView {
             } else {
                 // Task not currently visible or might have moved columns - refresh
                 this.refresh();
+            }
+            
+            // Update FilterBar options when tasks are updated (may have new properties, contexts, etc.)
+            if (this.filterBar) {
+                const updatedFilterOptions = await this.plugin.filterService.getFilterOptions();
+                this.filterBar.updateFilterOptions(updatedFilterOptions);
             }
         });
         this.listeners.push(taskUpdateListener);

@@ -64,8 +64,13 @@ export class AgendaView extends ItemView {
         this.functionListeners = [];
         
         // Listen for data changes
-        const dataListener = this.plugin.emitter.on(EVENT_DATA_CHANGED, () => {
+        const dataListener = this.plugin.emitter.on(EVENT_DATA_CHANGED, async () => {
             this.refresh();
+            // Update FilterBar options when data changes (new properties, contexts, etc.)
+            if (this.filterBar) {
+                const updatedFilterOptions = await this.plugin.filterService.getFilterOptions();
+                this.filterBar.updateFilterOptions(updatedFilterOptions);
+            }
         });
         this.listeners.push(dataListener);
         
@@ -78,10 +83,15 @@ export class AgendaView extends ItemView {
         this.listeners.push(dateListener);
         
         // Listen for individual task updates for granular DOM updates
-        const taskUpdateListener = this.plugin.emitter.on(EVENT_TASK_UPDATED, ({ path, originalTask, updatedTask }) => {
+        const taskUpdateListener = this.plugin.emitter.on(EVENT_TASK_UPDATED, async ({ path, originalTask, updatedTask }) => {
             // For agenda view, since items are organized by date and can move between days,
             // it's safer to do a refresh rather than try to update in place
             this.refresh();
+            // Update FilterBar options when tasks are updated (may have new properties, contexts, etc.)
+            if (this.filterBar) {
+                const updatedFilterOptions = await this.plugin.filterService.getFilterOptions();
+                this.filterBar.updateFilterOptions(updatedFilterOptions);
+            }
         });
         this.listeners.push(taskUpdateListener);
         

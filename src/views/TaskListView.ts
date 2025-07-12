@@ -75,8 +75,13 @@ export class TaskListView extends ItemView {
         this.functionListeners = [];
         
         // Listen for data changes
-        const dataListener = this.plugin.emitter.on(EVENT_DATA_CHANGED, () => {
+        const dataListener = this.plugin.emitter.on(EVENT_DATA_CHANGED, async () => {
             this.refresh();
+            // Update FilterBar options when data changes (new properties, contexts, etc.)
+            if (this.filterBar) {
+                const updatedFilterOptions = await this.plugin.filterService.getFilterOptions();
+                this.filterBar.updateFilterOptions(updatedFilterOptions);
+            }
         });
         this.listeners.push(dataListener);
         
@@ -114,6 +119,12 @@ export class TaskListView extends ItemView {
             } else {
                 // Task not currently visible - it might now match our filters, so refresh
                 this.refreshTasks();
+            }
+            
+            // Update FilterBar options when tasks are updated (may have new properties, contexts, etc.)
+            if (this.filterBar) {
+                const updatedFilterOptions = await this.plugin.filterService.getFilterOptions();
+                this.filterBar.updateFilterOptions(updatedFilterOptions);
             }
         });
         this.listeners.push(taskUpdateListener);
