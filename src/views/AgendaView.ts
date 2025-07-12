@@ -118,8 +118,10 @@ export class AgendaView extends ItemView {
         // Wait for the plugin to be fully initialized before proceeding
         await this.plugin.onReady();
         
-        // Wait for ViewStateManager initialization and load saved filter state
-        // ViewStateManager loads synchronously now
+        // Wait for migration to complete before initializing UI
+        await this.plugin.waitForMigration();
+        
+        // Load saved filter state
         const savedQuery = this.plugin.viewStateManager.getFilterState(AGENDA_VIEW_TYPE);
         if (savedQuery) {
             this.currentQuery = savedQuery;

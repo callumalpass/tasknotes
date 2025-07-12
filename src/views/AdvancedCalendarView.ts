@@ -134,6 +134,9 @@ export class AdvancedCalendarView extends ItemView {
     async onOpen() {
         await this.plugin.onReady();
         
+        // Wait for migration to complete before initializing UI
+        await this.plugin.waitForMigration();
+        
         // Load saved filter state
         const savedQuery = this.plugin.viewStateManager.getFilterState(ADVANCED_CALENDAR_VIEW_TYPE);
         if (savedQuery) {

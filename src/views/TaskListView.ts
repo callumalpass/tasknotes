@@ -141,11 +141,8 @@ export class TaskListView extends ItemView {
             // Wait for the plugin to be fully initialized before proceeding
             await this.plugin.onReady();
             
-            // Check if migration is needed
-            if (this.plugin.viewStateManager.needsMigration()) {
-                console.log('TaskListView: Performing migration to new filter system');
-                this.plugin.viewStateManager.performMigration();
-            }
+            // Wait for migration to complete before initializing UI
+            await this.plugin.waitForMigration();
             
             // Initialize with default query from FilterService
             this.currentQuery = this.plugin.filterService.createDefaultQuery();

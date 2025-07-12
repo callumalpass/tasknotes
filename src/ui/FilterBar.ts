@@ -187,11 +187,32 @@ export class FilterBar extends EventEmitter {
      * Render the complete FilterBar UI
      */
     private render(): void {
-        this.container.empty();
-        this.container.addClass('advanced-filter-bar');
+        try {
+            this.container.empty();
+            this.container.addClass('advanced-filter-bar');
 
-        // 1. Top Controls (Filter Icon + Templates Button)
-        this.renderTopControls();
+            // 1. Top Controls (Filter Icon + Templates Button)
+            this.renderTopControls();
+        } catch (error) {
+            console.error('Error rendering FilterBar:', error);
+            // Create minimal fallback UI
+            this.renderFallbackUI();
+        }
+    }
+
+    /**
+     * Render a minimal fallback UI in case of errors
+     */
+    private renderFallbackUI(): void {
+        try {
+            if (this.container.children.length === 0) {
+                this.container.addClass('advanced-filter-bar');
+                const errorDiv = this.container.createDiv({ cls: 'filter-bar-error' });
+                errorDiv.textContent = 'Filter bar temporarily unavailable';
+            }
+        } catch (error) {
+            console.error('Error rendering fallback FilterBar UI:', error);
+        }
     }
 
     /**
@@ -943,21 +964,26 @@ export class FilterBar extends EventEmitter {
      * Update only the filter builder section without re-rendering search input
      */
     private updateFilterBuilder(): void {
-        if (this.filterBuilder) {
-            // Store current search input value and focus state
-            const currentValue = this.searchInput?.getValue();
-            const hasFocus = this.searchInput?.inputEl === document.activeElement;
-            
-            this.filterBuilder.empty();
-            this.renderFilterGroup(this.filterBuilder, this.currentQuery, 0);
-            
-            // Restore search input value and focus if needed
-            if (this.searchInput && currentValue !== undefined) {
-                this.searchInput.setValue(currentValue);
-                if (hasFocus) {
-                    this.searchInput.inputEl.focus();
+        try {
+            if (this.filterBuilder && this.filterBuilder.isConnected) {
+                // Store current search input value and focus state
+                const currentValue = this.searchInput?.getValue();
+                const hasFocus = this.searchInput?.inputEl === document.activeElement;
+                
+                this.filterBuilder.empty();
+                this.renderFilterGroup(this.filterBuilder, this.currentQuery, 0);
+                
+                // Restore search input value and focus if needed
+                if (this.searchInput && currentValue !== undefined) {
+                    this.searchInput.setValue(currentValue);
+                    if (hasFocus) {
+                        this.searchInput.inputEl.focus();
+                    }
                 }
             }
+        } catch (error) {
+            console.error('Error updating filter builder:', error);
+            // Don't re-throw to prevent cascading failures
         }
     }
 
@@ -1014,9 +1040,22 @@ export class FilterBar extends EventEmitter {
      * Destroy and clean up the FilterBar
      */
     destroy(): void {
-        this.container.empty();
-        this.removeAllListeners();
-        // Ensure the document click listener is removed on destroy
-        document.removeEventListener('mousedown', this.handleDocumentClick);
+        try {
+            if (this.container && this.container.isConnected) {
+                this.container.empty();
+            }
+            this.removeAllListeners();
+            // Ensure the document click listener is removed on destroy
+            document.removeEventListener('mousedown', this.handleDocumentClick);
+        } catch (error) {
+            console.error('Error destroying FilterBar:', error);
+            // Still try to clean up listeners even if DOM cleanup fails
+            try {
+                this.removeAllListeners();
+                document.removeEventListener('mousedown', this.handleDocumentClick);
+            } catch (cleanupError) {
+                console.error('Error during FilterBar cleanup fallback:', cleanupError);
+            }
+        }
     }
 }

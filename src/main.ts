@@ -116,6 +116,10 @@ export default class TaskNotesPlugin extends Plugin {
 	// Initialization guard to prevent duplicate initialization
 	private initializationComplete = false;
 	
+	// Migration state management
+	private migrationComplete = false;
+	private migrationPromise: Promise<void> | null = null;
+	
 	async onload() {
 		// Create the promise and store its resolver
 		this.readyPromise = new Promise(resolve => {
@@ -206,6 +210,9 @@ export default class TaskNotesPlugin extends Plugin {
 		this.addSettingTab(new TaskNotesSettingTab(this.app, this));
 
 
+		// Start migration check early (before views can be opened)
+		this.migrationPromise = this.performEarlyMigrationCheck();
+		
 		// Defer expensive initialization until layout is ready
 		this.app.workspace.onLayoutReady(() => {
 			this.initializeAfterLayoutReady();
@@ -374,8 +381,8 @@ export default class TaskNotesPlugin extends Plugin {
 				// Set up status bar event listeners for real-time updates
 				this.setupStatusBarEventListeners();
 				
-				// Check for migration needs (after all services are initialized)
-				await this.checkMigrationNeeds();
+				// Migration check was moved to early startup - just show prompts here if needed
+				await this.showMigrationPromptsIfNeeded();
 				
 			} catch (error) {
 				console.error('Error during lazy service initialization:', error);
@@ -445,11 +452,53 @@ export default class TaskNotesPlugin extends Plugin {
 	}
 	
 	/**
-	 * Check if migration is needed and show prompt
+	 * Perform early migration check and state preparation
+	 * This runs before any views can be opened to prevent race conditions
 	 */
-	private async checkMigrationNeeds(): Promise<void> {
+	private async performEarlyMigrationCheck(): Promise<void> {
 		try {
-			// Check if migration has already been completed or dismissed this session
+			console.log('TaskNotes: Starting early migration check...');
+			
+			// Perform view state migration first (this is silent and fast)
+			if (this.viewStateManager.needsMigration()) {
+				console.log('TaskNotes: Performing view state migration...');
+				this.viewStateManager.performMigration();
+			}
+			
+			// Check if recurrence migration has already been completed
+			if (this.settings.recurrenceMigrated === true) {
+				this.migrationComplete = true;
+				return;
+			}
+			
+			// Check if recurrence migration is needed
+			const needsRecurrenceMigration = await this.migrationService.needsMigration();
+			if (!needsRecurrenceMigration) {
+				// No migration needed - mark as migrated to prevent future checks
+				this.settings.recurrenceMigrated = true;
+				await this.saveSettings();
+				this.migrationComplete = true;
+				return;
+			}
+			
+			// Recurrence migration is needed but will be prompted later
+			// For now, just mark that migration check is complete
+			this.migrationComplete = true;
+			console.log('TaskNotes: Early migration check complete. Will show prompts after UI initialization.');
+			
+		} catch (error) {
+			console.error('Error during early migration check:', error);
+			// Don't fail the entire plugin load due to migration check issues
+			this.migrationComplete = true;
+		}
+	}
+	
+	/**
+	 * Show migration prompts after UI is ready (only if needed)
+	 */
+	private async showMigrationPromptsIfNeeded(): Promise<void> {
+		try {
+			// Check if recurrence migration has already been completed or dismissed this session
 			if (this.settings.recurrenceMigrated === true) {
 				return;
 			}
@@ -461,13 +510,23 @@ export default class TaskNotesPlugin extends Plugin {
 				setTimeout(() => {
 					showMigrationPrompt(this.app, this.migrationService);
 				}, 1000);
-			} else {
-				// No migration needed - mark as migrated to prevent future checks
-				this.settings.recurrenceMigrated = true;
-				await this.saveSettings();
 			}
 		} catch (error) {
-			console.error('Error checking migration needs:', error);
+			console.error('Error showing migration prompts:', error);
+		}
+	}
+	
+	/**
+	 * Public method for views to wait for migration completion
+	 */
+	async waitForMigration(): Promise<void> {
+		if (this.migrationPromise) {
+			await this.migrationPromise;
+		}
+		
+		// Additional safety check - wait until migration is marked complete
+		while (!this.migrationComplete) {
+			await new Promise(resolve => setTimeout(resolve, 50));
 		}
 	}
 	
