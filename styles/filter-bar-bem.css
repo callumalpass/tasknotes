@@ -220,9 +220,12 @@
 /* =================================================================
    COLLAPSIBLE FILTER SECTIONS
    ================================================================= */
-
 .tasknotes-plugin .filter-bar__section {
     margin-bottom: var(--tn-spacing-md);
+}
+
+.tasknotes-plugin .filter-bar__section--hidden {
+    display: none;
 }
 
 .tasknotes-plugin .filter-bar__section-header {
@@ -386,46 +389,10 @@
     flex: 1;
 }
 
+
 .tasknotes-plugin .filter-bar__value-input:focus {
     outline: 2px solid var(--color-accent);
     outline-offset: 1px;
-}
-
-.tasknotes-plugin .filter-bar__multi-select {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--tn-spacing-xs);
-    padding: var(--tn-spacing-xs);
-    border: 1px solid var(--background-modifier-border);
-    border-radius: var(--radius-s);
-    background: var(--background-primary);
-    min-height: 28px;
-    max-width: 300px;
-}
-
-.tasknotes-plugin .filter-bar__checkbox-wrapper {
-    display: flex;
-    align-items: center;
-}
-
-.tasknotes-plugin .filter-bar__checkbox-label {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    cursor: pointer;
-    font-size: var(--font-ui-small);
-    color: var(--text-normal);
-    padding: 2px 4px;
-    border-radius: var(--radius-s);
-    transition: background-color 0.2s ease;
-}
-
-.tasknotes-plugin .filter-bar__checkbox-label:hover {
-    background: var(--background-modifier-hover);
-}
-
-.tasknotes-plugin .filter-bar__checkbox {
-    margin: 0;
 }
 
 .tasknotes-plugin .filter-bar__delete-button {

@@ -102,7 +102,7 @@ export interface PropertyDefinition {
 	label: string;
 	category: 'text' | 'select' | 'date' | 'boolean' | 'numeric' | 'special';
 	supportedOperators: FilterOperator[];
-	valueInputType: 'text' | 'multi-select' | 'date' | 'number' | 'none';
+	valueInputType: 'text' | 'select' | 'multi-select' | 'date' | 'number' | 'none';
 }
 
 // Predefined property definitions
@@ -111,11 +111,11 @@ export const FILTER_PROPERTIES: PropertyDefinition[] = [
 	{ id: 'title', label: 'Title', category: 'text', supportedOperators: ['is', 'is-not', 'contains', 'does-not-contain', 'is-empty', 'is-not-empty'], valueInputType: 'text' },
 	
 	// Select properties
-	{ id: 'status', label: 'Status', category: 'select', supportedOperators: ['is', 'is-not', 'contains', 'does-not-contain', 'is-empty', 'is-not-empty'], valueInputType: 'multi-select' },
-	{ id: 'priority', label: 'Priority', category: 'select', supportedOperators: ['is', 'is-not', 'contains', 'does-not-contain', 'is-empty', 'is-not-empty'], valueInputType: 'multi-select' },
-	{ id: 'tags', label: 'Tags', category: 'select', supportedOperators: ['is', 'is-not', 'contains', 'does-not-contain', 'is-empty', 'is-not-empty'], valueInputType: 'multi-select' },
-	{ id: 'contexts', label: 'Contexts', category: 'select', supportedOperators: ['is', 'is-not', 'contains', 'does-not-contain', 'is-empty', 'is-not-empty'], valueInputType: 'multi-select' },
-	{ id: 'projects', label: 'Projects', category: 'select', supportedOperators: ['is', 'is-not', 'contains', 'does-not-contain', 'is-empty', 'is-not-empty'], valueInputType: 'multi-select' },
+	{ id: 'status', label: 'Status', category: 'select', supportedOperators: ['is', 'is-not', 'is-empty', 'is-not-empty'], valueInputType: 'select' },
+	{ id: 'priority', label: 'Priority', category: 'select', supportedOperators: ['is', 'is-not', 'is-empty', 'is-not-empty'], valueInputType: 'select' },
+	{ id: 'tags', label: 'Tags', category: 'select', supportedOperators: ['contains', 'does-not-contain', 'is-empty', 'is-not-empty'], valueInputType: 'select' },
+	{ id: 'contexts', label: 'Contexts', category: 'select', supportedOperators: ['contains', 'does-not-contain', 'is-empty', 'is-not-empty'], valueInputType: 'select' },
+	{ id: 'projects', label: 'Projects', category: 'select', supportedOperators: ['contains', 'does-not-contain', 'is-empty', 'is-not-empty'], valueInputType: 'select' },
 	
 	// Date properties
 	{ id: 'due', label: 'Due Date', category: 'date', supportedOperators: ['is', 'is-not', 'is-before', 'is-after', 'is-on-or-before', 'is-on-or-after', 'is-empty', 'is-not-empty'], valueInputType: 'date' },
@@ -132,7 +132,7 @@ export const FILTER_PROPERTIES: PropertyDefinition[] = [
 	
 	// Special properties
 	{ id: 'recurrence', label: 'Recurrence', category: 'special', supportedOperators: ['is-empty', 'is-not-empty'], valueInputType: 'none' },
-	{ id: 'status.isCompleted', label: 'Is Completed', category: 'special', supportedOperators: ['is'], valueInputType: 'none' }
+	{ id: 'status.isCompleted', label: 'Completed', category: 'boolean', supportedOperators: ['is-checked', 'is-not-checked'], valueInputType: 'none' }
 ];
 
 // Operator metadata for UI generation

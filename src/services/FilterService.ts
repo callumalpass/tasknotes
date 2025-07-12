@@ -844,8 +844,8 @@ export class FilterService extends EventEmitter {
                         type: 'condition',
                         id: this.generateId(),
                         property: 'status.isCompleted',
-                        operator: 'is',
-                        value: false
+                        operator: 'is-not-checked',
+                        value: null
                     };
                     break;
                 case 'showArchived':

@@ -451,8 +451,8 @@ export class FilterBar extends EventEmitter {
             case 'text':
                 this.renderTextInput(container, condition);
                 break;
-            case 'multi-select':
-                this.renderMultiSelectInput(container, condition, propertyDef);
+            case 'select':
+                this.renderSelectInput(container, condition, propertyDef);
                 break;
             case 'date':
                 this.renderDateInput(container, condition);
@@ -482,9 +482,17 @@ export class FilterBar extends EventEmitter {
     /**
      * Render multi-select input
      */
-    private renderMultiSelectInput(container: HTMLElement, condition: FilterCondition, propertyDef: PropertyDefinition): void {
-        const selectContainer = container.createDiv('filter-bar__multi-select');
-        
+    private renderSelectInput(container: HTMLElement, condition: FilterCondition, propertyDef: PropertyDefinition): void {
+        const select = container.createEl('select', {
+            cls: 'filter-bar__value-input',
+        });
+
+        // Add a default, empty option
+        select.createEl('option', {
+            value: '',
+            text: 'Select...'
+        });
+
         let options: string[] = [];
         switch (propertyDef.id) {
             case 'status':
@@ -492,6 +500,9 @@ export class FilterBar extends EventEmitter {
                 break;
             case 'priority':
                 options = this.filterOptions.priorities;
+                break;
+            case 'tags':
+                options = this.filterOptions.contexts; // Assuming tags are managed as contexts
                 break;
             case 'contexts':
                 options = this.filterOptions.contexts;
@@ -502,40 +513,19 @@ export class FilterBar extends EventEmitter {
         }
 
         options.forEach(option => {
-            const checkboxWrapper = selectContainer.createDiv('filter-bar__checkbox-wrapper');
-            
-            const label = checkboxWrapper.createEl('label', {
-                cls: 'filter-bar__checkbox-label'
-            });
-
-            const checkbox = label.createEl('input', {
-                type: 'checkbox',
+            const optionEl = select.createEl('option', {
                 value: option,
-                cls: 'filter-bar__checkbox'
-            });
-
-            if (Array.isArray(condition.value)) {
-                checkbox.checked = condition.value.includes(option);
-            } else if (condition.value) {
-                checkbox.checked = condition.value === option;
-            }
-
-            label.createSpan({ text: option });
-
-            checkbox.addEventListener('change', () => {
-                this.updateMultiSelectValue(condition, selectContainer);
-                this.emitQueryChange();
+                text: option
             });
         });
-    }
 
-    /**
-     * Update multi-select value based on checkbox states
-     */
-    private updateMultiSelectValue(condition: FilterCondition, container: HTMLElement): void {
-        const checkboxes = container.querySelectorAll('input[type="checkbox"]:checked') as NodeListOf<HTMLInputElement>;
-        const selectedValues = Array.from(checkboxes).map(cb => cb.value);
-        condition.value = selectedValues.length > 0 ? selectedValues : null;
+        // Set current value
+        select.value = condition.value || '';
+
+        select.addEventListener('change', () => {
+            condition.value = select.value || null;
+            this.emitQueryChange();
+        });
     }
 
     /**
@@ -691,6 +681,8 @@ export class FilterBar extends EventEmitter {
      */
     private renderViewOptions(container: HTMLElement): void {
         const section = container.createDiv('filter-bar__section');
+        // Hide the section by default. It will be shown if setViewOptions is called with options.
+        section.addClass('filter-bar__section--hidden');
 
         // Collapsible header
         const header = section.createDiv('filter-bar__section-header');
@@ -726,21 +718,16 @@ export class FilterBar extends EventEmitter {
     setViewOptions(options: Array<{id: string, label: string, value: boolean, onChange: (value: boolean) => void}>): void {
         if (!this.viewOptionsContainer) return;
 
+        const section = this.viewOptionsContainer.closest('.filter-bar__section');
+        if (!section) return;
+
         this.viewOptionsContainer.empty();
 
         if (options.length === 0) {
-            // Hide the section if no options
-            const section = this.viewOptionsContainer.parentElement?.parentElement;
-            if (section) {
-                section.style.setProperty('display', 'none');
-            }
+            section.classList.add('filter-bar__section--hidden');
             return;
         } else {
-            // Show the section if we have options
-            const section = this.viewOptionsContainer.parentElement?.parentElement;
-            if (section) {
-                section.style.removeProperty('display');
-            }
+            section.classList.remove('filter-bar__section--hidden');
         }
 
         options.forEach(option => {
