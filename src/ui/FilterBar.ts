@@ -68,7 +68,7 @@ export class FilterBar extends EventEmitter {
 
     // Collapse states
     private sectionStates = {
-        filterBox: true,    // Entire filter box - expanded by default
+        filterBox: false,   // Entire filter box - collapsed by default
         filters: true,      // This view section - expanded by default
         display: true,      // Display & Organization - expanded by default
         viewOptions: false  // View Options - collapsed by default
@@ -192,9 +192,6 @@ export class FilterBar extends EventEmitter {
 
         // 1. Top Controls (Filter Icon + Templates Button)
         this.renderTopControls();
-
-        // 2. Main Filter Box (collapsible)
-        this.renderMainFilterBox();
     }
 
     /**
@@ -205,7 +202,7 @@ export class FilterBar extends EventEmitter {
 
         // Filter toggle icon
         new ButtonComponent(topControls)
-            .setIcon('filter')
+            .setIcon('list-filter')
             .setTooltip('Toggle filter')
             .setClass('filter-bar__filter-toggle')
             .onClick(() => {
@@ -229,6 +226,9 @@ export class FilterBar extends EventEmitter {
                 this.toggleViewSelectorDropdown();
             });
 
+        // Main filter box (now rendered within top-controls for positioning)
+        this.renderMainFilterBox(topControls);
+
         // Templates dropdown
         this.viewSelectorDropdown = topControls.createDiv({
             cls: 'filter-bar__view-selector-dropdown filter-bar__view-selector-dropdown--hidden',
@@ -241,8 +241,8 @@ export class FilterBar extends EventEmitter {
     /**
      * Render the main filter box (collapsible)
      */
-    private renderMainFilterBox(): void {
-        const mainFilterBox = this.container.createDiv('filter-bar__main-box');
+    private renderMainFilterBox(container: HTMLElement): void {
+        const mainFilterBox = container.createDiv('filter-bar__main-box');
         if (!this.sectionStates.filterBox) {
             mainFilterBox.addClass('filter-bar__main-box--collapsed');
         }
@@ -256,6 +256,18 @@ export class FilterBar extends EventEmitter {
         // 3. View-Specific Options
         this.renderViewOptions(mainFilterBox);
     }
+
+    private handleDocumentClick = (event: MouseEvent): void => {
+        const target = event.target as HTMLElement;
+        const isClickInsideFilterBox = this.container.querySelector('.filter-bar__main-box')?.contains(target);
+        const isClickOnFilterToggle = this.container.querySelector('.filter-bar__filter-toggle')?.contains(target);
+
+        if (!isClickInsideFilterBox && !isClickOnFilterToggle) {
+            if (this.sectionStates.filterBox) {
+                this.toggleMainFilterBox();
+            }
+        }
+    };
 
     /**
      * Toggle the main filter box
@@ -271,6 +283,13 @@ export class FilterBar extends EventEmitter {
         
         if (filterToggle) {
             filterToggle.classList.toggle('filter-bar__filter-toggle--active', this.sectionStates.filterBox);
+        }
+
+        // Add or remove the document click listener
+        if (this.sectionStates.filterBox) {
+            document.addEventListener('mousedown', this.handleDocumentClick);
+        } else {
+            document.removeEventListener('mousedown', this.handleDocumentClick);
         }
     }
 
@@ -575,28 +594,33 @@ export class FilterBar extends EventEmitter {
         const dropdown = new DropdownComponent(container)
             .addOption('', 'Select...');
 
-        let options: readonly string[] = [];
         switch (propertyDef.id) {
             case 'status':
-                options = this.filterOptions.statuses;
+                this.filterOptions.statuses.forEach(statusConfig => {
+                    dropdown.addOption(statusConfig.value, statusConfig.label);
+                });
                 break;
             case 'priority':
-                options = this.filterOptions.priorities;
+                this.filterOptions.priorities.forEach(priorityConfig => {
+                    dropdown.addOption(priorityConfig.value, priorityConfig.label);
+                });
                 break;
             case 'tags':
-                options = this.filterOptions.contexts; // Assuming tags are managed as contexts
+                this.filterOptions.contexts.forEach(option => {
+                    dropdown.addOption(option, option);
+                });
                 break;
             case 'contexts':
-                options = this.filterOptions.contexts;
+                this.filterOptions.contexts.forEach(option => {
+                    dropdown.addOption(option, option);
+                });
                 break;
             case 'projects':
-                options = this.filterOptions.projects;
+                this.filterOptions.projects.forEach(option => {
+                    dropdown.addOption(option, option);
+                });
                 break;
         }
-
-        options.forEach(option => {
-            dropdown.addOption(option, option);
-        });
 
         // Handle project link syntax for setting the initial value
         if (propertyDef.id === 'projects') {
@@ -981,7 +1005,7 @@ export class FilterBar extends EventEmitter {
     /**
      * Force refresh filter options from the cache (for debugging)
      */
-    async forceRefreshOptions(filterService: any): Promise<void> {
+    async forceRefreshOptions(filterService: { getFilterOptions: () => Promise<FilterOptions>; }): Promise<void> {
         const newOptions = await filterService.getFilterOptions();
         this.updateFilterOptions(newOptions);
     }
@@ -992,5 +1016,7 @@ export class FilterBar extends EventEmitter {
     destroy(): void {
         this.container.empty();
         this.removeAllListeners();
+        // Ensure the document click listener is removed on destroy
+        document.removeEventListener('mousedown', this.handleDocumentClick);
     }
 }
