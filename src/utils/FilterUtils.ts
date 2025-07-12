@@ -375,12 +375,22 @@ export class FilterUtils {
     }
 
     /**
-     * Check if value is empty (null, undefined, empty string, empty array)
+     * Check if value is empty (null, undefined, empty string, empty array, or array with only empty/whitespace strings)
      */
     private static isEmpty(value: TaskPropertyValue): boolean {
         if (value === null || value === undefined) return true;
         if (typeof value === 'string') return value.trim() === '';
-        if (Array.isArray(value)) return value.length === 0;
+        if (Array.isArray(value)) {
+            // Check if array is empty
+            if (value.length === 0) return true;
+            
+            // Check if array contains only empty/whitespace strings
+            return value.every(item => {
+                if (typeof item !== 'string') return false;
+                const trimmed = item.trim();
+                return trimmed.length === 0 || trimmed === '""' || trimmed === "''";
+            });
+        }
         return false;
     }
 
