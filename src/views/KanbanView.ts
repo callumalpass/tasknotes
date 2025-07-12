@@ -6,7 +6,8 @@ import {
     EVENT_TASK_UPDATED, 
     TaskInfo,
     FilterQuery,
-    TaskGroupKey
+    TaskGroupKey,
+    SavedView
 } from '../types';
 import { createTaskCard, updateTaskCard } from '../ui/TaskCard';
 import { FilterBar } from '../ui/FilterBar';
@@ -194,7 +195,16 @@ export class KanbanView extends ItemView {
         // Listen for saved view events
         this.filterBar.on('saveView', ({ name, query }) => {
             this.plugin.viewStateManager.saveView(name, query);
-            const updatedViews = this.plugin.viewStateManager.getSavedViews();
+            // Don't update here - the ViewStateManager event will handle it
+        });
+        
+        this.filterBar.on('deleteView', (viewId: string) => {
+            this.plugin.viewStateManager.deleteView(viewId);
+            // Don't update here - the ViewStateManager event will handle it
+        });
+
+        // Listen for global saved views changes
+        this.plugin.viewStateManager.on('saved-views-changed', (updatedViews: readonly SavedView[]) => {
             this.filterBar?.updateSavedViews(updatedViews);
         });
         

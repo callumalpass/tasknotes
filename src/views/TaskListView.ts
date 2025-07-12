@@ -264,16 +264,18 @@ export class TaskListView extends ItemView {
             console.log('TaskListView: Received saveView event:', name, query); // Debug
             const savedView = this.plugin.viewStateManager.saveView(name, query);
             console.log('TaskListView: Saved view result:', savedView); // Debug
-            const updatedViews = this.plugin.viewStateManager.getSavedViews();
-            console.log('TaskListView: Updated views from manager:', updatedViews); // Debug
-            this.filterBar?.updateSavedViews(updatedViews);
+            // Don't update here - the ViewStateManager event will handle it
         });
         
         this.filterBar.on('deleteView', (viewId: string) => {
             console.log('TaskListView: Received deleteView event:', viewId); // Debug
             this.plugin.viewStateManager.deleteView(viewId);
-            const updatedViews = this.plugin.viewStateManager.getSavedViews();
-            console.log('TaskListView: Updated views after deletion:', updatedViews); // Debug
+            // Don't update here - the ViewStateManager event will handle it
+        });
+
+        // Listen for global saved views changes
+        this.plugin.viewStateManager.on('saved-views-changed', (updatedViews: readonly SavedView[]) => {
+            console.log('TaskListView: Received saved-views-changed event:', updatedViews); // Debug
             this.filterBar?.updateSavedViews(updatedViews);
         });
         

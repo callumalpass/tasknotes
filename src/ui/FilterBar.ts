@@ -233,6 +233,9 @@ export class FilterBar extends EventEmitter {
         this.viewSelectorDropdown = topControls.createDiv({
             cls: 'filter-bar__view-selector-dropdown filter-bar__view-selector-dropdown--hidden',
         });
+
+        // Populate the dropdown with saved views
+        this.renderViewSelectorDropdown();
     }
 
     /**
