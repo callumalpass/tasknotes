@@ -72,7 +72,7 @@ export class TaskEditModal extends TaskModal {
         }
     }
 
-    private convertLegacyRecurrenceToString(recurrence: any): string {
+    private convertLegacyRecurrenceToString(recurrence: { frequency?: string; days_of_week?: string[]; day_of_month?: number }): string {
         // Convert legacy recurrence object to a readable string
         // This is for display purposes in the edit modal
         if (!recurrence.frequency) return '';
@@ -479,7 +479,7 @@ export class TaskEditModal extends TaskModal {
 
             // Open the file in a new leaf
             const leaf = this.app.workspace.getLeaf(true);
-            await leaf.openFile(file as any);
+            await leaf.openFile(file as TFile);
             
             // Close the modal
             this.close();

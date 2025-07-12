@@ -1,4 +1,4 @@
-import { FilterQuery, TaskInfo, TaskSortKey, TaskGroupKey, SortDirection, FilterCondition, FilterGroup, FilterNode, FilterProperty, FilterOperator, FilterOptions, FILTER_PROPERTIES, FILTER_OPERATORS } from '../types';
+import { FilterQuery, TaskInfo, TaskSortKey, TaskGroupKey, SortDirection, FilterCondition, FilterGroup, FilterOptions, FilterProperty, FilterOperator } from '../types';
 import { parseLinktext } from 'obsidian';
 import { MinimalNativeCache } from '../utils/MinimalNativeCache';
 import { StatusManager } from './StatusManager';

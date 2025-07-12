@@ -136,7 +136,7 @@ export class TaskService {
             };
 
             // Update cache proactively
-            await this.plugin.cacheManager.updateTaskInfoInCache(file.path, taskInfo);
+            this.plugin.cacheManager.updateTaskInfoInCache(file.path, taskInfo);
 
             // Emit task created event
             this.plugin.emitter.trigger(EVENT_TASK_UPDATED, {

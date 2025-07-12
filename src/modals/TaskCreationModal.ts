@@ -57,7 +57,6 @@ export class TaskCreationModal extends TaskModal {
         
         // Re-render projects list if pre-populated values were applied
         if (this.options.prePopulatedValues && this.options.prePopulatedValues.projects) {
-            console.log('TaskCreationModal: Re-rendering projects list after UI creation');
             this.renderProjectsList();
         }
 
@@ -276,7 +275,6 @@ export class TaskCreationModal extends TaskModal {
         
         // Apply pre-populated values if provided (overrides defaults)
         if (this.options.prePopulatedValues) {
-            console.log('TaskCreationModal: Applying pre-populated values:', this.options.prePopulatedValues);
             this.applyPrePopulatedValues(this.options.prePopulatedValues);
         }
     }
@@ -291,7 +289,6 @@ export class TaskCreationModal extends TaskModal {
             this.contexts = values.contexts.join(', ');
         }
         if (values.projects !== undefined) {
-            console.log('TaskCreationModal: Initializing projects from strings:', values.projects);
             // Filter out null, undefined, or empty strings before checking if we have valid projects
             const validProjects = values.projects.filter(p => p && typeof p === 'string' && p.trim() !== '');
             if (validProjects.length > 0) {
