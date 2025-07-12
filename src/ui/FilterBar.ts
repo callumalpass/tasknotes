@@ -1,13 +1,51 @@
-import { FilterQuery, SavedView, FilterCondition, FilterGroup, FilterNode, TaskSortKey, TaskGroupKey, SortDirection, FilterProperty, FilterOperator, FILTER_PROPERTIES, FILTER_OPERATORS, PropertyDefinition, OperatorDefinition, FilterOptions } from '../types';
+import { App, ButtonComponent, debounce, DropdownComponent, Modal, setIcon, TextComponent } from 'obsidian';
+import { FilterCondition, FilterGroup, FilterNode, FilterOptions, FilterOperator, FilterProperty, FilterQuery, FILTER_OPERATORS, FILTER_PROPERTIES, PropertyDefinition, SavedView, TaskGroupKey, TaskSortKey } from '../types';
 import { EventEmitter } from '../utils/EventEmitter';
-import { setIcon, DropdownComponent, debounce } from 'obsidian';
 import { FilterUtils } from '../utils/FilterUtils';
+
+class SaveViewModal extends Modal {
+    private name: string;
+    private onSubmit: (name: string) => void;
+
+    constructor(app: App, onSubmit: (name: string) => void) {
+        super(app);
+        this.onSubmit = onSubmit;
+    }
+
+    onOpen() {
+        const { contentEl } = this;
+        contentEl.createEl('h2', { text: 'Save view' });
+
+        const textComponent = new TextComponent(contentEl)
+            .setPlaceholder('Enter view name...')
+            .onChange((value) => {
+                this.name = value;
+            });
+        textComponent.inputEl.style.width = '100%';
+
+        const buttonContainer = contentEl.createDiv({ cls: 'modal-button-container' });
+        new ButtonComponent(buttonContainer)
+            .setButtonText('Save')
+            .setCta()
+            .onClick(() => {
+                if (this.name) {
+                    this.onSubmit(this.name);
+                    this.close();
+                }
+            });
+    }
+
+    onClose() {
+        this.contentEl.empty();
+    }
+}
 
 /**
  * Advanced FilterBar component implementing the new query builder system
  * Provides hierarchical filtering with groups, conditions, and saved views
  */
 export class FilterBar extends EventEmitter {
+    private app: App;
     private container: HTMLElement;
     private currentQuery: FilterQuery;
     private savedViews: readonly SavedView[] = [];
@@ -18,12 +56,12 @@ export class FilterBar extends EventEmitter {
     private debouncedHandleSearchInput: () => void;
 
     // UI Elements
-    private viewSelectorButton?: HTMLButtonElement;
+    private viewSelectorButton?: ButtonComponent;
     private viewSelectorDropdown?: HTMLElement;
     private filterBuilder?: HTMLElement;
     private displaySection?: HTMLElement;
     private viewOptionsContainer?: HTMLElement;
-    private searchInput?: HTMLInputElement;
+    private searchInput?: TextComponent;
     private isUserTyping = false;
 
     // Collapse states
@@ -35,11 +73,13 @@ export class FilterBar extends EventEmitter {
     };
 
     constructor(
+        app: App,
         container: HTMLElement,
         initialQuery: FilterQuery,
         filterOptions: FilterOptions
     ) {
         super();
+        this.app = app;
         this.container = container;
         this.currentQuery = { ...initialQuery };
         this.filterOptions = filterOptions;
@@ -71,7 +111,7 @@ export class FilterBar extends EventEmitter {
      */
     private handleSearchInput(): void {
         try {
-            const searchTerm = this.searchInput?.value.trim() || '';
+            const searchTerm = this.searchInput?.getValue().trim() || '';
             
             // Remove existing search conditions
             this.removeSearchConditions();
@@ -163,56 +203,35 @@ export class FilterBar extends EventEmitter {
         const topControls = this.container.createDiv('filter-bar__top-controls');
 
         // Filter toggle icon
-        const filterToggle = topControls.createEl('button', {
-            cls: `filter-bar__filter-toggle ${this.sectionStates.filterBox ? 'filter-bar__filter-toggle--active' : ''}`,
-            attr: { 'aria-label': 'Toggle filter' }
-        });
-        setIcon(filterToggle, 'filter');
+        new ButtonComponent(topControls)
+            .setIcon('filter')
+            .setTooltip('Toggle filter')
+            .setClass('filter-bar__filter-toggle')
+            .onClick(() => {
+                this.toggleMainFilterBox();
+            });
 
         // Search input
-        this.searchInput = topControls.createEl('input', {
-            type: 'text',
-            cls: 'filter-bar__search-input',
-            attr: { 
-                placeholder: 'Search tasks...',
-                'aria-label': 'Search tasks'
-            }
-        });
-
-        // Templates button
-        this.viewSelectorButton = topControls.createEl('button', {
-            text: 'Views',
-            cls: 'filter-bar__templates-button'
-        });
-
-        // Templates dropdown
-        this.viewSelectorDropdown = topControls.createDiv({
-            cls: 'filter-bar__view-selector-dropdown filter-bar__view-selector-dropdown--hidden'
-        });
-
-        // Event listeners
-        filterToggle.addEventListener('click', () => {
-            this.toggleMainFilterBox();
-        });
-
-        this.searchInput.addEventListener('input', () => {
+        this.searchInput = new TextComponent(topControls)
+            .setPlaceholder('Search tasks...');
+        this.searchInput.inputEl.addClass('filter-bar__search-input');
+        this.searchInput.onChange(() => {
             this.isUserTyping = true;
             this.debouncedHandleSearchInput();
         });
 
-        this.searchInput.addEventListener('focus', () => {
-            this.isUserTyping = true;
-        });
+        // Templates button
+        this.viewSelectorButton = new ButtonComponent(topControls)
+            .setButtonText('Views')
+            .setClass('filter-bar__templates-button')
+            .onClick(() => {
+                this.toggleViewSelectorDropdown();
+            });
 
-        this.searchInput.addEventListener('blur', () => {
-            this.isUserTyping = false;
+        // Templates dropdown
+        this.viewSelectorDropdown = topControls.createDiv({
+            cls: 'filter-bar__view-selector-dropdown filter-bar__view-selector-dropdown--hidden',
         });
-
-        this.viewSelectorButton.addEventListener('click', () => {
-            this.toggleViewSelectorDropdown();
-        });
-
-        this.renderViewSelectorDropdown();
     }
 
     /**
@@ -277,24 +296,22 @@ export class FilterBar extends EventEmitter {
                     cls: 'filter-bar__view-item-container'
                 });
                 
-                const viewItem = viewItemContainer.createEl('button', {
-                    text: view.name,
-                    cls: 'filter-bar__view-item'
-                });
-                viewItem.addEventListener('click', () => {
-                    this.loadSavedView(view);
-                });
+                new ButtonComponent(viewItemContainer)
+                    .setButtonText(view.name)
+                    .setClass('filter-bar__view-item')
+                    .onClick(() => {
+                        this.loadSavedView(view);
+                    });
 
-                const deleteBtn = viewItemContainer.createEl('button', {
-                    text: '×',
-                    cls: 'filter-bar__view-delete'
-                });
-                deleteBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    if (confirm(`Delete view "${view.name}"?`)) {
-                        this.emit('deleteView', view.id);
-                    }
-                });
+                new ButtonComponent(viewItemContainer)
+                    .setIcon('trash-2')
+                    .setClass('filter-bar__view-delete')
+                    .setTooltip('Delete view')
+                    .onClick(() => {
+                        if (confirm(`Delete view "${view.name}"?`)) {
+                            this.emit('deleteView', view.id);
+                        }
+                    });
             });
         }
     }
@@ -307,22 +324,21 @@ export class FilterBar extends EventEmitter {
 
         // Collapsible header
         const header = section.createDiv('filter-bar__section-header');
-        if (!this.sectionStates.filters) {
-            header.addClass('filter-bar__section-header--collapsed');
-        }
         
         const titleWrapper = header.createDiv('filter-bar__section-header-main');
-        const title = titleWrapper.createSpan({
+        titleWrapper.createSpan({
             text: 'Filter',
             cls: 'filter-bar__section-title'
         });
 
         const actionsWrapper = header.createDiv('filter-bar__section-header-actions');
-        const saveButton = actionsWrapper.createEl('button', {
-            cls: 'filter-bar__save-button',
-            attr: { 'aria-label': 'Save current filter as view' }
-        });
-        setIcon(saveButton, 'save');
+        new ButtonComponent(actionsWrapper)
+            .setIcon('save')
+            .setTooltip('Save current filter as view')
+            .setClass('filter-bar__save-button')
+            .onClick(() => {
+                this.showSaveViewDialog();
+            });
 
         // Content
         const content = section.createDiv('filter-bar__section-content');
@@ -339,11 +355,6 @@ export class FilterBar extends EventEmitter {
         titleWrapper.addEventListener('click', () => {
             this.toggleSection('filters', header, content);
         });
-
-        saveButton.addEventListener('click', (e) => {
-            e.stopPropagation();
-            this.showSaveViewDialog();
-        });
     }
 
     /**
@@ -351,45 +362,37 @@ export class FilterBar extends EventEmitter {
      */
     private renderFilterGroup(parent: HTMLElement, group: FilterGroup, depth: number, parentGroup?: FilterGroup, groupIndex?: number): void {
         const groupContainer = parent.createDiv('filter-bar__group');
-        groupContainer.style.marginLeft = `${depth * 20}px`;
-
+        
         // Group header with conjunction and delete button
         const groupHeader = groupContainer.createDiv('filter-bar__group-header');
         
         // Conjunction dropdown
         const conjunctionContainer = groupHeader.createDiv('filter-bar__conjunction');
         
-        const conjunctionLabel = depth === 0 ? 'All' : (group.conjunction === 'and' ? 'All' : 'Any');
-        const conjunctionSelect = conjunctionContainer.createEl('select', {
-            cls: 'filter-bar__conjunction-select'
-        });
-
-        const allOption = conjunctionSelect.createEl('option', { value: 'and', text: depth === 0 ? 'All' : 'All' });
-        const anyOption = conjunctionSelect.createEl('option', { value: 'or', text: depth === 0 ? 'Any' : 'Any' });
-        conjunctionSelect.value = group.conjunction;
+        new DropdownComponent(conjunctionContainer)
+            .addOption('and', depth === 0 ? 'All' : 'All')
+            .addOption('or', depth === 0 ? 'Any' : 'Any')
+            .setValue(group.conjunction)
+            .onChange((value) => {
+                group.conjunction = value as 'and' | 'or';
+                this.updateUI();
+                this.emitQueryChange();
+            });
 
         conjunctionContainer.createSpan({
             text: 'of the following are true:',
             cls: 'filter-bar__conjunction-text'
         });
 
-        conjunctionSelect.addEventListener('change', () => {
-            group.conjunction = conjunctionSelect.value as 'and' | 'or';
-            this.updateUI();
-            this.emitQueryChange();
-        });
-
         // Delete button for non-root groups
         if (depth > 0 && parentGroup && groupIndex !== undefined) {
-            const deleteGroupButton = groupHeader.createEl('button', {
-                cls: 'filter-bar__delete-button',
-                attr: { 'aria-label': 'Delete filter group' }
-            });
-            setIcon(deleteGroupButton, 'trash-2');
-            
-            deleteGroupButton.addEventListener('click', () => {
-                this.removeFilterGroup(parentGroup, groupIndex);
-            });
+            new ButtonComponent(groupHeader)
+                .setIcon('trash-2')
+                .setClass('filter-bar__delete-button')
+                .setTooltip('Delete filter group')
+                .onClick(() => {
+                    this.removeFilterGroup(parentGroup, groupIndex);
+                });
         }
 
         // Render children
@@ -401,21 +404,21 @@ export class FilterBar extends EventEmitter {
         // Action buttons
         const actionsContainer = groupContainer.createDiv('filter-bar__group-actions');
         
-        const addFilterButton = actionsContainer.createEl('button', {
-            text: '+ Add filter',
-            cls: 'filter-bar__action-button'
-        });
-        addFilterButton.addEventListener('click', () => {
-            this.addFilterCondition(group);
-        });
+        new ButtonComponent(actionsContainer)
+            .setIcon('plus')
+            .setButtonText('Add filter')
+            .setClass('filter-bar__action-button')
+            .onClick(() => {
+                this.addFilterCondition(group);
+            });
 
-        const addGroupButton = actionsContainer.createEl('button', {
-            text: '+ Add filter group',
-            cls: 'filter-bar__action-button'
-        });
-        addGroupButton.addEventListener('click', () => {
-            this.addFilterGroup(group);
-        });
+        new ButtonComponent(actionsContainer)
+            .setIcon('plus-circle')
+            .setButtonText('Add filter group')
+            .setClass('filter-bar__action-button')
+            .onClick(() => {
+                this.addFilterGroup(group);
+            });
     }
 
     /**
@@ -434,79 +437,62 @@ export class FilterBar extends EventEmitter {
      */
     private renderFilterCondition(parent: HTMLElement, condition: FilterCondition, parentGroup: FilterGroup, index: number, depth: number): void {
         const conditionContainer = parent.createDiv('filter-bar__condition');
-        conditionContainer.style.marginLeft = `${depth * 20}px`;
 
         // Prefix (where/and/or)
-        const prefix = conditionContainer.createSpan({
+        conditionContainer.createSpan({
             text: index === 0 ? 'where' : parentGroup.conjunction,
             cls: 'filter-bar__condition-prefix'
         });
 
         // Property dropdown
-        const propertySelect = conditionContainer.createEl('select', {
-            cls: 'filter-bar__property-select'
-        });
-        
-        FILTER_PROPERTIES.forEach(prop => {
-            const option = propertySelect.createEl('option', {
-                value: prop.id,
-                text: prop.label
+        new DropdownComponent(conditionContainer)
+            .addOptions(Object.fromEntries(FILTER_PROPERTIES.map(p => [p.id, p.label])))
+            .setValue(condition.property)
+            .onChange((newPropertyId: FilterProperty) => {
+                condition.property = newPropertyId;
+
+                const propertyDef = FILTER_PROPERTIES.find(p => p.id === newPropertyId);
+                if (propertyDef && propertyDef.supportedOperators.length > 0) {
+                    const newOperator = propertyDef.supportedOperators[0];
+                    condition.operator = newOperator;
+
+                    const operatorDef = FILTER_OPERATORS.find(op => op.id === newOperator);
+                    condition.value = operatorDef?.requiresValue ? '' : null;
+                }
+                
+                this.updateUI();
+                this.emitQueryChange();
             });
-        });
-        propertySelect.value = condition.property;
 
         // Operator dropdown
-        const operatorSelect = conditionContainer.createEl('select', {
-            cls: 'filter-bar__operator-select'
+        const operatorDropdown = new DropdownComponent(conditionContainer);
+        this.updateOperatorOptions(operatorDropdown, condition.property as FilterProperty);
+        operatorDropdown.setValue(condition.operator);
+        operatorDropdown.onChange((newOperator: FilterOperator) => {
+            condition.operator = newOperator;
+            this.updateUI(); // Re-render to show/hide value input
+            this.emitQueryChange();
         });
-        this.updateOperatorOptions(operatorSelect, condition.property as FilterProperty);
-        operatorSelect.value = condition.operator;
 
         // Value input
         const valueContainer = conditionContainer.createDiv('filter-bar__value-container');
         this.renderValueInput(valueContainer, condition);
 
         // Delete button
-        const deleteButton = conditionContainer.createEl('button', {
-            cls: 'filter-bar__delete-button',
-            attr: { 'aria-label': 'Delete condition' }
-        });
-        setIcon(deleteButton, 'trash-2');
-
-        // Event listeners
-        propertySelect.addEventListener('change', () => {
-            const newPropertyId = propertySelect.value as FilterProperty;
-            condition.property = newPropertyId;
-
-            const propertyDef = FILTER_PROPERTIES.find(p => p.id === newPropertyId);
-            if (propertyDef && propertyDef.supportedOperators.length > 0) {
-                const newOperator = propertyDef.supportedOperators[0];
-                condition.operator = newOperator;
-
-                const operatorDef = FILTER_OPERATORS.find(op => op.id === newOperator);
-                condition.value = operatorDef?.requiresValue ? '' : null;
-            }
-            
-            this.updateUI();
-            this.emitQueryChange();
-        });
-
-        operatorSelect.addEventListener('change', () => {
-            condition.operator = operatorSelect.value as FilterOperator;
-            this.renderValueInput(valueContainer, condition);
-            this.emitQueryChange();
-        });
-
-        deleteButton.addEventListener('click', () => {
-            this.removeFilterCondition(parentGroup, index);
-        });
+        new ButtonComponent(conditionContainer)
+            .setIcon('trash-2')
+            .setClass('filter-bar__delete-button')
+            .setTooltip('Delete condition')
+            .onClick(() => {
+                this.removeFilterCondition(parentGroup, index);
+            });
     }
 
     /**
      * Update operator options based on selected property
      */
-    private updateOperatorOptions(select: HTMLSelectElement, property: FilterProperty): void {
-        select.empty();
+    private updateOperatorOptions(dropdown: DropdownComponent, property: FilterProperty): void {
+        dropdown.selectEl.empty();
         
         const propertyDef = FILTER_PROPERTIES.find(p => p.id === property);
         if (!propertyDef) return;
@@ -514,10 +500,7 @@ export class FilterBar extends EventEmitter {
         propertyDef.supportedOperators.forEach(operatorId => {
             const operatorDef = FILTER_OPERATORS.find(op => op.id === operatorId);
             if (operatorDef) {
-                select.createEl('option', {
-                    value: operatorDef.id,
-                    text: operatorDef.label
-                });
+                dropdown.addOption(operatorDef.id, operatorDef.label);
             }
         });
     }
@@ -555,31 +538,20 @@ export class FilterBar extends EventEmitter {
      * Render text input
      */
     private renderTextInput(container: HTMLElement, condition: FilterCondition): void {
-        const input = container.createEl('input', {
-            type: 'text',
-            cls: 'filter-bar__value-input',
-            value: String(condition.value || '')
-        });
-
-        input.addEventListener('input', () => {
-            condition.value = input.value || null;
-            this.debouncedEmitQueryChange();
-        });
+        new TextComponent(container)
+            .setValue(String(condition.value || ''))
+            .onChange((value) => {
+                condition.value = value || null;
+                this.debouncedEmitQueryChange();
+            });
     }
 
     /**
      * Render multi-select input
      */
     private renderSelectInput(container: HTMLElement, condition: FilterCondition, propertyDef: PropertyDefinition): void {
-        const select = container.createEl('select', {
-            cls: 'filter-bar__value-input',
-        });
-
-        // Add a default, empty option
-        select.createEl('option', {
-            value: '',
-            text: 'Select...'
-        });
+        const dropdown = new DropdownComponent(container)
+            .addOption('', 'Select...');
 
         let options: readonly string[] = [];
         switch (propertyDef.id) {
@@ -601,17 +573,12 @@ export class FilterBar extends EventEmitter {
         }
 
         options.forEach(option => {
-            const optionEl = select.createEl('option', {
-                value: option,
-                text: option
-            });
+            dropdown.addOption(option, option);
         });
 
-        // Set current value
-        select.value = String(condition.value || '');
-
-        select.addEventListener('change', () => {
-            condition.value = select.value || null;
+        dropdown.setValue(String(condition.value || ''));
+        dropdown.onChange((value) => {
+            condition.value = value || null;
             this.emitQueryChange();
         });
     }
@@ -620,32 +587,26 @@ export class FilterBar extends EventEmitter {
      * Render date input
      */
     private renderDateInput(container: HTMLElement, condition: FilterCondition): void {
-        const input = container.createEl('input', {
-            type: 'date',
-            cls: 'filter-bar__value-input',
-            value: String(condition.value || '')
-        });
-
-        input.addEventListener('change', () => {
-            condition.value = input.value || null;
-            this.emitQueryChange(); // Date changes are immediate, no need for debouncing
-        });
+        const textInput = new TextComponent(container)
+            .setValue(String(condition.value || ''))
+            .onChange((value) => {
+                condition.value = value || null;
+                this.emitQueryChange();
+            });
+        textInput.inputEl.type = 'date';
     }
 
     /**
      * Render number input
      */
     private renderNumberInput(container: HTMLElement, condition: FilterCondition): void {
-        const input = container.createEl('input', {
-            type: 'number',
-            cls: 'filter-bar__value-input',
-            value: String(condition.value || '')
-        });
-
-        input.addEventListener('input', () => {
-            condition.value = input.value ? parseFloat(input.value) : null;
-            this.debouncedEmitQueryChange();
-        });
+        const textInput = new TextComponent(container)
+            .setValue(String(condition.value || ''))
+            .onChange((value) => {
+                condition.value = value ? parseFloat(value) : null;
+                this.debouncedEmitQueryChange();
+            });
+        textInput.inputEl.type = 'number';
     }
 
     /**
@@ -656,11 +617,9 @@ export class FilterBar extends EventEmitter {
 
         // Collapsible header
         const header = section.createDiv('filter-bar__section-header');
-        if (!this.sectionStates.display) {
-            header.addClass('filter-bar__section-header--collapsed');
-        }
         
-        const title = header.createSpan({
+        const titleWrapper = header.createDiv('filter-bar__section-header-main');
+        titleWrapper.createSpan({
             text: 'Display & Organization',
             cls: 'filter-bar__section-title'
         });
@@ -678,79 +637,52 @@ export class FilterBar extends EventEmitter {
         const sortContainer = controls.createDiv('filter-bar__sort-container');
         sortContainer.createSpan({ text: 'Sort by:', cls: 'filter-bar__label' });
 
-        const sortSelect = sortContainer.createEl('select', {
-            cls: 'filter-bar__sort-select'
-        });
-
-        const sortOptions = [
-            { value: 'due', label: 'Due Date' },
-            { value: 'scheduled', label: 'Scheduled Date' },
-            { value: 'priority', label: 'Priority' },
-            { value: 'title', label: 'Title' }
-        ];
-
-        sortOptions.forEach(option => {
-            sortSelect.createEl('option', {
-                value: option.value,
-                text: option.label
+        new DropdownComponent(sortContainer)
+            .addOptions({
+                'due': 'Due Date',
+                'scheduled': 'Scheduled Date',
+                'priority': 'Priority',
+                'title': 'Title'
+            })
+            .setValue(this.currentQuery.sortKey || 'due')
+            .onChange((value: TaskSortKey) => {
+                this.currentQuery.sortKey = value;
+                this.emitQueryChange();
             });
-        });
 
-        sortSelect.value = this.currentQuery.sortKey || 'due';
-
-        const sortDirectionButton = sortContainer.createEl('button', {
-            cls: 'filter-bar__sort-direction',
-            attr: { 'aria-label': 'Toggle sort direction' }
-        });
+        new ButtonComponent(sortContainer)
+            .setClass('filter-bar__sort-direction')
+            .setTooltip('Toggle sort direction')
+            .onClick(() => {
+                this.currentQuery.sortDirection = this.currentQuery.sortDirection === 'asc' ? 'desc' : 'asc';
+                this.updateSortDirectionButton();
+                this.emitQueryChange();
+            });
 
         // Group control
         const groupContainer = controls.createDiv('filter-bar__group-container');
         groupContainer.createSpan({ text: 'Group by:', cls: 'filter-bar__label' });
 
-        const groupSelect = groupContainer.createEl('select', {
-            cls: 'filter-bar__group-select'
-        });
-
-        const groupOptions = [
-            { value: 'none', label: 'None' },
-            { value: 'status', label: 'Status' },
-            { value: 'priority', label: 'Priority' },
-            { value: 'context', label: 'Context' },
-            { value: 'project', label: 'Project' },
-            { value: 'due', label: 'Due Date' },
-            { value: 'scheduled', label: 'Scheduled Date' }
-        ];
-
-        groupOptions.forEach(option => {
-            groupSelect.createEl('option', {
-                value: option.value,
-                text: option.label
+        new DropdownComponent(groupContainer)
+            .addOptions({
+                'none': 'None',
+                'status': 'Status',
+                'priority': 'Priority',
+                'context': 'Context',
+                'project': 'Project',
+                'due': 'Due Date',
+                'scheduled': 'Scheduled Date'
+            })
+            .setValue(this.currentQuery.groupKey || 'none')
+            .onChange((value: TaskGroupKey) => {
+                this.currentQuery.groupKey = value;
+                this.emitQueryChange();
             });
-        });
-
-        groupSelect.value = this.currentQuery.groupKey || 'none';
-
-        // Event listeners
-        sortSelect.addEventListener('change', () => {
-            this.currentQuery.sortKey = sortSelect.value as TaskSortKey;
-            this.emitQueryChange();
-        });
-
-        sortDirectionButton.addEventListener('click', () => {
-            this.currentQuery.sortDirection = this.currentQuery.sortDirection === 'asc' ? 'desc' : 'asc';
-            this.updateSortDirectionButton();
-            this.emitQueryChange();
-        });
-
-        groupSelect.addEventListener('change', () => {
-            this.currentQuery.groupKey = groupSelect.value as TaskGroupKey;
-            this.emitQueryChange();
-        });
 
         this.updateSortDirectionButton();
 
         // Add click handler for toggle
-        header.addEventListener('click', () => {
+        titleWrapper.addEventListener('click', () => {
             this.toggleSection('display', header, content);
         });
     }
@@ -774,11 +706,9 @@ export class FilterBar extends EventEmitter {
 
         // Collapsible header
         const header = section.createDiv('filter-bar__section-header');
-        if (!this.sectionStates.viewOptions) {
-            header.addClass('filter-bar__section-header--collapsed');
-        }
         
-        const title = header.createSpan({
+        const titleWrapper = header.createDiv('filter-bar__section-header-main');
+        titleWrapper.createSpan({
             text: 'View Options',
             cls: 'filter-bar__section-title'
         });
@@ -793,11 +723,9 @@ export class FilterBar extends EventEmitter {
         this.viewOptionsContainer = content.createDiv('filter-bar__view-options');
 
         // Add click handler for toggle
-        header.addEventListener('click', () => {
+        titleWrapper.addEventListener('click', () => {
             this.toggleSection('viewOptions', header, content);
         });
-
-        // This will be populated by the view component as needed
     }
 
     /**
@@ -920,121 +848,10 @@ export class FilterBar extends EventEmitter {
      * Show save view dialog
      */
     private showSaveViewDialog(): void {
-        // Create a simple modal for name input
-        const modal = document.createElement('div');
-        modal.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 10000;
-        `;
-
-        const content = document.createElement('div');
-        content.style.cssText = `
-            background: var(--background-primary);
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: var(--shadow-s);
-            border: 1px solid var(--background-modifier-border);
-            min-width: 300px;
-        `;
-
-        const title = document.createElement('h3');
-        title.textContent = 'Save View';
-        title.style.marginBottom = '16px';
-
-        const input = document.createElement('input');
-        input.type = 'text';
-        input.placeholder = 'Enter view name...';
-        input.style.cssText = `
-            width: 100%;
-            padding: 8px 12px;
-            border: 1px solid var(--background-modifier-border);
-            border-radius: 4px;
-            background: var(--background-primary);
-            color: var(--text-normal);
-            margin-bottom: 16px;
-        `;
-
-        const buttons = document.createElement('div');
-        buttons.style.cssText = `
-            display: flex;
-            gap: 8px;
-            justify-content: flex-end;
-        `;
-
-        const cancelBtn = document.createElement('button');
-        cancelBtn.textContent = 'Cancel';
-        cancelBtn.style.cssText = `
-            padding: 6px 12px;
-            border: 1px solid var(--background-modifier-border);
-            border-radius: 4px;
-            background: var(--background-primary);
-            color: var(--text-normal);
-            cursor: pointer;
-        `;
-
-        const saveBtn = document.createElement('button');
-        saveBtn.textContent = 'Save';
-        saveBtn.style.cssText = `
-            padding: 6px 12px;
-            border: 1px solid var(--color-accent);
-            border-radius: 4px;
-            background: var(--color-accent);
-            color: white;
-            cursor: pointer;
-        `;
-
-        const closeModal = () => {
-            document.body.removeChild(modal);
-        };
-
-        const saveView = () => {
-            const name = input.value.trim();
-            if (name) {
-                console.log('FilterBar: Emitting saveView event:', name, this.currentQuery); // Debug
-                this.emit('saveView', { name, query: this.currentQuery });
-                closeModal();
-                // Close the dropdown as well
-                this.toggleViewSelectorDropdown();
-            } else {
-                input.focus();
-            }
-        };
-
-        cancelBtn.addEventListener('click', closeModal);
-        saveBtn.addEventListener('click', saveView);
-        
-        input.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                saveView();
-            } else if (e.key === 'Escape') {
-                e.preventDefault();
-                closeModal();
-            }
-        });
-
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) closeModal();
-        });
-
-        buttons.appendChild(cancelBtn);
-        buttons.appendChild(saveBtn);
-        content.appendChild(title);
-        content.appendChild(input);
-        content.appendChild(buttons);
-        modal.appendChild(content);
-        document.body.appendChild(modal);
-
-        // Focus the input
-        setTimeout(() => input.focus(), 100);
+        new SaveViewModal(this.app, (name) => {
+            this.emit('saveView', { name, query: this.currentQuery });
+            this.toggleViewSelectorDropdown();
+        }).open();
     }
 
 
@@ -1065,17 +882,17 @@ export class FilterBar extends EventEmitter {
     private updateFilterBuilder(): void {
         if (this.filterBuilder) {
             // Store current search input value and focus state
-            const currentValue = this.searchInput?.value;
-            const hasFocus = this.searchInput === document.activeElement;
+            const currentValue = this.searchInput?.getValue();
+            const hasFocus = this.searchInput?.inputEl === document.activeElement;
             
             this.filterBuilder.empty();
             this.renderFilterGroup(this.filterBuilder, this.currentQuery, 0);
             
             // Restore search input value and focus if needed
             if (this.searchInput && currentValue !== undefined) {
-                this.searchInput.value = currentValue;
+                this.searchInput.setValue(currentValue);
                 if (hasFocus) {
-                    this.searchInput.focus();
+                    this.searchInput.inputEl.focus();
                 }
             }
         }
@@ -1096,7 +913,7 @@ export class FilterBar extends EventEmitter {
         ) as FilterCondition | undefined;
         
         // Update search input value only if user is not actively typing
-        this.searchInput.value = String(searchCondition?.value || '');
+        this.searchInput.setValue(String(searchCondition?.value || ''));
     }
 
     /**

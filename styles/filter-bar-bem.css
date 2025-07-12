@@ -427,8 +427,6 @@
     padding-right: var(--tn-spacing-sm);
 }
 
-.tasknotes-plugin .filter-bar__property-select,
-.tasknotes-plugin .filter-bar__operator-select,
 .tasknotes-plugin .filter-bar__value-input {
     border: none; /* No borders on inputs */
     background: transparent; /* Transparent background */
@@ -463,6 +461,11 @@
     border: 1px solid var(--background-modifier-border);
     border-radius: var(--radius-s);
     padding: 0 var(--tn-spacing-xs);
+    transition: all 0.2s ease;
+}
+
+.tasknotes-plugin .filter-bar__value-container:hover {
+    border-color: var(--background-modifier-border-hover);
 }
 
 .tasknotes-plugin .filter-bar__value-container:focus-within {
@@ -470,9 +473,19 @@
     box-shadow: 0 0 0 1px var(--color-accent);
 }
 
-.tasknotes-plugin .filter-bar__value-container .filter-bar__value-input {
+.tasknotes-plugin .filter-bar__value-input {
     border: none;
-    height: 26px;
+    background: transparent;
+    padding: var(--tn-spacing-xs);
+    color: var(--text-normal);
+    font-size: var(--font-ui-small);
+    width: 100%;
+    height: 28px;
+}
+
+.tasknotes-plugin .filter-bar__value-input:focus {
+    outline: none;
+    box-shadow: none;
 }
 
 .tasknotes-plugin .filter-bar__delete-button {
