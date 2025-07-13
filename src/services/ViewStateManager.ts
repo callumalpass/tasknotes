@@ -1,5 +1,6 @@
 import { FilterQuery, ViewFilterState, ViewPreferences, SavedView } from '../types';
 import { EventEmitter } from '../utils/EventEmitter';
+import { FilterUtils } from '../utils/FilterUtils';
 import { App } from 'obsidian';
 import type TaskNotesPlugin from '../main';
 
@@ -37,16 +38,17 @@ export class ViewStateManager extends EventEmitter {
      * Get filter state for a specific view
      */
     getFilterState(viewType: string): FilterQuery | undefined {
-        return this.filterState[viewType];
+        const state = this.filterState[viewType];
+        return state ? FilterUtils.deepCloneFilterQuery(state) : undefined;
     }
 
     /**
      * Set filter state for a specific view
      */
     setFilterState(viewType: string, query: FilterQuery): void {
-        this.filterState[viewType] = { ...query };
+        this.filterState[viewType] = FilterUtils.deepCloneFilterQuery(query);
         this.saveToStorage();
-        this.emit('filter-state-changed', { viewType, query });
+        this.emit('filter-state-changed', { viewType, query: FilterUtils.deepCloneFilterQuery(query) });
     }
 
     /**
@@ -168,7 +170,10 @@ export class ViewStateManager extends EventEmitter {
      * Get all saved views
      */
     getSavedViews(): SavedView[] {
-        return [...this.savedViews];
+        return this.savedViews.map(view => ({
+            ...view,
+            query: FilterUtils.deepCloneFilterQuery(view.query)
+        }));
     }
 
     /**
@@ -178,12 +183,12 @@ export class ViewStateManager extends EventEmitter {
         const view: SavedView = {
             id: this.generateId(),
             name,
-            query: { ...query }
+            query: FilterUtils.deepCloneFilterQuery(query)
         };
 
         this.savedViews.push(view);
         this.saveSavedViewsToPluginData();
-        this.emit('saved-views-changed', this.savedViews);
+        this.emit('saved-views-changed', this.getSavedViews());
         
         return view;
     }
@@ -197,13 +202,19 @@ export class ViewStateManager extends EventEmitter {
             throw new Error(`Saved view with ID ${viewId} not found`);
         }
 
+        // Deep clone the query if it's being updated
+        const clonedUpdates = { ...updates };
+        if (clonedUpdates.query) {
+            clonedUpdates.query = FilterUtils.deepCloneFilterQuery(clonedUpdates.query);
+        }
+
         this.savedViews[viewIndex] = {
             ...this.savedViews[viewIndex],
-            ...updates
+            ...clonedUpdates
         };
 
         this.saveSavedViewsToPluginData();
-        this.emit('saved-views-changed', this.savedViews);
+        this.emit('saved-views-changed', this.getSavedViews());
     }
 
     /**
@@ -217,14 +228,20 @@ export class ViewStateManager extends EventEmitter {
 
         this.savedViews.splice(viewIndex, 1);
         this.saveSavedViewsToPluginData();
-        this.emit('saved-views-changed', this.savedViews);
+        this.emit('saved-views-changed', this.getSavedViews());
     }
 
     /**
      * Get a saved view by ID
      */
     getSavedView(viewId: string): SavedView | undefined {
-        return this.savedViews.find(v => v.id === viewId);
+        const view = this.savedViews.find(v => v.id === viewId);
+        if (!view) return undefined;
+        
+        return {
+            ...view,
+            query: FilterUtils.deepCloneFilterQuery(view.query)
+        };
     }
 
     /**
@@ -233,7 +250,7 @@ export class ViewStateManager extends EventEmitter {
     clearAllSavedViews(): void {
         this.savedViews = [];
         this.saveSavedViewsToPluginData();
-        this.emit('saved-views-changed', this.savedViews);
+        this.emit('saved-views-changed', this.getSavedViews());
     }
 
     /**
