@@ -1,4 +1,26 @@
-import { format, parseISO, isSameDay, isBefore, isValid, startOfDay, addDays as addDaysFns, endOfDay } from 'date-fns';
+import { 
+    format, 
+    parseISO, 
+    isSameDay, 
+    isBefore, 
+    isValid, 
+    startOfDay, 
+    addDays as addDaysFns, 
+    endOfDay,
+    addWeeks,
+    addMonths,
+    addYears,
+    startOfWeek,
+    endOfWeek,
+    startOfMonth,
+    endOfMonth,
+    startOfYear,
+    endOfYear,
+    subDays,
+    subWeeks,
+    subMonths,
+    subYears
+} from 'date-fns';
 
 /**
  * Smart date parsing that detects timezone info and handles appropriately
@@ -76,10 +98,7 @@ export function parseDate(dateString: string): Date {
                 throw error;
             }
             
-            console.debug('Successfully parsed ISO week format:', { 
-                original: dateString, 
-                result: targetWeekMonday.toISOString() 
-            });
+            // Successfully parsed ISO week format
             return targetWeekMonday;
         }
         
@@ -99,11 +118,7 @@ export function parseDate(dateString: string): Date {
                 throw error;
             }
             
-            console.debug('Successfully parsed space-separated datetime:', { 
-                original: dateString, 
-                converted: isoFormat, 
-                result: parsed.toISOString() 
-            });
+            // Successfully parsed space-separated datetime
             return parsed;
         }
         
@@ -121,10 +136,7 @@ export function parseDate(dateString: string): Date {
                 throw error;
             }
             
-            console.debug('Successfully parsed timezone-aware date:', { 
-                original: dateString, 
-                result: parsed.toISOString() 
-            });
+            // Successfully parsed timezone-aware date
             return parsed;
         } else {
             // Date-only string - parse in local timezone
@@ -155,10 +167,7 @@ export function parseDate(dateString: string): Date {
                 throw error;
             }
             
-            console.debug('Successfully parsed date-only string:', { 
-                original: dateString, 
-                result: parsed.toISOString() 
-            });
+            // Successfully parsed date-only string
             return parsed;
         }
     } catch (error) {
@@ -279,6 +288,126 @@ export function addDaysToDateString(dateString: string, days: number): string {
         return format(result, 'yyyy-MM-dd');
     } catch (error) {
         console.error('Error adding days to date string:', { dateString, days, error });
+        throw error;
+    }
+}
+
+/**
+ * Add weeks to a date string, returning a date string
+ */
+export function addWeeksToDateString(dateString: string, weeks: number): string {
+    try {
+        const parsed = parseDate(dateString);
+        const result = addWeeks(parsed, weeks);
+        return format(result, 'yyyy-MM-dd');
+    } catch (error) {
+        console.error('Error adding weeks to date string:', { dateString, weeks, error });
+        throw error;
+    }
+}
+
+/**
+ * Add months to a date string, returning a date string
+ */
+export function addMonthsToDateString(dateString: string, months: number): string {
+    try {
+        const parsed = parseDate(dateString);
+        const result = addMonths(parsed, months);
+        return format(result, 'yyyy-MM-dd');
+    } catch (error) {
+        console.error('Error adding months to date string:', { dateString, months, error });
+        throw error;
+    }
+}
+
+/**
+ * Add years to a date string, returning a date string
+ */
+export function addYearsToDateString(dateString: string, years: number): string {
+    try {
+        const parsed = parseDate(dateString);
+        const result = addYears(parsed, years);
+        return format(result, 'yyyy-MM-dd');
+    } catch (error) {
+        console.error('Error adding years to date string:', { dateString, years, error });
+        throw error;
+    }
+}
+
+/**
+ * Get start of week for today, returning a date string
+ */
+export function getStartOfWeekString(weekStartsOn: 0 | 1 | 2 | 3 | 4 | 5 | 6 = 1): string {
+    try {
+        const result = startOfWeek(new Date(), { weekStartsOn });
+        return format(result, 'yyyy-MM-dd');
+    } catch (error) {
+        console.error('Error getting start of week:', { error });
+        throw error;
+    }
+}
+
+/**
+ * Get end of week for today, returning a date string
+ */
+export function getEndOfWeekString(weekStartsOn: 0 | 1 | 2 | 3 | 4 | 5 | 6 = 1): string {
+    try {
+        const result = endOfWeek(new Date(), { weekStartsOn });
+        return format(result, 'yyyy-MM-dd');
+    } catch (error) {
+        console.error('Error getting end of week:', { error });
+        throw error;
+    }
+}
+
+/**
+ * Get start of month for today, returning a date string
+ */
+export function getStartOfMonthString(): string {
+    try {
+        const result = startOfMonth(new Date());
+        return format(result, 'yyyy-MM-dd');
+    } catch (error) {
+        console.error('Error getting start of month:', { error });
+        throw error;
+    }
+}
+
+/**
+ * Get end of month for today, returning a date string
+ */
+export function getEndOfMonthString(): string {
+    try {
+        const result = endOfMonth(new Date());
+        return format(result, 'yyyy-MM-dd');
+    } catch (error) {
+        console.error('Error getting end of month:', { error });
+        throw error;
+    }
+}
+
+/**
+ * Get start of year for today, returning a date string
+ */
+export function getStartOfYearString(): string {
+    try {
+        const result = startOfYear(new Date());
+        return format(result, 'yyyy-MM-dd');
+    } catch (error) {
+        console.error('Error getting start of year:', { error });
+        throw error;
+    }
+}
+
+/**
+ * Get end of year for today, returning a date string
+ */
+export function getEndOfYearString(): string {
+    try {
+        const result = endOfYear(new Date());
+        return format(result, 'yyyy-MM-dd');
+    } catch (error) {
+        console.error('Error getting end of year:', { error });
         throw error;
     }
 }
@@ -635,13 +764,13 @@ export function validateCompleteInstances(instances: any[]): string[] {
             
             // Skip obviously invalid time-only formats like "T00:00" before regex check
             if (trimmed.startsWith('T') && /^T\d{2}:\d{2}(:\d{2})?/.test(trimmed)) {
-                console.debug('Skipping invalid time-only entry in complete_instances:', instance);
+                // Skipping invalid time-only entry
                 return false;
             }
             
             // Must match YYYY-MM-DD format exactly
             if (!/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
-                console.debug('Invalid complete_instances entry (not YYYY-MM-DD format):', instance);
+                // Invalid entry (not YYYY-MM-DD format)
                 return false;
             }
             
@@ -829,4 +958,145 @@ export function getUTCStartOfMonth(date: Date): Date {
 export function getUTCEndOfMonth(date: Date): Date {
     const utcDate = createUTCDateForRRule(formatUTCDateForCalendar(date));
     return new Date(Date.UTC(utcDate.getUTCFullYear(), utcDate.getUTCMonth() + 1, 0));
+}
+
+/**
+ * Natural language date terms that can be resolved to actual dates
+ */
+export const NATURAL_LANGUAGE_DATE_PATTERNS = {
+    // Common relative days - most frequently used patterns
+    'today': () => getTodayString(),
+    'tomorrow': () => addDaysToDateString(getTodayString(), 1),
+    'yesterday': () => addDaysToDateString(getTodayString(), -1),
+    
+    // Simple week patterns - simplified to avoid date-fns boundary functions
+    'next week': () => addDaysToDateString(getTodayString(), 7),
+    'last week': () => addDaysToDateString(getTodayString(), -7)
+} as const;
+
+/**
+ * Check if a string is a natural language date pattern
+ */
+export function isNaturalLanguageDate(value: string): boolean {
+    if (!value || typeof value !== 'string') {
+        return false;
+    }
+    
+    const normalized = value.toLowerCase().trim().replace(/\s+/g, ' ');
+    
+    // Check exact matches
+    if (normalized in NATURAL_LANGUAGE_DATE_PATTERNS) {
+        return true;
+    }
+    
+    // Check relative patterns like "in 3 days", "2 weeks ago"
+    const relativePatterns = [
+        /^in\s+(\d+)\s+(days?)$/,
+        /^(\d+)\s+(days?)\s+ago$/,
+        /^in\s+(\d+)\s+(weeks?)$/,
+        /^(\d+)\s+(weeks?)\s+ago$/
+    ];
+    
+    return relativePatterns.some(pattern => pattern.test(normalized));
+}
+
+/**
+ * Check if a date input string is valid (either natural language or ISO date)
+ */
+export function isValidDateInput(value: string): boolean {
+    if (typeof value !== 'string') {
+        return false;
+    }
+    
+    const trimmed = value.trim();
+    if (trimmed === '') {
+        return true; // Empty is valid (no filter)
+    }
+    
+    // Check if it's a natural language date
+    if (isNaturalLanguageDate(trimmed)) {
+        return true;
+    }
+    
+    // Check if it's a valid ISO date format
+    try {
+        const parsed = parseDate(trimmed);
+        return isValid(parsed);
+    } catch {
+        return false;
+    }
+}
+
+/**
+ * Resolve a natural language date string to an actual date string (YYYY-MM-DD format)
+ * Returns the original string if it's not a recognized natural language pattern
+ */
+export function resolveNaturalLanguageDate(value: string): string {
+    if (!value || typeof value !== 'string') {
+        return value;
+    }
+    
+    const normalized = value.toLowerCase().trim().replace(/\s+/g, ' ');
+    
+    // Check exact matches first
+    if (normalized in NATURAL_LANGUAGE_DATE_PATTERNS) {
+        try {
+            return NATURAL_LANGUAGE_DATE_PATTERNS[normalized as keyof typeof NATURAL_LANGUAGE_DATE_PATTERNS]();
+        } catch (error) {
+            console.error('Error resolving natural language date:', { value, error });
+            return value;
+        }
+    }
+    
+    // Handle relative patterns like "in 3 days", "2 weeks ago"
+    try {
+        // "in X days" pattern (handle flexible whitespace)
+        let match = normalized.match(/^in\s+(\d+)\s+(days?)$/);
+        if (match) {
+            const days = parseInt(match[1], 10);
+            return addDaysToDateString(getTodayString(), days);
+        }
+        
+        // "X days ago" pattern (handle flexible whitespace)
+        match = normalized.match(/^(\d+)\s+(days?)\s+ago$/);
+        if (match) {
+            const days = parseInt(match[1], 10);
+            return addDaysToDateString(getTodayString(), -days);
+        }
+        
+        // "in X weeks" pattern (handle flexible whitespace)
+        match = normalized.match(/^in\s+(\d+)\s+(weeks?)$/);
+        if (match) {
+            const weeks = parseInt(match[1], 10);
+            return addWeeksToDateString(getTodayString(), weeks);
+        }
+        
+        // "X weeks ago" pattern (handle flexible whitespace)
+        match = normalized.match(/^(\d+)\s+(weeks?)\s+ago$/);
+        if (match) {
+            const weeks = parseInt(match[1], 10);
+            return addWeeksToDateString(getTodayString(), -weeks);
+        }
+        
+    } catch (error) {
+        console.error('Error parsing relative natural language date:', { value, error });
+    }
+    
+    // Return original value if not a natural language pattern
+    return value;
+}
+
+/**
+ * Get all supported natural language date patterns for UI suggestions
+ */
+export function getNaturalLanguageDateSuggestions(): string[] {
+    const exactPatterns = Object.keys(NATURAL_LANGUAGE_DATE_PATTERNS);
+    const relativeExamples = [
+        'in 3 days',
+        '2 days ago', 
+        'in 1 week',
+        '2 weeks ago'
+    ];
+    
+    return [...exactPatterns, ...relativeExamples].sort();
 }
