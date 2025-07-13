@@ -26,16 +26,39 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: var(--tn-spacing-md) 0;
+    padding: var(--tn-spacing-lg) var(--tn-spacing-md);
     border-bottom: 1px solid var(--tn-border-color);
-    margin-bottom: var(--tn-spacing-md);
+    margin-bottom: var(--tn-spacing-lg);
     position: relative;
+    background: var(--tn-bg-primary);
 }
 
 .tasknotes-plugin .agenda-view__header-content {
     display: flex;
     align-items: center;
-    gap: var(--tn-spacing-lg);
+    justify-content: space-between;
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.tasknotes-plugin .agenda-view__nav-section {
+    display: flex;
+    align-items: center;
+    gap: var(--tn-spacing-xs);
+}
+
+.tasknotes-plugin .agenda-view__title-section {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    margin: 0 var(--tn-spacing-lg);
+}
+
+.tasknotes-plugin .agenda-view__actions-section {
+    display: flex;
+    align-items: center;
+    gap: var(--tn-spacing-sm);
 }
 
 .tasknotes-plugin .agenda-view__period-title {
@@ -43,8 +66,7 @@
     font-weight: var(--tn-font-weight-medium);
     color: var(--tn-text-normal);
     text-align: center;
-    min-width: 240px;
-    padding: var(--tn-spacing-sm) var(--tn-spacing-md);
+    white-space: nowrap;
     letter-spacing: 0.01em;
     line-height: 1.3;
 }
@@ -176,39 +198,41 @@
     align-items: center;
     justify-content: center;
     gap: var(--tn-spacing-xs);
-    padding: 0 var(--tn-spacing-lg);
-    border: none;
+    padding: var(--tn-spacing-sm) var(--tn-spacing-md);
+    border: 1px solid var(--tn-border-color);
     border-radius: var(--tn-radius-md);
     background: var(--tn-bg-primary);
-    color: var(--tn-text-normal);
+    color: var(--tn-text-muted);
     font-family: inherit;
     font-size: var(--tn-font-size-sm);
     font-weight: var(--tn-font-weight-medium);
     line-height: 1.25;
-    min-height: var(--tn-button-height-md);
+    height: var(--tn-button-height-md);
     cursor: pointer;
     user-select: none;
     text-decoration: none;
     white-space: nowrap;
     transition: all var(--tn-transition-fast);
     overflow: hidden;
-    border: 1px solid var(--tn-border-color);
 }
 
 .tasknotes-plugin .agenda-view__today-button:hover {
     background: var(--tn-interactive-hover);
     border-color: var(--tn-border-color-hover);
-    box-shadow: var(--tn-shadow-light);
+    color: var(--tn-text-normal);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .tasknotes-plugin .agenda-view__today-button:focus-visible {
     outline: 2px solid var(--tn-interactive-accent);
     outline-offset: 2px;
+    border-color: var(--tn-interactive-accent);
 }
 
 .tasknotes-plugin .agenda-view__today-button:active {
-    background: var(--tn-interactive-hover);
-    transform: scale(0.98);
+    background: var(--tn-interactive-active);
+    transform: translateY(1px);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 /* Toggle Controls */
@@ -433,12 +457,22 @@
     }
     
     .tasknotes-plugin .agenda-view__header-content {
-        gap: var(--tn-spacing-sm);
+        flex-direction: column;
+        gap: var(--tn-spacing-md);
+    }
+    
+    .tasknotes-plugin .agenda-view__title-section {
+        order: -1;
+        margin: 0;
     }
     
     .tasknotes-plugin .agenda-view__period-title {
         font-size: var(--tn-font-size-lg);
-        min-width: 150px;
+    }
+    
+    .tasknotes-plugin .agenda-view__nav-section,
+    .tasknotes-plugin .agenda-view__actions-section {
+        justify-content: center;
     }
     
     .tasknotes-plugin .agenda-view__nav-button {
