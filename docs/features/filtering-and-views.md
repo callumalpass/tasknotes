@@ -70,6 +70,13 @@ The filter builder allows incomplete conditions during construction:
 - `file.ctime` - File creation date
 - `file.mtime` - File modification date
 
+**Natural Language Date Support**: Date properties support both ISO date formats (`2024-12-25`, `2024-12-25T14:30:00`) and natural language patterns for dynamic filtering:
+- **Basic dates**: `today`, `tomorrow`, `yesterday`
+- **Week patterns**: `next week`, `last week`
+- **Relative patterns**: `in 3 days`, `2 days ago`, `in 1 week`, `2 weeks ago`
+
+Natural language dates are resolved dynamically when filters are evaluated, making saved views with dates like "today" stay current over time.
+
 ### Boolean Properties
 - `archived` - Whether task is archived
 - `status.isCompleted` - Whether the task's status indicates completion
@@ -110,9 +117,21 @@ The value input changes based on the selected property and operator:
 
 **Text Input**: For text properties and custom values
 **Dropdown Selection**: For status, priority, tags, contexts, and projects
-**Date Picker**: For date properties
+**Date Input**: For date properties - supports both ISO dates and natural language
 **Number Input**: For numeric properties
 **No Input**: For existence operators that don't require values
+
+### Date Input
+
+Date inputs provide real-time validation with visual feedback:
+- **Valid input**: Green border indicates recognized date format
+- **Invalid input**: Red border indicates unrecognized format
+- **Help tooltip**: Click the `?` button to see available natural language patterns
+- **Smart filtering**: Only applies filters when input is valid or empty
+
+Examples of valid date inputs:
+- ISO formats: `2024-12-25`, `2024-12-25T14:30:00Z`
+- Natural language: `today`, `next week`, `in 3 days`, `2 weeks ago`
 
 ## Saved Views
 
@@ -185,10 +204,22 @@ Understanding how filters are evaluated:
 - Operator: `contains`
 - Value: `meeting`
 
+### Dynamic Date Filters
+Using natural language dates for filters that stay current:
+- Property: `due`
+- Operator: `is-on-or-after`
+- Value: `today`
+
 ### Complex Date Range
 Group with AND conjunction:
 - Condition 1: `due` `is-on-or-after` `2024-01-01`
 - Condition 2: `due` `is-on-or-before` `2024-01-31`
+
+### This Week's Tasks
+Using natural language for relative time periods:
+- Property: `due`
+- Operator: `is-on-or-after`
+- Value: `next week`
 
 ### High Priority Incomplete Tasks
 Group with AND conjunction:
