@@ -83,12 +83,12 @@ export class FilterBar extends EventEmitter {
         super();
         this.app = app;
         this.container = container;
-        this.currentQuery = { ...initialQuery };
+        this.currentQuery = FilterUtils.deepCloneFilterQuery(initialQuery);
         this.filterOptions = filterOptions;
 
         // Initialize debounced query change emission (300ms delay)
         this.debouncedEmitQueryChange = debounce(() => {
-            this.emit('queryChange', { ...this.currentQuery });
+            this.emit('queryChange', FilterUtils.deepCloneFilterQuery(this.currentQuery));
         }, 300);
 
         // Initialize debounced search input handling (800ms delay to reduce lag)
@@ -104,7 +104,7 @@ export class FilterBar extends EventEmitter {
      * Update the current query and refresh UI
      */
     updateQuery(query: FilterQuery): void {
-        this.currentQuery = { ...query };
+        this.currentQuery = FilterUtils.deepCloneFilterQuery(query);
         this.updateUI();
     }
 
@@ -127,7 +127,7 @@ export class FilterBar extends EventEmitter {
             this.updateFilterBuilder();
             
             // Emit query change 
-            this.emit('queryChange', { ...this.currentQuery });
+            this.emit('queryChange', FilterUtils.deepCloneFilterQuery(this.currentQuery));
             
             // Reset typing flag after a delay
             setTimeout(() => {
@@ -179,7 +179,7 @@ export class FilterBar extends EventEmitter {
      * Get the current query
      */
     getCurrentQuery(): FilterQuery {
-        return { ...this.currentQuery };
+        return FilterUtils.deepCloneFilterQuery(this.currentQuery);
     }
 
 
@@ -492,19 +492,29 @@ export class FilterBar extends EventEmitter {
         });
 
         // Property dropdown
+        const propertyOptions = Object.fromEntries([
+            ['', 'Select...'], // Placeholder option
+            ...FILTER_PROPERTIES.map(p => [p.id, p.label])
+        ]);
         new DropdownComponent(conditionContainer)
-            .addOptions(Object.fromEntries(FILTER_PROPERTIES.map(p => [p.id, p.label])))
+            .addOptions(propertyOptions)
             .setValue(condition.property)
             .onChange((newPropertyId: FilterProperty) => {
                 condition.property = newPropertyId;
 
-                const propertyDef = FILTER_PROPERTIES.find(p => p.id === newPropertyId);
-                if (propertyDef && propertyDef.supportedOperators.length > 0) {
-                    const newOperator = propertyDef.supportedOperators[0];
-                    condition.operator = newOperator;
+                // Handle placeholder selection
+                if (newPropertyId === '') {
+                    // Keep current operator and value when "Select..." is chosen
+                    // The condition will be incomplete and won't trigger filtering
+                } else {
+                    const propertyDef = FILTER_PROPERTIES.find(p => p.id === newPropertyId);
+                    if (propertyDef && propertyDef.supportedOperators.length > 0) {
+                        const newOperator = propertyDef.supportedOperators[0];
+                        condition.operator = newOperator;
 
-                    const operatorDef = FILTER_OPERATORS.find(op => op.id === newOperator);
-                    condition.value = operatorDef?.requiresValue ? '' : null;
+                        const operatorDef = FILTER_OPERATORS.find(op => op.id === newOperator);
+                        condition.value = operatorDef?.requiresValue ? '' : null;
+                    }
                 }
                 
                 this.updateUI();
@@ -846,14 +856,14 @@ export class FilterBar extends EventEmitter {
         const condition: FilterCondition = {
             type: 'condition',
             id: FilterUtils.generateId(),
-            property: 'title',
+            property: '',
             operator: 'contains',
             value: ''
         };
         
         group.children.push(condition);
         this.updateFilterBuilderComplete();
-        this.emitQueryChange();
+        // Don't emit queryChange - new condition is incomplete until property is selected
     }
 
     /**
@@ -869,7 +879,7 @@ export class FilterBar extends EventEmitter {
         
         group.children.push(newGroup);
         this.updateFilterBuilderComplete();
-        this.emitQueryChange();
+        // Don't emit queryChange - new group is empty and won't affect filtering
     }
 
     /**
@@ -928,7 +938,7 @@ export class FilterBar extends EventEmitter {
      * Load a saved view
      */
     private loadSavedView(view: SavedView): void {
-        this.currentQuery = { ...view.query };
+        this.currentQuery = FilterUtils.deepCloneFilterQuery(view.query);
         this.render();
         this.emitQueryChange();
         this.toggleViewSelectorDropdown();
@@ -1028,10 +1038,58 @@ export class FilterBar extends EventEmitter {
     }
 
     /**
-     * Emit query change event
+     * Emit query change event only if the query is complete and meaningful
+     * This prevents expensive filter operations when users are still building filters
      */
     private emitQueryChange(): void {
-        this.emit('queryChange', { ...this.currentQuery });
+        // Always emit for sort/group changes and structural operations
+        this.emitQueryChangeIfComplete();
+    }
+    
+    /**
+     * Check if the current query is complete and meaningful, then emit if so
+     */
+    private emitQueryChangeIfComplete(): void {
+        if (this.isQueryMeaningful(this.currentQuery)) {
+            console.debug('FilterBar: Emitting queryChange - query is complete');
+            this.emit('queryChange', FilterUtils.deepCloneFilterQuery(this.currentQuery));
+        } else {
+            console.debug('FilterBar: Skipping queryChange - query has incomplete conditions');
+        }
+    }
+    
+    /**
+     * Check if a query is meaningful (has complete conditions or no conditions)
+     * Incomplete conditions (missing required values) should not trigger filtering
+     */
+    private isQueryMeaningful(query: FilterGroup): boolean {
+        // Empty query is meaningful (shows all tasks)
+        if (query.children.length === 0) {
+            return true;
+        }
+        
+        // Check if query has at least one complete condition or group
+        return this.hasCompleteConditions(query);
+    }
+    
+    /**
+     * Recursively check if a group has any complete conditions
+     */
+    private hasCompleteConditions(group: FilterGroup): boolean {
+        for (const child of group.children) {
+            if (child.type === 'condition') {
+                // Check if this condition is complete using FilterUtils
+                if (FilterUtils.isFilterNodeComplete(child)) {
+                    return true;
+                }
+            } else if (child.type === 'group') {
+                // Recursively check child groups
+                if (this.hasCompleteConditions(child)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**

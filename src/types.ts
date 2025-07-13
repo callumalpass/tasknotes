@@ -72,6 +72,8 @@ export interface SavedView {
 
 // Property and operator definitions for the advanced filtering system
 export type FilterProperty = 
+	// Placeholder for "Select..." option
+	| ''
 	// Text properties
 	| 'title'
 	// Select properties

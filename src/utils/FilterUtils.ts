@@ -37,6 +37,14 @@ export class FilterUtils {
     }
 
     /**
+     * Deep clone a FilterQuery to prevent shared object references
+     * This is essential for saved views to avoid overwriting each other
+     */
+    static deepCloneFilterQuery(query: FilterGroup): FilterGroup {
+        return JSON.parse(JSON.stringify(query));
+    }
+
+    /**
      * Validate a filter node (group or condition)
      */
     static validateFilterNode(node: FilterGroup | FilterCondition, strict = true): void {
@@ -61,8 +69,18 @@ export class FilterUtils {
      * Validate a filter condition
      */
     private static validateCondition(condition: FilterCondition, strict = true): void {
-        if (!condition.property || typeof condition.property !== 'string') {
+        if (typeof condition.property !== 'string') {
             throw new FilterValidationError('Condition must have a valid property', 'property', condition.id);
+        }
+
+        // In strict mode, empty property (placeholder) should be invalid
+        if (strict && condition.property === '') {
+            throw new FilterValidationError('Property must be selected', 'property', condition.id);
+        }
+
+        // Non-empty property is required for further validation
+        if (condition.property === '') {
+            return; // Skip further validation for placeholder
         }
 
         if (!condition.operator || typeof condition.operator !== 'string') {
@@ -127,6 +145,9 @@ export class FilterUtils {
      */
     private static getValidOperatorsForProperty(property: FilterProperty): FilterOperator[] {
         const operatorMap: Record<FilterProperty, FilterOperator[]> = {
+            // Placeholder property (no valid operators)
+            '': [],
+            
             // Text properties
             'title': ['is', 'is-not', 'contains', 'does-not-contain', 'is-empty', 'is-not-empty'],
             
