@@ -760,7 +760,7 @@ export class FilterBar extends EventEmitter {
      */
     private removeFilterGroup(parentGroup: FilterGroup, index: number): void {
         parentGroup.children.splice(index, 1);
-        this.updateUI();
+        this.updateFilterBuilderComplete();
         this.emitQueryChange();
     }
 
@@ -852,7 +852,7 @@ export class FilterBar extends EventEmitter {
         };
         
         group.children.push(condition);
-        this.render();
+        this.updateFilterBuilderComplete();
         this.emitQueryChange();
     }
 
@@ -868,7 +868,7 @@ export class FilterBar extends EventEmitter {
         };
         
         group.children.push(newGroup);
-        this.render();
+        this.updateFilterBuilderComplete();
         this.emitQueryChange();
     }
 
@@ -877,7 +877,7 @@ export class FilterBar extends EventEmitter {
      */
     private removeFilterCondition(group: FilterGroup, index: number): void {
         group.children.splice(index, 1);
-        this.render();
+        this.updateFilterBuilderComplete();
         this.emitQueryChange();
     }
 
@@ -969,6 +969,43 @@ export class FilterBar extends EventEmitter {
         } catch (error) {
             console.error('Error updating filter builder:', error);
             // Don't re-throw to prevent cascading failures
+        }
+    }
+
+    /**
+     * Update filter builder ensuring all conjunction buttons and UI elements are properly rendered
+     * This is more efficient than full render() but ensures all parts are updated correctly
+     */
+    private updateFilterBuilderComplete(): void {
+        try {
+            if (this.filterBuilder && this.filterBuilder.isConnected) {
+                // Store current search input value and focus state
+                const currentValue = this.searchInput?.getValue();
+                const hasFocus = this.searchInput?.inputEl === document.activeElement;
+                
+                // Update the filter builder section completely
+                this.filterBuilder.empty();
+                this.renderFilterGroup(this.filterBuilder, this.currentQuery, 0);
+                
+                // Update display section to ensure sort/group controls are in sync
+                const displaySection = this.container.querySelector('.filter-bar__display-section');
+                if (displaySection) {
+                    displaySection.empty();
+                    this.renderDisplaySection(displaySection as HTMLElement);
+                }
+                
+                // Restore search input value and focus if needed
+                if (this.searchInput && currentValue !== undefined) {
+                    this.searchInput.setValue(currentValue);
+                    if (hasFocus) {
+                        this.searchInput.inputEl.focus();
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Error updating filter builder completely:', error);
+            // Fallback to full render if partial update fails
+            this.render();
         }
     }
 
