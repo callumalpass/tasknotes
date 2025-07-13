@@ -39,7 +39,26 @@ export class ViewStateManager extends EventEmitter {
      */
     getFilterState(viewType: string): FilterQuery | undefined {
         const state = this.filterState[viewType];
-        return state ? FilterUtils.deepCloneFilterQuery(state) : undefined;
+        
+        if (!state) {
+            return undefined;
+        }
+        
+        // Check if state has the new FilterGroup structure (v3.13.0+)
+        // If it's old format, ignore it and return undefined to use default
+        if (typeof state !== 'object' ||
+            state.type !== 'group' ||
+            !Array.isArray(state.children) ||
+            typeof state.conjunction !== 'string') {
+            
+            console.warn(`ViewStateManager: Ignoring old format filter state for ${viewType}, will use default`);
+            // Clear the old format data
+            delete this.filterState[viewType];
+            this.saveToStorage();
+            return undefined;
+        }
+        
+        return FilterUtils.deepCloneFilterQuery(state);
     }
 
     /**

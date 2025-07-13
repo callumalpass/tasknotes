@@ -87,6 +87,9 @@ export class FilterBar extends EventEmitter {
         this.currentQuery = FilterUtils.deepCloneFilterQuery(initialQuery);
         this.filterOptions = filterOptions;
 
+        // Defensive migration fix: ensure query has proper structure
+        this.ensureValidFilterQuery();
+
         // Initialize debounced query change emission (300ms delay)
         this.debouncedEmitQueryChange = debounce(() => {
             this.emit('queryChange', FilterUtils.deepCloneFilterQuery(this.currentQuery));
@@ -102,10 +105,43 @@ export class FilterBar extends EventEmitter {
     }
 
     /**
+     * Ensure the current query has the proper FilterQuery structure
+     * If it's from an old version (<3.13.0), replace with fresh default
+     */
+    private ensureValidFilterQuery(): void {
+        // Check if query has the new FilterGroup structure
+        if (!this.currentQuery || 
+            typeof this.currentQuery !== 'object' ||
+            this.currentQuery.type !== 'group' ||
+            !Array.isArray(this.currentQuery.children) ||
+            typeof this.currentQuery.conjunction !== 'string') {
+            
+            console.warn('FilterBar: Detected old format FilterQuery, initializing with fresh default');
+            
+            // Create a fresh default query, preserving any sort/group settings if valid
+            const sortKey = (this.currentQuery?.sortKey && typeof this.currentQuery.sortKey === 'string') ? this.currentQuery.sortKey : 'due';
+            const sortDirection = (this.currentQuery?.sortDirection && typeof this.currentQuery.sortDirection === 'string') ? this.currentQuery.sortDirection : 'asc';
+            const groupKey = (this.currentQuery?.groupKey && typeof this.currentQuery.groupKey === 'string') ? this.currentQuery.groupKey : 'none';
+            
+            this.currentQuery = {
+                type: 'group',
+                id: FilterUtils.generateId(),
+                conjunction: 'and',
+                children: [],
+                sortKey: sortKey as any,
+                sortDirection: sortDirection as any,
+                groupKey: groupKey as any
+            };
+        }
+    }
+
+    /**
      * Update the current query and refresh UI
      */
     updateQuery(query: FilterQuery): void {
         this.currentQuery = FilterUtils.deepCloneFilterQuery(query);
+        // Ensure the updated query has proper structure
+        this.ensureValidFilterQuery();
         this.updateUI();
     }
 
@@ -143,6 +179,13 @@ export class FilterBar extends EventEmitter {
      * Remove existing search conditions from the query
      */
     private removeSearchConditions(): void {
+        // Defensive check: ensure children array exists
+        if (!Array.isArray(this.currentQuery.children)) {
+            console.warn('FilterBar: children array missing in removeSearchConditions');
+            this.currentQuery.children = [];
+            return;
+        }
+        
         this.currentQuery.children = this.currentQuery.children.filter(child => {
             if (child.type === 'condition') {
                 return !(child.property === 'title' && child.operator === 'contains' && 
@@ -156,6 +199,12 @@ export class FilterBar extends EventEmitter {
      * Add a search condition to the query
      */
     private addSearchCondition(searchTerm: string): void {
+        // Defensive check: ensure children array exists
+        if (!Array.isArray(this.currentQuery.children)) {
+            console.warn('FilterBar: children array missing in addSearchCondition');
+            this.currentQuery.children = [];
+        }
+        
         const searchCondition: FilterCondition = {
             type: 'condition',
             id: `search_${FilterUtils.generateId()}`,
@@ -407,6 +456,18 @@ export class FilterBar extends EventEmitter {
      * Render a filter group (recursive)
      */
     private renderFilterGroup(parent: HTMLElement, group: FilterGroup, depth: number, parentGroup?: FilterGroup, groupIndex?: number): void {
+        // Defensive check: ensure group has required properties
+        if (!group || typeof group !== 'object') {
+            console.error('FilterBar: Invalid group object provided to renderFilterGroup');
+            return;
+        }
+        
+        // Ensure children array exists (defensive migration fix)
+        if (!Array.isArray(group.children)) {
+            console.warn('FilterBar: Group missing children array, initializing empty array');
+            group.children = [];
+        }
+
         const groupContainer = parent.createDiv('filter-bar__group');
         
         // Group header with conjunction and delete button
@@ -418,7 +479,7 @@ export class FilterBar extends EventEmitter {
         new DropdownComponent(conjunctionContainer)
             .addOption('and', depth === 0 ? 'All' : 'All')
             .addOption('or', depth === 0 ? 'Any' : 'Any')
-            .setValue(group.conjunction)
+            .setValue(group.conjunction || 'and') // Defensive fallback
             .onChange((value) => {
                 group.conjunction = value as 'and' | 'or';
                 this.updateUI();
@@ -1118,6 +1179,13 @@ export class FilterBar extends EventEmitter {
      */
     private syncSearchInput(): void {
         if (!this.searchInput || this.isUserTyping) return;
+        
+        // Defensive check: ensure currentQuery has children array
+        if (!this.currentQuery || !Array.isArray(this.currentQuery.children)) {
+            console.warn('FilterBar: currentQuery missing children array in syncSearchInput');
+            this.searchInput.setValue('');
+            return;
+        }
         
         // Find search condition in current query
         const searchCondition = this.currentQuery.children.find(child => 
