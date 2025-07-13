@@ -259,7 +259,6 @@ export class AdvancedCalendarView extends ItemView {
         // Set up view-specific options
         this.setupViewOptions();
         
-        
     }
     
     private updateHeaderVisibility() {
@@ -344,6 +343,7 @@ export class AdvancedCalendarView extends ItemView {
         this.filterBar.setViewOptions(options);
     }
 
+
     // View options handling for FilterBar integration
     getViewOptionsConfig() {
         const options = [
@@ -397,11 +397,45 @@ export class AdvancedCalendarView extends ItemView {
             return false; // This hides the entire header toolbar
         }
         
-        return {
+        const toolbarConfig = {
             left: 'prev,next today',
             center: 'title',
-            right: 'multiMonthYear,dayGridMonth,timeGridWeek,timeGridDay'
+            right: 'refreshICS multiMonthYear,dayGridMonth,timeGridWeek,timeGridDay'
         };
+        console.log('Header toolbar config:', toolbarConfig);
+        return toolbarConfig;
+    }
+
+    private getCustomButtons() {
+        const customButtons = {
+            refreshICS: {
+                text: 'Refresh',
+                hint: 'Refresh Calendar Subscriptions',
+                click: () => {
+                    console.log('Refresh ICS button clicked!');
+                    this.handleRefreshClick();
+                }
+            }
+        };
+        console.log('Custom buttons:', customButtons);
+        return customButtons;
+    }
+
+    private async handleRefreshClick() {
+        if (!this.plugin.icsSubscriptionService) {
+            new Notice('ICS subscription service not available');
+            return;
+        }
+        
+        try {
+            await this.plugin.icsSubscriptionService.refreshAllSubscriptions();
+            new Notice('All calendar subscriptions refreshed successfully');
+            // Force calendar to re-render with updated ICS events
+            this.refreshEvents();
+        } catch (error) {
+            console.error('Error refreshing subscriptions:', error);
+            new Notice('Failed to refresh some calendar subscriptions');
+        }
     }
 
     
@@ -455,10 +489,17 @@ export class AdvancedCalendarView extends ItemView {
         // Apply today highlight setting
         this.updateTodayHighlight();
         
+        const customButtons = this.getCustomButtons();
+        const headerToolbar = this.getHeaderToolbarConfig();
+        
+        console.log('Initializing calendar with customButtons:', customButtons);
+        console.log('Initializing calendar with headerToolbar:', headerToolbar);
+        
         this.calendar = new Calendar(calendarEl, {
             plugins: [dayGridPlugin, timeGridPlugin, multiMonthPlugin, interactionPlugin],
             initialView: calendarSettings.defaultView,
-            headerToolbar: this.getHeaderToolbarConfig(),
+            headerToolbar: headerToolbar,
+            customButtons: customButtons,
             height: '100%',
             editable: true,
             droppable: true,

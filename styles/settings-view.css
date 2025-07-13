@@ -767,13 +767,16 @@
 /* ICS Subscription Actions */
 .tasknotes-plugin .ics-subscription-actions {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     gap: var(--tn-spacing-xs);
-    align-items: flex-end;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
 }
 
 .tasknotes-plugin .ics-subscription-toggle,
 .tasknotes-plugin .ics-subscription-refresh,
+.tasknotes-plugin .ics-subscription-edit,
 .tasknotes-plugin .ics-subscription-delete {
     padding: var(--tn-spacing-xs) var(--tn-spacing-sm);
     border: 1px solid var(--tn-border-color);
@@ -782,6 +785,8 @@
     cursor: pointer;
     transition: all var(--tn-transition-fast);
     white-space: nowrap;
+    min-width: 60px;
+    text-align: center;
 }
 
 .tasknotes-plugin .ics-subscription-toggle.enabled {
@@ -796,12 +801,24 @@
 }
 
 .tasknotes-plugin .ics-subscription-refresh {
-    background: var(--tn-bg-primary);
-    color: var(--tn-text-normal);
+    background: var(--tn-color-blue-bg);
+    color: var(--tn-color-blue);
+    border-color: var(--tn-color-blue);
 }
 
 .tasknotes-plugin .ics-subscription-refresh:hover {
+    background: var(--tn-color-blue);
+    color: var(--tn-text-on-accent);
+}
+
+.tasknotes-plugin .ics-subscription-edit {
+    background: var(--tn-bg-secondary);
+    color: var(--tn-text-normal);
+}
+
+.tasknotes-plugin .ics-subscription-edit:hover {
     background: var(--tn-interactive-hover);
+    border-color: var(--tn-border-color-hover);
 }
 
 .tasknotes-plugin .ics-subscription-delete {

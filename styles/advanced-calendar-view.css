@@ -836,3 +836,49 @@
 .hide-today-highlight .fc-daygrid-day.fc-day-today::before {
     display: none;
 }
+
+.hide-today-highlight .fc-timegrid-col.fc-day-today {
+    background: inherit !important;
+    border: none !important;
+}
+
+/* ICS Refresh Button in FullCalendar Toolbar */
+.advanced-calendar-view .fc-refreshICS-button {
+    background: var(--background-secondary);
+    border: 1px solid var(--background-modifier-border);
+    color: var(--text-normal);
+    transition: all 0.2s ease;
+    font-weight: normal;
+    font-size: 13px;
+    padding: 4px 8px;
+}
+
+.advanced-calendar-view .fc-refreshICS-button .fc-icon,
+.advanced-calendar-view .fc-refreshICS-button .fc-button-label {
+    color: var(--text-normal);
+    font-size: 13px;
+    line-height: 1.2;
+    display: inline;
+    visibility: visible;
+}
+
+.advanced-calendar-view .fc-refreshICS-button:hover {
+    background: var(--background-modifier-hover);
+    border-color: var(--background-modifier-border-hover);
+    color: var(--text-normal);
+}
+
+.advanced-calendar-view .fc-refreshICS-button:hover .fc-icon,
+.advanced-calendar-view .fc-refreshICS-button:hover .fc-button-label {
+    color: var(--text-normal);
+}
+
+.advanced-calendar-view .fc-refreshICS-button:focus {
+    box-shadow: 0 0 0 2px var(--background-modifier-border-focus);
+}
+
+/* Ensure button content is visible and matches other FC buttons */
+.advanced-calendar-view .fc-refreshICS-button,
+.advanced-calendar-view .fc-refreshICS-button * {
+    color: var(--text-normal);
+}
