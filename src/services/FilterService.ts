@@ -492,7 +492,7 @@ export class FilterService extends EventEmitter {
         }
         
         // Apply the operator
-        return FilterUtils.applyOperator(taskValue, operator as FilterOperator, value, condition.id);
+        return FilterUtils.applyOperator(taskValue, operator as FilterOperator, value, condition.id, property as FilterProperty);
     }
 
 
