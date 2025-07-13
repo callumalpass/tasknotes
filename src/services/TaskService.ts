@@ -1,4 +1,5 @@
 import { TFile, Notice, normalizePath, stringifyYaml } from 'obsidian';
+import { format } from 'date-fns';
 // YAML not needed in this service
 import TaskNotesPlugin from '../main';
 import { TaskInfo, TimeEntry, EVENT_TASK_UPDATED, EVENT_TASK_DELETED, TaskCreationData } from '../types';
@@ -719,7 +720,7 @@ export class TaskService {
 
         // Use the provided date or fall back to the currently selected date
         const targetDate = date || this.plugin.selectedDate;
-        const dateStr = formatUTCDateForCalendar(targetDate);
+        const dateStr = format(targetDate, 'yyyy-MM-dd');
         
         // Check current completion status for this date using fresh data
         const completeInstances = Array.isArray(freshTask.complete_instances) ? freshTask.complete_instances : [];
