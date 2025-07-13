@@ -3,6 +3,7 @@ import { FilterCondition, FilterGroup, FilterNode, FilterOptions, FilterOperator
 import { EventEmitter } from '../utils/EventEmitter';
 import { FilterUtils } from '../utils/FilterUtils';
 import { showConfirmationModal } from '../modals/ConfirmationModal';
+import { isNaturalLanguageDate, getNaturalLanguageDateSuggestions, isValidDateInput } from '../utils/dateUtils';
 
 class SaveViewModal extends Modal {
     private name: string;
@@ -662,16 +663,109 @@ export class FilterBar extends EventEmitter {
     }
 
     /**
-     * Render date input
+     * Render enhanced date input with natural language support
      */
     private renderDateInput(container: HTMLElement, condition: FilterCondition): void {
-        const textInput = new TextComponent(container)
+        const dateContainer = container.createDiv('filter-date-input-container');
+        
+        // Main text input for both natural language and date entry
+        const textInput = new TextComponent(dateContainer)
             .setValue(String(condition.value || ''))
             .onChange((value) => {
                 condition.value = value || null;
-                this.emitQueryChange();
+                this.updateDateInputValidation(textInput, value);
+                
+                // Only emit query change if input is valid or empty
+                const trimmedValue = (value || '').trim();
+                if (trimmedValue === '' || isValidDateInput(trimmedValue)) {
+                    this.emitQueryChange();
+                }
             });
-        textInput.inputEl.type = 'date';
+        
+        // Set placeholder to guide users
+        textInput.setPlaceholder('today, 2024-12-25, next week...');
+        textInput.inputEl.addClass('filter-date-text-input');
+        
+        // Set initial validation state
+        this.updateDateInputValidation(textInput, String(condition.value || ''));
+        
+        // Add a small help button showing natural language examples
+        const helpButton = dateContainer.createEl('button', {
+            cls: 'filter-date-help-button',
+            text: '?',
+            title: 'Natural language dates: today, tomorrow, yesterday, next week, last week, in 3 days, 2 days ago, in 1 week, 2 weeks ago'
+        });
+        
+        helpButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            this.showNaturalLanguageDateHelp(helpButton);
+        });
+    }
+    
+    /**
+     * Update date input validation styling based on the current value
+     */
+    private updateDateInputValidation(textInput: TextComponent, value: string): void {
+        const inputEl = textInput.inputEl;
+        
+        // Remove all validation classes
+        inputEl.removeClass('is-valid', 'is-invalid', 'is-empty');
+        
+        const trimmedValue = value.trim();
+        
+        if (trimmedValue === '') {
+            inputEl.addClass('is-empty');
+        } else if (isValidDateInput(trimmedValue)) {
+            inputEl.addClass('is-valid');
+        } else {
+            inputEl.addClass('is-invalid');
+        }
+    }
+    
+    /**
+     * Show natural language date help tooltip
+     */
+    private showNaturalLanguageDateHelp(button: HTMLElement): void {
+        // Remove existing tooltip
+        document.querySelectorAll('.filter-date-help-tooltip').forEach(el => el.remove());
+        
+        const tooltip = document.body.createDiv('filter-date-help-tooltip');
+        const suggestions = getNaturalLanguageDateSuggestions();
+        
+        tooltip.createEl('h4', { text: 'Natural Language Dates' });
+        const examplesList = tooltip.createEl('ul');
+        
+        // Show the actual available patterns from our simplified implementation
+        const availablePatterns = [
+            'today', 'tomorrow', 'yesterday',
+            'next week', 'last week',
+            'in 3 days', '2 days ago',
+            'in 1 week', '2 weeks ago',
+            '2024-12-25', '2024-12-25T14:30:00'
+        ];
+        
+        availablePatterns.forEach(example => {
+            examplesList.createEl('li', { text: example });
+        });
+        
+        // Position tooltip near the button
+        const buttonRect = button.getBoundingClientRect();
+        tooltip.style.position = 'absolute';
+        tooltip.style.top = `${buttonRect.bottom + 5}px`;
+        tooltip.style.left = `${buttonRect.left}px`;
+        tooltip.style.zIndex = '1000';
+        
+        // Remove tooltip when clicking elsewhere
+        const removeTooltip = () => {
+            tooltip.remove();
+            document.removeEventListener('click', removeTooltip);
+        };
+        
+        // Add delay to prevent immediate removal
+        setTimeout(() => {
+            document.addEventListener('click', removeTooltip);
+        }, 100);
     }
 
     /**
