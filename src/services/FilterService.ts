@@ -5,7 +5,7 @@ import { StatusManager } from './StatusManager';
 import { PriorityManager } from './PriorityManager';
 import { EventEmitter } from '../utils/EventEmitter';
 import { FilterUtils, FilterValidationError, FilterEvaluationError, TaskPropertyValue } from '../utils/FilterUtils';
-import { isDueByRRule, filterEmptyProjects } from '../utils/helpers';
+import { isDueByRRule, filterEmptyProjects, getEffectiveTaskStatus } from '../utils/helpers';
 import { format, isToday } from 'date-fns';
 import { 
     getTodayString, 
@@ -67,7 +67,7 @@ export class FilterService extends EventEmitter {
             const candidateTasks = await this.pathsToTaskInfos(Array.from(candidateTaskPaths));
             
             // Apply full filter query to the reduced candidate set
-            const filteredTasks = candidateTasks.filter(task => this.evaluateFilterNode(query, task));
+            const filteredTasks = candidateTasks.filter(task => this.evaluateFilterNode(query, task, targetDate));
             
             // Sort the filtered results
             const sortedTasks = this.sortTasks(filteredTasks, query.sortKey || 'due', query.sortDirection || 'asc');
@@ -436,11 +436,11 @@ export class FilterService extends EventEmitter {
      * Recursively evaluate a filter node (group or condition) against a task
      * Returns true if the task matches the filter criteria
      */
-    private evaluateFilterNode(node: FilterGroup | FilterCondition, task: TaskInfo): boolean {
+    private evaluateFilterNode(node: FilterGroup | FilterCondition, task: TaskInfo, targetDate?: Date): boolean {
         if (node.type === 'condition') {
-            return this.evaluateCondition(node, task);
+            return this.evaluateCondition(node, task, targetDate);
         } else if (node.type === 'group') {
-            return this.evaluateGroup(node, task);
+            return this.evaluateGroup(node, task, targetDate);
         }
         return true; // Default to true if unknown node type
     }
@@ -448,7 +448,7 @@ export class FilterService extends EventEmitter {
     /**
      * Evaluate a filter group against a task
      */
-    private evaluateGroup(group: FilterGroup, task: TaskInfo): boolean {
+    private evaluateGroup(group: FilterGroup, task: TaskInfo, targetDate?: Date): boolean {
         if (group.children.length === 0) {
             return true; // Empty group matches everything
         }
@@ -468,10 +468,10 @@ export class FilterService extends EventEmitter {
 
         if (group.conjunction === 'and') {
             // All complete children must match
-            return completeChildren.every(child => this.evaluateFilterNode(child, task));
+            return completeChildren.every(child => this.evaluateFilterNode(child, task, targetDate));
         } else if (group.conjunction === 'or') {
             // At least one complete child must match
-            return completeChildren.some(child => this.evaluateFilterNode(child, task));
+            return completeChildren.some(child => this.evaluateFilterNode(child, task, targetDate));
         }
 
         return true; // Default to true if unknown conjunction
@@ -480,7 +480,7 @@ export class FilterService extends EventEmitter {
     /**
      * Evaluate a single filter condition against a task
      */
-    private evaluateCondition(condition: FilterCondition, task: TaskInfo): boolean {
+    private evaluateCondition(condition: FilterCondition, task: TaskInfo, targetDate?: Date): boolean {
         const { property, operator, value } = condition;
         
         // Get the actual value from the task
@@ -488,7 +488,8 @@ export class FilterService extends EventEmitter {
         
         // Handle special case for status.isCompleted
         if (property === 'status.isCompleted') {
-            taskValue = this.statusManager.isCompletedStatus(task.status);
+            const effectiveStatus = getEffectiveTaskStatus(task, targetDate || new Date());
+            taskValue = this.statusManager.isCompletedStatus(effectiveStatus);
         }
         
         // Apply the operator
