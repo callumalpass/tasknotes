@@ -22,6 +22,94 @@
     isolation: isolate; /* Create a new stacking context */
 }
 
+/* Natural Language Date Input Enhancement */
+.tasknotes-plugin .filter-date-input-container {
+    display: flex;
+    align-items: center;
+    gap: var(--tn-spacing-xs);
+    width: 100%;
+}
+
+.tasknotes-plugin .filter-date-text-input {
+    flex: 1;
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+/* Date input validation states - subtle styling */
+.tasknotes-plugin .filter-date-text-input.is-valid {
+    border-left: 2px solid var(--color-green);
+    background-color: transparent;
+    box-shadow: inset 0 0 0 1px rgba(var(--color-green-rgb), 0.15);
+}
+
+.tasknotes-plugin .filter-date-text-input.is-invalid {
+    border-left: 2px solid var(--color-red);
+    background-color: transparent;
+    box-shadow: inset 0 0 0 1px rgba(var(--color-red-rgb), 0.15);
+}
+
+.tasknotes-plugin .filter-date-text-input.is-empty {
+    border-left: none;
+    background-color: transparent;
+    box-shadow: none;
+}
+
+.tasknotes-plugin .filter-date-help-button {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 1px solid var(--text-muted);
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.tasknotes-plugin .filter-date-help-button:hover {
+    background: var(--interactive-hover);
+    color: var(--text-normal);
+    border-color: var(--text-normal);
+}
+
+.filter-date-help-tooltip {
+    background: var(--background-primary);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: var(--radius-m);
+    padding: var(--tn-spacing-sm);
+    box-shadow: var(--shadow-s);
+    min-width: 200px;
+    max-width: 300px;
+    font-size: var(--font-ui-smaller);
+}
+
+.filter-date-help-tooltip h4 {
+    margin: 0 0 var(--tn-spacing-xs) 0;
+    color: var(--text-normal);
+    font-weight: var(--font-semibold);
+}
+
+.filter-date-help-tooltip ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+}
+
+.filter-date-help-tooltip li {
+    padding: 2px var(--tn-spacing-xs);
+    color: var(--text-muted);
+    background: var(--background-modifier-hover);
+    border-radius: var(--radius-s);
+    font-family: var(--font-monospace);
+    font-size: 11px;
+}
+
 .tasknotes-plugin .filter-bar__filter-toggle {
     padding: var(--tn-spacing-xs);
     background: transparent;
@@ -131,14 +219,15 @@
     position: absolute;
     top: 100%;
     right: 0; /* Align to the right of the container */
-    min-width: 200px;
+    min-width: 240px;
+    max-width: 320px;
     z-index: 1000; /* Ensure it's on top */
-    background: var(--background-primary);
+    background: var(--background-secondary);
     border: 1px solid var(--background-modifier-border);
-    border-radius: var(--radius-s);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-    margin-top: 2px;
-    max-height: 300px;
+    border-radius: var(--radius-m);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+    margin-top: 4px;
+    max-height: 400px;
     overflow-y: auto;
     opacity: 1;
     transform: translateY(0) scale(1);
@@ -152,20 +241,21 @@
 }
 
 .tasknotes-plugin .filter-bar__view-section {
-    padding: var(--tn-spacing-sm);
+    padding: var(--tn-spacing-md);
 }
 
 .tasknotes-plugin .filter-bar__view-section:not(:last-child) {
-    border-bottom: 1px solid var(--background-modifier-border);
+    border-bottom: none;
 }
 
 .tasknotes-plugin .filter-bar__view-section-header {
-    font-weight: 500; /* Lighter weight */
-    font-size: var(--font-ui-smaller);
-    color: var(--text-muted);
+    font-weight: 600; /* Slightly stronger for better hierarchy */
+    font-size: var(--font-ui-small);
+    color: var(--text-normal);
     text-transform: none; /* Normal case */
     letter-spacing: 0; /* Natural spacing */
-    margin-bottom: var(--tn-spacing-xs);
+    margin-bottom: var(--tn-spacing-sm);
+    padding-bottom: var(--tn-spacing-xs);
 }
 
 .tasknotes-plugin .filter-bar__view-item-container {
@@ -173,47 +263,50 @@
     align-items: center;
     border-radius: var(--radius-s);
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    margin: 2px 0;
 }
 
 .tasknotes-plugin .filter-bar__view-item-container:hover {
     background: var(--background-modifier-hover);
-    transform: translateX(2px);
 }
 
 .tasknotes-plugin .filter-bar__view-item {
     flex: 1;
-    padding: var(--tn-spacing-xs) var(--tn-spacing-sm);
+    padding: var(--tn-spacing-sm) var(--tn-spacing-md);
     background: none;
     border: none;
     color: var(--text-normal);
     text-align: left;
     cursor: pointer;
     font-size: var(--font-ui-small);
+    font-weight: 500;
     transition: background-color 0.2s ease;
 }
 
 .tasknotes-plugin .filter-bar__view-delete {
-    padding: 2px 6px;
     background: none;
     border: none;
+    box-shadow: none;
     color: var(--text-muted);
     cursor: pointer;
-    font-size: 14px;
-    line-height: 1;
+    padding: var(--tn-spacing-xs);
     border-radius: var(--radius-s);
+    display: flex;
+    align-items: center;
+    justify-content: center;
     transition: all 0.2s ease;
-    margin-right: 4px;
+    margin-right: var(--tn-spacing-xs);
 }
 
 .tasknotes-plugin .filter-bar__view-delete:hover {
-    background: var(--background-modifier-error);
+    background: var(--background-modifier-hover);
     color: var(--text-error);
 }
 
 .tasknotes-plugin .filter-bar__view-action {
     display: block;
     width: 100%;
-    padding: var(--tn-spacing-xs) var(--tn-spacing-sm);
+    padding: var(--tn-spacing-sm) var(--tn-spacing-md);
     background: none;
     border: none;
     color: var(--color-accent);
@@ -221,20 +314,22 @@
     cursor: pointer;
     border-radius: var(--radius-s);
     font-size: var(--font-ui-small);
-    font-style: italic;
-    transition: background-color 0.2s ease;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    margin: 2px 0;
 }
 
 .tasknotes-plugin .filter-bar__view-action:hover {
-    background: var(--background-modifier-hover);
+    background: var(--interactive-accent-tint);
 }
 
 .tasknotes-plugin .filter-bar__view-empty-message {
-    padding: var(--tn-spacing-sm);
+    padding: var(--tn-spacing-lg);
     color: var(--text-muted);
-    font-style: italic;
     font-size: var(--font-ui-small);
     text-align: center;
+    background: var(--background-modifier-hover);
+    margin: var(--tn-spacing-sm);
 }
 
 /* =================================================================
