@@ -723,11 +723,31 @@ export class MinimalNativeCache extends Events {
             // Try to extract date from frontmatter using parseDate
             if (frontmatter.dateCreated || frontmatter.date) {
                 const dateValue = frontmatter.dateCreated || frontmatter.date;
-                try {
-                    const parsed = parseDate(dateValue);
-                    noteDate = getDatePart(parsed.toISOString());
-                } catch (e) {
-                    // Ignore invalid dates or parsing errors
+                
+                // Pre-validate the date value to avoid console warnings
+                if (typeof dateValue === 'string' && dateValue.trim()) {
+                    const trimmed = dateValue.trim();
+                    
+                    // Skip invalid time-only formats like "T00:00" that would cause console warnings
+                    if (trimmed.startsWith('T') && /^T\d{2}:\d{2}(:\d{2})?/.test(trimmed)) {
+                        console.debug('Skipping invalid time-only date in note frontmatter:', { 
+                            path: file.path, 
+                            dateValue: trimmed 
+                        });
+                        // Continue to filename parsing
+                    } else {
+                        try {
+                            const parsed = parseDate(dateValue);
+                            noteDate = getDatePart(parsed.toISOString());
+                        } catch (e) {
+                            // Ignore invalid dates or parsing errors
+                            console.debug('Failed to parse date from note frontmatter:', { 
+                                path: file.path, 
+                                dateValue, 
+                                error: e instanceof Error ? e.message : String(e)
+                            });
+                        }
+                    }
                 }
             }
             

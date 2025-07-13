@@ -633,13 +633,19 @@ export function validateCompleteInstances(instances: any[]): string[] {
             
             const trimmed = instance.trim();
             
-            // Must match YYYY-MM-DD format exactly
-            if (!/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
-                console.warn('Invalid complete_instances entry (not YYYY-MM-DD format):', instance);
+            // Skip obviously invalid time-only formats like "T00:00" before regex check
+            if (trimmed.startsWith('T') && /^T\d{2}:\d{2}(:\d{2})?/.test(trimmed)) {
+                console.debug('Skipping invalid time-only entry in complete_instances:', instance);
                 return false;
             }
             
-            // Must be a valid date
+            // Must match YYYY-MM-DD format exactly
+            if (!/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+                console.debug('Invalid complete_instances entry (not YYYY-MM-DD format):', instance);
+                return false;
+            }
+            
+            // Must be a valid date (this should not fail for YYYY-MM-DD format, but check anyway)
             try {
                 parseDate(trimmed);
                 return true;

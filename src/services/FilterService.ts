@@ -41,20 +41,21 @@ export class FilterService extends EventEmitter {
     /**
      * Main method to get filtered, sorted, and grouped tasks
      * Handles the new advanced FilterQuery structure with nested conditions and groups
+     * Uses query-first approach with index optimization for better performance
      */
     async getGroupedTasks(query: FilterQuery, targetDate?: Date): Promise<Map<string, TaskInfo[]>> {
         try {
             // Use non-strict validation to allow incomplete filters during building
             FilterUtils.validateFilterNode(query, false);
             
-            // Get all tasks (we can optimize this later with smarter indexing)
-            let allTaskPaths = this.cacheManager.getAllTaskPaths();
+            // PHASE 1 OPTIMIZATION: Use query-first approach with index-backed filtering
+            let candidateTaskPaths = this.getIndexOptimizedTaskPaths(query);
             
-            // Convert paths to TaskInfo objects
-            const allTasks = await this.pathsToTaskInfos(Array.from(allTaskPaths));
+            // Convert paths to TaskInfo objects (only for candidates)
+            const candidateTasks = await this.pathsToTaskInfos(Array.from(candidateTaskPaths));
             
-            // Filter tasks using the new recursive evaluation
-            const filteredTasks = allTasks.filter(task => this.evaluateFilterNode(query, task));
+            // Apply full filter query to the reduced candidate set
+            const filteredTasks = candidateTasks.filter(task => this.evaluateFilterNode(query, task));
             
             // Sort the filtered results
             const sortedTasks = this.sortTasks(filteredTasks, query.sortKey || 'due', query.sortDirection || 'asc');
@@ -69,6 +70,171 @@ export class FilterService extends EventEmitter {
             }
             throw error;
         }
+    }
+
+    /**
+     * Get optimized task paths using index-backed filtering
+     * Analyzes the filter query to find the most selective indexed condition
+     * Returns a reduced set of candidate task paths for further processing
+     */
+    private getIndexOptimizedTaskPaths(query: FilterQuery): Set<string> {
+        // Find the most selective index-backed condition in the query
+        const indexableConditions = this.findIndexableConditions(query);
+        
+        if (indexableConditions.length === 0) {
+            // No indexable conditions found, return all task paths
+            return this.cacheManager.getAllTaskPaths();
+        }
+        
+        // Use the most selective condition to get initial candidate set
+        const mostSelectiveCondition = this.selectMostSelectiveCondition(indexableConditions);
+        let candidatePaths = this.getPathsForIndexableCondition(mostSelectiveCondition);
+        
+        // If we have multiple indexable conditions that should be ANDed together,
+        // intersect their result sets for even better performance
+        for (const condition of indexableConditions) {
+            if (condition === mostSelectiveCondition) continue;
+            
+            // Only intersect if this condition is in an AND relationship with the most selective one
+            if (this.shouldIntersectConditions(query, mostSelectiveCondition, condition)) {
+                const conditionPaths = this.getPathsForIndexableCondition(condition);
+                candidatePaths = this.intersectPathSets(candidatePaths, conditionPaths);
+            }
+        }
+        
+        return candidatePaths;
+    }
+
+    /**
+     * Recursively find all indexable conditions in a filter query
+     */
+    private findIndexableConditions(node: FilterQuery | FilterCondition): FilterCondition[] {
+        const conditions: FilterCondition[] = [];
+        
+        if (node.type === 'condition') {
+            if (this.isIndexableCondition(node)) {
+                conditions.push(node);
+            }
+        } else if (node.type === 'group') {
+            for (const child of node.children) {
+                conditions.push(...this.findIndexableConditions(child));
+            }
+        }
+        
+        return conditions;
+    }
+
+    /**
+     * Check if a condition can be optimized using existing indexes
+     */
+    private isIndexableCondition(condition: FilterCondition): boolean {
+        const { property, operator, value } = condition;
+        
+        // Status-based conditions (uses tasksByStatus index)
+        if (property === 'status' && operator === 'is' && value) {
+            return true;
+        }
+        
+        // Due date conditions (uses tasksByDate index)
+        if (property === 'due' && (operator === 'is' || operator === 'is-before' || operator === 'is-after') && value) {
+            return true;
+        }
+        
+        // Scheduled date conditions (uses tasksByDate index)
+        if (property === 'scheduled' && (operator === 'is' || operator === 'is-before' || operator === 'is-after') && value) {
+            return true;
+        }
+        
+        return false;
+    }
+
+    /**
+     * Select the most selective condition from a list of indexable conditions
+     * Priority: specific status > specific date > date range
+     */
+    private selectMostSelectiveCondition(conditions: FilterCondition[]): FilterCondition {
+        // Prioritize specific status conditions
+        const statusConditions = conditions.filter(c => c.property === 'status' && c.operator === 'is');
+        if (statusConditions.length > 0) {
+            return statusConditions[0];
+        }
+        
+        // Then specific date conditions (exact matches)
+        const exactDateConditions = conditions.filter(c => 
+            (c.property === 'due' || c.property === 'scheduled') && c.operator === 'is'
+        );
+        if (exactDateConditions.length > 0) {
+            return exactDateConditions[0];
+        }
+        
+        // Then date range conditions
+        const dateRangeConditions = conditions.filter(c => 
+            (c.property === 'due' || c.property === 'scheduled') && 
+            (c.operator === 'is-before' || c.operator === 'is-after')
+        );
+        if (dateRangeConditions.length > 0) {
+            return dateRangeConditions[0];
+        }
+        
+        // Fallback to first condition
+        return conditions[0];
+    }
+
+    /**
+     * Get task paths for a specific indexable condition
+     */
+    private getPathsForIndexableCondition(condition: FilterCondition): Set<string> {
+        const { property, operator, value } = condition;
+        
+        if (property === 'status' && operator === 'is' && value && typeof value === 'string') {
+            return new Set(this.cacheManager.getTaskPathsByStatus(value));
+        }
+        
+        if ((property === 'due' || property === 'scheduled') && operator === 'is' && value && typeof value === 'string') {
+            return new Set(this.cacheManager.getTasksForDate(value));
+        }
+        
+        // For date range conditions, we'll need to implement range queries
+        if ((property === 'due' || property === 'scheduled') && (operator === 'is-before' || operator === 'is-after') && value && typeof value === 'string') {
+            return this.getTaskPathsForDateRange(property, operator, value);
+        }
+        
+        // Fallback - return all paths if we can't optimize
+        return this.cacheManager.getAllTaskPaths();
+    }
+
+    /**
+     * Get task paths for date range queries (before/after operators)
+     */
+    private getTaskPathsForDateRange(property: string, operator: string, value: string): Set<string> {
+        // For now, return all paths and let the full filter handle the range logic
+        // This could be optimized further by implementing date range indexes
+        return this.cacheManager.getAllTaskPaths();
+    }
+
+    /**
+     * Check if two conditions should be intersected (are in AND relationship)
+     */
+    private shouldIntersectConditions(query: FilterQuery, condition1: FilterCondition, condition2: FilterCondition): boolean {
+        // For now, use a simple heuristic: if both conditions are at the root level
+        // and the root conjunction is 'and', then intersect them
+        if (query.type === 'group' && query.conjunction === 'and') {
+            return query.children.includes(condition1) && query.children.includes(condition2);
+        }
+        return false;
+    }
+
+    /**
+     * Intersect two sets of task paths
+     */
+    private intersectPathSets(set1: Set<string>, set2: Set<string>): Set<string> {
+        const intersection = new Set<string>();
+        for (const path of set1) {
+            if (set2.has(path)) {
+                intersection.add(path);
+            }
+        }
+        return intersection;
     }
 
     /**
