@@ -41,7 +41,15 @@ import {
   createUTCDateForRRule,
   validateCompleteInstances,
   normalizeCalendarBoundariesToUTC,
-  formatUTCDateForCalendar
+  formatUTCDateForCalendar,
+  isNaturalLanguageDate,
+  resolveNaturalLanguageDate,
+  getNaturalLanguageDateSuggestions,
+  NATURAL_LANGUAGE_DATE_PATTERNS,
+  addWeeksToDateString,
+  addMonthsToDateString,
+  addYearsToDateString,
+  isValidDateInput
 } from '../../../src/utils/dateUtils';
 
 // Use improved date-fns mock that behaves more like the real library
@@ -1042,6 +1050,224 @@ describe('DateUtils', () => {
           // Should maintain the original date
           expect(formattedDate).toBe(dateStr);
         });
+      });
+    });
+  });
+
+  describe('Natural Language Date Functions', () => {
+    
+    describe('isNaturalLanguageDate', () => {
+      
+      it('should recognize exact pattern matches', () => {
+        expect(isNaturalLanguageDate('today')).toBe(true);
+        expect(isNaturalLanguageDate('tomorrow')).toBe(true);
+        expect(isNaturalLanguageDate('yesterday')).toBe(true);
+        expect(isNaturalLanguageDate('next week')).toBe(true);
+        expect(isNaturalLanguageDate('last week')).toBe(true);
+      });
+
+      it('should recognize relative patterns', () => {
+        expect(isNaturalLanguageDate('in 3 days')).toBe(true);
+        expect(isNaturalLanguageDate('2 days ago')).toBe(true);
+        expect(isNaturalLanguageDate('in 1 week')).toBe(true);
+        expect(isNaturalLanguageDate('5 weeks ago')).toBe(true);
+      });
+
+      it('should handle case insensitive matching', () => {
+        expect(isNaturalLanguageDate('TODAY')).toBe(true);
+        expect(isNaturalLanguageDate('Tomorrow')).toBe(true);
+        expect(isNaturalLanguageDate('NEXT WEEK')).toBe(true);
+        expect(isNaturalLanguageDate('IN 3 DAYS')).toBe(true);
+      });
+
+      it('should handle whitespace variations', () => {
+        expect(isNaturalLanguageDate('  today  ')).toBe(true);
+        expect(isNaturalLanguageDate(' in  3  days ')).toBe(true);
+        expect(isNaturalLanguageDate('2  weeks  ago')).toBe(true);
+      });
+
+      it('should reject non-natural language date strings', () => {
+        expect(isNaturalLanguageDate('2024-01-15')).toBe(false);
+        expect(isNaturalLanguageDate('random text')).toBe(false);
+        expect(isNaturalLanguageDate('in 3 hours')).toBe(false);
+        expect(isNaturalLanguageDate('5 minutes ago')).toBe(false);
+        expect(isNaturalLanguageDate('')).toBe(false);
+        expect(isNaturalLanguageDate(null as any)).toBe(false);
+        expect(isNaturalLanguageDate(undefined as any)).toBe(false);
+      });
+
+      it('should reject malformed relative patterns', () => {
+        expect(isNaturalLanguageDate('in days')).toBe(false);
+        expect(isNaturalLanguageDate('3 ago')).toBe(false);
+        expect(isNaturalLanguageDate('in 3')).toBe(false);
+        expect(isNaturalLanguageDate('weeks ago')).toBe(false);
+      });
+    });
+
+    describe('resolveNaturalLanguageDate', () => {
+      
+      // Mock the current date for consistent testing
+      beforeEach(() => {
+        jest.useFakeTimers();
+        jest.setSystemTime(new Date('2024-07-15T12:00:00Z')); // Monday
+      });
+
+      afterEach(() => {
+        jest.useRealTimers();
+      });
+
+      it('should resolve basic relative days', () => {
+        expect(resolveNaturalLanguageDate('today')).toBe('2024-07-15');
+        expect(resolveNaturalLanguageDate('tomorrow')).toBe('2024-07-16');
+        expect(resolveNaturalLanguageDate('yesterday')).toBe('2024-07-14');
+      });
+
+      it('should resolve relative day patterns', () => {
+        expect(resolveNaturalLanguageDate('in 3 days')).toBe('2024-07-18');
+        expect(resolveNaturalLanguageDate('2 days ago')).toBe('2024-07-13');
+        expect(resolveNaturalLanguageDate('in 1 day')).toBe('2024-07-16');
+        expect(resolveNaturalLanguageDate('1 day ago')).toBe('2024-07-14');
+      });
+
+      it('should resolve relative week patterns', () => {
+        expect(resolveNaturalLanguageDate('in 1 week')).toBe('2024-07-22');
+        expect(resolveNaturalLanguageDate('2 weeks ago')).toBe('2024-07-01');
+        expect(resolveNaturalLanguageDate('in 2 weeks')).toBe('2024-07-29');
+        expect(resolveNaturalLanguageDate('1 week ago')).toBe('2024-07-08');
+      });
+
+
+
+      it('should handle case insensitive input', () => {
+        expect(resolveNaturalLanguageDate('TODAY')).toBe('2024-07-15');
+        expect(resolveNaturalLanguageDate('Tomorrow')).toBe('2024-07-16');
+        expect(resolveNaturalLanguageDate('IN 3 DAYS')).toBe('2024-07-18');
+      });
+
+      it('should handle whitespace variations', () => {
+        expect(resolveNaturalLanguageDate('  today  ')).toBe('2024-07-15');
+        expect(resolveNaturalLanguageDate(' in  3  days ')).toBe('2024-07-18');
+        expect(resolveNaturalLanguageDate('2  weeks  ago')).toBe('2024-07-01');
+      });
+
+      it('should return original value for non-natural language dates', () => {
+        expect(resolveNaturalLanguageDate('2024-01-15')).toBe('2024-01-15');
+        expect(resolveNaturalLanguageDate('random text')).toBe('random text');
+        expect(resolveNaturalLanguageDate('')).toBe('');
+        expect(resolveNaturalLanguageDate(null as any)).toBe(null);
+        expect(resolveNaturalLanguageDate(undefined as any)).toBe(undefined);
+      });
+
+      it('should handle errors gracefully', () => {
+        // Mock console.error to avoid noise in test output
+        const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+        
+        // Test with patterns that might cause errors due to invalid dates
+        expect(resolveNaturalLanguageDate('in 999999 years')).toBe('in 999999 years');
+        
+        consoleSpy.mockRestore();
+      });
+    });
+
+    describe('getNaturalLanguageDateSuggestions', () => {
+      
+      it('should return a sorted array of suggestions', () => {
+        const suggestions = getNaturalLanguageDateSuggestions();
+        
+        expect(Array.isArray(suggestions)).toBe(true);
+        expect(suggestions.length).toBeGreaterThan(0);
+        
+        // Check that it's sorted
+        const sortedSuggestions = [...suggestions].sort();
+        expect(suggestions).toEqual(sortedSuggestions);
+      });
+
+      it('should include exact pattern suggestions', () => {
+        const suggestions = getNaturalLanguageDateSuggestions();
+        
+        expect(suggestions).toContain('today');
+        expect(suggestions).toContain('tomorrow');
+        expect(suggestions).toContain('yesterday');
+        expect(suggestions).toContain('next week');
+        expect(suggestions).toContain('last week');
+      });
+
+      it('should include relative pattern examples', () => {
+        const suggestions = getNaturalLanguageDateSuggestions();
+        
+        expect(suggestions).toContain('in 3 days');
+        expect(suggestions).toContain('2 days ago');
+        expect(suggestions).toContain('in 1 week');
+        expect(suggestions).toContain('2 weeks ago');
+      });
+
+      it('should not contain duplicates', () => {
+        const suggestions = getNaturalLanguageDateSuggestions();
+        const uniqueSuggestions = [...new Set(suggestions)];
+        
+        expect(suggestions.length).toBe(uniqueSuggestions.length);
+      });
+    });
+
+    describe('NATURAL_LANGUAGE_DATE_PATTERNS', () => {
+      
+      it('should contain expected pattern functions', () => {
+        expect(typeof NATURAL_LANGUAGE_DATE_PATTERNS.today).toBe('function');
+        expect(typeof NATURAL_LANGUAGE_DATE_PATTERNS.tomorrow).toBe('function');
+        expect(typeof NATURAL_LANGUAGE_DATE_PATTERNS.yesterday).toBe('function');
+        expect(typeof NATURAL_LANGUAGE_DATE_PATTERNS['next week']).toBe('function');
+        expect(typeof NATURAL_LANGUAGE_DATE_PATTERNS['last week']).toBe('function');
+      });
+
+      it('should return valid date strings when called', () => {
+        const today = NATURAL_LANGUAGE_DATE_PATTERNS.today();
+        const tomorrow = NATURAL_LANGUAGE_DATE_PATTERNS.tomorrow();
+        
+        expect(typeof today).toBe('string');
+        expect(typeof tomorrow).toBe('string');
+        expect(today).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+        expect(tomorrow).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+      });
+    });
+
+    describe('isValidDateInput', () => {
+      it('should return true for empty strings', () => {
+        expect(isValidDateInput('')).toBe(true);
+        expect(isValidDateInput('   ')).toBe(true);
+      });
+
+      it('should return true for valid natural language dates', () => {
+        expect(isValidDateInput('today')).toBe(true);
+        expect(isValidDateInput('tomorrow')).toBe(true);
+        expect(isValidDateInput('next week')).toBe(true);
+        expect(isValidDateInput('in 3 days')).toBe(true);
+        expect(isValidDateInput('2 weeks ago')).toBe(true);
+      });
+
+      it('should return true for valid ISO date formats', () => {
+        expect(isValidDateInput('2024-12-25')).toBe(true);
+        expect(isValidDateInput('2024-12-25T14:30:00')).toBe(true);
+        expect(isValidDateInput('2024-12-25T14:30:00Z')).toBe(true);
+        expect(isValidDateInput('2024-01-01')).toBe(true);
+      });
+
+      it('should return false for invalid date formats', () => {
+        expect(isValidDateInput('not a date')).toBe(false);
+        expect(isValidDateInput('2024-13-25')).toBe(false);
+        expect(isValidDateInput('2024-12-32')).toBe(false);
+        expect(isValidDateInput('invalid date')).toBe(false);
+        expect(isValidDateInput('25/12/2024')).toBe(false);
+      });
+
+      it('should return false for null/undefined inputs', () => {
+        expect(isValidDateInput(null as any)).toBe(false);
+        expect(isValidDateInput(undefined as any)).toBe(false);
+      });
+
+      it('should handle case insensitive natural language dates', () => {
+        expect(isValidDateInput('TODAY')).toBe(true);
+        expect(isValidDateInput('Tomorrow')).toBe(true);
+        expect(isValidDateInput('NEXT WEEK')).toBe(true);
       });
     });
   });
