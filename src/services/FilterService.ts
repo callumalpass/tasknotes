@@ -30,7 +30,14 @@ export class FilterService extends EventEmitter {
     // Query result caching for repeated filter operations
     private indexQueryCache = new Map<string, Set<string>>();
     private cacheTimeout = 30000; // 30 seconds
-    private cacheTimers = new Map<string, NodeJS.Timeout>();
+    private cacheTimers = new Map<string, ReturnType<typeof setTimeout>>();
+    
+    // Filter options caching for better performance
+    private filterOptionsCache: FilterOptions | null = null;
+    private filterOptionsCacheTimestamp = 0;
+    private filterOptionsCacheTTL = 300000; // 5 minutes fallback TTL (should rarely be needed)
+    private filterOptionsComputeCount = 0;
+    private filterOptionsCacheHits = 0;
 
     constructor(
         cacheManager: MinimalNativeCache,
@@ -79,35 +86,156 @@ export class FilterService extends EventEmitter {
 
     /**
      * Get optimized task paths using index-backed filtering
-     * Analyzes the filter query to find the most selective indexed condition
+     * Analyzes the filter query to find safe optimization opportunities
      * Returns a reduced set of candidate task paths for further processing
+     * CRITICAL: Only optimizes when it's guaranteed to not exclude valid results
      */
     private getIndexOptimizedTaskPaths(query: FilterQuery): Set<string> {
-        // Find the most selective index-backed condition in the query
-        const indexableConditions = this.findIndexableConditions(query);
+        // Analyze if optimization is safe for this query structure
+        const optimizationAnalysis = this.analyzeQueryOptimizationSafety(query);
         
-        if (indexableConditions.length === 0) {
-            // No indexable conditions found, return all task paths
+        if (!optimizationAnalysis.canOptimize) {
+            // Optimization not safe - return all task paths to ensure correctness
+            console.debug('FilterService: Optimization not safe for this query, using all tasks');
             return this.cacheManager.getAllTaskPaths();
         }
         
-        // Use the most selective condition to get initial candidate set
-        const mostSelectiveCondition = this.selectMostSelectiveCondition(indexableConditions);
-        let candidatePaths = this.getPathsForIndexableCondition(mostSelectiveCondition);
-        
-        // If we have multiple indexable conditions that should be ANDed together,
-        // intersect their result sets for even better performance
-        for (const condition of indexableConditions) {
-            if (condition === mostSelectiveCondition) continue;
+        // Safe to optimize - apply the optimization strategy
+        if (optimizationAnalysis.strategy === 'intersect') {
+            // All indexable conditions are in AND relationship - intersect them
+            let candidatePaths = this.getPathsForIndexableCondition(optimizationAnalysis.conditions[0]);
             
-            // Only intersect if this condition is in an AND relationship with the most selective one
-            if (this.shouldIntersectConditions(query, mostSelectiveCondition, condition)) {
-                const conditionPaths = this.getPathsForIndexableCondition(condition);
+            for (let i = 1; i < optimizationAnalysis.conditions.length; i++) {
+                const conditionPaths = this.getPathsForIndexableCondition(optimizationAnalysis.conditions[i]);
                 candidatePaths = this.intersectPathSets(candidatePaths, conditionPaths);
+            }
+            
+            console.debug(`FilterService: Optimized using intersection of ${optimizationAnalysis.conditions.length} conditions (${candidatePaths.size} candidates)`);
+            return candidatePaths;
+        } else if (optimizationAnalysis.strategy === 'single') {
+            // Single indexable condition that's safe to use
+            const candidatePaths = this.getPathsForIndexableCondition(optimizationAnalysis.conditions[0]);
+            console.debug(`FilterService: Optimized using single condition (${candidatePaths.size} candidates)`);
+            return candidatePaths;
+        }
+        
+        // Fallback to all tasks
+        console.debug('FilterService: No valid optimization strategy, using all tasks');
+        return this.cacheManager.getAllTaskPaths();
+    }
+
+    /**
+     * Analyze query structure to determine if optimization is safe and what strategy to use
+     */
+    private analyzeQueryOptimizationSafety(query: FilterQuery): {
+        canOptimize: boolean;
+        strategy?: 'intersect' | 'single';
+        conditions: FilterCondition[];
+        reason?: string;
+    } {
+        // Find all indexable conditions in the query
+        const indexableConditions = this.findIndexableConditions(query);
+        
+        if (indexableConditions.length === 0) {
+            return { 
+                canOptimize: false, 
+                conditions: [], 
+                reason: 'No indexable conditions found' 
+            };
+        }
+        
+        // For simple queries (single condition or only AND at root level), optimization is safe
+        if (this.isSimpleQuery(query, indexableConditions)) {
+            return {
+                canOptimize: true,
+                strategy: indexableConditions.length === 1 ? 'single' : 'intersect',
+                conditions: indexableConditions
+            };
+        }
+        
+        // For complex queries with OR conditions involving indexable conditions,
+        // we need to be very careful. Conservative approach: don't optimize.
+        return { 
+            canOptimize: false, 
+            conditions: indexableConditions,
+            reason: 'Complex query structure with OR conditions - optimization not safe'
+        };
+    }
+
+    /**
+     * Check if query is simple enough for safe optimization
+     * A simple query is one where all indexable conditions are in AND relationship
+     */
+    private isSimpleQuery(query: FilterQuery, indexableConditions: FilterCondition[]): boolean {
+        // If no indexable conditions, nothing to optimize
+        if (indexableConditions.length === 0) {
+            return false;
+        }
+        
+        // CRITICAL: Check if any indexable condition is part of an OR group
+        // This would make pre-filtering unsafe as it could exclude valid results
+        if (this.hasIndexableConditionInOrGroup(query, indexableConditions)) {
+            return false;
+        }
+        
+        // If only one indexable condition AND it's not in an OR group, safe to optimize
+        if (indexableConditions.length === 1) {
+            return true;
+        }
+        
+        // Check if all indexable conditions are at the root level and root is AND
+        if (query.type === 'group' && query.conjunction === 'and') {
+            const rootIndexableConditions = query.children.filter(child => 
+                child.type === 'condition' && this.isIndexableCondition(child)
+            );
+            
+            // If all indexable conditions are at root level in an AND group, safe to intersect
+            if (rootIndexableConditions.length === indexableConditions.length) {
+                return true;
             }
         }
         
-        return candidatePaths;
+        // Any other structure is potentially unsafe
+        return false;
+    }
+
+    /**
+     * Check if any indexable condition is part of an OR group
+     * This makes optimization unsafe as it would exclude valid results
+     */
+    private hasIndexableConditionInOrGroup(query: FilterQuery, indexableConditions: FilterCondition[]): boolean {
+        return this.checkNodeForOrWithIndexable(query, indexableConditions);
+    }
+
+    /**
+     * Recursively check if any indexable condition is in an OR group
+     */
+    private checkNodeForOrWithIndexable(node: FilterQuery | FilterCondition, indexableConditions: FilterCondition[]): boolean {
+        if (node.type === 'condition') {
+            return false; // Conditions themselves can't contain OR
+        }
+        
+        if (node.type === 'group') {
+            // If this group is OR and contains any indexable conditions, optimization is unsafe
+            if (node.conjunction === 'or') {
+                const hasIndexableChild = node.children.some(child => 
+                    child.type === 'condition' && indexableConditions.includes(child)
+                );
+                if (hasIndexableChild) {
+                    console.debug('FilterService: Found indexable condition in OR group - optimization unsafe');
+                    return true;
+                }
+            }
+            
+            // Recursively check child groups
+            for (const child of node.children) {
+                if (this.checkNodeForOrWithIndexable(child, indexableConditions)) {
+                    return true;
+                }
+            }
+        }
+        
+        return false;
     }
 
     /**
@@ -153,37 +281,6 @@ export class FilterService extends EventEmitter {
         return false;
     }
 
-    /**
-     * Select the most selective condition from a list of indexable conditions
-     * Priority: specific status > specific date > date range
-     */
-    private selectMostSelectiveCondition(conditions: FilterCondition[]): FilterCondition {
-        // Prioritize specific status conditions
-        const statusConditions = conditions.filter(c => c.property === 'status' && c.operator === 'is');
-        if (statusConditions.length > 0) {
-            return statusConditions[0];
-        }
-        
-        // Then specific date conditions (exact matches)
-        const exactDateConditions = conditions.filter(c => 
-            (c.property === 'due' || c.property === 'scheduled') && c.operator === 'is'
-        );
-        if (exactDateConditions.length > 0) {
-            return exactDateConditions[0];
-        }
-        
-        // Then date range conditions
-        const dateRangeConditions = conditions.filter(c => 
-            (c.property === 'due' || c.property === 'scheduled') && 
-            (c.operator === 'is-before' || c.operator === 'is-after')
-        );
-        if (dateRangeConditions.length > 0) {
-            return dateRangeConditions[0];
-        }
-        
-        // Fallback to first condition
-        return conditions[0];
-    }
 
     /**
      * Get cached index query result with automatic expiration
@@ -298,17 +395,6 @@ export class FilterService extends EventEmitter {
         return this.cacheManager.getAllTaskPaths();
     }
 
-    /**
-     * Check if two conditions should be intersected (are in AND relationship)
-     */
-    private shouldIntersectConditions(query: FilterQuery, condition1: FilterCondition, condition2: FilterCondition): boolean {
-        // For now, use a simple heuristic: if both conditions are at the root level
-        // and the root conjunction is 'and', then intersect them
-        if (query.type === 'group' && query.conjunction === 'and') {
-            return query.children.includes(condition1) && query.children.includes(condition2);
-        }
-        return false;
-    }
 
     /**
      * Intersect two sets of task paths
@@ -865,16 +951,104 @@ export class FilterService extends EventEmitter {
 
     /**
      * Get available filter options for building FilterBar UI
+     * Uses event-driven caching - cache is invalidated only when new options are detected
      */
     async getFilterOptions(): Promise<FilterOptions> {
-        const allOptions = {
+        const now = Date.now();
+        
+        // Return cached options if valid and not expired by fallback TTL
+        if (this.filterOptionsCache && (now - this.filterOptionsCacheTimestamp) < this.filterOptionsCacheTTL) {
+            this.filterOptionsCacheHits++;
+            console.debug(`FilterService: getFilterOptions() cache HIT (${this.filterOptionsCacheHits} hits, ${this.filterOptionsComputeCount} computes)`);
+            return this.filterOptionsCache;
+        }
+        
+        // Cache miss - compute fresh options
+        const reason = this.filterOptionsCache ? 'fallback TTL expired' : 'no cache';
+        console.debug(`FilterService: getFilterOptions() cache MISS (${reason}) - computing fresh options...`);
+        const startTime = performance.now();
+        
+        const freshOptions = {
             statuses: this.statusManager.getAllStatuses(),
             priorities: this.priorityManager.getAllPriorities(),
             contexts: this.cacheManager.getAllContexts(),
             projects: this.cacheManager.getAllProjects()
         };
         
-        return allOptions;
+        const computeTime = performance.now() - startTime;
+        this.filterOptionsComputeCount++;
+        
+        // Update cache and timestamp
+        this.filterOptionsCache = freshOptions;
+        this.filterOptionsCacheTimestamp = now;
+        
+        console.debug(`FilterService: Computed filter options in ${computeTime.toFixed(2)}ms (${this.filterOptionsComputeCount} total computes)`);
+        
+        return freshOptions;
+    }
+    
+    /**
+     * Check if new filter options have been detected and invalidate cache if needed
+     * Uses a time-based throttling approach to balance freshness with performance
+     */
+    private checkAndInvalidateFilterOptionsCache(): void {
+        if (!this.filterOptionsCache) {
+            return; // No cache to invalidate
+        }
+        
+        const now = Date.now();
+        const cacheAge = now - this.filterOptionsCacheTimestamp;
+        
+        // Use a smart invalidation strategy:
+        // 1. If cache is very fresh (< 30 seconds), keep it (most changes don't affect options)
+        // 2. If cache is older, invalidate it to ensure new options are picked up
+        // This gives us good performance for rapid file changes while ensuring freshness
+        
+        const minCacheAge = 30000; // 30 seconds
+        
+        if (cacheAge > minCacheAge) {
+            console.debug(`FilterService: File change detected, cache age ${(cacheAge/1000).toFixed(1)}s > ${minCacheAge/1000}s, invalidating`);
+            this.invalidateFilterOptionsCache();
+        } else {
+            console.debug(`FilterService: File change detected, but cache is fresh (${(cacheAge/1000).toFixed(1)}s), keeping cache`);
+        }
+    }
+    
+    /**
+     * Manually invalidate the filter options cache
+     */
+    private invalidateFilterOptionsCache(): void {
+        if (this.filterOptionsCache) {
+            console.debug('FilterService: Invalidating filter options cache');
+            this.filterOptionsCache = null;
+        }
+    }
+    
+    /**
+     * Get performance statistics for filter options caching
+     */
+    getFilterOptionsCacheStats(): {
+        cacheHits: number;
+        computeCount: number;
+        hitRate: string;
+        isCurrentlyCached: boolean;
+        cacheAge: number;
+        ttlRemaining: number;
+    } {
+        const now = Date.now();
+        const cacheAge = this.filterOptionsCache ? now - this.filterOptionsCacheTimestamp : 0;
+        const ttlRemaining = this.filterOptionsCache ? Math.max(0, this.filterOptionsCacheTTL - cacheAge) : 0;
+        const totalRequests = this.filterOptionsCacheHits + this.filterOptionsComputeCount;
+        const hitRate = totalRequests > 0 ? ((this.filterOptionsCacheHits / totalRequests) * 100).toFixed(1) + '%' : '0%';
+        
+        return {
+            cacheHits: this.filterOptionsCacheHits,
+            computeCount: this.filterOptionsComputeCount,
+            hitRate,
+            isCurrentlyCached: !!this.filterOptionsCache,
+            cacheAge,
+            ttlRemaining
+        };
     }
 
     /**
@@ -995,26 +1169,31 @@ export class FilterService extends EventEmitter {
     initialize(): void {
         this.cacheManager.on('file-updated', () => {
             this.clearIndexQueryCache();
+            this.checkAndInvalidateFilterOptionsCache();
             this.emit('data-changed');
         });
         
         this.cacheManager.on('file-added', () => {
             this.clearIndexQueryCache();
+            this.checkAndInvalidateFilterOptionsCache();
             this.emit('data-changed');
         });
         
         this.cacheManager.on('file-deleted', () => {
             this.clearIndexQueryCache();
+            this.checkAndInvalidateFilterOptionsCache();
             this.emit('data-changed');
         });
         
         this.cacheManager.on('file-renamed', () => {
             this.clearIndexQueryCache();
+            this.checkAndInvalidateFilterOptionsCache();
             this.emit('data-changed');
         });
         
         this.cacheManager.on('indexes-built', () => {
             this.clearIndexQueryCache();
+            this.checkAndInvalidateFilterOptionsCache();
             this.emit('data-changed');
         });
     }
@@ -1025,6 +1204,9 @@ export class FilterService extends EventEmitter {
     cleanup(): void {
         // Clear query result cache and timers
         this.clearIndexQueryCache();
+        
+        // Clear filter options cache
+        this.invalidateFilterOptionsCache();
         
         // Remove all event listeners
         this.removeAllListeners();
