@@ -26,6 +26,11 @@ export class FilterService extends EventEmitter {
     private cacheManager: MinimalNativeCache;
     private statusManager: StatusManager;
     private priorityManager: PriorityManager;
+    
+    // Query result caching for repeated filter operations
+    private indexQueryCache = new Map<string, Set<string>>();
+    private cacheTimeout = 30000; // 30 seconds
+    private cacheTimers = new Map<string, NodeJS.Timeout>();
 
     constructor(
         cacheManager: MinimalNativeCache,
@@ -181,26 +186,107 @@ export class FilterService extends EventEmitter {
     }
 
     /**
-     * Get task paths for a specific indexable condition
+     * Get cached index query result with automatic expiration
+     * Returns a copy of the cached result to avoid mutation issues
+     */
+    private getCachedIndexResult(cacheKey: string, computer: () => Set<string>): Set<string> {
+        const cached = this.indexQueryCache.get(cacheKey);
+        if (cached) {
+            // Cache hit - return copy to avoid mutation of cached data
+            console.debug(`FilterService: Cache HIT for key "${cacheKey}" (${cached.size} results)`);
+            return new Set(cached);
+        }
+
+        // Cache miss - compute the result
+        console.debug(`FilterService: Cache MISS for key "${cacheKey}", computing...`);
+        const startTime = performance.now();
+        const result = computer();
+        const computeTime = performance.now() - startTime;
+        console.debug(`FilterService: Computed "${cacheKey}" in ${computeTime.toFixed(2)}ms (${result.size} results)`);
+        
+        // Cache the result
+        this.indexQueryCache.set(cacheKey, new Set(result));
+
+        // Clear any existing timer for this key
+        const existingTimer = this.cacheTimers.get(cacheKey);
+        if (existingTimer) {
+            clearTimeout(existingTimer);
+        }
+
+        // Auto-expire cache entry after timeout
+        const timer = setTimeout(() => {
+            console.debug(`FilterService: Cache entry "${cacheKey}" expired`);
+            this.indexQueryCache.delete(cacheKey);
+            this.cacheTimers.delete(cacheKey);
+        }, this.cacheTimeout);
+        
+        this.cacheTimers.set(cacheKey, timer);
+
+        return result;
+    }
+
+    /**
+     * Clear all cached index query results
+     * Called when underlying data changes to ensure cache consistency
+     */
+    private clearIndexQueryCache(): void {
+        const cacheSize = this.indexQueryCache.size;
+        if (cacheSize > 0) {
+            console.debug(`FilterService: Clearing query cache (${cacheSize} entries)`);
+        }
+        
+        // Clear all timers
+        for (const timer of this.cacheTimers.values()) {
+            clearTimeout(timer);
+        }
+        
+        // Clear caches
+        this.indexQueryCache.clear();
+        this.cacheTimers.clear();
+    }
+
+    /**
+     * Get query cache statistics for monitoring performance
+     */
+    getCacheStats(): {
+        entryCount: number;
+        cacheKeys: string[];
+        timeoutMs: number;
+    } {
+        return {
+            entryCount: this.indexQueryCache.size,
+            cacheKeys: Array.from(this.indexQueryCache.keys()),
+            timeoutMs: this.cacheTimeout
+        };
+    }
+
+    /**
+     * Get task paths for a specific indexable condition with caching
      */
     private getPathsForIndexableCondition(condition: FilterCondition): Set<string> {
         const { property, operator, value } = condition;
         
-        if (property === 'status' && operator === 'is' && value && typeof value === 'string') {
-            return new Set(this.cacheManager.getTaskPathsByStatus(value));
-        }
+        // Create cache key from condition properties
+        const cacheKey = `${property}:${operator}:${value}`;
         
-        if ((property === 'due' || property === 'scheduled') && operator === 'is' && value && typeof value === 'string') {
-            return new Set(this.cacheManager.getTasksForDate(value));
-        }
-        
-        // For date range conditions, we'll need to implement range queries
-        if ((property === 'due' || property === 'scheduled') && (operator === 'is-before' || operator === 'is-after') && value && typeof value === 'string') {
-            return this.getTaskPathsForDateRange(property, operator, value);
-        }
-        
-        // Fallback - return all paths if we can't optimize
-        return this.cacheManager.getAllTaskPaths();
+        return this.getCachedIndexResult(cacheKey, () => {
+            // Original logic for computing paths
+            if (property === 'status' && operator === 'is' && value && typeof value === 'string') {
+                return new Set(this.cacheManager.getTaskPathsByStatus(value));
+            }
+            
+            if ((property === 'due' || property === 'scheduled') && operator === 'is' && value && typeof value === 'string') {
+                return new Set(this.cacheManager.getTasksForDate(value));
+            }
+            
+            // For date range conditions, we'll need to implement range queries
+            if ((property === 'due' || property === 'scheduled') && (operator === 'is-before' || operator === 'is-after') && value && typeof value === 'string') {
+                return this.getTaskPathsForDateRange(property, operator, value);
+            }
+            
+            // Fallback - return all paths if we can't optimize
+            return this.cacheManager.getAllTaskPaths();
+        });
     }
 
     /**
@@ -908,14 +994,27 @@ export class FilterService extends EventEmitter {
      */
     initialize(): void {
         this.cacheManager.on('file-updated', () => {
+            this.clearIndexQueryCache();
             this.emit('data-changed');
         });
         
         this.cacheManager.on('file-added', () => {
+            this.clearIndexQueryCache();
             this.emit('data-changed');
         });
         
         this.cacheManager.on('file-deleted', () => {
+            this.clearIndexQueryCache();
+            this.emit('data-changed');
+        });
+        
+        this.cacheManager.on('file-renamed', () => {
+            this.clearIndexQueryCache();
+            this.emit('data-changed');
+        });
+        
+        this.cacheManager.on('indexes-built', () => {
+            this.clearIndexQueryCache();
             this.emit('data-changed');
         });
     }
@@ -924,6 +1023,9 @@ export class FilterService extends EventEmitter {
      * Clean up event subscriptions and clear any caches
      */
     cleanup(): void {
+        // Clear query result cache and timers
+        this.clearIndexQueryCache();
+        
         // Remove all event listeners
         this.removeAllListeners();
     }
