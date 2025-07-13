@@ -143,7 +143,6 @@ export class AgendaView extends ItemView {
         this.hideLoadingIndicator();
         
         // Register keyboard navigation
-        this.registerKeyboardNavigation();
     }
     
     async onClose() {
@@ -180,30 +179,36 @@ export class AgendaView extends ItemView {
         
         const headerContent = headerSection.createDiv({ cls: 'agenda-view__header-content' });
         
-        // Navigation controls
-        const prevButton = headerContent.createEl('button', {
+        // Left section: Navigation controls
+        const navSection = headerContent.createDiv({ cls: 'agenda-view__nav-section' });
+        
+        const prevButton = navSection.createEl('button', {
             cls: 'agenda-view__nav-button agenda-view__nav-button--prev',
             text: '‹',
             attr: {
                 'aria-label': 'Previous period',
-                'title': 'Previous period (Left arrow)'
+                'title': 'Previous period'
             }
         });
         
-        // Current period display (large, styled like tasks view date)
-        headerContent.createDiv({ 
-            cls: 'agenda-view__period-title',
-            text: this.getCurrentPeriodText()
-        });
-        
-        const nextButton = headerContent.createEl('button', {
+        const nextButton = navSection.createEl('button', {
             cls: 'agenda-view__nav-button agenda-view__nav-button--next',
             text: '›',
             attr: {
                 'aria-label': 'Next period',
-                'title': 'Next period (Right arrow)'
+                'title': 'Next period'
             }
         });
+        
+        // Center section: Current period display
+        const titleSection = headerContent.createDiv({ cls: 'agenda-view__title-section' });
+        titleSection.createDiv({ 
+            cls: 'agenda-view__period-title',
+            text: this.getCurrentPeriodText()
+        });
+        
+        // Right section: Today button
+        const actionsSection = headerContent.createDiv({ cls: 'agenda-view__actions-section' });
         
         prevButton.addEventListener('click', () => {
             this.navigateToPreviousPeriod();
@@ -211,6 +216,23 @@ export class AgendaView extends ItemView {
         
         nextButton.addEventListener('click', () => {
             this.navigateToNextPeriod();
+        });
+        
+        // Today button
+        const todayButton = actionsSection.createEl('button', {
+            text: 'Today',
+            cls: 'agenda-view__today-button',
+            attr: {
+                'aria-label': 'Go to today',
+                'title': 'Go to today'
+            }
+        });
+        
+        todayButton.addEventListener('click', () => {
+            this.startDate = new Date();
+            this.plugin.setSelectedDate(new Date());
+            this.updatePeriodDisplay();
+            this.refresh();
         });
         
         // FilterBar section (like tasks view)
@@ -347,20 +369,6 @@ export class AgendaView extends ItemView {
         });
     }
     
-    /**
-     * Render today button as custom button in FilterBar
-     */
-    private renderTodayButton(container: HTMLElement): void {
-        const todayButton = container.createEl('button', {
-            text: 'Today',
-            cls: 'agenda-view__today-button'
-        });
-        
-        todayButton.addEventListener('click', () => {
-            this.startDate = new Date();
-            this.refresh();
-        });
-    }
     
     /**
      * Get date range for FilterService query
@@ -397,32 +405,16 @@ export class AgendaView extends ItemView {
         try {
             const dates = this.getAgendaDates();
             
-            // Use FilterService to get grouped tasks, then filter for agenda dates
+            // Use FilterService to get tasks for each date (properly handles recurring tasks)
             const agendaData: Array<{date: Date; tasks: TaskInfo[]}> = [];
             
             for (const date of dates) {
-                const groupedTasks = await this.plugin.filterService.getGroupedTasks(this.currentQuery, date);
-                const tasksForDate = Array.from(groupedTasks.values()).flat().filter(task => {
-                    // Filter tasks that are scheduled or due on this specific date
-                    const taskDate = task.scheduled || task.due;
-                    if (!taskDate) return false;
-                    
-                    const taskDateStr = getDatePart(taskDate);
-                    const targetDateStr = format(date, 'yyyy-MM-dd');
-                    const todayStr = format(new Date(), 'yyyy-MM-dd');
-                    
-                    // Show task if it matches the target date
-                    if (taskDateStr === targetDateStr) {
-                        return true;
-                    }
-                    
-                    // Show overdue tasks on today if option is enabled
-                    if (this.showOverdueOnToday && targetDateStr === todayStr && taskDateStr < todayStr) {
-                        return true;
-                    }
-                    
-                    return false;
-                });
+                // Use FilterService's getTasksForDate which properly handles recurring tasks
+                const tasksForDate = await this.plugin.filterService.getTasksForDate(
+                    date,
+                    this.currentQuery,
+                    this.showOverdueOnToday
+                );
                 
                 agendaData.push({ date, tasks: tasksForDate });
             }
@@ -838,33 +830,7 @@ export class AgendaView extends ItemView {
         }
     }
     
-    private registerKeyboardNavigation() {
-        this.registerDomEvent(document, 'keydown', async (e: KeyboardEvent) => {
-            // Only handle events when this view is active
-            if (!this.isThisViewActive()) {
-                return;
-            }
-            
-            switch (e.key) {
-                // Left arrow - previous period
-                case 'ArrowLeft':
-                    e.preventDefault();
-                    this.navigateToPreviousPeriod();
-                    break;
-                    
-                // Right arrow - next period
-                case 'ArrowRight':
-                    e.preventDefault();
-                    this.navigateToNextPeriod();
-                    break;
-            }
-        });
-    }
     
-    private isThisViewActive(): boolean {
-        const activeView = this.app.workspace.getActiveViewOfType(AgendaView);
-        return activeView === this;
-    }
     
     /**
      * Wait for cache to be ready with actual data
