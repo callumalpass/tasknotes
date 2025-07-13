@@ -1,5 +1,5 @@
 import { FilterOperator, FilterProperty, FilterCondition, FilterGroup, TaskInfo } from '../types';
-import { isBeforeDateTimeAware, getDatePart, isSameDateSafe } from './dateUtils';
+import { isBeforeDateTimeAware, getDatePart, isSameDateSafe, resolveNaturalLanguageDate, isNaturalLanguageDate } from './dateUtils';
 
 /**
  * Error types for filter operations
@@ -249,14 +249,15 @@ export class FilterUtils {
         taskValue: TaskPropertyValue, 
         operator: FilterOperator, 
         conditionValue: TaskPropertyValue,
-        nodeId?: string
+        nodeId?: string,
+        property?: FilterProperty
     ): boolean {
         try {
             switch (operator) {
                 case 'is':
-                    return this.isEqual(taskValue, conditionValue);
+                    return this.isEqual(taskValue, conditionValue, property);
                 case 'is-not':
-                    return !this.isEqual(taskValue, conditionValue);
+                    return !this.isEqual(taskValue, conditionValue, property);
                 case 'contains':
                     return this.contains(taskValue, conditionValue);
                 case 'does-not-contain':
@@ -298,7 +299,14 @@ export class FilterUtils {
     /**
      * Equality comparison that handles arrays and different value types
      */
-    private static isEqual(taskValue: TaskPropertyValue, conditionValue: TaskPropertyValue): boolean {
+    private static isEqual(taskValue: TaskPropertyValue, conditionValue: TaskPropertyValue, property?: FilterProperty): boolean {
+        // Handle date properties with natural language date resolution
+        if (property && this.isDateProperty(property) && 
+            typeof taskValue === 'string' && typeof conditionValue === 'string' &&
+            (taskValue || isNaturalLanguageDate(conditionValue))) {
+            return this.isEqualDate(taskValue, conditionValue);
+        }
+        
         if (Array.isArray(taskValue)) {
             if (Array.isArray(conditionValue)) {
                 // Both arrays: check if any task value matches any condition value
@@ -351,7 +359,8 @@ export class FilterUtils {
     private static isBefore(taskValue: TaskPropertyValue, conditionValue: TaskPropertyValue): boolean {
         if (!taskValue || !conditionValue) return false;
         try {
-            return isBeforeDateTimeAware(taskValue as string, conditionValue as string);
+            const resolvedConditionValue = resolveNaturalLanguageDate(conditionValue as string);
+            return isBeforeDateTimeAware(taskValue as string, resolvedConditionValue);
         } catch {
             return false;
         }
@@ -363,7 +372,8 @@ export class FilterUtils {
     private static isAfter(taskValue: TaskPropertyValue, conditionValue: TaskPropertyValue): boolean {
         if (!taskValue || !conditionValue) return false;
         try {
-            return isBeforeDateTimeAware(conditionValue as string, taskValue as string);
+            const resolvedConditionValue = resolveNaturalLanguageDate(conditionValue as string);
+            return isBeforeDateTimeAware(resolvedConditionValue, taskValue as string);
         } catch {
             return false;
         }
@@ -375,8 +385,9 @@ export class FilterUtils {
     private static isOnOrBefore(taskValue: TaskPropertyValue, conditionValue: TaskPropertyValue): boolean {
         if (!taskValue || !conditionValue) return false;
         try {
-            return isBeforeDateTimeAware(taskValue as string, conditionValue as string) || 
-                   isSameDateSafe(getDatePart(taskValue as string), getDatePart(conditionValue as string));
+            const resolvedConditionValue = resolveNaturalLanguageDate(conditionValue as string);
+            return isBeforeDateTimeAware(taskValue as string, resolvedConditionValue) || 
+                   isSameDateSafe(getDatePart(taskValue as string), getDatePart(resolvedConditionValue));
         } catch {
             return false;
         }
@@ -388,8 +399,30 @@ export class FilterUtils {
     private static isOnOrAfter(taskValue: TaskPropertyValue, conditionValue: TaskPropertyValue): boolean {
         if (!taskValue || !conditionValue) return false;
         try {
-            return isBeforeDateTimeAware(conditionValue as string, taskValue as string) || 
-                   isSameDateSafe(getDatePart(taskValue as string), getDatePart(conditionValue as string));
+            const resolvedConditionValue = resolveNaturalLanguageDate(conditionValue as string);
+            return isBeforeDateTimeAware(resolvedConditionValue, taskValue as string) || 
+                   isSameDateSafe(getDatePart(taskValue as string), getDatePart(resolvedConditionValue));
+        } catch {
+            return false;
+        }
+    }
+
+    /**
+     * Check if a property is a date property
+     */
+    private static isDateProperty(property: FilterProperty): boolean {
+        const dateProperties: FilterProperty[] = ['due', 'scheduled', 'completedDate', 'file.ctime', 'file.mtime'];
+        return dateProperties.includes(property);
+    }
+
+    /**
+     * Handle date equality comparison with natural language date resolution
+     */
+    private static isEqualDate(taskValue: string, conditionValue: string): boolean {
+        try {
+            const resolvedConditionValue = resolveNaturalLanguageDate(conditionValue);
+            // For date equality, we compare the date parts only (not time)
+            return isSameDateSafe(getDatePart(taskValue), getDatePart(resolvedConditionValue));
         } catch {
             return false;
         }
