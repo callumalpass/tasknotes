@@ -64,6 +64,15 @@ import { StatusBarService } from './services/StatusBarService';
 export default class TaskNotesPlugin extends Plugin {
 	settings: TaskNotesSettings;
 	
+	// Track cache-related settings to avoid unnecessary re-indexing
+	private previousCacheSettings: {
+		taskTag: string;
+		excludedFolders: string;
+		disableNoteIndexing: boolean;
+		storeTitleInFilename: boolean;
+		fieldMapping: any;
+	} | null = null;
+	
 	// Ready promise to signal when initialization is complete
 	private readyPromise: Promise<void>;
 	private resolveReady: () => void;
@@ -696,10 +705,16 @@ export default class TaskNotesPlugin extends Plugin {
 		}
 		
 		// Cache setting migration is no longer needed (native cache only)
+		
+		// Capture initial cache settings for change detection
+		this.updatePreviousCacheSettings();
 	}
 
 	async saveSettings() {
 		await this.saveData(this.settings);
+		
+		// Check if cache-related settings have changed
+		const cacheSettingsChanged = this.haveCacheSettingsChanged();
 		
 		// Update customization services with new settings
 		if (this.fieldMapper) {
@@ -712,14 +727,20 @@ export default class TaskNotesPlugin extends Plugin {
 			this.priorityManager.updatePriorities(this.settings.customPriorities);
 		}
 		
-		// Update the cache manager with new settings
-		this.cacheManager.updateConfig(
-			this.settings.taskTag,
-			this.settings.excludedFolders,
-			this.fieldMapper,
-			this.settings.disableNoteIndexing,
-			this.settings.storeTitleInFilename
-		);
+		// Only update cache manager if cache-related settings actually changed
+		if (cacheSettingsChanged) {
+			console.debug('Cache-related settings changed, updating cache configuration');
+			this.cacheManager.updateConfig(
+				this.settings.taskTag,
+				this.settings.excludedFolders,
+				this.fieldMapper,
+				this.settings.disableNoteIndexing,
+				this.settings.storeTitleInFilename
+			);
+			
+			// Update our tracking of cache settings
+			this.updatePreviousCacheSettings();
+		}
 		
 		// Update custom styles
 		this.injectCustomStyles();
@@ -1388,6 +1409,44 @@ private injectCustomStyles(): void {
 			console.error('Error opening quick actions:', error);
 			new Notice('Failed to open quick actions');
 		}
+	}
+
+	/**
+	 * Check if cache-related settings have changed since last save
+	 */
+	private haveCacheSettingsChanged(): boolean {
+		if (!this.previousCacheSettings) {
+			return true; // First time, assume changed
+		}
+
+		const current = {
+			taskTag: this.settings.taskTag,
+			excludedFolders: this.settings.excludedFolders,
+			disableNoteIndexing: this.settings.disableNoteIndexing,
+			storeTitleInFilename: this.settings.storeTitleInFilename,
+			fieldMapping: this.settings.fieldMapping
+		};
+
+		return (
+			current.taskTag !== this.previousCacheSettings.taskTag ||
+			current.excludedFolders !== this.previousCacheSettings.excludedFolders ||
+			current.disableNoteIndexing !== this.previousCacheSettings.disableNoteIndexing ||
+			current.storeTitleInFilename !== this.previousCacheSettings.storeTitleInFilename ||
+			JSON.stringify(current.fieldMapping) !== JSON.stringify(this.previousCacheSettings.fieldMapping)
+		);
+	}
+
+	/**
+	 * Update tracking of cache-related settings
+	 */
+	private updatePreviousCacheSettings(): void {
+		this.previousCacheSettings = {
+			taskTag: this.settings.taskTag,
+			excludedFolders: this.settings.excludedFolders,
+			disableNoteIndexing: this.settings.disableNoteIndexing,
+			storeTitleInFilename: this.settings.storeTitleInFilename,
+			fieldMapping: JSON.parse(JSON.stringify(this.settings.fieldMapping)) // Deep copy
+		};
 	}
 
 }
