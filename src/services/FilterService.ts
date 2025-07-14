@@ -620,6 +620,8 @@ export class FilterService extends EventEmitter {
                 case 'title':
                     comparison = a.title.localeCompare(b.title);
                     break;
+                case 'dateCreated':
+                    comparison = this.compareDates(a.dateCreated, b.dateCreated);
             }
 
             // If primary criteria are equal, apply fallback sorting
