@@ -697,10 +697,18 @@ export default class TaskNotesPlugin extends Plugin {
 		
 		if (hasNewFields) {
 			// Save the migrated settings to include new field mappings (non-blocking)
-			setTimeout(() => {
-				this.saveData(this.settings).catch(error => {
+			setTimeout(async () => {
+				try {
+					const data = await this.loadData() || {};
+					// Merge only settings properties, preserving non-settings data
+					const settingsKeys = Object.keys(DEFAULT_SETTINGS) as (keyof TaskNotesSettings)[];
+					for (const key of settingsKeys) {
+						data[key] = this.settings[key];
+					}
+					await this.saveData(data);
+				} catch (error) {
 					console.error('Failed to save migrated settings:', error);
-				});
+				}
 			}, 100);
 		}
 		
@@ -711,7 +719,14 @@ export default class TaskNotesPlugin extends Plugin {
 	}
 
 	async saveSettings() {
-		await this.saveData(this.settings);
+		// Load existing plugin data to preserve non-settings data like pomodoroHistory
+		const data = await this.loadData() || {};
+		// Merge only settings properties, preserving non-settings data
+		const settingsKeys = Object.keys(DEFAULT_SETTINGS) as (keyof TaskNotesSettings)[];
+		for (const key of settingsKeys) {
+			data[key] = this.settings[key];
+		}
+		await this.saveData(data);
 		
 		// Check if cache-related settings have changed
 		const cacheSettingsChanged = this.haveCacheSettingsChanged();
