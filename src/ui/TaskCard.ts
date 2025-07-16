@@ -276,6 +276,41 @@ export function createTaskCard(task: TaskInfo, plugin: TaskNotesPlugin, options:
         });
     }
     
+    // Project indicator (if task is used as a project)
+    // Create placeholder that will be updated asynchronously
+    const projectIndicatorPlaceholder = card.createEl('div', { 
+        cls: 'task-card__project-indicator-placeholder',
+        attr: { style: 'display: none;' }
+    });
+    
+    plugin.projectSubtasksService.isTaskUsedAsProject(task.path).then((isProject: boolean) => {
+        if (isProject) {
+            projectIndicatorPlaceholder.className = 'task-card__project-indicator';
+            projectIndicatorPlaceholder.removeAttribute('style');
+            projectIndicatorPlaceholder.setAttribute('aria-label', 'This task is used as a project (click to filter subtasks)');
+            projectIndicatorPlaceholder.setAttribute('title', 'This task is used as a project (click to filter subtasks)');
+            
+            // Use Obsidian's built-in folder icon for project tasks
+            setIcon(projectIndicatorPlaceholder, 'folder');
+            
+            // Add click handler to filter subtasks
+            projectIndicatorPlaceholder.addEventListener('click', async (e) => {
+                e.stopPropagation(); // Don't trigger card click
+                try {
+                    await plugin.applyProjectSubtaskFilter(task);
+                } catch (error) {
+                    console.error('Error filtering project subtasks:', error);
+                    new Notice('Failed to filter project subtasks');
+                }
+            });
+        } else {
+            projectIndicatorPlaceholder.remove();
+        }
+    }).catch((error: any) => {
+        console.error('Error checking if task is used as project:', error);
+        projectIndicatorPlaceholder.remove();
+    });
+    
     // Main content container
     const contentContainer = card.createEl('div', { cls: 'task-card__content' });
     
@@ -821,6 +856,47 @@ export function updateTaskCard(element: HTMLElement, task: TaskInfo, plugin: Tas
         const frequencyDisplay = getRecurrenceDisplayText(task.recurrence);
         existingRecurringIndicator.setAttribute('aria-label', `Recurring: ${frequencyDisplay}`);
     }
+    
+    // Update project indicator
+    const existingProjectIndicator = element.querySelector('.task-card__project-indicator');
+    const existingPlaceholder = element.querySelector('.task-card__project-indicator-placeholder');
+    
+    plugin.projectSubtasksService.isTaskUsedAsProject(task.path).then((isProject: boolean) => {
+        if (isProject && !existingProjectIndicator && !existingPlaceholder) {
+            // Add project indicator if task is now used as a project but didn't have one
+            const projectIndicator = element.createEl('div', { 
+                cls: 'task-card__project-indicator',
+                attr: { 
+                    'aria-label': 'This task is used as a project (click to filter subtasks)',
+                    'title': 'This task is used as a project (click to filter subtasks)'
+                }
+            });
+            setIcon(projectIndicator, 'folder');
+            
+            // Add click handler to filter subtasks
+            projectIndicator.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                try {
+                    await plugin.applyProjectSubtaskFilter(task);
+                } catch (error) {
+                    console.error('Error filtering project subtasks:', error);
+                    new Notice('Failed to filter project subtasks');
+                }
+            });
+            
+            // Insert after recurring indicator or priority dot
+            const insertAfter = element.querySelector('.task-card__recurring-indicator') || 
+                               element.querySelector('.task-card__priority-dot') ||
+                               element.querySelector('.task-card__status-dot');
+            insertAfter?.insertAdjacentElement('afterend', projectIndicator);
+        } else if (!isProject && (existingProjectIndicator || existingPlaceholder)) {
+            // Remove project indicator if task is no longer used as a project
+            existingProjectIndicator?.remove();
+            existingPlaceholder?.remove();
+        }
+    }).catch((error: any) => {
+        console.error('Error checking if task is used as project in update:', error);
+    });
     
     // Update title
     const titleEl = element.querySelector('.task-card__title') as HTMLElement;
