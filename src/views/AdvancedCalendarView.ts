@@ -888,6 +888,7 @@ export class AdvancedCalendarView extends ItemView {
         }
 
         const instances: CalendarEvent[] = [];
+        const hasOriginalTime = hasTimeComponent(task.scheduled);
         const templateTime = this.getRecurringTime(task);
         
         // Use the new helper function to generate recurring dates
@@ -896,7 +897,9 @@ export class AdvancedCalendarView extends ItemView {
         for (const date of recurringDates) {
             // Use UTC-safe formatting to prevent off-by-one date shifts
             const instanceDate = formatUTCDateForCalendar(date);
-            const eventStart = `${instanceDate}T${templateTime}`;
+            
+            // Only append time if the original task had a time component
+            const eventStart = hasOriginalTime ? `${instanceDate}T${templateTime}` : instanceDate;
             
             // Create the recurring event instance
             const recurringEvent = this.createRecurringEvent(task, eventStart, instanceDate, templateTime);
@@ -1166,12 +1169,19 @@ export class AdvancedCalendarView extends ItemView {
             
             if (isRecurringInstance) {
                 // For recurring instances, only allow time changes, not date changes
-                const newTime = format(newStart, 'HH:mm');
                 const originalDate = getDatePart(taskInfo.scheduled!);
-                const updatedScheduled = `${originalDate}T${newTime}`;
+                let updatedScheduled: string;
                 
-                // Show notice about the behavior
-                new Notice(`Updated recurring task time to ${newTime}. This affects all future instances.`);
+                if (allDay) {
+                    // If dragged to all-day section, remove time component entirely
+                    updatedScheduled = originalDate;
+                    new Notice('Updated recurring task to all-day. This affects all future instances.');
+                } else {
+                    // If dragged to a specific time, update the time
+                    const newTime = format(newStart, 'HH:mm');
+                    updatedScheduled = `${originalDate}T${newTime}`;
+                    new Notice(`Updated recurring task time to ${newTime}. This affects all future instances.`);
+                }
                 
                 // Update the template time in scheduled field
                 await this.plugin.taskService.updateProperty(taskInfo, 'scheduled', updatedScheduled);
