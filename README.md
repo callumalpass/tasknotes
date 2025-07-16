@@ -3,7 +3,7 @@
 A task management plugin where each task is stored as an individual note using YAML frontmatter with calendar, kanban and pomodoro integration.
 
 ![Downloads](https://img.shields.io/github/downloads/callumalpass/tasknotes/main.js)
-![Screenshot of biblib Obsidian plugin](https://github.com/callumalpass/tasknotes/blob/main/media/2025-06-15_23-32-16.png)
+![Screenshot of biblib Obsidian plugin](https://github.com/callumalpass/tasknotes/blob/main/media/175266750_comp.gif)
 
 ## Documentation
 
@@ -59,6 +59,18 @@ Since each task is a full note, you can write detailed descriptions, jot down th
 - **Agenda**: Daily task and note overview
 - **Notes**: Date-based note browser
 - **Pomodoro**: Timer with statistics
+
+![Task creation dialog](media/2025-07-15_21-11-10.png)
+*Create tasks with natural language parsing for due dates, recurrence, and contexts*
+
+![Pomodoro timer](media/2025-07-15_21-12-23.png)
+*Built-in pomodoro timer with task integration and daily completion tracking*
+
+![Kanban board view](media/2025-07-15_21-13-26.png)
+*Kanban boards with drag-and-drop functionality and customizable columns*
+
+![Project subtasks view](media/2025-07-15_21-14-06.png)
+*Project management with subtasks and hierarchical organization*
 
 ## Configuration
 
