@@ -1251,8 +1251,8 @@ export class AdvancedCalendarView extends ItemView {
             return;
         }
         
-        if (eventType !== 'scheduled') {
-            // Only scheduled events and timeblocks can be resized (not timeEntry, ics, due, or recurring)
+        if (eventType !== 'scheduled' && eventType !== 'recurring') {
+            // Only scheduled and recurring events and timeblocks can be resized (not timeEntry, ics, due)
             resizeInfo.revert();
             return;
         }
