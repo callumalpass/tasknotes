@@ -1,6 +1,6 @@
 # TaskNotes for Obsidian
 
-A task management plugin where each task is stored as an individual note with YAML frontmatter and calendar integration.
+A task management plugin where each task is stored as an individual note using YAML frontmatter with calendar, kanban and pomodoro integration.
 
 ![Downloads](https://img.shields.io/github/downloads/callumalpass/tasknotes/main.js)
 ![Screenshot of biblib Obsidian plugin](https://github.com/callumalpass/tasknotes/blob/main/media/2025-06-15_23-32-16.png)
