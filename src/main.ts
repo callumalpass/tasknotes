@@ -1,4 +1,4 @@
-import { Notice, Plugin, WorkspaceLeaf, Editor, MarkdownView } from 'obsidian';
+import { Notice, Plugin, WorkspaceLeaf, Editor, MarkdownView, TFile } from 'obsidian';
 import { EditorView } from '@codemirror/view';
 import { format } from 'date-fns';
 import { 
@@ -22,6 +22,7 @@ import {
 	POMODORO_STATS_VIEW_TYPE,
 	KANBAN_VIEW_TYPE,
 	TaskInfo,
+	FilterQuery,
 	EVENT_DATE_SELECTED,
 	EVENT_DATA_CHANGED,
 	EVENT_TASK_UPDATED
@@ -60,6 +61,7 @@ import { ICSSubscriptionService } from './services/ICSSubscriptionService';
 import { MigrationService } from './services/MigrationService';
 import { showMigrationPrompt } from './modals/MigrationModal';
 import { StatusBarService } from './services/StatusBarService';
+import { ProjectSubtasksService } from './services/ProjectSubtasksService';
 
 export default class TaskNotesPlugin extends Plugin {
 	settings: TaskNotesSettings;
@@ -102,6 +104,7 @@ export default class TaskNotesPlugin extends Plugin {
 	taskService: TaskService;
 	filterService: FilterService;
 	viewStateManager: ViewStateManager;
+	projectSubtasksService: ProjectSubtasksService;
 	
 	// Editor services  
 	taskLinkDetectionService?: import('./services/TaskLinkDetectionService').TaskLinkDetectionService;
@@ -169,6 +172,7 @@ export default class TaskNotesPlugin extends Plugin {
 			this.priorityManager
 		);
 		this.viewStateManager = new ViewStateManager(this.app, this);
+		this.projectSubtasksService = new ProjectSubtasksService(this);
 		this.dragDropManager = new DragDropManager(this);
 		this.migrationService = new MigrationService(this.app);
 		this.statusBarService = new StatusBarService(this);
@@ -1150,6 +1154,96 @@ private injectCustomStyles(): void {
 	
 	openTaskCreationModal(prePopulatedValues?: Partial<TaskInfo>) {
 		new TaskCreationModal(this.app, this, { prePopulatedValues }).open();
+	}
+
+	/**
+	 * Apply a filter to show subtasks of a project
+	 */
+	async applyProjectSubtaskFilter(projectTask: TaskInfo): Promise<void> {
+		try {
+			const file = this.app.vault.getAbstractFileByPath(projectTask.path);
+			if (!file) {
+				new Notice('Project file not found');
+				return;
+			}
+
+			// Get the current active view that has a FilterBar
+			const activeView = this.app.workspace.getActiveViewOfType(TaskListView) ||
+							   this.app.workspace.getActiveViewOfType(KanbanView) ||
+							   this.app.workspace.getActiveViewOfType(AgendaView);
+
+			if (!activeView || !('filterBar' in activeView)) {
+				new Notice('No compatible view active to apply filter');
+				return;
+			}
+
+			const filterBar = (activeView as any).filterBar;
+			if (!filterBar) {
+				new Notice('Filter bar not available');
+				return;
+			}
+
+			// Use the same pattern as the search box - add a condition to the current query
+			this.addProjectCondition(filterBar, (file as TFile).basename);
+			
+			new Notice(`Filtered to show subtasks of: ${projectTask.title}`);
+		} catch (error) {
+			console.error('Error applying project subtask filter:', error);
+			new Notice('Failed to apply project filter');
+		}
+	}
+
+	/**
+	 * Add a project filter condition to the FilterBar (similar to search)
+	 */
+	private addProjectCondition(filterBar: any, projectName: string): void {
+		// Remove existing project conditions first
+		this.removeProjectConditions(filterBar);
+		
+		// Create condition for wikilink format [[Project Name]]
+		const projectCondition = {
+			type: 'condition',
+			id: `project_${this.generateFilterId()}`,
+			property: 'projects',
+			operator: 'contains',
+			value: `[[${projectName}]]`
+		};
+		
+		// Add to the current query (same pattern as search)
+		if (!Array.isArray(filterBar.currentQuery.children)) {
+			filterBar.currentQuery.children = [];
+		}
+		
+		filterBar.currentQuery.children.unshift(projectCondition);
+		
+		// Update the filter bar UI and emit changes
+		filterBar.updateFilterBuilder();
+		filterBar.emit('queryChange', filterBar.currentQuery);
+	}
+
+	/**
+	 * Remove existing project filter conditions
+	 */
+	private removeProjectConditions(filterBar: any): void {
+		if (!Array.isArray(filterBar.currentQuery.children)) {
+			filterBar.currentQuery.children = [];
+			return;
+		}
+		
+		filterBar.currentQuery.children = filterBar.currentQuery.children.filter((child: any) => {
+			if (child.type === 'condition') {
+				return !(child.property === 'projects' && child.operator === 'contains' && 
+						child.id.startsWith('project_'));
+			}
+			return true;
+		});
+	}
+
+	/**
+	 * Generate a unique filter ID
+	 */
+	private generateFilterId(): string {
+		return `filter-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 	}
 
 
