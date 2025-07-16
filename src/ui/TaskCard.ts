@@ -728,6 +728,22 @@ export async function showTaskContextMenu(event: MouseEvent, taskPath: string, p
         
         menu.addSeparator();
         
+        // Create subtask
+        menu.addItem((item) => {
+            item.setTitle('Create subtask');
+            item.setIcon('plus');
+            item.onClick(() => {
+                // Create a subtask with the current task as the project reference
+                const taskFile = plugin.app.vault.getAbstractFileByPath(task.path);
+                if (taskFile instanceof TFile) {
+                    const projectReference = `[[${taskFile.basename}]]`;
+                    plugin.openTaskCreationModal({
+                        projects: [projectReference]
+                    });
+                }
+            });
+        });
+        
         // Delete Task
         menu.addItem((item) => {
             item.setTitle('Delete task');
