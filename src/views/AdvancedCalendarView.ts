@@ -245,6 +245,10 @@ export class AdvancedCalendarView extends ItemView {
             this.filterBar?.updateSavedViews(updatedViews);
         });
         
+        this.filterBar.on('reorderViews', (fromIndex: number, toIndex: number) => {
+            this.plugin.viewStateManager.reorderSavedViews(fromIndex, toIndex);
+        });
+        
         this.filterBar.on('manageViews', () => {
             console.log('Manage views requested');
         });

@@ -156,6 +156,12 @@
     box-shadow: none;
 }
 
+.tasknotes-plugin .filter-bar__templates-button--active {
+    background: var(--interactive-accent-tint);
+    color: var(--color-accent);
+    box-shadow: none;
+}
+
 /* Search Input */
 .tasknotes-plugin .filter-bar__search-input {
     flex: 1;
@@ -264,10 +270,88 @@
     border-radius: var(--radius-s);
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     margin: 2px 0;
+    position: relative;
+    overflow: hidden;
 }
 
 .tasknotes-plugin .filter-bar__view-item-container:hover {
     background: var(--background-modifier-hover);
+    transform: translateX(2px);
+}
+
+/* Drag and drop styles */
+.tasknotes-plugin .filter-bar__view-drag-handle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    margin-right: var(--tn-spacing-xs);
+    color: var(--text-faint);
+    cursor: grab;
+    font-size: 14px;
+    user-select: none;
+    opacity: 0;
+    transition: all 0.2s ease;
+    border-radius: var(--radius-s);
+    position: relative;
+}
+
+.tasknotes-plugin .filter-bar__view-drag-handle::before {
+    content: '';
+    position: absolute;
+    width: 12px;
+    height: 2px;
+    background: currentColor;
+    border-radius: 1px;
+    box-shadow: 
+        0 -4px 0 currentColor,
+        0 4px 0 currentColor;
+}
+
+.tasknotes-plugin .filter-bar__view-item-container:hover .filter-bar__view-drag-handle {
+    opacity: 1;
+}
+
+.tasknotes-plugin .filter-bar__view-drag-handle:hover {
+    color: var(--text-normal);
+    background: var(--background-modifier-hover);
+    transform: scale(1.05);
+}
+
+.tasknotes-plugin .filter-bar__view-drag-handle:active {
+    cursor: grabbing;
+    transform: scale(0.95);
+}
+
+.tasknotes-plugin .filter-bar__view-item-container--dragging {
+    opacity: 0.8;
+    transform: scale(1.02);
+    background: var(--background-modifier-hover);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border-radius: var(--radius-s);
+    z-index: 1000;
+    transition: none;
+}
+
+.tasknotes-plugin .filter-bar__view-item-container--placeholder {
+    opacity: 0.5;
+    background: var(--interactive-accent-tint);
+    border: 2px dashed var(--color-accent);
+    border-radius: var(--radius-s);
+    pointer-events: none;
+    min-height: 30px;
+    transition: all 0.2s ease;
+    animation: placeholderPulse 1s ease-in-out infinite;
+}
+
+@keyframes placeholderPulse {
+    0%, 100% { 
+        opacity: 0.5;
+    }
+    50% { 
+        opacity: 0.7;
+    }
 }
 
 .tasknotes-plugin .filter-bar__view-item {

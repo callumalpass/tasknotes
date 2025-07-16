@@ -287,6 +287,10 @@ export class TaskListView extends ItemView {
             this.filterBar?.updateSavedViews(updatedViews);
         });
         
+        this.filterBar.on('reorderViews', (fromIndex: number, toIndex: number) => {
+            this.plugin.viewStateManager.reorderSavedViews(fromIndex, toIndex);
+        });
+        
         // Listen for filter changes
         this.filterBar.on('queryChange', async (newQuery: FilterQuery) => {
             this.currentQuery = newQuery;

@@ -4,6 +4,8 @@ import { EventEmitter } from '../utils/EventEmitter';
 import { FilterUtils } from '../utils/FilterUtils';
 import { showConfirmationModal } from '../modals/ConfirmationModal';
 import { isNaturalLanguageDate, getNaturalLanguageDateSuggestions, isValidDateInput } from '../utils/dateUtils';
+import { DragDropHandler } from './DragDropHandler';
+
 
 class SaveViewModal extends Modal {
     private name: string;
@@ -66,6 +68,7 @@ export class FilterBar extends EventEmitter {
     private searchInput?: TextComponent;
     private isUserTyping = false;
     private viewOptionsConfig: Array<{id: string, label: string, value: boolean, onChange: (value: boolean) => void}> | null = null;
+    private dragDropHandler: DragDropHandler;
 
     // Collapse states
     private sectionStates = {
@@ -86,6 +89,11 @@ export class FilterBar extends EventEmitter {
         this.container = container;
         this.currentQuery = FilterUtils.deepCloneFilterQuery(initialQuery);
         this.filterOptions = filterOptions;
+
+        // Initialize drag and drop handler
+        this.dragDropHandler = new DragDropHandler((fromIndex, toIndex) => {
+            this.emit('reorderViews', fromIndex, toIndex);
+        });
 
         // Defensive migration fix: ensure query has proper structure
         this.ensureValidFilterQuery();
@@ -335,6 +343,13 @@ export class FilterBar extends EventEmitter {
      */
     private toggleMainFilterBox(): void {
         this.sectionStates.filterBox = !this.sectionStates.filterBox;
+        this.updateFilterBoxState();
+    }
+
+    /**
+     * Update the filter box and button state
+     */
+    private updateFilterBoxState(): void {
         const mainBox = this.container.querySelector('.filter-bar__main-box');
         const filterToggle = this.container.querySelector('.filter-bar__filter-toggle');
         
@@ -345,8 +360,6 @@ export class FilterBar extends EventEmitter {
         if (filterToggle) {
             filterToggle.classList.toggle('filter-bar__filter-toggle--active', this.sectionStates.filterBox);
         }
-
-        // No document click listener - filter stays open until button is clicked again
     }
 
     private async deleteView(view: SavedView): Promise<void> {
@@ -381,9 +394,19 @@ export class FilterBar extends EventEmitter {
                 cls: 'filter-bar__view-section-header'
             });
 
-            this.savedViews.forEach(view => {
+            this.savedViews.forEach((view, index) => {
                 const viewItemContainer = savedViewsSection.createDiv({
                     cls: 'filter-bar__view-item-container'
+                });
+                
+                // Make the container draggable
+                viewItemContainer.draggable = true;
+                viewItemContainer.setAttribute('data-view-index', index.toString());
+                
+                // Add drag handle
+                const dragHandle = viewItemContainer.createDiv({
+                    cls: 'filter-bar__view-drag-handle',
+                    title: 'Drag to reorder'
                 });
                 
                 new ButtonComponent(viewItemContainer)
@@ -407,7 +430,13 @@ export class FilterBar extends EventEmitter {
                             this.emit('deleteView', view.id);
                         }
                     });
+                
+                // Add drag and drop event handlers
+                this.dragDropHandler.setupDragAndDrop(viewItemContainer, index);
             });
+            
+            // Add global handlers to ensure drop events work reliably
+            this.dragDropHandler.setupGlobalHandlers(savedViewsSection);
         }
     }
 
@@ -1062,10 +1091,19 @@ export class FilterBar extends EventEmitter {
      * Toggle view selector dropdown
      */
     private toggleViewSelectorDropdown(): void {
-        if (!this.viewSelectorDropdown) return;
+        if (!this.viewSelectorDropdown || !this.viewSelectorButton) return;
         
         const isHidden = this.viewSelectorDropdown.classList.contains('filter-bar__view-selector-dropdown--hidden');
         this.viewSelectorDropdown.classList.toggle('filter-bar__view-selector-dropdown--hidden', !isHidden);
+        
+        // Toggle active state on the button
+        if (isHidden) {
+            // Opening dropdown - add active class
+            this.viewSelectorButton.buttonEl.classList.add('filter-bar__templates-button--active');
+        } else {
+            // Closing dropdown - remove active class
+            this.viewSelectorButton.buttonEl.classList.remove('filter-bar__templates-button--active');
+        }
     }
 
     /**
@@ -1131,6 +1169,9 @@ export class FilterBar extends EventEmitter {
                         this.searchInput.inputEl.focus();
                     }
                 }
+                
+                // Maintain filter button active state
+                this.updateFilterBoxState();
             }
         } catch (error) {
             console.error('Error updating filter builder:', error);
@@ -1167,6 +1208,9 @@ export class FilterBar extends EventEmitter {
                         this.searchInput.inputEl.focus();
                     }
                 }
+                
+                // Maintain filter button active state
+                this.updateFilterBoxState();
             }
         } catch (error) {
             console.error('Error updating filter builder completely:', error);
@@ -1278,6 +1322,7 @@ export class FilterBar extends EventEmitter {
         const newOptions = await filterService.getFilterOptions();
         this.updateFilterOptions(newOptions);
     }
+
 
     /**
      * Destroy and clean up the FilterBar

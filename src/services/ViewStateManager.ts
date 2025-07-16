@@ -273,6 +273,30 @@ export class ViewStateManager extends EventEmitter {
     }
 
     /**
+     * Reorder saved views by moving a view from one position to another
+     */
+    reorderSavedViews(fromIndex: number, toIndex: number): void {
+        if (fromIndex < 0 || fromIndex >= this.savedViews.length || 
+            toIndex < 0 || toIndex > this.savedViews.length || 
+            fromIndex === toIndex) {
+            return;
+        }
+        
+        // Clamp toIndex to valid range
+        toIndex = Math.min(toIndex, this.savedViews.length - 1);
+        
+        // Remove the view from its current position
+        const [movedView] = this.savedViews.splice(fromIndex, 1);
+        
+        // Insert it at the new position
+        this.savedViews.splice(toIndex, 0, movedView);
+        
+        // Save the reordered views
+        this.saveSavedViewsToPluginData();
+        this.emit('saved-views-changed', this.getSavedViews());
+    }
+
+    /**
      * Generate a unique ID for saved views
      */
     private generateId(): string {
