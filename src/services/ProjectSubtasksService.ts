@@ -51,6 +51,24 @@ export class ProjectSubtasksService {
     }
 
     /**
+     * Check if a task is used as a project (i.e., referenced by other tasks)
+     */
+    async isTaskUsedAsProject(taskPath: string): Promise<boolean> {
+        try {
+            const file = this.plugin.app.vault.getAbstractFileByPath(taskPath);
+            if (!(file instanceof TFile)) {
+                return false;
+            }
+            
+            const linkedTasks = await this.getTasksLinkedToProject(file);
+            return linkedTasks.length > 0;
+        } catch (error) {
+            console.error('Error checking if task is used as project:', error);
+            return false;
+        }
+    }
+
+    /**
      * Sort tasks by priority and status
      */
     sortTasks(tasks: TaskInfo[]): TaskInfo[] {
