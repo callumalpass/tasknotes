@@ -246,6 +246,36 @@
     height: 100%;
 }
 
+.tasknotes-plugin .task-card__project-indicator {
+    position: absolute;
+    top: 8px;
+    right: 44px; /* Position after recurring indicator */
+    width: 16px;
+    height: 16px;
+    color: var(--tn-text-muted);
+    opacity: 0.8;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-s);
+    padding: 2px;
+    cursor: pointer;
+    transition: all var(--tn-transition-fast);
+}
+
+.tasknotes-plugin .task-card__project-indicator:hover {
+    opacity: 1;
+    color: var(--interactive-accent);
+    background: var(--background-modifier-hover);
+    transform: scale(1.1);
+}
+
+.tasknotes-plugin .task-card__project-indicator svg {
+    width: 100%;
+    height: 100%;
+}
+
 .tasknotes-plugin .task-card__context-menu {
     position: absolute;
     top: 8px;
