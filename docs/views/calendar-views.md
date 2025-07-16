@@ -10,6 +10,10 @@ The Mini Calendar is a month-based view that shows which days have tasks. It is 
 
 The Advanced Calendar is a calendar with multiple view modes (month, week, and day), drag-and-drop scheduling, and time-blocking capabilities. You can create new tasks by clicking on dates or time slots, and you can reschedule tasks by dragging them to a new date or time.
 
+### Recurring Task Support
+
+The Advanced Calendar handles recurring tasks with proper all-day event support and allows duration updates through calendar resize operations. When dragging or resizing recurring task events, the changes apply to that specific occurrence while preserving the recurrence pattern.
+
 ### FilterBar Integration
 
 The Advanced Calendar View includes the same FilterBar functionality as the Task List View, allowing you to filter which tasks appear on the calendar and save views. See the [Task List View](task-list.md) documentation for complete FilterBar functionality details.

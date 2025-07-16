@@ -44,6 +44,14 @@ Projects are stored as wikilinks in the task's frontmatter (e.g., `projects: ["[
 
 Tasks can be filtered and grouped by their associated projects in all task views. The FilterBar includes project-specific filters, and tasks can be grouped by project in the Task List and Kanban views. Tasks assigned to multiple projects will appear in each relevant project group, providing flexibility in project-based organization.
 
+### Project Indicators
+
+TaskCards display visual indicators when tasks are used as projects. These indicators help identify which tasks have other tasks linked to them as subtasks, making project hierarchy visible at a glance.
+
+### Subtask Creation
+
+Tasks can have subtasks created directly from their context menu. When viewing a task that serves as a project, you can select "Create subtask" to create a new task automatically linked to the current project.
+
 ### Template Integration
 
 Projects support template variables for automated workflows. The `{{parentNote}}` variable inserts the parent note as a properly formatted markdown link. For project organization, it's recommended to use it as a YAML list item (e.g., `project:\n  - {{parentNote}}`) to align with the projects system behavior when creating tasks from project notes through instant conversion.
@@ -53,3 +61,37 @@ Projects support template variables for automated workflows. The `{{parentNote}}
 TaskNotes provides a system for managing your task files. You can specify a **Default Tasks Folder** where all new tasks will be created, and you can choose from a variety of **Filename Generation** patterns, including title-based, timestamp-based, and Zettelkasten-style.
 
 TaskNotes also supports **Templates** for both the YAML frontmatter and the body of your task notes. You can use templates to pre-fill common values, add boilerplate text, and create a consistent structure for your tasks. Templates can also include variables, such as `{{title}}`, `{{date}}`, and `{{parentNote}}` (which inserts the parent note as a properly formatted markdown link), which will be automatically replaced with the appropriate values when a new task is created.
+
+## Recurring Tasks
+
+TaskNotes supports recurring tasks using the RFC 5545 RRule standard, which allows for complex recurrence patterns. Recurring tasks can repeat on schedules like daily, weekly, monthly, or custom patterns such as "every third Tuesday" or "last Friday of each month."
+
+### Setting Up Recurring Tasks
+
+Recurring tasks require two key components:
+
+1. **Scheduled Date**: This serves as the start date (anchor date) for the recurrence pattern. The scheduled date determines when the recurring series begins.
+2. **Recurrence Pattern**: An RRule string that defines how the task repeats.
+
+If no scheduled date is provided, the task's creation date is used as the fallback start date.
+
+### Recurrence Patterns
+
+TaskNotes uses the RRule standard format for defining recurrence patterns. Common examples include:
+
+- `FREQ=DAILY` - Repeats every day
+- `FREQ=WEEKLY;BYDAY=MO,WE,FR` - Repeats on Monday, Wednesday, and Friday
+- `FREQ=MONTHLY;BYMONTHDAY=15` - Repeats on the 15th of each month
+- `FREQ=MONTHLY;BYDAY=-1FR` - Repeats on the last Friday of each month
+
+### Completion Tracking
+
+Each instance of a recurring task can be completed independently. When you complete a recurring task on a specific date, that completion is recorded in the `complete_instances` array as a YYYY-MM-DD date string. This allows you to track which instances have been completed while keeping the recurrence pattern intact.
+
+### Date Calculation
+
+Recurring task instances are generated using UTC dates to prevent timezone-related display issues. The system calculates which dates should show the recurring task based on the scheduled date and recurrence pattern, ensuring consistent behavior across different time zones.
+
+### Legacy Format Support
+
+TaskNotes maintains backward compatibility with older recurrence formats. The system automatically converts legacy recurrence data to the modern RRule format when needed, ensuring your existing recurring tasks continue to work correctly.

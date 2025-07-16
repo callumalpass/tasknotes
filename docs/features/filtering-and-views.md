@@ -151,6 +151,7 @@ Saved views store complete filter configurations for quick access.
 ### Managing Views
 - **Load**: Apply a saved view configuration
 - **Delete**: Remove a saved view (requires confirmation)
+- **Reorder**: Drag and drop saved views to reorder them
 - Views persist across sessions using local storage
 
 ## Sorting
@@ -160,6 +161,7 @@ Available sort options:
 - `scheduled` - Scheduled date (earliest first)
 - `priority` - Priority level (by configured weight)
 - `title` - Alphabetical (A-Z)
+- `createdDate` - Date created (newest first)
 
 **Fallback Sorting**: When the primary sort criteria are equal, tasks are sorted by: scheduled → due → priority → title
 
