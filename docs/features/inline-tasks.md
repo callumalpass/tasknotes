@@ -6,10 +6,12 @@ TaskNotes integrates with the Obsidian editor to allow task management directly 
 
 When a wikilink to a task note is created, TaskNotes can replace it with an interactive **Task Link Overlay**. This widget displays information about the task, such as its status, priority, and due date. It also allows for actions like changing the status or priority, or opening the task for editing, directly from the note.
 
-![Task Link Overlays in Live Preview mode](../media/2025-07-17_21-03-55.png)
+![Task Link Overlays in Live Preview mode](../assets/2025-07-17_21-03-55.png)
+
 *Task link overlays in Live Preview mode show interactive widgets with status, dates, and quick actions*
 
-![Task Link Overlays in Source mode](../media/2025-07-17_21-04-24.png)
+![Task Link Overlays in Source mode](../assets/2025-07-17_21-04-24.png)
+
 *In Source mode, task links appear as standard wikilinks until rendered*
 
 ### Widget Features
