@@ -188,6 +188,7 @@ export interface FilterOptions {
 	priorities: readonly PriorityConfig[];
 	contexts: readonly string[];
 	projects: readonly string[];
+	tags: readonly string[];
 }
 
 // Time and date related types

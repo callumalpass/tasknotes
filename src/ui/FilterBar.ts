@@ -713,7 +713,7 @@ export class FilterBar extends EventEmitter {
                 });
                 break;
             case 'tags':
-                this.filterOptions.contexts.forEach(option => {
+                this.filterOptions.tags.forEach(option => {
                     dropdown.addOption(option, option);
                 });
                 break;
