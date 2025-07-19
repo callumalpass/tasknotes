@@ -421,7 +421,7 @@ export class MinimalNativeCache extends Events {
             const metadata = this.app.metadataCache.getFileCache(file);
             if (metadata?.frontmatter?.tags?.includes(this.taskTag)) {
                 const taskInfo = this.extractTaskInfoFromNative(file.path, metadata.frontmatter);
-                if (taskInfo?.tags) {
+                if (taskInfo?.tags && Array.isArray(taskInfo.tags)) {
                     taskInfo.tags.forEach(tag => tags.add(tag));
                 }
             }
@@ -442,7 +442,7 @@ export class MinimalNativeCache extends Events {
             const metadata = this.app.metadataCache.getFileCache(file);
             if (metadata?.frontmatter?.tags?.includes(this.taskTag)) {
                 const taskInfo = this.extractTaskInfoFromNative(file.path, metadata.frontmatter);
-                if (taskInfo?.contexts) {
+                if (taskInfo?.contexts && Array.isArray(taskInfo.contexts)) {
                     taskInfo.contexts.forEach(context => contexts.add(context));
                 }
             }
@@ -946,9 +946,9 @@ export class MinimalNativeCache extends Events {
                 scheduled: mappedTask.scheduled,
                 path,
                 archived: mappedTask.archived || false,
-                tags: mappedTask.tags || [],
-                contexts: mappedTask.contexts || [],
-                projects: mappedTask.projects || [],
+                tags: Array.isArray(mappedTask.tags) ? mappedTask.tags : [],
+                contexts: Array.isArray(mappedTask.contexts) ? mappedTask.contexts : [],
+                projects: Array.isArray(mappedTask.projects) ? mappedTask.projects : [],
                 recurrence: mappedTask.recurrence,
                 complete_instances: mappedTask.complete_instances,
                 completedDate: mappedTask.completedDate,
