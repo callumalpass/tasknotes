@@ -57,6 +57,7 @@ nav:
     - Inline Task Settings: settings/inline-task-settings.md
     - Calendar Settings: settings/calendar-settings.md
     - Advanced Settings: settings/advanced-settings.md
+  - Release Notes: releases.md
   - Troubleshooting: troubleshooting.md
 
 markdown_extensions:
