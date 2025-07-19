@@ -3,7 +3,7 @@ import { format } from 'date-fns';
 // YAML not needed in this service
 import TaskNotesPlugin from '../main';
 import { TaskInfo, TimeEntry, EVENT_TASK_UPDATED, EVENT_TASK_DELETED, TaskCreationData } from '../types';
-import { getCurrentTimestamp, getCurrentDateString, formatUTCDateForCalendar } from '../utils/dateUtils';
+import { getCurrentTimestamp, getCurrentDateString } from '../utils/dateUtils';
 import { generateTaskFilename, generateUniqueFilename, FilenameContext } from '../utils/filenameGenerator';
 import { ensureFolderExists } from '../utils/helpers';
 import { processTemplate, mergeTemplateFrontmatter, TemplateData } from '../utils/templateProcessor';

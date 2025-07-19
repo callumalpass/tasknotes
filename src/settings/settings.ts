@@ -50,6 +50,9 @@ export interface TaskNotesSettings {
 	recurrenceMigrated?: boolean;
 	// Status bar settings
 	showTrackedTasksInStatusBar: boolean;
+	// Time tracking settings
+	autoStopTimeTrackingOnComplete: boolean;
+	autoStopTimeTrackingNotification: boolean;
 	// Project subtasks widget settings
 	showProjectSubtasks: boolean;
 	// Saved filter views
@@ -275,6 +278,9 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	recurrenceMigrated: false,
 	// Status bar defaults
 	showTrackedTasksInStatusBar: false,
+	// Time tracking defaults
+	autoStopTimeTrackingOnComplete: true,
+	autoStopTimeTrackingNotification: false,
 	// Project subtasks widget defaults
 	showProjectSubtasks: true,
 	// Saved filter views defaults
@@ -2064,6 +2070,26 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 						new Notice('Failed to update storage location setting.');
 						dropdown.setValue('plugin'); // Reset to plugin storage on error
 					}
+				}));
+
+		new Setting(container)
+			.setName('Auto-stop time tracking on completion')
+			.setDesc('Automatically stop time tracking when a task is marked as completed')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.autoStopTimeTrackingOnComplete)
+				.onChange(async (value) => {
+					this.plugin.settings.autoStopTimeTrackingOnComplete = value;
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(container)
+			.setName('Show auto-stop notifications')
+			.setDesc('Show a notice when time tracking is automatically stopped')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.autoStopTimeTrackingNotification)
+				.onChange(async (value) => {
+					this.plugin.settings.autoStopTimeTrackingNotification = value;
+					await this.plugin.saveSettings();
 				}));
 	}
 

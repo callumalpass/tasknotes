@@ -16,7 +16,6 @@ import { createTaskCard, updateTaskCard } from '../ui/TaskCard';
 import { createNoteCard } from '../ui/NoteCard';
 import { FilterBar } from '../ui/FilterBar';
 import { FilterService } from '../services/FilterService';
-import { getDatePart } from '../utils/dateUtils';
 
 export class AgendaView extends ItemView {
     plugin: TaskNotesPlugin;
