@@ -1651,7 +1651,7 @@ export class AdvancedCalendarView extends ItemView {
     }
 
     private showTimeblockInfo(timeblock: TimeBlock, eventDate: Date): void {
-        const modal = new TimeblockInfoModal(this.app, timeblock, eventDate);
+        const modal = new TimeblockInfoModal(this.app, this.plugin, timeblock, eventDate);
         modal.open();
     }
 
