@@ -5,7 +5,7 @@ import { TaskInfo } from '../types';
 import { getCurrentTimestamp, createUTCDateForRRule, formatUTCDateForCalendar, generateUTCCalendarDates, getUTCStartOfWeek, getUTCEndOfWeek, getUTCStartOfMonth, getUTCEndOfMonth } from '../utils/dateUtils';
 import { formatTimestampForDisplay } from '../utils/dateUtils';
 import { format, isSameMonth } from 'date-fns';
-import { generateRecurringInstances, extractTaskInfo } from '../utils/helpers';
+import { generateRecurringInstances, extractTaskInfo, calculateTotalTimeSpent, formatTime } from '../utils/helpers';
 
 export interface TaskEditOptions {
     task: TaskInfo;
@@ -186,6 +186,14 @@ export class TaskEditModal extends TaskModal {
         metadataLabel.textContent = 'Task Information';
         
         const metadataContent = this.metadataContainer.createDiv('metadata-content');
+        
+        // Total tracked time
+        const totalTimeSpent = calculateTotalTimeSpent(this.task.timeEntries || []);
+        if (totalTimeSpent > 0) {
+            const timeDiv = metadataContent.createDiv('metadata-item');
+            timeDiv.createSpan('metadata-key').textContent = 'Total tracked time: ';
+            timeDiv.createSpan('metadata-value').textContent = formatTime(totalTimeSpent);
+        }
         
         // Created date
         if (this.task.dateCreated) {
