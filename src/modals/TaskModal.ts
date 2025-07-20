@@ -207,7 +207,7 @@ export abstract class TaskModal extends Modal {
                 button.setButtonText('Add Project')
                     .setTooltip('Select a project note using fuzzy search')
                     .onClick(() => {
-                        const modal = new ProjectSelectModal(this.app, (file) => {
+                        const modal = new ProjectSelectModal(this.app, this.plugin, (file) => {
                             this.addProject(file);
                         });
                         modal.open();

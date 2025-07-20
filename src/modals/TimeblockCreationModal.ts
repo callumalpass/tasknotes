@@ -121,7 +121,7 @@ export class TimeblockCreationModal extends Modal {
                 button.setButtonText('Add Attachment')
                     .setTooltip('Select a file or note using fuzzy search')
                     .onClick(() => {
-                        const modal = new AttachmentSelectModal(this.app, (file) => {
+                        const modal = new AttachmentSelectModal(this.app, this.plugin, (file) => {
                             this.addAttachment(file);
                         });
                         modal.open();

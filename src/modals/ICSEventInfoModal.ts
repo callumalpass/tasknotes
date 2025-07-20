@@ -196,7 +196,7 @@ export class ICSEventInfoModal extends Modal {
         console.log('Link existing note button clicked');
         await SafeAsync.execute(
             async () => {
-                const modal = new ICSNoteLinkModal(this.app, async (file) => {
+                const modal = new ICSNoteLinkModal(this.app, this.plugin, async (file) => {
                     await SafeAsync.execute(
                         async () => {
                             await this.plugin.icsNoteService.linkNoteToICS(file.path, this.icsEvent);

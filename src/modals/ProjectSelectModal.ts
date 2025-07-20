@@ -1,4 +1,5 @@
-import { App, FuzzySuggestModal, TAbstractFile, TFile, SearchResult } from 'obsidian';
+import { App, FuzzySuggestModal, TAbstractFile, TFile, SearchResult, parseFrontMatterAliases } from 'obsidian';
+import type TaskNotesPlugin from '../main';
 
 /**
  * Modal for selecting project notes using fuzzy search
@@ -6,9 +7,11 @@ import { App, FuzzySuggestModal, TAbstractFile, TFile, SearchResult } from 'obsi
  */
 export class ProjectSelectModal extends FuzzySuggestModal<TAbstractFile> {
     private onChoose: (file: TAbstractFile) => void;
+    private plugin: TaskNotesPlugin;
 
-    constructor(app: App, onChoose: (file: TAbstractFile) => void) {
+    constructor(app: App, plugin: TaskNotesPlugin, onChoose: (file: TAbstractFile) => void) {
         super(app);
+        this.plugin = plugin;
         this.onChoose = onChoose;
         this.setPlaceholder('Type to search for project notes...');
         this.setInstructions([
@@ -25,7 +28,20 @@ export class ProjectSelectModal extends FuzzySuggestModal<TAbstractFile> {
     }
 
     getItemText(file: TAbstractFile): string {
-        return `${file.name} ${file.path}`;
+        let text = `${file.name} ${file.path}`;
+        
+        // Add aliases to searchable text
+        if (file instanceof TFile) {
+            const cache = this.app.metadataCache.getFileCache(file);
+            if (cache?.frontmatter) {
+                const aliases = parseFrontMatterAliases(cache.frontmatter);
+                if (aliases && aliases.length > 0) {
+                    text += ` ${aliases.join(' ')}`;
+                }
+            }
+        }
+        
+        return text;
     }
 
     renderSuggestion(value: { item: TAbstractFile; match: SearchResult }, el: HTMLElement) {
@@ -34,9 +50,29 @@ export class ProjectSelectModal extends FuzzySuggestModal<TAbstractFile> {
         
         const container = el.createDiv({ cls: 'project-suggestion' });
         
-        // File name
+        // File name (main line)
         const nameEl = container.createSpan({ cls: 'project-name' });
         nameEl.textContent = file.name;
+        
+        // Title or aliases (second line)
+        if (file instanceof TFile) {
+            const cache = this.app.metadataCache.getFileCache(file);
+            if (cache?.frontmatter) {
+                const titleField = this.plugin.fieldMapper.toUserField('title');
+                const title = cache.frontmatter[titleField];
+                
+                if (title) {
+                    const titleEl = container.createDiv({ cls: 'project-title' });
+                    titleEl.textContent = title;
+                } else {
+                    const aliases = parseFrontMatterAliases(cache.frontmatter);
+                    if (aliases && aliases.length > 0) {
+                        const aliasEl = container.createDiv({ cls: 'project-aliases' });
+                        aliasEl.textContent = aliases.join(', ');
+                    }
+                }
+            }
+        }
         
         // File path (if different from name)
         if (file.path !== file.name) {
