@@ -135,6 +135,9 @@ export class KanbanView extends ItemView {
             this.previousGroupKey = this.currentQuery.groupKey || null;
         }
         
+        // Load saved column order
+        this.loadColumnOrder();
+        
         this.contentEl.empty();
         await this.render();
     }
@@ -345,6 +348,9 @@ export class KanbanView extends ItemView {
         // Initialize column order if empty
         if (this.columnOrder.length === 0) {
             this.columnOrder = [...allColumns];
+            if (this.columnOrder.length > 0) {
+                this.saveColumnOrder();
+            }
         }
 
         // Use the render method with order for consistency
@@ -442,6 +448,25 @@ export class KanbanView extends ItemView {
 
     private columnOrder: string[] = [];
 
+    /**
+     * Load column order from view preferences
+     */
+    private loadColumnOrder(): void {
+        const preferences = this.plugin.viewStateManager.getViewPreferences<{ columnOrder?: string[] }>(KANBAN_VIEW_TYPE);
+        if (preferences?.columnOrder) {
+            this.columnOrder = [...preferences.columnOrder];
+        }
+    }
+
+    /**
+     * Save column order to view preferences
+     */
+    private saveColumnOrder(): void {
+        const preferences = this.plugin.viewStateManager.getViewPreferences<{ columnOrder?: string[] }>(KANBAN_VIEW_TYPE) || {};
+        preferences.columnOrder = [...this.columnOrder];
+        this.plugin.viewStateManager.setViewPreferences(KANBAN_VIEW_TYPE, preferences);
+    }
+
     private async reorderColumns(sourceColumnId: string, targetColumnId: string) {
         // Get current column order or create it from DOM
         if (this.columnOrder.length === 0) {
@@ -461,6 +486,9 @@ export class KanbanView extends ItemView {
         
         // Insert it at the target position
         this.columnOrder.splice(targetIndex, 0, movedColumn);
+
+        // Save the new column order to preferences
+        this.saveColumnOrder();
 
         // Re-render the board with new order
         this.renderBoardWithOrder();
@@ -515,13 +543,20 @@ export class KanbanView extends ItemView {
 
         // Add any new columns that aren't in our order yet
         const allColumns = Array.from(groupedTasks.keys());
+        let orderChanged = false;
         allColumns.forEach(columnId => {
             if (!this.columnOrder.includes(columnId)) {
                 this.columnOrder.push(columnId);
+                orderChanged = true;
                 const columnTasks = groupedTasks.get(columnId) || [];
                 this.renderColumn(boardEl, columnId, columnTasks);
             }
         });
+
+        // Save column order if it changed
+        if (orderChanged) {
+            this.saveColumnOrder();
+        }
     }
 
     private addDragHandlers(card: HTMLElement, task: TaskInfo) {
@@ -661,14 +696,24 @@ export class KanbanView extends ItemView {
         // Initialize column order if empty
         if (this.columnOrder.length === 0) {
             this.columnOrder = [...allColumns];
+            if (this.columnOrder.length > 0) {
+                this.saveColumnOrder();
+            }
         }
 
         // Add any new columns that aren't in our order yet
+        let orderChanged = false;
         allColumns.forEach(columnId => {
             if (!this.columnOrder.includes(columnId)) {
                 this.columnOrder.push(columnId);
+                orderChanged = true;
             }
         });
+
+        // Save column order if it changed
+        if (orderChanged) {
+            this.saveColumnOrder();
+        }
 
         // Create column data in the stored order
         const orderedColumns = this.columnOrder.map(columnId => ({
