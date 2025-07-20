@@ -94,7 +94,8 @@ export class TaskService {
                 timeEstimate: taskData.timeEstimate && taskData.timeEstimate > 0 ? taskData.timeEstimate : undefined,
                 dateCreated: dateCreated,
                 dateModified: dateModified,
-                recurrence: taskData.recurrence || undefined
+                recurrence: taskData.recurrence || undefined,
+                icsEventId: taskData.icsEventId || undefined
             };
 
             // Use field mapper to convert to frontmatter with proper field mapping

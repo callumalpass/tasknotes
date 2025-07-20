@@ -90,6 +90,12 @@ export class FieldMapper {
             // Validate and clean the complete_instances array
             mapped.complete_instances = validateCompleteInstances(frontmatter[this.mapping.completeInstances]);
         }
+        
+        if (frontmatter[this.mapping.icsEventId] !== undefined) {
+            const icsEventId = frontmatter[this.mapping.icsEventId];
+            // Ensure icsEventId is always an array
+            mapped.icsEventId = Array.isArray(icsEventId) ? icsEventId : [icsEventId];
+        }
 
         // Handle tags array (includes archive tag)
         if (frontmatter.tags && Array.isArray(frontmatter.tags)) {
@@ -171,6 +177,10 @@ export class FieldMapper {
         
         if (taskData.complete_instances !== undefined) {
             frontmatter[this.mapping.completeInstances] = taskData.complete_instances;
+        }
+        
+        if (taskData.icsEventId !== undefined && taskData.icsEventId.length > 0) {
+            frontmatter[this.mapping.icsEventId] = taskData.icsEventId;
         }
 
         // Handle tags (merge archive status into tags array)

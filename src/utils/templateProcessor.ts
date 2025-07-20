@@ -15,6 +15,17 @@ export interface TemplateData {
     parentNote: string;
 }
 
+export interface ICSTemplateData extends TemplateData {
+    icsEventTitle: string;
+    icsEventStart: string;
+    icsEventEnd: string;
+    icsEventLocation: string;
+    icsEventDescription: string;
+    icsEventUrl: string;
+    icsEventSubscription: string;
+    icsEventId: string;
+}
+
 export interface ProcessedTemplate {
     frontmatter: Record<string, any>;
     body: string;
@@ -23,7 +34,9 @@ export interface ProcessedTemplate {
 /**
  * Process a complete template with frontmatter and body
  */
-export function processTemplate(templateContent: string, taskData: TemplateData): ProcessedTemplate {
+export function processTemplate(templateContent: string, taskData: TemplateData): ProcessedTemplate;
+export function processTemplate(templateContent: string, taskData: ICSTemplateData): ProcessedTemplate;
+export function processTemplate(templateContent: string, taskData: TemplateData | ICSTemplateData): ProcessedTemplate {
     const sections = parseTemplateSections(templateContent);
     
     const processedFrontmatter = sections.frontmatter 
@@ -81,7 +94,7 @@ function parseTemplateSections(templateContent: string): { frontmatter: string |
 /**
  * Process template variables in frontmatter
  */
-function processTemplateFrontmatter(frontmatterContent: string, taskData: TemplateData): Record<string, any> {
+function processTemplateFrontmatter(frontmatterContent: string, taskData: TemplateData | ICSTemplateData): Record<string, any> {
     try {
         // First, process template variables in the raw YAML text with YAML-safe replacements
         const processedYamlText = processTemplateVariablesForYaml(frontmatterContent, taskData);
@@ -105,7 +118,7 @@ function processTemplateFrontmatter(frontmatterContent: string, taskData: Templa
 /**
  * Process template variables in body content
  */
-function processTemplateBody(bodyContent: string, taskData: TemplateData): string {
+function processTemplateBody(bodyContent: string, taskData: TemplateData | ICSTemplateData): string {
     return processTemplateVariables(bodyContent, taskData);
 }
 
@@ -113,7 +126,7 @@ function processTemplateBody(bodyContent: string, taskData: TemplateData): strin
  * Process template variables for YAML frontmatter with proper quoting
  * This version ensures that values that could break YAML parsing are properly quoted
  */
-function processTemplateVariablesForYaml(template: string, taskData: TemplateData): string {
+function processTemplateVariablesForYaml(template: string, taskData: TemplateData | ICSTemplateData): string {
     let result = template;
     const now = new Date();
     
@@ -159,6 +172,45 @@ function processTemplateVariablesForYaml(template: string, taskData: TemplateDat
     // {{time}} - Current time (basic format only)
     result = result.replace(/\{\{time\}\}/g, format(now, 'HH:mm'));
     
+    // ICS Event template variables (only available if taskData is ICSTemplateData)
+    if ('icsEventTitle' in taskData) {
+        const icsData = taskData as ICSTemplateData;
+        
+        // {{icsEventTitle}} - ICS event title (quote if contains special characters)
+        const icsTitle = icsData.icsEventTitle || '';
+        const quotedIcsTitle = needsYamlQuoting(icsTitle) ? `"${escapeYamlString(icsTitle)}"` : icsTitle;
+        result = result.replace(/\{\{icsEventTitle\}\}/g, quotedIcsTitle);
+        
+        // {{icsEventStart}} - ICS event start time
+        result = result.replace(/\{\{icsEventStart\}\}/g, icsData.icsEventStart || '');
+        
+        // {{icsEventEnd}} - ICS event end time
+        result = result.replace(/\{\{icsEventEnd\}\}/g, icsData.icsEventEnd || '');
+        
+        // {{icsEventLocation}} - ICS event location (quote if contains special characters)
+        const icsLocation = icsData.icsEventLocation || '';
+        const quotedIcsLocation = icsLocation && needsYamlQuoting(icsLocation) ? `"${escapeYamlString(icsLocation)}"` : icsLocation;
+        result = result.replace(/\{\{icsEventLocation\}\}/g, quotedIcsLocation);
+        
+        // {{icsEventDescription}} - ICS event description (quote if contains special characters)
+        const icsDescription = icsData.icsEventDescription || '';
+        const quotedIcsDescription = icsDescription && needsYamlQuoting(icsDescription) ? `"${escapeYamlString(icsDescription)}"` : icsDescription;
+        result = result.replace(/\{\{icsEventDescription\}\}/g, quotedIcsDescription);
+        
+        // {{icsEventUrl}} - ICS event URL
+        result = result.replace(/\{\{icsEventUrl\}\}/g, icsData.icsEventUrl || '');
+        
+        // {{icsEventSubscription}} - ICS subscription name (quote if contains special characters)
+        const icsSubscription = icsData.icsEventSubscription || '';
+        const quotedIcsSubscription = icsSubscription && needsYamlQuoting(icsSubscription) ? `"${escapeYamlString(icsSubscription)}"` : icsSubscription;
+        result = result.replace(/\{\{icsEventSubscription\}\}/g, quotedIcsSubscription);
+        
+        // {{icsEventId}} - ICS event ID (ALWAYS quote for YAML safety since it's a UUID)
+        const icsEventId = icsData.icsEventId || '';
+        const quotedIcsEventId = icsEventId ? `"${escapeYamlString(icsEventId)}"` : '';
+        result = result.replace(/\{\{icsEventId\}\}/g, quotedIcsEventId);
+    }
+    
     return result;
 }
 
@@ -194,7 +246,7 @@ function escapeYamlString(str: string): string {
  * Process task template variables like {{title}}, {{priority}}, {{status}}, etc.
  * This is the core variable replacement function used by both frontmatter and body processing
  */
-function processTemplateVariables(template: string, taskData: TemplateData): string {
+function processTemplateVariables(template: string, taskData: TemplateData | ICSTemplateData): string {
     let result = template;
     const now = new Date();
     
@@ -235,6 +287,35 @@ function processTemplateVariables(template: string, taskData: TemplateData): str
     
     // {{time}} - Current time (basic format only)
     result = result.replace(/\{\{time\}\}/g, format(now, 'HH:mm'));
+    
+    // ICS Event template variables (only available if taskData is ICSTemplateData)
+    if ('icsEventTitle' in taskData) {
+        const icsData = taskData as ICSTemplateData;
+        
+        // {{icsEventTitle}} - ICS event title
+        result = result.replace(/\{\{icsEventTitle\}\}/g, icsData.icsEventTitle || '');
+        
+        // {{icsEventStart}} - ICS event start time
+        result = result.replace(/\{\{icsEventStart\}\}/g, icsData.icsEventStart || '');
+        
+        // {{icsEventEnd}} - ICS event end time
+        result = result.replace(/\{\{icsEventEnd\}\}/g, icsData.icsEventEnd || '');
+        
+        // {{icsEventLocation}} - ICS event location
+        result = result.replace(/\{\{icsEventLocation\}\}/g, icsData.icsEventLocation || '');
+        
+        // {{icsEventDescription}} - ICS event description
+        result = result.replace(/\{\{icsEventDescription\}\}/g, icsData.icsEventDescription || '');
+        
+        // {{icsEventUrl}} - ICS event URL
+        result = result.replace(/\{\{icsEventUrl\}\}/g, icsData.icsEventUrl || '');
+        
+        // {{icsEventSubscription}} - ICS subscription name
+        result = result.replace(/\{\{icsEventSubscription\}\}/g, icsData.icsEventSubscription || '');
+        
+        // {{icsEventId}} - ICS event ID
+        result = result.replace(/\{\{icsEventId\}\}/g, icsData.icsEventId || '');
+    }
     
     return result;
 }
