@@ -17,3 +17,9 @@ You can also create a **Custom Priority System**. You can define as many priorit
 ## Pomodoro Timer Settings
 
 You can configure the **Pomodoro Timer** from this section, including the duration of work and break sessions, as well as the notification settings. You can also choose where to store the Pomodoro session data.
+
+### Time Tracking Auto-Stop
+
+**Auto-stop time tracking on task completion** - Automatically stop active time tracking when any task is marked as completed. This ensures that time tracking accurately reflects the work done on tasks without requiring manual intervention. Enabled by default.
+
+**Show notification when auto-stopping time tracking** - Display a notification when time tracking is automatically stopped due to task completion. This provides feedback when the auto-stop feature activates. Disabled by default to avoid notification clutter.
