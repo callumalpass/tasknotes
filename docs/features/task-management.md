@@ -8,6 +8,32 @@ You can create and edit tasks in a variety of ways. The primary method is throug
 
 TaskNotes also supports **Natural Language Creation**, which allows you to create tasks by typing descriptions in plain English. The built-in parser can extract structured data from phrases like "Buy groceries tomorrow at 3pm @home #errands high priority."
 
+### Auto-Suggestions in Natural Language Input
+
+The natural language input field includes auto-suggestion functionality that activates when typing specific trigger characters:
+
+- **@** - Shows available contexts from existing tasks
+- **#** - Shows available tags from existing tasks  
+- **+** - Shows files from your vault as project suggestions
+
+#### Project Suggestions
+
+When typing `+` in the natural language input, you'll see up to 20 suggestions from your vault's markdown files. The suggestions display additional information to help identify files:
+
+```
+project-alpha [title: Alpha Project Development | aliases: alpha, proj-alpha]
+meeting-notes [title: Weekly Team Meeting Notes]
+simple-project
+work-file [aliases: work, office-tasks]
+```
+
+Project suggestions search across:
+- File names (basename without extension)
+- Frontmatter titles (using your configured field mapping)
+- Frontmatter aliases
+
+Selecting a project suggestion inserts it as `+[[filename]]`, creating a wikilink to the file while maintaining the `+` project marker that the natural language parser recognizes.
+
 Additionally, you can convert existing checkbox tasks in your notes to TaskNotes using the **Instant Conversion** feature.
 
 ## Task Properties
