@@ -992,15 +992,27 @@ export class AdvancedCalendarView extends ItemView {
             ? format(start, 'yyyy-MM-dd')
             : format(start, "yyyy-MM-dd'T'HH:mm");
             
-        const timeEstimate = allDay 
-            ? 60 // Default 1 hour for all-day events
-            : Math.round((end.getTime() - start.getTime()) / (1000 * 60)); // Duration in minutes
+        const durationMinutes = Math.round((end.getTime() - start.getTime()) / (1000 * 60));
+        
+        // Determine if this was a drag (intentional time selection) or just a click
+        const isDragOperation = !allDay && durationMinutes >= 5; // 5+ minutes indicates intentional drag
+        
+        const prePopulatedValues: any = {
+            scheduled: scheduledDate
+        };
+        
+        // Only override time estimate if it's an intentional drag operation
+        if (allDay) {
+            // For all-day events, don't override user's default time estimate
+            // Let TaskCreationModal use the default setting
+        } else if (isDragOperation) {
+            // User dragged to select a specific duration, use that
+            prePopulatedValues.timeEstimate = durationMinutes;
+        }
+        // For clicks (not drags), don't set timeEstimate to let default setting apply
         
         const modal = new TaskCreationModal(this.app, this.plugin, {
-            prePopulatedValues: {
-                scheduled: scheduledDate,
-                timeEstimate: timeEstimate > 0 ? timeEstimate : 60
-            }
+            prePopulatedValues
         });
         
         modal.open();
