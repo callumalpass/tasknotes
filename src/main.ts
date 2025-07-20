@@ -57,6 +57,7 @@ import { createReadingModeTaskLinkProcessor } from './editor/ReadingModeTaskLink
 import { createProjectNoteDecorations, dispatchProjectSubtasksUpdate } from './editor/ProjectNoteDecorations';
 import { DragDropManager } from './utils/DragDropManager';
 import { ICSSubscriptionService } from './services/ICSSubscriptionService';
+import { ICSNoteService } from './services/ICSNoteService';
 import { MigrationService } from './services/MigrationService';
 import { showMigrationPrompt } from './modals/MigrationModal';
 import { StatusBarService } from './services/StatusBarService';
@@ -127,6 +128,9 @@ export default class TaskNotesPlugin extends Plugin {
 	// ICS subscription service
 	icsSubscriptionService: ICSSubscriptionService;
 	
+	// ICS note service for creating notes/tasks from ICS events
+	icsNoteService: ICSNoteService;
+	
 	// Migration service
 	migrationService: MigrationService;
 	
@@ -135,7 +139,6 @@ export default class TaskNotesPlugin extends Plugin {
 	
 	// Event listener cleanup  
 	private taskUpdateListenerForEditor: import('obsidian').EventRef | null = null;
-	private autoStopTimeTrackingListener: import('obsidian').EventRef | null = null;
 	
 	// Initialization guard to prevent duplicate initialization
 	private initializationComplete = false;
@@ -336,6 +339,9 @@ export default class TaskNotesPlugin extends Plugin {
 				this.icsSubscriptionService = new ICSSubscriptionService(this);
 				await this.icsSubscriptionService.initialize();
 				
+				// Initialize ICS note service
+				this.icsNoteService = new ICSNoteService(this);
+				
 				// Initialize editor services (async imports)
 				const { TaskLinkDetectionService } = await import('./services/TaskLinkDetectionService');
 				this.taskLinkDetectionService = new TaskLinkDetectionService(this);
@@ -484,30 +490,18 @@ export default class TaskNotesPlugin extends Plugin {
 	 * Set up time tracking event listeners based on settings
 	 */
 	private setupTimeTrackingEventListeners(): void {
-		// Clean up existing listener if it exists
-		this.cleanupTimeTrackingEventListeners();
-		
 		// Only set up listener if auto-stop is enabled
 		if (this.settings.autoStopTimeTrackingOnComplete) {
-			this.autoStopTimeTrackingListener = this.emitter.on(EVENT_TASK_UPDATED, async (data: TaskUpdateEventData) => {
+			const eventRef = this.emitter.on(EVENT_TASK_UPDATED, async (data: TaskUpdateEventData) => {
 				await this.handleAutoStopTimeTracking(data);
 			});
-			this.registerEvent(this.autoStopTimeTrackingListener);
+			this.registerEvent(eventRef);
 		}
 		
 		// Update tracking of time tracking settings
 		this.updatePreviousTimeTrackingSettings();
 	}
 	
-	/**
-	 * Clean up time tracking event listeners
-	 */
-	private cleanupTimeTrackingEventListeners(): void {
-		if (this.autoStopTimeTrackingListener) {
-			this.emitter.offref(this.autoStopTimeTrackingListener);
-			this.autoStopTimeTrackingListener = null;
-		}
-	}
 	
 	/**
 	 * Handle auto-stop time tracking logic
@@ -696,8 +690,6 @@ export default class TaskNotesPlugin extends Plugin {
 			perfMonitor.logSummary();
 		}
 		
-		// Clean up time tracking event listeners
-		this.cleanupTimeTrackingEventListeners();
 		
 		// Clean up Pomodoro service
 		if (this.pomodoroService) {
@@ -869,7 +861,8 @@ export default class TaskNotesPlugin extends Plugin {
 		// Update custom styles
 		this.injectCustomStyles();
 		
-		// Update time tracking event listeners if settings changed
+		// Note: Event listeners are automatically cleaned up and re-registered by this.register()
+		// when settings change, so we just need to set them up again
 		if (timeTrackingSettingsChanged) {
 			this.setupTimeTrackingEventListeners();
 		}

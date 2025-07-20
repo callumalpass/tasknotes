@@ -10,15 +10,22 @@ The time tracking interface includes controls to start and stop tracking, which 
 
 ### Auto-Stop Time Tracking
 
-TaskNotes can automatically stop time tracking when a task is marked as completed. This feature helps ensure that time tracking accurately reflects the work done on tasks without requiring manual intervention.
+TaskNotes can automatically stop time tracking when a task is marked as completed. This feature ensures that time tracking data accurately reflects work completion without requiring manual timer management.
 
-**Key Features:**
-- Automatically stops active time tracking when any task is completed
-- Optional notification when auto-stop occurs (disabled by default)
-- Configurable through plugin settings
-- Works across all task views and completion methods
+The auto-stop feature works by monitoring task status changes across all views and interfaces. When a task's status changes from any non-completed state to a completed state (as defined by the custom status configuration), any active time tracking session for that task is automatically terminated.
 
-This feature is enabled by default but can be disabled in the plugin settings if you prefer manual control over time tracking.
+**Configuration Options:**
+- **Auto-stop tracking** - Enable or disable the automatic stopping behavior (enabled by default)
+- **Completion notification** - Show a notice when auto-stop occurs (disabled by default)
+
+**Behavior:**
+- Monitors all task status changes in real-time
+- Stops only the specific task that was completed (other active timers continue)
+- Preserves the recorded time data in the task's time entries
+- Works with both standard and recurring task completions
+- Functions across all task views (list, kanban, calendar, etc.)
+
+The feature integrates with the custom status system, so completion detection respects your configured workflow statuses rather than relying on hardcoded completion states.
 
 ## Pomodoro Timer
 
