@@ -216,11 +216,21 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: var(--tn-spacing-sm);
-    max-width: 400px;
+    gap: var(--tn-spacing-md);
+    max-width: 500px;
     width: 100%;
     margin: 0 auto;
     padding: 0;
+}
+
+/* Task Buttons Container */
+.tasknotes-plugin .pomodoro-view__task-buttons {
+    display: flex;
+    gap: var(--tn-spacing-sm);
+    align-items: center;
+    justify-content: center;
+    flex-wrap: nowrap;
+    width: 100%;
 }
 
 /* Task Select Button */
@@ -230,27 +240,80 @@
     justify-content: center;
     text-align: center;
     padding: var(--tn-spacing-sm) var(--tn-spacing-lg);
-    border: 1px solid var(--tn-border-color);
+    border: none;
     border-radius: var(--tn-radius-lg);
-    background: var(--tn-bg-secondary);
+    background: var(--tn-bg-primary);
     color: var(--tn-text-normal);
     cursor: pointer;
     font-size: var(--tn-font-size-sm);
     font-weight: var(--tn-font-weight-normal);
-    transition: all var(--tn-transition-fast);
+    transition: background-color 0.2s ease;
     min-height: var(--tn-button-height-sm);
-    width: 100%;
-    max-width: 300px;
+    flex: 1;
+    white-space: nowrap;
+    box-shadow: none;
 }
 
 .tasknotes-plugin .pomodoro-view__task-select-button:hover {
-    background: var(--tn-interactive-hover);
-    border-color: var(--tn-border-color-hover);
+    background: var(--tn-bg-secondary);
 }
 
 .tasknotes-plugin .pomodoro-view__task-select-button--no-task {
     color: var(--tn-text-muted);
     font-style: italic;
+}
+
+/* Task Clear Button - Inline secondary button */
+.tasknotes-plugin .pomodoro-view__task-clear-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: var(--tn-spacing-sm) var(--tn-spacing-lg);
+    border: none;
+    border-radius: var(--tn-radius-lg);
+    background: var(--tn-bg-primary);
+    color: var(--tn-text-normal);
+    cursor: pointer;
+    font-size: var(--tn-font-size-sm);
+    font-weight: var(--tn-font-weight-normal);
+    transition: background-color 0.2s ease;
+    min-height: var(--tn-button-height-sm);
+    flex: 1;
+    white-space: nowrap;
+    box-shadow: none;
+}
+
+.tasknotes-plugin .pomodoro-view__task-clear-button:hover {
+    background: var(--tn-bg-secondary);
+}
+
+.tasknotes-plugin .pomodoro-view__task-clear-button--hidden {
+    display: none;
+}
+
+/* Task Card Container */
+.tasknotes-plugin .pomodoro-view__task-card-container {
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.tasknotes-plugin .pomodoro-view__task-card-container--empty {
+    display: none;
+}
+
+/* Task card styling within pomodoro view */
+.tasknotes-plugin .pomodoro-view__task-card-container .task-card {
+    margin: 0;
+    border-radius: var(--tn-radius-lg);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.tasknotes-plugin .pomodoro-view__task-card-container .task-card:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 
@@ -383,31 +446,25 @@
     width: 28px;
     height: 28px;
     border-radius: 50%;
-    background: transparent;
-    color: var(--tn-text-muted);
+    background: var(--tn-bg-primary);
+    color: var(--tn-text-normal);
     border: none;
+    box-shadow: none;
     cursor: pointer;
     font-size: var(--tn-font-size-md);
     font-weight: var(--tn-font-weight-normal);
-    transition: all var(--tn-transition-fast);
+    transition: background-color 0.2s ease;
     display: flex;
     align-items: center;
     justify-content: center;
-    opacity: 0.6;
 }
 
 .tasknotes-plugin .pomodoro-view__time-adjust-button:hover {
     background: var(--tn-bg-secondary);
-    color: var(--tn-interactive-accent);
-    opacity: 1;
-    transform: scale(1.1);
 }
 
 .tasknotes-plugin .pomodoro-view__time-adjust-button:focus {
     outline: none;
-    background: var(--tn-bg-secondary);
-    color: var(--tn-interactive-accent);
-    opacity: 1;
 }
 
 /* Button States */
@@ -560,8 +617,7 @@
 .tasknotes-plugin .pomodoro-view__start-button:focus,
 .tasknotes-plugin .pomodoro-view__pause-button:focus,
 .tasknotes-plugin .pomodoro-view__stop-button:focus,
-.tasknotes-plugin .pomodoro-view__skip-break-button:focus,
-.tasknotes-plugin .pomodoro-view__task-select-button:focus {
+.tasknotes-plugin .pomodoro-view__skip-break-button:focus {
     outline: 2px solid var(--tn-interactive-accent);
     outline-offset: 2px;
 }
