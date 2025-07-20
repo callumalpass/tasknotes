@@ -1630,7 +1630,7 @@ export class AdvancedCalendarView extends ItemView {
     }
 
     private showICSEventInfo(icsEvent: ICSEvent, subscriptionName?: string): void {
-        const modal = new ICSEventInfoModal(this.app, icsEvent, subscriptionName);
+        const modal = new ICSEventInfoModal(this.app, this.plugin, icsEvent, subscriptionName);
         modal.open();
     }
 

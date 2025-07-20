@@ -55,6 +55,8 @@ export interface TaskNotesSettings {
 	autoStopTimeTrackingNotification: boolean;
 	// Project subtasks widget settings
 	showProjectSubtasks: boolean;
+	// ICS integration settings
+	icsIntegration: ICSIntegrationSettings;
 	// Saved filter views
 	savedViews: SavedView[];
 }
@@ -71,6 +73,13 @@ export interface TaskCreationDefaults {
 	// Body template settings
 	bodyTemplate: string;     // Path to template file for task body, empty = no template
 	useBodyTemplate: boolean; // Whether to use body template by default
+}
+
+export interface ICSIntegrationSettings {
+	// Default templates for creating content from ICS events
+	defaultNoteTemplate: string;     // Path to template file for notes created from ICS events
+	// Default folders
+	defaultNoteFolder: string;       // Folder for notes created from ICS events
 }
 
 export interface CalendarViewSettings {
@@ -121,7 +130,9 @@ export const DEFAULT_FIELD_MAPPING: FieldMapping = {
 	archiveTag: 'archived',
 	timeEntries: 'timeEntries',
 	completeInstances: 'complete_instances',
-	pomodoros: 'pomodoros'
+	pomodoros: 'pomodoros',
+	icsEventId: 'icsEventId',
+	icsEventTag: 'ics_event'
 };
 
 // Default status configuration matches current hardcoded behavior
@@ -283,6 +294,11 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	autoStopTimeTrackingNotification: false,
 	// Project subtasks widget defaults
 	showProjectSubtasks: true,
+	// ICS integration defaults
+	icsIntegration: {
+		defaultNoteTemplate: '',
+		defaultNoteFolder: ''
+	},
 	// Saved filter views defaults
 	savedViews: []
 };
@@ -1383,6 +1399,43 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 			text: 'Note: Only read-only access is supported. You cannot edit calendar events from within TaskNotes.',
 			cls: 'settings-help-note'
 		});
+
+		// ICS Integration Settings
+		new Setting(container).setName('Content creation from events').setHeading();
+		
+		new Setting(container)
+			.setName('Default note template')
+			.setDesc('Template file for notes created from ICS events (leave empty for default format)')
+			.addText(text => text
+				.setValue(this.plugin.settings.icsIntegration?.defaultNoteTemplate || '')
+				.setPlaceholder('templates/ics-note-template.md')
+				.onChange(async (value) => {
+					if (!this.plugin.settings.icsIntegration) {
+						this.plugin.settings.icsIntegration = {
+							defaultNoteTemplate: '',
+							defaultNoteFolder: ''
+						};
+					}
+					this.plugin.settings.icsIntegration.defaultNoteTemplate = value;
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(container)
+			.setName('Default note folder')
+			.setDesc('Folder for notes created from ICS events (leave empty for vault root)')
+			.addText(text => text
+				.setValue(this.plugin.settings.icsIntegration?.defaultNoteFolder || '')
+				.setPlaceholder('Notes/Calendar Events')
+				.onChange(async (value) => {
+					if (!this.plugin.settings.icsIntegration) {
+						this.plugin.settings.icsIntegration = {
+							defaultNoteTemplate: '',
+							defaultNoteFolder: ''
+						};
+					}
+					this.plugin.settings.icsIntegration.defaultNoteFolder = value;
+					await this.plugin.saveSettings();
+				}));
 	}
 	
 	private renderMiscTab(): void {
@@ -1485,7 +1538,9 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 			['dateCreated', 'Created date'],
 			['dateModified', 'Modified date'],
 			['recurrence', 'Recurrence'],
-			['archiveTag', 'Archive tag']
+			['archiveTag', 'Archive tag'],
+			['icsEventId', 'ICS Event ID'],
+			['icsEventTag', 'ICS Event Tag']
 		];
 		
 		fieldMappings.forEach(([field, label]) => {

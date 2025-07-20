@@ -21,3 +21,11 @@ You can enable or disable the **Timeblocking** feature, which allows you to crea
 ## External Calendar Integration
 
 You can manage your **ICS Calendar Subscriptions** from this section, including adding, editing, and removing subscriptions. You can also set the refresh interval for remote calendars.
+
+## Content Creation from Events
+
+These settings control how notes are created from calendar events.
+
+**Default note template** - Template file for notes created from ICS events (leave empty for default format). Specify the path to a markdown template file.
+
+**Default note folder** - Folder for notes created from ICS events (leave empty for vault root). The folder structure will be created if it doesn't exist.
