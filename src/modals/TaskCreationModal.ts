@@ -14,12 +14,13 @@ export interface TaskCreationOptions {
 }
 
 /**
- * Auto-suggestion provider for NLP textarea with @ and # triggers
+ * Auto-suggestion provider for NLP textarea with @, #, and + triggers
+ * @ = contexts, # = tags, + = wikilinks to vault files
  */
 class NLPSuggest extends AbstractInputSuggest<string> {
     private plugin: TaskNotesPlugin;
     private textarea: HTMLTextAreaElement;
-    private currentTrigger: '@' | '#' | null = null;
+    private currentTrigger: '@' | '#' | '+' | null = null;
     
     constructor(app: App, textareaEl: HTMLTextAreaElement, plugin: TaskNotesPlugin) {
         super(app, textareaEl as unknown as HTMLInputElement);
@@ -32,19 +33,24 @@ class NLPSuggest extends AbstractInputSuggest<string> {
         const cursorPos = this.textarea.selectionStart;
         const textBeforeCursor = this.textarea.value.slice(0, cursorPos);
         
-        // Find the last @ or # before cursor
+        // Find the last @, #, or + before cursor
         const lastAtIndex = textBeforeCursor.lastIndexOf('@');
         const lastHashIndex = textBeforeCursor.lastIndexOf('#');
+        const lastPlusIndex = textBeforeCursor.lastIndexOf('+');
         
         let triggerIndex = -1;
-        let trigger: '@' | '#' | null = null;
+        let trigger: '@' | '#' | '+' | null = null;
         
-        if (lastAtIndex > lastHashIndex && lastAtIndex !== -1) {
+        // Find the most recent trigger
+        if (lastAtIndex >= lastHashIndex && lastAtIndex >= lastPlusIndex && lastAtIndex !== -1) {
             triggerIndex = lastAtIndex;
             trigger = '@';
-        } else if (lastHashIndex !== -1) {
+        } else if (lastHashIndex >= lastPlusIndex && lastHashIndex !== -1) {
             triggerIndex = lastHashIndex;
             trigger = '#';
+        } else if (lastPlusIndex !== -1) {
+            triggerIndex = lastPlusIndex;
+            trigger = '+';
         }
         
         // No trigger found or trigger is not at word boundary
@@ -81,6 +87,15 @@ class NLPSuggest extends AbstractInputSuggest<string> {
                     tag.toLowerCase().includes(queryAfterTrigger.toLowerCase())
                 )
                 .slice(0, 10);
+        } else if (trigger === '+') {
+            // Get all markdown files in the vault for wikilink suggestions
+            const markdownFiles = this.plugin.app.vault.getMarkdownFiles();
+            return markdownFiles
+                .map(file => file.basename) // Get just the filename without extension
+                .filter(filename => 
+                    filename.toLowerCase().includes(queryAfterTrigger.toLowerCase())
+                )
+                .slice(0, 10);
         }
         
         return [];
@@ -104,18 +119,27 @@ class NLPSuggest extends AbstractInputSuggest<string> {
         // Find the last trigger position
         const lastTriggerIndex = this.currentTrigger === '@' 
             ? textBeforeCursor.lastIndexOf('@')
-            : textBeforeCursor.lastIndexOf('#');
+            : this.currentTrigger === '#'
+            ? textBeforeCursor.lastIndexOf('#')
+            : textBeforeCursor.lastIndexOf('+');
             
         if (lastTriggerIndex === -1) return;
         
         // Replace the trigger and partial text with the full suggestion
         const beforeTrigger = textBeforeCursor.slice(0, lastTriggerIndex);
-        const newText = beforeTrigger + this.currentTrigger + suggestion + ' ' + textAfterCursor;
+        let replacement = this.currentTrigger + suggestion;
+        
+        // For project (+) trigger, wrap in wikilink syntax but keep the + sign
+        if (this.currentTrigger === '+') {
+            replacement = '+[[' + suggestion + ']]';
+        }
+        
+        const newText = beforeTrigger + replacement + ' ' + textAfterCursor;
         
         this.textarea.value = newText;
         
         // Set cursor position after the inserted suggestion
-        const newCursorPos = beforeTrigger.length + this.currentTrigger.length + suggestion.length + 1;
+        const newCursorPos = beforeTrigger.length + replacement.length + 1;
         this.textarea.setSelectionRange(newCursorPos, newCursorPos);
         
         // Trigger input event to update preview
@@ -339,6 +363,7 @@ export class TaskCreationModal extends TaskModal {
         }
         
         if (parsed.contexts && parsed.contexts.length > 0) this.contexts = parsed.contexts.join(', ');
+        // Projects will be handled in the form input update section below
         if (parsed.tags && parsed.tags.length > 0) this.tags = parsed.tags.join(', ');
         if (parsed.details) this.details = parsed.details;
         if (parsed.recurrence) this.recurrenceRule = parsed.recurrence;
@@ -348,6 +373,12 @@ export class TaskCreationModal extends TaskModal {
         if (this.detailsInput) this.detailsInput.value = this.details;
         if (this.contextsInput) this.contextsInput.value = this.contexts;
         if (this.tagsInput) this.tagsInput.value = this.tags;
+        
+        // Handle projects differently - they use file selection, not text input
+        if (parsed.projects && parsed.projects.length > 0) {
+            this.initializeProjectsFromStrings(parsed.projects);
+            this.renderProjectsList();
+        }
         
         // Update icon states
         this.updateIconStates();

@@ -14,6 +14,7 @@ export interface ParsedTaskData {
     status?: string;
     tags: string[];
     contexts: string[];
+    projects: string[];
     recurrence?: string;
     estimate?: number; // in minutes
     isCompleted?: boolean;
@@ -51,6 +52,7 @@ export class NaturalLanguageParser {
             title: '',
             tags: [],
             contexts: [],
+            projects: [],
         };
 
         // 1. Separate title line from details
@@ -65,6 +67,7 @@ export class NaturalLanguageParser {
         // Extract simple, unambiguous patterns first
         remainingText = this.extractTags(remainingText, result);
         remainingText = this.extractContexts(remainingText, result);
+        remainingText = this.extractProjects(remainingText, result);
 
         // Extract configured keywords
         remainingText = this.extractPriority(remainingText, result);
@@ -123,6 +126,27 @@ export class NaturalLanguageParser {
             return this.cleanupWhitespace(text.replace(/@\w+/g, ''));
         }
         return text;
+    }
+
+    /** Extracts +projects and +[[wikilinks]] from the text and adds them to the result object. */
+    private extractProjects(text: string, result: ParsedTaskData): string {
+        let workingText = text;
+        
+        // Extract +[[wikilink]] patterns first (more specific)
+        const wikilinkProjectMatches = workingText.match(/\+\[\[[^\]]+\]\]/g);
+        if (wikilinkProjectMatches) {
+            result.projects.push(...wikilinkProjectMatches.map(project => project.slice(3, -2))); // Remove +[[ and ]]
+            workingText = this.cleanupWhitespace(workingText.replace(/\+\[\[[^\]]+\]\]/g, ''));
+        }
+        
+        // Extract +project patterns (simple word projects)
+        const projectMatches = workingText.match(/\+[\w/]+/g);
+        if (projectMatches) {
+            result.projects.push(...projectMatches.map(project => project.substring(1)));
+            workingText = this.cleanupWhitespace(workingText.replace(/\+[\w/]+/g, ''));
+        }
+        
+        return workingText;
     }
 
 
@@ -501,6 +525,7 @@ export class NaturalLanguageParser {
         // Sanitize and remove duplicates from arrays
         result.tags = [...new Set(result.tags.filter(Boolean))];
         result.contexts = [...new Set(result.contexts.filter(Boolean))];
+        result.projects = [...new Set(result.projects.filter(Boolean))];
 
         // Ensure date and time strings are valid formats (defensive check)
         if (result.dueDate && !this.isValidDateString(result.dueDate)) delete result.dueDate;
@@ -540,6 +565,18 @@ export class NaturalLanguageParser {
         if (parsed.priority) parts.push({ icon: 'alert-triangle', text: `Priority: ${parsed.priority}` });
         if (parsed.status) parts.push({ icon: 'activity', text: `Status: ${parsed.status}` });
         if (parsed.contexts && parsed.contexts.length > 0) parts.push({ icon: 'map-pin', text: `Contexts: ${parsed.contexts.map(c => '@' + c).join(', ')}` });
+        if (parsed.projects && parsed.projects.length > 0) {
+            // Display projects with + prefix and determine if they should have wikilink format
+            const projectDisplay = parsed.projects.map(p => {
+                // If the project name contains spaces or special characters, use wikilink format
+                if (p.includes(' ') || p.includes('-') || p.match(/[A-Z]/)) {
+                    return `+[[${p}]]`;
+                } else {
+                    return `+${p}`;
+                }
+            }).join(', ');
+            parts.push({ icon: 'folder', text: `Projects: ${projectDisplay}` });
+        }
         if (parsed.tags && parsed.tags.length > 0) parts.push({ icon: 'tag', text: `Tags: ${parsed.tags.map(t => '#' + t).join(', ')}` });
         if (parsed.recurrence) {
             let recurrenceText = 'Invalid recurrence';
