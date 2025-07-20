@@ -307,12 +307,12 @@
 .tasknotes-plugin .pomodoro-view__task-card-container .task-card {
     margin: 0;
     border-radius: var(--tn-radius-lg);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: none;
+    transition: none;
 }
 
 .tasknotes-plugin .pomodoro-view__task-card-container .task-card:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    /* No hover effects - keep task card static */
 }
 
 
