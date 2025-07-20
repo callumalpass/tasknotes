@@ -17,7 +17,12 @@ export interface TaskCreationOptions {
  * Auto-suggestion provider for NLP textarea with @, #, and + triggers
  * @ = contexts, # = tags, + = wikilinks to vault files
  */
-class NLPSuggest extends AbstractInputSuggest<string> {
+interface ProjectSuggestion {
+    basename: string;
+    displayName: string;
+}
+
+class NLPSuggest extends AbstractInputSuggest<string | ProjectSuggestion> {
     private plugin: TaskNotesPlugin;
     private textarea: HTMLTextAreaElement;
     private currentTrigger: '@' | '#' | '+' | null = null;
@@ -28,7 +33,7 @@ class NLPSuggest extends AbstractInputSuggest<string> {
         this.textarea = textareaEl;
     }
     
-    protected async getSuggestions(query: string): Promise<string[]> {
+    protected async getSuggestions(query: string): Promise<(string | ProjectSuggestion)[]> {
         // Get cursor position and text around it
         const cursorPos = this.textarea.selectionStart;
         const textBeforeCursor = this.textarea.value.slice(0, cursorPos);
@@ -90,26 +95,95 @@ class NLPSuggest extends AbstractInputSuggest<string> {
         } else if (trigger === '+') {
             // Get all markdown files in the vault for wikilink suggestions
             const markdownFiles = this.plugin.app.vault.getMarkdownFiles();
-            return markdownFiles
-                .map(file => file.basename) // Get just the filename without extension
-                .filter(filename => 
-                    filename.toLowerCase().includes(queryAfterTrigger.toLowerCase())
-                )
-                .slice(0, 10);
+            const query = queryAfterTrigger.toLowerCase();
+            
+            const matchingFiles = markdownFiles
+                .map(file => {
+                    const metadata = this.plugin.app.metadataCache.getFileCache(file);
+                    
+                    // Use field mapper to determine title - same logic as the system uses
+                    let title = '';
+                    if (metadata?.frontmatter) {
+                        const mappedData = this.plugin.fieldMapper.mapFromFrontmatter(
+                            metadata.frontmatter, 
+                            file.path, 
+                            this.plugin.settings.storeTitleInFilename
+                        );
+                        title = mappedData.title || '';
+                    }
+                    
+                    return {
+                        file,
+                        basename: file.basename,
+                        title: title,
+                        aliases: metadata?.frontmatter?.aliases || []
+                    };
+                })
+                .filter(item => {
+                    // Search in filename (basename)
+                    if (item.basename.toLowerCase().includes(query)) return true;
+                    
+                    // Search in title
+                    if (item.title && item.title.toLowerCase().includes(query)) return true;
+                    
+                    // Search in aliases
+                    if (Array.isArray(item.aliases)) {
+                        return item.aliases.some(alias => 
+                            typeof alias === 'string' && alias.toLowerCase().includes(query)
+                        );
+                    }
+                    
+                    return false;
+                })
+                .map(item => {
+                    // Create display name with title and aliases in brackets
+                    let displayName = item.basename;
+                    const extras: string[] = [];
+                    
+                    if (item.title && item.title !== item.basename) {
+                        extras.push(`title: ${item.title}`);
+                    }
+                    
+                    if (Array.isArray(item.aliases) && item.aliases.length > 0) {
+                        const validAliases = item.aliases.filter(alias => typeof alias === 'string');
+                        if (validAliases.length > 0) {
+                            extras.push(`aliases: ${validAliases.join(', ')}`);
+                        }
+                    }
+                    
+                    if (extras.length > 0) {
+                        displayName += ` [${extras.join(' | ')}]`;
+                    }
+                    
+                    return {
+                        basename: item.basename,
+                        displayName: displayName
+                    } as ProjectSuggestion;
+                })
+                .slice(0, 20); // Increased from 10 to 20
+                
+            return matchingFiles;
         }
         
         return [];
     }
     
-    public renderSuggestion(suggestion: string, el: HTMLElement): void {
+    public renderSuggestion(suggestion: string | ProjectSuggestion, el: HTMLElement): void {
         const icon = el.createSpan('nlp-suggest-icon');
         icon.textContent = this.currentTrigger || '';
         
         const text = el.createSpan('nlp-suggest-text');
-        text.textContent = suggestion;
+        
+        if (typeof suggestion === 'string') {
+            // For contexts and tags
+            text.textContent = suggestion;
+        } else {
+            // For projects with enhanced display
+            text.textContent = suggestion.displayName;
+        }
     }
     
-    public selectSuggestion(suggestion: string): void {
+    public selectSuggestion(suggestion: string | ProjectSuggestion): void {
         if (!this.currentTrigger) return;
         
         const cursorPos = this.textarea.selectionStart;
@@ -125,13 +199,16 @@ class NLPSuggest extends AbstractInputSuggest<string> {
             
         if (lastTriggerIndex === -1) return;
         
+        // Get the actual suggestion text to insert
+        const suggestionText = typeof suggestion === 'string' ? suggestion : suggestion.basename;
+        
         // Replace the trigger and partial text with the full suggestion
         const beforeTrigger = textBeforeCursor.slice(0, lastTriggerIndex);
-        let replacement = this.currentTrigger + suggestion;
+        let replacement = this.currentTrigger + suggestionText;
         
         // For project (+) trigger, wrap in wikilink syntax but keep the + sign
         if (this.currentTrigger === '+') {
-            replacement = '+[[' + suggestion + ']]';
+            replacement = '+[[' + suggestionText + ']]';
         }
         
         const newText = beforeTrigger + replacement + ' ' + textAfterCursor;
