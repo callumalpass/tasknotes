@@ -1,4 +1,4 @@
-import { ItemView, WorkspaceLeaf, TFile, Notice, EventRef, Menu } from 'obsidian';
+import { ItemView, WorkspaceLeaf, TFile, Notice, EventRef, Menu, Modal } from 'obsidian';
 import { ICSEventInfoModal } from '../modals/ICSEventInfoModal';
 import { TimeblockInfoModal } from '../modals/TimeblockInfoModal';
 import { format, startOfDay, endOfDay } from 'date-fns';
@@ -846,7 +846,8 @@ export class AdvancedCalendarView extends ItemView {
                 extendedProps: {
                     taskInfo: task,
                     eventType: 'timeEntry' as const,
-                    isCompleted: isCompleted
+                    isCompleted: isCompleted,
+                    timeEntryIndex: index
                 }
             }));
     }
@@ -1122,7 +1123,11 @@ export class AdvancedCalendarView extends ItemView {
         const jsEvent = clickInfo.jsEvent;
         
         if (eventType === 'timeEntry') {
-            // Time entries are read-only, just show info
+            // Time entries open the task edit modal
+            if (taskInfo && (jsEvent.button === 0 && !jsEvent.ctrlKey && !jsEvent.metaKey)) {
+                const editModal = new TaskEditModal(this.app, this.plugin, { task: taskInfo });
+                editModal.open();
+            }
             return;
         }
         
@@ -1514,34 +1519,42 @@ export class AdvancedCalendarView extends ItemView {
             arg.el.classList.add('fc-completed-event');
         }
         
-        // Add hover preview and context menu event listeners (only for task events, not for time entries or ICS events)
-        if (eventType !== 'timeEntry' && eventType !== 'ics' && taskInfo) {
-            // Add hover preview functionality
-            arg.el.addEventListener('mouseover', (event: MouseEvent) => {
-                const file = this.plugin.app.vault.getAbstractFileByPath(taskInfo.path);
-                if (file) {
-                    this.plugin.app.workspace.trigger('hover-link', {
-                        event,
-                        source: 'tasknotes-advanced-calendar',
-                        hoverParent: arg.el,
-                        targetEl: arg.el,
-                        linktext: taskInfo.path,
-                        sourcePath: taskInfo.path
-                    });
-                }
-            });
+        // Add hover preview and context menu event listeners
+        if (taskInfo) {
+            // Add hover preview functionality for all task-related events
+            if (eventType !== 'ics') {
+                arg.el.addEventListener('mouseover', (event: MouseEvent) => {
+                    const file = this.plugin.app.vault.getAbstractFileByPath(taskInfo.path);
+                    if (file) {
+                        this.plugin.app.workspace.trigger('hover-link', {
+                            event,
+                            source: 'tasknotes-advanced-calendar',
+                            hoverParent: arg.el,
+                            targetEl: arg.el,
+                            linktext: taskInfo.path,
+                            sourcePath: taskInfo.path
+                        });
+                    }
+                });
+            }
             
             // Add context menu functionality
             arg.el.addEventListener("contextmenu", (jsEvent: MouseEvent) => {
                 jsEvent.preventDefault();
                 jsEvent.stopPropagation();
                 
-                // For recurring instances, use the instance date
-                const targetDate = isRecurringInstance && instanceDate 
-                    ? parseDate(instanceDate) 
-                    : (arg.event.start || new Date());
-                    
-                showTaskContextMenu(jsEvent, taskInfo.path, this.plugin, targetDate);
+                if (eventType === 'timeEntry') {
+                    // Special context menu for time entries
+                    const { timeEntryIndex } = arg.event.extendedProps;
+                    this.showTimeEntryContextMenu(jsEvent, taskInfo, timeEntryIndex);
+                } else {
+                    // Standard task context menu for other event types
+                    const targetDate = isRecurringInstance && instanceDate 
+                        ? parseDate(instanceDate) 
+                        : (arg.event.start || new Date());
+                        
+                    showTaskContextMenu(jsEvent, taskInfo.path, this.plugin, targetDate);
+                }
             });
         }
     }
@@ -1699,6 +1712,95 @@ export class AdvancedCalendarView extends ItemView {
                     })
             );
         }
+
+        menu.showAtMouseEvent(jsEvent);
+    }
+
+    private showTimeEntryContextMenu(jsEvent: MouseEvent, taskInfo: TaskInfo, timeEntryIndex: number): void {
+        const menu = new Menu();
+
+        // Show task details option
+        menu.addItem((item) =>
+            item
+                .setTitle("Open task")
+                .setIcon("edit")
+                .onClick(() => {
+                    const editModal = new TaskEditModal(this.app, this.plugin, { task: taskInfo });
+                    editModal.open();
+                })
+        );
+
+        menu.addSeparator();
+
+        // Delete time entry option
+        menu.addItem((item) =>
+            item
+                .setTitle("Delete time entry")
+                .setIcon("trash")
+                .onClick(async () => {
+                    try {
+                        const timeEntry = taskInfo.timeEntries?.[timeEntryIndex];
+                        if (!timeEntry) {
+                            new Notice('Time entry not found');
+                            return;
+                        }
+
+                        // Calculate duration for confirmation message
+                        let durationText = '';
+                        if (timeEntry.startTime && timeEntry.endTime) {
+                            const start = new Date(timeEntry.startTime);
+                            const end = new Date(timeEntry.endTime);
+                            const durationMs = end.getTime() - start.getTime();
+                            const durationMinutes = Math.round(durationMs / (1000 * 60));
+                            const hours = Math.floor(durationMinutes / 60);
+                            const minutes = durationMinutes % 60;
+                            
+                            if (hours > 0) {
+                                durationText = ` (${hours}h ${minutes}m)`;
+                            } else {
+                                durationText = ` (${minutes}m)`;
+                            }
+                        }
+
+                        // Show confirmation
+                        const confirmed = await new Promise<boolean>((resolve) => {
+                            const confirmModal = new Modal(this.app);
+                            confirmModal.setTitle('Delete Time Entry');
+                            confirmModal.setContent(`Are you sure you want to delete this time entry${durationText}? This action cannot be undone.`);
+                            
+                            const buttonContainer = confirmModal.contentEl.createDiv({ cls: 'modal-button-container' });
+                            buttonContainer.style.display = 'flex';
+                            buttonContainer.style.justifyContent = 'flex-end';
+                            buttonContainer.style.gap = '8px';
+                            buttonContainer.style.marginTop = '20px';
+                            
+                            const cancelBtn = buttonContainer.createEl('button', { text: 'Cancel' });
+                            const deleteBtn = buttonContainer.createEl('button', { text: 'Delete', cls: 'mod-warning' });
+                            
+                            cancelBtn.onclick = () => {
+                                confirmModal.close();
+                                resolve(false);
+                            };
+                            
+                            deleteBtn.onclick = () => {
+                                confirmModal.close();
+                                resolve(true);
+                            };
+                            
+                            confirmModal.open();
+                        });
+
+                        if (confirmed) {
+                            await this.plugin.taskService.deleteTimeEntry(taskInfo, timeEntryIndex);
+                            new Notice('Time entry deleted');
+                            this.refreshEvents();
+                        }
+                    } catch (error) {
+                        console.error('Error deleting time entry:', error);
+                        new Notice('Failed to delete time entry');
+                    }
+                })
+        );
 
         menu.showAtMouseEvent(jsEvent);
     }

@@ -780,4 +780,55 @@ export class TaskService {
         // Step 5: Return authoritative data
         return updatedTask;
     }
+
+    /**
+     * Delete a specific time entry from a task
+     */
+    async deleteTimeEntry(task: TaskInfo, timeEntryIndex: number): Promise<TaskInfo> {
+        const file = this.plugin.app.vault.getAbstractFileByPath(task.path);
+        if (!(file instanceof TFile)) {
+            throw new Error(`Cannot find task file: ${task.path}`);
+        }
+
+        if (!task.timeEntries || !Array.isArray(task.timeEntries)) {
+            throw new Error('Task has no time entries');
+        }
+
+        if (timeEntryIndex < 0 || timeEntryIndex >= task.timeEntries.length) {
+            throw new Error('Invalid time entry index');
+        }
+
+        // Step 1: Construct new state in memory
+        const updatedTask = { ...task };
+        updatedTask.dateModified = getCurrentTimestamp();
+        
+        // Remove the time entry at the specified index
+        updatedTask.timeEntries = task.timeEntries.filter((_, index) => index !== timeEntryIndex);
+
+        // Step 2: Persist to file
+        await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
+            const timeEntriesField = this.plugin.fieldMapper.toUserField('timeEntries');
+            const dateModifiedField = this.plugin.fieldMapper.toUserField('dateModified');
+            
+            if (frontmatter[timeEntriesField] && Array.isArray(frontmatter[timeEntriesField])) {
+                // Remove the time entry at the specified index
+                frontmatter[timeEntriesField] = frontmatter[timeEntriesField].filter((_: any, index: number) => index !== timeEntryIndex);
+            }
+            
+            frontmatter[dateModifiedField] = updatedTask.dateModified;
+        });
+
+        // Step 3: Proactively update cache
+        await this.plugin.cacheManager.updateTaskInfoInCache(task.path, updatedTask);
+        
+        // Step 4: Notify system of change
+        this.plugin.emitter.trigger(EVENT_TASK_UPDATED, {
+            path: task.path,
+            originalTask: task,
+            updatedTask: updatedTask
+        });
+        
+        // Step 5: Return authoritative data
+        return updatedTask;
+    }
 }
