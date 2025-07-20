@@ -63,6 +63,11 @@ export interface FilterQuery extends FilterGroup {
 	groupKey?: TaskGroupKey;
 }
 
+export interface GetGroupedTasksOptions {
+	targetDate?: Date;
+	prePopulateGroups?: boolean;
+}
+
 // A named, persistent configuration that encapsulates the entire state
 export interface SavedView {
 	id: string; // Unique ID for the view
