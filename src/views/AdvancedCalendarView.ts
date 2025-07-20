@@ -1514,8 +1514,24 @@ export class AdvancedCalendarView extends ItemView {
             arg.el.classList.add('fc-completed-event');
         }
         
-        // Add context menu event listener (only for task events, not for time entries or ICS events)
+        // Add hover preview and context menu event listeners (only for task events, not for time entries or ICS events)
         if (eventType !== 'timeEntry' && eventType !== 'ics' && taskInfo) {
+            // Add hover preview functionality
+            arg.el.addEventListener('mouseover', (event: MouseEvent) => {
+                const file = this.plugin.app.vault.getAbstractFileByPath(taskInfo.path);
+                if (file) {
+                    this.plugin.app.workspace.trigger('hover-link', {
+                        event,
+                        source: 'tasknotes-advanced-calendar',
+                        hoverParent: arg.el,
+                        targetEl: arg.el,
+                        linktext: taskInfo.path,
+                        sourcePath: taskInfo.path
+                    });
+                }
+            });
+            
+            // Add context menu functionality
             arg.el.addEventListener("contextmenu", (jsEvent: MouseEvent) => {
                 jsEvent.preventDefault();
                 jsEvent.stopPropagation();
