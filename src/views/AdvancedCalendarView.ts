@@ -986,6 +986,14 @@ export class AdvancedCalendarView extends ItemView {
         this.calendar?.unselect();
     }
     
+    private parseSlotDurationToMinutes(slotDuration: string): number {
+        // Parse slot duration format like '00:30:00' to minutes
+        const parts = slotDuration.split(':');
+        const hours = parseInt(parts[0], 10);
+        const minutes = parseInt(parts[1], 10);
+        return hours * 60 + minutes;
+    }
+    
     private handleTaskCreation(start: Date, end: Date, allDay: boolean) {
         // Pre-populate with selected date/time
         const scheduledDate = allDay 
@@ -994,8 +1002,13 @@ export class AdvancedCalendarView extends ItemView {
             
         const durationMinutes = Math.round((end.getTime() - start.getTime()) / (1000 * 60));
         
+        // Convert slot duration setting to minutes for comparison
+        const slotDurationSetting = this.plugin.settings.calendarViewSettings.slotDuration;
+        const slotDurationMinutes = this.parseSlotDurationToMinutes(slotDurationSetting);
+        
         // Determine if this was a drag (intentional time selection) or just a click
-        const isDragOperation = !allDay && durationMinutes >= 5; // 5+ minutes indicates intentional drag
+        // If duration is greater than slot duration, it's an intentional drag
+        const isDragOperation = !allDay && durationMinutes > slotDurationMinutes;
         
         const prePopulatedValues: any = {
             scheduled: scheduledDate
