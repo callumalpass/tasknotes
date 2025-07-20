@@ -835,3 +835,359 @@
     border: 0;
 }
 
+/* =====================================================================
+   ICS NOTE CREATION MODAL
+   ===================================================================== */
+
+.tasknotes-plugin .ics-note-creation-modal {
+    width: 600px;
+    max-width: 90vw;
+}
+
+.tasknotes-plugin .ics-event-preview {
+    background: var(--background-secondary);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: var(--radius-s);
+    padding: var(--size-4-3);
+    margin-bottom: var(--size-4-3);
+}
+
+.tasknotes-plugin .ics-event-preview h3 {
+    margin: 0 0 var(--size-4-2) 0;
+    color: var(--text-accent);
+}
+
+.tasknotes-plugin .event-details > div {
+    margin-bottom: var(--size-4-1);
+    font-size: var(--font-ui-small);
+    line-height: 1.4;
+}
+
+.tasknotes-plugin .content-type-selector .setting-item-control {
+    display: flex;
+    gap: var(--size-4-2);
+}
+
+.tasknotes-plugin .content-type-buttons button {
+    padding: var(--size-4-1) var(--size-4-3);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: var(--radius-s);
+    background: var(--background-primary);
+    color: var(--text-normal);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tasknotes-plugin .content-type-buttons button:hover {
+    background: var(--background-modifier-hover);
+}
+
+.tasknotes-plugin .content-type-buttons button.mod-cta {
+    background: var(--interactive-accent);
+    color: var(--text-on-accent);
+    border-color: var(--interactive-accent);
+}
+
+.tasknotes-plugin .content-preview {
+    background: var(--background-secondary);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: var(--radius-s);
+    padding: var(--size-4-3);
+    margin: var(--size-4-3) 0;
+}
+
+.tasknotes-plugin .content-preview h4 {
+    margin: 0 0 var(--size-4-2) 0;
+    color: var(--text-accent);
+}
+
+.tasknotes-plugin .preview-details > div {
+    margin-bottom: var(--size-4-1);
+    font-size: var(--font-ui-small);
+}
+
+.tasknotes-plugin .template-variables {
+    margin-top: var(--size-4-3);
+}
+
+.tasknotes-plugin .template-variables h5 {
+    margin: 0 0 var(--size-4-2) 0;
+    font-size: var(--font-ui-smaller);
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.tasknotes-plugin .variables-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--size-4-1);
+}
+
+.tasknotes-plugin .template-variable {
+    background: var(--background-modifier-border);
+    color: var(--text-muted);
+    padding: 2px var(--size-4-1);
+    border-radius: var(--radius-s);
+    font-size: var(--font-ui-smaller);
+    font-family: var(--font-monospace);
+}
+
+.tasknotes-plugin .modal-button-container {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--size-4-2);
+    margin-top: var(--size-4-4);
+    padding-top: var(--size-4-3);
+    border-top: 1px solid var(--background-modifier-border);
+}
+
+/* =====================================================================
+   ICS EVENT INFO MODAL
+   ===================================================================== */
+
+.tasknotes-plugin .ics-event-info-modal {
+    width: 700px;
+    max-width: 95vw;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    z-index: 1000;
+}
+
+.tasknotes-plugin .ics-event-info-modal .modal-content {
+    padding: var(--size-4-4);
+    box-sizing: border-box;
+}
+
+.tasknotes-plugin .ics-event-info-modal * {
+    box-sizing: border-box;
+}
+
+.tasknotes-plugin .ics-event-info-modal .modal-header h2 {
+    margin: 0 0 var(--size-4-4) 0;
+    color: var(--text-accent);
+}
+
+.tasknotes-plugin .event-details-section,
+.tasknotes-plugin .related-notes-section,
+.tasknotes-plugin .action-buttons-section {
+    margin-bottom: var(--size-4-4);
+    padding-bottom: var(--size-4-3);
+    border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.tasknotes-plugin .event-details-section:last-of-type,
+.tasknotes-plugin .related-notes-section:last-of-type,
+.tasknotes-plugin .action-buttons-section:last-of-type {
+    border-bottom: none;
+}
+
+.tasknotes-plugin .event-details-section h3,
+.tasknotes-plugin .related-notes-section h3,
+.tasknotes-plugin .action-buttons-section h3 {
+    margin: 0 0 var(--size-4-3) 0;
+    font-size: var(--font-ui-medium);
+    color: var(--text-normal);
+}
+
+.tasknotes-plugin .event-details-grid {
+    display: flex;
+    flex-direction: column;
+    gap: var(--size-4-2);
+}
+
+.tasknotes-plugin .detail-row {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--size-4-2);
+    font-size: var(--font-ui-small);
+    margin-bottom: var(--size-4-2);
+    line-height: 1.4;
+    clear: both;
+    overflow: hidden;
+}
+
+.tasknotes-plugin .detail-row strong {
+    min-width: 120px;
+    flex-shrink: 0;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.tasknotes-plugin .detail-row span {
+    flex: 1;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+.tasknotes-plugin .detail-row.description-row {
+    flex-direction: column;
+    gap: var(--size-4-1);
+}
+
+.tasknotes-plugin .description-content {
+    background: var(--background-secondary);
+    padding: var(--size-4-2);
+    border-radius: var(--radius-s);
+    border: 1px solid var(--background-modifier-border);
+    font-style: italic;
+    white-space: pre-wrap;
+}
+
+.tasknotes-plugin .external-link {
+    color: var(--interactive-accent);
+    text-decoration: none;
+}
+
+.tasknotes-plugin .external-link:hover {
+    text-decoration: underline;
+}
+
+.tasknotes-plugin .empty-state {
+    text-align: center;
+    color: var(--text-muted);
+    font-style: italic;
+    padding: var(--size-4-4);
+    background: var(--background-secondary);
+    border-radius: var(--radius-s);
+    border: 1px solid var(--background-modifier-border);
+}
+
+.tasknotes-plugin .related-notes-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--size-4-2);
+}
+
+.tasknotes-plugin .related-note-item {
+    background: var(--background-secondary);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: var(--radius-s);
+    padding: var(--size-4-3);
+    transition: background-color 0.2s ease;
+}
+
+.tasknotes-plugin .related-note-item:hover {
+    background: var(--background-modifier-hover);
+}
+
+.tasknotes-plugin .note-header {
+    display: flex;
+    align-items: center;
+    gap: var(--size-4-2);
+    margin-bottom: var(--size-4-1);
+}
+
+.tasknotes-plugin .note-icon {
+    font-size: var(--font-ui-medium);
+    opacity: 0.7;
+}
+
+.tasknotes-plugin .note-header .internal-link {
+    color: var(--text-normal);
+    text-decoration: none;
+    font-weight: 500;
+    flex: 1;
+}
+
+.tasknotes-plugin .note-header .internal-link:hover {
+    color: var(--interactive-accent);
+    text-decoration: underline;
+}
+
+.tasknotes-plugin .note-metadata {
+    display: flex;
+    gap: var(--size-4-2);
+    font-size: var(--font-ui-smaller);
+}
+
+.tasknotes-plugin .note-status,
+.tasknotes-plugin .note-priority {
+    background: var(--background-modifier-border);
+    padding: 2px var(--size-4-1);
+    border-radius: var(--radius-s);
+    color: var(--text-muted);
+}
+
+.tasknotes-plugin .action-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--size-4-2);
+}
+
+.tasknotes-plugin .action-button {
+    padding: var(--size-4-2) var(--size-4-3);
+    border-radius: var(--radius-s);
+    border: 1px solid var(--background-modifier-border);
+    cursor: pointer;
+    font-size: var(--font-ui-small);
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: var(--size-4-1);
+    min-height: 32px;
+    user-select: none;
+}
+
+.tasknotes-plugin .action-button .button-icon {
+    opacity: 0.7;
+}
+
+.tasknotes-plugin .content-type-buttons button {
+    display: flex;
+    align-items: center;
+    gap: var(--size-4-1);
+}
+
+.tasknotes-plugin .action-button.primary-button {
+    background: var(--interactive-accent);
+    color: var(--text-on-accent);
+    border-color: var(--interactive-accent);
+}
+
+.tasknotes-plugin .action-button.primary-button:hover {
+    background: var(--interactive-accent-hover);
+    border-color: var(--interactive-accent-hover);
+}
+
+.tasknotes-plugin .action-button.secondary-button {
+    background: var(--background-primary);
+    color: var(--text-normal);
+}
+
+.tasknotes-plugin .action-button.secondary-button:hover {
+    background: var(--background-modifier-hover);
+}
+
+.tasknotes-plugin .close-button-container {
+    display: flex;
+    justify-content: center;
+    margin-top: var(--size-4-4);
+    padding-top: var(--size-4-3);
+    border-top: 1px solid var(--background-modifier-border);
+}
+
+/* =====================================================================
+   ICS NOTE LINK MODAL (Fuzzy Selector)
+   ===================================================================== */
+
+.tasknotes-plugin .ics-note-link-suggestion {
+    display: flex;
+    flex-direction: column;
+    gap: var(--size-4-1);
+    padding: var(--size-4-2);
+}
+
+.tasknotes-plugin .note-link-name {
+    font-weight: 500;
+    color: var(--text-normal);
+}
+
+.tasknotes-plugin .note-link-path {
+    font-size: var(--font-ui-smaller);
+    color: var(--text-muted);
+    font-style: italic;
+}
+
