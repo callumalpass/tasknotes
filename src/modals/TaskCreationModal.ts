@@ -1,4 +1,4 @@
-import { App, Notice, setIcon } from 'obsidian';
+import { App, Notice, setIcon, AbstractInputSuggest } from 'obsidian';
 import TaskNotesPlugin from '../main';
 import { TaskModal } from './TaskModal';
 import { TaskInfo, TaskCreationData } from '../types';
@@ -13,12 +13,124 @@ export interface TaskCreationOptions {
     onTaskCreated?: (task: TaskInfo) => void;
 }
 
+/**
+ * Auto-suggestion provider for NLP textarea with @ and # triggers
+ */
+class NLPSuggest extends AbstractInputSuggest<string> {
+    private plugin: TaskNotesPlugin;
+    private textarea: HTMLTextAreaElement;
+    private currentTrigger: '@' | '#' | null = null;
+    
+    constructor(app: App, textareaEl: HTMLTextAreaElement, plugin: TaskNotesPlugin) {
+        super(app, textareaEl as unknown as HTMLInputElement);
+        this.plugin = plugin;
+        this.textarea = textareaEl;
+    }
+    
+    protected async getSuggestions(query: string): Promise<string[]> {
+        // Get cursor position and text around it
+        const cursorPos = this.textarea.selectionStart;
+        const textBeforeCursor = this.textarea.value.slice(0, cursorPos);
+        
+        // Find the last @ or # before cursor
+        const lastAtIndex = textBeforeCursor.lastIndexOf('@');
+        const lastHashIndex = textBeforeCursor.lastIndexOf('#');
+        
+        let triggerIndex = -1;
+        let trigger: '@' | '#' | null = null;
+        
+        if (lastAtIndex > lastHashIndex && lastAtIndex !== -1) {
+            triggerIndex = lastAtIndex;
+            trigger = '@';
+        } else if (lastHashIndex !== -1) {
+            triggerIndex = lastHashIndex;
+            trigger = '#';
+        }
+        
+        // No trigger found or trigger is not at word boundary
+        if (triggerIndex === -1 || (triggerIndex > 0 && /\w/.test(textBeforeCursor[triggerIndex - 1]))) {
+            this.currentTrigger = null;
+            return [];
+        }
+        
+        // Extract the query after the trigger
+        const queryAfterTrigger = textBeforeCursor.slice(triggerIndex + 1);
+        
+        // Check if there's a space in the query (which would end the suggestion context)
+        if (queryAfterTrigger.includes(' ') || queryAfterTrigger.includes('\n')) {
+            this.currentTrigger = null;
+            return [];
+        }
+        
+        this.currentTrigger = trigger;
+        
+        // Get suggestions based on trigger type
+        if (trigger === '@') {
+            const contexts = this.plugin.cacheManager.getAllContexts();
+            return contexts
+                .filter(context => context && typeof context === 'string')
+                .filter(context => 
+                    context.toLowerCase().includes(queryAfterTrigger.toLowerCase())
+                )
+                .slice(0, 10);
+        } else if (trigger === '#') {
+            const tags = this.plugin.cacheManager.getAllTags();
+            return tags
+                .filter(tag => tag && typeof tag === 'string')
+                .filter(tag => 
+                    tag.toLowerCase().includes(queryAfterTrigger.toLowerCase())
+                )
+                .slice(0, 10);
+        }
+        
+        return [];
+    }
+    
+    public renderSuggestion(suggestion: string, el: HTMLElement): void {
+        const icon = el.createSpan('nlp-suggest-icon');
+        icon.textContent = this.currentTrigger || '';
+        
+        const text = el.createSpan('nlp-suggest-text');
+        text.textContent = suggestion;
+    }
+    
+    public selectSuggestion(suggestion: string): void {
+        if (!this.currentTrigger) return;
+        
+        const cursorPos = this.textarea.selectionStart;
+        const textBeforeCursor = this.textarea.value.slice(0, cursorPos);
+        const textAfterCursor = this.textarea.value.slice(cursorPos);
+        
+        // Find the last trigger position
+        const lastTriggerIndex = this.currentTrigger === '@' 
+            ? textBeforeCursor.lastIndexOf('@')
+            : textBeforeCursor.lastIndexOf('#');
+            
+        if (lastTriggerIndex === -1) return;
+        
+        // Replace the trigger and partial text with the full suggestion
+        const beforeTrigger = textBeforeCursor.slice(0, lastTriggerIndex);
+        const newText = beforeTrigger + this.currentTrigger + suggestion + ' ' + textAfterCursor;
+        
+        this.textarea.value = newText;
+        
+        // Set cursor position after the inserted suggestion
+        const newCursorPos = beforeTrigger.length + this.currentTrigger.length + suggestion.length + 1;
+        this.textarea.setSelectionRange(newCursorPos, newCursorPos);
+        
+        // Trigger input event to update preview
+        this.textarea.dispatchEvent(new Event('input', { bubbles: true }));
+        this.textarea.focus();
+    }
+}
+
 export class TaskCreationModal extends TaskModal {
     private options: TaskCreationOptions;
     private nlParser: NaturalLanguageParser;
     private nlInput: HTMLTextAreaElement;
     private nlPreviewContainer: HTMLElement;
     private nlButtonContainer: HTMLElement;
+    private nlpSuggest: NLPSuggest;
 
     constructor(app: App, plugin: TaskNotesPlugin, options: TaskCreationOptions = {}) {
         super(app, plugin);
@@ -102,6 +214,9 @@ export class TaskCreationModal extends TaskModal {
                 this.parseAndFillForm(input);
             }
         });
+
+        // Initialize auto-suggestion
+        this.nlpSuggest = new NLPSuggest(this.app, this.nlInput, this.plugin);
 
         // Focus the input
         setTimeout(() => {

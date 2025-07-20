@@ -607,6 +607,19 @@
     box-shadow: 0 2px 16px rgba(0, 0, 0, 0.3);
 }
 
+/* NLP Auto-suggestion specific styles */
+.tasknotes-plugin .nlp-suggest-icon {
+    display: inline-block;
+    font-weight: 600;
+    color: var(--interactive-accent);
+    margin-right: var(--size-2-2);
+    min-width: 14px;
+}
+
+.tasknotes-plugin .nlp-suggest-text {
+    color: var(--text-normal);
+}
+
 /* =====================================================================
    PROJECT SELECTION UI
    ===================================================================== */
