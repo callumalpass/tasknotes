@@ -358,9 +358,12 @@
     flex: 1;
     padding: var(--tn-spacing-sm) var(--tn-spacing-md);
     background: none;
-    border: none;
+    border: none !important;
+    box-shadow: none;
+    outline: none;
     color: var(--text-normal);
     text-align: left;
+    justify-content: flex-start;
     cursor: pointer;
     font-size: var(--font-ui-small);
     font-weight: 500;
@@ -473,7 +476,9 @@
 
 .tasknotes-plugin .filter-bar__save-button {
     background: none;
-    border: none;
+    border: none !important;
+    box-shadow: none;
+    outline: none;
     color: var(--text-muted);
     cursor: pointer;
     padding: 4px;

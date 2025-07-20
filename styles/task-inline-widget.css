@@ -233,7 +233,8 @@
     /* Visual styling */
     background: transparent;
     color: var(--text-muted);
-    border: none;
+    border: none !important;
+    box-shadow: none;
     border-radius: 3px;
     
     /* Interactivity */
@@ -255,7 +256,6 @@
     background: var(--interactive-accent);
     color: var(--text-on-accent);
     opacity: 1;
-    transform: scale(1.1);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
