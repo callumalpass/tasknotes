@@ -19,11 +19,13 @@ TaskNotes can subscribe to external calendar feeds using the iCalendar (ICS) for
 TaskNotes allows you to create notes and tasks directly from calendar events through the event information modal. When you click on a calendar event, you can:
 
 **Create Notes from Events:**
+
 - Generate notes using the event title, date, location, and description
 - Apply custom templates for consistent note formatting
 - Automatically link notes to the original calendar event for reference
 
 **Create Tasks from Events:**
+
 - Convert calendar events into actionable tasks
 - Preserve the event's start time as the task's scheduled date and time
 - Include event duration as the task's time estimate
@@ -31,6 +33,7 @@ TaskNotes allows you to create notes and tasks directly from calendar events thr
 - Automatically tag tasks with the ICS event identifier
 
 **Link Existing Content:**
+
 - Connect existing notes to calendar events
 - View all notes and tasks related to a specific event
 - Maintain bidirectional references between calendar events and vault content
