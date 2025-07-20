@@ -70,6 +70,12 @@ export class FilterBar extends EventEmitter {
     private viewOptionsConfig: Array<{id: string, label: string, value: boolean, onChange: (value: boolean) => void}> | null = null;
     private dragDropHandler: DragDropHandler;
 
+    // Click-outside handling
+    private mainFilterBox?: HTMLElement;
+    private abortController?: AbortController;
+    private ignoreNextClick = false;
+    private ignoreClickTimeout?: number;
+
     // Collapse states
     private sectionStates = {
         filterBox: false,   // Entire filter box - collapsed by default
@@ -110,6 +116,7 @@ export class FilterBar extends EventEmitter {
 
         this.render();
         this.updateUI();
+        this.setupClickOutsideHandlers();
     }
 
     /**
@@ -321,25 +328,126 @@ export class FilterBar extends EventEmitter {
      * Render the main filter box (collapsible)
      */
     private renderMainFilterBox(container: HTMLElement): void {
-        const mainFilterBox = container.createDiv('filter-bar__main-box');
+        this.mainFilterBox = container.createDiv('filter-bar__main-box');
         if (!this.sectionStates.filterBox) {
-            mainFilterBox.addClass('filter-bar__main-box--collapsed');
+            this.mainFilterBox.addClass('filter-bar__main-box--collapsed');
         }
 
         // 1. Filter Builder (This view section)
-        this.renderFilterBuilder(mainFilterBox);
+        this.renderFilterBuilder(this.mainFilterBox);
 
         // 2. Display & Organization
-        this.renderDisplaySection(mainFilterBox);
+        this.renderDisplaySection(this.mainFilterBox);
 
         // 3. View-Specific Options
-        this.renderViewOptions(mainFilterBox);
+        this.renderViewOptions(this.mainFilterBox);
     }
 
-    // Removed handleDocumentClick - filter box now stays open until button is clicked again
+    /**
+     * Setup click-outside and keyboard handlers for filter box and views dropdown
+     */
+    private setupClickOutsideHandlers(): void {
+        // Create AbortController for clean event management
+        this.abortController = new AbortController();
+        const { signal } = this.abortController;
+        
+        // Click outside handler with passive option for better performance
+        document.addEventListener('click', (event: MouseEvent) => {
+            this.handleDocumentClick(event);
+        }, { signal, passive: true });
+        
+        // Keyboard escape handler for accessibility
+        document.addEventListener('keydown', (event: KeyboardEvent) => {
+            this.handleKeyDown(event);
+        }, { signal });
+    }
 
     /**
-     * Toggle the main filter box (only closes/opens via button click)
+     * Temporarily ignore the next click to prevent closing after UI updates
+     */
+    private ignoreNextClickOutside(): void {
+        this.ignoreNextClick = true;
+        
+        // Clear any existing timeout
+        if (this.ignoreClickTimeout) {
+            window.clearTimeout(this.ignoreClickTimeout);
+        }
+        
+        // Reset the flag after a short delay as a safety measure
+        this.ignoreClickTimeout = window.setTimeout(() => {
+            this.ignoreNextClick = false;
+            this.ignoreClickTimeout = undefined;
+        }, 100);
+    }
+
+    /**
+     * Handle keyboard events for accessibility
+     */
+    private handleKeyDown(event: KeyboardEvent): void {
+        if (event.key === 'Escape') {
+            // Close filter box if open
+            if (this.sectionStates.filterBox) {
+                this.sectionStates.filterBox = false;
+                this.updateFilterBoxState();
+                event.preventDefault();
+                return;
+            }
+            
+            // Close view selector dropdown if open
+            if (this.viewSelectorDropdown && !this.viewSelectorDropdown.classList.contains('filter-bar__view-selector-dropdown--hidden')) {
+                this.viewSelectorDropdown.classList.add('filter-bar__view-selector-dropdown--hidden');
+                if (this.viewSelectorButton?.buttonEl) {
+                    this.viewSelectorButton.buttonEl.classList.remove('filter-bar__templates-button--active');
+                }
+                event.preventDefault();
+            }
+        }
+    }
+
+    /**
+     * Handle document clicks to close dropdowns and filter box when clicking outside
+     */
+    private handleDocumentClick(event: MouseEvent): void {
+        // Ignore clicks that happen immediately after UI updates
+        if (this.ignoreNextClick) {
+            this.ignoreNextClick = false;
+            return;
+        }
+        
+        const target = event.target as HTMLElement;
+        if (!target) return;
+        
+        // Check if click is outside the main filter box
+        if (this.sectionStates.filterBox && this.mainFilterBox && this.container) {
+            const filterToggleButton = this.container.querySelector('.filter-bar__filter-toggle');
+            
+            // Check if the click is inside the entire filter bar container
+            const isInsideFilterBar = this.container.contains(target);
+            const isFilterToggleButton = filterToggleButton && filterToggleButton.contains(target);
+            
+            // Only close if clicking completely outside the filter bar, but not on the toggle button
+            if (!isInsideFilterBar && !isFilterToggleButton) {
+                this.sectionStates.filterBox = false;
+                this.updateFilterBoxState();
+            }
+        }
+        
+        // Check if click is outside the view selector dropdown
+        if (this.viewSelectorDropdown && this.viewSelectorButton?.buttonEl) {
+            const isDropdownHidden = this.viewSelectorDropdown.classList.contains('filter-bar__view-selector-dropdown--hidden');
+            
+            // Don't close if clicking on the views button or inside the dropdown
+            if (!isDropdownHidden && 
+                !this.viewSelectorButton.buttonEl.contains(target) && 
+                !this.viewSelectorDropdown.contains(target)) {
+                this.viewSelectorDropdown.classList.add('filter-bar__view-selector-dropdown--hidden');
+                this.viewSelectorButton.buttonEl.classList.remove('filter-bar__templates-button--active');
+            }
+        }
+    }
+
+    /**
+     * Toggle the main filter box (closes/opens via button click or click-outside)
      */
     private toggleMainFilterBox(): void {
         this.sectionStates.filterBox = !this.sectionStates.filterBox;
@@ -955,6 +1063,7 @@ export class FilterBar extends EventEmitter {
      */
     private removeFilterGroup(parentGroup: FilterGroup, index: number): void {
         parentGroup.children.splice(index, 1);
+        this.ignoreNextClickOutside();
         this.updateFilterBuilderComplete();
         this.emitQueryChange();
     }
@@ -1047,6 +1156,7 @@ export class FilterBar extends EventEmitter {
         };
         
         group.children.push(condition);
+        this.ignoreNextClickOutside();
         this.updateFilterBuilderComplete();
         // Don't emit queryChange - new condition is incomplete until property is selected
     }
@@ -1063,6 +1173,7 @@ export class FilterBar extends EventEmitter {
         };
         
         group.children.push(newGroup);
+        this.ignoreNextClickOutside();
         this.updateFilterBuilderComplete();
         // Don't emit queryChange - new group is empty and won't affect filtering
     }
@@ -1072,6 +1183,7 @@ export class FilterBar extends EventEmitter {
      */
     private removeFilterCondition(group: FilterGroup, index: number): void {
         group.children.splice(index, 1);
+        this.ignoreNextClickOutside();
         this.updateFilterBuilderComplete();
         this.emitQueryChange();
     }
@@ -1333,12 +1445,31 @@ export class FilterBar extends EventEmitter {
                 this.container.empty();
             }
             this.removeAllListeners();
-            // No document click listener to remove anymore
+            
+            // Clean up event listeners and timeout
+            if (this.abortController) {
+                this.abortController.abort();
+                this.abortController = undefined;
+            }
+            
+            if (this.ignoreClickTimeout) {
+                window.clearTimeout(this.ignoreClickTimeout);
+                this.ignoreClickTimeout = undefined;
+            }
         } catch (error) {
             console.error('Error destroying FilterBar:', error);
             // Still try to clean up listeners even if DOM cleanup fails
             try {
                 this.removeAllListeners();
+                if (this.abortController) {
+                    this.abortController.abort();
+                    this.abortController = undefined;
+                }
+                
+                if (this.ignoreClickTimeout) {
+                    window.clearTimeout(this.ignoreClickTimeout);
+                    this.ignoreClickTimeout = undefined;
+                }
             } catch (cleanupError) {
                 console.error('Error during FilterBar cleanup fallback:', cleanupError);
             }
