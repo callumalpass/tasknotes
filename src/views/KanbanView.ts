@@ -304,7 +304,7 @@ export class KanbanView extends ItemView {
 
         try {
             // Get grouped tasks from FilterService
-            const groupedTasks = await this.plugin.filterService.getGroupedTasks(this.currentQuery, { targetDate: this.plugin.selectedDate, prePopulateGroups: true });
+            const groupedTasks = await this.plugin.filterService.getGroupedTasks(this.currentQuery, this.plugin.selectedDate);
             
             // Remove loading indicator if it exists
             if (loadingIndicator) {
@@ -499,7 +499,7 @@ export class KanbanView extends ItemView {
         
         try {
             // Get fresh grouped tasks from FilterService
-            const groupedTasks = await this.plugin.filterService.getGroupedTasks(this.currentQuery, { targetDate: this.plugin.selectedDate, prePopulateGroups: true });
+            const groupedTasks = await this.plugin.filterService.getGroupedTasks(this.currentQuery, this.plugin.selectedDate);
             
             // Re-render the board using the new column order and DOMReconciler
             this.renderBoardFromGroupedTasksWithReconciler(groupedTasks);

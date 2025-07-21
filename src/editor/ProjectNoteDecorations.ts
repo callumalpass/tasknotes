@@ -1,6 +1,6 @@
 import { Decoration, DecorationSet, EditorView, PluginSpec, PluginValue, ViewPlugin, ViewUpdate, WidgetType } from '@codemirror/view';
 import { Extension, RangeSetBuilder, StateEffect } from '@codemirror/state';
-import { TFile, editorLivePreviewField, EventRef } from 'obsidian';
+import { TFile, editorLivePreviewField, editorInfoField, EventRef } from 'obsidian';
 import TaskNotesPlugin from '../main';
 import { TaskInfo, EVENT_DATA_CHANGED, EVENT_TASK_UPDATED, EVENT_TASK_DELETED } from '../types';
 import { createTaskCard } from '../ui/TaskCard';
@@ -225,8 +225,8 @@ class ProjectNoteDecorationsPlugin implements PluginValue {
             this.decorations = this.buildDecorations(update.view);
         }
         
-        // Check if file changed
-        const newFile = this.plugin.app.workspace.getActiveFile();
+        // Check if file changed for this specific view
+        const newFile = this.getFileFromView(update.view);
         if (newFile !== this.currentFile) {
             this.currentFile = newFile;
             this.loadTasksForCurrentFile(update.view);
@@ -306,7 +306,7 @@ class ProjectNoteDecorationsPlugin implements PluginValue {
     }
     
     private async loadTasksForCurrentFile(view: EditorView) {
-        const file = this.plugin.app.workspace.getActiveFile();
+        const file = this.getFileFromView(view);
         
         if (file instanceof TFile) {
             try {
@@ -338,11 +338,61 @@ class ProjectNoteDecorationsPlugin implements PluginValue {
             }
         }
     }
+    
+    private getFileFromView(view: EditorView): TFile | null {
+        // Get the file associated with this specific editor view
+        const editorInfo = view.state.field(editorInfoField, false);
+        return editorInfo?.file || null;
+    }
+    
+    private isTableCellEditor(view: EditorView): boolean {
+        try {
+            // Check if the editor is inside a table cell using DOM inspection
+            const editorElement = view.dom;
+            const tableCell = editorElement.closest('td, th');
+            
+            if (tableCell) {
+                return true;
+            }
+            
+            // Also check for Obsidian-specific table widget classes
+            const obsidianTableWidget = editorElement.closest('.cm-table-widget');
+            if (obsidianTableWidget) {
+                return true;
+            }
+            
+            // Additional check: inline editors without file association
+            const editorInfo = view.state.field(editorInfoField, false);
+            if (!editorInfo?.file) {
+                // This might be an inline editor - check if parent is table-related
+                let parent = editorElement.parentElement;
+                while (parent && parent !== document.body) {
+                    if (parent.tagName === 'TABLE' || 
+                        parent.tagName === 'TD' || 
+                        parent.tagName === 'TH' ||
+                        parent.classList.contains('markdown-rendered')) {
+                        return true;
+                    }
+                    parent = parent.parentElement;
+                }
+            }
+            
+            return false;
+        } catch (error) {
+            console.debug('Error detecting table cell editor:', error);
+            return false;
+        }
+    }
 
     private buildDecorations(view: EditorView): DecorationSet {
         const builder = new RangeSetBuilder<Decoration>();
         
         try {
+            // Don't show widget in table cell editors
+            if (this.isTableCellEditor(view)) {
+                return builder.finish();
+            }
+            
             // Check if project subtasks widget is enabled
             if (!this.plugin.settings.showProjectSubtasks) {
                 return builder.finish();

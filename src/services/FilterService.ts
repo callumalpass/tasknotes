@@ -1,4 +1,4 @@
-import { FilterQuery, TaskInfo, TaskSortKey, TaskGroupKey, SortDirection, FilterCondition, FilterGroup, FilterOptions, FilterProperty, FilterOperator, GetGroupedTasksOptions } from '../types';
+import { FilterQuery, TaskInfo, TaskSortKey, TaskGroupKey, SortDirection, FilterCondition, FilterGroup, FilterOptions, FilterProperty, FilterOperator } from '../types';
 import { parseLinktext } from 'obsidian';
 import { MinimalNativeCache } from '../utils/MinimalNativeCache';
 import { StatusManager } from './StatusManager';
@@ -55,7 +55,7 @@ export class FilterService extends EventEmitter {
      * Handles the new advanced FilterQuery structure with nested conditions and groups
      * Uses query-first approach with index optimization for better performance
      */
-    async getGroupedTasks(query: FilterQuery, options?: GetGroupedTasksOptions): Promise<Map<string, TaskInfo[]>> {
+    async getGroupedTasks(query: FilterQuery, targetDate?: Date): Promise<Map<string, TaskInfo[]>> {
         try {
             // Use non-strict validation to allow incomplete filters during building
             FilterUtils.validateFilterNode(query, false);
@@ -67,13 +67,13 @@ export class FilterService extends EventEmitter {
             const candidateTasks = await this.pathsToTaskInfos(Array.from(candidateTaskPaths));
             
             // Apply full filter query to the reduced candidate set
-            const filteredTasks = candidateTasks.filter(task => this.evaluateFilterNode(query, task, options?.targetDate));
+            const filteredTasks = candidateTasks.filter(task => this.evaluateFilterNode(query, task, targetDate));
             
             // Sort the filtered results
             const sortedTasks = this.sortTasks(filteredTasks, query.sortKey || 'due', query.sortDirection || 'asc');
             
             // Group the sorted results
-            return this.groupTasks(sortedTasks, query.groupKey || 'none', options);
+            return this.groupTasks(sortedTasks, query.groupKey || 'none', targetDate);
         } catch (error) {
             if (error instanceof FilterValidationError || error instanceof FilterEvaluationError) {
                 console.error('Filter error:', error.message, { nodeId: error.nodeId, field: (error as FilterValidationError).field });
@@ -709,44 +709,14 @@ export class FilterService extends EventEmitter {
     }
 
     /**
-     * Pre-populate groups with predefined values for status and priority
-     * to ensure all defined statuses/priorities appear even if empty
-     */
-    private prePopulateGroupsWithPredefinedValues(groups: Map<string, TaskInfo[]>, groupKey: TaskGroupKey): void {
-        switch (groupKey) {
-            case 'status': {
-                const allStatuses = this.statusManager.getStatusesByOrder();
-                allStatuses.forEach(status => {
-                    groups.set(status.value, []);
-                });
-                break;
-            }
-            case 'priority': {
-                const allPriorities = this.priorityManager.getPrioritiesByWeight();
-                allPriorities.forEach(priority => {
-                    groups.set(priority.value, []);
-                });
-                break;
-            }
-            // For other group types (context, project, due), don't pre-populate
-            // as these are dynamic based on data
-        }
-    }
-
-    /**
      * Group sorted tasks by specified criteria
      */
-    private groupTasks(tasks: TaskInfo[], groupKey: TaskGroupKey, options?: GetGroupedTasksOptions): Map<string, TaskInfo[]> {
+    private groupTasks(tasks: TaskInfo[], groupKey: TaskGroupKey, targetDate?: Date): Map<string, TaskInfo[]> {
         if (groupKey === 'none') {
             return new Map([['all', tasks]]);
         }
 
         const groups = new Map<string, TaskInfo[]>();
-
-        // Pre-populate groups with predefined values for status and priority
-        if (options?.prePopulateGroups) {
-            this.prePopulateGroupsWithPredefinedValues(groups, groupKey);
-        }
 
         for (const task of tasks) {
             // For projects, handle multiple groups per task
@@ -786,10 +756,10 @@ export class FilterService extends EventEmitter {
                             : 'none';
                         break;
                     case 'due':
-                        groupValue = this.getDueDateGroup(task, options?.targetDate);
+                        groupValue = this.getDueDateGroup(task, targetDate);
                         break;
                     case 'scheduled':
-                        groupValue = this.getScheduledDateGroup(task, options?.targetDate);
+                        groupValue = this.getScheduledDateGroup(task, targetDate);
                         break;
                     default:
                         groupValue = 'unknown';
