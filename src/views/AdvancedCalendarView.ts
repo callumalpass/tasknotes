@@ -1499,6 +1499,16 @@ export class AdvancedCalendarView extends ItemView {
         // Add data attributes for tasks
         arg.el.setAttribute('data-task-path', taskInfo.path);
         arg.el.classList.add('fc-task-event');
+
+		// Add tag classes to tasks
+		if (taskInfo.tags && taskInfo.tags.length > 0) {
+			taskInfo.tags.forEach((tag: string) => {
+				const sanitizedTag = tag.replace(/[^a-zA-Z0-9-_]/g, ''); 
+				if (sanitizedTag) {
+					arg.el.classList.add(`fc-tag-${sanitizedTag}`); 
+				}
+			});
+		}
         
         // Set editable based on event type
         if (arg.event.setProp) {
