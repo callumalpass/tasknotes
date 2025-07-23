@@ -542,7 +542,15 @@ export class KanbanView extends ItemView {
         });
 
         // Clean up obsolete columns and add new ones
-        const allColumns = Array.from(groupedTasks.keys());
+        const taskBasedColumns = Array.from(groupedTasks.keys());
+        let allColumns = taskBasedColumns;
+        
+        // If grouping by status, include all configured statuses to show empty columns
+        if (this.currentQuery.groupKey === 'status') {
+            const configuredStatuses = this.plugin.statusManager.getAllStatuses().map(s => s.value);
+            allColumns = [...new Set([...taskBasedColumns, ...configuredStatuses])];
+        }
+        
         let orderChanged = false;
         
         // Remove columns that no longer exist
@@ -699,8 +707,17 @@ export class KanbanView extends ItemView {
             boardEl = this.boardContainer.createDiv({ cls: 'kanban-view__board' });
         }
         
-        // Get all possible columns from the grouped tasks
-        const allColumns = Array.from(groupedTasks.keys()).sort();
+        // Get all possible columns from grouped tasks and configured statuses
+        const taskBasedColumns = Array.from(groupedTasks.keys());
+        let allColumns = taskBasedColumns;
+        
+        // If grouping by status, include all configured statuses to show empty columns
+        if (this.currentQuery.groupKey === 'status') {
+            const configuredStatuses = this.plugin.statusManager.getAllStatuses().map(s => s.value);
+            allColumns = [...new Set([...taskBasedColumns, ...configuredStatuses])];
+        }
+        
+        allColumns = allColumns.sort();
 
         // Initialize column order if empty
         if (this.columnOrder.length === 0) {
