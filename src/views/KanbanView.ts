@@ -541,9 +541,18 @@ export class KanbanView extends ItemView {
             }
         });
 
-        // Add any new columns that aren't in our order yet
+        // Clean up obsolete columns and add new ones
         const allColumns = Array.from(groupedTasks.keys());
         let orderChanged = false;
+        
+        // Remove columns that no longer exist
+        const initialLength = this.columnOrder.length;
+        this.columnOrder = this.columnOrder.filter(columnId => allColumns.includes(columnId));
+        if (this.columnOrder.length !== initialLength) {
+            orderChanged = true;
+        }
+        
+        // Add any new columns that aren't in our order yet
         allColumns.forEach(columnId => {
             if (!this.columnOrder.includes(columnId)) {
                 this.columnOrder.push(columnId);
@@ -701,8 +710,17 @@ export class KanbanView extends ItemView {
             }
         }
 
-        // Add any new columns that aren't in our order yet
+        // Clean up obsolete columns and add new ones
         let orderChanged = false;
+        
+        // Remove columns that no longer exist
+        const initialLength = this.columnOrder.length;
+        this.columnOrder = this.columnOrder.filter(columnId => allColumns.includes(columnId));
+        if (this.columnOrder.length !== initialLength) {
+            orderChanged = true;
+        }
+        
+        // Add any new columns that aren't in our order yet
         allColumns.forEach(columnId => {
             if (!this.columnOrder.includes(columnId)) {
                 this.columnOrder.push(columnId);
