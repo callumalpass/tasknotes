@@ -683,6 +683,7 @@
 .advanced-calendar-view .fc-event-title {
     font-weight: 500;
     line-height: 1.3;
+	text-decoration: inherit;
 }
 
 /* Time grid specific styles */
