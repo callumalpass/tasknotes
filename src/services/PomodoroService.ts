@@ -40,6 +40,7 @@ export class PomodoroService {
         await this.loadState();
         this.setupWorker();
         
+        // Setup last session
         if (this.state.isRunning && this.state.currentSession) {
             const now = Date.now();
             let totalActiveSeconds = 0;
@@ -57,7 +58,7 @@ export class PomodoroService {
                 this.state.timeRemaining = newTimeRemaining;
                 this.startTimer();
             } else {
-                // Si el tiempo ya se cumplió mientras estaba cerrado, completarlo.
+                // If the time remaining is 0 or less, complete the pomodoro immediately
                 this.completePomodoro();
             }
         }
