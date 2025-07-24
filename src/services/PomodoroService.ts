@@ -40,27 +40,8 @@ export class PomodoroService {
         await this.loadState();
         this.setupWorker();
         
-        // Setup last session
         if (this.state.isRunning && this.state.currentSession) {
-            const now = Date.now();
-            let totalActiveSeconds = 0;
-            
-            this.state.currentSession.activePeriods.forEach(period => {
-                const start = new Date(period.startTime).getTime();
-                const end = period.endTime ? new Date(period.endTime).getTime() : now;
-                totalActiveSeconds += Math.floor((end - start) / 1000);
-            });
-            
-            const totalDuration = this.state.currentSession.plannedDuration * 60;
-            const newTimeRemaining = Math.max(0, totalDuration - totalActiveSeconds);
-
-            if (newTimeRemaining > 0) {
-                this.state.timeRemaining = newTimeRemaining;
-                this.startTimer();
-            } else {
-                // If the time remaining is 0 or less, complete the pomodoro immediately
-                this.completePomodoro();
-            }
+            this.resumeTimer();
         }
     }
 
@@ -392,7 +373,8 @@ export class PomodoroService {
 
         this.state.currentSession = undefined;
         this.state.isRunning = false;
-        this.state.timeRemaining = this.plugin.settings.pomodoroWorkDuration * 60; // Reset to default work duration
+        // Reset to default work duration
+        this.state.timeRemaining = this.plugin.settings.pomodoroWorkDuration * 60;
         
         await this.saveState();
         
@@ -423,49 +405,39 @@ export class PomodoroService {
     }
 
     private resumeTimer() {
-        // Calculate time elapsed since last save
         if (this.state.currentSession && this.state.currentSession.startTime) {
             const startTime = new Date(this.state.currentSession.startTime).getTime();
             const now = Date.now();
-            
+
             // Check for invalid start time (future dates)
             if (startTime > now) {
                 // Reset session if start time is in the future
                 this.stopPomodoro();
                 return;
             }
-            
+
             const totalDuration = this.state.currentSession.plannedDuration * 60;
-            
-            // Account for paused time by using actual time remaining from state
-            // rather than calculating from start time when session was paused
+
             if (!this.state.isRunning && this.state.timeRemaining > 0) {
                 // Session was paused, use stored time remaining (don't recalculate)
                 this.state.timeRemaining = Math.min(this.state.timeRemaining, totalDuration);
             } else if (this.state.isRunning) {
-                // For running sessions, calculate elapsed time based on active periods
-                // to handle pause/resume and time adjustments correctly
+                // Calculate elapsed time based on active periods
                 const activePeriods = this.state.currentSession.activePeriods || [];
                 let totalActiveSeconds = 0;
-                
+
                 for (const period of activePeriods) {
-                    if (period.endTime) {
-                        // Completed period
-                        const start = new Date(period.startTime).getTime();
-                        const end = new Date(period.endTime).getTime();
-                        totalActiveSeconds += Math.floor((end - start) / 1000);
-                    } else {
-                        // Current running period
-                        const start = new Date(period.startTime).getTime();
-                        const now = Date.now();
-                        totalActiveSeconds += Math.floor((now - start) / 1000);
-                    }
+                    const start = new Date(period.startTime).getTime();
+                    const end = period.endTime
+                        ? new Date(period.endTime).getTime()
+                        : now;
+                    totalActiveSeconds += Math.floor((end - start) / 1000);
                 }
-                
+
                 // Calculate time remaining based on actual active time
                 this.state.timeRemaining = Math.max(0, totalDuration - totalActiveSeconds);
             }
-            
+
             if (this.state.timeRemaining > 0 && this.state.isRunning) {
                 this.startTimer();
             } else if (this.state.timeRemaining <= 0) {
