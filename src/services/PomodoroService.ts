@@ -149,14 +149,15 @@ export class PomodoroService {
         }
         
         // Validate duration settings
-        const duration = Math.max(1, Math.min(120, this.plugin.settings.pomodoroWorkDuration));
+        const durationSeconds = this.state.timeRemaining;
+        const durationMinutes = Math.max(1, durationSeconds / 60);
 
         const sessionStartTime = getCurrentTimestamp();
         const session: PomodoroSession = {
             id: Date.now().toString(),
             taskPath: task?.path,
             startTime: sessionStartTime,
-            plannedDuration: duration,
+            plannedDuration: durationMinutes,
             type: 'work',
             completed: false,
             activePeriods: [{
@@ -167,8 +168,8 @@ export class PomodoroService {
 
         this.state.currentSession = session;
         this.state.isRunning = true;
-        this.state.timeRemaining = session.plannedDuration * 60; // Convert to seconds
-        this.state.nextSessionType = undefined; // Clear next session type since we're starting a session
+        // Clear next session type since we're starting a session
+        this.state.nextSessionType = undefined; 
 
         await this.saveState();
         this.startTimer();
@@ -665,7 +666,8 @@ export class PomodoroService {
 
     adjustPreparedTimer(newTimeInSeconds: number): void {
         if (!this.state.currentSession) {
-            this.state.timeRemaining = newTimeInSeconds;
+            // Change the prepared timer only if there's an active session
+            this.state.timeRemaining = Math.max(1, newTimeInSeconds);
             this.saveState();
             
             // Emit tick event to update UI
