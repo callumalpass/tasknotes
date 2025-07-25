@@ -4,7 +4,7 @@ import { RRule } from 'rrule';
 import { TimeInfo, TaskInfo, TimeEntry, TimeBlock, DailyNoteFrontmatter } from '../types';
 import { FieldMapper } from '../services/FieldMapper';
 import { DEFAULT_FIELD_MAPPING } from '../settings/settings';
-import { isBeforeDateSafe, getTodayString, parseDate, createUTCDateForRRule } from './dateUtils';
+import { isBeforeDateSafe, getTodayString, parseDate, createUTCDateForRRule, formatUTCDateForCalendar } from './dateUtils';
 // import { RegexOptimizer } from './RegexOptimizer'; // Temporarily disabled
 
 /**
@@ -339,7 +339,7 @@ export function isDueByRRule(task: TaskInfo, date: Date): boolean {
 			
 			// Check if the target date is an occurrence
 			// Use UTC date to match the dtstart timezone
-			const targetDateStart = createUTCDateForRRule(format(date, 'yyyy-MM-dd'));
+			const targetDateStart = createUTCDateForRRule(formatUTCDateForCalendar(date));
 			const occurrences = rrule.between(targetDateStart, new Date(targetDateStart.getTime() + 24 * 60 * 60 * 1000 - 1), true);
 			
 			return occurrences.length > 0;
