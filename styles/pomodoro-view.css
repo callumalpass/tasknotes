@@ -233,29 +233,20 @@
     width: 100%;
 }
 
-/* Task Select Button */
+/* Use consistent button system for task select button */
 .tasknotes-plugin .pomodoro-view__task-select-button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: var(--tn-spacing-sm) var(--tn-spacing-lg);
-    border: none;
-    border-radius: var(--tn-radius-lg);
-    background: var(--tn-bg-primary);
+    background: transparent;
     color: var(--tn-text-normal);
-    cursor: pointer;
-    font-size: var(--tn-font-size-sm);
-    font-weight: var(--tn-font-weight-normal);
-    transition: background-color 0.2s ease;
-    min-height: var(--tn-button-height-sm);
+    border: none;
+    box-shadow: none;
     flex: 1;
     white-space: nowrap;
-    box-shadow: none;
 }
 
 .tasknotes-plugin .pomodoro-view__task-select-button:hover {
-    background: var(--tn-bg-secondary);
+    background: var(--tn-interactive-hover);
+    border: none;
+    box-shadow: none;
 }
 
 .tasknotes-plugin .pomodoro-view__task-select-button--no-task {
@@ -263,29 +254,20 @@
     font-style: italic;
 }
 
-/* Task Clear Button - Inline secondary button */
+/* Use consistent button system for task clear button */
 .tasknotes-plugin .pomodoro-view__task-clear-button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: var(--tn-spacing-sm) var(--tn-spacing-lg);
-    border: none;
-    border-radius: var(--tn-radius-lg);
-    background: var(--tn-bg-primary);
+    background: transparent;
     color: var(--tn-text-normal);
-    cursor: pointer;
-    font-size: var(--tn-font-size-sm);
-    font-weight: var(--tn-font-weight-normal);
-    transition: background-color 0.2s ease;
-    min-height: var(--tn-button-height-sm);
+    border: none;
+    box-shadow: none;
     flex: 1;
     white-space: nowrap;
-    box-shadow: none;
 }
 
 .tasknotes-plugin .pomodoro-view__task-clear-button:hover {
-    background: var(--tn-bg-secondary);
+    background: var(--tn-interactive-hover);
+    border: none;
+    box-shadow: none;
 }
 
 .tasknotes-plugin .pomodoro-view__task-clear-button--hidden {
@@ -406,25 +388,21 @@
     pointer-events: auto; /* Re-enable pointer events for the buttons */
 }
 
+/* Use consistent button system for time adjust buttons */
 .tasknotes-plugin .pomodoro-view__time-adjust-button {
     width: 28px;
     height: 28px;
     border-radius: 50%;
-    background: var(--tn-bg-primary);
+    background: transparent;
     color: var(--tn-text-normal);
     border: none;
     box-shadow: none;
-    cursor: pointer;
-    font-size: var(--tn-font-size-md);
-    font-weight: var(--tn-font-weight-normal);
-    transition: background-color 0.2s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
 }
 
 .tasknotes-plugin .pomodoro-view__time-adjust-button:hover {
-    background: var(--tn-bg-secondary);
+    background: var(--tn-interactive-hover);
+    border: none;
+    box-shadow: none;
 }
 
 .tasknotes-plugin .pomodoro-view__time-adjust-button:focus {
@@ -488,7 +466,8 @@
 
 .tasknotes-plugin .pomodoro-view__stat--clickable:hover {
     background: var(--tn-interactive-hover);
-    transform: translateY(-1px);
+    border: none;
+    box-shadow: none;
 }
 
 .tasknotes-plugin .pomodoro-view__stat-value {

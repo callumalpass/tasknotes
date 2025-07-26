@@ -589,10 +589,20 @@
     gap: 0.25rem;
 }
 
-/* Minimal button styling */
-.advanced-calendar-view .fc-button-primary {
+/* Remove all borders from FullCalendar buttons */
+.advanced-calendar-view .fc-button,
+.advanced-calendar-view .fc-button-primary,
+.advanced-calendar-view .fc-button-secondary,
+.advanced-calendar-view .fc-prev-button,
+.advanced-calendar-view .fc-next-button,
+.advanced-calendar-view .fc-today-button,
+.advanced-calendar-view .fc-dayGridMonth-button,
+.advanced-calendar-view .fc-timeGridWeek-button,
+.advanced-calendar-view .fc-timeGridDay-button,
+.advanced-calendar-view .fc-listWeek-button {
+    border: none !important;
+    box-shadow: none !important;
     background: transparent;
-    border: none;
     color: var(--text-muted);
     font-size: 0.8rem;
     font-weight: 400;
@@ -601,9 +611,16 @@
     transition: all 0.2s ease;
 }
 
-.advanced-calendar-view .fc-button-primary:hover:not(:disabled) {
+/* Hover states for all FC buttons */
+.advanced-calendar-view .fc-button:hover:not(:disabled),
+.advanced-calendar-view .fc-button-primary:hover:not(:disabled),
+.advanced-calendar-view .fc-button-secondary:hover:not(:disabled),
+.advanced-calendar-view .fc-prev-button:hover:not(:disabled),
+.advanced-calendar-view .fc-next-button:hover:not(:disabled) {
     background: var(--tn-interactive-hover);
     color: var(--text-normal);
+    border: none !important;
+    box-shadow: none !important;
 }
 
 .advanced-calendar-view .fc-button-primary:disabled {
@@ -612,7 +629,9 @@
     opacity: 0.5;
 }
 
-.advanced-calendar-view .fc-button-active {
+/* Active state for FC buttons (currently selected view) */
+.advanced-calendar-view .fc-button-active,
+.advanced-calendar-view .fc-button.fc-button-active {
     background: var(--interactive-accent) !important;
     border: none !important;
     box-shadow: none !important;

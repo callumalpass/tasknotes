@@ -2067,6 +2067,42 @@
    BUTTON UTILITIES - CONSISTENT BUTTON SYSTEM
    ================================================ */
 
+/* Global button border removal - high specificity without !important */
+.tasknotes-plugin button,
+.tasknotes-plugin input[type="button"],
+.tasknotes-plugin input[type="submit"],
+.tasknotes-plugin input[type="reset"],
+.tasknotes-plugin [role="button"],
+.tasknotes-plugin .button,
+.tasknotes-plugin .btn {
+    border: none;
+    box-shadow: none;
+}
+
+/* Hover states should also not have borders */
+.tasknotes-plugin button:hover,
+.tasknotes-plugin input[type="button"]:hover,
+.tasknotes-plugin input[type="submit"]:hover,
+.tasknotes-plugin input[type="reset"]:hover,
+.tasknotes-plugin [role="button"]:hover,
+.tasknotes-plugin .button:hover,
+.tasknotes-plugin .btn:hover {
+    border: none;
+    box-shadow: none;
+}
+
+/* Focus states should not have borders either */
+.tasknotes-plugin button:focus,
+.tasknotes-plugin input[type="button"]:focus,
+.tasknotes-plugin input[type="submit"]:focus,
+.tasknotes-plugin input[type="reset"]:focus,
+.tasknotes-plugin [role="button"]:focus,
+.tasknotes-plugin .button:focus,
+.tasknotes-plugin .btn:focus {
+    border: none;
+    box-shadow: none;
+}
+
 /* Base Button - All buttons inherit from this */
 .tasknotes-plugin .tn-btn {
     display: inline-flex;
@@ -2093,21 +2129,29 @@
 
 .tasknotes-plugin .tn-btn:hover {
     background: var(--tn-interactive-hover);
+    border: none;
+    box-shadow: none;
 }
 
 .tasknotes-plugin .tn-btn:active {
     opacity: 0.8;
+    border: none;
+    box-shadow: none;
 }
 
 .tasknotes-plugin .tn-btn:focus-visible {
     outline: 2px solid var(--tn-interactive-accent);
     outline-offset: 2px;
+    border: none;
+    box-shadow: none;
 }
 
 .tasknotes-plugin .tn-btn:disabled {
     opacity: var(--cs-state-disabled);
     cursor: not-allowed;
     pointer-events: none;
+    border: none;
+    box-shadow: none;
 }
 
 /* Button Sizes */

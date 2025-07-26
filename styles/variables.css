@@ -256,7 +256,7 @@
 
     /* Interactive States - Map to Obsidian theme variables */
     --tn-interactive-normal: var(--interactive-normal);
-    --tn-interactive-hover: var(--interactive-hover);
+    --tn-interactive-hover: color-mix(in srgb, var(--tn-interactive-accent) 8%, transparent);
     --tn-interactive-accent: var(--interactive-accent);
     --tn-interactive-accent-hover: var(--interactive-accent-hover);
     --tn-interactive-success: var(--interactive-success);

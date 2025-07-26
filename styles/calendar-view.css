@@ -38,15 +38,16 @@
     gap: var(--tn-spacing-md);
 }
 
-/* Calendar View Type Select */
+/* Use consistent button system for view selector */
 .tasknotes-plugin .calendar-view__view-selector,
 .tasknotes-plugin .mini-calendar-view__view-selector {
     margin-right: var(--tn-spacing-md);
     min-width: 120px;
     padding: var(--tn-spacing-xs) var(--tn-spacing-sm);
-    border: 1px solid var(--tn-border-color);
+    border: none;
+    box-shadow: none;
     border-radius: var(--tn-radius-sm);
-    background: var(--tn-bg-primary);
+    background: transparent;
     color: var(--tn-text-normal);
     font-size: var(--tn-font-size-sm);
     cursor: pointer;
@@ -56,13 +57,14 @@
 .tasknotes-plugin .calendar-view__view-selector:hover,
 .tasknotes-plugin .mini-calendar-view__view-selector:hover {
     background: var(--tn-interactive-hover);
-    border-color: var(--tn-border-color-hover);
+    box-shadow: none;
 }
 
 .tasknotes-plugin .calendar-view__view-selector:focus,
 .tasknotes-plugin .mini-calendar-view__view-selector:focus {
-    border-color: var(--tn-interactive-accent);
-    outline: none;
+    outline: 2px solid var(--tn-interactive-accent);
+    outline-offset: 2px;
+    box-shadow: none;
 }
 
 /* Calendar Navigation Section */
@@ -206,11 +208,11 @@
     padding: var(--tn-spacing-xs);
     color: var(--tn-text-muted);
     background: var(--tn-bg-secondary);
-    border-bottom: 1px solid var(--tn-border-color);
+    border: none;
     role: columnheader;
 }
 
-/* Calendar Day Cell */
+/* Calendar Day Cell - consistent styling */
 .tasknotes-plugin .calendar-view__day,
 .tasknotes-plugin .mini-calendar-view__day {
     position: relative;
@@ -223,7 +225,7 @@
     align-items: center;
     justify-content: center;
     background: var(--tn-bg-primary);
-    border-bottom: 1px solid var(--tn-border-color);
+    border: none;
     transition: all var(--tn-transition-fast);
     font-size: var(--tn-font-size-sm);
     font-weight: 500;
@@ -233,7 +235,7 @@
 .tasknotes-plugin .calendar-view__day:hover,
 .tasknotes-plugin .mini-calendar-view__day:hover {
     background-color: var(--tn-interactive-hover);
-    border-color: transparent;
+    border: none;
     transform: none;
     box-shadow: none;
 }
@@ -266,7 +268,7 @@
 .tasknotes-plugin .mini-calendar-view__day--selected {
     border: 1px solid var(--tn-interactive-accent);
     font-weight: 500;
-    background-color: transparent;
+    background-color: color-mix(in srgb, var(--tn-interactive-accent) 12%, transparent);
     box-shadow: none;
 }
 
