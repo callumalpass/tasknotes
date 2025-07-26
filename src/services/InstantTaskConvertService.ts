@@ -55,28 +55,55 @@ export class InstantTaskConvertService {
             const taskLineInfo = TasksPluginParser.parseTaskLine(currentLine);
             
             if (!taskLineInfo.isTaskLine) {
-                new Notice('Current line is not a task.');
-                return;
-            }
-            
-            if (taskLineInfo.error || !taskLineInfo.parsedData) {
-                new Notice(`Error parsing task: ${taskLineInfo.error || 'No data extracted'}`);
-                return;
-            }
-            
-            // Check if Tasks plugin parsing was sufficient (has meaningful metadata)
-            const hasMetadata = this.hasUsefulMetadata(taskLineInfo.parsedData);
-            
-            if (!hasMetadata && this.plugin.settings.enableNaturalLanguageInput) {
-                // Fallback to NLP if Tasks plugin parsing only extracted basic title
-                const nlpResult = this.tryNLPFallback(currentLine, details || '');
-                if (nlpResult) {
-                    parsedData = nlpResult;
+                // Line is not a checkbox task, but we can still convert it to a tasknote
+                // Extract the line content as the task title, removing any leading list markers
+                const taskTitle = this.extractLineContentAsTitle(currentLine);
+                
+                if (!taskTitle.trim()) {
+                    new Notice('Current line is empty or contains no valid content.');
+                    return;
+                }
+                
+                // Try NLP parsing first if enabled for better metadata extraction
+                if (this.plugin.settings.enableNaturalLanguageInput) {
+                    const nlpResult = this.tryNLPFallback(currentLine, details || '');
+                    if (nlpResult) {
+                        parsedData = nlpResult;
+                    } else {
+                        // Fallback to basic task data with just the title
+                        parsedData = {
+                            title: taskTitle,
+                            isCompleted: false
+                        };
+                    }
+                } else {
+                    // Create basic task data with just the title
+                    parsedData = {
+                        title: taskTitle,
+                        isCompleted: false
+                    };
+                }
+            } else {
+                // Line is a checkbox task, process normally
+                if (taskLineInfo.error || !taskLineInfo.parsedData) {
+                    new Notice(`Error parsing task: ${taskLineInfo.error || 'No data extracted'}`);
+                    return;
+                }
+                
+                // Check if Tasks plugin parsing was sufficient (has meaningful metadata)
+                const hasMetadata = this.hasUsefulMetadata(taskLineInfo.parsedData);
+                
+                if (!hasMetadata && this.plugin.settings.enableNaturalLanguageInput) {
+                    // Fallback to NLP if Tasks plugin parsing only extracted basic title
+                    const nlpResult = this.tryNLPFallback(currentLine, details || '');
+                    if (nlpResult) {
+                        parsedData = nlpResult;
+                    } else {
+                        parsedData = taskLineInfo.parsedData;
+                    }
                 } else {
                     parsedData = taskLineInfo.parsedData;
                 }
-            } else {
-                parsedData = taskLineInfo.parsedData;
             }
 
             // Validate final parsed data before proceeding
@@ -431,16 +458,42 @@ export class InstantTaskConvertService {
                 }
             }
 
-            // Re-validate that the first line is still a task (additional safety)
+            // Re-validate that the first line still has content (additional safety)
             const taskLineInfo = TasksPluginParser.parseTaskLine(originalContent[0]);
-            if (!taskLineInfo.isTaskLine) {
+            const isCheckboxTask = taskLineInfo.isTaskLine;
+            
+            // For checkbox tasks, ensure it's still a valid task
+            // For non-checkbox lines, just ensure there's still content
+            if (isCheckboxTask && !taskLineInfo.isTaskLine) {
                 return { success: false, error: 'First line is no longer a valid task.' };
+            } else if (!isCheckboxTask && !this.extractLineContentAsTitle(originalContent[0]).trim()) {
+                return { success: false, error: 'First line no longer contains valid content.' };
             }
 
-            // Create link text preserving original list format and indentation from the first line
+            // Create link text preserving original format and indentation from the first line
             const originalIndentation = originalContent[0].match(/^(\s*)/)?.[1] || '';
-            const listPrefixMatch = originalContent[0].match(/^\s*((?:[-*+]|\d+\.)\s+)\[/);
-            const listPrefix = listPrefixMatch?.[1] || '- ';
+            
+            let listPrefix = '';
+            if (isCheckboxTask) {
+                // For checkbox tasks, preserve the list prefix without the checkbox
+                const listPrefixMatch = originalContent[0].match(/^\s*((?:[-*+]|\d+\.)\s+)\[/);
+                listPrefix = listPrefixMatch?.[1] || '- ';
+            } else {
+                // For non-checkbox lines, try to preserve existing list markers
+                const bulletMatch = originalContent[0].match(/^\s*([-*+]\s+)/);
+                const numberedMatch = originalContent[0].match(/^\s*(\d+\.\s+)/);
+                const blockquoteMatch = originalContent[0].match(/^\s*(>\s*)/);
+                
+                if (bulletMatch) {
+                    listPrefix = bulletMatch[1];
+                } else if (numberedMatch) {
+                    listPrefix = numberedMatch[1];
+                } else if (blockquoteMatch) {
+                    listPrefix = blockquoteMatch[1];
+                } else {
+                    listPrefix = '- '; // Default to bullet point
+                }
+            }
             
             // Get the current file context for relative link generation
             const currentFile = this.plugin.app.workspace.getActiveFile();
@@ -609,6 +662,27 @@ export class InstantTaskConvertService {
     private extractTaskContent(line: string): string {
         // Remove checkbox markers like "- [ ]", "1. [ ]", etc.
         const cleanLine = line.replace(/^\s*(?:[-*+]|\d+\.)\s*\[[ xX]\]\s*/, '');
+        return cleanLine.trim();
+    }
+
+    /**
+     * Extract content from any line to use as a task title
+     * This removes common list markers and prefixes while preserving the core content
+     */
+    private extractLineContentAsTitle(line: string): string {
+        let cleanLine = line.trim();
+        
+        // Remove common list markers and bullet points
+        cleanLine = cleanLine.replace(/^\s*[-*+]\s+/, ''); // Remove bullet points
+        cleanLine = cleanLine.replace(/^\s*\d+\.\s+/, ''); // Remove numbered lists
+        
+        // Remove blockquote markers (for issue #262 - callouts support)
+        cleanLine = cleanLine.replace(/^\s*>\s*/, '');
+        
+        // Remove common prefixes that might not be useful as task titles
+        cleanLine = cleanLine.replace(/^\s*#+\s+/, ''); // Remove markdown headers
+        cleanLine = cleanLine.replace(/^\s*(-{3,}|={3,})\s*$/, ''); // Remove horizontal rules
+        
         return cleanLine.trim();
     }
 }
