@@ -596,13 +596,13 @@ export class AdvancedCalendarView extends ItemView {
             this.resizeTimeout = null;
         }
 
-        // Limpia listeners anteriores
+        // Clean up previous listeners
         this.functionListeners.forEach(unsubscribe => unsubscribe());
         this.functionListeners = [];
         this.listeners.forEach(listener => this.plugin.emitter.offref(listener));
         this.listeners = [];
 
-        // Usa el window correcto (soporta popout)
+        // Use the correct window reference (supports popout windows)
         const win = this.contentEl.ownerDocument.defaultView || window;
 
         // Debounced resize handler
@@ -637,6 +637,7 @@ export class AdvancedCalendarView extends ItemView {
         // Listen for active leaf changes that might affect calendar size
         const activeLeafListener = this.plugin.app.workspace.on('active-leaf-change', (leaf) => {
             if (leaf === this.leaf) {
+                // Small delay to ensure layout has settled after leaf activation
                 setTimeout(debouncedResize, 100);
             }
         });
