@@ -1,6 +1,6 @@
 # Filtering and Views
 
-TaskNotes provides comprehensive filtering capabilities through the FilterBar, available in the Task List, Agenda, Kanban, and Advanced Calendar views. The FilterBar uses a hierarchical query builder to create complex filter conditions and supports saved views for quick access to common filter configurations.
+TaskNotes provides filtering capabilities through the FilterBar, available in the Task List, Agenda, Kanban, and Advanced Calendar views. The FilterBar uses a hierarchical query builder to create complex filter conditions and supports saved views for quick access to common filter configurations.
 
 ## FilterBar Overview
 
@@ -18,6 +18,31 @@ The search input provides instant filtering by task title:
 - Uses case-insensitive substring matching
 - Updates with 800ms debouncing for performance
 - Search terms appear as filter conditions in the query builder
+
+### Search and Existing Filters
+
+The search functionality intelligently preserves your existing filters:
+
+**When you apply search to existing filters:**
+1. All existing filters are automatically grouped together
+2. The search condition is added as a separate filter
+3. Search and existing filters are connected with "AND" logic
+
+**When you clear search:**
+- The search condition is removed
+- Original filter structure is restored exactly as it was
+
+**Example:**
+If you have filters: `Priority = High OR Status = In Progress`
+
+With search "urgent":
+```
+Search: title contains "urgent"
+AND
+Group: (Priority = High OR Status = In Progress)
+```
+
+This ensures search never interferes with your carefully crafted filter logic while providing powerful search capabilities on top of existing filters.
 
 ## Query Builder
 
