@@ -1,4 +1,4 @@
-import { TFile, ItemView, WorkspaceLeaf, EventRef } from 'obsidian';
+import { TFile, ItemView, WorkspaceLeaf, EventRef, Notice } from 'obsidian';
 import TaskNotesPlugin from '../main';
 import { 
     TASK_LIST_VIEW_TYPE, 
@@ -451,10 +451,16 @@ export class TaskListView extends ItemView {
             
             // Add group header (skip only if grouping is 'none' and group name is 'all')
             if (!(this.currentQuery.groupKey === 'none' && groupName === 'all')) {
-                groupSection.createEl('h3', {
-                    text: this.formatGroupName(groupName),
+                const headerElement = groupSection.createEl('h3', {
                     cls: 'task-group-header task-list-view__group-header'
                 });
+                
+                // For project groups, make the header clickable if it's a wikilink project
+                if (this.currentQuery.groupKey === 'project' && this.isWikilinkProject(groupName)) {
+                    this.createClickableProjectHeader(headerElement, groupName);
+                } else {
+                    headerElement.textContent = this.formatGroupName(groupName);
+                }
             }
             
             // Create task cards container
@@ -616,5 +622,47 @@ export class TaskListView extends ItemView {
                 resolve();
             });
         });
+    }
+
+    /**
+     * Check if a project string is in wikilink format [[Note Name]]
+     */
+    private isWikilinkProject(project: string): boolean {
+        return project.startsWith('[[') && project.endsWith(']]');
+    }
+
+    /**
+     * Create a clickable project header for wikilink projects
+     */
+    private createClickableProjectHeader(headerElement: HTMLElement, projectName: string): void {
+        if (this.isWikilinkProject(projectName)) {
+            // Extract the note name from [[Note Name]]
+            const noteName = projectName.slice(2, -2);
+            
+            // Create a clickable link
+            const linkEl = headerElement.createEl('a', {
+                cls: 'internal-link task-list-view__project-link',
+                text: noteName
+            });
+            
+            // Add click handler to open the note
+            this.registerDomEvent(linkEl, 'click', async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // Resolve the link to get the actual file
+                const file = this.plugin.app.metadataCache.getFirstLinkpathDest(noteName, '');
+                if (file instanceof TFile) {
+                    // Open the file in the current leaf
+                    await this.plugin.app.workspace.getLeaf(false).openFile(file);
+                } else {
+                    // File not found, show notice
+                    new Notice(`Note "${noteName}" not found`);
+                }
+            });
+        } else {
+            // Fallback to plain text
+            headerElement.textContent = this.formatGroupName(projectName);
+        }
     }
 }
