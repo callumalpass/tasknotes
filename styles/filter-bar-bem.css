@@ -123,6 +123,7 @@
     width: 32px;
     height: 32px;
     transition: all 0.2s ease;
+    box-shadow: none;
 }
 
 .tasknotes-plugin .filter-bar__filter-toggle:hover {
@@ -147,6 +148,7 @@
     font-weight: 500;
     transition: all 0.2s ease;
     height: 32px; /* Consistent height */
+    box-shadow: none;
 }
 
 .tasknotes-plugin .filter-bar__templates-button:hover {

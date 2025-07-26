@@ -27,7 +27,6 @@
     align-items: center;
     justify-content: center;
     padding: var(--tn-spacing-lg) var(--tn-spacing-md);
-    border-bottom: 1px solid var(--tn-border-color);
     margin-bottom: var(--tn-spacing-lg);
     position: relative;
     background: var(--tn-bg-primary);
@@ -90,6 +89,7 @@
     user-select: none;
     transition: all var(--tn-transition-fast);
     overflow: hidden;
+    box-shadow: none;
 }
 
 .tasknotes-plugin .agenda-view__nav-button::before {
@@ -102,8 +102,12 @@
     transition: opacity var(--tn-transition-fast);
 }
 
+.tasknotes-plugin .agenda-view__nav-button:hover {
+    background: var(--tn-interactive-hover);
+}
+
 .tasknotes-plugin .agenda-view__nav-button:hover::before {
-    opacity: 0.1;
+    opacity: 0;
 }
 
 .tasknotes-plugin .agenda-view__nav-button:focus-visible {
@@ -199,7 +203,7 @@
     justify-content: center;
     gap: var(--tn-spacing-xs);
     padding: var(--tn-spacing-sm) var(--tn-spacing-md);
-    border: 1px solid var(--tn-border-color);
+    border: none;
     border-radius: var(--tn-radius-md);
     background: var(--tn-bg-primary);
     color: var(--tn-text-muted);
@@ -214,25 +218,22 @@
     white-space: nowrap;
     transition: all var(--tn-transition-fast);
     overflow: hidden;
+    box-shadow: none;
 }
 
 .tasknotes-plugin .agenda-view__today-button:hover {
     background: var(--tn-interactive-hover);
-    border-color: var(--tn-border-color-hover);
     color: var(--tn-text-normal);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .tasknotes-plugin .agenda-view__today-button:focus-visible {
     outline: 2px solid var(--tn-interactive-accent);
     outline-offset: 2px;
-    border-color: var(--tn-interactive-accent);
 }
 
 .tasknotes-plugin .agenda-view__today-button:active {
     background: var(--tn-interactive-active);
     transform: translateY(1px);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 /* Toggle Controls */
