@@ -510,6 +510,9 @@ export class AdvancedCalendarView extends ItemView {
             selectable: true,
             selectMirror: calendarSettings.selectMirror,
             
+            // Locale settings - use browser locale for date formatting
+            locale: this.getUserLocale(),
+            
             // Week settings
             firstDay: calendarSettings.firstDay,
             weekNumbers: calendarSettings.weekNumbers,
@@ -622,6 +625,33 @@ export class AdvancedCalendarView extends ItemView {
             case '01:00:00': return '01:00:00'; // 1-hour slots, hourly labels
             default: return '01:00:00';
         }
+    }
+
+    private getUserLocale(): string {
+        // Try to get the user's locale in order of preference:
+        // 1. Browser language (most specific)
+        // 2. Obsidian locale if available 
+        // 3. System language
+        // 4. Default to 'en' as fallback
+        
+        // Check browser language first
+        if (navigator.language) {
+            return navigator.language;
+        }
+        
+        // Check for system languages array
+        if (navigator.languages && navigator.languages.length > 0) {
+            return navigator.languages[0];
+        }
+        
+        // Check for older browser support
+        const legacyLocale = (navigator as any).userLanguage || (navigator as any).browserLanguage;
+        if (legacyLocale) {
+            return legacyLocale;
+        }
+        
+        // Default fallback
+        return 'en';
     }
 
     private getTimeFormat(timeFormat: '12' | '24'): any {
