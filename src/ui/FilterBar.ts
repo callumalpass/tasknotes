@@ -166,12 +166,12 @@ export class FilterBar extends EventEmitter {
         try {
             const searchTerm = this.searchInput?.getValue().trim() || '';
             
-            // Remove existing search conditions
+            // Remove existing search conditions and reorganize query structure
             this.removeSearchConditions();
             
             // Add new search condition if term is not empty
             if (searchTerm) {
-                this.addSearchCondition(searchTerm);
+                this.addSearchConditionWithGrouping(searchTerm);
             }
             
             // Update only the filter builder to show the search condition
@@ -190,7 +190,7 @@ export class FilterBar extends EventEmitter {
     }
 
     /**
-     * Remove existing search conditions from the query
+     * Remove existing search conditions from the query and restore original structure
      */
     private removeSearchConditions(): void {
         // Defensive check: ensure children array exists
@@ -199,19 +199,39 @@ export class FilterBar extends EventEmitter {
             return;
         }
         
-        this.currentQuery.children = this.currentQuery.children.filter(child => {
-            if (child.type === 'condition') {
-                return !(child.property === 'title' && child.operator === 'contains' && 
-                        child.id.startsWith('search_'));
-            }
-            return true;
-        });
+        // Find the search condition
+        const searchConditionIndex = this.currentQuery.children.findIndex(child => 
+            child.type === 'condition' && 
+            child.property === 'title' && 
+            child.operator === 'contains' && 
+            child.id.startsWith('search_')
+        );
+
+        if (searchConditionIndex === -1) {
+            // No search condition found, nothing to do
+            return;
+        }
+
+        // Remove the search condition
+        this.currentQuery.children.splice(searchConditionIndex, 1);
+
+        // Check if we have a structure where the remaining child is a single group
+        // that was created to preserve existing filters when search was added
+        if (this.currentQuery.children.length === 1 && 
+            this.currentQuery.children[0].type === 'group') {
+            
+            const remainingGroup = this.currentQuery.children[0] as FilterGroup;
+            
+            // Restore the original filter structure by moving the group's children up to the root
+            this.currentQuery.children = remainingGroup.children;
+            this.currentQuery.conjunction = remainingGroup.conjunction;
+        }
     }
 
     /**
-     * Add a search condition to the query
+     * Add a search condition to the query, preserving existing filters by grouping them
      */
-    private addSearchCondition(searchTerm: string): void {
+    private addSearchConditionWithGrouping(searchTerm: string): void {
         // Defensive check: ensure children array exists
         if (!Array.isArray(this.currentQuery.children)) {
             this.currentQuery.children = [];
@@ -224,9 +244,31 @@ export class FilterBar extends EventEmitter {
             operator: 'contains',
             value: searchTerm
         };
-        
-        // Add search condition at the beginning
-        this.currentQuery.children.unshift(searchCondition);
+
+        // Get existing non-search filters
+        const existingFilters = this.currentQuery.children.filter(child => {
+            return !(child.type === 'condition' && 
+                    child.property === 'title' && 
+                    child.operator === 'contains' && 
+                    child.id.startsWith('search_'));
+        });
+
+        if (existingFilters.length === 0) {
+            // No existing filters, just add the search condition
+            this.currentQuery.children = [searchCondition];
+        } else {
+            // Create a group containing all existing filters
+            const existingFiltersGroup: FilterGroup = {
+                type: 'group',
+                id: FilterUtils.generateId(),
+                conjunction: this.currentQuery.conjunction, // Preserve the current conjunction
+                children: existingFilters
+            };
+
+            // Replace query children with the search condition AND the existing filters group
+            this.currentQuery.children = [searchCondition, existingFiltersGroup];
+            this.currentQuery.conjunction = 'and'; // Connect search with existing filters using AND
+        }
     }
 
     /**
