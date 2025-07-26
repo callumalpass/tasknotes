@@ -14,7 +14,10 @@
     border-radius: var(--radius-s);
     clear: both;
     position: relative;
-    z-index: 1;
+    z-index: 10; /* Higher z-index to allow dropdowns to appear above other content */
+    
+    /* Allow filter dropdowns to extend beyond widget boundaries */
+    overflow: visible !important;
     
     /* Prevent cursor and editing issues */
     pointer-events: auto;
@@ -150,13 +153,32 @@
     transform: rotate(-90deg);
 }
 
-.tasknotes-plugin .project-note-subtasks__list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5em;
-    overflow: hidden;
+/* Content container that holds both filter bar and task list */
+.tasknotes-plugin .project-note-subtasks__content {
+    overflow: visible; /* Allow filter dropdowns to extend outside */
     transition: max-height 0.3s ease, opacity 0.3s ease;
     opacity: 1;
+    max-height: none;
+    position: relative;
+    z-index: 20; /* Higher than widget container */
+}
+
+.tasknotes-plugin .project-note-subtasks__content.collapsed {
+    max-height: 0;
+    opacity: 0;
+    margin: 0;
+    padding: 0;
+    overflow: hidden; /* Hide content when collapsed */
+}
+
+/* Filter bar container */
+.tasknotes-plugin .project-note-subtasks__filter {
+    margin-bottom: 1em;
+    position: relative;
+    z-index: 30; /* Highest z-index for filter components */
+    
+    /* Allow filter dropdowns to extend beyond boundaries */
+    overflow: visible;
     
     /* Prevent cursor and selection issues */
     user-select: none;
@@ -166,11 +188,45 @@
     caret-color: transparent;
 }
 
-.tasknotes-plugin .project-note-subtasks__list.collapsed {
-    max-height: 0;
-    opacity: 0;
-    margin: 0;
+.tasknotes-plugin .project-note-subtasks__list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
+    
+    /* Prevent cursor and selection issues */
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    caret-color: transparent;
+}
+
+/* Group headers for when tasks are grouped */
+.tasknotes-plugin .project-note-subtasks__group-header {
+    margin: 1em 0 0.5em 0;
     padding: 0;
+}
+
+.tasknotes-plugin .project-note-subtasks__group-header:first-child {
+    margin-top: 0;
+}
+
+.tasknotes-plugin .project-note-subtasks__group-title {
+    font-size: 0.9em;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 0;
+    padding: 0.3em 0;
+    border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.tasknotes-plugin .project-note-subtasks__group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3em;
+    margin-bottom: 0.5em;
 }
 
 .tasknotes-plugin .project-note-subtasks__task {
@@ -227,6 +283,27 @@
     .tasknotes-plugin .project-note-subtasks__task .task-card {
         padding: 0.5em 0.6em;
     }
+}
+
+/* Ensure FilterBar components have proper z-index within subtask widget */
+.tasknotes-plugin .project-note-subtasks__filter .filter-bar__main-box {
+    z-index: 1000 !important; /* Override FilterBar's default z-index */
+}
+
+.tasknotes-plugin .project-note-subtasks__filter .filter-bar__view-selector-dropdown {
+    z-index: 1000 !important; /* Override FilterBar's default z-index */
+}
+
+/* Ensure the filter bar is properly contained but allows dropdowns to extend */
+.tasknotes-plugin .project-note-subtasks__filter .advanced-filter-bar {
+    position: relative;
+    z-index: inherit;
+}
+
+/* Ensure all filter bar dropdowns can appear above other content */
+.tasknotes-plugin .project-note-subtasks__filter .filter-bar__top-controls {
+    position: relative;
+    z-index: 50;
 }
 
 /* Dark mode adjustments */

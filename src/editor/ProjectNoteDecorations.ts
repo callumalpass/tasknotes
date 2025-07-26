@@ -2,16 +2,42 @@ import { Decoration, DecorationSet, EditorView, PluginSpec, PluginValue, ViewPlu
 import { Extension, RangeSetBuilder, StateEffect } from '@codemirror/state';
 import { TFile, editorLivePreviewField, editorInfoField, EventRef } from 'obsidian';
 import TaskNotesPlugin from '../main';
-import { TaskInfo, EVENT_DATA_CHANGED, EVENT_TASK_UPDATED, EVENT_TASK_DELETED } from '../types';
+import { TaskInfo, EVENT_DATA_CHANGED, EVENT_TASK_UPDATED, EVENT_TASK_DELETED, FilterQuery, FilterOptions } from '../types';
 import { createTaskCard } from '../ui/TaskCard';
 import { ProjectSubtasksService } from '../services/ProjectSubtasksService';
+import { FilterBar } from '../ui/FilterBar';
+import { FilterService } from '../services/FilterService';
 
 // Define a state effect for project subtasks updates
 const projectSubtasksUpdateEffect = StateEffect.define<{ forceUpdate?: boolean }>();
 
 class ProjectSubtasksWidget extends WidgetType {
+    private groupedTasks: Map<string, TaskInfo[]> = new Map();
+    private filterBar: FilterBar | null = null;
+    private filterService: FilterService;
+    private currentQuery: FilterQuery;
+    private savedViewsUnsubscribe: (() => void) | null = null;
+
     constructor(private plugin: TaskNotesPlugin, private tasks: TaskInfo[], private version: number = 0) {
         super();
+        // Initialize with ungrouped tasks
+        this.groupedTasks.set('all', [...tasks]);
+        this.filterService = new FilterService(
+            plugin.cacheManager,
+            plugin.statusManager, 
+            plugin.priorityManager
+        );
+        
+        // Initialize with default filter query
+        this.currentQuery = {
+            type: 'group',
+            id: 'root',
+            conjunction: 'and',
+            children: [],
+            sortKey: 'priority',
+            sortDirection: 'desc',
+            groupKey: 'none'
+        };
     }
     
     // Override eq to ensure widget updates when tasks change
@@ -33,6 +59,20 @@ class ProjectSubtasksWidget extends WidgetType {
                           task.recurrence === otherTask.recurrence &&
                           JSON.stringify(task.complete_instances || []) === JSON.stringify(otherTask.complete_instances || []);
                });
+    }
+
+    destroy(): void {
+        // Clean up the filter bar
+        if (this.filterBar) {
+            this.filterBar.destroy();
+            this.filterBar = null;
+        }
+        
+        // Clean up ViewStateManager event listeners
+        if (this.savedViewsUnsubscribe) {
+            this.savedViewsUnsubscribe();
+            this.savedViewsUnsubscribe = null;
+        }
     }
 
     toDOM(view: EditorView): HTMLElement {
@@ -65,16 +105,16 @@ class ProjectSubtasksWidget extends WidgetType {
             this.createNewSubtask();
         });
         
-        // Create task list container
-        const taskListContainer = container.createEl('div', {
-            cls: 'project-note-subtasks__list'
+        // Create content container that will hold both filter bar and task list
+        const contentContainer = container.createEl('div', {
+            cls: 'project-note-subtasks__content'
         });
         
         // Add collapsible functionality
         const isCollapsed = this.getCollapsedState();
         if (isCollapsed) {
             titleEl.classList.add('collapsed');
-            taskListContainer.classList.add('collapsed');
+            contentContainer.classList.add('collapsed');
         }
         
         // Add click handler for collapsing/expanding
@@ -86,32 +126,210 @@ class ProjectSubtasksWidget extends WidgetType {
             
             if (isCurrentlyCollapsed) {
                 titleEl.classList.remove('collapsed');
-                taskListContainer.classList.remove('collapsed');
+                contentContainer.classList.remove('collapsed');
                 this.setCollapsedState(false);
             } else {
                 titleEl.classList.add('collapsed');
-                taskListContainer.classList.add('collapsed');
+                contentContainer.classList.add('collapsed');
                 this.setCollapsedState(true);
             }
         });
         
-        // Sort and render tasks (use static method to avoid creating new service instance)
-        const sortedTasks = this.sortTasks(this.tasks);
-        sortedTasks.forEach(task => {
-            const taskCard = createTaskCard(task, this.plugin, {
-                showDueDate: true,
-                showCheckbox: false,
-                showArchiveButton: false,
-                showTimeTracking: false,
-                showRecurringControls: true,
-                groupByDate: false
-            });
-            
-            taskCard.classList.add('project-note-subtasks__task');
-            taskListContainer.appendChild(taskCard);
+        // Create filter bar container
+        const filterContainer = contentContainer.createEl('div', {
+            cls: 'project-note-subtasks__filter'
         });
         
+        // Create task list container
+        const taskListContainer = contentContainer.createEl('div', {
+            cls: 'project-note-subtasks__list'
+        });
+        
+        // Initialize the filter bar asynchronously
+        this.initializeFilterBar(filterContainer).then(() => {
+            this.applyFiltersAndRender(taskListContainer);
+        });
+        
+        // Initial render of tasks
+        this.renderTaskGroups(taskListContainer);
+        
         return container;
+    }
+
+    private async initializeFilterBar(container: HTMLElement): Promise<void> {
+        try {
+            const filterOptions = await this.filterService.getFilterOptions();
+            
+            this.filterBar = new FilterBar(
+                this.plugin.app,
+                container,
+                this.currentQuery,
+                filterOptions
+            );
+            
+            // Load saved views from the main ViewStateManager
+            const savedViews = this.plugin.viewStateManager.getSavedViews();
+            this.filterBar.updateSavedViews(savedViews);
+            
+            // Listen for filter changes
+            this.filterBar.on('queryChange', (query: FilterQuery) => {
+                this.currentQuery = query;
+                this.applyFiltersAndRender();
+            });
+            
+            // Listen for saved view operations
+            this.filterBar.on('saveView', (data: { name: string, query: FilterQuery }) => {
+                this.plugin.viewStateManager.saveView(data.name, data.query);
+            });
+            
+            this.filterBar.on('deleteView', (viewId: string) => {
+                this.plugin.viewStateManager.deleteView(viewId);
+            });
+            
+            this.filterBar.on('reorderViews', (fromIndex: number, toIndex: number) => {
+                this.plugin.viewStateManager.reorderSavedViews(fromIndex, toIndex);
+            });
+            
+            // Listen for saved views changes from ViewStateManager
+            this.savedViewsUnsubscribe = this.plugin.viewStateManager.on('saved-views-changed', (updatedViews) => {
+                if (this.filterBar) {
+                    this.filterBar.updateSavedViews(updatedViews);
+                }
+            });
+            
+        } catch (error) {
+            console.error('Error initializing filter bar for subtasks:', error);
+        }
+    }
+
+    private async applyFiltersAndRender(taskListContainer?: HTMLElement): Promise<void> {
+        try {
+            // Apply filters to get grouped tasks
+            const allGroupedTasks = await this.filterService.getGroupedTasks(this.currentQuery);
+            
+            // Filter grouped tasks to only include our original subtasks
+            const originalTaskPaths = new Set(this.tasks.map(t => t.path));
+            this.groupedTasks.clear();
+            
+            for (const [groupKey, tasks] of allGroupedTasks) {
+                const filteredGroupTasks = tasks.filter(task => originalTaskPaths.has(task.path));
+                if (filteredGroupTasks.length > 0) {
+                    this.groupedTasks.set(groupKey, filteredGroupTasks);
+                }
+            }
+            
+            // Re-render tasks if container is provided
+            if (taskListContainer) {
+                this.renderTaskGroups(taskListContainer);
+            } else {
+                // Find the task list container if not provided
+                const container = document.querySelector('.project-note-subtasks__list');
+                if (container) {
+                    this.renderTaskGroups(container as HTMLElement);
+                }
+            }
+        } catch (error) {
+            console.error('Error applying filters to subtasks:', error);
+            // Fallback to unfiltered, ungrouped tasks
+            this.groupedTasks.clear();
+            this.groupedTasks.set('all', [...this.tasks]);
+        }
+    }
+
+    private renderTaskGroups(taskListContainer: HTMLElement): void {
+        // Clear existing tasks
+        taskListContainer.empty();
+        
+        // Calculate total filtered tasks for count display
+        let totalFilteredTasks = 0;
+        for (const tasks of this.groupedTasks.values()) {
+            totalFilteredTasks += tasks.length;
+        }
+        
+        // Render groups
+        if (this.currentQuery.groupKey === 'none' || this.groupedTasks.size <= 1) {
+            // No grouping - render tasks directly
+            const tasks = this.groupedTasks.size === 1 
+                ? Array.from(this.groupedTasks.values())[0] 
+                : this.groupedTasks.get('all') || [];
+            tasks.forEach(task => {
+                const taskCard = createTaskCard(task, this.plugin, {
+                    showDueDate: true,
+                    showCheckbox: false,
+                    showArchiveButton: false,
+                    showTimeTracking: false,
+                    showRecurringControls: true,
+                    groupByDate: false
+                });
+                
+                taskCard.classList.add('project-note-subtasks__task');
+                taskListContainer.appendChild(taskCard);
+            });
+        } else {
+            // Render grouped tasks with group headers
+            for (const [groupKey, tasks] of this.groupedTasks.entries()) {
+                if (tasks.length === 0) continue;
+                
+                // Create group header
+                const groupHeader = taskListContainer.createEl('div', {
+                    cls: 'project-note-subtasks__group-header'
+                });
+                
+                const groupTitle = groupHeader.createEl('h4', {
+                    cls: 'project-note-subtasks__group-title',
+                    text: this.getGroupDisplayName(groupKey, tasks.length)
+                });
+                
+                // Create group container
+                const groupContainer = taskListContainer.createEl('div', {
+                    cls: 'project-note-subtasks__group'
+                });
+                
+                // Render tasks in this group
+                tasks.forEach(task => {
+                    const taskCard = createTaskCard(task, this.plugin, {
+                        showDueDate: true,
+                        showCheckbox: false,
+                        showArchiveButton: false,
+                        showTimeTracking: false,
+                        showRecurringControls: true,
+                        groupByDate: false
+                    });
+                    
+                    taskCard.classList.add('project-note-subtasks__task');
+                    groupContainer.appendChild(taskCard);
+                });
+            }
+        }
+
+        // Update count in title if it exists
+        const titleEl = taskListContainer.parentElement?.parentElement?.querySelector('.project-note-subtasks__title');
+        if (titleEl) {
+            titleEl.textContent = `Subtasks (${totalFilteredTasks}${totalFilteredTasks !== this.tasks.length ? ` of ${this.tasks.length}` : ''})`;
+        }
+    }
+
+    private getGroupDisplayName(groupKey: string, taskCount: number): string {
+        // Handle different group types with user-friendly names
+        switch (groupKey) {
+            case 'none':
+            case 'all':
+                return `All Tasks (${taskCount})`;
+            case 'No Status':
+                return `No Status (${taskCount})`;
+            case 'No Priority':
+                return `No Priority (${taskCount})`;
+            case 'No Context':
+                return `No Context (${taskCount})`;
+            case 'No Project':
+                return `No Project (${taskCount})`;
+            case 'No Due Date':
+                return `No Due Date (${taskCount})`;
+            case 'No Scheduled Date':
+                return `No Scheduled Date (${taskCount})`;
+            default:
+                return `${groupKey} (${taskCount})`;
+        }
     }
 
     private createNewSubtask(): void {
@@ -130,37 +348,6 @@ class ProjectSubtasksWidget extends WidgetType {
         });
     }
 
-    private sortTasks(tasks: TaskInfo[]): TaskInfo[] {
-        return tasks.sort((a, b) => {
-            // First sort by completion status (incomplete first)
-            const aCompleted = this.plugin.statusManager.isCompletedStatus(a.status);
-            const bCompleted = this.plugin.statusManager.isCompletedStatus(b.status);
-            
-            if (aCompleted !== bCompleted) {
-                return aCompleted ? 1 : -1;
-            }
-            
-            // Then sort by priority
-            const aPriorityWeight = this.plugin.priorityManager.getPriorityWeight(a.priority);
-            const bPriorityWeight = this.plugin.priorityManager.getPriorityWeight(b.priority);
-            
-            if (aPriorityWeight !== bPriorityWeight) {
-                return bPriorityWeight - aPriorityWeight; // Higher priority first
-            }
-            
-            // Then sort by due date (earliest first)
-            if (a.due && b.due) {
-                return new Date(a.due).getTime() - new Date(b.due).getTime();
-            } else if (a.due) {
-                return -1; // Tasks with due dates come first
-            } else if (b.due) {
-                return 1;
-            }
-            
-            // Finally sort by title
-            return a.title.localeCompare(b.title);
-        });
-    }
 
     /**
      * Get the collapsed state for project subtasks from localStorage
