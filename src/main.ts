@@ -964,6 +964,14 @@ export default class TaskNotesPlugin extends Plugin {
 		});
 
 		this.addCommand({
+			id: 'batch-convert-all-tasks',
+			name: 'Convert all tasks in note to TaskNotes',
+			editorCallback: async (editor: Editor) => {
+				await this.batchConvertAllTasks(editor);
+			}
+		});
+
+		this.addCommand({
 			id: 'insert-tasknote-link',
 			name: 'Insert tasknote link',
 			editorCallback: (editor: Editor) => {
@@ -1506,6 +1514,26 @@ private injectCustomStyles(): void {
 		} catch (error) {
 			console.error('Error converting task:', error);
 			new Notice('Failed to convert task. Please try again.');
+		}
+	}
+
+	/**
+	 * Batch convert all checkbox tasks in the current note to TaskNotes
+	 */
+	async batchConvertAllTasks(editor: Editor): Promise<void> {
+		try {
+			// Check if instant convert service is available
+			if (!this.instantTaskConvertService) {
+				new Notice('Task conversion service not available. Please try again.');
+				return;
+			}
+			
+			// Use the instant convert service for batch conversion
+			await this.instantTaskConvertService.batchConvertAllTasks(editor);
+			
+		} catch (error) {
+			console.error('Error batch converting tasks:', error);
+			new Notice('Failed to batch convert tasks. Please try again.');
 		}
 	}
 

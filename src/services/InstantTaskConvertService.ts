@@ -31,6 +31,96 @@ export class InstantTaskConvertService {
     }
 
     /**
+     * Batch convert all checkbox tasks in the current note to TaskNotes (optimized version)
+     */
+    async batchConvertAllTasks(editor: Editor): Promise<void> {
+        try {
+            // Find all checkbox tasks in the current note
+            const checkboxTasks = this.findAllCheckboxTasks(editor);
+            
+            if (checkboxTasks.length === 0) {
+                new Notice('No checkbox tasks found in the current note.');
+                return;
+            }
+            
+            new Notice(`Converting ${checkboxTasks.length} task${checkboxTasks.length === 1 ? '' : 's'}...`);
+            
+            // Batch process tasks for better performance
+            const result = await this.batchConvertTasksOptimized(editor, checkboxTasks);
+            
+            // Show summary
+            if (result.failures.length === 0) {
+                new Notice(`✅ Successfully converted ${result.successCount} task${result.successCount === 1 ? '' : 's'} to TaskNotes!`);
+            } else {
+                let message = `Converted ${result.successCount} task${result.successCount === 1 ? '' : 's'}.`;
+                if (result.failures.length > 0) {
+                    message += ` ${result.failures.length} failed.`;
+                }
+                new Notice(message);
+                
+                // Log failures for debugging
+                console.warn('Batch conversion failures:', result.failures);
+            }
+            
+        } catch (error) {
+            console.error('Error during batch task conversion:', error);
+            new Notice('Failed to perform batch conversion. Please try again.');
+        }
+    }
+
+    /**
+     * Optimized batch conversion that processes tasks in parallel and minimizes editor operations
+     */
+    private async batchConvertTasksOptimized(
+        editor: Editor, 
+        checkboxTasks: Array<{ lineNumber: number; line: string }>
+    ): Promise<{ successCount: number; failures: Array<{ lineNumber: number; error: string }> }> {
+        const failures: Array<{ lineNumber: number; error: string }> = [];
+        const taskFiles: Array<{ lineNumber: number; line: string; file: TFile; linkText: string }> = [];
+        
+        // Phase 1: Parse all tasks and create files in parallel
+        const parsePromises = checkboxTasks.map(async (task) => {
+            try {
+                const parsedData = await this.parseTaskForBatch(task.line);
+                if (!parsedData) {
+                    throw new Error('Failed to parse task');
+                }
+                
+                const file = await this.createTaskFile(parsedData);
+                const linkText = this.generateLinkText(task.line, file);
+                
+                return { lineNumber: task.lineNumber, line: task.line, file, linkText };
+            } catch (error) {
+                failures.push({
+                    lineNumber: task.lineNumber + 1,
+                    error: error instanceof Error ? error.message : String(error)
+                });
+                return null;
+            }
+        });
+        
+        // Wait for all file creation operations to complete
+        const results = await Promise.all(parsePromises);
+        
+        // Filter out failed operations
+        for (const result of results) {
+            if (result) {
+                taskFiles.push(result);
+            }
+        }
+        
+        // Phase 2: Replace all task lines in a single editor operation
+        if (taskFiles.length > 0) {
+            this.replaceAllTaskLines(editor, taskFiles);
+        }
+        
+        // Phase 3: Let the editor handle task link overlay rendering naturally
+        // No manual overlay refresh needed - editor will detect the link changes automatically
+        
+        return { successCount: taskFiles.length, failures };
+    }
+
+    /**
      * Instantly convert a checkbox task to a TaskNote without showing the modal
      * Supports multi-line selection where additional lines become task details
      */
@@ -692,4 +782,144 @@ export class InstantTaskConvertService {
         
         return cleanLine.trim();
     }
+
+    /**
+     * Find all checkbox tasks in the current note
+     * Returns an array of tasks with their line numbers
+     */
+    private findAllCheckboxTasks(editor: Editor): Array<{ lineNumber: number; line: string }> {
+        const tasks: Array<{ lineNumber: number; line: string }> = [];
+        const totalLines = editor.lineCount();
+        
+        for (let lineNumber = 0; lineNumber < totalLines; lineNumber++) {
+            const line = editor.getLine(lineNumber);
+            
+            // Check if this line is a checkbox task directly
+            const taskLineInfo = TasksPluginParser.parseTaskLine(line);
+            if (taskLineInfo.isTaskLine) {
+                tasks.push({ lineNumber, line });
+                continue;
+            }
+            
+            // Also check if it's a checkbox task inside blockquotes (like "> - [ ] task")
+            // This uses the same logic as the main conversion method
+            if (line.trim().includes('[ ]') || line.trim().includes('[x]') || line.trim().includes('[X]')) {
+                // Remove blockquote markers and try parsing again
+                let cleanLine = line.trim();
+                while (cleanLine.match(/^\s*>\s*/)) {
+                    cleanLine = cleanLine.replace(/^\s*>\s*/, '');
+                }
+                
+                const cleanedTaskLineInfo = TasksPluginParser.parseTaskLine(cleanLine);
+                if (cleanedTaskLineInfo.isTaskLine) {
+                    tasks.push({ lineNumber, line });
+                }
+            }
+        }
+        
+        return tasks;
+    }
+
+    /**
+     * Parse a task line for batch processing (simplified version of the main parsing logic)
+     */
+    private async parseTaskForBatch(line: string): Promise<ParsedTaskData | null> {
+        try {
+            const taskLineInfo = TasksPluginParser.parseTaskLine(line);
+            
+            if (!taskLineInfo.isTaskLine) {
+                // Handle non-checkbox lines (like blockquoted tasks)
+                const taskTitle = this.extractLineContentAsTitle(line);
+                if (!taskTitle.trim()) {
+                    return null;
+                }
+                
+                if (this.plugin.settings.enableNaturalLanguageInput) {
+                    const nlpResult = this.tryNLPFallback(taskTitle, '');
+                    if (nlpResult) {
+                        return nlpResult;
+                    }
+                }
+                
+                return { title: taskTitle, isCompleted: false };
+            } else {
+                if (taskLineInfo.error || !taskLineInfo.parsedData) {
+                    return null;
+                }
+                
+                const hasMetadata = this.hasUsefulMetadata(taskLineInfo.parsedData);
+                if (!hasMetadata && this.plugin.settings.enableNaturalLanguageInput) {
+                    const nlpResult = this.tryNLPFallback(line, '');
+                    if (nlpResult) {
+                        return nlpResult;
+                    }
+                }
+                
+                return taskLineInfo.parsedData;
+            }
+        } catch (error) {
+            console.warn('Error parsing task for batch:', error);
+            return null;
+        }
+    }
+
+    /**
+     * Generate link text for a task line replacement
+     */
+    private generateLinkText(originalLine: string, file: TFile): string {
+        const originalIndentation = originalLine.match(/^(\s*)/)?.[1] || '';
+        
+        // Determine if this was a checkbox task
+        const taskLineInfo = TasksPluginParser.parseTaskLine(originalLine);
+        const isCheckboxTask = taskLineInfo.isTaskLine;
+        
+        let listPrefix = '';
+        if (isCheckboxTask) {
+            const listPrefixMatch = originalLine.match(/^\s*((?:[-*+]|\d+\.)\s+)\[/);
+            listPrefix = listPrefixMatch?.[1] || '- ';
+        } else {
+            // For non-checkbox lines, preserve existing markers
+            const bulletMatch = originalLine.match(/^\s*([-*+]\s+)/);
+            const numberedMatch = originalLine.match(/^\s*(\d+\.\s+)/);
+            const blockquoteMatch = originalLine.match(/^\s*(>\s*)/);
+            
+            if (bulletMatch) {
+                listPrefix = bulletMatch[1];
+            } else if (numberedMatch) {
+                listPrefix = numberedMatch[1];
+            } else if (blockquoteMatch) {
+                listPrefix = blockquoteMatch[1];
+            } else {
+                listPrefix = '- ';
+            }
+        }
+        
+        const currentFile = this.plugin.app.workspace.getActiveFile();
+        const sourcePath = currentFile?.path || '';
+        const obsidianLinkText = this.plugin.app.metadataCache.fileToLinktext(file, sourcePath, true);
+        
+        return `${originalIndentation}${listPrefix}[[${obsidianLinkText}]]`;
+    }
+
+    /**
+     * Replace all task lines in a single editor operation for better performance
+     */
+    private replaceAllTaskLines(
+        editor: Editor, 
+        taskFiles: Array<{ lineNumber: number; line: string; file: TFile; linkText: string }>
+    ): void {
+        // Sort by line number in descending order to avoid line number shifts
+        const sortedTasks = taskFiles.sort((a, b) => b.lineNumber - a.lineNumber);
+        
+        // Process all replacements
+        for (const task of sortedTasks) {
+            const lineLength = editor.getLine(task.lineNumber).length;
+            editor.replaceRange(
+                task.linkText,
+                { line: task.lineNumber, ch: 0 },
+                { line: task.lineNumber, ch: lineLength }
+            );
+        }
+    }
+
 }
