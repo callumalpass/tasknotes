@@ -156,20 +156,27 @@ export class AdvancedCalendarView extends ItemView {
             this.showTimeblocks = savedPreferences.showTimeblocks ?? this.plugin.settings.calendarViewSettings.defaultShowTimeblocks;
             this.headerCollapsed = savedPreferences.headerCollapsed ?? true;
         }
-        
-        const contentEl = this.contentEl;
-        contentEl.empty();
-        contentEl.addClass('tasknotes-plugin');
-        contentEl.addClass('advanced-calendar-view');
 
-        // Create the calendar container
-        await this.renderView();
-        
-        // Register event listeners
-        this.registerEvents();
-        
-        // Initialize the calendar
-        await this.initializeCalendar();
+        // Ensure initialization
+        const init = async () => {
+            // Cleanup old calendar if it exists
+            const contentEl = this.contentEl;
+            contentEl.empty();
+            contentEl.addClass('tasknotes-plugin');
+            contentEl.addClass('advanced-calendar-view');
+
+            // Re-render the view
+            await this.renderView();
+            this.registerEvents();
+
+            // Initialize the calendar
+            await this.initializeCalendar();            
+        }
+
+        await init();
+
+        // Re-initialize on window migration
+        this.contentEl.onWindowMigrated(init);
     }
 
     async renderView() {
@@ -186,7 +193,7 @@ export class AdvancedCalendarView extends ItemView {
         mainContainer.createDiv({ 
             cls: 'advanced-calendar-view__calendar-container',
             attr: { id: 'advanced-calendar' }
-        });
+        });       
     }
 
     async createHeader(container: HTMLElement) {
@@ -482,7 +489,7 @@ export class AdvancedCalendarView extends ItemView {
     }
 
     async initializeCalendar() {
-        const calendarEl = document.getElementById('advanced-calendar');
+        const calendarEl = this.contentEl.querySelector('#advanced-calendar');
         if (!calendarEl) {
             console.error('Calendar element not found');
             return;
@@ -499,7 +506,7 @@ export class AdvancedCalendarView extends ItemView {
         console.log('Initializing calendar with customButtons:', customButtons);
         console.log('Initializing calendar with headerToolbar:', headerToolbar);
         
-        this.calendar = new Calendar(calendarEl, {
+        this.calendar = new Calendar(calendarEl as HTMLElement, {
             plugins: [dayGridPlugin, timeGridPlugin, multiMonthPlugin, interactionPlugin],
             initialView: calendarSettings.defaultView,
             headerToolbar: headerToolbar,
@@ -557,6 +564,8 @@ export class AdvancedCalendarView extends ItemView {
                 this.calendar.render();
                 // Set up resize handling after initial render
                 this.setupResizeHandling();
+                // Refresh events to ensure initial state is correct
+                this.refreshEvents();
             }
         });
     }
@@ -577,12 +586,31 @@ export class AdvancedCalendarView extends ItemView {
     private setupResizeHandling(): void {
         if (!this.calendar) return;
 
-        // Debounced resize handler to prevent excessive updates
+        // Clean up previous resize handling
+        if (this.resizeObserver) {
+            this.resizeObserver.disconnect();
+            this.resizeObserver = null;
+        }
+        if (this.resizeTimeout) {
+            window.clearTimeout(this.resizeTimeout);
+            this.resizeTimeout = null;
+        }
+
+        // Limpia listeners anteriores
+        this.functionListeners.forEach(unsubscribe => unsubscribe());
+        this.functionListeners = [];
+        this.listeners.forEach(listener => this.plugin.emitter.offref(listener));
+        this.listeners = [];
+
+        // Usa el window correcto (soporta popout)
+        const win = this.contentEl.ownerDocument.defaultView || window;
+
+        // Debounced resize handler
         const debouncedResize = () => {
             if (this.resizeTimeout) {
-                window.clearTimeout(this.resizeTimeout);
+                win.clearTimeout(this.resizeTimeout);
             }
-            this.resizeTimeout = window.setTimeout(() => {
+            this.resizeTimeout = win.setTimeout(() => {
                 if (this.calendar) {
                     this.calendar.updateSize();
                 }
@@ -590,30 +618,29 @@ export class AdvancedCalendarView extends ItemView {
         };
 
         // Use ResizeObserver to detect container size changes
-        if (window.ResizeObserver) {
-            this.resizeObserver = new ResizeObserver(debouncedResize);
+        if (win.ResizeObserver) {
+            this.resizeObserver = new win.ResizeObserver(debouncedResize);
             const calendarContainer = this.contentEl.querySelector('.advanced-calendar-view__calendar-container');
             if (calendarContainer) {
                 this.resizeObserver.observe(calendarContainer);
             }
         }
 
-        // Also listen for workspace layout changes (Obsidian-specific)
+        // Listen for workspace layout changes (Obsidian-specific)
         const layoutChangeListener = this.plugin.app.workspace.on('layout-change', debouncedResize);
         this.listeners.push(layoutChangeListener);
 
         // Listen for window resize as fallback
-        const windowResizeListener = () => debouncedResize();
-        window.addEventListener('resize', windowResizeListener);
-        this.functionListeners.push(() => window.removeEventListener('resize', windowResizeListener));
+        win.addEventListener('resize', debouncedResize);
+        this.functionListeners.push(() => win.removeEventListener('resize', debouncedResize));
 
         // Listen for active leaf changes that might affect calendar size
         const activeLeafListener = this.plugin.app.workspace.on('active-leaf-change', (leaf) => {
             if (leaf === this.leaf) {
-                // Small delay to ensure layout is settled
                 setTimeout(debouncedResize, 100);
             }
         });
+        
         this.listeners.push(activeLeafListener);
     }
 
