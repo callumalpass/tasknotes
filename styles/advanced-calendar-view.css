@@ -328,18 +328,17 @@
     flex-shrink: 0;
 }
 
+/* Use consistent button system */
 .ics-subscription-actions button {
-    padding: 0.25rem 0.5rem;
-    font-size: 0.8em;
-    border: 1px solid var(--background-modifier-border);
-    border-radius: 3px;
-    background: var(--background-primary);
+    background: transparent;
     color: var(--text-normal);
-    cursor: pointer;
+    border: none;
+    box-shadow: none;
+    font-size: 0.8em;
 }
 
 .ics-subscription-actions button:hover {
-    background: var(--background-modifier-hover);
+    background: var(--tn-interactive-hover);
 }
 
 .ics-subscription-toggle.enabled {
@@ -445,32 +444,33 @@
     margin: 0;
 }
 
+/* Use consistent button system */
 .ics-form-button,
 .ics-edit-button {
-    padding: 0.5rem 1rem;
-    border: 1px solid var(--background-modifier-border);
-    border-radius: 3px;
-    background: var(--background-primary);
+    background: transparent;
     color: var(--text-normal);
-    cursor: pointer;
+    border: none;
+    box-shadow: none;
     margin-right: 0.5rem;
 }
 
 .ics-form-button:hover,
 .ics-edit-button:hover {
-    background: var(--background-modifier-hover);
+    background: var(--tn-interactive-hover);
 }
 
 .ics-form-button.mod-cta,
 .ics-edit-button.mod-cta {
     background: var(--interactive-accent);
     color: var(--text-on-accent);
-    border-color: var(--interactive-accent);
+    border: none;
+    box-shadow: none;
 }
 
 .ics-form-button.mod-cta:hover,
 .ics-edit-button.mod-cta:hover {
     background: var(--interactive-accent-hover);
+    box-shadow: none;
 }
 
 .ics-edit-buttons {
@@ -602,7 +602,7 @@
 }
 
 .advanced-calendar-view .fc-button-primary:hover:not(:disabled) {
-    background: var(--background-modifier-hover);
+    background: var(--tn-interactive-hover);
     color: var(--text-normal);
 }
 
@@ -614,19 +614,22 @@
 
 .advanced-calendar-view .fc-button-active {
     background: var(--interactive-accent) !important;
-    border-color: var(--interactive-accent) !important;
+    border: none !important;
+    box-shadow: none !important;
     color: var(--text-on-accent) !important;
 }
 
+/* Use consistent button system for today button */
 .advanced-calendar-view .fc-today-button {
     background: var(--interactive-accent);
-    border-color: var(--interactive-accent);
+    border: none;
+    box-shadow: none;
     color: var(--text-on-accent);
 }
 
 .advanced-calendar-view .fc-today-button:hover:not(:disabled) {
     background: var(--interactive-accent-hover);
-    border-color: var(--interactive-accent-hover);
+    box-shadow: none;
 }
 
 /* Clean today styling */
@@ -853,9 +856,11 @@
 }
 
 /* ICS Refresh Button in FullCalendar Toolbar */
+/* Use consistent button system for refresh ICS button */
 .advanced-calendar-view .fc-refreshICS-button {
-    background: var(--background-secondary);
-    border: 1px solid var(--background-modifier-border);
+    background: transparent;
+    border: none;
+    box-shadow: none;
     color: var(--text-normal);
     transition: all 0.2s ease;
     font-weight: normal;
@@ -873,8 +878,8 @@
 }
 
 .advanced-calendar-view .fc-refreshICS-button:hover {
-    background: var(--background-modifier-hover);
-    border-color: var(--background-modifier-border-hover);
+    background: var(--tn-interactive-hover);
+    box-shadow: none;
     color: var(--text-normal);
 }
 
@@ -884,7 +889,9 @@
 }
 
 .advanced-calendar-view .fc-refreshICS-button:focus {
-    box-shadow: 0 0 0 2px var(--background-modifier-border-focus);
+    outline: 2px solid var(--tn-interactive-accent);
+    outline-offset: 2px;
+    box-shadow: none;
 }
 
 /* Ensure button content is visible and matches other FC buttons */

@@ -36,28 +36,17 @@
     gap: var(--tn-spacing-sm);
 }
 
+/* Use consistent button system with primary accent background preserved */
 .tasknotes-plugin .task-list-view__add-button {
-    padding: var(--tn-spacing-xs) var(--tn-spacing-md);
     background: var(--tn-interactive-accent);
-    color: var(--tn-bg-primary);
+    color: var(--text-on-accent);
     border: none;
-    border-radius: var(--tn-radius-sm);
-    font-size: var(--tn-font-size-md);
-    font-weight: var(--tn-font-weight-medium);
-    cursor: pointer;
-    transition: all var(--tn-transition-fast);
-    min-height: var(--tn-button-height-md);
+    box-shadow: none;
 }
 
 .tasknotes-plugin .task-list-view__add-button:hover {
     background: var(--tn-interactive-accent-hover);
-    transform: translateY(-1px);
-    box-shadow: var(--tn-shadow-medium);
-}
-
-.tasknotes-plugin .task-list-view__add-button:active {
-    transform: translateY(0);
-    box-shadow: var(--tn-shadow-light);
+    box-shadow: none;
 }
 
 /* Filter Bar Container */

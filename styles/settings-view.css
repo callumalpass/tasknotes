@@ -25,32 +25,16 @@
     white-space: nowrap;
 }
 
-/* Tab Button */
+/* Use consistent button system */
 .tasknotes-plugin .settings-view__tab-button {
-    padding: var(--tn-spacing-sm) var(--tn-spacing-md);
-    background: var(--tn-bg-secondary);
-    color: var(--tn-text-muted);
-    border: 1px solid var(--tn-border-color);
-    border-radius: var(--tn-radius-sm);
-    cursor: pointer;
-    font-size: var(--tn-font-size-sm);
-    font-weight: var(--tn-font-weight-medium);
-    transition: all var(--tn-transition-fast);
+    /* Remove individual styles - use tn-btn tn-btn--ghost classes */
     white-space: nowrap;
     flex-shrink: 0;
-    min-height: var(--tn-button-height-md);
-}
-
-.tasknotes-plugin .settings-view__tab-button:hover {
-    background: var(--tn-interactive-hover);
-    color: var(--tn-text-normal);
-    border-color: var(--tn-interactive-accent);
 }
 
 .tasknotes-plugin .settings-view__tab-button--active {
     background: var(--tn-interactive-accent);
-    color: var(--tn-bg-primary);
-    border-color: var(--tn-interactive-accent);
+    color: var(--text-on-accent);
 }
 
 /* ================================================

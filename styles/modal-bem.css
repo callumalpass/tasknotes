@@ -560,53 +560,18 @@
     border-top: 1px solid var(--tn-border-color);
 }
 
-/* Base Button */
+/* Use consistent button system */
 .tasknotes-plugin .modal-form__button {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--tn-spacing-sm);
-    padding: var(--tn-spacing-md) var(--tn-spacing-lg);
-    border-radius: var(--tn-radius-md);
-    font-family: inherit;
-    font-size: var(--tn-font-size-lg);
-    font-weight: var(--tn-font-weight-medium);
-    cursor: pointer;
-    user-select: none;
-    transition: all var(--tn-transition-fast);
-    border: none;
-    outline: none;
-    min-height: var(--tn-button-height-md);
+    /* Remove individual styles - use tn-btn classes */
 }
 
-/* Primary Button (Submit actions) */
 .tasknotes-plugin .modal-form__button--primary {
-    background: var(--tn-interactive-accent);
-    color: var(--text-on-accent);
-    border: 1px solid var(--tn-interactive-accent);
+    /* Remove individual styles - use tn-btn tn-btn--primary classes */
 }
 
-.tasknotes-plugin .modal-form__button--primary:hover {
-    background: var(--tn-interactive-accent-hover);
-    border-color: var(--tn-interactive-accent-hover);
-    transform: translateY(-1px);
-    box-shadow: var(--tn-shadow-hover);
-}
-
-.tasknotes-plugin .modal-form__button--primary:active {
-    transform: translateY(0);
-    box-shadow: var(--tn-shadow-light);
-}
-
-/* Secondary Button (Cancel, etc.) */
 .tasknotes-plugin .modal-form__button--secondary {
-    background: transparent;
-    color: var(--tn-text-normal);
-    border: 1px solid var(--tn-border-color);
+    /* Remove individual styles - use tn-btn tn-btn--secondary classes */
 }
-
-.tasknotes-plugin .modal-form__button--secondary:hover {
-    background: var(--tn-interactive-hover);
     border-color: var(--tn-border-color-hover);
     transform: translateY(-1px);
 }
@@ -1116,19 +1081,9 @@
     gap: var(--size-4-2);
 }
 
+/* Use consistent button system */
 .tasknotes-plugin .action-button {
-    padding: var(--size-4-2) var(--size-4-3);
-    border-radius: var(--radius-s);
-    border: 1px solid var(--background-modifier-border);
-    cursor: pointer;
-    font-size: var(--tn-font-size-md);
-    transition: all 0.2s ease;
-    white-space: nowrap;
-    display: flex;
-    align-items: center;
-    gap: var(--size-4-1);
-    min-height: 32px;
-    user-select: none;
+    /* Remove individual styles - use tn-btn classes */
 }
 
 .tasknotes-plugin .action-button .button-icon {
@@ -1136,25 +1091,15 @@
 }
 
 .tasknotes-plugin .content-type-buttons button {
-    display: flex;
-    align-items: center;
-    gap: var(--size-4-1);
+    /* Remove individual styles - use tn-btn classes */
 }
 
 .tasknotes-plugin .action-button.primary-button {
-    background: var(--interactive-accent);
-    color: var(--text-on-accent);
-    border-color: var(--interactive-accent);
-}
-
-.tasknotes-plugin .action-button.primary-button:hover {
-    background: var(--interactive-accent-hover);
-    border-color: var(--interactive-accent-hover);
+    /* Remove individual styles - use tn-btn tn-btn--primary classes */
 }
 
 .tasknotes-plugin .action-button.secondary-button {
-    background: var(--background-primary);
-    color: var(--tn-text-normal);
+    /* Remove individual styles - use tn-btn tn-btn--secondary classes */
 }
 
 .tasknotes-plugin .action-button.secondary-button:hover {

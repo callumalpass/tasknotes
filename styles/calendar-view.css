@@ -83,34 +83,14 @@
     color: var(--tn-text-normal);
 }
 
-/* Calendar Navigation Buttons */
+/* Use consistent button system */
 .tasknotes-plugin .calendar-view__nav-button,
 .tasknotes-plugin .mini-calendar-view__nav-button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    /* Remove individual styles - use tn-btn tn-btn--icon tn-btn--ghost classes */
     width: 32px;
     height: 32px;
-    border: 1px solid var(--tn-border-color);
-    border-radius: var(--tn-radius-sm);
-    background: var(--tn-bg-primary);
-    color: var(--tn-text-normal);
-    cursor: pointer;
     font-size: 16px;
     font-weight: 500;
-    transition: all var(--tn-transition-fast);
-}
-
-.tasknotes-plugin .calendar-view__nav-button:hover,
-.tasknotes-plugin .mini-calendar-view__nav-button:hover {
-    background: var(--tn-interactive-hover);
-    border-color: var(--tn-border-color-hover);
-}
-
-.tasknotes-plugin .calendar-view__nav-button:active,
-.tasknotes-plugin .mini-calendar-view__nav-button:active {
-    background: var(--tn-interactive-accent);
-    color: var(--tn-bg-primary);
 }
 
 .tasknotes-plugin .calendar-view__nav-button--prev,
@@ -123,15 +103,11 @@
     /* Specific styling for next button if needed */
 }
 
-/* Today Button */
+/* Use consistent button system */
 .tasknotes-plugin .calendar-view__today-button,
 .tasknotes-plugin .mini-calendar-view__today-button {
+    /* Remove individual styles - use tn-btn tn-btn--ghost tn-btn--sm classes */
     margin-left: auto;
-    background: transparent;
-    color: var(--tn-text-muted);
-    padding: var(--tn-spacing-xs) var(--tn-spacing-md);
-    font-size: var(--tn-font-size-xs);
-    min-height: 24px;
     border: none;
     font-weight: normal;
     opacity: 0.7;

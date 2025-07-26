@@ -43,36 +43,28 @@
     gap: var(--tn-spacing-sm);
 }
 
+/* Use consistent button system */
 .tasknotes-plugin .notes-view__refresh-button {
-    padding: var(--tn-spacing-xs) var(--tn-spacing-md);
-    background: var(--tn-bg-secondary);
+    background: transparent;
     color: var(--tn-text-normal);
-    border: 1px solid var(--tn-border-color);
-    border-radius: var(--tn-radius-sm);
+    border: none;
+    box-shadow: none;
     font-size: var(--tn-font-size-sm);
     font-weight: var(--tn-font-weight-medium);
-    cursor: pointer;
-    transition: all var(--tn-transition-fast);
-    min-height: var(--tn-button-height-md);
 }
 
 .tasknotes-plugin .notes-view__refresh-button:hover {
     background: var(--tn-interactive-hover);
-    border-color: var(--tn-border-color-hover);
-    transform: translateY(-1px);
-    box-shadow: var(--tn-shadow-light);
+    box-shadow: none;
 }
 
 .tasknotes-plugin .notes-view__refresh-button:active {
-    transform: translateY(0);
-    box-shadow: none;
+    opacity: 0.8;
 }
 
 .tasknotes-plugin .notes-view__refresh-button:disabled {
     opacity: 0.6;
     cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
 }
 
 .tasknotes-plugin .notes-view__refresh-button.is-loading {

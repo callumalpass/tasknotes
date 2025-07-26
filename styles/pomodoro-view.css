@@ -347,88 +347,53 @@
 }
 
 /* Primary Control Buttons */
+/* Use consistent button system with primary accent background preserved */
 .tasknotes-plugin .pomodoro-view__start-button {
-    min-width: 200px;
-    padding: var(--tn-spacing-lg) var(--tn-spacing-xl);
     background: var(--tn-interactive-accent);
-    color: var(--tn-bg-primary);
-    border: 2px solid var(--tn-interactive-accent);
-    border-radius: var(--tn-radius-lg);
-    font-size: var(--tn-font-size-lg);
-    font-weight: var(--tn-font-weight-semibold);
-    cursor: pointer;
-    transition: all var(--tn-transition-fast);
-    min-height: var(--tn-button-height-lg);
+    color: var(--text-on-accent);
+    border: none;
+    box-shadow: none;
+    min-width: 200px;
 }
 
 .tasknotes-plugin .pomodoro-view__start-button:hover {
     background: var(--tn-interactive-accent-hover);
-    transform: translateY(-1px);
-    box-shadow: var(--tn-shadow-medium);
+    box-shadow: none;
 }
 
+/* Remove all borders and shadows from other pomodoro buttons */
+.tasknotes-plugin .pomodoro-view__pause-button,
+.tasknotes-plugin .pomodoro-view__stop-button,
+.tasknotes-plugin .pomodoro-view__skip-break-button,
+.tasknotes-plugin .pomodoro-view__time-adjust-button {
+    border: none;
+    box-shadow: none;
+}
+
+.tasknotes-plugin .pomodoro-view__pause-button:hover,
+.tasknotes-plugin .pomodoro-view__stop-button:hover,
+.tasknotes-plugin .pomodoro-view__skip-break-button:hover,
+.tasknotes-plugin .pomodoro-view__time-adjust-button:hover {
+    box-shadow: none;
+}
+
+/* Use consistent button system */
 .tasknotes-plugin .pomodoro-view__pause-button {
+    /* Remove individual styles - use tn-btn tn-btn--secondary tn-btn--lg classes */
     min-width: 200px;
-    padding: var(--tn-spacing-lg) var(--tn-spacing-xl);
-    background: transparent;
-    color: var(--tn-interactive-accent);
-    border: 2px solid var(--tn-interactive-accent);
-    border-radius: var(--tn-radius-lg);
-    font-size: var(--tn-font-size-lg);
-    font-weight: var(--tn-font-weight-semibold);
-    cursor: pointer;
-    transition: all var(--tn-transition-fast);
-    min-height: var(--tn-button-height-lg);
 }
 
-.tasknotes-plugin .pomodoro-view__pause-button:hover {
-    background: var(--tn-interactive-accent);
-    color: var(--tn-bg-primary);
-    transform: translateY(-1px);
-    box-shadow: var(--tn-shadow-medium);
-}
-
+/* Use consistent button system */
 .tasknotes-plugin .pomodoro-view__stop-button {
+    /* Remove individual styles - use tn-btn tn-btn--danger classes */
     min-width: 120px;
-    padding: var(--tn-spacing-sm) var(--tn-spacing-md);
-    background: transparent;
-    color: var(--tn-text-muted);
-    border: 1px solid var(--tn-border-color);
-    border-radius: var(--tn-radius-md);
-    font-size: var(--tn-font-size-md);
-    font-weight: var(--tn-font-weight-medium);
-    cursor: pointer;
-    transition: all var(--tn-transition-fast);
-    min-height: var(--tn-button-height-md);
-}
-
-.tasknotes-plugin .pomodoro-view__stop-button:hover {
-    background: var(--tn-color-error);
-    color: var(--tn-bg-primary);
-    border-color: var(--tn-color-error);
-    transform: translateY(-1px);
-    box-shadow: var(--tn-shadow-medium);
 }
 
 /* Skip Break Button */
+/* Use consistent button system */
 .tasknotes-plugin .pomodoro-view__skip-break-button {
+    /* Remove individual styles - use tn-btn tn-btn--ghost classes */
     min-width: 120px;
-    padding: var(--tn-spacing-sm) var(--tn-spacing-md);
-    background: transparent;
-    color: var(--tn-text-muted);
-    border: 1px solid var(--tn-border-color);
-    border-radius: var(--tn-radius-md);
-    font-size: var(--tn-font-size-md);
-    font-weight: var(--tn-font-weight-medium);
-    cursor: pointer;
-    transition: all var(--tn-transition-fast);
-    min-height: var(--tn-button-height-md);
-}
-
-.tasknotes-plugin .pomodoro-view__skip-break-button:hover {
-    background: var(--tn-interactive-hover);
-    border-color: var(--tn-interactive-accent);
-    color: var(--tn-interactive-accent);
 }
 
 /* Time Adjustment Controls */

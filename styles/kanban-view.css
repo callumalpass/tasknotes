@@ -47,46 +47,22 @@
     gap: var(--tn-spacing-sm);
 }
 
-/* New Task Button */
+/* Use consistent button system with primary accent background preserved */
 .tasknotes-plugin .kanban-view__new-task-button {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--tn-spacing-sm);
-    padding: 0 var(--tn-spacing-lg);
-    border: none;
-    border-radius: var(--tn-radius-md);
     background: var(--tn-interactive-accent);
-    color: var(--tn-text-on-accent);
-    font-family: inherit;
-    font-size: var(--tn-font-size-md);
-    font-weight: var(--tn-font-weight-medium);
-    line-height: 1.25;
-    min-height: var(--tn-button-height-md);
-    cursor: pointer;
-    user-select: none;
-    text-decoration: none;
+    color: var(--text-on-accent);
+    border: none;
+    box-shadow: none;
     white-space: nowrap;
-    transition: all var(--tn-transition-fast);
-    overflow: hidden;
 }
 
 .tasknotes-plugin .kanban-view__new-task-button:hover {
     background: var(--tn-interactive-accent-hover);
-    transform: translateY(-1px);
-    box-shadow: var(--tn-shadow-medium);
-}
-
-.tasknotes-plugin .kanban-view__new-task-button:focus-visible {
-    outline: 2px solid color-mix(in srgb, var(--tn-interactive-accent) 0.5, transparent);
-    outline-offset: 2px;
+    box-shadow: none;
 }
 
 .tasknotes-plugin .kanban-view__new-task-button:active {
-    background: var(--tn-interactive-accent);
-    transform: translateY(0);
-    box-shadow: var(--tn-shadow-light);
+    opacity: 0.8;
 }
 
 /* Stats Container */

@@ -476,24 +476,10 @@
     padding-right: var(--tn-spacing-sm);
 }
 
+/* Use consistent button system */
 .tasknotes-plugin .filter-bar__save-button {
-    background: none;
-    border: none !important;
-    box-shadow: none;
-    outline: none;
-    color: var(--text-muted);
-    cursor: pointer;
+    /* Remove individual styles - use tn-btn tn-btn--icon tn-btn--ghost classes */
     padding: 4px;
-    border-radius: var(--radius-s);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s ease;
-}
-
-.tasknotes-plugin .filter-bar__save-button:hover {
-    background: var(--interactive-hover);
-    color: var(--text-normal);
 }
 
 .tasknotes-plugin .filter-bar__save-button svg {

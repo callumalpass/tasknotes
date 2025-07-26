@@ -256,41 +256,31 @@
     border-top: 1px solid var(--background-modifier-border);
 }
 
+/* Use consistent button system with primary accent background preserved */
 .tasknotes-plugin .save-button {
-    padding: var(--size-4-2) var(--size-4-4);
-    font-size: var(--font-ui-medium);
-    font-weight: 600;
-    border: none;
-    border-radius: var(--radius-s);
-    background: var(--interactive-accent);
+    background: var(--tn-interactive-accent);
     color: var(--text-on-accent);
-    cursor: pointer;
-    transition: all 0.2s ease;
+    border: none;
+    box-shadow: none;
     min-width: 80px;
 }
 
 .tasknotes-plugin .save-button:hover {
-    background: var(--interactive-accent-hover);
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    background: var(--tn-interactive-accent-hover);
+    box-shadow: none;
 }
 
 .tasknotes-plugin .cancel-button {
-    padding: var(--size-4-2) var(--size-4-4);
-    font-size: var(--font-ui-medium);
-    font-weight: 500;
-    border: 1px solid var(--background-modifier-border);
-    border-radius: var(--radius-s);
-    background: var(--background-primary);
-    color: var(--text-normal);
-    cursor: pointer;
-    transition: all 0.2s ease;
+    background: transparent;
+    color: var(--tn-text-normal);
+    border: none;
+    box-shadow: none;
     min-width: 80px;
 }
 
 .tasknotes-plugin .cancel-button:hover {
-    background: var(--background-modifier-hover);
-    border-color: var(--interactive-accent);
+    background: var(--tn-interactive-hover);
+    box-shadow: none;
 }
 
 /* =====================================================================

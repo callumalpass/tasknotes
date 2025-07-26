@@ -33,23 +33,18 @@
     margin: 0;
 }
 
-/* Refresh Button */
+/* Use consistent button system */
 .tasknotes-plugin .pomodoro-stats-view__refresh-button {
-    padding: var(--tn-spacing-xs) var(--tn-spacing-md);
-    border: 1px solid var(--tn-border-color);
-    border-radius: var(--tn-radius-sm);
-    background: var(--tn-bg-primary);
+    background: transparent;
     color: var(--tn-text-normal);
-    cursor: pointer;
+    border: none;
+    box-shadow: none;
     font-size: var(--tn-font-size-sm);
     font-weight: var(--tn-font-weight-medium);
-    transition: all var(--tn-transition-fast);
-    min-height: var(--tn-button-height-md);
 }
 
 .tasknotes-plugin .pomodoro-stats-view__refresh-button:hover {
     background: var(--tn-interactive-hover);
-    border-color: var(--tn-interactive-accent);
 }
 
 /* ================================================
