@@ -36,7 +36,90 @@ The overlays support drag-and-drop to calendar views and provide keyboard shortc
 
 ## Instant Task Conversion
 
-The **Instant Task Conversion** feature transforms standard Obsidian checkbox tasks into TaskNotes files. In edit mode, a "convert" button appears next to a checkbox task. Clicking this button creates a new task note using the checkbox's text as the title and replaces the checkbox with a link to the new task file.
+The **Instant Task Conversion** feature transforms lines in your notes into TaskNotes files. This works with both checkbox tasks and regular lines of text. When available, a "convert" button appears next to the content in edit mode. Clicking this button creates a new task note using the line's text as the title and replaces the original line with a link to the new task file.
+
+### Supported Line Types
+
+The conversion feature works with:
+
+- **Checkbox tasks**: `- [ ] Task description` becomes a TaskNote with task metadata
+- **Bullet points**: `- Some task idea` becomes a TaskNote with the text as title  
+- **Numbered lists**: `1. Important item` becomes a TaskNote
+- **Blockquoted content**: `> Task in callout` becomes a TaskNote (preserves blockquote formatting)
+- **Plain text lines**: `Important thing to do` becomes a TaskNote
+- **Mixed formats**: `> - [ ] Task in blockquote` handles both blockquote and checkbox formatting
+
+### Content Processing
+
+When converting lines:
+
+- **Special characters** like `>`, `#`, `-` are automatically removed from the task title
+- **Original formatting** is preserved in the note (e.g., `> [[Task Title]]` for blockquoted content)
+- **Task metadata** is extracted from checkbox tasks (due dates, priorities, etc.)
+- **Natural language processing** can extract dates and metadata from plain text (if enabled)
+
+The feature handles edge cases like nested blockquotes and maintains proper indentation in the final link replacement.
+
+## Bulk Task Conversion
+
+The **Bulk Task Conversion** command converts all checkbox tasks in the current note to TaskNotes in a single operation. This command is available in the command palette as "Convert all tasks in note to TaskNotes".
+
+### How It Works
+
+The command:
+
+1. Scans the entire current note for checkbox tasks (`- [ ]`, `* [ ]`, `1. [ ]`, etc.)
+2. Includes tasks inside blockquotes (e.g., `> - [ ] task in callout`)  
+3. Applies the same enhanced conversion logic as instant task conversion
+4. Creates individual TaskNote files for each task
+5. Replaces the original checkboxes with links to the new task files
+6. Preserves original indentation and formatting (including blockquote markers)
+
+The bulk conversion uses the same content processing as instant conversion, automatically removing special characters from task titles while preserving original formatting in the note.
+
+### Usage
+
+To use bulk conversion:
+
+1. Open a note containing checkbox tasks
+2. Access the command palette (`Ctrl+P` / `Cmd+P`)
+3. Search for "Convert all tasks in note to TaskNotes"
+4. Execute the command
+
+The command will display progress and show a summary when complete (e.g., "✅ Successfully converted 5 tasks to TaskNotes!").
+
+!!! warning "Important Considerations"
+
+    **This command modifies note content permanently.** Before using:
+    
+    - **Create a backup** of your note if it contains important data
+    - **Review the tasks** to ensure they should become individual TaskNotes
+    - **Expect processing time** - notes with many tasks may take several seconds to process
+    - **Avoid interruption** - do not edit the note while conversion is running
+
+!!! note "Performance"
+
+    Processing time depends on the number of tasks:
+    
+    - Small notes (1-10 tasks): Near-instant
+    - Medium notes (10-50 tasks): 2-5 seconds  
+    - Large notes (50+ tasks): 10+ seconds
+    
+    The operation creates multiple files and updates the note content, which requires disk I/O and editor updates.
+
+### Error Handling
+
+If some tasks fail to convert, the command will:
+
+- Complete successfully converted tasks
+- Display a summary showing both successes and failures
+- Log detailed error information to the console for troubleshooting
+
+Failed conversions typically occur due to:
+
+- Tasks with titles containing invalid filename characters
+- Insufficient disk permissions
+- Very long task titles (over 200 characters)
 
 ## Project Subtasks Widget
 
