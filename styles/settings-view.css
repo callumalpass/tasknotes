@@ -389,22 +389,23 @@
     color: var(--tn-bg-primary);
 }
 
-/* Add Button */
+/* Use default button styling */
 .tasknotes-plugin .settings-view__add-button {
+    background: transparent;
+    color: var(--tn-text-normal);
+    border: none;
+    box-shadow: none;
     padding: var(--tn-spacing-sm) var(--tn-spacing-md);
-    background: var(--tn-interactive-accent);
-    color: var(--tn-bg-primary);
-    border: 1px solid var(--tn-interactive-accent);
     border-radius: var(--tn-radius-sm);
     font-size: var(--tn-font-size-sm);
     font-weight: var(--tn-font-weight-medium);
-    cursor: pointer;
-    transition: all var(--tn-transition-fast);
     min-height: var(--tn-button-height-md);
 }
 
 .tasknotes-plugin .settings-view__add-button:hover {
-    background: var(--tn-interactive-accent-hover);
+    background: var(--tn-interactive-hover);
+    border: none;
+    box-shadow: none;
 }
 
 /* Reset Button */
@@ -933,19 +934,21 @@
     background: var(--tn-color-red-bg);
 }
 
+/* Use default button styling */
 .tasknotes-plugin .default-project-add-btn {
-    background: var(--tn-interactive-accent);
-    color: var(--tn-text-on-accent);
+    background: transparent;
+    color: var(--tn-text-normal);
     border: none;
+    box-shadow: none;
     padding: var(--tn-spacing-xs) var(--tn-spacing-sm);
     border-radius: var(--tn-radius-sm);
     font-size: var(--tn-font-size-sm);
-    cursor: pointer;
-    transition: background var(--tn-transition-fast);
 }
 
 .tasknotes-plugin .default-project-add-btn:hover {
-    background: var(--tn-interactive-accent-hover);
+    background: var(--tn-interactive-hover);
+    border: none;
+    box-shadow: none;
 }
 
 .tasknotes-plugin .default-projects-empty {

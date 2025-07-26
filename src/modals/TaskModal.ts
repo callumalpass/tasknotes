@@ -212,6 +212,8 @@ export abstract class TaskModal extends Modal {
                         });
                         modal.open();
                     });
+                // Add consistent button classes for transparent styling
+                button.buttonEl.addClasses(['tn-btn', 'tn-btn--ghost']);
             });
 
         // Projects list container

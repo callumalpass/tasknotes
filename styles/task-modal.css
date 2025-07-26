@@ -666,43 +666,43 @@
     white-space: nowrap;
 }
 
+/* Use consistent button system for project remove button */
 .tasknotes-plugin .task-project-remove {
-    background: none;
+    background: transparent;
     border: none;
+    box-shadow: none;
     color: var(--text-muted);
-    cursor: pointer;
     font-size: 16px;
     font-weight: bold;
     width: 20px;
     height: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     border-radius: 50%;
-    transition: all 0.2s ease;
 }
 
 .tasknotes-plugin .task-project-remove:hover {
-    background-color: var(--background-modifier-error);
-    color: var(--text-on-accent);
+    background: var(--tn-color-error);
+    color: var(--tn-bg-primary);
+    border: none;
+    box-shadow: none;
 }
 
 /* =====================================================================
    PROJECT SELECT MODAL
    ===================================================================== */
 
+/* Use consistent button system for project suggestions */
 .tasknotes-plugin .project-suggestion {
-    display: flex;
-    flex-direction: column;
-    padding: var(--size-4-2);
+    background: transparent;
     border: none;
+    box-shadow: none;
+    padding: var(--size-4-2);
     border-radius: var(--radius-s);
-    transition: background-color 0.2s ease;
-    cursor: pointer;
 }
 
 .tasknotes-plugin .project-suggestion:hover {
-    background-color: var(--background-modifier-hover);
+    background: var(--tn-interactive-hover);
+    border: none;
+    box-shadow: none;
 }
 
 .tasknotes-plugin .project-name {

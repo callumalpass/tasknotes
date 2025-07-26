@@ -118,23 +118,21 @@
     -moz-user-modify: read-only;
 }
 
+/* Use consistent button system */
 .tasknotes-plugin .project-note-subtasks__new-btn {
-    background: none;
+    background: transparent;
     color: var(--text-muted);
     border: none;
-    padding: 0.2em 0.4em;
+    box-shadow: none;
     font-size: 0.8em;
     font-weight: 400;
-    cursor: pointer;
-    transition: color 0.2s ease;
-    user-select: none;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
 }
 
 .tasknotes-plugin .project-note-subtasks__new-btn:hover {
+    background: var(--tn-interactive-hover);
     color: var(--text-normal);
+    border: none;
+    box-shadow: none;
 }
 
 .tasknotes-plugin .project-note-subtasks__title:hover {
