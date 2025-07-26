@@ -1,5 +1,6 @@
 import { Notice, TFile, ItemView, WorkspaceLeaf, EventRef, debounce } from 'obsidian';
 import { format } from 'date-fns';
+import { formatUTCDateForCalendar } from '../utils/dateUtils';
 import TaskNotesPlugin from '../main';
 import { getAllDailyNotes, getDailyNote } from 'obsidian-daily-notes-interface';
 import { 
@@ -756,7 +757,7 @@ export class MiniCalendarView extends ItemView {
                 }
                 
                 const dateObj = createSafeDate(year, actualMonth, date);
-                const dateKey = format(dateObj, 'yyyy-MM-dd');
+                const dateKey = formatUTCDateForCalendar(dateObj);
                 
                 // Get note count for this date
                 const noteCount = notesCache.get(dateKey) || 0;
@@ -837,7 +838,7 @@ export class MiniCalendarView extends ItemView {
                     }
                     
                     const dateObj = createSafeDate(year, actualMonth, date);
-                    const dateKey = format(dateObj, 'yyyy-MM-dd');
+                    const dateKey = formatUTCDateForCalendar(dateObj);
                     
                     cachedResult = { actualMonth, dateObj, dateKey };
                     this.monthCalculationCache.set(cacheKey, cachedResult);
@@ -948,7 +949,7 @@ export class MiniCalendarView extends ItemView {
                     }
                     
                     const dateObj = createSafeDate(year, actualMonth, date);
-                    const dateKey = format(dateObj, 'yyyy-MM-dd');
+                    const dateKey = formatUTCDateForCalendar(dateObj);
                     
                     cachedResult = { actualMonth, dateObj, dateKey };
                     this.monthCalculationCache.set(cacheKey, cachedResult);
@@ -1152,7 +1153,7 @@ export class MiniCalendarView extends ItemView {
             const cellDate = this.getCellDate(dayEl, date, currentYear, currentMonth);
             
             if (cellDate) {
-                const dateKey = format(cellDate, 'yyyy-MM-dd');
+                const dateKey = formatUTCDateForCalendar(cellDate);
                 this.elementToDateMap.set(element, { date, dateKey });
             }
         });
@@ -1273,7 +1274,7 @@ source: 'tasknotes-calendar',
                 }
                 
                 // Format the date for task due date (all-day)
-                const dueDate = format(dayDate, 'yyyy-MM-dd');
+                const dueDate = formatUTCDateForCalendar(dayDate);
                 
                 // Update the task's due date
                 await this.plugin.taskService.updateProperty(task, 'due', dueDate);

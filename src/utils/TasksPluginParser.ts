@@ -1,5 +1,5 @@
 import { format } from 'date-fns';
-import { parseDate, isPastDate, isToday } from './dateUtils';
+import { parseDate, isPastDate, isToday, formatUTCDateForCalendar } from './dateUtils';
 
 export interface ParsedTaskData {
 	title: string;
@@ -232,7 +232,7 @@ export class TasksPluginParser {
 						return undefined;
 					}
 					
-					return format(date, 'yyyy-MM-dd');
+					return formatUTCDateForCalendar(date);
 				} catch {
 					return undefined;
 				}

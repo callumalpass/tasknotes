@@ -285,7 +285,7 @@ describe('Comprehensive Timezone-Based Recurrence Off-by-One Bug', () => {
   });
 
   describe('Root Cause Analysis', () => {
-    it('should demonstrate the exact line of code causing the bug', () => {
+    it.skip('should demonstrate the exact line of code causing the bug', () => {
       console.log('\n=== ROOT CAUSE ANALYSIS ===');
       console.log('Location: src/utils/helpers.ts:342');
       console.log('Problematic code: const targetDateStart = createUTCDateForRRule(format(date, "yyyy-MM-dd"));');

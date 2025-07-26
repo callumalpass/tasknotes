@@ -1585,7 +1585,7 @@ export class AdvancedCalendarView extends ItemView {
                 } else {
                     // Standard task context menu for other event types
                     const targetDate = isRecurringInstance && instanceDate 
-                        ? parseDate(instanceDate) 
+                        ? parseDate(instanceDate + 'T00:00:00Z')  // Treat instanceDate as UTC to avoid double conversion
                         : (arg.event.start || new Date());
                         
                     showTaskContextMenu(jsEvent, taskInfo.path, this.plugin, targetDate);

@@ -56,6 +56,7 @@ import { createTaskLinkOverlay, dispatchTaskUpdate } from './editor/TaskLinkOver
 import { createReadingModeTaskLinkProcessor } from './editor/ReadingModeTaskLinkProcessor';
 import { createProjectNoteDecorations, dispatchProjectSubtasksUpdate } from './editor/ProjectNoteDecorations';
 import { DragDropManager } from './utils/DragDropManager';
+import { formatUTCDateForCalendar } from './utils/dateUtils';
 import { ICSSubscriptionService } from './services/ICSSubscriptionService';
 import { ICSNoteService } from './services/ICSNoteService';
 import { MigrationService } from './services/MigrationService';
@@ -1417,8 +1418,8 @@ private injectCustomStyles(): void {
 	 * Check if a recurring task is completed for a specific date
 	 */
 	isRecurringTaskCompleteForDate(task: TaskInfo, date: Date): boolean {
-		if (!task.recurrence) return false;
-		const dateStr = format(date, 'yyyy-MM-dd');
+		if (!task.recurrence) return false;  
+		const dateStr = formatUTCDateForCalendar(date);
 		const completeInstances = Array.isArray(task.complete_instances) ? task.complete_instances : [];
 		return completeInstances.includes(dateStr);
 	}

@@ -1,6 +1,5 @@
 import { TFile, Notice, normalizePath, stringifyYaml } from 'obsidian';
-// format import removed - now using formatUTCDateForCalendar from dateUtils
-// YAML not needed in this service
+import { format } from 'date-fns';
 import TaskNotesPlugin from '../main';
 import { TaskInfo, TimeEntry, EVENT_TASK_UPDATED, EVENT_TASK_DELETED, TaskCreationData } from '../types';
 import { getCurrentTimestamp, getCurrentDateString, formatUTCDateForCalendar } from '../utils/dateUtils';

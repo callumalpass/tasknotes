@@ -8,7 +8,8 @@ import {
     isTodayTimeAware,
     isOverdueTimeAware,
     getDatePart,
-    getTimePart
+    getTimePart,
+    formatUTCDateForCalendar
 } from '../utils/dateUtils';
 import { DateContextMenu } from '../components/DateContextMenu';
 import { PriorityContextMenu } from '../components/PriorityContextMenu';
@@ -590,7 +591,7 @@ export async function showTaskContextMenu(event: MouseEvent, taskPath: string, p
             menu.addSeparator();
             
             // Check current completion status for this date
-            const dateStr = format(targetDate, 'yyyy-MM-dd');
+            const dateStr = formatUTCDateForCalendar(targetDate);
             const isCompletedForDate = task.complete_instances?.includes(dateStr) || false;
             
             menu.addItem((item) => {

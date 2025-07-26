@@ -477,7 +477,7 @@ export function getCurrentTimestamp(): string {
  * Get current date in YYYY-MM-DD format for completion dates
  */
 export function getCurrentDateString(): string {
-    return format(new Date(), 'yyyy-MM-dd');
+    return formatUTCDateForCalendar(new Date());
 }
 
 /**

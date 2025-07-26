@@ -353,7 +353,7 @@ export function isDueByRRule(task: TaskInfo, date: Date): boolean {
 	// If recurrence is an object (legacy format), handle it inline
 	// Legacy recurrence object handling
 	const frequency = task.recurrence.frequency;
-	const targetDate = parseDate(format(date, 'yyyy-MM-dd'));
+	const targetDate = parseDate(formatUTCDateForCalendar(date));
 	const dayOfWeek = targetDate.getDay();
 	const dayOfMonth = targetDate.getDate();
 	const monthOfYear = targetDate.getMonth() + 1; // JavaScript months are 0-indexed
@@ -407,7 +407,7 @@ export function isRecurringTaskDueOn(task: any, date: Date): boolean {
 	if (typeof task.recurrence === 'string') return true;
 	
 	const frequency = task.recurrence.frequency;
-	const targetDate = parseDate(format(date, 'yyyy-MM-dd'));
+	const targetDate = parseDate(formatUTCDateForCalendar(date));
 	const dayOfWeek = targetDate.getDay();
 	const dayOfMonth = targetDate.getDate();
 	const monthOfYear = targetDate.getMonth() + 1; // JavaScript months are 0-indexed
@@ -479,7 +479,7 @@ export function shouldShowRecurringTaskOnDate(task: TaskInfo, targetDate: Date):
 export function getRecurringTaskCompletionText(task: TaskInfo, targetDate: Date): string {
 	if (!task.recurrence) return '';
 	
-	const dateStr = format(targetDate, 'yyyy-MM-dd');
+	const dateStr = formatUTCDateForCalendar(targetDate);
 	const isCompleted = task.complete_instances?.includes(dateStr) || false;
 	
 	return isCompleted ? 'Completed for this date' : 'Not completed for this date';
