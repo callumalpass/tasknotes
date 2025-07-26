@@ -1,10 +1,11 @@
-import { App, PluginSettingTab, Setting, Notice, setIcon } from 'obsidian';
+import { App, PluginSettingTab, Setting, Notice, setIcon, TAbstractFile, TFile } from 'obsidian';
 import TaskNotesPlugin from '../main';
 import { FieldMapping, StatusConfig, PriorityConfig, SavedView } from '../types';
 import { StatusManager } from '../services/StatusManager';
 import { PriorityManager } from '../services/PriorityManager';
 import { showConfirmationModal } from '../modals/ConfirmationModal';
 import { showStorageLocationConfirmationModal } from '../modals/StorageLocationConfirmationModal';
+import { ProjectSelectModal } from '../modals/ProjectSelectModal';
 
 export interface TaskNotesSettings {
 	tasksFolder: string;  // Now just a default location for new tasks
@@ -65,6 +66,7 @@ export interface TaskCreationDefaults {
 	// Pre-fill options
 	defaultContexts: string;  // Comma-separated list
 	defaultTags: string;      // Comma-separated list
+	defaultProjects: string;  // Comma-separated list of project links
 	defaultTimeEstimate: number; // minutes, 0 = no default
 	defaultRecurrence: 'none' | 'daily' | 'weekly' | 'monthly' | 'yearly';
 	// Date defaults
@@ -206,6 +208,7 @@ export const DEFAULT_PRIORITIES: PriorityConfig[] = [
 export const DEFAULT_TASK_CREATION_DEFAULTS: TaskCreationDefaults = {
 	defaultContexts: '',
 	defaultTags: '',
+	defaultProjects: '',
 	defaultTimeEstimate: 0,
 	defaultRecurrence: 'none',
 	defaultDueDate: 'none',
@@ -308,6 +311,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 	plugin: TaskNotesPlugin;
 	private activeTab = 'task-defaults';
 	private tabContents: Record<string, HTMLElement> = {};
+	private selectedDefaultProjectFiles: TAbstractFile[] = [];
   
 	constructor(app: App, plugin: TaskNotesPlugin) {
 		super(app, plugin);
@@ -706,6 +710,34 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 						await this.plugin.saveSettings();
 					});
 			});
+
+		// Default projects setting
+		const projectSetting = new Setting(container)
+			.setName('Default projects')
+			.setDesc('Default projects for new tasks');
+
+		// Initialize default project files from settings
+		this.initializeDefaultProjectsFromSettings();
+
+		// Create projects display area
+		const projectsContainer = projectSetting.settingEl.createDiv('default-projects-container');
+		const projectsList = projectsContainer.createDiv('default-projects-list');
+		
+		// Add project button
+		const addProjectBtn = projectsContainer.createEl('button', {
+			cls: 'default-project-add-btn',
+			text: '+ Add project'
+		});
+		addProjectBtn.addEventListener('click', () => {
+			new ProjectSelectModal(this.app, this.plugin, (file) => {
+				this.addDefaultProject(file);
+				this.renderDefaultProjectsList(projectsList);
+				this.updateDefaultProjectsInSettings();
+			}).open();
+		});
+
+		// Initial render
+		this.renderDefaultProjectsList(projectsList);
 
 		new Setting(container)
 			.setName('Default time estimate')
@@ -2410,5 +2442,108 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 		window.setTimeout(() => nameInput.focus(), 50);
 	}
 
+	private initializeDefaultProjectsFromSettings(): void {
+		// Convert project strings to files
+		const defaultProjects = this.plugin.settings.taskCreationDefaults.defaultProjects;
+		if (!defaultProjects) {
+			this.selectedDefaultProjectFiles = [];
+			return;
+		}
+
+		const projectStrings = defaultProjects.split(',').map(p => p.trim()).filter(p => p.length > 0);
+		this.selectedDefaultProjectFiles = [];
+		
+		for (const projectString of projectStrings) {
+			// Check if it's a wiki link format
+			const linkMatch = projectString.match(/^\[\[([^\]]+)\]\]$/);
+			if (linkMatch) {
+				const linkPath = linkMatch[1];
+				const file = this.app.metadataCache.getFirstLinkpathDest(linkPath, '');
+				if (file) {
+					this.selectedDefaultProjectFiles.push(file);
+				}
+			} else {
+				// For backwards compatibility, try to find a file with this name
+				const files = this.app.vault.getMarkdownFiles();
+				const matchingFile = files.find(f => 
+					f.basename === projectString || 
+					f.name === projectString + '.md'
+				);
+				if (matchingFile) {
+					this.selectedDefaultProjectFiles.push(matchingFile);
+				}
+			}
+		}
+	}
+
+	private addDefaultProject(file: TAbstractFile): void {
+		// Check if project is already selected
+		const exists = this.selectedDefaultProjectFiles.some(
+			existing => existing.path === file.path
+		);
+		if (!exists) {
+			this.selectedDefaultProjectFiles.push(file);
+		}
+	}
+
+	private removeDefaultProject(file: TAbstractFile): void {
+		this.selectedDefaultProjectFiles = this.selectedDefaultProjectFiles.filter(
+			existing => existing.path !== file.path
+		);
+	}
+
+	private renderDefaultProjectsList(container: HTMLElement): void {
+		container.empty();
+
+		if (this.selectedDefaultProjectFiles.length === 0) {
+			const emptyText = container.createDiv({ cls: 'default-projects-empty' });
+			emptyText.textContent = 'No default projects selected';
+			return;
+		}
+
+		this.selectedDefaultProjectFiles.forEach(file => {
+			const projectItem = container.createDiv({ cls: 'default-project-item' });
+			
+			// Info container
+			const infoEl = projectItem.createDiv({ cls: 'default-project-info' });
+			
+			// File name
+			const nameEl = infoEl.createSpan({ cls: 'default-project-name' });
+			nameEl.textContent = file.name;
+			
+			// File path (if different from name)
+			if (file.path !== file.name) {
+				const pathEl = infoEl.createDiv({ cls: 'default-project-path' });
+				pathEl.textContent = file.path;
+			}
+			
+			// Remove button
+			const removeBtn = projectItem.createEl('button', { 
+				cls: 'default-project-remove',
+				text: '×'
+			});
+			removeBtn.title = 'Remove project';
+			removeBtn.addEventListener('click', () => {
+				this.removeDefaultProject(file);
+				this.renderDefaultProjectsList(container);
+				this.updateDefaultProjectsInSettings();
+			});
+		});
+	}
+
+	private updateDefaultProjectsInSettings(): void {
+		// Convert selected files to markdown links
+		const currentFile = this.app.workspace.getActiveFile();
+		const sourcePath = currentFile?.path || '';
+		
+		const projectStrings = this.selectedDefaultProjectFiles.map(file => {
+			// fileToLinktext expects TFile, so cast safely since we know these are markdown files
+			const linkText = this.app.metadataCache.fileToLinktext(file as TFile, sourcePath, true);
+			return `[[${linkText}]]`;
+		});
+
+		this.plugin.settings.taskCreationDefaults.defaultProjects = projectStrings.join(', ');
+		this.plugin.saveSettings();
+	}
 
 }

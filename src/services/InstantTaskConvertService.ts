@@ -409,11 +409,6 @@ export class InstantTaskConvertService {
                 contextsArray = defaults.defaultContexts.split(',').map(s => s.trim()).filter(s => s);
             }
             
-            // Apply projects: add parsed projects (no default projects in settings currently)
-            if (parsedProjects.length > 0) {
-                // Projects will be set in the TaskCreationData object
-            }
-            
             // Apply tags: start with task tag, add parsed tags, then add default tags
             tagsArray = [this.plugin.settings.taskTag];
             if (parsedTags.length > 0) {
@@ -452,6 +447,26 @@ export class InstantTaskConvertService {
             tagsArray = [...new Set(tagsArray)];
         }
 
+        // Apply projects: handle default projects if enabled, otherwise just use parsed projects
+        const projectsArray: string[] = [];
+        
+        // Apply default projects if defaults are enabled
+        if (this.plugin.settings.useDefaultsOnInstantConvert) {
+            const defaults = this.plugin.settings.taskCreationDefaults;
+            if (defaults.defaultProjects) {
+                const defaultProjectsArray = defaults.defaultProjects.split(',').map(s => s.trim()).filter(s => s);
+                projectsArray.push(...defaultProjectsArray);
+            }
+        }
+        
+        // Add parsed projects
+        if (parsedProjects.length > 0) {
+            projectsArray.push(...parsedProjects);
+        }
+        
+        // Remove duplicates
+        const uniqueProjects = [...new Set(projectsArray)];
+
         // Create TaskCreationData object with all the data
         const taskData: TaskCreationData = {
             title: title,
@@ -460,7 +475,7 @@ export class InstantTaskConvertService {
             due: dueDate,
             scheduled: scheduledDate,
             contexts: contextsArray.length > 0 ? contextsArray : undefined,
-            projects: parsedProjects.length > 0 ? parsedProjects : undefined,
+            projects: uniqueProjects.length > 0 ? uniqueProjects : undefined,
             tags: tagsArray,
             timeEstimate: timeEstimate,
             recurrence: recurrence,

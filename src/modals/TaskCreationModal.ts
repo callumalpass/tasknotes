@@ -268,8 +268,9 @@ export class TaskCreationModal extends TaskModal {
         // Create collapsible details section
         this.createDetailsSection(container);
         
-        // Re-render projects list if pre-populated values were applied
-        if (this.options.prePopulatedValues && this.options.prePopulatedValues.projects) {
+        // Re-render projects list if pre-populated values were applied or defaults are set
+        if ((this.options.prePopulatedValues && this.options.prePopulatedValues.projects) || 
+            this.selectedProjectFiles.length > 0) {
             this.renderProjectsList();
         }
 
@@ -487,9 +488,17 @@ export class TaskCreationModal extends TaskModal {
         // Apply default scheduled date based on user settings
         this.scheduledDate = calculateDefaultDate(defaults.defaultScheduledDate);
         
-        // Apply default contexts and tags
+        // Apply default contexts, tags, and projects
         this.contexts = defaults.defaultContexts || '';
         this.tags = defaults.defaultTags || '';
+        
+        // Apply default projects
+        if (defaults.defaultProjects) {
+            const projectStrings = defaults.defaultProjects.split(',').map(p => p.trim()).filter(p => p.length > 0);
+            if (projectStrings.length > 0) {
+                this.initializeProjectsFromStrings(projectStrings);
+            }
+        }
         
         // Apply default time estimate
         if (defaults.defaultTimeEstimate && defaults.defaultTimeEstimate > 0) {

@@ -831,3 +831,88 @@
     background: var(--tn-color-red);
     color: var(--tn-text-on-accent);
 }
+
+/* ================================================
+   DEFAULT PROJECTS SETTING
+   ================================================ */
+
+.tasknotes-plugin .default-projects-container {
+    margin-top: var(--tn-spacing-sm);
+}
+
+.tasknotes-plugin .default-projects-list {
+    margin-bottom: var(--tn-spacing-sm);
+    min-height: 20px;
+}
+
+.tasknotes-plugin .default-project-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--tn-spacing-xs) var(--tn-spacing-sm);
+    margin-bottom: var(--tn-spacing-xs);
+    background: var(--tn-bg-secondary);
+    border: 1px solid var(--tn-border-color);
+    border-radius: var(--tn-radius-sm);
+    gap: var(--tn-spacing-sm);
+}
+
+.tasknotes-plugin .default-project-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.tasknotes-plugin .default-project-name {
+    font-weight: var(--tn-font-weight-medium);
+    color: var(--tn-text-normal);
+    display: block;
+}
+
+.tasknotes-plugin .default-project-path {
+    font-size: var(--tn-font-size-xs);
+    color: var(--tn-text-muted);
+    margin-top: 2px;
+}
+
+.tasknotes-plugin .default-project-remove {
+    background: none;
+    border: none;
+    color: var(--tn-text-muted);
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 1;
+    padding: 2px 4px;
+    border-radius: var(--tn-radius-xs);
+    transition: all var(--tn-transition-fast);
+    flex-shrink: 0;
+}
+
+.tasknotes-plugin .default-project-remove:hover {
+    color: var(--tn-color-red);
+    background: var(--tn-color-red-bg);
+}
+
+.tasknotes-plugin .default-project-add-btn {
+    background: var(--tn-interactive-accent);
+    color: var(--tn-text-on-accent);
+    border: none;
+    padding: var(--tn-spacing-xs) var(--tn-spacing-sm);
+    border-radius: var(--tn-radius-sm);
+    font-size: var(--tn-font-size-sm);
+    cursor: pointer;
+    transition: background var(--tn-transition-fast);
+}
+
+.tasknotes-plugin .default-project-add-btn:hover {
+    background: var(--tn-interactive-accent-hover);
+}
+
+.tasknotes-plugin .default-projects-empty {
+    color: var(--tn-text-muted);
+    font-style: italic;
+    padding: var(--tn-spacing-sm);
+    text-align: center;
+    border: 1px dashed var(--tn-border-color);
+    border-radius: var(--tn-radius-sm);
+    background: var(--tn-bg-muted);
+}
