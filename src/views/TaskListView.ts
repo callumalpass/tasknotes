@@ -660,9 +660,34 @@ export class TaskListView extends ItemView {
                     new Notice(`Note "${noteName}" not found`);
                 }
             });
+            
+            // Add hover preview functionality - resolve the file first
+            const file = this.plugin.app.metadataCache.getFirstLinkpathDest(noteName, '');
+            if (file instanceof TFile) {
+                this.addHoverPreview(linkEl, file.path);
+            }
         } else {
             // Fallback to plain text
             headerElement.textContent = this.formatGroupName(projectName);
         }
+    }
+
+    /**
+     * Add hover preview functionality to an element
+     */
+    private addHoverPreview(element: HTMLElement, filePath: string) {
+        element.addEventListener('mouseover', (event) => {
+            const file = this.app.vault.getAbstractFileByPath(filePath);
+            if (file) {
+                this.app.workspace.trigger('hover-link', {
+                    event,
+                    source: 'tasknotes-tasklistview',
+                    hoverParent: this,
+                    targetEl: element,
+                    linktext: filePath,
+                    sourcePath: filePath
+                });
+            }
+        });
     }
 }

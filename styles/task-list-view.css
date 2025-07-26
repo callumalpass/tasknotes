@@ -121,17 +121,30 @@
 }
 
 .tasknotes-plugin .task-list-view__group-header {
-    padding: var(--tn-spacing-xs) var(--tn-spacing-sm);
-    margin: var(--tn-spacing-sm) 0 var(--tn-spacing-xs);
-    background: var(--tn-bg-secondary);
-    border-radius: var(--tn-radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--tn-spacing-md) 0 var(--tn-spacing-sm);
+    margin-bottom: var(--tn-spacing-sm);
+    border-bottom: 1px solid var(--tn-border-color);
+    position: relative;
+    font-size: var(--tn-font-size-lg);
     font-weight: var(--tn-font-weight-medium);
-    font-size: var(--tn-font-size-md);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
     color: var(--tn-text-normal);
-    border: 1px solid var(--tn-border-color);
+    letter-spacing: 0.01em;
     line-height: 1.4;
+}
+
+.tasknotes-plugin .task-list-view__project-link {
+    color: var(--tn-text-normal);
+    text-decoration: none;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.tasknotes-plugin .task-list-view__project-link:hover {
+    color: var(--tn-interactive-accent);
+    text-decoration: underline;
 }
 
 .tasknotes-plugin .task-list-view__group-content {
@@ -270,8 +283,8 @@
 
 @media (max-width: 480px) {
     .tasknotes-plugin .task-list-view__group-header {
-        font-size: var(--tn-font-size-xs);
-        padding: var(--tn-spacing-xs);
+        font-size: var(--tn-font-size-md);
+        padding: var(--tn-spacing-sm) 0 var(--tn-spacing-xs);
     }
     
     .tasknotes-plugin .task-list-view__empty {
