@@ -36,20 +36,25 @@ describe('Context Menu Completion Date Fix', () => {
   it('should verify the fix eliminates timezone-related date inconsistencies', () => {
     const targetDate = new Date('2025-01-15T23:00:00Z');
     
-    // Before fix: these would be different
+    // All components now use consistent UTC formatting
     const contextMenuCheck = formatUTCDateForCalendar(targetDate); // Always used this
     const taskServiceStores = formatUTCDateForCalendar(targetDate); // Always used this
-    const oldMainTsCheck = format(targetDate, 'yyyy-MM-dd'); // Was using this (buggy)
-    const newMainTsCheck = formatUTCDateForCalendar(targetDate); // Now uses this (fixed)
+    const mainTsCheck = formatUTCDateForCalendar(targetDate); // Now uses this (fixed)
+    const localTimezoneFormat = format(targetDate, 'yyyy-MM-dd'); // Local timezone (varies by environment)
     
-    // Demonstrate the problem existed
+    // Verify the fix works - all UTC-based components are consistent
     expect(contextMenuCheck).toBe('2025-01-15');
-    expect(oldMainTsCheck).toBe('2025-01-16'); // Different due to timezone
+    expect(taskServiceStores).toBe('2025-01-15');
+    expect(mainTsCheck).toBe('2025-01-15');
     
-    // Verify the fix works
-    expect(contextMenuCheck).toBe(newMainTsCheck); // Now they match!
-    expect(taskServiceStores).toBe(newMainTsCheck); // All consistent
-    expect(newMainTsCheck).toBe('2025-01-15');
+    // All UTC components now match
+    expect(contextMenuCheck).toBe(taskServiceStores);
+    expect(taskServiceStores).toBe(mainTsCheck);
+    
+    // Local timezone format may differ (this is expected and handled correctly)
+    // In UTC environment: localTimezoneFormat === '2025-01-15'  
+    // In UTC+2 environment: localTimezoneFormat === '2025-01-16'
+    // But our fix ensures all recurring task operations use UTC consistently
   });
 
   it('should verify consistent date handling across all components', () => {

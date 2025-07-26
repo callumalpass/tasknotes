@@ -182,11 +182,11 @@ describe('Context Menu Completion Date Fix (Corrected)', () => {
     // Call the TaskService method
     await taskService.toggleRecurringTaskComplete(recurringTask, targetDate);
     
-    // Verify TaskService now stores local timezone format
-    const expectedLocalDate = format(targetDate, 'yyyy-MM-dd');
-    expect(expectedLocalDate).toBe('2025-01-16'); // Local timezone (UTC+2)
+    // Verify TaskService now stores UTC format for consistency
+    const expectedUTCDate = formatUTCDateForCalendar(targetDate);
+    expect(expectedUTCDate).toBe('2025-01-15'); // UTC format (consistent)
     
-    // The TaskService should now be storing this local timezone date
+    // The TaskService should now be storing this UTC date format
     // (The mock captures this, but the real test would be in an integration scenario)
   });
 });
