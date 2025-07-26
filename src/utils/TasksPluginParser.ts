@@ -16,6 +16,7 @@ export interface ParsedTaskData {
 		day_of_month?: number;
 		month_of_year?: number;
 	};
+	tags?: string[];
 	isCompleted: boolean;
 }
 
@@ -37,8 +38,11 @@ export class TasksPluginParser {
 		HIGH_PRIORITY: /⏫/g,
 		MEDIUM_PRIORITY: /🔼/g,
 		LOW_PRIORITY: /⏬/g,
-		RECURRENCE: /🔁\s*([^📅⏳🛫➕✅⏫🔼⏬🔁]+?)(?=\s*[📅⏳🛫➕✅⏫🔼⏬🔁]|$)/gu
+		RECURRENCE: /🔁\s*([^📅⏳🛫➕✅⏫🔼⏬🔁#]+?)(?=\s*[📅⏳🛫➕✅⏫🔼⏬🔁#]|$)/gu
 	};
+
+	// Tag pattern for hashtags
+	private static readonly TAG_PATTERN = /#[\w/]+/g;
 
 	// Checkbox pattern for markdown tasks (supports both bullet points and numbered lists)
 	private static readonly CHECKBOX_PATTERN = /^(\s*(?:[-*+]|\d+\.)\s+\[)([ xX])(\]\s+)(.*)/;
@@ -146,7 +150,10 @@ export class TasksPluginParser {
 			// Extract recurrence
 			const { recurrence, recurrenceData } = this.extractRecurrence(workingContent);
 
-			// Remove all emoji patterns to get clean title
+			// Extract tags
+			const tags = this.extractTags(workingContent);
+
+			// Remove all emoji patterns and tags to get clean title
 			const title = this.extractCleanTitle(workingContent);
 			
 			// Validate title
@@ -188,6 +195,7 @@ export class TasksPluginParser {
 				doneDate,
 				recurrence,
 				recurrenceData,
+				tags: tags.length > 0 ? tags : undefined,
 				isCompleted
 			};
 		} catch (error) {
@@ -327,7 +335,39 @@ export class TasksPluginParser {
 	}
 
 	/**
-	 * Extract clean title by removing all emoji patterns
+	 * Extract tags from content
+	 */
+	private static extractTags(content: string): string[] {
+		// Validate input
+		if (typeof content !== 'string') {
+			return [];
+		}
+
+		try {
+			// Create a fresh regex to avoid global state issues
+			const freshPattern = new RegExp(this.TAG_PATTERN.source, 'g');
+			const tags: string[] = [];
+			let match;
+
+			while ((match = freshPattern.exec(content)) !== null) {
+				if (match[0]) {
+					// Remove the # prefix and add to tags array
+					const tag = match[0].substring(1);
+					if (tag && !tags.includes(tag)) {
+						tags.push(tag);
+					}
+				}
+			}
+
+			return tags;
+		} catch (error) {
+			console.debug('Error extracting tags:', error);
+			return [];
+		}
+	}
+
+	/**
+	 * Extract clean title by removing all emoji patterns and tags
 	 */
 	private static extractCleanTitle(content: string): string {
 		// Validate input
@@ -348,6 +388,14 @@ export class TasksPluginParser {
 					console.debug('Error applying emoji pattern:', error);
 				}
 			});
+
+			// Remove tags using fresh regex instance
+			try {
+				const tagPattern = new RegExp(this.TAG_PATTERN.source, 'g');
+				cleanContent = cleanContent.replace(tagPattern, '');
+			} catch (error) {
+				console.debug('Error removing tags from title:', error);
+			}
 
 			// Clean up extra whitespace and validate result
 			const cleaned = cleanContent.replace(/\s+/g, ' ').trim();
@@ -416,6 +464,7 @@ export class TasksPluginParser {
 		if (parsedData.createdDate) parts.push(`Created: ${parsedData.createdDate}`);
 		if (parsedData.doneDate) parts.push(`Done: ${parsedData.doneDate}`);
 		if (parsedData.recurrence) parts.push(`Recurrence: ${parsedData.recurrence}`);
+		if (parsedData.tags && parsedData.tags.length > 0) parts.push(`Tags: ${parsedData.tags.map(t => '#' + t).join(', ')}`);
 		
 		return parts.join(' | ');
 	}

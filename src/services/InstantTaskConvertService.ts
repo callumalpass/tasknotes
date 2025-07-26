@@ -262,6 +262,9 @@ export class InstantTaskConvertService {
         let timeEstimate: number | undefined;
         let recurrence: import('../types').RecurrenceInfo | undefined;
         
+        // Extract parsed tags
+        const parsedTags = parsedData.tags || [];
+
         if (this.plugin.settings.useDefaultsOnInstantConvert) {
             const defaults = this.plugin.settings.taskCreationDefaults;
             
@@ -288,11 +291,17 @@ export class InstantTaskConvertService {
                 contextsArray = defaults.defaultContexts.split(',').map(s => s.trim()).filter(s => s);
             }
             
-            // Apply default tags (add to existing task tag)
+            // Apply tags: start with task tag, add parsed tags, then add default tags
+            tagsArray = [this.plugin.settings.taskTag];
+            if (parsedTags.length > 0) {
+                tagsArray.push(...parsedTags);
+            }
             if (defaults.defaultTags) {
                 const defaultTagsArray = defaults.defaultTags.split(',').map(s => s.trim()).filter(s => s);
-                tagsArray = [...tagsArray, ...defaultTagsArray];
+                tagsArray.push(...defaultTagsArray);
             }
+            // Remove duplicates
+            tagsArray = [...new Set(tagsArray)];
             
             // Apply time estimate
             if (defaults.defaultTimeEstimate && defaults.defaultTimeEstimate > 0) {
@@ -311,8 +320,13 @@ export class InstantTaskConvertService {
             status = (parsedData.status ? this.sanitizeStatus(parsedData.status) : '') || 'none';
             dueDate = parsedDueDate || undefined;
             scheduledDate = parsedScheduledDate || undefined;
-            // Keep minimal tags (just the task tag)
+            // Apply tags: start with task tag, add parsed tags
             tagsArray = [this.plugin.settings.taskTag];
+            if (parsedTags.length > 0) {
+                tagsArray.push(...parsedTags);
+            }
+            // Remove duplicates
+            tagsArray = [...new Set(tagsArray)];
         }
 
         // Create TaskCreationData object with all the data
@@ -527,7 +541,8 @@ export class InstantTaskConvertService {
             data.status ||
             data.recurrence ||
             data.createdDate ||
-            data.doneDate
+            data.doneDate ||
+            (data.tags && data.tags.length > 0)
         );
     }
 
@@ -563,6 +578,7 @@ export class InstantTaskConvertService {
                 dueDate: nlpResult.dueDate,
                 scheduledDate: nlpResult.scheduledDate,
                 recurrence: nlpResult.recurrence,
+                tags: nlpResult.tags && nlpResult.tags.length > 0 ? nlpResult.tags : undefined,
                 // TasksPlugin specific fields that NLP doesn't have
                 startDate: undefined,
                 createdDate: undefined,
