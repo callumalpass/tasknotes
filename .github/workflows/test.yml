@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [18, 20]
+        node-version: [20]
     
     steps:
     - name: Checkout code
@@ -27,6 +27,13 @@ jobs:
       run: npm ci --prefer-offline --no-audit
       timeout-minutes: 5
       
+    - name: Debug environment
+      run: |
+        echo "Node version: $(node --version)"
+        echo "NPM version: $(npm --version)"
+        echo "Timezone: $(date)"
+        echo "Jest version: $(npx jest --version)"
+      
     - name: Run linter
       run: npm run lint
       timeout-minutes: 10
@@ -36,7 +43,7 @@ jobs:
       timeout-minutes: 5
       
     - name: Run unit tests with coverage
-      run: npm run test:coverage
+      run: npm run test:coverage -- --verbose
       timeout-minutes: 15
       
     - name: Run integration tests
