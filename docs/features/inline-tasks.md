@@ -128,6 +128,8 @@ The **Project Subtasks Widget** displays tasks that reference the current note a
 The widget includes:
 
 - **Collapsible Interface**: Click the widget title to expand or collapse the task list. The state is remembered between sessions.
+- **FilterBar Integration**: Full filtering, sorting, and grouping capabilities with real-time filtering and count display.
+- **Saved Views System**: Access to saved filter configurations for consistent task organization.
 - **Task Details**: Each task shows its status, priority, due date, and other properties.
 - **Real-time Updates**: The widget updates automatically when tasks are added, modified, or deleted.
 - **Smart Positioning**: The widget appears after frontmatter and properties but before the main note content.

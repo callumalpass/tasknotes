@@ -101,6 +101,13 @@ Available grouping options:
 - `priority` - By priority level
 - `context` - By first context
 - `project` - By project (tasks can appear in multiple groups)
+
+### Project Group Headers
+
+When grouping tasks by project, the project group headers are interactive:
+- **Clickable Navigation**: Project headers that are wikilinks (e.g., `[[Project Name]]`) can be clicked to open the corresponding project note
+- **Hover Previews**: Use Ctrl+hover on project headers to preview project notes without opening them
+- **Error Handling**: Clicking on project headers for missing files shows appropriate error messages
 - `due` - By due date ranges (Today, Tomorrow, This week, etc.)
 - `scheduled` - By scheduled date ranges
 

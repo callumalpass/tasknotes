@@ -34,7 +34,7 @@ Project suggestions search across:
 
 Selecting a project suggestion inserts it as `+[[filename]]`, creating a wikilink to the file while maintaining the `+` project marker that the natural language parser recognizes.
 
-Additionally, you can convert existing checkbox tasks in your notes to TaskNotes using the **Instant Conversion** feature.
+Additionally, you can convert any line type in your notes to TaskNotes using the **Instant Conversion** feature. This works with checkboxes, bullet points, numbered lists, blockquotes, headers, and plain text lines.
 
 ## Task Properties
 

@@ -49,7 +49,7 @@ Since each task is a full note, you can write detailed descriptions, jot down th
 
 ### Editor Integration
 - Interactive task previews for wikilinks
-- Checkbox-to-task conversion
+- Universal line-to-task conversion
 - Template support with parent note context
 
 ### Views

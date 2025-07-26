@@ -8,7 +8,7 @@ You can enable or disable the **Task Link Overlay** feature, which replaces wiki
 
 ## Instant Task Conversion
 
-You can enable or disable the **Instant Task Conversion** feature, which allows you to convert checkbox tasks to TaskNotes with a single click. You can also choose whether to apply your default task settings to converted tasks.
+You can enable or disable the **Instant Task Conversion** feature, which allows you to convert any line type (checkboxes, bullet points, numbered lists, blockquotes, headers, or plain text) to TaskNotes with a single click. You can also choose whether to apply your default task settings to converted tasks.
 
 ## Natural Language Processing
 
