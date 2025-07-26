@@ -95,10 +95,24 @@ export class PomodoroView extends ItemView {
             if (!path || !updatedTask) return;
             
             // Check if this is the currently selected task in pomodoro view
-            if (this.currentSelectedTask && this.currentSelectedTask.path === path) {
+            // We need to check both the new path and the original path in case of filename changes
+            const isCurrentSelectedTask = this.currentSelectedTask && 
+                (this.currentSelectedTask.path === path || 
+                 (originalTask && this.currentSelectedTask.path === originalTask.path));
+            
+            if (isCurrentSelectedTask) {
                 // Update the selected task and refresh the task card
                 this.currentSelectedTask = updatedTask;
                 this.updateTaskCardDisplay(updatedTask);
+                
+                // If there's a current pomodoro session and this task's path changed,
+                // update the session's task path to the new path
+                const state = this.plugin.pomodoroService.getState();
+                if (state.currentSession && originalTask && 
+                    originalTask.path !== updatedTask.path && 
+                    state.currentSession.taskPath === originalTask.path) {
+                    await this.plugin.pomodoroService.assignTaskToCurrentSession(updatedTask);
+                }
             }
         });
         this.listeners.push(taskUpdateListener);
