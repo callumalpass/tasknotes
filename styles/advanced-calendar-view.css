@@ -574,6 +574,15 @@
     background: transparent;
 }
 
+/* Calendar title styling - smaller and minimalist */
+.advanced-calendar-view .fc-toolbar-title {
+    font-size: 1rem;
+    font-weight: 400;
+    color: var(--text-muted);
+    margin: 0;
+    padding: 0.3rem 0.6rem;
+}
+
 .advanced-calendar-view .fc-toolbar-chunk {
     display: flex;
     align-items: center;
