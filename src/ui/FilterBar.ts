@@ -131,7 +131,6 @@ export class FilterBar extends EventEmitter {
             !Array.isArray(this.currentQuery.children) ||
             typeof this.currentQuery.conjunction !== 'string') {
             
-            console.warn('FilterBar: Detected old format FilterQuery, initializing with fresh default');
             
             // Create a fresh default query, preserving any sort/group settings if valid
             const sortKey = (this.currentQuery?.sortKey && typeof this.currentQuery.sortKey === 'string') ? this.currentQuery.sortKey : 'due';
@@ -196,7 +195,6 @@ export class FilterBar extends EventEmitter {
     private removeSearchConditions(): void {
         // Defensive check: ensure children array exists
         if (!Array.isArray(this.currentQuery.children)) {
-            console.warn('FilterBar: children array missing in removeSearchConditions');
             this.currentQuery.children = [];
             return;
         }
@@ -216,7 +214,6 @@ export class FilterBar extends EventEmitter {
     private addSearchCondition(searchTerm: string): void {
         // Defensive check: ensure children array exists
         if (!Array.isArray(this.currentQuery.children)) {
-            console.warn('FilterBar: children array missing in addSearchCondition');
             this.currentQuery.children = [];
         }
         
@@ -601,7 +598,6 @@ export class FilterBar extends EventEmitter {
         
         // Ensure children array exists (defensive migration fix)
         if (!Array.isArray(group.children)) {
-            console.warn('FilterBar: Group missing children array, initializing empty array');
             group.children = [];
         }
 
@@ -1339,7 +1335,6 @@ export class FilterBar extends EventEmitter {
         
         // Defensive check: ensure currentQuery has children array
         if (!this.currentQuery || !Array.isArray(this.currentQuery.children)) {
-            console.warn('FilterBar: currentQuery missing children array in syncSearchInput');
             this.searchInput.setValue('');
             return;
         }
@@ -1370,10 +1365,7 @@ export class FilterBar extends EventEmitter {
      */
     private emitQueryChangeIfComplete(): void {
         if (this.isQueryMeaningful(this.currentQuery)) {
-            console.debug('FilterBar: Emitting queryChange - query is complete');
             this.emit('queryChange', FilterUtils.deepCloneFilterQuery(this.currentQuery));
-        } else {
-            console.debug('FilterBar: Skipping queryChange - query has incomplete conditions');
         }
     }
     

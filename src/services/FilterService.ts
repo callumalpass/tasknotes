@@ -96,7 +96,6 @@ export class FilterService extends EventEmitter {
         
         if (!optimizationAnalysis.canOptimize) {
             // Optimization not safe - return all task paths to ensure correctness
-            console.debug('FilterService: Optimization not safe for this query, using all tasks');
             return this.cacheManager.getAllTaskPaths();
         }
         
@@ -110,17 +109,14 @@ export class FilterService extends EventEmitter {
                 candidatePaths = this.intersectPathSets(candidatePaths, conditionPaths);
             }
             
-            console.debug(`FilterService: Optimized using intersection of ${optimizationAnalysis.conditions.length} conditions (${candidatePaths.size} candidates)`);
             return candidatePaths;
         } else if (optimizationAnalysis.strategy === 'single') {
             // Single indexable condition that's safe to use
             const candidatePaths = this.getPathsForIndexableCondition(optimizationAnalysis.conditions[0]);
-            console.debug(`FilterService: Optimized using single condition (${candidatePaths.size} candidates)`);
             return candidatePaths;
         }
         
         // Fallback to all tasks
-        console.debug('FilterService: No valid optimization strategy, using all tasks');
         return this.cacheManager.getAllTaskPaths();
     }
 
@@ -222,7 +218,6 @@ export class FilterService extends EventEmitter {
                     child.type === 'condition' && indexableConditions.includes(child)
                 );
                 if (hasIndexableChild) {
-                    console.debug('FilterService: Found indexable condition in OR group - optimization unsafe');
                     return true;
                 }
             }
@@ -290,16 +285,11 @@ export class FilterService extends EventEmitter {
         const cached = this.indexQueryCache.get(cacheKey);
         if (cached) {
             // Cache hit - return copy to avoid mutation of cached data
-            console.debug(`FilterService: Cache HIT for key "${cacheKey}" (${cached.size} results)`);
             return new Set(cached);
         }
 
         // Cache miss - compute the result
-        console.debug(`FilterService: Cache MISS for key "${cacheKey}", computing...`);
-        const startTime = performance.now();
         const result = computer();
-        const computeTime = performance.now() - startTime;
-        console.debug(`FilterService: Computed "${cacheKey}" in ${computeTime.toFixed(2)}ms (${result.size} results)`);
         
         // Cache the result
         this.indexQueryCache.set(cacheKey, new Set(result));
@@ -312,7 +302,6 @@ export class FilterService extends EventEmitter {
 
         // Auto-expire cache entry after timeout
         const timer = setTimeout(() => {
-            console.debug(`FilterService: Cache entry "${cacheKey}" expired`);
             this.indexQueryCache.delete(cacheKey);
             this.cacheTimers.delete(cacheKey);
         }, this.cacheTimeout);
@@ -327,10 +316,6 @@ export class FilterService extends EventEmitter {
      * Called when underlying data changes to ensure cache consistency
      */
     private clearIndexQueryCache(): void {
-        const cacheSize = this.indexQueryCache.size;
-        if (cacheSize > 0) {
-            console.debug(`FilterService: Clearing query cache (${cacheSize} entries)`);
-        }
         
         // Clear all timers
         for (const timer of this.cacheTimers.values()) {
@@ -962,14 +947,10 @@ export class FilterService extends EventEmitter {
         // Return cached options if valid and not expired by fallback TTL
         if (this.filterOptionsCache && (now - this.filterOptionsCacheTimestamp) < this.filterOptionsCacheTTL) {
             this.filterOptionsCacheHits++;
-            console.debug(`FilterService: getFilterOptions() cache HIT (${this.filterOptionsCacheHits} hits, ${this.filterOptionsComputeCount} computes)`);
             return this.filterOptionsCache;
         }
         
         // Cache miss - compute fresh options
-        const reason = this.filterOptionsCache ? 'fallback TTL expired' : 'no cache';
-        console.debug(`FilterService: getFilterOptions() cache MISS (${reason}) - computing fresh options...`);
-        const startTime = performance.now();
         
         const freshOptions = {
             statuses: this.statusManager.getAllStatuses(),
@@ -979,14 +960,11 @@ export class FilterService extends EventEmitter {
             tags: this.cacheManager.getAllTags()
         };
         
-        const computeTime = performance.now() - startTime;
         this.filterOptionsComputeCount++;
         
         // Update cache and timestamp
         this.filterOptionsCache = freshOptions;
         this.filterOptionsCacheTimestamp = now;
-        
-        console.debug(`FilterService: Computed filter options in ${computeTime.toFixed(2)}ms (${this.filterOptionsComputeCount} total computes)`);
         
         return freshOptions;
     }
@@ -1011,10 +989,7 @@ export class FilterService extends EventEmitter {
         const minCacheAge = 30000; // 30 seconds
         
         if (cacheAge > minCacheAge) {
-            console.debug(`FilterService: File change detected, cache age ${(cacheAge/1000).toFixed(1)}s > ${minCacheAge/1000}s, invalidating`);
             this.invalidateFilterOptionsCache();
-        } else {
-            console.debug(`FilterService: File change detected, but cache is fresh (${(cacheAge/1000).toFixed(1)}s), keeping cache`);
         }
     }
     
@@ -1023,7 +998,6 @@ export class FilterService extends EventEmitter {
      */
     private invalidateFilterOptionsCache(): void {
         if (this.filterOptionsCache) {
-            console.debug('FilterService: Invalidating filter options cache');
             this.filterOptionsCache = null;
         }
     }
