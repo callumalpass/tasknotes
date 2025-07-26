@@ -58,13 +58,19 @@ export class TaskService {
             if (taskData.creationContext === 'inline-conversion') {
                 // For inline conversion, use the inline task folder setting with variable support
                 const inlineFolder = this.plugin.settings.inlineTaskConvertFolder || '';
-                if (inlineFolder.includes('{{currentNotePath}}')) {
-                    // Get current file's folder path
-                    const currentFile = this.plugin.app.workspace.getActiveFile();
-                    const currentFolderPath = currentFile?.parent?.path || '';
-                    folder = inlineFolder.replace(/\{\{currentNotePath\}\}/g, currentFolderPath);
+                if (inlineFolder.trim()) {
+                    // Inline folder is configured, use it
+                    if (inlineFolder.includes('{{currentNotePath}}')) {
+                        // Get current file's folder path
+                        const currentFile = this.plugin.app.workspace.getActiveFile();
+                        const currentFolderPath = currentFile?.parent?.path || '';
+                        folder = inlineFolder.replace(/\{\{currentNotePath\}\}/g, currentFolderPath);
+                    } else {
+                        folder = inlineFolder;
+                    }
                 } else {
-                    folder = inlineFolder;
+                    // Fallback to default tasks folder when inline folder is empty (#128)
+                    folder = this.plugin.settings.tasksFolder || '';
                 }
             } else {
                 // For manual creation and other contexts, use the general tasks folder
