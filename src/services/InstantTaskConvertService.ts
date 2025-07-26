@@ -66,7 +66,7 @@ export class InstantTaskConvertService {
                 
                 // Try NLP parsing first if enabled for better metadata extraction
                 if (this.plugin.settings.enableNaturalLanguageInput) {
-                    const nlpResult = this.tryNLPFallback(currentLine, details || '');
+                    const nlpResult = this.tryNLPFallback(taskTitle, details || '');
                     if (nlpResult) {
                         parsedData = nlpResult;
                     } else {
@@ -677,11 +677,18 @@ export class InstantTaskConvertService {
         cleanLine = cleanLine.replace(/^\s*\d+\.\s+/, ''); // Remove numbered lists
         
         // Remove blockquote markers (for issue #262 - callouts support)
-        cleanLine = cleanLine.replace(/^\s*>\s*/, '');
+        // Handle multiple levels of blockquotes like "> > > text"
+        while (cleanLine.match(/^\s*>\s*/)) {
+            cleanLine = cleanLine.replace(/^\s*>\s*/, '');
+        }
         
-        // Remove common prefixes that might not be useful as task titles
-        cleanLine = cleanLine.replace(/^\s*#+\s+/, ''); // Remove markdown headers
-        cleanLine = cleanLine.replace(/^\s*(-{3,}|={3,})\s*$/, ''); // Remove horizontal rules
+        // Remove markdown headers
+        cleanLine = cleanLine.replace(/^\s*#+\s+/, '');
+        
+        // Remove horizontal rules (these lines shouldn't become tasks anyway)
+        if (cleanLine.match(/^\s*(-{3,}|={3,})\s*$/)) {
+            return '';
+        }
         
         return cleanLine.trim();
     }
