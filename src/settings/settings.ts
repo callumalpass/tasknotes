@@ -1547,7 +1547,8 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 			.setName('Field mapping')
 			.setHeading();
 		container.createEl('p', { 
-			text: 'Configure which frontmatter properties TaskNotes should use for each field.'
+			text: 'Configure which frontmatter properties TaskNotes should use for each field.',
+			cls: 'settings-help-note'
 		});
 		
 		// Create mapping table
@@ -1626,7 +1627,8 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 		
 		// Description section
 		container.createEl('p', { 
-			text: 'Customize the status options available for your tasks. These statuses control the task lifecycle and determine when tasks are considered complete.'
+			text: 'Customize the status options available for your tasks. These statuses control the task lifecycle and determine when tasks are considered complete.',
+			cls: 'settings-help-note'
 		});
 		
 		// Help section
@@ -1802,7 +1804,8 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 		
 		// Description section
 		container.createEl('p', { 
-			text: 'Customize the priority levels available for your tasks. Priority weights determine sorting order and visual hierarchy in your task views.'
+			text: 'Customize the priority levels available for your tasks. Priority weights determine sorting order and visual hierarchy in your task views.',
+			cls: 'settings-help-note'
 		});
 		
 		// Help section

@@ -105,28 +105,90 @@
     margin-right: var(--tn-spacing-xs);
 }
 
-/* Help Section */
-.tasknotes-plugin .settings-view__help-section {
-    background: var(--tn-bg-secondary);
-    border: 1px solid var(--tn-border-color);
-    border-radius: var(--tn-radius-sm);
+/* ================================================
+   EXPLANATORY SECTIONS - MINIMALIST STYLING
+   ================================================ */
+
+/* Main Help Section Container */
+.tasknotes-plugin .settings-help-section {
+    margin: var(--tn-spacing-md) 0;
     padding: var(--tn-spacing-md);
-    margin-bottom: var(--tn-spacing-lg);
+    background: var(--tn-bg-secondary);
+    border-radius: var(--tn-radius-sm);
+}
+
+.tasknotes-plugin .settings-help-section h4 {
+    margin: 0 0 var(--tn-spacing-xs) 0;
+    font-size: var(--tn-font-size-sm);
+    font-weight: var(--tn-font-weight-medium);
+    color: var(--tn-text-muted);
+}
+
+.tasknotes-plugin .settings-help-section h5 {
+    margin: var(--tn-spacing-sm) 0 var(--tn-spacing-xs) 0;
+    font-size: var(--tn-font-size-sm);
+    font-weight: var(--tn-font-weight-medium);
+    color: var(--tn-text-muted);
+}
+
+.tasknotes-plugin .settings-help-section ul {
+    margin: 0;
+    padding-left: var(--tn-spacing-md);
+    font-size: var(--tn-font-size-sm);
+    color: var(--tn-text-muted);
+}
+
+.tasknotes-plugin .settings-help-section li {
+    margin-bottom: var(--tn-spacing-xs);
+}
+
+.tasknotes-plugin .settings-help-section p {
+    margin: var(--tn-spacing-xs) 0 0 0;
+    font-size: var(--tn-font-size-sm);
+    color: var(--tn-text-muted);
+}
+
+/* Help Notes - Minimal explanatory text */
+.tasknotes-plugin .settings-help-note {
+    margin: var(--tn-spacing-sm) 0;
+    padding: var(--tn-spacing-sm) var(--tn-spacing-md);
+    font-size: var(--tn-font-size-sm);
+    color: var(--tn-text-muted);
+    background: var(--tn-bg-secondary);
+    border-radius: var(--tn-radius-sm);
+}
+
+/* Validation Notes - Subtle warning style */
+.tasknotes-plugin .settings-validation-note {
+    margin: var(--tn-spacing-sm) 0;
+    padding: var(--tn-spacing-sm) var(--tn-spacing-md);
+    font-size: var(--tn-font-size-sm);
+    color: var(--tn-text-muted);
+    font-style: italic;
+    background: var(--tn-bg-secondary);
+    border-radius: var(--tn-radius-sm);
+}
+
+/* Legacy support for old class names */
+.tasknotes-plugin .settings-view__help-section {
+    margin: var(--tn-spacing-md) 0;
+    padding: var(--tn-spacing-md);
+    background: var(--tn-bg-secondary);
+    border-radius: var(--tn-radius-sm);
 }
 
 .tasknotes-plugin .settings-view__help-title {
-    margin: 0 0 var(--tn-spacing-sm) 0;
-    color: var(--tn-text-normal);
+    margin: 0 0 var(--tn-spacing-xs) 0;
     font-size: var(--tn-font-size-sm);
-    font-weight: var(--tn-font-weight-semibold);
+    font-weight: var(--tn-font-weight-medium);
+    color: var(--tn-text-muted);
 }
 
 .tasknotes-plugin .settings-view__help-list {
     margin: 0;
     padding-left: var(--tn-spacing-md);
-    color: var(--tn-text-muted);
     font-size: var(--tn-font-size-sm);
-    line-height: 1.4;
+    color: var(--tn-text-muted);
 }
 
 .tasknotes-plugin .settings-view__help-item {
@@ -134,22 +196,22 @@
 }
 
 .tasknotes-plugin .settings-view__help-note {
-    margin: var(--tn-spacing-sm) 0 0 0;
-    font-size: var(--tn-font-size-xs);
+    margin: var(--tn-spacing-sm) 0;
+    padding: var(--tn-spacing-sm) var(--tn-spacing-md);
+    font-size: var(--tn-font-size-sm);
     color: var(--tn-text-muted);
-    font-style: italic;
-}
-
-/* Validation Note */
-.tasknotes-plugin .settings-view__validation-note {
-    margin: var(--tn-spacing-md) 0 0 0;
-    font-size: var(--tn-font-size-xs);
-    color: var(--tn-text-muted);
-    font-style: italic;
-    padding: var(--tn-spacing-sm);
     background: var(--tn-bg-secondary);
     border-radius: var(--tn-radius-sm);
-    border-left: 3px solid var(--tn-interactive-accent);
+}
+
+.tasknotes-plugin .settings-view__validation-note {
+    margin: var(--tn-spacing-sm) 0;
+    padding: var(--tn-spacing-sm) var(--tn-spacing-md);
+    font-size: var(--tn-font-size-sm);
+    color: var(--tn-text-muted);
+    font-style: italic;
+    background: var(--tn-bg-secondary);
+    border-radius: var(--tn-radius-sm);
 }
 
 /* ================================================
@@ -407,12 +469,7 @@
     margin-bottom: var(--tn-spacing-xs);
 }
 
-.tasknotes-plugin .settings-view .setting-item-description {
-    color: var(--tn-text-muted);
-    font-size: var(--tn-font-size-sm);
-    line-height: 1.4;
-    margin: 0;
-}
+/* Use Obsidian's default styling for setting descriptions */
 
 .tasknotes-plugin .settings-view .setting-item-control {
     flex-shrink: 0;
