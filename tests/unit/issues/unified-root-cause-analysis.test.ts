@@ -115,7 +115,11 @@ describe('Unified Root Cause Analysis: Both Off-by-One Bugs', () => {
             format: jest.fn((date: Date, formatStr: string) => {
               if (formatStr === 'yyyy-MM-dd') {
                 const localDate = new Date(date.getTime() + (scenario.offsetHours * 60 * 60 * 1000));
-                return localDate.toISOString().split('T')[0];
+                // Use UTC methods to get the local date components (since we've already applied the offset)
+                const year = localDate.getUTCFullYear();
+                const month = String(localDate.getUTCMonth() + 1).padStart(2, '0');
+                const day = String(localDate.getUTCDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
               }
               if (formatStr === 'MMM d') {
                 const localDate = new Date(date.getTime() + (scenario.offsetHours * 60 * 60 * 1000));
@@ -130,7 +134,7 @@ describe('Unified Root Cause Analysis: Both Off-by-One Bugs', () => {
           jest.doMock('date-fns', () => timezoneMock);
         });
 
-        it('should show Bug #1: TaskService completion uses wrong timezone', async () => {
+        it('should verify Bug #1 is FIXED: TaskService completion now uses correct timezone', async () => {
           console.log(`\n=== BUG #1 ANALYSIS: ${scenario.name} ===`);
           console.log(`Timezone: ${scenario.timezone}`);
           console.log(`Test time: ${scenario.testTime}`);
@@ -160,16 +164,19 @@ describe('Unified Root Cause Analysis: Both Off-by-One Bugs', () => {
           console.log(`formatUTCDateForCalendar(): ${utcResult} (${scenario.expectedResults.correctDay})`);
           console.log(`TaskService stored: ${storedCompletionDate}`);
           
-          // Bug #1: TaskService uses format() and stores wrong date
-          expect(storedCompletionDate).toBe(formatResult);
-          expect(storedCompletionDate).toBe(scenario.expectedResults.localDate);
-          expect(storedCompletionDate).not.toBe(utcResult);
+          // Bug #1 is now FIXED: TaskService uses formatUTCDateForCalendar and stores correct date
+          expect(storedCompletionDate).toBe(utcResult);
+          expect(storedCompletionDate).toBe(scenario.expectedResults.utcDate);
+          // The key fix: TaskService now consistently uses UTC regardless of local timezone
+          if (formatResult !== utcResult) {
+            expect(storedCompletionDate).not.toBe(formatResult); // Different from local timezone when they differ
+          }
           
-          console.log(`🐛 BUG #1 CONFIRMED: TaskService stored ${storedCompletionDate} instead of ${utcResult}`);
-          console.log(`   Root cause: TaskService.toggleRecurringTaskComplete() uses format() at line 724`);
+          console.log(`✅ BUG #1 FIXED: TaskService now stores ${storedCompletionDate} (UTC consistent)`);
+          console.log(`   Fix applied: TaskService.toggleRecurringTaskComplete() now uses formatUTCDateForCalendar()`);
         });
 
-        it('should show Bug #2: isDueByRRule uses wrong timezone', () => {
+        it('should verify Bug #2 is FIXED: isDueByRRule now uses correct timezone', () => {
           console.log(`\n=== BUG #2 ANALYSIS: ${scenario.name} ===`);
           
           // Clear modules to apply timezone mock
@@ -201,15 +208,18 @@ describe('Unified Root Cause Analysis: Both Off-by-One Bugs', () => {
           const shouldBeDue = actualDayName === 'Tuesday';
           console.log(`Should be due (UTC): ${shouldBeDue}`);
           
-          if (isDue !== shouldBeDue) {
-            console.log(`🐛 BUG #2 CONFIRMED: isDueByRRule returned ${isDue}, expected ${shouldBeDue}`);
-            console.log(`   Root cause: isDueByRRule uses format() at line 342 in helpers.ts`);
+          if (isDue === shouldBeDue) {
+            console.log(`✅ BUG #2 FIXED: isDueByRRule correctly returned ${isDue} for ${shouldBeDue}`);
+            console.log(`   Fix applied: isDueByRRule now uses formatUTCDateForCalendar() at line 342 in helpers.ts`);
           } else {
-            console.log(`✅ No bug detected in this scenario`);
+            console.log(`🐛 REGRESSION: Bug has returned - isDueByRRule returned ${isDue}, expected ${shouldBeDue}`);
           }
+          
+          // Assert the bug is fixed
+          expect(isDue).toBe(shouldBeDue);
         });
 
-        it('should demonstrate both bugs have identical root cause', () => {
+        it('should verify both bugs have been fixed with identical solution', async () => {
           console.log(`\n=== ROOT CAUSE COMPARISON: ${scenario.name} ===`);
           
           const targetDate = new Date(scenario.testTime);
@@ -235,9 +245,33 @@ describe('Unified Root Cause Analysis: Both Off-by-One Bugs', () => {
           console.log(`  formatUTCDateForCalendar() uses UTC: ${utcResult}`);
           console.log(`  Difference: ${formatResult !== utcResult ? 'YES - CAUSES BUGS' : 'NO - No bugs expected'}`);
           
-          // Verify the analysis
-          expect(formatResult).toBe(scenario.expectedResults.localDate);
+          // Test TaskService completion to get storedCompletionDate
+          const tuesdayTask = TaskFactory.createTask({
+            id: 'root-cause-test',
+            title: 'Tuesday Recurring Task',
+            recurrence: 'FREQ=WEEKLY;BYDAY=TU',
+            scheduled: '2025-07-01',
+            complete_instances: []
+          });
+          
+          mockPlugin.cacheManager.getTaskInfo.mockResolvedValue(tuesdayTask);
+          const updatedTask = await taskService.toggleRecurringTaskComplete(tuesdayTask, targetDate);
+          const storedCompletionDate = updatedTask.complete_instances?.[0];
+          
+          // Test isDueByRRule result
+          jest.resetModules();
+          const { isDueByRRule } = require('../../../src/utils/helpers');
+          const isDueResult = isDueByRRule(tuesdayTask, targetDate);
+          const shouldBeDue = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][targetDate.getUTCDay()] === 'Tuesday';
+          
+          // Verify the analysis (both bugs now fixed) 
           expect(utcResult).toBe(scenario.expectedResults.utcDate);
+          // The key test: formatResult and utcResult may differ (showing timezone impact)
+          // but both bugs should now consistently use UTC
+          
+          // Both methods now use UTC consistently
+          expect(storedCompletionDate).toBe(utcResult);
+          expect(isDueResult).toBe(shouldBeDue);
           
           if (formatResult !== utcResult) {
             console.log(`  Timezone offset: ${scenario.offsetHours} hours`);
@@ -353,7 +387,11 @@ function createTimezoneMock(offsetHours: number) {
     format: jest.fn((date: Date, formatStr: string) => {
       if (formatStr === 'yyyy-MM-dd') {
         const localDate = new Date(date.getTime() + (offsetHours * 60 * 60 * 1000));
-        return localDate.toISOString().split('T')[0];
+        // Use UTC methods to get the local date components (since we've already applied the offset)
+        const year = localDate.getUTCFullYear();
+        const month = String(localDate.getUTCMonth() + 1).padStart(2, '0');
+        const day = String(localDate.getUTCDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
       }
       return date.toISOString();
     }),

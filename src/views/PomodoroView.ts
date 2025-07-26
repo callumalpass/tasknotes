@@ -12,7 +12,7 @@ import {
     TaskInfo
 } from '../types';
 import { TaskSelectorModal } from '../modals/TaskSelectorModal';
-import { createTaskCard, updateTaskCard } from '../ui/TaskCard';
+import { createTaskCard } from '../ui/TaskCard';
 
 export class PomodoroView extends ItemView {
     plugin: TaskNotesPlugin;

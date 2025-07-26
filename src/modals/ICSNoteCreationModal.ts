@@ -1,4 +1,4 @@
-import { App, Modal, Setting, Notice, setIcon, TFile } from 'obsidian';
+import { App, Modal, Setting, Notice, TFile } from 'obsidian';
 import TaskNotesPlugin from '../main';
 import { ICSEvent, NoteInfo } from '../types';
 import { format } from 'date-fns';
@@ -131,26 +131,34 @@ export class ICSNoteCreationModal extends Modal {
         
         if (icsEvent.start) {
             const startDate = new Date(icsEvent.start);
-            details.createDiv().innerHTML = `<strong>Start:</strong> ${format(startDate, 'PPPp')}`;
+            const startDiv = details.createDiv();
+            startDiv.createEl('strong', { text: 'Start: ' });
+            startDiv.appendText(format(startDate, 'PPPp'));
         }
         
         if (icsEvent.end && !icsEvent.allDay) {
             const endDate = new Date(icsEvent.end);
-            details.createDiv().innerHTML = `<strong>End:</strong> ${format(endDate, 'PPPp')}`;
+            const endDiv = details.createDiv();
+            endDiv.createEl('strong', { text: 'End: ' });
+            endDiv.appendText(format(endDate, 'PPPp'));
         }
         
         if (icsEvent.location) {
-            details.createDiv().innerHTML = `<strong>Location:</strong> ${icsEvent.location}`;
+            const locationDiv = details.createDiv();
+            locationDiv.createEl('strong', { text: 'Location: ' });
+            locationDiv.appendText(icsEvent.location);
         }
         
-        details.createDiv().innerHTML = `<strong>Calendar:</strong> ${subscriptionName}`;
+        const calendarDiv = details.createDiv();
+        calendarDiv.createEl('strong', { text: 'Calendar: ' });
+        calendarDiv.appendText(subscriptionName);
     }
 
 
     private createTemplateSettings(): void {
         this.templateContainer.empty();
 
-        const templateSetting = new Setting(this.templateContainer)
+        new Setting(this.templateContainer)
             .setName('Use Template')
             .setDesc('Apply a template when creating the content')
             .addToggle(toggle => {
@@ -163,7 +171,7 @@ export class ICSNoteCreationModal extends Modal {
             });
 
         if (this.useTemplate) {
-            const templateInputSetting = new Setting(this.templateContainer)
+            new Setting(this.templateContainer)
                 .setName('Template Path')
                 .setDesc('Path to the template file')
                 .addText(text => {
@@ -200,14 +208,24 @@ export class ICSNoteCreationModal extends Modal {
 
         const previewDetails = this.previewContainer.createDiv('preview-details');
         
-        previewDetails.createDiv().innerHTML = `<strong>Type:</strong> Note`;
-        previewDetails.createDiv().innerHTML = `<strong>Title:</strong> ${this.title || 'Untitled'}`;
-        previewDetails.createDiv().innerHTML = `<strong>Folder:</strong> ${this.folder || 'Vault root'}`;
+        const typeDiv = previewDetails.createDiv();
+        typeDiv.createEl('strong', { text: 'Type: ' });
+        typeDiv.appendText('Note');
+        const titleDiv = previewDetails.createDiv();
+        titleDiv.createEl('strong', { text: 'Title: ' });
+        titleDiv.appendText(this.title || 'Untitled');
+        const folderDiv = previewDetails.createDiv();
+        folderDiv.createEl('strong', { text: 'Folder: ' });
+        folderDiv.appendText(this.folder || 'Vault root');
         
         if (this.useTemplate && this.template) {
-            previewDetails.createDiv().innerHTML = `<strong>Template:</strong> ${this.template}`;
+            const templateDiv = previewDetails.createDiv();
+            templateDiv.createEl('strong', { text: 'Template: ' });
+            templateDiv.appendText(this.template);
         } else {
-            previewDetails.createDiv().innerHTML = `<strong>Template:</strong> Default format`;
+            const templateDiv = previewDetails.createDiv();
+            templateDiv.createEl('strong', { text: 'Template: ' });
+            templateDiv.appendText('Default format');
         }
 
         // Show available template variables

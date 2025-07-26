@@ -2,7 +2,6 @@ import { App, Modal, Setting, Notice, TAbstractFile, parseYaml, stringifyYaml, T
 import TaskNotesPlugin from '../main';
 import { AttachmentSelectModal } from './AttachmentSelectModal';
 import { 
-    createDailyNote, 
     getDailyNote, 
     getAllDailyNotes,
     appHasDailyNotesPluginLoaded

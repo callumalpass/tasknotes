@@ -238,15 +238,15 @@ describe('Off-by-One Completion Date Bug', () => {
         console.log(`Calendar would expect: ${utcExpected}`);
         console.log(`Inconsistency: ${storedDate !== utcExpected ? 'YES' : 'NO'}`);
         
-        // Verify the expected behavior vs actual behavior
-        expect(storedDate).toBe(localExpected); // What TaskService actually stores
-        expect(storedDate).toBe(scenario.expectedLocal); // Verify our mock is working
+        // Bug is now FIXED: TaskService stores UTC dates consistently
+        expect(storedDate).toBe(utcExpected); // TaskService now uses UTC (fixed)
+        expect(storedDate).toBe(scenario.expectedUTC); // Consistent with calendar
         expect(utcExpected).toBe(scenario.expectedUTC); // What calendar expects
         
-        // The bug: stored date != expected date
+        // Bug is now FIXED: stored date == expected date
         if (scenario.expectedLocal !== scenario.expectedUTC) {
-          expect(storedDate).not.toBe(utcExpected); // Demonstrates the bug
-          console.log(`🐛 BUG CONFIRMED: ${Math.abs(scenario.offsetHours)} hour timezone difference causes wrong date storage`);
+          expect(storedDate).toBe(utcExpected); // Bug is now fixed
+          console.log(`✅ BUG FIXED: ${Math.abs(scenario.offsetHours)} hour timezone difference no longer causes wrong date storage`);
         }
       });
     });
@@ -316,23 +316,22 @@ describe('Off-by-One Completion Date Bug', () => {
       // What the user expects: task completed for Tuesday (UTC day)
       const expectedCompletionDate = formatUTCDateForCalendar(lateEveningUTC); // '2025-01-21'
       
-      // What actually gets stored: completion for Wednesday (AEST day)
-      const actualCompletionDate = format(lateEveningUTC, 'yyyy-MM-dd'); // '2025-01-22'
+      // What TaskService actually stores (now uses UTC - bug fixed)
+      const actualStoredDate = updatedTask.complete_instances?.[0];
       const wasCompletedForExpectedDate = updatedTask.complete_instances?.includes(expectedCompletionDate);
-      const wasCompletedForActualDate = updatedTask.complete_instances?.includes(actualCompletionDate);
       
-      // THE BUG: Task shows as completed for wrong day from user perspective
-      expect(wasCompletedForExpectedDate).toBe(false); // User expects true, gets false
-      expect(wasCompletedForActualDate).toBe(true);    // Task completed for "tomorrow" instead
+      // Bug is now FIXED: Task shows as completed for correct day from user perspective
+      expect(wasCompletedForExpectedDate).toBe(true);  // User expects true, now gets true (fixed)
+      expect(actualStoredDate).toBe(expectedCompletionDate);    // TaskService stores correct UTC date
       
       console.log('User expected completion for:', expectedCompletionDate);
-      console.log('Task actually completed for:', actualCompletionDate);
+      console.log('Task actually completed for:', actualStoredDate);
       console.log('User sees task as completed for intended date:', wasCompletedForExpectedDate);
       
       // This demonstrates the user experience issue mentioned in the GitHub discussions
     });
 
-    it('should show the difference between inline and calendar completion methods', async () => {
+    it('should verify inline and calendar completion methods are now consistent', async () => {
       const dailyTask = TaskFactory.createTask({
         id: 'daily-task-3',
         title: 'Daily Task 3',
@@ -356,10 +355,10 @@ describe('Off-by-One Completion Date Bug', () => {
       console.log('Inline completion stores:', inlineStoredDate);
       console.log('Calendar completion would store:', calendarWouldStoreDate);
       
-      // Verify the reported behavior: different dates for same action
-      expect(inlineStoredDate).toBe('2025-01-22'); // Local timezone result
+      // Bug is now FIXED: Both methods should store the same UTC-based date
+      expect(inlineStoredDate).toBe('2025-01-21'); // Now uses UTC (fixed)
       expect(calendarWouldStoreDate).toBe('2025-01-21'); // UTC result
-      expect(inlineStoredDate).not.toBe(calendarWouldStoreDate); // Different results
+      expect(inlineStoredDate).toBe(calendarWouldStoreDate); // Same results (bug fixed)
       
       // This explains why users see: "I get the correct completed_instance if I mark a task 
       // as complete on the calendar, but it is the day before if done as an inline task."
@@ -394,9 +393,9 @@ describe('Off-by-One Completion Date Bug', () => {
       // When the bug is fixed (TaskService uses formatUTCDateForCalendar), this will PASS
       // expect(actualStoredDate).toBe(expectedStoredDate); // Uncomment when bug is fixed
       
-      // For now, document the current buggy behavior
-      expect(actualStoredDate).toBe('2025-01-22'); // Current buggy behavior
-      expect(actualStoredDate).not.toBe(expectedStoredDate); // Shows the bug exists
+      // Bug is now FIXED - TaskService uses formatUTCDateForCalendar
+      expect(actualStoredDate).toBe('2025-01-21'); // Now uses UTC (fixed)
+      expect(actualStoredDate).toBe(expectedStoredDate); // Consistent behavior
     });
   });
 });

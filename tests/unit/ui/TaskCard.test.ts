@@ -126,6 +126,9 @@ describe('TaskCard Component', () => {
       },
       taskService: {
         deleteTask: jest.fn()
+      },
+      projectSubtasksService: {
+        isTaskUsedAsProject: jest.fn().mockResolvedValue(false)
       }
     };
 

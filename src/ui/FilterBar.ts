@@ -3,7 +3,7 @@ import { FilterCondition, FilterGroup, FilterNode, FilterOptions, FilterOperator
 import { EventEmitter } from '../utils/EventEmitter';
 import { FilterUtils } from '../utils/FilterUtils';
 import { showConfirmationModal } from '../modals/ConfirmationModal';
-import { isNaturalLanguageDate, getNaturalLanguageDateSuggestions, isValidDateInput } from '../utils/dateUtils';
+import { isValidDateInput } from '../utils/dateUtils';
 import { DragDropHandler } from './DragDropHandler';
 
 
@@ -512,7 +512,7 @@ export class FilterBar extends EventEmitter {
                 viewItemContainer.setAttribute('data-view-index', index.toString());
                 
                 // Add drag handle
-                const dragHandle = viewItemContainer.createDiv({
+                viewItemContainer.createDiv({
                     cls: 'filter-bar__view-drag-handle',
                     title: 'Drag to reorder'
                 });
@@ -929,7 +929,7 @@ export class FilterBar extends EventEmitter {
         document.querySelectorAll('.filter-date-help-tooltip').forEach(el => el.remove());
         
         const tooltip = document.body.createDiv('filter-date-help-tooltip');
-        const suggestions = getNaturalLanguageDateSuggestions();
+        // const suggestions = getNaturalLanguageDateSuggestions(); // Not currently used in tooltip
         
         tooltip.createEl('h4', { text: 'Natural Language Dates' });
         const examplesList = tooltip.createEl('ul');

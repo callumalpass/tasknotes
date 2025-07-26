@@ -1,4 +1,4 @@
-import { App, Modal, Setting, Notice, TFile, setIcon, TAbstractFile } from 'obsidian';
+import { App, Modal, Setting, Notice, TFile } from 'obsidian';
 import TaskNotesPlugin from '../main';
 import { ICSEvent, TaskInfo, NoteInfo } from '../types';
 import { ICSNoteCreationModal } from './ICSNoteCreationModal';
