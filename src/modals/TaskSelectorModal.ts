@@ -33,11 +33,18 @@ export class TaskSelectorModal extends FuzzySuggestModal<TaskInfo> {
     }
 
     getItems(): TaskInfo[] {
-        // Filter  archived tasks, sort by due date and priority
+        // Filter  archived tasks, sort by completion status first, then by due date and priority
         return this.tasks
             .filter(task => !task.archived)
             .sort((a, b) => {
-                // Sort by due date first (tasks with due dates come first)
+                // Sort by completion status first (incomplete tasks come first)
+                const aCompleted = this.plugin.statusManager.isCompletedStatus(a.status);
+                const bCompleted = this.plugin.statusManager.isCompletedStatus(b.status);
+                if (aCompleted !== bCompleted) {
+                    return aCompleted ? 1 : -1; // Incomplete (false) comes before completed (true)
+                }
+                
+                // Sort by due date second (tasks with due dates come first)
                 if (a.due && !b.due) return -1;
                 if (!a.due && b.due) return 1;
                 if (a.due && b.due) {
@@ -119,7 +126,7 @@ export class TaskSelectorModal extends FuzzySuggestModal<TaskInfo> {
                 if (index > 0) contextsSpan.createSpan({ text: ', ' });
                 contextsSpan.createSpan({ 
                     cls: 'task-selector-modal__context-tag',
-                    text: `@${context}` 
+                    text: `${context}` 
                 });
             });
         }
