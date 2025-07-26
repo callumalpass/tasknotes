@@ -13,7 +13,6 @@ import {
     isSameDateSafe, 
     startOfDayForDateString, 
     isToday as isTodayUtil,
-    formatUTCDateForCalendar,
     isBeforeDateTimeAware,
     isOverdueTimeAware,
     getDatePart
@@ -1269,7 +1268,13 @@ export class FilterService extends EventEmitter {
         const tasksForDate = filteredTasks.filter(task => {
             // Handle recurring tasks
             if (task.recurrence) {
-                return isDueByRRule(task, normalizedDate);
+                // Create UTC date for same calendar day to match recurring task calculations
+                const utcDateForRecurrence = new Date(Date.UTC(
+                    normalizedDate.getFullYear(),
+                    normalizedDate.getMonth(), 
+                    normalizedDate.getDate()
+                ));
+                return isDueByRRule(task, utcDateForRecurrence);
             }
             
             // Handle regular tasks with due dates for this specific date

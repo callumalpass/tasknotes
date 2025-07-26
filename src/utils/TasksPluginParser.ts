@@ -1,4 +1,3 @@
-import { format } from 'date-fns';
 import { parseDate, isPastDate, isToday, formatUTCDateForCalendar } from './dateUtils';
 
 export interface ParsedTaskData {

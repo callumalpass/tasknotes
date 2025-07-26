@@ -1,5 +1,4 @@
 import { TFile, Notice, normalizePath, stringifyYaml } from 'obsidian';
-import { format } from 'date-fns';
 import TaskNotesPlugin from '../main';
 import { TaskInfo, TimeEntry, EVENT_TASK_UPDATED, EVENT_TASK_DELETED, TaskCreationData } from '../types';
 import { getCurrentTimestamp, getCurrentDateString, formatUTCDateForCalendar } from '../utils/dateUtils';
