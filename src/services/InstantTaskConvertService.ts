@@ -262,8 +262,9 @@ export class InstantTaskConvertService {
         let timeEstimate: number | undefined;
         let recurrence: import('../types').RecurrenceInfo | undefined;
         
-        // Extract parsed tags
+        // Extract parsed tags and projects
         const parsedTags = parsedData.tags || [];
+        const parsedProjects = parsedData.projects || [];
 
         if (this.plugin.settings.useDefaultsOnInstantConvert) {
             const defaults = this.plugin.settings.taskCreationDefaults;
@@ -289,6 +290,11 @@ export class InstantTaskConvertService {
             // Apply default contexts
             if (defaults.defaultContexts) {
                 contextsArray = defaults.defaultContexts.split(',').map(s => s.trim()).filter(s => s);
+            }
+            
+            // Apply projects: add parsed projects (no default projects in settings currently)
+            if (parsedProjects.length > 0) {
+                // Projects will be set in the TaskCreationData object
             }
             
             // Apply tags: start with task tag, add parsed tags, then add default tags
@@ -337,6 +343,7 @@ export class InstantTaskConvertService {
             due: dueDate,
             scheduled: scheduledDate,
             contexts: contextsArray.length > 0 ? contextsArray : undefined,
+            projects: parsedProjects.length > 0 ? parsedProjects : undefined,
             tags: tagsArray,
             timeEstimate: timeEstimate,
             recurrence: recurrence,
@@ -542,7 +549,8 @@ export class InstantTaskConvertService {
             data.recurrence ||
             data.createdDate ||
             data.doneDate ||
-            (data.tags && data.tags.length > 0)
+            (data.tags && data.tags.length > 0) ||
+            (data.projects && data.projects.length > 0)
         );
     }
 
@@ -579,6 +587,7 @@ export class InstantTaskConvertService {
                 scheduledDate: nlpResult.scheduledDate,
                 recurrence: nlpResult.recurrence,
                 tags: nlpResult.tags && nlpResult.tags.length > 0 ? nlpResult.tags : undefined,
+                projects: nlpResult.projects && nlpResult.projects.length > 0 ? nlpResult.projects : undefined,
                 // TasksPlugin specific fields that NLP doesn't have
                 startDate: undefined,
                 createdDate: undefined,

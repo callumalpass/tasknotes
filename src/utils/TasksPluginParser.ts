@@ -17,6 +17,7 @@ export interface ParsedTaskData {
 		month_of_year?: number;
 	};
 	tags?: string[];
+	projects?: string[];
 	isCompleted: boolean;
 }
 
@@ -196,6 +197,7 @@ export class TasksPluginParser {
 				recurrence,
 				recurrenceData,
 				tags: tags.length > 0 ? tags : undefined,
+				projects: undefined, // TasksPlugin format doesn't have projects, only NLP fallback does
 				isCompleted
 			};
 		} catch (error) {
@@ -465,6 +467,7 @@ export class TasksPluginParser {
 		if (parsedData.doneDate) parts.push(`Done: ${parsedData.doneDate}`);
 		if (parsedData.recurrence) parts.push(`Recurrence: ${parsedData.recurrence}`);
 		if (parsedData.tags && parsedData.tags.length > 0) parts.push(`Tags: ${parsedData.tags.map(t => '#' + t).join(', ')}`);
+		if (parsedData.projects && parsedData.projects.length > 0) parts.push(`Projects: ${parsedData.projects.map(p => p.includes(' ') ? `+[[${p}]]` : `+${p}`).join(', ')}`);
 		
 		return parts.join(' | ');
 	}
