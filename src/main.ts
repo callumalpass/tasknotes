@@ -965,7 +965,7 @@ export default class TaskNotesPlugin extends Plugin {
 
 		this.addCommand({
 			id: 'batch-convert-all-tasks',
-			name: 'Convert all tasks in note to TaskNotes',
+			name: 'Convert all tasks in note',
 			editorCallback: async (editor: Editor) => {
 				await this.batchConvertAllTasks(editor);
 			}

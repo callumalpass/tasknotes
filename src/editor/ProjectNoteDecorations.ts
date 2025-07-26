@@ -2,7 +2,7 @@ import { Decoration, DecorationSet, EditorView, PluginSpec, PluginValue, ViewPlu
 import { Extension, RangeSetBuilder, StateEffect } from '@codemirror/state';
 import { TFile, editorLivePreviewField, editorInfoField, EventRef } from 'obsidian';
 import TaskNotesPlugin from '../main';
-import { TaskInfo, EVENT_DATA_CHANGED, EVENT_TASK_UPDATED, EVENT_TASK_DELETED, FilterQuery, FilterOptions } from '../types';
+import { TaskInfo, EVENT_DATA_CHANGED, EVENT_TASK_UPDATED, EVENT_TASK_DELETED, FilterQuery } from '../types';
 import { createTaskCard } from '../ui/TaskCard';
 import { ProjectSubtasksService } from '../services/ProjectSubtasksService';
 import { FilterBar } from '../ui/FilterBar';
@@ -275,7 +275,7 @@ class ProjectSubtasksWidget extends WidgetType {
                     cls: 'project-note-subtasks__group-header'
                 });
                 
-                const groupTitle = groupHeader.createEl('h4', {
+                groupHeader.createEl('h4', {
                     cls: 'project-note-subtasks__group-title',
                     text: this.getGroupDisplayName(groupKey, tasks.length)
                 });
