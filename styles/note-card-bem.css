@@ -11,30 +11,56 @@
     gap: 0;
     position: relative;
     
-    /* Spacing & Sizing */
+    /* Spacing & Sizing - Todoist compact style */
     padding: var(--tn-spacing-md) var(--tn-spacing-lg);
-    margin-bottom: 0;
+    margin-bottom: 1px;
     
-    /* Visual Styling */
-    background-color: var(--tn-bg-primary);
+    /* Visual Styling - Todoist minimal style */
+    background-color: transparent;
     border: none;
-    border-bottom: 1px solid var(--tn-border-color);
     border-radius: 0;
-    border-left: 3px solid transparent; /* For potential categorization */
+    border-left: 3px solid transparent; /* Transparent by default */
     
-    /* Interactions */
+    /* Interactions & Accessibility - Simplified */
     cursor: pointer;
-    transition: background-color var(--tn-transition-fast),
-                border-color var(--tn-transition-fast),
-                transform var(--tn-transition-fast),
-                box-shadow var(--tn-transition-fast);
-    will-change: transform, box-shadow;
+    transition: background-color var(--tn-transition-fast);
+    will-change: background-color;
+    outline: none;
+    role: listitem;
+    tabindex: 0;
 }
 
 .tasknotes-plugin .note-card:hover {
     background-color: var(--tn-interactive-hover);
-    transform: translateY(-1px);
-    box-shadow: var(--tn-shadow-light);
+}
+
+.tasknotes-plugin .note-card:focus {
+    background-color: var(--tn-interactive-hover);
+    outline: 1px solid var(--tn-border-color);
+    outline-offset: -1px;
+}
+
+.tasknotes-plugin .note-card:focus:not(:focus-visible) {
+    outline: none;
+}
+
+.tasknotes-plugin .note-card:last-child {
+    margin-bottom: 0;
+}
+
+/* Daily note specific styling */
+.tasknotes-plugin .note-card--daily {
+    border-left: 3px solid var(--tn-interactive-accent); /* Purple left border for daily notes only */
+}
+
+/* Ensure all note card titles match task card titles exactly */
+.tasknotes-plugin .note-card__title,
+.tasknotes-plugin .tn-card__title,
+.tasknotes-plugin .note-card--daily .note-card__title,
+.tasknotes-plugin .note-card--daily-note .note-card__title {
+    font-size: var(--tn-font-size-lg) !important;
+    font-weight: 400 !important;
+    line-height: 1.3 !important;
 }
 
 /* Remove border radius for cleaner list appearance */
@@ -52,13 +78,13 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: var(--tn-spacing-xs);
+    gap: 2px;
     min-width: 0;
 }
 
 .tasknotes-plugin .note-card__title {
-    font-size: var(--tn-font-size-md);
-    font-weight: var(--tn-font-weight-normal);
+    font-size: var(--tn-font-size-lg);
+    font-weight: 400;
     line-height: 1.3;
     color: var(--tn-text-normal);
     margin: 0;
@@ -174,11 +200,7 @@
 /* Daily Note Variant */
 .tasknotes-plugin .note-card--daily-note {
     border-left-color: var(--tn-color-daily-note);
-    background: linear-gradient(
-        135deg,
-        var(--tn-bg-primary) 0%,
-        color-mix(in srgb, var(--tn-color-daily-note) 3%, var(--tn-bg-primary)) 100%
-    );
+    background: transparent; /* Keep consistent with other note cards */
 }
 
 .tasknotes-plugin .note-card--daily-note .note-card__badge {
@@ -186,17 +208,17 @@
     color: var(--tn-bg-primary);
 }
 
-/* Shadow Variants */
+/* Shadow Variants - Disabled for consistency with task cards */
 .tasknotes-plugin .note-card--shadow-light:hover {
-    box-shadow: var(--tn-shadow-light);
+    box-shadow: none;
 }
 
 .tasknotes-plugin .note-card--shadow-medium:hover {
-    box-shadow: var(--tn-shadow-medium);
+    box-shadow: none;
 }
 
 .tasknotes-plugin .note-card--shadow-strong:hover {
-    box-shadow: var(--tn-shadow-strong);
+    box-shadow: none;
 }
 
 /* Update Animation */
@@ -237,17 +259,12 @@
     border-bottom: 1px solid var(--tn-border-color);
     border-radius: 0;
     cursor: pointer;
-    transition: background-color var(--tn-transition-fast),
-                border-color var(--tn-transition-fast),
-                transform var(--tn-transition-fast),
-                box-shadow var(--tn-transition-fast);
-    will-change: transform, box-shadow;
+    transition: background-color var(--tn-transition-fast);
+    will-change: background-color;
 }
 
 .tasknotes-plugin .tn-card:hover {
     background-color: var(--tn-interactive-hover);
-    transform: translateY(-1px);
-    box-shadow: var(--tn-shadow-light);
 }
 
 .tasknotes-plugin .tn-card__content {
@@ -259,8 +276,8 @@
 }
 
 .tasknotes-plugin .tn-card__title {
-    font-size: var(--tn-font-size-md);
-    font-weight: var(--tn-font-weight-normal);
+    font-size: var(--tn-font-size-lg);
+    font-weight: 400;
     line-height: 1.3;
     color: var(--tn-text-normal);
     margin: 0;

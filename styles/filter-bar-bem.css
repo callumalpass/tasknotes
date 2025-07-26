@@ -120,8 +120,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 32px;
-    height: 32px;
+    width: var(--tn-button-height-md);
+    height: var(--tn-button-height-md);
     transition: all 0.2s ease;
     box-shadow: none;
 }
@@ -147,7 +147,7 @@
     font-size: var(--font-ui-small);
     font-weight: 500;
     transition: all 0.2s ease;
-    height: 32px; /* Consistent height */
+    height: var(--tn-button-height-md); /* Consistent height */
     box-shadow: none;
 }
 
@@ -175,7 +175,7 @@
     font-size: var(--font-ui-small);
     transition: all 0.2s ease;
     min-width: 200px;
-    height: 32px; /* Consistent height */
+    height: var(--tn-button-height-md); /* Consistent height */
 }
 
 .tasknotes-plugin .filter-bar__search-input:focus {

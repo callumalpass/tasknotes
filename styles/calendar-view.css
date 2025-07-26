@@ -43,7 +43,7 @@
 .tasknotes-plugin .mini-calendar-view__view-selector {
     margin-right: var(--tn-spacing-md);
     min-width: 120px;
-    padding: 4px 8px;
+    padding: var(--tn-spacing-xs) var(--tn-spacing-sm);
     border: 1px solid var(--tn-border-color);
     border-radius: var(--tn-radius-sm);
     background: var(--tn-bg-primary);
@@ -129,7 +129,7 @@
     margin-left: auto;
     background: transparent;
     color: var(--tn-text-muted);
-    padding: 4px 12px;
+    padding: var(--tn-spacing-xs) var(--tn-spacing-md);
     font-size: var(--tn-font-size-xs);
     min-height: 24px;
     border: none;
@@ -340,7 +340,7 @@
     height: 6px;
     border-radius: 50%;
     display: inline-block;
-    margin: 2px;
+    margin: var(--tn-spacing-xs);
 }
 
 .tasknotes-plugin .calendar-view__day-indicator--notes,
@@ -464,7 +464,7 @@
     position: absolute;
     background: var(--tn-bg-primary);
     color: var(--tn-text-normal);
-    padding: 4px 8px;
+    padding: var(--tn-spacing-xs) var(--tn-spacing-sm);
     border-radius: var(--tn-radius-sm);
     font-size: var(--tn-font-size-xs);
     white-space: nowrap;
@@ -595,7 +595,7 @@
     .tasknotes-plugin .calendar-view__day,
     .tasknotes-plugin .mini-calendar-view__day {
         min-height: 1.5rem;
-        padding: 2px;
+        padding: var(--tn-spacing-xs);
     }
     
     .tasknotes-plugin .calendar-view__content-indicator,

@@ -66,11 +66,11 @@
 }
 
 .tasknotes-plugin .pomodoro-view__progress-circle--short-break {
-    stroke: var(--tn-priority-medium-color, #10B981);
+    stroke: var(--tn-priority-medium-color, var(--tn-color-success));
 }
 
 .tasknotes-plugin .pomodoro-view__progress-circle--long-break {
-    stroke: var(--tn-priority-high-color, #3B82F6);
+    stroke: var(--tn-priority-high-color, var(--tn-interactive-accent));
 }
 
 .tasknotes-plugin .pomodoro-view__progress-circle--warning {
@@ -134,11 +134,11 @@
 }
 
 .tasknotes-plugin .pomodoro-view__status--short-break {
-    color: var(--tn-priority-medium-color, #10B981);
+    color: var(--tn-priority-medium-color, var(--tn-color-success));
 }
 
 .tasknotes-plugin .pomodoro-view__status--long-break {
-    color: var(--tn-priority-high-color, #3B82F6);
+    color: var(--tn-priority-high-color, var(--tn-interactive-accent));
 }
 
 .tasknotes-plugin .pomodoro-view__status--paused {
