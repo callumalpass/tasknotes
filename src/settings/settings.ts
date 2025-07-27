@@ -1711,7 +1711,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 			
 			// Drag handle
 			const dragHandle = statusRow.createDiv('settings-drag-handle');
-			dragHandle.innerHTML = '⋮⋮';
+			dragHandle.innerHTML = '☰';
 			dragHandle.setAttribute('title', 'Drag to reorder');
 			
 			// Color indicator
