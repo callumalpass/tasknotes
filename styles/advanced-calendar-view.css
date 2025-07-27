@@ -534,6 +534,8 @@
 .advanced-calendar-view__calendar-container {
     flex: 1;
     overflow: auto;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: var(--tn-radius-md);
     min-height: 0;
 }
 
@@ -551,6 +553,7 @@
 /* Light dividers for clean look */
 .advanced-calendar-view .fc-col-header-cell {
     border-bottom: 1px solid var(--background-modifier-border);
+    border-top: 1px solid var(--background-modifier-border);
 }
 
 .advanced-calendar-view .fc-daygrid-day {
@@ -570,7 +573,7 @@
 .advanced-calendar-view .fc-header-toolbar {
     margin-bottom: 0.5rem;
     padding: 0;
-    border: none;
+    border-bottom: 1px solid var(--background-modifier-border);
     background: transparent;
 }
 
