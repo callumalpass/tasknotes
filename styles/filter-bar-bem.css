@@ -495,6 +495,14 @@
     letter-spacing: 0; /* Natural spacing */
 }
 
+.tasknotes-plugin .filter-bar__active-view-name {
+    font-weight: 400;
+    font-size: var(--font-ui-smaller);
+    color: var(--text-accent);
+    margin-left: var(--tn-spacing-xs);
+    font-style: italic;
+}
+
 .tasknotes-plugin .filter-bar__section-content {
     padding: var(--tn-spacing-md);
     background: var(--background-primary);

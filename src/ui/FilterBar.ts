@@ -54,6 +54,8 @@ export class FilterBar extends EventEmitter {
     private currentQuery: FilterQuery;
     private savedViews: readonly SavedView[] = [];
     private filterOptions: FilterOptions;
+    private activeSavedView: SavedView | null = null;
+    private isLoadingSavedView = false;
 
     // Debouncing for input fields
     private debouncedEmitQueryChange: () => void;
@@ -106,6 +108,12 @@ export class FilterBar extends EventEmitter {
 
         // Initialize debounced query change emission (300ms delay)
         this.debouncedEmitQueryChange = debounce(() => {
+            // Clear active saved view when user manually modifies filters (except during saved view loading)
+            if (!this.isLoadingSavedView && this.activeSavedView) {
+                this.clearActiveSavedView();
+                // Re-render the filter section to remove the view name display
+                this.updateFilterBuilder();
+            }
             this.emit('queryChange', FilterUtils.deepCloneFilterQuery(this.currentQuery));
         }, 300);
 
@@ -156,6 +164,10 @@ export class FilterBar extends EventEmitter {
         this.currentQuery = FilterUtils.deepCloneFilterQuery(query);
         // Ensure the updated query has proper structure
         this.ensureValidFilterQuery();
+        // Clear active saved view when query is updated externally (unless loading a saved view)
+        if (!this.isLoadingSavedView && this.activeSavedView) {
+            this.clearActiveSavedView();
+        }
         this.updateUI();
     }
 
@@ -284,6 +296,13 @@ export class FilterBar extends EventEmitter {
      */
     getCurrentQuery(): FilterQuery {
         return FilterUtils.deepCloneFilterQuery(this.currentQuery);
+    }
+
+    /**
+     * Clear the active saved view indicator (called when filters are manually modified)
+     */
+    private clearActiveSavedView(): void {
+        this.activeSavedView = null;
     }
 
 
@@ -601,6 +620,14 @@ export class FilterBar extends EventEmitter {
             text: 'Filter',
             cls: 'filter-bar__section-title'
         });
+        
+        // Show active saved view name if one is loaded
+        if (this.activeSavedView) {
+            titleWrapper.createSpan({
+                text: `(${this.activeSavedView.name})`,
+                cls: 'filter-bar__active-view-name'
+            });
+        }
 
         const actionsWrapper = header.createDiv('filter-bar__section-header-actions');
         new ButtonComponent(actionsWrapper)
@@ -1298,7 +1325,9 @@ export class FilterBar extends EventEmitter {
      * Load a saved view
      */
     private loadSavedView(view: SavedView): void {
+        this.isLoadingSavedView = true;
         this.currentQuery = FilterUtils.deepCloneFilterQuery(view.query);
+        this.activeSavedView = view;
         this.render();
         this.emitQueryChange();
         
@@ -1308,6 +1337,7 @@ export class FilterBar extends EventEmitter {
         }
         
         this.toggleViewSelectorDropdown();
+        this.isLoadingSavedView = false;
     }
 
     /**
@@ -1420,6 +1450,13 @@ export class FilterBar extends EventEmitter {
      * This prevents expensive filter operations when users are still building filters
      */
     private emitQueryChange(): void {
+        // Clear active saved view when user manually modifies filters (except during saved view loading)
+        if (!this.isLoadingSavedView && this.activeSavedView) {
+            this.clearActiveSavedView();
+            // Re-render the filter section to remove the view name display
+            this.updateFilterBuilder();
+        }
+        
         // Always emit for sort/group changes and structural operations
         this.emitQueryChangeIfComplete();
     }
