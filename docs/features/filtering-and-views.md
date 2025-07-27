@@ -160,18 +160,32 @@ Examples of valid date inputs:
 
 ## Saved Views
 
-Saved views store complete filter configurations for quick access.
+Saved views store complete filter configurations and view-specific options for quick access. This includes not only filters, sorting, and grouping, but also view-specific display preferences.
+
+### What Gets Saved
+
+When you save a view, the following state is preserved:
+- **Filter Configuration**: All filter conditions, groups, and logic
+- **Sorting**: Selected sort criteria and direction
+- **Grouping**: Chosen grouping method
+- **View Options**: View-specific display preferences such as:
+  - **Agenda View**: "Show overdue on today" and "Show notes" toggles
+  - **Advanced Calendar**: Display options for scheduled tasks, due dates, timeblocks, recurring tasks, ICS events, and time entries
 
 ### Saving Views
 1. Configure your desired filters, sorting, and grouping
-2. Click the "Save View" button
-3. Enter a name for the view
-4. The view is saved and appears in the dropdown
+2. Set any view-specific options (toggles, display preferences)
+3. Click the "Save View" button
+4. Enter a name for the view
+5. The complete view state is saved and appears in the dropdown
 
 ### Loading Views
 1. Click the saved views dropdown
 2. Select a view name
-3. The complete configuration (filters, sorting, grouping) is applied
+3. The complete configuration is applied, including:
+   - Filter conditions and structure
+   - Sorting and grouping settings
+   - View-specific display options
 
 ### Managing Views
 - **Load**: Apply a saved view configuration

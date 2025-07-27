@@ -10,6 +10,15 @@ The Agenda View includes the same FilterBar functionality as the Task List View,
 
 The Agenda View groups tasks and notes by time. The default groups are "Overdue," "Today," "Tomorrow," "This Week," "Next Week," and "Later." Within each group, items are sorted by priority.
 
+## View Options
+
+The Agenda View provides several display options that can be configured:
+
+- **Show overdue on today**: When enabled, overdue tasks appear in the "Today" section alongside today's tasks
+- **Show notes**: Controls whether daily notes are displayed alongside tasks in the agenda
+
+These options are preserved when you save a view, allowing you to create saved views with specific display preferences that persist across sessions.
+
 ## Focus Features
 
 The view provides controls for the date range and for the display of completed tasks. It also uses visual styling to distinguish overdue and high-priority items.

@@ -243,7 +243,124 @@ Let's say you want to add a `complexity: 'simple' | 'medium' | 'hard'` property 
 
 **Note**: With the minimal cache approach, most new properties should be computed on-demand rather than indexed. Only add indexes for frequently-accessed, performance-critical queries.
 
-### 5.2. Walkthrough: Modifying a Task Property (Native-First Approach)
+### 5.2. Adding View-Specific Options to Saved Views
+
+The plugin supports capturing and restoring view-specific display options as part of saved views. This feature allows views to preserve their display preferences (toggles, visibility options) alongside filter configurations.
+
+#### Implementation Pattern
+
+**Step 1: Define View Options in the View Class**
+```typescript
+export class MyView extends ItemView {
+    private showOption1: boolean = true;
+    private showOption2: boolean = false;
+    
+    private setupViewOptions(): void {
+        // Configure FilterBar with view options
+        this.filterBar.setViewOptions([
+            { id: 'showOption1', label: 'Show Option 1', value: this.showOption1 },
+            { id: 'showOption2', label: 'Show Option 2', value: this.showOption2 }
+        ]);
+    }
+}
+```
+
+**Step 2: Handle View Options Events**
+```typescript
+private setupEventListeners(): void {
+    // Save view options along with filter state
+    this.filterBar.on('saveView', ({ name, query, viewOptions }) => {
+        this.plugin.viewStateManager.saveView(name, query, viewOptions);
+    });
+    
+    // Apply loaded view options
+    this.filterBar.on('loadViewOptions', (viewOptions: {[key: string]: boolean}) => {
+        this.applyViewOptions(viewOptions);
+    });
+}
+
+private applyViewOptions(viewOptions: {[key: string]: boolean}): void {
+    // Apply options to internal state
+    if (viewOptions.hasOwnProperty('showOption1')) {
+        this.showOption1 = viewOptions.showOption1;
+    }
+    if (viewOptions.hasOwnProperty('showOption2')) {
+        this.showOption2 = viewOptions.showOption2;
+    }
+    
+    // Update FilterBar to reflect loaded state
+    this.setupViewOptions();
+    
+    // Refresh view to apply changes
+    this.refresh();
+}
+```
+
+**Step 3: FilterBar Integration**
+The FilterBar automatically handles:
+- Capturing current view options when saving views
+- Emitting `loadViewOptions` events when loading saved views
+- Providing UI controls for view-specific options
+
+#### Architecture Components
+
+**SavedView Interface Enhancement:**
+```typescript
+export interface SavedView {
+    id: string;
+    name: string;
+    query: FilterQuery;
+    viewOptions?: {[key: string]: boolean}; // View-specific display options
+}
+```
+
+**ViewStateManager Integration:**
+```typescript
+saveView(name: string, query: FilterQuery, viewOptions?: {[key: string]: boolean}): SavedView {
+    const view: SavedView = {
+        id: this.generateId(),
+        name,
+        query: FilterUtils.deepCloneFilterQuery(query),
+        viewOptions: viewOptions ? { ...viewOptions } : undefined
+    };
+    // ... save logic
+}
+```
+
+#### Current Implementation Examples
+
+**Agenda View Options:**
+- `showOverdueOnToday`: Shows overdue tasks in today's section
+- `showNotes`: Controls display of daily notes
+
+**Advanced Calendar View Options:**
+- `showScheduled`: Display tasks with scheduled dates
+- `showDue`: Display tasks with due dates  
+- `showTimeblocks`: Display time-blocking entries
+- `showRecurring`: Display recurring task events
+- `showICSEvents`: Display imported calendar events
+- `showTimeEntries`: Display time tracking entries
+
+#### Developer Best Practices
+
+**View Option Design:**
+- Use boolean options for simple toggles
+- Keep option IDs descriptive and unique per view
+- Provide sensible defaults for all options
+- Consider backward compatibility when adding new options
+
+**State Management:**
+- Always use defensive programming when checking for option existence
+- Apply options to internal state before updating UI
+- Refresh the view after applying loaded options
+- Maintain option state independently of saved views
+
+**Performance Considerations:**
+- View options are cloned when saving/loading for data safety
+- Options are applied synchronously to avoid UI state conflicts
+- FilterBar updates are batched to prevent unnecessary re-renders
+
+### 5.3. Walkthrough: Modifying a Task Property (Native-First Approach)
 
 Let's trace the flow of changing a task's priority from a `TaskCard`.
 
