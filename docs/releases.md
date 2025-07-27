@@ -5,6 +5,8 @@ Welcome to the TaskNotes release notes. Here you can find detailed information a
 ## Latest Releases
 
 ### Version 3.x (Current)
+
+- [3.16.0](releases/3.16.0.md)
 - [3.15.1](releases/3.15.1.md)
 - [3.15.0](releases/3.15.0.md)
 - [3.14.0](releases/3.14.0.md)
@@ -40,6 +42,7 @@ Welcome to the TaskNotes release notes. Here you can find detailed information a
 - [3.0.0](releases/3.0.0.md)
 
 ### Version 2.x
+
 - [2.2.3](releases/2.2.3.md)
 - [2.2.2](releases/2.2.2.md)
 - [2.2.1](releases/2.2.1.md)
@@ -52,11 +55,13 @@ Welcome to the TaskNotes release notes. Here you can find detailed information a
 - [2.0.0](releases/2.0.0.md)
 
 ### Version 1.x
+
 - [1.2.0](releases/1.2.0.md)
 - [1.1.0](releases/1.1.0.md)
 - [1.0.0](releases/1.0.0.md)
 
 ### Early Versions (0.x)
+
 - [0.8.0](releases/0.8.0.md)
 - [0.7.0](releases/0.7.0.md)
 - [0.6.3](releases/0.6.3.md)
