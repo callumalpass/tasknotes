@@ -684,7 +684,7 @@
     color: var(--text-muted);
     font-weight: 400;
     font-size: 0.75rem;
-    text-transform: lowercase;
+    /* text-transform: lowercase; */
     letter-spacing: 0;
     padding: 0.5rem 0.5rem;
 }
@@ -735,28 +735,6 @@
     width: 4rem;
 }
 
-/* Scrollbar styling */
-.advanced-calendar-view .fc-scroller {
-    scrollbar-width: thin;
-    scrollbar-color: var(--scrollbar-thumb-bg) var(--scrollbar-bg);
-}
-
-.advanced-calendar-view .fc-scroller::-webkit-scrollbar {
-    width: 8px;
-}
-
-.advanced-calendar-view .fc-scroller::-webkit-scrollbar-track {
-    background: var(--scrollbar-bg);
-}
-
-.advanced-calendar-view .fc-scroller::-webkit-scrollbar-thumb {
-    background: var(--scrollbar-thumb-bg);
-    border-radius: 4px;
-}
-
-.advanced-calendar-view .fc-scroller::-webkit-scrollbar-thumb:hover {
-    background: var(--scrollbar-thumb-bg-hover);
-}
 
 /* More events link */
 .advanced-calendar-view .fc-more-link {
