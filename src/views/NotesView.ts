@@ -194,7 +194,7 @@ export class NotesView extends ItemView {
                     .setName('No notes found')
                     .setHeading();
                 emptyState.createEl('p', {
-                    text: 'No notes found for the selected date. Try selecting a different date or create some notes.',
+                    text: 'No notes found for the selected date. Try selecting a different date in the Mini Calendar view or create some notes.',
                     cls: 'notes-view__empty-description'
                 });
             }

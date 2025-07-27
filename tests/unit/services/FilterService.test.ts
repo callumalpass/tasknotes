@@ -55,7 +55,7 @@ describe('FilterService - Issue 153 Timezone Bug Fix Verification', () => {
         } as any;
         mockPriorityManager = {} as any;
 
-        filterService = new FilterService(mockCacheManager, mockStatusManager, mockPriorityManager);
+        filterService = new FilterService(mockCacheManager, mockStatusManager, mockPriorityManager, null);
     });
 
     describe('Date comparison edge cases that cause issue 153', () => {

@@ -46,7 +46,7 @@ describe('FilterService - Issue 153 Fix Verification', () => {
         
         mockPriorityManager = {} as any;
 
-        filterService = new FilterService(mockCacheManager, mockStatusManager, mockPriorityManager);
+        filterService = new FilterService(mockCacheManager, mockStatusManager, mockPriorityManager, null);
     });
 
     describe('Timezone-safe date comparisons', () => {

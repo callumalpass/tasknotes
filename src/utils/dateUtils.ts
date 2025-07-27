@@ -670,8 +670,13 @@ export function isBeforeDateTimeAware(date1: string, date2: string): boolean {
 /**
  * Check if a date/datetime is overdue (past current date/time)
  */
-export function isOverdueTimeAware(dateString: string): boolean {
+export function isOverdueTimeAware(dateString: string, isCompleted?: boolean, hideCompletedFromOverdue?: boolean): boolean {
     if (!dateString) return false;
+    
+    // If the setting is enabled and task is completed, don't consider it overdue
+    if (hideCompletedFromOverdue && isCompleted) {
+        return false;
+    }
     
     try {
         const taskDate = parseDate(dateString);

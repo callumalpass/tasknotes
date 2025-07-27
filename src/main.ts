@@ -185,7 +185,8 @@ export default class TaskNotesPlugin extends Plugin {
 		this.filterService = new FilterService(
 			this.cacheManager,
 			this.statusManager,
-			this.priorityManager
+			this.priorityManager,
+			this
 		);
 		this.viewStateManager = new ViewStateManager(this.app, this);
 		this.projectSubtasksService = new ProjectSubtasksService(this);

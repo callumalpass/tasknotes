@@ -42,7 +42,8 @@ export class FilterService extends EventEmitter {
     constructor(
         cacheManager: MinimalNativeCache,
         statusManager: StatusManager,
-        priorityManager: PriorityManager
+        priorityManager: PriorityManager,
+        private plugin?: any // Plugin reference for accessing settings
     ) {
         super();
         this.cacheManager = cacheManager;
@@ -769,25 +770,28 @@ export class FilterService extends EventEmitter {
         const referenceDate = targetDate || new Date();
         referenceDate.setHours(0, 0, 0, 0);
 
+        const isCompleted = this.statusManager.isCompletedStatus(task.status);
+        const hideCompletedFromOverdue = this.plugin?.settings?.hideCompletedFromOverdue ?? true;
+
         // For recurring tasks, check if due on the target date
         if (task.recurrence) {
             if (isDueByRRule(task, referenceDate)) {
                 // If due on target date, determine which group based on target date vs today
                 const referenceDateStr = format(referenceDate, 'yyyy-MM-dd');
-                return this.getDateGroupFromDateString(referenceDateStr);
+                return this.getDateGroupFromDateStringWithTask(referenceDateStr, isCompleted, hideCompletedFromOverdue);
             } else {
                 // Recurring task not due on target date
                 // If it has an original due date, use that, otherwise no due date
                 if (task.due) {
-                    return this.getDueDateGroupFromDate(task.due);
+                    return this.getDateGroupFromDateStringWithTask(task.due, isCompleted, hideCompletedFromOverdue);
                 }
                 return 'No due date';
             }
         }
         
-        // Non-recurring task - use original logic
+        // Non-recurring task - use completion-aware logic
         if (!task.due) return 'No due date';
-        return this.getDueDateGroupFromDate(task.due);
+        return this.getDateGroupFromDateStringWithTask(task.due, isCompleted, hideCompletedFromOverdue);
     }
     
     /**
@@ -797,7 +801,9 @@ export class FilterService extends EventEmitter {
     private getDateGroupFromDateString(dateString: string): string {
         const todayStr = getTodayString();
         
-        // Use time-aware overdue detection
+        // Use time-aware overdue detection with completion-aware logic
+        // For categorization purposes, we need the task to determine completion status
+        // This call is for categorization only, specific task overdue checks happen elsewhere
         if (isOverdueTimeAware(dateString)) return 'Overdue';
         
         // Extract date part for day-level comparisons
@@ -829,9 +835,87 @@ export class FilterService extends EventEmitter {
         return this.getDateGroupFromDateString(dueDate);
     }
 
+    /**
+     * Helper method to get due date group for a specific task (completion-aware)
+     */
+    private getDueDateGroupForTask(task: TaskInfo): string {
+        if (!task.due) return 'No due date';
+        
+        const isCompleted = this.statusManager.isCompletedStatus(task.status);
+        const hideCompletedFromOverdue = this.plugin?.settings?.hideCompletedFromOverdue ?? true;
+        
+        return this.getDateGroupFromDateStringWithTask(task.due, isCompleted, hideCompletedFromOverdue);
+    }
+
+    /**
+     * Get date group from date string with task completion awareness
+     */
+    private getDateGroupFromDateStringWithTask(dateString: string, isCompleted: boolean, hideCompletedFromOverdue: boolean): string {
+        const todayStr = getTodayString();
+        
+        // Use completion-aware overdue detection
+        if (isOverdueTimeAware(dateString, isCompleted, hideCompletedFromOverdue)) return 'Overdue';
+        
+        // Extract date part for day-level comparisons
+        const datePart = getDatePart(dateString);
+        if (isSameDateSafe(datePart, todayStr)) return 'Today';
+        
+        try {
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const tomorrowStr = format(tomorrow, 'yyyy-MM-dd');
+            if (isSameDateSafe(datePart, tomorrowStr)) return 'Tomorrow';
+            
+            const thisWeek = new Date();
+            thisWeek.setDate(thisWeek.getDate() + 7);
+            const thisWeekStr = format(thisWeek, 'yyyy-MM-dd');
+            if (isBeforeDateSafe(datePart, thisWeekStr) || isSameDateSafe(datePart, thisWeekStr)) return 'This week';
+            
+            return 'Later';
+        } catch (error) {
+            console.error(`Error categorizing date ${dateString}:`, error);
+            return 'Invalid Date';
+        }
+    }
+
     private getScheduledDateGroup(task: TaskInfo, targetDate?: Date): string {
         if (!task.scheduled) return 'No scheduled date';
-        return this.getScheduledDateGroupFromDate(task.scheduled);
+        
+        const isCompleted = this.statusManager.isCompletedStatus(task.status);
+        const hideCompletedFromOverdue = this.plugin?.settings?.hideCompletedFromOverdue ?? true;
+        
+        return this.getScheduledDateGroupForTask(task.scheduled, isCompleted, hideCompletedFromOverdue);
+    }
+
+    /**
+     * Get scheduled date group with task completion awareness
+     */
+    private getScheduledDateGroupForTask(scheduledDate: string, isCompleted: boolean, hideCompletedFromOverdue: boolean): string {
+        const todayStr = getTodayString();
+        
+        // Use completion-aware overdue detection for past scheduled
+        if (isOverdueTimeAware(scheduledDate, isCompleted, hideCompletedFromOverdue)) return 'Past scheduled';
+        
+        // Extract date part for day-level comparisons
+        const datePart = getDatePart(scheduledDate);
+        if (isSameDateSafe(datePart, todayStr)) return 'Today';
+        
+        try {
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const tomorrowStr = format(tomorrow, 'yyyy-MM-dd');
+            if (isSameDateSafe(datePart, tomorrowStr)) return 'Tomorrow';
+            
+            const thisWeek = new Date();
+            thisWeek.setDate(thisWeek.getDate() + 7);
+            const thisWeekStr = format(thisWeek, 'yyyy-MM-dd');
+            if (isBeforeDateSafe(datePart, thisWeekStr) || isSameDateSafe(datePart, thisWeekStr)) return 'This week';
+            
+            return 'Later';
+        } catch (error) {
+            console.error(`Error categorizing scheduled date ${scheduledDate}:`, error);
+            return 'Invalid Date';
+        }
     }
     
     /**
@@ -1271,16 +1355,19 @@ export class FilterService extends EventEmitter {
             
             // If showing overdue tasks and this is today, include overdue tasks on today
             if (includeOverdue && isViewingToday) {
+                const isCompleted = this.statusManager.isCompletedStatus(task.status);
+                const hideCompletedFromOverdue = this.plugin?.settings?.hideCompletedFromOverdue ?? true;
+                
                 // Check if due date is overdue (show on today)
                 if (task.due && getDatePart(task.due) !== dateStr) {
-                    if (isOverdueTimeAware(task.due)) {
+                    if (isOverdueTimeAware(task.due, isCompleted, hideCompletedFromOverdue)) {
                         return true;
                     }
                 }
                 
                 // Check if scheduled date is overdue (show on today)
                 if (task.scheduled && getDatePart(task.scheduled) !== dateStr) {
-                    if (isOverdueTimeAware(task.scheduled)) {
+                    if (isOverdueTimeAware(task.scheduled, isCompleted, hideCompletedFromOverdue)) {
                         return true;
                     }
                 }

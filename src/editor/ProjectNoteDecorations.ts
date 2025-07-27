@@ -25,7 +25,8 @@ class ProjectSubtasksWidget extends WidgetType {
         this.filterService = new FilterService(
             plugin.cacheManager,
             plugin.statusManager, 
-            plugin.priorityManager
+            plugin.priorityManager,
+            plugin
         );
         
         // Initialize with default filter query

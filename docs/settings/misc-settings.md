@@ -10,6 +10,10 @@ These settings control various plugin features and display options that don't fi
 
 **Show project subtasks widget** - Display a collapsible widget showing all tasks that reference the current note as a project. This widget appears in the editor when viewing notes that have tasks referencing them as projects, providing quick access to related tasks.
 
+## Task Display
+
+**Hide completed tasks from overdue** - Control whether completed tasks appear as overdue in the agenda view. When enabled (default), completed tasks will not appear in the "Overdue" section of the agenda view, even if their due or scheduled date has passed. This setting affects task grouping and overdue detection throughout the plugin, helping keep overdue lists focused on actionable items.
+
 ## Performance Settings
 
 **Disable note indexing** - Disable indexing and caching of non-task notes to improve performance in large vaults. Note: This will disable the Notes view and notes display in the Agenda view. Requires plugin restart to take effect.

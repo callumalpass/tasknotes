@@ -56,6 +56,8 @@ export interface TaskNotesSettings {
 	autoStopTimeTrackingNotification: boolean;
 	// Project subtasks widget settings
 	showProjectSubtasks: boolean;
+	// Overdue behavior settings
+	hideCompletedFromOverdue: boolean;
 	// ICS integration settings
 	icsIntegration: ICSIntegrationSettings;
 	// Saved filter views
@@ -297,6 +299,8 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	autoStopTimeTrackingNotification: false,
 	// Project subtasks widget defaults
 	showProjectSubtasks: true,
+	// Overdue behavior defaults
+	hideCompletedFromOverdue: true,
 	// ICS integration defaults
 	icsIntegration: {
 		defaultNoteTemplate: '',
@@ -1511,6 +1515,21 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 						this.plugin.settings.showProjectSubtasks = value;
 						await this.plugin.saveSettings();
 						// Refresh all open editors to apply the change
+						this.plugin.notifyDataChanged();
+					});
+			});
+		// Hide completed tasks from overdue
+		new Setting(container)
+			.setName('Hide completed tasks from overdue')
+			.setDesc('When enabled, completed tasks will not appear as overdue in the agenda view, even if their due/scheduled date has passed')
+			.addToggle(toggle => {
+				toggle.toggleEl.setAttribute('aria-label', 'Hide completed tasks from overdue status');
+				return toggle
+					.setValue(this.plugin.settings.hideCompletedFromOverdue)
+					.onChange(async (value) => {
+						this.plugin.settings.hideCompletedFromOverdue = value;
+						await this.plugin.saveSettings();
+						// Refresh views to apply the change
 						this.plugin.notifyDataChanged();
 					});
 			});
