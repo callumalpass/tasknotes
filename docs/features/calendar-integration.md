@@ -8,7 +8,7 @@ TaskNotes has two calendar views for visualizing and managing tasks: the **Mini 
 
 The **Mini Calendar** is a compact, month-based view that provides an overview of which days have tasks. It is designed for navigation and for understanding task distribution.
 
-The **Advanced Calendar** is a calendar with multiple view modes (month, week, and day), drag-and-drop scheduling, and time-blocking capabilities. You can create new tasks by clicking on dates or time slots, and you can reschedule tasks by dragging them to a new date or time.
+The **Advanced Calendar** is a calendar with multiple view modes (month, week, day, year, and custom days), drag-and-drop scheduling, and time-blocking capabilities. You can create new tasks by clicking on dates or time slots, and you can reschedule tasks by dragging them to a new date or time. The custom days view allows you to display 2-10 days at once, providing flexible screen space utilization.
 
 ## ICS Calendar Subscriptions
 

@@ -4,7 +4,9 @@ These settings control the appearance and behavior of the calendar views, as wel
 
 ## Default Calendar View
 
-You can set the **Default View** for the Advanced Calendar, choosing from month, week, day, or year. You can also configure the **Time Slot Duration** and the **Time Range** that is displayed in the week and day views.
+You can set the **Default View** for the Advanced Calendar, choosing from month, week, day, year, or custom days. You can also configure the **Time Slot Duration** and the **Time Range** that is displayed in the week, day, and custom days views.
+
+**Custom view day count** - When using the Custom Days view, this slider controls how many days (2-10) are displayed simultaneously. The default is 3 days, which provides optimal screen space utilization while maintaining detailed scheduling capabilities.
 
 ## Week and Date Settings
 

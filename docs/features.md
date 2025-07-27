@@ -51,7 +51,7 @@ For more detailed information, see the [Time Management](features/time-managemen
 TaskNotes includes calendar integration features, such as:
 
 - **ICS Calendar Subscriptions**: A feature to subscribe to external calendar feeds from Google Calendar, Outlook, and other services.
-- **Advanced Calendar View**: A calendar with multiple view modes, drag-and-drop scheduling, and time-blocking capabilities.
+- **Advanced Calendar View**: A calendar with multiple view modes (month, week, day, year, and configurable custom days), drag-and-drop scheduling, and time-blocking capabilities.
 - **Time-blocking**: A feature to create focused work periods and link them to your tasks.
 
 For more detailed information, see the [Calendar Integration](features/calendar-integration.md) documentation.
