@@ -249,10 +249,10 @@ export function createTaskCard(task: TaskInfo, plugin: TaskNotesPlugin, options:
         const recurringIndicator = card.createEl('div', { 
             cls: 'task-card__recurring-indicator',
             attr: { 
-                'aria-label': `Recurring: ${getRecurrenceDisplayText(task.recurrence)} (click to change)`,
-                'title': `Recurring: ${getRecurrenceDisplayText(task.recurrence)} (click to change)`
+                'aria-label': `Recurring: ${getRecurrenceDisplayText(task.recurrence)} (click to change)`
             }
         });
+        setTooltip(recurringIndicator, `Recurring: ${getRecurrenceDisplayText(task.recurrence)} (click to change)`, { placement: 'top' });
         
         // Use Obsidian's built-in rotate-ccw icon for recurring tasks
         setIcon(recurringIndicator, 'rotate-ccw');
