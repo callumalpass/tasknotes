@@ -857,6 +857,16 @@ export function setIcon(element: HTMLElement, iconName: string): void {
   element.classList.add('has-icon');
 }
 
+// Tooltip utilities
+export function setTooltip(element: HTMLElement, tooltip: string, options?: { placement?: string }): void {
+  // Mock implementation - just add tooltip attributes
+  element.setAttribute('data-tooltip', tooltip);
+  if (options?.placement) {
+    element.setAttribute('data-tooltip-placement', options.placement);
+  }
+  element.classList.add('has-tooltip');
+}
+
 // Keymap mock class
 export class Keymap {
   pushScope = jest.fn();
@@ -924,6 +934,7 @@ export const MockObsidian = {
   Menu,
   Notice,
   setIcon,
+  setTooltip,
 };
 
 // Default export for compatibility
@@ -953,6 +964,7 @@ export default {
   Notice,
   Events,
   setIcon,
+  setTooltip,
   parseLinktext,
   MockObsidian,
 };
