@@ -1088,6 +1088,15 @@ export class FilterBar extends EventEmitter {
         const sortContainer = controls.createDiv('filter-bar__sort-container');
         sortContainer.createSpan({ text: 'Sort by:', cls: 'filter-bar__label' });
 
+        new ButtonComponent(sortContainer)
+            .setClass('filter-bar__sort-direction')
+            .setTooltip('Toggle sort direction')
+            .onClick(() => {
+                this.currentQuery.sortDirection = this.currentQuery.sortDirection === 'asc' ? 'desc' : 'asc';
+                this.updateSortDirectionButton();
+                this.emitQueryChange();
+            });
+
         const sortDropdown = new DropdownComponent(sortContainer)
             .addOptions({
                 'due': 'Due Date',
@@ -1102,15 +1111,6 @@ export class FilterBar extends EventEmitter {
                 this.emitQueryChange();
             });
         setTooltip(sortDropdown.selectEl, 'Choose how to sort tasks', { placement: 'top' });
-
-        new ButtonComponent(sortContainer)
-            .setClass('filter-bar__sort-direction')
-            .setTooltip('Toggle sort direction')
-            .onClick(() => {
-                this.currentQuery.sortDirection = this.currentQuery.sortDirection === 'asc' ? 'desc' : 'asc';
-                this.updateSortDirectionButton();
-                this.emitQueryChange();
-            });
 
         // Group control
         const groupContainer = controls.createDiv('filter-bar__group-container');

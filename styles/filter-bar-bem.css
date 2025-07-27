@@ -807,10 +807,11 @@
     height: 28px;
     width: 30px;
     border-radius: var(--radius-s);
-    color: var(--text-muted);
+    color: var(--text-accent);
     cursor: pointer;
-    font-size: var(--font-ui-small);
-    transition: background-color 0.2s ease;
+    font-size: 16px;
+    font-weight: 700;
+    transition: all 0.2s ease;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -818,7 +819,8 @@
 
 .tasknotes-plugin .filter-bar__sort-direction:hover {
     background-color: var(--background-modifier-hover);
-    color: var(--text-normal);
+    color: var(--text-accent-hover);
+    transform: scale(1.1);
 }
 
 /* =================================================================
