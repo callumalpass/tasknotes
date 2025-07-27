@@ -519,8 +519,8 @@ export class AdvancedCalendarView extends ItemView {
             views: {
                 timeGridCustom: {
                     type: 'timeGrid',
-                    duration: { days: calendarSettings.customDayCount },
-                    buttonText: `${calendarSettings.customDayCount} days`
+                    duration: { days: calendarSettings.customDayCount || 3 },
+                    buttonText: `${calendarSettings.customDayCount || 3} days`
                 }
             },
             height: '100%',
@@ -1769,8 +1769,8 @@ export class AdvancedCalendarView extends ItemView {
         this.calendar.setOption('views', {
             timeGridCustom: {
                 type: 'timeGrid',
-                duration: { days: calendarSettings.customDayCount },
-                buttonText: `${calendarSettings.customDayCount} days`
+                duration: { days: calendarSettings.customDayCount || 3 },
+                buttonText: `${calendarSettings.customDayCount || 3} days`
             }
         });
         

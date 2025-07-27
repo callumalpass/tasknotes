@@ -787,15 +787,23 @@ export default class TaskNotesPlugin extends Plugin {
 			// Deep merge custom statuses array
 			customStatuses: loadedData?.customStatuses || DEFAULT_SETTINGS.customStatuses,
 			// Deep merge custom priorities array  
-			customPriorities: loadedData?.customPriorities || DEFAULT_SETTINGS.customPriorities
+			customPriorities: loadedData?.customPriorities || DEFAULT_SETTINGS.customPriorities,
+			// Deep merge calendar view settings to ensure new fields get default values
+			calendarViewSettings: {
+				...DEFAULT_SETTINGS.calendarViewSettings,
+				...(loadedData?.calendarViewSettings || {})
+			}
 		};
 		
-		// Check if we added any new field mappings and save if needed
+		// Check if we added any new field mappings or calendar settings and save if needed
 		const hasNewFields = Object.keys(DEFAULT_SETTINGS.fieldMapping).some(key => 
 			!(loadedData?.fieldMapping?.[key])
 		);
+		const hasNewCalendarSettings = Object.keys(DEFAULT_SETTINGS.calendarViewSettings).some(key => 
+			!(loadedData?.calendarViewSettings?.[key as keyof typeof DEFAULT_SETTINGS.calendarViewSettings])
+		);
 		
-		if (hasNewFields) {
+		if (hasNewFields || hasNewCalendarSettings) {
 			// Save the migrated settings to include new field mappings (non-blocking)
 			setTimeout(async () => {
 				try {
