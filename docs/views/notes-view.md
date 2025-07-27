@@ -7,6 +7,7 @@ The Notes View displays your vault's non-task notes organized by date, providing
 The Notes View shows **non-task notes** that meet specific criteria:
 
 ### Inclusion Criteria
+
 - **Markdown files** (`.md` extension)
 - **Non-task notes** (don't contain the task tag in frontmatter)
 - **Date-matched notes** for the selected day
@@ -14,13 +15,16 @@ The Notes View shows **non-task notes** that meet specific criteria:
 - **Note indexing enabled** (performance setting)
 
 ### Date Detection
+
 Notes are associated with dates through:
 1. **Frontmatter fields**: `dateCreated` or `date` 
 2. **Filename patterns**: YYYY-MM-DD format in the filename
 3. Only notes matching the selected date appear
 
 ### Exclusions
+
 Notes are excluded if they:
+
 - Are task files (contain the configured task tag)
 - Are in excluded folders (Templates, Archive, etc.)
 - Have note indexing disabled (performance optimization)
@@ -29,6 +33,7 @@ Notes are excluded if they:
 ## Interface Layout
 
 The Notes View consists of:
+
 - **Date navigation header** - Navigate between dates to view notes for different days
 - **Note cards list** - Displays all qualifying notes for the selected date
 - Each note card shows the note's title, path, and relevant metadata

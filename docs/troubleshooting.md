@@ -9,12 +9,14 @@ This section covers common issues and their solutions when using TaskNotes.
 **Symptoms**: Tasks you've created don't show up in TaskNotes views
 
 **Possible Causes**:
+
 - Task files are missing the configured task tag
 - Files are in excluded folders
 - Tasks don't have valid YAML frontmatter
 - Cache needs refreshing
 
 **Solutions**:
+
 1. Check that task files include the task tag configured in settings (default: `#task`)
 2. Verify task files are not in folders listed in "Excluded folders" setting
 3. Ensure YAML frontmatter is properly formatted with opening and closing `---` lines
@@ -26,11 +28,13 @@ This section covers common issues and their solutions when using TaskNotes.
 **Symptoms**: Links to task files appear as normal wikilinks instead of interactive widgets
 
 **Possible Causes**:
+
 - Task link overlay is disabled in settings
 - Task files don't have the required task tag
 - Links are to non-task files
 
 **Solutions**:
+
 1. Enable "Task link overlay" in Inline Task Settings
 2. Ensure linked files have the configured task tag in their frontmatter
 3. Verify you're linking to actual task files created by TaskNotes
@@ -40,11 +44,13 @@ This section covers common issues and their solutions when using TaskNotes.
 **Symptoms**: Convert buttons don't appear next to checkbox tasks
 
 **Possible Causes**:
+
 - Instant task convert is disabled
 - Not in edit mode
 - Cursor not near checkbox tasks
 
 **Solutions**:
+
 1. Enable "Instant task convert" in Inline Task Settings
 2. Switch to edit mode (not reading mode)
 3. Position cursor near checkbox tasks to make buttons visible
@@ -54,11 +60,13 @@ This section covers common issues and their solutions when using TaskNotes.
 **Symptoms**: Calendar views are slow or unresponsive
 
 **Possible Causes**:
+
 - Large number of tasks or external calendar events
 - Multiple ICS subscriptions with frequent refresh
 - Complex recurring task patterns
 
 **Solutions**:
+
 1. Disable unused event types in calendar view toggles
 2. Increase ICS subscription refresh intervals
 3. Consider disabling note indexing in Misc settings if you don't use the Notes view
@@ -69,11 +77,13 @@ This section covers common issues and their solutions when using TaskNotes.
 **Symptoms**: Natural language input doesn't extract expected task properties
 
 **Possible Causes**:
+
 - Natural language processing is disabled
 - Input format doesn't match supported patterns
 - Custom status/priority words not configured
 
 **Solutions**:
+
 1. Enable "Natural language input" in Task Defaults settings
 2. Review supported syntax in the Natural Language Processing documentation
 3. Configure custom priority and status words if using non-default values
@@ -84,11 +94,13 @@ This section covers common issues and their solutions when using TaskNotes.
 **Symptoms**: Time tracking doesn't start/stop properly or data is lost
 
 **Possible Causes**:
+
 - Multiple time tracking sessions active
 - Browser/Obsidian closed during active session
 - Task file permissions or save issues
 
 **Solutions**:
+
 1. Stop any active time tracking before starting new sessions
 2. Manually edit task frontmatter to fix corrupted time entries
 3. Check that task files can be saved (not read-only)
@@ -101,6 +113,7 @@ This section covers common issues and their solutions when using TaskNotes.
 **Symptoms**: Tasks appear broken or cause errors in views
 
 **Solutions**:
+
 1. Open the task file directly and check YAML frontmatter syntax
 2. Ensure YAML values are properly quoted when containing special characters
 3. Validate YAML syntax using an online YAML validator
@@ -111,6 +124,7 @@ This section covers common issues and their solutions when using TaskNotes.
 **Symptoms**: Tasks missing expected properties or using default values unexpectedly
 
 **Solutions**:
+
 1. Check field mapping settings to ensure property names match your expectations
 2. Verify default values in Task Defaults settings
 3. Manually add missing properties to task frontmatter
@@ -121,6 +135,7 @@ This section covers common issues and their solutions when using TaskNotes.
 **Symptoms**: Dates not displaying correctly or causing parse errors
 
 **Solutions**:
+
 1. Use supported date formats: YYYY-MM-DD or YYYY-MM-DDTHH:MM:SS
 2. Check that dates are quoted in YAML frontmatter when necessary
 3. Verify time zone handling for dates with time components
@@ -131,6 +146,7 @@ This section covers common issues and their solutions when using TaskNotes.
 ### Slow View Loading
 
 **Solutions**:
+
 1. Disable note indexing in Misc settings if you don't use the Notes view
 2. Reduce the number of external calendar subscriptions
 3. Exclude large folders from note processing
@@ -143,6 +159,7 @@ This section covers common issues and their solutions when using TaskNotes.
 **Symptoms**: External calendar events don't appear in calendar views
 
 **Solutions**:
+
 1. Verify ICS URL is correct and accessible
 2. Check network connection and firewall settings
 3. Try manual refresh of the subscription
@@ -154,6 +171,7 @@ This section covers common issues and their solutions when using TaskNotes.
 **Symptoms**: External calendar changes not reflected in TaskNotes
 
 **Solutions**:
+
 1. Check refresh interval settings for the subscription
 2. Manually refresh the subscription
 3. Verify the external calendar is actually updated at the source

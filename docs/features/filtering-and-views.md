@@ -79,9 +79,11 @@ The filter builder allows incomplete conditions during construction:
 ## Available Properties
 
 ### Text Properties
+
 - `title` - Task title/name
 
 ### Selection Properties
+
 - `status` - Task status (uses your configured statuses)
 - `priority` - Priority level (uses your configured priorities)
 - `tags` - Task tags
@@ -89,6 +91,7 @@ The filter builder allows incomplete conditions during construction:
 - `projects` - Task projects (supports `[[wiki-link]]` format)
 
 ### Date Properties
+
 - `due` - Due date
 - `scheduled` - Scheduled date
 - `completedDate` - Date when task was completed
@@ -96,6 +99,7 @@ The filter builder allows incomplete conditions during construction:
 - `file.mtime` - File modification date
 
 **Natural Language Date Support**: Date properties support both ISO date formats (`2024-12-25`, `2024-12-25T14:30:00`) and natural language patterns for dynamic filtering:
+
 - **Basic dates**: `today`, `tomorrow`, `yesterday`
 - **Week patterns**: `next week`, `last week`
 - **Relative patterns**: `in 3 days`, `2 days ago`, `in 1 week`, `2 weeks ago`
@@ -103,34 +107,41 @@ The filter builder allows incomplete conditions during construction:
 Natural language dates are resolved dynamically when filters are evaluated, making saved views with dates like "today" stay current over time.
 
 ### Boolean Properties
+
 - `archived` - Whether task is archived
 - `status.isCompleted` - Whether the task's status indicates completion
 
 ### Numeric Properties
+
 - `timeEstimate` - Time estimate in minutes
 
 ### Special Properties
+
 - `recurrence` - Recurrence pattern (checks if pattern exists)
 
 ## Filter Operators
 
 ### Text Operators
+
 - `contains` - Text contains substring (case-insensitive)
 - `does-not-contain` - Text does not contain substring
 
 ### Comparison Operators
+
 - `is` - Exact equality
 - `is-not` - Exact inequality
 - `is-greater-than` - Numeric greater than
 - `is-less-than` - Numeric less than
 
 ### Date Operators
+
 - `is-before` - Date is before specified date
 - `is-after` - Date is after specified date
 - `is-on-or-before` - Date is on or before specified date
 - `is-on-or-after` - Date is on or after specified date
 
 ### Existence Operators
+
 - `is-empty` - Property is null, undefined, or empty
 - `is-not-empty` - Property has a value
 - `is-checked` - Boolean property is true
@@ -165,6 +176,7 @@ Saved views store complete filter configurations and view-specific options for q
 ### What Gets Saved
 
 When you save a view, the following state is preserved:
+
 - **Filter Configuration**: All filter conditions, groups, and logic
 - **Sorting**: Selected sort criteria and direction
 - **Grouping**: Chosen grouping method
@@ -173,6 +185,7 @@ When you save a view, the following state is preserved:
   - **Advanced Calendar**: Display options for scheduled tasks, due dates, timeblocks, recurring tasks, ICS events, and time entries
 
 ### Saving Views
+
 1. Configure your desired filters, sorting, and grouping
 2. Set any view-specific options (toggles, display preferences)
 3. Click the "Save View" button
@@ -180,6 +193,7 @@ When you save a view, the following state is preserved:
 5. The complete view state is saved and appears in the dropdown
 
 ### Loading Views
+
 1. Click the saved views dropdown
 2. Select a view name
 3. The complete configuration is applied, including:
@@ -188,6 +202,7 @@ When you save a view, the following state is preserved:
    - View-specific display options
 
 ### Managing Views
+
 - **Load**: Apply a saved view configuration
 - **Delete**: Remove a saved view (requires confirmation)
 - **Reorder**: Drag and drop saved views to reorder them
@@ -241,34 +256,41 @@ Understanding how filters are evaluated:
 ## Example Filter Scenarios
 
 ### Simple Text Search
+
 - Property: `title`
 - Operator: `contains`
 - Value: `meeting`
 
 ### Dynamic Date Filters
+
 Using natural language dates for filters that stay current:
 - Property: `due`
 - Operator: `is-on-or-after`
 - Value: `today`
 
 ### Complex Date Range
+
 Group with AND conjunction:
 - Condition 1: `due` `is-on-or-after` `2024-01-01`
 - Condition 2: `due` `is-on-or-before` `2024-01-31`
 
 ### This Week's Tasks
+
 Using natural language for relative time periods:
 - Property: `due`
 - Operator: `is-on-or-after`
 - Value: `next week`
 
 ### High Priority Incomplete Tasks
+
 Group with AND conjunction:
 - Condition 1: `priority` `is` `high`
 - Condition 2: `status.isCompleted` `is-not-checked`
 
 ### Multiple Projects or Contexts
+
 Group with OR conjunction:
+
 - Condition 1: `projects` `contains` `[[Work Project]]`
 - Condition 2: `contexts` `is` `work`
 

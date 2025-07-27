@@ -15,10 +15,12 @@ TaskNotes can automatically stop time tracking when a task is marked as complete
 The auto-stop feature works by monitoring task status changes across all views and interfaces. When a task's status changes from any non-completed state to a completed state (as defined by the custom status configuration), any active time tracking session for that task is automatically terminated.
 
 **Configuration Options:**
+
 - **Auto-stop tracking** - Enable or disable the automatic stopping behavior (enabled by default)
 - **Completion notification** - Show a notice when auto-stop occurs (disabled by default)
 
 **Behavior:**
+
 - Monitors all task status changes in real-time
 - Stops only the specific task that was completed (other active timers continue)
 - Preserves the recorded time data in the task's time entries

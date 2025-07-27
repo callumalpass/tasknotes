@@ -16,6 +16,7 @@ The ICS integration allows you to:
 When you interact with a calendar event in TaskNotes, an information modal displays event details and available actions. The modal provides:
 
 ### Event Details
+
 - Event title and description
 - Start and end times (formatted according to your locale)
 - Location information
@@ -23,6 +24,7 @@ When you interact with a calendar event in TaskNotes, an information modal displ
 - Event URL (if available)
 
 ### Related Content
+
 The modal shows a list of existing notes and tasks that are linked to the calendar event. Content is automatically categorized as:
 - **Task** - Files containing the configured task tag
 - **Note** - Files without the task tag
@@ -44,11 +46,13 @@ The relationship is maintained through the ICS Event ID field in the content's f
 The note creation process allows customization of the generated content:
 
 ### Basic Settings
+
 - **Title** - Default combines event title and date, but can be modified
 - **Folder** - Destination for the new note (uses default ICS note folder if configured)
 - **Template** - Optional template file to structure the note content
 
 ### Template Usage
+
 When a template is specified:
 - The template file is processed with ICS-specific variables
 - Standard TaskNotes template variables are also available
@@ -56,6 +60,7 @@ When a template is specified:
 - Frontmatter from templates is merged with required ICS fields
 
 ### Default Content
+
 Without a template, notes include:
 - Event title as the main heading
 - Formatted start and end times
@@ -69,9 +74,11 @@ Without a template, notes include:
 Tasks created from calendar events include relevant event data:
 
 ### Scheduled Date and Time
+
 Tasks are scheduled using the event's start time as an ISO timestamp, preserving both date and time information. This allows for accurate scheduling that reflects the original event timing.
 
 ### Task Properties
+
 - **Title** - Uses the event title
 - **Status** - Set to the default task status configured in settings
 - **Priority** - Set to the default task priority
@@ -80,6 +87,7 @@ Tasks are scheduled using the event's start time as an ISO timestamp, preserving
 - **Tags** - Includes the ICS event tag and any default task tags
 
 ### Content
+
 Task content includes formatted event details similar to note creation, providing context about the original calendar event.
 
 ## Linking Existing Content
@@ -103,12 +111,14 @@ You can establish connections between existing vault content and calendar events
 The ICS integration extends the field mapping system with two new fields:
 
 ### ICS Event ID Field
+
 - Stores the unique identifier connecting content to calendar events
 - Default field name is `icsEventId`
 - Values are stored as arrays to support multiple event associations
 - Field name can be customized through field mapping settings
 
 ### ICS Event Tag Field
+
 - Tag automatically applied to content created from events
 - Default tag is `ics_event`
 - Used to identify ICS-related content throughout the system
@@ -119,6 +129,7 @@ The ICS integration extends the field mapping system with two new fields:
 Templates used for ICS content creation have access to event-specific variables in addition to standard TaskNotes variables:
 
 ### Event Information
+
 - `{{icsEventTitle}}` - Event title
 - `{{icsEventStart}}` - Start date and time (ISO format)
 - `{{icsEventEnd}}` - End date and time (ISO format)
@@ -129,6 +140,7 @@ Templates used for ICS content creation have access to event-specific variables 
 - `{{icsEventId}}` - Unique event identifier
 
 ### Standard Variables
+
 All standard TaskNotes template variables remain available:
 - `{{title}}`, `{{date}}`, `{{time}}`
 - `{{priority}}`, `{{status}}`, `{{contexts}}`
