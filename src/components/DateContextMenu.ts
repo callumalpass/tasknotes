@@ -16,6 +16,7 @@ export interface DateContextMenuOptions {
     includeScheduled?: boolean;
     includeDue?: boolean;
     showRelativeDates?: boolean;
+    title?: string;
 }
 
 export class DateContextMenu {
@@ -29,6 +30,16 @@ export class DateContextMenu {
     }
 
     private buildMenu(): void {
+        // Add title if provided
+        if (this.options.title) {
+            this.menu.addItem(item => {
+                item.setTitle(this.options.title!);
+                item.setIcon('calendar');
+                item.setDisabled(true);
+            });
+            this.menu.addSeparator();
+        }
+        
         const dateOptions = this.getDateOptions();
         
         // Add quick date options

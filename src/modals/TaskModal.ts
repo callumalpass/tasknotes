@@ -326,10 +326,12 @@ export abstract class TaskModal extends Modal {
 
     protected showDateContextMenu(event: MouseEvent, type: 'due' | 'scheduled'): void {
         const currentValue = type === 'due' ? this.dueDate : this.scheduledDate;
+        const title = type === 'due' ? 'Set Due Date' : 'Set Scheduled Date';
         
         const menu = new DateContextMenu({
             currentValue: currentValue ? getDatePart(currentValue) : undefined,
             currentTime: currentValue ? getTimePart(currentValue) : undefined,
+            title: title,
             onSelect: (value: string | null, time: string | null) => {
                 if (value) {
                     // Combine date and time if both are provided
