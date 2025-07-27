@@ -229,13 +229,13 @@
 .tasknotes-plugin .open-note-button:hover {
     background: var(--interactive-accent);
     color: var(--text-on-accent);
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--interactive-accent);
 }
 
 .tasknotes-plugin .open-note-button:active {
-    transform: translateY(0);
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+    background: var(--interactive-accent);
+    color: var(--text-on-accent);
+    border: 1px solid var(--interactive-accent);
 }
 
 .tasknotes-plugin .button-spacer {
