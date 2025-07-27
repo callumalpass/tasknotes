@@ -88,7 +88,9 @@ export interface ICSIntegrationSettings {
 
 export interface CalendarViewSettings {
 	// Default view
-	defaultView: 'dayGridMonth' | 'timeGridWeek' | 'timeGridDay' | 'multiMonthYear';
+	defaultView: 'dayGridMonth' | 'timeGridWeek' | 'timeGridDay' | 'multiMonthYear' | 'timeGridCustom';
+	// Custom multi-day view settings
+	customDayCount: number; // Number of days to show in custom view (2-10)
 	// Time settings
 	slotDuration: '00:15:00' | '00:30:00' | '01:00:00'; // 15, 30, or 60 minutes
 	slotMinTime: string; // Start time (HH:MM:SS format)
@@ -222,6 +224,8 @@ export const DEFAULT_TASK_CREATION_DEFAULTS: TaskCreationDefaults = {
 export const DEFAULT_CALENDAR_VIEW_SETTINGS: CalendarViewSettings = {
 	// Default view
 	defaultView: 'dayGridMonth',
+	// Custom multi-day view settings
+	customDayCount: 3, // Default to 3 days as requested in issue #282
 	// Time settings
 	slotDuration: '00:30:00', // 30-minute slots
 	slotMinTime: '00:00:00', // Start at midnight
@@ -884,10 +888,26 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 					.addOption('dayGridMonth', 'Month')
 					.addOption('timeGridWeek', 'Week')
 					.addOption('timeGridDay', 'Day')
+					.addOption('timeGridCustom', 'Custom Days')
 					.addOption('multiMonthYear', 'Year')
 					.setValue(this.plugin.settings.calendarViewSettings.defaultView)
 					.onChange(async (value: any) => {
 						this.plugin.settings.calendarViewSettings.defaultView = value;
+						await this.plugin.saveSettings();
+					});
+			});
+
+		new Setting(container)
+			.setName('Custom view day count')
+			.setDesc('Number of days to show in the custom view (2-10 days)')
+			.addSlider(slider => {
+				slider.sliderEl.setAttribute('aria-label', 'Number of days in custom view');
+				return slider
+					.setLimits(2, 10, 1)
+					.setValue(this.plugin.settings.calendarViewSettings.customDayCount)
+					.setDynamicTooltip()
+					.onChange(async (value) => {
+						this.plugin.settings.calendarViewSettings.customDayCount = value;
 						await this.plugin.saveSettings();
 					});
 			});

@@ -416,7 +416,7 @@ export class AdvancedCalendarView extends ItemView {
         const toolbarConfig = {
             left: 'prev,next today',
             center: 'title',
-            right: 'refreshICS multiMonthYear,dayGridMonth,timeGridWeek,timeGridDay'
+            right: 'refreshICS multiMonthYear,dayGridMonth,timeGridWeek,timeGridCustom,timeGridDay'
         };
         console.log('Header toolbar config:', toolbarConfig);
         return toolbarConfig;
@@ -516,6 +516,13 @@ export class AdvancedCalendarView extends ItemView {
             initialView: calendarSettings.defaultView,
             headerToolbar: headerToolbar,
             customButtons: customButtons,
+            views: {
+                timeGridCustom: {
+                    type: 'timeGrid',
+                    duration: { days: calendarSettings.customDayCount },
+                    buttonText: `${calendarSettings.customDayCount} days`
+                }
+            },
             height: '100%',
             editable: true,
             droppable: true,
@@ -1742,11 +1749,33 @@ export class AdvancedCalendarView extends ItemView {
         });
         this.listeners.push(timeblockingToggleListener);
 
-        // Listen for settings changes to update today highlight
+        // Listen for settings changes to update today highlight and custom view
         const settingsListener = this.plugin.emitter.on('settings-changed', () => {
             this.updateTodayHighlight();
+            this.updateCustomViewConfiguration();
         });
         this.listeners.push(settingsListener);
+    }
+
+    /**
+     * Update the custom view configuration when settings change
+     */
+    private updateCustomViewConfiguration(): void {
+        if (!this.calendar) return;
+        
+        const calendarSettings = this.plugin.settings.calendarViewSettings;
+        
+        // Update the custom view definition
+        this.calendar.setOption('views', {
+            timeGridCustom: {
+                type: 'timeGrid',
+                duration: { days: calendarSettings.customDayCount },
+                buttonText: `${calendarSettings.customDayCount} days`
+            }
+        });
+        
+        // Update the header toolbar in case it needs to refresh
+        this.calendar.setOption('headerToolbar', this.getHeaderToolbarConfig());
     }
 
     async refreshEvents() {
