@@ -1,4 +1,4 @@
-import { App, Modal, Setting, Notice, TAbstractFile, parseYaml, stringifyYaml, TFile } from 'obsidian';
+import { App, Modal, Setting, Notice, TAbstractFile, parseYaml, stringifyYaml, TFile, setTooltip } from 'obsidian';
 import TaskNotesPlugin from '../main';
 import { AttachmentSelectModal } from './AttachmentSelectModal';
 import { 
@@ -216,7 +216,7 @@ export class TimeblockInfoModal extends Modal {
             // Info container (clickable to open)
             const infoEl = attachmentItem.createDiv({ cls: 'timeblock-attachment-info' });
             infoEl.style.cursor = 'pointer';
-            infoEl.title = 'Click to open';
+            setTooltip(infoEl, 'Click to open', { placement: 'top' });
             infoEl.addEventListener('click', () => this.openAttachment(file));
             
             // File name
@@ -234,7 +234,7 @@ export class TimeblockInfoModal extends Modal {
                 cls: 'timeblock-attachment-remove',
                 text: '×'
             });
-            removeBtn.title = 'Remove attachment';
+            setTooltip(removeBtn, 'Remove attachment', { placement: 'top' });
             removeBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 this.removeAttachment(file);

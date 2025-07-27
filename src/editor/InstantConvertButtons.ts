@@ -1,6 +1,6 @@
 import { Extension, RangeSetBuilder, StateField, Transaction } from '@codemirror/state';
 import { Decoration, DecorationSet, EditorView, WidgetType } from '@codemirror/view';
-import { setIcon, MarkdownView, Editor } from 'obsidian';
+import { setIcon, MarkdownView, Editor, setTooltip } from 'obsidian';
 import TaskNotesPlugin from '../main';
 import { TasksPluginParser } from '../utils/TasksPluginParser';
 
@@ -19,9 +19,11 @@ class ConvertButtonWidget extends WidgetType {
         const container = document.createElement('span');
         container.className = 'tasknotes-plugin';
         
-        const button = container.createEl('button', { cls: 'instant-convert-button' });
-        button.setAttribute('title', 'Convert to TaskNote');
-        button.setAttribute('aria-label', 'Convert to TaskNote');
+        const button = container.createEl('button', { 
+            cls: 'instant-convert-button',
+            attr: { 'aria-label': 'Convert to TaskNote' }
+        });
+        setTooltip(button, 'Convert to TaskNote', { placement: 'top' });
         
         // Add the convert icon
         const iconSpan = button.createEl('span', { cls: 'instant-convert-button__icon' });

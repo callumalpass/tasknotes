@@ -1,4 +1,4 @@
-import { TFile, Menu, setIcon, Notice, Modal, App } from 'obsidian';
+import { TFile, Menu, setIcon, Notice, Modal, App, setTooltip } from 'obsidian';
 import { TaskInfo } from '../types';
 import TaskNotesPlugin from '../main';
 import { calculateTotalTimeSpent, getEffectiveTaskStatus, getRecurrenceDisplayText, filterEmptyProjects } from '../utils/helpers';
@@ -288,7 +288,7 @@ export function createTaskCard(task: TaskInfo, plugin: TaskNotesPlugin, options:
             projectIndicatorPlaceholder.className = 'task-card__project-indicator';
             projectIndicatorPlaceholder.removeAttribute('style');
             projectIndicatorPlaceholder.setAttribute('aria-label', 'This task is used as a project (click to filter subtasks)');
-            projectIndicatorPlaceholder.setAttribute('title', 'This task is used as a project (click to filter subtasks)');
+            setTooltip(projectIndicatorPlaceholder, 'This task is used as a project (click to filter subtasks)', { placement: 'top' });
             
             // Use Obsidian's built-in folder icon for project tasks
             setIcon(projectIndicatorPlaceholder, 'folder');
@@ -318,13 +318,13 @@ export function createTaskCard(task: TaskInfo, plugin: TaskNotesPlugin, options:
     const contextIcon = card.createEl('div', { 
         cls: 'task-card__context-menu',
         attr: { 
-            'aria-label': 'Task options',
-            'title': 'More options'
+            'aria-label': 'Task options'
         }
     });
     
     // Use Obsidian's built-in ellipsis-vertical icon
     setIcon(contextIcon, 'ellipsis-vertical');
+    setTooltip(contextIcon, 'Task options', { placement: 'top' });
     
     contextIcon.addEventListener('click', async (e) => {
         e.stopPropagation();

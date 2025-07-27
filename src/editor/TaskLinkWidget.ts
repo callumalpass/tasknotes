@@ -1,5 +1,5 @@
 import { EditorView, WidgetType } from '@codemirror/view';
-import { TFile, setIcon, Notice } from 'obsidian';
+import { TFile, setIcon, Notice, setTooltip } from 'obsidian';
 import { TaskInfo } from '../types';
 import TaskNotesPlugin from '../main';
 import { formatDateTimeForDisplay, getDatePart, getTimePart } from '../utils/dateUtils';
@@ -49,9 +49,9 @@ export class TaskLinkWidget extends WidgetType {
         // Status indicator dot (BEFORE text, styled like task cards)
         const statusConfig = this.plugin.statusManager.getStatusConfig(effectiveStatus);
         const statusDot = container.createEl('span', { 
-            cls: 'task-inline-preview__status-dot',
-            attr: { title: `Status: ${statusConfig ? statusConfig.label : effectiveStatus}` }
+            cls: 'task-inline-preview__status-dot'
         });
+        setTooltip(statusDot, `Status: ${statusConfig ? statusConfig.label : effectiveStatus}`, { placement: 'top' });
         if (statusConfig) {
             statusDot.style.borderColor = statusConfig.color;
             
@@ -149,9 +149,9 @@ export class TaskLinkWidget extends WidgetType {
             const priorityConfig = this.plugin.priorityManager.getPriorityConfig(this.taskInfo.priority);
             if (priorityConfig) {
                 const priorityDot = container.createEl('span', { 
-                    cls: 'task-inline-preview__priority-dot task-card__priority-dot',
-                    attr: { title: `Priority: ${priorityConfig.label} (click to change)` }
+                    cls: 'task-inline-preview__priority-dot task-card__priority-dot'
                 });
+                setTooltip(priorityDot, `Priority: ${priorityConfig.label} (click to change)`, { placement: 'top' });
                 priorityDot.style.backgroundColor = priorityConfig.color;
                 
                 // Add click context menu for priority (same as TaskCard)
@@ -171,7 +171,7 @@ export class TaskLinkWidget extends WidgetType {
                                 const newPriorityConfig = this.plugin.priorityManager.getPriorityConfig(newPriority);
                                 if (newPriorityConfig) {
                                     priorityDot.style.backgroundColor = newPriorityConfig.color;
-                                    priorityDot.setAttribute('title', `Priority: ${newPriorityConfig.label} (click to change)`);
+                                    setTooltip(priorityDot, `Priority: ${newPriorityConfig.label} (click to change)`, { placement: 'top' });
                                 }
                             } catch (error) {
                                 console.error('Error updating priority:', error);
@@ -209,9 +209,9 @@ export class TaskLinkWidget extends WidgetType {
             });
             
             const dueDateSpan = container.createEl('span', {
-                cls: 'task-inline-preview__date task-inline-preview__date--due task-card__metadata-date task-card__metadata-date--due',
-                attr: { title: `Due: ${tooltipText} (click to change)` }
+                cls: 'task-inline-preview__date task-inline-preview__date--due task-card__metadata-date task-card__metadata-date--due'
             });
+            setTooltip(dueDateSpan, `Due: ${tooltipText} (click to change)`, { placement: 'top' });
             
             const calendarIcon = dueDateSpan.createEl('span', { cls: 'task-inline-preview__date-icon' });
             setIcon(calendarIcon, 'calendar');
@@ -266,9 +266,9 @@ export class TaskLinkWidget extends WidgetType {
             });
             
             const scheduledSpan = container.createEl('span', {
-                cls: 'task-inline-preview__date task-inline-preview__date--scheduled task-card__metadata-date task-card__metadata-date--scheduled',
-                attr: { title: `Scheduled: ${tooltipText} (click to change)` }
+                cls: 'task-inline-preview__date task-inline-preview__date--scheduled task-card__metadata-date task-card__metadata-date--scheduled'
             });
+            setTooltip(scheduledSpan, `Scheduled: ${tooltipText} (click to change)`, { placement: 'top' });
             
             const clockIcon = scheduledSpan.createEl('span', { cls: 'task-inline-preview__date-icon' });
             setIcon(clockIcon, 'clock');
@@ -311,10 +311,10 @@ export class TaskLinkWidget extends WidgetType {
             const recurringIndicator = container.createEl('span', { 
                 cls: 'task-inline-preview__recurring-indicator',
                 attr: { 
-                    'title': `Recurring task (click to change)`,
                     'aria-label': `Recurring task (click to change)`
                 }
             });
+            setTooltip(recurringIndicator, 'Recurring task (click to change)', { placement: 'top' });
             
             // Use Obsidian's built-in rotate-ccw icon for recurring tasks
             setIcon(recurringIndicator, 'rotate-ccw');
@@ -345,9 +345,9 @@ export class TaskLinkWidget extends WidgetType {
         // Add Lucide pencil icon
         const pencilIcon = container.createEl('span', { 
             cls: 'task-inline-preview__pencil',
-            attr: { 'title': 'Task options' },
             text: ''
         });
+        setTooltip(pencilIcon, 'Task options', { placement: 'top' });
         setIcon(pencilIcon, 'ellipsis-vertical');
         
         // Store data for interactions

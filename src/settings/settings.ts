@@ -1,4 +1,4 @@
-import { App, PluginSettingTab, Setting, Notice, setIcon, TAbstractFile, TFile } from 'obsidian';
+import { App, PluginSettingTab, Setting, Notice, setIcon, TAbstractFile, TFile, setTooltip } from 'obsidian';
 import TaskNotesPlugin from '../main';
 import { FieldMapping, StatusConfig, PriorityConfig, SavedView } from '../types';
 import { StatusManager } from '../services/StatusManager';
@@ -1732,7 +1732,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 			// Drag handle
 			const dragHandle = statusRow.createDiv('settings-drag-handle');
 			dragHandle.innerHTML = '☰';
-			dragHandle.setAttribute('title', 'Drag to reorder');
+			setTooltip(dragHandle, 'Drag to reorder', { placement: 'top' });
 			
 			// Color indicator
 			const colorIndicator = statusRow.createDiv('settings-color-indicator settings-view__color-indicator');
@@ -2338,13 +2338,13 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 			const statusIndicator = subRow.createDiv('settings-status-indicator');
 			if (subscription.enabled) {
 				statusIndicator.addClass('enabled');
-				statusIndicator.title = subscription.lastError ? `Error: ${subscription.lastError}` : 'Active';
+				setTooltip(statusIndicator, subscription.lastError ? `Error: ${subscription.lastError}` : 'Active', { placement: 'top' });
 				if (subscription.lastError) {
 					statusIndicator.addClass('error');
 				}
 			} else {
 				statusIndicator.addClass('disabled');
-				statusIndicator.title = 'Disabled';
+				setTooltip(statusIndicator, 'Disabled', { placement: 'top' });
 			}
 			
 			// Subscription info
@@ -2656,7 +2656,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 				cls: 'default-project-remove',
 				text: '×'
 			});
-			removeBtn.title = 'Remove project';
+			setTooltip(removeBtn, 'Remove project', { placement: 'top' });
 			removeBtn.addEventListener('click', () => {
 				this.removeDefaultProject(file);
 				this.renderDefaultProjectsList(container);

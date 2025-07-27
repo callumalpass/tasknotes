@@ -1,4 +1,4 @@
-import { App, Modal, Setting, setIcon, TAbstractFile, TFile, AbstractInputSuggest } from 'obsidian';
+import { App, Modal, Setting, setIcon, TAbstractFile, TFile, AbstractInputSuggest, setTooltip } from 'obsidian';
 import TaskNotesPlugin from '../main';
 import { DateContextMenu } from '../components/DateContextMenu';
 import { PriorityContextMenu } from '../components/PriorityContextMenu';
@@ -139,7 +139,8 @@ export abstract class TaskModal extends Modal {
     ): HTMLElement {
         const iconContainer = container.createDiv('action-icon');
         iconContainer.setAttribute('aria-label', tooltip);
-        iconContainer.setAttribute('title', tooltip);
+        // Store initial tooltip for later updates but don't set title attribute
+        iconContainer.setAttribute('data-initial-tooltip', tooltip);
         
         // Add data attribute for easier identification
         if (dataType) {
@@ -520,22 +521,26 @@ export abstract class TaskModal extends Modal {
 
         // Update due date icon
         const dueDateIcon = this.actionBar.querySelector('[data-type="due-date"]') as HTMLElement;
-        if (dueDateIcon && this.dueDate) {
-            dueDateIcon.classList.add('has-value');
-            dueDateIcon.setAttribute('title', `Due: ${this.dueDate}`);
-        } else if (dueDateIcon) {
-            dueDateIcon.classList.remove('has-value');
-            dueDateIcon.setAttribute('title', 'Set due date');
+        if (dueDateIcon) {
+            if (this.dueDate) {
+                dueDateIcon.classList.add('has-value');
+                setTooltip(dueDateIcon, `Due: ${this.dueDate}`, { placement: 'top' });
+            } else {
+                dueDateIcon.classList.remove('has-value');
+                setTooltip(dueDateIcon, 'Set due date', { placement: 'top' });
+            }
         }
 
         // Update scheduled date icon
         const scheduledDateIcon = this.actionBar.querySelector('[data-type="scheduled-date"]') as HTMLElement;
-        if (scheduledDateIcon && this.scheduledDate) {
-            scheduledDateIcon.classList.add('has-value');
-            scheduledDateIcon.setAttribute('title', `Scheduled: ${this.scheduledDate}`);
-        } else if (scheduledDateIcon) {
-            scheduledDateIcon.classList.remove('has-value');
-            scheduledDateIcon.setAttribute('title', 'Set scheduled date');
+        if (scheduledDateIcon) {
+            if (this.scheduledDate) {
+                scheduledDateIcon.classList.add('has-value');
+                setTooltip(scheduledDateIcon, `Scheduled: ${this.scheduledDate}`, { placement: 'top' });
+            } else {
+                scheduledDateIcon.classList.remove('has-value');
+                setTooltip(scheduledDateIcon, 'Set scheduled date', { placement: 'top' });
+            }
         }
 
         // Update status icon
@@ -547,10 +552,10 @@ export abstract class TaskModal extends Modal {
             
             if (this.status && statusConfig && statusConfig.value !== this.getDefaultStatus()) {
                 statusIcon.classList.add('has-value');
-                statusIcon.setAttribute('title', `Status: ${statusLabel}`);
+                setTooltip(statusIcon, `Status: ${statusLabel}`, { placement: 'top' });
             } else {
                 statusIcon.classList.remove('has-value');
-                statusIcon.setAttribute('title', 'Set status');
+                setTooltip(statusIcon, 'Set status', { placement: 'top' });
             }
 
             // Apply status color to the icon
@@ -571,10 +576,10 @@ export abstract class TaskModal extends Modal {
             
             if (this.priority && priorityConfig && priorityConfig.value !== this.getDefaultPriority()) {
                 priorityIcon.classList.add('has-value');
-                priorityIcon.setAttribute('title', `Priority: ${priorityLabel}`);
+                setTooltip(priorityIcon, `Priority: ${priorityLabel}`, { placement: 'top' });
             } else {
                 priorityIcon.classList.remove('has-value');
-                priorityIcon.setAttribute('title', 'Set priority');
+                setTooltip(priorityIcon, 'Set priority', { placement: 'top' });
             }
 
             // Apply priority color to the icon
@@ -591,10 +596,10 @@ export abstract class TaskModal extends Modal {
         if (recurrenceIcon) {
             if (this.recurrenceRule && this.recurrenceRule.trim()) {
                 recurrenceIcon.classList.add('has-value');
-                recurrenceIcon.setAttribute('title', `Recurrence: ${this.getRecurrenceDisplayText()}`);
+                setTooltip(recurrenceIcon, `Recurrence: ${this.getRecurrenceDisplayText()}`, { placement: 'top' });
             } else {
                 recurrenceIcon.classList.remove('has-value');
-                recurrenceIcon.setAttribute('title', 'Set recurrence');
+                setTooltip(recurrenceIcon, 'Set recurrence', { placement: 'top' });
             }
         }
     }
@@ -703,7 +708,7 @@ export abstract class TaskModal extends Modal {
                 cls: 'task-project-remove',
                 text: '×'
             });
-            removeBtn.title = 'Remove project';
+            setTooltip(removeBtn, 'Remove project', { placement: 'top' });
             removeBtn.addEventListener('click', () => {
                 this.removeProject(file);
             });

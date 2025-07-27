@@ -1,4 +1,4 @@
-import { ItemView, WorkspaceLeaf, TFile, Notice, EventRef, Menu, Modal } from 'obsidian';
+import { ItemView, WorkspaceLeaf, TFile, Notice, EventRef, Menu, Modal, setTooltip } from 'obsidian';
 import { ICSEventInfoModal } from '../modals/ICSEventInfoModal';
 import { TimeblockInfoModal } from '../modals/TimeblockInfoModal';
 import { format, startOfDay, endOfDay } from 'date-fns';
@@ -1565,7 +1565,7 @@ export class AdvancedCalendarView extends ItemView {
             arg.el.classList.add('fc-ics-event');
             
             // Add tooltip with subscription name
-            arg.el.title = `${icsEvent?.title || 'Event'} (from ${subscriptionName || 'Calendar subscription'})`;
+            setTooltip(arg.el, `${icsEvent?.title || 'Event'} (from ${subscriptionName || 'Calendar subscription'})`, { placement: 'top' });
             
             // Add context menu for ICS events
             arg.el.addEventListener("contextmenu", (jsEvent: MouseEvent) => {
@@ -1594,7 +1594,7 @@ export class AdvancedCalendarView extends ItemView {
             // Add tooltip
             const attachmentCount = timeblock?.attachments?.length || 0;
             const tooltipText = `${timeblock?.title || 'Timeblock'}${timeblock?.description ? ` - ${timeblock.description}` : ''}${attachmentCount > 0 ? ` (${attachmentCount} attachment${attachmentCount > 1 ? 's' : ''})` : ''}`;
-            arg.el.title = tooltipText;
+            setTooltip(arg.el, tooltipText, { placement: 'top' });
             
             return;
         }

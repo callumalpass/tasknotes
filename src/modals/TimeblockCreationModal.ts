@@ -1,4 +1,4 @@
-import { App, Modal, Setting, Notice, TAbstractFile, parseYaml, stringifyYaml } from 'obsidian';
+import { App, Modal, Setting, Notice, TAbstractFile, parseYaml, stringifyYaml, setTooltip } from 'obsidian';
 import TaskNotesPlugin from '../main';
 import { TimeBlock, DailyNoteFrontmatter } from '../types';
 import { generateTimeblockId } from '../utils/helpers';
@@ -329,7 +329,7 @@ export class TimeblockCreationModal extends Modal {
                 cls: 'timeblock-attachment-remove',
                 text: '×'
             });
-            removeBtn.title = 'Remove attachment';
+            setTooltip(removeBtn, 'Remove attachment', { placement: 'top' });
             removeBtn.addEventListener('click', () => {
                 this.removeAttachment(file);
             });

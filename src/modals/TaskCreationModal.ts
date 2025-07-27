@@ -1,4 +1,4 @@
-import { App, Notice, setIcon, AbstractInputSuggest } from 'obsidian';
+import { App, Notice, setIcon, AbstractInputSuggest, setTooltip } from 'obsidian';
 import TaskNotesPlugin from '../main';
 import { TaskModal } from './TaskModal';
 import { TaskInfo, TaskCreationData } from '../types';
@@ -404,7 +404,7 @@ export class TaskCreationModal extends TaskModal {
                 if (iconEl) {
                     setIcon(iconEl as HTMLElement, this.isExpanded ? 'chevron-up' : 'chevron-down');
                 }
-                icon.setAttribute('title', this.isExpanded ? 'Hide detailed options' : 'Show detailed options');
+                setTooltip(icon, this.isExpanded ? 'Hide detailed options' : 'Show detailed options', { placement: 'top' });
             });
 
             // Add separator

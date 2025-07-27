@@ -1,4 +1,4 @@
-import { ItemView, WorkspaceLeaf, Notice, EventRef } from 'obsidian';
+import { ItemView, WorkspaceLeaf, Notice, EventRef, setTooltip } from 'obsidian';
 import TaskNotesPlugin from '../main';
 import { 
     POMODORO_VIEW_TYPE,
@@ -390,11 +390,12 @@ export class PomodoroView extends ItemView {
         if (this.taskSelectButton) {
             if (task) {
                 this.taskSelectButton.textContent = 'Change task...';
-                this.taskSelectButton.title = 'Select a different task';
+                setTooltip(this.taskSelectButton, 'Select a different task', { placement: 'top' });
                 this.taskSelectButton.removeClass('pomodoro-view__task-select-button--no-task');
             } else {
                 this.taskSelectButton.textContent = 'Choose task...';
-                this.taskSelectButton.title = '';
+                // Remove tooltip for no-task state
+                this.taskSelectButton.removeAttribute('title');
                 this.taskSelectButton.addClass('pomodoro-view__task-select-button--no-task');
             }
         }
@@ -471,7 +472,7 @@ export class PomodoroView extends ItemView {
                 this.currentSelectedTask = task;
                 if (this.taskSelectButton) {
                     this.taskSelectButton.textContent = 'Change task...';
-                    this.taskSelectButton.title = 'Select a different task';
+                    setTooltip(this.taskSelectButton, 'Select a different task', { placement: 'top' });
                     this.taskSelectButton.removeClass('pomodoro-no-task');
                     this.taskSelectButton.removeClass('pomodoro-view__task-select-button--no-task');
                 }
@@ -488,7 +489,8 @@ export class PomodoroView extends ItemView {
             this.currentSelectedTask = null;
             if (this.taskSelectButton) {
                 this.taskSelectButton.textContent = 'Choose task...';
-                this.taskSelectButton.title = '';
+                // Remove tooltip for no-task state
+                this.taskSelectButton.removeAttribute('title');
                 this.taskSelectButton.addClass('pomodoro-view__task-select-button--no-task');
             }
             if (this.taskClearButton) {

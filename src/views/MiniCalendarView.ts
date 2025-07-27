@@ -1,4 +1,4 @@
-import { Notice, TFile, ItemView, WorkspaceLeaf, EventRef, debounce } from 'obsidian';
+import { Notice, TFile, ItemView, WorkspaceLeaf, EventRef, debounce, setTooltip } from 'obsidian';
 import { format } from 'date-fns';
 import { formatUTCDateForCalendar } from '../utils/dateUtils';
 import TaskNotesPlugin from '../main';
@@ -784,7 +784,7 @@ export class MiniCalendarView extends ItemView {
                     
                     // Add tooltip with note count
                     indicator.setAttribute('aria-label', `${noteCount} note${noteCount > 1 ? 's' : ''}`);
-                    indicator.setAttribute('title', `${noteCount} note${noteCount > 1 ? 's' : ''}`);
+                    setTooltip(indicator, `${noteCount} note${noteCount > 1 ? 's' : ''}`, { placement: 'top' });
                     
                     // Add indicator to the day cell
                     day.appendChild(indicator);
@@ -881,7 +881,7 @@ export class MiniCalendarView extends ItemView {
                     
                     // Add tooltip with task count information
                     indicator.setAttribute('aria-label', `${taskStatus} tasks (${taskInfo.count})`);
-                    indicator.setAttribute('title', `${taskStatus} tasks (${taskInfo.count})`);
+                    setTooltip(indicator, `${taskStatus} tasks (${taskInfo.count})`, { placement: 'top' });
                     
                     // Add indicator to the day cell
                     day.appendChild(indicator);
@@ -969,7 +969,7 @@ export class MiniCalendarView extends ItemView {
                     
                     // Add tooltip for daily note
                     indicator.setAttribute('aria-label', 'Daily note exists');
-                    indicator.setAttribute('title', 'Daily note exists');
+                    setTooltip(indicator, 'Daily note exists', { placement: 'top' });
                     
                     // Add indicator to the day cell
                     day.appendChild(indicator);
@@ -1105,7 +1105,7 @@ export class MiniCalendarView extends ItemView {
             
             // Add tooltip with task count information
             indicator.setAttribute('aria-label', `${taskStatus} tasks (${taskInfo.count})`);
-            indicator.setAttribute('title', `${taskStatus} tasks (${taskInfo.count})`);
+            setTooltip(indicator, `${taskStatus} tasks (${taskInfo.count})`, { placement: 'top' });
             
             // Add indicator to the day cell
             dayEl.appendChild(indicator);

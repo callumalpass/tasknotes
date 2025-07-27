@@ -1,5 +1,6 @@
 import { TaskInfo } from '../types';
 import { RequestDeduplicator } from '../utils/RequestDeduplicator';
+import { setTooltip } from 'obsidian';
 
 export class StatusBarService {
 	private plugin: import('../main').default;
@@ -111,7 +112,7 @@ export class StatusBarService {
 			textEl.setText(`Tracking: ${truncatedTitle}`);
 			
 			// Add tooltip with full title
-			this.statusBarElement.setAttribute('title', `Currently tracking: ${task.title}`);
+			setTooltip(this.statusBarElement, `Currently tracking: ${task.title}`, { placement: 'top' });
 		} else {
 			textEl.setText(`Tracking ${count} tasks`);
 			
@@ -123,7 +124,7 @@ export class StatusBarService {
 			const tooltipText = count > 5 
 				? `${taskTitles}\n... and ${count - 5} more`
 				: taskTitles;
-			this.statusBarElement.setAttribute('title', `Currently tracking:\n${tooltipText}`);
+			setTooltip(this.statusBarElement, `Currently tracking:\n${tooltipText}`, { placement: 'top' });
 		}
 	}
 	
