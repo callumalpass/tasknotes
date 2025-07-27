@@ -416,7 +416,7 @@ export class TaskEditModal extends TaskModal {
         const oldProjects = this.task.projects || [];
         
         if (JSON.stringify(newProjects.sort()) !== JSON.stringify(oldProjects.sort())) {
-            changes.projects = newProjects.length > 0 ? newProjects : undefined;
+            changes.projects = newProjects;
         }
 
         // Parse and compare tags
