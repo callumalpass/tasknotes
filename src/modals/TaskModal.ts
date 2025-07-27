@@ -714,9 +714,19 @@ export abstract class TaskModal extends Modal {
 }
 
 /**
+ * Context suggestion object for compatibility with other plugins
+ */
+interface ContextSuggestion {
+    value: string;
+    display: string;
+    type: 'context';
+    toString(): string;
+}
+
+/**
  * Context suggestion provider using AbstractInputSuggest
  */
-class ContextSuggest extends AbstractInputSuggest<string> {
+class ContextSuggest extends AbstractInputSuggest<ContextSuggestion> {
     private plugin: TaskNotesPlugin;
     private input: HTMLInputElement;
     
@@ -726,7 +736,7 @@ class ContextSuggest extends AbstractInputSuggest<string> {
         this.input = inputEl;
     }
     
-    protected async getSuggestions(query: string): Promise<string[]> {
+    protected async getSuggestions(query: string): Promise<ContextSuggestion[]> {
         // Handle comma-separated values
         const currentValues = this.input.value.split(',').map((v: string) => v.trim());
         const currentQuery = currentValues[currentValues.length - 1];
@@ -740,16 +750,22 @@ class ContextSuggest extends AbstractInputSuggest<string> {
                 context.toLowerCase().includes(currentQuery.toLowerCase()) &&
                 !currentValues.slice(0, -1).includes(context)
             )
-            .slice(0, 10);
+            .slice(0, 10)
+            .map(context => ({
+                value: context,
+                display: context,
+                type: 'context' as const,
+                toString() { return this.value; }
+            }));
     }
     
-    public renderSuggestion(context: string, el: HTMLElement): void {
-        el.textContent = context;
+    public renderSuggestion(contextSuggestion: ContextSuggestion, el: HTMLElement): void {
+        el.textContent = contextSuggestion.display;
     }
     
-    public selectSuggestion(context: string): void {
+    public selectSuggestion(contextSuggestion: ContextSuggestion): void {
         const currentValues = this.input.value.split(',').map((v: string) => v.trim());
-        currentValues[currentValues.length - 1] = context;
+        currentValues[currentValues.length - 1] = contextSuggestion.value;
         this.input.value = currentValues.join(', ') + ', ';
         
         // Trigger input event to update internal state
@@ -759,9 +775,19 @@ class ContextSuggest extends AbstractInputSuggest<string> {
 }
 
 /**
+ * Tag suggestion object for compatibility with other plugins
+ */
+interface TagSuggestion {
+    value: string;
+    display: string;
+    type: 'tag';
+    toString(): string;
+}
+
+/**
  * Tag suggestion provider using AbstractInputSuggest
  */
-class TagSuggest extends AbstractInputSuggest<string> {
+class TagSuggest extends AbstractInputSuggest<TagSuggestion> {
     private plugin: TaskNotesPlugin;
     private input: HTMLInputElement;
     
@@ -771,7 +797,7 @@ class TagSuggest extends AbstractInputSuggest<string> {
         this.input = inputEl;
     }
     
-    protected async getSuggestions(query: string): Promise<string[]> {
+    protected async getSuggestions(query: string): Promise<TagSuggestion[]> {
         // Handle comma-separated values
         const currentValues = this.input.value.split(',').map((v: string) => v.trim());
         const currentQuery = currentValues[currentValues.length - 1];
@@ -785,16 +811,22 @@ class TagSuggest extends AbstractInputSuggest<string> {
                 tag.toLowerCase().includes(currentQuery.toLowerCase()) &&
                 !currentValues.slice(0, -1).includes(tag)
             )
-            .slice(0, 10);
+            .slice(0, 10)
+            .map(tag => ({
+                value: tag,
+                display: tag,
+                type: 'tag' as const,
+                toString() { return this.value; }
+            }));
     }
     
-    public renderSuggestion(tag: string, el: HTMLElement): void {
-        el.textContent = tag;
+    public renderSuggestion(tagSuggestion: TagSuggestion, el: HTMLElement): void {
+        el.textContent = tagSuggestion.display;
     }
     
-    public selectSuggestion(tag: string): void {
+    public selectSuggestion(tagSuggestion: TagSuggestion): void {
         const currentValues = this.input.value.split(',').map((v: string) => v.trim());
-        currentValues[currentValues.length - 1] = tag;
+        currentValues[currentValues.length - 1] = tagSuggestion.value;
         this.input.value = currentValues.join(', ') + ', ';
         
         // Trigger input event to update internal state

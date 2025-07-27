@@ -20,9 +20,25 @@ export interface TaskCreationOptions {
 interface ProjectSuggestion {
     basename: string;
     displayName: string;
+    type: 'project';
+    toString(): string;
 }
 
-class NLPSuggest extends AbstractInputSuggest<string | ProjectSuggestion> {
+interface TagSuggestion {
+    value: string;
+    display: string;
+    type: 'tag';
+    toString(): string;
+}
+
+interface ContextSuggestion {
+    value: string;
+    display: string;
+    type: 'context';
+    toString(): string;
+}
+
+class NLPSuggest extends AbstractInputSuggest<TagSuggestion | ContextSuggestion | ProjectSuggestion> {
     private plugin: TaskNotesPlugin;
     private textarea: HTMLTextAreaElement;
     private currentTrigger: '@' | '#' | '+' | null = null;
@@ -33,7 +49,7 @@ class NLPSuggest extends AbstractInputSuggest<string | ProjectSuggestion> {
         this.textarea = textareaEl;
     }
     
-    protected async getSuggestions(query: string): Promise<(string | ProjectSuggestion)[]> {
+    protected async getSuggestions(query: string): Promise<(TagSuggestion | ContextSuggestion | ProjectSuggestion)[]> {
         // Get cursor position and text around it
         const cursorPos = this.textarea.selectionStart;
         const textBeforeCursor = this.textarea.value.slice(0, cursorPos);
@@ -83,7 +99,13 @@ class NLPSuggest extends AbstractInputSuggest<string | ProjectSuggestion> {
                 .filter(context => 
                     context.toLowerCase().includes(queryAfterTrigger.toLowerCase())
                 )
-                .slice(0, 10);
+                .slice(0, 10)
+                .map(context => ({
+                    value: context,
+                    display: context,
+                    type: 'context' as const,
+                    toString() { return this.value; }
+                }));
         } else if (trigger === '#') {
             const tags = this.plugin.cacheManager.getAllTags();
             return tags
@@ -91,7 +113,13 @@ class NLPSuggest extends AbstractInputSuggest<string | ProjectSuggestion> {
                 .filter(tag => 
                     tag.toLowerCase().includes(queryAfterTrigger.toLowerCase())
                 )
-                .slice(0, 10);
+                .slice(0, 10)
+                .map(tag => ({
+                    value: tag,
+                    display: tag,
+                    type: 'tag' as const,
+                    toString() { return this.value; }
+                }));
         } else if (trigger === '+') {
             // Get all markdown files in the vault for wikilink suggestions
             const markdownFiles = this.plugin.app.vault.getMarkdownFiles();
@@ -157,7 +185,9 @@ class NLPSuggest extends AbstractInputSuggest<string | ProjectSuggestion> {
                     
                     return {
                         basename: item.basename,
-                        displayName: displayName
+                        displayName: displayName,
+                        type: 'project' as const,
+                        toString() { return this.basename; }
                     } as ProjectSuggestion;
                 })
                 .slice(0, 20); // Increased from 10 to 20
@@ -168,22 +198,22 @@ class NLPSuggest extends AbstractInputSuggest<string | ProjectSuggestion> {
         return [];
     }
     
-    public renderSuggestion(suggestion: string | ProjectSuggestion, el: HTMLElement): void {
+    public renderSuggestion(suggestion: TagSuggestion | ContextSuggestion | ProjectSuggestion, el: HTMLElement): void {
         const icon = el.createSpan('nlp-suggest-icon');
         icon.textContent = this.currentTrigger || '';
         
         const text = el.createSpan('nlp-suggest-text');
         
-        if (typeof suggestion === 'string') {
-            // For contexts and tags
-            text.textContent = suggestion;
-        } else {
+        if (suggestion.type === 'project') {
             // For projects with enhanced display
             text.textContent = suggestion.displayName;
+        } else {
+            // For contexts and tags
+            text.textContent = suggestion.display;
         }
     }
     
-    public selectSuggestion(suggestion: string | ProjectSuggestion): void {
+    public selectSuggestion(suggestion: TagSuggestion | ContextSuggestion | ProjectSuggestion): void {
         if (!this.currentTrigger) return;
         
         const cursorPos = this.textarea.selectionStart;
@@ -200,7 +230,7 @@ class NLPSuggest extends AbstractInputSuggest<string | ProjectSuggestion> {
         if (lastTriggerIndex === -1) return;
         
         // Get the actual suggestion text to insert
-        const suggestionText = typeof suggestion === 'string' ? suggestion : suggestion.basename;
+        const suggestionText = suggestion.type === 'project' ? suggestion.basename : suggestion.value;
         
         // Replace the trigger and partial text with the full suggestion
         const beforeTrigger = textBeforeCursor.slice(0, lastTriggerIndex);
