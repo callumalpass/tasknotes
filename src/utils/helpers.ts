@@ -959,6 +959,11 @@ async function addTimeblockToDailyNote(app: any, date: string, timeblock: TimeBl
 	
 	if (!dailyNote) {
 		dailyNote = await createDailyNote(moment);
+		
+		// Validate that daily note was created successfully
+		if (!dailyNote) {
+			throw new Error('Failed to create daily note. Please check your Daily Notes plugin configuration and ensure the daily notes folder exists.');
+		}
 	}
 	
 	const content = await app.vault.read(dailyNote);

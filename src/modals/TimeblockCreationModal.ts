@@ -237,6 +237,11 @@ export class TimeblockCreationModal extends Modal {
         if (!dailyNote) {
             // Create daily note if it doesn't exist
             dailyNote = await createDailyNote(moment);
+            
+            // Validate that daily note was created successfully
+            if (!dailyNote) {
+                throw new Error('Failed to create daily note. Please check your Daily Notes plugin configuration and ensure the daily notes folder exists.');
+            }
         }
 
         // Read current content
