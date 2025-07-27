@@ -260,7 +260,7 @@
 /* List Headers Row */
 .tasknotes-plugin .settings-view__list-headers {
     display: grid;
-    grid-template-columns: 24px 1fr 1fr 80px 1fr 40px;
+    grid-template-columns: 20px 24px 1fr 1fr 80px 1fr 40px;
     gap: var(--tn-spacing-sm);
     padding: var(--tn-spacing-sm) 0;
     margin-bottom: var(--tn-spacing-xs);
@@ -295,7 +295,7 @@
 /* Item Row Container */
 .tasknotes-plugin .settings-view__item-row {
     display: grid;
-    grid-template-columns: 24px 1fr 1fr 80px 1fr 40px;
+    grid-template-columns: 20px 24px 1fr 1fr 80px 1fr 40px;
     gap: var(--tn-spacing-sm);
     align-items: center;
     padding: var(--tn-spacing-sm);
@@ -303,11 +303,46 @@
     border: 1px solid var(--tn-border-color);
     border-radius: var(--tn-radius-sm);
     transition: all var(--tn-transition-fast);
+    cursor: move;
 }
 
 .tasknotes-plugin .settings-view__item-row:hover {
     background: var(--tn-interactive-hover);
     border-color: var(--tn-interactive-accent);
+}
+
+/* Drag Handle */
+.tasknotes-plugin .settings-drag-handle {
+    color: var(--tn-text-muted);
+    cursor: grab;
+    font-weight: bold;
+    font-size: 12px;
+    text-align: center;
+    user-select: none;
+    transition: color var(--tn-transition-fast);
+}
+
+.tasknotes-plugin .settings-drag-handle:hover {
+    color: var(--tn-text-normal);
+}
+
+.tasknotes-plugin .settings-drag-handle:active {
+    cursor: grabbing;
+}
+
+/* Drag States */
+.tasknotes-plugin .settings-view__item-row.dragging {
+    opacity: 0.5;
+    transform: rotate(2deg);
+    z-index: 1000;
+}
+
+.tasknotes-plugin .settings-view__item-row.drag-over-top {
+    border-top: 2px solid var(--interactive-accent);
+}
+
+.tasknotes-plugin .settings-view__item-row.drag-over-bottom {
+    border-bottom: 2px solid var(--interactive-accent);
 }
 
 /* Color Indicator */
@@ -502,12 +537,12 @@
     }
     
     .tasknotes-plugin .settings-view__list-headers {
-        grid-template-columns: 20px 1fr 1fr 60px 80px 32px;
+        grid-template-columns: 16px 20px 1fr 1fr 60px 80px 32px;
         gap: var(--tn-spacing-xs);
     }
     
     .tasknotes-plugin .settings-view__item-row {
-        grid-template-columns: 20px 1fr 1fr 60px 80px 32px;
+        grid-template-columns: 16px 20px 1fr 1fr 60px 80px 32px;
         gap: var(--tn-spacing-xs);
         padding: var(--tn-spacing-xs);
     }

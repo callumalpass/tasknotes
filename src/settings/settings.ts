@@ -1666,6 +1666,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 		
 		// Column headers
 		const headersRow = container.createDiv('settings-headers-row settings-view__list-headers');
+		headersRow.createDiv('settings-header-spacer settings-view__header-spacer'); // For drag handle space
 		headersRow.createDiv('settings-header-spacer settings-view__header-spacer'); // For color indicator space
 		headersRow.createEl('span', { text: 'Value', cls: 'settings-column-header settings-view__column-header' });
 		headersRow.createEl('span', { text: 'Display Label', cls: 'settings-column-header settings-view__column-header' });
@@ -1705,6 +1706,13 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 		
 		sortedStatuses.forEach((status, index) => {
 			const statusRow = container.createDiv('settings-item-row settings-view__item-row');
+			statusRow.setAttribute('draggable', 'true');
+			statusRow.setAttribute('data-status-id', status.id);
+			
+			// Drag handle
+			const dragHandle = statusRow.createDiv('settings-drag-handle');
+			dragHandle.innerHTML = '⋮⋮';
+			dragHandle.setAttribute('title', 'Drag to reorder');
 			
 			// Color indicator
 			const colorIndicator = statusRow.createDiv('settings-color-indicator settings-view__color-indicator');
@@ -1811,7 +1819,91 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 					}
 				}
 			});
+			
+			// Drag and drop event handlers
+			statusRow.addEventListener('dragstart', (e) => {
+				e.dataTransfer!.setData('text/plain', status.id);
+				statusRow.classList.add('dragging');
+			});
+			
+			statusRow.addEventListener('dragend', () => {
+				statusRow.classList.remove('dragging');
+			});
+			
+			statusRow.addEventListener('dragover', (e) => {
+				e.preventDefault();
+				const draggingRow = container.querySelector('.dragging') as HTMLElement;
+				if (draggingRow && draggingRow !== statusRow) {
+					const rect = statusRow.getBoundingClientRect();
+					const midpoint = rect.top + rect.height / 2;
+					if (e.clientY < midpoint) {
+						statusRow.classList.add('drag-over-top');
+						statusRow.classList.remove('drag-over-bottom');
+					} else {
+						statusRow.classList.add('drag-over-bottom');
+						statusRow.classList.remove('drag-over-top');
+					}
+				}
+			});
+			
+			statusRow.addEventListener('dragleave', () => {
+				statusRow.classList.remove('drag-over-top', 'drag-over-bottom');
+			});
+			
+			statusRow.addEventListener('drop', async (e) => {
+				e.preventDefault();
+				statusRow.classList.remove('drag-over-top', 'drag-over-bottom');
+				
+				const draggedStatusId = e.dataTransfer!.getData('text/plain');
+				const targetStatusId = status.id;
+				
+				if (draggedStatusId !== targetStatusId) {
+					await this.reorderStatus(draggedStatusId, targetStatusId, e.clientY < statusRow.getBoundingClientRect().top + statusRow.getBoundingClientRect().height / 2);
+				}
+			});
 		});
+	}
+	
+	private async reorderStatus(draggedStatusId: string, targetStatusId: string, insertBefore: boolean): Promise<void> {
+		const statuses = [...this.plugin.settings.customStatuses];
+		
+		// Find the dragged and target statuses
+		const draggedIndex = statuses.findIndex(s => s.id === draggedStatusId);
+		const targetIndex = statuses.findIndex(s => s.id === targetStatusId);
+		
+		if (draggedIndex === -1 || targetIndex === -1) {
+			return;
+		}
+		
+		// Remove the dragged status from its current position
+		const [draggedStatus] = statuses.splice(draggedIndex, 1);
+		
+		// Determine the new position
+		let newIndex = targetIndex;
+		if (draggedIndex < targetIndex) {
+			// If we removed an item before the target, adjust the target index
+			newIndex--;
+		}
+		
+		if (!insertBefore) {
+			// Insert after the target
+			newIndex++;
+		}
+		
+		// Insert the dragged status at the new position
+		statuses.splice(newIndex, 0, draggedStatus);
+		
+		// Update the order values
+		statuses.forEach((status, index) => {
+			status.order = index;
+		});
+		
+		// Save the updated statuses
+		this.plugin.settings.customStatuses = statuses;
+		await this.plugin.saveSettings();
+		
+		// Re-render the list to reflect the new order
+		this.renderActiveTab();
 	}
 	
 	private renderPrioritiesTab(): void {
