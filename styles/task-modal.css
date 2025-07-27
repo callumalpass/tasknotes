@@ -216,7 +216,6 @@
 
 .tasknotes-plugin .open-note-button {
     padding: var(--size-4-2) var(--size-4-3);
-    font-size: var(--font-ui-medium);
     font-weight: 500;
     border: 1px solid var(--interactive-accent);
     border-radius: var(--radius-s);
