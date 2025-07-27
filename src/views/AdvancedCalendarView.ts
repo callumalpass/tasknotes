@@ -239,12 +239,17 @@ export class AdvancedCalendarView extends ItemView {
         this.filterBar.updateSavedViews(savedViews);
         
         // Listen for saved view events
-        this.filterBar.on('saveView', ({ name, query }) => {
-            this.plugin.viewStateManager.saveView(name, query);
+        this.filterBar.on('saveView', ({ name, query, viewOptions }) => {
+            this.plugin.viewStateManager.saveView(name, query, viewOptions);
         });
         
         this.filterBar.on('deleteView', (viewId: string) => {
             this.plugin.viewStateManager.deleteView(viewId);
+        });
+
+        // Listen for view options load events
+        this.filterBar.on('loadViewOptions', (viewOptions: {[key: string]: boolean}) => {
+            this.applyViewOptions(viewOptions);
         });
 
         // Listen for global saved views changes
@@ -581,6 +586,37 @@ export class AdvancedCalendarView extends ItemView {
             headerCollapsed: this.headerCollapsed
         };
         this.plugin.viewStateManager.setViewPreferences(ADVANCED_CALENDAR_VIEW_TYPE, preferences);
+    }
+
+    /**
+     * Apply view options from a loaded saved view
+     */
+    private applyViewOptions(viewOptions: {[key: string]: boolean}): void {
+        // Apply the loaded view options to the internal state
+        if (viewOptions.hasOwnProperty('showScheduled')) {
+            this.showScheduled = viewOptions.showScheduled;
+        }
+        if (viewOptions.hasOwnProperty('showDue')) {
+            this.showDue = viewOptions.showDue;
+        }
+        if (viewOptions.hasOwnProperty('showTimeEntries')) {
+            this.showTimeEntries = viewOptions.showTimeEntries;
+        }
+        if (viewOptions.hasOwnProperty('showRecurring')) {
+            this.showRecurring = viewOptions.showRecurring;
+        }
+        if (viewOptions.hasOwnProperty('showICSEvents')) {
+            this.showICSEvents = viewOptions.showICSEvents;
+        }
+        if (viewOptions.hasOwnProperty('showTimeblocks')) {
+            this.showTimeblocks = viewOptions.showTimeblocks;
+        }
+
+        // Update the view options in the FilterBar to reflect the loaded state
+        this.setupViewOptions();
+        
+        // Refresh the calendar to apply the changes
+        this.refreshEvents();
     }
 
     private setupResizeHandling(): void {

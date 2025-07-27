@@ -179,8 +179,8 @@ class ProjectSubtasksWidget extends WidgetType {
             });
             
             // Listen for saved view operations
-            this.filterBar.on('saveView', (data: { name: string, query: FilterQuery }) => {
-                this.plugin.viewStateManager.saveView(data.name, data.query);
+            this.filterBar.on('saveView', (data: { name: string, query: FilterQuery, viewOptions?: {[key: string]: boolean} }) => {
+                this.plugin.viewStateManager.saveView(data.name, data.query, data.viewOptions);
             });
             
             this.filterBar.on('deleteView', (viewId: string) => {

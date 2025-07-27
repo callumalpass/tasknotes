@@ -191,18 +191,20 @@ export class ViewStateManager extends EventEmitter {
     getSavedViews(): SavedView[] {
         return this.savedViews.map(view => ({
             ...view,
-            query: FilterUtils.deepCloneFilterQuery(view.query)
+            query: FilterUtils.deepCloneFilterQuery(view.query),
+            viewOptions: view.viewOptions ? { ...view.viewOptions } : undefined
         }));
     }
 
     /**
      * Save a new view
      */
-    saveView(name: string, query: FilterQuery): SavedView {
+    saveView(name: string, query: FilterQuery, viewOptions?: {[key: string]: boolean}): SavedView {
         const view: SavedView = {
             id: this.generateId(),
             name,
-            query: FilterUtils.deepCloneFilterQuery(query)
+            query: FilterUtils.deepCloneFilterQuery(query),
+            viewOptions: viewOptions ? { ...viewOptions } : undefined
         };
 
         this.savedViews.push(view);
@@ -225,6 +227,9 @@ export class ViewStateManager extends EventEmitter {
         const clonedUpdates = { ...updates };
         if (clonedUpdates.query) {
             clonedUpdates.query = FilterUtils.deepCloneFilterQuery(clonedUpdates.query);
+        }
+        if (clonedUpdates.viewOptions) {
+            clonedUpdates.viewOptions = { ...clonedUpdates.viewOptions };
         }
 
         this.savedViews[viewIndex] = {
@@ -259,7 +264,8 @@ export class ViewStateManager extends EventEmitter {
         
         return {
             ...view,
-            query: FilterUtils.deepCloneFilterQuery(view.query)
+            query: FilterUtils.deepCloneFilterQuery(view.query),
+            viewOptions: view.viewOptions ? { ...view.viewOptions } : undefined
         };
     }
 

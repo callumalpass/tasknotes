@@ -1272,9 +1272,25 @@ export class FilterBar extends EventEmitter {
      */
     private showSaveViewDialog(): void {
         new SaveViewModal(this.app, (name) => {
-            this.emit('saveView', { name, query: this.currentQuery });
+            const currentViewOptions = this.getCurrentViewOptions();
+            this.emit('saveView', { name, query: this.currentQuery, viewOptions: currentViewOptions });
             this.toggleViewSelectorDropdown();
         }).open();
+    }
+
+    /**
+     * Get current view options as a simple object
+     */
+    private getCurrentViewOptions(): {[key: string]: boolean} | undefined {
+        if (!this.viewOptionsConfig || this.viewOptionsConfig.length === 0) {
+            return undefined;
+        }
+        
+        const options: {[key: string]: boolean} = {};
+        this.viewOptionsConfig.forEach(option => {
+            options[option.id] = option.value;
+        });
+        return options;
     }
 
 
@@ -1285,6 +1301,12 @@ export class FilterBar extends EventEmitter {
         this.currentQuery = FilterUtils.deepCloneFilterQuery(view.query);
         this.render();
         this.emitQueryChange();
+        
+        // Emit viewOptions event if they exist
+        if (view.viewOptions) {
+            this.emit('loadViewOptions', view.viewOptions);
+        }
+        
         this.toggleViewSelectorDropdown();
     }
 

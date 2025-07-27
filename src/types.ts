@@ -68,6 +68,7 @@ export interface SavedView {
 	id: string; // Unique ID for the view
 	name: string; // User-defined name (e.g., "High-Priority Work")
 	query: FilterQuery; // The complete configuration, including filters, sorting, and grouping
+	viewOptions?: {[key: string]: boolean}; // View-specific options (e.g., showOverdueOnToday, showNotes)
 }
 
 // Property and operator definitions for the advanced filtering system

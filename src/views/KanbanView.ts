@@ -211,8 +211,8 @@ export class KanbanView extends ItemView {
         this.filterBar.updateSavedViews(savedViews);
         
         // Listen for saved view events
-        this.filterBar.on('saveView', ({ name, query }) => {
-            this.plugin.viewStateManager.saveView(name, query);
+        this.filterBar.on('saveView', ({ name, query, viewOptions }) => {
+            this.plugin.viewStateManager.saveView(name, query, viewOptions);
             // Don't update here - the ViewStateManager event will handle it
         });
         

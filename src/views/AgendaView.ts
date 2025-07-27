@@ -269,14 +269,19 @@ export class AgendaView extends ItemView {
         this.filterBar.updateSavedViews(savedViews);
         
         // Listen for saved view events
-        this.filterBar.on('saveView', ({ name, query }) => {
-            this.plugin.viewStateManager.saveView(name, query);
+        this.filterBar.on('saveView', ({ name, query, viewOptions }) => {
+            this.plugin.viewStateManager.saveView(name, query, viewOptions);
             // Don't update here - the ViewStateManager event will handle it
         });
         
         this.filterBar.on('deleteView', (viewId: string) => {
             this.plugin.viewStateManager.deleteView(viewId);
             // Don't update here - the ViewStateManager event will handle it
+        });
+
+        // Listen for view options load events
+        this.filterBar.on('loadViewOptions', (viewOptions: {[key: string]: boolean}) => {
+            this.applyViewOptions(viewOptions);
         });
 
         // Listen for global saved views changes
@@ -334,6 +339,25 @@ export class AgendaView extends ItemView {
         ];
 
         this.filterBar.setViewOptions(options);
+    }
+
+    /**
+     * Apply view options from a loaded saved view
+     */
+    private applyViewOptions(viewOptions: {[key: string]: boolean}): void {
+        // Apply the loaded view options to the internal state
+        if (viewOptions.hasOwnProperty('showOverdueOnToday')) {
+            this.showOverdueOnToday = viewOptions.showOverdueOnToday;
+        }
+        if (viewOptions.hasOwnProperty('showNotes')) {
+            this.showNotes = viewOptions.showNotes;
+        }
+
+        // Update the view options in the FilterBar to reflect the loaded state
+        this.setupViewOptions();
+        
+        // Refresh the view to apply the changes
+        this.refresh();
     }
     
     /**
