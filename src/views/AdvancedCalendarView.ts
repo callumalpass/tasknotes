@@ -413,9 +413,14 @@ export class AdvancedCalendarView extends ItemView {
             return false; // This hides the entire header toolbar
         }
         
+        // Check if calendar container is narrow (less than 600px wide) to hide title
+        const calendarContainer = this.contentEl.querySelector('.advanced-calendar-view__calendar-container');
+        const containerWidth = calendarContainer ? calendarContainer.getBoundingClientRect().width : window.innerWidth;
+        const isNarrowView = containerWidth <= 600;
+        
         const toolbarConfig = {
             left: 'prev,next today',
-            center: 'title',
+            center: isNarrowView ? '' : 'title', // Hide title in narrow views
             right: 'refreshICS multiMonthYear,dayGridMonth,timeGridWeek,timeGridCustom,timeGridDay'
         };
         console.log('Header toolbar config:', toolbarConfig);
@@ -656,6 +661,8 @@ export class AdvancedCalendarView extends ItemView {
             this.resizeTimeout = win.setTimeout(() => {
                 if (this.calendar) {
                     this.calendar.updateSize();
+                    // Update header toolbar to handle narrow view title visibility
+                    this.updateHeaderVisibility();
                 }
             }, 150);
         };
