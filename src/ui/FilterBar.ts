@@ -303,6 +303,7 @@ export class FilterBar extends EventEmitter {
      */
     private clearActiveSavedView(): void {
         this.activeSavedView = null;
+        this.updateViewSelectorButtonState();
     }
 
 
@@ -371,6 +372,9 @@ export class FilterBar extends EventEmitter {
             .onClick(() => {
                 this.toggleViewSelectorDropdown();
             });
+
+        // Update button state based on active saved view
+        this.updateViewSelectorButtonState();
 
         // Main filter box (now rendered within top-controls for positioning)
         this.renderMainFilterBox(topControls);
@@ -578,13 +582,19 @@ export class FilterBar extends EventEmitter {
                 });
                 setTooltip(dragHandle, 'Drag to reorder views', { placement: 'top' });
                 
-                new ButtonComponent(viewItemContainer)
+                const viewItemButton = new ButtonComponent(viewItemContainer)
                     .setButtonText(view.name)
                     .setClass('filter-bar__view-item')
                     .setTooltip(`Load saved view: ${view.name}`)
                     .onClick(() => {
                         this.loadSavedView(view);
                     });
+
+                // Add active state styling if this is the current active view
+                if (this.activeSavedView && this.activeSavedView.id === view.id) {
+                    viewItemButton.buttonEl.classList.add('filter-bar__view-item--active');
+                    viewItemContainer.classList.add('filter-bar__view-item-container--active');
+                }
 
                 new ButtonComponent(viewItemContainer)
                     .setIcon('trash-2')
@@ -1286,6 +1296,20 @@ export class FilterBar extends EventEmitter {
     }
 
     /**
+     * Update view selector button state based on active saved view
+     */
+    private updateViewSelectorButtonState(): void {
+        if (!this.viewSelectorButton?.buttonEl) return;
+        
+        // Add/remove active state class
+        if (this.activeSavedView) {
+            this.viewSelectorButton.buttonEl.classList.add('filter-bar__templates-button--saved-view-active');
+        } else {
+            this.viewSelectorButton.buttonEl.classList.remove('filter-bar__templates-button--saved-view-active');
+        }
+    }
+
+    /**
      * Toggle view selector dropdown
      */
     private toggleViewSelectorDropdown(): void {
@@ -1358,6 +1382,7 @@ export class FilterBar extends EventEmitter {
         }
         
         this.toggleViewSelectorDropdown();
+        this.updateViewSelectorButtonState();
         this.isLoadingSavedView = false;
     }
 
@@ -1370,6 +1395,9 @@ export class FilterBar extends EventEmitter {
         
         // Re-render everything to ensure consistency
         this.render();
+        
+        // Update button state after render
+        this.updateViewSelectorButtonState();
     }
 
     /**

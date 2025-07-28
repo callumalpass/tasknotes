@@ -164,6 +164,13 @@
     box-shadow: none;
 }
 
+.tasknotes-plugin .filter-bar__templates-button--saved-view-active {
+    background: var(--interactive-accent);
+    color: var(--text-on-accent);
+    border: none;
+    box-shadow: 0 0 0 1px var(--color-accent);
+}
+
 /* Search Input */
 .tasknotes-plugin .filter-bar__search-input {
     flex: 1;
@@ -370,6 +377,21 @@
     font-size: var(--font-ui-small);
     font-weight: 500;
     transition: background-color 0.2s ease;
+}
+
+.tasknotes-plugin .filter-bar__view-item--active {
+    color: var(--text-on-accent);
+}
+
+.tasknotes-plugin .filter-bar__view-item-container--active {
+    background: var(--interactive-accent);
+    border-radius: var(--radius-s);
+    border: none;
+}
+
+.tasknotes-plugin .filter-bar__view-item-container--active:hover {
+    background: var(--interactive-accent-hover);
+    transform: translateX(2px);
 }
 
 .tasknotes-plugin .filter-bar__view-delete {
