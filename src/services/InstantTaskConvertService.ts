@@ -379,8 +379,9 @@ export class InstantTaskConvertService {
         let timeEstimate: number | undefined;
         let recurrence: import('../types').RecurrenceInfo | undefined;
         
-        // Extract parsed tags and projects
+        // Extract parsed tags, contexts, and projects
         const parsedTags = parsedData.tags || [];
+        const parsedContexts = parsedData.contexts || [];
         const parsedProjects = parsedData.projects || [];
 
         if (this.plugin.settings.useDefaultsOnInstantConvert) {
@@ -404,10 +405,17 @@ export class InstantTaskConvertService {
                 scheduledDate = calculateDefaultDate(defaults.defaultScheduledDate);
             }
             
-            // Apply default contexts
-            if (defaults.defaultContexts) {
-                contextsArray = defaults.defaultContexts.split(',').map(s => s.trim()).filter(s => s);
+            // Apply contexts: start with parsed contexts, then add default contexts
+            contextsArray = [];
+            if (parsedContexts.length > 0) {
+                contextsArray.push(...parsedContexts);
             }
+            if (defaults.defaultContexts) {
+                const defaultContextsArray = defaults.defaultContexts.split(',').map(s => s.trim()).filter(s => s);
+                contextsArray.push(...defaultContextsArray);
+            }
+            // Remove duplicates
+            contextsArray = [...new Set(contextsArray)];
             
             // Apply tags: start with task tag, add parsed tags, then add default tags
             tagsArray = [this.plugin.settings.taskTag];
@@ -438,6 +446,11 @@ export class InstantTaskConvertService {
             status = (parsedData.status ? this.sanitizeStatus(parsedData.status) : '') || 'none';
             dueDate = parsedDueDate || undefined;
             scheduledDate = parsedScheduledDate || undefined;
+            // Apply contexts: only use parsed contexts
+            contextsArray = [];
+            if (parsedContexts.length > 0) {
+                contextsArray.push(...parsedContexts);
+            }
             // Apply tags: start with task tag, add parsed tags
             tagsArray = [this.plugin.settings.taskTag];
             if (parsedTags.length > 0) {
@@ -746,6 +759,7 @@ export class InstantTaskConvertService {
                 recurrence: nlpResult.recurrence,
                 tags: nlpResult.tags && nlpResult.tags.length > 0 ? nlpResult.tags : undefined,
                 projects: nlpResult.projects && nlpResult.projects.length > 0 ? nlpResult.projects : undefined,
+                contexts: nlpResult.contexts && nlpResult.contexts.length > 0 ? nlpResult.contexts : undefined,
                 // TasksPlugin specific fields that NLP doesn't have
                 startDate: undefined,
                 createdDate: undefined,

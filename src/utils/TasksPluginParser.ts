@@ -17,6 +17,7 @@ export interface ParsedTaskData {
 		month_of_year?: number;
 	};
 	tags?: string[];
+	contexts?: string[];
 	projects?: string[];
 	isCompleted: boolean;
 }
