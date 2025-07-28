@@ -15,6 +15,11 @@
     justify-content: center;
     background: var(--tn-bg-primary);
     min-height: 100vh;
+
+	button {
+		cursor: pointer;
+	}
+
 }
 
 /* ================================================
