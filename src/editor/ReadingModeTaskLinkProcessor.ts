@@ -24,35 +24,56 @@ export class ReadingModeTaskLinkProcessor {
                 return;
             }
 
-            // Find all wikilinks in the rendered content
-            const wikilinks = el.querySelectorAll('a.internal-link');
+            // Find all links in the rendered content
+            const allLinks = el.querySelectorAll('a');
             
-            for (const link of Array.from(wikilinks)) {
-                this.processWikilink(link as HTMLAnchorElement, ctx.sourcePath);
+            for (const link of Array.from(allLinks)) {
+                const linkEl = link as HTMLAnchorElement;
+                const href = linkEl.getAttribute('href');
+                
+                // Process internal links (wikilinks) - these have .internal-link class
+                if (linkEl.classList.contains('internal-link')) {
+                    this.processLink(linkEl, ctx.sourcePath, 'internal');
+                }
+                // Process other links that might be markdown links to internal files
+                else if (href && !href.startsWith('http://') && !href.startsWith('https://') && !href.includes('://')) {
+                    this.processLink(linkEl, ctx.sourcePath, 'external');
+                }
             }
         };
     }
 
     /**
-     * Process a single wikilink to check if it should be replaced with a task preview
+     * Process a single link to check if it should be replaced with a task preview
      */
-    private async processWikilink(linkEl: HTMLAnchorElement, sourcePath: string): Promise<void> {
+    private async processLink(linkEl: HTMLAnchorElement, sourcePath: string, linkType: 'internal' | 'external'): Promise<void> {
         try {
             // Get the link path from the href attribute
             const href = linkEl.getAttribute('href');
             if (!href) return;
 
-            // Parse the link path - Obsidian internal links use format like "app://obsidian.md/path"
-            // or just the file path directly
             let linkPath = href;
-            if (href.startsWith('app://')) {
-                // Extract path from app:// URL
-                const url = new URL(href);
-                linkPath = decodeURIComponent(url.pathname);
-                // Remove leading slash if present
-                if (linkPath.startsWith('/')) {
-                    linkPath = linkPath.substring(1);
+            
+            if (linkType === 'internal') {
+                // Parse internal links - Obsidian internal links use format like "app://obsidian.md/path"
+                // or just the file path directly
+                if (href.startsWith('app://')) {
+                    // Extract path from app:// URL
+                    const url = new URL(href);
+                    linkPath = decodeURIComponent(url.pathname);
+                    // Remove leading slash if present
+                    if (linkPath.startsWith('/')) {
+                        linkPath = linkPath.substring(1);
+                    }
                 }
+            } else {
+                // For external links, check if they might be markdown links to internal files
+                // Skip if it's clearly an external URL
+                if (href.startsWith('http://') || href.startsWith('https://') || href.includes('://')) {
+                    return;
+                }
+                // Otherwise treat as a potential internal path
+                linkPath = href;
             }
 
             // Resolve the link path to get the actual file
@@ -67,7 +88,7 @@ export class ReadingModeTaskLinkProcessor {
             await this.replaceWithTaskWidget(linkEl, taskInfo, linkPath);
 
         } catch (error) {
-            console.debug('Error processing wikilink in reading mode:', error);
+            console.debug('Error processing link in reading mode:', error);
         }
     }
 

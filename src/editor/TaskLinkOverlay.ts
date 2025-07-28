@@ -160,34 +160,36 @@ function buildTaskLinkDecorations(state: { doc: { toString(): string; length: nu
         // Get cursor position to check if it overlaps with any wikilinks
         const cursorPos = state.selection?.main.head;
         
-        const wikilinks = detectionService.findWikilinks(text);
+        const links = detectionService.findWikilinks(text);
         
-        // Validate wikilinks result
-        if (!Array.isArray(wikilinks)) {
-            console.warn('Invalid wikilinks result from detection service');
+        // Validate links result
+        if (!Array.isArray(links)) {
+            console.warn('Invalid links result from detection service');
             return builder.finish();
         }
 
-        // Process each wikilink and check if it's a valid task link
+        // Process each link and check if it's a valid task link
         // Note: In State Field, we need to do this synchronously, so we'll use cached results
-        for (const wikilink of wikilinks) {
+        for (const link of links) {
             try {
-                // Validate wikilink object
-                if (!wikilink || typeof wikilink.match !== 'string' || 
-                    typeof wikilink.start !== 'number' || typeof wikilink.end !== 'number') {
-                    console.debug('Invalid wikilink object:', wikilink);
+                // Validate link object
+                if (!link || typeof link.match !== 'string' || 
+                    typeof link.start !== 'number' || typeof link.end !== 'number') {
+                    console.debug('Invalid link object:', link);
                     continue;
                 }
                 
                 // Validate positions
-                if (wikilink.start < 0 || wikilink.end <= wikilink.start || 
-                    wikilink.start >= text.length || wikilink.end > text.length) {
-                    console.debug('Invalid wikilink positions:', wikilink.start, wikilink.end);
+                if (link.start < 0 || link.end <= link.start || 
+                    link.start >= text.length || link.end > text.length) {
+                    console.debug('Invalid link positions:', link.start, link.end);
                     continue;
                 }
                 
-                // Parse the wikilink to get the link path
-                const parsed = parseWikilinkSync(wikilink.match);
+                // Parse the link to get the link path (handle both wikilinks and markdown links)
+                const parsed = link.type === 'wikilink' 
+                    ? parseWikilinkSync(link.match)
+                    : parseMarkdownLinkSync(link.match);
                 if (!parsed) continue;
 
                 const { linkPath } = parsed;
@@ -211,17 +213,17 @@ function buildTaskLinkDecorations(state: { doc: { toString(): string; length: nu
                         continue;
                     }
                     
-                    // Check if cursor is within this wikilink range - if so, skip decoration to show plain text
-                    if (cursorPos !== undefined && cursorPos >= wikilink.start && cursorPos <= wikilink.end) {
-                        console.debug('Cursor is within wikilink range, skipping decoration to show plain text');
+                    // Check if cursor is within this link range - if so, skip decoration to show plain text
+                    if (cursorPos !== undefined && cursorPos >= link.start && cursorPos <= link.end) {
+                        console.debug('Cursor is within link range, skipping decoration to show plain text');
                         continue;
                     }
                     
                     // Create or reuse widget instance
-                    const widgetKey = `${resolvedPath}-${wikilink.start}-${wikilink.end}`;
+                    const widgetKey = `${resolvedPath}-${link.start}-${link.end}`;
                     
                     // Always create a new widget with the current task info
-                    const newWidget = new TaskLinkWidget(taskInfo, plugin, wikilink.match, parsed.displayText);
+                    const newWidget = new TaskLinkWidget(taskInfo, plugin, link.match, parsed.displayText);
                     
                     // Check if we need to update the cached widget
                     const cachedWidget = activeWidgets.get(widgetKey);
@@ -235,11 +237,11 @@ function buildTaskLinkDecorations(state: { doc: { toString(): string; length: nu
                         inclusive: true
                     });
 
-                    builder.add(wikilink.start, wikilink.end, decoration);
+                    builder.add(link.start, link.end, decoration);
                 }
             } catch (error) {
-                // If there's any error, skip this wikilink
-                console.debug('Error processing wikilink:', wikilink.match, error);
+                // If there's any error, skip this link
+                console.debug('Error processing link:', link.match, error);
                 continue;
             }
         }
@@ -309,6 +311,51 @@ function parseWikilinkSync(wikilinkText: string): { linkPath: string; displayTex
     return {
         linkPath: parsed.path,
         displayText: parsed.subpath || undefined
+    };
+}
+
+function parseMarkdownLinkSync(markdownLinkText: string): { linkPath: string; displayText?: string } | null {
+    // Validate input
+    if (!markdownLinkText || typeof markdownLinkText !== 'string') {
+        return null;
+    }
+    
+    // Parse markdown link: [text](path)
+    const match = markdownLinkText.match(/^\[([^\]]*)\]\(([^)]+)\)$/);
+    if (!match) return null;
+
+    const displayText = match[1].trim();
+    let linkPath = match[2].trim();
+    
+    if (!linkPath || linkPath.length === 0) {
+        return null;
+    }
+    
+    // Prevent processing of extremely long links
+    if (linkPath.length > 500) {
+        console.debug('Markdown link path too long, skipping:', linkPath.length);
+        return null;
+    }
+
+    // URL decode the link path - this is crucial for markdown links
+    try {
+        linkPath = decodeURIComponent(linkPath);
+    } catch (error) {
+        console.debug('parseMarkdownLinkSync: Failed to decode URI component:', linkPath, error);
+        // If decoding fails, use the original path
+    }
+
+    // Use Obsidian's parseLinktext to handle any subpaths/headings
+    const parsed = parseLinktext(linkPath);
+    
+    // Validate the path
+    if (!parsed.path) {
+        return null;
+    }
+    
+    return {
+        linkPath: parsed.path,
+        displayText: displayText || parsed.subpath || undefined
     };
 }
 

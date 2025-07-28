@@ -18,10 +18,13 @@ export class TaskLinkDetectionService {
     }
 
     /**
-     * Parse a wikilink and determine if it points to a valid task
+     * Parse a link (wikilink or markdown) and determine if it points to a valid task
      */
-    async detectTaskLink(wikilinkText: string, sourcePath: string): Promise<TaskLinkInfo> {
-        const parsed = this.parseWikilink(wikilinkText);
+    async detectTaskLink(linkText: string, sourcePath: string, linkType: 'wikilink' | 'markdown' = 'wikilink'): Promise<TaskLinkInfo> {
+        const parsed = linkType === 'wikilink' 
+            ? this.parseWikilink(linkText)
+            : this.parseMarkdownLink(linkText);
+            
         if (!parsed) {
             return { isValidTaskLink: false };
         }
@@ -109,6 +112,36 @@ export class TaskLinkDetectionService {
     }
 
     /**
+     * Parse markdown link syntax to extract link path and display text
+     */
+    private parseMarkdownLink(markdownLinkText: string): { linkPath: string; displayText?: string } | null {
+        // Parse markdown link: [text](path)
+        const match = markdownLinkText.match(/^\[([^\]]*)\]\(([^)]+)\)$/);
+        if (!match) return null;
+
+        const displayText = match[1].trim();
+        let linkPath = match[2].trim();
+        
+        if (!linkPath) return null;
+
+        // URL decode the link path - this is crucial for markdown links
+        try {
+            linkPath = decodeURIComponent(linkPath);
+        } catch (error) {
+            console.debug('TaskLinkDetectionService: Failed to decode URI component:', linkPath, error);
+            // If decoding fails, use the original path
+        }
+
+        // Use Obsidian's parseLinktext to handle any subpaths/headings
+        const parsed = parseLinktext(linkPath);
+        
+        return {
+            linkPath: parsed.path,
+            displayText: displayText || parsed.subpath || undefined
+        };
+    }
+
+    /**
      * Resolve a link path relative to the source file
      */
     private resolveLinkPath(linkPath: string, sourcePath: string): string | null {
@@ -154,22 +187,39 @@ export class TaskLinkDetectionService {
     }
 
     /**
-     * Find all wikilinks in a text string
+     * Find all wikilinks and markdown links in a text string
      */
-    findWikilinks(text: string): Array<{ match: string; start: number; end: number }> {
-        const wikilinks: Array<{ match: string; start: number; end: number }> = [];
-        const regex = /\[\[([^\]]+)\]\]/g;
+    findWikilinks(text: string): Array<{ match: string; start: number; end: number; type: 'wikilink' | 'markdown' }> {
+        const links: Array<{ match: string; start: number; end: number; type: 'wikilink' | 'markdown' }> = [];
+        
+        // Find wikilinks: [[link]] or [[link|alias]]
+        const wikilinkRegex = /\[\[([^\]]+)\]\]/g;
         let match;
 
-        while ((match = regex.exec(text)) !== null) {
-            wikilinks.push({
+        while ((match = wikilinkRegex.exec(text)) !== null) {
+            links.push({
                 match: match[0],
                 start: match.index,
-                end: match.index + match[0].length
+                end: match.index + match[0].length,
+                type: 'wikilink'
             });
         }
 
-        return wikilinks;
+        // Find markdown links: [text](path)
+        const markdownLinkRegex = /\[([^\]]*)\]\(([^)]+)\)/g;
+        wikilinkRegex.lastIndex = 0; // Reset regex state
+        
+        while ((match = markdownLinkRegex.exec(text)) !== null) {
+            links.push({
+                match: match[0],
+                start: match.index,
+                end: match.index + match[0].length,
+                type: 'markdown'
+            });
+        }
+
+        // Sort by start position to maintain order
+        return links.sort((a, b) => a.start - b.start);
     }
 
     /**
