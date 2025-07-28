@@ -184,11 +184,11 @@ export function calculateDefaultDate(defaultOption: 'none' | 'today' | 'tomorrow
 			break;
 		case 'tomorrow':
 			targetDate = new Date(today);
-			targetDate.setDate(today.getDate() + 1);
+			targetDate.setUTCDate(today.getUTCDate() + 1);
 			break;
 		case 'next-week':
 			targetDate = new Date(today);
-			targetDate.setDate(today.getDate() + 7);
+			targetDate.setUTCDate(today.getUTCDate() + 7);
 			break;
 		default:
 			return '';
@@ -198,12 +198,12 @@ export function calculateDefaultDate(defaultOption: 'none' | 'today' | 'tomorrow
 }
 
 /**
- * Checks if two dates are the same day
+ * Checks if two dates are the same day using UTC methods for consistency
  */
 export function isSameDay(date1: Date, date2: Date): boolean {
-	return date1.getFullYear() === date2.getFullYear() &&
-		date1.getMonth() === date2.getMonth() &&
-		date1.getDate() === date2.getDate();
+	return date1.getUTCFullYear() === date2.getUTCFullYear() &&
+		date1.getUTCMonth() === date2.getUTCMonth() &&
+		date1.getUTCDate() === date2.getUTCDate();
 }
 
 /**
@@ -354,9 +354,9 @@ export function isDueByRRule(task: TaskInfo, date: Date): boolean {
 	// Legacy recurrence object handling
 	const frequency = task.recurrence.frequency;
 	const targetDate = parseDate(formatUTCDateForCalendar(date));
-	const dayOfWeek = targetDate.getDay();
-	const dayOfMonth = targetDate.getDate();
-	const monthOfYear = targetDate.getMonth() + 1; // JavaScript months are 0-indexed
+	const dayOfWeek = targetDate.getUTCDay();
+	const dayOfMonth = targetDate.getUTCDate();
+	const monthOfYear = targetDate.getUTCMonth() + 1; // JavaScript months are 0-indexed
 	// Map JavaScript's day of week (0-6, where 0 is Sunday) to our day abbreviations
 	const weekdayMap = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
 	
@@ -382,8 +382,8 @@ export function isDueByRRule(task: TaskInfo, date: Date): boolean {
 			else if (task.due) {
 				try {
 					const originalDueDate = parseDate(task.due); // Safe parsing
-					return originalDueDate.getDate() === dayOfMonth && 
-							originalDueDate.getMonth() === targetDate.getMonth();
+					return originalDueDate.getUTCDate() === dayOfMonth && 
+							originalDueDate.getUTCMonth() === targetDate.getUTCMonth();
 				} catch (error) {
 					console.error(`Error parsing due date ${task.due}:`, error);
 					return false;
@@ -408,9 +408,9 @@ export function isRecurringTaskDueOn(task: any, date: Date): boolean {
 	
 	const frequency = task.recurrence.frequency;
 	const targetDate = parseDate(formatUTCDateForCalendar(date));
-	const dayOfWeek = targetDate.getDay();
-	const dayOfMonth = targetDate.getDate();
-	const monthOfYear = targetDate.getMonth() + 1; // JavaScript months are 0-indexed
+	const dayOfWeek = targetDate.getUTCDay();
+	const dayOfMonth = targetDate.getUTCDate();
+	const monthOfYear = targetDate.getUTCMonth() + 1; // JavaScript months are 0-indexed
 	// Map JavaScript's day of week (0-6, where 0 is Sunday) to our day abbreviations
 	const weekdayMap = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
 	
@@ -436,8 +436,8 @@ export function isRecurringTaskDueOn(task: any, date: Date): boolean {
 			else if (task.due) {
 				try {
 					const originalDueDate = parseDate(task.due); // Safe parsing
-					return originalDueDate.getDate() === dayOfMonth && 
-						originalDueDate.getMonth() === targetDate.getMonth();
+					return originalDueDate.getUTCDate() === dayOfMonth && 
+						originalDueDate.getUTCMonth() === targetDate.getUTCMonth();
 				} catch (error) {
 					console.error(`Error parsing due date ${task.due}:`, error);
 					return false;
@@ -539,7 +539,7 @@ export function generateRecurringInstances(task: TaskInfo, startDate: Date, endD
 		if (isDueByRRule(task, current)) {
 			instances.push(new Date(current));
 		}
-		current.setDate(current.getDate() + 1);
+		current.setUTCDate(current.getUTCDate() + 1);
 	}
 	
 	return instances;
