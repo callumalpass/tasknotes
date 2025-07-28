@@ -260,6 +260,14 @@ export function createSafeDate(year: number, month: number, day: number): Date {
 }
 
 /**
+ * Create a safe UTC Date object for a specific year/month/day
+ */
+export function createSafeUTCDate(year: number, month: number, day: number): Date {
+    // Note: month is 0-based in Date constructor
+    return new Date(Date.UTC(year, month, day));
+}
+
+/**
  * Enhanced date validation that accepts both date-only and timezone-aware formats
  */
 export function validateDateInput(dateValue: string): boolean {

@@ -93,7 +93,10 @@ export default class TaskNotesPlugin extends Plugin {
 	private resolveReady: () => void;
 	
 	// Shared state between views
-	selectedDate: Date = new Date();
+	selectedDate: Date = (() => {
+		const now = new Date();
+		return new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+	})();
 	
 	// Minimal native cache manager (also handles events)
 	cacheManager: MinimalNativeCache;

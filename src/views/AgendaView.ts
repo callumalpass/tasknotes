@@ -762,8 +762,8 @@ export class AgendaView extends ItemView {
             
             let currentDate = weekStart;
             while (currentDate <= weekEnd) {
-                // Normalize to start of day to ensure consistent date handling
-                const normalizedDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
+                // Normalize to start of day using UTC to ensure consistent date handling
+                const normalizedDate = new Date(Date.UTC(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate()));
                 dates.push(normalizedDate);
                 currentDate = addDays(currentDate, 1);
             }
@@ -771,8 +771,8 @@ export class AgendaView extends ItemView {
             // Fixed number of days starting from startDate
             for (let i = 0; i < this.daysToShow; i++) {
                 const targetDate = addDays(this.startDate, i);
-                // Normalize to start of day to ensure consistent date handling
-                const normalizedDate = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate());
+                // Normalize to start of day using UTC to ensure consistent date handling
+                const normalizedDate = new Date(Date.UTC(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate()));
                 dates.push(normalizedDate);
             }
         }

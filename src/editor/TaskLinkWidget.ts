@@ -28,7 +28,10 @@ export class TaskLinkWidget extends WidgetType {
         const container = document.createElement('span');
         
         // Determine effective status for recurring tasks (same as TaskCard)
-        const targetDate = this.plugin.selectedDate || new Date();
+        const targetDate = this.plugin.selectedDate || (() => {
+            const now = new Date();
+            return new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+        })();
         const effectiveStatus = this.taskInfo.recurrence 
             ? getEffectiveTaskStatus(this.taskInfo, targetDate)
             : this.taskInfo.status;
@@ -421,7 +424,10 @@ export class TaskLinkWidget extends WidgetType {
         try {
             // Import the showTaskContextMenu function from TaskCard
             const { showTaskContextMenu } = await import('../ui/TaskCard');
-            const targetDate = this.plugin.selectedDate || new Date();
+            const targetDate = this.plugin.selectedDate || (() => {
+            const now = new Date();
+            return new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+        })();
             await showTaskContextMenu(event, this.taskInfo.path, this.plugin, targetDate);
         } catch (error) {
             console.error(`Error showing context menu for task ${this.taskInfo.path}:`, error);
