@@ -1561,20 +1561,26 @@ private injectCustomStyles(): void {
 			// Open task selector modal
 			const modal = new TaskSelectorModal(this.app, this, unarchivedTasks, (selectedTask) => {
 				if (selectedTask) {
-					// Create wikilink using Obsidian's API
+					// Create link using Obsidian's generateMarkdownLink (respects user's link format settings)
 					const file = this.app.vault.getAbstractFileByPath(selectedTask.path);
 					if (file) {
-						const linkText = this.app.metadataCache.fileToLinktext(file as any, '');
-						const wikilink = `[[${linkText}|${selectedTask.title}]]`;
+						const currentFile = this.app.workspace.getActiveFile();
+						const sourcePath = currentFile?.path || '';
+						const properLink = this.app.fileManager.generateMarkdownLink(
+							file as TFile, 
+							sourcePath, 
+							'', 
+							selectedTask.title  // Use task title as alias
+						);
 						
 						// Insert at cursor position
 						const cursor = editor.getCursor();
-						editor.replaceRange(wikilink, cursor);
+						editor.replaceRange(properLink, cursor);
 						
 						// Move cursor to end of inserted text
 						const newCursor = {
 							line: cursor.line,
-							ch: cursor.ch + wikilink.length
+							ch: cursor.ch + properLink.length
 						};
 						editor.setCursor(newCursor);
 					} else {

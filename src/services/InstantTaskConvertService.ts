@@ -604,11 +604,11 @@ export class InstantTaskConvertService {
             const currentFile = this.plugin.app.workspace.getActiveFile();
             const sourcePath = currentFile?.path || '';
             
-            // Use Obsidian's native link text generation
-            const obsidianLinkText = this.plugin.app.metadataCache.fileToLinktext(file, sourcePath, true);
+            // Use Obsidian's generateMarkdownLink (respects user's link format settings)
+            const properLink = this.plugin.app.fileManager.generateMarkdownLink(file, sourcePath);
             
             // Create the final line with proper indentation and original list format
-            const linkText = `${originalIndentation}${listPrefix}[[${obsidianLinkText}]]`;
+            const linkText = `${originalIndentation}${listPrefix}${properLink}`;
             
             // Validate the generated link text
             if (linkText.length > 500) { // Reasonable limit for link text
@@ -911,9 +911,9 @@ export class InstantTaskConvertService {
         
         const currentFile = this.plugin.app.workspace.getActiveFile();
         const sourcePath = currentFile?.path || '';
-        const obsidianLinkText = this.plugin.app.metadataCache.fileToLinktext(file, sourcePath, true);
+        const properLink = this.plugin.app.fileManager.generateMarkdownLink(file, sourcePath);
         
-        return `${originalIndentation}${listPrefix}[[${obsidianLinkText}]]`;
+        return `${originalIndentation}${listPrefix}${properLink}`;
     }
 
     /**
