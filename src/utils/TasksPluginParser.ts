@@ -6,6 +6,8 @@ export interface ParsedTaskData {
 	priority?: string;
 	dueDate?: string;
 	scheduledDate?: string;
+	dueTime?: string;
+	scheduledTime?: string;
 	startDate?: string;
 	createdDate?: string;
 	doneDate?: string;

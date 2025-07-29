@@ -3,7 +3,7 @@ import TaskNotesPlugin from '../main';
 import { TasksPluginParser, ParsedTaskData } from '../utils/TasksPluginParser';
 import { NaturalLanguageParser } from './NaturalLanguageParser';
 import { TaskCreationData } from '../types';
-import { getCurrentTimestamp } from '../utils/dateUtils';
+import { getCurrentTimestamp, combineDateAndTime } from '../utils/dateUtils';
 import { calculateDefaultDate } from '../utils/helpers';
 import { StatusManager } from './StatusManager';
 import { PriorityManager } from './PriorityManager';
@@ -369,6 +369,10 @@ export class InstantTaskConvertService {
         const parsedDueDate = this.sanitizeDate(parsedData.dueDate);
         const parsedScheduledDate = this.sanitizeDate(parsedData.scheduledDate);
         
+        // Extract time information
+        const parsedDueTime = parsedData.dueTime?.trim() || undefined;
+        const parsedScheduledTime = parsedData.scheduledTime?.trim() || undefined;
+        
         // Apply task creation defaults if setting is enabled
         let priority: string | undefined;
         let status: string | undefined;
@@ -393,14 +397,14 @@ export class InstantTaskConvertService {
             
             // Apply due date: parsed date takes priority, then defaults
             if (parsedDueDate) {
-                dueDate = parsedDueDate;
+                dueDate = parsedDueTime ? combineDateAndTime(parsedDueDate, parsedDueTime) : parsedDueDate;
             } else if (defaults.defaultDueDate !== 'none') {
                 dueDate = calculateDefaultDate(defaults.defaultDueDate);
             }
             
             // Apply scheduled date: parsed date takes priority, then defaults
             if (parsedScheduledDate) {
-                scheduledDate = parsedScheduledDate;
+                scheduledDate = parsedScheduledTime ? combineDateAndTime(parsedScheduledDate, parsedScheduledTime) : parsedScheduledDate;
             } else if (defaults.defaultScheduledDate !== 'none') {
                 scheduledDate = calculateDefaultDate(defaults.defaultScheduledDate);
             }
@@ -444,8 +448,8 @@ export class InstantTaskConvertService {
             // Minimal behavior: only use parsed data, use "none" for unset values
             priority = (parsedData.priority ? this.sanitizePriority(parsedData.priority) : '') || 'none';
             status = (parsedData.status ? this.sanitizeStatus(parsedData.status) : '') || 'none';
-            dueDate = parsedDueDate || undefined;
-            scheduledDate = parsedScheduledDate || undefined;
+            dueDate = parsedDueDate ? (parsedDueTime ? combineDateAndTime(parsedDueDate, parsedDueTime) : parsedDueDate) : undefined;
+            scheduledDate = parsedScheduledDate ? (parsedScheduledTime ? combineDateAndTime(parsedScheduledDate, parsedScheduledTime) : parsedScheduledDate) : undefined;
             // Apply contexts: only use parsed contexts
             contextsArray = [];
             if (parsedContexts.length > 0) {
@@ -756,6 +760,8 @@ export class InstantTaskConvertService {
                 priority: nlpResult.priority,
                 dueDate: nlpResult.dueDate,
                 scheduledDate: nlpResult.scheduledDate,
+                dueTime: nlpResult.dueTime,
+                scheduledTime: nlpResult.scheduledTime,
                 recurrence: nlpResult.recurrence,
                 tags: nlpResult.tags && nlpResult.tags.length > 0 ? nlpResult.tags : undefined,
                 projects: nlpResult.projects && nlpResult.projects.length > 0 ? nlpResult.projects : undefined,
