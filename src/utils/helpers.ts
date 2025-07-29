@@ -523,8 +523,23 @@ export function generateRecurringInstances(task: TaskInfo, startDate: Date, endD
 			
 			const rrule = new RRule(rruleOptions);
 			
+			// Convert start and end dates to UTC to match dtstart
+			// This ensures consistent timezone handling and prevents off-by-one day errors
+			const utcStartDate = new Date(Date.UTC(
+				startDate.getFullYear(),
+				startDate.getMonth(),
+				startDate.getDate(),
+				0, 0, 0, 0
+			));
+			const utcEndDate = new Date(Date.UTC(
+				endDate.getFullYear(),
+				endDate.getMonth(),
+				endDate.getDate(),
+				23, 59, 59, 999
+			));
+			
 			// Generate occurrences within the date range
-			return rrule.between(startDate, endDate, true);
+			return rrule.between(utcStartDate, utcEndDate, true);
 		} catch (error) {
 			console.error('Error generating recurring instances:', error, { task: task.title, recurrence: task.recurrence });
 			// Fall back to legacy method on error
