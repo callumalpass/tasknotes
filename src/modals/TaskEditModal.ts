@@ -222,8 +222,14 @@ export class TaskEditModal extends TaskModal {
         this.calendarWrapper = container.createDiv('recurring-calendar');
         
         // Show current month by default, or the month with most recent completions
+        // Use UTC date to be consistent with the rest of the calendar
         const currentDate = new Date();
-        let mostRecentCompletion = currentDate;
+        const currentUTCDate = new Date(Date.UTC(
+            currentDate.getUTCFullYear(), 
+            currentDate.getUTCMonth(), 
+            currentDate.getUTCDate()
+        ));
+        let mostRecentCompletion = currentUTCDate;
         
         if (this.task.complete_instances && this.task.complete_instances.length > 0) {
             const validCompletions = this.task.complete_instances
@@ -324,14 +330,22 @@ export class TaskEditModal extends TaskModal {
         
         // Navigation event handlers
         prevButton.addEventListener('click', () => {
-            const prevMonth = new Date(displayDate);
-            prevMonth.setMonth(prevMonth.getMonth() - 1);
+            // Create previous month date using UTC to avoid timezone issues
+            const prevMonth = new Date(Date.UTC(
+                displayDate.getUTCFullYear(), 
+                displayDate.getUTCMonth() - 1, 
+                1
+            ));
             this.renderCalendarMonth(container, prevMonth);
         });
         
         nextButton.addEventListener('click', () => {
-            const nextMonth = new Date(displayDate);
-            nextMonth.setMonth(nextMonth.getMonth() + 1);
+            // Create next month date using UTC to avoid timezone issues
+            const nextMonth = new Date(Date.UTC(
+                displayDate.getUTCFullYear(), 
+                displayDate.getUTCMonth() + 1, 
+                1
+            ));
             this.renderCalendarMonth(container, nextMonth);
         });
     }
