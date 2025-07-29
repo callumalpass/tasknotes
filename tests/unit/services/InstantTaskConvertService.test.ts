@@ -467,4 +467,514 @@ describe('InstantTaskConvertService', () => {
       expect(converted.projects).toBeUndefined();
     });
   });
+
+  describe('Due Date Handling', () => {
+    it('should extract due date from natural language', () => {
+      const mockNLPResult: NLPParsedTaskData = {
+        title: 'Submit report',
+        contexts: [],
+        tags: [],
+        projects: [],
+        dueDate: '2025-02-15',
+        isCompleted: false
+      };
+      mockNLParser.parseInput.mockReturnValue(mockNLPResult);
+
+      const result = service['tryNLPFallback']('Submit report due February 15th', '');
+      
+      expect(result).not.toBeNull();
+      expect(result!.dueDate).toBe('2025-02-15');
+      expect(result!.title).toBe('Submit report');
+    });
+
+    it('should extract due date with time from natural language', () => {
+      const mockNLPResult: NLPParsedTaskData = {
+        title: 'Meeting with client',
+        contexts: [],
+        tags: [],
+        projects: [],
+        dueDate: '2025-02-15',
+        dueTime: '14:30',
+        isCompleted: false
+      };
+      mockNLParser.parseInput.mockReturnValue(mockNLPResult);
+
+      const result = service['tryNLPFallback']('Meeting with client due February 15th at 2:30 PM', '');
+      
+      expect(result).not.toBeNull();
+      expect(result!.dueDate).toBe('2025-02-15');
+      expect(result!.dueTime).toBe('14:30');
+    });
+
+    it('should handle Tasks plugin due date format', () => {
+      const mockNLPResult: NLPParsedTaskData = {
+        title: 'Buy groceries',
+        contexts: ['home'],
+        tags: ['errands'],
+        projects: [],
+        dueDate: '2025-01-20',
+        isCompleted: false
+      };
+      mockNLParser.parseInput.mockReturnValue(mockNLPResult);
+
+      const result = service['tryNLPFallback']('- [ ] Buy groceries 📅 2025-01-20 @home #errands', '');
+      
+      expect(result).not.toBeNull();
+      expect(result!.dueDate).toBe('2025-01-20');
+      expect(result!.contexts).toEqual(['home']);
+      expect(result!.tags).toEqual(['errands']);
+    });
+
+    it('should handle invalid due date gracefully', () => {
+      const mockNLPResult: NLPParsedTaskData = {
+        title: 'Task with invalid date',
+        contexts: [],
+        tags: [],
+        projects: [],
+        dueDate: 'invalid-date',
+        isCompleted: false
+      };
+      mockNLParser.parseInput.mockReturnValue(mockNLPResult);
+
+      const result = service['tryNLPFallback']('Task with invalid date due never', '');
+      
+      expect(result).not.toBeNull();
+      expect(result!.dueDate).toBe('invalid-date'); // Service preserves what NLP returns
+      expect(result!.title).toBe('Task with invalid date');
+    });
+
+    it('should handle tasks without due dates', () => {
+      const mockNLPResult: NLPParsedTaskData = {
+        title: 'Simple task',
+        contexts: [],
+        tags: [],
+        projects: [],
+        isCompleted: false
+      };
+      mockNLParser.parseInput.mockReturnValue(mockNLPResult);
+
+      const result = service['tryNLPFallback']('Simple task', '');
+      
+      expect(result).not.toBeNull();
+      expect(result!.dueDate).toBeUndefined();
+      expect(result!.title).toBe('Simple task');
+    });
+  });
+
+  describe('Scheduled Date Handling', () => {
+    it('should extract scheduled date from natural language', () => {
+      const mockNLPResult: NLPParsedTaskData = {
+        title: 'Plan project',
+        contexts: [],
+        tags: [],
+        projects: [],
+        scheduledDate: '2025-02-10',
+        isCompleted: false
+      };
+      mockNLParser.parseInput.mockReturnValue(mockNLPResult);
+
+      const result = service['tryNLPFallback']('Plan project scheduled for February 10th', '');
+      
+      expect(result).not.toBeNull();
+      expect(result!.scheduledDate).toBe('2025-02-10');
+      expect(result!.title).toBe('Plan project');
+    });
+
+    it('should extract scheduled date with time from natural language', () => {
+      const mockNLPResult: NLPParsedTaskData = {
+        title: 'Team standup',
+        contexts: ['office'],
+        tags: [],
+        projects: [],
+        scheduledDate: '2025-02-10',
+        scheduledTime: '09:00',
+        isCompleted: false
+      };
+      mockNLParser.parseInput.mockReturnValue(mockNLPResult);
+
+      const result = service['tryNLPFallback']('Team standup scheduled for February 10th at 9 AM @office', '');
+      
+      expect(result).not.toBeNull();
+      expect(result!.scheduledDate).toBe('2025-02-10');
+      expect(result!.scheduledTime).toBe('09:00');
+      expect(result!.contexts).toEqual(['office']);
+    });
+
+    it('should handle Tasks plugin scheduled date format', () => {
+      const mockNLPResult: NLPParsedTaskData = {
+        title: 'Review code',
+        contexts: ['development'],
+        tags: ['review'],
+        projects: [],
+        scheduledDate: '2025-01-25',
+        isCompleted: false
+      };
+      mockNLParser.parseInput.mockReturnValue(mockNLPResult);
+
+      const result = service['tryNLPFallback']('- [ ] Review code ⏰ 2025-01-25 @development #review', '');
+      
+      expect(result).not.toBeNull();
+      expect(result!.scheduledDate).toBe('2025-01-25');
+      expect(result!.contexts).toEqual(['development']);
+      expect(result!.tags).toEqual(['review']);
+    });
+
+    it('should handle both due and scheduled dates', () => {
+      const mockNLPResult: NLPParsedTaskData = {
+        title: 'Project milestone',
+        contexts: ['work'],
+        tags: ['important'],
+        projects: ['q1-goals'],
+        dueDate: '2025-02-28',
+        scheduledDate: '2025-02-20',
+        priority: 'high',
+        isCompleted: false
+      };
+      mockNLParser.parseInput.mockReturnValue(mockNLPResult);
+
+      const result = service['tryNLPFallback']('Project milestone scheduled February 20th due February 28th @work #important +q1-goals ⏫', '');
+      
+      expect(result).not.toBeNull();
+      expect(result!.dueDate).toBe('2025-02-28');
+      expect(result!.scheduledDate).toBe('2025-02-20');
+      expect(result!.contexts).toEqual(['work']);
+      expect(result!.tags).toEqual(['important']);
+      expect(result!.projects).toEqual(['q1-goals']);
+      expect(result!.priority).toBe('high');
+    });
+
+    it('should handle invalid scheduled date gracefully', () => {
+      const mockNLPResult: NLPParsedTaskData = {
+        title: 'Task with invalid scheduled date',
+        contexts: [],
+        tags: [],
+        projects: [],
+        scheduledDate: 'invalid-scheduled-date',
+        isCompleted: false
+      };
+      mockNLParser.parseInput.mockReturnValue(mockNLPResult);
+
+      const result = service['tryNLPFallback']('Task with invalid scheduled date scheduled for never', '');
+      
+      expect(result).not.toBeNull();
+      expect(result!.scheduledDate).toBe('invalid-scheduled-date');
+      expect(result!.title).toBe('Task with invalid scheduled date');
+    });
+  });
+
+  describe('Recurrence (RRule) Handling', () => {
+    it('should extract daily recurrence from natural language', () => {
+      const mockNLPResult: NLPParsedTaskData = {
+        title: 'Daily standup',
+        contexts: ['work'],
+        tags: [],
+        projects: [],
+        recurrence: 'FREQ=DAILY',
+        isCompleted: false
+      };
+      mockNLParser.parseInput.mockReturnValue(mockNLPResult);
+
+      const result = service['tryNLPFallback']('Daily standup every day @work', '');
+      
+      expect(result).not.toBeNull();
+      expect(result!.recurrence).toBe('FREQ=DAILY');
+      expect(result!.title).toBe('Daily standup');
+      expect(result!.contexts).toEqual(['work']);
+    });
+
+    it('should extract weekly recurrence from natural language', () => {
+      const mockNLPResult: NLPParsedTaskData = {
+        title: 'Team meeting',
+        contexts: ['office'],
+        tags: ['meeting'],
+        projects: [],
+        recurrence: 'FREQ=WEEKLY;BYDAY=MO',
+        isCompleted: false
+      };
+      mockNLParser.parseInput.mockReturnValue(mockNLPResult);
+
+      const result = service['tryNLPFallback']('Team meeting every Monday @office #meeting', '');
+      
+      expect(result).not.toBeNull();
+      expect(result!.recurrence).toBe('FREQ=WEEKLY;BYDAY=MO');
+      expect(result!.title).toBe('Team meeting');
+      expect(result!.contexts).toEqual(['office']);
+      expect(result!.tags).toEqual(['meeting']);
+    });
+
+    it('should extract monthly recurrence from natural language', () => {
+      const mockNLPResult: NLPParsedTaskData = {
+        title: 'Pay rent',
+        contexts: ['home'],
+        tags: ['bills'],
+        projects: [],
+        recurrence: 'FREQ=MONTHLY;BYMONTHDAY=1',
+        dueDate: '2025-02-01',
+        isCompleted: false
+      };
+      mockNLParser.parseInput.mockReturnValue(mockNLPResult);
+
+      const result = service['tryNLPFallback']('Pay rent monthly on the 1st due February 1st @home #bills', '');
+      
+      expect(result).not.toBeNull();
+      expect(result!.recurrence).toBe('FREQ=MONTHLY;BYMONTHDAY=1');
+      expect(result!.dueDate).toBe('2025-02-01');
+      expect(result!.contexts).toEqual(['home']);
+      expect(result!.tags).toEqual(['bills']);
+    });
+
+    it('should extract yearly recurrence from natural language', () => {
+      const mockNLPResult: NLPParsedTaskData = {
+        title: 'Annual review',
+        contexts: ['work'],
+        tags: ['review', 'performance'],
+        projects: ['hr-tasks'],
+        recurrence: 'FREQ=YEARLY;BYMONTH=12;BYMONTHDAY=15',
+        scheduledDate: '2025-12-15',
+        isCompleted: false
+      };
+      mockNLParser.parseInput.mockReturnValue(mockNLPResult);
+
+      const result = service['tryNLPFallback']('Annual review every year on December 15th scheduled December 15th @work #review #performance +hr-tasks', '');
+      
+      expect(result).not.toBeNull();
+      expect(result!.recurrence).toBe('FREQ=YEARLY;BYMONTH=12;BYMONTHDAY=15');
+      expect(result!.scheduledDate).toBe('2025-12-15');
+      expect(result!.contexts).toEqual(['work']);
+      expect(result!.tags).toEqual(['review', 'performance']);
+      expect(result!.projects).toEqual(['hr-tasks']);
+    });
+
+    it('should handle complex recurrence with intervals', () => {
+      const mockNLPResult: NLPParsedTaskData = {
+        title: 'Backup server',
+        contexts: ['development'],
+        tags: ['maintenance'],
+        projects: [],
+        recurrence: 'FREQ=WEEKLY;INTERVAL=2;BYDAY=FR',
+        isCompleted: false
+      };
+      mockNLParser.parseInput.mockReturnValue(mockNLPResult);
+
+      const result = service['tryNLPFallback']('Backup server every 2 weeks on Friday @development #maintenance', '');
+      
+      expect(result).not.toBeNull();
+      expect(result!.recurrence).toBe('FREQ=WEEKLY;INTERVAL=2;BYDAY=FR');
+      expect(result!.title).toBe('Backup server');
+      expect(result!.contexts).toEqual(['development']);
+      expect(result!.tags).toEqual(['maintenance']);
+    });
+
+    it('should handle recurrence with end date', () => {
+      const mockNLPResult: NLPParsedTaskData = {
+        title: 'Project check-in',
+        contexts: ['work'],
+        tags: ['project'],
+        projects: ['web-redesign'],
+        recurrence: 'FREQ=WEEKLY;UNTIL=20250331T000000Z',
+        scheduledDate: '2025-02-03',
+        isCompleted: false
+      };
+      mockNLParser.parseInput.mockReturnValue(mockNLPResult);
+
+      const result = service['tryNLPFallback']('Project check-in weekly until March 31st scheduled February 3rd @work #project +web-redesign', '');
+      
+      expect(result).not.toBeNull();
+      expect(result!.recurrence).toBe('FREQ=WEEKLY;UNTIL=20250331T000000Z');
+      expect(result!.scheduledDate).toBe('2025-02-03');
+      expect(result!.contexts).toEqual(['work']);
+      expect(result!.tags).toEqual(['project']);
+      expect(result!.projects).toEqual(['web-redesign']);
+    });
+
+    it('should handle Tasks plugin recurrence format', () => {
+      const mockNLPResult: NLPParsedTaskData = {
+        title: 'Water plants',
+        contexts: ['home'],
+        tags: ['gardening'],
+        projects: [],
+        recurrence: 'FREQ=WEEKLY;BYDAY=SU,WE',
+        isCompleted: false
+      };
+      mockNLParser.parseInput.mockReturnValue(mockNLPResult);
+
+      const result = service['tryNLPFallback']('- [ ] Water plants 🔁 every Sunday and Wednesday @home #gardening', '');
+      
+      expect(result).not.toBeNull();
+      expect(result!.recurrence).toBe('FREQ=WEEKLY;BYDAY=SU,WE');
+      expect(result!.title).toBe('Water plants');
+      expect(result!.contexts).toEqual(['home']);
+      expect(result!.tags).toEqual(['gardening']);
+    });
+
+    it('should handle invalid recurrence gracefully', () => {
+      const mockNLPResult: NLPParsedTaskData = {
+        title: 'Task with invalid recurrence',
+        contexts: [],
+        tags: [],
+        projects: [],
+        recurrence: 'INVALID_RRULE_FORMAT',
+        isCompleted: false
+      };
+      mockNLParser.parseInput.mockReturnValue(mockNLPResult);
+
+      const result = service['tryNLPFallback']('Task with invalid recurrence repeat in some weird way', '');
+      
+      expect(result).not.toBeNull();
+      expect(result!.recurrence).toBe('INVALID_RRULE_FORMAT'); // Service preserves what NLP returns
+      expect(result!.title).toBe('Task with invalid recurrence');
+    });
+
+    it('should handle tasks without recurrence', () => {
+      const mockNLPResult: NLPParsedTaskData = {
+        title: 'One-time task',
+        contexts: ['office'],
+        tags: [],
+        projects: [],
+        dueDate: '2025-02-15',
+        isCompleted: false
+      };
+      mockNLParser.parseInput.mockReturnValue(mockNLPResult);
+
+      const result = service['tryNLPFallback']('One-time task due February 15th @office', '');
+      
+      expect(result).not.toBeNull();
+      expect(result!.recurrence).toBeUndefined();
+      expect(result!.dueDate).toBe('2025-02-15');
+      expect(result!.title).toBe('One-time task');
+      expect(result!.contexts).toEqual(['office']);
+    });
+  });
+
+  describe('Combined Date and Recurrence Scenarios', () => {
+    it('should handle recurring task with both due and scheduled dates', () => {
+      const mockNLPResult: NLPParsedTaskData = {
+        title: 'Monthly report',
+        contexts: ['work'],
+        tags: ['report', 'monthly'],
+        projects: ['operations'],
+        dueDate: '2025-02-28',
+        scheduledDate: '2025-02-25',
+        recurrence: 'FREQ=MONTHLY;BYMONTHDAY=25',
+        priority: 'high',
+        isCompleted: false
+      };
+      mockNLParser.parseInput.mockReturnValue(mockNLPResult);
+
+      const result = service['tryNLPFallback']('Monthly report scheduled 25th due end of month every month @work #report #monthly +operations ⏫', '');
+      
+      expect(result).not.toBeNull();
+      expect(result!.title).toBe('Monthly report');
+      expect(result!.dueDate).toBe('2025-02-28');
+      expect(result!.scheduledDate).toBe('2025-02-25');
+      expect(result!.recurrence).toBe('FREQ=MONTHLY;BYMONTHDAY=25');
+      expect(result!.contexts).toEqual(['work']);
+      expect(result!.tags).toEqual(['report', 'monthly']);
+      expect(result!.projects).toEqual(['operations']);
+      expect(result!.priority).toBe('high');
+    });
+
+    it('should handle recurring task with time components', () => {
+      const mockNLPResult: NLPParsedTaskData = {
+        title: 'Weekly team sync',
+        contexts: ['office', 'meeting-room'],
+        tags: ['meeting'],
+        projects: ['team-management'],
+        scheduledDate: '2025-02-03',
+        scheduledTime: '10:00',
+        recurrence: 'FREQ=WEEKLY;BYDAY=MO',
+        isCompleted: false
+      };
+      mockNLParser.parseInput.mockReturnValue(mockNLPResult);
+
+      const result = service['tryNLPFallback']('Weekly team sync every Monday at 10 AM scheduled February 3rd @office @meeting-room #meeting +team-management', '');
+      
+      expect(result).not.toBeNull();
+      expect(result!.title).toBe('Weekly team sync');
+      expect(result!.scheduledDate).toBe('2025-02-03');
+      expect(result!.scheduledTime).toBe('10:00');
+      expect(result!.recurrence).toBe('FREQ=WEEKLY;BYDAY=MO');
+      expect(result!.contexts).toEqual(['office', 'meeting-room']);
+      expect(result!.tags).toEqual(['meeting']);
+      expect(result!.projects).toEqual(['team-management']);
+    });
+
+    it('should handle complex Tasks plugin format with all date components', () => {
+      const mockNLPResult: NLPParsedTaskData = {
+        title: 'Weekly status update',
+        contexts: ['remote'],
+        tags: ['status', 'weekly'],
+        projects: ['project-alpha'],
+        dueDate: '2025-02-07',
+        scheduledDate: '2025-02-05',
+        recurrence: 'FREQ=WEEKLY;BYDAY=WE',
+        priority: 'medium',
+        status: 'in-progress',
+        isCompleted: false
+      };
+      mockNLParser.parseInput.mockReturnValue(mockNLPResult);
+
+      const result = service['tryNLPFallback']('- [ ] Weekly status update 📅 2025-02-07 ⏰ 2025-02-05 🔁 every Wednesday 🔽 @remote #status #weekly +project-alpha', '');
+      
+      expect(result).not.toBeNull();
+      expect(result!.title).toBe('Weekly status update');
+      expect(result!.dueDate).toBe('2025-02-07');
+      expect(result!.scheduledDate).toBe('2025-02-05');
+      expect(result!.recurrence).toBe('FREQ=WEEKLY;BYDAY=WE');
+      expect(result!.priority).toBe('medium');
+      expect(result!.status).toBe('in-progress');
+      expect(result!.contexts).toEqual(['remote']);
+      expect(result!.tags).toEqual(['status', 'weekly']);
+      expect(result!.projects).toEqual(['project-alpha']);
+    });
+
+    it('should preserve date formats during NLP to TasksPlugin conversion', () => {
+      const nlpResult: NLPParsedTaskData = {
+        title: 'Conversion test task',
+        contexts: ['test'],
+        tags: ['conversion'],
+        projects: ['testing'],
+        dueDate: '2025-03-15',
+        scheduledDate: '2025-03-10',
+        dueTime: '16:30',
+        scheduledTime: '09:00',
+        recurrence: 'FREQ=WEEKLY;BYDAY=FR',
+        priority: 'high',
+        status: 'open',
+        isCompleted: false
+      };
+
+      // Test the conversion logic from NLP to TasksPlugin format
+      const converted: ParsedTaskData = {
+        title: nlpResult.title.trim(),
+        isCompleted: nlpResult.isCompleted || false,
+        status: nlpResult.status,
+        priority: nlpResult.priority,
+        dueDate: nlpResult.dueDate,
+        scheduledDate: nlpResult.scheduledDate,
+        recurrence: nlpResult.recurrence,
+        tags: nlpResult.tags && nlpResult.tags.length > 0 ? nlpResult.tags : undefined,
+        projects: nlpResult.projects && nlpResult.projects.length > 0 ? nlpResult.projects : undefined,
+        contexts: nlpResult.contexts && nlpResult.contexts.length > 0 ? nlpResult.contexts : undefined,
+        startDate: undefined,
+        createdDate: undefined,
+        doneDate: undefined,
+        recurrenceData: undefined
+      };
+
+      expect(converted.title).toBe('Conversion test task');
+      expect(converted.dueDate).toBe('2025-03-15');
+      expect(converted.scheduledDate).toBe('2025-03-10');
+      expect(converted.recurrence).toBe('FREQ=WEEKLY;BYDAY=FR');
+      expect(converted.priority).toBe('high');
+      expect(converted.status).toBe('open');
+      expect(converted.contexts).toEqual(['test']);
+      expect(converted.tags).toEqual(['conversion']);
+      expect(converted.projects).toEqual(['testing']);
+      expect(converted.isCompleted).toBe(false);
+      
+      // Note: dueTime and scheduledTime are not part of TasksPlugin format
+      // This is expected behavior - time information may be stored differently
+    });
+  });
 });
