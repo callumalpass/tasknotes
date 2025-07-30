@@ -158,6 +158,33 @@ export abstract class TaskModal extends Modal {
             this.detailsContainer.style.display = 'none';
         }
 
+        // Title field appears in details section for:
+        // 1. Edit modals (always)
+        // 2. Creation modals when NLP is enabled (since the main title input is replaced by NLP textarea)
+        const isEditModal = this.getModalTitle() === 'Edit task';
+        const isCreationWithNLP = this.getModalTitle() === 'Create task' && this.plugin.settings.enableNaturalLanguageInput;
+        
+        if (isEditModal || isCreationWithNLP) {
+            const titleLabel = this.detailsContainer.createDiv('detail-label');
+            titleLabel.textContent = 'Title';
+            
+            const titleInputDetailed = this.detailsContainer.createEl('input', {
+                type: 'text',
+                cls: 'title-input-detailed',
+                placeholder: 'Task title...'
+            });
+            
+            titleInputDetailed.value = this.title;
+            titleInputDetailed.addEventListener('input', (e) => {
+                this.title = (e.target as HTMLInputElement).value;
+            });
+            
+            // Store reference for creation modals with NLP
+            if (isCreationWithNLP && !this.titleInput) {
+                this.titleInput = titleInputDetailed;
+            }
+        }
+
         // Details textarea (only for creation modals, not edit modals)
         if (this.getModalTitle() !== 'Edit task') {
             const detailsLabel = this.detailsContainer.createDiv('detail-label');
