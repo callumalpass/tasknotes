@@ -290,6 +290,9 @@ export class TaskCreationModal extends TaskModal {
         } else {
             // Fall back to regular title input
             this.createTitleInput(container);
+            // When NLP is disabled, start with the modal expanded
+            this.isExpanded = true;
+            this.containerEl.addClass('expanded');
         }
 
         // Create action bar with icons

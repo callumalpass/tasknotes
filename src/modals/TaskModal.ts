@@ -89,13 +89,6 @@ export abstract class TaskModal extends Modal {
         this.titleInput.addEventListener('input', (e) => {
             this.title = (e.target as HTMLInputElement).value;
         });
-
-        // Auto-expand on focus
-        this.titleInput.addEventListener('focus', () => {
-            if (!this.isExpanded) {
-                this.expandModal();
-            }
-        });
     }
 
     protected createActionBar(container: HTMLElement): void {
@@ -164,21 +157,6 @@ export abstract class TaskModal extends Modal {
         if (!this.isExpanded) {
             this.detailsContainer.style.display = 'none';
         }
-
-        // Title field (appears on expansion)
-        const titleLabel = this.detailsContainer.createDiv('detail-label');
-        titleLabel.textContent = 'Title';
-        
-        this.titleInput = this.detailsContainer.createEl('input', {
-            type: 'text',
-            cls: 'title-input-detailed',
-            placeholder: 'Task title...'
-        });
-        
-        this.titleInput.value = this.title;
-        this.titleInput.addEventListener('input', (e) => {
-            this.title = (e.target as HTMLInputElement).value;
-        });
 
         // Details textarea (only for creation modals, not edit modals)
         if (this.getModalTitle() !== 'Edit task') {
