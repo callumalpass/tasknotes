@@ -56,7 +56,7 @@ import { createTaskLinkOverlay, dispatchTaskUpdate } from './editor/TaskLinkOver
 import { createReadingModeTaskLinkProcessor } from './editor/ReadingModeTaskLinkProcessor';
 import { createProjectNoteDecorations, dispatchProjectSubtasksUpdate } from './editor/ProjectNoteDecorations';
 import { DragDropManager } from './utils/DragDropManager';
-import { formatUTCDateForCalendar } from './utils/dateUtils';
+import { formatUTCDateForCalendar, formatDateForStorage } from './utils/dateUtils';
 import { ICSSubscriptionService } from './services/ICSSubscriptionService';
 import { ICSNoteService } from './services/ICSNoteService';
 import { MigrationService } from './services/MigrationService';
@@ -1237,7 +1237,7 @@ private injectCustomStyles(): void {
 			const updatedTask = await this.taskService.toggleRecurringTaskComplete(task, date);
 			
 			// Determine if task was completed or marked incomplete
-			const dateStr = format(targetDate, 'yyyy-MM-dd');
+			const dateStr = formatDateForStorage(targetDate);
 			const wasCompleted = updatedTask.complete_instances?.includes(dateStr);
 			const action = wasCompleted ? 'completed' : 'marked incomplete';
 			

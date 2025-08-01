@@ -15,7 +15,10 @@ import {
     isToday as isTodayUtil,
     isBeforeDateTimeAware,
     isOverdueTimeAware,
-    getDatePart
+    getDatePart,
+    getTodayLocal,
+    parseDateAsLocal,
+    formatDateForStorage
 } from '../utils/dateUtils';
 
 /**
@@ -1312,8 +1315,8 @@ export class FilterService extends EventEmitter {
         baseQuery: FilterQuery,
         includeOverdue = false
     ): Promise<TaskInfo[]> {
-        // Normalize to the date string first to avoid timezone boundary issues
-        const dateStr = format(date, 'yyyy-MM-dd');
+        // Use local date formatting to ensure consistency
+        const dateStr = formatDateForStorage(date);
         const normalizedDate = startOfDayForDateString(dateStr);
         const isViewingToday = isTodayUtil(dateStr);
         

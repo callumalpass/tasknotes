@@ -1,6 +1,6 @@
 import { TFile, ItemView, WorkspaceLeaf, EventRef, Setting } from 'obsidian';
 import { format, addDays, startOfWeek, endOfWeek, isToday, isSameDay } from 'date-fns';
-import { formatUTCDateForCalendar } from '../utils/dateUtils';
+import { formatUTCDateForCalendar, createUTCDateFromLocalCalendarDate, getTodayLocal } from '../utils/dateUtils';
 import TaskNotesPlugin from '../main';
 import { 
     AGENDA_VIEW_TYPE,
@@ -229,8 +229,9 @@ export class AgendaView extends ItemView {
         });
         
         todayButton.addEventListener('click', () => {
-            this.startDate = new Date();
-            this.plugin.setSelectedDate(new Date());
+            const today = getTodayLocal();
+            this.startDate = today;
+            this.plugin.setSelectedDate(today);
             this.updatePeriodDisplay();
             this.refresh();
         });
@@ -762,8 +763,8 @@ export class AgendaView extends ItemView {
             
             let currentDate = weekStart;
             while (currentDate <= weekEnd) {
-                // Normalize to start of day using UTC to ensure consistent date handling
-                const normalizedDate = new Date(Date.UTC(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate()));
+                // Create UTC date that represents this calendar date
+                const normalizedDate = createUTCDateFromLocalCalendarDate(currentDate);
                 dates.push(normalizedDate);
                 currentDate = addDays(currentDate, 1);
             }
@@ -771,8 +772,8 @@ export class AgendaView extends ItemView {
             // Fixed number of days starting from startDate
             for (let i = 0; i < this.daysToShow; i++) {
                 const targetDate = addDays(this.startDate, i);
-                // Normalize to start of day using UTC to ensure consistent date handling
-                const normalizedDate = new Date(Date.UTC(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate()));
+                // Create UTC date that represents this calendar date
+                const normalizedDate = createUTCDateFromLocalCalendarDate(targetDate);
                 dates.push(normalizedDate);
             }
         }

@@ -37,7 +37,9 @@ import {
     getTimePart,
     parseDate,
     normalizeCalendarBoundariesToUTC,
-    formatUTCDateForCalendar
+    formatUTCDateForCalendar,
+    formatDateForStorage,
+    getTodayLocal
 } from '../utils/dateUtils';
 import { 
     generateRecurringInstances,
@@ -480,16 +482,16 @@ export class AdvancedCalendarView extends ItemView {
             
             if (options?.date) {
                 if (options.allDay) {
-                    scheduledDate = format(options.date, 'yyyy-MM-dd');
+                    scheduledDate = formatDateForStorage(options.date);
                 } else if (options.time) {
-                    scheduledDate = format(options.date, 'yyyy-MM-dd') + 'T' + options.time;
+                    scheduledDate = formatDateForStorage(options.date) + 'T' + options.time;
                 } else {
                     // Default to 9 AM if no time specified
-                    scheduledDate = format(options.date, 'yyyy-MM-dd') + 'T09:00';
+                    scheduledDate = formatDateForStorage(options.date) + 'T09:00';
                 }
             } else {
                 // Default to today at 9 AM
-                scheduledDate = format(new Date(), 'yyyy-MM-dd') + 'T09:00';
+                scheduledDate = formatDateForStorage(getTodayLocal()) + 'T09:00';
             }
             
             await this.plugin.taskService.updateProperty(task, 'scheduled', scheduledDate);
@@ -764,8 +766,9 @@ export class AdvancedCalendarView extends ItemView {
             
             // Get calendar's visible date range for recurring task generation
             const calendarView = this.calendar?.view;
-            const rawVisibleStart = calendarView?.activeStart || startOfDay(new Date());
-            const rawVisibleEnd = calendarView?.activeEnd || endOfDay(new Date());
+            const today = getTodayLocal();
+            const rawVisibleStart = calendarView?.activeStart || startOfDay(today);
+            const rawVisibleEnd = calendarView?.activeEnd || endOfDay(today);
             
             // Normalize FullCalendar boundaries to UTC to prevent timezone mismatches with RRule
             const { utcStart: visibleStart, utcEnd: visibleEnd } = normalizeCalendarBoundariesToUTC(rawVisibleStart, rawVisibleEnd);
@@ -1105,8 +1108,8 @@ export class AdvancedCalendarView extends ItemView {
     private handleTaskCreation(start: Date, end: Date, allDay: boolean) {
         // Pre-populate with selected date/time
         const scheduledDate = allDay 
-            ? format(start, 'yyyy-MM-dd')
-            : format(start, "yyyy-MM-dd'T'HH:mm");
+            ? formatDateForStorage(start)
+            : formatDateForStorage(start) + 'T' + format(start, 'HH:mm');
             
         const durationMinutes = Math.round((end.getTime() - start.getTime()) / (1000 * 60));
         
@@ -1146,7 +1149,7 @@ export class AdvancedCalendarView extends ItemView {
             return;
         }
         
-        const date = format(start, 'yyyy-MM-dd');
+        const date = formatDateForStorage(start);
         const startTime = format(start, 'HH:mm');
         const endTime = format(end, 'HH:mm');
         
@@ -1222,7 +1225,7 @@ export class AdvancedCalendarView extends ItemView {
             // Iterate through each day in the visible range
             const currentDate = new Date(visibleStart);
             while (currentDate <= visibleEnd) {
-                const dateString = format(currentDate, 'yyyy-MM-dd');
+                const dateString = formatDateForStorage(currentDate);
                 const moment = (window as any).moment(currentDate);
                 const dailyNote = getDailyNote(moment, allDailyNotes);
                 
@@ -1331,9 +1334,9 @@ export class AdvancedCalendarView extends ItemView {
                 // Handle non-recurring events normally
                 let newDateString: string;
                 if (allDay) {
-                    newDateString = format(newStart, 'yyyy-MM-dd');
+                    newDateString = formatDateForStorage(newStart);
                 } else {
-                    newDateString = format(newStart, "yyyy-MM-dd'T'HH:mm");
+                    newDateString = formatDateForStorage(newStart) + 'T' + format(newStart, 'HH:mm');
                 }
                 
                 // Update the appropriate property
@@ -1353,7 +1356,7 @@ export class AdvancedCalendarView extends ItemView {
             const newEnd = dropInfo.event.end;
             
             // Calculate new date and times
-            const newDate = format(newStart, 'yyyy-MM-dd');
+            const newDate = formatDateForStorage(newStart);
             const newStartTime = format(newStart, 'HH:mm');
             const newEndTime = format(newEnd, 'HH:mm');
             
@@ -1502,10 +1505,10 @@ export class AdvancedCalendarView extends ItemView {
             let scheduledDate: string;
             if (dropInfo.allDay) {
                 // All-day event - just the date
-                scheduledDate = format(dropDate, 'yyyy-MM-dd');
+                scheduledDate = formatDateForStorage(dropDate);
             } else {
                 // Specific time - include time
-                scheduledDate = format(dropDate, "yyyy-MM-dd'T'HH:mm");
+                scheduledDate = formatDateForStorage(dropDate) + 'T' + format(dropDate, 'HH:mm');
             }
             
             // Update the task's scheduled date

@@ -18,7 +18,7 @@ import {
     EVENT_POMODORO_TICK,
     TaskInfo
 } from '../types';
-import { getCurrentTimestamp } from '../utils/dateUtils';
+import { getCurrentTimestamp, formatDateForStorage, getTodayLocal } from '../utils/dateUtils';
 import { getSessionDuration, timerWorker } from '../utils/pomodoroUtils';
 
 export class PomodoroService {
@@ -77,7 +77,7 @@ export class PomodoroService {
                 this.state.timeRemaining = Math.max(0, this.state.timeRemaining || 0);
                 
                 // Clear any stale session from previous day
-                const today = format(new Date(), 'yyyy-MM-dd');
+                const today = formatDateForStorage(getTodayLocal());
                 const lastDate = data.lastPomodoroDate;
                 if (lastDate !== today) {
                     if (this.state.currentSession) {
@@ -120,7 +120,7 @@ export class PomodoroService {
         try {
             const data = await this.plugin.loadData() || {};
             data.pomodoroState = this.state;
-            data.lastPomodoroDate = format(new Date(), 'yyyy-MM-dd');
+            data.lastPomodoroDate = formatDateForStorage(getTodayLocal());
             await this.plugin.saveData(data);
         } catch (error) {
             console.error('Failed to save pomodoro state:', error);
@@ -803,12 +803,12 @@ export class PomodoroService {
     }
 
     async getStatsForDate(date: Date): Promise<PomodoroHistoryStats> {
-        const dateStr = format(date, 'yyyy-MM-dd');
+        const dateStr = formatDateForStorage(date);
         const history = await this.getSessionHistory();
         
         // Filter sessions for the specific date
         const dayHistory = history.filter(session => {
-            const sessionDate = format(new Date(session.startTime), 'yyyy-MM-dd');
+            const sessionDate = formatDateForStorage(new Date(session.startTime));
             return sessionDate === dateStr;
         });
 
@@ -936,7 +936,7 @@ export class PomodoroService {
 
         for (const session of history) {
             const date = new Date(session.startTime);
-            const dateStr = format(date, 'yyyy-MM-dd');
+            const dateStr = formatDateForStorage(date);
             
             if (!grouped.has(dateStr)) {
                 grouped.set(dateStr, []);

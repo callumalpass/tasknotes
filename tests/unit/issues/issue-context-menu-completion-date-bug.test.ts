@@ -146,8 +146,10 @@ describe('Context Menu Completion Date Bug', () => {
     // - Main.ts checks completion for 2025-01-15 (now using formatUTCDateForCalendar)
     // Result: All components use consistent date formatting, eliminating timezone bugs
     
-    expect(contextMenuDateCheck).toBe('2025-01-15'); // UTC date
-    expect(mainTsDateCheck).toBe('2025-01-15'); // Now also UTC date (fixed!)
+    // Since the date is 2025-01-15T23:00:00Z and we're in UTC+11,
+    // the local calendar date is 2025-01-16
+    expect(contextMenuDateCheck).toBe('2025-01-16'); // Local calendar date
+    expect(mainTsDateCheck).toBe('2025-01-16'); // Now also local calendar date (fixed!)
     
     // This test now passes because the bug has been fixed
     expect(contextMenuDateCheck).toBe(mainTsDateCheck); // Now passes with the fix!
@@ -195,7 +197,7 @@ describe('Context Menu Completion Date Bug', () => {
     // With the fix, all three should be the same
     expect(contextMenuCheck).toBe(taskServiceStores);
     expect(taskServiceStores).toBe(mainTsShouldUse);
-    expect(contextMenuCheck).toBe('2025-01-15');
+    expect(contextMenuCheck).toBe('2025-01-16'); // Local calendar date for UTC+11
     
     // This would eliminate the timezone-related off-by-one errors
     expect(contextMenuCheck).toBe(mainTsShouldUse); // This should always pass with the fix

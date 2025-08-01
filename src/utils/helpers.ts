@@ -1,10 +1,10 @@
 import { normalizePath, TFile, Vault, App, parseYaml, stringifyYaml } from 'obsidian';
-import { format } from 'date-fns';
+import { format, isBefore, startOfDay } from 'date-fns';
 import { RRule } from 'rrule';
 import { TimeInfo, TaskInfo, TimeEntry, TimeBlock, DailyNoteFrontmatter } from '../types';
 import { FieldMapper } from '../services/FieldMapper';
 import { DEFAULT_FIELD_MAPPING } from '../settings/settings';
-import { isBeforeDateSafe, getTodayString, parseDate, createUTCDateForRRule, formatUTCDateForCalendar } from './dateUtils';
+import { isBeforeDateSafe, getTodayString, parseDate, createUTCDateForRRule, formatUTCDateForCalendar, getTodayLocal, parseDateAsLocal, hasTimeComponent, formatDateAsUTCString } from './dateUtils';
 // import { RegexOptimizer } from './RegexOptimizer'; // Temporarily disabled
 
 /**
@@ -291,16 +291,30 @@ export function extractTaskInfo(
  * Checks if a task is overdue (either due date or scheduled date is in the past)
  */
 export function isTaskOverdue(task: {due?: string; scheduled?: string}): boolean {
-	const today = getTodayString();
+	const today = getTodayLocal();
 	
 	// Check due date
 	if (task.due) {
-		if (isBeforeDateSafe(task.due, today)) return true;
+		try {
+			// For date-only strings, use local date parsing
+			const dueDate = hasTimeComponent(task.due) ? parseDate(task.due) : parseDateAsLocal(task.due);
+			if (isBefore(startOfDay(dueDate), startOfDay(today))) return true;
+		} catch (e) {
+			// If parsing fails, fall back to string comparison
+			if (isBeforeDateSafe(task.due, getTodayString())) return true;
+		}
 	}
 	
 	// Check scheduled date
 	if (task.scheduled) {
-		if (isBeforeDateSafe(task.scheduled, today)) return true;
+		try {
+			// For date-only strings, use local date parsing
+			const scheduledDate = hasTimeComponent(task.scheduled) ? parseDate(task.scheduled) : parseDateAsLocal(task.scheduled);
+			if (isBefore(startOfDay(scheduledDate), startOfDay(today))) return true;
+		} catch (e) {
+			// If parsing fails, fall back to string comparison
+			if (isBeforeDateSafe(task.scheduled, getTodayString())) return true;
+		}
 	}
 	
 	return false;
@@ -339,7 +353,7 @@ export function isDueByRRule(task: TaskInfo, date: Date): boolean {
 			
 			// Check if the target date is an occurrence
 			// Use UTC date to match the dtstart timezone
-			const targetDateStart = createUTCDateForRRule(formatUTCDateForCalendar(date));
+			const targetDateStart = createUTCDateForRRule(formatDateAsUTCString(date));
 			const occurrences = rrule.between(targetDateStart, new Date(targetDateStart.getTime() + 24 * 60 * 60 * 1000 - 1), true);
 			
 			return occurrences.length > 0;

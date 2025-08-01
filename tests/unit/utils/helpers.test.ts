@@ -57,12 +57,12 @@ jest.mock('date-fns', () => ({
     return date.toISOString();
   }),
   parseISO: jest.fn((dateStr: string) => new Date(dateStr)),
+  isBefore: jest.fn((date1: Date, date2: Date) => date1.getTime() < date2.getTime()),
   startOfDay: jest.fn((date: Date) => {
     const d = new Date(date);
     d.setHours(0, 0, 0, 0);
     return d;
   }),
-  isBefore: jest.fn((date1: Date, date2: Date) => date1.getTime() < date2.getTime()),
   isSameDay: jest.fn((date1: Date, date2: Date) => date1.toDateString() === date2.toDateString())
 }));
 
@@ -85,12 +85,25 @@ jest.mock('rrule', () => ({
 jest.mock('../../../src/utils/dateUtils', () => ({
   parseDate: jest.fn((dateStr: string) => new Date(dateStr)),
   getTodayString: jest.fn(() => '2025-06-25'), // Fixed future date
+  getTodayLocal: jest.fn(() => new Date('2025-06-25')),
+  parseDateAsLocal: jest.fn((dateStr: string) => new Date(dateStr)),
+  hasTimeComponent: jest.fn((dateStr: string) => dateStr.includes('T')),
   isBeforeDateSafe: jest.fn((date1: string, date2: string) => {
     // Mock past dates as overdue
     if (date1 === '2020-01-01') return true;
     return false;
   }),
-  isSameDateSafe: jest.fn((date1: string, date2: string) => date1 === date2)
+  isSameDateSafe: jest.fn((date1: string, date2: string) => date1 === date2),
+  createUTCDateForRRule: jest.fn((dateStr: string) => {
+    const [year, month, day] = dateStr.split('-').map(Number);
+    return new Date(Date.UTC(year, month - 1, day));
+  }),
+  formatUTCDateForCalendar: jest.fn((date: Date) => {
+    const year = date.getUTCFullYear();
+    const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(date.getUTCDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  })
 }));
 
 describe('Helpers', () => {
