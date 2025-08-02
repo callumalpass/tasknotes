@@ -3,6 +3,7 @@ import TaskNotesPlugin from '../main';
 import { TimeBlock, DailyNoteFrontmatter } from '../types';
 import { generateTimeblockId } from '../utils/helpers';
 import { AttachmentSelectModal } from './AttachmentSelectModal';
+import { parseDateAsLocal } from '../utils/dateUtils';
 import { 
     createDailyNote, 
     getDailyNote, 
@@ -50,7 +51,8 @@ export class TimeblockCreationModal extends Modal {
         // Date display (read-only)
         const dateDisplay = contentEl.createDiv({ cls: 'timeblock-date-display' });
         dateDisplay.createEl('strong', { text: 'Date: ' });
-        const dateObj = new Date(this.options.date + 'T00:00:00');
+        // Parse the date string to get a proper date object for display
+        const dateObj = parseDateAsLocal(this.options.date);
         dateDisplay.createSpan({ text: dateObj.toLocaleDateString() });
 
         // Title field

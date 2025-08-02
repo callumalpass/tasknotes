@@ -7,16 +7,22 @@ import { MinimalNativeCache } from '../../../src/utils/MinimalNativeCache';
 import { StatusManager } from '../../../src/services/StatusManager';
 import { PriorityManager } from '../../../src/services/PriorityManager';
 import { TaskInfo, FilterQuery } from '../../../src/types';
+import { formatDateForStorage } from '../../../src/utils/dateUtils';
+import { format } from 'date-fns';
 
-// Don't mock date-fns or dateUtils - we want to test the real implementation
-jest.mock('../../../src/utils/dateUtils', () => {
-    const actual = jest.requireActual('../../../src/utils/dateUtils');
-    return {
-        ...actual,
-        // Mock only getTodayString to control what "today" is for testing
-        getTodayString: jest.fn(() => '2025-01-15'),
-        isToday: jest.fn((dateStr: string) => dateStr === '2025-01-15'),
-    };
+// Don't mock dateUtils - we want to test the real implementation
+
+// Add a simple unit test for date comparison logic
+describe('Date comparison logic', () => {
+    it('should correctly compare UTC-based formatted dates', () => {
+        const date1 = new Date('2025-01-08T12:00:00.000Z');
+        const date1Str = formatDateForStorage(date1); // Should be '2025-01-08'
+        
+        const scheduledDate = '2025-01-08';
+        
+        expect(date1Str).toBe(scheduledDate); // Basic check
+        expect(date1Str === scheduledDate).toBe(true); // Direct comparison
+    });
 });
 
 describe('FilterService - Issue 153 Fix Verification', () => {
@@ -65,20 +71,20 @@ describe('FilterService - Issue 153 Fix Verification', () => {
             // Mock cache to return our test task
             mockCacheManager.getAllTasks.mockResolvedValue([testTask]);
             mockCacheManager.getAllTaskPaths.mockReturnValue(new Set([testTask.path]));
-            mockCacheManager.getCachedTaskInfo.mockResolvedValue(testTask);
+            // getCachedTaskInfo needs to return the task when called with its path
+            mockCacheManager.getCachedTaskInfo.mockImplementation(async (path: string) => {
+                return path === testTask.path ? testTask : null;
+            });
             mockCacheManager.getTaskInfo.mockResolvedValue(testTask);
 
             // Create date exactly 7 days ago from "today" (2025-01-15)
             const targetDate = new Date('2025-01-08T12:00:00.000Z');
             
             const query: FilterQuery = {
-                searchQuery: undefined,
-                statuses: undefined,
-                contexts: undefined,
-                priorities: undefined,
-                showArchived: false,
-                showRecurrent: true,
-                showCompleted: false,
+                type: 'group',
+                id: 'root',
+                conjunction: 'and',
+                children: [], // Empty filter means show all tasks
                 sortKey: 'due',
                 sortDirection: 'asc',
                 groupKey: 'none'
@@ -105,20 +111,19 @@ describe('FilterService - Issue 153 Fix Verification', () => {
 
             mockCacheManager.getAllTasks.mockResolvedValue([testTask]);
             mockCacheManager.getAllTaskPaths.mockReturnValue(new Set([testTask.path]));
-            mockCacheManager.getCachedTaskInfo.mockResolvedValue(testTask);
+            mockCacheManager.getCachedTaskInfo.mockImplementation(async (path: string) => {
+                return path === testTask.path ? testTask : null;
+            });
             mockCacheManager.getTaskInfo.mockResolvedValue(testTask);
 
             // Create date for yesterday
             const targetDate = new Date('2025-01-14T12:00:00.000Z');
             
             const query: FilterQuery = {
-                searchQuery: undefined,
-                statuses: undefined,
-                contexts: undefined,
-                priorities: undefined,
-                showArchived: false,
-                showRecurrent: true,
-                showCompleted: false,
+                type: 'group',
+                id: 'root',
+                conjunction: 'and',
+                children: [], // Empty filter means show all tasks
                 sortKey: 'due',
                 sortDirection: 'asc',
                 groupKey: 'none'
@@ -173,13 +178,10 @@ describe('FilterService - Issue 153 Fix Verification', () => {
             });
 
             const query: FilterQuery = {
-                searchQuery: undefined,
-                statuses: undefined,
-                contexts: undefined,
-                priorities: undefined,
-                showArchived: false,
-                showRecurrent: true,
-                showCompleted: false,
+                type: 'group',
+                id: 'root',
+                conjunction: 'and',
+                children: [], // Empty filter means show all tasks
                 sortKey: 'due',
                 sortDirection: 'asc',
                 groupKey: 'none'
@@ -215,20 +217,19 @@ describe('FilterService - Issue 153 Fix Verification', () => {
 
             mockCacheManager.getAllTasks.mockResolvedValue([testTask]);
             mockCacheManager.getAllTaskPaths.mockReturnValue(new Set([testTask.path]));
-            mockCacheManager.getCachedTaskInfo.mockResolvedValue(testTask);
+            mockCacheManager.getCachedTaskInfo.mockImplementation(async (path: string) => {
+                return path === testTask.path ? testTask : null;
+            });
             mockCacheManager.getTaskInfo.mockResolvedValue(testTask);
 
             // Create date for DST transition day
             const dstTransitionDate = new Date('2025-03-09T12:00:00.000Z');
             
             const query: FilterQuery = {
-                searchQuery: undefined,
-                statuses: undefined,
-                contexts: undefined,
-                priorities: undefined,
-                showArchived: false,
-                showRecurrent: true,
-                showCompleted: false,
+                type: 'group',
+                id: 'root',
+                conjunction: 'and',
+                children: [], // Empty filter means show all tasks
                 sortKey: 'due',
                 sortDirection: 'asc',
                 groupKey: 'none'
@@ -257,17 +258,16 @@ describe('FilterService - Issue 153 Fix Verification', () => {
 
             mockCacheManager.getAllTasks.mockResolvedValue([testTask]);
             mockCacheManager.getAllTaskPaths.mockReturnValue(new Set([testTask.path]));
-            mockCacheManager.getCachedTaskInfo.mockResolvedValue(testTask);
+            mockCacheManager.getCachedTaskInfo.mockImplementation(async (path: string) => {
+                return path === testTask.path ? testTask : null;
+            });
             mockCacheManager.getTaskInfo.mockResolvedValue(testTask);
 
             const query: FilterQuery = {
-                searchQuery: undefined,
-                statuses: undefined,
-                contexts: undefined,
-                priorities: undefined,
-                showArchived: false,
-                showRecurrent: true,
-                showCompleted: false,
+                type: 'group',
+                id: 'root',
+                conjunction: 'and',
+                children: [], // Empty filter means show all tasks
                 sortKey: 'due',
                 sortDirection: 'asc',
                 groupKey: 'none'

@@ -1316,7 +1316,7 @@ export class FilterService extends EventEmitter {
         includeOverdue = false
     ): Promise<TaskInfo[]> {
         // Use local date formatting to ensure consistency
-        const dateStr = formatDateForStorage(date);
+        const dateStr = format(date, 'yyyy-MM-dd');
         const normalizedDate = startOfDayForDateString(dateStr);
         const isViewingToday = isTodayUtil(dateStr);
         

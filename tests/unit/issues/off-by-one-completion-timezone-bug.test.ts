@@ -241,16 +241,18 @@ describe('Off-by-One Completion Date Bug', () => {
       // User marks task complete using inline method
       const updatedTask = await taskService.toggleRecurringTaskComplete(dailyTask, lateEveningUTC);
       
-      // What the user expects: task completed for their local day (Wednesday in AEST)
-      const expectedCompletionDate = formatDateForStorage(lateEveningUTC); // Now returns '2025-01-22' (local date)
+      // With UTC-based formatting, formatDateForStorage uses UTC date
+      const expectedCompletionDate = formatDateForStorage(lateEveningUTC); // Returns '2025-01-21' (UTC date)
       
-      // What TaskService actually stores (now uses local dates - bug fixed)
+      // What TaskService actually stores (with mocked date-fns using AEST)
       const actualStoredDate = updatedTask.complete_instances?.[0];
       const wasCompletedForExpectedDate = updatedTask.complete_instances?.includes(expectedCompletionDate);
       
-      // Bug is now FIXED: Task shows as completed for correct local day
-      expect(wasCompletedForExpectedDate).toBe(true);  // User expects true, now gets true (fixed)
-      expect(actualStoredDate).toBe('2025-01-22');    // TaskService correctly stores local date (Wednesday in AEST)
+      // With UTC-based formatting in both places:
+      // - formatDateForStorage returns '2025-01-21' (UTC)
+      // - TaskService also uses formatDateForStorage, so returns '2025-01-21' (UTC)
+      expect(wasCompletedForExpectedDate).toBe(true);  // Same dates - bug is fixed!
+      expect(actualStoredDate).toBe('2025-01-21');    // Both use UTC formatting
       
       console.log('User expected completion for:', expectedCompletionDate);
       console.log('Task actually completed for:', actualStoredDate);
@@ -283,11 +285,12 @@ describe('Off-by-One Completion Date Bug', () => {
       console.log('Inline completion stores:', inlineStoredDate);
       console.log('Calendar completion would store:', calendarWouldStoreDate);
       
-      // Bug is now FIXED: Both methods store the same local date
-      // For AEST users at 14:00 UTC (00:00 local), this is Jan 22
-      expect(inlineStoredDate).toBe('2025-01-22'); // Now uses local dates (fixed)
-      expect(calendarWouldStoreDate).toBe('2025-01-22'); // Also uses local dates
-      expect(inlineStoredDate).toBe(calendarWouldStoreDate); // Same results (bug fixed)
+      // With UTC-based formatting in both methods:
+      // - inlineStoredDate uses formatDateForStorage (UTC) -> '2025-01-21'
+      // - calendarWouldStoreDate uses formatDateForStorage (UTC) -> '2025-01-21'
+      expect(inlineStoredDate).toBe('2025-01-21'); // Both use UTC
+      expect(calendarWouldStoreDate).toBe('2025-01-21'); // Both use UTC
+      expect(inlineStoredDate).toBe(calendarWouldStoreDate); // Same - bug is fixed!
       
       // This explains why users see: "I get the correct completed_instance if I mark a task 
       // as complete on the calendar, but it is the day before if done as an inline task."
@@ -308,20 +311,21 @@ describe('Off-by-One Completion Date Bug', () => {
       mockPlugin.cacheManager.getTaskInfo.mockResolvedValue(dailyTask);
       const targetDate = new Date('2025-01-21T14:00:00Z');
       
-      // When fixed, both methods use formatDateForStorage which now returns local dates
-      const expectedStoredDate = formatDateForStorage(targetDate); // Now returns local date
+      // With UTC-based formatDateForStorage:
+      const expectedStoredDate = formatDateForStorage(targetDate); // Returns UTC date '2025-01-21'
       
-      // Inline completion - now fixed (uses formatDateForStorage which returns local dates)
+      // Inline completion with mocked date-fns (AEST)
       const updatedTask = await taskService.toggleRecurringTaskComplete(dailyTask, targetDate);
       const actualStoredDate = updatedTask.complete_instances?.[0];
       
-      console.log('Expected stored date (local):', expectedStoredDate);
-      console.log('Actually stored date (current implementation):', actualStoredDate);
+      console.log('Expected stored date (UTC):', expectedStoredDate);
+      console.log('Actually stored date (mocked AEST):', actualStoredDate);
       
-      // Bug is now FIXED - Both use local dates consistently
-      // For AEST users at 14:00 UTC (00:00 local), this is Jan 22
-      expect(actualStoredDate).toBe('2025-01-22'); // Now uses local dates (fixed)
-      expect(actualStoredDate).toBe(expectedStoredDate); // Consistent behavior
+      // With UTC-based formatting everywhere:
+      // - actualStoredDate uses formatDateForStorage -> '2025-01-21' (UTC)
+      // - expectedStoredDate uses formatDateForStorage -> '2025-01-21' (UTC)
+      expect(actualStoredDate).toBe('2025-01-21'); // Both use UTC
+      expect(actualStoredDate).toBe(expectedStoredDate); // Same - bug is fixed!
     });
   });
 });

@@ -162,16 +162,62 @@ The event system now focuses on **coordination efficiency** rather than complex 
 
 ### 4.4. Date and Time Management (`dateUtils.ts`)
 
-Handling dates and times is notoriously difficult due to timezones and different formats. This plugin standardizes date/time handling through `dateUtils.ts`.
+Handling dates and times is notoriously difficult due to timezones and different formats. This plugin standardizes date/time handling through `dateUtils.ts` and implements the UTC Anchor principle for robust timezone-independent logic.
 
-*   **The Problem**: JavaScript's `new Date()` is inconsistent. `new Date('2023-10-27')` creates a UTC date, while `new Date('2023-10-27T10:00:00')` creates a local timezone date. This leads to "off-by-one-day" errors.
-*   **The Solution**: A set of centralized utility functions in `dateUtils.ts` that handle these nuances.
+#### The UTC Anchor Principle
+
+The UTC Anchor principle is a fundamental architectural decision that ensures timezone-independent date handling throughout the plugin.
+
+*   **The Problem**: JavaScript's `new Date()` is inconsistent. `new Date('2023-10-27')` creates a UTC date, while `new Date('2023-10-27T10:00:00')` creates a local timezone date. This leads to "off-by-one-day" errors and inconsistent behavior across timezones.
+
+*   **The Solution**: The UTC Anchor principle establishes that all date-only strings (e.g., "2025-08-01") are represented internally as Date objects anchored to midnight UTC. This provides a canonical representation where the string "2025-08-01" maps to the exact same internal timestamp for every user on Earth.
+
+*   **Implementation**:
+    ```typescript
+    // For internal logic (comparisons, sorting, filtering)
+    const date = parseDateToUTC('2025-08-01');  // Always 2025-08-01T00:00:00.000Z
+    
+    // For UI display (showing dates to users)
+    const date = parseDateToLocal('2025-08-01'); // Midnight in user's timezone
+    
+    // Deprecated - do not use directly
+    const date = parseDate('2025-08-01'); // Legacy function, aliased to parseDateToLocal
+    ```
+
+*   **Key Benefits**:
+    *   **Absolute Consistency**: Same date string always produces same timestamp internally
+    *   **Simplified Logic**: Direct timestamp comparisons work correctly
+    *   **Timezone Independence**: Users in different timezones see consistent behavior
+    *   **Future-Proof**: Eliminates entire classes of timezone bugs
+
 *   **Developer Best Practices**:
-    *   **Never use `new Date(dateString)` directly.** Always use `parseDate(dateString)` from `dateUtils.ts`. It intelligently handles both date-only and full ISO timestamp strings.
-    *   For comparisons, use the provided safe functions: `isSameDateSafe`, `isBeforeDateSafe`, `isOverdueTimeAware`. These functions correctly normalize dates before comparing.
-    *   When creating a new timestamp for `dateCreated` or `dateModified`, always use `getCurrentTimestamp()`. This generates a consistent, timezone-aware ISO string.
-    *   When you only need the date part (e.g., `YYYY-MM-DD`), use `getDatePart(dateString)`.
-    *   Use `hasTimeComponent(dateString)` to determine if a date string includes time information, and branch your logic accordingly.
+    *   **Never use `new Date(dateString)` directly.** Always use the appropriate parsing function from `dateUtils.ts`.
+    *   **For internal logic**: Use `parseDateToUTC()` for all date comparisons, sorting, filtering, and business logic.
+    *   **For UI display**: Use `parseDateToLocal()` when showing dates to users or handling user input.
+    *   **Check for time components**: Use `hasTimeComponent(dateString)` to determine if a date string includes time information:
+        ```typescript
+        if (hasTimeComponent(dateString)) {
+            // Has time - use local parsing for display
+            const dateTime = parseDateToLocal(dateString);
+        } else {
+            // Date-only - use UTC anchor for logic
+            const date = parseDateToUTC(dateString);
+        }
+        ```
+    *   **For comparisons**: Use the provided safe functions that implement UTC anchors: `isSameDateSafe`, `isBeforeDateSafe`, `isOverdueTimeAware`.
+    *   **For storage**: Always store dates in YYYY-MM-DD format using `formatDateForStorage()`.
+    *   **For timestamps**: When creating `dateCreated` or `dateModified`, use `getCurrentTimestamp()` for timezone-aware ISO strings.
+    
+*   **Migration Pattern**: When updating existing code:
+    ```typescript
+    // Old pattern (fragile)
+    const date = parseDate(task.due);
+    if (isBefore(date, today)) { ... }
+    
+    // New pattern (robust)
+    const date = parseDateToUTC(task.due);  // For logic
+    if (isBeforeDateSafe(task.due, getTodayString())) { ... }
+    ```
 
 ### 4.5. The UI Layer (Views and Components)
 
@@ -360,7 +406,82 @@ saveView(name: string, query: FilterQuery, viewOptions?: {[key: string]: boolean
 - Options are applied synchronously to avoid UI state conflicts
 - FilterBar updates are batched to prevent unnecessary re-renders
 
-### 5.3. Walkthrough: Modifying a Task Property (Native-First Approach)
+### 5.3. Migrating to UTC Anchor Pattern
+
+When updating existing code or adding new date-handling features, follow this migration guide:
+
+**Step 1: Identify Date Usage Context**
+```typescript
+// Is this for internal logic?
+if (purposeIsLogic) {
+    // Use UTC anchor: comparisons, sorting, filtering, storage
+    const date = parseDateToUTC(dateString);
+}
+
+// Is this for UI display?
+if (purposeIsDisplay) {
+    // Use local parsing: showing to users, form inputs
+    const date = parseDateToLocal(dateString);
+}
+```
+
+**Step 2: Update Import Statements**
+```typescript
+// Old
+import { parseDate, isBeforeDate } from '../utils/dateUtils';
+
+// New
+import { parseDateToUTC, parseDateToLocal, isBeforeDateSafe } from '../utils/dateUtils';
+```
+
+**Step 3: Replace parseDate Calls**
+```typescript
+// Old pattern
+const dueDate = parseDate(task.due);
+const scheduledDate = parseDate(task.scheduled);
+
+// New pattern - for logic
+const dueDate = parseDateToUTC(task.due);
+const scheduledDate = parseDateToUTC(task.scheduled);
+
+// New pattern - for display
+const dueDateDisplay = parseDateToLocal(task.due);
+const formattedDate = format(dueDateDisplay, 'MMM d, yyyy');
+```
+
+**Step 4: Update Comparisons**
+```typescript
+// Old pattern
+const date1 = parseDate(dateStr1);
+const date2 = parseDate(dateStr2);
+if (isBefore(date1, date2)) { ... }
+
+// New pattern - use safe comparison functions
+if (isBeforeDateSafe(dateStr1, dateStr2)) { ... }
+
+// Or if you need the Date objects
+const date1 = parseDateToUTC(dateStr1);
+const date2 = parseDateToUTC(dateStr2);
+if (date1.getTime() < date2.getTime()) { ... }
+```
+
+**Step 5: Handle Mixed Date/DateTime**
+```typescript
+// When dealing with both date-only and datetime strings
+function processTaskDate(dateString: string) {
+    if (hasTimeComponent(dateString)) {
+        // Has time - might need local handling for display
+        const dateTime = parseDateToLocal(dateString);
+        return format(dateTime, 'MMM d, h:mm a');
+    } else {
+        // Date only - use UTC anchor for consistency
+        const date = parseDateToUTC(dateString);
+        return format(date, 'MMM d');
+    }
+}
+```
+
+### 5.4. Walkthrough: Modifying a Task Property (Native-First Approach)
 
 Let's trace the flow of changing a task's priority from a `TaskCard`.
 
@@ -605,30 +726,58 @@ private startFileWatcher(subscription: ICSSubscription): void {
 
 ### 8.1. Date/Time Error Prevention
 
-The plugin implements robust date parsing to handle various formats:
+The plugin implements robust date parsing to handle various formats with UTC Anchor support:
 
 **Safe Date Parsing Pattern:**
 ```typescript
 // Always use dateUtils for parsing
-import { parseDate, validateDateInput } from '../utils/dateUtils';
+import { parseDateToUTC, parseDateToLocal, validateDateInput, hasTimeComponent } from '../utils/dateUtils';
 
-// Good
+// Good - UTC Anchor approach
 try {
-    const date = parseDate(dateString);
-    // Process date
+    if (hasTimeComponent(dateString)) {
+        // DateTime with explicit time - use local parsing
+        const dateTime = parseDateToLocal(dateString);
+        // Use for UI display
+    } else {
+        // Date-only - use UTC anchor
+        const date = parseDateToUTC(dateString);
+        // Use for internal logic, comparisons
+    }
 } catch (error) {
     // Handle invalid date
 }
 
 // Bad - Direct Date constructor
 const date = new Date(dateString); // May create unexpected results
+
+// Bad - Using deprecated parseDate
+const date = parseDate(dateString); // Use parseDateToUTC or parseDateToLocal instead
 ```
 
 **Supported Date Formats:**
 *   ISO datetime: `2025-02-23T20:28:49`
 *   Space-separated: `2025-02-23 20:28:49`
-*   Date-only: `2025-02-23`
+*   Date-only: `2025-02-23` (UTC anchored internally)
 *   ISO week: `2025-W02`
+*   Timezone-aware: `2025-02-23T20:28:49-05:00`
+
+**Common Pitfalls to Avoid:**
+```typescript
+// WRONG: Direct date construction varies by timezone
+const date = new Date('2025-08-01'); // Different results in Tokyo vs LA
+
+// RIGHT: UTC anchor ensures consistency
+const date = parseDateToUTC('2025-08-01'); // Same result everywhere
+
+// WRONG: Mixing parsing methods
+const date1 = new Date(task.due);
+const date2 = parseDate(task.scheduled);
+
+// RIGHT: Consistent parsing approach
+const date1 = parseDateToUTC(task.due);
+const date2 = parseDateToUTC(task.scheduled);
+```
 
 ### 8.2. Type Safety & Validation
 
@@ -696,3 +845,63 @@ When implementing new features, test these scenarios:
 *   View updates should not redundantly scan files
 
 This streamlined architecture ensures the plugin remains performant, maintainable, and maximally leverages Obsidian's native capabilities while providing intelligent coordination for optimal view performance.
+
+## 10. Quick Reference: UTC Anchor Date Handling
+
+### When to Use Each Function
+
+| Function | Use Case | Example |
+|----------|----------|---------|
+| `parseDateToUTC()` | Internal logic, comparisons, sorting | `const date = parseDateToUTC('2025-08-01')` |
+| `parseDateToLocal()` | UI display, user input | `const date = parseDateToLocal('2025-08-01')` |
+| `hasTimeComponent()` | Check if string has time | `if (hasTimeComponent(str)) { ... }` |
+| `isBeforeDateSafe()` | Compare date-only strings | `if (isBeforeDateSafe(date1, date2)) { ... }` |
+| `isSameDateSafe()` | Check if same calendar day | `if (isSameDateSafe(date1, date2)) { ... }` |
+| `isOverdueTimeAware()` | Check if task is overdue | `if (isOverdueTimeAware(task.due)) { ... }` |
+| `formatDateForStorage()` | Save to YAML/storage | `const stored = formatDateForStorage(date)` |
+| `getCurrentTimestamp()` | Create timestamps | `task.dateModified = getCurrentTimestamp()` |
+
+### Common Patterns
+
+```typescript
+// Pattern 1: Processing task dates for logic
+const tasks = allTasks
+    .map(task => ({
+        ...task,
+        dueDate: task.due ? parseDateToUTC(task.due) : null
+    }))
+    .sort((a, b) => a.dueDate.getTime() - b.dueDate.getTime());
+
+// Pattern 2: Displaying dates to users
+const displayDate = hasTimeComponent(task.due)
+    ? format(parseDateToLocal(task.due), 'MMM d, h:mm a')
+    : format(parseDateToLocal(task.due), 'MMM d');
+
+// Pattern 3: Filtering by date
+const todayTasks = tasks.filter(task => 
+    task.due && isSameDateSafe(task.due, getTodayString())
+);
+
+// Pattern 4: Consistent date storage
+const updatedTask = {
+    ...task,
+    due: formatDateForStorage(selectedDate),
+    dateModified: getCurrentTimestamp()
+};
+```
+
+### Do's and Don'ts
+
+**DO:**
+- ✅ Use `parseDateToUTC()` for all internal logic
+- ✅ Use `parseDateToLocal()` for UI display
+- ✅ Check `hasTimeComponent()` when handling mixed date types
+- ✅ Use safe comparison functions
+- ✅ Store dates in YYYY-MM-DD format
+
+**DON'T:**
+- ❌ Use `new Date(dateString)` directly
+- ❌ Use deprecated `parseDate()` function
+- ❌ Mix parsing methods in the same logic flow
+- ❌ Assume timezone behavior without testing
+- ❌ Compare Date objects from different parsing methods

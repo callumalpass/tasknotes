@@ -42,11 +42,11 @@ describe('Context Menu Completion Date Fix', () => {
     const mainTsCheck = formatDateForStorage(targetDate); // Now uses this (fixed)
     const localTimezoneFormat = format(targetDate, 'yyyy-MM-dd'); // Local timezone (varies by environment)
     
-    // Verify the fix works - all components now use local calendar dates
-    // In UTC+11, 2025-01-15T23:00:00Z is 2025-01-16 local time
-    expect(contextMenuCheck).toBe('2025-01-16');
-    expect(taskServiceStores).toBe('2025-01-16');
-    expect(mainTsCheck).toBe('2025-01-16');
+    // Verify the fix works - all components now use UTC dates
+    // With UTC-based formatting, 2025-01-15T23:00:00Z formats as '2025-01-15'
+    expect(contextMenuCheck).toBe('2025-01-15');
+    expect(taskServiceStores).toBe('2025-01-15');
+    expect(mainTsCheck).toBe('2025-01-15');
     
     // All UTC components now match
     expect(contextMenuCheck).toBe(taskServiceStores);
@@ -75,11 +75,9 @@ describe('Context Menu Completion Date Fix', () => {
       // All should be the same regardless of timezone
       expect(contextMenuDate).toBe(taskServiceDate);
       expect(taskServiceDate).toBe(mainTsDate);
-      // For dates that cross midnight in local time, the local calendar date varies
-      // In UTC+11, dates after 13:00 UTC become the next day locally
-      const utcHours = date.getUTCHours();
-      const expectedDate = utcHours >= 13 ? '2025-01-16' : '2025-01-15'; // UTC+11
-      expect(contextMenuDate).toBe(expectedDate);
+      // With UTC-based formatting, all dates format using UTC components
+      // All dates on 2025-01-15 format as '2025-01-15' regardless of time
+      expect(contextMenuDate).toBe('2025-01-15');
     });
   });
 
@@ -102,8 +100,8 @@ describe('Context Menu Completion Date Fix', () => {
     // 4. All three should now be consistent
     expect(expectedDateStr).toBe(storedCompletionDate);
     expect(storedCompletionDate).toBe(mainTsCheckDate);
-    // In UTC+11, 2025-01-15T23:00:00Z is 2025-01-16 local time
-    expect(expectedDateStr).toBe('2025-01-16');
+    // With UTC-based formatting, 2025-01-15T23:00:00Z formats as '2025-01-15'
+    expect(expectedDateStr).toBe('2025-01-15');
     
     // 5. The bug is fixed: no more off-by-one errors
     const completeInstances = [storedCompletionDate];

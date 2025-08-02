@@ -1,7 +1,7 @@
 import { App, FuzzySuggestModal, FuzzyMatch, setIcon, TFile, Notice } from 'obsidian';
 import { format } from 'date-fns';
 import { TaskInfo } from '../types';
-import { isPastDate, isToday, hasTimeComponent, getDatePart, parseDate } from '../utils/dateUtils';
+import { isPastDate, isToday, hasTimeComponent, getDatePart, parseDateToLocal } from '../utils/dateUtils';
 import { filterEmptyProjects } from '../utils/helpers';
 import TaskNotesPlugin from '../main';
 
@@ -130,8 +130,8 @@ export class UnscheduledTasksSelectorModal extends FuzzySuggestModal<TaskInfo> {
             const dueEl = metaEl.createSpan({ cls: 'unscheduled-tasks-selector__due' });
             
             const dueDateStr = hasTimeComponent(task.due) 
-                ? format(parseDate(task.due), 'MMM d, h:mm a')
-                : format(parseDate(task.due), 'MMM d');
+                ? format(parseDateToLocal(task.due), 'MMM d, h:mm a')
+                : format(parseDateToLocal(task.due), 'MMM d');
             
             if (isPastDate(getDatePart(task.due))) {
                 dueEl.addClass('overdue');

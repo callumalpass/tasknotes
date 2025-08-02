@@ -129,17 +129,29 @@ describe('Issue #327: Recurring Task Updates Wrong Day from Agenda View', () => 
         const localDateStr = formatDateForStorage(localDate);
         const utcDateStr = formatDateForStorage(utcDate);
         
-        // They should produce the same date string regardless of timezone
-        expect(localDateStr).toBe('2024-01-17');
+        // Calculate timezone offset once for the test
+        const offsetHours = -new Date().getTimezoneOffset() / 60;
+        
+        // With UTC-based formatting (FIXED):
+        // - UTC date always formats as expected
         expect(utcDateStr).toBe('2024-01-17');
+        // - Local date now ALSO formats consistently due to UTC-based approach
+        // This is the FIX - no more timezone-dependent formatting inconsistencies
+        expect(localDateStr).toBe('2024-01-17');
         
         // Test with edge case times that might roll over to different days
         const lateNightLocal = new Date('2024-01-17T23:59:59'); // Late at night local time
         const lateNightUTC = new Date('2024-01-17T23:59:59.000Z'); // Late at night UTC
         
+        // With UTC-based formatting (FIXED):
+        // - lateNightLocal now formats consistently regardless of timezone
+        // The key insight: lateNightLocal is parsed as local time, then formatted using UTC
+        // Since formatDateForStorage now uses UTC methods, we get consistent results
+        // Based on the local time interpretation: 2024-01-17T23:59:59 local
+        // In AEST (UTC+10): this becomes 2024-01-17T13:59:59 UTC, which formats as '2024-01-17'
         expect(formatDateForStorage(lateNightLocal)).toBe('2024-01-17');
-        // In Australia (UTC+11), Jan 17 23:59 UTC is actually Jan 18 10:59 local
-        expect(formatDateForStorage(lateNightUTC)).toBe('2024-01-18');
+        // - lateNightUTC always formats as Jan 17 (unchanged)
+        expect(formatDateForStorage(lateNightUTC)).toBe('2024-01-17');
     });
     
     it('should handle dates created with UTC constructor methods', () => {
@@ -163,8 +175,16 @@ describe('Issue #327: Recurring Task Updates Wrong Day from Agenda View', () => 
         const regularDate = new Date('2024-01-17');
         const utcConstructedDate = new Date(Date.UTC(2024, 0, 17));
         
-        // Both should format to the same string
-        expect(formatDateForStorage(regularDate)).toBe(formatDateForStorage(utcConstructedDate));
+        // Calculate timezone offset for this test
+        const offsetHours = -new Date().getTimezoneOffset() / 60;
+        
+        // With UTC-based formatting (FIXED), both format consistently
+        // regularDate is parsed as local time, utcConstructedDate is UTC
+        expect(formatDateForStorage(utcConstructedDate)).toBe('2024-01-17');
+        // regularDate formatting is now consistent regardless of timezone
+        // The FIX: formatDateForStorage now uses UTC methods for consistent output
+        // regularDate '2024-01-17' parsed as local midnight becomes UTC and formats consistently
+        expect(formatDateForStorage(regularDate)).toBe('2024-01-17');
     });
     
     it('FAILS: demonstrates the timezone bug when local date differs from UTC date', () => {

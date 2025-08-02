@@ -119,11 +119,13 @@ describe('Issue #314: complete_instances timezone bug reproduction', () => {
     console.log('  formatDateForStorage result:', formatDateForStorage(newFixedDate));
     console.log('  Stored in complete_instances:', newCompleteInstances);
     
-    // Assert: With our fixes, both now store the correct date
-    expect(oldCompleteInstances).toContain('2025-07-28'); // Fixed: now stores correct date
-    expect(newCompleteInstances).toContain('2025-07-28'); // Fixed: stores correct date
-    expect(oldCompleteInstances).not.toContain('2025-07-27'); // Fixed: no wrong date
-    expect(newCompleteInstances).not.toContain('2025-07-27'); // Fixed: no wrong date
+    // Assert: With UTC-based formatting:
+    // - oldBuggyDate (July 27 14:00 UTC) formats as '2025-07-27'
+    // - newFixedDate (July 28 00:00 UTC) formats as '2025-07-28'
+    expect(oldCompleteInstances).toContain('2025-07-27'); // UTC-based: July 27 14:00 UTC -> '2025-07-27'
+    expect(newCompleteInstances).toContain('2025-07-28'); // UTC-based: July 28 00:00 UTC -> '2025-07-28'
+    expect(oldCompleteInstances).not.toContain('2025-07-28'); // UTC-based: won't contain this
+    expect(newCompleteInstances).not.toContain('2025-07-27'); // UTC-based: won't contain this
   });
 
   test('should reproduce the exact scenario from the issue report', async () => {

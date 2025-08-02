@@ -56,13 +56,10 @@ describe('FilterService - Issue 153 Fixed', () => {
             mockCacheManager.getTaskInfo.mockResolvedValue(testTask);
 
             const query: FilterQuery = {
-                searchQuery: undefined,
-                statuses: undefined,
-                contexts: undefined,
-                priorities: undefined,
-                showArchived: false,
-                showRecurrent: true,
-                showCompleted: false,
+                type: 'group',
+                id: '1',
+                conjunction: 'and',
+                children: [],
                 sortKey: 'due',
                 sortDirection: 'asc',
                 groupKey: 'none'
@@ -95,13 +92,10 @@ describe('FilterService - Issue 153 Fixed', () => {
             mockCacheManager.getTaskInfo.mockResolvedValue(testTask);
 
             const query: FilterQuery = {
-                searchQuery: undefined,
-                statuses: undefined,
-                contexts: undefined,
-                priorities: undefined,
-                showArchived: false,
-                showRecurrent: true,
-                showCompleted: false,
+                type: 'group',
+                id: '1',
+                conjunction: 'and',
+                children: [],
                 sortKey: 'due',
                 sortDirection: 'asc',
                 groupKey: 'none'
@@ -157,13 +151,10 @@ describe('FilterService - Issue 153 Fixed', () => {
             );
 
             const query: FilterQuery = {
-                searchQuery: undefined,
-                statuses: undefined,
-                contexts: undefined,
-                priorities: undefined,
-                showArchived: false,
-                showRecurrent: true,
-                showCompleted: false,
+                type: 'group',
+                id: '1',
+                conjunction: 'and',
+                children: [],
                 sortKey: 'due',
                 sortDirection: 'asc',
                 groupKey: 'none'

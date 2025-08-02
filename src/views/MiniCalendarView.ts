@@ -1,6 +1,6 @@
 import { Notice, TFile, ItemView, WorkspaceLeaf, EventRef, debounce, setTooltip } from 'obsidian';
 import { format } from 'date-fns';
-import { formatDateForStorage, createSafeUTCDate } from '../utils/dateUtils';
+import { formatDateForStorage, createSafeUTCDate, getTodayLocal, createUTCDateFromLocalCalendarDate } from '../utils/dateUtils';
 import TaskNotesPlugin from '../main';
 import { getAllDailyNotes, getDailyNote } from 'obsidian-daily-notes-interface';
 import { 
@@ -186,12 +186,12 @@ export class MiniCalendarView extends ItemView {
     }
     
     async navigateToToday() {
-        // Create UTC date for today
-        const now = new Date();
-        const today = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+        // Get today in the user's local timezone and convert to UTC anchor
+        const todayLocal = getTodayLocal();
+        const todayUTCRepresentation = createUTCDateFromLocalCalendarDate(todayLocal);
         
         // Set the selected date - the event listener will handle the calendar update
-        this.plugin.setSelectedDate(today);
+        this.plugin.setSelectedDate(todayUTCRepresentation);
     }
     
   

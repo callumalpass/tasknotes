@@ -4,7 +4,7 @@ import { RRule } from 'rrule';
 import { TimeInfo, TaskInfo, TimeEntry, TimeBlock, DailyNoteFrontmatter } from '../types';
 import { FieldMapper } from '../services/FieldMapper';
 import { DEFAULT_FIELD_MAPPING } from '../settings/settings';
-import { isBeforeDateSafe, getTodayString, parseDate, createUTCDateForRRule, formatDateForStorage, getTodayLocal, parseDateAsLocal, hasTimeComponent, formatDateAsUTCString } from './dateUtils';
+import { isBeforeDateSafe, getTodayString, parseDateToLocal, parseDateToUTC, createUTCDateForRRule, formatDateForStorage, getTodayLocal, parseDateAsLocal, hasTimeComponent, formatDateAsUTCString } from './dateUtils';
 // import { RegexOptimizer } from './RegexOptimizer'; // Temporarily disabled
 
 /**
@@ -296,8 +296,8 @@ export function isTaskOverdue(task: {due?: string; scheduled?: string}): boolean
 	// Check due date
 	if (task.due) {
 		try {
-			// For date-only strings, use local date parsing
-			const dueDate = hasTimeComponent(task.due) ? parseDate(task.due) : parseDateAsLocal(task.due);
+			// Use consistent date parsing for both datetime and date-only strings
+			const dueDate = parseDateToUTC(task.due);
 			if (isBefore(startOfDay(dueDate), startOfDay(today))) return true;
 		} catch (e) {
 			// If parsing fails, fall back to string comparison
@@ -308,8 +308,8 @@ export function isTaskOverdue(task: {due?: string; scheduled?: string}): boolean
 	// Check scheduled date
 	if (task.scheduled) {
 		try {
-			// For date-only strings, use local date parsing
-			const scheduledDate = hasTimeComponent(task.scheduled) ? parseDate(task.scheduled) : parseDateAsLocal(task.scheduled);
+			// Use consistent date parsing for both datetime and date-only strings
+			const scheduledDate = parseDateToUTC(task.scheduled);
 			if (isBefore(startOfDay(scheduledDate), startOfDay(today))) return true;
 		} catch (e) {
 			// If parsing fails, fall back to string comparison
@@ -367,7 +367,7 @@ export function isDueByRRule(task: TaskInfo, date: Date): boolean {
 	// If recurrence is an object (legacy format), handle it inline
 	// Legacy recurrence object handling
 	const frequency = task.recurrence.frequency;
-	const targetDate = parseDate(formatDateForStorage(date));
+	const targetDate = parseDateToUTC(formatDateForStorage(date));
 	const dayOfWeek = targetDate.getUTCDay();
 	const dayOfMonth = targetDate.getUTCDate();
 	const monthOfYear = targetDate.getUTCMonth() + 1; // JavaScript months are 0-indexed
@@ -395,7 +395,7 @@ export function isDueByRRule(task: TaskInfo, date: Date): boolean {
 			// Fall back to using the original due date
 			else if (task.due) {
 				try {
-					const originalDueDate = parseDate(task.due); // Safe parsing
+					const originalDueDate = parseDateToUTC(task.due); // Safe parsing
 					return originalDueDate.getUTCDate() === dayOfMonth && 
 							originalDueDate.getUTCMonth() === targetDate.getUTCMonth();
 				} catch (error) {
@@ -421,7 +421,7 @@ export function isRecurringTaskDueOn(task: any, date: Date): boolean {
 	if (typeof task.recurrence === 'string') return true;
 	
 	const frequency = task.recurrence.frequency;
-	const targetDate = parseDate(formatDateForStorage(date));
+	const targetDate = parseDateToUTC(formatDateForStorage(date));
 	const dayOfWeek = targetDate.getUTCDay();
 	const dayOfMonth = targetDate.getUTCDate();
 	const monthOfYear = targetDate.getUTCMonth() + 1; // JavaScript months are 0-indexed
@@ -449,7 +449,7 @@ export function isRecurringTaskDueOn(task: any, date: Date): boolean {
 			// Fall back to using the original due date
 			else if (task.due) {
 				try {
-					const originalDueDate = parseDate(task.due); // Safe parsing
+					const originalDueDate = parseDateToUTC(task.due); // Safe parsing
 					return originalDueDate.getUTCDate() === dayOfMonth && 
 						originalDueDate.getUTCMonth() === targetDate.getUTCMonth();
 				} catch (error) {
@@ -719,7 +719,7 @@ export function extractNoteInfo(app: App, content: string, path: string, file?: 
 		// If it's a full ISO timestamp or similar, extract just the date part
 		else {
 			try {
-				const date = parseDate(createdDate); // Use safe parsing
+				const date = parseDateToLocal(createdDate); // Use safe parsing
 				if (!isNaN(date.getTime())) {
 					// Format to YYYY-MM-DD to ensure consistency
 					createdDate = format(date, "yyyy-MM-dd");

@@ -56,7 +56,7 @@ import { createTaskLinkOverlay, dispatchTaskUpdate } from './editor/TaskLinkOver
 import { createReadingModeTaskLinkProcessor } from './editor/ReadingModeTaskLinkProcessor';
 import { createProjectNoteDecorations, dispatchProjectSubtasksUpdate } from './editor/ProjectNoteDecorations';
 import { DragDropManager } from './utils/DragDropManager';
-import { formatDateForStorage } from './utils/dateUtils';
+import { formatDateForStorage, getTodayLocal, createUTCDateFromLocalCalendarDate } from './utils/dateUtils';
 import { ICSSubscriptionService } from './services/ICSSubscriptionService';
 import { ICSNoteService } from './services/ICSNoteService';
 import { MigrationService } from './services/MigrationService';
@@ -93,10 +93,8 @@ export default class TaskNotesPlugin extends Plugin {
 	private resolveReady: () => void;
 	
 	// Shared state between views
-	selectedDate: Date = (() => {
-		const now = new Date();
-		return new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
-	})();
+	// Initialize with UTC anchor for today's calendar date
+	selectedDate: Date = createUTCDateFromLocalCalendarDate(getTodayLocal());
 	
 	// Minimal native cache manager (also handles events)
 	cacheManager: MinimalNativeCache;

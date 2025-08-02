@@ -35,7 +35,8 @@ import {
     hasTimeComponent, 
     getDatePart, 
     getTimePart,
-    parseDate,
+    parseDateToLocal,
+    parseDateToUTC,
     normalizeCalendarBoundariesToUTC,
     formatDateForStorage,
     getTodayLocal
@@ -851,7 +852,7 @@ export class AdvancedCalendarView extends ItemView {
         let endDate: string | undefined;
         if (hasTime && task.timeEstimate) {
             // Calculate end time based on time estimate
-            const start = parseDate(startDate);
+            const start = parseDateToLocal(startDate);
             const end = new Date(start.getTime() + (task.timeEstimate * 60 * 1000));
             endDate = format(end, "yyyy-MM-dd'T'HH:mm");
         }
@@ -890,7 +891,7 @@ export class AdvancedCalendarView extends ItemView {
         let endDate: string | undefined;
         if (hasTime) {
             // Fixed duration for due events (30 minutes)
-            const start = parseDate(startDate);
+            const start = parseDateToLocal(startDate);
             const end = new Date(start.getTime() + (30 * 60 * 1000));
             endDate = format(end, "yyyy-MM-dd'T'HH:mm");
         }
@@ -1695,7 +1696,7 @@ export class AdvancedCalendarView extends ItemView {
                 } else {
                     // Standard task context menu for other event types
                     const targetDate = isRecurringInstance && instanceDate 
-                        ? parseDate(instanceDate + 'T00:00:00Z')  // Treat instanceDate as UTC to avoid double conversion
+                        ? parseDateToUTC(instanceDate)  // Use UTC anchor for instance date
                         : (arg.event.start || new Date());
                         
                     showTaskContextMenu(jsEvent, taskInfo.path, this.plugin, targetDate);

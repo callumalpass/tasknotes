@@ -814,9 +814,9 @@ describe('DateUtils', () => {
 
       it('should handle UTC dates at different times of day', () => {
         const testCases = [
-          { input: '2025-01-15T00:00:00.000Z', expected: '2025-01-15' }, // 11:00 in UTC+11
-          { input: '2025-01-15T12:00:00.000Z', expected: '2025-01-15' }, // 23:00 in UTC+11
-          { input: '2025-01-15T23:59:59.999Z', expected: '2025-01-16' }  // 10:59 next day in UTC+11
+          { input: '2025-01-15T00:00:00.000Z', expected: '2025-01-15' }, // Midnight UTC
+          { input: '2025-01-15T12:00:00.000Z', expected: '2025-01-15' }, // Noon UTC
+          { input: '2025-01-15T23:59:59.999Z', expected: '2025-01-15' }  // End of day UTC
         ];
 
         testCases.forEach(({ input, expected }) => {
@@ -1047,7 +1047,7 @@ describe('DateUtils', () => {
           const utcDate = createUTCDateForRRule(dateStr);
           const formattedDate = formatDateForStorage(utcDate);
           
-          // Should maintain the original date
+          // With UTC-based formatting, the date should be preserved
           expect(formattedDate).toBe(dateStr);
         });
       });
