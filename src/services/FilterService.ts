@@ -19,7 +19,8 @@ import {
     getTodayLocal,
     parseDateAsLocal,
     formatDateForStorage,
-    parseDateToUTC
+    parseDateToUTC,
+    isTodayUTC
 } from '../utils/dateUtils';
 
 /**
@@ -1316,8 +1317,8 @@ export class FilterService extends EventEmitter {
         baseQuery: FilterQuery,
         includeOverdue = false
     ): Promise<TaskInfo[]> {
-        // Use local date formatting to ensure consistency
-        const dateStr = format(date, 'yyyy-MM-dd');
+        // FIXED: Use UTC-aware date formatting to prevent timezone bugs
+        const dateStr = formatDateForStorage(date);
         const normalizedDate = startOfDayForDateString(dateStr);
         const isViewingToday = isTodayUtil(dateStr);
         
@@ -1400,7 +1401,7 @@ export class FilterService extends EventEmitter {
             const tasksForDate = await this.getTasksForDate(
                 date, 
                 baseQuery, 
-                showOverdueOnToday && isToday(date)
+                showOverdueOnToday && isTodayUTC(date)
             );
             
             agendaData.push({

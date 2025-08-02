@@ -15,7 +15,7 @@ import {
     isSameDay
 } from '../utils/helpers';
 import { perfMonitor } from '../utils/PerformanceMonitor';
-import { createSafeDate, normalizeDateString } from '../utils/dateUtils';
+import { createSafeDate, getDatePart } from '../utils/dateUtils';
 
 export class MiniCalendarView extends ItemView {
     // Static property to track initialization status for daily notes
@@ -994,22 +994,22 @@ export class MiniCalendarView extends ItemView {
         
         // Add original due date if it exists
         if (originalTask?.due) {
-            affectedDates.add(normalizeDateString(originalTask.due));
+            affectedDates.add(getDatePart(originalTask.due));
         }
         
         // Add new due date if it exists
         if (updatedTask.due) {
-            affectedDates.add(normalizeDateString(updatedTask.due));
+            affectedDates.add(getDatePart(updatedTask.due));
         }
         
         // Add original scheduled date if it exists
         if (originalTask?.scheduled) {
-            affectedDates.add(normalizeDateString(originalTask.scheduled));
+            affectedDates.add(getDatePart(originalTask.scheduled));
         }
         
         // Add new scheduled date if it exists
         if (updatedTask.scheduled) {
-            affectedDates.add(normalizeDateString(updatedTask.scheduled));
+            affectedDates.add(getDatePart(updatedTask.scheduled));
         }
         
         // If no dates are affected, nothing to update

@@ -1051,6 +1051,32 @@ export function createUTCDateFromLocalCalendarDate(localDate: Date): Date {
 }
 
 /**
+ * Checks if a UTC-anchored date object represents the user's local "today".
+ * This is timezone-safe unlike date-fns isToday() which can give wrong results
+ * for UTC-anchored dates in non-UTC timezones.
+ * 
+ * @param date - A UTC-anchored Date object (e.g., 2024-10-26T00:00:00.000Z)
+ * @returns true if the date represents today's calendar date for the user
+ */
+export function isTodayUTC(date: Date): boolean {
+    try {
+        // Get today's calendar date in the user's local timezone
+        const todayLocal = getTodayLocal();
+        
+        // Convert today to a UTC anchor for comparison
+        const todayUTCAnchor = createUTCDateFromLocalCalendarDate(todayLocal);
+        
+        // Compare the UTC date components (timezone-safe)
+        return date.getUTCFullYear() === todayUTCAnchor.getUTCFullYear() &&
+               date.getUTCMonth() === todayUTCAnchor.getUTCMonth() &&
+               date.getUTCDate() === todayUTCAnchor.getUTCDate();
+    } catch (error) {
+        console.error('Error in isTodayUTC:', error);
+        return false;
+    }
+}
+
+/**
  * Convert FullCalendar's date boundaries to UTC for consistent RRULE processing
  * This prevents off-by-one errors when calendar view boundaries don't align with RRule timezone
  */

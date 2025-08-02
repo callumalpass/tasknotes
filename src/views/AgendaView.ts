@@ -1,6 +1,6 @@
 import { TFile, ItemView, WorkspaceLeaf, EventRef, Setting } from 'obsidian';
 import { format, addDays, startOfWeek, endOfWeek, isToday, isSameDay } from 'date-fns';
-import { formatDateForStorage, createUTCDateFromLocalCalendarDate, getTodayLocal } from '../utils/dateUtils';
+import { formatDateForStorage, createUTCDateFromLocalCalendarDate, getTodayLocal, isTodayUTC } from '../utils/dateUtils';
 import TaskNotesPlugin from '../main';
 import { 
     AGENDA_VIEW_TYPE,
@@ -601,7 +601,7 @@ export class AgendaView extends ItemView {
             const dayName = format(item.date, 'EEEE');
             const dateFormatted = format(item.date, 'MMMM d');
             
-            if (isToday(item.date)) {
+            if (isTodayUTC(item.date)) {
                 headerText.createSpan({ cls: 'agenda-view__day-name agenda-view__day-name--today', text: 'Today' });
                 headerText.createSpan({ cls: 'agenda-view__day-date', text: ` • ${dateFormatted}` });
             } else {
