@@ -852,7 +852,8 @@ export class AdvancedCalendarView extends ItemView {
         let endDate: string | undefined;
         if (hasTime && task.timeEstimate) {
             // Calculate end time based on time estimate
-            const start = parseDateToLocal(startDate);
+            // Use parseDateToUTC to properly handle timezone-safe parsing
+            const start = parseDateToUTC(startDate);
             const end = new Date(start.getTime() + (task.timeEstimate * 60 * 1000));
             endDate = format(end, "yyyy-MM-dd'T'HH:mm");
         }
