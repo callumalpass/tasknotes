@@ -1,7 +1,7 @@
 import { TFile, Notice, normalizePath, stringifyYaml } from 'obsidian';
 import TaskNotesPlugin from '../main';
 import { TaskInfo, TimeEntry, EVENT_TASK_UPDATED, EVENT_TASK_DELETED, TaskCreationData } from '../types';
-import { getCurrentTimestamp, getCurrentDateString, formatUTCDateForCalendar, formatDateForStorage } from '../utils/dateUtils';
+import { getCurrentTimestamp, getCurrentDateString, formatDateForStorage } from '../utils/dateUtils';
 import { generateTaskFilename, generateUniqueFilename, FilenameContext } from '../utils/filenameGenerator';
 import { ensureFolderExists } from '../utils/helpers';
 import { processTemplate, mergeTemplateFrontmatter, TemplateData } from '../utils/templateProcessor';
@@ -725,7 +725,7 @@ export class TaskService {
 
         // Use the provided date or fall back to the currently selected date
         const targetDate = date || this.plugin.selectedDate;
-        const dateStr = formatUTCDateForCalendar(targetDate);
+        const dateStr = formatDateForStorage(targetDate);
         
         // Check current completion status for this date using fresh data
         const completeInstances = Array.isArray(freshTask.complete_instances) ? freshTask.complete_instances : [];

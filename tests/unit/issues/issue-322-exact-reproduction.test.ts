@@ -9,7 +9,7 @@
  */
 
 import { generateRecurringInstances } from '../../../src/utils/helpers';
-import { formatUTCDateForCalendar, createUTCDateForRRule, getUTCStartOfMonth, getUTCEndOfMonth } from '../../../src/utils/dateUtils';
+import { formatDateForStorage, createUTCDateForRRule, getUTCStartOfMonth, getUTCEndOfMonth } from '../../../src/utils/dateUtils';
 import { TaskInfo } from '../../../src/types';
 import { TaskFactory } from '../../helpers/mock-factories';
 
@@ -45,12 +45,12 @@ describe('Issue #322: Tuesday recurring tasks showing on Monday', () => {
         
         // Generate recurring instances like TaskEditModal does
         const recurringDates = generateRecurringInstances(tuesdayTask, bufferStart, bufferEnd);
-        const recurringDateStrings = recurringDates.map(d => formatUTCDateForCalendar(d));
+        const recurringDateStrings = recurringDates.map(d => formatDateForStorage(d));
         
         console.log('Generated recurring dates:');
         recurringDates.forEach((date, index) => {
             const dayName = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][date.getUTCDay()];
-            const dateStr = formatUTCDateForCalendar(date);
+            const dateStr = formatDateForStorage(date);
             console.log(`  ${index + 1}: ${dateStr} (${dayName})`);
         });
         
@@ -92,7 +92,7 @@ describe('Issue #322: Tuesday recurring tasks showing on Monday', () => {
             console.log('🐛 ADDITIONAL BUG: Non-Tuesday dates generated:');
             wrongDayDates.forEach(date => {
                 const dayName = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][date.getUTCDay()];
-                console.log(`   ${formatUTCDateForCalendar(date)} is a ${dayName}`);
+                console.log(`   ${formatDateForStorage(date)} is a ${dayName}`);
             });
         }
         
@@ -121,7 +121,7 @@ describe('Issue #322: Tuesday recurring tasks showing on Monday', () => {
         const utcResults = generateRecurringInstances(tuesdayTask, utcStart, utcEnd);
         utcResults.forEach(date => {
             const dayName = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][date.getUTCDay()];
-            console.log(`   ${formatUTCDateForCalendar(date)} (${dayName})`);
+            console.log(`   ${formatDateForStorage(date)} (${dayName})`);
         });
         
         console.log('\\n2. Local date range (potential bug source):');
@@ -134,12 +134,12 @@ describe('Issue #322: Tuesday recurring tasks showing on Monday', () => {
         const localResults = generateRecurringInstances(tuesdayTask, localStart, localEnd);
         localResults.forEach(date => {
             const dayName = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][date.getUTCDay()];
-            console.log(`   ${formatUTCDateForCalendar(date)} (${dayName})`);
+            console.log(`   ${formatDateForStorage(date)} (${dayName})`);
         });
         
         // Check if different date range creation methods produce different results
-        const utcDates = utcResults.map(d => formatUTCDateForCalendar(d));
-        const localDates = localResults.map(d => formatUTCDateForCalendar(d));
+        const utcDates = utcResults.map(d => formatDateForStorage(d));
+        const localDates = localResults.map(d => formatDateForStorage(d));
         
         if (JSON.stringify(utcDates) !== JSON.stringify(localDates)) {
             console.log('🐛 TIMEZONE BUG: Different results from UTC vs local date ranges!');

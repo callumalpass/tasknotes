@@ -2,12 +2,12 @@
  * Test for Issue #160: Inconsistency between TaskEditModal calendar and TaskService completion
  * 
  * This test specifically targets the interaction between:
- * 1. TaskEditModal completion calendar (uses formatUTCDateForCalendar)
+ * 1. TaskEditModal completion calendar (uses formatDateForStorage)
  * 2. TaskService toggleRecurringTaskComplete (uses date-fns format)
  */
 
 import { format } from 'date-fns';
-import { formatUTCDateForCalendar, createUTCDateForRRule } from '../../../src/utils/dateUtils';
+import { formatDateForStorage, createUTCDateForRRule } from '../../../src/utils/dateUtils';
 import { generateRecurringInstances } from '../../../src/utils/helpers';
 import { TaskInfo } from '../../../src/types';
 import { TaskFactory } from '../../helpers/mock-factories';
@@ -41,16 +41,16 @@ describe('Issue #160: TaskEditModal vs TaskService inconsistency', () => {
       allDays.push(new Date(day)); // These are local timezone dates
     }
     
-    // Calendar formats these local dates using formatUTCDateForCalendar (treating them as UTC)
+    // Calendar formats these local dates using formatDateForStorage (treating them as UTC)
     const calendarDateStrings = allDays.map(day => {
-      const formatted = formatUTCDateForCalendar(day);
+      const formatted = formatDateForStorage(day);
       console.log(`  ${day.toISOString()} → ${formatted} (day ${day.getUTCDay()})`);
       return formatted;
     });
     
     // Generate recurring instances (these are properly UTC)
     const recurringDates = generateRecurringInstances(fridayTask, weekStart, weekEnd);
-    const recurringDateStrings = new Set(recurringDates.map(d => formatUTCDateForCalendar(d)));
+    const recurringDateStrings = new Set(recurringDates.map(d => formatDateForStorage(d)));
     
     console.log('\nRecurring date strings (UTC):', Array.from(recurringDateStrings));
     console.log('Calendar date strings (local treated as UTC):', calendarDateStrings);
@@ -72,7 +72,7 @@ describe('Issue #160: TaskEditModal vs TaskService inconsistency', () => {
     console.log('TaskService would record:', completionDateStr);
     
     // Calendar formats the same date using UTC methods
-    const calendarDateStr = formatUTCDateForCalendar(userClickedDay);
+    const calendarDateStr = formatDateForStorage(userClickedDay);
     console.log('Calendar shows this as:', calendarDateStr);
     
     console.log('\n3. Bug Analysis:');
@@ -118,16 +118,16 @@ describe('Issue #160: TaskEditModal vs TaskService inconsistency', () => {
     }
     
     // Both calendar and service use the same formatting
-    const calendarDateStrings = allDaysUTC.map(day => formatUTCDateForCalendar(day));
+    const calendarDateStrings = allDaysUTC.map(day => formatDateForStorage(day));
     const recurringDates = generateRecurringInstances(fridayTask, weekStartUTC, weekEndUTC);
-    const recurringDateStrings = new Set(recurringDates.map(d => formatUTCDateForCalendar(d)));
+    const recurringDateStrings = new Set(recurringDates.map(d => formatDateForStorage(d)));
     
     console.log('Calendar dates (UTC):', calendarDateStrings);
     console.log('Recurring dates (UTC):', Array.from(recurringDateStrings));
     
     // When user clicks, use the same UTC formatting
     const userClickedDayUTC = allDaysUTC[4]; // Friday UTC
-    const completionDateStr = formatUTCDateForCalendar(userClickedDayUTC); // Use same function!
+    const completionDateStr = formatDateForStorage(userClickedDayUTC); // Use same function!
     
     console.log('User clicked (UTC):', userClickedDayUTC.toISOString());
     console.log('Completion recorded (UTC):', completionDateStr);

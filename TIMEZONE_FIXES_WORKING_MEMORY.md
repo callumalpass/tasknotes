@@ -35,7 +35,7 @@ This document tracks all timezone-related fixes and potential issues in the Chro
 ### ✅ Fully Reviewed and Fixed
 - [x] `/src/utils/dateUtils.ts` - Core date utilities
   - Added local date functions
-  - Fixed `formatUTCDateForCalendar` to use local dates
+  - Fixed `formatDateForStorage` to use local dates
   - Updated `isToday`, `isOverdueTimeAware`
   
 - [x] `/src/views/AgendaView.ts` - Agenda view
@@ -50,8 +50,8 @@ This document tracks all timezone-related fixes and potential issues in the Chro
   - Updated `getTasksForDate` to use `formatDateForStorage()`
 
 - [x] `/src/services/TaskService.ts` - Task service
-  - ✅ `toggleRecurringTaskComplete` uses `formatUTCDateForCalendar` (now local)
-  - ✅ `getCurrentDateString` uses `formatUTCDateForCalendar` (now local)
+  - ✅ `toggleRecurringTaskComplete` uses `formatDateForStorage` (now local)
+  - ✅ `getCurrentDateString` uses `formatDateForStorage` (now local)
   - ✅ Completion dates handled correctly
   - ⚠️ Uses `new Date()` for filename context - should be OK as it's just for generation
 
@@ -85,14 +85,14 @@ This document tracks all timezone-related fixes and potential issues in the Chro
 ## Known Issues
 
 ### 1. ✅ FIXED: RRule/Local Date Boundary Bug
-- **Problem**: `formatUTCDateForCalendar` now returns local date strings, but `createUTCDateForRRule` interprets them as UTC
+- **Problem**: `formatDateForStorage` now returns local date strings, but `createUTCDateForRRule` interprets them as UTC
 - **Example**: In UTC+11, local "2024-07-29" gets parsed as UTC "2024-07-29T00:00:00Z", which is actually July 28 in local time
 - **Risk**: Recurring tasks were showing on wrong days - this was a regression!
 - **Files Affected**: 
   - `isDueByRRule` in helpers.ts - was using both functions together incorrectly
 - **Fix Applied**: 
   - Added `formatDateAsUTCString()` function to properly format dates for RRule operations
-  - Updated `isDueByRRule` to use `formatDateAsUTCString` instead of `formatUTCDateForCalendar`
+  - Updated `isDueByRRule` to use `formatDateAsUTCString` instead of `formatDateForStorage`
   - All tests passing, including Issue #327 tests
 
 ### 2. Date String Comparisons
@@ -127,7 +127,7 @@ This document tracks all timezone-related fixes and potential issues in the Chro
 
 ### Critical Fixes
 1. **RRule/Local Date Boundary** ✅
-   - Fixed `isDueByRRule` to use `formatDateAsUTCString` instead of `formatUTCDateForCalendar`
+   - Fixed `isDueByRRule` to use `formatDateAsUTCString` instead of `formatDateForStorage`
    - This prevents recurring tasks from showing on wrong days
 
 2. **Date Formatting Standardization** ✅

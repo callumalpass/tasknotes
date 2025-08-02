@@ -23,7 +23,7 @@ jest.mock('../../../src/utils/dateUtils', () => ({
   getCurrentTimestamp: jest.fn(() => '2025-01-01T12:00:00Z'),
   getCurrentDateString: jest.fn(() => '2025-01-01'),
   parseDate: jest.fn((dateStr) => dateStr),
-  formatUTCDateForCalendar: jest.fn((dateStr) => dateStr)
+  formatDateForStorage: jest.fn((dateStr) => dateStr)
 }));
 
 jest.mock('../../../src/utils/filenameGenerator', () => ({

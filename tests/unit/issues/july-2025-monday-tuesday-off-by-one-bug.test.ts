@@ -17,7 +17,7 @@ import {
   isDueByRRule
 } from '../../../src/utils/helpers';
 import { 
-  formatUTCDateForCalendar, 
+  formatDateForStorage, 
   createUTCDateForRRule
 } from '../../../src/utils/dateUtils';
 
@@ -39,7 +39,7 @@ describe('July 2025 Monday/Tuesday Off-by-One Bug', () => {
       const julyEnd = new Date('2025-07-31T23:59:59.999Z');
       
       const recurringDates = generateRecurringInstances(tuesdayTask, julyStart, julyEnd);
-      const dateStrings = recurringDates.map(d => formatUTCDateForCalendar(d));
+      const dateStrings = recurringDates.map(d => formatDateForStorage(d));
       
       console.log('Generated recurring dates for July 2025:', dateStrings);
       
@@ -169,7 +169,7 @@ describe('July 2025 Monday/Tuesday Off-by-One Bug', () => {
         const julyStart = new Date('2025-07-01T00:00:00.000Z');
         const julyEnd = new Date('2025-07-31T23:59:59.999Z');
         const instances = generateRecurringInstances(task, julyStart, julyEnd);
-        const dateStrings = instances.map(d => formatUTCDateForCalendar(d));
+        const dateStrings = instances.map(d => formatDateForStorage(d));
         
         console.log(`July instances: ${dateStrings.join(', ')}`);
         
@@ -205,7 +205,7 @@ describe('July 2025 Monday/Tuesday Off-by-One Bug', () => {
       testTimes.forEach(timeStr => {
         const testDate = new Date(timeStr);
         const isDue = isDueByRRule(tuesdayTask, testDate);
-        const dateStr = formatUTCDateForCalendar(testDate);
+        const dateStr = formatDateForStorage(testDate);
         const dayName = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][testDate.getUTCDay()];
         
         console.log(`${timeStr} (${dateStr}, ${dayName}): isDue = ${isDue}`);
@@ -228,7 +228,7 @@ describe('July 2025 Monday/Tuesday Off-by-One Bug', () => {
       console.log('\ncreatUUTCDateForRRule consistency check:');
       testDates.forEach(dateStr => {
         const utcDate = createUTCDateForRRule(dateStr);
-        const backToString = formatUTCDateForCalendar(utcDate);
+        const backToString = formatDateForStorage(utcDate);
         const dayOfWeek = utcDate.getUTCDay();
         const dayName = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][dayOfWeek];
         

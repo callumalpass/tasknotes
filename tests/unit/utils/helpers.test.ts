@@ -98,7 +98,7 @@ jest.mock('../../../src/utils/dateUtils', () => ({
     const [year, month, day] = dateStr.split('-').map(Number);
     return new Date(Date.UTC(year, month - 1, day));
   }),
-  formatUTCDateForCalendar: jest.fn((date: Date) => {
+  formatDateForStorage: jest.fn((date: Date) => {
     const year = date.getUTCFullYear();
     const month = String(date.getUTCMonth() + 1).padStart(2, '0');
     const day = String(date.getUTCDate()).padStart(2, '0');

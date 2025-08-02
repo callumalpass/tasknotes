@@ -15,7 +15,7 @@
 import { TaskInfo } from '../../../src/types';
 import { TaskFactory } from '../../helpers/mock-factories';
 import { isDueByRRule, generateRecurringInstances } from '../../../src/utils/helpers';
-import { createUTCDateForRRule, formatUTCDateForCalendar } from '../../../src/utils/dateUtils';
+import { createUTCDateForRRule, formatDateForStorage } from '../../../src/utils/dateUtils';
 import { RRule } from 'rrule';
 
 // Mock the rrule library to potentially introduce the off-by-one behavior
@@ -166,7 +166,7 @@ describe('Calendar Recurrence Off-by-One Bug', () => {
       const monthEnd = new Date('2025-01-31T23:59:59.999Z');
       
       const recurringInstances = generateRecurringInstances(tuesdayTask, monthStart, monthEnd);
-      const dateStrings = recurringInstances.map(date => formatUTCDateForCalendar(date));
+      const dateStrings = recurringInstances.map(date => formatDateForStorage(date));
       
       console.log('Generated recurring instances:', dateStrings);
       
@@ -266,7 +266,7 @@ describe('Calendar Recurrence Off-by-One Bug', () => {
       const monthEnd = createUTCDateForRRule('2025-01-31');
       
       const instances = rule.between(monthStart, monthEnd, true);
-      const instanceStrings = instances.map(date => formatUTCDateForCalendar(date));
+      const instanceStrings = instances.map(date => formatDateForStorage(date));
       
       console.log('RRule generated instances:', instanceStrings);
       
@@ -318,7 +318,7 @@ describe('Calendar Recurrence Off-by-One Bug', () => {
         createUTCDateForRRule('2025-03-31')
       );
       
-      const instanceStrings = instances.map(date => formatUTCDateForCalendar(date));
+      const instanceStrings = instances.map(date => formatDateForStorage(date));
       
       // Should include both Sundays
       expect(instanceStrings).toContain('2025-03-09');

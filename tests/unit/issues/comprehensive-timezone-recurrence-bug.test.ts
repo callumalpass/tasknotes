@@ -14,7 +14,7 @@
 import { TaskInfo } from '../../../src/types';
 import { TaskFactory } from '../../helpers/mock-factories';
 import { isDueByRRule, generateRecurringInstances } from '../../../src/utils/helpers';
-import { formatUTCDateForCalendar, createUTCDateForRRule } from '../../../src/utils/dateUtils';
+import { formatDateForStorage, createUTCDateForRRule } from '../../../src/utils/dateUtils';
 import { format } from 'date-fns';
 
 // Comprehensive timezone scenarios for testing
@@ -174,7 +174,7 @@ describe('Comprehensive Timezone-Based Recurrence Off-by-One Bug', () => {
             // What does format() return in this timezone?
             const formatResult = timezoneMock.format(testDate, 'yyyy-MM-dd');
             console.log(`format() returns: ${formatResult}`);
-            console.log(`formatUTCDateForCalendar() returns: ${formatUTCDateForCalendar(testDate)}`);
+            console.log(`formatDateForStorage() returns: ${formatDateForStorage(testDate)}`);
             console.log(`isDueByRRule result: ${isDue}`);
             
             // Check if the bug is present
@@ -182,7 +182,7 @@ describe('Comprehensive Timezone-Based Recurrence Off-by-One Bug', () => {
             if (hasBug) {
               console.log(`🐛 BUG DETECTED: Expected ${testCase.shouldBeDue}, got ${isDue}`);
               console.log(`   Root cause: format() uses local timezone (${formatResult})`);
-              console.log(`   But should use UTC timezone (${formatUTCDateForCalendar(testDate)})`);
+              console.log(`   But should use UTC timezone (${formatDateForStorage(testDate)})`);
             } else {
               console.log(`✅ CORRECT: Result matches expected behavior`);
             }
@@ -192,8 +192,8 @@ describe('Comprehensive Timezone-Based Recurrence Off-by-One Bug', () => {
             // expect(isDue).toBe(testCase.shouldBeDue); // Uncomment when bug is fixed
             
             // For now, document the current buggy behavior
-            if (formatResult !== formatUTCDateForCalendar(testDate)) {
-              // When format() and formatUTCDateForCalendar() differ, we expect inconsistent behavior
+            if (formatResult !== formatDateForStorage(testDate)) {
+              // When format() and formatDateForStorage() differ, we expect inconsistent behavior
               console.log(`   Timezone inconsistency detected - bug likely present`);
             }
           });
@@ -226,7 +226,7 @@ describe('Comprehensive Timezone-Based Recurrence Off-by-One Bug', () => {
       const julyStart = new Date('2025-07-01T00:00:00.000Z');
       const julyEnd = new Date('2025-07-31T23:59:59.999Z');
       const instances = generateRecurringInstances(tuesdayTask, julyStart, julyEnd);
-      const dateStrings = instances.map(d => formatUTCDateForCalendar(d));
+      const dateStrings = instances.map(d => formatDateForStorage(d));
       
       console.log('Generated recurring dates:', dateStrings);
       
@@ -247,11 +247,11 @@ describe('Comprehensive Timezone-Based Recurrence Off-by-One Bug', () => {
         const testDate = new Date(date);
         const isDue = isDueByRRule(tuesdayTask, testDate);
         const formatResult = aestMock.format(testDate, 'yyyy-MM-dd');
-        const utcResult = formatUTCDateForCalendar(testDate);
+        const utcResult = formatDateForStorage(testDate);
         
         console.log(`\n${desc}:`);
         console.log(`  format() returns: ${formatResult}`);
-        console.log(`  formatUTCDateForCalendar(): ${utcResult}`);
+        console.log(`  formatDateForStorage(): ${utcResult}`);
         console.log(`  isDueByRRule(): ${isDue}`);
         console.log(`  Expected: false (should NOT be due on Monday)`);
         
@@ -265,11 +265,11 @@ describe('Comprehensive Timezone-Based Recurrence Off-by-One Bug', () => {
         const testDate = new Date(date);
         const isDue = isDueByRRule(tuesdayTask, testDate);
         const formatResult = aestMock.format(testDate, 'yyyy-MM-dd');
-        const utcResult = formatUTCDateForCalendar(testDate);
+        const utcResult = formatDateForStorage(testDate);
         
         console.log(`\n${desc}:`);
         console.log(`  format() returns: ${formatResult}`);
-        console.log(`  formatUTCDateForCalendar(): ${utcResult}`);
+        console.log(`  formatDateForStorage(): ${utcResult}`);
         console.log(`  isDueByRRule(): ${isDue}`);
         console.log(`  Expected: true (should be due on Tuesday)`);
         
@@ -303,13 +303,13 @@ describe('Comprehensive Timezone-Based Recurrence Off-by-One Bug', () => {
       
       console.log(`UTC time: ${testDate.toISOString()}`);
       console.log(`format(date, "yyyy-MM-dd"): ${aestMock.format(testDate, 'yyyy-MM-dd')} (WRONG - uses local time)`);
-      console.log(`formatUTCDateForCalendar(date): ${formatUTCDateForCalendar(testDate)} (CORRECT - uses UTC)`);
+      console.log(`formatDateForStorage(date): ${formatDateForStorage(testDate)} (CORRECT - uses UTC)`);
       console.log('');
-      console.log('Fix: Replace format(date, "yyyy-MM-dd") with formatUTCDateForCalendar(date)');
+      console.log('Fix: Replace format(date, "yyyy-MM-dd") with formatDateForStorage(date)');
       
       // Verify our analysis
       const formatResult = aestMock.format(testDate, 'yyyy-MM-dd');
-      const utcResult = formatUTCDateForCalendar(testDate);
+      const utcResult = formatDateForStorage(testDate);
       
       expect(formatResult).toBe('2025-07-22'); // Local timezone (wrong)
       expect(utcResult).toBe('2025-07-21');    // UTC (correct)
@@ -326,7 +326,7 @@ describe('Comprehensive Timezone-Based Recurrence Off-by-One Bug', () => {
       timezoneTestScenarios.forEach(scenario => {
         const timezoneMock = createTimezoneMock(scenario.offsetHours);
         const localResult = timezoneMock.format(testDate, 'yyyy-MM-dd');
-        const utcResult = formatUTCDateForCalendar(testDate);
+        const utcResult = formatDateForStorage(testDate);
         
         console.log(`${scenario.name}:`);
         console.log(`  Local format(): ${localResult}`);
@@ -336,13 +336,13 @@ describe('Comprehensive Timezone-Based Recurrence Off-by-One Bug', () => {
       
       // All UTC results should be the same regardless of timezone
       const allUtcResults = timezoneTestScenarios.map(scenario => {
-        return formatUTCDateForCalendar(testDate);
+        return formatDateForStorage(testDate);
       });
       
       const allSame = allUtcResults.every(result => result === '2025-07-22');
       expect(allSame).toBe(true);
       
-      console.log('\nResult: formatUTCDateForCalendar() produces consistent results across all timezones');
+      console.log('\nResult: formatDateForStorage() produces consistent results across all timezones');
       console.log('This confirms that using UTC-based formatting will fix the bug');
     });
   });

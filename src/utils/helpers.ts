@@ -4,7 +4,7 @@ import { RRule } from 'rrule';
 import { TimeInfo, TaskInfo, TimeEntry, TimeBlock, DailyNoteFrontmatter } from '../types';
 import { FieldMapper } from '../services/FieldMapper';
 import { DEFAULT_FIELD_MAPPING } from '../settings/settings';
-import { isBeforeDateSafe, getTodayString, parseDate, createUTCDateForRRule, formatUTCDateForCalendar, getTodayLocal, parseDateAsLocal, hasTimeComponent, formatDateAsUTCString } from './dateUtils';
+import { isBeforeDateSafe, getTodayString, parseDate, createUTCDateForRRule, formatDateForStorage, getTodayLocal, parseDateAsLocal, hasTimeComponent, formatDateAsUTCString } from './dateUtils';
 // import { RegexOptimizer } from './RegexOptimizer'; // Temporarily disabled
 
 /**
@@ -367,7 +367,7 @@ export function isDueByRRule(task: TaskInfo, date: Date): boolean {
 	// If recurrence is an object (legacy format), handle it inline
 	// Legacy recurrence object handling
 	const frequency = task.recurrence.frequency;
-	const targetDate = parseDate(formatUTCDateForCalendar(date));
+	const targetDate = parseDate(formatDateForStorage(date));
 	const dayOfWeek = targetDate.getUTCDay();
 	const dayOfMonth = targetDate.getUTCDate();
 	const monthOfYear = targetDate.getUTCMonth() + 1; // JavaScript months are 0-indexed
@@ -421,7 +421,7 @@ export function isRecurringTaskDueOn(task: any, date: Date): boolean {
 	if (typeof task.recurrence === 'string') return true;
 	
 	const frequency = task.recurrence.frequency;
-	const targetDate = parseDate(formatUTCDateForCalendar(date));
+	const targetDate = parseDate(formatDateForStorage(date));
 	const dayOfWeek = targetDate.getUTCDay();
 	const dayOfMonth = targetDate.getUTCDate();
 	const monthOfYear = targetDate.getUTCMonth() + 1; // JavaScript months are 0-indexed
@@ -493,7 +493,7 @@ export function shouldShowRecurringTaskOnDate(task: TaskInfo, targetDate: Date):
 export function getRecurringTaskCompletionText(task: TaskInfo, targetDate: Date): string {
 	if (!task.recurrence) return '';
 	
-	const dateStr = formatUTCDateForCalendar(targetDate);
+	const dateStr = formatDateForStorage(targetDate);
 	const isCompleted = task.complete_instances?.includes(dateStr) || false;
 	
 	return isCompleted ? 'Completed for this date' : 'Not completed for this date';

@@ -1,4 +1,4 @@
-import { parseDate, isPastDate, isToday, formatUTCDateForCalendar } from './dateUtils';
+import { parseDate, isPastDate, isToday, formatDateForStorage } from './dateUtils';
 
 export interface ParsedTaskData {
 	title: string;
@@ -244,7 +244,7 @@ export class TasksPluginParser {
 						return undefined;
 					}
 					
-					return formatUTCDateForCalendar(date);
+					return formatDateForStorage(date);
 				} catch {
 					return undefined;
 				}

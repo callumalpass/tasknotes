@@ -41,7 +41,7 @@ import {
   createUTCDateForRRule,
   validateCompleteInstances,
   normalizeCalendarBoundariesToUTC,
-  formatUTCDateForCalendar,
+  formatDateForStorage,
   isNaturalLanguageDate,
   resolveNaturalLanguageDate,
   getNaturalLanguageDateSuggestions,
@@ -803,11 +803,11 @@ describe('DateUtils', () => {
       });
     });
 
-    describe('formatUTCDateForCalendar', () => {
+    describe('formatDateForStorage', () => {
       it('should format UTC dates to YYYY-MM-DD without timezone shift', () => {
         const utcDate = new Date('2025-01-15T00:00:00.000Z');
         
-        const result = formatUTCDateForCalendar(utcDate);
+        const result = formatDateForStorage(utcDate);
         
         expect(result).toBe('2025-01-15');
       });
@@ -821,7 +821,7 @@ describe('DateUtils', () => {
 
         testCases.forEach(({ input, expected }) => {
           const utcDate = new Date(input);
-          const result = formatUTCDateForCalendar(utcDate);
+          const result = formatDateForStorage(utcDate);
           expect(result).toBe(expected);
         });
       });
@@ -836,7 +836,7 @@ describe('DateUtils', () => {
 
         testCases.forEach(({ input, expected }) => {
           const utcDate = new Date(input);
-          const result = formatUTCDateForCalendar(utcDate);
+          const result = formatDateForStorage(utcDate);
           expect(result).toBe(expected);
         });
       });
@@ -851,7 +851,7 @@ describe('DateUtils', () => {
 
         testCases.forEach(({ input, expected }) => {
           const utcDate = new Date(input);
-          const result = formatUTCDateForCalendar(utcDate);
+          const result = formatDateForStorage(utcDate);
           expect(result).toBe(expected);
         });
       });
@@ -860,9 +860,9 @@ describe('DateUtils', () => {
         const invalidDate = new Date('invalid');
         
         // Should not throw and should provide a fallback
-        expect(() => formatUTCDateForCalendar(invalidDate)).not.toThrow();
+        expect(() => formatDateForStorage(invalidDate)).not.toThrow();
         
-        const result = formatUTCDateForCalendar(invalidDate);
+        const result = formatDateForStorage(invalidDate);
         // Fallback should be ISO string date part
         expect(typeof result).toBe('string');
       });
@@ -877,8 +877,8 @@ describe('DateUtils', () => {
         const startDate = createUTCDateForRRule('2025-07-07');
         
         // Test that both calendar and edit modal use the same date formatting
-        const calendarDate = formatUTCDateForCalendar(startDate);
-        const editModalDate = formatUTCDateForCalendar(startDate);
+        const calendarDate = formatDateForStorage(startDate);
+        const editModalDate = formatDateForStorage(startDate);
         
         expect(calendarDate).toBe('2025-07-07');
         expect(editModalDate).toBe('2025-07-07');
@@ -897,7 +897,7 @@ describe('DateUtils', () => {
 
         testDates.forEach(dateStr => {
           const utcDate = createUTCDateForRRule(dateStr);
-          const formattedDate = formatUTCDateForCalendar(utcDate);
+          const formattedDate = formatDateForStorage(utcDate);
           
           // Date should remain consistent regardless of timezone
           expect(formattedDate).toBe(dateStr);
@@ -927,8 +927,8 @@ describe('DateUtils', () => {
         const editModalInstances = [startDate];
         
         // Both should format to the same date string
-        const calendarDates = calendarInstances.map(d => formatUTCDateForCalendar(d));
-        const editModalDates = editModalInstances.map(d => formatUTCDateForCalendar(d));
+        const calendarDates = calendarInstances.map(d => formatDateForStorage(d));
+        const editModalDates = editModalInstances.map(d => formatDateForStorage(d));
         
         expect(calendarDates).toEqual(['2025-07-07']);
         expect(editModalDates).toEqual(['2025-07-07']);
@@ -957,7 +957,7 @@ describe('DateUtils', () => {
 
         testCases.forEach(({ date, description }) => {
           const utcDate = createUTCDateForRRule(date);
-          const formattedDate = formatUTCDateForCalendar(utcDate);
+          const formattedDate = formatDateForStorage(utcDate);
           
           expect(formattedDate).toBe(date);
         });
@@ -976,7 +976,7 @@ describe('DateUtils', () => {
 
         monthEndDates.forEach(dateStr => {
           const utcDate = createUTCDateForRRule(dateStr);
-          const formattedDate = formatUTCDateForCalendar(utcDate);
+          const formattedDate = formatDateForStorage(utcDate);
           
           expect(formattedDate).toBe(dateStr);
         });
@@ -1010,8 +1010,8 @@ describe('DateUtils', () => {
           expect(utcEnd.getUTCSeconds()).toBe(0);
           
           // Verify that dates are properly formatted for calendar display
-          const startDateStr = formatUTCDateForCalendar(utcStart);
-          const endDateStr = formatUTCDateForCalendar(utcEnd);
+          const startDateStr = formatDateForStorage(utcStart);
+          const endDateStr = formatDateForStorage(utcEnd);
           
           expect(startDateStr).toMatch(/^\d{4}-\d{2}-\d{2}$/);
           expect(endDateStr).toMatch(/^\d{4}-\d{2}-\d{2}$/);
@@ -1025,9 +1025,9 @@ describe('DateUtils', () => {
         const recurringTaskDate = '2025-07-07'; // Monday
         
         // All views should use the same date utilities
-        const tasksViewDate = formatUTCDateForCalendar(createUTCDateForRRule(recurringTaskDate));
-        const calendarViewDate = formatUTCDateForCalendar(createUTCDateForRRule(recurringTaskDate));
-        const editModalDate = formatUTCDateForCalendar(createUTCDateForRRule(recurringTaskDate));
+        const tasksViewDate = formatDateForStorage(createUTCDateForRRule(recurringTaskDate));
+        const calendarViewDate = formatDateForStorage(createUTCDateForRRule(recurringTaskDate));
+        const editModalDate = formatDateForStorage(createUTCDateForRRule(recurringTaskDate));
         
         // All three views should show the same date
         expect(tasksViewDate).toBe('2025-07-07');
@@ -1045,7 +1045,7 @@ describe('DateUtils', () => {
         
         completionDates.forEach(dateStr => {
           const utcDate = createUTCDateForRRule(dateStr);
-          const formattedDate = formatUTCDateForCalendar(utcDate);
+          const formattedDate = formatDateForStorage(utcDate);
           
           // Should maintain the original date
           expect(formattedDate).toBe(dateStr);

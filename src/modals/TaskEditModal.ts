@@ -2,7 +2,7 @@ import { App, Notice, TFile } from 'obsidian';
 import TaskNotesPlugin from '../main';
 import { TaskModal } from './TaskModal';
 import { TaskInfo } from '../types';
-import { getCurrentTimestamp, createUTCDateForRRule, formatUTCDateForCalendar, generateUTCCalendarDates, getUTCStartOfWeek, getUTCEndOfWeek, getUTCStartOfMonth, getUTCEndOfMonth, getTodayLocal, parseDateAsLocal, formatDateAsUTCString } from '../utils/dateUtils';
+import { getCurrentTimestamp, createUTCDateForRRule, formatDateForStorage, generateUTCCalendarDates, getUTCStartOfWeek, getUTCEndOfWeek, getUTCStartOfMonth, getUTCEndOfMonth, getTodayLocal, parseDateAsLocal, formatDateAsUTCString } from '../utils/dateUtils';
 import { formatTimestampForDisplay } from '../utils/dateUtils';
 import { format, isSameMonth } from 'date-fns';
 import { generateRecurringInstances, extractTaskInfo, calculateTotalTimeSpent, formatTime } from '../utils/helpers';
@@ -278,7 +278,7 @@ export class TaskEditModal extends TaskModal {
         bufferEnd.setUTCMonth(bufferEnd.getUTCMonth() + 1);
         
         const recurringDates = generateRecurringInstances(this.task, bufferStart, bufferEnd);
-        const recurringDateStrings = new Set(recurringDates.map(d => formatUTCDateForCalendar(d)));
+        const recurringDateStrings = new Set(recurringDates.map(d => formatDateForStorage(d)));
         
         // Get current completed instances (original + changes)
         const completedInstances = new Set(this.task.complete_instances || []);
@@ -292,7 +292,7 @@ export class TaskEditModal extends TaskModal {
         
         // Render each day (no headers, just numbers)
         allDays.forEach(day => {
-            const dayStr = formatUTCDateForCalendar(day);
+            const dayStr = formatDateForStorage(day);
             const isCurrentMonth = isSameMonth(day, displayDate);
             const isRecurring = recurringDateStrings.has(dayStr);
             const isCompleted = completedInstances.has(dayStr);

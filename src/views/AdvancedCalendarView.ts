@@ -37,7 +37,6 @@ import {
     getTimePart,
     parseDate,
     normalizeCalendarBoundariesToUTC,
-    formatUTCDateForCalendar,
     formatDateForStorage,
     getTodayLocal
 } from '../utils/dateUtils';
@@ -1012,7 +1011,7 @@ export class AdvancedCalendarView extends ItemView {
         
         for (const date of recurringDates) {
             // Use UTC-safe formatting to prevent off-by-one date shifts
-            const instanceDate = formatUTCDateForCalendar(date);
+            const instanceDate = formatDateForStorage(date);
             
             // Only append time if the original task had a time component
             const eventStart = hasOriginalTime ? `${instanceDate}T${templateTime}` : instanceDate;

@@ -532,7 +532,7 @@ export function getCurrentTimestamp(): string {
  * Get current date in YYYY-MM-DD format for completion dates
  */
 export function getCurrentDateString(): string {
-    return formatUTCDateForCalendar(new Date());
+    return formatDateForStorage(new Date());
 }
 
 /**
@@ -955,17 +955,6 @@ export function normalizeCalendarBoundariesToUTC(startDate: Date, endDate: Date)
     }
 }
 
-/**
- * Format a UTC date from RRule back to YYYY-MM-DD string without timezone conversion
- * This prevents the date from shifting when displayed on calendar
- * IMPORTANT: Only use this for dates that are already in UTC (e.g., from RRule processing)
- */
-export function formatUTCDateForCalendar(utcDate: Date): string {
-    // When AgendaView passes UTC normalized dates, they should be treated
-    // as calendar dates and formatted using local methods to prevent
-    // timezone-based date shifts
-    return formatDateForStorage(utcDate);
-}
 
 /**
  * Format a date as UTC YYYY-MM-DD for RRule operations
@@ -1017,8 +1006,8 @@ export function generateUTCCalendarDates(startDate: Date, endDate: Date): Date[]
     const dates: Date[] = [];
     
     // Convert to UTC date strings and back to ensure consistent UTC dates
-    const startDateStr = formatUTCDateForCalendar(startDate);
-    const endDateStr = formatUTCDateForCalendar(endDate);
+    const startDateStr = formatDateForStorage(startDate);
+    const endDateStr = formatDateForStorage(endDate);
     
     const current = createUTCDateForRRule(startDateStr);
     const end = createUTCDateForRRule(endDateStr);
@@ -1035,7 +1024,7 @@ export function generateUTCCalendarDates(startDate: Date, endDate: Date): Date[]
  * Get the start of week for a UTC date, returning a UTC date
  */
 export function getUTCStartOfWeek(date: Date, weekStartsOn = 1): Date {
-    const utcDate = createUTCDateForRRule(formatUTCDateForCalendar(date));
+    const utcDate = createUTCDateForRRule(formatDateForStorage(date));
     const dayOfWeek = utcDate.getUTCDay();
     const diff = (dayOfWeek - weekStartsOn + 7) % 7;
     const startOfWeek = new Date(utcDate);
@@ -1057,7 +1046,7 @@ export function getUTCEndOfWeek(date: Date, weekStartsOn = 1): Date {
  * Get the start of month for a UTC date, returning a UTC date
  */
 export function getUTCStartOfMonth(date: Date): Date {
-    const utcDate = createUTCDateForRRule(formatUTCDateForCalendar(date));
+    const utcDate = createUTCDateForRRule(formatDateForStorage(date));
     return new Date(Date.UTC(utcDate.getUTCFullYear(), utcDate.getUTCMonth(), 1));
 }
 
@@ -1065,7 +1054,7 @@ export function getUTCStartOfMonth(date: Date): Date {
  * Get the end of month for a UTC date, returning a UTC date
  */
 export function getUTCEndOfMonth(date: Date): Date {
-    const utcDate = createUTCDateForRRule(formatUTCDateForCalendar(date));
+    const utcDate = createUTCDateForRRule(formatDateForStorage(date));
     return new Date(Date.UTC(utcDate.getUTCFullYear(), utcDate.getUTCMonth() + 1, 0));
 }
 

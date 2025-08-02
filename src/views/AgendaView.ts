@@ -1,6 +1,6 @@
 import { TFile, ItemView, WorkspaceLeaf, EventRef, Setting } from 'obsidian';
 import { format, addDays, startOfWeek, endOfWeek, isToday, isSameDay } from 'date-fns';
-import { formatUTCDateForCalendar, createUTCDateFromLocalCalendarDate, getTodayLocal } from '../utils/dateUtils';
+import { formatDateForStorage, createUTCDateFromLocalCalendarDate, getTodayLocal } from '../utils/dateUtils';
 import TaskNotesPlugin from '../main';
 import { 
     AGENDA_VIEW_TYPE,
@@ -480,7 +480,7 @@ export class AgendaView extends ItemView {
         
         let hasAnyItems = false;
         agendaData.forEach(dayData => {
-            const dateStr = formatUTCDateForCalendar(dayData.date);
+            const dateStr = formatDateForStorage(dayData.date);
             
             // Tasks are already filtered by FilterService, no need to re-filter
             const hasItems = dayData.tasks.length > 0 || dayData.notes.length > 0;

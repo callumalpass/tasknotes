@@ -7,18 +7,18 @@
  * 
  * The bug occurs when:
  * 1. TaskService uses `format(date, 'yyyy-MM-dd')` which applies local timezone
- * 2. Calendar/UI components use `formatUTCDateForCalendar()` which uses UTC
+ * 2. Calendar/UI components use `formatDateForStorage()` which uses UTC
  * 3. This creates inconsistency where completion dates can be off by one day
  * 
  * Specific scenarios:
  * - Weekly recurring task set for Tuesday shows Monday highlighted (recurrence bug)
  * - Task completed inline shows completion date as previous day (completion bug) 
- * - Task completed on calendar shows correct date (calendar uses formatUTCDateForCalendar)
+ * - Task completed on calendar shows correct date (calendar uses formatDateForStorage)
  * - Different behavior between inline and calendar completion methods
  */
 
 import { TaskService } from '../../../src/services/TaskService';
-import { formatUTCDateForCalendar } from '../../../src/utils/dateUtils';
+import { formatDateForStorage } from '../../../src/utils/dateUtils';
 import { format } from 'date-fns';
 import { TaskInfo } from '../../../src/types';
 import { TaskFactory } from '../../helpers/mock-factories';
@@ -165,7 +165,7 @@ describe('Off-by-One Completion Date Bug', () => {
       const weekEnd = new Date('2025-01-25T23:59:59.999Z'); // Saturday
       
       const instances = generateRecurringInstances(tuesdayTask, weekStart, weekEnd);
-      const dateStrings = instances.map(d => formatUTCDateForCalendar(d));
+      const dateStrings = instances.map(d => formatDateForStorage(d));
       
       // The bug: if present, might include Monday instead of Tuesday
       expect(dateStrings).toContain('2025-01-21'); // Should contain Tuesday
@@ -206,8 +206,8 @@ describe('Off-by-One Completion Date Bug', () => {
       const taskServiceStoredDate = format(targetDate, 'yyyy-MM-dd');
       
       // CALENDAR COMPLETION: What would calendar completion store?
-      // Calendar uses formatUTCDateForCalendar() - UTC timezone
-      const calendarWouldStoreDate = formatUTCDateForCalendar(targetDate);
+      // Calendar uses formatDateForStorage() - UTC timezone
+      const calendarWouldStoreDate = formatDateForStorage(targetDate);
       
       console.log('Target date (UTC):', targetDate.toISOString());
       console.log('TaskService stores (local timezone):', taskServiceStoredDate);
@@ -242,7 +242,7 @@ describe('Off-by-One Completion Date Bug', () => {
       const updatedTask = await taskService.toggleRecurringTaskComplete(dailyTask, lateEveningUTC);
       
       // What the user expects: task completed for their local day (Wednesday in AEST)
-      const expectedCompletionDate = formatUTCDateForCalendar(lateEveningUTC); // Now returns '2025-01-22' (local date)
+      const expectedCompletionDate = formatDateForStorage(lateEveningUTC); // Now returns '2025-01-22' (local date)
       
       // What TaskService actually stores (now uses local dates - bug fixed)
       const actualStoredDate = updatedTask.complete_instances?.[0];
@@ -277,7 +277,7 @@ describe('Off-by-One Completion Date Bug', () => {
       
       // CALENDAR COMPLETION (hypothetical - would use UTC format)
       // This simulates what calendar completion would store
-      const calendarWouldStoreDate = formatUTCDateForCalendar(targetDate);
+      const calendarWouldStoreDate = formatDateForStorage(targetDate);
       
       // Show the difference mentioned in GitHub discussion #270
       console.log('Inline completion stores:', inlineStoredDate);
@@ -308,10 +308,10 @@ describe('Off-by-One Completion Date Bug', () => {
       mockPlugin.cacheManager.getTaskInfo.mockResolvedValue(dailyTask);
       const targetDate = new Date('2025-01-21T14:00:00Z');
       
-      // When fixed, both methods use formatUTCDateForCalendar which now returns local dates
-      const expectedStoredDate = formatUTCDateForCalendar(targetDate); // Now returns local date
+      // When fixed, both methods use formatDateForStorage which now returns local dates
+      const expectedStoredDate = formatDateForStorage(targetDate); // Now returns local date
       
-      // Inline completion - now fixed (uses formatUTCDateForCalendar which returns local dates)
+      // Inline completion - now fixed (uses formatDateForStorage which returns local dates)
       const updatedTask = await taskService.toggleRecurringTaskComplete(dailyTask, targetDate);
       const actualStoredDate = updatedTask.complete_instances?.[0];
       

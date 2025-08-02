@@ -12,7 +12,7 @@
 
 import { TaskService } from '../../../src/services/TaskService';
 import { TaskInfo } from '../../../src/types';
-import { formatUTCDateForCalendar } from '../../../src/utils/dateUtils';
+import { formatDateForStorage } from '../../../src/utils/dateUtils';
 import { PluginFactory } from '../../helpers/mock-factories';
 
 describe('Issue #314: complete_instances timezone bug reproduction', () => {
@@ -36,7 +36,7 @@ describe('Issue #314: complete_instances timezone bug reproduction', () => {
     // Add the missing method from main.ts
     mockPlugin.isRecurringTaskCompleteForDate = jest.fn((task: TaskInfo, date: Date) => {
       if (!task.recurrence) return false;
-      const dateStr = formatUTCDateForCalendar(date);
+      const dateStr = formatDateForStorage(date);
       const completeInstances = Array.isArray(task.complete_instances) ? task.complete_instances : [];
       return completeInstances.includes(dateStr);
     });
@@ -77,8 +77,8 @@ describe('Issue #314: complete_instances timezone bug reproduction', () => {
     expect(actualCompleteInstances).toContain(expectedDateString);
     expect(actualCompleteInstances).not.toContain('2025-07-27');
     
-    // Additional validation: Ensure formatUTCDateForCalendar works correctly
-    const formattedDate = formatUTCDateForCalendar(aestTime);
+    // Additional validation: Ensure formatDateForStorage works correctly
+    const formattedDate = formatDateForStorage(aestTime);
     expect(formattedDate).toBe('2025-07-28');
   });
 
@@ -105,7 +105,7 @@ describe('Issue #314: complete_instances timezone bug reproduction', () => {
     
     console.log('OLD BUGGY BEHAVIOR:');
     console.log('  Calendar created (July 28 AEST):', oldBuggyDate.toISOString());
-    console.log('  formatUTCDateForCalendar result:', formatUTCDateForCalendar(oldBuggyDate));
+    console.log('  formatDateForStorage result:', formatDateForStorage(oldBuggyDate));
     console.log('  Stored in complete_instances:', oldCompleteInstances);
     
     // Test 2: The NEW fixed behavior (when calendar creates UTC dates)
@@ -116,7 +116,7 @@ describe('Issue #314: complete_instances timezone bug reproduction', () => {
     
     console.log('NEW FIXED BEHAVIOR:');
     console.log('  Calendar creates (July 28 UTC):', newFixedDate.toISOString());
-    console.log('  formatUTCDateForCalendar result:', formatUTCDateForCalendar(newFixedDate));
+    console.log('  formatDateForStorage result:', formatDateForStorage(newFixedDate));
     console.log('  Stored in complete_instances:', newCompleteInstances);
     
     // Assert: With our fixes, both now store the correct date
@@ -199,8 +199,8 @@ describe('Issue #314: complete_instances timezone bug reproduction', () => {
 
     // Simulate what each view would check:
     
-    // 1. Agenda View - uses formatUTCDateForCalendar(targetDate)
-    const agendaViewDate = formatUTCDateForCalendar(targetDate);
+    // 1. Agenda View - uses formatDateForStorage(targetDate)
+    const agendaViewDate = formatDateForStorage(targetDate);
     expect(agendaViewDate).toBe(expectedDateString);
     expect(actualCompleteInstances.includes(agendaViewDate)).toBe(true);
 
@@ -209,11 +209,11 @@ describe('Issue #314: complete_instances timezone bug reproduction', () => {
     expect(tasksViewComplete).toBe(true);
 
     // 3. Kanban View - should show same completion state
-    const kanbanViewComplete = actualCompleteInstances.includes(formatUTCDateForCalendar(targetDate));
+    const kanbanViewComplete = actualCompleteInstances.includes(formatDateForStorage(targetDate));
     expect(kanbanViewComplete).toBe(true);
 
     // 4. Inline Tasks - should also show same completion state  
-    const inlineTasksComplete = actualCompleteInstances.includes(formatUTCDateForCalendar(targetDate));
+    const inlineTasksComplete = actualCompleteInstances.includes(formatDateForStorage(targetDate));
     expect(inlineTasksComplete).toBe(true);
 
     // All views should agree on the completion state

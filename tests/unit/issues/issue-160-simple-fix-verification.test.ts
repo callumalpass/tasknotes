@@ -5,7 +5,7 @@
  * now matches the calendar logic by testing the specific functions
  */
 
-import { formatUTCDateForCalendar } from '../../../src/utils/dateUtils';
+import { formatDateForStorage } from '../../../src/utils/dateUtils';
 import { format } from 'date-fns';
 
 describe('Issue #160 Fix: Simple Verification', () => {
@@ -19,16 +19,16 @@ describe('Issue #160 Fix: Simple Verification', () => {
     console.log('Day of week:', localTimezoneDate.getDay());
     
     // Calendar formatting (used by TaskEditModal)
-    const calendarFormat = formatUTCDateForCalendar(localTimezoneDate);
-    console.log('Calendar format (formatUTCDateForCalendar):', calendarFormat);
+    const calendarFormat = formatDateForStorage(localTimezoneDate);
+    console.log('Calendar format (formatDateForStorage):', calendarFormat);
     
     // Old service formatting (the bug)
     const oldServiceFormat = format(localTimezoneDate, 'yyyy-MM-dd');
     console.log('Old service format (date-fns format):', oldServiceFormat);
     
-    // New service formatting (the fix) - now both use formatUTCDateForCalendar
-    const newServiceFormat = formatUTCDateForCalendar(localTimezoneDate);
-    console.log('New service format (formatUTCDateForCalendar):', newServiceFormat);
+    // New service formatting (the fix) - now both use formatDateForStorage
+    const newServiceFormat = formatDateForStorage(localTimezoneDate);
+    console.log('New service format (formatDateForStorage):', newServiceFormat);
     
     console.log('\nComparison:');
     console.log('Calendar vs Old Service:', calendarFormat === oldServiceFormat ? '✅ Same' : '❌ Different');
@@ -55,8 +55,8 @@ describe('Issue #160 Fix: Simple Verification', () => {
     console.log('UTC day of week:', utcDate.getUTCDay());
     
     // Both calendar and service should now use the same formatting
-    const calendarFormat = formatUTCDateForCalendar(utcDate);
-    const serviceFormat = formatUTCDateForCalendar(utcDate); // Fixed to use same function
+    const calendarFormat = formatDateForStorage(utcDate);
+    const serviceFormat = formatDateForStorage(utcDate); // Fixed to use same function
     
     console.log('Calendar format:', calendarFormat);
     console.log('Service format:', serviceFormat);
@@ -80,10 +80,10 @@ describe('Issue #160 Fix: Simple Verification', () => {
       console.log('  Input date:', date.toISOString());
       
       const oldWay = format(date, 'yyyy-MM-dd');
-      const newWay = formatUTCDateForCalendar(date);
+      const newWay = formatDateForStorage(date);
       
       console.log('  Old way (date-fns):', oldWay);
-      console.log('  New way (formatUTCDateForCalendar):', newWay);
+      console.log('  New way (formatDateForStorage):', newWay);
       
       if (oldWay !== newWay) {
         console.log('  ⚠️  This case would have caused the bug');

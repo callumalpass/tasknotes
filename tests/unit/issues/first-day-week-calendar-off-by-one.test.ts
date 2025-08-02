@@ -19,7 +19,7 @@ import {
   generateRecurringInstances, 
 } from '../../../src/utils/helpers';
 import { 
-  formatUTCDateForCalendar, 
+  formatDateForStorage, 
   generateUTCCalendarDates, 
   getUTCStartOfWeek, 
   getUTCEndOfWeek, 
@@ -55,7 +55,7 @@ describe('First Day of Week Calendar Display Off-by-One', () => {
       bufferEnd.setUTCMonth(bufferEnd.getUTCMonth() + 1);
       
       const recurringDates = generateRecurringInstances(tuesdayTask, bufferStart, bufferEnd);
-      const recurringDateStrings = new Set(recurringDates.map(d => formatUTCDateForCalendar(d)));
+      const recurringDateStrings = new Set(recurringDates.map(d => formatDateForStorage(d)));
       
       console.log('Recurring dates (unchanged by first day setting):', Array.from(recurringDateStrings).filter(d => d.startsWith('2025-01')).sort());
 
@@ -80,7 +80,7 @@ describe('First Day of Week Calendar Display Off-by-One', () => {
         let currentWeek: string[] = [];
         
         allDays.forEach((day, index) => {
-          const dayStr = formatUTCDateForCalendar(day);
+          const dayStr = formatDateForStorage(day);
           const isCurrentMonth = isSameMonth(day, displayDate);
           const isRecurring = recurringDateStrings.has(dayStr);
           const dayOfMonth = day.getUTCDate();
@@ -118,7 +118,7 @@ describe('First Day of Week Calendar Display Off-by-One', () => {
         const tuesdayPositions: Array<{date: string, weekIndex: number, dayIndex: number}> = [];
         
         allDays.forEach((day, index) => {
-          const dayStr = formatUTCDateForCalendar(day);
+          const dayStr = formatDateForStorage(day);
           const isCurrentMonth = isSameMonth(day, displayDate);
           const isRecurring = recurringDateStrings.has(dayStr);
           
@@ -245,14 +245,14 @@ describe('First Day of Week Calendar Display Off-by-One', () => {
         const calendarEnd = getUTCEndOfWeek(monthEnd, firstDaySetting);
         
         // The start of the calendar grid will be different
-        const startDateStr = formatUTCDateForCalendar(calendarStart);
+        const startDateStr = formatDateForStorage(calendarStart);
         console.log(`First day setting ${firstDaySetting}: Calendar starts on ${startDateStr} (${['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][calendarStart.getUTCDay()]})`);
         
         // But the recurring dates themselves don't change
         const recurringDates = generateRecurringInstances(tuesdayTask, calendarStart, calendarEnd);
         const januaryRecurringDates = recurringDates
           .filter(d => d.getUTCMonth() === 0 && d.getUTCFullYear() === 2025)
-          .map(d => formatUTCDateForCalendar(d));
+          .map(d => formatDateForStorage(d));
         
         expect(januaryRecurringDates).toEqual(['2025-01-07', '2025-01-14', '2025-01-21', '2025-01-28']);
       });

@@ -2,14 +2,14 @@
  * Test for Issue #160: Date formatting inconsistency between calendar and completion logic
  * 
  * The bug occurs because:
- * 1. Completion calendar uses formatUTCDateForCalendar() (UTC methods)
+ * 1. Completion calendar uses formatDateForStorage() (UTC methods)
  * 2. "Mark as completed" uses format() from date-fns (local timezone)
  * 
  * This causes off-by-one issues when timezone offsets affect date interpretation
  */
 
 import { format } from 'date-fns';
-import { formatUTCDateForCalendar } from '../../../src/utils/dateUtils';
+import { formatDateForStorage } from '../../../src/utils/dateUtils';
 
 describe('Issue #160: Date formatting inconsistency', () => {
   it('should show how calendar dates and completion dates can be off by one', () => {
@@ -21,7 +21,7 @@ describe('Issue #160: Date formatting inconsistency', () => {
     console.log('Day of week (UTC):', fridayDate.getUTCDay()); // Should be 5 (Friday)
     
     // Method 1: How completion calendar formats dates (UTC)
-    const calendarDateStr = formatUTCDateForCalendar(fridayDate);
+    const calendarDateStr = formatDateForStorage(fridayDate);
     console.log('Calendar formatting (UTC):', calendarDateStr);
     
     // Method 2: How "Mark as completed" formats dates (local timezone)
@@ -43,7 +43,7 @@ describe('Issue #160: Date formatting inconsistency', () => {
     console.log('Local date:', localDate.toISOString());
     console.log('Local day of week:', localDate.getDay());
     
-    const calendarFromLocal = formatUTCDateForCalendar(localDate);
+    const calendarFromLocal = formatDateForStorage(localDate);
     const completionFromLocal = format(localDate, 'yyyy-MM-dd');
     
     console.log('Calendar formatting from local:', calendarFromLocal);
@@ -70,7 +70,7 @@ describe('Issue #160: Date formatting inconsistency', () => {
     console.log('UTC day of week:', testDate.getUTCDay());
     
     // What the calendar would show (treating as UTC)
-    const calendarDay = formatUTCDateForCalendar(testDate);
+    const calendarDay = formatDateForStorage(testDate);
     
     // What "mark as completed" would record (using local timezone)
     const completionDay = format(testDate, 'yyyy-MM-dd');
@@ -96,7 +96,7 @@ describe('Issue #160: Date formatting inconsistency', () => {
     console.log('UTC interpretation:');
     console.log('  Date:', boundaryDate.toISOString());
     console.log('  Day of week:', boundaryDate.getUTCDay());
-    console.log('  Formatted (UTC):', formatUTCDateForCalendar(boundaryDate));
+    console.log('  Formatted (UTC):', formatDateForStorage(boundaryDate));
     
     console.log('Local interpretation:');
     console.log('  Local string:', boundaryDate.toLocaleString());

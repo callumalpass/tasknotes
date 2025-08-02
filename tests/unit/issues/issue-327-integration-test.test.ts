@@ -5,7 +5,7 @@
  * from the agenda view to ensure dates are handled correctly throughout
  */
 
-import { formatUTCDateForCalendar, createUTCDateFromLocalCalendarDate } from '../../../src/utils/dateUtils';
+import { formatDateForStorage, createUTCDateFromLocalCalendarDate } from '../../../src/utils/dateUtils';
 import { TaskFactory } from '../../helpers/mock-factories';
 
 describe('Issue #327: Complete Integration Test', () => {
@@ -26,8 +26,8 @@ describe('Issue #327: Complete Integration Test', () => {
         // Step 2: This date is passed to TaskCard as targetDate
         const targetDate = agendaDate;
         
-        // Step 3: When user clicks to mark task complete, formatUTCDateForCalendar is used
-        const dateStrForStorage = formatUTCDateForCalendar(targetDate);
+        // Step 3: When user clicks to mark task complete, formatDateForStorage is used
+        const dateStrForStorage = formatDateForStorage(targetDate);
         console.log('\n=== Step 2: Date Formatting for Storage ===');
         console.log('Date string for storage:', dateStrForStorage);
         
@@ -37,7 +37,7 @@ describe('Issue #327: Complete Integration Test', () => {
         // Step 5: Simulate checking if task is complete for a date
         const complete_instances = [dateStrForStorage];
         const checkDate = createUTCDateFromLocalCalendarDate(new Date(2024, 6, 29));
-        const checkDateStr = formatUTCDateForCalendar(checkDate);
+        const checkDateStr = formatDateForStorage(checkDate);
         
         console.log('\n=== Step 3: Checking Completion Status ===');
         console.log('Checking for date:', checkDateStr);
@@ -78,7 +78,7 @@ describe('Issue #327: Complete Integration Test', () => {
             console.log('Normalized date:', normalizedDate.toISOString());
             
             // Format for storage
-            const storageStr = formatUTCDateForCalendar(normalizedDate);
+            const storageStr = formatDateForStorage(normalizedDate);
             console.log('Storage string:', storageStr);
             
             expect(storageStr).toBe(testCase.expectedStorage);
@@ -97,7 +97,7 @@ describe('Issue #327: Complete Integration Test', () => {
         const agendaDate = createUTCDateFromLocalCalendarDate(userClickDate);
         
         // Mark complete (simulating toggleRecurringTaskComplete)
-        const completeDateStr = formatUTCDateForCalendar(agendaDate);
+        const completeDateStr = formatDateForStorage(agendaDate);
         task.complete_instances = [completeDateStr];
         
         console.log('\n=== Consistency Test ===');
@@ -106,10 +106,10 @@ describe('Issue #327: Complete Integration Test', () => {
         
         // Later, check if July 29 shows as complete (simulating isRecurringTaskCompleteForDate)
         const checkJuly29 = createUTCDateFromLocalCalendarDate(new Date(2024, 6, 29));
-        const checkJuly29Str = formatUTCDateForCalendar(checkJuly29);
+        const checkJuly29Str = formatDateForStorage(checkJuly29);
         
         const checkJuly28 = createUTCDateFromLocalCalendarDate(new Date(2024, 6, 28));
-        const checkJuly28Str = formatUTCDateForCalendar(checkJuly28);
+        const checkJuly28Str = formatDateForStorage(checkJuly28);
         
         console.log('Checking July 29:', checkJuly29Str, '-> Complete?', task.complete_instances.includes(checkJuly29Str));
         console.log('Checking July 28:', checkJuly28Str, '-> Complete?', task.complete_instances.includes(checkJuly28Str));

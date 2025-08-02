@@ -5,7 +5,7 @@
  * do users in timezones BEHIND UTC see dates shift forwards (July 28 -> July 29)?
  */
 
-import { formatUTCDateForCalendar } from '../../../src/utils/dateUtils';
+import { formatDateForStorage } from '../../../src/utils/dateUtils';
 
 describe('Issue #327: Reverse timezone bug - dates shifting forward', () => {
     it('demonstrates how dates behave for users behind UTC', () => {
@@ -31,8 +31,8 @@ describe('Issue #327: Reverse timezone bug - dates shifting forward', () => {
         // So July 28 00:00 Pacific = July 28 08:00 UTC
         // The date doesn't shift forward
         
-        const localFormatted = formatUTCDateForCalendar(july28LocalTime);
-        const utcFormatted = formatUTCDateForCalendar(july28UTC);
+        const localFormatted = formatDateForStorage(july28LocalTime);
+        const utcFormatted = formatDateForStorage(july28UTC);
         
         console.log('Local formatted:', localFormatted);
         console.log('UTC formatted:', utcFormatted);
@@ -55,14 +55,14 @@ describe('Issue #327: Reverse timezone bug - dates shifting forward', () => {
         const dec31LateNight = new Date(2023, 11, 31, 23, 0, 0);
         console.log('\nDec 31 23:00 local:', dec31LateNight.toString());
         console.log('ISO (UTC):', dec31LateNight.toISOString());
-        console.log('Formatted:', formatUTCDateForCalendar(dec31LateNight));
+        console.log('Formatted:', formatDateForStorage(dec31LateNight));
         
         // Test 2: Early morning in timezone ahead of UTC  
         // Jan 1 01:00 in Sydney (UTC+11) = Dec 31 14:00 UTC
         const jan1EarlyMorning = new Date(2024, 0, 1, 1, 0, 0);
         console.log('\nJan 1 01:00 local:', jan1EarlyMorning.toString());
         console.log('ISO (UTC):', jan1EarlyMorning.toISOString());
-        console.log('Formatted:', formatUTCDateForCalendar(jan1EarlyMorning));
+        console.log('Formatted:', formatDateForStorage(jan1EarlyMorning));
     });
     
     it('simulates the complete flow: user clicks -> format -> save -> display', () => {
@@ -75,7 +75,7 @@ describe('Issue #327: Reverse timezone bug - dates shifting forward', () => {
         console.log('   ISO string:', userClicksJuly28.toISOString());
         
         // Format for saving to complete_instances
-        const formattedDate = formatUTCDateForCalendar(userClicksJuly28);
+        const formattedDate = formatDateForStorage(userClicksJuly28);
         console.log('\n2. Format for saving:', formattedDate);
         
         // This gets saved to the file
@@ -104,7 +104,7 @@ describe('Issue #327: Reverse timezone bug - dates shifting forward', () => {
         console.log('\nAustralia - July 29 midnight:');
         console.log('Local:', australiaDate.toString());
         console.log('UTC:', australiaDate.toISOString());
-        console.log('Formatted:', formatUTCDateForCalendar(australiaDate));
+        console.log('Formatted:', formatDateForStorage(australiaDate));
         console.log('Bug effect: July 29 -> July', australiaDate.getUTCDate());
         
         // For users BEHIND UTC (Americas)
@@ -112,7 +112,7 @@ describe('Issue #327: Reverse timezone bug - dates shifting forward', () => {
         // This scenario is harder to test without actually changing timezones
         // But in theory:
         // - US Pacific July 28 00:00 = July 28 08:00 UTC
-        // - formatUTCDateForCalendar would return July 28 (correct)
+        // - formatDateForStorage would return July 28 (correct)
         // - No forward shift occurs
         
         console.log('\n=== Summary ===');

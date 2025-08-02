@@ -6,15 +6,15 @@
  * timezone formatting inconsistencies between the UI check and the service storage.
  * 
  * The bug occurs when:
- * 1. Context menu uses formatUTCDateForCalendar() to check completion status
- * 2. TaskService.toggleRecurringTaskComplete() uses formatUTCDateForCalendar() to store completion dates
+ * 1. Context menu uses formatDateForStorage() to check completion status
+ * 2. TaskService.toggleRecurringTaskComplete() uses formatDateForStorage() to store completion dates
  * 3. But main.ts toggleRecurringTaskComplete() uses format() with local timezone to check completion state
  * 
  * This creates a mismatch where dates can appear off by one day depending on timezone.
  */
 
 import { TaskService } from '../../../src/services/TaskService';
-import { formatUTCDateForCalendar } from '../../../src/utils/dateUtils';
+import { formatDateForStorage } from '../../../src/utils/dateUtils';
 import { format } from 'date-fns';
 import { TaskInfo } from '../../../src/types';
 import { TaskFactory } from '../../helpers/mock-factories';
@@ -36,7 +36,7 @@ jest.mock('date-fns', () => ({
   ...jest.requireActual('date-fns')
 }));
 
-// Mock the dateUtils to use real implementation for formatUTCDateForCalendar
+// Mock the dateUtils to use real implementation for formatDateForStorage
 jest.mock('../../../src/utils/dateUtils', () => ({
   ...jest.requireActual('../../../src/utils/dateUtils'),
   getCurrentTimestamp: jest.fn(() => '2025-01-15T23:00:00Z'),
@@ -102,11 +102,11 @@ describe('Context Menu Completion Date Bug', () => {
 
   it('should pass: bug has been fixed - all date formatting is now consistent', async () => {
     // The target date is 2025-01-15 in UTC, but due to timezone simulation,
-    // local format() will return 2025-01-16 while formatUTCDateForCalendar returns 2025-01-15
+    // local format() will return 2025-01-16 while formatDateForStorage returns 2025-01-15
     const targetDate = new Date('2025-01-15T23:00:00Z');
     
     // This is what the context menu uses to check completion status (should be consistent)
-    const contextMenuDateCheck = formatUTCDateForCalendar(targetDate);
+    const contextMenuDateCheck = formatDateForStorage(targetDate);
     
     // This is what TaskService uses to store completion dates (should be consistent)
     // Let's capture what gets stored by mocking the frontmatter update
@@ -130,20 +130,20 @@ describe('Context Menu Completion Date Bug', () => {
     await taskService.toggleRecurringTaskComplete(recurringTask, targetDate);
 
     // Now simulate what main.ts does to check completion status
-    // FIXED: main.ts now uses formatUTCDateForCalendar() instead of format() with local timezone
-    const mainTsDateCheck = formatUTCDateForCalendar(targetDate);
+    // FIXED: main.ts now uses formatDateForStorage() instead of format() with local timezone
+    const mainTsDateCheck = formatDateForStorage(targetDate);
     
-    console.log('Context menu date check (formatUTCDateForCalendar):', contextMenuDateCheck);
-    console.log('TaskService stores completion date as:', contextMenuDateCheck); // TaskService uses formatUTCDateForCalendar
-    console.log('Main.ts now checks completion using (formatUTCDateForCalendar):', mainTsDateCheck);
+    console.log('Context menu date check (formatDateForStorage):', contextMenuDateCheck);
+    console.log('TaskService stores completion date as:', contextMenuDateCheck); // TaskService uses formatDateForStorage
+    console.log('Main.ts now checks completion using (formatDateForStorage):', mainTsDateCheck);
     
     // FIXED: these are now the same due to consistent date formatting
     expect(contextMenuDateCheck).toBe(mainTsDateCheck);
     
     // This demonstrates the fix:
-    // - Context menu checks completion for 2025-01-15 (using formatUTCDateForCalendar)
-    // - TaskService stores completion for 2025-01-15 (using formatUTCDateForCalendar) 
-    // - Main.ts checks completion for 2025-01-15 (now using formatUTCDateForCalendar)
+    // - Context menu checks completion for 2025-01-15 (using formatDateForStorage)
+    // - TaskService stores completion for 2025-01-15 (using formatDateForStorage) 
+    // - Main.ts checks completion for 2025-01-15 (now using formatDateForStorage)
     // Result: All components use consistent date formatting, eliminating timezone bugs
     
     // Since the date is 2025-01-15T23:00:00Z and we're in UTC+11,
@@ -159,8 +159,8 @@ describe('Context Menu Completion Date Bug', () => {
     const targetDate = new Date('2025-01-15T23:00:00Z');
     
     // Step 1: User clicks "mark completed for this date" in context menu
-    // Context menu checks if task is already completed using formatUTCDateForCalendar
-    const contextMenuCheck = formatUTCDateForCalendar(targetDate); // Returns '2025-01-15'
+    // Context menu checks if task is already completed using formatDateForStorage
+    const contextMenuCheck = formatDateForStorage(targetDate); // Returns '2025-01-15'
     const isAlreadyCompleted = recurringTask.complete_instances?.includes(contextMenuCheck) || false;
     
     expect(isAlreadyCompleted).toBe(false); // Task is not completed yet
@@ -189,10 +189,10 @@ describe('Context Menu Completion Date Bug', () => {
   it('should demonstrate how the fix would work', async () => {
     const targetDate = new Date('2025-01-15T23:00:00Z');
     
-    // The fix: main.ts should use formatUTCDateForCalendar() consistently
-    const contextMenuCheck = formatUTCDateForCalendar(targetDate);
-    const taskServiceStores = formatUTCDateForCalendar(targetDate);
-    const mainTsShouldUse = formatUTCDateForCalendar(targetDate); // Instead of format()
+    // The fix: main.ts should use formatDateForStorage() consistently
+    const contextMenuCheck = formatDateForStorage(targetDate);
+    const taskServiceStores = formatDateForStorage(targetDate);
+    const mainTsShouldUse = formatDateForStorage(targetDate); // Instead of format()
     
     // With the fix, all three should be the same
     expect(contextMenuCheck).toBe(taskServiceStores);

@@ -8,7 +8,7 @@
  */
 
 import { TaskInfo } from '../../../src/types';
-import { formatUTCDateForCalendar } from '../../../src/utils/dateUtils';
+import { formatDateForStorage } from '../../../src/utils/dateUtils';
 import { TaskFactory } from '../../helpers/mock-factories';
 import TaskNotesPlugin from '../../../src/main';
 import { TFile } from 'obsidian';
@@ -63,7 +63,7 @@ describe('Issue #327: Recurring Task Updates Wrong Day from Agenda View', () => 
 
         // Simulate clicking on the task in agenda view for Wednesday (2024-01-17)
         const targetDate = new Date('2024-01-17T00:00:00.000Z');
-        const expectedDateStr = formatUTCDateForCalendar(targetDate);
+        const expectedDateStr = formatDateForStorage(targetDate);
 
         // Mock the frontmatter processing
         let updatedFrontmatter: any = {};
@@ -88,7 +88,7 @@ describe('Issue #327: Recurring Task Updates Wrong Day from Agenda View', () => 
             if (!file) throw new Error('File not found');
 
             await plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
-                const dateStr = formatUTCDateForCalendar(targetDate);
+                const dateStr = formatDateForStorage(targetDate);
                 
                 if (!frontmatter.complete_instances) {
                     frontmatter.complete_instances = [];
@@ -126,8 +126,8 @@ describe('Issue #327: Recurring Task Updates Wrong Day from Agenda View', () => 
         const utcDate = new Date('2024-01-17T00:00:00.000Z'); // This creates a date in UTC
         
         // Format both dates
-        const localDateStr = formatUTCDateForCalendar(localDate);
-        const utcDateStr = formatUTCDateForCalendar(utcDate);
+        const localDateStr = formatDateForStorage(localDate);
+        const utcDateStr = formatDateForStorage(utcDate);
         
         // They should produce the same date string regardless of timezone
         expect(localDateStr).toBe('2024-01-17');
@@ -137,9 +137,9 @@ describe('Issue #327: Recurring Task Updates Wrong Day from Agenda View', () => 
         const lateNightLocal = new Date('2024-01-17T23:59:59'); // Late at night local time
         const lateNightUTC = new Date('2024-01-17T23:59:59.000Z'); // Late at night UTC
         
-        expect(formatUTCDateForCalendar(lateNightLocal)).toBe('2024-01-17');
+        expect(formatDateForStorage(lateNightLocal)).toBe('2024-01-17');
         // In Australia (UTC+11), Jan 17 23:59 UTC is actually Jan 18 10:59 local
-        expect(formatUTCDateForCalendar(lateNightUTC)).toBe('2024-01-18');
+        expect(formatDateForStorage(lateNightUTC)).toBe('2024-01-18');
     });
     
     it('should handle dates created with UTC constructor methods', () => {
@@ -152,19 +152,19 @@ describe('Issue #327: Recurring Task Updates Wrong Day from Agenda View', () => 
         const normalizedDate = new Date(Date.UTC(year, month, day));
         
         // Test that it formats correctly
-        expect(formatUTCDateForCalendar(normalizedDate)).toBe('2024-01-17');
+        expect(formatDateForStorage(normalizedDate)).toBe('2024-01-17');
         
         // Test with a date that would be different in some timezones
         // For example, if local timezone is UTC-5, then Jan 17 00:00 UTC is Jan 16 19:00 local
         const utcMidnight = new Date(Date.UTC(2024, 0, 17, 0, 0, 0));
-        expect(formatUTCDateForCalendar(utcMidnight)).toBe('2024-01-17');
+        expect(formatDateForStorage(utcMidnight)).toBe('2024-01-17');
         
         // Test with a date created differently but should result in same output
         const regularDate = new Date('2024-01-17');
         const utcConstructedDate = new Date(Date.UTC(2024, 0, 17));
         
         // Both should format to the same string
-        expect(formatUTCDateForCalendar(regularDate)).toBe(formatUTCDateForCalendar(utcConstructedDate));
+        expect(formatDateForStorage(regularDate)).toBe(formatDateForStorage(utcConstructedDate));
     });
     
     it('FAILS: demonstrates the timezone bug when local date differs from UTC date', () => {
@@ -197,9 +197,9 @@ describe('Issue #327: Recurring Task Updates Wrong Day from Agenda View', () => 
         console.log('Local date string:', localDateString);
         console.log('Local date object:', localDate.toString());
         console.log('Local date ISO:', localDate.toISOString());
-        console.log('Formatted for calendar:', formatUTCDateForCalendar(localDate));
+        console.log('Formatted for calendar:', formatDateForStorage(localDate));
         
-        // The bug would occur if formatUTCDateForCalendar returns a different date
+        // The bug would occur if formatDateForStorage returns a different date
         // than what the user clicked on in the UI
     });
 
@@ -238,7 +238,7 @@ describe('Issue #327: Recurring Task Updates Wrong Day from Agenda View', () => 
             if (!file) throw new Error('File not found');
 
             await plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
-                const dateStr = formatUTCDateForCalendar(targetDate);
+                const dateStr = formatDateForStorage(targetDate);
                 
                 if (!frontmatter.complete_instances) {
                     frontmatter.complete_instances = [];
@@ -296,7 +296,7 @@ describe('Issue #327: Recurring Task Updates Wrong Day from Agenda View', () => 
             if (!file) throw new Error('File not found');
 
             await plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
-                const dateStr = formatUTCDateForCalendar(targetDate);
+                const dateStr = formatDateForStorage(targetDate);
                 
                 if (!frontmatter.complete_instances) {
                     frontmatter.complete_instances = [];

@@ -4,7 +4,7 @@
  * This test should FAIL when the bug is present and PASS when it's fixed
  */
 
-import { formatUTCDateForCalendar, formatDateForStorage } from '../../../src/utils/dateUtils';
+import { formatDateForStorage, formatDateForStorage } from '../../../src/utils/dateUtils';
 
 describe('Issue #327: Recurring Task Wrong Day Bug (FAILING TEST)', () => {
     it('should format dates correctly regardless of how they are created', () => {
@@ -21,9 +21,9 @@ describe('Issue #327: Recurring Task Wrong Day Bug (FAILING TEST)', () => {
         const utcFormattedNew = formatDateForStorage(july29UTC);
         const stringFormattedNew = formatDateForStorage(july29String);
         
-        // Also test the OLD formatUTCDateForCalendar to show the bug
-        const localFormattedOld = formatUTCDateForCalendar(july29LocalTime);
-        const utcFormattedOld = formatUTCDateForCalendar(july29UTC);
+        // Also test the OLD formatDateForStorage to show the bug
+        const localFormattedOld = formatDateForStorage(july29LocalTime);
+        const utcFormattedOld = formatDateForStorage(july29UTC);
         
         console.log('Local time date:', july29LocalTime.toString());
         console.log('Local time formatted (NEW):', localFormattedNew);
@@ -60,12 +60,12 @@ describe('Issue #327: Recurring Task Wrong Day Bug (FAILING TEST)', () => {
         expect(formatDateForStorage(jan1UTC)).toBe('2024-01-01');
         
         // The old function has been fixed and now works correctly
-        expect(formatUTCDateForCalendar(jan1LocalTime)).toBe('2024-01-01'); // Fixed!
-        expect(formatUTCDateForCalendar(jan1UTC)).toBe('2024-01-01');
+        expect(formatDateForStorage(jan1LocalTime)).toBe('2024-01-01'); // Fixed!
+        expect(formatDateForStorage(jan1UTC)).toBe('2024-01-01');
     });
     
-    it('demonstrates the fix needed for formatUTCDateForCalendar', () => {
-        // The bug is that formatUTCDateForCalendar uses UTC methods
+    it('demonstrates the fix needed for formatDateForStorage', () => {
+        // The bug is that formatDateForStorage uses UTC methods
         // on dates that might have been created in local time
         
         // Current implementation extracts UTC components:

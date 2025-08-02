@@ -6,7 +6,7 @@
  */
 
 import { generateRecurringInstances } from '../../../src/utils/helpers';
-import { formatUTCDateForCalendar, createUTCDateForRRule } from '../../../src/utils/dateUtils';
+import { formatDateForStorage, createUTCDateForRRule } from '../../../src/utils/dateUtils';
 import { TaskInfo } from '../../../src/types';
 import { TaskFactory } from '../../helpers/mock-factories';
 
@@ -60,7 +60,7 @@ describe('Issue #322: Regression Prevention', () => {
             
             recurringDates.forEach(date => {
                 const dayName = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][date.getUTCDay()];
-                const dateStr = formatUTCDateForCalendar(date);
+                const dateStr = formatDateForStorage(date);
                 console.log(`    ${dateStr} (${dayName})`);
                 
                 if (date.getUTCDay() !== 2) { // 2 = Tuesday
@@ -105,7 +105,7 @@ describe('Issue #322: Regression Prevention', () => {
             expect(utcDate.getUTCMilliseconds()).toBe(0);
             
             // The date should match the input date string when formatted
-            const formattedBack = formatUTCDateForCalendar(utcDate);
+            const formattedBack = formatDateForStorage(utcDate);
             expect(formattedBack).toBe(dateStr);
         });
     });
@@ -132,17 +132,17 @@ describe('Issue #322: Regression Prevention', () => {
         console.log('Generated instances for week of July 28 - August 3, 2024:');
         instances.forEach(date => {
             const dayName = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][date.getUTCDay()];
-            const dateStr = formatUTCDateForCalendar(date);
+            const dateStr = formatDateForStorage(date);
             console.log(`  ${dateStr} (${dayName})`);
         });
 
         // CRITICAL ASSERTIONS: These will catch the regression
         expect(instances.length).toBe(1); // Should only have one instance in this week
         expect(instances[0].getUTCDay()).toBe(2); // Must be Tuesday
-        expect(formatUTCDateForCalendar(instances[0])).toBe('2024-07-30'); // Must be July 30, not 29
+        expect(formatDateForStorage(instances[0])).toBe('2024-07-30'); // Must be July 30, not 29
         
         // Specifically check it's NOT Monday July 29 (the bug behavior)
-        const hasMonday29 = instances.some(d => formatUTCDateForCalendar(d) === '2024-07-29');
+        const hasMonday29 = instances.some(d => formatDateForStorage(d) === '2024-07-29');
         expect(hasMonday29).toBe(false);
         
         console.log('✅ Tuesday task correctly generates Tuesday date, not Monday');
@@ -186,7 +186,7 @@ describe('Issue #322: Regression Prevention', () => {
             console.log(`\\n${testMonth.name}:`);
             instances.forEach(date => {
                 const dayName = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][date.getUTCDay()];
-                const dateStr = formatUTCDateForCalendar(date);
+                const dateStr = formatDateForStorage(date);
                 console.log(`  ${dateStr} (${dayName})`);
             });
 

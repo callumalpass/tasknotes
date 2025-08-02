@@ -8,7 +8,7 @@
  */
 
 import { generateRecurringInstances } from '../../../src/utils/helpers';
-import { formatUTCDateForCalendar, createUTCDateForRRule, getUTCStartOfMonth, getUTCEndOfMonth } from '../../../src/utils/dateUtils';
+import { formatDateForStorage, createUTCDateForRRule, getUTCStartOfMonth, getUTCEndOfMonth } from '../../../src/utils/dateUtils';
 import { TaskInfo } from '../../../src/types';
 import { TaskFactory } from '../../helpers/mock-factories';
 
@@ -58,12 +58,12 @@ describe('Issue #322: Failing reproduction test', () => {
 
         // Generate recurring instances (this is where the bug would occur)
         const recurringDates = generateRecurringInstances(tuesdayTask, bufferStart, bufferEnd);
-        const recurringDateStrings = recurringDates.map(d => formatUTCDateForCalendar(d));
+        const recurringDateStrings = recurringDates.map(d => formatDateForStorage(d));
         
         console.log('Generated recurring dates:');
         recurringDates.forEach((date, index) => {
             const dayName = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][date.getUTCDay()];
-            const dateStr = formatUTCDateForCalendar(date);
+            const dateStr = formatDateForStorage(date);
             console.log(`  ${dateStr} (${dayName}) - Day of week: ${date.getUTCDay()}`);
         });
         
@@ -85,7 +85,7 @@ describe('Issue #322: Failing reproduction test', () => {
             console.log('🐛 BUG CONFIRMED: Non-Tuesday dates found:');
             nonTuesdayDates.forEach(date => {
                 const dayName = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][date.getUTCDay()];
-                const dateStr = formatUTCDateForCalendar(date);
+                const dateStr = formatDateForStorage(date);
                 console.log(`   ${dateStr} is a ${dayName} (should be Tuesday)`);
             });
             
@@ -126,7 +126,7 @@ describe('Issue #322: Failing reproduction test', () => {
         console.log('Generated dates:');
         recurringDates.forEach(date => {
             const dayName = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][date.getUTCDay()];
-            const dateStr = formatUTCDateForCalendar(date);
+            const dateStr = formatDateForStorage(date);
             console.log(`  ${dateStr} (${dayName}) - UTC day: ${date.getUTCDay()}`);
         });
         
@@ -137,7 +137,7 @@ describe('Issue #322: Failing reproduction test', () => {
         if (mondayDates.length > 0) {
             console.log('🐛 TIMEZONE BUG: Tuesday task generating Monday dates!');
             mondayDates.forEach(date => {
-                console.log(`   ${formatUTCDateForCalendar(date)} is Monday (should be Tuesday)`);
+                console.log(`   ${formatDateForStorage(date)} is Monday (should be Tuesday)`);
             });
         }
         
@@ -190,7 +190,7 @@ describe('Issue #322: Failing reproduction test', () => {
             
             recurringDates.forEach(date => {
                 const dayName = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][date.getUTCDay()];
-                const dateStr = formatUTCDateForCalendar(date);
+                const dateStr = formatDateForStorage(date);
                 console.log(`  Generated: ${dateStr} (${dayName})`);
                 
                 // Each generated date should be a Tuesday

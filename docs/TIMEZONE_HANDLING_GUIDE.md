@@ -8,7 +8,7 @@ ChronoSync uses a **UTC Midnight Convention** to ensure consistent date handling
 
 1. **User-facing operations** (display, input, storage) use **local dates**
 2. **RRule operations** internally use **UTC** but convert to/from local dates at boundaries
-3. **Never mix** `format()` with `formatUTCDateForCalendar()` - they're the same now!
+3. **Never mix** `format()` with `formatDateForStorage()` - they're the same now!
 
 ## The Golden Rules
 
@@ -110,7 +110,7 @@ const calendarDate = formatDateForStorage(selectedDate);
 const events = getEventsForDate(parseDateAsLocal(dateString));
 
 // ❌ WRONG
-const calendarDate = formatUTCDateForCalendar(date); // This now returns local anyway
+const calendarDate = formatDateForStorage(date); // This now returns local anyway
 ```
 
 ## Key Functions Reference
@@ -124,7 +124,7 @@ const calendarDate = formatUTCDateForCalendar(date); // This now returns local a
 - `parseDate(dateString)` - Parse any date string (handles timezones)
 - `hasTimeComponent(dateString)` - Check if string includes time
 
-### What About `formatUTCDateForCalendar()`?
+### What About `formatDateForStorage()`?
 
 This function now just calls `formatDateForStorage()` internally. It exists for backward compatibility but always returns local dates. You can use either, but prefer `formatDateForStorage()` for clarity.
 

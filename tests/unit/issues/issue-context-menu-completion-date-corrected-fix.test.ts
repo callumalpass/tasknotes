@@ -2,7 +2,7 @@
  * Test for Context Menu Completion Date Fix (Corrected)
  * 
  * This test verifies the corrected fix for the context menu completion date bug.
- * The real issue was that TaskService was using formatUTCDateForCalendar() while
+ * The real issue was that TaskService was using formatDateForStorage() while
  * the rest of the system (context menu, main.ts, helpers) was using format() with
  * local timezone.
  * 
@@ -10,7 +10,7 @@
  */
 
 import { TaskService } from '../../../src/services/TaskService';
-import { formatUTCDateForCalendar } from '../../../src/utils/dateUtils';
+import { formatDateForStorage } from '../../../src/utils/dateUtils';
 import { format } from 'date-fns';
 import { TaskInfo } from '../../../src/types';
 import { TaskFactory } from '../../helpers/mock-factories';
@@ -37,7 +37,7 @@ jest.mock('../../../src/utils/dateUtils', () => ({
   ...jest.requireActual('../../../src/utils/dateUtils'),
   getCurrentTimestamp: jest.fn(() => '2025-01-15T23:00:00Z'),
   getCurrentDateString: jest.fn(() => '2025-01-15'),
-  formatUTCDateForCalendar: jest.fn((date: Date) => {
+  formatDateForStorage: jest.fn((date: Date) => {
     // Extract UTC date parts (this was the old inconsistent behavior)
     const year = date.getUTCFullYear();
     const month = String(date.getUTCMonth() + 1).padStart(2, '0');
@@ -111,11 +111,11 @@ describe('Context Menu Completion Date Fix (Corrected)', () => {
     const mainTsCheck = format(targetDate, 'yyyy-MM-dd');
     const helpersCheck = format(targetDate, 'yyyy-MM-dd');
     
-    // TaskService now also uses local timezone format() instead of formatUTCDateForCalendar()
+    // TaskService now also uses local timezone format() instead of formatDateForStorage()
     const taskServiceStores = format(targetDate, 'yyyy-MM-dd');
     
     // The old inconsistent UTC formatting (this was the source of the bug)
-    const oldUTCFormat = formatUTCDateForCalendar(targetDate);
+    const oldUTCFormat = formatDateForStorage(targetDate);
     
     console.log('All components now use local timezone format():', contextMenuCheck);
     console.log('Old problematic UTC format was:', oldUTCFormat);
@@ -183,7 +183,7 @@ describe('Context Menu Completion Date Fix (Corrected)', () => {
     await taskService.toggleRecurringTaskComplete(recurringTask, targetDate);
     
     // Verify TaskService now stores UTC format for consistency
-    const expectedUTCDate = formatUTCDateForCalendar(targetDate);
+    const expectedUTCDate = formatDateForStorage(targetDate);
     expect(expectedUTCDate).toBe('2025-01-15'); // UTC format (consistent)
     
     // The TaskService should now be storing this UTC date format

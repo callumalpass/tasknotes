@@ -18,7 +18,7 @@ import {
   generateRecurringInstances, 
 } from '../../../src/utils/helpers';
 import { 
-  formatUTCDateForCalendar, 
+  formatDateForStorage, 
   generateUTCCalendarDates, 
   getUTCStartOfWeek, 
   getUTCEndOfWeek, 
@@ -81,7 +81,7 @@ describe('TaskEditModal Calendar Off-by-One Bug', () => {
       bufferEnd.setUTCMonth(bufferEnd.getUTCMonth() + 1);
       
       const recurringDates = generateRecurringInstances(tuesdayTask, bufferStart, bufferEnd);
-      const recurringDateStrings = new Set(recurringDates.map(d => formatUTCDateForCalendar(d)));
+      const recurringDateStrings = new Set(recurringDates.map(d => formatDateForStorage(d)));
       
       console.log('Calendar month:', displayDate.toISOString().split('T')[0]);
       console.log('Recurring date strings:', Array.from(recurringDateStrings).sort());
@@ -96,7 +96,7 @@ describe('TaskEditModal Calendar Off-by-One Bug', () => {
       }> = [];
       
       allDays.forEach(day => {
-        const dayStr = formatUTCDateForCalendar(day);
+        const dayStr = formatDateForStorage(day);
         const isCurrentMonth = isSameMonth(day, displayDate);
         const isRecurring = recurringDateStrings.has(dayStr);
         
@@ -194,7 +194,7 @@ describe('TaskEditModal Calendar Off-by-One Bug', () => {
       bufferEnd.setUTCMonth(bufferEnd.getUTCMonth() + 1);
       
       const recurringDates = generateRecurringInstances(boundaryTask, bufferStart, bufferEnd);
-      const recurringDateStrings = new Set(recurringDates.map(d => formatUTCDateForCalendar(d)));
+      const recurringDateStrings = new Set(recurringDates.map(d => formatDateForStorage(d)));
       
       // Verify Sunday dates are included
       const januarySundays = ['2025-01-05', '2025-01-12', '2025-01-19', '2025-01-26'];
@@ -234,7 +234,7 @@ describe('TaskEditModal Calendar Off-by-One Bug', () => {
       bufferEnd.setUTCMonth(bufferEnd.getUTCMonth() + 1);
       
       const recurringDates = generateRecurringInstances(taskFromIssue, bufferStart, bufferEnd);
-      const recurringDateStrings = new Set(recurringDates.map(d => formatUTCDateForCalendar(d)));
+      const recurringDateStrings = new Set(recurringDates.map(d => formatDateForStorage(d)));
       
       console.log('User scenario - recurring dates in calendar:', Array.from(recurringDateStrings).sort());
       
@@ -251,8 +251,8 @@ describe('TaskEditModal Calendar Off-by-One Bug', () => {
       expect(day21).toBeDefined();
       expect(day28).toBeDefined();
       
-      const day21Str = formatUTCDateForCalendar(day21!);
-      const day28Str = formatUTCDateForCalendar(day28!);
+      const day21Str = formatDateForStorage(day21!);
+      const day28Str = formatDateForStorage(day28!);
       
       // What the user should see vs what they reported
       const day21IsHighlighted = recurringDateStrings.has(day21Str);

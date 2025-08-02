@@ -12,7 +12,7 @@ import { TaskInfo } from '../../../src/types';
 import { format } from 'date-fns';
 import {
     createUTCDateForRRule,
-    formatUTCDateForCalendar,
+    formatDateForStorage,
     generateUTCCalendarDates,
     getUTCStartOfWeek,
     getUTCEndOfWeek,
@@ -70,12 +70,12 @@ describe('Issue #322: Completion Calendar Timezone Bug', () => {
         bufferEnd.setUTCMonth(bufferEnd.getUTCMonth() + 1);
         
         const recurringDates = generateRecurringInstances(task, bufferStart, bufferEnd);
-        const recurringDateStrings = new Set(recurringDates.map(d => formatUTCDateForCalendar(d)));
+        const recurringDateStrings = new Set(recurringDates.map(d => formatDateForStorage(d)));
         
         console.log('Recurring date instances generated:');
         recurringDates.forEach(date => {
             const dayName = format(date, 'EEEE');
-            const dateStr = formatUTCDateForCalendar(date);
+            const dateStr = formatDateForStorage(date);
             console.log(`  ${dateStr} (${dayName})`);
         });
         
@@ -87,7 +87,7 @@ describe('Issue #322: Completion Calendar Timezone Bug', () => {
         
         console.log('\nCalendar grid days for July 2025:');
         allDays.forEach(day => {
-            const dayStr = formatUTCDateForCalendar(day);
+            const dayStr = formatDateForStorage(day);
             const dayName = format(day, 'EEEE');
             // Check if day is in July 2025
             const isCurrentMonth = dayStr.startsWith('2025-07');
@@ -164,7 +164,7 @@ describe('Issue #322: Completion Calendar Timezone Bug', () => {
         bufferEnd.setUTCMonth(bufferEnd.getUTCMonth() + 1);
         
         const recurringDates = generateRecurringInstances(task, bufferStart, bufferEnd);
-        const recurringDateStrings = new Set(recurringDates.map(d => formatUTCDateForCalendar(d)));
+        const recurringDateStrings = new Set(recurringDates.map(d => formatDateForStorage(d)));
         
         // Check that completed dates are still properly identified as recurring days
         expect(recurringDateStrings.has('2025-07-15')).toBe(true); // Completed Tuesday
@@ -203,11 +203,11 @@ describe('Issue #322: Completion Calendar Timezone Bug', () => {
             bufferEnd.setUTCMonth(bufferEnd.getUTCMonth() + 1);
             
             const recurringDates = generateRecurringInstances(task, bufferStart, bufferEnd);
-            const recurringDateStrings = new Set(recurringDates.map(d => formatUTCDateForCalendar(d)));
+            const recurringDateStrings = new Set(recurringDates.map(d => formatDateForStorage(d)));
             
             console.log('Australian timezone test - Recurring dates:');
             recurringDates.forEach(date => {
-                console.log(`  ${formatUTCDateForCalendar(date)} (${format(date, 'EEEE')})`);
+                console.log(`  ${formatDateForStorage(date)} (${format(date, 'EEEE')})`);
             });
             
             // In Australian timezone, should still work correctly

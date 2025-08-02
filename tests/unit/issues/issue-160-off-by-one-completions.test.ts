@@ -13,7 +13,7 @@
 import { TaskInfo } from '../../../src/types';
 import { TaskFactory } from '../../helpers/mock-factories';
 import { isDueByRRule, generateRecurringInstances } from '../../../src/utils/helpers';
-import { createUTCDateForRRule, formatUTCDateForCalendar } from '../../../src/utils/dateUtils';
+import { createUTCDateForRRule, formatDateForStorage } from '../../../src/utils/dateUtils';
 import { RRule } from 'rrule';
 
 // Don't mock date-fns - we want the real implementation
@@ -98,7 +98,7 @@ describe('Issue #160: Off-by-one issues in completions calendar', () => {
         weekEnd.setUTCDate(weekEnd.getUTCDate() + 3); // End a few days after
         
         const instances = generateRecurringInstances(task, weekStart, weekEnd);
-        const dateStrings = instances.map(d => formatUTCDateForCalendar(d));
+        const dateStrings = instances.map(d => formatDateForStorage(d));
         
         // Should include the intended date
         expect(dateStrings).toContain(date);
@@ -106,7 +106,7 @@ describe('Issue #160: Off-by-one issues in completions calendar', () => {
         // Should NOT include the next day (off-by-one check)
         const nextDate = new Date(date + 'T00:00:00.000Z');
         nextDate.setUTCDate(nextDate.getUTCDate() + 1);
-        const nextDateStr = formatUTCDateForCalendar(nextDate);
+        const nextDateStr = formatDateForStorage(nextDate);
         
         expect(dateStrings).not.toContain(nextDateStr);
       });
@@ -133,7 +133,7 @@ describe('Issue #160: Off-by-one issues in completions calendar', () => {
       weekEnd.setUTCDate(weekEnd.getUTCDate() + 3);
       
       const recurringDates = generateRecurringInstances(task, weekStart, weekEnd);
-      const recurringDateStrings = new Set(recurringDates.map(d => formatUTCDateForCalendar(d)));
+      const recurringDateStrings = new Set(recurringDates.map(d => formatDateForStorage(d)));
       
       // The intended day should be in the recurring dates set
       expect(recurringDateStrings.has(date)).toBe(true);
@@ -141,7 +141,7 @@ describe('Issue #160: Off-by-one issues in completions calendar', () => {
       // The next day should NOT be in the recurring dates set (off-by-one check)
       const nextDate = new Date(date + 'T00:00:00.000Z');
       nextDate.setUTCDate(nextDate.getUTCDate() + 1);
-      const nextDateStr = formatUTCDateForCalendar(nextDate);
+      const nextDateStr = formatDateForStorage(nextDate);
       
       expect(recurringDateStrings.has(nextDateStr)).toBe(false);
     });
@@ -171,7 +171,7 @@ describe('Issue #160: Off-by-one issues in completions calendar', () => {
       // Calculate the next day
       const nextDate = new Date(date + 'T00:00:00.000Z');
       nextDate.setUTCDate(nextDate.getUTCDate() + 1);
-      const nextDateStr = formatUTCDateForCalendar(nextDate);
+      const nextDateStr = formatDateForStorage(nextDate);
       
       const task = TaskFactory.createTask({
         id: `test-${day.toLowerCase()}-task`,
@@ -238,7 +238,7 @@ describe('Issue #160: Off-by-one issues in completions calendar', () => {
       weekEnd.setUTCDate(weekEnd.getUTCDate() + 3);
       
       const recurringDates = generateRecurringInstances(task, weekStart, weekEnd);
-      const recurringDateStrings = new Set(recurringDates.map(d => formatUTCDateForCalendar(d)));
+      const recurringDateStrings = new Set(recurringDates.map(d => formatDateForStorage(d)));
       
       // The bug would cause the next day to be highlighted instead of the intended day
       // This assertion should pass when the bug is fixed
@@ -247,7 +247,7 @@ describe('Issue #160: Off-by-one issues in completions calendar', () => {
       // Calculate next day
       const nextDate = new Date(date + 'T00:00:00.000Z');
       nextDate.setUTCDate(nextDate.getUTCDate() + 1);
-      const nextDateStr = formatUTCDateForCalendar(nextDate);
+      const nextDateStr = formatDateForStorage(nextDate);
       
       expect(recurringDateStrings.has(nextDateStr)).toBe(false); // Next day should NOT be highlighted
     });
@@ -271,7 +271,7 @@ describe('Issue #160: Off-by-one issues in completions calendar', () => {
       // Task should NOT be marked as completed for the next day
       const nextDate = new Date(date + 'T00:00:00.000Z');
       nextDate.setUTCDate(nextDate.getUTCDate() + 1);
-      const nextDateStr = formatUTCDateForCalendar(nextDate);
+      const nextDateStr = formatDateForStorage(nextDate);
       
       expect(completedInstances.has(nextDateStr)).toBe(false);
     });
@@ -297,13 +297,13 @@ describe('Issue #160: Off-by-one issues in completions calendar', () => {
       weekEnd.setUTCDate(weekEnd.getUTCDate() + 3);
       
       const recurringDates = generateRecurringInstances(task, weekStart, weekEnd);
-      const recurringDateStrings = new Set(recurringDates.map(d => formatUTCDateForCalendar(d)));
+      const recurringDateStrings = new Set(recurringDates.map(d => formatDateForStorage(d)));
       const completedInstances = new Set(task.complete_instances || []);
 
       // Test the intended day vs the next day (off-by-one check)
       const nextDate = new Date(date + 'T00:00:00.000Z');
       nextDate.setUTCDate(nextDate.getUTCDate() + 1);
-      const nextDateStr = formatUTCDateForCalendar(nextDate);
+      const nextDateStr = formatDateForStorage(nextDate);
 
       // The intended day should be marked as recurring and completed
       expect(recurringDateStrings.has(date)).toBe(true);
