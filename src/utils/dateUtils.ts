@@ -210,53 +210,43 @@ export function parseDateToUTC(dateString: string): Date {
     const trimmed = dateString.trim();
     
     try {
-        // Check if it has a time component or timezone indicator
-        if (trimmed.includes('T') || trimmed.includes(' ') || 
-            trimmed.includes('Z') || trimmed.match(/[+-]\d{2}:\d{2}$/)) {
-            // This is a full datetime string - parse it as-is
-            return parseDate(trimmed);
+        // For date-only strings (YYYY-MM-DD), create a Date at UTC midnight
+        const dateOnlyMatch = trimmed.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+        if (dateOnlyMatch) {
+            const [, year, month, day] = dateOnlyMatch;
+            const yearNum = parseInt(year, 10);
+            const monthNum = parseInt(month, 10);
+            const dayNum = parseInt(day, 10);
+            
+            // Validate date components
+            if (monthNum < 1 || monthNum > 12) {
+                throw new Error(`Invalid month in date: ${dateString}`);
+            }
+            
+            if (dayNum < 1 || dayNum > 31) {
+                throw new Error(`Invalid day in date: ${dateString}`);
+            }
+            
+            // Create Date object at UTC midnight for this calendar day
+            const parsed = new Date(Date.UTC(yearNum, monthNum - 1, dayNum));
+            
+            // Validate that the date didn't roll over (e.g., Feb 31 -> March 3)
+            if (parsed.getUTCFullYear() !== yearNum || 
+                parsed.getUTCMonth() !== monthNum - 1 || 
+                parsed.getUTCDate() !== dayNum) {
+                throw new Error(`Invalid date values: ${dateString}`);
+            }
+            
+            return parsed;
         }
         
-        // Check for ISO week format
-        if (trimmed.includes('W')) {
-            // Let parseDate handle ISO week format
-            return parseDate(trimmed);
-        }
+        // For datetime strings, ISO week format, or any other format,
+        // delegate to parseDateToLocal to handle the complexity
+        // This maintains backward compatibility for complex formats
+        return parseDateToLocal(trimmed);
         
-        // For date-only strings, create a Date at UTC midnight
-        const dateMatch = trimmed.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-        if (!dateMatch) {
-            // Not a simple date format, fall back to parseDate
-            return parseDate(trimmed);
-        }
-        
-        const [, year, month, day] = dateMatch;
-        const yearNum = parseInt(year, 10);
-        const monthNum = parseInt(month, 10);
-        const dayNum = parseInt(day, 10);
-        
-        // Validate date components
-        if (monthNum < 1 || monthNum > 12) {
-            throw new Error(`Invalid month in date: ${dateString}`);
-        }
-        
-        if (dayNum < 1 || dayNum > 31) {
-            throw new Error(`Invalid day in date: ${dateString}`);
-        }
-        
-        // Create Date object at UTC midnight for this calendar day
-        const parsed = new Date(Date.UTC(yearNum, monthNum - 1, dayNum));
-        
-        // Validate that the date didn't roll over (e.g., Feb 31 -> March 3)
-        if (parsed.getUTCFullYear() !== yearNum || 
-            parsed.getUTCMonth() !== monthNum - 1 || 
-            parsed.getUTCDate() !== dayNum) {
-            throw new Error(`Invalid date values: ${dateString}`);
-        }
-        
-        return parsed;
     } catch (error) {
-        const wrappedError = new Error(`Failed to parse date: ${trimmed}`);
+        const wrappedError = new Error(`Failed to parse date to UTC: ${trimmed}`);
         console.error('Date parsing error:', { 
             dateString, 
             trimmed, 

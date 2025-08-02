@@ -852,8 +852,8 @@ export class AdvancedCalendarView extends ItemView {
         let endDate: string | undefined;
         if (hasTime && task.timeEstimate) {
             // Calculate end time based on time estimate
-            // Use parseDateToUTC to properly handle timezone-safe parsing
-            const start = parseDateToUTC(startDate);
+            // Use parseDateToLocal for display purposes since this has time
+            const start = parseDateToLocal(startDate);
             const end = new Date(start.getTime() + (task.timeEstimate * 60 * 1000));
             endDate = format(end, "yyyy-MM-dd'T'HH:mm");
         }
@@ -1040,7 +1040,7 @@ export class AdvancedCalendarView extends ItemView {
         // Calculate end time if time estimate is available
         let endDate: string | undefined;
         if (hasTime && task.timeEstimate) {
-            const start = parseDate(eventStart);
+            const start = parseDateToLocal(eventStart);
             const end = new Date(start.getTime() + (task.timeEstimate * 60 * 1000));
             endDate = format(end, "yyyy-MM-dd'T'HH:mm");
         }
@@ -1224,8 +1224,13 @@ export class AdvancedCalendarView extends ItemView {
             const allDailyNotes = getAllDailyNotes();
             
             // Iterate through each day in the visible range
-            const currentDate = new Date(visibleStart);
-            while (currentDate <= visibleEnd) {
+            // Use a safer date iteration approach to avoid DST issues
+            const startTime = visibleStart.getTime();
+            const endTime = visibleEnd.getTime();
+            const oneDayMs = 24 * 60 * 60 * 1000;
+            
+            for (let time = startTime; time <= endTime; time += oneDayMs) {
+                const currentDate = new Date(time);
                 const dateString = formatDateForStorage(currentDate);
                 const moment = (window as any).moment(currentDate);
                 const dailyNote = getDailyNote(moment, allDailyNotes);
@@ -1244,9 +1249,6 @@ export class AdvancedCalendarView extends ItemView {
                         console.error(`Error reading daily note ${dailyNote.path}:`, error);
                     }
                 }
-                
-                // Move to next day
-                currentDate.setDate(currentDate.getDate() + 1);
             }
         } catch (error) {
             console.error('Error getting timeblock events:', error);
@@ -1698,7 +1700,7 @@ export class AdvancedCalendarView extends ItemView {
                     // Standard task context menu for other event types
                     const targetDate = isRecurringInstance && instanceDate 
                         ? parseDateToUTC(instanceDate)  // Use UTC anchor for instance date
-                        : (arg.event.start || new Date());
+                        : (arg.event.start || getTodayLocal());
                         
                     showTaskContextMenu(jsEvent, taskInfo.path, this.plugin, targetDate);
                 }
@@ -1917,8 +1919,8 @@ export class AdvancedCalendarView extends ItemView {
                         // Calculate duration for confirmation message
                         let durationText = '';
                         if (timeEntry.startTime && timeEntry.endTime) {
-                            const start = new Date(timeEntry.startTime);
-                            const end = new Date(timeEntry.endTime);
+                            const start = parseDateToLocal(timeEntry.startTime);
+                            const end = parseDateToLocal(timeEntry.endTime);
                             const durationMs = end.getTime() - start.getTime();
                             const durationMinutes = Math.round(durationMs / (1000 * 60));
                             const hours = Math.floor(durationMinutes / 60);

@@ -18,7 +18,7 @@ import {
     EVENT_POMODORO_TICK,
     TaskInfo
 } from '../types';
-import { getCurrentTimestamp, formatDateForStorage, getTodayLocal } from '../utils/dateUtils';
+import { getCurrentTimestamp, formatDateForStorage, getTodayLocal, parseDateToLocal } from '../utils/dateUtils';
 import { getSessionDuration, timerWorker } from '../utils/pomodoroUtils';
 
 export class PomodoroService {
@@ -991,7 +991,7 @@ export class PomodoroService {
      */
     private async updateDailyNotePomodoros(dateStr: string, sessions: PomodoroSessionHistory[]): Promise<void> {
         try {
-            const date = new Date(dateStr + 'T12:00:00'); // Noon to avoid timezone issues
+            const date = parseDateToLocal(dateStr); // Use local date for daily note creation
             const moment = (window as any).moment(date);
             
             // Get or create daily note

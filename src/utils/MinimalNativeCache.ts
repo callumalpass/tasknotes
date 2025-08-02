@@ -5,7 +5,8 @@ import {
     getTodayString, 
     isBeforeDateSafe, 
     getDatePart,
-    parseDate
+    parseDateToUTC,
+    formatDateForStorage
 } from './dateUtils';
 import { filterEmptyProjects } from './helpers';
 
@@ -737,8 +738,8 @@ export class MinimalNativeCache extends Events {
                         // Continue to filename parsing
                     } else {
                         try {
-                            const parsed = parseDate(dateValue);
-                            noteDate = getDatePart(parsed.toISOString());
+                            const parsed = parseDateToUTC(dateValue);
+                            noteDate = formatDateForStorage(parsed);
                         } catch (e) {
                             // Ignore invalid dates or parsing errors
                             console.debug('Failed to parse date from note frontmatter:', { 
@@ -757,8 +758,8 @@ export class MinimalNativeCache extends Events {
                 const dateMatch = fileName.match(/(\d{4}-\d{2}-\d{2})/);
                 if (dateMatch) {
                     try {
-                        const parsed = parseDate(dateMatch[1]);
-                        noteDate = getDatePart(parsed.toISOString());
+                        const parsed = parseDateToUTC(dateMatch[1]);
+                        noteDate = formatDateForStorage(parsed);
                     } catch (e) {
                         // Ignore invalid dates or parsing errors
                     }

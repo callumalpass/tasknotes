@@ -492,8 +492,9 @@ export class FilterService extends EventEmitter {
      */
     private async getTaskPathsInDateRange(startDate: string, endDate: string): Promise<Set<string>> {
         const pathsInRange = new Set<string>();
-        const start = new Date(startDate);
-        const end = new Date(endDate);
+        // Use UTC anchors for consistent date range operations
+        const start = parseDateToUTC(startDate);
+        const end = parseDateToUTC(endDate);
 
         // Get tasks with due dates in the range (existing logic)
         for (let date = new Date(start); date <= end; date.setDate(date.getDate() + 1)) {
@@ -577,10 +578,9 @@ export class FilterService extends EventEmitter {
      */
     private isSameDayAs(dateObj: Date, dateString: string): boolean {
         try {
-            const dateObjNormalized = new Date(dateObj);
-            dateObjNormalized.setHours(0, 0, 0, 0);
-            const targetDate = startOfDayForDateString(dateString);
-            return dateObjNormalized.getTime() === targetDate.getTime();
+            // Use safe date comparison with UTC anchors
+            const dateObjString = format(dateObj, 'yyyy-MM-dd');
+            return isSameDateSafe(dateObjString, dateString);
         } catch (error) {
             console.error('Error comparing date object with date string:', { dateObj, dateString, error });
             return false;

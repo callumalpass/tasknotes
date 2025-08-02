@@ -3,7 +3,7 @@ import TaskNotesPlugin from '../main';
 import { TasksPluginParser, ParsedTaskData } from '../utils/TasksPluginParser';
 import { NaturalLanguageParser } from './NaturalLanguageParser';
 import { TaskCreationData } from '../types';
-import { getCurrentTimestamp, combineDateAndTime } from '../utils/dateUtils';
+import { getCurrentTimestamp, combineDateAndTime, parseDateToUTC, formatDateForStorage } from '../utils/dateUtils';
 import { calculateDefaultDate } from '../utils/helpers';
 import { StatusManager } from './StatusManager';
 import { PriorityManager } from './PriorityManager';
@@ -350,8 +350,14 @@ export class InstantTaskConvertService {
             return false;
         }
 
-        const date = new Date(dateString);
-        return date instanceof Date && !isNaN(date.getTime()) && date.toISOString().slice(0, 10) === dateString;
+        try {
+            // Use UTC anchor for consistent date validation
+            const date = parseDateToUTC(dateString);
+            // Check if the parsed date matches the original string
+            return formatDateForStorage(date) === dateString;
+        } catch {
+            return false;
+        }
     }
 
     /**
