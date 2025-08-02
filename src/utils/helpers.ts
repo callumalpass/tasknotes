@@ -184,11 +184,13 @@ export function calculateDefaultDate(defaultOption: 'none' | 'today' | 'tomorrow
 			break;
 		case 'tomorrow':
 			targetDate = new Date(today);
-			targetDate.setUTCDate(today.getUTCDate() + 1);
+			// Use local date methods for consistent date arithmetic
+			targetDate.setDate(today.getDate() + 1);
 			break;
 		case 'next-week':
 			targetDate = new Date(today);
-			targetDate.setUTCDate(today.getUTCDate() + 7);
+			// Use local date methods for consistent date arithmetic
+			targetDate.setDate(today.getDate() + 7);
 			break;
 		default:
 			return '';

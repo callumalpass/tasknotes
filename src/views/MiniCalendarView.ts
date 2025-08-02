@@ -167,8 +167,8 @@ export class MiniCalendarView extends ItemView {
         const currentDate = new Date(this.plugin.selectedDate);
         const date = new Date(currentDate);
         
-        // Go to previous month using UTC methods
-        date.setUTCMonth(date.getUTCMonth() - 1);
+        // Use local month methods for consistent date arithmetic
+        date.setMonth(date.getMonth() - 1);
         
         // Set the selected date - the event listener will handle the calendar update
         this.plugin.setSelectedDate(date);
@@ -178,8 +178,8 @@ export class MiniCalendarView extends ItemView {
         const currentDate = new Date(this.plugin.selectedDate);
         const date = new Date(currentDate);
         
-        // Go to next month using UTC methods
-        date.setUTCMonth(date.getUTCMonth() + 1);
+        // Use local month methods for consistent date arithmetic
+        date.setMonth(date.getMonth() + 1);
         
         // Set the selected date - the event listener will handle the calendar update
         this.plugin.setSelectedDate(date);
