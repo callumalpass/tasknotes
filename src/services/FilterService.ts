@@ -18,7 +18,8 @@ import {
     getDatePart,
     getTodayLocal,
     parseDateAsLocal,
-    formatDateForStorage
+    formatDateForStorage,
+    parseDateToUTC
 } from '../utils/dateUtils';
 
 /**
