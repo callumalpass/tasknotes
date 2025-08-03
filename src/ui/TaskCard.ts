@@ -74,7 +74,7 @@ function attachDateClickHandler(
  */
 export function createTaskCard(task: TaskInfo, plugin: TaskNotesPlugin, options: Partial<TaskCardOptions> = {}): HTMLElement {
     const opts = { ...DEFAULT_TASK_CARD_OPTIONS, ...options };
-    const targetDate = opts.targetDate || plugin.selectedDate;
+    const targetDate = opts.targetDate || plugin.selectedDate || new Date();
     
     // Determine effective status for recurring tasks
     const effectiveStatus = task.recurrence 
@@ -314,7 +314,7 @@ export function createTaskCard(task: TaskInfo, plugin: TaskNotesPlugin, options:
             });
             
             // Add chevron for expandable subtasks if feature is enabled
-            if (plugin.settings.showExpandableSubtasks) {
+            if (plugin.settings?.showExpandableSubtasks) {
                 chevronPlaceholder.className = 'task-card__chevron';
                 chevronPlaceholder.removeAttribute('style');
                 
@@ -836,7 +836,7 @@ export async function showTaskContextMenu(event: MouseEvent, taskPath: string, p
  */
 export function updateTaskCard(element: HTMLElement, task: TaskInfo, plugin: TaskNotesPlugin, options: Partial<TaskCardOptions> = {}): void {
     const opts = { ...DEFAULT_TASK_CARD_OPTIONS, ...options };
-    const targetDate = opts.targetDate || plugin.selectedDate;
+    const targetDate = opts.targetDate || plugin.selectedDate || new Date();
     
     // Update effective status
     const effectiveStatus = task.recurrence 
@@ -977,7 +977,7 @@ export function updateTaskCard(element: HTMLElement, task: TaskInfo, plugin: Tas
         const existingChevron = element.querySelector('.task-card__chevron') as HTMLElement;
         const existingChevronPlaceholder = element.querySelector('.task-card__chevron-placeholder');
         
-        if (isProject && plugin.settings.showExpandableSubtasks && !existingChevron && !existingChevronPlaceholder) {
+        if (isProject && plugin.settings?.showExpandableSubtasks && !existingChevron && !existingChevronPlaceholder) {
             // Add chevron if task is now used as a project and feature is enabled
             const chevron = mainRow.createEl('div', { 
                 cls: 'task-card__chevron',
@@ -1027,11 +1027,15 @@ export function updateTaskCard(element: HTMLElement, task: TaskInfo, plugin: Tas
             
             // If already expanded, show subtasks
             if (isExpanded) {
+                chevron.classList.add('task-card__chevron--expanded');
+                chevron.setAttribute('aria-label', 'Collapse subtasks');
+                setTooltip(chevron, 'Collapse subtasks', { placement: 'top' });
+                
                 toggleSubtasks(element, task, plugin, true).catch(error => {
                     console.error('Error showing initial subtasks in update:', error);
                 });
             }
-        } else if ((!isProject || !plugin.settings.showExpandableSubtasks) && (existingChevron || existingChevronPlaceholder)) {
+        } else if ((!isProject || !plugin.settings?.showExpandableSubtasks) && (existingChevron || existingChevronPlaceholder)) {
             // Remove chevron if task is no longer used as a project or feature is disabled
             existingChevron?.remove();
             existingChevronPlaceholder?.remove();
@@ -1422,31 +1426,33 @@ export function cleanupTaskCard(card: HTMLElement): void {
  * Toggle subtasks display for a project task card
  */
 async function toggleSubtasks(card: HTMLElement, task: TaskInfo, plugin: TaskNotesPlugin, expanded: boolean): Promise<void> {
-    let subtasksContainer = card.querySelector('.task-card__subtasks') as HTMLElement;
-    
-    if (expanded) {
-        // Show subtasks
-        if (!subtasksContainer) {
-            // Create subtasks container after the main content
-            subtasksContainer = document.createElement('div');
-            subtasksContainer.className = 'task-card__subtasks';
-            
-            // Prevent clicks inside subtasks container from bubbling to parent card
-            const clickHandler = (e: Event) => {
-                e.stopPropagation();
-            };
-            subtasksContainer.addEventListener('click', clickHandler);
-            
-            // Store handler reference for cleanup
-            (subtasksContainer as any)._clickHandler = clickHandler;
-            
-            card.appendChild(subtasksContainer);
-        }
+    try {
+        let subtasksContainer = card.querySelector('.task-card__subtasks') as HTMLElement;
         
-        // Clear existing content properly (this will clean up subtask event listeners)
-        while (subtasksContainer.firstChild) {
-            subtasksContainer.removeChild(subtasksContainer.firstChild);
-        }
+        if (expanded) {
+            
+            // Show subtasks
+            if (!subtasksContainer) {
+                // Create subtasks container after the main content
+                subtasksContainer = document.createElement('div');
+                subtasksContainer.className = 'task-card__subtasks';
+                
+                // Prevent clicks inside subtasks container from bubbling to parent card
+                const clickHandler = (e: Event) => {
+                    e.stopPropagation();
+                };
+                subtasksContainer.addEventListener('click', clickHandler);
+                
+                // Store handler reference for cleanup
+                (subtasksContainer as any)._clickHandler = clickHandler;
+                
+                card.appendChild(subtasksContainer);
+            }
+            
+            // Clear existing content properly (this will clean up subtask event listeners)
+            while (subtasksContainer.firstChild) {
+                subtasksContainer.removeChild(subtasksContainer.firstChild);
+            }
         
         // Show loading state
         const loadingEl = subtasksContainer.createEl('div', { 
@@ -1462,7 +1468,11 @@ async function toggleSubtasks(card: HTMLElement, task: TaskInfo, plugin: TaskNot
             }
             
             // Get subtasks
-            let subtasks = await plugin.projectSubtasksService.getTasksLinkedToProject(file);
+            if (!plugin.projectSubtasksService) {
+                throw new Error('projectSubtasksService not initialized');
+            }
+            
+            const subtasks = await plugin.projectSubtasksService.getTasksLinkedToProject(file);
             
             // Apply current filter to subtasks if available
             // For now, we'll show all subtasks to keep the implementation simple
@@ -1483,8 +1493,14 @@ async function toggleSubtasks(card: HTMLElement, task: TaskInfo, plugin: TaskNot
             // Sort subtasks
             const sortedSubtasks = plugin.projectSubtasksService.sortTasks(subtasks);
             
-            // Render each subtask
+            // Render each subtask (but prevent circular references)
             for (const subtask of sortedSubtasks) {
+                // Prevent circular reference where a task is its own subtask
+                if (subtask.path === task.path) {
+                    console.warn('Circular reference detected: task references itself as subtask:', task.path);
+                    continue;
+                }
+                
                 const subtaskCard = createTaskCard(subtask, plugin, {
                     showDueDate: true,
                     showCheckbox: false,
@@ -1518,5 +1534,9 @@ async function toggleSubtasks(card: HTMLElement, task: TaskInfo, plugin: TaskNot
             // Remove the container (this will also clean up child elements and their listeners)
             subtasksContainer.remove();
         }
+    }
+    } catch (error) {
+        console.error('Error in toggleSubtasks:', error);
+        throw error;
     }
 }
