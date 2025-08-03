@@ -217,7 +217,7 @@
 }
 
 /* Completed status - filled circle with status color */
-.tasknotes-plugin .task-card--completed .task-card__status-dot {
+.tasknotes-plugin .task-card--completed > .task-card__main-row .task-card__status-dot {
     background-color: var(--current-status-color, var(--tn-color-success));
     border-color: var(--current-status-color, var(--tn-color-success));
 }
@@ -469,11 +469,11 @@
    ================================================================= */
 
 /* Completion State - Use theme colors */
-.tasknotes-plugin .task-card--completed {
+.tasknotes-plugin .task-card--completed > .task-card__main-row {
     opacity: 0.6;
 }
 
-.tasknotes-plugin .task-card--completed .task-card__title {
+.tasknotes-plugin .task-card--completed > .task-card__main-row .task-card__title {
     text-decoration: line-through;
     color: var(--tn-text-muted);
 }
@@ -688,7 +688,7 @@
 }
 
 /* DEPRECATED - Use .task-card__title.task-card--completed instead */
-.tasknotes-plugin .task-card .task-title.completed {
+.tasknotes-plugin .task-card > .task-card__main-row .task-title.completed {
     text-decoration: line-through;
     color: var(--tn-text-muted);
 }

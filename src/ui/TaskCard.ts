@@ -1390,6 +1390,12 @@ async function toggleSubtasks(card: HTMLElement, task: TaskInfo, plugin: TaskNot
             // Create subtasks container after the main content
             subtasksContainer = document.createElement('div');
             subtasksContainer.className = 'task-card__subtasks';
+            
+            // Prevent clicks inside subtasks container from bubbling to parent card
+            subtasksContainer.addEventListener('click', (e) => {
+                e.stopPropagation();
+            });
+            
             card.appendChild(subtasksContainer);
         }
         
