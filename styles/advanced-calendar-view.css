@@ -571,7 +571,6 @@
 
 /* Header toolbar styling */
 .advanced-calendar-view .fc-header-toolbar {
-    margin-bottom: 0.5rem;
     padding: 0;
     border-bottom: 1px solid var(--background-modifier-border);
     background: transparent;
@@ -590,6 +589,10 @@
     display: flex;
     align-items: center;
     gap: 0.25rem;
+}
+
+.advanced-calendar-view .fc-toolbar.fc-header-toolbar {
+    margin-bottom: 0;
 }
 
 /* Remove all borders from FullCalendar buttons */
