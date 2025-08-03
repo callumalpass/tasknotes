@@ -1023,9 +1023,17 @@ export function updateTaskCard(element: HTMLElement, task: TaskInfo, plugin: Tas
             // Remove chevron if task is no longer used as a project or feature is disabled
             existingChevron?.remove();
             existingChevronPlaceholder?.remove();
-            // Also remove any existing subtasks container
-            const subtasksContainer = element.querySelector('.task-card__subtasks');
-            subtasksContainer?.remove();
+            // Also remove any existing subtasks container with proper cleanup
+            const subtasksContainer = element.querySelector('.task-card__subtasks') as HTMLElement;
+            if (subtasksContainer) {
+                // Clean up the click handler
+                const clickHandler = (subtasksContainer as any)._clickHandler;
+                if (clickHandler) {
+                    subtasksContainer.removeEventListener('click', clickHandler);
+                    delete (subtasksContainer as any)._clickHandler;
+                }
+                subtasksContainer.remove();
+            }
         }
     }).catch((error: any) => {
         console.error('Error checking if task is used as project in update:', error);
@@ -1379,6 +1387,26 @@ function renderProjectLinks(container: HTMLElement, projects: string[], plugin: 
 }
 
 /**
+ * Clean up event listeners and resources for a task card
+ */
+export function cleanupTaskCard(card: HTMLElement): void {
+    // Clean up subtasks container if it exists
+    const subtasksContainer = card.querySelector('.task-card__subtasks') as HTMLElement;
+    if (subtasksContainer) {
+        // Clean up the click handler
+        const clickHandler = (subtasksContainer as any)._clickHandler;
+        if (clickHandler) {
+            subtasksContainer.removeEventListener('click', clickHandler);
+            delete (subtasksContainer as any)._clickHandler;
+        }
+    }
+    
+    // Note: Other event listeners on the card itself are automatically cleaned up 
+    // when the card is removed from the DOM. We only need to manually clean up
+    // listeners that we store references to.
+}
+
+/**
  * Toggle subtasks display for a project task card
  */
 async function toggleSubtasks(card: HTMLElement, task: TaskInfo, plugin: TaskNotesPlugin, expanded: boolean): Promise<void> {
@@ -1392,15 +1420,23 @@ async function toggleSubtasks(card: HTMLElement, task: TaskInfo, plugin: TaskNot
             subtasksContainer.className = 'task-card__subtasks';
             
             // Prevent clicks inside subtasks container from bubbling to parent card
-            subtasksContainer.addEventListener('click', (e) => {
+            const clickHandler = (e: Event) => {
                 e.stopPropagation();
-            });
+            };
+            subtasksContainer.addEventListener('click', clickHandler);
+            
+            // Store handler reference for cleanup
+            (subtasksContainer as any)._clickHandler = clickHandler;
             
             card.appendChild(subtasksContainer);
         }
         
+        // Clear existing content properly (this will clean up subtask event listeners)
+        while (subtasksContainer.firstChild) {
+            subtasksContainer.removeChild(subtasksContainer.firstChild);
+        }
+        
         // Show loading state
-        subtasksContainer.innerHTML = '';
         const loadingEl = subtasksContainer.createEl('div', { 
             cls: 'task-card__subtasks-loading',
             text: 'Loading subtasks...'
@@ -1460,6 +1496,14 @@ async function toggleSubtasks(card: HTMLElement, task: TaskInfo, plugin: TaskNot
     } else {
         // Hide subtasks
         if (subtasksContainer) {
+            // Clean up the click handler
+            const clickHandler = (subtasksContainer as any)._clickHandler;
+            if (clickHandler) {
+                subtasksContainer.removeEventListener('click', clickHandler);
+                delete (subtasksContainer as any)._clickHandler;
+            }
+            
+            // Remove the container (this will also clean up child elements and their listeners)
             subtasksContainer.remove();
         }
     }
