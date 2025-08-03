@@ -6,7 +6,6 @@ import {
     isValid, 
     startOfDay, 
     addDays as addDaysFns, 
-    endOfDay,
     addWeeks,
     addMonths,
     addYears,
@@ -370,10 +369,10 @@ export function normalizeDateString(dateString: string): string {
             }
         }
         
-        // For non-timezone strings, parse and format
-        const parsed = parseDate(dateString);
+        // For non-timezone strings, parse with UTC anchor for consistent storage
+        const parsed = parseDateToUTC(dateString);
         if (isValid(parsed)) {
-            return format(parsed, 'yyyy-MM-dd');
+            return formatDateForStorage(parsed);
         }
         return dateString;
     } catch (error) {
@@ -549,12 +548,13 @@ export function getEndOfYearString(): string {
 }
 
 /**
- * Get start of day for a date string, preserving the date format
+ * Get start of day for a date string using UTC anchoring for consistency
+ * Uses parseDateToUTC to ensure timezone-independent comparisons
  */
 export function startOfDayForDateString(dateString: string): Date {
     try {
-        const parsed = parseDate(dateString);
-        return startOfDay(parsed);
+        const parsed = parseDateToUTC(dateString);
+        return parsed; // parseDateToUTC already returns midnight UTC for date-only strings
     } catch (error) {
         console.error('Error getting start of day for date string:', { dateString, error });
         throw error;
@@ -699,9 +699,9 @@ export function getDatePart(dateString: string): string {
             return dateString.substring(0, tIndex);
         }
         
-        // For other formats, parse and format using local date
-        const parsed = parseDate(dateString);
-        return format(parsed, 'yyyy-MM-dd');
+        // For other formats, parse and format using UTC anchor for consistency
+        const parsed = parseDateToUTC(dateString);
+        return formatDateForStorage(parsed);
     } catch (error) {
         console.error('Error extracting date part:', { dateString, error });
         return dateString;
@@ -809,30 +809,52 @@ export function formatDateTimeForDisplay(dateString: string, options: {
 }
 
 /**
- * Time-aware comparison for before/after relationships
- * For date-only strings, treats them as end-of-day for sorting purposes
+ * Time-aware comparison for before/after relationships with consistent UTC parsing
+ * Uses UTC anchoring for all date-only strings to ensure timezone-independent comparisons
  */
 export function isBeforeDateTimeAware(date1: string, date2: string): boolean {
     try {
-        // Use appropriate parsing based on whether the string has time
-        const d1 = hasTimeComponent(date1) ? parseDateToLocal(date1) : parseDateToUTC(date1);
-        const d2 = hasTimeComponent(date2) ? parseDateToLocal(date2) : parseDateToUTC(date2);
+        // Step 1: Parse all dates to UTC anchors for consistency
+        const d1UTC = parseDateToUTC(date1);
+        const d2UTC = parseDateToUTC(date2);
         
-        // If both have time, direct comparison
-        if (hasTimeComponent(date1) && hasTimeComponent(date2)) {
-            return d1.getTime() < d2.getTime();
+        // Step 2: For datetime strings, add time component to UTC anchor
+        let d1Final = d1UTC;
+        let d2Final = d2UTC;
+        
+        if (hasTimeComponent(date1)) {
+            // Extract time and apply it to UTC anchor
+            const timeInfo = getTimePart(date1);
+            if (timeInfo) {
+                const [hours, minutes] = timeInfo.split(':').map(Number);
+                d1Final = new Date(d1UTC);
+                d1Final.setUTCHours(hours, minutes, 0, 0);
+            }
         }
         
-        // If neither has time, compare UTC anchors directly
-        if (!hasTimeComponent(date1) && !hasTimeComponent(date2)) {
-            return d1.getTime() < d2.getTime();
+        if (hasTimeComponent(date2)) {
+            // Extract time and apply it to UTC anchor
+            const timeInfo = getTimePart(date2);
+            if (timeInfo) {
+                const [hours, minutes] = timeInfo.split(':').map(Number);
+                d2Final = new Date(d2UTC);
+                d2Final.setUTCHours(hours, minutes, 0, 0);
+            }
         }
         
-        // Mixed case: treat date-only as end-of-day for sorting
-        const d1Normalized = hasTimeComponent(date1) ? d1 : endOfDay(parseDateToLocal(date1));
-        const d2Normalized = hasTimeComponent(date2) ? d2 : endOfDay(parseDateToLocal(date2));
+        // Step 3: Handle mixed case by treating date-only as end-of-day
+        if (hasTimeComponent(date1) && !hasTimeComponent(date2)) {
+            // date2 is date-only, treat as end of day for sorting
+            d2Final = new Date(d2UTC);
+            d2Final.setUTCHours(23, 59, 59, 999);
+        } else if (!hasTimeComponent(date1) && hasTimeComponent(date2)) {
+            // date1 is date-only, treat as end of day for sorting
+            d1Final = new Date(d1UTC);
+            d1Final.setUTCHours(23, 59, 59, 999);
+        }
         
-        return d1Normalized.getTime() < d2Normalized.getTime();
+        // Step 4: Direct comparison with consistent UTC timestamps
+        return d1Final.getTime() < d2Final.getTime();
     } catch (error) {
         console.error('Error comparing dates time-aware:', { date1, date2, error });
         return false;

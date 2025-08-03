@@ -6,7 +6,7 @@ import { PriorityManager } from './PriorityManager';
 import { EventEmitter } from '../utils/EventEmitter';
 import { FilterUtils, FilterValidationError, FilterEvaluationError, TaskPropertyValue } from '../utils/FilterUtils';
 import { isDueByRRule, filterEmptyProjects, getEffectiveTaskStatus } from '../utils/helpers';
-import { format, isToday } from 'date-fns';
+import { format } from 'date-fns';
 import { 
     getTodayString, 
     isBeforeDateSafe, 
@@ -16,8 +16,6 @@ import {
     isBeforeDateTimeAware,
     isOverdueTimeAware,
     getDatePart,
-    getTodayLocal,
-    parseDateAsLocal,
     formatDateForStorage,
     parseDateToUTC,
     isTodayUTC

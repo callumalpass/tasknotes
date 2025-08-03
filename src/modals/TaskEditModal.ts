@@ -2,9 +2,9 @@ import { App, Notice, TFile } from 'obsidian';
 import TaskNotesPlugin from '../main';
 import { TaskModal } from './TaskModal';
 import { TaskInfo } from '../types';
-import { getCurrentTimestamp, createUTCDateForRRule, formatDateForStorage, generateUTCCalendarDates, getUTCStartOfWeek, getUTCEndOfWeek, getUTCStartOfMonth, getUTCEndOfMonth, getTodayLocal, parseDateAsLocal, formatDateAsUTCString } from '../utils/dateUtils';
+import { getCurrentTimestamp, formatDateForStorage, generateUTCCalendarDates, getUTCStartOfWeek, getUTCEndOfWeek, getUTCStartOfMonth, getUTCEndOfMonth, getTodayLocal, parseDateAsLocal, createUTCDateFromLocalCalendarDate } from '../utils/dateUtils';
 import { formatTimestampForDisplay } from '../utils/dateUtils';
-import { format, isSameMonth } from 'date-fns';
+import { format } from 'date-fns';
 import { generateRecurringInstances, extractTaskInfo, calculateTotalTimeSpent, formatTime } from '../utils/helpers';
 
 export interface TaskEditOptions {
@@ -271,6 +271,9 @@ export class TaskEditModal extends TaskModal {
         const calendarEnd = getUTCEndOfWeek(monthEnd, firstDaySetting);
         const allDays = generateUTCCalendarDates(calendarStart, calendarEnd);
         
+        // FIX: Create a UTC-anchored version of displayDate for consistent comparison
+        const displayDateUTC = createUTCDateFromLocalCalendarDate(displayDate);
+        
         // Generate recurring instances for this month (with some buffer)
         const bufferStart = getUTCStartOfMonth(displayDate);
         bufferStart.setUTCMonth(bufferStart.getUTCMonth() - 1);
@@ -293,7 +296,8 @@ export class TaskEditModal extends TaskModal {
         // Render each day (no headers, just numbers)
         allDays.forEach(day => {
             const dayStr = formatDateForStorage(day);
-            const isCurrentMonth = isSameMonth(day, displayDate);
+            // FIX: Use UTC-to-UTC comparison instead of mixing local and UTC dates
+            const isCurrentMonth = day.getUTCMonth() === displayDateUTC.getUTCMonth();
             const isRecurring = recurringDateStrings.has(dayStr);
             const isCompleted = completedInstances.has(dayStr);
             

@@ -1,5 +1,5 @@
 import { TFile, ItemView, WorkspaceLeaf, EventRef, Setting } from 'obsidian';
-import { format, addDays, startOfWeek, endOfWeek, isToday, isSameDay } from 'date-fns';
+import { format, addDays, startOfWeek, endOfWeek, isSameDay } from 'date-fns';
 import { formatDateForStorage, createUTCDateFromLocalCalendarDate, getTodayLocal, isTodayUTC } from '../utils/dateUtils';
 import TaskNotesPlugin from '../main';
 import { 

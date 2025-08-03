@@ -4,7 +4,7 @@ import { RRule } from 'rrule';
 import { TimeInfo, TaskInfo, TimeEntry, TimeBlock, DailyNoteFrontmatter } from '../types';
 import { FieldMapper } from '../services/FieldMapper';
 import { DEFAULT_FIELD_MAPPING } from '../settings/settings';
-import { isBeforeDateSafe, getTodayString, parseDateToLocal, parseDateToUTC, createUTCDateForRRule, formatDateForStorage, getTodayLocal, parseDateAsLocal, hasTimeComponent, formatDateAsUTCString } from './dateUtils';
+import { isBeforeDateSafe, getTodayString, parseDateToLocal, parseDateToUTC, createUTCDateForRRule, formatDateForStorage, getTodayLocal, formatDateAsUTCString } from './dateUtils';
 // import { RegexOptimizer } from './RegexOptimizer'; // Temporarily disabled
 
 /**
@@ -291,6 +291,8 @@ export function extractTaskInfo(
 
 /**
  * Checks if a task is overdue (either due date or scheduled date is in the past)
+ * @deprecated Use isOverdueTimeAware from dateUtils.ts instead. This function has timezone
+ * bugs due to mixing UTC-anchored dates with local-timezone dates in comparisons.
  */
 export function isTaskOverdue(task: {due?: string; scheduled?: string}): boolean {
 	const today = getTodayLocal();

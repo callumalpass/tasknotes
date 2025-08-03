@@ -1,6 +1,6 @@
 import { Notice, TFile, ItemView, WorkspaceLeaf, EventRef, debounce, setTooltip } from 'obsidian';
 import { format } from 'date-fns';
-import { formatDateForStorage, createSafeUTCDate, getTodayLocal, createUTCDateFromLocalCalendarDate } from '../utils/dateUtils';
+import { formatDateForStorage, getTodayLocal, createUTCDateFromLocalCalendarDate } from '../utils/dateUtils';
 import TaskNotesPlugin from '../main';
 import { getAllDailyNotes, getDailyNote } from 'obsidian-daily-notes-interface';
 import { 
@@ -15,7 +15,7 @@ import {
     isSameDay
 } from '../utils/helpers';
 import { perfMonitor } from '../utils/PerformanceMonitor';
-import { createSafeDate, getDatePart } from '../utils/dateUtils';
+import { createSafeDate, createSafeUTCDate, getDatePart } from '../utils/dateUtils';
 
 export class MiniCalendarView extends ItemView {
     // Static property to track initialization status for daily notes
@@ -758,7 +758,8 @@ export class MiniCalendarView extends ItemView {
                     }
                 }
                 
-                const dateObj = createSafeDate(year, actualMonth, date);
+                // FIX: Use UTC-anchored date to prevent timezone-dependent storage key generation
+                const dateObj = createSafeUTCDate(year, actualMonth, date);
                 const dateKey = formatDateForStorage(dateObj);
                 
                 // Get note count for this date
@@ -839,7 +840,8 @@ export class MiniCalendarView extends ItemView {
                         }
                     }
                     
-                    const dateObj = createSafeDate(year, actualMonth, date);
+                    // FIX: Use UTC-anchored date to prevent timezone-dependent storage key generation
+                    const dateObj = createSafeUTCDate(year, actualMonth, date);
                     const dateKey = formatDateForStorage(dateObj);
                     
                     cachedResult = { actualMonth, dateObj, dateKey };
@@ -950,7 +952,8 @@ export class MiniCalendarView extends ItemView {
                         }
                     }
                     
-                    const dateObj = createSafeDate(year, actualMonth, date);
+                    // FIX: Use UTC-anchored date to prevent timezone-dependent storage key generation
+                    const dateObj = createSafeUTCDate(year, actualMonth, date);
                     const dateKey = formatDateForStorage(dateObj);
                     
                     cachedResult = { actualMonth, dateObj, dateKey };
