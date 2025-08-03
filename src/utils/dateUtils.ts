@@ -398,6 +398,19 @@ export function createSafeUTCDate(year: number, month: number, day: number): Dat
 }
 
 /**
+ * Converts a UTC-anchored Date object back to a local Date object
+ * representing the same calendar day, for display purposes.
+ * @param utcDate - A UTC-anchored Date object (e.g., from selectedDate)
+ * @returns A local Date object (e.g., for formatting with date-fns)
+ */
+export function convertUTCToLocalCalendarDate(utcDate: Date): Date {
+    const year = utcDate.getUTCFullYear();
+    const month = utcDate.getUTCMonth();
+    const day = utcDate.getUTCDate();
+    return new Date(year, month, day);
+}
+
+/**
  * Enhanced date validation that accepts both date-only and timezone-aware formats
  */
 export function validateDateInput(dateValue: string): boolean {

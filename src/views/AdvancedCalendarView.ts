@@ -410,14 +410,17 @@ export class AdvancedCalendarView extends ItemView {
     }
     
     private getHeaderToolbarConfig() {
+        // FIX: Use the correct window context for the view (handles pop-out windows)
+        const win = this.contentEl.ownerDocument.defaultView || window;
+        
         // Hide FullCalendar header on mobile when collapsed
-        if (this.headerCollapsed && window.innerWidth <= 768) {
+        if (this.headerCollapsed && win.innerWidth <= 768) {
             return false; // This hides the entire header toolbar
         }
         
         // Check if calendar container is narrow (less than 600px wide) to hide title
         const calendarContainer = this.contentEl.querySelector('.advanced-calendar-view__calendar-container');
-        const containerWidth = calendarContainer ? calendarContainer.getBoundingClientRect().width : window.innerWidth;
+        const containerWidth = calendarContainer ? calendarContainer.getBoundingClientRect().width : win.innerWidth;
         const isNarrowView = containerWidth <= 600;
         
         const toolbarConfig = {

@@ -1157,7 +1157,7 @@ export class FilterBar extends EventEmitter {
     private removeFilterGroup(parentGroup: FilterGroup, index: number): void {
         parentGroup.children.splice(index, 1);
         this.ignoreNextClickOutside();
-        this.updateFilterBuilderComplete();
+        // FIX: Remove redundant UI update - emitQueryChange will handle it
         this.emitQueryChange();
     }
 
@@ -1279,7 +1279,7 @@ export class FilterBar extends EventEmitter {
     private removeFilterCondition(group: FilterGroup, index: number): void {
         group.children.splice(index, 1);
         this.ignoreNextClickOutside();
-        this.updateFilterBuilderComplete();
+        // FIX: Remove redundant UI update - emitQueryChange will handle it
         this.emitQueryChange();
     }
 

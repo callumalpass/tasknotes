@@ -1,6 +1,6 @@
 import { TFile, ItemView, WorkspaceLeaf, EventRef, Setting } from 'obsidian';
 import { format, addDays, startOfWeek, endOfWeek, isSameDay } from 'date-fns';
-import { formatDateForStorage, createUTCDateFromLocalCalendarDate, getTodayLocal, isTodayUTC } from '../utils/dateUtils';
+import { formatDateForStorage, createUTCDateFromLocalCalendarDate, getTodayLocal, isTodayUTC, convertUTCToLocalCalendarDate } from '../utils/dateUtils';
 import TaskNotesPlugin from '../main';
 import { 
     AGENDA_VIEW_TYPE,
@@ -598,8 +598,10 @@ export class AgendaView extends ItemView {
             dayHeader.className = 'agenda-view__day-header';
             
             const headerText = dayHeader.createDiv({ cls: 'agenda-view__day-header-text' });
-            const dayName = format(item.date, 'EEEE');
-            const dateFormatted = format(item.date, 'MMMM d');
+            // FIX: Convert UTC-anchored date to local calendar date for proper display formatting
+            const displayDate = convertUTCToLocalCalendarDate(item.date);
+            const dayName = format(displayDate, 'EEEE');
+            const dateFormatted = format(displayDate, 'MMMM d');
             
             if (isTodayUTC(item.date)) {
                 headerText.createSpan({ cls: 'agenda-view__day-name agenda-view__day-name--today', text: 'Today' });
@@ -711,9 +713,11 @@ export class AgendaView extends ItemView {
         
         // Add date if not grouping by date
         if (!this.groupByDate && date) {
+            // FIX: Convert UTC-anchored date to local calendar date for proper display formatting
+            const displayDate = convertUTCToLocalCalendarDate(date);
             noteCard.createSpan({ 
                 cls: 'agenda-view__note-date', 
-                text: format(date, 'MMM d') 
+                text: format(displayDate, 'MMM d') 
             });
         }
         
@@ -822,10 +826,12 @@ export class AgendaView extends ItemView {
         const dates = this.getAgendaDates();
         if (dates.length === 0) return '';
         
-        const start = dates[0];
-        const end = dates[dates.length - 1];
+        // FIX: Convert UTC-anchored dates to local calendar dates for proper display formatting
+        const start = convertUTCToLocalCalendarDate(dates[0]);
+        const end = convertUTCToLocalCalendarDate(dates[dates.length - 1]);
         
-        if (isSameDay(start, end)) {
+        // Use original UTC dates for isSameDay comparison since it's UTC-aware
+        if (isSameDay(dates[0], dates[dates.length - 1])) {
             return format(start, 'EEEE, MMMM d, yyyy');
         } else {
             return `${format(start, 'MMM d')} - ${format(end, 'MMM d, yyyy')}`;

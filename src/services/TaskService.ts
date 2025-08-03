@@ -287,7 +287,8 @@ export class TaskService {
                     frontmatter[fieldName] = value;
                     
                     // Update completed date when marking as complete (non-recurring tasks only)
-                    if (!task.recurrence) {
+                    // FIX: Use freshTask instead of stale task to check recurrence
+                    if (!freshTask.recurrence) {
                         const completedDateField = this.plugin.fieldMapper.toUserField('completedDate');
                         if (this.plugin.statusManager.isCompletedStatus(value)) {
                             frontmatter[completedDateField] = getCurrentDateString();
