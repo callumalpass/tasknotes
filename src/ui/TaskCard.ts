@@ -83,6 +83,10 @@ export function createTaskCard(task: TaskInfo, plugin: TaskNotesPlugin, options:
     
     // Main container with BEM class structure
     const card = document.createElement('div');
+    
+    // Store task path for circular reference detection
+    (card as any)._taskPath = task.path;
+    
     const isActivelyTracked = plugin.getActiveTimeSession(task) !== null;
     const isCompleted = plugin.statusManager.isCompletedStatus(effectiveStatus);
     const isRecurring = !!task.recurrence;
@@ -1493,11 +1497,33 @@ async function toggleSubtasks(card: HTMLElement, task: TaskInfo, plugin: TaskNot
             // Sort subtasks
             const sortedSubtasks = plugin.projectSubtasksService.sortTasks(subtasks);
             
+            // Build parent chain by traversing up the DOM hierarchy
+            const buildParentChain = (element: HTMLElement): string[] => {
+                const chain: string[] = [];
+                let current = element.closest('.task-card');
+                
+                while (current) {
+                    const taskPath = (current as any)._taskPath;
+                    if (taskPath) {
+                        chain.unshift(taskPath); // Add to beginning
+                    }
+                    // Find next parent task card (skip current)
+                    current = current.parentElement?.closest('.task-card') as HTMLElement;
+                }
+                return chain;
+            };
+            
+            const parentChain = buildParentChain(card);
+            
             // Render each subtask (but prevent circular references)
             for (const subtask of sortedSubtasks) {
-                // Prevent circular reference where a task is its own subtask
-                if (subtask.path === task.path) {
-                    console.warn('Circular reference detected: task references itself as subtask:', task.path);
+                // Check for circular reference in the parent chain
+                if (parentChain.includes(subtask.path)) {
+                    console.warn('Circular reference detected in task chain:', {
+                        subtask: subtask.path,
+                        parentChain,
+                        cycle: [...parentChain, subtask.path]
+                    });
                     continue;
                 }
                 
