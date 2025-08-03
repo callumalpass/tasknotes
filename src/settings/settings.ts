@@ -608,7 +608,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 			if (this.plugin.settings.taskFilenameFormat === 'custom') {
 				new Setting(container)
 					.setName('Custom filename template')
-					.setDesc('Template for custom filenames. Available variables: {title}, {date}, {time}, {priority}, {status}, {timestamp}, {dueDate}, {scheduledDate}, etc.')
+					.setDesc('Template for custom filenames. Available variables: {title}, {titleLower}, {titleUpper}, {titleSnake}, {titleKebab}, {titleCamel}, {titlePascal}, {date}, {shortDate}, {time}, {time12}, {time24}, {timestamp}, {dateTime}, {year}, {month}, {monthName}, {monthNameShort}, {day}, {dayName}, {dayNameShort}, {hour}, {hour12}, {minute}, {second}, {ampm}, {week}, {quarter}, {unix}, {unixMs}, {zettel}, {nano}, {priority}, {priorityShort}, {status}, {statusShort}, {dueDate}, {scheduledDate}')
 					.addText(text => {
 						text.inputEl.setAttribute('aria-label', 'Custom filename template with variables');
 						return text

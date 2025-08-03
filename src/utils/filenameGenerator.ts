@@ -138,7 +138,41 @@ function generateCustomFilename(
             minute: format(date, 'mm'),
             second: format(date, 'ss'),
             dueDate: context.dueDate || '',
-            scheduledDate: context.scheduledDate || ''
+            scheduledDate: context.scheduledDate || '',
+            // New date format variations
+            shortDate: format(date, 'yyMMdd'),
+            monthName: format(date, 'MMMM'),
+            monthNameShort: format(date, 'MMM'),
+            dayName: format(date, 'EEEE'),
+            dayNameShort: format(date, 'EEE'),
+            week: format(date, 'ww'),
+            quarter: format(date, 'q'),
+            // Time variations
+            time12: format(date, 'hh:mm a'),
+            time24: format(date, 'HH:mm'),
+            hourPadded: format(date, 'HH'),
+            hour12: format(date, 'hh'),
+            ampm: format(date, 'a'),
+            // Unix timestamp
+            unix: Math.floor(date.getTime() / 1000).toString(),
+            unixMs: date.getTime().toString(),
+            // Priority and status variations
+            priorityShort: sanitizedPriority.substring(0, 1).toUpperCase(),
+            statusShort: sanitizedStatus.substring(0, 1).toUpperCase(),
+            // Title variations
+            titleLower: sanitizedTitle.toLowerCase(),
+            titleUpper: sanitizedTitle.toUpperCase(),
+            titleSnake: sanitizedTitle.toLowerCase().replace(/\s+/g, '_'),
+            titleKebab: sanitizedTitle.toLowerCase().replace(/\s+/g, '-'),
+            titleCamel: sanitizedTitle.replace(/(?:^\w|[A-Z]|\b\w)/g, (word, index) => 
+                index === 0 ? word.toLowerCase() : word.toUpperCase()
+            ).replace(/\s+/g, ''),
+            titlePascal: sanitizedTitle.replace(/(?:^\w|[A-Z]|\b\w)/g, word => 
+                word.toUpperCase()
+            ).replace(/\s+/g, ''),
+            // Date-based identifiers
+            zettel: generateZettelId(date),
+            nano: Date.now().toString() + Math.random().toString(36).substring(2, 7)
         };
         
         let result = template;
