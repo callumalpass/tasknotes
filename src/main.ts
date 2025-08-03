@@ -119,6 +119,7 @@ export default class TaskNotesPlugin extends Plugin {
 	filterService: FilterService;
 	viewStateManager: ViewStateManager;
 	projectSubtasksService: ProjectSubtasksService;
+	expandedProjectsService: import('./services/ExpandedProjectsService').ExpandedProjectsService;
 	
 	// Editor services  
 	taskLinkDetectionService?: import('./services/TaskLinkDetectionService').TaskLinkDetectionService;
@@ -191,6 +192,7 @@ export default class TaskNotesPlugin extends Plugin {
 		);
 		this.viewStateManager = new ViewStateManager(this.app, this);
 		this.projectSubtasksService = new ProjectSubtasksService(this);
+		this.expandedProjectsService = new (await import('./services/ExpandedProjectsService')).ExpandedProjectsService(this);
 		this.dragDropManager = new DragDropManager(this);
 		this.migrationService = new MigrationService(this.app);
 		this.statusBarService = new StatusBarService(this);

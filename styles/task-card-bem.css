@@ -7,7 +7,7 @@
 .tasknotes-plugin .task-card {
     /* Layout & Structure */
     display: flex;
-    align-items: flex-start;
+    flex-direction: column;
     gap: 0;
     position: relative;
     
@@ -57,6 +57,13 @@
 /* =================================================================
    TASKCARD ELEMENTS (BEM __element)
    ================================================================= */
+
+.tasknotes-plugin .task-card__main-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 0;
+    width: 100%;
+}
 
 .tasknotes-plugin .task-card__content {
     flex: 1;
@@ -274,6 +281,75 @@
 .tasknotes-plugin .task-card__project-indicator svg {
     width: 100%;
     height: 100%;
+}
+
+.tasknotes-plugin .task-card__chevron {
+    position: absolute;
+    top: 8px;
+    right: 62px; /* Position after project indicator */
+    width: 16px;
+    height: 16px;
+    color: var(--tn-text-muted);
+    opacity: 0.8;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-s);
+    padding: 2px;
+    cursor: pointer;
+    transition: all var(--tn-transition-fast);
+}
+
+.tasknotes-plugin .task-card__chevron:hover {
+    opacity: 1;
+    color: var(--interactive-accent);
+    background: var(--background-modifier-hover);
+    transform: scale(1.1);
+}
+
+.tasknotes-plugin .task-card__chevron svg {
+    width: 100%;
+    height: 100%;
+    transition: transform var(--tn-transition-fast);
+}
+
+.tasknotes-plugin .task-card__chevron--expanded svg {
+    transform: rotate(90deg);
+}
+
+.tasknotes-plugin .task-card__subtasks {
+    margin-left: 20px;
+    margin-top: 4px;
+    border-left: 2px solid var(--tn-border-color);
+    padding-left: 12px;
+}
+
+.tasknotes-plugin .task-card__subtasks .task-card {
+    margin-bottom: 2px;
+    padding: var(--tn-spacing-sm) var(--tn-spacing-md);
+}
+
+.tasknotes-plugin .task-card__subtasks .task-card:last-child {
+    margin-bottom: 0;
+}
+
+.tasknotes-plugin .task-card--subtask {
+    background: color-mix(in srgb, var(--tn-bg-secondary) 30%, transparent);
+    border-radius: var(--tn-radius-xs);
+}
+
+.tasknotes-plugin .task-card--subtask:hover {
+    background: color-mix(in srgb, var(--tn-interactive-hover) 70%, var(--tn-bg-secondary));
+}
+
+.tasknotes-plugin .task-card__subtasks-loading {
+    margin-left: 20px;
+    margin-top: 4px;
+    padding: var(--tn-spacing-sm);
+    color: var(--tn-text-muted);
+    font-size: var(--tn-font-size-sm);
+    font-style: italic;
 }
 
 .tasknotes-plugin .task-card__context-menu {

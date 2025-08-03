@@ -56,6 +56,7 @@ export interface TaskNotesSettings {
 	autoStopTimeTrackingNotification: boolean;
 	// Project subtasks widget settings
 	showProjectSubtasks: boolean;
+	showExpandableSubtasks: boolean;
 	// Overdue behavior settings
 	hideCompletedFromOverdue: boolean;
 	// ICS integration settings
@@ -303,6 +304,7 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	autoStopTimeTrackingNotification: false,
 	// Project subtasks widget defaults
 	showProjectSubtasks: true,
+	showExpandableSubtasks: true,
 	// Overdue behavior defaults
 	hideCompletedFromOverdue: true,
 	// ICS integration defaults
@@ -1535,6 +1537,22 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 						this.plugin.settings.showProjectSubtasks = value;
 						await this.plugin.saveSettings();
 						// Refresh all open editors to apply the change
+						this.plugin.notifyDataChanged();
+					});
+			});
+
+		// Expandable subtasks in task cards
+		new Setting(container)
+			.setName('Show expandable subtasks in task cards')
+			.setDesc('Add a chevron icon to project task cards that allows expanding to view subtasks inline')
+			.addToggle(toggle => {
+				toggle.toggleEl.setAttribute('aria-label', 'Show expandable subtasks in task cards');
+				return toggle
+					.setValue(this.plugin.settings.showExpandableSubtasks)
+					.onChange(async (value) => {
+						this.plugin.settings.showExpandableSubtasks = value;
+						await this.plugin.saveSettings();
+						// Refresh task views to apply the change
 						this.plugin.notifyDataChanged();
 					});
 			});
