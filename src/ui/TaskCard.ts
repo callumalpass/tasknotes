@@ -318,7 +318,7 @@ export function createTaskCard(task: TaskInfo, plugin: TaskNotesPlugin, options:
                 chevronPlaceholder.className = 'task-card__chevron';
                 chevronPlaceholder.removeAttribute('style');
                 
-                const isExpanded = plugin.expandedProjectsService.isExpanded(task.path);
+                const isExpanded = plugin.expandedProjectsService?.isExpanded(task.path) || false;
                 if (isExpanded) {
                     chevronPlaceholder.classList.add('task-card__chevron--expanded');
                 }
@@ -333,6 +333,12 @@ export function createTaskCard(task: TaskInfo, plugin: TaskNotesPlugin, options:
                 chevronPlaceholder.addEventListener('click', async (e) => {
                     e.stopPropagation(); // Don't trigger card click
                     try {
+                        if (!plugin.expandedProjectsService) {
+                            console.error('ExpandedProjectsService not initialized');
+                            new Notice('Service not available. Please try reloading the plugin.');
+                            return;
+                        }
+                        
                         const newExpanded = plugin.expandedProjectsService.toggle(task.path);
                         chevronPlaceholder.classList.toggle('task-card__chevron--expanded', newExpanded);
                         chevronPlaceholder.setAttribute('aria-label', newExpanded ? 'Collapse subtasks' : 'Expand subtasks');
@@ -981,7 +987,7 @@ export function updateTaskCard(element: HTMLElement, task: TaskInfo, plugin: Tas
                 }
             });
             
-            const isExpanded = plugin.expandedProjectsService.isExpanded(task.path);
+            const isExpanded = plugin.expandedProjectsService?.isExpanded(task.path) || false;
             if (isExpanded) {
                 chevron.classList.add('task-card__chevron--expanded');
                 chevron.setAttribute('aria-label', 'Collapse subtasks');
@@ -996,6 +1002,12 @@ export function updateTaskCard(element: HTMLElement, task: TaskInfo, plugin: Tas
             chevron.addEventListener('click', async (e) => {
                 e.stopPropagation();
                 try {
+                    if (!plugin.expandedProjectsService) {
+                        console.error('ExpandedProjectsService not initialized in update');
+                        new Notice('Service not available. Please try reloading the plugin.');
+                        return;
+                    }
+                    
                     const newExpanded = plugin.expandedProjectsService.toggle(task.path);
                     chevron.classList.toggle('task-card__chevron--expanded', newExpanded);
                     chevron.setAttribute('aria-label', newExpanded ? 'Collapse subtasks' : 'Expand subtasks');

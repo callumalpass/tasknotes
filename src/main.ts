@@ -63,6 +63,7 @@ import { MigrationService } from './services/MigrationService';
 import { showMigrationPrompt } from './modals/MigrationModal';
 import { StatusBarService } from './services/StatusBarService';
 import { ProjectSubtasksService } from './services/ProjectSubtasksService';
+import { ExpandedProjectsService } from './services/ExpandedProjectsService';
 
 // Type definitions for better type safety
 interface TaskUpdateEventData {
@@ -119,7 +120,7 @@ export default class TaskNotesPlugin extends Plugin {
 	filterService: FilterService;
 	viewStateManager: ViewStateManager;
 	projectSubtasksService: ProjectSubtasksService;
-	expandedProjectsService: import('./services/ExpandedProjectsService').ExpandedProjectsService;
+	expandedProjectsService: ExpandedProjectsService;
 	
 	// Editor services  
 	taskLinkDetectionService?: import('./services/TaskLinkDetectionService').TaskLinkDetectionService;
@@ -192,7 +193,7 @@ export default class TaskNotesPlugin extends Plugin {
 		);
 		this.viewStateManager = new ViewStateManager(this.app, this);
 		this.projectSubtasksService = new ProjectSubtasksService(this);
-		this.expandedProjectsService = new (await import('./services/ExpandedProjectsService')).ExpandedProjectsService(this);
+		this.expandedProjectsService = new ExpandedProjectsService(this);
 		this.dragDropManager = new DragDropManager(this);
 		this.migrationService = new MigrationService(this.app);
 		this.statusBarService = new StatusBarService(this);
