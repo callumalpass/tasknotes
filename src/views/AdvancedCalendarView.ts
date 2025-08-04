@@ -493,16 +493,19 @@ export class AdvancedCalendarView extends ItemView {
             
             if (options?.date) {
                 if (options.allDay) {
-                    scheduledDate = formatDateForStorage(options.date);
+                    // Use format() to extract local date components for consistency
+                    scheduledDate = format(options.date, 'yyyy-MM-dd');
                 } else if (options.time) {
-                    scheduledDate = formatDateForStorage(options.date) + 'T' + options.time;
+                    // Use format() for date part to maintain local timezone consistency
+                    scheduledDate = format(options.date, 'yyyy-MM-dd') + 'T' + options.time;
                 } else {
                     // Default to 9 AM if no time specified
-                    scheduledDate = formatDateForStorage(options.date) + 'T09:00';
+                    scheduledDate = format(options.date, 'yyyy-MM-dd') + 'T09:00';
                 }
             } else {
                 // Default to today at 9 AM
-                scheduledDate = formatDateForStorage(getTodayLocal()) + 'T09:00';
+                const today = getTodayLocal();
+                scheduledDate = format(today, 'yyyy-MM-dd') + 'T09:00';
             }
             
             await this.plugin.taskService.updateProperty(task, 'scheduled', scheduledDate);
@@ -1195,8 +1198,8 @@ export class AdvancedCalendarView extends ItemView {
     private handleTaskCreation(start: Date, end: Date, allDay: boolean) {
         // Pre-populate with selected date/time
         const scheduledDate = allDay 
-            ? formatDateForStorage(start)
-            : formatDateForStorage(start) + 'T' + format(start, 'HH:mm');
+            ? format(start, 'yyyy-MM-dd')
+            : format(start, "yyyy-MM-dd'T'HH:mm");
             
         const durationMinutes = Math.round((end.getTime() - start.getTime()) / (1000 * 60));
         
@@ -1236,7 +1239,7 @@ export class AdvancedCalendarView extends ItemView {
             return;
         }
         
-        const date = formatDateForStorage(start);
+        const date = format(start, 'yyyy-MM-dd');
         const startTime = format(start, 'HH:mm');
         const endTime = format(end, 'HH:mm');
         
@@ -1416,9 +1419,11 @@ export class AdvancedCalendarView extends ItemView {
                 // Dragging Next Scheduled Occurrence: Updates only task.scheduled (manual reschedule)
                 let newDateString: string;
                 if (allDay) {
-                    newDateString = formatDateForStorage(newStart);
+                    // Fix: Use format() to extract local date components for timezone consistency
+                    newDateString = format(newStart, 'yyyy-MM-dd');
                 } else {
-                    newDateString = formatDateForStorage(newStart) + 'T' + format(newStart, 'HH:mm');
+                    // Fix: Use format() for the entire date-time string to maintain local timezone consistency
+                    newDateString = format(newStart, "yyyy-MM-dd'T'HH:mm");
                 }
                 
                 // Update the scheduled field directly (manual reschedule of next occurrence)
@@ -1454,9 +1459,12 @@ export class AdvancedCalendarView extends ItemView {
                 // Handle non-recurring events normally
                 let newDateString: string;
                 if (allDay) {
-                    newDateString = formatDateForStorage(newStart);
+                    // Fix: Use format() to extract local date components instead of formatDateForStorage()
+                    // which uses UTC methods and causes timezone shift for users ahead of UTC
+                    newDateString = format(newStart, 'yyyy-MM-dd');
                 } else {
-                    newDateString = formatDateForStorage(newStart) + 'T' + format(newStart, 'HH:mm');
+                    // Fix: Use format() for the entire date-time string to maintain local timezone consistency
+                    newDateString = format(newStart, "yyyy-MM-dd'T'HH:mm");
                 }
                 
                 // Update the appropriate property
@@ -1575,7 +1583,7 @@ export class AdvancedCalendarView extends ItemView {
             const newEnd = dropInfo.event.end;
             
             // Calculate new date and times
-            const newDate = formatDateForStorage(newStart);
+            const newDate = format(newStart, 'yyyy-MM-dd');
             const newStartTime = format(newStart, 'HH:mm');
             const newEndTime = format(newEnd, 'HH:mm');
             
@@ -1723,11 +1731,11 @@ export class AdvancedCalendarView extends ItemView {
             // Format the date for task scheduling
             let scheduledDate: string;
             if (dropInfo.allDay) {
-                // All-day event - just the date
-                scheduledDate = formatDateForStorage(dropDate);
+                // All-day event - use format() to extract local date components
+                scheduledDate = format(dropDate, 'yyyy-MM-dd');
             } else {
-                // Specific time - include time
-                scheduledDate = formatDateForStorage(dropDate) + 'T' + format(dropDate, 'HH:mm');
+                // Specific time - use format() for the entire date-time string
+                scheduledDate = format(dropDate, "yyyy-MM-dd'T'HH:mm");
             }
             
             // Update the task's scheduled date
@@ -1944,8 +1952,8 @@ export class AdvancedCalendarView extends ItemView {
                         // For regular events, convert FullCalendar date to UTC anchor
                         const eventDate = arg.event.start;
                         if (eventDate) {
-                            // Convert FullCalendar Date to UTC-anchored date string then back to Date
-                            const dateStr = formatDateForStorage(eventDate);
+                            // Convert FullCalendar Date to date string preserving local date
+                            const dateStr = format(eventDate, 'yyyy-MM-dd');
                             targetDate = parseDateToUTC(dateStr);
                         } else {
                             targetDate = getTodayLocal();
