@@ -3,7 +3,7 @@ import TaskNotesPlugin from '../main';
 import { TaskInfo, TimeEntry, EVENT_TASK_UPDATED, EVENT_TASK_DELETED, TaskCreationData } from '../types';
 import { getCurrentTimestamp, getCurrentDateString, formatDateForStorage } from '../utils/dateUtils';
 import { generateTaskFilename, generateUniqueFilename, FilenameContext } from '../utils/filenameGenerator';
-import { ensureFolderExists, updateToNextScheduledOccurrence } from '../utils/helpers';
+import { ensureFolderExists, updateToNextScheduledOccurrence, addDTSTARTToRecurrenceRule } from '../utils/helpers';
 import { processTemplate, mergeTemplateFrontmatter, TemplateData } from '../utils/templateProcessor';
 
 export class TaskService {
@@ -760,6 +760,14 @@ export class TaskService {
             updatedTask.complete_instances = completeInstances.filter(d => d !== dateStr);
         }
 
+        // Add DTSTART to recurrence rule if it's missing (only when completing)
+        if (newComplete && typeof updatedTask.recurrence === 'string' && !updatedTask.recurrence.includes('DTSTART:')) {
+            const updatedRecurrence = addDTSTARTToRecurrenceRule(updatedTask);
+            if (updatedRecurrence) {
+                updatedTask.recurrence = updatedRecurrence;
+            }
+        }
+
         // Update scheduled date to next uncompleted occurrence
         const nextScheduledDate = updateToNextScheduledOccurrence(updatedTask);
         if (nextScheduledDate) {
@@ -771,6 +779,7 @@ export class TaskService {
             const completeInstancesField = this.plugin.fieldMapper.toUserField('completeInstances');
             const dateModifiedField = this.plugin.fieldMapper.toUserField('dateModified');
             const scheduledField = this.plugin.fieldMapper.toUserField('scheduled');
+            const recurrenceField = this.plugin.fieldMapper.toUserField('recurrence');
             
             // Ensure complete_instances array exists
             if (!frontmatter[completeInstancesField]) {
@@ -787,6 +796,11 @@ export class TaskService {
             } else {
                 // Remove date from completed instances
                 frontmatter[completeInstancesField] = completeDates.filter(d => d !== dateStr);
+            }
+            
+            // Update recurrence field if it was updated with DTSTART
+            if (updatedTask.recurrence !== freshTask.recurrence) {
+                frontmatter[recurrenceField] = updatedTask.recurrence;
             }
             
             // Update scheduled date if it changed
