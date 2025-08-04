@@ -51,12 +51,14 @@ Recurring tasks are displayed with distinct visual styling:
 The calendar provides different behaviors depending on which type of recurring event you drag:
 
 **Dragging Next Scheduled Occurrence (Solid Border)**:
+
 - Updates only the `scheduled` field in the task
 - Reschedules just that specific occurrence to the new date/time
 - Leaves the recurrence pattern unchanged
 - Notice: "Rescheduled next occurrence. This does not change the recurrence pattern."
 
 **Dragging Pattern Instances (Dashed Border)**:
+
 - Updates the DTSTART time in the recurrence rule
 - Changes when all future pattern instances appear
 - Does not affect the independently scheduled next occurrence
@@ -65,6 +67,7 @@ The calendar provides different behaviors depending on which type of recurring e
 #### Flexible Scheduling
 
 The next scheduled occurrence can appear on any date, even:
+
 - Before the DTSTART date
 - On days that don't match the recurring pattern (e.g., Tuesday for a weekly Monday pattern)
 - At different times than the pattern instances
