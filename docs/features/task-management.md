@@ -90,34 +90,199 @@ TaskNotes also supports **Templates** for both the YAML frontmatter and the body
 
 ## Recurring Tasks
 
-TaskNotes supports recurring tasks using the RFC 5545 RRule standard, which allows for complex recurrence patterns. Recurring tasks can repeat on schedules like daily, weekly, monthly, or custom patterns such as "every third Tuesday" or "last Friday of each month."
+TaskNotes provides sophisticated recurring task management using the RFC 5545 RRule standard with enhanced DTSTART support and dynamic scheduled dates. The system separates recurring pattern behavior from individual occurrence scheduling, giving you complete control over both aspects.
+
+### Core Concepts
+
+Recurring tasks in TaskNotes operate on two independent levels:
+
+1. **Recurring Pattern**: Defines when pattern instances appear (controlled by DTSTART in the recurrence rule)
+2. **Next Occurrence**: The specific date/time when you plan to work on the next instance (controlled by the scheduled field)
+
+This separation allows for flexible scheduling where you can reschedule individual occurrences without affecting the overall pattern.
 
 ### Setting Up Recurring Tasks
 
-Recurring tasks require two key components:
+#### Creating Recurrence Patterns
 
-1. **Scheduled Date**: This serves as the start date (anchor date) for the recurrence pattern. The scheduled date determines when the recurring series begins.
-2. **Recurrence Pattern**: An RRule string that defines how the task repeats.
+You can create recurring tasks through:
 
-If no scheduled date is provided, the task's creation date is used as the fallback start date.
+1. **Recurrence Context Menu**: Right-click the recurrence field in any task modal to access preset patterns or custom recurrence options
+2. **Preset Options**: Quick selections like "Daily," "Weekly on [current day]," "Monthly on the [current date]"
+3. **Custom Recurrence Modal**: Advanced editor with date picker, time picker, and full RRule configuration
 
-### Recurrence Patterns
+#### Required Components
 
-TaskNotes uses the RRule standard format for defining recurrence patterns. Common examples include:
+Recurring tasks require:
+- **Recurrence Rule**: An RRule string with DTSTART defining the pattern
+- **Scheduled Date**: The next occurrence date (can be independent from the pattern)
 
-- `FREQ=DAILY` - Repeats every day
-- `FREQ=WEEKLY;BYDAY=MO,WE,FR` - Repeats on Monday, Wednesday, and Friday
-- `FREQ=MONTHLY;BYMONTHDAY=15` - Repeats on the 15th of each month
-- `FREQ=MONTHLY;BYDAY=-1FR` - Repeats on the last Friday of each month
+#### DTSTART Integration
+
+All recurrence rules now include DTSTART (start date and optionally time):
+- **Date-only**: `DTSTART:20250804;FREQ=DAILY` (pattern instances appear all-day)
+- **Date and time**: `DTSTART:20250804T090000Z;FREQ=DAILY` (pattern instances appear at 9:00 AM)
+
+### Recurrence Pattern Examples
+
+TaskNotes supports the full RFC 5545 RRule standard with DTSTART:
+
+```
+DTSTART:20250804T090000Z;FREQ=DAILY
+→ Daily at 9:00 AM, starting August 4, 2025
+
+DTSTART:20250804T140000Z;FREQ=WEEKLY;BYDAY=MO,WE,FR
+→ Monday, Wednesday, Friday at 2:00 PM, starting August 4, 2025
+
+DTSTART:20250815;FREQ=MONTHLY;BYMONTHDAY=15
+→ 15th of each month (all-day), starting August 15, 2025
+
+DTSTART:20250801T100000Z;FREQ=MONTHLY;BYDAY=-1FR
+→ Last Friday of each month at 10:00 AM, starting August 1, 2025
+```
+
+### Visual Hierarchy in Calendar Views
+
+The Advanced Calendar View displays recurring tasks with distinct visual styling:
+
+#### Next Scheduled Occurrence
+- **Solid border** with full opacity
+- Shows at the date/time specified in the `scheduled` field
+- Can appear on any date, even outside the recurring pattern
+- Dragging updates only the `scheduled` field (manual reschedule)
+
+#### Pattern Instances  
+- **Dashed border** with reduced opacity (70%)
+- Shows preview of when future recurring instances will appear
+- Generated from the DTSTART date/time and recurrence rule
+- Dragging updates the DTSTART time (changes all future pattern instances)
+
+### Dynamic Scheduled Dates
+
+The `scheduled` field automatically updates to show the next uncompleted occurrence:
+
+1. **When creating**: Initially set to the DTSTART date
+2. **When completing**: Automatically advances to the next uncompleted occurrence
+3. **When rule changes**: Recalculates based on the new pattern
+4. **Manual reschedule**: Can be set to any date independently
+
+#### Example Behavior
+
+```yaml
+# Initial state
+recurrence: "DTSTART:20250804T090000Z;FREQ=DAILY"
+scheduled: "2025-08-04T09:00"
+complete_instances: []
+
+# After completing Aug 4th
+recurrence: "DTSTART:20250804T090000Z;FREQ=DAILY"  # unchanged
+scheduled: "2025-08-05T09:00"  # auto-updated to next day
+complete_instances: ["2025-08-04"]
+
+# After manually rescheduling next occurrence
+recurrence: "DTSTART:20250804T090000Z;FREQ=DAILY"  # unchanged
+scheduled: "2025-08-05T14:30"  # manually set to 2:30 PM
+complete_instances: ["2025-08-04"]
+
+# Calendar view shows:
+# - Aug 5 at 2:30 PM: Next occurrence (solid border)
+# - Aug 6+ at 9:00 AM: Pattern instances (dashed border)
+```
+
+### Drag and Drop Behavior
+
+#### Dragging Next Scheduled Occurrence (Solid Border)
+- **Updates**: Only the `scheduled` field
+- **Effect**: Reschedules just that specific occurrence  
+- **Pattern**: Remains unchanged
+- **Use case**: "I need to do today's workout at 2 PM instead of 9 AM"
+
+#### Dragging Pattern Instances (Dashed Border)  
+- **Updates**: DTSTART time in the recurrence rule
+- **Effect**: Changes when all future pattern instances appear
+- **Next occurrence**: Remains independently scheduled
+- **Use case**: "I want to change my daily workout from 9 AM to 2 PM going forward"
 
 ### Completion Tracking
 
-Each instance of a recurring task can be completed independently. When you complete a recurring task on a specific date, that completion is recorded in the `complete_instances` array as a YYYY-MM-DD date string. This allows you to track which instances have been completed while keeping the recurrence pattern intact.
+#### Individual Instance Completion
+Each occurrence can be completed independently through:
+- Task cards (completes for current date)
+- Calendar context menu (completes for specific date)
+- Task edit modal completion calendar
 
-### Date Calculation
+Completed instances are stored in the `complete_instances` array:
+```yaml
+complete_instances: ["2025-08-04", "2025-08-06", "2025-08-08"]
+```
 
-Recurring task instances are generated using UTC dates to prevent timezone-related display issues. The system calculates which dates should show the recurring task based on the scheduled date and recurrence pattern, ensuring consistent behavior across different time zones.
+#### Automatic Scheduled Date Updates
+When completing occurrences:
+- The `scheduled` field automatically updates to the next uncompleted occurrence
+- Uses UTC anchor principle for consistent timezone handling
+- Skips already completed dates when calculating the next occurrence
 
-### Legacy Format Support
+### Flexible Scheduling
 
-TaskNotes maintains backward compatibility with older recurrence formats. The system automatically converts legacy recurrence data to the modern RRule format when needed, ensuring your existing recurring tasks continue to work correctly.
+#### Next Occurrence Independence
+The next scheduled occurrence can be set to any date, including:
+- **Before DTSTART**: Schedule the next occurrence before the pattern officially begins
+- **Outside pattern**: Schedule Tuesday's occurrence for a weekly Monday pattern  
+- **Different time**: Next occurrence at 2 PM while pattern instances remain at 9 AM
+- **Far future**: Schedule weeks ahead while pattern continues normally
+
+#### Examples of Flexible Scheduling
+
+**Example 1: Early Start**
+```yaml
+recurrence: "DTSTART:20250810T090000Z;FREQ=WEEKLY;BYDAY=MO"  # Mondays at 9 AM
+scheduled: "2025-08-07T14:00"  # Next occurrence on preceding Thursday
+```
+Shows next occurrence Thursday 2 PM, pattern instances on Mondays 9 AM.
+
+**Example 2: Off-Pattern Day**
+```yaml
+recurrence: "DTSTART:20250804T090000Z;FREQ=WEEKLY;BYDAY=MO"  # Mondays at 9 AM  
+scheduled: "2025-08-06T15:30"  # Next occurrence on Wednesday
+```
+Shows next occurrence Wednesday 3:30 PM, pattern instances on Mondays 9 AM.
+
+### Completion Calendar
+
+The task edit modal includes a completion calendar for recurring tasks:
+- Click any date to toggle completion status for that specific occurrence
+- Changing completions automatically updates the scheduled date to the next uncompleted occurrence
+- Visual indicators show which dates are part of the recurring pattern vs completed
+
+### Timezone Handling
+
+All recurring task logic uses the UTC Anchor principle:
+- Pattern generation uses UTC dates for consistency
+- DTSTART dates are interpreted as UTC anchors
+- Display adapts to user's local timezone
+- Prevents off-by-one date errors across timezone boundaries
+
+### Backward Compatibility
+
+TaskNotes maintains full backward compatibility:
+- **Legacy RRule strings** without DTSTART continue to work using scheduled date as anchor
+- **Legacy recurrence objects** are automatically converted to RRule format
+- **Existing tasks** gain new functionality without requiring migration
+- **Mixed formats** are handled transparently
+
+### Advanced Configuration
+
+#### Custom Recurrence Modal
+Access advanced options through the custom recurrence modal:
+- **Start date picker**: Set the DTSTART date
+- **Start time picker**: Set the DTSTART time (optional)
+- **Frequency options**: Daily, weekly, monthly, yearly
+- **Advanced patterns**: Complex RRule configurations
+- **End conditions**: Until date, count limits, or never-ending
+
+#### Time Independence
+Pattern time (DTSTART) and next occurrence time (scheduled) are completely independent:
+- Pattern instances can appear at 9 AM while next occurrence is at 2 PM
+- Dragging pattern instances changes the pattern time for all future instances
+- Dragging next occurrence only affects that specific instance
+- Users have complete control over both timing aspects
