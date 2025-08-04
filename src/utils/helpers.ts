@@ -4,7 +4,7 @@ import { RRule } from 'rrule';
 import { TimeInfo, TaskInfo, TimeEntry, TimeBlock, DailyNoteFrontmatter } from '../types';
 import { FieldMapper } from '../services/FieldMapper';
 import { DEFAULT_FIELD_MAPPING } from '../settings/settings';
-import { isBeforeDateSafe, getTodayString, parseDateToLocal, parseDateToUTC, createUTCDateForRRule, formatDateForStorage, getTodayLocal, formatDateAsUTCString } from './dateUtils';
+import { isBeforeDateSafe, getTodayString, parseDateToLocal, parseDateToUTC, createUTCDateForRRule, formatDateForStorage, getTodayLocal, formatDateAsUTCString, hasTimeComponent } from './dateUtils';
 // import { RegexOptimizer } from './RegexOptimizer'; // Temporarily disabled
 
 /**
@@ -1172,5 +1172,120 @@ export function filterEmptyProjects(projects: string[]): string[] {
 		
 		return true;
 	});
+}
+
+/**
+ * Adds DTSTART to a recurrence rule that doesn't have one, using the same fallback logic
+ * as the recurrence interpretation (scheduled date first, then dateCreated)
+ * Follows the UTC Anchor principle for consistent date handling
+ */
+export function addDTSTARTToRecurrenceRule(task: TaskInfo): string | null {
+	if (!task.recurrence || typeof task.recurrence !== 'string') {
+		return null;
+	}
+	
+	// Check if DTSTART is already present
+	if (task.recurrence.includes('DTSTART:')) {
+		return task.recurrence; // Already has DTSTART, return as-is
+	}
+	
+	// Determine the source date string using the same fallback logic as isDueByRRule
+	let sourceDateString: string;
+	if (task.scheduled) {
+		sourceDateString = task.scheduled;
+	} else if (task.dateCreated) {
+		sourceDateString = task.dateCreated;
+	} else {
+		// No anchor date available, cannot add DTSTART
+		return null;
+	}
+	
+	try {
+		// Use the plugin's established date handling approach
+		let dtstartValue: string;
+		
+		if (hasTimeComponent(sourceDateString)) {
+			// Has time component - parse as local time for accuracy, then format for DTSTART
+			const dateTime = parseDateToLocal(sourceDateString);
+			const year = dateTime.getFullYear();
+			const month = String(dateTime.getMonth() + 1).padStart(2, '0');
+			const day = String(dateTime.getDate()).padStart(2, '0');
+			const hours = String(dateTime.getHours()).padStart(2, '0');
+			const minutes = String(dateTime.getMinutes()).padStart(2, '0');
+			const seconds = String(dateTime.getSeconds()).padStart(2, '0');
+			dtstartValue = `${year}${month}${day}T${hours}${minutes}${seconds}Z`;
+		} else {
+			// Date-only - use UTC anchor principle for consistency
+			const date = parseDateToUTC(sourceDateString);
+			const year = date.getUTCFullYear();
+			const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+			const day = String(date.getUTCDate()).padStart(2, '0');
+			dtstartValue = `${year}${month}${day}`;
+		}
+		
+		// Add DTSTART at the beginning of the recurrence rule
+		return `DTSTART:${dtstartValue};${task.recurrence}`;
+	} catch (error) {
+		console.error('Error parsing date for DTSTART:', error, { sourceDateString });
+		return null; // Return null on parsing errors
+	}
+}
+
+/**
+ * Adds DTSTART to a recurrence rule with a specific time from user drag interaction
+ * Uses fallback logic for the date (scheduled first, then dateCreated) but applies the user-dragged time
+ * Follows the UTC Anchor principle for consistent date handling
+ */
+export function addDTSTARTToRecurrenceRuleWithDraggedTime(task: TaskInfo, draggedStart: Date, allDay: boolean): string | null {
+	if (!task.recurrence || typeof task.recurrence !== 'string') {
+		return null;
+	}
+	
+	// Check if DTSTART is already present
+	if (task.recurrence.includes('DTSTART:')) {
+		return task.recurrence; // Already has DTSTART, return as-is
+	}
+	
+	// Determine the source date string using the same fallback logic as isDueByRRule
+	let sourceDateString: string;
+	if (task.scheduled) {
+		sourceDateString = task.scheduled;
+	} else if (task.dateCreated) {
+		sourceDateString = task.dateCreated;
+	} else {
+		// No anchor date available, cannot add DTSTART
+		return null;
+	}
+	
+	try {
+		// Use the plugin's established date handling approach
+		let dtstartValue: string;
+		
+		if (allDay) {
+			// All-day event - use date-only format from the source date (not draggedStart)
+			const date = parseDateToUTC(sourceDateString);
+			const year = date.getUTCFullYear();
+			const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+			const day = String(date.getUTCDate()).padStart(2, '0');
+			dtstartValue = `${year}${month}${day}`;
+		} else {
+			// Timed event - use date from source, time from draggedStart
+			const sourceDate = parseDateToUTC(sourceDateString);
+			const year = sourceDate.getUTCFullYear();
+			const month = String(sourceDate.getUTCMonth() + 1).padStart(2, '0');
+			const day = String(sourceDate.getUTCDate()).padStart(2, '0');
+			
+			// Use the time from the dragged position
+			const hours = String(draggedStart.getHours()).padStart(2, '0');
+			const minutes = String(draggedStart.getMinutes()).padStart(2, '0');
+			dtstartValue = `${year}${month}${day}T${hours}${minutes}00Z`;
+		}
+		
+		// Add DTSTART at the beginning of the recurrence rule
+		return `DTSTART:${dtstartValue};${task.recurrence}`;
+	} catch (error) {
+		console.error('Error parsing date for DTSTART with dragged time:', error, { sourceDateString, draggedStart, allDay });
+		return null; // Return null on parsing errors
+	}
 }
 
