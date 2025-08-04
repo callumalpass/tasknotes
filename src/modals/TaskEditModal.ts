@@ -5,7 +5,7 @@ import { TaskInfo } from '../types';
 import { getCurrentTimestamp, formatDateForStorage, generateUTCCalendarDates, getUTCStartOfWeek, getUTCEndOfWeek, getUTCStartOfMonth, getUTCEndOfMonth, getTodayLocal, parseDateAsLocal, createUTCDateFromLocalCalendarDate } from '../utils/dateUtils';
 import { formatTimestampForDisplay } from '../utils/dateUtils';
 import { format } from 'date-fns';
-import { generateRecurringInstances, extractTaskInfo, calculateTotalTimeSpent, formatTime } from '../utils/helpers';
+import { generateRecurringInstances, extractTaskInfo, calculateTotalTimeSpent, formatTime, updateToNextScheduledOccurrence } from '../utils/helpers';
 
 export interface TaskEditOptions {
     task: TaskInfo;
@@ -477,6 +477,15 @@ export class TaskEditModal extends TaskModal {
                 }
             });
             changes.complete_instances = Array.from(currentCompleted);
+            
+            // If task has recurrence, update scheduled date to next uncompleted occurrence
+            if (this.task.recurrence) {
+                const tempTask: TaskInfo = { ...this.task, ...changes };
+                const nextScheduledDate = updateToNextScheduledOccurrence(tempTask);
+                if (nextScheduledDate) {
+                    changes.scheduled = nextScheduledDate;
+                }
+            }
         }
 
         // Always update modified timestamp if there are changes

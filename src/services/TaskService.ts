@@ -3,7 +3,7 @@ import TaskNotesPlugin from '../main';
 import { TaskInfo, TimeEntry, EVENT_TASK_UPDATED, EVENT_TASK_DELETED, TaskCreationData } from '../types';
 import { getCurrentTimestamp, getCurrentDateString, formatDateForStorage } from '../utils/dateUtils';
 import { generateTaskFilename, generateUniqueFilename, FilenameContext } from '../utils/filenameGenerator';
-import { ensureFolderExists } from '../utils/helpers';
+import { ensureFolderExists, updateToNextScheduledOccurrence } from '../utils/helpers';
 import { processTemplate, mergeTemplateFrontmatter, TemplateData } from '../utils/templateProcessor';
 
 export class TaskService {
@@ -569,11 +569,23 @@ export class TaskService {
                 newPath = parentPath ? `${parentPath}/${newFilename}.md` : `${newFilename}.md`;
             }
 
+            // Check if recurrence rule changed and update scheduled date if needed
+            let recurrenceUpdates: Partial<TaskInfo> = {};
+            if (updates.recurrence !== undefined && updates.recurrence !== originalTask.recurrence) {
+                // Recurrence rule changed, calculate new scheduled date
+                const tempTask: TaskInfo = { ...originalTask, ...updates };
+                const nextScheduledDate = updateToNextScheduledOccurrence(tempTask);
+                if (nextScheduledDate) {
+                    recurrenceUpdates.scheduled = nextScheduledDate;
+                }
+            }
+
             // Step 1: Persist frontmatter changes to the file at its original path
             await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
                 const completeTaskData: Partial<TaskInfo> = {
                     ...originalTask,
                     ...updates,
+                    ...recurrenceUpdates,
                     dateModified: getCurrentTimestamp()
                 };
 
@@ -616,6 +628,7 @@ export class TaskService {
             const updatedTask: TaskInfo = {
                 ...originalTask,
                 ...updates,
+                ...recurrenceUpdates,
                 path: newPath,
                 dateModified: getCurrentTimestamp()
             };
@@ -746,11 +759,18 @@ export class TaskService {
             // Remove date from completed instances
             updatedTask.complete_instances = completeInstances.filter(d => d !== dateStr);
         }
+
+        // Update scheduled date to next uncompleted occurrence
+        const nextScheduledDate = updateToNextScheduledOccurrence(updatedTask);
+        if (nextScheduledDate) {
+            updatedTask.scheduled = nextScheduledDate;
+        }
         
         // Step 2: Persist to file
         await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
             const completeInstancesField = this.plugin.fieldMapper.toUserField('completeInstances');
             const dateModifiedField = this.plugin.fieldMapper.toUserField('dateModified');
+            const scheduledField = this.plugin.fieldMapper.toUserField('scheduled');
             
             // Ensure complete_instances array exists
             if (!frontmatter[completeInstancesField]) {
@@ -767,6 +787,11 @@ export class TaskService {
             } else {
                 // Remove date from completed instances
                 frontmatter[completeInstancesField] = completeDates.filter(d => d !== dateStr);
+            }
+            
+            // Update scheduled date if it changed
+            if (updatedTask.scheduled) {
+                frontmatter[scheduledField] = updatedTask.scheduled;
             }
             
             frontmatter[dateModifiedField] = updatedTask.dateModified;

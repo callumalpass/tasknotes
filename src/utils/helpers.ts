@@ -336,21 +336,39 @@ export function isDueByRRule(task: TaskInfo, date: Date): boolean {
 	// If recurrence is a string (rrule format), process it
 	if (typeof task.recurrence === 'string') {
 		try {
-			// Determine the anchor date (dtstart) for the recurrence
-			// Use UTC date to avoid timezone issues with day-of-week calculations
+			// Parse DTSTART from RRULE string if present, otherwise use fallback logic
 			let dtstart: Date;
-			if (task.scheduled) {
-				dtstart = createUTCDateForRRule(task.scheduled);
-			} else if (task.dateCreated) {
-				dtstart = createUTCDateForRRule(task.dateCreated);
+			const dtstartMatch = task.recurrence.match(/DTSTART:(\d{8}(?:T\d{6}Z?)?)/);
+			
+			if (dtstartMatch) {
+				// Extract DTSTART from RRULE string (supports both YYYYMMDD and YYYYMMDDTHHMMSSZ formats)
+				const dtstartStr = dtstartMatch[1];
+				if (dtstartStr.length === 8) {
+					// YYYYMMDD format
+					const year = parseInt(dtstartStr.slice(0, 4));
+					const month = parseInt(dtstartStr.slice(4, 6)) - 1; // JavaScript months are 0-indexed
+					const day = parseInt(dtstartStr.slice(6, 8));
+					dtstart = new Date(Date.UTC(year, month, day, 0, 0, 0, 0));
+				} else {
+					// YYYYMMDDTHHMMSSZ format
+					dtstart = createUTCDateForRRule(dtstartStr);
+				}
 			} else {
-				// If no anchor date available, task cannot generate recurring instances
-				return false;
+				// Fallback to original logic for backward compatibility
+				if (task.scheduled) {
+					dtstart = createUTCDateForRRule(task.scheduled);
+				} else if (task.dateCreated) {
+					dtstart = createUTCDateForRRule(task.dateCreated);
+				} else {
+					// If no anchor date available, task cannot generate recurring instances
+					return false;
+				}
 			}
 			
 			// Parse the rrule string and create RRule object
-			// The rrule string should contain all recurrence information including any UNTIL dates
-			const rruleOptions = RRule.parseString(task.recurrence);
+			// Remove DTSTART from the string before parsing since we set it manually
+			const rruleString = task.recurrence.replace(/DTSTART:[^;]+;?/, '');
+			const rruleOptions = RRule.parseString(rruleString);
 			rruleOptions.dtstart = dtstart;
 			
 			const rrule = new RRule(rruleOptions);
@@ -522,21 +540,39 @@ export function generateRecurringInstances(task: TaskInfo, startDate: Date, endD
 	// If recurrence is a string (rrule format), use rrule
 	if (typeof task.recurrence === 'string') {
 		try {
-			// Determine the anchor date (dtstart) for the recurrence
-			// Use UTC date to avoid timezone issues with day-of-week calculations
+			// Parse DTSTART from RRULE string if present, otherwise use fallback logic
 			let dtstart: Date;
-			if (task.scheduled) {
-				dtstart = createUTCDateForRRule(task.scheduled);
-			} else if (task.dateCreated) {
-				dtstart = createUTCDateForRRule(task.dateCreated);
+			const dtstartMatch = task.recurrence.match(/DTSTART:(\d{8}(?:T\d{6}Z?)?)/);
+			
+			if (dtstartMatch) {
+				// Extract DTSTART from RRULE string (supports both YYYYMMDD and YYYYMMDDTHHMMSSZ formats)
+				const dtstartStr = dtstartMatch[1];
+				if (dtstartStr.length === 8) {
+					// YYYYMMDD format
+					const year = parseInt(dtstartStr.slice(0, 4));
+					const month = parseInt(dtstartStr.slice(4, 6)) - 1; // JavaScript months are 0-indexed
+					const day = parseInt(dtstartStr.slice(6, 8));
+					dtstart = new Date(Date.UTC(year, month, day, 0, 0, 0, 0));
+				} else {
+					// YYYYMMDDTHHMMSSZ format
+					dtstart = createUTCDateForRRule(dtstartStr);
+				}
 			} else {
-				// If no anchor date available, task cannot generate recurring instances
-				return [];
+				// Fallback to original logic for backward compatibility
+				if (task.scheduled) {
+					dtstart = createUTCDateForRRule(task.scheduled);
+				} else if (task.dateCreated) {
+					dtstart = createUTCDateForRRule(task.dateCreated);
+				} else {
+					// If no anchor date available, task cannot generate recurring instances
+					return [];
+				}
 			}
 			
 			// Parse the rrule string and create RRule object
-			// The rrule string should contain all recurrence information including any UNTIL dates
-			const rruleOptions = RRule.parseString(task.recurrence);
+			// Remove DTSTART from the string before parsing since we set it manually
+			const rruleString = task.recurrence.replace(/DTSTART:[^;]+;?/, '');
+			const rruleOptions = RRule.parseString(rruleString);
 			rruleOptions.dtstart = dtstart;
 			
 			const rrule = new RRule(rruleOptions);
@@ -576,6 +612,62 @@ export function generateRecurringInstances(task: TaskInfo, startDate: Date, endD
 	}
 	
 	return instances;
+}
+
+/**
+ * Calculates the next uncompleted occurrence for a recurring task
+ * Returns null if no future occurrences exist
+ */
+export function getNextUncompletedOccurrence(task: TaskInfo): Date | null {
+	// If no recurrence, return null
+	if (!task.recurrence) {
+		return null;
+	}
+
+	try {
+		// Get current date as starting point using UTC anchor principle
+		const todayStr = getTodayString(); // YYYY-MM-DD format
+		const today = parseDateToUTC(todayStr); // UTC anchored for consistent logic
+		const endDate = new Date(today.getTime() + 365 * 24 * 60 * 60 * 1000); // Look ahead 1 year
+		
+		// Generate all occurrences from today onwards
+		const occurrences = generateRecurringInstances(task, today, endDate);
+		
+		// Get completed instances as Set for faster lookup
+		const completedInstances = new Set(task.complete_instances || []);
+		
+		// Find the first occurrence that hasn't been completed
+		for (const occurrence of occurrences) {
+			const occurrenceStr = formatDateForStorage(occurrence);
+			if (!completedInstances.has(occurrenceStr)) {
+				return occurrence;
+			}
+		}
+		
+		return null; // No future occurrences or all completed
+	} catch (error) {
+		console.error('Error calculating next uncompleted occurrence:', error, { task: task.title });
+		return null;
+	}
+}
+
+/**
+ * Updates the scheduled date of a recurring task to its next uncompleted occurrence
+ * Returns the updated scheduled date or null if no next occurrence
+ */
+export function updateToNextScheduledOccurrence(task: TaskInfo): string | null {
+	const nextOccurrence = getNextUncompletedOccurrence(task);
+	if (!nextOccurrence) {
+		return null;
+	}
+	
+	// Preserve time component if original scheduled date had time
+	if (task.scheduled && task.scheduled.includes('T')) {
+		const timePart = task.scheduled.split('T')[1];
+		return `${formatDateForStorage(nextOccurrence)}T${timePart}`;
+	} else {
+		return formatDateForStorage(nextOccurrence);
+	}
 }
 
 /**

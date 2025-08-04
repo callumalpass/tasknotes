@@ -43,6 +43,7 @@ import {
 } from '../utils/dateUtils';
 import { 
     generateRecurringInstances,
+    updateToNextScheduledOccurrence,
     extractTimeblocksFromNote,
     timeblockToCalendarEvent,
     updateTimeblockInDailyNote
@@ -65,6 +66,8 @@ interface CalendarEvent {
         eventType: 'scheduled' | 'due' | 'timeEntry' | 'recurring' | 'ics' | 'timeblock';
         isCompleted?: boolean;
         isRecurringInstance?: boolean;
+        isNextScheduledOccurrence?: boolean; // Flag for next scheduled occurrence
+        isPatternInstance?: boolean; // Flag for pattern instances
         instanceDate?: string; // YYYY-MM-DD for this specific occurrence
         recurringTemplateTime?: string; // Original scheduled time
         subscriptionName?: string; // For ICS events
@@ -1011,6 +1014,9 @@ export class AdvancedCalendarView extends ItemView {
         const hasOriginalTime = hasTimeComponent(task.scheduled);
         const templateTime = this.getRecurringTime(task);
         
+        // Get the current scheduled date (next occurrence) for comparison
+        const nextScheduledDate = getDatePart(task.scheduled);
+        
         // Use the new helper function to generate recurring dates
         const recurringDates = generateRecurringInstances(task, startDate, endDate);
         
@@ -1021,10 +1027,16 @@ export class AdvancedCalendarView extends ItemView {
             // Only append time if the original task had a time component
             const eventStart = hasOriginalTime ? `${instanceDate}T${templateTime}` : instanceDate;
             
-            // Create the recurring event instance
-            const recurringEvent = this.createRecurringEvent(task, eventStart, instanceDate, templateTime);
-            if (recurringEvent) {
-                instances.push(recurringEvent);
+            // Determine if this is the next scheduled occurrence or a pattern instance
+            const isNextScheduledOccurrence = instanceDate === nextScheduledDate;
+            
+            // Create the appropriate event type
+            const event = isNextScheduledOccurrence 
+                ? this.createNextScheduledEvent(task, eventStart, instanceDate, templateTime)
+                : this.createRecurringEvent(task, eventStart, instanceDate, templateTime);
+                
+            if (event) {
+                instances.push(event);
             }
         }
 
@@ -1035,6 +1047,48 @@ export class AdvancedCalendarView extends ItemView {
         if (!task.scheduled) return '09:00'; // default
         const timePart = getTimePart(task.scheduled);
         return timePart || '09:00';
+    }
+
+    createNextScheduledEvent(task: TaskInfo, eventStart: string, instanceDate: string, templateTime: string): CalendarEvent | null {
+        const hasTime = hasTimeComponent(eventStart);
+        
+        // Calculate end time if time estimate is available
+        let endDate: string | undefined;
+        if (hasTime && task.timeEstimate) {
+            const start = parseDateToLocal(eventStart);
+            const end = new Date(start.getTime() + (task.timeEstimate * 60 * 1000));
+            endDate = format(end, "yyyy-MM-dd'T'HH:mm");
+        }
+        
+        // Get priority-based color for border
+        const priorityConfig = this.plugin.priorityManager.getPriorityConfig(task.priority);
+        const borderColor = priorityConfig?.color || 'var(--color-accent)';
+        
+        // Check if this instance is completed
+        const isInstanceCompleted = task.complete_instances?.includes(instanceDate) || false;
+        
+        // Next scheduled occurrence uses normal task styling (solid border, full opacity)
+        const backgroundColor = isInstanceCompleted ? 'rgba(0,0,0,0.3)' : 'transparent';
+        
+        return {
+            id: `next-scheduled-${task.path}-${instanceDate}`,
+            title: task.title,
+            start: eventStart,
+            end: endDate,
+            allDay: !hasTime,
+            backgroundColor: backgroundColor,
+            borderColor: borderColor,
+            textColor: borderColor,
+            editable: true,
+            extendedProps: {
+                taskInfo: task,
+                eventType: 'scheduled', // Use 'scheduled' instead of 'recurring' for next occurrence
+                isCompleted: isInstanceCompleted,
+                isNextScheduledOccurrence: true, // Flag to identify this as the next occurrence
+                instanceDate: instanceDate,
+                recurringTemplateTime: templateTime
+            }
+        };
     }
 
     createRecurringEvent(task: TaskInfo, eventStart: string, instanceDate: string, templateTime: string): CalendarEvent | null {
@@ -1055,9 +1109,8 @@ export class AdvancedCalendarView extends ItemView {
         // Check if this instance is completed
         const isInstanceCompleted = task.complete_instances?.includes(instanceDate) || false;
         
-        // Visual styling for recurring instances
+        // Pattern instances use recurring preview styling (dashed border, reduced opacity)
         const backgroundColor = isInstanceCompleted ? 'rgba(0,0,0,0.3)' : 'transparent';
-        // Text decoration handled in renderEvent hook
         
         return {
             id: `recurring-${task.path}-${instanceDate}`,
@@ -1068,12 +1121,13 @@ export class AdvancedCalendarView extends ItemView {
             backgroundColor: backgroundColor,
             borderColor: borderColor,
             textColor: borderColor,
-            editable: true, // Recurring tasks are editable
+            editable: true, // Pattern instances are editable
             extendedProps: {
                 taskInfo: task,
                 eventType: 'recurring',
                 isCompleted: isInstanceCompleted,
                 isRecurringInstance: true,
+                isPatternInstance: true, // Flag to identify this as a pattern instance
                 instanceDate: instanceDate,
                 recurringTemplateTime: templateTime
             }
@@ -1300,7 +1354,15 @@ export class AdvancedCalendarView extends ItemView {
     }
 
     async handleEventDrop(dropInfo: any) {
-        const { taskInfo, timeblock, eventType, isRecurringInstance, originalDate } = dropInfo.event.extendedProps;
+        const { 
+            taskInfo, 
+            timeblock, 
+            eventType, 
+            isRecurringInstance, 
+            isNextScheduledOccurrence, 
+            isPatternInstance, 
+            originalDate 
+        } = dropInfo.event.extendedProps;
         
         if (eventType === 'timeEntry' || eventType === 'ics') {
             // Time entries and ICS events cannot be moved
@@ -1318,24 +1380,39 @@ export class AdvancedCalendarView extends ItemView {
             const newStart = dropInfo.event.start;
             const allDay = dropInfo.event.allDay;
             
-            if (isRecurringInstance) {
-                // For recurring instances, only allow time changes, not date changes
+            if (isNextScheduledOccurrence) {
+                // Dragging Next Scheduled Occurrence: Updates only task.scheduled (manual reschedule)
+                let newDateString: string;
+                if (allDay) {
+                    newDateString = formatDateForStorage(newStart);
+                } else {
+                    newDateString = formatDateForStorage(newStart) + 'T' + format(newStart, 'HH:mm');
+                }
+                
+                // Update the scheduled field directly (manual reschedule of next occurrence)
+                await this.plugin.taskService.updateProperty(taskInfo, 'scheduled', newDateString);
+                new Notice('Rescheduled next occurrence. This does not change the recurrence pattern.');
+                
+            } else if (isPatternInstance) {
+                // Dragging Pattern Instances: Updates DTSTART in RRULE and recalculates task.scheduled
+                await this.handlePatternInstanceDrop(taskInfo, newStart, allDay);
+                
+            } else if (isRecurringInstance) {
+                // Legacy support: Handle old-style recurring instances (time changes only)
                 const originalDate = getDatePart(taskInfo.scheduled!);
                 let updatedScheduled: string;
                 
                 if (allDay) {
-                    // If dragged to all-day section, remove time component entirely
                     updatedScheduled = originalDate;
                     new Notice('Updated recurring task to all-day. This affects all future instances.');
                 } else {
-                    // If dragged to a specific time, update the time
                     const newTime = format(newStart, 'HH:mm');
                     updatedScheduled = `${originalDate}T${newTime}`;
                     new Notice(`Updated recurring task time to ${newTime}. This affects all future instances.`);
                 }
                 
-                // Update the template time in scheduled field
                 await this.plugin.taskService.updateProperty(taskInfo, 'scheduled', updatedScheduled);
+                
             } else {
                 // Handle non-recurring events normally
                 let newDateString: string;
@@ -1353,6 +1430,60 @@ export class AdvancedCalendarView extends ItemView {
         } catch (error) {
             console.error('Error updating task date:', error);
             dropInfo.revert();
+        }
+    }
+
+    private async handlePatternInstanceDrop(taskInfo: TaskInfo, newStart: Date, allDay: boolean): Promise<void> {
+        try {
+            if (!taskInfo.recurrence || typeof taskInfo.recurrence !== 'string') {
+                throw new Error('Task does not have a valid RRULE string');
+            }
+
+            // Calculate new DTSTART date
+            let newDTSTART: string;
+            if (allDay) {
+                // Date-only format: YYYYMMDD
+                const year = newStart.getFullYear();
+                const month = String(newStart.getMonth() + 1).padStart(2, '0');
+                const day = String(newStart.getDate()).padStart(2, '0');
+                newDTSTART = `${year}${month}${day}`;
+            } else {
+                // DateTime format: YYYYMMDDTHHMMSSZ
+                const year = newStart.getFullYear();
+                const month = String(newStart.getMonth() + 1).padStart(2, '0');
+                const day = String(newStart.getDate()).padStart(2, '0');
+                const hours = String(newStart.getHours()).padStart(2, '0');
+                const minutes = String(newStart.getMinutes()).padStart(2, '0');
+                newDTSTART = `${year}${month}${day}T${hours}${minutes}00Z`;
+            }
+
+            // Update DTSTART in RRULE string
+            let updatedRRule: string;
+            const dtstartMatch = taskInfo.recurrence.match(/DTSTART:[^;]+/);
+            
+            if (dtstartMatch) {
+                // Replace existing DTSTART
+                updatedRRule = taskInfo.recurrence.replace(/DTSTART:[^;]+/, `DTSTART:${newDTSTART}`);
+            } else {
+                // Add DTSTART to beginning
+                updatedRRule = `DTSTART:${newDTSTART};${taskInfo.recurrence}`;
+            }
+
+            // Update the recurrence pattern
+            await this.plugin.taskService.updateProperty(taskInfo, 'recurrence', updatedRRule);
+
+            // Calculate and update new scheduled date to next occurrence
+            const updatedTask = { ...taskInfo, recurrence: updatedRRule };
+            const nextScheduledDate = updateToNextScheduledOccurrence(updatedTask);
+            if (nextScheduledDate) {
+                await this.plugin.taskService.updateProperty(taskInfo, 'scheduled', nextScheduledDate);
+            }
+
+            new Notice('Updated recurrence pattern. All future instances moved accordingly.');
+            
+        } catch (error) {
+            console.error('Error updating pattern instance:', error);
+            throw error;
         }
     }
 
@@ -1643,13 +1774,33 @@ export class AdvancedCalendarView extends ItemView {
             }
         }
         
-        // Apply visual styling for recurring instances
-        if (isRecurringInstance) {
-            // Add dashed border for recurring instances
+        // Apply visual styling based on event type and recurrence status
+        const { isNextScheduledOccurrence, isPatternInstance } = arg.event.extendedProps;
+        
+        if (isNextScheduledOccurrence) {
+            // Next scheduled occurrence: Normal task styling (solid border, full opacity)
+            arg.el.style.borderStyle = 'solid';
+            arg.el.style.borderWidth = '2px';
+            arg.el.setAttribute('data-next-scheduled', 'true');
+            arg.el.classList.add('fc-next-scheduled-event');
+            
+            // Apply dimmed appearance for completed instances
+            if (isCompleted) {
+                arg.el.style.opacity = '0.6';
+            }
+        } else if (isPatternInstance) {
+            // Pattern occurrences: Recurring preview styling (dashed border, reduced opacity)
+            arg.el.style.borderStyle = 'dashed';
+            arg.el.style.borderWidth = '2px';
+            arg.el.style.opacity = isCompleted ? '0.4' : '0.7'; // Reduced opacity for pattern instances
+            
+            arg.el.setAttribute('data-pattern-instance', 'true');
+            arg.el.classList.add('fc-pattern-instance-event');
+        } else if (isRecurringInstance) {
+            // Legacy recurring instances (for backward compatibility)
             arg.el.style.borderStyle = 'dashed';
             arg.el.style.borderWidth = '2px';
             
-            // Add recurring badge (already in title with 🔄)
             arg.el.setAttribute('data-recurring', 'true');
             arg.el.classList.add('fc-recurring-event');
             
@@ -1701,9 +1852,23 @@ export class AdvancedCalendarView extends ItemView {
                     this.showTimeEntryContextMenu(jsEvent, taskInfo, timeEntryIndex);
                 } else {
                     // Standard task context menu for other event types
-                    const targetDate = isRecurringInstance && instanceDate 
-                        ? parseDateToUTC(instanceDate)  // Use UTC anchor for instance date
-                        : (arg.event.start || getTodayLocal());
+                    const { isNextScheduledOccurrence, isPatternInstance } = arg.event.extendedProps;
+                    
+                    let targetDate: Date;
+                    if ((isRecurringInstance || isNextScheduledOccurrence || isPatternInstance) && instanceDate) {
+                        // For all recurring-related events, use UTC anchor for instance date
+                        targetDate = parseDateToUTC(instanceDate);
+                    } else {
+                        // For regular events, convert FullCalendar date to UTC anchor
+                        const eventDate = arg.event.start;
+                        if (eventDate) {
+                            // Convert FullCalendar Date to UTC-anchored date string then back to Date
+                            const dateStr = formatDateForStorage(eventDate);
+                            targetDate = parseDateToUTC(dateStr);
+                        } else {
+                            targetDate = getTodayLocal();
+                        }
+                    }
                         
                     showTaskContextMenu(jsEvent, taskInfo.path, this.plugin, targetDate);
                 }
