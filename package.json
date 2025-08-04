@@ -1,6 +1,6 @@
 {
 	"name": "tasknotes",
-	"version": "3.16.5",
+	"version": "3.17.1",
 	"description": "Note-based task management with calendar, pomodoro and time-tracking integration.",
 	"main": "main.js",
 	"scripts": {
