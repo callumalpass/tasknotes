@@ -1014,39 +1014,59 @@ export class AdvancedCalendarView extends ItemView {
         const hasOriginalTime = hasTimeComponent(task.scheduled);
         const templateTime = this.getRecurringTime(task);
         
-        // Get the current scheduled date (next occurrence) for comparison
+        // Get the current scheduled date for comparison
         const nextScheduledDate = getDatePart(task.scheduled);
         
-        // Use the new helper function to generate recurring dates
+        // 1. Always create the next scheduled occurrence event (regardless of pattern)
+        const scheduledTime = hasOriginalTime ? getTimePart(task.scheduled) : null;
+        const scheduledEventStart = scheduledTime ? `${nextScheduledDate}T${scheduledTime}` : nextScheduledDate;
+        const nextScheduledEvent = this.createNextScheduledEvent(task, scheduledEventStart, nextScheduledDate, scheduledTime || '09:00');
+        if (nextScheduledEvent) {
+            instances.push(nextScheduledEvent);
+        }
+        
+        // 2. Generate pattern instances from recurrence rule
         const recurringDates = generateRecurringInstances(task, startDate, endDate);
         
         for (const date of recurringDates) {
-            // Use UTC-safe formatting to prevent off-by-one date shifts
             const instanceDate = formatDateForStorage(date);
             
-            // Only append time if the original task had a time component
-            const eventStart = hasOriginalTime ? `${instanceDate}T${templateTime}` : instanceDate;
-            
-            // Determine if this is the next scheduled occurrence or a pattern instance
-            const isNextScheduledOccurrence = instanceDate === nextScheduledDate;
-            
-            // Create the appropriate event type
-            const event = isNextScheduledOccurrence 
-                ? this.createNextScheduledEvent(task, eventStart, instanceDate, templateTime)
-                : this.createRecurringEvent(task, eventStart, instanceDate, templateTime);
-                
-            if (event) {
-                instances.push(event);
+            // Skip pattern instance if it conflicts with the next scheduled occurrence
+            if (instanceDate === nextScheduledDate) {
+                continue; // Already added the next scheduled occurrence above
             }
+            
+            // Create pattern instance with DTSTART time
+            const eventStart = hasOriginalTime ? `${instanceDate}T${templateTime}` : instanceDate;
+            const event = this.createRecurringEvent(task, eventStart, instanceDate, templateTime);
+            if (event) instances.push(event);
         }
 
         return instances;
     }
 
     getRecurringTime(task: TaskInfo): string {
-        if (!task.scheduled) return '09:00'; // default
-        const timePart = getTimePart(task.scheduled);
-        return timePart || '09:00';
+        // Extract time from DTSTART in recurrence rule, not from scheduled field
+        if (task.recurrence && typeof task.recurrence === 'string') {
+            const dtstartMatch = task.recurrence.match(/DTSTART:(\d{8}(?:T\d{6}Z?)?)/);
+            if (dtstartMatch && dtstartMatch[1].includes('T')) {
+                // Parse time from YYYYMMDDTHHMMSSZ format
+                const timeStr = dtstartMatch[1].split('T')[1];
+                if (timeStr.length >= 4) {
+                    const hours = timeStr.slice(0, 2);
+                    const minutes = timeStr.slice(2, 4);
+                    return `${hours}:${minutes}`;
+                }
+            }
+        }
+        
+        // Fallback: if no time in DTSTART, use scheduled time or default
+        if (task.scheduled) {
+            const timePart = getTimePart(task.scheduled);
+            if (timePart) return timePart;
+        }
+        
+        return '09:00'; // final fallback
     }
 
     createNextScheduledEvent(task: TaskInfo, eventStart: string, instanceDate: string, templateTime: string): CalendarEvent | null {
@@ -1439,50 +1459,39 @@ export class AdvancedCalendarView extends ItemView {
                 throw new Error('Task does not have a valid RRULE string');
             }
 
-            // Calculate new DTSTART (both date and time from drag)
+            // Extract current DTSTART to preserve the date
+            const currentDtstartMatch = taskInfo.recurrence.match(/DTSTART:(\d{8}(?:T\d{6}Z?)?)/);
+            if (!currentDtstartMatch) {
+                throw new Error('No DTSTART found in recurrence rule');
+            }
+
+            const currentDtstart = currentDtstartMatch[1];
             let newDTSTART: string;
+
             if (allDay) {
-                // Date-only format: YYYYMMDD
-                const year = newStart.getFullYear();
-                const month = String(newStart.getMonth() + 1).padStart(2, '0');
-                const day = String(newStart.getDate()).padStart(2, '0');
-                newDTSTART = `${year}${month}${day}`;
+                // For all-day, remove time component entirely (keep original date)
+                newDTSTART = currentDtstart.slice(0, 8); // Keep YYYYMMDD only
             } else {
-                // DateTime format: YYYYMMDDTHHMMSSZ (use drag time for DTSTART)
-                const year = newStart.getFullYear();
-                const month = String(newStart.getMonth() + 1).padStart(2, '0');
-                const day = String(newStart.getDate()).padStart(2, '0');
+                // Update only the time component, preserve the original date
+                const originalDate = currentDtstart.slice(0, 8); // YYYYMMDD
                 const hours = String(newStart.getHours()).padStart(2, '0');
                 const minutes = String(newStart.getMinutes()).padStart(2, '0');
-                newDTSTART = `${year}${month}${day}T${hours}${minutes}00Z`;
+                newDTSTART = `${originalDate}T${hours}${minutes}00Z`;
             }
 
             // Update DTSTART in RRULE string
-            let updatedRRule: string;
-            const dtstartMatch = taskInfo.recurrence.match(/DTSTART:[^;]+/);
-            
-            if (dtstartMatch) {
-                // Replace existing DTSTART
-                updatedRRule = taskInfo.recurrence.replace(/DTSTART:[^;]+/, `DTSTART:${newDTSTART}`);
-            } else {
-                // Add DTSTART to beginning
-                updatedRRule = `DTSTART:${newDTSTART};${taskInfo.recurrence}`;
-            }
+            const updatedRRule = taskInfo.recurrence.replace(/DTSTART:[^;]+/, `DTSTART:${newDTSTART}`);
 
             // Update the recurrence pattern
             await this.plugin.taskService.updateProperty(taskInfo, 'recurrence', updatedRRule);
 
-            // Calculate and update new scheduled date to next occurrence
-            const updatedTask = { ...taskInfo, recurrence: updatedRRule };
-            const nextScheduledDate = updateToNextScheduledOccurrence(updatedTask);
-            if (nextScheduledDate) {
-                await this.plugin.taskService.updateProperty(taskInfo, 'scheduled', nextScheduledDate);
-            }
+            // Note: Don't update scheduled date - it should remain independent
+            // Only the pattern timing changes, not the next occurrence timing
 
-            new Notice('Updated recurrence pattern. All future instances moved accordingly.');
+            new Notice('Updated recurring pattern time. All future instances now appear at this time.');
             
         } catch (error) {
-            console.error('Error updating pattern instance:', error);
+            console.error('Error updating pattern instance time:', error);
             throw error;
         }
     }
