@@ -46,7 +46,8 @@ import {
     updateToNextScheduledOccurrence,
     extractTimeblocksFromNote,
     timeblockToCalendarEvent,
-    updateTimeblockInDailyNote
+    updateTimeblockInDailyNote,
+    addDTSTARTToRecurrenceRuleWithDraggedTime
 } from '../utils/helpers';
 
 interface CalendarEvent {
@@ -88,6 +89,10 @@ export class AdvancedCalendarView extends ItemView {
     // Filter system
     private filterBar: FilterBar | null = null;
     private currentQuery: FilterQuery;
+    
+    // Track if we're waiting for a recurring task update
+    private pendingRecurringUpdate: boolean = false;
+    
     
     // View toggles (keeping for calendar-specific display options)
     private showScheduled: boolean;
@@ -574,6 +579,10 @@ export class AdvancedCalendarView extends ItemView {
             select: this.handleDateSelect.bind(this),
             eventClick: this.handleEventClick.bind(this),
             eventDrop: this.handleEventDrop.bind(this),
+            eventAllow: (dropInfo: any) => {
+                // Allow all drops to proceed visually
+                return true;
+            },
             eventResize: this.handleEventResize.bind(this),
             drop: this.handleExternalDrop.bind(this),
             eventReceive: this.handleEventReceive.bind(this),
@@ -1396,6 +1405,9 @@ export class AdvancedCalendarView extends ItemView {
             return;
         }
         
+        // Store whether this is a recurring task update for special handling
+        const isRecurringUpdate = isRecurringInstance || isNextScheduledOccurrence || isPatternInstance;
+        
         try {
             const newStart = dropInfo.event.start;
             const allDay = dropInfo.event.allDay;
@@ -1413,9 +1425,12 @@ export class AdvancedCalendarView extends ItemView {
                 await this.plugin.taskService.updateProperty(taskInfo, 'scheduled', newDateString);
                 new Notice('Rescheduled next occurrence. This does not change the recurrence pattern.');
                 
+                // The refresh will happen automatically via EVENT_TASK_UPDATED listener
+                
             } else if (isPatternInstance) {
                 // Dragging Pattern Instances: Updates DTSTART in RRULE and recalculates task.scheduled
                 await this.handlePatternInstanceDrop(taskInfo, newStart, allDay);
+                // Note: handlePatternInstanceDrop already calls refreshEvents()
                 
             } else if (isRecurringInstance) {
                 // Legacy support: Handle old-style recurring instances (time changes only)
@@ -1433,6 +1448,8 @@ export class AdvancedCalendarView extends ItemView {
                 
                 await this.plugin.taskService.updateProperty(taskInfo, 'scheduled', updatedScheduled);
                 
+                // The refresh will happen automatically via EVENT_TASK_UPDATED listener
+                
             } else {
                 // Handle non-recurring events normally
                 let newDateString: string;
@@ -1447,6 +1464,52 @@ export class AdvancedCalendarView extends ItemView {
                 await this.plugin.taskService.updateProperty(taskInfo, propertyToUpdate, newDateString);
             }
             
+            // For recurring tasks, we need special handling
+            if (isRecurringUpdate) {
+                console.log('Recurring task drop completed', { 
+                    taskPath: taskInfo.path,
+                    newStart: newStart?.toISOString(),
+                    isPatternInstance,
+                    isNextScheduledOccurrence
+                });
+                
+                // The EVENT_TASK_UPDATED will trigger refreshEvents()
+                // But on slow systems, we need to wait longer for file writes to complete
+                // Let's use a longer delay and verify the data has actually changed
+                const originalRecurrence = taskInfo.recurrence;
+                
+                // Use a longer delay for slow systems
+                setTimeout(async () => {
+                    console.log('Checking if task data has been updated...');
+                    
+                    // Get fresh task data to verify the update went through
+                    const freshTask = await this.plugin.cacheManager.getTaskInfo(taskInfo.path);
+                    
+                    if (freshTask && freshTask.recurrence !== originalRecurrence) {
+                        console.log('Task data confirmed updated, refreshing calendar');
+                        
+                        // Remove all existing events for this task to ensure clean state
+                        if (this.calendar) {
+                            const allEvents = this.calendar.getEvents();
+                            const taskEvents = allEvents.filter(event => 
+                                event.extendedProps.taskInfo?.path === taskInfo.path
+                            );
+                            
+                            taskEvents.forEach(event => event.remove());
+                            
+                            // Force a complete refresh
+                            await this.refreshEvents();
+                        }
+                    } else {
+                        console.log('Task data not yet updated, waiting longer...');
+                        // Try again after another delay
+                        setTimeout(async () => {
+                            await this.refreshEvents();
+                        }, 1000);
+                    }
+                }, 1500); // 1.5 second initial delay for slow systems
+            }
+            
         } catch (error) {
             console.error('Error updating task date:', error);
             dropInfo.revert();
@@ -1459,36 +1522,46 @@ export class AdvancedCalendarView extends ItemView {
                 throw new Error('Task does not have a valid RRULE string');
             }
 
-            // Extract current DTSTART to preserve the date
+            // Check if DTSTART already exists
             const currentDtstartMatch = taskInfo.recurrence.match(/DTSTART:(\d{8}(?:T\d{6}Z?)?)/);
+            let updatedRRule: string;
+
             if (!currentDtstartMatch) {
-                throw new Error('No DTSTART found in recurrence rule');
-            }
-
-            const currentDtstart = currentDtstartMatch[1];
-            let newDTSTART: string;
-
-            if (allDay) {
-                // For all-day, remove time component entirely (keep original date)
-                newDTSTART = currentDtstart.slice(0, 8); // Keep YYYYMMDD only
+                // No DTSTART exists - add it using the drag interaction
+                const ruleWithDTSTART = addDTSTARTToRecurrenceRuleWithDraggedTime(taskInfo, newStart, allDay);
+                if (!ruleWithDTSTART) {
+                    throw new Error('Failed to add DTSTART to recurrence rule');
+                }
+                updatedRRule = ruleWithDTSTART;
+                new Notice('Added time information to recurring pattern. All future instances now appear at this time.');
             } else {
-                // Update only the time component, preserve the original date
-                const originalDate = currentDtstart.slice(0, 8); // YYYYMMDD
-                const hours = String(newStart.getHours()).padStart(2, '0');
-                const minutes = String(newStart.getMinutes()).padStart(2, '0');
-                newDTSTART = `${originalDate}T${hours}${minutes}00Z`;
-            }
+                // DTSTART exists - update the time component
+                const currentDtstart = currentDtstartMatch[1];
+                let newDTSTART: string;
 
-            // Update DTSTART in RRULE string
-            const updatedRRule = taskInfo.recurrence.replace(/DTSTART:[^;]+/, `DTSTART:${newDTSTART}`);
+                if (allDay) {
+                    // For all-day, remove time component entirely (keep original date)
+                    newDTSTART = currentDtstart.slice(0, 8); // Keep YYYYMMDD only
+                } else {
+                    // Update only the time component, preserve the original date
+                    const originalDate = currentDtstart.slice(0, 8); // YYYYMMDD
+                    const hours = String(newStart.getHours()).padStart(2, '0');
+                    const minutes = String(newStart.getMinutes()).padStart(2, '0');
+                    newDTSTART = `${originalDate}T${hours}${minutes}00Z`;
+                }
+
+                // Update DTSTART in RRULE string
+                updatedRRule = taskInfo.recurrence.replace(/DTSTART:[^;]+/, `DTSTART:${newDTSTART}`);
+                new Notice('Updated recurring pattern time. All future instances now appear at this time.');
+            }
 
             // Update the recurrence pattern
             await this.plugin.taskService.updateProperty(taskInfo, 'recurrence', updatedRRule);
 
             // Note: Don't update scheduled date - it should remain independent
             // Only the pattern timing changes, not the next occurrence timing
-
-            new Notice('Updated recurring pattern time. All future instances now appear at this time.');
+            
+            // The refresh will happen automatically via EVENT_TASK_UPDATED listener
             
         } catch (error) {
             console.error('Error updating pattern instance time:', error);
@@ -1970,7 +2043,12 @@ export class AdvancedCalendarView extends ItemView {
 
     async refreshEvents() {
         if (this.calendar) {
-            this.calendar.refetchEvents();
+            // For a complete refresh, remove all event sources and re-add them
+            // This ensures FullCalendar doesn't cache any stale positions
+            this.calendar.removeAllEventSources();
+            this.calendar.addEventSource({
+                events: this.getCalendarEvents.bind(this)
+            });
         }
     }
 
