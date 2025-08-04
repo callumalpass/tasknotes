@@ -657,8 +657,25 @@ class ProjectNoteDecorationsPlugin implements PluginValue {
     private findInsertionPosition(view: EditorView, doc: any): number {
         if (doc.lines === 0) return 0;
         
-        // Insert at the very end of the document
-        return doc.length;
+        const position = this.plugin.settings.projectSubtasksPosition || 'bottom';
+        
+        if (position === 'top') {
+            // Find position after frontmatter if present
+            const docText = doc.toString();
+            const frontmatterRegex = /^---\n[\s\S]*?\n---\n/;
+            const match = frontmatterRegex.exec(docText);
+            
+            if (match) {
+                // Place after frontmatter
+                return match[0].length;
+            } else {
+                // No frontmatter, place at beginning
+                return 0;
+            }
+        } else {
+            // Default: insert at the very end of the document
+            return doc.length;
+        }
     }
 
 }

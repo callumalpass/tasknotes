@@ -57,6 +57,7 @@ export interface TaskNotesSettings {
 	// Project subtasks widget settings
 	showProjectSubtasks: boolean;
 	showExpandableSubtasks: boolean;
+	projectSubtasksPosition: 'top' | 'bottom';
 	// Overdue behavior settings
 	hideCompletedFromOverdue: boolean;
 	// ICS integration settings
@@ -305,6 +306,7 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	// Project subtasks widget defaults
 	showProjectSubtasks: true,
 	showExpandableSubtasks: true,
+	projectSubtasksPosition: 'bottom',
 	// Overdue behavior defaults
 	hideCompletedFromOverdue: true,
 	// ICS integration defaults
@@ -1535,6 +1537,23 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 					.setValue(this.plugin.settings.showProjectSubtasks)
 					.onChange(async (value) => {
 						this.plugin.settings.showProjectSubtasks = value;
+						await this.plugin.saveSettings();
+						// Refresh all open editors to apply the change
+						this.plugin.notifyDataChanged();
+					});
+			});
+
+		// Project subtasks widget position
+		new Setting(container)
+			.setName('Project subtasks widget position')
+			.setDesc('Choose where the subtasks widget appears in project notes')
+			.addDropdown(dropdown => {
+				dropdown
+					.addOption('top', 'Top of note')
+					.addOption('bottom', 'Bottom of note')
+					.setValue(this.plugin.settings.projectSubtasksPosition || 'bottom')
+					.onChange(async (value: 'top' | 'bottom') => {
+						this.plugin.settings.projectSubtasksPosition = value;
 						await this.plugin.saveSettings();
 						// Refresh all open editors to apply the change
 						this.plugin.notifyDataChanged();
