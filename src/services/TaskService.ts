@@ -578,6 +578,35 @@ export class TaskService {
                 if (nextScheduledDate) {
                     recurrenceUpdates.scheduled = nextScheduledDate;
                 }
+                
+                // Add DTSTART to recurrence rule if it's missing (scenario 1: editing recurrence rule)
+                if (typeof updates.recurrence === 'string' && updates.recurrence && !updates.recurrence.includes('DTSTART:')) {
+                    const tempTaskWithRecurrence: TaskInfo = { ...originalTask, ...updates, ...recurrenceUpdates };
+                    const updatedRecurrence = addDTSTARTToRecurrenceRule(tempTaskWithRecurrence);
+                    if (updatedRecurrence) {
+                        recurrenceUpdates.recurrence = updatedRecurrence;
+                    }
+                }
+            } else if (updates.recurrence !== undefined && !originalTask.recurrence && updates.recurrence) {
+                // Scenario 2: Converting non-recurring to recurring task
+                if (typeof updates.recurrence === 'string' && !updates.recurrence.includes('DTSTART:')) {
+                    const tempTask: TaskInfo = { ...originalTask, ...updates };
+                    const updatedRecurrence = addDTSTARTToRecurrenceRule(tempTask);
+                    if (updatedRecurrence) {
+                        recurrenceUpdates.recurrence = updatedRecurrence;
+                    }
+                }
+            }
+            
+            // Scenario 3: Scheduled date update for recurring tasks
+            if (updates.scheduled !== undefined && updates.scheduled !== originalTask.scheduled && originalTask.recurrence) {
+                if (typeof originalTask.recurrence === 'string' && !originalTask.recurrence.includes('DTSTART:')) {
+                    const tempTask: TaskInfo = { ...originalTask, ...updates };
+                    const updatedRecurrence = addDTSTARTToRecurrenceRule(tempTask);
+                    if (updatedRecurrence) {
+                        recurrenceUpdates.recurrence = updatedRecurrence;
+                    }
+                }
             }
 
             // Step 1: Persist frontmatter changes to the file at its original path
