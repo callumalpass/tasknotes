@@ -1439,7 +1439,7 @@ export class AdvancedCalendarView extends ItemView {
                 throw new Error('Task does not have a valid RRULE string');
             }
 
-            // Calculate new DTSTART date
+            // Calculate new DTSTART (both date and time from drag)
             let newDTSTART: string;
             if (allDay) {
                 // Date-only format: YYYYMMDD
@@ -1448,7 +1448,7 @@ export class AdvancedCalendarView extends ItemView {
                 const day = String(newStart.getDate()).padStart(2, '0');
                 newDTSTART = `${year}${month}${day}`;
             } else {
-                // DateTime format: YYYYMMDDTHHMMSSZ
+                // DateTime format: YYYYMMDDTHHMMSSZ (use drag time for DTSTART)
                 const year = newStart.getFullYear();
                 const month = String(newStart.getMonth() + 1).padStart(2, '0');
                 const day = String(newStart.getDate()).padStart(2, '0');

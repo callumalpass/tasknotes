@@ -85,8 +85,18 @@ export class RecurrenceContextMenu {
         const currentMonthName = monthNames[today.getMonth()];
         const dayName = today.toLocaleDateString('en-US', { weekday: 'long' });
 
-        // Format today as DTSTART (YYYYMMDD format)
-        const todayDTSTART = this.formatDateForDTSTART(today);
+        // Format today as DTSTART, preserving existing time if available
+        let todayDTSTART = this.formatDateForDTSTART(today);
+        
+        // If there's an existing recurrence with time, preserve the time component
+        if (this.options.currentValue) {
+            const existingDtstartMatch = this.options.currentValue.match(/DTSTART:(\d{8}(?:T\d{6}Z?)?)/);
+            if (existingDtstartMatch && existingDtstartMatch[1].includes('T')) {
+                // Extract time part from existing DTSTART
+                const existingTime = existingDtstartMatch[1].split('T')[1];
+                todayDTSTART = `${todayDTSTART}T${existingTime}`;
+            }
+        }
 
         // Daily
         options.push({
@@ -186,6 +196,7 @@ class CustomRecurrenceModal extends Modal {
     private until = '';
     private endType: 'never' | 'count' | 'until' = 'never';
     private dtstart = '';
+    private dtstartTime = '';
 
     constructor(app: App, currentValue: string, onSubmit: (result: string | null) => void) {
         super(app);
@@ -212,6 +223,14 @@ class CustomRecurrenceModal extends Modal {
                     // Convert YYYYMMDD or YYYYMMDDTHHMMSSZ to YYYY-MM-DD for date input
                     if (value.length >= 8) {
                         this.dtstart = `${value.slice(0,4)}-${value.slice(4,6)}-${value.slice(6,8)}`;
+                        
+                        // Extract time if present (YYYYMMDDTHHMMSSZ format)
+                        if (value.length > 8 && value.includes('T')) {
+                            const timeStr = value.slice(9); // Get HHMMSSZ part
+                            if (timeStr.length >= 4) {
+                                this.dtstartTime = `${timeStr.slice(0,2)}:${timeStr.slice(2,4)}`;
+                            }
+                        }
                     } else {
                         this.dtstart = value;
                     }
@@ -292,6 +311,18 @@ class CustomRecurrenceModal extends Modal {
                 text.setValue(this.dtstart)
                     .onChange(value => {
                         this.dtstart = value;
+                    });
+            });
+
+        // Start time selection
+        new Setting(contentEl)
+            .setName('Start time')
+            .setDesc('The time when recurring instances should appear (optional)')
+            .addText(text => {
+                text.inputEl.type = 'time';
+                text.setValue(this.dtstartTime)
+                    .onChange(value => {
+                        this.dtstartTime = value;
                     });
             });
 
@@ -652,9 +683,16 @@ class CustomRecurrenceModal extends Modal {
     private buildRRule(monthlyType?: string, yearlyType?: string): string {
         let parts = [];
         
-        // Add DTSTART first (convert YYYY-MM-DD to YYYYMMDD format)
+        // Add DTSTART first (convert YYYY-MM-DD to YYYYMMDD or YYYYMMDDTHHMMSSZ format)
         if (this.dtstart) {
-            const dtstartFormatted = this.dtstart.replace(/-/g, '');
+            let dtstartFormatted = this.dtstart.replace(/-/g, '');
+            
+            // Add time if specified
+            if (this.dtstartTime) {
+                const timeFormatted = this.dtstartTime.replace(':', '') + '00Z';
+                dtstartFormatted = `${dtstartFormatted}T${timeFormatted}`;
+            }
+            
             parts.push(`DTSTART:${dtstartFormatted}`);
         }
         

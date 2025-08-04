@@ -350,8 +350,14 @@ export function isDueByRRule(task: TaskInfo, date: Date): boolean {
 					const day = parseInt(dtstartStr.slice(6, 8));
 					dtstart = new Date(Date.UTC(year, month, day, 0, 0, 0, 0));
 				} else {
-					// YYYYMMDDTHHMMSSZ format
-					dtstart = createUTCDateForRRule(dtstartStr);
+					// YYYYMMDDTHHMMSSZ format - parse manually since createUTCDateForRRule expects YYYY-MM-DD
+					const year = parseInt(dtstartStr.slice(0, 4));
+					const month = parseInt(dtstartStr.slice(4, 6)) - 1; // JavaScript months are 0-indexed
+					const day = parseInt(dtstartStr.slice(6, 8));
+					const hour = parseInt(dtstartStr.slice(9, 11)) || 0;
+					const minute = parseInt(dtstartStr.slice(11, 13)) || 0;
+					const second = parseInt(dtstartStr.slice(13, 15)) || 0;
+					dtstart = new Date(Date.UTC(year, month, day, hour, minute, second, 0));
 				}
 			} else {
 				// Fallback to original logic for backward compatibility
@@ -554,8 +560,14 @@ export function generateRecurringInstances(task: TaskInfo, startDate: Date, endD
 					const day = parseInt(dtstartStr.slice(6, 8));
 					dtstart = new Date(Date.UTC(year, month, day, 0, 0, 0, 0));
 				} else {
-					// YYYYMMDDTHHMMSSZ format
-					dtstart = createUTCDateForRRule(dtstartStr);
+					// YYYYMMDDTHHMMSSZ format - parse manually since createUTCDateForRRule expects YYYY-MM-DD
+					const year = parseInt(dtstartStr.slice(0, 4));
+					const month = parseInt(dtstartStr.slice(4, 6)) - 1; // JavaScript months are 0-indexed
+					const day = parseInt(dtstartStr.slice(6, 8));
+					const hour = parseInt(dtstartStr.slice(9, 11)) || 0;
+					const minute = parseInt(dtstartStr.slice(11, 13)) || 0;
+					const second = parseInt(dtstartStr.slice(13, 15)) || 0;
+					dtstart = new Date(Date.UTC(year, month, day, hour, minute, second, 0));
 				}
 			} else {
 				// Fallback to original logic for backward compatibility
