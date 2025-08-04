@@ -753,7 +753,9 @@ export function getRecurrenceDisplayText(recurrence: string | any): string {
 	try {
 		// Handle rrule string format
 		if (typeof recurrence === 'string' && recurrence.includes('FREQ=')) {
-			const rrule = RRule.fromString(recurrence);
+			// Remove DTSTART from the string before parsing since RRule.fromString() expects only RRULE parameters
+			const rruleString = recurrence.replace(/DTSTART:[^;]+;?/, '');
+			const rrule = RRule.fromString(rruleString);
 			return rrule.toText();
 		}
 		
