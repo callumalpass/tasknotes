@@ -271,8 +271,6 @@ export class TaskEditModal extends TaskModal {
         const calendarEnd = getUTCEndOfWeek(monthEnd, firstDaySetting);
         const allDays = generateUTCCalendarDates(calendarStart, calendarEnd);
         
-        // FIX: Create a UTC-anchored version of displayDate for consistent comparison
-        const displayDateUTC = createUTCDateFromLocalCalendarDate(displayDate);
         
         // Generate recurring instances for this month (with some buffer)
         const bufferStart = getUTCStartOfMonth(displayDate);
@@ -297,12 +295,13 @@ export class TaskEditModal extends TaskModal {
         allDays.forEach(day => {
             const dayStr = formatDateForStorage(day);
             // FIX: Use UTC-to-UTC comparison instead of mixing local and UTC dates
-            const isCurrentMonth = day.getUTCMonth() === displayDateUTC.getUTCMonth();
+            const isCurrentMonth = day.getUTCMonth() === displayDate.getUTCMonth();
             const isRecurring = recurringDateStrings.has(dayStr);
             const isCompleted = completedInstances.has(dayStr);
             
             const dayElement = grid.createDiv('recurring-calendar__day');
-            dayElement.textContent = format(day, 'd');
+            // FIX: Use UTC date method instead of timezone-sensitive format()
+            dayElement.textContent = String(day.getUTCDate());
             
             // Apply BEM modifier classes
             if (!isCurrentMonth) {
@@ -329,22 +328,16 @@ export class TaskEditModal extends TaskModal {
         
         // Navigation event handlers
         prevButton.addEventListener('click', () => {
-            // Create previous month date using local time
-            const prevMonth = new Date(
-                displayDate.getFullYear(), 
-                displayDate.getMonth() - 1, 
-                1
-            );
+            // FIX: Use UTC methods to prevent timezone drift
+            const prevMonth = new Date(displayDate);
+            prevMonth.setUTCMonth(prevMonth.getUTCMonth() - 1);
             this.renderCalendarMonth(container, prevMonth);
         });
         
         nextButton.addEventListener('click', () => {
-            // Create next month date using local time
-            const nextMonth = new Date(
-                displayDate.getFullYear(), 
-                displayDate.getMonth() + 1, 
-                1
-            );
+            // FIX: Use UTC methods to prevent timezone drift
+            const nextMonth = new Date(displayDate);
+            nextMonth.setUTCMonth(nextMonth.getUTCMonth() + 1);
             this.renderCalendarMonth(container, nextMonth);
         });
     }
