@@ -213,8 +213,14 @@ export class ICSSubscriptionService extends EventEmitter {
         try {
             const jcalData = ICAL.parse(icsData);
             const comp = new ICAL.Component(jcalData);
-            const vevents = comp.getAllSubcomponents('vevent');
 
+            // Register VTIMEZONE components before processing events
+            const vtimezones = comp.getAllSubcomponents('vtimezone');
+            vtimezones.forEach((vtimezone: ICAL.Component) => {
+                ICAL.TimezoneService.register(vtimezone);
+            });
+
+            const vevents = comp.getAllSubcomponents('vevent');
             const events: ICSEvent[] = [];
 
             vevents.forEach((vevent: ICAL.Component) => {
