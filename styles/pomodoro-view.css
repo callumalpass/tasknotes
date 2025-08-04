@@ -576,6 +576,27 @@
    RESPONSIVE DESIGN - Mobile & Narrow Panes
    ================================================ */
 
+/* Extra responsive breakpoints for very granular control */
+.tasknotes-plugin .pomodoro-view--tiny {
+    padding: var(--tn-spacing-sm);
+    gap: var(--tn-spacing-sm);
+}
+
+.tasknotes-plugin .pomodoro-view.pomodoro-view--tiny .pomodoro-view__timer-overlay .pomodoro-view__timer-display {
+    font-size: 2rem !important;
+    font-weight: 700 !important;
+}
+
+.tasknotes-plugin .pomodoro-view--extra-narrow {
+    padding: var(--tn-spacing-md);
+    gap: var(--tn-spacing-sm);
+}
+
+.tasknotes-plugin .pomodoro-view.pomodoro-view--extra-narrow .pomodoro-view__timer-overlay .pomodoro-view__timer-display {
+    font-size: 2.2rem !important;
+    font-weight: 650 !important;
+}
+
 /* Very narrow view (≤ 300px) - Minimal layout */
 .tasknotes-plugin .pomodoro-view--very-narrow {
     padding: var(--tn-spacing-md);
@@ -591,9 +612,9 @@
     padding: var(--tn-spacing-sm) 0;
 }
 
-.tasknotes-plugin .pomodoro-view--very-narrow .pomodoro-view__timer-display {
-    font-size: 2.5rem;
-    font-weight: 600;
+.tasknotes-plugin .pomodoro-view.pomodoro-view--very-narrow .pomodoro-view__timer-overlay .pomodoro-view__timer-display {
+    font-size: 2.5rem !important;
+    font-weight: 600 !important;
 }
 
 .tasknotes-plugin .pomodoro-view--very-narrow .pomodoro-view__time-controls {
@@ -650,9 +671,9 @@
     gap: var(--tn-spacing-lg);
 }
 
-.tasknotes-plugin .pomodoro-view--narrow .pomodoro-view__timer-display {
-    font-size: 3rem;
-    font-weight: 600;
+.tasknotes-plugin .pomodoro-view.pomodoro-view--narrow .pomodoro-view__timer-overlay .pomodoro-view__timer-display {
+    font-size: 3rem !important;
+    font-weight: 600 !important;
 }
 
 .tasknotes-plugin .pomodoro-view--narrow .pomodoro-view__time-controls {
@@ -680,18 +701,56 @@
     padding: var(--tn-spacing-sm) var(--tn-spacing-md);
 }
 
+/* Small view (≤ 400px) - Enhanced compact layout */
+.tasknotes-plugin .pomodoro-view--small {
+    padding: var(--tn-spacing-lg);
+    gap: var(--tn-spacing-md);
+}
+
+.tasknotes-plugin .pomodoro-view.pomodoro-view--small .pomodoro-view__timer-overlay .pomodoro-view__timer-display {
+    font-size: 3.2rem !important;
+    font-weight: 550 !important;
+}
+
+.tasknotes-plugin .pomodoro-view--small .pomodoro-view__primary-controls {
+    gap: var(--tn-spacing-sm);
+}
+
+/* Medium-small view (≤ 500px) - Transitional layout */
+.tasknotes-plugin .pomodoro-view--medium-small {
+    padding: var(--tn-spacing-lg);
+    gap: var(--tn-spacing-lg);
+}
+
+.tasknotes-plugin .pomodoro-view.pomodoro-view--medium-small .pomodoro-view__timer-overlay .pomodoro-view__timer-display {
+    font-size: 3.6rem !important;
+    font-weight: 500 !important;
+}
+
 /* Medium view (≤ 600px) - Standard responsive adjustments */
 .tasknotes-plugin .pomodoro-view--medium {
     padding: var(--tn-spacing-xl);
     gap: var(--tn-spacing-xl);
 }
 
-.tasknotes-plugin .pomodoro-view--medium .pomodoro-view__timer-display {
-    font-size: 3.5rem;
+.tasknotes-plugin .pomodoro-view.pomodoro-view--medium .pomodoro-view__timer-overlay .pomodoro-view__timer-display {
+    font-size: 4rem !important;
+    font-weight: 500 !important;
 }
 
 .tasknotes-plugin .pomodoro-view--medium .pomodoro-view__task-buttons {
     gap: var(--tn-spacing-md);
+}
+
+/* Wide view (> 600px) - Enhanced layout */
+.tasknotes-plugin .pomodoro-view--wide {
+    padding: var(--tn-spacing-xl);
+    gap: var(--tn-spacing-xl);
+}
+
+.tasknotes-plugin .pomodoro-view.pomodoro-view--wide .pomodoro-view__timer-overlay .pomodoro-view__timer-display {
+    font-size: 4.5rem !important;
+    font-weight: 400 !important;
 }
 
 /* Task card responsiveness */

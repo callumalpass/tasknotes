@@ -485,50 +485,133 @@ export class PomodoroView extends ItemView {
         const pomodoroContainer = this.contentEl.querySelector('.pomodoro-view') as HTMLElement;
         if (!pomodoroContainer) return;
         
-        const containerWidth = pomodoroContainer.getBoundingClientRect().width;
+        const containerRect = pomodoroContainer.getBoundingClientRect();
+        const containerWidth = containerRect.width;
+        const containerHeight = containerRect.height;
         
-        // Define breakpoints
-        const isVeryNarrow = containerWidth <= 300;  // Very small panes
-        const isNarrow = containerWidth <= 400;      // Small panes
-        const isMedium = containerWidth <= 600;      // Medium panes
+        // Calculate a responsive scale factor based on both width and height
+        // Use the smaller dimension as the limiting factor, but weight width more heavily
+        const widthScale = Math.min(containerWidth / 600, 1); // 600px is our "ideal" width
+        const heightScale = Math.min(containerHeight / 800, 1); // 800px is our "ideal" height
+        const responsiveScale = Math.min(widthScale * 0.7 + heightScale * 0.3, 1); // Weight width 70%, height 30%
         
         // Remove all responsive classes first
         pomodoroContainer.classList.remove(
+            'pomodoro-view--tiny',
+            'pomodoro-view--extra-narrow',
             'pomodoro-view--very-narrow',
-            'pomodoro-view--narrow', 
-            'pomodoro-view--medium'
+            'pomodoro-view--narrow',
+            'pomodoro-view--small',
+            'pomodoro-view--medium-small', 
+            'pomodoro-view--medium',
+            'pomodoro-view--wide'
         );
         
-        // Apply appropriate responsive class
-        if (isVeryNarrow) {
+        // Apply appropriate responsive class based on granular breakpoints (still use width for layout)
+        let appliedClass = '';
+        if (containerWidth <= 200) {
+            pomodoroContainer.classList.add('pomodoro-view--tiny');
+            appliedClass = 'tiny';
+        } else if (containerWidth <= 250) {
+            pomodoroContainer.classList.add('pomodoro-view--extra-narrow');
+            appliedClass = 'extra-narrow';
+        } else if (containerWidth <= 300) {
             pomodoroContainer.classList.add('pomodoro-view--very-narrow');
-        } else if (isNarrow) {
+            appliedClass = 'very-narrow';
+        } else if (containerWidth <= 350) {
             pomodoroContainer.classList.add('pomodoro-view--narrow');
-        } else if (isMedium) {
+            appliedClass = 'narrow';
+        } else if (containerWidth <= 400) {
+            pomodoroContainer.classList.add('pomodoro-view--small');
+            appliedClass = 'small';
+        } else if (containerWidth <= 500) {
+            pomodoroContainer.classList.add('pomodoro-view--medium-small');
+            appliedClass = 'medium-small';
+        } else if (containerWidth <= 600) {
             pomodoroContainer.classList.add('pomodoro-view--medium');
+            appliedClass = 'medium';
+        } else {
+            pomodoroContainer.classList.add('pomodoro-view--wide');
+            appliedClass = 'wide';
         }
         
-        // Update progress circle size and timer font size based on available space
-        this.updateProgressCircleSize(containerWidth);
-        this.updateTimerFontSize(containerWidth);
+        console.log(`PomodoroView: width=${containerWidth}px, height=${containerHeight}px, scale=${responsiveScale.toFixed(2)}, applied class=${appliedClass}`);
+        
+        // Apply font size directly via JavaScript, now considering both width and height
+        const timerDisplay = pomodoroContainer.querySelector('.pomodoro-view__timer-display') as HTMLElement;
+        if (timerDisplay) {
+            let baseFontSize: number;
+            let fontWeight: string;
+            
+            // Base font sizes still determined by width breakpoints
+            if (containerWidth <= 200) {
+                baseFontSize = 2;
+                fontWeight = '700';
+            } else if (containerWidth <= 250) {
+                baseFontSize = 2.2;
+                fontWeight = '650';
+            } else if (containerWidth <= 300) {
+                baseFontSize = 2.5;
+                fontWeight = '600';
+            } else if (containerWidth <= 350) {
+                baseFontSize = 3;
+                fontWeight = '600';
+            } else if (containerWidth <= 400) {
+                baseFontSize = 3.2;
+                fontWeight = '550';
+            } else if (containerWidth <= 500) {
+                baseFontSize = 3.6;
+                fontWeight = '500';
+            } else if (containerWidth <= 600) {
+                baseFontSize = 4;
+                fontWeight = '500';
+            } else {
+                baseFontSize = 4.5;
+                fontWeight = '400';
+            }
+            
+            // Apply height-based scaling to the base font size
+            const scaledFontSize = Math.max(baseFontSize * responsiveScale, 1.5); // Minimum 1.5rem
+            const fontSize = `${scaledFontSize.toFixed(1)}rem`;
+            
+            // Apply styles directly via JavaScript
+            timerDisplay.style.fontSize = fontSize;
+            timerDisplay.style.fontWeight = fontWeight;
+            
+            console.log(`PomodoroView: base=${baseFontSize}rem, scaled=${fontSize}, weight=${fontWeight}`);
+        }
+        
+        // Update progress circle size based on available space
+        this.updateProgressCircleSize(containerWidth, containerHeight);
     }
     
-    private updateProgressCircleSize(containerWidth: number): void {
+    private updateProgressCircleSize(containerWidth: number, containerHeight: number): void {
         if (!this.progressContainer) return;
         
         const svg = this.progressContainer.querySelector('.pomodoro-view__progress-svg') as SVGElement;
         if (!svg) return;
         
-        // Calculate optimal size based on container width
+        // Calculate optimal size based on both container width and height
+        // Use the smaller dimension but consider both
+        const availableSpace = Math.min(containerWidth * 0.8, containerHeight * 0.4); // Leave margins
+        
         let size: number;
-        if (containerWidth <= 300) {
-            size = Math.max(200, containerWidth - 80); // Very narrow: smaller circle with margins
+        if (containerWidth <= 200) {
+            size = Math.max(120, Math.min(availableSpace, containerWidth - 40)); // Tiny: very small circle
+        } else if (containerWidth <= 250) {
+            size = Math.max(150, Math.min(availableSpace, containerWidth - 50)); // Extra narrow: small circle
+        } else if (containerWidth <= 300) {
+            size = Math.max(180, Math.min(availableSpace, containerWidth - 60)); // Very narrow: compact circle
+        } else if (containerWidth <= 350) {
+            size = Math.max(200, Math.min(availableSpace, containerWidth - 70)); // Narrow: medium-small circle
         } else if (containerWidth <= 400) {
-            size = Math.max(250, containerWidth - 100); // Narrow: medium circle
+            size = Math.max(230, Math.min(availableSpace, containerWidth - 80)); // Small: medium circle
+        } else if (containerWidth <= 500) {
+            size = Math.max(250, Math.min(availableSpace, containerWidth - 100)); // Medium-small: larger circle
         } else if (containerWidth <= 600) {
-            size = 300; // Medium: standard size
+            size = Math.max(280, Math.min(availableSpace, 300)); // Medium: standard size
         } else {
-            size = 300; // Wide: standard size
+            size = Math.max(300, Math.min(availableSpace, containerWidth * 0.5, 400)); // Wide: up to 400px
         }
         
         // Only update if size has changed to prevent unnecessary DOM manipulation
@@ -573,31 +656,6 @@ export class PomodoroView extends ItemView {
         }
     }
     
-    private updateTimerFontSize(containerWidth: number): void {
-        if (!this.timerDisplay) return;
-        
-        // Calculate font size based on container width and circle size
-        let fontSize: string;
-        if (containerWidth <= 300) {
-            fontSize = '2.5rem'; // Very narrow: smaller font
-        } else if (containerWidth <= 400) {
-            fontSize = '3rem'; // Narrow: medium font  
-        } else if (containerWidth <= 600) {
-            fontSize = '3.5rem'; // Medium: larger font
-        } else {
-            fontSize = '4rem'; // Wide: full size font
-        }
-        
-        // Apply the font size directly to the timer display
-        this.timerDisplay.style.fontSize = fontSize;
-        
-        // Also update font weight for better readability at smaller sizes
-        if (containerWidth <= 300) {
-            this.timerDisplay.style.fontWeight = '600';
-        } else {
-            this.timerDisplay.style.fontWeight = '500';
-        }
-    }
     
     private async openTaskSelector() {
         try {
