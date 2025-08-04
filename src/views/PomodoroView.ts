@@ -535,7 +535,6 @@ export class PomodoroView extends ItemView {
             appliedClass = 'wide';
         }
         
-        console.log(`PomodoroView: width=${containerWidth}px, height=${containerHeight}px, scale=${responsiveScale.toFixed(2)}, applied class=${appliedClass}`);
         
         // Apply font size directly via JavaScript, now considering both width and height
         const timerDisplay = pomodoroContainer.querySelector('.pomodoro-view__timer-display') as HTMLElement;
@@ -578,7 +577,6 @@ export class PomodoroView extends ItemView {
             timerDisplay.style.fontSize = fontSize;
             timerDisplay.style.fontWeight = fontWeight;
             
-            console.log(`PomodoroView: base=${baseFontSize}rem, scaled=${fontSize}, weight=${fontWeight}`);
         }
         
         // Update progress circle size based on available space

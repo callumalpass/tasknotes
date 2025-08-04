@@ -17,9 +17,14 @@ class ProjectSubtasksWidget extends WidgetType {
     private filterService: FilterService;
     private currentQuery: FilterQuery;
     private savedViewsUnsubscribe: (() => void) | null = null;
+    private readonly viewType: string;
+    private taskListContainer: HTMLElement | null = null;
 
-    constructor(private plugin: TaskNotesPlugin, private tasks: TaskInfo[], private version: number = 0) {
+    constructor(private plugin: TaskNotesPlugin, private tasks: TaskInfo[], private notePath: string, private version: number = 0) {
         super();
+        // Create note-specific view type identifier
+        this.viewType = `project-subtasks:${notePath}`;
+        
         // Initialize with ungrouped tasks
         this.groupedTasks.set('all', [...tasks]);
         this.filterService = new FilterService(
@@ -29,8 +34,9 @@ class ProjectSubtasksWidget extends WidgetType {
             plugin
         );
         
-        // Initialize with default filter query
-        this.currentQuery = {
+        // Try to restore saved filter state from ViewStateManager for this specific note
+        const savedQuery = this.plugin.viewStateManager.getFilterState(this.viewType);
+        this.currentQuery = savedQuery || {
             type: 'group',
             id: 'root',
             conjunction: 'and',
@@ -39,27 +45,35 @@ class ProjectSubtasksWidget extends WidgetType {
             sortDirection: 'desc',
             groupKey: 'none'
         };
+        
     }
     
-    // Override eq to ensure widget updates when tasks change
+    // Override eq to ensure widget updates when tasks change but preserves filter state
     eq(other: ProjectSubtasksWidget): boolean {
-        return this.version === other.version && 
-               this.tasks.length === other.tasks.length &&
-               this.tasks.every((task, index) => {
-                   const otherTask = other.tasks[index];
-                   return task.title === otherTask.title && 
-                          task.status === otherTask.status &&
-                          task.priority === otherTask.priority &&
-                          task.due === otherTask.due &&
-                          task.scheduled === otherTask.scheduled &&
-                          task.path === otherTask.path &&
-                          JSON.stringify(task.contexts || []) === JSON.stringify(otherTask.contexts || []) &&
-                          JSON.stringify(task.projects || []) === JSON.stringify(otherTask.projects || []) &&
-                          JSON.stringify(task.tags || []) === JSON.stringify(otherTask.tags || []) &&
-                          task.timeEstimate === otherTask.timeEstimate &&
-                          task.recurrence === otherTask.recurrence &&
-                          JSON.stringify(task.complete_instances || []) === JSON.stringify(otherTask.complete_instances || []);
-               });
+        // Check if the tasks data has changed
+        const tasksEqual = this.tasks.length === other.tasks.length &&
+                          this.tasks.every((task, index) => {
+                              const otherTask = other.tasks[index];
+                              return task.title === otherTask.title && 
+                                     task.status === otherTask.status &&
+                                     task.priority === otherTask.priority &&
+                                     task.due === otherTask.due &&
+                                     task.scheduled === otherTask.scheduled &&
+                                     task.path === otherTask.path &&
+                                     JSON.stringify(task.contexts || []) === JSON.stringify(otherTask.contexts || []) &&
+                                     JSON.stringify(task.projects || []) === JSON.stringify(otherTask.projects || []) &&
+                                     JSON.stringify(task.tags || []) === JSON.stringify(otherTask.tags || []) &&
+                                     task.timeEstimate === otherTask.timeEstimate &&
+                                     task.recurrence === otherTask.recurrence &&
+                                     JSON.stringify(task.complete_instances || []) === JSON.stringify(otherTask.complete_instances || []);
+                          });
+        
+        // When creating a new widget for the same note, copy the current query to preserve filter state
+        if (tasksEqual && this !== other && this.notePath === other.notePath) {
+            other.currentQuery = this.currentQuery;
+        }
+        
+        return this.version === other.version && tasksEqual;
     }
 
     destroy(): void {
@@ -141,18 +155,20 @@ class ProjectSubtasksWidget extends WidgetType {
             cls: 'project-note-subtasks__filter'
         });
         
-        // Create task list container
-        const taskListContainer = contentContainer.createEl('div', {
+        // Create task list container and store reference
+        this.taskListContainer = contentContainer.createEl('div', {
             cls: 'project-note-subtasks__list'
         });
         
         // Initialize the filter bar asynchronously
         this.initializeFilterBar(filterContainer).then(() => {
-            this.applyFiltersAndRender(taskListContainer);
+            if (this.taskListContainer) {
+                this.applyFiltersAndRender(this.taskListContainer);
+            }
         });
         
         // Initial render of tasks
-        this.renderTaskGroups(taskListContainer);
+        this.renderTaskGroups(this.taskListContainer);
         
         return container;
     }
@@ -175,7 +191,11 @@ class ProjectSubtasksWidget extends WidgetType {
             // Listen for filter changes
             this.filterBar.on('queryChange', (query: FilterQuery) => {
                 this.currentQuery = query;
-                this.applyFiltersAndRender();
+                // Save the filter state to ViewStateManager for this specific note
+                this.plugin.viewStateManager.setFilterState(this.viewType, query);
+                if (this.taskListContainer) {
+                    this.applyFiltersAndRender(this.taskListContainer);
+                }
             });
             
             // Listen for saved view operations
@@ -219,15 +239,9 @@ class ProjectSubtasksWidget extends WidgetType {
                 }
             }
             
-            // Re-render tasks if container is provided
+            // Re-render tasks using the stored container reference
             if (taskListContainer) {
                 this.renderTaskGroups(taskListContainer);
-            } else {
-                // Find the task list container if not provided
-                const container = document.querySelector('.project-note-subtasks__list');
-                if (container) {
-                    this.renderTaskGroups(container as HTMLElement);
-                }
             }
         } catch (error) {
             console.error('Error applying filters to subtasks:', error);
@@ -611,8 +625,22 @@ class ProjectNoteDecorationsPlugin implements PluginValue {
                 insertPos = 0;
             }
             
+            // Get the current file path for note-specific filter state
+            // Try multiple methods to get the file path to avoid "unknown"
+            let notePath = this.currentFile?.path;
+            if (!notePath) {
+                // Fallback: try to get file from the view
+                const viewFile = this.getFileFromView(view);
+                notePath = viewFile?.path;
+            }
+            if (!notePath) {
+                // Last resort: return early - don't create widget without proper file context
+                console.warn('ProjectNoteDecorations: Cannot create widget without file context');
+                return builder.finish();
+            }
+            
             const widget = Decoration.widget({
-                widget: new ProjectSubtasksWidget(this.plugin, this.cachedTasks, this.version),
+                widget: new ProjectSubtasksWidget(this.plugin, this.cachedTasks, notePath, this.version),
                 side: 1  // Place widget after the position so cursor can't go past it
             });
             
