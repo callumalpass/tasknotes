@@ -37,7 +37,39 @@ The Custom Days view is particularly useful for:
 
 ### Recurring Task Support
 
-The Advanced Calendar handles recurring tasks with proper all-day event support and allows duration updates through calendar resize operations. When dragging or resizing recurring task events, the changes apply to that specific occurrence while preserving the recurrence pattern.
+The Advanced Calendar provides sophisticated recurring task management with visual hierarchy and intelligent drag-and-drop behavior.
+
+#### Visual Hierarchy
+
+Recurring tasks are displayed with distinct visual styling:
+
+- **Next Scheduled Occurrence**: Solid border with full opacity, representing the specific date/time when you plan to work on the next instance
+- **Pattern Instances**: Dashed border with reduced opacity (70%), showing preview of when future recurring instances will appear based on the DTSTART and recurrence rule
+
+#### Drag and Drop Behavior
+
+The calendar provides different behaviors depending on which type of recurring event you drag:
+
+**Dragging Next Scheduled Occurrence (Solid Border)**:
+- Updates only the `scheduled` field in the task
+- Reschedules just that specific occurrence to the new date/time
+- Leaves the recurrence pattern unchanged
+- Notice: "Rescheduled next occurrence. This does not change the recurrence pattern."
+
+**Dragging Pattern Instances (Dashed Border)**:
+- Updates the DTSTART time in the recurrence rule
+- Changes when all future pattern instances appear
+- Does not affect the independently scheduled next occurrence
+- Notice: "Updated recurring pattern time. All future instances now appear at this time."
+
+#### Flexible Scheduling
+
+The next scheduled occurrence can appear on any date, even:
+- Before the DTSTART date
+- On days that don't match the recurring pattern (e.g., Tuesday for a weekly Monday pattern)
+- At different times than the pattern instances
+
+This flexibility allows for complete control over both the recurring pattern and individual occurrence scheduling.
 
 ### View Options
 
