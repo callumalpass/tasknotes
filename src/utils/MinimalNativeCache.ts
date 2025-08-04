@@ -466,12 +466,20 @@ export class MinimalNativeCache extends Events {
             const metadata = this.app.metadataCache.getFileCache(file);
             if (metadata?.frontmatter?.tags?.includes(this.taskTag)) {
                 const taskInfo = this.extractTaskInfoFromNative(file.path, metadata.frontmatter);
-                const filteredProjects = filterEmptyProjects(taskInfo?.projects || []);
-                if (filteredProjects.length > 0) {
-                    filteredProjects.forEach(project => {
-                        const extractedProjects = this.extractProjectNamesFromValue(project, file.path);
-                        extractedProjects.forEach(projectName => projects.add(projectName));
-                    });
+                if (taskInfo && taskInfo.projects) {
+                    const filteredProjects = filterEmptyProjects(taskInfo.projects);
+                    if (filteredProjects.length > 0) {
+                        filteredProjects.forEach(project => {
+                            const extractedProjects = this.extractProjectNamesFromValue(project, file.path);
+                            extractedProjects.forEach(projectName => {
+                                // Trim and validate project names to avoid empty entries
+                                const cleanName = projectName.trim();
+                                if (cleanName.length > 0) {
+                                    projects.add(cleanName);
+                                }
+                            });
+                        });
+                    }
                 }
             }
         }

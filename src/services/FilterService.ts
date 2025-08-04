@@ -1068,12 +1068,9 @@ export class FilterService extends EventEmitter {
         const now = Date.now();
         const cacheAge = now - this.filterOptionsCacheTimestamp;
         
-        // Use a smart invalidation strategy:
-        // 1. If cache is very fresh (< 30 seconds), keep it (most changes don't affect options)
-        // 2. If cache is older, invalidate it to ensure new options are picked up
-        // This gives us good performance for rapid file changes while ensuring freshness
-        
-        const minCacheAge = 30000; // 30 seconds
+        // Use a more aggressive invalidation strategy for better data freshness
+        // Always invalidate if cache is older than 10 seconds to ensure new projects are picked up quickly
+        const minCacheAge = 10000; // 10 seconds (reduced from 30 seconds)
         
         if (cacheAge > minCacheAge) {
             this.invalidateFilterOptionsCache();
@@ -1087,6 +1084,14 @@ export class FilterService extends EventEmitter {
         if (this.filterOptionsCache) {
             this.filterOptionsCache = null;
         }
+    }
+    
+    /**
+     * Force refresh of filter options cache
+     * This can be called by UI components when they detect stale data
+     */
+    refreshFilterOptions(): void {
+        this.invalidateFilterOptionsCache();
     }
     
     /**
