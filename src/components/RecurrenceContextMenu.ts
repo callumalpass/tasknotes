@@ -232,7 +232,14 @@ class CustomRecurrenceModal extends Modal {
                             }
                         }
                     } else {
-                        this.dtstart = value;
+                        // Fallback: try to parse as ISO date or use current date
+                        const parsed = new Date(value);
+                        if (!isNaN(parsed.getTime())) {
+                            this.dtstart = value; // Already in YYYY-MM-DD format
+                        } else {
+                            // Invalid date, use today as fallback
+                            this.dtstart = this.formatTodayForInput();
+                        }
                     }
                     break;
                 case 'FREQ':
