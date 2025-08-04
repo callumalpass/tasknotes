@@ -9,7 +9,7 @@ import {
     TaskGroupKey,
     SavedView
 } from '../types';
-import { createTaskCard, updateTaskCard } from '../ui/TaskCard';
+import { createTaskCard, updateTaskCard, refreshParentTaskSubtasks } from '../ui/TaskCard';
 import { FilterBar } from '../ui/FilterBar';
 
 export class KanbanView extends ItemView {
@@ -79,6 +79,9 @@ export class KanbanView extends ItemView {
 
         const taskUpdateListener = this.plugin.emitter.on(EVENT_TASK_UPDATED, async ({ path, originalTask, updatedTask }) => {
             if (!path || !updatedTask) return;
+            
+            // Check if any parent task cards need their subtasks refreshed
+            await refreshParentTaskSubtasks(updatedTask, this.plugin, this.contentEl);
             
             // Check if this task is currently visible in our view
             const taskElement = this.taskElements.get(path);

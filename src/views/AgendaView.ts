@@ -13,7 +13,7 @@ import {
     SavedView
 } from '../types';
 // No helper functions needed from helpers
-import { createTaskCard, updateTaskCard } from '../ui/TaskCard';
+import { createTaskCard, updateTaskCard, refreshParentTaskSubtasks } from '../ui/TaskCard';
 import { createNoteCard } from '../ui/NoteCard';
 import { FilterBar } from '../ui/FilterBar';
 import { FilterService } from '../services/FilterService';
@@ -84,6 +84,11 @@ export class AgendaView extends ItemView {
         
         // Listen for individual task updates for granular DOM updates
         const taskUpdateListener = this.plugin.emitter.on(EVENT_TASK_UPDATED, async ({ path, originalTask, updatedTask }) => {
+            // Check if any parent task cards need their subtasks refreshed
+            if (updatedTask) {
+                await refreshParentTaskSubtasks(updatedTask, this.plugin, this.contentEl);
+            }
+            
             // For agenda view, since items are organized by date and can move between days,
             // it's safer to do a refresh rather than try to update in place
             this.refresh();

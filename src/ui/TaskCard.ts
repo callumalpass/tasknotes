@@ -1566,3 +1566,84 @@ async function toggleSubtasks(card: HTMLElement, task: TaskInfo, plugin: TaskNot
         throw error;
     }
 }
+
+/**
+ * Refresh expanded subtasks in parent task cards when a subtask is updated
+ * This ensures that when a subtask is modified, any parent task cards that have
+ * that subtask expanded will refresh their subtasks display
+ */
+export async function refreshParentTaskSubtasks(
+    updatedTask: TaskInfo, 
+    plugin: TaskNotesPlugin, 
+    container: HTMLElement
+): Promise<void> {
+    // Only process if the updated task has projects (i.e., is a subtask)
+    if (!updatedTask || !updatedTask.projects || updatedTask.projects.length === 0) {
+        return;
+    }
+    
+    // Wait for cache to contain the updated task data to prevent race condition
+    // Try to get the updated task from cache, with a short retry loop
+    let attempts = 0;
+    const maxAttempts = 10; // Max 100ms wait
+    while (attempts < maxAttempts) {
+        try {
+            const cachedTask = await plugin.cacheManager.getTaskInfo(updatedTask.path);
+            if (cachedTask && cachedTask.dateModified === updatedTask.dateModified) {
+                // Cache has been updated
+                break;
+            }
+        } catch (error) {
+            // Cache not ready yet
+        }
+        await new Promise(resolve => setTimeout(resolve, 10));
+        attempts++;
+    }
+    
+    // Find all expanded project task cards in the container
+    const expandedChevrons = container.querySelectorAll('.task-card__chevron--expanded');
+    
+    for (const chevron of expandedChevrons) {
+        const taskCard = chevron.closest('.task-card') as HTMLElement;
+        if (!taskCard) continue;
+        
+        const projectTaskPath = taskCard.dataset.taskPath;
+        if (!projectTaskPath) continue;
+        
+        // Check if this project task is referenced by the updated subtask
+        const projectFile = plugin.app.vault.getAbstractFileByPath(projectTaskPath);
+        if (!(projectFile instanceof TFile)) continue;
+        
+        const projectFileName = projectFile.basename;
+        
+        // Check if the updated task references this project
+        const isSubtaskOfThisProject = updatedTask.projects.some(project => {
+            if (project.startsWith('[[') && project.endsWith(']]')) {
+                const linkedNoteName = project.slice(2, -2).trim();
+                // Check both exact match and resolved file match
+                const resolvedFile = plugin.app.metadataCache.getFirstLinkpathDest(linkedNoteName, '');
+                return linkedNoteName === projectFileName || 
+                       (resolvedFile && resolvedFile.path === projectTaskPath);
+            }
+            return project === projectFileName || project === projectTaskPath;
+        });
+        
+        if (isSubtaskOfThisProject) {
+            // Find the subtasks container
+            const subtasksContainer = taskCard.querySelector('.task-card__subtasks') as HTMLElement;
+            if (subtasksContainer) {
+                // Re-render the subtasks by calling toggleSubtasks
+                try {
+                    // Get the parent task info
+                    const parentTask = await plugin.cacheManager.getTaskInfo(projectTaskPath);
+                    if (parentTask) {
+                        // Clear and re-render subtasks
+                        await toggleSubtasks(taskCard, parentTask, plugin, true);
+                    }
+                } catch (error) {
+                    console.error('Error refreshing parent task subtasks:', error);
+                }
+            }
+        }
+    }
+}

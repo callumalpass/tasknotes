@@ -10,7 +10,7 @@ import {
 } from '../types';
 // No helper functions needed from helpers
 import { perfMonitor } from '../utils/PerformanceMonitor';
-import { createTaskCard, updateTaskCard } from '../ui/TaskCard';
+import { createTaskCard, updateTaskCard, refreshParentTaskSubtasks } from '../ui/TaskCard';
 import { FilterBar } from '../ui/FilterBar';
 
 export class TaskListView extends ItemView {
@@ -91,6 +91,9 @@ export class TaskListView extends ItemView {
                 console.error('EVENT_TASK_UPDATED received invalid data:', { path, originalTask, updatedTask });
                 return;
             }
+            
+            // Check if any parent task cards need their subtasks refreshed
+            await refreshParentTaskSubtasks(updatedTask, this.plugin, this.contentEl);
             
             // Check if this task is currently visible in our view
             const taskElement = this.taskElements.get(path);
