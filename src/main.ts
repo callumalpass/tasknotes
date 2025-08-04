@@ -1319,11 +1319,17 @@ private injectCustomStyles(): void {
 	}
 
 	/**
-	 * Add a project filter condition to the FilterBar (similar to search)
+	 * Add a project filter condition to the FilterBar with proper grouping
+	 * Uses the same pattern as search to ensure correct AND/OR logic
 	 */
 	private addProjectCondition(filterBar: any, projectName: string): void {
 		// Remove existing project conditions first
 		this.removeProjectConditions(filterBar);
+		
+		// Defensive check: ensure children array exists
+		if (!Array.isArray(filterBar.currentQuery.children)) {
+			filterBar.currentQuery.children = [];
+		}
 		
 		// Create condition for wikilink format [[Project Name]]
 		const projectCondition = {
@@ -1333,13 +1339,31 @@ private injectCustomStyles(): void {
 			operator: 'contains',
 			value: `[[${projectName}]]`
 		};
-		
-		// Add to the current query (same pattern as search)
-		if (!Array.isArray(filterBar.currentQuery.children)) {
-			filterBar.currentQuery.children = [];
+
+		// Get existing non-project filters
+		const existingFilters = filterBar.currentQuery.children.filter((child: any) => {
+			return !(child.type === 'condition' && 
+					child.property === 'projects' && 
+					child.operator === 'contains' && 
+					child.id.startsWith('project_'));
+		});
+
+		if (existingFilters.length === 0) {
+			// No existing filters, just add the project condition
+			filterBar.currentQuery.children = [projectCondition];
+		} else {
+			// Create a group containing all existing filters
+			const existingFiltersGroup = {
+				type: 'group',
+				id: this.generateFilterId(),
+				conjunction: filterBar.currentQuery.conjunction, // Preserve the current conjunction
+				children: existingFilters
+			};
+
+			// Replace query children with the project condition AND the existing filters group
+			filterBar.currentQuery.children = [projectCondition, existingFiltersGroup];
+			filterBar.currentQuery.conjunction = 'and'; // Connect project with existing filters using AND
 		}
-		
-		filterBar.currentQuery.children.unshift(projectCondition);
 		
 		// Update the filter bar UI and emit changes
 		filterBar.updateFilterBuilder();
