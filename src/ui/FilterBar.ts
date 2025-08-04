@@ -964,7 +964,8 @@ export class FilterBar extends EventEmitter {
                 // Only emit query change if input is valid or empty
                 const trimmedValue = (value || '').trim();
                 if (trimmedValue === '' || isValidDateInput(trimmedValue)) {
-                    this.emitQueryChange();
+                    // FIX: Use the debounced version for performance
+                    this.debouncedEmitQueryChange();
                 }
             });
         
@@ -1157,7 +1158,8 @@ export class FilterBar extends EventEmitter {
     private removeFilterGroup(parentGroup: FilterGroup, index: number): void {
         parentGroup.children.splice(index, 1);
         this.ignoreNextClickOutside();
-        // FIX: Remove redundant UI update - emitQueryChange will handle it
+        // FIX: Re-render the UI completely before emitting the change.
+        this.updateFilterBuilderComplete();
         this.emitQueryChange();
     }
 
@@ -1279,7 +1281,8 @@ export class FilterBar extends EventEmitter {
     private removeFilterCondition(group: FilterGroup, index: number): void {
         group.children.splice(index, 1);
         this.ignoreNextClickOutside();
-        // FIX: Remove redundant UI update - emitQueryChange will handle it
+        // FIX: Re-render the UI completely before emitting the change.
+        this.updateFilterBuilderComplete();
         this.emitQueryChange();
     }
 
