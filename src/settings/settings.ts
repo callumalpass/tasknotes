@@ -10,6 +10,9 @@ import { ProjectSelectModal } from '../modals/ProjectSelectModal';
 export interface TaskNotesSettings {
 	tasksFolder: string;  // Now just a default location for new tasks
 	taskTag: string;      // The tag that identifies tasks
+	taskIdentificationMethod: 'tag' | 'property';  // Method to identify tasks
+	taskPropertyName: string;     // Property name for property-based identification
+	taskPropertyValue: string;    // Property value for property-based identification
 	excludedFolders: string;  // Comma-separated list of folders to exclude from Notes tab
 	defaultTaskPriority: string;  // Changed to string to support custom priorities
 	defaultTaskStatus: string;    // Changed to string to support custom statuses
@@ -259,6 +262,9 @@ export const DEFAULT_CALENDAR_VIEW_SETTINGS: CalendarViewSettings = {
 export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	tasksFolder: 'TaskNotes/Tasks',
 	taskTag: 'task',
+	taskIdentificationMethod: 'tag',  // Default to tag-based identification
+	taskPropertyName: '',
+	taskPropertyValue: '',
 	excludedFolders: '',  // Default to no excluded folders
 	defaultTaskPriority: 'normal',
 	defaultTaskStatus: 'open',
@@ -546,18 +552,57 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 			});
 		
 		new Setting(container)
-			.setName('Task tag')
-			.setDesc('Tag that identifies notes as tasks (without #)')
-			.addText(text => {
-				text.inputEl.setAttribute('aria-label', 'Task identification tag');
-				return text
-					.setPlaceholder('task')
-					.setValue(this.plugin.settings.taskTag)
-					.onChange(async (value) => {
-						this.plugin.settings.taskTag = value;
+			.setName('Identify tasks by')
+			.setDesc('Choose whether to identify tasks by tag or by a frontmatter property')
+			.addDropdown(dropdown => {
+				dropdown
+					.addOption('tag', 'Tag')
+					.addOption('property', 'Property')
+					.setValue(this.plugin.settings.taskIdentificationMethod)
+					.onChange(async (value: 'tag' | 'property') => {
+						this.plugin.settings.taskIdentificationMethod = value;
 						await this.plugin.saveSettings();
+						this.renderActiveTab(); // Re-render to show/hide conditional fields
 					});
 			});
+
+		if (this.plugin.settings.taskIdentificationMethod === 'tag') {
+			new Setting(container)
+				.setName('Task tag')
+				.setDesc('Tag that identifies notes as tasks (without #)')
+				.addText(text => {
+					text.inputEl.setAttribute('aria-label', 'Task identification tag');
+					return text
+						.setPlaceholder('task')
+						.setValue(this.plugin.settings.taskTag)
+						.onChange(async (value) => {
+							this.plugin.settings.taskTag = value;
+							await this.plugin.saveSettings();
+						});
+				});
+		} else { // Property-based identification
+			new Setting(container)
+				.setName('Task property name')
+				.setDesc('The frontmatter property name (e.g., "category")')
+				.addText(text => text
+					.setPlaceholder('category')
+					.setValue(this.plugin.settings.taskPropertyName)
+					.onChange(async (value) => {
+						this.plugin.settings.taskPropertyName = value;
+						await this.plugin.saveSettings();
+					}));
+
+			new Setting(container)
+				.setName('Task property value')
+				.setDesc('The value that identifies a task (e.g., "[[Tasks]]")')
+				.addText(text => text
+					.setPlaceholder('[[Tasks]]')
+					.setValue(this.plugin.settings.taskPropertyValue)
+					.onChange(async (value) => {
+						this.plugin.settings.taskPropertyValue = value;
+						await this.plugin.saveSettings();
+					}));
+		}
 		
 		new Setting(container)
 			.setName('Excluded folders')

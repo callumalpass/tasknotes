@@ -9,6 +9,7 @@ import {
     formatDateForStorage
 } from './dateUtils';
 import { filterEmptyProjects } from './helpers';
+import { TaskNotesSettings } from '../settings/settings';
 
 /**
  * Ultra-minimal cache manager that leverages Obsidian's native metadata cache
@@ -22,6 +23,7 @@ import { filterEmptyProjects } from './helpers';
  */
 export class MinimalNativeCache extends Events {
     private app: App;
+    private settings: TaskNotesSettings;
     private taskTag: string;
     private excludedFolders: string[];
     private fieldMapper?: FieldMapper;
@@ -42,21 +44,19 @@ export class MinimalNativeCache extends Events {
     
     constructor(
         app: App,
-        taskTag: string,
-        excludedFolders = '',
-        fieldMapper?: FieldMapper,
-        disableNoteIndexing = false,
-        storeTitleInFilename = false
+        settings: TaskNotesSettings,
+        fieldMapper?: FieldMapper
     ) {
         super();
         this.app = app;
-        this.taskTag = taskTag;
-        this.excludedFolders = excludedFolders 
-            ? excludedFolders.split(',').map(folder => folder.trim())
+        this.settings = settings;
+        this.taskTag = settings.taskTag;
+        this.excludedFolders = settings.excludedFolders
+            ? settings.excludedFolders.split(',').map(folder => folder.trim())
             : [];
         this.fieldMapper = fieldMapper;
-        this.disableNoteIndexing = disableNoteIndexing;
-        this.storeTitleInFilename = storeTitleInFilename;
+        this.disableNoteIndexing = settings.disableNoteIndexing;
+        this.storeTitleInFilename = settings.storeTitleInFilename;
     }
     
     /**
@@ -79,6 +79,31 @@ export class MinimalNativeCache extends Events {
      */
     getApp(): App {
         return this.app;
+    }
+
+    /**
+     * Check if a file is a task based on current settings
+     */
+    private isTaskFile(frontmatter: any): boolean {
+        if (!frontmatter) return false;
+
+        if (this.settings.taskIdentificationMethod === 'property') {
+            const propName = this.settings.taskPropertyName;
+            const propValue = this.settings.taskPropertyValue;
+            if (!propName || !propValue) return false; // Not configured
+
+            const frontmatterValue = frontmatter[propName];
+            if (frontmatterValue === undefined) return false;
+
+            // Handle both single and multi-value properties
+            if (Array.isArray(frontmatterValue)) {
+                return frontmatterValue.includes(propValue);
+            }
+            return frontmatterValue === propValue;
+        } else {
+            // Fallback to legacy tag-based method
+            return Array.isArray(frontmatter.tags) && frontmatter.tags.includes(this.taskTag);
+        }
     }
     
     /**
@@ -137,7 +162,7 @@ export class MinimalNativeCache extends Events {
                 for (const file of batch) {
                     try {
                         const metadata = this.app.metadataCache.getFileCache(file);
-                        if (metadata?.frontmatter?.tags?.includes(this.taskTag)) {
+                        if (metadata?.frontmatter && this.isTaskFile(metadata.frontmatter)) {
                             await this.indexTaskFile(file, metadata.frontmatter);
                         }
                     } catch (error) {
@@ -207,7 +232,7 @@ export class MinimalNativeCache extends Events {
         const tasks: TaskInfo[] = [];
         for (const file of markdownFiles) {
             const metadata = this.app.metadataCache.getFileCache(file);
-            if (metadata?.frontmatter?.tags?.includes(this.taskTag)) {
+            if (metadata?.frontmatter && this.isTaskFile(metadata.frontmatter)) {
                 const taskInfo = this.extractTaskInfoFromNative(file.path, metadata.frontmatter);
                 if (taskInfo) tasks.push(taskInfo);
             }
@@ -272,7 +297,7 @@ export class MinimalNativeCache extends Events {
             if (!metadata?.frontmatter) continue;
             
             const frontmatter = metadata.frontmatter;
-            const isTask = frontmatter.tags?.includes(this.taskTag);
+            const isTask = this.isTaskFile(frontmatter);
             
             if (!isTask && !this.disableNoteIndexing) {
                 // This is a note - extract date information
@@ -352,7 +377,7 @@ export class MinimalNativeCache extends Events {
         
         for (const file of markdownFiles) {
             const metadata = this.app.metadataCache.getFileCache(file);
-            if (metadata?.frontmatter?.tags?.includes(this.taskTag)) {
+            if (metadata?.frontmatter && this.isTaskFile(metadata.frontmatter)) {
                 taskPaths.add(file.path);
             }
         }
@@ -375,7 +400,7 @@ export class MinimalNativeCache extends Events {
             
             for (const file of markdownFiles) {
                 const metadata = this.app.metadataCache.getFileCache(file);
-                if (metadata?.frontmatter?.tags?.includes(this.taskTag)) {
+                if (metadata?.frontmatter && this.isTaskFile(metadata.frontmatter)) {
                     const taskInfo = this.extractTaskInfoFromNative(file.path, metadata.frontmatter);
                     if (taskInfo?.status) {
                         statuses.add(taskInfo.status);
@@ -399,7 +424,7 @@ export class MinimalNativeCache extends Events {
         
         for (const file of markdownFiles) {
             const metadata = this.app.metadataCache.getFileCache(file);
-            if (metadata?.frontmatter?.tags?.includes(this.taskTag)) {
+            if (metadata?.frontmatter && this.isTaskFile(metadata.frontmatter)) {
                 const taskInfo = this.extractTaskInfoFromNative(file.path, metadata.frontmatter);
                 if (taskInfo?.priority) {
                     priorities.add(taskInfo.priority);
@@ -420,7 +445,7 @@ export class MinimalNativeCache extends Events {
         
         for (const file of markdownFiles) {
             const metadata = this.app.metadataCache.getFileCache(file);
-            if (metadata?.frontmatter?.tags?.includes(this.taskTag)) {
+            if (metadata?.frontmatter && this.isTaskFile(metadata.frontmatter)) {
                 const taskInfo = this.extractTaskInfoFromNative(file.path, metadata.frontmatter);
                 if (taskInfo?.tags && Array.isArray(taskInfo.tags)) {
                     taskInfo.tags.forEach(tag => tags.add(tag));
@@ -441,7 +466,7 @@ export class MinimalNativeCache extends Events {
         
         for (const file of markdownFiles) {
             const metadata = this.app.metadataCache.getFileCache(file);
-            if (metadata?.frontmatter?.tags?.includes(this.taskTag)) {
+            if (metadata?.frontmatter && this.isTaskFile(metadata.frontmatter)) {
                 const taskInfo = this.extractTaskInfoFromNative(file.path, metadata.frontmatter);
                 if (taskInfo?.contexts && Array.isArray(taskInfo.contexts)) {
                     taskInfo.contexts.forEach(context => contexts.add(context));
@@ -464,7 +489,7 @@ export class MinimalNativeCache extends Events {
         
         for (const file of markdownFiles) {
             const metadata = this.app.metadataCache.getFileCache(file);
-            if (metadata?.frontmatter?.tags?.includes(this.taskTag)) {
+            if (metadata?.frontmatter && this.isTaskFile(metadata.frontmatter)) {
                 const taskInfo = this.extractTaskInfoFromNative(file.path, metadata.frontmatter);
                 if (taskInfo && taskInfo.projects) {
                     const filteredProjects = filterEmptyProjects(taskInfo.projects);
@@ -511,7 +536,7 @@ export class MinimalNativeCache extends Events {
         
         for (const file of markdownFiles) {
             const metadata = this.app.metadataCache.getFileCache(file);
-            if (metadata?.frontmatter?.tags?.includes(this.taskTag)) {
+            if (metadata?.frontmatter && this.isTaskFile(metadata.frontmatter)) {
                 const taskInfo = this.extractTaskInfoFromNative(file.path, metadata.frontmatter);
                 const filteredProjects = filterEmptyProjects(taskInfo?.projects || []);
                 if (filteredProjects.length > 0) {
@@ -688,7 +713,7 @@ export class MinimalNativeCache extends Events {
         if (!metadata?.frontmatter) return null;
         
         // Check if the note has the task tag
-        if (!metadata.frontmatter.tags?.includes(this.taskTag)) return null;
+        if (!this.isTaskFile(metadata.frontmatter)) return null;
         
         return this.extractTaskInfoFromNative(path, metadata.frontmatter);
     }
@@ -722,7 +747,7 @@ export class MinimalNativeCache extends Events {
             if (!metadata?.frontmatter) continue;
             
             const frontmatter = metadata.frontmatter;
-            const isTask = frontmatter.tags?.includes(this.taskTag);
+            const isTask = this.isTaskFile(frontmatter);
             
             // Skip task files - we only want notes
             if (isTask) continue;
@@ -828,7 +853,7 @@ export class MinimalNativeCache extends Events {
         
         for (const file of markdownFiles) {
             const metadata = this.app.metadataCache.getFileCache(file);
-            if (metadata?.frontmatter?.tags?.includes(this.taskTag)) {
+            if (metadata?.frontmatter && this.isTaskFile(metadata.frontmatter)) {
                 const taskInfo = this.extractTaskInfoFromNative(file.path, metadata.frontmatter);
                 if (taskInfo?.priority === priority) {
                     taskPaths.push(file.path);
@@ -910,7 +935,7 @@ export class MinimalNativeCache extends Events {
         this.clearFileFromIndexes(file.path);
         
         const metadata = this.app.metadataCache.getFileCache(file);
-        if (metadata?.frontmatter?.tags?.includes(this.taskTag)) {
+        if (metadata?.frontmatter && this.isTaskFile(metadata.frontmatter)) {
             this.indexTaskFile(file, metadata.frontmatter);
         }
         
@@ -930,7 +955,7 @@ export class MinimalNativeCache extends Events {
         this.clearFileFromIndexes(oldPath);
         
         const metadata = this.app.metadataCache.getFileCache(file);
-        if (metadata?.frontmatter?.tags?.includes(this.taskTag)) {
+        if (metadata?.frontmatter && this.isTaskFile(metadata.frontmatter)) {
             this.indexTaskFile(file, metadata.frontmatter);
         }
         
@@ -1026,7 +1051,7 @@ export class MinimalNativeCache extends Events {
         const file = this.app.vault.getAbstractFileByPath(path);
         if (file instanceof TFile) {
             const metadata = this.app.metadataCache.getFileCache(file);
-            if (metadata?.frontmatter?.tags?.includes(this.taskTag)) {
+            if (metadata?.frontmatter && this.isTaskFile(metadata.frontmatter)) {
                 this.indexTaskFile(file, metadata.frontmatter);
             }
         }

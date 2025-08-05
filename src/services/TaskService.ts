@@ -34,11 +34,14 @@ export class TaskService {
             // Prepare contexts, projects, and tags arrays
             const contextsArray = taskData.contexts || [];
             const projectsArray = taskData.projects || [];
-            const tagsArray = taskData.tags || [this.plugin.settings.taskTag];
+            // Handle tags based on identification method
+            let tagsArray = taskData.tags || [];
             
-            // Ensure task tag is always included
-            if (!tagsArray.includes(this.plugin.settings.taskTag)) {
-                tagsArray.unshift(this.plugin.settings.taskTag);
+            // Only add task tag if using tag-based identification
+            if (this.plugin.settings.taskIdentificationMethod === 'tag') {
+                if (!tagsArray.includes(this.plugin.settings.taskTag)) {
+                    tagsArray = [this.plugin.settings.taskTag, ...tagsArray];
+                }
             }
 
             // Generate filename
@@ -105,8 +108,22 @@ export class TaskService {
             // Use field mapper to convert to frontmatter with proper field mapping
             const frontmatter = this.plugin.fieldMapper.mapToFrontmatter(completeTaskData, this.plugin.settings.taskTag, this.plugin.settings.storeTitleInFilename);
             
-            // Tags are handled separately (not via field mapper)
-            frontmatter.tags = tagsArray;
+            // Handle task identification based on settings
+            if (this.plugin.settings.taskIdentificationMethod === 'property') {
+                const propName = this.plugin.settings.taskPropertyName;
+                const propValue = this.plugin.settings.taskPropertyValue;
+                if (propName && propValue) {
+                    frontmatter[propName] = propValue;
+                }
+                // Remove task tag from tags array if using property identification
+                const filteredTags = tagsArray.filter((tag: string) => tag !== this.plugin.settings.taskTag);
+                if (filteredTags.length > 0) {
+                    frontmatter.tags = filteredTags;
+                }
+            } else {
+                // Tags are handled separately (not via field mapper)
+                frontmatter.tags = tagsArray;
+            }
 
             // Apply template processing (both frontmatter and body)
             const templateResult = await this.applyTemplate(taskData);

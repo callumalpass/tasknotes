@@ -173,11 +173,8 @@ export default class TaskNotesPlugin extends Plugin {
 		// Initialize minimal native cache manager
 		this.cacheManager = new MinimalNativeCache(
 			this.app,
-			this.settings.taskTag,
-			this.settings.excludedFolders,
-			this.fieldMapper,
-			this.settings.disableNoteIndexing,
-			this.settings.storeTitleInFilename
+			this.settings,
+			this.fieldMapper
 		);
 		
 		// Use same instance for event emitting
