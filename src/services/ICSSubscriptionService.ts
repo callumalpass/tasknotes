@@ -222,10 +222,39 @@ export class ICSSubscriptionService extends EventEmitter {
 
             const vevents = comp.getAllSubcomponents('vevent');
             const events: ICSEvent[] = [];
+            
+            // Maps to track recurring event exceptions
+            const recurringExceptions = new Map<string, Set<string>>(); // uid -> Set of exception dates
+            const modifiedInstances = new Map<string, Map<string, ICAL.Event>>(); // uid -> Map of recurrence-id to Event
+            
+            // First pass: identify exceptions and modified instances
+            vevents.forEach((vevent: ICAL.Component) => {
+                const event = new ICAL.Event(vevent);
+                const uid = event.uid;
+                
+                if (!uid) return;
+                
+                // Check if this is a modified instance (has RECURRENCE-ID)
+                const recurrenceId = (vevent as any).getFirstPropertyValue('recurrence-id');
+                if (recurrenceId) {
+                    if (!modifiedInstances.has(uid)) {
+                        modifiedInstances.set(uid, new Map());
+                    }
+                    const recurrenceIdStr = recurrenceId.toString();
+                    modifiedInstances.get(uid)!.set(recurrenceIdStr, event);
+                }
+            });
 
+            // Second pass: process events
             vevents.forEach((vevent: ICAL.Component) => {
                 try {
                     const event = new ICAL.Event(vevent);
+                    
+                    // Skip if this is a modified instance (will be handled as part of the recurring series)
+                    const recurrenceId = (vevent as any).getFirstPropertyValue('recurrence-id');
+                    if (recurrenceId) {
+                        return;
+                    }
                     
                     // Extract basic properties
                     const summary = event.summary || 'Untitled Event';
@@ -262,7 +291,26 @@ export class ICSSubscriptionService extends EventEmitter {
 
                     // Handle recurring events
                     if (event.isRecurring()) {
-                        // For now, we'll generate instances for the next year
+                        // Parse EXDATE (exception dates) - dates to exclude from the recurrence
+                        const exdates = new Set<string>();
+                        const exdateProp = (vevent as any).getAllProperties('exdate');
+                        exdateProp.forEach((prop: any) => {
+                            const exdateValue = prop.getFirstValue();
+                            if (exdateValue) {
+                                // Handle both single dates and arrays of dates
+                                const dates = Array.isArray(exdateValue) ? exdateValue : [exdateValue];
+                                dates.forEach(date => {
+                                    if (date && typeof date.toString === 'function') {
+                                        exdates.add(date.toString());
+                                    }
+                                });
+                            }
+                        });
+                        
+                        // Get modified instances for this UID
+                        const modifiedForThisEvent = modifiedInstances.get(uid) || new Map();
+                        
+                        // Generate instances for the next year
                         const iterator = event.iterator(startDate);
                         const maxDate = new ICAL.Time();
                         maxDate.fromJSDate(new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)); // One year from now
@@ -275,21 +323,52 @@ export class ICSSubscriptionService extends EventEmitter {
                             if (occurrence.compare(maxDate) > 0) {
                                 break;
                             }
-
-                            const instanceStart = occurrence.toJSDate().toISOString();
-                            let instanceEnd = endISO;
                             
-                            if (endDate && startDate) {
-                                const duration = endDate.toJSDate().getTime() - startDate.toJSDate().getTime();
-                                instanceEnd = new Date(occurrence.toJSDate().getTime() + duration).toISOString();
+                            const occurrenceStr = occurrence.toString();
+                            
+                            // Skip if this date is in EXDATE
+                            if (exdates.has(occurrenceStr)) {
+                                instanceCount++;
+                                continue;
                             }
+                            
+                            // Check if this instance has been modified
+                            const modifiedEvent = modifiedForThisEvent.get(occurrenceStr);
+                            if (modifiedEvent) {
+                                // Use the modified event instead
+                                const modifiedStart = modifiedEvent.startDate;
+                                const modifiedEnd = modifiedEvent.endDate;
+                                
+                                if (modifiedStart) {
+                                    events.push({
+                                        id: `${eventId}-${instanceCount}`,
+                                        subscriptionId: subscriptionId,
+                                        title: modifiedEvent.summary || summary,
+                                        description: modifiedEvent.description || description,
+                                        start: modifiedStart.toJSDate().toISOString(),
+                                        end: modifiedEnd ? modifiedEnd.toJSDate().toISOString() : undefined,
+                                        allDay: modifiedStart.isDate,
+                                        location: modifiedEvent.location || location,
+                                        url: modifiedEvent.url || icsEvent.url
+                                    });
+                                }
+                            } else {
+                                // Use the original recurring event instance
+                                const instanceStart = occurrence.toJSDate().toISOString();
+                                let instanceEnd = endISO;
+                                
+                                if (endDate && startDate) {
+                                    const duration = endDate.toJSDate().getTime() - startDate.toJSDate().getTime();
+                                    instanceEnd = new Date(occurrence.toJSDate().getTime() + duration).toISOString();
+                                }
 
-                            events.push({
-                                ...icsEvent,
-                                id: `${eventId}-${instanceCount}`,
-                                start: instanceStart,
-                                end: instanceEnd
-                            });
+                                events.push({
+                                    ...icsEvent,
+                                    id: `${eventId}-${instanceCount}`,
+                                    start: instanceStart,
+                                    end: instanceEnd
+                                });
+                            }
 
                             instanceCount++;
                         }
