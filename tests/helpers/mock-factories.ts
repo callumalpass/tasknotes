@@ -412,6 +412,9 @@ export const PluginFactory = {
 
     const mockSettings = {
       taskTag: 'task',
+      taskIdentificationMethod: 'tag',  // Default to tag-based identification
+      taskPropertyName: '',
+      taskPropertyValue: '',
       tasksFolder: 'Tasks',
       defaultTaskStatus: 'open',
       defaultTaskPriority: 'normal',

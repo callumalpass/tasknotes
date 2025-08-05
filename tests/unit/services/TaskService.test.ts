@@ -113,6 +113,7 @@ describe('TaskService', () => {
         timeEstimate: 120,
         recurrence: 'FREQ=DAILY;INTERVAL=1'
       });
+      // With default tag-based identification, task tag should be included
       expect(taskInfo.tags).toContain('task');
     });
 
@@ -232,7 +233,10 @@ describe('TaskService', () => {
       await expect(taskService.createTask({ title: longTitle })).rejects.toThrow('Title is too long');
     });
 
-    it('should ensure task tag is always included', async () => {
+    it('should ensure task tag is included when using tag-based identification', async () => {
+      // Ensure we're using tag-based identification (default)
+      mockPlugin.settings.taskIdentificationMethod = 'tag';
+      
       const taskData: TaskCreationData = {
         title: 'Tag Test Task',
         tags: ['custom', 'tags']
@@ -241,6 +245,46 @@ describe('TaskService', () => {
       const { taskInfo } = await taskService.createTask(taskData);
 
       expect(taskInfo.tags).toEqual(['task', 'custom', 'tags']);
+    });
+
+    it('should use property-based identification when configured', async () => {
+      // Configure property-based identification
+      mockPlugin.settings.taskIdentificationMethod = 'property';
+      mockPlugin.settings.taskPropertyName = 'category';
+      mockPlugin.settings.taskPropertyValue = '[[Tasks]]';
+      
+      const taskData: TaskCreationData = {
+        title: 'Property Test Task',
+        tags: ['custom', 'tags']
+      };
+
+      const { taskInfo } = await taskService.createTask(taskData);
+
+      // Should NOT include task tag in tags array
+      expect(taskInfo.tags).toEqual(['custom', 'tags']);
+      
+      // Verify the fieldMapper was called with the property data
+      expect(mockPlugin.fieldMapper.mapToFrontmatter).toHaveBeenCalled();
+    });
+
+    it('should not add task tag when using property identification with no custom tags', async () => {
+      // Configure property-based identification
+      mockPlugin.settings.taskIdentificationMethod = 'property';
+      mockPlugin.settings.taskPropertyName = 'type';
+      mockPlugin.settings.taskPropertyValue = 'task';
+      
+      const taskData: TaskCreationData = {
+        title: 'Property No Tags Test',
+        // No tags provided
+      };
+
+      const { taskInfo } = await taskService.createTask(taskData);
+
+      // Should have empty tags array (no task tag added)
+      expect(taskInfo.tags).toEqual([]);
+      
+      // Verify the fieldMapper was called 
+      expect(mockPlugin.fieldMapper.mapToFrontmatter).toHaveBeenCalled();
     });
 
     it('should handle template processing errors gracefully', async () => {
