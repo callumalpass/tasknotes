@@ -785,15 +785,25 @@ export default class TaskNotesPlugin extends Plugin {
 				...DEFAULT_SETTINGS.fieldMapping,
 				...(loadedData?.fieldMapping || {})
 			},
-			// Deep merge custom statuses array
-			customStatuses: loadedData?.customStatuses || DEFAULT_SETTINGS.customStatuses,
-			// Deep merge custom priorities array  
-			customPriorities: loadedData?.customPriorities || DEFAULT_SETTINGS.customPriorities,
+			// Deep merge task creation defaults to ensure new fields get default values
+			taskCreationDefaults: {
+				...DEFAULT_SETTINGS.taskCreationDefaults,
+				...(loadedData?.taskCreationDefaults || {})
+			},
 			// Deep merge calendar view settings to ensure new fields get default values
 			calendarViewSettings: {
 				...DEFAULT_SETTINGS.calendarViewSettings,
 				...(loadedData?.calendarViewSettings || {})
-			}
+			},
+			// Deep merge ICS integration settings to ensure new fields get default values
+			icsIntegration: {
+				...DEFAULT_SETTINGS.icsIntegration,
+				...(loadedData?.icsIntegration || {})
+			},
+			// Array handling - maintain existing arrays or use defaults
+			customStatuses: loadedData?.customStatuses || DEFAULT_SETTINGS.customStatuses,
+			customPriorities: loadedData?.customPriorities || DEFAULT_SETTINGS.customPriorities,
+			savedViews: loadedData?.savedViews || DEFAULT_SETTINGS.savedViews
 		};
 		
 		// Check if we added any new field mappings or calendar settings and save if needed
