@@ -480,6 +480,12 @@ export class InstantTaskConvertService {
                 const defaultProjectsArray = defaults.defaultProjects.split(',').map(s => s.trim()).filter(s => s);
                 projectsArray.push(...defaultProjectsArray);
             }
+            
+            // Add parent note as project if enabled
+            if (defaults.useParentNoteAsProject && currentFile) {
+                // The parentNote is already a markdown link, so we can add it directly
+                projectsArray.push(parentNote);
+            }
         }
         
         // Add parsed projects

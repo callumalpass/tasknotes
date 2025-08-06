@@ -74,6 +74,7 @@ export interface TaskCreationDefaults {
 	defaultContexts: string;  // Comma-separated list
 	defaultTags: string;      // Comma-separated list
 	defaultProjects: string;  // Comma-separated list of project links
+	useParentNoteAsProject: boolean; // Use the parent note as a project during instant conversion
 	defaultTimeEstimate: number; // minutes, 0 = no default
 	defaultRecurrence: 'none' | 'daily' | 'weekly' | 'monthly' | 'yearly';
 	// Date defaults
@@ -218,6 +219,7 @@ export const DEFAULT_TASK_CREATION_DEFAULTS: TaskCreationDefaults = {
 	defaultContexts: '',
 	defaultTags: '',
 	defaultProjects: '',
+	useParentNoteAsProject: false,
 	defaultTimeEstimate: 0,
 	defaultRecurrence: 'none',
 	defaultDueDate: 'none',
@@ -795,6 +797,19 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 
 		// Initial render
 		this.renderDefaultProjectsList(projectsList);
+
+		new Setting(container)
+			.setName('Use parent note as project')
+			.setDesc('During instant task conversion, automatically add the parent note as a project')
+			.addToggle(toggle => {
+				toggle.toggleEl.setAttribute('aria-label', 'Use parent note as project for instant conversion');
+				return toggle
+					.setValue(this.plugin.settings.taskCreationDefaults.useParentNoteAsProject)
+					.onChange(async (value) => {
+						this.plugin.settings.taskCreationDefaults.useParentNoteAsProject = value;
+						await this.plugin.saveSettings();
+					});
+			});
 
 		new Setting(container)
 			.setName('Default time estimate')
