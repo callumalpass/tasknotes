@@ -1,6 +1,6 @@
-import { Notice, TFile } from 'obsidian';
+import { Notice, TFile, EventRef } from 'obsidian';
 import TaskNotesPlugin from '../main';
-import { TaskInfo, Reminder } from '../types';
+import { TaskInfo, Reminder, EVENT_TASK_UPDATED } from '../types';
 import { parseDateToLocal, hasTimeComponent } from '../utils/dateUtils';
 
 interface NotificationQueueItem {
@@ -15,6 +15,9 @@ export class NotificationService {
 	private broadScanInterval?: NodeJS.Timer;
 	private quickCheckInterval?: NodeJS.Timer;
 	private processedReminders: Set<string> = new Set(); // Track processed reminders to avoid duplicates
+	private taskUpdateListener?: EventRef;
+	private lastBroadScanTime: number = Date.now();
+	private lastQuickCheckTime: number = Date.now();
 
 	// Configuration constants
 	private readonly BROAD_SCAN_INTERVAL = 5 * 60 * 1000; // 5 minutes
@@ -37,6 +40,9 @@ export class NotificationService {
 			}
 		}
 
+		// Set up task update listener to handle stale notifications
+		this.setupTaskUpdateListener();
+
 		// Start the two-tier interval system
 		this.startBroadScan();
 		this.startQuickCheck();
@@ -52,19 +58,42 @@ export class NotificationService {
 		if (this.quickCheckInterval) {
 			clearInterval(this.quickCheckInterval);
 		}
+		if (this.taskUpdateListener) {
+			this.plugin.emitter.offref(this.taskUpdateListener);
+		}
 		this.notificationQueue = [];
 		this.processedReminders.clear();
 	}
 
 	private startBroadScan(): void {
 		this.broadScanInterval = setInterval(async () => {
+			const now = Date.now();
+			const timeSinceLastScan = now - this.lastBroadScanTime;
+			
+			// Check for system sleep/wake - if gap is significantly larger than interval, handle catch-up
+			if (timeSinceLastScan > this.BROAD_SCAN_INTERVAL + 60000) { // 1 minute tolerance
+				console.log('NotificationService: Detected potential system sleep, performing catch-up scan');
+				await this.handleSystemWakeUp();
+			}
+			
 			await this.scanTasksAndBuildQueue();
+			this.lastBroadScanTime = now;
 		}, this.BROAD_SCAN_INTERVAL);
 	}
 
 	private startQuickCheck(): void {
 		this.quickCheckInterval = setInterval(() => {
+			const now = Date.now();
+			const timeSinceLastCheck = now - this.lastQuickCheckTime;
+			
+			// Check for system sleep/wake for quick checks too
+			if (timeSinceLastCheck > this.QUICK_CHECK_INTERVAL + 60000) { // 1 minute tolerance
+				console.log('NotificationService: Detected potential system sleep during quick check');
+				// Don't spam with catch-up, just process current queue
+			}
+			
 			this.checkNotificationQueue();
+			this.lastQuickCheckTime = now;
 		}, this.QUICK_CHECK_INTERVAL);
 	}
 
@@ -311,5 +340,88 @@ export class NotificationService {
 			}
 		}
 		keysToRemove.forEach(key => this.processedReminders.delete(key));
+	}
+
+	private setupTaskUpdateListener(): void {
+		this.taskUpdateListener = this.plugin.emitter.on(EVENT_TASK_UPDATED, async ({ path, originalTask, updatedTask }) => {
+			if (!path || !updatedTask) {
+				return;
+			}
+
+			// Clear any existing notifications for this task path
+			this.removeNotificationsForTask(path);
+			
+			// Clear processed reminders for this task so they can trigger again if needed
+			this.clearProcessedRemindersForTask(path);
+
+			// Re-calculate notification times for the updated task within the current window
+			const now = Date.now();
+			const windowEnd = now + this.QUEUE_WINDOW;
+
+			if (updatedTask.reminders && updatedTask.reminders.length > 0) {
+				for (const reminder of updatedTask.reminders) {
+					const reminderId = `${path}-${reminder.id}`;
+					if (this.processedReminders.has(reminderId)) {
+						continue;
+					}
+
+					const notifyAt = this.calculateNotificationTime(updatedTask, reminder);
+					if (notifyAt === null) {
+						continue;
+					}
+
+					// Add to queue if within the next scan window
+					if (notifyAt > now && notifyAt <= windowEnd) {
+						this.notificationQueue.push({
+							taskPath: path,
+							reminder,
+							notifyAt
+						});
+					}
+				}
+
+				// Re-sort queue by notification time
+				this.notificationQueue.sort((a, b) => a.notifyAt - b.notifyAt);
+			}
+		});
+	}
+
+	private removeNotificationsForTask(taskPath: string): void {
+		this.notificationQueue = this.notificationQueue.filter(item => item.taskPath !== taskPath);
+	}
+
+	private async handleSystemWakeUp(): Promise<void> {
+		// Clear processed reminders to allow missed notifications to trigger
+		// But only for reminders that are now past their notification time
+		const now = Date.now();
+		const keysToRemove: string[] = [];
+
+		// Check all processed reminders and remove ones that should have triggered
+		for (const key of this.processedReminders) {
+			const [taskPath, reminderId] = key.split('-', 2);
+			if (!taskPath || !reminderId) continue;
+
+			// Try to get the task and check if the reminder time has passed
+			try {
+				const task = await this.plugin.cacheManager.getTaskInfo(taskPath);
+				if (task && task.reminders) {
+					const reminder = task.reminders.find(r => r.id === reminderId);
+					if (reminder) {
+						const notifyAt = this.calculateNotificationTime(task, reminder);
+						if (notifyAt && notifyAt <= now) {
+							keysToRemove.push(key);
+						}
+					}
+				}
+			} catch (error) {
+				// If we can't get the task, remove the processed reminder anyway
+				keysToRemove.push(key);
+			}
+		}
+
+		keysToRemove.forEach(key => this.processedReminders.delete(key));
+
+		// Perform a full scan to rebuild the queue with current data
+		await this.scanTasksAndBuildQueue();
 	}
 }

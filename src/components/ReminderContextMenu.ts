@@ -1,4 +1,4 @@
-import { Menu, setIcon } from 'obsidian';
+import { Menu, Notice } from 'obsidian';
 import TaskNotesPlugin from '../main';
 import { TaskInfo, Reminder } from '../types';
 import { ReminderModal } from '../modals/ReminderModal';
@@ -131,14 +131,21 @@ export class ReminderContextMenu {
 	}
 
 	private async saveReminders(reminders: Reminder[]): Promise<void> {
+		// Fetch the latest task data to avoid overwriting changes
+		const freshTask = await this.plugin.cacheManager.getTaskInfo(this.task.path);
+		if (!freshTask) {
+			new Notice('Task not found. Could not save reminder.');
+			return;
+		}
+
 		const updatedTask: TaskInfo = {
-			...this.task,
+			...freshTask, // Use the fresh task data as the base
 			reminders
 		};
 
 		// Only save to file if the task already exists (has a valid path)
 		if (this.task.path && this.task.path.trim() !== '') {
-			await this.plugin.taskService.updateProperty(this.task, 'reminders', reminders);
+			await this.plugin.taskService.updateProperty(updatedTask, 'reminders', reminders);
 		}
 		
 		// Always notify the caller about the update (for local state management)
