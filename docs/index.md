@@ -24,7 +24,7 @@ The plugin is built around several key principles:
 
 TaskNotes includes the following capabilities:
 
-**Task Properties**: Each task can include a title, status, priority, due date, scheduled date, contexts, tags, time estimate, and recurrence pattern. You can also add custom fields.
+**Task Properties**: Each task can include a title, status, priority, due date, scheduled date, contexts, tags, time estimate, recurrence pattern, and reminders. You can also add custom fields.
 
 **Time Tracking**: A time tracking feature allows you to record the amount of time that you spend on tasks. This data is stored in the task's frontmatter as time entries with start and stop times.
 

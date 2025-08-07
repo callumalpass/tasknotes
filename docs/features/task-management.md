@@ -51,6 +51,7 @@ Each task in TaskNotes is a Markdown file with a YAML frontmatter block that sto
 - **Time Estimate**: The estimated time required to complete the task, in minutes.
 - **Recurrence**: The pattern for repeating tasks, using the RRule standard.
 - **Time Entries**: An array of recorded work sessions, with start and stop times.
+- **Reminders**: Custom reminders to notify you before or at specific times related to the task.
 
 You can also add your own custom fields to the YAML frontmatter, and use the **Field Mapping** feature to map them to TaskNotes' internal properties.
 
@@ -170,21 +171,25 @@ The `scheduled` field automatically updates to show the next uncompleted occurre
 
 ```yaml
 # Initial state
+
 recurrence: "DTSTART:20250804T090000Z;FREQ=DAILY"
 scheduled: "2025-08-04T09:00"
 complete_instances: []
 
 # After completing Aug 4th
+
 recurrence: "DTSTART:20250804T090000Z;FREQ=DAILY"  # unchanged
 scheduled: "2025-08-05T09:00"  # auto-updated to next day
 complete_instances: ["2025-08-04"]
 
 # After manually rescheduling next occurrence
+
 recurrence: "DTSTART:20250804T090000Z;FREQ=DAILY"  # unchanged
 scheduled: "2025-08-05T14:30"  # manually set to 2:30 PM
 complete_instances: ["2025-08-04"]
 
 # Calendar view shows:
+
 # - Aug 5 at 2:30 PM: Next occurrence (solid border)
 # - Aug 6+ at 9:00 AM: Pattern instances (dashed border)
 ```
@@ -192,12 +197,14 @@ complete_instances: ["2025-08-04"]
 ### Drag and Drop Behavior
 
 #### Dragging Next Scheduled Occurrence (Solid Border)
+
 - **Updates**: Only the `scheduled` field
 - **Effect**: Reschedules just that specific occurrence  
 - **Pattern**: Remains unchanged
 - **Use case**: "I need to do today's workout at 2 PM instead of 9 AM"
 
 #### Dragging Pattern Instances (Dashed Border)  
+
 - **Updates**: DTSTART time in the recurrence rule
 - **Effect**: Changes when all future pattern instances appear
 - **Next occurrence**: Remains independently scheduled
@@ -217,6 +224,7 @@ complete_instances: ["2025-08-04", "2025-08-06", "2025-08-08"]
 ```
 
 #### Automatic Scheduled Date Updates
+
 When completing occurrences:
 - The `scheduled` field automatically updates to the next uncompleted occurrence
 - Uses UTC anchor principle for consistent timezone handling
@@ -225,6 +233,7 @@ When completing occurrences:
 ### Flexible Scheduling
 
 #### Next Occurrence Independence
+
 The next scheduled occurrence can be set to any date, including:
 - **Before DTSTART**: Schedule the next occurrence before the pattern officially begins
 - **Outside pattern**: Schedule Tuesday's occurrence for a weekly Monday pattern  
@@ -273,6 +282,7 @@ TaskNotes maintains full backward compatibility:
 ### Advanced Configuration
 
 #### Custom Recurrence Modal
+
 Access advanced options through the custom recurrence modal:
 - **Start date picker**: Set the DTSTART date
 - **Start time picker**: Set the DTSTART time (optional)
@@ -281,8 +291,205 @@ Access advanced options through the custom recurrence modal:
 - **End conditions**: Until date, count limits, or never-ending
 
 #### Time Independence
+
 Pattern time (DTSTART) and next occurrence time (scheduled) are completely independent:
 - Pattern instances can appear at 9 AM while next occurrence is at 2 PM
 - Dragging pattern instances changes the pattern time for all future instances
 - Dragging next occurrence only affects that specific instance
 - Users have complete control over both timing aspects
+
+## Task Reminders
+
+TaskNotes provides a reminder system that allows you to set notifications for your tasks. The reminder system uses the iCalendar VALARM specification and supports both relative reminders (based on due or scheduled dates) and absolute reminders (specific date and time).
+
+### Reminder Types
+
+#### Relative Reminders
+
+Relative reminders are triggered relative to a task's due date or scheduled date. These are useful for consistent notification patterns across different tasks.
+
+**Examples:**
+- 15 minutes before due date
+- 1 hour before scheduled date
+- 2 days before due date
+- 30 minutes after scheduled date
+
+#### Absolute Reminders
+
+Absolute reminders are triggered at a specific date and time, regardless of the task's due or scheduled dates. These are useful for time-sensitive notifications or follow-up actions.
+
+**Examples:**
+
+- October 26, 2025 at 9:00 AM
+- Tomorrow at 2:30 PM
+- Next Monday at 10:00 AM
+
+### Setting Up Reminders
+
+#### Adding Reminders to Tasks
+
+You can add reminders to tasks through several methods:
+
+1. **Task Creation Modal**: When creating a new task, use the reminder field to access the reminder interface
+2. **Task Edit Modal**: Edit existing tasks and manage their reminders
+3. **Task Cards**: Click the bell icon on any task card to access quick reminder options
+4. **Context Menu**: Right-click the reminder field for quick access to common options
+
+#### Quick Reminder Options
+
+The reminder context menu provides quick access to common reminder patterns:
+
+**Before Due Date:**
+- 5 minutes before
+- 15 minutes before  
+- 1 hour before
+- 1 day before
+
+**Before Scheduled Date:**
+- 5 minutes before
+- 15 minutes before
+- 1 hour before  
+- 1 day before
+
+These quick options are only available when the task has the corresponding due or scheduled date set.
+
+#### Reminder Modal
+
+For advanced reminder management, use the Reminder Modal which provides:
+
+- **Form-based reminder creation** with validation and real-time preview
+- **Multiple reminder management** for complex notification needs
+- **Custom descriptions** for personalized reminder messages
+- **Visual indicators** showing task context (due date, scheduled date)
+- **Editing and deletion** of existing reminders
+
+### Reminder Data Format
+
+Reminders are stored in the task's YAML frontmatter as an array using the following format:
+
+#### Relative Reminder Structure
+
+```yaml
+reminders:
+  - id: "rem_1678886400000_abc123xyz"
+    type: "relative"
+    relatedTo: "due"
+    offset: "-PT15M"
+    description: "Review task details"
+```
+
+#### Absolute Reminder Structure
+
+```yaml
+reminders:
+  - id: "rem_1678886400001_def456uvw"
+    type: "absolute" 
+    absoluteTime: "2025-10-26T09:00:00"
+    description: "Follow up with client"
+```
+
+#### Field Descriptions
+
+- **id**: Unique identifier for UI management and updates
+- **type**: Either "relative" or "absolute"
+- **relatedTo** (relative only): Anchor date - either "due" or "scheduled"
+- **offset** (relative only): ISO 8601 duration format (negative for before, positive for after)
+- **absoluteTime** (absolute only): Full ISO 8601 timestamp
+- **description** (optional): Custom notification message
+
+### Visual Indicators
+
+#### Task Card Bell Icons
+
+Tasks with reminders display a bell icon on their task cards:
+- **Solid bell**: Task has active reminders
+- **Clickable**: Opens the reminder context menu for quick management
+- **Positioned**: Properly spaced with other task indicators (priority, status, etc.)
+
+#### Reminder Context Information
+
+When managing reminders, the interface displays relevant task context:
+- Current due date (if set)
+- Current scheduled date (if set)
+- Existing reminders count
+- Task title for reference
+
+### Default Reminders
+
+TaskNotes supports configuring default reminders that automatically apply to new tasks. This feature eliminates the need to manually add common reminders to every task.
+
+#### Configuring Default Reminders
+
+Default reminders are configured in the TaskNotes settings under "Task Creation Defaults":
+
+1. Navigate to Settings → TaskNotes → Task Defaults
+2. Scroll to the "Default Reminders" section
+3. Use the form to add new default reminders
+4. Specify reminder type, timing, and optional descriptions
+
+#### Default Reminder Application
+
+Default reminders automatically apply to:
+
+- **Manual task creation** through the task creation modal
+- **Instant conversion** of existing content to tasks
+- **Natural language task creation** using the parser
+
+#### Default Reminder Examples
+
+Common default reminder configurations:
+
+- 15 minutes before due date (for all tasks with due dates)
+- 1 hour before scheduled date (for time-sensitive tasks) 
+- 1 day before due date (for project deadlines)
+- Custom absolute reminders for recurring processes
+
+### Integration with Task Workflows
+
+#### Task Creation Integration
+
+Reminders integrate with all task creation workflows:
+
+- Default reminders apply automatically during creation
+- Additional reminders can be added during the creation process
+
+#### Task Editing Integration
+
+The task editing process provides full reminder management:
+
+- View all existing reminders
+- Add, edit, or remove individual reminders
+- Quick access through context menus
+- Real-time validation and preview
+
+#### Calendar View Integration
+
+Reminders work alongside calendar features:
+
+- Visual reminder indicators on task cards in calendar views
+- Quick reminder management through calendar context menus
+- Compatibility with drag-and-drop scheduling
+
+### Field Mapping Support
+
+The reminder system integrates with TaskNotes' field mapping functionality:
+
+- **Custom Property Names**: Map reminders to custom frontmatter property names
+- **Vault Compatibility**: Adapt to existing vault structures and naming conventions
+- **Migration Support**: Maintain compatibility when changing field mappings
+
+### Technical Implementation
+
+#### iCalendar VALARM Compliance
+
+TaskNotes reminder implementation follows the iCalendar VALARM specification:
+- Standard duration formats (ISO 8601)
+- Proper trigger mechanisms for relative and absolute reminders
+- Compatible data structures for interoperability
+
+#### Performance Considerations
+
+The reminder system is designed for efficiency:
+- Lazy loading of reminder data
+- Minimal impact on task loading performance
+- Efficient storage in YAML frontmatter format

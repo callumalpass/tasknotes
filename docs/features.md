@@ -11,6 +11,7 @@ TaskNotes provides a system for managing tasks. You can create, edit, and organi
 - **Organization**: Contexts and tags.
 - **Planning**: Time estimates and recurring patterns.
 - **Tracking**: Automatic creation and modification dates.
+- **Reminders**: Custom notifications for tasks using relative or absolute timing.
 
 For more detailed information, see the [Task Management](features/task-management.md) documentation.
 
