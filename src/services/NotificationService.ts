@@ -254,7 +254,6 @@ export class NotificationService {
 			if ('Notification' in window && Notification.permission === 'granted') {
 				const notification = new Notification('TaskNotes Reminder', {
 					body: message,
-					icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v6l4-4M12 8v8"/><circle cx="12" cy="20" r="2"/></svg>',
 					tag: `tasknotes-${item.taskPath}-${item.reminder.id}`
 				});
 
