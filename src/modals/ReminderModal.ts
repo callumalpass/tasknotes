@@ -1,4 +1,4 @@
-import { App, Modal, Setting, setIcon, Notice } from 'obsidian';
+import { App, Modal, Setting, setIcon, Notice, setTooltip } from 'obsidian';
 import TaskNotesPlugin from '../main';
 import { TaskInfo, Reminder } from '../types';
 import { formatDateForDisplay, parseDateToLocal, getCurrentTimestamp } from '../utils/dateUtils';
@@ -9,6 +9,7 @@ export class ReminderModal extends Modal {
 	private reminders: Reminder[];
 	private onSave: (reminders: Reminder[]) => void;
 	private originalReminders: Reminder[];
+	private saveBtn: HTMLButtonElement;
 
 	constructor(
 		app: App,
@@ -29,89 +30,249 @@ export class ReminderModal extends Modal {
 		contentEl.empty();
 		contentEl.addClass('tasknotes-reminder-modal');
 
-		// Header
-		const header = contentEl.createEl('h2', { text: 'Manage Reminders' });
-		const subtitle = contentEl.createEl('div', { 
-			cls: 'tasknotes-reminder-subtitle',
+		// Compact header
+		const headerContainer = contentEl.createDiv({ cls: 'reminder-modal__header' });
+		const header = headerContainer.createEl('h2', { text: 'Task Reminders' });
+		
+		const taskTitle = headerContainer.createDiv({ 
+			cls: 'reminder-modal__task-title',
 			text: this.task.title 
 		});
+		
+		// Add task dates context if available
+		const contextInfo = this.getTaskContextInfo();
+		if (contextInfo) {
+			const taskDates = headerContainer.createDiv({ cls: 'reminder-modal__task-dates' });
+			taskDates.textContent = contextInfo;
+		}
 
+		// Main content area - more compact
+		const contentContainer = contentEl.createDiv({ cls: 'reminder-modal__content' });
+		
 		// Existing reminders section
-		this.renderExistingReminders(contentEl);
+		this.renderExistingReminders(contentContainer);
 
 		// Add new reminder section
-		this.renderAddReminderForm(contentEl);
+		this.renderAddReminderForm(contentContainer);
 
 		// Action buttons
-		const buttonContainer = contentEl.createDiv({ cls: 'modal-button-container' });
+		this.renderActionButtons(contentEl);
 		
-		const saveBtn = buttonContainer.createEl('button', { text: 'Save' });
-		saveBtn.onclick = () => {
+		// Set up keyboard handlers and update save button state
+		this.setupKeyboardHandlers();
+		this.updateSaveButtonState();
+	}
+
+	private renderActionButtons(container: HTMLElement): void {
+		const buttonContainer = container.createDiv({ cls: 'reminder-modal__actions' });
+		
+		// Save button (initially disabled)
+		this.saveBtn = buttonContainer.createEl('button', { 
+			text: 'Save Changes', 
+			cls: 'mod-cta reminder-modal__save-btn'
+		});
+		this.saveBtn.disabled = true;
+		this.saveBtn.onclick = () => {
 			this.save();
 		};
 
-		const cancelBtn = buttonContainer.createEl('button', { text: 'Cancel' });
+		const cancelBtn = buttonContainer.createEl('button', { 
+			text: 'Cancel', 
+			cls: 'reminder-modal__cancel-btn'
+		});
 		cancelBtn.onclick = () => {
 			this.cancel();
 		};
 	}
 
+	private getTaskContextInfo(): string | null {
+		const parts: string[] = [];
+		
+		if (this.task.due) {
+			parts.push(`Due: ${formatDateForDisplay(this.task.due)}`);
+		}
+		
+		if (this.task.scheduled) {
+			parts.push(`Scheduled: ${formatDateForDisplay(this.task.scheduled)}`);
+		}
+		
+		return parts.length > 0 ? parts.join(' • ') : null;
+	}
+
+	private setupKeyboardHandlers(): void {
+		const handleKeydown = (e: KeyboardEvent) => {
+			if (e.key === 'Enter' && (e.ctrlKey || e.metaKey) && !this.saveBtn.disabled) {
+				e.preventDefault();
+				this.save();
+			} else if (e.key === 'Escape') {
+				e.preventDefault();
+				this.cancel();
+			}
+		};
+		
+		this.contentEl.addEventListener('keydown', handleKeydown);
+		this.onClose = () => {
+			this.contentEl.removeEventListener('keydown', handleKeydown);
+			const { contentEl } = this;
+			contentEl.empty();
+		};
+	}
+
+	private updateSaveButtonState(): void {
+		if (!this.saveBtn) return;
+		
+		const hasChanges = this.remindersHaveChanged();
+		this.saveBtn.disabled = !hasChanges;
+		this.saveBtn.textContent = hasChanges ? 'Save Changes' : 'No Changes';
+	}
+
 	private renderExistingReminders(container: HTMLElement): void {
-		const section = container.createDiv({ cls: 'reminder-section' });
-		section.createEl('h3', { text: 'Existing Reminders' });
+		const section = container.createDiv({ cls: 'reminder-modal__section' });
+		
+		const sectionHeader = section.createDiv({ cls: 'reminder-modal__section-header' });
+		const headerTitle = sectionHeader.createEl('h3', { text: 'Current Reminders' });
+		
+		if (this.reminders.length > 0) {
+			const reminderCount = sectionHeader.createSpan({ 
+				cls: 'reminder-modal__reminder-count',
+				text: `(${this.reminders.length})`
+			});
+		}
 
 		if (this.reminders.length === 0) {
-			section.createEl('div', { 
-				cls: 'no-reminders',
+			const emptyState = section.createDiv({ cls: 'reminder-modal__empty-state' });
+			setIcon(emptyState.createDiv({ cls: 'reminder-modal__empty-icon' }), 'bell-off');
+			emptyState.createEl('div', { 
+				cls: 'reminder-modal__empty-text',
 				text: 'No reminders set' 
 			});
 			return;
 		}
 
-		const reminderList = section.createDiv({ cls: 'reminder-list' });
+		const reminderList = section.createDiv({ cls: 'reminder-modal__reminder-list' });
 		
 		this.reminders.forEach((reminder, index) => {
-			const reminderItem = reminderList.createDiv({ cls: 'reminder-item' });
+			const reminderCard = reminderList.createDiv({ cls: 'reminder-modal__reminder-card' });
+			
+			// Reminder type icon
+			const iconContainer = reminderCard.createDiv({ cls: 'reminder-modal__reminder-icon' });
+			const iconName = reminder.type === 'absolute' ? 'calendar-clock' : 'timer';
+			setIcon(iconContainer, iconName);
 			
 			// Main content area
-			const content = reminderItem.createDiv({ cls: 'reminder-item__content' });
+			const content = reminderCard.createDiv({ cls: 'reminder-modal__reminder-content' });
 			
-			// Type and timing
-			const timing = content.createDiv({ cls: 'reminder-item__timing' });
-			timing.textContent = this.formatReminderTiming(reminder);
+			// Primary info (timing with time for absolute reminders)
+			const primaryInfo = content.createDiv({ cls: 'reminder-modal__reminder-primary' });
+			primaryInfo.textContent = this.formatReminderDisplayText(reminder);
 			
-			// Description (if custom)
+			// Custom description (if any)
 			if (reminder.description) {
-				const description = content.createDiv({ cls: 'reminder-item__description' });
-				description.textContent = reminder.description;
+				const description = content.createDiv({ cls: 'reminder-modal__reminder-description' });
+				description.textContent = `"${reminder.description}"`;
 			}
-			
-			// Details
-			const details = content.createDiv({ cls: 'reminder-item__details' });
-			details.textContent = this.formatReminderDetails(reminder);
 
-			// Actions area
-			const actions = reminderItem.createDiv({ cls: 'reminder-item__actions' });
+			// Actions area - only remove button
+			const actions = reminderCard.createDiv({ cls: 'reminder-modal__reminder-actions' });
 			
-			// Remove button
+			// Remove button with Obsidian tooltip
 			const removeBtn = actions.createEl('button', { 
-				cls: 'reminder-item__remove-btn',
-				attr: { 'aria-label': 'Remove reminder' }
+				cls: 'reminder-modal__action-btn reminder-modal__remove-btn'
 			});
-			setIcon(removeBtn, 'trash');
-			removeBtn.onclick = () => {
+			setIcon(removeBtn, 'trash-2');
+			setTooltip(removeBtn, 'Delete this reminder');
+			removeBtn.onclick = (e) => {
+				e.stopPropagation();
 				this.removeReminder(index);
 			};
 		});
 	}
 
+	private formatReminderDisplayText(reminder: Reminder): string {
+		if (reminder.type === 'absolute') {
+			// For absolute reminders, show the full date and time
+			if (reminder.absoluteTime) {
+				try {
+					const date = new Date(reminder.absoluteTime);
+					return `${date.toLocaleDateString()} at ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+				} catch (error) {
+					return `At ${reminder.absoluteTime}`;
+				}
+			}
+			return 'Absolute reminder';
+		} else {
+			// For relative reminders, show the timing relative to task date
+			const anchor = reminder.relatedTo === 'due' ? 'due date' : 'scheduled date';
+			const offset = this.formatOffset(reminder.offset || '');
+			return `${offset} ${anchor}`;
+		}
+	}
+
+	private renderQuickActions(section: HTMLElement): void {
+		// Only show quick actions if task has due/scheduled dates
+		const hasDates = this.task.due || this.task.scheduled;
+		if (!hasDates) return;
+
+		const quickActions = section.createDiv({ cls: 'reminder-modal__quick-actions' });
+
+		const buttonsContainer = quickActions.createDiv({ cls: 'reminder-modal__quick-buttons' });
+
+		const commonReminders = [
+			{ label: '5m', fullLabel: '5 minutes before', offset: '-PT5M', icon: 'clock' },
+			{ label: '15m', fullLabel: '15 minutes before', offset: '-PT15M', icon: 'clock' },
+			{ label: '1h', fullLabel: '1 hour before', offset: '-PT1H', icon: 'clock' },
+			{ label: '1d', fullLabel: '1 day before', offset: '-P1D', icon: 'calendar' }
+		];
+
+		commonReminders.forEach(({ label, fullLabel, offset, icon }) => {
+			const anchor = this.task.due ? 'due' : 'scheduled';
+			
+			const quickBtn = buttonsContainer.createEl('button', {
+				cls: 'reminder-modal__quick-btn'
+			});
+			
+			const iconEl = quickBtn.createSpan({ cls: 'reminder-modal__quick-btn-icon' });
+			setIcon(iconEl, icon);
+			
+			const labelEl = quickBtn.createSpan({ 
+				cls: 'reminder-modal__quick-btn-label',
+				text: label 
+			});
+			
+			// Use Obsidian's native tooltip
+			setTooltip(quickBtn, `Add reminder ${fullLabel} ${anchor} date`);
+			
+			quickBtn.onclick = () => {
+				this.addQuickReminder(anchor, offset, fullLabel);
+			};
+		});
+	}
+
+	private addQuickReminder(anchor: 'due' | 'scheduled', offset: string, description: string): void {
+		const reminder: Reminder = {
+			id: `rem_${Date.now()}`,
+			type: 'relative',
+			relatedTo: anchor,
+			offset,
+			description
+		};
+
+		this.addReminder(reminder);
+		new Notice(`Added reminder: ${description}`);
+	}
+
 	private renderAddReminderForm(container: HTMLElement): void {
-		const section = container.createDiv({ cls: 'reminder-section' });
-		section.createEl('h3', { text: 'Add New Reminder' });
+		const section = container.createDiv({ cls: 'reminder-modal__section' });
+		
+		const sectionHeader = section.createDiv({ cls: 'reminder-modal__section-header' });
+		const headerTitle = sectionHeader.createEl('h3', { text: 'Add New Reminder' });
+		
+		// Add quick actions for common reminders
+		this.renderQuickActions(section);
 
-		const form = section.createDiv({ cls: 'reminder-form' });
+		const form = section.createDiv({ cls: 'reminder-modal__form' });
 
-		// Type selector
+		// Form state
 		let selectedType: 'absolute' | 'relative' = 'relative';
 		let relativeAnchor: 'due' | 'scheduled' = 'due';
 		let relativeOffset = 15;
@@ -121,18 +282,35 @@ export class ReminderModal extends Modal {
 		let absoluteTime = '';
 		let description = '';
 
-		new Setting(form)
-			.setName('Reminder Type')
-			.addDropdown(dropdown => {
-				dropdown
-					.addOption('relative', 'Relative to task date')
-					.addOption('absolute', 'Specific date and time')
-					.setValue(selectedType)
-					.onChange(value => {
-						selectedType = value as 'absolute' | 'relative';
-						this.updateFormVisibility(form, selectedType);
-					});
-			});
+		// Compact type selector
+		const typeSelector = form.createDiv({ cls: 'reminder-modal__type-selector' });
+		
+		const relativeTab = typeSelector.createEl('button', { 
+			cls: 'reminder-modal__type-tab reminder-modal__type-tab--active',
+			text: 'Relative',
+			attr: { 'data-type': 'relative' }
+		});
+		
+		const absoluteTab = typeSelector.createEl('button', { 
+			cls: 'reminder-modal__type-tab',
+			text: 'Absolute',
+			attr: { 'data-type': 'absolute' }
+		});
+		
+		// Tab switching logic
+		const switchToType = (type: 'relative' | 'absolute') => {
+			selectedType = type;
+			
+			// Update tab appearance
+			relativeTab.classList.toggle('reminder-modal__type-tab--active', type === 'relative');
+			absoluteTab.classList.toggle('reminder-modal__type-tab--active', type === 'absolute');
+			
+			// Update form visibility
+			this.updateFormVisibility(form, selectedType);
+		};
+		
+		relativeTab.onclick = () => switchToType('relative');
+		absoluteTab.onclick = () => switchToType('absolute');
 
 		// Relative reminder fields
 		const relativeContainer = form.createDiv({ cls: 'relative-fields' });
@@ -233,25 +411,61 @@ export class ReminderModal extends Modal {
 					});
 			});
 
-		// Add button
+		// Enhanced add button with icon
 		const addBtn = form.createEl('button', { 
-			cls: 'reminder-add-btn',
+			cls: 'reminder-add-btn'
+		});
+		
+		const addIcon = addBtn.createSpan({ cls: 'reminder-add-btn-icon' });
+		setIcon(addIcon, 'plus');
+		addBtn.createSpan({ 
+			cls: 'reminder-add-btn-text',
 			text: 'Add Reminder' 
 		});
 		addBtn.onclick = () => {
-			const newReminder = this.createReminder(
-				selectedType,
-				relativeAnchor,
-				relativeOffset,
-				relativeUnit,
-				relativeDirection,
-				absoluteDate,
-				absoluteTime,
-				description
-			);
+			// Add loading state
+			addBtn.disabled = true;
+			addBtn.classList.add('reminder-add-btn--loading');
 			
-			if (newReminder) {
-				this.addReminder(newReminder);
+			try {
+				const newReminder = this.createReminder(
+					selectedType,
+					relativeAnchor,
+					relativeOffset,
+					relativeUnit,
+					relativeDirection,
+					absoluteDate,
+					absoluteTime,
+					description
+				);
+				
+				if (newReminder) {
+					this.addReminder(newReminder);
+					
+					// Reset form values for next reminder
+					if (selectedType === 'relative') {
+						relativeOffset = 15;
+						relativeUnit = 'minutes';
+						description = '';
+					} else {
+						absoluteDate = '';
+						absoluteTime = '';
+						description = '';
+					}
+					
+					// Clear description input
+					const descInput = form.querySelector('input[placeholder*="Custom reminder message"]') as HTMLInputElement;
+					if (descInput) {
+						descInput.value = '';
+					}
+				}
+			} catch (error) {
+				console.error('Error adding reminder:', error);
+				new Notice('Failed to add reminder. Please check your inputs.');
+			} finally {
+				// Remove loading state
+				addBtn.disabled = false;
+				addBtn.classList.remove('reminder-add-btn--loading');
 			}
 		};
 	}
@@ -391,6 +605,7 @@ export class ReminderModal extends Modal {
 	private addReminder(reminder: Reminder): void {
 		this.reminders.push(reminder);
 		this.refresh();
+		this.updateSaveButtonState();
 		
 		// Emit immediate event for live UI updates (optional, for real-time feedback)
 		if (this.task.path) {
@@ -407,6 +622,7 @@ export class ReminderModal extends Modal {
 		const removedReminder = this.reminders[index];
 		this.reminders.splice(index, 1);
 		this.refresh();
+		this.updateSaveButtonState();
 		
 		// Emit immediate event for live UI updates (optional, for real-time feedback)
 		if (this.task.path && removedReminder) {
