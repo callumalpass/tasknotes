@@ -70,6 +70,9 @@ export class TaskEditModal extends TaskModal {
         } else {
             this.recurrenceRule = '';
         }
+        
+        // Initialize reminders
+        this.reminders = this.task.reminders ? [...this.task.reminders] : [];
     }
 
     private convertLegacyRecurrenceToString(recurrence: { frequency?: string; days_of_week?: string[]; day_of_month?: number }): string {
@@ -457,6 +460,14 @@ export class TaskEditModal extends TaskModal {
             
         if (this.recurrenceRule !== oldRecurrence) {
             changes.recurrence = this.recurrenceRule || undefined;
+        }
+
+        // Compare reminders
+        const oldReminders = this.task.reminders || [];
+        const newReminders = this.reminders || [];
+        
+        if (JSON.stringify(newReminders) !== JSON.stringify(oldReminders)) {
+            changes.reminders = newReminders.length > 0 ? newReminders : undefined;
         }
 
         // Apply completed instances changes

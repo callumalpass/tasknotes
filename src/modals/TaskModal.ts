@@ -4,8 +4,10 @@ import { DateContextMenu } from '../components/DateContextMenu';
 import { PriorityContextMenu } from '../components/PriorityContextMenu';
 import { StatusContextMenu } from '../components/StatusContextMenu';
 import { RecurrenceContextMenu } from '../components/RecurrenceContextMenu';
+import { ReminderContextMenu } from '../components/ReminderContextMenu';
 import { getDatePart, getTimePart, combineDateAndTime } from '../utils/dateUtils';
 import { ProjectSelectModal } from './ProjectSelectModal';
+import { TaskInfo, Reminder } from '../types';
 
 export abstract class TaskModal extends Modal {
     plugin: TaskNotesPlugin;
@@ -22,6 +24,7 @@ export abstract class TaskModal extends Modal {
     protected tags = '';
     protected timeEstimate = 0;
     protected recurrenceRule = '';
+    protected reminders: Reminder[] = [];
     
     // Project link storage
     protected selectedProjectFiles: TAbstractFile[] = [];
@@ -118,6 +121,11 @@ export abstract class TaskModal extends Modal {
         this.createActionIcon(this.actionBar, 'refresh-ccw', 'Set recurrence', (icon, event) => {
             this.showRecurrenceContextMenu(event);
         }, 'recurrence');
+
+        // Reminder icon
+        this.createActionIcon(this.actionBar, 'bell', 'Set reminders', (icon, event) => {
+            this.showReminderContextMenu(event);
+        }, 'reminders');
 
         // Update icon states based on current values
         this.updateIconStates();
@@ -402,6 +410,32 @@ export abstract class TaskModal extends Modal {
         menu.show(event);
     }
 
+    protected showReminderContextMenu(event: MouseEvent): void {
+        // Create a temporary task info object for the context menu
+        const tempTask: TaskInfo = {
+            title: this.title,
+            status: this.status,
+            priority: this.priority,
+            due: this.dueDate,
+            scheduled: this.scheduledDate,
+            path: '', // Will be set when saving
+            archived: false,
+            reminders: this.reminders
+        };
+
+        const menu = new ReminderContextMenu(
+            this.plugin,
+            tempTask,
+            event.target as HTMLElement,
+            (updatedTask: TaskInfo) => {
+                this.reminders = updatedTask.reminders || [];
+                this.updateReminderIconState();
+            }
+        );
+        
+        menu.show(event);
+    }
+
     protected updateDateIconState(): void {
         this.updateIconStates();
     }
@@ -415,6 +449,10 @@ export abstract class TaskModal extends Modal {
     }
 
     protected updateRecurrenceIconState(): void {
+        this.updateIconStates();
+    }
+
+    protected updateReminderIconState(): void {
         this.updateIconStates();
     }
 
@@ -605,6 +643,20 @@ export abstract class TaskModal extends Modal {
             } else {
                 recurrenceIcon.classList.remove('has-value');
                 setTooltip(recurrenceIcon, 'Set recurrence', { placement: 'top' });
+            }
+        }
+
+        // Update reminder icon
+        const reminderIcon = this.actionBar.querySelector('[data-type="reminders"]') as HTMLElement;
+        if (reminderIcon) {
+            if (this.reminders && this.reminders.length > 0) {
+                reminderIcon.classList.add('has-value');
+                const count = this.reminders.length;
+                const tooltip = count === 1 ? '1 reminder set' : `${count} reminders set`;
+                setTooltip(reminderIcon, tooltip, { placement: 'top' });
+            } else {
+                reminderIcon.classList.remove('has-value');
+                setTooltip(reminderIcon, 'Set reminders', { placement: 'top' });
             }
         }
     }

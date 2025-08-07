@@ -64,6 +64,7 @@ import { showMigrationPrompt } from './modals/MigrationModal';
 import { StatusBarService } from './services/StatusBarService';
 import { ProjectSubtasksService } from './services/ProjectSubtasksService';
 import { ExpandedProjectsService } from './services/ExpandedProjectsService';
+import { NotificationService } from './services/NotificationService';
 
 // Type definitions for better type safety
 interface TaskUpdateEventData {
@@ -141,6 +142,9 @@ export default class TaskNotesPlugin extends Plugin {
 	// Status bar service
 	statusBarService: StatusBarService;
 	
+	// Notification service
+	notificationService: NotificationService;
+	
 	// Event listener cleanup  
 	private taskUpdateListenerForEditor: import('obsidian').EventRef | null = null;
 	
@@ -194,6 +198,7 @@ export default class TaskNotesPlugin extends Plugin {
 		this.dragDropManager = new DragDropManager(this);
 		this.migrationService = new MigrationService(this.app);
 		this.statusBarService = new StatusBarService(this);
+		this.notificationService = new NotificationService(this);
 		
 		// Note: View registration and heavy operations moved to onLayoutReady
 		
@@ -318,6 +323,9 @@ export default class TaskNotesPlugin extends Plugin {
 			
 			// Initialize status bar service
 			this.statusBarService.initialize();
+			
+			// Initialize notification service
+			await this.notificationService.initialize();
 			
 			// Defer heavy service initialization until needed
 			this.initializeServicesLazily();
@@ -727,6 +735,11 @@ export default class TaskNotesPlugin extends Plugin {
 		// Clean up status bar service
 		if (this.statusBarService) {
 			this.statusBarService.destroy();
+		}
+		
+		// Clean up notification service
+		if (this.notificationService) {
+			this.notificationService.destroy();
 		}
 		
 		// Clean up native cache manager

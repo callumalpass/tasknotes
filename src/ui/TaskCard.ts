@@ -13,6 +13,7 @@ import {
 import { DateContextMenu } from '../components/DateContextMenu';
 import { PriorityContextMenu } from '../components/PriorityContextMenu';
 import { RecurrenceContextMenu } from '../components/RecurrenceContextMenu';
+import { ReminderModal } from '../modals/ReminderModal';
 
 export interface TaskCardOptions {
     showDueDate: boolean;
@@ -280,6 +281,42 @@ export function createTaskCard(task: TaskInfo, plugin: TaskNotesPlugin, options:
                 app: plugin.app
             });
             menu.show(e as MouseEvent);
+        });
+    }
+    
+    // Reminder indicator (if task has reminders)
+    if (task.reminders && task.reminders.length > 0) {
+        const reminderIndicator = mainRow.createEl('div', {
+            cls: 'task-card__reminder-indicator',
+            attr: {
+                'aria-label': `${task.reminders.length} reminder${task.reminders.length > 1 ? 's' : ''} set (click to manage)`
+            }
+        });
+        
+        const count = task.reminders.length;
+        const tooltip = count === 1 ? '1 reminder set (click to manage)' : `${count} reminders set (click to manage)`;
+        setTooltip(reminderIndicator, tooltip, { placement: 'top' });
+        
+        // Use Obsidian's built-in bell icon for reminders
+        setIcon(reminderIndicator, 'bell');
+        
+        // Add click handler to open reminder modal
+        reminderIndicator.addEventListener('click', (e) => {
+            e.stopPropagation(); // Don't trigger card click
+            const modal = new ReminderModal(
+                plugin.app,
+                plugin,
+                task,
+                async (reminders) => {
+                    try {
+                        await plugin.updateTaskProperty(task, 'reminders', reminders.length > 0 ? reminders : undefined);
+                    } catch (error) {
+                        console.error('Error updating reminders:', error);
+                        new Notice('Failed to update reminders');
+                    }
+                }
+            );
+            modal.open();
         });
     }
     
@@ -613,6 +650,7 @@ export async function showTaskContextMenu(event: MouseEvent, taskPath: string, p
         }
         
         
+        
         const menu = new Menu();
         
         
@@ -719,6 +757,28 @@ export async function showTaskContextMenu(event: MouseEvent, taskPath: string, p
             item.onClick(() => {
                 // Use the fresh task data that showTaskContextMenu just fetched
                 plugin.openScheduledDateModal(task);
+            });
+        });
+        
+        // Manage Reminders
+        menu.addItem((item) => {
+            item.setTitle('Manage reminders...');
+            item.setIcon('bell');
+            item.onClick(() => {
+                const modal = new ReminderModal(
+                    plugin.app,
+                    plugin,
+                    task,
+                    async (reminders) => {
+                        try {
+                            await plugin.updateTaskProperty(task, 'reminders', reminders.length > 0 ? reminders : undefined);
+                        } catch (error) {
+                            console.error('Error updating reminders:', error);
+                            new Notice('Failed to update reminders');
+                        }
+                    }
+                );
+                modal.open();
             });
         });
         
@@ -928,6 +988,7 @@ export function updateTaskCard(element: HTMLElement, task: TaskInfo, plugin: Tas
             cls: 'task-card__recurring-indicator',
             attr: { 'aria-label': `Recurring: ${getRecurrenceDisplayText(task.recurrence)}` }
         });
+        setIcon(recurringIndicator, 'rotate-ccw');
         statusDot?.insertAdjacentElement('afterend', recurringIndicator);
     } else if (!task.recurrence && existingRecurringIndicator) {
         // Remove recurring indicator if task is no longer recurring
@@ -936,6 +997,56 @@ export function updateTaskCard(element: HTMLElement, task: TaskInfo, plugin: Tas
         // Update existing recurring indicator
         const frequencyDisplay = getRecurrenceDisplayText(task.recurrence);
         existingRecurringIndicator.setAttribute('aria-label', `Recurring: ${frequencyDisplay}`);
+    }
+
+    // Update reminder indicator
+    const existingReminderIndicator = element.querySelector('.task-card__reminder-indicator');
+    if (task.reminders && task.reminders.length > 0 && !existingReminderIndicator) {
+        // Add reminder indicator if task has reminders but didn't have one
+        const reminderIndicator = mainRow.createEl('div', {
+            cls: 'task-card__reminder-indicator',
+            attr: {
+                'aria-label': `${task.reminders.length} reminder${task.reminders.length > 1 ? 's' : ''} set (click to manage)`
+            }
+        });
+        
+        const count = task.reminders.length;
+        const tooltip = count === 1 ? '1 reminder set (click to manage)' : `${count} reminders set (click to manage)`;
+        setTooltip(reminderIndicator, tooltip, { placement: 'top' });
+        
+        setIcon(reminderIndicator, 'bell');
+        
+        // Add click handler to open reminder modal
+        reminderIndicator.addEventListener('click', (e) => {
+            e.stopPropagation(); // Don't trigger card click
+            const modal = new ReminderModal(
+                plugin.app,
+                plugin,
+                task,
+                async (reminders) => {
+                    try {
+                        await plugin.updateTaskProperty(task, 'reminders', reminders.length > 0 ? reminders : undefined);
+                    } catch (error) {
+                        console.error('Error updating reminders:', error);
+                        new Notice('Failed to update reminders');
+                    }
+                }
+            );
+            modal.open();
+        });
+        
+        // Insert after the recurring indicator or status dot
+        const insertAfter = existingRecurringIndicator || statusDot;
+        insertAfter?.insertAdjacentElement('afterend', reminderIndicator);
+    } else if ((!task.reminders || task.reminders.length === 0) && existingReminderIndicator) {
+        // Remove reminder indicator if task no longer has reminders
+        existingReminderIndicator.remove();
+    } else if (task.reminders && task.reminders.length > 0 && existingReminderIndicator) {
+        // Update existing reminder indicator
+        const count = task.reminders.length;
+        const tooltip = count === 1 ? '1 reminder set (click to manage)' : `${count} reminders set (click to manage)`;
+        existingReminderIndicator.setAttribute('aria-label', `${count} reminder${count > 1 ? 's' : ''} set (click to manage)`);
+        setTooltip(existingReminderIndicator as HTMLElement, tooltip, { placement: 'top' });
     }
     
     // Update project indicator

@@ -67,6 +67,9 @@ export interface TaskNotesSettings {
 	icsIntegration: ICSIntegrationSettings;
 	// Saved filter views
 	savedViews: SavedView[];
+	// Notification settings
+	enableNotifications: boolean;
+	notificationType: 'in-app' | 'system';
 }
 
 export interface TaskCreationDefaults {
@@ -144,7 +147,8 @@ export const DEFAULT_FIELD_MAPPING: FieldMapping = {
 	completeInstances: 'complete_instances',
 	pomodoros: 'pomodoros',
 	icsEventId: 'icsEventId',
-	icsEventTag: 'ics_event'
+	icsEventTag: 'ics_event',
+	reminders: 'reminders'
 };
 
 // Default status configuration matches current hardcoded behavior
@@ -323,7 +327,10 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 		defaultNoteFolder: ''
 	},
 	// Saved filter views defaults
-	savedViews: []
+	savedViews: [],
+	// Notification defaults
+	enableNotifications: true,
+	notificationType: 'system'
 };
 
 
@@ -356,6 +363,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 			{ id: 'statuses', name: 'Statuses' },
 			{ id: 'priorities', name: 'Priorities' },
 			{ id: 'pomodoro', name: 'Pomodoro' },
+			{ id: 'notifications', name: 'Notifications' },
 			{ id: 'misc', name: 'Misc' }
 		];
 		
@@ -448,6 +456,9 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 				break;
 			case 'pomodoro':
 				this.renderPomodoroTab();
+				break;
+			case 'notifications':
+				this.renderNotificationsTab();
 				break;
 			case 'misc':
 				this.renderMiscTab();
@@ -1556,6 +1567,47 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 					this.plugin.settings.icsIntegration.defaultNoteFolder = value;
 					await this.plugin.saveSettings();
 				}));
+	}
+	
+	private renderNotificationsTab(): void {
+		const container = this.tabContents['notifications'];
+		
+		new Setting(container).setName('Notifications').setHeading();
+		
+		container.createEl('p', { 
+			text: 'Configure task reminder notifications.',
+			cls: 'settings-help-note'
+		});
+		
+		new Setting(container)
+			.setName('Enable reminders')
+			.setDesc('Enable the task reminder system. When disabled, no reminder notifications will be shown.')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.enableNotifications)
+				.onChange(async (value) => {
+					this.plugin.settings.enableNotifications = value;
+					await this.plugin.saveSettings();
+				}));
+		
+		new Setting(container)
+			.setName('Notification type')
+			.setDesc('Choose how reminder notifications are displayed.')
+			.addDropdown(dropdown => dropdown
+				.addOption('system', 'System notifications')
+				.addOption('in-app', 'In-app notices')
+				.setValue(this.plugin.settings.notificationType)
+				.onChange(async (value: 'system' | 'in-app') => {
+					this.plugin.settings.notificationType = value;
+					await this.plugin.saveSettings();
+				}));
+		
+		// Additional info about system notifications
+		const systemNotesEl = container.createDiv({ cls: 'setting-item-description' });
+		systemNotesEl.innerHTML = `
+			<strong>System notifications:</strong> Use your operating system's native notification system. 
+			Requires permission and works even when Obsidian is minimized.<br>
+			<strong>In-app notices:</strong> Show notifications as temporary popups within Obsidian only.
+		`;
 	}
 	
 	private renderMiscTab(): void {

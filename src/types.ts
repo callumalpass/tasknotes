@@ -228,6 +228,7 @@ export interface TaskInfo {
 	dateCreated?: string; // Creation date (ISO timestamp)
 	dateModified?: string; // Last modification date (ISO timestamp)
 	icsEventId?: string[]; // Links to ICS calendar event IDs
+	reminders?: Reminder[]; // Task reminders
 }
 
 export interface TaskCreationData extends Partial<TaskInfo> {
@@ -241,6 +242,22 @@ export interface TimeEntry {
 	endTime?: string; // ISO timestamp, undefined if currently running
 	description?: string; // Optional description of what was worked on
 	duration?: number; // Duration in minutes (calculated or manually set)
+}
+
+// Reminder types
+export interface Reminder {
+	id: string; // A unique ID for UI keying, e.g., 'rem_1678886400000'
+	type: 'absolute' | 'relative';
+	
+	// For relative reminders
+	relatedTo?: 'due' | 'scheduled'; // The anchor date property
+	offset?: string; // ISO 8601 duration format, e.g., "-PT5M", "-PT1H", "-P2D"
+	
+	// For absolute reminders
+	absoluteTime?: string; // Full ISO 8601 timestamp, e.g., "2025-10-26T09:00:00"
+	
+	// Common properties
+	description?: string; // The notification message (optional, can be auto-generated)
 }
 
 // Timeblocking types
@@ -385,6 +402,7 @@ export interface FieldMapping {
 	pomodoros: string;  // For daily note pomodoro tracking
 	icsEventId: string;  // For linking to ICS calendar events (stored as array in frontmatter)
 	icsEventTag: string;  // Tag used for ICS event-related content
+	reminders: string;  // For task reminders
 }
 
 export interface StatusConfig {

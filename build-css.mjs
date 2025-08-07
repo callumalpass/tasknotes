@@ -14,6 +14,7 @@ const CSS_FILES = [
     'styles/filter-bar-bem.css',     // FilterBar component with proper BEM scoping
     'styles/modal-bem.css',          // Modal components with proper BEM scoping
     'styles/task-modal.css',         // Task modal components (Google Keep/Todoist style)
+    'styles/reminder-modal.css',     // Reminder modal component with proper BEM scoping
     'styles/date-picker.css',        // Enhanced date/time picker styling
     'styles/task-selector-modal.css', // TaskSelectorModal component with proper BEM scoping
     'styles/unscheduled-tasks-selector-modal.css', // UnscheduledTasksSelectorModal component with proper BEM scoping

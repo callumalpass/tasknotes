@@ -247,7 +247,8 @@ export function extractTaskInfo(
 				timeEstimate: mappedTask.timeEstimate,
 				timeEntries: mappedTask.timeEntries,
 				dateCreated: mappedTask.dateCreated,
-				dateModified: mappedTask.dateModified
+				dateModified: mappedTask.dateModified,
+				reminders: mappedTask.reminders
 			};
 			
 			return taskInfo;
@@ -273,7 +274,8 @@ export function extractTaskInfo(
 				timeEstimate: mappedTask.timeEstimate,
 				timeEntries: mappedTask.timeEntries,
 				dateCreated: mappedTask.dateCreated,
-				dateModified: mappedTask.dateModified
+				dateModified: mappedTask.dateModified,
+				reminders: mappedTask.reminders
 			};
 		}
 	}
@@ -285,7 +287,8 @@ export function extractTaskInfo(
 		status: 'open',
 		priority: 'normal',
 		path,
-		archived: false
+		archived: false,
+		reminders: []
 	};
 }
 

@@ -443,6 +443,11 @@ export class TaskCreationModal extends TaskModal {
             this.showRecurrenceContextMenu(event);
         }, 'recurrence');
 
+        // Reminder icon
+        this.createActionIcon(this.actionBar, 'bell', 'Set reminders', (icon, event) => {
+            this.showReminderContextMenu(event);
+        }, 'reminders');
+
         // Update icon states based on current values
         this.updateIconStates();
     }
@@ -639,6 +644,7 @@ export class TaskCreationModal extends TaskModal {
             tags: tagList.length > 0 ? tagList : undefined,
             timeEstimate: this.timeEstimate > 0 ? this.timeEstimate : undefined,
             recurrence: this.recurrenceRule || undefined,
+            reminders: this.reminders.length > 0 ? this.reminders : undefined,
             creationContext: 'manual-creation', // Mark as manual creation for folder logic
             dateCreated: now,
             dateModified: now

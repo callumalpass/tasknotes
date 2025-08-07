@@ -989,7 +989,8 @@ export class MinimalNativeCache extends Events {
                 timeEstimate: mappedTask.timeEstimate,
                 timeEntries: mappedTask.timeEntries,
                 dateCreated: mappedTask.dateCreated,
-                dateModified: mappedTask.dateModified
+                dateModified: mappedTask.dateModified,
+                reminders: mappedTask.reminders
             };
         } catch (error) {
             console.error(`Error extracting task info from native metadata for ${path}:`, error);

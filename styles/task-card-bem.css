@@ -212,7 +212,6 @@
 
 .tasknotes-plugin .task-card__status-dot:hover {
     border-color: var(--tn-text-muted);
-    box-shadow: 0 0 8px rgba(100, 149, 237, 0.5);
     transform: scale(1.1);
 }
 
@@ -238,14 +237,16 @@
     transition: all 0.2s ease;
     border-radius: 3px;
     padding: 2px;
-    margin: -2px;
+    border-radius: var(--radius-s);
+    padding: 2px;
+    cursor: pointer;
+    transition: all var(--tn-transition-fast);
 }
 
 .tasknotes-plugin .task-card__recurring-indicator:hover {
     opacity: 1;
     color: var(--interactive-accent);
     background: var(--background-modifier-hover);
-    transform: scale(1.1);
 }
 
 .tasknotes-plugin .task-card__recurring-indicator svg {
@@ -253,10 +254,42 @@
     height: 100%;
 }
 
+/* Reminder indicator - positioned to not overlap with other indicators */
+.tasknotes-plugin .task-card__reminder-indicator {
+    position: absolute;
+    top: 8px;
+    width: 16px;
+    right: 44px; 
+    height: 16px;
+    color: var(--tn-text-muted);
+    opacity: 0.8;
+    cursor: pointer;
+    transition: all var(--tn-transition-fast);
+    display: flex;
+    padding: 2px;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-s);
+    padding: 2px;
+    cursor: pointer;
+    transition: all var(--tn-transition-fast);
+}
+
+.tasknotes-plugin .task-card__reminder-indicator:hover {
+    opacity: 1;
+    color: var(--interactive-accent);
+    background: var(--background-modifier-hover);
+}
+
+.tasknotes-plugin .task-card__reminder-indicator svg {
+    width: 100%;
+    height: 100%;
+}
+
 .tasknotes-plugin .task-card__project-indicator {
     position: absolute;
     top: 8px;
-    right: 44px; /* Position after recurring indicator */
+    right: 62px; 
     width: 16px;
     height: 16px;
     color: var(--tn-text-muted);
@@ -275,7 +308,6 @@
     opacity: 1;
     color: var(--interactive-accent);
     background: var(--background-modifier-hover);
-    transform: scale(1.1);
 }
 
 .tasknotes-plugin .task-card__project-indicator svg {
@@ -286,11 +318,11 @@
 .tasknotes-plugin .task-card__chevron {
     position: absolute;
     top: 8px;
-    right: 62px; /* Position after project indicator */
+    right: 80px; /* Position after project indicator */
     width: 16px;
     height: 16px;
     color: var(--tn-text-muted);
-    opacity: 0.8;
+    opacity: 0;
     z-index: 1;
     display: flex;
     align-items: center;
@@ -305,7 +337,10 @@
     opacity: 1;
     color: var(--interactive-accent);
     background: var(--background-modifier-hover);
-    transform: scale(1.1);
+}
+
+.tasknotes-plugin .task-card:hover .task-card__chevron {
+    opacity: 1;
 }
 
 .tasknotes-plugin .task-card__chevron svg {
@@ -728,33 +763,6 @@
     justify-content: center;
 }
 
-/* DEPRECATED - Use .task-card__context-menu instead */
-.tasknotes-plugin .task-card .task-context-icon {
-    position: absolute;
-    top: var(--tn-spacing-md);
-    right: var(--tn-spacing-md);
-    width: 16px;
-    height: 16px;
-    color: var(--tn-text-muted);
-    cursor: pointer;
-    opacity: 0;
-    transition: all var(--tn-transition-fast);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 10;
-    border-radius: var(--tn-radius-xs);
-}
-
-.tasknotes-plugin .task-card .task-context-icon:hover {
-    color: var(--tn-text-normal);
-    background: var(--tn-interactive-hover);
-    transform: scale(1.1);
-}
-
-.tasknotes-plugin .task-card:hover .task-context-icon {
-    opacity: 1;
-}
 
 /* =================================================================
    TASKCARD DRAG AND DROP STATES
