@@ -38,6 +38,7 @@ export class ReminderModal extends Modal {
 	onOpen() {
 		const { contentEl } = this;
 		contentEl.empty();
+		contentEl.addClass('tasknotes-plugin');
 		contentEl.addClass('tasknotes-reminder-modal');
 
 		// Show loading state while we fetch fresh data
@@ -48,6 +49,8 @@ export class ReminderModal extends Modal {
 		this.initializeWithFreshData().catch(error => {
 			console.error('Failed to initialize reminder modal:', error);
 			contentEl.empty();
+			contentEl.addClass('tasknotes-plugin');
+			contentEl.addClass('tasknotes-reminder-modal');
 			contentEl.createDiv({
 				cls: 'reminder-modal__error',
 				text: 'Failed to load task data. Please try again.'
@@ -80,6 +83,7 @@ export class ReminderModal extends Modal {
 
 		// Clear loading state and render the actual modal content
 		contentEl.empty();
+		contentEl.addClass('tasknotes-plugin');
 		contentEl.addClass('tasknotes-reminder-modal');
 
 		// Compact header

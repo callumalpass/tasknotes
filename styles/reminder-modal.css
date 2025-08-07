@@ -1,154 +1,174 @@
-/* Reminder Modal Styles - Compact Layout */
-.tasknotes-reminder-modal {
+/* =====================================================================
+   REMINDER MODAL - Consistent with Task Modal Styling
+   ===================================================================== */
+
+.tasknotes-plugin .tasknotes-reminder-modal {
     max-width: 600px;
+    min-width: 480px;
     min-height: 400px;
     max-height: 75vh;
     display: flex;
     flex-direction: column;
+    border-radius: var(--radius-l);
+    box-shadow: var(--shadow-l);
 }
 
-/* Compact Header Section */
-.reminder-modal__header {
+/* =====================================================================
+   HEADER SECTION
+   ===================================================================== */
+
+.tasknotes-plugin .reminder-modal__header {
     padding: var(--size-4-4) var(--size-4-4) var(--size-4-3);
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--background-modifier-border);
 }
 
-.reminder-modal__header h2 {
+.tasknotes-plugin .reminder-modal__header h2 {
     margin: 0 0 var(--size-4-1) 0;
-    font-size: var(--font-size-md);
-    font-weight: var(--font-weight-bold);
+    font-size: var(--font-ui-large);
+    font-weight: 600;
     color: var(--text-normal);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
-.reminder-modal__task-title {
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-medium);
-    color: var(--text-accent);
+.tasknotes-plugin .reminder-modal__task-title {
+    font-size: var(--font-ui-medium);
+    font-weight: 500;
+    color: var(--interactive-accent);
     display: block;
     margin-bottom: var(--size-4-1);
 }
 
-.reminder-modal__task-dates {
-    font-size: var(--font-size-xs);
+.tasknotes-plugin .reminder-modal__task-dates {
+    font-size: var(--font-ui-small);
     color: var(--text-muted);
     font-style: italic;
 }
 
-/* Compact Content Area */
-.reminder-modal__content {
-    flex: 1;
-    padding: var(--size-4-3) var(--size-4-4);
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: var(--size-4-4);
-}
+/* =====================================================================
+   CONTENT AREA
+   ===================================================================== */
 
-/* Compact Section Styling */
-.reminder-modal__section {
+.tasknotes-plugin .reminder-modal__content {
+    flex: 1;
+    padding: var(--size-4-4);
+    overflow-y: auto;
     display: flex;
     flex-direction: column;
     gap: var(--size-4-3);
 }
 
-.reminder-modal__section-header {
+/* Section Styling - Match Task Modal Details */
+.tasknotes-plugin .reminder-modal__section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--size-4-2);
+}
+
+.tasknotes-plugin .reminder-modal__section-header {
     display: flex;
     align-items: center;
     gap: var(--size-4-2);
 }
 
-.reminder-modal__section-header h3 {
+.tasknotes-plugin .reminder-modal__section-header h3 {
     margin: 0;
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-semibold);
-    color: var(--text-normal);
-}
-
-.reminder-modal__reminder-count {
-    font-size: var(--font-size-xs);
+    font-size: var(--font-ui-small);
+    font-weight: 600;
     color: var(--text-muted);
-    font-weight: var(--font-weight-normal);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
-/* Compact Empty State */
-.reminder-modal__empty-state {
+.tasknotes-plugin .reminder-modal__reminder-count {
+    font-size: var(--font-ui-small);
+    color: var(--text-muted);
+    font-weight: 400;
+}
+
+/* Empty State - Match Task Modal Secondary Background */
+.tasknotes-plugin .reminder-modal__empty-state {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: var(--size-4-4) var(--size-4-3);
+    padding: var(--size-4-3);
     text-align: center;
     background: var(--background-secondary);
-    border-radius: var(--radius-m);
-    border: 1px dashed var(--border-color);
+    border-radius: var(--radius-s);
+    border: 1px dashed var(--background-modifier-border);
 }
 
-.reminder-modal__empty-icon {
+.tasknotes-plugin .reminder-modal__empty-icon {
     width: 24px;
     height: 24px;
     color: var(--text-faint);
     margin-bottom: var(--size-4-2);
 }
 
-.reminder-modal__empty-text {
-    font-size: var(--font-size-sm);
+.tasknotes-plugin .reminder-modal__empty-text {
+    font-size: var(--font-ui-small);
     color: var(--text-muted);
-    font-weight: var(--font-weight-medium);
+    font-weight: 500;
 }
 
-/* Compact Reminder Cards */
-.reminder-modal__reminder-list {
+/* =====================================================================
+   REMINDER CARDS - Match Task Modal Item Styling
+   ===================================================================== */
+
+.tasknotes-plugin .reminder-modal__reminder-list {
     display: flex;
     flex-direction: column;
     gap: var(--size-4-2);
 }
 
-.reminder-modal__reminder-card {
+.tasknotes-plugin .reminder-modal__reminder-card {
     display: flex;
     align-items: center;
-    gap: var(--size-4-3);
-    padding: var(--size-4-3);
-    background: var(--background-primary);
-    border: 1px solid var(--border-color);
+    gap: var(--size-4-2);
+    padding: var(--size-4-2);
+    background: var(--background-secondary);
+    border: 1px solid var(--background-modifier-border);
     border-radius: var(--radius-s);
     transition: all 0.2s ease;
 }
 
-.reminder-modal__reminder-card:hover {
+.tasknotes-plugin .reminder-modal__reminder-card:hover {
     border-color: var(--interactive-accent);
+    background: var(--background-primary);
 }
 
-.reminder-modal__reminder-icon {
+.tasknotes-plugin .reminder-modal__reminder-icon {
     width: 16px;
     height: 16px;
     color: var(--interactive-accent);
     flex-shrink: 0;
 }
 
-.reminder-modal__reminder-content {
+.tasknotes-plugin .reminder-modal__reminder-content {
     flex: 1;
     display: flex;
     flex-direction: column;
     gap: var(--size-4-1);
 }
 
-.reminder-modal__reminder-primary {
-    font-weight: var(--font-weight-medium);
+.tasknotes-plugin .reminder-modal__reminder-primary {
+    font-weight: 500;
     color: var(--text-normal);
-    font-size: var(--font-size-sm);
+    font-size: var(--font-ui-medium);
 }
 
-.reminder-modal__reminder-description {
-    font-size: var(--font-size-xs);
-    color: var(--text-accent);
+.tasknotes-plugin .reminder-modal__reminder-description {
+    font-size: var(--font-ui-small);
+    color: var(--interactive-accent);
     font-style: italic;
 }
 
-.reminder-modal__reminder-actions {
+.tasknotes-plugin .reminder-modal__reminder-actions {
     display: flex;
     flex-shrink: 0;
 }
 
-.reminder-modal__action-btn {
+.tasknotes-plugin .reminder-modal__action-btn {
     padding: var(--size-4-1);
     background: transparent;
     border: none;
@@ -163,27 +183,30 @@
     border-radius: var(--radius-s);
 }
 
-.reminder-modal__action-btn:hover {
+.tasknotes-plugin .reminder-modal__action-btn:hover {
     color: var(--text-error);
-    background: var(--background-modifier-error-hover);
+    background: var(--background-modifier-hover);
 }
 
-/* Quick Actions - Part of Add Reminder Section */
-.reminder-modal__quick-actions {
-    padding: var(--size-4-3);
-    background: var(--background-primary);
-    border: 1px solid var(--border-color);
+/* =====================================================================
+   QUICK ACTIONS - Icon-Based Controls Like Task Modal
+   ===================================================================== */
+
+.tasknotes-plugin .reminder-modal__quick-actions {
+    padding: var(--size-4-2);
+    background: var(--background-secondary);
+    border: 1px solid var(--background-modifier-border);
     border-radius: var(--radius-s);
     margin-bottom: var(--size-4-3);
 }
 
-.reminder-modal__quick-buttons {
+.tasknotes-plugin .reminder-modal__quick-buttons {
     display: flex;
     gap: var(--size-4-1);
     justify-content: space-between;
 }
 
-.reminder-modal__quick-btn {
+.tasknotes-plugin .reminder-modal__quick-btn {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -193,19 +216,20 @@
     border: none;
     cursor: pointer;
     transition: all 0.2s ease;
-    font-size: var(--font-size-xs);
+    font-size: var(--font-ui-small);
     color: var(--text-muted);
     flex: 1;
     min-width: 0;
+    border-radius: var(--radius-s);
 }
 
-.reminder-modal__quick-btn:hover {
+.tasknotes-plugin .reminder-modal__quick-btn:hover {
     background: var(--background-modifier-hover);
     color: var(--text-normal);
     transform: translateY(-1px);
 }
 
-.reminder-modal__quick-btn-icon {
+.tasknotes-plugin .reminder-modal__quick-btn-icon {
     width: 14px;
     height: 14px;
     flex-shrink: 0;
@@ -214,62 +238,65 @@
     justify-content: center;
 }
 
-.reminder-modal__quick-btn-label {
-    font-weight: var(--font-weight-medium);
+.tasknotes-plugin .reminder-modal__quick-btn-label {
+    font-weight: 500;
 }
 
-/* Compact Form Styling */
-.reminder-modal__form {
+/* =====================================================================
+   FORM STYLING - Match Task Modal Input Styles
+   ===================================================================== */
+
+.tasknotes-plugin .reminder-modal__form {
     display: flex;
     flex-direction: column;
-    gap: var(--size-4-3);
+    gap: var(--size-4-2);
     background: var(--background-secondary);
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--background-modifier-border);
     border-radius: var(--radius-s);
-    padding: var(--size-4-4);
+    padding: var(--size-4-3);
     margin-top: var(--size-4-2);
 }
 
-.reminder-modal__type-selector {
+.tasknotes-plugin .reminder-modal__type-selector {
     display: flex;
     background: var(--background-primary);
     border-radius: var(--radius-s);
     padding: 2px;
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--background-modifier-border);
 }
 
-.reminder-modal__type-tab {
+.tasknotes-plugin .reminder-modal__type-tab {
     flex: 1;
     padding: var(--size-4-1) var(--size-4-3);
     background: transparent;
     border: none;
     border-radius: var(--radius-s);
     cursor: pointer;
-    font-weight: var(--font-weight-medium);
+    font-weight: 500;
     color: var(--text-muted);
     transition: all 0.2s ease;
     text-align: center;
-    font-size: var(--font-size-sm);
+    font-size: var(--font-ui-small);
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
-.reminder-modal__type-tab--active {
+.tasknotes-plugin .reminder-modal__type-tab--active {
     background: var(--interactive-accent);
     color: var(--text-on-accent);
 }
 
-.reminder-modal__type-tab:not(.reminder-modal__type-tab--active):hover {
+.tasknotes-plugin .reminder-modal__type-tab:not(.reminder-modal__type-tab--active):hover {
     background: var(--background-modifier-hover);
     color: var(--text-normal);
 }
 
-.relative-fields,
-.absolute-fields {
-    padding: var(--size-4-3);
+.tasknotes-plugin .relative-fields,
+.tasknotes-plugin .absolute-fields {
+    padding: var(--size-4-2);
     background: var(--background-primary);
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--background-modifier-border);
     border-radius: var(--radius-s);
     display: flex;
     flex-direction: column;
@@ -277,49 +304,71 @@
     margin-top: var(--size-4-2);
 }
 
-.absolute-fields {
+.tasknotes-plugin .absolute-fields {
     display: none;
 }
 
-/* Compact form controls */
-.reminder-modal__form .setting-item {
-    padding: var(--size-4-1) 0;
-    border-bottom: none;
+/* Form controls - Match Task Modal Details Section */
+.tasknotes-plugin .reminder-modal__form .setting-item {
+    padding: var(--size-4-2) 0;
+    border: none;
 }
 
-.reminder-modal__form .setting-item-name {
-    font-weight: var(--font-weight-medium);
-    color: var(--text-normal);
-    font-size: var(--font-size-sm);
+.tasknotes-plugin .reminder-modal__form .setting-item-name {
+    font-size: var(--font-ui-small);
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
-.reminder-add-btn {
+.tasknotes-plugin .reminder-modal__form .setting-item-control input,
+.tasknotes-plugin .reminder-modal__form .setting-item-control select {
+    background: var(--background-secondary);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: var(--radius-s);
+    padding: var(--size-4-1) var(--size-4-2);
+    font-size: var(--font-ui-medium);
+    transition: all 0.2s ease;
+}
+
+.tasknotes-plugin .reminder-modal__form .setting-item-control input:focus,
+.tasknotes-plugin .reminder-modal__form .setting-item-control select:focus {
+    border-color: var(--interactive-accent);
+    background: var(--background-primary);
+    outline: none;
+}
+
+.tasknotes-plugin .reminder-add-btn {
     align-self: flex-start;
-    padding: var(--size-4-2) var(--size-4-4);
-    background: var(--interactive-accent);
+    padding: var(--size-4-2) var(--size-4-3);
+    background: var(--tn-interactive-accent, var(--interactive-accent));
     color: var(--text-on-accent);
     border: none;
     cursor: pointer;
-    font-weight: var(--font-weight-medium);
-    font-size: var(--font-size-sm);
+    font-weight: 500;
+    font-size: var(--font-ui-medium);
     transition: all 0.2s ease;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: var(--size-4-1);
+    border-radius: var(--radius-s);
+    min-width: 80px;
 }
 
-.reminder-add-btn:hover {
-    background: var(--interactive-accent-hover);
+.tasknotes-plugin .reminder-add-btn:hover {
+    background: var(--tn-interactive-accent-hover, var(--interactive-accent-hover));
+    box-shadow: none;
 }
 
-.reminder-add-btn:disabled,
-.reminder-add-btn--loading {
+.tasknotes-plugin .reminder-add-btn:disabled,
+.tasknotes-plugin .reminder-add-btn--loading {
     opacity: 0.6;
     cursor: not-allowed;
 }
 
-.reminder-add-btn--loading .reminder-add-btn-icon {
+.tasknotes-plugin .reminder-add-btn--loading .reminder-add-btn-icon {
     animation: spin 1s linear infinite;
 }
 
@@ -328,78 +377,107 @@
     to { transform: rotate(360deg); }
 }
 
-/* Compact Actions Footer */
-.reminder-modal__actions {
+/* =====================================================================
+   ACTION BUTTONS - Match Task Modal Button Container
+   ===================================================================== */
+
+.tasknotes-plugin .reminder-modal__actions {
     display: flex;
     justify-content: flex-end;
     align-items: center;
     gap: var(--size-4-2);
+    margin-top: var(--size-4-4);
     padding: var(--size-4-3) var(--size-4-4);
-    border-top: 1px solid var(--border-color);
+    border-top: 1px solid var(--background-modifier-border);
 }
 
-.reminder-modal__save-btn,
-.reminder-modal__cancel-btn {
-    padding: var(--size-4-2) var(--size-4-4);
-    font-weight: var(--font-weight-medium);
-    font-size: var(--font-size-sm);
+.tasknotes-plugin .reminder-modal__save-btn,
+.tasknotes-plugin .reminder-modal__cancel-btn {
+    padding: var(--size-4-2) var(--size-4-3);
+    font-weight: 500;
+    font-size: var(--font-ui-medium);
     cursor: pointer;
     transition: all 0.2s ease;
     border: none;
     display: flex;
     align-items: center;
     justify-content: center;
+    border-radius: var(--radius-s);
+    min-width: 80px;
 }
 
-.reminder-modal__save-btn {
-    background: var(--interactive-accent);
+.tasknotes-plugin .reminder-modal__save-btn {
+    background: var(--tn-interactive-accent, var(--interactive-accent));
     color: var(--text-on-accent);
+    box-shadow: none;
 }
 
-.reminder-modal__save-btn:disabled {
+.tasknotes-plugin .reminder-modal__save-btn:disabled {
     opacity: 0.5;
     cursor: not-allowed;
     background: var(--background-modifier-border);
     color: var(--text-muted);
 }
 
-.reminder-modal__save-btn:not(:disabled):hover {
-    background: var(--interactive-accent-hover);
+.tasknotes-plugin .reminder-modal__save-btn:not(:disabled):hover {
+    background: var(--tn-interactive-accent-hover, var(--interactive-accent-hover));
+    box-shadow: none;
 }
 
-.reminder-modal__cancel-btn {
+.tasknotes-plugin .reminder-modal__cancel-btn {
     background: transparent;
     color: var(--text-muted);
+    box-shadow: none;
 }
 
-.reminder-modal__cancel-btn:hover {
-    background: var(--background-modifier-hover);
-    color: var(--text-normal);
+.tasknotes-plugin .reminder-modal__cancel-btn:hover {
+    background: var(--tn-interactive-hover, var(--background-modifier-hover));
+    box-shadow: none;
 }
 
-/* Responsive Design */
+/* =====================================================================
+   RESPONSIVE DESIGN - Match Task Modal Breakpoints
+   ===================================================================== */
+
 @media (max-width: 600px) {
-    .tasknotes-reminder-modal {
-        max-width: 95vw;
+    .tasknotes-plugin .tasknotes-reminder-modal {
+        min-width: 90vw;
+        max-width: 90vw;
         min-height: 60vh;
         max-height: 90vh;
     }
     
-    .reminder-modal__quick-buttons {
-        grid-template-columns: repeat(2, 1fr);
+    .tasknotes-plugin .reminder-modal__quick-buttons {
+        flex-wrap: wrap;
+        gap: var(--size-4-2);
     }
     
-    .reminder-modal__actions {
+    .tasknotes-plugin .reminder-modal__actions {
         flex-direction: column;
-        gap: var(--size-4-3);
+        gap: var(--size-4-2);
     }
     
-    .reminder-modal__shortcuts {
+    .tasknotes-plugin .reminder-modal__save-btn,
+    .tasknotes-plugin .reminder-modal__cancel-btn {
+        width: 100%;
+    }
+    
+    .tasknotes-plugin .reminder-modal__shortcuts {
         order: -1;
     }
 }
 
-/* Backward compatibility for existing classes */
+/* =====================================================================
+   DARK MODE ADJUSTMENTS - Match Task Modal
+   ===================================================================== */
+
+.theme-dark .tasknotes-plugin .tasknotes-reminder-modal {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+/* =====================================================================
+   BACKWARD COMPATIBILITY
+   ===================================================================== */
 .reminder-section {
     margin-bottom: var(--size-4-6);
 }
