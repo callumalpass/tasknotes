@@ -131,21 +131,34 @@ export class ReminderContextMenu {
 	}
 
 	private async saveReminders(reminders: Reminder[]): Promise<void> {
-		// Fetch the latest task data to avoid overwriting changes
-		const freshTask = await this.plugin.cacheManager.getTaskInfo(this.task.path);
-		if (!freshTask) {
-			new Notice('Task not found. Could not save reminder.');
-			return;
-		}
-
-		const updatedTask: TaskInfo = {
-			...freshTask, // Use the fresh task data as the base
-			reminders
-		};
-
-		// Only save to file if the task already exists (has a valid path)
+		let updatedTask: TaskInfo;
+		
+		// If task has a path, try to fetch the latest data to avoid overwriting changes
 		if (this.task.path && this.task.path.trim() !== '') {
-			await this.plugin.taskService.updateProperty(updatedTask, 'reminders', reminders);
+			const freshTask = await this.plugin.cacheManager.getTaskInfo(this.task.path);
+			if (freshTask) {
+				// Use fresh task data as base if available
+				updatedTask = {
+					...freshTask,
+					reminders
+				};
+				// Save to file since task exists
+				await this.plugin.taskService.updateProperty(updatedTask, 'reminders', reminders);
+			} else {
+				// Task path exists but task not found in cache - this shouldn't happen in edit modal
+				// Use the provided task data
+				updatedTask = {
+					...this.task,
+					reminders
+				};
+			}
+		} else {
+			// Task doesn't have a path yet (new task being created)
+			// Just update the in-memory task object
+			updatedTask = {
+				...this.task,
+				reminders
+			};
 		}
 		
 		// Always notify the caller about the update (for local state management)

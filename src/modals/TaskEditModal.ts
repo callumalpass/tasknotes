@@ -6,6 +6,7 @@ import { getCurrentTimestamp, formatDateForStorage, generateUTCCalendarDates, ge
 import { formatTimestampForDisplay } from '../utils/dateUtils';
 import { format } from 'date-fns';
 import { generateRecurringInstances, extractTaskInfo, calculateTotalTimeSpent, formatTime, updateToNextScheduledOccurrence } from '../utils/helpers';
+import { ReminderContextMenu } from '../components/ReminderContextMenu';
 
 export interface TaskEditOptions {
     task: TaskInfo;
@@ -91,6 +92,30 @@ export class TaskEditModal extends TaskModal {
         }
         
         return recurrenceText;
+    }
+
+    protected showReminderContextMenu(event: MouseEvent): void {
+        // Override parent method to use the actual task with its path
+        // Update the task object with current form values before showing menu
+        const currentTask: TaskInfo = {
+            ...this.task,
+            title: this.title,
+            due: this.dueDate,
+            scheduled: this.scheduledDate,
+            reminders: this.reminders
+        };
+        
+        const menu = new ReminderContextMenu(
+            this.plugin,
+            currentTask, // Use task with current form values and correct path
+            event.target as HTMLElement,
+            (updatedTask: TaskInfo) => {
+                this.reminders = updatedTask.reminders || [];
+                this.updateReminderIconState();
+            }
+        );
+        
+        menu.show(event);
     }
 
     async onOpen() {

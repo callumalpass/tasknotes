@@ -59,21 +59,23 @@ export class ReminderModal extends Modal {
 		const { contentEl } = this;
 
 		// Fetch fresh task data to avoid working with stale data
-		if (this.task.path) {
+		if (this.task.path && this.task.path.trim() !== '') {
 			const freshTask = await this.plugin.cacheManager.getTaskInfo(this.task.path);
 			if (freshTask) {
 				this.task = freshTask;
 				this.reminders = freshTask.reminders ? [...freshTask.reminders] : [];
 				this.originalReminders = freshTask.reminders ? [...freshTask.reminders] : [];
 			} else {
-				// Task no longer exists
-				contentEl.empty();
-				contentEl.createDiv({
-					cls: 'reminder-modal__error',
-					text: 'Task not found. It may have been deleted or moved.'
-				});
-				return;
+				// Task path exists but not found in cache - use provided task data
+				// This can happen during edit when changes haven't been saved yet
+				this.reminders = this.task.reminders ? [...this.task.reminders] : [];
+				this.originalReminders = this.task.reminders ? [...this.task.reminders] : [];
 			}
+		} else {
+			// Task doesn't have a path yet (new task being created)
+			// Use the provided task data
+			this.reminders = this.task.reminders ? [...this.task.reminders] : [];
+			this.originalReminders = this.task.reminders ? [...this.task.reminders] : [];
 		}
 
 		// Clear loading state and render the actual modal content
