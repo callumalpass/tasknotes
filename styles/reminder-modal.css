@@ -572,3 +572,263 @@
     padding-top: var(--size-4-4);
     border-top: 1px solid var(--border-color);
 }
+
+/* =====================================================================
+   REMINDER DEFAULTS SECTION - Settings Tab Styling
+   ===================================================================== */
+
+.tasknotes-plugin .reminder-defaults-section {
+    margin-bottom: var(--size-4-4);
+    padding: var(--size-4-3);
+    background: var(--background-secondary);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: var(--radius-s);
+}
+
+.tasknotes-plugin .reminder-defaults-list {
+    margin-bottom: var(--size-4-3);
+}
+
+/* Empty State */
+.tasknotes-plugin .reminder-defaults-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: var(--size-4-3);
+    text-align: center;
+    background: var(--background-primary);
+    border-radius: var(--radius-s);
+    border: 1px dashed var(--background-modifier-border);
+}
+
+.tasknotes-plugin .reminder-defaults-empty-icon {
+    width: 24px;
+    height: 24px;
+    color: var(--text-faint);
+    margin-bottom: var(--size-4-2);
+}
+
+.tasknotes-plugin .reminder-defaults-empty-text {
+    font-size: var(--font-ui-small);
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+/* Reminder Items */
+.tasknotes-plugin .reminder-defaults-items {
+    display: flex;
+    flex-direction: column;
+    gap: var(--size-4-2);
+}
+
+.tasknotes-plugin .reminder-defaults-card {
+    display: flex;
+    align-items: center;
+    gap: var(--size-4-2);
+    padding: var(--size-4-2);
+    background: var(--background-primary);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: var(--radius-s);
+    transition: all 0.2s ease;
+}
+
+.tasknotes-plugin .reminder-defaults-card:hover {
+    border-color: var(--interactive-accent);
+    background: var(--background-secondary);
+}
+
+.tasknotes-plugin .reminder-defaults-icon {
+    width: 16px;
+    height: 16px;
+    color: var(--interactive-accent);
+    flex-shrink: 0;
+}
+
+.tasknotes-plugin .reminder-defaults-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--size-4-1);
+}
+
+.tasknotes-plugin .reminder-defaults-primary {
+    font-weight: 500;
+    color: var(--text-normal);
+    font-size: var(--font-ui-medium);
+}
+
+.tasknotes-plugin .reminder-defaults-description {
+    font-size: var(--font-ui-small);
+    color: var(--interactive-accent);
+    font-style: italic;
+}
+
+.tasknotes-plugin .reminder-defaults-actions {
+    display: flex;
+    flex-shrink: 0;
+}
+
+.tasknotes-plugin .reminder-defaults-remove-btn {
+    padding: var(--size-4-1);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--text-muted);
+    transition: all 0.2s ease;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-s);
+}
+
+.tasknotes-plugin .reminder-defaults-remove-btn:hover {
+    color: var(--text-error);
+    background: var(--background-modifier-hover);
+}
+
+/* Form Styling */
+.tasknotes-plugin .reminder-defaults-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--size-4-2);
+    background: var(--background-primary);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: var(--radius-s);
+    padding: var(--size-4-3);
+    margin-top: var(--size-4-3);
+}
+
+.tasknotes-plugin .reminder-defaults-form-header {
+    margin: 0 0 var(--size-4-2) 0;
+    font-size: var(--font-ui-small);
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Type Selector */
+.tasknotes-plugin .reminder-defaults-type-selector {
+    display: flex;
+    background: var(--background-secondary);
+    border-radius: var(--radius-s);
+    padding: 2px;
+    border: 1px solid var(--background-modifier-border);
+    margin-bottom: var(--size-4-2);
+}
+
+.tasknotes-plugin .reminder-defaults-type-tab {
+    flex: 1;
+    padding: var(--size-4-1) var(--size-4-3);
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-s);
+    cursor: pointer;
+    font-weight: 500;
+    color: var(--text-muted);
+    transition: all 0.2s ease;
+    text-align: center;
+    font-size: var(--font-ui-small);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.tasknotes-plugin .reminder-defaults-type-tab--active {
+    background: var(--interactive-accent);
+    color: var(--text-on-accent);
+}
+
+.tasknotes-plugin .reminder-defaults-type-tab:not(.reminder-defaults-type-tab--active):hover {
+    background: var(--background-modifier-hover);
+    color: var(--text-normal);
+}
+
+/* Form Fields */
+.tasknotes-plugin .reminder-defaults-relative-fields,
+.tasknotes-plugin .reminder-defaults-absolute-fields {
+    padding: var(--size-4-2);
+    background: var(--background-secondary);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: var(--radius-s);
+    display: flex;
+    flex-direction: column;
+    gap: var(--size-4-2);
+    margin-bottom: var(--size-4-2);
+}
+
+.tasknotes-plugin .reminder-defaults-absolute-fields {
+    display: none;
+}
+
+/* Form controls - Match Task Modal Details Section */
+.tasknotes-plugin .reminder-defaults-form .setting-item {
+    padding: var(--size-4-2) 0;
+    border: none;
+}
+
+.tasknotes-plugin .reminder-defaults-form .setting-item-name {
+    font-size: var(--font-ui-small);
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.tasknotes-plugin .reminder-defaults-form .setting-item-control input,
+.tasknotes-plugin .reminder-defaults-form .setting-item-control select {
+    background: var(--background-primary);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: var(--radius-s);
+    padding: var(--size-4-1) var(--size-4-2);
+    font-size: var(--font-ui-medium);
+    transition: all 0.2s ease;
+}
+
+.tasknotes-plugin .reminder-defaults-form .setting-item-control input:focus,
+.tasknotes-plugin .reminder-defaults-form .setting-item-control select:focus {
+    border-color: var(--interactive-accent);
+    background: var(--background-secondary);
+    outline: none;
+}
+
+/* Add Button */
+.tasknotes-plugin .reminder-defaults-add-btn {
+    align-self: flex-start;
+    padding: var(--size-4-2) var(--size-4-3);
+    background: var(--tn-interactive-accent, var(--interactive-accent));
+    color: var(--text-on-accent);
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: var(--font-ui-medium);
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--size-4-1);
+    border-radius: var(--radius-s);
+    min-width: 120px;
+}
+
+.tasknotes-plugin .reminder-defaults-add-btn:hover {
+    background: var(--tn-interactive-accent-hover, var(--interactive-accent-hover));
+    box-shadow: none;
+}
+
+.tasknotes-plugin .reminder-defaults-add-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.tasknotes-plugin .reminder-defaults-add-icon {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+}
+
+.tasknotes-plugin .reminder-defaults-add-text {
+    font-weight: 500;
+}

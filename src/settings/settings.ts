@@ -1,6 +1,6 @@
 import { App, PluginSettingTab, Setting, Notice, setIcon, TAbstractFile, TFile, setTooltip } from 'obsidian';
 import TaskNotesPlugin from '../main';
-import { FieldMapping, StatusConfig, PriorityConfig, SavedView } from '../types';
+import { FieldMapping, StatusConfig, PriorityConfig, SavedView, Reminder, TaskInfo } from '../types';
 import { StatusManager } from '../services/StatusManager';
 import { PriorityManager } from '../services/PriorityManager';
 import { showConfirmationModal } from '../modals/ConfirmationModal';
@@ -72,6 +72,20 @@ export interface TaskNotesSettings {
 	notificationType: 'in-app' | 'system';
 }
 
+export interface DefaultReminder {
+	id: string;
+	type: 'relative' | 'absolute';
+	// For relative reminders
+	relatedTo?: 'due' | 'scheduled';
+	offset?: number; // Amount in specified unit
+	unit?: 'minutes' | 'hours' | 'days';
+	direction?: 'before' | 'after';
+	// For absolute reminders
+	absoluteTime?: string; // Time in HH:MM format
+	absoluteDate?: string; // Date in YYYY-MM-DD format
+	description?: string;
+}
+
 export interface TaskCreationDefaults {
 	// Pre-fill options
 	defaultContexts: string;  // Comma-separated list
@@ -86,6 +100,8 @@ export interface TaskCreationDefaults {
 	// Body template settings
 	bodyTemplate: string;     // Path to template file for task body, empty = no template
 	useBodyTemplate: boolean; // Whether to use body template by default
+	// Reminder defaults
+	defaultReminders: DefaultReminder[];
 }
 
 export interface ICSIntegrationSettings {
@@ -229,7 +245,8 @@ export const DEFAULT_TASK_CREATION_DEFAULTS: TaskCreationDefaults = {
 	defaultDueDate: 'none',
 	defaultScheduledDate: 'today',
 	bodyTemplate: '',
-	useBodyTemplate: false
+	useBodyTemplate: false,
+	defaultReminders: []
 };
 
 export const DEFAULT_CALENDAR_VIEW_SETTINGS: CalendarViewSettings = {
@@ -332,6 +349,61 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	enableNotifications: true,
 	notificationType: 'system'
 };
+
+/**
+ * Converts DefaultReminder objects to Reminder objects that can be used in tasks.
+ * This function handles the conversion of user-configured default reminders into
+ * the format expected by the task reminder system.
+ */
+export function convertDefaultRemindersToReminders(
+	defaultReminders: DefaultReminder[],
+	task?: TaskInfo
+): Reminder[] {
+	return defaultReminders.map(defaultReminder => {
+		const reminder: Reminder = {
+			id: `rem_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+			type: defaultReminder.type,
+			description: defaultReminder.description
+		};
+
+		if (defaultReminder.type === 'relative') {
+			// For relative reminders, validate that the anchor date will be available
+			if (defaultReminder.relatedTo && defaultReminder.offset && defaultReminder.unit && defaultReminder.direction) {
+				// Convert offset to ISO 8601 duration format
+				let duration = 'PT';
+				if (defaultReminder.unit === 'days') {
+					duration = `P${defaultReminder.offset}D`;
+				} else if (defaultReminder.unit === 'hours') {
+					duration = `PT${defaultReminder.offset}H`;
+				} else {
+					duration = `PT${defaultReminder.offset}M`;
+				}
+
+				// Add negative sign for "before"
+				if (defaultReminder.direction === 'before') {
+					duration = '-' + duration;
+				}
+
+				reminder.relatedTo = defaultReminder.relatedTo;
+				reminder.offset = duration;
+			}
+		} else if (defaultReminder.type === 'absolute') {
+			// For absolute reminders, convert date and time to ISO string
+			if (defaultReminder.absoluteDate && defaultReminder.absoluteTime) {
+				reminder.absoluteTime = `${defaultReminder.absoluteDate}T${defaultReminder.absoluteTime}:00`;
+			}
+		}
+
+		return reminder;
+	}).filter(reminder => {
+		// Filter out invalid reminders
+		if (reminder.type === 'relative') {
+			return reminder.relatedTo && reminder.offset;
+		} else {
+			return reminder.absoluteTime;
+		}
+	});
+}
 
 
 export class TaskNotesSettingTab extends PluginSettingTab {
@@ -946,6 +1018,24 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 			text: 'Template is applied when the task is created with all final values from the form. Use {{details}} to include user content from the Details field.\n{{parentNote}} will resolve to a quoted markdown link (e.g., "[[Note Name]]") for the note where the task was created. For project organization, use it as a YAML list item: "project:\\n  - {{parentNote}}". Variables use the same format as daily note templates.',
 			cls: 'settings-help-note'
 		});
+
+		// Reminder defaults section
+		new Setting(container).setName('Reminder defaults').setHeading();
+
+		const reminderSection = container.createDiv('reminder-defaults-section');
+		reminderSection.createEl('p', { 
+			text: 'Configure default reminders that will be automatically added to new tasks. These can be relative to due or scheduled dates.',
+			cls: 'settings-help-note'
+		});
+
+		// Current default reminders list
+		const remindersList = reminderSection.createDiv('reminder-defaults-list');
+		this.renderDefaultRemindersList(remindersList);
+
+		// Add reminder form
+		this.renderAddDefaultReminderForm(reminderSection);
+
+
 	}
 	
 	private renderCalendarTab(): void {
@@ -2827,6 +2917,353 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 
 		this.plugin.settings.taskCreationDefaults.defaultProjects = projectStrings.join(', ');
 		this.plugin.saveSettings();
+	}
+
+	private renderDefaultRemindersList(container: HTMLElement): void {
+		container.empty();
+		
+		const reminders = this.plugin.settings.taskCreationDefaults.defaultReminders || [];
+		
+		if (reminders.length === 0) {
+			const emptyState = container.createDiv({ cls: 'reminder-defaults-empty' });
+			setIcon(emptyState.createDiv({ cls: 'reminder-defaults-empty-icon' }), 'bell-off');
+			emptyState.createEl('div', { 
+				cls: 'reminder-defaults-empty-text',
+				text: 'No default reminders configured' 
+			});
+			return;
+		}
+		
+		const remindersList = container.createDiv({ cls: 'reminder-defaults-items' });
+		
+		reminders.forEach((reminder, index) => {
+			const reminderCard = remindersList.createDiv({ cls: 'reminder-defaults-card' });
+			
+			// Reminder type icon
+			const iconContainer = reminderCard.createDiv({ cls: 'reminder-defaults-icon' });
+			const iconName = reminder.type === 'absolute' ? 'calendar-clock' : 'timer';
+			setIcon(iconContainer, iconName);
+			
+			// Main content area
+			const content = reminderCard.createDiv({ cls: 'reminder-defaults-content' });
+			
+			// Primary info (timing)
+			const primaryInfo = content.createDiv({ cls: 'reminder-defaults-primary' });
+			primaryInfo.textContent = this.formatDefaultReminderText(reminder);
+			
+			// Custom description (if any)
+			if (reminder.description) {
+				const description = content.createDiv({ cls: 'reminder-defaults-description' });
+				description.textContent = `"${reminder.description}"`;
+			}
+
+			// Actions area
+			const actions = reminderCard.createDiv({ cls: 'reminder-defaults-actions' });
+			
+			// Remove button
+			const removeBtn = actions.createEl('button', { 
+				cls: 'reminder-defaults-remove-btn'
+			});
+			setIcon(removeBtn, 'trash-2');
+			setTooltip(removeBtn, 'Delete this default reminder');
+			removeBtn.onclick = async () => {
+				await this.removeDefaultReminder(index);
+			};
+		});
+	}
+
+	private renderAddDefaultReminderForm(container: HTMLElement): void {
+		const formContainer = container.createDiv({ cls: 'reminder-defaults-form' });
+		
+		const formHeader = formContainer.createEl('h4', { 
+			text: 'Add Default Reminder',
+			cls: 'reminder-defaults-form-header'
+		});
+		
+		// Type selector
+		const typeSelector = formContainer.createDiv({ cls: 'reminder-defaults-type-selector' });
+		
+		const relativeTab = typeSelector.createEl('button', { 
+			cls: 'reminder-defaults-type-tab reminder-defaults-type-tab--active',
+			text: 'Relative',
+			attr: { 'data-type': 'relative' }
+		});
+		
+		const absoluteTab = typeSelector.createEl('button', { 
+			cls: 'reminder-defaults-type-tab',
+			text: 'Absolute',
+			attr: { 'data-type': 'absolute' }
+		});
+		
+		let selectedType: 'relative' | 'absolute' = 'relative';
+		let relativeAnchor: 'due' | 'scheduled' = 'due';
+		let relativeOffset = 15;
+		let relativeUnit: 'minutes' | 'hours' | 'days' = 'minutes';
+		let relativeDirection: 'before' | 'after' = 'before';
+		let absoluteDate = '';
+		let absoluteTime = '';
+		let description = '';
+		
+		// Tab switching
+		const switchToType = (type: 'relative' | 'absolute') => {
+			selectedType = type;
+			relativeTab.classList.toggle('reminder-defaults-type-tab--active', type === 'relative');
+			absoluteTab.classList.toggle('reminder-defaults-type-tab--active', type === 'absolute');
+			updateFormVisibility();
+		};
+		
+		relativeTab.onclick = () => switchToType('relative');
+		absoluteTab.onclick = () => switchToType('absolute');
+
+		// Relative form fields
+		const relativeFields = formContainer.createDiv({ cls: 'reminder-defaults-relative-fields' });
+
+		new Setting(relativeFields)
+			.setName('Time')
+			.addText(text => {
+				text
+					.setPlaceholder('15')
+					.setValue(String(relativeOffset))
+					.onChange(value => {
+						relativeOffset = parseInt(value) || 0;
+					});
+			})
+			.addDropdown(dropdown => {
+				dropdown
+					.addOption('minutes', 'minutes')
+					.addOption('hours', 'hours')
+					.addOption('days', 'days')
+					.setValue(relativeUnit)
+					.onChange(value => {
+						relativeUnit = value as 'minutes' | 'hours' | 'days';
+					});
+			});
+
+		new Setting(relativeFields)
+			.setName('Direction')
+			.addDropdown(dropdown => {
+				dropdown
+					.addOption('before', 'Before')
+					.addOption('after', 'After')
+					.setValue(relativeDirection)
+					.onChange(value => {
+						relativeDirection = value as 'before' | 'after';
+					});
+			});
+
+		new Setting(relativeFields)
+			.setName('Relative to')
+			.addDropdown(dropdown => {
+				dropdown
+					.addOption('due', 'Due date')
+					.addOption('scheduled', 'Scheduled date')
+					.setValue(relativeAnchor)
+					.onChange(value => {
+						relativeAnchor = value as 'due' | 'scheduled';
+					});
+			});
+
+		// Absolute form fields
+		const absoluteFields = formContainer.createDiv({ cls: 'reminder-defaults-absolute-fields' });
+
+		new Setting(absoluteFields)
+			.setName('Date')
+			.addText(text => {
+				text
+					.setPlaceholder('YYYY-MM-DD')
+					.setValue(absoluteDate)
+					.onChange(value => {
+						absoluteDate = value;
+					});
+				text.inputEl.type = 'date';
+			});
+
+		new Setting(absoluteFields)
+			.setName('Time')
+			.addText(text => {
+				text
+					.setPlaceholder('HH:MM')
+					.setValue(absoluteTime)
+					.onChange(value => {
+						absoluteTime = value;
+					});
+				text.inputEl.type = 'time';
+			});
+
+		// Description field (common)
+		new Setting(formContainer)
+			.setName('Description (optional)')
+			.addText(text => {
+				text
+					.setPlaceholder('Custom reminder message')
+					.setValue(description)
+					.onChange(value => {
+						description = value;
+					});
+			});
+
+		// Add button
+		const addBtn = formContainer.createEl('button', { 
+			cls: 'reminder-defaults-add-btn'
+		});
+		
+		const addIcon = addBtn.createSpan({ cls: 'reminder-defaults-add-icon' });
+		setIcon(addIcon, 'plus');
+		addBtn.createSpan({ 
+			cls: 'reminder-defaults-add-text',
+			text: 'Add Default Reminder' 
+		});
+
+		addBtn.onclick = async () => {
+			try {
+				const newReminder = this.createDefaultReminder(
+					selectedType,
+					relativeAnchor,
+					relativeOffset,
+					relativeUnit,
+					relativeDirection,
+					absoluteDate,
+					absoluteTime,
+					description
+				);
+				
+				if (newReminder) {
+					await this.addDefaultReminder(newReminder);
+					
+					// Reset form
+					if (selectedType === 'relative') {
+						relativeOffset = 15;
+						relativeUnit = 'minutes';
+						description = '';
+					} else {
+						absoluteDate = '';
+						absoluteTime = '';
+						description = '';
+					}
+					
+					// Reset form inputs
+					this.resetDefaultReminderForm(formContainer);
+				}
+			} catch (error) {
+				console.error('Error adding default reminder:', error);
+				new Notice('Failed to add default reminder. Please check your inputs.');
+			}
+		};
+		
+		const updateFormVisibility = () => {
+			relativeFields.style.display = selectedType === 'relative' ? 'block' : 'none';
+			absoluteFields.style.display = selectedType === 'absolute' ? 'block' : 'none';
+		};
+		
+		// Set initial form visibility
+		updateFormVisibility();
+	}
+
+	private formatDefaultReminderText(reminder: DefaultReminder): string {
+		if (reminder.type === 'absolute') {
+			if (reminder.absoluteDate && reminder.absoluteTime) {
+				return `${reminder.absoluteDate} at ${reminder.absoluteTime}`;
+			}
+			return 'Absolute reminder';
+		} else {
+			const anchor = reminder.relatedTo === 'due' ? 'due date' : 'scheduled date';
+			const offset = this.formatDefaultReminderOffset(reminder);
+			return `${offset} ${anchor}`;
+		}
+	}
+
+	private formatDefaultReminderOffset(reminder: DefaultReminder): string {
+		if (!reminder.offset || !reminder.unit) return 'At time of';
+		
+		const direction = reminder.direction === 'before' ? 'before' : 'after';
+		const unit = reminder.offset === 1 ? reminder.unit.slice(0, -1) : reminder.unit; // Remove 's' for singular
+		return `${reminder.offset} ${unit} ${direction}`;
+	}
+
+	private createDefaultReminder(
+		type: 'relative' | 'absolute',
+		anchor: 'due' | 'scheduled',
+		offset: number,
+		unit: 'minutes' | 'hours' | 'days',
+		direction: 'before' | 'after',
+		date: string,
+		time: string,
+		description: string
+	): DefaultReminder | null {
+		const id = `def_rem_${Date.now()}`;
+
+		if (type === 'relative') {
+			return {
+				id,
+				type: 'relative',
+				relatedTo: anchor,
+				offset,
+				unit,
+				direction,
+				description: description || undefined
+			};
+		} else {
+			if (!date || !time) {
+				new Notice('Please specify both date and time for absolute reminder');
+				return null;
+			}
+
+			return {
+				id,
+				type: 'absolute',
+				absoluteDate: date,
+				absoluteTime: time,
+				description: description || undefined
+			};
+		}
+	}
+
+	private async addDefaultReminder(reminder: DefaultReminder): Promise<void> {
+		if (!this.plugin.settings.taskCreationDefaults.defaultReminders) {
+			this.plugin.settings.taskCreationDefaults.defaultReminders = [];
+		}
+		
+		this.plugin.settings.taskCreationDefaults.defaultReminders.push(reminder);
+		await this.plugin.saveSettings();
+		
+		// Re-render the list
+		const remindersList = document.querySelector('.reminder-defaults-list') as HTMLElement;
+		if (remindersList) {
+			this.renderDefaultRemindersList(remindersList);
+		}
+		
+		new Notice('Default reminder added successfully');
+	}
+
+	private async removeDefaultReminder(index: number): Promise<void> {
+		if (!this.plugin.settings.taskCreationDefaults.defaultReminders) return;
+		
+		this.plugin.settings.taskCreationDefaults.defaultReminders.splice(index, 1);
+		await this.plugin.saveSettings();
+		
+		// Re-render the list
+		const remindersList = document.querySelector('.reminder-defaults-list') as HTMLElement;
+		if (remindersList) {
+			this.renderDefaultRemindersList(remindersList);
+		}
+		
+		new Notice('Default reminder removed');
+	}
+
+	private resetDefaultReminderForm(formContainer: HTMLElement): void {
+		// Reset all form inputs to their default values
+		const inputs = formContainer.querySelectorAll('input, select') as NodeListOf<HTMLInputElement | HTMLSelectElement>;
+		inputs.forEach(input => {
+			if (input.type === 'text' || input.type === 'date' || input.type === 'time') {
+				input.value = '';
+			} else if (input.tagName === 'SELECT') {
+				(input as HTMLSelectElement).selectedIndex = 0;
+			}
+		});
+		
+		// Reset number input to default
+		const offsetInput = formContainer.querySelector('input[placeholder="15"]') as HTMLInputElement;
+		if (offsetInput) offsetInput.value = '15';
 	}
 
 }

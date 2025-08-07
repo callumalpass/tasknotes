@@ -543,6 +543,13 @@ export class TaskCreationModal extends TaskModal {
             this.timeEstimate = defaults.defaultTimeEstimate;
         }
         
+        // Apply default reminders
+        if (defaults.defaultReminders && defaults.defaultReminders.length > 0) {
+            // Import the conversion function
+            const { convertDefaultRemindersToReminders } = await import('../settings/settings');
+            this.reminders = convertDefaultRemindersToReminders(defaults.defaultReminders);
+        }
+        
         // Apply pre-populated values if provided (overrides defaults)
         if (this.options.prePopulatedValues) {
             this.applyPrePopulatedValues(this.options.prePopulatedValues);

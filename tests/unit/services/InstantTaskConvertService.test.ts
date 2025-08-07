@@ -60,7 +60,8 @@ describe('InstantTaskConvertService', () => {
           defaultContexts: 'work,home',
           defaultTags: 'urgent,todo',
           defaultPriority: 'medium',
-          defaultTaskStatus: 'open'
+          defaultTaskStatus: 'open',
+          defaultReminders: []
         }
       }
     });
@@ -975,6 +976,71 @@ describe('InstantTaskConvertService', () => {
       
       // Note: dueTime and scheduledTime are not part of TasksPlugin format
       // This is expected behavior - time information may be stored differently
+    });
+  });
+
+  describe('Reminder Defaults Utility', () => {
+    it('should convert default reminders to proper Reminder format', async () => {
+      const { convertDefaultRemindersToReminders } = await import('../../../src/settings/settings');
+      
+      const defaultReminders = [
+        {
+          id: 'def_rem_test1',
+          type: 'relative' as const,
+          relatedTo: 'due' as const,
+          offset: 30,
+          unit: 'minutes' as const,
+          direction: 'before' as const,
+          description: 'Test reminder'
+        },
+        {
+          id: 'def_rem_test2',
+          type: 'absolute' as const,
+          absoluteDate: '2025-12-25',
+          absoluteTime: '09:00',
+          description: 'Christmas reminder'
+        }
+      ];
+
+      const converted = convertDefaultRemindersToReminders(defaultReminders);
+
+      expect(converted).toHaveLength(2);
+      
+      // Test relative reminder conversion
+      expect(converted[0]).toMatchObject({
+        type: 'relative',
+        relatedTo: 'due',
+        offset: '-PT30M',
+        description: 'Test reminder'
+      });
+
+      // Test absolute reminder conversion
+      expect(converted[1]).toMatchObject({
+        type: 'absolute',
+        absoluteTime: '2025-12-25T09:00:00',
+        description: 'Christmas reminder'
+      });
+    });
+
+    it('should filter out invalid reminders', async () => {
+      const { convertDefaultRemindersToReminders } = await import('../../../src/settings/settings');
+      
+      const defaultReminders = [
+        {
+          id: 'invalid_relative',
+          type: 'relative' as const,
+          // Missing required fields for relative reminder
+        },
+        {
+          id: 'invalid_absolute',
+          type: 'absolute' as const,
+          // Missing required fields for absolute reminder
+        }
+      ];
+
+      const converted = convertDefaultRemindersToReminders(defaultReminders as any);
+
+      expect(converted).toHaveLength(0);
     });
   });
 });

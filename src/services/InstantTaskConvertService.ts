@@ -496,6 +496,17 @@ export class InstantTaskConvertService {
         // Remove duplicates
         const uniqueProjects = [...new Set(projectsArray)];
 
+        // Apply default reminders if enabled
+        let reminders: any[] | undefined = undefined;
+        if (this.plugin.settings.useDefaultsOnInstantConvert) {
+            const defaults = this.plugin.settings.taskCreationDefaults;
+            if (defaults.defaultReminders && defaults.defaultReminders.length > 0) {
+                // Import the conversion function
+                const { convertDefaultRemindersToReminders } = await import('../settings/settings');
+                reminders = convertDefaultRemindersToReminders(defaults.defaultReminders);
+            }
+        }
+
         // Create TaskCreationData object with all the data
         const taskData: TaskCreationData = {
             title: title,
@@ -508,6 +519,7 @@ export class InstantTaskConvertService {
             tags: tagsArray,
             timeEstimate: timeEstimate,
             recurrence: recurrence,
+            reminders: reminders,
             details: details, // Use provided details from selection
             parentNote: parentNote, // Include parent note for template variable
             creationContext: 'inline-conversion', // Mark as inline conversion for folder logic

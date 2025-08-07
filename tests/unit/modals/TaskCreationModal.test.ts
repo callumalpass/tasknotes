@@ -108,7 +108,8 @@ describe('TaskCreationModal - Fixed Implementation', () => {
           defaultContexts: '',
           defaultTags: '',
           defaultTimeEstimate: 0,
-          defaultRecurrence: 'none'
+          defaultRecurrence: 'none',
+          defaultReminders: []
         },
         customStatuses: [
           { value: 'open', label: 'Open' },
@@ -219,6 +220,39 @@ describe('TaskCreationModal - Fixed Implementation', () => {
       expect((modal as any).contexts).toBe('work');
       expect((modal as any).tags).toBe('important');
       expect((modal as any).timeEstimate).toBe(60);
+    });
+
+    it('should apply default reminders', async () => {
+      mockPlugin.settings.taskCreationDefaults = {
+        defaultDueDate: 'none',
+        defaultScheduledDate: 'none',
+        defaultContexts: '',
+        defaultTags: '',
+        defaultTimeEstimate: 0,
+        defaultRecurrence: 'none',
+        defaultReminders: [
+          {
+            id: 'def_rem_test1',
+            type: 'relative',
+            relatedTo: 'due',
+            offset: 15,
+            unit: 'minutes',
+            direction: 'before',
+            description: 'Test reminder'
+          }
+        ]
+      };
+
+      modal = new TaskCreationModal(createMockApp(mockApp), mockPlugin);
+      await (modal as any).initializeFormData();
+
+      expect((modal as any).reminders).toHaveLength(1);
+      expect((modal as any).reminders[0]).toMatchObject({
+        type: 'relative',
+        relatedTo: 'due',
+        offset: '-PT15M',
+        description: 'Test reminder'
+      });
     });
   });
 
