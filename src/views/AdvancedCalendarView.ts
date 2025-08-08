@@ -664,11 +664,9 @@ export class AdvancedCalendarView extends ItemView {
             this.resizeTimeout = null;
         }
 
-        // Clean up previous listeners
+        // Clean up function listeners
         this.functionListeners.forEach(unsubscribe => unsubscribe());
         this.functionListeners = [];
-        this.listeners.forEach(listener => this.plugin.emitter.offref(listener));
-        this.listeners = [];
 
         // Use the correct window reference (supports popout windows)
         const win = this.contentEl.ownerDocument.defaultView || window;
@@ -1967,27 +1965,22 @@ export class AdvancedCalendarView extends ItemView {
     }
 
     registerEvents(): void {
-        // Clean up any existing listeners
-        this.listeners.forEach(listener => this.plugin.emitter.offref(listener));
-        this.listeners = [];
+        // Clean up function listeners (FilterService, ICS subscription service, etc.)
         this.functionListeners.forEach(unsubscribe => unsubscribe());
         this.functionListeners = [];
         
         // Listen for data changes
-        const dataListener = this.plugin.emitter.on(EVENT_DATA_CHANGED, async () => {
+        this.plugin.emitter.on(EVENT_DATA_CHANGED, async () => {
             this.refreshEvents();
             // Update FilterBar options when data changes (new properties, contexts, etc.)
             if (this.filterBar) {
-                console.log('AdvancedCalendarView: Updating FilterBar options due to data change');
                 const updatedFilterOptions = await this.plugin.filterService.getFilterOptions();
-                console.log('AdvancedCalendarView: Got updated options with projects count:', updatedFilterOptions.projects.length);
                 this.filterBar.updateFilterOptions(updatedFilterOptions);
             }
         });
-        this.listeners.push(dataListener);
         
         // Listen for task updates
-        const taskUpdateListener = this.plugin.emitter.on(EVENT_TASK_UPDATED, async () => {
+        this.plugin.emitter.on(EVENT_TASK_UPDATED, async (eventData: any) => {
             this.refreshEvents();
             // Update FilterBar options when tasks are updated (may have new properties, contexts, etc.)
             if (this.filterBar) {
@@ -1995,7 +1988,6 @@ export class AdvancedCalendarView extends ItemView {
                 this.filterBar.updateFilterOptions(updatedFilterOptions);
             }
         });
-        this.listeners.push(taskUpdateListener);
         
         // Listen for filter service data changes
         const filterDataListener = this.plugin.filterService.on('data-changed', () => {
@@ -2012,20 +2004,19 @@ export class AdvancedCalendarView extends ItemView {
         }
         
         // Listen for timeblocking toggle changes
-        const timeblockingToggleListener = this.plugin.emitter.on(EVENT_TIMEBLOCKING_TOGGLED, (enabled: boolean) => {
+        this.plugin.emitter.on(EVENT_TIMEBLOCKING_TOGGLED, (enabled: boolean) => {
             // Update visibility and refresh if timeblocking was enabled
             this.showTimeblocks = enabled && this.plugin.settings.calendarViewSettings.defaultShowTimeblocks;
             this.refreshEvents();
             this.setupViewOptions(); // Re-render view options
         });
-        this.listeners.push(timeblockingToggleListener);
 
         // Listen for settings changes to update today highlight and custom view
-        const settingsListener = this.plugin.emitter.on('settings-changed', () => {
+        this.plugin.emitter.on('settings-changed', () => {
             this.updateTodayHighlight();
             this.updateCustomViewConfiguration();
         });
-        this.listeners.push(settingsListener);
+        
     }
 
     /**
@@ -2072,8 +2063,7 @@ export class AdvancedCalendarView extends ItemView {
             this.resizeTimeout = null;
         }
         
-        // Remove event listeners
-        this.listeners.forEach(listener => this.plugin.emitter.offref(listener));
+        // Clean up function listeners
         this.functionListeners.forEach(unsubscribe => unsubscribe());
         
         // Clean up FilterBar

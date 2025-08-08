@@ -159,8 +159,16 @@ export class TaskService {
                 archived: false
             };
 
-            // Update cache proactively
-            this.plugin.cacheManager.updateTaskInfoInCache(file.path, taskInfo);
+            // Wait for fresh data and update cache
+            try {
+                // Wait for the metadata cache to have the updated data for new tasks
+                if (this.plugin.cacheManager.waitForFreshTaskData) {
+                    await this.plugin.cacheManager.waitForFreshTaskData(file, { title: taskInfo.title });
+                }
+                this.plugin.cacheManager.updateTaskInfoInCache(file.path, taskInfo);
+            } catch (cacheError) {
+                console.error('Error updating cache for new task:', cacheError);
+            }
 
             // Emit task created event
             this.plugin.emitter.trigger(EVENT_TASK_UPDATED, {
@@ -329,8 +337,12 @@ export class TaskService {
                 frontmatter[dateModifiedField] = updatedTask.dateModified;
             });
             
-            // Step 3: Proactively update cache
+            // Step 3: Wait for fresh data and update cache
             try {
+                // Wait for the metadata cache to have the updated data
+                if (this.plugin.cacheManager.waitForFreshTaskData) {
+                    await this.plugin.cacheManager.waitForFreshTaskData(file, { [property]: value });
+                }
                 await this.plugin.cacheManager.updateTaskInfoInCache(task.path, updatedTask as TaskInfo);
             } catch (cacheError) {
                 // Cache errors shouldn't break the operation, just log them
@@ -433,8 +445,17 @@ export class TaskService {
             frontmatter[dateModifiedField] = updatedTask.dateModified;
         });
         
-        // Step 3: Proactively update cache
-        await this.plugin.cacheManager.updateTaskInfoInCache(task.path, updatedTask);
+        // Step 3: Wait for fresh data and update cache
+        try {
+            const file = this.plugin.app.vault.getAbstractFileByPath(task.path);
+            // Wait for the metadata cache to have the updated data
+            if (file instanceof TFile && this.plugin.cacheManager.waitForFreshTaskData) {
+                await this.plugin.cacheManager.waitForFreshTaskData(file, { archived: updatedTask.archived });
+            }
+            await this.plugin.cacheManager.updateTaskInfoInCache(task.path, updatedTask);
+        } catch (cacheError) {
+            console.error('Error updating cache for archived task:', cacheError);
+        }
         
         // Step 4: Notify system of change
         this.plugin.emitter.trigger(EVENT_TASK_UPDATED, {
@@ -490,8 +511,16 @@ export class TaskService {
             frontmatter[dateModifiedField] = updatedTask.dateModified;
         });
 
-        // Step 3: Proactively update cache
-        await this.plugin.cacheManager.updateTaskInfoInCache(task.path, updatedTask);
+        // Step 3: Wait for fresh data and update cache
+        try {
+            // Wait for the metadata cache to have the updated time entries
+            if (this.plugin.cacheManager.waitForFreshTaskData) {
+                await this.plugin.cacheManager.waitForFreshTaskData(file, { timeEntries: updatedTask.timeEntries });
+            }
+            await this.plugin.cacheManager.updateTaskInfoInCache(task.path, updatedTask);
+        } catch (cacheError) {
+            console.error('Error updating cache for time tracking start:', cacheError);
+        }
         
         // Step 4: Notify system of change
         this.plugin.emitter.trigger(EVENT_TASK_UPDATED, {
@@ -553,8 +582,16 @@ export class TaskService {
             frontmatter[dateModifiedField] = updatedTask.dateModified;
         });
 
-        // Step 3: Proactively update cache
-        await this.plugin.cacheManager.updateTaskInfoInCache(task.path, updatedTask);
+        // Step 3: Wait for fresh data and update cache
+        try {
+            // Wait for the metadata cache to have the updated time entries
+            if (this.plugin.cacheManager.waitForFreshTaskData) {
+                await this.plugin.cacheManager.waitForFreshTaskData(file, { timeEntries: updatedTask.timeEntries });
+            }
+            await this.plugin.cacheManager.updateTaskInfoInCache(task.path, updatedTask);
+        } catch (cacheError) {
+            console.error('Error updating cache for time tracking stop:', cacheError);
+        }
         
         // Step 4: Notify system of change
         this.plugin.emitter.trigger(EVENT_TASK_UPDATED, {
@@ -690,11 +727,23 @@ export class TaskService {
                 }
             }
 
-            // Step 4: Update cache
+            // Step 4: Wait for fresh data and update cache
             if (isRenameNeeded) {
                 this.plugin.cacheManager.clearCacheEntry(originalTask.path);
             }
             try {
+                // Wait for the metadata cache to have the updated data
+                const finalFile = this.plugin.app.vault.getAbstractFileByPath(newPath);
+                if (finalFile instanceof TFile && this.plugin.cacheManager.waitForFreshTaskData) {
+                    // Wait for key changes to be reflected
+                    const keyChanges: Partial<TaskInfo> = {};
+                    if (updates.title !== undefined) keyChanges.title = updates.title;
+                    if (updates.status !== undefined) keyChanges.status = updates.status;
+                    if (updates.priority !== undefined) keyChanges.priority = updates.priority;
+                    if (Object.keys(keyChanges).length > 0) {
+                        await this.plugin.cacheManager.waitForFreshTaskData(finalFile, keyChanges);
+                    }
+                }
                 await this.plugin.cacheManager.updateTaskInfoInCache(newPath, updatedTask);
             } catch (cacheError) {
                 // Cache errors shouldn't break the operation, just log them
@@ -858,8 +907,22 @@ export class TaskService {
             frontmatter[dateModifiedField] = updatedTask.dateModified;
         });
         
-        // Step 3: Proactively update cache
-        await this.plugin.cacheManager.updateTaskInfoInCache(freshTask.path, updatedTask);
+        // Step 3: Wait for fresh data and update cache
+        try {
+            // Wait for the metadata cache to have the updated data
+            if (this.plugin.cacheManager.waitForFreshTaskData) {
+                const expectedChanges: Partial<TaskInfo> = {
+                    complete_instances: updatedTask.complete_instances
+                };
+                if (updatedTask.scheduled !== freshTask.scheduled) {
+                    expectedChanges.scheduled = updatedTask.scheduled;
+                }
+                await this.plugin.cacheManager.waitForFreshTaskData(file, expectedChanges);
+            }
+            await this.plugin.cacheManager.updateTaskInfoInCache(freshTask.path, updatedTask);
+        } catch (cacheError) {
+            console.error('Error updating cache for recurring task:', cacheError);
+        }
         
         // Step 4: Notify system of change
         this.plugin.emitter.trigger(EVENT_TASK_UPDATED, {
@@ -909,8 +972,16 @@ export class TaskService {
             frontmatter[dateModifiedField] = updatedTask.dateModified;
         });
 
-        // Step 3: Proactively update cache
-        await this.plugin.cacheManager.updateTaskInfoInCache(task.path, updatedTask);
+        // Step 3: Wait for fresh data and update cache
+        try {
+            // Wait for the metadata cache to have the updated time entries
+            if (this.plugin.cacheManager.waitForFreshTaskData) {
+                await this.plugin.cacheManager.waitForFreshTaskData(file, { timeEntries: updatedTask.timeEntries });
+            }
+            await this.plugin.cacheManager.updateTaskInfoInCache(task.path, updatedTask);
+        } catch (cacheError) {
+            console.error('Error updating cache for time entry deletion:', cacheError);
+        }
         
         // Step 4: Notify system of change
         this.plugin.emitter.trigger(EVENT_TASK_UPDATED, {

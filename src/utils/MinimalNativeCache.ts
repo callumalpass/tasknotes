@@ -929,14 +929,17 @@ export class MinimalNativeCache extends Events {
     // EVENT HANDLERS
     // ========================================
     
-    private handleFileChanged(file: TFile, cache: any): void {
+    private async handleFileChanged(file: TFile, cache: any): Promise<void> {
         if (!this.initialized) return;
         
         this.clearFileFromIndexes(file.path);
         
+        // Wait for fresh data to be available before proceeding
+        await this.waitForFreshData(file);
+        
         const metadata = this.app.metadataCache.getFileCache(file);
         if (metadata?.frontmatter && this.isTaskFile(metadata.frontmatter)) {
-            this.indexTaskFile(file, metadata.frontmatter);
+            await this.indexTaskFile(file, metadata.frontmatter);
         }
         
         this.trigger('file-updated', { path: file.path, file });
@@ -949,17 +952,114 @@ export class MinimalNativeCache extends Events {
         this.trigger('file-deleted', { path });
     }
     
-    private handleFileRenamed(file: TFile, oldPath: string): void {
+    private async handleFileRenamed(file: TFile, oldPath: string): Promise<void> {
         if (!this.initialized) return;
         
         this.clearFileFromIndexes(oldPath);
         
+        // Wait for fresh data to be available before proceeding
+        await this.waitForFreshData(file);
+        
         const metadata = this.app.metadataCache.getFileCache(file);
         if (metadata?.frontmatter && this.isTaskFile(metadata.frontmatter)) {
-            this.indexTaskFile(file, metadata.frontmatter);
+            await this.indexTaskFile(file, metadata.frontmatter);
         }
         
         this.trigger('file-renamed', { oldPath, newPath: file.path, file });
+    }
+    
+    /**
+     * Wait for fresh data to be available in Obsidian's metadata cache
+     * This ensures we don't emit events before the data is actually updated
+     */
+    private async waitForFreshData(file: TFile, maxAttempts: number = 10): Promise<void> {
+        const startTime = Date.now();
+        
+        for (let attempt = 0; attempt < maxAttempts; attempt++) {
+            try {
+                // Try to get file stats and metadata
+                const fileStat = await this.app.vault.adapter.stat(file.path);
+                if (!fileStat) break;
+                
+                const metadata = this.app.metadataCache.getFileCache(file);
+                
+                // If metadata exists and we can extract task info, data is ready
+                if (metadata?.frontmatter) {
+                    const taskInfo = this.extractTaskInfoFromNative(file.path, metadata.frontmatter);
+                    if (taskInfo || !this.isTaskFile(metadata.frontmatter)) {
+                        // Data is available (either valid task info or confirmed non-task)
+                        return;
+                    }
+                }
+                
+                // Data not ready yet, wait with exponential backoff
+                const delay = Math.min(50 * Math.pow(1.5, attempt), 200);
+                await new Promise(resolve => setTimeout(resolve, delay));
+                
+            } catch (error) {
+                // If we can't check file stats, just wait briefly and continue
+                await new Promise(resolve => setTimeout(resolve, 50));
+            }
+        }
+        
+        // Log if we timed out (for debugging slow systems)
+        const elapsed = Date.now() - startTime;
+        if (elapsed > 500) {
+            console.debug(`MinimalNativeCache: Waited ${elapsed}ms for fresh data on ${file.path}`);
+        }
+    }
+    
+    /**
+     * Wait for fresh task data with specific expected changes
+     * This can be called from TaskService to verify specific updates are reflected
+     */
+    async waitForFreshTaskData(file: TFile, expectedChanges?: Partial<TaskInfo>, maxAttempts: number = 10): Promise<void> {
+        const startTime = Date.now();
+        
+        for (let attempt = 0; attempt < maxAttempts; attempt++) {
+            try {
+                const metadata = this.app.metadataCache.getFileCache(file);
+                if (!metadata?.frontmatter) {
+                    const delay = Math.min(50 * Math.pow(1.5, attempt), 200);
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    continue;
+                }
+                
+                // Try to extract task info
+                const taskInfo = this.extractTaskInfoFromNative(file.path, metadata.frontmatter);
+                if (taskInfo) {
+                    // If we have expected changes, verify they're present
+                    if (expectedChanges) {
+                        let dataIsUpdated = true;
+                        for (const [key, expectedValue] of Object.entries(expectedChanges)) {
+                            const actualValue = taskInfo[key as keyof TaskInfo];
+                            if (actualValue !== expectedValue) {
+                                dataIsUpdated = false;
+                                break;
+                            }
+                        }
+                        if (dataIsUpdated) {
+                            return; // Data matches expectations
+                        }
+                    } else {
+                        return; // Data is available
+                    }
+                }
+                
+                // Data not ready yet, wait with exponential backoff
+                const delay = Math.min(50 * Math.pow(1.5, attempt), 200);
+                await new Promise(resolve => setTimeout(resolve, delay));
+                
+            } catch (error) {
+                await new Promise(resolve => setTimeout(resolve, 50));
+            }
+        }
+        
+        // Log if we timed out (for debugging)
+        const elapsed = Date.now() - startTime;
+        if (elapsed > 500) {
+            console.debug(`MinimalNativeCache: Waited ${elapsed}ms for fresh task data on ${file.path}`, expectedChanges);
+        }
     }
     
     // ========================================
