@@ -31,3 +31,7 @@ For more detailed information, see the [Advanced Settings](settings/advanced-set
 These settings control various plugin features and display options, including status bar visibility, project subtasks widget, and performance tuning.
 
 For more detailed information, see the [Misc Settings](settings/misc-settings.md) documentation.
+
+## Property-based Identification (Boolean note)
+
+If you identify task files by a frontmatter property, enter boolean values as true/false (without quotes) in Settings. Obsidian stores checkbox properties as real booleans; TaskNotes matches them correctly (e.g., setting "true" matches frontmatter `true`). See [Property-based Task Identification](settings/property-identification.md) for examples.
