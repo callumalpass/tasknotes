@@ -1,10 +1,11 @@
-import { TFile, Notice, normalizePath, stringifyYaml } from 'obsidian';
+import { EVENT_TASK_DELETED, EVENT_TASK_UPDATED, TaskCreationData, TaskInfo, TimeEntry } from '../types';
+import { FilenameContext, generateTaskFilename, generateUniqueFilename } from '../utils/filenameGenerator';
+import { Notice, TFile, normalizePath, stringifyYaml } from 'obsidian';
+import { TemplateData, mergeTemplateFrontmatter, processTemplate } from '../utils/templateProcessor';
+import { addDTSTARTToRecurrenceRule, ensureFolderExists, updateToNextScheduledOccurrence } from '../utils/helpers';
+import { formatDateForStorage, getCurrentDateString, getCurrentTimestamp } from '../utils/dateUtils';
+
 import TaskNotesPlugin from '../main';
-import { TaskInfo, TimeEntry, EVENT_TASK_UPDATED, EVENT_TASK_DELETED, TaskCreationData } from '../types';
-import { getCurrentTimestamp, getCurrentDateString, formatDateForStorage } from '../utils/dateUtils';
-import { generateTaskFilename, generateUniqueFilename, FilenameContext } from '../utils/filenameGenerator';
-import { ensureFolderExists, updateToNextScheduledOccurrence, addDTSTARTToRecurrenceRule } from '../utils/helpers';
-import { processTemplate, mergeTemplateFrontmatter, TemplateData } from '../utils/templateProcessor';
 
 export class TaskService {
     constructor(private plugin: TaskNotesPlugin) {}
@@ -114,7 +115,10 @@ export class TaskService {
                 const propName = this.plugin.settings.taskPropertyName;
                 const propValue = this.plugin.settings.taskPropertyValue;
                 if (propName && propValue) {
-                    frontmatter[propName] = propValue;
+                    // Coerce boolean-like strings to actual booleans for compatibility with Obsidian properties
+                    const lower = propValue.toLowerCase();
+                    const coercedValue = (lower === 'true' || lower === 'false') ? (lower === 'true') : propValue;
+                    frontmatter[propName] = coercedValue as any;
                 }
                 // Remove task tag from tags array if using property identification
                 const filteredTags = tagsArray.filter((tag: string) => tag !== this.plugin.settings.taskTag);
