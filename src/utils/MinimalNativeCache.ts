@@ -1,20 +1,21 @@
-import { TFile, App, Events, EventRef, parseLinktext } from 'obsidian';
-import { TaskInfo, NoteInfo } from '../types';
-import { FieldMapper } from '../services/FieldMapper';
-import { 
-    getTodayString, 
-    isBeforeDateSafe, 
+import { App, EventRef, Events, TFile, parseLinktext } from 'obsidian';
+import { NoteInfo, TaskInfo } from '../types';
+import {
+    formatDateForStorage,
     getDatePart,
-    parseDateToUTC,
-    formatDateForStorage
+    getTodayString,
+    isBeforeDateSafe,
+    parseDateToUTC
 } from './dateUtils';
-import { filterEmptyProjects } from './helpers';
+
+import { FieldMapper } from '../services/FieldMapper';
 import { TaskNotesSettings } from '../settings/settings';
+import { filterEmptyProjects } from './helpers';
 
 /**
  * Ultra-minimal cache manager that leverages Obsidian's native metadata cache
  * to the maximum extent possible. Only maintains essential indexes for performance.
- * 
+ *
  * Design Philosophy:
  * - Native-first: Always use app.metadataCache as primary data source
  * - Minimal indexing: Only index performance-critical queries
@@ -29,19 +30,19 @@ export class MinimalNativeCache extends Events {
     private fieldMapper?: FieldMapper;
     private disableNoteIndexing: boolean;
     private storeTitleInFilename: boolean;
-    
+
     // Only essential indexes - everything else computed on-demand
     private tasksByDate: Map<string, Set<string>> = new Map(); // YYYY-MM-DD -> task paths
     private tasksByStatus: Map<string, Set<string>> = new Map(); // status -> task paths
     private overdueTasks: Set<string> = new Set(); // overdue task paths
-    
+
     // Initialization state
     private initialized = false;
     private indexesBuilt = false;
-    
+
     // Event listeners for cleanup
     private eventListeners: EventRef[] = [];
-    
+
     constructor(
         app: App,
         settings: TaskNotesSettings,
@@ -58,7 +59,7 @@ export class MinimalNativeCache extends Events {
         this.disableNoteIndexing = settings.disableNoteIndexing;
         this.storeTitleInFilename = settings.storeTitleInFilename;
     }
-    
+
     /**
      * Initialize by setting up native event listeners
      * Indexes built lazily for optimal startup performance
@@ -67,12 +68,12 @@ export class MinimalNativeCache extends Events {
         if (this.initialized) {
             return;
         }
-        
+
         this.setupNativeEventListeners();
         this.initialized = true;
         this.trigger('cache-initialized', { message: 'Minimal native cache ready' });
     }
-    
+
     /**
      * Get the Obsidian app instance
      * Needed for external services to access app APIs
@@ -97,15 +98,32 @@ export class MinimalNativeCache extends Events {
 
             // Handle both single and multi-value properties
             if (Array.isArray(frontmatterValue)) {
-                return frontmatterValue.includes(propValue);
+                return frontmatterValue.some((val: any) => this.comparePropertyValues(val, propValue));
             }
-            return frontmatterValue === propValue;
+            return this.comparePropertyValues(frontmatterValue, propValue);
         } else {
             // Fallback to legacy tag-based method
             return Array.isArray(frontmatter.tags) && frontmatter.tags.includes(this.taskTag);
         }
     }
-    
+
+    /**
+     * Compare frontmatter property values with settings value, with boolean coercion support.
+     */
+    private comparePropertyValues(frontmatterValue: any, settingValue: string): boolean {
+        // Handle boolean frontmatter values compared to string settings (e.g., true vs "true")
+        if (typeof frontmatterValue === 'boolean' && typeof settingValue === 'string') {
+            const lower = settingValue.toLowerCase();
+            if (lower === 'true' || lower === 'false') {
+                return frontmatterValue === (lower === 'true');
+            }
+        }
+
+        // Fallback to strict equality for other types (strings, numbers, etc.)
+        return frontmatterValue === settingValue;
+    }
+
+
     /**
      * Set up native event listeners for real-time updates
      */
@@ -118,7 +136,7 @@ export class MinimalNativeCache extends Events {
                 }
             })
         );
-        
+
         this.eventListeners.push(
             this.app.metadataCache.on('deleted', (file, prevCache) => {
                 if (file instanceof TFile && file.extension === 'md') {
@@ -126,7 +144,7 @@ export class MinimalNativeCache extends Events {
                 }
             })
         );
-        
+
         this.eventListeners.push(
             this.app.vault.on('rename', (file, oldPath) => {
                 if (file instanceof TFile && file.extension === 'md') {
@@ -135,17 +153,17 @@ export class MinimalNativeCache extends Events {
             })
         );
     }
-    
+
     /**
      * Ensure essential indexes are built (lazy loading)
      */
     private ensureIndexesBuilt(): void {
         if (this.indexesBuilt) return;
-        
+
         this.indexesBuilt = true;
         window.setTimeout(() => this.buildEssentialIndexes(), 1);
     }
-    
+
     /**
      * Build only essential indexes in background
      */
@@ -153,12 +171,12 @@ export class MinimalNativeCache extends Events {
         try {
             const markdownFiles = this.app.vault.getMarkdownFiles()
                 .filter(file => this.isValidFile(file.path));
-            
+
             // Process in small batches to avoid blocking
             const batchSize = 50;
             for (let i = 0; i < markdownFiles.length; i += batchSize) {
                 const batch = markdownFiles.slice(i, i + batchSize);
-                
+
                 for (const file of batch) {
                     try {
                         const metadata = this.app.metadataCache.getFileCache(file);
@@ -169,66 +187,66 @@ export class MinimalNativeCache extends Events {
                         console.error(`Error indexing file ${file.path}:`, error);
                     }
                 }
-                
+
                 // Yield control between batches
                 await new Promise(resolve => window.setTimeout(resolve, 1));
             }
-            
-            this.trigger('indexes-built', { 
+
+            this.trigger('indexes-built', {
                 tasksByDate: this.tasksByDate.size,
                 tasksByStatus: this.tasksByStatus.size,
-                overdueTasks: this.overdueTasks.size 
+                overdueTasks: this.overdueTasks.size
             });
-            
+
         } catch (error) {
             console.error('Error building essential indexes:', error);
         }
     }
-    
+
     /**
      * Index a task file (minimal - only essential indexes)
      */
     private async indexTaskFile(file: TFile, frontmatter: any): Promise<void> {
         if (!this.fieldMapper) return;
-        
+
         try {
             const taskInfo = this.extractTaskInfoFromNative(file.path, frontmatter);
             if (!taskInfo) return;
-            
+
             // Update only essential indexes
             this.updateDateIndex(file.path, taskInfo);
             this.updateStatusIndex(file.path, taskInfo.status);
             this.updateOverdueIndex(file.path, taskInfo);
-            
+
         } catch (error) {
             console.error(`Error indexing task ${file.path}:`, error);
         }
     }
-    
+
     // ========================================
     // PUBLIC API - NATIVE-FIRST APPROACH
     // ========================================
-    
+
     /**
      * Get task info directly from native metadata cache
      */
     async getTaskInfo(path: string): Promise<TaskInfo | null> {
         const file = this.app.vault.getAbstractFileByPath(path);
         if (!(file instanceof TFile)) return null;
-        
+
         const metadata = this.app.metadataCache.getFileCache(file);
         if (!metadata?.frontmatter) return null;
-        
+
         return this.extractTaskInfoFromNative(path, metadata.frontmatter);
     }
-    
+
     /**
      * Get all tasks by scanning native metadata cache
      */
     async getAllTasks(): Promise<TaskInfo[]> {
         const markdownFiles = this.app.vault.getMarkdownFiles()
             .filter(file => this.isValidFile(file.path));
-        
+
         const tasks: TaskInfo[] = [];
         for (const file of markdownFiles) {
             const metadata = this.app.metadataCache.getFileCache(file);
@@ -237,10 +255,10 @@ export class MinimalNativeCache extends Events {
                 if (taskInfo) tasks.push(taskInfo);
             }
         }
-        
+
         return tasks;
     }
-    
+
     /**
      * Get tasks for specific date (uses essential index)
      */
@@ -249,7 +267,7 @@ export class MinimalNativeCache extends Events {
         const taskPaths = this.tasksByDate.get(date) || new Set();
         return Array.from(taskPaths);
     }
-    
+
     /**
      * Get task paths by status (uses essential index)
      */
@@ -258,7 +276,7 @@ export class MinimalNativeCache extends Events {
         const taskPaths = this.tasksByStatus.get(status) || new Set();
         return Array.from(taskPaths);
     }
-    
+
     /**
      * Get overdue task paths (uses essential index)
      */
@@ -266,7 +284,7 @@ export class MinimalNativeCache extends Events {
         this.ensureIndexesBuilt();
         return new Set(this.overdueTasks);
     }
-    
+
     /**
      * Get calendar data by computing on-demand
      */
@@ -274,35 +292,35 @@ export class MinimalNativeCache extends Events {
         const taskData = new Map();
         const noteData = new Map();
         const dailyNotesSet = new Set<string>();
-        
+
         // Get all markdown files for note counting
         const markdownFiles = this.app.vault.getMarkdownFiles()
             .filter(file => this.isValidFile(file.path));
-        
+
         // Use Obsidian's daily notes interface for daily notes detection
         try {
             const { getAllDailyNotes } = require('obsidian-daily-notes-interface');
             const allDailyNotes = getAllDailyNotes();
-            
+
             for (const [dateStr] of Object.entries(allDailyNotes)) {
                 dailyNotesSet.add(dateStr);
             }
         } catch (e) {
             // Daily notes interface not available, fallback to filename pattern matching
         }
-        
+
         // Process all files to extract date information for notes
         for (const file of markdownFiles) {
             const metadata = this.app.metadataCache.getFileCache(file);
             if (!metadata?.frontmatter) continue;
-            
+
             const frontmatter = metadata.frontmatter;
             const isTask = this.isTaskFile(frontmatter);
-            
+
             if (!isTask && !this.disableNoteIndexing) {
                 // This is a note - extract date information
                 let noteDate: string | null = null;
-                
+
                 // Try to extract date from frontmatter
                 if (frontmatter.dateCreated || frontmatter.date) {
                     const dateValue = frontmatter.dateCreated || frontmatter.date;
@@ -315,7 +333,7 @@ export class MinimalNativeCache extends Events {
                         // Ignore invalid dates
                     }
                 }
-                
+
                 // Check if it's a daily note by filename pattern (fallback)
                 if (!noteDate) {
                     const fileName = file.basename;
@@ -326,7 +344,7 @@ export class MinimalNativeCache extends Events {
                         dailyNotesSet.add(noteDate);
                     }
                 }
-                
+
                 if (noteDate) {
                     // Increment note count for this date
                     const currentCount = noteData.get(noteDate) || 0;
@@ -334,13 +352,13 @@ export class MinimalNativeCache extends Events {
                 }
             }
         }
-        
+
         // Build task data for the requested month
         const daysInMonth = new Date(year, month + 1, 0).getDate();
-        
+
         for (let day = 1; day <= daysInMonth; day++) {
             const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-            
+
             // Get tasks for this date
             const taskPaths = this.getTasksForDate(dateKey);
             if (taskPaths.length > 0) {
@@ -348,7 +366,7 @@ export class MinimalNativeCache extends Events {
                     taskPaths.map(path => this.getTaskInfo(path))
                 );
                 const validTasks = tasks.filter(task => task !== null) as TaskInfo[];
-                
+
                 if (validTasks.length > 0) {
                     // Create task summary info for calendar coloring
                     const taskSummary = {
@@ -363,10 +381,10 @@ export class MinimalNativeCache extends Events {
                 }
             }
         }
-        
+
         return { tasks: taskData, notes: noteData, dailyNotes: dailyNotesSet };
     }
-    
+
     /**
      * Get all task paths by scanning native cache
      */
@@ -374,30 +392,30 @@ export class MinimalNativeCache extends Events {
         const taskPaths = new Set<string>();
         const markdownFiles = this.app.vault.getMarkdownFiles()
             .filter(file => this.isValidFile(file.path));
-        
+
         for (const file of markdownFiles) {
             const metadata = this.app.metadataCache.getFileCache(file);
             if (metadata?.frontmatter && this.isTaskFile(metadata.frontmatter)) {
                 taskPaths.add(file.path);
             }
         }
-        
+
         return taskPaths;
     }
-    
+
     /**
      * Get all statuses by computing on-demand from active tasks
      */
     getAllStatuses(): string[] {
         this.ensureIndexesBuilt();
-        
+
         // If indexes aren't built yet, try to get statuses synchronously
         if (this.tasksByStatus.size === 0 && this.indexesBuilt) {
             console.debug('MinimalNativeCache: Indexes marked as built but tasksByStatus is empty, computing statuses synchronously');
             const statuses = new Set<string>();
             const markdownFiles = this.app.vault.getMarkdownFiles()
                 .filter(file => this.isValidFile(file.path));
-            
+
             for (const file of markdownFiles) {
                 const metadata = this.app.metadataCache.getFileCache(file);
                 if (metadata?.frontmatter && this.isTaskFile(metadata.frontmatter)) {
@@ -407,13 +425,13 @@ export class MinimalNativeCache extends Events {
                     }
                 }
             }
-            
+
             return Array.from(statuses).sort();
         }
-        
+
         return Array.from(this.tasksByStatus.keys()).sort();
     }
-    
+
     /**
      * Get all priorities by computing on-demand
      */
@@ -421,7 +439,7 @@ export class MinimalNativeCache extends Events {
         const priorities = new Set<string>();
         const markdownFiles = this.app.vault.getMarkdownFiles()
             .filter(file => this.isValidFile(file.path));
-        
+
         for (const file of markdownFiles) {
             const metadata = this.app.metadataCache.getFileCache(file);
             if (metadata?.frontmatter && this.isTaskFile(metadata.frontmatter)) {
@@ -431,10 +449,10 @@ export class MinimalNativeCache extends Events {
                 }
             }
         }
-        
+
         return Array.from(priorities).sort();
     }
-    
+
     /**
      * Get all tags by computing on-demand
      */
@@ -442,7 +460,7 @@ export class MinimalNativeCache extends Events {
         const tags = new Set<string>();
         const markdownFiles = this.app.vault.getMarkdownFiles()
             .filter(file => this.isValidFile(file.path));
-        
+
         for (const file of markdownFiles) {
             const metadata = this.app.metadataCache.getFileCache(file);
             if (metadata?.frontmatter && this.isTaskFile(metadata.frontmatter)) {
@@ -452,10 +470,10 @@ export class MinimalNativeCache extends Events {
                 }
             }
         }
-        
+
         return Array.from(tags).sort();
     }
-    
+
     /**
      * Get all contexts by computing on-demand
      */
@@ -463,7 +481,7 @@ export class MinimalNativeCache extends Events {
         const contexts = new Set<string>();
         const markdownFiles = this.app.vault.getMarkdownFiles()
             .filter(file => this.isValidFile(file.path));
-        
+
         for (const file of markdownFiles) {
             const metadata = this.app.metadataCache.getFileCache(file);
             if (metadata?.frontmatter && this.isTaskFile(metadata.frontmatter)) {
@@ -473,10 +491,10 @@ export class MinimalNativeCache extends Events {
                 }
             }
         }
-        
+
         return Array.from(contexts).sort();
     }
-    
+
     /**
      * Get all projects by computing on-demand
      * Extracts project names from [[Note Name]] links in task project fields
@@ -486,7 +504,7 @@ export class MinimalNativeCache extends Events {
         const projects = new Set<string>();
         const markdownFiles = this.app.vault.getMarkdownFiles()
             .filter(file => this.isValidFile(file.path));
-        
+
         for (const file of markdownFiles) {
             const metadata = this.app.metadataCache.getFileCache(file);
             if (metadata?.frontmatter && this.isTaskFile(metadata.frontmatter)) {
@@ -508,10 +526,10 @@ export class MinimalNativeCache extends Events {
                 }
             }
         }
-        
+
         return Array.from(projects).sort();
     }
-    
+
     /**
      * Get detailed project information including file paths and existence status
      * Returns an object with project metadata for more advanced use cases
@@ -530,10 +548,10 @@ export class MinimalNativeCache extends Events {
             exists: boolean;
             usageCount: number;
         }>();
-        
+
         const markdownFiles = this.app.vault.getMarkdownFiles()
             .filter(file => this.isValidFile(file.path));
-        
+
         for (const file of markdownFiles) {
             const metadata = this.app.metadataCache.getFileCache(file);
             if (metadata?.frontmatter && this.isTaskFile(metadata.frontmatter)) {
@@ -554,10 +572,10 @@ export class MinimalNativeCache extends Events {
                 }
             }
         }
-        
+
         return Array.from(projectMap.values()).sort((a, b) => a.name.localeCompare(b.name));
     }
-    
+
     /**
      * Get all project notes that exist as files in the vault
      * This returns only projects that are linked notes and actually exist as files
@@ -576,7 +594,7 @@ export class MinimalNativeCache extends Events {
                 usageCount: project.usageCount
             }));
     }
-    
+
     /**
      * Extract project names from a project field value
      * Handles both [[Note Name]] links and plain strings
@@ -584,27 +602,27 @@ export class MinimalNativeCache extends Events {
      */
     private extractProjectNamesFromValue(projectValue: string, sourcePath: string): string[] {
         if (!projectValue) return [];
-        
+
         const projects: string[] = [];
-        
+
         // Check if this is a [[link]] format
         if (projectValue.startsWith('[[') && projectValue.endsWith(']]')) {
             const linkContent = projectValue.slice(2, -2);
             const parsed = parseLinktext(linkContent);
             const linkPath = parsed.path;
-            
+
             // Handle both relative and absolute link paths
             let resolvedFile;
-            
+
             // First try to resolve as-is (handles absolute paths and relative paths from vault root)
             resolvedFile = this.app.metadataCache.getFirstLinkpathDest(linkPath, '');
-            
+
             // If not found, try resolving relative to the source file's directory
             if (!resolvedFile) {
                 const sourceDir = sourcePath.substring(0, sourcePath.lastIndexOf('/'));
                 resolvedFile = this.app.metadataCache.getFirstLinkpathDest(linkPath, sourceDir);
             }
-            
+
             if (resolvedFile) {
                 // Return the actual note name (basename without extension)
                 projects.push(resolvedFile.basename);
@@ -623,10 +641,10 @@ export class MinimalNativeCache extends Events {
                 projects.push(trimmed);
             }
         }
-        
+
         return projects;
     }
-    
+
     /**
      * Extract detailed project information from a project field value
      * Returns project metadata including file paths and existence status
@@ -638,32 +656,32 @@ export class MinimalNativeCache extends Events {
         exists: boolean;
     }> {
         if (!projectValue) return [];
-        
+
         const projects: Array<{
             name: string;
             isLinkedNote: boolean;
             filePath?: string;
             exists: boolean;
         }> = [];
-        
+
         // Check if this is a [[link]] format
         if (projectValue.startsWith('[[') && projectValue.endsWith(']]')) {
             const linkContent = projectValue.slice(2, -2);
             const parsed = parseLinktext(linkContent);
             const linkPath = parsed.path;
-            
+
             // Handle both relative and absolute link paths
             let resolvedFile;
-            
+
             // First try to resolve as-is (handles absolute paths and relative paths from vault root)
             resolvedFile = this.app.metadataCache.getFirstLinkpathDest(linkPath, '');
-            
+
             // If not found, try resolving relative to the source file's directory
             if (!resolvedFile) {
                 const sourceDir = sourcePath.substring(0, sourcePath.lastIndexOf('/'));
                 resolvedFile = this.app.metadataCache.getFirstLinkpathDest(linkPath, sourceDir);
             }
-            
+
             if (resolvedFile) {
                 // Return the actual note name and file path
                 projects.push({
@@ -694,79 +712,79 @@ export class MinimalNativeCache extends Events {
                 });
             }
         }
-        
+
         return projects;
     }
-    
+
     // ========================================
     // BACKWARD COMPATIBILITY METHODS
     // ========================================
-    
+
     /**
      * Sync version of getTaskInfo for editor extensions
      */
     getCachedTaskInfoSync(path: string): TaskInfo | null {
         const file = this.app.vault.getAbstractFileByPath(path);
         if (!(file instanceof TFile)) return null;
-        
+
         const metadata = this.app.metadataCache.getFileCache(file);
         if (!metadata?.frontmatter) return null;
-        
+
         // Check if the note has the task tag
         if (!this.isTaskFile(metadata.frontmatter)) return null;
-        
+
         return this.extractTaskInfoFromNative(path, metadata.frontmatter);
     }
-    
+
     /**
      * Alias methods for backward compatibility
      */
     async getCachedTaskInfo(path: string): Promise<TaskInfo | null> {
         return this.getTaskInfo(path);
     }
-    
+
     async getTaskByPath(path: string): Promise<TaskInfo | null> {
         return this.getTaskInfo(path);
     }
-    
+
     async getNotesForDate(date: Date): Promise<NoteInfo[]> {
         // Check if note indexing is disabled
         if (this.disableNoteIndexing) {
             return [];
         }
-        
+
 		const targetDateStr = getDatePart(date.toISOString()); // YYYY-MM-DD format
         const notes: NoteInfo[] = [];
-        
+
         // Get all markdown files excluding task files and excluded folders
         const markdownFiles = this.app.vault.getMarkdownFiles()
             .filter(file => this.isValidFile(file.path));
-        
+
         for (const file of markdownFiles) {
             const metadata = this.app.metadataCache.getFileCache(file);
             if (!metadata?.frontmatter) continue;
-            
+
             const frontmatter = metadata.frontmatter;
             const isTask = this.isTaskFile(frontmatter);
-            
+
             // Skip task files - we only want notes
             if (isTask) continue;
-            
+
             let noteDate: string | null = null;
-            
+
             // Try to extract date from frontmatter using parseDate
             if (frontmatter.dateCreated || frontmatter.date) {
                 const dateValue = frontmatter.dateCreated || frontmatter.date;
-                
+
                 // Pre-validate the date value to avoid console warnings
                 if (typeof dateValue === 'string' && dateValue.trim()) {
                     const trimmed = dateValue.trim();
-                    
+
                     // Skip invalid time-only formats like "T00:00" that would cause console warnings
                     if (trimmed.startsWith('T') && /^T\d{2}:\d{2}(:\d{2})?/.test(trimmed)) {
-                        console.debug('Skipping invalid time-only date in note frontmatter:', { 
-                            path: file.path, 
-                            dateValue: trimmed 
+                        console.debug('Skipping invalid time-only date in note frontmatter:', {
+                            path: file.path,
+                            dateValue: trimmed
                         });
                         // Continue to filename parsing
                     } else {
@@ -775,16 +793,16 @@ export class MinimalNativeCache extends Events {
                             noteDate = formatDateForStorage(parsed);
                         } catch (e) {
                             // Ignore invalid dates or parsing errors
-                            console.debug('Failed to parse date from note frontmatter:', { 
-                                path: file.path, 
-                                dateValue, 
+                            console.debug('Failed to parse date from note frontmatter:', {
+                                path: file.path,
+                                dateValue,
                                 error: e instanceof Error ? e.message : String(e)
                             });
                         }
                     }
                 }
             }
-            
+
             // If not found in frontmatter, try to extract from filename using parseDate
             if (!noteDate) {
                 const fileName = file.basename;
@@ -798,7 +816,7 @@ export class MinimalNativeCache extends Events {
                     }
                 }
             }
-            
+
             // If we found a date and it matches our target date, include this note
             if (noteDate === targetDateStr) {
                 // Extract tags from frontmatter or metadata
@@ -810,13 +828,13 @@ export class MinimalNativeCache extends Events {
                         tags = [frontmatter.tags];
                     }
                 }
-                
+
                 // Also include tags from Obsidian's tag parsing
                 if (metadata.tags) {
                     const obsidianTags = metadata.tags.map(tag => tag.tag.replace('#', ''));
                     tags = [...new Set([...tags, ...obsidianTags])];
                 }
-                
+
                 const noteInfo: NoteInfo = {
                     title: file.basename,
                     tags: tags,
@@ -824,14 +842,14 @@ export class MinimalNativeCache extends Events {
                     createdDate: noteDate,
                     lastModified: file.stat.mtime
                 };
-                
+
                 notes.push(noteInfo);
             }
         }
-        
+
         return notes;
     }
-    
+
     async getTaskInfoForDate(date: Date): Promise<TaskInfo[]> {
         const dateStr = date.toISOString().split('T')[0];
         const taskPaths = this.getTasksForDate(dateStr);
@@ -840,17 +858,17 @@ export class MinimalNativeCache extends Events {
         );
         return tasks.filter(task => task !== null) as TaskInfo[];
     }
-    
+
     getTaskPathsByDate(dateStr: string): Set<string> {
         return new Set(this.getTasksForDate(dateStr));
     }
-    
+
     getTaskPathsByPriority(priority: string): string[] {
         // Compute on-demand - no longer indexed
         const taskPaths: string[] = [];
         const markdownFiles = this.app.vault.getMarkdownFiles()
             .filter(file => this.isValidFile(file.path));
-        
+
         for (const file of markdownFiles) {
             const metadata = this.app.metadataCache.getFileCache(file);
             if (metadata?.frontmatter && this.isTaskFile(metadata.frontmatter)) {
@@ -860,24 +878,24 @@ export class MinimalNativeCache extends Events {
                 }
             }
         }
-        
+
         return taskPaths;
     }
-    
+
     async rebuildDailyNotesCache(year: number, month: number): Promise<void> {
         // No-op - use Obsidian's daily notes interface
     }
-    
+
     // ========================================
     // ESSENTIAL INDEX MANAGEMENT
     // ========================================
-    
+
     private updateDateIndex(path: string, taskInfo: TaskInfo): void {
         // Remove from existing date indexes
         for (const taskSet of this.tasksByDate.values()) {
             taskSet.delete(path);
         }
-        
+
         // Add to due date index
         if (taskInfo.due) {
             const dueDateKey = getDatePart(taskInfo.due);
@@ -886,7 +904,7 @@ export class MinimalNativeCache extends Events {
             }
             this.tasksByDate.get(dueDateKey)!.add(path);
         }
-        
+
         // Add to scheduled date index
         if (taskInfo.scheduled) {
             const scheduledDateKey = getDatePart(taskInfo.scheduled);
@@ -896,27 +914,27 @@ export class MinimalNativeCache extends Events {
             this.tasksByDate.get(scheduledDateKey)!.add(path);
         }
     }
-    
+
     private updateStatusIndex(path: string, status: string): void {
         // Remove from all status indexes
         for (const statusSet of this.tasksByStatus.values()) {
             statusSet.delete(path);
         }
-        
+
         // Add to new status index
         if (!this.tasksByStatus.has(status)) {
             this.tasksByStatus.set(status, new Set());
         }
         this.tasksByStatus.get(status)!.add(path);
     }
-    
+
     private updateOverdueIndex(path: string, taskInfo: TaskInfo): void {
         this.overdueTasks.delete(path);
-        
+
         // Check if task is overdue
         if (!taskInfo.recurrence) {
             const today = getTodayString();
-            
+
             if (taskInfo.due && isBeforeDateSafe(taskInfo.due, today)) {
                 this.overdueTasks.add(path);
             } else if (!taskInfo.due && taskInfo.scheduled && isBeforeDateSafe(taskInfo.scheduled, today)) {
@@ -924,65 +942,65 @@ export class MinimalNativeCache extends Events {
             }
         }
     }
-    
+
     // ========================================
     // EVENT HANDLERS
     // ========================================
-    
+
     private async handleFileChanged(file: TFile, cache: any): Promise<void> {
         if (!this.initialized) return;
-        
+
         this.clearFileFromIndexes(file.path);
-        
+
         // Wait for fresh data to be available before proceeding
         await this.waitForFreshData(file);
-        
+
         const metadata = this.app.metadataCache.getFileCache(file);
         if (metadata?.frontmatter && this.isTaskFile(metadata.frontmatter)) {
             await this.indexTaskFile(file, metadata.frontmatter);
         }
-        
+
         this.trigger('file-updated', { path: file.path, file });
     }
-    
+
     private handleFileDeleted(path: string): void {
         if (!this.initialized) return;
-        
+
         this.clearFileFromIndexes(path);
         this.trigger('file-deleted', { path });
     }
-    
+
     private async handleFileRenamed(file: TFile, oldPath: string): Promise<void> {
         if (!this.initialized) return;
-        
+
         this.clearFileFromIndexes(oldPath);
-        
+
         // Wait for fresh data to be available before proceeding
         await this.waitForFreshData(file);
-        
+
         const metadata = this.app.metadataCache.getFileCache(file);
         if (metadata?.frontmatter && this.isTaskFile(metadata.frontmatter)) {
             await this.indexTaskFile(file, metadata.frontmatter);
         }
-        
+
         this.trigger('file-renamed', { oldPath, newPath: file.path, file });
     }
-    
+
     /**
      * Wait for fresh data to be available in Obsidian's metadata cache
      * This ensures we don't emit events before the data is actually updated
      */
     private async waitForFreshData(file: TFile, maxAttempts: number = 10): Promise<void> {
         const startTime = Date.now();
-        
+
         for (let attempt = 0; attempt < maxAttempts; attempt++) {
             try {
                 // Try to get file stats and metadata
                 const fileStat = await this.app.vault.adapter.stat(file.path);
                 if (!fileStat) break;
-                
+
                 const metadata = this.app.metadataCache.getFileCache(file);
-                
+
                 // If metadata exists and we can extract task info, data is ready
                 if (metadata?.frontmatter) {
                     const taskInfo = this.extractTaskInfoFromNative(file.path, metadata.frontmatter);
@@ -991,31 +1009,31 @@ export class MinimalNativeCache extends Events {
                         return;
                     }
                 }
-                
+
                 // Data not ready yet, wait with exponential backoff
                 const delay = Math.min(50 * Math.pow(1.5, attempt), 200);
                 await new Promise(resolve => setTimeout(resolve, delay));
-                
+
             } catch (error) {
                 // If we can't check file stats, just wait briefly and continue
                 await new Promise(resolve => setTimeout(resolve, 50));
             }
         }
-        
+
         // Log if we timed out (for debugging slow systems)
         const elapsed = Date.now() - startTime;
         if (elapsed > 500) {
             console.debug(`MinimalNativeCache: Waited ${elapsed}ms for fresh data on ${file.path}`);
         }
     }
-    
+
     /**
      * Wait for fresh task data with specific expected changes
      * This can be called from TaskService to verify specific updates are reflected
      */
     async waitForFreshTaskData(file: TFile, expectedChanges?: Partial<TaskInfo>, maxAttempts: number = 10): Promise<void> {
         const startTime = Date.now();
-        
+
         for (let attempt = 0; attempt < maxAttempts; attempt++) {
             try {
                 const metadata = this.app.metadataCache.getFileCache(file);
@@ -1024,7 +1042,7 @@ export class MinimalNativeCache extends Events {
                     await new Promise(resolve => setTimeout(resolve, delay));
                     continue;
                 }
-                
+
                 // Try to extract task info
                 const taskInfo = this.extractTaskInfoFromNative(file.path, metadata.frontmatter);
                 if (taskInfo) {
@@ -1045,33 +1063,33 @@ export class MinimalNativeCache extends Events {
                         return; // Data is available
                     }
                 }
-                
+
                 // Data not ready yet, wait with exponential backoff
                 const delay = Math.min(50 * Math.pow(1.5, attempt), 200);
                 await new Promise(resolve => setTimeout(resolve, delay));
-                
+
             } catch (error) {
                 await new Promise(resolve => setTimeout(resolve, 50));
             }
         }
-        
+
         // Log if we timed out (for debugging)
         const elapsed = Date.now() - startTime;
         if (elapsed > 500) {
             console.debug(`MinimalNativeCache: Waited ${elapsed}ms for fresh task data on ${file.path}`, expectedChanges);
         }
     }
-    
+
     // ========================================
     // UTILITY METHODS
     // ========================================
-    
+
     private extractTaskInfoFromNative(path: string, frontmatter: any): TaskInfo | null {
         if (!this.fieldMapper) return null;
-        
+
         try {
             const mappedTask = this.fieldMapper.mapFromFrontmatter(frontmatter, path, this.storeTitleInFilename);
-            
+
             return {
                 title: mappedTask.title || 'Untitled task',
                 status: mappedTask.status || 'open',
@@ -1097,36 +1115,36 @@ export class MinimalNativeCache extends Events {
             return null;
         }
     }
-    
+
     private isValidFile(path: string): boolean {
         return !this.excludedFolders.some(folder => path.startsWith(folder));
     }
-    
+
     private clearFileFromIndexes(path: string): void {
         // Remove from date indexes
         for (const taskSet of this.tasksByDate.values()) {
             taskSet.delete(path);
         }
-        
+
         // Remove from status indexes
         for (const statusSet of this.tasksByStatus.values()) {
             statusSet.delete(path);
         }
-        
+
         // Remove from overdue tasks
         this.overdueTasks.delete(path);
     }
-    
+
     private clearAllIndexes(): void {
         this.tasksByDate.clear();
         this.tasksByStatus.clear();
         this.overdueTasks.clear();
     }
-    
+
     // ========================================
     // CACHE MANAGEMENT API
     // ========================================
-    
+
     updateConfig(
         taskTag: string,
         excludedFolders: string,
@@ -1135,19 +1153,19 @@ export class MinimalNativeCache extends Events {
         storeTitleInFilename = false
     ): void {
         this.taskTag = taskTag;
-        this.excludedFolders = excludedFolders 
+        this.excludedFolders = excludedFolders
             ? excludedFolders.split(',').map(folder => folder.trim())
             : [];
         this.fieldMapper = fieldMapper;
         this.disableNoteIndexing = disableNoteIndexing;
         this.storeTitleInFilename = storeTitleInFilename;
-        
+
         if (this.initialized) {
             this.clearAllIndexes();
             this.indexesBuilt = false;
         }
     }
-    
+
     clearCacheEntry(path: string): void {
         const file = this.app.vault.getAbstractFileByPath(path);
         if (file instanceof TFile) {
@@ -1157,12 +1175,12 @@ export class MinimalNativeCache extends Events {
             }
         }
     }
-    
+
     async clearAllCaches(): Promise<void> {
         this.clearAllIndexes();
         this.indexesBuilt = false;
     }
-    
+
     updateTaskInfoInCache(path: string, taskInfo: TaskInfo): void {
         // Native metadata cache handles this automatically
         // Just trigger our minimal index update
@@ -1173,16 +1191,16 @@ export class MinimalNativeCache extends Events {
             this.updateOverdueIndex(path, taskInfo);
         }
     }
-    
+
     subscribe(eventName: string, callback: (data: any) => void): () => void {
         this.on(eventName, callback);
         return () => this.off(eventName, callback);
     }
-    
+
     isInitialized(): boolean {
         return this.initialized;
     }
-    
+
     getStats() {
         return {
             indexSizes: {
@@ -1193,14 +1211,14 @@ export class MinimalNativeCache extends Events {
             memoryFootprint: 'Minimal - only essential indexes'
         };
     }
-    
+
     destroy(): void {
         // Clean up event listeners
         this.eventListeners.forEach(listener => {
             this.app.metadataCache.offref(listener);
         });
         this.eventListeners = [];
-        
+
         this.clearAllIndexes();
         this.initialized = false;
         this.indexesBuilt = false;

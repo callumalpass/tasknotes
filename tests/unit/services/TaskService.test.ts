@@ -1,6 +1,6 @@
 /**
  * TaskService Unit Tests
- * 
+ *
  * Tests for the core TaskService functionality including:
  * - Task creation with various scenarios
  * - Task property updates
@@ -11,10 +11,10 @@
  * - Error handling and edge cases
  */
 
-import { TaskService, TaskCreationData } from '../../../src/services/TaskService';
-import { TaskInfo, TimeEntry } from '../../../src/types';
-import { TaskFactory, PluginFactory, FileSystemFactory } from '../../helpers/mock-factories';
+import { FileSystemFactory, PluginFactory, TaskFactory } from '../../helpers/mock-factories';
 import { MockObsidian, TFile } from '../../__mocks__/obsidian';
+import { TaskCreationData, TaskService } from '../../../src/services/TaskService';
+import { TaskInfo, TimeEntry } from '../../../src/types';
 
 // Mock external dependencies
 jest.mock('../../../src/utils/dateUtils', () => ({
@@ -32,9 +32,9 @@ jest.mock('../../../src/utils/helpers', () => ({
 }));
 
 jest.mock('../../../src/utils/templateProcessor', () => ({
-  processTemplate: jest.fn(() => ({ 
-    frontmatter: {}, 
-    body: 'Template content' 
+  processTemplate: jest.fn(() => ({
+    frontmatter: {},
+    body: 'Template content'
   })),
   mergeTemplateFrontmatter: jest.fn((base, template) => ({ ...base, ...template }))
 }));
@@ -119,7 +119,7 @@ describe('TaskService', () => {
 
     it('should handle default folder configuration', async () => {
       mockPlugin.settings.tasksFolder = 'Projects/Tasks';
-      
+
       const taskData: TaskCreationData = {
         title: 'Folder Test Task'
       };
@@ -135,7 +135,7 @@ describe('TaskService', () => {
     it('should apply template when configured', async () => {
       mockPlugin.settings.taskCreationDefaults.useBodyTemplate = true;
       mockPlugin.settings.taskCreationDefaults.bodyTemplate = 'templates/task-template.md';
-      
+
       const mockTemplateFile = new TFile('templates/task-template.md');
       mockPlugin.app.vault.getAbstractFileByPath.mockReturnValue(mockTemplateFile);
       mockPlugin.app.vault.read.mockResolvedValue('Template content with {{title}}');
@@ -152,7 +152,7 @@ describe('TaskService', () => {
 
     it('should handle inline conversion context with currentNotePath variable', async () => {
       mockPlugin.settings.inlineTaskConvertFolder = 'Tasks/{{currentNotePath}}';
-      
+
       const mockCurrentFile = new TFile('Projects/MyProject/note.md');
       mockCurrentFile.parent = { path: 'Projects/MyProject' } as any;
       mockPlugin.app.workspace.getActiveFile.mockReturnValue(mockCurrentFile);
@@ -205,7 +205,7 @@ describe('TaskService', () => {
 
     it('should handle inline conversion context with currentNotePath when file has no parent', async () => {
       mockPlugin.settings.inlineTaskConvertFolder = 'Tasks/{{currentNotePath}}';
-      
+
       const mockCurrentFile = new TFile('note.md');
       // Don't set parent - this will be undefined
       mockPlugin.app.workspace.getActiveFile.mockReturnValue(mockCurrentFile);
@@ -236,7 +236,7 @@ describe('TaskService', () => {
     it('should ensure task tag is included when using tag-based identification', async () => {
       // Ensure we're using tag-based identification (default)
       mockPlugin.settings.taskIdentificationMethod = 'tag';
-      
+
       const taskData: TaskCreationData = {
         title: 'Tag Test Task',
         tags: ['custom', 'tags']
@@ -252,7 +252,7 @@ describe('TaskService', () => {
       mockPlugin.settings.taskIdentificationMethod = 'property';
       mockPlugin.settings.taskPropertyName = 'category';
       mockPlugin.settings.taskPropertyValue = '[[Tasks]]';
-      
+
       const taskData: TaskCreationData = {
         title: 'Property Test Task',
         tags: ['custom', 'tags']
@@ -262,7 +262,7 @@ describe('TaskService', () => {
 
       // Should NOT include task tag in tags array
       expect(taskInfo.tags).toEqual(['custom', 'tags']);
-      
+
       // Verify the fieldMapper was called with the property data
       expect(mockPlugin.fieldMapper.mapToFrontmatter).toHaveBeenCalled();
     });
@@ -272,7 +272,7 @@ describe('TaskService', () => {
       mockPlugin.settings.taskIdentificationMethod = 'property';
       mockPlugin.settings.taskPropertyName = 'type';
       mockPlugin.settings.taskPropertyValue = 'task';
-      
+
       const taskData: TaskCreationData = {
         title: 'Property No Tags Test',
         // No tags provided
@@ -282,15 +282,15 @@ describe('TaskService', () => {
 
       // Should have empty tags array (no task tag added)
       expect(taskInfo.tags).toEqual([]);
-      
-      // Verify the fieldMapper was called 
+
+      // Verify the fieldMapper was called
       expect(mockPlugin.fieldMapper.mapToFrontmatter).toHaveBeenCalled();
     });
 
     it('should handle template processing errors gracefully', async () => {
       mockPlugin.settings.taskCreationDefaults.useBodyTemplate = true;
       mockPlugin.settings.taskCreationDefaults.bodyTemplate = 'nonexistent-template.md';
-      
+
       mockPlugin.app.vault.getAbstractFileByPath.mockReturnValue(null);
 
       const taskData: TaskCreationData = {
@@ -327,12 +327,53 @@ describe('TaskService', () => {
         taskInfo
       );
     });
+
+    it('should coerce boolean-like property value to boolean true in frontmatter when using property identification', async () => {
+      // Configure property-based identification with boolean-like string
+      mockPlugin.settings.taskIdentificationMethod = 'property';
+      mockPlugin.settings.taskPropertyName = 'isTask';
+      mockPlugin.settings.taskPropertyValue = 'true';
+
+      // Spy on stringifyYaml to capture the frontmatter object passed during file creation
+      const obsidian = require('obsidian');
+      const yamlSpy = jest.spyOn(obsidian, 'stringifyYaml');
+
+      await taskService.createTask({ title: 'Boolean Property Task' });
+
+      expect(yamlSpy).toHaveBeenCalled();
+      const fmArg = yamlSpy.mock.calls[0][0];
+      expect(typeof fmArg.isTask).toBe('boolean');
+      expect(fmArg.isTask).toBe(true);
+
+      yamlSpy.mockRestore();
+    });
+
+    it('should coerce boolean-like property value to boolean false in frontmatter when using property identification', async () => {
+      // Configure property-based identification with boolean-like string
+      mockPlugin.settings.taskIdentificationMethod = 'property';
+      mockPlugin.settings.taskPropertyName = 'isTask';
+      mockPlugin.settings.taskPropertyValue = 'false';
+
+      const obsidian = require('obsidian');
+      const yamlSpy = jest.spyOn(obsidian, 'stringifyYaml');
+
+      await taskService.createTask({ title: 'Boolean Property False Task' });
+
+      expect(yamlSpy).toHaveBeenCalled();
+      const fmArg = yamlSpy.mock.calls[0][0];
+      expect(typeof fmArg.isTask).toBe('boolean');
+      expect(fmArg.isTask).toBe(false);
+
+      yamlSpy.mockRestore();
+    });
+
+
   });
 
   describe('toggleStatus', () => {
     it('should toggle from open to completed status', async () => {
       const task = TaskFactory.createTask({ status: 'open' });
-      
+
       const result = await taskService.toggleStatus(task);
 
       expect(result.status).toBe('done');
@@ -341,7 +382,7 @@ describe('TaskService', () => {
     it('should toggle from completed to open status', async () => {
       const task = TaskFactory.createTask({ status: 'done' });
       mockPlugin.statusManager.isCompletedStatus.mockReturnValue(true);
-      
+
       const result = await taskService.toggleStatus(task);
 
       expect(result.status).toBe('open');
@@ -350,7 +391,7 @@ describe('TaskService', () => {
     it('should use first completed status when toggling to completed', async () => {
       const task = TaskFactory.createTask({ status: 'open' });
       mockPlugin.statusManager.getCompletedStatuses.mockReturnValue(['completed', 'done']);
-      
+
       const result = await taskService.toggleStatus(task);
 
       expect(result.status).toBe('completed');
@@ -359,7 +400,7 @@ describe('TaskService', () => {
     it('should handle missing completed statuses gracefully', async () => {
       const task = TaskFactory.createTask({ status: 'open' });
       mockPlugin.statusManager.getCompletedStatuses.mockReturnValue([]);
-      
+
       const result = await taskService.toggleStatus(task);
 
       expect(result.status).toBe('done'); // fallback
@@ -386,7 +427,7 @@ describe('TaskService', () => {
 
     it('should handle status updates with completion date for non-recurring tasks', async () => {
       const nonRecurringTask = TaskFactory.createTask({ recurrence: undefined });
-      
+
       const result = await taskService.updateProperty(nonRecurringTask, 'status', 'done');
 
       expect(result.status).toBe('done');
@@ -396,7 +437,7 @@ describe('TaskService', () => {
     it('should not set completion date for recurring tasks', async () => {
       const recurringTask = TaskFactory.createTask({ recurrence: 'FREQ=DAILY' });
       mockPlugin.cacheManager.getTaskInfo.mockResolvedValue(recurringTask);
-      
+
       const result = await taskService.updateProperty(recurringTask, 'status', 'done');
 
       expect(result.status).toBe('done');
@@ -404,11 +445,11 @@ describe('TaskService', () => {
     });
 
     it('should clear completion date when marking as incomplete', async () => {
-      const completedTask = TaskFactory.createTask({ 
-        status: 'done', 
-        completedDate: '2025-01-01' 
+      const completedTask = TaskFactory.createTask({
+        status: 'done',
+        completedDate: '2025-01-01'
       });
-      
+
       const result = await taskService.updateProperty(completedTask, 'status', 'open');
 
       expect(result.status).toBe('open');
@@ -427,7 +468,7 @@ describe('TaskService', () => {
     it('should use fresh task data to prevent overwrites', async () => {
       const freshTask = { ...task, priority: 'medium' };
       mockPlugin.cacheManager.getTaskInfo.mockResolvedValue(freshTask);
-      
+
       const result = await taskService.updateProperty(task, 'status', 'done');
 
       expect(result.priority).toBe('medium'); // from fresh data
@@ -478,11 +519,11 @@ describe('TaskService', () => {
     });
 
     it('should unarchive an archived task', async () => {
-      const archivedTask = TaskFactory.createTask({ 
-        archived: true, 
-        tags: ['task', 'archived'] 
+      const archivedTask = TaskFactory.createTask({
+        archived: true,
+        tags: ['task', 'archived']
       });
-      
+
       const result = await taskService.toggleArchive(archivedTask);
 
       expect(result.archived).toBe(false);
@@ -491,7 +532,7 @@ describe('TaskService', () => {
 
     it('should handle tasks without existing tags', async () => {
       const taskWithoutTags = TaskFactory.createTask({ tags: undefined });
-      
+
       const result = await taskService.toggleArchive(taskWithoutTags);
 
       expect(result.tags).toEqual(['archived']);
@@ -499,7 +540,7 @@ describe('TaskService', () => {
 
     it('should use custom archive tag from field mapping', async () => {
       mockPlugin.fieldMapper.getMapping.mockReturnValue({ archiveTag: 'custom-archived' });
-      
+
       const result = await taskService.toggleArchive(task);
 
       expect(result.tags).toContain('custom-archived');
@@ -531,7 +572,7 @@ describe('TaskService', () => {
     it('should add to existing time entries', async () => {
       const taskWithEntries = TaskFactory.createTaskWithTimeTracking();
       const existingCount = taskWithEntries.timeEntries?.length || 0;
-      
+
       const result = await taskService.startTimeTracking(taskWithEntries);
 
       expect(result.timeEntries).toHaveLength(existingCount + 1);
@@ -563,11 +604,11 @@ describe('TaskService', () => {
         startTime: '2025-01-01T11:00:00Z',
         description: 'Active session'
       };
-      
+
       task = TaskFactory.createTask({
         timeEntries: [activeSession]
       });
-      
+
       mockFile = new TFile(task.path);
       mockPlugin.app.vault.getAbstractFileByPath.mockReturnValue(mockFile);
       mockPlugin.getActiveTimeSession.mockReturnValue(activeSession);
@@ -592,7 +633,7 @@ describe('TaskService', () => {
 
     it('should handle missing time entries array', async () => {
       const taskWithoutEntries = TaskFactory.createTask({ timeEntries: undefined });
-      
+
       // Should not throw but won't find entry to update
       await taskService.stopTimeTracking(taskWithoutEntries);
     });
