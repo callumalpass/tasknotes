@@ -42,7 +42,16 @@ export class MinimalNativeCache extends Events {
 
     // Event listeners for cleanup
     private eventListeners: EventRef[] = [];
-
+    
+    // Debouncing for file changes to prevent excessive updates during typing
+    private debouncedHandlers: Map<string, NodeJS.Timeout> = new Map();
+    private readonly DEBOUNCE_DELAY = 300; // 300ms delay after user stops typing
+    
+    // Cache of last known task info for comparison to detect actual changes
+    private lastKnownTaskInfo: Map<string, TaskInfo | null> = new Map();
+    
+    // Cache of last known frontmatter to detect frontmatter-specific changes
+    private lastKnownFrontmatter: Map<string, any> = new Map();
     constructor(
         app: App,
         settings: TaskNotesSettings,
@@ -132,7 +141,7 @@ export class MinimalNativeCache extends Events {
         this.eventListeners.push(
             this.app.metadataCache.on('changed', (file, data, cache) => {
                 if (file instanceof TFile && file.extension === 'md' && this.isValidFile(file.path)) {
-                    this.handleFileChanged(file, cache);
+                    this.handleFileChangedDebounced(file, cache);
                 }
             })
         );
@@ -946,7 +955,58 @@ export class MinimalNativeCache extends Events {
     // ========================================
     // EVENT HANDLERS
     // ========================================
-
+    
+    /**
+     * Debounced version of handleFileChanged to prevent excessive updates during typing
+     */
+    private handleFileChangedDebounced(file: TFile, cache: any): void {
+        // Early exit: Only process files that are potentially task files
+        const metadata = this.app.metadataCache.getFileCache(file);
+        if (!metadata?.frontmatter || !this.isTaskFile(metadata.frontmatter)) {
+            return;
+        }
+        
+        // Check if frontmatter actually changed by comparing raw frontmatter objects
+        const currentFrontmatter = metadata.frontmatter;
+        const lastKnownFrontmatter = this.lastKnownFrontmatter.get(file.path);
+        
+        if (this.frontmatterEquals(currentFrontmatter, lastKnownFrontmatter)) {
+            // Frontmatter hasn't changed - this was likely just a content change or mtime update
+            return;
+        }
+        
+        // Store the current frontmatter for future comparisons
+        this.lastKnownFrontmatter.set(file.path, this.deepClone(currentFrontmatter));
+        
+        // Extract task info for view update comparison
+        const currentTaskInfo = this.extractTaskInfoFromNative(file.path, currentFrontmatter);
+        const lastKnownTaskInfo = this.getLastKnownTaskInfo(file.path);
+        
+        // Even if frontmatter changed, check if it affects task rendering
+        if (this.taskInfoEquals(currentTaskInfo, lastKnownTaskInfo)) {
+            // Update our cached task info but don't trigger view updates
+            this.setLastKnownTaskInfo(file.path, currentTaskInfo);
+            return;
+        }
+        
+        // Store the current task info for future comparisons
+        this.setLastKnownTaskInfo(file.path, currentTaskInfo);
+        
+        // Clear any existing timeout for this file
+        const existingTimeout = this.debouncedHandlers.get(file.path);
+        if (existingTimeout) {
+            clearTimeout(existingTimeout);
+        }
+        
+        // Set up new debounced handler
+        const timeout = setTimeout(() => {
+            this.handleFileChanged(file, cache);
+            this.debouncedHandlers.delete(file.path);
+        }, this.DEBOUNCE_DELAY);
+        
+        this.debouncedHandlers.set(file.path, timeout);
+    }
+    
     private async handleFileChanged(file: TFile, cache: any): Promise<void> {
         if (!this.initialized) return;
 
@@ -967,6 +1027,8 @@ export class MinimalNativeCache extends Events {
         if (!this.initialized) return;
 
         this.clearFileFromIndexes(path);
+        this.lastKnownTaskInfo.delete(path); // Clean up cached task info
+        this.lastKnownFrontmatter.delete(path); // Clean up cached frontmatter
         this.trigger('file-deleted', { path });
     }
 
@@ -974,13 +1036,18 @@ export class MinimalNativeCache extends Events {
         if (!this.initialized) return;
 
         this.clearFileFromIndexes(oldPath);
-
+        this.lastKnownTaskInfo.delete(oldPath); // Clean up old path cached task info
+        this.lastKnownFrontmatter.delete(oldPath); // Clean up old path cached frontmatter
         // Wait for fresh data to be available before proceeding
         await this.waitForFreshData(file);
 
         const metadata = this.app.metadataCache.getFileCache(file);
         if (metadata?.frontmatter && this.isTaskFile(metadata.frontmatter)) {
             await this.indexTaskFile(file, metadata.frontmatter);
+            // Store the task info and frontmatter for the new path
+            const taskInfo = this.extractTaskInfoFromNative(file.path, metadata.frontmatter);
+            this.setLastKnownTaskInfo(file.path, taskInfo);
+            this.lastKnownFrontmatter.set(file.path, this.deepClone(metadata.frontmatter));
         }
 
         this.trigger('file-renamed', { oldPath, newPath: file.path, file });
@@ -1083,7 +1150,103 @@ export class MinimalNativeCache extends Events {
     // ========================================
     // UTILITY METHODS
     // ========================================
-
+    
+    /**
+     * Get the last known task info for a file path
+     */
+    private getLastKnownTaskInfo(path: string): TaskInfo | null {
+        return this.lastKnownTaskInfo.get(path) || null;
+    }
+    
+    /**
+     * Store the last known task info for a file path
+     */
+    private setLastKnownTaskInfo(path: string, taskInfo: TaskInfo | null): void {
+        this.lastKnownTaskInfo.set(path, taskInfo);
+    }
+    
+    /**
+     * Compare two TaskInfo objects to see if they're functionally equivalent
+     * Only compares fields that would affect view rendering
+     */
+    private taskInfoEquals(current: TaskInfo | null, previous: TaskInfo | null): boolean {
+        if (current === null && previous === null) return true;
+        if (current === null || previous === null) return false;
+        
+        // Compare scalar fields
+        const scalarFieldsEqual = (
+            current.title === previous.title &&
+            current.status === previous.status &&
+            current.priority === previous.priority &&
+            current.due === previous.due &&
+            current.scheduled === previous.scheduled &&
+            current.archived === previous.archived &&
+            current.completedDate === previous.completedDate &&
+            current.recurrence === previous.recurrence &&
+            current.timeEstimate === previous.timeEstimate
+        );
+        
+        if (!scalarFieldsEqual) return false;
+        
+        // Compare array fields more efficiently
+        return (
+            this.arraysEqual(current.tags, previous.tags) &&
+            this.arraysEqual(current.contexts, previous.contexts) &&
+            this.arraysEqual(current.projects, previous.projects) &&
+            this.objectsEqual(current.timeEntries, previous.timeEntries) &&
+            this.objectsEqual(current.reminders, previous.reminders) &&
+            this.objectsEqual(current.complete_instances, previous.complete_instances)
+        );
+    }
+    
+    /**
+     * Compare two arrays for equality (order-independent for string arrays)
+     */
+    private arraysEqual(a: any[] | undefined, b: any[] | undefined): boolean {
+        if (a === b) return true;
+        if (!a || !b) return a === b;
+        if (a.length !== b.length) return false;
+        
+        // For string arrays, sort and compare
+        if (a.length === 0) return true;
+        if (typeof a[0] === 'string') {
+            const sortedA = [...a].sort();
+            const sortedB = [...b].sort();
+            return sortedA.every((val, i) => val === sortedB[i]);
+        }
+        
+        // For object arrays, fall back to JSON comparison (less common case)
+        return JSON.stringify(a) === JSON.stringify(b);
+    }
+    
+    /**
+     * Compare two objects for deep equality
+     */
+    private objectsEqual(a: any, b: any): boolean {
+        if (a === b) return true;
+        if (!a || !b) return a === b;
+        return JSON.stringify(a) === JSON.stringify(b);
+    }
+    
+    /**
+     * Compare two frontmatter objects for equality
+     */
+    private frontmatterEquals(current: any, previous: any): boolean {
+        if (current === previous) return true;
+        if (!current || !previous) return current === previous;
+        
+        // Use JSON comparison for frontmatter since it's typically small
+        return JSON.stringify(current) === JSON.stringify(previous);
+    }
+    
+    /**
+     * Deep clone an object (for caching frontmatter)
+     */
+    private deepClone(obj: any): any {
+        if (obj === null || typeof obj !== 'object') return obj;
+        return JSON.parse(JSON.stringify(obj));
+    }
+    
     private extractTaskInfoFromNative(path: string, frontmatter: any): TaskInfo | null {
         if (!this.fieldMapper) return null;
 
@@ -1218,7 +1381,15 @@ export class MinimalNativeCache extends Events {
             this.app.metadataCache.offref(listener);
         });
         this.eventListeners = [];
-
+        
+        // Clean up any pending debounced handlers
+        this.debouncedHandlers.forEach(timeout => clearTimeout(timeout));
+        this.debouncedHandlers.clear();
+        
+        // Clean up task info cache
+        this.lastKnownTaskInfo.clear();
+        this.lastKnownFrontmatter.clear();
+        
         this.clearAllIndexes();
         this.initialized = false;
         this.indexesBuilt = false;
