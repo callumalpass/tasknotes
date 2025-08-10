@@ -1311,14 +1311,18 @@ export class AdvancedCalendarView extends ItemView {
             const allDailyNotes = getAllDailyNotes();
             
             // Iterate through each day in the visible range
-            // Use a safer date iteration approach to avoid DST issues
-            const startTime = visibleStart.getTime();
-            const endTime = visibleEnd.getTime();
-            const oneDayMs = 24 * 60 * 60 * 1000;
+            // Use UTC-based date iteration to avoid DST issues and ensure consistent date handling
+            const startDateString = formatDateForStorage(visibleStart);
+            const endDateString = formatDateForStorage(visibleEnd);
             
-            for (let time = startTime; time <= endTime; time += oneDayMs) {
-                const currentDate = new Date(time);
-                const dateString = formatDateForStorage(currentDate);
+            // Create UTC dates for proper iteration
+            const startUTC = new Date(`${startDateString}T00:00:00.000Z`);
+            const endUTC = new Date(`${endDateString}T00:00:00.000Z`);
+            
+            for (let currentUTC = new Date(startUTC); currentUTC <= endUTC; currentUTC.setUTCDate(currentUTC.getUTCDate() + 1)) {
+                const dateString = formatDateForStorage(currentUTC);
+                // Use the date string to create moment for daily notes consistency
+                const currentDate = new Date(`${dateString}T12:00:00`);
                 const moment = (window as any).moment(currentDate);
                 const dailyNote = getDailyNote(moment, allDailyNotes);
                 

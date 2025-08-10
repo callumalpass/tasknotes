@@ -51,7 +51,7 @@ export class TimeblockCreationModal extends Modal {
         // Date display (read-only)
         const dateDisplay = contentEl.createDiv({ cls: 'timeblock-date-display' });
         dateDisplay.createEl('strong', { text: 'Date: ' });
-        // Parse the date string to get a proper date object for display
+        // Parse the date string to get a proper date object for display (using local for UI)
         const dateObj = parseDateAsLocal(this.options.date);
         dateDisplay.createSpan({ text: dateObj.toLocaleDateString() });
 

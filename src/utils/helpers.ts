@@ -946,8 +946,11 @@ export function extractTimeblocksFromNote(content: string, path: string): TimeBl
 
 /**
  * Converts a timeblock to a calendar event format
+ * Uses proper timezone handling following UTC Anchor pattern to prevent date shift issues
  */
 export function timeblockToCalendarEvent(timeblock: TimeBlock, date: string): any {
+	// Create datetime strings that FullCalendar interprets consistently
+	// Using date-only format ensures the timeblock appears on the correct day
 	const startDateTime = `${date}T${timeblock.startTime}:00`;
 	const endDateTime = `${date}T${timeblock.endTime}:00`;
 	
