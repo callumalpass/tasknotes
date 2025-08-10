@@ -17,6 +17,8 @@ import {
   TimeBlock
 } from '../../src/types';
 import { MockObsidian, TFile } from '../__mocks__/obsidian';
+import { FieldMapper } from '../../src/services/FieldMapper';
+import { DEFAULT_FIELD_MAPPING } from '../../src/settings/settings';
 
 // Task-related factories
 export const TaskFactory = {
@@ -219,6 +221,7 @@ export const SettingsFactory = {
     due: 'due',
     scheduled: 'scheduled',
     contexts: 'contexts',
+    projects: 'projects',
     timeEstimate: 'timeEstimate',
     completedDate: 'completedDate',
     dateCreated: 'dateCreated',
@@ -228,6 +231,8 @@ export const SettingsFactory = {
     timeEntries: 'timeEntries',
     completeInstances: 'complete_instances',
     pomodoros: 'pomodoros',
+    icsEventId: 'icsEventId',
+    reminders: 'reminders',
     ...overrides
   }),
 
@@ -251,7 +256,10 @@ export const SettingsFactory = {
   }),
 
   createFilterQuery: (overrides?: Partial<FilterQuery>): FilterQuery => ({
-    showArchived: false,
+    type: 'group',
+    id: 'root',
+    conjunction: 'and',
+    children: [],
     sortKey: 'due',
     sortDirection: 'asc',
     groupKey: 'none',
@@ -335,7 +343,7 @@ export const PluginFactory = {
   createMockPlugin: (overrides?: any) => {
     const mockApp = {
       vault: {
-        create: jest.fn().mockImplementation((path, content) => {
+        create: jest.fn().mockImplementation((path, _content) => {
           const mockFile = new TFile(path);
           return Promise.resolve(mockFile);
         }),
@@ -351,7 +359,7 @@ export const PluginFactory = {
         }
       },
       fileManager: {
-        processFrontMatter: jest.fn().mockImplementation(async (file, fn) => {
+        processFrontMatter: jest.fn().mockImplementation(async (_file, fn) => {
           const mockFrontmatter = {};
           fn(mockFrontmatter);
         }),
@@ -367,7 +375,7 @@ export const PluginFactory = {
         getLeavesOfType: jest.fn().mockReturnValue([]),
         getViewsOfType: jest.fn().mockReturnValue([]),
         detachLeavesOfType: jest.fn(),
-        iterateAllLeaves: jest.fn().mockImplementation((callback) => {
+        iterateAllLeaves: jest.fn().mockImplementation((_callback) => {
           // Mock implementation - iterate over no leaves by default
         }),
         getLeaf: jest.fn().mockReturnValue({
@@ -436,37 +444,7 @@ export const PluginFactory = {
         on: jest.fn(),
         off: jest.fn()
       },
-      fieldMapper: {
-        mapToFrontmatter: jest.fn().mockImplementation((taskData, taskTag) => {
-          // Create a basic frontmatter mapping from the task data
-          const frontmatter: any = {};
-          Object.keys(taskData).forEach(key => {
-            if (taskData[key] !== undefined && key !== 'path' && key !== 'tags') {
-              frontmatter[key] = taskData[key];
-            }
-          });
-          return frontmatter;
-        }),
-        mapFromFrontmatter: jest.fn().mockReturnValue({}),
-        toUserField: jest.fn().mockImplementation((field) => field),
-        getMapping: jest.fn().mockReturnValue({
-          archiveTag: 'archived',
-          title: 'title',
-          status: 'status',
-          priority: 'priority',
-          due: 'due',
-          scheduled: 'scheduled',
-          contexts: 'contexts',
-          timeEstimate: 'timeEstimate',
-          completedDate: 'completedDate',
-          dateCreated: 'dateCreated',
-          dateModified: 'dateModified',
-          recurrence: 'recurrence',
-          timeEntries: 'timeEntries',
-          completeInstances: 'complete_instances',
-          pomodoros: 'pomodoros'
-        })
-      },
+      fieldMapper: new FieldMapper(DEFAULT_FIELD_MAPPING),
       cacheManager: mockCache,
       taskService: {
         createTask: jest.fn().mockImplementation(async (taskData) => {
@@ -495,7 +473,7 @@ export const PluginFactory = {
             task: { path, [property]: value }
           };
         }),
-        deleteTask: jest.fn().mockImplementation(async (task) => {
+        deleteTask: jest.fn().mockImplementation(async (_task) => {
           return { success: true };
         })
       },
@@ -542,23 +520,23 @@ export const PluginFactory = {
       selectedDate: new Date(),
       
       // Calendar integration methods that are missing from test failures
-      toggleRecurringTaskComplete: jest.fn().mockImplementation(async (task, targetDate) => {
+      toggleRecurringTaskComplete: jest.fn().mockImplementation(async (_task, _targetDate) => {
         return { success: true, taskUpdated: true };
       }),
-      updateTimeblockInDailyNote: jest.fn().mockImplementation(async (app, timeblockId, oldDate, newDate, newStartTime, newEndTime) => {
+      updateTimeblockInDailyNote: jest.fn().mockImplementation(async (_app, _timeblockId, _oldDate, _newDate, _newStartTime, _newEndTime) => {
         return { success: true, updated: true };
       }),
       
       // Task archiving methods
-      toggleTaskArchive: jest.fn().mockImplementation(async (task) => {
-        return { success: true, taskArchived: !task.archived };
+      toggleTaskArchive: jest.fn().mockImplementation(async (_task) => {
+        return { success: true, taskArchived: !_task.archived };
       }),
       
       // Time tracking methods
-      startTimeTracking: jest.fn().mockImplementation(async (task) => {
+      startTimeTracking: jest.fn().mockImplementation(async (_task) => {
         return { success: true, sessionStarted: true };
       }),
-      stopTimeTracking: jest.fn().mockImplementation(async (task) => {
+      stopTimeTracking: jest.fn().mockImplementation(async (_task) => {
         return { success: true, sessionEnded: true };
       }),
       

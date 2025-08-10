@@ -262,9 +262,6 @@ describe('TaskService', () => {
 
       // Should NOT include task tag in tags array
       expect(taskInfo.tags).toEqual(['custom', 'tags']);
-
-      // Verify the fieldMapper was called with the property data
-      expect(mockPlugin.fieldMapper.mapToFrontmatter).toHaveBeenCalled();
     });
 
     it('should not add task tag when using property identification with no custom tags', async () => {
@@ -282,9 +279,6 @@ describe('TaskService', () => {
 
       // Should have empty tags array (no task tag added)
       expect(taskInfo.tags).toEqual([]);
-
-      // Verify the fieldMapper was called
-      expect(mockPlugin.fieldMapper.mapToFrontmatter).toHaveBeenCalled();
     });
 
     it('should handle template processing errors gracefully', async () => {
@@ -341,7 +335,7 @@ describe('TaskService', () => {
       await taskService.createTask({ title: 'Boolean Property Task' });
 
       expect(yamlSpy).toHaveBeenCalled();
-      const fmArg = yamlSpy.mock.calls[0][0];
+      const fmArg = yamlSpy.mock.calls[0][0] as any;
       expect(typeof fmArg.isTask).toBe('boolean');
       expect(fmArg.isTask).toBe(true);
 
@@ -360,9 +354,66 @@ describe('TaskService', () => {
       await taskService.createTask({ title: 'Boolean Property False Task' });
 
       expect(yamlSpy).toHaveBeenCalled();
-      const fmArg = yamlSpy.mock.calls[0][0];
+      const fmArg = yamlSpy.mock.calls[0][0] as any;
       expect(typeof fmArg.isTask).toBe('boolean');
       expect(fmArg.isTask).toBe(false);
+
+      yamlSpy.mockRestore();
+    });
+
+    it('should write boolean status "true" as boolean true in frontmatter', async () => {
+      const obsidian = require('obsidian');
+      const yamlSpy = jest.spyOn(obsidian, 'stringifyYaml');
+
+      const taskData: TaskCreationData = {
+        title: 'Boolean Status Task',
+        status: 'true'
+      };
+
+      await taskService.createTask(taskData);
+
+      expect(yamlSpy).toHaveBeenCalled();
+      const fmArg = yamlSpy.mock.calls[0][0] as any;
+      expect(typeof fmArg.status).toBe('boolean');
+      expect(fmArg.status).toBe(true);
+
+      yamlSpy.mockRestore();
+    });
+
+    it('should write boolean status "false" as boolean false in frontmatter', async () => {
+      const obsidian = require('obsidian');
+      const yamlSpy = jest.spyOn(obsidian, 'stringifyYaml');
+
+      const taskData: TaskCreationData = {
+        title: 'Boolean Status False Task',
+        status: 'false'
+      };
+
+      await taskService.createTask(taskData);
+
+      expect(yamlSpy).toHaveBeenCalled();
+      const fmArg = yamlSpy.mock.calls[0][0] as any;
+      expect(typeof fmArg.status).toBe('boolean');
+      expect(fmArg.status).toBe(false);
+
+      yamlSpy.mockRestore();
+    });
+
+    it('should write regular status values as strings in frontmatter', async () => {
+      const obsidian = require('obsidian');
+      const yamlSpy = jest.spyOn(obsidian, 'stringifyYaml');
+
+      const taskData: TaskCreationData = {
+        title: 'Regular Status Task',
+        status: 'in-progress'
+      };
+
+      await taskService.createTask(taskData);
+
+      expect(yamlSpy).toHaveBeenCalled();
+      const fmArg = yamlSpy.mock.calls[0][0] as any;
+      expect(typeof fmArg.status).toBe('string');
+      expect(fmArg.status).toBe('in-progress');
 
       yamlSpy.mockRestore();
     });
@@ -539,7 +590,12 @@ describe('TaskService', () => {
     });
 
     it('should use custom archive tag from field mapping', async () => {
-      mockPlugin.fieldMapper.getMapping.mockReturnValue({ archiveTag: 'custom-archived' });
+      // Update the fieldMapper to use a custom archive tag
+      const customMapping = { 
+        ...mockPlugin.fieldMapper.getMapping(),
+        archiveTag: 'custom-archived'
+      };
+      mockPlugin.fieldMapper.updateMapping(customMapping);
 
       const result = await taskService.toggleArchive(task);
 
@@ -754,14 +810,18 @@ describe('TaskService', () => {
 
   describe('Error Handling', () => {
     it('should handle field mapper errors gracefully', async () => {
-      mockPlugin.fieldMapper.mapToFrontmatter.mockImplementation(() => {
-        throw new Error('Field mapping error');
-      });
+      // Create a spy on the real fieldMapper method to force it to throw
+      const mapToFrontmatterSpy = jest.spyOn(mockPlugin.fieldMapper, 'mapToFrontmatter')
+        .mockImplementation(() => {
+          throw new Error('Field mapping error');
+        });
 
       const taskData: TaskCreationData = { title: 'Error Test Task' };
 
       await expect(taskService.createTask(taskData))
         .rejects.toThrow('Failed to create task');
+
+      mapToFrontmatterSpy.mockRestore();
     });
 
     it('should handle vault operation errors', async () => {
@@ -795,7 +855,7 @@ describe('TaskService', () => {
         details: 'Integration test details'
       };
 
-      const { file, taskInfo } = await taskService.createTask(taskData);
+      const { taskInfo } = await taskService.createTask(taskData);
 
       // Verify file creation
       expect(mockPlugin.app.vault.create).toHaveBeenCalledWith(

@@ -314,7 +314,10 @@ export class TaskService {
                 const fieldName = this.plugin.fieldMapper.toUserField(property as keyof import('../types').FieldMapping);
                 
                 if (property === 'status') {
-                    frontmatter[fieldName] = value;
+                    // Coerce boolean-like status strings to actual booleans for compatibility with Obsidian checkbox properties
+                    const lower = String(value).toLowerCase();
+                    const coercedValue = (lower === 'true' || lower === 'false') ? (lower === 'true') : value;
+                    frontmatter[fieldName] = coercedValue;
                     
                     // Update completed date when marking as complete (non-recurring tasks only)
                     // FIX: Use freshTask instead of stale task to check recurrence
