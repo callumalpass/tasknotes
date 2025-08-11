@@ -6,6 +6,10 @@ Welcome to the TaskNotes release notes. Here you can find detailed information a
 
 ### Version 3.x (Current)
 
+- [3.18.2](releases/3.18.2.md)
+- [3.18.1](releases/3.18.1.md)
+- [3.18.0](releases/3.18.0.md)
+- [3.17.1](releases/3.17.1.md)
 - [3.17.0](releases/3.17.0.md)
 - [3.16.4](releases/3.16.4.md)
 - [3.16.3](releases/3.16.3.md)
