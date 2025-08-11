@@ -1,5 +1,6 @@
 import { ItemView, WorkspaceLeaf, TFile, Notice, EventRef, Menu, Modal, setTooltip } from 'obsidian';
 import { ICSEventInfoModal } from '../modals/ICSEventInfoModal';
+import { ICSEventContextMenu } from '../components/ICSEventContextMenu';
 import { TimeblockInfoModal } from '../modals/TimeblockInfoModal';
 import { format, startOfDay, endOfDay } from 'date-fns';
 import { Calendar } from '@fullcalendar/core';
@@ -2097,51 +2098,17 @@ export class AdvancedCalendarView extends ItemView {
     }
 
     private showICSEventContextMenu(jsEvent: MouseEvent, icsEvent: ICSEvent, subscriptionName?: string): void {
-        const menu = new Menu();
-
-        // Show details option
-        menu.addItem((item) =>
-            item
-                .setTitle("Show details")
-                .setIcon("info")
-                .onClick(() => {
-                    this.showICSEventInfo(icsEvent, subscriptionName);
-                })
-        );
-
-        // Copy title option
-        menu.addItem((item) =>
-            item
-                .setTitle("Copy title")
-                .setIcon("copy")
-                .onClick(async () => {
-                    try {
-                        await navigator.clipboard.writeText(icsEvent.title);
-                        new Notice('Event title copied to clipboard');
-                    } catch (error) {
-                        new Notice('Failed to copy to clipboard');
-                    }
-                })
-        );
-
-        // Copy URL option (if available)
-        if (icsEvent.url) {
-            menu.addItem((item) =>
-                item
-                    .setTitle("Copy URL")
-                    .setIcon("link")
-                    .onClick(async () => {
-                        try {
-                            await navigator.clipboard.writeText(icsEvent.url!);
-                            new Notice('Event URL copied to clipboard');
-                        } catch (error) {
-                            new Notice('Failed to copy to clipboard');
-                        }
-                    })
-            );
-        }
-
-        menu.showAtMouseEvent(jsEvent);
+        const contextMenu = new ICSEventContextMenu({
+            icsEvent: icsEvent,
+            plugin: this.plugin,
+            subscriptionName: subscriptionName,
+            onUpdate: () => {
+                // Refresh the calendar to show any newly created/linked notes
+                this.refreshEvents();
+            }
+        });
+        
+        contextMenu.show(jsEvent);
     }
 
     private showTimeEntryContextMenu(jsEvent: MouseEvent, taskInfo: TaskInfo, timeEntryIndex: number): void {

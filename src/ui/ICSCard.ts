@@ -2,6 +2,7 @@ import { setIcon } from 'obsidian';
 import TaskNotesPlugin from '../main';
 import { ICSEvent } from '../types';
 import { format } from 'date-fns';
+import { ICSEventContextMenu } from '../components/ICSEventContextMenu';
 
 export interface ICSCardOptions {
     showDate: boolean;
@@ -80,11 +81,29 @@ export function createICSEventCard(icsEvent: ICSEvent, plugin: TaskNotesPlugin, 
     parts.push(sourceName);
     metadata.textContent = parts.join(' • ');
 
-    // Click to open detailed info modal
+    // Left-click to open detailed info modal
     card.addEventListener('click', () => {
         const { ICSEventInfoModal } = require('../modals/ICSEventInfoModal');
         const modal = new ICSEventInfoModal(plugin.app, plugin, icsEvent, sourceName);
         modal.open();
+    });
+
+    // Right-click for context menu
+    card.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const contextMenu = new ICSEventContextMenu({
+            icsEvent: icsEvent,
+            plugin: plugin,
+            subscriptionName: sourceName,
+            onUpdate: () => {
+                // Trigger any necessary updates
+                plugin.app.workspace.trigger('tasknotes:refresh-views');
+            }
+        });
+        
+        contextMenu.show(e);
     });
 
     // Apply accent color as CSS var for nicer theming
