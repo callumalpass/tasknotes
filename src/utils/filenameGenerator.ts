@@ -156,6 +156,14 @@ function generateCustomFilename(
             // Unix timestamp
             unix: Math.floor(date.getTime() / 1000).toString(),
             unixMs: date.getTime().toString(),
+            // Milliseconds and timezone support for ISO 8601 format
+            milliseconds: format(date, 'SSS'),
+            ms: format(date, 'SSS'),
+            timezone: format(date, 'xxx'), // UTC offset in format ±HH:MM
+            timezoneShort: format(date, 'xx'), // UTC offset in format ±HHMM
+            utcOffset: format(date, 'xxx'), // UTC offset in format ±HH:MM
+            utcOffsetShort: format(date, 'xx'), // UTC offset in format ±HHMM
+            utcZ: 'Z', // Always 'Z' for Google Keep format (assumes UTC time)
             // Priority and status variations
             priorityShort: sanitizedPriority.substring(0, 1).toUpperCase(),
             statusShort: sanitizedStatus.substring(0, 1).toUpperCase(),
