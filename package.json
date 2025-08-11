@@ -4,8 +4,9 @@
 	"description": "Note-based task management with calendar, pomodoro and time-tracking integration.",
 	"main": "main.js",
 	"scripts": {
-		"dev": "npm run build-css && node esbuild.config.mjs",
-		"build": "npm run build-css && tsc -noEmit -skipLibCheck && node esbuild.config.mjs production && npm run copy-files",
+		"build": "npm run build-css && tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
+		"dev": "npm run build && npm run copy-files",
+		"dev:watch": "npm run build-css && node esbuild.config.mjs",
 		"copy-files": "node copy-files.mjs",
 		"build-css": "node build-css.mjs",
 		"version": "node version-bump.mjs && git add manifest.json versions.json",
