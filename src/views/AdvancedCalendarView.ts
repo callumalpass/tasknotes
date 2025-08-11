@@ -1,6 +1,7 @@
 import { ItemView, WorkspaceLeaf, TFile, Notice, EventRef, Menu, Modal, setTooltip } from 'obsidian';
 import { ICSEventInfoModal } from '../modals/ICSEventInfoModal';
 import { ICSEventContextMenu } from '../components/ICSEventContextMenu';
+import { TaskContextMenu } from '../components/TaskContextMenu';
 import { TimeblockInfoModal } from '../modals/TimeblockInfoModal';
 import { format, startOfDay, endOfDay } from 'date-fns';
 import { Calendar } from '@fullcalendar/core';
@@ -31,7 +32,6 @@ import { TaskEditModal } from '../modals/TaskEditModal';
 import { UnscheduledTasksSelectorModal, ScheduleTaskOptions } from '../modals/UnscheduledTasksSelectorModal';
 import { TimeblockCreationModal } from '../modals/TimeblockCreationModal';
 import { FilterBar } from '../ui/FilterBar';
-import { showTaskContextMenu } from '../ui/TaskCard';
 import { 
     hasTimeComponent, 
     getDatePart, 
@@ -1963,7 +1963,8 @@ export class AdvancedCalendarView extends ItemView {
                         }
                     }
                         
-                    showTaskContextMenu(jsEvent, taskInfo.path, this.plugin, targetDate);
+                    // Use TaskContextMenu component directly
+                    this.showTaskContextMenuForEvent(jsEvent, taskInfo, targetDate);
                 }
             });
         }
@@ -2104,6 +2105,20 @@ export class AdvancedCalendarView extends ItemView {
             subscriptionName: subscriptionName,
             onUpdate: () => {
                 // Refresh the calendar to show any newly created/linked notes
+                this.refreshEvents();
+            }
+        });
+        
+        contextMenu.show(jsEvent);
+    }
+
+    private async showTaskContextMenuForEvent(jsEvent: MouseEvent, taskInfo: TaskInfo, targetDate: Date): Promise<void> {
+        const contextMenu = new TaskContextMenu({
+            task: taskInfo,
+            plugin: this.plugin,
+            targetDate: targetDate,
+            onUpdate: () => {
+                // Refresh the calendar to show any updates
                 this.refreshEvents();
             }
         });

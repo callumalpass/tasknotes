@@ -1,6 +1,7 @@
 import { TFile, Menu, setIcon, Notice, Modal, App, setTooltip } from 'obsidian';
 import { TaskInfo } from '../types';
 import TaskNotesPlugin from '../main';
+import { TaskContextMenu } from '../components/TaskContextMenu';
 import { calculateTotalTimeSpent, getEffectiveTaskStatus, getRecurrenceDisplayText, filterEmptyProjects } from '../utils/helpers';
 import { 
     formatDateTimeForDisplay,
@@ -649,242 +650,17 @@ export async function showTaskContextMenu(event: MouseEvent, taskPath: string, p
             return;
         }
         
-        
-        
-        const menu = new Menu();
-        
-        
-        // For recurring tasks, only show non-completion statuses
-        // For regular tasks, show all statuses
-        const availableStatuses = task.recurrence 
-            ? plugin.statusManager.getNonCompletionStatuses()
-            : plugin.statusManager.getAllStatuses();
-        
-        // Direct status options (no submenu to avoid issues)
-        availableStatuses.forEach(statusConfig => {
-            menu.addItem((item) => {
-                const isSelected = task.status === statusConfig.value;
-                item.setTitle(`${statusConfig.label}`);
-                item.setIcon('circle');
-                if (isSelected) {
-                    item.setIcon('check');
-                }
-                item.onClick(async () => {
-                    try {
-                        // Use the fresh task data that showTaskContextMenu just fetched
-                        await plugin.updateTaskProperty(task, 'status', statusConfig.value);
-                    } catch (error) {
-                        const errorMessage = error instanceof Error ? error.message : String(error);
-                        console.error('Error updating task status:', {
-                            error: errorMessage,
-                            taskPath: task.path
-                        });
-                        new Notice(`Failed to update task status: ${errorMessage}`);
-                    }
-                });
-            });
+        const contextMenu = new TaskContextMenu({
+            task: task,
+            plugin: plugin,
+            targetDate: targetDate,
+            onUpdate: () => {
+                // Trigger refresh of views
+                plugin.app.workspace.trigger('tasknotes:refresh-views');
+            }
         });
         
-        // Add completion toggle for recurring tasks
-        if (task.recurrence) {
-            menu.addSeparator();
-            
-            // Check current completion status for this date
-            const dateStr = formatDateForStorage(targetDate);
-            const isCompletedForDate = task.complete_instances?.includes(dateStr) || false;
-            
-            menu.addItem((item) => {
-                item.setTitle(isCompletedForDate ? 'Mark incomplete for this date' : 'Mark complete for this date');
-                item.setIcon(isCompletedForDate ? 'x' : 'check');
-                item.onClick(async () => {
-                    try {
-                        await plugin.toggleRecurringTaskComplete(task, targetDate);
-                    } catch (error) {
-                        const errorMessage = error instanceof Error ? error.message : String(error);
-                        console.error('Error toggling recurring task completion:', {
-                            error: errorMessage,
-                            taskPath: task.path
-                        });
-                        new Notice(`Failed to toggle recurring task completion: ${errorMessage}`);
-                    }
-                });
-            });
-        }
-        
-        menu.addSeparator();
-        
-        // Direct priority options (no submenu to avoid issues)
-        plugin.priorityManager.getPrioritiesByWeight().forEach(priorityConfig => {
-            menu.addItem((item) => {
-                const isSelected = task.priority === priorityConfig.value;
-                item.setTitle(`Priority: ${priorityConfig.label}`);
-                item.setIcon('flag');
-                if (isSelected) {
-                    item.setIcon('check');
-                }
-                item.onClick(async () => {
-                    try {
-                        // Use the fresh task data that showTaskContextMenu just fetched
-                        await plugin.updateTaskProperty(task, 'priority', priorityConfig.value);
-                    } catch (error) {
-                        const errorMessage = error instanceof Error ? error.message : String(error);
-                        console.error('Error updating task priority:', {
-                            error: errorMessage,
-                            taskPath: task.path
-                        });
-                        new Notice(`Failed to update task priority: ${errorMessage}`);
-                    }
-                });
-            });
-        });
-        
-        menu.addSeparator();
-        
-        // Set Due Date
-        menu.addItem((item) => {
-            item.setTitle('Set due date...');
-            item.setIcon('calendar');
-            item.onClick(() => {
-                // Use the fresh task data that showTaskContextMenu just fetched
-                plugin.openDueDateModal(task);
-            });
-        });
-        
-        // Set Scheduled Date
-        menu.addItem((item) => {
-            item.setTitle('Set scheduled date...');
-            item.setIcon('calendar-clock');
-            item.onClick(() => {
-                // Use the fresh task data that showTaskContextMenu just fetched
-                plugin.openScheduledDateModal(task);
-            });
-        });
-        
-        // Manage Reminders
-        menu.addItem((item) => {
-            item.setTitle('Manage reminders...');
-            item.setIcon('bell');
-            item.onClick(() => {
-                const modal = new ReminderModal(
-                    plugin.app,
-                    plugin,
-                    task,
-                    async (reminders) => {
-                        try {
-                            await plugin.updateTaskProperty(task, 'reminders', reminders.length > 0 ? reminders : undefined);
-                        } catch (error) {
-                            console.error('Error updating reminders:', error);
-                            new Notice('Failed to update reminders');
-                        }
-                    }
-                );
-                modal.open();
-            });
-        });
-        
-        menu.addSeparator();
-        
-        // Time Tracking - determine current state from fresh task data
-        menu.addItem((item) => {
-            const activeSession = plugin.getActiveTimeSession(task);
-            item.setTitle(activeSession ? 'Stop time tracking' : 'Start time tracking');
-            item.setIcon(activeSession ? 'pause' : 'play');
-            item.onClick(async () => {
-                // Use the fresh task data that showTaskContextMenu just fetched
-                const activeSession = plugin.getActiveTimeSession(task);
-                if (activeSession) {
-                    await plugin.stopTimeTracking(task);
-                } else {
-                    await plugin.startTimeTracking(task);
-                }
-            });
-        });
-        
-        // Archive/Unarchive
-        menu.addItem((item) => {
-            item.setTitle(task.archived ? 'Unarchive' : 'Archive');
-            item.setIcon(task.archived ? 'archive-restore' : 'archive');
-            item.onClick(async () => {
-                try {
-                    // Use the fresh task data that showTaskContextMenu just fetched
-                    await plugin.toggleTaskArchive(task);
-                } catch (error) {
-                    const errorMessage = error instanceof Error ? error.message : String(error);
-                    console.error('Error toggling task archive:', {
-                        error: errorMessage,
-                        taskPath: task.path
-                    });
-                    new Notice(`Failed to toggle task archive: ${errorMessage}`);
-                }
-            });
-        });
-        
-        menu.addSeparator();
-        
-        // Open Note
-        menu.addItem((item) => {
-            item.setTitle('Open note');
-            item.setIcon('file-text');
-            item.onClick(() => {
-                const file = plugin.app.vault.getAbstractFileByPath(taskPath);
-                if (file instanceof TFile) {
-                    plugin.app.workspace.getLeaf(false).openFile(file);
-                }
-            });
-        });
-        
-        // Copy Task Title
-        menu.addItem((item) => {
-            item.setTitle('Copy task title');
-            item.setIcon('copy');
-            item.onClick(async () => {
-                // Use the fresh task data that showTaskContextMenu just fetched
-                try {
-                    await navigator.clipboard.writeText(task.title);
-                    new Notice('Task title copied to clipboard');
-                } catch (error) {
-                    new Notice('Failed to copy to clipboard');
-                }
-            });
-        });
-        
-        menu.addSeparator();
-        
-        // Create subtask
-        menu.addItem((item) => {
-            item.setTitle('Create subtask');
-            item.setIcon('plus');
-            item.onClick(() => {
-                // Create a subtask with the current task as the project reference
-                const taskFile = plugin.app.vault.getAbstractFileByPath(task.path);
-                if (taskFile instanceof TFile) {
-                    const projectReference = `[[${taskFile.basename}]]`;
-                    plugin.openTaskCreationModal({
-                        projects: [projectReference]
-                    });
-                }
-            });
-        });
-        
-        // Delete Task
-        menu.addItem((item) => {
-            item.setTitle('Delete task');
-            item.setIcon('trash');
-            item.onClick(async () => {
-                try {
-                    await showDeleteConfirmationModal(task, plugin);
-                } catch (error) {
-                    const errorMessage = error instanceof Error ? error.message : String(error);
-                    console.error('Error deleting task:', {
-                        error: errorMessage,
-                        taskPath: task.path
-                    });
-                    new Notice(`Failed to delete task: ${errorMessage}`);
-                }
-            });
-        });
-    
-        menu.showAtMouseEvent(event);
+        contextMenu.show(event);
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
         console.error('Error creating context menu:', {
