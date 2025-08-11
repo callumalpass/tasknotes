@@ -2,9 +2,11 @@
 
 import { copyFile, mkdir, access, constants } from 'fs/promises';
 import { join, resolve } from 'path';
+import os from 'os';
 
 // Default copy destination - can be overridden with OBSIDIAN_PLUGIN_PATH environment variable
-const defaultPath = '/mnt/c/Users/Admin/Documents/testvault/test/.obsidian/plugins/tasknotes';
+// Use os.homedir() to avoid literal "$HOME" not being expanded by Node
+const defaultPath = join(os.homedir(), 'testvault', 'test', '.obsidian', 'plugins', 'tasknotes');
 const copyPath = process.env.OBSIDIAN_PLUGIN_PATH || defaultPath;
 
 // Files to copy after build
@@ -15,8 +17,8 @@ async function copyFiles() {
         // Resolve the destination path
         const destPath = resolve(copyPath);
         
-        // Create the directory if it doesn't exist
-      
+        // Ensure the directory exists (including nested)
+        await mkdir(destPath, { recursive: true });
         
         // Check each file exists before copying
         const copyPromises = files.map(async (file) => {
@@ -26,10 +28,21 @@ async function copyFiles() {
                 await copyFile(file, destFile);
                 console.log(`✅ Copied ${file}`);
             } catch (err) {
-                if (err.code === 'ENOENT') {
-                    console.warn(`⚠️  Warning: ${file} not found, skipping`);
+                if (err && err.code === 'ENOENT') {
+                    // Differentiate between missing source and missing destination path
+                    try {
+                        await access(file, constants.F_OK);
+                    } catch {
+                        console.warn(`⚠️  Warning: source file ${file} not found, skipping`);
+                        return;
+                    }
+                    console.warn(`⚠️  Warning: destination path missing for ${file}. Attempting to create…`);
+                    await mkdir(destPath, { recursive: true });
+                    const destFileRetry = join(destPath, file);
+                    await copyFile(file, destFileRetry);
+                    console.log(`✅ Copied ${file} (after creating destination)`);
                 } else {
-                    throw new Error(`Failed to copy ${file}: ${err.message}`);
+                    throw new Error(`Failed to copy ${file}: ${err?.message || err}`);
                 }
             }
         });

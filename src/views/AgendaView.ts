@@ -1,4 +1,4 @@
-import { TFile, ItemView, WorkspaceLeaf, EventRef, Setting } from 'obsidian';
+import { TFile, ItemView, WorkspaceLeaf, EventRef, Setting, Notice } from 'obsidian';
 import { format, addDays, startOfWeek, endOfWeek, isSameDay } from 'date-fns';
 import { formatDateForStorage, createUTCDateFromLocalCalendarDate, getTodayLocal, isTodayUTC, convertUTCToLocalCalendarDate } from '../utils/dateUtils';
 import TaskNotesPlugin from '../main';
@@ -15,6 +15,7 @@ import {
 // No helper functions needed from helpers
 import { createTaskCard, updateTaskCard, refreshParentTaskSubtasks } from '../ui/TaskCard';
 import { createNoteCard } from '../ui/NoteCard';
+import { createICSEventCard, updateICSEventCard } from '../ui/ICSCard';
 import { FilterBar } from '../ui/FilterBar';
 import { FilterService } from '../services/FilterService';
 
@@ -27,6 +28,7 @@ export class AgendaView extends ItemView {
     private startDate: Date;
     private showOverdueOnToday = true;
     private showNotes = true;
+    private showICSEvents = true;
     
     // Filter system
     private filterBar: FilterBar | null = null;
@@ -105,6 +107,14 @@ export class AgendaView extends ItemView {
             this.refresh();
         });
         this.functionListeners.push(filterDataListener);
+
+        // Listen for ICS subscription updates
+        if (this.plugin.icsSubscriptionService) {
+            const icsListener = this.plugin.icsSubscriptionService.on('data-changed', () => {
+                this.refresh();
+            });
+            this.functionListeners.push(icsListener);
+        }
     }
     
     getViewType(): string {
@@ -240,6 +250,30 @@ export class AgendaView extends ItemView {
             this.updatePeriodDisplay();
             this.refresh();
         });
+
+        // Refresh ICS button (always show; handle availability on click)
+        const refreshBtn = actionsSection.createEl('button', {
+            text: 'Refresh calendars',
+            cls: 'agenda-view__today-button',
+            attr: {
+                'aria-label': 'Refresh calendar subscriptions',
+                'title': 'Refresh calendar subscriptions'
+            }
+        });
+        refreshBtn.addEventListener('click', async () => {
+            if (!this.plugin.icsSubscriptionService) {
+                new Notice('Calendar service not ready yet');
+                return;
+            }
+            try {
+                await this.plugin.icsSubscriptionService.refreshAllSubscriptions();
+                new Notice('Calendar subscriptions refreshed');
+                this.refresh();
+            } catch (e) {
+                console.error('Failed to refresh ICS subscriptions', e);
+                new Notice('Failed to refresh calendar subscriptions');
+            }
+        });
         
         // FilterBar section (like tasks view)
         const filterBarContainer = controlsContainer.createDiv({ cls: 'agenda-view__filter-container' });
@@ -341,6 +375,15 @@ export class AgendaView extends ItemView {
                     this.showNotes = value;
                     this.refresh();
                 }
+            },
+            {
+                id: 'icsEvents',
+                label: 'Calendar subscriptions',
+                value: this.showICSEvents,
+                onChange: (value: boolean) => {
+                    this.showICSEvents = value;
+                    this.refresh();
+                }
             }
         ];
 
@@ -357,6 +400,13 @@ export class AgendaView extends ItemView {
         }
         if (viewOptions.hasOwnProperty('showNotes')) {
             this.showNotes = viewOptions.showNotes;
+        }
+        // Be robust to both key styles
+        if (viewOptions.hasOwnProperty('icsEvents')) {
+            this.showICSEvents = (viewOptions as any).icsEvents;
+        }
+        if (viewOptions.hasOwnProperty('showICSEvents')) {
+            this.showICSEvents = (viewOptions as any).showICSEvents;
         }
 
         // Update the view options in the FilterBar to reflect the loaded state
@@ -440,7 +490,7 @@ export class AgendaView extends ItemView {
             const dates = this.getAgendaDates();
             
             // Use FilterService to get tasks for each date (properly handles recurring tasks)
-            const agendaData: Array<{date: Date; tasks: TaskInfo[]}> = [];
+            const agendaData: Array<{date: Date; tasks: TaskInfo[]; ics: import('../types').ICSEvent[]}> = [];
             
             for (const date of dates) {
                 // Use FilterService's getTasksForDate which properly handles recurring tasks
@@ -449,24 +499,53 @@ export class AgendaView extends ItemView {
                     this.currentQuery,
                     this.showOverdueOnToday
                 );
+                // Collect ICS events for this date
+                let icsForDate: import('../types').ICSEvent[] = [];
+                if (this.showICSEvents && this.plugin.icsSubscriptionService) {
+                    const allIcs = this.plugin.icsSubscriptionService.getAllEvents();
+                    icsForDate = this.filterICSEventsForDate(allIcs, date);
+                }
                 
-                agendaData.push({ date, tasks: tasksForDate });
+                agendaData.push({ date, tasks: tasksForDate, ics: icsForDate });
             }
             
             // Get notes separately and add them to the agenda data
-            const agendaDataWithNotes = await this.addNotesToAgendaData(agendaData);
+            const agendaDataWithNotes = await this.addNotesToAgendaData(agendaData.map(d => ({ date: d.date, tasks: d.tasks })));
+            // Merge ICS back into enriched data
+            const merged = agendaDataWithNotes.map((d, i) => ({ ...d, ics: agendaData[i].ics }));
             
             // Use DOMReconciler-based rendering
             if (this.groupByDate) {
-                this.renderGroupedAgendaWithReconciler(contentContainer, agendaDataWithNotes);
+                this.renderGroupedAgendaWithReconciler(contentContainer, merged);
             } else {
-                this.renderFlatAgendaWithReconciler(contentContainer, agendaDataWithNotes);
+                this.renderFlatAgendaWithReconciler(contentContainer, merged);
             }
         } catch (error) {
             console.error('Error rendering agenda content:', error);
             contentContainer.empty();
             const errorEl = contentContainer.createDiv({ cls: 'agenda-view__error' });
             errorEl.createSpan({ text: 'Error loading agenda. Please try refreshing.' });
+        }
+    }
+
+    private filterICSEventsForDate(events: import('../types').ICSEvent[], utcAnchoredDate: Date): import('../types').ICSEvent[] {
+        try {
+            // Convert UTC-anchored date to local calendar date, then compute start/end of that day
+            const localDate = convertUTCToLocalCalendarDate(utcAnchoredDate);
+            const dayStart = new Date(localDate.getFullYear(), localDate.getMonth(), localDate.getDate(), 0, 0, 0, 0);
+            const dayEnd = new Date(localDate.getFullYear(), localDate.getMonth(), localDate.getDate(), 23, 59, 59, 999);
+            return events.filter(ev => {
+                const evStart = new Date(ev.start);
+                const evEnd = ev.end ? new Date(ev.end) : null;
+                if (evEnd) {
+                    // Overlaps if start <= dayEnd and end >= dayStart
+                    return evStart <= dayEnd && evEnd >= dayStart;
+                }
+                // No end: occurs on day if start between start and end of day
+                return evStart >= dayStart && evStart <= dayEnd;
+            });
+        } catch {
+            return [];
         }
     }
     
@@ -479,16 +558,16 @@ export class AgendaView extends ItemView {
     /**
      * Render grouped agenda using DOMReconciler for efficient updates
      */
-    private renderGroupedAgendaWithReconciler(container: HTMLElement, agendaData: Array<{date: Date, tasks: TaskInfo[], notes: NoteInfo[]}>) {
+    private renderGroupedAgendaWithReconciler(container: HTMLElement, agendaData: Array<{date: Date, tasks: TaskInfo[], notes: NoteInfo[], ics: import('../types').ICSEvent[]}>) {
         // Create flattened list of all items with their day grouping
-        const allItems: Array<{type: 'day-header' | 'task' | 'note', item: any, date: Date, dayKey: string}> = [];
+        const allItems: Array<{type: 'day-header' | 'task' | 'note' | 'ics', item: any, date: Date, dayKey: string}> = [];
         
         let hasAnyItems = false;
         agendaData.forEach(dayData => {
             const dateStr = formatDateForStorage(dayData.date);
             
             // Tasks are already filtered by FilterService, no need to re-filter
-            const hasItems = dayData.tasks.length > 0 || dayData.notes.length > 0;
+            const hasItems = dayData.tasks.length > 0 || dayData.notes.length > 0 || (this.showICSEvents && dayData.ics.length > 0);
             
             if (hasItems) {
                 hasAnyItems = true;
@@ -521,6 +600,18 @@ export class AgendaView extends ItemView {
                         dayKey
                     });
                 });
+
+                // Add ICS events
+                if (this.showICSEvents) {
+                    dayData.ics.forEach(ics => {
+                        allItems.push({
+                            type: 'ics',
+                            item: ics,
+                            date: dayData.date,
+                            dayKey
+                        });
+                    });
+                }
             }
         });
         
@@ -553,9 +644,9 @@ export class AgendaView extends ItemView {
     /**
      * Render flat agenda using DOMReconciler for efficient updates
      */
-    private renderFlatAgendaWithReconciler(container: HTMLElement, agendaData: Array<{date: Date, tasks: TaskInfo[], notes: NoteInfo[]}>) {
+    private renderFlatAgendaWithReconciler(container: HTMLElement, agendaData: Array<{date: Date, tasks: TaskInfo[], notes: NoteInfo[], ics: import('../types').ICSEvent[]}>) {
         // Collect all items with their dates
-        const allItems: Array<{type: 'task' | 'note', item: TaskInfo | NoteInfo, date: Date}> = [];
+        const allItems: Array<{type: 'task' | 'note' | 'ics', item: TaskInfo | NoteInfo | import('../types').ICSEvent, date: Date}> = [];
         
         agendaData.forEach(dayData => {
             // Tasks are already filtered by FilterService, no need to re-filter
@@ -566,6 +657,13 @@ export class AgendaView extends ItemView {
             dayData.notes.forEach(note => {
                 allItems.push({ type: 'note', item: note, date: dayData.date });
             });
+
+            // ICS events
+            if (this.showICSEvents) {
+                dayData.ics.forEach(ics => {
+                    allItems.push({ type: 'ics', item: ics, date: dayData.date });
+                });
+            }
         });
         
         if (allItems.length === 0) {
@@ -588,7 +686,7 @@ export class AgendaView extends ItemView {
         this.plugin.domReconciler.updateList(
             container,
             allItems,
-            (item) => `${item.type}-${item.item.path || (item.item as any).id || 'unknown'}`,
+            (item) => `${item.type}-${(item.item as any).path || (item.item as any).id || 'unknown'}`,
             (item) => this.createFlatAgendaItemElement(item),
             (element, item) => this.updateFlatAgendaItemElement(element, item)
         );
@@ -597,7 +695,7 @@ export class AgendaView extends ItemView {
     /**
      * Create agenda item element for reconciler
      */
-    private createAgendaItemElement(item: {type: 'day-header' | 'task' | 'note', item: any, date: Date, dayKey: string}): HTMLElement {
+    private createAgendaItemElement(item: {type: 'day-header' | 'task' | 'note' | 'ics', item: any, date: Date, dayKey: string}): HTMLElement {
         if (item.type === 'day-header') {
             const dayHeader = document.createElement('div');
             dayHeader.className = 'agenda-view__day-header';
@@ -617,26 +715,29 @@ export class AgendaView extends ItemView {
             }
             
             // Item count badge
-            const itemCount = item.item.tasks.length + item.item.notes.length;
+            const itemCount = item.item.tasks.length + item.item.notes.length + (item.item.ics?.length || 0);
             dayHeader.createDiv({ cls: 'agenda-view__item-count', text: `${itemCount}` });
             
             return dayHeader;
         } else if (item.type === 'task') {
             return this.createTaskItemElement(item.item as TaskInfo, item.date);
         } else {
-            return this.createNoteItemElement(item.item as NoteInfo, item.date);
+            if (item.type === 'note') {
+                return this.createNoteItemElement(item.item as NoteInfo, item.date);
+            }
+            return this.createICSEventItemElement(item.item as import('../types').ICSEvent);
         }
     }
     
     /**
      * Update agenda item element for reconciler
      */
-    private updateAgendaItemElement(element: HTMLElement, item: {type: 'day-header' | 'task' | 'note', item: any, date: Date, dayKey: string}): void {
+    private updateAgendaItemElement(element: HTMLElement, item: {type: 'day-header' | 'task' | 'note' | 'ics', item: any, date: Date, dayKey: string}): void {
         if (item.type === 'day-header') {
             // Update item count badge
             const countBadge = element.querySelector('.agenda-view__item-count');
             if (countBadge) {
-                const itemCount = item.item.tasks.length + item.item.notes.length;
+                const itemCount = item.item.tasks.length + item.item.notes.length + (item.item.ics?.length || 0);
                 countBadge.textContent = `${itemCount}`;
             }
         } else if (item.type === 'task') {
@@ -648,6 +749,8 @@ export class AgendaView extends ItemView {
                 groupByDate: this.groupByDate,
                 targetDate: item.date
             });
+        } else if (item.type === 'ics') {
+            updateICSEventCard(element, item.item as import('../types').ICSEvent, this.plugin);
         }
         // Note updates are handled automatically by the note card structure
     }
@@ -655,18 +758,16 @@ export class AgendaView extends ItemView {
     /**
      * Create flat agenda item element for reconciler
      */
-    private createFlatAgendaItemElement(item: {type: 'task' | 'note', item: TaskInfo | NoteInfo, date: Date}): HTMLElement {
-        if (item.type === 'task') {
-            return this.createTaskItemElement(item.item as TaskInfo, item.date);
-        } else {
-            return this.createNoteItemElement(item.item as NoteInfo, item.date);
-        }
+    private createFlatAgendaItemElement(item: {type: 'task' | 'note' | 'ics', item: TaskInfo | NoteInfo | import('../types').ICSEvent, date: Date}): HTMLElement {
+        if (item.type === 'task') return this.createTaskItemElement(item.item as TaskInfo, item.date);
+        if (item.type === 'note') return this.createNoteItemElement(item.item as NoteInfo, item.date);
+        return this.createICSEventItemElement(item.item as import('../types').ICSEvent);
     }
     
     /**
      * Update flat agenda item element for reconciler
      */
-    private updateFlatAgendaItemElement(element: HTMLElement, item: {type: 'task' | 'note', item: TaskInfo | NoteInfo, date: Date}): void {
+    private updateFlatAgendaItemElement(element: HTMLElement, item: {type: 'task' | 'note' | 'ics', item: TaskInfo | NoteInfo | import('../types').ICSEvent, date: Date}): void {
         if (item.type === 'task') {
             updateTaskCard(element, item.item as TaskInfo, this.plugin, {
                 showDueDate: !this.groupByDate,
@@ -676,6 +777,8 @@ export class AgendaView extends ItemView {
                 groupByDate: this.groupByDate,
                 targetDate: item.date
             });
+        } else if (item.type === 'ics') {
+            updateICSEventCard(element, item.item as import('../types').ICSEvent, this.plugin);
         }
         // Note updates are handled automatically by the note card structure
     }
@@ -727,6 +830,14 @@ export class AgendaView extends ItemView {
         }
         
         return noteCard;
+    }
+
+    /**
+     * Create ICS event item element
+     */
+    private createICSEventItemElement(icsEvent: import('../types').ICSEvent): HTMLElement {
+        const icsCard = createICSEventCard(icsEvent, this.plugin, {});
+        return icsCard;
     }
     
     /**

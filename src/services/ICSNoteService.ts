@@ -2,7 +2,7 @@ import { TFile, Notice, normalizePath } from 'obsidian';
 import { format } from 'date-fns';
 import TaskNotesPlugin from '../main';
 import { ICSEvent, TaskInfo, NoteInfo, TaskCreationData } from '../types';
-import { getCurrentTimestamp } from '../utils/dateUtils';
+import { getCurrentTimestamp, formatDateForStorage } from '../utils/dateUtils';
 import { generateTaskFilename, generateUniqueFilename, FilenameContext } from '../utils/filenameGenerator';
 import { ensureFolderExists } from '../utils/helpers';
 import { processTemplate, ICSTemplateData } from '../utils/templateProcessor';
@@ -24,12 +24,19 @@ export class ICSNoteService {
             const subscriptionName = subscription?.name || 'Unknown Calendar';
 
             // Convert ICS event to task creation data
+            const scheduledValue = overrides?.scheduled !== undefined
+                ? overrides.scheduled
+                : this.computeScheduledFromICSEvent(icsEvent);
+
             const taskData: TaskCreationData = {
                 title: overrides?.title || icsEvent.title,
                 status: overrides?.status || this.plugin.settings.defaultTaskStatus,
                 priority: overrides?.priority || this.plugin.settings.defaultTaskPriority,
                 due: overrides?.due || undefined, // Don't set due date from ICS events
-                scheduled: overrides?.scheduled || (icsEvent.start ? icsEvent.start : undefined),
+                // Safe date handling per guidelines:
+                // - all-day: YYYY-MM-DD (UTC-anchored calendar day)
+                // - timed: YYYY-MM-DDTHH:mm (local)
+                scheduled: scheduledValue,
                 contexts: overrides?.contexts || (icsEvent.location ? [icsEvent.location] : undefined),
                 projects: overrides?.projects,
                 tags: overrides?.tags || [this.plugin.fieldMapper.toUserField('icsEventTag')],
@@ -52,6 +59,26 @@ export class ICSNoteService {
                 icsEventTitle: icsEvent.title
             });
             throw new Error(`Failed to create task from ICS event: ${errorMessage}`);
+        }
+    }
+
+    /**
+     * Convert ICSEvent.start to a safe scheduled string per guidelines
+     * - All-day -> 'YYYY-MM-DD'
+     * - Timed   -> 'YYYY-MM-DDTHH:mm' (local)
+     */
+    private computeScheduledFromICSEvent(icsEvent: ICSEvent): string | undefined {
+        try {
+            if (!icsEvent.start) return undefined;
+            const start = new Date(icsEvent.start);
+            if (icsEvent.allDay) {
+                return formatDateForStorage(start);
+            }
+            // Timed event: store local wall-clock without seconds
+            return format(start, "yyyy-MM-dd'T'HH:mm");
+        } catch (error) {
+            console.warn('Failed to compute scheduled from ICS event start:', { start: icsEvent.start, error });
+            return icsEvent.start; // fallback to raw value
         }
     }
 
