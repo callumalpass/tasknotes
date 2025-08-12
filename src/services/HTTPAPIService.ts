@@ -6,6 +6,8 @@ import { TaskService } from './TaskService';
 import { FilterService } from './FilterService';
 import { MinimalNativeCache } from '../utils/MinimalNativeCache';
 import { calculateDefaultDate } from '../utils/helpers';
+import { NaturalLanguageParser, ParsedTaskData } from './NaturalLanguageParser';
+import { StatusManager } from './StatusManager';
 import TaskNotesPlugin from '../main';
 
 interface APIResponse<T = any> {
@@ -38,6 +40,8 @@ export class HTTPAPIService {
 	private taskService: TaskService;
 	private filterService: FilterService;
 	private cacheManager: MinimalNativeCache;
+	private nlParser: NaturalLanguageParser;
+	private statusManager: StatusManager;
 
 	constructor(
 		plugin: TaskNotesPlugin,
@@ -49,6 +53,12 @@ export class HTTPAPIService {
 		this.taskService = taskService;
 		this.filterService = filterService;
 		this.cacheManager = cacheManager;
+		this.nlParser = new NaturalLanguageParser(
+			plugin.settings.customStatuses,
+			plugin.settings.customPriorities,
+			plugin.settings.nlpDefaultToScheduled
+		);
+		this.statusManager = new StatusManager(plugin.settings.customStatuses);
 	}
 
 	private async parseRequestBody(req: IncomingMessage): Promise<any> {
@@ -150,6 +160,10 @@ export class HTTPAPIService {
 				await this.handleGetFilterOptions(req, res);
 			} else if (req.method === 'GET' && pathname === '/api/stats') {
 				await this.handleGetStats(req, res);
+			} else if (req.method === 'POST' && pathname === '/api/nlp/parse') {
+				await this.handleNLPParse(req, res);
+			} else if (req.method === 'POST' && pathname === '/api/nlp/create') {
+				await this.handleNLPCreate(req, res);
 			} else {
 				this.sendResponse(res, 404, this.errorResponse('Not found'));
 			}
@@ -160,7 +174,30 @@ export class HTTPAPIService {
 	}
 
 	private async handleHealthCheck(req: IncomingMessage, res: ServerResponse): Promise<void> {
-		this.sendResponse(res, 200, this.successResponse({ status: 'ok', timestamp: new Date().toISOString() }));
+		const vaultName = this.plugin.app.vault.getName();
+		const adapter = this.plugin.app.vault.adapter as any;
+		
+		// Try to get vault path information
+		let vaultPath = null;
+		try {
+			// Check if adapter has basePath property (some adapters expose this)
+			if ('basePath' in adapter && typeof adapter.basePath === 'string') {
+				vaultPath = adapter.basePath;
+			} else if ('path' in adapter && typeof adapter.path === 'string') {
+				vaultPath = adapter.path;
+			}
+		} catch (error) {
+			// Silently fail if vault path isn't accessible
+		}
+		
+		this.sendResponse(res, 200, this.successResponse({ 
+			status: 'ok', 
+			timestamp: new Date().toISOString(),
+			vault: {
+				name: vaultName,
+				path: vaultPath
+			}
+		}));
 	}
 
 	private async handleGetTasks(req: IncomingMessage, res: ServerResponse, query: any): Promise<void> {
@@ -190,13 +227,13 @@ export class HTTPAPIService {
 			if (params.overdue === 'true') {
 				const today = new Date();
 				filteredTasks = filteredTasks.filter(task => 
-					task.due && new Date(task.due) < today && task.status !== 'completed'
+					task.due && new Date(task.due) < today && !this.statusManager.isCompletedStatus(task.status)
 				);
 			}
 			if (params.completed === 'true') {
-				filteredTasks = filteredTasks.filter(task => task.status === 'completed');
+				filteredTasks = filteredTasks.filter(task => this.statusManager.isCompletedStatus(task.status));
 			} else if (params.completed === 'false') {
-				filteredTasks = filteredTasks.filter(task => task.status !== 'completed');
+				filteredTasks = filteredTasks.filter(task => !this.statusManager.isCompletedStatus(task.status));
 			}
 			if (params.archived === 'true') {
 				filteredTasks = filteredTasks.filter(task => task.archived === true);
@@ -229,6 +266,9 @@ export class HTTPAPIService {
 				});
 			}
 
+			// Calculate filtered count before pagination
+			const filteredCount = filteredTasks.length;
+
 			// Pagination
 			const limit = params.limit ? parseInt(params.limit) : undefined;
 			const offset = params.offset ? parseInt(params.offset) : 0;
@@ -236,10 +276,27 @@ export class HTTPAPIService {
 				filteredTasks = filteredTasks.slice(offset, offset + limit);
 			}
 
+			// Get vault information
+			const adapter = this.plugin.app.vault.adapter as any;
+			let vaultPath = null;
+			try {
+				if ('basePath' in adapter && typeof adapter.basePath === 'string') {
+					vaultPath = adapter.basePath;
+				} else if ('path' in adapter && typeof adapter.path === 'string') {
+					vaultPath = adapter.path;
+				}
+			} catch (error) {
+				// Silently fail if vault path isn't accessible
+			}
+
 			this.sendResponse(res, 200, this.successResponse({
 				tasks: filteredTasks,
 				total: allTasks.length,
-				filtered: filteredTasks.length
+				filtered: filteredCount,
+				vault: {
+					name: this.plugin.app.vault.getName(),
+					path: vaultPath
+				}
 			}));
 		} catch (error: any) {
 			this.sendResponse(res, 500, this.errorResponse(error.message));
@@ -267,7 +324,7 @@ export class HTTPAPIService {
 
 	private async handleGetTask(req: IncomingMessage, res: ServerResponse, pathname: string): Promise<void> {
 		try {
-			const taskId = pathname.split('/')[3]; // /api/tasks/{id}
+			const taskId = decodeURIComponent(pathname.split('/')[3]); // /api/tasks/{id}
 			const task = await this.cacheManager.getTaskInfo(taskId);
 			
 			if (!task) {
@@ -283,7 +340,7 @@ export class HTTPAPIService {
 
 	private async handleUpdateTask(req: IncomingMessage, res: ServerResponse, pathname: string): Promise<void> {
 		try {
-			const taskId = pathname.split('/')[3]; // /api/tasks/{id}
+			const taskId = decodeURIComponent(pathname.split('/')[3]); // /api/tasks/{id}
 			const updates = await this.parseRequestBody(req);
 			
 			const originalTask = await this.cacheManager.getTaskInfo(taskId);
@@ -301,7 +358,7 @@ export class HTTPAPIService {
 
 	private async handleDeleteTask(req: IncomingMessage, res: ServerResponse, pathname: string): Promise<void> {
 		try {
-			const taskId = pathname.split('/')[3]; // /api/tasks/{id}
+			const taskId = decodeURIComponent(pathname.split('/')[3]); // /api/tasks/{id}
 			const task = await this.cacheManager.getTaskInfo(taskId);
 			
 			if (!task) {
@@ -318,7 +375,7 @@ export class HTTPAPIService {
 
 	private async handleStartTimeTracking(req: IncomingMessage, res: ServerResponse, pathname: string): Promise<void> {
 		try {
-			const taskId = pathname.split('/')[3]; // /api/tasks/{id}/time/start
+			const taskId = decodeURIComponent(pathname.split('/')[3]); // /api/tasks/{id}/time/start
 			const task = await this.cacheManager.getTaskInfo(taskId);
 			
 			if (!task) {
@@ -335,7 +392,7 @@ export class HTTPAPIService {
 
 	private async handleStopTimeTracking(req: IncomingMessage, res: ServerResponse, pathname: string): Promise<void> {
 		try {
-			const taskId = pathname.split('/')[3]; // /api/tasks/{id}/time/stop
+			const taskId = decodeURIComponent(pathname.split('/')[3]); // /api/tasks/{id}/time/stop
 			const task = await this.cacheManager.getTaskInfo(taskId);
 			
 			if (!task) {
@@ -352,7 +409,7 @@ export class HTTPAPIService {
 
 	private async handleToggleStatus(req: IncomingMessage, res: ServerResponse, pathname: string): Promise<void> {
 		try {
-			const taskId = pathname.split('/')[3]; // /api/tasks/{id}/toggle-status
+			const taskId = decodeURIComponent(pathname.split('/')[3]); // /api/tasks/{id}/toggle-status
 			const task = await this.cacheManager.getTaskInfo(taskId);
 			
 			if (!task) {
@@ -369,7 +426,7 @@ export class HTTPAPIService {
 
 	private async handleToggleArchive(req: IncomingMessage, res: ServerResponse, pathname: string): Promise<void> {
 		try {
-			const taskId = pathname.split('/')[3]; // /api/tasks/{id}/archive
+			const taskId = decodeURIComponent(pathname.split('/')[3]); // /api/tasks/{id}/archive
 			const task = await this.cacheManager.getTaskInfo(taskId);
 			
 			if (!task) {
@@ -386,7 +443,7 @@ export class HTTPAPIService {
 
 	private async handleCompleteRecurringInstance(req: IncomingMessage, res: ServerResponse, pathname: string): Promise<void> {
 		try {
-			const taskId = pathname.split('/')[3]; // /api/tasks/{id}/complete-instance
+			const taskId = decodeURIComponent(pathname.split('/')[3]); // /api/tasks/{id}/complete-instance
 			const { date } = await this.parseRequestBody(req);
 			const task = await this.cacheManager.getTaskInfo(taskId);
 			
@@ -415,10 +472,27 @@ export class HTTPAPIService {
 			}
 			
 			const allTasks = await this.cacheManager.getAllTasks();
+			// Get vault information
+			const adapter = this.plugin.app.vault.adapter as any;
+			let vaultPath = null;
+			try {
+				if ('basePath' in adapter && typeof adapter.basePath === 'string') {
+					vaultPath = adapter.basePath;
+				} else if ('path' in adapter && typeof adapter.path === 'string') {
+					vaultPath = adapter.path;
+				}
+			} catch (error) {
+				// Silently fail if vault path isn't accessible
+			}
+
 			this.sendResponse(res, 200, this.successResponse({
 				tasks: filteredTasks,
 				total: allTasks.length,
-				filtered: filteredTasks.length
+				filtered: filteredTasks.length,
+				vault: {
+					name: this.plugin.app.vault.getName(),
+					path: vaultPath
+				}
 			}));
 		} catch (error: any) {
 			this.sendResponse(res, 400, this.errorResponse(error.message));
@@ -439,10 +513,10 @@ export class HTTPAPIService {
 			const allTasks = await this.cacheManager.getAllTasks();
 			const stats = {
 				total: allTasks.length,
-				completed: allTasks.filter(t => t.status === 'completed').length,
-				active: allTasks.filter(t => t.status !== 'completed' && !t.archived).length,
+				completed: allTasks.filter(t => this.statusManager.isCompletedStatus(t.status)).length,
+				active: allTasks.filter(t => !this.statusManager.isCompletedStatus(t.status) && !t.archived).length,
 				overdue: allTasks.filter(t => {
-					if (t.status === 'completed' || t.archived) return false;
+					if (this.statusManager.isCompletedStatus(t.status) || t.archived) return false;
 					return t.due && new Date(t.due) < new Date();
 				}).length,
 				archived: allTasks.filter(t => t.archived === true).length,
@@ -530,6 +604,115 @@ export class HTTPAPIService {
 		// Apply default time estimate if not provided
 		if (!taskData.timeEstimate && defaults.defaultTimeEstimate > 0) {
 			taskData.timeEstimate = defaults.defaultTimeEstimate;
+		}
+	}
+
+	/**
+	 * Handle NLP parse request - parses natural language input and returns structured data
+	 */
+	private async handleNLPParse(req: IncomingMessage, res: ServerResponse): Promise<void> {
+		try {
+			const body = await this.parseRequestBody(req);
+			
+			if (!body.text || typeof body.text !== 'string') {
+				this.sendResponse(res, 400, this.errorResponse('Text field is required and must be a string'));
+				return;
+			}
+
+			// Parse the natural language input
+			const parsedData = this.nlParser.parseInput(body.text);
+			
+			// Convert ParsedTaskData to TaskCreationData format
+			const taskData: TaskCreationData = {
+				title: parsedData.title,
+				details: parsedData.details,
+				priority: parsedData.priority,
+				status: parsedData.status || 'todo',
+				tags: parsedData.tags,
+				contexts: parsedData.contexts,
+				projects: parsedData.projects,
+				recurrence: parsedData.recurrence,
+				timeEstimate: parsedData.estimate
+			};
+
+			// Handle dates
+			if (parsedData.dueDate) {
+				taskData.due = parsedData.dueDate;
+				if (parsedData.dueTime) {
+					taskData.due = `${parsedData.dueDate} ${parsedData.dueTime}`;
+				}
+			}
+			if (parsedData.scheduledDate) {
+				taskData.scheduled = parsedData.scheduledDate;
+				if (parsedData.scheduledTime) {
+					taskData.scheduled = `${parsedData.scheduledDate} ${parsedData.scheduledTime}`;
+				}
+			}
+
+			this.sendResponse(res, 200, this.successResponse({
+				parsed: parsedData,
+				taskData: taskData
+			}));
+		} catch (error: any) {
+			this.sendResponse(res, 500, this.errorResponse(error.message));
+		}
+	}
+
+	/**
+	 * Handle NLP create request - parses natural language input and creates a task
+	 */
+	private async handleNLPCreate(req: IncomingMessage, res: ServerResponse): Promise<void> {
+		try {
+			const body = await this.parseRequestBody(req);
+			
+			if (!body.text || typeof body.text !== 'string') {
+				this.sendResponse(res, 400, this.errorResponse('Text field is required and must be a string'));
+				return;
+			}
+
+			// Parse the natural language input
+			const parsedData = this.nlParser.parseInput(body.text);
+			
+			// Convert ParsedTaskData to TaskCreationData format
+			const taskData: TaskCreationData = {
+				title: parsedData.title,
+				details: parsedData.details,
+				priority: parsedData.priority,
+				status: parsedData.status || 'todo',
+				tags: parsedData.tags,
+				contexts: parsedData.contexts,
+				projects: parsedData.projects,
+				recurrence: parsedData.recurrence,
+				timeEstimate: parsedData.estimate,
+				creationContext: 'api'
+			};
+
+			// Handle dates
+			if (parsedData.dueDate) {
+				taskData.due = parsedData.dueDate;
+				if (parsedData.dueTime) {
+					taskData.due = `${parsedData.dueDate} ${parsedData.dueTime}`;
+				}
+			}
+			if (parsedData.scheduledDate) {
+				taskData.scheduled = parsedData.scheduledDate;
+				if (parsedData.scheduledTime) {
+					taskData.scheduled = `${parsedData.scheduledDate} ${parsedData.scheduledTime}`;
+				}
+			}
+
+			// Apply task creation defaults
+			this.applyTaskCreationDefaults(taskData);
+
+			// Create the task
+			const result = await this.taskService.createTask(taskData);
+			
+			this.sendResponse(res, 201, this.successResponse({
+				task: result.taskInfo,
+				parsed: parsedData
+			}));
+		} catch (error: any) {
+			this.sendResponse(res, 400, this.errorResponse(error.message));
 		}
 	}
 }

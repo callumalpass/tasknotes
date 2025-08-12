@@ -210,6 +210,7 @@ export interface RecurrenceInfo {
 }
 
 export interface TaskInfo {
+	id?: string; // Task identifier (typically same as path for API consistency)
 	title: string;
 	status: string;
 	priority: string;

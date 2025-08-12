@@ -1238,6 +1238,7 @@ export class MinimalNativeCache extends Events {
             const mappedTask = this.fieldMapper.mapFromFrontmatter(frontmatter, path, this.storeTitleInFilename);
             
             return {
+                id: path, // Add id field for API consistency
                 title: mappedTask.title || 'Untitled task',
                 status: mappedTask.status || 'open',
                 priority: mappedTask.priority || 'normal',
