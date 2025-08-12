@@ -1,4 +1,4 @@
-import { Notice, Plugin, WorkspaceLeaf, Editor, MarkdownView, TFile } from 'obsidian';
+import { Notice, Plugin, WorkspaceLeaf, Editor, MarkdownView, TFile, Platform } from 'obsidian';
 import { EditorView } from '@codemirror/view';
 import { format } from 'date-fns';
 import { 
@@ -65,6 +65,8 @@ import { StatusBarService } from './services/StatusBarService';
 import { ProjectSubtasksService } from './services/ProjectSubtasksService';
 import { ExpandedProjectsService } from './services/ExpandedProjectsService';
 import { NotificationService } from './services/NotificationService';
+// Type-only import for HTTPAPIService (actual import is dynamic on desktop only)
+import type { HTTPAPIService } from './services/HTTPAPIService';
 
 // Type definitions for better type safety
 interface TaskUpdateEventData {
@@ -144,6 +146,9 @@ export default class TaskNotesPlugin extends Plugin {
 	
 	// Notification service
 	notificationService: NotificationService;
+	
+	// HTTP API service
+	apiService?: HTTPAPIService;
 	
 	// Event listener cleanup  
 	private taskUpdateListenerForEditor: import('obsidian').EventRef | null = null;
@@ -259,6 +264,35 @@ export default class TaskNotesPlugin extends Plugin {
 	}
 
 	/**
+	 * Initialize HTTP API service (desktop only)
+	 */
+	private async initializeHTTPAPI(): Promise<void> {
+		// Only initialize on desktop and if API is enabled
+		if (Platform.isMobile || !this.settings.enableAPI) {
+			return;
+		}
+
+		try {
+			// Use dynamic import() to load HTTPAPIService only on desktop
+			const { HTTPAPIService } = await import('./services/HTTPAPIService');
+			
+			this.apiService = new HTTPAPIService(
+				this,
+				this.taskService,
+				this.filterService,
+				this.cacheManager
+			);
+
+			// Start the API server
+			await this.apiService.start();
+			new Notice(`TaskNotes API started on port ${this.apiService.getPort()}`);
+		} catch (error) {
+			console.error('Failed to initialize HTTP API:', error);
+			new Notice('Failed to start TaskNotes API server. Check console for details.');
+		}
+	}
+
+	/**
 	 * Initialize expensive operations after layout is ready
 	 */
 	private async initializeAfterLayoutReady(): Promise<void> {
@@ -352,6 +386,9 @@ export default class TaskNotesPlugin extends Plugin {
 				
 				// Initialize ICS note service
 				this.icsNoteService = new ICSNoteService(this);
+				
+				// Initialize HTTP API service if enabled (desktop only)
+				await this.initializeHTTPAPI();
 				
 				// Initialize editor services (async imports)
 				const { TaskLinkDetectionService } = await import('./services/TaskLinkDetectionService');
@@ -727,6 +764,11 @@ export default class TaskNotesPlugin extends Plugin {
 			this.dragDropManager.destroy();
 		}
 		
+		// Stop HTTP API server
+		if (this.apiService) {
+			this.apiService.stop();
+		}
+		
 		// Clean up ViewStateManager
 		if (this.viewStateManager) {
 			this.viewStateManager.cleanup();
@@ -787,6 +829,17 @@ export default class TaskNotesPlugin extends Plugin {
 		// Migration: Remove old useNativeMetadataCache setting if it exists
 		if (loadedData && 'useNativeMetadataCache' in loadedData) {
 			delete loadedData.useNativeMetadataCache;
+		}
+
+		// Migration: Add API settings defaults if they don't exist
+		if (loadedData && typeof loadedData.enableAPI === 'undefined') {
+			loadedData.enableAPI = false;
+		}
+		if (loadedData && typeof loadedData.apiPort === 'undefined') {
+			loadedData.apiPort = 8080;
+		}
+		if (loadedData && typeof loadedData.apiAuthToken === 'undefined') {
+			loadedData.apiAuthToken = '';
 		}
 		
 		// Deep merge settings with proper migration for nested objects

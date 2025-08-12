@@ -103,6 +103,41 @@ recurrence: "FREQ=WEEKLY;BYDAY=MO"
 complete_instances: ["2024-01-08"]
 ```
 
+## HTTP API
+
+TaskNotes includes an optional HTTP API server for external integrations. This enables creating tasks from browsers, automation tools, mobile apps, and custom scripts.
+
+### Quick Start
+1. Enable the HTTP API in Settings → HTTP API tab (desktop only)
+2. Configure port (default: 8080) and optional auth token  
+3. Restart Obsidian to start the server
+
+### Basic Usage
+```bash
+# Health check
+curl http://localhost:8080/api/health
+
+# List all tasks
+curl http://localhost:8080/api/tasks
+
+# Create a task
+curl -X POST http://localhost:8080/api/tasks \
+  -H "Content-Type: application/json" \
+  -d '{"title": "New task", "priority": "High"}'
+
+# Get task statistics
+curl http://localhost:8080/api/stats
+```
+
+### Browser Integration
+The API enables powerful browser integrations:
+- **Bookmarklets** for one-click task creation from any webpage
+- **Browser extensions** for Gmail, Outlook, and other email providers  
+- **Automation** with Zapier, IFTTT, and similar services
+
+### Documentation
+See [HTTP API Documentation](./docs/HTTP_API.md) for complete endpoint reference and integration examples.
+
 ## Credits
 
 This plugin uses [FullCalendar.io](https://fullcalendar.io/) for its calendar components.

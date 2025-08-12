@@ -1,4 +1,4 @@
-import { App, PluginSettingTab, Setting, Notice, setIcon, TAbstractFile, TFile, setTooltip } from 'obsidian';
+import { App, PluginSettingTab, Setting, Notice, setIcon, TAbstractFile, TFile, setTooltip, Platform } from 'obsidian';
 import TaskNotesPlugin from '../main';
 import { FieldMapping, StatusConfig, PriorityConfig, SavedView, Reminder, TaskInfo } from '../types';
 import { StatusManager } from '../services/StatusManager';
@@ -70,6 +70,10 @@ export interface TaskNotesSettings {
 	// Notification settings
 	enableNotifications: boolean;
 	notificationType: 'in-app' | 'system';
+	// HTTP API settings
+	enableAPI: boolean;
+	apiPort: number;
+	apiAuthToken: string;
 }
 
 export interface DefaultReminder {
@@ -347,7 +351,11 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	savedViews: [],
 	// Notification defaults
 	enableNotifications: true,
-	notificationType: 'system'
+	notificationType: 'system',
+	// HTTP API defaults
+	enableAPI: false,
+	apiPort: 8080,
+	apiAuthToken: ''
 };
 
 /**
@@ -427,7 +435,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 		// Create tab navigation
 		const tabNav = containerEl.createDiv('settings-tab-nav settings-view__tab-nav');
 		
-		const tabs = [
+		const allTabs = [
 			{ id: 'task-defaults', name: 'Task defaults' },
 			{ id: 'general', name: 'Inline tasks' },
 			{ id: 'calendar', name: 'Calendar' },
@@ -436,8 +444,17 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 			{ id: 'priorities', name: 'Priorities' },
 			{ id: 'pomodoro', name: 'Pomodoro' },
 			{ id: 'notifications', name: 'Notifications' },
+			{ id: 'api', name: 'HTTP API' },
 			{ id: 'misc', name: 'Misc' }
 		];
+		
+		// Filter out API tab on mobile
+		const tabs = Platform.isMobile ? allTabs.filter(tab => tab.id !== 'api') : allTabs;
+		
+		// Reset active tab if it's 'api' on mobile
+		if (Platform.isMobile && this.activeTab === 'api') {
+			this.activeTab = 'general';
+		}
 		
 		tabs.forEach(tab => {
 			const isActive = this.activeTab === tab.id;
@@ -531,6 +548,9 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 				break;
 			case 'notifications':
 				this.renderNotificationsTab();
+				break;
+			case 'api':
+				this.renderAPITab();
 				break;
 			case 'misc':
 				this.renderMiscTab();
@@ -1697,6 +1717,113 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 			<strong>System notifications:</strong> Use your operating system's native notification system. 
 			Requires permission and works even when Obsidian is minimized.<br>
 			<strong>In-app notices:</strong> Show notifications as temporary popups within Obsidian only.
+		`;
+		
+	}
+	
+	private renderAPITab(): void {
+		const container = this.tabContents['api'];
+		
+		// Show message on mobile
+		if (Platform.isMobile) {
+			const mobileMessage = container.createDiv({ cls: 'setting-item-description' });
+			mobileMessage.innerHTML = `
+				<div style="text-align: center; padding: 2rem; color: var(--text-muted);">
+					<h3>HTTP API not available on mobile</h3>
+					<p>The HTTP API feature requires Node.js capabilities that are only available on desktop platforms.</p>
+					<p>This tab will be available when using TaskNotes on desktop.</p>
+				</div>
+			`;
+			return;
+		}
+
+		container.createEl('h2', { text: 'HTTP API Settings' });
+		
+		// API description
+		const descEl = container.createDiv({ cls: 'setting-item-description' });
+		descEl.innerHTML = `
+			<p>Enable HTTP API server to allow external tools and scripts to interact with your TaskNotes data.</p>
+			<p><strong>Note:</strong> This feature is only available on desktop. Restart Obsidian after changing API settings.</p>
+		`;
+		
+		new Setting(container)
+			.setName('Enable HTTP API')
+			.setDesc('Enable HTTP API server for external tool integration.')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.enableAPI)
+				.onChange(async (value) => {
+					this.plugin.settings.enableAPI = value;
+					await this.plugin.saveSettings();
+					if (value) {
+						new Notice('API enabled. Restart Obsidian to start the server.');
+					} else {
+						new Notice('API disabled. Restart Obsidian to stop the server.');
+					}
+				}));
+		
+		new Setting(container)
+			.setName('API Port')
+			.setDesc('Port for the HTTP API server (default: 8080)')
+			.addText(text => text
+				.setPlaceholder('8080')
+				.setValue(this.plugin.settings.apiPort.toString())
+				.onChange(async (value) => {
+					const port = parseInt(value) || 8080;
+					if (port < 1024 || port > 65535) {
+						new Notice('Port must be between 1024 and 65535');
+						return;
+					}
+					this.plugin.settings.apiPort = port;
+					await this.plugin.saveSettings();
+				}));
+		
+		new Setting(container)
+			.setName('API Authentication Token')
+			.setDesc('Optional token for API authentication. Leave empty to disable authentication.')
+			.addText(text => text
+				.setPlaceholder('Optional authentication token')
+				.setValue(this.plugin.settings.apiAuthToken)
+				.onChange(async (value) => {
+					this.plugin.settings.apiAuthToken = value;
+					await this.plugin.saveSettings();
+				}));
+		
+		// API documentation section
+		container.createEl('h3', { text: 'API Documentation' });
+		
+		const apiInfoEl = container.createDiv({ cls: 'setting-item-description' });
+		apiInfoEl.innerHTML = `
+			<h4>Available Endpoints:</h4>
+			<ul style="margin-left: 1rem;">
+				<li><code>GET /api/health</code> - Health check</li>
+				<li><code>GET /api/tasks</code> - List tasks with optional filters</li>
+				<li><code>POST /api/tasks</code> - Create new task</li>
+				<li><code>GET /api/tasks/{id}</code> - Get specific task</li>
+				<li><code>PUT /api/tasks/{id}</code> - Update task</li>
+				<li><code>DELETE /api/tasks/{id}</code> - Delete task</li>
+				<li><code>POST /api/tasks/{id}/time/start</code> - Start time tracking</li>
+				<li><code>POST /api/tasks/{id}/time/stop</code> - Stop time tracking</li>
+				<li><code>POST /api/tasks/{id}/toggle-status</code> - Toggle completion</li>
+				<li><code>POST /api/tasks/{id}/archive</code> - Toggle archive</li>
+				<li><code>POST /api/tasks/query</code> - Advanced filtering</li>
+				<li><code>GET /api/filter-options</code> - Available filters</li>
+				<li><code>GET /api/stats</code> - Task statistics</li>
+			</ul>
+			
+			<h4>Usage Examples:</h4>
+			<p><strong>Basic request:</strong></p>
+			<pre><code>curl http://localhost:${this.plugin.settings.apiPort}/api/tasks</code></pre>
+			
+			<p><strong>With authentication:</strong></p>
+			<pre><code>curl -H "Authorization: Bearer YOUR_TOKEN" http://localhost:${this.plugin.settings.apiPort}/api/tasks</code></pre>
+			
+			<p><strong>Create task:</strong></p>
+			<pre><code>curl -X POST http://localhost:${this.plugin.settings.apiPort}/api/tasks \\
+  -H "Content-Type: application/json" \\
+  -d '{"title": "New task", "priority": "High"}'</code></pre>
+			
+			<p><strong>Filter tasks:</strong></p>
+			<pre><code>curl "http://localhost:${this.plugin.settings.apiPort}/api/tasks?status=open&priority=High"</code></pre>
 		`;
 	}
 	
