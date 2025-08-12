@@ -3568,7 +3568,7 @@ class WebhookModal extends Modal {
 			'task.created', 'task.updated', 'task.deleted', 'task.completed',
 			'task.archived', 'task.unarchived', 'time.started', 'time.stopped',
 			'pomodoro.started', 'pomodoro.completed', 'pomodoro.interrupted',
-			'recurring.instance.completed'
+			'recurring.instance.completed', 'reminder.triggered'
 		];
 		
 		availableEvents.forEach(event => {

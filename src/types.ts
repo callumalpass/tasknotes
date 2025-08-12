@@ -521,7 +521,8 @@ export type WebhookEvent =
 	| 'pomodoro.started'
 	| 'pomodoro.completed'
 	| 'pomodoro.interrupted'
-	| 'recurring.instance.completed';
+	| 'recurring.instance.completed'
+	| 'reminder.triggered';
 
 export interface WebhookConfig {
 	id: string;

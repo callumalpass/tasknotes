@@ -113,6 +113,12 @@ app.post('/webhook', (req, res) => {
         console.log(`  ⏹️  Time tracking stopped: "${req.body.data.task?.title}"`);
         break;
         
+      case 'reminder.triggered':
+        console.log(`  🔔 Reminder triggered: "${req.body.data.task?.title}"`);
+        console.log(`  📝 Message: "${req.body.data.message}"`);
+        console.log(`  🕐 Notification time: ${req.body.data.notificationTime}`);
+        break;
+        
       default:
         console.log(`  🔍 Unknown event: ${req.body.event}`);
     }

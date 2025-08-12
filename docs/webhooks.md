@@ -37,6 +37,10 @@ TaskNotes triggers webhooks for the following events:
 
 - `recurring.instance.completed` - When a recurring task instance is marked complete
 
+### Reminder Events
+
+- `reminder.triggered` - When a task reminder fires and displays a notification
+
 ## Payload Structure
 
 All webhook payloads follow this structure:
@@ -118,6 +122,27 @@ All webhook payloads follow this structure:
     "task": { /* TaskInfo object */ },
     "source": "nlp",
     "originalText": "Review PR #123 tomorrow high priority @work"
+  }
+}
+```
+
+### Reminder Events
+
+```json
+{
+  "event": "reminder.triggered",
+  "data": {
+    "task": { /* TaskInfo object */ },
+    "reminder": {
+      "id": "rem_1234",
+      "type": "relative",
+      "relatedTo": "due",
+      "offset": "-PT15M",
+      "description": "Don't forget this important task!"
+    },
+    "notificationTime": "2024-03-15T14:15:00.000Z",
+    "message": "Don't forget this important task!",
+    "notificationType": "system"
   }
 }
 ```
@@ -245,6 +270,35 @@ app.post('/webhook/tasknotes', (req, res) => {
     });
   } else if (event === 'time.stopped') {
     await toggl.stopTimer();
+  }
+  
+  res.status(200).send('OK');
+});
+```
+
+### Reminder Notifications
+
+```javascript
+app.post('/webhook/tasknotes', (req, res) => {
+  const { event, data } = req.body;
+  
+  if (event === 'reminder.triggered') {
+    // Forward reminder to mobile app via push notification
+    await pushNotification.send({
+      title: 'TaskNotes Reminder',
+      body: data.message,
+      data: {
+        taskId: data.task.id,
+        taskTitle: data.task.title,
+        reminderType: data.reminder.type
+      }
+    });
+    
+    // Or send to smart home system
+    await homeAssistant.notify({
+      message: data.message,
+      service: 'mobile_app_phone'
+    });
   }
   
   res.status(200).send('OK');
