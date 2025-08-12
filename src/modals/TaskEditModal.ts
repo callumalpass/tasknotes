@@ -2,7 +2,6 @@ import { App, Notice, TFile, Menu } from 'obsidian';
 import TaskNotesPlugin from '../main';
 import { TaskModal } from './TaskModal';
 import { TaskInfo } from '../types';
-import { CalendarExportService } from '../services/CalendarExportService';
 import { getCurrentTimestamp, formatDateForStorage, generateUTCCalendarDates, getUTCStartOfWeek, getUTCEndOfWeek, getUTCStartOfMonth, getUTCEndOfMonth, getTodayLocal, parseDateAsLocal, createUTCDateFromLocalCalendarDate } from '../utils/dateUtils';
 import { formatTimestampForDisplay } from '../utils/dateUtils';
 import { format } from 'date-fns';
@@ -550,61 +549,6 @@ export class TaskEditModal extends TaskModal {
         }
     }
 
-    private showExportMenu(event: MouseEvent): void {
-        const menu = new Menu();
-        
-        // Google Calendar
-        menu.addItem((item) => {
-            item.setTitle('Google Calendar');
-            item.setIcon('external-link');
-            item.onClick(() => {
-                CalendarExportService.openCalendarURL({
-                    type: 'google',
-                    task: this.task,
-                    useScheduledAsDue: true
-                });
-            });
-        });
-        
-        // Outlook Calendar
-        menu.addItem((item) => {
-            item.setTitle('Outlook Calendar');
-            item.setIcon('external-link');
-            item.onClick(() => {
-                CalendarExportService.openCalendarURL({
-                    type: 'outlook',
-                    task: this.task,
-                    useScheduledAsDue: true
-                });
-            });
-        });
-        
-        // Yahoo Calendar
-        menu.addItem((item) => {
-            item.setTitle('Yahoo Calendar');
-            item.setIcon('external-link');
-            item.onClick(() => {
-                CalendarExportService.openCalendarURL({
-                    type: 'yahoo',
-                    task: this.task,
-                    useScheduledAsDue: true
-                });
-            });
-        });
-        
-        menu.addSeparator();
-        
-        // Download ICS file
-        menu.addItem((item) => {
-            item.setTitle('Download .ics file');
-            item.setIcon('download');
-            item.onClick(() => {
-                CalendarExportService.downloadICSFile(this.task);
-            });
-        });
-        
-        menu.showAtMouseEvent(event);
-    }
 
     private async archiveTask(): Promise<void> {
         try {
@@ -652,16 +596,6 @@ export class TaskEditModal extends TaskModal {
         
         archiveButton.addEventListener('click', async () => {
             await this.archiveTask();
-        });
-
-        // Add "Export" button with dropdown
-        const exportButton = buttonContainer.createEl('button', {
-            cls: 'export-button',
-            text: 'Export ▼'
-        });
-        
-        exportButton.addEventListener('click', (event) => {
-            this.showExportMenu(event);
         });
 
         // Spacer to push Save/Cancel to the right
