@@ -1,7 +1,7 @@
 import { createServer, IncomingMessage, ServerResponse, Server } from 'http';
 import { parse } from 'url';
 import { parse as parseQuery } from 'querystring';
-import { TaskInfo, TaskCreationData, FilterQuery } from '../types';
+import { TaskInfo, TaskCreationData, FilterQuery, WebhookConfig, WebhookEvent, WebhookPayload, WebhookDelivery } from '../types';
 import { TaskService } from './TaskService';
 import { FilterService } from './FilterService';
 import { MinimalNativeCache } from '../utils/MinimalNativeCache';
@@ -9,6 +9,7 @@ import { calculateDefaultDate } from '../utils/helpers';
 import { NaturalLanguageParser, ParsedTaskData } from './NaturalLanguageParser';
 import { StatusManager } from './StatusManager';
 import TaskNotesPlugin from '../main';
+import { createHash, createHmac } from 'crypto';
 
 interface APIResponse<T = any> {
 	success: boolean;
@@ -42,6 +43,9 @@ export class HTTPAPIService {
 	private cacheManager: MinimalNativeCache;
 	private nlParser: NaturalLanguageParser;
 	private statusManager: StatusManager;
+	private webhooks: Map<string, WebhookConfig> = new Map();
+	private webhookDeliveryQueue: WebhookDelivery[] = [];
+	private isProcessingWebhooks = false;
 
 	constructor(
 		plugin: TaskNotesPlugin,
@@ -164,6 +168,14 @@ export class HTTPAPIService {
 				await this.handleNLPParse(req, res);
 			} else if (req.method === 'POST' && pathname === '/api/nlp/create') {
 				await this.handleNLPCreate(req, res);
+			} else if (req.method === 'POST' && pathname === '/api/webhooks') {
+				await this.handleRegisterWebhook(req, res);
+			} else if (req.method === 'GET' && pathname === '/api/webhooks') {
+				await this.handleListWebhooks(req, res);
+			} else if (req.method === 'DELETE' && pathname.startsWith('/api/webhooks/')) {
+				await this.handleDeleteWebhook(req, res, pathname);
+			} else if (req.method === 'GET' && pathname === '/api/webhooks/deliveries') {
+				await this.handleGetWebhookDeliveries(req, res);
 			} else {
 				this.sendResponse(res, 404, this.errorResponse('Not found'));
 			}
@@ -316,6 +328,10 @@ export class HTTPAPIService {
 			this.applyTaskCreationDefaults(taskData);
 
 			const result = await this.taskService.createTask(taskData);
+			
+			// Trigger webhook for task creation
+			await this.triggerWebhook('task.created', { task: result.taskInfo });
+			
 			this.sendResponse(res, 201, this.successResponse(result.taskInfo));
 		} catch (error: any) {
 			this.sendResponse(res, 400, this.errorResponse(error.message));
@@ -350,6 +366,13 @@ export class HTTPAPIService {
 			}
 
 			const updatedTask = await this.taskService.updateTask(originalTask, updates);
+			
+			// Trigger webhook for task update
+			await this.triggerWebhook('task.updated', { 
+				task: updatedTask,
+				previous: originalTask 
+			});
+			
 			this.sendResponse(res, 200, this.successResponse(updatedTask));
 		} catch (error: any) {
 			this.sendResponse(res, 400, this.errorResponse(error.message));
@@ -367,6 +390,10 @@ export class HTTPAPIService {
 			}
 
 			await this.taskService.deleteTask(task);
+			
+			// Trigger webhook for task deletion
+			await this.triggerWebhook('task.deleted', { task });
+			
 			this.sendResponse(res, 200, this.successResponse({ message: 'Task deleted successfully' }));
 		} catch (error: any) {
 			this.sendResponse(res, 500, this.errorResponse(error.message));
@@ -384,6 +411,13 @@ export class HTTPAPIService {
 			}
 
 			const updatedTask = await this.taskService.startTimeTracking(task);
+			
+			// Trigger webhook for time tracking start
+			await this.triggerWebhook('time.started', { 
+				task: updatedTask,
+				session: updatedTask.timeEntries?.[updatedTask.timeEntries.length - 1]
+			});
+			
 			this.sendResponse(res, 200, this.successResponse(updatedTask));
 		} catch (error: any) {
 			this.sendResponse(res, 400, this.errorResponse(error.message));
@@ -401,6 +435,13 @@ export class HTTPAPIService {
 			}
 
 			const updatedTask = await this.taskService.stopTimeTracking(task);
+			
+			// Trigger webhook for time tracking stop
+			await this.triggerWebhook('time.stopped', { 
+				task: updatedTask,
+				session: updatedTask.timeEntries?.[updatedTask.timeEntries.length - 1]
+			});
+			
 			this.sendResponse(res, 200, this.successResponse(updatedTask));
 		} catch (error: any) {
 			this.sendResponse(res, 400, this.errorResponse(error.message));
@@ -418,6 +459,20 @@ export class HTTPAPIService {
 			}
 
 			const updatedTask = await this.taskService.toggleStatus(task);
+			
+			// Trigger webhook for status change (might be completion)
+			const wasCompleted = this.statusManager.isCompletedStatus(task.status);
+			const isCompleted = this.statusManager.isCompletedStatus(updatedTask.status);
+			
+			if (!wasCompleted && isCompleted) {
+				await this.triggerWebhook('task.completed', { task: updatedTask });
+			} else {
+				await this.triggerWebhook('task.updated', { 
+					task: updatedTask,
+					previous: task
+				});
+			}
+			
 			this.sendResponse(res, 200, this.successResponse(updatedTask));
 		} catch (error: any) {
 			this.sendResponse(res, 400, this.errorResponse(error.message));
@@ -435,6 +490,14 @@ export class HTTPAPIService {
 			}
 
 			const updatedTask = await this.taskService.toggleArchive(task);
+			
+			// Trigger webhook for archive/unarchive
+			if (updatedTask.archived) {
+				await this.triggerWebhook('task.archived', { task: updatedTask });
+			} else {
+				await this.triggerWebhook('task.unarchived', { task: updatedTask });
+			}
+			
 			this.sendResponse(res, 200, this.successResponse(updatedTask));
 		} catch (error: any) {
 			this.sendResponse(res, 400, this.errorResponse(error.message));
@@ -530,6 +593,9 @@ export class HTTPAPIService {
 	}
 
 	async start(): Promise<void> {
+		// Load saved webhooks
+		this.loadWebhooks();
+		
 		return new Promise((resolve, reject) => {
 			try {
 				this.server = createServer((req, res) => {
@@ -707,6 +773,13 @@ export class HTTPAPIService {
 			// Create the task
 			const result = await this.taskService.createTask(taskData);
 			
+			// Trigger webhook for task creation via NLP
+			await this.triggerWebhook('task.created', { 
+				task: result.taskInfo,
+				source: 'nlp',
+				originalText: body.text
+			});
+			
 			this.sendResponse(res, 201, this.successResponse({
 				task: result.taskInfo,
 				parsed: parsedData
@@ -715,4 +788,287 @@ export class HTTPAPIService {
 			this.sendResponse(res, 400, this.errorResponse(error.message));
 		}
 	}
+
+	/**
+	 * Register a new webhook
+	 */
+	private async handleRegisterWebhook(req: IncomingMessage, res: ServerResponse): Promise<void> {
+		try {
+			const body = await this.parseRequestBody(req);
+			
+			if (!body.url || typeof body.url !== 'string') {
+				this.sendResponse(res, 400, this.errorResponse('URL is required and must be a string'));
+				return;
+			}
+			
+			if (!body.events || !Array.isArray(body.events) || body.events.length === 0) {
+				this.sendResponse(res, 400, this.errorResponse('Events array is required and must not be empty'));
+				return;
+			}
+			
+			// Generate webhook ID and secret if not provided
+			const id = body.id || this.generateWebhookId();
+			const secret = body.secret || this.generateWebhookSecret();
+			
+			const webhook: WebhookConfig = {
+				id,
+				url: body.url,
+				events: body.events,
+				secret,
+				active: body.active !== false,
+				createdAt: new Date().toISOString(),
+				failureCount: 0,
+				successCount: 0
+			};
+			
+			this.webhooks.set(id, webhook);
+			await this.saveWebhooks();
+			
+			this.sendResponse(res, 201, this.successResponse({
+				webhook,
+				message: 'Webhook registered successfully. Save the secret for signature validation.'
+			}));
+		} catch (error: any) {
+			this.sendResponse(res, 400, this.errorResponse(error.message));
+		}
+	}
+
+	/**
+	 * List all registered webhooks
+	 */
+	private async handleListWebhooks(req: IncomingMessage, res: ServerResponse): Promise<void> {
+		try {
+			const webhooks = Array.from(this.webhooks.values()).map(webhook => ({
+				...webhook,
+				secret: undefined // Don't expose secrets in list
+			}));
+			
+			this.sendResponse(res, 200, this.successResponse({
+				webhooks,
+				total: webhooks.length
+			}));
+		} catch (error: any) {
+			this.sendResponse(res, 500, this.errorResponse(error.message));
+		}
+	}
+
+	/**
+	 * Delete a webhook
+	 */
+	private async handleDeleteWebhook(req: IncomingMessage, res: ServerResponse, pathname: string): Promise<void> {
+		try {
+			const webhookId = decodeURIComponent(pathname.split('/')[3]);
+			
+			if (!this.webhooks.has(webhookId)) {
+				this.sendResponse(res, 404, this.errorResponse('Webhook not found'));
+				return;
+			}
+			
+			this.webhooks.delete(webhookId);
+			await this.saveWebhooks();
+			
+			this.sendResponse(res, 200, this.successResponse({
+				message: 'Webhook deleted successfully'
+			}));
+		} catch (error: any) {
+			this.sendResponse(res, 500, this.errorResponse(error.message));
+		}
+	}
+
+	/**
+	 * Get webhook delivery history
+	 */
+	private async handleGetWebhookDeliveries(req: IncomingMessage, res: ServerResponse): Promise<void> {
+		try {
+			// Return recent deliveries from queue
+			const deliveries = this.webhookDeliveryQueue.slice(-100); // Last 100 deliveries
+			
+			this.sendResponse(res, 200, this.successResponse({
+				deliveries,
+				total: deliveries.length
+			}));
+		} catch (error: any) {
+			this.sendResponse(res, 500, this.errorResponse(error.message));
+		}
+	}
+
+	/**
+	 * Trigger webhooks for an event
+	 */
+	async triggerWebhook(event: WebhookEvent, data: any): Promise<void> {
+		// Fire and forget - don't block the main operation
+		setImmediate(() => {
+			this.processWebhookTrigger(event, data).catch(error => {
+				console.error('Webhook processing error:', error);
+			});
+		});
+	}
+
+	/**
+	 * Process webhook triggers asynchronously
+	 */
+	private async processWebhookTrigger(event: WebhookEvent, data: any): Promise<void> {
+		const relevantWebhooks = Array.from(this.webhooks.values())
+			.filter(webhook => webhook.active && webhook.events.includes(event));
+		
+		if (relevantWebhooks.length === 0) {
+			return;
+		}
+		
+		const adapter = this.plugin.app.vault.adapter as any;
+		let vaultPath = null;
+		try {
+			if ('basePath' in adapter && typeof adapter.basePath === 'string') {
+				vaultPath = adapter.basePath;
+			} else if ('path' in adapter && typeof adapter.path === 'string') {
+				vaultPath = adapter.path;
+			}
+		} catch (error) {
+			// Silently fail if vault path isn't accessible
+		}
+		
+		const payload: WebhookPayload = {
+			event,
+			timestamp: new Date().toISOString(),
+			vault: {
+				name: this.plugin.app.vault.getName(),
+				path: vaultPath
+			},
+			data
+		};
+		
+		for (const webhook of relevantWebhooks) {
+			const delivery: WebhookDelivery = {
+				id: this.generateDeliveryId(),
+				webhookId: webhook.id,
+				event,
+				payload,
+				status: 'pending',
+				attempts: 0
+			};
+			
+			this.webhookDeliveryQueue.push(delivery);
+			
+			// Process delivery
+			this.deliverWebhook(webhook, delivery);
+		}
+		
+		// Clean up old deliveries (keep last 100)
+		if (this.webhookDeliveryQueue.length > 100) {
+			this.webhookDeliveryQueue = this.webhookDeliveryQueue.slice(-100);
+		}
+	}
+
+	/**
+	 * Deliver a webhook with retry logic
+	 */
+	private async deliverWebhook(webhook: WebhookConfig, delivery: WebhookDelivery, retryCount = 0): Promise<void> {
+		const maxRetries = 3;
+		
+		try {
+			delivery.attempts++;
+			delivery.lastAttempt = new Date().toISOString();
+			
+			const signature = this.generateSignature(delivery.payload, webhook.secret);
+			
+			const response = await fetch(webhook.url, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					'X-TaskNotes-Event': delivery.event,
+					'X-TaskNotes-Signature': signature,
+					'X-TaskNotes-Delivery-ID': delivery.id
+				},
+				body: JSON.stringify(delivery.payload),
+				// 10 second timeout - AbortSignal.timeout not available in all environments
+			});
+			
+			delivery.responseStatus = response.status;
+			
+			if (response.ok) {
+				delivery.status = 'success';
+				webhook.successCount++;
+				webhook.lastTriggered = new Date().toISOString();
+			} else {
+				throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+			}
+		} catch (error: any) {
+			delivery.error = error.message;
+			webhook.failureCount++;
+			
+			if (retryCount < maxRetries) {
+				// Exponential backoff: 1s, 2s, 4s
+				const delay = Math.pow(2, retryCount) * 1000;
+				setTimeout(() => {
+					this.deliverWebhook(webhook, delivery, retryCount + 1);
+				}, delay);
+			} else {
+				delivery.status = 'failed';
+				
+				// Disable webhook after too many failures
+				if (webhook.failureCount > 10) {
+					webhook.active = false;
+					console.warn(`Webhook ${webhook.id} disabled after ${webhook.failureCount} failures`);
+				}
+			}
+		}
+		
+		// Save webhook state
+		await this.saveWebhooks();
+	}
+
+	/**
+	 * Generate HMAC signature for webhook payload
+	 */
+	private generateSignature(payload: any, secret: string): string {
+		const hmac = createHmac('sha256', secret);
+		hmac.update(JSON.stringify(payload));
+		return hmac.digest('hex');
+	}
+
+	/**
+	 * Generate unique webhook ID
+	 */
+	private generateWebhookId(): string {
+		return `wh_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+	}
+
+	/**
+	 * Generate secure webhook secret
+	 */
+	private generateWebhookSecret(): string {
+		return createHash('sha256')
+			.update(Date.now().toString() + Math.random().toString())
+			.digest('hex');
+	}
+
+	/**
+	 * Generate unique delivery ID
+	 */
+	private generateDeliveryId(): string {
+		return `del_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+	}
+
+	/**
+	 * Save webhooks to plugin settings
+	 */
+	private async saveWebhooks(): Promise<void> {
+		// Convert Map to array for storage
+		const webhooksArray = Array.from(this.webhooks.values());
+		this.plugin.settings.webhooks = webhooksArray;
+		await this.plugin.saveSettings();
+	}
+
+	/**
+	 * Load webhooks from plugin settings
+	 */
+	private loadWebhooks(): void {
+		if (this.plugin.settings.webhooks) {
+			this.webhooks.clear();
+			for (const webhook of this.plugin.settings.webhooks) {
+				this.webhooks.set(webhook.id, webhook);
+			}
+		}
+	}
+
 }

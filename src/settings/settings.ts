@@ -1,6 +1,6 @@
-import { App, PluginSettingTab, Setting, Notice, setIcon, TAbstractFile, TFile, setTooltip, Platform } from 'obsidian';
+import { App, PluginSettingTab, Setting, Notice, setIcon, TAbstractFile, TFile, setTooltip, Platform, Modal } from 'obsidian';
 import TaskNotesPlugin from '../main';
-import { FieldMapping, StatusConfig, PriorityConfig, SavedView, Reminder, TaskInfo } from '../types';
+import { FieldMapping, StatusConfig, PriorityConfig, SavedView, Reminder, TaskInfo, WebhookConfig } from '../types';
 import { StatusManager } from '../services/StatusManager';
 import { PriorityManager } from '../services/PriorityManager';
 import { showConfirmationModal } from '../modals/ConfirmationModal';
@@ -74,6 +74,8 @@ export interface TaskNotesSettings {
 	enableAPI: boolean;
 	apiPort: number;
 	apiAuthToken: string;
+	// Webhook settings
+	webhooks: WebhookConfig[];
 }
 
 export interface DefaultReminder {
@@ -355,7 +357,9 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	// HTTP API defaults
 	enableAPI: false,
 	apiPort: 8080,
-	apiAuthToken: ''
+	apiAuthToken: '',
+	// Webhook defaults
+	webhooks: []
 };
 
 /**
@@ -1786,6 +1790,29 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 				.onChange(async (value) => {
 					this.plugin.settings.apiAuthToken = value;
 					await this.plugin.saveSettings();
+				}));
+		
+		// Webhook settings section
+		container.createEl('h3', { text: 'Webhook Settings' });
+		
+		const webhookDescEl = container.createDiv({ cls: 'setting-item-description' });
+		webhookDescEl.innerHTML = `
+			<p>Webhooks send real-time notifications to external services when TaskNotes events occur.</p>
+			<p>Configure webhooks to integrate with automation tools, sync services, or custom applications.</p>
+		`;
+		
+		// Webhook management
+		this.renderWebhookList(container);
+		
+		// Add webhook button
+		new Setting(container)
+			.setName('Add Webhook')
+			.setDesc('Register a new webhook endpoint')
+			.addButton(button => button
+				.setButtonText('Add Webhook')
+				.setTooltip('Add a new webhook endpoint')
+				.onClick(() => {
+					this.showWebhookModal();
 				}));
 		
 		// API documentation section
@@ -3393,4 +3420,207 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 		if (offsetInput) offsetInput.value = '15';
 	}
 
+	/**
+	 * Render the list of configured webhooks
+	 */
+	private renderWebhookList(container: HTMLElement): void {
+		const webhooksContainer = container.createDiv({ cls: 'webhooks-container' });
+		
+		if (!this.plugin.settings.webhooks || this.plugin.settings.webhooks.length === 0) {
+			const emptyState = webhooksContainer.createDiv({ cls: 'setting-item-description' });
+			emptyState.textContent = 'No webhooks configured. Add a webhook to receive real-time notifications.';
+			return;
+		}
+		
+		this.plugin.settings.webhooks.forEach((webhook, index) => {
+			const webhookItem = webhooksContainer.createDiv({ cls: 'webhook-item' });
+			
+			const webhookInfo = webhookItem.createDiv({ cls: 'webhook-info' });
+			webhookInfo.createEl('strong', { text: webhook.url });
+			
+			const eventsList = webhookInfo.createDiv({ cls: 'webhook-events' });
+			eventsList.textContent = `Events: ${webhook.events.join(', ')}`;
+			
+			const webhookStatus = webhookInfo.createDiv({ cls: 'webhook-status' });
+			webhookStatus.innerHTML = `
+				<span class="webhook-status-indicator ${webhook.active ? 'active' : 'inactive'}">
+					${webhook.active ? 'Active' : 'Inactive'}
+				</span>
+				<span class="webhook-stats">
+					✓ ${webhook.successCount || 0} | ✗ ${webhook.failureCount || 0}
+				</span>
+			`;
+			
+			const webhookActions = webhookItem.createDiv({ cls: 'webhook-actions' });
+			
+			// Toggle active/inactive
+			const toggleBtn = webhookActions.createEl('button', {
+				text: webhook.active ? 'Disable' : 'Enable',
+				cls: 'mod-cta'
+			});
+			toggleBtn.onclick = async () => {
+				webhook.active = !webhook.active;
+				await this.plugin.saveSettings();
+				this.display(); // Refresh the settings
+				new Notice(`Webhook ${webhook.active ? 'enabled' : 'disabled'}`);
+			};
+			
+			// Delete webhook
+			const deleteBtn = webhookActions.createEl('button', {
+				text: 'Delete',
+				cls: 'mod-warning'
+			});
+			deleteBtn.onclick = async () => {
+				const confirmed = await showConfirmationModal(this.app, {
+					title: 'Delete Webhook',
+					message: `Are you sure you want to delete this webhook?\n\nURL: ${webhook.url}\n\nThis action cannot be undone.`,
+					confirmText: 'Delete',
+					cancelText: 'Cancel',
+					isDestructive: true
+				});
+				
+				if (confirmed) {
+					this.plugin.settings.webhooks.splice(index, 1);
+					await this.plugin.saveSettings();
+					this.display(); // Refresh the settings
+					new Notice('Webhook deleted');
+				}
+			};
+		});
+	}
+	
+	/**
+	 * Show modal for adding a new webhook
+	 */
+	private showWebhookModal(): void {
+		const modal = new WebhookModal(this.app, async (webhookConfig: Partial<WebhookConfig>) => {
+			// Generate ID and secret
+			const webhook: WebhookConfig = {
+				id: `wh_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
+				url: webhookConfig.url || '',
+				events: webhookConfig.events || [],
+				secret: this.generateWebhookSecret(),
+				active: true,
+				createdAt: new Date().toISOString(),
+				failureCount: 0,
+				successCount: 0
+			};
+			
+			if (!this.plugin.settings.webhooks) {
+				this.plugin.settings.webhooks = [];
+			}
+			
+			this.plugin.settings.webhooks.push(webhook);
+			await this.plugin.saveSettings();
+			this.display(); // Refresh settings
+			
+			new Notice(`Webhook added successfully!\n\nSecret: ${webhook.secret.substring(0, 8)}...`);
+		});
+		
+		modal.open();
+	}
+	
+	/**
+	 * Generate secure webhook secret
+	 */
+	private generateWebhookSecret(): string {
+		return Array.from(crypto.getRandomValues(new Uint8Array(32)))
+			.map(b => b.toString(16).padStart(2, '0'))
+			.join('');
+	}
+}
+
+/**
+ * Modal for adding/editing webhooks
+ */
+class WebhookModal extends Modal {
+	private url = '';
+	private selectedEvents: string[] = [];
+	private onSubmit: (config: Partial<WebhookConfig>) => void;
+	
+	constructor(app: App, onSubmit: (config: Partial<WebhookConfig>) => void) {
+		super(app);
+		this.onSubmit = onSubmit;
+	}
+	
+	onOpen(): void {
+		const { contentEl } = this;
+		contentEl.empty();
+		
+		contentEl.createEl('h2', { text: 'Add Webhook' });
+		
+		// URL input
+		new Setting(contentEl)
+			.setName('Webhook URL')
+			.setDesc('The endpoint where webhook payloads will be sent')
+			.addText(text => text
+				.setPlaceholder('https://your-service.com/webhook')
+				.setValue(this.url)
+				.onChange((value) => {
+					this.url = value;
+				}));
+		
+		// Events selection
+		const eventsContainer = contentEl.createDiv();
+		eventsContainer.createEl('h3', { text: 'Events to subscribe to:' });
+		
+		const availableEvents = [
+			'task.created', 'task.updated', 'task.deleted', 'task.completed',
+			'task.archived', 'task.unarchived', 'time.started', 'time.stopped',
+			'pomodoro.started', 'pomodoro.completed', 'pomodoro.interrupted',
+			'recurring.instance.completed'
+		];
+		
+		availableEvents.forEach(event => {
+			const eventSetting = new Setting(eventsContainer)
+				.setName(event)
+				.setDesc(`Subscribe to ${event} events`)
+				.addToggle(toggle => toggle
+					.setValue(this.selectedEvents.includes(event))
+					.onChange((value) => {
+						if (value) {
+							this.selectedEvents.push(event);
+						} else {
+							const index = this.selectedEvents.indexOf(event);
+							if (index > -1) {
+								this.selectedEvents.splice(index, 1);
+							}
+						}
+					}));
+		});
+		
+		// Buttons
+		const buttonContainer = contentEl.createDiv({ cls: 'modal-button-container' });
+		
+		const cancelBtn = buttonContainer.createEl('button', { text: 'Cancel' });
+		cancelBtn.onclick = () => this.close();
+		
+		const saveBtn = buttonContainer.createEl('button', { 
+			text: 'Add Webhook',
+			cls: 'mod-cta'
+		});
+		saveBtn.onclick = () => {
+			if (!this.url.trim()) {
+				new Notice('Webhook URL is required');
+				return;
+			}
+			
+			if (this.selectedEvents.length === 0) {
+				new Notice('Please select at least one event');
+				return;
+			}
+			
+			this.onSubmit({
+				url: this.url.trim(),
+				events: this.selectedEvents as any[]
+			});
+			
+			this.close();
+		};
+	}
+	
+	onClose(): void {
+		const { contentEl } = this;
+		contentEl.empty();
+	}
 }

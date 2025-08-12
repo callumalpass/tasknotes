@@ -508,3 +508,52 @@ export interface ICSCache {
 	expires: string; // ISO timestamp
 }
 
+// Webhook types
+export type WebhookEvent = 
+	| 'task.created'
+	| 'task.updated'
+	| 'task.deleted'
+	| 'task.completed'
+	| 'task.archived'
+	| 'task.unarchived'
+	| 'time.started'
+	| 'time.stopped'
+	| 'pomodoro.started'
+	| 'pomodoro.completed'
+	| 'pomodoro.interrupted'
+	| 'recurring.instance.completed';
+
+export interface WebhookConfig {
+	id: string;
+	url: string;
+	events: WebhookEvent[];
+	secret: string;
+	active: boolean;
+	createdAt: string;
+	lastTriggered?: string;
+	failureCount: number;
+	successCount: number;
+}
+
+export interface WebhookPayload {
+	event: WebhookEvent;
+	timestamp: string;
+	vault: {
+		name: string;
+		path?: string;
+	};
+	data: any;
+}
+
+export interface WebhookDelivery {
+	id: string;
+	webhookId: string;
+	event: WebhookEvent;
+	payload: WebhookPayload;
+	status: 'pending' | 'success' | 'failed';
+	attempts: number;
+	lastAttempt?: string;
+	responseStatus?: number;
+	error?: string;
+}
+
