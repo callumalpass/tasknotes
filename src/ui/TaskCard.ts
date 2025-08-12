@@ -113,6 +113,11 @@ export function createTaskCard(task: TaskInfo, plugin: TaskNotesPlugin, options:
         cardClasses.push(`task-card--status-${effectiveStatus}`);
     }
     
+    // Add project modifier (for issue #355)
+    const hasProjects = filterEmptyProjects(task.projects || []).length > 0;
+    if (hasProjects) {
+        cardClasses.push('task-card--has-projects');
+    }
     
     card.className = cardClasses.join(' ');
     card.dataset.taskPath = task.path;

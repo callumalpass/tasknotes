@@ -235,6 +235,29 @@ describe('TaskCard Component', () => {
       expect(card.classList.contains('task-card--actively-tracked')).toBe(true);
     });
 
+    it('should add has-projects class for tasks with projects (issue #355)', () => {
+      const taskWithProjects = TaskFactory.createTask({
+        projects: ['[[My Project]]', 'Another Project']
+      });
+      const cardWithProjects = createTaskCard(taskWithProjects, mockPlugin);
+
+      expect(cardWithProjects.classList.contains('task-card--has-projects')).toBe(true);
+
+      const taskWithoutProjects = TaskFactory.createTask({
+        projects: []
+      });
+      const cardWithoutProjects = createTaskCard(taskWithoutProjects, mockPlugin);
+
+      expect(cardWithoutProjects.classList.contains('task-card--has-projects')).toBe(false);
+
+      const taskWithEmptyProjects = TaskFactory.createTask({
+        projects: ['', '  ', null as any, undefined as any]
+      });
+      const cardWithEmptyProjects = createTaskCard(taskWithEmptyProjects, mockPlugin);
+
+      expect(cardWithEmptyProjects.classList.contains('task-card--has-projects')).toBe(false);
+    });
+
     it('should apply priority and status colors', () => {
       const task = TaskFactory.createTask({
         status: 'open',
