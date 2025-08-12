@@ -107,13 +107,29 @@ export class MinimalNativeCache extends Events {
 
             // Handle both single and multi-value properties
             if (Array.isArray(frontmatterValue)) {
-                return frontmatterValue.includes(propValue);
+                return frontmatterValue.some((val: any) => this.comparePropertyValues(val, propValue));
             }
-            return frontmatterValue === propValue;
+            return this.comparePropertyValues(frontmatterValue, propValue);
         } else {
             // Fallback to legacy tag-based method
             return Array.isArray(frontmatter.tags) && frontmatter.tags.includes(this.taskTag);
         }
+    }
+
+    /**
+     * Compare frontmatter property values with settings value, with boolean coercion support.
+     */
+    private comparePropertyValues(frontmatterValue: any, settingValue: string): boolean {
+        // Handle boolean frontmatter values compared to string settings (e.g., true vs "true")
+        if (typeof frontmatterValue === 'boolean' && typeof settingValue === 'string') {
+            const lower = settingValue.toLowerCase();
+            if (lower === 'true' || lower === 'false') {
+                return frontmatterValue === (lower === 'true');
+            }
+        }
+
+        // Fallback to strict equality for other types (strings, numbers, etc.)
+        return frontmatterValue === settingValue;
     }
     
     /**
