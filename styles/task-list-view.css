@@ -112,7 +112,8 @@
 .tasknotes-plugin .task-list-view__group-header {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    gap: var(--tn-spacing-sm);
+    justify-content: flex-start;
     padding: var(--tn-spacing-md) 0 var(--tn-spacing-sm);
     margin-bottom: var(--tn-spacing-sm);
     border-bottom: 1px solid var(--tn-border-color);
@@ -122,7 +123,21 @@
     color: var(--tn-text-normal);
     letter-spacing: 0.01em;
     line-height: 1.4;
+    cursor: pointer;
 }
+
+/* Chevron/toggle styles (match preview-all) */
+.tasknotes-plugin .task-group-header { cursor: pointer; }
+.task-group-header { display: flex; align-items: center; justify-content: flex-start; gap: var(--tn-spacing-xs); }
+.tasknotes-plugin .task-group-toggle svg,  .task-group-toggle .chevron, .task-group-toggle .chevron path { color: var(--tn-text-normal); }
+.tasknotes-plugin .task-group-toggle svg,  .task-group-toggle .chevron path { stroke: currentColor; }
+.tasknotes-plugin .task-group.is-collapsed .task-group-toggle svg,
+.tasknotes-plugin .task-group.is-collapsed .task-group-toggle .chevron { transform: rotate(0deg); }
+.tasknotes-plugin .task-group-toggle { display: contents; align-items: center; justify-content: center; width: 20px; height: 20px; margin-right: var(--tn-spacing-xs); border: none; background: transparent; color: var(--tn-text-normal); font-size: 14px; line-height: 1; }
+.tasknotes-plugin .task-group-toggle .chevron { transition: transform var(--tn-transition-fast); }
+.tasknotes-plugin .task-group .task-group-toggle .chevron,
+.tasknotes-plugin .task-group .task-group-toggle svg { transform: rotate(90deg); }
+.tasknotes-plugin .task-group.is-collapsed .task-cards { display: none; }
 
 .tasknotes-plugin .task-list-view__project-link {
     color: var(--tn-text-normal);

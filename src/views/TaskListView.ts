@@ -1,4 +1,4 @@
-import { TFile, ItemView, WorkspaceLeaf, EventRef, Notice } from 'obsidian';
+import { TFile, ItemView, WorkspaceLeaf, EventRef, Notice, setIcon } from 'obsidian';
 import TaskNotesPlugin from '../main';
 import { 
     TASK_LIST_VIEW_TYPE, 
@@ -452,23 +452,65 @@ export class TaskListView extends ItemView {
             const groupSection = container.createDiv({ cls: 'task-section task-group' });
             groupSection.setAttribute('data-group', groupName);
             
+            const groupingKey = this.currentQuery.groupKey || 'none';
+            const isAllGroup = groupingKey === 'none' && groupName === 'all';
+            const collapsedInitially = this.isGroupCollapsed(groupingKey, groupName);
+
             // Add group header (skip only if grouping is 'none' and group name is 'all')
-            if (!(this.currentQuery.groupKey === 'none' && groupName === 'all')) {
+            if (!isAllGroup) {
                 const headerElement = groupSection.createEl('h3', {
                     cls: 'task-group-header task-list-view__group-header'
                 });
-                
-                // For project groups, make the header clickable if it's a wikilink project
-                if (this.currentQuery.groupKey === 'project' && this.isWikilinkProject(groupName)) {
+
+                // Create toggle button first (exactly as in preview-all)
+                const toggleBtn = headerElement.createEl('button', { cls: 'task-group-toggle', attr: { 'aria-label': 'Toggle group' } });
+                try { setIcon(toggleBtn, 'chevron-right'); } catch (_) {}
+                const svg = toggleBtn.querySelector('svg');
+                if (svg) { svg.classList.add('chevron'); svg.setAttr('width', '16'); svg.setAttr('height', '16'); }
+                else { toggleBtn.textContent = '▸'; toggleBtn.addClass('chevron-text'); }
+
+                // Label: project wikilink -> clickable, else plain text span
+                if (groupingKey === 'project' && this.isWikilinkProject(groupName)) {
                     this.createClickableProjectHeader(headerElement, groupName);
                 } else {
-                    headerElement.textContent = this.formatGroupName(groupName);
+                    headerElement.createSpan({ text: this.formatGroupName(groupName) });
                 }
+
+                // Click handlers (match preview-all semantics; ignore link clicks inside header)
+                this.registerDomEvent(headerElement, 'click', (e: MouseEvent) => {
+                    const target = e.target as HTMLElement;
+                    if (target.closest('a')) return;
+                    const willCollapse = !groupSection.hasClass('is-collapsed');
+                    this.setGroupCollapsed(groupingKey, groupName, willCollapse);
+                    groupSection.toggleClass('is-collapsed', willCollapse);
+                    const list = groupSection.querySelector('.task-cards') as HTMLElement | null;
+                    if (list) list.style.display = willCollapse ? 'none' : '';
+                    toggleBtn.setAttr('aria-expanded', String(!willCollapse));
+                });
+                this.registerDomEvent(toggleBtn, 'click', (e: MouseEvent) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const willCollapse = !groupSection.hasClass('is-collapsed');
+                    this.setGroupCollapsed(groupingKey, groupName, willCollapse);
+                    groupSection.toggleClass('is-collapsed', willCollapse);
+                    const list = groupSection.querySelector('.task-cards') as HTMLElement | null;
+                    if (list) list.style.display = willCollapse ? 'none' : '';
+                    toggleBtn.setAttr('aria-expanded', String(!willCollapse));
+                });
+
+                // Initial ARIA state set after list container is created below
+                toggleBtn.setAttr('aria-expanded', String(!collapsedInitially));
             }
-            
+
             // Create task cards container
             const taskCardsContainer = groupSection.createDiv({ cls: 'tasks-container task-cards' });
-            
+
+            // Apply initial collapsed state
+            if (collapsedInitially && !isAllGroup) {
+                groupSection.addClass('is-collapsed');
+                taskCardsContainer.style.display = 'none';
+            }
+
             // Use reconciler for this group's task list
             this.plugin.domReconciler.updateList<TaskInfo>(
                 taskCardsContainer,
@@ -486,9 +528,29 @@ export class TaskListView extends ItemView {
                 }
             });
         });
-        
+
         // Restore scroll position
         container.scrollTop = scrollTop;
+    }
+
+    // Persist and restore collapsed state per grouping key and group name
+    private isGroupCollapsed(groupingKey: string, groupName: string): boolean {
+        try {
+            const prefs = this.plugin.viewStateManager.getViewPreferences<any>(TASK_LIST_VIEW_TYPE) || {};
+            const collapsed = prefs.collapsedGroups || {};
+            return !!collapsed?.[groupingKey]?.[groupName];
+        } catch {
+            return false;
+        }
+    }
+
+    private setGroupCollapsed(groupingKey: string, groupName: string, collapsed: boolean): void {
+        const prefs = this.plugin.viewStateManager.getViewPreferences<any>(TASK_LIST_VIEW_TYPE) || {};
+        const next = { ...prefs };
+        if (!next.collapsedGroups) next.collapsedGroups = {};
+        if (!next.collapsedGroups[groupingKey]) next.collapsedGroups[groupingKey] = {};
+        next.collapsedGroups[groupingKey][groupName] = collapsed;
+        this.plugin.viewStateManager.setViewPreferences(TASK_LIST_VIEW_TYPE, next);
     }
 
     /**
