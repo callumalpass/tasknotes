@@ -9,7 +9,7 @@ import {
     formatDateForStorage
 } from './dateUtils';
 import { filterEmptyProjects } from './helpers';
-import { TaskNotesSettings } from '../settings/settings';
+import { TaskNotesSettings } from '../types/settings';
 
 /**
  * Ultra-minimal cache manager that leverages Obsidian's native metadata cache

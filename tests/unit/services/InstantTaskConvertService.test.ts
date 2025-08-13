@@ -981,7 +981,7 @@ describe('InstantTaskConvertService', () => {
 
   describe('Reminder Defaults Utility', () => {
     it('should convert default reminders to proper Reminder format', async () => {
-      const { convertDefaultRemindersToReminders } = await import('../../../src/settings/settings');
+      const { convertDefaultRemindersToReminders } = await import('../../../src/utils/settingsUtils');
       
       const defaultReminders = [
         {
@@ -1023,7 +1023,7 @@ describe('InstantTaskConvertService', () => {
     });
 
     it('should filter out invalid reminders', async () => {
-      const { convertDefaultRemindersToReminders } = await import('../../../src/settings/settings');
+      const { convertDefaultRemindersToReminders } = await import('../../../src/utils/settingsUtils');
       
       const defaultReminders = [
         {

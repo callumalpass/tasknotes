@@ -7,11 +7,9 @@ import {
 	getAllDailyNotes,
 	appHasDailyNotesPluginLoaded
 } from 'obsidian-daily-notes-interface';
-import { 
-	TaskNotesSettings, 
-	DEFAULT_SETTINGS, 
-	TaskNotesSettingTab 
-} from './settings/settings';
+import { TaskNotesSettings } from './types/settings';
+import { DEFAULT_SETTINGS } from './settings/defaults';
+import { TaskNotesSettingTab } from './settings/settings';
 import { 
 	MINI_CALENDAR_VIEW_TYPE, 
 	ADVANCED_CALENDAR_VIEW_TYPE,

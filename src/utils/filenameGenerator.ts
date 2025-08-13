@@ -1,6 +1,6 @@
 import { format } from 'date-fns';
 import { normalizePath } from 'obsidian';
-import { TaskNotesSettings } from '../settings/settings';
+import { TaskNotesSettings } from '../types/settings';
 
 export interface FilenameContext {
     title: string;

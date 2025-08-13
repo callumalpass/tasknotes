@@ -4,7 +4,7 @@
  */
 
 import { FieldMapper } from '../../../src/services/FieldMapper';
-import { DEFAULT_FIELD_MAPPING } from '../../../src/settings/settings';
+import { DEFAULT_FIELD_MAPPING } from '../../../src/settings/defaults';
 import { TaskInfo } from '../../../src/types';
 
 describe('FieldMapper - boolean status handling', () => {

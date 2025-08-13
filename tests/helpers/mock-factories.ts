@@ -18,7 +18,7 @@ import {
 } from '../../src/types';
 import { MockObsidian, TFile } from '../__mocks__/obsidian';
 import { FieldMapper } from '../../src/services/FieldMapper';
-import { DEFAULT_FIELD_MAPPING } from '../../src/settings/settings';
+import { DEFAULT_FIELD_MAPPING } from '../../src/settings/defaults';
 
 // Task-related factories
 export const TaskFactory = {

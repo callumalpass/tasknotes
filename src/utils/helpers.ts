@@ -3,7 +3,7 @@ import { format, isBefore, startOfDay } from 'date-fns';
 import { RRule } from 'rrule';
 import { TimeInfo, TaskInfo, TimeEntry, TimeBlock, DailyNoteFrontmatter } from '../types';
 import { FieldMapper } from '../services/FieldMapper';
-import { DEFAULT_FIELD_MAPPING } from '../settings/settings';
+import { DEFAULT_FIELD_MAPPING } from '../settings/defaults';
 import { isBeforeDateSafe, getTodayString, parseDateToLocal, parseDateToUTC, createUTCDateForRRule, formatDateForStorage, getTodayLocal, formatDateAsUTCString, hasTimeComponent } from './dateUtils';
 // import { RegexOptimizer } from './RegexOptimizer'; // Temporarily disabled
 

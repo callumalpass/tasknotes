@@ -502,7 +502,7 @@ export class InstantTaskConvertService {
             const defaults = this.plugin.settings.taskCreationDefaults;
             if (defaults.defaultReminders && defaults.defaultReminders.length > 0) {
                 // Import the conversion function
-                const { convertDefaultRemindersToReminders } = await import('../settings/settings');
+                const { convertDefaultRemindersToReminders } = await import('../utils/settingsUtils');
                 reminders = convertDefaultRemindersToReminders(defaults.defaultReminders);
             }
         }

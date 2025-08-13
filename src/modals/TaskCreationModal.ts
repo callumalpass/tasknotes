@@ -546,7 +546,7 @@ export class TaskCreationModal extends TaskModal {
         // Apply default reminders
         if (defaults.defaultReminders && defaults.defaultReminders.length > 0) {
             // Import the conversion function
-            const { convertDefaultRemindersToReminders } = await import('../settings/settings');
+            const { convertDefaultRemindersToReminders } = await import('../utils/settingsUtils');
             this.reminders = convertDefaultRemindersToReminders(defaults.defaultReminders);
         }
         
