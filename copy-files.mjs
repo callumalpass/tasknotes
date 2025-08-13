@@ -1,13 +1,21 @@
 #!/usr/bin/env node
 
-import { copyFile, mkdir, access, constants } from 'fs/promises';
+import { copyFile, mkdir, access, constants, readFile } from 'fs/promises';
 import { join, resolve } from 'path';
 import os from 'os';
 
 // Default copy destination - can be overridden with OBSIDIAN_PLUGIN_PATH environment variable
 // Use os.homedir() to avoid literal "$HOME" not being expanded by Node
 const defaultPath = join(os.homedir(), 'testvault', 'test', '.obsidian', 'plugins', 'tasknotes');
-const copyPath = process.env.OBSIDIAN_PLUGIN_PATH || defaultPath;
+const LOCAL_OVERRIDE_FILE = '.copy-files.local';
+let copyPath = process.env.OBSIDIAN_PLUGIN_PATH || defaultPath;
+try {
+    const local = await readFile(LOCAL_OVERRIDE_FILE, 'utf8');
+    const trimmed = local.trim();
+    if (trimmed) copyPath = trimmed;
+} catch (_) {
+    // no local override
+}
 
 // Files to copy after build
 const files = ['main.js', 'styles.css', 'manifest.json'];

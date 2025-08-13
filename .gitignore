@@ -1,5 +1,5 @@
 # vscode
-.vscode 
+.vscode
 
 # Intellij
 *.iml
@@ -44,3 +44,10 @@ plans
 
 # Project planning files
 project
+
+
+# Exclude local test vaults and e2e cache artifacts
+external/tasknotes-e2e/.e2e/
+C/
+
+.copy-files.local
