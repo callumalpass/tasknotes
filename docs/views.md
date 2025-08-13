@@ -2,6 +2,8 @@
 
 TaskNotes offers a variety of views, each providing a different perspective on your tasks and notes.
 
+[← Back to Documentation](index.md)
+
 ## Task-Focused Views
 
 These views are for managing your tasks and tracking your progress.
@@ -19,11 +21,11 @@ The Task List, Agenda, Kanban, and Advanced Calendar views include a FilterBar t
 
 This view is for browsing and reviewing your notes.
 
-- **[Notes View](notes.md)**: A date-based view of your notes.
+- **[Notes View](views/notes-view.md)**: A date-based view of your notes.
 
 ## Productivity-Focused Views
 
 These views are for focus and productivity.
 
-- **[Pomodoro View](pomodoro.md)**: A Pomodoro timer.
-- **[Pomodoro Stats View](pomodoro-stats.md)**: Analytics and visualizations of your work habits.
+- **[Pomodoro View](views/pomodoro-view.md)**: A Pomodoro timer.
+- **[Pomodoro Stats View](views/pomodoro-view.md#pomodoro-stats-view)**: Analytics and visualizations of your work habits.

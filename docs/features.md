@@ -2,6 +2,8 @@
 
 TaskNotes is a task and note management plugin for Obsidian. It includes features for task management, inline task integration, time management, and calendar integration.
 
+[← Back to Documentation](index.md)
+
 ## Task Management
 
 TaskNotes provides a system for managing tasks. You can create, edit, and organize tasks with a variety of properties, including:
@@ -66,3 +68,24 @@ TaskNotes can be configured to support various workflows and use cases. Common w
 - **Time Management**: Combining time tracking, Pomodoro sessions, and scheduling
 
 For detailed workflow examples, see the [Workflows](workflows.md) documentation.
+
+## View Types
+
+TaskNotes provides multiple view types for different perspectives on your tasks:
+
+- **[Task List View](views/task-list.md)** - Filtering, sorting, and grouping capabilities
+- **[Agenda View](views/agenda-view.md)** - Daily and weekly planning view
+- **[Kanban View](views/kanban-view.md)** - Card-based task organization  
+- **[Calendar Views](views/calendar-views.md)** - Visual scheduling and time-blocking
+- **[Notes View](views/notes-view.md)** - Date-based note browsing
+- **[Pomodoro View](views/pomodoro-view.md)** - Focus timer with task integration
+
+## Settings
+
+Configure TaskNotes to match your workflow:
+
+- **[Task Defaults](settings/task-defaults.md)** - Default properties and templates
+- **[Inline Task Settings](settings/inline-task-settings.md)** - Editor integration options
+- **[Calendar Settings](settings/calendar-settings.md)** - Calendar appearance and behavior
+- **[Advanced Settings](settings/advanced-settings.md)** - Field mapping and customization
+- **[Misc Settings](settings/misc-settings.md)** - Additional plugin features

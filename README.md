@@ -7,7 +7,15 @@ A task management plugin where each task is stored as an individual note using Y
 
 ## Documentation
 
-**[Documentation](https://callumalpass.github.io/tasknotes/)**
+**[📖 Complete Documentation](https://callumalpass.github.io/tasknotes/)**
+
+### Quick Links
+- **[Getting Started](./docs/index.md)** - Core concepts and setup
+- **[Features Overview](./docs/features.md)** - Complete feature list
+- **[Views Guide](./docs/views.md)** - All available view types
+- **[Settings](./docs/settings.md)** - Configuration options
+- **[HTTP API](./docs/HTTP_API.md)** - External integrations
+- **[Troubleshooting](./docs/troubleshooting.md)** - Common issues
 
 ## Overview
 

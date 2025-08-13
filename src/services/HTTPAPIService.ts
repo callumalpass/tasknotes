@@ -10,6 +10,7 @@ import { NaturalLanguageParser, ParsedTaskData } from './NaturalLanguageParser';
 import { StatusManager } from './StatusManager';
 import TaskNotesPlugin from '../main';
 import { createHash, createHmac } from 'crypto';
+import { OpenAPIController, OpenAPI, generateOpenAPISpec } from '../utils/OpenAPIDecorators';
 
 interface APIResponse<T = any> {
 	success: boolean;
@@ -35,6 +36,7 @@ interface TaskQueryParams {
 	offset?: string;
 }
 
+@OpenAPIController
 export class HTTPAPIService implements IWebhookNotifier {
 	private server?: Server;
 	private plugin: TaskNotesPlugin;
@@ -176,6 +178,24 @@ export class HTTPAPIService implements IWebhookNotifier {
 				await this.handleDeleteWebhook(req, res, pathname);
 			} else if (req.method === 'GET' && pathname === '/api/webhooks/deliveries') {
 				await this.handleGetWebhookDeliveries(req, res);
+			} else if (req.method === 'GET' && pathname === '/api/docs') {
+				await this.handleOpenAPISpec(req, res);
+			} else if (req.method === 'GET' && pathname === '/api/docs/ui') {
+				await this.handleSwaggerUI(req, res);
+			} else if (req.method === 'POST' && pathname === '/api/pomodoro/start') {
+				await this.handleStartPomodoro(req, res);
+			} else if (req.method === 'POST' && pathname === '/api/pomodoro/stop') {
+				await this.handleStopPomodoro(req, res);
+			} else if (req.method === 'POST' && pathname === '/api/pomodoro/pause') {
+				await this.handlePausePomodoro(req, res);
+			} else if (req.method === 'POST' && pathname === '/api/pomodoro/resume') {
+				await this.handleResumePomodoro(req, res);
+			} else if (req.method === 'GET' && pathname === '/api/pomodoro/status') {
+				await this.handleGetPomodoroStatus(req, res);
+			} else if (req.method === 'GET' && pathname === '/api/pomodoro/sessions') {
+				await this.handleGetPomodoroSessions(req, res);
+			} else if (req.method === 'GET' && pathname === '/api/pomodoro/stats') {
+				await this.handleGetPomodoroStats(req, res);
 			} else {
 				this.sendResponse(res, 404, this.errorResponse('Not found'));
 			}
@@ -1185,6 +1205,288 @@ export class HTTPAPIService implements IWebhookNotifier {
 		return path.split('.').reduce((current, key) => {
 			return current && current[key] !== undefined ? current[key] : undefined;
 		}, obj);
+	}
+
+	/**
+	 * Serve OpenAPI specification
+	 */
+	private async handleOpenAPISpec(req: IncomingMessage, res: ServerResponse): Promise<void> {
+		try {
+			const spec = generateOpenAPISpec(this);
+			
+			// Update server URL based on current port
+			spec.servers = [{
+				url: `http://localhost:${this.plugin.settings.apiPort}`,
+				description: 'TaskNotes API Server'
+			}];
+			
+			res.statusCode = 200;
+			res.setHeader('Content-Type', 'application/json');
+			res.setHeader('Access-Control-Allow-Origin', '*');
+			res.end(JSON.stringify(spec, null, 2));
+		} catch (error: any) {
+			console.error('OpenAPI spec generation error:', error);
+			this.sendResponse(res, 500, this.errorResponse('Failed to generate API specification'));
+		}
+	}
+
+	/**
+	 * Serve Swagger UI for interactive documentation
+	 */
+	private async handleSwaggerUI(req: IncomingMessage, res: ServerResponse): Promise<void> {
+		try {
+			const swaggerHTML = this.generateSwaggerUIHTML();
+			
+			res.statusCode = 200;
+			res.setHeader('Content-Type', 'text/html');
+			res.setHeader('Access-Control-Allow-Origin', '*');
+			res.end(swaggerHTML);
+		} catch (error: any) {
+			console.error('Swagger UI generation error:', error);
+			this.sendResponse(res, 500, this.errorResponse('Failed to generate API documentation'));
+		}
+	}
+
+	/**
+	 * Generate Swagger UI HTML page
+	 */
+	private generateSwaggerUIHTML(): string {
+		const port = this.plugin.settings.apiPort;
+		
+		return `<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>TaskNotes API Documentation</title>
+	<link rel="stylesheet" type="text/css" href="https://unpkg.com/swagger-ui-dist@5.9.0/swagger-ui.css" />
+	<style>
+		body { margin: 0; }
+		.swagger-ui .topbar { display: none; }
+		.swagger-ui .info .title { color: #663399; }
+	</style>
+</head>
+<body>
+	<div id="swagger-ui"></div>
+	<script src="https://unpkg.com/swagger-ui-dist@5.9.0/swagger-ui-bundle.js"></script>
+	<script src="https://unpkg.com/swagger-ui-dist@5.9.0/swagger-ui-standalone-preset.js"></script>
+	<script>
+		SwaggerUIBundle({
+			url: 'http://localhost:${port}/api/docs',
+			dom_id: '#swagger-ui',
+			deepLinking: true,
+			presets: [
+				SwaggerUIBundle.presets.apis,
+				SwaggerUIStandalonePreset
+			],
+			plugins: [
+				SwaggerUIBundle.plugins.DownloadUrl
+			],
+			layout: "StandaloneLayout",
+			tryItOutEnabled: true,
+			displayRequestDuration: true,
+			docExpansion: 'list',
+			filter: true,
+			validatorUrl: null
+		});
+	</script>
+</body>
+</html>`;
+	}
+
+	/**
+	 * Start a pomodoro session
+	 */
+	private async handleStartPomodoro(req: IncomingMessage, res: ServerResponse): Promise<void> {
+		try {
+			const body = await this.parseRequestBody(req);
+			let task: TaskInfo | undefined;
+			
+			// Get task if taskId provided
+			if (body.taskId) {
+				const foundTask = await this.cacheManager.getTaskInfo(body.taskId);
+				if (!foundTask) {
+					this.sendResponse(res, 404, this.errorResponse('Task not found'));
+					return;
+				}
+				task = foundTask;
+			}
+			
+			// Check if session is already running
+			const currentState = this.plugin.pomodoroService.getState();
+			if (currentState.isRunning) {
+				this.sendResponse(res, 400, this.errorResponse('Pomodoro session is already running. Stop or pause the current session first.'));
+				return;
+			}
+			
+			// Start pomodoro
+			await this.plugin.pomodoroService.startPomodoro(task);
+			
+			// Get updated state
+			const newState = this.plugin.pomodoroService.getState();
+			
+			this.sendResponse(res, 200, this.successResponse({
+				session: newState.currentSession,
+				task: task || null,
+				message: 'Pomodoro session started'
+			}));
+		} catch (error: any) {
+			this.sendResponse(res, 400, this.errorResponse(error.message));
+		}
+	}
+
+	/**
+	 * Stop the current pomodoro session
+	 */
+	private async handleStopPomodoro(req: IncomingMessage, res: ServerResponse): Promise<void> {
+		try {
+			const currentState = this.plugin.pomodoroService.getState();
+			if (!currentState.currentSession) {
+				this.sendResponse(res, 400, this.errorResponse('No active pomodoro session to stop'));
+				return;
+			}
+			
+			await this.plugin.pomodoroService.stopPomodoro();
+			
+			this.sendResponse(res, 200, this.successResponse({
+				message: 'Pomodoro session stopped and reset'
+			}));
+		} catch (error: any) {
+			this.sendResponse(res, 400, this.errorResponse(error.message));
+		}
+	}
+
+	/**
+	 * Pause the current pomodoro session
+	 */
+	private async handlePausePomodoro(req: IncomingMessage, res: ServerResponse): Promise<void> {
+		try {
+			const currentState = this.plugin.pomodoroService.getState();
+			if (!currentState.isRunning || !currentState.currentSession) {
+				this.sendResponse(res, 400, this.errorResponse('No running pomodoro session to pause'));
+				return;
+			}
+			
+			await this.plugin.pomodoroService.pausePomodoro();
+			
+			const newState = this.plugin.pomodoroService.getState();
+			
+			this.sendResponse(res, 200, this.successResponse({
+				timeRemaining: newState.timeRemaining,
+				message: 'Pomodoro session paused'
+			}));
+		} catch (error: any) {
+			this.sendResponse(res, 400, this.errorResponse(error.message));
+		}
+	}
+
+	/**
+	 * Resume the paused pomodoro session
+	 */
+	private async handleResumePomodoro(req: IncomingMessage, res: ServerResponse): Promise<void> {
+		try {
+			const currentState = this.plugin.pomodoroService.getState();
+			if (currentState.isRunning) {
+				this.sendResponse(res, 400, this.errorResponse('Pomodoro session is already running'));
+				return;
+			}
+			
+			if (!currentState.currentSession) {
+				this.sendResponse(res, 400, this.errorResponse('No paused session to resume'));
+				return;
+			}
+			
+			await this.plugin.pomodoroService.resumePomodoro();
+			
+			const newState = this.plugin.pomodoroService.getState();
+			
+			this.sendResponse(res, 200, this.successResponse({
+				timeRemaining: newState.timeRemaining,
+				message: 'Pomodoro session resumed'
+			}));
+		} catch (error: any) {
+			this.sendResponse(res, 400, this.errorResponse(error.message));
+		}
+	}
+
+	/**
+	 * Get current pomodoro status
+	 */
+	private async handleGetPomodoroStatus(req: IncomingMessage, res: ServerResponse): Promise<void> {
+		try {
+			const state = this.plugin.pomodoroService.getState();
+			
+			// Add additional computed fields
+			const enhancedState = {
+				...state,
+				totalPomodoros: await this.plugin.pomodoroService.getPomodorosCompleted(),
+				currentStreak: await this.plugin.pomodoroService.getCurrentStreak(),
+				totalMinutesToday: await this.plugin.pomodoroService.getTotalMinutesToday()
+			};
+			
+			this.sendResponse(res, 200, this.successResponse(enhancedState));
+		} catch (error: any) {
+			this.sendResponse(res, 500, this.errorResponse(error.message));
+		}
+	}
+
+	/**
+	 * Get pomodoro session history
+	 */
+	private async handleGetPomodoroSessions(req: IncomingMessage, res: ServerResponse): Promise<void> {
+		try {
+			const parsedUrl = parse(req.url || '', true);
+			const query = parsedUrl.query;
+			
+			let sessions = await this.plugin.pomodoroService.getSessionHistory();
+			
+			// Filter by date if specified
+			if (query.date && typeof query.date === 'string') {
+				const targetDate = query.date;
+				sessions = sessions.filter(session => {
+					const sessionDate = new Date(session.startTime).toISOString().split('T')[0];
+					return sessionDate === targetDate;
+				});
+			}
+			
+			// Apply limit
+			const total = sessions.length;
+			if (query.limit && typeof query.limit === 'string') {
+				const limit = parseInt(query.limit);
+				if (limit > 0) {
+					sessions = sessions.slice(-limit); // Get most recent sessions
+				}
+			}
+			
+			this.sendResponse(res, 200, this.successResponse({
+				sessions,
+				total
+			}));
+		} catch (error: any) {
+			this.sendResponse(res, 500, this.errorResponse(error.message));
+		}
+	}
+
+	/**
+	 * Get pomodoro statistics
+	 */
+	private async handleGetPomodoroStats(req: IncomingMessage, res: ServerResponse): Promise<void> {
+		try {
+			const parsedUrl = parse(req.url || '', true);
+			const query = parsedUrl.query;
+			
+			let stats;
+			if (query.date && typeof query.date === 'string') {
+				const targetDate = new Date(query.date);
+				stats = await this.plugin.pomodoroService.getStatsForDate(targetDate);
+			} else {
+				stats = await this.plugin.pomodoroService.getTodayStats();
+			}
+			
+			this.sendResponse(res, 200, this.successResponse(stats));
+		} catch (error: any) {
+			this.sendResponse(res, 500, this.errorResponse(error.message));
+		}
 	}
 
 }

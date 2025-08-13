@@ -65,3 +65,22 @@ Using YAML frontmatter as the primary data storage has several implications:
 ## Getting Started
 
 You can start with basic task creation and then explore more advanced features like calendar integration, time tracking, and custom workflows. The plugin includes default settings that can be customized.
+
+## Documentation Navigation
+
+### Core Documentation
+- **[Features](features.md)** - Complete overview of TaskNotes capabilities
+- **[Views](views.md)** - Guide to all available view types
+- **[Settings](settings.md)** - Configuration options and customization
+- **[Core Concepts](core-concepts.md)** - Understanding TaskNotes architecture
+- **[Workflows](workflows.md)** - Example workflows and use cases
+- **[Troubleshooting](troubleshooting.md)** - Common issues and solutions
+
+### API Documentation
+- **[HTTP API](HTTP_API.md)** - External integrations and automation
+- **[NLP API](nlp-api.md)** - Natural language processing features
+- **[Webhooks](webhooks.md)** - Event-driven integrations
+
+### Advanced Topics
+- **[Timezone Handling](TIMEZONE_HANDLING_GUIDE.md)** - Understanding timezone behavior
+- **[Release Notes](releases.md)** - Version history and updates

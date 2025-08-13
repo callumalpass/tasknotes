@@ -2,6 +2,8 @@
 
 TaskNotes provides a variety of settings to customize its behavior and appearance. The settings are organized into several categories, each controlling a different aspect of the plugin.
 
+[← Back to Documentation](index.md)
+
 ## Task Defaults
 
 These settings control the default properties for new tasks, such as the default status, priority, and folder location. You can also configure templates for new tasks, and set up filename generation patterns.

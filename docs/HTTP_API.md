@@ -8,6 +8,20 @@ The TaskNotes HTTP API allows external applications to interact with your TaskNo
 2. **Configure**: Set port (default 8080) and optional auth token
 3. **Restart**: Restart Obsidian to start the server
 4. **Test**: `curl http://localhost:8080/api/health`
+5. **Explore**: Visit `http://localhost:8080/api/docs/ui` for interactive documentation
+
+## Interactive Documentation
+
+TaskNotes provides comprehensive API documentation through Swagger UI:
+
+- **OpenAPI Specification**: `GET /api/docs` - Machine-readable API spec in OpenAPI 3.0 format
+- **Interactive Docs**: `GET /api/docs/ui` - Swagger UI for exploring and testing endpoints
+
+The interactive documentation includes:
+- Complete endpoint documentation with examples
+- Request/response schemas
+- Try-it-out functionality for testing endpoints
+- Authentication setup for protected endpoints
 
 ## Authentication
 
@@ -275,6 +289,139 @@ GET /api/stats
 }
 ```
 
+### Pomodoro
+
+Control pomodoro sessions programmatically through the API.
+
+#### Start Pomodoro Session
+
+```
+POST /api/pomodoro/start
+```
+
+**Request Body (Optional):**
+
+```json
+{
+  "taskId": "path/to/task.md"
+}
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "session": {
+      "id": "pomo_123",
+      "type": "work",
+      "duration": 1500,
+      "startTime": "2025-08-13T10:00:00.000Z"
+    },
+    "task": {
+      "id": "path/to/task.md",
+      "title": "Work on API integration"
+    },
+    "message": "Pomodoro session started"
+  }
+}
+```
+
+#### Stop Pomodoro Session
+
+```
+POST /api/pomodoro/stop
+```
+
+#### Pause Pomodoro Session
+
+```
+POST /api/pomodoro/pause
+```
+
+#### Resume Pomodoro Session
+
+```
+POST /api/pomodoro/resume
+```
+
+#### Get Pomodoro Status
+
+```
+GET /api/pomodoro/status
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "isRunning": true,
+    "timeRemaining": 900,
+    "currentSession": {
+      "id": "pomo_123",
+      "type": "work",
+      "duration": 1500,
+      "startTime": "2025-08-13T10:00:00.000Z"
+    },
+    "totalPomodoros": 42,
+    "currentStreak": 3,
+    "totalMinutesToday": 180
+  }
+}
+```
+
+#### Get Pomodoro Session History
+
+```
+GET /api/pomodoro/sessions
+```
+
+**Query Parameters:**
+
+- `limit` - Maximum number of sessions to return
+- `date` - Filter sessions by date (YYYY-MM-DD)
+
+**Examples:**
+
+```bash
+# Get last 10 sessions
+curl "http://localhost:8080/api/pomodoro/sessions?limit=10"
+
+# Get sessions for specific date
+curl "http://localhost:8080/api/pomodoro/sessions?date=2025-08-13"
+```
+
+#### Get Pomodoro Statistics
+
+```
+GET /api/pomodoro/stats
+```
+
+**Query Parameters:**
+
+- `date` - Get stats for specific date (YYYY-MM-DD), defaults to today
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "totalSessions": 15,
+    "completedSessions": 12,
+    "interruptedSessions": 3,
+    "totalFocusTime": 300,
+    "workSessions": 10,
+    "breakSessions": 5,
+    "longestStreak": 8,
+    "averageSessionLength": 24.5
+  }
+}
+```
+
 ## Integration Examples
 
 ### Browser Bookmarklet
@@ -320,6 +467,63 @@ print(f"Created task: {task['data']['title']}")
 curl -X POST http://localhost:8080/api/tasks \
   -H "Content-Type: application/json" \
   -d '{"title":"{{trigger.subject}}", "tags":["email"], "details":"{{trigger.body}}"}'
+```
+
+### Pomodoro Timer Integration
+
+```javascript
+// Simple Pomodoro timer controller
+class PomodoroController {
+  constructor(apiUrl = 'http://localhost:8080') {
+    this.apiUrl = apiUrl;
+  }
+
+  async startSession(taskId = null) {
+    const body = taskId ? { taskId } : {};
+    const response = await fetch(`${this.apiUrl}/api/pomodoro/start`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    return response.json();
+  }
+
+  async getStatus() {
+    const response = await fetch(`${this.apiUrl}/api/pomodoro/status`);
+    return response.json();
+  }
+
+  async pause() {
+    const response = await fetch(`${this.apiUrl}/api/pomodoro/pause`, {
+      method: 'POST'
+    });
+    return response.json();
+  }
+
+  async resume() {
+    const response = await fetch(`${this.apiUrl}/api/pomodoro/resume`, {
+      method: 'POST'
+    });
+    return response.json();
+  }
+
+  async stop() {
+    const response = await fetch(`${this.apiUrl}/api/pomodoro/stop`, {
+      method: 'POST'
+    });
+    return response.json();
+  }
+}
+
+// Usage
+const pomodoro = new PomodoroController();
+
+// Start a session for a specific task
+await pomodoro.startSession('Projects/MyProject.md');
+
+// Check current status
+const status = await pomodoro.getStatus();
+console.log(`Time remaining: ${Math.floor(status.data.timeRemaining / 60)} minutes`);
 ```
 
 ## Error Handling
