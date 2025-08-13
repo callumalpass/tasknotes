@@ -44,3 +44,4 @@ plans
 
 # Project planning files
 project
+webhook*.log
