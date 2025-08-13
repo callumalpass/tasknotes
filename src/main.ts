@@ -282,6 +282,12 @@ export default class TaskNotesPlugin extends Plugin {
 				this.filterService,
 				this.cacheManager
 			);
+			
+			// Connect webhook notifier to TaskService for file-based operations
+			this.taskService.setWebhookNotifier(this.apiService);
+			
+			// Connect webhook notifier to PomodoroService for pomodoro events
+			this.pomodoroService.setWebhookNotifier(this.apiService);
 
 			// Start the API server
 			await this.apiService.start();
