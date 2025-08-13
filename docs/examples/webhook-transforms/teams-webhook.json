@@ -1,0 +1,233 @@
+{
+  "task.created": {
+    "@type": "MessageCard",
+    "@context": "http://schema.org/extensions",
+    "themeColor": "28a745",
+    "summary": "New Task Created",
+    "sections": [
+      {
+        "activityTitle": "📋 New Task Created",
+        "activitySubtitle": "${data.task.title}",
+        "facts": [
+          {
+            "name": "Status:",
+            "value": "${data.task.status}"
+          },
+          {
+            "name": "Priority:",
+            "value": "${data.task.priority}"
+          },
+          {
+            "name": "Due Date:",
+            "value": "${data.task.due}"
+          },
+          {
+            "name": "Vault:",
+            "value": "${vault.name}"
+          }
+        ]
+      }
+    ]
+  },
+  
+  "task.completed": {
+    "@type": "MessageCard",
+    "@context": "http://schema.org/extensions",
+    "themeColor": "007bff",
+    "summary": "Task Completed",
+    "sections": [
+      {
+        "activityTitle": "✅ Task Completed",
+        "activitySubtitle": "${data.task.title}",
+        "facts": [
+          {
+            "name": "Completion Time:",
+            "value": "${timestamp}"
+          },
+          {
+            "name": "Priority:",
+            "value": "${data.task.priority}"
+          },
+          {
+            "name": "Vault:",
+            "value": "${vault.name}"
+          }
+        ]
+      }
+    ]
+  },
+  
+  "task.updated": {
+    "@type": "MessageCard",
+    "@context": "http://schema.org/extensions",
+    "themeColor": "ffc107",
+    "summary": "Task Updated",
+    "sections": [
+      {
+        "activityTitle": "✏️ Task Updated",
+        "activitySubtitle": "${data.task.title}",
+        "facts": [
+          {
+            "name": "Current Status:",
+            "value": "${data.task.status}"
+          },
+          {
+            "name": "Previous Status:",
+            "value": "${data.previous.status}"
+          },
+          {
+            "name": "Vault:",
+            "value": "${vault.name}"
+          }
+        ]
+      }
+    ]
+  },
+  
+  "time.started": {
+    "@type": "MessageCard",
+    "@context": "http://schema.org/extensions",
+    "themeColor": "17a2b8",
+    "summary": "Time Tracking Started",
+    "sections": [
+      {
+        "activityTitle": "⏰ Time Tracking Started",
+        "activitySubtitle": "${data.task.title}",
+        "facts": [
+          {
+            "name": "Priority:",
+            "value": "${data.task.priority}"
+          },
+          {
+            "name": "Status:",
+            "value": "${data.task.status}"
+          },
+          {
+            "name": "Vault:",
+            "value": "${vault.name}"
+          }
+        ]
+      }
+    ]
+  },
+  
+  "pomodoro.completed": {
+    "@type": "MessageCard",
+    "@context": "http://schema.org/extensions",
+    "themeColor": "fd7e14",
+    "summary": "Pomodoro Completed",
+    "sections": [
+      {
+        "activityTitle": "🍅 Pomodoro Completed!",
+        "activitySubtitle": "Great work! 🎉",
+        "facts": [
+          {
+            "name": "Task:",
+            "value": "${data.task.title}"
+          },
+          {
+            "name": "Completion Time:",
+            "value": "${timestamp}"
+          },
+          {
+            "name": "Vault:",
+            "value": "${vault.name}"
+          }
+        ]
+      }
+    ]
+  },
+  
+  "recurring.instance.completed": {
+    "@type": "MessageCard",
+    "@context": "http://schema.org/extensions",
+    "themeColor": "32cd32",
+    "summary": "Recurring Task Instance Completed",
+    "sections": [
+      {
+        "activityTitle": "🔄 Recurring Task Instance Completed",
+        "activitySubtitle": "${data.task.title}",
+        "facts": [
+          {
+            "name": "Instance Date:",
+            "value": "${data.date}"
+          },
+          {
+            "name": "Recurrence Pattern:",
+            "value": "${data.task.recurrence}"
+          },
+          {
+            "name": "Priority:",
+            "value": "${data.task.priority}"
+          },
+          {
+            "name": "Total Completed:",
+            "value": "${data.task.complete_instances.length} instances"
+          },
+          {
+            "name": "Vault:",
+            "value": "${vault.name}"
+          }
+        ]
+      }
+    ]
+  },
+  
+  "reminder.triggered": {
+    "@type": "MessageCard",
+    "@context": "http://schema.org/extensions",
+    "themeColor": "ffd700",
+    "summary": "Task Reminder",
+    "sections": [
+      {
+        "activityTitle": "🔔 Task Reminder",
+        "activitySubtitle": "${data.message}",
+        "facts": [
+          {
+            "name": "Task:",
+            "value": "${data.task.title}"
+          },
+          {
+            "name": "Due Date:",
+            "value": "${data.task.due}"
+          },
+          {
+            "name": "Priority:",
+            "value": "${data.task.priority}"
+          },
+          {
+            "name": "Vault:",
+            "value": "${vault.name}"
+          }
+        ]
+      }
+    ]
+  },
+  
+  "default": {
+    "@type": "MessageCard",
+    "@context": "http://schema.org/extensions",
+    "themeColor": "6f42c1",
+    "summary": "TaskNotes Event",
+    "sections": [
+      {
+        "activityTitle": "📢 TaskNotes Event",
+        "activitySubtitle": "${event}",
+        "facts": [
+          {
+            "name": "Event Type:",
+            "value": "${event}"
+          },
+          {
+            "name": "Vault:",
+            "value": "${vault.name}"
+          },
+          {
+            "name": "Timestamp:",
+            "value": "${timestamp}"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,78 @@
+{
+  "task.created": {
+    "message": "📋 New task created: ${data.task.title}",
+    "priority": "${data.task.priority}",
+    "status": "${data.task.status}",
+    "due_date": "${data.task.due}",
+    "vault": "${vault.name}",
+    "timestamp": "${timestamp}",
+    "task_url": "obsidian://open?vault=${vault.name}&file=${data.task.path}"
+  },
+  
+  "task.completed": {
+    "message": "✅ Task completed: ${data.task.title}",
+    "completion_time": "${timestamp}",
+    "vault": "${vault.name}",
+    "task_id": "${data.task.id}",
+    "priority": "${data.task.priority}"
+  },
+  
+  "task.updated": {
+    "message": "✏️ Task updated: ${data.task.title}",
+    "current_status": "${data.task.status}",
+    "previous_status": "${data.previous.status}",
+    "vault": "${vault.name}",
+    "timestamp": "${timestamp}"
+  },
+  
+  "time.started": {
+    "message": "⏰ Started working on: ${data.task.title}",
+    "task_title": "${data.task.title}",
+    "priority": "${data.task.priority}",
+    "status": "${data.task.status}",
+    "vault": "${vault.name}",
+    "start_time": "${timestamp}"
+  },
+  
+  "time.stopped": {
+    "message": "⏹️ Stopped working on: ${data.task.title}",
+    "task_title": "${data.task.title}",
+    "vault": "${vault.name}",
+    "stop_time": "${timestamp}"
+  },
+  
+  "pomodoro.completed": {
+    "message": "🍅 Pomodoro completed!",
+    "task_title": "${data.task.title}",
+    "completion_time": "${timestamp}",
+    "vault": "${vault.name}",
+    "celebration": "🎉 Great work!"
+  },
+  
+  "recurring.instance.completed": {
+    "message": "🔄 Recurring task instance completed: ${data.task.title}",
+    "task_title": "${data.task.title}",
+    "instance_date": "${data.date}",
+    "recurrence_pattern": "${data.task.recurrence}",
+    "total_completed": "${data.task.complete_instances.length}",
+    "vault": "${vault.name}",
+    "timestamp": "${timestamp}"
+  },
+  
+  "reminder.triggered": {
+    "message": "🔔 Reminder: ${data.message}",
+    "task_title": "${data.task.title}",
+    "due_date": "${data.task.due}",
+    "priority": "${data.task.priority}",
+    "reminder_time": "${timestamp}",
+    "vault": "${vault.name}"
+  },
+  
+  "default": {
+    "message": "📢 TaskNotes event: ${event}",
+    "event_type": "${event}",
+    "vault": "${vault.name}",
+    "timestamp": "${timestamp}",
+    "raw_data": "${data}"
+  }
+}

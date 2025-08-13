@@ -429,6 +429,8 @@ curl http://localhost:8080/api/webhooks/deliveries \
 
 TaskNotes supports custom payload transformations using JavaScript or JSON template files stored in your vault. This allows you to adapt webhook payloads to match the specific format required by different services (Discord, Slack, custom APIs, etc.).
 
+📁 **[View Transform Examples](examples/webhook-transforms/)** - Ready-to-use transform files for Discord, Slack, Teams, and more!
+
 #### How Transform Files Work
 
 1. **File Location**: Transform files must be stored in your Obsidian vault
