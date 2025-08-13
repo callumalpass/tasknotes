@@ -265,7 +265,37 @@ export class TaskListView extends ItemView {
             this.currentQuery,
             filterOptions
         );
-        
+
+        // Wire expand/collapse all (as in preview-all)
+        this.filterBar.on('expandAllGroups', () => {
+            const key = this.currentQuery.groupKey || 'none';
+            const prefs = this.plugin.viewStateManager.getViewPreferences<any>(TASK_LIST_VIEW_TYPE) || {};
+            const next = { ...(prefs.collapsedGroups || {}) } as Record<string, Record<string, boolean>>;
+            next[key] = {};
+            this.plugin.viewStateManager.setViewPreferences(TASK_LIST_VIEW_TYPE, { ...prefs, collapsedGroups: next });
+            // Update DOM
+            this.contentEl.querySelectorAll('.task-group').forEach(section => {
+                section.classList.remove('is-collapsed');
+                const list = (section as HTMLElement).querySelector('.task-cards') as HTMLElement | null;
+                if (list) list.style.display = '';
+            });
+        });
+        this.filterBar.on('collapseAllGroups', () => {
+            const key = this.currentQuery.groupKey || 'none';
+            const prefs = this.plugin.viewStateManager.getViewPreferences<any>(TASK_LIST_VIEW_TYPE) || {};
+            const next = { ...(prefs.collapsedGroups || {}) } as Record<string, Record<string, boolean>>;
+            const collapsed: Record<string, boolean> = {};
+            this.contentEl.querySelectorAll('.task-group').forEach(section => {
+                const name = (section as HTMLElement).dataset.group;
+                if (name) collapsed[name] = true;
+                section.classList.add('is-collapsed');
+                const list = (section as HTMLElement).querySelector('.task-cards') as HTMLElement | null;
+                if (list) list.style.display = 'none';
+            });
+            next[key] = collapsed;
+            this.plugin.viewStateManager.setViewPreferences(TASK_LIST_VIEW_TYPE, { ...prefs, collapsedGroups: next });
+        });
+
         // Get saved views for the FilterBar
         const savedViews = this.plugin.viewStateManager.getSavedViews();
         this.filterBar.updateSavedViews(savedViews);

@@ -6,6 +6,9 @@ The Kanban View displays tasks as cards in columns, where each column represents
 
 The Kanban View includes the same FilterBar functionality as the Task List View, allowing you to filter, sort, and save views of your tasks. See the [Task List View](task-list.md) documentation for complete FilterBar functionality details.
 
+
+Note: The Task List view includes “Collapse/Expand All” buttons for grouped lists. In Kanban, columns act as groups and are not collapsible yet, so these buttons are hidden in Kanban until they provide a function.
+
 ## Interface Layout
 
 The Kanban View consists of a set of columns, each corresponding to a status in your configured workflow. Tasks are displayed as cards within the appropriate column. You can move tasks between columns by dragging and dropping them, which will automatically update the task's status.

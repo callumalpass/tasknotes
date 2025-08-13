@@ -114,6 +114,17 @@ When grouping tasks by project, the project group headers are interactive:
 - `due` - By due date ranges (Today, Tomorrow, This week, etc.)
 - `scheduled` - By scheduled date ranges
 
+
+### Group Controls: Expand/Collapse All
+
+When grouping is enabled, the FilterBar shows top‑bar controls to collapse or expand all groups at once. This helps quickly condense or expand long lists.
+
+- Collapse All: hides the contents of every group
+- Expand All: reveals the contents of every group
+- The collapsed state is remembered per grouping key for the current view
+
+![Expand/Collapse All demo](../assets/collapse-expand-all-buttons.gif)
+
 ## Task Actions
 
 The Task List View provides a variety of ways to interact with your tasks. You can click on a task to open it for editing, or you can use the context menu to perform a variety of actions, such as marking the task as complete, changing its priority, or deleting it.

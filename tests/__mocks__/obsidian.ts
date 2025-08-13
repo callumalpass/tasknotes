@@ -45,7 +45,7 @@ class MockVaultFileSystem {
   // File operations
   create(path: string, content: string): MockFile {
     const normalizedPath = this.normalizePath(path);
-    
+
     if (this.files.has(normalizedPath)) {
       throw new Error(`File already exists: ${normalizedPath}`);
     }
@@ -89,7 +89,7 @@ class MockVaultFileSystem {
   rename(oldPath: string, newPath: string): void {
     const oldNormalized = this.normalizePath(oldPath);
     const newNormalized = this.normalizePath(newPath);
-    
+
     const file = this.files.get(oldNormalized);
     if (file) {
       this.files.delete(oldNormalized);
@@ -126,7 +126,7 @@ class MockVaultFileSystem {
   // Folder operations
   ensureFolderExists(path: string): void {
     if (!path) return;
-    
+
     const normalizedPath = this.normalizePath(path);
     if (this.folders.has(normalizedPath)) return;
 
@@ -196,12 +196,12 @@ class MockVaultFileSystem {
 // Global mock file system instance
 const mockFileSystem = new MockVaultFileSystem();
 
-// TFile mock class  
+// TFile mock class
 export class TFile {
   public path: string;
   public vault: any = null;
   public parent: any = null;
-  
+
   constructor(path?: string) {
     this.path = path || '';
   }
@@ -443,19 +443,19 @@ export class Workspace {
   }
 }
 
-// App mock class  
+// App mock class
 export class App {
   vault = new Vault();
   metadataCache = new MetadataCache();
   fileManager = new FileManager();
   workspace = new Workspace();
-  
+
   // Required Obsidian App properties
   keymap = new Keymap();
   scope = new Scope();
-  
+
   lastEvent: any = null;
-  
+
   loadLocalStorage = jest.fn((key: string) => {
     try {
       return JSON.parse(localStorage.getItem(`obsidian-app-${key}`) || 'null');
@@ -463,7 +463,7 @@ export class App {
       return null;
     }
   });
-  
+
   saveLocalStorage = jest.fn((key: string, data: unknown | null) => {
     if (data === null) {
       localStorage.removeItem(`obsidian-app-${key}`);
@@ -477,11 +477,11 @@ export class App {
     mockFileSystem.on('create', (file: MockFile) => {
       this.metadataCache.setCache(file.path, this.parseFileMetadata(file.content));
     });
-    
+
     mockFileSystem.on('modify', (file: MockFile) => {
       this.metadataCache.setCache(file.path, this.parseFileMetadata(file.content));
     });
-    
+
     mockFileSystem.on('delete', (file: MockFile) => {
       this.metadataCache.deleteCache(file.path);
     });
@@ -517,15 +517,15 @@ export class Plugin {
 
   async onload(): Promise<void> {}
   onunload(): void {}
-  
+
   addCommand(command: any): void {}
   addRibbonIcon(icon: string, title: string, callback: () => void): void {}
   addSettingTab(tab: any): void {}
-  
+
   loadData(): Promise<any> {
     return Promise.resolve({});
   }
-  
+
   saveData(data: any): Promise<void> {
     return Promise.resolve();
   }
@@ -534,12 +534,12 @@ export class Plugin {
 // Component mock class
 export class Component {
   private children: Component[] = [];
-  
+
   addChild<T extends Component>(component: T): T {
     this.children.push(component);
     return component;
   }
-  
+
   removeChild<T extends Component>(component: T): T {
     const index = this.children.indexOf(component);
     if (index !== -1) {
@@ -547,7 +547,7 @@ export class Component {
     }
     return component;
   }
-  
+
   onload(): void {}
   onunload(): void {}
 }
@@ -567,7 +567,7 @@ export class Modal extends Component {
     this.contentEl = document.createElement('div');
     this.modalEl = document.createElement('div');
     this.containerEl = this.contentEl; // For compatibility with older APIs
-    
+
     // Add Obsidian DOM methods to contentEl
     this.contentEl.addClass = function(...classes: string[]) {
       this.classList.add(...classes);
@@ -606,7 +606,7 @@ export class Modal extends Component {
         }
       }
       this.appendChild(el);
-      
+
       // Add the same DOM methods to the created element
       if (!el.addClass) {
         el.addClass = this.addClass;
@@ -615,7 +615,7 @@ export class Modal extends Component {
         el.createDiv = this.createDiv;
         el.empty = this.empty;
       }
-      
+
       return el;
     };
     this.contentEl.createDiv = function(attrs?: any): HTMLDivElement {
@@ -625,7 +625,7 @@ export class Modal extends Component {
       this.innerHTML = '';
       return this;
     };
-    
+
     // Copy methods to containerEl as well
     this.containerEl.addClass = this.contentEl.addClass;
     this.containerEl.removeClass = this.contentEl.removeClass;
@@ -637,11 +637,11 @@ export class Modal extends Component {
   open(): void {
     this.onOpen();
   }
-  
+
   close(): void {
     this.onClose();
   }
-  
+
   onOpen(): void {}
   onClose(): void {}
 }
@@ -705,26 +705,26 @@ export class Setting {
   descEl: HTMLElement;
   controlEl: HTMLElement;
   settingEl: HTMLElement;
-  
+
   constructor(containerEl: HTMLElement) {
     this.containerEl = containerEl;
     this.settingEl = document.createElement('div');
     this.nameEl = document.createElement('div');
-    this.descEl = document.createElement('div'); 
+    this.descEl = document.createElement('div');
     this.controlEl = document.createElement('div');
     this.containerEl.appendChild(this.settingEl);
   }
-  
+
   setName(name: string): Setting {
     this.nameEl.textContent = name;
     return this;
   }
-  
+
   setDesc(desc: string): Setting {
     this.descEl.textContent = desc;
     return this;
   }
-  
+
   setHeading(): Setting {
     if (this.settingEl.addClass) {
       this.settingEl.addClass('setting-item-heading');
@@ -733,7 +733,7 @@ export class Setting {
     }
     return this;
   }
-  
+
   addText(callback: (text: any) => void): Setting {
     const mockText = {
       inputEl: document.createElement('input'),
@@ -744,7 +744,7 @@ export class Setting {
     callback(mockText);
     return this;
   }
-  
+
   addToggle(callback: (toggle: any) => void): Setting {
     const mockToggle = {
       toggleEl: document.createElement('div'),
@@ -754,7 +754,7 @@ export class Setting {
     callback(mockToggle);
     return this;
   }
-  
+
   addDropdown(callback: (dropdown: any) => void): Setting {
     const mockDropdown = {
       selectEl: document.createElement('select'),
@@ -765,7 +765,7 @@ export class Setting {
     callback(mockDropdown);
     return this;
   }
-  
+
   addButton(callback: (button: any) => void): Setting {
     const mockButton = {
       buttonEl: document.createElement('button'),
@@ -807,6 +807,55 @@ export function parseYaml(text: string): any {
   return require('yaml').parse(text);
 }
 
+// Minimal UI component mocks used by our UI tests
+export class ButtonComponent {
+  buttonEl: HTMLButtonElement;
+  constructor(container: HTMLElement) {
+    this.buttonEl = document.createElement('button');
+    container.appendChild(this.buttonEl);
+  }
+  setIcon(icon: string) { this.buttonEl.setAttribute('data-icon', icon); return this; }
+  setTooltip(tip: string) { this.buttonEl.setAttribute('data-tooltip', tip); return this; }
+  setClass(cls: string) { this.buttonEl.classList.add(cls); return this; }
+  setButtonText(text: string) { this.buttonEl.textContent = text; return this; }
+  setCta() { return this; }
+  onClick(cb: () => void) { this.buttonEl.addEventListener('click', cb); return this; }
+}
+
+export class TextComponent {
+  inputEl: HTMLInputElement;
+  constructor(container: HTMLElement) {
+    this.inputEl = document.createElement('input');
+    container.appendChild(this.inputEl);
+  }
+  setPlaceholder(text: string) { this.inputEl.placeholder = text; return this; }
+  setValue(val: string) { this.inputEl.value = val ?? ''; return this; }
+  getValue(): string { return this.inputEl.value; }
+  onChange(cb: (value: string) => void) { this.inputEl.addEventListener('input', () => cb(this.inputEl.value)); return this; }
+}
+
+export class DropdownComponent {
+  selectEl: HTMLSelectElement;
+  constructor(container: HTMLElement) {
+    this.selectEl = document.createElement('select');
+    container.appendChild(this.selectEl);
+  }
+  addOption(value: string, label: string) { const opt = document.createElement('option'); opt.value = value; opt.textContent = label; this.selectEl.appendChild(opt); return this; }
+  addOptions(options: Record<string, string>) { Object.entries(options).forEach(([v, l]) => this.addOption(v, l)); return this; }
+  setValue(value: string) { this.selectEl.value = value; return this; }
+  onChange(cb: (value: any) => void) { this.selectEl.addEventListener('change', () => cb(this.selectEl.value)); return this; }
+}
+
+export function debounce<T extends (...args: any[]) => void>(fn: T, wait = 0): T {
+  let timer: any;
+  const wrapped = ((...args: any[]) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn(...args), wait);
+  }) as any as T;
+  return wrapped;
+}
+
+
 export const Notice = jest.fn().mockImplementation((message: string, timeout?: number) => {
   // Mock Notice for testing - just track that it was called
   return {};
@@ -842,7 +891,7 @@ export function parseLinktext(linktext: string): { path: string; subpath: string
       subpath: linktext.slice(hashIndex + 1).trim()
     };
   }
-  
+
   // Simple path: [[path]]
   return {
     path: linktext.trim(),
@@ -881,11 +930,11 @@ export class Keymap {
 // Scope mock class
 export class Scope {
   keys: any[] = [];
-  
+
   constructor(parent?: Scope) {
     // Mock constructor
   }
-  
+
   register = jest.fn();
   unregister = jest.fn();
 }
@@ -912,24 +961,24 @@ export const MockObsidian = {
   reset: () => {
     mockFileSystem.reset();
   },
-  
+
   getFileSystem: () => mockFileSystem,
-  
+
   // Helper to create test files
   createTestFile: (path: string, content: string) => {
     return mockFileSystem.create(path, content);
   },
-  
+
   // Helper to get test files
   getTestFiles: () => {
     return mockFileSystem.getFiles();
   },
-  
+
   // Helper to create mock app instance
   createMockApp: () => {
     return new App();
   },
-  
+
   // Export class constructors for testing
   Menu,
   Notice,

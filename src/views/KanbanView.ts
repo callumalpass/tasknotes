@@ -206,7 +206,8 @@ export class KanbanView extends ItemView {
             this.app,
             filterBarContainer,
             this.currentQuery,
-            filterOptions
+            filterOptions,
+            { enableGroupExpandCollapse: false }
         );
         
         // Get saved views for the FilterBar
