@@ -1047,7 +1047,20 @@ export class TaskService {
             updatedTask: updatedTask
         });
         
-        // Step 5: Return authoritative data
+        // Step 5: Trigger webhook for recurring task completion
+        if (newComplete && this.webhookNotifier) {
+            try {
+                await this.webhookNotifier.triggerWebhook('recurring.instance.completed', { 
+                    task: updatedTask,
+                    date: dateStr,
+                    targetDate: targetDate
+                });
+            } catch (webhookError) {
+                console.error('Error triggering recurring task completion webhook:', webhookError);
+            }
+        }
+        
+        // Step 6: Return authoritative data
         return updatedTask;
     }
 
