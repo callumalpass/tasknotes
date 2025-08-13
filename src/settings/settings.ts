@@ -3424,40 +3424,123 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 	 * Render the list of configured webhooks
 	 */
 	private renderWebhookList(container: HTMLElement): void {
-		const webhooksContainer = container.createDiv({ cls: 'webhooks-container' });
+		const webhooksContainer = container.createDiv({ cls: 'tasknotes-webhooks-container' });
 		
 		if (!this.plugin.settings.webhooks || this.plugin.settings.webhooks.length === 0) {
-			const emptyState = webhooksContainer.createDiv({ cls: 'setting-item-description' });
-			emptyState.textContent = 'No webhooks configured. Add a webhook to receive real-time notifications.';
+			const emptyState = webhooksContainer.createDiv({ cls: 'tasknotes-webhooks-empty-state' });
+			const emptyIcon = emptyState.createSpan({ cls: 'tasknotes-webhooks-empty-icon' });
+			setIcon(emptyIcon, 'webhook');
+			emptyState.createSpan({ 
+				text: 'No webhooks configured. Add a webhook to receive real-time notifications.',
+				cls: 'tasknotes-webhooks-empty-text'
+			});
 			return;
 		}
 		
 		this.plugin.settings.webhooks.forEach((webhook, index) => {
-			const webhookItem = webhooksContainer.createDiv({ cls: 'webhook-item' });
+			const webhookCard = webhooksContainer.createDiv({ cls: 'tasknotes-webhook-card' });
 			
-			const webhookInfo = webhookItem.createDiv({ cls: 'webhook-info' });
-			webhookInfo.createEl('strong', { text: webhook.url });
+			// Header section with URL and status
+			const webhookHeader = webhookCard.createDiv({ cls: 'tasknotes-webhook-header' });
 			
-			const eventsList = webhookInfo.createDiv({ cls: 'webhook-events' });
-			eventsList.textContent = `Events: ${webhook.events.join(', ')}`;
-			
-			const webhookStatus = webhookInfo.createDiv({ cls: 'webhook-status' });
-			webhookStatus.innerHTML = `
-				<span class="webhook-status-indicator ${webhook.active ? 'active' : 'inactive'}">
-					${webhook.active ? 'Active' : 'Inactive'}
-				</span>
-				<span class="webhook-stats">
-					✓ ${webhook.successCount || 0} | ✗ ${webhook.failureCount || 0}
-				</span>
-			`;
-			
-			const webhookActions = webhookItem.createDiv({ cls: 'webhook-actions' });
-			
-			// Toggle active/inactive
-			const toggleBtn = webhookActions.createEl('button', {
-				text: webhook.active ? 'Disable' : 'Enable',
-				cls: 'mod-cta'
+			const urlSection = webhookHeader.createDiv({ cls: 'tasknotes-webhook-url-section' });
+			const urlIcon = urlSection.createSpan({ cls: 'tasknotes-webhook-url-icon' });
+			setIcon(urlIcon, 'link');
+			urlSection.createSpan({ 
+				text: webhook.url,
+				cls: 'tasknotes-webhook-url'
 			});
+			
+			const statusSection = webhookHeader.createDiv({ cls: 'tasknotes-webhook-status-section' });
+			const statusIndicator = statusSection.createSpan({ 
+				cls: `tasknotes-webhook-status-indicator ${webhook.active ? 'active' : 'inactive'}` 
+			});
+			const statusIcon = statusIndicator.createSpan({ cls: 'tasknotes-webhook-status-icon' });
+			setIcon(statusIcon, webhook.active ? 'circle-check' : 'circle-x');
+			statusIndicator.createSpan({ 
+				text: webhook.active ? 'Active' : 'Inactive',
+				cls: 'tasknotes-webhook-status-text'
+			});
+			
+			// Content section with details
+			const webhookContent = webhookCard.createDiv({ cls: 'tasknotes-webhook-content' });
+			
+			// Events row
+			const eventsRow = webhookContent.createDiv({ cls: 'tasknotes-webhook-detail-row' });
+			const eventsIcon = eventsRow.createSpan({ cls: 'tasknotes-webhook-detail-icon' });
+			setIcon(eventsIcon, 'zap');
+			eventsRow.createSpan({ 
+				text: 'Events:',
+				cls: 'tasknotes-webhook-detail-label'
+			});
+			eventsRow.createSpan({ 
+				text: webhook.events.join(', '),
+				cls: 'tasknotes-webhook-detail-value'
+			});
+			
+			// Transform file row (if present)
+			if (webhook.transformFile) {
+				const transformRow = webhookContent.createDiv({ cls: 'tasknotes-webhook-detail-row' });
+				const transformIcon = transformRow.createSpan({ cls: 'tasknotes-webhook-detail-icon' });
+				setIcon(transformIcon, 'file-code');
+				transformRow.createSpan({ 
+					text: 'Transform:',
+					cls: 'tasknotes-webhook-detail-label'
+				});
+				transformRow.createSpan({ 
+					text: webhook.transformFile,
+					cls: 'tasknotes-webhook-detail-value'
+				});
+			}
+			
+			// CORS headers row (if disabled)
+			if (webhook.corsHeaders === false) {
+				const corsRow = webhookContent.createDiv({ cls: 'tasknotes-webhook-detail-row warning' });
+				const corsIcon = corsRow.createSpan({ cls: 'tasknotes-webhook-detail-icon' });
+				setIcon(corsIcon, 'alert-triangle');
+				corsRow.createSpan({ 
+					text: 'Custom headers disabled',
+					cls: 'tasknotes-webhook-detail-warning'
+				});
+			}
+			
+			// Statistics row
+			const statsRow = webhookContent.createDiv({ cls: 'tasknotes-webhook-detail-row' });
+			const statsIcon = statsRow.createSpan({ cls: 'tasknotes-webhook-detail-icon' });
+			setIcon(statsIcon, 'bar-chart-3');
+			statsRow.createSpan({ 
+				text: 'Statistics:',
+				cls: 'tasknotes-webhook-detail-label'
+			});
+			const statsValue = statsRow.createSpan({ cls: 'tasknotes-webhook-stats' });
+			const successSpan = statsValue.createSpan({ cls: 'tasknotes-webhook-stat-success' });
+			const successIcon = successSpan.createSpan({ cls: 'tasknotes-webhook-stat-icon' });
+			setIcon(successIcon, 'check');
+			successSpan.createSpan({ text: `${webhook.successCount || 0}` });
+			
+			const failureSpan = statsValue.createSpan({ cls: 'tasknotes-webhook-stat-failure' });
+			const failureIcon = failureSpan.createSpan({ cls: 'tasknotes-webhook-stat-icon' });
+			setIcon(failureIcon, 'x');
+			failureSpan.createSpan({ text: `${webhook.failureCount || 0}` });
+			
+			// Actions section
+			const webhookActions = webhookCard.createDiv({ cls: 'tasknotes-webhook-actions' });
+			
+			// Toggle button
+			const toggleBtn = webhookActions.createEl('button', {
+				cls: `tasknotes-webhook-action-btn ${webhook.active ? 'disable' : 'enable'}`,
+				attr: {
+					'aria-label': webhook.active ? 'Disable webhook' : 'Enable webhook'
+				}
+			});
+			const toggleIcon = toggleBtn.createSpan({ cls: 'tasknotes-webhook-action-icon' });
+			setIcon(toggleIcon, webhook.active ? 'pause' : 'play');
+			toggleBtn.createSpan({ 
+				text: webhook.active ? 'Disable' : 'Enable',
+				cls: 'tasknotes-webhook-action-text'
+			});
+			setTooltip(toggleBtn, webhook.active ? 'Disable this webhook' : 'Enable this webhook');
+			
 			toggleBtn.onclick = async () => {
 				webhook.active = !webhook.active;
 				await this.plugin.saveSettings();
@@ -3465,11 +3548,21 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 				new Notice(`Webhook ${webhook.active ? 'enabled' : 'disabled'}`);
 			};
 			
-			// Delete webhook
+			// Delete button
 			const deleteBtn = webhookActions.createEl('button', {
-				text: 'Delete',
-				cls: 'mod-warning'
+				cls: 'tasknotes-webhook-action-btn delete',
+				attr: {
+					'aria-label': 'Delete webhook'
+				}
 			});
+			const deleteIcon = deleteBtn.createSpan({ cls: 'tasknotes-webhook-action-icon' });
+			setIcon(deleteIcon, 'trash-2');
+			deleteBtn.createSpan({ 
+				text: 'Delete',
+				cls: 'tasknotes-webhook-action-text'
+			});
+			setTooltip(deleteBtn, 'Delete this webhook');
+			
 			deleteBtn.onclick = async () => {
 				const confirmed = await showConfirmationModal(this.app, {
 					title: 'Delete Webhook',
@@ -3503,7 +3596,9 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 				active: true,
 				createdAt: new Date().toISOString(),
 				failureCount: 0,
-				successCount: 0
+				successCount: 0,
+				transformFile: webhookConfig.transformFile,
+				corsHeaders: webhookConfig.corsHeaders
 			};
 			
 			if (!this.plugin.settings.webhooks) {
@@ -3514,7 +3609,21 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 			await this.plugin.saveSettings();
 			this.display(); // Refresh settings
 			
-			new Notice(`Webhook added successfully!\n\nSecret: ${webhook.secret.substring(0, 8)}...`);
+			// Show secret in a formatted notice
+			const secretNotice = new Notice('', 8000);
+			const noticeContent = secretNotice.noticeEl.createDiv({ cls: 'tasknotes-webhook-secret-notice' });
+			const title = noticeContent.createDiv({ cls: 'tasknotes-webhook-secret-title' });
+			const titleIcon = title.createSpan();
+			setIcon(titleIcon, 'check-circle');
+			title.createSpan({ text: 'Webhook added successfully!' });
+			
+			const secretDiv = noticeContent.createDiv({ cls: 'tasknotes-webhook-secret-content' });
+			secretDiv.createSpan({ text: 'Secret: ' });
+			const secretCode = secretDiv.createEl('code', { 
+				text: `${webhook.secret.substring(0, 16)}...`,
+				cls: 'tasknotes-webhook-secret-code'
+			});
+			secretDiv.createSpan({ text: ' (copy from webhook settings)' });
 		});
 		
 		modal.open();
@@ -3536,6 +3645,8 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 class WebhookModal extends Modal {
 	private url = '';
 	private selectedEvents: string[] = [];
+	private transformFile = '';
+	private corsHeaders = true;
 	private onSubmit: (config: Partial<WebhookConfig>) => void;
 	
 	constructor(app: App, onSubmit: (config: Partial<WebhookConfig>) => void) {
@@ -3546,59 +3657,149 @@ class WebhookModal extends Modal {
 	onOpen(): void {
 		const { contentEl } = this;
 		contentEl.empty();
+		contentEl.addClass('tasknotes-webhook-modal');
 		
-		contentEl.createEl('h2', { text: 'Add Webhook' });
+		// Modal header with icon
+		const header = contentEl.createDiv({ cls: 'tasknotes-webhook-modal-header' });
+		const headerIcon = header.createSpan({ cls: 'tasknotes-webhook-modal-icon' });
+		setIcon(headerIcon, 'webhook');
+		header.createEl('h2', { text: 'Add Webhook', cls: 'tasknotes-webhook-modal-title' });
 		
-		// URL input
-		new Setting(contentEl)
+		// URL input section
+		const urlSection = contentEl.createDiv({ cls: 'tasknotes-webhook-modal-section' });
+		new Setting(urlSection)
 			.setName('Webhook URL')
 			.setDesc('The endpoint where webhook payloads will be sent')
-			.addText(text => text
-				.setPlaceholder('https://your-service.com/webhook')
-				.setValue(this.url)
-				.onChange((value) => {
-					this.url = value;
-				}));
+			.addText(text => {
+				text.inputEl.setAttribute('aria-label', 'Webhook URL');
+				return text
+					.setPlaceholder('https://your-service.com/webhook')
+					.setValue(this.url)
+					.onChange((value) => {
+						this.url = value;
+					});
+			});
 		
-		// Events selection
-		const eventsContainer = contentEl.createDiv();
-		eventsContainer.createEl('h3', { text: 'Events to subscribe to:' });
+		// Events selection section
+		const eventsSection = contentEl.createDiv({ cls: 'tasknotes-webhook-modal-section' });
+		const eventsHeader = eventsSection.createDiv({ cls: 'tasknotes-webhook-modal-subsection-header' });
+		const eventsIcon = eventsHeader.createSpan();
+		setIcon(eventsIcon, 'zap');
+		eventsHeader.createEl('h3', { text: 'Events to subscribe to' });
+		
+		const eventsGrid = eventsSection.createDiv({ cls: 'tasknotes-webhook-events-list' });
 		
 		const availableEvents = [
-			'task.created', 'task.updated', 'task.deleted', 'task.completed',
-			'task.archived', 'task.unarchived', 'time.started', 'time.stopped',
-			'pomodoro.started', 'pomodoro.completed', 'pomodoro.interrupted',
-			'recurring.instance.completed', 'reminder.triggered'
+			{ id: 'task.created', label: 'Task Created', desc: 'When new tasks are created' },
+			{ id: 'task.updated', label: 'Task Updated', desc: 'When tasks are modified' },
+			{ id: 'task.completed', label: 'Task Completed', desc: 'When tasks are marked complete' },
+			{ id: 'task.deleted', label: 'Task Deleted', desc: 'When tasks are deleted' },
+			{ id: 'task.archived', label: 'Task Archived', desc: 'When tasks are archived' },
+			{ id: 'task.unarchived', label: 'Task Unarchived', desc: 'When tasks are unarchived' },
+			{ id: 'time.started', label: 'Time Started', desc: 'When time tracking starts' },
+			{ id: 'time.stopped', label: 'Time Stopped', desc: 'When time tracking stops' },
+			{ id: 'pomodoro.started', label: 'Pomodoro Started', desc: 'When pomodoro sessions begin' },
+			{ id: 'pomodoro.completed', label: 'Pomodoro Completed', desc: 'When pomodoro sessions finish' },
+			{ id: 'pomodoro.interrupted', label: 'Pomodoro Interrupted', desc: 'When pomodoro sessions are stopped' },
+			{ id: 'recurring.instance.completed', label: 'Recurring Instance Completed', desc: 'When recurring task instances complete' },
+			{ id: 'reminder.triggered', label: 'Reminder Triggered', desc: 'When task reminders activate' }
 		];
 		
 		availableEvents.forEach(event => {
-			const eventSetting = new Setting(eventsContainer)
-				.setName(event)
-				.setDesc(`Subscribe to ${event} events`)
-				.addToggle(toggle => toggle
-					.setValue(this.selectedEvents.includes(event))
-					.onChange((value) => {
-						if (value) {
-							this.selectedEvents.push(event);
-						} else {
-							const index = this.selectedEvents.indexOf(event);
-							if (index > -1) {
-								this.selectedEvents.splice(index, 1);
+			const eventSetting = new Setting(eventsGrid)
+				.setName(event.label)
+				.setDesc(event.desc)
+				.addToggle(toggle => {
+					toggle.toggleEl.setAttribute('aria-label', `Subscribe to ${event.label} events`);
+					return toggle
+						.setValue(this.selectedEvents.includes(event.id))
+						.onChange((value) => {
+							if (value) {
+								this.selectedEvents.push(event.id);
+							} else {
+								const index = this.selectedEvents.indexOf(event.id);
+								if (index > -1) {
+									this.selectedEvents.splice(index, 1);
+								}
 							}
-						}
-					}));
+						});
+				});
 		});
 		
-		// Buttons
-		const buttonContainer = contentEl.createDiv({ cls: 'modal-button-container' });
+		// Transform file section
+		const transformSection = contentEl.createDiv({ cls: 'tasknotes-webhook-modal-section' });
+		const transformHeader = transformSection.createDiv({ cls: 'tasknotes-webhook-modal-subsection-header' });
+		const transformIcon = transformHeader.createSpan();
+		setIcon(transformIcon, 'file-code');
+		transformHeader.createEl('h3', { text: 'Transform Configuration (Optional)' });
 		
-		const cancelBtn = buttonContainer.createEl('button', { text: 'Cancel' });
+		new Setting(transformSection)
+			.setName('Transform File')
+			.setDesc('Path to a .js or .json file in your vault that transforms webhook payloads')
+			.addText(text => {
+				text.inputEl.setAttribute('aria-label', 'Transform file path');
+				return text
+					.setPlaceholder('discord-transform.js')
+					.setValue(this.transformFile)
+					.onChange((value) => {
+						this.transformFile = value;
+					});
+			});
+		
+		// Transform help section
+		const transformHelp = transformSection.createDiv({ cls: 'tasknotes-webhook-transform-help' });
+		const helpHeader = transformHelp.createDiv({ cls: 'tasknotes-webhook-help-header' });
+		const helpIcon = helpHeader.createSpan();
+		setIcon(helpIcon, 'info');
+		helpHeader.createSpan({ text: 'Transform files allow you to customize webhook payloads:' });
+		
+		const helpList = transformHelp.createEl('ul', { cls: 'tasknotes-webhook-help-list' });
+		helpList.createEl('li').innerHTML = '<strong>.js files:</strong> Custom JavaScript transforms';
+		helpList.createEl('li').innerHTML = '<strong>.json files:</strong> Templates with <code>${data.task.title}</code>';
+		helpList.createEl('li').innerHTML = '<strong>Leave empty:</strong> Send raw data';
+		
+		const helpExample = transformHelp.createDiv({ cls: 'tasknotes-webhook-help-example' });
+		helpExample.innerHTML = '<strong>Example:</strong> <code>discord-transform.js</code>';
+		
+		// CORS headers section
+		const corsSection = contentEl.createDiv({ cls: 'tasknotes-webhook-modal-section' });
+		const corsHeader = corsSection.createDiv({ cls: 'tasknotes-webhook-modal-subsection-header' });
+		const corsIcon = corsHeader.createSpan();
+		setIcon(corsIcon, 'settings');
+		corsHeader.createEl('h3', { text: 'Headers Configuration' });
+		
+		new Setting(corsSection)
+			.setName('Include custom headers')
+			.setDesc('Include TaskNotes headers (event type, signature, delivery ID). Turn off for Discord, Slack, and other services with strict CORS policies.')
+			.addToggle(toggle => {
+				toggle.toggleEl.setAttribute('aria-label', 'Include custom headers');
+				return toggle
+					.setValue(this.corsHeaders)
+					.onChange((value) => {
+						this.corsHeaders = value;
+					});
+			});
+		
+		// Buttons section
+		const buttonContainer = contentEl.createDiv({ cls: 'tasknotes-webhook-modal-buttons' });
+		
+		const cancelBtn = buttonContainer.createEl('button', { 
+			text: 'Cancel',
+			cls: 'tasknotes-webhook-modal-btn cancel',
+			attr: { 'aria-label': 'Cancel webhook creation' }
+		});
+		const cancelIcon = cancelBtn.createSpan({ cls: 'tasknotes-webhook-modal-btn-icon' });
+		setIcon(cancelIcon, 'x');
 		cancelBtn.onclick = () => this.close();
 		
 		const saveBtn = buttonContainer.createEl('button', { 
 			text: 'Add Webhook',
-			cls: 'mod-cta'
+			cls: 'tasknotes-webhook-modal-btn save mod-cta',
+			attr: { 'aria-label': 'Create webhook' }
 		});
+		const saveIcon = saveBtn.createSpan({ cls: 'tasknotes-webhook-modal-btn-icon' });
+		setIcon(saveIcon, 'plus');
+		
 		saveBtn.onclick = () => {
 			if (!this.url.trim()) {
 				new Notice('Webhook URL is required');
@@ -3612,7 +3813,9 @@ class WebhookModal extends Modal {
 			
 			this.onSubmit({
 				url: this.url.trim(),
-				events: this.selectedEvents as any[]
+				events: this.selectedEvents as any[],
+				transformFile: this.transformFile.trim() || undefined,
+				corsHeaders: this.corsHeaders
 			});
 			
 			this.close();
