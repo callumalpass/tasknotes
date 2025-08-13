@@ -1,7 +1,7 @@
 import { createServer, IncomingMessage, ServerResponse, Server } from 'http';
 import { parse } from 'url';
 import { parse as parseQuery } from 'querystring';
-import { TaskInfo, TaskCreationData, FilterQuery, WebhookConfig, WebhookEvent, WebhookPayload, WebhookDelivery } from '../types';
+import { TaskInfo, TaskCreationData, FilterQuery, WebhookConfig, WebhookEvent, WebhookPayload, WebhookDelivery, IWebhookNotifier } from '../types';
 import { TaskService } from './TaskService';
 import { FilterService } from './FilterService';
 import { MinimalNativeCache } from '../utils/MinimalNativeCache';
@@ -35,7 +35,7 @@ interface TaskQueryParams {
 	offset?: string;
 }
 
-export class HTTPAPIService {
+export class HTTPAPIService implements IWebhookNotifier {
 	private server?: Server;
 	private plugin: TaskNotesPlugin;
 	private taskService: TaskService;
@@ -818,7 +818,9 @@ export class HTTPAPIService {
 				active: body.active !== false,
 				createdAt: new Date().toISOString(),
 				failureCount: 0,
-				successCount: 0
+				successCount: 0,
+				transformFile: body.transformFile || undefined,
+				corsHeaders: body.corsHeaders !== false // Default to true unless explicitly set to false
 			};
 			
 			this.webhooks.set(id, webhook);
@@ -927,7 +929,7 @@ export class HTTPAPIService {
 			// Silently fail if vault path isn't accessible
 		}
 		
-		const payload: WebhookPayload = {
+		const basePayload: WebhookPayload = {
 			event,
 			timestamp: new Date().toISOString(),
 			vault: {
@@ -938,6 +940,17 @@ export class HTTPAPIService {
 		};
 		
 		for (const webhook of relevantWebhooks) {
+			// Apply transformation if specified
+			let payload = basePayload;
+			if (webhook.transformFile) {
+				try {
+					payload = await this.applyTransformation(webhook.transformFile, basePayload);
+				} catch (error) {
+					console.error(`Transform error for ${webhook.transformFile}:`, error);
+					// Continue with original payload on error
+				}
+			}
+			
 			const delivery: WebhookDelivery = {
 				id: this.generateDeliveryId(),
 				webhookId: webhook.id,
@@ -971,14 +984,20 @@ export class HTTPAPIService {
 			
 			const signature = this.generateSignature(delivery.payload, webhook.secret);
 			
+			const headers: Record<string, string> = {
+				'Content-Type': 'application/json'
+			};
+			
+			// Only add custom headers if corsHeaders is enabled (default true)
+			if (webhook.corsHeaders !== false) {
+				headers['X-TaskNotes-Event'] = delivery.event;
+				headers['X-TaskNotes-Signature'] = signature;
+				headers['X-TaskNotes-Delivery-ID'] = delivery.id;
+			}
+			
 			const response = await fetch(webhook.url, {
 				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-					'X-TaskNotes-Event': delivery.event,
-					'X-TaskNotes-Signature': signature,
-					'X-TaskNotes-Delivery-ID': delivery.id
-				},
+				headers,
 				body: JSON.stringify(delivery.payload),
 				// 10 second timeout - AbortSignal.timeout not available in all environments
 			});
@@ -1069,6 +1088,103 @@ export class HTTPAPIService {
 				this.webhooks.set(webhook.id, webhook);
 			}
 		}
+	}
+
+	/**
+	 * Apply transformation from file to webhook payload
+	 */
+	private async applyTransformation(transformFile: string, payload: WebhookPayload): Promise<any> {
+		try {
+			if (transformFile.endsWith('.js')) {
+				return await this.applyJSTransformation(transformFile, payload);
+			} else if (transformFile.endsWith('.json')) {
+				return await this.applyJSONTransformation(transformFile, payload);
+			}
+			
+			// Unknown file type, return original payload
+			return payload;
+		} catch (error) {
+			console.error(`Transformation failed for ${transformFile}:`, error);
+			throw error;
+		}
+	}
+
+	/**
+	 * Apply JavaScript transformation
+	 */
+	private async applyJSTransformation(transformFile: string, payload: WebhookPayload): Promise<any> {
+		try {
+			// Read transformation file from vault
+			const transformCode = await this.plugin.app.vault.adapter.read(transformFile);
+			
+			// Create a safe execution context
+			const transform = new Function('payload', `
+				${transformCode}
+				if (typeof transform === 'function') {
+					return transform(payload);
+				} else {
+					throw new Error('Transform file must export a transform function');
+				}
+			`);
+			
+			return transform(payload);
+		} catch (error) {
+			console.error(`JS transformation error:`, error);
+			throw error;
+		}
+	}
+
+	/**
+	 * Apply JSON template transformation
+	 */
+	private async applyJSONTransformation(transformFile: string, payload: WebhookPayload): Promise<any> {
+		try {
+			// Read template file from vault
+			const templateContent = await this.plugin.app.vault.adapter.read(transformFile);
+			const templates = JSON.parse(templateContent);
+			
+			// Get template for this event or use default
+			const template = templates[payload.event] || templates.default;
+			if (!template) {
+				throw new Error(`No template found for event ${payload.event} and no default template`);
+			}
+			
+			// Apply template variable substitution
+			return this.interpolateTemplate(template, payload);
+		} catch (error) {
+			console.error(`JSON transformation error:`, error);
+			throw error;
+		}
+	}
+
+	/**
+	 * Interpolate template variables
+	 */
+	private interpolateTemplate(template: any, payload: any): any {
+		if (typeof template === 'string') {
+			return template.replace(/\$\{([^}]+)\}/g, (match, path) => {
+				return this.getNestedValue(payload, path) || match;
+			});
+		} else if (Array.isArray(template)) {
+			return template.map(item => this.interpolateTemplate(item, payload));
+		} else if (template && typeof template === 'object') {
+			const result: any = {};
+			for (const [key, value] of Object.entries(template)) {
+				result[key] = this.interpolateTemplate(value, payload);
+			}
+			return result;
+		} else {
+			return template;
+		}
+	}
+
+	/**
+	 * Get nested value from object using dot notation
+	 */
+	private getNestedValue(obj: any, path: string): any {
+		return path.split('.').reduce((current, key) => {
+			return current && current[key] !== undefined ? current[key] : undefined;
+		}, obj);
 	}
 
 }
