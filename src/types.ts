@@ -534,6 +534,8 @@ export interface WebhookConfig {
 	lastTriggered?: string;
 	failureCount: number;
 	successCount: number;
+	transformFile?: string; // Optional path to transformation file (.js or .json)
+	corsHeaders?: boolean; // Whether to include custom headers (false for Discord, Slack, etc.)
 }
 
 export interface WebhookPayload {
@@ -556,5 +558,10 @@ export interface WebhookDelivery {
 	lastAttempt?: string;
 	responseStatus?: number;
 	error?: string;
+}
+
+// Webhook notification interface for loose coupling
+export interface IWebhookNotifier {
+	triggerWebhook(event: WebhookEvent, data: any): Promise<void>;
 }
 
