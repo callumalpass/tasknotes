@@ -1,4 +1,4 @@
-import { EVENT_TASK_DELETED, EVENT_TASK_UPDATED, TaskCreationData, TaskInfo, TimeEntry } from '../types';
+import { EVENT_TASK_DELETED, EVENT_TASK_UPDATED, TaskCreationData, TaskInfo, TimeEntry, IWebhookNotifier } from '../types';
 import { FilenameContext, generateTaskFilename, generateUniqueFilename } from '../utils/filenameGenerator';
 import { Notice, TFile, normalizePath, stringifyYaml } from 'obsidian';
 import { TemplateData, mergeTemplateFrontmatter, processTemplate } from '../utils/templateProcessor';
@@ -8,7 +8,17 @@ import { formatDateForStorage, getCurrentDateString, getCurrentTimestamp } from 
 import TaskNotesPlugin from '../main';
 
 export class TaskService {
+    private webhookNotifier?: IWebhookNotifier;
+    
     constructor(private plugin: TaskNotesPlugin) {}
+    
+    /**
+     * Set webhook notifier for triggering webhook events
+     * Called after HTTPAPIService is initialized to avoid circular dependencies
+     */
+    setWebhookNotifier(notifier: IWebhookNotifier): void {
+        this.webhookNotifier = notifier;
+    }
 
     /**
      * Create a new task file with all the necessary setup
@@ -179,6 +189,15 @@ export class TaskService {
                 path: file.path,
                 updatedTask: taskInfo
             });
+
+            // Trigger webhook for task creation
+            if (this.webhookNotifier) {
+                try {
+                    await this.webhookNotifier.triggerWebhook('task.created', { task: taskInfo });
+                } catch (error) {
+                    console.warn('Failed to trigger webhook for task creation:', error);
+                }
+            }
 
             return { file, taskInfo };
         } catch (error) {
@@ -374,6 +393,28 @@ export class TaskService {
                 // Event emission errors shouldn't break the operation
             }
             
+            // Trigger webhooks for property updates
+            if (this.webhookNotifier) {
+                try {
+                    // Check if this was a completion
+                    const wasCompleted = this.plugin.statusManager.isCompletedStatus(task.status);
+                    const isCompleted = property === 'status' && this.plugin.statusManager.isCompletedStatus(value);
+                    
+                    if (property === 'status' && !wasCompleted && isCompleted) {
+                        // Task was completed
+                        await this.webhookNotifier.triggerWebhook('task.completed', { task: updatedTask as TaskInfo });
+                    } else {
+                        // Regular property update
+                        await this.webhookNotifier.triggerWebhook('task.updated', { 
+                            task: updatedTask as TaskInfo,
+                            previous: task 
+                        });
+                    }
+                } catch (error) {
+                    console.warn('Failed to trigger webhook for property update:', error);
+                }
+            }
+            
             // Step 5: Return authoritative data
             return updatedTask as TaskInfo;
         } catch (error) {
@@ -471,6 +512,19 @@ export class TaskService {
             updatedTask: updatedTask
         });
         
+        // Trigger webhook for archive/unarchive
+        if (this.webhookNotifier) {
+            try {
+                if (updatedTask.archived) {
+                    await this.webhookNotifier.triggerWebhook('task.archived', { task: updatedTask });
+                } else {
+                    await this.webhookNotifier.triggerWebhook('task.unarchived', { task: updatedTask });
+                }
+            } catch (error) {
+                console.warn('Failed to trigger webhook for task archive/unarchive:', error);
+            }
+        }
+        
         // Step 5: Return authoritative data
         return updatedTask;
     }
@@ -535,6 +589,18 @@ export class TaskService {
             originalTask: task,
             updatedTask: updatedTask
         });
+        
+        // Trigger webhook for time tracking start
+        if (this.webhookNotifier) {
+            try {
+                await this.webhookNotifier.triggerWebhook('time.started', { 
+                    task: updatedTask,
+                    session: updatedTask.timeEntries?.[updatedTask.timeEntries.length - 1]
+                });
+            } catch (error) {
+                console.warn('Failed to trigger webhook for time tracking start:', error);
+            }
+        }
         
         // Step 5: Return authoritative data
         return updatedTask;
@@ -606,6 +672,18 @@ export class TaskService {
             originalTask: task,
             updatedTask: updatedTask
         });
+        
+        // Trigger webhook for time tracking stop
+        if (this.webhookNotifier) {
+            try {
+                await this.webhookNotifier.triggerWebhook('time.stopped', { 
+                    task: updatedTask,
+                    session: updatedTask.timeEntries?.[updatedTask.timeEntries.length - 1]
+                });
+            } catch (error) {
+                console.warn('Failed to trigger webhook for time tracking stop:', error);
+            }
+        }
         
         // Step 5: Return authoritative data
         return updatedTask;
@@ -775,6 +853,28 @@ export class TaskService {
                 // Event emission errors shouldn't break the operation
             }
 
+            // Trigger webhooks for task update/completion
+            if (this.webhookNotifier) {
+                try {
+                    // Check if this was a completion
+                    const wasCompleted = this.plugin.statusManager.isCompletedStatus(originalTask.status);
+                    const isCompleted = this.plugin.statusManager.isCompletedStatus(updatedTask.status);
+                    
+                    if (!wasCompleted && isCompleted) {
+                        // Task was completed
+                        await this.webhookNotifier.triggerWebhook('task.completed', { task: updatedTask });
+                    } else {
+                        // Regular update
+                        await this.webhookNotifier.triggerWebhook('task.updated', { 
+                            task: updatedTask,
+                            previous: originalTask 
+                        });
+                    }
+                } catch (error) {
+                    console.warn('Failed to trigger webhook for task update:', error);
+                }
+            }
+
             return updatedTask;
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : String(error);
@@ -811,6 +911,15 @@ export class TaskService {
                 path: task.path,
                 deletedTask: task
             });
+
+            // Trigger webhook for task deletion
+            if (this.webhookNotifier) {
+                try {
+                    await this.webhookNotifier.triggerWebhook('task.deleted', { task });
+                } catch (error) {
+                    console.warn('Failed to trigger webhook for task deletion:', error);
+                }
+            }
 
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : String(error);

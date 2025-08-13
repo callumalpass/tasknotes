@@ -15,7 +15,8 @@ import {
     EVENT_POMODORO_COMPLETE, 
     EVENT_POMODORO_INTERRUPT, 
     EVENT_POMODORO_TICK,
-    TaskInfo
+    TaskInfo,
+    IWebhookNotifier
 } from '../types';
 import { getCurrentTimestamp, formatDateForStorage, getTodayLocal, parseDateToLocal } from '../utils/dateUtils';
 import { getSessionDuration, timerWorker } from '../utils/pomodoroUtils';
@@ -26,6 +27,7 @@ export class PomodoroService {
     private state: PomodoroState;
     private activeAudioContexts: Set<AudioContext> = new Set();
     private cleanupTimeouts: Set<number> = new Set();
+    private webhookNotifier?: IWebhookNotifier;
 
     constructor(plugin: TaskNotesPlugin) {
         this.plugin = plugin;
@@ -42,6 +44,13 @@ export class PomodoroService {
         if (this.state.isRunning && this.state.currentSession) {
             this.resumeTimer();
         }
+    }
+
+    /**
+     * Set webhook notifier for triggering webhook events
+     */
+    setWebhookNotifier(notifier: IWebhookNotifier): void {
+        this.webhookNotifier = notifier;
     }
 
     private setupWorker() {
@@ -207,6 +216,16 @@ export class PomodoroService {
         
         // Notify the user and trigger event
         this.plugin.emitter.trigger(EVENT_POMODORO_START, { session, task });
+        
+        // Trigger webhook for pomodoro start
+        if (this.webhookNotifier) {
+            try {
+                await this.webhookNotifier.triggerWebhook('pomodoro.started', { session, task });
+            } catch (error) {
+                console.warn('Failed to trigger webhook for pomodoro start:', error);
+            }
+        }
+        
         new Notification(`Pomodoro started${task ? ` for: ${task.title}` : ''}`);
     }
 
@@ -358,6 +377,21 @@ export class PomodoroService {
 
         this.plugin.emitter.trigger(EVENT_POMODORO_INTERRUPT, { session: this.state.currentSession });
 
+        // Trigger webhook for pomodoro interruption
+        if (this.webhookNotifier && this.state.currentSession) {
+            try {
+                const task = this.state.currentSession.taskPath 
+                    ? await this.plugin.cacheManager.getTaskInfo(this.state.currentSession.taskPath) 
+                    : undefined;
+                await this.webhookNotifier.triggerWebhook('pomodoro.interrupted', { 
+                    session: this.state.currentSession, 
+                    task 
+                });
+            } catch (error) {
+                console.warn('Failed to trigger webhook for pomodoro interruption:', error);
+            }
+        }
+
         // Stop time tracking on the task if applicable (only if it was running)
         if (this.state.currentSession && this.state.currentSession.taskPath && wasRunning) {
             try {
@@ -507,6 +541,16 @@ export class PomodoroService {
                 ? (shouldTakeLongBreak ? 'long-break' : 'short-break')
                 : 'work'
         });
+
+        // Trigger webhook for pomodoro completion
+        if (this.webhookNotifier) {
+            try {
+                const task = session.taskPath ? await this.plugin.cacheManager.getTaskInfo(session.taskPath) : undefined;
+                await this.webhookNotifier.triggerWebhook('pomodoro.completed', { session, task });
+            } catch (error) {
+                console.warn('Failed to trigger webhook for pomodoro completion:', error);
+            }
+        }
 
         // Show notification
         if (this.plugin.settings.pomodoroNotifications) {
