@@ -71,6 +71,7 @@ GET /api/tasks
 ```
 
 **Query Parameters:**
+
 - `status` - Filter by status (e.g., "open", "completed")
 - `priority` - Filter by priority (e.g., "High", "Normal")
 - `project` - Filter by project name (partial match)
@@ -97,6 +98,7 @@ curl "http://localhost:8080/api/tasks?due_before=2025-08-19&sort=due:asc"
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -123,11 +125,13 @@ curl "http://localhost:8080/api/tasks?due_before=2025-08-19&sort=due:asc"
 ```
 
 #### Create Task
+
 ```
 POST /api/tasks
 ```
 
 **Request Body:**
+
 ```json
 {
   "title": "New task title",
@@ -138,15 +142,17 @@ POST /api/tasks
   "tags": ["email", "urgent"],
   "projects": ["[[Work Project]]"],
   "contexts": ["@computer"],
-  "notes": "Additional task description",
+  "details": "Additional task description",
   "timeEstimate": 60
 }
 ```
 
 **Required Fields:**
+
 - `title` - Task title (max 200 characters)
 
 **Optional Fields:**
+
 - `priority` - Task priority
 - `status` - Task status
 - `due` - Due date (ISO format)
@@ -154,10 +160,11 @@ POST /api/tasks
 - `tags` - Array of tag strings
 - `projects` - Array of project links
 - `contexts` - Array of context strings
-- `notes` - Task description/notes
+- `details` - Task description/details
 - `timeEstimate` - Estimated time in minutes
 
 #### Get Single Task
+
 ```
 GET /api/tasks/{id}
 ```
@@ -165,6 +172,7 @@ GET /api/tasks/{id}
 Where `{id}` is the task file path (URL-encoded).
 
 #### Update Task
+
 ```
 PUT /api/tasks/{id}
 ```
@@ -172,6 +180,7 @@ PUT /api/tasks/{id}
 **Request Body:** Same format as create task, with partial updates supported.
 
 #### Delete Task
+
 ```
 DELETE /api/tasks/{id}
 ```
@@ -179,11 +188,13 @@ DELETE /api/tasks/{id}
 ### Time Tracking
 
 #### Start Time Tracking
+
 ```
 POST /api/tasks/{id}/time/start
 ```
 
 #### Stop Time Tracking
+
 ```
 POST /api/tasks/{id}/time/stop
 ```
@@ -191,23 +202,30 @@ POST /api/tasks/{id}/time/stop
 ### Task Actions
 
 #### Toggle Status
+
 ```
 POST /api/tasks/{id}/toggle-status
 ```
+
 Toggles between open/completed status.
 
 #### Toggle Archive
+
 ```
 POST /api/tasks/{id}/archive
 ```
+
 Archives or unarchives the task.
 
 #### Complete Recurring Instance
+
 ```
 POST /api/tasks/{id}/complete-instance
 ```
 
+
 **Request Body:**
+
 ```json
 {
   "date": "2025-08-12"
@@ -217,13 +235,16 @@ POST /api/tasks/{id}/complete-instance
 ### Advanced Queries
 
 #### Query Tasks
+
 ```
 POST /api/tasks/query
 ```
 
+
 **Request Body:** Advanced FilterQuery object (see TaskNotes FilterQuery documentation).
 
 #### Get Filter Options
+
 ```
 GET /api/filter-options
 ```
@@ -233,11 +254,13 @@ Returns available tags, projects, statuses, and priorities for building filter U
 ### Statistics
 
 #### Get Task Statistics
+
 ```
 GET /api/stats
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -255,6 +278,7 @@ GET /api/stats
 ## Integration Examples
 
 ### Browser Bookmarklet
+
 ```javascript
 javascript:(function(){
   const title = document.title;
@@ -266,7 +290,7 @@ javascript:(function(){
     body: JSON.stringify({
       title: `Review: ${title}`,
       tags: ['web'],
-      notes: `Source: ${url}`
+      details: `Source: ${url}`
     })
   }).then(r => r.json()).then(d => {
     alert(d.success ? 'Task created!' : 'Error: ' + d.error);
@@ -275,6 +299,7 @@ javascript:(function(){
 ```
 
 ### Python Script
+
 ```python
 import requests
 
@@ -289,25 +314,29 @@ print(f"Created task: {task['data']['title']}")
 ```
 
 ### Automation (Zapier/IFTTT)
+
 ```bash
 # Webhook URL for automation services
 curl -X POST http://localhost:8080/api/tasks \
   -H "Content-Type: application/json" \
-  -d '{"title":"{{trigger.subject}}", "tags":["email"], "notes":"{{trigger.body}}"}'
+  -d '{"title":"{{trigger.subject}}", "tags":["email"], "details":"{{trigger.body}}"}'
 ```
 
 ## Error Handling
 
 ### Common Errors
+
 - `400 Bad Request` - Invalid request data
 - `401 Unauthorized` - Invalid or missing auth token
 - `404 Not Found` - Task not found
 - `500 Internal Server Error` - Server error
 
 ### Rate Limiting
+
 No rate limiting currently implemented. Use responsibly.
 
 ### CORS
+
 CORS is enabled for all origins (`*`). API is intended for localhost use only.
 
 ## Security Notes
@@ -320,31 +349,23 @@ CORS is enabled for all origins (`*`). API is intended for localhost use only.
 ## Troubleshooting
 
 ### API Not Starting
+
 1. Check that API is enabled in settings
 2. Ensure port is not in use by another application
 3. Try different port (1024-65535)
 4. Check Obsidian console for errors
 
 ### Connection Refused
+
 1. Verify API is enabled and Obsidian is running
 2. Check correct port number
 3. Ensure using `http://` not `https://`
 4. Try `127.0.0.1` instead of `localhost`
 
 ### Authentication Errors
+
 1. Verify token matches exactly (case-sensitive)
 2. Include `Bearer ` prefix in Authorization header
 3. Check for trailing spaces in token
 
-## Development
 
-### API Versioning
-Current version: `1.0`
-
-Future versions will maintain backwards compatibility where possible.
-
-### Feature Requests
-Submit feature requests to the TaskNotes repository with the `api` label.
-
-### Contributing
-See the main TaskNotes repository for contribution guidelines.
