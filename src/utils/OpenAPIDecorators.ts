@@ -128,6 +128,22 @@ function extractPathAndMethod(methodName: string): { path: string; method: strin
 		return { path: '/api/tasks/{id}/time/stop', method: 'post' };
 	}
 	
+	if (methodName === 'handleStartTimeTrackingWithDescription') {
+		return { path: '/api/tasks/{id}/time/start-with-description', method: 'post' };
+	}
+	
+	if (methodName === 'handleGetTaskTimeData') {
+		return { path: '/api/tasks/{id}/time', method: 'get' };
+	}
+	
+	if (methodName === 'handleGetActiveTimeSessions') {
+		return { path: '/api/time/active', method: 'get' };
+	}
+	
+	if (methodName === 'handleGetTimeSummary') {
+		return { path: '/api/time/summary', method: 'get' };
+	}
+	
 	if (methodName === 'handleToggleStatus') {
 		return { path: '/api/tasks/{id}/toggle-status', method: 'post' };
 	}
@@ -634,6 +650,314 @@ function getCommonSchemas(): any {
 				}
 			},
 			required: ['totalSessions', 'completedSessions', 'interruptedSessions', 'totalFocusTime']
+		},
+		TimeEntry: {
+			type: 'object',
+			properties: {
+				startTime: {
+					type: 'string',
+					format: 'date-time',
+					description: 'ISO timestamp when time tracking started'
+				},
+				endTime: {
+					type: 'string',
+					format: 'date-time',
+					nullable: true,
+					description: 'ISO timestamp when time tracking ended (null if still running)'
+				},
+				description: {
+					type: 'string',
+					nullable: true,
+					description: 'Optional description of work being tracked'
+				},
+				duration: {
+					type: 'integer',
+					minimum: 0,
+					description: 'Duration in minutes (calculated or manually set)'
+				},
+				isActive: {
+					type: 'boolean',
+					description: 'Whether this time entry is currently active'
+				}
+			},
+			required: ['startTime', 'duration', 'isActive']
+		},
+		ActiveTimeSession: {
+			type: 'object',
+			properties: {
+				task: {
+					type: 'object',
+					properties: {
+						id: {
+							type: 'string',
+							description: 'Task identifier (file path)'
+						},
+						title: {
+							type: 'string',
+							description: 'Task title'
+						},
+						status: {
+							type: 'string',
+							description: 'Task status'
+						},
+						priority: {
+							type: 'string',
+							description: 'Task priority'
+						},
+						tags: {
+							type: 'array',
+							items: { type: 'string' },
+							description: 'Task tags'
+						},
+						projects: {
+							type: 'array',
+							items: { type: 'string' },
+							description: 'Associated projects'
+						}
+					},
+					required: ['id', 'title', 'status']
+				},
+				session: {
+					type: 'object',
+					properties: {
+						startTime: {
+							type: 'string',
+							format: 'date-time',
+							description: 'When the session started'
+						},
+						description: {
+							type: 'string',
+							nullable: true,
+							description: 'Session description'
+						},
+						elapsedMinutes: {
+							type: 'integer',
+							minimum: 0,
+							description: 'Minutes elapsed since session started'
+						}
+					},
+					required: ['startTime', 'elapsedMinutes']
+				},
+				elapsedMinutes: {
+					type: 'integer',
+					minimum: 0,
+					description: 'Total elapsed minutes for this session'
+				}
+			},
+			required: ['task', 'session', 'elapsedMinutes']
+		},
+		TimeSummary: {
+			type: 'object',
+			properties: {
+				period: {
+					type: 'string',
+					enum: ['today', 'week', 'month', 'all', 'custom'],
+					description: 'Time period for the summary'
+				},
+				dateRange: {
+					type: 'object',
+					properties: {
+						from: {
+							type: 'string',
+							format: 'date-time',
+							description: 'Start date of the summary period'
+						},
+						to: {
+							type: 'string',
+							format: 'date-time',
+							description: 'End date of the summary period'
+						}
+					},
+					required: ['from', 'to']
+				},
+				summary: {
+					type: 'object',
+					properties: {
+						totalMinutes: {
+							type: 'integer',
+							minimum: 0,
+							description: 'Total tracked time in minutes'
+						},
+						totalHours: {
+							type: 'number',
+							minimum: 0,
+							description: 'Total tracked time in hours (rounded to 2 decimals)'
+						},
+						tasksWithTime: {
+							type: 'integer',
+							minimum: 0,
+							description: 'Number of tasks with time tracking data'
+						},
+						activeTasks: {
+							type: 'integer',
+							minimum: 0,
+							description: 'Number of tasks with active time tracking'
+						},
+						completedTasks: {
+							type: 'integer',
+							minimum: 0,
+							description: 'Number of completed tasks with time tracking'
+						}
+					},
+					required: ['totalMinutes', 'totalHours', 'tasksWithTime', 'activeTasks', 'completedTasks']
+				},
+				topTasks: {
+					type: 'array',
+					items: {
+						type: 'object',
+						properties: {
+							task: {
+								type: 'string',
+								description: 'Task identifier'
+							},
+							title: {
+								type: 'string',
+								description: 'Task title'
+							},
+							minutes: {
+								type: 'integer',
+								minimum: 0,
+								description: 'Total minutes tracked for this task'
+							}
+						},
+						required: ['task', 'title', 'minutes']
+					},
+					description: 'Top 10 tasks by time tracked'
+				},
+				topProjects: {
+					type: 'array',
+					items: {
+						type: 'object',
+						properties: {
+							project: {
+								type: 'string',
+								description: 'Project name'
+							},
+							minutes: {
+								type: 'integer',
+								minimum: 0,
+								description: 'Total minutes tracked for this project'
+							}
+						},
+						required: ['project', 'minutes']
+					},
+					description: 'Top 10 projects by time tracked'
+				},
+				topTags: {
+					type: 'array',
+					items: {
+						type: 'object',
+						properties: {
+							tag: {
+								type: 'string',
+								description: 'Tag name'
+							},
+							minutes: {
+								type: 'integer',
+								minimum: 0,
+								description: 'Total minutes tracked for this tag'
+							}
+						},
+						required: ['tag', 'minutes']
+					},
+					description: 'Top 10 tags by time tracked'
+				}
+			},
+			required: ['period', 'dateRange', 'summary', 'topTasks', 'topProjects', 'topTags']
+		},
+		TaskTimeData: {
+			type: 'object',
+			properties: {
+				task: {
+					type: 'object',
+					properties: {
+						id: {
+							type: 'string',
+							description: 'Task identifier (file path)'
+						},
+						title: {
+							type: 'string',
+							description: 'Task title'
+						},
+						status: {
+							type: 'string',
+							description: 'Task status'
+						},
+						priority: {
+							type: 'string',
+							description: 'Task priority'
+						}
+					},
+					required: ['id', 'title', 'status']
+				},
+				summary: {
+					type: 'object',
+					properties: {
+						totalMinutes: {
+							type: 'integer',
+							minimum: 0,
+							description: 'Total time tracked for this task in minutes'
+						},
+						totalHours: {
+							type: 'number',
+							minimum: 0,
+							description: 'Total time tracked for this task in hours'
+						},
+						totalSessions: {
+							type: 'integer',
+							minimum: 0,
+							description: 'Total number of time tracking sessions'
+						},
+						completedSessions: {
+							type: 'integer',
+							minimum: 0,
+							description: 'Number of completed sessions'
+						},
+						activeSessions: {
+							type: 'integer',
+							minimum: 0,
+							maximum: 1,
+							description: 'Number of active sessions (0 or 1)'
+						},
+						averageSessionMinutes: {
+							type: 'number',
+							minimum: 0,
+							description: 'Average session length in minutes'
+						}
+					},
+					required: ['totalMinutes', 'totalHours', 'totalSessions', 'completedSessions', 'activeSessions', 'averageSessionMinutes']
+				},
+				activeSession: {
+					type: 'object',
+					nullable: true,
+					properties: {
+						startTime: {
+							type: 'string',
+							format: 'date-time',
+							description: 'When the active session started'
+						},
+						description: {
+							type: 'string',
+							nullable: true,
+							description: 'Description of the active session'
+						},
+						elapsedMinutes: {
+							type: 'integer',
+							minimum: 0,
+							description: 'Minutes elapsed since session started'
+						}
+					},
+					required: ['startTime', 'elapsedMinutes']
+				},
+				timeEntries: {
+					type: 'array',
+					items: {
+						$ref: '#/components/schemas/TimeEntry'
+					},
+					description: 'All time entries for this task'
+				}
+			},
+			required: ['task', 'summary', 'timeEntries']
 		},
 		Error: {
 			type: 'object',
