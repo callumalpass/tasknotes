@@ -43,7 +43,7 @@ The **Instant Task Conversion** feature transforms lines in your notes into Task
 The conversion feature works with:
 
 - **Checkbox tasks**: `- [ ] Task description` becomes a TaskNote with task metadata
-- **Bullet points**: `- Some task idea` becomes a TaskNote with the text as title  
+- **Bullet points**: `- Some task idea` becomes a TaskNote with the text as title
 - **Numbered lists**: `1. Important item` becomes a TaskNote
 - **Blockquoted content**: `> Task in callout` becomes a TaskNote (preserves blockquote formatting)
 - **Plain text lines**: `Important thing to do` becomes a TaskNote
@@ -69,7 +69,7 @@ The **Bulk Task Conversion** command converts all checkbox tasks in the current 
 The command:
 
 1. Scans the entire current note for checkbox tasks (`- [ ]`, `* [ ]`, `1. [ ]`, etc.)
-2. Includes tasks inside blockquotes (e.g., `> - [ ] task in callout`)  
+2. Includes tasks inside blockquotes (e.g., `> - [ ] task in callout`)
 3. Applies the same enhanced conversion logic as instant task conversion
 4. Creates individual TaskNote files for each task
 5. Replaces the original checkboxes with links to the new task files
@@ -91,7 +91,7 @@ The command will display progress and show a summary when complete (e.g., "✅ S
 !!! warning "Important Considerations"
 
     **This command modifies note content permanently.** Before using:
-    
+
     - **Create a backup** of your note if it contains important data
     - **Review the tasks** to ensure they should become individual TaskNotes
     - **Expect processing time** - notes with many tasks may take several seconds to process
@@ -100,11 +100,11 @@ The command will display progress and show a summary when complete (e.g., "✅ S
 !!! note "Performance"
 
     Processing time depends on the number of tasks:
-    
+
     - Small notes (1-10 tasks): Near-instant
-    - Medium notes (10-50 tasks): 2-5 seconds  
+    - Medium notes (10-50 tasks): 2-5 seconds
     - Large notes (50+ tasks): 10+ seconds
-    
+
     The operation creates multiple files and updates the note content, which requires disk I/O and editor updates.
 
 ### Error Handling
@@ -135,6 +135,16 @@ The widget includes:
 - **Smart Positioning**: The widget appears after frontmatter and properties but before the main note content.
 
 The widget can be enabled or disabled in the plugin settings in the Misc tab under "Show project subtasks widget".
+
+### Expandable Subtasks Chevron
+
+Project tasks can display an expand/collapse chevron that toggles the visibility of subtasks.
+
+- The chevron can be positioned on the Right (default, hover to show) or on the Left (always visible, matches group chevrons).
+- Configure this in Settings → Misc → Subtask chevron position.
+
+![Left subtask chevron](../assets/left-task-subtask-chevron.gif)
+
 
 ## Natural Language Processing
 
