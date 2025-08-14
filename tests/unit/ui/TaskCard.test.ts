@@ -1,6 +1,6 @@
 /**
  * TaskCard Component Tests
- * 
+ *
  * Tests for the TaskCard UI component including:
  * - Task card creation with various options
  * - Status and priority indicators
@@ -71,12 +71,12 @@ describe('TaskCard Component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     MockObsidian.reset();
-    
+
     // Create DOM container
     document.body.innerHTML = '';
     container = document.createElement('div');
     document.body.appendChild(container);
-    
+
     // Mock plugin
     mockApp = new App();
     mockPlugin = {
@@ -84,10 +84,10 @@ describe('TaskCard Component', () => {
       selectedDate: new Date('2025-01-15'),
       statusManager: {
         isCompletedStatus: jest.fn((status) => status === 'done'),
-        getStatusConfig: jest.fn((status) => ({ 
-          value: status, 
-          label: status, 
-          color: '#666666' 
+        getStatusConfig: jest.fn((status) => ({
+          value: status,
+          label: status,
+          color: '#666666'
         })),
         getAllStatuses: jest.fn(() => [
           { value: 'open', label: 'Open' },
@@ -100,10 +100,10 @@ describe('TaskCard Component', () => {
         getNextStatus: jest.fn(() => 'done')
       },
       priorityManager: {
-        getPriorityConfig: jest.fn((priority) => ({ 
-          value: priority, 
-          label: priority, 
-          color: '#ff0000' 
+        getPriorityConfig: jest.fn((priority) => ({
+          value: priority,
+          label: priority,
+          color: '#ff0000'
         })),
         getPrioritiesByWeight: jest.fn(() => [
           { value: 'high', label: 'High' },
@@ -142,7 +142,7 @@ describe('TaskCard Component', () => {
     mockApp.workspace.trigger = jest.fn();
     mockApp.metadataCache = mockApp.metadataCache || {};
     mockApp.metadataCache.getFirstLinkpathDest = jest.fn();
-    
+
     // Mock console methods
     jest.spyOn(console, 'error').mockImplementation(() => {});
     jest.spyOn(console, 'warn').mockImplementation(() => {});
@@ -178,10 +178,10 @@ describe('TaskCard Component', () => {
 
       // Should not have checkbox by default
       expect(card.querySelector('.task-card__checkbox')).toBeNull();
-      
+
       // Should have status dot
       expect(card.querySelector('.task-card__status-dot')).toBeTruthy();
-      
+
       // Should have title
       const titleEl = card.querySelector('.task-card__title');
       expect(titleEl?.textContent).toBe(task.title);
@@ -190,7 +190,7 @@ describe('TaskCard Component', () => {
     it('should create task card with checkbox when enabled', () => {
       const task = TaskFactory.createTask({ status: 'done' });
       const options: Partial<TaskCardOptions> = { showCheckbox: true };
-      
+
       const card = createTaskCard(task, mockPlugin, options);
 
       const checkbox = card.querySelector('.task-card__checkbox') as HTMLInputElement;
@@ -212,7 +212,7 @@ describe('TaskCard Component', () => {
       const card = createTaskCard(task, mockPlugin);
 
       expect(card.classList.contains('task-card--completed')).toBe(true);
-      
+
       const titleEl = card.querySelector('.task-card__title');
       expect(titleEl?.classList.contains('completed')).toBe(true);
     });
@@ -229,7 +229,7 @@ describe('TaskCard Component', () => {
       mockPlugin.getActiveTimeSession.mockReturnValue({
         startTime: '2025-01-15T10:00:00Z'
       });
-      
+
       const card = createTaskCard(task, mockPlugin);
 
       expect(card.classList.contains('task-card--actively-tracked')).toBe(true);
@@ -311,16 +311,16 @@ describe('TaskCard Component', () => {
       expect(metadataLine?.textContent).toContain('+Project A');
       expect(metadataLine?.textContent).toContain('+Project B');
       expect(metadataLine?.textContent).toContain('+regular-project');
-      
+
       // Check that wikilink projects have clickable links
       const projectLinks = card.querySelectorAll('.task-card__project-link');
       expect(projectLinks.length).toBe(2); // Only wikilink projects should have clickable links
-      
+
       // Check link properties
       expect(projectLinks[0].textContent).toBe('Project A');
       expect(projectLinks[0].getAttribute('data-href')).toBe('Project A');
       expect(projectLinks[0].classList.contains('internal-link')).toBe(true);
-      
+
       expect(projectLinks[1].textContent).toBe('Project B');
       expect(projectLinks[1].getAttribute('data-href')).toBe('Project B');
       expect(projectLinks[1].classList.contains('internal-link')).toBe(true);
@@ -338,7 +338,7 @@ describe('TaskCard Component', () => {
       const projectLink = card.querySelector('.task-card__project-link') as HTMLElement;
 
       expect(projectLink).toBeTruthy();
-      
+
       // Simulate click
       const clickEvent = new MouseEvent('click', { bubbles: true });
       projectLink.dispatchEvent(clickEvent);
@@ -361,7 +361,7 @@ describe('TaskCard Component', () => {
       const projectLink = card.querySelector('.task-card__project-link') as HTMLElement;
 
       expect(projectLink).toBeTruthy();
-      
+
       // Simulate click
       const clickEvent = new MouseEvent('click', { bubbles: true });
       projectLink.dispatchEvent(clickEvent);
@@ -401,7 +401,7 @@ describe('TaskCard Component', () => {
 
     it('should handle checkbox click for regular tasks', async () => {
       const checkbox = card.querySelector('.task-card__checkbox') as HTMLInputElement;
-      
+
       checkbox.click();
 
       expect(mockPlugin.toggleTaskStatus).toHaveBeenCalledWith(task);
@@ -411,18 +411,18 @@ describe('TaskCard Component', () => {
       const recurringTask = TaskFactory.createRecurringTask('FREQ=DAILY');
       const recurringCard = createTaskCard(recurringTask, mockPlugin, { showCheckbox: true });
       const checkbox = recurringCard.querySelector('.task-card__checkbox') as HTMLInputElement;
-      
+
       checkbox.click();
 
       expect(mockPlugin.toggleRecurringTaskComplete).toHaveBeenCalledWith(
-        recurringTask, 
+        recurringTask,
         mockPlugin.selectedDate
       );
     });
 
     it('should handle status dot click for regular tasks', async () => {
       mockPlugin.cacheManager.getTaskInfo.mockResolvedValue(task);
-      
+
       const statusDot = card.querySelector('.task-card__status-dot') as HTMLElement;
       statusDot.click();
 
@@ -436,7 +436,7 @@ describe('TaskCard Component', () => {
       const recurringTask = TaskFactory.createRecurringTask('FREQ=DAILY');
       const recurringCard = createTaskCard(recurringTask, mockPlugin);
       mockPlugin.toggleRecurringTaskComplete.mockResolvedValue(recurringTask);
-      
+
       const statusDot = recurringCard.querySelector('.task-card__status-dot') as HTMLElement;
       statusDot.click();
 
@@ -451,7 +451,7 @@ describe('TaskCard Component', () => {
     it('should handle context menu icon click', async () => {
       const contextIcon = card.querySelector('.task-card__context-menu') as HTMLElement;
       const mockEvent = new MouseEvent('click', { bubbles: true });
-      
+
       // Mock showTaskContextMenu
       const showTaskContextMenuSpy = jest.fn();
       jest.doMock('../../../src/ui/TaskCard', () => ({
@@ -460,7 +460,7 @@ describe('TaskCard Component', () => {
       }));
 
       contextIcon.dispatchEvent(mockEvent);
-      
+
       // Context menu should be triggered
       expect(contextIcon).toBeTruthy();
     });
@@ -474,12 +474,12 @@ describe('TaskCard Component', () => {
     it('should handle Ctrl+click to open source note', async () => {
       const mockFile = new TFile('test.md');
       mockApp.vault.getAbstractFileByPath.mockReturnValue(mockFile);
-      
-      const ctrlClickEvent = new MouseEvent('click', { 
-        bubbles: true, 
-        ctrlKey: true 
+
+      const ctrlClickEvent = new MouseEvent('click', {
+        bubbles: true,
+        ctrlKey: true
       });
-      
+
       card.dispatchEvent(ctrlClickEvent);
 
       expect(mockApp.vault.getAbstractFileByPath).toHaveBeenCalledWith(task.path);
@@ -488,9 +488,9 @@ describe('TaskCard Component', () => {
 
     it('should handle right-click context menu', async () => {
       const contextMenuEvent = new MouseEvent('contextmenu', { bubbles: true });
-      
+
       card.dispatchEvent(contextMenuEvent);
-      
+
       // Should prevent default and trigger context menu
       expect(card.dataset.taskPath).toBe(task.path);
     });
@@ -498,7 +498,7 @@ describe('TaskCard Component', () => {
     it('should handle mouseover for hover preview', () => {
       const mockFile = new TFile('test.md');
       mockApp.vault.getAbstractFileByPath.mockReturnValue(mockFile);
-      
+
       const mouseoverEvent = new MouseEvent('mouseover', { bubbles: true });
       card.dispatchEvent(mouseoverEvent);
 
@@ -514,7 +514,7 @@ describe('TaskCard Component', () => {
 
     it('should handle errors in event handlers gracefully', async () => {
       mockPlugin.toggleTaskStatus.mockRejectedValue(new Error('Network error'));
-      
+
       const checkbox = card.querySelector('.task-card__checkbox') as HTMLInputElement;
       checkbox.click();
 
@@ -551,7 +551,7 @@ describe('TaskCard Component', () => {
       expect(card.classList.contains('task-card--completed')).toBe(true);
       expect(card.classList.contains('task-card--priority-high')).toBe(true);
       expect(card.classList.contains('task-card--status-done')).toBe(true);
-      
+
       const titleEl = card.querySelector('.task-card__title');
       expect(titleEl?.textContent).toBe('Updated Task');
       expect(titleEl?.classList.contains('completed')).toBe(true);
@@ -577,7 +577,7 @@ describe('TaskCard Component', () => {
         priority: undefined
       });
       const cardWithoutPriority = createTaskCard(taskWithoutPriority, mockPlugin, { showCheckbox: true });
-      
+
       // Task initially has no priority indicator
       expect(cardWithoutPriority.querySelector('.task-card__priority-dot')).toBeNull();
 
@@ -599,7 +599,7 @@ describe('TaskCard Component', () => {
         priority: 'high'
       });
       const cardWithPriority = createTaskCard(taskWithPriority, mockPlugin);
-      
+
       expect(cardWithPriority.querySelector('.task-card__priority-dot')).toBeTruthy();
 
       const updatedTask = TaskFactory.createTask({
@@ -664,14 +664,14 @@ describe('TaskCard Component', () => {
         addSeparator: jest.fn(),
         showAtMouseEvent: jest.fn()
       };
-      
+
       MockObsidian.Menu.mockImplementation(() => mockMenu);
       mockPlugin.cacheManager.getTaskInfo.mockResolvedValue(task);
     });
 
     it('should create context menu with basic actions', async () => {
       const mockEvent = new MouseEvent('contextmenu');
-      
+
       await showTaskContextMenu(mockEvent, task.path, mockPlugin, new Date('2025-01-15'));
 
       expect(mockPlugin.cacheManager.getTaskInfo).toHaveBeenCalledWith(task.path);
@@ -681,7 +681,7 @@ describe('TaskCard Component', () => {
 
     it('should add status options to context menu', async () => {
       const mockEvent = new MouseEvent('contextmenu');
-      
+
       await showTaskContextMenu(mockEvent, task.path, mockPlugin, new Date('2025-01-15'));
 
       // Should have called addItem for each status
@@ -691,9 +691,9 @@ describe('TaskCard Component', () => {
     it('should add completion toggle for recurring tasks', async () => {
       const recurringTask = TaskFactory.createRecurringTask('FREQ=DAILY');
       mockPlugin.cacheManager.getTaskInfo.mockResolvedValue(recurringTask);
-      
+
       const mockEvent = new MouseEvent('contextmenu');
-      
+
       await showTaskContextMenu(mockEvent, recurringTask.path, mockPlugin, new Date('2025-01-15'));
 
       expect(mockMenu.addSeparator).toHaveBeenCalled();
@@ -701,9 +701,9 @@ describe('TaskCard Component', () => {
 
     it('should handle task not found', async () => {
       mockPlugin.cacheManager.getTaskInfo.mockResolvedValue(null);
-      
+
       const mockEvent = new MouseEvent('contextmenu');
-      
+
       await showTaskContextMenu(mockEvent, 'nonexistent.md', mockPlugin, new Date('2025-01-15'));
 
       expect(console.error).toHaveBeenCalledWith(expect.stringContaining('No task found'));
@@ -711,9 +711,9 @@ describe('TaskCard Component', () => {
 
     it('should handle errors gracefully', async () => {
       mockPlugin.cacheManager.getTaskInfo.mockRejectedValue(new Error('Cache error'));
-      
+
       const mockEvent = new MouseEvent('contextmenu');
-      
+
       await showTaskContextMenu(mockEvent, task.path, mockPlugin, new Date('2025-01-15'));
 
       expect(console.error).toHaveBeenCalled();
@@ -730,30 +730,30 @@ describe('TaskCard Component', () => {
 
     it('should create and show delete confirmation modal', async () => {
       const deletePromise = showDeleteConfirmationModal(task, mockPlugin);
-      
+
       expect(Modal).toHaveBeenCalled();
-      
+
       // Simulate user confirming deletion
       mockPlugin.taskService.deleteTask.mockResolvedValue(undefined);
-      
+
       // The modal should be created
       expect(Modal).toHaveBeenCalledWith(mockPlugin.app);
     });
 
     it('should handle successful deletion', async () => {
       mockPlugin.taskService.deleteTask.mockResolvedValue(undefined);
-      
+
       const deletePromise = showDeleteConfirmationModal(task, mockPlugin);
-      
+
       // Modal should be created
       expect(Modal).toHaveBeenCalled();
     });
 
     it('should handle deletion errors', async () => {
       mockPlugin.taskService.deleteTask.mockRejectedValue(new Error('Delete failed'));
-      
+
       const deletePromise = showDeleteConfirmationModal(task, mockPlugin);
-      
+
       // Modal should still be created
       expect(Modal).toHaveBeenCalled();
     });
@@ -762,7 +762,7 @@ describe('TaskCard Component', () => {
   describe('Edge Cases and Error Handling', () => {
     it('should handle null plugin gracefully', () => {
       const task = TaskFactory.createTask();
-      
+
       // This test should throw since the function does access plugin properties early
       // The test expectation was wrong - it should throw
       expect(() => createTaskCard(task, null as any, { targetDate: new Date() })).toThrow();
@@ -774,44 +774,44 @@ describe('TaskCard Component', () => {
         status: undefined,
         path: ''
       } as any;
-      
+
       expect(() => createTaskCard(malformedTask, mockPlugin)).not.toThrow();
     });
 
     it('should handle missing DOM elements in update', () => {
       const task = TaskFactory.createTask();
       const emptyCard = document.createElement('div');
-      
+
       expect(() => updateTaskCard(emptyCard, task, mockPlugin)).not.toThrow();
     });
 
     it('should handle network errors in async operations', async () => {
       const task = TaskFactory.createTask();
       const card = createTaskCard(task, mockPlugin, { showCheckbox: true });
-      
+
       mockPlugin.toggleTaskStatus.mockRejectedValue(new Error('Network timeout'));
-      
+
       const checkbox = card.querySelector('.task-card__checkbox') as HTMLInputElement;
       checkbox.click();
-      
+
       await new Promise(resolve => setTimeout(resolve, 0));
-      
+
       expect(console.error).toHaveBeenCalled();
     });
 
     it('should handle missing file references', () => {
       const task = TaskFactory.createTask({ path: 'nonexistent.md' });
       mockApp.vault.getAbstractFileByPath.mockReturnValue(null);
-      
+
       const card = createTaskCard(task, mockPlugin);
-      
+
       // Simulate Ctrl+click to trigger file opening behavior
-      const ctrlClickEvent = new MouseEvent('click', { 
-        bubbles: true, 
-        ctrlKey: true 
+      const ctrlClickEvent = new MouseEvent('click', {
+        bubbles: true,
+        ctrlKey: true
       });
       card.dispatchEvent(ctrlClickEvent);
-      
+
       expect(mockApp.vault.getAbstractFileByPath).toHaveBeenCalledWith('nonexistent.md');
     });
   });
@@ -819,13 +819,13 @@ describe('TaskCard Component', () => {
   describe('Performance and Memory', () => {
     it('should handle large numbers of task cards efficiently', () => {
       const startTime = Date.now();
-      
+
       for (let i = 0; i < 100; i++) {
         const task = TaskFactory.createTask({ title: `Task ${i}` });
         const card = createTaskCard(task, mockPlugin);
         container.appendChild(card);
       }
-      
+
       const endTime = Date.now();
       expect(endTime - startTime).toBeLessThan(1000);
       expect(container.children.length).toBe(100);
@@ -834,10 +834,10 @@ describe('TaskCard Component', () => {
     it('should clean up event listeners properly', () => {
       const task = TaskFactory.createTask();
       const card = createTaskCard(task, mockPlugin);
-      
+
       container.appendChild(card);
       container.removeChild(card);
-      
+
       // Should not leak memory - hard to test directly but ensures structure is correct
       expect(card.parentNode).toBeNull();
     });
@@ -845,9 +845,9 @@ describe('TaskCard Component', () => {
     it('should handle rapid updates efficiently', () => {
       const task = TaskFactory.createTask();
       const card = createTaskCard(task, mockPlugin);
-      
+
       const startTime = Date.now();
-      
+
       for (let i = 0; i < 50; i++) {
         const updatedTask = TaskFactory.createTask({
           ...task,
@@ -856,20 +856,71 @@ describe('TaskCard Component', () => {
         });
         updateTaskCard(card, updatedTask, mockPlugin);
       }
-      
+
       const endTime = Date.now();
       expect(endTime - startTime).toBeLessThan(500);
     });
   });
 
+
+  describe('Subtask chevron position', () => {
+    it('should add task-card--chevron-left when setting is left (create)', async () => {
+      const task = TaskFactory.createTask({ title: 'Project Task' });
+      // Ensure this task is considered a project and chevron feature is on
+      mockPlugin.projectSubtasksService.isTaskUsedAsProject.mockResolvedValue(true);
+      mockPlugin.settings = { showExpandableSubtasks: true, subtaskChevronPosition: 'left' };
+
+      const card = createTaskCard(task, mockPlugin);
+
+      // Wait for async project check to complete
+      await new Promise((r) => setTimeout(r, 0));
+
+      expect(card.classList.contains('task-card--chevron-left')).toBe(true);
+      // Chevron should render for projects when feature enabled
+      expect(card.querySelector('.task-card__chevron')).not.toBeNull();
+    });
+
+    it('should not add task-card--chevron-left when setting is right/default (create)', async () => {
+      const task = TaskFactory.createTask({ title: 'Project Task' });
+      mockPlugin.projectSubtasksService.isTaskUsedAsProject.mockResolvedValue(true);
+      mockPlugin.settings = { showExpandableSubtasks: true, subtaskChevronPosition: 'right' };
+
+      const card = createTaskCard(task, mockPlugin);
+      await new Promise((r) => setTimeout(r, 0));
+
+      expect(card.classList.contains('task-card--chevron-left')).toBe(false);
+      expect(card.querySelector('.task-card__chevron')).not.toBeNull();
+    });
+
+    it('should toggle chevron-left class on update when setting changes', async () => {
+      const task = TaskFactory.createTask({ title: 'Project Task' });
+      // Start with right/default
+      mockPlugin.projectSubtasksService.isTaskUsedAsProject.mockResolvedValue(true);
+      mockPlugin.settings = { showExpandableSubtasks: true, subtaskChevronPosition: 'right' };
+
+      const card = createTaskCard(task, mockPlugin);
+      await new Promise((r) => setTimeout(r, 0));
+      expect(card.classList.contains('task-card--chevron-left')).toBe(false);
+
+      // Change to left and update
+      mockPlugin.settings.subtaskChevronPosition = 'left';
+      updateTaskCard(card, task, mockPlugin);
+      expect(card.classList.contains('task-card--chevron-left')).toBe(true);
+
+      // Change back to right and update
+      mockPlugin.settings.subtaskChevronPosition = 'right';
+      updateTaskCard(card, task, mockPlugin);
+      expect(card.classList.contains('task-card--chevron-left')).toBe(false);
+    });
+  });
   describe('Accessibility', () => {
     it('should have proper ARIA labels', () => {
       const task = TaskFactory.createTask({ priority: 'high' });
       const card = createTaskCard(task, mockPlugin);
-      
+
       const priorityDot = card.querySelector('.task-card__priority-dot');
       expect(priorityDot?.getAttribute('aria-label')).toBe('Priority: high');
-      
+
       const contextIcon = card.querySelector('.task-card__context-menu');
       expect(contextIcon?.getAttribute('aria-label')).toBe('Task options');
     });
@@ -877,7 +928,7 @@ describe('TaskCard Component', () => {
     it('should support keyboard navigation', () => {
       const task = TaskFactory.createTask();
       const card = createTaskCard(task, mockPlugin, { showCheckbox: true });
-      
+
       const checkbox = card.querySelector('.task-card__checkbox') as HTMLInputElement;
       expect(checkbox.tabIndex).toBe(0);
     });
@@ -885,7 +936,7 @@ describe('TaskCard Component', () => {
     it('should have proper semantic structure', () => {
       const task = TaskFactory.createTask();
       const card = createTaskCard(task, mockPlugin);
-      
+
       expect(card.querySelector('.task-card__title')).toBeTruthy();
       expect(card.querySelector('.task-card__metadata')).toBeTruthy();
       expect(card.querySelector('.task-card__content')).toBeTruthy();

@@ -198,6 +198,8 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	showProjectSubtasks: true,
 	showExpandableSubtasks: true,
 	projectSubtasksPosition: 'bottom',
+	// Subtask chevron position default
+	subtaskChevronPosition: 'right',
 	// Overdue behavior defaults
 	hideCompletedFromOverdue: true,
 	// ICS integration defaults
