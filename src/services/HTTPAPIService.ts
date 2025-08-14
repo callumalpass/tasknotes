@@ -1319,8 +1319,9 @@ export class HTTPAPIService implements IWebhookNotifier {
 				return;
 			}
 			
-			// Start pomodoro
-			await this.plugin.pomodoroService.startPomodoro(task);
+			// Start pomodoro with optional duration
+			const duration = body.duration ? parseInt(body.duration) : undefined;
+			await this.plugin.pomodoroService.startPomodoro(task, duration);
 			
 			// Get updated state
 			const newState = this.plugin.pomodoroService.getState();

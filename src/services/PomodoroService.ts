@@ -155,7 +155,7 @@ export class PomodoroService {
         }
     }
 
-    async startPomodoro(task?: TaskInfo) {
+    async startPomodoro(task?: TaskInfo, durationMinutes?: number) {
         if (this.state.isRunning) {
             new Notice('A pomodoro is already running');
             return;
@@ -167,8 +167,9 @@ export class PomodoroService {
             return;
         }
         
-        // Validate duration settings (in seconds) max 2 hours
-        const durationSeconds = Math.max(1, Math.min(120*60, this.state.timeRemaining));
+        // Use custom duration if provided, otherwise use default from settings/state
+        const customDurationSeconds = durationMinutes ? Math.max(1, Math.min(120, durationMinutes)) * 60 : null;
+        const durationSeconds = customDurationSeconds || Math.max(1, Math.min(120*60, this.state.timeRemaining));
 
         // Convert to minutes for planned duration
         const plannedDurationMinutes = durationSeconds / 60;
