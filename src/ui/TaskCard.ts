@@ -112,7 +112,12 @@ export function createTaskCard(task: TaskInfo, plugin: TaskNotesPlugin, options:
     if (effectiveStatus) {
         cardClasses.push(`task-card--status-${effectiveStatus}`);
     }
-    
+
+    // Chevron position preference
+    if (plugin.settings?.subtaskChevronPosition === 'left') {
+        cardClasses.push('task-card--chevron-left');
+    }
+
     // Add project modifier (for issue #355)
     const hasProjects = filterEmptyProjects(task.projects || []).length > 0;
     if (hasProjects) {
@@ -711,8 +716,12 @@ export function updateTaskCard(element: HTMLElement, task: TaskInfo, plugin: Tas
     if (effectiveStatus) {
         cardClasses.push(`task-card--status-${effectiveStatus}`);
     }
-    
-    
+
+    // Chevron position preference
+    if (plugin.settings?.subtaskChevronPosition === 'left') {
+        cardClasses.push('task-card--chevron-left');
+    }
+
     element.className = cardClasses.join(' ');
     element.dataset.status = effectiveStatus;
     
