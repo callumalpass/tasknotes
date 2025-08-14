@@ -61,6 +61,8 @@ export interface TaskNotesSettings {
 	showProjectSubtasks: boolean;
 	showExpandableSubtasks: boolean;
 	projectSubtasksPosition: 'top' | 'bottom';
+	// Subtask chevron UI preference
+	subtaskChevronPosition: 'right' | 'left';
 	// Overdue behavior settings
 	hideCompletedFromOverdue: boolean;
 	// ICS integration settings
@@ -342,6 +344,7 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	showProjectSubtasks: true,
 	showExpandableSubtasks: true,
 	projectSubtasksPosition: 'bottom',
+	subtaskChevronPosition: 'right',
 	// Overdue behavior defaults
 	hideCompletedFromOverdue: true,
 	// ICS integration defaults
@@ -423,22 +426,22 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 	private activeTab = 'task-defaults';
 	private tabContents: Record<string, HTMLElement> = {};
 	private selectedDefaultProjectFiles: TAbstractFile[] = [];
-  
+
 	constructor(app: App, plugin: TaskNotesPlugin) {
 		super(app, plugin);
 		this.plugin = plugin;
 	}
-  
+
 	display(): void {
 		const { containerEl } = this;
 		containerEl.empty();
 		containerEl.addClass('tasknotes-settings');
 		containerEl.addClass('tasknotes-plugin');
 		containerEl.addClass('settings-view');
-		
+
 		// Create tab navigation
 		const tabNav = containerEl.createDiv('settings-tab-nav settings-view__tab-nav');
-		
+
 		const allTabs = [
 			{ id: 'task-defaults', name: 'Task defaults' },
 			{ id: 'general', name: 'Inline tasks' },
@@ -451,15 +454,15 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 			{ id: 'api', name: 'HTTP API' },
 			{ id: 'misc', name: 'Misc' }
 		];
-		
+
 		// Filter out API tab on mobile
 		const tabs = Platform.isMobile ? allTabs.filter(tab => tab.id !== 'api') : allTabs;
-		
+
 		// Reset active tab if it's 'api' on mobile
 		if (Platform.isMobile && this.activeTab === 'api') {
 			this.activeTab = 'general';
 		}
-		
+
 		tabs.forEach(tab => {
 			const isActive = this.activeTab === tab.id;
 			const tabButton = tabNav.createEl('button', {
@@ -473,16 +476,16 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 					'tabindex': isActive ? '0' : '-1'
 				}
 			});
-			
+
 			tabButton.addEventListener('click', () => {
 				this.switchTab(tab.id);
 			});
-			
+
 			tabButton.addEventListener('keydown', (e) => {
 				if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
 					e.preventDefault();
 					const currentIndex = tabs.findIndex(t => t.id === tab.id);
-					const nextIndex = e.key === 'ArrowRight' 
+					const nextIndex = e.key === 'ArrowRight'
 						? (currentIndex + 1) % tabs.length
 						: (currentIndex - 1 + tabs.length) % tabs.length;
 					const nextTabId = tabs[nextIndex].id;
@@ -491,10 +494,10 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 				}
 			});
 		});
-		
+
 		// Create tab content containers
 		const tabContentsEl = containerEl.createDiv('settings-tab-contents settings-view__tab-contents');
-		
+
 		// Create all tab content containers
 		tabs.forEach(tab => {
 			const tabContent = tabContentsEl.createDiv('settings-tab-content settings-view__tab-content');
@@ -507,14 +510,14 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 			}
 			this.tabContents[tab.id] = tabContent;
 		});
-		
+
 		this.renderActiveTab();
 	}
-	
+
 	private switchTab(tabId: string): void {
 		this.activeTab = tabId;
 		this.display(); // Re-render the entire settings tab
-		
+
 		// Focus the newly active tab button
 		window.setTimeout(() => {
 			const activeTabButton = this.containerEl.querySelector(`#tab-button-${tabId}`) as HTMLElement;
@@ -523,11 +526,11 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 			}
 		}, 50);
 	}
-	
+
 	private renderActiveTab(): void {
 		// Clear current tab content
 		Object.values(this.tabContents).forEach(content => content.empty());
-		
+
 		switch (this.activeTab) {
 			case 'general':
 				this.renderGeneralTab();
@@ -561,18 +564,18 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 				break;
 		}
 	}
-	
+
 	private renderGeneralTab(): void {
 		const container = this.tabContents['general'];
-		
+
 		// Inline task settings
 		new Setting(container).setName('Inline tasks').setHeading();
-		
-		container.createEl('p', { 
+
+		container.createEl('p', {
 			text: 'Configure how TaskNotes integrates with your editor and existing Markdown tasks.',
 			cls: 'settings-help-note'
 		});
-		
+
 		new Setting(container)
 			.setName('Task link overlay')
 			.setDesc('Replace wikilinks to task files with interactive task cards in both live preview and reading modes')
@@ -633,19 +636,19 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 		const helpList = helpContainer.createEl('ul');
 		helpList.createEl('li', { text: 'Task link overlay: When you link to a task file like [[My Task]], it shows an interactive task card instead of a plain link' });
 		helpList.createEl('li', { text: 'Instant task convert: Shows a "Convert to TaskNote" button next to standard Markdown checkboxes like - [ ] My task' });
-		
-		helpContainer.createEl('p', { 
+
+		helpContainer.createEl('p', {
 			text: 'These features help bridge regular Markdown tasks with the full TaskNotes system.',
 			cls: 'settings-help-note'
 		});
 	}
-	
+
 	private renderTaskDefaultsTab(): void {
 		const container = this.tabContents['task-defaults'];
-		
+
 		// Task organization section
 		new Setting(container).setName('Task organization').setHeading();
-		
+
 		new Setting(container)
 			.setName('Default tasks folder')
 			.setDesc('Default folder for new tasks (tasks are identified by tag, not folder)')
@@ -659,7 +662,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 						await this.plugin.saveSettings();
 					});
 			});
-		
+
 		new Setting(container)
 			.setName('Identify tasks by')
 			.setDesc('Choose whether to identify tasks by tag or by a frontmatter property')
@@ -712,7 +715,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 						await this.plugin.saveSettings();
 					}));
 		}
-		
+
 		new Setting(container)
 			.setName('Excluded folders')
 			.setDesc('Comma-separated list of folder paths to exclude from Notes tab')
@@ -726,7 +729,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 						await this.plugin.saveSettings();
 					});
 			});
-		
+
 		// Task filename settings
 		new Setting(container).setName('Task filenames').setHeading();
 
@@ -784,10 +787,10 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 				});
 			}
 		}
-		
+
 		// Basic defaults section
 		new Setting(container).setName('Basic defaults').setHeading();
-		
+
 		new Setting(container)
 			.setName('Enable natural language task input')
 			.setDesc('Show a smart input field in task creation modal that can parse natural language like "Buy groceries tomorrow 3pm high priority @home #errands"')
@@ -813,7 +816,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 						await this.plugin.saveSettings();
 					});
 			});
-		
+
 		new Setting(container)
 			.setName('Default task status')
 			.setDesc('Default status for new tasks')
@@ -830,7 +833,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 						await this.plugin.saveSettings();
 					});
 			});
-		
+
 		new Setting(container)
 			.setName('Default task priority')
 			.setDesc('Default priority for new tasks')
@@ -888,7 +891,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 		// Create projects display area
 		const projectsContainer = projectSetting.settingEl.createDiv('default-projects-container');
 		const projectsList = projectsContainer.createDiv('default-projects-list');
-		
+
 		// Add project button
 		const addProjectBtn = projectsContainer.createEl('button', {
 			cls: 'default-project-add-btn',
@@ -990,7 +993,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 
 		// Body template section
 		new Setting(container).setName('Body template').setHeading();
-		
+
 		new Setting(container)
 			.setName('Use body template')
 			.setDesc('Pre-fill task details with content from a template file')
@@ -1037,8 +1040,8 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 		helpList.createEl('li', { text: '{{dueDate}} - Task due date' });
 		helpList.createEl('li', { text: '{{scheduledDate}} - Task scheduled date' });
 		helpList.createEl('li', { text: '{{parentNote}} - Parent note as a properly formatted markdown link' });
-		
-		helpContainer.createEl('p', { 
+
+		helpContainer.createEl('p', {
 			text: 'Template is applied when the task is created with all final values from the form. Use {{details}} to include user content from the Details field.\n{{parentNote}} will resolve to a quoted markdown link (e.g., "[[Note Name]]") for the note where the task was created. For project organization, use it as a YAML list item: "project:\\n  - {{parentNote}}". Variables use the same format as daily note templates.',
 			cls: 'settings-help-note'
 		});
@@ -1047,7 +1050,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 		new Setting(container).setName('Reminder defaults').setHeading();
 
 		const reminderSection = container.createDiv('reminder-defaults-section');
-		reminderSection.createEl('p', { 
+		reminderSection.createEl('p', {
 			text: 'Configure default reminders that will be automatically added to new tasks. These can be relative to due or scheduled dates.',
 			cls: 'settings-help-note'
 		});
@@ -1061,13 +1064,13 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 
 
 	}
-	
+
 	private renderCalendarTab(): void {
 		const container = this.tabContents['calendar'];
-		
+
 		// Calendar view section
 		new Setting(container).setName('Calendar view settings').setHeading();
-		
+
 		new Setting(container)
 			.setName('Default view')
 			.setDesc('Initial view when opening the Advanced Calendar')
@@ -1237,8 +1240,8 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 
 		// Event visibility section
 		new Setting(container).setName('Default event visibility').setHeading();
-		
-		container.createEl('p', { 
+
+		container.createEl('p', {
 			text: 'Configure which event types are visible by default when opening the Advanced Calendar. Users can still toggle these on/off in the calendar view.',
 			cls: 'settings-help-note'
 		});
@@ -1407,31 +1410,31 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 
 		// ICS Calendar Subscriptions section
 		new Setting(container).setName('Calendar subscriptions').setHeading();
-		
+
 		// Description section
-		container.createEl('p', { 
+		container.createEl('p', {
 			text: 'Subscribe to external calendar feeds (ICS/iCal format) to display events alongside your tasks.',
 			cls: 'settings-help-note'
 		});
-		
+
 		// Subscription list
 		const subscriptionList = container.createDiv('settings-list settings-view__list');
 		this.renderSubscriptionList(subscriptionList);
-		
+
 		// Add subscription form
 		new Setting(container)
 			.setName('Add calendar subscription')
 			.setDesc('Subscribe to an external calendar feed or add a local ICS file');
-		
+
 		const addForm = container.createDiv('ics-add-subscription-form');
-		
+
 		// Type selection
 		const typeRow = addForm.createDiv('ics-form-row');
 		typeRow.createEl('label', { text: 'Source type:', cls: 'ics-form-label' });
 		const typeSelect = typeRow.createEl('select', { cls: 'ics-form-select' });
 		typeSelect.createEl('option', { value: 'remote', text: 'Remote URL' });
 		typeSelect.createEl('option', { value: 'local', text: 'Local file' });
-		
+
 		// Name input
 		const nameRow = addForm.createDiv('ics-form-row');
 		nameRow.createEl('label', { text: 'Name:', cls: 'ics-form-label' });
@@ -1440,7 +1443,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 			placeholder: 'My Calendar',
 			cls: 'ics-form-input'
 		});
-		
+
 		// URL input (for remote)
 		const urlRow = addForm.createDiv('ics-form-row');
 		urlRow.createEl('label', { text: 'ICS URL:', cls: 'ics-form-label' });
@@ -1449,44 +1452,44 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 			placeholder: 'https://example.com/calendar.ics',
 			cls: 'ics-form-input'
 		});
-		
+
 		// Local file selection (for local)
 		const fileRow = addForm.createDiv('ics-form-row ics-form-row-hidden');
 		fileRow.createEl('label', { text: 'ICS file:', cls: 'ics-form-label' });
 		const fileSelect = fileRow.createEl('select', { cls: 'ics-form-select' });
-		
+
 		// Function to update available ICS files
 		const updateLocalFiles = () => {
 			fileSelect.empty();
 			fileSelect.createEl('option', { value: '', text: 'Select an ICS file...' });
-			
+
 			const icsFiles = this.plugin.icsSubscriptionService?.getLocalICSFiles() || [];
 			icsFiles.forEach(file => {
 				fileSelect.createEl('option', { value: file.path, text: file.path });
 			});
-			
+
 			if (icsFiles.length === 0) {
 				fileSelect.createEl('option', { value: '', text: 'No .ics files found in vault', attr: { disabled: 'true' } });
 			}
 		};
-		
+
 		// Initial update
 		updateLocalFiles();
-		
+
 		// Type change handler
 		typeSelect.addEventListener('change', () => {
 			const isRemote = typeSelect.value === 'remote';
 			urlRow.style.display = isRemote ? 'flex' : 'none';
 			fileRow.style.display = isRemote ? 'none' : 'flex';
-			
+
 			if (!isRemote) {
 				updateLocalFiles();
 			}
 		});
-		
+
 		// Color and settings row
 		const settingsRow = addForm.createDiv('ics-form-row ics-form-row-multi');
-		
+
 		// Color input
 		const colorGroup = settingsRow.createDiv('ics-form-group');
 		colorGroup.createEl('label', { text: 'Color:', cls: 'ics-form-label' });
@@ -1495,7 +1498,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 			value: '#3788d8',
 			cls: 'ics-form-color'
 		});
-		
+
 		// Refresh interval input
 		const intervalGroup = settingsRow.createDiv('ics-form-group');
 		intervalGroup.createEl('label', { text: 'Refresh (min):', cls: 'ics-form-label' });
@@ -1507,7 +1510,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 		intervalInput.setAttribute('min', '15');
 		intervalInput.setAttribute('max', '1440');
 		intervalInput.setAttribute('step', '15');
-		
+
 		// Enabled checkbox
 		const enabledGroup = settingsRow.createDiv('ics-form-group');
 		const enabledLabel = enabledGroup.createEl('label', { cls: 'ics-form-checkbox-label' });
@@ -1517,14 +1520,14 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 		});
 		enabledCheckbox.checked = true;
 		enabledLabel.createSpan({ text: ' Enabled' });
-		
+
 		// Add button
 		const buttonRow = addForm.createDiv('ics-form-row');
 		const addButton = buttonRow.createEl('button', {
 			text: 'Add Subscription',
 			cls: 'ics-form-button mod-cta'
 		});
-		
+
 		addButton.addEventListener('click', async () => {
 			const name = nameInput.value.trim();
 			const type = typeSelect.value as 'remote' | 'local';
@@ -1533,31 +1536,31 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 			const color = colorInput.value;
 			const refreshInterval = parseInt(intervalInput.value);
 			const enabled = enabledCheckbox.checked;
-			
+
 			if (!name) {
 				new Notice('Name is required');
 				return;
 			}
-			
+
 			if (type === 'remote' && !url) {
 				new Notice('URL is required for remote subscriptions');
 				return;
 			}
-			
+
 			if (type === 'local' && !filePath) {
 				new Notice('Please select a local ICS file');
 				return;
 			}
-			
+
 			if (refreshInterval < 15 || refreshInterval > 1440) {
 				new Notice('Refresh interval must be between 15 and 1440 minutes');
 				return;
 			}
-			
+
 			try {
 				addButton.textContent = 'Adding...';
 				addButton.disabled = true;
-				
+
 				const subscriptionData = {
 					name,
 					type,
@@ -1566,11 +1569,11 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 					enabled,
 					...(type === 'remote' ? { url } : { filePath })
 				};
-				
+
 				await this.plugin.icsSubscriptionService!.addSubscription(subscriptionData);
-				
+
 				new Notice(`Added ${type} subscription "${name}"`);
-				
+
 				// Clear the form
 				nameInput.value = '';
 				urlInput.value = '';
@@ -1581,7 +1584,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 				typeSelect.value = 'remote';
 				urlRow.style.display = 'flex';
 				fileRow.style.display = 'none';
-				
+
 				// Refresh the subscription list
 				this.renderActiveTab();
 			} catch (error) {
@@ -1592,7 +1595,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 				addButton.disabled = false;
 			}
 		});
-		
+
 		// Refresh all button
 		new Setting(container)
 			.setName('Refresh all subscriptions')
@@ -1615,18 +1618,18 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 						}
 					}
 				}));
-		
+
 		// Help section
 		const helpContainer = container.createDiv('settings-help-section');
 		helpContainer.createEl('h4', { text: 'Calendar sources:' });
-		
+
 		// Remote URLs section
 		helpContainer.createEl('h5', { text: 'Remote calendar URLs:' });
 		const urlHelpList = helpContainer.createEl('ul');
 		urlHelpList.createEl('li', { text: 'Google Calendar: Settings → Calendar settings → Integrate calendar → Secret address in iCal format' });
 		urlHelpList.createEl('li', { text: 'Outlook/Office 365: Calendar settings → Share calendar → Publish a calendar → ICS format' });
 		urlHelpList.createEl('li', { text: 'Other services: Look for "Calendar subscription", "ICS feed", "iCal URL", or "Webcal" options' });
-		
+
 		// Local files section
 		helpContainer.createEl('h5', { text: 'Local ICS files:' });
 		const fileHelpList = helpContainer.createEl('ul');
@@ -1634,20 +1637,20 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 		fileHelpList.createEl('li', { text: 'Export from Apple Calendar: File → Export → Export as .ics file' });
 		fileHelpList.createEl('li', { text: 'Export from Google Calendar: Settings → Export → Download your data' });
 		fileHelpList.createEl('li', { text: 'Files are automatically watched for changes and refreshed' });
-		
-		helpContainer.createEl('p', { 
+
+		helpContainer.createEl('p', {
 			text: 'Important: For Google Calendar remote URLs, you must use the "Secret address" (private URL) from your calendar settings. The calendar must be set to "Make available to public" for the secret URL to work.',
 			cls: 'settings-help-note'
 		});
-		
-		helpContainer.createEl('p', { 
+
+		helpContainer.createEl('p', {
 			text: 'Note: Only read-only access is supported. You cannot edit calendar events from within TaskNotes.',
 			cls: 'settings-help-note'
 		});
 
 		// ICS Integration Settings
 		new Setting(container).setName('Content creation from events').setHeading();
-		
+
 		new Setting(container)
 			.setName('Default note template')
 			.setDesc('Template file for notes created from ICS events (leave empty for default format)')
@@ -1682,17 +1685,17 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 					await this.plugin.saveSettings();
 				}));
 	}
-	
+
 	private renderNotificationsTab(): void {
 		const container = this.tabContents['notifications'];
-		
+
 		new Setting(container).setName('Notifications').setHeading();
-		
-		container.createEl('p', { 
+
+		container.createEl('p', {
 			text: 'Configure task reminder notifications.',
 			cls: 'settings-help-note'
 		});
-		
+
 		new Setting(container)
 			.setName('Enable reminders')
 			.setDesc('Enable the task reminder system. When disabled, no reminder notifications will be shown.')
@@ -1702,7 +1705,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 					this.plugin.settings.enableNotifications = value;
 					await this.plugin.saveSettings();
 				}));
-		
+
 		new Setting(container)
 			.setName('Notification type')
 			.setDesc('Choose how reminder notifications are displayed.')
@@ -1714,20 +1717,20 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 					this.plugin.settings.notificationType = value;
 					await this.plugin.saveSettings();
 				}));
-		
+
 		// Additional info about system notifications
 		const systemNotesEl = container.createDiv({ cls: 'setting-item-description' });
 		systemNotesEl.innerHTML = `
-			<strong>System notifications:</strong> Use your operating system's native notification system. 
+			<strong>System notifications:</strong> Use your operating system's native notification system.
 			Requires permission and works even when Obsidian is minimized.<br>
 			<strong>In-app notices:</strong> Show notifications as temporary popups within Obsidian only.
 		`;
-		
+
 	}
-	
+
 	private renderAPITab(): void {
 		const container = this.tabContents['api'];
-		
+
 		// Show message on mobile
 		if (Platform.isMobile) {
 			const mobileMessage = container.createDiv({ cls: 'setting-item-description' });
@@ -1742,14 +1745,14 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 		}
 
 		container.createEl('h2', { text: 'HTTP API Settings' });
-		
+
 		// API description
 		const descEl = container.createDiv({ cls: 'setting-item-description' });
 		descEl.innerHTML = `
 			<p>Enable HTTP API server to allow external tools and scripts to interact with your TaskNotes data.</p>
 			<p><strong>Note:</strong> This feature is only available on desktop. Restart Obsidian after changing API settings.</p>
 		`;
-		
+
 		new Setting(container)
 			.setName('Enable HTTP API')
 			.setDesc('Enable HTTP API server for external tool integration.')
@@ -1764,7 +1767,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 						new Notice('API disabled. Restart Obsidian to stop the server.');
 					}
 				}));
-		
+
 		new Setting(container)
 			.setName('API Port')
 			.setDesc('Port for the HTTP API server (default: 8080)')
@@ -1780,7 +1783,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 					this.plugin.settings.apiPort = port;
 					await this.plugin.saveSettings();
 				}));
-		
+
 		new Setting(container)
 			.setName('API Authentication Token')
 			.setDesc('Optional token for API authentication. Leave empty to disable authentication.')
@@ -1791,19 +1794,19 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 					this.plugin.settings.apiAuthToken = value;
 					await this.plugin.saveSettings();
 				}));
-		
+
 		// Webhook settings section
 		container.createEl('h3', { text: 'Webhook Settings' });
-		
+
 		const webhookDescEl = container.createDiv({ cls: 'setting-item-description' });
 		webhookDescEl.innerHTML = `
 			<p>Webhooks send real-time notifications to external services when TaskNotes events occur.</p>
 			<p>Configure webhooks to integrate with automation tools, sync services, or custom applications.</p>
 		`;
-		
+
 		// Webhook management
 		this.renderWebhookList(container);
-		
+
 		// Add webhook button
 		new Setting(container)
 			.setName('Add Webhook')
@@ -1814,10 +1817,10 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 				.onClick(() => {
 					this.showWebhookModal();
 				}));
-		
+
 		// API documentation section
 		container.createEl('h3', { text: 'API Documentation' });
-		
+
 		const apiInfoEl = container.createDiv({ cls: 'setting-item-description' });
 		apiInfoEl.innerHTML = `
 			<h4>Available Endpoints:</h4>
@@ -1836,31 +1839,31 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 				<li><code>GET /api/filter-options</code> - Available filters</li>
 				<li><code>GET /api/stats</code> - Task statistics</li>
 			</ul>
-			
+
 			<h4>Usage Examples:</h4>
 			<p><strong>Basic request:</strong></p>
 			<pre><code>curl http://localhost:${this.plugin.settings.apiPort}/api/tasks</code></pre>
-			
+
 			<p><strong>With authentication:</strong></p>
 			<pre><code>curl -H "Authorization: Bearer YOUR_TOKEN" http://localhost:${this.plugin.settings.apiPort}/api/tasks</code></pre>
-			
+
 			<p><strong>Create task:</strong></p>
 			<pre><code>curl -X POST http://localhost:${this.plugin.settings.apiPort}/api/tasks \\
   -H "Content-Type: application/json" \\
   -d '{"title": "New task", "priority": "High"}'</code></pre>
-			
+
 			<p><strong>Filter tasks:</strong></p>
 			<pre><code>curl "http://localhost:${this.plugin.settings.apiPort}/api/tasks?status=open&priority=High"</code></pre>
 		`;
 	}
-	
+
 	private renderMiscTab(): void {
 		const container = this.tabContents['misc'];
-		
+
 		// Misc settings
 		new Setting(container).setName('Miscellaneous settings').setHeading();
-		
-		container.createEl('p', { 
+
+		container.createEl('p', {
 			text: 'Configure various plugin features and display options.',
 			cls: 'settings-help-note'
 		});
@@ -1931,6 +1934,24 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 						this.plugin.notifyDataChanged();
 					});
 			});
+
+			// Chevron position preference for subtasks
+			new Setting(container)
+				.setName('Subtask chevron position')
+				.setDesc('Choose where the subtask expand/collapse chevron appears on task cards (default: Right)')
+				.addDropdown(dropdown => {
+					dropdown
+						.addOption('right', 'Right (default)')
+						.addOption('left', 'Left (match group chevrons)')
+						.setValue(this.plugin.settings.subtaskChevronPosition || 'right')
+						.onChange(async (value: 'right' | 'left') => {
+							this.plugin.settings.subtaskChevronPosition = value;
+							await this.plugin.saveSettings();
+							// Refresh task views to apply the change
+							this.plugin.notifyDataChanged();
+						});
+				});
+
 		// Hide completed tasks from overdue
 		new Setting(container)
 			.setName('Hide completed tasks from overdue')
@@ -1958,38 +1979,38 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 					.onChange(async (value) => {
 						this.plugin.settings.disableNoteIndexing = value;
 						await this.plugin.saveSettings();
-						
+
 						// Show notice about restart requirement
 						new Notice('Note indexing setting changed. Please restart Obsidian or reload the plugin for changes to take effect.');
 					});
 			});
 	}
-	
+
 	private renderFieldMappingTab(): void {
 		const container = this.tabContents['field-mapping'];
-		
+
 		// Warning message
 		const warning = container.createDiv('settings-warning settings-view__warning');
 		const warningIcon = warning.createEl('strong', { cls: 'settings-view__warning-icon' });
 		setIcon(warningIcon, 'alert-triangle');
 		warningIcon.createSpan({ text: ' Warning:' });
 		warning.createSpan({ text: ' TaskNotes will read AND write using these property names. Changing these after creating tasks may cause inconsistencies.' });
-		
+
 		new Setting(container)
 			.setName('Field mapping')
 			.setHeading();
-		container.createEl('p', { 
+		container.createEl('p', {
 			text: 'Configure which frontmatter properties TaskNotes should use for each field.',
 			cls: 'settings-help-note'
 		});
-		
+
 		// Create mapping table
 		const table = container.createEl('table', { cls: 'settings-table settings-view__table' });
-		
+
 		const header = table.createEl('tr');
 		header.createEl('th', { cls: 'settings-view__table-header', text: 'TaskNotes field' });
 		header.createEl('th', { cls: 'settings-view__table-header', text: 'Your property name' });
-		
+
 		const fieldMappings: Array<[keyof FieldMapping, string]> = [
 			['title', 'Title'],
 			['status', 'Status'],
@@ -2007,14 +2028,14 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 			['icsEventId', 'ICS Event ID'],
 			['icsEventTag', 'ICS Event Tag']
 		];
-		
+
 		fieldMappings.forEach(([field, label]) => {
 			const row = table.createEl('tr', { cls: 'settings-view__table-row' });
 			const labelCell = row.createEl('td', { cls: 'settings-view__table-cell' });
 			labelCell.textContent = label;
-			
+
 			const inputCell = row.createEl('td', { cls: 'settings-view__table-cell' });
-			
+
 			const input = inputCell.createEl('input', {
 				type: 'text',
 				value: this.plugin.settings.fieldMapping[field],
@@ -2024,7 +2045,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 					'id': `field-mapping-${field}`
 				}
 			});
-			
+
 			input.addEventListener('change', async () => {
 				try {
 					this.plugin.settings.fieldMapping[field] = input.value;
@@ -2035,7 +2056,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 				}
 			});
 		});
-		
+
 		// Reset button
 		new Setting(container)
 			.setName('Reset to defaults')
@@ -2049,20 +2070,20 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 					this.renderActiveTab();
 				}));
 	}
-	
+
 	private renderStatusesTab(): void {
 		const container = this.tabContents['statuses'];
-		
+
 		new Setting(container)
 			.setName('Task statuses')
 			.setHeading();
-		
+
 		// Description section
-		container.createEl('p', { 
+		container.createEl('p', {
 			text: 'Customize the status options available for your tasks. These statuses control the task lifecycle and determine when tasks are considered complete.',
 			cls: 'settings-help-note'
 		});
-		
+
 		// Help section
 		const helpContainer = container.createDiv('settings-help-section');
 		helpContainer.createEl('h4', { text: 'How statuses work:' });
@@ -2071,12 +2092,12 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 		helpList.createEl('li', { text: 'Label: The display name shown in the interface (e.g., "In Progress")' });
 		helpList.createEl('li', { text: 'Color: Visual indicator color for the status dot and badges' });
 		helpList.createEl('li', { text: 'Completed: When checked, tasks with this status are considered finished and may be filtered differently' });
-		
-		helpContainer.createEl('p', { 
+
+		helpContainer.createEl('p', {
 			text: 'The order below determines the sequence when cycling through statuses by clicking on task status badges.',
 			cls: 'settings-help-note'
 		});
-		
+
 		// Column headers
 		const headersRow = container.createDiv('settings-headers-row settings-view__list-headers');
 		headersRow.createDiv('settings-header-spacer settings-view__header-spacer'); // For drag handle space
@@ -2086,12 +2107,12 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 		headersRow.createEl('span', { text: 'Color', cls: 'settings-column-header settings-view__column-header' });
 		headersRow.createEl('span', { text: 'Mark as Completed', cls: 'settings-column-header settings-view__column-header' });
 		headersRow.createDiv('settings-header-spacer settings-view__header-spacer'); // For delete button space
-		
+
 		// Status list
 		const statusList = container.createDiv('settings-list settings-view__list');
-		
+
 		this.renderStatusList(statusList);
-		
+
 		// Add status button
 		new Setting(container)
 			.setName('Add new status')
@@ -2104,33 +2125,33 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 					await this.plugin.saveSettings();
 					this.renderActiveTab();
 				}));
-		
+
 		// Validation note
-		container.createEl('p', { 
+		container.createEl('p', {
 			text: 'Note: You must have at least 2 statuses, and at least one status must be marked as "Completed".',
 			cls: 'settings-validation-note'
 		});
 	}
-	
+
 	private renderStatusList(container: HTMLElement): void {
 		container.empty();
-		
+
 		const sortedStatuses = [...this.plugin.settings.customStatuses].sort((a, b) => a.order - b.order);
-		
+
 		sortedStatuses.forEach((status, index) => {
 			const statusRow = container.createDiv('settings-item-row settings-view__item-row');
 			statusRow.setAttribute('draggable', 'true');
 			statusRow.setAttribute('data-status-id', status.id);
-			
+
 			// Drag handle
 			const dragHandle = statusRow.createDiv('settings-drag-handle');
 			dragHandle.textContent = '☰';
 			setTooltip(dragHandle, 'Drag to reorder', { placement: 'top' });
-			
+
 			// Color indicator
 			const colorIndicator = statusRow.createDiv('settings-color-indicator settings-view__color-indicator');
 			colorIndicator.style.setProperty('--indicator-color', status.color);
-			
+
 			// Status value input
 			const valueInput = statusRow.createEl('input', {
 				type: 'text',
@@ -2141,7 +2162,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 					'id': `status-value-${status.id}`
 				}
 			});
-			
+
 			// Status label input
 			const labelInput = statusRow.createEl('input', {
 				type: 'text',
@@ -2152,7 +2173,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 					'id': `status-label-${status.id}`
 				}
 			});
-			
+
 			// Color input
 			const colorInput = statusRow.createEl('input', {
 				type: 'color',
@@ -2163,13 +2184,13 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 					'id': `status-color-${status.id}`
 				}
 			});
-			
+
 			// Completed checkbox
-			const completedLabel = statusRow.createEl('label', { 
+			const completedLabel = statusRow.createEl('label', {
 				cls: 'settings-checkbox-label settings-view__checkbox-label',
 				attr: { 'for': `status-completed-${status.id}` }
 			});
-			
+
 			const completedCheckbox = completedLabel.createEl('input', {
 				type: 'checkbox',
 				cls: 'settings-view__checkbox',
@@ -2179,15 +2200,15 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 				}
 			});
 			completedCheckbox.checked = status.isCompleted;
-			
+
 			completedLabel.createSpan({ text: 'Completed' });
-			
+
 			// Delete button
 			const deleteButton = statusRow.createEl('button', {
 				text: 'Delete',
 				cls: 'settings-delete-button settings-view__delete-button'
 			});
-			
+
 			// Event listeners
 			const updateStatus = async () => {
 				try {
@@ -2202,18 +2223,18 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 					new Notice('Failed to update status configuration. Please try again.');
 				}
 			};
-			
+
 			valueInput.addEventListener('change', updateStatus);
 			labelInput.addEventListener('change', updateStatus);
 			colorInput.addEventListener('change', updateStatus);
 			completedCheckbox.addEventListener('change', updateStatus);
-			
+
 			deleteButton.addEventListener('click', async () => {
 				if (this.plugin.settings.customStatuses.length <= 2) {
 					new Notice('You must have at least 2 statuses');
 					return;
 				}
-				
+
 				// Show confirmation dialog using Obsidian's Modal API
 				const confirmed = await showConfirmationModal(this.app, {
 					title: 'Delete Status',
@@ -2222,7 +2243,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 					cancelText: 'Cancel',
 					isDestructive: true
 				});
-				
+
 				if (confirmed) {
 					const statusIndex = this.plugin.settings.customStatuses.findIndex(s => s.id === status.id);
 					if (statusIndex !== -1) {
@@ -2232,17 +2253,17 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 					}
 				}
 			});
-			
+
 			// Drag and drop event handlers
 			statusRow.addEventListener('dragstart', (e) => {
 				e.dataTransfer!.setData('text/plain', status.id);
 				statusRow.classList.add('dragging');
 			});
-			
+
 			statusRow.addEventListener('dragend', () => {
 				statusRow.classList.remove('dragging');
 			});
-			
+
 			statusRow.addEventListener('dragover', (e) => {
 				e.preventDefault();
 				const draggingRow = container.querySelector('.dragging') as HTMLElement;
@@ -2258,80 +2279,80 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 					}
 				}
 			});
-			
+
 			statusRow.addEventListener('dragleave', () => {
 				statusRow.classList.remove('drag-over-top', 'drag-over-bottom');
 			});
-			
+
 			statusRow.addEventListener('drop', async (e) => {
 				e.preventDefault();
 				statusRow.classList.remove('drag-over-top', 'drag-over-bottom');
-				
+
 				const draggedStatusId = e.dataTransfer!.getData('text/plain');
 				const targetStatusId = status.id;
-				
+
 				if (draggedStatusId !== targetStatusId) {
 					await this.reorderStatus(draggedStatusId, targetStatusId, e.clientY < statusRow.getBoundingClientRect().top + statusRow.getBoundingClientRect().height / 2);
 				}
 			});
 		});
 	}
-	
+
 	private async reorderStatus(draggedStatusId: string, targetStatusId: string, insertBefore: boolean): Promise<void> {
 		const statuses = [...this.plugin.settings.customStatuses];
-		
+
 		// Find the dragged and target statuses
 		const draggedIndex = statuses.findIndex(s => s.id === draggedStatusId);
 		const targetIndex = statuses.findIndex(s => s.id === targetStatusId);
-		
+
 		if (draggedIndex === -1 || targetIndex === -1) {
 			return;
 		}
-		
+
 		// Remove the dragged status from its current position
 		const [draggedStatus] = statuses.splice(draggedIndex, 1);
-		
+
 		// Determine the new position
 		let newIndex = targetIndex;
 		if (draggedIndex < targetIndex) {
 			// If we removed an item before the target, adjust the target index
 			newIndex--;
 		}
-		
+
 		if (!insertBefore) {
 			// Insert after the target
 			newIndex++;
 		}
-		
+
 		// Insert the dragged status at the new position
 		statuses.splice(newIndex, 0, draggedStatus);
-		
+
 		// Update the order values
 		statuses.forEach((status, index) => {
 			status.order = index;
 		});
-		
+
 		// Save the updated statuses
 		this.plugin.settings.customStatuses = statuses;
 		await this.plugin.saveSettings();
-		
+
 		// Re-render the list to reflect the new order
 		this.renderActiveTab();
 	}
-	
+
 	private renderPrioritiesTab(): void {
 		const container = this.tabContents['priorities'];
-		
+
 		new Setting(container)
 			.setName('Task priorities')
 			.setHeading();
-		
+
 		// Description section
-		container.createEl('p', { 
+		container.createEl('p', {
 			text: 'Customize the priority levels available for your tasks. Priority weights determine sorting order and visual hierarchy in your task views.',
 			cls: 'settings-help-note'
 		});
-		
+
 		// Help section
 		const helpContainer = container.createDiv('settings-help-section');
 		helpContainer.createEl('h4', { text: 'How priorities work:' });
@@ -2340,12 +2361,12 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 		helpList.createEl('li', { text: 'Display Label: The display name shown in the interface (e.g., "High Priority")' });
 		helpList.createEl('li', { text: 'Color: Visual indicator color for the priority dot and badges' });
 		helpList.createEl('li', { text: 'Weight: Numeric value for sorting (higher weights appear first in lists)' });
-		
-		helpContainer.createEl('p', { 
+
+		helpContainer.createEl('p', {
 			text: 'Tasks are automatically sorted by priority weight in descending order (highest weight first). Weights can be any positive number.',
 			cls: 'settings-help-note'
 		});
-		
+
 		// Column headers
 		const headersRow = container.createDiv('settings-headers-row settings-view__list-headers');
 		headersRow.createDiv('settings-header-spacer settings-view__header-spacer'); // For color indicator space
@@ -2354,12 +2375,12 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 		headersRow.createEl('span', { text: 'Color', cls: 'settings-column-header settings-view__column-header' });
 		headersRow.createEl('span', { text: 'Weight', cls: 'settings-column-header settings-view__column-header' });
 		headersRow.createDiv('settings-header-spacer settings-view__header-spacer'); // For delete button space
-		
+
 		// Priority list
 		const priorityList = container.createDiv('settings-list settings-view__list');
-		
+
 		this.renderPriorityList(priorityList);
-		
+
 		// Add priority button
 		new Setting(container)
 			.setName('Add new priority')
@@ -2372,26 +2393,26 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 					await this.plugin.saveSettings();
 					this.renderActiveTab();
 				}));
-		
+
 		// Validation note
-		container.createEl('p', { 
+		container.createEl('p', {
 			text: 'Note: You must have at least 1 priority. Higher weights take precedence in sorting and visual hierarchy.',
 			cls: 'settings-validation-note'
 		});
 	}
-	
+
 	private renderPriorityList(container: HTMLElement): void {
 		container.empty();
-		
+
 		const sortedPriorities = [...this.plugin.settings.customPriorities].sort((a, b) => b.weight - a.weight);
-		
+
 		sortedPriorities.forEach((priority, index) => {
 			const priorityRow = container.createDiv('settings-item-row settings-view__item-row');
-			
+
 			// Color indicator
 			const colorIndicator = priorityRow.createDiv('settings-color-indicator settings-view__color-indicator');
 			colorIndicator.style.setProperty('--indicator-color', priority.color);
-			
+
 			// Priority value input
 			const valueInput = priorityRow.createEl('input', {
 				type: 'text',
@@ -2402,7 +2423,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 					'id': `priority-value-${priority.id}`
 				}
 			});
-			
+
 			// Priority label input
 			const labelInput = priorityRow.createEl('input', {
 				type: 'text',
@@ -2413,7 +2434,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 					'id': `priority-label-${priority.id}`
 				}
 			});
-			
+
 			// Color input
 			const colorInput = priorityRow.createEl('input', {
 				type: 'color',
@@ -2424,26 +2445,26 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 					'id': `priority-color-${priority.id}`
 				}
 			});
-			
+
 			// Weight input
 			const weightInput = priorityRow.createEl('input', {
 				type: 'number',
 				value: priority.weight.toString(),
 				cls: 'settings-input weight-input settings-view__input settings-view__input--weight',
-				attr: { 
-					min: '0', 
+				attr: {
+					min: '0',
 					step: '1',
 					'aria-label': `Weight for ${priority.label} priority`,
 					'id': `priority-weight-${priority.id}`
 				}
 			});
-			
+
 			// Delete button
 			const deleteButton = priorityRow.createEl('button', {
 				text: 'Delete',
 				cls: 'settings-delete-button settings-view__delete-button'
 			});
-			
+
 			// Event listeners
 			const updatePriority = async () => {
 				try {
@@ -2463,18 +2484,18 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 					new Notice('Failed to update priority configuration. Please try again.');
 				}
 			};
-			
+
 			valueInput.addEventListener('change', updatePriority);
 			labelInput.addEventListener('change', updatePriority);
 			colorInput.addEventListener('change', updatePriority);
 			weightInput.addEventListener('change', updatePriority);
-			
+
 			deleteButton.addEventListener('click', async () => {
 				if (this.plugin.settings.customPriorities.length <= 1) {
 					new Notice('You must have at least 1 priority');
 					return;
 				}
-				
+
 				// Show confirmation dialog using Obsidian's Modal API
 				const confirmed = await showConfirmationModal(this.app, {
 					title: 'Delete Priority',
@@ -2483,7 +2504,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 					cancelText: 'Cancel',
 					isDestructive: true
 				});
-				
+
 				if (confirmed) {
 					const priorityIndex = this.plugin.settings.customPriorities.findIndex(p => p.id === priority.id);
 					if (priorityIndex !== -1) {
@@ -2495,11 +2516,11 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 			});
 		});
 	}
-	
-	
+
+
 	private renderPomodoroTab(): void {
 		const container = this.tabContents['pomodoro'];
-		
+
 		new Setting(container)
 			.setName('Work duration')
 			.setDesc('Duration of work intervals in minutes')
@@ -2658,11 +2679,11 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 								dropdown.setValue('plugin'); // Reset to plugin storage
 								return;
 							}
-							
+
 							// Check if there's existing data to migrate
 							const data = await this.plugin.loadData();
 							const hasExistingData = data?.pomodoroHistory && Array.isArray(data.pomodoroHistory) && data.pomodoroHistory.length > 0;
-							
+
 							// Show confirmation dialog using Obsidian's Modal API
 							const confirmed = await showStorageLocationConfirmationModal(this.app, hasExistingData);
 							if (!confirmed) {
@@ -2670,15 +2691,15 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 								return;
 							}
 						}
-						
+
 						this.plugin.settings.pomodoroStorageLocation = value;
 						await this.plugin.saveSettings();
-						
+
 						// Trigger migration if switching to daily-notes and there's data to migrate
 						if (value === 'daily-notes') {
 							await this.plugin.pomodoroService.migrateTodailyNotes();
 						}
-						
+
 					} catch (error) {
 						console.error('Error updating pomodoro storage location:', error);
 						new Notice('Failed to update storage location setting.');
@@ -2711,22 +2732,22 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 
 	private renderSubscriptionList(container: HTMLElement): void {
 		container.empty();
-		
+
 		if (!this.plugin.icsSubscriptionService) {
 			container.createEl('p', { text: 'ICS Subscription service not available', cls: 'settings-help-note' });
 			return;
 		}
-		
+
 		const subscriptions = this.plugin.icsSubscriptionService.getSubscriptions();
-		
+
 		if (subscriptions.length === 0) {
 			container.createEl('p', { text: 'No calendar subscriptions configured', cls: 'settings-help-note' });
 			return;
 		}
-		
+
 		subscriptions.forEach(subscription => {
 			const subRow = container.createDiv('settings-item-row ics-subscription-row');
-			
+
 			// Status indicator
 			const statusIndicator = subRow.createDiv('settings-status-indicator');
 			if (subscription.enabled) {
@@ -2739,34 +2760,34 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 				statusIndicator.addClass('disabled');
 				setTooltip(statusIndicator, 'Disabled', { placement: 'top' });
 			}
-			
+
 			// Subscription info
 			const infoContainer = subRow.createDiv('ics-subscription-info');
 			const nameEl = infoContainer.createEl('div', { cls: 'ics-subscription-name', text: subscription.name });
-			
+
 			// Type badge
-			nameEl.createEl('span', { 
+			nameEl.createEl('span', {
 				cls: `ics-subscription-type-badge ${subscription.type}`,
 				text: subscription.type === 'remote' ? 'URL' : 'FILE'
 			});
-			
+
 			// Source (URL or file path)
 			const sourceText = subscription.type === 'remote' ? subscription.url : subscription.filePath;
 			infoContainer.createEl('div', { cls: 'ics-subscription-url', text: sourceText || 'Unknown source' });
 			const metaEl = infoContainer.createEl('div', { cls: 'ics-subscription-meta' });
-			
+
 			// Meta information
 			const refreshText = `Refresh: ${subscription.refreshInterval}min`;
 			const lastFetched = subscription.lastFetched ? ` • Last: ${new Date(subscription.lastFetched).toLocaleString()}` : '';
 			metaEl.textContent = refreshText + lastFetched;
-			
+
 			if (subscription.lastError) {
 				infoContainer.createEl('div', { cls: 'ics-subscription-error', text: `Error: ${subscription.lastError}` });
 			}
-			
+
 			// Actions
 			const actionsContainer = subRow.createDiv('ics-subscription-actions');
-			
+
 			// Enable/disable toggle
 			const enableButton = actionsContainer.createEl('button', {
 				text: subscription.enabled ? 'Disable' : 'Enable',
@@ -2783,7 +2804,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 					new Notice('Failed to update subscription');
 				}
 			});
-			
+
 			// Refresh button
 			const refreshButton = actionsContainer.createEl('button', {
 				text: 'Refresh',
@@ -2794,7 +2815,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 					new Notice('Enable the subscription first');
 					return;
 				}
-				
+
 				refreshButton.textContent = 'Refreshing...';
 				refreshButton.disabled = true;
 				try {
@@ -2809,7 +2830,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 					refreshButton.disabled = false;
 				}
 			});
-			
+
 			// Edit button
 			const editButton = actionsContainer.createEl('button', {
 				text: 'Edit',
@@ -2818,7 +2839,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 			editButton.addEventListener('click', () => {
 				this.showInlineEditForm(subscription, subRow);
 			});
-			
+
 			// Delete button
 			const deleteButton = actionsContainer.createEl('button', {
 				text: 'Delete',
@@ -2851,13 +2872,13 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 	private showInlineEditForm(subscription: any, rowElement: HTMLElement): void {
 		// Store reference to original row content for restoration
 		const originalChildren = Array.from(rowElement.children);
-		
+
 		// Clear the row and create edit form
 		rowElement.empty();
 		rowElement.addClass('ics-subscription-editing');
-		
+
 		const editForm = rowElement.createDiv('ics-edit-form');
-		
+
 		// Name input
 		const nameRow = editForm.createDiv('ics-edit-row');
 		nameRow.createEl('label', { text: 'Name:', cls: 'ics-edit-label' });
@@ -2866,7 +2887,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 			value: subscription.name,
 			cls: 'ics-edit-input'
 		});
-		
+
 		// URL input
 		const urlRow = editForm.createDiv('ics-edit-row');
 		urlRow.createEl('label', { text: 'URL:', cls: 'ics-edit-label' });
@@ -2875,10 +2896,10 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 			value: subscription.url,
 			cls: 'ics-edit-input'
 		});
-		
+
 		// Settings row
 		const settingsRow = editForm.createDiv('ics-edit-row ics-edit-settings');
-		
+
 		// Color
 		const colorGroup = settingsRow.createDiv('ics-edit-group');
 		colorGroup.createEl('label', { text: 'Color:', cls: 'ics-edit-label' });
@@ -2887,7 +2908,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 			value: subscription.color,
 			cls: 'ics-edit-color'
 		});
-		
+
 		// Refresh interval
 		const intervalGroup = settingsRow.createDiv('ics-edit-group');
 		intervalGroup.createEl('label', { text: 'Refresh (min):', cls: 'ics-edit-label' });
@@ -2899,7 +2920,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 		intervalInput.setAttribute('min', '15');
 		intervalInput.setAttribute('max', '1440');
 		intervalInput.setAttribute('step', '15');
-		
+
 		// Enabled checkbox
 		const enabledGroup = settingsRow.createDiv('ics-edit-group');
 		const enabledLabel = enabledGroup.createEl('label', { cls: 'ics-edit-checkbox-label' });
@@ -2909,7 +2930,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 		});
 		enabledCheckbox.checked = subscription.enabled;
 		enabledLabel.createSpan({ text: ' Enabled' });
-		
+
 		// Buttons row
 		const buttonsRow = editForm.createDiv('ics-edit-row ics-edit-buttons');
 		const saveButton = buttonsRow.createEl('button', {
@@ -2920,7 +2941,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 			text: 'Cancel',
 			cls: 'ics-edit-button'
 		});
-		
+
 		// Save handler
 		saveButton.addEventListener('click', async () => {
 			const name = nameInput.value.trim();
@@ -2928,25 +2949,25 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 			const color = colorInput.value;
 			const refreshInterval = parseInt(intervalInput.value);
 			const enabled = enabledCheckbox.checked;
-			
+
 			if (!name || !url) {
 				new Notice('Name and URL are required');
 				return;
 			}
-			
+
 			if (refreshInterval < 15 || refreshInterval > 1440) {
 				new Notice('Refresh interval must be between 15 and 1440 minutes');
 				return;
 			}
-			
+
 			try {
 				saveButton.textContent = 'Saving...';
 				saveButton.disabled = true;
-				
+
 				await this.plugin.icsSubscriptionService!.updateSubscription(subscription.id, {
 					name, url, color, refreshInterval, enabled
 				});
-				
+
 				new Notice(`Updated subscription "${name}"`);
 				this.renderActiveTab();
 			} catch (error) {
@@ -2954,7 +2975,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 				new Notice('Failed to update subscription');
 			}
 		});
-		
+
 		// Cancel handler
 		cancelButton.addEventListener('click', () => {
 			rowElement.empty();
@@ -2964,7 +2985,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 			// Re-attach event listeners by re-rendering
 			this.renderActiveTab();
 		});
-		
+
 		// Focus the name input
 		window.setTimeout(() => nameInput.focus(), 50);
 	}
@@ -2979,7 +3000,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 
 		const projectStrings = defaultProjects.split(',').map(p => p.trim()).filter(p => p.length > 0);
 		this.selectedDefaultProjectFiles = [];
-		
+
 		for (const projectString of projectStrings) {
 			// Check if it's a wiki link format
 			const linkMatch = projectString.match(/^\[\[([^\]]+)\]\]$/);
@@ -2992,8 +3013,8 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 			} else {
 				// For backwards compatibility, try to find a file with this name
 				const files = this.app.vault.getMarkdownFiles();
-				const matchingFile = files.find(f => 
-					f.basename === projectString || 
+				const matchingFile = files.find(f =>
+					f.basename === projectString ||
 					f.name === projectString + '.md'
 				);
 				if (matchingFile) {
@@ -3030,22 +3051,22 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 
 		this.selectedDefaultProjectFiles.forEach(file => {
 			const projectItem = container.createDiv({ cls: 'default-project-item' });
-			
+
 			// Info container
 			const infoEl = projectItem.createDiv({ cls: 'default-project-info' });
-			
+
 			// File name
 			const nameEl = infoEl.createSpan({ cls: 'default-project-name' });
 			nameEl.textContent = file.name;
-			
+
 			// File path (if different from name)
 			if (file.path !== file.name) {
 				const pathEl = infoEl.createDiv({ cls: 'default-project-path' });
 				pathEl.textContent = file.path;
 			}
-			
+
 			// Remove button
-			const removeBtn = projectItem.createEl('button', { 
+			const removeBtn = projectItem.createEl('button', {
 				cls: 'default-project-remove',
 				text: '×'
 			});
@@ -3062,7 +3083,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 		// Convert selected files to markdown links
 		const currentFile = this.app.workspace.getActiveFile();
 		const sourcePath = currentFile?.path || '';
-		
+
 		const projectStrings = this.selectedDefaultProjectFiles.map(file => {
 			// fileToLinktext expects TFile, so cast safely since we know these are markdown files
 			const linkText = this.app.metadataCache.fileToLinktext(file as TFile, sourcePath, true);
@@ -3075,36 +3096,36 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 
 	private renderDefaultRemindersList(container: HTMLElement): void {
 		container.empty();
-		
+
 		const reminders = this.plugin.settings.taskCreationDefaults.defaultReminders || [];
-		
+
 		if (reminders.length === 0) {
 			const emptyState = container.createDiv({ cls: 'reminder-defaults-empty' });
 			setIcon(emptyState.createDiv({ cls: 'reminder-defaults-empty-icon' }), 'bell-off');
-			emptyState.createEl('div', { 
+			emptyState.createEl('div', {
 				cls: 'reminder-defaults-empty-text',
-				text: 'No default reminders configured' 
+				text: 'No default reminders configured'
 			});
 			return;
 		}
-		
+
 		const remindersList = container.createDiv({ cls: 'reminder-defaults-items' });
-		
+
 		reminders.forEach((reminder, index) => {
 			const reminderCard = remindersList.createDiv({ cls: 'reminder-defaults-card' });
-			
+
 			// Reminder type icon
 			const iconContainer = reminderCard.createDiv({ cls: 'reminder-defaults-icon' });
 			const iconName = reminder.type === 'absolute' ? 'calendar-clock' : 'timer';
 			setIcon(iconContainer, iconName);
-			
+
 			// Main content area
 			const content = reminderCard.createDiv({ cls: 'reminder-defaults-content' });
-			
+
 			// Primary info (timing)
 			const primaryInfo = content.createDiv({ cls: 'reminder-defaults-primary' });
 			primaryInfo.textContent = this.formatDefaultReminderText(reminder);
-			
+
 			// Custom description (if any)
 			if (reminder.description) {
 				const description = content.createDiv({ cls: 'reminder-defaults-description' });
@@ -3113,9 +3134,9 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 
 			// Actions area
 			const actions = reminderCard.createDiv({ cls: 'reminder-defaults-actions' });
-			
+
 			// Remove button
-			const removeBtn = actions.createEl('button', { 
+			const removeBtn = actions.createEl('button', {
 				cls: 'reminder-defaults-remove-btn'
 			});
 			setIcon(removeBtn, 'trash-2');
@@ -3128,27 +3149,27 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 
 	private renderAddDefaultReminderForm(container: HTMLElement): void {
 		const formContainer = container.createDiv({ cls: 'reminder-defaults-form' });
-		
-		const formHeader = formContainer.createEl('h4', { 
+
+		const formHeader = formContainer.createEl('h4', {
 			text: 'Add Default Reminder',
 			cls: 'reminder-defaults-form-header'
 		});
-		
+
 		// Type selector
 		const typeSelector = formContainer.createDiv({ cls: 'reminder-defaults-type-selector' });
-		
-		const relativeTab = typeSelector.createEl('button', { 
+
+		const relativeTab = typeSelector.createEl('button', {
 			cls: 'reminder-defaults-type-tab reminder-defaults-type-tab--active',
 			text: 'Relative',
 			attr: { 'data-type': 'relative' }
 		});
-		
-		const absoluteTab = typeSelector.createEl('button', { 
+
+		const absoluteTab = typeSelector.createEl('button', {
 			cls: 'reminder-defaults-type-tab',
 			text: 'Absolute',
 			attr: { 'data-type': 'absolute' }
 		});
-		
+
 		let selectedType: 'relative' | 'absolute' = 'relative';
 		let relativeAnchor: 'due' | 'scheduled' = 'due';
 		let relativeOffset = 15;
@@ -3157,7 +3178,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 		let absoluteDate = '';
 		let absoluteTime = '';
 		let description = '';
-		
+
 		// Tab switching
 		const switchToType = (type: 'relative' | 'absolute') => {
 			selectedType = type;
@@ -3165,7 +3186,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 			absoluteTab.classList.toggle('reminder-defaults-type-tab--active', type === 'absolute');
 			updateFormVisibility();
 		};
-		
+
 		relativeTab.onclick = () => switchToType('relative');
 		absoluteTab.onclick = () => switchToType('absolute');
 
@@ -3257,15 +3278,15 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 			});
 
 		// Add button
-		const addBtn = formContainer.createEl('button', { 
+		const addBtn = formContainer.createEl('button', {
 			cls: 'reminder-defaults-add-btn'
 		});
-		
+
 		const addIcon = addBtn.createSpan({ cls: 'reminder-defaults-add-icon' });
 		setIcon(addIcon, 'plus');
-		addBtn.createSpan({ 
+		addBtn.createSpan({
 			cls: 'reminder-defaults-add-text',
-			text: 'Add Default Reminder' 
+			text: 'Add Default Reminder'
 		});
 
 		addBtn.onclick = async () => {
@@ -3280,10 +3301,10 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 					absoluteTime,
 					description
 				);
-				
+
 				if (newReminder) {
 					await this.addDefaultReminder(newReminder);
-					
+
 					// Reset form
 					if (selectedType === 'relative') {
 						relativeOffset = 15;
@@ -3294,7 +3315,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 						absoluteTime = '';
 						description = '';
 					}
-					
+
 					// Reset form inputs
 					this.resetDefaultReminderForm(formContainer);
 				}
@@ -3303,12 +3324,12 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 				new Notice('Failed to add default reminder. Please check your inputs.');
 			}
 		};
-		
+
 		const updateFormVisibility = () => {
 			relativeFields.style.display = selectedType === 'relative' ? 'block' : 'none';
 			absoluteFields.style.display = selectedType === 'absolute' ? 'block' : 'none';
 		};
-		
+
 		// Set initial form visibility
 		updateFormVisibility();
 	}
@@ -3328,7 +3349,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 
 	private formatDefaultReminderOffset(reminder: DefaultReminder): string {
 		if (!reminder.offset || !reminder.unit) return 'At time of';
-		
+
 		const direction = reminder.direction === 'before' ? 'before' : 'after';
 		const unit = reminder.offset === 1 ? reminder.unit.slice(0, -1) : reminder.unit; // Remove 's' for singular
 		return `${reminder.offset} ${unit} ${direction}`;
@@ -3376,31 +3397,31 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 		if (!this.plugin.settings.taskCreationDefaults.defaultReminders) {
 			this.plugin.settings.taskCreationDefaults.defaultReminders = [];
 		}
-		
+
 		this.plugin.settings.taskCreationDefaults.defaultReminders.push(reminder);
 		await this.plugin.saveSettings();
-		
+
 		// Re-render the list
 		const remindersList = document.querySelector('.reminder-defaults-list') as HTMLElement;
 		if (remindersList) {
 			this.renderDefaultRemindersList(remindersList);
 		}
-		
+
 		new Notice('Default reminder added successfully');
 	}
 
 	private async removeDefaultReminder(index: number): Promise<void> {
 		if (!this.plugin.settings.taskCreationDefaults.defaultReminders) return;
-		
+
 		this.plugin.settings.taskCreationDefaults.defaultReminders.splice(index, 1);
 		await this.plugin.saveSettings();
-		
+
 		// Re-render the list
 		const remindersList = document.querySelector('.reminder-defaults-list') as HTMLElement;
 		if (remindersList) {
 			this.renderDefaultRemindersList(remindersList);
 		}
-		
+
 		new Notice('Default reminder removed');
 	}
 
@@ -3414,7 +3435,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 				(input as HTMLSelectElement).selectedIndex = 0;
 			}
 		});
-		
+
 		// Reset number input to default
 		const offsetInput = formContainer.querySelector('input[placeholder="15"]') as HTMLInputElement;
 		if (offsetInput) offsetInput.value = '15';
@@ -3425,22 +3446,22 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 	 */
 	private renderWebhookList(container: HTMLElement): void {
 		const webhooksContainer = container.createDiv({ cls: 'webhooks-container' });
-		
+
 		if (!this.plugin.settings.webhooks || this.plugin.settings.webhooks.length === 0) {
 			const emptyState = webhooksContainer.createDiv({ cls: 'setting-item-description' });
 			emptyState.textContent = 'No webhooks configured. Add a webhook to receive real-time notifications.';
 			return;
 		}
-		
+
 		this.plugin.settings.webhooks.forEach((webhook, index) => {
 			const webhookItem = webhooksContainer.createDiv({ cls: 'webhook-item' });
-			
+
 			const webhookInfo = webhookItem.createDiv({ cls: 'webhook-info' });
 			webhookInfo.createEl('strong', { text: webhook.url });
-			
+
 			const eventsList = webhookInfo.createDiv({ cls: 'webhook-events' });
 			eventsList.textContent = `Events: ${webhook.events.join(', ')}`;
-			
+
 			const webhookStatus = webhookInfo.createDiv({ cls: 'webhook-status' });
 			webhookStatus.innerHTML = `
 				<span class="webhook-status-indicator ${webhook.active ? 'active' : 'inactive'}">
@@ -3450,9 +3471,9 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 					✓ ${webhook.successCount || 0} | ✗ ${webhook.failureCount || 0}
 				</span>
 			`;
-			
+
 			const webhookActions = webhookItem.createDiv({ cls: 'webhook-actions' });
-			
+
 			// Toggle active/inactive
 			const toggleBtn = webhookActions.createEl('button', {
 				text: webhook.active ? 'Disable' : 'Enable',
@@ -3464,7 +3485,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 				this.display(); // Refresh the settings
 				new Notice(`Webhook ${webhook.active ? 'enabled' : 'disabled'}`);
 			};
-			
+
 			// Delete webhook
 			const deleteBtn = webhookActions.createEl('button', {
 				text: 'Delete',
@@ -3478,7 +3499,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 					cancelText: 'Cancel',
 					isDestructive: true
 				});
-				
+
 				if (confirmed) {
 					this.plugin.settings.webhooks.splice(index, 1);
 					await this.plugin.saveSettings();
@@ -3488,7 +3509,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 			};
 		});
 	}
-	
+
 	/**
 	 * Show modal for adding a new webhook
 	 */
@@ -3505,21 +3526,21 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 				failureCount: 0,
 				successCount: 0
 			};
-			
+
 			if (!this.plugin.settings.webhooks) {
 				this.plugin.settings.webhooks = [];
 			}
-			
+
 			this.plugin.settings.webhooks.push(webhook);
 			await this.plugin.saveSettings();
 			this.display(); // Refresh settings
-			
+
 			new Notice(`Webhook added successfully!\n\nSecret: ${webhook.secret.substring(0, 8)}...`);
 		});
-		
+
 		modal.open();
 	}
-	
+
 	/**
 	 * Generate secure webhook secret
 	 */
@@ -3537,18 +3558,18 @@ class WebhookModal extends Modal {
 	private url = '';
 	private selectedEvents: string[] = [];
 	private onSubmit: (config: Partial<WebhookConfig>) => void;
-	
+
 	constructor(app: App, onSubmit: (config: Partial<WebhookConfig>) => void) {
 		super(app);
 		this.onSubmit = onSubmit;
 	}
-	
+
 	onOpen(): void {
 		const { contentEl } = this;
 		contentEl.empty();
-		
+
 		contentEl.createEl('h2', { text: 'Add Webhook' });
-		
+
 		// URL input
 		new Setting(contentEl)
 			.setName('Webhook URL')
@@ -3559,18 +3580,18 @@ class WebhookModal extends Modal {
 				.onChange((value) => {
 					this.url = value;
 				}));
-		
+
 		// Events selection
 		const eventsContainer = contentEl.createDiv();
 		eventsContainer.createEl('h3', { text: 'Events to subscribe to:' });
-		
+
 		const availableEvents = [
 			'task.created', 'task.updated', 'task.deleted', 'task.completed',
 			'task.archived', 'task.unarchived', 'time.started', 'time.stopped',
 			'pomodoro.started', 'pomodoro.completed', 'pomodoro.interrupted',
 			'recurring.instance.completed', 'reminder.triggered'
 		];
-		
+
 		availableEvents.forEach(event => {
 			const eventSetting = new Setting(eventsContainer)
 				.setName(event)
@@ -3588,14 +3609,14 @@ class WebhookModal extends Modal {
 						}
 					}));
 		});
-		
+
 		// Buttons
 		const buttonContainer = contentEl.createDiv({ cls: 'modal-button-container' });
-		
+
 		const cancelBtn = buttonContainer.createEl('button', { text: 'Cancel' });
 		cancelBtn.onclick = () => this.close();
-		
-		const saveBtn = buttonContainer.createEl('button', { 
+
+		const saveBtn = buttonContainer.createEl('button', {
 			text: 'Add Webhook',
 			cls: 'mod-cta'
 		});
@@ -3604,21 +3625,21 @@ class WebhookModal extends Modal {
 				new Notice('Webhook URL is required');
 				return;
 			}
-			
+
 			if (this.selectedEvents.length === 0) {
 				new Notice('Please select at least one event');
 				return;
 			}
-			
+
 			this.onSubmit({
 				url: this.url.trim(),
 				events: this.selectedEvents as any[]
 			});
-			
+
 			this.close();
 		};
 	}
-	
+
 	onClose(): void {
 		const { contentEl } = this;
 		contentEl.empty();

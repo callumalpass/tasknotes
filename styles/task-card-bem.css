@@ -10,16 +10,16 @@
     flex-direction: column;
     gap: 0;
     position: relative;
-    
+
     /* Spacing & Sizing - Todoist compact style */
     padding: var(--tn-spacing-md) var(--tn-spacing-lg);
     margin-bottom: 1px;
-    
+
     /* Visual Styling - Todoist minimal style */
     background-color: transparent;
     border: none;
     border-radius: 0;
-    
+
     /* Interactions & Accessibility - Simplified */
     cursor: pointer;
     transition: background-color var(--tn-transition-fast);
@@ -180,16 +180,16 @@
     .tasknotes-plugin .task-card {
         padding: var(--tn-spacing-sm) var(--tn-spacing-md);
     }
-    
+
     .tasknotes-plugin .task-card__quick-actions {
         gap: 2px;
     }
-    
+
     .tasknotes-plugin .task-card__quick-action {
         width: 20px;
         height: 20px;
     }
-    
+
     .tasknotes-plugin .task-card__metadata {
         gap: var(--tn-spacing-xs);
     }
@@ -259,7 +259,7 @@
     position: absolute;
     top: 8px;
     width: 16px;
-    right: 44px; 
+    right: 44px;
     height: 16px;
     color: var(--tn-text-muted);
     opacity: 0.8;
@@ -289,7 +289,7 @@
 .tasknotes-plugin .task-card__project-indicator {
     position: absolute;
     top: 8px;
-    right: 62px; 
+    right: 62px;
     width: 16px;
     height: 16px;
     color: var(--tn-text-muted);
@@ -339,6 +339,16 @@
     background: var(--background-modifier-hover);
 }
 
+/* In left mode, chevrons are always visible (like group chevrons) */
+.tasknotes-plugin .task-card.task-card--chevron-left .task-card__chevron {
+    opacity: 1;
+    left: 10px;
+    right: auto;
+    top: 14px;
+    width: 24px;
+    height: 24px;
+}
+
 .tasknotes-plugin .task-card:hover .task-card__chevron {
     opacity: 1;
 }
@@ -351,6 +361,17 @@
 
 .tasknotes-plugin .task-card__chevron--expanded svg {
     transform: rotate(90deg);
+}
+
+/* Left-position variant for subtask chevron */
+.tasknotes-plugin .task-card.task-card--chevron-left {
+    /* Reserve gutter for a 24x24 chevron plus spacing */
+    padding-left: calc(var(--tn-spacing-lg) + 30px);
+}
+
+/* Ensure nested cards in left mode also reserve chevron gutter */
+.tasknotes-plugin .task-card__subtasks .task-card.task-card--chevron-left {
+    padding-left: calc(var(--tn-spacing-md) + 30px);
 }
 
 .tasknotes-plugin .task-card__subtasks {
@@ -602,23 +623,23 @@
         min-height: 44px;
         margin-bottom: 2px;
     }
-    
+
     .tasknotes-plugin .task-card:active {
         background-color: var(--tn-interactive-hover);
     }
-    
+
     /* Larger touch targets */
     .tasknotes-plugin .task-card__context-menu {
         width: 24px;
         height: 24px;
         opacity: 1;
     }
-    
+
     .tasknotes-plugin .task-card__context-menu svg {
         width: 16px;
         height: 16px;
     }
-    
+
     /* Larger status dots for touch */
     .tasknotes-plugin .task-card__status-dot {
         width: 18px;
@@ -631,7 +652,7 @@
     .tasknotes-plugin .task-card {
         border-left-width: 1px;
     }
-    
+
     .tasknotes-plugin .task-card::before {
         width: 1px;
     }
@@ -648,7 +669,7 @@
         transition-duration: 0.01ms !important;
         scroll-behavior: auto !important;
     }
-    
+
     .tasknotes-plugin .task-card--dragging {
         animation: none;
     }
@@ -663,7 +684,7 @@
         box-shadow: none !important;
         border: 1px solid #ccc !important;
     }
-    
+
     .tasknotes-plugin .task-card__quick-actions,
     .tasknotes-plugin .task-card__context-menu,
     .tasknotes-plugin .task-card__enhanced-info {
@@ -676,15 +697,15 @@
     .tasknotes-plugin .task-card {
         padding: 10px 14px;
     }
-    
+
     .tasknotes-plugin .task-card__content {
         gap: 1px;
     }
-    
+
     .tasknotes-plugin .task-card__title {
         font-size: 13px;
     }
-    
+
     .tasknotes-plugin .task-card__metadata {
         font-size: 11px;
     }
@@ -692,7 +713,7 @@
 
 /* =================================================================
    LEGACY COMPATIBILITY - DEPRECATED
-   
+
    Keep existing classes for backward compatibility but prefer BEM structure above.
    These will be removed in a future version.
    ================================================================= */

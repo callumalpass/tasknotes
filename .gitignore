@@ -1,5 +1,5 @@
 # vscode
-.vscode 
+.vscode
 
 # Intellij
 *.iml
@@ -44,3 +44,10 @@ plans
 
 # Project planning files
 project
+
+
+# Local dev helper artifacts (ignore)
+.copy-files.local
+/tmp_ref_settings.txt
+C/
+external/
