@@ -8,6 +8,91 @@ You can specify a **Default Tasks Folder** where new tasks will be created. You 
 
 TaskNotes also provides a system for **Filename Generation**. You can choose from a variety of patterns, including title-based, timestamp-based, and Zettelkasten-style, or you can create your own custom filename template.
 
+### Folder Template Variables
+
+The **Default Tasks Folder** setting supports dynamic folder creation using template variables. This allows you to automatically organize tasks into folders based on their properties and the current date.
+
+#### Available Template Variables
+
+**Task Variables:**
+- `{{context}}` - First context from the task's contexts array
+- `{{project}}` - First project from the task's projects array  
+- `{{priority}}` - Task priority (e.g., "high", "medium", "low")
+- `{{status}}` - Task status (e.g., "todo", "in-progress", "done")
+- `{{title}}` - Task title (sanitized for folder names)
+
+**Date Variables:**
+- `{{year}}` - Current year (e.g., "2025")
+- `{{month}}` - Current month with leading zero (e.g., "08")
+- `{{day}}` - Current day with leading zero (e.g., "15")
+- `{{date}}` - Full current date (e.g., "2025-08-15")
+
+#### Template Examples
+
+**Date-based Organization:**
+```
+Tasks/{{year}}/{{month}}
+→ Tasks/2025/08
+
+Tasks/{{year}}/{{date}}
+→ Tasks/2025/2025-08-15
+```
+
+**Project-based Organization:**
+```
+{{project}}/{{year}}
+→ ProjectName/2025
+
+Projects/{{project}}/{{context}}
+→ Projects/ProjectName/ContextName
+```
+
+**Priority and Status Organization:**
+```
+Tasks/{{priority}}/{{status}}
+→ Tasks/high/todo
+
+{{status}}/{{priority}}/{{year}}
+→ todo/high/2025
+```
+
+**Mixed Organization:**
+```
+{{project}}/{{year}}/{{month}}/{{priority}}
+→ ProjectName/2025/08/high
+
+Tasks/{{context}}/{{date}}
+→ Tasks/ContextName/2025-08-15
+```
+
+#### Important Notes
+
+- **Variable Processing**: Variables are processed when the task is created, using the actual task properties
+- **Missing Values**: If a task doesn't have a value for a variable (e.g., no context assigned), the variable is replaced with an empty string
+- **Multiple Values**: For arrays like contexts and projects, only the first value is used
+- **Title Sanitization**: The `{{title}}` variable automatically removes invalid folder characters (`<>:"/\|?*`) and replaces them with underscores
+- **Folder Creation**: Folders are automatically created if they don't exist
+- **Inline Tasks**: Template variables also work for the inline task conversion folder setting
+
+#### Advanced Usage
+
+**Conditional Folder Structures:**
+Since missing variables become empty strings, you can create conditional folder structures:
+```
+Tasks/{{project}}/{{context}}/{{year}}
+```
+- If both project and context exist: `Tasks/ProjectName/ContextName/2025`
+- If only project exists: `Tasks/ProjectName//2025` (note the double slash)
+- If neither exists: `Tasks///2025`
+
+**Combining with Static Paths:**
+```
+Work/{{project}}/{{year}}/{{status}}
+Archive/{{year}}/{{month}}/{{project}}
+```
+
+This feature provides powerful flexibility for automatically organizing your tasks into meaningful folder structures based on their properties and creation date.
+
 ### Store Title Exclusively in Filename
 
 This setting provides an alternative way to manage your task titles. When enabled, the task's title will be used as the filename, and the `title` property will be removed from the frontmatter. This is a significant data storage change that simplifies frontmatter but disables all other filename templating options.
