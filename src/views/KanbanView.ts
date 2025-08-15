@@ -207,7 +207,8 @@ export class KanbanView extends ItemView {
             filterBarContainer,
             this.currentQuery,
             filterOptions,
-            this.plugin.settings.viewsButtonAlignment || 'right'
+            this.plugin.settings.viewsButtonAlignment || 'right',
+            { enableGroupExpandCollapse: false }
         );
         
         // Get saved views for the FilterBar

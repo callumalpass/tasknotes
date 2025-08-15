@@ -320,7 +320,7 @@
     height: 2px;
     background: currentColor;
     border-radius: 1px;
-    box-shadow: 
+    box-shadow:
         0 -4px 0 currentColor,
         0 4px 0 currentColor;
 }
@@ -362,10 +362,10 @@
 }
 
 @keyframes placeholderPulse {
-    0%, 100% { 
+    0%, 100% {
         opacity: 0.5;
     }
-    50% { 
+    50% {
         opacity: 0.7;
     }
 }
@@ -502,6 +502,10 @@
 }
 
 .tasknotes-plugin .filter-bar__section-header-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--tn-spacing-sm);
+
     padding-right: var(--tn-spacing-sm);
 }
 
@@ -513,6 +517,14 @@
 
 .tasknotes-plugin .filter-bar__save-button svg {
     width: 16px;
+
+/* Expand/Collapse all group buttons */
+.tasknotes-plugin .filter-bar__expand-groups svg,
+.tasknotes-plugin .filter-bar__collapse-groups svg {
+    width: 16px;
+    height: 16px;
+}
+
     height: 16px;
 }
 
@@ -922,7 +934,7 @@
     .tasknotes-plugin .filter-bar__condition {
         flex-wrap: wrap;
     }
-    
+
     .tasknotes-plugin .filter-bar__value-container {
         min-width: 120px;
     }

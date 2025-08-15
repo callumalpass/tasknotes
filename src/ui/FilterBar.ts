@@ -88,12 +88,15 @@ export class FilterBar extends EventEmitter {
         viewOptions: false  // View Options - collapsed by default
     };
 
+    private enableGroupExpandCollapse: boolean = true;
+
     constructor(
         app: App,
         container: HTMLElement,
         initialQuery: FilterQuery,
         filterOptions: FilterOptions,
-        viewsButtonAlignment: 'left' | 'right' = 'right'
+        viewsButtonAlignment: 'left' | 'right' = 'right',
+        options?: { enableGroupExpandCollapse?: boolean }
     ) {
         super();
         this.app = app;
@@ -101,6 +104,7 @@ export class FilterBar extends EventEmitter {
         this.currentQuery = FilterUtils.deepCloneFilterQuery(initialQuery);
         this.filterOptions = filterOptions;
         this.viewsButtonAlignment = viewsButtonAlignment;
+        this.enableGroupExpandCollapse = options?.enableGroupExpandCollapse ?? true;
 
         // Initialize drag and drop handler
         this.dragDropHandler = new DragDropHandler((fromIndex, toIndex) => {
@@ -379,7 +383,23 @@ export class FilterBar extends EventEmitter {
             });
         };
 
-        // Order based on alignment
+        // Add expand/collapse all group buttons if grouping is enabled and allowed
+        const isGrouped = (this.currentQuery.groupKey || 'none') !== 'none';
+        if (isGrouped && this.enableGroupExpandCollapse) {
+            const collapseAllBtn = new ButtonComponent(topControls)
+                .setIcon('list-collapse')
+                .setTooltip('Collapse All Groups')
+                .onClick(() => this.emit('collapseAllGroups'));
+            collapseAllBtn.buttonEl.addClass('filter-bar__collapse-groups');
+
+            const expandAllBtn = new ButtonComponent(topControls)
+                .setIcon('list-tree')
+                .setTooltip('Expand All Groups')
+                .onClick(() => this.emit('expandAllGroups'));
+            expandAllBtn.buttonEl.addClass('filter-bar__expand-groups');
+        }
+
+        // Order controls based on alignment preference  
         if (this.viewsButtonAlignment === 'left') {
             makeViewsButton();
             makeFilterToggle();
@@ -390,6 +410,9 @@ export class FilterBar extends EventEmitter {
             makeSearchInput();
             makeViewsButton();
         }
+
+        // Update button state based on active saved view
+        this.updateViewSelectorButtonState();
 
         // Main filter box (now rendered within top-controls for positioning)
         this.renderMainFilterBox(topControls);
@@ -1107,6 +1130,7 @@ export class FilterBar extends EventEmitter {
         });
         setTooltip(titleWrapper, 'Click to expand/collapse sorting and grouping options', { placement: 'top' });
 
+
         // Content
         const content = section.createDiv('filter-bar__section-content');
         if (!this.sectionStates.display) {
@@ -1161,6 +1185,8 @@ export class FilterBar extends EventEmitter {
             .setValue(this.currentQuery.groupKey || 'none')
             .onChange((value: TaskGroupKey) => {
                 this.currentQuery.groupKey = value;
+                // Re-render controls to show/hide group actions when grouping changes
+                this.updateUI();
                 this.emitQueryChange();
             });
         setTooltip(groupDropdown.selectEl, 'Group tasks by a common property', { placement: 'top' });

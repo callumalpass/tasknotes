@@ -291,14 +291,22 @@ export class TestEnvironment {
       return MockObsidian.getFileSystem().read(file.path);
     });
 
-    // FieldMapper responses
-    this.mockPlugin.fieldMapper.mapToFrontmatter.mockImplementation((taskData: any) => {
-      return { ...taskData };
-    });
-
-    this.mockPlugin.fieldMapper.mapFromFrontmatter.mockImplementation((frontmatter: any) => {
-      return { ...frontmatter };
-    });
+    // FieldMapper responses (support both jest-mocked and real implementations)
+    const fm = this.mockPlugin.fieldMapper;
+    if (fm && typeof fm.mapToFrontmatter === 'function') {
+      if ((fm.mapToFrontmatter as any).mockImplementation) {
+        (fm.mapToFrontmatter as any).mockImplementation((taskData: any) => ({ ...taskData }));
+      } else {
+        jest.spyOn(fm, 'mapToFrontmatter').mockImplementation((taskData: any) => ({ ...taskData }));
+      }
+    }
+    if (fm && typeof fm.mapFromFrontmatter === 'function') {
+      if ((fm.mapFromFrontmatter as any).mockImplementation) {
+        (fm.mapFromFrontmatter as any).mockImplementation((frontmatter: any) => ({ ...frontmatter }));
+      } else {
+        jest.spyOn(fm, 'mapFromFrontmatter').mockImplementation((frontmatter: any) => ({ ...frontmatter }));
+      }
+    }
 
     // Cache manager responses
     this.mockPlugin.cacheManager.updateTaskInfoInCache.mockResolvedValue(undefined);

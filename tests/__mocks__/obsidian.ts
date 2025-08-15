@@ -864,6 +864,55 @@ export function parseYaml(text: string): any {
   return require('yaml').parse(text);
 }
 
+// Minimal UI component mocks used by our UI tests
+export class ButtonComponent {
+  buttonEl: HTMLButtonElement;
+  constructor(container: HTMLElement) {
+    this.buttonEl = document.createElement('button');
+    container.appendChild(this.buttonEl);
+  }
+  setIcon(icon: string) { this.buttonEl.setAttribute('data-icon', icon); return this; }
+  setTooltip(tip: string) { this.buttonEl.setAttribute('data-tooltip', tip); return this; }
+  setClass(cls: string) { this.buttonEl.classList.add(cls); return this; }
+  setButtonText(text: string) { this.buttonEl.textContent = text; return this; }
+  setCta() { return this; }
+  onClick(cb: () => void) { this.buttonEl.addEventListener('click', cb); return this; }
+}
+
+export class TextComponent {
+  inputEl: HTMLInputElement;
+  constructor(container: HTMLElement) {
+    this.inputEl = document.createElement('input');
+    container.appendChild(this.inputEl);
+  }
+  setPlaceholder(text: string) { this.inputEl.placeholder = text; return this; }
+  setValue(val: string) { this.inputEl.value = val ?? ''; return this; }
+  getValue(): string { return this.inputEl.value; }
+  onChange(cb: (value: string) => void) { this.inputEl.addEventListener('input', () => cb(this.inputEl.value)); return this; }
+}
+
+export class DropdownComponent {
+  selectEl: HTMLSelectElement;
+  constructor(container: HTMLElement) {
+    this.selectEl = document.createElement('select');
+    container.appendChild(this.selectEl);
+  }
+  addOption(value: string, label: string) { const opt = document.createElement('option'); opt.value = value; opt.textContent = label; this.selectEl.appendChild(opt); return this; }
+  addOptions(options: Record<string, string>) { Object.entries(options).forEach(([v, l]) => this.addOption(v, l)); return this; }
+  setValue(value: string) { this.selectEl.value = value; return this; }
+  onChange(cb: (value: any) => void) { this.selectEl.addEventListener('change', () => cb(this.selectEl.value)); return this; }
+}
+
+export function debounce<T extends (...args: any[]) => void>(fn: T, wait = 0): T {
+  let timer: any;
+  const wrapped = ((...args: any[]) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn(...args), wait);
+  }) as any as T;
+  return wrapped;
+}
+
+
 export const Notice = jest.fn().mockImplementation((message: string, timeout?: number) => {
   // Mock Notice for testing - just track that it was called
   return {};
@@ -972,12 +1021,12 @@ export const MockObsidian = {
 
   getFileSystem: () => mockFileSystem,
 
-  // Helpers exposed for tests to use
+  // Helper to create test files
   createTestFile: (path: string, content: string) => mockFileSystem.create(path, content),
   getTestFiles: () => mockFileSystem.getFiles(),
   createMockApp: () => new App(),
 
-  // Expose certain constructors/mocks for easy overriding in tests
+  // Export class constructors for testing
   Menu,
   Notice,
   setIcon,
