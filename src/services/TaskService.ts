@@ -4,6 +4,7 @@ import { Notice, TFile, normalizePath, stringifyYaml } from 'obsidian';
 import { TemplateData, mergeTemplateFrontmatter, processTemplate } from '../utils/templateProcessor';
 import { addDTSTARTToRecurrenceRule, ensureFolderExists, updateToNextScheduledOccurrence } from '../utils/helpers';
 import { formatDateForStorage, getCurrentDateString, getCurrentTimestamp } from '../utils/dateUtils';
+import { format } from 'date-fns';
 
 import TaskNotesPlugin from '../main';
 
@@ -18,6 +19,81 @@ export class TaskService {
      */
     setWebhookNotifier(notifier: IWebhookNotifier): void {
         this.webhookNotifier = notifier;
+    }
+
+    /**
+     * Process a folder path template with task and date variables
+     * 
+     * This method enables dynamic folder creation by replacing template variables 
+     * with actual values from the task data and current date.
+     * 
+     * Supported task variables:
+     * - {{context}} - First context from the task's contexts array
+     * - {{project}} - First project from the task's projects array  
+     * - {{priority}} - Task priority (e.g., "high", "medium", "low")
+     * - {{status}} - Task status (e.g., "todo", "in-progress", "done")
+     * - {{title}} - Task title (sanitized for folder names)
+     * 
+     * Supported date variables:
+     * - {{year}} - Current year (e.g., "2025")
+     * - {{month}} - Current month with leading zero (e.g., "08")
+     * - {{day}} - Current day with leading zero (e.g., "15")
+     * - {{date}} - Full current date (e.g., "2025-08-15")
+     * 
+     * @param folderTemplate - The template string with variables to process
+     * @param taskData - Optional task data for variable substitution
+     * @param date - Date to use for date variables (defaults to current date)
+     * @returns Processed folder path with variables replaced
+     * 
+     * @example
+     * processFolderTemplate("Tasks/{{year}}/{{month}}", taskData)
+     * // Returns: "Tasks/2025/08"
+     * 
+     * @example 
+     * processFolderTemplate("{{project}}/{{priority}}", taskData)
+     * // Returns: "ProjectName/high"
+     */
+    private processFolderTemplate(folderTemplate: string, taskData?: TaskCreationData, date: Date = new Date()): string {
+        if (!folderTemplate) {
+            return folderTemplate;
+        }
+
+        let processedPath = folderTemplate;
+        
+        // Replace task variables if taskData is provided
+        if (taskData) {
+            // Handle single context (first one if multiple)
+            const context = Array.isArray(taskData.contexts) && taskData.contexts.length > 0 
+                ? taskData.contexts[0] 
+                : '';
+            processedPath = processedPath.replace(/\{\{context\}\}/g, context);
+            
+            // Handle single project (first one if multiple) 
+            const project = Array.isArray(taskData.projects) && taskData.projects.length > 0
+                ? taskData.projects[0]
+                : '';
+            processedPath = processedPath.replace(/\{\{project\}\}/g, project);
+            
+            // Handle priority
+            const priority = taskData.priority || '';
+            processedPath = processedPath.replace(/\{\{priority\}\}/g, priority);
+            
+            // Handle status
+            const status = taskData.status || '';
+            processedPath = processedPath.replace(/\{\{status\}\}/g, status);
+            
+            // Handle title (sanitized for folder names)
+            const title = taskData.title ? taskData.title.replace(/[<>:"/\\|?*]/g, '_') : '';
+            processedPath = processedPath.replace(/\{\{title\}\}/g, title);
+        }
+        
+        // Replace date variables with current date values
+        processedPath = processedPath.replace(/\{\{year\}\}/g, format(date, 'yyyy'));
+        processedPath = processedPath.replace(/\{\{month\}\}/g, format(date, 'MM'));
+        processedPath = processedPath.replace(/\{\{day\}\}/g, format(date, 'dd'));
+        processedPath = processedPath.replace(/\{\{date\}\}/g, format(date, 'yyyy-MM-dd'));
+        
+        return processedPath;
     }
 
     /**
@@ -68,6 +144,7 @@ export class TaskService {
             const baseFilename = generateTaskFilename(filenameContext, this.plugin.settings);
             
             // Determine folder based on creation context
+            // Process folder templates with task and date variables for dynamic folder organization
             let folder = '';
             if (taskData.creationContext === 'inline-conversion') {
                 // For inline conversion, use the inline task folder setting with variable support
@@ -82,13 +159,17 @@ export class TaskService {
                     } else {
                         folder = inlineFolder;
                     }
+                    // Process task and date variables in the inline folder path
+                    folder = this.processFolderTemplate(folder, taskData);
                 } else {
                     // Fallback to default tasks folder when inline folder is empty (#128)
-                    folder = this.plugin.settings.tasksFolder || '';
+                    const tasksFolder = this.plugin.settings.tasksFolder || '';
+                    folder = this.processFolderTemplate(tasksFolder, taskData);
                 }
             } else {
                 // For manual creation and other contexts, use the general tasks folder
-                folder = this.plugin.settings.tasksFolder || '';
+                const tasksFolder = this.plugin.settings.tasksFolder || '';
+                folder = this.processFolderTemplate(tasksFolder, taskData);
             }
             
             // Ensure folder exists
