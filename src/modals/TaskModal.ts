@@ -51,7 +51,18 @@ export abstract class TaskModal extends Modal {
 
     onOpen() {
         this.containerEl.addClass('tasknotes-plugin', 'minimalist-task-modal');
-        this.titleEl.textContent = this.getModalTitle();
+        
+        // Create header with TaskNotes icon and title
+        this.titleEl.empty();
+        const headerContainer = this.titleEl.createDiv('modal-header-container');
+        
+        // Add TaskNotes icon
+        const iconContainer = headerContainer.createDiv('modal-header-icon');
+        setIcon(iconContainer, 'tasknotes-simple');
+        
+        // Add title text
+        const titleText = headerContainer.createSpan('modal-header-title');
+        titleText.textContent = this.getModalTitle();
         
         this.initializeFormData().then(() => {
             this.createModalContent();

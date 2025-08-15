@@ -1,4 +1,4 @@
-# TaskNotes for Obsidian
+# <img src="tasknotes-gradient.svg" width="32" height="32" style="vertical-align: middle;"> TaskNotes for Obsidian
 
 A task management plugin where each task is stored as an individual note using YAML frontmatter with calendar, kanban and pomodoro integration.
 
