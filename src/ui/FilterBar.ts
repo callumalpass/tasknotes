@@ -345,6 +345,18 @@ export class FilterBar extends EventEmitter {
     private renderTopControls(): void {
         const topControls = this.container.createDiv('filter-bar__top-controls');
 
+        // Views button (first on the left)
+        this.viewSelectorButton = new ButtonComponent(topControls)
+            .setButtonText('Views')
+            .setClass('filter-bar__templates-button')
+            .setTooltip('Saved filter views')
+            .onClick(() => {
+                this.toggleViewSelectorDropdown();
+            });
+
+        // Update button state based on active saved view
+        this.updateViewSelectorButtonState();
+
         // Filter toggle icon
         new ButtonComponent(topControls)
             .setIcon('list-filter')
@@ -364,22 +376,10 @@ export class FilterBar extends EventEmitter {
             this.debouncedHandleSearchInput();
         });
 
-        // Templates button
-        this.viewSelectorButton = new ButtonComponent(topControls)
-            .setButtonText('Views')
-            .setClass('filter-bar__templates-button')
-            .setTooltip('Saved filter views')
-            .onClick(() => {
-                this.toggleViewSelectorDropdown();
-            });
-
-        // Update button state based on active saved view
-        this.updateViewSelectorButtonState();
-
         // Main filter box (now rendered within top-controls for positioning)
         this.renderMainFilterBox(topControls);
 
-        // Templates dropdown
+        // Views dropdown (left-aligned under the Views button/top controls)
         this.viewSelectorDropdown = topControls.createDiv({
             cls: 'filter-bar__view-selector-dropdown filter-bar__view-selector-dropdown--hidden',
         });

@@ -233,7 +233,7 @@
 .tasknotes-plugin .filter-bar__view-selector-dropdown {
     position: absolute;
     top: 100%;
-    right: 0; /* Align to the right of the container */
+    left: 0; /* Align to the left of the container (follows Views button) */
     min-width: 240px;
     max-width: 320px;
     z-index: 1000; /* Ensure it's on top */
