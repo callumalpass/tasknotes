@@ -233,7 +233,8 @@
 .tasknotes-plugin .filter-bar__view-selector-dropdown {
     position: absolute;
     top: 100%;
-    right: 0; /* Align to the right of the container */
+    right: 0; /* Default align to right of the container */
+    left: auto;
     min-width: 240px;
     max-width: 320px;
     z-index: 1000; /* Ensure it's on top */
@@ -247,6 +248,12 @@
     opacity: 1;
     transform: translateY(0) scale(1);
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Left-aligned variant for Views-left configuration */
+.tasknotes-plugin .filter-bar__view-selector-dropdown.filter-bar__view-selector-dropdown--left {
+    left: 0;
+    right: auto;
 }
 
 .tasknotes-plugin .filter-bar__view-selector-dropdown--hidden {

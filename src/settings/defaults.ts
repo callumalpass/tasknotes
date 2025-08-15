@@ -198,6 +198,9 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	showProjectSubtasks: true,
 	showExpandableSubtasks: true,
 	projectSubtasksPosition: 'bottom',
+		// Filter toolbar layout defaults
+		viewsButtonAlignment: 'right',
+
 	// Overdue behavior defaults
 	hideCompletedFromOverdue: true,
 	// ICS integration defaults

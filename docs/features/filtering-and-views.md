@@ -208,6 +208,24 @@ When you save a view, the following state is preserved:
 - **Reorder**: Drag and drop saved views to reorder them
 - Views persist across sessions using local storage
 
+
+### Saved Views Button Position
+
+You can choose where the Saved Views button appears in the FilterBar:
+
+- Right (default): Filter → Search → Saved Views
+- Left: Saved Views → Filter → Search
+
+This is configured via Settings → Misc → Saved Views button position.
+
+Right position (default):
+
+![Saved Views button on the right](assets/saved_views_button_collapse_all.gif)
+
+Left position:
+
+![Saved Views button on the left](assets/saved_views_button_no_expand_collapse_all.gif)
+
 ## Sorting
 
 Available sort options:
