@@ -61,6 +61,8 @@ export interface TaskNotesSettings {
 	showProjectSubtasks: boolean;
 	showExpandableSubtasks: boolean;
 	projectSubtasksPosition: 'top' | 'bottom';
+	// Filter toolbar layout
+	viewsButtonAlignment: 'left' | 'right';
 	// Overdue behavior settings
 	hideCompletedFromOverdue: boolean;
 	// ICS integration settings
@@ -342,6 +344,8 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	showProjectSubtasks: true,
 	showExpandableSubtasks: true,
 	projectSubtasksPosition: 'bottom',
+	// Filter toolbar layout defaults
+	viewsButtonAlignment: 'right',
 	// Overdue behavior defaults
 	hideCompletedFromOverdue: true,
 	// ICS integration defaults
@@ -1860,10 +1864,27 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 		// Misc settings
 		new Setting(container).setName('Miscellaneous settings').setHeading();
 		
-		container.createEl('p', { 
+		container.createEl('p', {
 			text: 'Configure various plugin features and display options.',
 			cls: 'settings-help-note'
 		});
+
+		// Views button alignment
+		new Setting(container)
+			.setName('Views button alignment')
+			.setDesc('Choose the position of the "Views" button in the filter toolbar')
+			.addDropdown((dropdown) => {
+				dropdown
+					.addOption('right', 'Right (Default)')
+					.addOption('left', 'Left')
+					.setValue(this.plugin.settings.viewsButtonAlignment || 'right')
+					.onChange(async (value: 'left' | 'right') => {
+						this.plugin.settings.viewsButtonAlignment = value;
+						await this.plugin.saveSettings();
+						// Refresh views to apply the change
+						this.plugin.notifyDataChanged();
+					});
+			});
 
 		// Status bar toggle
 		new Setting(container)
@@ -1958,7 +1979,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 					.onChange(async (value) => {
 						this.plugin.settings.disableNoteIndexing = value;
 						await this.plugin.saveSettings();
-						
+
 						// Show notice about restart requirement
 						new Notice('Note indexing setting changed. Please restart Obsidian or reload the plugin for changes to take effect.');
 					});

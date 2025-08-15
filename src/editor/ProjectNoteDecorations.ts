@@ -181,7 +181,8 @@ class ProjectSubtasksWidget extends WidgetType {
                 this.plugin.app,
                 container,
                 this.currentQuery,
-                filterOptions
+                filterOptions,
+                this.plugin.settings.viewsButtonAlignment || 'right'
             );
             
             // Load saved views from the main ViewStateManager
