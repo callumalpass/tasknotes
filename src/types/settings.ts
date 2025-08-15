@@ -54,9 +54,10 @@ export interface TaskNotesSettings {
 	showProjectSubtasks: boolean;
 	showExpandableSubtasks: boolean;
 	projectSubtasksPosition: 'top' | 'bottom';
-		// Filter toolbar layout
-		viewsButtonAlignment: 'left' | 'right';
-
+	// Subtask chevron position in task cards
+	subtaskChevronPosition: 'left' | 'right';
+	// Filter toolbar layout
+	viewsButtonAlignment: 'left' | 'right';
 	// Overdue behavior settings
 	hideCompletedFromOverdue: boolean;
 	// ICS integration settings
