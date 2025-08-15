@@ -52,17 +52,13 @@ export abstract class TaskModal extends Modal {
     onOpen() {
         this.containerEl.addClass('tasknotes-plugin', 'minimalist-task-modal');
         
-        // Create header with TaskNotes icon and title
-        this.titleEl.empty();
-        const headerContainer = this.titleEl.createDiv('modal-header-container');
+        // Set the modal title using the standard Obsidian approach (preserves close button)
+        this.titleEl.setText(this.getModalTitle());
         
-        // Add TaskNotes icon
-        const iconContainer = headerContainer.createDiv('modal-header-icon');
+        // Add TaskNotes icon at the beginning of the title
+        const iconContainer = this.titleEl.createSpan('modal-header-icon');
         setIcon(iconContainer, 'tasknotes-simple');
-        
-        // Add title text
-        const titleText = headerContainer.createSpan('modal-header-title');
-        titleText.textContent = this.getModalTitle();
+        this.titleEl.insertBefore(iconContainer, this.titleEl.firstChild);
         
         this.initializeFormData().then(() => {
             this.createModalContent();
