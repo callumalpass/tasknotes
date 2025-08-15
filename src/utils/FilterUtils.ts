@@ -150,6 +150,7 @@ export class FilterUtils {
             
             // Text properties
             'title': ['is', 'is-not', 'contains', 'does-not-contain', 'is-empty', 'is-not-empty'],
+            'path': ['contains', 'does-not-contain', 'is-empty', 'is-not-empty'],
             
             // Select properties
             'status': ['is', 'is-not', 'is-empty', 'is-not-empty'],
@@ -208,6 +209,8 @@ export class FilterUtils {
         switch (property) {
             case 'title':
                 return task.title;
+            case 'path':
+                return task.path;
             case 'status':
                 return task.status;
             case 'priority':

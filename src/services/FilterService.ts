@@ -1151,7 +1151,8 @@ export class FilterService extends EventEmitter {
             priorities: this.priorityManager.getAllPriorities(),
             contexts: this.cacheManager.getAllContexts(),
             projects: this.cacheManager.getAllProjects(),
-            tags: this.cacheManager.getAllTags()
+            tags: this.cacheManager.getAllTags(),
+            folders: this.extractUniqueFolders()
         };
         
         this.filterOptionsComputeCount++;
@@ -1548,6 +1549,34 @@ export class FilterService extends EventEmitter {
         }
 
         return flatData;
+    }
+
+    /**
+     * Extract unique folder paths from all task paths
+     * Returns an array of folder paths for dropdown filtering
+     */
+    private extractUniqueFolders(): readonly string[] {
+        const allTaskPaths = this.cacheManager.getAllTaskPaths();
+        const folderSet = new Set<string>();
+        
+        for (const taskPath of allTaskPaths) {
+            // Extract the folder part of the path (everything before the last slash)
+            const lastSlashIndex = taskPath.lastIndexOf('/');
+            if (lastSlashIndex > 0) {
+                const folderPath = taskPath.substring(0, lastSlashIndex);
+                folderSet.add(folderPath);
+            }
+            // Also add root-level folder (empty string or "." for tasks in vault root)
+            else if (lastSlashIndex === -1) {
+                folderSet.add(''); // Root folder
+            }
+        }
+        
+        // Convert to sorted array for consistent UI ordering
+        const folders = Array.from(folderSet).sort();
+        
+        // Replace empty string with a user-friendly label for root folder
+        return folders.map(folder => folder === '' ? '(Root)' : folder);
     }
 
     /**
