@@ -1524,6 +1524,25 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 						this.plugin.notifyDataChanged();
 					});
 			});
+
+			// Subtask chevron position
+			new Setting(container)
+				.setName('Subtask chevron position')
+				.setDesc('Choose where the expand/collapse chevron appears on task cards')
+				.addDropdown(dropdown => {
+					dropdown.selectEl.setAttribute('aria-label', 'Subtask chevron position on task cards');
+					return dropdown
+						.addOption('right', 'Right (default)')
+						.addOption('left', 'Left (match group chevrons)')
+						.setValue(this.plugin.settings.subtaskChevronPosition || 'right')
+						.onChange(async (value: 'left' | 'right') => {
+							this.plugin.settings.subtaskChevronPosition = value;
+							await this.plugin.saveSettings();
+							// Refresh task views to apply the change
+							this.plugin.notifyDataChanged();
+						});
+				});
+
 		// Hide completed tasks from overdue
 		new Setting(container)
 			.setName('Hide completed tasks from overdue')
