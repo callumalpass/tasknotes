@@ -2,6 +2,16 @@
 
 These settings control various plugin features and display options that don't fit into other categories.
 
+## Saved Views button position
+
+Choose where the Saved Views button appears in the FilterBar of supported views (Task List, Agenda, Kanban, Advanced Calendar):
+
+- Right (default): Filter → Search → Saved Views
+- Left: Saved Views → Filter → Search
+
+This setting affects layout only; functionality is the same. See examples in Filtering and Views.
+
+
 ## Status Bar
 
 **Show tracked tasks in status bar** - Display currently tracked tasks (with active time tracking) in the status bar at the bottom of the app. This provides a quick visual indicator of which tasks are currently being tracked without needing to open the TaskNotes views.
