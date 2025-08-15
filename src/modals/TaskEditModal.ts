@@ -1,4 +1,4 @@
-import { App, Notice, TFile, Menu } from 'obsidian';
+import { App, Notice, TFile, Menu, setIcon } from 'obsidian';
 import TaskNotesPlugin from '../main';
 import { TaskModal } from './TaskModal';
 import { TaskInfo } from '../types';
@@ -126,7 +126,14 @@ export class TaskEditModal extends TaskModal {
         await this.refreshTaskData();
         
         this.containerEl.addClass('tasknotes-plugin', 'minimalist-task-modal');
-        this.titleEl.textContent = this.getModalTitle();
+        
+        // Set the modal title using the standard Obsidian approach (preserves close button)
+        this.titleEl.setText(this.getModalTitle());
+        
+        // Add TaskNotes icon at the beginning of the title
+        const iconContainer = this.titleEl.createSpan('modal-header-icon');
+        setIcon(iconContainer, 'tasknotes-simple');
+        this.titleEl.insertBefore(iconContainer, this.titleEl.firstChild);
         
         this.initializeFormData().then(() => {
             this.createModalContent();
