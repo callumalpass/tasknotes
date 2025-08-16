@@ -203,6 +203,11 @@
 .tasknotes-plugin .project-note-subtasks__group-header {
     margin: 1em 0 0.5em 0;
     padding: 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: var(--tn-spacing-xs, 0.5em);
 }
 
 .tasknotes-plugin .project-note-subtasks__group-header:first-child {
@@ -218,6 +223,7 @@
     margin: 0;
     padding: 0.3em 0;
     border-bottom: 1px solid var(--background-modifier-border);
+    flex: 1;
 }
 
 .tasknotes-plugin .project-note-subtasks__group {
@@ -225,6 +231,55 @@
     flex-direction: column;
     gap: 0.3em;
     margin-bottom: 0.5em;
+}
+
+/* Collapsible group functionality */
+.tasknotes-plugin .project-note-subtasks__group-section {
+    margin-bottom: 1em;
+}
+
+.tasknotes-plugin .project-note-subtasks__group-section.is-collapsed .task-cards {
+    display: none;
+}
+
+/* Toggle button styles (match TaskListView) */
+.tasknotes-plugin .task-group-toggle {
+    background: none;
+    border: none;
+    padding: 0.2em;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-s);
+    transition: all 0.2s ease;
+}
+
+.tasknotes-plugin .task-group-toggle:hover {
+    background-color: var(--background-modifier-hover);
+}
+
+.tasknotes-plugin .task-group-toggle svg,
+.tasknotes-plugin .task-group-toggle .chevron,
+.tasknotes-plugin .task-group-toggle .chevron path {
+    color: var(--text-normal);
+    transition: transform 0.2s ease;
+}
+
+.tasknotes-plugin .task-group-toggle svg,
+.tasknotes-plugin .task-group-toggle .chevron path {
+    stroke: currentColor;
+}
+
+/* Chevron rotation for expanded state */
+.tasknotes-plugin .task-group:not(.is-collapsed) .task-group-toggle svg,
+.tasknotes-plugin .task-group:not(.is-collapsed) .task-group-toggle .chevron {
+    transform: rotate(90deg);
+}
+
+.tasknotes-plugin .task-group.is-collapsed .task-group-toggle svg,
+.tasknotes-plugin .task-group.is-collapsed .task-group-toggle .chevron {
+    transform: rotate(0deg);
 }
 
 .tasknotes-plugin .project-note-subtasks__task {
