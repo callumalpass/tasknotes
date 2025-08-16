@@ -43,7 +43,7 @@ export class MinimalNativeCache extends Events {
     private eventListeners: EventRef[] = [];
     
     // Debouncing for file changes to prevent excessive updates during typing
-    private debouncedHandlers: Map<string, NodeJS.Timeout> = new Map();
+    private debouncedHandlers: Map<string, number> = new Map();
     private readonly DEBOUNCE_DELAY = 300; // 300ms delay after user stops typing
     
     // Cache of last known task info for comparison to detect actual changes
@@ -1001,7 +1001,7 @@ export class MinimalNativeCache extends Events {
         const timeout = setTimeout(() => {
             this.handleFileChanged(file, cache);
             this.debouncedHandlers.delete(file.path);
-        }, this.DEBOUNCE_DELAY);
+        }, this.DEBOUNCE_DELAY) as unknown as number;
         
         this.debouncedHandlers.set(file.path, timeout);
     }
@@ -1057,7 +1057,7 @@ export class MinimalNativeCache extends Events {
      * Wait for fresh data to be available in Obsidian's metadata cache
      * This ensures we don't emit events before the data is actually updated
      */
-    private async waitForFreshData(file: TFile, maxAttempts: number = 10): Promise<void> {
+    private async waitForFreshData(file: TFile, maxAttempts = 10): Promise<void> {
         const startTime = Date.now();
         
         for (let attempt = 0; attempt < maxAttempts; attempt++) {
@@ -1098,7 +1098,7 @@ export class MinimalNativeCache extends Events {
      * Wait for fresh task data with specific expected changes
      * This can be called from TaskService to verify specific updates are reflected
      */
-    async waitForFreshTaskData(file: TFile, expectedChanges?: Partial<TaskInfo>, maxAttempts: number = 10): Promise<void> {
+    async waitForFreshTaskData(file: TFile, expectedChanges?: Partial<TaskInfo>, maxAttempts = 10): Promise<void> {
         const startTime = Date.now();
         
         for (let attempt = 0; attempt < maxAttempts; attempt++) {

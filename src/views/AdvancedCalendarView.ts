@@ -44,7 +44,6 @@ import {
 } from '../utils/dateUtils';
 import { 
     generateRecurringInstances,
-    updateToNextScheduledOccurrence,
     extractTimeblocksFromNote,
     timeblockToCalendarEvent,
     updateTimeblockInDailyNote,
@@ -92,7 +91,7 @@ export class AdvancedCalendarView extends ItemView {
     private currentQuery: FilterQuery;
     
     // Track if we're waiting for a recurring task update
-    private pendingRecurringUpdate: boolean = false;
+    private pendingRecurringUpdate = false;
     
     
     // View toggles (keeping for calendar-specific display options)

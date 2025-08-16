@@ -35,7 +35,7 @@ function formatTimeRange(icsEvent: ICSEvent): string {
  * Create a compact ICS event card styled similar to TaskCard
  */
 export function createICSEventCard(icsEvent: ICSEvent, plugin: TaskNotesPlugin, options: Partial<ICSCardOptions> = {}): HTMLElement {
-    const opts = { ...DEFAULT_ICS_CARD_OPTIONS, ...options };
+    // const opts = { ...DEFAULT_ICS_CARD_OPTIONS, ...options }; // Currently unused
 
     const card = document.createElement('div');
     // Reuse task-card base styling for visual consistency
@@ -70,7 +70,7 @@ export function createICSEventCard(icsEvent: ICSEvent, plugin: TaskNotesPlugin, 
 
     // Content
     const content = mainRow.createEl('div', { cls: 'task-card__content' });
-    const titleEl = content.createEl('div', { cls: 'task-card__title', text: icsEvent.title || 'Untitled event' });
+    content.createEl('div', { cls: 'task-card__title', text: icsEvent.title || 'Untitled event' });
 
     // Metadata line: time range • location • source
     const metadata = content.createEl('div', { cls: 'task-card__metadata' });
@@ -116,7 +116,7 @@ export function createICSEventCard(icsEvent: ICSEvent, plugin: TaskNotesPlugin, 
  * Update an existing ICS event card
  */
 export function updateICSEventCard(element: HTMLElement, icsEvent: ICSEvent, plugin: TaskNotesPlugin, options: Partial<ICSCardOptions> = {}): void {
-    const opts = { ...DEFAULT_ICS_CARD_OPTIONS, ...options };
+    // const opts = { ...DEFAULT_ICS_CARD_OPTIONS, ...options }; // Currently unused
 
     const subscription = plugin.icsSubscriptionService?.getSubscriptions().find(s => s.id === icsEvent.subscriptionId);
     const color = subscription?.color || 'var(--color-accent)';

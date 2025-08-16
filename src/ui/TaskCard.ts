@@ -1,4 +1,4 @@
-import { TFile, Menu, setIcon, Notice, Modal, App, setTooltip } from 'obsidian';
+import { TFile, setIcon, Notice, Modal, App, setTooltip } from 'obsidian';
 import { TaskInfo } from '../types';
 import TaskNotesPlugin from '../main';
 import { TaskContextMenu } from '../components/TaskContextMenu';
@@ -8,8 +8,7 @@ import {
     isTodayTimeAware,
     isOverdueTimeAware,
     getDatePart,
-    getTimePart,
-    formatDateForStorage
+    getTimePart
 } from '../utils/dateUtils';
 import { DateContextMenu } from '../components/DateContextMenu';
 import { PriorityContextMenu } from '../components/PriorityContextMenu';

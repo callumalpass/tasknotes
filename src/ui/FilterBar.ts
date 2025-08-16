@@ -88,7 +88,7 @@ export class FilterBar extends EventEmitter {
         viewOptions: false  // View Options - collapsed by default
     };
 
-    private enableGroupExpandCollapse: boolean = true;
+    private enableGroupExpandCollapse = true;
 
     constructor(
         app: App,

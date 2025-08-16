@@ -1,8 +1,8 @@
 import { App, PluginSettingTab, Setting, Notice, setIcon, TAbstractFile, TFile, setTooltip, Platform, Modal } from 'obsidian';
 import TaskNotesPlugin from '../main';
-import { FieldMapping, StatusConfig, PriorityConfig, SavedView, Reminder, TaskInfo, WebhookConfig } from '../types';
-import { TaskNotesSettings, DefaultReminder } from '../types/settings';
-import { DEFAULT_SETTINGS, DEFAULT_FIELD_MAPPING } from './defaults';
+import { FieldMapping, WebhookConfig } from '../types';
+import { DefaultReminder } from '../types/settings';
+import { DEFAULT_FIELD_MAPPING } from './defaults';
 import { StatusManager } from '../services/StatusManager';
 import { PriorityManager } from '../services/PriorityManager';
 import { showConfirmationModal } from '../modals/ConfirmationModal';
@@ -1310,11 +1310,14 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 
 		// Additional info about system notifications
 		const systemNotesEl = container.createDiv({ cls: 'setting-item-description' });
-		systemNotesEl.innerHTML = `
-			<strong>System notifications:</strong> Use your operating system's native notification system.
-			Requires permission and works even when Obsidian is minimized.<br>
-			<strong>In-app notices:</strong> Show notifications as temporary popups within Obsidian only.
-		`;
+		const systemDesc = systemNotesEl.createDiv();
+		const systemLine1 = systemDesc.createDiv();
+		systemLine1.createEl('strong', { text: 'System notifications:' });
+		systemLine1.appendText(' Use your operating system\'s native notification system. Requires permission and works even when Obsidian is minimized.');
+		
+		const systemLine2 = systemDesc.createDiv();
+		systemLine2.createEl('strong', { text: 'In-app notices:' });
+		systemLine2.appendText(' Show notifications as temporary popups within Obsidian only.');
 
 	}
 
@@ -1324,13 +1327,12 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 		// Show message on mobile
 		if (Platform.isMobile) {
 			const mobileMessage = container.createDiv({ cls: 'setting-item-description' });
-			mobileMessage.innerHTML = `
-				<div style="text-align: center; padding: 2rem; color: var(--text-muted);">
-					<h3>HTTP API not available on mobile</h3>
-					<p>The HTTP API feature requires Node.js capabilities that are only available on desktop platforms.</p>
-					<p>This tab will be available when using TaskNotes on desktop.</p>
-				</div>
-			`;
+			const mobileContainer = mobileMessage.createDiv({ 
+				attr: { style: 'text-align: center; padding: 2rem; color: var(--text-muted);' }
+			});
+			mobileContainer.createEl('h3', { text: 'HTTP API not available on mobile' });
+			mobileContainer.createEl('p', { text: 'The HTTP API feature requires Node.js capabilities that are only available on desktop platforms.' });
+			mobileContainer.createEl('p', { text: 'This tab will be available when using TaskNotes on desktop.' });
 			return;
 		}
 
@@ -1338,10 +1340,10 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 
 		// API description
 		const descEl = container.createDiv({ cls: 'setting-item-description' });
-		descEl.innerHTML = `
-			<p>Enable HTTP API server to allow external tools and scripts to interact with your TaskNotes data.</p>
-			<p><strong>Note:</strong> This feature is only available on desktop. Restart Obsidian after changing API settings.</p>
-		`;
+		descEl.createEl('p', { text: 'Enable HTTP API server to allow external tools and scripts to interact with your TaskNotes data.' });
+		const noteP = descEl.createEl('p');
+		noteP.createEl('strong', { text: 'Note:' });
+		noteP.appendText(' This feature is only available on desktop. Restart Obsidian after changing API settings.');
 
 		new Setting(container)
 			.setName('Enable HTTP API')
@@ -1389,10 +1391,8 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 		container.createEl('h3', { text: 'Webhook Settings' });
 
 		const webhookDescEl = container.createDiv({ cls: 'setting-item-description' });
-		webhookDescEl.innerHTML = `
-			<p>Webhooks send real-time notifications to external services when TaskNotes events occur.</p>
-			<p>Configure webhooks to integrate with automation tools, sync services, or custom applications.</p>
-		`;
+		webhookDescEl.createEl('p', { text: 'Webhooks send real-time notifications to external services when TaskNotes events occur.' });
+		webhookDescEl.createEl('p', { text: 'Configure webhooks to integrate with automation tools, sync services, or custom applications.' });
 
 		// Webhook management
 		this.renderWebhookList(container);
@@ -1412,39 +1412,58 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 		container.createEl('h3', { text: 'API Documentation' });
 
 		const apiInfoEl = container.createDiv({ cls: 'setting-item-description' });
-		apiInfoEl.innerHTML = `
-			<h4>Available Endpoints:</h4>
-			<ul style="margin-left: 1rem;">
-				<li><code>GET /api/health</code> - Health check</li>
-				<li><code>GET /api/tasks</code> - List tasks with optional filters</li>
-				<li><code>POST /api/tasks</code> - Create new task</li>
-				<li><code>GET /api/tasks/{id}</code> - Get specific task</li>
-				<li><code>PUT /api/tasks/{id}</code> - Update task</li>
-				<li><code>DELETE /api/tasks/{id}</code> - Delete task</li>
-				<li><code>POST /api/tasks/{id}/time/start</code> - Start time tracking</li>
-				<li><code>POST /api/tasks/{id}/time/stop</code> - Stop time tracking</li>
-				<li><code>POST /api/tasks/{id}/toggle-status</code> - Toggle completion</li>
-				<li><code>POST /api/tasks/{id}/archive</code> - Toggle archive</li>
-				<li><code>POST /api/tasks/query</code> - Advanced filtering</li>
-				<li><code>GET /api/filter-options</code> - Available filters</li>
-				<li><code>GET /api/stats</code> - Task statistics</li>
-			</ul>
+		// Available Endpoints
+		apiInfoEl.createEl('h4', { text: 'Available Endpoints:' });
+		const endpointsList = apiInfoEl.createEl('ul', { attr: { style: 'margin-left: 1rem;' } });
+		
+		const endpoints = [
+			{ method: 'GET', path: '/api/health', desc: 'Health check' },
+			{ method: 'GET', path: '/api/tasks', desc: 'List tasks with optional filters' },
+			{ method: 'POST', path: '/api/tasks', desc: 'Create new task' },
+			{ method: 'GET', path: '/api/tasks/{id}', desc: 'Get specific task' },
+			{ method: 'PUT', path: '/api/tasks/{id}', desc: 'Update task' },
+			{ method: 'DELETE', path: '/api/tasks/{id}', desc: 'Delete task' },
+			{ method: 'POST', path: '/api/tasks/{id}/time/start', desc: 'Start time tracking' },
+			{ method: 'POST', path: '/api/tasks/{id}/time/stop', desc: 'Stop time tracking' },
+			{ method: 'POST', path: '/api/tasks/{id}/toggle-status', desc: 'Toggle completion' },
+			{ method: 'POST', path: '/api/tasks/{id}/archive', desc: 'Toggle archive' },
+			{ method: 'POST', path: '/api/tasks/query', desc: 'Advanced filtering' },
+			{ method: 'GET', path: '/api/filter-options', desc: 'Available filters' },
+			{ method: 'GET', path: '/api/stats', desc: 'Task statistics' }
+		];
+		
+		endpoints.forEach(endpoint => {
+			const li = endpointsList.createEl('li');
+			li.createEl('code', { text: `${endpoint.method} ${endpoint.path}` });
+			li.appendText(` - ${endpoint.desc}`);
+		});
 
-			<h4>Usage Examples:</h4>
-			<p><strong>Basic request:</strong></p>
-			<pre><code>curl http://localhost:${this.plugin.settings.apiPort}/api/tasks</code></pre>
+		// Usage Examples
+		apiInfoEl.createEl('h4', { text: 'Usage Examples:' });
+		
+		const basicP = apiInfoEl.createEl('p');
+		basicP.createEl('strong', { text: 'Basic request:' });
+		apiInfoEl.createEl('pre').createEl('code', { 
+			text: `curl http://localhost:${this.plugin.settings.apiPort}/api/tasks` 
+		});
 
-			<p><strong>With authentication:</strong></p>
-			<pre><code>curl -H "Authorization: Bearer YOUR_TOKEN" http://localhost:${this.plugin.settings.apiPort}/api/tasks</code></pre>
+		const authP = apiInfoEl.createEl('p');
+		authP.createEl('strong', { text: 'With authentication:' });
+		apiInfoEl.createEl('pre').createEl('code', { 
+			text: `curl -H "Authorization: Bearer YOUR_TOKEN" http://localhost:${this.plugin.settings.apiPort}/api/tasks` 
+		});
 
-			<p><strong>Create task:</strong></p>
-			<pre><code>curl -X POST http://localhost:${this.plugin.settings.apiPort}/api/tasks \\
-  -H "Content-Type: application/json" \\
-  -d '{"title": "New task", "priority": "High"}'</code></pre>
+		const createP = apiInfoEl.createEl('p');
+		createP.createEl('strong', { text: 'Create task:' });
+		apiInfoEl.createEl('pre').createEl('code', { 
+			text: `curl -X POST http://localhost:${this.plugin.settings.apiPort}/api/tasks \\\n  -H "Content-Type: application/json" \\\n  -d '{"title": "New task", "priority": "High"}'` 
+		});
 
-			<p><strong>Filter tasks:</strong></p>
-			<pre><code>curl "http://localhost:${this.plugin.settings.apiPort}/api/tasks?status=open&priority=High"</code></pre>
-		`;
+		const filterP = apiInfoEl.createEl('p');
+		filterP.createEl('strong', { text: 'Filter tasks:' });
+		apiInfoEl.createEl('pre').createEl('code', { 
+			text: `curl "http://localhost:${this.plugin.settings.apiPort}/api/tasks?status=open&priority=High"` 
+		});
 	}
 
 	private renderMiscTab(): void {
@@ -2759,7 +2778,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 	private renderAddDefaultReminderForm(container: HTMLElement): void {
 		const formContainer = container.createDiv({ cls: 'reminder-defaults-form' });
 
-		const formHeader = formContainer.createEl('h4', {
+		formContainer.createEl('h4', {
 			text: 'Add Default Reminder',
 			cls: 'reminder-defaults-form-header'
 		});
@@ -3249,7 +3268,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 
 			const secretDiv = noticeContent.createDiv({ cls: 'tasknotes-webhook-secret-content' });
 			secretDiv.createSpan({ text: 'Secret: ' });
-			const secretCode = secretDiv.createEl('code', {
+			secretDiv.createEl('code', {
 				text: `${webhook.secret.substring(0, 16)}...`,
 				cls: 'tasknotes-webhook-secret-code'
 			});
@@ -3336,7 +3355,7 @@ class WebhookModal extends Modal {
 		];
 
 		availableEvents.forEach(event => {
-			const eventSetting = new Setting(eventsGrid)
+			new Setting(eventsGrid)
 				.setName(event.label)
 				.setDesc(event.desc)
 				.addToggle(toggle => {
@@ -3384,12 +3403,23 @@ class WebhookModal extends Modal {
 		helpHeader.createSpan({ text: 'Transform files allow you to customize webhook payloads:' });
 
 		const helpList = transformHelp.createEl('ul', { cls: 'tasknotes-webhook-help-list' });
-		helpList.createEl('li').innerHTML = '<strong>.js files:</strong> Custom JavaScript transforms';
-		helpList.createEl('li').innerHTML = '<strong>.json files:</strong> Templates with <code>${data.task.title}</code>';
-		helpList.createEl('li').innerHTML = '<strong>Leave empty:</strong> Send raw data';
+		const jsLi = helpList.createEl('li');
+		jsLi.createEl('strong', { text: '.js files:' });
+		jsLi.appendText(' Custom JavaScript transforms');
+		
+		const jsonLi = helpList.createEl('li');
+		jsonLi.createEl('strong', { text: '.json files:' });
+		jsonLi.appendText(' Templates with ');
+		jsonLi.createEl('code', { text: '${data.task.title}' });
+		
+		const emptyLi = helpList.createEl('li');
+		emptyLi.createEl('strong', { text: 'Leave empty:' });
+		emptyLi.appendText(' Send raw data');
 
 		const helpExample = transformHelp.createDiv({ cls: 'tasknotes-webhook-help-example' });
-		helpExample.innerHTML = '<strong>Example:</strong> <code>discord-transform.js</code>';
+		helpExample.createEl('strong', { text: 'Example:' });
+		helpExample.appendText(' ');
+		helpExample.createEl('code', { text: 'discord-transform.js' });
 
 		// CORS headers section
 		const corsSection = contentEl.createDiv({ cls: 'tasknotes-webhook-modal-section' });

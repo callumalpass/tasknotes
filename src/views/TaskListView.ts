@@ -495,7 +495,7 @@ export class TaskListView extends ItemView {
 
                 // Create toggle button first (exactly as in preview-all)
                 const toggleBtn = headerElement.createEl('button', { cls: 'task-group-toggle', attr: { 'aria-label': 'Toggle group' } });
-                try { setIcon(toggleBtn, 'chevron-right'); } catch (_) {}
+                try { setIcon(toggleBtn, 'chevron-right'); } catch (_) { /* Ignore setIcon errors */ }
                 const svg = toggleBtn.querySelector('svg');
                 if (svg) { svg.classList.add('chevron'); svg.setAttr('width', '16'); svg.setAttr('height', '16'); }
                 else { toggleBtn.textContent = '▸'; toggleBtn.addClass('chevron-text'); }
