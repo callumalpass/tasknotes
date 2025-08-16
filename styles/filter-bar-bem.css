@@ -60,6 +60,51 @@
   width: 16px; height: 16px;
 }
 
+/* Clear all filters button in Filter section header - matches Save button style exactly */
+.tasknotes-plugin .filter-bar__clear-all-button {
+  /* Ensure identical sizing and alignment with Save button */
+  width: var(--input-height);
+  height: var(--input-height);
+  min-width: var(--input-height);
+  min-height: var(--input-height);
+  padding: 0;
+  margin-right: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: top;
+}
+
+/* Ensure the icon is properly centered */
+.tasknotes-plugin .filter-bar__clear-all-button svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Close modal button - matches other buttons exactly but with transparent background */
+.tasknotes-plugin .filter-bar__close-modal-button {
+  /* Identical sizing to Clear and Save buttons */
+  width: var(--input-height);
+  height: var(--input-height);
+  min-width: var(--input-height);
+  min-height: var(--input-height);
+  padding: 0;
+  margin-left: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: top;
+  /* Transparent background */
+  background: transparent !important;
+  border: none !important;
+}
+
+/* Ensure the close icon is properly centered */
+.tasknotes-plugin .filter-bar__close-modal-button svg {
+  width: 16px;
+  height: 16px;
+}
+
 /* Natural Language Date Input Enhancement */
 .tasknotes-plugin .filter-date-input-container {
     display: flex;

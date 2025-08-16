@@ -699,12 +699,31 @@ export class FilterBar extends EventEmitter {
         }
 
         const actionsWrapper = header.createDiv('filter-bar__section-header-actions');
+
+        // Clear all filters button (always visible in modal)
+        new ButtonComponent(actionsWrapper)
+            .setIcon('eraser')
+            .setTooltip('Clear all filters and groups')
+            .setClass('filter-bar__clear-all-button')
+            .onClick(() => {
+                this.clearAllFiltersKeepModalOpen();
+            });
+
         new ButtonComponent(actionsWrapper)
             .setIcon('save')
             .setTooltip('Save current filter as view')
             .setClass('filter-bar__save-button')
             .onClick(() => {
                 this.showSaveViewDialog();
+            });
+
+        // Close modal button
+        new ButtonComponent(actionsWrapper)
+            .setIcon('x')
+            .setTooltip('Close filter modal')
+            .setClass('filter-bar__close-modal-button')
+            .onClick(() => {
+                this.closeFilterModal();
             });
 
         // Content
@@ -1449,8 +1468,8 @@ export class FilterBar extends EventEmitter {
             this.searchInput.setValue('');
         }
 
-        // Update UI and emit change
-        this.render();
+        // Update only the filter builder to avoid collapsing the filter box
+        this.updateFilterBuilder();
         this.updateViewSelectorButtonState();
         this.emitQueryChange();
 
@@ -1461,6 +1480,57 @@ export class FilterBar extends EventEmitter {
                 this.viewSelectorButton.buttonEl.classList.remove('filter-bar__templates-button--active');
             }
         }
+    }
+
+    /**
+     * Clear all filters but keep the modal open (for Clear button in modal)
+     */
+    private clearAllFiltersKeepModalOpen(): void {
+        // Create a fresh default query with preserved sort/group settings
+        this.currentQuery = {
+            type: 'group',
+            id: FilterUtils.generateId(),
+            conjunction: 'and',
+            children: [],
+            sortKey: this.currentQuery.sortKey || 'due',
+            sortDirection: this.currentQuery.sortDirection || 'asc',
+            groupKey: 'none'
+        };
+
+        // Clear the active saved view
+        this.activeSavedView = null;
+
+        // Clear the search input
+        if (this.searchInput) {
+            this.searchInput.setValue('');
+        }
+
+        // Update only the filter builder to avoid collapsing the filter box
+        this.updateFilterBuilder();
+        this.updateViewSelectorButtonState();
+
+        // Don't emit query change immediately to prevent modal closure
+        // Instead, just update the badge and emit after a delay
+        this.updateFilterToggleBadge();
+        setTimeout(() => {
+            this.emitQueryChangeIfComplete();
+        }, 100);
+
+        // Close the dropdown if it's open (do not toggle open on clear)
+        if (this.viewSelectorDropdown && !this.viewSelectorDropdown.classList.contains('filter-bar__view-selector-dropdown--hidden')) {
+            this.viewSelectorDropdown.classList.add('filter-bar__view-selector-dropdown--hidden');
+            if (this.viewSelectorButton?.buttonEl) {
+                this.viewSelectorButton.buttonEl.classList.remove('filter-bar__templates-button--active');
+            }
+        }
+    }
+
+    /**
+     * Close the filter modal
+     */
+    private closeFilterModal(): void {
+        this.sectionStates.filterBox = false;
+        this.updateFilterBoxState();
     }
 
     /**
@@ -1528,6 +1598,8 @@ export class FilterBar extends EventEmitter {
         }
     }
 
+
+
     /**
      * Update filter builder ensuring all conjunction buttons and UI elements are properly rendered
      * This is more efficient than full render() but ensures all parts are updated correctly
@@ -1539,16 +1611,13 @@ export class FilterBar extends EventEmitter {
                 const currentValue = this.searchInput?.getValue();
                 const hasFocus = this.searchInput?.inputEl === document.activeElement;
 
-                // Update the filter builder section completely
+                // Update the filter content
                 this.filterBuilder.empty();
                 this.renderFilterGroup(this.filterBuilder, this.currentQuery, 0);
 
-                // Update display section to ensure sort/group controls are in sync
-                const displaySection = this.container.querySelector('.filter-bar__display-section');
-                if (displaySection) {
-                    displaySection.empty();
-                    this.renderDisplaySection(displaySection as HTMLElement);
-                }
+
+
+                // Note: Display section doesn't need updating for filter changes
 
                 // Restore search input value and focus if needed
                 if (this.searchInput && currentValue !== undefined) {
@@ -1682,6 +1751,8 @@ export class FilterBar extends EventEmitter {
         const active = this.hasActiveFilters();
         el.classList.toggle('has-active-filters', active);
         setTooltip(el, active ? 'Active filters – Click to modify, right-click to clear' : 'Toggle filter', { placement: 'top' });
+
+
     }
 
     /**
