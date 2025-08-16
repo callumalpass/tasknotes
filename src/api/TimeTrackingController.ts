@@ -6,6 +6,7 @@ import { TaskService } from '../services/TaskService';
 import { MinimalNativeCache } from '../utils/MinimalNativeCache';
 import { StatusManager } from '../services/StatusManager';
 import TaskNotesPlugin from '../main';
+import { Get, Post } from '../utils/OpenAPIDecorators';
 
 export class TimeTrackingController extends BaseController {
 	constructor(
@@ -18,6 +19,7 @@ export class TimeTrackingController extends BaseController {
 		super();
 	}
 
+	@Post('/api/tasks/:id/time/start')
 	async startTimeTracking(req: IncomingMessage, res: ServerResponse, params?: Record<string, string>): Promise<void> {
 		try {
 			const taskId = params?.id;
@@ -47,6 +49,7 @@ export class TimeTrackingController extends BaseController {
 		}
 	}
 
+	@Post('/api/tasks/:id/time/stop')
 	async stopTimeTracking(req: IncomingMessage, res: ServerResponse, params?: Record<string, string>): Promise<void> {
 		try {
 			const taskId = params?.id;
@@ -76,6 +79,7 @@ export class TimeTrackingController extends BaseController {
 		}
 	}
 
+	@Post('/api/tasks/:id/time/start-with-description')
 	async startTimeTrackingWithDescription(req: IncomingMessage, res: ServerResponse, params?: Record<string, string>): Promise<void> {
 		try {
 			const taskId = params?.id;
@@ -122,6 +126,7 @@ export class TimeTrackingController extends BaseController {
 		}
 	}
 
+	@Get('/api/time/active')
 	async getActiveTimeSessions(req: IncomingMessage, res: ServerResponse): Promise<void> {
 		try {
 			const allTasks = await this.cacheManager.getAllTasks();
@@ -166,6 +171,7 @@ export class TimeTrackingController extends BaseController {
 		}
 	}
 
+	@Get('/api/time/summary')
 	async getTimeSummary(req: IncomingMessage, res: ServerResponse): Promise<void> {
 		try {
 			const parsedUrl = parse(req.url || '', true);
@@ -310,6 +316,7 @@ export class TimeTrackingController extends BaseController {
 		}
 	}
 
+	@Get('/api/tasks/:id/time')
 	async getTaskTimeData(req: IncomingMessage, res: ServerResponse, params?: Record<string, string>): Promise<void> {
 		try {
 			const taskId = params?.id;

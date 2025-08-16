@@ -56,56 +56,12 @@ export class HTTPAPIService implements IWebhookNotifier {
 	}
 
 	private setupRoutes(): void {
-		// Health check
-		this.router.get('/api/health', this.systemController.healthCheck.bind(this.systemController));
-		
-		// Task routes
-		this.router.get('/api/tasks', this.tasksController.getTasks.bind(this.tasksController));
-		this.router.post('/api/tasks', this.tasksController.createTask.bind(this.tasksController));
-		this.router.get('/api/tasks/:id', this.tasksController.getTask.bind(this.tasksController));
-		this.router.put('/api/tasks/:id', this.tasksController.updateTask.bind(this.tasksController));
-		this.router.delete('/api/tasks/:id', this.tasksController.deleteTask.bind(this.tasksController));
-		this.router.post('/api/tasks/:id/toggle-status', this.tasksController.toggleStatus.bind(this.tasksController));
-		this.router.post('/api/tasks/:id/archive', this.tasksController.toggleArchive.bind(this.tasksController));
-		this.router.post('/api/tasks/:id/complete-instance', this.tasksController.completeRecurringInstance.bind(this.tasksController));
-		this.router.post('/api/tasks/query', this.tasksController.queryTasks.bind(this.tasksController));
-		
-		// Task stats and filter options
-		this.router.get('/api/filter-options', this.tasksController.getFilterOptions.bind(this.tasksController));
-		this.router.get('/api/stats', this.tasksController.getStats.bind(this.tasksController));
-		
-		// Time tracking routes
-		this.router.post('/api/tasks/:id/time/start', this.timeTrackingController.startTimeTracking.bind(this.timeTrackingController));
-		this.router.post('/api/tasks/:id/time/stop', this.timeTrackingController.stopTimeTracking.bind(this.timeTrackingController));
-		this.router.post('/api/tasks/:id/time/start-with-description', this.timeTrackingController.startTimeTrackingWithDescription.bind(this.timeTrackingController));
-		this.router.get('/api/tasks/:id/time', this.timeTrackingController.getTaskTimeData.bind(this.timeTrackingController));
-		this.router.get('/api/time/active', this.timeTrackingController.getActiveTimeSessions.bind(this.timeTrackingController));
-		this.router.get('/api/time/summary', this.timeTrackingController.getTimeSummary.bind(this.timeTrackingController));
-		
-		// Pomodoro routes
-		this.router.post('/api/pomodoro/start', this.pomodoroController.startPomodoro.bind(this.pomodoroController));
-		this.router.post('/api/pomodoro/stop', this.pomodoroController.stopPomodoro.bind(this.pomodoroController));
-		this.router.post('/api/pomodoro/pause', this.pomodoroController.pausePomodoro.bind(this.pomodoroController));
-		this.router.post('/api/pomodoro/resume', this.pomodoroController.resumePomodoro.bind(this.pomodoroController));
-		this.router.get('/api/pomodoro/status', this.pomodoroController.getPomodoroStatus.bind(this.pomodoroController));
-		this.router.get('/api/pomodoro/sessions', this.pomodoroController.getPomodoroSessions.bind(this.pomodoroController));
-		this.router.get('/api/pomodoro/stats', this.pomodoroController.getPomodoroStats.bind(this.pomodoroController));
-		
-		// NLP routes
-		this.router.post('/api/nlp/parse', this.systemController.handleNLPParse.bind(this.systemController));
-		this.router.post('/api/nlp/create', this.systemController.handleNLPCreate.bind(this.systemController));
-		
-		// Webhook routes
-		this.router.post('/api/webhooks', this.webhookController.registerWebhook.bind(this.webhookController));
-		this.router.get('/api/webhooks', this.webhookController.listWebhooks.bind(this.webhookController));
-		this.router.delete('/api/webhooks/:id', this.webhookController.deleteWebhook.bind(this.webhookController));
-		this.router.get('/api/webhooks/deliveries', this.webhookController.getWebhookDeliveries.bind(this.webhookController));
-		
-		// Documentation routes
-		this.router.get('/api/docs', this.systemController.handleOpenAPISpec.bind(this.systemController));
-		this.router.get('/api/docs/ui', this.systemController.handleSwaggerUI.bind(this.systemController));
-		
-		// Note: CORS preflight is handled in the main handleRequest method
+		// Register all controllers using decorators
+		this.router.registerController(this.tasksController);
+		this.router.registerController(this.timeTrackingController);
+		this.router.registerController(this.pomodoroController);
+		this.router.registerController(this.systemController);
+		this.router.registerController(this.webhookController);
 	}
 
 	private async handleCORSPreflight(req: IncomingMessage, res: ServerResponse): Promise<void> {

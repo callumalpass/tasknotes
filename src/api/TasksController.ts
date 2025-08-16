@@ -7,6 +7,7 @@ import { FilterService } from '../services/FilterService';
 import { MinimalNativeCache } from '../utils/MinimalNativeCache';
 import { StatusManager } from '../services/StatusManager';
 import TaskNotesPlugin from '../main';
+import { Get, Post, Put, Delete } from '../utils/OpenAPIDecorators';
 
 interface TaskQueryParams {
 	status?: string;
@@ -37,82 +38,50 @@ export class TasksController extends BaseController {
 		super();
 	}
 
+	@Get('/api/tasks')
 	async getTasks(req: IncomingMessage, res: ServerResponse): Promise<void> {
 		try {
 			const parsedUrl = parse(req.url || '', true);
-			const params = parsedUrl.query as TaskQueryParams;
+			const params = parsedUrl.query;
+			
+			// Check if user is trying to use filtering parameters
+			const filterParams = ['status', 'priority', 'project', 'tag', 'overdue', 'completed', 'archived', 'due_before', 'due_after', 'sort'];
+			const hasFilters = filterParams.some(param => params[param]);
+			
+			if (hasFilters) {
+				// Recommend using the more powerful query endpoint
+				this.sendResponse(res, 400, this.errorResponse(
+					'For filtering tasks, please use POST /api/tasks/query which supports advanced filtering capabilities. ' +
+					'GET /api/tasks is for basic listing only. See API documentation for details.'
+				));
+				return;
+			}
+
 			const allTasks = await this.cacheManager.getAllTasks();
 			
-			let filteredTasks = allTasks;
+			// Basic pagination only
+			let offset = 0;
+			let limit = 50; // Reduced default for basic listing
 
-			// Apply basic filters
-			if (params.status) {
-				filteredTasks = filteredTasks.filter(task => task.status === params.status);
-			}
-			if (params.priority) {
-				filteredTasks = filteredTasks.filter(task => task.priority === params.priority);
-			}
-			if (params.project) {
-				filteredTasks = filteredTasks.filter(task => 
-					task.projects?.some(p => p.toLowerCase().includes(params.project!.toLowerCase()))
-				);
-			}
-			if (params.tag) {
-				filteredTasks = filteredTasks.filter(task => 
-					task.tags?.some(t => t.toLowerCase().includes(params.tag!.toLowerCase()))
-				);
-			}
-			if (params.overdue === 'true') {
-				const today = new Date();
-				filteredTasks = filteredTasks.filter(task => 
-					task.due && new Date(task.due) < today && !this.statusManager.isCompletedStatus(task.status)
-				);
-			}
-			if (params.completed === 'true') {
-				filteredTasks = filteredTasks.filter(task => this.statusManager.isCompletedStatus(task.status));
-			} else if (params.completed === 'false') {
-				filteredTasks = filteredTasks.filter(task => !this.statusManager.isCompletedStatus(task.status));
-			}
-			if (params.archived === 'true') {
-				filteredTasks = filteredTasks.filter(task => task.archived === true);
-			} else if (params.archived === 'false') {
-				filteredTasks = filteredTasks.filter(task => task.archived !== true);
+			if (params.offset) {
+				offset = parseInt(params.offset as string, 10);
+				if (isNaN(offset) || offset < 0) {
+					offset = 0;
+				}
 			}
 
-			// Apply date filters
-			if (params.due_before) {
-				const beforeDate = new Date(params.due_before);
-				filteredTasks = filteredTasks.filter(task => 
-					task.due && new Date(task.due) < beforeDate
-				);
-			}
-			if (params.due_after) {
-				const afterDate = new Date(params.due_after);
-				filteredTasks = filteredTasks.filter(task => 
-					task.due && new Date(task.due) > afterDate
-				);
+			if (params.limit) {
+				limit = parseInt(params.limit as string, 10);
+				if (isNaN(limit) || limit < 1) {
+					limit = 50;
+				}
+				// Cap the limit
+				if (limit > 200) {
+					limit = 200;
+				}
 			}
 
-			// Sorting
-			if (params.sort) {
-				const [field, direction = 'asc'] = params.sort.split(':');
-				filteredTasks.sort((a, b) => {
-					const aVal = (a as any)[field];
-					const bVal = (b as any)[field];
-					const comparison = aVal < bVal ? -1 : aVal > bVal ? 1 : 0;
-					return direction === 'desc' ? -comparison : comparison;
-				});
-			}
-
-			// Calculate filtered count before pagination
-			const filteredCount = filteredTasks.length;
-
-			// Pagination
-			const limit = params.limit ? parseInt(params.limit) : undefined;
-			const offset = params.offset ? parseInt(params.offset) : 0;
-			if (limit) {
-				filteredTasks = filteredTasks.slice(offset, offset + limit);
-			}
+			const paginatedTasks = allTasks.slice(offset, offset + limit);
 
 			// Get vault information
 			const adapter = this.plugin.app.vault.adapter as any;
@@ -128,19 +97,25 @@ export class TasksController extends BaseController {
 			}
 
 			this.sendResponse(res, 200, this.successResponse({
-				tasks: filteredTasks,
-				total: allTasks.length,
-				filtered: filteredCount,
+				tasks: paginatedTasks,
+				pagination: {
+					total: allTasks.length,
+					offset,
+					limit,
+					hasMore: offset + limit < allTasks.length
+				},
 				vault: {
 					name: this.plugin.app.vault.getName(),
 					path: vaultPath
-				}
+				},
+				note: 'For filtering and advanced queries, use POST /api/tasks/query'
 			}));
 		} catch (error: any) {
 			this.sendResponse(res, 500, this.errorResponse(error.message));
 		}
 	}
 
+	@Post('/api/tasks')
 	async createTask(req: IncomingMessage, res: ServerResponse): Promise<void> {
 		try {
 			const taskData: TaskCreationData = await this.parseRequestBody(req);
@@ -161,6 +136,7 @@ export class TasksController extends BaseController {
 		}
 	}
 
+	@Get('/api/tasks/:id')
 	async getTask(req: IncomingMessage, res: ServerResponse, params?: Record<string, string>): Promise<void> {
 		try {
 			const taskId = params?.id;
@@ -182,6 +158,7 @@ export class TasksController extends BaseController {
 		}
 	}
 
+	@Put('/api/tasks/:id')
 	async updateTask(req: IncomingMessage, res: ServerResponse, params?: Record<string, string>): Promise<void> {
 		try {
 			const taskId = params?.id;
@@ -212,6 +189,7 @@ export class TasksController extends BaseController {
 		}
 	}
 
+	@Delete('/api/tasks/:id')
 	async deleteTask(req: IncomingMessage, res: ServerResponse, params?: Record<string, string>): Promise<void> {
 		try {
 			const taskId = params?.id;
@@ -238,6 +216,7 @@ export class TasksController extends BaseController {
 		}
 	}
 
+	@Post('/api/tasks/:id/toggle-status')
 	async toggleStatus(req: IncomingMessage, res: ServerResponse, params?: Record<string, string>): Promise<void> {
 		try {
 			const taskId = params?.id;
@@ -274,6 +253,7 @@ export class TasksController extends BaseController {
 		}
 	}
 
+	@Post('/api/tasks/:id/archive')
 	async toggleArchive(req: IncomingMessage, res: ServerResponse, params?: Record<string, string>): Promise<void> {
 		try {
 			const taskId = params?.id;
@@ -304,6 +284,7 @@ export class TasksController extends BaseController {
 		}
 	}
 
+	@Post('/api/tasks/:id/complete-instance')
 	async completeRecurringInstance(req: IncomingMessage, res: ServerResponse, params?: Record<string, string>): Promise<void> {
 		try {
 			const taskId = params?.id;
@@ -328,6 +309,7 @@ export class TasksController extends BaseController {
 		}
 	}
 
+	@Post('/api/tasks/query')
 	async queryTasks(req: IncomingMessage, res: ServerResponse): Promise<void> {
 		try {
 			const query = await this.parseRequestBody(req) as FilterQuery;
@@ -367,6 +349,7 @@ export class TasksController extends BaseController {
 		}
 	}
 
+	@Get('/api/filter-options')
 	async getFilterOptions(req: IncomingMessage, res: ServerResponse): Promise<void> {
 		try {
 			const filterOptions = await this.filterService.getFilterOptions();
@@ -376,6 +359,7 @@ export class TasksController extends BaseController {
 		}
 	}
 
+	@Get('/api/stats')
 	async getStats(req: IncomingMessage, res: ServerResponse): Promise<void> {
 		try {
 			const allTasks = await this.cacheManager.getAllTasks();

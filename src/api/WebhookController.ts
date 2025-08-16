@@ -3,6 +3,7 @@ import { BaseController } from './BaseController';
 import { WebhookConfig, WebhookDelivery, WebhookEvent, WebhookPayload } from '../types';
 import { createHash, createHmac } from 'crypto';
 import TaskNotesPlugin from '../main';
+import { Get, Post, Delete } from '../utils/OpenAPIDecorators';
 
 export class WebhookController extends BaseController {
 	private webhooks: Map<string, WebhookConfig> = new Map();
@@ -13,6 +14,7 @@ export class WebhookController extends BaseController {
 		this.loadWebhooks();
 	}
 
+	@Post('/api/webhooks')
 	async registerWebhook(req: IncomingMessage, res: ServerResponse): Promise<void> {
 		try {
 			const body = await this.parseRequestBody(req);
@@ -56,6 +58,7 @@ export class WebhookController extends BaseController {
 		}
 	}
 
+	@Get('/api/webhooks')
 	async listWebhooks(req: IncomingMessage, res: ServerResponse): Promise<void> {
 		try {
 			const webhooks = Array.from(this.webhooks.values()).map(webhook => ({
@@ -72,6 +75,7 @@ export class WebhookController extends BaseController {
 		}
 	}
 
+	@Delete('/api/webhooks/:id')
 	async deleteWebhook(req: IncomingMessage, res: ServerResponse, params?: Record<string, string>): Promise<void> {
 		try {
 			const webhookId = params?.id;
@@ -96,6 +100,7 @@ export class WebhookController extends BaseController {
 		}
 	}
 
+	@Get('/api/webhooks/deliveries')
 	async getWebhookDeliveries(req: IncomingMessage, res: ServerResponse): Promise<void> {
 		try {
 			// Return recent deliveries from queue

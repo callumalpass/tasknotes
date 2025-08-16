@@ -5,7 +5,7 @@ import { TaskCreationData, IWebhookNotifier } from '../types';
 import { TaskService } from '../services/TaskService';
 import { calculateDefaultDate } from '../utils/helpers';
 import TaskNotesPlugin from '../main';
-import { generateOpenAPISpec } from '../utils/OpenAPIDecorators';
+import { generateOpenAPISpec, Get, Post } from '../utils/OpenAPIDecorators';
 
 export class SystemController extends BaseController {
 	constructor(
@@ -18,6 +18,7 @@ export class SystemController extends BaseController {
 		super();
 	}
 
+	@Get('/api/health')
 	async healthCheck(req: IncomingMessage, res: ServerResponse): Promise<void> {
 		const vaultName = this.plugin.app.vault.getName();
 		const adapter = this.plugin.app.vault.adapter as any;
@@ -45,6 +46,7 @@ export class SystemController extends BaseController {
 		}));
 	}
 
+	@Post('/api/nlp/parse')
 	async handleNLPParse(req: IncomingMessage, res: ServerResponse): Promise<void> {
 		try {
 			const body = await this.parseRequestBody(req);
@@ -93,6 +95,7 @@ export class SystemController extends BaseController {
 		}
 	}
 
+	@Post('/api/nlp/create')
 	async handleNLPCreate(req: IncomingMessage, res: ServerResponse): Promise<void> {
 		try {
 			const body = await this.parseRequestBody(req);
@@ -155,6 +158,7 @@ export class SystemController extends BaseController {
 		}
 	}
 
+	@Get('/api/docs')
 	async handleOpenAPISpec(req: IncomingMessage, res: ServerResponse): Promise<void> {
 		try {
 			const spec = generateOpenAPISpec(this.httpAPIService || this);
@@ -175,6 +179,7 @@ export class SystemController extends BaseController {
 		}
 	}
 
+	@Get('/api/docs/ui')
 	async handleSwaggerUI(req: IncomingMessage, res: ServerResponse): Promise<void> {
 		try {
 			const swaggerHTML = this.generateSwaggerUIHTML();

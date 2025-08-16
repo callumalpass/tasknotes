@@ -1,5 +1,6 @@
 import { IncomingMessage, ServerResponse } from 'http';
 import { parse } from 'url';
+import { getRoutes, RouteInfo } from '../utils/OpenAPIDecorators';
 
 export type HTTPMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'OPTIONS';
 export type RouteHandler = (req: IncomingMessage, res: ServerResponse, params?: Record<string, string>) => Promise<void>;
@@ -85,6 +86,24 @@ export class APIRouter {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Register a controller using decorator-based routes
+	 */
+	registerController(controllerInstance: any): void {
+		const routes = getRoutes(controllerInstance.constructor);
+		
+		for (const routeInfo of routes) {
+			const handler = controllerInstance[routeInfo.handler];
+			if (typeof handler === 'function') {
+				this.register(
+					routeInfo.method.toUpperCase() as HTTPMethod,
+					routeInfo.path,
+					handler.bind(controllerInstance)
+				);
+			}
+		}
 	}
 
 	getRoutes(): Readonly<Route[]> {

@@ -56,6 +56,14 @@ export interface OpenAPIEndpoint {
 // Metadata keys for storing OpenAPI information
 const OPENAPI_OPERATION_KEY = Symbol('openapi:operation');
 const OPENAPI_ENDPOINTS_KEY = Symbol('openapi:endpoints');
+const ROUTE_KEY = Symbol('route');
+
+// Route information interface
+export interface RouteInfo {
+	method: string;
+	path: string;
+	handler: string; // method name
+}
 
 /**
  * Class decorator to mark a class as having OpenAPI endpoints
@@ -68,6 +76,40 @@ export function OpenAPIController(target: any) {
 }
 
 /**
+ * Route decorator for defining HTTP routes
+ */
+export function Route(method: string, path: string) {
+	return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+		// Store route metadata
+		Reflect.defineMetadata(ROUTE_KEY, { method: method.toLowerCase(), path, handler: propertyKey }, target, propertyKey);
+		
+		// Also store in class-level routes array for easy access
+		const routes: RouteInfo[] = Reflect.getMetadata('routes', target.constructor) || [];
+		routes.push({ method: method.toLowerCase(), path, handler: propertyKey });
+		Reflect.defineMetadata('routes', routes, target.constructor);
+	};
+}
+
+/**
+ * HTTP method decorators
+ */
+export function Get(path: string) {
+	return Route('GET', path);
+}
+
+export function Post(path: string) {
+	return Route('POST', path);
+}
+
+export function Put(path: string) {
+	return Route('PUT', path);
+}
+
+export function Delete(path: string) {
+	return Route('DELETE', path);
+}
+
+/**
  * Method decorator for documenting API endpoints
  */
 export function OpenAPI(operation: OpenAPIOperation) {
@@ -77,8 +119,9 @@ export function OpenAPI(operation: OpenAPIOperation) {
 		// Store endpoint information on the class
 		const endpoints: OpenAPIEndpoint[] = Reflect.getMetadata(OPENAPI_ENDPOINTS_KEY, target.constructor) || [];
 		
-		// Extract path and method from method name (convention-based)
-		const { path, method } = extractPathAndMethod(propertyKey);
+		// Get route info from route decorator, or fall back to extractPathAndMethod
+		const routeInfo: RouteInfo = Reflect.getMetadata(ROUTE_KEY, target, propertyKey);
+		const { path, method } = routeInfo || extractPathAndMethod(propertyKey);
 		
 		endpoints.push({
 			path,
@@ -91,115 +134,12 @@ export function OpenAPI(operation: OpenAPIOperation) {
 }
 
 /**
- * Extract path and HTTP method from handler method name
- * Convention: handle{Method}{Resource} -> {method} /{resource}
+ * Extract path and HTTP method from handler method name (DEPRECATED)
+ * This is kept for backward compatibility with existing OpenAPI decorators
+ * New code should use @Route decorators instead
  */
 function extractPathAndMethod(methodName: string): { path: string; method: string } {
-	// Handle special cases first
-	if (methodName === 'handleHealthCheck') {
-		return { path: '/api/health', method: 'get' };
-	}
-	
-	if (methodName === 'handleGetTasks') {
-		return { path: '/api/tasks', method: 'get' };
-	}
-	
-	if (methodName === 'handleCreateTask') {
-		return { path: '/api/tasks', method: 'post' };
-	}
-	
-	if (methodName === 'handleGetTask') {
-		return { path: '/api/tasks/{id}', method: 'get' };
-	}
-	
-	if (methodName === 'handleUpdateTask') {
-		return { path: '/api/tasks/{id}', method: 'put' };
-	}
-	
-	if (methodName === 'handleDeleteTask') {
-		return { path: '/api/tasks/{id}', method: 'delete' };
-	}
-	
-	if (methodName === 'handleStartTimeTracking') {
-		return { path: '/api/tasks/{id}/time/start', method: 'post' };
-	}
-	
-	if (methodName === 'handleStopTimeTracking') {
-		return { path: '/api/tasks/{id}/time/stop', method: 'post' };
-	}
-	
-	if (methodName === 'handleStartTimeTrackingWithDescription') {
-		return { path: '/api/tasks/{id}/time/start-with-description', method: 'post' };
-	}
-	
-	if (methodName === 'handleGetTaskTimeData') {
-		return { path: '/api/tasks/{id}/time', method: 'get' };
-	}
-	
-	if (methodName === 'handleGetActiveTimeSessions') {
-		return { path: '/api/time/active', method: 'get' };
-	}
-	
-	if (methodName === 'handleGetTimeSummary') {
-		return { path: '/api/time/summary', method: 'get' };
-	}
-	
-	if (methodName === 'handleToggleStatus') {
-		return { path: '/api/tasks/{id}/toggle-status', method: 'post' };
-	}
-	
-	if (methodName === 'handleToggleArchive') {
-		return { path: '/api/tasks/{id}/archive', method: 'post' };
-	}
-	
-	if (methodName === 'handleCompleteRecurringInstance') {
-		return { path: '/api/tasks/{id}/complete-instance', method: 'post' };
-	}
-	
-	if (methodName === 'handleQueryTasks') {
-		return { path: '/api/tasks/query', method: 'post' };
-	}
-	
-	if (methodName === 'handleGetFilterOptions') {
-		return { path: '/api/filter-options', method: 'get' };
-	}
-	
-	if (methodName === 'handleGetStats') {
-		return { path: '/api/stats', method: 'get' };
-	}
-	
-	if (methodName === 'handleNLPParse') {
-		return { path: '/api/nlp/parse', method: 'post' };
-	}
-	
-	if (methodName === 'handleNLPCreate') {
-		return { path: '/api/nlp/create', method: 'post' };
-	}
-	
-	if (methodName === 'handleRegisterWebhook') {
-		return { path: '/api/webhooks', method: 'post' };
-	}
-	
-	if (methodName === 'handleListWebhooks') {
-		return { path: '/api/webhooks', method: 'get' };
-	}
-	
-	if (methodName === 'handleDeleteWebhook') {
-		return { path: '/api/webhooks/{id}', method: 'delete' };
-	}
-	
-	if (methodName === 'handleGetWebhookDeliveries') {
-		return { path: '/api/webhooks/deliveries', method: 'get' };
-	}
-	
-	// Fallback - try to parse from method name
-	const match = methodName.match(/^handle([A-Z][a-z]+)(.+)$/);
-	if (match) {
-		const method = match[1].toLowerCase();
-		const resource = match[2].toLowerCase();
-		return { path: `/api/${resource}`, method };
-	}
-	
+	console.warn(`extractPathAndMethod is deprecated. Use @Route decorators on method: ${methodName}`);
 	return { path: '/api/unknown', method: 'get' };
 }
 
@@ -974,6 +914,20 @@ function getCommonSchemas(): any {
 			required: ['success', 'error']
 		}
 	};
+}
+
+/**
+ * Get route metadata from a method
+ */
+export function getRouteInfo(target: any, propertyKey: string): RouteInfo | undefined {
+	return Reflect.getMetadata(ROUTE_KEY, target, propertyKey);
+}
+
+/**
+ * Get all routes from a controller class
+ */
+export function getRoutes(controllerClass: any): RouteInfo[] {
+	return Reflect.getMetadata('routes', controllerClass) || [];
 }
 
 /**

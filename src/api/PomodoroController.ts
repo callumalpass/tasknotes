@@ -3,6 +3,7 @@ import { parse } from 'url';
 import { BaseController } from './BaseController';
 import { MinimalNativeCache } from '../utils/MinimalNativeCache';
 import TaskNotesPlugin from '../main';
+import { Get, Post } from '../utils/OpenAPIDecorators';
 
 export class PomodoroController extends BaseController {
 	constructor(
@@ -12,6 +13,7 @@ export class PomodoroController extends BaseController {
 		super();
 	}
 
+	@Post('/api/pomodoro/start')
 	async startPomodoro(req: IncomingMessage, res: ServerResponse): Promise<void> {
 		try {
 			const body = await this.parseRequestBody(req);
@@ -51,6 +53,7 @@ export class PomodoroController extends BaseController {
 		}
 	}
 
+	@Post('/api/pomodoro/stop')
 	async stopPomodoro(req: IncomingMessage, res: ServerResponse): Promise<void> {
 		try {
 			const currentState = this.plugin.pomodoroService.getState();
@@ -69,6 +72,7 @@ export class PomodoroController extends BaseController {
 		}
 	}
 
+	@Post('/api/pomodoro/pause')
 	async pausePomodoro(req: IncomingMessage, res: ServerResponse): Promise<void> {
 		try {
 			const currentState = this.plugin.pomodoroService.getState();
@@ -90,6 +94,7 @@ export class PomodoroController extends BaseController {
 		}
 	}
 
+	@Post('/api/pomodoro/resume')
 	async resumePomodoro(req: IncomingMessage, res: ServerResponse): Promise<void> {
 		try {
 			const currentState = this.plugin.pomodoroService.getState();
@@ -116,6 +121,7 @@ export class PomodoroController extends BaseController {
 		}
 	}
 
+	@Get('/api/pomodoro/status')
 	async getPomodoroStatus(req: IncomingMessage, res: ServerResponse): Promise<void> {
 		try {
 			const state = this.plugin.pomodoroService.getState();
@@ -134,6 +140,7 @@ export class PomodoroController extends BaseController {
 		}
 	}
 
+	@Get('/api/pomodoro/sessions')
 	async getPomodoroSessions(req: IncomingMessage, res: ServerResponse): Promise<void> {
 		try {
 			const parsedUrl = parse(req.url || '', true);
@@ -168,6 +175,7 @@ export class PomodoroController extends BaseController {
 		}
 	}
 
+	@Get('/api/pomodoro/stats')
 	async getPomodoroStats(req: IncomingMessage, res: ServerResponse): Promise<void> {
 		try {
 			const parsedUrl = parse(req.url || '', true);
