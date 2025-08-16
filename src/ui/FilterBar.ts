@@ -88,7 +88,7 @@ export class FilterBar extends EventEmitter {
         viewOptions: false  // View Options - collapsed by default
     };
 
-    private enableGroupExpandCollapse: boolean = true;
+    private enableGroupExpandCollapse = true;
 
     constructor(
         app: App,
@@ -965,6 +965,11 @@ export class FilterBar extends EventEmitter {
                     dropdown.addOption(option, option);
                 });
                 break;
+            case 'path':
+                this.filterOptions.folders.forEach(option => {
+                    dropdown.addOption(option, option);
+                });
+                break;
         }
 
         setTooltip(dropdown.selectEl, `Select a ${propertyDef.label.toLowerCase()} to filter by`, { placement: 'top' });
@@ -978,6 +983,10 @@ export class FilterBar extends EventEmitter {
             } else {
                 dropdown.setValue(currentValue);
             }
+        } else if (propertyDef.id === 'path') {
+            const currentValue = String(condition.value || '');
+            // Show "(Root)" for empty string path
+            dropdown.setValue(currentValue === '' ? '(Root)' : currentValue);
         } else {
             dropdown.setValue(String(condition.value || ''));
         }
@@ -985,6 +994,8 @@ export class FilterBar extends EventEmitter {
         dropdown.onChange((value) => {
             if (propertyDef.id === 'projects' && value) {
                 condition.value = `[[${value}]]`;
+            } else if (propertyDef.id === 'path' && value === '(Root)') {
+                condition.value = '';
             } else {
                 condition.value = value || null;
             }

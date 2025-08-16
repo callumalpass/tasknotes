@@ -4,6 +4,8 @@ import { TaskInfo } from '../types';
 import { formatDateForStorage } from '../utils/dateUtils';
 import { ReminderModal } from '../modals/ReminderModal';
 import { CalendarExportService } from '../services/CalendarExportService';
+import { showConfirmationModal } from '../modals/ConfirmationModal';
+import { showTextInputModal } from '../modals/TextInputModal';
 
 export interface TaskContextMenuOptions {
     task: TaskInfo;
@@ -225,9 +227,13 @@ export class TaskContextMenu {
                     subItem.setIcon('pencil');
                     subItem.onClick(async () => {
                         try {
-                            // Simple prompt-based rename
+                            // Modal-based rename
                             const currentName = file.basename;
-                            const newName = prompt('Enter new name:', currentName);
+                            const newName = await showTextInputModal(plugin.app, {
+                                title: 'Rename File',
+                                placeholder: 'Enter new name',
+                                initialValue: currentName
+                            });
                             
                             if (newName && newName.trim() !== '' && newName !== currentName) {
                                 // Ensure the new name has the correct extension
@@ -256,9 +262,15 @@ export class TaskContextMenu {
                 submenu.addItem((subItem: any) => {
                     subItem.setTitle('Delete');
                     subItem.setIcon('trash');
-                    subItem.onClick(() => {
+                    subItem.onClick(async () => {
                         // Show confirmation and delete
-                        const confirmed = confirm(`Are you sure you want to delete "${file.name}"?`);
+                        const confirmed = await showConfirmationModal(plugin.app, {
+                            title: 'Delete File',
+                            message: `Are you sure you want to delete "${file.name}"?`,
+                            confirmText: 'Delete',
+                            cancelText: 'Cancel',
+                            isDestructive: true
+                        });
                         if (confirmed) {
                             plugin.app.vault.trash(file, true);
                         }

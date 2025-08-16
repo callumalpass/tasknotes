@@ -1,7 +1,7 @@
 import { Notice, TFile, EventRef } from 'obsidian';
 import TaskNotesPlugin from '../main';
 import { TaskInfo, Reminder, EVENT_TASK_UPDATED } from '../types';
-import { parseDateToLocal, hasTimeComponent } from '../utils/dateUtils';
+import { parseDateToLocal } from '../utils/dateUtils';
 
 interface NotificationQueueItem {
 	taskPath: string;
@@ -12,8 +12,8 @@ interface NotificationQueueItem {
 export class NotificationService {
 	private plugin: TaskNotesPlugin;
 	private notificationQueue: NotificationQueueItem[] = [];
-	private broadScanInterval?: NodeJS.Timer;
-	private quickCheckInterval?: NodeJS.Timer;
+	private broadScanInterval?: number;
+	private quickCheckInterval?: number;
 	private processedReminders: Set<string> = new Set(); // Track processed reminders to avoid duplicates
 	private taskUpdateListener?: EventRef;
 	private lastBroadScanTime: number = Date.now();
@@ -78,7 +78,7 @@ export class NotificationService {
 			
 			await this.scanTasksAndBuildQueue();
 			this.lastBroadScanTime = now;
-		}, this.BROAD_SCAN_INTERVAL);
+		}, this.BROAD_SCAN_INTERVAL) as unknown as number;
 	}
 
 	private startQuickCheck(): void {
@@ -94,7 +94,7 @@ export class NotificationService {
 			
 			this.checkNotificationQueue();
 			this.lastQuickCheckTime = now;
-		}, this.QUICK_CHECK_INTERVAL);
+		}, this.QUICK_CHECK_INTERVAL) as unknown as number;
 	}
 
 	private async scanTasksAndBuildQueue(): Promise<void> {

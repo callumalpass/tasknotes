@@ -1,4 +1,4 @@
-import { Menu, Notice } from 'obsidian';
+import { Menu } from 'obsidian';
 import TaskNotesPlugin from '../main';
 import { TaskInfo, Reminder } from '../types';
 import { ReminderModal } from '../modals/ReminderModal';

@@ -347,7 +347,7 @@ export class CalendarExportService {
     /**
      * Format dates for ICS format (YYYYMMDDTHHMMSSZ)
      */
-    private static getICSDateFormat(task: TaskInfo, useScheduledAsDue: boolean = true): { startICS: string | null, endICS: string | null } {
+    private static getICSDateFormat(task: TaskInfo, useScheduledAsDue = true): { startICS: string | null, endICS: string | null } {
         const { startISO, endISO } = this.getTaskDateRange(task, useScheduledAsDue);
         
         const formatICS = (isoString: string): string => {

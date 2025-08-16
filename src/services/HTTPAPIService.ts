@@ -1,16 +1,15 @@
 import { createServer, IncomingMessage, ServerResponse, Server } from 'http';
 import { parse } from 'url';
-import { parse as parseQuery } from 'querystring';
 import { TaskInfo, TaskCreationData, FilterQuery, WebhookConfig, WebhookEvent, WebhookPayload, WebhookDelivery, IWebhookNotifier } from '../types';
 import { TaskService } from './TaskService';
 import { FilterService } from './FilterService';
 import { MinimalNativeCache } from '../utils/MinimalNativeCache';
 import { calculateDefaultDate } from '../utils/helpers';
-import { NaturalLanguageParser, ParsedTaskData } from './NaturalLanguageParser';
+import { NaturalLanguageParser } from './NaturalLanguageParser';
 import { StatusManager } from './StatusManager';
 import TaskNotesPlugin from '../main';
 import { createHash, createHmac } from 'crypto';
-import { OpenAPIController, OpenAPI, generateOpenAPISpec } from '../utils/OpenAPIDecorators';
+import { OpenAPIController, generateOpenAPISpec } from '../utils/OpenAPIDecorators';
 
 interface APIResponse<T = any> {
 	success: boolean;

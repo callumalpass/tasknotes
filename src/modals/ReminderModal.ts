@@ -1,7 +1,7 @@
 import { App, Modal, Setting, setIcon, Notice, setTooltip } from 'obsidian';
 import TaskNotesPlugin from '../main';
 import { TaskInfo, Reminder } from '../types';
-import { formatDateForDisplay, parseDateToLocal } from '../utils/dateUtils';
+import { formatDateForDisplay } from '../utils/dateUtils';
 
 export class ReminderModal extends Modal {
 	private plugin: TaskNotesPlugin;

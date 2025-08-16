@@ -224,7 +224,6 @@ export class ICSSubscriptionService extends EventEmitter {
             const events: ICSEvent[] = [];
             
             // Maps to track recurring event exceptions
-            const recurringExceptions = new Map<string, Set<string>>(); // uid -> Set of exception dates
             const modifiedInstances = new Map<string, Map<string, ICAL.Event>>(); // uid -> Map of recurrence-id to Event
             
             // First pass: identify exceptions and modified instances

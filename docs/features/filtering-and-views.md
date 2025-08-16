@@ -84,6 +84,8 @@ The filter builder allows incomplete conditions during construction:
 
 ### Selection Properties
 
+- `path` - Task file path/folder location
+
 - `status` - Task status (uses your configured statuses)
 - `priority` - Priority level (uses your configured priorities)
 - `tags` - Task tags
@@ -152,7 +154,7 @@ Natural language dates are resolved dynamically when filters are evaluated, maki
 The value input changes based on the selected property and operator:
 
 **Text Input**: For text properties and custom values
-**Dropdown Selection**: For status, priority, tags, contexts, and projects
+**Dropdown Selection**: For status, priority, tags, contexts, projects, and path (folder locations)
 **Date Input**: For date properties - supports both ISO dates and natural language
 **Number Input**: For numeric properties
 **No Input**: For existence operators that don't require values
@@ -311,5 +313,30 @@ Group with OR conjunction:
 
 - Condition 1: `projects` `contains` `[[Work Project]]`
 - Condition 2: `contexts` `is` `work`
+
+### Folder-Based Filtering
+
+Filter tasks by their location in your vault:
+
+**Tasks in a specific folder:**
+- Property: `path`
+- Operator: `contains`
+- Value: `Work/Projects` (shows tasks in the Work/Projects folder)
+
+**Tasks in vault root:**
+- Property: `path`
+- Operator: `contains`
+- Value: `(Root)` (shows tasks in the vault root directory)
+
+**Exclude tasks from specific folders:**
+- Property: `path`
+- Operator: `does-not-contain`
+- Value: `Archive` (hides tasks in Archive folders)
+
+**Tasks without folder structure:**
+- Property: `path`
+- Operator: `is-empty` (shows tasks with no folder path)
+
+The path dropdown automatically populates with all unique folder paths found in your vault, making it easy to select existing locations.
 
 This filtering system provides the flexibility to create simple quick filters or complex multi-criteria queries while maintaining good performance and user experience.

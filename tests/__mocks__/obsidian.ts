@@ -700,60 +700,7 @@ export class ItemView extends Component {
 
 
 // --- UI Components used by FilterBar ---
-export class ButtonComponent {
-  public buttonEl: HTMLButtonElement;
-  constructor(containerEl: HTMLElement) {
-    this.buttonEl = document.createElement('button');
-    containerEl.appendChild(this.buttonEl);
-  }
-  setIcon(_icon: string) { return this; }
-  setButtonText(text: string) { this.buttonEl.textContent = text; return this; }
-  setClass(cls: string) { this.buttonEl.classList.add(cls); return this; }
-  setTooltip(_tooltip: string) { return this; }
-  setCta() { return this; }
-  onClick(callback: () => void) { this.buttonEl.addEventListener('click', callback); return this; }
-}
 
-export class TextComponent {
-  public inputEl: HTMLInputElement;
-  private _onChange: ((value: string) => void) | null = null;
-  constructor(containerEl: HTMLElement) {
-    this.inputEl = document.createElement('input');
-    this.inputEl.type = 'text';
-    containerEl.appendChild(this.inputEl);
-    this.inputEl.addEventListener('input', () => { this._onChange?.(this.inputEl.value); });
-  }
-  setPlaceholder(placeholder: string) { this.inputEl.placeholder = placeholder; return this; }
-  onChange(cb: (value: string) => void) { this._onChange = cb; return this; }
-  setValue(value: string) { this.inputEl.value = value; return this; }
-  getValue() { return this.inputEl.value; }
-}
-
-export class DropdownComponent {
-  public selectEl: HTMLSelectElement;
-  private _onChange: ((value: string) => void) | null = null;
-  constructor(containerEl: HTMLElement) {
-    this.selectEl = document.createElement('select');
-    containerEl.appendChild(this.selectEl);
-    this.selectEl.addEventListener('change', () => { this._onChange?.(this.selectEl.value); });
-  }
-  addOptions(options: Record<string, string>) {
-    Object.entries(options).forEach(([value, label]) => {
-      const opt = document.createElement('option');
-      opt.value = value; opt.textContent = label;
-      this.selectEl.appendChild(opt);
-    });
-    return this;
-  }
-  addOption(value: string, label: string) {
-    const opt = document.createElement('option');
-    opt.value = value; opt.textContent = label;
-    this.selectEl.appendChild(opt);
-    return this;
-  }
-  setValue(value: string) { this.selectEl.value = value; return this; }
-  onChange(cb: (value: string) => void) { this._onChange = cb; return this; }
-}
 
 // Setting mock class
 export class Setting {

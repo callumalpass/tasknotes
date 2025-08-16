@@ -44,8 +44,8 @@ export class PomodoroView extends ItemView {
     private resizeObserver: ResizeObserver | null = null;
     private resizeTimeout: number | null = null;
     private functionListeners: (() => void)[] = [];
-    private currentCircleSize: number = 300;
-    private currentCircumference: number = 0;
+    private currentCircleSize = 300;
+    private currentCircumference = 0;
     
     // Event listeners
     private listeners: EventRef[] = [];
@@ -454,7 +454,7 @@ export class PomodoroView extends ItemView {
         this.updateResponsiveLayout();
     }
     
-    private ensureResizeHandlingSetup(attempt: number = 0): void {
+    private ensureResizeHandlingSetup(attempt = 0): void {
         const maxAttempts = 10;
         const delay = Math.min(100 * Math.pow(1.5, attempt), 1000); // Exponential backoff, max 1s
         
@@ -508,31 +508,22 @@ export class PomodoroView extends ItemView {
         );
         
         // Apply appropriate responsive class based on granular breakpoints (still use width for layout)
-        let appliedClass = '';
         if (containerWidth <= 200) {
             pomodoroContainer.classList.add('pomodoro-view--tiny');
-            appliedClass = 'tiny';
         } else if (containerWidth <= 250) {
             pomodoroContainer.classList.add('pomodoro-view--extra-narrow');
-            appliedClass = 'extra-narrow';
         } else if (containerWidth <= 300) {
             pomodoroContainer.classList.add('pomodoro-view--very-narrow');
-            appliedClass = 'very-narrow';
         } else if (containerWidth <= 350) {
             pomodoroContainer.classList.add('pomodoro-view--narrow');
-            appliedClass = 'narrow';
         } else if (containerWidth <= 400) {
             pomodoroContainer.classList.add('pomodoro-view--small');
-            appliedClass = 'small';
         } else if (containerWidth <= 500) {
             pomodoroContainer.classList.add('pomodoro-view--medium-small');
-            appliedClass = 'medium-small';
         } else if (containerWidth <= 600) {
             pomodoroContainer.classList.add('pomodoro-view--medium');
-            appliedClass = 'medium';
         } else {
             pomodoroContainer.classList.add('pomodoro-view--wide');
-            appliedClass = 'wide';
         }
         
         
