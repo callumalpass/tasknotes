@@ -129,6 +129,7 @@ The widget includes:
 
 - **Collapsible Interface**: Click the widget title to expand or collapse the task list. The state is remembered between sessions.
 - **FilterBar Integration**: Full filtering, sorting, and grouping capabilities with real-time filtering and count display.
+- **Collapsible Groups**: When tasks are grouped, each group can be individually collapsed/expanded with persistent state. Includes expand/collapse all controls.
 - **Saved Views System**: Access to saved filter configurations for consistent task organization.
 - **Task Details**: Each task shows its status, priority, due date, and other properties.
 - **Real-time Updates**: The widget updates automatically when tasks are added, modified, or deleted.
@@ -145,6 +146,11 @@ Project tasks can display an expand/collapse chevron that toggles the visibility
 
 ![Left subtask chevron](../assets/left-task-subtask-chevron.gif)
 
+### Collapsible Groups
+
+When tasks are grouped by status, priority, or other criteria, each group displays with a collapsible header. Click the chevron or group header to expand/collapse individual groups, with state persisted per note.
+
+![Subtask widget collapsible groups](../assets/subtask-widget-collapsible-groups.gif)
 
 ## Natural Language Processing
 
