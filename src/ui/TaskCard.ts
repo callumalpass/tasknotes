@@ -752,8 +752,8 @@ export function updateTaskCard(element: HTMLElement, task: TaskInfo, plugin: Tas
     
     // Update priority indicator
     const existingPriorityDot = element.querySelector('.task-card__priority-dot') as HTMLElement;
-    if (task.priority && priorityConfig && !existingPriorityDot) {
-        // Add priority dot if task has priority but no dot exists
+    if (task.priority && priorityConfig && !existingPriorityDot && mainRow) {
+        // Add priority dot if task has priority but no dot exists (and mainRow exists)
         const priorityDot = mainRow.createEl('span', { 
             cls: 'task-card__priority-dot',
             attr: { 'aria-label': `Priority: ${priorityConfig.label}` }
