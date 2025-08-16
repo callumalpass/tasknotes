@@ -48,7 +48,7 @@ export class HTTPAPIService implements IWebhookNotifier {
 		this.tasksController = new TasksController(plugin, taskService, filterService, cacheManager, statusManager, this.webhookController);
 		this.timeTrackingController = new TimeTrackingController(plugin, taskService, cacheManager, statusManager, this.webhookController);
 		this.pomodoroController = new PomodoroController(plugin, cacheManager);
-		this.systemController = new SystemController(plugin, taskService, nlParser, this.webhookController);
+		this.systemController = new SystemController(plugin, taskService, nlParser, this.webhookController, this);
 		
 		// Initialize router and register routes
 		this.router = new APIRouter();

@@ -12,7 +12,8 @@ export class SystemController extends BaseController {
 		private plugin: TaskNotesPlugin,
 		private taskService: TaskService,
 		private nlParser: NaturalLanguageParser,
-		private webhookNotifier: IWebhookNotifier
+		private webhookNotifier: IWebhookNotifier,
+		private httpAPIService?: any
 	) {
 		super();
 	}
@@ -156,7 +157,7 @@ export class SystemController extends BaseController {
 
 	async handleOpenAPISpec(req: IncomingMessage, res: ServerResponse): Promise<void> {
 		try {
-			const spec = generateOpenAPISpec(this.plugin.httpAPIService);
+			const spec = generateOpenAPISpec(this.httpAPIService || this);
 			
 			// Update server URL based on current port
 			spec.servers = [{
