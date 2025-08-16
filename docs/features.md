@@ -1,3 +1,4 @@
+
 # Features
 
 TaskNotes is a task and note management plugin for Obsidian. It includes features for task management, inline task integration, time management, and calendar integration.
@@ -89,3 +90,5 @@ Configure TaskNotes to match your workflow:
 - **[Calendar Settings](settings/calendar-settings.md)** - Calendar appearance and behavior
 - **[Advanced Settings](settings/advanced-settings.md)** - Field mapping and customization
 - **[Misc Settings](settings/misc-settings.md)** - Additional plugin features
+
+
