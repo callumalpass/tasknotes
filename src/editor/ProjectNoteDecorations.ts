@@ -8,6 +8,7 @@ import { ProjectSubtasksService } from '../services/ProjectSubtasksService';
 import { FilterBar } from '../ui/FilterBar';
 import { FilterService } from '../services/FilterService';
 import { GroupingUtils } from '../utils/GroupingUtils';
+import { GroupCountUtils } from '../utils/GroupCountUtils';
 
 // Define a state effect for project subtasks updates
 const projectSubtasksUpdateEffect = StateEffect.define<{ forceUpdate?: boolean }>();
@@ -104,9 +105,20 @@ class ProjectSubtasksWidget extends WidgetType {
             cls: 'project-note-subtasks__header'
         });
         
+        // Calculate initial completion stats
+        const initialStats = GroupCountUtils.calculateGroupStats(this.tasks, this.plugin);
+
         const titleEl = titleContainer.createEl('h3', {
-            text: `Subtasks (${this.tasks.length})`,
             cls: 'project-note-subtasks__title'
+        });
+
+        // Add "Subtasks" text
+        titleEl.createSpan({ text: 'Subtasks ' });
+
+        // Add count with agenda-view__item-count styling
+        titleEl.createSpan({
+            text: GroupCountUtils.formatGroupCount(initialStats.completed, initialStats.total).text,
+            cls: 'agenda-view__item-count'
         });
         
         // Add new subtask button
@@ -287,11 +299,15 @@ class ProjectSubtasksWidget extends WidgetType {
     private renderTaskGroups(taskListContainer: HTMLElement): void {
         // Clear existing tasks
         taskListContainer.empty();
-        
-        // Calculate total filtered tasks for count display
+
+        // Calculate total filtered tasks and completion stats
         let totalFilteredTasks = 0;
+        let completedFilteredTasks = 0;
         for (const tasks of this.groupedTasks.values()) {
             totalFilteredTasks += tasks.length;
+            completedFilteredTasks += tasks.filter(task =>
+                this.plugin.statusManager.isCompletedStatus(task.status)
+            ).length;
         }
         
         // Render groups
@@ -350,10 +366,21 @@ class ProjectSubtasksWidget extends WidgetType {
                     toggleBtn.addClass('chevron-text');
                 }
 
-                // Add group title
-                groupHeader.createEl('h4', {
-                    cls: 'project-note-subtasks__group-title',
-                    text: GroupingUtils.getGroupDisplayName(groupKey, tasks.length, this.plugin)
+                // Create title element with group name and count together
+                const titleEl = groupHeader.createEl('h4', {
+                    cls: 'project-note-subtasks__group-title'
+                });
+
+                // Add group name
+                titleEl.createSpan({ text: this.getGroupDisplayName(groupKey) });
+
+                // Calculate completion stats for this group
+                const groupStats = GroupCountUtils.calculateGroupStats(tasks, this.plugin);
+
+                // Add count with agenda-view__item-count styling
+                titleEl.createSpan({
+                    text: ` ${GroupCountUtils.formatGroupCount(groupStats.completed, groupStats.total).text}`,
+                    cls: 'agenda-view__item-count'
                 });
 
                 // Create group container
@@ -410,10 +437,28 @@ class ProjectSubtasksWidget extends WidgetType {
             }
         }
 
-        // Update count in title if it exists
+        // Update count in title with completion stats
         const titleEl = taskListContainer.parentElement?.parentElement?.querySelector('.project-note-subtasks__title');
         if (titleEl) {
-            titleEl.textContent = `Subtasks (${totalFilteredTasks}${totalFilteredTasks !== this.tasks.length ? ` of ${this.tasks.length}` : ''})`;
+            // Clear and rebuild title with new counts
+            titleEl.empty();
+            titleEl.createSpan({ text: 'Subtasks ' });
+
+            // Calculate total stats (not just filtered)
+            const totalStats = GroupCountUtils.calculateGroupStats(this.tasks, this.plugin);
+
+            // Show filtered vs total if filtering is active
+            if (totalFilteredTasks !== this.tasks.length) {
+                titleEl.createSpan({
+                    text: `${completedFilteredTasks} / ${totalFilteredTasks} of ${totalStats.completed} / ${totalStats.total}`,
+                    cls: 'agenda-view__item-count'
+                });
+            } else {
+                titleEl.createSpan({
+                    text: GroupCountUtils.formatGroupCount(totalStats.completed, totalStats.total).text,
+                    cls: 'agenda-view__item-count'
+                });
+            }
         }
     }
 
