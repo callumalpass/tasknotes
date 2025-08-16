@@ -354,7 +354,6 @@ export class FilterBar extends EventEmitter {
     private renderTopControls(): void {
         const topControls = this.container.createDiv('filter-bar__top-controls');
 
-<<<<<<< HEAD
         const makeViewsButton = () => {
             this.viewSelectorButton = new ButtonComponent(topControls)
                 .setButtonText('Views')
@@ -393,29 +392,36 @@ export class FilterBar extends EventEmitter {
             });
         };
 
-        // Add expand/collapse all group buttons if grouping is enabled and allowed
-        const isGrouped = (this.currentQuery.groupKey || 'none') !== 'none';
-        if (isGrouped && this.enableGroupExpandCollapse) {
-            const collapseAllBtn = new ButtonComponent(topControls)
-                .setIcon('list-collapse')
-                .setTooltip('Collapse All Groups')
-                .onClick(() => this.emit('collapseAllGroups'));
-            collapseAllBtn.buttonEl.addClass('filter-bar__collapse-groups');
+        // Create expand/collapse button functions
+        const makeExpandCollapseButtons = () => {
+            const isGrouped = (this.currentQuery.groupKey || 'none') !== 'none';
+            if (isGrouped && this.enableGroupExpandCollapse) {
+                // Expand button first (always to the left of collapse)
+                const expandAllBtn = new ButtonComponent(topControls)
+                    .setIcon('list-tree')
+                    .setTooltip('Expand All Groups')
+                    .onClick(() => this.emit('expandAllGroups'));
+                expandAllBtn.buttonEl.addClass('filter-bar__expand-groups');
 
-            const expandAllBtn = new ButtonComponent(topControls)
-                .setIcon('list-tree')
-                .setTooltip('Expand All Groups')
-                .onClick(() => this.emit('expandAllGroups'));
-            expandAllBtn.buttonEl.addClass('filter-bar__expand-groups');
-        }
+                // Collapse button second
+                const collapseAllBtn = new ButtonComponent(topControls)
+                    .setIcon('list-collapse')
+                    .setTooltip('Collapse All Groups')
+                    .onClick(() => this.emit('collapseAllGroups'));
+                collapseAllBtn.buttonEl.addClass('filter-bar__collapse-groups');
+            }
+        };
 
-        // Order controls based on alignment preference  
+        // Order controls based on alignment preference
         if (this.viewsButtonAlignment === 'left') {
+            // Left: Views -> Expand -> Collapse -> Filter -> Search Box
             makeViewsButton();
+            makeExpandCollapseButtons();
             makeFilterToggle();
             makeSearchInput();
         } else {
-            // Right (default): Filter -> Search -> Views
+            // Right (default): Expand -> Collapse -> Filter -> Search Box -> Views
+            makeExpandCollapseButtons();
             makeFilterToggle();
             makeSearchInput();
             makeViewsButton();
@@ -1214,6 +1220,8 @@ export class FilterBar extends EventEmitter {
             .setValue(this.currentQuery.groupKey || 'none')
             .onChange((value: TaskGroupKey) => {
                 this.currentQuery.groupKey = value;
+                // Update expand/collapse buttons visibility immediately
+                this.updateExpandCollapseButtons();
                 // Re-render controls to show/hide group actions when grouping changes
                 this.updateUI();
                 this.emitQueryChange();
@@ -1470,6 +1478,7 @@ export class FilterBar extends EventEmitter {
 
         // Update only the filter builder to avoid collapsing the filter box
         this.updateFilterBuilder();
+        this.updateDisplaySection();
         this.updateViewSelectorButtonState();
         this.emitQueryChange();
 
@@ -1507,6 +1516,7 @@ export class FilterBar extends EventEmitter {
 
         // Update only the filter builder to avoid collapsing the filter box
         this.updateFilterBuilder();
+        this.updateDisplaySection();
         this.updateViewSelectorButtonState();
 
         // Don't emit query change immediately to prevent modal closure
@@ -1566,6 +1576,56 @@ export class FilterBar extends EventEmitter {
         // Update button state after render
         this.updateViewSelectorButtonState();
         this.updateFilterToggleBadge();
+    }
+
+    /**
+     * Update only the display section (sort/group controls)
+     */
+    private updateDisplaySection(): void {
+        try {
+            // Find the group dropdown and update its value
+            const groupDropdown = this.container.querySelector('.filter-bar__group-container select') as HTMLSelectElement;
+            if (groupDropdown) {
+                groupDropdown.value = this.currentQuery.groupKey || 'none';
+            }
+
+            // Find the sort dropdown and update its value
+            const sortDropdown = this.container.querySelector('.filter-bar__sort-container select') as HTMLSelectElement;
+            if (sortDropdown) {
+                sortDropdown.value = this.currentQuery.sortKey || 'due';
+            }
+
+            // Update sort direction button
+            this.updateSortDirectionButton();
+
+            // Update expand/collapse buttons visibility
+            this.updateExpandCollapseButtons();
+        } catch (error) {
+            console.error('Error updating display section:', error);
+        }
+    }
+
+    /**
+     * Update expand/collapse buttons visibility based on current grouping state
+     */
+    private updateExpandCollapseButtons(): void {
+        try {
+            const isGrouped = (this.currentQuery.groupKey || 'none') !== 'none';
+            const shouldShow = isGrouped && this.enableGroupExpandCollapse;
+
+            // Find existing expand/collapse buttons
+            const expandBtn = this.container.querySelector('.filter-bar__expand-groups') as HTMLElement;
+            const collapseBtn = this.container.querySelector('.filter-bar__collapse-groups') as HTMLElement;
+
+            if (expandBtn) {
+                expandBtn.style.display = shouldShow ? '' : 'none';
+            }
+            if (collapseBtn) {
+                collapseBtn.style.display = shouldShow ? '' : 'none';
+            }
+        } catch (error) {
+            console.error('Error updating expand/collapse buttons:', error);
+        }
     }
 
     /**
