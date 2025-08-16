@@ -123,6 +123,7 @@ export class FilterBar extends EventEmitter {
                 this.updateFilterBuilder();
             }
             this.emit('queryChange', FilterUtils.deepCloneFilterQuery(this.currentQuery));
+            this.updateFilterToggleBadge();
         }, 300);
 
         // Initialize debounced search input handling (800ms delay to reduce lag)
@@ -197,8 +198,8 @@ export class FilterBar extends EventEmitter {
             // Update only the filter builder to show the search condition
             this.updateFilterBuilder();
 
-            // Emit query change
-            this.emit('queryChange', FilterUtils.deepCloneFilterQuery(this.currentQuery));
+            // Emit query change (and update badge immediately)
+            this.emitQueryChange();
 
             // Reset typing flag after a delay
             setTimeout(() => {
@@ -353,6 +354,7 @@ export class FilterBar extends EventEmitter {
     private renderTopControls(): void {
         const topControls = this.container.createDiv('filter-bar__top-controls');
 
+<<<<<<< HEAD
         const makeViewsButton = () => {
             this.viewSelectorButton = new ButtonComponent(topControls)
                 .setButtonText('Views')
@@ -364,13 +366,21 @@ export class FilterBar extends EventEmitter {
             this.updateViewSelectorButtonState();
         };
         const makeFilterToggle = () => {
-            new ButtonComponent(topControls)
+            const filterToggle = new ButtonComponent(topControls)
                 .setIcon('list-filter')
                 .setTooltip('Toggle filter')
                 .setClass('filter-bar__filter-toggle')
                 .onClick(() => {
                     this.toggleMainFilterBox();
                 });
+            // Right-click quick clear
+            filterToggle.buttonEl.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (this.hasActiveFilters()) {
+                    this.clearAllFilters();
+                }
+            });
         };
         const makeSearchInput = () => {
             this.searchInput = new TextComponent(topControls)
@@ -1428,7 +1438,7 @@ export class FilterBar extends EventEmitter {
             children: [],
             sortKey: this.currentQuery.sortKey || 'due',
             sortDirection: this.currentQuery.sortDirection || 'asc',
-            groupKey: this.currentQuery.groupKey || 'none'
+            groupKey: 'none'
         };
 
         // Clear the active saved view
@@ -1444,8 +1454,13 @@ export class FilterBar extends EventEmitter {
         this.updateViewSelectorButtonState();
         this.emitQueryChange();
 
-        // Close the dropdown
-        this.toggleViewSelectorDropdown();
+        // Close the dropdown if it's open (do not toggle open on clear)
+        if (this.viewSelectorDropdown && !this.viewSelectorDropdown.classList.contains('filter-bar__view-selector-dropdown--hidden')) {
+            this.viewSelectorDropdown.classList.add('filter-bar__view-selector-dropdown--hidden');
+            if (this.viewSelectorButton?.buttonEl) {
+                this.viewSelectorButton.buttonEl.classList.remove('filter-bar__templates-button--active');
+            }
+        }
     }
 
     /**
@@ -1480,6 +1495,7 @@ export class FilterBar extends EventEmitter {
 
         // Update button state after render
         this.updateViewSelectorButtonState();
+        this.updateFilterToggleBadge();
     }
 
     /**
@@ -1589,6 +1605,8 @@ export class FilterBar extends EventEmitter {
         }
 
         // Always emit for sort/group changes and structural operations
+        // Also update the filter toggle badge instantly
+        this.updateFilterToggleBadge();
         this.emitQueryChangeIfComplete();
     }
 
@@ -1642,6 +1660,28 @@ export class FilterBar extends EventEmitter {
         this.filterOptions = newFilterOptions;
         // Re-render the UI to pick up new options
         this.updateUI();
+    }
+
+    /** True if a saved view is active OR any complete filter condition exists */
+    private hasActiveFilters(): boolean {
+        try {
+            if (this.activeSavedView) return true;
+            // Active if any complete filter condition exists OR any grouping is applied
+            const hasFilters = this.isQueryMeaningful(this.currentQuery) && this.currentQuery.children.length > 0;
+            const hasGrouping = (this.currentQuery.groupKey ?? 'none') !== 'none';
+            return hasFilters || !!hasGrouping;
+        } catch {
+            return false;
+        }
+    }
+
+    /** Update filter toggle badge and tooltip */
+    private updateFilterToggleBadge(): void {
+        const el = this.container.querySelector('.filter-bar__filter-toggle') as HTMLElement | null;
+        if (!el) return;
+        const active = this.hasActiveFilters();
+        el.classList.toggle('has-active-filters', active);
+        setTooltip(el, active ? 'Active filters – Click to modify, right-click to clear' : 'Toggle filter', { placement: 'top' });
     }
 
     /**

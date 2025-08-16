@@ -22,6 +22,44 @@
     isolation: isolate; /* Create a new stacking context */
 }
 
+
+/* Filter toggle base (positioning for badge) */
+.tasknotes-plugin .filter-bar__filter-toggle {
+  position: relative; /* context for badge */
+}
+
+/* Active filter badge dot */
+.tasknotes-plugin .filter-bar__filter-toggle.has-active-filters::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #a78bfa; /* subtle purple */
+}
+
+/* Clear all button in Filter section header */
+.tasknotes-plugin .filter-bar__clear-filters {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--tn-spacing-xs);
+  margin-left: var(--tn-spacing-sm);
+  padding: 2px 6px;
+  border-radius: var(--radius-s);
+  border: 1px solid var(--color-grey-tint);
+  background-color: var(--color-grey-base);
+  color: var(--text-normal);
+  font-size: var(--font-ui-small);
+}
+.tasknotes-plugin .filter-bar__clear-filters:hover {
+  background-color: var(--interactive-hover);
+}
+.tasknotes-plugin .filter-bar__clear-filters svg {
+  width: 16px; height: 16px;
+}
+
 /* Natural Language Date Input Enhancement */
 .tasknotes-plugin .filter-date-input-container {
     display: flex;
