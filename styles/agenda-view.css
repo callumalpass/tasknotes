@@ -260,7 +260,8 @@
 .tasknotes-plugin .agenda-view__day-header {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-start;
+    gap: var(--tn-spacing-sm);
     padding: var(--tn-spacing-md) 0 var(--tn-spacing-sm);
     margin-bottom: var(--tn-spacing-sm);
     border-bottom: 1px solid var(--tn-border-color);

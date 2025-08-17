@@ -2,17 +2,18 @@ import { TFile, ItemView, WorkspaceLeaf, EventRef, Setting, Notice } from 'obsid
 import { format, addDays, startOfWeek, endOfWeek, isSameDay } from 'date-fns';
 import { formatDateForStorage, createUTCDateFromLocalCalendarDate, getTodayLocal, isTodayUTC, convertUTCToLocalCalendarDate } from '../utils/dateUtils';
 import TaskNotesPlugin from '../main';
-import { 
+import {
     AGENDA_VIEW_TYPE,
     EVENT_DATA_CHANGED,
     EVENT_DATE_SELECTED,
     EVENT_TASK_UPDATED,
-    TaskInfo, 
+    TaskInfo,
     NoteInfo,
     FilterQuery,
     SavedView
 } from '../types';
 // No helper functions needed from helpers
+import { GroupCountUtils } from '../utils/GroupCountUtils';
 import { createTaskCard, updateTaskCard, refreshParentTaskSubtasks } from '../ui/TaskCard';
 import { createNoteCard } from '../ui/NoteCard';
 import { createICSEventCard, updateICSEventCard } from '../ui/ICSCard';
@@ -710,7 +711,7 @@ export class AgendaView extends ItemView {
             const displayDate = convertUTCToLocalCalendarDate(item.date);
             const dayName = format(displayDate, 'EEEE');
             const dateFormatted = format(displayDate, 'MMMM d');
-            
+
             if (isTodayUTC(item.date)) {
                 headerText.createSpan({ cls: 'agenda-view__day-name agenda-view__day-name--today', text: 'Today' });
                 headerText.createSpan({ cls: 'agenda-view__day-date', text: ` • ${dateFormatted}` });
@@ -718,10 +719,22 @@ export class AgendaView extends ItemView {
                 headerText.createSpan({ cls: 'agenda-view__day-name', text: dayName });
                 headerText.createSpan({ cls: 'agenda-view__day-date', text: ` • ${dateFormatted}` });
             }
-            
-            // Item count badge
-            const itemCount = item.item.tasks.length + item.item.notes.length + (item.item.ics?.length || 0);
-            dayHeader.createDiv({ cls: 'agenda-view__item-count', text: `${itemCount}` });
+
+            // Item count badge - show completion count for tasks only
+            const tasks = item.item.tasks || [];
+            let countText: string;
+
+            if (tasks.length > 0) {
+                // Show completion count for tasks
+                const taskStats = GroupCountUtils.calculateGroupStats(tasks, this.plugin);
+                countText = GroupCountUtils.formatGroupCount(taskStats.completed, taskStats.total).text;
+            } else {
+                // Show total count for other items (notes + ICS events)
+                const itemCount = (item.item.notes?.length || 0) + (item.item.ics?.length || 0);
+                countText = `${itemCount}`;
+            }
+
+            dayHeader.createDiv({ cls: 'agenda-view__item-count', text: countText });
             
             return dayHeader;
         } else if (item.type === 'task') {
@@ -739,11 +752,23 @@ export class AgendaView extends ItemView {
      */
     private updateAgendaItemElement(element: HTMLElement, item: {type: 'day-header' | 'task' | 'note' | 'ics', item: any, date: Date, dayKey: string}): void {
         if (item.type === 'day-header') {
-            // Update item count badge
+            // Update item count badge - show completion count for tasks only
             const countBadge = element.querySelector('.agenda-view__item-count');
             if (countBadge) {
-                const itemCount = item.item.tasks.length + item.item.notes.length + (item.item.ics?.length || 0);
-                countBadge.textContent = `${itemCount}`;
+                const tasks = item.item.tasks || [];
+                let countText: string;
+
+                if (tasks.length > 0) {
+                    // Show completion count for tasks
+                    const taskStats = GroupCountUtils.calculateGroupStats(tasks, this.plugin);
+                    countText = GroupCountUtils.formatGroupCount(taskStats.completed, taskStats.total).text;
+                } else {
+                    // Show total count for other items (notes + ICS events)
+                    const itemCount = (item.item.notes?.length || 0) + (item.item.ics?.length || 0);
+                    countText = `${itemCount}`;
+                }
+
+                countBadge.textContent = countText;
             }
         } else if (item.type === 'task') {
             updateTaskCard(element, item.item as TaskInfo, this.plugin, {
