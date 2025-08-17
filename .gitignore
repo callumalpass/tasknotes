@@ -52,6 +52,5 @@ external/tasknotes-e2e/.e2e/
 C/
 .copy-files.local
 .augment
-
 # Test output files
 jest-out.txt

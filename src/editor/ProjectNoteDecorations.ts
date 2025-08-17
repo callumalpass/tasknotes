@@ -1,12 +1,13 @@
 import { Decoration, DecorationSet, EditorView, PluginSpec, PluginValue, ViewPlugin, ViewUpdate, WidgetType } from '@codemirror/view';
 import { Extension, RangeSetBuilder, StateEffect } from '@codemirror/state';
-import { TFile, editorLivePreviewField, editorInfoField, EventRef } from 'obsidian';
+import { TFile, editorLivePreviewField, editorInfoField, EventRef, setIcon } from 'obsidian';
 import TaskNotesPlugin from '../main';
-import { TaskInfo, EVENT_DATA_CHANGED, EVENT_TASK_UPDATED, EVENT_TASK_DELETED, FilterQuery } from '../types';
+import { TaskInfo, EVENT_DATA_CHANGED, EVENT_TASK_UPDATED, EVENT_TASK_DELETED, FilterQuery, SUBTASK_WIDGET_VIEW_TYPE } from '../types';
 import { createTaskCard } from '../ui/TaskCard';
 import { ProjectSubtasksService } from '../services/ProjectSubtasksService';
 import { FilterBar } from '../ui/FilterBar';
 import { FilterService } from '../services/FilterService';
+import { GroupingUtils } from '../utils/GroupingUtils';
 
 // Define a state effect for project subtasks updates
 const projectSubtasksUpdateEffect = StateEffect.define<{ forceUpdate?: boolean }>();
@@ -23,7 +24,7 @@ class ProjectSubtasksWidget extends WidgetType {
     constructor(private plugin: TaskNotesPlugin, private tasks: TaskInfo[], private notePath: string, private version: number = 0) {
         super();
         // Create note-specific view type identifier
-        this.viewType = `project-subtasks:${notePath}`;
+        this.viewType = `${SUBTASK_WIDGET_VIEW_TYPE}:${notePath}`;
         
         // Initialize with ungrouped tasks
         this.groupedTasks.set('all', [...tasks]);
@@ -218,7 +219,38 @@ class ProjectSubtasksWidget extends WidgetType {
                     this.filterBar.updateSavedViews(updatedViews);
                 }
             });
-            
+
+            // Wire expand/collapse all functionality
+            this.filterBar.on('expandAllGroups', () => {
+                const key = this.currentQuery.groupKey || 'none';
+                GroupingUtils.expandAllGroups(this.viewType, key, this.plugin);
+                // Update DOM
+                if (this.taskListContainer) {
+                    this.taskListContainer.querySelectorAll('.task-group').forEach(section => {
+                        section.classList.remove('is-collapsed');
+                        const list = (section as HTMLElement).querySelector('.task-cards') as HTMLElement | null;
+                        if (list) list.style.display = '';
+                    });
+                }
+            });
+
+            this.filterBar.on('collapseAllGroups', () => {
+                const key = this.currentQuery.groupKey || 'none';
+                const groupNames: string[] = [];
+                if (this.taskListContainer) {
+                    this.taskListContainer.querySelectorAll('.task-group').forEach(section => {
+                        const name = (section as HTMLElement).dataset.group;
+                        if (name) {
+                            groupNames.push(name);
+                            section.classList.add('is-collapsed');
+                            const list = (section as HTMLElement).querySelector('.task-cards') as HTMLElement | null;
+                            if (list) list.style.display = 'none';
+                        }
+                    });
+                }
+                GroupingUtils.collapseAllGroups(this.viewType, key, groupNames, this.plugin);
+            });
+
         } catch (error) {
             console.error('Error initializing filter bar for subtasks:', error);
         }
@@ -282,25 +314,85 @@ class ProjectSubtasksWidget extends WidgetType {
                 taskListContainer.appendChild(taskCard);
             });
         } else {
-            // Render grouped tasks with group headers
+            // Render grouped tasks with collapsible group headers
             for (const [groupKey, tasks] of this.groupedTasks.entries()) {
                 if (tasks.length === 0) continue;
-                
-                // Create group header
-                const groupHeader = taskListContainer.createEl('div', {
-                    cls: 'project-note-subtasks__group-header'
+
+                // Create group section
+                const groupSection = taskListContainer.createEl('div', {
+                    cls: 'project-note-subtasks__group-section task-group'
                 });
-                
+                groupSection.setAttribute('data-group', groupKey);
+
+                const groupingKey = this.currentQuery.groupKey || 'none';
+                const collapsedInitially = GroupingUtils.isGroupCollapsed(this.viewType, groupingKey, groupKey, this.plugin);
+
+                // Create group header with toggle functionality
+                const groupHeader = groupSection.createEl('div', {
+                    cls: 'project-note-subtasks__group-header task-group-header'
+                });
+
+                // Create toggle button first
+                const toggleBtn = groupHeader.createEl('button', {
+                    cls: 'task-group-toggle',
+                    attr: { 'aria-label': 'Toggle group' }
+                });
+                try {
+                    setIcon(toggleBtn, 'chevron-right');
+                } catch (_) {}
+                const svg = toggleBtn.querySelector('svg');
+                if (svg) {
+                    svg.classList.add('chevron');
+                    svg.setAttr('width', '16');
+                    svg.setAttr('height', '16');
+                } else {
+                    toggleBtn.textContent = '▸';
+                    toggleBtn.addClass('chevron-text');
+                }
+
+                // Add group title
                 groupHeader.createEl('h4', {
                     cls: 'project-note-subtasks__group-title',
-                    text: this.getGroupDisplayName(groupKey, tasks.length)
+                    text: GroupingUtils.getGroupDisplayName(groupKey, tasks.length, this.plugin)
                 });
-                
+
                 // Create group container
-                const groupContainer = taskListContainer.createEl('div', {
-                    cls: 'project-note-subtasks__group'
+                const groupContainer = groupSection.createEl('div', {
+                    cls: 'project-note-subtasks__group task-cards'
                 });
-                
+
+                // Apply initial collapsed state
+                if (collapsedInitially) {
+                    groupSection.classList.add('is-collapsed');
+                    groupContainer.style.display = 'none';
+                }
+
+                // Add click handlers for expand/collapse
+                groupHeader.addEventListener('click', (e: MouseEvent) => {
+                    const target = e.target as HTMLElement;
+                    if (target.closest('a')) return; // Ignore link clicks
+
+                    const willCollapse = !groupSection.classList.contains('is-collapsed');
+                    GroupingUtils.setGroupCollapsed(this.viewType, groupingKey, groupKey, willCollapse, this.plugin);
+                    groupSection.classList.toggle('is-collapsed', willCollapse);
+                    groupContainer.style.display = willCollapse ? 'none' : '';
+                    toggleBtn.setAttribute('aria-expanded', String(!willCollapse));
+                });
+
+                toggleBtn.addEventListener('click', (e: MouseEvent) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    const willCollapse = !groupSection.classList.contains('is-collapsed');
+                    GroupingUtils.setGroupCollapsed(this.viewType, groupingKey, groupKey, willCollapse, this.plugin);
+                    groupSection.classList.toggle('is-collapsed', willCollapse);
+                    groupContainer.style.display = willCollapse ? 'none' : '';
+                    toggleBtn.setAttribute('aria-expanded', String(!willCollapse));
+                });
+
+                // Set initial ARIA state
+                toggleBtn.setAttribute('aria-expanded', String(!collapsedInitially));
+
                 // Render tasks in this group
                 tasks.forEach(task => {
                     const taskCard = createTaskCard(task, this.plugin, {
@@ -311,7 +403,7 @@ class ProjectSubtasksWidget extends WidgetType {
                         showRecurringControls: true,
                         groupByDate: false
                     });
-                    
+
                     taskCard.classList.add('project-note-subtasks__task');
                     groupContainer.appendChild(taskCard);
                 });
@@ -326,26 +418,7 @@ class ProjectSubtasksWidget extends WidgetType {
     }
 
     private getGroupDisplayName(groupKey: string, taskCount: number): string {
-        // Handle different group types with user-friendly names
-        switch (groupKey) {
-            case 'none':
-            case 'all':
-                return `All Tasks (${taskCount})`;
-            case 'No Status':
-                return `No Status (${taskCount})`;
-            case 'No Priority':
-                return `No Priority (${taskCount})`;
-            case 'No Context':
-                return `No Context (${taskCount})`;
-            case 'No Project':
-                return `No Project (${taskCount})`;
-            case 'No Due Date':
-                return `No Due Date (${taskCount})`;
-            case 'No Scheduled Date':
-                return `No Scheduled Date (${taskCount})`;
-            default:
-                return `${groupKey} (${taskCount})`;
-        }
+        return GroupingUtils.getGroupDisplayName(groupKey, taskCount, this.plugin);
     }
 
     private createNewSubtask(): void {

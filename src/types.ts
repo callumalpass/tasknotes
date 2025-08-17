@@ -7,6 +7,7 @@ export const AGENDA_VIEW_TYPE = 'tasknotes-agenda-view';
 export const POMODORO_VIEW_TYPE = 'tasknotes-pomodoro-view';
 export const POMODORO_STATS_VIEW_TYPE = 'tasknotes-pomodoro-stats-view';
 export const KANBAN_VIEW_TYPE = 'tasknotes-kanban-view';
+export const SUBTASK_WIDGET_VIEW_TYPE = 'tasknotes-subtask-widget-view';
 
 // Event types
 export const EVENT_DATE_SELECTED = 'date-selected';
