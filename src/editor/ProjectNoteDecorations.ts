@@ -23,6 +23,7 @@ class ProjectSubtasksWidget extends WidgetType {
     private savedViewsUnsubscribe: (() => void) | null = null;
     private readonly viewType: string;
     private taskListContainer: HTMLElement | null = null;
+    private editorView: EditorView | null = null;
 
     constructor(private plugin: TaskNotesPlugin, private tasks: TaskInfo[], private notePath: string, private version: number = 0) {
         super();
@@ -101,6 +102,9 @@ class ProjectSubtasksWidget extends WidgetType {
     }
 
     toDOM(view: EditorView): HTMLElement {
+        // Store the view reference for later use
+        this.editorView = view;
+
         const container = document.createElement('div');
         container.className = 'tasknotes-plugin project-note-subtasks project-subtasks-widget';
         
@@ -211,9 +215,12 @@ class ProjectSubtasksWidget extends WidgetType {
                 }
             });
 
-            // Listen for active saved view changes to update filter heading
+            // Listen for active saved view changes to force widget recreation (like tab reload)
             this.filterBar.on('activeSavedViewChanged', () => {
-                this.updateFilterHeading();
+                // Force widget recreation to ensure FilterHeading DOM is properly connected
+                if (this.editorView) {
+                    dispatchProjectSubtasksUpdate(this.editorView);
+                }
             });
             
             // Listen for saved view operations
@@ -472,28 +479,22 @@ class ProjectSubtasksWidget extends WidgetType {
             }
         }
 
-        // Update count in title with completion stats
+        // Update widget title with filtered count (same as FilterHeading)
         const titleEl = taskListContainer.parentElement?.parentElement?.querySelector('.project-note-subtasks__title');
         if (titleEl) {
-            // Clear and rebuild title with new counts
+            // Clear and rebuild title with filtered count only
             titleEl.empty();
             titleEl.createSpan({ text: 'Subtasks ' });
 
-            // Calculate total stats (not just filtered)
-            const totalStats = GroupCountUtils.calculateGroupStats(this.tasks, this.plugin);
+            // Calculate filtered stats (same as FilterHeading)
+            const allFilteredTasks = Array.from(this.groupedTasks.values()).flat();
+            const filteredStats = GroupCountUtils.calculateGroupStats(allFilteredTasks, this.plugin);
 
-            // Show filtered vs total if filtering is active
-            if (totalFilteredTasks !== this.tasks.length) {
-                titleEl.createSpan({
-                    text: `${completedFilteredTasks} / ${totalFilteredTasks} of ${totalStats.completed} / ${totalStats.total}`,
-                    cls: 'agenda-view__item-count'
-                });
-            } else {
-                titleEl.createSpan({
-                    text: GroupCountUtils.formatGroupCount(totalStats.completed, totalStats.total).text,
-                    cls: 'agenda-view__item-count'
-                });
-            }
+            // Show filtered count only (matching FilterHeading)
+            titleEl.createSpan({
+                text: GroupCountUtils.formatGroupCount(filteredStats.completed, filteredStats.total).text,
+                cls: 'agenda-view__item-count'
+            });
         }
     }
 
@@ -578,6 +579,10 @@ class ProjectNoteDecorationsPlugin implements PluginValue {
         );
         
         if (update.docChanged || update.viewportChanged || hasUpdateEffect) {
+            // If our custom effect is present, bump version so widgets are recreated (forces a fresh DOM)
+            if (hasUpdateEffect) {
+                this.version++;
+            }
             this.decorations = this.buildDecorations(update.view);
         }
         
