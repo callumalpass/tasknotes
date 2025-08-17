@@ -86,6 +86,19 @@ The FilterBar supports saving and loading filter configurations:
 - **Delete**: Remove saved views
 - Saved views include the complete filter hierarchy, sorting, and grouping preferences
 
+
+### Heading display and completion count
+
+The Task List heading shows the active saved view name and the current task count (completed / total).
+
+- No filter selected (shows “All”):
+
+![Saved view heading with count (no filter)](../assets/tasklist_filter_name+count_no_filter.png)
+
+- Saved view selected:
+
+![Saved view heading with count (with filter)](../assets/tasklist_filter_name+count_with_filter.png)
+
 ### Sorting Options
 
 Available sort criteria:
