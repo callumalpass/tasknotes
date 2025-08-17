@@ -1,11 +1,11 @@
-import { App, ButtonComponent, debounce, DropdownComponent, Modal, TextComponent, setTooltip } from 'obsidian';
-import { FilterCondition, FilterGroup, FilterNode, FilterOptions, FilterOperator, FilterProperty, FilterQuery, FILTER_OPERATORS, FILTER_PROPERTIES, PropertyDefinition, SavedView, TaskGroupKey, TaskSortKey } from '../types';
+import { App, ButtonComponent, DropdownComponent, Modal, TextComponent, debounce, setTooltip } from 'obsidian';
+import { FILTER_OPERATORS, FILTER_PROPERTIES, FilterCondition, FilterGroup, FilterNode, FilterOperator, FilterOptions, FilterProperty, FilterQuery, PropertyDefinition, SavedView, TaskGroupKey, TaskSortKey } from '../types';
+
+import { DragDropHandler } from './DragDropHandler';
 import { EventEmitter } from '../utils/EventEmitter';
 import { FilterUtils } from '../utils/FilterUtils';
-import { showConfirmationModal } from '../modals/ConfirmationModal';
 import { isValidDateInput } from '../utils/dateUtils';
-import { DragDropHandler } from './DragDropHandler';
-
+import { showConfirmationModal } from '../modals/ConfirmationModal';
 
 class SaveViewModal extends Modal {
     private name: string;
@@ -89,6 +89,7 @@ export class FilterBar extends EventEmitter {
     };
 
     private enableGroupExpandCollapse = true;
+    private forceShowExpandCollapse = false;
 
     constructor(
         app: App,
@@ -96,7 +97,7 @@ export class FilterBar extends EventEmitter {
         initialQuery: FilterQuery,
         filterOptions: FilterOptions,
         viewsButtonAlignment: 'left' | 'right' = 'right',
-        options?: { enableGroupExpandCollapse?: boolean }
+        options?: { enableGroupExpandCollapse?: boolean; forceShowExpandCollapse?: boolean }
     ) {
         super();
         this.app = app;
@@ -105,6 +106,7 @@ export class FilterBar extends EventEmitter {
         this.filterOptions = filterOptions;
         this.viewsButtonAlignment = viewsButtonAlignment;
         this.enableGroupExpandCollapse = options?.enableGroupExpandCollapse ?? true;
+        this.forceShowExpandCollapse = options?.forceShowExpandCollapse ?? false;
 
         // Initialize drag and drop handler
         this.dragDropHandler = new DragDropHandler((fromIndex, toIndex) => {
@@ -445,7 +447,8 @@ export class FilterBar extends EventEmitter {
         // Create expand/collapse button functions
         const makeExpandCollapseButtons = () => {
             const isGrouped = (this.currentQuery.groupKey || 'none') !== 'none';
-            if (isGrouped && this.enableGroupExpandCollapse) {
+            const shouldShow = this.enableGroupExpandCollapse && (isGrouped || this.forceShowExpandCollapse);
+            if (shouldShow) {
                 // Expand button first (always to the left of collapse)
                 const expandAllBtn = new ButtonComponent(topControls)
                     .setIcon('list-tree')
@@ -1680,7 +1683,7 @@ export class FilterBar extends EventEmitter {
     private updateExpandCollapseButtons(): void {
         try {
             const isGrouped = (this.currentQuery.groupKey || 'none') !== 'none';
-            const shouldShow = isGrouped && this.enableGroupExpandCollapse;
+            const shouldShow = this.enableGroupExpandCollapse && (isGrouped || this.forceShowExpandCollapse);
 
             // Find existing expand/collapse buttons
             const expandBtn = this.container.querySelector('.filter-bar__expand-groups') as HTMLElement;
