@@ -362,6 +362,7 @@ export class FilterBar extends EventEmitter {
                 .onClick(() => {
                     this.toggleViewSelectorDropdown();
                 });
+            this.viewSelectorButton.buttonEl.addClass('clickable-icon');
             this.updateViewSelectorButtonState();
         };
         const makeFilterToggle = () => {
@@ -372,6 +373,7 @@ export class FilterBar extends EventEmitter {
                 .onClick(() => {
                     this.toggleMainFilterBox();
                 });
+            filterToggle.buttonEl.addClass('clickable-icon');
             // Right-click quick clear
             filterToggle.buttonEl.addEventListener('contextmenu', (e) => {
                 e.preventDefault();
@@ -400,15 +402,17 @@ export class FilterBar extends EventEmitter {
                 const expandAllBtn = new ButtonComponent(topControls)
                     .setIcon('list-tree')
                     .setTooltip('Expand All Groups')
+                    .setClass('filter-bar__expand-groups')
                     .onClick(() => this.emit('expandAllGroups'));
-                expandAllBtn.buttonEl.addClass('filter-bar__expand-groups');
+                expandAllBtn.buttonEl.addClass('clickable-icon');
 
                 // Collapse button second
                 const collapseAllBtn = new ButtonComponent(topControls)
                     .setIcon('list-collapse')
                     .setTooltip('Collapse All Groups')
+                    .setClass('filter-bar__collapse-groups')
                     .onClick(() => this.emit('collapseAllGroups'));
-                collapseAllBtn.buttonEl.addClass('filter-bar__collapse-groups');
+                collapseAllBtn.buttonEl.addClass('clickable-icon');
             }
         };
 
