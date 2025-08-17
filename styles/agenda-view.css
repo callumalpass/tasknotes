@@ -164,7 +164,7 @@
     padding: var(--tn-spacing-sm) var(--tn-spacing-md);
     border: none;
     border-radius: var(--tn-radius-md);
-    background: var(--tn-bg-primary);
+    background: transparent;
     color: var(--tn-text-muted);
     font-family: inherit;
     font-size: var(--tn-font-size-sm);

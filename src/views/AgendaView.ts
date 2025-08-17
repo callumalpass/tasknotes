@@ -205,6 +205,7 @@ export class AgendaView extends ItemView {
                 'title': 'Previous period'
             }
         });
+        prevButton.addClass('clickable-icon');
         
         const nextButton = navSection.createEl('button', {
             cls: 'agenda-view__nav-button agenda-view__nav-button--next',
@@ -214,6 +215,7 @@ export class AgendaView extends ItemView {
                 'title': 'Next period'
             }
         });
+        nextButton.addClass('clickable-icon');
         
         // Center section: Current period display
         const titleSection = headerContent.createDiv({ cls: 'agenda-view__title-section' });
@@ -242,6 +244,7 @@ export class AgendaView extends ItemView {
                 'title': 'Go to today'
             }
         });
+        todayButton.addClass('clickable-icon');
         
         todayButton.addEventListener('click', () => {
             const today = getTodayLocal();
@@ -260,6 +263,7 @@ export class AgendaView extends ItemView {
                 'title': 'Refresh calendar subscriptions'
             }
         });
+        refreshBtn.addClass('clickable-icon');
         refreshBtn.addEventListener('click', async () => {
             if (!this.plugin.icsSubscriptionService) {
                 new Notice('Calendar service not ready yet');
