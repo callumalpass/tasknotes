@@ -146,6 +146,8 @@ export const DEFAULT_ICS_INTEGRATION_SETTINGS: ICSIntegrationSettings = {
 
 export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	tasksFolder: 'TaskNotes/Tasks',
+	moveArchivedTasks: false,
+	archiveFolder: 'TaskNotes/Archive',
 	taskTag: 'task',
 	taskIdentificationMethod: 'tag',  // Default to tag-based identification
 	taskPropertyName: '',

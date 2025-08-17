@@ -2,6 +2,8 @@ import { FieldMapping, StatusConfig, PriorityConfig, SavedView, WebhookConfig } 
 
 export interface TaskNotesSettings {
 	tasksFolder: string;  // Now just a default location for new tasks
+	moveArchivedTasks: boolean; // Whether to move tasks to archive folder when archived
+	archiveFolder: string; // Folder to move archived tasks to
 	taskTag: string;      // The tag that identifies tasks
 	taskIdentificationMethod: 'tag' | 'property';  // Method to identify tasks
 	taskPropertyName: string;     // Property name for property-based identification

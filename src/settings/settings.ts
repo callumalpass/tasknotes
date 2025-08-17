@@ -254,6 +254,36 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 			});
 
 		new Setting(container)
+			.setName('Move archived tasks to folder')
+			.setDesc('Automatically move tasks to a configured folder when archived')
+			.addToggle(toggle => {
+				toggle.toggleEl.setAttribute('aria-label', 'Move archived tasks to folder');
+				return toggle
+					.setValue(this.plugin.settings.moveArchivedTasks)
+					.onChange(async (value) => {
+						this.plugin.settings.moveArchivedTasks = value;
+						await this.plugin.saveSettings();
+						this.renderActiveTab(); // Re-render to show/hide archive folder setting
+					});
+			});
+
+		if (this.plugin.settings.moveArchivedTasks) {
+			new Setting(container)
+				.setName('Archive folder')
+				.setDesc('Folder to move tasks to when archived')
+				.addText(text => {
+					text.inputEl.setAttribute('aria-label', 'Archive folder path');
+					return text
+						.setPlaceholder('TaskNotes/Archive')
+						.setValue(this.plugin.settings.archiveFolder)
+						.onChange(async (value) => {
+							this.plugin.settings.archiveFolder = value;
+							await this.plugin.saveSettings();
+						});
+				});
+		}
+
+		new Setting(container)
 			.setName('Identify tasks by')
 			.setDesc('Choose whether to identify tasks by tag or by a frontmatter property')
 			.addDropdown(dropdown => {
