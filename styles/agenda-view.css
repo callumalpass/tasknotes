@@ -29,7 +29,7 @@
     padding: var(--tn-spacing-lg) var(--tn-spacing-md);
     margin-bottom: var(--tn-spacing-lg);
     position: relative;
-    background: var(--tn-bg-primary);
+    background: transparent;
 }
 
 .tasknotes-plugin .agenda-view__header-content {
@@ -164,7 +164,7 @@
     padding: var(--tn-spacing-sm) var(--tn-spacing-md);
     border: none;
     border-radius: var(--tn-radius-md);
-    background: var(--tn-bg-primary);
+    background: transparent;
     color: var(--tn-text-muted);
     font-family: inherit;
     font-size: var(--tn-font-size-sm);

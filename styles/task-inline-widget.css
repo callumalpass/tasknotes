@@ -43,7 +43,9 @@
 
 /* Status indicator dot - match task card styling */
 .tasknotes-plugin .task-inline-preview__status-dot {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     width: 14px;
     height: 14px;
     border-radius: 50%;
@@ -54,25 +56,26 @@
     position: relative;
     flex-shrink: 0;
     margin-right: 6px; /* More gap between status and priority */
-    vertical-align: baseline;
+    transform: translateY(2px); /* Lower the status circle slightly for better visual alignment */
 }
 
 .tasknotes-plugin .task-inline-preview__status-dot:hover {
     border-color: var(--tn-text-muted);
     box-shadow: 0 0 6px rgba(100, 149, 237, 0.4);
-    transform: scale(1.1);
+    transform: translateY(2px) scale(1.1); /* Maintain the lowered position while scaling */
 }
 
 /* Priority indicator dot - filled solid circle */
 .tasknotes-plugin .task-inline-preview__priority-dot {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     width: 10px;
     height: 10px;
     border-radius: 50%;
     background-color: var(--tn-text-muted);
     border: none;
     flex-shrink: 0;
-    vertical-align: baseline;
     margin-right: 6px; /* Gap between priority and title */
     cursor: pointer;
 }

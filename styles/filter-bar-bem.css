@@ -210,7 +210,7 @@
 }
 
 .tasknotes-plugin .filter-bar__filter-toggle:hover {
-    background: var(--interactive-hover);
+    background: var(--interactive-hover) !important;
     color: var(--text-normal);
 }
 
@@ -235,7 +235,7 @@
 }
 
 .tasknotes-plugin .filter-bar__templates-button:hover {
-    background: var(--interactive-hover);
+    background: var(--interactive-hover) !important;
     color: var(--text-normal);
     transform: none;
     box-shadow: none;
@@ -600,14 +600,36 @@
 
 .tasknotes-plugin .filter-bar__save-button svg {
     width: 16px;
-
-/* Expand/Collapse all group buttons */
-.tasknotes-plugin .filter-bar__expand-groups svg,
-.tasknotes-plugin .filter-bar__collapse-groups svg {
-    width: 16px;
     height: 16px;
 }
 
+/* Expand/Collapse all group buttons - Add pointer cursor but keep good hover */
+.tasknotes-plugin .filter-bar__expand-groups,
+.tasknotes-plugin .filter-bar__collapse-groups {
+    padding: var(--tn-spacing-xs);
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-s);
+    color: var(--text-muted);
+    cursor: pointer !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--tn-button-height-md);
+    height: var(--tn-button-height-md);
+    transition: all 0.2s ease;
+    box-shadow: none;
+}
+
+.tasknotes-plugin .filter-bar__expand-groups:hover,
+.tasknotes-plugin .filter-bar__collapse-groups:hover {
+    background: var(--interactive-hover);
+    color: var(--text-normal);
+}
+
+.tasknotes-plugin .filter-bar__expand-groups svg,
+.tasknotes-plugin .filter-bar__collapse-groups svg {
+    width: 16px;
     height: 16px;
 }
 

@@ -362,6 +362,7 @@ export class FilterBar extends EventEmitter {
                 .onClick(() => {
                     this.toggleViewSelectorDropdown();
                 });
+            this.viewSelectorButton.buttonEl.addClass('clickable-icon');
             this.updateViewSelectorButtonState();
         };
         const makeFilterToggle = () => {
@@ -372,6 +373,7 @@ export class FilterBar extends EventEmitter {
                 .onClick(() => {
                     this.toggleMainFilterBox();
                 });
+            filterToggle.buttonEl.addClass('clickable-icon');
             // Right-click quick clear
             filterToggle.buttonEl.addEventListener('contextmenu', (e) => {
                 e.preventDefault();
@@ -400,15 +402,17 @@ export class FilterBar extends EventEmitter {
                 const expandAllBtn = new ButtonComponent(topControls)
                     .setIcon('list-tree')
                     .setTooltip('Expand All Groups')
+                    .setClass('filter-bar__expand-groups')
                     .onClick(() => this.emit('expandAllGroups'));
-                expandAllBtn.buttonEl.addClass('filter-bar__expand-groups');
+                expandAllBtn.buttonEl.addClass('clickable-icon');
 
                 // Collapse button second
                 const collapseAllBtn = new ButtonComponent(topControls)
                     .setIcon('list-collapse')
                     .setTooltip('Collapse All Groups')
+                    .setClass('filter-bar__collapse-groups')
                     .onClick(() => this.emit('collapseAllGroups'));
-                collapseAllBtn.buttonEl.addClass('filter-bar__collapse-groups');
+                collapseAllBtn.buttonEl.addClass('clickable-icon');
             }
         };
 
@@ -707,30 +711,33 @@ export class FilterBar extends EventEmitter {
         const actionsWrapper = header.createDiv('filter-bar__section-header-actions');
 
         // Clear all filters button (always visible in modal)
-        new ButtonComponent(actionsWrapper)
+        const clearButton = new ButtonComponent(actionsWrapper)
             .setIcon('eraser')
             .setTooltip('Clear all filters and groups')
             .setClass('filter-bar__clear-all-button')
             .onClick(() => {
                 this.clearAllFiltersKeepModalOpen();
             });
+        clearButton.buttonEl.addClass('clickable-icon');
 
-        new ButtonComponent(actionsWrapper)
+        const saveButton = new ButtonComponent(actionsWrapper)
             .setIcon('save')
             .setTooltip('Save current filter as view')
             .setClass('filter-bar__save-button')
             .onClick(() => {
                 this.showSaveViewDialog();
             });
+        saveButton.buttonEl.addClass('clickable-icon');
 
         // Close modal button
-        new ButtonComponent(actionsWrapper)
+        const closeButton = new ButtonComponent(actionsWrapper)
             .setIcon('x')
             .setTooltip('Close filter modal')
             .setClass('filter-bar__close-modal-button')
             .onClick(() => {
                 this.closeFilterModal();
             });
+        closeButton.buttonEl.addClass('clickable-icon');
 
         // Content
         const content = section.createDiv('filter-bar__section-content');
