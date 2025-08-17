@@ -1,15 +1,16 @@
 import { Decoration, DecorationSet, EditorView, PluginSpec, PluginValue, ViewPlugin, ViewUpdate, WidgetType } from '@codemirror/view';
+import { EVENT_DATA_CHANGED, EVENT_TASK_DELETED, EVENT_TASK_UPDATED, FilterQuery, SUBTASK_WIDGET_VIEW_TYPE, TaskInfo } from '../types';
+import { EventRef, TFile, editorInfoField, editorLivePreviewField, setIcon } from 'obsidian';
 import { Extension, RangeSetBuilder, StateEffect } from '@codemirror/state';
-import { TFile, editorLivePreviewField, editorInfoField, EventRef, setIcon } from 'obsidian';
-import TaskNotesPlugin from '../main';
-import { TaskInfo, EVENT_DATA_CHANGED, EVENT_TASK_UPDATED, EVENT_TASK_DELETED, FilterQuery, SUBTASK_WIDGET_VIEW_TYPE } from '../types';
-import { createTaskCard } from '../ui/TaskCard';
-import { ProjectSubtasksService } from '../services/ProjectSubtasksService';
+
 import { FilterBar } from '../ui/FilterBar';
 import { FilterHeading } from '../ui/FilterHeading';
 import { FilterService } from '../services/FilterService';
-import { GroupingUtils } from '../utils/GroupingUtils';
 import { GroupCountUtils } from '../utils/GroupCountUtils';
+import { GroupingUtils } from '../utils/GroupingUtils';
+import { ProjectSubtasksService } from '../services/ProjectSubtasksService';
+import TaskNotesPlugin from '../main';
+import { createTaskCard } from '../ui/TaskCard';
 
 // Define a state effect for project subtasks updates
 const projectSubtasksUpdateEffect = StateEffect.define<{ forceUpdate?: boolean }>();
@@ -413,8 +414,8 @@ class ProjectSubtasksWidget extends WidgetType {
                     cls: 'project-note-subtasks__group-title'
                 });
 
-                // Add group name
-                titleEl.createSpan({ text: this.getGroupDisplayName(groupKey, tasks.length) });
+                // Add group name (no redundant count in parentheses)
+                titleEl.createSpan({ text: this.getGroupDisplayName(groupKey) });
 
                 // Calculate completion stats for this group
                 const groupStats = GroupCountUtils.calculateGroupStats(tasks, this.plugin);
@@ -498,8 +499,9 @@ class ProjectSubtasksWidget extends WidgetType {
         }
     }
 
-    private getGroupDisplayName(groupKey: string, taskCount: number): string {
-        return GroupingUtils.getGroupDisplayName(groupKey, taskCount, this.plugin);
+    private getGroupDisplayName(groupKey: string): string {
+        // Use formatGroupName to avoid adding the old count in parentheses
+        return GroupingUtils.formatGroupName(groupKey, this.plugin);
     }
 
     private createNewSubtask(): void {
