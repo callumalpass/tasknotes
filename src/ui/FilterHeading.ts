@@ -10,9 +10,11 @@ export class FilterHeading {
     private headingElement: HTMLElement | null = null;
     private countElement: HTMLElement | null = null;
     private dividerElement: HTMLElement | null = null;
+    private instanceId: string;
 
     constructor(container: HTMLElement) {
         this.container = container;
+        this.instanceId = 'fh-' + Math.random().toString(36).substr(2, 9);
         this.render();
     }
 

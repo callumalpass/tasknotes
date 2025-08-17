@@ -314,9 +314,13 @@ export class FilterBar extends EventEmitter {
         if (matchingView && this.activeSavedView?.id !== matchingView.id) {
             this.activeSavedView = matchingView;
             this.updateViewSelectorButtonState();
+            // Emit event when active saved view changes
+            this.emit('activeSavedViewChanged', matchingView);
         } else if (!matchingView && this.activeSavedView) {
             this.activeSavedView = null;
             this.updateViewSelectorButtonState();
+            // Emit event when active saved view is cleared
+            this.emit('activeSavedViewChanged', null);
         }
     }
 
@@ -1619,6 +1623,9 @@ export class FilterBar extends EventEmitter {
         if (view.viewOptions) {
             this.emit('loadViewOptions', view.viewOptions);
         }
+
+        // Emit activeSavedViewChanged event
+        this.emit('activeSavedViewChanged', view);
 
         this.toggleViewSelectorDropdown();
         this.updateViewSelectorButtonState();
