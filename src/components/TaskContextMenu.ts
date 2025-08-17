@@ -203,6 +203,20 @@ export class TaskContextMenu {
             });
         });
 
+        // Copy Task Title
+        this.menu.addItem((item) => {
+            item.setTitle('Copy task title');
+            item.setIcon('copy');
+            item.onClick(async () => {
+                try {
+                    await navigator.clipboard.writeText(task.title);
+                    new Notice('Task title copied to clipboard');
+                } catch (error) {
+                    new Notice('Failed to copy to clipboard');
+                }
+            });
+        });
+
         // Note actions submenu
         this.menu.addItem((item) => {
             item.setTitle('Note actions');
@@ -326,20 +340,6 @@ export class TaskContextMenu {
                     });
                 });
             }
-        });
-
-        // Copy Task Title
-        this.menu.addItem((item) => {
-            item.setTitle('Copy task title');
-            item.setIcon('copy');
-            item.onClick(async () => {
-                try {
-                    await navigator.clipboard.writeText(task.title);
-                    new Notice('Task title copied to clipboard');
-                } catch (error) {
-                    new Notice('Failed to copy to clipboard');
-                }
-            });
         });
         
         this.menu.addSeparator();
