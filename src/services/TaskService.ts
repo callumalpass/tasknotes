@@ -573,22 +573,86 @@ export class TaskService {
             // Always update the modification timestamp using field mapper
             frontmatter[dateModifiedField] = updatedTask.dateModified;
         });
+
+        // Step 2.5: Move file based on archive operation and settings
+        let movedFile = file;
+        if (this.plugin.settings.moveArchivedTasks) {
+            try {
+                if (!isCurrentlyArchived && this.plugin.settings.archiveFolder?.trim()) {
+                    // Archiving: Move to archive folder
+                    const archiveFolder = this.plugin.settings.archiveFolder.trim();
+                    
+                    // Ensure archive folder exists
+                    await ensureFolderExists(this.plugin.app.vault, archiveFolder);
+                    
+                    // Construct new path in archive folder
+                    const newPath = `${archiveFolder}/${file.name}`;
+                    
+                    // Check if file already exists at destination
+                    const existingFile = this.plugin.app.vault.getAbstractFileByPath(newPath);
+                    if (existingFile) {
+                        throw new Error(`A file named "${file.name}" already exists in the archive folder "${archiveFolder}". Cannot move task to avoid overwriting existing file.`);
+                    }
+                    
+                    // Move the file
+                    await this.plugin.app.fileManager.renameFile(file, newPath);
+                    
+                    // Update the file reference and task path
+                    movedFile = this.plugin.app.vault.getAbstractFileByPath(newPath) as TFile;
+                    updatedTask.path = newPath;
+                    
+                    // Clear old cache entry and update path in task object
+                    this.plugin.cacheManager.clearCacheEntry(task.path);
+                } else if (isCurrentlyArchived && this.plugin.settings.tasksFolder?.trim()) {
+                    // Unarchiving: Move to default tasks folder
+                    const tasksFolder = this.plugin.settings.tasksFolder.trim();
+                    
+                    // Ensure tasks folder exists
+                    await ensureFolderExists(this.plugin.app.vault, tasksFolder);
+                    
+                    // Construct new path in tasks folder
+                    const newPath = `${tasksFolder}/${file.name}`;
+                    
+                    // Check if file already exists at destination
+                    const existingFile = this.plugin.app.vault.getAbstractFileByPath(newPath);
+                    if (existingFile) {
+                        throw new Error(`A file named "${file.name}" already exists in the tasks folder "${tasksFolder}". Cannot move task to avoid overwriting existing file.`);
+                    }
+                    
+                    // Move the file
+                    await this.plugin.app.fileManager.renameFile(file, newPath);
+                    
+                    // Update the file reference and task path
+                    movedFile = this.plugin.app.vault.getAbstractFileByPath(newPath) as TFile;
+                    updatedTask.path = newPath;
+                    
+                    // Clear old cache entry and update path in task object
+                    this.plugin.cacheManager.clearCacheEntry(task.path);
+                }
+            } catch (moveError) {
+                // If moving fails, show error but don't break the archive operation
+                const errorMessage = moveError instanceof Error ? moveError.message : String(moveError);
+                const operation = isCurrentlyArchived ? 'unarchiving' : 'archiving';
+                console.error(`Error moving ${operation} task:`, errorMessage);
+                new Notice(`Failed to move ${operation} task: ${errorMessage}`);
+                // Continue with archive operation without moving the file
+            }
+        }
         
         // Step 3: Wait for fresh data and update cache
         try {
-            const file = this.plugin.app.vault.getAbstractFileByPath(task.path);
             // Wait for the metadata cache to have the updated data
-            if (file instanceof TFile && this.plugin.cacheManager.waitForFreshTaskData) {
-                await this.plugin.cacheManager.waitForFreshTaskData(file, { archived: updatedTask.archived });
+            if (movedFile instanceof TFile && this.plugin.cacheManager.waitForFreshTaskData) {
+                await this.plugin.cacheManager.waitForFreshTaskData(movedFile, { archived: updatedTask.archived });
             }
-            await this.plugin.cacheManager.updateTaskInfoInCache(task.path, updatedTask);
+            await this.plugin.cacheManager.updateTaskInfoInCache(updatedTask.path, updatedTask);
         } catch (cacheError) {
             console.error('Error updating cache for archived task:', cacheError);
         }
         
         // Step 4: Notify system of change
         this.plugin.emitter.trigger(EVENT_TASK_UPDATED, {
-            path: task.path,
+            path: updatedTask.path,
             originalTask: task,
             updatedTask: updatedTask
         });

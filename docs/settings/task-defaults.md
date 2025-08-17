@@ -93,6 +93,16 @@ Archive/{{year}}/{{month}}/{{project}}
 
 This feature provides powerful flexibility for automatically organizing your tasks into meaningful folder structures based on their properties and creation date.
 
+## Archive Folder Management
+
+TaskNotes can automatically move tasks to a designated archive folder when archived, and back to the default tasks folder when unarchived.
+
+**Move archived tasks to folder** - Controls whether tasks are automatically moved when archived. Disabled by default.
+
+**Archive folder** - Specifies the destination folder for archived tasks (default: `TaskNotes/Archive`). Only appears when the move setting is enabled. Supports the same template variables as the default tasks folder.
+
+The system prevents file overwrites by checking for existing files and showing error messages if conflicts are detected. Archive operations continue even if file moves fail.
+
 ### Store Title Exclusively in Filename
 
 This setting provides an alternative way to manage your task titles. When enabled, the task's title will be used as the filename, and the `title` property will be removed from the frontmatter. This is a significant data storage change that simplifies frontmatter but disables all other filename templating options.
