@@ -18,6 +18,7 @@ import { createTaskCard, updateTaskCard, refreshParentTaskSubtasks } from '../ui
 import { createNoteCard } from '../ui/NoteCard';
 import { createICSEventCard, updateICSEventCard } from '../ui/ICSCard';
 import { FilterBar } from '../ui/FilterBar';
+import { FilterHeading } from '../ui/FilterHeading';
 import { FilterService } from '../services/FilterService';
 
 export class AgendaView extends ItemView {
@@ -33,6 +34,7 @@ export class AgendaView extends ItemView {
     
     // Filter system
     private filterBar: FilterBar | null = null;
+    private filterHeading: FilterHeading | null = null;
     private currentQuery: FilterQuery;
     
     // Event listeners
@@ -170,6 +172,12 @@ export class AgendaView extends ItemView {
         if (this.filterBar) {
             this.filterBar.destroy();
             this.filterBar = null;
+        }
+
+        // Clean up FilterHeading
+        if (this.filterHeading) {
+            this.filterHeading.destroy();
+            this.filterHeading = null;
         }
         
         // Clean up
@@ -352,6 +360,9 @@ export class AgendaView extends ItemView {
             await this.plugin.viewStateManager.setFilterState(AGENDA_VIEW_TYPE, queryToSave);
             this.refresh();
         });
+
+        // Create filter heading
+        this.filterHeading = new FilterHeading(container);
 
         // Set up view-specific options
         this.setupViewOptions();
@@ -1020,7 +1031,41 @@ export class AgendaView extends ItemView {
             indicator.remove();
         }
     }
-    
+
+    /**
+     * Update the filter heading with current saved view and completion count
+     */
+    private async updateFilterHeading(): Promise<void> {
+        if (!this.filterHeading || !this.filterBar) return;
+
+        try {
+            // Get all agenda data to calculate completion stats (same logic as renderAgendaContent)
+            const dates = this.getAgendaDates();
+            const allTasks: TaskInfo[] = [];
+
+            for (const date of dates) {
+                // Use FilterService's getTasksForDate which properly handles recurring tasks
+                const tasksForDate = await this.plugin.filterService.getTasksForDate(
+                    date,
+                    this.currentQuery,
+                    this.showOverdueOnToday
+                );
+                allTasks.push(...tasksForDate);
+            }
+
+            // Calculate completion stats
+            const stats = GroupCountUtils.calculateGroupStats(allTasks, this.plugin);
+
+            // Get current saved view from FilterBar
+            const activeSavedView = (this.filterBar as any).activeSavedView || null;
+
+            // Update the filter heading
+            this.filterHeading.update(activeSavedView, stats.completed, stats.total);
+        } catch (error) {
+            console.error('Error updating filter heading in AgendaView:', error);
+        }
+    }
+
     async refresh() {
         const container = this.contentEl.querySelector('.agenda-view') as HTMLElement;
         if (container) {
@@ -1028,6 +1073,8 @@ export class AgendaView extends ItemView {
             this.setupViewOptions();
             // Use DOMReconciler for efficient updates
             await this.renderAgendaContent(container);
+            // Update filter heading with current data
+            this.updateFilterHeading();
         }
     }
     

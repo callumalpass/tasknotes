@@ -173,10 +173,8 @@ export class FilterBar extends EventEmitter {
         this.currentQuery = FilterUtils.deepCloneFilterQuery(query);
         // Ensure the updated query has proper structure
         this.ensureValidFilterQuery();
-        // Clear active saved view when query is updated externally (unless loading a saved view)
-        if (!this.isLoadingSavedView && this.activeSavedView) {
-            this.clearActiveSavedView();
-        }
+        // Detect if the updated query matches any saved view
+        this.detectActiveSavedView();
         this.updateUI();
     }
 
@@ -298,6 +296,52 @@ export class FilterBar extends EventEmitter {
     updateSavedViews(views: readonly SavedView[]): void {
         this.savedViews = views;
         this.renderViewSelectorDropdown();
+        // Check if current query matches any saved view
+        this.detectActiveSavedView();
+    }
+
+    /**
+     * Detect if the current query matches any saved view and set activeSavedView accordingly
+     */
+    private detectActiveSavedView(): void {
+        if (this.isLoadingSavedView) return; // Don't interfere when explicitly loading a view
+
+        // Find a saved view that matches the current query
+        const matchingView = this.savedViews.find(view =>
+            this.queriesMatch(this.currentQuery, view.query)
+        );
+
+        if (matchingView && this.activeSavedView?.id !== matchingView.id) {
+            this.activeSavedView = matchingView;
+            this.updateViewSelectorButtonState();
+        } else if (!matchingView && this.activeSavedView) {
+            this.activeSavedView = null;
+            this.updateViewSelectorButtonState();
+        }
+    }
+
+    /**
+     * Check if two queries are functionally equivalent
+     */
+    private queriesMatch(query1: FilterQuery, query2: FilterQuery): boolean {
+        // Deep comparison of filter queries (excluding sort/group which might differ)
+        const normalize = (query: FilterQuery) => {
+            const normalized = FilterUtils.deepCloneFilterQuery(query);
+            // Remove sort/group for comparison as they might be view-specific
+            delete (normalized as any).sortKey;
+            delete (normalized as any).sortDirection;
+            delete (normalized as any).groupKey;
+            return normalized;
+        };
+
+        try {
+            const norm1 = normalize(query1);
+            const norm2 = normalize(query2);
+            return JSON.stringify(norm1) === JSON.stringify(norm2);
+        } catch (error) {
+            console.warn('Error comparing queries:', error);
+            return false;
+        }
     }
 
     /**

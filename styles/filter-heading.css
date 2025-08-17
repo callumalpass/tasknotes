@@ -1,0 +1,41 @@
+/* =================================================================
+   FILTER HEADING COMPONENT
+   ================================================================= */
+
+/* All FilterHeading styles are scoped under .tasknotes-plugin for proper isolation */
+
+/* Main Container */
+.tasknotes-plugin .filter-heading {
+    margin-top: var(--tn-spacing-lg);
+    margin-bottom: var(--tn-spacing-lg);
+}
+
+/* Content wrapper with heading and count */
+.tasknotes-plugin .filter-heading__content {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    margin-bottom: var(--tn-spacing-md);
+}
+
+/* Heading title */
+.tasknotes-plugin .filter-heading__title {
+    margin: 0;
+    font-size: var(--font-ui-medium);
+    font-weight: 600;
+    color: var(--text-normal);
+}
+
+/* Count display */
+.tasknotes-plugin .filter-heading__count {
+    font-weight: 600;
+    font-size: var(--font-ui-small);
+    margin-left: 10px;
+}
+
+/* Divider line */
+.tasknotes-plugin .filter-heading__divider {
+    height: 1px;
+    background-color: var(--background-modifier-border);
+    margin-bottom: var(--tn-spacing-lg);
+}

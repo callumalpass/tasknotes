@@ -13,20 +13,21 @@
    4. task-card-bem.css - BEM TaskCard component with proper scoping
    5. note-card-bem.css - BEM NoteCard component with proper scoping
    6. filter-bar-bem.css - BEM FilterBar component with proper scoping
-   7. modal-bem.css - BEM Modal components with proper scoping
+   7. filter-heading.css - BEM FilterHeading component with proper scoping
+   8. modal-bem.css - BEM Modal components with proper scoping
    
    === BEM VIEW FILES ===
-   8. task-list-view.css - BEM TaskListView component
-   9. calendar-view.css - BEM CalendarView component
-   10. kanban-view.css - BEM KanbanView component
-   11. agenda-view.css - BEM AgendaView component
-   12. notes-view.css - BEM NotesView component
-   13. pomodoro-view.css - BEM PomodoroView component
-   14. pomodoro-stats-view.css - BEM PomodoroStatsView component
-   15. settings-view.css - BEM SettingsView component
-   
+   9. task-list-view.css - BEM TaskListView component
+   10. calendar-view.css - BEM CalendarView component
+   11. kanban-view.css - BEM KanbanView component
+   12. agenda-view.css - BEM AgendaView component
+   13. notes-view.css - BEM NotesView component
+   14. pomodoro-view.css - BEM PomodoroView component
+   15. pomodoro-stats-view.css - BEM PomodoroStatsView component
+   16. settings-view.css - BEM SettingsView component
+
    === LEGACY SUPPORT ===
-   16. components.css - Reusable UI components, utilities, and modals
+   17. components.css - Reusable UI components, utilities, and modals
    
    To build the final styles.css file, run:
    npm run build-css

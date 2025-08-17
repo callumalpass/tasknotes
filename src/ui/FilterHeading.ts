@@ -1,0 +1,66 @@
+import { GroupCountUtils } from '../utils/GroupCountUtils';
+import { SavedView } from '../types';
+
+/**
+ * Utility class for creating and managing filter heading displays
+ * Shows the current saved view name and completion count
+ */
+export class FilterHeading {
+    private container: HTMLElement;
+    private headingElement: HTMLElement | null = null;
+    private countElement: HTMLElement | null = null;
+    private dividerElement: HTMLElement | null = null;
+
+    constructor(container: HTMLElement) {
+        this.container = container;
+        this.render();
+    }
+
+    /**
+     * Render the filter heading structure
+     */
+    private render(): void {
+        // Create main heading container
+        const headingContainer = this.container.createDiv('filter-heading');
+        
+        // Create heading content wrapper
+        const headingContent = headingContainer.createDiv('filter-heading__content');
+        
+        // View name element
+        this.headingElement = headingContent.createEl('h2', {
+            cls: 'filter-heading__title',
+            text: 'All'
+        });
+        
+        // Count element
+        this.countElement = headingContent.createDiv('filter-heading__count agenda-view__item-count');
+        
+        // Divider line
+        this.dividerElement = headingContainer.createDiv('filter-heading__divider');
+    }
+
+    /**
+     * Update the heading with current filter information
+     */
+    update(activeSavedView: SavedView | null, completed: number, total: number): void {
+        if (!this.headingElement || !this.countElement) return;
+
+        // Update view name
+        const viewName = activeSavedView?.name || 'All';
+        this.headingElement.textContent = viewName;
+
+        // Update count
+        const countText = GroupCountUtils.formatGroupCount(completed, total).text;
+        this.countElement.textContent = countText;
+    }
+
+    /**
+     * Remove the filter heading from the DOM
+     */
+    destroy(): void {
+        const headingContainer = this.container.querySelector('.filter-heading');
+        if (headingContainer) {
+            headingContainer.remove();
+        }
+    }
+}

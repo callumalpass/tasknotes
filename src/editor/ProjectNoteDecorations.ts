@@ -6,6 +6,7 @@ import { TaskInfo, EVENT_DATA_CHANGED, EVENT_TASK_UPDATED, EVENT_TASK_DELETED, F
 import { createTaskCard } from '../ui/TaskCard';
 import { ProjectSubtasksService } from '../services/ProjectSubtasksService';
 import { FilterBar } from '../ui/FilterBar';
+import { FilterHeading } from '../ui/FilterHeading';
 import { FilterService } from '../services/FilterService';
 import { GroupingUtils } from '../utils/GroupingUtils';
 import { GroupCountUtils } from '../utils/GroupCountUtils';
@@ -16,6 +17,7 @@ const projectSubtasksUpdateEffect = StateEffect.define<{ forceUpdate?: boolean }
 class ProjectSubtasksWidget extends WidgetType {
     private groupedTasks: Map<string, TaskInfo[]> = new Map();
     private filterBar: FilterBar | null = null;
+    private filterHeading: FilterHeading | null = null;
     private filterService: FilterService;
     private currentQuery: FilterQuery;
     private savedViewsUnsubscribe: (() => void) | null = null;
@@ -265,6 +267,27 @@ class ProjectSubtasksWidget extends WidgetType {
 
         } catch (error) {
             console.error('Error initializing filter bar for subtasks:', error);
+        }
+    }
+
+    /**
+     * Update the filter heading with current saved view and completion count
+     */
+    private updateFilterHeading(): void {
+        if (!this.filterHeading || !this.filterBar) return;
+
+        try {
+            // Calculate completion stats from current filtered tasks
+            const allFilteredTasks = Array.from(this.groupedTasks.values()).flat();
+            const stats = GroupCountUtils.calculateGroupStats(allFilteredTasks, this.plugin);
+
+            // Get current saved view from FilterBar
+            const activeSavedView = (this.filterBar as any).activeSavedView || null;
+
+            // Update the filter heading
+            this.filterHeading.update(activeSavedView, stats.completed, stats.total);
+        } catch (error) {
+            console.error('Error updating filter heading in ProjectSubtasksWidget:', error);
         }
     }
 

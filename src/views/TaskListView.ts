@@ -12,7 +12,11 @@ import {
 import { perfMonitor } from '../utils/PerformanceMonitor';
 import { createTaskCard, updateTaskCard, refreshParentTaskSubtasks } from '../ui/TaskCard';
 import { FilterBar } from '../ui/FilterBar';
+<<<<<<< HEAD
 import { GroupingUtils } from '../utils/GroupingUtils';
+=======
+import { FilterHeading } from '../ui/FilterHeading';
+>>>>>>> b8d0a2a (feat: add filter heading display to TaskListView)
 import { GroupCountUtils } from '../utils/GroupCountUtils';
 
 export class TaskListView extends ItemView {
@@ -29,6 +33,7 @@ export class TaskListView extends ItemView {
     
     // Filter system
     private filterBar: FilterBar | null = null;
+    private filterHeading: FilterHeading | null = null;
     private currentQuery: FilterQuery;
     
     // Task item tracking for dynamic updates
@@ -200,6 +205,12 @@ export class TaskListView extends ItemView {
             this.filterBar.destroy();
             this.filterBar = null;
         }
+
+        // Clean up FilterHeading
+        if (this.filterHeading) {
+            this.filterHeading.destroy();
+            this.filterHeading = null;
+        }
         
         this.contentEl.empty();
     }
@@ -330,8 +341,10 @@ export class TaskListView extends ItemView {
             this.plugin.viewStateManager.setFilterState(TASK_LIST_VIEW_TYPE, newQuery);
             await this.refreshTasks();
         });
-        
-        
+
+        // Create filter heading
+        this.filterHeading = new FilterHeading(container);
+
         // Task list container
         const taskList = container.createDiv({ cls: 'task-list' });
         
@@ -355,7 +368,31 @@ export class TaskListView extends ItemView {
         this.isTasksLoading = false;
         this.updateLoadingState();
     }
-    
+
+    /**
+     * Update the filter heading with current saved view and completion count
+     */
+    private async updateFilterHeading(): Promise<void> {
+        if (!this.filterHeading || !this.filterBar) return;
+
+        try {
+            // Get all filtered tasks to calculate completion stats
+            const groupedTasks = await this.plugin.filterService.getGroupedTasks(this.currentQuery);
+            const allTasks = Array.from(groupedTasks.values()).flat();
+
+            // Calculate completion stats
+            const stats = GroupCountUtils.calculateGroupStats(allTasks, this.plugin);
+
+            // Get current saved view from FilterBar
+            const activeSavedView = (this.filterBar as any).activeSavedView || null;
+
+            // Update the filter heading
+            this.filterHeading.update(activeSavedView, stats.completed, stats.total);
+        } catch (error) {
+            console.error('Error updating filter heading in TaskListView:', error);
+        }
+    }
+
     /**
      * Refresh tasks using FilterService
      */
@@ -402,6 +439,8 @@ export class TaskListView extends ItemView {
         } finally {
             this.isTasksLoading = false;
             this.updateLoadingState();
+            // Update filter heading with current data
+            await this.updateFilterHeading();
         }
     }
 
