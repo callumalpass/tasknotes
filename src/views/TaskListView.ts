@@ -12,11 +12,8 @@ import {
 import { perfMonitor } from '../utils/PerformanceMonitor';
 import { createTaskCard, updateTaskCard, refreshParentTaskSubtasks } from '../ui/TaskCard';
 import { FilterBar } from '../ui/FilterBar';
-<<<<<<< HEAD
 import { GroupingUtils } from '../utils/GroupingUtils';
-=======
 import { FilterHeading } from '../ui/FilterHeading';
->>>>>>> b8d0a2a (feat: add filter heading display to TaskListView)
 import { GroupCountUtils } from '../utils/GroupCountUtils';
 
 export class TaskListView extends ItemView {

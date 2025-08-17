@@ -361,8 +361,15 @@ export class AgendaView extends ItemView {
             this.refresh();
         });
 
-        // Create filter heading
+        // Update heading immediately when a saved view is selected
+        this.filterBar.on('activeSavedViewChanged', () => {
+            this.updateFilterHeading();
+        });
+
+        // Create filter heading (shows active view name and filtered completion count)
         this.filterHeading = new FilterHeading(container);
+        // Initialize heading immediately
+        this.updateFilterHeading();
 
         // Set up view-specific options
         this.setupViewOptions();

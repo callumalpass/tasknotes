@@ -414,7 +414,7 @@ class ProjectSubtasksWidget extends WidgetType {
                 });
 
                 // Add group name
-                titleEl.createSpan({ text: this.getGroupDisplayName(groupKey) });
+                titleEl.createSpan({ text: this.getGroupDisplayName(groupKey, tasks.length) });
 
                 // Calculate completion stats for this group
                 const groupStats = GroupCountUtils.calculateGroupStats(tasks, this.plugin);
