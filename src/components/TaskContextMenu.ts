@@ -6,6 +6,11 @@ import { ReminderModal } from '../modals/ReminderModal';
 import { CalendarExportService } from '../services/CalendarExportService';
 import { showConfirmationModal } from '../modals/ConfirmationModal';
 import { showTextInputModal } from '../modals/TextInputModal';
+import { StatusContextMenu } from './StatusContextMenu';
+import { PriorityContextMenu } from './PriorityContextMenu';
+import { DateContextMenu } from './DateContextMenu';
+import { RecurrenceContextMenu } from './RecurrenceContextMenu';
+import { ReminderContextMenu } from './ReminderContextMenu';
 
 export interface TaskContextMenuOptions {
     task: TaskInfo;
@@ -27,33 +32,13 @@ export class TaskContextMenu {
     private buildMenu(): void {
         const { task, plugin } = this.options;
 
-        // Status options
-        const availableStatuses = task.recurrence 
-            ? plugin.statusManager.getNonCompletionStatuses()
-            : plugin.statusManager.getAllStatuses();
-        
-        availableStatuses.forEach(statusConfig => {
-            this.menu.addItem((item) => {
-                const isSelected = task.status === statusConfig.value;
-                item.setTitle(`${statusConfig.label}`);
-                item.setIcon('circle');
-                if (isSelected) {
-                    item.setIcon('check');
-                }
-                item.onClick(async () => {
-                    try {
-                        await plugin.updateTaskProperty(task, 'status', statusConfig.value);
-                        this.options.onUpdate?.();
-                    } catch (error) {
-                        const errorMessage = error instanceof Error ? error.message : String(error);
-                        console.error('Error updating task status:', {
-                            error: errorMessage,
-                            taskPath: task.path
-                        });
-                        new Notice(`Failed to update task status: ${errorMessage}`);
-                    }
-                });
-            });
+        // Status submenu
+        this.menu.addItem((item) => {
+            item.setTitle('Status');
+            item.setIcon('circle');
+            
+            const submenu = (item as any).setSubmenu();
+            this.addStatusOptions(submenu, task, plugin);
         });
         
         // Add completion toggle for recurring tasks
@@ -84,72 +69,115 @@ export class TaskContextMenu {
         
         this.menu.addSeparator();
         
-        // Priority options
-        plugin.priorityManager.getPrioritiesByWeight().forEach(priorityConfig => {
-            this.menu.addItem((item) => {
-                const isSelected = task.priority === priorityConfig.value;
-                item.setTitle(`Priority: ${priorityConfig.label}`);
-                item.setIcon('flag');
-                if (isSelected) {
-                    item.setIcon('check');
-                }
-                item.onClick(async () => {
-                    try {
-                        await plugin.updateTaskProperty(task, 'priority', priorityConfig.value);
-                        this.options.onUpdate?.();
-                    } catch (error) {
-                        const errorMessage = error instanceof Error ? error.message : String(error);
-                        console.error('Error updating task priority:', {
-                            error: errorMessage,
-                            taskPath: task.path
-                        });
-                        new Notice(`Failed to update task priority: ${errorMessage}`);
-                    }
-                });
-            });
+        // Priority submenu
+        this.menu.addItem((item) => {
+            item.setTitle('Priority');
+            item.setIcon('star');
+            
+            const submenu = (item as any).setSubmenu();
+            this.addPriorityOptions(submenu, task, plugin);
         });
         
         this.menu.addSeparator();
         
-        // Set Due Date
+        // Due Date submenu
         this.menu.addItem((item) => {
-            item.setTitle('Set due date...');
+            item.setTitle('Due date');
             item.setIcon('calendar');
-            item.onClick(() => {
+            
+            const submenu = (item as any).setSubmenu();
+            this.addDateOptions(submenu, task.due, async (value: string | null) => {
+                try {
+                    await plugin.updateTaskProperty(task, 'due', value || undefined);
+                    this.options.onUpdate?.();
+                } catch (error) {
+                    const errorMessage = error instanceof Error ? error.message : String(error);
+                    console.error('Error updating task due date:', {
+                        error: errorMessage,
+                        taskPath: task.path
+                    });
+                    new Notice(`Failed to update task due date: ${errorMessage}`);
+                }
+            }, () => {
                 plugin.openDueDateModal(task);
             });
         });
         
-        // Set Scheduled Date
+        // Scheduled Date submenu
         this.menu.addItem((item) => {
-            item.setTitle('Set scheduled date...');
+            item.setTitle('Scheduled date');
             item.setIcon('calendar-clock');
-            item.onClick(() => {
+            
+            const submenu = (item as any).setSubmenu();
+            this.addDateOptions(submenu, task.scheduled, async (value: string | null) => {
+                try {
+                    await plugin.updateTaskProperty(task, 'scheduled', value || undefined);
+                    this.options.onUpdate?.();
+                } catch (error) {
+                    const errorMessage = error instanceof Error ? error.message : String(error);
+                    console.error('Error updating task scheduled date:', {
+                        error: errorMessage,
+                        taskPath: task.path
+                    });
+                    new Notice(`Failed to update task scheduled date: ${errorMessage}`);
+                }
+            }, () => {
                 plugin.openScheduledDateModal(task);
             });
         });
         
-        // Manage Reminders
+        // Reminders submenu
         this.menu.addItem((item) => {
-            item.setTitle('Manage reminders...');
+            item.setTitle('Reminders');
             item.setIcon('bell');
-            item.onClick(() => {
-                const modal = new ReminderModal(
-                    plugin.app,
-                    plugin,
-                    task,
-                    async (reminders) => {
+            
+            const submenu = (item as any).setSubmenu();
+            
+            // Quick Add sections
+            this.addQuickRemindersSection(submenu, task, plugin, 'due', 'Remind before due...');
+            this.addQuickRemindersSection(submenu, task, plugin, 'scheduled', 'Remind before scheduled...');
+            
+            submenu.addSeparator();
+            
+            // Manage reminders
+            submenu.addItem((subItem: any) => {
+                subItem.setTitle('Manage All Reminders...');
+                subItem.setIcon('settings');
+                subItem.onClick(() => {
+                    const modal = new ReminderModal(
+                        plugin.app,
+                        plugin,
+                        task,
+                        async (reminders) => {
+                            try {
+                                await plugin.updateTaskProperty(task, 'reminders', reminders.length > 0 ? reminders : undefined);
+                                this.options.onUpdate?.();
+                            } catch (error) {
+                                console.error('Error updating reminders:', error);
+                                new Notice('Failed to update reminders');
+                            }
+                        }
+                    );
+                    modal.open();
+                });
+            });
+            
+            // Clear reminders (if any exist)
+            if (task.reminders && task.reminders.length > 0) {
+                submenu.addItem((subItem: any) => {
+                    subItem.setTitle('Clear All Reminders');
+                    subItem.setIcon('trash');
+                    subItem.onClick(async () => {
                         try {
-                            await plugin.updateTaskProperty(task, 'reminders', reminders.length > 0 ? reminders : undefined);
+                            await plugin.updateTaskProperty(task, 'reminders', undefined);
                             this.options.onUpdate?.();
                         } catch (error) {
-                            console.error('Error updating reminders:', error);
-                            new Notice('Failed to update reminders');
+                            console.error('Error clearing reminders:', error);
+                            new Notice('Failed to clear reminders');
                         }
-                    }
-                );
-                modal.open();
-            });
+                    });
+                });
+            }
         });
         
         this.menu.addSeparator();
@@ -404,6 +432,30 @@ export class TaskContextMenu {
         
         this.menu.addSeparator();
         
+        // Recurrence submenu  
+        this.menu.addItem((item) => {
+            item.setTitle('Recurrence');
+            item.setIcon('refresh-ccw');
+            
+            const submenu = (item as any).setSubmenu();
+            const currentRecurrence = typeof task.recurrence === 'string' ? task.recurrence : undefined;
+            this.addRecurrenceOptions(submenu, currentRecurrence, async (value: string | null) => {
+                try {
+                    await plugin.updateTaskProperty(task, 'recurrence', value || undefined);
+                    this.options.onUpdate?.();
+                } catch (error) {
+                    const errorMessage = error instanceof Error ? error.message : String(error);
+                    console.error('Error updating task recurrence:', {
+                        error: errorMessage,
+                        taskPath: task.path
+                    });
+                    new Notice(`Failed to update task recurrence: ${errorMessage}`);
+                }
+            }, plugin);
+        });
+        
+        this.menu.addSeparator();
+        
         // Create subtask
         this.menu.addItem((item) => {
             item.setTitle('Create subtask');
@@ -419,6 +471,416 @@ export class TaskContextMenu {
             });
         });
         
+        // Apply main menu icon colors after menu is built
+        setTimeout(() => {
+            this.updateMainMenuIconColors(task, plugin);
+        }, 10);
+    }
+    
+    private updateMainMenuIconColors(task: TaskInfo, plugin: TaskNotesPlugin): void {
+        const menuEl = document.querySelector('.menu');
+        if (!menuEl) return;
+        
+        const menuItems = menuEl.querySelectorAll('.menu-item');
+        
+        // Find status and priority menu items and apply colors
+        menuItems.forEach((menuItem: Element) => {
+            const titleEl = menuItem.querySelector('.menu-item-title');
+            const iconEl = menuItem.querySelector('.menu-item-icon');
+            
+            if (titleEl && iconEl) {
+                const title = titleEl.textContent;
+                
+                // Apply status color
+                if (title === 'Status') {
+                    const statusConfig = plugin.settings.customStatuses.find(s => s.value === task.status);
+                    if (statusConfig && statusConfig.color) {
+                        (iconEl as HTMLElement).style.color = statusConfig.color;
+                    }
+                }
+                
+                // Apply priority color
+                else if (title === 'Priority') {
+                    const priorityConfig = plugin.settings.customPriorities.find(p => p.value === task.priority);
+                    if (priorityConfig && priorityConfig.color) {
+                        (iconEl as HTMLElement).style.color = priorityConfig.color;
+                    }
+                }
+            }
+        });
+    }
+    
+    private addStatusOptions(submenu: any, task: TaskInfo, plugin: TaskNotesPlugin): void {
+        const statusOptions = this.getStatusOptions(task, plugin);
+        
+        statusOptions.forEach((option, index) => {
+            submenu.addItem((item: any) => {
+                let title = option.label;
+                
+                // Use consistent icon for all items
+                item.setIcon('circle');
+                
+                // Highlight current selection with visual indicator
+                if (option.value === task.status) {
+                    title = `✓ ${option.label}`;
+                }
+                
+                item.setTitle(title);
+                
+                item.onClick(async () => {
+                    try {
+                        await plugin.updateTaskProperty(task, 'status', option.value);
+                        this.options.onUpdate?.();
+                    } catch (error) {
+                        const errorMessage = error instanceof Error ? error.message : String(error);
+                        console.error('Error updating task status:', {
+                            error: errorMessage,
+                            taskPath: task.path
+                        });
+                        new Notice(`Failed to update task status: ${errorMessage}`);
+                    }
+                });
+            });
+        });
+        
+        // Apply color styling after menu is shown
+        setTimeout(() => {
+            this.applyStatusColorStyling(statusOptions);
+        }, 10);
+    }
+    
+    private addPriorityOptions(submenu: any, task: TaskInfo, plugin: TaskNotesPlugin): void {
+        const priorityOptions = plugin.priorityManager.getPrioritiesByWeight();
+        
+        priorityOptions.forEach(priority => {
+            submenu.addItem((item: any) => {
+                let title = priority.label;
+                
+                // Use consistent icon for all items
+                item.setIcon('star');
+                
+                // Highlight current selection with visual indicator
+                if (priority.value === task.priority) {
+                    title = `✓ ${priority.label}`;
+                }
+                
+                item.setTitle(title);
+                
+                item.onClick(async () => {
+                    try {
+                        await plugin.updateTaskProperty(task, 'priority', priority.value);
+                        this.options.onUpdate?.();
+                    } catch (error) {
+                        const errorMessage = error instanceof Error ? error.message : String(error);
+                        console.error('Error updating task priority:', {
+                            error: errorMessage,
+                            taskPath: task.path
+                        });
+                        new Notice(`Failed to update task priority: ${errorMessage}`);
+                    }
+                });
+            });
+        });
+        
+        // Apply color styling after menu is shown
+        setTimeout(() => {
+            this.applyPriorityColorStyling(priorityOptions);
+        }, 10);
+    }
+    
+    private addDateOptions(submenu: any, currentValue: string | undefined, onSelect: (value: string | null) => Promise<void>, onCustomDate: () => void): void {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const today = (window as any).moment();
+        
+        const dateOptions = [
+            {
+                label: 'Today',
+                value: today.format('YYYY-MM-DD'),
+                icon: 'calendar-check'
+            },
+            {
+                label: 'Tomorrow',
+                value: today.clone().add(1, 'day').format('YYYY-MM-DD'),
+                icon: 'calendar-plus'
+            },
+            {
+                label: 'This weekend',
+                value: (() => {
+                    const nextSaturday = today.clone().day(6);
+                    if (nextSaturday.isBefore(today) || nextSaturday.isSame(today, 'day')) {
+                        nextSaturday.add(1, 'week');
+                    }
+                    return nextSaturday.format('YYYY-MM-DD');
+                })(),
+                icon: 'calendar-days'
+            },
+            {
+                label: 'Next week',
+                value: today.clone().day(1).add(1, 'week').format('YYYY-MM-DD'),
+                icon: 'calendar-plus'
+            },
+            {
+                label: 'Next month',
+                value: today.clone().add(1, 'month').startOf('month').format('YYYY-MM-DD'),
+                icon: 'calendar-range'
+            }
+        ];
+        
+        dateOptions.forEach(option => {
+            submenu.addItem((item: any) => {
+                const isSelected = option.value === currentValue;
+                item.setTitle(isSelected ? `✓ ${option.label}` : option.label);
+                item.setIcon(option.icon);
+                item.onClick(() => {
+                    onSelect(option.value);
+                });
+            });
+        });
+        
+        submenu.addSeparator();
+        
+        // Custom date picker
+        submenu.addItem((item: any) => {
+            item.setTitle('Pick date & time...');
+            item.setIcon('calendar');
+            item.onClick(() => {
+                onCustomDate();
+            });
+        });
+        
+        // Clear option if there's a current value
+        if (currentValue) {
+            submenu.addItem((item: any) => {
+                item.setTitle('Clear date');
+                item.setIcon('x');
+                item.onClick(() => {
+                    onSelect(null);
+                });
+            });
+        }
+    }
+    
+    private addRecurrenceOptions(submenu: any, currentValue: string | undefined, onSelect: (value: string | null) => Promise<void>, plugin: TaskNotesPlugin): void {
+        const today = new Date();
+        const dayNames = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'];
+        const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
+                           'July', 'August', 'September', 'October', 'November', 'December'];
+        const currentDay = dayNames[today.getDay()];
+        const currentDate = today.getDate();
+        const currentMonth = today.getMonth() + 1;
+        const currentMonthName = monthNames[today.getMonth()];
+        const dayName = today.toLocaleDateString('en-US', { weekday: 'long' });
+        
+        const formatDateForDTSTART = (date: Date): string => {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}${month}${day}`;
+        };
+        
+        const getOrdinal = (n: number): string => {
+            const s = ['th', 'st', 'nd', 'rd'];
+            const v = n % 100;
+            return n + (s[(v - 20) % 10] || s[v] || s[0]);
+        };
+        
+        let todayDTSTART = formatDateForDTSTART(today);
+        
+        const recurrenceOptions = [
+            {
+                label: 'Daily',
+                value: `DTSTART:${todayDTSTART};FREQ=DAILY;INTERVAL=1`,
+                icon: 'calendar-days'
+            },
+            {
+                label: `Weekly on ${dayName}`,
+                value: `DTSTART:${todayDTSTART};FREQ=WEEKLY;INTERVAL=1;BYDAY=${currentDay}`,
+                icon: 'calendar'
+            },
+            {
+                label: `Every 2 weeks on ${dayName}`,
+                value: `DTSTART:${todayDTSTART};FREQ=WEEKLY;INTERVAL=2;BYDAY=${currentDay}`,
+                icon: 'calendar'
+            },
+            {
+                label: `Monthly on the ${getOrdinal(currentDate)}`,
+                value: `DTSTART:${todayDTSTART};FREQ=MONTHLY;INTERVAL=1;BYMONTHDAY=${currentDate}`,
+                icon: 'calendar-range'
+            },
+            {
+                label: `Every 3 months on the ${getOrdinal(currentDate)}`,
+                value: `DTSTART:${todayDTSTART};FREQ=MONTHLY;INTERVAL=3;BYMONTHDAY=${currentDate}`,
+                icon: 'calendar-range'
+            },
+            {
+                label: `Yearly on ${currentMonthName} ${getOrdinal(currentDate)}`,
+                value: `DTSTART:${todayDTSTART};FREQ=YEARLY;INTERVAL=1;BYMONTH=${currentMonth};BYMONTHDAY=${currentDate}`,
+                icon: 'calendar-clock'
+            },
+            {
+                label: 'Weekdays only',
+                value: `DTSTART:${todayDTSTART};FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR`,
+                icon: 'briefcase'
+            }
+        ];
+        
+        recurrenceOptions.forEach(option => {
+            submenu.addItem((item: any) => {
+                const isSelected = option.value === currentValue;
+                item.setTitle(isSelected ? `✓ ${option.label}` : option.label);
+                item.setIcon(option.icon);
+                item.onClick(() => {
+                    onSelect(option.value);
+                });
+            });
+        });
+        
+        submenu.addSeparator();
+        
+        // Custom recurrence option
+        submenu.addItem((item: any) => {
+            item.setTitle('Custom recurrence...');
+            item.setIcon('settings');
+            item.onClick(() => {
+                const recurrenceMenu = new RecurrenceContextMenu({
+                    currentValue: typeof currentValue === 'string' ? currentValue : undefined,
+                    onSelect: onSelect,
+                    app: plugin.app
+                });
+                recurrenceMenu['showCustomRecurrenceModal']();
+            });
+        });
+        
+        // Clear option if there's a current value
+        if (currentValue) {
+            submenu.addItem((item: any) => {
+                item.setTitle('Clear recurrence');
+                item.setIcon('x');
+                item.onClick(() => {
+                    onSelect(null);
+                });
+            });
+        }
+    }
+    
+    private getStatusOptions(task: TaskInfo, plugin: TaskNotesPlugin) {
+        const statusConfigs = plugin.settings.customStatuses;
+        const statusOptions: any[] = [];
+
+        // Use only the user-defined statuses from settings
+        if (statusConfigs && statusConfigs.length > 0) {
+            // Sort by order property
+            const sortedStatuses = [...statusConfigs].sort((a, b) => a.order - b.order);
+            
+            // Filter for recurring tasks if needed
+            const availableStatuses = task.recurrence 
+                ? sortedStatuses.filter(status => status.value !== 'completed')
+                : sortedStatuses;
+            
+            availableStatuses.forEach(status => {
+                statusOptions.push({
+                    label: status.label,
+                    value: status.value,
+                    color: status.color
+                });
+            });
+        }
+
+        return statusOptions;
+    }
+    
+    private applyStatusColorStyling(statusOptions: any[]): void {
+        const menuEl = document.querySelector('.menu');
+        
+        if (!menuEl) return;
+        
+        const menuItems = menuEl.querySelectorAll('.menu-item');
+        
+        statusOptions.forEach((option, index) => {
+            const menuItem = menuItems[index] as HTMLElement;
+            if (menuItem && option.color) {
+                const iconEl = menuItem.querySelector('.menu-item-icon');
+                if (iconEl) {
+                    (iconEl as HTMLElement).style.color = option.color;
+                }
+            }
+        });
+    }
+    
+    private applyPriorityColorStyling(priorityOptions: any[]): void {
+        const menuEl = document.querySelector('.menu');
+        
+        if (!menuEl) return;
+        
+        const menuItems = menuEl.querySelectorAll('.menu-item');
+        
+        priorityOptions.forEach((priority, index) => {
+            const menuItem = menuItems[index] as HTMLElement;
+            if (menuItem && priority.color) {
+                const iconEl = menuItem.querySelector('.menu-item-icon');
+                if (iconEl) {
+                    (iconEl as HTMLElement).style.color = priority.color;
+                }
+            }
+        });
+    }
+    
+    private addQuickRemindersSection(submenu: any, task: TaskInfo, plugin: TaskNotesPlugin, anchor: 'due' | 'scheduled', title: string): void {
+        const anchorDate = anchor === 'due' ? task.due : task.scheduled;
+        
+        if (!anchorDate) {
+            // If no anchor date, show disabled option
+            submenu.addItem((subItem: any) => {
+                subItem.setTitle(title);
+                subItem.setIcon('bell');
+                subItem.setDisabled(true);
+            });
+            return;
+        }
+
+        // Add submenu for quick reminder options
+        submenu.addItem((subItem: any) => {
+            subItem.setTitle(title);
+            subItem.setIcon('bell');
+            
+            const reminderSubmenu = (subItem as any).setSubmenu();
+            
+            const quickOptions = [
+                { label: 'At time of event', offset: 'PT0M' },
+                { label: '5 minutes before', offset: '-PT5M' },
+                { label: '15 minutes before', offset: '-PT15M' },
+                { label: '1 hour before', offset: '-PT1H' },
+                { label: '1 day before', offset: '-P1D' }
+            ];
+
+            quickOptions.forEach(option => {
+                reminderSubmenu.addItem((reminderItem: any) => {
+                    reminderItem.setTitle(option.label);
+                    reminderItem.onClick(async () => {
+                        await this.addQuickReminder(task, plugin, anchor, option.offset, option.label);
+                    });
+                });
+            });
+        });
+    }
+    
+    private async addQuickReminder(task: TaskInfo, plugin: TaskNotesPlugin, anchor: 'due' | 'scheduled', offset: string, description: string): Promise<void> {
+        const reminder = {
+            id: `rem_${Date.now()}`,
+            type: 'relative' as const,
+            relatedTo: anchor,
+            offset,
+            description
+        };
+
+        const updatedReminders = [...(task.reminders || []), reminder];
+        try {
+            await plugin.updateTaskProperty(task, 'reminders', updatedReminders);
+            this.options.onUpdate?.();
+        } catch (error) {
+            console.error('Error adding reminder:', error);
+            new Notice('Failed to add reminder');
+        }
     }
 
     public show(event: MouseEvent): void {
