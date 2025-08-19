@@ -540,13 +540,21 @@ export class TaskContextMenu {
                         new Notice(`Failed to update task status: ${errorMessage}`);
                     }
                 });
+                
+                // Apply color directly to this item
+                if (option.color) {
+                    setTimeout(() => {
+                        const itemEl = item.dom || item.domEl;
+                        if (itemEl) {
+                            const iconEl = itemEl.querySelector('.menu-item-icon');
+                            if (iconEl) {
+                                (iconEl as HTMLElement).style.color = option.color;
+                            }
+                        }
+                    }, 10);
+                }
             });
         });
-        
-        // Apply color styling after menu is shown
-        setTimeout(() => {
-            this.applyStatusColorStyling(statusOptions);
-        }, 10);
     }
     
     private addPriorityOptions(submenu: any, task: TaskInfo, plugin: TaskNotesPlugin): void {
@@ -579,13 +587,21 @@ export class TaskContextMenu {
                         new Notice(`Failed to update task priority: ${errorMessage}`);
                     }
                 });
+                
+                // Apply color directly to this item
+                if (priority.color) {
+                    setTimeout(() => {
+                        const itemEl = item.dom || item.domEl;
+                        if (itemEl) {
+                            const iconEl = itemEl.querySelector('.menu-item-icon');
+                            if (iconEl) {
+                                (iconEl as HTMLElement).style.color = priority.color;
+                            }
+                        }
+                    }, 10);
+                }
             });
         });
-        
-        // Apply color styling after menu is shown
-        setTimeout(() => {
-            this.applyPriorityColorStyling(priorityOptions);
-        }, 10);
     }
     
     private addDateOptions(submenu: any, currentValue: string | undefined, onSelect: (value: string | null) => Promise<void>, onCustomDate: () => void): void {
@@ -789,41 +805,6 @@ export class TaskContextMenu {
         return statusOptions;
     }
     
-    private applyStatusColorStyling(statusOptions: any[]): void {
-        const menuEl = document.querySelector('.menu');
-        
-        if (!menuEl) return;
-        
-        const menuItems = menuEl.querySelectorAll('.menu-item');
-        
-        statusOptions.forEach((option, index) => {
-            const menuItem = menuItems[index] as HTMLElement;
-            if (menuItem && option.color) {
-                const iconEl = menuItem.querySelector('.menu-item-icon');
-                if (iconEl) {
-                    (iconEl as HTMLElement).style.color = option.color;
-                }
-            }
-        });
-    }
-    
-    private applyPriorityColorStyling(priorityOptions: any[]): void {
-        const menuEl = document.querySelector('.menu');
-        
-        if (!menuEl) return;
-        
-        const menuItems = menuEl.querySelectorAll('.menu-item');
-        
-        priorityOptions.forEach((priority, index) => {
-            const menuItem = menuItems[index] as HTMLElement;
-            if (menuItem && priority.color) {
-                const iconEl = menuItem.querySelector('.menu-item-icon');
-                if (iconEl) {
-                    (iconEl as HTMLElement).style.color = priority.color;
-                }
-            }
-        });
-    }
     
     private addQuickRemindersSection(submenu: any, task: TaskInfo, plugin: TaskNotesPlugin, anchor: 'due' | 'scheduled', title: string): void {
         const anchorDate = anchor === 'due' ? task.due : task.scheduled;
