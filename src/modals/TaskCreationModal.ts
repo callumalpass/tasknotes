@@ -133,13 +133,13 @@ class NLPSuggest extends AbstractInputSuggest<TagSuggestion | ContextSuggestion 
                     let title = '';
                     if (metadata?.frontmatter) {
                         const mappedData = this.plugin.fieldMapper.mapFromFrontmatter(
-                            metadata.frontmatter, 
-                            file.path, 
+                            metadata.frontmatter,
+                            file.path,
                             this.plugin.settings.storeTitleInFilename
                         );
-                        title = mappedData.title || '';
+                        title = typeof mappedData.title === 'string' ? mappedData.title : '';
                     }
-                    
+
                     return {
                         file,
                         basename: file.basename,
@@ -149,29 +149,29 @@ class NLPSuggest extends AbstractInputSuggest<TagSuggestion | ContextSuggestion 
                 })
                 .filter(item => {
                     // Search in filename (basename)
-                    if (item.basename.toLowerCase().includes(query)) return true;
-                    
-                    // Search in title
-                    if (item.title && item.title.toLowerCase().includes(query)) return true;
-                    
+                    if (typeof item.basename === 'string' && item.basename.toLowerCase().includes(query)) return true;
+
+                    // Search in title (guard type)
+                    if (typeof item.title === 'string' && item.title.toLowerCase().includes(query)) return true;
+
                     // Search in aliases
                     if (Array.isArray(item.aliases)) {
-                        return item.aliases.some(alias => 
+                        return item.aliases.some(alias =>
                             typeof alias === 'string' && alias.toLowerCase().includes(query)
                         );
                     }
-                    
+
                     return false;
                 })
                 .map(item => {
                     // Create display name with title and aliases in brackets
                     let displayName = item.basename;
                     const extras: string[] = [];
-                    
-                    if (item.title && item.title !== item.basename) {
+
+                    if (typeof item.title === 'string' && item.title.length > 0 && item.title !== item.basename) {
                         extras.push(`title: ${item.title}`);
                     }
-                    
+
                     if (Array.isArray(item.aliases) && item.aliases.length > 0) {
                         const validAliases = item.aliases.filter(alias => typeof alias === 'string');
                         if (validAliases.length > 0) {
