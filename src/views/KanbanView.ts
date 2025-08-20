@@ -1,4 +1,4 @@
-import { ItemView, WorkspaceLeaf, Notice, EventRef, debounce } from 'obsidian';
+import { TextFileView, WorkspaceLeaf, Notice, EventRef, debounce, TFile } from 'obsidian';
 import TaskNotesPlugin from '../main';
 import { 
     KANBAN_VIEW_TYPE, 
@@ -12,7 +12,7 @@ import {
 import { createTaskCard, updateTaskCard, refreshParentTaskSubtasks } from '../ui/TaskCard';
 import { FilterBar } from '../ui/FilterBar';
 
-export class KanbanView extends ItemView {
+export class KanbanView extends TextFileView {
     plugin: TaskNotesPlugin;
     
     // UI elements
@@ -33,9 +33,11 @@ export class KanbanView extends ItemView {
         this.plugin = plugin;
         
         // Initialize with default query - will be properly set when plugin services are ready
+        // Use a unique temporary ID for each instance to avoid conflicts
+        const tempId = `temp-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
         this.currentQuery = {
             type: 'group',
-            id: 'temp',
+            id: tempId,
             conjunction: 'and',
             children: [],
             sortKey: 'priority',
@@ -54,6 +56,9 @@ export class KanbanView extends ItemView {
     }
 
     getDisplayText(): string {
+        if (this.file) {
+            return this.file.basename;
+        }
         return 'Kanban';
     }
 
@@ -131,15 +136,18 @@ export class KanbanView extends ItemView {
         // Wait for migration to complete before initializing UI
         await this.plugin.waitForMigration();
         
-        // Load saved filter state
-        const savedQuery = this.plugin.viewStateManager.getFilterState(KANBAN_VIEW_TYPE);
-        if (savedQuery) {
-            this.currentQuery = savedQuery;
-            this.previousGroupKey = this.currentQuery.groupKey || null;
+        // Note: File-specific state loading is now handled by onLoadFile()
+        // If this is a non-file view, load from viewStateManager
+        if (!this.file) {
+            const savedQuery = this.plugin.viewStateManager.getFilterState(KANBAN_VIEW_TYPE);
+            if (savedQuery) {
+                this.currentQuery = savedQuery;
+                this.previousGroupKey = this.currentQuery.groupKey || null;
+            }
+            
+            // Load saved column order from preferences if still empty
+            if (this.columnOrder.length === 0) this.loadColumnOrder();
         }
-        
-        // Load saved column order
-        this.loadColumnOrder();
         
         this.contentEl.empty();
         await this.render();
@@ -186,16 +194,20 @@ export class KanbanView extends ItemView {
         // FilterBar container
         const filterBarContainer = header.createDiv({ cls: 'kanban-view__filter-container' });
         
-        // Initialize with default query from FilterService
-        this.currentQuery = this.plugin.filterService.createDefaultQuery();
-        this.currentQuery.sortKey = 'priority';
-        this.currentQuery.sortDirection = 'desc';
-        this.currentQuery.groupKey = 'status';
-        
-        // Load saved filter state if it exists
-        const savedQuery = this.plugin.viewStateManager.getFilterState(KANBAN_VIEW_TYPE);
-        if (savedQuery) {
-            this.currentQuery = savedQuery;
+        // Only initialize with default query if we don't already have one loaded (e.g., from file)
+        if (!this.currentQuery || this.currentQuery.id.startsWith('temp')) {
+            this.currentQuery = this.plugin.filterService.createDefaultQuery();
+            this.currentQuery.sortKey = 'priority';
+            this.currentQuery.sortDirection = 'desc';
+            this.currentQuery.groupKey = 'status';
+            
+            // Load saved filter state if it exists (only for non-file views)
+            if (!this.file) {
+                const savedQuery = this.plugin.viewStateManager.getFilterState(KANBAN_VIEW_TYPE);
+                if (savedQuery) {
+                    this.currentQuery = savedQuery;
+                }
+            }
         }
         
         // Get filter options from FilterService
@@ -242,8 +254,41 @@ export class KanbanView extends ItemView {
         // Listen for filter changes
         this.filterBar.on('queryChange', async (newQuery: FilterQuery) => {
             this.currentQuery = newQuery;
-            // Save the filter state
-            await this.plugin.viewStateManager.setFilterState(KANBAN_VIEW_TYPE, newQuery);
+            // Persist the filter state - if this view is backed by a file, write to the file
+            if (this.file) {
+                try {
+                    // Read existing file content to preserve metadata
+                    const existing = await this.app.vault.read(this.file as TFile);
+                    let kanbanConfig: any = {};
+                    try {
+                        kanbanConfig = existing.trim() ? JSON.parse(existing) : {};
+                    } catch (_) {
+                        kanbanConfig = {};
+                    }
+                    
+                    // Update query and maintain structure
+                    kanbanConfig.query = newQuery;
+                    kanbanConfig.columnOrder = this.columnOrder;
+                    kanbanConfig.modified = new Date().toISOString();
+                    
+                    // Ensure required fields exist
+                    if (!kanbanConfig.id) {
+                        kanbanConfig.id = this.generateUniqueId();
+                    }
+                    if (!kanbanConfig.version) {
+                        kanbanConfig.version = '1.0';
+                    }
+                    if (!kanbanConfig.created) {
+                        kanbanConfig.created = new Date().toISOString();
+                    }
+                    
+                    await this.app.vault.modify(this.file as TFile, JSON.stringify(kanbanConfig, null, 2));
+                } catch (err) {
+                    console.warn('Failed to save kanban file state:', err);
+                }
+            } else {
+                await this.plugin.viewStateManager.setFilterState(KANBAN_VIEW_TYPE, newQuery);
+            }
             this.loadAndRenderBoard();
         });
 
@@ -454,22 +499,267 @@ export class KanbanView extends ItemView {
     private columnOrder: string[] = [];
 
     /**
+     * Generate a stable-ish unique id for ad-hoc views stored in files
+     */
+    private generateUniqueId(): string {
+        // Use timestamp + random + a counter fallback for higher uniqueness
+        const rand = Math.random().toString(36).slice(2, 10);
+        const time = Date.now().toString(36);
+        return `kanban-${time}-${rand}`;
+    }
+
+    /**
      * Load column order from view preferences
      */
     private loadColumnOrder(): void {
-        const preferences = this.plugin.viewStateManager.getViewPreferences<{ columnOrder?: string[] }>(KANBAN_VIEW_TYPE);
-        if (preferences?.columnOrder) {
-            this.columnOrder = [...preferences.columnOrder];
+        // Only load from viewStateManager for non-file views
+        if (!this.file) {
+            const preferences = this.plugin.viewStateManager.getViewPreferences<{ columnOrder?: string[] }>(KANBAN_VIEW_TYPE);
+            if (preferences?.columnOrder) {
+                this.columnOrder = [...preferences.columnOrder];
+            }
         }
+        // File-backed views should have already loaded columnOrder from file in onOpen()
     }
 
     /**
      * Save column order to view preferences
      */
     private saveColumnOrder(): void {
-        const preferences = this.plugin.viewStateManager.getViewPreferences<{ columnOrder?: string[] }>(KANBAN_VIEW_TYPE) || {};
-        preferences.columnOrder = [...this.columnOrder];
-        this.plugin.viewStateManager.setViewPreferences(KANBAN_VIEW_TYPE, preferences);
+        // Only save to viewStateManager for non-file views
+        if (!this.file) {
+            const preferences = this.plugin.viewStateManager.getViewPreferences<{ columnOrder?: string[] }>(KANBAN_VIEW_TYPE) || {};
+            preferences.columnOrder = [...this.columnOrder];
+            this.plugin.viewStateManager.setViewPreferences(KANBAN_VIEW_TYPE, preferences);
+        }
+        
+        // If this view is backed by a file, save to the file so the view is independent
+        if (this.file) {
+            // Use the same structure-preserving approach as queryChange handler
+            (async () => {
+                try {
+                    const existing = await this.app.vault.read(this.file as TFile);
+                    let kanbanConfig: any = {};
+                    try {
+                        kanbanConfig = existing.trim() ? JSON.parse(existing) : {};
+                    } catch (_) {
+                        kanbanConfig = {};
+                    }
+                    
+                    // Update columnOrder and maintain structure
+                    kanbanConfig.columnOrder = this.columnOrder;
+                    kanbanConfig.modified = new Date().toISOString();
+                    
+                    // Ensure required fields exist
+                    if (!kanbanConfig.query && this.currentQuery) {
+                        kanbanConfig.query = this.currentQuery;
+                    }
+                    if (!kanbanConfig.id) {
+                        kanbanConfig.id = this.generateUniqueId();
+                    }
+                    if (!kanbanConfig.version) {
+                        kanbanConfig.version = '1.0';
+                    }
+                    if (!kanbanConfig.created) {
+                        kanbanConfig.created = new Date().toISOString();
+                    }
+                    
+                    await this.app.vault.modify(this.file as TFile, JSON.stringify(kanbanConfig, null, 2));
+                } catch (err) {
+                    console.warn('Failed to persist column order to kanban file:', err);
+                }
+            })();
+        }
+    }
+
+    // --- TextFileView required methods ---
+    getViewData(): string {
+        // Return full FileKanbanConfig structure when backed by a file
+        if (this.file) {
+            const kanbanConfig = {
+                id: this.generateUniqueId(), // Generate if needed, but prefer existing
+                query: this.currentQuery,
+                columnOrder: this.columnOrder,
+                version: '1.0',
+                created: new Date().toISOString(),
+                modified: new Date().toISOString()
+            };
+            return JSON.stringify(kanbanConfig, null, 2);
+        } else {
+            // Minimal payload for non-file views
+            const payload = {
+                query: this.currentQuery,
+                columnOrder: this.columnOrder
+            };
+            return JSON.stringify(payload, null, 2);
+        }
+    }
+
+    setViewData(data: string, clear: boolean): void {
+        // This method is called by Obsidian's TextFileView system
+        // For file-backed views, the actual loading is handled by onLoadFile()
+        // This method primarily handles programmatic data setting
+        if (!data || clear) return;
+        
+        try {
+            const parsed = JSON.parse(data);
+            if (parsed.query) {
+                this.currentQuery = parsed.query as FilterQuery;
+                this.previousGroupKey = this.currentQuery.groupKey || null;
+                
+                // Update FilterBar if it exists
+                if (this.filterBar) {
+                    this.filterBar.updateQuery(this.currentQuery);
+                }
+            }
+            if (parsed.columnOrder && Array.isArray(parsed.columnOrder)) {
+                this.columnOrder = parsed.columnOrder;
+            }
+            
+            // Refresh the view to reflect the loaded data
+            if (this.filterBar) {
+                this.refresh();
+            }
+        } catch (err) {
+            console.warn('KanbanView: failed to set view data from file:', err);
+        }
+    }
+
+    clear(): void {
+        // When file is cleared, reset to defaults
+        this.currentQuery = this.plugin.filterService.createDefaultQuery();
+        this.currentQuery.id = this.generateUniqueId();
+        this.currentQuery.sortKey = 'priority';
+        this.currentQuery.sortDirection = 'desc';
+        this.currentQuery.groupKey = 'status';
+        this.columnOrder = [];
+        this.previousGroupKey = this.currentQuery.groupKey || null;
+        
+        // Update FilterBar if it exists
+        if (this.filterBar) {
+            this.filterBar.updateQuery(this.currentQuery);
+        }
+        
+        this.refresh();
+    }
+
+    async onLoadFile(file: TFile): Promise<void> {
+        // Called when a new file is loaded into this view
+        // Reset state and load from the new file
+        try {
+            const content = await this.app.vault.read(file);
+            if (content.trim()) {
+                const parsed = JSON.parse(content);
+                
+                // Load query from file
+                if (parsed.query) {
+                    this.currentQuery = parsed.query as FilterQuery;
+                    // Ensure unique ID for loaded query
+                    if (!this.currentQuery.id || this.currentQuery.id === 'default' || this.currentQuery.id.startsWith('temp')) {
+                        this.currentQuery.id = this.generateUniqueId();
+                    }
+                    this.previousGroupKey = this.currentQuery.groupKey || null;
+                } else {
+                    // No query in file, use defaults
+                    this.currentQuery = this.plugin.filterService.createDefaultQuery();
+                    this.currentQuery.id = this.generateUniqueId();
+                    this.currentQuery.sortKey = 'priority';
+                    this.currentQuery.sortDirection = 'desc';
+                    this.currentQuery.groupKey = 'status';
+                    this.previousGroupKey = this.currentQuery.groupKey || null;
+                }
+                
+                // Load column order from file
+                if (parsed.columnOrder && Array.isArray(parsed.columnOrder)) {
+                    this.columnOrder = [...parsed.columnOrder];
+                } else {
+                    this.columnOrder = [];
+                }
+            } else {
+                // Empty file, use defaults
+                this.currentQuery = this.plugin.filterService.createDefaultQuery();
+                this.currentQuery.id = this.generateUniqueId();
+                this.currentQuery.sortKey = 'priority';
+                this.currentQuery.sortDirection = 'desc';
+                this.currentQuery.groupKey = 'status';
+                this.columnOrder = [];
+                this.previousGroupKey = this.currentQuery.groupKey || null;
+            }
+            
+            // Update FilterBar if it exists
+            if (this.filterBar) {
+                this.filterBar.updateQuery(this.currentQuery);
+            }
+            
+            // Refresh the view with new data
+            this.refresh();
+            
+        } catch (err) {
+            console.warn('Failed to load kanban file data:', err);
+            // Fall back to defaults on parse error
+            this.currentQuery = this.plugin.filterService.createDefaultQuery();
+            this.currentQuery.id = this.generateUniqueId();
+            this.currentQuery.sortKey = 'priority';
+            this.currentQuery.sortDirection = 'desc';
+            this.currentQuery.groupKey = 'status';
+            this.columnOrder = [];
+            this.previousGroupKey = this.currentQuery.groupKey || null;
+            
+            if (this.filterBar) {
+                this.filterBar.updateQuery(this.currentQuery);
+            }
+            this.refresh();
+        }
+    }
+
+    async onUnloadFile(file: TFile): Promise<void> {
+        // Called when a file is being unloaded from this view
+        // Save current state to the file before unloading
+        if (this.currentQuery && this.currentQuery.id && !this.currentQuery.id.startsWith('temp')) {
+            try {
+                // Read existing content to preserve structure
+                const existing = await this.app.vault.read(file);
+                let kanbanConfig: any = {};
+                try {
+                    kanbanConfig = existing.trim() ? JSON.parse(existing) : {};
+                } catch (_) {
+                    kanbanConfig = {};
+                }
+                
+                // Update with current state
+                kanbanConfig.query = this.currentQuery;
+                kanbanConfig.columnOrder = this.columnOrder;
+                kanbanConfig.modified = new Date().toISOString();
+                
+                // Ensure required fields exist
+                if (!kanbanConfig.id) {
+                    kanbanConfig.id = this.currentQuery.id;
+                }
+                if (!kanbanConfig.version) {
+                    kanbanConfig.version = '1.0';
+                }
+                if (!kanbanConfig.created) {
+                    kanbanConfig.created = new Date().toISOString();
+                }
+                
+                await this.app.vault.modify(file, JSON.stringify(kanbanConfig, null, 2));
+            } catch (err) {
+                console.warn('Failed to save kanban file data on unload:', err);
+            }
+        }
+        
+        // Reset state to prevent contamination
+        this.currentQuery = {
+            type: 'group',
+            id: `temp-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+            conjunction: 'and',
+            children: [],
+            sortKey: 'priority',
+            sortDirection: 'desc',
+            groupKey: 'status'
+        };
+        this.columnOrder = [];
+        this.previousGroupKey = this.currentQuery.groupKey || null;
     }
 
     private async reorderColumns(sourceColumnId: string, targetColumnId: string) {

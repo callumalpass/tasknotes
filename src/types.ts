@@ -456,6 +456,17 @@ export interface KanbanBoardConfig {
 	columnOrder: string[];               // Order of column values
 }
 
+// File-based kanban board configuration (for .tnkanban files)
+export interface FileKanbanConfig {
+	id: string;                          // Unique board ID
+	name?: string;                       // Optional display name
+	query: FilterQuery;                  // Complete filter configuration
+	columnOrder: string[];               // Column order for the board
+	version: string;                     // Config version for migrations
+	created?: string;                    // ISO timestamp when created
+	modified?: string;                   // ISO timestamp when last modified
+}
+
 // UI state management for filter preferences
 export interface ViewFilterState {
 	[viewType: string]: FilterQuery;

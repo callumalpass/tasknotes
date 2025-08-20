@@ -22,7 +22,8 @@ import {
 	TaskInfo,
 	EVENT_DATE_SELECTED,
 	EVENT_DATA_CHANGED,
-	EVENT_TASK_UPDATED
+	EVENT_TASK_UPDATED,
+    FileKanbanConfig
 } from './types';
 import { MiniCalendarView } from './views/MiniCalendarView';
 import { AdvancedCalendarView } from './views/AdvancedCalendarView';
@@ -355,6 +356,8 @@ export default class TaskNotesPlugin extends Plugin {
 				KANBAN_VIEW_TYPE,
 				(leaf) => new KanbanView(leaf, this)
 			);
+
+            this.registerExtensions(["tnkanban"], KANBAN_VIEW_TYPE);
 			
 			// Register essential editor extensions (now safe after layout ready)
 			this.registerEditorExtension(createTaskLinkOverlay(this));
@@ -1039,6 +1042,14 @@ export default class TaskNotesPlugin extends Plugin {
 				await this.activateKanbanView();
 			}
 		});
+
+		this.addCommand({
+			id: 'create-new-kanban',
+			name: 'Create new kanban board file',
+			callback: async () => {
+				await this.createNewKanbanFile();
+			}
+		});
 		
 		this.addCommand({
 			id: 'open-pomodoro-stats',
@@ -1195,6 +1206,57 @@ export default class TaskNotesPlugin extends Plugin {
 	
 	async activateKanbanView() {
 		return this.activateView(KANBAN_VIEW_TYPE);
+	}
+
+	async createNewKanbanFile() {
+		try {
+			// Collect existing kanban ids to avoid collisions
+			const existingIds = new Set<string>();
+			const allFiles = this.app.vault.getFiles();
+			for (const f of allFiles) {
+				if (f.extension === 'tnkanban') {
+					try {
+						const raw = await this.app.vault.read(f);
+						const parsed = JSON.parse(raw);
+						if (parsed?.id) existingIds.add(parsed.id);
+					} catch (_) { /* ignore parse errors */ }
+				}
+			}
+			// Generate unique id with retry
+			let id: string;
+			let attempts = 0;
+			do {
+				const rand = Math.random().toString(36).slice(2, 10);
+				const time = Date.now().toString(36);
+				id = `kanban-${time}-${rand}`;
+				attempts++;
+			} while (existingIds.has(id) && attempts < 5);
+
+			const nowIso = new Date().toISOString();
+			const payload: FileKanbanConfig = {
+				id,
+				query: {
+					type: 'group',
+					id,
+					conjunction: 'and',
+					children: [],
+					sortKey: 'priority',
+					sortDirection: 'desc',
+					groupKey: 'status'
+				},
+				columnOrder: [],
+				version: '1.0',
+				created: nowIso,
+				modified: nowIso
+			};
+			const filename = `Kanban Board ${new Date().toISOString().slice(0,19).replace(/:/g,'-')}.tnkanban`;
+			const file = await this.app.vault.create(filename, JSON.stringify(payload, null, 2));
+			await this.app.workspace.getLeaf('tab').openFile(file);
+			new Notice(`Created new kanban board: ${file.basename}`);
+		} catch (err) {
+			console.error('Failed to create new kanban file:', err);
+			new Notice('Failed to create new kanban board');
+		}
 	}
 	
 
