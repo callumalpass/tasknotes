@@ -152,8 +152,9 @@ export class ICSSubscriptionService extends EventEmitter {
                     url: subscription.url,
                     method: 'GET',
                     headers: {
-                        'Accept': 'text/calendar,application/calendar+xml,text/plain',
-                        'User-Agent': 'TaskNotes-Plugin/1.0'
+                        'Accept': 'text/calendar,*/*;q=0.1',
+                        'Accept-Language': 'en-US,en;q=0.9',
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
                     }
                 });
 
@@ -199,6 +200,8 @@ export class ICSSubscriptionService extends EventEmitter {
             if (subscription.type === 'remote') {
                 if (errorMessage.includes('404')) {
                     new Notice(`Calendar "${subscription.name}" not found (404). Please check the ICS URL is correct and the calendar is publicly accessible.`);
+                } else if (errorMessage.includes('500') || errorMessage.includes('OwaBasicUnsupportedException')) {
+                    new Notice(`Calendar "${subscription.name}" access denied (500). This may be due to Microsoft Outlook server restrictions. Try regenerating the ICS URL from your calendar settings.`);
                 } else {
                     new Notice(`Failed to fetch remote calendar "${subscription.name}": ${errorMessage}`);
                 }
