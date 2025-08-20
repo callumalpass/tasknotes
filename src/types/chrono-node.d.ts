@@ -1,0 +1,2 @@
+declare module 'chrono-node';
+
