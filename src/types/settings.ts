@@ -1,5 +1,20 @@
 import { FieldMapping, StatusConfig, PriorityConfig, SavedView, WebhookConfig } from '../types';
 
+export interface UserFieldMapping {
+	enabled: boolean;
+	displayName: string;
+	key: string; // frontmatter key
+	type: 'text' | 'number' | 'date' | 'boolean' | 'list';
+}
+
+// New multi-field mapping for MVP
+export interface UserMappedField {
+	id: string; // stable id used in filters (e.g., 'effort')
+	displayName: string;
+	key: string; // frontmatter key
+	type: 'text' | 'number' | 'date' | 'boolean' | 'list';
+}
+
 export interface TaskNotesSettings {
 	tasksFolder: string;  // Now just a default location for new tasks
 	moveArchivedTasks: boolean; // Whether to move tasks to archive folder when archived
@@ -75,6 +90,10 @@ export interface TaskNotesSettings {
 	apiAuthToken: string;
 	// Webhook settings
 	webhooks: WebhookConfig[];
+	// User-defined field mappings (optional)
+	userFields?: UserMappedField[];
+	// Legacy single-field (for migration only)
+	userField?: UserFieldMapping;
 }
 
 export interface DefaultReminder {

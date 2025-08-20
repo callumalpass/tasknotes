@@ -1344,7 +1344,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 		const systemLine1 = systemDesc.createDiv();
 		systemLine1.createEl('strong', { text: 'System notifications:' });
 		systemLine1.appendText(' Use your operating system\'s native notification system. Requires permission and works even when Obsidian is minimized.');
-		
+
 		const systemLine2 = systemDesc.createDiv();
 		systemLine2.createEl('strong', { text: 'In-app notices:' });
 		systemLine2.appendText(' Show notifications as temporary popups within Obsidian only.');
@@ -1357,7 +1357,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 		// Show message on mobile
 		if (Platform.isMobile) {
 			const mobileMessage = container.createDiv({ cls: 'setting-item-description' });
-			const mobileContainer = mobileMessage.createDiv({ 
+			const mobileContainer = mobileMessage.createDiv({
 				attr: { style: 'text-align: center; padding: 2rem; color: var(--text-muted);' }
 			});
 			mobileContainer.createEl('h3', { text: 'HTTP API not available on mobile' });
@@ -1445,7 +1445,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 		// Available Endpoints
 		apiInfoEl.createEl('h4', { text: 'Available Endpoints:' });
 		const endpointsList = apiInfoEl.createEl('ul', { attr: { style: 'margin-left: 1rem;' } });
-		
+
 		const endpoints = [
 			{ method: 'GET', path: '/api/health', desc: 'Health check' },
 			{ method: 'GET', path: '/api/tasks', desc: 'List tasks with optional filters' },
@@ -1461,7 +1461,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 			{ method: 'GET', path: '/api/filter-options', desc: 'Available filters' },
 			{ method: 'GET', path: '/api/stats', desc: 'Task statistics' }
 		];
-		
+
 		endpoints.forEach(endpoint => {
 			const li = endpointsList.createEl('li');
 			li.createEl('code', { text: `${endpoint.method} ${endpoint.path}` });
@@ -1470,29 +1470,29 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 
 		// Usage Examples
 		apiInfoEl.createEl('h4', { text: 'Usage Examples:' });
-		
+
 		const basicP = apiInfoEl.createEl('p');
 		basicP.createEl('strong', { text: 'Basic request:' });
-		apiInfoEl.createEl('pre').createEl('code', { 
-			text: `curl http://localhost:${this.plugin.settings.apiPort}/api/tasks` 
+		apiInfoEl.createEl('pre').createEl('code', {
+			text: `curl http://localhost:${this.plugin.settings.apiPort}/api/tasks`
 		});
 
 		const authP = apiInfoEl.createEl('p');
 		authP.createEl('strong', { text: 'With authentication:' });
-		apiInfoEl.createEl('pre').createEl('code', { 
-			text: `curl -H "Authorization: Bearer YOUR_TOKEN" http://localhost:${this.plugin.settings.apiPort}/api/tasks` 
+		apiInfoEl.createEl('pre').createEl('code', {
+			text: `curl -H "Authorization: Bearer YOUR_TOKEN" http://localhost:${this.plugin.settings.apiPort}/api/tasks`
 		});
 
 		const createP = apiInfoEl.createEl('p');
 		createP.createEl('strong', { text: 'Create task:' });
-		apiInfoEl.createEl('pre').createEl('code', { 
-			text: `curl -X POST http://localhost:${this.plugin.settings.apiPort}/api/tasks \\\n  -H "Content-Type: application/json" \\\n  -d '{"title": "New task", "priority": "High"}'` 
+		apiInfoEl.createEl('pre').createEl('code', {
+			text: `curl -X POST http://localhost:${this.plugin.settings.apiPort}/api/tasks \\\n  -H "Content-Type: application/json" \\\n  -d '{"title": "New task", "priority": "High"}'`
 		});
 
 		const filterP = apiInfoEl.createEl('p');
 		filterP.createEl('strong', { text: 'Filter tasks:' });
-		apiInfoEl.createEl('pre').createEl('code', { 
-			text: `curl "http://localhost:${this.plugin.settings.apiPort}/api/tasks?status=open&priority=High"` 
+		apiInfoEl.createEl('pre').createEl('code', {
+			text: `curl "http://localhost:${this.plugin.settings.apiPort}/api/tasks?status=open&priority=High"`
 		});
 	}
 
@@ -1727,6 +1727,127 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 					await this.plugin.saveSettings();
 					this.renderActiveTab();
 				}));
+
+			// User Fields (optional) section
+			new Setting(container)
+				.setName('User Fields (optional)')
+				.setHeading();
+			container.createEl('p', {
+				text: 'Define one or more custom frontmatter properties to appear as type-aware filter options across views. Each row: Property Name, Display Name, Type.',
+				cls: 'settings-help-note'
+			});
+
+			// Ensure array exists; migrate legacy single field if present
+			if (!Array.isArray(this.plugin.settings.userFields)) {
+				this.plugin.settings.userFields = [];
+			}
+			if (this.plugin.settings.userField && this.plugin.settings.userField.enabled) {
+				const legacy = this.plugin.settings.userField;
+				const id = (legacy.displayName || legacy.key || 'field').toLowerCase().replace(/[^a-z0-9_\-]/g, '-');
+				if (!this.plugin.settings.userFields.find(f => (f.id === id) || (f.key === legacy.key))) {
+					this.plugin.settings.userFields.push({ id, displayName: legacy.displayName || '', key: legacy.key || '', type: legacy.type || 'text' });
+				}
+				// Keep legacy for now (migration step), but no longer render single-field UI
+			}
+
+			// Headers row
+			const headers = container.createDiv('settings-headers-row settings-view__list-headers');
+			headers.createEl('span', { text: 'Property Name', cls: 'settings-column-header settings-view__column-header' });
+			headers.createEl('span', { text: 'Display Name', cls: 'settings-column-header settings-view__column-header' });
+			headers.createEl('span', { text: 'Type', cls: 'settings-column-header settings-view__column-header' });
+			headers.createDiv('settings-header-spacer settings-view__header-spacer');
+
+			// Controls row (titled Setting with visible button)
+			new Setting(container)
+				.setName('Manage user fields')
+				.setDesc('Add or remove custom properties')
+				.addButton(btn => btn
+					.setButtonText('Add field')
+					.setCta()
+					.onClick(async () => {
+						const id = `fld_${Date.now()}`;
+						this.plugin.settings.userFields!.push({ id, key: '', displayName: '', type: 'text' });
+						await this.plugin.saveSettings();
+						renderUserFieldsList();
+					}));
+
+			// List container
+			const list = container.createDiv('settings-list settings-view__list');
+			const renderUserFieldsList = () => {
+				list.empty();
+				const fields = (this.plugin.settings.userFields || []);
+				if (fields.length === 0) {
+					const empty = list.createDiv('settings-empty-state');
+					empty.setText('No user fields yet — click Add field');
+					const actions = list.createDiv('settings-empty-actions');
+					new (window as any).obsidian.ButtonComponent(actions)
+						.setButtonText('Add field')
+						.setCta()
+						.onClick(async () => {
+							const id = `fld_${Date.now()}`;
+							this.plugin.settings.userFields!.push({ id, key: '', displayName: '', type: 'text' });
+							await this.plugin.saveSettings();
+							renderUserFieldsList();
+						});
+					return;
+				}
+				fields.forEach((field, index) => {
+					const row = list.createDiv('settings-item-row');
+
+					// Property Name (frontmatter key)
+					const keyCell = row.createDiv('settings-cell');
+					const keyInput = new (window as any).obsidian.TextComponent(keyCell)
+						.setPlaceholder('effort')
+						.setValue(field.key || '')
+						.onChange(async (value: string) => {
+							field.key = value.trim();
+							if (!field.id) field.id = (field.displayName || field.key || 'field').toLowerCase().replace(/[^a-z0-9_\-]/g, '-');
+							await this.plugin.saveSettings();
+						});
+					keyInput.inputEl.setAttribute('aria-label', 'Frontmatter property key');
+
+					// Display Name
+					const nameCell = row.createDiv('settings-cell');
+					const nameInput = new (window as any).obsidian.TextComponent(nameCell)
+						.setPlaceholder('Effort')
+						.setValue(field.displayName || '')
+						.onChange(async (value: string) => {
+							field.displayName = value;
+							if (!field.id) field.id = (field.displayName || field.key || 'field').toLowerCase().replace(/[^a-z0-9_\-]/g, '-');
+							await this.plugin.saveSettings();
+						});
+					nameInput.inputEl.setAttribute('aria-label', 'User Field display name');
+
+					// Type selector
+					const typeCell = row.createDiv('settings-cell');
+					const typeDropdown = new (window as any).obsidian.DropdownComponent(typeCell)
+						.addOption('text', 'Text')
+						.addOption('number', 'Number')
+						.addOption('date', 'Date')
+						.addOption('boolean', 'Boolean')
+						.addOption('list', 'List')
+						.setValue(field.type || 'text')
+						.onChange(async (value: string) => {
+							field.type = value as any;
+							await this.plugin.saveSettings();
+						});
+					typeDropdown.selectEl.setAttribute('aria-label', 'User Field type');
+
+					// Remove button
+					const actionsCell = row.createDiv('settings-cell actions');
+					new (window as any).obsidian.ButtonComponent(actionsCell)
+						.setButtonText('Remove')
+						.setWarning()
+						.onClick(async () => {
+							this.plugin.settings.userFields!.splice(index, 1);
+							await this.plugin.saveSettings();
+							renderUserFieldsList();
+						});
+				});
+			};
+
+			renderUserFieldsList();
+
 	}
 
 	private renderStatusesTab(): void {
@@ -3436,12 +3557,12 @@ class WebhookModal extends Modal {
 		const jsLi = helpList.createEl('li');
 		jsLi.createEl('strong', { text: '.js files:' });
 		jsLi.appendText(' Custom JavaScript transforms');
-		
+
 		const jsonLi = helpList.createEl('li');
 		jsonLi.createEl('strong', { text: '.json files:' });
 		jsonLi.appendText(' Templates with ');
 		jsonLi.createEl('code', { text: '${data.task.title}' });
-		
+
 		const emptyLi = helpList.createEl('li');
 		emptyLi.createEl('strong', { text: 'Leave empty:' });
 		emptyLi.appendText(' Send raw data');

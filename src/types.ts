@@ -73,7 +73,7 @@ export interface SavedView {
 }
 
 // Property and operator definitions for the advanced filtering system
-export type FilterProperty = 
+export type FilterProperty =
 	// Placeholder for "Select..." option
 	| ''
 	// Text properties
@@ -87,7 +87,9 @@ export type FilterProperty =
 	// Numeric properties
 	| 'timeEstimate'
 	// Special properties
-	| 'recurrence' | 'status.isCompleted';
+	| 'recurrence' | 'status.isCompleted'
+		// Dynamic user-mapped properties
+		| `user:${string}`;
 
 export type FilterOperator = 
 	// Basic comparison
@@ -193,6 +195,8 @@ export interface FilterOptions {
 	projects: readonly string[];
 	tags: readonly string[];
 	folders: readonly string[];
+	// Dynamic user-defined properties built from settings.userFields
+	userProperties?: readonly PropertyDefinition[];
 }
 
 // Time and date related types
