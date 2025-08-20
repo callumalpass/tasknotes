@@ -1430,9 +1430,8 @@ export class FilterService extends EventEmitter {
         baseQuery: FilterQuery,
         includeOverdue = false
     ): Promise<TaskInfo[]> {
-        // FIXED: Use UTC-aware date formatting to prevent timezone bugs
+        // FIXED: Use UTC Anchor principle for consistent date handling
         const dateStr = formatDateForStorage(date);
-        const normalizedDate = startOfDayForDateString(dateStr);
         const isViewingToday = isTodayUtil(dateStr);
         
         
@@ -1444,12 +1443,8 @@ export class FilterService extends EventEmitter {
         const tasksForDate = filteredTasks.filter(task => {
             // Handle recurring tasks
             if (task.recurrence) {
-                // Create UTC date for same calendar day to match recurring task calculations
-                const utcDateForRecurrence = new Date(Date.UTC(
-                    normalizedDate.getFullYear(),
-                    normalizedDate.getMonth(), 
-                    normalizedDate.getDate()
-                ));
+                // Use UTC Anchor principle: convert date string to UTC date for consistent recurring task evaluation
+                const utcDateForRecurrence = parseDateToUTC(dateStr);
                 return isDueByRRule(task, utcDateForRecurrence);
             }
             
