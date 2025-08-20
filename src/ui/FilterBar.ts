@@ -1,11 +1,11 @@
-import { App, ButtonComponent, debounce, DropdownComponent, Modal, TextComponent, setTooltip } from 'obsidian';
-import { FilterCondition, FilterGroup, FilterNode, FilterOptions, FilterOperator, FilterProperty, FilterQuery, FILTER_OPERATORS, FILTER_PROPERTIES, PropertyDefinition, SavedView, TaskGroupKey, TaskSortKey } from '../types';
+import { App, ButtonComponent, DropdownComponent, Modal, TextComponent, debounce, setTooltip } from 'obsidian';
+import { FILTER_OPERATORS, FILTER_PROPERTIES, FilterCondition, FilterGroup, FilterNode, FilterOperator, FilterOptions, FilterProperty, FilterQuery, PropertyDefinition, SavedView, TaskGroupKey, TaskSortKey } from '../types';
+
+import { DragDropHandler } from './DragDropHandler';
 import { EventEmitter } from '../utils/EventEmitter';
 import { FilterUtils } from '../utils/FilterUtils';
-import { showConfirmationModal } from '../modals/ConfirmationModal';
 import { isValidDateInput } from '../utils/dateUtils';
-import { DragDropHandler } from './DragDropHandler';
-
+import { showConfirmationModal } from '../modals/ConfirmationModal';
 
 class SaveViewModal extends Modal {
     private name: string;
@@ -89,6 +89,7 @@ export class FilterBar extends EventEmitter {
     };
 
     private enableGroupExpandCollapse = true;
+    private forceShowExpandCollapse = false;
 
     constructor(
         app: App,
@@ -96,7 +97,7 @@ export class FilterBar extends EventEmitter {
         initialQuery: FilterQuery,
         filterOptions: FilterOptions,
         viewsButtonAlignment: 'left' | 'right' = 'right',
-        options?: { enableGroupExpandCollapse?: boolean }
+        options?: { enableGroupExpandCollapse?: boolean; forceShowExpandCollapse?: boolean }
     ) {
         super();
         this.app = app;
@@ -105,6 +106,7 @@ export class FilterBar extends EventEmitter {
         this.filterOptions = filterOptions;
         this.viewsButtonAlignment = viewsButtonAlignment;
         this.enableGroupExpandCollapse = options?.enableGroupExpandCollapse ?? true;
+        this.forceShowExpandCollapse = options?.forceShowExpandCollapse ?? false;
 
         // Initialize drag and drop handler
         this.dragDropHandler = new DragDropHandler((fromIndex, toIndex) => {
@@ -173,10 +175,8 @@ export class FilterBar extends EventEmitter {
         this.currentQuery = FilterUtils.deepCloneFilterQuery(query);
         // Ensure the updated query has proper structure
         this.ensureValidFilterQuery();
-        // Clear active saved view when query is updated externally (unless loading a saved view)
-        if (!this.isLoadingSavedView && this.activeSavedView) {
-            this.clearActiveSavedView();
-        }
+        // Detect if the updated query matches any saved view
+        this.detectActiveSavedView();
         this.updateUI();
     }
 
@@ -298,6 +298,56 @@ export class FilterBar extends EventEmitter {
     updateSavedViews(views: readonly SavedView[]): void {
         this.savedViews = views;
         this.renderViewSelectorDropdown();
+        // Check if current query matches any saved view
+        this.detectActiveSavedView();
+    }
+
+    /**
+     * Detect if the current query matches any saved view and set activeSavedView accordingly
+     */
+    private detectActiveSavedView(): void {
+        if (this.isLoadingSavedView) return; // Don't interfere when explicitly loading a view
+
+        // Find a saved view that matches the current query
+        const matchingView = this.savedViews.find(view =>
+            this.queriesMatch(this.currentQuery, view.query)
+        );
+
+        if (matchingView && this.activeSavedView?.id !== matchingView.id) {
+            this.activeSavedView = matchingView;
+            this.updateViewSelectorButtonState();
+            // Emit event when active saved view changes
+            this.emit('activeSavedViewChanged', matchingView);
+        } else if (!matchingView && this.activeSavedView) {
+            this.activeSavedView = null;
+            this.updateViewSelectorButtonState();
+            // Emit event when active saved view is cleared
+            this.emit('activeSavedViewChanged', null);
+        }
+    }
+
+    /**
+     * Check if two queries are functionally equivalent
+     */
+    private queriesMatch(query1: FilterQuery, query2: FilterQuery): boolean {
+        // Deep comparison of filter queries (excluding sort/group which might differ)
+        const normalize = (query: FilterQuery) => {
+            const normalized = FilterUtils.deepCloneFilterQuery(query);
+            // Remove sort/group for comparison as they might be view-specific
+            delete (normalized as any).sortKey;
+            delete (normalized as any).sortDirection;
+            delete (normalized as any).groupKey;
+            return normalized;
+        };
+
+        try {
+            const norm1 = normalize(query1);
+            const norm2 = normalize(query2);
+            return JSON.stringify(norm1) === JSON.stringify(norm2);
+        } catch (error) {
+            console.warn('Error comparing queries:', error);
+            return false;
+        }
     }
 
     /**
@@ -397,7 +447,8 @@ export class FilterBar extends EventEmitter {
         // Create expand/collapse button functions
         const makeExpandCollapseButtons = () => {
             const isGrouped = (this.currentQuery.groupKey || 'none') !== 'none';
-            if (isGrouped && this.enableGroupExpandCollapse) {
+            const shouldShow = this.enableGroupExpandCollapse && (isGrouped || this.forceShowExpandCollapse);
+            if (shouldShow) {
                 // Expand button first (always to the left of collapse)
                 const expandAllBtn = new ButtonComponent(topControls)
                     .setIcon('list-tree')
@@ -1576,6 +1627,9 @@ export class FilterBar extends EventEmitter {
             this.emit('loadViewOptions', view.viewOptions);
         }
 
+        // Emit activeSavedViewChanged event
+        this.emit('activeSavedViewChanged', view);
+
         this.toggleViewSelectorDropdown();
         this.updateViewSelectorButtonState();
         this.isLoadingSavedView = false;
@@ -1629,7 +1683,7 @@ export class FilterBar extends EventEmitter {
     private updateExpandCollapseButtons(): void {
         try {
             const isGrouped = (this.currentQuery.groupKey || 'none') !== 'none';
-            const shouldShow = isGrouped && this.enableGroupExpandCollapse;
+            const shouldShow = this.enableGroupExpandCollapse && (isGrouped || this.forceShowExpandCollapse);
 
             // Find existing expand/collapse buttons
             const expandBtn = this.container.querySelector('.filter-bar__expand-groups') as HTMLElement;

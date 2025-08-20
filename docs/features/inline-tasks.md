@@ -152,6 +152,13 @@ When tasks are grouped by status, priority, or other criteria, each group displa
 
 ![Subtask widget collapsible groups](../assets/subtask-widget-collapsible-groups.gif)
 
+
+### Saved view heading and counts in Subtasks Widget
+
+The Project Subtasks widget shows the saved view name and completion counts just like the Task List heading.
+
+![Subtask widget saved view and counts](../assets/subtask_view_nam+count+task_count.png)
+
 ## Natural Language Processing
 
 TaskNotes includes a **Natural Language Processor (NLP)** that parses task descriptions written in English to extract structured data. This allows for task creation from conversational language, such as "Prepare quarterly report due Friday #work high priority," which would automatically set the due date, tag, and priority.

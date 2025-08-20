@@ -116,6 +116,9 @@
     outline: none;
     -webkit-user-modify: read-only;
     -moz-user-modify: read-only;
+
+    /* Better number formatting for completion stats */
+    font-variant-numeric: tabular-nums;
 }
 
 /* Use consistent button system */
@@ -223,7 +226,14 @@
     margin: 0;
     padding: 0.3em 0;
     border-bottom: 1px solid var(--background-modifier-border);
-    flex: 1;
+    display: flex;
+    align-items: center;
+}
+
+/* Count element within group titles and main title */
+.tasknotes-plugin .project-note-subtasks__group-title .agenda-view__item-count,
+.tasknotes-plugin .project-note-subtasks__title .agenda-view__item-count {
+    margin-left: 10px;
 }
 
 .tasknotes-plugin .project-note-subtasks__group {

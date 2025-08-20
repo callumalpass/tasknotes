@@ -6,6 +6,15 @@ The Agenda View displays a chronological list of tasks and notes, sorted by thei
 
 The Agenda View includes the same FilterBar functionality as the Task List View, allowing you to filter, sort, and save views of your tasks. See the [Task List View](task-list.md) documentation for complete FilterBar functionality details.
 
+
+### Saved view heading, counts, and collapsible groups
+
+- The Agenda heading shows the saved view name with a completion count (completed / total), consistent with the Task List.
+- Date groups are collapsible, with “Expand All” and “Collapse All” buttons always visible in the FilterBar top controls.
+- Collapsed state is remembered between sessions.
+
+![Agenda saved view and collapsible groups](../assets/agenda-collapsible-group-and-item-count.gif)
+
 ## Content Organization
 
 The Agenda View groups tasks and notes by time. The default groups are "Overdue," "Today," "Tomorrow," "This Week," "Next Week," and "Later." Within each group, items are sorted by priority.

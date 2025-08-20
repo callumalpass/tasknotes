@@ -1,23 +1,34 @@
-import { TFile, ItemView, WorkspaceLeaf, EventRef, Setting, Notice } from 'obsidian';
-import { format, addDays, startOfWeek, endOfWeek, isSameDay } from 'date-fns';
-import { formatDateForStorage, createUTCDateFromLocalCalendarDate, getTodayLocal, isTodayUTC, convertUTCToLocalCalendarDate } from '../utils/dateUtils';
-import TaskNotesPlugin from '../main';
-import { 
+import {
     AGENDA_VIEW_TYPE,
     EVENT_DATA_CHANGED,
     EVENT_DATE_SELECTED,
     EVENT_TASK_UPDATED,
-    TaskInfo, 
-    NoteInfo,
     FilterQuery,
-    SavedView
+    NoteInfo,
+    SavedView,
+    TaskInfo
 } from '../types';
-// No helper functions needed from helpers
-import { createTaskCard, updateTaskCard, refreshParentTaskSubtasks } from '../ui/TaskCard';
-import { createNoteCard } from '../ui/NoteCard';
+import { EventRef, ItemView, Notice, Setting, TFile, WorkspaceLeaf, setIcon } from 'obsidian';
+import { addDays, endOfWeek, format, isSameDay, startOfWeek } from 'date-fns';
+import { convertUTCToLocalCalendarDate, createUTCDateFromLocalCalendarDate, formatDateForStorage, getTodayLocal, isTodayUTC } from '../utils/dateUtils';
 import { createICSEventCard, updateICSEventCard } from '../ui/ICSCard';
+import { createTaskCard, refreshParentTaskSubtasks, updateTaskCard } from '../ui/TaskCard';
+
 import { FilterBar } from '../ui/FilterBar';
+import { FilterHeading } from '../ui/FilterHeading';
 import { FilterService } from '../services/FilterService';
+import { GroupCountUtils } from '../utils/GroupCountUtils';
+import TaskNotesPlugin from '../main';
+import { createNoteCard } from '../ui/NoteCard';
+
+// No helper functions needed from helpers
+
+
+
+
+
+
+
 
 export class AgendaView extends ItemView {
     plugin: TaskNotesPlugin;
@@ -32,6 +43,7 @@ export class AgendaView extends ItemView {
     
     // Filter system
     private filterBar: FilterBar | null = null;
+    private filterHeading: FilterHeading | null = null;
     private currentQuery: FilterQuery;
     
     // Event listeners
@@ -170,6 +182,12 @@ export class AgendaView extends ItemView {
             this.filterBar.destroy();
             this.filterBar = null;
         }
+
+        // Clean up FilterHeading
+        if (this.filterHeading) {
+            this.filterHeading.destroy();
+            this.filterHeading = null;
+        }
         
         // Clean up
         this.contentEl.empty();
@@ -306,9 +324,10 @@ export class AgendaView extends ItemView {
             filterBarContainer,
             this.currentQuery,
             filterOptions,
-            this.plugin.settings.viewsButtonAlignment || 'right'
+            this.plugin.settings.viewsButtonAlignment || 'right',
+            { enableGroupExpandCollapse: true, forceShowExpandCollapse: true }
         );
-        
+
         // Get saved views for the FilterBar
         const savedViews = this.plugin.viewStateManager.getSavedViews();
         this.filterBar.updateSavedViews(savedViews);
@@ -351,6 +370,53 @@ export class AgendaView extends ItemView {
             await this.plugin.viewStateManager.setFilterState(AGENDA_VIEW_TYPE, queryToSave);
             this.refresh();
         });
+
+        // Update heading immediately when a saved view is selected
+        this.filterBar.on('activeSavedViewChanged', () => {
+            this.updateFilterHeading();
+        });
+
+        // Wire expand/collapse all to day sections to match TaskListView behavior
+        this.filterBar.on('expandAllGroups', () => {
+            // Expand all visible day sections
+            const sections = this.contentEl.querySelectorAll('.agenda-view__day-section.task-group');
+            sections.forEach(section => {
+                const el = section as HTMLElement;
+                el.classList.remove('is-collapsed');
+                const items = el.querySelector('.agenda-view__day-items') as HTMLElement | null;
+                if (items) items.style.display = '';
+                const toggle = el.querySelector('.task-group-toggle') as HTMLElement | null;
+                if (toggle) toggle.setAttr('aria-expanded', 'true');
+            });
+            // Persist: clear collapsedDays
+            const prefs = this.plugin.viewStateManager.getViewPreferences<any>(AGENDA_VIEW_TYPE) || {};
+            const next = { ...prefs, collapsedDays: {} };
+            this.plugin.viewStateManager.setViewPreferences(AGENDA_VIEW_TYPE, next);
+        });
+        this.filterBar.on('collapseAllGroups', () => {
+            // Collapse all visible day sections
+            const collapsed: Record<string, boolean> = {};
+            const sections = this.contentEl.querySelectorAll('.agenda-view__day-section.task-group');
+            sections.forEach(section => {
+                const el = section as HTMLElement;
+                const dayKey = el.dataset.day;
+                if (dayKey) collapsed[dayKey] = true;
+                el.classList.add('is-collapsed');
+                const items = el.querySelector('.agenda-view__day-items') as HTMLElement | null;
+                if (items) items.style.display = 'none';
+                const toggle = el.querySelector('.task-group-toggle') as HTMLElement | null;
+                if (toggle) toggle.setAttr('aria-expanded', 'false');
+            });
+            // Persist: set all days collapsed
+            const prefs = this.plugin.viewStateManager.getViewPreferences<any>(AGENDA_VIEW_TYPE) || {};
+            const next = { ...prefs, collapsedDays: collapsed };
+            this.plugin.viewStateManager.setViewPreferences(AGENDA_VIEW_TYPE, next);
+        });
+
+        // Create filter heading (shows active view name and filtered completion count)
+        this.filterHeading = new FilterHeading(container);
+        // Initialize heading immediately
+        this.updateFilterHeading();
 
         // Set up view-specific options
         this.setupViewOptions();
@@ -564,69 +630,79 @@ export class AgendaView extends ItemView {
      * Render grouped agenda using DOMReconciler for efficient updates
      */
     private renderGroupedAgendaWithReconciler(container: HTMLElement, agendaData: Array<{date: Date, tasks: TaskInfo[], notes: NoteInfo[], ics: import('../types').ICSEvent[]}>) {
-        // Create flattened list of all items with their day grouping
-        const allItems: Array<{type: 'day-header' | 'task' | 'note' | 'ics', item: any, date: Date, dayKey: string}> = [];
-        
+        // Clear container and create day sections
+        container.empty();
+
         let hasAnyItems = false;
         agendaData.forEach(dayData => {
             const dateStr = formatDateForStorage(dayData.date);
-            
+
             // Tasks are already filtered by FilterService, no need to re-filter
             const hasItems = dayData.tasks.length > 0 || dayData.notes.length > 0 || (this.showICSEvents && dayData.ics.length > 0);
-            
+
             if (hasItems) {
                 hasAnyItems = true;
                 const dayKey = dateStr;
-                
-                // Add day header
-                allItems.push({
-                    type: 'day-header',
-                    item: dayData,
-                    date: dayData.date,
-                    dayKey
-                });
-                
-                // Add tasks (already filtered by FilterService)
+                const collapsedInitially = this.isDayCollapsed(dayKey);
+
+                // Create day section (like task groups)
+                const daySection = container.createDiv({ cls: 'agenda-view__day-section task-group' });
+                daySection.setAttribute('data-day', dayKey);
+
+                // Create day header
+                const dayHeader = this.createDayHeader(dayData, dayKey);
+                daySection.appendChild(dayHeader);
+
+                // Create items container
+                const itemsContainer = daySection.createDiv({ cls: 'agenda-view__day-items' });
+
+                // Apply initial collapsed state
+                if (collapsedInitially) {
+                    daySection.addClass('is-collapsed');
+                    itemsContainer.style.display = 'none';
+                }
+
+                // Add click handlers for collapse/expand
+                this.addDayHeaderClickHandlers(dayHeader, daySection, itemsContainer, dayKey);
+
+                // Collect items for this day
+                const dayItems: Array<{type: 'task' | 'note' | 'ics', item: any, date: Date}> = [];
+
+                // Add tasks
                 dayData.tasks.forEach(task => {
-                    allItems.push({
-                        type: 'task',
-                        item: task,
-                        date: dayData.date,
-                        dayKey
-                    });
+                    dayItems.push({ type: 'task', item: task, date: dayData.date });
                 });
-                
+
                 // Add notes
                 dayData.notes.forEach(note => {
-                    allItems.push({
-                        type: 'note',
-                        item: note,
-                        date: dayData.date,
-                        dayKey
-                    });
+                    dayItems.push({ type: 'note', item: note, date: dayData.date });
                 });
 
                 // Add ICS events
                 if (this.showICSEvents) {
                     dayData.ics.forEach(ics => {
-                        allItems.push({
-                            type: 'ics',
-                            item: ics,
-                            date: dayData.date,
-                            dayKey
-                        });
+                        dayItems.push({ type: 'ics', item: ics, date: dayData.date });
                     });
                 }
+
+                // Use DOMReconciler for this day's items
+                this.plugin.domReconciler.updateList(
+                    itemsContainer,
+                    dayItems,
+                    (item) => `${item.type}-${(item.item as any).path || (item.item as any).id || 'unknown'}`,
+                    (item) => this.createDayItemElement(item),
+                    (element, item) => this.updateDayItemElement(element, item)
+                );
             }
         });
-        
+
         if (!hasAnyItems) {
             container.empty();
             const emptyMessage = container.createDiv({ cls: 'agenda-view__empty' });
             new Setting(emptyMessage)
                 .setName('No items scheduled')
                 .setHeading();
-            emptyMessage.createEl('p', { 
+            emptyMessage.createEl('p', {
                 text: 'No items scheduled for this period.',
                 cls: 'agenda-view__empty-description'
             });
@@ -635,15 +711,6 @@ export class AgendaView extends ItemView {
             tipMessage.appendChild(document.createTextNode('Create tasks with due or scheduled dates, or add notes to see them here.'));
             return;
         }
-        
-        // Use DOMReconciler to update the list
-        this.plugin.domReconciler.updateList(
-            container,
-            allItems,
-            (item) => `${item.type}-${item.dayKey}-${item.type === 'day-header' ? item.dayKey : (item.item.path || (item.item as any).id || 'unknown')}`,
-            (item) => this.createAgendaItemElement(item),
-            (element, item) => this.updateAgendaItemElement(element, item)
-        );
     }
     
     /**
@@ -703,14 +770,33 @@ export class AgendaView extends ItemView {
     private createAgendaItemElement(item: {type: 'day-header' | 'task' | 'note' | 'ics', item: any, date: Date, dayKey: string}): HTMLElement {
         if (item.type === 'day-header') {
             const dayHeader = document.createElement('div');
-            dayHeader.className = 'agenda-view__day-header';
-            
+            dayHeader.className = 'agenda-view__day-header task-group-header';
+            dayHeader.setAttribute('data-day', item.dayKey);
+
+            // Create toggle button first (consistent with TaskList view)
+            const toggleBtn = dayHeader.createEl('button', {
+                cls: 'task-group-toggle',
+                attr: { 'aria-label': 'Toggle day' }
+            });
+            try {
+                setIcon(toggleBtn, 'chevron-right');
+            } catch (_) {}
+            const svg = toggleBtn.querySelector('svg');
+            if (svg) {
+                svg.classList.add('chevron');
+                svg.setAttr('width', '16');
+                svg.setAttr('height', '16');
+            } else {
+                toggleBtn.textContent = '▸';
+                toggleBtn.addClass('chevron-text');
+            }
+
             const headerText = dayHeader.createDiv({ cls: 'agenda-view__day-header-text' });
             // FIX: Convert UTC-anchored date to local calendar date for proper display formatting
             const displayDate = convertUTCToLocalCalendarDate(item.date);
             const dayName = format(displayDate, 'EEEE');
             const dateFormatted = format(displayDate, 'MMMM d');
-            
+
             if (isTodayUTC(item.date)) {
                 headerText.createSpan({ cls: 'agenda-view__day-name agenda-view__day-name--today', text: 'Today' });
                 headerText.createSpan({ cls: 'agenda-view__day-date', text: ` • ${dateFormatted}` });
@@ -718,11 +804,23 @@ export class AgendaView extends ItemView {
                 headerText.createSpan({ cls: 'agenda-view__day-name', text: dayName });
                 headerText.createSpan({ cls: 'agenda-view__day-date', text: ` • ${dateFormatted}` });
             }
-            
-            // Item count badge
-            const itemCount = item.item.tasks.length + item.item.notes.length + (item.item.ics?.length || 0);
-            dayHeader.createDiv({ cls: 'agenda-view__item-count', text: `${itemCount}` });
-            
+
+            // Item count badge - show completion count for tasks only
+            const tasks = item.item.tasks || [];
+            let countText: string;
+
+            if (tasks.length > 0) {
+                // Show completion count for tasks
+                const taskStats = GroupCountUtils.calculateGroupStats(tasks, this.plugin);
+                countText = GroupCountUtils.formatGroupCount(taskStats.completed, taskStats.total).text;
+            } else {
+                // Show total count for other items (notes + ICS events)
+                const itemCount = (item.item.notes?.length || 0) + (item.item.ics?.length || 0);
+                countText = `${itemCount}`;
+            }
+
+            dayHeader.createDiv({ cls: 'agenda-view__item-count', text: countText });
+
             return dayHeader;
         } else if (item.type === 'task') {
             return this.createTaskItemElement(item.item as TaskInfo, item.date);
@@ -739,11 +837,23 @@ export class AgendaView extends ItemView {
      */
     private updateAgendaItemElement(element: HTMLElement, item: {type: 'day-header' | 'task' | 'note' | 'ics', item: any, date: Date, dayKey: string}): void {
         if (item.type === 'day-header') {
-            // Update item count badge
+            // Update item count badge - show completion count for tasks only
             const countBadge = element.querySelector('.agenda-view__item-count');
             if (countBadge) {
-                const itemCount = item.item.tasks.length + item.item.notes.length + (item.item.ics?.length || 0);
-                countBadge.textContent = `${itemCount}`;
+                const tasks = item.item.tasks || [];
+                let countText: string;
+
+                if (tasks.length > 0) {
+                    // Show completion count for tasks
+                    const taskStats = GroupCountUtils.calculateGroupStats(tasks, this.plugin);
+                    countText = GroupCountUtils.formatGroupCount(taskStats.completed, taskStats.total).text;
+                } else {
+                    // Show total count for other items (notes + ICS events)
+                    const itemCount = (item.item.notes?.length || 0) + (item.item.ics?.length || 0);
+                    countText = `${itemCount}`;
+                }
+
+                countBadge.textContent = countText;
             }
         } else if (item.type === 'task') {
             updateTaskCard(element, item.item as TaskInfo, this.plugin, {
@@ -975,7 +1085,41 @@ export class AgendaView extends ItemView {
             indicator.remove();
         }
     }
-    
+
+    /**
+     * Update the filter heading with current saved view and completion count
+     */
+    private async updateFilterHeading(): Promise<void> {
+        if (!this.filterHeading || !this.filterBar) return;
+
+        try {
+            // Get all agenda data to calculate completion stats (same logic as renderAgendaContent)
+            const dates = this.getAgendaDates();
+            const allTasks: TaskInfo[] = [];
+
+            for (const date of dates) {
+                // Use FilterService's getTasksForDate which properly handles recurring tasks
+                const tasksForDate = await this.plugin.filterService.getTasksForDate(
+                    date,
+                    this.currentQuery,
+                    this.showOverdueOnToday
+                );
+                allTasks.push(...tasksForDate);
+            }
+
+            // Calculate completion stats
+            const stats = GroupCountUtils.calculateGroupStats(allTasks, this.plugin);
+
+            // Get current saved view from FilterBar
+            const activeSavedView = (this.filterBar as any).activeSavedView || null;
+
+            // Update the filter heading
+            this.filterHeading.update(activeSavedView, stats.completed, stats.total);
+        } catch (error) {
+            console.error('Error updating filter heading in AgendaView:', error);
+        }
+    }
+
     async refresh() {
         const container = this.contentEl.querySelector('.agenda-view') as HTMLElement;
         if (container) {
@@ -983,11 +1127,165 @@ export class AgendaView extends ItemView {
             this.setupViewOptions();
             // Use DOMReconciler for efficient updates
             await this.renderAgendaContent(container);
+            // Update filter heading with current data
+            this.updateFilterHeading();
         }
     }
     
     
     
+    /**
+     * Create day header element with chevron and click handlers
+     */
+    private createDayHeader(dayData: {date: Date, tasks: TaskInfo[], notes: NoteInfo[], ics: import('../types').ICSEvent[]}, dayKey: string): HTMLElement {
+        const dayHeader = document.createElement('div');
+        dayHeader.className = 'agenda-view__day-header task-group-header';
+        dayHeader.setAttribute('data-day', dayKey);
+
+        // Create toggle button first (consistent with TaskList view)
+        const toggleBtn = dayHeader.createEl('button', {
+            cls: 'task-group-toggle',
+            attr: { 'aria-label': 'Toggle day' }
+        });
+        try {
+            setIcon(toggleBtn, 'chevron-right');
+        } catch (_) {}
+        const svg = toggleBtn.querySelector('svg');
+        if (svg) {
+            svg.classList.add('chevron');
+            svg.setAttr('width', '16');
+            svg.setAttr('height', '16');
+        } else {
+            toggleBtn.textContent = '▸';
+            toggleBtn.addClass('chevron-text');
+        }
+
+        const headerText = dayHeader.createDiv({ cls: 'agenda-view__day-header-text' });
+        // FIX: Convert UTC-anchored date to local calendar date for proper display formatting
+        const displayDate = convertUTCToLocalCalendarDate(dayData.date);
+        const dayName = format(displayDate, 'EEEE');
+        const dateFormatted = format(displayDate, 'MMMM d');
+
+        if (isTodayUTC(dayData.date)) {
+            headerText.createSpan({ cls: 'agenda-view__day-name agenda-view__day-name--today', text: 'Today' });
+            headerText.createSpan({ cls: 'agenda-view__day-date', text: ` • ${dateFormatted}` });
+        } else {
+            headerText.createSpan({ cls: 'agenda-view__day-name', text: dayName });
+            headerText.createSpan({ cls: 'agenda-view__day-date', text: ` • ${dateFormatted}` });
+        }
+
+        // Item count badge - show completion count for tasks only
+        const tasks = dayData.tasks || [];
+        let countText: string;
+
+        if (tasks.length > 0) {
+            // Show completion count for tasks
+            const taskStats = GroupCountUtils.calculateGroupStats(tasks, this.plugin);
+            countText = GroupCountUtils.formatGroupCount(taskStats.completed, taskStats.total).text;
+        } else {
+            // Show total count for other items (notes + ICS events)
+            const itemCount = (dayData.notes?.length || 0) + (dayData.ics?.length || 0);
+            countText = `${itemCount}`;
+        }
+
+        dayHeader.createDiv({ cls: 'agenda-view__item-count', text: countText });
+
+        // Set initial ARIA state
+        const collapsedInitially = this.isDayCollapsed(dayKey);
+        toggleBtn.setAttr('aria-expanded', String(!collapsedInitially));
+
+        return dayHeader;
+    }
+
+    /**
+     * Add click handlers for day header collapse/expand
+     */
+    private addDayHeaderClickHandlers(dayHeader: HTMLElement, daySection: HTMLElement, itemsContainer: HTMLElement, dayKey: string): void {
+        const toggleBtn = dayHeader.querySelector('.task-group-toggle') as HTMLElement;
+
+        // Header click handler
+        this.registerDomEvent(dayHeader, 'click', (e: MouseEvent) => {
+            const target = e.target as HTMLElement;
+            if (target.closest('a')) return; // Ignore link clicks
+
+            const willCollapse = !daySection.hasClass('is-collapsed');
+            this.setDayCollapsed(dayKey, willCollapse);
+            daySection.toggleClass('is-collapsed', willCollapse);
+            itemsContainer.style.display = willCollapse ? 'none' : '';
+            if (toggleBtn) toggleBtn.setAttr('aria-expanded', String(!willCollapse));
+        });
+
+        // Toggle button click handler
+        if (toggleBtn) {
+            this.registerDomEvent(toggleBtn, 'click', (e: MouseEvent) => {
+                e.preventDefault();
+                e.stopPropagation();
+
+                const willCollapse = !daySection.hasClass('is-collapsed');
+                this.setDayCollapsed(dayKey, willCollapse);
+                daySection.toggleClass('is-collapsed', willCollapse);
+                itemsContainer.style.display = willCollapse ? 'none' : '';
+                toggleBtn.setAttr('aria-expanded', String(!willCollapse));
+            });
+        }
+    }
+
+    /**
+     * Create day item element (task, note, or ICS event)
+     */
+    private createDayItemElement(item: {type: 'task' | 'note' | 'ics', item: any, date: Date}): HTMLElement {
+        if (item.type === 'task') {
+            return this.createTaskItemElement(item.item as TaskInfo, item.date);
+        } else if (item.type === 'note') {
+            return this.createNoteItemElement(item.item as NoteInfo, item.date);
+        } else {
+            return this.createICSEventItemElement(item.item as import('../types').ICSEvent);
+        }
+    }
+
+    /**
+     * Update day item element
+     */
+    private updateDayItemElement(element: HTMLElement, item: {type: 'task' | 'note' | 'ics', item: any, date: Date}): void {
+        if (item.type === 'task') {
+            updateTaskCard(element, item.item as TaskInfo, this.plugin, {
+                showDueDate: !this.groupByDate,
+                showCheckbox: false,
+                showTimeTracking: true,
+                showRecurringControls: true,
+                groupByDate: this.groupByDate,
+                targetDate: item.date
+            });
+        } else if (item.type === 'ics') {
+            updateICSEventCard(element, item.item as import('../types').ICSEvent, this.plugin);
+        }
+        // Note updates are handled automatically by the note card structure
+    }
+
+    /**
+     * Check if a day is collapsed
+     */
+    private isDayCollapsed(dayKey: string): boolean {
+        try {
+            const prefs = this.plugin.viewStateManager.getViewPreferences<any>(AGENDA_VIEW_TYPE) || {};
+            const collapsed = prefs.collapsedDays || {};
+            return !!collapsed[dayKey];
+        } catch {
+            return false;
+        }
+    }
+
+    /**
+     * Set day collapsed state
+     */
+    private setDayCollapsed(dayKey: string, collapsed: boolean): void {
+        const prefs = this.plugin.viewStateManager.getViewPreferences<any>(AGENDA_VIEW_TYPE) || {};
+        const next = { ...prefs };
+        if (!next.collapsedDays) next.collapsedDays = {};
+        next.collapsedDays[dayKey] = collapsed;
+        this.plugin.viewStateManager.setViewPreferences(AGENDA_VIEW_TYPE, next);
+    }
+
     /**
      * Wait for cache to be ready with actual data
      */
@@ -996,7 +1294,7 @@ export class AgendaView extends ItemView {
         if (this.plugin.cacheManager.isInitialized()) {
             return;
         }
-        
+
         // If not initialized, wait for the cache-initialized event
         return new Promise((resolve) => {
             const unsubscribe = this.plugin.cacheManager.subscribe('cache-initialized', () => {

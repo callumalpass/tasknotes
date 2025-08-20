@@ -126,6 +126,11 @@
     cursor: pointer;
 }
 
+/* Count element within task list group headers */
+.tasknotes-plugin .task-list-view__group-header .agenda-view__item-count {
+    margin-left: 10px;
+}
+
 /* Chevron/toggle styles (match preview-all) */
 .tasknotes-plugin .task-group-header { cursor: pointer; }
 .task-group-header { display: flex; align-items: center; justify-content: flex-start; gap: var(--tn-spacing-xs); }
