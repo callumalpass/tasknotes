@@ -1750,104 +1750,141 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 				// Keep legacy for now (migration step), but no longer render single-field UI
 			}
 
-			// Headers row
-			const headers = container.createDiv('settings-headers-row settings-view__list-headers');
-			headers.createEl('span', { text: 'Property Name', cls: 'settings-column-header settings-view__column-header' });
-			headers.createEl('span', { text: 'Display Name', cls: 'settings-column-header settings-view__column-header' });
-			headers.createEl('span', { text: 'Type', cls: 'settings-column-header settings-view__column-header' });
-			headers.createDiv('settings-header-spacer settings-view__header-spacer');
+			// Column headers
+			const headersRow = container.createDiv('settings-headers-row settings-view__list-headers user-fields');
+			headersRow.createEl('span', { text: 'Property Name', cls: 'settings-column-header settings-view__column-header' });
+			headersRow.createEl('span', { text: 'Display Name', cls: 'settings-column-header settings-view__column-header' });
+			headersRow.createEl('span', { text: 'Type', cls: 'settings-column-header settings-view__column-header' });
+			headersRow.createDiv('settings-header-spacer settings-view__header-spacer'); // For delete button space
 
-			// Controls row (titled Setting with visible button)
+			// User fields list
+			const userFieldsList = container.createDiv('settings-list settings-view__list');
+			userFieldsList.addClass('user-fields');
+
+			this.renderUserFieldsList(userFieldsList);
+
+			// Add field button
 			new Setting(container)
-				.setName('Manage user fields')
-				.setDesc('Add or remove custom properties')
-				.addButton(btn => btn
+				.setName('Add new user field')
+				.setDesc('Create a new custom property for filtering')
+				.addButton(button => button
 					.setButtonText('Add field')
-					.setCta()
 					.onClick(async () => {
 						const id = `fld_${Date.now()}`;
 						this.plugin.settings.userFields!.push({ id, key: '', displayName: '', type: 'text' });
 						await this.plugin.saveSettings();
-						renderUserFieldsList();
+						this.renderActiveTab();
 					}));
 
-			// List container
-			const list = container.createDiv('settings-list settings-view__list');
-			const renderUserFieldsList = () => {
-				list.empty();
-				const fields = (this.plugin.settings.userFields || []);
-				if (fields.length === 0) {
-					const empty = list.createDiv('settings-empty-state');
-					empty.setText('No user fields yet — click Add field');
-					const actions = list.createDiv('settings-empty-actions');
-					new (window as any).obsidian.ButtonComponent(actions)
-						.setButtonText('Add field')
-						.setCta()
-						.onClick(async () => {
-							const id = `fld_${Date.now()}`;
-							this.plugin.settings.userFields!.push({ id, key: '', displayName: '', type: 'text' });
-							await this.plugin.saveSettings();
-							renderUserFieldsList();
-						});
-					return;
+
+	}
+
+	private renderUserFieldsList(container: HTMLElement): void {
+		container.empty();
+
+		const userFields = this.plugin.settings.userFields || [];
+
+		userFields.forEach((field, index) => {
+			const fieldRow = container.createDiv('settings-item-row settings-view__item-row user-fields');
+
+			// Property Name input
+			const keyInput = fieldRow.createEl('input', {
+				type: 'text',
+				value: field.key || '',
+				cls: 'settings-input key-input settings-view__input settings-view__input--value',
+				attr: {
+					'placeholder': 'effort',
+					'aria-label': `Property name for ${field.displayName || 'user field'}`,
+					'id': `user-field-key-${field.id}`
 				}
-				fields.forEach((field, index) => {
-					const row = list.createDiv('settings-item-row');
+			});
 
-					// Property Name (frontmatter key)
-					const keyCell = row.createDiv('settings-cell');
-					const keyInput = new (window as any).obsidian.TextComponent(keyCell)
-						.setPlaceholder('effort')
-						.setValue(field.key || '')
-						.onChange(async (value: string) => {
-							field.key = value.trim();
-							if (!field.id) field.id = (field.displayName || field.key || 'field').toLowerCase().replace(/[^a-z0-9_\-]/g, '-');
-							await this.plugin.saveSettings();
-						});
-					keyInput.inputEl.setAttribute('aria-label', 'Frontmatter property key');
+			// Display Name input
+			const nameInput = fieldRow.createEl('input', {
+				type: 'text',
+				value: field.displayName || '',
+				cls: 'settings-input name-input settings-view__input settings-view__input--label',
+				attr: {
+					'placeholder': 'Effort',
+					'aria-label': `Display name for ${field.displayName || 'user field'}`,
+					'id': `user-field-name-${field.id}`
+				}
+			});
 
-					// Display Name
-					const nameCell = row.createDiv('settings-cell');
-					const nameInput = new (window as any).obsidian.TextComponent(nameCell)
-						.setPlaceholder('Effort')
-						.setValue(field.displayName || '')
-						.onChange(async (value: string) => {
-							field.displayName = value;
-							if (!field.id) field.id = (field.displayName || field.key || 'field').toLowerCase().replace(/[^a-z0-9_\-]/g, '-');
-							await this.plugin.saveSettings();
-						});
-					nameInput.inputEl.setAttribute('aria-label', 'User Field display name');
+			// Type dropdown
+			const typeSelect = fieldRow.createEl('select', {
+				cls: 'settings-input type-select settings-view__input settings-view__input--select',
+				attr: {
+					'aria-label': `Type for ${field.displayName || 'user field'}`,
+					'id': `user-field-type-${field.id}`
+				}
+			});
 
-					// Type selector
-					const typeCell = row.createDiv('settings-cell');
-					const typeDropdown = new (window as any).obsidian.DropdownComponent(typeCell)
-						.addOption('text', 'Text')
-						.addOption('number', 'Number')
-						.addOption('date', 'Date')
-						.addOption('boolean', 'Boolean')
-						.addOption('list', 'List')
-						.setValue(field.type || 'text')
-						.onChange(async (value: string) => {
-							field.type = value as any;
-							await this.plugin.saveSettings();
-						});
-					typeDropdown.selectEl.setAttribute('aria-label', 'User Field type');
+			// Add type options
+			const typeOptions = [
+				{ value: 'text', label: 'Text' },
+				{ value: 'number', label: 'Number' },
+				{ value: 'date', label: 'Date' },
+				{ value: 'boolean', label: 'Boolean' },
+				{ value: 'list', label: 'List' }
+			];
 
-					// Remove button
-					const actionsCell = row.createDiv('settings-cell actions');
-					new (window as any).obsidian.ButtonComponent(actionsCell)
-						.setButtonText('Remove')
-						.setWarning()
-						.onClick(async () => {
-							this.plugin.settings.userFields!.splice(index, 1);
-							await this.plugin.saveSettings();
-							renderUserFieldsList();
-						});
+			typeOptions.forEach(option => {
+				const optionEl = typeSelect.createEl('option', {
+					value: option.value,
+					text: option.label
 				});
+				if (field.type === option.value) {
+					optionEl.selected = true;
+				}
+			});
+
+			// Delete button
+			const deleteButton = fieldRow.createEl('button', {
+				text: 'Delete',
+				cls: 'settings-delete-button settings-view__delete-button'
+			});
+
+			// Event listeners
+			const updateField = async () => {
+				try {
+					field.key = keyInput.value.trim();
+					field.displayName = nameInput.value;
+					field.type = typeSelect.value as any;
+					if (!field.id) {
+						field.id = (field.displayName || field.key || 'field').toLowerCase().replace(/[^a-z0-9_\-]/g, '-');
+					}
+					await this.plugin.saveSettings();
+				} catch (error) {
+					console.error('Error updating user field configuration:', error);
+					new Notice('Failed to update user field configuration. Please try again.');
+				}
 			};
 
-			renderUserFieldsList();
+			keyInput.addEventListener('change', updateField);
+			nameInput.addEventListener('change', updateField);
+			typeSelect.addEventListener('change', updateField);
 
+			deleteButton.addEventListener('click', async () => {
+				// Show confirmation dialog using Obsidian's Modal API
+				const confirmed = await showConfirmationModal(this.app, {
+					title: 'Delete User Field',
+					message: `Are you sure you want to delete the user field "${field.displayName || field.key}"?\n\nThis action cannot be undone and may affect existing filters.`,
+					confirmText: 'Delete',
+					cancelText: 'Cancel',
+					isDestructive: true
+				});
+
+				if (confirmed) {
+					const fieldIndex = this.plugin.settings.userFields!.findIndex(f => f.id === field.id);
+					if (fieldIndex !== -1) {
+						this.plugin.settings.userFields!.splice(fieldIndex, 1);
+						await this.plugin.saveSettings();
+						this.renderActiveTab();
+					}
+				}
+			});
+		});
 	}
 
 	private renderStatusesTab(): void {
