@@ -91,7 +91,7 @@ export type FilterProperty =
 		// Dynamic user-mapped properties
 		| `user:${string}`;
 
-export type FilterOperator = 
+export type FilterOperator =
 	// Basic comparison
 	| 'is' | 'is-not'
 	// Text operators
@@ -103,7 +103,7 @@ export type FilterOperator =
 	// Boolean operators
 	| 'is-checked' | 'is-not-checked'
 	// Numeric operators
-	| 'is-greater-than' | 'is-less-than';
+	| 'is-greater-than' | 'is-less-than' | 'is-greater-than-or-equal' | 'is-less-than-or-equal';
 
 // Property metadata for UI generation
 export interface PropertyDefinition {
@@ -138,7 +138,7 @@ export const FILTER_PROPERTIES: PropertyDefinition[] = [
 	{ id: 'archived', label: 'Archived', category: 'boolean', supportedOperators: ['is-checked', 'is-not-checked'], valueInputType: 'none' },
 	
 	// Numeric properties
-	{ id: 'timeEstimate', label: 'Time Estimate', category: 'numeric', supportedOperators: ['is', 'is-not', 'is-greater-than', 'is-less-than'], valueInputType: 'number' },
+	{ id: 'timeEstimate', label: 'Time Estimate', category: 'numeric', supportedOperators: ['is', 'is-not', 'is-greater-than', 'is-less-than', 'is-greater-than-or-equal', 'is-less-than-or-equal'], valueInputType: 'number' },
 	
 	// Special properties
 	{ id: 'recurrence', label: 'Recurrence', category: 'special', supportedOperators: ['is-empty', 'is-not-empty'], valueInputType: 'none' },
@@ -167,7 +167,9 @@ export const FILTER_OPERATORS: OperatorDefinition[] = [
 	{ id: 'is-checked', label: 'is checked', requiresValue: false },
 	{ id: 'is-not-checked', label: 'is not checked', requiresValue: false },
 	{ id: 'is-greater-than', label: 'is greater than', requiresValue: true },
-	{ id: 'is-less-than', label: 'is less than', requiresValue: true }
+	{ id: 'is-less-than', label: 'is less than', requiresValue: true },
+	{ id: 'is-greater-than-or-equal', label: 'is equal or greater than', requiresValue: true },
+	{ id: 'is-less-than-or-equal', label: 'is equal or less than', requiresValue: true }
 ];
 
 export interface FilterBarConfig {

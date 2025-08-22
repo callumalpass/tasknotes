@@ -1773,6 +1773,18 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 						const id = `fld_${Date.now()}`;
 						this.plugin.settings.userFields!.push({ id, key: '', displayName: '', type: 'text' });
 						await this.plugin.saveSettings();
+						// Immediately refresh FilterBar options in open views
+						this.plugin.filterService?.refreshFilterOptions();
+						const refreshed = await this.plugin.filterService.getFilterOptions();
+						const viewTypes = ['tasknotes-task-list-view','tasknotes-agenda-view','tasknotes-kanban-view','tasknotes-advanced-calendar-view'];
+						for (const t of viewTypes) {
+							for (const leaf of this.app.workspace.getLeavesOfType(t)) {
+								const v: any = (leaf as any).view;
+								if (v?.filterBar?.updateFilterOptions) {
+									v.filterBar.updateFilterOptions(refreshed);
+								}
+							}
+						}
 						this.renderActiveTab();
 					}));
 
@@ -1865,6 +1877,24 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 			nameInput.addEventListener('change', updateField);
 			typeSelect.addEventListener('change', updateField);
 
+			// Also refresh FilterBar options when a user field row is updated
+			const refreshFilterBarOptions = async () => {
+				this.plugin.filterService?.refreshFilterOptions();
+				const refreshed = await this.plugin.filterService.getFilterOptions();
+				const viewTypes = ['tasknotes-task-list-view','tasknotes-agenda-view','tasknotes-kanban-view','tasknotes-advanced-calendar-view'];
+				for (const t of viewTypes) {
+					for (const leaf of this.app.workspace.getLeavesOfType(t)) {
+						const v: any = (leaf as any).view;
+						if (v?.filterBar?.updateFilterOptions) {
+							v.filterBar.updateFilterOptions(refreshed);
+						}
+					}
+				}
+			};
+			keyInput.addEventListener('change', refreshFilterBarOptions);
+			nameInput.addEventListener('change', refreshFilterBarOptions);
+			typeSelect.addEventListener('change', refreshFilterBarOptions);
+
 			deleteButton.addEventListener('click', async () => {
 				// Show confirmation dialog using Obsidian's Modal API
 				const confirmed = await showConfirmationModal(this.app, {
@@ -1880,6 +1910,18 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 					if (fieldIndex !== -1) {
 						this.plugin.settings.userFields!.splice(fieldIndex, 1);
 						await this.plugin.saveSettings();
+						// Immediately refresh FilterBar options in open views
+						this.plugin.filterService?.refreshFilterOptions();
+						const refreshed = await this.plugin.filterService.getFilterOptions();
+						const viewTypes = ['tasknotes-task-list-view','tasknotes-agenda-view','tasknotes-kanban-view','tasknotes-advanced-calendar-view'];
+						for (const t of viewTypes) {
+							for (const leaf of this.app.workspace.getLeavesOfType(t)) {
+								const v: any = (leaf as any).view;
+								if (v?.filterBar?.updateFilterOptions) {
+									v.filterBar.updateFilterOptions(refreshed);
+								}
+							}
+						}
 						this.renderActiveTab();
 					}
 				}
