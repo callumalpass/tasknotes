@@ -1277,16 +1277,29 @@ export class FilterBar extends EventEmitter {
         const groupContainer = controls.createDiv('filter-bar__group-container');
         groupContainer.createSpan({ text: 'Group by:', cls: 'filter-bar__label' });
 
+        // Build group dropdown options, including dynamic user fields
+        const builtInGroupOptions: Record<string, string> = {
+            'none': 'None',
+            'status': 'Status',
+            'priority': 'Priority',
+            'context': 'Context',
+            'project': 'Project',
+            'due': 'Due Date',
+            'scheduled': 'Scheduled Date'
+        };
+
+        const options: Record<string, string> = { ...builtInGroupOptions };
+        const userProps = this.filterOptions.userProperties || [];
+        for (const p of userProps) {
+            if (!p?.id || !p?.label) continue;
+            // Only add if it is a user property id pattern
+            if (typeof p.id === 'string' && p.id.startsWith('user:')) {
+                options[p.id] = p.label;
+            }
+        }
+
         const groupDropdown = new DropdownComponent(groupContainer)
-            .addOptions({
-                'none': 'None',
-                'status': 'Status',
-                'priority': 'Priority',
-                'context': 'Context',
-                'project': 'Project',
-                'due': 'Due Date',
-                'scheduled': 'Scheduled Date'
-            })
+            .addOptions(options)
             .setValue(this.currentQuery.groupKey || 'none')
             .onChange((value: TaskGroupKey) => {
                 this.currentQuery.groupKey = value;

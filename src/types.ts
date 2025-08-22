@@ -31,7 +31,7 @@ export type CalendarDisplayMode = 'month' | 'agenda';
 
 // Task sorting and grouping types
 export type TaskSortKey = 'due' | 'scheduled' | 'priority' | 'title' | 'dateCreated';
-export type TaskGroupKey = 'none' | 'priority' | 'context' | 'project' | 'due' | 'scheduled' | 'status';
+export type TaskGroupKey = 'none' | 'priority' | 'context' | 'project' | 'due' | 'scheduled' | 'status' | `user:${string}`;
 export type SortDirection = 'asc' | 'desc';
 
 
