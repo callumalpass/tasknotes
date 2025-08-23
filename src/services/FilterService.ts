@@ -43,6 +43,8 @@ export class FilterService extends EventEmitter {
     private filterOptionsComputeCount = 0;
     private filterOptionsCacheHits = 0;
 
+        private currentSortKey?: TaskSortKey;
+        private currentSortDirection?: SortDirection;
     constructor(
         cacheManager: MinimalNativeCache,
         statusManager: StatusManager,
@@ -74,10 +76,14 @@ export class FilterService extends EventEmitter {
             // Apply full filter query to the reduced candidate set
             const filteredTasks = candidateTasks.filter(task => this.evaluateFilterNode(query, task, targetDate));
 
-            // Sort the filtered results
+            // Sort the filtered results (flat sort)
             const sortedTasks = this.sortTasks(filteredTasks, query.sortKey || 'due', query.sortDirection || 'asc');
 
-            // Group the sorted results
+            // Expose current sort to group ordering logic (used when groupKey === sortKey)
+            this.currentSortKey = (query.sortKey || 'due');
+            this.currentSortDirection = (query.sortDirection || 'asc');
+
+            // Group the results; group order handled inside sortGroups
             return this.groupTasks(sortedTasks, query.groupKey || 'none', targetDate);
         } catch (error) {
             if (error instanceof FilterValidationError || error instanceof FilterEvaluationError) {
@@ -792,21 +798,25 @@ export class FilterService extends EventEmitter {
             let comparison = 0;
 
             // Primary sort criteria
-            switch (sortKey) {
-                case 'due':
-                    comparison = this.compareDates(a.due, b.due);
-                    break;
-                case 'scheduled':
-                    comparison = this.compareDates(a.scheduled, b.scheduled);
-                    break;
-                case 'priority':
-                    comparison = this.comparePriorities(a.priority, b.priority);
-                    break;
-                case 'title':
-                    comparison = a.title.localeCompare(b.title);
-                    break;
-                case 'dateCreated':
-                    comparison = this.compareDates(a.dateCreated, b.dateCreated);
+            if (typeof sortKey === 'string' && sortKey.startsWith('user:')) {
+                comparison = this.compareByUserField(a, b, sortKey as `user:${string}`);
+            } else {
+                switch (sortKey) {
+                    case 'due':
+                        comparison = this.compareDates(a.due, b.due);
+                        break;
+                    case 'scheduled':
+                        comparison = this.compareDates(a.scheduled, b.scheduled);
+                        break;
+                    case 'priority':
+                        comparison = this.comparePriorities(a.priority, b.priority);
+                        break;
+                    case 'title':
+                        comparison = a.title.localeCompare(b.title);
+                        break;
+                    case 'dateCreated':
+                        comparison = this.compareDates(a.dateCreated, b.dateCreated);
+                }
             }
 
             // If primary criteria are equal, apply fallback sorting
@@ -893,6 +903,96 @@ export class FilterService extends EventEmitter {
         return 0;
     }
 
+
+    /** Compare by dynamic user field for sorting */
+    private compareByUserField(a: TaskInfo, b: TaskInfo, sortKey: `user:${string}`): number {
+        const fieldId = sortKey.slice(5);
+        const userFields = this.plugin?.settings?.userFields || [];
+        const field = userFields.find((f: any) => (f.id || f.key) === fieldId);
+        if (!field) return 0;
+
+        const getRaw = (t: TaskInfo) => {
+            try {
+                const app = this.cacheManager.getApp();
+                const file = app.vault.getAbstractFileByPath(t.path);
+                const fm = file ? app.metadataCache.getFileCache(file as any)?.frontmatter : undefined;
+                return fm ? fm[field.key] : undefined;
+            } catch {
+                return undefined;
+            }
+        };
+
+        const rawA = getRaw(a);
+        const rawB = getRaw(b);
+
+        switch (field.type) {
+            case 'number': {
+                const numA = typeof rawA === 'number' ? rawA : (rawA != null ? parseFloat(String(rawA)) : NaN);
+                const numB = typeof rawB === 'number' ? rawB : (rawB != null ? parseFloat(String(rawB)) : NaN);
+                const isNumA = !isNaN(numA);
+                const isNumB = !isNaN(numB);
+                if (isNumA && isNumB) return numA - numB;
+                if (isNumA && !isNumB) return -1;
+                if (!isNumA && isNumB) return 1;
+                return 0;
+            }
+            case 'boolean': {
+                const toBool = (v: any): boolean | undefined => {
+                    if (typeof v === 'boolean') return v;
+                    if (v == null) return undefined;
+                    const s = String(v).trim().toLowerCase();
+                    if (s === 'true') return true;
+                    if (s === 'false') return false;
+                    return undefined;
+                };
+                const bA = toBool(rawA);
+                const bB = toBool(rawB);
+                if (bA === bB) return 0;
+                if (bA === true) return -1;
+                if (bB === true) return 1;
+                if (bA === false) return -1;
+                if (bB === false) return 1;
+                return 0;
+            }
+            case 'date': {
+                const tA = rawA ? Date.parse(String(rawA)) : NaN;
+                const tB = rawB ? Date.parse(String(rawB)) : NaN;
+                const isValidA = !isNaN(tA);
+                const isValidB = !isNaN(tB);
+                if (isValidA && isValidB) return tA - tB;
+                if (isValidA && !isValidB) return -1;
+                if (!isValidA && isValidB) return 1;
+                return 0;
+            }
+            case 'list': {
+                const toFirst = (v: any): string | undefined => {
+                    if (Array.isArray(v)) {
+                        const tokens = this.normalizeUserListValue(v);
+                        return tokens[0];
+                    }
+                    if (typeof v === 'string') {
+                        if (v.trim().length === 0) return '';
+                        const tokens = this.normalizeUserListValue(v);
+                        return tokens[0];
+                    }
+                    return undefined;
+                };
+                const sA = toFirst(rawA);
+                const sB = toFirst(rawB);
+                if ((sA == null || sA === '') && (sB == null || sB === '')) return 0;
+                if (sA == null || sA === '') return 1; // empty/missing last
+                if (sB == null || sB === '') return -1;
+                return sA.localeCompare(sB);
+            }
+            case 'text':
+            default: {
+                const sA = rawA != null ? String(rawA) : '';
+                const sB = rawB != null ? String(rawB) : '';
+                return sA.localeCompare(sB);
+            }
+        }
+    }
+
     /**
      * Group sorted tasks by specified criteria
      */
@@ -934,7 +1034,7 @@ export class FilterService extends EventEmitter {
                     switch (groupKey) {
                         case 'status':
                             groupValue = task.status || 'no-status';
-                            break;
+
                         case 'priority':
                             groupValue = task.priority || 'unknown';
                             break;
@@ -964,6 +1064,7 @@ export class FilterService extends EventEmitter {
 
         return this.sortGroups(groups, groupKey);
     }
+
 
 
     /**
@@ -1223,6 +1324,10 @@ export class FilterService extends EventEmitter {
         // Handle dynamic user field sorting
         if (typeof groupKey === 'string' && groupKey.startsWith('user:')) {
             sortedKeys = this.sortUserFieldGroups(Array.from(groups.keys()), groupKey);
+            // If the sort key matches the group key, apply sort direction for group headers
+            if (this.currentSortKey === groupKey && this.currentSortDirection === 'desc') {
+                sortedKeys.reverse();
+            }
         } else {
             switch (groupKey) {
                 case 'priority':

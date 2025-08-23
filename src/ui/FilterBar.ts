@@ -1255,21 +1255,32 @@ export class FilterBar extends EventEmitter {
             .onClick(() => {
                 this.currentQuery.sortDirection = this.currentQuery.sortDirection === 'asc' ? 'desc' : 'asc';
                 this.updateSortDirectionButton();
-                this.emitQueryChange();
+                this.emitImmediateQueryChange();
             });
 
+        // Build sort dropdown options, including dynamic user fields
+        const builtInSortOptions: Record<string, string> = {
+            'due': 'Due Date',
+            'scheduled': 'Scheduled Date',
+            'priority': 'Priority',
+            'title': 'Title',
+            'dateCreated': 'Created Date'
+        };
+        const sortOptions: Record<string, string> = { ...builtInSortOptions };
+        const sortUserProps = this.filterOptions.userProperties || [];
+        for (const p of sortUserProps) {
+            if (!p?.id || !p?.label) continue;
+            if (typeof p.id === 'string' && p.id.startsWith('user:')) {
+                sortOptions[p.id] = `${p.label}`;
+            }
+        }
+
         const sortDropdown = new DropdownComponent(sortContainer)
-            .addOptions({
-                'due': 'Due Date',
-                'scheduled': 'Scheduled Date',
-                'priority': 'Priority',
-                'title': 'Title',
-                'dateCreated': 'Created Date'
-            })
+            .addOptions(sortOptions)
             .setValue(this.currentQuery.sortKey || 'due')
             .onChange((value: TaskSortKey) => {
                 this.currentQuery.sortKey = value;
-                this.emitQueryChange();
+                this.emitImmediateQueryChange();
             });
         setTooltip(sortDropdown.selectEl, 'Choose how to sort tasks', { placement: 'top' });
 
@@ -1825,6 +1836,18 @@ export class FilterBar extends EventEmitter {
         this.updateFilterToggleBadge();
         this.emitQueryChangeIfComplete();
     }
+
+	    /** Emit immediately regardless of filter completeness (for sort/group changes) */
+	    private emitImmediateQueryChange(): void {
+	        // Clear active saved view when user manually modifies filters (except during saved view loading)
+	        if (!this.isLoadingSavedView && this.activeSavedView) {
+	            this.clearActiveSavedView();
+	            this.updateFilterBuilder();
+	        }
+	        this.updateFilterToggleBadge();
+	        this.emit('queryChange', FilterUtils.deepCloneFilterQuery(this.currentQuery));
+	    }
+
 
     /**
      * Check if the current query is complete and meaningful, then emit if so
