@@ -106,6 +106,7 @@ Available sort criteria:
 - `scheduled` - Scheduled date
 - `priority` - Priority level (by weight)
 - `title` - Alphabetical
+- User fields (from Settings → Advanced → User Fields), shown by their Display Name
 
 When primary sort criteria are equal, tasks are sorted by: scheduled → due → priority → title
 
@@ -117,6 +118,8 @@ Available grouping options:
 - `priority` - By priority level
 - `context` - By first context
 - `project` - By project (tasks can appear in multiple groups)
+
+Note: When Group by equals the Sort user field, group headers follow the selected sort direction.
 
 ### Project Group Headers
 

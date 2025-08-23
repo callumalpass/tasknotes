@@ -64,7 +64,7 @@ This allows filtering like "Priority greater than 1" to match "2-Medium" and "3-
 
 ### Instant Availability
 
-User fields become available in filter dropdowns immediately after configuration - no plugin reload required. The fields appear in all TaskNotes views (Task List, Agenda, Kanban, Advanced Calendar) as soon as you save the settings.
+User fields become available in filter, sorting, and grouping menus immediately after configuration—no plugin reload required. The fields appear in all TaskNotes views (Task List, Agenda, Kanban, Advanced Calendar) as soon as you save the settings.
 
 ### Technical Implementation
 
