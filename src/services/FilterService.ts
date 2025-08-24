@@ -708,37 +708,21 @@ export class FilterService extends EventEmitter {
             
             // Parse the wikilink manually since Obsidian's parseLinktext seems unreliable
             let linkPath = linkContent;
-            let linkAlias = '';
             
             const pipeIndex = linkContent.indexOf('|');
             if (pipeIndex !== -1) {
                 linkPath = linkContent.substring(0, pipeIndex).trim();
-                linkAlias = linkContent.substring(pipeIndex + 1).trim();
-            }
-            
-            // DEBUG: Detailed logging
-            if (typeof window !== 'undefined' && window.console) {
-                console.log(`[DEBUG] Wikilink: "${projectValue}"`);
-                console.log(`[DEBUG] linkContent: "${linkContent}"`);
-                console.log(`[DEBUG] manual parse - path: "${linkPath}", alias: "${linkAlias}"`);
             }
             
             // Always try to resolve using Obsidian's API - this handles relative paths correctly
             const resolvedFile = this.plugin.app.metadataCache.getFirstLinkpathDest(linkPath, '');
             if (resolvedFile) {
-                if (typeof window !== 'undefined' && window.console) {
-                    console.log(`[DEBUG] File resolved: "${resolvedFile.path}"`);
-                }
                 // Return the absolute file path (vault-relative) without .md extension
                 return resolvedFile.path.replace(/\.md$/, '');
             }
             
             // If file doesn't exist, clean up the link path (ignore alias part)
-            const result = linkPath.replace(/\.md$/, '');
-            if (typeof window !== 'undefined' && window.console) {
-                console.log(`[DEBUG] File not found, using linkPath: "${result}"`);
-            }
-            return result;
+            return linkPath.replace(/\.md$/, '');
         }
 
         // Handle pipe syntax like "../projects/Genealogy|Genealogy" - extract path part
@@ -1115,10 +1099,6 @@ export class FilterService extends EventEmitter {
                     // Add task to each project group, using absolute path for consistent grouping
                     for (const project of filteredProjects) {
                         const absolutePath = this.resolveProjectToAbsolutePath(project);
-                        // TODO: Remove this debug logging
-                        if (typeof window !== 'undefined' && window.console) {
-                            console.log(`[Project Grouping] Task "${task.title}": "${project}" → "${absolutePath}"`);
-                        }
                         if (!groups.has(absolutePath)) {
                             groups.set(absolutePath, []);
                         }
