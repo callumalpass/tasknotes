@@ -951,7 +951,11 @@ export class KanbanView extends ItemView {
             case 'context':
                 return id === 'uncategorized' ? 'Uncategorized' : `@${id}`;
             case 'project':
-                return id === 'No Project' ? 'No Project' : `+${id}`;
+                if (id === 'No Project') {
+                    return 'No Project';
+                }
+                // Clean project display - just show the project name without + prefix or wikilink formatting
+                return id;
             case 'due':
                 return id;
             case 'none':

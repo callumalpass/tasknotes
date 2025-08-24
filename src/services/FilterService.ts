@@ -690,6 +690,50 @@ export class FilterService extends EventEmitter {
     }
 
     /**
+     * Consolidate project names that point to the same file.
+     * Returns a canonical project name that represents all variations.
+     */
+    private consolidateProjectName(projectValue: string): string {
+        if (!projectValue || typeof projectValue !== 'string') {
+            return projectValue;
+        }
+
+        // For wikilink format, try to resolve to actual file
+        if (projectValue.startsWith('[[') && projectValue.endsWith(']]')) {
+            const linkPath = this.extractWikilinkPath(projectValue);
+            if (linkPath && this.plugin?.app) {
+                const resolvedFile = this.plugin.app.metadataCache.getFirstLinkpathDest(linkPath, '');
+                if (resolvedFile) {
+                    // Return the file basename as the canonical name
+                    return resolvedFile.basename;
+                }
+                
+                // If file doesn't exist, extract clean name from path
+                const cleanName = this.extractProjectName(projectValue);
+                if (cleanName) {
+                    return cleanName;
+                }
+            }
+        }
+
+        // Handle pipe syntax like "../projects/Genealogy|Genealogy"
+        if (projectValue.includes('|')) {
+            const parts = projectValue.split('|');
+            // Return the display name (after the pipe)
+            return parts[parts.length - 1] || projectValue;
+        }
+
+        // Handle path-like strings (extract final segment)
+        if (projectValue.includes('/')) {
+            const parts = projectValue.split('/');
+            return parts[parts.length - 1] || projectValue;
+        }
+
+        // For plain text projects, return as-is
+        return projectValue;
+    }
+
+    /**
      * Get task paths within a date range
      */
     private async getTaskPathsInDateRange(startDate: string, endDate: string): Promise<Set<string>> {
@@ -1008,12 +1052,13 @@ export class FilterService extends EventEmitter {
             if (groupKey === 'project') {
                 const filteredProjects = filterEmptyProjects(task.projects || []);
                 if (filteredProjects.length > 0) {
-                    // Add task to each project group
+                    // Add task to each project group, consolidating names that point to same file
                     for (const project of filteredProjects) {
-                        if (!groups.has(project)) {
-                            groups.set(project, []);
+                        const consolidatedProject = this.consolidateProjectName(project);
+                        if (!groups.has(consolidatedProject)) {
+                            groups.set(consolidatedProject, []);
                         }
-                        groups.get(project)!.push(task);
+                        groups.get(consolidatedProject)!.push(task);
                     }
                 } else {
                     // Task has no projects - add to "No Project" group
