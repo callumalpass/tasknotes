@@ -220,5 +220,7 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	apiPort: 8080,
 	apiAuthToken: '',
 	// Webhook defaults
-	webhooks: []
+	webhooks: [],
+	// User Fields defaults (multiple)
+	userFields: []
 };

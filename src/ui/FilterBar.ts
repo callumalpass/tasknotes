@@ -913,8 +913,9 @@ export class FilterBar extends EventEmitter {
         // Property dropdown
         const propertyOptions = Object.fromEntries([
             ['', 'Select...'], // Placeholder option
-            ...FILTER_PROPERTIES.map(p => [p.id, p.label])
-        ]);
+            ...FILTER_PROPERTIES.map(p => [p.id, p.label]),
+            ...(this.filterOptions.userProperties?.map(p => [p.id, p.label]) || [])
+        ] as [string, string][]);
         const propertyDropdown = new DropdownComponent(conditionContainer)
             .addOptions(propertyOptions)
             .setValue(condition.property);
@@ -972,7 +973,7 @@ export class FilterBar extends EventEmitter {
     private updateOperatorOptions(dropdown: DropdownComponent, property: FilterProperty): void {
         dropdown.selectEl.empty();
 
-        const propertyDef = FILTER_PROPERTIES.find(p => p.id === property);
+        const propertyDef = FILTER_PROPERTIES.find(p => p.id === property) || this.filterOptions.userProperties?.find(p => p.id === property);
         if (!propertyDef) return;
 
         propertyDef.supportedOperators.forEach(operatorId => {
@@ -989,7 +990,7 @@ export class FilterBar extends EventEmitter {
     private renderValueInput(container: HTMLElement, condition: FilterCondition): void {
         container.empty();
 
-        const propertyDef = FILTER_PROPERTIES.find(p => p.id === condition.property);
+        const propertyDef = FILTER_PROPERTIES.find(p => p.id === condition.property) || this.filterOptions.userProperties?.find(p => p.id === condition.property);
         const operatorDef = FILTER_OPERATORS.find(op => op.id === condition.operator);
 
         if (!propertyDef || !operatorDef || !operatorDef.requiresValue) {
@@ -1291,8 +1292,9 @@ export class FilterBar extends EventEmitter {
                 this.currentQuery.groupKey = value;
                 // Update expand/collapse buttons visibility immediately
                 this.updateExpandCollapseButtons();
-                // Re-render controls to show/hide group actions when grouping changes
-                this.updateUI();
+                // Update only display section and badge to avoid destroying DOM (keeps toggle element stable for tests)
+                this.updateDisplaySection();
+                this.updateFilterToggleBadge();
                 this.emitQueryChange();
             });
         setTooltip(groupDropdown.selectEl, 'Group tasks by a common property', { placement: 'top' });

@@ -144,34 +144,46 @@ export class FilterUtils {
      * Get valid operators for a property
      */
     private static getValidOperatorsForProperty(property: FilterProperty): FilterOperator[] {
+        // Dynamic user-mapped properties: allow full operator set; UI constrains per-field type
+        if (typeof property === 'string' && property.startsWith('user:')) {
+            return [
+                'is','is-not',
+                'contains','does-not-contain',
+                'is-before','is-after','is-on-or-before','is-on-or-after',
+                'is-empty','is-not-empty',
+                'is-checked','is-not-checked',
+                'is-greater-than','is-less-than','is-greater-than-or-equal','is-less-than-or-equal'
+            ];
+        }
+
         const operatorMap: Record<FilterProperty, FilterOperator[]> = {
             // Placeholder property (no valid operators)
             '': [],
-            
+
             // Text properties
             'title': ['is', 'is-not', 'contains', 'does-not-contain', 'is-empty', 'is-not-empty'],
             'path': ['contains', 'does-not-contain', 'is-empty', 'is-not-empty'],
-            
+
             // Select properties
             'status': ['is', 'is-not', 'is-empty', 'is-not-empty'],
             'priority': ['is', 'is-not', 'is-empty', 'is-not-empty'],
             'tags': ['contains', 'does-not-contain', 'is-empty', 'is-not-empty'],
             'contexts': ['contains', 'does-not-contain', 'is-empty', 'is-not-empty'],
             'projects': ['contains', 'does-not-contain', 'is-empty', 'is-not-empty'],
-            
+
             // Date properties
             'due': ['is', 'is-not', 'is-before', 'is-after', 'is-on-or-before', 'is-on-or-after', 'is-empty', 'is-not-empty'],
             'scheduled': ['is', 'is-not', 'is-before', 'is-after', 'is-on-or-before', 'is-on-or-after', 'is-empty', 'is-not-empty'],
             'completedDate': ['is', 'is-not', 'is-before', 'is-after', 'is-on-or-before', 'is-on-or-after', 'is-empty', 'is-not-empty'],
             'file.ctime': ['is', 'is-not', 'is-before', 'is-after', 'is-on-or-before', 'is-on-or-after', 'is-empty', 'is-not-empty'],
             'file.mtime': ['is', 'is-not', 'is-before', 'is-after', 'is-on-or-before', 'is-on-or-after', 'is-empty', 'is-not-empty'],
-            
+
             // Boolean properties
             'archived': ['is-checked', 'is-not-checked'],
-            
+
             // Numeric properties
-            'timeEstimate': ['is', 'is-not', 'is-greater-than', 'is-less-than'],
-            
+            'timeEstimate': ['is', 'is-not', 'is-greater-than', 'is-less-than', 'is-greater-than-or-equal', 'is-less-than-or-equal'],
+
             // Special properties
             'recurrence': ['is-empty', 'is-not-empty'],
             'status.isCompleted': ['is-checked', 'is-not-checked']
@@ -285,6 +297,10 @@ export class FilterUtils {
                     return this.isGreaterThan(taskValue, conditionValue);
                 case 'is-less-than':
                     return this.isLessThan(taskValue, conditionValue);
+                case 'is-greater-than-or-equal':
+                    return this.isGreaterThanOrEqual(taskValue, conditionValue);
+                case 'is-less-than-or-equal':
+                    return this.isLessThanOrEqual(taskValue, conditionValue);
                 default:
                     throw new FilterEvaluationError(`Unknown operator: ${operator}`, nodeId);
             }
@@ -334,22 +350,25 @@ export class FilterUtils {
      */
     private static contains(taskValue: TaskPropertyValue, conditionValue: TaskPropertyValue): boolean {
         if (Array.isArray(taskValue)) {
+            // Array contains should be substring-based on each item when condition is string
             if (Array.isArray(conditionValue)) {
-                // Both arrays: check if any condition value is contained in task values
-                return conditionValue.some(cv => taskValue.includes(cv));
+                // Any condition token partially matches any haystack token
+                return conditionValue.some(cv =>
+                    taskValue.some(tv => typeof tv === 'string' && typeof cv === 'string' && tv.toLowerCase().includes(cv.toLowerCase()))
+                );
             } else {
-                // Task has array, condition is single value
-                return taskValue.includes(conditionValue as string);
+                const cond = typeof conditionValue === 'string' ? conditionValue.toLowerCase() : String(conditionValue ?? '').toLowerCase();
+                return taskValue.some(tv => typeof tv === 'string' && tv.toLowerCase().includes(cond));
             }
         } else if (typeof taskValue === 'string') {
             if (Array.isArray(conditionValue)) {
                 // Task has string, condition is array
-                return conditionValue.some(cv => 
+                return conditionValue.some(cv =>
                     typeof cv === 'string' && taskValue.toLowerCase().includes(cv.toLowerCase())
                 );
             } else {
                 // Both strings
-                return typeof conditionValue === 'string' && 
+                return typeof conditionValue === 'string' &&
                        taskValue.toLowerCase().includes(conditionValue.toLowerCase());
             }
         }
@@ -469,5 +488,25 @@ export class FilterUtils {
         const conditionNum = typeof conditionValue === 'number' ? conditionValue : parseFloat(conditionValue as string);
         if (isNaN(taskNum) || isNaN(conditionNum)) return false;
         return taskNum < conditionNum;
+    }
+
+    /**
+     * Numeric comparison: is task value greater than or equal to condition value
+     */
+    private static isGreaterThanOrEqual(taskValue: TaskPropertyValue, conditionValue: TaskPropertyValue): boolean {
+        const taskNum = typeof taskValue === 'number' ? taskValue : parseFloat(taskValue as string);
+        const conditionNum = typeof conditionValue === 'number' ? conditionValue : parseFloat(conditionValue as string);
+        if (isNaN(taskNum) || isNaN(conditionNum)) return false;
+        return taskNum >= conditionNum;
+    }
+
+    /**
+     * Numeric comparison: is task value less than or equal to condition value
+     */
+    private static isLessThanOrEqual(taskValue: TaskPropertyValue, conditionValue: TaskPropertyValue): boolean {
+        const taskNum = typeof taskValue === 'number' ? taskValue : parseFloat(taskValue as string);
+        const conditionNum = typeof conditionValue === 'number' ? conditionValue : parseFloat(conditionValue as string);
+        if (isNaN(taskNum) || isNaN(conditionNum)) return false;
+        return taskNum <= conditionNum;
     }
 }

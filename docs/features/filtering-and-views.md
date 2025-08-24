@@ -117,6 +117,17 @@ Natural language dates are resolved dynamically when filters are evaluated, maki
 
 - `timeEstimate` - Time estimate in minutes
 
+### User-Defined Properties
+
+TaskNotes supports custom user fields that you define in **Settings → Advanced → User Fields**. These fields appear as filter options based on their configured type:
+
+- **Text fields**: Filter by string content with text operators
+- **Number fields**: Filter by numeric values with comparison operators
+- **Date fields**: Filter by dates with date operators and natural language support
+- **Boolean fields**: Filter by true/false values with checkbox operators
+- **List fields**: Filter comma-separated values with intelligent splitting that preserves wikilinks and quoted text
+
+
 ### Special Properties
 
 - `recurrence` - Recurrence pattern (checks if pattern exists)
@@ -134,6 +145,8 @@ Natural language dates are resolved dynamically when filters are evaluated, maki
 - `is-not` - Exact inequality
 - `is-greater-than` - Numeric greater than
 - `is-less-than` - Numeric less than
+- `is-greater-than-or-equal` - Numeric greater than or equal (≥)
+- `is-less-than-or-equal` - Numeric less than or equal (≤)
 
 ### Date Operators
 
@@ -338,5 +351,28 @@ Filter tasks by their location in your vault:
 - Operator: `is-empty` (shows tasks with no folder path)
 
 The path dropdown automatically populates with all unique folder paths found in your vault, making it easy to select existing locations.
+
+### Custom User Field Examples
+
+**Filtering by Effort Level (Number field):**
+- Property: `Effort Level` (user field)
+- Operator: `is greater than or equal`
+- Value: `3`
+
+This filters tasks where effort is 3 or higher, useful for finding substantial work items.
+
+**Filtering by Team Members (List field):**
+- Property: `Assigned To` (user field)
+- Operator: `contains`
+- Value: `John Smith`
+
+This finds tasks assigned to John Smith, even when multiple people are assigned.
+
+**Mixed Priority Filtering (Number field with text):**
+- Property: `Priority Level` (user field)
+- Operator: `is greater than`
+- Value: `1`
+
+With values like "1-Low", "2-Medium", "3-High", if the custom property is defined as "Number" in the plugin settings, this shows Medium and High priority tasks by evaluating the numeric prefix.
 
 This filtering system provides the flexibility to create simple quick filters or complex multi-criteria queries while maintaining good performance and user experience.

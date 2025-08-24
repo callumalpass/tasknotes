@@ -7,11 +7,12 @@ import { EventEmitter } from '../utils/EventEmitter';
 import { FilterUtils, FilterValidationError, FilterEvaluationError, TaskPropertyValue } from '../utils/FilterUtils';
 import { isDueByRRule, filterEmptyProjects, getEffectiveTaskStatus } from '../utils/helpers';
 import { format } from 'date-fns';
-import { 
-    getTodayString, 
-    isBeforeDateSafe, 
-    isSameDateSafe, 
-    startOfDayForDateString, 
+import { splitListPreservingLinksAndQuotes } from '../utils/stringSplit';
+import {
+    getTodayString,
+    isBeforeDateSafe,
+    isSameDateSafe,
+    startOfDayForDateString,
     isToday as isTodayUtil,
     isBeforeDateTimeAware,
     isOverdueTimeAware,
@@ -29,12 +30,12 @@ export class FilterService extends EventEmitter {
     private cacheManager: MinimalNativeCache;
     private statusManager: StatusManager;
     private priorityManager: PriorityManager;
-    
+
     // Query result caching for repeated filter operations
     private indexQueryCache = new Map<string, Set<string>>();
     private cacheTimeout = 30000; // 30 seconds
     private cacheTimers = new Map<string, ReturnType<typeof setTimeout>>();
-    
+
     // Filter options caching for better performance
     private filterOptionsCache: FilterOptions | null = null;
     private filterOptionsCacheTimestamp = 0;
@@ -63,19 +64,19 @@ export class FilterService extends EventEmitter {
         try {
             // Use non-strict validation to allow incomplete filters during building
             FilterUtils.validateFilterNode(query, false);
-            
+
             // PHASE 1 OPTIMIZATION: Use query-first approach with index-backed filtering
             let candidateTaskPaths = this.getIndexOptimizedTaskPaths(query);
-            
+
             // Convert paths to TaskInfo objects (only for candidates)
             const candidateTasks = await this.pathsToTaskInfos(Array.from(candidateTaskPaths));
-            
+
             // Apply full filter query to the reduced candidate set
             const filteredTasks = candidateTasks.filter(task => this.evaluateFilterNode(query, task, targetDate));
-            
+
             // Sort the filtered results
             const sortedTasks = this.sortTasks(filteredTasks, query.sortKey || 'due', query.sortDirection || 'asc');
-            
+
             // Group the sorted results
             return this.groupTasks(sortedTasks, query.groupKey || 'none', targetDate);
         } catch (error) {
@@ -97,29 +98,29 @@ export class FilterService extends EventEmitter {
     private getIndexOptimizedTaskPaths(query: FilterQuery): Set<string> {
         // Analyze if optimization is safe for this query structure
         const optimizationAnalysis = this.analyzeQueryOptimizationSafety(query);
-        
+
         if (!optimizationAnalysis.canOptimize) {
             // Optimization not safe - return all task paths to ensure correctness
             return this.cacheManager.getAllTaskPaths();
         }
-        
+
         // Safe to optimize - apply the optimization strategy
         if (optimizationAnalysis.strategy === 'intersect') {
             // All indexable conditions are in AND relationship - intersect them
             let candidatePaths = this.getPathsForIndexableCondition(optimizationAnalysis.conditions[0]);
-            
+
             for (let i = 1; i < optimizationAnalysis.conditions.length; i++) {
                 const conditionPaths = this.getPathsForIndexableCondition(optimizationAnalysis.conditions[i]);
                 candidatePaths = this.intersectPathSets(candidatePaths, conditionPaths);
             }
-            
+
             return candidatePaths;
         } else if (optimizationAnalysis.strategy === 'single') {
             // Single indexable condition that's safe to use
             const candidatePaths = this.getPathsForIndexableCondition(optimizationAnalysis.conditions[0]);
             return candidatePaths;
         }
-        
+
         // Fallback to all tasks
         return this.cacheManager.getAllTaskPaths();
     }
@@ -135,15 +136,15 @@ export class FilterService extends EventEmitter {
     } {
         // Find all indexable conditions in the query
         const indexableConditions = this.findIndexableConditions(query);
-        
+
         if (indexableConditions.length === 0) {
-            return { 
-                canOptimize: false, 
-                conditions: [], 
-                reason: 'No indexable conditions found' 
+            return {
+                canOptimize: false,
+                conditions: [],
+                reason: 'No indexable conditions found'
             };
         }
-        
+
         // For simple queries (single condition or only AND at root level), optimization is safe
         if (this.isSimpleQuery(query, indexableConditions)) {
             return {
@@ -152,11 +153,11 @@ export class FilterService extends EventEmitter {
                 conditions: indexableConditions
             };
         }
-        
+
         // For complex queries with OR conditions involving indexable conditions,
         // we need to be very careful. Conservative approach: don't optimize.
-        return { 
-            canOptimize: false, 
+        return {
+            canOptimize: false,
             conditions: indexableConditions,
             reason: 'Complex query structure with OR conditions - optimization not safe'
         };
@@ -171,30 +172,30 @@ export class FilterService extends EventEmitter {
         if (indexableConditions.length === 0) {
             return false;
         }
-        
+
         // CRITICAL: Check if any indexable condition is part of an OR group
         // This would make pre-filtering unsafe as it could exclude valid results
         if (this.hasIndexableConditionInOrGroup(query, indexableConditions)) {
             return false;
         }
-        
+
         // If only one indexable condition AND it's not in an OR group, safe to optimize
         if (indexableConditions.length === 1) {
             return true;
         }
-        
+
         // Check if all indexable conditions are at the root level and root is AND
         if (query.type === 'group' && query.conjunction === 'and') {
-            const rootIndexableConditions = query.children.filter(child => 
+            const rootIndexableConditions = query.children.filter(child =>
                 child.type === 'condition' && this.isIndexableCondition(child)
             );
-            
+
             // If all indexable conditions are at root level in an AND group, safe to intersect
             if (rootIndexableConditions.length === indexableConditions.length) {
                 return true;
             }
         }
-        
+
         // Any other structure is potentially unsafe
         return false;
     }
@@ -214,18 +215,18 @@ export class FilterService extends EventEmitter {
         if (node.type === 'condition') {
             return false; // Conditions themselves can't contain OR
         }
-        
+
         if (node.type === 'group') {
             // If this group is OR and contains any indexable conditions, optimization is unsafe
             if (node.conjunction === 'or') {
-                const hasIndexableChild = node.children.some(child => 
+                const hasIndexableChild = node.children.some(child =>
                     child.type === 'condition' && indexableConditions.includes(child)
                 );
                 if (hasIndexableChild) {
                     return true;
                 }
             }
-            
+
             // Recursively check child groups
             for (const child of node.children) {
                 if (this.checkNodeForOrWithIndexable(child, indexableConditions)) {
@@ -233,7 +234,7 @@ export class FilterService extends EventEmitter {
                 }
             }
         }
-        
+
         return false;
     }
 
@@ -242,7 +243,7 @@ export class FilterService extends EventEmitter {
      */
     private findIndexableConditions(node: FilterQuery | FilterCondition): FilterCondition[] {
         const conditions: FilterCondition[] = [];
-        
+
         if (node.type === 'condition') {
             if (this.isIndexableCondition(node)) {
                 conditions.push(node);
@@ -252,7 +253,7 @@ export class FilterService extends EventEmitter {
                 conditions.push(...this.findIndexableConditions(child));
             }
         }
-        
+
         return conditions;
     }
 
@@ -261,22 +262,22 @@ export class FilterService extends EventEmitter {
      */
     private isIndexableCondition(condition: FilterCondition): boolean {
         const { property, operator, value } = condition;
-        
+
         // Status-based conditions (uses tasksByStatus index)
         if (property === 'status' && operator === 'is' && value) {
             return true;
         }
-        
+
         // Due date conditions (uses tasksByDate index)
         if (property === 'due' && (operator === 'is' || operator === 'is-before' || operator === 'is-after') && value) {
             return true;
         }
-        
+
         // Scheduled date conditions (uses tasksByDate index)
         if (property === 'scheduled' && (operator === 'is' || operator === 'is-before' || operator === 'is-after') && value) {
             return true;
         }
-        
+
         return false;
     }
 
@@ -294,7 +295,7 @@ export class FilterService extends EventEmitter {
 
         // Cache miss - compute the result
         const result = computer();
-        
+
         // Cache the result
         this.indexQueryCache.set(cacheKey, new Set(result));
 
@@ -309,7 +310,7 @@ export class FilterService extends EventEmitter {
             this.indexQueryCache.delete(cacheKey);
             this.cacheTimers.delete(cacheKey);
         }, this.cacheTimeout);
-        
+
         this.cacheTimers.set(cacheKey, timer);
 
         return result;
@@ -320,12 +321,12 @@ export class FilterService extends EventEmitter {
      * Called when underlying data changes to ensure cache consistency
      */
     private clearIndexQueryCache(): void {
-        
+
         // Clear all timers
         for (const timer of this.cacheTimers.values()) {
             clearTimeout(timer);
         }
-        
+
         // Clear caches
         this.indexQueryCache.clear();
         this.cacheTimers.clear();
@@ -351,25 +352,25 @@ export class FilterService extends EventEmitter {
      */
     private getPathsForIndexableCondition(condition: FilterCondition): Set<string> {
         const { property, operator, value } = condition;
-        
+
         // Create cache key from condition properties
         const cacheKey = `${property}:${operator}:${value}`;
-        
+
         return this.getCachedIndexResult(cacheKey, () => {
             // Original logic for computing paths
             if (property === 'status' && operator === 'is' && value && typeof value === 'string') {
                 return new Set(this.cacheManager.getTaskPathsByStatus(value));
             }
-            
+
             if ((property === 'due' || property === 'scheduled') && operator === 'is' && value && typeof value === 'string') {
                 return new Set(this.cacheManager.getTasksForDate(value));
             }
-            
+
             // For date range conditions, we'll need to implement range queries
             if ((property === 'due' || property === 'scheduled') && (operator === 'is-before' || operator === 'is-after') && value && typeof value === 'string') {
                 return this.getTaskPathsForDateRange(property, operator, value);
             }
-            
+
             // Fallback - return all paths if we can't optimize
             return this.cacheManager.getAllTaskPaths();
         });
@@ -404,20 +405,20 @@ export class FilterService extends EventEmitter {
     private async pathsToTaskInfos(paths: string[]): Promise<TaskInfo[]> {
         const tasks: TaskInfo[] = [];
         const batchSize = 50;
-        
+
         for (let i = 0; i < paths.length; i += batchSize) {
             const batch = paths.slice(i, i + batchSize);
             const batchTasks = await Promise.all(
                 batch.map(path => this.cacheManager.getCachedTaskInfo(path))
             );
-            
+
             for (const task of batchTasks) {
                 if (task) {
                     tasks.push(task);
                 }
             }
         }
-        
+
         return tasks;
     }
 
@@ -467,26 +468,114 @@ export class FilterService extends EventEmitter {
     }
 
     /**
+     * Normalize list-type user field values from frontmatter into comparable tokens
+     * - Splits comma-separated strings: "a, b" -> ["a","b"]
+     * - Extracts display text from wikilinks: [[file|Alias]] -> "Alias"; [[People/Chuck Norris]] -> "Chuck Norris"
+     * - Also includes the raw token (e.g., "[[Chuck Norris]]") for exact-match scenarios
+     */
+    private normalizeUserListValue(raw: any): string[] {
+        const tokens: string[] = [];
+        const pushToken = (s: string) => {
+            if (!s) return;
+            const trimmed = String(s).trim();
+            if (!trimmed) return;
+            const m = trimmed.match(/^\[\[([^|\]]+)(?:\|([^\]]+))?\]\]$/);
+            if (m) {
+                const target = m[1] || '';
+                const alias = m[2];
+                const base = alias || target.split('#')[0].split('/').pop() || target;
+                if (base) tokens.push(base);
+                tokens.push(trimmed); // keep raw as fallback
+                return;
+            }
+            tokens.push(trimmed);
+        };
+
+        if (Array.isArray(raw)) {
+            for (const v of raw) pushToken(String(v));
+        } else if (typeof raw === 'string') {
+            const parts = splitListPreservingLinksAndQuotes(raw);
+            for (const p of parts) pushToken(p);
+        } else if (raw != null) {
+            pushToken(String(raw));
+        }
+
+        // Deduplicate while preserving order
+        const seen = new Set<string>();
+        const out: string[] = [];
+        for (const t of tokens) {
+            if (!seen.has(t)) { seen.add(t); out.push(t); }
+        }
+        return out;
+    }
+
+
+    /**
      * Evaluate a single filter condition against a task
      */
     private evaluateCondition(condition: FilterCondition, task: TaskInfo, targetDate?: Date): boolean {
         const { property, operator, value } = condition;
-        
+
+        // Dynamic user-mapped properties: user:<id>
+        if (typeof property === 'string' && property.startsWith('user:')) {
+            const fieldId = property.slice(5);
+            const userFields = this.plugin?.settings?.userFields || [];
+            const field = userFields.find((f: any) => (f.id || f.key) === fieldId);
+            let taskValue: TaskPropertyValue = undefined;
+            if (field) {
+                try {
+                    const app = this.cacheManager.getApp();
+                    const file = app.vault.getAbstractFileByPath(task.path);
+                    if (file) {
+                        const fm = app.metadataCache.getFileCache(file as any)?.frontmatter;
+                        const raw = fm ? fm[field.key] : undefined;
+                        // Normalize based on type
+                        switch (field.type) {
+                            case 'boolean':
+                                taskValue = typeof raw === 'boolean' ? raw : (String(raw).toLowerCase() === 'true');
+                                break;
+                            case 'number':
+                                taskValue = typeof raw === 'number' ? raw : (raw != null ? parseFloat(String(raw)) : undefined);
+                                break;
+                            case 'list':
+                                taskValue = this.normalizeUserListValue(raw);
+                                break;
+                            default:
+                                taskValue = raw != null ? String(raw) : undefined;
+                        }
+                    }
+                } catch {}
+            }
+            // For list user fields, treat 'contains' as substring match across tokens
+            if (field?.type === 'list' && (operator === 'contains' || operator === 'does-not-contain')) {
+                const haystack = Array.isArray(taskValue) ? (taskValue as string[]) : (taskValue != null ? [String(taskValue)] : []);
+                const needles = Array.isArray(value) ? (value as string[]) : [String(value ?? '')];
+                const match = needles.some(n =>
+                    typeof n === 'string' && haystack.some(h => typeof h === 'string' && h.toLowerCase().includes(n.toLowerCase()))
+                );
+                return operator === 'contains' ? match : !match;
+            }
+
+            // For date equality, trick date handling by passing a known date property id
+            const propForDate = (field?.type === 'date') ? ('due' as FilterProperty) : (property as FilterProperty);
+            return FilterUtils.applyOperator(taskValue, operator as FilterOperator, value, condition.id, propForDate);
+        }
+
         // Get the actual value from the task
         let taskValue: TaskPropertyValue = FilterUtils.getTaskPropertyValue(task, property as FilterProperty);
-        
+
         // Handle special case for status.isCompleted
         if (property === 'status.isCompleted') {
             const effectiveStatus = getEffectiveTaskStatus(task, targetDate || new Date());
             taskValue = this.statusManager.isCompletedStatus(effectiveStatus);
         }
-        
+
         // Handle special case for projects - resolve wikilinks before comparison
         if (property === 'projects' && (operator === 'contains' || operator === 'does-not-contain')) {
             const result = this.evaluateProjectsCondition(taskValue, operator as FilterOperator, value);
             return result;
         }
-        
+
         // Apply the operator
         return FilterUtils.applyOperator(taskValue, operator as FilterOperator, value, condition.id, property as FilterProperty);
     }
@@ -500,33 +589,33 @@ export class FilterService extends EventEmitter {
         if (!Array.isArray(taskValue)) {
             return false;
         }
-        
+
         if (typeof conditionValue !== 'string') {
             return false;
         }
-        
+
         // Extract the condition project name (handle both [[Name]] and Name formats)
         const conditionProjectName = this.extractProjectName(conditionValue);
         if (!conditionProjectName) {
             return false;
         }
-        
+
         // Check if any task project matches the condition project
         const hasMatch = taskValue.some(taskProject => {
             const taskProjectName = this.extractProjectName(taskProject as string);
             if (!taskProjectName) {
                 return false;
             }
-            
+
             // Direct name comparison
             if (taskProjectName === conditionProjectName) {
                 return true;
             }
-            
+
             // Resolve wikilinks and compare resolved paths
             return this.compareProjectWikilinks(taskProject as string, conditionValue);
         });
-        
+
         return operator === 'contains' ? hasMatch : !hasMatch;
     }
 
@@ -537,7 +626,7 @@ export class FilterService extends EventEmitter {
         if (!projectValue || typeof projectValue !== 'string') {
             return null;
         }
-        
+
         // Handle [[Name]] format
         if (projectValue.startsWith('[[') && projectValue.endsWith(']]')) {
             const linkContent = projectValue.slice(2, -2);
@@ -545,7 +634,7 @@ export class FilterService extends EventEmitter {
             const parts = linkContent.split('/');
             return parts[parts.length - 1] || null;
         }
-        
+
         // Handle plain name
         return projectValue.trim() || null;
     }
@@ -558,24 +647,24 @@ export class FilterService extends EventEmitter {
         if (!this.plugin?.app) {
             return false;
         }
-        
+
         // Extract link paths
         const taskLinkPath = this.extractWikilinkPath(taskProject);
         const conditionLinkPath = this.extractWikilinkPath(conditionProject);
-        
+
         if (!taskLinkPath || !conditionLinkPath) {
             return false;
         }
-        
+
         // Resolve both links to actual files
         const taskFile = this.plugin.app.metadataCache.getFirstLinkpathDest(taskLinkPath, '');
         const conditionFile = this.plugin.app.metadataCache.getFirstLinkpathDest(conditionLinkPath, '');
-        
+
         // Compare resolved file paths
         if (taskFile && conditionFile) {
             return taskFile.path === conditionFile.path;
         }
-        
+
         return false;
     }
 
@@ -586,11 +675,11 @@ export class FilterService extends EventEmitter {
         if (!linkValue || typeof linkValue !== 'string') {
             return null;
         }
-        
+
         if (linkValue.startsWith('[[') && linkValue.endsWith(']]')) {
             return linkValue.slice(2, -2);
         }
-        
+
         return linkValue;
     }
 
@@ -612,17 +701,17 @@ export class FilterService extends EventEmitter {
 
         // Also check recurring tasks without due dates to see if they should appear in this range
         const allTaskPaths = this.cacheManager.getAllTaskPaths();
-        
+
         // Process paths in batches for better performance
         const batchSize = 50;
         const pathArray = Array.from(allTaskPaths);
-        
+
         for (let i = 0; i < pathArray.length; i += batchSize) {
             const batch = pathArray.slice(i, i + batchSize);
             const batchTasks = await Promise.all(
                 batch.map(path => this.cacheManager.getCachedTaskInfo(path))
             );
-            
+
             for (const task of batchTasks) {
                 if (task && task.recurrence && !task.due) {
                     // Check if this recurring task should appear on any date in the range
@@ -668,11 +757,11 @@ export class FilterService extends EventEmitter {
             const datePart = getDatePart(dateString);
             const startDatePart = getDatePart(startDateString);
             const endDatePart = getDatePart(endDateString);
-            
+
             const date = startOfDayForDateString(datePart);
             const startDate = startOfDayForDateString(startDatePart);
             const endDate = startOfDayForDateString(endDatePart);
-            
+
             return date >= startDate && date <= endDate;
         } catch (error) {
             console.error('Error checking date range:', { dateString, startDateString, endDateString, error });
@@ -737,7 +826,7 @@ export class FilterService extends EventEmitter {
         if (!dateA && !dateB) return 0;
         if (!dateA) return 1; // No due date sorts last
         if (!dateB) return -1;
-        
+
         try {
             // Use time-aware comparison for precise sorting
             if (isBeforeDateTimeAware(dateA, dateB)) {
@@ -760,7 +849,7 @@ export class FilterService extends EventEmitter {
     private comparePriorities(priorityA: string, priorityB: string): number {
         const weightA = this.priorityManager.getPriorityWeight(priorityA);
         const weightB = this.priorityManager.getPriorityWeight(priorityB);
-        
+
         // Higher weight = higher priority, so reverse for ascending order
         return weightB - weightA;
     }
@@ -772,13 +861,13 @@ export class FilterService extends EventEmitter {
     private applyFallbackSorting(a: TaskInfo, b: TaskInfo, primarySortKey: TaskSortKey): number {
         // Define fallback order: scheduled → due → priority → title
         const fallbackOrder: TaskSortKey[] = ['scheduled', 'due', 'priority', 'title'];
-        
+
         // Remove the primary sort key from fallbacks to avoid redundant comparison
         const fallbacks = fallbackOrder.filter(key => key !== primarySortKey);
-        
+
         for (const fallbackKey of fallbacks) {
             let comparison = 0;
-            
+
             switch (fallbackKey) {
                 case 'scheduled':
                     comparison = this.compareDates(a.scheduled, b.scheduled);
@@ -793,13 +882,13 @@ export class FilterService extends EventEmitter {
                     comparison = a.title.localeCompare(b.title);
                     break;
             }
-            
+
             // Return first non-zero comparison
             if (comparison !== 0) {
                 return comparison;
             }
         }
-        
+
         // All criteria equal
         return 0;
     }
@@ -847,8 +936,8 @@ export class FilterService extends EventEmitter {
                         break;
                     case 'context':
                         // For multiple contexts, put task in first context or 'none'
-                        groupValue = (task.contexts && task.contexts.length > 0) 
-                            ? task.contexts[0] 
+                        groupValue = (task.contexts && task.contexts.length > 0)
+                            ? task.contexts[0]
                             : 'none';
                         break;
                     case 'due':
@@ -898,39 +987,39 @@ export class FilterService extends EventEmitter {
                 return 'No due date';
             }
         }
-        
+
         // Non-recurring task - use completion-aware logic
         if (!task.due) return 'No due date';
         return this.getDateGroupFromDateStringWithTask(task.due, isCompleted, hideCompletedFromOverdue);
     }
-    
+
     /**
      * Helper method to get date group from a date string (shared logic)
      * Uses time-aware overdue detection for precise categorization
      */
     private getDateGroupFromDateString(dateString: string): string {
         const todayStr = getTodayString();
-        
+
         // Use time-aware overdue detection with completion-aware logic
         // For categorization purposes, we need the task to determine completion status
         // This call is for categorization only, specific task overdue checks happen elsewhere
         if (isOverdueTimeAware(dateString)) return 'Overdue';
-        
+
         // Extract date part for day-level comparisons
         const datePart = getDatePart(dateString);
         if (isSameDateSafe(datePart, todayStr)) return 'Today';
-        
+
         try {
             const tomorrow = new Date();
             tomorrow.setDate(tomorrow.getDate() + 1);
             const tomorrowStr = format(tomorrow, 'yyyy-MM-dd');
             if (isSameDateSafe(datePart, tomorrowStr)) return 'Tomorrow';
-            
+
             const thisWeek = new Date();
             thisWeek.setDate(thisWeek.getDate() + 7);
             const thisWeekStr = format(thisWeek, 'yyyy-MM-dd');
             if (isBeforeDateSafe(datePart, thisWeekStr) || isSameDateSafe(datePart, thisWeekStr)) return 'This week';
-            
+
             return 'Later';
         } catch (error) {
             console.error(`Error categorizing date ${dateString}:`, error);
@@ -950,10 +1039,10 @@ export class FilterService extends EventEmitter {
      */
     private getDueDateGroupForTask(task: TaskInfo): string {
         if (!task.due) return 'No due date';
-        
+
         const isCompleted = this.statusManager.isCompletedStatus(task.status);
         const hideCompletedFromOverdue = this.plugin?.settings?.hideCompletedFromOverdue ?? true;
-        
+
         return this.getDateGroupFromDateStringWithTask(task.due, isCompleted, hideCompletedFromOverdue);
     }
 
@@ -962,25 +1051,25 @@ export class FilterService extends EventEmitter {
      */
     private getDateGroupFromDateStringWithTask(dateString: string, isCompleted: boolean, hideCompletedFromOverdue: boolean): string {
         const todayStr = getTodayString();
-        
+
         // Use completion-aware overdue detection
         if (isOverdueTimeAware(dateString, isCompleted, hideCompletedFromOverdue)) return 'Overdue';
-        
+
         // Extract date part for day-level comparisons
         const datePart = getDatePart(dateString);
         if (isSameDateSafe(datePart, todayStr)) return 'Today';
-        
+
         try {
             const tomorrow = new Date();
             tomorrow.setDate(tomorrow.getDate() + 1);
             const tomorrowStr = format(tomorrow, 'yyyy-MM-dd');
             if (isSameDateSafe(datePart, tomorrowStr)) return 'Tomorrow';
-            
+
             const thisWeek = new Date();
             thisWeek.setDate(thisWeek.getDate() + 7);
             const thisWeekStr = format(thisWeek, 'yyyy-MM-dd');
             if (isBeforeDateSafe(datePart, thisWeekStr) || isSameDateSafe(datePart, thisWeekStr)) return 'This week';
-            
+
             return 'Later';
         } catch (error) {
             console.error(`Error categorizing date ${dateString}:`, error);
@@ -990,10 +1079,10 @@ export class FilterService extends EventEmitter {
 
     private getScheduledDateGroup(task: TaskInfo, targetDate?: Date): string {
         if (!task.scheduled) return 'No scheduled date';
-        
+
         const isCompleted = this.statusManager.isCompletedStatus(task.status);
         const hideCompletedFromOverdue = this.plugin?.settings?.hideCompletedFromOverdue ?? true;
-        
+
         return this.getScheduledDateGroupForTask(task.scheduled, isCompleted, hideCompletedFromOverdue);
     }
 
@@ -1002,57 +1091,57 @@ export class FilterService extends EventEmitter {
      */
     private getScheduledDateGroupForTask(scheduledDate: string, isCompleted: boolean, hideCompletedFromOverdue: boolean): string {
         const todayStr = getTodayString();
-        
+
         // Use completion-aware overdue detection for past scheduled
         if (isOverdueTimeAware(scheduledDate, isCompleted, hideCompletedFromOverdue)) return 'Past scheduled';
-        
+
         // Extract date part for day-level comparisons
         const datePart = getDatePart(scheduledDate);
         if (isSameDateSafe(datePart, todayStr)) return 'Today';
-        
+
         try {
             const tomorrow = new Date();
             tomorrow.setDate(tomorrow.getDate() + 1);
             const tomorrowStr = format(tomorrow, 'yyyy-MM-dd');
             if (isSameDateSafe(datePart, tomorrowStr)) return 'Tomorrow';
-            
+
             const thisWeek = new Date();
             thisWeek.setDate(thisWeek.getDate() + 7);
             const thisWeekStr = format(thisWeek, 'yyyy-MM-dd');
             if (isBeforeDateSafe(datePart, thisWeekStr) || isSameDateSafe(datePart, thisWeekStr)) return 'This week';
-            
+
             return 'Later';
         } catch (error) {
             console.error(`Error categorizing scheduled date ${scheduledDate}:`, error);
             return 'Invalid Date';
         }
     }
-    
+
     /**
      * Helper method to get scheduled date group from a specific date string
      * Uses time-aware overdue detection for precise categorization
      */
     private getScheduledDateGroupFromDate(scheduledDate: string): string {
         const todayStr = getTodayString();
-        
+
         // Use time-aware overdue detection for past scheduled
         if (isOverdueTimeAware(scheduledDate)) return 'Past scheduled';
-        
+
         // Extract date part for day-level comparisons
         const datePart = getDatePart(scheduledDate);
         if (isSameDateSafe(datePart, todayStr)) return 'Today';
-        
+
         try {
             const tomorrow = new Date();
             tomorrow.setDate(tomorrow.getDate() + 1);
             const tomorrowStr = format(tomorrow, 'yyyy-MM-dd');
             if (isSameDateSafe(datePart, tomorrowStr)) return 'Tomorrow';
-            
+
             const thisWeek = new Date();
             thisWeek.setDate(thisWeek.getDate() + 7);
             const thisWeekStr = format(thisWeek, 'yyyy-MM-dd');
             if (isBeforeDateSafe(datePart, thisWeekStr) || isSameDateSafe(datePart, thisWeekStr)) return 'This week';
-            
+
             return 'Later';
         } catch (error) {
             console.error(`Error categorizing scheduled date ${scheduledDate}:`, error);
@@ -1065,9 +1154,9 @@ export class FilterService extends EventEmitter {
      */
     private sortGroups(groups: Map<string, TaskInfo[]>, groupKey: TaskGroupKey): Map<string, TaskInfo[]> {
         const sortedGroups = new Map<string, TaskInfo[]>();
-        
+
         let sortedKeys: string[];
-        
+
         switch (groupKey) {
             case 'priority':
                 // Sort by priority weight (high to low)
@@ -1077,7 +1166,7 @@ export class FilterService extends EventEmitter {
                     return weightB - weightA;
                 });
                 break;
-                
+
             case 'status':
                 // Sort by status order
                 sortedKeys = Array.from(groups.keys()).sort((a, b) => {
@@ -1086,7 +1175,7 @@ export class FilterService extends EventEmitter {
                     return orderA - orderB;
                 });
                 break;
-                
+
             case 'due': {
                 // Sort by logical due date order
                 const dueDateOrder = ['Overdue', 'Today', 'Tomorrow', 'This week', 'Later', 'No due date'];
@@ -1097,7 +1186,7 @@ export class FilterService extends EventEmitter {
                 });
                 break;
             }
-                
+
             case 'scheduled': {
                 // Sort by logical scheduled date order
                 const scheduledDateOrder = ['Past scheduled', 'Today', 'Tomorrow', 'This week', 'Later', 'No scheduled date'];
@@ -1108,7 +1197,7 @@ export class FilterService extends EventEmitter {
                 });
                 break;
             }
-                
+
             case 'project':
                 // Sort projects alphabetically with "No Project" at the end
                 sortedKeys = Array.from(groups.keys()).sort((a, b) => {
@@ -1117,7 +1206,7 @@ export class FilterService extends EventEmitter {
                     return a.localeCompare(b);
                 });
                 break;
-                
+
             default:
                 // Alphabetical sort for contexts and others
                 sortedKeys = Array.from(groups.keys()).sort();
@@ -1137,33 +1226,81 @@ export class FilterService extends EventEmitter {
      */
     async getFilterOptions(): Promise<FilterOptions> {
         const now = Date.now();
-        
+
         // Return cached options if valid and not expired by fallback TTL
         if (this.filterOptionsCache && (now - this.filterOptionsCacheTimestamp) < this.filterOptionsCacheTTL) {
             this.filterOptionsCacheHits++;
             return this.filterOptionsCache;
         }
-        
+
         // Cache miss - compute fresh options
-        
+
         const freshOptions = {
             statuses: this.statusManager.getAllStatuses(),
             priorities: this.priorityManager.getAllPriorities(),
             contexts: this.cacheManager.getAllContexts(),
             projects: this.cacheManager.getAllProjects(),
             tags: this.cacheManager.getAllTags(),
-            folders: this.extractUniqueFolders()
+            folders: this.extractUniqueFolders(),
+            userProperties: this.buildUserPropertyDefinitions()
         };
-        
+
         this.filterOptionsComputeCount++;
-        
+
         // Update cache and timestamp
         this.filterOptionsCache = freshOptions;
         this.filterOptionsCacheTimestamp = now;
-        
+
         return freshOptions;
     }
-    
+
+    /**
+     * Build dynamic user property definitions from settings.userFields
+     */
+    private buildUserPropertyDefinitions(): import('../types').PropertyDefinition[] {
+        const fields = this.plugin?.settings?.userFields || [];
+        const defs: import('../types').PropertyDefinition[] = [];
+        for (const f of fields) {
+            if (!f || !f.key || !f.displayName) continue;
+            const id = `user:${f.id || f.key}` as import('../types').FilterProperty;
+            // Map type to supported operators and value input type
+            let supported: import('../types').FilterOperator[];
+            let valueInputType: import('../types').PropertyDefinition['valueInputType'];
+            switch (f.type) {
+                case 'number':
+                    supported = ['is','is-not','is-greater-than','is-less-than','is-greater-than-or-equal','is-less-than-or-equal','is-empty','is-not-empty'];
+                    valueInputType = 'number';
+                    break;
+                case 'date':
+                    supported = ['is','is-not','is-before','is-after','is-on-or-before','is-on-or-after','is-empty','is-not-empty'];
+                    valueInputType = 'date';
+                    break;
+                case 'boolean':
+                    supported = ['is-checked','is-not-checked'];
+                    valueInputType = 'none';
+                    break;
+                case 'list':
+                    supported = ['contains','does-not-contain','is-empty','is-not-empty'];
+                    valueInputType = 'text';
+                    break;
+                case 'text':
+                default:
+                    supported = ['is','is-not','contains','does-not-contain','is-empty','is-not-empty'];
+                    valueInputType = 'text';
+                    break;
+            }
+            defs.push({
+                id,
+                label: f.displayName,
+                category: f.type === 'boolean' ? 'boolean' : (f.type === 'number' ? 'numeric' : (f.type === 'date' ? 'date' : 'text')),
+                supportedOperators: supported,
+                valueInputType
+            });
+        }
+        return defs;
+    }
+
+
     /**
      * Check if new filter options have been detected and invalidate cache if needed
      * Uses a time-based throttling approach to balance freshness with performance
@@ -1172,21 +1309,21 @@ export class FilterService extends EventEmitter {
         if (!this.filterOptionsCache) {
             return; // No cache to invalidate
         }
-        
+
         const now = Date.now();
         const cacheAge = now - this.filterOptionsCacheTimestamp;
-        
+
         // Use a smart invalidation strategy:
         // 1. If cache is very fresh (< 30 seconds), keep it (most changes don't affect options)
         // 2. If cache is older, invalidate it to ensure new options are picked up
         // This gives us good performance for rapid file changes while ensuring freshness
         const minCacheAge = 30000; // 30 seconds
-        
+
         if (cacheAge > minCacheAge) {
             this.invalidateFilterOptionsCache();
         }
     }
-    
+
     /**
      * Manually invalidate the filter options cache
      */
@@ -1195,7 +1332,7 @@ export class FilterService extends EventEmitter {
             this.filterOptionsCache = null;
         }
     }
-    
+
     /**
      * Force refresh of filter options cache
      * This can be called by UI components when they detect stale data
@@ -1203,7 +1340,7 @@ export class FilterService extends EventEmitter {
     refreshFilterOptions(): void {
         this.invalidateFilterOptionsCache();
     }
-    
+
     /**
      * Get performance statistics for filter options caching
      */
@@ -1220,7 +1357,7 @@ export class FilterService extends EventEmitter {
         const ttlRemaining = this.filterOptionsCache ? Math.max(0, this.filterOptionsCacheTTL - cacheAge) : 0;
         const totalRequests = this.filterOptionsCacheHits + this.filterOptionsComputeCount;
         const hitRate = totalRequests > 0 ? ((this.filterOptionsCacheHits / totalRequests) * 100).toFixed(1) + '%' : '0%';
-        
+
         return {
             cacheHits: this.filterOptionsCacheHits,
             computeCount: this.filterOptionsComputeCount,
@@ -1261,7 +1398,7 @@ export class FilterService extends EventEmitter {
         // Add new condition if toggle is disabled (meaning we want to filter out)
         if (!enabled) {
             let condition: FilterCondition;
-            
+
             switch (toggle) {
                 case 'showCompleted':
                     condition = {
@@ -1291,7 +1428,7 @@ export class FilterService extends EventEmitter {
                     };
                     break;
             }
-            
+
             newQuery.children.push(condition);
         }
 
@@ -1303,7 +1440,7 @@ export class FilterService extends EventEmitter {
      */
     private removeQuickToggleCondition(query: FilterQuery, toggle: 'showCompleted' | 'showArchived' | 'showRecurrent'): void {
         let propertyToRemove: string;
-        
+
         switch (toggle) {
             case 'showCompleted':
                 propertyToRemove = 'status.isCompleted';
@@ -1329,7 +1466,7 @@ export class FilterService extends EventEmitter {
      */
     normalizeQuery(query: Partial<FilterQuery>): FilterQuery {
         const defaultQuery = this.createDefaultQuery();
-        
+
         return {
             ...defaultQuery,
             ...query,
@@ -1352,25 +1489,25 @@ export class FilterService extends EventEmitter {
             this.checkAndInvalidateFilterOptionsCache();
             this.emit('data-changed');
         });
-        
+
         this.cacheManager.on('file-added', () => {
             this.clearIndexQueryCache();
             this.checkAndInvalidateFilterOptionsCache();
             this.emit('data-changed');
         });
-        
+
         this.cacheManager.on('file-deleted', () => {
             this.clearIndexQueryCache();
             this.checkAndInvalidateFilterOptionsCache();
             this.emit('data-changed');
         });
-        
+
         this.cacheManager.on('file-renamed', () => {
             this.clearIndexQueryCache();
             this.checkAndInvalidateFilterOptionsCache();
             this.emit('data-changed');
         });
-        
+
         this.cacheManager.on('indexes-built', () => {
             this.clearIndexQueryCache();
             this.checkAndInvalidateFilterOptionsCache();
@@ -1384,10 +1521,10 @@ export class FilterService extends EventEmitter {
     cleanup(): void {
         // Clear query result cache and timers
         this.clearIndexQueryCache();
-        
+
         // Clear filter options cache
         this.invalidateFilterOptionsCache();
-        
+
         // Remove all event listeners
         this.removeAllListeners();
     }
@@ -1403,7 +1540,7 @@ export class FilterService extends EventEmitter {
         if (dates.length === 0) throw new Error('No dates provided');
         const startDate = dates[0];
         const endDate = dates[dates.length - 1];
-        
+
         return {
             start: format(startDate, 'yyyy-MM-dd'),
             end: format(endDate, 'yyyy-MM-dd')
@@ -1415,7 +1552,7 @@ export class FilterService extends EventEmitter {
      */
     static shouldIncludeOverdueForRange(dates: Date[], showOverdue: boolean): boolean {
         if (!showOverdue) return false;
-        
+
         const today = new Date();
         const todayStr = format(today, 'yyyy-MM-dd');
         return dates.some(date => format(date, 'yyyy-MM-dd') === todayStr);
@@ -1426,15 +1563,15 @@ export class FilterService extends EventEmitter {
      * Handles recurring tasks, due dates, scheduled dates, and overdue logic
      */
     async getTasksForDate(
-        date: Date, 
+        date: Date,
         baseQuery: FilterQuery,
         includeOverdue = false
     ): Promise<TaskInfo[]> {
         // FIXED: Use UTC Anchor principle for consistent date handling
         const dateStr = formatDateForStorage(date);
         const isViewingToday = isTodayUtil(dateStr);
-        
-        
+
+
         // Get all tasks and filter using new system
         const allTaskPaths = this.cacheManager.getAllTaskPaths();
         const allTasks = await this.pathsToTaskInfos(Array.from(allTaskPaths));
@@ -1447,7 +1584,7 @@ export class FilterService extends EventEmitter {
                 const utcDateForRecurrence = parseDateToUTC(dateStr);
                 return isDueByRRule(task, utcDateForRecurrence);
             }
-            
+
             // Handle regular tasks with due dates for this specific date
             // Use robust date comparison to handle timezone edge cases
             if (task.due) {
@@ -1456,8 +1593,8 @@ export class FilterService extends EventEmitter {
                     return true;
                 }
             }
-            
-            // Handle regular tasks with scheduled dates for this specific date  
+
+            // Handle regular tasks with scheduled dates for this specific date
             // Use robust date comparison to handle timezone edge cases
             if (task.scheduled) {
                 const taskScheduledDatePart = getDatePart(task.scheduled);
@@ -1465,19 +1602,19 @@ export class FilterService extends EventEmitter {
                     return true;
                 }
             }
-            
+
             // If showing overdue tasks and this is today, include overdue tasks on today
             if (includeOverdue && isViewingToday) {
                 const isCompleted = this.statusManager.isCompletedStatus(task.status);
                 const hideCompletedFromOverdue = this.plugin?.settings?.hideCompletedFromOverdue ?? true;
-                
+
                 // Check if due date is overdue (show on today)
                 if (task.due && getDatePart(task.due) !== dateStr) {
                     if (isOverdueTimeAware(task.due, isCompleted, hideCompletedFromOverdue)) {
                         return true;
                     }
                 }
-                
+
                 // Check if scheduled date is overdue (show on today)
                 if (task.scheduled && getDatePart(task.scheduled) !== dateStr) {
                     if (isOverdueTimeAware(task.scheduled, isCompleted, hideCompletedFromOverdue)) {
@@ -1485,7 +1622,7 @@ export class FilterService extends EventEmitter {
                     }
                 }
             }
-            
+
             return false;
         });
 
@@ -1498,7 +1635,7 @@ export class FilterService extends EventEmitter {
      * Simplified for new filter system
      */
     async getAgendaData(
-        dates: Date[], 
+        dates: Date[],
         baseQuery: FilterQuery,
         showOverdueOnToday = false
     ): Promise<Array<{date: Date; tasks: TaskInfo[]}>> {
@@ -1507,11 +1644,11 @@ export class FilterService extends EventEmitter {
         // Get tasks for each date
         for (const date of dates) {
             const tasksForDate = await this.getTasksForDate(
-                date, 
-                baseQuery, 
+                date,
+                baseQuery,
                 showOverdueOnToday && isTodayUTC(date)
             );
-            
+
             agendaData.push({
                 date: new Date(date),
                 tasks: tasksForDate
@@ -1526,14 +1663,14 @@ export class FilterService extends EventEmitter {
      * Useful for flat agenda view rendering
      */
     async getFlatAgendaData(
-        dates: Date[], 
+        dates: Date[],
         baseQuery: FilterQuery,
         showOverdueOnToday = false
     ): Promise<Array<TaskInfo & {agendaDate: Date}>> {
         const groupedData = await this.getAgendaData(dates, baseQuery, showOverdueOnToday);
-        
+
         const flatData: Array<TaskInfo & {agendaDate: Date}> = [];
-        
+
         for (const dayData of groupedData) {
             for (const task of dayData.tasks) {
                 flatData.push({
@@ -1553,7 +1690,7 @@ export class FilterService extends EventEmitter {
     private extractUniqueFolders(): readonly string[] {
         const allTaskPaths = this.cacheManager.getAllTaskPaths();
         const folderSet = new Set<string>();
-        
+
         for (const taskPath of allTaskPaths) {
             // Extract the folder part of the path (everything before the last slash)
             const lastSlashIndex = taskPath.lastIndexOf('/');
@@ -1566,10 +1703,10 @@ export class FilterService extends EventEmitter {
                 folderSet.add(''); // Root folder
             }
         }
-        
+
         // Convert to sorted array for consistent UI ordering
         const folders = Array.from(folderSet).sort();
-        
+
         // Replace empty string with a user-friendly label for root folder
         return folders.map(folder => folder === '' ? '(Root)' : folder);
     }
@@ -1585,12 +1722,12 @@ export class FilterService extends EventEmitter {
 
         // Remove quotes if the value is wrapped in them
         const cleanValue = projectValue.replace(/^"(.*)"$/, '$1');
-        
+
         // Check if it's a wikilink format
         if (cleanValue.startsWith('[[') && cleanValue.endsWith(']]')) {
             const linkContent = cleanValue.slice(2, -2);
             const parsed = parseLinktext(linkContent);
-            
+
             // Try to resolve the link using Obsidian's API through cache manager
             const resolvedFile = this.cacheManager.getApp().metadataCache.getFirstLinkpathDest(parsed.path, sourcePath);
             if (resolvedFile) {
