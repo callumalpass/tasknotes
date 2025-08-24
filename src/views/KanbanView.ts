@@ -987,6 +987,25 @@ export class KanbanView extends ItemView {
 
 
     /**
+     * Check if a project path represents a resolved file (vs plain text)
+     */
+    private isResolvedProjectPath(columnId: string): boolean {
+        // Try to resolve it back to see if it was originally a file reference
+        if (this.plugin?.app) {
+            const file = this.plugin.app.vault.getAbstractFileByPath(columnId + '.md');
+            if (file instanceof TFile) {
+                return true;
+            }
+            
+            // Also check if it resolves without adding .md
+            const fileWithoutExt = this.plugin.app.metadataCache.getFirstLinkpathDest(columnId, '');
+            return !!fileWithoutExt;
+        }
+        
+        return false;
+    }
+
+    /**
      * Find existing project format in task that resolves to the same absolute path
      */
     private findExistingProjectFormat(task: TaskInfo, targetAbsolutePath: string): string | null {
@@ -1006,8 +1025,10 @@ export class KanbanView extends ItemView {
      * Create a clickable project title for Kanban column headers
      */
     private createClickableProjectTitle(titleEl: HTMLElement, columnId: string, title: string): void {
-        // Check if the columnId looks like a file path
-        if (columnId.includes('/')) {
+        // For project grouping, all resolved paths should be clickable (they represent files)
+        // Only plain text projects that don't resolve to files should be non-clickable
+        const couldBeFilePath = columnId.includes('/') || this.isResolvedProjectPath(columnId);
+        if (couldBeFilePath) {
             // Create a clickable link for file paths
             const linkEl = titleEl.createEl('a', {
                 cls: 'internal-link kanban-view__project-link',

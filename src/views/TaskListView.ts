@@ -742,8 +742,23 @@ export class TaskListView extends ItemView {
             return true;
         }
         
-        // Absolute file path (contains slash)
-        return project.includes('/');
+        // File path (contains slash) or could be a resolved file
+        if (project.includes('/')) {
+            return true;
+        }
+        
+        // Check if it's a resolved file path by trying to find the file
+        if (this.plugin?.app) {
+            const file = this.plugin.app.vault.getAbstractFileByPath(project + '.md');
+            if (file instanceof TFile) {
+                return true;
+            }
+            
+            const resolvedFile = this.plugin.app.metadataCache.getFirstLinkpathDest(project, '');
+            return !!resolvedFile;
+        }
+        
+        return false;
     }
 
     /**

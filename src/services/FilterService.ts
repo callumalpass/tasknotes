@@ -1092,6 +1092,10 @@ export class FilterService extends EventEmitter {
                     // Add task to each project group, using absolute path for consistent grouping
                     for (const project of filteredProjects) {
                         const absolutePath = this.resolveProjectToAbsolutePath(project);
+                        // TODO: Remove this debug logging
+                        if (typeof window !== 'undefined' && window.console) {
+                            console.log(`[Project Grouping] Task "${task.title}": "${project}" → "${absolutePath}"`);
+                        }
                         if (!groups.has(absolutePath)) {
                             groups.set(absolutePath, []);
                         }
