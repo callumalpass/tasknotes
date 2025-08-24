@@ -245,6 +245,7 @@ export interface TaskCreationData extends Partial<TaskInfo> {
     details?: string; // Optional details/description for file content
     parentNote?: string; // Optional parent note name/path for template variable
     creationContext?: 'inline-conversion' | 'manual-creation' | 'api' | 'import' | 'ics-event'; // Context for folder determination
+    customFrontmatter?: Record<string, any>; // Custom frontmatter properties (including user fields)
 }
 
 export interface TimeEntry {
