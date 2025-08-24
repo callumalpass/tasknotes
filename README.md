@@ -5,11 +5,10 @@ A task management plugin where each task is stored as an individual note using Y
 ![Downloads](https://img.shields.io/github/downloads/callumalpass/tasknotes/main.js)
 ![Screenshot of biblib Obsidian plugin](https://github.com/callumalpass/tasknotes/blob/main/media/175266750_comp.gif)
 
-## Documentation
-
-**[📖 Complete Documentation](https://callumalpass.github.io/tasknotes/)**
+**[ Documentation](https://callumalpass.github.io/tasknotes/)**
 
 ### Quick Links
+
 - **[Getting Started](./docs/index.md)** - Core concepts and setup
 - **[Features Overview](./docs/features.md)** - Complete feature list
 - **[Views Guide](./docs/views.md)** - All available view types
@@ -36,6 +35,7 @@ Since each task is a full note, you can write detailed descriptions, jot down th
 ## Core Features
 
 ### Task Management
+
 - Individual Markdown files with YAML frontmatter
 - Properties: title, status, priority, due date, scheduled date, contexts, projects, tags, time estimates, completion date
 - Project organization using note-based linking
@@ -45,22 +45,26 @@ Since each task is a full note, you can write detailed descriptions, jot down th
 - Filtering and grouping options
 
 ### Calendar Integration
+j
 - Month view displaying tasks and notes
 - Mini calendar view for compact layouts
 - ICS/iCal feed subscriptions
 - Direct navigation to daily notes
 
 ### Time Management
+
 - Time tracking with start/stop functionality
 - Pomodoro timer with task integration
 - Session history and statistics
 
 ### Editor Integration
+
 - Interactive task previews for wikilinks
 - Universal line-to-task conversion
 - Template support with parent note context
 
 ### Views
+
 - **Calendar**: Month view with agenda
 - **Task List**: Filtering and grouping options
 - **Kanban**: Drag-and-drop task management
@@ -69,20 +73,25 @@ Since each task is a full note, you can write detailed descriptions, jot down th
 - **Pomodoro**: Timer with statistics
 
 ![Task creation dialog](media/2025-07-15_21-11-10.png)
+
 *Create tasks with natural language parsing for due dates, recurrence, and contexts*
 
 ![Pomodoro timer](media/2025-07-15_21-12-23.png)
+
 *Built-in pomodoro timer with task integration and daily completion tracking*
 
 ![Kanban board view](media/2025-07-15_21-13-26.png)
+
 *Kanban boards with drag-and-drop functionality and customizable columns*
 
 ![Project subtasks view](media/2025-07-15_21-14-06.png)
+
 *Project management with subtasks and hierarchical organization*
 
 ## Configuration
 
 ### Customization
+
 - **Field Mapping**: Customize YAML property names to match existing workflows
 - **Custom Statuses**: Define task statuses with colors and completion behavior
 - **Custom Priorities**: Create priority levels with weight-based sorting
@@ -105,6 +114,7 @@ timeEntries:
 ```
 
 ### Recurring Task
+
 ```yaml
 title: "Weekly meeting"
 recurrence: "FREQ=WEEKLY;BYDAY=MO"
@@ -116,6 +126,7 @@ complete_instances: ["2024-01-08"]
 TaskNotes includes an optional HTTP API server for external integrations. This enables creating tasks from browsers, automation tools, mobile apps, and custom scripts.
 
 ### Quick Start
+
 1. Enable the HTTP API in Settings → HTTP API tab (desktop only)
 2. Configure port (default: 8080) and optional auth token  
 3. Restart Obsidian to start the server
@@ -138,12 +149,14 @@ curl http://localhost:8080/api/stats
 ```
 
 ### Browser Integration
-The API enables powerful browser integrations:
+
+The API enables browser integrations:
 - **Bookmarklets** for one-click task creation from any webpage
-- **Browser extensions** for Gmail, Outlook, and other email providers  
+- **Browser extensions**: [for example](https://github.com/callumalpass/tasknotesbrowser-extension)
 - **Automation** with Zapier, IFTTT, and similar services
 
 ### Documentation
+
 See [HTTP API Documentation](./docs/HTTP_API.md) for complete endpoint reference and integration examples.
 
 ## Credits

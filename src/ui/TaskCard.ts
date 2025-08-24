@@ -13,6 +13,7 @@ import {
 import { DateContextMenu } from '../components/DateContextMenu';
 import { PriorityContextMenu } from '../components/PriorityContextMenu';
 import { RecurrenceContextMenu } from '../components/RecurrenceContextMenu';
+import { createTaskClickHandler, createTaskHoverHandler } from '../utils/clickHandlers';
 import { ReminderModal } from '../modals/ReminderModal';
 
 export interface TaskCardOptions {
@@ -601,23 +602,20 @@ export function createTaskCard(task: TaskInfo, plugin: TaskNotesPlugin, options:
         metadataLine.style.display = 'none';
     }
     
-    // Add click handlers
-    card.addEventListener('click', async (e) => {
-        if (e.target === card.querySelector('.task-card__checkbox')) {
-            return; // Let checkbox handle its own click
-        }
-        
-        if (e.ctrlKey || e.metaKey) {
-            // Ctrl/Cmd + Click: Open source note
-            const file = plugin.app.vault.getAbstractFileByPath(task.path);
-            if (file instanceof TFile) {
-                plugin.app.workspace.getLeaf(false).openFile(file);
-            }
-        } else {
-            // Left-click: Open edit modal
-            await plugin.openTaskEditModal(task);
+    // Add click handlers with single/double click distinction
+    const { clickHandler, dblclickHandler } = createTaskClickHandler({
+        task,
+        plugin,
+        excludeSelector: '.task-card__checkbox',
+        contextMenuHandler: async (e) => {
+            const path = card.dataset.taskPath;
+            if (!path) return;
+            await showTaskContextMenu(e, path, plugin, targetDate);
         }
     });
+    
+    card.addEventListener('click', clickHandler);
+    card.addEventListener('dblclick', dblclickHandler);
     
     // Right-click: Context menu
     card.addEventListener('contextmenu', async (e) => {
@@ -630,19 +628,7 @@ export function createTaskCard(task: TaskInfo, plugin: TaskNotesPlugin, options:
     });
     
     // Hover preview
-    card.addEventListener('mouseover', (event) => {
-        const file = plugin.app.vault.getAbstractFileByPath(task.path);
-        if (file) {
-            plugin.app.workspace.trigger('hover-link', {
-                event,
-                source: 'tasknotes-task-card',
-                hoverParent: card,
-                targetEl: card,
-                linktext: task.path,
-                sourcePath: task.path
-            });
-        }
-    });
+    card.addEventListener('mouseover', createTaskHoverHandler(task, plugin));
     
     return card;
 }

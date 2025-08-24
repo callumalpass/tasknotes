@@ -219,7 +219,6 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 					});
 			});
 
-
 		// Help section
 		const helpContainer = container.createDiv('settings-help-section');
 		helpContainer.createEl('h4', { text: 'How inline task features work:' });
@@ -1640,6 +1639,36 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 
 						// Show notice about restart requirement
 						new Notice('Note indexing setting changed. Please restart Obsidian or reload the plugin for changes to take effect.');
+					});
+			});
+
+		// Click behavior settings
+		new Setting(container)
+			.setName('Single-click action')
+			.setDesc('What happens when you single-click a task card')
+			.addDropdown(dropdown => {
+				dropdown
+					.addOption('edit', 'Edit task')
+					.addOption('openNote', 'Open note')
+					.setValue(this.plugin.settings.singleClickAction)
+					.onChange(async (value: 'edit' | 'openNote') => {
+						this.plugin.settings.singleClickAction = value;
+						await this.plugin.saveSettings();
+					});
+			});
+
+		new Setting(container)
+			.setName('Double-click action')
+			.setDesc('What happens when you double-click a task card')
+			.addDropdown(dropdown => {
+				dropdown
+					.addOption('openNote', 'Open note')
+					.addOption('edit', 'Edit task')
+					.addOption('none', 'None')
+					.setValue(this.plugin.settings.doubleClickAction)
+					.onChange(async (value: 'edit' | 'openNote' | 'none') => {
+						this.plugin.settings.doubleClickAction = value;
+						await this.plugin.saveSettings();
 					});
 			});
 	}

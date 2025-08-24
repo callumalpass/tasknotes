@@ -1034,7 +1034,7 @@ export class FilterService extends EventEmitter {
                     switch (groupKey) {
                         case 'status':
                             groupValue = task.status || 'no-status';
-
+                            break;
                         case 'priority':
                             groupValue = task.priority || 'unknown';
                             break;
