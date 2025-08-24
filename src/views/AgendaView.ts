@@ -678,9 +678,20 @@ export class AgendaView extends ItemView {
                     dayItems.push({ type: 'note', item: note, date: dayData.date });
                 });
 
-                // Add ICS events
+                // Add ICS events (sorted chronologically)
                 if (this.showICSEvents) {
-                    dayData.ics.forEach(ics => {
+                    // Sort ICS events by start time before adding them
+                    const sortedIcsEvents = [...dayData.ics].sort((a, b) => {
+                        try {
+                            const timeA = new Date(a.start).getTime();
+                            const timeB = new Date(b.start).getTime();
+                            return timeA - timeB;
+                        } catch {
+                            return 0;
+                        }
+                    });
+                    
+                    sortedIcsEvents.forEach(ics => {
                         dayItems.push({ type: 'ics', item: ics, date: dayData.date });
                     });
                 }
@@ -730,9 +741,20 @@ export class AgendaView extends ItemView {
                 allItems.push({ type: 'note', item: note, date: dayData.date });
             });
 
-            // ICS events
+            // ICS events (sorted chronologically)
             if (this.showICSEvents) {
-                dayData.ics.forEach(ics => {
+                // Sort ICS events by start time before adding them
+                const sortedIcsEvents = [...dayData.ics].sort((a, b) => {
+                    try {
+                        const timeA = new Date(a.start).getTime();
+                        const timeB = new Date(b.start).getTime();
+                        return timeA - timeB;
+                    } catch {
+                        return 0;
+                    }
+                });
+                
+                sortedIcsEvents.forEach(ics => {
                     allItems.push({ type: 'ics', item: ics, date: dayData.date });
                 });
             }
