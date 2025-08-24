@@ -360,32 +360,20 @@ export class TaskLinkWidget extends WidgetType {
         
         // Add drag functionality
         this.addDragHandlers(container);
-        
-        // Set up click handlers using shared utility
-        const { clickHandler, dblclickHandler } = createTaskClickHandler({
-            task: this.taskInfo,
-            plugin: this.plugin,
-            excludeSelector: '.task-inline-preview__pencil',
-            onSingleClick: async (e) => {
-                // Check if clicking the pencil icon for context menu
-                const target = e.target as HTMLElement;
-                if (target === pencilIcon || pencilIcon.contains(target) || target.closest('.task-inline-preview__pencil')) {
-                    this.showTaskContextMenu(e, container);
-                    return;
-                }
 
-                if (e.ctrlKey || e.metaKey) {
-                    // Ctrl/Cmd + Click: Open source note
-                    const file = this.plugin.app.vault.getAbstractFileByPath(this.taskInfo.path);
-                    if (file instanceof TFile) {
-                        this.plugin.app.workspace.getLeaf(false).openFile(file);
-                    }
-                } else {
-                    // Left-click: Open edit modal
-                    await this.plugin.openTaskEditModal(this.taskInfo);
-                }
-            }
-        });
+		// Handle context menu on pencil icon separately
+		pencilIcon.addEventListener('click', (e) => {
+			e.preventDefault();
+			e.stopPropagation();
+			this.showTaskContextMenu(e, container);
+		});
+
+		// Set up click handlers using shared utility
+		const { clickHandler, dblclickHandler } = createTaskClickHandler({
+			task: this.taskInfo,
+			plugin: this.plugin,
+			excludeSelector: '.task-inline-preview__pencil',
+		});
         
         container.addEventListener('click', async (e) => {
             e.preventDefault();

@@ -181,7 +181,8 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	useDefaultsOnInstantConvert: true,
 	enableNaturalLanguageInput: true,
 	nlpDefaultToScheduled: true,
-	enableDoubleClickToOpenNote: true,
+	singleClickAction: 'edit',
+	doubleClickAction: 'openNote',
 	// Inline task conversion defaults
 	inlineTaskConvertFolder: '{{currentNotePath}}',
 	// Performance defaults
