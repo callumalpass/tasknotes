@@ -654,7 +654,9 @@ export class TaskCreationModal extends TaskModal {
             reminders: this.reminders.length > 0 ? this.reminders : undefined,
             creationContext: 'manual-creation', // Mark as manual creation for folder logic
             dateCreated: now,
-            dateModified: now
+            dateModified: now,
+            // Add user fields as custom frontmatter properties
+            customFrontmatter: this.buildCustomFrontmatter()
         };
 
         // Add details if provided
@@ -665,6 +667,19 @@ export class TaskCreationModal extends TaskModal {
         }
 
         return taskData;
+    }
+
+    private buildCustomFrontmatter(): Record<string, any> {
+        const customFrontmatter: Record<string, any> = {};
+        
+        // Add user field values to frontmatter
+        for (const [fieldKey, fieldValue] of Object.entries(this.userFields)) {
+            if (fieldValue !== null && fieldValue !== undefined && fieldValue !== '') {
+                customFrontmatter[fieldKey] = fieldValue;
+            }
+        }
+        
+        return customFrontmatter;
     }
 
     private generateFilename(taskData: TaskCreationData): string {
