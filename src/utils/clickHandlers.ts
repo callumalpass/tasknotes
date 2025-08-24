@@ -13,8 +13,7 @@ export interface ClickHandlerOptions {
 
 /**
  * Creates a reusable click handler that supports single/double click distinction
- * Single click: Opens task edit modal
- * Double click: Opens source note (if enabled in settings)
+ * based on user settings.
  * Ctrl/Cmd + Click: Opens source note immediately
  */
 export function createTaskClickHandler(options: ClickHandlerOptions) {
@@ -29,6 +28,17 @@ export function createTaskClickHandler(options: ClickHandlerOptions) {
 
     let clickTimeout: NodeJS.Timeout | null = null;
 
+    const openNote = () => {
+        const file = plugin.app.vault.getAbstractFileByPath(task.path);
+        if (file instanceof TFile) {
+            plugin.app.workspace.getLeaf(false).openFile(file);
+        }
+    };
+
+    const editTask = async () => {
+        await plugin.openTaskEditModal(task);
+    };
+
     const handleSingleClick = async (e: MouseEvent) => {
         if (onSingleClick) {
             await onSingleClick(e);
@@ -36,14 +46,15 @@ export function createTaskClickHandler(options: ClickHandlerOptions) {
         }
 
         if (e.ctrlKey || e.metaKey) {
-            // Ctrl/Cmd + Click: Open source note immediately
-            const file = plugin.app.vault.getAbstractFileByPath(task.path);
-            if (file instanceof TFile) {
-                plugin.app.workspace.getLeaf(false).openFile(file);
-            }
-        } else {
-            // Single-click: Open edit modal
-            await plugin.openTaskEditModal(task);
+            openNote();
+            return;
+        }
+
+        const action = plugin.settings.singleClickAction;
+        if (action === 'edit') {
+            await editTask();
+        } else if (action === 'openNote') {
+            openNote();
         }
     };
 
@@ -53,63 +64,41 @@ export function createTaskClickHandler(options: ClickHandlerOptions) {
             return;
         }
 
-        // Double-click: Open source note
-        const file = plugin.app.vault.getAbstractFileByPath(task.path);
-        if (file instanceof TFile) {
-            plugin.app.workspace.getLeaf(false).openFile(file);
+        const action = plugin.settings.doubleClickAction;
+        if (action === 'edit') {
+            await editTask();
+        } else if (action === 'openNote') {
+            openNote();
         }
     };
 
     const clickHandler = async (e: MouseEvent) => {
-        // Check if click is on excluded elements
         if (excludeSelector) {
             const target = e.target as HTMLElement;
             if (target.closest(excludeSelector)) {
-                return; // Let the specific element handle its own click
+                return;
             }
         }
 
-        // If double-click feature is disabled, handle as immediate single click
-        if (!plugin.settings.enableDoubleClickToOpenNote) {
+        if (plugin.settings.doubleClickAction === 'none') {
             await handleSingleClick(e);
             return;
         }
 
-        // Clear any existing timeout
         if (clickTimeout) {
             clearTimeout(clickTimeout);
             clickTimeout = null;
+            await handleDoubleClick(e);
+        } else {
+            clickTimeout = setTimeout(() => {
+                clickTimeout = null;
+                handleSingleClick(e);
+            }, 250);
         }
-
-        // Set a timeout to handle single click
-        clickTimeout = setTimeout(() => {
-            handleSingleClick(e);
-            clickTimeout = null;
-        }, 250); // 250ms delay to detect double click
     };
 
     const dblclickHandler = async (e: MouseEvent) => {
-        // Check if click is on excluded elements
-        if (excludeSelector) {
-            const target = e.target as HTMLElement;
-            if (target.closest(excludeSelector)) {
-                return; // Let the specific element handle its own click
-            }
-        }
-
-        // If double-click feature is disabled, do nothing
-        if (!plugin.settings.enableDoubleClickToOpenNote) {
-            return;
-        }
-
-        // Clear the single click timeout
-        if (clickTimeout) {
-            clearTimeout(clickTimeout);
-            clickTimeout = null;
-        }
-
-        // Handle double click
-        await handleDoubleClick(e);
+        // This is handled by the clickHandler to distinguish single/double clicks
     };
 
     const contextmenuHandler = async (e: MouseEvent) => {
@@ -123,7 +112,6 @@ export function createTaskClickHandler(options: ClickHandlerOptions) {
         clickHandler,
         dblclickHandler,
         contextmenuHandler,
-        // Cleanup function to clear any pending timeouts
         cleanup: () => {
             if (clickTimeout) {
                 clearTimeout(clickTimeout);

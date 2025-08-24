@@ -1642,15 +1642,32 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 					});
 			});
 
+		// Click behavior settings
 		new Setting(container)
-			.setName('Double-click to open note')
-			.setDesc('Enable double-click on task cards to open source note. When disabled, only single-click opens edit modal.')
-			.addToggle(toggle => {
-				toggle.toggleEl.setAttribute('aria-label', 'Enable double-click to open note functionality');
-				return toggle
-					.setValue(this.plugin.settings.enableDoubleClickToOpenNote)
-					.onChange(async (value) => {
-						this.plugin.settings.enableDoubleClickToOpenNote = value;
+			.setName('Single-click action')
+			.setDesc('What happens when you single-click a task card')
+			.addDropdown(dropdown => {
+				dropdown
+					.addOption('edit', 'Edit task')
+					.addOption('openNote', 'Open note')
+					.setValue(this.plugin.settings.singleClickAction)
+					.onChange(async (value: 'edit' | 'openNote') => {
+						this.plugin.settings.singleClickAction = value;
+						await this.plugin.saveSettings();
+					});
+			});
+
+		new Setting(container)
+			.setName('Double-click action')
+			.setDesc('What happens when you double-click a task card')
+			.addDropdown(dropdown => {
+				dropdown
+					.addOption('openNote', 'Open note')
+					.addOption('edit', 'Edit task')
+					.addOption('none', 'None')
+					.setValue(this.plugin.settings.doubleClickAction)
+					.onChange(async (value: 'edit' | 'openNote' | 'none') => {
+						this.plugin.settings.doubleClickAction = value;
 						await this.plugin.saveSettings();
 					});
 			});

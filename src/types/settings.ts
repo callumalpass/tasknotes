@@ -37,7 +37,8 @@ export interface TaskNotesSettings {
 	useDefaultsOnInstantConvert: boolean;
 	enableNaturalLanguageInput: boolean;
 	nlpDefaultToScheduled: boolean;
-	enableDoubleClickToOpenNote: boolean;
+	singleClickAction: 'edit' | 'openNote';
+	doubleClickAction: 'edit' | 'openNote' | 'none';
 	// Inline task conversion settings
 	inlineTaskConvertFolder: string; // Folder for inline task conversion, supports {{currentNotePath}}
 	// Performance settings
