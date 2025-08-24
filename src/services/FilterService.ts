@@ -705,17 +705,40 @@ export class FilterService extends EventEmitter {
         // For wikilink format, resolve to actual file path
         if (projectValue.startsWith('[[') && projectValue.endsWith(']]')) {
             const linkContent = projectValue.slice(2, -2);
-            const parsed = parseLinktext(linkContent);
+            
+            // Parse the wikilink manually since Obsidian's parseLinktext seems unreliable
+            let linkPath = linkContent;
+            let linkAlias = '';
+            
+            const pipeIndex = linkContent.indexOf('|');
+            if (pipeIndex !== -1) {
+                linkPath = linkContent.substring(0, pipeIndex).trim();
+                linkAlias = linkContent.substring(pipeIndex + 1).trim();
+            }
+            
+            // DEBUG: Detailed logging
+            if (typeof window !== 'undefined' && window.console) {
+                console.log(`[DEBUG] Wikilink: "${projectValue}"`);
+                console.log(`[DEBUG] linkContent: "${linkContent}"`);
+                console.log(`[DEBUG] manual parse - path: "${linkPath}", alias: "${linkAlias}"`);
+            }
             
             // Always try to resolve using Obsidian's API - this handles relative paths correctly
-            const resolvedFile = this.plugin.app.metadataCache.getFirstLinkpathDest(parsed.path, '');
+            const resolvedFile = this.plugin.app.metadataCache.getFirstLinkpathDest(linkPath, '');
             if (resolvedFile) {
+                if (typeof window !== 'undefined' && window.console) {
+                    console.log(`[DEBUG] File resolved: "${resolvedFile.path}"`);
+                }
                 // Return the absolute file path (vault-relative) without .md extension
                 return resolvedFile.path.replace(/\.md$/, '');
             }
             
-            // If file doesn't exist, clean up the parsed path
-            return parsed.path.replace(/\.md$/, '');
+            // If file doesn't exist, clean up the link path (ignore alias part)
+            const result = linkPath.replace(/\.md$/, '');
+            if (typeof window !== 'undefined' && window.console) {
+                console.log(`[DEBUG] File not found, using linkPath: "${result}"`);
+            }
+            return result;
         }
 
         // Handle pipe syntax like "../projects/Genealogy|Genealogy" - extract path part
