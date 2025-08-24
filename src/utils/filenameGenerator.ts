@@ -64,7 +64,13 @@ export function generateICSNoteFilename(
                     return generateTimestampFilename(now);
                     
                 case 'custom':
-                    return generateCustomICSFilename(context, icsSettings.customICSNoteFilenameTemplate, now);
+                    // Create ICS-specific additional variables
+                    const icsVariables: Record<string, string> = {
+                        icsEventTitle: context.icsEventTitle ? sanitizeForFilename(context.icsEventTitle) : sanitizeForFilename(context.title),
+                        icsEventLocation: context.icsEventLocation ? sanitizeForFilename(context.icsEventLocation) : '',
+                        icsEventDescription: context.icsEventDescription ? sanitizeForFilename(context.icsEventDescription.substring(0, 50)) : ''
+                    };
+                    return generateCustomFilename(context, icsSettings.customICSNoteFilenameTemplate, now, icsVariables);
                     
                 default:
                     // Fallback to title format for ICS notes
@@ -172,7 +178,8 @@ function generateTimestampFilename(date: Date): string {
 function generateCustomFilename(
     context: FilenameContext, 
     template: string, 
-    date: Date
+    date: Date,
+    additionalVariables?: Record<string, string>
 ): string {
     // Validate inputs
     if (!context || !template || !date) {
@@ -250,7 +257,10 @@ function generateCustomFilename(
             ).replace(/\s+/g, ''),
             // Date-based identifiers
             zettel: generateZettelId(date),
-            nano: Date.now().toString() + Math.random().toString(36).substring(2, 7)
+            nano: Date.now().toString() + Math.random().toString(36).substring(2, 7),
+            
+            // Merge any additional variables
+            ...(additionalVariables || {})
         };
         
         let result = template;
@@ -440,129 +450,3 @@ export async function generateUniqueFilename(
     }
 }
 
-/**
- * Generates a filename based on a custom template for ICS events
- */
-function generateCustomICSFilename(
-    context: ICSFilenameContext, 
-    template: string, 
-    date: Date
-): string {
-    // Validate inputs
-    if (!context || !template || !date) {
-        throw new Error('Invalid inputs for custom ICS filename generation');
-    }
-    
-    if (typeof template !== 'string' || template.trim().length === 0) {
-        throw new Error('Template must be a non-empty string');
-    }
-    
-    if (!(date instanceof Date) || isNaN(date.getTime())) {
-        throw new Error('Invalid date for filename generation');
-    }
-    
-    try {
-        // Validate and sanitize context values
-        const sanitizedTitle = sanitizeForFilename(context.title);
-        const sanitizedPriority = (context.priority && ['low', 'normal', 'medium', 'high'].includes(context.priority)) ? context.priority : 'normal';
-        const sanitizedStatus = (context.status && ['open', 'in-progress', 'done', 'scheduled'].includes(context.status)) ? context.status : 'open';
-        
-        // Include all standard variables plus ICS-specific ones
-        const variables: Record<string, string> = {
-            // Standard variables
-            title: sanitizedTitle,
-            date: format(date, 'yyyy-MM-dd'),
-            time: format(date, 'HHmmss'),
-            priority: sanitizedPriority,
-            status: sanitizedStatus,
-            timestamp: format(date, 'yyyy-MM-dd-HHmmss'),
-            dateTime: format(date, 'yyyy-MM-dd-HHmm'),
-            year: format(date, 'yyyy'),
-            month: format(date, 'MM'),
-            day: format(date, 'dd'),
-            hour: format(date, 'HH'),
-            minute: format(date, 'mm'),
-            second: format(date, 'ss'),
-            dueDate: context.dueDate || '',
-            scheduledDate: context.scheduledDate || '',
-            // New date format variations
-            shortDate: format(date, 'yyMMdd'),
-            monthName: format(date, 'MMMM'),
-            monthNameShort: format(date, 'MMM'),
-            dayName: format(date, 'EEEE'),
-            dayNameShort: format(date, 'EEE'),
-            week: format(date, 'ww'),
-            quarter: format(date, 'q'),
-            // Time variations
-            time12: format(date, 'hh:mm a'),
-            time24: format(date, 'HH:mm'),
-            hourPadded: format(date, 'HH'),
-            hour12: format(date, 'hh'),
-            ampm: format(date, 'a'),
-            // Unix timestamp
-            unix: Math.floor(date.getTime() / 1000).toString(),
-            unixMs: date.getTime().toString(),
-            // Milliseconds and timezone support for ISO 8601 format
-            milliseconds: format(date, 'SSS'),
-            ms: format(date, 'SSS'),
-            timezone: format(date, 'xxx'), // UTC offset in format ±HH:MM
-            timezoneShort: format(date, 'xx'), // UTC offset in format ±HHMM
-            utcOffset: format(date, 'xxx'), // UTC offset in format ±HH:MM
-            utcOffsetShort: format(date, 'xx'), // UTC offset in format ±HHMM
-            utcZ: 'Z', // Always 'Z' for Google Keep format (assumes UTC time)
-            // Priority and status variations
-            priorityShort: sanitizedPriority.substring(0, 1).toUpperCase(),
-            statusShort: sanitizedStatus.substring(0, 1).toUpperCase(),
-            // Title variations
-            titleLower: sanitizedTitle.toLowerCase(),
-            titleUpper: sanitizedTitle.toUpperCase(),
-            titleSnake: sanitizedTitle.toLowerCase().replace(/\s+/g, '_'),
-            titleKebab: sanitizedTitle.toLowerCase().replace(/\s+/g, '-'),
-            titleCamel: sanitizedTitle.replace(/(?:^\w|[A-Z]|\b\w)/g, (word, index) => 
-                index === 0 ? word.toLowerCase() : word.toUpperCase()
-            ).replace(/\s+/g, ''),
-            titlePascal: sanitizedTitle.replace(/(?:^\w|[A-Z]|\b\w)/g, word => 
-                word.toUpperCase()
-            ).replace(/\s+/g, ''),
-            // Date-based identifiers
-            zettel: generateZettelId(date),
-            nano: Date.now().toString() + Math.random().toString(36).substring(2, 7),
-            
-            // ICS-specific variables
-            icsEventTitle: context.icsEventTitle ? sanitizeForFilename(context.icsEventTitle) : sanitizedTitle,
-            icsEventLocation: context.icsEventLocation ? sanitizeForFilename(context.icsEventLocation) : '',
-            icsEventDescription: context.icsEventDescription ? sanitizeForFilename(context.icsEventDescription.substring(0, 50)) : '' // Truncate description
-        };
-        
-        let result = template;
-        
-        // Validate template length
-        if (template.length > 500) {
-            throw new Error('Template too long');
-        }
-        
-        // Replace all variables in the template
-        Object.entries(variables).forEach(([key, value]) => {
-            try {
-                const regex = new RegExp(`\\{${key}\\}`, 'g');
-                result = result.replace(regex, value);
-            } catch (regexError) {
-                console.warn(`Error replacing template variable ${key}:`, regexError);
-            }
-        });
-        
-        // Clean up any remaining unreplaced variables
-        result = result.replace(/\{[^}]+\}/g, '');
-        
-        // Ensure we have a valid filename
-        if (!result.trim()) {
-            result = sanitizedTitle || generateZettelId(date);
-        }
-        
-        return sanitizeForFilename(result);
-    } catch (error) {
-        console.error('Error generating custom ICS filename:', error);
-        // Fallback to safe title-based filename
-        return sanitizeForFilename(context.title) || generateZettelId(date);
-    }
-}
