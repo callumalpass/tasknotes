@@ -690,6 +690,94 @@ export class FilterService extends EventEmitter {
     }
 
     /**
+     * Resolve project reference to absolute file path for consistent grouping.
+     * Returns the absolute path if it resolves to a file, otherwise returns the original value.
+     */
+    resolveProjectToAbsolutePath(projectValue: string): string {
+        if (!projectValue || typeof projectValue !== 'string') {
+            return projectValue;
+        }
+
+        if (!this.plugin?.app) {
+            return projectValue;
+        }
+
+        // For wikilink format, resolve to actual file path
+        if (projectValue.startsWith('[[') && projectValue.endsWith(']]')) {
+            const linkContent = projectValue.slice(2, -2);
+            
+            // Parse the wikilink manually since Obsidian's parseLinktext seems unreliable
+            let linkPath = linkContent;
+            
+            const pipeIndex = linkContent.indexOf('|');
+            if (pipeIndex !== -1) {
+                linkPath = linkContent.substring(0, pipeIndex).trim();
+            }
+            
+            // Always try to resolve using Obsidian's API - this handles relative paths correctly
+            const resolvedFile = this.plugin.app.metadataCache.getFirstLinkpathDest(linkPath, '');
+            if (resolvedFile) {
+                // Return the absolute file path (vault-relative) without .md extension
+                return resolvedFile.path.replace(/\.md$/, '');
+            }
+            
+            // If file doesn't exist, clean up the link path (ignore alias part)
+            return linkPath.replace(/\.md$/, '');
+        }
+
+        // Handle pipe syntax like "../projects/Genealogy|Genealogy" - extract path part
+        if (projectValue.includes('|')) {
+            const parts = projectValue.split('|');
+            const pathPart = parts[0].trim();
+            
+            // Try to resolve the path part using Obsidian's API
+            const resolvedFile = this.plugin.app.metadataCache.getFirstLinkpathDest(pathPart, '');
+            if (resolvedFile) {
+                return resolvedFile.path.replace(/\.md$/, '');
+            }
+            
+            return pathPart.replace(/\.md$/, '');
+        }
+
+        // Handle path-like strings - try to resolve if possible
+        if (projectValue.includes('/')) {
+            const resolvedFile = this.plugin.app.metadataCache.getFirstLinkpathDest(projectValue, '');
+            if (resolvedFile) {
+                return resolvedFile.path.replace(/\.md$/, '');
+            }
+            
+            return projectValue.replace(/\.md$/, '');
+        }
+
+        // For plain text projects, try to resolve as well (maybe it's a filename)
+        const resolvedFile = this.plugin.app.metadataCache.getFirstLinkpathDest(projectValue, '');
+        if (resolvedFile) {
+            return resolvedFile.path.replace(/\.md$/, '');
+        }
+
+        // For plain text projects that don't resolve to files, return as-is
+        return projectValue;
+    }
+
+    /**
+     * Get the preferred project format for writing to task frontmatter.
+     * Converts an absolute path back to a proper wikilink format.
+     */
+    getPreferredProjectFormat(absolutePathOrName: string): string {
+        if (!absolutePathOrName || absolutePathOrName === 'No Project') {
+            return absolutePathOrName;
+        }
+        
+        // If it's already an absolute path, return as wikilink
+        if (absolutePathOrName.includes('/') || absolutePathOrName.endsWith('.md')) {
+            return `[[${absolutePathOrName}]]`;
+        }
+        
+        // For non-path values (plain text projects), return as simple wikilink
+        return `[[${absolutePathOrName}]]`;
+    }
+
+    /**
      * Get task paths within a date range
      */
     private async getTaskPathsInDateRange(startDate: string, endDate: string): Promise<Set<string>> {
@@ -1008,12 +1096,13 @@ export class FilterService extends EventEmitter {
             if (groupKey === 'project') {
                 const filteredProjects = filterEmptyProjects(task.projects || []);
                 if (filteredProjects.length > 0) {
-                    // Add task to each project group
+                    // Add task to each project group, using absolute path for consistent grouping
                     for (const project of filteredProjects) {
-                        if (!groups.has(project)) {
-                            groups.set(project, []);
+                        const absolutePath = this.resolveProjectToAbsolutePath(project);
+                        if (!groups.has(absolutePath)) {
+                            groups.set(absolutePath, []);
                         }
-                        groups.get(project)!.push(task);
+                        groups.get(absolutePath)!.push(task);
                     }
                 } else {
                     // Task has no projects - add to "No Project" group

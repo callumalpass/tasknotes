@@ -537,8 +537,8 @@ export class TaskListView extends ItemView {
                 // Calculate completion stats for this group
                 const groupStats = GroupCountUtils.calculateGroupStats(tasks, this.plugin);
 
-                // Label: project wikilink -> clickable, else plain text span
-                if (groupingKey === 'project' && this.isWikilinkProject(groupName)) {
+                // Label: project path -> clickable, else plain text span
+                if (groupingKey === 'project' && this.isClickableProject(groupName)) {
                     this.createClickableProjectHeader(headerElement, groupName, groupStats);
                 } else {
                     headerElement.createSpan({ text: this.formatGroupName(groupName) });
@@ -734,58 +734,88 @@ export class TaskListView extends ItemView {
     }
 
     /**
-     * Check if a project string is in wikilink format [[Note Name]]
+     * Check if a project string is a file path that should be made clickable
      */
-    private isWikilinkProject(project: string): boolean {
-        return project.startsWith('[[') && project.endsWith(']]');
+    private isClickableProject(project: string): boolean {
+        // Wikilink format
+        if (project.startsWith('[[') && project.endsWith(']]')) {
+            return true;
+        }
+        
+        // File path (contains slash) or could be a resolved file
+        if (project.includes('/')) {
+            return true;
+        }
+        
+        // Check if it's a resolved file path by trying to find the file
+        if (this.plugin?.app) {
+            const file = this.plugin.app.vault.getAbstractFileByPath(project + '.md');
+            if (file instanceof TFile) {
+                return true;
+            }
+            
+            const resolvedFile = this.plugin.app.metadataCache.getFirstLinkpathDest(project, '');
+            return !!resolvedFile;
+        }
+        
+        return false;
     }
 
     /**
-     * Create a clickable project header for wikilink projects
+     * Create a clickable project header for project file paths
      */
     private createClickableProjectHeader(headerElement: HTMLElement, projectName: string, groupStats?: { completed: number; total: number }): void {
-        if (this.isWikilinkProject(projectName)) {
-            // Extract the note name from [[Note Name]]
-            const noteName = projectName.slice(2, -2);
+        let filePath = projectName;
+        let displayName = projectName;
+        
+        // Handle wikilink format
+        if (projectName.startsWith('[[') && projectName.endsWith(']]')) {
+            const linkContent = projectName.slice(2, -2);
+            filePath = linkContent;
+            displayName = linkContent;
+        }
+        
+        // Create a clickable link
+        const linkEl = headerElement.createEl('a', {
+            cls: 'internal-link task-list-view__project-link',
+            text: displayName
+        });
+        
+        // Add click handler to open the file
+        this.registerDomEvent(linkEl, 'click', async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
             
-            // Create a clickable link
-            const linkEl = headerElement.createEl('a', {
-                cls: 'internal-link task-list-view__project-link',
-                text: noteName
-            });
-            
-            // Add click handler to open the note
-            this.registerDomEvent(linkEl, 'click', async (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                
-                // Resolve the link to get the actual file
-                const file = this.plugin.app.metadataCache.getFirstLinkpathDest(noteName, '');
+            try {
+                // First try to get file by direct path
+                const file = this.plugin.app.vault.getAbstractFileByPath(filePath);
                 if (file instanceof TFile) {
-                    // Open the file in the current leaf
                     await this.plugin.app.workspace.getLeaf(false).openFile(file);
-                } else {
-                    // File not found, show notice
-                    new Notice(`Note "${noteName}" not found`);
+                    return;
                 }
-            });
-            
-            // Add hover preview functionality - resolve the file first
-            const file = this.plugin.app.metadataCache.getFirstLinkpathDest(noteName, '');
-            if (file instanceof TFile) {
-                this.addHoverPreview(linkEl, file.path);
+                
+                // If not found, try to resolve using metadata cache
+                const resolvedFile = this.plugin.app.metadataCache.getFirstLinkpathDest(filePath, '');
+                if (resolvedFile) {
+                    await this.plugin.app.workspace.getLeaf(false).openFile(resolvedFile);
+                } else {
+                    new Notice(`Project file not found: ${displayName}`);
+                }
+            } catch (error) {
+                console.error('Error opening project file:', error);
+                new Notice(`Error opening project: ${displayName}`);
             }
+        });
+        
+        // Add hover preview functionality
+        this.addHoverPreview(linkEl, filePath);
 
-            // Add count with agenda-view__item-count styling if stats provided
-            if (groupStats) {
-                headerElement.createSpan({
-                    text: ` ${GroupCountUtils.formatGroupCount(groupStats.completed, groupStats.total).text}`,
-                    cls: 'agenda-view__item-count'
-                });
-            }
-        } else {
-            // Fallback to plain text
-            headerElement.textContent = this.formatGroupName(projectName);
+        // Add count with agenda-view__item-count styling if stats provided
+        if (groupStats) {
+            headerElement.createSpan({
+                text: ` ${GroupCountUtils.formatGroupCount(groupStats.completed, groupStats.total).text}`,
+                cls: 'agenda-view__item-count'
+            });
         }
     }
 

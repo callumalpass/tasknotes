@@ -40,6 +40,8 @@ export class GroupingUtils {
             case 'No Scheduled Date':
                 return 'No Scheduled Date';
             default:
+                // For project names that may come from consolidation, return as-is
+                // since they should already be cleaned by FilterService.consolidateProjectName
                 return groupName;
         }
     }
