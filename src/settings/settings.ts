@@ -219,27 +219,12 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 					});
 			});
 
-		new Setting(container)
-			.setName('Double-click to open note')
-			.setDesc('Enable double-click on task cards to open source note. When disabled, only single-click opens edit modal.')
-			.addToggle(toggle => {
-				toggle.toggleEl.setAttribute('aria-label', 'Enable double-click to open note functionality');
-				return toggle
-					.setValue(this.plugin.settings.enableDoubleClickToOpenNote)
-					.onChange(async (value) => {
-						this.plugin.settings.enableDoubleClickToOpenNote = value;
-						await this.plugin.saveSettings();
-					});
-			});
-
-
 		// Help section
 		const helpContainer = container.createDiv('settings-help-section');
 		helpContainer.createEl('h4', { text: 'How inline task features work:' });
 		const helpList = helpContainer.createEl('ul');
 		helpList.createEl('li', { text: 'Task link overlay: When you link to a task file like [[My Task]], it shows an interactive task card instead of a plain link' });
 		helpList.createEl('li', { text: 'Instant task convert: Shows a "Convert to TaskNote" button next to standard Markdown checkboxes like - [ ] My task' });
-		helpList.createEl('li', { text: 'Double-click to open note: When enabled, single-click opens edit modal, double-click opens source note. Ctrl/Cmd+click always opens source note.' });
 
 		helpContainer.createEl('p', {
 			text: 'These features help bridge regular Markdown tasks with the full TaskNotes system.',
@@ -1654,6 +1639,19 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 
 						// Show notice about restart requirement
 						new Notice('Note indexing setting changed. Please restart Obsidian or reload the plugin for changes to take effect.');
+					});
+			});
+
+		new Setting(container)
+			.setName('Double-click to open note')
+			.setDesc('Enable double-click on task cards to open source note. When disabled, only single-click opens edit modal.')
+			.addToggle(toggle => {
+				toggle.toggleEl.setAttribute('aria-label', 'Enable double-click to open note functionality');
+				return toggle
+					.setValue(this.plugin.settings.enableDoubleClickToOpenNote)
+					.onChange(async (value) => {
+						this.plugin.settings.enableDoubleClickToOpenNote = value;
+						await this.plugin.saveSettings();
 					});
 			});
 	}
