@@ -8,7 +8,7 @@ import {
     SavedView,
     TaskInfo
 } from '../types';
-import { EventRef, ItemView, Notice, Setting, TFile, WorkspaceLeaf, setIcon } from 'obsidian';
+import { EventRef, ItemView, Notice, Setting, WorkspaceLeaf, setIcon } from 'obsidian';
 import { addDays, endOfWeek, format, isSameDay, startOfWeek } from 'date-fns';
 import { convertUTCToLocalCalendarDate, createUTCDateFromLocalCalendarDate, formatDateForStorage, getTodayLocal, isTodayUTC } from '../utils/dateUtils';
 import { createICSEventCard, updateICSEventCard } from '../ui/ICSCard';
@@ -678,9 +678,20 @@ export class AgendaView extends ItemView {
                     dayItems.push({ type: 'note', item: note, date: dayData.date });
                 });
 
-                // Add ICS events
+                // Add ICS events (sorted chronologically)
                 if (this.showICSEvents) {
-                    dayData.ics.forEach(ics => {
+                    // Sort ICS events by start time before adding them
+                    const sortedIcsEvents = [...dayData.ics].sort((a, b) => {
+                        try {
+                            const timeA = new Date(a.start).getTime();
+                            const timeB = new Date(b.start).getTime();
+                            return timeA - timeB;
+                        } catch {
+                            return 0;
+                        }
+                    });
+                    
+                    sortedIcsEvents.forEach(ics => {
                         dayItems.push({ type: 'ics', item: ics, date: dayData.date });
                     });
                 }
@@ -730,9 +741,20 @@ export class AgendaView extends ItemView {
                 allItems.push({ type: 'note', item: note, date: dayData.date });
             });
 
-            // ICS events
+            // ICS events (sorted chronologically)
             if (this.showICSEvents) {
-                dayData.ics.forEach(ics => {
+                // Sort ICS events by start time
+                const sortedIcsEvents = [...dayData.ics].sort((a, b) => {
+                    try {
+                        const timeA = new Date(a.start).getTime();
+                        const timeB = new Date(b.start).getTime();
+                        return timeA - timeB;
+                    } catch {
+                        return 0;
+                    }
+                });
+                
+                sortedIcsEvents.forEach(ics => {
                     allItems.push({ type: 'ics', item: ics, date: dayData.date });
                 });
             }
@@ -751,7 +773,7 @@ export class AgendaView extends ItemView {
             return;
         }
         
-        // Sort by date
+        // Sort by date (ICS events within each date are already sorted)
         allItems.sort((a, b) => a.date.getTime() - b.date.getTime());
         
         // Use DOMReconciler to update the list
@@ -764,111 +786,6 @@ export class AgendaView extends ItemView {
         );
     }
     
-    /**
-     * Create agenda item element for reconciler
-     */
-    private createAgendaItemElement(item: {type: 'day-header' | 'task' | 'note' | 'ics', item: any, date: Date, dayKey: string}): HTMLElement {
-        if (item.type === 'day-header') {
-            const dayHeader = document.createElement('div');
-            dayHeader.className = 'agenda-view__day-header task-group-header';
-            dayHeader.setAttribute('data-day', item.dayKey);
-
-            // Create toggle button first (consistent with TaskList view)
-            const toggleBtn = dayHeader.createEl('button', {
-                cls: 'task-group-toggle',
-                attr: { 'aria-label': 'Toggle day' }
-            });
-            try {
-                setIcon(toggleBtn, 'chevron-right');
-            } catch (_) {}
-            const svg = toggleBtn.querySelector('svg');
-            if (svg) {
-                svg.classList.add('chevron');
-                svg.setAttr('width', '16');
-                svg.setAttr('height', '16');
-            } else {
-                toggleBtn.textContent = '▸';
-                toggleBtn.addClass('chevron-text');
-            }
-
-            const headerText = dayHeader.createDiv({ cls: 'agenda-view__day-header-text' });
-            // FIX: Convert UTC-anchored date to local calendar date for proper display formatting
-            const displayDate = convertUTCToLocalCalendarDate(item.date);
-            const dayName = format(displayDate, 'EEEE');
-            const dateFormatted = format(displayDate, 'MMMM d');
-
-            if (isTodayUTC(item.date)) {
-                headerText.createSpan({ cls: 'agenda-view__day-name agenda-view__day-name--today', text: 'Today' });
-                headerText.createSpan({ cls: 'agenda-view__day-date', text: ` • ${dateFormatted}` });
-            } else {
-                headerText.createSpan({ cls: 'agenda-view__day-name', text: dayName });
-                headerText.createSpan({ cls: 'agenda-view__day-date', text: ` • ${dateFormatted}` });
-            }
-
-            // Item count badge - show completion count for tasks only
-            const tasks = item.item.tasks || [];
-            let countText: string;
-
-            if (tasks.length > 0) {
-                // Show completion count for tasks
-                const taskStats = GroupCountUtils.calculateGroupStats(tasks, this.plugin);
-                countText = GroupCountUtils.formatGroupCount(taskStats.completed, taskStats.total).text;
-            } else {
-                // Show total count for other items (notes + ICS events)
-                const itemCount = (item.item.notes?.length || 0) + (item.item.ics?.length || 0);
-                countText = `${itemCount}`;
-            }
-
-            dayHeader.createDiv({ cls: 'agenda-view__item-count', text: countText });
-
-            return dayHeader;
-        } else if (item.type === 'task') {
-            return this.createTaskItemElement(item.item as TaskInfo, item.date);
-        } else {
-            if (item.type === 'note') {
-                return this.createNoteItemElement(item.item as NoteInfo, item.date);
-            }
-            return this.createICSEventItemElement(item.item as import('../types').ICSEvent);
-        }
-    }
-    
-    /**
-     * Update agenda item element for reconciler
-     */
-    private updateAgendaItemElement(element: HTMLElement, item: {type: 'day-header' | 'task' | 'note' | 'ics', item: any, date: Date, dayKey: string}): void {
-        if (item.type === 'day-header') {
-            // Update item count badge - show completion count for tasks only
-            const countBadge = element.querySelector('.agenda-view__item-count');
-            if (countBadge) {
-                const tasks = item.item.tasks || [];
-                let countText: string;
-
-                if (tasks.length > 0) {
-                    // Show completion count for tasks
-                    const taskStats = GroupCountUtils.calculateGroupStats(tasks, this.plugin);
-                    countText = GroupCountUtils.formatGroupCount(taskStats.completed, taskStats.total).text;
-                } else {
-                    // Show total count for other items (notes + ICS events)
-                    const itemCount = (item.item.notes?.length || 0) + (item.item.ics?.length || 0);
-                    countText = `${itemCount}`;
-                }
-
-                countBadge.textContent = countText;
-            }
-        } else if (item.type === 'task') {
-            updateTaskCard(element, item.item as TaskInfo, this.plugin, {
-                showDueDate: !this.groupByDate,
-                showCheckbox: false,
-                showTimeTracking: true,
-                showRecurringControls: true,
-                groupByDate: this.groupByDate,
-                targetDate: item.date
-            });
-        } else if (item.type === 'ics') {
-            updateICSEventCard(element, item.item as import('../types').ICSEvent, this.plugin);
-        }
-        // Note updates are handled automatically by the note card structure
-    }
     
     /**
      * Create flat agenda item element for reconciler
@@ -963,28 +880,6 @@ export class AgendaView extends ItemView {
         this.plugin.dragDropManager.makeTaskCardDraggable(card, task.path);
     }
 
-    private addHoverPreview(element: HTMLElement, filePath: string) {
-        element.addEventListener('mouseover', (event) => {
-            const file = this.app.vault.getAbstractFileByPath(filePath);
-            if (file) {
-                this.app.workspace.trigger('hover-link', {
-                    event,
-                    source: 'tasknotes-agenda',
-                    hoverParent: this,
-                    targetEl: element,
-                    linktext: filePath,
-                    sourcePath: filePath
-                });
-            }
-        });
-    }
-    
-    private openFile(path: string) {
-        const file = this.app.vault.getAbstractFileByPath(path);
-        if (file instanceof TFile) {
-            this.app.workspace.getLeaf(false).openFile(file);
-        }
-    }
     
     private getAgendaDates(): Date[] {
         const dates: Date[] = [];
@@ -1285,6 +1180,7 @@ export class AgendaView extends ItemView {
         next.collapsedDays[dayKey] = collapsed;
         this.plugin.viewStateManager.setViewPreferences(AGENDA_VIEW_TYPE, next);
     }
+
 
     /**
      * Wait for cache to be ready with actual data
