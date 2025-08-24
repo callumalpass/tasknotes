@@ -11,6 +11,76 @@ export interface FilenameContext {
     scheduledDate?: string; // YYYY-MM-DD format
 }
 
+export interface ICSFilenameContext extends FilenameContext {
+    icsEventTitle?: string;
+    icsEventLocation?: string;
+    icsEventDescription?: string;
+}
+
+/**
+ * Generates a filename for ICS event notes based on the configured format and context
+ */
+export function generateICSNoteFilename(
+    context: ICSFilenameContext, 
+    settings: TaskNotesSettings
+): string {
+    // Validate inputs
+    if (!context || !settings) {
+        throw new Error('Invalid context or settings provided');
+    }
+    
+    if (!context.title || typeof context.title !== 'string') {
+        throw new Error('Context must have a valid title');
+    }
+    
+    // Validate title content
+    if (context.title.trim().length === 0) {
+        throw new Error('Title cannot be empty');
+    }
+    
+    if (context.title.length > 200) {
+        throw new Error('Title too long for filename generation');
+    }
+    
+    const now = context.date || new Date();
+    
+    // Validate date
+    if (!(now instanceof Date) || isNaN(now.getTime())) {
+        throw new Error('Invalid date provided in context');
+    }
+    
+    try {
+        // Use ICS-specific filename format if available
+        const icsSettings = settings.icsIntegration;
+        if (icsSettings) {
+            switch (icsSettings.icsNoteFilenameFormat) {
+                case 'title':
+                    return sanitizeForFilename(context.title);
+                    
+                case 'zettel':
+                    return generateZettelId(now);
+                    
+                case 'timestamp':
+                    return generateTimestampFilename(now);
+                    
+                case 'custom':
+                    return generateCustomICSFilename(context, icsSettings.customICSNoteFilenameTemplate, now);
+                    
+                default:
+                    // Fallback to title format for ICS notes
+                    return sanitizeForFilename(context.title);
+            }
+        }
+        
+        // Fallback to title format if no ICS settings
+        return sanitizeForFilename(context.title);
+    } catch (error) {
+        console.error('Error generating ICS note filename:', error);
+        // Fallback to safe title format
+        return sanitizeForFilename(context.title);
+    }
+}
+
 /**
  * Generates a filename based on the configured format and context
  */
@@ -367,5 +437,132 @@ export async function generateUniqueFilename(
         // Final fallback with timestamp
         const timestamp = Date.now().toString(36);
         return `task-${timestamp}`;
+    }
+}
+
+/**
+ * Generates a filename based on a custom template for ICS events
+ */
+function generateCustomICSFilename(
+    context: ICSFilenameContext, 
+    template: string, 
+    date: Date
+): string {
+    // Validate inputs
+    if (!context || !template || !date) {
+        throw new Error('Invalid inputs for custom ICS filename generation');
+    }
+    
+    if (typeof template !== 'string' || template.trim().length === 0) {
+        throw new Error('Template must be a non-empty string');
+    }
+    
+    if (!(date instanceof Date) || isNaN(date.getTime())) {
+        throw new Error('Invalid date for filename generation');
+    }
+    
+    try {
+        // Validate and sanitize context values
+        const sanitizedTitle = sanitizeForFilename(context.title);
+        const sanitizedPriority = (context.priority && ['low', 'normal', 'medium', 'high'].includes(context.priority)) ? context.priority : 'normal';
+        const sanitizedStatus = (context.status && ['open', 'in-progress', 'done', 'scheduled'].includes(context.status)) ? context.status : 'open';
+        
+        // Include all standard variables plus ICS-specific ones
+        const variables: Record<string, string> = {
+            // Standard variables
+            title: sanitizedTitle,
+            date: format(date, 'yyyy-MM-dd'),
+            time: format(date, 'HHmmss'),
+            priority: sanitizedPriority,
+            status: sanitizedStatus,
+            timestamp: format(date, 'yyyy-MM-dd-HHmmss'),
+            dateTime: format(date, 'yyyy-MM-dd-HHmm'),
+            year: format(date, 'yyyy'),
+            month: format(date, 'MM'),
+            day: format(date, 'dd'),
+            hour: format(date, 'HH'),
+            minute: format(date, 'mm'),
+            second: format(date, 'ss'),
+            dueDate: context.dueDate || '',
+            scheduledDate: context.scheduledDate || '',
+            // New date format variations
+            shortDate: format(date, 'yyMMdd'),
+            monthName: format(date, 'MMMM'),
+            monthNameShort: format(date, 'MMM'),
+            dayName: format(date, 'EEEE'),
+            dayNameShort: format(date, 'EEE'),
+            week: format(date, 'ww'),
+            quarter: format(date, 'q'),
+            // Time variations
+            time12: format(date, 'hh:mm a'),
+            time24: format(date, 'HH:mm'),
+            hourPadded: format(date, 'HH'),
+            hour12: format(date, 'hh'),
+            ampm: format(date, 'a'),
+            // Unix timestamp
+            unix: Math.floor(date.getTime() / 1000).toString(),
+            unixMs: date.getTime().toString(),
+            // Milliseconds and timezone support for ISO 8601 format
+            milliseconds: format(date, 'SSS'),
+            ms: format(date, 'SSS'),
+            timezone: format(date, 'xxx'), // UTC offset in format ±HH:MM
+            timezoneShort: format(date, 'xx'), // UTC offset in format ±HHMM
+            utcOffset: format(date, 'xxx'), // UTC offset in format ±HH:MM
+            utcOffsetShort: format(date, 'xx'), // UTC offset in format ±HHMM
+            utcZ: 'Z', // Always 'Z' for Google Keep format (assumes UTC time)
+            // Priority and status variations
+            priorityShort: sanitizedPriority.substring(0, 1).toUpperCase(),
+            statusShort: sanitizedStatus.substring(0, 1).toUpperCase(),
+            // Title variations
+            titleLower: sanitizedTitle.toLowerCase(),
+            titleUpper: sanitizedTitle.toUpperCase(),
+            titleSnake: sanitizedTitle.toLowerCase().replace(/\s+/g, '_'),
+            titleKebab: sanitizedTitle.toLowerCase().replace(/\s+/g, '-'),
+            titleCamel: sanitizedTitle.replace(/(?:^\w|[A-Z]|\b\w)/g, (word, index) => 
+                index === 0 ? word.toLowerCase() : word.toUpperCase()
+            ).replace(/\s+/g, ''),
+            titlePascal: sanitizedTitle.replace(/(?:^\w|[A-Z]|\b\w)/g, word => 
+                word.toUpperCase()
+            ).replace(/\s+/g, ''),
+            // Date-based identifiers
+            zettel: generateZettelId(date),
+            nano: Date.now().toString() + Math.random().toString(36).substring(2, 7),
+            
+            // ICS-specific variables
+            icsEventTitle: context.icsEventTitle ? sanitizeForFilename(context.icsEventTitle) : sanitizedTitle,
+            icsEventLocation: context.icsEventLocation ? sanitizeForFilename(context.icsEventLocation) : '',
+            icsEventDescription: context.icsEventDescription ? sanitizeForFilename(context.icsEventDescription.substring(0, 50)) : '' // Truncate description
+        };
+        
+        let result = template;
+        
+        // Validate template length
+        if (template.length > 500) {
+            throw new Error('Template too long');
+        }
+        
+        // Replace all variables in the template
+        Object.entries(variables).forEach(([key, value]) => {
+            try {
+                const regex = new RegExp(`\\{${key}\\}`, 'g');
+                result = result.replace(regex, value);
+            } catch (regexError) {
+                console.warn(`Error replacing template variable ${key}:`, regexError);
+            }
+        });
+        
+        // Clean up any remaining unreplaced variables
+        result = result.replace(/\{[^}]+\}/g, '');
+        
+        // Ensure we have a valid filename
+        if (!result.trim()) {
+            result = sanitizedTitle || generateZettelId(date);
+        }
+        
+        return sanitizeForFilename(result);
+    } catch (error) {
+        console.error('Error generating custom ICS filename:', error);
+        // Fallback to safe title-based filename
+        return sanitizeForFilename(context.title) || generateZettelId(date);
     }
 }
