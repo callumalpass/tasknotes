@@ -700,19 +700,24 @@ export class FilterService extends EventEmitter {
 
         // For wikilink format, try to resolve to actual file
         if (projectValue.startsWith('[[') && projectValue.endsWith(']]')) {
-            const linkPath = this.extractWikilinkPath(projectValue);
-            if (linkPath && this.plugin?.app) {
-                const resolvedFile = this.plugin.app.metadataCache.getFirstLinkpathDest(linkPath, '');
+            const linkContent = projectValue.slice(2, -2);
+            const parsed = parseLinktext(linkContent);
+            
+            if (this.plugin?.app) {
+                const resolvedFile = this.plugin.app.metadataCache.getFirstLinkpathDest(parsed.path, '');
                 if (resolvedFile) {
                     // Return the file basename as the canonical name
                     return resolvedFile.basename;
                 }
                 
-                // If file doesn't exist, extract clean name from path
-                const cleanName = this.extractProjectName(projectValue);
-                if (cleanName) {
-                    return cleanName;
+                // If file doesn't exist, use display text if available, otherwise extract from path
+                if (parsed.subpath) {
+                    return parsed.subpath;
                 }
+                
+                // Extract clean name from path
+                const parts = parsed.path.split('/');
+                return parts[parts.length - 1] || parsed.path;
             }
         }
 
