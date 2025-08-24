@@ -11,6 +11,84 @@ export interface FilenameContext {
     scheduledDate?: string; // YYYY-MM-DD format
 }
 
+export interface ICSFilenameContext extends FilenameContext {
+    icsEventTitle?: string;
+    icsEventLocation?: string;
+    icsEventDescription?: string;
+}
+
+/**
+ * Generates a filename for ICS event notes based on the configured format and context
+ */
+export function generateICSNoteFilename(
+    context: ICSFilenameContext, 
+    settings: TaskNotesSettings
+): string {
+    // Validate inputs
+    if (!context || !settings) {
+        throw new Error('Invalid context or settings provided');
+    }
+    
+    if (!context.title || typeof context.title !== 'string') {
+        throw new Error('Context must have a valid title');
+    }
+    
+    // Validate title content
+    if (context.title.trim().length === 0) {
+        throw new Error('Title cannot be empty');
+    }
+    
+    if (context.title.length > 200) {
+        throw new Error('Title too long for filename generation');
+    }
+    
+    const now = context.date || new Date();
+    
+    // Validate date
+    if (!(now instanceof Date) || isNaN(now.getTime())) {
+        throw new Error('Invalid date provided in context');
+    }
+    
+    try {
+        // Use ICS-specific filename format if available
+        const icsSettings = settings.icsIntegration;
+        if (icsSettings) {
+            switch (icsSettings.icsNoteFilenameFormat) {
+                case 'title':
+                    return sanitizeForFilename(context.title);
+                    
+                case 'zettel':
+                    return generateZettelId(now);
+                    
+                case 'timestamp':
+                    return generateTimestampFilename(now);
+                    
+                case 'custom':
+                    // Create ICS-specific additional variables
+                    const icsVariables: Record<string, string> = {
+                        icsEventTitle: context.icsEventTitle ? sanitizeForFilename(context.icsEventTitle) : sanitizeForFilename(context.title),
+                        icsEventLocation: context.icsEventLocation ? sanitizeForFilename(context.icsEventLocation) : '',
+                        icsEventDescription: context.icsEventDescription ? sanitizeForFilename(context.icsEventDescription.substring(0, 50)) : '',
+                        // Add formatted title with date for users who want the full context
+                        icsEventTitleWithDate: sanitizeForFilename(`${context.icsEventTitle || context.title} - ${format(now, 'PPP')}`)
+                    };
+                    return generateCustomFilename(context, icsSettings.customICSNoteFilenameTemplate, now, icsVariables);
+                    
+                default:
+                    // Fallback to title format for ICS notes
+                    return sanitizeForFilename(context.title);
+            }
+        }
+        
+        // Fallback to title format if no ICS settings
+        return sanitizeForFilename(context.title);
+    } catch (error) {
+        console.error('Error generating ICS note filename:', error);
+        // Fallback to safe title format
+        return sanitizeForFilename(context.title);
+    }
+}
+
 /**
  * Generates a filename based on the configured format and context
  */
@@ -102,7 +180,8 @@ function generateTimestampFilename(date: Date): string {
 function generateCustomFilename(
     context: FilenameContext, 
     template: string, 
-    date: Date
+    date: Date,
+    additionalVariables?: Record<string, string>
 ): string {
     // Validate inputs
     if (!context || !template || !date) {
@@ -180,7 +259,10 @@ function generateCustomFilename(
             ).replace(/\s+/g, ''),
             // Date-based identifiers
             zettel: generateZettelId(date),
-            nano: Date.now().toString() + Math.random().toString(36).substring(2, 7)
+            nano: Date.now().toString() + Math.random().toString(36).substring(2, 7),
+            
+            // Merge any additional variables
+            ...(additionalVariables || {})
         };
         
         let result = template;
@@ -369,3 +451,4 @@ export async function generateUniqueFilename(
         return `task-${timestamp}`;
     }
 }
+

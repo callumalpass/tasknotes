@@ -135,6 +135,9 @@ export interface ICSIntegrationSettings {
 	defaultNoteTemplate: string;     // Path to template file for notes created from ICS events
 	// Default folders
 	defaultNoteFolder: string;       // Folder for notes created from ICS events
+	// Filename settings for ICS event notes
+	icsNoteFilenameFormat: 'title' | 'zettel' | 'timestamp' | 'custom';
+	customICSNoteFilenameTemplate: string; // Template for custom format
 }
 
 export interface CalendarViewSettings {

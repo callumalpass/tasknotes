@@ -1280,7 +1280,9 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 					if (!this.plugin.settings.icsIntegration) {
 						this.plugin.settings.icsIntegration = {
 							defaultNoteTemplate: '',
-							defaultNoteFolder: ''
+							defaultNoteFolder: '',
+							icsNoteFilenameFormat: 'title',
+							customICSNoteFilenameTemplate: '{title}'
 						};
 					}
 					this.plugin.settings.icsIntegration.defaultNoteTemplate = value;
@@ -1297,12 +1299,66 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 					if (!this.plugin.settings.icsIntegration) {
 						this.plugin.settings.icsIntegration = {
 							defaultNoteTemplate: '',
-							defaultNoteFolder: ''
+							defaultNoteFolder: '',
+							icsNoteFilenameFormat: 'title',
+							customICSNoteFilenameTemplate: '{title}'
 						};
 					}
 					this.plugin.settings.icsIntegration.defaultNoteFolder = value;
 					await this.plugin.saveSettings();
 				}));
+
+		// Filename settings for ICS event notes
+		new Setting(container).setName('Filename format for calendar event notes').setHeading();
+		
+		new Setting(container)
+			.setName('Filename format')
+			.setDesc('How to name notes created from calendar events')
+			.addDropdown(dropdown => dropdown
+				.addOptions({
+					'title': 'Event title',
+					'zettel': 'Zettelkasten (YYMMDD + time)',
+					'timestamp': 'Timestamp (YYYY-MM-DD-HHMMSS)', 
+					'custom': 'Custom template'
+				})
+				.setValue(this.plugin.settings.icsIntegration?.icsNoteFilenameFormat || 'title')
+				.onChange(async (value: 'title' | 'zettel' | 'timestamp' | 'custom') => {
+					if (!this.plugin.settings.icsIntegration) {
+						this.plugin.settings.icsIntegration = {
+							defaultNoteTemplate: '',
+							defaultNoteFolder: '',
+							icsNoteFilenameFormat: 'title',
+							customICSNoteFilenameTemplate: '{title}'
+						};
+					}
+					this.plugin.settings.icsIntegration.icsNoteFilenameFormat = value;
+					await this.plugin.saveSettings();
+					this.display();
+				}));
+
+		// Custom template setting (conditional)
+		if (this.plugin.settings.icsIntegration?.icsNoteFilenameFormat === 'custom') {
+			new Setting(container)
+				.setName('Custom filename template for ICS notes')
+				.setDesc('Template for custom filename format. Available variables: {title} (event title), {icsEventTitleWithDate} (event title + date), {icsEventLocation}, {icsEventDescription}, {date}, {time}, {timestamp}, etc.')
+				.addText(text => {
+					text.inputEl.setAttribute('aria-label', 'Custom ICS note filename template with variables');
+					return text
+						.setValue(this.plugin.settings.icsIntegration?.customICSNoteFilenameTemplate || '{title}')
+						.onChange(async (value) => {
+							if (!this.plugin.settings.icsIntegration) {
+								this.plugin.settings.icsIntegration = {
+									defaultNoteTemplate: '',
+									defaultNoteFolder: '',
+									icsNoteFilenameFormat: 'title',
+									customICSNoteFilenameTemplate: '{title}'
+								};
+							}
+							this.plugin.settings.icsIntegration.customICSNoteFilenameTemplate = value;
+							await this.plugin.saveSettings();
+						});
+				});
+		}
 	}
 
 	private renderNotificationsTab(): void {

@@ -141,7 +141,9 @@ export const DEFAULT_CALENDAR_VIEW_SETTINGS: CalendarViewSettings = {
 
 export const DEFAULT_ICS_INTEGRATION_SETTINGS: ICSIntegrationSettings = {
 	defaultNoteTemplate: '',
-	defaultNoteFolder: ''
+	defaultNoteFolder: '',
+	icsNoteFilenameFormat: 'title', // Default to using the event title for ICS notes
+	customICSNoteFilenameTemplate: '{title}' // Simple title template for ICS notes
 };
 
 export const DEFAULT_SETTINGS: TaskNotesSettings = {

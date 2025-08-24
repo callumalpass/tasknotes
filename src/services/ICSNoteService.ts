@@ -3,7 +3,7 @@ import { format } from 'date-fns';
 import TaskNotesPlugin from '../main';
 import { ICSEvent, TaskInfo, NoteInfo, TaskCreationData } from '../types';
 import { getCurrentTimestamp, formatDateForStorage } from '../utils/dateUtils';
-import { generateTaskFilename, generateUniqueFilename, FilenameContext } from '../utils/filenameGenerator';
+import { generateTaskFilename, generateICSNoteFilename, generateUniqueFilename, FilenameContext, ICSFilenameContext } from '../utils/filenameGenerator';
 import { ensureFolderExists } from '../utils/helpers';
 import { processTemplate, ICSTemplateData } from '../utils/templateProcessor';
 
@@ -99,17 +99,21 @@ export class ICSNoteService {
             const folder = overrides?.folder || this.plugin.settings.icsIntegration?.defaultNoteFolder || '';
 
             // Generate filename context for ICS events
-            const filenameContext: FilenameContext = {
-                title: noteTitle,
+            // Use clean event title for filename template variables, not the formatted noteTitle
+            const filenameContext: ICSFilenameContext = {
+                title: icsEvent.title, // Use clean event title for {title} variable
                 priority: '',
                 status: '',
                 date: new Date(icsEvent.start),
                 dueDate: icsEvent.end,
-                scheduledDate: icsEvent.start
+                scheduledDate: icsEvent.start,
+                icsEventTitle: icsEvent.title,
+                icsEventLocation: icsEvent.location,
+                icsEventDescription: icsEvent.description
             };
 
-            // Generate unique filename
-            const baseFilename = generateTaskFilename(filenameContext, this.plugin.settings);
+            // Generate unique filename using ICS-specific filename generator
+            const baseFilename = generateICSNoteFilename(filenameContext, this.plugin.settings);
             const uniqueFilename = await generateUniqueFilename(baseFilename, folder, this.plugin.app.vault);
             const fullPath = folder ? `${folder}/${uniqueFilename}.md` : `${uniqueFilename}.md`;
 
