@@ -249,6 +249,11 @@ Available sort options:
 - `priority` - Priority level (by configured weight)
 - `title` - Alphabetical (A-Z)
 - `createdDate` - Date created (newest first)
+- User-defined fields (from Settings → Advanced → User Fields). Sorting is type‑aware (number/date/boolean/list). For list fields, empty or missing values sort last.
+
+When Group by matches the selected Sort user field, group header order follows the sort direction (asc/desc).
+
+![Sort by custom user fields](../assets/sort-by-custom-user-fields.gif)
 
 **Fallback Sorting**: When the primary sort criteria are equal, tasks are sorted by: scheduled → due → priority → title
 
