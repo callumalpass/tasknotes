@@ -1,4 +1,4 @@
-import { ItemView, WorkspaceLeaf, Notice, EventRef, debounce } from 'obsidian';
+import { ItemView, WorkspaceLeaf, Notice, EventRef, debounce, TFile } from 'obsidian';
 import TaskNotesPlugin from '../main';
 import { 
     KANBAN_VIEW_TYPE, 
@@ -680,8 +680,22 @@ export class KanbanView extends ItemView {
                                 break;
                             case 'project':
                                 propertyToUpdate = 'projects';
-                                // For projects, set as array with single value
-                                valueToSet = targetColumnId === 'No Project' ? [] : [targetColumnId];
+                                // For projects, set as array with proper wikilink format
+                                if (targetColumnId === 'No Project') {
+                                    valueToSet = [];
+                                } else {
+                                    // Check if task already has this project in a different format
+                                    const existingFormat = this.findExistingProjectFormat(task, targetColumnId);
+                                    if (existingFormat) {
+                                        // Preserve the existing format by setting projects to only include this one
+                                        valueToSet = [existingFormat];
+                                    } else {
+                                        // Use a reasonable default format (simple wikilink with absolute path)
+                                        // Add .md extension if it's a file path
+                                        const wikilinkPath = targetColumnId.includes('/') ? `${targetColumnId}.md` : targetColumnId;
+                                        valueToSet = [`[[${wikilinkPath}]]`];
+                                    }
+                                }
                                 break;
                             default:
                                 throw new Error(`Unsupported groupBy: ${this.currentQuery.groupKey}`);
@@ -804,7 +818,14 @@ export class KanbanView extends ItemView {
         
         // Title line
         const title = this.formatColumnTitle(columnId, this.currentQuery.groupKey || 'none');
-        headerEl.createEl('div', { text: title, cls: 'kanban-view__column-title' });
+        const titleEl = headerEl.createEl('div', { cls: 'kanban-view__column-title' });
+        
+        // Make project paths clickable
+        if (this.currentQuery.groupKey === 'project' && columnId !== 'No Project') {
+            this.createClickableProjectTitle(titleEl, columnId, title);
+        } else {
+            titleEl.textContent = title;
+        }
         
         // Count line
         headerEl.createEl('div', { 
@@ -954,7 +975,7 @@ export class KanbanView extends ItemView {
                 if (id === 'No Project') {
                     return 'No Project';
                 }
-                // Clean project display - just show the project name without + prefix or wikilink formatting
+                // For project paths, display the absolute path
                 return id;
             case 'due':
                 return id;
@@ -964,6 +985,76 @@ export class KanbanView extends ItemView {
         }
     }
 
+
+    /**
+     * Find existing project format in task that resolves to the same absolute path
+     */
+    private findExistingProjectFormat(task: TaskInfo, targetAbsolutePath: string): string | null {
+        const filteredProjects = task.projects?.filter(p => p && typeof p === 'string' && p.trim() !== '') || [];
+        
+        for (const project of filteredProjects) {
+            const resolvedPath = this.plugin.filterService.resolveProjectToAbsolutePath(project);
+            if (resolvedPath === targetAbsolutePath) {
+                return project; // Return the original format
+            }
+        }
+        
+        return null;
+    }
+
+    /**
+     * Create a clickable project title for Kanban column headers
+     */
+    private createClickableProjectTitle(titleEl: HTMLElement, columnId: string, title: string): void {
+        // Check if the columnId looks like a file path
+        if (columnId.includes('/')) {
+            // Create a clickable link for file paths
+            const linkEl = titleEl.createEl('a', {
+                cls: 'internal-link kanban-view__project-link',
+                text: title
+            });
+            
+            // Add click handler to open the file
+            linkEl.addEventListener('click', async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                try {
+                    const file = this.plugin.app.vault.getAbstractFileByPath(columnId);
+                    if (file instanceof TFile) {
+                        // File exists, open it
+                        await this.plugin.app.workspace.getLeaf(false).openFile(file);
+                    } else {
+                        // File doesn't exist, try to resolve using metadata cache
+                        const resolvedFile = this.plugin.app.metadataCache.getFirstLinkpathDest(columnId, '');
+                        if (resolvedFile) {
+                            await this.plugin.app.workspace.getLeaf(false).openFile(resolvedFile);
+                        } else {
+                            new Notice(`Project file not found: ${columnId}`);
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error opening project file:', error);
+                    new Notice(`Error opening project: ${columnId}`);
+                }
+            });
+            
+            // Add hover preview
+            linkEl.addEventListener('mouseover', (event) => {
+                this.plugin.app.workspace.trigger('hover-link', {
+                    event,
+                    source: 'tasknotes-kanban',
+                    hoverParent: this,
+                    targetEl: linkEl,
+                    linktext: columnId,
+                    sourcePath: columnId
+                });
+            });
+        } else {
+            // For non-path projects, just show as text
+            titleEl.textContent = title;
+        }
+    }
 
     /**
      * Open task creation modal with pre-populated values based on column

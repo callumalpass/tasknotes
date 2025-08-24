@@ -690,52 +690,84 @@ export class FilterService extends EventEmitter {
     }
 
     /**
-     * Consolidate project names that point to the same file.
-     * Returns a canonical project name that represents all variations.
+     * Resolve project reference to absolute file path for consistent grouping.
+     * Returns the absolute path if it resolves to a file, otherwise returns the original value.
      */
-    private consolidateProjectName(projectValue: string): string {
+    resolveProjectToAbsolutePath(projectValue: string): string {
         if (!projectValue || typeof projectValue !== 'string') {
             return projectValue;
         }
 
-        // For wikilink format, try to resolve to actual file
+        if (!this.plugin?.app) {
+            return projectValue;
+        }
+
+        // For wikilink format, resolve to actual file path
         if (projectValue.startsWith('[[') && projectValue.endsWith(']]')) {
             const linkContent = projectValue.slice(2, -2);
             const parsed = parseLinktext(linkContent);
             
-            if (this.plugin?.app) {
-                const resolvedFile = this.plugin.app.metadataCache.getFirstLinkpathDest(parsed.path, '');
-                if (resolvedFile) {
-                    // Return the file basename as the canonical name
-                    return resolvedFile.basename;
-                }
-                
-                // If file doesn't exist, use display text if available, otherwise extract from path
-                if (parsed.subpath) {
-                    return parsed.subpath;
-                }
-                
-                // Extract clean name from path
-                const parts = parsed.path.split('/');
-                return parts[parts.length - 1] || parsed.path;
+            // Always try to resolve using Obsidian's API - this handles relative paths correctly
+            const resolvedFile = this.plugin.app.metadataCache.getFirstLinkpathDest(parsed.path, '');
+            if (resolvedFile) {
+                // Return the absolute file path (vault-relative) without .md extension
+                return resolvedFile.path.replace(/\.md$/, '');
             }
+            
+            // If file doesn't exist, clean up the parsed path
+            return parsed.path.replace(/\.md$/, '');
         }
 
-        // Handle pipe syntax like "../projects/Genealogy|Genealogy"
+        // Handle pipe syntax like "../projects/Genealogy|Genealogy" - extract path part
         if (projectValue.includes('|')) {
             const parts = projectValue.split('|');
-            // Return the display name (after the pipe)
-            return parts[parts.length - 1] || projectValue;
+            const pathPart = parts[0].trim();
+            
+            // Try to resolve the path part using Obsidian's API
+            const resolvedFile = this.plugin.app.metadataCache.getFirstLinkpathDest(pathPart, '');
+            if (resolvedFile) {
+                return resolvedFile.path.replace(/\.md$/, '');
+            }
+            
+            return pathPart.replace(/\.md$/, '');
         }
 
-        // Handle path-like strings (extract final segment)
+        // Handle path-like strings - try to resolve if possible
         if (projectValue.includes('/')) {
-            const parts = projectValue.split('/');
-            return parts[parts.length - 1] || projectValue;
+            const resolvedFile = this.plugin.app.metadataCache.getFirstLinkpathDest(projectValue, '');
+            if (resolvedFile) {
+                return resolvedFile.path.replace(/\.md$/, '');
+            }
+            
+            return projectValue.replace(/\.md$/, '');
         }
 
-        // For plain text projects, return as-is
+        // For plain text projects, try to resolve as well (maybe it's a filename)
+        const resolvedFile = this.plugin.app.metadataCache.getFirstLinkpathDest(projectValue, '');
+        if (resolvedFile) {
+            return resolvedFile.path.replace(/\.md$/, '');
+        }
+
+        // For plain text projects that don't resolve to files, return as-is
         return projectValue;
+    }
+
+    /**
+     * Get the preferred project format for writing to task frontmatter.
+     * Converts an absolute path back to a proper wikilink format.
+     */
+    getPreferredProjectFormat(absolutePathOrName: string): string {
+        if (!absolutePathOrName || absolutePathOrName === 'No Project') {
+            return absolutePathOrName;
+        }
+        
+        // If it's already an absolute path, return as wikilink
+        if (absolutePathOrName.includes('/') || absolutePathOrName.endsWith('.md')) {
+            return `[[${absolutePathOrName}]]`;
+        }
+        
+        // For non-path values (plain text projects), return as simple wikilink
+        return `[[${absolutePathOrName}]]`;
     }
 
     /**
@@ -1057,13 +1089,13 @@ export class FilterService extends EventEmitter {
             if (groupKey === 'project') {
                 const filteredProjects = filterEmptyProjects(task.projects || []);
                 if (filteredProjects.length > 0) {
-                    // Add task to each project group, consolidating names that point to same file
+                    // Add task to each project group, using absolute path for consistent grouping
                     for (const project of filteredProjects) {
-                        const consolidatedProject = this.consolidateProjectName(project);
-                        if (!groups.has(consolidatedProject)) {
-                            groups.set(consolidatedProject, []);
+                        const absolutePath = this.resolveProjectToAbsolutePath(project);
+                        if (!groups.has(absolutePath)) {
+                            groups.set(absolutePath, []);
                         }
-                        groups.get(consolidatedProject)!.push(task);
+                        groups.get(absolutePath)!.push(task);
                     }
                 } else {
                     // Task has no projects - add to "No Project" group
