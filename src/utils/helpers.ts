@@ -1295,3 +1295,23 @@ export function addDTSTARTToRecurrenceRuleWithDraggedTime(task: TaskInfo, dragge
 	}
 }
 
+/**
+ * Sanitizes tag input by removing # prefixes to prevent duplicate tags
+ * Handles both single tags and comma-separated lists
+ */
+export function sanitizeTags(tags: string): string {
+	if (!tags || typeof tags !== 'string') {
+		return '';
+	}
+	
+	return tags
+		.split(',')
+		.map(tag => {
+			const trimmed = tag.trim();
+			// Remove # prefix if it exists
+			return trimmed.startsWith('#') ? trimmed.slice(1) : trimmed;
+		})
+		.filter(tag => tag.length > 0) // Remove empty tags
+		.join(', ');
+}
+

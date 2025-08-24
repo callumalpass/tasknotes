@@ -4,7 +4,7 @@ import { TaskModal } from './TaskModal';
 import { TaskInfo, TaskCreationData } from '../types';
 import { getCurrentTimestamp } from '../utils/dateUtils';
 import { generateTaskFilename, FilenameContext } from '../utils/filenameGenerator';
-import { calculateDefaultDate } from '../utils/helpers';
+import { calculateDefaultDate, sanitizeTags } from '../utils/helpers';
 import { NaturalLanguageParser, ParsedTaskData as NLParsedTaskData } from '../services/NaturalLanguageParser';
 import { combineDateAndTime } from '../utils/dateUtils';
 
@@ -480,7 +480,7 @@ export class TaskCreationModal extends TaskModal {
         
         if (parsed.contexts && parsed.contexts.length > 0) this.contexts = parsed.contexts.join(', ');
         // Projects will be handled in the form input update section below
-        if (parsed.tags && parsed.tags.length > 0) this.tags = parsed.tags.join(', ');
+        if (parsed.tags && parsed.tags.length > 0) this.tags = sanitizeTags(parsed.tags.join(', '));
         if (parsed.details) this.details = parsed.details;
         if (parsed.recurrence) this.recurrenceRule = parsed.recurrence;
 
@@ -574,7 +574,7 @@ export class TaskCreationModal extends TaskModal {
             this.renderProjectsList();
         }
         if (values.tags !== undefined) {
-            this.tags = values.tags.filter(tag => tag !== this.plugin.settings.taskTag).join(', ');
+            this.tags = sanitizeTags(values.tags.filter(tag => tag !== this.plugin.settings.taskTag).join(', '));
         }
         if (values.timeEstimate !== undefined) this.timeEstimate = values.timeEstimate;
         if (values.recurrence !== undefined && typeof values.recurrence === 'string') {
@@ -630,7 +630,7 @@ export class TaskCreationModal extends TaskModal {
             .map(p => p.trim())
             .filter(p => p.length > 0);
             
-        const tagList = this.tags
+        const tagList = sanitizeTags(this.tags)
             .split(',')
             .map(t => t.trim())
             .filter(t => t.length > 0);
