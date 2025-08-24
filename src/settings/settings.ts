@@ -1340,7 +1340,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 		if (this.plugin.settings.icsIntegration?.icsNoteFilenameFormat === 'custom') {
 			new Setting(container)
 				.setName('Custom filename template for ICS notes')
-				.setDesc('Template for custom filename format. Available variables: {title}, {date}, {time}, {timestamp}, {icsEventTitle}, etc.')
+				.setDesc('Template for custom filename format. Available variables: {title} (event title), {icsEventTitleWithDate} (event title + date), {icsEventLocation}, {icsEventDescription}, {date}, {time}, {timestamp}, etc.')
 				.addText(text => {
 					text.inputEl.setAttribute('aria-label', 'Custom ICS note filename template with variables');
 					return text

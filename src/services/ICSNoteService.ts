@@ -99,8 +99,9 @@ export class ICSNoteService {
             const folder = overrides?.folder || this.plugin.settings.icsIntegration?.defaultNoteFolder || '';
 
             // Generate filename context for ICS events
+            // Use clean event title for filename template variables, not the formatted noteTitle
             const filenameContext: ICSFilenameContext = {
-                title: noteTitle,
+                title: icsEvent.title, // Use clean event title for {title} variable
                 priority: '',
                 status: '',
                 date: new Date(icsEvent.start),

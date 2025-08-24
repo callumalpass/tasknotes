@@ -68,7 +68,9 @@ export function generateICSNoteFilename(
                     const icsVariables: Record<string, string> = {
                         icsEventTitle: context.icsEventTitle ? sanitizeForFilename(context.icsEventTitle) : sanitizeForFilename(context.title),
                         icsEventLocation: context.icsEventLocation ? sanitizeForFilename(context.icsEventLocation) : '',
-                        icsEventDescription: context.icsEventDescription ? sanitizeForFilename(context.icsEventDescription.substring(0, 50)) : ''
+                        icsEventDescription: context.icsEventDescription ? sanitizeForFilename(context.icsEventDescription.substring(0, 50)) : '',
+                        // Add formatted title with date for users who want the full context
+                        icsEventTitleWithDate: sanitizeForFilename(`${context.icsEventTitle || context.title} - ${format(now, 'PPP')}`)
                     };
                     return generateCustomFilename(context, icsSettings.customICSNoteFilenameTemplate, now, icsVariables);
                     
