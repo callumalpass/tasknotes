@@ -29,6 +29,22 @@
     color: var(--color-accent);
 }
 
+/* User fields section styling */
+.user-fields-separator {
+    margin-top: var(--size-4-4);
+    border-top: 1px solid var(--background-modifier-border);
+    padding-top: var(--size-4-3);
+}
+
+.detail-label-section {
+    font-weight: 600;
+    color: var(--text-muted);
+    font-size: 0.9em;
+    margin-bottom: var(--size-4-2);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
 .modal-header-icon .svg-icon {
     width: 20px !important;
     height: 20px !important;
