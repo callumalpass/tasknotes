@@ -89,6 +89,7 @@ export class FilterBar extends EventEmitter {
         filterBox: false,   // Entire filter box - collapsed by default
         filters: true,      // This view section - expanded by default
         display: true,      // Display & Organization - expanded by default
+        layout: false,      // Layout (Display Fields) - collapsed by default
         viewOptions: false  // View Options - collapsed by default
     };
 
@@ -1520,7 +1521,7 @@ export class FilterBar extends EventEmitter {
     /**
      * Toggle a collapsible section
      */
-    private toggleSection(sectionKey: 'filterBox' | 'filters' | 'display' | 'viewOptions', header: HTMLElement, content: HTMLElement): void {
+    private toggleSection(sectionKey: 'filterBox' | 'filters' | 'display' | 'layout' | 'viewOptions', header: HTMLElement, content: HTMLElement): void {
         this.sectionStates[sectionKey] = !this.sectionStates[sectionKey];
         const isExpanded = this.sectionStates[sectionKey];
 
@@ -1958,12 +1959,23 @@ export class FilterBar extends EventEmitter {
      */
     private renderDisplayFieldsSection(container: HTMLElement): void {
         const section = container.createDiv('filter-bar__section');
+
+        // Collapsible header
         const header = section.createDiv('filter-bar__section-header');
         const titleWrapper = header.createDiv('filter-bar__section-header-main');
         titleWrapper.createSpan({ text: 'Layout', cls: 'filter-bar__section-title' });
         setTooltip(titleWrapper, 'Configure fields shown on task cards using {property|flags}', { placement: 'top' });
 
         const content = section.createDiv('filter-bar__section-content');
+        if (!this.sectionStates.layout) {
+            header.addClass('filter-bar__section-header--collapsed');
+            content.addClass('filter-bar__section-content--collapsed');
+        }
+
+        // Use the same toggle behavior as other sections (left chevron rotates)
+        titleWrapper.addEventListener('click', () => {
+            this.toggleSection('layout', header, content);
+        });
 
         // Row 1 is fixed Title preview
         content.createDiv({ text: '{Title}', cls: 'filter-bar__layout-fixed-title' });
