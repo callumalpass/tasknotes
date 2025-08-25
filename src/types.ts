@@ -6,6 +6,7 @@ export const NOTES_VIEW_TYPE = 'tasknotes-notes-view';
 export const AGENDA_VIEW_TYPE = 'tasknotes-agenda-view';
 export const POMODORO_VIEW_TYPE = 'tasknotes-pomodoro-view';
 export const POMODORO_STATS_VIEW_TYPE = 'tasknotes-pomodoro-stats-view';
+export const STATS_VIEW_TYPE = 'tasknotes-stats-view';
 export const KANBAN_VIEW_TYPE = 'tasknotes-kanban-view';
 export const SUBTASK_WIDGET_VIEW_TYPE = 'tasknotes-subtask-widget-view';
 
