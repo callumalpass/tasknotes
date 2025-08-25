@@ -633,7 +633,14 @@ export function createTaskCard(task: TaskInfo, plugin: TaskNotesPlugin, options:
 
     // Render additional display fields (rows 2–4) if configured
     if (opts.displayFields && opts.displayFields.rows) {
+        try { card.setAttr('data-has-display-fields', 'true'); } catch {}
         renderDisplayFields(contentContainer, task, plugin, opts.displayFields);
+        try {
+            const count = contentContainer.querySelectorAll('.task-card__custom-row').length;
+            card.setAttr('data-custom-rows', String(count));
+        } catch {}
+    } else {
+        try { card.removeAttribute('data-has-display-fields'); card.removeAttribute('data-custom-rows'); } catch {}
     }
 
     return card;
