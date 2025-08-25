@@ -1,6 +1,6 @@
 import { App, ButtonComponent, DropdownComponent, Modal, TextComponent, debounce, setTooltip } from 'obsidian';
 import { FILTER_OPERATORS, FILTER_PROPERTIES, FilterCondition, FilterGroup, FilterNode, FilterOperator, FilterOptions, FilterProperty, FilterQuery, PropertyDefinition, SavedView, TaskGroupKey, TaskSortKey, TaskCardDisplayFieldsConfig } from '../types';
-import { parseDisplayFieldsRow, parseDisplayFieldsConfig } from '../utils/displayFieldsParser';
+import { parseDisplayFieldsRow, parseDisplayFieldsConfig, serializeDisplayFieldsRow } from '../utils/displayFieldsParser';
 
 import { DragDropHandler } from './DragDropHandler';
 import { EventEmitter } from '../utils/EventEmitter';
@@ -1998,8 +1998,8 @@ export class FilterBar extends EventEmitter {
             update();
         };
 
-        // Initialize from currentDisplayFields if available
-        const initialRows = this.currentDisplayFields ? this.currentDisplayFields.rows.map(r => r.map(t => `{${t.property}${t.showName ? '|n' : ''}${t.displayName ? `|d(${t.displayName})` : ''}}`).join(' ')) : ['', '', ''];
+        // Initialize from currentDisplayFields if available (preserve literals and spacing)
+        const initialRows = this.currentDisplayFields ? this.currentDisplayFields.rows.map(r => serializeDisplayFieldsRow(r)) : ['', '', ''];
         makeRowEditor(0, initialRows[0] || '');
         makeRowEditor(1, initialRows[1] || '');
         makeRowEditor(2, initialRows[2] || '');

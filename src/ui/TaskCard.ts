@@ -649,6 +649,16 @@ function renderDisplayFields(container: HTMLElement, task: TaskInfo, plugin: Tas
             if (!row || row.length === 0) continue;
             const rowEl = container.createDiv({ cls: 'task-card__custom-row' });
             for (const token of row) {
+                // Handle literal tokens inline (no label/value split)
+                if (typeof token.property === 'string' && token.property.startsWith('literal:')) {
+                    const lit = token.property.slice(8);
+                    if (lit && lit.length > 0) {
+                        const litEl = rowEl.createSpan({ cls: 'task-card__literal', text: lit });
+                        // No further processing for literals
+                    }
+                    continue;
+                }
+
                 const fieldEl = rowEl.createSpan({ cls: 'task-card__field' });
                 const label = token.showName ? (token.displayName || prettifyKey(token.property)) : '';
                 if (label) {
@@ -658,13 +668,123 @@ function renderDisplayFields(container: HTMLElement, task: TaskInfo, plugin: Tas
                 const value = resolveDisplayFieldValue(task, plugin, token.property);
                 if (value !== undefined && value !== null && String(value).trim() !== '') {
                     const valueEl = fieldEl.createSpan({ cls: 'task-card__field-value' });
-                    valueEl.textContent = formatDisplayValue(value);
+                    appendRenderedValueWithLinks(valueEl, value, plugin, task.path);
                 }
             }
         }
     } catch (err) {
         console.error('Error rendering display fields', err);
     }
+}
+
+function appendRenderedValueWithLinks(parent: HTMLElement, value: any, plugin: TaskNotesPlugin, sourcePath: string): void {
+    if (Array.isArray(value)) {
+        let first = true;
+        for (const v of value) {
+            const str = v != null ? String(v) : '';
+            if (!str) continue;
+            if (!first) parent.appendChild(document.createTextNode(', '));
+            renderInlineLinks(parent, str, plugin, sourcePath);
+            first = false;
+        }
+        return;
+    }
+    if (typeof value === 'string') {
+        renderInlineLinks(parent, value, plugin, sourcePath);
+        return;
+    }
+    parent.textContent = formatDisplayValue(value);
+}
+
+function renderInlineLinks(parent: HTMLElement, text: string, plugin: TaskNotesPlugin, sourcePath: string): void {
+    try {
+        const svc = new (require('../services/TaskLinkDetectionService').TaskLinkDetectionService)(plugin);
+        const matches = svc.findWikilinks(text);
+        if (!matches || matches.length === 0) {
+            parent.appendChild(document.createTextNode(text));
+            return;
+        }
+        let cursor = 0;
+        for (const m of matches) {
+            if (m.start > cursor) {
+                parent.appendChild(document.createTextNode(text.slice(cursor, m.start)));
+            }
+            const seg = text.slice(m.start, m.end);
+            if (m.type === 'wikilink') {
+                renderWikilink(parent, seg, plugin, sourcePath);
+            } else {
+                renderMarkdownLink(parent, seg, plugin, sourcePath);
+            }
+            cursor = m.end;
+        }
+        if (cursor < text.length) {
+            parent.appendChild(document.createTextNode(text.slice(cursor)));
+        }
+    } catch (e) {
+        // Fallback to plain text on any error
+        parent.appendChild(document.createTextNode(text));
+    }
+}
+
+function renderWikilink(parent: HTMLElement, wikilink: string, plugin: TaskNotesPlugin, sourcePath: string): void {
+    const content = wikilink.slice(2, -2);
+    const pipeIndex = content.indexOf('|');
+    const pathPart = pipeIndex !== -1 ? content.slice(0, pipeIndex).trim() : content.trim();
+    const alias = pipeIndex !== -1 ? content.slice(pipeIndex + 1).trim() : '';
+
+    const { parseLinktext, TFile, Notice } = require('obsidian');
+    const parsed = parseLinktext(pathPart);
+    const display = alias || parsed.subpath || pathPart;
+
+    const a = parent.createEl('a', { cls: 'internal-link', text: display, attr: { 'data-href': parsed.path } });
+    a.addEventListener('click', async (e: MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const file = plugin.app.metadataCache.getFirstLinkpathDest(parsed.path, sourcePath);
+        if (file instanceof TFile) {
+            await plugin.app.workspace.getLeaf(false).openFile(file as TFile);
+        } else {
+            new Notice(`Note "${display}" not found`);
+        }
+    });
+}
+
+function renderMarkdownLink(parent: HTMLElement, md: string, plugin: TaskNotesPlugin, sourcePath: string): void {
+    const match = md.match(/^\[([^\]]*)\]\(([^)]+)\)$/);
+    if (!match) {
+        parent.appendChild(document.createTextNode(md));
+        return;
+    }
+    const displayText = match[1].trim();
+    let linkPath = match[2].trim();
+
+    // External link? leave as normal anchor
+    if (/^[a-zA-Z]+:\/\//.test(linkPath)) {
+        const a = parent.createEl('a', { text: displayText || linkPath, attr: { href: linkPath, target: '_blank', rel: 'noopener' } });
+        a.addEventListener('click', (e: MouseEvent) => { e.stopPropagation(); });
+        return;
+    }
+
+    // Internal link path
+    try {
+        linkPath = decodeURIComponent(linkPath);
+    } catch {}
+
+    const { parseLinktext, TFile, Notice } = require('obsidian');
+    const parsed = parseLinktext(linkPath);
+    const display = displayText || parsed.subpath || parsed.path;
+
+    const a = parent.createEl('a', { cls: 'internal-link', text: display, attr: { 'data-href': parsed.path } });
+    a.addEventListener('click', async (e: MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const file = plugin.app.metadataCache.getFirstLinkpathDest(parsed.path, sourcePath);
+        if (file instanceof TFile) {
+            await plugin.app.workspace.getLeaf(false).openFile(file as TFile);
+        } else {
+            new Notice(`Note "${display}" not found`);
+        }
+    });
 }
 
 function prettifyKey(key: string): string {

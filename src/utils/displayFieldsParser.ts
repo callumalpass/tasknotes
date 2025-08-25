@@ -41,10 +41,10 @@ export function parseDisplayFieldsRow(input: string): DisplayFieldToken[] {
   let match: RegExpExecArray | null;
   let lastIndex = 0;
   while ((match = regex.exec(input)) !== null) {
-    // Ensure tokens are contiguous or separated by whitespace
+    // Capture any literal text between tokens (including spaces/punctuation)
     const between = input.slice(lastIndex, match.index);
-    if (!/^\s*$/.test(between)) {
-      throw new Error('Unexpected characters between tokens');
+    if (between.length > 0) {
+      tokens.push({ property: `literal:${between}`, showName: false });
     }
     lastIndex = regex.lastIndex;
 
@@ -72,10 +72,10 @@ export function parseDisplayFieldsRow(input: string): DisplayFieldToken[] {
     }
     tokens.push(token);
   }
-  // Validate trailing characters after last token
+  // Capture any trailing literal text after the last token
   const trailing = input.slice(lastIndex);
-  if (!/^\s*$/.test(trailing)) {
-    throw new Error('Unexpected trailing characters after last token');
+  if (trailing.length > 0) {
+    tokens.push({ property: `literal:${trailing}`, showName: false });
   }
   return tokens;
 }
@@ -84,6 +84,9 @@ export function serializeDisplayFieldsRow(tokens: DisplayFieldToken[]): string {
   const esc = (s: string) => s.replace(/\|/g, '\\|').replace(/\)/g, '\\)');
   return tokens
     .map(t => {
+      if (typeof t.property === 'string' && t.property.startsWith('literal:')) {
+        return t.property.slice(8);
+      }
       const flags: string[] = [];
       if (t.showName) flags.push('n');
       if (t.displayName) flags.push(`d(${esc(t.displayName)})`);
@@ -91,7 +94,7 @@ export function serializeDisplayFieldsRow(tokens: DisplayFieldToken[]): string {
       if (t.format) flags.push(`f(${esc(t.format)})`);
       return `{${t.property}${flags.length ? '|' + flags.join('|') : ''}}`;
     })
-    .join(' ');
+    .join('');
 }
 
 export function parseDisplayFieldsConfig(rows2to4: string[]): TaskCardDisplayFieldsConfig {
