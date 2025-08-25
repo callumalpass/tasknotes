@@ -1,5 +1,8 @@
-import { App, ButtonComponent, DropdownComponent, Modal, TextComponent, debounce, setTooltip } from 'obsidian';
+import { App, ButtonComponent, DropdownComponent, Modal, Notice, TextComponent, debounce, setTooltip } from 'obsidian';
 import { FILTER_OPERATORS, FILTER_PROPERTIES, FilterCondition, FilterGroup, FilterNode, FilterOperator, FilterOptions, FilterProperty, FilterQuery, PropertyDefinition, SavedView, TaskGroupKey, TaskSortKey } from '../types';
+import type { TaskCardFieldConfig, TaskCardFieldId, TaskCardLayoutConfig } from '../types';
+import { buildAvailableFieldOptions } from '../utils/LayoutUtils';
+
 
 import { DragDropHandler } from './DragDropHandler';
 import { EventEmitter } from '../utils/EventEmitter';
@@ -57,6 +60,10 @@ export class FilterBar extends EventEmitter {
     private activeSavedView: SavedView | null = null;
     private isLoadingSavedView = false;
 
+    // Task card layout (Phase 1 plumbing)
+    private currentLayout?: TaskCardLayoutConfig;
+    private enableLayoutBuilder: boolean = true;
+
     // Debouncing for input fields
     private debouncedEmitQueryChange: () => void;
     private debouncedHandleSearchInput: () => void;
@@ -97,7 +104,7 @@ export class FilterBar extends EventEmitter {
         initialQuery: FilterQuery,
         filterOptions: FilterOptions,
         viewsButtonAlignment: 'left' | 'right' = 'right',
-        options?: { enableGroupExpandCollapse?: boolean; forceShowExpandCollapse?: boolean }
+        options?: { enableGroupExpandCollapse?: boolean; forceShowExpandCollapse?: boolean; enableLayoutBuilder?: boolean }
     ) {
         super();
         this.app = app;
@@ -107,6 +114,7 @@ export class FilterBar extends EventEmitter {
         this.viewsButtonAlignment = viewsButtonAlignment;
         this.enableGroupExpandCollapse = options?.enableGroupExpandCollapse ?? true;
         this.forceShowExpandCollapse = options?.forceShowExpandCollapse ?? false;
+        this.enableLayoutBuilder = options?.enableLayoutBuilder ?? true;
 
         // Initialize drag and drop handler
         this.dragDropHandler = new DragDropHandler((fromIndex, toIndex) => {
@@ -513,7 +521,12 @@ export class FilterBar extends EventEmitter {
         // 2. Display & Organization
         this.renderDisplaySection(this.mainFilterBox);
 
-        // 3. View-Specific Options
+        // 3. Display Layout (experimental, disabled by default)
+        if (this.enableLayoutBuilder) {
+            this.renderLayoutSection(this.mainFilterBox);
+        }
+
+        // 4. View-Specific Options
         this.renderViewOptions(this.mainFilterBox);
     }
 
@@ -1527,7 +1540,10 @@ export class FilterBar extends EventEmitter {
     private showSaveViewDialog(): void {
         new SaveViewModal(this.app, (name) => {
             const currentViewOptions = this.getCurrentViewOptions();
-            this.emit('saveView', { name, query: this.currentQuery, viewOptions: currentViewOptions });
+            // Phase 1 plumbing: include layout in payload (uses currentLayout, typically undefined)
+            const currentLayout = this.currentLayout;
+            console.log('FilterBar: Emitting saveView; layout present?', !!currentLayout);
+            this.emit('saveView', { name, query: this.currentQuery, viewOptions: currentViewOptions, layout: currentLayout });
             this.toggleViewSelectorDropdown();
         }).open();
     }
@@ -1547,6 +1563,14 @@ export class FilterBar extends EventEmitter {
         return options;
     }
 
+
+    /**
+     * Programmatically set the current layout (dev/scaffolding)
+     */
+    public setCurrentLayout(layout?: TaskCardLayoutConfig): void {
+        this.currentLayout = layout;
+        console.log('FilterBar: setCurrentLayout called; layout present?', !!layout);
+    }
 
     /**
      * Clear all filters and reset to default state
@@ -1644,6 +1668,11 @@ export class FilterBar extends EventEmitter {
     private loadSavedView(view: SavedView): void {
         this.isLoadingSavedView = true;
         this.currentQuery = FilterUtils.deepCloneFilterQuery(view.query);
+        this.currentLayout = view.layout; // store layout for future saves (may be undefined)
+        console.log('FilterBar: Loading saved view', { name: view.name, hasLayout: !!view.layout });
+        if (!view.layout) {
+            console.log('FilterBar: No layout in saved view; not emitting loadLayout');
+        }
         this.activeSavedView = view;
         this.render();
         this.emitQueryChange();
@@ -1651,6 +1680,10 @@ export class FilterBar extends EventEmitter {
         // Emit viewOptions event if they exist
         if (view.viewOptions) {
             this.emit('loadViewOptions', view.viewOptions);
+        }
+        // Phase 1 plumbing: emit layout if present (no UI yet)
+        if (view.layout) {
+            this.emit('loadLayout', view.layout);
         }
 
         // Emit activeSavedViewChanged event
@@ -1940,6 +1973,120 @@ export class FilterBar extends EventEmitter {
         this.updateFilterOptions(newOptions);
     }
 
+    /**
+     * Render the Layout section (scaffolding only; hidden unless enableLayoutBuilder is true)
+     */
+    private renderLayoutSection(container: HTMLElement): void {
+        const section = container.createDiv('filter-bar__section');
+        const header = section.createDiv('filter-bar__section-header');
+        const titleWrapper = header.createDiv('filter-bar__section-header-main');
+        titleWrapper.createSpan({ text: 'Layout (experimental)', cls: 'filter-bar__section-title' });
+        setTooltip(titleWrapper, 'Experimental layout configuration (hidden by default)', { placement: 'top' });
+
+        const content = section.createDiv('filter-bar__section-content');
+
+        // Minimal MVP editor (hidden behind flag): 2-column rows (max 4), field dropdowns, label toggles, right-column width
+        const snapshot = content.createDiv({ cls: 'filter-bar__layout-snapshot' });
+        const snapshotLabel = snapshot.createSpan({ text: 'Current layout: ' });
+        const snapshotValue = snapshot.createSpan({ text: this.currentLayout ? 'defined' : 'undefined' });
+
+        const grid = content.createDiv({ cls: 'filter-bar__layout-grid' });
+        const availableFields = buildAvailableFieldOptions(this.filterOptions);
+
+        const ensureLayout = (): TaskCardLayoutConfig => {
+            if (!this.currentLayout) {
+                this.currentLayout = { version: 1, rows: [] };
+            }
+            return this.currentLayout;
+        };
+
+        const renderRow = (rowIndex: number) => {
+            const layout = ensureLayout();
+            // Ensure row exists
+            while (layout.rows.length <= rowIndex) {
+                layout.rows.push({ fields: [null, null], rightColumnWidth: 50 });
+            }
+            const row = layout.rows[rowIndex];
+
+            const rowEl = grid.createDiv({ cls: 'filter-bar__layout-row' });
+            rowEl.createSpan({ text: `Row ${rowIndex + 1}` });
+
+            // Column editors
+            [0, 1].forEach((col) => {
+                const cell = rowEl.createDiv({ cls: 'filter-bar__layout-cell' });
+
+                // Field selector
+                const select = cell.createEl('select');
+                select.appendChild(new Option('Empty', ''));
+                availableFields.forEach(f => select.appendChild(new Option(f.label, f.id)));
+                const currentId = row.fields[col]?.id ?? '';
+                select.value = currentId as string;
+                select.addEventListener('change', () => {
+                    const value = select.value as TaskCardFieldId | '';
+                    row.fields[col] = value ? { id: value as TaskCardFieldId, labelVisible: true } : null;
+                    this.setCurrentLayout(layout);
+                    snapshotValue.setText('defined');
+                });
+
+                // Label visibility toggle (only when field selected)
+                const labelToggle = cell.createEl('input', { type: 'checkbox' });
+                labelToggle.checked = row.fields[col]?.labelVisible ?? false;
+                labelToggle.disabled = !row.fields[col];
+                labelToggle.addEventListener('change', () => {
+                    if (row.fields[col]) {
+                        row.fields[col]!.labelVisible = labelToggle.checked;
+                        this.setCurrentLayout(layout);
+                    }
+                });
+            });
+
+            // Right column width slider
+            const widthWrap = rowEl.createDiv({ cls: 'filter-bar__layout-width' });
+            const widthLabel = widthWrap.createSpan({ text: `Right column width: ${row.rightColumnWidth}%` });
+            const widthInput = widthWrap.createEl('input', { type: 'range' });
+            widthInput.min = '0';
+            widthInput.max = '100';
+            widthInput.step = '5';
+            widthInput.value = String(row.rightColumnWidth);
+            widthInput.addEventListener('input', () => {
+                row.rightColumnWidth = Number(widthInput.value);
+                widthLabel.setText(`Right column width: ${row.rightColumnWidth}%`);
+                this.setCurrentLayout(layout);
+            });
+
+            // Row controls
+            const rowControls = rowEl.createDiv({ cls: 'filter-bar__layout-row-controls' });
+            const removeBtn = rowControls.createEl('button', { text: 'Remove row' });
+            removeBtn.addEventListener('click', () => {
+                const layout = ensureLayout();
+                layout.rows.splice(rowIndex, 1);
+                grid.empty();
+                for (let i = 0; i < layout.rows.length; i++) renderRow(i);
+            });
+        };
+
+        const controls = content.createDiv({ cls: 'filter-bar__layout-controls' });
+        const addRowBtn = controls.createEl('button', { text: 'Add row' });
+        addRowBtn.addEventListener('click', () => {
+            const layout = ensureLayout();
+            if (layout.rows.length >= 4) {
+                new Notice('Maximum of 4 rows allowed in MVP layout');
+                return;
+            }
+            layout.rows.push({ fields: [null, null], rightColumnWidth: 50 });
+            grid.empty();
+            for (let i = 0; i < layout.rows.length; i++) renderRow(i);
+            snapshotValue.setText('defined');
+        });
+
+        // Initial render from existing layout
+        const layout = this.currentLayout;
+        if (layout?.rows?.length) {
+            for (let i = 0; i < Math.min(layout.rows.length, 4); i++) {
+                renderRow(i);
+            }
+        }
+    }
 
     /**
      * Destroy and clean up the FilterBar
@@ -1970,7 +2117,6 @@ export class FilterBar extends EventEmitter {
                     this.abortController.abort();
                     this.abortController = undefined;
                 }
-
                 if (this.ignoreClickTimeout) {
                     window.clearTimeout(this.ignoreClickTimeout);
                     this.ignoreClickTimeout = undefined;

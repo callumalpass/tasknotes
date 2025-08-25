@@ -1,5 +1,5 @@
 import { Decoration, DecorationSet, EditorView, PluginSpec, PluginValue, ViewPlugin, ViewUpdate, WidgetType } from '@codemirror/view';
-import { EVENT_DATA_CHANGED, EVENT_TASK_DELETED, EVENT_TASK_UPDATED, FilterQuery, SUBTASK_WIDGET_VIEW_TYPE, TaskInfo } from '../types';
+import { EVENT_DATA_CHANGED, EVENT_TASK_DELETED, EVENT_TASK_UPDATED, FilterQuery, SUBTASK_WIDGET_VIEW_TYPE, TaskInfo, TaskCardLayoutConfig } from '../types';
 import { EventRef, TFile, editorInfoField, editorLivePreviewField, setIcon } from 'obsidian';
 import { Extension, RangeSetBuilder, StateEffect } from '@codemirror/state';
 
@@ -205,7 +205,12 @@ class ProjectSubtasksWidget extends WidgetType {
             // Load saved views from the main ViewStateManager
             const savedViews = this.plugin.viewStateManager.getSavedViews();
             this.filterBar.updateSavedViews(savedViews);
-            
+
+            // Phase 1: listen for layout load (store only)
+            this.filterBar.on('loadLayout', (layout: TaskCardLayoutConfig) => {
+                console.log('ProjectNoteDecorations: loadLayout received (ignored for editor widgets in Phase 1)');
+            });
+
             // Listen for filter changes
             this.filterBar.on('queryChange', (query: FilterQuery) => {
                 this.currentQuery = query;
@@ -225,8 +230,9 @@ class ProjectSubtasksWidget extends WidgetType {
             });
             
             // Listen for saved view operations
-            this.filterBar.on('saveView', (data: { name: string, query: FilterQuery, viewOptions?: {[key: string]: boolean} }) => {
-                this.plugin.viewStateManager.saveView(data.name, data.query, data.viewOptions);
+            this.filterBar.on('saveView', (data: { name: string, query: FilterQuery, viewOptions?: {[key: string]: boolean}, layout?: TaskCardLayoutConfig }) => {
+                const effectiveLayout = data.layout; // no per-note persistence yet
+                this.plugin.viewStateManager.saveView(data.name, data.query, data.viewOptions, effectiveLayout);
             });
             
             this.filterBar.on('deleteView', (viewId: string) => {

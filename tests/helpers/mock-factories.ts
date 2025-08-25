@@ -503,6 +503,17 @@ export const PluginFactory = {
           return result;
         })
       },
+      priorityManager: {
+        getPriorityConfig: jest.fn((priority) => ({
+          value: priority,
+          label: priority,
+          color: '#ff0000'
+        })),
+        getPrioritiesByWeight: jest.fn(() => [
+          { value: 'high', label: 'High' },
+          { value: 'normal', label: 'Normal' }
+        ])
+      },
       statusManager: {
         isCompletedStatus: jest.fn((status) => status === 'done' || status === 'completed'),
         getCompletedStatuses: jest.fn(() => ['done', 'completed']),
@@ -514,10 +525,18 @@ export const PluginFactory = {
           };
           return statusMap[currentStatus] || 'in-progress';
         }),
-        getAllStatuses: jest.fn(() => ['open', 'in-progress', 'done'])
+        getAllStatuses: jest.fn(() => ['open', 'in-progress', 'done']),
+        getStatusConfig: jest.fn((status) => ({ value: status, label: status, color: '#00aa00' }))
       },
       getActiveTimeSession: jest.fn().mockReturnValue(null),
       selectedDate: new Date(),
+
+      // Project subtasks service stub for TaskCard
+      projectSubtasksService: {
+        isTaskUsedAsProject: jest.fn().mockResolvedValue(false),
+        getTasksLinkedToProject: jest.fn().mockResolvedValue([]),
+        sortTasks: jest.fn((tasks: any[]) => tasks)
+      },
       
       // Calendar integration methods that are missing from test failures
       toggleRecurringTaskComplete: jest.fn().mockImplementation(async (_task, _targetDate) => {

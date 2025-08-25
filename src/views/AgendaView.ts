@@ -6,7 +6,8 @@ import {
     FilterQuery,
     NoteInfo,
     SavedView,
-    TaskInfo
+    TaskInfo,
+    TaskCardLayoutConfig
 } from '../types';
 import { EventRef, ItemView, Notice, Setting, TFile, WorkspaceLeaf, setIcon } from 'obsidian';
 import { addDays, endOfWeek, format, isSameDay, startOfWeek } from 'date-fns';
@@ -45,7 +46,8 @@ export class AgendaView extends ItemView {
     private filterBar: FilterBar | null = null;
     private filterHeading: FilterHeading | null = null;
     private currentQuery: FilterQuery;
-    
+    private currentLayout?: TaskCardLayoutConfig;
+
     // Event listeners
     private listeners: EventRef[] = [];
     private functionListeners: (() => void)[] = [];
@@ -333,8 +335,10 @@ export class AgendaView extends ItemView {
         this.filterBar.updateSavedViews(savedViews);
         
         // Listen for saved view events
-        this.filterBar.on('saveView', ({ name, query, viewOptions }) => {
-            this.plugin.viewStateManager.saveView(name, query, viewOptions);
+        this.filterBar.on('saveView', ({ name, query, viewOptions, layout }) => {
+            const effectiveLayout = layout ?? this.currentLayout;
+            const savedView = this.plugin.viewStateManager.saveView(name, query, viewOptions, effectiveLayout);
+            console.log('AgendaView: Saved view result:', { id: savedView.id, name: savedView.name, hasLayout: !!savedView.layout });
             // Don't update here - the ViewStateManager event will handle it
         });
         
@@ -346,6 +350,18 @@ export class AgendaView extends ItemView {
         // Listen for view options load events
         this.filterBar.on('loadViewOptions', (viewOptions: {[key: string]: boolean}) => {
             this.applyViewOptions(viewOptions);
+        });
+
+        // Listen for layout load (Phase 1: store only)
+        this.filterBar.on('loadLayout', (layout: TaskCardLayoutConfig) => {
+            this.currentLayout = layout;
+            console.log('AgendaView: loadLayout received; stored currentLayout');
+        });
+
+        // Listen for layout load (Phase 1: store only)
+        this.filterBar.on('loadLayout', (layout: TaskCardLayoutConfig) => {
+            this.currentLayout = layout;
+            // No rendering changes yet
         });
 
         // Listen for global saved views changes

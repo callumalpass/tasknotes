@@ -1,4 +1,4 @@
-import { FilterQuery, ViewFilterState, ViewPreferences, SavedView } from '../types';
+import { FilterQuery, ViewFilterState, ViewPreferences, SavedView, TaskCardLayoutConfig } from '../types';
 import { EventEmitter } from '../utils/EventEmitter';
 import { FilterUtils } from '../utils/FilterUtils';
 import { App } from 'obsidian';
@@ -199,12 +199,13 @@ export class ViewStateManager extends EventEmitter {
     /**
      * Save a new view
      */
-    saveView(name: string, query: FilterQuery, viewOptions?: {[key: string]: boolean}): SavedView {
+    saveView(name: string, query: FilterQuery, viewOptions?: {[key: string]: boolean}, layout?: TaskCardLayoutConfig): SavedView {
         const view: SavedView = {
             id: this.generateId(),
             name,
             query: FilterUtils.deepCloneFilterQuery(query),
-            viewOptions: viewOptions ? { ...viewOptions } : undefined
+            viewOptions: viewOptions ? { ...viewOptions } : undefined,
+            layout: layout ? { ...layout } : undefined
         };
 
         this.savedViews.push(view);
@@ -230,6 +231,9 @@ export class ViewStateManager extends EventEmitter {
         }
         if (clonedUpdates.viewOptions) {
             clonedUpdates.viewOptions = { ...clonedUpdates.viewOptions };
+        }
+        if (clonedUpdates.layout) {
+            clonedUpdates.layout = { ...clonedUpdates.layout } as any;
         }
 
         this.savedViews[viewIndex] = {

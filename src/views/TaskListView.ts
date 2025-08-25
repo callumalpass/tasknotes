@@ -6,7 +6,8 @@ import {
     EVENT_DATA_CHANGED,
     EVENT_TASK_UPDATED,
     FilterQuery,
-    SavedView
+    SavedView,
+    TaskCardLayoutConfig
 } from '../types';
 // No helper functions needed from helpers
 import { perfMonitor } from '../utils/PerformanceMonitor';
@@ -32,7 +33,8 @@ export class TaskListView extends ItemView {
     private filterBar: FilterBar | null = null;
     private filterHeading: FilterHeading | null = null;
     private currentQuery: FilterQuery;
-    
+    private currentLayout?: TaskCardLayoutConfig;
+
     // Task item tracking for dynamic updates
     private taskElements: Map<string, HTMLElement> = new Map();
     
@@ -308,10 +310,11 @@ export class TaskListView extends ItemView {
         this.filterBar.updateSavedViews(savedViews);
         
         // Listen for saved view events
-        this.filterBar.on('saveView', ({ name, query, viewOptions }) => {
-            console.log('TaskListView: Received saveView event:', name, query, viewOptions); // Debug
-            const savedView = this.plugin.viewStateManager.saveView(name, query, viewOptions);
-            console.log('TaskListView: Saved view result:', savedView); // Debug
+        this.filterBar.on('saveView', ({ name, query, viewOptions, layout }) => {
+            console.log('TaskListView: Received saveView event:', { name, hasLayout: !!layout });
+            const effectiveLayout = layout ?? this.currentLayout;
+            const savedView = this.plugin.viewStateManager.saveView(name, query, viewOptions, effectiveLayout);
+            console.log('TaskListView: Saved view result:', { id: savedView.id, name: savedView.name, hasLayout: !!savedView.layout });
             // Don't update here - the ViewStateManager event will handle it
         });
         
@@ -325,6 +328,13 @@ export class TaskListView extends ItemView {
         this.plugin.viewStateManager.on('saved-views-changed', (updatedViews: readonly SavedView[]) => {
             console.log('TaskListView: Received saved-views-changed event:', updatedViews); // Debug
             this.filterBar?.updateSavedViews(updatedViews);
+        });
+
+        // Listen for layout load (Phase 1: store only)
+        this.filterBar.on('loadLayout', (layout: TaskCardLayoutConfig) => {
+            this.currentLayout = layout;
+            console.log('TaskListView: loadLayout received; stored currentLayout');
+            // No rendering changes yet; future TaskCard integration will consume this
         });
         
         this.filterBar.on('reorderViews', (fromIndex: number, toIndex: number) => {

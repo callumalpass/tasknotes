@@ -64,12 +64,41 @@ export interface FilterQuery extends FilterGroup {
 	groupKey?: TaskGroupKey;
 }
 
+// Task card layout configuration types (Phase 0: added for future use)
+export type TaskCardFieldId =
+	// Built-in fields
+	| 'title' | 'status' | 'priority' | 'due' | 'scheduled' | 'contexts' | 'projects'
+	| 'timeEstimate' | 'completedDate' | 'recurrence' | 'tags'
+	// User-defined fields (from settings.userFields)
+	| `user:${string}`;
+
+export interface TaskCardFieldConfig {
+	id: TaskCardFieldId;
+	labelVisible: boolean; // MVP-supported setting
+	// editable flag reserved for future iterations; not used in MVP
+	editable?: boolean;
+}
+
+export interface TaskCardLayoutGridRow {
+	// Two columns maximum; null means empty cell
+	fields: [TaskCardFieldConfig | null, TaskCardFieldConfig | null];
+	// Percentage 0-100 for right column width; left is 100 - right
+	rightColumnWidth: number;
+}
+
+export interface TaskCardLayoutConfig {
+	version: 1;
+	rows: TaskCardLayoutGridRow[]; // Visual grid rows
+}
+
 // A named, persistent configuration that encapsulates the entire state
 export interface SavedView {
 	id: string; // Unique ID for the view
 	name: string; // User-defined name (e.g., "High-Priority Work")
 	query: FilterQuery; // The complete configuration, including filters, sorting, and grouping
 	viewOptions?: {[key: string]: boolean}; // View-specific options (e.g., showOverdueOnToday, showNotes)
+	// Optional task card layout configuration (when undefined/empty → no behavior change)
+	layout?: TaskCardLayoutConfig;
 }
 
 // Property and operator definitions for the advanced filtering system

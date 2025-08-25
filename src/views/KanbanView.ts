@@ -1,13 +1,14 @@
 import { ItemView, WorkspaceLeaf, Notice, EventRef, debounce, TFile } from 'obsidian';
 import TaskNotesPlugin from '../main';
-import { 
-    KANBAN_VIEW_TYPE, 
-    EVENT_DATA_CHANGED, 
-    EVENT_TASK_UPDATED, 
+import {
+    KANBAN_VIEW_TYPE,
+    EVENT_DATA_CHANGED,
+    EVENT_TASK_UPDATED,
     TaskInfo,
     FilterQuery,
     TaskGroupKey,
-    SavedView
+    SavedView,
+    TaskCardLayoutConfig
 } from '../types';
 import { createTaskCard, updateTaskCard, refreshParentTaskSubtasks } from '../ui/TaskCard';
 import { FilterBar } from '../ui/FilterBar';
@@ -21,6 +22,7 @@ export class KanbanView extends ItemView {
     // Filter system
     private filterBar: FilterBar | null = null;
     private currentQuery: FilterQuery;
+    private currentLayout?: TaskCardLayoutConfig;
     private taskElements: Map<string, HTMLElement> = new Map();
     private previousGroupKey: string | null = null;
 
@@ -216,8 +218,10 @@ export class KanbanView extends ItemView {
         this.filterBar.updateSavedViews(savedViews);
         
         // Listen for saved view events
-        this.filterBar.on('saveView', ({ name, query, viewOptions }) => {
-            this.plugin.viewStateManager.saveView(name, query, viewOptions);
+        this.filterBar.on('saveView', ({ name, query, viewOptions, layout }) => {
+            const effectiveLayout = layout ?? this.currentLayout;
+            const savedView = this.plugin.viewStateManager.saveView(name, query, viewOptions, effectiveLayout);
+            console.log('KanbanView: Saved view result:', { id: savedView.id, name: savedView.name, hasLayout: !!savedView.layout });
             // Don't update here - the ViewStateManager event will handle it
         });
         
@@ -229,6 +233,12 @@ export class KanbanView extends ItemView {
         // Listen for global saved views changes
         this.plugin.viewStateManager.on('saved-views-changed', (updatedViews: readonly SavedView[]) => {
             this.filterBar?.updateSavedViews(updatedViews);
+        });
+
+        // Listen for layout load (Phase 1: store only)
+        this.filterBar.on('loadLayout', (layout: TaskCardLayoutConfig) => {
+            this.currentLayout = layout;
+            console.log('KanbanView: loadLayout received; stored currentLayout');
         });
         
         this.filterBar.on('reorderViews', (fromIndex: number, toIndex: number) => {
