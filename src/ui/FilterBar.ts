@@ -321,11 +321,29 @@ export class FilterBar extends EventEmitter {
         if (matchingView && this.activeSavedView?.id !== matchingView.id) {
             this.activeSavedView = matchingView;
             this.updateViewSelectorButtonState();
+            // Update the modal header view name if the modal is currently rendered
+            const titleWrapper = this.container.querySelector('.filter-bar__section-header-main');
+            if (titleWrapper) {
+                const existing = titleWrapper.querySelector('.filter-bar__active-view-name');
+                if (existing) existing.textContent = `(${matchingView.name})`;
+                else {
+                    const span = document.createElement('span');
+                    span.className = 'filter-bar__active-view-name';
+                    span.textContent = `(${matchingView.name})`;
+                    titleWrapper.appendChild(span);
+                }
+            }
             // Emit event when active saved view changes
             this.emit('activeSavedViewChanged', matchingView);
         } else if (!matchingView && this.activeSavedView) {
             this.activeSavedView = null;
             this.updateViewSelectorButtonState();
+            // Clear modal header view name if present
+            const titleWrapper = this.container.querySelector('.filter-bar__section-header-main');
+            if (titleWrapper) {
+                const existing = titleWrapper.querySelector('.filter-bar__active-view-name');
+                if (existing) existing.remove();
+            }
             // Emit event when active saved view is cleared
             this.emit('activeSavedViewChanged', null);
         }
@@ -1657,6 +1675,18 @@ export class FilterBar extends EventEmitter {
         this.currentDisplayFields = view.displayFields;
         this.activeSavedView = view;
         this.render();
+        // If filter modal is open, ensure the view name appears in header immediately
+        const titleWrapper = this.container.querySelector('.filter-bar__section-header-main');
+        if (titleWrapper) {
+            const existing = titleWrapper.querySelector('.filter-bar__active-view-name');
+            if (existing) existing.textContent = `(${view.name})`;
+            else {
+                const span = document.createElement('span');
+                span.className = 'filter-bar__active-view-name';
+                span.textContent = `(${view.name})`;
+                titleWrapper.appendChild(span);
+            }
+        }
         this.emitQueryChange();
 
         // Emit viewOptions event if they exist
@@ -2016,11 +2046,26 @@ export class FilterBar extends EventEmitter {
         makeRowEditor(1, initialRows[1] || '');
         makeRowEditor(2, initialRows[2] || '');
 
-        // Syntax help
+        // Layout syntax help (collapsible)
         const help = content.createDiv({ cls: 'filter-bar__syntax-help' });
-        help.createEl('details', { text: 'Syntax help' });
-        const helpBody = help.createDiv();
-        helpBody.createEl('p', { text: 'Use tokens like {property|n|d(Custom Name)} separated by spaces. Flags: n=show name, d(label). Escape | or ) with \\.' });
+        const detailsEl = help.createEl('details');
+        detailsEl.createEl('summary', { text: 'Layout syntax help' });
+
+        // Overview
+        detailsEl.createEl('p', { text: 'Configure rows 2–4 using tokens. Each token renders a task field; tokens can be separated by spaces and combined with plain text.' });
+
+        // Quick reference list
+        const list = detailsEl.createEl('ul');
+        list.createEl('li', { text: 'Token format: {property|flags}. Example: {due|n|d(Due)} {priority|n}' });
+        list.createEl('li', { text: 'Flags: n = show field name; d(Name) = custom label' });
+        list.createEl('li', { text: 'Escape characters inside labels: use \\| for | and \\) for )' });
+        list.createEl('li', { text: 'You may include literal text between tokens; anything outside { } is rendered as-is' });
+
+        // Examples
+        detailsEl.createEl('p', { text: 'Examples:' });
+        detailsEl.createEl('pre', { text: '{due|n|d(Due)} {priority|n}\n{contexts|n|d(Contexts)}' });
+        detailsEl.createEl('pre', { text: 'Custom label with escape: {assignee|n|d(Owner\|Team)}' });
+        detailsEl.createEl('pre', { text: 'Include literals: Due {due} · Est {timeEstimate}' });
     }
 
     /**
