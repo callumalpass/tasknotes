@@ -64,7 +64,7 @@ export class SystemController extends BaseController {
 				title: parsedData.title,
 				details: parsedData.details,
 				priority: parsedData.priority,
-				status: parsedData.status || 'todo',
+				status: parsedData.status || this.getDefaultStatus(),
 				tags: parsedData.tags,
 				contexts: parsedData.contexts,
 				projects: parsedData.projects,
@@ -113,7 +113,7 @@ export class SystemController extends BaseController {
 				title: parsedData.title,
 				details: parsedData.details,
 				priority: parsedData.priority,
-				status: parsedData.status || 'todo',
+				status: parsedData.status || this.getDefaultStatus(),
 				tags: parsedData.tags,
 				contexts: parsedData.contexts,
 				projects: parsedData.projects,
@@ -221,6 +221,16 @@ export class SystemController extends BaseController {
 		if (!taskData.timeEstimate && defaults.defaultTimeEstimate > 0) {
 			taskData.timeEstimate = defaults.defaultTimeEstimate;
 		}
+	}
+
+	private getDefaultStatus(): string {
+		// Get the first status (lowest order) as default, same logic as TaskModal
+		const statusConfigs = this.plugin.settings.customStatuses;
+		if (statusConfigs && statusConfigs.length > 0) {
+			const sortedStatuses = [...statusConfigs].sort((a, b) => a.order - b.order);
+			return sortedStatuses[0].value;
+		}
+		return 'open'; // fallback
 	}
 
 	private generateSwaggerUIHTML(): string {
