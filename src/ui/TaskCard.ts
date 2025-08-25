@@ -677,6 +677,8 @@ function renderDisplayFields(container: HTMLElement, task: TaskInfo, plugin: Tas
     }
 }
 
+
+
 function appendRenderedValueWithLinks(parent: HTMLElement, value: any, plugin: TaskNotesPlugin, sourcePath: string): void {
     if (Array.isArray(value)) {
         let first = true;
