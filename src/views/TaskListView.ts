@@ -7,7 +7,7 @@ import {
     EVENT_TASK_UPDATED,
     FilterQuery,
     SavedView,
-    TaskCardLayoutConfig
+    TaskCardDisplayFieldsConfig
 } from '../types';
 // No helper functions needed from helpers
 import { perfMonitor } from '../utils/PerformanceMonitor';
@@ -33,7 +33,7 @@ export class TaskListView extends ItemView {
     private filterBar: FilterBar | null = null;
     private filterHeading: FilterHeading | null = null;
     private currentQuery: FilterQuery;
-    private currentLayout?: TaskCardLayoutConfig;
+    private currentDisplayFields?: TaskCardDisplayFieldsConfig;
 
     // Task item tracking for dynamic updates
     private taskElements: Map<string, HTMLElement> = new Map();
@@ -112,6 +112,7 @@ export class TaskListView extends ItemView {
                         showArchiveButton: true,
                         showTimeTracking: true,
                         showRecurringControls: true,
+            displayFields: this.currentDisplayFields,
                         groupByDate: false
                     });
                     
@@ -310,12 +311,9 @@ export class TaskListView extends ItemView {
         this.filterBar.updateSavedViews(savedViews);
         
         // Listen for saved view events
-        this.filterBar.on('saveView', ({ name, query, viewOptions, layout }) => {
-            console.log('TaskListView: Received saveView event:', { name, hasLayout: !!layout });
-            const effectiveLayout = layout ?? this.currentLayout;
-            const savedView = this.plugin.viewStateManager.saveView(name, query, viewOptions, effectiveLayout);
-            console.log('TaskListView: Saved view result:', { id: savedView.id, name: savedView.name, hasLayout: !!savedView.layout });
-            // Don't update here - the ViewStateManager event will handle it
+        this.filterBar.on('saveView', ({ name, query, viewOptions, displayFields }) => {
+            const effective = displayFields ?? this.currentDisplayFields;
+            const savedView = this.plugin.viewStateManager.saveView(name, query, viewOptions, effective);
         });
         
         this.filterBar.on('deleteView', (viewId: string) => {
@@ -330,11 +328,9 @@ export class TaskListView extends ItemView {
             this.filterBar?.updateSavedViews(updatedViews);
         });
 
-        // Listen for layout load (Phase 1: store only)
-        this.filterBar.on('loadLayout', (layout: TaskCardLayoutConfig) => {
-            this.currentLayout = layout;
-            console.log('TaskListView: loadLayout received; stored currentLayout');
-            // No rendering changes yet; future TaskCard integration will consume this
+        // Listen for display fields load
+        this.filterBar.on('loadDisplayFields', (cfg: TaskCardDisplayFieldsConfig) => {
+            this.currentDisplayFields = cfg;
         });
         
         this.filterBar.on('reorderViews', (fromIndex: number, toIndex: number) => {
@@ -636,7 +632,8 @@ export class TaskListView extends ItemView {
             showArchiveButton: true,
             showTimeTracking: true,
             showRecurringControls: true,
-            groupByDate: false
+            groupByDate: false,
+            displayFields: this.currentDisplayFields
         });
         
         // Ensure the key is set for reconciler
@@ -658,6 +655,7 @@ export class TaskListView extends ItemView {
             showArchiveButton: true,
             showTimeTracking: true,
             showRecurringControls: true,
+            displayFields: this.currentDisplayFields,
             groupByDate: false
         });
     }

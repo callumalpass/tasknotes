@@ -7,7 +7,7 @@ import {
     NoteInfo,
     SavedView,
     TaskInfo,
-    TaskCardLayoutConfig
+    TaskCardDisplayFieldsConfig
 } from '../types';
 import { EventRef, ItemView, Notice, Setting, TFile, WorkspaceLeaf, setIcon } from 'obsidian';
 import { addDays, endOfWeek, format, isSameDay, startOfWeek } from 'date-fns';
@@ -46,7 +46,7 @@ export class AgendaView extends ItemView {
     private filterBar: FilterBar | null = null;
     private filterHeading: FilterHeading | null = null;
     private currentQuery: FilterQuery;
-    private currentLayout?: TaskCardLayoutConfig;
+    private currentDisplayFields?: TaskCardDisplayFieldsConfig;
 
     // Event listeners
     private listeners: EventRef[] = [];
@@ -335,11 +335,9 @@ export class AgendaView extends ItemView {
         this.filterBar.updateSavedViews(savedViews);
         
         // Listen for saved view events
-        this.filterBar.on('saveView', ({ name, query, viewOptions, layout }) => {
-            const effectiveLayout = layout ?? this.currentLayout;
-            const savedView = this.plugin.viewStateManager.saveView(name, query, viewOptions, effectiveLayout);
-            console.log('AgendaView: Saved view result:', { id: savedView.id, name: savedView.name, hasLayout: !!savedView.layout });
-            // Don't update here - the ViewStateManager event will handle it
+        this.filterBar.on('saveView', ({ name, query, viewOptions, displayFields }) => {
+            const effective = displayFields ?? this.currentDisplayFields;
+            const savedView = this.plugin.viewStateManager.saveView(name, query, viewOptions, effective);
         });
         
         this.filterBar.on('deleteView', (viewId: string) => {
@@ -352,16 +350,9 @@ export class AgendaView extends ItemView {
             this.applyViewOptions(viewOptions);
         });
 
-        // Listen for layout load (Phase 1: store only)
-        this.filterBar.on('loadLayout', (layout: TaskCardLayoutConfig) => {
-            this.currentLayout = layout;
-            console.log('AgendaView: loadLayout received; stored currentLayout');
-        });
-
-        // Listen for layout load (Phase 1: store only)
-        this.filterBar.on('loadLayout', (layout: TaskCardLayoutConfig) => {
-            this.currentLayout = layout;
-            // No rendering changes yet
+        // Listen for display fields load
+        this.filterBar.on('loadDisplayFields', (cfg: TaskCardDisplayFieldsConfig) => {
+            this.currentDisplayFields = cfg;
         });
 
         // Listen for global saved views changes
@@ -946,7 +937,8 @@ export class AgendaView extends ItemView {
             showTimeTracking: true,
             showRecurringControls: true,
             groupByDate: this.groupByDate,
-            targetDate: date
+            targetDate: date,
+            displayFields: this.currentDisplayFields
         });
         
         // Add completion status class if task is completed

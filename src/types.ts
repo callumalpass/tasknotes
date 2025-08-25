@@ -64,31 +64,20 @@ export interface FilterQuery extends FilterGroup {
 	groupKey?: TaskGroupKey;
 }
 
-// Task card layout configuration types (Phase 0: added for future use)
-export type TaskCardFieldId =
-	// Built-in fields
-	| 'title' | 'status' | 'priority' | 'due' | 'scheduled' | 'contexts' | 'projects'
-	| 'timeEstimate' | 'completedDate' | 'recurrence' | 'tags'
-	// User-defined fields (from settings.userFields)
-	| `user:${string}`;
 
-export interface TaskCardFieldConfig {
-	id: TaskCardFieldId;
-	labelVisible: boolean; // MVP-supported setting
-	// editable flag reserved for future iterations; not used in MVP
-	editable?: boolean;
+// Task card display fields configuration (Simplified MVP)
+export interface DisplayFieldToken {
+	property: string;            // exact frontmatter key or built-in alias (e.g., 'due')
+	showName: boolean;           // flag n
+	displayName?: string;        // from d(...)
+	inlineEditable?: boolean;    // reserved for post-MVP 'e'
+	format?: string;             // reserved for post-MVP 'f(...)'
 }
 
-export interface TaskCardLayoutGridRow {
-	// Two columns maximum; null means empty cell
-	fields: [TaskCardFieldConfig | null, TaskCardFieldConfig | null];
-	// Percentage 0-100 for right column width; left is 100 - right
-	rightColumnWidth: number;
-}
-
-export interface TaskCardLayoutConfig {
+export interface TaskCardDisplayFieldsConfig {
 	version: 1;
-	rows: TaskCardLayoutGridRow[]; // Visual grid rows
+	row1FixedTitle: true; // Title row is fixed by design
+	rows: [DisplayFieldToken[], DisplayFieldToken[], DisplayFieldToken[]]; // rows 2–4
 }
 
 // A named, persistent configuration that encapsulates the entire state
@@ -97,8 +86,8 @@ export interface SavedView {
 	name: string; // User-defined name (e.g., "High-Priority Work")
 	query: FilterQuery; // The complete configuration, including filters, sorting, and grouping
 	viewOptions?: {[key: string]: boolean}; // View-specific options (e.g., showOverdueOnToday, showNotes)
-	// Optional task card layout configuration (when undefined/empty → no behavior change)
-	layout?: TaskCardLayoutConfig;
+	// Optional display fields configuration for task cards
+	displayFields?: TaskCardDisplayFieldsConfig;
 }
 
 // Property and operator definitions for the advanced filtering system

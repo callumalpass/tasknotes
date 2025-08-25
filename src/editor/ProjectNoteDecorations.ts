@@ -1,5 +1,5 @@
 import { Decoration, DecorationSet, EditorView, PluginSpec, PluginValue, ViewPlugin, ViewUpdate, WidgetType } from '@codemirror/view';
-import { EVENT_DATA_CHANGED, EVENT_TASK_DELETED, EVENT_TASK_UPDATED, FilterQuery, SUBTASK_WIDGET_VIEW_TYPE, TaskInfo, TaskCardLayoutConfig } from '../types';
+import { EVENT_DATA_CHANGED, EVENT_TASK_DELETED, EVENT_TASK_UPDATED, FilterQuery, SUBTASK_WIDGET_VIEW_TYPE, TaskInfo, TaskCardDisplayFieldsConfig } from '../types';
 import { EventRef, TFile, editorInfoField, editorLivePreviewField, setIcon } from 'obsidian';
 import { Extension, RangeSetBuilder, StateEffect } from '@codemirror/state';
 
@@ -15,7 +15,7 @@ import { createTaskCard } from '../ui/TaskCard';
 // Define a state effect for project subtasks updates
 const projectSubtasksUpdateEffect = StateEffect.define<{ forceUpdate?: boolean }>();
 
-class ProjectSubtasksWidget extends WidgetType {
+export class ProjectSubtasksWidget extends WidgetType {
     private groupedTasks: Map<string, TaskInfo[]> = new Map();
     private filterBar: FilterBar | null = null;
     private filterHeading: FilterHeading | null = null;
@@ -41,7 +41,7 @@ class ProjectSubtasksWidget extends WidgetType {
         );
         
         // Try to restore saved filter state from ViewStateManager for this specific note
-        const savedQuery = this.plugin.viewStateManager.getFilterState(this.viewType);
+        const savedQuery = this.plugin.viewStateManager?.getFilterState?.(this.viewType);
         this.currentQuery = savedQuery || {
             type: 'group',
             id: 'root',
@@ -206,9 +206,9 @@ class ProjectSubtasksWidget extends WidgetType {
             const savedViews = this.plugin.viewStateManager.getSavedViews();
             this.filterBar.updateSavedViews(savedViews);
 
-            // Phase 1: listen for layout load (store only)
-            this.filterBar.on('loadLayout', (layout: TaskCardLayoutConfig) => {
-                console.log('ProjectNoteDecorations: loadLayout received (ignored for editor widgets in Phase 1)');
+            // Listen for display fields load (ignored for editor widgets)
+            this.filterBar.on('loadDisplayFields', (cfg: TaskCardDisplayFieldsConfig) => {
+                // no-op
             });
 
             // Listen for filter changes
@@ -230,9 +230,8 @@ class ProjectSubtasksWidget extends WidgetType {
             });
             
             // Listen for saved view operations
-            this.filterBar.on('saveView', (data: { name: string, query: FilterQuery, viewOptions?: {[key: string]: boolean}, layout?: TaskCardLayoutConfig }) => {
-                const effectiveLayout = data.layout; // no per-note persistence yet
-                this.plugin.viewStateManager.saveView(data.name, data.query, data.viewOptions, effectiveLayout);
+            this.filterBar.on('saveView', (data: { name: string, query: FilterQuery, viewOptions?: {[key: string]: boolean}, displayFields?: TaskCardDisplayFieldsConfig }) => {
+                this.plugin.viewStateManager.saveView(data.name, data.query, data.viewOptions, data.displayFields);
             });
             
             this.filterBar.on('deleteView', (viewId: string) => {
