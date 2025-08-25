@@ -5,7 +5,7 @@ import { TaskInfo } from '../types';
 import { getCurrentTimestamp, formatDateForStorage, generateUTCCalendarDates, getUTCStartOfWeek, getUTCEndOfWeek, getUTCStartOfMonth, getUTCEndOfMonth, getTodayLocal, parseDateAsLocal } from '../utils/dateUtils';
 import { formatTimestampForDisplay } from '../utils/dateUtils';
 import { format } from 'date-fns';
-import { generateRecurringInstances, extractTaskInfo, calculateTotalTimeSpent, formatTime, updateToNextScheduledOccurrence } from '../utils/helpers';
+import { generateRecurringInstances, extractTaskInfo, calculateTotalTimeSpent, formatTime, updateToNextScheduledOccurrence, sanitizeTags } from '../utils/helpers';
 import { ReminderContextMenu } from '../components/ReminderContextMenu';
 
 export interface TaskEditOptions {
@@ -56,7 +56,7 @@ export class TaskEditModal extends TaskModal {
         }
         
         this.tags = this.task.tags 
-            ? this.task.tags.filter(tag => tag !== this.plugin.settings.taskTag).join(', ') 
+            ? sanitizeTags(this.task.tags.filter(tag => tag !== this.plugin.settings.taskTag).join(', '))
             : '';
         this.timeEstimate = this.task.timeEstimate || 0;
         

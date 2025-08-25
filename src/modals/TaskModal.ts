@@ -6,6 +6,7 @@ import { StatusContextMenu } from '../components/StatusContextMenu';
 import { RecurrenceContextMenu } from '../components/RecurrenceContextMenu';
 import { ReminderContextMenu } from '../components/ReminderContextMenu';
 import { getDatePart, getTimePart, combineDateAndTime } from '../utils/dateUtils';
+import { sanitizeTags } from '../utils/helpers';
 import { ProjectSelectModal } from './ProjectSelectModal';
 import { TaskInfo, Reminder } from '../types';
 
@@ -265,7 +266,7 @@ export abstract class TaskModal extends Modal {
                 text.setPlaceholder('tag1, tag2')
                     .setValue(this.tags)
                     .onChange(value => {
-                        this.tags = value;
+                        this.tags = sanitizeTags(value);
                     });
                 
                 // Store reference to input element
