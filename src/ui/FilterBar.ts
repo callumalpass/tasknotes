@@ -2082,21 +2082,22 @@ export class FilterBar extends EventEmitter {
         const detailsEl = help.createEl('details');
         detailsEl.createEl('summary', { text: 'Layout syntax help' });
 
-        // Overview
-        detailsEl.createEl('p', { text: 'Configure rows 2–4 using tokens. Each token renders a task field; tokens can be separated by spaces and combined with plain text.' });
-
-        // Quick reference list
-        const list = detailsEl.createEl('ul');
-        list.createEl('li', { text: 'Token format: {property|flags}. Example: {due|n(Due)} {priority|n}' });
-        list.createEl('li', { text: 'Flags: n = show field name; optional label override: n(Name)' });
-        list.createEl('li', { text: 'Escape characters inside labels: use \\| for | and \\) for )' });
-        list.createEl('li', { text: 'You may include literal text between tokens; anything outside { } is rendered as-is' });
+        // Overview (concise syntax help)
+        detailsEl.createEl('p', { text: 'Use {field} to show task info.' });
+        detailsEl.createEl('p', { text: 'Add |n to also show the field name.' });
+        detailsEl.createEl('p', { text: "Use |n(name) to replace the property name by the 'name' you informed within brackets. Useful when you just want a property to have that name in specific views." });
+        detailsEl.createEl('p', { text: "Use \\ to escape the pipe '|' symbol." });
 
         // Examples
         detailsEl.createEl('p', { text: 'Examples:' });
-        detailsEl.createEl('pre', { text: '{due|n(Due)} {priority|n}\n{contexts|n(Custom Contexts)}' });
-        detailsEl.createEl('pre', { text: 'Custom label with escape: {assignee|n(Owner\|Team)}' });
-        detailsEl.createEl('pre', { text: 'Include literals: Due {due} · Est {timeEstimate}' });
+        detailsEl.createEl('pre', { text: '{assignee} → Chuck Norris' });
+        detailsEl.createEl('pre', { text: '{assignee|n} → Assignee: Chuck' });
+        detailsEl.createEl('pre', { text: '{assignee|n(Assigned to)} → Assigned to: Chuck' });
+        detailsEl.createEl('pre', { text: '{due|n(Due\\|Review date)} → Due|Review date: 2025-07-01' });
+
+        // Tip
+        detailsEl.createEl('p', { text: 'Tip: Mix text + fields in the same line.' });
+        detailsEl.createEl('pre', { text: '👤{assignee} 🗓️{review_date} → 👤Chuck 🗓️2025-07-01' });
     }
 
     /**
