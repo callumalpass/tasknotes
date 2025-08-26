@@ -189,6 +189,8 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	inlineTaskConvertFolder: '{{currentNotePath}}',
 	// Performance defaults
 	disableNoteIndexing: false,
+	// Suggestion performance defaults
+	suggestionDebounceMs: 0,
 	// Customization defaults
 	fieldMapping: DEFAULT_FIELD_MAPPING,
 	customStatuses: DEFAULT_STATUSES,

@@ -1699,6 +1699,20 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 					});
 			});
 
+		// Suggestion performance: optional debounce for inline file suggestions
+		new Setting(container)
+			.setName('Debounce inline suggestions (ms)')
+			.setDesc('Optional delay before running inline file suggestions (useful for large vaults). Set 0 to disable.')
+			.addText(text => text
+				.setPlaceholder('0 (disabled)')
+				.setValue(String(this.plugin.settings.suggestionDebounceMs ?? 0))
+				.onChange(async (value) => {
+					const n = parseInt(value, 10);
+					if (isNaN(n) || n < 0) return;
+					this.plugin.settings.suggestionDebounceMs = n;
+					await this.plugin.saveSettings();
+				}));
+
 		// Click behavior settings
 		new Setting(container)
 			.setName('Single-click action')
