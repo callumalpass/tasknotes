@@ -82,7 +82,13 @@ class NLPSuggest extends AbstractInputSuggest<TagSuggestion | ContextSuggestion 
         
         // Extract the query after the trigger
         const queryAfterTrigger = textBeforeCursor.slice(triggerIndex + 1);
-        
+
+        // If '+' trigger already has a completed wikilink (+[[...]]), do not suggest again
+        if (trigger === '+' && /^\[\[[^\]]*\]\]/.test(queryAfterTrigger)) {
+            this.currentTrigger = null;
+            return [];
+        }
+
         // Check if there's a space in the query (which would end the suggestion context)
         // For '+' (projects/wikilinks), allow spaces for multi-word fuzzy queries
         if ((trigger === '@' || trigger === '#') && (queryAfterTrigger.includes(' ') || queryAfterTrigger.includes('\n'))) {
