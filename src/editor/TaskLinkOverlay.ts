@@ -43,7 +43,6 @@ export function createTaskLinkViewPlugin(plugin: TaskNotesPlugin) {
                     return;
                 }
             } catch (error) {
-                console.debug('Error checking live preview mode:', error);
                 this.decorations = Decoration.none;
                 return;
             }
@@ -106,19 +105,16 @@ function buildTaskLinkDecorations(state: { doc: { toString(): string; length: nu
     
     // Validate inputs
     if (!state || !plugin || !activeWidgets) {
-        console.warn('Invalid inputs for building task link decorations');
         return builder.finish();
     }
     
     const doc = state.doc;
     if (!doc) {
-        console.warn('Invalid document state');
         return builder.finish();
     }
     
     // Validate plugin components
     if (!plugin.app || !plugin.app.workspace) {
-        console.warn('Plugin app or workspace not available');
         return builder.finish();
     }
     
@@ -137,7 +133,6 @@ function buildTaskLinkDecorations(state: { doc: { toString(): string; length: nu
 
     // Validate current file path
     if (typeof currentFile !== 'string' || currentFile.length === 0) {
-        console.warn('Invalid current file path');
         return builder.finish();
     }
 
@@ -147,13 +142,11 @@ function buildTaskLinkDecorations(state: { doc: { toString(): string; length: nu
         
         // Validate document text
         if (typeof text !== 'string') {
-            console.warn('Invalid document text');
             return builder.finish();
         }
         
         // Performance safeguard: skip processing extremely large documents
         if (text.length > 100000) {
-            console.warn('Document too large for task link processing, skipping');
             return builder.finish();
         }
         
@@ -164,7 +157,6 @@ function buildTaskLinkDecorations(state: { doc: { toString(): string; length: nu
         
         // Validate links result
         if (!Array.isArray(links)) {
-            console.warn('Invalid links result from detection service');
             return builder.finish();
         }
 
@@ -175,14 +167,12 @@ function buildTaskLinkDecorations(state: { doc: { toString(): string; length: nu
                 // Validate link object
                 if (!link || typeof link.match !== 'string' || 
                     typeof link.start !== 'number' || typeof link.end !== 'number') {
-                    console.debug('Invalid link object:', link);
                     continue;
                 }
                 
                 // Validate positions
                 if (link.start < 0 || link.end <= link.start || 
                     link.start >= text.length || link.end > text.length) {
-                    console.debug('Invalid link positions:', link.start, link.end);
                     continue;
                 }
                 
@@ -196,7 +186,6 @@ function buildTaskLinkDecorations(state: { doc: { toString(): string; length: nu
                 
                 // Validate link path
                 if (!linkPath || typeof linkPath !== 'string' || linkPath.trim().length === 0) {
-                    console.debug('Invalid link path:', linkPath);
                     continue;
                 }
                 
@@ -209,13 +198,11 @@ function buildTaskLinkDecorations(state: { doc: { toString(): string; length: nu
                 if (taskInfo) {
                     // Validate task info
                     if (!taskInfo.title || typeof taskInfo.title !== 'string') {
-                        console.debug('Invalid task info for:', resolvedPath);
                         continue;
                     }
                     
                     // Check if cursor is within this link range - if so, skip decoration to show plain text
                     if (cursorPos !== undefined && cursorPos >= link.start && cursorPos <= link.end) {
-                        console.debug('Cursor is within link range, skipping decoration to show plain text');
                         continue;
                     }
                     
@@ -241,7 +228,6 @@ function buildTaskLinkDecorations(state: { doc: { toString(): string; length: nu
                 }
             } catch (error) {
                 // If there's any error, skip this link
-                console.debug('Error processing link:', link.match, error);
                 continue;
             }
         }
@@ -272,7 +258,6 @@ function parseWikilinkSync(wikilinkText: string): { linkPath: string; displayTex
     
     // Prevent processing of extremely long links
     if (content.length > 500) {
-        console.debug('Wikilink content too long, skipping:', content.length);
         return null;
     }
 
@@ -333,7 +318,6 @@ function parseMarkdownLinkSync(markdownLinkText: string): { linkPath: string; di
     
     // Prevent processing of extremely long links
     if (linkPath.length > 500) {
-        console.debug('Markdown link path too long, skipping:', linkPath.length);
         return null;
     }
 
@@ -341,7 +325,6 @@ function parseMarkdownLinkSync(markdownLinkText: string): { linkPath: string; di
     try {
         linkPath = decodeURIComponent(linkPath);
     } catch (error) {
-        console.debug('parseMarkdownLinkSync: Failed to decode URI component:', linkPath, error);
         // If decoding fails, use the original path
     }
 
@@ -389,7 +372,6 @@ function resolveLinkPathSync(linkPath: string, sourcePath: string, plugin: TaskN
         
         return file.path;
     } catch (error) {
-        console.debug('Error resolving link path:', linkPath, error);
         return null;
     }
 }
@@ -405,12 +387,6 @@ function getTaskInfoSync(filePath: string, plugin: TaskNotesPlugin): TaskInfo | 
     }
     
     try {
-        // Validate file path format
-        if (filePath.length > 260) { // Windows path limit
-            console.debug('File path too long:', filePath.length);
-            return null;
-        }
-        
         // Check for invalid characters
         const basicInvalidChars = /[<>:"|?*]/;
         const hasControlChars = filePath.split('').some(char => {
@@ -419,7 +395,6 @@ function getTaskInfoSync(filePath: string, plugin: TaskNotesPlugin): TaskInfo | 
         });
         
         if (basicInvalidChars.test(filePath) || hasControlChars) {
-            console.debug('File path contains invalid characters:', filePath);
             return null;
         }
         
@@ -439,7 +414,6 @@ function getTaskInfoSync(filePath: string, plugin: TaskNotesPlugin): TaskInfo | 
         
         return null;
     } catch (error) {
-        console.debug('Error getting task info for:', filePath, error);
         return null;
     }
 }
