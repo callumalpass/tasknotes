@@ -182,11 +182,15 @@ class NLPSuggest extends AbstractInputSuggest<TagSuggestion | ContextSuggestion 
         const newText = beforeTrigger + replacement + ' ' + textAfterCursor;
         
         this.textarea.value = newText;
-        
+
         // Set cursor position after the inserted suggestion
         const newCursorPos = beforeTrigger.length + replacement.length + 1;
         this.textarea.setSelectionRange(newCursorPos, newCursorPos);
-        
+
+        // Close suggestions after insertion and reset trigger to prevent further replacements
+        this.currentTrigger = null;
+        this.close();
+
         // Trigger input event to update preview
         this.textarea.dispatchEvent(new Event('input', { bubbles: true }));
         this.textarea.focus();
