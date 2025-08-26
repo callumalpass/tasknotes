@@ -343,7 +343,10 @@ export abstract class TaskModal extends Modal {
                                     this.userFields[field.key] = value || null;
                                 });
                             // Add date picker button/icon next to the input
-                            const btn = text.inputEl.parentElement?.createEl('button', { cls: 'user-field-date-picker-btn' });
+                            // Ensure the input and button layout as a single row with proper sizing
+                            const parent = text.inputEl.parentElement as HTMLElement | null;
+                            if (parent) parent.addClass('tn-date-control');
+                            const btn = parent?.createEl('button', { cls: 'user-field-date-picker-btn' });
                             if (btn) {
                                 btn.setAttribute('aria-label', `Pick ${field.displayName.toLowerCase()} date`);
                                 setIcon(btn, 'calendar');
@@ -380,26 +383,10 @@ export abstract class TaskModal extends Modal {
                                 });
 
                             // Add autocomplete functionality
-                            const sugg = new UserFieldSuggest(this.app, text.inputEl, this.plugin, field);
-                            // Link preview area under the input
-                            const preview = container.createDiv({ cls: 'user-field-link-preview' });
-                            const renderPreview = async () => {
-                                const val = text.getValue();
-                                const match = val.match(/\[\[([^\]]+)\]\]/);
-                                if (!match) { preview.empty(); preview.hide(); return; }
-                                const name = match[1];
-                                const file = this.app.metadataCache.getFirstLinkpathDest(name, '');
-                                if (file) {
-                                    preview.show();
-                                    preview.setText(`[[${name}]] → ${file.path}`);
-                                } else {
-                                    preview.show();
-                                    preview.setText(`[[${name}]] (not found)`);
-                                }
-                            };
-                            text.inputEl.addEventListener('input', renderPreview);
-                            // initial
-                            renderPreview();
+                            new UserFieldSuggest(this.app, text.inputEl, this.plugin, field);
+                            // Remove link preview area: we only want the input value
+                            const oldPreview = container.querySelector('.user-field-link-preview');
+                            if (oldPreview) oldPreview.detach?.();
                         });
                     break;
 
@@ -1164,12 +1151,16 @@ class UserFieldSuggest extends AbstractInputSuggest<UserFieldSuggestion> {
         const isListField = this.fieldConfig.type === 'list';
 
         if (isListField) {
-            // Replace last token with a wikilink if not already wrapped
+            // Replace last token with the selected suggestion. If user is typing a
+            // wikilink region ([[...), replace that partial region; otherwise
+            // replace the token entirely with the suggestion value.
             const parts = this.input.value.split(',');
             const last = parts.pop() ?? '';
             const before = parts.join(',');
             const trimmed = last.trim();
-            const replacement = trimmed.replace(/\[\[[^\]]*$/, `[[${suggestion.value}]]`);
+            const replacement = /\[\[/.test(trimmed)
+                ? trimmed.replace(/\[\[[^\]]*$/, `[[${suggestion.value}]]`)
+                : suggestion.value;
             const rebuilt = (before ? before + ', ' : '') + replacement;
             this.input.value = rebuilt.endsWith(',') ? rebuilt + ' ' : rebuilt + ', ';
         } else {
