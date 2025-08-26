@@ -38,11 +38,12 @@ describe('displayFieldsParser', () => {
     ]);
   });
 
-  it('round-trips with serializer (normalizes to n(Name))', () => {
-    const src = '{alpha|n|d(Name)} {beta}';
+  it('round-trips with serializer (normalizes to n(Name) and strips user:)', () => {
+    const src = '{alpha|n|d(Name)} {user:beta}';
     const tokens = parseDisplayFieldsRow(src);
     const out = serializeDisplayFieldsRow(tokens);
     expect(out).toContain('{alpha|n(Name)}');
+    expect(out).toContain('{beta}'); // user:beta should serialize as {beta} for layout
     expect(parseDisplayFieldsRow(out)).toEqual(tokens);
   });
 });
