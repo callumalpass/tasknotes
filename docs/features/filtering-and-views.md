@@ -299,7 +299,6 @@ Escaping inside labels: use `\|` for `|` and `\)` for `)`
 ### Supported properties
 - Built-ins: `due`, `scheduled`, `priority`, `status`, `contexts`, `projects`, `timeEstimate`, `tags`, `completedDate`, `title` (title is already row 1 and typically not needed here)
 - Custom frontmatter keys: use the exact frontmatter key, e.g., `assignee`, `effort`, `custom_key`
-  - If you previously used `user:<id>` in a layout, you can now simply use the field key without the `user:` prefix (e.g., `{effort}`)
 
 ### Examples
 - Row with labels and custom label:
