@@ -5,27 +5,44 @@ describe('displayFieldsParser', () => {
     expect(parseDisplayFieldsRow('')).toEqual([]);
   });
 
-  it('parses single token with n and d()', () => {
-    const tokens = parseDisplayFieldsRow('{due|n|d(Due)}');
-    expect(tokens).toHaveLength(1);
-    expect(tokens[0]).toMatchObject({ property: 'due', showName: true, displayName: 'Due' });
+  it('parses n and n(Name)', () => {
+    const t1 = parseDisplayFieldsRow('{due|n}');
+    expect(t1).toHaveLength(1);
+    expect(t1[0]).toMatchObject({ property: 'due', showName: true });
+
+    const t2 = parseDisplayFieldsRow('{due|n(Due)}');
+    expect(t2).toHaveLength(1);
+    expect(t2[0]).toMatchObject({ property: 'due', showName: true, displayName: 'Due' });
   });
 
-  it('supports escaping in d()', () => {
-    const tokens = parseDisplayFieldsRow('{x|d(A\\|B)} {y|d(C\\))}');
-    expect(tokens[0].displayName).toBe('A|B');
-    expect(tokens[1].displayName).toBe('C)');
+  it('maintains back-compat with d()', () => {
+    const tokens = parseDisplayFieldsRow('{x|n|d(A)} {y|d(B)|n}');
+    const nonLiteral = tokens.filter(t => !(typeof t.property === 'string' && t.property.startsWith('literal:')));
+    expect(nonLiteral[0]).toMatchObject({ property: 'x', showName: true, displayName: 'A' });
+    expect(nonLiteral[1]).toMatchObject({ property: 'y', showName: true, displayName: 'B' });
   });
 
-  it('errors on stray characters between tokens', () => {
-    expect(() => parseDisplayFieldsRow('{a} x {b}')).toThrow();
+  it('supports escaping in n(Name)', () => {
+    const tokens = parseDisplayFieldsRow('{x|n(A\\|B)} {y|n(C\\))}');
+    const nonLiteral = tokens.filter(t => !(typeof t.property === 'string' && t.property.startsWith('literal:')));
+    expect(nonLiteral[0].displayName).toBe('A|B');
+    expect(nonLiteral[1].displayName).toBe('C)');
   });
 
-  it('round-trips with serializer', () => {
+  it('handles stray characters between tokens as literal segments', () => {
+    const tokens = parseDisplayFieldsRow('{a} x {b}');
+    expect(tokens).toEqual([
+      { property: 'a', showName: false },
+      { property: 'literal: x ', showName: false },
+      { property: 'b', showName: false }
+    ]);
+  });
+
+  it('round-trips with serializer (normalizes to n(Name))', () => {
     const src = '{alpha|n|d(Name)} {beta}';
     const tokens = parseDisplayFieldsRow(src);
     const out = serializeDisplayFieldsRow(tokens);
-    // allow normalization differences
+    expect(out).toContain('{alpha|n(Name)}');
     expect(parseDisplayFieldsRow(out)).toEqual(tokens);
   });
 });

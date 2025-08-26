@@ -2056,15 +2056,15 @@ export class FilterBar extends EventEmitter {
 
         // Quick reference list
         const list = detailsEl.createEl('ul');
-        list.createEl('li', { text: 'Token format: {property|flags}. Example: {due|n|d(Due)} {priority|n}' });
-        list.createEl('li', { text: 'Flags: n = show field name; d(Name) = custom label' });
+        list.createEl('li', { text: 'Token format: {property|flags}. Example: {due|n(Due)} {priority|n}' });
+        list.createEl('li', { text: 'Flags: n = show field name; optional label override: n(Name)' });
         list.createEl('li', { text: 'Escape characters inside labels: use \\| for | and \\) for )' });
         list.createEl('li', { text: 'You may include literal text between tokens; anything outside { } is rendered as-is' });
 
         // Examples
         detailsEl.createEl('p', { text: 'Examples:' });
-        detailsEl.createEl('pre', { text: '{due|n|d(Due)} {priority|n}\n{contexts|n|d(Contexts)}' });
-        detailsEl.createEl('pre', { text: 'Custom label with escape: {assignee|n|d(Owner\|Team)}' });
+        detailsEl.createEl('pre', { text: '{due|n(Due)} {priority|n}\n{contexts|n(Custom Contexts)}' });
+        detailsEl.createEl('pre', { text: 'Custom label with escape: {assignee|n(Owner\|Team)}' });
         detailsEl.createEl('pre', { text: 'Include literals: Due {due} · Est {timeEstimate}' });
     }
 

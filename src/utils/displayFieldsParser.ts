@@ -58,9 +58,16 @@ export function parseDisplayFieldsRow(input: string): DisplayFieldToken[] {
     const token: DisplayFieldToken = { property, showName: false };
     for (let i = 1; i < parts.length; i++) {
       const flag = parts[i];
-      if (flag === 'n') token.showName = true;
-      else if (flag === 'e') token.inlineEditable = true; // post-MVP
+      if (flag === 'n') {
+        token.showName = true;
+      } else if (flag.startsWith('n(') && flag.endsWith(')')) {
+        // New syntax: n(Name) both enables label and overrides it
+        token.showName = true;
+        const v = flag.slice(2, -1);
+        token.displayName = unescapeValue(v);
+      } else if (flag === 'e') token.inlineEditable = true; // post-MVP
       else if (flag.startsWith('d(') && flag.endsWith(')')) {
+        // Back-compat: still accept d(Name) but prefer n(Name) going forward
         const v = flag.slice(2, -1);
         token.displayName = unescapeValue(v);
       } else if (flag.startsWith('f(') && flag.endsWith(')')) {
@@ -88,8 +95,9 @@ export function serializeDisplayFieldsRow(tokens: DisplayFieldToken[]): string {
         return t.property.slice(8);
       }
       const flags: string[] = [];
-      if (t.showName) flags.push('n');
-      if (t.displayName) flags.push(`d(${esc(t.displayName)})`);
+      if (t.showName && t.displayName) flags.push(`n(${esc(t.displayName)})`);
+      else if (t.showName) flags.push('n');
+      // Do not emit d() anymore; keep serializer output normalized to n(...) form
       if (t.inlineEditable) flags.push('e');
       if (t.format) flags.push(`f(${esc(t.format)})`);
       return `{${t.property}${flags.length ? '|' + flags.join('|') : ''}}`;

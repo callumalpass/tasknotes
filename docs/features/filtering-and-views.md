@@ -292,8 +292,7 @@ You can customize the content shown on task cards using the Layout section in th
 - Anything outside `{}` is treated as literal text and rendered as-is
 
 ### Implemented flags
-- `n` – Show the field name (label) before the value
-- `d(Name)` – Override the label with a custom name
+- `n` – Show the field name (label) before the value; optionally override the label with `n(Name)`
 
 Escaping inside labels: use `\|` for `|` and `\)` for `)`
 
@@ -304,15 +303,15 @@ Escaping inside labels: use `\|` for `|` and `\)` for `)`
 
 ### Examples
 - Row with labels and custom label:
-  - `{due|n|d(Due)} {priority|n}`
+  - `{due|n(Due)} {priority|n}`
 - Contexts with a custom label containing a pipe:
-  - `{contexts|n|d(Contexts\|Areas)}`
+  - `{contexts|n(Contexts\|Areas)}`
 - Mixing tokens and literal separators:
   - `Due {due} · Est {timeEstimate}`
 
 Notes
 - Title is fixed on row 1; you configure only rows 2–4
-- Only implemented flags are documented here (n, d). Future flags may be introduced later
+- Only implemented flags are documented here (n). Future flags may be introduced later
 
 
 The FilterBar includes several performance optimizations:
