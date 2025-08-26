@@ -1,5 +1,6 @@
 import { App, ButtonComponent, DropdownComponent, Modal, TextComponent, debounce, setTooltip } from 'obsidian';
-import { FILTER_OPERATORS, FILTER_PROPERTIES, FilterCondition, FilterGroup, FilterNode, FilterOperator, FilterOptions, FilterProperty, FilterQuery, PropertyDefinition, SavedView, TaskGroupKey, TaskSortKey } from '../types';
+import { FILTER_OPERATORS, FILTER_PROPERTIES, FilterCondition, FilterGroup, FilterNode, FilterOperator, FilterOptions, FilterProperty, FilterQuery, PropertyDefinition, SavedView, TaskGroupKey, TaskSortKey, TaskCardDisplayFieldsConfig } from '../types';
+import { parseDisplayFieldsRow, parseDisplayFieldsConfig, serializeDisplayFieldsRow } from '../utils/displayFieldsParser';
 
 import { DragDropHandler } from './DragDropHandler';
 import { EventEmitter } from '../utils/EventEmitter';
@@ -57,6 +58,9 @@ export class FilterBar extends EventEmitter {
     private activeSavedView: SavedView | null = null;
     private isLoadingSavedView = false;
 
+    // Task card display fields (MVP)
+    private currentDisplayFields?: TaskCardDisplayFieldsConfig;
+
     // Debouncing for input fields
     private debouncedEmitQueryChange: () => void;
     private debouncedHandleSearchInput: () => void;
@@ -85,6 +89,7 @@ export class FilterBar extends EventEmitter {
         filterBox: false,   // Entire filter box - collapsed by default
         filters: true,      // This view section - expanded by default
         display: true,      // Display & Organization - expanded by default
+        layout: false,      // Layout (Display Fields) - collapsed by default
         viewOptions: false  // View Options - collapsed by default
     };
 
@@ -316,11 +321,29 @@ export class FilterBar extends EventEmitter {
         if (matchingView && this.activeSavedView?.id !== matchingView.id) {
             this.activeSavedView = matchingView;
             this.updateViewSelectorButtonState();
+            // Update the modal header view name if the modal is currently rendered
+            const titleWrapper = this.container.querySelector('.filter-bar__section-header-main');
+            if (titleWrapper) {
+                const existing = titleWrapper.querySelector('.filter-bar__active-view-name');
+                if (existing) existing.textContent = `(${matchingView.name})`;
+                else {
+                    const span = document.createElement('span');
+                    span.className = 'filter-bar__active-view-name';
+                    span.textContent = `(${matchingView.name})`;
+                    titleWrapper.appendChild(span);
+                }
+            }
             // Emit event when active saved view changes
             this.emit('activeSavedViewChanged', matchingView);
         } else if (!matchingView && this.activeSavedView) {
             this.activeSavedView = null;
             this.updateViewSelectorButtonState();
+            // Clear modal header view name if present
+            const titleWrapper = this.container.querySelector('.filter-bar__section-header-main');
+            if (titleWrapper) {
+                const existing = titleWrapper.querySelector('.filter-bar__active-view-name');
+                if (existing) existing.remove();
+            }
             // Emit event when active saved view is cleared
             this.emit('activeSavedViewChanged', null);
         }
@@ -513,7 +536,10 @@ export class FilterBar extends EventEmitter {
         // 2. Display & Organization
         this.renderDisplaySection(this.mainFilterBox);
 
-        // 3. View-Specific Options
+        // 3. Layout (Display Fields)
+        this.renderDisplayFieldsSection(this.mainFilterBox);
+
+        // 4. View-Specific Options
         this.renderViewOptions(this.mainFilterBox);
     }
 
@@ -1513,7 +1539,7 @@ export class FilterBar extends EventEmitter {
     /**
      * Toggle a collapsible section
      */
-    private toggleSection(sectionKey: 'filterBox' | 'filters' | 'display' | 'viewOptions', header: HTMLElement, content: HTMLElement): void {
+    private toggleSection(sectionKey: 'filterBox' | 'filters' | 'display' | 'layout' | 'viewOptions', header: HTMLElement, content: HTMLElement): void {
         this.sectionStates[sectionKey] = !this.sectionStates[sectionKey];
         const isExpanded = this.sectionStates[sectionKey];
 
@@ -1527,7 +1553,7 @@ export class FilterBar extends EventEmitter {
     private showSaveViewDialog(): void {
         new SaveViewModal(this.app, (name) => {
             const currentViewOptions = this.getCurrentViewOptions();
-            this.emit('saveView', { name, query: this.currentQuery, viewOptions: currentViewOptions });
+            this.emit('saveView', { name, query: this.currentQuery, viewOptions: currentViewOptions, displayFields: this.currentDisplayFields });
             this.toggleViewSelectorDropdown();
         }).open();
     }
@@ -1546,6 +1572,8 @@ export class FilterBar extends EventEmitter {
         });
         return options;
     }
+
+
 
 
     /**
@@ -1644,13 +1672,29 @@ export class FilterBar extends EventEmitter {
     private loadSavedView(view: SavedView): void {
         this.isLoadingSavedView = true;
         this.currentQuery = FilterUtils.deepCloneFilterQuery(view.query);
+        this.currentDisplayFields = view.displayFields;
         this.activeSavedView = view;
         this.render();
+        // If filter modal is open, ensure the view name appears in header immediately
+        const titleWrapper = this.container.querySelector('.filter-bar__section-header-main');
+        if (titleWrapper) {
+            const existing = titleWrapper.querySelector('.filter-bar__active-view-name');
+            if (existing) existing.textContent = `(${view.name})`;
+            else {
+                const span = document.createElement('span');
+                span.className = 'filter-bar__active-view-name';
+                span.textContent = `(${view.name})`;
+                titleWrapper.appendChild(span);
+            }
+        }
         this.emitQueryChange();
 
         // Emit viewOptions event if they exist
         if (view.viewOptions) {
             this.emit('loadViewOptions', view.viewOptions);
+        }
+        if (view.displayFields) {
+            this.emit('loadDisplayFields', view.displayFields);
         }
 
         // Emit activeSavedViewChanged event
@@ -1940,6 +1984,121 @@ export class FilterBar extends EventEmitter {
         this.updateFilterOptions(newOptions);
     }
 
+    /**
+     * Render the simplified Layout section (Display Fields via text syntax)
+     */
+    private renderDisplayFieldsSection(container: HTMLElement): void {
+        const section = container.createDiv('filter-bar__section');
+
+        // Collapsible header
+        const header = section.createDiv('filter-bar__section-header');
+        const titleWrapper = header.createDiv('filter-bar__section-header-main');
+        titleWrapper.createSpan({ text: 'Layout', cls: 'filter-bar__section-title' });
+        setTooltip(titleWrapper, 'Configure fields shown on task cards using {property|flags}', { placement: 'top' });
+
+        // Actions container (right side of header)
+        const actions = header.createDiv('filter-bar__section-header-actions');
+        const resetLayoutBtn = new ButtonComponent(actions)
+            .setIcon('eraser')
+            .setTooltip('Reset to default layout')
+            .setClass('filter-bar__layout-reset')
+            .onClick(() => {
+                try {
+                    // Clear current display fields configuration
+                    this.currentDisplayFields = { version: 1, row1FixedTitle: true, rows: [[], [], []] } as TaskCardDisplayFieldsConfig;
+                    // Clear inputs for rows 2-4
+                    const rowsContainer = content.querySelector('.filter-bar__display-fields-rows') as HTMLElement | null;
+                    if (rowsContainer) {
+                        const inputs = Array.from(rowsContainer.querySelectorAll('input')) as HTMLInputElement[];
+                        inputs.forEach((inp) => (inp.value = ''));
+                    }
+                    // Notify listeners and refresh views immediately
+                    this.emit('loadDisplayFields', this.currentDisplayFields);
+                    this.emitImmediateQueryChange();
+                } catch (e) {
+                    console.error('Failed to reset layout', e);
+                }
+            });
+        resetLayoutBtn.buttonEl.classList.add('clickable-icon');
+
+        const content = section.createDiv('filter-bar__section-content');
+        if (!this.sectionStates.layout) {
+            header.addClass('filter-bar__section-header--collapsed');
+            content.addClass('filter-bar__section-content--collapsed');
+        }
+
+        // Use the same toggle behavior as other sections (left chevron rotates)
+        titleWrapper.addEventListener('click', () => {
+            this.toggleSection('layout', header, content);
+        });
+
+        // Row 1 is fixed Title preview
+        content.createDiv({ text: '{Title}', cls: 'filter-bar__layout-fixed-title' });
+
+        const rowsContainer = content.createDiv({ cls: 'filter-bar__display-fields-rows' });
+
+        const makeRowEditor = (idx: number, initial: string) => {
+            const rowEl = rowsContainer.createDiv({ cls: 'filter-bar__display-fields-row' });
+            rowEl.createSpan({ text: `Row ${idx + 2}:`, cls: 'filter-bar__label' });
+            const input = new TextComponent(rowEl).setPlaceholder('{property|n(Name)} {prop2|...}');
+            (input.inputEl as HTMLInputElement).style.width = '100%';
+            if (initial) input.setValue(initial);
+            const status = rowEl.createDiv({ cls: 'filter-bar__help' });
+
+            const update = debounce(() => {
+                try {
+                    const tokens = parseDisplayFieldsRow(input.getValue());
+                    status.setText(`✓ Parsed ${tokens.length} field${tokens.length === 1 ? '' : 's'}`);
+                    // Build aggregate config from all three rows
+                    const r2 = (rowsContainer.children[0] as HTMLElement).querySelector('input') as HTMLInputElement;
+                    const r3 = (rowsContainer.children[1] as HTMLElement).querySelector('input') as HTMLInputElement;
+                    const r4 = (rowsContainer.children[2] as HTMLElement).querySelector('input') as HTMLInputElement;
+                    const cfg = parseDisplayFieldsConfig([r2?.value || '', r3?.value || '', r4?.value || '']);
+                    const prev = this.currentDisplayFields;
+                    this.currentDisplayFields = cfg;
+                    // Apply instantly if changed: notify listeners and refresh views
+                    if (!prev || JSON.stringify(prev) !== JSON.stringify(cfg)) {
+                        this.emit('loadDisplayFields', cfg);
+                        this.emitImmediateQueryChange();
+                    }
+                } catch (err) {
+                    status.setText(err instanceof Error ? `Error: ${err.message}` : 'Error parsing');
+                }
+            }, 300);
+
+            input.onChange(() => update());
+            // Initial parse on first render
+            update();
+        };
+
+        // Initialize from currentDisplayFields if available (preserve literals and spacing)
+        const initialRows = this.currentDisplayFields ? this.currentDisplayFields.rows.map(r => serializeDisplayFieldsRow(r)) : ['', '', ''];
+        makeRowEditor(0, initialRows[0] || '');
+        makeRowEditor(1, initialRows[1] || '');
+        makeRowEditor(2, initialRows[2] || '');
+
+        // Layout syntax help (collapsible)
+        const help = content.createDiv({ cls: 'filter-bar__syntax-help' });
+        const detailsEl = help.createEl('details');
+        detailsEl.createEl('summary', { text: 'Layout syntax help' });
+
+        // Overview (concise syntax help)
+        detailsEl.createEl('p', { text: 'Use {field} to show task info.' });
+        detailsEl.createEl('p', { text: 'Add |n to also show the field name.' });
+        detailsEl.createEl('p', { text: "Use |n(name) to replace the property name by the 'name' you informed within brackets. Useful when you just want a property to have that name in specific views." });
+        detailsEl.createEl('p', { text: "Use \\ to escape the pipe '|' symbol." });
+
+        // Examples
+        detailsEl.createEl('p', { text: 'Examples:' });
+        detailsEl.createEl('pre', { text: '{assignee} → Chuck Norris' });
+        detailsEl.createEl('pre', { text: '{assignee|n} → Assignee: Chuck' });
+        detailsEl.createEl('pre', { text: '{assignee|n(Assigned to)} → Assigned to: Chuck' });
+        detailsEl.createEl('pre', { text: '{due|n(Due\\|Review date)} → Due|Review date: 2025-07-01' });
+
+        // Tip
+        detailsEl.createEl('p', { text: 'Tip: Mix text + fields in the same line.' });
+        detailsEl.createEl('pre', { text: '👤{assignee} 🗓️{review_date} → 👤Chuck 🗓️2025-07-01' });
+    }
 
     /**
      * Destroy and clean up the FilterBar
@@ -1970,7 +2129,6 @@ export class FilterBar extends EventEmitter {
                     this.abortController.abort();
                     this.abortController = undefined;
                 }
-
                 if (this.ignoreClickTimeout) {
                     window.clearTimeout(this.ignoreClickTimeout);
                     this.ignoreClickTimeout = undefined;

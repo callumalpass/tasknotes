@@ -58,6 +58,26 @@
    TASKCARD ELEMENTS (BEM __element)
    ================================================================= */
 
+.tasknotes-plugin .task-card__custom-row {
+    /* Match metadata sizing/appearance and preserve spacing */
+    font-size: var(--tn-font-size-md);
+    color: var(--tn-text-muted);
+    line-height: 1.2;
+    margin-top: 2px;
+    white-space: pre-wrap; /* preserve spaces and allow wrapping */
+}
+
+/* Links inside custom rows */
+.tasknotes-plugin .task-card__custom-row a.internal-link {
+    color: var(--link-color);
+    text-decoration: none; /* no underline for Obsidian internal links */
+}
+.tasknotes-plugin .task-card__custom-row a.internal-link:hover,
+.tasknotes-plugin .task-card__custom-row a.internal-link:focus {
+    color: var(--link-color-hover);
+    text-decoration: none;
+}
+
 .tasknotes-plugin .task-card__main-row {
     display: flex;
     align-items: flex-start;

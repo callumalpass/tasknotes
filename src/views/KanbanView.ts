@@ -1,13 +1,14 @@
 import { ItemView, WorkspaceLeaf, Notice, EventRef, debounce, TFile } from 'obsidian';
 import TaskNotesPlugin from '../main';
-import { 
-    KANBAN_VIEW_TYPE, 
-    EVENT_DATA_CHANGED, 
-    EVENT_TASK_UPDATED, 
+import {
+    KANBAN_VIEW_TYPE,
+    EVENT_DATA_CHANGED,
+    EVENT_TASK_UPDATED,
     TaskInfo,
     FilterQuery,
     TaskGroupKey,
-    SavedView
+    SavedView,
+    TaskCardDisplayFieldsConfig
 } from '../types';
 import { createTaskCard, updateTaskCard, refreshParentTaskSubtasks } from '../ui/TaskCard';
 import { FilterBar } from '../ui/FilterBar';
@@ -21,6 +22,7 @@ export class KanbanView extends ItemView {
     // Filter system
     private filterBar: FilterBar | null = null;
     private currentQuery: FilterQuery;
+    private currentDisplayFields?: TaskCardDisplayFieldsConfig;
     private taskElements: Map<string, HTMLElement> = new Map();
     private previousGroupKey: string | null = null;
 
@@ -216,9 +218,9 @@ export class KanbanView extends ItemView {
         this.filterBar.updateSavedViews(savedViews);
         
         // Listen for saved view events
-        this.filterBar.on('saveView', ({ name, query, viewOptions }) => {
-            this.plugin.viewStateManager.saveView(name, query, viewOptions);
-            // Don't update here - the ViewStateManager event will handle it
+        this.filterBar.on('saveView', ({ name, query, viewOptions, displayFields }) => {
+            const effective = displayFields ?? this.currentDisplayFields;
+            const savedView = this.plugin.viewStateManager.saveView(name, query, viewOptions, effective);
         });
         
         this.filterBar.on('deleteView', (viewId: string) => {
@@ -229,6 +231,11 @@ export class KanbanView extends ItemView {
         // Listen for global saved views changes
         this.plugin.viewStateManager.on('saved-views-changed', (updatedViews: readonly SavedView[]) => {
             this.filterBar?.updateSavedViews(updatedViews);
+        });
+
+        // Listen for display fields load
+        this.filterBar.on('loadDisplayFields', (cfg: TaskCardDisplayFieldsConfig) => {
+            this.currentDisplayFields = cfg;
         });
         
         this.filterBar.on('reorderViews', (fromIndex: number, toIndex: number) => {
@@ -936,7 +943,8 @@ export class KanbanView extends ItemView {
         const taskCard = createTaskCard(task, this.plugin, {
             showDueDate: true,
             showCheckbox: false,
-            showTimeTracking: true
+            showTimeTracking: true,
+            displayFields: this.currentDisplayFields
         });
         taskCard.draggable = true;
         this.addDragHandlers(taskCard, task);
@@ -952,7 +960,8 @@ export class KanbanView extends ItemView {
         updateTaskCard(element, task, this.plugin, {
             showDueDate: true,
             showCheckbox: false,
-            showTimeTracking: true
+            showTimeTracking: true,
+            displayFields: this.currentDisplayFields
         });
         // Ensure task elements tracking is updated
         this.taskElements.set(task.path, element);

@@ -273,6 +273,46 @@ Available grouping options:
 
 ## Performance Considerations
 
+## Task Card Layout (Display Fields)
+
+You can customize the content shown on task cards using the Layout section in the Filter modal. This feature lets you add up to three additional rows (rows 2–4; row 1 is always the title) using a compact text syntax.
+
+![Task card layout demo](../assets/display-custom-fileds-task-card-demo.gif)
+
+### Where to find it
+- Open any supported view (Task List, Agenda, Kanban)
+- Click the Filter button to open the Filter modal
+- Scroll to the "Layout" section
+- Expand "Layout syntax help" for reference and examples
+
+### Basics
+- Each row accepts a text string composed of tokens and optional literal text
+- A token renders a task property and uses the format: `{property|flags}`
+- Multiple tokens can be placed on a row, separated by spaces
+- Anything outside `{}` is treated as literal text and rendered as-is
+
+### Implemented flags
+- `n` – Show the field name (label) before the value; optionally override the label with `n(Name)`
+
+Escaping inside labels: use `\|` for `|` and `\)` for `)`
+
+### Supported properties
+- Built-ins: `due`, `scheduled`, `priority`, `status`, `contexts`, `projects`, `timeEstimate`, `tags`, `completedDate`, `title` (title is already row 1 and typically not needed here)
+- Custom frontmatter keys: use the exact frontmatter key, e.g., `assignee`, `effort`, `custom_key`
+
+### Examples
+- Row with labels and custom label:
+  - `{due|n(Due)} {priority|n}`
+- Contexts with a custom label containing a pipe:
+  - `{contexts|n(Contexts\|Areas)}`
+- Mixing tokens and literal separators:
+  - `Due {due} · Est {timeEstimate}`
+
+Notes
+- Title is fixed on row 1; you configure only rows 2–4
+- Only implemented flags are documented here (n). Future flags may be introduced later
+
+
 The FilterBar includes several performance optimizations:
 
 - **Debounced Input**: Search (800ms) and filter changes (300ms) are debounced
