@@ -8,6 +8,7 @@ import { PriorityManager } from '../services/PriorityManager';
 import { showConfirmationModal } from '../modals/ConfirmationModal';
 import { showStorageLocationConfirmationModal } from '../modals/StorageLocationConfirmationModal';
 import { ProjectSelectModal } from '../modals/ProjectSelectModal';
+import { splitListPreservingLinksAndQuotes } from '../utils/stringSplit';
 
 
 
@@ -2941,7 +2942,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 			return;
 		}
 
-		const projectStrings = defaultProjects.split(',').map(p => p.trim()).filter(p => p.length > 0);
+		const projectStrings = splitListPreservingLinksAndQuotes(defaultProjects);
 		this.selectedDefaultProjectFiles = [];
 
 		for (const projectString of projectStrings) {

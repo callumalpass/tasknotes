@@ -8,6 +8,7 @@ import { calculateDefaultDate } from '../utils/helpers';
 import { StatusManager } from './StatusManager';
 import { PriorityManager } from './PriorityManager';
 import { dispatchTaskUpdate } from '../editor/TaskLinkOverlay';
+import { splitListPreservingLinksAndQuotes } from '../utils/stringSplit';
 
 export class InstantTaskConvertService {
     private plugin: TaskNotesPlugin;
@@ -477,7 +478,7 @@ export class InstantTaskConvertService {
         if (this.plugin.settings.useDefaultsOnInstantConvert) {
             const defaults = this.plugin.settings.taskCreationDefaults;
             if (defaults.defaultProjects) {
-                const defaultProjectsArray = defaults.defaultProjects.split(',').map(s => s.trim()).filter(s => s);
+                const defaultProjectsArray = splitListPreservingLinksAndQuotes(defaults.defaultProjects);
                 projectsArray.push(...defaultProjectsArray);
             }
             
