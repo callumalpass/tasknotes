@@ -1032,26 +1032,39 @@ class UserFieldSuggest extends AbstractInputSuggest<UserFieldSuggestion> {
     }
     
     protected async getSuggestions(query: string): Promise<UserFieldSuggestion[]> {
-        // Handle comma-separated values for list fields
         const isListField = this.fieldConfig.type === 'list';
-        let currentQuery: string;
-        let currentValues: string[] = [];
 
+        // Get current token or full value
+        let currentQuery = '';
+        let currentValues: string[] = [];
         if (isListField) {
             currentValues = this.input.value.split(',').map((v: string) => v.trim());
-            currentQuery = currentValues[currentValues.length - 1];
+            currentQuery = currentValues[currentValues.length - 1] || '';
         } else {
             currentQuery = this.input.value.trim();
         }
-        
         if (!currentQuery) return [];
-        
-        // Get existing values from all tasks for this user field
+
+        // Detect wikilink trigger [[... and delegate to file suggester
+        const wikiMatch = currentQuery.match(/\[\[([^\]]*)$/);
+        if (wikiMatch) {
+            const partial = wikiMatch[1] || '';
+            const { FileSuggestHelper } = await import('../suggest/FileSuggestHelper');
+            const list = await FileSuggestHelper.suggest(this.plugin, partial);
+            return list.map(item => ({
+                value: item.insertText,
+                display: item.displayText,
+                type: 'user-field' as const,
+                fieldKey: this.fieldConfig.key,
+                toString() { return this.value; }
+            }));
+        }
+
+        // Fallback to existing-values suggestion
         const existingValues = await this.getExistingUserFieldValues(this.fieldConfig.key);
-        
         return existingValues
             .filter(value => value && typeof value === 'string')
-            .filter(value => 
+            .filter(value =>
                 value.toLowerCase().includes(currentQuery.toLowerCase()) &&
                 (!isListField || !currentValues.slice(0, -1).includes(value))
             )
@@ -1113,17 +1126,23 @@ class UserFieldSuggest extends AbstractInputSuggest<UserFieldSuggestion> {
     
     public selectSuggestion(suggestion: UserFieldSuggestion): void {
         const isListField = this.fieldConfig.type === 'list';
-        
+
         if (isListField) {
-            // Handle comma-separated values for list fields
-            const currentValues = this.input.value.split(',').map((v: string) => v.trim());
-            currentValues[currentValues.length - 1] = suggestion.value;
-            this.input.value = currentValues.join(', ') + ', ';
+            // Replace last token with a wikilink if not already wrapped
+            const parts = this.input.value.split(',');
+            const last = parts.pop() ?? '';
+            const before = parts.join(',');
+            const trimmed = last.trim();
+            const replacement = trimmed.replace(/\[\[[^\]]*$/, `[[${suggestion.value}]]`);
+            const rebuilt = (before ? before + ', ' : '') + replacement;
+            this.input.value = rebuilt.endsWith(',') ? rebuilt + ' ' : rebuilt + ', ';
         } else {
-            // Replace entire value for single-value fields
-            this.input.value = suggestion.value;
+            // Replace the active [[... region or entire value
+            const val = this.input.value;
+            const replaced = val.replace(/\[\[[^\]]*$/, `[[${suggestion.value}]]`);
+            this.input.value = replaced === val ? suggestion.value : replaced;
         }
-        
+
         // Trigger input event to update internal state
         this.input.dispatchEvent(new Event('input', { bubbles: true }));
         this.input.focus();

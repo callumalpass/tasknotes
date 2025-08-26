@@ -25,6 +25,8 @@ import * as yaml from 'yaml';
 jest.mock('obsidian');
 
 // Mock helper functions with real implementations where possible
+// Note: Added sanitizeTags mock because TaskCreationModal uses it during save.
+// Keeping behavior aligned with src/utils/helpers.sanitizeTags to avoid false negatives.
 jest.mock('../../../src/utils/helpers', () => ({
   calculateDefaultDate: jest.fn((option) => {
     const today = new Date('2025-01-15');
@@ -35,7 +37,18 @@ jest.mock('../../../src/utils/helpers', () => ({
       return format(tomorrow, 'yyyy-MM-dd');
     }
     return '';
-  })
+  }),
+  sanitizeTags: jest.fn((tags) => {
+    if (!tags || typeof tags !== 'string') return '';
+    return tags
+      .split(',')
+      .map((t) => {
+        const trimmed = t.trim();
+        return trimmed.startsWith('#') ? trimmed.slice(1) : trimmed;
+      })
+      .filter((t) => t.length > 0)
+      .join(', ');
+  }),
 }));
 
 jest.mock('../../../src/utils/dateUtils', () => ({
