@@ -342,6 +342,23 @@ export abstract class TaskModal extends Modal {
                                 .onChange(value => {
                                     this.userFields[field.key] = value || null;
                                 });
+                            // Add date picker button/icon next to the input
+                            const btn = text.inputEl.parentElement?.createEl('button', { cls: 'user-field-date-picker-btn' });
+                            if (btn) {
+                                btn.setAttribute('aria-label', `Pick ${field.displayName.toLowerCase()} date`);
+                                setIcon(btn, 'calendar');
+                                btn.addEventListener('click', (e) => {
+                                    e.preventDefault();
+                                    const menu = new DateContextMenu({
+                                        currentValue: text.getValue() || undefined,
+                                        onSelect: (value) => {
+                                            text.setValue(value || '');
+                                            this.userFields[field.key] = value || null;
+                                        }
+                                    });
+                                    menu.showAtElement(btn);
+                                });
+                            }
                         });
                     break;
 
@@ -363,7 +380,26 @@ export abstract class TaskModal extends Modal {
                                 });
 
                             // Add autocomplete functionality
-                            new UserFieldSuggest(this.app, text.inputEl, this.plugin, field);
+                            const sugg = new UserFieldSuggest(this.app, text.inputEl, this.plugin, field);
+                            // Link preview area under the input
+                            const preview = container.createDiv({ cls: 'user-field-link-preview' });
+                            const renderPreview = async () => {
+                                const val = text.getValue();
+                                const match = val.match(/\[\[([^\]]+)\]\]/);
+                                if (!match) { preview.empty(); preview.hide(); return; }
+                                const name = match[1];
+                                const file = this.app.metadataCache.getFirstLinkpathDest(name, '');
+                                if (file) {
+                                    preview.show();
+                                    preview.setText(`[[${name}]] → ${file.path}`);
+                                } else {
+                                    preview.show();
+                                    preview.setText(`[[${name}]] (not found)`);
+                                }
+                            };
+                            text.inputEl.addEventListener('input', renderPreview);
+                            // initial
+                            renderPreview();
                         });
                     break;
 
