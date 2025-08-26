@@ -1818,7 +1818,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 				.setName('User Fields (optional)')
 				.setHeading();
 			container.createEl('p', {
-				text: 'Define one or more custom frontmatter properties to appear as type-aware filter options across views. Each row: Property Name, Display Name, Type.',
+				text: 'Define one or more custom frontmatter properties to appear as type-aware filter options across views. Each row: Display Name, Property Name, Type.',
 				cls: 'settings-help-note'
 			});
 
@@ -1837,8 +1837,8 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 
 			// Column headers
 			const headersRow = container.createDiv('settings-headers-row settings-view__list-headers user-fields');
-			headersRow.createEl('span', { text: 'Property Name', cls: 'settings-column-header settings-view__column-header' });
 			headersRow.createEl('span', { text: 'Display Name', cls: 'settings-column-header settings-view__column-header' });
+			headersRow.createEl('span', { text: 'Property Name', cls: 'settings-column-header settings-view__column-header' });
 			headersRow.createEl('span', { text: 'Type', cls: 'settings-column-header settings-view__column-header' });
 			headersRow.createDiv('settings-header-spacer settings-view__header-spacer'); // For delete button space
 
@@ -1884,18 +1884,6 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 		userFields.forEach((field, index) => {
 			const fieldRow = container.createDiv('settings-item-row settings-view__item-row user-fields');
 
-			// Property Name input
-			const keyInput = fieldRow.createEl('input', {
-				type: 'text',
-				value: field.key || '',
-				cls: 'settings-input key-input settings-view__input settings-view__input--value',
-				attr: {
-					'placeholder': 'effort',
-					'aria-label': `Property name for ${field.displayName || 'user field'}`,
-					'id': `user-field-key-${field.id}`
-				}
-			});
-
 			// Display Name input
 			const nameInput = fieldRow.createEl('input', {
 				type: 'text',
@@ -1905,6 +1893,18 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 					'placeholder': 'Effort',
 					'aria-label': `Display name for ${field.displayName || 'user field'}`,
 					'id': `user-field-name-${field.id}`
+				}
+			});
+
+			// Property Name input
+			const keyInput = fieldRow.createEl('input', {
+				type: 'text',
+				value: field.key || '',
+				cls: 'settings-input key-input settings-view__input settings-view__input--value',
+				attr: {
+					'placeholder': 'effort',
+					'aria-label': `Property name for ${field.displayName || 'user field'}`,
+					'id': `user-field-key-${field.id}`
 				}
 			});
 
