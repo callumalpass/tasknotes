@@ -6,6 +6,7 @@ import { getCurrentTimestamp, formatDateForStorage, generateUTCCalendarDates, ge
 import { formatTimestampForDisplay } from '../utils/dateUtils';
 import { format } from 'date-fns';
 import { generateRecurringInstances, extractTaskInfo, calculateTotalTimeSpent, formatTime, updateToNextScheduledOccurrence, sanitizeTags } from '../utils/helpers';
+import { splitListPreservingLinksAndQuotes } from '../utils/stringSplit';
 import { ReminderContextMenu } from '../components/ReminderContextMenu';
 
 export interface TaskEditOptions {
@@ -483,10 +484,7 @@ export class TaskEditModal extends TaskModal {
         }
 
         // Parse and compare projects
-        const newProjects = this.projects
-            .split(',')
-            .map(p => p.trim())
-            .filter(p => p.length > 0);
+        const newProjects = splitListPreservingLinksAndQuotes(this.projects);
         const oldProjects = this.task.projects || [];
         
         if (JSON.stringify(newProjects.sort()) !== JSON.stringify(oldProjects.sort())) {
