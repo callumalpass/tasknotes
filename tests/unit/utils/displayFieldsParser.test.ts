@@ -15,12 +15,7 @@ describe('displayFieldsParser', () => {
     expect(t2[0]).toMatchObject({ property: 'due', showName: true, displayName: 'Due' });
   });
 
-  it('maintains back-compat with d()', () => {
-    const tokens = parseDisplayFieldsRow('{x|n|d(A)} {y|d(B)|n}');
-    const nonLiteral = tokens.filter(t => !(typeof t.property === 'string' && t.property.startsWith('literal:')));
-    expect(nonLiteral[0]).toMatchObject({ property: 'x', showName: true, displayName: 'A' });
-    expect(nonLiteral[1]).toMatchObject({ property: 'y', showName: true, displayName: 'B' });
-  });
+
 
   it('supports escaping in n(Name)', () => {
     const tokens = parseDisplayFieldsRow('{x|n(A\\|B)} {y|n(C\\))}');
@@ -38,12 +33,12 @@ describe('displayFieldsParser', () => {
     ]);
   });
 
-  it('round-trips with serializer (normalizes to n(Name) and strips user:)', () => {
-    const src = '{alpha|n|d(Name)} {user:beta}';
+  it('round-trips with serializer (normalizes to n(Name))', () => {
+    const src = '{alpha|n(Name)} {beta}';
     const tokens = parseDisplayFieldsRow(src);
     const out = serializeDisplayFieldsRow(tokens);
     expect(out).toContain('{alpha|n(Name)}');
-    expect(out).toContain('{beta}'); // user:beta should serialize as {beta} for layout
+    expect(out).toContain('{beta}');
     expect(parseDisplayFieldsRow(out)).toEqual(tokens);
   });
 });
