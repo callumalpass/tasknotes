@@ -52,8 +52,12 @@ export function parseDisplayFieldsRow(input: string): DisplayFieldToken[] {
     if (!inner) continue;
     const parts = splitPipesRespectingEscapes(inner);
     if (parts.length === 0) continue;
-    const property = parts[0];
+    let property = parts[0];
     if (!property) throw new Error('Missing property name in token');
+    // Back-compat: allow 'user:<key>' but normalize to plain '<key>' for layout
+    if (typeof property === 'string' && property.startsWith('user:')) {
+      property = property.slice(5);
+    }
 
     const token: DisplayFieldToken = { property, showName: false };
     for (let i = 1; i < parts.length; i++) {
