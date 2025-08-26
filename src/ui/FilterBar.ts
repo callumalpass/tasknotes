@@ -2012,7 +2012,8 @@ export class FilterBar extends EventEmitter {
                         const inputs = Array.from(rowsContainer.querySelectorAll('input')) as HTMLInputElement[];
                         inputs.forEach((inp) => (inp.value = ''));
                     }
-                    // Re-emit so views refresh
+                    // Notify listeners and refresh views immediately
+                    this.emit('loadDisplayFields', this.currentDisplayFields);
                     this.emitImmediateQueryChange();
                 } catch (e) {
                     console.error('Failed to reset layout', e);
@@ -2053,7 +2054,13 @@ export class FilterBar extends EventEmitter {
                     const r3 = (rowsContainer.children[1] as HTMLElement).querySelector('input') as HTMLInputElement;
                     const r4 = (rowsContainer.children[2] as HTMLElement).querySelector('input') as HTMLInputElement;
                     const cfg = parseDisplayFieldsConfig([r2?.value || '', r3?.value || '', r4?.value || '']);
+                    const prev = this.currentDisplayFields;
                     this.currentDisplayFields = cfg;
+                    // Apply instantly if changed: notify listeners and refresh views
+                    if (!prev || JSON.stringify(prev) !== JSON.stringify(cfg)) {
+                        this.emit('loadDisplayFields', cfg);
+                        this.emitImmediateQueryChange();
+                    }
                 } catch (err) {
                     status.setText(err instanceof Error ? `Error: ${err.message}` : 'Error parsing');
                 }
