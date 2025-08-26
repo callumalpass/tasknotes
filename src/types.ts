@@ -69,9 +69,7 @@ export interface FilterQuery extends FilterGroup {
 export interface DisplayFieldToken {
 	property: string;            // exact frontmatter key or built-in alias (e.g., 'due')
 	showName: boolean;           // flag n
-	displayName?: string;        // from d(...)
-	inlineEditable?: boolean;    // reserved for post-MVP 'e'
-	format?: string;             // reserved for post-MVP 'f(...)'
+	displayName?: string;        // from n(Name)
 }
 
 export interface TaskCardDisplayFieldsConfig {

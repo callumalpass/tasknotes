@@ -69,16 +69,8 @@ export function parseDisplayFieldsRow(input: string): DisplayFieldToken[] {
         token.showName = true;
         const v = flag.slice(2, -1);
         token.displayName = unescapeValue(v);
-      } else if (flag === 'e') token.inlineEditable = true; // post-MVP
-      else if (flag.startsWith('d(') && flag.endsWith(')')) {
-        // Back-compat: still accept d(Name) but prefer n(Name) going forward
-        const v = flag.slice(2, -1);
-        token.displayName = unescapeValue(v);
-      } else if (flag.startsWith('f(') && flag.endsWith(')')) {
-        const v = flag.slice(2, -1);
-        token.format = unescapeValue(v);
       } else {
-        // Unknown flags are ignored (forward compatible)
+        // Unknown flags are ignored (intentionally minimal surface)
       }
     }
     tokens.push(token);
@@ -101,9 +93,6 @@ export function serializeDisplayFieldsRow(tokens: DisplayFieldToken[]): string {
       const flags: string[] = [];
       if (t.showName && t.displayName) flags.push(`n(${esc(t.displayName)})`);
       else if (t.showName) flags.push('n');
-      // Do not emit d() anymore; keep serializer output normalized to n(...) form
-      if (t.inlineEditable) flags.push('e');
-      if (t.format) flags.push(`f(${esc(t.format)})`);
       return `{${t.property}${flags.length ? '|' + flags.join('|') : ''}}`;
     })
     .join('');
