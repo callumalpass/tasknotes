@@ -1996,6 +1996,30 @@ export class FilterBar extends EventEmitter {
         titleWrapper.createSpan({ text: 'Layout', cls: 'filter-bar__section-title' });
         setTooltip(titleWrapper, 'Configure fields shown on task cards using {property|flags}', { placement: 'top' });
 
+        // Actions container (right side of header)
+        const actions = header.createDiv('filter-bar__section-header-actions');
+        const resetLayoutBtn = new ButtonComponent(actions)
+            .setIcon('eraser')
+            .setTooltip('Reset to default layout')
+            .setClass('filter-bar__layout-reset')
+            .onClick(() => {
+                try {
+                    // Clear current display fields configuration
+                    this.currentDisplayFields = { version: 1, row1FixedTitle: true, rows: [[], [], []] } as TaskCardDisplayFieldsConfig;
+                    // Clear inputs for rows 2-4
+                    const rowsContainer = content.querySelector('.filter-bar__display-fields-rows') as HTMLElement | null;
+                    if (rowsContainer) {
+                        const inputs = Array.from(rowsContainer.querySelectorAll('input')) as HTMLInputElement[];
+                        inputs.forEach((inp) => (inp.value = ''));
+                    }
+                    // Re-emit so views refresh
+                    this.emitImmediateQueryChange();
+                } catch (e) {
+                    console.error('Failed to reset layout', e);
+                }
+            });
+        resetLayoutBtn.buttonEl.classList.add('clickable-icon');
+
         const content = section.createDiv('filter-bar__section-content');
         if (!this.sectionStates.layout) {
             header.addClass('filter-bar__section-header--collapsed');
@@ -2015,7 +2039,7 @@ export class FilterBar extends EventEmitter {
         const makeRowEditor = (idx: number, initial: string) => {
             const rowEl = rowsContainer.createDiv({ cls: 'filter-bar__display-fields-row' });
             rowEl.createSpan({ text: `Row ${idx + 2}:`, cls: 'filter-bar__label' });
-            const input = new TextComponent(rowEl).setPlaceholder('{property|n|d(Name)} {prop2|...}');
+            const input = new TextComponent(rowEl).setPlaceholder('{property|n(Name)} {prop2|...}');
             (input.inputEl as HTMLInputElement).style.width = '100%';
             if (initial) input.setValue(initial);
             const status = rowEl.createDiv({ cls: 'filter-bar__help' });
