@@ -180,6 +180,21 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 			});
 
 		new Setting(container)
+			.setName('Overlay cursor behavior')
+			.setDesc('Controls when overlays hide to show raw text. Set to 0 for legacy behavior (hide only when cursor is inside link). Set to 150+ for immediate hiding when cursor approaches link (recommended for better right-click support).')
+			.addSlider(slider => {
+				slider.sliderEl.setAttribute('aria-label', 'Overlay cursor behavior setting');
+				return slider
+					.setLimits(0, 500, 50)
+					.setValue(this.plugin.settings.overlayHideDelay)
+					.setDynamicTooltip()
+					.onChange(async (value) => {
+						this.plugin.settings.overlayHideDelay = value;
+						await this.plugin.saveSettings();
+					});
+			});
+
+		new Setting(container)
 			.setName('Instant task convert')
 			.setDesc('Show a convert button next to checkbox tasks for instant conversion to TaskNotes')
 			.addToggle(toggle => {

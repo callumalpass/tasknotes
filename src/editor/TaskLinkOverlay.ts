@@ -16,6 +16,62 @@ import { TaskLinkWidget } from './TaskLinkWidget';
 // Define a state effect for task updates
 const taskUpdateEffect = StateEffect.define<{ taskPath?: string }>();
 
+// Define a state effect for cursor position changes (for debounced hiding)
+const cursorPositionEffect = StateEffect.define<{ position: number; timestamp: number }>();
+
+/**
+ * Clear the cursor hide state - useful for testing
+ */
+export function clearCursorHideState(): void {
+    // No longer needed with immediate cursor detection, but kept for test compatibility
+}
+
+/**
+ * Determine if overlay should be hidden based on precise cursor position
+ *
+ * Behavior:
+ * - Hide overlay when cursor is immediately adjacent to or inside the link
+ * - Show overlay when cursor is at least one character away from link boundaries
+ *
+ * For link [[test-task]] at positions 10-21:
+ * - Position 9 (before [): overlay visible
+ * - Position 10-21 (on/in link): overlay hidden (raw text shown)
+ * - Position 22 (after ]): overlay hidden (raw text shown)
+ * - Position 23+ (away from link): overlay visible
+ */
+function shouldHideOverlay(
+    cursorPos: number | undefined,
+    linkStart: number,
+    linkEnd: number,
+    plugin: TaskNotesPlugin
+): boolean {
+    // If overlay is disabled, never hide
+    if (!plugin.settings?.enableTaskLinkOverlay) {
+        return false;
+    }
+
+    // If no cursor position, show overlay
+    if (cursorPos === undefined) {
+        return false;
+    }
+
+    // Check if overlay hide delay is set to 0 (legacy behavior)
+    const hideDelay = plugin.settings?.overlayHideDelay ?? 150;
+    if (hideDelay === 0) {
+        // Legacy behavior: hide only when cursor is strictly inside the link content (not at brackets)
+        // For [[test-task]] at positions 10-23 (exclusive), hide only at positions 12-21 (inside the content)
+        return cursorPos > linkStart + 1 && cursorPos < linkEnd - 2;
+    }
+
+    // New behavior: hide when cursor is adjacent to or within link
+    // This provides immediate feedback when cursor approaches the link
+    // Note: linkEnd is exclusive, so we need to subtract 1 for the actual last character
+    const hideStart = linkStart; // Hide when cursor touches the first [
+    const hideEnd = linkEnd - 1; // Hide until cursor is past the last ] (convert from exclusive to inclusive)
+
+    return cursorPos >= hideStart && cursorPos <= hideEnd;
+}
+
 // Create a ViewPlugin factory that takes the plugin as a parameter
 export function createTaskLinkViewPlugin(plugin: TaskNotesPlugin) {
     // Track widget instances for updates
@@ -101,7 +157,7 @@ export function createTaskLinkViewPlugin(plugin: TaskNotesPlugin) {
     });
 }
 
-function buildTaskLinkDecorations(state: { doc: { toString(): string; length: number }; selection?: { main: { head: number; anchor: number } } }, plugin: TaskNotesPlugin, activeWidgets: Map<string, TaskLinkWidget>): DecorationSet {
+export function buildTaskLinkDecorations(state: { doc: { toString(): string; length: number }; selection?: { main: { head: number; anchor: number } } }, plugin: TaskNotesPlugin, activeWidgets: Map<string, TaskLinkWidget>): DecorationSet {
     const builder = new RangeSetBuilder<Decoration>();
     
     // Validate inputs
@@ -213,9 +269,9 @@ function buildTaskLinkDecorations(state: { doc: { toString(): string; length: nu
                         continue;
                     }
                     
-                    // Check if cursor is within this link range - if so, skip decoration to show plain text
-                    if (cursorPos !== undefined && cursorPos >= link.start && cursorPos <= link.end) {
-                        console.debug('Cursor is within link range, skipping decoration to show plain text');
+                    // Check if cursor position requires hiding the overlay to show raw text
+                    if (shouldHideOverlay(cursorPos, link.start, link.end, plugin)) {
+                        console.debug('Cursor is adjacent to or within link range, skipping decoration to show plain text');
                         continue;
                     }
                     
