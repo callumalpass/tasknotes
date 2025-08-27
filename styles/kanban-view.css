@@ -1,4 +1,456 @@
 /* ================================================
+   KANBAN EMBED VIEW - BEM STRUCTURE
+   ================================================ */
+
+/* Kanban Embed View Container - Root Block */
+.tasknotes-plugin .kanban-embed-view {
+    padding: var(--tn-spacing-sm);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+    gap: var(--tn-spacing-sm);
+    max-width: 100%;
+}
+
+/* Kanban Embed Header */
+.tasknotes-plugin .kanban-embed-view__header {
+    display: flex;
+    flex-direction: column;
+    gap: var(--tn-spacing-md);
+    padding-bottom: var(--tn-spacing-md);
+    border-bottom: 1px solid var(--tn-border-color);
+    flex-shrink: 0;
+}
+
+.tasknotes-plugin .kanban-embed-view__filter-container {
+    margin-bottom: var(--tn-spacing-sm);
+}
+
+.tasknotes-plugin .kanban-embed-view__actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--tn-spacing-md);
+    flex-wrap: wrap;
+}
+
+.tasknotes-plugin .kanban-embed-view__actions-left {
+    display: flex;
+    align-items: center;
+    gap: var(--tn-spacing-sm);
+}
+
+.tasknotes-plugin .kanban-embed-view__actions-right {
+    display: flex;
+    align-items: center;
+    gap: var(--tn-spacing-sm);
+}
+
+/* Use consistent button system with primary accent background preserved */
+.tasknotes-plugin .kanban-embed-view__new-task-button {
+    background: var(--tn-interactive-accent);
+    color: var(--text-on-accent);
+    border: none;
+    box-shadow: none;
+    white-space: nowrap;
+}
+
+.tasknotes-plugin .kanban-embed-view__new-task-button:hover {
+    background: var(--tn-interactive-accent-hover);
+    box-shadow: none;
+}
+
+.tasknotes-plugin .kanban-embed-view__new-task-button:active {
+    opacity: 0.8;
+}
+
+/* Stats Container */
+.tasknotes-plugin .kanban-embed-view__stats {
+    display: flex;
+    align-items: center;
+    gap: var(--tn-spacing-sm);
+    padding: var(--tn-spacing-sm) var(--tn-spacing-md);
+    background: var(--tn-bg-secondary);
+    border: 1px solid var(--tn-border-color);
+    border-radius: var(--tn-radius-sm);
+    font-size: var(--tn-font-size-md);
+    color: var(--tn-text-muted);
+    font-weight: 400;
+}
+
+.tasknotes-plugin .kanban-embed-view__stats-simple {
+    font-size: var(--tn-font-size-sm);
+    color: var(--tn-text-muted);
+    font-weight: 400;
+}
+
+/* Board Container */
+.tasknotes-plugin .kanban-embed-view__board-container {
+    flex: 1;
+    overflow: hidden;
+    background: var(--tn-bg-secondary);
+    border-radius: var(--tn-radius-md);
+    min-height: 0;
+}
+
+/* Board */
+.tasknotes-plugin .kanban-embed-view__board {
+    display: flex;
+    height: 100%;
+    overflow-x: auto;
+    padding: var(--tn-spacing-md);
+    gap: var(--tn-spacing-md);
+    min-height: 0;
+    flex-wrap: nowrap;
+}
+
+/* Board Scrollbar */
+.tasknotes-plugin .kanban-embed-view__board::-webkit-scrollbar {
+    height: 8px;
+}
+
+.tasknotes-plugin .kanban-embed-view__board::-webkit-scrollbar-track {
+    background: var(--tn-bg-secondary);
+}
+
+.tasknotes-plugin .kanban-embed-view__board::-webkit-scrollbar-thumb {
+    background: var(--tn-border-color);
+    border-radius: 4px;
+}
+
+.tasknotes-plugin .kanban-embed-view__board::-webkit-scrollbar-thumb:hover {
+    background: var(--tn-text-muted);
+}
+
+/* Loading Indicator */
+.tasknotes-plugin .kanban-embed-view__loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--tn-spacing-sm);
+    padding: var(--tn-spacing-lg);
+    color: var(--tn-text-muted);
+    font-size: var(--tn-font-size-md);
+    font-style: italic;
+    font-weight: 400;
+    background: var(--tn-bg-secondary);
+    border: 1px solid var(--tn-border-color);
+    border-radius: var(--tn-radius-md);
+    margin: var(--tn-spacing-md);
+}
+
+.tasknotes-plugin .kanban-embed-view__loading::before {
+    content: '';
+    width: 16px;
+    height: 16px;
+    border: 2px solid color-mix(in srgb, var(--tn-text-muted) 0.3, transparent);
+    border-top: 2px solid var(--tn-text-muted);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    flex-shrink: 0;
+}
+
+/* Error State */
+.tasknotes-plugin .kanban-embed-view__error {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--tn-spacing-lg);
+    color: var(--tn-color-error);
+    background: color-mix(in srgb, var(--tn-color-error) 0.05, var(--tn-bg-secondary));
+    border: 1px solid color-mix(in srgb, var(--tn-color-error) 0.3, transparent);
+    border-radius: var(--tn-radius-md);
+    font-size: var(--tn-font-size-md);
+    font-weight: var(--tn-font-weight-medium);
+    margin: var(--tn-spacing-md);
+}
+
+/* ================================================
+   KANBAN EMBED COLUMNS
+   ================================================ */
+
+/* Column */
+.tasknotes-plugin .kanban-embed-view__column {
+    min-width: 280px;
+    max-width: 350px;
+    flex-shrink: 0;
+    background: var(--tn-bg-primary);
+    border: 1px solid var(--tn-border-color);
+    border-radius: var(--tn-radius-md);
+    display: flex;
+    flex-direction: column;
+    height: fit-content;
+    max-height: calc(100vh - 200px);
+    transition: all var(--tn-transition-fast);
+}
+
+.tasknotes-plugin .kanban-embed-view__column--dragover {
+    border-color: var(--tn-interactive-accent);
+    transform: scale(1.02);
+    box-shadow: var(--tn-shadow-medium);
+}
+
+.tasknotes-plugin .kanban-embed-view__column--uncategorized {
+    opacity: 0.8;
+    border: 1px dashed var(--tn-text-muted);
+}
+
+.tasknotes-plugin .kanban-embed-view__column--uncategorized .kanban-embed-view__column-header {
+    background: var(--tn-border-color);
+}
+
+.tasknotes-plugin .kanban-embed-view__column--column-drop-target {
+    background: var(--tn-interactive-hover);
+    border: 2px dashed var(--tn-interactive-accent);
+    transform: scale(1.02);
+    transition: all var(--tn-transition-medium);
+    box-shadow: var(--tn-shadow-medium);
+    position: relative;
+}
+
+.tasknotes-plugin .kanban-embed-view__column--column-drop-target .kanban-embed-view__column-header {
+    background: transparent;
+    border: none;
+}
+
+.tasknotes-plugin .kanban-embed-view__column--column-drop-target::before {
+    content: "Drop here to reorder column";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--tn-interactive-accent);
+    color: var(--tn-text-on-accent);
+    padding: var(--tn-spacing-xs) var(--tn-spacing-md);
+    border-radius: var(--tn-radius-sm);
+    font-size: var(--tn-font-size-sm);
+    font-weight: var(--tn-font-weight-medium);
+    z-index: 1000;
+    pointer-events: none;
+    white-space: nowrap;
+}
+
+/* Column Header */
+.tasknotes-plugin .kanban-embed-view__column-header {
+    display: flex;
+    flex-direction: column;
+    gap: var(--tn-spacing-xs);
+    padding: var(--tn-spacing-sm) var(--tn-spacing-md);
+    border-bottom: 1px solid var(--tn-border-color);
+    background: var(--tn-bg-secondary);
+    border-radius: var(--tn-radius-md) var(--tn-radius-md) 0 0;
+    cursor: grab;
+    user-select: none;
+    transition: all var(--tn-transition-fast);
+}
+
+.tasknotes-plugin .kanban-embed-view__column-header:active {
+    cursor: grabbing;
+}
+
+.tasknotes-plugin .kanban-embed-view__column-header--dragging {
+    opacity: 0.5;
+    transform: rotate(2deg);
+    box-shadow: var(--tn-shadow-medium);
+}
+
+.tasknotes-plugin .kanban-embed-view__column-title {
+    font-weight: var(--tn-font-weight-semibold);
+    font-size: var(--tn-font-size-lg);
+    color: var(--tn-text-normal);
+    line-height: 1.2;
+    margin: 0;
+}
+
+.tasknotes-plugin .kanban-embed-view__column-count {
+    color: var(--tn-text-muted);
+    font-size: var(--tn-font-size-xs);
+    line-height: 1.2;
+    font-weight: 400;
+    margin: 0;
+}
+
+/* Column Body */
+.tasknotes-plugin .kanban-embed-view__column-body {
+    padding: var(--tn-spacing-sm);
+    min-height: 100px;
+    max-height: calc(100vh - 300px);
+    overflow-y: auto;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--tn-spacing-xs);
+}
+
+.tasknotes-plugin .kanban-embed-view__column-body--dragover {
+    background: var(--tn-interactive-hover);
+    position: relative;
+}
+
+.tasknotes-plugin .kanban-embed-view__column-body--dragover::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: color-mix(in srgb, var(--tn-interactive-accent) 0.1, transparent);
+    border: 2px dashed var(--tn-interactive-accent);
+    border-radius: var(--tn-radius-md);
+    pointer-events: none;
+}
+
+/* Column Body Scrollbar */
+.tasknotes-plugin .kanban-embed-view__column-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.tasknotes-plugin .kanban-embed-view__column-body::-webkit-scrollbar-track {
+    background: var(--tn-bg-secondary);
+    border-radius: 3px;
+}
+
+.tasknotes-plugin .kanban-embed-view__column-body::-webkit-scrollbar-thumb {
+    background: var(--tn-border-color);
+    border-radius: 3px;
+}
+
+.tasknotes-plugin .kanban-embed-view__column-body::-webkit-scrollbar-thumb:hover {
+    background: var(--tn-text-muted);
+}
+
+/* Tasks Container */
+.tasknotes-plugin .kanban-embed-view__tasks-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--tn-spacing-xs);
+    flex: 1;
+}
+
+/* Empty Column */
+.tasknotes-plugin .kanban-embed-view__column-empty {
+    text-align: center;
+    color: var(--tn-text-muted);
+    font-style: italic;
+    font-size: var(--tn-font-size-sm);
+    padding: var(--tn-spacing-lg);
+    border: 2px dashed var(--tn-border-color);
+    border-radius: var(--tn-radius-md);
+    background: var(--tn-bg-secondary);
+    transition: all var(--tn-transition-fast);
+    margin: var(--tn-spacing-xs);
+}
+
+.tasknotes-plugin .kanban-embed-view__column-empty:hover {
+    border-color: var(--tn-interactive-accent);
+    background: var(--tn-interactive-hover);
+}
+
+.tasknotes-plugin .kanban-embed-view__column--dragover .kanban-embed-view__column-empty {
+    border-color: var(--tn-interactive-accent);
+    background: var(--tn-interactive-accent-hover);
+    color: var(--tn-text-on-accent);
+}
+
+/* Add Card Button */
+.tasknotes-plugin .kanban-embed-view__add-card-button {
+    background: transparent;
+    border: 2px dashed var(--tn-border-color);
+    border-radius: var(--tn-radius-md);
+    padding: var(--tn-spacing-sm);
+    margin: var(--tn-spacing-xs);
+    color: var(--tn-text-muted);
+    font-size: var(--tn-font-size-sm);
+    cursor: pointer;
+    transition: all var(--tn-transition-fast);
+    font-weight: 400;
+}
+
+.tasknotes-plugin .kanban-embed-view__add-card-button:hover {
+    background: var(--tn-interactive-hover);
+    border-color: var(--tn-interactive-accent);
+    color: var(--tn-interactive-accent);
+}
+
+.tasknotes-plugin .kanban-embed-view__add-card-button:active {
+    background: var(--tn-interactive-accent);
+    color: var(--tn-text-on-accent);
+}
+
+/* ================================================
+   RESPONSIVE DESIGN FOR EMBED
+   ================================================ */
+
+@media (max-width: 768px) {
+    .tasknotes-plugin .kanban-embed-view {
+        padding: var(--tn-spacing-xs);
+        gap: var(--tn-spacing-xs);
+    }
+    
+    .tasknotes-plugin .kanban-embed-view__header {
+        padding-bottom: var(--tn-spacing-sm);
+        gap: var(--tn-spacing-sm);
+    }
+    
+    .tasknotes-plugin .kanban-embed-view__actions {
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--tn-spacing-sm);
+    }
+    
+    .tasknotes-plugin .kanban-embed-view__actions-left,
+    .tasknotes-plugin .kanban-embed-view__actions-right {
+        justify-content: center;
+        width: 100%;
+    }
+    
+    .tasknotes-plugin .kanban-embed-view__new-task-button {
+        width: 100%;
+        max-width: 300px;
+    }
+    
+    .tasknotes-plugin .kanban-embed-view__board {
+        padding: var(--tn-spacing-sm);
+        gap: var(--tn-spacing-sm);
+    }
+    
+    .tasknotes-plugin .kanban-embed-view__column {
+        min-width: 240px;
+        max-width: 280px;
+    }
+}
+
+@media (max-width: 480px) {
+    .tasknotes-plugin .kanban-embed-view {
+        padding: var(--tn-spacing-xs);
+    }
+    
+    .tasknotes-plugin .kanban-embed-view__board {
+        padding: var(--tn-spacing-xs);
+        gap: var(--tn-spacing-xs);
+    }
+    
+    .tasknotes-plugin .kanban-embed-view__column {
+        min-width: 200px;
+        max-width: 240px;
+    }
+    
+    .tasknotes-plugin .kanban-embed-view__column-header {
+        padding: var(--tn-spacing-xs) var(--tn-spacing-sm);
+    }
+    
+    .tasknotes-plugin .kanban-embed-view__column-body {
+        padding: var(--tn-spacing-xs);
+    }
+    
+    .tasknotes-plugin .kanban-embed-view__new-task-button {
+        font-size: var(--tn-font-size-xs);
+        padding: 0 var(--tn-spacing-md);
+    }
+}
+
+/* ================================================
    KANBAN VIEW - BEM STRUCTURE
    ================================================ */
 

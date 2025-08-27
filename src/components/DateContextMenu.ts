@@ -283,13 +283,13 @@ export class DateContextMenu {
 
     private addPickerClickHandler(input: HTMLInputElement): void {
         input.addEventListener('click', () => {
-            if ('showPicker' in input) {
-                try {
+            try {
+                if ('showPicker' in input && typeof (input as any).showPicker === 'function') {
                     (input as any).showPicker();
-                } catch (error) {
+                } else {
                     input.focus();
                 }
-            } else {
+            } catch (error: any) {
                 input.focus();
             }
         });

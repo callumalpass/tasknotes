@@ -360,14 +360,13 @@ export default class TaskNotesPlugin extends Plugin {
             // register tnkanban extension
             this.registerExtensions(["tnkanban"], KANBAN_VIEW_TYPE);
 			
-            // embedded
+            // // embedded
             this.app.embedRegistry.registerExtensions(
                 ["tnkanban"],
                 (info, file, subPath) => {
                     return new KanbanEmbedView(info, file, subPath || "", this.app)
                 }
             );
-
 
 			// Register essential editor extensions (now safe after layout ready)
 			this.registerEditorExtension(createTaskLinkOverlay(this));
@@ -1324,7 +1323,7 @@ export default class TaskNotesPlugin extends Plugin {
 			
 			// Open the daily note
 			if (dailyNote) {
-				await this.app.workspace.getLeaf(false).openFile(dailyNote);
+				await this.app.workspace.getLeaf(false).openFile(dailyNote as TFile);
 				
 				// If we created a new daily note, refresh the cache to ensure it shows up in views
 				if (noteWasCreated) {

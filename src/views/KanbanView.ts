@@ -1293,44 +1293,192 @@ export class KanbanView extends TextFileView {
 
 // embedded view
 export class KanbanEmbedView extends Component {
+    plugin: TaskNotesPlugin;
     root: Root | null = null;
     containerEl: HTMLElement;
-    private counterLogic: CounterLogic;
+    
+    // UI elements
+    private boardContainer: HTMLElement | null = null;
+    
+    // Filter system
+    private filterBar: FilterBar | null = null;
+    private currentQuery: FilterQuery;
+    private taskElements: Map<string, HTMLElement> = new Map();
+    private previousGroupKey: string | null = null;
+    private columnOrder: string[] = [];
+
+    // Event listeners
+    private listeners: EventRef[] = [];
+    private functionListeners: (() => void)[] = [];
 
     constructor(
         public info: EmbedContext,
         public file: TFile,
         public subpath: string,
-        public app: App
+        public app: App,
+        plugin?: TaskNotesPlugin
     ) {
         super();
         this.containerEl = info.containerEl;
-        this.containerEl.addClasses(["counter--embed-view"]);
-        this.counterLogic = new CounterLogic(this.app, this.file);
+        this.containerEl.addClasses(["tasknotes-plugin", "kanban-embed-view"]);
+        
+        // Get plugin instance
+        this.plugin = plugin || (this.app as any).plugins.plugins.tasknotes as TaskNotesPlugin;
+        
+        // Initialize with default query
+        const tempId = `temp-embed-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+        this.currentQuery = {
+            type: 'group',
+            id: tempId,
+            conjunction: 'and',
+            children: [],
+            sortKey: 'priority',
+            sortDirection: 'desc',
+            groupKey: 'status' // Kanban default grouping
+        };
+        
+        // Initialize previous group key to current state to avoid clearing on first load
+        this.previousGroupKey = this.currentQuery.groupKey || null;
+        
         // Only create React root if needed, otherwise set to null
         this.root = null;
     }
 
     override onload(): void {
         super.onload();
+        this.registerEvents();
         this.loadFileData();
         this.render();
     }
 
+    registerEvents(): void {
+        if (!this.plugin) return;
+        
+        this.listeners.forEach(listener => this.plugin.emitter.offref(listener));
+        this.listeners = [];
+        this.functionListeners.forEach(unsubscribe => unsubscribe());
+        this.functionListeners = [];
+
+        const dataListener = this.plugin.emitter.on(EVENT_DATA_CHANGED, async () => {
+            this.refresh();
+            // Update FilterBar options when data changes (new properties, contexts, etc.)
+            if (this.filterBar) {
+                const updatedFilterOptions = await this.plugin.filterService.getFilterOptions();
+                this.filterBar.updateFilterOptions(updatedFilterOptions);
+            }
+        });
+        this.listeners.push(dataListener);
+
+        const taskUpdateListener = this.plugin.emitter.on(EVENT_TASK_UPDATED, async ({ path, originalTask, updatedTask }) => {
+            if (!path || !updatedTask) return;
+            
+            // Check if any parent task cards need their subtasks refreshed
+            await refreshParentTaskSubtasks(updatedTask, this.plugin, this.containerEl);
+            
+            // Check if this task is currently visible in our view
+            const taskElement = this.taskElements.get(path);
+            if (taskElement) {
+                // Task is visible - update it in place
+                try {
+                    updateTaskCard(taskElement, updatedTask, this.plugin, {
+                        showDueDate: true,
+                        showCheckbox: false,
+                        showTimeTracking: true
+                    });
+                    
+                    // Add update animation for real user updates
+                    taskElement.classList.add('task-card--updated');
+                    window.setTimeout(() => {
+                        taskElement.classList.remove('task-card--updated');
+                    }, 1000);
+                } catch (error) {
+                    console.error('Error updating task card in kanban embed:', error);
+                    // Fallback to refresh if update fails
+                    this.refresh();
+                }
+            } else {
+                // Task not currently visible or might have moved columns - refresh
+                this.refresh();
+            }
+            
+            // Update FilterBar options when tasks are updated (may have new properties, contexts, etc.)
+            if (this.filterBar) {
+                const updatedFilterOptions = await this.plugin.filterService.getFilterOptions();
+                this.filterBar.updateFilterOptions(updatedFilterOptions);
+            }
+        });
+        this.listeners.push(taskUpdateListener);
+        
+        // Listen for filter service data changes
+        const filterDataListener = this.plugin.filterService.on('data-changed', () => {
+            this.refresh();
+        });
+        this.functionListeners.push(filterDataListener);
+    }
+
     async loadFileData(): Promise<void> {
+        if (!this.plugin) return;
+        
         try {
-            const data = await this.app.vault.cachedRead(this.file);
-            this.counterLogic.parseData(data);
+            const content = await this.app.vault.cachedRead(this.file);
+            if (content.trim()) {
+                const parsed = JSON.parse(content);
+                
+                // Load query from file
+                if (parsed.query) {
+                    this.currentQuery = parsed.query as FilterQuery;
+                    // Ensure unique ID for loaded query
+                    if (!this.currentQuery.id || this.currentQuery.id === 'default' || this.currentQuery.id.startsWith('temp')) {
+                        this.currentQuery.id = this.generateUniqueId();
+                    }
+                    this.previousGroupKey = this.currentQuery.groupKey || null;
+                } else {
+                    // No query in file, use defaults
+                    this.currentQuery = this.plugin.filterService.createDefaultQuery();
+                    this.currentQuery.id = this.generateUniqueId();
+                    this.currentQuery.sortKey = 'priority';
+                    this.currentQuery.sortDirection = 'desc';
+                    this.currentQuery.groupKey = 'status';
+                    this.previousGroupKey = this.currentQuery.groupKey || null;
+                }
+                
+                // Load column order from file
+                if (parsed.columnOrder && Array.isArray(parsed.columnOrder)) {
+                    this.columnOrder = [...parsed.columnOrder];
+                } else {
+                    this.columnOrder = [];
+                }
+            } else {
+                // Empty file, use defaults
+                this.currentQuery = this.plugin.filterService.createDefaultQuery();
+                this.currentQuery.id = this.generateUniqueId();
+                this.currentQuery.sortKey = 'priority';
+                this.currentQuery.sortDirection = 'desc';
+                this.currentQuery.groupKey = 'status';
+                this.columnOrder = [];
+                this.previousGroupKey = this.currentQuery.groupKey || null;
+            }
         } catch (e) {
             // If file is empty or invalid, reset defaults
-            this.counterLogic.resetCounter();
+            this.currentQuery = this.plugin.filterService.createDefaultQuery();
+            this.currentQuery.id = this.generateUniqueId();
+            this.currentQuery.sortKey = 'priority';
+            this.currentQuery.sortDirection = 'desc';
+            this.currentQuery.groupKey = 'status';
+            this.columnOrder = [];
+            this.previousGroupKey = this.currentQuery.groupKey || null;
         }
     }
 
     override onunload(): void {
-        // Clean up counter logic and its event listeners
-        if (this.counterLogic) {
-            this.counterLogic.cleanup();
+        // Clean up event listeners
+        this.listeners.forEach(listener => this.plugin?.emitter.offref(listener));
+        this.functionListeners.forEach(unsubscribe => unsubscribe());
+        
+        // Clean up FilterBar
+        if (this.filterBar) {
+            this.filterBar.destroy();
+            this.filterBar = null;
         }
 
         // Clean up React root if it was used
@@ -1346,13 +1494,603 @@ export class KanbanEmbedView extends Component {
     }
 
     async loadFile() {
-        // we can render here?
+        await this.loadFileData();
+        await this.render();
+    }
+
+    async refresh() {
+        // Use DOMReconciler for efficient updates
+        if (this.boardContainer) {
+            await this.loadAndRenderBoard();
+        } else {
+            // First render - do full render
+            await this.render();
+        }
     }
 
     async render() {
-        // Load current file data before rendering
-        const data = await this.app.vault.cachedRead(this.file);
-        this.counterLogic.parseData(data);
-        this.counterLogic.renderCounter(this.containerEl);
+        if (!this.plugin) return;
+        this.containerEl.empty();
+
+        await this.renderHeader(this.containerEl);
+        
+        this.boardContainer = this.containerEl.createDiv({ cls: 'kanban-embed-view__board-container' });
+        await this.loadAndRenderBoard();
+    }
+
+    private async renderHeader(container: HTMLElement) {
+        if (!this.plugin) return;
+        
+        const header = container.createDiv({ cls: 'kanban-embed-view__header' });
+
+        // FilterBar container
+        const filterBarContainer = header.createDiv({ cls: 'kanban-embed-view__filter-container' });
+        
+        // Only initialize with default query if we don't already have one loaded
+        if (!this.currentQuery || this.currentQuery.id.startsWith('temp')) {
+            this.currentQuery = this.plugin.filterService.createDefaultQuery();
+            this.currentQuery.sortKey = 'priority';
+            this.currentQuery.sortDirection = 'desc';
+            this.currentQuery.groupKey = 'status';
+        }
+        
+        // Get filter options from FilterService
+        const filterOptions = await this.plugin.filterService.getFilterOptions();
+        
+        // Create new FilterBar
+        this.filterBar = new FilterBar(
+            this.app,
+            filterBarContainer,
+            this.currentQuery,
+            filterOptions,
+            this.plugin.settings.viewsButtonAlignment || 'right',
+            { enableGroupExpandCollapse: false }
+        );
+        
+        // Get saved views for the FilterBar
+        const savedViews = this.plugin.viewStateManager.getSavedViews();
+        this.filterBar.updateSavedViews(savedViews);
+        
+        // Listen for saved view events
+        this.filterBar.on('saveView', ({ name, query, viewOptions }) => {
+            this.plugin.viewStateManager.saveView(name, query, viewOptions);
+        });
+        
+        this.filterBar.on('deleteView', (viewId: string) => {
+            this.plugin.viewStateManager.deleteView(viewId);
+        });
+
+        // Listen for global saved views changes
+        this.plugin.viewStateManager.on('saved-views-changed', (updatedViews: readonly SavedView[]) => {
+            this.filterBar?.updateSavedViews(updatedViews);
+        });
+        
+        this.filterBar.on('reorderViews', (fromIndex: number, toIndex: number) => {
+            this.plugin.viewStateManager.reorderSavedViews(fromIndex, toIndex);
+        });
+        
+        this.filterBar.on('manageViews', () => {
+            console.log('Manage views requested');
+        });
+        
+        // Listen for filter changes
+        this.filterBar.on('queryChange', async (newQuery: FilterQuery) => {
+            this.currentQuery = newQuery;
+            
+            // Save to file
+            try {
+                // Read existing file content to preserve metadata
+                const existing = await this.app.vault.cachedRead(this.file);
+                let kanbanConfig: any = {};
+                try {
+                    kanbanConfig = existing.trim() ? JSON.parse(existing) : {};
+                } catch (_) {
+                    kanbanConfig = {};
+                }
+                
+                // Update query and maintain structure
+                kanbanConfig.query = newQuery;
+                kanbanConfig.columnOrder = this.columnOrder;
+                kanbanConfig.modified = new Date().toISOString();
+                
+                // Ensure required fields exist
+                if (!kanbanConfig.id) {
+                    kanbanConfig.id = this.generateUniqueId();
+                }
+                if (!kanbanConfig.version) {
+                    kanbanConfig.version = '1.0';
+                }
+                if (!kanbanConfig.created) {
+                    kanbanConfig.created = new Date().toISOString();
+                }
+                
+                await this.app.vault.modify(this.file, JSON.stringify(kanbanConfig, null, 2));
+            } catch (err) {
+                console.warn('Failed to save kanban embed file state:', err);
+            }
+            
+            this.loadAndRenderBoard();
+        });
+
+        // Actions row (simplified for embed view)
+        const actionsRow = header.createDiv({ cls: 'kanban-embed-view__actions' });
+        
+        // Left actions
+        const leftActions = actionsRow.createDiv({ cls: 'kanban-embed-view__actions-left' });
+        
+        // Add new task button
+        const newTaskButton = leftActions.createEl('button', { 
+            cls: 'kanban-embed-view__new-task-button',
+            text: 'New task'
+        });
+        newTaskButton.addEventListener('click', () => {
+            this.plugin.openTaskCreationModal();
+        });
+
+        // Right actions
+        const rightActions = actionsRow.createDiv({ cls: 'kanban-embed-view__actions-right' });
+        
+        // Board stats
+        const statsContainer = rightActions.createDiv({ cls: 'kanban-embed-view__stats' });
+        this.updateBoardStats(statsContainer);
+    }
+
+    private updateBoardStats(container: HTMLElement, tasks?: TaskInfo[]) {
+        if (!this.plugin) return;
+        
+        container.empty();
+        
+        if (!tasks || tasks.length === 0) return;
+
+        const totalTasks = tasks.length;
+        const completedTasks = tasks.filter(task => 
+            this.plugin.statusManager.isCompletedStatus(task.status)
+        ).length;
+
+        // Simple, minimal stats
+        if (totalTasks > 0) {
+            const completionRate = Math.round((completedTasks / totalTasks) * 100);
+            container.createSpan({ 
+                text: `${totalTasks} tasks • ${completionRate}% complete`,
+                cls: 'kanban-embed-view__stats-simple'
+            });
+        }
+    }
+
+    private async loadAndRenderBoard() {
+        if (!this.boardContainer || !this.plugin) return;
+        
+        // Check if grouping type has changed - if so, clear the board completely
+        const currentGroupKey = this.currentQuery.groupKey || null;
+        if (this.previousGroupKey !== null && this.previousGroupKey !== currentGroupKey) {
+            this.boardContainer.empty();
+            this.columnOrder = [];
+        }
+        this.previousGroupKey = currentGroupKey;
+        
+        // Show loading indicator only if board is empty
+        let loadingIndicator: HTMLElement | null = null;
+        if (this.boardContainer.children.length === 0) {
+            loadingIndicator = this.boardContainer.createDiv({ cls: 'kanban-embed-view__loading', text: 'Loading board...' });
+        }
+
+        try {
+            // Get grouped tasks from FilterService
+            const groupedTasks = await this.plugin.filterService.getGroupedTasks(this.currentQuery, this.plugin.selectedDate);
+            
+            // Remove loading indicator if it exists
+            if (loadingIndicator) {
+                loadingIndicator.remove();
+            }
+            
+            // Render the grouped tasks using DOMReconciler
+            this.renderBoardFromGroupedTasksWithReconciler(groupedTasks);
+            
+            // Calculate stats from all tasks
+            const allTasks = Array.from(groupedTasks.values()).flat();
+            
+            // Update stats after rendering
+            const statsContainer = this.containerEl.querySelector('.kanban-embed-view__stats') as HTMLElement;
+            if (statsContainer) {
+                this.updateBoardStats(statsContainer, allTasks);
+            }
+        } catch (error) {
+            console.error("Error loading Kanban embed board:", error);
+            
+            // Remove loading indicator if it exists
+            if (loadingIndicator) {
+                loadingIndicator.remove();
+            }
+            
+            // Show error state
+            this.boardContainer.empty();
+            this.boardContainer.createDiv({ cls: 'kanban-embed-view__error', text: 'Error loading board.' });
+        }
+    }
+
+    /**
+     * Generate a stable-ish unique id for ad-hoc views stored in files
+     */
+    private generateUniqueId(): string {
+        // Use timestamp + random + a counter fallback for higher uniqueness
+        const rand = Math.random().toString(36).slice(2, 10);
+        const time = Date.now().toString(36);
+        return `kanban-embed-${time}-${rand}`;
+    }
+
+    /**
+     * Render board using DOMReconciler for efficient updates
+     */
+    private renderBoardFromGroupedTasksWithReconciler(groupedTasks: Map<string, TaskInfo[]>) {
+        if (!this.boardContainer || !this.plugin) return;
+
+        // Get or create board element
+        let boardEl = this.boardContainer.querySelector('.kanban-embed-view__board') as HTMLElement;
+        if (!boardEl) {
+            boardEl = this.boardContainer.createDiv({ cls: 'kanban-embed-view__board' });
+        }
+        
+        // Get all possible columns from grouped tasks and configured statuses
+        const taskBasedColumns = Array.from(groupedTasks.keys());
+        let allColumns = taskBasedColumns;
+        
+        // If grouping by status, include all configured statuses to show empty columns
+        if (this.currentQuery.groupKey === 'status') {
+            const configuredStatuses = this.plugin.statusManager.getAllStatuses().map(s => s.value);
+            allColumns = [...new Set([...taskBasedColumns, ...configuredStatuses])];
+        }
+        
+        allColumns = allColumns.sort();
+
+        // Initialize column order if empty
+        if (this.columnOrder.length === 0) {
+            this.columnOrder = [...allColumns];
+        }
+
+        // Clean up obsolete columns and add new ones
+        let orderChanged = false;
+        
+        // Remove columns that no longer exist
+        const initialLength = this.columnOrder.length;
+        this.columnOrder = this.columnOrder.filter(columnId => allColumns.includes(columnId));
+        if (this.columnOrder.length !== initialLength) {
+            orderChanged = true;
+        }
+        
+        // Add any new columns that aren't in our order yet
+        allColumns.forEach(columnId => {
+            if (!this.columnOrder.includes(columnId)) {
+                this.columnOrder.push(columnId);
+                orderChanged = true;
+            }
+        });
+
+        // Create column data in the stored order
+        const orderedColumns = this.columnOrder.map(columnId => ({
+            id: columnId,
+            tasks: groupedTasks.get(columnId) || []
+        }));
+
+        // Use DOMReconciler to update the columns
+        this.plugin.domReconciler.updateList(
+            boardEl,
+            orderedColumns,
+            (column) => column.id,
+            (column) => this.createColumnElement(column.id, column.tasks),
+            (element, column) => this.updateColumnElement(element, column.id, column.tasks)
+        );
+
+        // Update task elements tracking
+        this.taskElements.clear();
+        const taskCards = boardEl.querySelectorAll('.task-card[data-task-path]');
+        taskCards.forEach(card => {
+            const taskPath = (card as HTMLElement).dataset.taskPath;
+            if (taskPath) {
+                this.taskElements.set(taskPath, card as HTMLElement);
+            }
+        });
+    }
+
+    /**
+     * Create column element for reconciler
+     */
+    private createColumnElement(columnId: string, tasks: TaskInfo[]): HTMLElement {
+        const columnEl = document.createElement('div');
+        columnEl.className = 'kanban-embed-view__column';
+        columnEl.dataset.columnId = columnId;
+
+        // Add column status classes for styling
+        if (columnId === 'uncategorized') {
+            columnEl.classList.add('kanban-embed-view__column--uncategorized');
+        }
+
+        // Column header
+        const headerEl = columnEl.createDiv({ cls: 'kanban-embed-view__column-header' });
+        
+        // Title line
+        const title = this.formatColumnTitle(columnId, this.currentQuery.groupKey || 'none');
+        headerEl.createEl('div', { text: title, cls: 'kanban-embed-view__column-title' });
+        
+        // Count line
+        headerEl.createEl('div', { 
+            text: `${tasks.length} tasks`, 
+            cls: 'kanban-embed-view__column-count' 
+        });
+
+        // Column body for tasks
+        const bodyEl = columnEl.createDiv({ cls: 'kanban-embed-view__column-body' });
+        
+        // Create tasks container
+        const tasksContainer = bodyEl.createDiv({ cls: 'kanban-embed-view__tasks-container' });
+        
+        if (tasks.length === 0) {
+            // Empty column placeholder
+            const emptyEl = tasksContainer.createDiv({ 
+                cls: 'kanban-embed-view__column-empty',
+                text: 'No tasks'
+            });
+            
+            // Make empty columns droppable
+            this.addColumnDropHandlers(emptyEl);
+        } else {
+            // Use DOMReconciler for tasks within this container
+            this.plugin.domReconciler.updateList(
+                tasksContainer,
+                tasks,
+                (task) => task.path,
+                (task) => this.createTaskCardElement(task),
+                (element, task) => this.updateTaskCardElement(element, task)
+            );
+        }
+        
+        // Add "Add Card" button (simplified for embed)
+        const addCardButton = bodyEl.createEl('button', {
+            cls: 'kanban-embed-view__add-card-button',
+            text: '+ Add a card'
+        });
+        addCardButton.addEventListener('click', () => {
+            this.openTaskCreationModalForColumn(columnId);
+        });
+        
+        // Add drop handlers to the column
+        this.addColumnDropHandlers(columnEl);
+        
+        return columnEl;
+    }
+
+    /**
+     * Update column element for reconciler
+     */
+    private updateColumnElement(element: HTMLElement, columnId: string, tasks: TaskInfo[]): void {
+        // Update count
+        const countEl = element.querySelector('.kanban-embed-view__column-count');
+        if (countEl) {
+            countEl.textContent = `${tasks.length} tasks`;
+        }
+
+        // Update body
+        const bodyEl = element.querySelector('.kanban-embed-view__column-body') as HTMLElement;
+        if (bodyEl) {
+            // Preserve the add card button
+            const addCardButton = bodyEl.querySelector('.kanban-embed-view__add-card-button');
+            
+            // Get or create tasks container
+            let tasksContainer = bodyEl.querySelector('.kanban-embed-view__tasks-container') as HTMLElement;
+            if (!tasksContainer) {
+                tasksContainer = bodyEl.createDiv({ cls: 'kanban-embed-view__tasks-container' });
+                // Insert before add button if it exists
+                if (addCardButton) {
+                    bodyEl.insertBefore(tasksContainer, addCardButton);
+                } else {
+                    bodyEl.appendChild(tasksContainer);
+                }
+            }
+            
+            if (tasks.length === 0) {
+                // Clear tasks container and show empty state
+                tasksContainer.empty();
+                const emptyEl = tasksContainer.createDiv({ 
+                    cls: 'kanban-embed-view__column-empty',
+                    text: 'No tasks'
+                });
+                this.addColumnDropHandlers(emptyEl);
+            } else {
+                // Remove empty state if it exists
+                const emptyEl = tasksContainer.querySelector('.kanban-embed-view__column-empty');
+                if (emptyEl) {
+                    emptyEl.remove();
+                }
+                
+                // Use DOMReconciler for task cards within this container
+                this.plugin.domReconciler.updateList(
+                    tasksContainer,
+                    tasks,
+                    (task) => task.path,
+                    (task) => this.createTaskCardElement(task),
+                    (element, task) => this.updateTaskCardElement(element, task)
+                );
+            }
+        }
+    }
+
+    /**
+     * Create task card element for reconciler
+     */
+    private createTaskCardElement(task: TaskInfo): HTMLElement {
+        const taskCard = createTaskCard(task, this.plugin, {
+            showDueDate: true,
+            showCheckbox: false,
+            showTimeTracking: true
+        });
+        taskCard.draggable = true;
+        this.addDragHandlers(taskCard, task);
+        // Update task elements tracking
+        this.taskElements.set(task.path, taskCard);
+        return taskCard;
+    }
+
+    /**
+     * Update task card element for reconciler
+     */
+    private updateTaskCardElement(element: HTMLElement, task: TaskInfo): void {
+        updateTaskCard(element, task, this.plugin, {
+            showDueDate: true,
+            showCheckbox: false,
+            showTimeTracking: true
+        });
+        // Ensure task elements tracking is updated
+        this.taskElements.set(task.path, element);
+    }
+
+    private addDragHandlers(card: HTMLElement, task: TaskInfo) {
+        card.addEventListener('dragstart', (e) => {
+            if (e.dataTransfer) {
+                e.dataTransfer.setData('text/plain', task.path);
+                e.dataTransfer.effectAllowed = 'move';
+            }
+            window.setTimeout(() => card.classList.add('task-card--dragging'), 0);
+        });
+
+        card.addEventListener('dragend', () => {
+            card.classList.remove('task-card--dragging');
+        });
+    }
+
+    private addColumnDropHandlers(columnEl: HTMLElement) {
+        if (!this.plugin) return;
+        
+        columnEl.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            if (e.dataTransfer) {
+                e.dataTransfer.dropEffect = 'move';
+                columnEl.classList.add('kanban-embed-view__column--dragover');
+            }
+        });
+
+        columnEl.addEventListener('dragleave', (e) => {
+            // Only remove drop styling if we're actually leaving the column
+            // and not just moving to a child element
+            if (!columnEl.contains(e.relatedTarget as Node)) {
+                columnEl.classList.remove('kanban-embed-view__column--dragover');
+            }
+        });
+
+        columnEl.addEventListener('drop', async (e) => {
+            e.preventDefault();
+            e.stopPropagation(); // Prevent event bubbling
+            
+            // Remove drop styling from all columns (cleanup)
+            this.boardContainer?.querySelectorAll('.kanban-embed-view__column--dragover').forEach(col => {
+                col.classList.remove('kanban-embed-view__column--dragover');
+            });
+
+            const data = e.dataTransfer?.getData('text/plain');
+            const taskPath = data;
+            
+            // Find the target column - prefer the one with data attribute, fallback to finding parent
+            let targetColumnId = columnEl.dataset.columnId;
+            if (!targetColumnId) {
+                // If dropped on a child element, find the parent column
+                const parentColumn = (e.target as HTMLElement).closest('.kanban-embed-view__column');
+                targetColumnId = parentColumn?.getAttribute('data-column-id') || undefined;
+            }
+
+            if (taskPath && targetColumnId && targetColumnId !== 'uncategorized') {
+                // Get task from cache
+                const task = await this.plugin.cacheManager.getCachedTaskInfo(taskPath);
+                if (task) {
+                    try {
+                        // Map current grouping to actual TaskInfo property
+                        let propertyToUpdate: keyof TaskInfo;
+                        let valueToSet: any;
+                        
+                        switch (this.currentQuery.groupKey) {
+                            case 'status':
+                                propertyToUpdate = 'status';
+                                valueToSet = targetColumnId;
+                                break;
+                            case 'priority':
+                                propertyToUpdate = 'priority';
+                                valueToSet = targetColumnId;
+                                break;
+                            case 'context':
+                                propertyToUpdate = 'contexts';
+                                // For contexts, set as array with single value
+                                valueToSet = [targetColumnId];
+                                break;
+                            case 'project':
+                                propertyToUpdate = 'projects';
+                                // For projects, set as array with single value
+                                valueToSet = targetColumnId === 'No Project' ? [] : [targetColumnId];
+                                break;
+                            default:
+                                throw new Error(`Unsupported groupBy: ${this.currentQuery.groupKey}`);
+                        }
+                        
+                        await this.plugin.updateTaskProperty(task, propertyToUpdate, valueToSet, { silent: true });
+                    } catch (error) {
+                        console.error('Failed to move task in embed:', error);
+                        // Refresh to revert any optimistic updates
+                        this.refresh();
+                    }
+                }
+            }
+        });
+    }
+
+    private formatColumnTitle(id: string, groupBy: TaskGroupKey): string {
+        if (!this.plugin) return id;
+        
+        switch (groupBy) {
+            case 'status':
+                return this.plugin.statusManager.getStatusConfig(id)?.label || id;
+            case 'priority':
+                return this.plugin.priorityManager.getPriorityConfig(id)?.label || id;
+            case 'context':
+                return id === 'uncategorized' ? 'Uncategorized' : `@${id}`;
+            case 'project':
+                return id === 'No Project' ? 'No Project' : `+${id}`;
+            case 'due':
+                return id;
+            case 'none':
+            default:
+                return id;
+        }
+    }
+
+    /**
+     * Open task creation modal with pre-populated values based on column
+     */
+    private openTaskCreationModalForColumn(columnId: string): void {
+        if (!this.plugin) return;
+        
+        // Determine pre-populated values based on current grouping
+        let prePopulatedValues: Partial<TaskInfo> = {};
+        
+        switch (this.currentQuery.groupKey) {
+            case 'status':
+                if (columnId !== 'uncategorized') {
+                    prePopulatedValues.status = columnId;
+                }
+                break;
+            case 'priority':
+                if (columnId !== 'uncategorized') {
+                    prePopulatedValues.priority = columnId;
+                }
+                break;
+            case 'context':
+                if (columnId !== 'uncategorized') {
+                    prePopulatedValues.contexts = [columnId];
+                }
+                break;
+            case 'project':
+                if (columnId !== 'No Project') {
+                    prePopulatedValues.projects = [columnId];
+                }
+                break;
+        }
+        
+        // Open the task creation modal with pre-populated values
+        this.plugin.openTaskCreationModal(prePopulatedValues);
     }
 }
