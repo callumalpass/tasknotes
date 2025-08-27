@@ -1,4 +1,4 @@
-import { App, ButtonComponent, DropdownComponent, Modal, TextComponent, debounce, setTooltip, setIcon } from 'obsidian';
+import { App, ButtonComponent, DropdownComponent, Modal, TextComponent, debounce, setTooltip, setIcon, AbstractInputSuggest } from 'obsidian';
 import { FILTER_OPERATORS, FILTER_PROPERTIES, FilterCondition, FilterGroup, FilterNode, FilterOperator, FilterOptions, FilterProperty, FilterQuery, PropertyDefinition, SavedView, TaskGroupKey, TaskSortKey, TaskCardDisplayFieldsConfig } from '../types';
 import { parseDisplayFieldsRow, parseDisplayFieldsConfig, serializeDisplayFieldsRow } from '../utils/displayFieldsParser';
 
@@ -553,6 +553,9 @@ export class FilterBar extends EventEmitter {
         const { signal } = this.abortController;
 
         // Click outside handler with passive option for better performance
+        document.addEventListener('mousedown', (event: MouseEvent) => {
+            this.handleDocumentClick(event);
+        }, { signal, passive: true });
         document.addEventListener('click', (event: MouseEvent) => {
             this.handleDocumentClick(event);
         }, { signal, passive: true });
@@ -617,6 +620,11 @@ export class FilterBar extends EventEmitter {
 
         const target = event.target as HTMLElement;
         if (!target) return;
+
+        // Ignore clicks inside Obsidian's suggestion dropdowns
+        if (target.closest('.suggestion-container')) {
+            return;
+        }
 
         // Check if click is outside the main filter box
         if (this.sectionStates.filterBox && this.mainFilterBox && this.container) {
@@ -1024,6 +1032,12 @@ export class FilterBar extends EventEmitter {
             return; // No value input needed
         }
 
+        // Special-case: Tags + contains should allow free text AND suggestions
+        if (propertyDef.id === 'tags' && condition.operator === 'contains') {
+            this.renderTagsContainsInput(container, condition);
+            return;
+        }
+
         switch (propertyDef.valueInputType) {
             case 'text':
                 this.renderTextInput(container, condition);
@@ -1038,6 +1052,67 @@ export class FilterBar extends EventEmitter {
                 this.renderNumberInput(container, condition);
                 break;
         }
+    }
+
+    /**
+     * Render tags input matching TaskModal behavior (free text + suggest on comma-separated tokens)
+     */
+    private renderTagsContainsInput(container: HTMLElement, condition: FilterCondition): void {
+        const initial = typeof condition.value === 'string' ? condition.value : '';
+        const input = new TextComponent(container)
+            .setValue(initial)
+            .setPlaceholder('Type a tag');
+
+        // Suggest behavior similar to TaskModal, but single value only
+        class FilterTagSuggest extends AbstractInputSuggest<{ value: string; display: string; type: 'tag'; toString(): string; }> {
+            private get inputEl(): HTMLInputElement { return input.inputEl; }
+            protected async getSuggestions(_query: string) {
+                const currentQuery = this.inputEl.value.trim();
+                const tags = (this as any).owner.filterOptions.tags as readonly string[];
+                const base = tags.filter(t => typeof t === 'string');
+
+                // If input exactly matches a tag, hide suggestions
+                if (currentQuery !== '' && base.some(t => t === currentQuery)) {
+                    return [];
+                }
+
+                const list = currentQuery === ''
+                    ? base
+                    : base.filter(t => t.toLowerCase().includes(currentQuery.toLowerCase()));
+                return list.slice(0, 20).map(tag => ({ value: tag, display: tag, type: 'tag' as const, toString() { return this.value; } }));
+            }
+            public renderSuggestion(s: { display: string }, el: HTMLElement): void { el.textContent = s.display; }
+            public selectSuggestion(s: { value: string }): void {
+                // Prevent modal close by ignoring next click outside
+                (this as any).owner.ignoreNextClickOutside();
+                this.inputEl.value = s.value;
+                this.inputEl.dispatchEvent(new Event('input', { bubbles: true }));
+                this.inputEl.focus();
+                // Close suggestions after selection since we now have an exact match
+                this.close();
+            }
+            constructor(appRef: App, inputEl: HTMLInputElement, private owner: FilterBar) { super(appRef, inputEl); }
+        }
+        const suggest = new FilterTagSuggest(this.app, input.inputEl as any, this);
+
+        // Show all tags when focused and empty
+        input.inputEl.addEventListener('focus', () => {
+            if ((input.getValue() || '').trim() === '') {
+                // Trigger input event to fetch suggestions for empty query
+                input.inputEl.dispatchEvent(new Event('input', { bubbles: true }));
+                // Open suggestions explicitly
+                (suggest as any).open?.();
+            }
+        });
+
+        // Sync condition value on change (single value only)
+        input.onChange((value) => {
+            const trimmed = (value || '').trim();
+            condition.value = trimmed === '' ? null : trimmed;
+            this.debouncedEmitQueryChange();
+        });
+
+        setTooltip(input.inputEl, 'Type a tag; suggestions appear as you type', { placement: 'top' });
     }
 
     /**
