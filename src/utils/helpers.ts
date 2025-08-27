@@ -781,7 +781,7 @@ export function getRecurrenceDisplayText(recurrence: string | any): string {
 /**
  * Extracts note information from a note file's content
  */
-export function extractNoteInfo(app: App, content: string, path: string, file?: TFile): {title: string, tags: string[], path: string, createdDate?: string, lastModified?: number} | null {
+export function extractNoteInfo(app: App, content: string, path: string, file?: TFile, fieldMapper?: FieldMapper): {title: string, tags: string[], path: string, createdDate?: string, lastModified?: number} | null {
 	let title = path.split('/').pop()?.replace('.md', '') || 'Untitled';
 	let tags: string[] = [];
 	let createdDate: string | undefined = undefined;
@@ -801,11 +801,19 @@ export function extractNoteInfo(app: App, content: string, path: string, file?: 
 				tags = frontmatter.tags;
 			}
 			
-			// Extract creation date from dateCreated or date field
-			if (frontmatter.dateCreated) {
-				createdDate = frontmatter.dateCreated;
-			} else if (frontmatter.date) {
-				createdDate = frontmatter.date;
+			// Extract creation date using field mapper if available
+			if (fieldMapper) {
+				const dateCreatedField = fieldMapper.toUserField('dateCreated');
+				if (frontmatter[dateCreatedField]) {
+					createdDate = frontmatter[dateCreatedField];
+				}
+			} else {
+				// Fallback to hardcoded fields if no field mapper
+				if (frontmatter.dateCreated) {
+					createdDate = frontmatter.dateCreated;
+				} else if (frontmatter.date) {
+					createdDate = frontmatter.date;
+				}
 			}
 		}
 	}
