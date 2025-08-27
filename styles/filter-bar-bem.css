@@ -767,7 +767,7 @@
     background: transparent; /* No background */
     border: 1px; /* No border */
     border-radius: 0;
-    flex-wrap: wrap;
+    flex-wrap: nowrap; /* keep in one row on desktop */
     transition: background-color 0.2s ease;
 }
 
@@ -826,9 +826,9 @@
 .tasknotes-plugin .filter-bar__value-container {
     display: flex;
     align-items: center;
-    gap: 0; /* No gap for combined look */
-    flex: 1;
-	width: 100%;
+    gap: 0;
+    flex: none;
+    min-width: 160px;
     border-radius: var(--radius-s);
     padding: 0 var(--tn-spacing-xs);
     transition: all 0.2s ease;
@@ -863,6 +863,8 @@
     transition: all 0.2s ease;
     margin-left: auto;
 }
+
+
 
 .tasknotes-plugin .filter-bar__delete-button:hover {
     background: var(--background-modifier-hover);
