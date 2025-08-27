@@ -26,6 +26,10 @@ export function createTaskClickHandler(options: ClickHandlerOptions) {
         contextMenuHandler
     } = options;
 
+    // Provide safe defaults when plugin.settings is missing (e.g., in tests)
+    const settings = (plugin as any)?.settings ?? { singleClickAction: 'edit', doubleClickAction: 'none' };
+
+
     let clickTimeout: NodeJS.Timeout | null = null;
 
     const openNote = () => {
@@ -50,7 +54,7 @@ export function createTaskClickHandler(options: ClickHandlerOptions) {
             return;
         }
 
-        const action = plugin.settings.singleClickAction;
+        const action = settings.singleClickAction;
         if (action === 'edit') {
             await editTask();
         } else if (action === 'openNote') {
@@ -64,7 +68,7 @@ export function createTaskClickHandler(options: ClickHandlerOptions) {
             return;
         }
 
-        const action = plugin.settings.doubleClickAction;
+        const action = settings.doubleClickAction;
         if (action === 'edit') {
             await editTask();
         } else if (action === 'openNote') {
@@ -80,7 +84,7 @@ export function createTaskClickHandler(options: ClickHandlerOptions) {
             }
         }
 
-        if (plugin.settings.doubleClickAction === 'none') {
+        if (settings.doubleClickAction === 'none') {
             await handleSingleClick(e);
             return;
         }

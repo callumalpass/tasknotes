@@ -8,6 +8,7 @@ import { PriorityManager } from '../services/PriorityManager';
 import { showConfirmationModal } from '../modals/ConfirmationModal';
 import { showStorageLocationConfirmationModal } from '../modals/StorageLocationConfirmationModal';
 import { ProjectSelectModal } from '../modals/ProjectSelectModal';
+import { splitListPreservingLinksAndQuotes } from '../utils/stringSplit';
 
 
 
@@ -1713,6 +1714,20 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 					});
 			});
 
+		// Suggestion performance: optional debounce for inline file suggestions
+		new Setting(container)
+			.setName('Debounce inline suggestions (ms)')
+			.setDesc('Optional delay before running inline file suggestions (useful for large vaults). Set 0 to disable.')
+			.addText(text => text
+				.setPlaceholder('0 (disabled)')
+				.setValue(String(this.plugin.settings.suggestionDebounceMs ?? 0))
+				.onChange(async (value) => {
+					const n = parseInt(value, 10);
+					if (isNaN(n) || n < 0) return;
+					this.plugin.settings.suggestionDebounceMs = n;
+					await this.plugin.saveSettings();
+				}));
+
 		// Click behavior settings
 		new Setting(container)
 			.setName('Single-click action')
@@ -1833,7 +1848,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 				.setName('User Fields (optional)')
 				.setHeading();
 			container.createEl('p', {
-				text: 'Define one or more custom frontmatter properties to appear as type-aware filter options across views. Each row: Property Name, Display Name, Type.',
+				text: 'Define one or more custom frontmatter properties to appear as type-aware filter options across views. Each row: Display Name, Property Name, Type.',
 				cls: 'settings-help-note'
 			});
 
@@ -1852,8 +1867,8 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 
 			// Column headers
 			const headersRow = container.createDiv('settings-headers-row settings-view__list-headers user-fields');
-			headersRow.createEl('span', { text: 'Property Name', cls: 'settings-column-header settings-view__column-header' });
 			headersRow.createEl('span', { text: 'Display Name', cls: 'settings-column-header settings-view__column-header' });
+			headersRow.createEl('span', { text: 'Property Name', cls: 'settings-column-header settings-view__column-header' });
 			headersRow.createEl('span', { text: 'Type', cls: 'settings-column-header settings-view__column-header' });
 			headersRow.createDiv('settings-header-spacer settings-view__header-spacer'); // For delete button space
 
@@ -1899,18 +1914,6 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 		userFields.forEach((field, index) => {
 			const fieldRow = container.createDiv('settings-item-row settings-view__item-row user-fields');
 
-			// Property Name input
-			const keyInput = fieldRow.createEl('input', {
-				type: 'text',
-				value: field.key || '',
-				cls: 'settings-input key-input settings-view__input settings-view__input--value',
-				attr: {
-					'placeholder': 'effort',
-					'aria-label': `Property name for ${field.displayName || 'user field'}`,
-					'id': `user-field-key-${field.id}`
-				}
-			});
-
 			// Display Name input
 			const nameInput = fieldRow.createEl('input', {
 				type: 'text',
@@ -1920,6 +1923,18 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 					'placeholder': 'Effort',
 					'aria-label': `Display name for ${field.displayName || 'user field'}`,
 					'id': `user-field-name-${field.id}`
+				}
+			});
+
+			// Property Name input
+			const keyInput = fieldRow.createEl('input', {
+				type: 'text',
+				value: field.key || '',
+				cls: 'settings-input key-input settings-view__input settings-view__input--value',
+				attr: {
+					'placeholder': 'effort',
+					'aria-label': `Property name for ${field.displayName || 'user field'}`,
+					'id': `user-field-key-${field.id}`
 				}
 			});
 
@@ -2956,7 +2971,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 			return;
 		}
 
-		const projectStrings = defaultProjects.split(',').map(p => p.trim()).filter(p => p.length > 0);
+		const projectStrings = splitListPreservingLinksAndQuotes(defaultProjects);
 		this.selectedDefaultProjectFiles = [];
 
 		for (const projectString of projectStrings) {

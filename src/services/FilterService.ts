@@ -526,7 +526,7 @@ export class FilterService extends EventEmitter {
         if (typeof property === 'string' && property.startsWith('user:')) {
             const fieldId = property.slice(5);
             const userFields = this.plugin?.settings?.userFields || [];
-            const field = userFields.find((f: any) => (f.id || f.key) === fieldId);
+            const field = userFields.find((f: any) => f?.id === fieldId || f?.key === fieldId);
             let taskValue: TaskPropertyValue = undefined;
             if (field) {
                 try {
@@ -996,7 +996,7 @@ export class FilterService extends EventEmitter {
     private compareByUserField(a: TaskInfo, b: TaskInfo, sortKey: `user:${string}`): number {
         const fieldId = sortKey.slice(5);
         const userFields = this.plugin?.settings?.userFields || [];
-        const field = userFields.find((f: any) => (f.id || f.key) === fieldId);
+        const field = userFields.find((f: any) => f?.id === fieldId || f?.key === fieldId);
         if (!field) return 0;
 
         const getRaw = (t: TaskInfo) => {
@@ -1162,7 +1162,7 @@ export class FilterService extends EventEmitter {
     private getUserFieldGroupValue(task: TaskInfo, groupKey: string): string {
         const fieldId = groupKey.slice(5);
         const userFields = this.plugin?.settings?.userFields || [];
-        const field = userFields.find((f: any) => (f.id || f.key) === fieldId);
+        const field = userFields.find((f: any) => f?.id === fieldId || f?.key === fieldId);
         if (!field) return 'unknown-field';
 
         try {
@@ -1489,7 +1489,7 @@ export class FilterService extends EventEmitter {
     private sortUserFieldGroups(groupKeys: string[], groupKey: string): string[] {
         const fieldId = groupKey.slice(5);
         const userFields = this.plugin?.settings?.userFields || [];
-        const field = userFields.find((f: any) => (f.id || f.key) === fieldId);
+        const field = userFields.find((f: any) => f?.id === fieldId || f?.key === fieldId);
         if (!field) return groupKeys.sort();
 
         switch (field.type) {

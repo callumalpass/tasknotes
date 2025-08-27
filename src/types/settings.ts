@@ -59,6 +59,8 @@ export interface TaskNotesSettings {
 	inlineTaskConvertFolder: string; // Folder for inline task conversion, supports {{currentNotePath}}
 	// Performance settings
 	disableNoteIndexing: boolean;
+	/** Optional debounce in milliseconds for inline file suggestions (0 = disabled) */
+	suggestionDebounceMs?: number;
 	// Customization settings
 	fieldMapping: FieldMapping;
 	customStatuses: StatusConfig[];

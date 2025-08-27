@@ -64,12 +64,28 @@ export interface FilterQuery extends FilterGroup {
 	groupKey?: TaskGroupKey;
 }
 
+
+// Task card display fields configuration (Simplified MVP)
+export interface DisplayFieldToken {
+	property: string;            // exact frontmatter key or built-in alias (e.g., 'due')
+	showName: boolean;           // flag n
+	displayName?: string;        // from n(Name)
+}
+
+export interface TaskCardDisplayFieldsConfig {
+	version: 1;
+	row1FixedTitle: true; // Title row is fixed by design
+	rows: [DisplayFieldToken[], DisplayFieldToken[], DisplayFieldToken[]]; // rows 2–4
+}
+
 // A named, persistent configuration that encapsulates the entire state
 export interface SavedView {
 	id: string; // Unique ID for the view
 	name: string; // User-defined name (e.g., "High-Priority Work")
 	query: FilterQuery; // The complete configuration, including filters, sorting, and grouping
 	viewOptions?: {[key: string]: boolean}; // View-specific options (e.g., showOverdueOnToday, showNotes)
+	// Optional display fields configuration for task cards
+	displayFields?: TaskCardDisplayFieldsConfig;
 }
 
 // Property and operator definitions for the advanced filtering system
