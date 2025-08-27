@@ -1102,45 +1102,71 @@ class UserFieldSuggest extends AbstractInputSuggest<UserFieldSuggestion> {
     }
     
     private async getExistingUserFieldValues(fieldKey: string): Promise<string[]> {
-        try {
-            // Get all tasks and extract unique values for this field
-            const allFiles = this.plugin.app.vault.getMarkdownFiles();
-            const values = new Set<string>();
-            
-            for (const file of allFiles.slice(0, 100)) { // Limit for performance
-                try {
-                    const metadata = this.plugin.app.metadataCache.getFileCache(file);
-                    const frontmatter = metadata?.frontmatter;
-                    
-                    if (frontmatter && frontmatter[fieldKey] !== undefined) {
-                        const value = frontmatter[fieldKey];
-                        
-                        if (Array.isArray(value)) {
-                            // Handle list fields
-                            value.forEach(v => {
-                                if (typeof v === 'string' && v.trim()) {
-                                    values.add(v.trim());
-                                }
-                            });
-                        } else if (typeof value === 'string' && value.trim()) {
-                            values.add(value.trim());
-                        } else if (typeof value === 'number') {
-                            values.add(value.toString());
-                        } else if (typeof value === 'boolean') {
-                            values.add(value.toString());
+        const run = async (): Promise<string[]> => {
+            try {
+                // Get all files and extract unique values for this field
+                const allFiles = this.plugin.app.vault.getMarkdownFiles();
+                const values = new Set<string>();
+
+                // Process all files, but with early termination for performance
+                for (const file of allFiles) {
+                    try {
+                        const metadata = this.plugin.app.metadataCache.getFileCache(file);
+                        const frontmatter = metadata?.frontmatter;
+
+                        if (frontmatter && frontmatter[fieldKey] !== undefined) {
+                            const value = frontmatter[fieldKey];
+
+                            if (Array.isArray(value)) {
+                                // Handle list fields
+                                value.forEach(v => {
+                                    if (typeof v === 'string' && v.trim()) {
+                                        values.add(v.trim());
+                                    }
+                                });
+                            } else if (typeof value === 'string' && value.trim()) {
+                                values.add(value.trim());
+                            } else if (typeof value === 'number') {
+                                values.add(value.toString());
+                            } else if (typeof value === 'boolean') {
+                                values.add(value.toString());
+                            }
                         }
+
+                        // Early termination: stop after finding many unique values for performance
+                        // This ensures we get comprehensive suggestions without processing every file
+                        if (values.size >= 200) {
+                            break;
+                        }
+                    } catch (error) {
+                        // Skip files with errors
+                        continue;
                     }
-                } catch (error) {
-                    // Skip files with errors
-                    continue;
                 }
+
+                return Array.from(values).sort();
+            } catch (error) {
+                console.error('Error getting user field values:', error);
+                return [];
             }
-            
-            return Array.from(values).sort();
-        } catch (error) {
-            console.error('Error getting user field values:', error);
-            return [];
+        };
+
+        // Use debouncing for performance in large vaults (same pattern as FileSuggestHelper)
+        const debounceMs = this.plugin.settings?.suggestionDebounceMs ?? 0;
+        if (!debounceMs) {
+            return run();
         }
+
+        return new Promise<string[]>((resolve) => {
+            const anyPlugin = this.plugin as unknown as { __userFieldSuggestTimer?: number };
+            if (anyPlugin.__userFieldSuggestTimer) {
+                clearTimeout(anyPlugin.__userFieldSuggestTimer);
+            }
+            anyPlugin.__userFieldSuggestTimer = setTimeout(async () => {
+                const results = await run();
+                resolve(results);
+            }, debounceMs) as unknown as number;
+        });
     }
     
     public renderSuggestion(suggestion: UserFieldSuggestion, el: HTMLElement): void {
