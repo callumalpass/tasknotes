@@ -32,7 +32,7 @@ import { NotesView } from './views/NotesView';
 import { AgendaView } from './views/AgendaView';
 import { PomodoroView } from './views/PomodoroView';
 import { PomodoroStatsView } from './views/PomodoroStatsView';
-import { KanbanView } from './views/KanbanView';
+import { KanbanView, KanbanEmbedView } from './views/KanbanView';
 import { TaskCreationModal } from './modals/TaskCreationModal';
 import { TaskEditModal } from './modals/TaskEditModal';
 import { TaskSelectorModal } from './modals/TaskSelectorModal';
@@ -357,8 +357,18 @@ export default class TaskNotesPlugin extends Plugin {
 				(leaf) => new KanbanView(leaf, this)
 			);
 
+            // register tnkanban extension
             this.registerExtensions(["tnkanban"], KANBAN_VIEW_TYPE);
 			
+            // embedded
+            this.app.embedRegistry.registerExtensions(
+                ["tnkanban"],
+                (info, file, subPath) => {
+                    return new KanbanEmbedView(info, file, subPath || "", this.app)
+                }
+            );
+
+
 			// Register essential editor extensions (now safe after layout ready)
 			this.registerEditorExtension(createTaskLinkOverlay(this));
 			
@@ -1208,6 +1218,7 @@ export default class TaskNotesPlugin extends Plugin {
 		return this.activateView(KANBAN_VIEW_TYPE);
 	}
 
+    // tkkanban file
 	async createNewKanbanFile() {
 		try {
 			// Collect existing kanban ids to avoid collisions

@@ -1,4 +1,6 @@
-import { TextFileView, WorkspaceLeaf, Notice, EventRef, debounce, TFile } from 'obsidian';
+import { App, Component, TextFileView, WorkspaceLeaf, Notice, EventRef, debounce, TFile } from 'obsidian';
+import { EmbedContext } from "obsidian-typings";
+import { Root } from "react-dom/client";
 import TaskNotesPlugin from '../main';
 import { 
     KANBAN_VIEW_TYPE, 
@@ -1285,4 +1287,72 @@ export class KanbanView extends TextFileView {
         this.plugin.openTaskCreationModal(prePopulatedValues);
     }
 
+}
+
+
+
+// embedded view
+export class KanbanEmbedView extends Component {
+    root: Root | null = null;
+    containerEl: HTMLElement;
+    private counterLogic: CounterLogic;
+
+    constructor(
+        public info: EmbedContext,
+        public file: TFile,
+        public subpath: string,
+        public app: App
+    ) {
+        super();
+        this.containerEl = info.containerEl;
+        this.containerEl.addClasses(["counter--embed-view"]);
+        this.counterLogic = new CounterLogic(this.app, this.file);
+        // Only create React root if needed, otherwise set to null
+        this.root = null;
+    }
+
+    override onload(): void {
+        super.onload();
+        this.loadFileData();
+        this.render();
+    }
+
+    async loadFileData(): Promise<void> {
+        try {
+            const data = await this.app.vault.cachedRead(this.file);
+            this.counterLogic.parseData(data);
+        } catch (e) {
+            // If file is empty or invalid, reset defaults
+            this.counterLogic.resetCounter();
+        }
+    }
+
+    override onunload(): void {
+        // Clean up counter logic and its event listeners
+        if (this.counterLogic) {
+            this.counterLogic.cleanup();
+        }
+
+        // Clean up React root if it was used
+        if (this.root) {
+            this.root.unmount();
+            this.root = null;
+        }
+
+        // Clear container content
+        this.containerEl.empty();
+
+        super.onunload();
+    }
+
+    async loadFile() {
+        // we can render here?
+    }
+
+    async render() {
+        // Load current file data before rendering
+        const data = await this.app.vault.cachedRead(this.file);
+        this.counterLogic.parseData(data);
+        this.counterLogic.renderCounter(this.containerEl);
+    }
 }

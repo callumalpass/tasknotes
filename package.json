@@ -39,7 +39,10 @@
 		"obsidian": "latest",
 		"ts-jest": "^29.1.1",
 		"tslib": "2.4.0",
-		"typescript": "4.7.4"
+		"typescript": "4.7.4",
+		"@types/obsidian-typings": "npm:obsidian-typings@^2.3.4",
+		"@types/react": "^18.2.47",
+		"@types/react-dom": "^18.2.18"
 	},
 	"dependencies": {
 		"@codemirror/view": "^6.37.2",
@@ -48,6 +51,8 @@
 		"@fullcalendar/interaction": "^6.1.17",
 		"@fullcalendar/multimonth": "^6.1.17",
 		"@fullcalendar/timegrid": "^6.1.17",
+    "react": "^18.3.0",
+		"react-dom": "^18.3.0",
 		"chrono-node": "^2.7.5",
 		"date-fns": "^2.30.0",
 		"ical.js": "^1.5.0",
