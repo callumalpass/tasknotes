@@ -620,6 +620,7 @@ export function createTaskCard(task: TaskInfo, plugin: TaskNotesPlugin, options:
     // Right-click: Context menu
     card.addEventListener('contextmenu', async (e) => {
         e.preventDefault();
+        e.stopPropagation(); // Prevent event bubbling to parent task cards
         const path = card.dataset.taskPath;
         if (!path) return;
 

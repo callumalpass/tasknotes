@@ -180,6 +180,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 					});
 			});
 
+
 		new Setting(container)
 			.setName('Instant task convert')
 			.setDesc('Show a convert button next to checkbox tasks for instant conversion to TaskNotes')
