@@ -7,6 +7,7 @@ import { generateTaskFilename, FilenameContext } from '../utils/filenameGenerato
 import { calculateDefaultDate, sanitizeTags } from '../utils/helpers';
 import { NaturalLanguageParser, ParsedTaskData as NLParsedTaskData } from '../services/NaturalLanguageParser';
 import { combineDateAndTime } from '../utils/dateUtils';
+import { splitListPreservingLinksAndQuotes } from '../utils/stringSplit';
 
 export interface TaskCreationOptions {
     prePopulatedValues?: Partial<TaskInfo>;
@@ -532,7 +533,7 @@ export class TaskCreationModal extends TaskModal {
         
         // Apply default projects
         if (defaults.defaultProjects) {
-            const projectStrings = defaults.defaultProjects.split(',').map(p => p.trim()).filter(p => p.length > 0);
+            const projectStrings = splitListPreservingLinksAndQuotes(defaults.defaultProjects);
             if (projectStrings.length > 0) {
                 this.initializeProjectsFromStrings(projectStrings);
             }
@@ -625,10 +626,7 @@ export class TaskCreationModal extends TaskModal {
             .map(c => c.trim())
             .filter(c => c.length > 0);
             
-        const projectList = this.projects
-            .split(',')
-            .map(p => p.trim())
-            .filter(p => p.length > 0);
+        const projectList = splitListPreservingLinksAndQuotes(this.projects);
             
         const tagList = sanitizeTags(this.tags)
             .split(',')
