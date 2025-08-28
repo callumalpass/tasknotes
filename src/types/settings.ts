@@ -52,6 +52,9 @@ export interface TaskNotesSettings {
 	useDefaultsOnInstantConvert: boolean;
 	enableNaturalLanguageInput: boolean;
 	nlpDefaultToScheduled: boolean;
+		// NLP status suggestion trigger (empty to disable)
+		statusSuggestionTrigger: string;
+
 	singleClickAction: 'edit' | 'openNote';
 	doubleClickAction: 'edit' | 'openNote' | 'none';
 	// Inline task conversion settings
