@@ -981,6 +981,7 @@ export class KanbanView extends TextFileView {
                         
                         await this.plugin.updateTaskProperty(task, propertyToUpdate, valueToSet, { silent: true });
                         new Notice(`Task moved to "${this.formatColumnTitle(targetColumnId, this.currentQuery.groupKey)}"`);
+                        this.refresh();
                     } catch (error) {
                         console.error('Failed to move task:', error);
                         new Notice('Failed to move task');
@@ -2028,6 +2029,8 @@ export class KanbanEmbedView extends Component {
                         }
                         
                         await this.plugin.updateTaskProperty(task, propertyToUpdate, valueToSet, { silent: true });
+                        console.log("Task moved to column:", targetColumnId);
+                        this.refresh();
                     } catch (error) {
                         console.error('Failed to move task in embed:', error);
                         // Refresh to revert any optimistic updates

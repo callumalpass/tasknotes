@@ -261,7 +261,18 @@ export default class TaskNotesPlugin extends Plugin {
 		// Add settings tab
 		this.addSettingTab(new TaskNotesSettingTab(this.app, this));
 
-
+		// Register tnkanban embed extension early (before layout ready)
+        // otherwise it won't be available in the embed registry
+		this.registerExtensions(["tnkanban"], KANBAN_VIEW_TYPE);
+        this.app.embedRegistry.registerExtensions(
+			["tnkanban"],
+			(info, file, subPath) => {
+				const embedView = new KanbanEmbedView(info, file, subPath || "", this.app, this);
+				embedView.load();
+				return embedView;
+			}
+		);
+		
 		// Start migration check early (before views can be opened)
 		this.migrationPromise = this.performEarlyMigrationCheck();
 		
@@ -357,16 +368,6 @@ export default class TaskNotesPlugin extends Plugin {
 				(leaf) => new KanbanView(leaf, this)
 			);
 
-            // register tnkanban extension
-            this.registerExtensions(["tnkanban"], KANBAN_VIEW_TYPE);
-			
-            // // embedded
-            this.app.embedRegistry.registerExtensions(
-                ["tnkanban"],
-                (info, file, subPath) => {
-                    return new KanbanEmbedView(info, file, subPath || "", this.app)
-                }
-            );
 
 			// Register essential editor extensions (now safe after layout ready)
 			this.registerEditorExtension(createTaskLinkOverlay(this));
