@@ -83,15 +83,22 @@ class NLPSuggest extends AbstractInputSuggest<TagSuggestion | ContextSuggestion 
         
         // Extract the query after the trigger
         const queryAfterTrigger = textBeforeCursor.slice(triggerIndex + 1);
-        
-        // Check if there's a space in the query (which would end the suggestion context)
-        if (queryAfterTrigger.includes(' ') || queryAfterTrigger.includes('\n')) {
+
+        // If '+' trigger already has a completed wikilink (+[[...]]), do not suggest again
+        if (trigger === '+' && /^\[\[[^\]]*\]\]/.test(queryAfterTrigger)) {
             this.currentTrigger = null;
             return [];
         }
-        
+
+        // Check if there's a space in the query (which would end the suggestion context)
+        // For '+' (projects/wikilinks), allow spaces for multi-word fuzzy queries
+        if ((trigger === '@' || trigger === '#') && (queryAfterTrigger.includes(' ') || queryAfterTrigger.includes('\n'))) {
+            this.currentTrigger = null;
+            return [];
+        }
+
         this.currentTrigger = trigger;
-        
+
         // Get suggestions based on trigger type
         if (trigger === '@') {
             const contexts = this.plugin.cacheManager.getAllContexts();
@@ -122,78 +129,15 @@ class NLPSuggest extends AbstractInputSuggest<TagSuggestion | ContextSuggestion 
                     toString() { return this.value; }
                 }));
         } else if (trigger === '+') {
-            // Get all markdown files in the vault for wikilink suggestions
-            const markdownFiles = this.plugin.app.vault.getMarkdownFiles();
-            const query = queryAfterTrigger.toLowerCase();
-            
-            const matchingFiles = markdownFiles
-                .map(file => {
-                    const metadata = this.plugin.app.metadataCache.getFileCache(file);
-                    
-                    // Use field mapper to determine title - same logic as the system uses
-                    let title = '';
-                    if (metadata?.frontmatter) {
-                        const mappedData = this.plugin.fieldMapper.mapFromFrontmatter(
-                            metadata.frontmatter,
-                            file.path,
-                            this.plugin.settings.storeTitleInFilename
-                        );
-                        title = typeof mappedData.title === 'string' ? mappedData.title : '';
-                    }
-
-                    return {
-                        file,
-                        basename: file.basename,
-                        title: title,
-                        aliases: metadata?.frontmatter?.aliases || []
-                    };
-                })
-                .filter(item => {
-                    // Search in filename (basename)
-                    if (typeof item.basename === 'string' && item.basename.toLowerCase().includes(query)) return true;
-
-                    // Search in title (guard type)
-                    if (typeof item.title === 'string' && item.title.toLowerCase().includes(query)) return true;
-
-                    // Search in aliases
-                    if (Array.isArray(item.aliases)) {
-                        return item.aliases.some(alias =>
-                            typeof alias === 'string' && alias.toLowerCase().includes(query)
-                        );
-                    }
-
-                    return false;
-                })
-                .map(item => {
-                    // Create display name with title and aliases in brackets
-                    let displayName = item.basename;
-                    const extras: string[] = [];
-
-                    if (typeof item.title === 'string' && item.title.length > 0 && item.title !== item.basename) {
-                        extras.push(`title: ${item.title}`);
-                    }
-
-                    if (Array.isArray(item.aliases) && item.aliases.length > 0) {
-                        const validAliases = item.aliases.filter(alias => typeof alias === 'string');
-                        if (validAliases.length > 0) {
-                            extras.push(`aliases: ${validAliases.join(', ')}`);
-                        }
-                    }
-                    
-                    if (extras.length > 0) {
-                        displayName += ` [${extras.join(' | ')}]`;
-                    }
-                    
-                    return {
-                        basename: item.basename,
-                        displayName: displayName,
-                        type: 'project' as const,
-                        toString() { return this.basename; }
-                    } as ProjectSuggestion;
-                })
-                .slice(0, 20); // Increased from 10 to 20
-                
-            return matchingFiles;
+            // Inline fuzzy: use shared file suggestion helper with multi-word support
+            const { FileSuggestHelper } = await import('../suggest/FileSuggestHelper');
+            const list = await FileSuggestHelper.suggest(this.plugin, queryAfterTrigger);
+            return list.map(item => ({
+                basename: item.insertText,
+                displayName: item.displayText,
+                type: 'project' as const,
+                toString() { return this.basename; }
+            }));
         }
         
         return [];
@@ -245,11 +189,15 @@ class NLPSuggest extends AbstractInputSuggest<TagSuggestion | ContextSuggestion 
         const newText = beforeTrigger + replacement + ' ' + textAfterCursor;
         
         this.textarea.value = newText;
-        
+
         // Set cursor position after the inserted suggestion
         const newCursorPos = beforeTrigger.length + replacement.length + 1;
         this.textarea.setSelectionRange(newCursorPos, newCursorPos);
-        
+
+        // Close suggestions after insertion and reset trigger to prevent further replacements
+        this.currentTrigger = null;
+        this.close();
+
         // Trigger input event to update preview
         this.textarea.dispatchEvent(new Event('input', { bubbles: true }));
         this.textarea.focus();
