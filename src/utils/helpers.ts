@@ -807,13 +807,6 @@ export function extractNoteInfo(app: App, content: string, path: string, file?: 
 				if (frontmatter[dateCreatedField]) {
 					createdDate = frontmatter[dateCreatedField];
 				}
-			} else {
-				// Fallback to hardcoded fields if no field mapper
-				if (frontmatter.dateCreated) {
-					createdDate = frontmatter.dateCreated;
-				} else if (frontmatter.date) {
-					createdDate = frontmatter.date;
-				}
 			}
 		}
 	}
