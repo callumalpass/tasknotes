@@ -179,7 +179,6 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	pomodoroStorageLocation: 'plugin',
 	// Editor defaults
 	enableTaskLinkOverlay: true,
-	overlayHideDelay: 150, // Immediate cursor-based overlay hiding (recommended for right-click support)
 	enableInstantTaskConvert: true,
 	useDefaultsOnInstantConvert: true,
 	enableNaturalLanguageInput: true,

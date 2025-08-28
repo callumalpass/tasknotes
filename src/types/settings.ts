@@ -48,7 +48,6 @@ export interface TaskNotesSettings {
 	pomodoroStorageLocation: 'plugin' | 'daily-notes'; // where to store pomodoro history data
 	// Editor settings
 	enableTaskLinkOverlay: boolean;
-	overlayHideDelay: number; // Controls overlay cursor behavior: 0 = legacy (hide only inside link), >0 = immediate (hide when approaching link)
 	enableInstantTaskConvert: boolean;
 	useDefaultsOnInstantConvert: boolean;
 	enableNaturalLanguageInput: boolean;
