@@ -975,12 +975,16 @@ export class KanbanView extends TextFileView {
                                 // For projects, set as array with single value
                                 valueToSet = targetColumnId === 'No Project' ? [] : [targetColumnId];
                                 break;
+                            case 'none':
                             default:
-                                throw new Error(`Unsupported groupBy: ${this.currentQuery.groupKey}`);
+                                // For Kanban views, if groupKey is 'none' or unrecognized, default to status
+                                propertyToUpdate = 'status';
+                                valueToSet = targetColumnId;
+                                break;
                         }
                         
                         await this.plugin.updateTaskProperty(task, propertyToUpdate, valueToSet, { silent: true });
-                        new Notice(`Task moved to "${this.formatColumnTitle(targetColumnId, this.currentQuery.groupKey)}"`);
+                        new Notice(`Task moved to "${this.formatColumnTitle(targetColumnId, this.currentQuery.groupKey || 'status')}"`);
                         this.refresh();
                     } catch (error) {
                         console.error('Failed to move task:', error);
@@ -1432,6 +1436,10 @@ export class KanbanEmbedView extends Component {
                     if (!this.currentQuery.id || this.currentQuery.id === 'default' || this.currentQuery.id.startsWith('temp')) {
                         this.currentQuery.id = this.generateUniqueId();
                     }
+                    // Ensure Kanban views always have proper groupKey - default to 'status' if 'none'
+                    if (!this.currentQuery.groupKey || this.currentQuery.groupKey === 'none') {
+                        this.currentQuery.groupKey = 'status';
+                    }
                     this.previousGroupKey = this.currentQuery.groupKey || null;
                 } else {
                     // No query in file, use defaults
@@ -1809,7 +1817,7 @@ export class KanbanEmbedView extends Component {
         const headerEl = columnEl.createDiv({ cls: 'kanban-embed-view__column-header' });
         
         // Title line
-        const title = this.formatColumnTitle(columnId, this.currentQuery.groupKey || 'none');
+        const title = this.formatColumnTitle(columnId, this.currentQuery.groupKey || 'status');
         headerEl.createEl('div', { text: title, cls: 'kanban-embed-view__column-title' });
         
         // Count line
@@ -2024,12 +2032,17 @@ export class KanbanEmbedView extends Component {
                                 // For projects, set as array with single value
                                 valueToSet = targetColumnId === 'No Project' ? [] : [targetColumnId];
                                 break;
+                            case 'none':
                             default:
-                                throw new Error(`Unsupported groupBy: ${this.currentQuery.groupKey}`);
+                                // For Kanban views, if groupKey is 'none' or unrecognized, default to status
+                                propertyToUpdate = 'status';
+                                valueToSet = targetColumnId;
+                                break;
                         }
                         
                         await this.plugin.updateTaskProperty(task, propertyToUpdate, valueToSet, { silent: true });
                         console.log("Task moved to column:", targetColumnId);
+                        console.log("Current group key:", this.currentQuery.groupKey);
                         this.refresh();
                     } catch (error) {
                         console.error('Failed to move task in embed:', error);
