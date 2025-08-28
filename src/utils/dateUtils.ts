@@ -31,11 +31,19 @@ export function parseDate(dateString: string): Date {
         console.error('Date parsing error:', { dateString, error: error.message });
         throw error;
     }
-    
+
     // Trim whitespace
     const trimmed = dateString.trim();
-    
+
     try {
+        // Handle date with day name format (e.g., "2024-01-26 Fri")
+        const dateWithDayNameMatch = trimmed.match(/^(\d{4}-\d{2}-\d{2})\s+(Mon|Tue|Wed|Thu|Fri|Sat|Sun|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)$/i);
+        if (dateWithDayNameMatch) {
+            // Extract just the date part and continue with normal parsing
+            const dateOnly = dateWithDayNameMatch[1];
+            return parseDate(dateOnly);
+        }
+
         // Handle incomplete time format (e.g., "T00:00" without date)
         if (trimmed.startsWith('T') && /^T\d{2}:\d{2}(:\d{2})?/.test(trimmed)) {
             const error = new Error(`Invalid date format - time without date: ${dateString}`);
@@ -204,11 +212,19 @@ export function parseDateToUTC(dateString: string): Date {
         console.error('Date parsing error:', { dateString, error: error.message });
         throw error;
     }
-    
+
     // Trim whitespace
     const trimmed = dateString.trim();
-    
+
     try {
+        // Handle date with day name format (e.g., "2024-01-26 Fri")
+        const dateWithDayNameMatch = trimmed.match(/^(\d{4}-\d{2}-\d{2})\s+(Mon|Tue|Wed|Thu|Fri|Sat|Sun|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)$/i);
+        if (dateWithDayNameMatch) {
+            // Extract just the date part and continue with normal parsing
+            const dateOnly = dateWithDayNameMatch[1];
+            return parseDateToUTC(dateOnly);
+        }
+
         // For date-only strings (YYYY-MM-DD), create a Date at UTC midnight
         const dateOnlyMatch = trimmed.match(/^(\d{4})-(\d{2})-(\d{2})$/);
         if (dateOnlyMatch) {
