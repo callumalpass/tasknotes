@@ -1,6 +1,6 @@
 import { EditorState, EditorSelection } from '@codemirror/state';
 import { EditorView } from '@codemirror/view';
-import { buildTaskLinkDecorations, createTaskLinkOverlay, clearCursorHideState } from '../../../src/editor/TaskLinkOverlay';
+import { buildTaskLinkDecorations, createTaskLinkOverlay } from '../../../src/editor/TaskLinkOverlay';
 import { TaskLinkWidget } from '../../../src/editor/TaskLinkWidget';
 import { PluginFactory, TaskFactory } from '../../helpers/mock-factories';
 import { TaskNotesPlugin } from '../../../src/main';
@@ -119,9 +119,7 @@ describe('TaskLinkOverlay Context Menu Integration', () => {
     });
 
     afterEach(() => {
-        // Clear any debounce state between tests by resetting the global state
-        // This is needed because the debounce logic uses global state
-        clearCursorHideState();
+        // No state to clear in simplified implementation
         jest.clearAllMocks();
     });
 

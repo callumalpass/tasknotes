@@ -1,5 +1,5 @@
 import { EditorState, EditorSelection } from '@codemirror/state';
-import { buildTaskLinkDecorations, clearCursorHideState } from '../../src/editor/TaskLinkOverlay';
+import { buildTaskLinkDecorations } from '../../src/editor/TaskLinkOverlay';
 import { TaskLinkWidget } from '../../src/editor/TaskLinkWidget';
 import { PluginFactory, TaskFactory } from '../helpers/mock-factories';
 import { TaskNotesPlugin } from '../../src/main';
@@ -16,8 +16,7 @@ describe('TaskLinkOverlay Integration Tests', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
-        clearCursorHideState();
-        
+
         // Create mock task
         mockTask = TaskFactory.createTask({
             path: 'test-task.md',
@@ -28,8 +27,7 @@ describe('TaskLinkOverlay Integration Tests', () => {
         // Create mock plugin
         mockPlugin = PluginFactory.createMockPlugin({
             settings: {
-                enableTaskLinkOverlay: true,
-                overlayHideDelay: 150
+                enableTaskLinkOverlay: true
             },
             cacheManager: {
                 ...PluginFactory.createMockPlugin().cacheManager,
@@ -187,46 +185,47 @@ describe('TaskLinkOverlay Integration Tests', () => {
             });
         });
 
-        it('should respect immediate mode settings', () => {
-            // Set immediate mode (any value > 0)
-            mockPlugin.settings.overlayHideDelay = 300;
-
+        it('should hide overlay when cursor is within link boundaries (simplified behavior)', () => {
             const docText = 'This is a [[test-task]] in the document.';
 
-            const cursorOnLink = EditorState.create({
-                doc: docText,
-                selection: EditorSelection.single(10) // At link boundary
-            });
+            // Test simplified implementation: cursor anywhere within link range hides overlay
+            const testCases = [
+                { pos: 10, desc: 'at first [' },
+                { pos: 15, desc: 'inside link content' },
+                { pos: 22, desc: 'at last ]' }
+            ];
 
-            // With immediate mode, overlay should be hidden at boundary
-            const decorations = buildTaskLinkDecorations(cursorOnLink, mockPlugin, activeWidgets);
-            expect(decorations.size).toBe(0);
+            testCases.forEach(({ pos, desc }) => {
+                const cursorState = EditorState.create({
+                    doc: docText,
+                    selection: EditorSelection.single(pos)
+                });
+
+                const decorations = buildTaskLinkDecorations(cursorState, mockPlugin, activeWidgets);
+                expect(decorations.size).toBe(0); // Simplified: always hidden within boundaries
+            });
         });
 
-        it('should use legacy mode when delay is set to 0', () => {
-            // Set delay to 0 (legacy mode)
-            mockPlugin.settings.overlayHideDelay = 0;
-
+        it('should show overlay when cursor is outside link boundaries', () => {
             const docText = 'This is a [[test-task]] in the document.';
 
-            // In legacy mode, overlay is only hidden when cursor is strictly inside link
-            const cursorAtBoundary = EditorState.create({
-                doc: docText,
-                selection: EditorSelection.single(10) // At first [
+            // Test simplified implementation: cursor outside link range shows overlay
+            const testCases = [
+                { pos: 5, desc: 'before link' },
+                { pos: 9, desc: 'just before first [' },
+                { pos: 23, desc: 'just after last ]' },
+                { pos: 30, desc: 'well after link' }
+            ];
+
+            testCases.forEach(({ pos, desc }) => {
+                const cursorState = EditorState.create({
+                    doc: docText,
+                    selection: EditorSelection.single(pos)
+                });
+
+                const decorations = buildTaskLinkDecorations(cursorState, mockPlugin, activeWidgets);
+                expect(decorations.size).toBe(1); // Simplified: visible outside boundaries
             });
-
-            // With legacy mode, overlay should be visible at boundary
-            let decorations = buildTaskLinkDecorations(cursorAtBoundary, mockPlugin, activeWidgets);
-            expect(decorations.size).toBeGreaterThan(0);
-
-            // But hidden when strictly inside
-            const cursorInside = EditorState.create({
-                doc: docText,
-                selection: EditorSelection.single(15) // Inside link
-            });
-
-            decorations = buildTaskLinkDecorations(cursorInside, mockPlugin, activeWidgets);
-            expect(decorations.size).toBe(0);
         });
     });
 
