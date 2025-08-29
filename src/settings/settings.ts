@@ -1782,6 +1782,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 				['completedDate', 'Completed date'],
 			['dateCreated', 'Created date'],
 			['dateModified', 'Modified date'],
+			['recurrenceField', 'Recurrence Field'],
 			['recurrence', 'Recurrence'],
 			['archiveTag', 'Archive tag'],
 			['icsEventId', 'ICS Event ID'],

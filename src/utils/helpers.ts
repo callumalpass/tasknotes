@@ -241,6 +241,7 @@ export function extractTaskInfo(
 				tags: mappedTask.tags || [],
 				contexts: mappedTask.contexts || [],
 				projects: mappedTask.projects || [],
+				recurrenceField: mappedTask.recurrenceField,
 				recurrence: mappedTask.recurrence,
 				complete_instances: mappedTask.complete_instances,
 				completedDate: mappedTask.completedDate,
@@ -574,7 +575,10 @@ export function generateRecurringInstances(task: TaskInfo, startDate: Date, endD
 				}
 			} else {
 				// Fallback to original logic for backward compatibility
-				if (task.scheduled) {
+				if (task.recurrenceField === "DUE" && task.due) {
+					dtstart = createUTCDateForRRule(task.due);
+				}
+				else if (task.scheduled) {
 					dtstart = createUTCDateForRRule(task.scheduled);
 				} else if (task.dateCreated) {
 					dtstart = createUTCDateForRRule(task.dateCreated);
@@ -667,22 +671,64 @@ export function getNextUncompletedOccurrence(task: TaskInfo): Date | null {
 }
 
 /**
- * Updates the scheduled date of a recurring task to its next uncompleted occurrence
- * Returns the updated scheduled date or null if no next occurrence
+ * Updates both scheduled and due dates of a recurring task to their next uncompleted occurrences
+ * Due date maintains its offset from the scheduled date
+ * Returns an object with both updated dates or null values if no next occurrences
  */
-export function updateToNextScheduledOccurrence(task: TaskInfo): string | null {
-	const nextOccurrence = getNextUncompletedOccurrence(task);
-	if (!nextOccurrence) {
-		return null;
-	}
+export function updateToNextScheduledOccurrence(
+	task: TaskInfo
+): { scheduled: string | null; due: string | null } {
 	
-	// Preserve time component if original scheduled date had time
-	if (task.scheduled && task.scheduled.includes('T')) {
-		const timePart = task.scheduled.split('T')[1];
-		return `${formatDateForStorage(nextOccurrence)}T${timePart}`;
+	let nextScheduledDate: Date | null = null;
+	let nextScheduledStr: string | null = null;
+	let nextDueDate: Date | null = null;
+	let nextDueStr: string | null = null;
+
+	const nextRecurrence = getNextUncompletedOccurrence(task);
+	
+	if(task.recurrenceField === "DUE") {
+		nextDueDate = nextRecurrence;
 	} else {
-		return formatDateForStorage(nextOccurrence);
+		nextScheduledDate = nextRecurrence;
 	}
+
+	if (task.due && task.scheduled) {
+		// Calculate the offset between original scheduled and due dates
+		try {
+			const originalScheduled = task.scheduled ? parseDateToUTC(task.scheduled) : null;
+			const originalDue = task.due ? parseDateToUTC(task.due): null;
+
+			if (originalScheduled && originalDue) {
+				// Calculate the time difference
+				const offsetMs = originalDue.getTime() - originalScheduled.getTime();
+				if(nextScheduledDate) {
+					// Apply the same offset to the new due date
+					nextDueDate = new Date(nextScheduledDate.getTime() + offsetMs);
+				} else if(nextDueDate) {
+					// Apply the same offset to the new scheduled date
+					nextScheduledDate = new Date(nextDueDate.getTime() - offsetMs);			}
+			}
+		} catch (error) {
+			console.error('Error calculating next due date with offset:', error);
+		}
+	}
+
+	// Preserve time components if original due/scheduled date had time
+	if (nextDueDate && task.due && task.due.includes('T')) {
+		nextDueStr = formatDateAsUTCString(nextDueDate);
+	} else if (nextDueDate) {
+		nextDueStr = formatDateForStorage(nextDueDate);
+	}
+	if (nextScheduledDate && task.scheduled && task.scheduled.includes('T')) {
+		nextScheduledStr = formatDateAsUTCString(nextScheduledDate);
+	} else if (nextScheduledDate) {
+		nextScheduledStr = formatDateForStorage(nextScheduledDate);
+	}
+
+	return {
+		scheduled: nextScheduledStr,
+		due: nextDueStr
+	};
 }
 
 /**

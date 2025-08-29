@@ -438,10 +438,14 @@ export class TaskContextMenu {
             item.setIcon('refresh-ccw');
             
             const submenu = (item as any).setSubmenu();
+            const targetField = typeof task.recurrenceField === 'string' ? task.recurrenceField : undefined;
             const currentRecurrence = typeof task.recurrence === 'string' ? task.recurrence : undefined;
-            this.addRecurrenceOptions(submenu, currentRecurrence, async (value: string | null) => {
+            this.addRecurrenceOptions(submenu, targetField, currentRecurrence, async (targetField: string | null, value: string | null) => {
                 try {
                     await plugin.updateTaskProperty(task, 'recurrence', value || undefined);
+                    if(targetField) {
+                        await plugin.updateTaskProperty(task, 'recurrenceField', targetField || undefined);
+                    }
                     this.options.onUpdate?.();
                 } catch (error) {
                     const errorMessage = error instanceof Error ? error.message : String(error);
@@ -676,7 +680,7 @@ export class TaskContextMenu {
         }
     }
     
-    private addRecurrenceOptions(submenu: any, currentValue: string | undefined, onSelect: (value: string | null) => Promise<void>, plugin: TaskNotesPlugin): void {
+    private addRecurrenceOptions(submenu: any, targetField: string | undefined, currentValue: string | undefined, onSelect: (targetField: string | null, value: string | null) => Promise<void>, plugin: TaskNotesPlugin): void {
         const today = new Date();
         const dayNames = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'];
         const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
@@ -742,11 +746,11 @@ export class TaskContextMenu {
         
         recurrenceOptions.forEach(option => {
             submenu.addItem((item: any) => {
-                const isSelected = option.value === currentValue;
+                const isSelected = option.value === currentValue;                
                 item.setTitle(isSelected ? `✓ ${option.label}` : option.label);
                 item.setIcon(option.icon);
                 item.onClick(() => {
-                    onSelect(option.value);
+                    onSelect(null, option.value);
                 });
             });
         });
@@ -759,6 +763,7 @@ export class TaskContextMenu {
             item.setIcon('settings');
             item.onClick(() => {
                 const recurrenceMenu = new RecurrenceContextMenu({
+                    targetField: typeof targetField === 'string' ? targetField : undefined,
                     currentValue: typeof currentValue === 'string' ? currentValue : undefined,
                     onSelect: onSelect,
                     app: plugin.app
@@ -773,7 +778,7 @@ export class TaskContextMenu {
                 item.setTitle('Clear recurrence');
                 item.setIcon('x');
                 item.onClick(() => {
-                    onSelect(null);
+                    onSelect(null, null);
                 });
             });
         }

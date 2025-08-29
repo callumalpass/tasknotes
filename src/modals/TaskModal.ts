@@ -24,6 +24,7 @@ export abstract class TaskModal extends Modal {
     protected projects = '';
     protected tags = '';
     protected timeEstimate = 0;
+    protected recurrenceField = '';
     protected recurrenceRule = '';
     protected reminders: Reminder[] = [];
     
@@ -528,9 +529,13 @@ export abstract class TaskModal extends Modal {
 
     protected showRecurrenceContextMenu(event: MouseEvent): void {
         const menu = new RecurrenceContextMenu({
+            targetField: this.recurrenceField,
             currentValue: this.recurrenceRule,
-            onSelect: (value) => {
+            onSelect: (targetField, value) => {
                 this.recurrenceRule = value || '';
+                if(targetField) {
+                    this.recurrenceField = targetField;
+                }
                 this.updateRecurrenceIconState();
             },
             app: this.app
