@@ -6,6 +6,7 @@ import { getCurrentTimestamp } from '../utils/dateUtils';
 import { generateTaskFilename, FilenameContext } from '../utils/filenameGenerator';
 import { calculateDefaultDate, sanitizeTags } from '../utils/helpers';
 import { NaturalLanguageParser, ParsedTaskData as NLParsedTaskData } from '../services/NaturalLanguageParser';
+import { StatusSuggestionService, StatusSuggestion } from '../services/StatusSuggestionService';
 import { combineDateAndTime } from '../utils/dateUtils';
 import { splitListPreservingLinksAndQuotes } from '../utils/stringSplit';
 
@@ -39,13 +40,7 @@ interface ContextSuggestion {
     toString(): string;
 }
 
-interface StatusSuggestion {
-    value: string; // status value (e.g., 'in-progress')
-    label: string; // human label (e.g., 'In Progress')
-    display: string; // shown in list (use label)
-    type: 'status';
-    toString(): string;
-}
+
 
 class NLPSuggest extends AbstractInputSuggest<TagSuggestion | ContextSuggestion | ProjectSuggestion | StatusSuggestion> {
     private plugin: TaskNotesPlugin;
@@ -132,19 +127,17 @@ class NLPSuggest extends AbstractInputSuggest<TagSuggestion | ContextSuggestion 
                     toString() { return this.value; }
                 }));
         } else if (trigger === 'status') {
-            const statuses = this.plugin.settings.customStatuses || [];
-            const q = queryAfterTrigger.toLowerCase();
-            return statuses
-                .filter(s => s && typeof s.value === 'string' && typeof s.label === 'string')
-                .filter(s => s.value.toLowerCase().includes(q) || s.label.toLowerCase().includes(q))
-                .slice(0, 10)
-                .map(s => ({
-                    value: s.value,
-                    label: s.label,
-                    display: s.label,
-                    type: 'status' as const,
-                    toString() { return this.value; }
-                } as StatusSuggestion));
+            // Use the StatusSuggestionService for status suggestions
+            const statusService = new StatusSuggestionService(
+                this.plugin.settings.customStatuses,
+                this.plugin.settings.customPriorities,
+                this.plugin.settings.nlpDefaultToScheduled
+            );
+            return statusService.getStatusSuggestions(
+                queryAfterTrigger,
+                this.plugin.settings.customStatuses || [],
+                10
+            );
         } else if (trigger === '#') {
             const tags = this.plugin.cacheManager.getAllTags();
             return tags
@@ -248,15 +241,28 @@ class NLPSuggest extends AbstractInputSuggest<TagSuggestion | ContextSuggestion 
 export class TaskCreationModal extends TaskModal {
     private options: TaskCreationOptions;
     private nlParser: NaturalLanguageParser;
+    private statusSuggestionService: StatusSuggestionService;
     private nlInput: HTMLTextAreaElement;
     private nlPreviewContainer: HTMLElement;
     private nlButtonContainer: HTMLElement;
     private nlpSuggest: NLPSuggest;
 
-    constructor(app: App, plugin: TaskNotesPlugin, options: TaskCreationOptions = {}) {
+    constructor(
+        app: App,
+        plugin: TaskNotesPlugin,
+        options: TaskCreationOptions = {},
+        statusSuggestionService?: StatusSuggestionService // Optional for backward compatibility
+    ) {
         super(app, plugin);
         this.options = options;
         this.nlParser = new NaturalLanguageParser(
+            plugin.settings.customStatuses,
+            plugin.settings.customPriorities,
+            plugin.settings.nlpDefaultToScheduled
+        );
+
+        // Use injected service or create default one
+        this.statusSuggestionService = statusSuggestionService || new StatusSuggestionService(
             plugin.settings.customStatuses,
             plugin.settings.customPriorities,
             plugin.settings.nlpDefaultToScheduled
@@ -444,7 +450,7 @@ export class TaskCreationModal extends TaskModal {
 
 
     private parseAndFillForm(input: string): void {
-        const parsed = this.nlParser.parseInput(input);
+        const parsed = this.statusSuggestionService.extractTaskDataFromInput(input);
         this.applyParsedData(parsed);
 
         // Expand the form to show filled fields
@@ -578,7 +584,7 @@ export class TaskCreationModal extends TaskModal {
             const nlContent = this.nlInput.value.trim();
             if (nlContent && !this.title.trim()) {
                 // Only auto-parse if no title has been manually entered
-                const parsed = this.nlParser.parseInput(nlContent);
+                const parsed = this.statusSuggestionService.extractTaskDataFromInput(nlContent);
                 this.applyParsedData(parsed);
             }
         }
