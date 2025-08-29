@@ -2,6 +2,15 @@
    TASK MODAL - Google Keep/Todoist Inspired
    ===================================================================== */
 
+/* Fix suggestion text truncation */
+.suggestion-item .nlp-suggest-text {
+    white-space: nowrap;
+    overflow: visible;
+    text-overflow: clip;
+    max-width: none;
+    width: auto;
+}
+
 .tasknotes-plugin .minimalist-task-modal {
     /* Modal container adjustments */
 }

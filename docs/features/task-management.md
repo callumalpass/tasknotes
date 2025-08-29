@@ -15,6 +15,7 @@ The natural language input field includes auto-suggestion functionality that act
 - **@** - Shows available contexts from existing tasks
 - **#** - Shows available tags from existing tasks  
 - **+** - Shows files from your vault as project suggestions
+- **\*** - Shows available status options (configurable trigger in Settings → Misc)
 
 #### Project Suggestions
 
@@ -33,6 +34,14 @@ Project suggestions search across:
 - Frontmatter aliases
 
 Selecting a project suggestion inserts it as `+[[filename]]`, creating a wikilink to the file while maintaining the `+` project marker that the natural language parser recognizes.
+
+#### Status Suggestions
+
+When typing the status trigger character (default `*`) in the natural language input, you'll see suggestions for all configured status options:
+
+![Status Auto-Suggestion](../assets/auto-suggest-status.gif)
+
+Status suggestions allow quick selection of statuses when creating tasks. For example, typing `*in` shows "In Progress" as a suggestion if that's one of your configured statuses.
 
 Additionally, you can convert any line type in your notes to TaskNotes using the **Instant Conversion** feature. This works with checkboxes, bullet points, numbered lists, blockquotes, headers, and plain text lines.
 
