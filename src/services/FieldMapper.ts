@@ -96,6 +96,10 @@ export class FieldMapper {
             mapped.completedDate = frontmatter[this.mapping.completedDate];
         }
 
+        if (frontmatter[this.mapping.recurrenceField] !== undefined) {
+            mapped.recurrenceField = frontmatter[this.mapping.recurrenceField];
+        }
+
         if (frontmatter[this.mapping.recurrence] !== undefined) {
             mapped.recurrence = frontmatter[this.mapping.recurrence];
         }
@@ -192,6 +196,10 @@ export class FieldMapper {
 
         if (taskData.completedDate !== undefined) {
             frontmatter[this.mapping.completedDate] = taskData.completedDate;
+        }
+
+        if (taskData.recurrenceField !== undefined) {
+            frontmatter[this.mapping.recurrenceField] = taskData.recurrenceField;
         }
 
         if (taskData.recurrence !== undefined) {

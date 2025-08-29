@@ -39,7 +39,7 @@ export class TaskEditModal extends TaskModal {
         this.priority = this.task.priority;
         this.status = this.task.status;
         this.contexts = this.task.contexts ? this.task.contexts.join(', ') : '';
-        
+
         // Initialize projects using the new method that handles both old and new formats
         if (this.task.projects && this.task.projects.length > 0) {
             // Filter out null, undefined, or empty strings before checking if we have valid projects
@@ -60,6 +60,11 @@ export class TaskEditModal extends TaskModal {
             : '';
         this.timeEstimate = this.task.timeEstimate || 0;
         
+        
+        if (this.task.recurrenceField && typeof this.task.recurrenceField === 'string') {
+            this.recurrenceField = this.task.recurrenceField;
+        }
+
         // Handle recurrence - support both new rrule strings and old RecurrenceInfo objects
         if (this.task.recurrence) {
             if (typeof this.task.recurrence === 'string') {
@@ -124,7 +129,7 @@ export class TaskEditModal extends TaskModal {
         
         // Refresh task data from file before opening
         await this.refreshTaskData();
-        
+
         this.containerEl.addClass('tasknotes-plugin', 'minimalist-task-modal');
         
         // Set the modal title using the standard Obsidian approach (preserves close button)
@@ -494,6 +499,10 @@ export class TaskEditModal extends TaskModal {
             changes.recurrence = this.recurrenceRule || undefined;
         }
 
+        if(this.recurrenceField && this.recurrenceField.length > 0 && this.recurrenceField !== this.task.recurrenceField) {
+            changes.recurrenceField = this.recurrenceField || undefined;
+        }
+
         // Compare reminders
         const oldReminders = this.task.reminders || [];
         const newReminders = this.reminders || [];
@@ -517,9 +526,12 @@ export class TaskEditModal extends TaskModal {
             // If task has recurrence, update scheduled date to next uncompleted occurrence
             if (this.task.recurrence) {
                 const tempTask: TaskInfo = { ...this.task, ...changes };
-                const nextScheduledDate = updateToNextScheduledOccurrence(tempTask);
-                if (nextScheduledDate) {
-                    changes.scheduled = nextScheduledDate;
+                const nextDates = updateToNextScheduledOccurrence(tempTask);
+                if (nextDates.scheduled) {
+                    changes.scheduled = nextDates.scheduled;
+                }
+                if (nextDates.due) {
+                    changes.due = nextDates.due;
                 }
             }
         }

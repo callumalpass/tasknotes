@@ -1265,6 +1265,7 @@ export class MinimalNativeCache extends Events {
                 tags: Array.isArray(mappedTask.tags) ? mappedTask.tags : [],
                 contexts: Array.isArray(mappedTask.contexts) ? mappedTask.contexts : [],
                 projects: Array.isArray(mappedTask.projects) ? mappedTask.projects : [],
+                recurrenceField: mappedTask.recurrenceField,
                 recurrence: mappedTask.recurrence,
                 complete_instances: mappedTask.complete_instances,
                 completedDate: mappedTask.completedDate,

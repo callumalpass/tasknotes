@@ -650,6 +650,7 @@ export class TaskCreationModal extends TaskModal {
             projects: projectList.length > 0 ? projectList : undefined,
             tags: tagList.length > 0 ? tagList : undefined,
             timeEstimate: this.timeEstimate > 0 ? this.timeEstimate : undefined,
+            recurrenceField: this.recurrenceField || undefined,
             recurrence: this.recurrenceRule || undefined,
             reminders: this.reminders.length > 0 ? this.reminders : undefined,
             creationContext: 'manual-creation', // Mark as manual creation for folder logic

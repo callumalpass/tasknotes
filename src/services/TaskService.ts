@@ -193,6 +193,7 @@ export class TaskService {
                 timeEstimate: taskData.timeEstimate && taskData.timeEstimate > 0 ? taskData.timeEstimate : undefined,
                 dateCreated: dateCreated,
                 dateModified: dateModified,
+                recurrenceField: taskData.recurrenceField || undefined,
                 recurrence: taskData.recurrence || undefined,
                 reminders: taskData.reminders && taskData.reminders.length > 0 ? taskData.reminders : undefined,
                 icsEventId: taskData.icsEventId || undefined
@@ -857,11 +858,14 @@ export class TaskService {
             // Check if recurrence rule changed and update scheduled date if needed
             let recurrenceUpdates: Partial<TaskInfo> = {};
             if (updates.recurrence !== undefined && updates.recurrence !== originalTask.recurrence) {
-                // Recurrence rule changed, calculate new scheduled date
+                // Recurrence rule changed, calculate new scheduled and due dates
                 const tempTask: TaskInfo = { ...originalTask, ...updates };
-                const nextScheduledDate = updateToNextScheduledOccurrence(tempTask);
-                if (nextScheduledDate) {
-                    recurrenceUpdates.scheduled = nextScheduledDate;
+                const nextDates = updateToNextScheduledOccurrence(tempTask);
+                if (nextDates.scheduled) {
+                    recurrenceUpdates.scheduled = nextDates.scheduled;
+                }
+                if (nextDates.due) {
+                    recurrenceUpdates.due = nextDates.due;
                 }
                 
                 // Add DTSTART to recurrence rule if it's missing (scenario 1: editing recurrence rule)
@@ -920,6 +924,7 @@ export class TaskService {
                 if (updates.hasOwnProperty('contexts') && updates.contexts === undefined) delete frontmatter[this.plugin.fieldMapper.toUserField('contexts')];
                 if (updates.hasOwnProperty('timeEstimate') && updates.timeEstimate === undefined) delete frontmatter[this.plugin.fieldMapper.toUserField('timeEstimate')];
                 if (updates.hasOwnProperty('completedDate') && updates.completedDate === undefined) delete frontmatter[this.plugin.fieldMapper.toUserField('completedDate')];
+                if (updates.hasOwnProperty('recurrenceField') && updates.recurrenceField === undefined) delete frontmatter[this.plugin.fieldMapper.toUserField('recurrenceField')];
                 if (updates.hasOwnProperty('recurrence') && updates.recurrence === undefined) delete frontmatter[this.plugin.fieldMapper.toUserField('recurrence')];
 
                 if (isRenameNeeded) {
@@ -1125,10 +1130,13 @@ export class TaskService {
             }
         }
 
-        // Update scheduled date to next uncompleted occurrence
-        const nextScheduledDate = updateToNextScheduledOccurrence(updatedTask);
-        if (nextScheduledDate) {
-            updatedTask.scheduled = nextScheduledDate;
+        // Update scheduled and due dates to next uncompleted occurrence
+        const nextDates = updateToNextScheduledOccurrence(updatedTask);
+        if (nextDates.scheduled) {
+            updatedTask.scheduled = nextDates.scheduled;
+        }
+        if (nextDates.due) {
+            updatedTask.due = nextDates.due;
         }
         
         // Step 2: Persist to file
@@ -1136,6 +1144,7 @@ export class TaskService {
             const completeInstancesField = this.plugin.fieldMapper.toUserField('completeInstances');
             const dateModifiedField = this.plugin.fieldMapper.toUserField('dateModified');
             const scheduledField = this.plugin.fieldMapper.toUserField('scheduled');
+            const dueField = this.plugin.fieldMapper.toUserField('due');
             const recurrenceField = this.plugin.fieldMapper.toUserField('recurrence');
             
             // Ensure complete_instances array exists
@@ -1165,6 +1174,11 @@ export class TaskService {
                 frontmatter[scheduledField] = updatedTask.scheduled;
             }
             
+            // Update due date if it changed
+            if (updatedTask.due) {
+                frontmatter[dueField] = updatedTask.due;
+            }
+            
             frontmatter[dateModifiedField] = updatedTask.dateModified;
         });
         
@@ -1177,6 +1191,9 @@ export class TaskService {
                 };
                 if (updatedTask.scheduled !== freshTask.scheduled) {
                     expectedChanges.scheduled = updatedTask.scheduled;
+                }
+                if (updatedTask.due !== freshTask.due) {
+                    expectedChanges.due = updatedTask.due;
                 }
                 await this.plugin.cacheManager.waitForFreshTaskData(file, expectedChanges);
             }

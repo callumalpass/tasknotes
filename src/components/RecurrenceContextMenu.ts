@@ -7,8 +7,9 @@ export interface RecurrenceOption {
 }
 
 export interface RecurrenceContextMenuOptions {
+    targetField?: string;
     currentValue?: string;
-    onSelect: (value: string | null) => void;
+    onSelect: (targetField: string | null, value: string | null) => void;
     app: App;
 }
 
@@ -42,7 +43,7 @@ export class RecurrenceContextMenu {
                 item.setTitle(title);
                 
                 item.onClick(async () => {
-                    this.options.onSelect(option.value);
+                    this.options.onSelect(null, option.value);
                 });
             });
         });
@@ -65,7 +66,7 @@ export class RecurrenceContextMenu {
                 item.setTitle('Clear recurrence');
                 item.setIcon('x');
                 item.onClick(async () => {
-                    this.options.onSelect(null);
+                    this.options.onSelect(null, null);
                 });
             });
         }
@@ -164,10 +165,10 @@ export class RecurrenceContextMenu {
     }
 
     private showCustomRecurrenceModal(): void {
-        new CustomRecurrenceModal(this.options.app, this.options.currentValue || '', (result) => {
+        new CustomRecurrenceModal(this.options.app, this.options.targetField || 'SCHEDULED', this.options.currentValue || '', (targetField, result) => {
             if (result) {
-                this.options.onSelect(result);
-            }
+                this.options.onSelect(targetField, result);
+            }            
         }).open();
     }
 
@@ -185,7 +186,8 @@ export class RecurrenceContextMenu {
 
 class CustomRecurrenceModal extends Modal {
     private currentValue: string;
-    private onSubmit: (result: string | null) => void;
+    private onSubmit: (targetField: string | null, result: string | null) => void;
+    private targetField = 'SCHEDULED';
     private frequency = 'DAILY';
     private interval = 1;
     private byDay: string[] = [];
@@ -198,8 +200,11 @@ class CustomRecurrenceModal extends Modal {
     private dtstart = '';
     private dtstartTime = '';
 
-    constructor(app: App, currentValue: string, onSubmit: (result: string | null) => void) {
+    constructor(app: App, targetField: string, currentValue: string, onSubmit: (targetField: string | null, result: string | null) => void) {
         super(app);
+        if(targetField && targetField.length > 0) {
+             this.targetField = targetField;
+        }
         this.currentValue = currentValue;
         this.onSubmit = onSubmit;
         this.parseCurrentValue();
@@ -308,6 +313,20 @@ class CustomRecurrenceModal extends Modal {
         contentEl.empty();
 
         contentEl.createEl('h2', { text: 'Custom Recurrence' });
+
+        // Target field selection
+        new Setting(contentEl)
+            .setName('Apply recurrence to')
+            .setDesc('Choose which date this rule updates on each recurrence')
+            .addDropdown(dropdown => {
+                dropdown
+                    .addOption('SCHEDULED', 'Scheduled Date')
+                    .addOption('DUE', 'Due Date')
+                    .setValue(this.targetField)
+                    .onChange(value => {
+                        this.targetField = value;
+                    });
+            });
 
         // Start date selection
         new Setting(contentEl)
@@ -678,7 +697,7 @@ class CustomRecurrenceModal extends Modal {
             }
             
             const rrule = this.buildRRule(monthlyType, yearlyType);
-            this.onSubmit(rrule);
+            this.onSubmit(this.targetField, rrule);
             this.close();
         });
     }

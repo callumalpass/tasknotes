@@ -279,13 +279,22 @@ export function createTaskCard(task: TaskInfo, plugin: TaskNotesPlugin, options:
         recurringIndicator.addEventListener('click', (e) => {
             e.stopPropagation(); // Don't trigger card click
             const menu = new RecurrenceContextMenu({
+                targetField: typeof task.recurrenceField === 'string' ? task.recurrenceField : undefined,
                 currentValue: typeof task.recurrence === 'string' ? task.recurrence : undefined,
-                onSelect: async (newRecurrence: string | null) => {
+                onSelect: async (newTarget: string | null, newRecurrence: string | null) => {
                     try {
                         await plugin.updateTaskProperty(task, 'recurrence', newRecurrence || undefined);
                     } catch (error) {
                         console.error('Error updating recurrence:', error);
                         new Notice('Failed to update recurrence');
+                    }
+                    try {
+                        if(newTarget) {
+                            await plugin.updateTaskProperty(task, 'recurrenceField', newTarget || undefined);
+                        }
+                    } catch (error) {
+                        console.error('Error updating recurrenceField:', error);
+                        new Notice('Failed to update recurrenceField');
                     }
                 },
                 app: plugin.app

@@ -327,13 +327,17 @@ export class TaskLinkWidget extends WidgetType {
                 e.stopPropagation();
                 e.preventDefault();
                 const menu = new RecurrenceContextMenu({
+                    targetField: typeof this.taskInfo.recurrenceField === 'string' ? this.taskInfo.recurrenceField : undefined,
                     currentValue: typeof this.taskInfo.recurrence === 'string' ? this.taskInfo.recurrence : undefined,
-                    onSelect: async (newRecurrence: string | null) => {
+                    onSelect: async (newTarget: string | null, newRecurrence: string | null) => {
                         try {
                             await this.plugin.updateTaskProperty(this.taskInfo, 'recurrence', newRecurrence || undefined);
-                            
+                            if(newTarget) {
+                                await this.plugin.updateTaskProperty(this.taskInfo, 'recurrenceField', newTarget || undefined);
+                                this.taskInfo.recurrenceField = newTarget;
+                            }
                             // Update the widget's internal task data
-                            this.taskInfo.recurrence = newRecurrence || undefined;
+                            this.taskInfo.recurrence = newRecurrence || undefined;                            
                         } catch (error) {
                             console.error('Error updating recurrence:', error);
                             new Notice('Failed to update recurrence');

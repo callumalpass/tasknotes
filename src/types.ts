@@ -224,6 +224,7 @@ export interface TaskInfo {
 	tags?: string[];
 	contexts?: string[];
 	projects?: string[];
+	recurrenceField?: string | undefined;
 	recurrence?: string | RecurrenceInfo | undefined; // RFC 5545 recurrence rule string (preferred) or legacy RecurrenceInfo object (deprecated)
 	complete_instances?: string[]; // Array of dates (YYYY-MM-DD) when recurring task was completed
 	completedDate?: string; // Date (YYYY-MM-DD) when task was marked as done
@@ -399,6 +400,7 @@ export interface FieldMapping {
 	completedDate: string;
 	dateCreated: string;
 	dateModified: string;
+	recurrenceField: string;
 	recurrence: string;  // RFC 5545 recurrence rule string or legacy RecurrenceInfo object
 	archiveTag: string;  // For the archive tag in the tags array
 	timeEntries: string;
