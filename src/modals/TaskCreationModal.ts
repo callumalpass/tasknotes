@@ -78,10 +78,10 @@ class NLPSuggest extends AbstractInputSuggest<TagSuggestion | ContextSuggestion 
 
         // Determine most recent valid trigger by index
         const candidates: Array<{type: '@'|'#'|'+'|'status'; index: number}> = [
-            { type: '@', index: lastAtIndex },
-            { type: '#', index: lastHashIndex },
-            { type: '+', index: lastPlusIndex },
-            { type: 'status', index: lastStatusIndex }
+            { type: '@' as const, index: lastAtIndex },
+            { type: '#' as const, index: lastHashIndex },
+            { type: '+' as const, index: lastPlusIndex },
+            { type: 'status' as const, index: lastStatusIndex }
         ].filter(c => isBoundary(c.index));
 
         if (candidates.length === 0) {
