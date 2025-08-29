@@ -34,6 +34,73 @@ describe('TaskCreationModal - Status Auto-Suggestions', () => {
   let mockVault: any;
   let mockWorkspace: any;
 
+  // Helper function to initialize Modal DOM properties
+  function initializeModalDOMProperties(modal: TaskCreationModal) {
+    if (!modal.contentEl) {
+      modal.contentEl = document.createElement('div');
+      modal.contentEl.addClass = function(...classes: string[]) {
+        this.classList.add(...classes);
+        return this;
+      };
+      modal.contentEl.removeClass = function(...classes: string[]) {
+        this.classList.remove(...classes);
+        return this;
+      };
+      modal.contentEl.createEl = function<T extends keyof HTMLElementTagNameMap>(tag: T, attrs?: any): HTMLElementTagNameMap[T] {
+        const el = document.createElement(tag);
+        if (attrs) {
+          if (attrs.cls) {
+            if (Array.isArray(attrs.cls)) {
+              el.classList.add(...attrs.cls);
+            } else {
+              el.classList.add(attrs.cls);
+            }
+          }
+          if (attrs.text) {
+            el.textContent = attrs.text;
+          }
+          if (attrs.attr) {
+            Object.entries(attrs.attr).forEach(([key, value]) => {
+              el.setAttribute(key, String(value));
+            });
+          }
+          if (attrs.href) {
+            (el as any).href = attrs.href;
+          }
+          if (attrs.type) {
+            (el as any).type = attrs.type;
+          }
+          if (attrs.value) {
+            (el as any).value = attrs.value;
+          }
+        }
+        this.appendChild(el);
+
+        // Add the same DOM methods to the created element
+        if (!el.addClass) {
+          el.addClass = this.addClass;
+          el.removeClass = this.removeClass;
+          el.createEl = this.createEl;
+          el.createDiv = this.createDiv;
+          el.empty = this.empty;
+        }
+
+        return el;
+      };
+      modal.contentEl.createDiv = function(attrs?: any): HTMLDivElement {
+        return this.createEl('div', attrs);
+      };
+      modal.contentEl.empty = function() {
+        this.innerHTML = '';
+        return this;
+      };
+
+      modal.containerEl = modal.contentEl;
+      modal.titleEl = document.createElement('div');
+      modal.modalEl = document.createElement('div');
+    }
+  }
+
   beforeEach(() => {
     // Reset all mocks
     jest.clearAllMocks();
@@ -106,6 +173,7 @@ describe('TaskCreationModal - Status Auto-Suggestions', () => {
 
     // Create modal instance
     modal = new TaskCreationModal(mockApp, mockPlugin);
+    initializeModalDOMProperties(modal);
   });
 
   afterEach(() => {
@@ -140,8 +208,7 @@ describe('TaskCreationModal - Status Auto-Suggestions', () => {
   describe('Status Suggestion Detection', () => {
     it('should detect status trigger in natural language input', async () => {
       // Open modal to initialize components
-      modal.open();
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await modal.onOpen();
 
       const nlInput = modal.contentEl.querySelector('textarea') as HTMLTextAreaElement;
       expect(nlInput).toBeTruthy();
@@ -155,8 +222,7 @@ describe('TaskCreationModal - Status Auto-Suggestions', () => {
     });
 
     it('should show status suggestions for partial matches', async () => {
-      modal.open();
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await modal.onOpen();
 
       const nlInput = modal.contentEl.querySelector('textarea') as HTMLTextAreaElement;
       
@@ -169,8 +235,7 @@ describe('TaskCreationModal - Status Auto-Suggestions', () => {
     });
 
     it('should show status suggestions for "in" matching "In Progress"', async () => {
-      modal.open();
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await modal.onOpen();
 
       const nlInput = modal.contentEl.querySelector('textarea') as HTMLTextAreaElement;
       
@@ -184,8 +249,7 @@ describe('TaskCreationModal - Status Auto-Suggestions', () => {
 
   describe('Status Suggestion Behavior', () => {
     it('should insert status text into textarea when selected', async () => {
-      modal.open();
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await modal.onOpen();
 
       const nlInput = modal.contentEl.querySelector('textarea') as HTMLTextAreaElement;
       
@@ -198,8 +262,7 @@ describe('TaskCreationModal - Status Auto-Suggestions', () => {
     });
 
     it('should work consistently with other NLP elements', async () => {
-      modal.open();
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await modal.onOpen();
 
       const nlInput = modal.contentEl.querySelector('textarea') as HTMLTextAreaElement;
       
@@ -215,8 +278,7 @@ describe('TaskCreationModal - Status Auto-Suggestions', () => {
 
   describe('Natural Language Parser Integration', () => {
     it('should extract status before date parsing to prevent conflicts', async () => {
-      modal.open();
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await modal.onOpen();
 
       const nlInput = modal.contentEl.querySelector('textarea') as HTMLTextAreaElement;
       
@@ -239,8 +301,7 @@ describe('TaskCreationModal - Status Auto-Suggestions', () => {
         order: 5
       });
 
-      modal.open();
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await modal.onOpen();
 
       const nlInput = modal.contentEl.querySelector('textarea') as HTMLTextAreaElement;
       
@@ -253,8 +314,7 @@ describe('TaskCreationModal - Status Auto-Suggestions', () => {
 
   describe('Preview Integration', () => {
     it('should show status in preview after selection', async () => {
-      modal.open();
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await modal.onOpen();
 
       const nlInput = modal.contentEl.querySelector('textarea') as HTMLTextAreaElement;
       
@@ -267,8 +327,7 @@ describe('TaskCreationModal - Status Auto-Suggestions', () => {
     });
 
     it('should remove status text from title in preview', async () => {
-      modal.open();
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await modal.onOpen();
 
       const nlInput = modal.contentEl.querySelector('textarea') as HTMLTextAreaElement;
       

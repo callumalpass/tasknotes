@@ -129,9 +129,9 @@ describe('NaturalLanguageParser - Status Extraction', () => {
   describe('Date Parser Conflict Prevention', () => {
     it('should extract status before date parsing to prevent "Now" conflicts', () => {
       const result = parser.parseInput('Task Active = Now tomorrow at 3pm');
-      
+
       expect(result.status).toBe('active');
-      expect(result.title).toBe('Task tomorrow at 3pm');
+      expect(result.title).toBe('Task'); // "tomorrow at 3pm" should be parsed as date and removed
       // "Now" should not be parsed as current time since it was removed with status
       expect(result.dueDate).toBeDefined(); // Should parse "tomorrow at 3pm"
       expect(result.dueTime).toBeDefined();
@@ -148,7 +148,7 @@ describe('NaturalLanguageParser - Status Extraction', () => {
       const result = timeParser.parseInput('Task Due Today tomorrow');
       
       expect(result.status).toBe('today-status');
-      expect(result.title).toBe('Task tomorrow');
+      expect(result.title).toBe('Task'); // "tomorrow" should be parsed as date and removed
       // Should parse "tomorrow" as due date, not "Today" from status
       expect(result.dueDate).toBeDefined();
     });
@@ -165,7 +165,7 @@ describe('NaturalLanguageParser - Status Extraction', () => {
       const result = unicodeParser.parseInput('Task 🔥 High Priority! tomorrow');
       
       expect(result.status).toBe('emoji');
-      expect(result.title).toBe('Task tomorrow');
+      expect(result.title).toBe('Task'); // "tomorrow" should be parsed as date and removed
     });
 
     it('should handle multiple spaces in status names', () => {
@@ -178,7 +178,7 @@ describe('NaturalLanguageParser - Status Extraction', () => {
       const result = spaceParser.parseInput('Task Status   With   Spaces today');
       
       expect(result.status).toBe('spaces');
-      expect(result.title).toBe('Task today');
+      expect(result.title).toBe('Task'); // "today" should be parsed as date and removed
     });
   });
 
@@ -195,7 +195,7 @@ describe('NaturalLanguageParser - Status Extraction', () => {
       
       // Should use custom "Done" status, not fallback "done" pattern
       expect(result.status).toBe('done');
-      expect(result.title).toBe('Task is today');
+      expect(result.title).toBe('Task is'); // "today" should be parsed as date and removed
     });
   });
 
@@ -206,7 +206,7 @@ describe('NaturalLanguageParser - Status Extraction', () => {
       
       // Should use fallback pattern
       expect(result.status).toBe('in-progress');
-      expect(result.title).toBe('Task today');
+      expect(result.title).toBe('Task'); // "today" should be parsed as date and removed
     });
   });
 
@@ -217,7 +217,7 @@ describe('NaturalLanguageParser - Status Extraction', () => {
       expect(result.status).toBe('active');
       expect(result.contexts).toContain('home');
       expect(result.tags).toContain('errands');
-      expect(result.title).toBe('Buy groceries tomorrow');
+      expect(result.title).toBe('Buy groceries'); // "tomorrow" should be parsed as date and removed
       expect(result.dueDate).toBeDefined();
     });
 
@@ -229,7 +229,7 @@ describe('NaturalLanguageParser - Status Extraction', () => {
       expect(result.projects).toContain('project');
       expect(result.dueDate).toBeDefined();
       expect(result.dueTime).toBeDefined();
-      expect(result.title).toBe('Task due at 2pm');
+      expect(result.title).toBe('Task'); // "due tomorrow at 2pm" should be parsed as date and removed
     });
   });
 });
