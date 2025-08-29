@@ -1,4 +1,4 @@
-import { App, ButtonComponent, DropdownComponent, Modal, TextComponent, debounce, setTooltip } from 'obsidian';
+import { App, ButtonComponent, DropdownComponent, Modal, TextComponent, debounce, setTooltip, setIcon } from 'obsidian';
 import { FILTER_OPERATORS, FILTER_PROPERTIES, FilterCondition, FilterGroup, FilterNode, FilterOperator, FilterOptions, FilterProperty, FilterQuery, PropertyDefinition, SavedView, TaskGroupKey, TaskSortKey } from '../types';
 
 import { DragDropHandler } from './DragDropHandler';
@@ -6,6 +6,7 @@ import { EventEmitter } from '../utils/EventEmitter';
 import { FilterUtils } from '../utils/FilterUtils';
 import { isValidDateInput } from '../utils/dateUtils';
 import { showConfirmationModal } from '../modals/ConfirmationModal';
+import { DateContextMenu } from '../components/DateContextMenu';
 
 class SaveViewModal extends Modal {
     private name: string;
@@ -913,8 +914,9 @@ export class FilterBar extends EventEmitter {
         // Property dropdown
         const propertyOptions = Object.fromEntries([
             ['', 'Select...'], // Placeholder option
-            ...FILTER_PROPERTIES.map(p => [p.id, p.label])
-        ]);
+            ...FILTER_PROPERTIES.map(p => [p.id, p.label]),
+            ...(this.filterOptions.userProperties?.map(p => [p.id, p.label]) || [])
+        ] as [string, string][]);
         const propertyDropdown = new DropdownComponent(conditionContainer)
             .addOptions(propertyOptions)
             .setValue(condition.property);
@@ -972,7 +974,7 @@ export class FilterBar extends EventEmitter {
     private updateOperatorOptions(dropdown: DropdownComponent, property: FilterProperty): void {
         dropdown.selectEl.empty();
 
-        const propertyDef = FILTER_PROPERTIES.find(p => p.id === property);
+        const propertyDef = FILTER_PROPERTIES.find(p => p.id === property) || this.filterOptions.userProperties?.find(p => p.id === property);
         if (!propertyDef) return;
 
         propertyDef.supportedOperators.forEach(operatorId => {
@@ -989,7 +991,7 @@ export class FilterBar extends EventEmitter {
     private renderValueInput(container: HTMLElement, condition: FilterCondition): void {
         container.empty();
 
-        const propertyDef = FILTER_PROPERTIES.find(p => p.id === condition.property);
+        const propertyDef = FILTER_PROPERTIES.find(p => p.id === condition.property) || this.filterOptions.userProperties?.find(p => p.id === condition.property);
         const operatorDef = FILTER_OPERATORS.find(op => op.id === condition.operator);
 
         if (!propertyDef || !operatorDef || !operatorDef.requiresValue) {
@@ -1125,6 +1127,25 @@ export class FilterBar extends EventEmitter {
         // Set initial validation state
         this.updateDateInputValidation(textInput, String(condition.value || ''));
 
+        // Date picker icon button
+        const pickerButton = dateContainer.createEl('button', { cls: 'filter-date-picker-button' });
+        setTooltip(pickerButton, 'Pick date & time', { placement: 'top' });
+        setIcon(pickerButton, 'calendar');
+        pickerButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const menu = new DateContextMenu({
+                currentValue: String(condition.value || undefined),
+                onSelect: (value: string | null) => {
+                    textInput.setValue(value || '');
+                    condition.value = value || null;
+                    this.updateDateInputValidation(textInput, textInput.getValue());
+                    this.debouncedEmitQueryChange();
+                }
+            });
+            menu.showAtElement(pickerButton);
+        });
+
         // Add a small help button showing natural language examples
         const helpButton = dateContainer.createEl('button', {
             cls: 'filter-date-help-button',
@@ -1254,21 +1275,32 @@ export class FilterBar extends EventEmitter {
             .onClick(() => {
                 this.currentQuery.sortDirection = this.currentQuery.sortDirection === 'asc' ? 'desc' : 'asc';
                 this.updateSortDirectionButton();
-                this.emitQueryChange();
+                this.emitImmediateQueryChange();
             });
 
+        // Build sort dropdown options, including dynamic user fields
+        const builtInSortOptions: Record<string, string> = {
+            'due': 'Due Date',
+            'scheduled': 'Scheduled Date',
+            'priority': 'Priority',
+            'title': 'Title',
+            'dateCreated': 'Created Date'
+        };
+        const sortOptions: Record<string, string> = { ...builtInSortOptions };
+        const sortUserProps = this.filterOptions.userProperties || [];
+        for (const p of sortUserProps) {
+            if (!p?.id || !p?.label) continue;
+            if (typeof p.id === 'string' && p.id.startsWith('user:')) {
+                sortOptions[p.id] = `${p.label}`;
+            }
+        }
+
         const sortDropdown = new DropdownComponent(sortContainer)
-            .addOptions({
-                'due': 'Due Date',
-                'scheduled': 'Scheduled Date',
-                'priority': 'Priority',
-                'title': 'Title',
-                'dateCreated': 'Created Date'
-            })
+            .addOptions(sortOptions)
             .setValue(this.currentQuery.sortKey || 'due')
             .onChange((value: TaskSortKey) => {
                 this.currentQuery.sortKey = value;
-                this.emitQueryChange();
+                this.emitImmediateQueryChange();
             });
         setTooltip(sortDropdown.selectEl, 'Choose how to sort tasks', { placement: 'top' });
 
@@ -1276,23 +1308,37 @@ export class FilterBar extends EventEmitter {
         const groupContainer = controls.createDiv('filter-bar__group-container');
         groupContainer.createSpan({ text: 'Group by:', cls: 'filter-bar__label' });
 
+        // Build group dropdown options, including dynamic user fields
+        const builtInGroupOptions: Record<string, string> = {
+            'none': 'None',
+            'status': 'Status',
+            'priority': 'Priority',
+            'context': 'Context',
+            'project': 'Project',
+            'due': 'Due Date',
+            'scheduled': 'Scheduled Date'
+        };
+
+        const options: Record<string, string> = { ...builtInGroupOptions };
+        const userProps = this.filterOptions.userProperties || [];
+        for (const p of userProps) {
+            if (!p?.id || !p?.label) continue;
+            // Only add if it is a user property id pattern
+            if (typeof p.id === 'string' && p.id.startsWith('user:')) {
+                options[p.id] = p.label;
+            }
+        }
+
         const groupDropdown = new DropdownComponent(groupContainer)
-            .addOptions({
-                'none': 'None',
-                'status': 'Status',
-                'priority': 'Priority',
-                'context': 'Context',
-                'project': 'Project',
-                'due': 'Due Date',
-                'scheduled': 'Scheduled Date'
-            })
+            .addOptions(options)
             .setValue(this.currentQuery.groupKey || 'none')
             .onChange((value: TaskGroupKey) => {
                 this.currentQuery.groupKey = value;
                 // Update expand/collapse buttons visibility immediately
                 this.updateExpandCollapseButtons();
-                // Re-render controls to show/hide group actions when grouping changes
-                this.updateUI();
+                // Update only display section and badge to avoid destroying DOM (keeps toggle element stable for tests)
+                this.updateDisplaySection();
+                this.updateFilterToggleBadge();
                 this.emitQueryChange();
             });
         setTooltip(groupDropdown.selectEl, 'Group tasks by a common property', { placement: 'top' });
@@ -1810,6 +1856,18 @@ export class FilterBar extends EventEmitter {
         this.updateFilterToggleBadge();
         this.emitQueryChangeIfComplete();
     }
+
+	    /** Emit immediately regardless of filter completeness (for sort/group changes) */
+	    private emitImmediateQueryChange(): void {
+	        // Clear active saved view when user manually modifies filters (except during saved view loading)
+	        if (!this.isLoadingSavedView && this.activeSavedView) {
+	            this.clearActiveSavedView();
+	            this.updateFilterBuilder();
+	        }
+	        this.updateFilterToggleBadge();
+	        this.emit('queryChange', FilterUtils.deepCloneFilterQuery(this.currentQuery));
+	    }
+
 
     /**
      * Check if the current query is complete and meaningful, then emit if so

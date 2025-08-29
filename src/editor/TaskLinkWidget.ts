@@ -8,6 +8,7 @@ import { dispatchTaskUpdate } from './TaskLinkOverlay';
 import { DateContextMenu } from '../components/DateContextMenu';
 import { PriorityContextMenu } from '../components/PriorityContextMenu';
 import { RecurrenceContextMenu } from '../components/RecurrenceContextMenu';
+import { createTaskClickHandler, createTaskHoverHandler } from '../utils/clickHandlers';
 
 export class TaskLinkWidget extends WidgetType {
     private taskInfo: TaskInfo;
@@ -363,29 +364,31 @@ export class TaskLinkWidget extends WidgetType {
         
         // Add drag functionality
         this.addDragHandlers(container);
+
+		// Handle context menu on pencil icon separately
+		pencilIcon.addEventListener('click', (e) => {
+			e.preventDefault();
+			e.stopPropagation();
+			this.showTaskContextMenu(e, container);
+		});
+
+		// Set up click handlers using shared utility
+		const { clickHandler, dblclickHandler } = createTaskClickHandler({
+			task: this.taskInfo,
+			plugin: this.plugin,
+			excludeSelector: '.task-inline-preview__pencil',
+		});
         
-        // Click handler - open task edit modal (same as TaskCard)
         container.addEventListener('click', async (e) => {
             e.preventDefault();
             e.stopPropagation();
-            
-            // Check if clicking the pencil icon for context menu
-            const target = e.target as HTMLElement;
-            if (target === pencilIcon || pencilIcon.contains(target) || target.closest('.task-inline-preview__pencil')) {
-                this.showTaskContextMenu(e, container);
-                return;
-            }
-            
-            if (e.ctrlKey || e.metaKey) {
-                // Ctrl/Cmd + Click: Open source note
-                const file = this.plugin.app.vault.getAbstractFileByPath(this.taskInfo.path);
-                if (file instanceof TFile) {
-                    this.plugin.app.workspace.getLeaf(false).openFile(file);
-                }
-            } else {
-                // Left-click: Open edit modal
-                await this.plugin.openTaskEditModal(this.taskInfo);
-            }
+            await clickHandler(e);
+        });
+        
+        container.addEventListener('dblclick', async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            await dblclickHandler(e);
         });
         
         // Right-click - show context menu (same as task cards)
@@ -395,20 +398,8 @@ export class TaskLinkWidget extends WidgetType {
             await this.showTaskContextMenu(e, container);
         });
         
-        // Hover preview (same as TaskCard)
-        container.addEventListener('mouseover', (event) => {
-            const file = this.plugin.app.vault.getAbstractFileByPath(this.taskInfo.path);
-            if (file) {
-                this.plugin.app.workspace.trigger('hover-link', {
-                    event,
-                    source: 'tasknotes-task-card',
-                    hoverParent: container,
-                    targetEl: container,
-                    linktext: this.taskInfo.path,
-                    sourcePath: this.taskInfo.path
-                });
-            }
-        });
+        // Hover preview using shared utility
+        container.addEventListener('mouseover', createTaskHoverHandler(this.taskInfo, this.plugin));
         
         return container;
     }

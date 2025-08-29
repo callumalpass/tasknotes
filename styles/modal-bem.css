@@ -303,6 +303,35 @@
     flex-wrap: wrap;
 }
 
+/* User-field date input: full width textbox; icon overlayed on the left */
+.tasknotes-plugin .tn-date-control {
+  position: relative;
+  padding-left: 35px; /* reserve space for the icon to the left of the textbox */
+}
+.tasknotes-plugin .tn-date-control input[type="text"] {
+  padding-left: 0; /* the padding-left is applied on the container */
+}
+.tasknotes-plugin .tn-date-control .user-field-date-picker-btn {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  color: var(--tn-text-muted);
+  z-index: 1;
+}
+.tasknotes-plugin .tn-date-control .user-field-date-picker-btn:hover {
+  color: var(--text-normal);
+}
+
+
 /* Date and Time Input Modifiers */
 .tasknotes-plugin .modal-form__input--date {
     flex: 1;
@@ -560,25 +589,7 @@
     border-top: 1px solid var(--tn-border-color);
 }
 
-/* Use consistent button system */
-.tasknotes-plugin .modal-form__button {
-    /* Remove individual styles - use tn-btn classes */
-}
-
-.tasknotes-plugin .modal-form__button--primary {
-    /* Remove individual styles - use tn-btn tn-btn--primary classes */
-}
-
-.tasknotes-plugin .modal-form__button--secondary {
-    /* Remove individual styles - use tn-btn tn-btn--secondary classes */
-}
-    border-color: var(--tn-border-color-hover);
-    transform: translateY(-1px);
-}
-
-.tasknotes-plugin .modal-form__button--secondary:active {
-    transform: translateY(0);
-}
+/* Buttons use shared tn-btn system; no modal-specific overrides here */
 
 /* Tertiary Button (Open note, etc.) */
 .tasknotes-plugin .modal-form__button--tertiary {
@@ -756,26 +767,26 @@
         padding: var(--tn-spacing-lg);
         max-width: 92vw;
     }
-    
+
     .tasknotes-plugin .modal-form__buttons {
         flex-direction: column;
         gap: var(--tn-spacing-md);
     }
-    
+
     .tasknotes-plugin .modal-form__button {
         width: 100%;
         justify-content: center;
     }
-    
+
     .tasknotes-plugin .modal-form__days-grid {
         grid-template-columns: repeat(4, 1fr);
         gap: var(--tn-spacing-sm);
     }
-    
+
     .tasknotes-plugin .modal-form__quick-actions {
         flex-direction: column;
     }
-    
+
     .tasknotes-plugin .modal-form__button--quick-date {
         flex: none;
     }
@@ -827,6 +838,17 @@
     font-size: var(--tn-font-size-md);
     line-height: 1.4;
 }
+
+/* Align all modal setting controls to the right edge of the column */
+.tasknotes-plugin .modal .setting-item .setting-item-control {
+  flex: none;
+  text-align: end;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: var(--size-4-2);
+}
+
 
 .tasknotes-plugin .content-type-selector .setting-item-control {
     display: flex;

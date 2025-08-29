@@ -227,7 +227,12 @@ export class TaskService {
             
             // Merge template frontmatter with base frontmatter
             // User-defined values take precedence over template frontmatter
-            const finalFrontmatter = mergeTemplateFrontmatter(frontmatter, templateResult.frontmatter);
+            let finalFrontmatter = mergeTemplateFrontmatter(frontmatter, templateResult.frontmatter);
+
+            // Add custom frontmatter properties (including user fields)
+            if (taskData.customFrontmatter) {
+                finalFrontmatter = { ...finalFrontmatter, ...taskData.customFrontmatter };
+            }
             
             // Prepare file content
             const yamlHeader = stringifyYaml(finalFrontmatter);
@@ -918,6 +923,20 @@ export class TaskService {
                         frontmatter[key] = mappedFrontmatter[key];
                     }
                 });
+
+                // Handle custom frontmatter properties (including user fields)
+                if ((updates as any).customFrontmatter) {
+                    Object.keys((updates as any).customFrontmatter).forEach(key => {
+                        const value = (updates as any).customFrontmatter[key];
+                        if (value === null) {
+                            // Remove the property if value is null
+                            delete frontmatter[key];
+                        } else {
+                            // Set the property value
+                            frontmatter[key] = value;
+                        }
+                    });
+                }
 
                 if (updates.hasOwnProperty('due') && updates.due === undefined) delete frontmatter[this.plugin.fieldMapper.toUserField('due')];
                 if (updates.hasOwnProperty('scheduled') && updates.scheduled === undefined) delete frontmatter[this.plugin.fieldMapper.toUserField('scheduled')];

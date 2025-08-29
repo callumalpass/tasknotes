@@ -8,6 +8,7 @@ import { PriorityManager } from '../services/PriorityManager';
 import { showConfirmationModal } from '../modals/ConfirmationModal';
 import { showStorageLocationConfirmationModal } from '../modals/StorageLocationConfirmationModal';
 import { ProjectSelectModal } from '../modals/ProjectSelectModal';
+import { splitListPreservingLinksAndQuotes } from '../utils/stringSplit';
 
 
 
@@ -179,6 +180,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 					});
 			});
 
+
 		new Setting(container)
 			.setName('Instant task convert')
 			.setDesc('Show a convert button next to checkbox tasks for instant conversion to TaskNotes')
@@ -218,7 +220,6 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 						await this.plugin.saveSettings();
 					});
 			});
-
 
 		// Help section
 		const helpContainer = container.createDiv('settings-help-section');
@@ -1281,7 +1282,9 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 					if (!this.plugin.settings.icsIntegration) {
 						this.plugin.settings.icsIntegration = {
 							defaultNoteTemplate: '',
-							defaultNoteFolder: ''
+							defaultNoteFolder: '',
+							icsNoteFilenameFormat: 'title',
+							customICSNoteFilenameTemplate: '{title}'
 						};
 					}
 					this.plugin.settings.icsIntegration.defaultNoteTemplate = value;
@@ -1298,12 +1301,66 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 					if (!this.plugin.settings.icsIntegration) {
 						this.plugin.settings.icsIntegration = {
 							defaultNoteTemplate: '',
-							defaultNoteFolder: ''
+							defaultNoteFolder: '',
+							icsNoteFilenameFormat: 'title',
+							customICSNoteFilenameTemplate: '{title}'
 						};
 					}
 					this.plugin.settings.icsIntegration.defaultNoteFolder = value;
 					await this.plugin.saveSettings();
 				}));
+
+		// Filename settings for ICS event notes
+		new Setting(container).setName('Filename format for calendar event notes').setHeading();
+		
+		new Setting(container)
+			.setName('Filename format')
+			.setDesc('How to name notes created from calendar events')
+			.addDropdown(dropdown => dropdown
+				.addOptions({
+					'title': 'Event title',
+					'zettel': 'Zettelkasten (YYMMDD + time)',
+					'timestamp': 'Timestamp (YYYY-MM-DD-HHMMSS)', 
+					'custom': 'Custom template'
+				})
+				.setValue(this.plugin.settings.icsIntegration?.icsNoteFilenameFormat || 'title')
+				.onChange(async (value: 'title' | 'zettel' | 'timestamp' | 'custom') => {
+					if (!this.plugin.settings.icsIntegration) {
+						this.plugin.settings.icsIntegration = {
+							defaultNoteTemplate: '',
+							defaultNoteFolder: '',
+							icsNoteFilenameFormat: 'title',
+							customICSNoteFilenameTemplate: '{title}'
+						};
+					}
+					this.plugin.settings.icsIntegration.icsNoteFilenameFormat = value;
+					await this.plugin.saveSettings();
+					this.display();
+				}));
+
+		// Custom template setting (conditional)
+		if (this.plugin.settings.icsIntegration?.icsNoteFilenameFormat === 'custom') {
+			new Setting(container)
+				.setName('Custom filename template for ICS notes')
+				.setDesc('Template for custom filename format. Available variables: {title} (event title), {icsEventTitleWithDate} (event title + date), {icsEventLocation}, {icsEventDescription}, {date}, {time}, {timestamp}, etc.')
+				.addText(text => {
+					text.inputEl.setAttribute('aria-label', 'Custom ICS note filename template with variables');
+					return text
+						.setValue(this.plugin.settings.icsIntegration?.customICSNoteFilenameTemplate || '{title}')
+						.onChange(async (value) => {
+							if (!this.plugin.settings.icsIntegration) {
+								this.plugin.settings.icsIntegration = {
+									defaultNoteTemplate: '',
+									defaultNoteFolder: '',
+									icsNoteFilenameFormat: 'title',
+									customICSNoteFilenameTemplate: '{title}'
+								};
+							}
+							this.plugin.settings.icsIntegration.customICSNoteFilenameTemplate = value;
+							await this.plugin.saveSettings();
+						});
+				});
+		}
 	}
 
 	private renderNotificationsTab(): void {
@@ -1344,7 +1401,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 		const systemLine1 = systemDesc.createDiv();
 		systemLine1.createEl('strong', { text: 'System notifications:' });
 		systemLine1.appendText(' Use your operating system\'s native notification system. Requires permission and works even when Obsidian is minimized.');
-		
+
 		const systemLine2 = systemDesc.createDiv();
 		systemLine2.createEl('strong', { text: 'In-app notices:' });
 		systemLine2.appendText(' Show notifications as temporary popups within Obsidian only.');
@@ -1357,7 +1414,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 		// Show message on mobile
 		if (Platform.isMobile) {
 			const mobileMessage = container.createDiv({ cls: 'setting-item-description' });
-			const mobileContainer = mobileMessage.createDiv({ 
+			const mobileContainer = mobileMessage.createDiv({
 				attr: { style: 'text-align: center; padding: 2rem; color: var(--text-muted);' }
 			});
 			mobileContainer.createEl('h3', { text: 'HTTP API not available on mobile' });
@@ -1445,7 +1502,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 		// Available Endpoints
 		apiInfoEl.createEl('h4', { text: 'Available Endpoints:' });
 		const endpointsList = apiInfoEl.createEl('ul', { attr: { style: 'margin-left: 1rem;' } });
-		
+
 		const endpoints = [
 			{ method: 'GET', path: '/api/health', desc: 'Health check' },
 			{ method: 'GET', path: '/api/tasks', desc: 'List tasks with optional filters' },
@@ -1461,7 +1518,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 			{ method: 'GET', path: '/api/filter-options', desc: 'Available filters' },
 			{ method: 'GET', path: '/api/stats', desc: 'Task statistics' }
 		];
-		
+
 		endpoints.forEach(endpoint => {
 			const li = endpointsList.createEl('li');
 			li.createEl('code', { text: `${endpoint.method} ${endpoint.path}` });
@@ -1470,29 +1527,29 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 
 		// Usage Examples
 		apiInfoEl.createEl('h4', { text: 'Usage Examples:' });
-		
+
 		const basicP = apiInfoEl.createEl('p');
 		basicP.createEl('strong', { text: 'Basic request:' });
-		apiInfoEl.createEl('pre').createEl('code', { 
-			text: `curl http://localhost:${this.plugin.settings.apiPort}/api/tasks` 
+		apiInfoEl.createEl('pre').createEl('code', {
+			text: `curl http://localhost:${this.plugin.settings.apiPort}/api/tasks`
 		});
 
 		const authP = apiInfoEl.createEl('p');
 		authP.createEl('strong', { text: 'With authentication:' });
-		apiInfoEl.createEl('pre').createEl('code', { 
-			text: `curl -H "Authorization: Bearer YOUR_TOKEN" http://localhost:${this.plugin.settings.apiPort}/api/tasks` 
+		apiInfoEl.createEl('pre').createEl('code', {
+			text: `curl -H "Authorization: Bearer YOUR_TOKEN" http://localhost:${this.plugin.settings.apiPort}/api/tasks`
 		});
 
 		const createP = apiInfoEl.createEl('p');
 		createP.createEl('strong', { text: 'Create task:' });
-		apiInfoEl.createEl('pre').createEl('code', { 
-			text: `curl -X POST http://localhost:${this.plugin.settings.apiPort}/api/tasks \\\n  -H "Content-Type: application/json" \\\n  -d '{"title": "New task", "priority": "High"}'` 
+		apiInfoEl.createEl('pre').createEl('code', {
+			text: `curl -X POST http://localhost:${this.plugin.settings.apiPort}/api/tasks \\\n  -H "Content-Type: application/json" \\\n  -d '{"title": "New task", "priority": "High"}'`
 		});
 
 		const filterP = apiInfoEl.createEl('p');
 		filterP.createEl('strong', { text: 'Filter tasks:' });
-		apiInfoEl.createEl('pre').createEl('code', { 
-			text: `curl "http://localhost:${this.plugin.settings.apiPort}/api/tasks?status=open&priority=High"` 
+		apiInfoEl.createEl('pre').createEl('code', {
+			text: `curl "http://localhost:${this.plugin.settings.apiPort}/api/tasks?status=open&priority=High"`
 		});
 	}
 
@@ -1642,6 +1699,50 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 						new Notice('Note indexing setting changed. Please restart Obsidian or reload the plugin for changes to take effect.');
 					});
 			});
+
+		// Suggestion performance: optional debounce for inline file suggestions
+		new Setting(container)
+			.setName('Debounce inline suggestions (ms)')
+			.setDesc('Optional delay before running inline file suggestions (useful for large vaults). Set 0 to disable.')
+			.addText(text => text
+				.setPlaceholder('0 (disabled)')
+				.setValue(String(this.plugin.settings.suggestionDebounceMs ?? 0))
+				.onChange(async (value) => {
+					const n = parseInt(value, 10);
+					if (isNaN(n) || n < 0) return;
+					this.plugin.settings.suggestionDebounceMs = n;
+					await this.plugin.saveSettings();
+				}));
+
+		// Click behavior settings
+		new Setting(container)
+			.setName('Single-click action')
+			.setDesc('What happens when you single-click a task card')
+			.addDropdown(dropdown => {
+				dropdown
+					.addOption('edit', 'Edit task')
+					.addOption('openNote', 'Open note')
+					.setValue(this.plugin.settings.singleClickAction)
+					.onChange(async (value: 'edit' | 'openNote') => {
+						this.plugin.settings.singleClickAction = value;
+						await this.plugin.saveSettings();
+					});
+			});
+
+		new Setting(container)
+			.setName('Double-click action')
+			.setDesc('What happens when you double-click a task card')
+			.addDropdown(dropdown => {
+				dropdown
+					.addOption('openNote', 'Open note')
+					.addOption('edit', 'Edit task')
+					.addOption('none', 'None')
+					.setValue(this.plugin.settings.doubleClickAction)
+					.onChange(async (value: 'edit' | 'openNote' | 'none') => {
+						this.plugin.settings.doubleClickAction = value;
+						await this.plugin.saveSettings();
+					});
+			});
 	}
 
 	private renderFieldMappingTab(): void {
@@ -1728,6 +1829,206 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 					await this.plugin.saveSettings();
 					this.renderActiveTab();
 				}));
+
+			// User Fields (optional) section
+			new Setting(container)
+				.setName('User Fields (optional)')
+				.setHeading();
+			container.createEl('p', {
+				text: 'Define one or more custom frontmatter properties to appear as type-aware filter options across views. Each row: Display Name, Property Name, Type.',
+				cls: 'settings-help-note'
+			});
+
+			// Ensure array exists; migrate legacy single field if present
+			if (!Array.isArray(this.plugin.settings.userFields)) {
+				this.plugin.settings.userFields = [];
+			}
+			if (this.plugin.settings.userField && this.plugin.settings.userField.enabled) {
+				const legacy = this.plugin.settings.userField;
+				const id = (legacy.displayName || legacy.key || 'field').toLowerCase().replace(/[^a-z0-9_\-]/g, '-');
+				if (!this.plugin.settings.userFields.find(f => (f.id === id) || (f.key === legacy.key))) {
+					this.plugin.settings.userFields.push({ id, displayName: legacy.displayName || '', key: legacy.key || '', type: legacy.type || 'text' });
+				}
+				// Keep legacy for now (migration step), but no longer render single-field UI
+			}
+
+			// Column headers
+			const headersRow = container.createDiv('settings-headers-row settings-view__list-headers user-fields');
+			headersRow.createEl('span', { text: 'Display Name', cls: 'settings-column-header settings-view__column-header' });
+			headersRow.createEl('span', { text: 'Property Name', cls: 'settings-column-header settings-view__column-header' });
+			headersRow.createEl('span', { text: 'Type', cls: 'settings-column-header settings-view__column-header' });
+			headersRow.createDiv('settings-header-spacer settings-view__header-spacer'); // For delete button space
+
+			// User fields list
+			const userFieldsList = container.createDiv('settings-list settings-view__list');
+			userFieldsList.addClass('user-fields');
+
+			this.renderUserFieldsList(userFieldsList);
+
+			// Add field button
+			new Setting(container)
+				.setName('Add new user field')
+				.setDesc('Create a new custom property for filtering')
+				.addButton(button => button
+					.setButtonText('Add field')
+					.onClick(async () => {
+						const id = `fld_${Date.now()}`;
+						this.plugin.settings.userFields!.push({ id, key: '', displayName: '', type: 'text' });
+						await this.plugin.saveSettings();
+						// Immediately refresh FilterBar options in open views
+						this.plugin.filterService?.refreshFilterOptions();
+						const refreshed = await this.plugin.filterService.getFilterOptions();
+						const viewTypes = ['tasknotes-task-list-view','tasknotes-agenda-view','tasknotes-kanban-view','tasknotes-advanced-calendar-view'];
+						for (const t of viewTypes) {
+							for (const leaf of this.app.workspace.getLeavesOfType(t)) {
+								const v: any = (leaf as any).view;
+								if (v?.filterBar?.updateFilterOptions) {
+									v.filterBar.updateFilterOptions(refreshed);
+								}
+							}
+						}
+						this.renderActiveTab();
+					}));
+
+
+	}
+
+	private renderUserFieldsList(container: HTMLElement): void {
+		container.empty();
+
+		const userFields = this.plugin.settings.userFields || [];
+
+		userFields.forEach((field, index) => {
+			const fieldRow = container.createDiv('settings-item-row settings-view__item-row user-fields');
+
+			// Display Name input
+			const nameInput = fieldRow.createEl('input', {
+				type: 'text',
+				value: field.displayName || '',
+				cls: 'settings-input name-input settings-view__input settings-view__input--label',
+				attr: {
+					'placeholder': 'Effort',
+					'aria-label': `Display name for ${field.displayName || 'user field'}`,
+					'id': `user-field-name-${field.id}`
+				}
+			});
+
+			// Property Name input
+			const keyInput = fieldRow.createEl('input', {
+				type: 'text',
+				value: field.key || '',
+				cls: 'settings-input key-input settings-view__input settings-view__input--value',
+				attr: {
+					'placeholder': 'effort',
+					'aria-label': `Property name for ${field.displayName || 'user field'}`,
+					'id': `user-field-key-${field.id}`
+				}
+			});
+
+			// Type dropdown
+			const typeSelect = fieldRow.createEl('select', {
+				cls: 'settings-input type-select settings-view__input settings-view__input--select',
+				attr: {
+					'aria-label': `Type for ${field.displayName || 'user field'}`,
+					'id': `user-field-type-${field.id}`
+				}
+			});
+
+			// Add type options
+			const typeOptions = [
+				{ value: 'text', label: 'Text' },
+				{ value: 'number', label: 'Number' },
+				{ value: 'date', label: 'Date' },
+				{ value: 'boolean', label: 'Boolean' },
+				{ value: 'list', label: 'List' }
+			];
+
+			typeOptions.forEach(option => {
+				const optionEl = typeSelect.createEl('option', {
+					value: option.value,
+					text: option.label
+				});
+				if (field.type === option.value) {
+					optionEl.selected = true;
+				}
+			});
+
+			// Delete button
+			const deleteButton = fieldRow.createEl('button', {
+				text: 'Delete',
+				cls: 'settings-delete-button settings-view__delete-button'
+			});
+
+			// Event listeners
+			const updateField = async () => {
+				try {
+					field.key = keyInput.value.trim();
+					field.displayName = nameInput.value;
+					field.type = typeSelect.value as any;
+					if (!field.id) {
+						field.id = (field.displayName || field.key || 'field').toLowerCase().replace(/[^a-z0-9_\-]/g, '-');
+					}
+					await this.plugin.saveSettings();
+				} catch (error) {
+					console.error('Error updating user field configuration:', error);
+					new Notice('Failed to update user field configuration. Please try again.');
+				}
+			};
+
+			keyInput.addEventListener('change', updateField);
+			nameInput.addEventListener('change', updateField);
+			typeSelect.addEventListener('change', updateField);
+
+			// Also refresh FilterBar options when a user field row is updated
+			const refreshFilterBarOptions = async () => {
+				this.plugin.filterService?.refreshFilterOptions();
+				const refreshed = await this.plugin.filterService.getFilterOptions();
+				const viewTypes = ['tasknotes-task-list-view','tasknotes-agenda-view','tasknotes-kanban-view','tasknotes-advanced-calendar-view'];
+				for (const t of viewTypes) {
+					for (const leaf of this.app.workspace.getLeavesOfType(t)) {
+						const v: any = (leaf as any).view;
+						if (v?.filterBar?.updateFilterOptions) {
+							v.filterBar.updateFilterOptions(refreshed);
+						}
+					}
+				}
+			};
+			keyInput.addEventListener('change', refreshFilterBarOptions);
+			nameInput.addEventListener('change', refreshFilterBarOptions);
+			typeSelect.addEventListener('change', refreshFilterBarOptions);
+
+			deleteButton.addEventListener('click', async () => {
+				// Show confirmation dialog using Obsidian's Modal API
+				const confirmed = await showConfirmationModal(this.app, {
+					title: 'Delete User Field',
+					message: `Are you sure you want to delete the user field "${field.displayName || field.key}"?\n\nThis action cannot be undone and may affect existing filters.`,
+					confirmText: 'Delete',
+					cancelText: 'Cancel',
+					isDestructive: true
+				});
+
+				if (confirmed) {
+					const fieldIndex = this.plugin.settings.userFields!.findIndex(f => f.id === field.id);
+					if (fieldIndex !== -1) {
+						this.plugin.settings.userFields!.splice(fieldIndex, 1);
+						await this.plugin.saveSettings();
+						// Immediately refresh FilterBar options in open views
+						this.plugin.filterService?.refreshFilterOptions();
+						const refreshed = await this.plugin.filterService.getFilterOptions();
+						const viewTypes = ['tasknotes-task-list-view','tasknotes-agenda-view','tasknotes-kanban-view','tasknotes-advanced-calendar-view'];
+						for (const t of viewTypes) {
+							for (const leaf of this.app.workspace.getLeavesOfType(t)) {
+								const v: any = (leaf as any).view;
+								if (v?.filterBar?.updateFilterOptions) {
+									v.filterBar.updateFilterOptions(refreshed);
+								}
+							}
+						}
+						this.renderActiveTab();
+					}
+				}
+			});
+		});
 	}
 
 	private renderStatusesTab(): void {
@@ -2657,7 +2958,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 			return;
 		}
 
-		const projectStrings = defaultProjects.split(',').map(p => p.trim()).filter(p => p.length > 0);
+		const projectStrings = splitListPreservingLinksAndQuotes(defaultProjects);
 		this.selectedDefaultProjectFiles = [];
 
 		for (const projectString of projectStrings) {
@@ -3437,12 +3738,12 @@ class WebhookModal extends Modal {
 		const jsLi = helpList.createEl('li');
 		jsLi.createEl('strong', { text: '.js files:' });
 		jsLi.appendText(' Custom JavaScript transforms');
-		
+
 		const jsonLi = helpList.createEl('li');
 		jsonLi.createEl('strong', { text: '.json files:' });
 		jsonLi.appendText(' Templates with ');
 		jsonLi.createEl('code', { text: '${data.task.title}' });
-		
+
 		const emptyLi = helpList.createEl('li');
 		emptyLi.createEl('strong', { text: 'Leave empty:' });
 		emptyLi.appendText(' Send raw data');

@@ -1,5 +1,20 @@
 import { FieldMapping, StatusConfig, PriorityConfig, SavedView, WebhookConfig } from '../types';
 
+export interface UserFieldMapping {
+	enabled: boolean;
+	displayName: string;
+	key: string; // frontmatter key
+	type: 'text' | 'number' | 'date' | 'boolean' | 'list';
+}
+
+// New multi-field mapping for MVP
+export interface UserMappedField {
+	id: string; // stable id used in filters (e.g., 'effort')
+	displayName: string;
+	key: string; // frontmatter key
+	type: 'text' | 'number' | 'date' | 'boolean' | 'list';
+}
+
 export interface TaskNotesSettings {
 	tasksFolder: string;  // Now just a default location for new tasks
 	moveArchivedTasks: boolean; // Whether to move tasks to archive folder when archived
@@ -37,10 +52,14 @@ export interface TaskNotesSettings {
 	useDefaultsOnInstantConvert: boolean;
 	enableNaturalLanguageInput: boolean;
 	nlpDefaultToScheduled: boolean;
+	singleClickAction: 'edit' | 'openNote';
+	doubleClickAction: 'edit' | 'openNote' | 'none';
 	// Inline task conversion settings
 	inlineTaskConvertFolder: string; // Folder for inline task conversion, supports {{currentNotePath}}
 	// Performance settings
 	disableNoteIndexing: boolean;
+	/** Optional debounce in milliseconds for inline file suggestions (0 = disabled) */
+	suggestionDebounceMs?: number;
 	// Customization settings
 	fieldMapping: FieldMapping;
 	customStatuses: StatusConfig[];
@@ -75,6 +94,10 @@ export interface TaskNotesSettings {
 	apiAuthToken: string;
 	// Webhook settings
 	webhooks: WebhookConfig[];
+	// User-defined field mappings (optional)
+	userFields?: UserMappedField[];
+	// Legacy single-field (for migration only)
+	userField?: UserFieldMapping;
 }
 
 export interface DefaultReminder {
@@ -114,6 +137,9 @@ export interface ICSIntegrationSettings {
 	defaultNoteTemplate: string;     // Path to template file for notes created from ICS events
 	// Default folders
 	defaultNoteFolder: string;       // Folder for notes created from ICS events
+	// Filename settings for ICS event notes
+	icsNoteFilenameFormat: 'title' | 'zettel' | 'timestamp' | 'custom';
+	customICSNoteFilenameTemplate: string; // Template for custom format
 }
 
 export interface CalendarViewSettings {

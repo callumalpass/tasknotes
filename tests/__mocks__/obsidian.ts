@@ -3,6 +3,12 @@
  * This mock provides a complete simulation of the Obsidian environment
  */
 
+// Minimal Platform mock for mobile/desktop branching in settings
+export const Platform = {
+  isMobile: false,
+  isDesktop: true,
+};
+
 import { EventEmitter } from 'events';
 
 // Mock file system data structure
@@ -716,6 +722,10 @@ export class Setting {
     this.nameEl = document.createElement('div');
     this.descEl = document.createElement('div');
     this.controlEl = document.createElement('div');
+    // Append structure similar to Obsidian: name, controls, description inside settingEl
+    this.settingEl.appendChild(this.nameEl);
+    this.settingEl.appendChild(this.controlEl);
+    this.settingEl.appendChild(this.descEl);
     this.containerEl.appendChild(this.settingEl);
   }
 
@@ -744,6 +754,7 @@ export class Setting {
       setPlaceholder: (placeholder: string) => mockText,
       setValue: (value: string) => mockText,
       onChange: (callback: (value: string) => void) => mockText,
+      setDisabled: (disabled: boolean) => mockText,
     };
     callback(mockText);
     return this;
@@ -763,8 +774,10 @@ export class Setting {
     const mockDropdown = {
       selectEl: document.createElement('select'),
       addOptions: (options: Record<string, string>) => mockDropdown,
+      addOption: (key: string, label: string) => mockDropdown,
       setValue: (value: string) => mockDropdown,
       onChange: (callback: (value: string) => void) => mockDropdown,
+      setDisabled: (disabled: boolean) => mockDropdown,
     };
     callback(mockDropdown);
     return this;
@@ -773,10 +786,13 @@ export class Setting {
   addButton(callback: (button: any) => void): Setting {
     const mockButton = {
       buttonEl: document.createElement('button'),
-      setButtonText: (text: string) => mockButton,
+      setButtonText: (text: string) => { mockButton.buttonEl.textContent = text; return mockButton; },
       setCta: () => mockButton,
-      onClick: (callback: () => void) => mockButton,
+      setWarning: () => mockButton,
+      onClick: (cb: () => void) => { mockButton.buttonEl.addEventListener('click', cb); return mockButton; },
     };
+    // Append to controls so text is visible in DOM for tests
+    this.controlEl.appendChild(mockButton.buttonEl);
     callback(mockButton);
     return this;
   }

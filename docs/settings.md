@@ -24,7 +24,9 @@ For more detailed information, see the [Calendar Settings](settings/calendar-set
 
 ## Advanced Settings
 
-These settings provide more advanced customization options, such as field mapping, custom status and priority workflows. You can also configure the Pomodoro timer from this section.
+These settings provide more advanced customization options, such as field mapping, custom status and priority workflows, and user-defined fields. You can also configure the Pomodoro timer from this section.
+
+**User Fields** allow you to define custom frontmatter properties that become filterable across all TaskNotes views, supporting text, number, date, boolean, and list data types with intelligent parsing.
 
 For more detailed information, see the [Advanced Settings](settings/advanced-settings.md) documentation.
 

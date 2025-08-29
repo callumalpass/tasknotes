@@ -6,6 +6,7 @@ import { StatusContextMenu } from '../components/StatusContextMenu';
 import { RecurrenceContextMenu } from '../components/RecurrenceContextMenu';
 import { ReminderContextMenu } from '../components/ReminderContextMenu';
 import { getDatePart, getTimePart, combineDateAndTime } from '../utils/dateUtils';
+import { sanitizeTags } from '../utils/helpers';
 import { ProjectSelectModal } from './ProjectSelectModal';
 import { TaskInfo, Reminder } from '../types';
 
@@ -26,6 +27,9 @@ export abstract class TaskModal extends Modal {
     protected recurrenceField = '';
     protected recurrenceRule = '';
     protected reminders: Reminder[] = [];
+    
+    // User-defined fields (dynamic based on settings)
+    protected userFields: Record<string, any> = {};
     
     // Project link storage
     protected selectedProjectFiles: TAbstractFile[] = [];
@@ -266,7 +270,7 @@ export abstract class TaskModal extends Modal {
                 text.setPlaceholder('tag1, tag2')
                     .setValue(this.tags)
                     .onChange(value => {
-                        this.tags = value;
+                        this.tags = sanitizeTags(value);
                     });
                 
                 // Store reference to input element
@@ -286,6 +290,124 @@ export abstract class TaskModal extends Modal {
                         this.timeEstimate = parseInt(value) || 0;
                     });
             });
+
+        // Dynamic user fields
+        this.createUserFields(container);
+    }
+
+    protected createUserFields(container: HTMLElement): void {
+        const userFieldConfigs = this.plugin.settings?.userFields || [];
+        
+        // Add a section separator if there are user fields
+        if (userFieldConfigs.length > 0) {
+            const separator = container.createDiv({ cls: 'user-fields-separator' });
+            separator.createDiv({ text: 'Custom Fields', cls: 'detail-label-section' });
+        }
+
+        for (const field of userFieldConfigs) {
+            if (!field || !field.key || !field.displayName) continue;
+
+            const currentValue = this.userFields[field.key] || '';
+
+            switch (field.type) {
+                case 'boolean':
+                    new Setting(container)
+                        .setName(field.displayName)
+                        .addToggle(toggle => {
+                            toggle.setValue(currentValue === true || currentValue === 'true')
+                                .onChange(value => {
+                                    this.userFields[field.key] = value;
+                                });
+                        });
+                    break;
+
+                case 'number':
+                    new Setting(container)
+                        .setName(field.displayName)
+                        .addText(text => {
+                            text.setPlaceholder('0')
+                                .setValue(currentValue ? String(currentValue) : '')
+                                .onChange(value => {
+                                    const numValue = parseFloat(value);
+                                    this.userFields[field.key] = isNaN(numValue) ? null : numValue;
+                                });
+                        });
+                    break;
+
+                case 'date':
+                    new Setting(container)
+                        .setName(field.displayName)
+                        .addText(text => {
+                            text.setPlaceholder('YYYY-MM-DD')
+                                .setValue(currentValue ? String(currentValue) : '')
+                                .onChange(value => {
+                                    this.userFields[field.key] = value || null;
+                                });
+                            // Add date picker button/icon next to the input
+                            // Ensure the input and button layout as a single row with proper sizing
+                            const parent = text.inputEl.parentElement as HTMLElement | null;
+                            if (parent) parent.addClass('tn-date-control');
+                            const btn = parent?.createEl('button', { cls: 'user-field-date-picker-btn' });
+                            if (btn) {
+                                btn.setAttribute('aria-label', `Pick ${field.displayName.toLowerCase()} date`);
+                                setIcon(btn, 'calendar');
+                                btn.addEventListener('click', (e) => {
+                                    e.preventDefault();
+                                    const menu = new DateContextMenu({
+                                        currentValue: text.getValue() || undefined,
+                                        onSelect: (value) => {
+                                            text.setValue(value || '');
+                                            this.userFields[field.key] = value || null;
+                                        }
+                                    });
+                                    menu.showAtElement(btn);
+                                });
+                            }
+                        });
+                    break;
+
+                case 'list':
+                    new Setting(container)
+                        .setName(field.displayName)
+                        .addText(text => {
+                            const displayValue = Array.isArray(currentValue) ? 
+                                currentValue.join(', ') : (currentValue ? String(currentValue) : '');
+                            
+                            text.setPlaceholder('item1, item2, item3')
+                                .setValue(displayValue)
+                                .onChange(value => {
+                                    if (!value.trim()) {
+                                        this.userFields[field.key] = null;
+                                    } else {
+                                        this.userFields[field.key] = value.split(',').map(v => v.trim()).filter(v => v);
+                                    }
+                                });
+
+                            // Add autocomplete functionality
+                            new UserFieldSuggest(this.app, text.inputEl, this.plugin, field);
+                            // Remove link preview area: we only want the input value
+                            const oldPreview = container.querySelector('.user-field-link-preview');
+                            if (oldPreview) oldPreview.detach?.();
+                        });
+                    break;
+
+                case 'text':
+                default:
+                    new Setting(container)
+                        .setName(field.displayName)
+                        .addText(text => {
+                            text.setPlaceholder(`Enter ${field.displayName.toLowerCase()}...`)
+                                .setValue(currentValue ? String(currentValue) : '')
+                                .onChange(value => {
+                                    this.userFields[field.key] = value || null;
+                                });
+
+                            // Add autocomplete functionality
+                            new UserFieldSuggest(this.app, text.inputEl, this.plugin, field);
+                        });
+                    break;
+            }
+        }
     }
 
 
@@ -905,6 +1027,180 @@ class TagSuggest extends AbstractInputSuggest<TagSuggestion> {
         currentValues[currentValues.length - 1] = tagSuggestion.value;
         this.input.value = currentValues.join(', ') + ', ';
         
+        // Trigger input event to update internal state
+        this.input.dispatchEvent(new Event('input', { bubbles: true }));
+        this.input.focus();
+    }
+}
+
+/**
+ * User field suggestion object
+ */
+interface UserFieldSuggestion {
+    value: string;
+    display: string;
+    type: 'user-field';
+    fieldKey: string;
+    toString(): string;
+}
+
+/**
+ * User field suggestion provider using AbstractInputSuggest
+ */
+class UserFieldSuggest extends AbstractInputSuggest<UserFieldSuggestion> {
+    private plugin: TaskNotesPlugin;
+    private input: HTMLInputElement;
+    private fieldConfig: any; // UserMappedField from settings
+    
+    constructor(app: App, inputEl: HTMLInputElement, plugin: TaskNotesPlugin, fieldConfig: any) {
+        super(app, inputEl);
+        this.plugin = plugin;
+        this.input = inputEl;
+        this.fieldConfig = fieldConfig;
+    }
+    
+    protected async getSuggestions(query: string): Promise<UserFieldSuggestion[]> {
+        const isListField = this.fieldConfig.type === 'list';
+
+        // Get current token or full value
+        let currentQuery = '';
+        let currentValues: string[] = [];
+        if (isListField) {
+            currentValues = this.input.value.split(',').map((v: string) => v.trim());
+            currentQuery = currentValues[currentValues.length - 1] || '';
+        } else {
+            currentQuery = this.input.value.trim();
+        }
+        if (!currentQuery) return [];
+
+        // Detect wikilink trigger [[... and delegate to file suggester
+        const wikiMatch = currentQuery.match(/\[\[([^\]]*)$/);
+        if (wikiMatch) {
+            const partial = wikiMatch[1] || '';
+            const { FileSuggestHelper } = await import('../suggest/FileSuggestHelper');
+            const list = await FileSuggestHelper.suggest(this.plugin, partial);
+            return list.map(item => ({
+                value: item.insertText,
+                display: item.displayText,
+                type: 'user-field' as const,
+                fieldKey: this.fieldConfig.key,
+                toString() { return this.value; }
+            }));
+        }
+
+        // Fallback to existing-values suggestion
+        const existingValues = await this.getExistingUserFieldValues(this.fieldConfig.key);
+        return existingValues
+            .filter(value => value && typeof value === 'string')
+            .filter(value =>
+                value.toLowerCase().includes(currentQuery.toLowerCase()) &&
+                (!isListField || !currentValues.slice(0, -1).includes(value))
+            )
+            .slice(0, 10)
+            .map(value => ({
+                value: value,
+                display: value,
+                type: 'user-field' as const,
+                fieldKey: this.fieldConfig.key,
+                toString() { return this.value; }
+            }));
+    }
+    
+    private async getExistingUserFieldValues(fieldKey: string): Promise<string[]> {
+        const run = async (): Promise<string[]> => {
+            try {
+                // Get all files and extract unique values for this field
+                const allFiles = this.plugin.app.vault.getMarkdownFiles();
+                const values = new Set<string>();
+
+                // Process all files, but with early termination for performance
+                for (const file of allFiles) {
+                    try {
+                        const metadata = this.plugin.app.metadataCache.getFileCache(file);
+                        const frontmatter = metadata?.frontmatter;
+
+                        if (frontmatter && frontmatter[fieldKey] !== undefined) {
+                            const value = frontmatter[fieldKey];
+
+                            if (Array.isArray(value)) {
+                                // Handle list fields
+                                value.forEach(v => {
+                                    if (typeof v === 'string' && v.trim()) {
+                                        values.add(v.trim());
+                                    }
+                                });
+                            } else if (typeof value === 'string' && value.trim()) {
+                                values.add(value.trim());
+                            } else if (typeof value === 'number') {
+                                values.add(value.toString());
+                            } else if (typeof value === 'boolean') {
+                                values.add(value.toString());
+                            }
+                        }
+
+                        // Early termination: stop after finding many unique values for performance
+                        // This ensures we get comprehensive suggestions without processing every file
+                        if (values.size >= 200) {
+                            break;
+                        }
+                    } catch (error) {
+                        // Skip files with errors
+                        continue;
+                    }
+                }
+
+                return Array.from(values).sort();
+            } catch (error) {
+                console.error('Error getting user field values:', error);
+                return [];
+            }
+        };
+
+        // Use debouncing for performance in large vaults (same pattern as FileSuggestHelper)
+        const debounceMs = this.plugin.settings?.suggestionDebounceMs ?? 0;
+        if (!debounceMs) {
+            return run();
+        }
+
+        return new Promise<string[]>((resolve) => {
+            const anyPlugin = this.plugin as unknown as { __userFieldSuggestTimer?: number };
+            if (anyPlugin.__userFieldSuggestTimer) {
+                clearTimeout(anyPlugin.__userFieldSuggestTimer);
+            }
+            anyPlugin.__userFieldSuggestTimer = setTimeout(async () => {
+                const results = await run();
+                resolve(results);
+            }, debounceMs) as unknown as number;
+        });
+    }
+    
+    public renderSuggestion(suggestion: UserFieldSuggestion, el: HTMLElement): void {
+        el.textContent = suggestion.display;
+    }
+    
+    public selectSuggestion(suggestion: UserFieldSuggestion): void {
+        const isListField = this.fieldConfig.type === 'list';
+
+        if (isListField) {
+            // Replace last token with the selected suggestion. If user is typing a
+            // wikilink region ([[...), replace that partial region; otherwise
+            // replace the token entirely with the suggestion value.
+            const parts = this.input.value.split(',');
+            const last = parts.pop() ?? '';
+            const before = parts.join(',');
+            const trimmed = last.trim();
+            const replacement = /\[\[/.test(trimmed)
+                ? trimmed.replace(/\[\[[^\]]*$/, `[[${suggestion.value}]]`)
+                : suggestion.value;
+            const rebuilt = (before ? before + ', ' : '') + replacement;
+            this.input.value = rebuilt.endsWith(',') ? rebuilt + ' ' : rebuilt + ', ';
+        } else {
+            // Replace the active [[... region or entire value
+            const val = this.input.value;
+            const replaced = val.replace(/\[\[[^\]]*$/, `[[${suggestion.value}]]`);
+            this.input.value = replaced === val ? suggestion.value : replaced;
+        }
+
         // Trigger input event to update internal state
         this.input.dispatchEvent(new Event('input', { bubbles: true }));
         this.input.focus();

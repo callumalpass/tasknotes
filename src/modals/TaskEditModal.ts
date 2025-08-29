@@ -5,7 +5,8 @@ import { TaskInfo } from '../types';
 import { getCurrentTimestamp, formatDateForStorage, generateUTCCalendarDates, getUTCStartOfWeek, getUTCEndOfWeek, getUTCStartOfMonth, getUTCEndOfMonth, getTodayLocal, parseDateAsLocal } from '../utils/dateUtils';
 import { formatTimestampForDisplay } from '../utils/dateUtils';
 import { format } from 'date-fns';
-import { generateRecurringInstances, extractTaskInfo, calculateTotalTimeSpent, formatTime, updateToNextScheduledOccurrence } from '../utils/helpers';
+import { generateRecurringInstances, extractTaskInfo, calculateTotalTimeSpent, formatTime, updateToNextScheduledOccurrence, sanitizeTags } from '../utils/helpers';
+import { splitListPreservingLinksAndQuotes } from '../utils/stringSplit';
 import { ReminderContextMenu } from '../components/ReminderContextMenu';
 
 export interface TaskEditOptions {
@@ -56,7 +57,7 @@ export class TaskEditModal extends TaskModal {
         }
         
         this.tags = this.task.tags 
-            ? this.task.tags.filter(tag => tag !== this.plugin.settings.taskTag).join(', ') 
+            ? sanitizeTags(this.task.tags.filter(tag => tag !== this.plugin.settings.taskTag).join(', '))
             : '';
         this.timeEstimate = this.task.timeEstimate || 0;
         
@@ -79,6 +80,39 @@ export class TaskEditModal extends TaskModal {
         
         // Initialize reminders
         this.reminders = this.task.reminders ? [...this.task.reminders] : [];
+
+        // Initialize user fields from frontmatter
+        await this.initializeUserFields();
+    }
+
+    private async initializeUserFields(): Promise<void> {
+        try {
+            // Get the file and read its frontmatter
+            const file = this.app.vault.getAbstractFileByPath(this.task.path);
+            if (!file || !(file instanceof TFile)) {
+                return;
+            }
+
+            const metadata = this.app.metadataCache.getFileCache(file);
+            const frontmatter = metadata?.frontmatter;
+
+            if (!frontmatter) {
+                return;
+            }
+
+            // Load user field values from frontmatter
+            const userFieldConfigs = this.plugin.settings?.userFields || [];
+            for (const field of userFieldConfigs) {
+                if (!field || !field.key) continue;
+
+                const value = frontmatter[field.key];
+                if (value !== undefined) {
+                    this.userFields[field.key] = value;
+                }
+            }
+        } catch (error) {
+            console.error('Error initializing user fields:', error);
+        }
     }
 
     private convertLegacyRecurrenceToString(recurrence: { frequency?: string; days_of_week?: string[]; day_of_month?: number }): string {
@@ -455,10 +489,7 @@ export class TaskEditModal extends TaskModal {
         }
 
         // Parse and compare projects
-        const newProjects = this.projects
-            .split(',')
-            .map(p => p.trim())
-            .filter(p => p.length > 0);
+        const newProjects = splitListPreservingLinksAndQuotes(this.projects);
         const oldProjects = this.task.projects || [];
         
         if (JSON.stringify(newProjects.sort()) !== JSON.stringify(oldProjects.sort())) {
@@ -536,6 +567,12 @@ export class TaskEditModal extends TaskModal {
             }
         }
 
+        // Compare user fields and add to changes if modified
+        const userFieldsChanges = this.getUserFieldChanges();
+        if (Object.keys(userFieldsChanges).length > 0) {
+            (changes as any).customFrontmatter = userFieldsChanges;
+        }
+
         // Always update modified timestamp if there are changes
         if (Object.keys(changes).length > 0) {
             changes.dateModified = getCurrentTimestamp();
@@ -544,6 +581,61 @@ export class TaskEditModal extends TaskModal {
         return changes;
     }
 
+    private getUserFieldChanges(): Record<string, any> {
+        const userFieldsChanges: Record<string, any> = {};
+        
+        try {
+            // Get current frontmatter values
+            const file = this.app.vault.getAbstractFileByPath(this.task.path);
+            if (!file || !(file instanceof TFile)) {
+                return userFieldsChanges;
+            }
+
+            const metadata = this.app.metadataCache.getFileCache(file);
+            const frontmatter = metadata?.frontmatter || {};
+
+            // Compare current values with original frontmatter
+            const userFieldConfigs = this.plugin.settings?.userFields || [];
+            for (const field of userFieldConfigs) {
+                if (!field || !field.key) continue;
+
+                const newValue = this.userFields[field.key];
+                const oldValue = frontmatter[field.key];
+
+                // Check if values are different
+                if (this.isDifferent(newValue, oldValue)) {
+                    // Set to null if empty value, otherwise use the new value
+                    userFieldsChanges[field.key] = (newValue === null || newValue === undefined || newValue === '') ? 
+                        null : newValue;
+                }
+            }
+        } catch (error) {
+            console.error('Error comparing user fields:', error);
+        }
+
+        return userFieldsChanges;
+    }
+
+    private isDifferent(newValue: any, oldValue: any): boolean {
+        // Handle null/undefined/empty comparisons
+        const normalizeEmpty = (value: any) => {
+            if (value === null || value === undefined || value === '') {
+                return null;
+            }
+            return value;
+        };
+
+        const normalizedNew = normalizeEmpty(newValue);
+        const normalizedOld = normalizeEmpty(oldValue);
+
+        // For arrays (list fields), compare as JSON strings
+        if (Array.isArray(normalizedNew) || Array.isArray(normalizedOld)) {
+            return JSON.stringify(normalizedNew) !== JSON.stringify(normalizedOld);
+        }
+
+        // For other values, direct comparison
+        return normalizedNew !== normalizedOld;
+    }
 
     private async openTaskNote(): Promise<void> {
         try {

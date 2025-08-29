@@ -13,6 +13,7 @@ import {
 import { DateContextMenu } from '../components/DateContextMenu';
 import { PriorityContextMenu } from '../components/PriorityContextMenu';
 import { RecurrenceContextMenu } from '../components/RecurrenceContextMenu';
+import { createTaskClickHandler, createTaskHoverHandler } from '../utils/clickHandlers';
 import { ReminderModal } from '../modals/ReminderModal';
 
 export interface TaskCardOptions {
@@ -610,27 +611,25 @@ export function createTaskCard(task: TaskInfo, plugin: TaskNotesPlugin, options:
         metadataLine.style.display = 'none';
     }
     
-    // Add click handlers
-    card.addEventListener('click', async (e) => {
-        if (e.target === card.querySelector('.task-card__checkbox')) {
-            return; // Let checkbox handle its own click
-        }
-        
-        if (e.ctrlKey || e.metaKey) {
-            // Ctrl/Cmd + Click: Open source note
-            const file = plugin.app.vault.getAbstractFileByPath(task.path);
-            if (file instanceof TFile) {
-                plugin.app.workspace.getLeaf(false).openFile(file);
-            }
-        } else {
-            // Left-click: Open edit modal
-            await plugin.openTaskEditModal(task);
+    // Add click handlers with single/double click distinction
+    const { clickHandler, dblclickHandler } = createTaskClickHandler({
+        task,
+        plugin,
+        excludeSelector: '.task-card__checkbox',
+        contextMenuHandler: async (e) => {
+            const path = card.dataset.taskPath;
+            if (!path) return;
+            await showTaskContextMenu(e, path, plugin, targetDate);
         }
     });
+    
+    card.addEventListener('click', clickHandler);
+    card.addEventListener('dblclick', dblclickHandler);
     
     // Right-click: Context menu
     card.addEventListener('contextmenu', async (e) => {
         e.preventDefault();
+        e.stopPropagation(); // Prevent event bubbling to parent task cards
         const path = card.dataset.taskPath;
         if (!path) return;
 
@@ -639,19 +638,7 @@ export function createTaskCard(task: TaskInfo, plugin: TaskNotesPlugin, options:
     });
     
     // Hover preview
-    card.addEventListener('mouseover', (event) => {
-        const file = plugin.app.vault.getAbstractFileByPath(task.path);
-        if (file) {
-            plugin.app.workspace.trigger('hover-link', {
-                event,
-                source: 'tasknotes-task-card',
-                hoverParent: card,
-                targetEl: card,
-                linktext: task.path,
-                sourcePath: task.path
-            });
-        }
-    });
+    card.addEventListener('mouseover', createTaskHoverHandler(task, plugin));
     
     return card;
 }
@@ -1250,15 +1237,24 @@ function renderProjectLinks(container: HTMLElement, projects: string[], plugin: 
         container.appendChild(plusText);
         
         if (isWikilinkProject(project)) {
-            // Extract the note name from [[Note Name]]
-            const noteName = project.slice(2, -2);
+            // Parse the wikilink to separate path and display text
+            const linkContent = project.slice(2, -2);
+            let filePath = linkContent;
+            let displayText = linkContent;
             
-            // Create a clickable link
+            // Handle alias syntax: [[path|alias]]
+            if (linkContent.includes('|')) {
+                const parts = linkContent.split('|');
+                filePath = parts[0];
+                displayText = parts[1];
+            }
+            
+            // Create a clickable link showing the display text (alias if available)
             const linkEl = container.createEl('a', {
                 cls: 'task-card__project-link internal-link',
-                text: noteName,
+                text: displayText,
                 attr: { 
-                    'data-href': noteName,
+                    'data-href': filePath,
                     'role': 'button',
                     'tabindex': '0'
                 }
@@ -1271,17 +1267,17 @@ function renderProjectLinks(container: HTMLElement, projects: string[], plugin: 
                 
                 try {
                     // Resolve the link to get the actual file
-                    const file = plugin.app.metadataCache.getFirstLinkpathDest(noteName, '');
+                    const file = plugin.app.metadataCache.getFirstLinkpathDest(filePath, '');
                     if (file instanceof TFile) {
                         // Open the file in the current leaf
                         await plugin.app.workspace.getLeaf(false).openFile(file);
                     } else {
                         // File not found, show notice
-                        new Notice(`Note "${noteName}" not found`);
+                        new Notice(`Note "${displayText}" not found`);
                     }
                 } catch (error) {
                     console.error('Error opening project link:', error);
-                    new Notice(`Failed to open note "${noteName}"`);
+                    new Notice(`Failed to open note "${displayText}"`);
                 }
             });
             
@@ -1295,14 +1291,14 @@ function renderProjectLinks(container: HTMLElement, projects: string[], plugin: 
             
             // Add hover preview for the project link
             linkEl.addEventListener('mouseover', (event) => {
-                const file = plugin.app.metadataCache.getFirstLinkpathDest(noteName, '');
+                const file = plugin.app.metadataCache.getFirstLinkpathDest(filePath, '');
                 if (file instanceof TFile) {
                     plugin.app.workspace.trigger('hover-link', {
                         event,
                         source: 'tasknotes-project-link',
                         hoverParent: container,
                         targetEl: linkEl,
-                        linktext: noteName,
+                        linktext: filePath,
                         sourcePath: file.path
                     });
                 }

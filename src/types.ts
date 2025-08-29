@@ -30,8 +30,8 @@ export type ColorizeMode = 'tasks' | 'notes' | 'daily';
 export type CalendarDisplayMode = 'month' | 'agenda';
 
 // Task sorting and grouping types
-export type TaskSortKey = 'due' | 'scheduled' | 'priority' | 'title' | 'dateCreated';
-export type TaskGroupKey = 'none' | 'priority' | 'context' | 'project' | 'due' | 'scheduled' | 'status';
+export type TaskSortKey = 'due' | 'scheduled' | 'priority' | 'title' | 'dateCreated' | `user:${string}`;
+export type TaskGroupKey = 'none' | 'priority' | 'context' | 'project' | 'due' | 'scheduled' | 'status' | `user:${string}`;
 export type SortDirection = 'asc' | 'desc';
 
 
@@ -73,7 +73,7 @@ export interface SavedView {
 }
 
 // Property and operator definitions for the advanced filtering system
-export type FilterProperty = 
+export type FilterProperty =
 	// Placeholder for "Select..." option
 	| ''
 	// Text properties
@@ -87,9 +87,11 @@ export type FilterProperty =
 	// Numeric properties
 	| 'timeEstimate'
 	// Special properties
-	| 'recurrence' | 'status.isCompleted';
+	| 'recurrence' | 'status.isCompleted'
+		// Dynamic user-mapped properties
+		| `user:${string}`;
 
-export type FilterOperator = 
+export type FilterOperator =
 	// Basic comparison
 	| 'is' | 'is-not'
 	// Text operators
@@ -101,7 +103,7 @@ export type FilterOperator =
 	// Boolean operators
 	| 'is-checked' | 'is-not-checked'
 	// Numeric operators
-	| 'is-greater-than' | 'is-less-than';
+	| 'is-greater-than' | 'is-less-than' | 'is-greater-than-or-equal' | 'is-less-than-or-equal';
 
 // Property metadata for UI generation
 export interface PropertyDefinition {
@@ -136,7 +138,7 @@ export const FILTER_PROPERTIES: PropertyDefinition[] = [
 	{ id: 'archived', label: 'Archived', category: 'boolean', supportedOperators: ['is-checked', 'is-not-checked'], valueInputType: 'none' },
 	
 	// Numeric properties
-	{ id: 'timeEstimate', label: 'Time Estimate', category: 'numeric', supportedOperators: ['is', 'is-not', 'is-greater-than', 'is-less-than'], valueInputType: 'number' },
+	{ id: 'timeEstimate', label: 'Time Estimate', category: 'numeric', supportedOperators: ['is', 'is-not', 'is-greater-than', 'is-less-than', 'is-greater-than-or-equal', 'is-less-than-or-equal'], valueInputType: 'number' },
 	
 	// Special properties
 	{ id: 'recurrence', label: 'Recurrence', category: 'special', supportedOperators: ['is-empty', 'is-not-empty'], valueInputType: 'none' },
@@ -165,7 +167,9 @@ export const FILTER_OPERATORS: OperatorDefinition[] = [
 	{ id: 'is-checked', label: 'is checked', requiresValue: false },
 	{ id: 'is-not-checked', label: 'is not checked', requiresValue: false },
 	{ id: 'is-greater-than', label: 'is greater than', requiresValue: true },
-	{ id: 'is-less-than', label: 'is less than', requiresValue: true }
+	{ id: 'is-less-than', label: 'is less than', requiresValue: true },
+	{ id: 'is-greater-than-or-equal', label: 'is equal or greater than', requiresValue: true },
+	{ id: 'is-less-than-or-equal', label: 'is equal or less than', requiresValue: true }
 ];
 
 export interface FilterBarConfig {
@@ -193,6 +197,8 @@ export interface FilterOptions {
 	projects: readonly string[];
 	tags: readonly string[];
 	folders: readonly string[];
+	// Dynamic user-defined properties built from settings.userFields
+	userProperties?: readonly PropertyDefinition[];
 }
 
 // Time and date related types
@@ -240,6 +246,7 @@ export interface TaskCreationData extends Partial<TaskInfo> {
     details?: string; // Optional details/description for file content
     parentNote?: string; // Optional parent note name/path for template variable
     creationContext?: 'inline-conversion' | 'manual-creation' | 'api' | 'import' | 'ics-event'; // Context for folder determination
+    customFrontmatter?: Record<string, any>; // Custom frontmatter properties (including user fields)
 }
 
 export interface TimeEntry {

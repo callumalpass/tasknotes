@@ -16,6 +16,7 @@ import { TaskLinkWidget } from './TaskLinkWidget';
 // Define a state effect for task updates
 const taskUpdateEffect = StateEffect.define<{ taskPath?: string }>();
 
+
 // Create a ViewPlugin factory that takes the plugin as a parameter
 export function createTaskLinkViewPlugin(plugin: TaskNotesPlugin) {
     // Track widget instances for updates
@@ -101,7 +102,7 @@ export function createTaskLinkViewPlugin(plugin: TaskNotesPlugin) {
     });
 }
 
-function buildTaskLinkDecorations(state: { doc: { toString(): string; length: number }; selection?: { main: { head: number; anchor: number } } }, plugin: TaskNotesPlugin, activeWidgets: Map<string, TaskLinkWidget>): DecorationSet {
+export function buildTaskLinkDecorations(state: { doc: { toString(): string; length: number }; selection?: { main: { head: number; anchor: number } } }, plugin: TaskNotesPlugin, activeWidgets: Map<string, TaskLinkWidget>): DecorationSet {
     const builder = new RangeSetBuilder<Decoration>();
     
     // Validate inputs
@@ -213,8 +214,9 @@ function buildTaskLinkDecorations(state: { doc: { toString(): string; length: nu
                         continue;
                     }
                     
-                    // Check if cursor is within this link range - if so, skip decoration to show plain text
-                    if (cursorPos !== undefined && cursorPos >= link.start && cursorPos <= link.end) {
+                    // Check if cursor is within link range - if so, skip decoration to show plain text
+                    // Fix: exclude position immediately after ]] to keep overlay visible for right-click context menu
+                    if (cursorPos !== undefined && cursorPos >= link.start && cursorPos < link.end) {
                         console.debug('Cursor is within link range, skipping decoration to show plain text');
                         continue;
                     }
