@@ -162,41 +162,10 @@
 
 /* Projects Container */
 .tasknotes-plugin .stats-view__projects {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: var(--tn-spacing-md);
     margin-top: var(--tn-spacing-sm);
-    max-height: 600px;
-    overflow-y: auto;
-}
-
-/* Project Header */
-.tasknotes-plugin .stats-view__project-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: var(--tn-spacing-sm);
-}
-
-.tasknotes-plugin .stats-view__completion-rate {
-    font-size: var(--tn-font-size-sm);
-    font-weight: var(--tn-font-weight-bold);
-    color: var(--tn-accent-color);
-    background: var(--tn-background-primary);
-    padding: var(--tn-spacing-xs) var(--tn-spacing-sm);
-    border-radius: var(--tn-border-radius-sm);
-    border: 1px solid var(--tn-border-color);
-}
-
-/* Progress Container */
-.tasknotes-plugin .stats-view__progress-container {
-    margin-bottom: var(--tn-spacing-sm);
-}
-
-.tasknotes-plugin .stats-view__progress-label {
-    font-size: var(--tn-font-size-xs);
-    color: var(--tn-text-muted);
-    margin-bottom: var(--tn-spacing-xs);
 }
 
 /* Project Item */
@@ -212,12 +181,87 @@
     border-color: var(--tn-accent-color);
 }
 
-/* Project Name */
+/* Project Header */
+.tasknotes-plugin .stats-view__project-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--tn-spacing-sm);
+}
+
 .tasknotes-plugin .stats-view__project-name {
     font-size: var(--tn-font-size-md);
     font-weight: var(--tn-font-weight-semibold);
     color: var(--tn-text-normal);
-    margin-bottom: var(--tn-spacing-sm);
+}
+
+/* Project Content Grid */
+.tasknotes-plugin .stats-view__project-content-grid {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: var(--tn-spacing-md);
+    align-items: center;
+}
+
+/* Progress Circle */
+.tasknotes-plugin .stats-view__progress-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--tn-spacing-xs);
+    padding: var(--tn-spacing-sm);
+}
+
+.tasknotes-plugin .stats-view__progress-circle-svg {
+    transform: rotate(-90deg);
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+}
+
+.tasknotes-plugin .stats-view__progress-circle-bg {
+    fill: none;
+    stroke: var(--background-modifier-border);
+    stroke-width: 4;
+    opacity: 0.3;
+}
+
+.tasknotes-plugin .stats-view__progress-circle-fg {
+    fill: none;
+    stroke: var(--interactive-accent);
+    stroke-width: 4;
+    stroke-linecap: round;
+    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    filter: brightness(1.1);
+    opacity: 1;
+}
+
+/* Hover effect for progress circle */
+.tasknotes-plugin .stats-view__project-item:hover .stats-view__progress-circle-fg {
+    stroke-width: 5;
+    filter: brightness(1.2) saturate(1.1);
+}
+
+.tasknotes-plugin .stats-view__progress-circle-text {
+    font-size: 14px;
+    font-weight: var(--tn-font-weight-bold);
+    fill: var(--tn-text-normal);
+    transform: rotate(90deg);
+    transform-origin: center;
+    text-anchor: middle;
+    dominant-baseline: central;
+}
+
+.tasknotes-plugin .stats-view__progress-label {
+    font-size: var(--tn-font-size-xs);
+    color: var(--tn-text-muted);
+    font-weight: var(--tn-font-weight-medium);
+    text-align: center;
+}
+
+/* Stats Container */
+.tasknotes-plugin .stats-view__stats-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--tn-spacing-sm);
 }
 
 /* Project Stats Container */
@@ -406,6 +450,38 @@
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
+}
+
+/* Special styling for "No Project" items */
+.tasknotes-plugin .stats-view__project-item--no-project {
+    background: linear-gradient(135deg, var(--tn-background-modifier-border), var(--tn-background-secondary));
+    border: 1px dashed var(--tn-text-muted);
+    opacity: 0.8;
+}
+
+.tasknotes-plugin .stats-view__project-item--no-project::before {
+    background: linear-gradient(90deg, var(--tn-text-muted), var(--color-base-60));
+    opacity: 0.3;
+}
+
+.tasknotes-plugin .stats-view__project-item--no-project:hover {
+    border-color: var(--tn-text-muted);
+    opacity: 1;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.tasknotes-plugin .stats-view__project-item--no-project .stats-view__project-name {
+    color: var(--tn-text-muted);
+    font-style: italic;
+}
+
+
+.tasknotes-plugin .stats-view__project-item--no-project .stats-view__time-bar-fill {
+    background: linear-gradient(90deg, var(--color-base-60), var(--color-base-70));
+}
+
+.tasknotes-plugin .stats-view__project-item--no-project .stats-view__progress-circle-fg {
+    stroke: var(--color-base-60);
 }
 
 .tasknotes-plugin .stats-view__project-item::before {
@@ -697,7 +773,7 @@
     right: 0;
     bottom: 0;
     background: rgba(0, 0, 0, 0.5);
-    z-index: 1000;
+    z-index: var(--layer-modal);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -831,14 +907,15 @@
 }
 
 /* ================================================
-   RECENT TASKS
+   TASK LISTS IN DRILL-DOWN
    ================================================ */
 
-.tasknotes-plugin .stats-view__recent-tasks {
+.tasknotes-plugin .stats-view__recent-tasks,
+.tasknotes-plugin .stats-view__task-list {
     display: flex;
     flex-direction: column;
     gap: var(--tn-spacing-sm);
-    max-height: 300px;
+    max-height: 400px;
     overflow-y: auto;
 }
 
@@ -866,6 +943,29 @@
 .tasknotes-plugin .stats-view__task-meta {
     font-size: var(--tn-font-size-xs);
     color: var(--tn-text-muted);
+}
+
+/* Section headers and task filters */
+.tasknotes-plugin .stats-view__section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--tn-spacing-md);
+}
+
+.tasknotes-plugin .stats-view__task-filters {
+    display: flex;
+    gap: var(--tn-spacing-sm);
+}
+
+.tasknotes-plugin .stats-view__task-count {
+    font-size: var(--tn-font-size-sm);
+    color: var(--tn-text-muted);
+    margin-bottom: var(--tn-spacing-sm);
+    padding: var(--tn-spacing-xs) var(--tn-spacing-sm);
+    background: var(--tn-background-modifier-border);
+    border-radius: var(--tn-border-radius-sm);
+    text-align: center;
 }
 
 /* ================================================

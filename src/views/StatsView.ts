@@ -6,6 +6,7 @@ import {
     TaskInfo
 } from '../types';
 import { calculateTotalTimeSpent, filterEmptyProjects } from '../utils/helpers';
+import { createTaskCard } from '../ui/TaskCard';
 
 interface ProjectStats {
     projectName: string;
@@ -846,12 +847,16 @@ export class StatsView extends ItemView {
         // Calculate max time for relative bar sizing
         const maxTime = Math.max(...projects.map(p => p.totalTimeSpent));
         
-        // Show top projects (limit to avoid overwhelming UI)
-        const topProjects = projects.slice(0, 20);
-        
-        for (const project of topProjects) {
+        for (const project of projects) {
+            const projectClasses = ['stats-project-item', 'stats-view__project-item', 'stats-view__project-item--clickable'];
+            
+            // Add special class for "No Project" items
+            if (project.projectName === 'No Project') {
+                projectClasses.push('stats-view__project-item--no-project');
+            }
+            
             const projectEl = container.createDiv({ 
-                cls: 'stats-project-item stats-view__project-item stats-view__project-item--clickable' 
+                cls: projectClasses.join(' ')
             });
             
             // Make project clickable for drill-down
@@ -873,23 +878,20 @@ export class StatsView extends ItemView {
             });
             
             const completionRate = project.taskCount > 0 ? (project.completedTaskCount / project.taskCount) * 100 : 0;
-            const rateEl = headerEl.createDiv({ cls: 'stats-view__completion-rate' });
-            rateEl.textContent = `${Math.round(completionRate)}%`;
             
-            // Completion progress bar
-            if (project.taskCount > 0) {
-                const progressContainer = projectEl.createDiv({ cls: 'stats-view__progress-container' });
-                const progressBar = progressContainer.createDiv({ cls: 'stats-view__progress-bar' });
-                const progressFill = progressBar.createDiv({ cls: 'stats-view__progress-fill' });
-                progressFill.style.width = `${completionRate}%`;
-                
-                const progressLabel = progressContainer.createDiv({ cls: 'stats-view__progress-label' });
-                progressLabel.textContent = `${project.completedTaskCount}/${project.taskCount} tasks completed`;
-            }
-            
+            // Main content grid
+            const contentGrid = projectEl.createDiv({ cls: 'stats-view__project-content-grid' });
+
+            // Left side: Progress circle and details
+            const progressContainer = contentGrid.createDiv({ cls: 'stats-view__progress-container' });
+            this.renderProgressCircle(progressContainer, completionRate, project.completedTaskCount, project.taskCount);
+
+            // Right side: Stats and trend
+            const statsContainer = contentGrid.createDiv({ cls: 'stats-view__stats-container' });
+
             // Time visualization bar
             if (project.totalTimeSpent > 0) {
-                const timeBar = projectEl.createDiv({ cls: 'stats-view__time-bar' });
+                const timeBar = statsContainer.createDiv({ cls: 'stats-view__time-bar' });
                 const timeBarVisual = timeBar.createDiv({ cls: 'stats-view__time-bar-visual' });
                 const timeBarFill = timeBarVisual.createDiv({ cls: 'stats-view__time-bar-fill' });
                 const timePercentage = maxTime > 0 ? (project.totalTimeSpent / maxTime) * 100 : 0;
@@ -898,30 +900,9 @@ export class StatsView extends ItemView {
                 const timeLabel = timeBar.createDiv({ cls: 'stats-view__time-bar-label' });
                 timeLabel.textContent = formatTime(project.totalTimeSpent);
             }
-            
-            // Add sparkline trend (load asynchronously)
-            const trendContainer = projectEl.createDiv({ cls: 'stats-view__trend-container' });
-            const trendLabel = trendContainer.createDiv({ cls: 'stats-view__trend-label', text: 'Activity Trend' });
-            const sparklineEl = trendContainer.createDiv({ cls: 'stats-view__sparkline' });
-            
-            // Load trend data synchronously for now - we can optimize later
-            try {
-                const trendData = await this.calculateProjectTrend(project.projectName);
-                console.log(`Trend data for ${project.projectName}:`, trendData.length, 'points, max value:', Math.max(0, ...trendData.map(d => d.value)));
-                
-                if (trendData.length > 0 && trendData.some(d => d.value > 0)) {
-                    this.renderSparkline(sparklineEl, trendData);
-                } else {
-                    console.log(`No trend data for ${project.projectName}, removing container`);
-                    trendContainer.remove();
-                }
-            } catch (error) {
-                console.error('Error loading trend data:', error);
-                trendContainer.remove();
-            }
-            
+
             // Additional stats
-            const statsEl = projectEl.createDiv({ cls: 'project-stats stats-view__project-stats' });
+            const statsEl = statsContainer.createDiv({ cls: 'project-stats stats-view__project-stats' });
             
             if (project.lastActivity) {
                 const activityEl = statsEl.createDiv({ cls: 'project-stat stats-view__project-stat' });
@@ -932,15 +913,69 @@ export class StatsView extends ItemView {
                 const avgEl = statsEl.createDiv({ cls: 'project-stat stats-view__project-stat' });
                 avgEl.textContent = `Avg: ${formatTime(project.avgTimePerTask)}/task`;
             }
+
+            // Add sparkline trend (load asynchronously)
+            const trendContainer = statsContainer.createDiv({ cls: 'stats-view__trend-container' });
+            const sparklineEl = trendContainer.createDiv({ cls: 'stats-view__sparkline' });
+            
+            // Load trend data synchronously for now - we can optimize later
+            try {
+                const trendData = await this.calculateProjectTrend(project.projectName);
+                if (trendData.length > 0 && trendData.some(d => d.value > 0)) {
+                    this.renderSparkline(sparklineEl, trendData);
+                } else {
+                    trendContainer.remove();
+                }
+            } catch (error) {
+                console.error('Error loading trend data:', error);
+                trendContainer.remove();
+            }
         }
-        
-        // Show total count if there are more projects
-        if (projects.length > 20) {
-            const moreEl = container.createDiv({ 
-                cls: 'stats-more-projects stats-view__more-projects',
-                text: `... and ${projects.length - 20} more projects`
-            });
-        }
+    }
+
+    private renderProgressCircle(container: HTMLElement, percentage: number, completed: number, total: number) {
+        const size = 60;
+        const strokeWidth = 5;
+        const radius = (size - strokeWidth) / 2;
+        const circumference = 2 * Math.PI * radius;
+        const offset = circumference - (percentage / 100) * circumference;
+
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('width', size.toString());
+        svg.setAttribute('height', size.toString());
+        svg.setAttribute('viewBox', `0 0 ${size} ${size}`);
+        svg.classList.add('stats-view__progress-circle-svg');
+
+        const backgroundCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        backgroundCircle.setAttribute('cx', (size / 2).toString());
+        backgroundCircle.setAttribute('cy', (size / 2).toString());
+        backgroundCircle.setAttribute('r', radius.toString());
+        backgroundCircle.classList.add('stats-view__progress-circle-bg');
+
+        const foregroundCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        foregroundCircle.setAttribute('cx', (size / 2).toString());
+        foregroundCircle.setAttribute('cy', (size / 2).toString());
+        foregroundCircle.setAttribute('r', radius.toString());
+        foregroundCircle.setAttribute('stroke-dasharray', `${circumference} ${circumference}`);
+        foregroundCircle.setAttribute('stroke-dashoffset', offset.toString());
+        foregroundCircle.classList.add('stats-view__progress-circle-fg');
+
+        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        text.setAttribute('x', '50%');
+        text.setAttribute('y', '50%');
+        text.setAttribute('dy', '0.3em');
+        text.setAttribute('text-anchor', 'middle');
+        text.classList.add('stats-view__progress-circle-text');
+        text.textContent = `${Math.round(percentage)}%`;
+
+        svg.appendChild(backgroundCircle);
+        svg.appendChild(foregroundCircle);
+        svg.appendChild(text);
+
+        container.appendChild(svg);
+
+        const label = container.createDiv({ cls: 'stats-view__progress-label' });
+        label.textContent = `${completed}/${total} tasks`;
     }
     
     /**
@@ -1077,8 +1112,8 @@ export class StatsView extends ItemView {
         console.log('Modal backdrop style position:', window.getComputedStyle(backdrop).position);
         console.log('Modal backdrop style z-index:', window.getComputedStyle(backdrop).zIndex);
         
-        // Create modal content
-        const modal = backdrop.createDiv({ cls: 'stats-view__modal' });
+        // Create modal content with proper CSS scope for TaskCard components
+        const modal = backdrop.createDiv({ cls: 'stats-view__modal tasknotes-plugin' });
         console.log('Modal created:', modal);
         
         // Modal header
@@ -1242,7 +1277,7 @@ export class StatsView extends ItemView {
             return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
         };
         
-        // Overview stats
+        // Overview stats with enhanced metrics
         const overviewEl = container.createDiv({ cls: 'stats-view__drilldown-overview' });
         
         const statsGrid = overviewEl.createDiv({ cls: 'stats-view__drilldown-stats' });
@@ -1259,49 +1294,94 @@ export class StatsView extends ItemView {
         completionCard.createDiv({ cls: 'stats-view__drilldown-value', text: `${Math.round(data.completionRate)}%` });
         completionCard.createDiv({ cls: 'stats-view__drilldown-label', text: 'Completed' });
         
+        // Add average time per task
+        const avgTimeCard = statsGrid.createDiv({ cls: 'stats-view__drilldown-card' });
+        const avgTime = data.tasks.length > 0 ? data.totalTimeSpent / data.tasks.length : 0;
+        avgTimeCard.createDiv({ cls: 'stats-view__drilldown-value', text: formatTime(avgTime) });
+        avgTimeCard.createDiv({ cls: 'stats-view__drilldown-label', text: 'Avg per Task' });
+        
         // Activity chart
         const chartSection = container.createDiv({ cls: 'stats-view__drilldown-section' });
         chartSection.createDiv({ cls: 'stats-view__drilldown-heading', text: 'Activity Over Time (Last 30 Days)' });
         const chartEl = chartSection.createDiv({ cls: 'stats-view__activity-chart' });
         this.renderActivityChart(chartEl, data.timeByDay);
         
-        // Recent activity
-        const recentSection = container.createDiv({ cls: 'stats-view__drilldown-section' });
-        recentSection.createDiv({ cls: 'stats-view__drilldown-heading', text: 'Recent Activity' });
-        const recentList = recentSection.createDiv({ cls: 'stats-view__recent-tasks' });
+        // All project tasks section (improved from just recent activity)
+        const tasksSection = container.createDiv({ cls: 'stats-view__drilldown-section' });
+        const tasksHeaderContainer = tasksSection.createDiv({ cls: 'stats-view__section-header' });
+        tasksHeaderContainer.createDiv({ cls: 'stats-view__drilldown-heading', text: 'All Project Tasks' });
         
-        if (data.recentActivity.length === 0) {
-            recentList.createDiv({ cls: 'stats-view__no-data', text: 'No recent activity' });
-        } else {
-            for (const task of data.recentActivity) {
-                const taskEl = recentList.createDiv({ cls: 'stats-view__recent-task' });
-                
-                const taskTitle = taskEl.createDiv({ cls: 'stats-view__task-title' });
-                taskTitle.textContent = task.title || 'Untitled Task';
-                
-                const taskMeta = taskEl.createDiv({ cls: 'stats-view__task-meta' });
-                
-                const taskTime = calculateTotalTimeSpent(task.timeEntries || []);
-                if (taskTime > 0) {
-                    taskMeta.createSpan({ text: `${formatTime(taskTime)} tracked` });
-                }
-                
-                if (task.completedDate) {
-                    const completedSpan = taskMeta.createSpan({ text: ' • Completed' });
-                    completedSpan.style.color = 'var(--color-green)';
-                }
-                
-                // Make task clickable to open file
-                taskEl.style.cursor = 'pointer';
-                this.registerDomEvent(taskEl, 'click', async () => {
-                    const file = this.plugin.app.vault.getAbstractFileByPath(task.path);
-                    if (file && file instanceof TFile) {
-                        await this.plugin.app.workspace.getLeaf(false).openFile(file);
-                        this.closeDrilldownModal();
-                    }
-                });
+        // Add filter controls for tasks
+        const taskFilters = tasksHeaderContainer.createDiv({ cls: 'stats-view__task-filters' });
+        const statusFilter = taskFilters.createEl('select', { cls: 'stats-view__filter-select' });
+        statusFilter.createEl('option', { value: 'all', text: 'All Tasks' });
+        statusFilter.createEl('option', { value: 'active', text: 'Active Only' });
+        statusFilter.createEl('option', { value: 'completed', text: 'Completed Only' });
+        
+        const taskList = tasksSection.createDiv({ cls: 'stats-view__task-list' });
+        
+        // Function to render filtered tasks
+        const renderTasks = (filterStatus: string = 'all') => {
+            taskList.empty();
+            
+            let filteredTasks = data.tasks;
+            if (filterStatus === 'active') {
+                filteredTasks = data.tasks.filter(task => !this.plugin.statusManager.isCompletedStatus(task.status));
+            } else if (filterStatus === 'completed') {
+                filteredTasks = data.tasks.filter(task => this.plugin.statusManager.isCompletedStatus(task.status));
             }
-        }
+            
+            // Sort tasks: incomplete first, then by last activity
+            filteredTasks.sort((a, b) => {
+                const aCompleted = this.plugin.statusManager.isCompletedStatus(a.status);
+                const bCompleted = this.plugin.statusManager.isCompletedStatus(b.status);
+                
+                if (aCompleted !== bCompleted) {
+                    return aCompleted ? 1 : -1; // Incomplete tasks first
+                }
+                
+                // Sort by last activity (time entries or modification date)
+                const getLastActivity = (task: TaskInfo): number => {
+                    if (task.timeEntries?.length) {
+                        return Math.max(...task.timeEntries.map(e => new Date(e.startTime).getTime()));
+                    }
+                    return task.dateModified ? new Date(task.dateModified).getTime() : 0;
+                };
+                
+                return getLastActivity(b) - getLastActivity(a);
+            });
+            
+            if (filteredTasks.length === 0) {
+                taskList.createDiv({ cls: 'stats-view__no-data', text: 'No tasks found' });
+                return;
+            }
+            
+            // Show task count
+            const countEl = taskList.createDiv({ cls: 'stats-view__task-count' });
+            countEl.textContent = `Showing ${filteredTasks.length} task${filteredTasks.length !== 1 ? 's' : ''}`;
+            
+            for (const task of filteredTasks) {
+                // Create TaskCard with checkbox disabled as requested
+                const taskCard = createTaskCard(task, this.plugin, {
+                    showDueDate: true,
+                    showCheckbox: false,
+                    showArchiveButton: false,
+                    showTimeTracking: true,
+                    showRecurringControls: true,
+                    groupByDate: false
+                });
+                
+                taskList.appendChild(taskCard);
+            }
+        };
+        
+        // Initial render
+        renderTasks('all');
+        
+        // Add filter event listener
+        this.registerDomEvent(statusFilter, 'change', () => {
+            renderTasks(statusFilter.value);
+        });
     }
     
     /**
