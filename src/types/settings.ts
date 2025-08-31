@@ -52,12 +52,17 @@ export interface TaskNotesSettings {
 	useDefaultsOnInstantConvert: boolean;
 	enableNaturalLanguageInput: boolean;
 	nlpDefaultToScheduled: boolean;
+		// NLP status suggestion trigger (empty to disable)
+		statusSuggestionTrigger: string;
+
 	singleClickAction: 'edit' | 'openNote';
 	doubleClickAction: 'edit' | 'openNote' | 'none';
 	// Inline task conversion settings
 	inlineTaskConvertFolder: string; // Folder for inline task conversion, supports {{currentNotePath}}
 	// Performance settings
 	disableNoteIndexing: boolean;
+	/** Optional debounce in milliseconds for inline file suggestions (0 = disabled) */
+	suggestionDebounceMs?: number;
 	// Customization settings
 	fieldMapping: FieldMapping;
 	customStatuses: StatusConfig[];
@@ -135,6 +140,9 @@ export interface ICSIntegrationSettings {
 	defaultNoteTemplate: string;     // Path to template file for notes created from ICS events
 	// Default folders
 	defaultNoteFolder: string;       // Folder for notes created from ICS events
+	// Filename settings for ICS event notes
+	icsNoteFilenameFormat: 'title' | 'zettel' | 'timestamp' | 'custom';
+	customICSNoteFilenameTemplate: string; // Template for custom format
 }
 
 export interface CalendarViewSettings {
@@ -152,6 +160,8 @@ export interface CalendarViewSettings {
 	// Display preferences
 	timeFormat: '12' | '24'; // 12-hour or 24-hour format
 	showWeekends: boolean;
+	// Locale settings
+	locale: string; // Calendar locale (e.g., 'en', 'fa', 'de', etc.) - empty string means auto-detect
 	// Default event type visibility
 	defaultShowScheduled: boolean;
 	defaultShowDue: boolean;

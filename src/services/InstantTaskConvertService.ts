@@ -8,6 +8,7 @@ import { calculateDefaultDate } from '../utils/helpers';
 import { StatusManager } from './StatusManager';
 import { PriorityManager } from './PriorityManager';
 import { dispatchTaskUpdate } from '../editor/TaskLinkOverlay';
+import { splitListPreservingLinksAndQuotes } from '../utils/stringSplit';
 
 export class InstantTaskConvertService {
     private plugin: TaskNotesPlugin;
@@ -220,7 +221,15 @@ export class InstantTaskConvertService {
                 return;
             }
             
-            new Notice(`Task converted: ${parsedData.title}`);
+            // Check if filename was changed due to length constraints
+            const expectedFilename = this.sanitizeTitle(parsedData.title);
+            const actualFilename = file.basename;
+            
+            if (actualFilename.startsWith('task-') && actualFilename !== expectedFilename) {
+                new Notice(`Task converted: "${parsedData.title}" (filename shortened due to length)`);
+            } else {
+                new Notice(`Task converted: ${parsedData.title}`);
+            }
             
             // Trigger immediate refresh of task link overlays to show the inline widget
             await this.refreshTaskLinkOverlays(editor, file);
@@ -314,9 +323,6 @@ export class InstantTaskConvertService {
             return { isValid: false, error: 'Task title cannot be empty.' };
         }
 
-        if (parsedData.title.length > 200) {
-            return { isValid: false, error: 'Task title is too long (max 200 characters).' };
-        }
 
         // Validate against dangerous characters for file operations
         const basicDangerousChars = /[<>:"/\\|?*]/;
@@ -477,7 +483,7 @@ export class InstantTaskConvertService {
         if (this.plugin.settings.useDefaultsOnInstantConvert) {
             const defaults = this.plugin.settings.taskCreationDefaults;
             if (defaults.defaultProjects) {
-                const defaultProjectsArray = defaults.defaultProjects.split(',').map(s => s.trim()).filter(s => s);
+                const defaultProjectsArray = splitListPreservingLinksAndQuotes(defaults.defaultProjects);
                 projectsArray.push(...defaultProjectsArray);
             }
             
@@ -788,7 +794,7 @@ export class InstantTaskConvertService {
                 scheduledTime: nlpResult.scheduledTime,
                 recurrence: nlpResult.recurrence,
                 tags: nlpResult.tags && nlpResult.tags.length > 0 ? nlpResult.tags : undefined,
-                projects: nlpResult.projects && nlpResult.projects.length > 0 ? nlpResult.projects : undefined,
+                projects: nlpResult.projects && nlpResult.projects.length > 0 ? this.resolveProjectLinks(nlpResult.projects) : undefined,
                 contexts: nlpResult.contexts && nlpResult.contexts.length > 0 ? nlpResult.contexts : undefined,
                 // TasksPlugin specific fields that NLP doesn't have
                 startDate: undefined,
@@ -802,6 +808,59 @@ export class InstantTaskConvertService {
         } catch (error) {
             console.debug('NLP fallback parsing failed:', error);
             return null;
+        }
+    }
+
+    /**
+     * Resolve project wikilinks to proper relative links using metadataCache
+     */
+    private resolveProjectLinks(projects: string[]): string[] {
+        try {
+            // Check if we have access to the app interface (might not be available in tests)
+            if (!this.plugin.app?.workspace?.getActiveFile || !this.plugin.app?.metadataCache) {
+                // Fallback: return projects as-is if app interface is not available
+                return projects;
+            }
+            
+            const currentFile = this.plugin.app.workspace.getActiveFile();
+            const sourcePath = currentFile?.path || '';
+            
+            return projects.map(project => {
+                // Check if it's a wikilink format
+                const linkMatch = project.match(/^\[\[([^\]]+)\]\]$/);
+                if (linkMatch) {
+                    const linkPath = linkMatch[1];
+                    
+                    // Handle pipe syntax: "path|display" -> use "path"
+                    let actualPath = linkPath;
+                    if (linkPath.includes('|')) {
+                        actualPath = linkPath.split('|')[0];
+                    }
+                    
+                    try {
+                        // Try to find the file
+                        const file = this.plugin.app.metadataCache.getFirstLinkpathDest(actualPath, sourcePath);
+                        if (file) {
+                            // Generate the proper relative link
+                            const linkText = this.plugin.app.metadataCache.fileToLinktext(file, sourcePath, true);
+                            return `[[${linkText}]]`;
+                        }
+                    } catch (error) {
+                        // If file resolution fails, return the original project
+                        console.debug('Error resolving project link:', error);
+                    }
+                    
+                    // If file not found, return the original project
+                    return project;
+                }
+                
+                // For non-wikilink projects (simple strings), return as-is
+                return project;
+            });
+        } catch (error) {
+            console.debug('Error in resolveProjectLinks:', error);
+            // Fallback: return projects as-is if resolution fails
+            return projects;
         }
     }
 

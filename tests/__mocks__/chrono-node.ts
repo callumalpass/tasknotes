@@ -70,8 +70,19 @@ const mockChrono = {
     const referenceDate = refDate || new Date();
     const results: ParsedResult[] = [];
     
-    // Basic date patterns for testing
+    // Enhanced date patterns for testing - handle time expressions properly
     const patterns = [
+      // Date + time patterns (must come first for longest match)
+      { regex: /\btomorrow\s+at\s+(\d{1,2})\s*pm\b/i, offset: 1, timeFn: (match: RegExpMatchArray) => parseInt(match[1]) + 12 },
+      { regex: /\btomorrow\s+at\s+(\d{1,2})\s*am\b/i, offset: 1, timeFn: (match: RegExpMatchArray) => parseInt(match[1]) },
+      { regex: /\btoday\s+at\s+(\d{1,2})\s*pm\b/i, offset: 0, timeFn: (match: RegExpMatchArray) => parseInt(match[1]) + 12 },
+      { regex: /\btoday\s+at\s+(\d{1,2})\s*am\b/i, offset: 0, timeFn: (match: RegExpMatchArray) => parseInt(match[1]) },
+      { regex: /\byesterday\s+at\s+(\d{1,2})\s*pm\b/i, offset: -1, timeFn: (match: RegExpMatchArray) => parseInt(match[1]) + 12 },
+      { regex: /\byesterday\s+at\s+(\d{1,2})\s*am\b/i, offset: -1, timeFn: (match: RegExpMatchArray) => parseInt(match[1]) },
+      // Due/scheduled patterns with time
+      { regex: /\bdue\s+tomorrow\s+at\s+(\d{1,2})\s*pm\b/i, offset: 1, timeFn: (match: RegExpMatchArray) => parseInt(match[1]) + 12 },
+      { regex: /\bdue\s+tomorrow\s+at\s+(\d{1,2})\s*am\b/i, offset: 1, timeFn: (match: RegExpMatchArray) => parseInt(match[1]) },
+      // Basic date patterns (without time)
       { regex: /\btomorrow\b/i, offset: 1 },
       { regex: /\byesterday\b/i, offset: -1 },
       { regex: /\btoday\b/i, offset: 0 },
@@ -79,9 +90,9 @@ const mockChrono = {
       { regex: /\bnext month\b/i, offset: 30 },
       { regex: /\bin (\d+) days?\b/i, offsetFn: (match: RegExpMatchArray) => parseInt(match[1]) },
       { regex: /\bin (\d+) weeks?\b/i, offsetFn: (match: RegExpMatchArray) => parseInt(match[1]) * 7 },
-      { regex: /(\d{4})-(\d{2})-(\d{2})/i, dateFn: (match: RegExpMatchArray) => 
+      { regex: /(\d{4})-(\d{2})-(\d{2})/i, dateFn: (match: RegExpMatchArray) =>
         new Date(parseInt(match[1]), parseInt(match[2]) - 1, parseInt(match[3])) },
-      { regex: /(\d{1,2})\/(\d{1,2})\/(\d{4})/i, dateFn: (match: RegExpMatchArray) => 
+      { regex: /(\d{1,2})\/(\d{1,2})\/(\d{4})/i, dateFn: (match: RegExpMatchArray) =>
         new Date(parseInt(match[3]), parseInt(match[1]) - 1, parseInt(match[2])) },
     ];
 
@@ -89,7 +100,7 @@ const mockChrono = {
       const match = text.match(pattern.regex);
       if (match) {
         let targetDate: Date;
-        
+
         if (pattern.dateFn) {
           targetDate = pattern.dateFn(match);
         } else if (pattern.offsetFn) {
@@ -102,20 +113,29 @@ const mockChrono = {
         } else {
           continue;
         }
-        
+
+        // Handle time if specified
+        if (pattern.timeFn) {
+          const hour = pattern.timeFn(match);
+          targetDate.setHours(hour, 0, 0, 0);
+        }
+
         // Determine certain components based on pattern
         let certainComponents: string[] = ['year', 'month', 'day'];
-        if (pattern.regex.toString().includes('hour|time|am|pm')) {
+        if (pattern.timeFn || pattern.regex.toString().includes('am|pm')) {
           certainComponents.push('hour', 'minute');
         }
-        
+
         results.push(createMockParsedResult(
-          match[0],
+          match[0], // This now includes the full match like "tomorrow at 3pm"
           targetDate,
           match.index || 0,
           undefined,
           certainComponents
         ));
+
+        // Return first match only (like real chrono-node)
+        break;
       }
     }
     

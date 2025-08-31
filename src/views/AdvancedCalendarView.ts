@@ -20,6 +20,7 @@ import {
     ADVANCED_CALENDAR_VIEW_TYPE,
     EVENT_DATA_CHANGED,
     EVENT_TASK_UPDATED,
+    EVENT_DATE_CHANGED,
     EVENT_TIMEBLOCKING_TOGGLED,
     TaskInfo,
     TimeBlock,
@@ -101,6 +102,7 @@ export class AdvancedCalendarView extends ItemView {
     private showRecurring: boolean;
     private showICSEvents: boolean;
     private showTimeblocks: boolean;
+    private showAllDaySlot: boolean;
     
     // Mobile collapsible header state
     private headerCollapsed = true;
@@ -116,6 +118,7 @@ export class AdvancedCalendarView extends ItemView {
         this.showRecurring = this.plugin.settings.calendarViewSettings.defaultShowRecurring;
         this.showICSEvents = this.plugin.settings.calendarViewSettings.defaultShowICSEvents;
         this.showTimeblocks = this.plugin.settings.calendarViewSettings.defaultShowTimeblocks;
+        this.showAllDaySlot = true; // Default to true to match FullCalendar's default
         
         // Initialize with default query - will be properly set when plugin services are ready
         this.currentQuery = {
@@ -165,6 +168,7 @@ export class AdvancedCalendarView extends ItemView {
             this.showICSEvents = savedPreferences.showICSEvents ?? this.plugin.settings.calendarViewSettings.defaultShowICSEvents;
             this.showTimeblocks = savedPreferences.showTimeblocks ?? this.plugin.settings.calendarViewSettings.defaultShowTimeblocks;
             this.headerCollapsed = savedPreferences.headerCollapsed ?? true;
+            this.showAllDaySlot = savedPreferences.showAllDaySlot ?? true;
         }
 
         // Ensure initialization
@@ -352,6 +356,18 @@ export class AdvancedCalendarView extends ItemView {
                     this.saveViewPreferences();
                     this.refreshEvents();
                 }
+            },
+            {
+                id: 'allDaySlot',
+                label: 'All-day slot',
+                value: this.showAllDaySlot,
+                onChange: (value: boolean) => {
+                    this.showAllDaySlot = value;
+                    this.saveViewPreferences();
+                    if (this.calendar) {
+                        this.calendar.setOption('allDaySlot', value);
+                    }
+                }
             }
         ];
         
@@ -407,6 +423,12 @@ export class AdvancedCalendarView extends ItemView {
                 break;
             case 'timeblocks':
                 this.showTimeblocks = enabled;
+                break;
+            case 'allDaySlot':
+                this.showAllDaySlot = enabled;
+                if (this.calendar) {
+                    this.calendar.setOption('allDaySlot', enabled);
+                }
                 break;
         }
         
@@ -573,6 +595,7 @@ export class AdvancedCalendarView extends ItemView {
             // Time grid configurations
             slotDuration: calendarSettings.slotDuration,
             slotLabelInterval: this.getSlotLabelInterval(calendarSettings.slotDuration),
+            allDaySlot: this.showAllDaySlot,
             
             // Time format
             eventTimeFormat: this.getTimeFormat(calendarSettings.timeFormat),
@@ -615,7 +638,8 @@ export class AdvancedCalendarView extends ItemView {
             showRecurring: this.showRecurring,
             showICSEvents: this.showICSEvents,
             showTimeblocks: this.showTimeblocks,
-            headerCollapsed: this.headerCollapsed
+            headerCollapsed: this.headerCollapsed,
+            showAllDaySlot: this.showAllDaySlot
         };
         this.plugin.viewStateManager.setViewPreferences(ADVANCED_CALENDAR_VIEW_TYPE, preferences);
     }
@@ -642,6 +666,12 @@ export class AdvancedCalendarView extends ItemView {
         }
         if (viewOptions.hasOwnProperty('showTimeblocks')) {
             this.showTimeblocks = viewOptions.showTimeblocks;
+        }
+        if (viewOptions.hasOwnProperty('showAllDaySlot')) {
+            this.showAllDaySlot = viewOptions.showAllDaySlot;
+            if (this.calendar) {
+                this.calendar.setOption('allDaySlot', this.showAllDaySlot);
+            }
         }
 
         // Update the view options in the FilterBar to reflect the loaded state
@@ -725,12 +755,19 @@ export class AdvancedCalendarView extends ItemView {
 
     private getUserLocale(): string {
         // Try to get the user's locale in order of preference:
-        // 1. Browser language (most specific)
-        // 2. Obsidian locale if available 
-        // 3. System language
-        // 4. Default to 'en' as fallback
+        // 1. User's configured locale setting (if set)
+        // 2. Browser language (most specific)
+        // 3. Obsidian locale if available 
+        // 4. System language
+        // 5. Default to 'en' as fallback
         
-        // Check browser language first
+        // Check user's configured locale setting first
+        const userLocale = this.plugin.settings.calendarViewSettings.locale;
+        if (userLocale && userLocale.trim() !== '') {
+            return userLocale.trim();
+        }
+        
+        // Check browser language
         if (navigator.language) {
             return navigator.language;
         }
@@ -1975,7 +2012,7 @@ export class AdvancedCalendarView extends ItemView {
         this.functionListeners = [];
         
         // Listen for data changes
-        this.plugin.emitter.on(EVENT_DATA_CHANGED, async () => {
+        const dataListener = this.plugin.emitter.on(EVENT_DATA_CHANGED, async () => {
             this.refreshEvents();
             // Update FilterBar options when data changes (new properties, contexts, etc.)
             if (this.filterBar) {
@@ -1983,9 +2020,16 @@ export class AdvancedCalendarView extends ItemView {
                 this.filterBar.updateFilterOptions(updatedFilterOptions);
             }
         });
+        this.listeners.push(dataListener);
+        
+        // Listen for date changes to refresh recurring task states
+        const dateChangeListener = this.plugin.emitter.on(EVENT_DATE_CHANGED, async () => {
+            this.refreshEvents();
+        });
+        this.listeners.push(dateChangeListener);
         
         // Listen for task updates
-        this.plugin.emitter.on(EVENT_TASK_UPDATED, async (eventData: any) => {
+        const taskUpdateListener = this.plugin.emitter.on(EVENT_TASK_UPDATED, async (eventData: any) => {
             this.refreshEvents();
             // Update FilterBar options when tasks are updated (may have new properties, contexts, etc.)
             if (this.filterBar) {
@@ -1993,6 +2037,7 @@ export class AdvancedCalendarView extends ItemView {
                 this.filterBar.updateFilterOptions(updatedFilterOptions);
             }
         });
+        this.listeners.push(taskUpdateListener);
         
         // Listen for filter service data changes
         const filterDataListener = this.plugin.filterService.on('data-changed', () => {
@@ -2009,19 +2054,20 @@ export class AdvancedCalendarView extends ItemView {
         }
         
         // Listen for timeblocking toggle changes
-        this.plugin.emitter.on(EVENT_TIMEBLOCKING_TOGGLED, (enabled: boolean) => {
+        const timeblockingListener = this.plugin.emitter.on(EVENT_TIMEBLOCKING_TOGGLED, (enabled: boolean) => {
             // Update visibility and refresh if timeblocking was enabled
             this.showTimeblocks = enabled && this.plugin.settings.calendarViewSettings.defaultShowTimeblocks;
             this.refreshEvents();
             this.setupViewOptions(); // Re-render view options
         });
+        this.listeners.push(timeblockingListener);
 
         // Listen for settings changes to update today highlight and custom view
-        this.plugin.emitter.on('settings-changed', () => {
+        const settingsListener = this.plugin.emitter.on('settings-changed', () => {
             this.updateTodayHighlight();
             this.updateCustomViewConfiguration();
         });
-        
+        this.listeners.push(settingsListener);
     }
 
     /**
@@ -2070,6 +2116,11 @@ export class AdvancedCalendarView extends ItemView {
         
         // Clean up function listeners
         this.functionListeners.forEach(unsubscribe => unsubscribe());
+        this.functionListeners = [];
+
+        // Clean up event listeners
+        this.listeners.forEach(listener => this.plugin.emitter.offref(listener));
+        this.listeners = [];
         
         // Clean up FilterBar
         if (this.filterBar) {

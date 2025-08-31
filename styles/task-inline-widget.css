@@ -15,21 +15,21 @@
     align-items: center;
     gap: 8px;
     white-space: nowrap;
-    
+
     /* Typography - match editor font */
     font-size: var(--editor-font-size, 16px);
     font-family: var(--editor-font-family, var(--font-interface));
-    
+
     /* Visual styling - clean text appearance */
     padding: 2px 4px;
-    
+
     /* Interactivity */
     cursor: pointer;
-    
+
     /* Prevent text selection issues */
     user-select: none;
     -webkit-user-select: none;
-    
+
     /* Ensure proper vertical alignment with text */
     vertical-align: baseline;
     line-height: 1.4;
@@ -305,7 +305,7 @@
 .tasknotes-plugin .task-inline-preview__title {
     overflow: hidden;
     text-overflow: ellipsis;
-    white-space: nowrap;
+    white-space: break-spaces;
     color: var(--text-normal);
     font-weight: 500;
     margin: 0;

@@ -8,6 +8,7 @@ import { PriorityManager } from '../services/PriorityManager';
 import { showConfirmationModal } from '../modals/ConfirmationModal';
 import { showStorageLocationConfirmationModal } from '../modals/StorageLocationConfirmationModal';
 import { ProjectSelectModal } from '../modals/ProjectSelectModal';
+import { splitListPreservingLinksAndQuotes } from '../utils/stringSplit';
 
 
 
@@ -178,6 +179,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 						await this.plugin.saveSettings();
 					});
 			});
+
 
 		new Setting(container)
 			.setName('Instant task convert')
@@ -757,6 +759,20 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 			});
 
 		new Setting(container)
+			.setName('Calendar locale')
+			.setDesc('Calendar locale for date formatting and calendar system (e.g., "en", "fa" for Farsi/Persian, "de" for German). Leave empty to auto-detect from browser.')
+			.addText(text => {
+				text.inputEl.setAttribute('aria-label', 'Calendar locale');
+				return text
+					.setPlaceholder('Auto-detect')
+					.setValue(this.plugin.settings.calendarViewSettings.locale)
+					.onChange(async (value) => {
+						this.plugin.settings.calendarViewSettings.locale = value;
+						await this.plugin.saveSettings();
+					});
+			});
+
+		new Setting(container)
 			.setName('Show week numbers')
 			.setDesc('Display week numbers on the left side of calendar views')
 			.addToggle(toggle => {
@@ -1280,7 +1296,9 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 					if (!this.plugin.settings.icsIntegration) {
 						this.plugin.settings.icsIntegration = {
 							defaultNoteTemplate: '',
-							defaultNoteFolder: ''
+							defaultNoteFolder: '',
+							icsNoteFilenameFormat: 'title',
+							customICSNoteFilenameTemplate: '{title}'
 						};
 					}
 					this.plugin.settings.icsIntegration.defaultNoteTemplate = value;
@@ -1297,12 +1315,66 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 					if (!this.plugin.settings.icsIntegration) {
 						this.plugin.settings.icsIntegration = {
 							defaultNoteTemplate: '',
-							defaultNoteFolder: ''
+							defaultNoteFolder: '',
+							icsNoteFilenameFormat: 'title',
+							customICSNoteFilenameTemplate: '{title}'
 						};
 					}
 					this.plugin.settings.icsIntegration.defaultNoteFolder = value;
 					await this.plugin.saveSettings();
 				}));
+
+		// Filename settings for ICS event notes
+		new Setting(container).setName('Filename format for calendar event notes').setHeading();
+
+		new Setting(container)
+			.setName('Filename format')
+			.setDesc('How to name notes created from calendar events')
+			.addDropdown(dropdown => dropdown
+				.addOptions({
+					'title': 'Event title',
+					'zettel': 'Zettelkasten (YYMMDD + time)',
+					'timestamp': 'Timestamp (YYYY-MM-DD-HHMMSS)',
+					'custom': 'Custom template'
+				})
+				.setValue(this.plugin.settings.icsIntegration?.icsNoteFilenameFormat || 'title')
+				.onChange(async (value: 'title' | 'zettel' | 'timestamp' | 'custom') => {
+					if (!this.plugin.settings.icsIntegration) {
+						this.plugin.settings.icsIntegration = {
+							defaultNoteTemplate: '',
+							defaultNoteFolder: '',
+							icsNoteFilenameFormat: 'title',
+							customICSNoteFilenameTemplate: '{title}'
+						};
+					}
+					this.plugin.settings.icsIntegration.icsNoteFilenameFormat = value;
+					await this.plugin.saveSettings();
+					this.display();
+				}));
+
+		// Custom template setting (conditional)
+		if (this.plugin.settings.icsIntegration?.icsNoteFilenameFormat === 'custom') {
+			new Setting(container)
+				.setName('Custom filename template for ICS notes')
+				.setDesc('Template for custom filename format. Available variables: {title} (event title), {icsEventTitleWithDate} (event title + date), {icsEventLocation}, {icsEventDescription}, {date}, {time}, {timestamp}, etc.')
+				.addText(text => {
+					text.inputEl.setAttribute('aria-label', 'Custom ICS note filename template with variables');
+					return text
+						.setValue(this.plugin.settings.icsIntegration?.customICSNoteFilenameTemplate || '{title}')
+						.onChange(async (value) => {
+							if (!this.plugin.settings.icsIntegration) {
+								this.plugin.settings.icsIntegration = {
+									defaultNoteTemplate: '',
+									defaultNoteFolder: '',
+									icsNoteFilenameFormat: 'title',
+									customICSNoteFilenameTemplate: '{title}'
+								};
+							}
+							this.plugin.settings.icsIntegration.customICSNoteFilenameTemplate = value;
+							await this.plugin.saveSettings();
+						});
+				});
+		}
 	}
 
 	private renderNotificationsTab(): void {
@@ -1592,6 +1664,32 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 				});
 
 		// Hide completed tasks from overdue
+
+			// Status suggestion trigger (NLP)
+			new Setting(container)
+				.setName('Status suggestion trigger')
+				.setDesc('Type this pattern before a status to see suggestions in the task creation input. Leave empty to disable. Avoid @, #, + which are reserved.')
+				.addText(text => {
+					text
+						.setPlaceholder('*')
+						.setValue(this.plugin.settings.statusSuggestionTrigger || '')
+						.onChange(async (value) => {
+							// Normalize and basic validation: keep small length, avoid reserved triggers
+							const trimmed = value.trim();
+							const reserved = ['@', '#', '+'];
+							if (reserved.includes(trimmed)) {
+								new Notice('This trigger conflicts with existing triggers (@, #, +). Please choose another.');
+								return;
+							}
+							if (trimmed.length > 3) {
+								new Notice('Please use a short trigger (max 3 characters).');
+								return;
+							}
+							this.plugin.settings.statusSuggestionTrigger = trimmed; // empty disables
+							await this.plugin.saveSettings();
+						});
+				});
+
 		new Setting(container)
 			.setName('Hide completed tasks from overdue')
 			.setDesc('When enabled, completed tasks will not appear as overdue in the agenda view, even if their due/scheduled date has passed')
@@ -1641,6 +1739,20 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 						new Notice('Note indexing setting changed. Please restart Obsidian or reload the plugin for changes to take effect.');
 					});
 			});
+
+		// Suggestion performance: optional debounce for inline file suggestions
+		new Setting(container)
+			.setName('Debounce inline suggestions (ms)')
+			.setDesc('Optional delay before running inline file suggestions (useful for large vaults). Set 0 to disable.')
+			.addText(text => text
+				.setPlaceholder('0 (disabled)')
+				.setValue(String(this.plugin.settings.suggestionDebounceMs ?? 0))
+				.onChange(async (value) => {
+					const n = parseInt(value, 10);
+					if (isNaN(n) || n < 0) return;
+					this.plugin.settings.suggestionDebounceMs = n;
+					await this.plugin.saveSettings();
+				}));
 
 		// Click behavior settings
 		new Setting(container)
@@ -1762,7 +1874,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 				.setName('User Fields (optional)')
 				.setHeading();
 			container.createEl('p', {
-				text: 'Define one or more custom frontmatter properties to appear as type-aware filter options across views. Each row: Property Name, Display Name, Type.',
+				text: 'Define one or more custom frontmatter properties to appear as type-aware filter options across views. Each row: Display Name, Property Name, Type.',
 				cls: 'settings-help-note'
 			});
 
@@ -1781,8 +1893,8 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 
 			// Column headers
 			const headersRow = container.createDiv('settings-headers-row settings-view__list-headers user-fields');
-			headersRow.createEl('span', { text: 'Property Name', cls: 'settings-column-header settings-view__column-header' });
 			headersRow.createEl('span', { text: 'Display Name', cls: 'settings-column-header settings-view__column-header' });
+			headersRow.createEl('span', { text: 'Property Name', cls: 'settings-column-header settings-view__column-header' });
 			headersRow.createEl('span', { text: 'Type', cls: 'settings-column-header settings-view__column-header' });
 			headersRow.createDiv('settings-header-spacer settings-view__header-spacer'); // For delete button space
 
@@ -1828,18 +1940,6 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 		userFields.forEach((field, index) => {
 			const fieldRow = container.createDiv('settings-item-row settings-view__item-row user-fields');
 
-			// Property Name input
-			const keyInput = fieldRow.createEl('input', {
-				type: 'text',
-				value: field.key || '',
-				cls: 'settings-input key-input settings-view__input settings-view__input--value',
-				attr: {
-					'placeholder': 'effort',
-					'aria-label': `Property name for ${field.displayName || 'user field'}`,
-					'id': `user-field-key-${field.id}`
-				}
-			});
-
 			// Display Name input
 			const nameInput = fieldRow.createEl('input', {
 				type: 'text',
@@ -1849,6 +1949,18 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 					'placeholder': 'Effort',
 					'aria-label': `Display name for ${field.displayName || 'user field'}`,
 					'id': `user-field-name-${field.id}`
+				}
+			});
+
+			// Property Name input
+			const keyInput = fieldRow.createEl('input', {
+				type: 'text',
+				value: field.key || '',
+				cls: 'settings-input key-input settings-view__input settings-view__input--value',
+				attr: {
+					'placeholder': 'effort',
+					'aria-label': `Property name for ${field.displayName || 'user field'}`,
+					'id': `user-field-key-${field.id}`
 				}
 			});
 
@@ -2885,7 +2997,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 			return;
 		}
 
-		const projectStrings = defaultProjects.split(',').map(p => p.trim()).filter(p => p.length > 0);
+		const projectStrings = splitListPreservingLinksAndQuotes(defaultProjects);
 		this.selectedDefaultProjectFiles = [];
 
 		for (const projectString of projectStrings) {

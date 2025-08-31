@@ -1,4 +1,4 @@
-import { App, ButtonComponent, DropdownComponent, Modal, TextComponent, debounce, setTooltip } from 'obsidian';
+import { App, ButtonComponent, DropdownComponent, Modal, TextComponent, debounce, setTooltip, setIcon } from 'obsidian';
 import { FILTER_OPERATORS, FILTER_PROPERTIES, FilterCondition, FilterGroup, FilterNode, FilterOperator, FilterOptions, FilterProperty, FilterQuery, PropertyDefinition, SavedView, TaskGroupKey, TaskSortKey } from '../types';
 
 import { DragDropHandler } from './DragDropHandler';
@@ -6,6 +6,7 @@ import { EventEmitter } from '../utils/EventEmitter';
 import { FilterUtils } from '../utils/FilterUtils';
 import { isValidDateInput } from '../utils/dateUtils';
 import { showConfirmationModal } from '../modals/ConfirmationModal';
+import { DateContextMenu } from '../components/DateContextMenu';
 
 class SaveViewModal extends Modal {
     private name: string;
@@ -1126,6 +1127,25 @@ export class FilterBar extends EventEmitter {
         // Set initial validation state
         this.updateDateInputValidation(textInput, String(condition.value || ''));
 
+        // Date picker icon button
+        const pickerButton = dateContainer.createEl('button', { cls: 'filter-date-picker-button' });
+        setTooltip(pickerButton, 'Pick date & time', { placement: 'top' });
+        setIcon(pickerButton, 'calendar');
+        pickerButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const menu = new DateContextMenu({
+                currentValue: String(condition.value || undefined),
+                onSelect: (value: string | null) => {
+                    textInput.setValue(value || '');
+                    condition.value = value || null;
+                    this.updateDateInputValidation(textInput, textInput.getValue());
+                    this.debouncedEmitQueryChange();
+                }
+            });
+            menu.showAtElement(pickerButton);
+        });
+
         // Add a small help button showing natural language examples
         const helpButton = dateContainer.createEl('button', {
             cls: 'filter-date-help-button',
@@ -1264,7 +1284,8 @@ export class FilterBar extends EventEmitter {
             'scheduled': 'Scheduled Date',
             'priority': 'Priority',
             'title': 'Title',
-            'dateCreated': 'Created Date'
+            'dateCreated': 'Created Date',
+            'tags': 'Tags'
         };
         const sortOptions: Record<string, string> = { ...builtInSortOptions };
         const sortUserProps = this.filterOptions.userProperties || [];
@@ -1296,7 +1317,8 @@ export class FilterBar extends EventEmitter {
             'context': 'Context',
             'project': 'Project',
             'due': 'Due Date',
-            'scheduled': 'Scheduled Date'
+            'scheduled': 'Scheduled Date',
+            'tags': 'Tags'
         };
 
         const options: Record<string, string> = { ...builtInGroupOptions };

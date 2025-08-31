@@ -4,9 +4,11 @@ import { TaskModal } from './TaskModal';
 import { TaskInfo, TaskCreationData } from '../types';
 import { getCurrentTimestamp } from '../utils/dateUtils';
 import { generateTaskFilename, FilenameContext } from '../utils/filenameGenerator';
-import { calculateDefaultDate } from '../utils/helpers';
+import { calculateDefaultDate, sanitizeTags } from '../utils/helpers';
 import { NaturalLanguageParser, ParsedTaskData as NLParsedTaskData } from '../services/NaturalLanguageParser';
+import { StatusSuggestionService, StatusSuggestion } from '../services/StatusSuggestionService';
 import { combineDateAndTime } from '../utils/dateUtils';
+import { splitListPreservingLinksAndQuotes } from '../utils/stringSplit';
 
 export interface TaskCreationOptions {
     prePopulatedValues?: Partial<TaskInfo>;
@@ -38,65 +40,83 @@ interface ContextSuggestion {
     toString(): string;
 }
 
-class NLPSuggest extends AbstractInputSuggest<TagSuggestion | ContextSuggestion | ProjectSuggestion> {
+
+
+class NLPSuggest extends AbstractInputSuggest<TagSuggestion | ContextSuggestion | ProjectSuggestion | StatusSuggestion> {
     private plugin: TaskNotesPlugin;
     private textarea: HTMLTextAreaElement;
-    private currentTrigger: '@' | '#' | '+' | null = null;
-    
+    private currentTrigger: '@' | '#' | '+' | 'status' | null = null;
+
     constructor(app: App, textareaEl: HTMLTextAreaElement, plugin: TaskNotesPlugin) {
         super(app, textareaEl as unknown as HTMLInputElement);
         this.plugin = plugin;
         this.textarea = textareaEl;
     }
-    
-    protected async getSuggestions(query: string): Promise<(TagSuggestion | ContextSuggestion | ProjectSuggestion)[]> {
+
+    protected async getSuggestions(query: string): Promise<(TagSuggestion | ContextSuggestion | ProjectSuggestion | StatusSuggestion)[]> {
         // Get cursor position and text around it
         const cursorPos = this.textarea.selectionStart;
         const textBeforeCursor = this.textarea.value.slice(0, cursorPos);
-        
-        // Find the last @, #, or + before cursor
+
+        // Find the last @, #, +, or custom status trigger before cursor
         const lastAtIndex = textBeforeCursor.lastIndexOf('@');
         const lastHashIndex = textBeforeCursor.lastIndexOf('#');
         const lastPlusIndex = textBeforeCursor.lastIndexOf('+');
-        
+        const statusTrig = (this.plugin.settings.statusSuggestionTrigger || '').trim();
+        const lastStatusIndex = statusTrig ? textBeforeCursor.lastIndexOf(statusTrig) : -1;
+
         let triggerIndex = -1;
-        let trigger: '@' | '#' | '+' | null = null;
-        
-        // Find the most recent trigger
-        if (lastAtIndex >= lastHashIndex && lastAtIndex >= lastPlusIndex && lastAtIndex !== -1) {
-            triggerIndex = lastAtIndex;
-            trigger = '@';
-        } else if (lastHashIndex >= lastPlusIndex && lastHashIndex !== -1) {
-            triggerIndex = lastHashIndex;
-            trigger = '#';
-        } else if (lastPlusIndex !== -1) {
-            triggerIndex = lastPlusIndex;
-            trigger = '+';
-        }
-        
-        // No trigger found or trigger is not at word boundary
-        if (triggerIndex === -1 || (triggerIndex > 0 && /\w/.test(textBeforeCursor[triggerIndex - 1]))) {
+        let trigger: '@' | '#' | '+' | 'status' | null = null;
+
+        // Helper: boundary check for multi-char trigger
+        const isBoundary = (index: number) => {
+            if (index === -1) return false;
+            if (index === 0) return true;
+            const prev = textBeforeCursor[index - 1];
+            return !/\w/.test(prev);
+        };
+
+        // Determine most recent valid trigger by index
+        const candidates: Array<{type: '@'|'#'|'+'|'status'; index: number}> = [
+            { type: '@' as const, index: lastAtIndex },
+            { type: '#' as const, index: lastHashIndex },
+            { type: '+' as const, index: lastPlusIndex },
+            { type: 'status' as const, index: lastStatusIndex }
+        ].filter(c => isBoundary(c.index));
+
+        if (candidates.length === 0) {
             this.currentTrigger = null;
             return [];
         }
-        
-        // Extract the query after the trigger
-        const queryAfterTrigger = textBeforeCursor.slice(triggerIndex + 1);
-        
+
+        candidates.sort((a,b) => b.index - a.index);
+        triggerIndex = candidates[0].index;
+        trigger = candidates[0].type;
+
+        // Extract the query after the trigger (respect multi-char trigger for status)
+        const offset = trigger === 'status' ? (statusTrig?.length || 0) : 1;
+        const queryAfterTrigger = textBeforeCursor.slice(triggerIndex + offset);
+
+        // If '+' trigger already has a completed wikilink (+[[...]]), do not suggest again
+        if (trigger === '+' && /^\[\[[^\]]*\]\]/.test(queryAfterTrigger)) {
+            this.currentTrigger = null;
+            return [];
+        }
+
         // Check if there's a space in the query (which would end the suggestion context)
-        if (queryAfterTrigger.includes(' ') || queryAfterTrigger.includes('\n')) {
+        // For '+' (projects/wikilinks), allow spaces for multi-word fuzzy queries
+        if ((trigger === '@' || trigger === '#' || trigger === 'status') && (queryAfterTrigger.includes(' ') || queryAfterTrigger.includes('\n'))) {
             this.currentTrigger = null;
             return [];
         }
-        
         this.currentTrigger = trigger;
-        
+
         // Get suggestions based on trigger type
         if (trigger === '@') {
             const contexts = this.plugin.cacheManager.getAllContexts();
             return contexts
                 .filter(context => context && typeof context === 'string')
-                .filter(context => 
+                .filter(context =>
                     context.toLowerCase().includes(queryAfterTrigger.toLowerCase())
                 )
                 .slice(0, 10)
@@ -106,11 +126,23 @@ class NLPSuggest extends AbstractInputSuggest<TagSuggestion | ContextSuggestion 
                     type: 'context' as const,
                     toString() { return this.value; }
                 }));
+        } else if (trigger === 'status') {
+            // Use the StatusSuggestionService for status suggestions
+            const statusService = new StatusSuggestionService(
+                this.plugin.settings.customStatuses,
+                this.plugin.settings.customPriorities,
+                this.plugin.settings.nlpDefaultToScheduled
+            );
+            return statusService.getStatusSuggestions(
+                queryAfterTrigger,
+                this.plugin.settings.customStatuses || [],
+                10
+            );
         } else if (trigger === '#') {
             const tags = this.plugin.cacheManager.getAllTags();
             return tags
                 .filter(tag => tag && typeof tag === 'string')
-                .filter(tag => 
+                .filter(tag =>
                     tag.toLowerCase().includes(queryAfterTrigger.toLowerCase())
                 )
                 .slice(0, 10)
@@ -121,134 +153,85 @@ class NLPSuggest extends AbstractInputSuggest<TagSuggestion | ContextSuggestion 
                     toString() { return this.value; }
                 }));
         } else if (trigger === '+') {
-            // Get all markdown files in the vault for wikilink suggestions
-            const markdownFiles = this.plugin.app.vault.getMarkdownFiles();
-            const query = queryAfterTrigger.toLowerCase();
-            
-            const matchingFiles = markdownFiles
-                .map(file => {
-                    const metadata = this.plugin.app.metadataCache.getFileCache(file);
-                    
-                    // Use field mapper to determine title - same logic as the system uses
-                    let title = '';
-                    if (metadata?.frontmatter) {
-                        const mappedData = this.plugin.fieldMapper.mapFromFrontmatter(
-                            metadata.frontmatter,
-                            file.path,
-                            this.plugin.settings.storeTitleInFilename
-                        );
-                        title = typeof mappedData.title === 'string' ? mappedData.title : '';
-                    }
-
-                    return {
-                        file,
-                        basename: file.basename,
-                        title: title,
-                        aliases: metadata?.frontmatter?.aliases || []
-                    };
-                })
-                .filter(item => {
-                    // Search in filename (basename)
-                    if (typeof item.basename === 'string' && item.basename.toLowerCase().includes(query)) return true;
-
-                    // Search in title (guard type)
-                    if (typeof item.title === 'string' && item.title.toLowerCase().includes(query)) return true;
-
-                    // Search in aliases
-                    if (Array.isArray(item.aliases)) {
-                        return item.aliases.some(alias =>
-                            typeof alias === 'string' && alias.toLowerCase().includes(query)
-                        );
-                    }
-
-                    return false;
-                })
-                .map(item => {
-                    // Create display name with title and aliases in brackets
-                    let displayName = item.basename;
-                    const extras: string[] = [];
-
-                    if (typeof item.title === 'string' && item.title.length > 0 && item.title !== item.basename) {
-                        extras.push(`title: ${item.title}`);
-                    }
-
-                    if (Array.isArray(item.aliases) && item.aliases.length > 0) {
-                        const validAliases = item.aliases.filter(alias => typeof alias === 'string');
-                        if (validAliases.length > 0) {
-                            extras.push(`aliases: ${validAliases.join(', ')}`);
-                        }
-                    }
-                    
-                    if (extras.length > 0) {
-                        displayName += ` [${extras.join(' | ')}]`;
-                    }
-                    
-                    return {
-                        basename: item.basename,
-                        displayName: displayName,
-                        type: 'project' as const,
-                        toString() { return this.basename; }
-                    } as ProjectSuggestion;
-                })
-                .slice(0, 20); // Increased from 10 to 20
-                
-            return matchingFiles;
+            // Inline fuzzy: use shared file suggestion helper with multi-word support
+            const { FileSuggestHelper } = await import('../suggest/FileSuggestHelper');
+            const list = await FileSuggestHelper.suggest(this.plugin, queryAfterTrigger);
+            return list.map(item => ({
+                basename: item.insertText,
+                displayName: item.displayText,
+                type: 'project' as const,
+                toString() { return this.basename; }
+            }));
         }
-        
+
         return [];
     }
-    
-    public renderSuggestion(suggestion: TagSuggestion | ContextSuggestion | ProjectSuggestion, el: HTMLElement): void {
+
+    public renderSuggestion(suggestion: TagSuggestion | ContextSuggestion | ProjectSuggestion | StatusSuggestion, el: HTMLElement): void {
         const icon = el.createSpan('nlp-suggest-icon');
-        icon.textContent = this.currentTrigger || '';
-        
+        icon.textContent = this.currentTrigger === 'status' ? (this.plugin.settings.statusSuggestionTrigger || '') : (this.currentTrigger || '');
+
         const text = el.createSpan('nlp-suggest-text');
-        
+
         if (suggestion.type === 'project') {
             // For projects with enhanced display
             text.textContent = suggestion.displayName;
+        } else if (suggestion.type === 'status') {
+            text.textContent = suggestion.display;
         } else {
             // For contexts and tags
             text.textContent = suggestion.display;
         }
     }
-    
-    public selectSuggestion(suggestion: TagSuggestion | ContextSuggestion | ProjectSuggestion): void {
+
+    public selectSuggestion(suggestion: TagSuggestion | ContextSuggestion | ProjectSuggestion | StatusSuggestion): void {
         if (!this.currentTrigger) return;
-        
+
         const cursorPos = this.textarea.selectionStart;
         const textBeforeCursor = this.textarea.value.slice(0, cursorPos);
         const textAfterCursor = this.textarea.value.slice(cursorPos);
-        
-        // Find the last trigger position
-        const lastTriggerIndex = this.currentTrigger === '@' 
-            ? textBeforeCursor.lastIndexOf('@')
-            : this.currentTrigger === '#'
-            ? textBeforeCursor.lastIndexOf('#')
-            : textBeforeCursor.lastIndexOf('+');
-            
+
+        // Find the last trigger position (handle custom status trigger length)
+        let lastTriggerIndex = -1;
+        const statusTrig = (this.plugin.settings.statusSuggestionTrigger || '').trim();
+        if (this.currentTrigger === '@') {
+            lastTriggerIndex = textBeforeCursor.lastIndexOf('@');
+        } else if (this.currentTrigger === '#') {
+            lastTriggerIndex = textBeforeCursor.lastIndexOf('#');
+        } else if (this.currentTrigger === '+') {
+            lastTriggerIndex = textBeforeCursor.lastIndexOf('+');
+        } else if (this.currentTrigger === 'status' && statusTrig) {
+            lastTriggerIndex = textBeforeCursor.lastIndexOf(statusTrig);
+        }
+
         if (lastTriggerIndex === -1) return;
-        
+
         // Get the actual suggestion text to insert
         const suggestionText = suggestion.type === 'project' ? suggestion.basename : suggestion.value;
-        
+
         // Replace the trigger and partial text with the full suggestion
         const beforeTrigger = textBeforeCursor.slice(0, lastTriggerIndex);
-        let replacement = this.currentTrigger + suggestionText;
-        
-        // For project (+) trigger, wrap in wikilink syntax but keep the + sign
+        let replacement = '';
+
         if (this.currentTrigger === '+') {
+            // For project (+) trigger, wrap in wikilink syntax but keep the + sign
             replacement = '+[[' + suggestionText + ']]';
+        } else if (this.currentTrigger === 'status') {
+            // For status: insert the label text (like other suggestions)
+            replacement = suggestion.type === 'status' ? suggestion.label : suggestionText;
+        } else {
+            // For @ and #, keep the trigger and the suggestion
+            replacement = this.currentTrigger + suggestionText;
         }
-        
-        const newText = beforeTrigger + replacement + ' ' + textAfterCursor;
-        
+
+        const newText = beforeTrigger + replacement + (replacement ? ' ' : '') + textAfterCursor;
+
         this.textarea.value = newText;
-        
+
         // Set cursor position after the inserted suggestion
-        const newCursorPos = beforeTrigger.length + replacement.length + 1;
+        const newCursorPos = beforeTrigger.length + replacement.length + (replacement ? 1 : 0);
         this.textarea.setSelectionRange(newCursorPos, newCursorPos);
-        
+
         // Trigger input event to update preview
         this.textarea.dispatchEvent(new Event('input', { bubbles: true }));
         this.textarea.focus();
@@ -258,15 +241,28 @@ class NLPSuggest extends AbstractInputSuggest<TagSuggestion | ContextSuggestion 
 export class TaskCreationModal extends TaskModal {
     private options: TaskCreationOptions;
     private nlParser: NaturalLanguageParser;
+    private statusSuggestionService: StatusSuggestionService;
     private nlInput: HTMLTextAreaElement;
     private nlPreviewContainer: HTMLElement;
     private nlButtonContainer: HTMLElement;
     private nlpSuggest: NLPSuggest;
 
-    constructor(app: App, plugin: TaskNotesPlugin, options: TaskCreationOptions = {}) {
+    constructor(
+        app: App,
+        plugin: TaskNotesPlugin,
+        options: TaskCreationOptions = {},
+        statusSuggestionService?: StatusSuggestionService // Optional for backward compatibility
+    ) {
         super(app, plugin);
         this.options = options;
         this.nlParser = new NaturalLanguageParser(
+            plugin.settings.customStatuses,
+            plugin.settings.customPriorities,
+            plugin.settings.nlpDefaultToScheduled
+        );
+
+        // Use injected service or create default one
+        this.statusSuggestionService = statusSuggestionService || new StatusSuggestionService(
             plugin.settings.customStatuses,
             plugin.settings.customPriorities,
             plugin.settings.nlpDefaultToScheduled
@@ -300,9 +296,9 @@ export class TaskCreationModal extends TaskModal {
 
         // Create collapsible details section
         this.createDetailsSection(container);
-        
+
         // Re-render projects list if pre-populated values were applied or defaults are set
-        if ((this.options.prePopulatedValues && this.options.prePopulatedValues.projects) || 
+        if ((this.options.prePopulatedValues && this.options.prePopulatedValues.projects) ||
             this.selectedProjectFiles.length > 0) {
             this.renderProjectsList();
         }
@@ -313,7 +309,7 @@ export class TaskCreationModal extends TaskModal {
 
     private createNaturalLanguageInput(container: HTMLElement): void {
         const nlContainer = container.createDiv('nl-input-container');
-        
+
         // Create minimalist input field
         this.nlInput = nlContainer.createEl('textarea', {
             cls: 'nl-input',
@@ -368,7 +364,7 @@ export class TaskCreationModal extends TaskModal {
         if (previewData.length > 0 && parsed.title) {
             this.nlPreviewContainer.empty();
             this.nlPreviewContainer.style.display = 'block';
-            
+
             previewData.forEach((item) => {
                 const previewItem = this.nlPreviewContainer.createDiv('nl-preview-item');
                 previewItem.textContent = item.text;
@@ -399,7 +395,7 @@ export class TaskCreationModal extends TaskModal {
             });
 
             // Expand/collapse icon
-            this.createActionIcon(this.actionBar, this.isExpanded ? 'chevron-up' : 'chevron-down', 
+            this.createActionIcon(this.actionBar, this.isExpanded ? 'chevron-up' : 'chevron-down',
                 this.isExpanded ? 'Hide detailed options' : 'Show detailed options', (icon, event) => {
                 this.toggleDetailedForm();
                 // Update icon and tooltip
@@ -454,9 +450,9 @@ export class TaskCreationModal extends TaskModal {
 
 
     private parseAndFillForm(input: string): void {
-        const parsed = this.nlParser.parseInput(input);
+        const parsed = this.statusSuggestionService.extractTaskDataFromInput(input);
         this.applyParsedData(parsed);
-        
+
         // Expand the form to show filled fields
         if (!this.isExpanded) {
             this.expandModal();
@@ -467,20 +463,20 @@ export class TaskCreationModal extends TaskModal {
         if (parsed.title) this.title = parsed.title;
         if (parsed.status) this.status = parsed.status;
         if (parsed.priority) this.priority = parsed.priority;
-        
+
         // Handle due date with time
         if (parsed.dueDate) {
             this.dueDate = parsed.dueTime ? combineDateAndTime(parsed.dueDate, parsed.dueTime) : parsed.dueDate;
         }
-        
+
         // Handle scheduled date with time
         if (parsed.scheduledDate) {
             this.scheduledDate = parsed.scheduledTime ? combineDateAndTime(parsed.scheduledDate, parsed.scheduledTime) : parsed.scheduledDate;
         }
-        
+
         if (parsed.contexts && parsed.contexts.length > 0) this.contexts = parsed.contexts.join(', ');
         // Projects will be handled in the form input update section below
-        if (parsed.tags && parsed.tags.length > 0) this.tags = parsed.tags.join(', ');
+        if (parsed.tags && parsed.tags.length > 0) this.tags = sanitizeTags(parsed.tags.join(', '));
         if (parsed.details) this.details = parsed.details;
         if (parsed.recurrence) this.recurrenceRule = parsed.recurrence;
 
@@ -489,13 +485,13 @@ export class TaskCreationModal extends TaskModal {
         if (this.detailsInput) this.detailsInput.value = this.details;
         if (this.contextsInput) this.contextsInput.value = this.contexts;
         if (this.tagsInput) this.tagsInput.value = this.tags;
-        
+
         // Handle projects differently - they use file selection, not text input
         if (parsed.projects && parsed.projects.length > 0) {
             this.initializeProjectsFromStrings(parsed.projects);
             this.renderProjectsList();
         }
-        
+
         // Update icon states
         this.updateIconStates();
     }
@@ -516,40 +512,40 @@ export class TaskCreationModal extends TaskModal {
         // Initialize with default values from settings
         this.priority = this.plugin.settings.defaultTaskPriority;
         this.status = this.plugin.settings.defaultTaskStatus;
-        
+
         // Apply task creation defaults
         const defaults = this.plugin.settings.taskCreationDefaults;
-        
+
         // Apply default due date
         this.dueDate = calculateDefaultDate(defaults.defaultDueDate);
-        
+
         // Apply default scheduled date based on user settings
         this.scheduledDate = calculateDefaultDate(defaults.defaultScheduledDate);
-        
+
         // Apply default contexts, tags, and projects
         this.contexts = defaults.defaultContexts || '';
         this.tags = defaults.defaultTags || '';
-        
+
         // Apply default projects
         if (defaults.defaultProjects) {
-            const projectStrings = defaults.defaultProjects.split(',').map(p => p.trim()).filter(p => p.length > 0);
+            const projectStrings = splitListPreservingLinksAndQuotes(defaults.defaultProjects);
             if (projectStrings.length > 0) {
                 this.initializeProjectsFromStrings(projectStrings);
             }
         }
-        
+
         // Apply default time estimate
         if (defaults.defaultTimeEstimate && defaults.defaultTimeEstimate > 0) {
             this.timeEstimate = defaults.defaultTimeEstimate;
         }
-        
+
         // Apply default reminders
         if (defaults.defaultReminders && defaults.defaultReminders.length > 0) {
             // Import the conversion function
             const { convertDefaultRemindersToReminders } = await import('../utils/settingsUtils');
             this.reminders = convertDefaultRemindersToReminders(defaults.defaultReminders);
         }
-        
+
         // Apply pre-populated values if provided (overrides defaults)
         if (this.options.prePopulatedValues) {
             this.applyPrePopulatedValues(this.options.prePopulatedValues);
@@ -574,7 +570,7 @@ export class TaskCreationModal extends TaskModal {
             this.renderProjectsList();
         }
         if (values.tags !== undefined) {
-            this.tags = values.tags.filter(tag => tag !== this.plugin.settings.taskTag).join(', ');
+            this.tags = sanitizeTags(values.tags.filter(tag => tag !== this.plugin.settings.taskTag).join(', '));
         }
         if (values.timeEstimate !== undefined) this.timeEstimate = values.timeEstimate;
         if (values.recurrence !== undefined && typeof values.recurrence === 'string') {
@@ -588,7 +584,7 @@ export class TaskCreationModal extends TaskModal {
             const nlContent = this.nlInput.value.trim();
             if (nlContent && !this.title.trim()) {
                 // Only auto-parse if no title has been manually entered
-                const parsed = this.nlParser.parseInput(nlContent);
+                const parsed = this.statusSuggestionService.extractTaskDataFromInput(nlContent);
                 this.applyParsedData(parsed);
             }
         }
@@ -602,8 +598,16 @@ export class TaskCreationModal extends TaskModal {
             const taskData = this.buildTaskData();
             const result = await this.plugin.taskService.createTask(taskData);
 
-            new Notice(`Task "${result.taskInfo.title}" created successfully`);
+            // Check if filename was changed due to length constraints
+            const expectedFilename = result.taskInfo.title.replace(/[<>:"/\\|?*]/g, '').trim();
+            const actualFilename = result.file.basename;
             
+            if (actualFilename.startsWith('task-') && actualFilename !== expectedFilename) {
+                new Notice(`Task "${result.taskInfo.title}" created successfully (filename shortened due to length)`);
+            } else {
+                new Notice(`Task "${result.taskInfo.title}" created successfully`);
+            }
+
             if (this.options.onTaskCreated) {
                 this.options.onTaskCreated(result.taskInfo);
             }
@@ -618,19 +622,15 @@ export class TaskCreationModal extends TaskModal {
 
     private buildTaskData(): Partial<TaskInfo> {
         const now = getCurrentTimestamp();
-        
+
         // Parse contexts, projects, and tags
         const contextList = this.contexts
             .split(',')
             .map(c => c.trim())
             .filter(c => c.length > 0);
-            
-        const projectList = this.projects
-            .split(',')
-            .map(p => p.trim())
-            .filter(p => p.length > 0);
-            
-        const tagList = this.tags
+
+        const projectList = splitListPreservingLinksAndQuotes(this.projects);
+        const tagList = sanitizeTags(this.tags)
             .split(',')
             .map(t => t.trim())
             .filter(t => t.length > 0);
@@ -654,7 +654,9 @@ export class TaskCreationModal extends TaskModal {
             reminders: this.reminders.length > 0 ? this.reminders : undefined,
             creationContext: 'manual-creation', // Mark as manual creation for folder logic
             dateCreated: now,
-            dateModified: now
+            dateModified: now,
+            // Add user fields as custom frontmatter properties
+            customFrontmatter: this.buildCustomFrontmatter()
         };
 
         // Add details if provided
@@ -665,6 +667,19 @@ export class TaskCreationModal extends TaskModal {
         }
 
         return taskData;
+    }
+
+    private buildCustomFrontmatter(): Record<string, any> {
+        const customFrontmatter: Record<string, any> = {};
+
+        // Add user field values to frontmatter
+        for (const [fieldKey, fieldValue] of Object.entries(this.userFields)) {
+            if (fieldValue !== null && fieldValue !== undefined && fieldValue !== '') {
+                customFrontmatter[fieldKey] = fieldValue;
+            }
+        }
+
+        return customFrontmatter;
     }
 
     private generateFilename(taskData: TaskCreationData): string {

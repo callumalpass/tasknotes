@@ -64,7 +64,7 @@ export class SystemController extends BaseController {
 				title: parsedData.title,
 				details: parsedData.details,
 				priority: parsedData.priority,
-				status: parsedData.status || 'todo',
+				status: parsedData.status || this.getDefaultStatus(),
 				tags: parsedData.tags,
 				contexts: parsedData.contexts,
 				projects: parsedData.projects,
@@ -113,7 +113,7 @@ export class SystemController extends BaseController {
 				title: parsedData.title,
 				details: parsedData.details,
 				priority: parsedData.priority,
-				status: parsedData.status || 'todo',
+				status: parsedData.status || this.getDefaultStatus(),
 				tags: parsedData.tags,
 				contexts: parsedData.contexts,
 				projects: parsedData.projects,
@@ -137,7 +137,7 @@ export class SystemController extends BaseController {
 			}
 
 			// Apply task creation defaults
-			this.applyTaskCreationDefaults(taskData);
+			await this.applyTaskCreationDefaults(taskData);
 
 			// Create the task
 			const result = await this.taskService.createTask(taskData);
@@ -194,7 +194,7 @@ export class SystemController extends BaseController {
 		}
 	}
 
-	private applyTaskCreationDefaults(taskData: TaskCreationData): void {
+	private async applyTaskCreationDefaults(taskData: TaskCreationData): Promise<void> {
 		const defaults = this.plugin.settings.taskCreationDefaults;
 
 		// Apply default scheduled date if not provided
@@ -221,6 +221,34 @@ export class SystemController extends BaseController {
 		if (!taskData.timeEstimate && defaults.defaultTimeEstimate > 0) {
 			taskData.timeEstimate = defaults.defaultTimeEstimate;
 		}
+
+		// Apply default tags if not provided
+		if (!taskData.tags && defaults.defaultTags) {
+			taskData.tags = defaults.defaultTags.split(',').map(t => t.trim()).filter(t => t);
+		}
+
+		// Apply default recurrence if not provided
+		if (!taskData.recurrence && defaults.defaultRecurrence && defaults.defaultRecurrence !== 'none') {
+			taskData.recurrence = {
+				frequency: defaults.defaultRecurrence
+			};
+		}
+
+		// Apply default reminders if not provided
+		if (!taskData.reminders && defaults.defaultReminders && defaults.defaultReminders.length > 0) {
+			const { convertDefaultRemindersToReminders } = await import('../utils/settingsUtils');
+			taskData.reminders = convertDefaultRemindersToReminders(defaults.defaultReminders);
+		}
+	}
+
+	private getDefaultStatus(): string {
+		// Get the first status (lowest order) as default, same logic as TaskModal
+		const statusConfigs = this.plugin.settings.customStatuses;
+		if (statusConfigs && statusConfigs.length > 0) {
+			const sortedStatuses = [...statusConfigs].sort((a, b) => a.order - b.order);
+			return sortedStatuses[0].value;
+		}
+		return 'open'; // fallback
 	}
 
 	private generateSwaggerUIHTML(): string {

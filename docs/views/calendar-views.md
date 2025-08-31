@@ -84,6 +84,9 @@ The Advanced Calendar provides several display options that control what types o
 - **Show recurring**: Display recurring task events
 - **Show ICS events**: Display events from imported ICS calendars
 - **Show time entries**: Display time tracking entries
+- **All-day slot**: Show or hide the all-day event area at the top of time grid views (Week, Day, and Custom views)
+
+The **All-day slot** option is particularly useful when you have many all-day tasks on a single date, as hiding it can resolve scrolling issues and make the hourly time slots more accessible. When disabled, all-day events will not be displayed in time grid views, but they will still appear in month view.
 
 These display options are preserved when you save a view, allowing you to create specialized calendar views that show only specific types of events and maintain those preferences across sessions.
 

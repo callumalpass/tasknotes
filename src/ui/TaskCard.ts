@@ -620,6 +620,7 @@ export function createTaskCard(task: TaskInfo, plugin: TaskNotesPlugin, options:
     // Right-click: Context menu
     card.addEventListener('contextmenu', async (e) => {
         e.preventDefault();
+        e.stopPropagation(); // Prevent event bubbling to parent task cards
         const path = card.dataset.taskPath;
         if (!path) return;
 
@@ -1227,15 +1228,24 @@ function renderProjectLinks(container: HTMLElement, projects: string[], plugin: 
         container.appendChild(plusText);
         
         if (isWikilinkProject(project)) {
-            // Extract the note name from [[Note Name]]
-            const noteName = project.slice(2, -2);
+            // Parse the wikilink to separate path and display text
+            const linkContent = project.slice(2, -2);
+            let filePath = linkContent;
+            let displayText = linkContent;
             
-            // Create a clickable link
+            // Handle alias syntax: [[path|alias]]
+            if (linkContent.includes('|')) {
+                const parts = linkContent.split('|');
+                filePath = parts[0];
+                displayText = parts[1];
+            }
+            
+            // Create a clickable link showing the display text (alias if available)
             const linkEl = container.createEl('a', {
                 cls: 'task-card__project-link internal-link',
-                text: noteName,
+                text: displayText,
                 attr: { 
-                    'data-href': noteName,
+                    'data-href': filePath,
                     'role': 'button',
                     'tabindex': '0'
                 }
@@ -1248,17 +1258,17 @@ function renderProjectLinks(container: HTMLElement, projects: string[], plugin: 
                 
                 try {
                     // Resolve the link to get the actual file
-                    const file = plugin.app.metadataCache.getFirstLinkpathDest(noteName, '');
+                    const file = plugin.app.metadataCache.getFirstLinkpathDest(filePath, '');
                     if (file instanceof TFile) {
                         // Open the file in the current leaf
                         await plugin.app.workspace.getLeaf(false).openFile(file);
                     } else {
                         // File not found, show notice
-                        new Notice(`Note "${noteName}" not found`);
+                        new Notice(`Note "${displayText}" not found`);
                     }
                 } catch (error) {
                     console.error('Error opening project link:', error);
-                    new Notice(`Failed to open note "${noteName}"`);
+                    new Notice(`Failed to open note "${displayText}"`);
                 }
             });
             
@@ -1272,14 +1282,14 @@ function renderProjectLinks(container: HTMLElement, projects: string[], plugin: 
             
             // Add hover preview for the project link
             linkEl.addEventListener('mouseover', (event) => {
-                const file = plugin.app.metadataCache.getFirstLinkpathDest(noteName, '');
+                const file = plugin.app.metadataCache.getFirstLinkpathDest(filePath, '');
                 if (file instanceof TFile) {
                     plugin.app.workspace.trigger('hover-link', {
                         event,
                         source: 'tasknotes-project-link',
                         hoverParent: container,
                         targetEl: linkEl,
-                        linktext: noteName,
+                        linktext: filePath,
                         sourcePath: file.path
                     });
                 }

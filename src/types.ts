@@ -23,6 +23,7 @@ export const EVENT_POMODORO_TICK = 'pomodoro-tick';
 export const EVENT_TIMEBLOCKING_TOGGLED = 'timeblocking-toggled';
 export const EVENT_TIMEBLOCK_UPDATED = 'timeblock-updated';
 export const EVENT_TIMEBLOCK_DELETED = 'timeblock-deleted';
+export const EVENT_DATE_CHANGED = 'date-changed';
 
 // Calendar colorization modes
 export type ColorizeMode = 'tasks' | 'notes' | 'daily';
@@ -31,8 +32,8 @@ export type ColorizeMode = 'tasks' | 'notes' | 'daily';
 export type CalendarDisplayMode = 'month' | 'agenda';
 
 // Task sorting and grouping types
-export type TaskSortKey = 'due' | 'scheduled' | 'priority' | 'title' | 'dateCreated' | `user:${string}`;
-export type TaskGroupKey = 'none' | 'priority' | 'context' | 'project' | 'due' | 'scheduled' | 'status' | `user:${string}`;
+export type TaskSortKey = 'due' | 'scheduled' | 'priority' | 'title' | 'dateCreated' | 'tags' | `user:${string}`;
+export type TaskGroupKey = 'none' | 'priority' | 'context' | 'project' | 'due' | 'scheduled' | 'status' | 'tags' | `user:${string}`;
 export type SortDirection = 'asc' | 'desc';
 
 
@@ -246,6 +247,7 @@ export interface TaskCreationData extends Partial<TaskInfo> {
     details?: string; // Optional details/description for file content
     parentNote?: string; // Optional parent note name/path for template variable
     creationContext?: 'inline-conversion' | 'manual-creation' | 'api' | 'import' | 'ics-event'; // Context for folder determination
+    customFrontmatter?: Record<string, any>; // Custom frontmatter properties (including user fields)
 }
 
 export interface TimeEntry {
@@ -477,6 +479,7 @@ export interface CalendarViewPreferences {
 	showICSEvents: boolean;
 	showTimeblocks?: boolean;
 	headerCollapsed?: boolean;
+	showAllDaySlot?: boolean;
 }
 
 // All view-specific preferences

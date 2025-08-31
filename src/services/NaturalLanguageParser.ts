@@ -33,14 +33,18 @@ interface RegexPattern {
 export class NaturalLanguageParser {
     private readonly statusPatterns: RegexPattern[];
     private readonly priorityPatterns: RegexPattern[];
+    private readonly statusConfigs: StatusConfig[];
     private readonly defaultToScheduled: boolean;
 
     constructor(statusConfigs: StatusConfig[] = [], priorityConfigs: PriorityConfig[] = [], defaultToScheduled = true) {
         this.defaultToScheduled = defaultToScheduled;
-        
-        // Pre-compile regex patterns for performance
+
+        // Store status configs for string-based matching
+        this.statusConfigs = statusConfigs;
+
+        // Pre-compile regex patterns for performance (fallback patterns only)
         this.priorityPatterns = this.buildPriorityPatterns(priorityConfigs);
-        this.statusPatterns = this.buildStatusPatterns(statusConfigs);
+        this.statusPatterns = this.buildFallbackStatusPatterns();
     }
 
     /**
@@ -133,17 +137,22 @@ export class NaturalLanguageParser {
         let workingText = text;
         
         // Extract +[[wikilink]] patterns first (more specific)
-        const wikilinkProjectMatches = workingText.match(/\+\[\[[^\]]+\]\]/g);
+        const wikilinkProjectMatches = workingText.match(/\+\[\[.*?\]\]/g);
         if (wikilinkProjectMatches) {
-            result.projects.push(...wikilinkProjectMatches.map(project => project.slice(3, -2))); // Remove +[[ and ]]
-            workingText = this.cleanupWhitespace(workingText.replace(/\+\[\[[^\]]+\]\]/g, ''));
+            result.projects.push(...wikilinkProjectMatches.map(project => {
+                // Remove the + prefix but keep [[ ]]
+                let projectName = project.slice(1); // Remove just the +
+                // Keep the full wikilink as-is for now - resolution will happen in InstantTaskConvertService
+                return projectName;
+            }));
+            workingText = this.cleanupWhitespace(workingText.replace(/\+\[\[.*?\]\]/g, ''));
         }
         
         // Extract +project patterns (simple word projects)
-        const projectMatches = workingText.match(/\+[\w/]+/g);
+        const projectMatches = workingText.match(/\+[\w/-]+/g);
         if (projectMatches) {
             result.projects.push(...projectMatches.map(project => project.substring(1)));
-            workingText = this.cleanupWhitespace(workingText.replace(/\+[\w/]+/g, ''));
+            workingText = this.cleanupWhitespace(workingText.replace(/\+[\w/-]+/g, ''));
         }
         
         return workingText;
@@ -193,16 +202,9 @@ export class NaturalLanguageParser {
     }
 
     /**
-     * Pre-builds status regex patterns from configuration for efficiency.
+     * Pre-builds fallback status regex patterns (simple patterns only).
      */
-    private buildStatusPatterns(configs: StatusConfig[]): RegexPattern[] {
-        if (configs.length > 0) {
-            return configs.flatMap(config => [
-                { regex: new RegExp(`\\b${this.escapeRegex(config.value)}\\b`, 'i'), value: config.value },
-                { regex: new RegExp(`\\b${this.escapeRegex(config.label)}\\b`, 'i'), value: config.value }
-            ]);
-        }
-        // Fallback patterns
+    private buildFallbackStatusPatterns(): RegexPattern[] {
         return [
             { regex: /\b(todo|to do|open)\b/i, value: 'open' },
             { regex: /\b(in progress|in-progress|doing)\b/i, value: 'in-progress' },
@@ -212,15 +214,71 @@ export class NaturalLanguageParser {
         ];
     }
 
-    /** Extracts status using pre-compiled patterns. */
+    /** Extracts status using string-based matching for custom statuses and regex for fallbacks. */
     private extractStatus(text: string, result: ParsedTaskData): string {
+        // First try string-based matching for custom status configs (handles any characters)
+        if (this.statusConfigs.length > 0) {
+            // Sort by length (longest first) to prevent partial matches
+            const sortedConfigs = [...this.statusConfigs].sort((a, b) => b.label.length - a.label.length);
+
+            for (const config of sortedConfigs) {
+                // Try both label and value
+                const candidates = [config.label, config.value];
+
+                for (const candidate of candidates) {
+                    const match = this.findStatusMatch(text, candidate);
+                    if (match) {
+                        result.status = config.value;
+                        return this.cleanupWhitespace(text.replace(match.fullMatch, ''));
+                    }
+                }
+            }
+        }
+
+        // Fallback to regex patterns for built-in status keywords
         for (const pattern of this.statusPatterns) {
             if (pattern.regex.test(text)) {
                 result.status = pattern.value;
                 return this.cleanupWhitespace(text.replace(pattern.regex, ''));
             }
         }
+
         return text;
+    }
+
+    /**
+     * Finds a status match using case-insensitive string search with boundary checking.
+     * Returns the match details or null if no valid match found.
+     */
+    private findStatusMatch(text: string, statusText: string): { fullMatch: string; startIndex: number } | null {
+        const lowerText = text.toLowerCase();
+        const lowerStatus = statusText.toLowerCase();
+
+        let searchIndex = 0;
+        while (true) {
+            const index = lowerText.indexOf(lowerStatus, searchIndex);
+            if (index === -1) break;
+
+            // Check if this is a valid word boundary match
+            const beforeChar = index > 0 ? text[index - 1] : ' ';
+            const afterIndex = index + statusText.length;
+            const afterChar = afterIndex < text.length ? text[afterIndex] : ' ';
+
+            // Valid if surrounded by whitespace or string boundaries
+            const isValidBefore = /\s/.test(beforeChar) || index === 0;
+            const isValidAfter = /\s/.test(afterChar) || afterIndex === text.length;
+
+            if (isValidBefore && isValidAfter) {
+                return {
+                    fullMatch: text.substring(index, afterIndex),
+                    startIndex: index
+                };
+            }
+
+            searchIndex = index + 1;
+        }
+
+        return null;
     }
 
     /**

@@ -42,8 +42,37 @@ export class DateContextMenu {
         
         const dateOptions = this.getDateOptions();
         
-        // Add quick date options
-        dateOptions.forEach(option => {
+        // Add increment/decrement options first (if they exist)
+        const incrementOptions = dateOptions.filter(option => 
+            option.label.startsWith('+') || option.label.startsWith('-')
+        );
+        
+        if (incrementOptions.length > 0) {
+            incrementOptions.forEach(option => {
+                this.menu.addItem(item => {
+                    let title = option.label;
+                    if (option.icon) {
+                        item.setIcon(option.icon);
+                    }
+                    
+                    item.setTitle(title);
+                    
+                    item.onClick(async () => {
+                        this.options.onSelect(option.value, null);
+                    });
+                });
+            });
+            
+            this.menu.addSeparator();
+        }
+
+        // Add basic date options (Today, Tomorrow, etc.)
+        const basicOptions = dateOptions.filter(option => 
+            !option.label.startsWith('+') && !option.label.startsWith('-') &&
+            !['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].includes(option.label)
+        );
+        
+        basicOptions.forEach(option => {
             this.menu.addItem(item => {
                 let title = option.label;
                 if (option.icon) {
@@ -62,6 +91,40 @@ export class DateContextMenu {
                 });
             });
         });
+
+        // Add weekdays submenu
+        const weekdayOptions = dateOptions.filter(option => 
+            ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].includes(option.label)
+        );
+        
+        if (weekdayOptions.length > 0) {
+            this.menu.addSeparator();
+            
+            this.menu.addItem(item => {
+                item.setTitle('Weekdays');
+                item.setIcon('calendar');
+                
+                const submenu = (item as any).setSubmenu();
+                
+                weekdayOptions.forEach(option => {
+                    submenu.addItem((subItem: any) => {
+                        let title = option.label;
+                        
+                        // Highlight current selection with visual indicator
+                        if (option.value && option.value === this.options.currentValue) {
+                            title = `✓ ${option.label}`;
+                        }
+                        
+                        subItem.setTitle(title);
+                        subItem.setIcon('calendar');
+                        
+                        subItem.onClick(async () => {
+                            this.options.onSelect(option.value, null);
+                        });
+                    });
+                });
+            });
+        }
 
         // Add separator before custom options
         this.menu.addSeparator();
@@ -87,10 +150,40 @@ export class DateContextMenu {
         }
     }
 
-    private getDateOptions(): DateOption[] {
+    public getDateOptions(): DateOption[] {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const today = (window as any).moment();
         const options: DateOption[] = [];
+
+        // Add increment/decrement options if there's an existing date
+        if (this.options.currentValue) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const currentDate = (window as any).moment(this.options.currentValue);
+            
+            options.push({
+                label: '+1 day',
+                value: currentDate.clone().add(1, 'day').format('YYYY-MM-DD'),
+                icon: 'plus'
+            });
+
+            options.push({
+                label: '-1 day',
+                value: currentDate.clone().subtract(1, 'day').format('YYYY-MM-DD'),
+                icon: 'minus'
+            });
+
+            options.push({
+                label: '+1 week',
+                value: currentDate.clone().add(1, 'week').format('YYYY-MM-DD'),
+                icon: 'plus-circle'
+            });
+
+            options.push({
+                label: '-1 week',
+                value: currentDate.clone().subtract(1, 'week').format('YYYY-MM-DD'),
+                icon: 'minus-circle'
+            });
+        }
 
         // Today option
         options.push({
@@ -105,6 +198,32 @@ export class DateContextMenu {
             label: 'Tomorrow',
             value: today.clone().add(1, 'day').format('YYYY-MM-DD'),
             icon: 'calendar-plus'
+        });
+
+        // Add weekday options
+        const weekdays = [
+            { name: 'Monday', day: 1 },
+            { name: 'Tuesday', day: 2 },
+            { name: 'Wednesday', day: 3 },
+            { name: 'Thursday', day: 4 },
+            { name: 'Friday', day: 5 },
+            { name: 'Saturday', day: 6 },
+            { name: 'Sunday', day: 0 }
+        ];
+
+        weekdays.forEach(weekday => {
+            let targetDate = today.clone().day(weekday.day);
+            
+            // If the target day is today or has passed this week, get next week's occurrence
+            if (targetDate.isSameOrBefore(today, 'day')) {
+                targetDate = targetDate.add(1, 'week');
+            }
+            
+            options.push({
+                label: weekday.name,
+                value: targetDate.format('YYYY-MM-DD'),
+                icon: 'calendar'
+            });
         });
 
         // This weekend (Saturday)
@@ -283,7 +402,7 @@ export class DateContextMenu {
 
     private addPickerClickHandler(input: HTMLInputElement): void {
         input.addEventListener('click', () => {
-            if ('showPicker' in input) {
+            if ('showPicker' in input && typeof (input as any).showPicker === 'function') {
                 try {
                     (input as any).showPicker();
                 } catch (error) {

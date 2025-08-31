@@ -690,6 +690,94 @@ export class FilterService extends EventEmitter {
     }
 
     /**
+     * Resolve project reference to absolute file path for consistent grouping.
+     * Returns the absolute path if it resolves to a file, otherwise returns the original value.
+     */
+    resolveProjectToAbsolutePath(projectValue: string): string {
+        if (!projectValue || typeof projectValue !== 'string') {
+            return projectValue;
+        }
+
+        if (!this.plugin?.app) {
+            return projectValue;
+        }
+
+        // For wikilink format, resolve to actual file path
+        if (projectValue.startsWith('[[') && projectValue.endsWith(']]')) {
+            const linkContent = projectValue.slice(2, -2);
+            
+            // Parse the wikilink manually since Obsidian's parseLinktext seems unreliable
+            let linkPath = linkContent;
+            
+            const pipeIndex = linkContent.indexOf('|');
+            if (pipeIndex !== -1) {
+                linkPath = linkContent.substring(0, pipeIndex).trim();
+            }
+            
+            // Always try to resolve using Obsidian's API - this handles relative paths correctly
+            const resolvedFile = this.plugin.app.metadataCache.getFirstLinkpathDest(linkPath, '');
+            if (resolvedFile) {
+                // Return the absolute file path (vault-relative) without .md extension
+                return resolvedFile.path.replace(/\.md$/, '');
+            }
+            
+            // If file doesn't exist, clean up the link path (ignore alias part)
+            return linkPath.replace(/\.md$/, '');
+        }
+
+        // Handle pipe syntax like "../projects/Genealogy|Genealogy" - extract path part
+        if (projectValue.includes('|')) {
+            const parts = projectValue.split('|');
+            const pathPart = parts[0].trim();
+            
+            // Try to resolve the path part using Obsidian's API
+            const resolvedFile = this.plugin.app.metadataCache.getFirstLinkpathDest(pathPart, '');
+            if (resolvedFile) {
+                return resolvedFile.path.replace(/\.md$/, '');
+            }
+            
+            return pathPart.replace(/\.md$/, '');
+        }
+
+        // Handle path-like strings - try to resolve if possible
+        if (projectValue.includes('/')) {
+            const resolvedFile = this.plugin.app.metadataCache.getFirstLinkpathDest(projectValue, '');
+            if (resolvedFile) {
+                return resolvedFile.path.replace(/\.md$/, '');
+            }
+            
+            return projectValue.replace(/\.md$/, '');
+        }
+
+        // For plain text projects, try to resolve as well (maybe it's a filename)
+        const resolvedFile = this.plugin.app.metadataCache.getFirstLinkpathDest(projectValue, '');
+        if (resolvedFile) {
+            return resolvedFile.path.replace(/\.md$/, '');
+        }
+
+        // For plain text projects that don't resolve to files, return as-is
+        return projectValue;
+    }
+
+    /**
+     * Get the preferred project format for writing to task frontmatter.
+     * Converts an absolute path back to a proper wikilink format.
+     */
+    getPreferredProjectFormat(absolutePathOrName: string): string {
+        if (!absolutePathOrName || absolutePathOrName === 'No Project') {
+            return absolutePathOrName;
+        }
+        
+        // If it's already an absolute path, return as wikilink
+        if (absolutePathOrName.includes('/') || absolutePathOrName.endsWith('.md')) {
+            return `[[${absolutePathOrName}]]`;
+        }
+        
+        // For non-path values (plain text projects), return as simple wikilink
+        return `[[${absolutePathOrName}]]`;
+    }
+
+    /**
      * Get task paths within a date range
      */
     private async getTaskPathsInDateRange(startDate: string, endDate: string): Promise<Set<string>> {
@@ -816,6 +904,10 @@ export class FilterService extends EventEmitter {
                         break;
                     case 'dateCreated':
                         comparison = this.compareDates(a.dateCreated, b.dateCreated);
+                        break;
+                    case 'tags':
+                        comparison = this.compareTags(a.tags, b.tags);
+                        break;
                 }
             }
 
@@ -862,6 +954,30 @@ export class FilterService extends EventEmitter {
 
         // Higher weight = higher priority, so reverse for ascending order
         return weightB - weightA;
+    }
+
+    /**
+     * Compare two task tag arrays for sorting purposes
+     * Sort by the first tag alphabetically, tasks with no tags go last
+     */
+    private compareTags(tagsA: string[] | undefined, tagsB: string[] | undefined): number {
+        const normalizedTagsA = tagsA && tagsA.length > 0 ? tagsA : [];
+        const normalizedTagsB = tagsB && tagsB.length > 0 ? tagsB : [];
+
+        // If neither has tags, they're equal
+        if (normalizedTagsA.length === 0 && normalizedTagsB.length === 0) {
+            return 0;
+        }
+
+        // Tasks with no tags sort last
+        if (normalizedTagsA.length === 0) return 1;
+        if (normalizedTagsB.length === 0) return -1;
+
+        // Sort by the first tag alphabetically (case-insensitive)
+        const firstTagA = normalizedTagsA[0].toLowerCase();
+        const firstTagB = normalizedTagsB[0].toLowerCase();
+        
+        return firstTagA.localeCompare(firstTagB);
     }
 
     /**
@@ -1004,16 +1120,17 @@ export class FilterService extends EventEmitter {
         const groups = new Map<string, TaskInfo[]>();
 
         for (const task of tasks) {
-            // For projects, handle multiple groups per task
+            // For projects and tags, handle multiple groups per task
             if (groupKey === 'project') {
                 const filteredProjects = filterEmptyProjects(task.projects || []);
                 if (filteredProjects.length > 0) {
-                    // Add task to each project group
+                    // Add task to each project group, using absolute path for consistent grouping
                     for (const project of filteredProjects) {
-                        if (!groups.has(project)) {
-                            groups.set(project, []);
+                        const absolutePath = this.resolveProjectToAbsolutePath(project);
+                        if (!groups.has(absolutePath)) {
+                            groups.set(absolutePath, []);
                         }
-                        groups.get(project)!.push(task);
+                        groups.get(absolutePath)!.push(task);
                     }
                 } else {
                     // Task has no projects - add to "No Project" group
@@ -1022,6 +1139,24 @@ export class FilterService extends EventEmitter {
                         groups.set(noProjectGroup, []);
                     }
                     groups.get(noProjectGroup)!.push(task);
+                }
+            } else if (groupKey === 'tags') {
+                const taskTags = task.tags || [];
+                if (taskTags.length > 0) {
+                    // Add task to each tag group
+                    for (const tag of taskTags) {
+                        if (!groups.has(tag)) {
+                            groups.set(tag, []);
+                        }
+                        groups.get(tag)!.push(task);
+                    }
+                } else {
+                    // Task has no tags - add to "No Tags" group
+                    const noTagsGroup = 'No Tags';
+                    if (!groups.has(noTagsGroup)) {
+                        groups.set(noTagsGroup, []);
+                    }
+                    groups.get(noTagsGroup)!.push(task);
                 }
             } else {
                 // For all other grouping types, use single group assignment
@@ -1375,6 +1510,15 @@ export class FilterService extends EventEmitter {
                     sortedKeys = Array.from(groups.keys()).sort((a, b) => {
                         if (a === 'No Project') return 1;
                         if (b === 'No Project') return -1;
+                        return a.localeCompare(b);
+                    });
+                    break;
+
+                case 'tags':
+                    // Sort tags alphabetically with "No Tags" at the end
+                    sortedKeys = Array.from(groups.keys()).sort((a, b) => {
+                        if (a === 'No Tags') return 1;
+                        if (b === 'No Tags') return -1;
                         return a.localeCompare(b);
                     });
                     break;

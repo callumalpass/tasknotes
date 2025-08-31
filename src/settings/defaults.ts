@@ -121,6 +121,8 @@ export const DEFAULT_CALENDAR_VIEW_SETTINGS: CalendarViewSettings = {
 	// Display preferences
 	timeFormat: '24', // 24-hour format
 	showWeekends: true,
+	// Locale settings
+	locale: '', // Empty string means auto-detect from browser
 	// Default event type visibility
 	defaultShowScheduled: true,
 	defaultShowDue: true,
@@ -141,7 +143,9 @@ export const DEFAULT_CALENDAR_VIEW_SETTINGS: CalendarViewSettings = {
 
 export const DEFAULT_ICS_INTEGRATION_SETTINGS: ICSIntegrationSettings = {
 	defaultNoteTemplate: '',
-	defaultNoteFolder: ''
+	defaultNoteFolder: '',
+	icsNoteFilenameFormat: 'title', // Default to using the event title for ICS notes
+	customICSNoteFilenameTemplate: '{title}' // Simple title template for ICS notes
 };
 
 export const DEFAULT_SETTINGS: TaskNotesSettings = {
@@ -181,12 +185,17 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	useDefaultsOnInstantConvert: true,
 	enableNaturalLanguageInput: true,
 	nlpDefaultToScheduled: true,
+		// NLP status suggestion trigger
+		statusSuggestionTrigger: '*',
+
 	singleClickAction: 'edit',
 	doubleClickAction: 'openNote',
 	// Inline task conversion defaults
 	inlineTaskConvertFolder: '{{currentNotePath}}',
 	// Performance defaults
 	disableNoteIndexing: false,
+	// Suggestion performance defaults
+	suggestionDebounceMs: 0,
 	// Customization defaults
 	fieldMapping: DEFAULT_FIELD_MAPPING,
 	customStatuses: DEFAULT_STATUSES,

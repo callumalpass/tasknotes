@@ -328,17 +328,20 @@ export class MinimalNativeCache extends Events {
             if (!isTask && !this.disableNoteIndexing) {
                 // This is a note - extract date information
                 let noteDate: string | null = null;
-                
-                // Try to extract date from frontmatter
-                if (frontmatter.dateCreated || frontmatter.date) {
-                    const dateValue = frontmatter.dateCreated || frontmatter.date;
-                    try {
-                        const parsed = new Date(dateValue);
-                        if (!isNaN(parsed.getTime())) {
-                            noteDate = parsed.toISOString().split('T')[0];
+
+                // Try to extract date from frontmatter using field mapper
+                if (this.fieldMapper) {
+                    const dateCreatedField = this.fieldMapper.toUserField('dateCreated');
+                    if (frontmatter[dateCreatedField]) {
+                        const dateValue = frontmatter[dateCreatedField];
+                        try {
+                            const parsed = new Date(dateValue);
+                            if (!isNaN(parsed.getTime())) {
+                                noteDate = parsed.toISOString().split('T')[0];
+                            }
+                        } catch (e) {
+                            // Ignore invalid dates
                         }
-                    } catch (e) {
-                        // Ignore invalid dates
                     }
                 }
                 
@@ -780,32 +783,35 @@ export class MinimalNativeCache extends Events {
             
             let noteDate: string | null = null;
             
-            // Try to extract date from frontmatter using parseDate
-            if (frontmatter.dateCreated || frontmatter.date) {
-                const dateValue = frontmatter.dateCreated || frontmatter.date;
-                
-                // Pre-validate the date value to avoid console warnings
-                if (typeof dateValue === 'string' && dateValue.trim()) {
-                    const trimmed = dateValue.trim();
-                    
-                    // Skip invalid time-only formats like "T00:00" that would cause console warnings
-                    if (trimmed.startsWith('T') && /^T\d{2}:\d{2}(:\d{2})?/.test(trimmed)) {
-                        console.debug('Skipping invalid time-only date in note frontmatter:', { 
-                            path: file.path, 
-                            dateValue: trimmed 
-                        });
-                        // Continue to filename parsing
-                    } else {
-                        try {
-                            const parsed = parseDateToUTC(dateValue);
-                            noteDate = formatDateForStorage(parsed);
-                        } catch (e) {
-                            // Ignore invalid dates or parsing errors
-                            console.debug('Failed to parse date from note frontmatter:', { 
-                                path: file.path, 
-                                dateValue, 
-                                error: e instanceof Error ? e.message : String(e)
+            // Try to extract date from frontmatter using field mapper
+            if (this.fieldMapper) {
+                const dateCreatedField = this.fieldMapper.toUserField('dateCreated');
+                if (frontmatter[dateCreatedField]) {
+                    const dateValue = frontmatter[dateCreatedField];
+
+                    // Pre-validate the date value to avoid console warnings
+                    if (typeof dateValue === 'string' && dateValue.trim()) {
+                        const trimmed = dateValue.trim();
+
+                        // Skip invalid time-only formats like "T00:00" that would cause console warnings
+                        if (trimmed.startsWith('T') && /^T\d{2}:\d{2}(:\d{2})?/.test(trimmed)) {
+                            console.debug('Skipping invalid time-only date in note frontmatter:', {
+                                path: file.path,
+                                dateValue: trimmed
                             });
+                            // Continue to filename parsing
+                        } else {
+                            try {
+                                const parsed = parseDateToUTC(dateValue);
+                                noteDate = formatDateForStorage(parsed);
+                            } catch (e) {
+                                // Ignore invalid dates or parsing errors
+                                console.debug('Failed to parse date from note frontmatter:', {
+                                    path: file.path,
+                                    dateValue,
+                                    error: e instanceof Error ? e.message : String(e)
+                                });
+                            }
                         }
                     }
                 }
