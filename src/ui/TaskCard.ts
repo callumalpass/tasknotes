@@ -1019,6 +1019,67 @@ export function updateTaskCard(element: HTMLElement, task: TaskInfo, plugin: Tas
             if (statusConfig) {
                 newStatusDot.style.borderColor = statusConfig.color;
             }
+            
+            // Add click handler to cycle through statuses
+            newStatusDot.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                try {
+                    if (task.recurrence) {
+                        // For recurring tasks, toggle completion for the target date
+                        const updatedTask = await plugin.toggleRecurringTaskComplete(task, targetDate);
+                        
+                        // Immediately update the visual state of the status dot
+                        const newEffectiveStatus = getEffectiveTaskStatus(updatedTask, targetDate);
+                        const newStatusConfig = plugin.statusManager.getStatusConfig(newEffectiveStatus);
+                        const isNowCompleted = plugin.statusManager.isCompletedStatus(newEffectiveStatus);
+                        
+                        // Update status dot border color
+                        if (newStatusConfig) {
+                            newStatusDot.style.borderColor = newStatusConfig.color;
+                        }
+                        
+                        // Update the card's completion state and classes
+                        const cardClasses = ['task-card'];
+                        if (isNowCompleted) {
+                            cardClasses.push('task-card--completed');
+                        }
+                        if (task.archived) cardClasses.push('task-card--archived');
+                        if (plugin.getActiveTimeSession(task)) cardClasses.push('task-card--actively-tracked');
+                        if (task.recurrence) cardClasses.push('task-card--recurring');
+                        if (task.priority) cardClasses.push(`task-card--priority-${task.priority}`);
+                        if (newEffectiveStatus) cardClasses.push(`task-card--status-${newEffectiveStatus}`);
+                        
+                        element.className = cardClasses.join(' ');
+                        element.dataset.status = newEffectiveStatus;
+                        
+                        // Update the title completion styling
+                        const titleEl = element.querySelector('.task-card__title') as HTMLElement;
+                        if (titleEl) {
+                            titleEl.classList.toggle('completed', isNowCompleted);
+                        }
+                    } else {
+                        // For regular tasks, cycle to next status
+                        // Get fresh task data to ensure we have the latest status
+                        const freshTask = await plugin.cacheManager.getTaskInfo(task.path);
+                        if (!freshTask) {
+                            new Notice('Task not found');
+                            return;
+                        }
+                        
+                        const currentStatus = freshTask.status || 'open';
+                        const nextStatus = plugin.statusManager.getNextStatus(currentStatus);
+                        await plugin.updateTaskProperty(freshTask, 'status', nextStatus);
+                    }
+                } catch (error) {
+                    const errorMessage = error instanceof Error ? error.message : String(error);
+                    console.error('Error cycling task status:', {
+                        error: errorMessage,
+                        taskPath: task.path
+                    });
+                    new Notice(`Failed to update task status: ${errorMessage}`);
+                }
+            });
+            
             // Insert at the beginning after checkbox
             const checkbox = element.querySelector('.task-card__checkbox');
             if (checkbox) {
@@ -1044,6 +1105,24 @@ export function updateTaskCard(element: HTMLElement, task: TaskInfo, plugin: Tas
                 attr: { 'aria-label': `Priority: ${priorityConfig.label}` }
             });
             priorityDot.style.borderColor = priorityConfig.color;
+
+            // Add click context menu for priority
+            priorityDot.addEventListener('click', (e) => {
+                e.stopPropagation(); // Don't trigger card click
+                const menu = new PriorityContextMenu({
+                    currentValue: task.priority,
+                    onSelect: async (newPriority) => {
+                        try {
+                            await plugin.updateTaskProperty(task, 'priority', newPriority);
+                        } catch (error) {
+                            console.error('Error updating priority:', error);
+                            new Notice('Failed to update priority');
+                        }
+                    },
+                    plugin: plugin
+                });
+                menu.show(e as MouseEvent);
+            });
             
             // Insert after status dot if it exists, otherwise after checkbox
             const statusDotForInsert = element.querySelector('.task-card__status-dot');
