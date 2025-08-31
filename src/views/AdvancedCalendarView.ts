@@ -256,8 +256,8 @@ export class AdvancedCalendarView extends ItemView {
         this.filterBar.updateSavedViews(savedViews);
         
         // Listen for saved view events
-        this.filterBar.on('saveView', ({ name, query, viewOptions }) => {
-            this.plugin.viewStateManager.saveView(name, query, viewOptions);
+        this.filterBar.on('saveView', ({ name, query, viewOptions, visibleProperties }) => {
+            this.plugin.viewStateManager.saveView(name, query, viewOptions, visibleProperties);
         });
         
         this.filterBar.on('deleteView', (viewId: string) => {
