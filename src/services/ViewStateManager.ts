@@ -128,7 +128,7 @@ export class ViewStateManager extends EventEmitter {
     private loadFromStorage(): void {
         try {
             const stored = this.app.loadLocalStorage(this.storageKey);
-            if (stored) {
+            if (stored && typeof stored === 'string') {
                 this.filterState = JSON.parse(stored);
             }
         } catch (error) {
@@ -154,7 +154,7 @@ export class ViewStateManager extends EventEmitter {
     private loadPreferencesFromStorage(): void {
         try {
             const stored = this.app.loadLocalStorage(this.preferencesStorageKey);
-            if (stored) {
+            if (stored && typeof stored === 'string') {
                 this.viewPreferences = JSON.parse(stored);
             }
         } catch (error) {
@@ -319,7 +319,7 @@ export class ViewStateManager extends EventEmitter {
             
             // Check if we need to migrate from localStorage
             const localStorageData = this.app.loadLocalStorage(this.savedViewsStorageKey);
-            if (localStorageData && this.savedViews.length === 0) {
+            if (localStorageData && typeof localStorageData === 'string' && this.savedViews.length === 0) {
                 console.log('TaskNotes: Migrating saved views from localStorage to plugin data...');
                 
                 // Parse localStorage data

@@ -274,7 +274,7 @@
 
 /* User fields headers: no drag handle or color indicator columns */
 .tasknotes-plugin .settings-view__list-headers.user-fields {
-    grid-template-columns: 1fr 1fr 160px 80px; /* key | name | type | delete spacer */
+    grid-template-columns: 1fr 1fr 160px 80px; /* name | key | type | delete spacer */
 }
 
 .tasknotes-plugin .settings-view__column-header {
@@ -313,7 +313,7 @@
 
 /* User fields rows: simpler grid with wider inputs */
 .tasknotes-plugin .settings-view__item-row.user-fields {
-    grid-template-columns: 1fr 1fr 160px 80px; /* key | name | type | delete */
+    grid-template-columns: 1fr 1fr 160px 80px; /* name | key | type | delete */
     cursor: default;
 }
 .tasknotes-plugin .settings-view__input.key-input,

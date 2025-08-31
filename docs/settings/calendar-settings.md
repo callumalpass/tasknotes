@@ -12,6 +12,8 @@ You can set the **Default View** for the Advanced Calendar, choosing from month,
 
 You can set the **First Day of the Week** and choose whether to **Show Weekends** in the calendar views.
 
+You can also configure the **Calendar Locale** to change the calendar's language and date formatting. This supports different calendar systems like the Jalali (Persian) calendar by setting the locale to "fa". Leave this field empty to automatically detect your browser's locale.
+
 ## Event Type Visibility
 
 You can control which types of events are shown by default in the calendar views, including scheduled tasks, tasks with due dates, recurring tasks, time entries, and events from external calendars.

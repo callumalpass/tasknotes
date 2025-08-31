@@ -16,6 +16,7 @@ import { TaskLinkWidget } from './TaskLinkWidget';
 // Define a state effect for task updates
 const taskUpdateEffect = StateEffect.define<{ taskPath?: string }>();
 
+
 // Create a ViewPlugin factory that takes the plugin as a parameter
 export function createTaskLinkViewPlugin(plugin: TaskNotesPlugin) {
     // Track widget instances for updates
@@ -100,7 +101,7 @@ export function createTaskLinkViewPlugin(plugin: TaskNotesPlugin) {
     });
 }
 
-function buildTaskLinkDecorations(state: { doc: { toString(): string; length: number }; selection?: { main: { head: number; anchor: number } } }, plugin: TaskNotesPlugin, activeWidgets: Map<string, TaskLinkWidget>): DecorationSet {
+export function buildTaskLinkDecorations(state: { doc: { toString(): string; length: number }; selection?: { main: { head: number; anchor: number } } }, plugin: TaskNotesPlugin, activeWidgets: Map<string, TaskLinkWidget>): DecorationSet {
     const builder = new RangeSetBuilder<Decoration>();
     
     // Validate inputs
@@ -201,8 +202,9 @@ function buildTaskLinkDecorations(state: { doc: { toString(): string; length: nu
                         continue;
                     }
                     
-                    // Check if cursor is within this link range - if so, skip decoration to show plain text
-                    if (cursorPos !== undefined && cursorPos >= link.start && cursorPos <= link.end) {
+                    // Check if cursor is within link range - if so, skip decoration to show plain text
+                    // Fix: exclude position immediately after ]] to keep overlay visible for right-click context menu
+                    if (cursorPos !== undefined && cursorPos >= link.start && cursorPos < link.end) {
                         continue;
                     }
                     
@@ -421,8 +423,17 @@ function getTaskInfoSync(filePath: string, plugin: TaskNotesPlugin): TaskInfo | 
 
 export function createTaskLinkOverlay(plugin: TaskNotesPlugin): Extension {
     const viewPlugin = createTaskLinkViewPlugin(plugin);
-    
+
     return viewPlugin;
+}
+
+/**
+ * Stub function for clearing cursor hide state.
+ * In the simplified implementation, there's no state to clear since we use immediate cursor detection.
+ * This function exists for backward compatibility with tests.
+ */
+export function clearCursorHideState(): void {
+    // No-op: simplified implementation doesn't maintain cursor hide state
 }
 
 // Export the effect and utility function for triggering updates
