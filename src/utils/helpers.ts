@@ -670,19 +670,51 @@ export function getNextUncompletedOccurrence(task: TaskInfo): Date | null {
  * Updates the scheduled date of a recurring task to its next uncompleted occurrence
  * Returns the updated scheduled date or null if no next occurrence
  */
-export function updateToNextScheduledOccurrence(task: TaskInfo): string | null {
+export function updateToNextScheduledOccurrence(task: TaskInfo): { scheduled: string | null; due: string | null } {
 	const nextOccurrence = getNextUncompletedOccurrence(task);
-	if (!nextOccurrence) {
-		return null;
-	}
+	let nextScheduleStr: string | null = null;
+	let nextDueStr: string | null = null;
+	let nextDueDate: Date | null = null;
+
+	if (nextOccurrence) {
+		
+		// Calculate the offset between original scheduled and due dates
+		try {
+			const originalScheduled = task.scheduled ? parseDateToUTC(task.scheduled) : null;
+			const originalDue = task.due ? parseDateToUTC(task.due): null;
+
+			if (originalScheduled && originalDue) {
+				// Calculate the time difference
+				const offsetMs = originalDue.getTime() - originalScheduled.getTime();
+				if(nextOccurrence) {
+					// Apply the same offset to get the new due date
+					nextDueDate = new Date(nextOccurrence.getTime() + offsetMs);
+				}
+			}
+		} catch (error) {
+			console.error('Error calculating next due date with offset:', error);
+		}
 	
-	// Preserve time component if original scheduled date had time
-	if (task.scheduled && task.scheduled.includes('T')) {
-		const timePart = task.scheduled.split('T')[1];
-		return `${formatDateForStorage(nextOccurrence)}T${timePart}`;
-	} else {
-		return formatDateForStorage(nextOccurrence);
+		// Preserve time component if original scheduled date had time
+		if (task.scheduled && task.scheduled.includes('T')) {
+			const timePart = task.scheduled.split('T')[1];
+			nextScheduleStr = `${formatDateForStorage(nextOccurrence)}T${timePart}`;
+		} else {
+			nextScheduleStr = formatDateForStorage(nextOccurrence);
+		}
+		if (nextDueDate && task.due && task.due.includes('T')) {
+			const timePart = task.due.split('T')[1];
+			nextDueStr = `${formatDateForStorage(nextDueDate)}T${timePart}`;
+		} else if (nextDueDate) {
+			nextDueStr = formatDateForStorage(nextDueDate);
+		}
 	}
+
+	return {
+		scheduled: nextScheduleStr,
+		due: nextDueStr
+	}
+
 }
 
 /**

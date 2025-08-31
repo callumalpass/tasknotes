@@ -949,9 +949,12 @@ export class TaskService {
             if (updates.recurrence !== undefined && updates.recurrence !== originalTask.recurrence) {
                 // Recurrence rule changed, calculate new scheduled date
                 const tempTask: TaskInfo = { ...originalTask, ...updates };
-                const nextScheduledDate = updateToNextScheduledOccurrence(tempTask);
-                if (nextScheduledDate) {
-                    recurrenceUpdates.scheduled = nextScheduledDate;
+                const nextDates = updateToNextScheduledOccurrence(tempTask);
+                if (nextDates.scheduled) {
+                    recurrenceUpdates.scheduled = nextDates.scheduled;
+                }
+                if (nextDates.due) {
+                    recurrenceUpdates.due = nextDates.due;
                 }
                 
                 // Add DTSTART to recurrence rule if it's missing (scenario 1: editing recurrence rule)
@@ -1230,9 +1233,12 @@ export class TaskService {
         }
 
         // Update scheduled date to next uncompleted occurrence
-        const nextScheduledDate = updateToNextScheduledOccurrence(updatedTask);
-        if (nextScheduledDate) {
-            updatedTask.scheduled = nextScheduledDate;
+        const nextDates = updateToNextScheduledOccurrence(updatedTask);
+        if (nextDates.scheduled) {
+            updatedTask.scheduled = nextDates.scheduled;
+        }
+        if (nextDates.due) {
+            updatedTask.due = nextDates.due;
         }
         
         // Step 2: Persist to file
@@ -1240,6 +1246,7 @@ export class TaskService {
             const completeInstancesField = this.plugin.fieldMapper.toUserField('completeInstances');
             const dateModifiedField = this.plugin.fieldMapper.toUserField('dateModified');
             const scheduledField = this.plugin.fieldMapper.toUserField('scheduled');
+            const dueField = this.plugin.fieldMapper.toUserField('due');
             const recurrenceField = this.plugin.fieldMapper.toUserField('recurrence');
             
             // Ensure complete_instances array exists
@@ -1268,6 +1275,12 @@ export class TaskService {
             if (updatedTask.scheduled) {
                 frontmatter[scheduledField] = updatedTask.scheduled;
             }
+
+            // Update due date if it changed
+            if (updatedTask.due) {
+                frontmatter[dueField] = updatedTask.due;
+            }
+
             
             frontmatter[dateModifiedField] = updatedTask.dateModified;
         });
@@ -1281,6 +1294,9 @@ export class TaskService {
                 };
                 if (updatedTask.scheduled !== freshTask.scheduled) {
                     expectedChanges.scheduled = updatedTask.scheduled;
+                }
+                if (updatedTask.due !== freshTask.due) {
+                    expectedChanges.due = updatedTask.due;
                 }
                 await this.plugin.cacheManager.waitForFreshTaskData(file, expectedChanges);
             }
