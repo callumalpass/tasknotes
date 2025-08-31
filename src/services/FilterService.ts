@@ -904,6 +904,10 @@ export class FilterService extends EventEmitter {
                         break;
                     case 'dateCreated':
                         comparison = this.compareDates(a.dateCreated, b.dateCreated);
+                        break;
+                    case 'tags':
+                        comparison = this.compareTags(a.tags, b.tags);
+                        break;
                 }
             }
 
@@ -950,6 +954,30 @@ export class FilterService extends EventEmitter {
 
         // Higher weight = higher priority, so reverse for ascending order
         return weightB - weightA;
+    }
+
+    /**
+     * Compare two task tag arrays for sorting purposes
+     * Sort by the first tag alphabetically, tasks with no tags go last
+     */
+    private compareTags(tagsA: string[] | undefined, tagsB: string[] | undefined): number {
+        const normalizedTagsA = tagsA && tagsA.length > 0 ? tagsA : [];
+        const normalizedTagsB = tagsB && tagsB.length > 0 ? tagsB : [];
+
+        // If neither has tags, they're equal
+        if (normalizedTagsA.length === 0 && normalizedTagsB.length === 0) {
+            return 0;
+        }
+
+        // Tasks with no tags sort last
+        if (normalizedTagsA.length === 0) return 1;
+        if (normalizedTagsB.length === 0) return -1;
+
+        // Sort by the first tag alphabetically (case-insensitive)
+        const firstTagA = normalizedTagsA[0].toLowerCase();
+        const firstTagB = normalizedTagsB[0].toLowerCase();
+        
+        return firstTagA.localeCompare(firstTagB);
     }
 
     /**
@@ -1092,7 +1120,7 @@ export class FilterService extends EventEmitter {
         const groups = new Map<string, TaskInfo[]>();
 
         for (const task of tasks) {
-            // For projects, handle multiple groups per task
+            // For projects and tags, handle multiple groups per task
             if (groupKey === 'project') {
                 const filteredProjects = filterEmptyProjects(task.projects || []);
                 if (filteredProjects.length > 0) {
@@ -1111,6 +1139,24 @@ export class FilterService extends EventEmitter {
                         groups.set(noProjectGroup, []);
                     }
                     groups.get(noProjectGroup)!.push(task);
+                }
+            } else if (groupKey === 'tags') {
+                const taskTags = task.tags || [];
+                if (taskTags.length > 0) {
+                    // Add task to each tag group
+                    for (const tag of taskTags) {
+                        if (!groups.has(tag)) {
+                            groups.set(tag, []);
+                        }
+                        groups.get(tag)!.push(task);
+                    }
+                } else {
+                    // Task has no tags - add to "No Tags" group
+                    const noTagsGroup = 'No Tags';
+                    if (!groups.has(noTagsGroup)) {
+                        groups.set(noTagsGroup, []);
+                    }
+                    groups.get(noTagsGroup)!.push(task);
                 }
             } else {
                 // For all other grouping types, use single group assignment
@@ -1464,6 +1510,15 @@ export class FilterService extends EventEmitter {
                     sortedKeys = Array.from(groups.keys()).sort((a, b) => {
                         if (a === 'No Project') return 1;
                         if (b === 'No Project') return -1;
+                        return a.localeCompare(b);
+                    });
+                    break;
+
+                case 'tags':
+                    // Sort tags alphabetically with "No Tags" at the end
+                    sortedKeys = Array.from(groups.keys()).sort((a, b) => {
+                        if (a === 'No Tags') return 1;
+                        if (b === 'No Tags') return -1;
                         return a.localeCompare(b);
                     });
                     break;

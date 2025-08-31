@@ -1284,7 +1284,8 @@ export class FilterBar extends EventEmitter {
             'scheduled': 'Scheduled Date',
             'priority': 'Priority',
             'title': 'Title',
-            'dateCreated': 'Created Date'
+            'dateCreated': 'Created Date',
+            'tags': 'Tags'
         };
         const sortOptions: Record<string, string> = { ...builtInSortOptions };
         const sortUserProps = this.filterOptions.userProperties || [];
@@ -1316,7 +1317,8 @@ export class FilterBar extends EventEmitter {
             'context': 'Context',
             'project': 'Project',
             'due': 'Due Date',
-            'scheduled': 'Scheduled Date'
+            'scheduled': 'Scheduled Date',
+            'tags': 'Tags'
         };
 
         const options: Record<string, string> = { ...builtInGroupOptions };
