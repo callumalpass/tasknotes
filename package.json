@@ -15,8 +15,8 @@
 		"test:coverage": "jest --coverage",
 		"test:ci": "jest --ci --coverage --watchAll=false",
 		"test:integration": "jest --config jest.integration.config.js",
-		"test:unit": "jest --testPathPattern=unit",
-		"test:performance": "jest --testPathPattern=performance --detectOpenHandles --passWithNoTests",
+		"test:unit": "jest --testPathPatterns=unit",
+		"test:performance": "jest --testPathPatterns=performance --detectOpenHandles --passWithNoTests",
 		"test:build": "node -e \"console.log('Build test passed - plugin bundle created successfully')\"",
 		"lint": "eslint src/ --ext .ts",
 		"typecheck": "tsc --noEmit"
