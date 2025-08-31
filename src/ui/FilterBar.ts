@@ -1553,60 +1553,51 @@ export class FilterBar extends EventEmitter {
     }
 
     /**
-     * Show properties visibility dropdown
+     * Show properties visibility dropdown with simplified error handling
      */
     private showPropertiesDropdown(event: MouseEvent): void {
         try {
-            console.log('FilterBar: Showing properties dropdown...');
             const dropdown = new PropertyVisibilityDropdown(
                 this.getCurrentVisibleProperties(),
                 this.plugin,
-                (newProperties: string[]) => {
-                    this.updateCurrentViewProperties(newProperties);
-                }
+                this.handlePropertiesUpdate.bind(this)
             );
             dropdown.show(event);
-            console.log('FilterBar: Properties dropdown shown successfully');
         } catch (error) {
             console.error('FilterBar: Error showing properties dropdown:', error);
+            // Show user-friendly error message
+            this.plugin.app.workspace.trigger('notice', 'Failed to show properties menu');
         }
     }
 
     /**
-     * Update properties for the current view (temporary state, like filters)
+     * Handle properties update with validation
      */
-    private updateCurrentViewProperties(properties: string[]): void {
-        // Set temporary properties state (like filters work)
-        this.temporaryVisibleProperties = properties;
+    private handlePropertiesUpdate(properties: string[]): void {
+        if (!Array.isArray(properties)) {
+            console.warn('FilterBar: Invalid properties array received:', properties);
+            return;
+        }
         
-        // Emit properties change event for immediate UI update
+        this.temporaryVisibleProperties = properties;
         this.emit('propertiesChanged', properties);
     }
 
     /**
-     * Get current effective visible properties (temporary, saved view, or defaults)
+     * Get current effective visible properties with fallback chain
      */
     public getCurrentVisibleProperties(): string[] {
-        // Use temporary properties if available
-        if (this.temporaryVisibleProperties) {
-            return this.temporaryVisibleProperties;
-        }
-        
-        // Use saved view properties if available
-        if (this.activeSavedView?.visibleProperties) {
-            return this.activeSavedView.visibleProperties;
-        }
-        
-        // Use plugin defaults as configured in settings - no exceptions or overrides
-        const settingsDefaults = this.plugin.settings.defaultVisibleProperties || [];
-        
-        // If no defaults are configured in settings, use a basic fallback
-        // (but still respect user's choice to exclude status/priority if they set empty array)
-        if (settingsDefaults.length === 0) {
-            return ['status', 'priority', 'due', 'scheduled', 'projects', 'contexts', 'tags'];
-        }
-        
-        return settingsDefaults;
+        return this.temporaryVisibleProperties ||
+               this.activeSavedView?.visibleProperties ||
+               this.plugin.settings.defaultVisibleProperties ||
+               this.getDefaultFallbackProperties();
+    }
+    
+    /**
+     * Get default fallback properties when no configuration exists
+     */
+    private getDefaultFallbackProperties(): string[] {
+        return ['status', 'priority', 'due', 'scheduled', 'projects', 'contexts', 'tags'];
     }
 
     /**

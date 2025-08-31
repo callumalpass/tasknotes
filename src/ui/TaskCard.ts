@@ -85,75 +85,160 @@ function getDefaultVisibleProperties(): string[] {
 }
 
 /**
- * Get property value from a task
+ * Property value extractors for better type safety and error handling
  */
-function getPropertyValue(task: TaskInfo, propertyId: string, plugin: TaskNotesPlugin): any {
-    switch (propertyId) {
-        case 'due':
-            return task.due;
-        case 'scheduled':
-            return task.scheduled;
-        case 'projects':
-            return task.projects;
-        case 'contexts':
-            return task.contexts;
-        case 'tags':
-            return task.tags;
-        case 'timeEstimate':
-            return task.timeEstimate;
-        case 'totalTrackedTime':
-            return task.totalTrackedTime;
-        case 'recurrence':
-            return task.recurrence;
-        case 'completedDate':
-            return task.completedDate;
-        case 'file.ctime':
-            return task.dateCreated;
-        case 'file.mtime':
-            return task.dateModified;
-        default:
-            // Handle user properties
-            if (propertyId.startsWith('user:')) {
-                const fieldId = propertyId.slice(5);
-                // Find the user field definition to get the correct key
-                const userField = plugin.settings.userFields?.find(f => f.id === fieldId);
-                if (userField && userField.key) {
-                    // First try to get value from task object (for backward compatibility)
-                    let value = (task as any)[userField.key];
-                    
-                    // If not found in task object, try to get it from the file's frontmatter
-                    if (value === undefined) {
-                        try {
-                            const file = plugin.app.vault.getAbstractFileByPath(task.path);
-                            if (file instanceof plugin.app.vault.adapter.constructor) {
-                                // This won't work - let me try a different approach
-                            }
-                            
-                            // Try to get the file's cache/metadata
-                            const fileMetadata = plugin.app.metadataCache.getCache(task.path);
-                            if (fileMetadata?.frontmatter) {
-                                value = fileMetadata.frontmatter[userField.key];
-                                console.log(`TaskCard: Found custom property ${propertyId} in frontmatter:`, value);
-                            }
-                        } catch (error) {
-                            console.warn(`TaskCard: Error accessing frontmatter for ${task.path}:`, error);
-                        }
-                    }
-                    
-                    console.log(`TaskCard: Getting custom property ${propertyId} (fieldId: ${fieldId}, key: ${userField.key}) for task ${task.path}:`, value);
-                    return value;
-                } else {
-                    console.log(`TaskCard: No user field found for ${propertyId} (fieldId: ${fieldId})`);
-                    console.log(`TaskCard: Available userFields:`, plugin.settings.userFields);
-                    return null;
-                }
-            }
-            return null;
+const PROPERTY_EXTRACTORS: Record<string, (task: TaskInfo) => any> = {
+    'due': (task) => task.due,
+    'scheduled': (task) => task.scheduled,
+    'projects': (task) => task.projects,
+    'contexts': (task) => task.contexts,
+    'tags': (task) => task.tags,
+    'timeEstimate': (task) => task.timeEstimate,
+    'totalTrackedTime': (task) => task.totalTrackedTime,
+    'recurrence': (task) => task.recurrence,
+    'completedDate': (task) => task.completedDate,
+    'file.ctime': (task) => task.dateCreated,
+    'file.mtime': (task) => task.dateModified
+};
+
+/**
+ * Get property value from a task with improved error handling and type safety
+ */
+function getPropertyValue(task: TaskInfo, propertyId: string, plugin: TaskNotesPlugin): unknown {
+    try {
+        // Use extractors for standard properties
+        if (propertyId in PROPERTY_EXTRACTORS) {
+            return PROPERTY_EXTRACTORS[propertyId](task);
+        }
+        
+        // Handle user properties
+        if (propertyId.startsWith('user:')) {
+            return getUserPropertyValue(task, propertyId, plugin);
+        }
+        
+        return null;
+    } catch (error) {
+        console.warn(`TaskCard: Error getting property ${propertyId}:`, error);
+        return null;
     }
 }
 
 /**
- * Render a single property as a metadata element
+ * Extract user property value with improved error handling and type safety
+ */
+function getUserPropertyValue(task: TaskInfo, propertyId: string, plugin: TaskNotesPlugin): unknown {
+    const fieldId = propertyId.slice(5);
+    const userField = plugin.settings.userFields?.find(f => f.id === fieldId);
+    
+    if (!userField?.key) {
+        return null;
+    }
+    
+    // Try task object first (backward compatibility)
+    let value = (task as unknown as Record<string, unknown>)[userField.key];
+    
+    // Fall back to frontmatter if needed
+    if (value === undefined) {
+        value = getFrontmatterValue(task.path, userField.key, plugin);
+    }
+    
+    return value;
+}
+
+/**
+ * Safely extract frontmatter value with proper typing
+ */
+function getFrontmatterValue(taskPath: string, key: string, plugin: TaskNotesPlugin): unknown {
+    try {
+        const fileMetadata = plugin.app.metadataCache.getCache(taskPath);
+        if (!fileMetadata?.frontmatter) {
+            return undefined;
+        }
+        
+        const frontmatter = fileMetadata.frontmatter as Record<string, unknown>;
+        return frontmatter[key];
+    } catch (error) {
+        console.warn(`TaskCard: Error accessing frontmatter for ${taskPath}:`, error);
+        return undefined;
+    }
+}
+
+/**
+ * Property renderer function type for better type safety
+ */
+type PropertyRenderer = (element: HTMLElement, value: unknown, task: TaskInfo, plugin: TaskNotesPlugin) => void;
+
+/**
+ * Property renderers for cleaner separation of concerns
+ */
+const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
+    'due': (element, value, task, plugin) => {
+        if (typeof value === 'string') {
+            renderDueDateProperty(element, value, task, plugin);
+        }
+    },
+    'scheduled': (element, value, task, plugin) => {
+        if (typeof value === 'string') {
+            renderScheduledDateProperty(element, value, task, plugin);
+        }
+    },
+    'projects': (element, value, _, plugin) => {
+        if (Array.isArray(value)) {
+            renderProjectLinks(element, value as string[], plugin);
+        }
+    },
+    'contexts': (element, value) => {
+        if (Array.isArray(value)) {
+            const validContexts = flattenAndFilter(value);
+            element.textContent = `@${validContexts.join(', @')}`;
+        }
+    },
+    'tags': (element, value) => {
+        if (Array.isArray(value)) {
+            const validTags = flattenAndFilter(value);
+            element.textContent = `#${validTags.join(' #')}`;
+        }
+    },
+    'timeEstimate': (element, value, _, plugin) => {
+        if (typeof value === 'number') {
+            element.textContent = `${plugin.formatTime(value)} estimated`;
+        }
+    },
+    'totalTrackedTime': (element, value, _, plugin) => {
+        if (typeof value === 'number') {
+            element.textContent = `${plugin.formatTime(value)} tracked`;
+        }
+    },
+    'recurrence': (element, value) => {
+        if (typeof value === 'string') {
+            element.textContent = `Recurring: ${getRecurrenceDisplayText(value)}`;
+        }
+    },
+    'completedDate': (element, value) => {
+        if (typeof value === 'string') {
+            element.textContent = `Completed: ${formatDateTimeForDisplay(value, {
+                dateFormat: 'MMM d', timeFormat: 'h:mm a', showTime: false
+            })}`;
+        }
+    },
+    'file.ctime': (element, value) => {
+        if (typeof value === 'string') {
+            element.textContent = `Created: ${formatDateTimeForDisplay(value, {
+                dateFormat: 'MMM d', timeFormat: 'h:mm a', showTime: false
+            })}`;
+        }
+    },
+    'file.mtime': (element, value) => {
+        if (typeof value === 'string') {
+            element.textContent = `Modified: ${formatDateTimeForDisplay(value, {
+                dateFormat: 'MMM d', timeFormat: 'h:mm a', showTime: false
+            })}`;
+        }
+    }
+};
+
+/**
+ * Render a single property as a metadata element with improved organization
  */
 function renderPropertyMetadata(
     container: HTMLElement,
@@ -162,9 +247,8 @@ function renderPropertyMetadata(
     plugin: TaskNotesPlugin
 ): HTMLElement | null {
     const value = getPropertyValue(task, propertyId, plugin);
-    if (value === null || value === undefined || 
-        (Array.isArray(value) && value.length === 0) ||
-        (typeof value === 'string' && value.trim() === '')) {
+    
+    if (!hasValidValue(value)) {
         return null;
     }
 
@@ -172,114 +256,101 @@ function renderPropertyMetadata(
         cls: `task-card__metadata-property task-card__metadata-property--${propertyId.replace(':', '-')}`
     });
 
-    // Property-specific rendering logic
-    switch (propertyId) {
-        case 'due':
-            renderDueDateProperty(element, value as string, task, plugin);
-            break;
-        case 'scheduled':
-            renderScheduledDateProperty(element, value as string, task, plugin);
-            break;
-        case 'projects':
-            renderProjectLinks(element, value as string[], plugin);
-            break;
-        case 'contexts':
-            const validContexts = (value as string[])
-                .flat(2)
-                .filter(c => c !== null && c !== undefined && typeof c === 'string' && c.trim() !== '');
-            element.textContent = `@${validContexts.join(', @')}`;
-            break;
-        case 'tags':
-            const validTags = (value as string[])
-                .flat(2)
-                .filter(t => t !== null && t !== undefined && typeof t === 'string' && t.trim() !== '');
-            element.textContent = `#${validTags.join(' #')}`;
-            break;
-        case 'timeEstimate':
-            element.textContent = `${plugin.formatTime(value as number)} estimated`;
-            break;
-        case 'totalTrackedTime':
-            element.textContent = `${plugin.formatTime(value as number)} tracked`;
-            break;
-        case 'recurrence':
-            element.textContent = `Recurring: ${getRecurrenceDisplayText(value)}`;
-            break;
-        case 'completedDate':
-            element.textContent = `Completed: ${formatDateTimeForDisplay(value as string, {
-                dateFormat: 'MMM d',
-                timeFormat: 'h:mm a',
-                showTime: false
-            })}`;
-            break;
-        case 'file.ctime':
-            element.textContent = `Created: ${formatDateTimeForDisplay(value as string, {
-                dateFormat: 'MMM d',
-                timeFormat: 'h:mm a',
-                showTime: false
-            })}`;
-            break;
-        case 'file.mtime':
-            element.textContent = `Modified: ${formatDateTimeForDisplay(value as string, {
-                dateFormat: 'MMM d',
-                timeFormat: 'h:mm a',
-                showTime: false
-            })}`;
-            break;
-        default:
-            // Handle user properties
-            if (propertyId.startsWith('user:')) {
-                const fieldId = propertyId.slice(5);
-                const userField = plugin.settings.userFields?.find(f => f.id === fieldId);
-                console.log(`TaskCard: Rendering custom property ${propertyId}:`, { fieldId, userField, value });
-                
-                if (userField && value !== null && value !== undefined) {
-                    let displayValue = '';
-                    
-                    switch (userField.type) {
-                        case 'text':
-                            displayValue = String(value);
-                            break;
-                        case 'number':
-                            displayValue = typeof value === 'number' ? value.toString() : String(value);
-                            break;
-                        case 'date':
-                            if (value) {
-                                displayValue = formatDateTimeForDisplay(String(value), {
-                                    dateFormat: 'MMM d, yyyy',
-                                    timeFormat: '',
-                                    showTime: false
-                                });
-                            }
-                            break;
-                        case 'boolean':
-                            displayValue = value ? '✓' : '✗';
-                            break;
-                        case 'list':
-                            if (Array.isArray(value)) {
-                                displayValue = value.flat(2).join(', ');
-                            } else {
-                                displayValue = String(value);
-                            }
-                            break;
-                        default:
-                            displayValue = String(value);
-                    }
-                    
-                    if (displayValue.trim() !== '') {
-                        element.textContent = `${userField.displayName || fieldId}: ${displayValue}`;
-                    } else {
-                        element.textContent = `${userField.displayName || fieldId}: (empty)`;
-                    }
-                } else {
-                    // Show debug info when field or value is missing
-                    element.textContent = `${fieldId}: (not found)`;
-                    console.warn(`TaskCard: Custom property ${propertyId} not found or has no value`, { userField, value });
-                }
-            }
-            break;
+    try {
+        if (propertyId in PROPERTY_RENDERERS) {
+            PROPERTY_RENDERERS[propertyId](element, value, task, plugin);
+        } else if (propertyId.startsWith('user:')) {
+            renderUserProperty(element, propertyId, value, plugin);
+        }
+        return element;
+    } catch (error) {
+        console.warn(`TaskCard: Error rendering property ${propertyId}:`, error);
+        element.textContent = `${propertyId}: (error)`;
+        return element;
     }
+}
 
-    return element;
+/**
+ * Check if a value is valid for display
+ */
+function hasValidValue(value: any): boolean {
+    return value !== null && 
+           value !== undefined && 
+           !(Array.isArray(value) && value.length === 0) &&
+           !(typeof value === 'string' && value.trim() === '');
+}
+
+/**
+ * Flatten and filter array values
+ */
+function flattenAndFilter(value: any[]): string[] {
+    return value
+        .flat(2)
+        .filter(item => item !== null && item !== undefined && 
+                typeof item === 'string' && item.trim() !== '');
+}
+
+/**
+ * Render user-defined property with type safety
+ */
+function renderUserProperty(element: HTMLElement, propertyId: string, value: unknown, plugin: TaskNotesPlugin): void {
+    const fieldId = propertyId.slice(5);
+    const userField = plugin.settings.userFields?.find(f => f.id === fieldId);
+    
+    if (!userField) {
+        element.textContent = `${fieldId}: (not found)`;
+        return;
+    }
+    
+    const displayValue = formatUserPropertyValue(value, userField);
+    const fieldName = userField.displayName || fieldId;
+    
+    element.textContent = displayValue.trim() !== '' 
+        ? `${fieldName}: ${displayValue}`
+        : `${fieldName}: (empty)`;
+}
+
+/**
+ * User field type definition for better type safety
+ */
+interface UserField {
+    id: string;
+    key: string;
+    type: 'text' | 'number' | 'date' | 'boolean' | 'list';
+    displayName?: string;
+}
+
+/**
+ * Format user property value based on field type with improved type safety
+ */
+function formatUserPropertyValue(value: unknown, userField: UserField): string {
+    if (value === null || value === undefined) return '';
+    
+    try {
+        switch (userField.type) {
+            case 'text':
+            case 'number':
+                return String(value);
+            case 'date':
+                return formatDateTimeForDisplay(String(value), {
+                    dateFormat: 'MMM d, yyyy',
+                    timeFormat: '',
+                    showTime: false
+                });
+            case 'boolean':
+                return value ? '✓' : '✗';
+            case 'list':
+                if (Array.isArray(value)) {
+                    return (value as unknown[]).flat(2).join(', ');
+                }
+                return String(value);
+            default:
+                return String(value);
+        }
+    } catch (error) {
+        console.warn('TaskCard: Error formatting user property value:', error);
+        return String(value);
+    }
 }
 
 /**
