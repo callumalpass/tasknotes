@@ -18,6 +18,7 @@ import { WebhookController } from '../api/WebhookController';
 
 
 @OpenAPIController
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export class HTTPAPIService implements IWebhookNotifier {
 	private server?: Server;
 	private plugin: TaskNotesPlugin;
