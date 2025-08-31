@@ -598,7 +598,15 @@ export class TaskCreationModal extends TaskModal {
             const taskData = this.buildTaskData();
             const result = await this.plugin.taskService.createTask(taskData);
 
-            new Notice(`Task "${result.taskInfo.title}" created successfully`);
+            // Check if filename was changed due to length constraints
+            const expectedFilename = result.taskInfo.title.replace(/[<>:"/\\|?*]/g, '').trim();
+            const actualFilename = result.file.basename;
+            
+            if (actualFilename.startsWith('task-') && actualFilename !== expectedFilename) {
+                new Notice(`Task "${result.taskInfo.title}" created successfully (filename shortened due to length)`);
+            } else {
+                new Notice(`Task "${result.taskInfo.title}" created successfully`);
+            }
 
             if (this.options.onTaskCreated) {
                 this.options.onTaskCreated(result.taskInfo);
