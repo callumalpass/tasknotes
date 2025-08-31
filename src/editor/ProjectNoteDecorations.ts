@@ -1,5 +1,5 @@
 import { Decoration, DecorationSet, EditorView, PluginSpec, PluginValue, ViewPlugin, ViewUpdate, WidgetType } from '@codemirror/view';
-import { EVENT_DATA_CHANGED, EVENT_TASK_DELETED, EVENT_TASK_UPDATED, FilterQuery, SUBTASK_WIDGET_VIEW_TYPE, TaskInfo } from '../types';
+import { EVENT_DATA_CHANGED, EVENT_TASK_DELETED, EVENT_TASK_UPDATED, EVENT_DATE_CHANGED, FilterQuery, SUBTASK_WIDGET_VIEW_TYPE, TaskInfo } from '../types';
 import { EventRef, TFile, editorInfoField, editorLivePreviewField, setIcon } from 'obsidian';
 import { Extension, RangeSetBuilder, StateEffect } from '@codemirror/state';
 
@@ -618,6 +618,11 @@ class ProjectNoteDecorationsPlugin implements PluginValue {
         
         const taskDeleteListener = this.plugin.emitter.on(EVENT_TASK_DELETED, () => {
             // Refresh tasks for current file when tasks are deleted
+            this.loadTasksForCurrentFile(this.view);
+        });
+        
+        const dateChangeListener = this.plugin.emitter.on(EVENT_DATE_CHANGED, () => {
+            // Refresh tasks for current file when date changes (for recurring task states)
             this.loadTasksForCurrentFile(this.view);
         });
         

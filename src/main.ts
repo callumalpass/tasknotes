@@ -22,7 +22,8 @@ import {
 	TaskInfo,
 	EVENT_DATE_SELECTED,
 	EVENT_DATA_CHANGED,
-	EVENT_TASK_UPDATED
+	EVENT_TASK_UPDATED,
+	EVENT_DATE_CHANGED
 } from './types';
 import { MiniCalendarView } from './views/MiniCalendarView';
 import { AdvancedCalendarView } from './views/AdvancedCalendarView';
@@ -89,6 +90,11 @@ export default class TaskNotesPlugin extends Plugin {
 	private previousTimeTrackingSettings: {
 		autoStopTimeTrackingOnComplete: boolean;
 	} | null = null;
+
+	// Date change detection for refreshing task states at midnight
+	private lastKnownDate: string = new Date().toDateString();
+	private dateCheckInterval: number;
+	private midnightTimeout: number;
 
 	// Ready promise to signal when initialization is complete
 	private readyPromise: Promise<void>;
@@ -376,6 +382,9 @@ export default class TaskNotesPlugin extends Plugin {
 
 			// Initialize notification service
 			await this.notificationService.initialize();
+
+			// Initialize date change detection to refresh tasks at midnight
+			this.setupDateChangeDetection();
 
 			// Defer heavy service initialization until needed
 			this.initializeServicesLazily();
@@ -745,6 +754,59 @@ export default class TaskNotesPlugin extends Plugin {
 				this.emitter.trigger(EVENT_DATA_CHANGED);
 			});
 		}
+	}
+
+	/**
+	 * Set up date change detection to refresh task states when the date rolls over
+	 */
+	private setupDateChangeDetection(): void {
+		// Check for date changes every minute
+		const checkDateChange = () => {
+			const currentDate = new Date().toDateString();
+			if (currentDate !== this.lastKnownDate) {
+				this.lastKnownDate = currentDate;
+				// Emit date change event to trigger UI refresh
+				this.emitter.trigger(EVENT_DATE_CHANGED);
+			}
+		};
+
+		// Set up regular interval to check for date changes
+		this.dateCheckInterval = window.setInterval(checkDateChange, 60000); // Check every minute
+		this.registerInterval(this.dateCheckInterval);
+
+		// Schedule precise check at next midnight for better timing
+		this.scheduleNextMidnightCheck();
+	}
+
+	/**
+	 * Schedule a precise check at the next midnight
+	 */
+	private scheduleNextMidnightCheck(): void {
+		const now = new Date();
+		const midnight = new Date(now);
+		midnight.setHours(24, 0, 0, 0); // Next midnight
+		
+		const msUntilMidnight = midnight.getTime() - now.getTime();
+		
+		// Clear any existing midnight timeout
+		if (this.midnightTimeout) {
+			window.clearTimeout(this.midnightTimeout);
+		}
+		
+		this.midnightTimeout = window.setTimeout(() => {
+			// Force immediate date change check at midnight
+			const currentDate = new Date().toDateString();
+			if (currentDate !== this.lastKnownDate) {
+				this.lastKnownDate = currentDate;
+				this.emitter.trigger(EVENT_DATE_CHANGED);
+			}
+			
+			// Schedule the next midnight check
+			this.scheduleNextMidnightCheck();
+		}, msUntilMidnight);
+		
+		// Register the timeout for cleanup
+		this.registerInterval(this.midnightTimeout);
 	}
 
 	onunload() {

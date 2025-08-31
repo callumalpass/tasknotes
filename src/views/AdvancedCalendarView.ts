@@ -20,6 +20,7 @@ import {
     ADVANCED_CALENDAR_VIEW_TYPE,
     EVENT_DATA_CHANGED,
     EVENT_TASK_UPDATED,
+    EVENT_DATE_CHANGED,
     EVENT_TIMEBLOCKING_TOGGLED,
     TaskInfo,
     TimeBlock,
@@ -1989,6 +1990,11 @@ export class AdvancedCalendarView extends ItemView {
                 const updatedFilterOptions = await this.plugin.filterService.getFilterOptions();
                 this.filterBar.updateFilterOptions(updatedFilterOptions);
             }
+        });
+        
+        // Listen for date changes to refresh recurring task states
+        this.plugin.emitter.on(EVENT_DATE_CHANGED, async () => {
+            this.refreshEvents();
         });
         
         // Listen for task updates

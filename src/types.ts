@@ -22,6 +22,7 @@ export const EVENT_POMODORO_TICK = 'pomodoro-tick';
 export const EVENT_TIMEBLOCKING_TOGGLED = 'timeblocking-toggled';
 export const EVENT_TIMEBLOCK_UPDATED = 'timeblock-updated';
 export const EVENT_TIMEBLOCK_DELETED = 'timeblock-deleted';
+export const EVENT_DATE_CHANGED = 'date-changed';
 
 // Calendar colorization modes
 export type ColorizeMode = 'tasks' | 'notes' | 'daily';
