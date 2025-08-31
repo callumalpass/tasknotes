@@ -317,10 +317,15 @@ export class FilterBar extends EventEmitter {
     private detectActiveSavedView(): void {
         if (this.isLoadingSavedView || this.isSettingSavedView) return; // Don't interfere when explicitly loading/setting a view
 
-        // Find a saved view that matches the current query
-        const matchingView = this.savedViews.find(view =>
-            this.queriesMatch(this.currentQuery, view.query)
-        );
+        // Find a saved view that matches the current query (prefer the most recently created)
+        let matchingView = null;
+        for (let i = this.savedViews.length - 1; i >= 0; i--) {
+            const view = this.savedViews[i];
+            if (this.queriesMatch(this.currentQuery, view.query)) {
+                matchingView = view;
+                break;
+            }
+        }
 
         if (matchingView && this.activeSavedView?.id !== matchingView.id) {
             this.activeSavedView = matchingView;

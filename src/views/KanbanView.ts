@@ -221,9 +221,7 @@ export class KanbanView extends ItemView {
         this.filterBar.on('saveView', ({ name, query, viewOptions, visibleProperties }) => {
             const savedView = this.plugin.viewStateManager.saveView(name, query, viewOptions, visibleProperties);
             // Set the newly saved view as active to prevent incorrect view matching
-            if (this.filterBar) {
-                this.filterBar.setActiveSavedView(savedView);
-            }
+            this.filterBar!.setActiveSavedView(savedView);
         });
         
         this.filterBar.on('deleteView', (viewId: string) => {

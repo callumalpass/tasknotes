@@ -235,9 +235,7 @@ export class ProjectSubtasksWidget extends WidgetType {
             this.filterBar.on('saveView', (data: { name: string, query: FilterQuery, viewOptions?: {[key: string]: boolean}, visibleProperties?: string[] }) => {
                 const savedView = this.plugin.viewStateManager.saveView(data.name, data.query, data.viewOptions, data.visibleProperties);
                 // Set the newly saved view as active to prevent incorrect view matching
-                if (this.filterBar) {
-                    this.filterBar.setActiveSavedView(savedView);
-                }
+                this.filterBar!.setActiveSavedView(savedView);
             });
             
             this.filterBar.on('deleteView', (viewId: string) => {

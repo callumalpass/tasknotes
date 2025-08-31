@@ -305,9 +305,8 @@ export class TaskListView extends ItemView {
             const savedView = this.plugin.viewStateManager.saveView(name, query, viewOptions, visibleProperties);
             console.log('TaskListView: Saved view result:', savedView); // Debug
             // Set the newly saved view as active to prevent incorrect view matching
-            if (this.filterBar) {
-                this.filterBar.setActiveSavedView(savedView);
-            }
+            console.log('TaskListView: Setting newly saved view as active:', savedView.name, savedView.id);
+            this.filterBar!.setActiveSavedView(savedView);
         });
         
         this.filterBar.on('deleteView', (viewId: string) => {
