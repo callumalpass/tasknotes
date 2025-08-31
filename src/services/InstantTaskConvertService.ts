@@ -794,7 +794,7 @@ export class InstantTaskConvertService {
                 scheduledTime: nlpResult.scheduledTime,
                 recurrence: nlpResult.recurrence,
                 tags: nlpResult.tags && nlpResult.tags.length > 0 ? nlpResult.tags : undefined,
-                projects: nlpResult.projects && nlpResult.projects.length > 0 ? nlpResult.projects : undefined,
+                projects: nlpResult.projects && nlpResult.projects.length > 0 ? this.resolveProjectLinks(nlpResult.projects) : undefined,
                 contexts: nlpResult.contexts && nlpResult.contexts.length > 0 ? nlpResult.contexts : undefined,
                 // TasksPlugin specific fields that NLP doesn't have
                 startDate: undefined,
@@ -808,6 +808,59 @@ export class InstantTaskConvertService {
         } catch (error) {
             console.debug('NLP fallback parsing failed:', error);
             return null;
+        }
+    }
+
+    /**
+     * Resolve project wikilinks to proper relative links using metadataCache
+     */
+    private resolveProjectLinks(projects: string[]): string[] {
+        try {
+            // Check if we have access to the app interface (might not be available in tests)
+            if (!this.plugin.app?.workspace?.getActiveFile || !this.plugin.app?.metadataCache) {
+                // Fallback: return projects as-is if app interface is not available
+                return projects;
+            }
+            
+            const currentFile = this.plugin.app.workspace.getActiveFile();
+            const sourcePath = currentFile?.path || '';
+            
+            return projects.map(project => {
+                // Check if it's a wikilink format
+                const linkMatch = project.match(/^\[\[([^\]]+)\]\]$/);
+                if (linkMatch) {
+                    const linkPath = linkMatch[1];
+                    
+                    // Handle pipe syntax: "path|display" -> use "path"
+                    let actualPath = linkPath;
+                    if (linkPath.includes('|')) {
+                        actualPath = linkPath.split('|')[0];
+                    }
+                    
+                    try {
+                        // Try to find the file
+                        const file = this.plugin.app.metadataCache.getFirstLinkpathDest(actualPath, sourcePath);
+                        if (file) {
+                            // Generate the proper relative link
+                            const linkText = this.plugin.app.metadataCache.fileToLinktext(file, sourcePath, true);
+                            return `[[${linkText}]]`;
+                        }
+                    } catch (error) {
+                        // If file resolution fails, return the original project
+                        console.debug('Error resolving project link:', error);
+                    }
+                    
+                    // If file not found, return the original project
+                    return project;
+                }
+                
+                // For non-wikilink projects (simple strings), return as-is
+                return project;
+            });
+        } catch (error) {
+            console.debug('Error in resolveProjectLinks:', error);
+            // Fallback: return projects as-is if resolution fails
+            return projects;
         }
     }
 

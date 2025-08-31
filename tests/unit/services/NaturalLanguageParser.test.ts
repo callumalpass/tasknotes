@@ -155,6 +155,67 @@ describe('NaturalLanguageParser', () => {
     });
   });
 
+  describe('Projects Extraction', () => {
+    it('should extract simple +project syntax', () => {
+      const result = parser.parseInput('Complete task +project @work');
+
+      expect(result.projects).toEqual(['project']);
+      expect(result.contexts).toEqual(['work']);
+      expect(result.title).toBe('Complete task');
+    });
+
+    it('should extract multiple projects', () => {
+      const result = parser.parseInput('Task +project1 +project2 planning');
+
+      expect(result.projects).toEqual(['project1', 'project2']);
+      expect(result.title).toBe('Task planning');
+    });
+
+    it('should extract +[[wikilink]] project syntax', () => {
+      const result = parser.parseInput('Meeting +[[Project Name With Spaces]]');
+
+      expect(result.projects).toEqual(['[[Project Name With Spaces]]']);
+      expect(result.title).toBe('Meeting');
+    });
+
+    it('should extract mixed simple and wikilink projects', () => {
+      const result = parser.parseInput('Review +simple-project +[[Complex Project Name]]');
+      
+      expect(result.projects).toEqual(['[[Complex Project Name]]', 'simple-project']);
+      expect(result.title).toBe('Review');
+    });
+
+    it('should handle projects with forward slashes', () => {
+      const result = parser.parseInput('Update +project/subproject documentation');
+
+      expect(result.projects).toEqual(['project/subproject']);
+      expect(result.title).toBe('Update documentation');
+    });
+
+    it('should remove duplicate projects', () => {
+      const result = parser.parseInput('Task +project +project progress');
+
+      expect(result.projects).toEqual(['project']);
+      expect(result.title).toBe('Task progress');
+    });
+
+    it('should handle projects alongside tags and contexts', () => {
+      const result = parser.parseInput('Complete #urgent @work +quarterly-review task');
+
+      expect(result.projects).toEqual(['quarterly-review']);
+      expect(result.tags).toEqual(['urgent']);
+      expect(result.contexts).toEqual(['work']);
+      expect(result.title).toBe('Complete task');
+    });
+
+    it('should handle wikilink projects with paths and pipe syntax', () => {
+      const result = parser.parseInput('this is a test +[[../../Untitled 9|Untitled 9]]');
+
+      expect(result.projects).toEqual(['[[../../Untitled 9|Untitled 9]]']);
+      expect(result.title).toBe('this is a test');
+    });
+  });
+
   describe('Priority Extraction', () => {
     it('should extract configured priority values', () => {
       const result = parser.parseInput('urgent task needs completion');
@@ -620,6 +681,7 @@ describe('NaturalLanguageParser', () => {
         dueTime: '14:30',
         tags: ['documentation'],
         contexts: ['work'],
+        projects: [],
         estimate: 120,
         recurrence: 'FREQ=DAILY'
       };
@@ -641,7 +703,8 @@ describe('NaturalLanguageParser', () => {
         title: 'Simple Task',
         priority: 'normal',
         tags: ['test'],
-        contexts: []
+        contexts: [],
+        projects: []
       };
 
       const preview = parser.getPreviewText(parsedData);
@@ -657,7 +720,8 @@ describe('NaturalLanguageParser', () => {
         title: 'Task with long details',
         details: longDetails,
         tags: [],
-        contexts: []
+        contexts: [],
+        projects: []
       };
 
       const preview = parser.getPreviewData(parsedData);
@@ -672,7 +736,8 @@ describe('NaturalLanguageParser', () => {
         title: 'Task',
         recurrence: 'INVALID_RRULE',
         tags: [],
-        contexts: []
+        contexts: [],
+        projects: []
       };
 
       const preview = parser.getPreviewData(parsedData);
@@ -702,7 +767,8 @@ describe('NaturalLanguageParser', () => {
         title: 'Task',
         recurrence: 'FREQ=DAILY',
         tags: [],
-        contexts: []
+        contexts: [],
+        projects: []
       };
 
       // Mock RRule.fromString to throw
