@@ -43,7 +43,7 @@ jobs:
       timeout-minutes: 5
       
     - name: Run unit tests with coverage
-      run: npm run test:coverage -- --verbose
+      run: npm run test:ci -- --verbose
       timeout-minutes: 15
       
     - name: Run integration tests
