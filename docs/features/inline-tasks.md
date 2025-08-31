@@ -166,6 +166,7 @@ TaskNotes includes a **Natural Language Processor (NLP)** that parses task descr
 The NLP engine supports syntax for:
 
 -   **Tags and Contexts**: `#tag` and `@context` syntax.
+-   **Projects**: `+project` for simple projects or `+[[Project Name]]` for projects with spaces.
 -   **Priority Levels**: Keywords like "high," "normal," and "low".
 -   **Status Assignment**: Keywords like "open," "in-progress," and "done".
 -   **Dates and Times**: Phrases like "tomorrow," "next Friday," and "January 15th at 3pm".

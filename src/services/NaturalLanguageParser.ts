@@ -137,17 +137,22 @@ export class NaturalLanguageParser {
         let workingText = text;
         
         // Extract +[[wikilink]] patterns first (more specific)
-        const wikilinkProjectMatches = workingText.match(/\+\[\[[^\]]+\]\]/g);
+        const wikilinkProjectMatches = workingText.match(/\+\[\[.*?\]\]/g);
         if (wikilinkProjectMatches) {
-            result.projects.push(...wikilinkProjectMatches.map(project => project.slice(3, -2))); // Remove +[[ and ]]
-            workingText = this.cleanupWhitespace(workingText.replace(/\+\[\[[^\]]+\]\]/g, ''));
+            result.projects.push(...wikilinkProjectMatches.map(project => {
+                // Remove the + prefix but keep [[ ]]
+                let projectName = project.slice(1); // Remove just the +
+                // Keep the full wikilink as-is for now - resolution will happen in InstantTaskConvertService
+                return projectName;
+            }));
+            workingText = this.cleanupWhitespace(workingText.replace(/\+\[\[.*?\]\]/g, ''));
         }
         
         // Extract +project patterns (simple word projects)
-        const projectMatches = workingText.match(/\+[\w/]+/g);
+        const projectMatches = workingText.match(/\+[\w/-]+/g);
         if (projectMatches) {
             result.projects.push(...projectMatches.map(project => project.substring(1)));
-            workingText = this.cleanupWhitespace(workingText.replace(/\+[\w/]+/g, ''));
+            workingText = this.cleanupWhitespace(workingText.replace(/\+[\w/-]+/g, ''));
         }
         
         return workingText;
