@@ -33,7 +33,7 @@ export class StatusSuggestionService {
     getStatusSuggestions(
         query: string,
         statusConfigs: StatusConfig[],
-        limit: number = 10
+        limit = 10
     ): StatusSuggestion[] {
         const q = query.toLowerCase();
         return statusConfigs

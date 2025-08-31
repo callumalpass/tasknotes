@@ -6,6 +6,7 @@ import { TaskService } from '../services/TaskService';
 import { MinimalNativeCache } from '../utils/MinimalNativeCache';
 import { StatusManager } from '../services/StatusManager';
 import TaskNotesPlugin from '../main';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Get, Post } from '../utils/OpenAPIDecorators';
 
 export class TimeTrackingController extends BaseController {

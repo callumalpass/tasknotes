@@ -809,7 +809,9 @@ export class AgendaView extends ItemView {
             });
             try {
                 setIcon(toggleBtn, 'chevron-right');
-            } catch (_) {}
+            } catch (_) {
+                // Ignore icon loading errors
+            }
             const svg = toggleBtn.querySelector('svg');
             if (svg) {
                 svg.classList.add('chevron');
@@ -1178,7 +1180,9 @@ export class AgendaView extends ItemView {
         });
         try {
             setIcon(toggleBtn, 'chevron-right');
-        } catch (_) {}
+        } catch (_) {
+            // Ignore icon loading errors
+        }
         const svg = toggleBtn.querySelector('svg');
         if (svg) {
             svg.classList.add('chevron');

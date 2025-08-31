@@ -1,5 +1,6 @@
 import { IncomingMessage, ServerResponse } from 'http';
 import { parse } from 'url';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { getRoutes, RouteInfo } from '../utils/OpenAPIDecorators';
 
 export type HTTPMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'OPTIONS';

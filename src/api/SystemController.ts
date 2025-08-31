@@ -5,6 +5,7 @@ import { TaskCreationData, IWebhookNotifier } from '../types';
 import { TaskService } from '../services/TaskService';
 import { calculateDefaultDate } from '../utils/helpers';
 import TaskNotesPlugin from '../main';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { generateOpenAPISpec, Get, Post } from '../utils/OpenAPIDecorators';
 
 export class SystemController extends BaseController {
