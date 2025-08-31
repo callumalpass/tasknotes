@@ -550,7 +550,9 @@ export class FilterService extends EventEmitter {
                                 taskValue = raw != null ? String(raw) : undefined;
                         }
                     }
-                } catch {}
+                } catch {
+                    // Ignore JSON parsing errors for malformed user field values
+                }
             }
             // For list user fields, treat 'contains' as substring match across tokens
             if (field?.type === 'list' && (operator === 'contains' || operator === 'does-not-contain')) {
