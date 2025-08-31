@@ -20,6 +20,7 @@
     position: relative; /* Set as positioning context for the dropdown */
     z-index: 10; /* Ensure this container is on top of the filter box below */
     isolation: isolate; /* Create a new stacking context */
+    container-type: inline-size; /* Enable container queries */
 }
 
 
@@ -301,8 +302,9 @@
     color: var(--text-normal);
     font-size: var(--font-ui-small);
     transition: all 0.2s ease;
-    min-width: 200px;
     height: var(--tn-button-height-md); /* Consistent height */
+    min-width: 0 !important; /* Override any default min-width */
+    width: auto; /* Allow natural width */
 }
 
 .tasknotes-plugin .filter-bar__search-input:focus {
@@ -1041,6 +1043,72 @@
 /* =================================================================
    RESPONSIVE DESIGN
    ================================================================= */
+
+/* Hide button text on narrow panes (container width-based responsiveness) */
+@container (max-width: 500px) {
+    .tasknotes-plugin .filter-bar__top-controls .has-text-icon .button-text {
+        display: none !important;
+    }
+    
+    .tasknotes-plugin .filter-bar__top-controls .has-text-icon {
+        padding: 2px 4px !important;
+        min-width: var(--input-height);
+        justify-content: center;
+    }
+    
+    /* Hide Views button text and show only chevron icon */
+    .tasknotes-plugin .filter-bar__templates-button {
+        padding: 2px 4px !important;
+        min-width: var(--input-height);
+        justify-content: center;
+        width: var(--input-height);
+        font-size: 0 !important; /* Hide text */
+    }
+    
+    .tasknotes-plugin .filter-bar__templates-button .filter-bar__chevron-container {
+        display: flex !important;
+    }
+    
+    /* Adjust search input to take more space when buttons are icon-only */
+    .tasknotes-plugin .filter-bar__search-input {
+        flex-grow: 2;
+        min-width: 0 !important; /* Force override any inherited min-width */
+        flex-basis: 0; /* Start from zero width and grow */
+    }
+}
+
+/* Fallback for browsers without container query support */
+@media (max-width: 700px) {
+    .tasknotes-plugin .filter-bar__top-controls .has-text-icon .button-text {
+        display: none !important;
+    }
+    
+    .tasknotes-plugin .filter-bar__top-controls .has-text-icon {
+        padding: 2px 4px !important;
+        min-width: var(--input-height);
+        justify-content: center;
+    }
+    
+    /* Hide Views button text and show only chevron icon */
+    .tasknotes-plugin .filter-bar__templates-button {
+        padding: 2px 4px !important;
+        min-width: var(--input-height);
+        justify-content: center;
+        width: var(--input-height);
+        font-size: 0 !important; /* Hide text */
+    }
+    
+    .tasknotes-plugin .filter-bar__templates-button .filter-bar__chevron-container {
+        display: flex !important;
+    }
+    
+    /* Adjust search input to take more space when buttons are icon-only */
+    .tasknotes-plugin .filter-bar__search-input {
+        flex-grow: 2;
+        min-width: 0 !important; /* Force override any inherited min-width */
+        flex-basis: 0; /* Start from zero width and grow */
+    }
+}
 
 /* Mobile styles */
 @media (max-width: 768px) {
