@@ -759,6 +759,20 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 			});
 
 		new Setting(container)
+			.setName('Calendar locale')
+			.setDesc('Calendar locale for date formatting and calendar system (e.g., "en", "fa" for Farsi/Persian, "de" for German). Leave empty to auto-detect from browser.')
+			.addText(text => {
+				text.inputEl.setAttribute('aria-label', 'Calendar locale');
+				return text
+					.setPlaceholder('Auto-detect')
+					.setValue(this.plugin.settings.calendarViewSettings.locale)
+					.onChange(async (value) => {
+						this.plugin.settings.calendarViewSettings.locale = value;
+						await this.plugin.saveSettings();
+					});
+			});
+
+		new Setting(container)
 			.setName('Show week numbers')
 			.setDesc('Display week numbers on the left side of calendar views')
 			.addToggle(toggle => {

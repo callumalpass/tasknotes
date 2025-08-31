@@ -725,12 +725,19 @@ export class AdvancedCalendarView extends ItemView {
 
     private getUserLocale(): string {
         // Try to get the user's locale in order of preference:
-        // 1. Browser language (most specific)
-        // 2. Obsidian locale if available 
-        // 3. System language
-        // 4. Default to 'en' as fallback
+        // 1. User's configured locale setting (if set)
+        // 2. Browser language (most specific)
+        // 3. Obsidian locale if available 
+        // 4. System language
+        // 5. Default to 'en' as fallback
         
-        // Check browser language first
+        // Check user's configured locale setting first
+        const userLocale = this.plugin.settings.calendarViewSettings.locale;
+        if (userLocale && userLocale.trim() !== '') {
+            return userLocale.trim();
+        }
+        
+        // Check browser language
         if (navigator.language) {
             return navigator.language;
         }
