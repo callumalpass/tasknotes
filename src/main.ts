@@ -1147,6 +1147,14 @@ export default class TaskNotesPlugin extends Plugin {
 		});
 
 		this.addCommand({
+			id: 'create-inline-task',
+			name: 'Create new inline task',
+			editorCallback: async (editor: Editor) => {
+				await this.createInlineTask(editor);
+			}
+		});
+
+		this.addCommand({
 			id: 'quick-actions-current-task',
 			name: 'Quick actions for current task',
 			callback: async () => {
@@ -1846,6 +1854,102 @@ private injectCustomStyles(): void {
 		} catch (error) {
 			console.error('Error opening quick actions:', error);
 			new Notice('Failed to open quick actions');
+		}
+	}
+
+	/**
+	 * Create a new inline task at cursor position
+	 * Opens the task creation modal, then inserts a link to the created task
+	 * Handles two scenarios:
+	 * 1. Cursor on blank line: add new inline task
+	 * 2. Cursor anywhere else: start new line then create inline task
+	 */
+	async createInlineTask(editor: Editor): Promise<void> {
+		try {
+			const cursor = editor.getCursor();
+			const currentLine = editor.getLine(cursor.line);
+			const lineContent = currentLine.trim();
+
+			// Determine insertion point
+			let insertionPoint: { line: number; ch: number };
+
+			// Scenario 1: Cursor on blank line
+			if (lineContent === '') {
+				insertionPoint = { line: cursor.line, ch: cursor.ch };
+			}
+			// Scenario 2: Cursor anywhere else - create new line
+			else {
+				// Insert a new line and position cursor there
+				const endOfLine = { line: cursor.line, ch: currentLine.length };
+				editor.replaceRange('\n', endOfLine);
+				insertionPoint = { line: cursor.line + 1, ch: 0 };
+			}
+
+			// Store the insertion context for the callback
+			const insertionContext = {
+				editor,
+				insertionPoint
+			};
+
+			// Open task creation modal with callback to insert link
+			const modal = new TaskCreationModal(this.app, this, {
+				onTaskCreated: (task: TaskInfo) => {
+					this.handleInlineTaskCreated(task, insertionContext);
+				}
+			});
+
+			modal.open();
+
+		} catch (error) {
+			console.error('Error creating inline task:', error);
+			new Notice('Failed to create inline task');
+		}
+	}
+
+	/**
+	 * Handle task creation completion - insert link at the determined position
+	 */
+	private handleInlineTaskCreated(
+		task: TaskInfo, 
+		context: {
+			editor: Editor;
+			insertionPoint: { line: number; ch: number };
+		}
+	): void {
+		try {
+			const { editor, insertionPoint } = context;
+
+			// Create link using Obsidian's generateMarkdownLink
+			const file = this.app.vault.getAbstractFileByPath(task.path);
+			if (!file) {
+				new Notice('Failed to create link - file not found');
+				return;
+			}
+
+			const currentFile = this.app.workspace.getActiveFile();
+			const sourcePath = currentFile?.path || '';
+			const properLink = this.app.fileManager.generateMarkdownLink(
+				file as TFile,
+				sourcePath,
+				'',
+				task.title  // Use task title as alias
+			);
+
+			// Insert the link at the determined insertion point
+			editor.replaceRange(properLink, insertionPoint);
+			
+			// Position cursor at end of inserted link
+			const newCursor = {
+				line: insertionPoint.line,
+				ch: insertionPoint.ch + properLink.length
+			};
+			editor.setCursor(newCursor);
+
+			new Notice(`Inline task "${task.title}" created and linked successfully`);
+
+		} catch (error) {
+			console.error('Error handling inline task creation:', error);
+			new Notice('Failed to insert task link');
 		}
 	}
 
