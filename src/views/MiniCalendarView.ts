@@ -600,7 +600,9 @@ export class MiniCalendarView extends ItemView {
         }
         
         // Days from current month
-        const today = new Date();
+        // Use UTC-anchored today for consistent timezone handling
+        const todayLocal = getTodayLocal();
+        const today = createUTCDateFromLocalCalendarDate(todayLocal);
         for (let i = 1; i <= daysThisMonth; i++) {
             // Start a new row every 7 days (once per week)
             if ((i + daysFromPrevMonth - 1) % 7 === 0 && i > 1) {

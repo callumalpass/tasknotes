@@ -18,7 +18,7 @@ import {
     TaskInfo,
     IWebhookNotifier
 } from '../types';
-import { getCurrentTimestamp, formatDateForStorage, getTodayLocal, parseDateToLocal } from '../utils/dateUtils';
+import { getCurrentTimestamp, formatDateForStorage, getTodayLocal, parseDateToLocal, createUTCDateFromLocalCalendarDate } from '../utils/dateUtils';
 import { getSessionDuration, timerWorker } from '../utils/pomodoroUtils';
 
 export class PomodoroService {
@@ -889,7 +889,10 @@ export class PomodoroService {
     }
 
     async getTodayStats(): Promise<PomodoroHistoryStats> {
-        return this.getStatsForDate(new Date());
+        // Use UTC-anchored today for consistent timezone handling
+        const todayLocal = getTodayLocal();
+        const todayUTCAnchor = createUTCDateFromLocalCalendarDate(todayLocal);
+        return this.getStatsForDate(todayUTCAnchor);
     }
 
     cleanup() {
