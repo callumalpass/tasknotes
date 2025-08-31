@@ -16,7 +16,7 @@
 .tasknotes-plugin .filter-bar__top-controls {
     display: flex;
     align-items: center;
-    gap: var(--tn-spacing-sm);
+    gap: 8px;
     position: relative; /* Set as positioning context for the dropdown */
     z-index: 10; /* Ensure this container is on top of the filter box below */
     isolation: isolate; /* Create a new stacking context */
@@ -38,6 +38,43 @@
   height: 8px;
   border-radius: 50%;
   background-color: #a78bfa; /* subtle purple */
+}
+
+/* Icon + Text Button Styling */
+.tasknotes-plugin .filter-bar__top-controls .has-text-icon {
+  display: flex !important;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 6px !important;
+  min-height: var(--input-height);
+  border-radius: var(--radius-s);
+  width: auto !important; /* Override any fixed width */
+}
+
+.tasknotes-plugin .filter-bar__top-controls .has-text-icon .button-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.tasknotes-plugin .filter-bar__top-controls .has-text-icon .button-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.tasknotes-plugin .filter-bar__top-controls .has-text-icon .button-text {
+  white-space: nowrap;
+  font-size: var(--font-ui-small);
+  line-height: 1;
+}
+
+/* Override button-specific hover states for consistent text+icon button behavior */
+.tasknotes-plugin .filter-bar__top-controls .has-text-icon:hover {
+  background: var(--interactive-hover) !important;
+  color: var(--text-normal) !important;
 }
 
 /* Clear all button in Filter section header */
@@ -282,11 +319,11 @@
 .tasknotes-plugin .filter-bar__main-box {
     position: absolute;
     top: calc(100% + 4px); /* Position below the top controls with a small gap */
-    left: 0; /* Align to left edge near the filter button */
-    right: 10px; /* Add some margin from the right edge */
-    width: auto; /* Let it size itself */
+    left: auto; /* Let it position dynamically */
+    right: auto; /* Let it position dynamically */
+    width: 500px; /* Default preferred width */
     max-width: 600px; /* Maximum preferred width */
-    min-width: 300px; /* Minimum usable width */
+    min-width: 400px; /* Minimum usable width */
     z-index: 1000; /* High z-index */
     display: flex;
     flex-direction: column;

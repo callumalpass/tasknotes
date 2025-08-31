@@ -246,7 +246,9 @@ export class AdvancedCalendarView extends ItemView {
             this.plugin,
             filterBarContainer,
             this.currentQuery,
-            filterOptions
+            filterOptions,
+            this.plugin.settings.viewsButtonAlignment || 'right',
+            { enableGroupExpandCollapse: false, forceShowExpandCollapse: false, viewType: 'advanced-calendar' }
         );
         
         // Get saved views for the FilterBar

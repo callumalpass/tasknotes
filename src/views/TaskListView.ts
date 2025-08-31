@@ -1,4 +1,4 @@
-import { TFile, ItemView, WorkspaceLeaf, EventRef, Notice, setIcon } from 'obsidian';
+import { TFile, ItemView, WorkspaceLeaf, EventRef, Notice, setIcon, ButtonComponent } from 'obsidian';
 import TaskNotesPlugin from '../main';
 import {
     TASK_LIST_VIEW_TYPE,
@@ -290,34 +290,10 @@ export class TaskListView extends ItemView {
             filterBarContainer,
             this.currentQuery,
             filterOptions,
-            this.plugin.settings.viewsButtonAlignment || 'right'
+            this.plugin.settings.viewsButtonAlignment || 'right',
+            { enableGroupExpandCollapse: false, forceShowExpandCollapse: false, viewType: 'task-list' }
         );
 
-        // Wire expand/collapse all (as in preview-all)
-        this.filterBar.on('expandAllGroups', () => {
-            const key = this.currentQuery.groupKey || 'none';
-            GroupingUtils.expandAllGroups(TASK_LIST_VIEW_TYPE, key, this.plugin);
-            // Update DOM
-            this.contentEl.querySelectorAll('.task-group').forEach(section => {
-                section.classList.remove('is-collapsed');
-                const list = (section as HTMLElement).querySelector('.task-cards') as HTMLElement | null;
-                if (list) list.style.display = '';
-            });
-        });
-        this.filterBar.on('collapseAllGroups', () => {
-            const key = this.currentQuery.groupKey || 'none';
-            const groupNames: string[] = [];
-            this.contentEl.querySelectorAll('.task-group').forEach(section => {
-                const name = (section as HTMLElement).dataset.group;
-                if (name) {
-                    groupNames.push(name);
-                    section.classList.add('is-collapsed');
-                    const list = (section as HTMLElement).querySelector('.task-cards') as HTMLElement | null;
-                    if (list) list.style.display = 'none';
-                }
-            });
-            GroupingUtils.collapseAllGroups(TASK_LIST_VIEW_TYPE, key, groupNames, this.plugin);
-        });
 
         // Get saved views for the FilterBar
         const savedViews = this.plugin.viewStateManager.getSavedViews();
@@ -352,6 +328,11 @@ export class TaskListView extends ItemView {
             this.currentQuery = newQuery;
             // Save the filter state
             this.plugin.viewStateManager.setFilterState(TASK_LIST_VIEW_TYPE, newQuery);
+            // Update expand/collapse buttons visibility
+            const controlsContainer = this.contentEl.querySelector('.filter-heading__controls') as HTMLElement;
+            if (controlsContainer) {
+                this.createExpandCollapseButtons(controlsContainer);
+            }
             await this.refreshTasks();
         });
 
@@ -361,8 +342,19 @@ export class TaskListView extends ItemView {
             this.refreshTaskDisplay();
         });
 
-        // Create filter heading
+        // Create filter heading with integrated controls
         this.filterHeading = new FilterHeading(container);
+        
+        // Add expand/collapse controls to the heading container
+        const headingContainer = container.querySelector('.filter-heading') as HTMLElement;
+        if (headingContainer) {
+            const headingContent = headingContainer.querySelector('.filter-heading__content') as HTMLElement;
+            if (headingContent) {
+                // Add controls to the right side of the heading
+                const controlsContainer = headingContent.createDiv({ cls: 'filter-heading__controls' });
+                this.createExpandCollapseButtons(controlsContainer);
+            }
+        }
 
         // Task list container
         const taskList = container.createDiv({ cls: 'task-list' });
@@ -386,6 +378,64 @@ export class TaskListView extends ItemView {
         // Hide loading state when done
         this.isTasksLoading = false;
         this.updateLoadingState();
+        
+        // Update expand/collapse buttons after initial load
+        const controlsContainer = this.contentEl.querySelector('.filter-heading__controls') as HTMLElement;
+        if (controlsContainer) {
+            this.createExpandCollapseButtons(controlsContainer);
+        }
+    }
+
+    /**
+     * Create expand/collapse buttons for grouped views
+     */
+    private createExpandCollapseButtons(container: HTMLElement): void {
+        const isGrouped = (this.currentQuery.groupKey || 'none') !== 'none';
+        
+        if (!isGrouped) {
+            container.style.display = 'none';
+            return;
+        }
+
+        container.style.display = 'flex';
+        container.empty();
+        
+        // Expand all button
+        const expandAllBtn = new ButtonComponent(container)
+            .setIcon('list-tree')
+            .setTooltip('Expand All Groups')
+            .setClass('task-view-control-button')
+            .onClick(() => {
+                const key = this.currentQuery.groupKey || 'none';
+                this.contentEl.querySelectorAll('.task-group').forEach(section => {
+                    section.classList.remove('is-collapsed');
+                    const list = (section as HTMLElement).querySelector('.task-cards') as HTMLElement | null;
+                    if (list) list.style.display = '';
+                });
+                GroupingUtils.expandAllGroups(TASK_LIST_VIEW_TYPE, key, this.plugin);
+            });
+        expandAllBtn.buttonEl.addClass('clickable-icon');
+
+        // Collapse all button  
+        const collapseAllBtn = new ButtonComponent(container)
+            .setIcon('list-collapse')
+            .setTooltip('Collapse All Groups')
+            .setClass('task-view-control-button')
+            .onClick(() => {
+                const key = this.currentQuery.groupKey || 'none';
+                const groupNames: string[] = [];
+                this.contentEl.querySelectorAll('.task-group').forEach(section => {
+                    const name = (section as HTMLElement).dataset.group;
+                    if (name) {
+                        groupNames.push(name);
+                        section.classList.add('is-collapsed');
+                        const list = (section as HTMLElement).querySelector('.task-cards') as HTMLElement | null;
+                        if (list) list.style.display = 'none';
+                    }
+                });
+                GroupingUtils.collapseAllGroups(TASK_LIST_VIEW_TYPE, key, groupNames, this.plugin);
+            });
+        collapseAllBtn.buttonEl.addClass('clickable-icon');
     }
 
     /**

@@ -200,7 +200,8 @@ export class ProjectSubtasksWidget extends WidgetType {
                 container,
                 this.currentQuery,
                 filterOptions,
-                this.plugin.settings.viewsButtonAlignment || 'right'
+                this.plugin.settings.viewsButtonAlignment || 'right',
+                { enableGroupExpandCollapse: false, forceShowExpandCollapse: false, viewType: 'subtask-widget' }
             );
             
             // Load saved views from the main ViewStateManager

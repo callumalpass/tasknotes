@@ -1,4 +1,4 @@
-import { App, ButtonComponent, DropdownComponent, Modal, TextComponent, debounce, setTooltip, setIcon } from 'obsidian';
+import { App, ButtonComponent, DropdownComponent, Modal, TextComponent, debounce, setTooltip, setIcon, Menu } from 'obsidian';
 import { FILTER_OPERATORS, FILTER_PROPERTIES, FilterCondition, FilterGroup, FilterNode, FilterOperator, FilterOptions, FilterProperty, FilterQuery, PropertyDefinition, SavedView, TaskGroupKey, TaskSortKey } from '../types';
 
 import { DragDropHandler } from './DragDropHandler';
@@ -94,6 +94,7 @@ export class FilterBar extends EventEmitter {
 
     private enableGroupExpandCollapse = true;
     private forceShowExpandCollapse = false;
+    private viewType?: string;
 
     constructor(
         app: App,
@@ -102,7 +103,7 @@ export class FilterBar extends EventEmitter {
         initialQuery: FilterQuery,
         filterOptions: FilterOptions,
         viewsButtonAlignment: 'left' | 'right' = 'right',
-        options?: { enableGroupExpandCollapse?: boolean; forceShowExpandCollapse?: boolean }
+        options?: { enableGroupExpandCollapse?: boolean; forceShowExpandCollapse?: boolean; viewType?: string }
     ) {
         super();
         this.app = app;
@@ -113,6 +114,7 @@ export class FilterBar extends EventEmitter {
         this.viewsButtonAlignment = viewsButtonAlignment;
         this.enableGroupExpandCollapse = options?.enableGroupExpandCollapse ?? true;
         this.forceShowExpandCollapse = options?.forceShowExpandCollapse ?? false;
+        this.viewType = options?.viewType;
 
         // Initialize drag and drop handler
         this.dragDropHandler = new DragDropHandler((fromIndex, toIndex) => {
@@ -419,17 +421,34 @@ export class FilterBar extends EventEmitter {
                     this.toggleViewSelectorDropdown();
                 });
             this.viewSelectorButton.buttonEl.addClass('clickable-icon');
+            
+            // Add chevron arrows
+            const chevronContainer = this.viewSelectorButton.buttonEl.createDiv('filter-bar__chevron-container');
+            setIcon(chevronContainer, 'chevron-up');
+            setIcon(chevronContainer, 'chevron-down');
+            
             this.updateViewSelectorButtonState();
         };
         const makeFilterToggle = () => {
             const filterToggle = new ButtonComponent(topControls)
-                .setIcon('list-filter')
                 .setTooltip('Toggle filter')
                 .setClass('filter-bar__filter-toggle')
                 .onClick(() => {
                     this.toggleMainFilterBox();
                 });
             filterToggle.buttonEl.addClass('clickable-icon');
+            filterToggle.buttonEl.addClass('has-text-icon');
+            
+            // Clear any existing content and build manually
+            filterToggle.buttonEl.empty();
+            
+            // Add icon
+            const iconEl = filterToggle.buttonEl.createSpan({ cls: 'button-icon' });
+            setIcon(iconEl, 'list-filter');
+            
+            // Add text
+            const textEl = filterToggle.buttonEl.createSpan({ cls: 'button-text', text: 'Filters' });
+            
             // Right-click quick clear
             filterToggle.buttonEl.addEventListener('contextmenu', (e) => {
                 e.preventDefault();
@@ -441,7 +460,6 @@ export class FilterBar extends EventEmitter {
         };
         const makePropertiesButton = () => {
             const propertiesButton = new ButtonComponent(topControls)
-                .setIcon('columns')
                 .setTooltip('Configure visible properties')
                 .setClass('filter-bar__properties-button')
                 .onClick((event) => {
@@ -451,6 +469,17 @@ export class FilterBar extends EventEmitter {
                     this.showPropertiesDropdown(mouseEvent);
                 });
             propertiesButton.buttonEl.addClass('clickable-icon');
+            propertiesButton.buttonEl.addClass('has-text-icon');
+            
+            // Clear any existing content and build manually
+            propertiesButton.buttonEl.empty();
+            
+            // Add icon
+            const iconEl = propertiesButton.buttonEl.createSpan({ cls: 'button-icon' });
+            setIcon(iconEl, 'list');
+            
+            // Add text
+            const textEl = propertiesButton.buttonEl.createSpan({ cls: 'button-text', text: 'Properties' });
         };
         const makeSearchInput = () => {
             this.searchInput = new TextComponent(topControls)
@@ -461,6 +490,52 @@ export class FilterBar extends EventEmitter {
                 this.isUserTyping = true;
                 this.debouncedHandleSearchInput();
             });
+        };
+        const makeSortGroupButton = () => {
+            // Don't show sort/group button on advanced calendar view
+            if (this.viewType === 'advanced-calendar') return;
+            
+            const sortGroupButton = new ButtonComponent(topControls)
+                .setTooltip('Sort and group options')
+                .setClass('filter-bar__sort-group-button')
+                .onClick((event) => {
+                    this.showSortGroupContextMenu(event);
+                });
+            sortGroupButton.buttonEl.addClass('clickable-icon');
+            sortGroupButton.buttonEl.addClass('has-text-icon');
+            
+            // Clear any existing content and build manually
+            sortGroupButton.buttonEl.empty();
+            
+            // Add icon
+            const iconEl = sortGroupButton.buttonEl.createSpan({ cls: 'button-icon' });
+            setIcon(iconEl, 'arrow-up-down');
+            
+            // Add text
+            const textEl = sortGroupButton.buttonEl.createSpan({ cls: 'button-text', text: 'Sort' });
+        };
+        const makeNewTaskButton = () => {
+            // Don't show new task button on subtask widget
+            if (this.viewType === 'subtask-widget') return;
+            
+            const newTaskButton = new ButtonComponent(topControls)
+                .setTooltip('Create new task')
+                .setClass('filter-bar__new-task-button')
+                .onClick(() => {
+                    this.createNewTask();
+                });
+            newTaskButton.buttonEl.addClass('clickable-icon');
+            newTaskButton.buttonEl.addClass('has-text-icon');
+            
+            // Clear any existing content and build manually
+            newTaskButton.buttonEl.empty();
+            
+            // Add icon
+            const iconEl = newTaskButton.buttonEl.createSpan({ cls: 'button-icon' });
+            setIcon(iconEl, 'plus');
+            
+            // Add text
+            const textEl = newTaskButton.buttonEl.createSpan({ cls: 'button-text', text: 'New' });
         };
 
         // Create expand/collapse button functions
@@ -488,18 +563,20 @@ export class FilterBar extends EventEmitter {
 
         // Order controls based on alignment preference
         if (this.viewsButtonAlignment === 'left') {
-            // Left: Views -> Expand -> Collapse -> Filter -> Properties -> Search Box
+            // Left: Views -> Search Box -> Sort -> Filter -> Properties -> New 
             makeViewsButton();
-            makeExpandCollapseButtons();
+            makeSearchInput();
+            makeSortGroupButton();
             makeFilterToggle();
             makePropertiesButton();
-            makeSearchInput();
+            makeNewTaskButton();
         } else {
-            // Right (default): Expand -> Collapse -> Filter -> Properties -> Search Box -> Views
-            makeExpandCollapseButtons();
+            // Right (default): Search Box -> Sort -> Filter -> Properties -> New -> Views
+            makeSearchInput();
+            makeSortGroupButton();
             makeFilterToggle();
             makePropertiesButton();
-            makeSearchInput();
+            makeNewTaskButton();
             makeViewsButton();
         }
 
@@ -528,14 +605,57 @@ export class FilterBar extends EventEmitter {
             this.mainFilterBox.addClass('filter-bar__main-box--collapsed');
         }
 
+        // Position the filter box relative to the filter button
+        this.positionFilterBox();
+
         // 1. Filter Builder (This view section)
         this.renderFilterBuilder(this.mainFilterBox);
 
-        // 2. Display & Organization
-        this.renderDisplaySection(this.mainFilterBox);
-
-        // 3. View-Specific Options
+        // 2. View-Specific Options
         this.renderViewOptions(this.mainFilterBox);
+    }
+
+    /**
+     * Position the filter box relative to the filter toggle button
+     */
+    private positionFilterBox(): void {
+        if (!this.mainFilterBox) return;
+
+        // Find the filter button to position relative to it
+        const filterButton = this.container.querySelector('.filter-bar__filter-toggle') as HTMLElement;
+        if (filterButton) {
+            const containerRect = this.container.getBoundingClientRect();
+            const buttonRect = filterButton.getBoundingClientRect();
+            const filterBoxRect = this.mainFilterBox.getBoundingClientRect();
+            
+            // Calculate ideal position aligned with filter button
+            let leftOffset = buttonRect.left - containerRect.left;
+            
+            // Find the parent pane/leaf to get the actual available space
+            const parentLeaf = this.container.closest('.workspace-leaf');
+            if (parentLeaf) {
+                const leafRect = parentLeaf.getBoundingClientRect();
+                const margin = 30; // generous margin from pane edge
+                
+                // Calculate how far right the popup would extend
+                const popupRightEdge = containerRect.left + leftOffset + filterBoxRect.width;
+                const maxAllowedRight = leafRect.right - margin;
+                
+                if (popupRightEdge > maxAllowedRight) {
+                    // Calculate how much we need to shift left
+                    const overflow = popupRightEdge - maxAllowedRight;
+                    leftOffset = leftOffset - overflow;
+                    
+                    // Ensure it doesn't go off the left edge of the container
+                    if (leftOffset < 0) {
+                        leftOffset = 0;
+                    }
+                }
+            }
+            
+            // Position the filter box
+            this.mainFilterBox.style.left = `${leftOffset}px`;
+        }
     }
 
     /**
@@ -646,6 +766,8 @@ export class FilterBar extends EventEmitter {
      */
     private toggleMainFilterBox(): void {
         this.sectionStates.filterBox = !this.sectionStates.filterBox;
+        // Re-position the filter box each time it's toggled
+        this.positionFilterBox();
         this.updateFilterBoxState();
     }
 
@@ -1549,6 +1671,154 @@ export class FilterBar extends EventEmitter {
         } else {
             // Closing dropdown - remove active class
             this.viewSelectorButton.buttonEl.classList.remove('filter-bar__templates-button--active');
+        }
+    }
+
+    /**
+     * Show sort and group context menu
+     */
+    private showSortGroupContextMenu(event: MouseEvent): void {
+        try {
+            const menu = new Menu();
+            
+            // Build sort options
+            const builtInSortOptions: Record<string, string> = {
+                'due': 'Due Date',
+                'scheduled': 'Scheduled Date',
+                'priority': 'Priority',
+                'title': 'Title',
+                'dateCreated': 'Created Date',
+                'tags': 'Tags'
+            };
+            const sortOptions: Record<string, string> = { ...builtInSortOptions };
+            const sortUserProps = this.filterOptions.userProperties || [];
+            for (const p of sortUserProps) {
+                if (!p?.id || !p?.label) continue;
+                if (typeof p.id === 'string' && p.id.startsWith('user:')) {
+                    sortOptions[p.id] = `${p.label}`;
+                }
+            }
+
+            // Sort section
+            menu.addItem(item => {
+                item.setTitle('SORT');
+                item.setDisabled(true);
+            });
+            
+            Object.entries(sortOptions).forEach(([key, label]) => {
+                menu.addItem(item => {
+                    item.setTitle(label);
+                    if (this.currentQuery.sortKey === key) {
+                        item.setIcon('check');
+                    }
+                    item.onClick(() => {
+                        this.currentQuery.sortKey = key as any;
+                        this.emitImmediateQueryChange();
+                        this.updateDisplaySection();
+                    });
+                });
+            });
+
+            // Order section
+            menu.addSeparator();
+            menu.addItem(item => {
+                item.setTitle('ORDER');
+                item.setDisabled(true);
+            });
+            
+            menu.addItem(item => {
+                item.setTitle('Ascending');
+                if (this.currentQuery.sortDirection === 'asc') {
+                    item.setIcon('check');
+                }
+                item.onClick(() => {
+                    this.currentQuery.sortDirection = 'asc';
+                    this.emitImmediateQueryChange();
+                    this.updateDisplaySection();
+                });
+            });
+            
+            menu.addItem(item => {
+                item.setTitle('Descending');
+                if (this.currentQuery.sortDirection === 'desc') {
+                    item.setIcon('check');
+                }
+                item.onClick(() => {
+                    this.currentQuery.sortDirection = 'desc';
+                    this.emitImmediateQueryChange();
+                    this.updateDisplaySection();
+                });
+            });
+
+            // Group section (hidden on agenda view)
+            if (this.viewType !== 'agenda') {
+                const builtInGroupOptions: Record<string, string> = {
+                    'none': 'None',
+                    'status': 'Status',
+                    'priority': 'Priority',
+                    'context': 'Context',
+                    'project': 'Project',
+                    'due': 'Due Date',
+                    'scheduled': 'Scheduled Date',
+                    'tags': 'Tags'
+                };
+
+                const groupOptions: Record<string, string> = { ...builtInGroupOptions };
+                const userProps = this.filterOptions.userProperties || [];
+                for (const p of userProps) {
+                    if (!p?.id || !p?.label) continue;
+                    if (typeof p.id === 'string' && p.id.startsWith('user:')) {
+                        groupOptions[p.id] = p.label;
+                    }
+                }
+
+                menu.addSeparator();
+                menu.addItem(item => {
+                    item.setTitle('GROUP');
+                    item.setDisabled(true);
+                });
+                
+                Object.entries(groupOptions).forEach(([key, label]) => {
+                    menu.addItem(item => {
+                        item.setTitle(label);
+                        if (this.currentQuery.groupKey === key) {
+                            item.setIcon('check');
+                        }
+                        item.onClick(() => {
+                            this.currentQuery.groupKey = key as any;
+                            this.updateExpandCollapseButtons();
+                            this.updateDisplaySection();
+                            this.updateFilterToggleBadge();
+                            this.emitQueryChange();
+                        });
+                    });
+                });
+            }
+
+            // Show menu at mouse position
+            menu.showAtMouseEvent(event);
+
+        } catch (error) {
+            console.error('FilterBar: Error showing sort/group context menu:', error);
+        }
+    }
+
+    /**
+     * Create a new task
+     */
+    private createNewTask(): void {
+        try {
+            // Use the plugin's existing task creation functionality
+            if (this.plugin && typeof this.plugin.openTaskCreationModal === 'function') {
+                this.plugin.openTaskCreationModal();
+            } else if (this.plugin && typeof this.plugin.createTask === 'function') {
+                this.plugin.createTask();
+            } else {
+                // Fallback: emit an event that views can listen for
+                this.emit('createNewTask');
+            }
+        } catch (error) {
+            console.error('FilterBar: Error creating new task:', error);
         }
     }
 

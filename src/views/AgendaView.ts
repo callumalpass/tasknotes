@@ -9,7 +9,7 @@ import {
     SavedView,
     TaskInfo
 } from '../types';
-import { EventRef, ItemView, Notice, Setting, TFile, WorkspaceLeaf, setIcon } from 'obsidian';
+import { EventRef, ItemView, Notice, Setting, TFile, WorkspaceLeaf, setIcon, ButtonComponent } from 'obsidian';
 import { addDays, endOfWeek, format, isSameDay, startOfWeek } from 'date-fns';
 import { convertUTCToLocalCalendarDate, createUTCDateFromLocalCalendarDate, formatDateForStorage, getTodayLocal, isTodayUTC } from '../utils/dateUtils';
 import { createICSEventCard, updateICSEventCard } from '../ui/ICSCard';
@@ -333,7 +333,7 @@ export class AgendaView extends ItemView {
             this.currentQuery,
             filterOptions,
             this.plugin.settings.viewsButtonAlignment || 'right',
-            { enableGroupExpandCollapse: true, forceShowExpandCollapse: true }
+            { enableGroupExpandCollapse: false, forceShowExpandCollapse: false, viewType: 'agenda' }
         );
 
         // Get saved views for the FilterBar
@@ -432,8 +432,69 @@ export class AgendaView extends ItemView {
         // Initialize heading immediately
         this.updateFilterHeading();
 
+        // Add expand/collapse controls for day sections
+        const expandControlsContainer = container.createDiv({ cls: 'agenda-view-controls' });
+        this.createExpandCollapseButtons(expandControlsContainer);
+
         // Set up view-specific options
         this.setupViewOptions();
+    }
+
+    /**
+     * Create expand/collapse buttons for day sections
+     */
+    private createExpandCollapseButtons(container: HTMLElement): void {
+        container.style.display = 'flex';
+        container.empty();
+        
+        // Expand all button
+        const expandAllBtn = new ButtonComponent(container)
+            .setIcon('list-tree')
+            .setTooltip('Expand All Days')
+            .setClass('agenda-view-control-button')
+            .onClick(() => {
+                // Expand all visible day sections
+                const sections = this.contentEl.querySelectorAll('.agenda-view__day-section.task-group');
+                sections.forEach(section => {
+                    const el = section as HTMLElement;
+                    el.classList.remove('is-collapsed');
+                    const items = el.querySelector('.agenda-view__day-items') as HTMLElement | null;
+                    if (items) items.style.display = '';
+                    const toggle = el.querySelector('.task-group-toggle') as HTMLElement | null;
+                    if (toggle) toggle.setAttr('aria-expanded', 'true');
+                });
+                // Persist: clear collapsedDays
+                const prefs = this.plugin.viewStateManager.getViewPreferences<any>(AGENDA_VIEW_TYPE) || {};
+                const next = { ...prefs, collapsedDays: {} };
+                this.plugin.viewStateManager.setViewPreferences(AGENDA_VIEW_TYPE, next);
+            });
+        expandAllBtn.buttonEl.addClass('clickable-icon');
+
+        // Collapse all button  
+        const collapseAllBtn = new ButtonComponent(container)
+            .setIcon('list-collapse')
+            .setTooltip('Collapse All Days')
+            .setClass('agenda-view-control-button')
+            .onClick(() => {
+                // Collapse all visible day sections
+                const collapsed: Record<string, boolean> = {};
+                const sections = this.contentEl.querySelectorAll('.agenda-view__day-section.task-group');
+                sections.forEach(section => {
+                    const el = section as HTMLElement;
+                    const dayKey = el.dataset.day;
+                    if (dayKey) collapsed[dayKey] = true;
+                    el.classList.add('is-collapsed');
+                    const items = el.querySelector('.agenda-view__day-items') as HTMLElement | null;
+                    if (items) items.style.display = 'none';
+                    const toggle = el.querySelector('.task-group-toggle') as HTMLElement | null;
+                    if (toggle) toggle.setAttr('aria-expanded', 'false');
+                });
+                // Persist: set all days collapsed
+                const prefs = this.plugin.viewStateManager.getViewPreferences<any>(AGENDA_VIEW_TYPE) || {};
+                const next = { ...prefs, collapsedDays: collapsed };
+                this.plugin.viewStateManager.setViewPreferences(AGENDA_VIEW_TYPE, next);
+            });
+        collapseAllBtn.buttonEl.addClass('clickable-icon');
     }
 
     /**
