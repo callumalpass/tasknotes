@@ -233,7 +233,8 @@
 /* Count element within group titles and main title */
 .tasknotes-plugin .project-note-subtasks__group-title .agenda-view__item-count,
 .tasknotes-plugin .project-note-subtasks__title .agenda-view__item-count {
-    margin-left: 10px;
+    margin-left: auto;
+    margin-right: 0;
 }
 
 .tasknotes-plugin .project-note-subtasks__group {

@@ -1415,7 +1415,6 @@ export class FilterBar extends EventEmitter {
             .setTooltip('Toggle sort direction')
             .onClick(() => {
                 this.currentQuery.sortDirection = this.currentQuery.sortDirection === 'asc' ? 'desc' : 'asc';
-                this.updateSortDirectionButton();
                 this.emitImmediateQueryChange();
             });
 
@@ -1485,8 +1484,6 @@ export class FilterBar extends EventEmitter {
                 this.emitQueryChange();
             });
         setTooltip(groupDropdown.selectEl, 'Group tasks by a common property', { placement: 'top' });
-
-        this.updateSortDirectionButton();
 
         // Add click handler for toggle
         titleWrapper.addEventListener('click', () => {
@@ -1628,17 +1625,6 @@ export class FilterBar extends EventEmitter {
         this.emitQueryChange();
     }
 
-    /**
-     * Update sort direction button appearance
-     */
-    private updateSortDirectionButton(): void {
-        const button = this.container.querySelector('.filter-bar__sort-direction') as HTMLElement;
-        if (button) {
-            button.textContent = this.currentQuery.sortDirection === 'asc' ? '↑' : '↓';
-            // Remove any existing title attribute to avoid duplicate tooltips
-            button.removeAttribute('title');
-        }
-    }
 
     /**
      * Update view selector button state based on active saved view
@@ -2068,21 +2054,10 @@ export class FilterBar extends EventEmitter {
      */
     private updateDisplaySection(): void {
         try {
-            // Find the group dropdown and update its value
-            const groupDropdown = this.container.querySelector('.filter-bar__group-container select') as HTMLSelectElement;
-            if (groupDropdown) {
-                groupDropdown.value = this.currentQuery.groupKey || 'none';
-            }
-
-            // Find the sort dropdown and update its value
-            const sortDropdown = this.container.querySelector('.filter-bar__sort-container select') as HTMLSelectElement;
-            if (sortDropdown) {
-                sortDropdown.value = this.currentQuery.sortKey || 'due';
-            }
-
-            // Update sort direction button
-            this.updateSortDirectionButton();
-
+            // Note: With context menu approach, we don't need to update UI elements
+            // as the context menu is rebuilt each time it's shown.
+            // Just update expand/collapse buttons visibility which is still relevant.
+            
             // Update expand/collapse buttons visibility
             this.updateExpandCollapseButtons();
         } catch (error) {

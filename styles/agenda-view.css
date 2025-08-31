@@ -366,15 +366,16 @@
 }
 
 .tasknotes-plugin .agenda-view__item-count {
-    background: var(--tn-bg-secondary);
-    color: var(--tn-text-normal);
-    border: 1px solid var(--tn-border-color);
-    border-radius: var(--tn-radius-md);
-    padding: var(--tn-spacing-xs) var(--tn-spacing-sm);
+    background: none;
+    color: var(--text-muted);
+    border: none;
+    border-radius: 0;
+    padding: 0;
     font-size: var(--tn-font-size-xs);
     font-weight: var(--tn-font-weight-medium);
     line-height: 1.2;
     display: inline-flex;
+    margin-left: auto;
     align-items: center;
     justify-content: center;
     min-width: 24px;
