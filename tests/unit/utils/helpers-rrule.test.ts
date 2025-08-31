@@ -19,29 +19,29 @@ import { TaskInfo } from '../../../src/types';
 import { TaskFactory } from '../../helpers/mock-factories';
 import { RRule } from 'rrule';
 
-// Mock RRule for consistent testing
-const mockRRuleConstructor = jest.fn();
-const mockRRule = {
-  DAILY: 3,
-  WEEKLY: 2,
-  MONTHLY: 1,
-  YEARLY: 0,
-  MO: { weekday: 0 },
-  TU: { weekday: 1 },
-  WE: { weekday: 2 },
-  TH: { weekday: 3 },
-  FR: { weekday: 4 },
-  SA: { weekday: 5 },
-  SU: { weekday: 6 },
-  parseString: jest.fn(),
-  fromString: jest.fn()
-};
+// Mock RRule for consistent testing  
+jest.mock('rrule', () => {
+  const mockConstructor = jest.fn();
+  mockConstructor.DAILY = 3;
+  mockConstructor.WEEKLY = 2;
+  mockConstructor.MONTHLY = 1;
+  mockConstructor.YEARLY = 0;
+  mockConstructor.MO = { weekday: 0 };
+  mockConstructor.TU = { weekday: 1 };
+  mockConstructor.WE = { weekday: 2 };
+  mockConstructor.TH = { weekday: 3 };
+  mockConstructor.FR = { weekday: 4 };
+  mockConstructor.SA = { weekday: 5 };
+  mockConstructor.SU = { weekday: 6 };
+  mockConstructor.parseString = jest.fn();
+  mockConstructor.fromString = jest.fn();
+  
+  return {
+    RRule: mockConstructor
+  };
+});
 
-Object.assign(mockRRuleConstructor, mockRRule);
-
-jest.mock('rrule', () => ({
-  RRule: mockRRuleConstructor
-}));
+const mockRRuleConstructor = RRule as jest.MockedFunction<typeof RRule>;
 
 describe('RRule Helper Functions', () => {
   beforeEach(() => {
@@ -55,8 +55,8 @@ describe('RRule Helper Functions', () => {
       options
     }));
     
-    mockRRule.parseString.mockReturnValue({ freq: 3 });
-    mockRRule.fromString.mockReturnValue({
+    (mockRRuleConstructor as any).parseString.mockReturnValue({ freq: 3 });
+    (mockRRuleConstructor as any).fromString.mockReturnValue({
       toText: jest.fn(() => 'daily'),
       between: jest.fn(() => [new Date('2024-01-15')])
     });
