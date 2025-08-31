@@ -1597,21 +1597,16 @@ export class FilterBar extends EventEmitter {
             return this.activeSavedView.visibleProperties;
         }
         
-        // Fall back to plugin defaults, ensuring status and priority are included
+        // Use plugin defaults as configured in settings - no exceptions or overrides
         const settingsDefaults = this.plugin.settings.defaultVisibleProperties || [];
-        const defaults = [...settingsDefaults];
         
-        // Always ensure status and priority are included for backwards compatibility
-        if (!defaults.includes('status')) {
-            defaults.unshift('status');
-        }
-        if (!defaults.includes('priority')) {
-            defaults.splice(1, 0, 'priority');
+        // If no defaults are configured in settings, use a basic fallback
+        // (but still respect user's choice to exclude status/priority if they set empty array)
+        if (settingsDefaults.length === 0) {
+            return ['status', 'priority', 'due', 'scheduled', 'projects', 'contexts', 'tags'];
         }
         
-        return defaults.length > 0 ? defaults : [
-            'status', 'priority', 'due', 'scheduled', 'projects', 'contexts', 'tags'
-        ];
+        return settingsDefaults;
     }
 
     /**
