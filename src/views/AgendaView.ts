@@ -427,14 +427,22 @@ export class AgendaView extends ItemView {
             this.plugin.viewStateManager.setViewPreferences(AGENDA_VIEW_TYPE, next);
         });
 
-        // Create filter heading (shows active view name and filtered completion count)
+        // Create filter heading with integrated controls
         this.filterHeading = new FilterHeading(container);
+        
+        // Add expand/collapse controls to the heading container  
+        const headingContainer = container.querySelector('.filter-heading') as HTMLElement;
+        if (headingContainer) {
+            const headingContent = headingContainer.querySelector('.filter-heading__content') as HTMLElement;
+            if (headingContent) {
+                // Add controls to the right side of the heading
+                const controlsContainer = headingContent.createDiv({ cls: 'filter-heading__controls' });
+                this.createExpandCollapseButtons(controlsContainer);
+            }
+        }
+        
         // Initialize heading immediately
         this.updateFilterHeading();
-
-        // Add expand/collapse controls for day sections
-        const expandControlsContainer = container.createDiv({ cls: 'agenda-view-controls' });
-        this.createExpandCollapseButtons(expandControlsContainer);
 
         // Set up view-specific options
         this.setupViewOptions();
@@ -444,6 +452,7 @@ export class AgendaView extends ItemView {
      * Create expand/collapse buttons for day sections
      */
     private createExpandCollapseButtons(container: HTMLElement): void {
+        // Always show controls for agenda view (unlike task list which is conditional)
         container.style.display = 'flex';
         container.empty();
         

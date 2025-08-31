@@ -422,10 +422,9 @@ export class FilterBar extends EventEmitter {
                 });
             this.viewSelectorButton.buttonEl.addClass('clickable-icon');
             
-            // Add chevron arrows
+            // Add chevrons-up-down icon
             const chevronContainer = this.viewSelectorButton.buttonEl.createDiv('filter-bar__chevron-container');
-            setIcon(chevronContainer, 'chevron-up');
-            setIcon(chevronContainer, 'chevron-down');
+            setIcon(chevronContainer, 'chevrons-up-down');
             
             this.updateViewSelectorButtonState();
         };
