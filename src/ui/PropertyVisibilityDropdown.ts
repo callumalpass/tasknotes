@@ -31,15 +31,6 @@ export class PropertyVisibilityDropdown {
             const allProperties = this.getAllAvailableProperties();
             console.log('PropertyVisibilityDropdown: All properties:', allProperties);
             
-            // Add a simple test item first
-            menu.addItem((item) => {
-                item.setTitle('Test Menu Item');
-                item.setIcon('gear');
-                item.onClick(() => {
-                    console.log('Test item clicked');
-                });
-            });
-            
             // Add property groups (Bases-style)
             this.addPropertyGroup(menu, 'CORE PROPERTIES', 
                 allProperties.filter(p => p.category === 'core'), 
