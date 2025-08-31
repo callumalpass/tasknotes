@@ -38,9 +38,6 @@ export function generateICSNoteFilename(
         throw new Error('Title cannot be empty');
     }
     
-    if (context.title.length > 200) {
-        throw new Error('Title too long for filename generation');
-    }
     
     const now = context.date || new Date();
     
@@ -110,9 +107,6 @@ export function generateTaskFilename(
         throw new Error('Title cannot be empty');
     }
     
-    if (context.title.length > 200) {
-        throw new Error('Title too long for filename generation');
-    }
     
     const now = context.date || new Date();
     
@@ -321,8 +315,6 @@ function sanitizeForFilename(input: string): string {
             })
             // Remove leading/trailing dots
             .replace(/^\.+|\.+$/g, '')
-            // Limit length to reasonable size (100 chars leaves room for extensions)
-            .substring(0, 100)
             // Final trim in case we removed characters at the edges
             .trim();
         

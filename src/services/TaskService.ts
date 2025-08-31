@@ -107,9 +107,6 @@ export class TaskService {
                 throw new Error('Title is required');
             }
 
-            if (taskData.title.length > 200) {
-                throw new Error('Title is too long (max 200 characters)');
-            }
 
             // Apply defaults for missing fields
             const title = taskData.title.trim();

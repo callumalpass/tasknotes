@@ -165,9 +165,6 @@ export class TasksPluginParser {
 				throw new Error('Title cannot be empty after parsing');
 			}
 			
-			if (title.length > 200) {
-				throw new Error('Title too long (max 200 characters)');
-			}
 
 			// Determine status based on completion and done date
 			let status: string | undefined = undefined;

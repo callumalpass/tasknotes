@@ -221,7 +221,15 @@ export class InstantTaskConvertService {
                 return;
             }
             
-            new Notice(`Task converted: ${parsedData.title}`);
+            // Check if filename was changed due to length constraints
+            const expectedFilename = this.sanitizeTitle(parsedData.title);
+            const actualFilename = file.basename;
+            
+            if (actualFilename.startsWith('task-') && actualFilename !== expectedFilename) {
+                new Notice(`Task converted: "${parsedData.title}" (filename shortened due to length)`);
+            } else {
+                new Notice(`Task converted: ${parsedData.title}`);
+            }
             
             // Trigger immediate refresh of task link overlays to show the inline widget
             await this.refreshTaskLinkOverlays(editor, file);
@@ -315,9 +323,6 @@ export class InstantTaskConvertService {
             return { isValid: false, error: 'Task title cannot be empty.' };
         }
 
-        if (parsedData.title.length > 200) {
-            return { isValid: false, error: 'Task title is too long (max 200 characters).' };
-        }
 
         // Validate against dangerous characters for file operations
         const basicDangerousChars = /[<>:"/\\|?*]/;
