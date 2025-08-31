@@ -8,7 +8,7 @@ import {
     parseDateToUTC,
     formatDateForStorage
 } from './dateUtils';
-import { filterEmptyProjects } from './helpers';
+import { filterEmptyProjects, calculateTotalTimeSpent } from './helpers';
 import { TaskNotesSettings } from '../types/settings';
 
 /**
@@ -1259,6 +1259,9 @@ export class MinimalNativeCache extends Events {
         try {
             const mappedTask = this.fieldMapper.mapFromFrontmatter(frontmatter, path, this.storeTitleInFilename);
             
+            // Calculate total tracked time from time entries
+            const totalTrackedTime = mappedTask.timeEntries ? calculateTotalTimeSpent(mappedTask.timeEntries) : 0;
+            
             return {
                 id: path, // Add id field for API consistency
                 title: mappedTask.title || 'Untitled task',
@@ -1276,6 +1279,7 @@ export class MinimalNativeCache extends Events {
                 completedDate: mappedTask.completedDate,
                 timeEstimate: mappedTask.timeEstimate,
                 timeEntries: mappedTask.timeEntries,
+                totalTrackedTime: totalTrackedTime,
                 dateCreated: mappedTask.dateCreated,
                 dateModified: mappedTask.dateModified,
                 reminders: mappedTask.reminders

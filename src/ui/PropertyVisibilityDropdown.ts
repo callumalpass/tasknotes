@@ -94,6 +94,7 @@ export class PropertyVisibilityDropdown {
             { id: 'due', name: 'Due Date', category: 'core' },
             { id: 'scheduled', name: 'Scheduled Date', category: 'core' },
             { id: 'timeEstimate', name: 'Time Estimate', category: 'core' },
+            { id: 'totalTrackedTime', name: 'Total Tracked Time', category: 'core' },
             { id: 'recurrence', name: 'Recurrence', category: 'core' },
             { id: 'completedDate', name: 'Completed Date', category: 'core' },
             { id: 'file.ctime', name: 'Created Date', category: 'core' },

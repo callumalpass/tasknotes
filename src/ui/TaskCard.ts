@@ -87,7 +87,7 @@ function getDefaultVisibleProperties(): string[] {
 /**
  * Get property value from a task
  */
-function getPropertyValue(task: TaskInfo, propertyId: string): any {
+function getPropertyValue(task: TaskInfo, propertyId: string, plugin: TaskNotesPlugin): any {
     switch (propertyId) {
         case 'due':
             return task.due;
@@ -101,6 +101,8 @@ function getPropertyValue(task: TaskInfo, propertyId: string): any {
             return task.tags;
         case 'timeEstimate':
             return task.timeEstimate;
+        case 'totalTrackedTime':
+            return task.totalTrackedTime;
         case 'recurrence':
             return task.recurrence;
         case 'completedDate':
@@ -113,8 +115,38 @@ function getPropertyValue(task: TaskInfo, propertyId: string): any {
             // Handle user properties
             if (propertyId.startsWith('user:')) {
                 const fieldId = propertyId.slice(5);
-                // Get value from task's custom frontmatter
-                return (task as any)[fieldId];
+                // Find the user field definition to get the correct key
+                const userField = plugin.settings.userFields?.find(f => f.id === fieldId);
+                if (userField && userField.key) {
+                    // First try to get value from task object (for backward compatibility)
+                    let value = (task as any)[userField.key];
+                    
+                    // If not found in task object, try to get it from the file's frontmatter
+                    if (value === undefined) {
+                        try {
+                            const file = plugin.app.vault.getAbstractFileByPath(task.path);
+                            if (file instanceof plugin.app.vault.adapter.constructor) {
+                                // This won't work - let me try a different approach
+                            }
+                            
+                            // Try to get the file's cache/metadata
+                            const fileMetadata = plugin.app.metadataCache.getCache(task.path);
+                            if (fileMetadata?.frontmatter) {
+                                value = fileMetadata.frontmatter[userField.key];
+                                console.log(`TaskCard: Found custom property ${propertyId} in frontmatter:`, value);
+                            }
+                        } catch (error) {
+                            console.warn(`TaskCard: Error accessing frontmatter for ${task.path}:`, error);
+                        }
+                    }
+                    
+                    console.log(`TaskCard: Getting custom property ${propertyId} (fieldId: ${fieldId}, key: ${userField.key}) for task ${task.path}:`, value);
+                    return value;
+                } else {
+                    console.log(`TaskCard: No user field found for ${propertyId} (fieldId: ${fieldId})`);
+                    console.log(`TaskCard: Available userFields:`, plugin.settings.userFields);
+                    return null;
+                }
             }
             return null;
     }
@@ -129,7 +161,7 @@ function renderPropertyMetadata(
     task: TaskInfo,
     plugin: TaskNotesPlugin
 ): HTMLElement | null {
-    const value = getPropertyValue(task, propertyId);
+    const value = getPropertyValue(task, propertyId, plugin);
     if (value === null || value === undefined || 
         (Array.isArray(value) && value.length === 0) ||
         (typeof value === 'string' && value.trim() === '')) {
@@ -166,6 +198,9 @@ function renderPropertyMetadata(
         case 'timeEstimate':
             element.textContent = `${plugin.formatTime(value as number)} estimated`;
             break;
+        case 'totalTrackedTime':
+            element.textContent = `${plugin.formatTime(value as number)} tracked`;
+            break;
         case 'recurrence':
             element.textContent = `Recurring: ${getRecurrenceDisplayText(value)}`;
             break;
@@ -195,7 +230,51 @@ function renderPropertyMetadata(
             if (propertyId.startsWith('user:')) {
                 const fieldId = propertyId.slice(5);
                 const userField = plugin.settings.userFields?.find(f => f.id === fieldId);
-                element.textContent = `${userField?.displayName || fieldId}: ${value}`;
+                console.log(`TaskCard: Rendering custom property ${propertyId}:`, { fieldId, userField, value });
+                
+                if (userField && value !== null && value !== undefined) {
+                    let displayValue = '';
+                    
+                    switch (userField.type) {
+                        case 'text':
+                            displayValue = String(value);
+                            break;
+                        case 'number':
+                            displayValue = typeof value === 'number' ? value.toString() : String(value);
+                            break;
+                        case 'date':
+                            if (value) {
+                                displayValue = formatDateTimeForDisplay(String(value), {
+                                    dateFormat: 'MMM d, yyyy',
+                                    timeFormat: '',
+                                    showTime: false
+                                });
+                            }
+                            break;
+                        case 'boolean':
+                            displayValue = value ? '✓' : '✗';
+                            break;
+                        case 'list':
+                            if (Array.isArray(value)) {
+                                displayValue = value.flat(2).join(', ');
+                            } else {
+                                displayValue = String(value);
+                            }
+                            break;
+                        default:
+                            displayValue = String(value);
+                    }
+                    
+                    if (displayValue.trim() !== '') {
+                        element.textContent = `${userField.displayName || fieldId}: ${displayValue}`;
+                    } else {
+                        element.textContent = `${userField.displayName || fieldId}: (empty)`;
+                    }
+                } else {
+                    // Show debug info when field or value is missing
+                    element.textContent = `${fieldId}: (not found)`;
+                    console.warn(`TaskCard: Custom property ${propertyId} not found or has no value`, { userField, value });
+                }
             }
             break;
     }
@@ -702,10 +781,11 @@ export function createTaskCard(task: TaskInfo, plugin: TaskNotesPlugin, visibleP
         }
     }
     
-    // Legacy: Add time spent information if timeEstimate property is not explicitly configured
+    // Legacy: Add time spent information if timeEstimate or totalTrackedTime properties are not explicitly configured
     const timeSpent = calculateTotalTimeSpent(task.timeEntries || []);
     const hasTimeEstimate = propertiesToShow.includes('timeEstimate');
-    if (!hasTimeEstimate && (task.timeEstimate || timeSpent > 0)) {
+    const hasTotalTrackedTime = propertiesToShow.includes('totalTrackedTime');
+    if (!hasTimeEstimate && !hasTotalTrackedTime && (task.timeEstimate || timeSpent > 0)) {
         const timeInfo: string[] = [];
         if (timeSpent > 0) {
             timeInfo.push(`${plugin.formatTime(timeSpent)} spent`);
@@ -1134,10 +1214,11 @@ export function updateTaskCard(element: HTMLElement, task: TaskInfo, plugin: Tas
             }
         }
         
-        // Legacy: Add time spent information if timeEstimate property is not explicitly configured
+        // Legacy: Add time spent information if timeEstimate or totalTrackedTime properties are not explicitly configured
         const timeSpent = calculateTotalTimeSpent(task.timeEntries || []);
         const hasTimeEstimate = propertiesToShow.includes('timeEstimate');
-        if (!hasTimeEstimate && (task.timeEstimate || timeSpent > 0)) {
+        const hasTotalTrackedTime = propertiesToShow.includes('totalTrackedTime');
+        if (!hasTimeEstimate && !hasTotalTrackedTime && (task.timeEstimate || timeSpent > 0)) {
             const timeInfo: string[] = [];
             if (timeSpent > 0) {
                 timeInfo.push(`${plugin.formatTime(timeSpent)} spent`);

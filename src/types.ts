@@ -238,6 +238,7 @@ export interface TaskInfo {
 	completedDate?: string; // Date (YYYY-MM-DD) when task was marked as done
 	timeEstimate?: number; // Estimated time in minutes
 	timeEntries?: TimeEntry[]; // Individual time tracking sessions
+	totalTrackedTime?: number; // Total tracked time in minutes (calculated from timeEntries)
 	dateCreated?: string; // Creation date (ISO timestamp)
 	dateModified?: string; // Last modification date (ISO timestamp)
 	icsEventId?: string[]; // Links to ICS calendar event IDs
