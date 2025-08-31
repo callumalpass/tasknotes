@@ -1,5 +1,5 @@
 import type TaskNotesPlugin from '../main';
-import { parseFrontMatterAliases, TFile } from 'obsidian';
+import { parseFrontMatterAliases } from 'obsidian';
 import { scoreMultiword } from '../utils/fuzzyMatch';
 
 export interface FileSuggestionItem {

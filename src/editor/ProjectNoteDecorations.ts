@@ -343,15 +343,15 @@ class ProjectSubtasksWidget extends WidgetType {
         // Clear existing tasks
         taskListContainer.empty();
 
-        // Calculate total filtered tasks and completion stats
-        let totalFilteredTasks = 0;
-        let completedFilteredTasks = 0;
-        for (const tasks of this.groupedTasks.values()) {
-            totalFilteredTasks += tasks.length;
-            completedFilteredTasks += tasks.filter(task =>
-                this.plugin.statusManager.isCompletedStatus(task.status)
-            ).length;
-        }
+        // Calculate total filtered tasks and completion stats (for future use)
+        // let totalFilteredTasks = 0;
+        // let completedFilteredTasks = 0;
+        // for (const tasks of this.groupedTasks.values()) {
+        //     totalFilteredTasks += tasks.length;
+        //     completedFilteredTasks += tasks.filter(task =>
+        //         this.plugin.statusManager.isCompletedStatus(task.status)
+        //     ).length;
+        // }
         
         // Render groups
         if (this.currentQuery.groupKey === 'none' || this.groupedTasks.size <= 1) {

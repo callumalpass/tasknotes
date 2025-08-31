@@ -255,6 +255,7 @@ export class NaturalLanguageParser {
         const lowerStatus = statusText.toLowerCase();
 
         let searchIndex = 0;
+        // eslint-disable-next-line no-constant-condition
         while (true) {
             const index = lowerText.indexOf(lowerStatus, searchIndex);
             if (index === -1) break;
