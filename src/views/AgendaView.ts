@@ -1,6 +1,7 @@
 import {
     AGENDA_VIEW_TYPE,
     EVENT_DATA_CHANGED,
+    EVENT_DATE_CHANGED,
     EVENT_DATE_SELECTED,
     EVENT_TASK_UPDATED,
     FilterQuery,
@@ -87,6 +88,12 @@ export class AgendaView extends ItemView {
             }
         });
         this.listeners.push(dataListener);
+        
+        // Listen for date changes to refresh recurring task states
+        const dateChangeListener = this.plugin.emitter.on(EVENT_DATE_CHANGED, async () => {
+            this.refresh();
+        });
+        this.listeners.push(dateChangeListener);
         
         // Listen for date selection changes
         const dateListener = this.plugin.emitter.on(EVENT_DATE_SELECTED, (date: Date) => {

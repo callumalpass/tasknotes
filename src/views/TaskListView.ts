@@ -5,6 +5,7 @@ import {
     TaskInfo,
     EVENT_DATA_CHANGED,
     EVENT_TASK_UPDATED,
+    EVENT_DATE_CHANGED,
     FilterQuery,
     SavedView
 } from '../types';
@@ -88,6 +89,12 @@ export class TaskListView extends ItemView {
             }
         });
         this.listeners.push(dataListener);
+        
+        // Listen for date changes to refresh recurring task states
+        const dateChangeListener = this.plugin.emitter.on(EVENT_DATE_CHANGED, async () => {
+            this.refresh();
+        });
+        this.listeners.push(dateChangeListener);
         
         // Listen for individual task updates
         const taskUpdateListener = this.plugin.emitter.on(EVENT_TASK_UPDATED, async ({ path, originalTask, updatedTask }) => {
