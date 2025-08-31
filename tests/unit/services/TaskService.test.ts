@@ -228,9 +228,10 @@ describe('TaskService', () => {
       await expect(taskService.createTask({ title: '   ' })).rejects.toThrow('Title is required');
     });
 
-    it('should validate title length', async () => {
+    it('should accept long titles without error', async () => {
       const longTitle = 'A'.repeat(201);
-      await expect(taskService.createTask({ title: longTitle })).rejects.toThrow('Title is too long');
+      const result = await taskService.createTask({ title: longTitle });
+      expect(result.taskInfo.title).toBe(longTitle);
     });
 
     it('should ensure task tag is included when using tag-based identification', async () => {

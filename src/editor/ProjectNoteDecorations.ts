@@ -15,7 +15,7 @@ import { createTaskCard } from '../ui/TaskCard';
 // Define a state effect for project subtasks updates
 const projectSubtasksUpdateEffect = StateEffect.define<{ forceUpdate?: boolean }>();
 
-class ProjectSubtasksWidget extends WidgetType {
+export class ProjectSubtasksWidget extends WidgetType {
     private groupedTasks: Map<string, TaskInfo[]> = new Map();
     private filterBar: FilterBar | null = null;
     private filterHeading: FilterHeading | null = null;

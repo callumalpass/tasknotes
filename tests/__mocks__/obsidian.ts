@@ -792,8 +792,13 @@ export class Setting {
 
   addButton(callback: (button: any) => void): Setting {
     const mockButton = {
-      buttonEl: document.createElement('button'),
+      buttonEl: Object.assign(document.createElement('button'), {
+        addClasses: function(classes: string[]) { 
+          classes.forEach(cls => this.classList.add(cls)); 
+        }
+      }),
       setButtonText: (text: string) => { mockButton.buttonEl.textContent = text; return mockButton; },
+      setTooltip: (text: string) => { mockButton.buttonEl.title = text; return mockButton; },
       setCta: () => mockButton,
       setWarning: () => mockButton,
       onClick: (cb: () => void) => { mockButton.buttonEl.addEventListener('click', cb); return mockButton; },

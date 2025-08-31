@@ -42,6 +42,7 @@ jest.mock('rrule', () => {
 });
 
 const mockRRuleConstructor = RRule as jest.MockedFunction<typeof RRule>;
+const mockRRule = mockRRuleConstructor;
 
 describe('RRule Helper Functions', () => {
   beforeEach(() => {
