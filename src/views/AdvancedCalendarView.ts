@@ -102,6 +102,7 @@ export class AdvancedCalendarView extends ItemView {
     private showRecurring: boolean;
     private showICSEvents: boolean;
     private showTimeblocks: boolean;
+    private showAllDaySlot: boolean;
     
     // Mobile collapsible header state
     private headerCollapsed = true;
@@ -117,6 +118,7 @@ export class AdvancedCalendarView extends ItemView {
         this.showRecurring = this.plugin.settings.calendarViewSettings.defaultShowRecurring;
         this.showICSEvents = this.plugin.settings.calendarViewSettings.defaultShowICSEvents;
         this.showTimeblocks = this.plugin.settings.calendarViewSettings.defaultShowTimeblocks;
+        this.showAllDaySlot = true; // Default to true to match FullCalendar's default
         
         // Initialize with default query - will be properly set when plugin services are ready
         this.currentQuery = {
@@ -166,6 +168,7 @@ export class AdvancedCalendarView extends ItemView {
             this.showICSEvents = savedPreferences.showICSEvents ?? this.plugin.settings.calendarViewSettings.defaultShowICSEvents;
             this.showTimeblocks = savedPreferences.showTimeblocks ?? this.plugin.settings.calendarViewSettings.defaultShowTimeblocks;
             this.headerCollapsed = savedPreferences.headerCollapsed ?? true;
+            this.showAllDaySlot = savedPreferences.showAllDaySlot ?? true;
         }
 
         // Ensure initialization
@@ -353,6 +356,18 @@ export class AdvancedCalendarView extends ItemView {
                     this.saveViewPreferences();
                     this.refreshEvents();
                 }
+            },
+            {
+                id: 'allDaySlot',
+                label: 'All-day slot',
+                value: this.showAllDaySlot,
+                onChange: (value: boolean) => {
+                    this.showAllDaySlot = value;
+                    this.saveViewPreferences();
+                    if (this.calendar) {
+                        this.calendar.setOption('allDaySlot', value);
+                    }
+                }
             }
         ];
         
@@ -408,6 +423,12 @@ export class AdvancedCalendarView extends ItemView {
                 break;
             case 'timeblocks':
                 this.showTimeblocks = enabled;
+                break;
+            case 'allDaySlot':
+                this.showAllDaySlot = enabled;
+                if (this.calendar) {
+                    this.calendar.setOption('allDaySlot', enabled);
+                }
                 break;
         }
         
@@ -574,6 +595,7 @@ export class AdvancedCalendarView extends ItemView {
             // Time grid configurations
             slotDuration: calendarSettings.slotDuration,
             slotLabelInterval: this.getSlotLabelInterval(calendarSettings.slotDuration),
+            allDaySlot: this.showAllDaySlot,
             
             // Time format
             eventTimeFormat: this.getTimeFormat(calendarSettings.timeFormat),
@@ -616,7 +638,8 @@ export class AdvancedCalendarView extends ItemView {
             showRecurring: this.showRecurring,
             showICSEvents: this.showICSEvents,
             showTimeblocks: this.showTimeblocks,
-            headerCollapsed: this.headerCollapsed
+            headerCollapsed: this.headerCollapsed,
+            showAllDaySlot: this.showAllDaySlot
         };
         this.plugin.viewStateManager.setViewPreferences(ADVANCED_CALENDAR_VIEW_TYPE, preferences);
     }
@@ -643,6 +666,12 @@ export class AdvancedCalendarView extends ItemView {
         }
         if (viewOptions.hasOwnProperty('showTimeblocks')) {
             this.showTimeblocks = viewOptions.showTimeblocks;
+        }
+        if (viewOptions.hasOwnProperty('showAllDaySlot')) {
+            this.showAllDaySlot = viewOptions.showAllDaySlot;
+            if (this.calendar) {
+                this.calendar.setOption('allDaySlot', this.showAllDaySlot);
+            }
         }
 
         // Update the view options in the FilterBar to reflect the loaded state
