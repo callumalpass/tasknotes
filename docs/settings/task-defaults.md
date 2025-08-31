@@ -15,55 +15,67 @@ The **Default Tasks Folder** setting supports dynamic folder creation using temp
 #### Available Template Variables
 
 **Task Variables:**
+
 - `{{context}}` - First context from the task's contexts array
 - `{{project}}` - First project from the task's projects array  
 - `{{priority}}` - Task priority (e.g., "high", "medium", "low")
 - `{{status}}` - Task status (e.g., "todo", "in-progress", "done")
 - `{{title}}` - Task title (sanitized for folder names)
+- `{{dueDate}}` - Task due date (YYYY-MM-DD format)
+- `{{scheduledDate}}` - Task scheduled date (YYYY-MM-DD format)
+- `{{priorityShort}}` - First letter of priority in uppercase (e.g., "H")
+- `{{statusShort}}` - First letter of status in uppercase (e.g., "T")
+- `{{titleLower}}` - Task title in lowercase
+- `{{titleUpper}}` - Task title in uppercase
+- `{{titleSnake}}` - Task title in snake_case
+- `{{titleKebab}}` - Task title in kebab-case
+- `{{titleCamel}}` - Task title in camelCase
+- `{{titlePascal}}` - Task title in PascalCase
 
 **Date Variables:**
+
 - `{{year}}` - Current year (e.g., "2025")
 - `{{month}}` - Current month with leading zero (e.g., "08")
 - `{{day}}` - Current day with leading zero (e.g., "15")
 - `{{date}}` - Full current date (e.g., "2025-08-15")
 
-#### Template Examples
+**Time Variables:**
 
-**Date-based Organization:**
-```
-Tasks/{{year}}/{{month}}
-→ Tasks/2025/08
+- `{{time}}` - Current time as HHMMSS (e.g., "143502")
+- `{{timestamp}}` - Current timestamp as YYYY-MM-DD-HHMMSS (e.g., "2025-08-15-143502")
+- `{{dateTime}}` - Current date and time as YYYY-MM-DD-HHMM (e.g., "2025-08-15-1435")
+- `{{hour}}` - Current hour with leading zero (e.g., "14")
+- `{{minute}}` - Current minute with leading zero (e.g., "35")
+- `{{second}}` - Current second with leading zero (e.g., "02")
+- `{{time12}}` - 12-hour time with AM/PM (e.g., "02:35 PM")
+- `{{time24}}` - 24-hour time (e.g., "14:35")
+- `{{hourPadded}}` - Hour with leading zero (e.g., "14")
+- `{{hour12}}` - 12-hour format hour with leading zero (e.g., "02")
+- `{{ampm}}` - AM/PM indicator (e.g., "PM")
 
-Tasks/{{year}}/{{date}}
-→ Tasks/2025/2025-08-15
-```
+**Extended Date Variables:**
 
-**Project-based Organization:**
-```
-{{project}}/{{year}}
-→ ProjectName/2025
+- `{{shortDate}}` - Short date as YYMMDD (e.g., "250815")
+- `{{monthName}}` - Full month name (e.g., "August")
+- `{{monthNameShort}}` - Short month name (e.g., "Aug")
+- `{{dayName}}` - Full day name (e.g., "Thursday")
+- `{{dayNameShort}}` - Short day name (e.g., "Thu")
+- `{{week}}` - Week number (e.g., "33")
+- `{{quarter}}` - Quarter number (e.g., "3")
 
-Projects/{{project}}/{{context}}
-→ Projects/ProjectName/ContextName
-```
+**Advanced Variables:**
 
-**Priority and Status Organization:**
-```
-Tasks/{{priority}}/{{status}}
-→ Tasks/high/todo
-
-{{status}}/{{priority}}/{{year}}
-→ todo/high/2025
-```
-
-**Mixed Organization:**
-```
-{{project}}/{{year}}/{{month}}/{{priority}}
-→ ProjectName/2025/08/high
-
-Tasks/{{context}}/{{date}}
-→ Tasks/ContextName/2025-08-15
-```
+- `{{unix}}` - Unix timestamp in seconds (e.g., "1692106502")
+- `{{unixMs}}` - Unix timestamp in milliseconds (e.g., "1692106502123")
+- `{{milliseconds}}` - Milliseconds (e.g., "123")
+- `{{ms}}` - Milliseconds (e.g., "123")
+- `{{timezone}}` - Timezone offset (e.g., "+10:00")
+- `{{timezoneShort}}` - Short timezone offset (e.g., "+1000")
+- `{{utcOffset}}` - UTC offset (e.g., "+10:00")
+- `{{utcOffsetShort}}` - Short UTC offset (e.g., "+1000")
+- `{{utcZ}}` - UTC Z indicator (always "Z")
+- `{{zettel}}` - Zettelkasten ID (e.g., "250815abc")
+- `{{nano}}` - Nano ID with timestamp and random string
 
 #### Important Notes
 
@@ -90,8 +102,6 @@ Tasks/{{project}}/{{context}}/{{year}}
 Work/{{project}}/{{year}}/{{status}}
 Archive/{{year}}/{{month}}/{{project}}
 ```
-
-This feature provides powerful flexibility for automatically organizing your tasks into meaningful folder structures based on their properties and creation date.
 
 ## Archive Folder Management
 
@@ -162,6 +172,7 @@ Absolute default reminders are triggered at specific dates and times:
 - **Description**: Optional custom reminder message
 
 **Example Configurations:**
+
 ```
 Every Monday at 9:00 AM (for weekly planning)
 October 26, 2025 at 2:30 PM (for project deadline)
@@ -173,16 +184,19 @@ Tomorrow at 10:00 AM (for follow-up tasks)
 Default reminders automatically apply to new tasks created through:
 
 #### Manual Task Creation
+
 - Tasks created using the Task Creation Modal
 - Default reminders are added automatically based on available anchor dates
 - Additional reminders can be added during the creation process
 
 #### Instant Conversion
+
 - Tasks created by converting existing content (checkboxes, bullet points, etc.)
 - Default reminders apply based on the converted task's properties
 - Respects existing due and scheduled dates from natural language parsing
 
 #### Natural Language Task Creation
+
 - Tasks created using the natural language parser
 - Default reminders integrate with parsed task properties
 - Applied after natural language processing is complete
@@ -211,18 +225,21 @@ Default reminders can be managed through the settings interface:
 #### Common Workflow Patterns
 
 **Getting Things Done (GTD) Setup:**
+
 ```
 15 minutes before due date (quick review)
 1 day before due date (preparation time)
 ```
 
 **Time-blocking Setup:**
+
 ```
 30 minutes before scheduled date (preparation)
 5 minutes before scheduled date (start notification)
 ```
 
 **Project Management Setup:**  
+
 ```
 1 week before due date (progress check)
 2 days before due date (final review)
@@ -232,12 +249,14 @@ Default reminders can be managed through the settings interface:
 #### Task Type Specific Defaults
 
 **Meeting Tasks:**
+
 ```
 30 minutes before scheduled date (preparation)
 5 minutes before scheduled date (join notification)
 ```
 
 **Deadline Tasks:**
+
 ```
 1 week before due date (progress milestone)
 2 days before due date (completion buffer)
@@ -245,6 +264,7 @@ Default reminders can be managed through the settings interface:
 ```
 
 **Follow-up Tasks:**
+
 ```
 Absolute reminder: Next Monday at 9:00 AM
 Relative reminder: 1 day after due date (if not completed)
@@ -273,6 +293,7 @@ Default reminders work alongside template systems:
 Default reminders are stored in your TaskNotes settings and converted to task reminders when new tasks are created. They maintain the same data structure as task reminders:
 
 #### Settings Storage Format
+
 ```json
 {
   "defaultReminders": [
@@ -297,6 +318,7 @@ Default reminders are stored in your TaskNotes settings and converted to task re
 ```
 
 #### Task Application Format
+
 When applied to tasks, default reminders are converted to the standard reminder format:
 
 ```yaml
