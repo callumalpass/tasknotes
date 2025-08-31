@@ -1,0 +1,1000 @@
+/* ================================================
+   STATISTICS VIEW - BEM STRUCTURE
+   ================================================ */
+
+/* Statistics View Container - Root Block */
+.tasknotes-plugin .stats-view {
+    padding: var(--tn-spacing-lg);
+    max-width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: var(--tn-spacing-xl);
+    height: 100%;
+    overflow-y: auto;
+}
+
+/* ================================================
+   STATS VIEW HEADER
+   ================================================ */
+
+/* Stats Header Container */
+.tasknotes-plugin .stats-view__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--tn-border-color);
+    padding-bottom: var(--tn-spacing-md);
+}
+
+.tasknotes-plugin .stats-view__title {
+    font-size: var(--tn-font-size-xl);
+    font-weight: var(--tn-font-weight-semibold);
+    color: var(--tn-text-normal);
+    margin: 0;
+}
+
+/* Use consistent button system */
+.tasknotes-plugin .stats-view__refresh-button {
+    background: transparent;
+    color: var(--tn-text-normal);
+    border: none;
+    box-shadow: none;
+    font-size: var(--tn-font-size-sm);
+    font-weight: var(--tn-font-weight-medium);
+}
+
+.tasknotes-plugin .stats-view__refresh-button:hover {
+    background: var(--tn-interactive-hover);
+}
+
+/* ================================================
+   STATS VIEW SECTIONS
+   ================================================ */
+
+/* Section Container */
+.tasknotes-plugin .stats-view__section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--tn-spacing-md);
+}
+
+.tasknotes-plugin .stats-view__section .setting-item {
+    border: none;
+    padding: 0;
+    margin: 0;
+}
+
+.tasknotes-plugin .stats-view__section .setting-item-name {
+    font-size: var(--tn-font-size-lg);
+    font-weight: var(--tn-font-weight-semibold);
+    color: var(--tn-text-normal);
+    margin-bottom: var(--tn-spacing-sm);
+}
+
+/* ================================================
+   OVERVIEW GRID
+   ================================================ */
+
+/* Overview Grid Layout */
+.tasknotes-plugin .stats-view__overview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--tn-spacing-md);
+    margin-top: var(--tn-spacing-sm);
+}
+
+/* Overview Card */
+.tasknotes-plugin .stats-view__overview-card {
+    background: var(--tn-background-secondary);
+    border: 1px solid var(--tn-border-color);
+    border-radius: var(--tn-border-radius-md);
+    padding: var(--tn-spacing-md);
+    text-align: center;
+    transition: border-color 0.15s ease-in-out;
+}
+
+.tasknotes-plugin .stats-view__overview-card:hover {
+    border-color: var(--tn-accent-color);
+}
+
+/* Overview Values */
+.tasknotes-plugin .stats-view__overview-value {
+    font-size: var(--tn-font-size-xxl);
+    font-weight: var(--tn-font-weight-bold);
+    color: var(--tn-accent-color);
+    margin-bottom: var(--tn-spacing-xs);
+    line-height: 1.2;
+}
+
+.tasknotes-plugin .stats-view__overview-label {
+    font-size: var(--tn-font-size-sm);
+    font-weight: var(--tn-font-weight-medium);
+    color: var(--tn-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* ================================================
+   STATS GRID
+   ================================================ */
+
+/* Stats Grid Layout */
+.tasknotes-plugin .stats-view__stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: var(--tn-spacing-md);
+    margin-top: var(--tn-spacing-sm);
+}
+
+/* Stat Card */
+.tasknotes-plugin .stats-view__stat-card {
+    background: var(--tn-background-secondary);
+    border: 1px solid var(--tn-border-color);
+    border-radius: var(--tn-border-radius-md);
+    padding: var(--tn-spacing-md);
+    text-align: center;
+    transition: all 0.15s ease-in-out;
+}
+
+.tasknotes-plugin .stats-view__stat-card:hover {
+    border-color: var(--tn-accent-color);
+}
+
+/* Stat Values */
+.tasknotes-plugin .stats-view__stat-value {
+    font-size: var(--tn-font-size-xl);
+    font-weight: var(--tn-font-weight-bold);
+    color: var(--tn-text-normal);
+    margin-bottom: var(--tn-spacing-xs);
+    line-height: 1.2;
+}
+
+.tasknotes-plugin .stats-view__stat-label {
+    font-size: var(--tn-font-size-sm);
+    color: var(--tn-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* ================================================
+   PROJECT STATS
+   ================================================ */
+
+/* Projects Container */
+.tasknotes-plugin .stats-view__projects {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--tn-spacing-md);
+    margin-top: var(--tn-spacing-sm);
+}
+
+/* Project Item */
+.tasknotes-plugin .stats-view__project-item {
+    background: var(--tn-background-secondary);
+    border: 1px solid var(--tn-border-color);
+    border-radius: var(--tn-border-radius-md);
+    padding: var(--tn-spacing-md);
+    transition: all 0.15s ease-in-out;
+}
+
+.tasknotes-plugin .stats-view__project-item:hover {
+    border-color: var(--tn-accent-color);
+}
+
+/* Project Header */
+.tasknotes-plugin .stats-view__project-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--tn-spacing-sm);
+}
+
+.tasknotes-plugin .stats-view__project-name {
+    font-size: var(--tn-font-size-md);
+    font-weight: var(--tn-font-weight-semibold);
+    color: var(--tn-text-normal);
+}
+
+/* Project Content Grid */
+.tasknotes-plugin .stats-view__project-content-grid {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: var(--tn-spacing-md);
+    align-items: center;
+}
+
+/* Progress Circle */
+.tasknotes-plugin .stats-view__progress-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--tn-spacing-xs);
+    padding: var(--tn-spacing-sm);
+}
+
+.tasknotes-plugin .stats-view__progress-circle-svg {
+    transform: rotate(-90deg);
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+}
+
+.tasknotes-plugin .stats-view__progress-circle-bg {
+    fill: none;
+    stroke: var(--background-modifier-border);
+    stroke-width: 4;
+    opacity: 0.3;
+}
+
+.tasknotes-plugin .stats-view__progress-circle-fg {
+    fill: none;
+    stroke: var(--interactive-accent);
+    stroke-width: 4;
+    stroke-linecap: round;
+    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    filter: brightness(1.1);
+    opacity: 1;
+}
+
+/* Hover effect for progress circle */
+.tasknotes-plugin .stats-view__project-item:hover .stats-view__progress-circle-fg {
+    stroke-width: 5;
+    filter: brightness(1.2) saturate(1.1);
+}
+
+.tasknotes-plugin .stats-view__progress-circle-text {
+    font-size: 14px;
+    font-weight: var(--tn-font-weight-bold);
+    fill: var(--tn-text-normal);
+    transform: rotate(90deg);
+    transform-origin: center;
+    text-anchor: middle;
+    dominant-baseline: central;
+}
+
+.tasknotes-plugin .stats-view__progress-label {
+    font-size: var(--tn-font-size-xs);
+    color: var(--tn-text-muted);
+    font-weight: var(--tn-font-weight-medium);
+    text-align: center;
+}
+
+/* Stats Container */
+.tasknotes-plugin .stats-view__stats-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--tn-spacing-sm);
+}
+
+/* Project Stats Container */
+.tasknotes-plugin .stats-view__project-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--tn-spacing-md);
+}
+
+/* Individual Project Stat */
+.tasknotes-plugin .stats-view__project-stat {
+    font-size: var(--tn-font-size-sm);
+    color: var(--tn-text-muted);
+    background: var(--tn-background-primary);
+    padding: var(--tn-spacing-xs) var(--tn-spacing-sm);
+    border-radius: var(--tn-border-radius-sm);
+    border: 1px solid var(--tn-border-color);
+    white-space: nowrap;
+}
+
+/* ================================================
+   NO DATA STATE
+   ================================================ */
+
+.tasknotes-plugin .stats-view__no-data {
+    text-align: center;
+    padding: var(--tn-spacing-xl);
+    color: var(--tn-text-muted);
+    font-style: italic;
+}
+
+/* More Projects Indicator */
+.tasknotes-plugin .stats-view__more-projects {
+    text-align: center;
+    color: var(--tn-text-muted);
+    font-style: italic;
+    padding: var(--tn-spacing-sm);
+    border-top: 1px solid var(--tn-border-color);
+    margin-top: var(--tn-spacing-sm);
+}
+
+/* ================================================
+   RESPONSIVE DESIGN
+   ================================================ */
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+    .tasknotes-plugin .stats-view {
+        padding: var(--tn-spacing-md);
+        gap: var(--tn-spacing-lg);
+    }
+    
+    .tasknotes-plugin .stats-view__overview-grid {
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: var(--tn-spacing-sm);
+    }
+    
+    .tasknotes-plugin .stats-view__stats-grid {
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: var(--tn-spacing-sm);
+    }
+    
+    .tasknotes-plugin .stats-view__project-stats {
+        flex-direction: column;
+        gap: var(--tn-spacing-sm);
+    }
+}
+
+/* ================================================
+   DARK MODE ADJUSTMENTS
+   ================================================ */
+
+.theme-dark .tasknotes-plugin .stats-view__overview-card,
+.theme-dark .tasknotes-plugin .stats-view__stat-card,
+.theme-dark .tasknotes-plugin .stats-view__project-item {
+    background: var(--tn-background-secondary);
+    border-color: var(--tn-border-color);
+}
+
+.theme-dark .tasknotes-plugin .stats-view__project-stat {
+    background: var(--tn-background-modifier-border);
+}
+
+/* ================================================
+   PROGRESS BARS
+   ================================================ */
+
+.tasknotes-plugin .stats-view__progress-bar {
+    width: 100%;
+    height: 8px;
+    background: var(--tn-background-modifier-border);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-top: var(--tn-spacing-xs);
+    position: relative;
+}
+
+.tasknotes-plugin .stats-view__progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--tn-accent-color), var(--color-accent-2, var(--tn-accent-color)));
+    border-radius: 4px;
+    transition: width 0.6s ease-out;
+    position: relative;
+}
+
+.tasknotes-plugin .stats-view__progress-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+/* ================================================
+   VISUAL ENHANCEMENTS
+   ================================================ */
+
+/* Enhanced cards with gradients */
+.tasknotes-plugin .stats-view__overview-card {
+    background: linear-gradient(135deg, var(--tn-background-secondary), var(--tn-background-primary));
+    border: 1px solid var(--tn-border-color);
+    border-radius: var(--tn-border-radius-lg);
+    padding: var(--tn-spacing-lg);
+    text-align: center;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.tasknotes-plugin .stats-view__overview-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--tn-accent-color), var(--color-accent-2, var(--tn-accent-color)));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.tasknotes-plugin .stats-view__overview-card:hover::before {
+    opacity: 1;
+}
+
+.tasknotes-plugin .stats-view__overview-card:hover {
+    border-color: var(--tn-accent-color);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* Enhanced overview values with animation */
+.tasknotes-plugin .stats-view__overview-value {
+    font-size: var(--tn-font-size-xxl);
+    font-weight: var(--tn-font-weight-bold);
+    color: var(--tn-accent-color);
+    margin-bottom: var(--tn-spacing-xs);
+    line-height: 1.2;
+    animation: countUp 0.8s ease-out;
+}
+
+@keyframes countUp {
+    0% { 
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    100% { 
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Enhanced project items */
+.tasknotes-plugin .stats-view__project-item {
+    background: linear-gradient(135deg, var(--tn-background-secondary), var(--tn-background-primary));
+    border: 1px solid var(--tn-border-color);
+    border-radius: var(--tn-border-radius-lg);
+    padding: var(--tn-spacing-lg);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Special styling for "No Project" items */
+.tasknotes-plugin .stats-view__project-item--no-project {
+    background: linear-gradient(135deg, var(--tn-background-modifier-border), var(--tn-background-secondary));
+    border: 1px dashed var(--tn-text-muted);
+    opacity: 0.8;
+}
+
+.tasknotes-plugin .stats-view__project-item--no-project::before {
+    background: linear-gradient(90deg, var(--tn-text-muted), var(--color-base-60));
+    opacity: 0.3;
+}
+
+.tasknotes-plugin .stats-view__project-item--no-project:hover {
+    border-color: var(--tn-text-muted);
+    opacity: 1;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.tasknotes-plugin .stats-view__project-item--no-project .stats-view__project-name {
+    color: var(--tn-text-muted);
+    font-style: italic;
+}
+
+
+.tasknotes-plugin .stats-view__project-item--no-project .stats-view__time-bar-fill {
+    background: linear-gradient(90deg, var(--color-base-60), var(--color-base-70));
+}
+
+.tasknotes-plugin .stats-view__project-item--no-project .stats-view__progress-circle-fg {
+    stroke: var(--color-base-60);
+}
+
+.tasknotes-plugin .stats-view__project-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: var(--tn-accent-color);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.tasknotes-plugin .stats-view__project-item:hover::before {
+    opacity: 1;
+}
+
+.tasknotes-plugin .stats-view__project-item:hover {
+    border-color: var(--tn-accent-color);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* Time visualization bars */
+.tasknotes-plugin .stats-view__time-bar {
+    display: flex;
+    align-items: center;
+    gap: var(--tn-spacing-sm);
+    margin: var(--tn-spacing-xs) 0;
+}
+
+.tasknotes-plugin .stats-view__time-bar-visual {
+    flex: 1;
+    height: 6px;
+    background: var(--tn-background-modifier-border);
+    border-radius: 3px;
+    overflow: hidden;
+    position: relative;
+}
+
+.tasknotes-plugin .stats-view__time-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--color-green), var(--color-blue));
+    border-radius: 3px;
+    transition: width 0.8s ease-out;
+}
+
+.tasknotes-plugin .stats-view__time-bar-label {
+    font-size: var(--tn-font-size-xs);
+    color: var(--tn-text-muted);
+    white-space: nowrap;
+    min-width: 60px;
+    text-align: right;
+}
+
+/* Insight cards */
+.tasknotes-plugin .stats-view__insight-card {
+    background: linear-gradient(135deg, var(--color-accent-2, var(--tn-accent-color)), var(--tn-accent-color));
+    color: var(--text-on-accent);
+    border-radius: var(--tn-border-radius-lg);
+    padding: var(--tn-spacing-lg);
+    margin: var(--tn-spacing-md) 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.tasknotes-plugin .stats-view__insight-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.tasknotes-plugin .stats-view__insight-card:hover::before {
+    opacity: 1;
+}
+
+.tasknotes-plugin .stats-view__insight-title {
+    font-weight: var(--tn-font-weight-bold);
+    margin-bottom: var(--tn-spacing-xs);
+}
+
+.tasknotes-plugin .stats-view__insight-text {
+    font-size: var(--tn-font-size-sm);
+    opacity: 0.9;
+}
+
+/* ================================================
+   LOADING STATE
+   ================================================ */
+
+.tasknotes-plugin .stats-view__loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--tn-spacing-xl);
+    color: var(--tn-text-muted);
+}
+
+.tasknotes-plugin .stats-view__loading::before {
+    content: '';
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--tn-border-color);
+    border-top-color: var(--tn-accent-color);
+    border-radius: 50%;
+    margin-right: var(--tn-spacing-sm);
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360px);
+    }
+}
+
+/* ================================================
+   FILTER CONTROLS
+   ================================================ */
+
+.tasknotes-plugin .stats-view__filters {
+    margin-top: var(--tn-spacing-sm);
+}
+
+.tasknotes-plugin .stats-view__filter-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--tn-spacing-md);
+    align-items: end;
+}
+
+.tasknotes-plugin .stats-view__filter-item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--tn-spacing-xs);
+}
+
+.tasknotes-plugin .stats-view__filter-label {
+    font-size: var(--tn-font-size-sm);
+    font-weight: var(--tn-font-weight-medium);
+    color: var(--tn-text-normal);
+}
+
+.tasknotes-plugin .stats-view__filter-select,
+.tasknotes-plugin .stats-view__filter-input {
+    padding: var(--tn-spacing-sm);
+    border: 1px solid var(--tn-border-color);
+    border-radius: var(--tn-border-radius-sm);
+    background: var(--tn-background-primary);
+    color: var(--tn-text-normal);
+    font-size: var(--tn-font-size-sm);
+}
+
+.tasknotes-plugin .stats-view__filter-select:focus,
+.tasknotes-plugin .stats-view__filter-input:focus {
+    outline: none;
+    border-color: var(--tn-accent-color);
+    box-shadow: 0 0 0 2px rgba(var(--color-accent-rgb), 0.2);
+}
+
+.tasknotes-plugin .stats-view__custom-dates {
+    grid-column: 1 / -1;
+    display: flex;
+    gap: var(--tn-spacing-md);
+    margin-top: var(--tn-spacing-sm);
+}
+
+.tasknotes-plugin .stats-view__date-input-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--tn-spacing-xs);
+    flex: 1;
+}
+
+.tasknotes-plugin .stats-view__date-label {
+    font-size: var(--tn-font-size-sm);
+    font-weight: var(--tn-font-weight-medium);
+    color: var(--tn-text-normal);
+}
+
+.tasknotes-plugin .stats-view__date-input {
+    padding: var(--tn-spacing-sm);
+    border: 1px solid var(--tn-border-color);
+    border-radius: var(--tn-border-radius-sm);
+    background: var(--tn-background-primary);
+    color: var(--tn-text-normal);
+    font-size: var(--tn-font-size-sm);
+}
+
+.tasknotes-plugin .stats-view__filter-buttons {
+    display: flex;
+    gap: var(--tn-spacing-sm);
+    align-items: end;
+}
+
+.tasknotes-plugin .stats-view__filter-button {
+    padding: var(--tn-spacing-sm) var(--tn-spacing-md);
+    border: 1px solid var(--tn-border-color);
+    border-radius: var(--tn-border-radius-sm);
+    background: var(--tn-background-primary);
+    color: var(--tn-text-normal);
+    font-size: var(--tn-font-size-sm);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tasknotes-plugin .stats-view__filter-button:hover {
+    background: var(--tn-interactive-hover);
+}
+
+.tasknotes-plugin .stats-view__filter-button--reset {
+    border-color: var(--color-red);
+    color: var(--color-red);
+}
+
+.tasknotes-plugin .stats-view__filter-button--reset:hover {
+    background: var(--color-red);
+    color: var(--text-on-accent);
+}
+
+/* ================================================
+   INTERACTIVE ELEMENTS
+   ================================================ */
+
+/* Clickable project items */
+.tasknotes-plugin .stats-view__project-item--clickable {
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tasknotes-plugin .stats-view__project-item--clickable:hover {
+    background: var(--tn-interactive-hover);
+}
+
+.tasknotes-plugin .stats-view__click-indicator {
+    font-size: var(--tn-font-size-lg);
+    color: var(--tn-text-muted);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.tasknotes-plugin .stats-view__project-item--clickable:hover .stats-view__click-indicator {
+    opacity: 1;
+}
+
+/* ================================================
+   SPARKLINES & TRENDS
+   ================================================ */
+
+.tasknotes-plugin .stats-view__trend-container {
+    margin: var(--tn-spacing-sm) 0;
+    padding: var(--tn-spacing-sm);
+    background: var(--tn-background-modifier-border);
+    border-radius: var(--tn-border-radius-sm);
+}
+
+.tasknotes-plugin .stats-view__trend-label {
+    font-size: var(--tn-font-size-xs);
+    color: var(--tn-text-muted);
+    margin-bottom: var(--tn-spacing-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.tasknotes-plugin .stats-view__sparkline {
+    height: 20px;
+}
+
+.tasknotes-plugin .stats-view__sparkline-svg {
+    width: 100%;
+    height: 100%;
+    color: var(--tn-accent-color);
+}
+
+/* ================================================
+   MODAL STYLES
+   ================================================ */
+
+/* Modal styles - no plugin scope needed since modals are appended to document.body */
+.stats-view__modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: var(--layer-modal);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--tn-spacing-lg, 16px);
+}
+
+.stats-view__modal {
+    background: var(--tn-background-primary, var(--background-primary));
+    border-radius: var(--tn-border-radius-lg, 8px);
+    max-width: 800px;
+    max-height: 80vh;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.stats-view__modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--tn-spacing-lg, 16px);
+    border-bottom: 1px solid var(--tn-border-color, var(--background-modifier-border));
+}
+
+.stats-view__modal-title {
+    font-size: var(--tn-font-size-lg, 18px);
+    font-weight: var(--tn-font-weight-bold, 600);
+    color: var(--tn-text-normal, var(--text-normal));
+}
+
+.stats-view__modal-close {
+    background: none;
+    border: none;
+    font-size: var(--tn-font-size-xl, 20px);
+    color: var(--tn-text-muted, var(--text-muted));
+    cursor: pointer;
+    padding: var(--tn-spacing-xs, 4px);
+    border-radius: var(--tn-border-radius-sm, 4px);
+    transition: all 0.2s ease;
+}
+
+.stats-view__modal-close:hover {
+    background: var(--tn-interactive-hover, var(--interactive-hover));
+    color: var(--tn-text-normal, var(--text-normal));
+}
+
+.stats-view__modal-content {
+    padding: var(--tn-spacing-lg, 16px);
+    overflow-y: auto;
+    flex: 1;
+}
+
+/* ================================================
+   DRILL-DOWN CONTENT
+   ================================================ */
+
+/* Drill-down styles - no plugin scope needed since content is in modal */
+.stats-view__drilldown-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: var(--tn-spacing-md, 12px);
+    margin-bottom: var(--tn-spacing-xl, 24px);
+}
+
+.stats-view__drilldown-card {
+    background: var(--tn-background-secondary, var(--background-secondary));
+    border: 1px solid var(--tn-border-color, var(--background-modifier-border));
+    border-radius: var(--tn-border-radius-md, 6px);
+    padding: var(--tn-spacing-md, 12px);
+    text-align: center;
+}
+
+.stats-view__drilldown-value {
+    font-size: var(--tn-font-size-xl, 20px);
+    font-weight: var(--tn-font-weight-bold, 600);
+    color: var(--tn-accent-color, var(--interactive-accent));
+    margin-bottom: var(--tn-spacing-xs, 4px);
+}
+
+.stats-view__drilldown-label {
+    font-size: var(--tn-font-size-sm, 12px);
+    color: var(--tn-text-muted, var(--text-muted));
+}
+
+.stats-view__drilldown-section {
+    margin-bottom: var(--tn-spacing-xl, 24px);
+}
+
+.stats-view__drilldown-heading {
+    font-size: var(--tn-font-size-md, 14px);
+    font-weight: var(--tn-font-weight-semibold, 500);
+    color: var(--tn-text-normal, var(--text-normal));
+    margin-bottom: var(--tn-spacing-md, 12px);
+    padding-bottom: var(--tn-spacing-xs, 4px);
+    border-bottom: 1px solid var(--tn-border-color, var(--background-modifier-border));
+}
+
+/* ================================================
+   ACTIVITY CHART
+   ================================================ */
+
+/* Activity chart styles - no plugin scope needed since content is in modal */
+.stats-view__bar-chart {
+    display: flex;
+    align-items: end;
+    gap: 2px;
+    height: 50px;
+    padding: var(--tn-spacing-sm, 8px);
+    background: var(--tn-background-secondary, var(--background-secondary));
+    border-radius: var(--tn-border-radius-sm, 4px);
+    overflow-x: auto;
+}
+
+.stats-view__bar-container {
+    display: flex;
+    align-items: end;
+    flex-shrink: 0;
+}
+
+.stats-view__bar {
+    width: 6px;
+    background: linear-gradient(to top, var(--tn-accent-color, var(--interactive-accent)), var(--color-accent-2, var(--tn-accent-color, var(--interactive-accent))));
+    border-radius: 1px 1px 0 0;
+    min-height: 1px;
+    transition: opacity 0.2s ease;
+}
+
+.stats-view__bar:hover {
+    opacity: 0.7;
+}
+
+/* ================================================
+   TASK LISTS IN DRILL-DOWN
+   ================================================ */
+
+.tasknotes-plugin .stats-view__recent-tasks,
+.tasknotes-plugin .stats-view__task-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--tn-spacing-sm);
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.tasknotes-plugin .stats-view__recent-task {
+    background: var(--tn-background-secondary);
+    border: 1px solid var(--tn-border-color);
+    border-radius: var(--tn-border-radius-sm);
+    padding: var(--tn-spacing-sm);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tasknotes-plugin .stats-view__recent-task:hover {
+    border-color: var(--tn-accent-color);
+    background: var(--tn-interactive-hover);
+}
+
+.tasknotes-plugin .stats-view__task-title {
+    font-size: var(--tn-font-size-sm);
+    font-weight: var(--tn-font-weight-medium);
+    color: var(--tn-text-normal);
+    margin-bottom: var(--tn-spacing-xs);
+}
+
+.tasknotes-plugin .stats-view__task-meta {
+    font-size: var(--tn-font-size-xs);
+    color: var(--tn-text-muted);
+}
+
+/* Section headers and task filters */
+.tasknotes-plugin .stats-view__section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--tn-spacing-md);
+}
+
+.tasknotes-plugin .stats-view__task-filters {
+    display: flex;
+    gap: var(--tn-spacing-sm);
+}
+
+.tasknotes-plugin .stats-view__task-count {
+    font-size: var(--tn-font-size-sm);
+    color: var(--tn-text-muted);
+    margin-bottom: var(--tn-spacing-sm);
+    padding: var(--tn-spacing-xs) var(--tn-spacing-sm);
+    background: var(--tn-background-modifier-border);
+    border-radius: var(--tn-border-radius-sm);
+    text-align: center;
+}
+
+/* ================================================
+   RESPONSIVE ENHANCEMENTS
+   ================================================ */
+
+@media (max-width: 768px) {
+    .tasknotes-plugin .stats-view__overview-card,
+    .tasknotes-plugin .stats-view__project-item {
+        padding: var(--tn-spacing-md);
+    }
+    
+    .tasknotes-plugin .stats-view__time-bar-label {
+        min-width: 50px;
+    }
+    
+    .tasknotes-plugin .stats-view__filter-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .tasknotes-plugin .stats-view__custom-dates {
+        flex-direction: column;
+    }
+    
+    .tasknotes-plugin .stats-view__filter-buttons {
+        justify-content: stretch;
+    }
+    
+    .tasknotes-plugin .stats-view__filter-button {
+        flex: 1;
+    }
+}

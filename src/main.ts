@@ -18,6 +18,7 @@ import {
 	AGENDA_VIEW_TYPE,
 	POMODORO_VIEW_TYPE,
 	POMODORO_STATS_VIEW_TYPE,
+	STATS_VIEW_TYPE,
 	KANBAN_VIEW_TYPE,
 	TaskInfo,
 	EVENT_DATE_SELECTED,
@@ -32,6 +33,7 @@ import { NotesView } from './views/NotesView';
 import { AgendaView } from './views/AgendaView';
 import { PomodoroView } from './views/PomodoroView';
 import { PomodoroStatsView } from './views/PomodoroStatsView';
+import { StatsView } from './views/StatsView';
 import { KanbanView } from './views/KanbanView';
 import { TaskCreationModal } from './modals/TaskCreationModal';
 import { TaskEditModal } from './modals/TaskEditModal';
@@ -356,6 +358,10 @@ export default class TaskNotesPlugin extends Plugin {
 			this.registerView(
 				POMODORO_STATS_VIEW_TYPE,
 				(leaf) => new PomodoroStatsView(leaf, this)
+			);
+			this.registerView(
+				STATS_VIEW_TYPE,
+				(leaf) => new StatsView(leaf, this)
 			);
 			this.registerView(
 				KANBAN_VIEW_TYPE,
@@ -1113,6 +1119,14 @@ export default class TaskNotesPlugin extends Plugin {
 			}
 		});
 
+		this.addCommand({
+			id: 'open-statistics',
+			name: 'Open task & project statistics',
+			callback: async () => {
+				await this.activateStatsView();
+			}
+		});
+
 		// Task commands
 		this.addCommand({
 			id: 'create-new-task',
@@ -1264,6 +1278,10 @@ export default class TaskNotesPlugin extends Plugin {
 
 	async activatePomodoroStatsView() {
 		return this.activateView(POMODORO_STATS_VIEW_TYPE);
+	}
+
+	async activateStatsView() {
+		return this.activateView(STATS_VIEW_TYPE);
 	}
 
 	async activateKanbanView() {
