@@ -1597,8 +1597,19 @@ export class FilterBar extends EventEmitter {
             return this.activeSavedView.visibleProperties;
         }
         
-        // Fall back to plugin defaults
-        return this.plugin.settings.defaultVisibleProperties || [
+        // Fall back to plugin defaults, ensuring status and priority are included
+        const settingsDefaults = this.plugin.settings.defaultVisibleProperties || [];
+        const defaults = [...settingsDefaults];
+        
+        // Always ensure status and priority are included for backwards compatibility
+        if (!defaults.includes('status')) {
+            defaults.unshift('status');
+        }
+        if (!defaults.includes('priority')) {
+            defaults.splice(1, 0, 'priority');
+        }
+        
+        return defaults.length > 0 ? defaults : [
             'status', 'priority', 'due', 'scheduled', 'projects', 'contexts', 'tags'
         ];
     }
