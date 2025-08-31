@@ -605,53 +605,84 @@ export class TaskContextMenu {
     }
     
     private addDateOptions(submenu: any, currentValue: string | undefined, onSelect: (value: string | null) => Promise<void>, onCustomDate: () => void): void {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const today = (window as any).moment();
+        const dateContextMenu = new DateContextMenu({
+            currentValue: currentValue,
+            onSelect: (value: string | null) => {
+                onSelect(value);
+            },
+            onCustomDate: onCustomDate
+        });
         
-        const dateOptions = [
-            {
-                label: 'Today',
-                value: today.format('YYYY-MM-DD'),
-                icon: 'calendar-check'
-            },
-            {
-                label: 'Tomorrow',
-                value: today.clone().add(1, 'day').format('YYYY-MM-DD'),
-                icon: 'calendar-plus'
-            },
-            {
-                label: 'This weekend',
-                value: (() => {
-                    const nextSaturday = today.clone().day(6);
-                    if (nextSaturday.isBefore(today) || nextSaturday.isSame(today, 'day')) {
-                        nextSaturday.add(1, 'week');
+        // Get the date options from DateContextMenu and add them to this submenu
+        const dateOptions = dateContextMenu.getDateOptions();
+        
+        // Add increment/decrement options first (if they exist)
+        const incrementOptions = dateOptions.filter((option: any) => 
+            option.label.startsWith('+') || option.label.startsWith('-')
+        );
+        
+        if (incrementOptions.length > 0) {
+            incrementOptions.forEach((option: any) => {
+                submenu.addItem((item: any) => {
+                    item.setTitle(option.label);
+                    if (option.icon) {
+                        item.setIcon(option.icon);
                     }
-                    return nextSaturday.format('YYYY-MM-DD');
-                })(),
-                icon: 'calendar-days'
-            },
-            {
-                label: 'Next week',
-                value: today.clone().day(1).add(1, 'week').format('YYYY-MM-DD'),
-                icon: 'calendar-plus'
-            },
-            {
-                label: 'Next month',
-                value: today.clone().add(1, 'month').startOf('month').format('YYYY-MM-DD'),
-                icon: 'calendar-range'
-            }
-        ];
+                    item.onClick(() => {
+                        onSelect(option.value);
+                    });
+                });
+            });
+            
+            submenu.addSeparator();
+        }
+
+        // Add basic date options (Today, Tomorrow, etc.)
+        const basicOptions = dateOptions.filter((option: any) => 
+            !option.label.startsWith('+') && !option.label.startsWith('-') &&
+            !['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].includes(option.label)
+        );
         
-        dateOptions.forEach(option => {
+        basicOptions.forEach((option: any) => {
             submenu.addItem((item: any) => {
                 const isSelected = option.value === currentValue;
                 item.setTitle(isSelected ? `✓ ${option.label}` : option.label);
-                item.setIcon(option.icon);
+                if (option.icon) {
+                    item.setIcon(option.icon);
+                }
                 item.onClick(() => {
                     onSelect(option.value);
                 });
             });
         });
+
+        // Add weekdays submenu
+        const weekdayOptions = dateOptions.filter((option: any) => 
+            ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].includes(option.label)
+        );
+        
+        if (weekdayOptions.length > 0) {
+            submenu.addSeparator();
+            
+            submenu.addItem((item: any) => {
+                item.setTitle('Weekdays');
+                item.setIcon('calendar');
+                
+                const weekdaySubmenu = (item as any).setSubmenu();
+                
+                weekdayOptions.forEach((option: any) => {
+                    weekdaySubmenu.addItem((subItem: any) => {
+                        const isSelected = option.value === currentValue;
+                        subItem.setTitle(isSelected ? `✓ ${option.label}` : option.label);
+                        subItem.setIcon('calendar');
+                        
+                        subItem.onClick(() => {
+                            onSelect(option.value);
+                        });
+                    });
+                });
+            });
+        }
         
         submenu.addSeparator();
         
