@@ -231,5 +231,15 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	// Webhook defaults
 	webhooks: [],
 	// User Fields defaults (multiple)
-	userFields: []
+	userFields: [],
+	// Default visible properties for task cards
+	defaultVisibleProperties: [
+		'status',      // Status dot
+		'priority',    // Priority dot
+		'due',         // Due date
+		'scheduled',   // Scheduled date
+		'projects',    // Projects
+		'contexts',    // Contexts
+		'tags'         // Tags
+	]
 };

@@ -683,7 +683,100 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 		// Add reminder form
 		this.renderAddDefaultReminderForm(reminderSection);
 
+		// Task display section
+		new Setting(container).setName('Task display defaults').setHeading();
 
+		this.renderDefaultVisiblePropertiesSettings(container);
+
+	}
+
+	private renderDefaultVisiblePropertiesSettings(container: HTMLElement): void {
+		// Get available properties 
+		const availableProperties = [
+			{ id: 'status', name: 'Status dot', category: 'core' },
+			{ id: 'priority', name: 'Priority dot', category: 'core' },
+			{ id: 'due', name: 'Due date', category: 'core' },
+			{ id: 'scheduled', name: 'Scheduled date', category: 'core' },
+			{ id: 'timeEstimate', name: 'Time estimate', category: 'core' },
+			{ id: 'recurrence', name: 'Recurrence', category: 'core' },
+			{ id: 'completedDate', name: 'Completed date', category: 'core' },
+			{ id: 'projects', name: 'Projects', category: 'organization' },
+			{ id: 'contexts', name: 'Contexts', category: 'organization' },
+			{ id: 'tags', name: 'Tags', category: 'organization' }
+		];
+
+		new Setting(container)
+			.setName('Default visible properties')
+			.setDesc('Choose which properties appear on task cards by default. You can temporarily change these in each view and save custom combinations to saved views.')
+			.setClass('setting-item-default-properties');
+
+		// Create container for property toggles
+		const propertiesContainer = container.createDiv('default-properties-container');
+		
+		// Group by category
+		const coreProperties = availableProperties.filter(p => p.category === 'core');
+		const orgProperties = availableProperties.filter(p => p.category === 'organization');
+		
+		// Create sections
+		this.createPropertiesSection(propertiesContainer, 'Core properties', coreProperties);
+		this.createPropertiesSection(propertiesContainer, 'Organization', orgProperties);
+		
+		// Add user-defined properties if any exist
+		const userFields = this.plugin.settings.userFields || [];
+		if (userFields.length > 0) {
+			const userProperties = userFields.map(field => ({
+				id: `user:${field.id}`,
+				name: field.displayName,
+				category: 'user' as const
+			}));
+			this.createPropertiesSection(propertiesContainer, 'Custom properties', userProperties);
+		}
+		
+		// Add note about backward compatibility
+		const note = container.createDiv({ cls: 'settings-help-note' });
+		note.textContent = 'Note: Status and priority dots are automatically included for backward compatibility with existing views.';
+	}
+
+	private createPropertiesSection(container: HTMLElement, title: string, properties: Array<{ id: string, name: string, category: string }>) {
+		const section = container.createDiv('properties-section');
+		const header = section.createDiv('properties-section-header');
+		header.textContent = title;
+		
+		const grid = section.createDiv('properties-grid');
+		
+		const currentDefaults = this.plugin.settings.defaultVisibleProperties || [];
+		
+		properties.forEach(property => {
+			const item = grid.createDiv('property-item');
+			
+			const checkbox = item.createEl('input', {
+				type: 'checkbox',
+				attr: { 'aria-label': `Show ${property.name}` }
+			}) as HTMLInputElement;
+			
+			checkbox.checked = currentDefaults.includes(property.id);
+			checkbox.addEventListener('change', async () => {
+				let updatedDefaults = [...currentDefaults];
+				
+				if (checkbox.checked) {
+					if (!updatedDefaults.includes(property.id)) {
+						updatedDefaults.push(property.id);
+					}
+				} else {
+					updatedDefaults = updatedDefaults.filter(id => id !== property.id);
+				}
+				
+				this.plugin.settings.defaultVisibleProperties = updatedDefaults;
+				await this.plugin.saveSettings();
+			});
+			
+			const label = item.createEl('label');
+			label.textContent = property.name;
+			label.addEventListener('click', () => {
+				checkbox.checked = !checkbox.checked;
+				checkbox.dispatchEvent(new Event('change'));
+			});
+		});
 	}
 
 	private renderCalendarTab(): void {

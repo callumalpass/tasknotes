@@ -101,6 +101,8 @@ export interface TaskNotesSettings {
 	userFields?: UserMappedField[];
 	// Legacy single-field (for migration only)
 	userField?: UserFieldMapping;
+	// Default visible properties for task cards (when no saved view is active)
+	defaultVisibleProperties?: string[];
 }
 
 export interface DefaultReminder {

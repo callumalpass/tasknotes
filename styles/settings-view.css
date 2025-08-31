@@ -1022,3 +1022,72 @@
     border-radius: var(--tn-radius-sm);
     background: var(--tn-bg-muted);
 }
+
+/* ================================================
+   DEFAULT VISIBLE PROPERTIES SETTINGS
+   ================================================ */
+
+.tasknotes-plugin .default-properties-container {
+    margin-top: var(--tn-spacing-md);
+    border: 1px solid var(--tn-border-color);
+    border-radius: var(--tn-radius-md);
+    padding: var(--tn-spacing-md);
+    background: var(--tn-bg-secondary);
+}
+
+.tasknotes-plugin .properties-section {
+    margin-bottom: var(--tn-spacing-lg);
+}
+
+.tasknotes-plugin .properties-section:last-child {
+    margin-bottom: 0;
+}
+
+.tasknotes-plugin .properties-section-header {
+    font-weight: 600;
+    margin-bottom: var(--tn-spacing-sm);
+    color: var(--tn-text-accent);
+    font-size: 0.9em;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.tasknotes-plugin .properties-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--tn-spacing-sm);
+}
+
+.tasknotes-plugin .property-item {
+    display: flex;
+    align-items: center;
+    gap: var(--tn-spacing-xs);
+    padding: var(--tn-spacing-xs);
+    border-radius: var(--tn-radius-sm);
+    background: var(--tn-bg-primary);
+    border: 1px solid transparent;
+    transition: border-color 0.2s ease;
+}
+
+.tasknotes-plugin .property-item:hover {
+    border-color: var(--tn-border-color);
+}
+
+.tasknotes-plugin .property-item input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    accent-color: var(--tn-interactive-accent);
+}
+
+.tasknotes-plugin .property-item label {
+    cursor: pointer;
+    font-size: 0.9em;
+    color: var(--tn-text-primary);
+    user-select: none;
+    flex-grow: 1;
+}
+
+.tasknotes-plugin .property-item label:hover {
+    color: var(--tn-text-accent);
+}

@@ -128,7 +128,8 @@
 
 /* Count element within task list group headers */
 .tasknotes-plugin .task-list-view__group-header .agenda-view__item-count {
-    margin-left: 10px;
+    margin-left: auto;
+    margin-right: 0;
 }
 
 /* Chevron/toggle styles (match preview-all) */

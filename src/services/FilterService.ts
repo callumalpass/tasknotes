@@ -610,7 +610,12 @@ export class FilterService extends EventEmitter {
 
         // Check if any task project matches the condition project
         const hasMatch = taskValue.some(taskProject => {
-            const taskProjectName = this.extractProjectName(taskProject as string);
+            // Add null check before processing
+            if (!taskProject || typeof taskProject !== 'string') {
+                return false;
+            }
+            
+            const taskProjectName = this.extractProjectName(taskProject);
             if (!taskProjectName) {
                 return false;
             }
@@ -621,7 +626,7 @@ export class FilterService extends EventEmitter {
             }
 
             // Resolve wikilinks and compare resolved paths
-            return this.compareProjectWikilinks(taskProject as string, conditionValue);
+            return this.compareProjectWikilinks(taskProject, conditionValue);
         });
 
         return operator === 'contains' ? hasMatch : !hasMatch;
@@ -697,7 +702,7 @@ export class FilterService extends EventEmitter {
      */
     resolveProjectToAbsolutePath(projectValue: string): string {
         if (!projectValue || typeof projectValue !== 'string') {
-            return projectValue;
+            return projectValue || '';
         }
 
         if (!this.plugin?.app) {
@@ -1262,7 +1267,7 @@ export class FilterService extends EventEmitter {
     }
 
     /**
-     * Get due date group for task (Today, Tomorrow, This Week, etc.)
+     * Get due date group for task (Today, Tomorrow, Next seven days, etc.)
      * For recurring tasks, checks if the task is due on the target date
      */
     private getDueDateGroup(task: TaskInfo, targetDate?: Date): string {
@@ -1319,7 +1324,7 @@ export class FilterService extends EventEmitter {
             const thisWeek = new Date();
             thisWeek.setDate(thisWeek.getDate() + 7);
             const thisWeekStr = format(thisWeek, 'yyyy-MM-dd');
-            if (isBeforeDateSafe(datePart, thisWeekStr) || isSameDateSafe(datePart, thisWeekStr)) return 'This week';
+            if (isBeforeDateSafe(datePart, thisWeekStr) || isSameDateSafe(datePart, thisWeekStr)) return 'Next seven days';
 
             return 'Later';
         } catch (error) {
@@ -1369,7 +1374,7 @@ export class FilterService extends EventEmitter {
             const thisWeek = new Date();
             thisWeek.setDate(thisWeek.getDate() + 7);
             const thisWeekStr = format(thisWeek, 'yyyy-MM-dd');
-            if (isBeforeDateSafe(datePart, thisWeekStr) || isSameDateSafe(datePart, thisWeekStr)) return 'This week';
+            if (isBeforeDateSafe(datePart, thisWeekStr) || isSameDateSafe(datePart, thisWeekStr)) return 'Next seven days';
 
             return 'Later';
         } catch (error) {
@@ -1409,7 +1414,7 @@ export class FilterService extends EventEmitter {
             const thisWeek = new Date();
             thisWeek.setDate(thisWeek.getDate() + 7);
             const thisWeekStr = format(thisWeek, 'yyyy-MM-dd');
-            if (isBeforeDateSafe(datePart, thisWeekStr) || isSameDateSafe(datePart, thisWeekStr)) return 'This week';
+            if (isBeforeDateSafe(datePart, thisWeekStr) || isSameDateSafe(datePart, thisWeekStr)) return 'Next seven days';
 
             return 'Later';
         } catch (error) {
@@ -1441,7 +1446,7 @@ export class FilterService extends EventEmitter {
             const thisWeek = new Date();
             thisWeek.setDate(thisWeek.getDate() + 7);
             const thisWeekStr = format(thisWeek, 'yyyy-MM-dd');
-            if (isBeforeDateSafe(datePart, thisWeekStr) || isSameDateSafe(datePart, thisWeekStr)) return 'This week';
+            if (isBeforeDateSafe(datePart, thisWeekStr) || isSameDateSafe(datePart, thisWeekStr)) return 'Next seven days';
 
             return 'Later';
         } catch (error) {
@@ -1487,7 +1492,7 @@ export class FilterService extends EventEmitter {
 
                 case 'due': {
                     // Sort by logical due date order
-                    const dueDateOrder = ['Overdue', 'Today', 'Tomorrow', 'This week', 'Later', 'No due date'];
+                    const dueDateOrder = ['Overdue', 'Today', 'Tomorrow', 'Next seven days', 'Later', 'No due date'];
                     sortedKeys = Array.from(groups.keys()).sort((a, b) => {
                         const indexA = dueDateOrder.indexOf(a);
                         const indexB = dueDateOrder.indexOf(b);
@@ -1498,7 +1503,7 @@ export class FilterService extends EventEmitter {
 
                 case 'scheduled': {
                     // Sort by logical scheduled date order
-                    const scheduledDateOrder = ['Past scheduled', 'Today', 'Tomorrow', 'This week', 'Later', 'No scheduled date'];
+                    const scheduledDateOrder = ['Past scheduled', 'Today', 'Tomorrow', 'Next seven days', 'Later', 'No scheduled date'];
                     sortedKeys = Array.from(groups.keys()).sort((a, b) => {
                         const indexA = scheduledDateOrder.indexOf(a);
                         const indexB = scheduledDateOrder.indexOf(b);

@@ -88,7 +88,8 @@ export class KanbanView extends ItemView {
             if (taskElement) {
                 // Task is visible - update it in place
                 try {
-                    updateTaskCard(taskElement, updatedTask, this.plugin, {
+                    const visibleProperties = this.getCurrentVisibleProperties();
+                    updateTaskCard(taskElement, updatedTask, this.plugin, visibleProperties, {
                         showDueDate: true,
                         showCheckbox: false,
                         showTimeTracking: true
@@ -204,6 +205,7 @@ export class KanbanView extends ItemView {
         // Create new FilterBar
         this.filterBar = new FilterBar(
             this.app,
+            this.plugin,
             filterBarContainer,
             this.currentQuery,
             filterOptions,
@@ -244,6 +246,12 @@ export class KanbanView extends ItemView {
             this.currentQuery = newQuery;
             // Save the filter state
             await this.plugin.viewStateManager.setFilterState(KANBAN_VIEW_TYPE, newQuery);
+            this.loadAndRenderBoard();
+        });
+
+        // Listen for properties changes
+        this.filterBar.on('propertiesChanged', (properties: string[]) => {
+            // Refresh the task display with new properties
             this.loadAndRenderBoard();
         });
 
@@ -328,7 +336,23 @@ export class KanbanView extends ItemView {
                 this.updateBoardStats(statsContainer, allTasks);
             }
         } catch (error) {
-            console.error("Error loading Kanban board:", error);
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            console.error("KanbanView: Error loading Kanban board:", {
+                error: errorMessage,
+                stack: error instanceof Error ? error.stack : undefined,
+                query: this.currentQuery,
+                cacheInitialized: this.plugin.cacheManager?.isInitialized() || false,
+                visibleProperties: this.getCurrentVisibleProperties(),
+                filterServiceQuery: JSON.stringify(this.currentQuery, null, 2)
+            });
+            
+            // Additional debugging info
+            console.error('KanbanView: Detailed error context:', {
+                pluginInitialized: !!this.plugin,
+                filterServiceInitialized: !!this.plugin?.filterService,
+                containerExists: !!this.boardContainer
+            });
+            
             new Notice("Failed to load Kanban board. See console for details.");
             
             // Remove loading indicator if it exists
@@ -406,7 +430,8 @@ export class KanbanView extends ItemView {
         } else {
             // Tasks are already sorted by FilterService, just render them
             tasks.forEach(task => {
-                const taskCard = createTaskCard(task, this.plugin, {
+                const visibleProperties = this.getCurrentVisibleProperties();
+                const taskCard = createTaskCard(task, this.plugin, visibleProperties, {
                     showDueDate: true,
                     showCheckbox: false,
                     showTimeTracking: true
@@ -933,7 +958,8 @@ export class KanbanView extends ItemView {
      * Create task card element for reconciler
      */
     private createTaskCardElement(task: TaskInfo): HTMLElement {
-        const taskCard = createTaskCard(task, this.plugin, {
+        const visibleProperties = this.getCurrentVisibleProperties();
+        const taskCard = createTaskCard(task, this.plugin, visibleProperties, {
             showDueDate: true,
             showCheckbox: false,
             showTimeTracking: true
@@ -949,13 +975,22 @@ export class KanbanView extends ItemView {
      * Update task card element for reconciler
      */
     private updateTaskCardElement(element: HTMLElement, task: TaskInfo): void {
-        updateTaskCard(element, task, this.plugin, {
+        const visibleProperties = this.getCurrentVisibleProperties();
+        updateTaskCard(element, task, this.plugin, visibleProperties, {
             showDueDate: true,
             showCheckbox: false,
             showTimeTracking: true
         });
         // Ensure task elements tracking is updated
         this.taskElements.set(task.path, element);
+    }
+
+    /**
+     * Get current visible properties for task cards
+     */
+    private getCurrentVisibleProperties(): string[] | undefined {
+        // Use the FilterBar's method which handles temporary state
+        return this.filterBar?.getCurrentVisibleProperties();
     }
 
     // Debounced refresh to avoid multiple rapid refreshes
