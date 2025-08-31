@@ -121,6 +121,8 @@ export const DEFAULT_CALENDAR_VIEW_SETTINGS: CalendarViewSettings = {
 	// Display preferences
 	timeFormat: '24', // 24-hour format
 	showWeekends: true,
+	// Locale settings
+	locale: '', // Empty string means auto-detect from browser
 	// Default event type visibility
 	defaultShowScheduled: true,
 	defaultShowDue: true,

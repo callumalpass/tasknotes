@@ -160,6 +160,8 @@ export interface CalendarViewSettings {
 	// Display preferences
 	timeFormat: '12' | '24'; // 12-hour or 24-hour format
 	showWeekends: boolean;
+	// Locale settings
+	locale: string; // Calendar locale (e.g., 'en', 'fa', 'de', etc.) - empty string means auto-detect
 	// Default event type visibility
 	defaultShowScheduled: boolean;
 	defaultShowDue: boolean;
