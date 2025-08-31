@@ -1983,7 +1983,7 @@ export class AdvancedCalendarView extends ItemView {
         this.functionListeners = [];
         
         // Listen for data changes
-        this.plugin.emitter.on(EVENT_DATA_CHANGED, async () => {
+        const dataListener = this.plugin.emitter.on(EVENT_DATA_CHANGED, async () => {
             this.refreshEvents();
             // Update FilterBar options when data changes (new properties, contexts, etc.)
             if (this.filterBar) {
@@ -1991,14 +1991,16 @@ export class AdvancedCalendarView extends ItemView {
                 this.filterBar.updateFilterOptions(updatedFilterOptions);
             }
         });
+        this.listeners.push(dataListener);
         
         // Listen for date changes to refresh recurring task states
-        this.plugin.emitter.on(EVENT_DATE_CHANGED, async () => {
+        const dateChangeListener = this.plugin.emitter.on(EVENT_DATE_CHANGED, async () => {
             this.refreshEvents();
         });
+        this.listeners.push(dateChangeListener);
         
         // Listen for task updates
-        this.plugin.emitter.on(EVENT_TASK_UPDATED, async (eventData: any) => {
+        const taskUpdateListener = this.plugin.emitter.on(EVENT_TASK_UPDATED, async (eventData: any) => {
             this.refreshEvents();
             // Update FilterBar options when tasks are updated (may have new properties, contexts, etc.)
             if (this.filterBar) {
@@ -2006,6 +2008,7 @@ export class AdvancedCalendarView extends ItemView {
                 this.filterBar.updateFilterOptions(updatedFilterOptions);
             }
         });
+        this.listeners.push(taskUpdateListener);
         
         // Listen for filter service data changes
         const filterDataListener = this.plugin.filterService.on('data-changed', () => {
@@ -2022,19 +2025,20 @@ export class AdvancedCalendarView extends ItemView {
         }
         
         // Listen for timeblocking toggle changes
-        this.plugin.emitter.on(EVENT_TIMEBLOCKING_TOGGLED, (enabled: boolean) => {
+        const timeblockingListener = this.plugin.emitter.on(EVENT_TIMEBLOCKING_TOGGLED, (enabled: boolean) => {
             // Update visibility and refresh if timeblocking was enabled
             this.showTimeblocks = enabled && this.plugin.settings.calendarViewSettings.defaultShowTimeblocks;
             this.refreshEvents();
             this.setupViewOptions(); // Re-render view options
         });
+        this.listeners.push(timeblockingListener);
 
         // Listen for settings changes to update today highlight and custom view
-        this.plugin.emitter.on('settings-changed', () => {
+        const settingsListener = this.plugin.emitter.on('settings-changed', () => {
             this.updateTodayHighlight();
             this.updateCustomViewConfiguration();
         });
-        
+        this.listeners.push(settingsListener);
     }
 
     /**
@@ -2083,6 +2087,11 @@ export class AdvancedCalendarView extends ItemView {
         
         // Clean up function listeners
         this.functionListeners.forEach(unsubscribe => unsubscribe());
+        this.functionListeners = [];
+
+        // Clean up event listeners
+        this.listeners.forEach(listener => this.plugin.emitter.offref(listener));
+        this.listeners = [];
         
         // Clean up FilterBar
         if (this.filterBar) {

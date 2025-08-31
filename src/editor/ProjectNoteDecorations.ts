@@ -652,6 +652,7 @@ class ProjectNoteDecorationsPlugin implements PluginValue {
             dataChangeListener, 
             taskUpdateListener, 
             taskDeleteListener,
+            dateChangeListener,
             settingsChangeListener,
             fileUpdateListener,
             fileDeleteListener,
