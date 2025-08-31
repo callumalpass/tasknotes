@@ -214,7 +214,7 @@ export class UnscheduledTasksSelectorModal extends FuzzySuggestModal<TaskInfo> {
  * Check if a project string is in wikilink format [[Note Name]]
  */
 function isWikilinkProject(project: string): boolean {
-    return project.startsWith('[[') && project.endsWith(']]');
+    return Boolean(project && typeof project === 'string' && project.startsWith('[[') && project.endsWith(']]'));
 }
 
 /**

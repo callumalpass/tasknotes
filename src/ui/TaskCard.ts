@@ -152,10 +152,16 @@ function renderPropertyMetadata(
             renderProjectLinks(element, value as string[], plugin);
             break;
         case 'contexts':
-            element.textContent = `@${(value as string[]).join(', @')}`;
+            const validContexts = (value as string[])
+                .flat(2)
+                .filter(c => c !== null && c !== undefined && typeof c === 'string' && c.trim() !== '');
+            element.textContent = `@${validContexts.join(', @')}`;
             break;
         case 'tags':
-            element.textContent = `#${(value as string[]).join(' #')}`;
+            const validTags = (value as string[])
+                .flat(2)
+                .filter(t => t !== null && t !== undefined && typeof t === 'string' && t.trim() !== '');
+            element.textContent = `#${validTags.join(' #')}`;
             break;
         case 'timeEstimate':
             element.textContent = `${plugin.formatTime(value as number)} estimated`;
@@ -1250,7 +1256,7 @@ export async function showDeleteConfirmationModal(task: TaskInfo, plugin: TaskNo
  * Check if a project string is in wikilink format [[Note Name]]
  */
 function isWikilinkProject(project: string): boolean {
-    return project.startsWith('[[') && project.endsWith(']]');
+    return Boolean(project && project.startsWith('[[') && project.endsWith(']]'));
 }
 
 /**
@@ -1259,7 +1265,12 @@ function isWikilinkProject(project: string): boolean {
 function renderProjectLinks(container: HTMLElement, projects: string[], plugin: TaskNotesPlugin): void {
     container.innerHTML = '';
     
-    projects.forEach((project, index) => {
+    // Flatten nested arrays and filter out null/undefined values before processing
+    const validProjects = projects
+        .flat(2) // Flatten up to 2 levels deep to handle nested arrays
+        .filter(project => project !== null && project !== undefined && typeof project === 'string');
+    
+    validProjects.forEach((project, index) => {
         if (index > 0) {
             const separator = document.createTextNode(', ');
             container.appendChild(separator);
@@ -1554,8 +1565,10 @@ export async function refreshParentTaskSubtasks(
         const projectFileName = projectFile.basename;
         
         // Check if the updated task references this project
-        const isSubtaskOfThisProject = updatedTask.projects.some(project => {
-            if (project.startsWith('[[') && project.endsWith(']]')) {
+        const isSubtaskOfThisProject = updatedTask.projects
+            .flat(2)
+            .some(project => {
+            if (project && typeof project === 'string' && project.startsWith('[[') && project.endsWith(']]')) {
                 const linkedNoteName = project.slice(2, -2).trim();
                 // Check both exact match and resolved file match
                 const resolvedFile = plugin.app.metadataCache.getFirstLinkpathDest(linkedNoteName, '');

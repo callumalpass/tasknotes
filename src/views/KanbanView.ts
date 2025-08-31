@@ -336,7 +336,23 @@ export class KanbanView extends ItemView {
                 this.updateBoardStats(statsContainer, allTasks);
             }
         } catch (error) {
-            console.error("Error loading Kanban board:", error);
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            console.error("KanbanView: Error loading Kanban board:", {
+                error: errorMessage,
+                stack: error instanceof Error ? error.stack : undefined,
+                query: this.currentQuery,
+                cacheInitialized: this.plugin.cacheManager?.isInitialized() || false,
+                visibleProperties: this.getCurrentVisibleProperties(),
+                filterServiceQuery: JSON.stringify(this.currentQuery, null, 2)
+            });
+            
+            // Additional debugging info
+            console.error('KanbanView: Detailed error context:', {
+                pluginInitialized: !!this.plugin,
+                filterServiceInitialized: !!this.plugin?.filterService,
+                containerExists: !!this.boardContainer
+            });
+            
             new Notice("Failed to load Kanban board. See console for details.");
             
             // Remove loading indicator if it exists

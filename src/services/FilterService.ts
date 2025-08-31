@@ -610,7 +610,12 @@ export class FilterService extends EventEmitter {
 
         // Check if any task project matches the condition project
         const hasMatch = taskValue.some(taskProject => {
-            const taskProjectName = this.extractProjectName(taskProject as string);
+            // Add null check before processing
+            if (!taskProject || typeof taskProject !== 'string') {
+                return false;
+            }
+            
+            const taskProjectName = this.extractProjectName(taskProject);
             if (!taskProjectName) {
                 return false;
             }
@@ -621,7 +626,7 @@ export class FilterService extends EventEmitter {
             }
 
             // Resolve wikilinks and compare resolved paths
-            return this.compareProjectWikilinks(taskProject as string, conditionValue);
+            return this.compareProjectWikilinks(taskProject, conditionValue);
         });
 
         return operator === 'contains' ? hasMatch : !hasMatch;
@@ -697,7 +702,7 @@ export class FilterService extends EventEmitter {
      */
     resolveProjectToAbsolutePath(projectValue: string): string {
         if (!projectValue || typeof projectValue !== 'string') {
-            return projectValue;
+            return projectValue || '';
         }
 
         if (!this.plugin?.app) {

@@ -423,7 +423,7 @@ export class StatsView extends ItemView {
      * Extract wikilink path from [[...]] format, handling alias syntax
      */
     private extractWikilinkPath(projectValue: string): string | null {
-        if (!projectValue.startsWith('[[') || !projectValue.endsWith(']]')) {
+        if (!projectValue || typeof projectValue !== 'string' || !projectValue.startsWith('[[') || !projectValue.endsWith(']]')) {
             return null;
         }
 

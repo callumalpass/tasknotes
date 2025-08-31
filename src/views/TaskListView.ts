@@ -152,22 +152,29 @@ export class TaskListView extends ItemView {
     }
     
     async onOpen() {
+        console.log('TaskListView: onOpen() called');
         try {
+            console.log('TaskListView: Waiting for plugin to be ready...');
             // Wait for the plugin to be fully initialized before proceeding
             await this.plugin.onReady();
+            console.log('TaskListView: Plugin ready, waiting for migration...');
             
             // Wait for migration to complete before initializing UI
             await this.plugin.waitForMigration();
+            console.log('TaskListView: Migration complete, initializing query...');
             
             // Initialize with default query from FilterService
             this.currentQuery = this.plugin.filterService.createDefaultQuery();
+            console.log('TaskListView: Default query created:', this.currentQuery);
             
             // Load saved filter state if it exists (will be empty after migration)
             const savedQuery = this.plugin.viewStateManager.getFilterState(TASK_LIST_VIEW_TYPE);
             if (savedQuery) {
+                console.log('TaskListView: Loaded saved query:', savedQuery);
                 this.currentQuery = savedQuery;
             }
             
+            console.log('TaskListView: Calling refresh()...');
             await this.refresh();
         } catch (error) {
             console.error('TaskListView: Error during onOpen:', error);
@@ -409,16 +416,24 @@ export class TaskListView extends ItemView {
      * Refresh tasks using FilterService
      */
     private async refreshTasks(): Promise<void> {
+        console.log('TaskListView: Starting refreshTasks()');
+        
         if (!this.taskListContainer) {
+            console.log('TaskListView: No taskListContainer, returning');
             return;
         }
+        
+        console.log('TaskListView: Current query:', this.currentQuery);
+        console.log('TaskListView: Visible properties:', this.getCurrentVisibleProperties());
         
         try {
             this.isTasksLoading = true;
             this.updateLoadingState();
             
+            console.log('TaskListView: Calling filterService.getGroupedTasks()');
             // Get grouped tasks from FilterService
             const groupedTasks = await this.plugin.filterService.getGroupedTasks(this.currentQuery);
+            console.log('TaskListView: Got grouped tasks:', groupedTasks.size, 'groups');
             
             // Render the grouped tasks
             this.renderTaskItems(this.taskListContainer, groupedTasks);
@@ -429,7 +444,16 @@ export class TaskListView extends ItemView {
                 error: errorMessage,
                 stack: error instanceof Error ? error.stack : undefined,
                 query: this.currentQuery,
-                cacheInitialized: this.plugin.cacheManager?.isInitialized() || false
+                cacheInitialized: this.plugin.cacheManager?.isInitialized() || false,
+                visibleProperties: this.getCurrentVisibleProperties(),
+                filterServiceQuery: JSON.stringify(this.currentQuery, null, 2)
+            });
+            
+            // Additional debugging info
+            console.error('TaskListView: Detailed error context:', {
+                pluginInitialized: !!this.plugin,
+                filterServiceInitialized: !!this.plugin?.filterService,
+                containerExists: !!this.taskListContainer
             });
             
             // Clear existing content and show error message
@@ -458,8 +482,11 @@ export class TaskListView extends ItemView {
 
     // Helper method to render task items with grouping support using DOMReconciler or Virtual Scrolling
     renderTaskItems(container: HTMLElement, groupedTasks: Map<string, TaskInfo[]>) {
+        console.log('TaskListView: Starting renderTaskItems(), groups:', Array.from(groupedTasks.keys()));
+        
         // Check if there are any tasks across all groups
         const totalTasks = Array.from(groupedTasks.values()).reduce((total, tasks) => total + tasks.length, 0);
+        console.log('TaskListView: Total tasks to render:', totalTasks);
         
         if (totalTasks === 0) {
             // Clear everything and show placeholder
@@ -473,9 +500,11 @@ export class TaskListView extends ItemView {
         if (this.currentQuery.groupKey === 'none' && groupedTasks.has('all')) {
             // Non-grouped: use DOMReconciler for the flat task list
             const allTasks = groupedTasks.get('all') || [];
+            console.log('TaskListView: Using non-grouped rendering with', allTasks.length, 'tasks');
             this.renderTaskListWithReconciler(container, allTasks);
         } else {
             // Grouped: render groups normally (groups change less frequently than individual tasks)
+            console.log('TaskListView: Using grouped rendering');
             this.renderGroupedTasksWithReconciler(container, groupedTasks);
         }
     }
@@ -484,13 +513,51 @@ export class TaskListView extends ItemView {
      * Render a flat task list using DOMReconciler for optimal performance
      */
     private renderTaskListWithReconciler(container: HTMLElement, tasks: TaskInfo[]) {
-        this.plugin.domReconciler.updateList<TaskInfo>(
-            container,
-            tasks,
-            (task) => task.path, // Unique key
-            (task) => this.createTaskCardForReconciler(task), // Render new item
-            (element, task) => this.updateTaskCardForReconciler(element, task) // Update existing item
-        );
+        console.log('TaskListView: Starting renderTaskListWithReconciler with', tasks.length, 'tasks');
+        console.log('TaskListView: Container has', container.children.length, 'existing children');
+        console.log('TaskListView: Existing keys:', Array.from(container.children).map(child => (child as HTMLElement).dataset.key));
+        
+        // Clear any elements without proper keys to avoid DOMReconciler confusion
+        Array.from(container.children).forEach(child => {
+            const element = child as HTMLElement;
+            if (!element.dataset.key) {
+                console.log('TaskListView: Removing element without key:', element);
+                element.remove();
+            }
+        });
+        
+        console.log('TaskListView: After cleanup - Container has', container.children.length, 'children');
+        
+        try {
+            console.log('TaskListView: About to call DOMReconciler.updateList');
+            console.log('TaskListView: DOMReconciler exists:', !!this.plugin.domReconciler);
+            console.log('TaskListView: updateList method exists:', typeof this.plugin.domReconciler.updateList);
+            
+            const result = this.plugin.domReconciler.updateList<TaskInfo>(
+                container,
+                tasks,
+                (task) => {
+                    console.log('TaskListView: DOMReconciler requesting key for:', task.path);
+                    return task.path;
+                }, // Unique key
+                (task) => {
+                    console.log('TaskListView: DOMReconciler requesting creation of:', task.path);
+                    return this.createTaskCardForReconciler(task);
+                }, // Render new item
+                (element, task) => {
+                    console.log('TaskListView: DOMReconciler requesting update of:', task.path);
+                    return this.updateTaskCardForReconciler(element, task);
+                } // Update existing item
+            );
+            
+            console.log('TaskListView: DOMReconciler.updateList returned:', result);
+            console.log('TaskListView: DOMReconciler.updateList completed successfully');
+            console.log('TaskListView: Final DOM children count:', container.children.length);
+        } catch (error) {
+            console.error('TaskListView: Error in renderTaskListWithReconciler:', error);
+            console.error('TaskListView: DOM children count at error:', container.children.length);
+            throw error;
+        }
         
         // Update task elements tracking
         this.taskElements.clear();
@@ -666,23 +733,31 @@ export class TaskListView extends ItemView {
      * Create a task card for use with DOMReconciler
      */
     private createTaskCardForReconciler(task: TaskInfo): HTMLElement {
-        const visibleProperties = this.getCurrentVisibleProperties();
-        const taskCard = createTaskCard(task, this.plugin, visibleProperties, {
-            showDueDate: true,
-            showCheckbox: false, // TaskListView doesn't use checkboxes 
-            showArchiveButton: true,
-            showTimeTracking: true,
-            showRecurringControls: true,
-            groupByDate: false
-        });
-        
-        // Ensure the key is set for reconciler
-        taskCard.dataset.key = task.path;
-        
-        // Add drag functionality
-        this.addDragHandlers(taskCard, task);
-        
-        return taskCard;
+        console.log('TaskListView: Creating task card for:', task.path);
+        try {
+            const visibleProperties = this.getCurrentVisibleProperties();
+            console.log('TaskListView: Using visible properties:', visibleProperties);
+            const taskCard = createTaskCard(task, this.plugin, visibleProperties, {
+                showDueDate: true,
+                showCheckbox: false, // TaskListView doesn't use checkboxes 
+                showArchiveButton: true,
+                showTimeTracking: true,
+                showRecurringControls: true,
+                groupByDate: false
+            });
+            console.log('TaskListView: Task card created successfully for:', task.path);
+            
+            // Ensure the key is set for reconciler
+            taskCard.dataset.key = task.path;
+            
+            // Add drag functionality
+            this.addDragHandlers(taskCard, task);
+            
+            return taskCard;
+        } catch (error) {
+            console.error('TaskListView: Error creating task card for', task.path, ':', error);
+            throw error;
+        }
     }
 
     /**
@@ -785,6 +860,10 @@ export class TaskListView extends ItemView {
      * Check if a project string is a file path that should be made clickable
      */
     private isClickableProject(project: string): boolean {
+        if (!project || typeof project !== 'string') {
+            return false;
+        }
+        
         // Wikilink format
         if (project.startsWith('[[') && project.endsWith(']]')) {
             return true;
@@ -813,6 +892,10 @@ export class TaskListView extends ItemView {
      * Create a clickable project header for project file paths
      */
     private createClickableProjectHeader(headerElement: HTMLElement, projectName: string, groupStats?: { completed: number; total: number }): void {
+        if (!projectName || typeof projectName !== 'string') {
+            return;
+        }
+        
         let filePath = projectName;
         let displayName = projectName;
         
