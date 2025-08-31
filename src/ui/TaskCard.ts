@@ -72,9 +72,227 @@ function attachDateClickHandler(
 }
 
 /**
+ * Get default visible properties when no custom configuration is provided
+ */
+function getDefaultVisibleProperties(): string[] {
+    return [
+        'due',         // Due date
+        'scheduled',   // Scheduled date
+        'projects',    // Projects
+        'contexts',    // Contexts
+        'tags'         // Tags
+    ];
+}
+
+/**
+ * Get property value from a task
+ */
+function getPropertyValue(task: TaskInfo, propertyId: string): any {
+    switch (propertyId) {
+        case 'due':
+            return task.due;
+        case 'scheduled':
+            return task.scheduled;
+        case 'projects':
+            return task.projects;
+        case 'contexts':
+            return task.contexts;
+        case 'tags':
+            return task.tags;
+        case 'timeEstimate':
+            return task.timeEstimate;
+        case 'recurrence':
+            return task.recurrence;
+        case 'completedDate':
+            return task.completedDate;
+        case 'file.ctime':
+            return task.dateCreated;
+        case 'file.mtime':
+            return task.dateModified;
+        default:
+            // Handle user properties
+            if (propertyId.startsWith('user:')) {
+                const fieldId = propertyId.slice(5);
+                // Get value from task's custom frontmatter
+                return (task as any)[fieldId];
+            }
+            return null;
+    }
+}
+
+/**
+ * Render a single property as a metadata element
+ */
+function renderPropertyMetadata(
+    container: HTMLElement,
+    propertyId: string,
+    task: TaskInfo,
+    plugin: TaskNotesPlugin
+): HTMLElement | null {
+    const value = getPropertyValue(task, propertyId);
+    if (value === null || value === undefined || 
+        (Array.isArray(value) && value.length === 0) ||
+        (typeof value === 'string' && value.trim() === '')) {
+        return null;
+    }
+
+    const element = container.createEl('span', {
+        cls: `task-card__metadata-property task-card__metadata-property--${propertyId.replace(':', '-')}`
+    });
+
+    // Property-specific rendering logic
+    switch (propertyId) {
+        case 'due':
+            renderDueDateProperty(element, value as string, task, plugin);
+            break;
+        case 'scheduled':
+            renderScheduledDateProperty(element, value as string, task, plugin);
+            break;
+        case 'projects':
+            renderProjectLinks(element, value as string[], plugin);
+            break;
+        case 'contexts':
+            element.textContent = `@${(value as string[]).join(', @')}`;
+            break;
+        case 'tags':
+            element.textContent = `#${(value as string[]).join(' #')}`;
+            break;
+        case 'timeEstimate':
+            element.textContent = `${plugin.formatTime(value as number)} estimated`;
+            break;
+        case 'recurrence':
+            element.textContent = `Recurring: ${getRecurrenceDisplayText(value)}`;
+            break;
+        case 'completedDate':
+            element.textContent = `Completed: ${formatDateTimeForDisplay(value as string, {
+                dateFormat: 'MMM d',
+                timeFormat: 'h:mm a',
+                showTime: false
+            })}`;
+            break;
+        case 'file.ctime':
+            element.textContent = `Created: ${formatDateTimeForDisplay(value as string, {
+                dateFormat: 'MMM d',
+                timeFormat: 'h:mm a',
+                showTime: false
+            })}`;
+            break;
+        case 'file.mtime':
+            element.textContent = `Modified: ${formatDateTimeForDisplay(value as string, {
+                dateFormat: 'MMM d',
+                timeFormat: 'h:mm a',
+                showTime: false
+            })}`;
+            break;
+        default:
+            // Handle user properties
+            if (propertyId.startsWith('user:')) {
+                const fieldId = propertyId.slice(5);
+                const userField = plugin.settings.userFields?.find(f => f.id === fieldId);
+                element.textContent = `${userField?.displayName || fieldId}: ${value}`;
+            }
+            break;
+    }
+
+    return element;
+}
+
+/**
+ * Render due date property with click handler
+ */
+function renderDueDateProperty(element: HTMLElement, due: string, task: TaskInfo, plugin: TaskNotesPlugin): void {
+    const isDueToday = isTodayTimeAware(due);
+    const isDueOverdue = isOverdueTimeAware(due);
+    
+    let dueDateText = '';
+    if (isDueToday) {
+        const timeDisplay = formatDateTimeForDisplay(due, {
+            dateFormat: '',
+            timeFormat: 'h:mm a',
+            showTime: true
+        });
+        dueDateText = timeDisplay.trim() === '' ? 'Due: Today' : `Due: Today at ${timeDisplay}`;
+    } else if (isDueOverdue) {
+        const display = formatDateTimeForDisplay(due, {
+            dateFormat: 'MMM d',
+            timeFormat: 'h:mm a',
+            showTime: true
+        });
+        dueDateText = `Due: ${display} (overdue)`;
+    } else {
+        const display = formatDateTimeForDisplay(due, {
+            dateFormat: 'MMM d',
+            timeFormat: 'h:mm a',
+            showTime: true
+        });
+        dueDateText = `Due: ${display}`;
+    }
+
+    element.textContent = dueDateText;
+    element.classList.add('task-card__metadata-date', 'task-card__metadata-date--due');
+    attachDateClickHandler(element, task, plugin, 'due');
+}
+
+/**
+ * Render scheduled date property with click handler
+ */
+function renderScheduledDateProperty(element: HTMLElement, scheduled: string, task: TaskInfo, plugin: TaskNotesPlugin): void {
+    const isScheduledToday = isTodayTimeAware(scheduled);
+    const isScheduledPast = isOverdueTimeAware(scheduled);
+    
+    let scheduledDateText = '';
+    if (isScheduledToday) {
+        const timeDisplay = formatDateTimeForDisplay(scheduled, {
+            dateFormat: '',
+            timeFormat: 'h:mm a',
+            showTime: true
+        });
+        scheduledDateText = timeDisplay.trim() === '' ? 'Scheduled: Today' : `Scheduled: Today at ${timeDisplay}`;
+    } else if (isScheduledPast) {
+        const display = formatDateTimeForDisplay(scheduled, {
+            dateFormat: 'MMM d',
+            timeFormat: 'h:mm a',
+            showTime: true
+        });
+        scheduledDateText = `Scheduled: ${display} (past)`;
+    } else {
+        const display = formatDateTimeForDisplay(scheduled, {
+            dateFormat: 'MMM d',
+            timeFormat: 'h:mm a',
+            showTime: true
+        });
+        scheduledDateText = `Scheduled: ${display}`;
+    }
+
+    element.textContent = scheduledDateText;
+    element.classList.add('task-card__metadata-date', 'task-card__metadata-date--scheduled');
+    attachDateClickHandler(element, task, plugin, 'scheduled');
+}
+
+/**
+ * Add separators between metadata elements
+ */
+function addMetadataSeparators(metadataLine: HTMLElement, metadataElements: HTMLElement[]): void {
+    if (metadataElements.length > 0) {
+        // Insert separators between elements
+        for (let i = 1; i < metadataElements.length; i++) {
+            const separator = metadataLine.createEl('span', { 
+                cls: 'task-card__metadata-separator',
+                text: ' • ' 
+            });
+            // Insert separator before each element (except first)
+            metadataElements[i].insertAdjacentElement('beforebegin', separator);
+        }
+        metadataLine.style.display = '';
+    } else {
+        metadataLine.style.display = 'none';
+    }
+}
+
+/**
  * Create a minimalist, unified task card element
  */
-export function createTaskCard(task: TaskInfo, plugin: TaskNotesPlugin, options: Partial<TaskCardOptions> = {}): HTMLElement {
+export function createTaskCard(task: TaskInfo, plugin: TaskNotesPlugin, visibleProperties?: string[], options: Partial<TaskCardOptions> = {}): HTMLElement {
     const opts = { ...DEFAULT_TASK_CARD_OPTIONS, ...options };
     const targetDate = opts.targetDate || plugin.selectedDate || new Date();
     
@@ -451,130 +669,30 @@ export function createTaskCard(task: TaskInfo, plugin: TaskNotesPlugin, options:
         titleEl.classList.add('completed');
     }
     
-    // Second line: Metadata
+    // Second line: Metadata (dynamic based on visible properties)
     const metadataLine = contentContainer.createEl('div', { cls: 'task-card__metadata' });
     const metadataElements: HTMLElement[] = [];
     
-    // Recurrence info (if recurring)
-    if (task.recurrence) {
-        const frequencyDisplay = getRecurrenceDisplayText(task.recurrence);
-        const recurringSpan = metadataLine.createEl('span');
-        recurringSpan.textContent = `Recurring: ${frequencyDisplay}`;
-        metadataElements.push(recurringSpan);
-    }
+    // Get properties to display
+    const propertiesToShow = visibleProperties || 
+                            plugin.settings.defaultVisibleProperties || 
+                            getDefaultVisibleProperties();
     
-    // Due date (if has due date) - with hover menu
-    if (task.due) {
-        const isDueToday = isTodayTimeAware(task.due);
-        const isDueOverdue = isOverdueTimeAware(task.due);
+    // Render each visible property
+    for (const propertyId of propertiesToShow) {
+        // Skip status and priority - they're shown as dots
+        if (propertyId === 'status' || propertyId === 'priority') continue;
         
-        let dueDateText = '';
-        if (isDueToday) {
-            // For today, show time if available
-            const timeDisplay = formatDateTimeForDisplay(task.due, {
-                dateFormat: '',
-                timeFormat: 'h:mm a',
-                showTime: true
-            });
-            if (timeDisplay.trim() === '') {
-                dueDateText = 'Due: Today';
-            } else {
-                dueDateText = `Due: Today at ${timeDisplay}`;
-            }
-        } else if (isDueOverdue) {
-            // For overdue, show date and time if available
-            const display = formatDateTimeForDisplay(task.due, {
-                dateFormat: 'MMM d',
-                timeFormat: 'h:mm a',
-                showTime: true
-            });
-            dueDateText = `Due: ${display} (overdue)`;
-        } else {
-            // For future dates, show date and time if available
-            const display = formatDateTimeForDisplay(task.due, {
-                dateFormat: 'MMM d',
-                timeFormat: 'h:mm a',
-                showTime: true
-            });
-            dueDateText = `Due: ${display}`;
+        const element = renderPropertyMetadata(metadataLine, propertyId, task, plugin);
+        if (element) {
+            metadataElements.push(element);
         }
-
-        const dueDateSpan = metadataLine.createEl('span', { 
-            cls: 'task-card__metadata-date task-card__metadata-date--due',
-            text: dueDateText
-        });
-
-        // Add click context menu for due date
-        attachDateClickHandler(dueDateSpan, task, plugin, 'due');
-
-        metadataElements.push(dueDateSpan);
     }
     
-    // Scheduled date (if has scheduled date) - with hover menu
-    if (task.scheduled) {
-        const isScheduledToday = isTodayTimeAware(task.scheduled);
-        const isScheduledPast = isOverdueTimeAware(task.scheduled);
-        
-        let scheduledDateText = '';
-        if (isScheduledToday) {
-            // For today, show time if available
-            const timeDisplay = formatDateTimeForDisplay(task.scheduled, {
-                dateFormat: '',
-                timeFormat: 'h:mm a',
-                showTime: true
-            });
-            if (timeDisplay.trim() === '') {
-                scheduledDateText = 'Scheduled: Today';
-            } else {
-                scheduledDateText = `Scheduled: Today at ${timeDisplay}`;
-            }
-        } else if (isScheduledPast) {
-            // For past dates, show date and time if available
-            const display = formatDateTimeForDisplay(task.scheduled, {
-                dateFormat: 'MMM d',
-                timeFormat: 'h:mm a',
-                showTime: true
-            });
-            scheduledDateText = `Scheduled: ${display} (past)`;
-        } else {
-            // For future dates, show date and time if available
-            const display = formatDateTimeForDisplay(task.scheduled, {
-                dateFormat: 'MMM d',
-                timeFormat: 'h:mm a',
-                showTime: true
-            });
-            scheduledDateText = `Scheduled: ${display}`;
-        }
-
-        const scheduledSpan = metadataLine.createEl('span', { 
-            cls: 'task-card__metadata-date task-card__metadata-date--scheduled',
-            text: scheduledDateText
-        });
-
-        // Add click context menu for scheduled date
-        attachDateClickHandler(scheduledSpan, task, plugin, 'scheduled');
-
-        metadataElements.push(scheduledSpan);
-    }
-    
-    // Contexts (if has contexts)
-    if (task.contexts && task.contexts.length > 0) {
-        const contextsSpan = metadataLine.createEl('span');
-        contextsSpan.textContent = `@${task.contexts.join(', @')}`;
-        metadataElements.push(contextsSpan);
-    }
-    
-    // Projects (if has projects)
-    const filteredProjects = filterEmptyProjects(task.projects || []);
-    if (filteredProjects.length > 0) {
-        const projectsSpan = metadataLine.createEl('span');
-        renderProjectLinks(projectsSpan, filteredProjects, plugin);
-        metadataElements.push(projectsSpan);
-    }
-    
-    // Time tracking (if has time estimate or logged time)
+    // Legacy: Add time spent information if timeEstimate property is not explicitly configured
     const timeSpent = calculateTotalTimeSpent(task.timeEntries || []);
-    if (task.timeEstimate || timeSpent > 0) {
+    const hasTimeEstimate = propertiesToShow.includes('timeEstimate');
+    if (!hasTimeEstimate && (task.timeEstimate || timeSpent > 0)) {
         const timeInfo: string[] = [];
         if (timeSpent > 0) {
             timeInfo.push(`${plugin.formatTime(timeSpent)} spent`);
@@ -582,25 +700,15 @@ export function createTaskCard(task: TaskInfo, plugin: TaskNotesPlugin, options:
         if (task.timeEstimate) {
             timeInfo.push(`${plugin.formatTime(task.timeEstimate)} estimated`);
         }
-        const timeSpan = metadataLine.createEl('span');
+        const timeSpan = metadataLine.createEl('span', {
+            cls: 'task-card__metadata-property task-card__metadata-property--time'
+        });
         timeSpan.textContent = timeInfo.join(', ');
         metadataElements.push(timeSpan);
     }
     
     // Add separators between metadata elements
-    if (metadataElements.length > 0) {
-        // Insert separators between elements
-        for (let i = 1; i < metadataElements.length; i++) {
-            const separator = metadataLine.createEl('span', { 
-                cls: 'task-card__metadata-separator',
-                text: ' • ' 
-            });
-            // Insert separator before each element (except first)
-            metadataElements[i].insertAdjacentElement('beforebegin', separator);
-        }
-    } else {
-        metadataLine.style.display = 'none';
-    }
+    addMetadataSeparators(metadataLine, metadataElements);
     
     // Add click handlers with single/double click distinction
     const { clickHandler, dblclickHandler } = createTaskClickHandler({
@@ -670,7 +778,7 @@ export async function showTaskContextMenu(event: MouseEvent, taskPath: string, p
 /**
  * Update an existing task card with new data
  */
-export function updateTaskCard(element: HTMLElement, task: TaskInfo, plugin: TaskNotesPlugin, options: Partial<TaskCardOptions> = {}): void {
+export function updateTaskCard(element: HTMLElement, task: TaskInfo, plugin: TaskNotesPlugin, visibleProperties?: string[], options: Partial<TaskCardOptions> = {}): void {
     const opts = { ...DEFAULT_TASK_CARD_OPTIONS, ...options };
     const targetDate = opts.targetDate || plugin.selectedDate || new Date();
     
@@ -960,126 +1068,26 @@ export function updateTaskCard(element: HTMLElement, task: TaskInfo, plugin: Tas
         metadataLine.innerHTML = '';
         const metadataElements: HTMLElement[] = [];
         
-        // Recurrence info (if recurring)
-        if (task.recurrence) {
-            const frequencyDisplay = getRecurrenceDisplayText(task.recurrence);
-            const recurringSpan = metadataLine.createEl('span');
-            recurringSpan.textContent = `Recurring: ${frequencyDisplay}`;
-            metadataElements.push(recurringSpan);
-        }
+        // Get properties to display
+        const propertiesToShow = visibleProperties || 
+                                plugin.settings.defaultVisibleProperties || 
+                                getDefaultVisibleProperties();
         
-        // Due date (if has due date)
-        if (task.due) {
-            const isDueToday = isTodayTimeAware(task.due);
-            const isDueOverdue = isOverdueTimeAware(task.due);
+        // Render each visible property
+        for (const propertyId of propertiesToShow) {
+            // Skip status and priority - they're shown as dots
+            if (propertyId === 'status' || propertyId === 'priority') continue;
             
-            let dueDateText = '';
-            if (isDueToday) {
-                // For today, show time if available
-                const timeDisplay = formatDateTimeForDisplay(task.due, {
-                    dateFormat: '',
-                    timeFormat: 'h:mm a',
-                    showTime: true
-                });
-                if (timeDisplay.trim() === '') {
-                    dueDateText = 'Due: Today';
-                } else {
-                    dueDateText = `Due: Today at ${timeDisplay}`;
-                }
-            } else if (isDueOverdue) {
-                // For overdue, show date and time if available
-                const display = formatDateTimeForDisplay(task.due, {
-                    dateFormat: 'MMM d',
-                    timeFormat: 'h:mm a',
-                    showTime: true
-                });
-                dueDateText = `Due: ${display} (overdue)`;
-            } else {
-                // For future dates, show date and time if available
-                const display = formatDateTimeForDisplay(task.due, {
-                    dateFormat: 'MMM d',
-                    timeFormat: 'h:mm a',
-                    showTime: true
-                });
-                dueDateText = `Due: ${display}`;
+            const element = renderPropertyMetadata(metadataLine, propertyId, task, plugin);
+            if (element) {
+                metadataElements.push(element);
             }
-
-            const dueDateSpan = metadataLine.createEl('span', { 
-                cls: 'task-card__metadata-date task-card__metadata-date--due',
-                text: dueDateText
-            });
-            
-            // Re-attach click context menu for due date
-            attachDateClickHandler(dueDateSpan, task, plugin, 'due');
-            
-            metadataElements.push(dueDateSpan);
         }
         
-        // Scheduled date (if has scheduled date)
-        if (task.scheduled) {
-            const isScheduledToday = isTodayTimeAware(task.scheduled);
-            const isScheduledPast = isOverdueTimeAware(task.scheduled);
-            
-            let scheduledDateText = '';
-            if (isScheduledToday) {
-                // For today, show time if available
-                const timeDisplay = formatDateTimeForDisplay(task.scheduled, {
-                    dateFormat: '',
-                    timeFormat: 'h:mm a',
-                    showTime: true
-                });
-                if (timeDisplay.trim() === '') {
-                    scheduledDateText = 'Scheduled: Today';
-                } else {
-                    scheduledDateText = `Scheduled: Today at ${timeDisplay}`;
-                }
-            } else if (isScheduledPast) {
-                // For past dates, show date and time if available
-                const display = formatDateTimeForDisplay(task.scheduled, {
-                    dateFormat: 'MMM d',
-                    timeFormat: 'h:mm a',
-                    showTime: true
-                });
-                scheduledDateText = `Scheduled: ${display} (past)`;
-            } else {
-                // For future dates, show date and time if available
-                const display = formatDateTimeForDisplay(task.scheduled, {
-                    dateFormat: 'MMM d',
-                    timeFormat: 'h:mm a',
-                    showTime: true
-                });
-                scheduledDateText = `Scheduled: ${display}`;
-            }
-
-            const scheduledSpan = metadataLine.createEl('span', { 
-                cls: 'task-card__metadata-date task-card__metadata-date--scheduled',
-                text: scheduledDateText
-            });
-            
-            // Re-attach click context menu for scheduled date
-            attachDateClickHandler(scheduledSpan, task, plugin, 'scheduled');
-            
-            metadataElements.push(scheduledSpan);
-        }
-        
-        // Contexts (if has contexts)
-        if (task.contexts && task.contexts.length > 0) {
-            const contextsSpan = metadataLine.createEl('span');
-            contextsSpan.textContent = `@${task.contexts.join(', @')}`;
-            metadataElements.push(contextsSpan);
-        }
-        
-        // Projects (if has projects) - use specialized rendering for links
-        const filteredProjects = filterEmptyProjects(task.projects || []);
-        if (filteredProjects.length > 0) {
-            const projectsSpan = metadataLine.createEl('span');
-            renderProjectLinks(projectsSpan, filteredProjects, plugin);
-            metadataElements.push(projectsSpan);
-        }
-        
-        // Time tracking (if has time estimate or logged time)
+        // Legacy: Add time spent information if timeEstimate property is not explicitly configured
         const timeSpent = calculateTotalTimeSpent(task.timeEntries || []);
-        if (task.timeEstimate || timeSpent > 0) {
+        const hasTimeEstimate = propertiesToShow.includes('timeEstimate');
+        if (!hasTimeEstimate && (task.timeEstimate || timeSpent > 0)) {
             const timeInfo: string[] = [];
             if (timeSpent > 0) {
                 timeInfo.push(`${plugin.formatTime(timeSpent)} spent`);
@@ -1087,26 +1095,15 @@ export function updateTaskCard(element: HTMLElement, task: TaskInfo, plugin: Tas
             if (task.timeEstimate) {
                 timeInfo.push(`${plugin.formatTime(task.timeEstimate)} estimated`);
             }
-            const timeSpan = metadataLine.createEl('span');
+            const timeSpan = metadataLine.createEl('span', {
+                cls: 'task-card__metadata-property task-card__metadata-property--time'
+            });
             timeSpan.textContent = timeInfo.join(', ');
             metadataElements.push(timeSpan);
         }
         
         // Add separators between metadata elements
-        if (metadataElements.length > 0) {
-            // Insert separators between elements
-            for (let i = 1; i < metadataElements.length; i++) {
-                const separator = metadataLine.createEl('span', { 
-                    cls: 'task-card__metadata-separator',
-                    text: ' • ' 
-                });
-                // Insert separator before each element (except first)
-                metadataElements[i].insertAdjacentElement('beforebegin', separator);
-            }
-            metadataLine.style.display = '';
-        } else {
-            metadataLine.style.display = 'none';
-        }
+        addMetadataSeparators(metadataLine, metadataElements);
     }
     
     // Animation is now handled separately - don't add it here during reconciler updates
@@ -1423,7 +1420,7 @@ async function toggleSubtasks(card: HTMLElement, task: TaskInfo, plugin: TaskNot
                     continue;
                 }
                 
-                const subtaskCard = createTaskCard(subtask, plugin, {
+                const subtaskCard = createTaskCard(subtask, plugin, undefined, {
                     showDueDate: true,
                     showCheckbox: false,
                     showArchiveButton: false,

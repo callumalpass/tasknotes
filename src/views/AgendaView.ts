@@ -328,6 +328,7 @@ export class AgendaView extends ItemView {
         // Create new FilterBar
         this.filterBar = new FilterBar(
             this.app,
+            this.plugin,
             filterBarContainer,
             this.currentQuery,
             filterOptions,
@@ -887,7 +888,7 @@ export class AgendaView extends ItemView {
                 countBadge.textContent = countText;
             }
         } else if (item.type === 'task') {
-            updateTaskCard(element, item.item as TaskInfo, this.plugin, {
+            updateTaskCard(element, item.item as TaskInfo, this.plugin, undefined, {
                 showDueDate: !this.groupByDate,
                 showCheckbox: false,
                 showTimeTracking: true,
@@ -915,7 +916,7 @@ export class AgendaView extends ItemView {
      */
     private updateFlatAgendaItemElement(element: HTMLElement, item: {type: 'task' | 'note' | 'ics', item: TaskInfo | NoteInfo | import('../types').ICSEvent, date: Date}): void {
         if (item.type === 'task') {
-            updateTaskCard(element, item.item as TaskInfo, this.plugin, {
+            updateTaskCard(element, item.item as TaskInfo, this.plugin, undefined, {
                 showDueDate: !this.groupByDate,
                 showCheckbox: false,
                 showTimeTracking: true,
@@ -933,7 +934,7 @@ export class AgendaView extends ItemView {
      * Create task item element
      */
     private createTaskItemElement(task: TaskInfo, date?: Date): HTMLElement {
-        const taskCard = createTaskCard(task, this.plugin, {
+        const taskCard = createTaskCard(task, this.plugin, undefined, {
             showDueDate: !this.groupByDate,
             showCheckbox: false,
             showTimeTracking: true,
@@ -1281,7 +1282,7 @@ export class AgendaView extends ItemView {
      */
     private updateDayItemElement(element: HTMLElement, item: {type: 'task' | 'note' | 'ics', item: any, date: Date}): void {
         if (item.type === 'task') {
-            updateTaskCard(element, item.item as TaskInfo, this.plugin, {
+            updateTaskCard(element, item.item as TaskInfo, this.plugin, undefined, {
                 showDueDate: !this.groupByDate,
                 showCheckbox: false,
                 showTimeTracking: true,

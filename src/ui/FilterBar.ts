@@ -7,6 +7,7 @@ import { FilterUtils } from '../utils/FilterUtils';
 import { isValidDateInput } from '../utils/dateUtils';
 import { showConfirmationModal } from '../modals/ConfirmationModal';
 import { DateContextMenu } from '../components/DateContextMenu';
+import { PropertyVisibilityDropdown } from './PropertyVisibilityDropdown';
 
 class SaveViewModal extends Modal {
     private name: string;
@@ -51,6 +52,7 @@ class SaveViewModal extends Modal {
  */
 export class FilterBar extends EventEmitter {
     private app: App;
+    private plugin: any; // TaskNotesPlugin
     private container: HTMLElement;
     private currentQuery: FilterQuery;
     private savedViews: readonly SavedView[] = [];
@@ -94,6 +96,7 @@ export class FilterBar extends EventEmitter {
 
     constructor(
         app: App,
+        plugin: any, // TaskNotesPlugin
         container: HTMLElement,
         initialQuery: FilterQuery,
         filterOptions: FilterOptions,
@@ -102,6 +105,7 @@ export class FilterBar extends EventEmitter {
     ) {
         super();
         this.app = app;
+        this.plugin = plugin;
         this.container = container;
         this.currentQuery = FilterUtils.deepCloneFilterQuery(initialQuery);
         this.filterOptions = filterOptions;
@@ -434,6 +438,16 @@ export class FilterBar extends EventEmitter {
                 }
             });
         };
+        const makePropertiesButton = () => {
+            const propertiesButton = new ButtonComponent(topControls)
+                .setIcon('columns')
+                .setTooltip('Configure visible properties')
+                .setClass('filter-bar__properties-button')
+                .onClick((event) => {
+                    this.showPropertiesDropdown(event);
+                });
+            propertiesButton.buttonEl.addClass('clickable-icon');
+        };
         const makeSearchInput = () => {
             this.searchInput = new TextComponent(topControls)
                 .setPlaceholder('Search tasks...');
@@ -470,15 +484,17 @@ export class FilterBar extends EventEmitter {
 
         // Order controls based on alignment preference
         if (this.viewsButtonAlignment === 'left') {
-            // Left: Views -> Expand -> Collapse -> Filter -> Search Box
+            // Left: Views -> Expand -> Collapse -> Filter -> Properties -> Search Box
             makeViewsButton();
             makeExpandCollapseButtons();
             makeFilterToggle();
+            makePropertiesButton();
             makeSearchInput();
         } else {
-            // Right (default): Expand -> Collapse -> Filter -> Search Box -> Views
+            // Right (default): Expand -> Collapse -> Filter -> Properties -> Search Box -> Views
             makeExpandCollapseButtons();
             makeFilterToggle();
+            makePropertiesButton();
             makeSearchInput();
             makeViewsButton();
         }
@@ -1530,6 +1546,51 @@ export class FilterBar extends EventEmitter {
             // Closing dropdown - remove active class
             this.viewSelectorButton.buttonEl.classList.remove('filter-bar__templates-button--active');
         }
+    }
+
+    /**
+     * Show properties visibility dropdown
+     */
+    private showPropertiesDropdown(event: MouseEvent): void {
+        const dropdown = new PropertyVisibilityDropdown(
+            this.getCurrentSavedView(),
+            this.plugin,
+            (newProperties: string[]) => {
+                this.updateCurrentViewProperties(newProperties);
+            }
+        );
+        dropdown.show(event);
+    }
+
+    /**
+     * Update properties for the current view
+     */
+    private updateCurrentViewProperties(properties: string[]): void {
+        const currentView = this.getCurrentSavedView();
+        
+        if (currentView) {
+            // Update the existing saved view with new properties
+            const updatedView: SavedView = {
+                ...currentView,
+                visibleProperties: properties
+            };
+            
+            // Emit save view event to update the saved view
+            this.emit('saveView', updatedView);
+        } else {
+            // No active saved view - just emit properties update for temporary use
+            this.emit('updateProperties', properties);
+        }
+        
+        // Always emit properties change event for immediate UI update
+        this.emit('propertiesChanged', properties);
+    }
+
+    /**
+     * Get the currently active saved view (for external use)
+     */
+    public getCurrentSavedView(): SavedView | null {
+        return this.activeSavedView;
     }
 
     /**

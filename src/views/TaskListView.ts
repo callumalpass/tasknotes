@@ -33,6 +33,7 @@ export class TaskListView extends ItemView {
     private filterBar: FilterBar | null = null;
     private filterHeading: FilterHeading | null = null;
     private currentQuery: FilterQuery;
+    private currentVisibleProperties: string[] | null = null;
     
     // Task item tracking for dynamic updates
     private taskElements: Map<string, HTMLElement> = new Map();
@@ -111,7 +112,8 @@ export class TaskListView extends ItemView {
             if (taskElement) {
                 // Task is visible - update it in place using TaskCard's update function
                 try {
-                    updateTaskCard(taskElement, updatedTask, this.plugin, {
+                    const visibleProperties = this.getCurrentVisibleProperties();
+                    updateTaskCard(taskElement, updatedTask, this.plugin, visibleProperties, {
                         showDueDate: true,
                         showCheckbox: false,
                         showArchiveButton: true,
@@ -278,6 +280,7 @@ export class TaskListView extends ItemView {
         // Create new FilterBar with simplified constructor
         this.filterBar = new FilterBar(
             this.app,
+            this.plugin,
             filterBarContainer,
             this.currentQuery,
             filterOptions,
@@ -332,6 +335,13 @@ export class TaskListView extends ItemView {
         this.plugin.viewStateManager.on('saved-views-changed', (updatedViews: readonly SavedView[]) => {
             console.log('TaskListView: Received saved-views-changed event:', updatedViews); // Debug
             this.filterBar?.updateSavedViews(updatedViews);
+            
+            // Update visible properties if active view changed
+            const activeSavedView = this.filterBar?.getCurrentSavedView();
+            if (activeSavedView?.visibleProperties) {
+                this.currentVisibleProperties = activeSavedView.visibleProperties;
+                this.refreshTaskDisplay();
+            }
         });
         
         this.filterBar.on('reorderViews', (fromIndex: number, toIndex: number) => {
@@ -344,6 +354,13 @@ export class TaskListView extends ItemView {
             // Save the filter state
             this.plugin.viewStateManager.setFilterState(TASK_LIST_VIEW_TYPE, newQuery);
             await this.refreshTasks();
+        });
+
+        // Listen for properties changes
+        this.filterBar.on('propertiesChanged', (properties: string[]) => {
+            this.currentVisibleProperties = properties;
+            // Refresh the task display with new properties
+            this.refreshTaskDisplay();
         });
 
         // Create filter heading
@@ -624,10 +641,53 @@ export class TaskListView extends ItemView {
     }
 
     /**
+     * Get current visible properties for task cards
+     */
+    private getCurrentVisibleProperties(): string[] | undefined {
+        // Use cached properties if available
+        if (this.currentVisibleProperties) {
+            return this.currentVisibleProperties;
+        }
+        
+        // Try to get from active saved view
+        const activeSavedView = this.filterBar?.getCurrentSavedView();
+        if (activeSavedView?.visibleProperties) {
+            return activeSavedView.visibleProperties;
+        }
+        
+        // Fall back to plugin settings
+        return this.plugin.settings.defaultVisibleProperties;
+    }
+
+    /**
+     * Refresh task display with current properties (without refetching data)
+     */
+    private refreshTaskDisplay(): void {
+        if (!this.taskListContainer) return;
+        
+        // Get all existing task cards
+        const taskCards = this.taskListContainer.querySelectorAll('.task-card');
+        const visibleProperties = this.getCurrentVisibleProperties();
+        
+        taskCards.forEach(card => {
+            const taskPath = (card as HTMLElement).dataset.taskPath;
+            if (!taskPath) return;
+            
+            // Get task data from cache
+            this.plugin.cacheManager.getTaskInfo(taskPath).then(task => {
+                if (task) {
+                    updateTaskCard(card as HTMLElement, task, this.plugin, visibleProperties);
+                }
+            });
+        });
+    }
+
+    /**
      * Create a task card for use with DOMReconciler
      */
     private createTaskCardForReconciler(task: TaskInfo): HTMLElement {
-        const taskCard = createTaskCard(task, this.plugin, {
+        const visibleProperties = this.getCurrentVisibleProperties();
+        const taskCard = createTaskCard(task, this.plugin, visibleProperties, {
             showDueDate: true,
             showCheckbox: false, // TaskListView doesn't use checkboxes 
             showArchiveButton: true,
@@ -649,7 +709,7 @@ export class TaskListView extends ItemView {
      * Update an existing task card for use with DOMReconciler
      */
     private updateTaskCardForReconciler(element: HTMLElement, task: TaskInfo): void {
-        updateTaskCard(element, task, this.plugin, {
+        updateTaskCard(element, task, this.plugin, undefined, {
             showDueDate: true,
             showCheckbox: false, // TaskListView doesn't use checkboxes
             showArchiveButton: true,

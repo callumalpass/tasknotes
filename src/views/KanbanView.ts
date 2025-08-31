@@ -88,7 +88,7 @@ export class KanbanView extends ItemView {
             if (taskElement) {
                 // Task is visible - update it in place
                 try {
-                    updateTaskCard(taskElement, updatedTask, this.plugin, {
+                    updateTaskCard(taskElement, updatedTask, this.plugin, undefined, {
                         showDueDate: true,
                         showCheckbox: false,
                         showTimeTracking: true
@@ -204,6 +204,7 @@ export class KanbanView extends ItemView {
         // Create new FilterBar
         this.filterBar = new FilterBar(
             this.app,
+            this.plugin,
             filterBarContainer,
             this.currentQuery,
             filterOptions,
@@ -406,7 +407,7 @@ export class KanbanView extends ItemView {
         } else {
             // Tasks are already sorted by FilterService, just render them
             tasks.forEach(task => {
-                const taskCard = createTaskCard(task, this.plugin, {
+                const taskCard = createTaskCard(task, this.plugin, undefined, {
                     showDueDate: true,
                     showCheckbox: false,
                     showTimeTracking: true
@@ -933,7 +934,7 @@ export class KanbanView extends ItemView {
      * Create task card element for reconciler
      */
     private createTaskCardElement(task: TaskInfo): HTMLElement {
-        const taskCard = createTaskCard(task, this.plugin, {
+        const taskCard = createTaskCard(task, this.plugin, undefined, {
             showDueDate: true,
             showCheckbox: false,
             showTimeTracking: true
@@ -949,7 +950,7 @@ export class KanbanView extends ItemView {
      * Update task card element for reconciler
      */
     private updateTaskCardElement(element: HTMLElement, task: TaskInfo): void {
-        updateTaskCard(element, task, this.plugin, {
+        updateTaskCard(element, task, this.plugin, undefined, {
             showDueDate: true,
             showCheckbox: false,
             showTimeTracking: true

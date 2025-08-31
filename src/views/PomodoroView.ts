@@ -716,7 +716,7 @@ export class PomodoroView extends ItemView {
         
         if (task) {
             // Create a task card with appropriate options for pomodoro view
-            const taskCard = createTaskCard(task, this.plugin, {
+            const taskCard = createTaskCard(task, this.plugin, undefined, {
                 showDueDate: true,
                 showCheckbox: false,
                 showArchiveButton: false,

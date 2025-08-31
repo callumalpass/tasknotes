@@ -265,7 +265,8 @@ export class ViewStateManager extends EventEmitter {
         return {
             ...view,
             query: FilterUtils.deepCloneFilterQuery(view.query),
-            viewOptions: view.viewOptions ? { ...view.viewOptions } : undefined
+            viewOptions: view.viewOptions ? { ...view.viewOptions } : undefined,
+            visibleProperties: view.visibleProperties ? [...view.visibleProperties] : undefined
         };
     }
 
@@ -276,6 +277,26 @@ export class ViewStateManager extends EventEmitter {
         this.savedViews = [];
         this.saveSavedViewsToPluginData();
         this.emit('saved-views-changed', this.getSavedViews());
+    }
+
+    /**
+     * Update visible properties for a saved view
+     */
+    updateSavedViewProperties(viewId: string, properties: string[]): void {
+        const view = this.savedViews.find(v => v.id === viewId);
+        if (view) {
+            view.visibleProperties = properties;
+            this.saveSavedViewsToPluginData();
+            this.emit('saved-views-changed', this.getSavedViews());
+        }
+    }
+
+    /**
+     * Get visible properties for a saved view, falling back to defaults
+     */
+    getSavedViewProperties(viewId: string): string[] | undefined {
+        const view = this.savedViews.find(v => v.id === viewId);
+        return view?.visibleProperties;
     }
 
     /**

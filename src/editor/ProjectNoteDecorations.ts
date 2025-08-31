@@ -196,6 +196,7 @@ export class ProjectSubtasksWidget extends WidgetType {
             
             this.filterBar = new FilterBar(
                 this.plugin.app,
+                this.plugin,
                 container,
                 this.currentQuery,
                 filterOptions,
@@ -360,7 +361,7 @@ export class ProjectSubtasksWidget extends WidgetType {
                 ? Array.from(this.groupedTasks.values())[0] 
                 : this.groupedTasks.get('all') || [];
             tasks.forEach(task => {
-                const taskCard = createTaskCard(task, this.plugin, {
+                const taskCard = createTaskCard(task, this.plugin, undefined, {
                     showDueDate: true,
                     showCheckbox: false,
                     showArchiveButton: false,
@@ -467,7 +468,7 @@ export class ProjectSubtasksWidget extends WidgetType {
 
                 // Render tasks in this group
                 tasks.forEach(task => {
-                    const taskCard = createTaskCard(task, this.plugin, {
+                    const taskCard = createTaskCard(task, this.plugin, undefined, {
                         showDueDate: true,
                         showCheckbox: false,
                         showArchiveButton: false,

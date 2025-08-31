@@ -243,6 +243,7 @@ export class AdvancedCalendarView extends ItemView {
         // Create new FilterBar
         this.filterBar = new FilterBar(
             this.app,
+            this.plugin,
             filterBarContainer,
             this.currentQuery,
             filterOptions
