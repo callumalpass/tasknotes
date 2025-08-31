@@ -1,5 +1,5 @@
-import { ItemView, WorkspaceLeaf, Setting, TFile, EventRef } from 'obsidian';
-import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfDay, subDays, subWeeks, subMonths } from 'date-fns';
+import { ItemView, WorkspaceLeaf, Setting, EventRef } from 'obsidian';
+import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfDay, subDays } from 'date-fns';
 import TaskNotesPlugin from '../main';
 import { 
     STATS_VIEW_TYPE,
@@ -85,6 +85,12 @@ export class StatsView extends ItemView {
     private drilldownModal: HTMLElement | null = null;
     private currentDrilldownData: ProjectDrilldownData | null = null;
     private listeners: EventRef[] = [];
+    
+    // Performance optimizations
+    private statsCache = new Map<string, TaskInfo[]>();
+    private lastCacheTime = 0;
+    private readonly CACHE_DURATION = 60000; // 1 minute
+    private debounceTimeout: ReturnType<typeof setTimeout> | null = null;
     
     constructor(leaf: WorkspaceLeaf, plugin: TaskNotesPlugin) {
         super(leaf);
@@ -200,19 +206,42 @@ export class StatsView extends ItemView {
     
     private async refreshStats() {
         try {
-            await Promise.all([
+            // Clear cache to ensure fresh data
+            this.clearCache();
+            
+            const results = await Promise.allSettled([
                 this.updateOverviewStats(),
                 this.updateTodayStats(),
                 this.updateWeekStats(),
                 this.updateMonthStats(),
                 this.updateProjectStats()
             ]);
+            
+            // Log any failures in development
+            if (process.env.NODE_ENV === 'development') {
+                results.forEach((result, index) => {
+                    if (result.status === 'rejected') {
+                        const sections = ['overview', 'today', 'week', 'month', 'projects'];
+                        console.warn(`Failed to update ${sections[index]} stats:`, result.reason);
+                    }
+                });
+            }
         } catch (error) {
-            console.error('Failed to refresh stats:', error);
+            // Failed to refresh stats - continue silently
         }
     }
     
     private async getAllTasks(): Promise<TaskInfo[]> {
+        const cacheKey = `all-tasks-${JSON.stringify(this.currentFilters)}`;
+        
+        // Check cache first
+        if (this.isCacheValid() && this.statsCache.has(cacheKey)) {
+            const cached = this.statsCache.get(cacheKey);
+            if (cached) {
+                return cached;
+            }
+        }
+        
         // Get all tasks from the cache
         const allTaskPaths = await this.plugin.cacheManager.getAllTaskPaths();
         let tasks: TaskInfo[] = [];
@@ -224,12 +253,16 @@ export class StatsView extends ItemView {
                     tasks.push(task);
                 }
             } catch (error) {
-                console.error(`Failed to get task info for ${path}:`, error);
+                // Failed to get task info - continue silently
             }
         }
         
         // Apply filters
         tasks = this.applyTaskFilters(tasks);
+        
+        // Cache the results
+        this.statsCache.set(cacheKey, tasks);
+        this.lastCacheTime = Date.now();
         
         return tasks;
     }
@@ -448,17 +481,10 @@ export class StatsView extends ItemView {
                 completedTasks++;
             }
             
-            // Add projects to the set - follow FilterService pattern from PR #486
-            const filteredProjects = filterEmptyProjects(task.projects || []);
-            if (filteredProjects.length > 0) {
-                // Add task to each project group, consolidating names that point to same file
-                for (const project of filteredProjects) {
-                    const consolidatedProject = this.consolidateProjectName(project);
-                    uniqueProjects.add(consolidatedProject);
-                }
-            } else {
-                // Task has no projects - count as "No Project"
-                uniqueProjects.add('No Project');
+            // Add projects to the set
+            const taskProjects = this.getTaskProjects(task);
+            for (const project of taskProjects) {
+                uniqueProjects.add(project);
             }
         }
         
@@ -533,37 +559,12 @@ export class StatsView extends ItemView {
                 lastActivity = task.dateModified;
             }
             
-            // Handle projects exactly like FilterService does in PR #486
-            const filteredProjects = filterEmptyProjects(task.projects || []);
-            if (filteredProjects.length > 0) {
-                // Add task to each project group, consolidating names that point to same file
-                for (const project of filteredProjects) {
-                    const consolidatedProject = this.consolidateProjectName(project);
-                    
-                    if (!projectMap.has(consolidatedProject)) {
-                        projectMap.set(consolidatedProject, {
-                            tasks: [],
-                            totalTime: 0,
-                            completedCount: 0,
-                            lastActivity: undefined
-                        });
-                    }
-                    
-                    const projectData = projectMap.get(consolidatedProject)!;
-                    projectData.tasks.push(task);
-                    projectData.totalTime += timeSpent;
-                    if (isCompleted) projectData.completedCount++;
-                    
-                    // Update last activity if this is more recent
-                    if (lastActivity && (!projectData.lastActivity || new Date(lastActivity) > new Date(projectData.lastActivity))) {
-                        projectData.lastActivity = lastActivity;
-                    }
-                }
-            } else {
-                // Task has no projects - add to "No Project" group (same key as FilterService)
-                const noProjectGroup = 'No Project';
-                if (!projectMap.has(noProjectGroup)) {
-                    projectMap.set(noProjectGroup, {
+            // Handle projects
+            const taskProjects = this.getTaskProjects(task);
+            
+            for (const consolidatedProject of taskProjects) {
+                if (!projectMap.has(consolidatedProject)) {
+                    projectMap.set(consolidatedProject, {
                         tasks: [],
                         totalTime: 0,
                         completedCount: 0,
@@ -571,11 +572,14 @@ export class StatsView extends ItemView {
                     });
                 }
                 
-                const projectData = projectMap.get(noProjectGroup)!;
+                const projectData = projectMap.get(consolidatedProject);
+                if (!projectData) continue;
+                
                 projectData.tasks.push(task);
                 projectData.totalTime += timeSpent;
                 if (isCompleted) projectData.completedCount++;
                 
+                // Update last activity if this is more recent
                 if (lastActivity && (!projectData.lastActivity || new Date(lastActivity) > new Date(projectData.lastActivity))) {
                     projectData.lastActivity = lastActivity;
                 }
@@ -699,7 +703,7 @@ export class StatsView extends ItemView {
         
         if (this.currentFilters.dateRange === 'custom') {
             const startDateContainer = customDatesContainer.createDiv({ cls: 'stats-view__date-input-container' });
-            const startLabel = startDateContainer.createDiv({ cls: 'stats-view__date-label', text: 'From' });
+            startDateContainer.createDiv({ cls: 'stats-view__date-label', text: 'From' });
             const startInput = startDateContainer.createEl('input', {
                 cls: 'stats-view__date-input',
                 type: 'date',
@@ -707,7 +711,7 @@ export class StatsView extends ItemView {
             });
             
             const endDateContainer = customDatesContainer.createDiv({ cls: 'stats-view__date-input-container' });
-            const endLabel = endDateContainer.createDiv({ cls: 'stats-view__date-label', text: 'To' });
+            endDateContainer.createDiv({ cls: 'stats-view__date-label', text: 'To' });
             const endInput = endDateContainer.createEl('input', {
                 cls: 'stats-view__date-input',
                 type: 'date',
@@ -727,10 +731,54 @@ export class StatsView extends ItemView {
     }
     
     /**
-     * Apply current filters and refresh statistics
+     * Apply current filters and refresh statistics with debouncing
      */
     private async applyFilters() {
-        await this.refreshStats();
+        if (this.debounceTimeout) {
+            clearTimeout(this.debounceTimeout);
+        }
+        
+        this.debounceTimeout = setTimeout(async () => {
+            await this.refreshStats();
+            this.debounceTimeout = null;
+        }, 300);
+    }
+    
+    /**
+     * Check if stats cache is valid
+     */
+    private isCacheValid(): boolean {
+        const now = Date.now();
+        return (now - this.lastCacheTime) < this.CACHE_DURATION;
+    }
+    
+    /**
+     * Clear stats cache
+     */
+    private clearCache() {
+        this.statsCache.clear();
+        this.lastCacheTime = 0;
+    }
+    
+    /**
+     * Get consolidated project names for a task
+     */
+    private getTaskProjects(task: TaskInfo): string[] {
+        try {
+            if (!task || !Array.isArray(task.projects)) {
+                return ['No Project'];
+            }
+            
+            const filteredProjects = filterEmptyProjects(task.projects);
+            if (filteredProjects.length > 0) {
+                return filteredProjects
+                    .map(project => this.consolidateProjectName(project))
+                    .filter(project => typeof project === 'string' && project.length > 0);
+            }
+            return ['No Project'];
+        } catch (error) {
+            return ['No Project'];
+        }
     }
     
     /**
@@ -885,7 +933,6 @@ export class StatsView extends ItemView {
             
             // Make project clickable for drill-down
             this.registerDomEvent(projectEl, 'click', () => {
-                console.log('Project clicked:', project.projectName);
                 this.openProjectDrilldown(project.projectName);
             });
             
@@ -896,7 +943,7 @@ export class StatsView extends ItemView {
             nameEl.textContent = project.projectName;
             
             // Add click indicator
-            const clickIndicator = headerEl.createDiv({ 
+            headerEl.createDiv({ 
                 cls: 'stats-view__click-indicator',
                 text: '→'
             });
@@ -951,7 +998,7 @@ export class StatsView extends ItemView {
                     trendContainer.remove();
                 }
             } catch (error) {
-                console.error('Error loading trend data:', error);
+                // Error loading trend data - remove container
                 trendContainer.remove();
             }
         }
@@ -1015,17 +1062,13 @@ export class StatsView extends ItemView {
                 try {
                     const task = await this.plugin.cacheManager.getTaskInfo(path);
                     if (task) {
-                        const filteredProjects = filterEmptyProjects(task.projects || []);
-                        for (const project of filteredProjects) {
-                            const consolidatedProject = this.consolidateProjectName(project);
-                            if (consolidatedProject === projectName) {
-                                projectTasks.push(task);
-                                break;
-                            }
+                        const taskProjects = this.getTaskProjects(task);
+                        if (taskProjects.includes(projectName)) {
+                            projectTasks.push(task);
                         }
                     }
                 } catch (error) {
-                    console.error(`Failed to get task info for trend: ${path}`, error);
+                    // Failed to get task info - continue silently
                 }
             }
             
@@ -1059,7 +1102,7 @@ export class StatsView extends ItemView {
             
             return trendData;
         } catch (error) {
-            console.error('Error calculating project trend:', error);
+            // Error calculating project trend
             return [];
         }
     }
@@ -1068,11 +1111,9 @@ export class StatsView extends ItemView {
      * Render SVG sparkline
      */
     private renderSparkline(container: HTMLElement, data: TrendDataPoint[]) {
-        console.log('Rendering sparkline with data:', data.length, 'points');
         container.empty();
         
         if (data.length === 0) {
-            console.log('No data for sparkline');
             return;
         }
         
@@ -1080,9 +1121,7 @@ export class StatsView extends ItemView {
         const height = 20;
         const maxValue = Math.max(...data.map(d => d.value));
         
-        console.log('Sparkline max value:', maxValue);
         if (maxValue === 0) {
-            console.log('Max value is 0, not rendering sparkline');
             return;
         }
         
@@ -1121,8 +1160,6 @@ export class StatsView extends ItemView {
      * Open project drill-down modal
      */
     private async openProjectDrilldown(projectName: string) {
-        console.log('Opening drill-down for project:', projectName);
-        
         // Remove any existing modal
         this.closeDrilldownModal();
         
@@ -1130,15 +1167,8 @@ export class StatsView extends ItemView {
         const backdrop = document.body.createDiv({ cls: 'stats-view__modal-backdrop' });
         this.drilldownModal = backdrop;
         
-        console.log('Modal backdrop created:', backdrop);
-        console.log('Modal backdrop classes:', backdrop.className);
-        console.log('Modal backdrop style display:', window.getComputedStyle(backdrop).display);
-        console.log('Modal backdrop style position:', window.getComputedStyle(backdrop).position);
-        console.log('Modal backdrop style z-index:', window.getComputedStyle(backdrop).zIndex);
-        
         // Create modal content with proper CSS scope for TaskCard components
         const modal = backdrop.createDiv({ cls: 'stats-view__modal tasknotes-plugin' });
-        console.log('Modal created:', modal);
         
         // Modal header
         const header = modal.createDiv({ cls: 'stats-view__modal-header' });
@@ -1223,13 +1253,9 @@ export class StatsView extends ItemView {
             try {
                 const task = await this.plugin.cacheManager.getTaskInfo(path);
                 if (task) {
-                    const filteredProjects = filterEmptyProjects(task.projects || []);
-                    for (const project of filteredProjects) {
-                        const consolidatedProject = this.consolidateProjectName(project);
-                        if (consolidatedProject === projectName) {
-                            projectTasks.push(task);
-                            break;
-                        }
+                    const taskProjects = this.getTaskProjects(task);
+                    if (taskProjects.includes(projectName)) {
+                        projectTasks.push(task);
                     }
                 }
             } catch (error) {
@@ -1367,7 +1393,7 @@ export class StatsView extends ItemView {
         const taskList = tasksSection.createDiv({ cls: 'stats-view__task-list' });
         
         // Function to render filtered tasks
-        const renderTasks = (filterStatus: string = 'all') => {
+        const renderTasks = (filterStatus = 'all') => {
             taskList.empty();
             
             let filteredTasks = data.tasks;
