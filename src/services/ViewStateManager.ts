@@ -199,12 +199,13 @@ export class ViewStateManager extends EventEmitter {
     /**
      * Save a new view
      */
-    saveView(name: string, query: FilterQuery, viewOptions?: {[key: string]: boolean}): SavedView {
+    saveView(name: string, query: FilterQuery, viewOptions?: {[key: string]: boolean}, visibleProperties?: string[]): SavedView {
         const view: SavedView = {
             id: this.generateId(),
             name,
             query: FilterUtils.deepCloneFilterQuery(query),
-            viewOptions: viewOptions ? { ...viewOptions } : undefined
+            viewOptions: viewOptions ? { ...viewOptions } : undefined,
+            visibleProperties: visibleProperties ? [...visibleProperties] : undefined
         };
 
         this.savedViews.push(view);

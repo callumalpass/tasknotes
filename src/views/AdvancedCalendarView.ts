@@ -26,7 +26,8 @@ import {
     TimeBlock,
     FilterQuery,
     CalendarViewPreferences,
-    ICSEvent
+    ICSEvent,
+    SavedView
 } from '../types';
 import { TaskCreationModal } from '../modals/TaskCreationModal';
 import { TaskEditModal } from '../modals/TaskEditModal';
@@ -256,8 +257,10 @@ export class AdvancedCalendarView extends ItemView {
         this.filterBar.updateSavedViews(savedViews);
         
         // Listen for saved view events
-        this.filterBar.on('saveView', ({ name, query, viewOptions }) => {
-            this.plugin.viewStateManager.saveView(name, query, viewOptions);
+        this.filterBar.on('saveView', ({ name, query, viewOptions, visibleProperties }) => {
+            const savedView = this.plugin.viewStateManager.saveView(name, query, viewOptions, visibleProperties);
+            // Set the newly saved view as active to prevent incorrect view matching
+            this.filterBar!.setActiveSavedView(savedView);
         });
         
         this.filterBar.on('deleteView', (viewId: string) => {
