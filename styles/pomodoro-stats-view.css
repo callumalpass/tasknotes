@@ -125,7 +125,7 @@
 }
 
 .tasknotes-plugin .pomodoro-stats-view__overview-change.negative {
-    color: var(--tn-text-error);
+    color: var(--tn-color-error);
 }
 
 /* ================================================
@@ -255,7 +255,7 @@
 }
 
 .tasknotes-plugin .pomodoro-stats-view__session-status--interrupted {
-    background: var(--tn-text-error);
+    background: var(--tn-color-error);
     color: var(--tn-bg-primary);
 }
 
