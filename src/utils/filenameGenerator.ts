@@ -60,7 +60,7 @@ export function generateICSNoteFilename(
                 case 'timestamp':
                     return generateTimestampFilename(now);
                     
-                case 'custom':
+                case 'custom': {
                     // Create ICS-specific additional variables
                     const icsVariables: Record<string, string> = {
                         icsEventTitle: context.icsEventTitle ? sanitizeForFilename(context.icsEventTitle) : sanitizeForFilename(context.title),
@@ -70,6 +70,7 @@ export function generateICSNoteFilename(
                         icsEventTitleWithDate: sanitizeForFilename(`${context.icsEventTitle || context.title} - ${format(now, 'PPP')}`)
                     };
                     return generateCustomFilename(context, icsSettings.customICSNoteFilenameTemplate, now, icsVariables);
+                }
                     
                 default:
                     // Fallback to title format for ICS notes

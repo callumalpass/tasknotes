@@ -3,7 +3,7 @@ import { format } from 'date-fns';
 import TaskNotesPlugin from '../main';
 import { ICSEvent, TaskInfo, NoteInfo, TaskCreationData } from '../types';
 import { getCurrentTimestamp, formatDateForStorage } from '../utils/dateUtils';
-import { generateTaskFilename, generateICSNoteFilename, generateUniqueFilename, FilenameContext, ICSFilenameContext } from '../utils/filenameGenerator';
+import { generateICSNoteFilename, generateUniqueFilename, ICSFilenameContext } from '../utils/filenameGenerator';
 import { ensureFolderExists } from '../utils/helpers';
 import { processTemplate, ICSTemplateData } from '../utils/templateProcessor';
 

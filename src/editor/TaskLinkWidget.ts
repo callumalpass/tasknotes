@@ -1,5 +1,5 @@
 import { EditorView, WidgetType } from '@codemirror/view';
-import { TFile, setIcon, Notice, setTooltip } from 'obsidian';
+import { setIcon, Notice, setTooltip } from 'obsidian';
 import { TaskInfo } from '../types';
 import TaskNotesPlugin from '../main';
 import { formatDateTimeForDisplay, getDatePart, getTimePart } from '../utils/dateUtils';

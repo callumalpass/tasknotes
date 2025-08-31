@@ -7,6 +7,7 @@ import { MinimalNativeCache } from '../utils/MinimalNativeCache';
 import { NaturalLanguageParser } from './NaturalLanguageParser';
 import { StatusManager } from './StatusManager';
 import TaskNotesPlugin from '../main';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { OpenAPIController } from '../utils/OpenAPIDecorators';
 import { APIRouter } from '../api/APIRouter';
 import { TasksController } from '../api/TasksController';
@@ -17,6 +18,7 @@ import { WebhookController } from '../api/WebhookController';
 
 
 @OpenAPIController
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export class HTTPAPIService implements IWebhookNotifier {
 	private server?: Server;
 	private plugin: TaskNotesPlugin;

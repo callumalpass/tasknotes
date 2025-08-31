@@ -15,6 +15,7 @@
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
+    "skipLibCheck": true,
     "lib": [
       "DOM",
       "DOM.Iterable",

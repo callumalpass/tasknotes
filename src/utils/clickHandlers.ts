@@ -26,7 +26,7 @@ export function createTaskClickHandler(options: ClickHandlerOptions) {
         contextMenuHandler
     } = options;
 
-    let clickTimeout: NodeJS.Timeout | null = null;
+    let clickTimeout: ReturnType<typeof setTimeout> | null = null;
 
     const openNote = () => {
         const file = plugin.app.vault.getAbstractFileByPath(task.path);

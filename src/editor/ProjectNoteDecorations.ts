@@ -15,7 +15,7 @@ import { createTaskCard } from '../ui/TaskCard';
 // Define a state effect for project subtasks updates
 const projectSubtasksUpdateEffect = StateEffect.define<{ forceUpdate?: boolean }>();
 
-class ProjectSubtasksWidget extends WidgetType {
+export class ProjectSubtasksWidget extends WidgetType {
     private groupedTasks: Map<string, TaskInfo[]> = new Map();
     private filterBar: FilterBar | null = null;
     private filterHeading: FilterHeading | null = null;
@@ -343,15 +343,15 @@ class ProjectSubtasksWidget extends WidgetType {
         // Clear existing tasks
         taskListContainer.empty();
 
-        // Calculate total filtered tasks and completion stats
-        let totalFilteredTasks = 0;
-        let completedFilteredTasks = 0;
-        for (const tasks of this.groupedTasks.values()) {
-            totalFilteredTasks += tasks.length;
-            completedFilteredTasks += tasks.filter(task =>
-                this.plugin.statusManager.isCompletedStatus(task.status)
-            ).length;
-        }
+        // Calculate total filtered tasks and completion stats (for future use)
+        // let totalFilteredTasks = 0;
+        // let completedFilteredTasks = 0;
+        // for (const tasks of this.groupedTasks.values()) {
+        //     totalFilteredTasks += tasks.length;
+        //     completedFilteredTasks += tasks.filter(task =>
+        //         this.plugin.statusManager.isCompletedStatus(task.status)
+        //     ).length;
+        // }
         
         // Render groups
         if (this.currentQuery.groupKey === 'none' || this.groupedTasks.size <= 1) {
@@ -398,7 +398,9 @@ class ProjectSubtasksWidget extends WidgetType {
                 });
                 try {
                     setIcon(toggleBtn, 'chevron-right');
-                } catch (_) {}
+                } catch (_) {
+                    // Ignore icon loading errors
+                }
                 const svg = toggleBtn.querySelector('svg');
                 if (svg) {
                     svg.classList.add('chevron');

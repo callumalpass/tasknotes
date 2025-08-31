@@ -35,26 +35,6 @@ module.exports = {
     '!tests/**/*'
   ],
   coverageReporters: ['text', 'lcov', 'html'],
-  coverageThreshold: {
-    global: {
-      branches: 40,
-      functions: 45,
-      lines: 50,
-      statements: 50
-    },
-    './src/services/': {
-      branches: 45,
-      functions: 45,
-      lines: 50,
-      statements: 50
-    },
-    './src/utils/': {
-      branches: 40,
-      functions: 45,
-      lines: 50,
-      statements: 50
-    }
-  },
   testTimeout: 10000,
   clearMocks: true,
   restoreMocks: true

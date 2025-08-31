@@ -1884,7 +1884,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 			}
 			if (this.plugin.settings.userField && this.plugin.settings.userField.enabled) {
 				const legacy = this.plugin.settings.userField;
-				const id = (legacy.displayName || legacy.key || 'field').toLowerCase().replace(/[^a-z0-9_\-]/g, '-');
+				const id = (legacy.displayName || legacy.key || 'field').toLowerCase().replace(/[^a-z0-9_-]/g, '-');
 				if (!this.plugin.settings.userFields.find(f => (f.id === id) || (f.key === legacy.key))) {
 					this.plugin.settings.userFields.push({ id, displayName: legacy.displayName || '', key: legacy.key || '', type: legacy.type || 'text' });
 				}
@@ -2005,7 +2005,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 					field.displayName = nameInput.value;
 					field.type = typeSelect.value as any;
 					if (!field.id) {
-						field.id = (field.displayName || field.key || 'field').toLowerCase().replace(/[^a-z0-9_\-]/g, '-');
+						field.id = (field.displayName || field.key || 'field').toLowerCase().replace(/[^a-z0-9_-]/g, '-');
 					}
 					await this.plugin.saveSettings();
 				} catch (error) {

@@ -6,11 +6,8 @@ import { ReminderModal } from '../modals/ReminderModal';
 import { CalendarExportService } from '../services/CalendarExportService';
 import { showConfirmationModal } from '../modals/ConfirmationModal';
 import { showTextInputModal } from '../modals/TextInputModal';
-import { StatusContextMenu } from './StatusContextMenu';
-import { PriorityContextMenu } from './PriorityContextMenu';
 import { DateContextMenu } from './DateContextMenu';
 import { RecurrenceContextMenu } from './RecurrenceContextMenu';
-import { ReminderContextMenu } from './ReminderContextMenu';
 
 export interface TaskContextMenuOptions {
     task: TaskInfo;

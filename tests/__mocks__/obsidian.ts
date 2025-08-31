@@ -614,13 +614,15 @@ export class Modal extends Component {
       this.appendChild(el);
 
       // Add the same DOM methods to the created element
-      if (!el.addClass) {
-        el.addClass = this.addClass;
-        el.removeClass = this.removeClass;
-        el.createEl = this.createEl;
-        el.createDiv = this.createDiv;
-        el.empty = this.empty;
-      }
+      el.addClass = this.addClass;
+      el.removeClass = this.removeClass;
+      el.createEl = this.createEl;
+      el.createDiv = this.createDiv;
+      el.empty = this.empty;
+      (el as any).appendText = function(text: string) {
+        this.textContent = (this.textContent || '') + text;
+        return this;
+      };
 
       return el;
     };
@@ -631,6 +633,10 @@ export class Modal extends Component {
       this.innerHTML = '';
       return this;
     };
+    this.contentEl.appendText = function(text: string) {
+      this.textContent = (this.textContent || '') + text;
+      return this;
+    };
 
     // Copy methods to containerEl as well
     this.containerEl.addClass = this.contentEl.addClass;
@@ -638,6 +644,7 @@ export class Modal extends Component {
     this.containerEl.createEl = this.contentEl.createEl;
     this.containerEl.createDiv = this.contentEl.createDiv;
     this.containerEl.empty = this.contentEl.empty;
+    this.containerEl.appendText = this.contentEl.appendText;
   }
 
   open(): void {
@@ -785,8 +792,13 @@ export class Setting {
 
   addButton(callback: (button: any) => void): Setting {
     const mockButton = {
-      buttonEl: document.createElement('button'),
+      buttonEl: Object.assign(document.createElement('button'), {
+        addClasses: function(classes: string[]) { 
+          classes.forEach(cls => this.classList.add(cls)); 
+        }
+      }),
       setButtonText: (text: string) => { mockButton.buttonEl.textContent = text; return mockButton; },
+      setTooltip: (text: string) => { mockButton.buttonEl.title = text; return mockButton; },
       setCta: () => mockButton,
       setWarning: () => mockButton,
       onClick: (cb: () => void) => { mockButton.buttonEl.addEventListener('click', cb); return mockButton; },

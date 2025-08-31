@@ -3,6 +3,7 @@ import { BaseController } from './BaseController';
 import { WebhookConfig, WebhookDelivery, WebhookEvent, WebhookPayload } from '../types';
 import { createHash, createHmac } from 'crypto';
 import TaskNotesPlugin from '../main';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Get, Post, Delete } from '../utils/OpenAPIDecorators';
 
 export class WebhookController extends BaseController {

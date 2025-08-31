@@ -3,6 +3,7 @@ import { parse } from 'url';
 import { BaseController } from './BaseController';
 import { MinimalNativeCache } from '../utils/MinimalNativeCache';
 import TaskNotesPlugin from '../main';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Get, Post } from '../utils/OpenAPIDecorators';
 
 export class PomodoroController extends BaseController {

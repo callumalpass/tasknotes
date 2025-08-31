@@ -1859,16 +1859,16 @@ export class FilterBar extends EventEmitter {
         this.emitQueryChangeIfComplete();
     }
 
-	    /** Emit immediately regardless of filter completeness (for sort/group changes) */
-	    private emitImmediateQueryChange(): void {
-	        // Clear active saved view when user manually modifies filters (except during saved view loading)
-	        if (!this.isLoadingSavedView && this.activeSavedView) {
-	            this.clearActiveSavedView();
-	            this.updateFilterBuilder();
-	        }
-	        this.updateFilterToggleBadge();
-	        this.emit('queryChange', FilterUtils.deepCloneFilterQuery(this.currentQuery));
-	    }
+    /** Emit immediately regardless of filter completeness (for sort/group changes) */
+    private emitImmediateQueryChange(): void {
+        // Clear active saved view when user manually modifies filters (except during saved view loading)
+        if (!this.isLoadingSavedView && this.activeSavedView) {
+            this.clearActiveSavedView();
+            this.updateFilterBuilder();
+        }
+        this.updateFilterToggleBadge();
+        this.emit('queryChange', FilterUtils.deepCloneFilterQuery(this.currentQuery));
+    }
 
 
     /**

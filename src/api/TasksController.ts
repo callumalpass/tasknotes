@@ -7,9 +7,11 @@ import { FilterService } from '../services/FilterService';
 import { MinimalNativeCache } from '../utils/MinimalNativeCache';
 import { StatusManager } from '../services/StatusManager';
 import TaskNotesPlugin from '../main';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Get, Post, Put, Delete } from '../utils/OpenAPIDecorators';
 import { calculateDefaultDate } from '../utils/helpers';
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface TaskQueryParams {
 	status?: string;
 	priority?: string;
@@ -375,7 +377,7 @@ export class TasksController extends BaseController {
 					if (this.statusManager.isCompletedStatus(t.status) || t.archived) return false;
 					return t.due && new Date(t.due) < new Date();
 				}).length,
-				archived: allTasks.filter(t => t.archived === true).length,
+				archived: allTasks.filter(t => t.archived).length,
 				withTimeTracking: allTasks.filter(t => t.timeEntries && t.timeEntries.length > 0).length
 			};
 			
