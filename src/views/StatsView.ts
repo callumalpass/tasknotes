@@ -1,9 +1,10 @@
-import { ItemView, WorkspaceLeaf, Setting, TFile } from 'obsidian';
+import { ItemView, WorkspaceLeaf, Setting, TFile, EventRef } from 'obsidian';
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfDay, subDays, subWeeks, subMonths } from 'date-fns';
 import TaskNotesPlugin from '../main';
 import { 
     STATS_VIEW_TYPE,
-    TaskInfo
+    TaskInfo,
+    EVENT_TASK_UPDATED
 } from '../types';
 import { calculateTotalTimeSpent, filterEmptyProjects } from '../utils/helpers';
 import { createTaskCard } from '../ui/TaskCard';
@@ -82,6 +83,8 @@ export class StatsView extends ItemView {
         minTimeSpent: 0
     };
     private drilldownModal: HTMLElement | null = null;
+    private currentDrilldownData: ProjectDrilldownData | null = null;
+    private listeners: EventRef[] = [];
     
     constructor(leaf: WorkspaceLeaf, plugin: TaskNotesPlugin) {
         super(leaf);
@@ -102,11 +105,32 @@ export class StatsView extends ItemView {
 
     async onOpen() {
         await this.plugin.onReady();
+        
+        // Listen for task updates to refresh the drill-down modal if it's open
+        const taskUpdateListener = this.plugin.emitter.on(EVENT_TASK_UPDATED, async ({ path, originalTask, updatedTask }) => {
+            if (!path || !updatedTask || !this.drilldownModal || !this.currentDrilldownData) return;
+            
+            // Check if the updated task is part of the current drill-down data
+            const taskExists = this.currentDrilldownData.tasks.some(task => 
+                task.path === path || (originalTask && task.path === originalTask.path)
+            );
+            
+            if (taskExists) {
+                // Refresh the drill-down modal with updated task data
+                await this.refreshDrilldownModal();
+            }
+        });
+        this.listeners.push(taskUpdateListener);
+        
         await this.render();
     }
     
     async onClose() {
         this.contentEl.empty();
+        
+        // Clean up listeners
+        this.listeners.forEach(listener => this.plugin.emitter.offref(listener));
+        this.listeners = [];
     }
     
     async render() {
@@ -1148,6 +1172,7 @@ export class StatsView extends ItemView {
         // Load and render drill-down data
         try {
             const drilldownData = await this.getProjectDrilldownData(projectName);
+            this.currentDrilldownData = drilldownData;
             this.renderDrilldownContent(content, drilldownData);
         } catch (error) {
             console.error('Error loading drill-down data:', error);
@@ -1162,6 +1187,27 @@ export class StatsView extends ItemView {
         if (this.drilldownModal) {
             this.drilldownModal.remove();
             this.drilldownModal = null;
+            this.currentDrilldownData = null;
+        }
+    }
+    
+    /**
+     * Refresh drill-down modal with updated task data
+     */
+    private async refreshDrilldownModal() {
+        if (!this.drilldownModal || !this.currentDrilldownData) return;
+        
+        // Find the modal content div
+        const modalContent = this.drilldownModal.querySelector('.stats-view__modal-content');
+        if (!modalContent) return;
+        
+        try {
+            // Re-fetch the drill-down data for the current project
+            const updatedData = await this.getProjectDrilldownData(this.currentDrilldownData.projectName);
+            this.currentDrilldownData = updatedData;
+            this.renderDrilldownContent(modalContent as HTMLElement, updatedData);
+        } catch (error) {
+            console.error('Error refreshing drill-down modal:', error);
         }
     }
     
