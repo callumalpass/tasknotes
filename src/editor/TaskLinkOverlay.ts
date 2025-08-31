@@ -449,8 +449,17 @@ function getTaskInfoSync(filePath: string, plugin: TaskNotesPlugin): TaskInfo | 
 
 export function createTaskLinkOverlay(plugin: TaskNotesPlugin): Extension {
     const viewPlugin = createTaskLinkViewPlugin(plugin);
-    
+
     return viewPlugin;
+}
+
+/**
+ * Stub function for clearing cursor hide state.
+ * In the simplified implementation, there's no state to clear since we use immediate cursor detection.
+ * This function exists for backward compatibility with tests.
+ */
+export function clearCursorHideState(): void {
+    // No-op: simplified implementation doesn't maintain cursor hide state
 }
 
 // Export the effect and utility function for triggering updates
