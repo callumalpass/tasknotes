@@ -31,8 +31,8 @@ export type ColorizeMode = 'tasks' | 'notes' | 'daily';
 export type CalendarDisplayMode = 'month' | 'agenda';
 
 // Task sorting and grouping types
-export type TaskSortKey = 'due' | 'scheduled' | 'priority' | 'title' | 'dateCreated' | `user:${string}`;
-export type TaskGroupKey = 'none' | 'priority' | 'context' | 'project' | 'due' | 'scheduled' | 'status' | `user:${string}`;
+export type TaskSortKey = 'due' | 'scheduled' | 'priority' | 'title' | 'dateCreated' | 'tags' | `user:${string}`;
+export type TaskGroupKey = 'none' | 'priority' | 'context' | 'project' | 'due' | 'scheduled' | 'status' | 'tags' | `user:${string}`;
 export type SortDirection = 'asc' | 'desc';
 
 
