@@ -1,5 +1,5 @@
 import { Decoration, DecorationSet, EditorView, PluginSpec, PluginValue, ViewPlugin, ViewUpdate, WidgetType } from '@codemirror/view';
-import { EVENT_DATA_CHANGED, EVENT_TASK_DELETED, EVENT_TASK_UPDATED, EVENT_DATE_CHANGED, FilterQuery, SUBTASK_WIDGET_VIEW_TYPE, TaskInfo } from '../types';
+import { EVENT_DATA_CHANGED, EVENT_TASK_DELETED, EVENT_TASK_UPDATED, EVENT_DATE_CHANGED, FilterQuery, SUBTASK_WIDGET_VIEW_TYPE, TaskInfo, SavedView } from '../types';
 import { EventRef, TFile, editorInfoField, editorLivePreviewField, setIcon, ButtonComponent } from 'obsidian';
 import { Extension, RangeSetBuilder, StateEffect } from '@codemirror/state';
 
@@ -233,7 +233,11 @@ export class ProjectSubtasksWidget extends WidgetType {
             
             // Listen for saved view operations
             this.filterBar.on('saveView', (data: { name: string, query: FilterQuery, viewOptions?: {[key: string]: boolean}, visibleProperties?: string[] }) => {
-                this.plugin.viewStateManager.saveView(data.name, data.query, data.viewOptions, data.visibleProperties);
+                const savedView = this.plugin.viewStateManager.saveView(data.name, data.query, data.viewOptions, data.visibleProperties);
+                // Set the newly saved view as active to prevent incorrect view matching
+                if (this.filterBar) {
+                    this.filterBar.setActiveSavedView(savedView);
+                }
             });
             
             this.filterBar.on('deleteView', (viewId: string) => {

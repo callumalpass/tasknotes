@@ -59,6 +59,7 @@ export class FilterBar extends EventEmitter {
     private filterOptions: FilterOptions;
     private activeSavedView: SavedView | null = null;
     private isLoadingSavedView = false;
+    private isSettingSavedView = false;
     private temporaryVisibleProperties: string[] | null = null;
 
     // Debouncing for input fields
@@ -314,7 +315,7 @@ export class FilterBar extends EventEmitter {
      * Detect if the current query matches any saved view and set activeSavedView accordingly
      */
     private detectActiveSavedView(): void {
-        if (this.isLoadingSavedView) return; // Don't interfere when explicitly loading a view
+        if (this.isLoadingSavedView || this.isSettingSavedView) return; // Don't interfere when explicitly loading/setting a view
 
         // Find a saved view that matches the current query
         const matchingView = this.savedViews.find(view =>
@@ -323,6 +324,19 @@ export class FilterBar extends EventEmitter {
 
         if (matchingView && this.activeSavedView?.id !== matchingView.id) {
             this.activeSavedView = matchingView;
+            
+            // Clear temporary properties if they match the saved view's properties
+            if (this.temporaryVisibleProperties && matchingView.visibleProperties) {
+                const tempPropsSet = new Set(this.temporaryVisibleProperties);
+                const savedPropsSet = new Set(matchingView.visibleProperties);
+                
+                // Check if the sets are equal (same properties)
+                if (tempPropsSet.size === savedPropsSet.size && 
+                    [...tempPropsSet].every(prop => savedPropsSet.has(prop))) {
+                    this.temporaryVisibleProperties = null;
+                }
+            }
+            
             this.updateViewSelectorButtonState();
             // Emit event when active saved view changes
             this.emit('activeSavedViewChanged', matchingView);
@@ -1860,6 +1874,30 @@ export class FilterBar extends EventEmitter {
      */
     public getCurrentSavedView(): SavedView | null {
         return this.activeSavedView;
+    }
+
+    /**
+     * Set the active saved view (for external use, e.g., after saving a view)
+     */
+    public setActiveSavedView(view: SavedView | null): void {
+        this.isSettingSavedView = true;
+        this.activeSavedView = view;
+        
+        // Clear temporary properties when setting a saved view as active
+        if (view && this.temporaryVisibleProperties && view.visibleProperties) {
+            const tempPropsSet = new Set(this.temporaryVisibleProperties);
+            const savedPropsSet = new Set(view.visibleProperties);
+            
+            // Check if the sets are equal (same properties)
+            if (tempPropsSet.size === savedPropsSet.size && 
+                [...tempPropsSet].every(prop => savedPropsSet.has(prop))) {
+                this.temporaryVisibleProperties = null;
+            }
+        }
+        
+        this.updateViewSelectorButtonState();
+        this.emit('activeSavedViewChanged', view);
+        this.isSettingSavedView = false;
     }
 
     /**
