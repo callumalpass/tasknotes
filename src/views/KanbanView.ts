@@ -88,7 +88,8 @@ export class KanbanView extends ItemView {
             if (taskElement) {
                 // Task is visible - update it in place
                 try {
-                    updateTaskCard(taskElement, updatedTask, this.plugin, undefined, {
+                    const visibleProperties = this.getCurrentVisibleProperties();
+                    updateTaskCard(taskElement, updatedTask, this.plugin, visibleProperties, {
                         showDueDate: true,
                         showCheckbox: false,
                         showTimeTracking: true
@@ -245,6 +246,12 @@ export class KanbanView extends ItemView {
             this.currentQuery = newQuery;
             // Save the filter state
             await this.plugin.viewStateManager.setFilterState(KANBAN_VIEW_TYPE, newQuery);
+            this.loadAndRenderBoard();
+        });
+
+        // Listen for properties changes
+        this.filterBar.on('propertiesChanged', (properties: string[]) => {
+            // Refresh the task display with new properties
             this.loadAndRenderBoard();
         });
 
@@ -407,7 +414,8 @@ export class KanbanView extends ItemView {
         } else {
             // Tasks are already sorted by FilterService, just render them
             tasks.forEach(task => {
-                const taskCard = createTaskCard(task, this.plugin, undefined, {
+                const visibleProperties = this.getCurrentVisibleProperties();
+                const taskCard = createTaskCard(task, this.plugin, visibleProperties, {
                     showDueDate: true,
                     showCheckbox: false,
                     showTimeTracking: true
@@ -934,7 +942,8 @@ export class KanbanView extends ItemView {
      * Create task card element for reconciler
      */
     private createTaskCardElement(task: TaskInfo): HTMLElement {
-        const taskCard = createTaskCard(task, this.plugin, undefined, {
+        const visibleProperties = this.getCurrentVisibleProperties();
+        const taskCard = createTaskCard(task, this.plugin, visibleProperties, {
             showDueDate: true,
             showCheckbox: false,
             showTimeTracking: true
@@ -950,13 +959,22 @@ export class KanbanView extends ItemView {
      * Update task card element for reconciler
      */
     private updateTaskCardElement(element: HTMLElement, task: TaskInfo): void {
-        updateTaskCard(element, task, this.plugin, undefined, {
+        const visibleProperties = this.getCurrentVisibleProperties();
+        updateTaskCard(element, task, this.plugin, visibleProperties, {
             showDueDate: true,
             showCheckbox: false,
             showTimeTracking: true
         });
         // Ensure task elements tracking is updated
         this.taskElements.set(task.path, element);
+    }
+
+    /**
+     * Get current visible properties for task cards
+     */
+    private getCurrentVisibleProperties(): string[] | undefined {
+        // Use the FilterBar's method which handles temporary state
+        return this.filterBar?.getCurrentVisibleProperties();
     }
 
     // Debounced refresh to avoid multiple rapid refreshes

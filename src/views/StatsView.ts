@@ -1434,7 +1434,7 @@ export class StatsView extends ItemView {
             
             for (const task of filteredTasks) {
                 // Create TaskCard with checkbox disabled as requested
-                const taskCard = createTaskCard(task, this.plugin, undefined, {
+                const taskCard = createTaskCard(task, this.plugin, this.plugin.settings.defaultVisibleProperties, {
                     showDueDate: true,
                     showCheckbox: false,
                     showArchiveButton: false,

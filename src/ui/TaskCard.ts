@@ -388,14 +388,19 @@ export function createTaskCard(task: TaskInfo, plugin: TaskNotesPlugin, visibleP
         });
     }
     
-    // Status indicator dot
-    const statusDot = mainRow.createEl('span', { cls: 'task-card__status-dot' });
-    if (statusConfig) {
-        statusDot.style.borderColor = statusConfig.color;
+    // Status indicator dot (conditional based on visible properties)
+    let statusDot: HTMLElement | null = null;
+    const shouldShowStatus = !visibleProperties || visibleProperties.includes('status');
+    if (shouldShowStatus) {
+        statusDot = mainRow.createEl('span', { cls: 'task-card__status-dot' });
+        if (statusConfig) {
+            statusDot.style.borderColor = statusConfig.color;
+        }
     }
     
     // Add click handler to cycle through statuses (original functionality)
-    statusDot.addEventListener('click', async (e) => {
+    if (statusDot) {
+        statusDot.addEventListener('click', async (e) => {
         e.stopPropagation();
         try {
             if (task.recurrence) {
@@ -452,10 +457,12 @@ export function createTaskCard(task: TaskInfo, plugin: TaskNotesPlugin, visibleP
             });
             new Notice(`Failed to update task status: ${errorMessage}`);
         }
-    });
+        });
+    }
 
-    // Priority indicator dot
-    if (task.priority && priorityConfig) {
+    // Priority indicator dot (conditional based on visible properties)
+    const shouldShowPriority = !visibleProperties || visibleProperties.includes('priority');
+    if (task.priority && priorityConfig && shouldShowPriority) {
         const priorityDot = mainRow.createEl('span', { 
             cls: 'task-card__priority-dot',
             attr: { 'aria-label': `Priority: ${priorityConfig.label}` }
@@ -839,29 +846,66 @@ export function updateTaskCard(element: HTMLElement, task: TaskInfo, plugin: Tas
         checkbox.checked = plugin.statusManager.isCompletedStatus(effectiveStatus);
     }
     
-    // Update status dot
+    // Update status dot (conditional based on visible properties)
+    const shouldShowStatus = !visibleProperties || visibleProperties.includes('status');
     const statusDot = element.querySelector('.task-card__status-dot') as HTMLElement;
-    if (statusDot && statusConfig) {
-        statusDot.style.borderColor = statusConfig.color;
+    
+    if (shouldShowStatus) {
+        if (statusDot) {
+            // Update existing dot
+            if (statusConfig) {
+                statusDot.style.borderColor = statusConfig.color;
+            }
+        } else if (mainRow) {
+            // Add missing dot
+            const newStatusDot = mainRow.createEl('span', { cls: 'task-card__status-dot' });
+            if (statusConfig) {
+                newStatusDot.style.borderColor = statusConfig.color;
+            }
+            // Insert at the beginning after checkbox
+            const checkbox = element.querySelector('.task-card__checkbox');
+            if (checkbox) {
+                checkbox.insertAdjacentElement('afterend', newStatusDot);
+            } else {
+                mainRow.insertBefore(newStatusDot, mainRow.firstChild);
+            }
+        }
+    } else if (statusDot) {
+        // Remove dot if it shouldn't be visible
+        statusDot.remove();
     }
     
-    // Update priority indicator
+    // Update priority indicator (conditional based on visible properties)
+    const shouldShowPriority = !visibleProperties || visibleProperties.includes('priority');
     const existingPriorityDot = element.querySelector('.task-card__priority-dot') as HTMLElement;
-    if (task.priority && priorityConfig && !existingPriorityDot && mainRow) {
-        // Add priority dot if task has priority but no dot exists (and mainRow exists)
-        const priorityDot = mainRow.createEl('span', { 
-            cls: 'task-card__priority-dot',
-            attr: { 'aria-label': `Priority: ${priorityConfig.label}` }
-        });
-        priorityDot.style.borderColor = priorityConfig.color;
-        statusDot?.insertAdjacentElement('afterend', priorityDot);
-    } else if (!task.priority && existingPriorityDot) {
-        // Remove priority dot if task no longer has priority
+    
+    if (shouldShowPriority && task.priority && priorityConfig) {
+        if (!existingPriorityDot && mainRow) {
+            // Add priority dot if task has priority but no dot exists
+            const priorityDot = mainRow.createEl('span', { 
+                cls: 'task-card__priority-dot',
+                attr: { 'aria-label': `Priority: ${priorityConfig.label}` }
+            });
+            priorityDot.style.borderColor = priorityConfig.color;
+            
+            // Insert after status dot if it exists, otherwise after checkbox
+            const statusDotForInsert = element.querySelector('.task-card__status-dot');
+            const checkbox = element.querySelector('.task-card__checkbox');
+            if (statusDotForInsert) {
+                statusDotForInsert.insertAdjacentElement('afterend', priorityDot);
+            } else if (checkbox) {
+                checkbox.insertAdjacentElement('afterend', priorityDot);
+            } else {
+                mainRow.insertBefore(priorityDot, mainRow.firstChild);
+            }
+        } else if (existingPriorityDot) {
+            // Update existing priority dot
+            existingPriorityDot.style.borderColor = priorityConfig.color;
+            existingPriorityDot.setAttribute('aria-label', `Priority: ${priorityConfig.label}`);
+        }
+    } else if (existingPriorityDot) {
+        // Remove priority dot if it shouldn't be visible or task no longer has priority
         existingPriorityDot.remove();
-    } else if (task.priority && priorityConfig && existingPriorityDot) {
-        // Update existing priority dot
-        existingPriorityDot.style.borderColor = priorityConfig.color;
-        existingPriorityDot.setAttribute('aria-label', `Priority: ${priorityConfig.label}`);
     }
     
     // Update recurring indicator

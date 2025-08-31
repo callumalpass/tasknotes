@@ -361,7 +361,7 @@ export class ProjectSubtasksWidget extends WidgetType {
                 ? Array.from(this.groupedTasks.values())[0] 
                 : this.groupedTasks.get('all') || [];
             tasks.forEach(task => {
-                const taskCard = createTaskCard(task, this.plugin, undefined, {
+                const taskCard = createTaskCard(task, this.plugin, this.plugin.settings.defaultVisibleProperties, {
                     showDueDate: true,
                     showCheckbox: false,
                     showArchiveButton: false,
@@ -468,7 +468,7 @@ export class ProjectSubtasksWidget extends WidgetType {
 
                 // Render tasks in this group
                 tasks.forEach(task => {
-                    const taskCard = createTaskCard(task, this.plugin, undefined, {
+                    const taskCard = createTaskCard(task, this.plugin, this.plugin.settings.defaultVisibleProperties, {
                         showDueDate: true,
                         showCheckbox: false,
                         showArchiveButton: false,

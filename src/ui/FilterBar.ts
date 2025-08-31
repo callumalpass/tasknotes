@@ -59,6 +59,7 @@ export class FilterBar extends EventEmitter {
     private filterOptions: FilterOptions;
     private activeSavedView: SavedView | null = null;
     private isLoadingSavedView = false;
+    private temporaryVisibleProperties: string[] | null = null;
 
     // Debouncing for input fields
     private debouncedEmitQueryChange: () => void;
@@ -444,7 +445,10 @@ export class FilterBar extends EventEmitter {
                 .setTooltip('Configure visible properties')
                 .setClass('filter-bar__properties-button')
                 .onClick((event) => {
-                    this.showPropertiesDropdown(event);
+                    // Ensure we have a proper MouseEvent
+                    const mouseEvent = event instanceof MouseEvent ? event : 
+                        new MouseEvent('click', { bubbles: true, cancelable: true });
+                    this.showPropertiesDropdown(mouseEvent);
                 });
             propertiesButton.buttonEl.addClass('clickable-icon');
         };
@@ -1552,38 +1556,51 @@ export class FilterBar extends EventEmitter {
      * Show properties visibility dropdown
      */
     private showPropertiesDropdown(event: MouseEvent): void {
-        const dropdown = new PropertyVisibilityDropdown(
-            this.getCurrentSavedView(),
-            this.plugin,
-            (newProperties: string[]) => {
-                this.updateCurrentViewProperties(newProperties);
-            }
-        );
-        dropdown.show(event);
+        try {
+            console.log('FilterBar: Showing properties dropdown...');
+            const dropdown = new PropertyVisibilityDropdown(
+                this.getCurrentVisibleProperties(),
+                this.plugin,
+                (newProperties: string[]) => {
+                    this.updateCurrentViewProperties(newProperties);
+                }
+            );
+            dropdown.show(event);
+            console.log('FilterBar: Properties dropdown shown successfully');
+        } catch (error) {
+            console.error('FilterBar: Error showing properties dropdown:', error);
+        }
     }
 
     /**
-     * Update properties for the current view
+     * Update properties for the current view (temporary state, like filters)
      */
     private updateCurrentViewProperties(properties: string[]): void {
-        const currentView = this.getCurrentSavedView();
+        // Set temporary properties state (like filters work)
+        this.temporaryVisibleProperties = properties;
         
-        if (currentView) {
-            // Update the existing saved view with new properties
-            const updatedView: SavedView = {
-                ...currentView,
-                visibleProperties: properties
-            };
-            
-            // Emit save view event to update the saved view
-            this.emit('saveView', updatedView);
-        } else {
-            // No active saved view - just emit properties update for temporary use
-            this.emit('updateProperties', properties);
+        // Emit properties change event for immediate UI update
+        this.emit('propertiesChanged', properties);
+    }
+
+    /**
+     * Get current effective visible properties (temporary, saved view, or defaults)
+     */
+    public getCurrentVisibleProperties(): string[] {
+        // Use temporary properties if available
+        if (this.temporaryVisibleProperties) {
+            return this.temporaryVisibleProperties;
         }
         
-        // Always emit properties change event for immediate UI update
-        this.emit('propertiesChanged', properties);
+        // Use saved view properties if available
+        if (this.activeSavedView?.visibleProperties) {
+            return this.activeSavedView.visibleProperties;
+        }
+        
+        // Fall back to plugin defaults
+        return this.plugin.settings.defaultVisibleProperties || [
+            'status', 'priority', 'due', 'scheduled', 'projects', 'contexts', 'tags'
+        ];
     }
 
     /**
@@ -1610,7 +1627,13 @@ export class FilterBar extends EventEmitter {
     private showSaveViewDialog(): void {
         new SaveViewModal(this.app, (name) => {
             const currentViewOptions = this.getCurrentViewOptions();
-            this.emit('saveView', { name, query: this.currentQuery, viewOptions: currentViewOptions });
+            const currentProperties = this.getCurrentVisibleProperties();
+            this.emit('saveView', { 
+                name, 
+                query: this.currentQuery, 
+                viewOptions: currentViewOptions,
+                visibleProperties: currentProperties
+            });
             this.toggleViewSelectorDropdown();
         }).open();
     }
@@ -1648,6 +1671,9 @@ export class FilterBar extends EventEmitter {
 
         // Clear the active saved view
         this.activeSavedView = null;
+        
+        // Clear temporary properties
+        this.temporaryVisibleProperties = null;
 
         // Clear the search input
         if (this.searchInput) {
@@ -1686,6 +1712,9 @@ export class FilterBar extends EventEmitter {
 
         // Clear the active saved view
         this.activeSavedView = null;
+        
+        // Clear temporary properties
+        this.temporaryVisibleProperties = null;
 
         // Clear the search input
         if (this.searchInput) {
@@ -1728,12 +1757,21 @@ export class FilterBar extends EventEmitter {
         this.isLoadingSavedView = true;
         this.currentQuery = FilterUtils.deepCloneFilterQuery(view.query);
         this.activeSavedView = view;
+        
+        // Clear temporary properties when loading a saved view
+        this.temporaryVisibleProperties = null;
+        
         this.render();
         this.emitQueryChange();
 
         // Emit viewOptions event if they exist
         if (view.viewOptions) {
             this.emit('loadViewOptions', view.viewOptions);
+        }
+        
+        // Emit properties change if the saved view has visible properties
+        if (view.visibleProperties) {
+            this.emit('propertiesChanged', view.visibleProperties);
         }
 
         // Emit activeSavedViewChanged event

@@ -1,4 +1,4 @@
-import { Menu } from 'obsidian';
+import { Menu, App } from 'obsidian';
 import type TaskNotesPlugin from '../main';
 import type { SavedView } from '../types';
 
@@ -14,52 +14,68 @@ interface PropertyDefinition {
  */
 export class PropertyVisibilityDropdown {
     constructor(
-        private currentSavedView: SavedView | null,
+        private currentProperties: string[],
         private plugin: TaskNotesPlugin,
         private onUpdate: (properties: string[]) => void
     ) {}
 
     public show(event: MouseEvent): void {
-        const menu = new Menu();
-        
-        // Get current visible properties
-        const currentProperties = this.getCurrentVisibleProperties();
-        const allProperties = this.getAllAvailableProperties();
-        
-        // Add property groups (Bases-style)
-        this.addPropertyGroup(menu, 'CORE PROPERTIES', 
-            allProperties.filter(p => p.category === 'core'), 
-            currentProperties);
+        try {
+            console.log('PropertyVisibilityDropdown: Creating menu...');
+            const menu = new Menu();
             
-        this.addPropertyGroup(menu, 'ORGANIZATION', 
-            allProperties.filter(p => p.category === 'organization'), 
-            currentProperties);
-        
-        const userProperties = allProperties.filter(p => p.category === 'user');
-        if (userProperties.length > 0) {
-            this.addPropertyGroup(menu, 'CUSTOM PROPERTIES', userProperties, currentProperties);
+            // Use the current properties passed to constructor
+            const currentProperties = this.currentProperties;
+            console.log('PropertyVisibilityDropdown: Current properties:', currentProperties);
+            
+            const allProperties = this.getAllAvailableProperties();
+            console.log('PropertyVisibilityDropdown: All properties:', allProperties);
+            
+            // Add a simple test item first
+            menu.addItem((item) => {
+                item.setTitle('Test Menu Item');
+                item.setIcon('gear');
+                item.onClick(() => {
+                    console.log('Test item clicked');
+                });
+            });
+            
+            // Add property groups (Bases-style)
+            this.addPropertyGroup(menu, 'CORE PROPERTIES', 
+                allProperties.filter(p => p.category === 'core'), 
+                currentProperties);
+                
+            this.addPropertyGroup(menu, 'ORGANIZATION', 
+                allProperties.filter(p => p.category === 'organization'), 
+                currentProperties);
+            
+            const userProperties = allProperties.filter(p => p.category === 'user');
+            if (userProperties.length > 0) {
+                this.addPropertyGroup(menu, 'CUSTOM PROPERTIES', userProperties, currentProperties);
+            }
+            
+            console.log('PropertyVisibilityDropdown: Showing menu at coordinates:', event.clientX, event.clientY);
+            
+            // Try both methods to show the menu
+            if (menu.showAtMouseEvent) {
+                menu.showAtMouseEvent(event);
+            } else if (menu.showAtPosition) {
+                menu.showAtPosition({ x: event.clientX, y: event.clientY });
+            } else {
+                console.error('PropertyVisibilityDropdown: Menu has no show method');
+            }
+            
+            console.log('PropertyVisibilityDropdown: Menu shown successfully');
+        } catch (error) {
+            console.error('PropertyVisibilityDropdown: Error showing menu:', error);
+            console.error('PropertyVisibilityDropdown: Stack trace:', error.stack);
         }
-        
-        menu.showAtMouseEvent(event);
-    }
-    
-    private getCurrentVisibleProperties(): string[] {
-        // Check saved view first
-        if (this.currentSavedView?.visibleProperties) {
-            return this.currentSavedView.visibleProperties;
-        }
-        
-        // Fall back to global defaults
-        if (this.plugin.settings.defaultVisibleProperties) {
-            return this.plugin.settings.defaultVisibleProperties;
-        }
-        
-        // Ultimate fallback
-        return this.getDefaultProperties();
     }
     
     private getDefaultProperties(): string[] {
         return [
+            'status',      // Status dot
+            'priority',    // Priority dot
             'due',         // Due date
             'scheduled',   // Scheduled date
             'projects',    // Projects
@@ -71,8 +87,10 @@ export class PropertyVisibilityDropdown {
     private getAllAvailableProperties(): PropertyDefinition[] {
         const properties: PropertyDefinition[] = [];
         
-        // Core properties
+        // Core properties (including status and priority dots)
         properties.push(
+            { id: 'status', name: 'Status Dot', category: 'core' },
+            { id: 'priority', name: 'Priority Dot', category: 'core' },
             { id: 'due', name: 'Due Date', category: 'core' },
             { id: 'scheduled', name: 'Scheduled Date', category: 'core' },
             { id: 'timeEstimate', name: 'Time Estimate', category: 'core' },

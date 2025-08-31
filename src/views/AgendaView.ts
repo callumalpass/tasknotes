@@ -384,6 +384,12 @@ export class AgendaView extends ItemView {
             this.updateFilterHeading();
         });
 
+        // Listen for properties changes
+        this.filterBar.on('propertiesChanged', (properties: string[]) => {
+            // Refresh the task display with new properties
+            this.refresh();
+        });
+
         // Wire expand/collapse all to day sections to match TaskListView behavior
         this.filterBar.on('expandAllGroups', () => {
             // Expand all visible day sections
@@ -888,7 +894,8 @@ export class AgendaView extends ItemView {
                 countBadge.textContent = countText;
             }
         } else if (item.type === 'task') {
-            updateTaskCard(element, item.item as TaskInfo, this.plugin, undefined, {
+            const visibleProperties = this.getCurrentVisibleProperties();
+            updateTaskCard(element, item.item as TaskInfo, this.plugin, visibleProperties, {
                 showDueDate: !this.groupByDate,
                 showCheckbox: false,
                 showTimeTracking: true,
@@ -916,7 +923,8 @@ export class AgendaView extends ItemView {
      */
     private updateFlatAgendaItemElement(element: HTMLElement, item: {type: 'task' | 'note' | 'ics', item: TaskInfo | NoteInfo | import('../types').ICSEvent, date: Date}): void {
         if (item.type === 'task') {
-            updateTaskCard(element, item.item as TaskInfo, this.plugin, undefined, {
+            const visibleProperties = this.getCurrentVisibleProperties();
+            updateTaskCard(element, item.item as TaskInfo, this.plugin, visibleProperties, {
                 showDueDate: !this.groupByDate,
                 showCheckbox: false,
                 showTimeTracking: true,
@@ -931,10 +939,19 @@ export class AgendaView extends ItemView {
     }
     
     /**
+     * Get current visible properties for task cards
+     */
+    private getCurrentVisibleProperties(): string[] | undefined {
+        // Use the FilterBar's method which handles temporary state
+        return this.filterBar?.getCurrentVisibleProperties();
+    }
+    
+    /**
      * Create task item element
      */
     private createTaskItemElement(task: TaskInfo, date?: Date): HTMLElement {
-        const taskCard = createTaskCard(task, this.plugin, undefined, {
+        const visibleProperties = this.getCurrentVisibleProperties();
+        const taskCard = createTaskCard(task, this.plugin, visibleProperties, {
             showDueDate: !this.groupByDate,
             showCheckbox: false,
             showTimeTracking: true,
@@ -1282,7 +1299,8 @@ export class AgendaView extends ItemView {
      */
     private updateDayItemElement(element: HTMLElement, item: {type: 'task' | 'note' | 'ics', item: any, date: Date}): void {
         if (item.type === 'task') {
-            updateTaskCard(element, item.item as TaskInfo, this.plugin, undefined, {
+            const visibleProperties = this.getCurrentVisibleProperties();
+            updateTaskCard(element, item.item as TaskInfo, this.plugin, visibleProperties, {
                 showDueDate: !this.groupByDate,
                 showCheckbox: false,
                 showTimeTracking: true,
