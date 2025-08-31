@@ -20,40 +20,46 @@ import { TaskFactory } from '../../helpers/mock-factories';
 import { RRule } from 'rrule';
 
 // Mock RRule for consistent testing
-jest.mock('rrule');
+const mockRRuleConstructor = jest.fn();
+const mockRRule = {
+  DAILY: 3,
+  WEEKLY: 2,
+  MONTHLY: 1,
+  YEARLY: 0,
+  MO: { weekday: 0 },
+  TU: { weekday: 1 },
+  WE: { weekday: 2 },
+  TH: { weekday: 3 },
+  FR: { weekday: 4 },
+  SA: { weekday: 5 },
+  SU: { weekday: 6 },
+  parseString: jest.fn(),
+  fromString: jest.fn()
+};
 
-const mockRRule = RRule as jest.MockedClass<typeof RRule>;
+Object.assign(mockRRuleConstructor, mockRRule);
+
+jest.mock('rrule', () => ({
+  RRule: mockRRuleConstructor
+}));
 
 describe('RRule Helper Functions', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     
-    // Setup default RRule mock behavior
-    mockRRule.DAILY = 3;
-    mockRRule.WEEKLY = 2;
-    mockRRule.MONTHLY = 1;
-    mockRRule.YEARLY = 0;
-    mockRRule.MO = { weekday: 0 };
-    mockRRule.TU = { weekday: 1 };
-    mockRRule.WE = { weekday: 2 };
-    mockRRule.TH = { weekday: 3 };
-    mockRRule.FR = { weekday: 4 };
-    mockRRule.SA = { weekday: 5 };
-    mockRRule.SU = { weekday: 6 };
-    
-    // Mock RRule constructor and methods
-    mockRRule.mockImplementation((options: any) => ({
+    // Setup default mock implementation
+    mockRRuleConstructor.mockImplementation((options: any) => ({
       toString: jest.fn(() => 'FREQ=DAILY'),
       toText: jest.fn(() => 'daily'),
       between: jest.fn(() => [new Date('2024-01-15')]),
       options
-    } as any));
+    }));
     
-    mockRRule.parseString = jest.fn(() => ({ freq: 3 }));
-    mockRRule.fromString = jest.fn(() => ({
+    mockRRule.parseString.mockReturnValue({ freq: 3 });
+    mockRRule.fromString.mockReturnValue({
       toText: jest.fn(() => 'daily'),
       between: jest.fn(() => [new Date('2024-01-15')])
-    } as any));
+    });
   });
 
   describe('convertLegacyRecurrenceToRRule', () => {
@@ -65,7 +71,7 @@ describe('RRule Helper Functions', () => {
       const mockRRuleInstance = {
         toString: jest.fn(() => 'FREQ=DAILY')
       };
-      mockRRule.mockReturnValue(mockRRuleInstance as any);
+      mockRRuleConstructor.mockReturnValue(mockRRuleInstance as any);
 
       const result = convertLegacyRecurrenceToRRule(legacyRecurrence);
 
@@ -84,7 +90,7 @@ describe('RRule Helper Functions', () => {
       const mockRRuleInstance = {
         toString: jest.fn(() => 'FREQ=WEEKLY;BYDAY=MO,WE,FR')
       };
-      mockRRule.mockReturnValue(mockRRuleInstance as any);
+      mockRRuleConstructor.mockReturnValue(mockRRuleInstance as any);
 
       const result = convertLegacyRecurrenceToRRule(legacyRecurrence);
 
@@ -103,7 +109,7 @@ describe('RRule Helper Functions', () => {
       const mockRRuleInstance = {
         toString: jest.fn(() => 'FREQ=WEEKLY')
       };
-      mockRRule.mockReturnValue(mockRRuleInstance as any);
+      mockRRuleConstructor.mockReturnValue(mockRRuleInstance as any);
 
       const result = convertLegacyRecurrenceToRRule(legacyRecurrence);
 
@@ -122,7 +128,7 @@ describe('RRule Helper Functions', () => {
       const mockRRuleInstance = {
         toString: jest.fn(() => 'FREQ=WEEKLY;BYDAY=MO,WE,FR')
       };
-      mockRRule.mockReturnValue(mockRRuleInstance as any);
+      mockRRuleConstructor.mockReturnValue(mockRRuleInstance as any);
 
       convertLegacyRecurrenceToRRule(legacyRecurrence);
 
@@ -141,7 +147,7 @@ describe('RRule Helper Functions', () => {
       const mockRRuleInstance = {
         toString: jest.fn(() => 'FREQ=WEEKLY;BYDAY=MO,FR')
       };
-      mockRRule.mockReturnValue(mockRRuleInstance as any);
+      mockRRuleConstructor.mockReturnValue(mockRRuleInstance as any);
 
       convertLegacyRecurrenceToRRule(legacyRecurrence);
 
@@ -160,7 +166,7 @@ describe('RRule Helper Functions', () => {
       const mockRRuleInstance = {
         toString: jest.fn(() => 'FREQ=MONTHLY;BYMONTHDAY=15')
       };
-      mockRRule.mockReturnValue(mockRRuleInstance as any);
+      mockRRuleConstructor.mockReturnValue(mockRRuleInstance as any);
 
       const result = convertLegacyRecurrenceToRRule(legacyRecurrence);
 
@@ -179,7 +185,7 @@ describe('RRule Helper Functions', () => {
       const mockRRuleInstance = {
         toString: jest.fn(() => 'FREQ=MONTHLY')
       };
-      mockRRule.mockReturnValue(mockRRuleInstance as any);
+      mockRRuleConstructor.mockReturnValue(mockRRuleInstance as any);
 
       const result = convertLegacyRecurrenceToRRule(legacyRecurrence);
 
@@ -199,7 +205,7 @@ describe('RRule Helper Functions', () => {
       const mockRRuleInstance = {
         toString: jest.fn(() => 'FREQ=YEARLY;BYMONTH=12;BYMONTHDAY=25')
       };
-      mockRRule.mockReturnValue(mockRRuleInstance as any);
+      mockRRuleConstructor.mockReturnValue(mockRRuleInstance as any);
 
       const result = convertLegacyRecurrenceToRRule(legacyRecurrence);
 
@@ -220,7 +226,7 @@ describe('RRule Helper Functions', () => {
       const mockRRuleInstance = {
         toString: jest.fn(() => 'FREQ=YEARLY;BYMONTH=6')
       };
-      mockRRule.mockReturnValue(mockRRuleInstance as any);
+      mockRRuleConstructor.mockReturnValue(mockRRuleInstance as any);
 
       const result = convertLegacyRecurrenceToRRule(legacyRecurrence);
 
@@ -240,7 +246,7 @@ describe('RRule Helper Functions', () => {
       const mockRRuleInstance = {
         toString: jest.fn(() => 'FREQ=YEARLY;BYMONTHDAY=1')
       };
-      mockRRule.mockReturnValue(mockRRuleInstance as any);
+      mockRRuleConstructor.mockReturnValue(mockRRuleInstance as any);
 
       const result = convertLegacyRecurrenceToRRule(legacyRecurrence);
 
@@ -310,7 +316,7 @@ describe('RRule Helper Functions', () => {
       const mockRRuleInstance = {
         between: jest.fn(() => [new Date('2024-01-15')])
       };
-      mockRRule.mockReturnValue(mockRRuleInstance as any);
+      mockRRuleConstructor.mockReturnValue(mockRRuleInstance as any);
       mockRRule.parseString = jest.fn(() => ({ freq: 3 }));
 
       const result = isDueByRRule(task, new Date('2024-01-15'));
@@ -332,7 +338,7 @@ describe('RRule Helper Functions', () => {
       const mockRRuleInstance = {
         between: jest.fn(() => [new Date('2024-01-15')])
       };
-      mockRRule.mockReturnValue(mockRRuleInstance as any);
+      mockRRuleConstructor.mockReturnValue(mockRRuleInstance as any);
       mockRRule.parseString = jest.fn(() => ({ freq: 3 }));
 
       const result = isDueByRRule(task, new Date('2024-01-15'));
@@ -364,7 +370,7 @@ describe('RRule Helper Functions', () => {
       const mockRRuleInstance = {
         between: jest.fn(() => []) // No occurrences
       };
-      mockRRule.mockReturnValue(mockRRuleInstance as any);
+      mockRRuleConstructor.mockReturnValue(mockRRuleInstance as any);
       mockRRule.parseString = jest.fn(() => ({ freq: 3 }));
 
       const result = isDueByRRule(task, new Date('2024-01-15'));
@@ -408,7 +414,7 @@ describe('RRule Helper Functions', () => {
       const mockRRuleInstance = {
         between: jest.fn(() => [new Date('2024-01-15')])
       };
-      mockRRule.mockReturnValue(mockRRuleInstance as any);
+      mockRRuleConstructor.mockReturnValue(mockRRuleInstance as any);
       mockRRule.parseString = jest.fn(() => ({ freq: 3 }));
 
       const targetDate = new Date('2024-01-15T10:30:00');
@@ -447,7 +453,7 @@ describe('RRule Helper Functions', () => {
       const mockRRuleInstance = {
         between: jest.fn(() => expectedInstances)
       };
-      mockRRule.mockReturnValue(mockRRuleInstance as any);
+      mockRRuleConstructor.mockReturnValue(mockRRuleInstance as any);
       mockRRule.parseString = jest.fn(() => ({ freq: 3 }));
 
       const startDate = new Date('2024-01-15');
@@ -478,7 +484,7 @@ describe('RRule Helper Functions', () => {
       const mockRRuleInstance = {
         between: jest.fn(() => [new Date('2024-01-15')])
       };
-      mockRRule.mockReturnValue(mockRRuleInstance as any);
+      mockRRuleConstructor.mockReturnValue(mockRRuleInstance as any);
       mockRRule.parseString = jest.fn(() => ({ freq: 2 }));
 
       const startDate = new Date('2024-01-15');
@@ -550,7 +556,7 @@ describe('RRule Helper Functions', () => {
       const mockRRuleInstance = {
         between: jest.fn(() => [])
       };
-      mockRRule.mockReturnValue(mockRRuleInstance as any);
+      mockRRuleConstructor.mockReturnValue(mockRRuleInstance as any);
       mockRRule.parseString = jest.fn(() => ({ freq: 3 }));
 
       const startDate = new Date('2024-01-15');
@@ -570,7 +576,7 @@ describe('RRule Helper Functions', () => {
         const mockRRuleInstance = {
           between: jest.fn(() => [new Date('2025-06-27T00:00:00.000Z')])
         };
-        mockRRule.mockReturnValue(mockRRuleInstance as any);
+        mockRRuleConstructor.mockReturnValue(mockRRuleInstance as any);
         mockRRule.parseString = jest.fn(() => ({ freq: 1, byweekday: [-1 * 5] }));
 
         const startDate = new Date('2025-06-01');
@@ -595,7 +601,7 @@ describe('RRule Helper Functions', () => {
         const mockRRuleInstance = {
           between: jest.fn(() => [])
         };
-        mockRRule.mockReturnValue(mockRRuleInstance as any);
+        mockRRuleConstructor.mockReturnValue(mockRRuleInstance as any);
         mockRRule.parseString = jest.fn(() => ({ freq: 2, byweekday: [4] }));
 
         const startDate = new Date('2025-06-01');
@@ -620,7 +626,7 @@ describe('RRule Helper Functions', () => {
         const mockRRuleInstance = {
           between: jest.fn(() => [expectedOccurrence])
         };
-        mockRRule.mockReturnValue(mockRRuleInstance as any);
+        mockRRuleConstructor.mockReturnValue(mockRRuleInstance as any);
         mockRRule.parseString = jest.fn(() => ({ freq: 1, byweekday: [-1 * 5] }));
 
         // Test generateRecurringInstances
@@ -659,7 +665,7 @@ describe('RRule Helper Functions', () => {
         const mockRRuleInstance = {
           between: jest.fn(() => [])
         };
-        mockRRule.mockReturnValue(mockRRuleInstance as any);
+        mockRRuleConstructor.mockReturnValue(mockRRuleInstance as any);
         mockRRule.parseString = jest.fn(() => ({ freq: 3 }));
 
         const startDate = new Date('2025-06-26');
@@ -709,7 +715,7 @@ describe('RRule Helper Functions', () => {
         toText: jest.fn(() => 'weekly on Monday and Friday')
       };
       
-      mockRRule.mockReturnValue(mockRRuleInstance as any);
+      mockRRuleConstructor.mockReturnValue(mockRRuleInstance as any);
       mockRRule.fromString = jest.fn(() => mockFromStringInstance as any);
 
       const result = getRecurrenceDisplayText(legacyRecurrence);
@@ -779,7 +785,7 @@ describe('RRule Helper Functions', () => {
       const mockRRuleInstance = {
         between: jest.fn(() => mockUTCDates)
       };
-      mockRRule.mockReturnValue(mockRRuleInstance as any);
+      mockRRuleConstructor.mockReturnValue(mockRRuleInstance as any);
       mockRRule.parseString = jest.fn(() => ({ freq: 3 }));
 
       // Simulate normalized UTC calendar boundaries
@@ -816,7 +822,7 @@ describe('RRule Helper Functions', () => {
       const mockRRuleInstance = {
         between: jest.fn(() => mockMondayDates)
       };
-      mockRRule.mockReturnValue(mockRRuleInstance as any);
+      mockRRuleConstructor.mockReturnValue(mockRRuleInstance as any);
       mockRRule.parseString = jest.fn(() => ({ freq: 2, byweekday: [0] }));
 
       const utcStart = new Date('2025-01-13T00:00:00.000Z');
@@ -849,7 +855,7 @@ describe('RRule Helper Functions', () => {
       const mockRRuleInstance = {
         between: jest.fn(() => mockCrossBoundaryDates)
       };
-      mockRRule.mockReturnValue(mockRRuleInstance as any);
+      mockRRuleConstructor.mockReturnValue(mockRRuleInstance as any);
 
       const utcStart = new Date('2025-01-30T00:00:00.000Z');
       const utcEnd = new Date('2025-02-02T00:00:00.000Z');
@@ -872,7 +878,7 @@ describe('RRule Helper Functions', () => {
       const mockRRuleInstance = {
         between: jest.fn(() => [new Date('2025-01-15T00:00:00.000Z')])
       };
-      mockRRule.mockReturnValue(mockRRuleInstance as any);
+      mockRRuleConstructor.mockReturnValue(mockRRuleInstance as any);
 
       generateRecurringInstances(task, new Date(), new Date());
 
@@ -905,7 +911,7 @@ describe('RRule Helper Functions', () => {
           })
         };
         
-        mockRRule.mockReturnValue(mockRRuleInstance as any);
+        mockRRuleConstructor.mockReturnValue(mockRRuleInstance as any);
         mockRRule.parseString = jest.fn(() => ({ freq: 1, byweekday: [-1 * 5] })); // -1FR
 
         // Test that it shows on Friday, not Saturday
@@ -929,7 +935,7 @@ describe('RRule Helper Functions', () => {
           between: jest.fn(() => [])
         };
         
-        mockRRule.mockReturnValue(mockRRuleInstance as any);
+        mockRRuleConstructor.mockReturnValue(mockRRuleInstance as any);
         mockRRule.parseString = jest.fn(() => ({ freq: 2, byweekday: [4] })); // Friday
 
         const testDate = new Date('2025-06-27');
@@ -953,7 +959,7 @@ describe('RRule Helper Functions', () => {
           between: jest.fn(() => [])
         };
         
-        mockRRule.mockReturnValue(mockRRuleInstance as any);
+        mockRRuleConstructor.mockReturnValue(mockRRuleInstance as any);
         mockRRule.parseString = jest.fn(() => ({ freq: 3 }));
 
         const testDate = new Date('2025-06-26');
@@ -989,7 +995,7 @@ describe('RRule Helper Functions', () => {
           between: jest.fn(() => [])
         };
         
-        mockRRule.mockReturnValue(mockRRuleInstance as any);
+        mockRRuleConstructor.mockReturnValue(mockRRuleInstance as any);
         mockRRule.parseString = jest.fn(() => ({ freq: 3 }));
 
         const testDate = new Date('2025-06-27T15:30:00'); // Afternoon time
@@ -1033,7 +1039,7 @@ describe('RRule Helper Functions', () => {
           between: jest.fn(() => [new Date('2025-03-16T00:00:00.000Z')])
         };
         
-        mockRRule.mockReturnValue(mockRRuleInstance as any);
+        mockRRuleConstructor.mockReturnValue(mockRRuleInstance as any);
         mockRRule.parseString = jest.fn(() => ({ freq: 2, byweekday: [6] }));
 
         const testDate = new Date('2025-03-16'); // Sunday after DST
@@ -1052,7 +1058,7 @@ describe('RRule Helper Functions', () => {
           between: jest.fn(() => [new Date('2025-01-31T00:00:00.000Z')])
         };
         
-        mockRRule.mockReturnValue(mockRRuleInstance as any);
+        mockRRuleConstructor.mockReturnValue(mockRRuleInstance as any);
         mockRRule.parseString = jest.fn(() => ({ freq: 1, bymonthday: [31] }));
 
         const testDate = new Date('2025-01-31');
