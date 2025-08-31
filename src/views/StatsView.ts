@@ -7,6 +7,7 @@ import {
     EVENT_TASK_UPDATED
 } from '../types';
 import { calculateTotalTimeSpent, filterEmptyProjects } from '../utils/helpers';
+import { getTodayLocal, createUTCDateFromLocalCalendarDate } from '../utils/dateUtils';
 import { createTaskCard } from '../ui/TaskCard';
 
 interface ProjectStats {
@@ -334,9 +335,11 @@ export class StatsView extends ItemView {
     private async updateTodayStats() {
         if (!this.todayStatsEl) return;
         
-        const today = new Date();
-        const startOfToday = startOfDay(today);
-        const stats = await this.calculateStatsForRange(startOfToday, today);
+        // Use UTC-anchored today for consistent timezone handling
+        const todayLocal = getTodayLocal();
+        const todayUTCAnchor = createUTCDateFromLocalCalendarDate(todayLocal);
+        const startOfToday = startOfDay(todayUTCAnchor);
+        const stats = await this.calculateStatsForRange(startOfToday, todayUTCAnchor);
         
         this.renderTimeRangeStats(this.todayStatsEl, stats);
     }
@@ -344,11 +347,13 @@ export class StatsView extends ItemView {
     private async updateWeekStats() {
         if (!this.weekStatsEl) return;
         
-        const today = new Date();
+        // Use UTC-anchored today for consistent timezone handling
+        const todayLocal = getTodayLocal();
+        const todayUTCAnchor = createUTCDateFromLocalCalendarDate(todayLocal);
         const firstDaySetting = this.plugin.settings.calendarViewSettings.firstDay || 0;
         const weekStartOptions = { weekStartsOn: firstDaySetting as 0 | 1 | 2 | 3 | 4 | 5 | 6 };
-        const weekStart = startOfWeek(today, weekStartOptions);
-        const weekEnd = endOfWeek(today, weekStartOptions);
+        const weekStart = startOfWeek(todayUTCAnchor, weekStartOptions);
+        const weekEnd = endOfWeek(todayUTCAnchor, weekStartOptions);
         
         const stats = await this.calculateStatsForRange(weekStart, weekEnd);
         this.renderTimeRangeStats(this.weekStatsEl, stats);
@@ -357,9 +362,11 @@ export class StatsView extends ItemView {
     private async updateMonthStats() {
         if (!this.monthStatsEl) return;
         
-        const today = new Date();
-        const monthStart = startOfMonth(today);
-        const monthEnd = endOfMonth(today);
+        // Use UTC-anchored today for consistent timezone handling
+        const todayLocal = getTodayLocal();
+        const todayUTCAnchor = createUTCDateFromLocalCalendarDate(todayLocal);
+        const monthStart = startOfMonth(todayUTCAnchor);
+        const monthEnd = endOfMonth(todayUTCAnchor);
         
         const stats = await this.calculateStatsForRange(monthStart, monthEnd);
         this.renderTimeRangeStats(this.monthStatsEl, stats);
@@ -785,23 +792,25 @@ export class StatsView extends ItemView {
      * Get date range based on current filters
      */
     private getFilterDateRange(): { start?: Date; end?: Date } {
-        const now = new Date();
+        // Use UTC-anchored today for consistent timezone handling
+        const todayLocal = getTodayLocal();
+        const todayUTCAnchor = createUTCDateFromLocalCalendarDate(todayLocal);
         
         switch (this.currentFilters.dateRange) {
             case '7days':
                 return {
-                    start: subDays(now, 7),
-                    end: now
+                    start: subDays(todayUTCAnchor, 7),
+                    end: todayUTCAnchor
                 };
             case '30days':
                 return {
-                    start: subDays(now, 30),
-                    end: now
+                    start: subDays(todayUTCAnchor, 30),
+                    end: todayUTCAnchor
                 };
             case '90days':
                 return {
-                    start: subDays(now, 90),
-                    end: now
+                    start: subDays(todayUTCAnchor, 90),
+                    end: todayUTCAnchor
                 };
             case 'custom':
                 return {
@@ -1074,10 +1083,12 @@ export class StatsView extends ItemView {
             
             // Calculate daily time spent over last 30 days
             const trendData: TrendDataPoint[] = [];
-            const today = new Date();
+            // Use UTC-anchored today for consistent timezone handling
+            const todayLocal = getTodayLocal();
+            const todayUTCAnchor = createUTCDateFromLocalCalendarDate(todayLocal);
             
             for (let i = 29; i >= 0; i--) {
-                const date = subDays(today, i);
+                const date = subDays(todayUTCAnchor, i);
                 const dateStr = format(date, 'yyyy-MM-dd');
                 let dailyTime = 0;
                 
@@ -1288,10 +1299,12 @@ export class StatsView extends ItemView {
         
         // Calculate time by day for the last 30 days
         const timeByDay: TimeByDay[] = [];
-        const today = new Date();
+        // Use UTC-anchored today for consistent timezone handling
+        const todayLocal = getTodayLocal();
+        const todayUTCAnchor = createUTCDateFromLocalCalendarDate(todayLocal);
         
         for (let i = 29; i >= 0; i--) {
-            const date = subDays(today, i);
+            const date = subDays(todayUTCAnchor, i);
             const dateStr = format(date, 'yyyy-MM-dd');
             let dayTime = 0;
             let dayTasks = 0;

@@ -6,7 +6,7 @@ import {
     PomodoroHistoryStats,
     PomodoroSessionHistory
 } from '../types';
-import { parseTimestamp } from '../utils/dateUtils';
+import { parseTimestamp, getTodayLocal, createUTCDateFromLocalCalendarDate } from '../utils/dateUtils';
 import { getSessionDuration } from '../utils/pomodoroUtils';
 
 export class PomodoroStatsView extends ItemView {
@@ -136,10 +136,12 @@ export class PomodoroStatsView extends ItemView {
         const todayStats = await this.plugin.pomodoroService.getTodayStats();
         const overallStats = await this.calculateOverallStatsFromHistory();
         
-        const today = new Date();
-        const yesterday = new Date(today);
-        yesterday.setDate(yesterday.getDate() - 1);
-        const yesterdayStats = await this.calculateStatsForRange(yesterday, yesterday);
+        // Use UTC-anchored dates for consistent timezone handling
+        const todayLocal = getTodayLocal();
+        const yesterdayLocal = new Date(todayLocal);
+        yesterdayLocal.setDate(yesterdayLocal.getDate() - 1);
+        const yesterdayUTCAnchor = createUTCDateFromLocalCalendarDate(yesterdayLocal);
+        const yesterdayStats = await this.calculateStatsForRange(yesterdayUTCAnchor, yesterdayUTCAnchor);
         
         this.renderOverviewStats(this.overviewStatsEl, todayStats, overallStats, yesterdayStats);
     }
@@ -154,11 +156,13 @@ export class PomodoroStatsView extends ItemView {
     private async updateWeekStats() {
         if (!this.weekStatsEl) return;
         
-        const today = new Date();
+        // Use UTC-anchored today for consistent timezone handling
+        const todayLocal = getTodayLocal();
+        const todayUTCAnchor = createUTCDateFromLocalCalendarDate(todayLocal);
         const firstDaySetting = this.plugin.settings.calendarViewSettings.firstDay || 0;
         const weekStartOptions = { weekStartsOn: firstDaySetting as 0 | 1 | 2 | 3 | 4 | 5 | 6 };
-        const weekStart = startOfWeek(today, weekStartOptions);
-        const weekEnd = endOfWeek(today, weekStartOptions);
+        const weekStart = startOfWeek(todayUTCAnchor, weekStartOptions);
+        const weekEnd = endOfWeek(todayUTCAnchor, weekStartOptions);
         
         const stats = await this.calculateStatsForRange(weekStart, weekEnd);
         this.renderStatsGrid(this.weekStatsEl, stats);
