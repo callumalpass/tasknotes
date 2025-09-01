@@ -272,22 +272,16 @@ export default class TaskNotesPlugin extends Plugin {
 		// Start migration check early (before views can be opened)
 		this.migrationPromise = this.performEarlyMigrationCheck();
 
-		// Early registration attempt for Bases integration  
-		console.log('[TaskNotes][Bases] Early registration check - enableBasesPOC:', this.settings?.enableBasesPOC);
+		// Early registration attempt for Bases integration
 		if (this.settings?.enableBasesPOC) {
-			console.log('[TaskNotes][Bases] Settings show POC enabled, attempting registration...');
 			try {
-				console.log('[TaskNotes][Bases] About to import registration module...');
 				const { registerBasesTaskList } = await import('./bases/registration');
-				console.log('[TaskNotes][Bases] Registration module imported, calling function...');
 				await registerBasesTaskList(this);
 			} catch (e) {
-				console.log('[TaskNotes][Bases] Early registration failed:', e);
-				console.error('[TaskNotes][Bases] Early registration error details:', e);
+				console.debug('[TaskNotes][Bases] Early registration failed:', e);
 			}
-		} else {
-			console.log('[TaskNotes][Bases] POC not enabled in settings, skipping registration');
 		}
+
 
 		// Defer expensive initialization until layout is ready
 		this.app.workspace.onLayoutReady(() => {
@@ -413,19 +407,13 @@ export default class TaskNotesPlugin extends Plugin {
 			this.initializeServicesLazily();
 
 			// Register TaskNotes views with Bases plugin (if enabled)
-			console.log('[TaskNotes][Bases] Layout-ready registration check - enableBasesPOC:', this.settings?.enableBasesPOC);
 			if (this.settings?.enableBasesPOC) {
-				console.log('[TaskNotes][Bases] Settings show POC enabled, attempting layout-ready registration...');
 				try {
 					const { registerBasesTaskList } = await import('./bases/registration');
-					console.log('[TaskNotes][Bases] Registration module imported (layout-ready), calling function...');
 					await registerBasesTaskList(this);
 				} catch (e) {
-					console.log('[TaskNotes][Bases] Layout-ready registration failed:', e);
-					console.error('[TaskNotes][Bases] Layout-ready registration error details:', e);
+					console.debug('[TaskNotes][Bases] Registration failed:', e);
 				}
-			} else {
-				console.log('[TaskNotes][Bases] POC not enabled in settings, skipping layout-ready registration');
 			}
 
 		} catch (error) {
