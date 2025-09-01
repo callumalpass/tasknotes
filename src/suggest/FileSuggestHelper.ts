@@ -11,7 +11,7 @@ export interface FileSuggestionItem {
 export const FileSuggestHelper = {
   async suggest(plugin: TaskNotesPlugin, query: string, limit = 20): Promise<FileSuggestionItem[]> {
     const run = async () => {
-      const files = plugin.app.vault.getMarkdownFiles();
+      const files = plugin?.app?.vault?.getMarkdownFiles ? plugin.app.vault.getMarkdownFiles() : [];
       const items: FileSuggestionItem[] = [];
 
       for (const file of files) {

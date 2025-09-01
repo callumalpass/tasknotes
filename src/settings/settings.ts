@@ -438,6 +438,8 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 					});
 			});
 
+
+
 		new Setting(container)
 			.setName('Default task status')
 			.setDesc('Default status for new tasks')
@@ -1857,6 +1859,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 					.addOption('openNote', 'Open note')
 					.setValue(this.plugin.settings.singleClickAction)
 					.onChange(async (value: 'edit' | 'openNote') => {
+
 						this.plugin.settings.singleClickAction = value;
 						await this.plugin.saveSettings();
 					});
@@ -1916,6 +1919,8 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 		const header = table.createEl('tr');
 		header.createEl('th', { cls: 'settings-view__table-header', text: 'TaskNotes field' });
 		header.createEl('th', { cls: 'settings-view__table-header', text: 'Your property name' });
+
+
 
 		const fieldMappings: Array<[keyof FieldMapping, string]> = [
 			['title', 'Title'],
