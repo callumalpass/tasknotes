@@ -1,6 +1,5 @@
 import TaskNotesPlugin from '../main';
 import { BasesDataItem, identifyTaskNotesFromBasesData, renderTaskNotesInBasesView } from './helpers';
-import { TaskNotesBasesTaskListComponent } from './component';
 
 export interface BasesContainerLike {
   results?: Map<any, any>;
@@ -96,22 +95,70 @@ export function buildTasknotesBaseViewFactory(plugin: TaskNotesPlugin, config: V
       }
     };
 
-    // Build component with lifecycle hooks
-    const component = new TaskNotesBasesTaskListComponent({
-      getContainer: () => currentRoot,
-      setContainer: (el) => { currentRoot = el; },
-      refresh: render,
-      attachQueryListener: (handler) => (basesContainer as any)?.query?.on?.('change', handler),
-      detachQueryListener: (handler) => (basesContainer as any)?.query?.off?.('change', handler)
-    });
-
-    // Add Bases lifecycle shims
-    (component as any).load = component.onload.bind(component);
-    (component as any).unload = component.onunload.bind(component);
-
     // Kick off initial async render
     void render();
 
-    return component as any;
+    // Create view object with proper listener management
+    let queryListener: (() => void) | null = null;
+    
+    const viewObject = {
+      // Core interface for Bases
+      refresh: render,
+      destroy: () => {
+        // Clean up query listener
+        if (queryListener && (basesContainer as any)?.query?.off) {
+          try {
+            (basesContainer as any).query.off('change', queryListener);
+          } catch (e) {
+            console.debug('[TaskNotes][Bases] Could not detach query listener:', e);
+          }
+        }
+        
+        // Clean up DOM
+        if (currentRoot) {
+          currentRoot.remove();
+          currentRoot = null;
+        }
+        queryListener = null;
+      },
+      
+      // Bases lifecycle methods
+      load: () => {
+        // Attach query change listener if available
+        if ((basesContainer as any)?.query?.on && !queryListener) {
+          queryListener = () => void render();
+          try {
+            (basesContainer as any).query.on('change', queryListener);
+          } catch (e) {
+            console.debug('[TaskNotes][Bases] Could not attach query listener:', e);
+          }
+        }
+      },
+      
+      unload: () => {
+        // Clean up query listener
+        if (queryListener && (basesContainer as any)?.query?.off) {
+          try {
+            (basesContainer as any).query.off('change', queryListener);
+          } catch (e) {
+            console.debug('[TaskNotes][Bases] Could not detach query listener:', e);
+          }
+        }
+        
+        // Clean up DOM
+        if (currentRoot) {
+          currentRoot.remove();
+          currentRoot = null;
+        }
+        queryListener = null;
+      },
+
+      // Additional methods that Bases might expect
+      onDataUpdated: () => void render(),
+      getViewType: () => 'tasknotes-task-list',
+      getDisplayText: () => 'TaskNotes Task List'
+    };
+
+    return viewObject;
   };
 }
