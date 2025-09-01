@@ -241,5 +241,7 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 		'projects',    // Projects
 		'contexts',    // Contexts
 		'tags'         // Tags
-	]
+	],
+	// Recurring task behavior defaults
+	maintainDueDateOffsetInRecurring: false
 };

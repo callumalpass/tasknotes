@@ -548,9 +548,12 @@ export class TaskEditModal extends TaskModal {
             // If task has recurrence, update scheduled date to next uncompleted occurrence
             if (this.task.recurrence) {
                 const tempTask: TaskInfo = { ...this.task, ...changes };
-                const nextScheduledDate = updateToNextScheduledOccurrence(tempTask);
-                if (nextScheduledDate) {
-                    changes.scheduled = nextScheduledDate;
+                const nextDates = updateToNextScheduledOccurrence(tempTask, this.plugin.settings.maintainDueDateOffsetInRecurring);
+                if (nextDates.scheduled) {
+                    changes.scheduled = nextDates.scheduled;
+                }
+                if (nextDates.due) {
+                    changes.due = nextDates.due;
                 }
             }
         }
