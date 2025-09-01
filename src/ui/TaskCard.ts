@@ -116,6 +116,14 @@ function getPropertyValue(task: TaskInfo, propertyId: string, plugin: TaskNotesP
             return getUserPropertyValue(task, propertyId, plugin);
         }
         
+        // Fallback: try to get arbitrary property from frontmatter
+        if (task.path) {
+            const value = getFrontmatterValue(task.path, propertyId, plugin);
+            if (value !== undefined) {
+                return value;
+            }
+        }
+        
         return null;
     } catch (error) {
         console.warn(`TaskCard: Error getting property ${propertyId}:`, error);
@@ -261,6 +269,9 @@ function renderPropertyMetadata(
             PROPERTY_RENDERERS[propertyId](element, value, task, plugin);
         } else if (propertyId.startsWith('user:')) {
             renderUserProperty(element, propertyId, value, plugin);
+        } else {
+            // Fallback: render arbitrary property with generic format
+            renderGenericProperty(element, propertyId, value);
         }
         return element;
     } catch (error) {
@@ -318,6 +329,31 @@ interface UserField {
     key: string;
     type: 'text' | 'number' | 'date' | 'boolean' | 'list';
     displayName?: string;
+}
+
+/**
+ * Render generic property with smart formatting
+ */
+function renderGenericProperty(element: HTMLElement, propertyId: string, value: unknown): void {
+    const displayName = propertyId.charAt(0).toUpperCase() + propertyId.slice(1);
+    let displayValue: string;
+    
+    if (Array.isArray(value)) {
+        // Handle arrays by joining with commas
+        const filtered = value.filter(v => v !== null && v !== undefined && v !== '');
+        displayValue = filtered.join(', ');
+    } else if (typeof value === 'object' && value !== null) {
+        // Handle objects by converting to JSON (but not ideal)
+        displayValue = JSON.stringify(value);
+    } else if (typeof value === 'boolean') {
+        // Handle booleans
+        displayValue = value ? 'Yes' : 'No';
+    } else {
+        // Handle strings, numbers, etc.
+        displayValue = String(value);
+    }
+    
+    element.textContent = `${displayName}: ${displayValue}`;
 }
 
 /**
