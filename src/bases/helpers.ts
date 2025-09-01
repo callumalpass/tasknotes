@@ -9,6 +9,7 @@ export interface BasesDataItem {
   properties?: Record<string, any>;
   frontmatter?: Record<string, any>;
   name?: string;
+  formulaResults?: Record<string, any>;
 }
 
 /**
@@ -18,6 +19,26 @@ export function createTaskInfoFromBasesData(basesItem: BasesDataItem): TaskInfo 
   if (!basesItem?.path) return null;
 
   const props = basesItem.properties || basesItem.frontmatter || {};
+
+  // Separate known TaskNotes properties from custom properties
+  const knownProperties = new Set([
+    'title', 'status', 'priority', 'archived', 'due', 'scheduled', 'contexts', 
+    'projects', 'tags', 'timeEstimate', 'completedDate', 'recurrence', 
+    'dateCreated', 'dateModified', 'timeEntries', 'reminders', 'icsEventId'
+  ]);
+
+  // Extract custom properties from frontmatter
+  const customProperties: Record<string, any> = {};
+  Object.keys(props).forEach(key => {
+    if (!knownProperties.has(key)) {
+      customProperties[key] = props[key];
+    }
+  });
+
+  // Note: Bases formula properties are handled dynamically in the TaskCard rendering layer
+  // since they require access to the Bases property computation system
+  
+
 
   const taskInfo: TaskInfo = {
     title: props.title || basesItem.name || basesItem.path!.split('/').pop()?.replace('.md', '') || 'Untitled',
@@ -37,7 +58,8 @@ export function createTaskInfoFromBasesData(basesItem: BasesDataItem): TaskInfo 
     dateModified: props.dateModified,
     timeEntries: props.timeEntries,
     reminders: props.reminders,
-    icsEventId: props.icsEventId
+    icsEventId: props.icsEventId,
+    customProperties: Object.keys(customProperties).length > 0 ? customProperties : undefined
   };
 
   return taskInfo;
@@ -83,6 +105,7 @@ export function getBasesVisibleProperties(basesContainer: any): BasesSelectedPro
     // Build index from available properties
     const propsMap: Record<string, any> | undefined = query?.properties;
     const idIndex = new Map<string, string>();
+    
     if (propsMap && typeof propsMap === 'object') {
       for (const id of Object.keys(propsMap)) {
         idIndex.set(id, id);
@@ -160,27 +183,32 @@ export async function renderTaskNotesInBasesView(
       
       // Map common property names to TaskNotes property names
       visibleProperties = visibleProperties.map(propId => {
+        let mappedId = propId;
         // Handle dotted properties like task.due -> due
         if (propId.startsWith('task.')) {
-          return propId.substring(5);
+          mappedId = propId.substring(5);
         }
         // Handle note properties like note.projects -> projects
-        if (propId.startsWith('note.')) {
+        else if (propId.startsWith('note.')) {
           const stripped = propId.substring(5);
           // Map specific note properties to TaskNotes property names
-          if (stripped === 'dateCreated') return 'dateCreated';
-          if (stripped === 'dateModified') return 'dateModified';
-          if (stripped === 'completedDate') return 'completedDate';
-          return stripped; // projects, contexts, tags, and any other arbitrary properties
+          if (stripped === 'dateCreated') mappedId = 'dateCreated';
+          else if (stripped === 'dateModified') mappedId = 'dateModified';
+          else if (stripped === 'completedDate') mappedId = 'completedDate';
+          else mappedId = stripped; // projects, contexts, tags, and any other arbitrary properties
         }
         // Handle file properties
-        if (propId === 'file.ctime') return 'dateCreated';
-        if (propId === 'file.mtime') return 'dateModified';
-        if (propId === 'file.name') return 'title'; // Map file name to title
+        else if (propId === 'file.ctime') mappedId = 'dateCreated';
+        else if (propId === 'file.mtime') mappedId = 'dateModified';
+        else if (propId === 'file.name') mappedId = 'title'; // Map file name to title
+        // Handle formula properties like formula.TESTST -> formula.TESTST (keep as-is for now)
+        else if (propId.startsWith('formula.')) {
+          mappedId = propId; // Keep the full formula.TESTST format for property lookup
+        }
         
         // Pass through arbitrary properties unchanged
         // These will be handled by the generic property renderer in TaskCard
-        return propId;
+        return mappedId;
       });
     }
   }

@@ -116,6 +116,19 @@ function getPropertyValue(task: TaskInfo, propertyId: string, plugin: TaskNotesP
             return getUserPropertyValue(task, propertyId, plugin);
         }
         
+        // Check custom properties from Bases or other sources
+        if (task.customProperties && propertyId in task.customProperties) {
+            return task.customProperties[propertyId];
+        }
+        
+        // Handle Bases formula properties
+        if (propertyId.startsWith('formula.')) {
+            // TODO: Implement dynamic formula computation by accessing Bases property system
+            // This requires integration with Bases' formula computation engine
+            const formulaName = propertyId.substring(8);
+            return `[${formulaName}]`; // Placeholder - formulas need Bases computation integration
+        }
+        
         // Fallback: try to get arbitrary property from frontmatter
         if (task.path) {
             const value = getFrontmatterValue(task.path, propertyId, plugin);
@@ -335,7 +348,14 @@ interface UserField {
  * Render generic property with smart formatting
  */
 function renderGenericProperty(element: HTMLElement, propertyId: string, value: unknown): void {
-    const displayName = propertyId.charAt(0).toUpperCase() + propertyId.slice(1);
+    // Handle formula properties - show just the formula name, not "formula.TESTST"
+    let displayName: string;
+    if (propertyId.startsWith('formula.')) {
+        displayName = propertyId.substring(8); // Remove "formula." prefix
+    } else {
+        displayName = propertyId.charAt(0).toUpperCase() + propertyId.slice(1);
+    }
+    
     let displayValue: string;
     
     if (Array.isArray(value)) {
@@ -343,14 +363,44 @@ function renderGenericProperty(element: HTMLElement, propertyId: string, value: 
         const filtered = value.filter(v => v !== null && v !== undefined && v !== '');
         displayValue = filtered.join(', ');
     } else if (typeof value === 'object' && value !== null) {
-        // Handle objects by converting to JSON (but not ideal)
-        displayValue = JSON.stringify(value);
+        // Handle Date objects specially
+        if (value instanceof Date) {
+            displayValue = formatDateTimeForDisplay(value.toISOString(), {
+                dateFormat: 'MMM d, yyyy',
+                timeFormat: '',
+                showTime: false
+            });
+        }
+        // Handle objects with meaningful toString methods or simple key-value pairs
+        else if (typeof value.toString === 'function' && value.toString() !== '[object Object]') {
+            displayValue = value.toString();
+        }
+        // For simple objects with a few key-value pairs, show them nicely
+        else {
+            const entries = Object.entries(value as Record<string, any>);
+            if (entries.length <= 3) {
+                displayValue = entries
+                    .map(([k, v]) => `${k}: ${v}`)
+                    .join(', ');
+            } else {
+                // Fallback to JSON for complex objects
+                displayValue = JSON.stringify(value);
+            }
+        }
     } else if (typeof value === 'boolean') {
-        // Handle booleans
-        displayValue = value ? 'Yes' : 'No';
+        // Handle booleans with checkmark/x symbols for better visual
+        displayValue = value ? '✓' : '✗';
+    } else if (typeof value === 'number') {
+        // Format numbers with appropriate precision
+        displayValue = Number.isInteger(value) ? String(value) : value.toFixed(2);
     } else {
-        // Handle strings, numbers, etc.
+        // Handle strings and other primitive types
         displayValue = String(value);
+    }
+    
+    // Truncate very long values to keep card readable
+    if (displayValue.length > 100) {
+        displayValue = displayValue.substring(0, 97) + '...';
     }
     
     element.textContent = `${displayName}: ${displayValue}`;

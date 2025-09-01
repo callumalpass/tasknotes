@@ -39,6 +39,7 @@ export function buildTasknotesBaseViewFactory(plugin: TaskNotesPlugin, config: V
     const extractDataItems = (): BasesDataItem[] => {
       const dataItems: BasesDataItem[] = [];
       const results = (basesContainer as any)?.results as Map<any, any> | undefined;
+      
       if (results && results instanceof Map) {
         for (const [key, value] of results.entries()) {
           dataItems.push({
@@ -46,10 +47,14 @@ export function buildTasknotesBaseViewFactory(plugin: TaskNotesPlugin, config: V
             data: value,
             file: (value as any)?.file,
             path: (value as any)?.file?.path || (value as any)?.path,
-            properties: (value as any)?.properties || (value as any)?.frontmatter
+            properties: (value as any)?.properties || (value as any)?.frontmatter,
+            // Note: Formula results extraction is handled in the property rendering layer
+            // since Bases formula computation is complex and property-specific
+            formulaResults: {}
           });
         }
       }
+      
       return dataItems;
     };
 
@@ -57,6 +62,8 @@ export function buildTasknotesBaseViewFactory(plugin: TaskNotesPlugin, config: V
       if (!currentRoot) return;
       try {
         const dataItems = extractDataItems();
+        
+        
         const taskNotes = await identifyTaskNotesFromBasesData(dataItems);
 
         // Render body

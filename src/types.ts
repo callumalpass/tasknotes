@@ -243,6 +243,7 @@ export interface TaskInfo {
 	dateModified?: string; // Last modification date (ISO timestamp)
 	icsEventId?: string[]; // Links to ICS calendar event IDs
 	reminders?: Reminder[]; // Task reminders
+	customProperties?: Record<string, any>; // Custom properties from Bases or other sources
 }
 
 export interface TaskCreationData extends Partial<TaskInfo> {
