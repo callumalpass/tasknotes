@@ -1,6 +1,7 @@
 import type TaskNotesPlugin from '../main';
 import { parseFrontMatterAliases } from 'obsidian';
 import { scoreMultiword } from '../utils/fuzzyMatch';
+import { parseDisplayFieldsRow } from '../utils/projectAutosuggestDisplayFieldsParser';
 
 export interface FileSuggestionItem {
   insertText: string;   // usually basename
@@ -13,6 +14,21 @@ export const FileSuggestHelper = {
     const run = async () => {
       const files = plugin?.app?.vault?.getMarkdownFiles ? plugin.app.vault.getMarkdownFiles() : [];
       const items: FileSuggestionItem[] = [];
+
+      // Collect additional searchable properties from settings rows (|s flag)
+      const rows: string[] = (plugin.settings?.projectAutosuggest?.rows ?? []).slice(0, 3);
+      const extraProps = new Set<string>();
+      for (const row of rows) {
+        try {
+          const tokens = parseDisplayFieldsRow(row);
+          for (const t of tokens) {
+            if ((t as any).searchable && !t.property.startsWith('literal:')) {
+              extraProps.add(t.property);
+            }
+          }
+        } catch {/* ignore parse errors */}
+      }
+      const qLower = (query || '').toLowerCase();
 
       for (const file of files) {
         const cache = plugin.app.metadataCache.getFileCache(file);
@@ -34,6 +50,39 @@ export const FileSuggestHelper = {
           for (const a of aliases) {
             if (typeof a === 'string') {
               bestScore = Math.max(bestScore, scoreMultiword(query, a));
+            }
+          }
+        }
+
+        // Additional searchable properties (IN ADDITION TO defaults)
+        if (extraProps.size > 0) {
+          const fm = cache?.frontmatter || {};
+          for (const prop of extraProps) {
+            let val = '';
+            if (prop === 'file.path') {
+              val = file.path;
+            } else if (prop === 'file.parent') {
+              // @ts-ignore parent typing on TFile
+              val = (file.parent?.path || '') as string;
+            } else if (prop === 'file.basename') {
+              val = basename; // already default, but harmless
+            } else if (prop === 'title') {
+              val = title; // already default
+            } else if (prop === 'aliases') {
+              const aList = Array.isArray(aliases) ? aliases.filter(a => typeof a === 'string') : [];
+              val = aList.join(' ');
+            } else {
+              const raw = (fm as any)[prop];
+              if (raw != null) {
+                if (Array.isArray(raw)) val = raw.filter(x => typeof x === 'string').join(' ');
+                else if (typeof raw === 'object') val = JSON.stringify(raw);
+                else if (typeof raw === 'string' || typeof raw === 'number' || typeof raw === 'boolean') val = String(raw);
+              }
+            }
+            if (val) {
+              const s = scoreMultiword(query, val);
+              const inc = s > 0 ? s : (val.toLowerCase().includes(qLower) ? 30 : 0);
+              if (inc > 0) bestScore = Math.max(bestScore, inc);
             }
           }
         }
