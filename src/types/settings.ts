@@ -101,6 +101,8 @@ export interface TaskNotesSettings {
 	userFields?: UserMappedField[];
 	// Legacy single-field (for migration only)
 	userField?: UserFieldMapping;
+	// Recurring task behavior
+	maintainDueDateOffsetInRecurring: boolean;
 }
 
 export interface DefaultReminder {

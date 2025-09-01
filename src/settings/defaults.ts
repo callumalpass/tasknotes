@@ -231,5 +231,7 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	// Webhook defaults
 	webhooks: [],
 	// User Fields defaults (multiple)
-	userFields: []
+	userFields: [],
+	// Recurring task behavior defaults
+	maintainDueDateOffsetInRecurring: false
 };

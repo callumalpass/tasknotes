@@ -669,8 +669,10 @@ export function getNextUncompletedOccurrence(task: TaskInfo): Date | null {
 /**
  * Updates the scheduled date of a recurring task to its next uncompleted occurrence
  * Returns the updated scheduled date or null if no next occurrence
+ * @param task Task info object
+ * @param maintainDueOffset Whether to maintain the due date offset (from settings)
  */
-export function updateToNextScheduledOccurrence(task: TaskInfo): { scheduled: string | null; due: string | null } {
+export function updateToNextScheduledOccurrence(task: TaskInfo, maintainDueOffset: boolean = true): { scheduled: string | null; due: string | null } {
 	const nextOccurrence = getNextUncompletedOccurrence(task);
 	let nextScheduleStr: string | null = null;
 	let nextDueStr: string | null = null;
@@ -678,21 +680,23 @@ export function updateToNextScheduledOccurrence(task: TaskInfo): { scheduled: st
 
 	if (nextOccurrence) {
 		
-		// Calculate the offset between original scheduled and due dates
-		try {
-			const originalScheduled = task.scheduled ? parseDateToUTC(task.scheduled) : null;
-			const originalDue = task.due ? parseDateToUTC(task.due): null;
+		// Calculate the offset between original scheduled and due dates (only if setting is enabled)
+		if (maintainDueOffset) {
+			try {
+				const originalScheduled = task.scheduled ? parseDateToUTC(task.scheduled) : null;
+				const originalDue = task.due ? parseDateToUTC(task.due): null;
 
-			if (originalScheduled && originalDue) {
-				// Calculate the time difference
-				const offsetMs = originalDue.getTime() - originalScheduled.getTime();
-				if(nextOccurrence) {
-					// Apply the same offset to get the new due date
-					nextDueDate = new Date(nextOccurrence.getTime() + offsetMs);
+				if (originalScheduled && originalDue) {
+					// Calculate the time difference
+					const offsetMs = originalDue.getTime() - originalScheduled.getTime();
+					if(nextOccurrence) {
+						// Apply the same offset to get the new due date
+						nextDueDate = new Date(nextOccurrence.getTime() + offsetMs);
+					}
 				}
+			} catch (error) {
+				console.error('Error calculating next due date with offset:', error);
 			}
-		} catch (error) {
-			console.error('Error calculating next due date with offset:', error);
 		}
 	
 		// Preserve time component if original scheduled date had time

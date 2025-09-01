@@ -1783,6 +1783,20 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 						await this.plugin.saveSettings();
 					});
 			});
+
+		// Recurring task due date behavior
+		new Setting(container)
+			.setName('Maintain due date offset in recurring tasks')
+			.setDesc('When completing a recurring task, move the due date by the same offset as the scheduled date to preserve the time separation between them')
+			.addToggle(toggle => {
+				toggle.toggleEl.setAttribute('aria-label', 'Maintain due date offset in recurring tasks');
+				return toggle
+					.setValue(this.plugin.settings.maintainDueDateOffsetInRecurring)
+					.onChange(async (value) => {
+						this.plugin.settings.maintainDueDateOffsetInRecurring = value;
+						await this.plugin.saveSettings();
+					});
+			});
 	}
 
 	private renderFieldMappingTab(): void {

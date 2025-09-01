@@ -949,7 +949,7 @@ export class TaskService {
             if (updates.recurrence !== undefined && updates.recurrence !== originalTask.recurrence) {
                 // Recurrence rule changed, calculate new scheduled date
                 const tempTask: TaskInfo = { ...originalTask, ...updates };
-                const nextDates = updateToNextScheduledOccurrence(tempTask);
+                const nextDates = updateToNextScheduledOccurrence(tempTask, this.plugin.settings.maintainDueDateOffsetInRecurring);
                 if (nextDates.scheduled) {
                     recurrenceUpdates.scheduled = nextDates.scheduled;
                 }
@@ -1233,7 +1233,7 @@ export class TaskService {
         }
 
         // Update scheduled date to next uncompleted occurrence
-        const nextDates = updateToNextScheduledOccurrence(updatedTask);
+        const nextDates = updateToNextScheduledOccurrence(updatedTask, this.plugin.settings.maintainDueDateOffsetInRecurring);
         if (nextDates.scheduled) {
             updatedTask.scheduled = nextDates.scheduled;
         }
