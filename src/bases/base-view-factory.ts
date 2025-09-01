@@ -78,7 +78,6 @@ export function buildTasknotesBaseViewFactory(plugin: TaskNotesPlugin, config: V
           const { getBasesSortComparator } = await import('./sorting');
           const sortComparator = getBasesSortComparator(basesContainer, pathToProps);
           if (sortComparator) {
-            console.log('[TaskNotes][Bases] Applying sort configuration:', (sortComparator as any).__basesSortEntries);
             taskNotes.sort(sortComparator);
           }
 
@@ -110,7 +109,7 @@ export function buildTasknotesBaseViewFactory(plugin: TaskNotesPlugin, config: V
           try {
             (basesContainer as any).query.off('change', queryListener);
           } catch (e) {
-            console.debug('[TaskNotes][Bases] Could not detach query listener:', e);
+            // Silently handle query listener cleanup failure
           }
         }
         
@@ -130,7 +129,7 @@ export function buildTasknotesBaseViewFactory(plugin: TaskNotesPlugin, config: V
           try {
             (basesContainer as any).query.on('change', queryListener);
           } catch (e) {
-            console.debug('[TaskNotes][Bases] Could not attach query listener:', e);
+            // Silently handle query listener attachment failure
           }
         }
       },
@@ -141,7 +140,7 @@ export function buildTasknotesBaseViewFactory(plugin: TaskNotesPlugin, config: V
           try {
             (basesContainer as any).query.off('change', queryListener);
           } catch (e) {
-            console.debug('[TaskNotes][Bases] Could not detach query listener:', e);
+            // Silently handle query listener cleanup failure
           }
         }
         
@@ -155,8 +154,8 @@ export function buildTasknotesBaseViewFactory(plugin: TaskNotesPlugin, config: V
 
       // Additional methods that Bases might expect
       onDataUpdated: () => void render(),
-      getViewType: () => 'tasknotes-task-list',
-      getDisplayText: () => 'TaskNotes Task List'
+      getViewType: () => 'tasknotes',
+      getDisplayText: () => 'TaskNotes'
     };
 
     return viewObject;
