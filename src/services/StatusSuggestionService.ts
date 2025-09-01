@@ -38,6 +38,7 @@ export class StatusSuggestionService {
         const q = query.toLowerCase();
         return statusConfigs
             .filter(s => s && typeof s.value === 'string' && typeof s.label === 'string')
+            .filter(s => s.value.trim() !== '' && s.label.trim() !== '') // Filter out empty values
             .filter(s => s.value.toLowerCase().includes(q) || s.label.toLowerCase().includes(q))
             .slice(0, limit)
             .map(s => ({
