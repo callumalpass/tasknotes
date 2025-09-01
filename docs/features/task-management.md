@@ -13,7 +13,7 @@ TaskNotes also supports **Natural Language Creation**, which allows you to creat
 The natural language input field includes auto-suggestion functionality that activates when typing specific trigger characters:
 
 - **@** - Shows available contexts from existing tasks
-- **#** - Shows available tags from existing tasks  
+- **#** - Shows available tags from existing tasks
 - **+** - Shows files from your vault as project suggestions
 - **\*** - Shows available status options (configurable trigger in Settings → Misc)
 
@@ -34,6 +34,41 @@ Project suggestions search across:
 - Frontmatter aliases
 
 Selecting a project suggestion inserts it as `+[[filename]]`, creating a wikilink to the file while maintaining the `+` project marker that the natural language parser recognizes.
+
+
+#### Enhanced Project Auto‑suggester (configurable cards)
+
+Project suggestions can display configurable multi‑row cards and support smarter search. Configure up to 3 rows using a simple token syntax in Settings → Misc → Project Autosuggest.
+
+- Properties: file.basename, file.name, file.path, file.parent, title, aliases, and any frontmatter key
+- Flags:
+  - n or n(Label) → show the field name/label before the value
+  - s → include this field in + search (in addition to defaults)
+- Literals: you can mix in fixed text or emojis between tokens
+
+Examples
+
+- "{title|n(Title)}" → Title: Alpha Project
+- "🔖 {aliases|n(Aliases)}" → 🔖 Aliases: alpha, proj-alpha
+- "{file.path|n(Path)|s}" → include path in + search as well as display it
+
+Search behavior
+
+- Defaults: + search always includes file basename, title (via your field mapping), and aliases
+- |s flag: add more searchable fields on top of the defaults (e.g., file.path or a custom frontmatter key like customer)
+- Fuzzy: optional fuzzy matching can be enabled in settings for broader, multi‑word matches
+
+Performance tips
+
+- Keep rows to three or fewer for clarity and performance (the UI supports up to 3)
+- Prefer specific searchable fields with |s on large vaults
+
+Demo
+
+![Autosuggest projects with spaces](../assets/autosuggest_project_names_with_space.gif)
+
+![Enhanced project autosuggester](../assets/enhanced-project-auto-suggester.gif)
+
 
 #### Status Suggestions
 
@@ -161,7 +196,7 @@ The Advanced Calendar View displays recurring tasks with distinct visual styling
 - Can appear on any date, even outside the recurring pattern
 - Dragging updates only the `scheduled` field (manual reschedule)
 
-#### Pattern Instances  
+#### Pattern Instances
 - **Dashed border** with reduced opacity (70%)
 - Shows preview of when future recurring instances will appear
 - Generated from the DTSTART date/time and recurrence rule
@@ -208,11 +243,11 @@ complete_instances: ["2025-08-04"]
 #### Dragging Next Scheduled Occurrence (Solid Border)
 
 - **Updates**: Only the `scheduled` field
-- **Effect**: Reschedules just that specific occurrence  
+- **Effect**: Reschedules just that specific occurrence
 - **Pattern**: Remains unchanged
 - **Use case**: "I need to do today's workout at 2 PM instead of 9 AM"
 
-#### Dragging Pattern Instances (Dashed Border)  
+#### Dragging Pattern Instances (Dashed Border)
 
 - **Updates**: DTSTART time in the recurrence rule
 - **Effect**: Changes when all future pattern instances appear
@@ -245,7 +280,7 @@ When completing occurrences:
 
 The next scheduled occurrence can be set to any date, including:
 - **Before DTSTART**: Schedule the next occurrence before the pattern officially begins
-- **Outside pattern**: Schedule Tuesday's occurrence for a weekly Monday pattern  
+- **Outside pattern**: Schedule Tuesday's occurrence for a weekly Monday pattern
 - **Different time**: Next occurrence at 2 PM while pattern instances remain at 9 AM
 - **Far future**: Schedule weeks ahead while pattern continues normally
 
@@ -260,7 +295,7 @@ Shows next occurrence Thursday 2 PM, pattern instances on Mondays 9 AM.
 
 **Example 2: Off-Pattern Day**
 ```yaml
-recurrence: "DTSTART:20250804T090000Z;FREQ=WEEKLY;BYDAY=MO"  # Mondays at 9 AM  
+recurrence: "DTSTART:20250804T090000Z;FREQ=WEEKLY;BYDAY=MO"  # Mondays at 9 AM
 scheduled: "2025-08-06T15:30"  # Next occurrence on Wednesday
 ```
 Shows next occurrence Wednesday 3:30 PM, pattern instances on Mondays 9 AM.
@@ -350,14 +385,14 @@ The reminder context menu provides quick access to common reminder patterns:
 
 **Before Due Date:**
 - 5 minutes before
-- 15 minutes before  
+- 15 minutes before
 - 1 hour before
 - 1 day before
 
 **Before Scheduled Date:**
 - 5 minutes before
 - 15 minutes before
-- 1 hour before  
+- 1 hour before
 - 1 day before
 
 These quick options are only available when the task has the corresponding due or scheduled date set.
@@ -392,7 +427,7 @@ reminders:
 ```yaml
 reminders:
   - id: "rem_1678886400001_def456uvw"
-    type: "absolute" 
+    type: "absolute"
     absoluteTime: "2025-10-26T09:00:00"
     description: "Follow up with client"
 ```
@@ -449,7 +484,7 @@ Default reminders automatically apply to:
 Common default reminder configurations:
 
 - 15 minutes before due date (for all tasks with due dates)
-- 1 hour before scheduled date (for time-sensitive tasks) 
+- 1 hour before scheduled date (for time-sensitive tasks)
 - 1 day before due date (for project deadlines)
 - Custom absolute reminders for recurring processes
 
