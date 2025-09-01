@@ -17,12 +17,12 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
       if (!bases.registrations.tasknotesTaskList) {
         const factory = buildTasknotesTaskListViewFactory(plugin);
         bases.registrations.tasknotesTaskList = {
-          name: 'TaskNotes Task List',
-          icon: 'check-square',
+          name: 'TaskNotes',
+          icon: 'tasknotes-simple',
           factory,
-          options: () => ({ description: 'TaskNotes Task List view' })
+          options: () => ({ description: 'TaskNotes view' })
         };
-        console.log('[TaskNotes][Bases] Registered TaskNotes Task List');
+        console.log('[TaskNotes][Bases] Registered TaskNotes');
       }
 
       // Refresh existing Bases views
@@ -35,7 +35,7 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 
       return true;
     } catch (e) {
-      console.debug('[TaskNotes][Bases] Registration attempt failed:', e);
+      // Silently handle registration failures
       return false;
     }
   };

@@ -153,7 +153,6 @@ export async function renderTaskNotesInBasesView(
 
   if (basesContainer) {
     const basesVisibleProperties = getBasesVisibleProperties(basesContainer);
-    console.log('[TaskNotes][Bases] Visible properties from Bases:', basesVisibleProperties);
     
     if (basesVisibleProperties.length > 0) {
       // Extract just the property IDs for TaskCard
@@ -183,8 +182,6 @@ export async function renderTaskNotesInBasesView(
         // These will be handled by the generic property renderer in TaskCard
         return propId;
       });
-      
-      console.log('[TaskNotes][Bases] Mapped visible properties:', visibleProperties);
     }
   }
 
@@ -193,7 +190,6 @@ export async function renderTaskNotesInBasesView(
     visibleProperties = plugin.settings.defaultVisibleProperties || [
       'due', 'scheduled', 'projects', 'contexts', 'tags'
     ];
-    console.log('[TaskNotes][Bases] Using plugin default properties:', visibleProperties);
   }
 
   for (const taskInfo of taskNotes) {
