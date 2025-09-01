@@ -243,5 +243,7 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 		'tags'         // Tags
 	],
 	// Bases integration defaults
-	enableBasesPOC: false
+	enableBasesPOC: false,
+	// Recurring task behavior defaults
+	maintainDueDateOffsetInRecurring: false
 };
