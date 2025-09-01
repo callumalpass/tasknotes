@@ -1,7 +1,6 @@
 import TaskNotesPlugin from '../main';
 import { BasesDataItem, identifyTaskNotesFromBasesData, renderTaskNotesInBasesView } from './helpers';
 import { TaskNotesBasesTaskListComponent } from './component';
-import { TextComponent, debounce, setTooltip } from 'obsidian';
 
 export interface BasesContainerLike {
   results?: Map<any, any>;
@@ -10,7 +9,6 @@ export interface BasesContainerLike {
 }
 
 export interface ViewConfig {
-  emptyStateMessage: string;
   errorPrefix: string;
 }
 
@@ -32,23 +30,6 @@ export function buildTasknotesBaseViewFactory(plugin: TaskNotesPlugin, config: V
     viewContainerEl.appendChild(root);
     currentRoot = root;
 
-    // Controls container (top bar)
-    const controls = document.createElement('div');
-    controls.className = 'filter-bar__top-controls';
-    root.appendChild(controls);
-
-    // Add search input
-    let currentSearchTerm = '';
-    const searchInput = new TextComponent(controls)
-      .setPlaceholder('Search path | title | aliases');
-    searchInput.inputEl.addClass('filter-bar__search-input');
-    setTooltip(searchInput.inputEl, 'Quick search (ephemeral)', { placement: 'top' } as any);
-
-    const triggerSearch = debounce(() => {
-      currentSearchTerm = searchInput.getValue();
-      void render();
-    }, 800);
-    searchInput.onChange(() => triggerSearch());
 
     const itemsContainer = document.createElement('div');
     itemsContainer.className = 'tn-bases-items-container';
@@ -85,23 +66,7 @@ export function buildTasknotesBaseViewFactory(plugin: TaskNotesPlugin, config: V
           const emptyEl = document.createElement('div');
           emptyEl.className = 'tn-bases-empty';
           emptyEl.style.cssText = 'padding: 20px; text-align: center; color: #666;';
-
-          if (config.emptyStateMessage.includes('TaskNotes are identified')) {
-            // Task List view with detailed message
-            const emptyTitle = document.createElement('p');
-            emptyTitle.textContent = 'No TaskNotes tasks found for this Base.';
-            emptyTitle.style.cssText = 'margin: 0 0 10px 0; font-weight: 500;';
-            emptyEl.appendChild(emptyTitle);
-
-            const emptyDesc = document.createElement('p');
-            emptyDesc.textContent = 'TaskNotes are identified by files with task-related frontmatter properties.';
-            emptyDesc.style.cssText = 'margin: 0; font-size: 0.9em; opacity: 0.7;';
-            emptyEl.appendChild(emptyDesc);
-          } else {
-            // Simple message for Agenda/Kanban views
-            emptyEl.textContent = config.emptyStateMessage;
-          }
-
+          emptyEl.textContent = 'No TaskNotes tasks found for this Base.';
           itemsContainer.appendChild(emptyEl);
         } else {
           // Build a map from task path to its properties/frontmatter
@@ -110,20 +75,16 @@ export function buildTasknotesBaseViewFactory(plugin: TaskNotesPlugin, config: V
           );
 
 
-          // In-memory search filter
-          const { buildSearchIndex, filterTasksBySearch } = await import('./search');
-          const getAliases = (p: string): string[] => {
-            const props = pathToProps.get(p) || {};
-            const v = props['note.aliases'] ?? props['aliases'];
-            if (Array.isArray(v)) return v.filter((x: any) => !!x).map(String);
-            if (typeof v === 'string' && v.trim()) return [v];
-            return [];
-          };
-          const searchIndex = buildSearchIndex(taskNotes, { getAliases });
-          const searchedTasks = filterTasksBySearch(taskNotes, searchIndex, currentSearchTerm);
+          // Apply Bases sorting if configured
+          const { getBasesSortComparator } = await import('./sorting');
+          const sortComparator = getBasesSortComparator(basesContainer, pathToProps);
+          if (sortComparator) {
+            console.log('[TaskNotes][Bases] Applying sort configuration:', (sortComparator as any).__basesSortEntries);
+            taskNotes.sort(sortComparator);
+          }
 
           // Render tasks using existing helper
-          await renderTaskNotesInBasesView(itemsContainer, searchedTasks, plugin, basesContainer);
+          await renderTaskNotesInBasesView(itemsContainer, taskNotes, plugin, basesContainer);
         }
       } catch (error: any) {
         console.error(`[TaskNotes][BasesPOC] Error rendering Bases ${config.errorPrefix}:`, error);

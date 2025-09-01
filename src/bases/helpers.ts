@@ -72,12 +72,6 @@ interface BasesSelectedProperty {
   visible: boolean; 
 }
 
-function isNonEmpty(value: unknown): boolean {
-  if (value === null || value === undefined) return false;
-  if (typeof value === 'string') return value.trim().length > 0;
-  if (Array.isArray(value)) return value.length > 0;
-  return true;
-}
 
 export function getBasesVisibleProperties(basesContainer: any): BasesSelectedProperty[] {
   try {
@@ -133,29 +127,6 @@ export function getBasesVisibleProperties(basesContainer: any): BasesSelectedPro
   }
 }
 
-export function mapBasesPropertiesToCardOptions(visibleProperties: BasesSelectedProperty[]) {
-  const propertyIds = new Set(visibleProperties.map(p => p.id));
-  
-  return {
-    showCheckbox: false,
-    showDueDate: propertyIds.has('due') || propertyIds.has('task.due'),
-    showScheduledDate: propertyIds.has('scheduled') || propertyIds.has('task.scheduled'),
-    showPriority: propertyIds.has('priority') || propertyIds.has('task.priority'),
-    showStatus: propertyIds.has('status') || propertyIds.has('task.status'),
-    showProjects: propertyIds.has('projects') || propertyIds.has('task.projects'),
-    showContexts: propertyIds.has('contexts') || propertyIds.has('task.contexts'),
-    showTags: propertyIds.has('tags') || propertyIds.has('task.tags'),
-    showTimeEstimate: propertyIds.has('timeEstimate') || propertyIds.has('task.timeEstimate'),
-    showTimeTracking: propertyIds.has('totalTrackedTime') || propertyIds.has('task.totalTrackedTime'),
-    showRecurrence: propertyIds.has('recurrence') || propertyIds.has('task.recurrence'),
-    showCompletedDate: propertyIds.has('completedDate') || propertyIds.has('task.completedDate'),
-    showCreatedDate: propertyIds.has('file.ctime') || propertyIds.has('dateCreated'),
-    showModifiedDate: propertyIds.has('file.mtime') || propertyIds.has('dateModified'),
-    showArchiveButton: false,
-    showRecurringControls: true,
-    groupByDate: false
-  };
-}
 
 export async function renderTaskNotesInBasesView(
   container: HTMLElement,
