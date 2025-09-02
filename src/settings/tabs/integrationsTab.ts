@@ -498,12 +498,11 @@ function renderICSSubscriptionsList(container: HTMLElement, plugin: TaskNotesPlu
         // Build content rows
         const contentRows: { label: string; input: HTMLElement; fullWidth?: boolean; }[] = [
             { label: 'Enabled:', input: enabledToggle },
-            { label: 'Name:', input: nameInput, fullWidth: true },
+            { label: 'Name:', input: nameInput },
             { label: 'Type:', input: typeSelect },
             { 
                 label: subscription.type === 'remote' ? 'URL:' : 'File Path:', 
                 input: sourceInput, 
-                fullWidth: true 
             },
             { label: 'Color:', input: colorInput },
             { label: 'Refresh (min):', input: refreshInput }
@@ -735,9 +734,9 @@ function renderWebhookList(container: HTMLElement, plugin: TaskNotesPlugin, save
                     {
                         rows: [
                             { label: 'Active:', input: activeToggle },
-                            { label: 'URL:', input: urlInput, fullWidth: true },
-                            { label: 'Events:', input: eventsDisplay, fullWidth: true },
-                            { label: 'Transform:', input: transformDisplay, fullWidth: true }
+                            { label: 'URL:', input: urlInput },
+                            { label: 'Events:', input: eventsDisplay },
+                            { label: 'Transform:', input: transformDisplay }
                         ]
                     }
                 ]
