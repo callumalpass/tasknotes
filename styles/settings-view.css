@@ -237,7 +237,7 @@ select.tasknotes-settings__card-input {
 }
 
 .tasknotes-settings__card-action-btn--primary {
-    background: var(--interactive-accent);
+    background: none;
     color: var(--text-on-accent);
     border-color: var(--interactive-accent);
 }
@@ -697,24 +697,7 @@ select.tasknotes-settings__card-input {
 /* Field mapping input styling */
 .field-mapping-input {
     width: 100%;
-    padding: 8px 12px;
-    border: 1px solid var(--background-modifier-border);
-    border-radius: 4px;
-    background: var(--background-primary);
-    color: var(--text-normal);
-    font-size: 13px;
-    font-family: var(--font-monospace);
-    transition: all 0.2s ease;
-    line-height: 1.4;
-    min-height: 32px;
-}
-
-.field-mapping-input:focus {
-    border-color: var(--interactive-accent);
-    box-shadow: 0 0 0 2px rgba(var(--interactive-accent-rgb), 0.2);
-    outline: none;
-    background: var(--background-modifier-form-field);
-}
+} 
 
 .field-mapping-input:hover {
     border-color: var(--interactive-hover);
@@ -751,7 +734,7 @@ select.tasknotes-settings__card-input {
 
 .tasknotes-settings__property-toggles {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     gap: 8px;
 }
 
@@ -779,6 +762,48 @@ select.tasknotes-settings__card-input {
 
 .tasknotes-settings__property-label:hover {
     color: var(--text-accent);
+}
+
+/* ================================================
+   COLLAPSIBLE SECTIONS
+   ================================================ */
+
+.tasknotes-settings__collapsible-header {
+    cursor: pointer;
+    padding: 8px 12px;
+    margin: -8px -12px 12px -12px;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+    user-select: none;
+}
+
+.tasknotes-settings__collapsible-header:hover {
+    background: var(--background-modifier-hover);
+}
+
+.tasknotes-settings__collapsible-header-content {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.tasknotes-settings__collapsible-icon {
+    font-size: 12px;
+    color: var(--text-muted);
+    transition: transform 0.2s ease;
+    font-family: monospace;
+    line-height: 1;
+}
+
+.tasknotes-settings__collapsible-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-normal);
+    margin: 0;
+}
+
+.tasknotes-settings__collapsible-content {
+    transition: all 0.2s ease;
 }
 
 /* ================================================

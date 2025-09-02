@@ -121,13 +121,43 @@ export function renderIntegrationsTab(container: HTMLElement, plugin: TaskNotesP
         });
     }
 
-    // ICS Subscriptions List
+    // ICS Subscriptions List - Add proper section header
+    createSectionHeader(container, 'Calendar Subscriptions List');
     const icsContainer = container.createDiv('ics-subscriptions-container');
     renderICSSubscriptionsList(icsContainer, plugin, save);
 
-    // Add subscription form
-    const addICSContainer = container.createDiv('add-ics-container');
-    renderAddICSForm(addICSContainer, plugin, save);
+    // Add subscription button
+    createButtonSetting(container, {
+        name: 'Add Calendar Subscription',
+        desc: 'Add a new calendar subscription from ICS/iCal URL or local file',
+        buttonText: 'Add Subscription',
+        onClick: async () => {
+            // Create a new subscription with temporary values
+            const newSubscription = {
+                name: 'New Calendar',
+                url: '',
+                color: '#6366f1',
+                enabled: false, // Start disabled until user fills in details
+                type: 'remote' as const,
+                refreshInterval: 60
+            };
+
+            if (!plugin.icsSubscriptionService) {
+                new Notice('ICS subscription service not available');
+                return;
+            }
+
+            try {
+                await plugin.icsSubscriptionService.addSubscription(newSubscription);
+                new Notice('New calendar subscription added - please configure the details');
+                // Re-render to show the new subscription card
+                renderICSSubscriptionsList(icsContainer, plugin, save);
+            } catch (error) {
+                console.error('Error adding subscription:', error);
+                new Notice('Failed to add subscription');
+            }
+        }
+    });
 
     // Refresh all subscriptions button
     createButtonSetting(container, {
@@ -191,12 +221,74 @@ export function renderIntegrationsTab(container: HTMLElement, plugin: TaskNotesP
 
             // API endpoint info
             const apiInfoContainer = container.createDiv('tasknotes-settings__help-section');
-            apiInfoContainer.createEl('h4', { text: 'API Endpoints:' });
-            const endpointsList = apiInfoContainer.createEl('ul');
-            endpointsList.createEl('li', { text: 'GET /tasks - List all tasks' });
-            endpointsList.createEl('li', { text: 'POST /tasks - Create a new task' });
-            endpointsList.createEl('li', { text: 'PUT /tasks/:id - Update a task' });
-            endpointsList.createEl('li', { text: 'DELETE /tasks/:id - Delete a task' });
+            const apiHeader = apiInfoContainer.createDiv('tasknotes-settings__collapsible-header');
+            const apiHeaderContent = apiHeader.createDiv('tasknotes-settings__collapsible-header-content');
+            const apiToggleIcon = apiHeaderContent.createSpan('tasknotes-settings__collapsible-icon');
+            apiToggleIcon.textContent = '▶';
+            apiHeaderContent.createSpan({ text: 'Available API Endpoints', cls: 'tasknotes-settings__collapsible-title' });
+            
+            const apiEndpointsContent = apiInfoContainer.createDiv('tasknotes-settings__collapsible-content');
+            apiEndpointsContent.style.display = 'none'; // Start collapsed
+            
+            // Toggle functionality
+            apiHeader.addEventListener('click', () => {
+                const isExpanded = apiEndpointsContent.style.display !== 'none';
+                apiEndpointsContent.style.display = isExpanded ? 'none' : 'block';
+                apiToggleIcon.textContent = isExpanded ? '▶' : '▼';
+            });
+            
+            // Tasks endpoints
+            apiEndpointsContent.createEl('h5', { text: 'Tasks', attr: { style: 'margin: 16px 0 8px 0; font-weight: 600; color: var(--text-normal);' } });
+            const taskEndpoints = apiEndpointsContent.createEl('ul');
+            taskEndpoints.createEl('li', { text: 'GET /api/tasks - List all tasks with filtering' });
+            taskEndpoints.createEl('li', { text: 'POST /api/tasks - Create a new task' });
+            taskEndpoints.createEl('li', { text: 'GET /api/tasks/:id - Get a specific task' });
+            taskEndpoints.createEl('li', { text: 'PUT /api/tasks/:id - Update a task' });
+            taskEndpoints.createEl('li', { text: 'DELETE /api/tasks/:id - Delete a task' });
+            taskEndpoints.createEl('li', { text: 'POST /api/tasks/:id/toggle-status - Toggle task status' });
+            taskEndpoints.createEl('li', { text: 'POST /api/tasks/:id/archive - Archive a task' });
+            taskEndpoints.createEl('li', { text: 'POST /api/tasks/:id/complete-instance - Complete recurring instance' });
+            taskEndpoints.createEl('li', { text: 'POST /api/tasks/query - Advanced task query' });
+
+            // Time tracking endpoints
+            apiEndpointsContent.createEl('h5', { text: 'Time Tracking', attr: { style: 'margin: 16px 0 8px 0; font-weight: 600; color: var(--text-normal);' } });
+            const timeEndpoints = apiEndpointsContent.createEl('ul');
+            timeEndpoints.createEl('li', { text: 'POST /api/tasks/:id/time/start - Start time tracking' });
+            timeEndpoints.createEl('li', { text: 'POST /api/tasks/:id/time/stop - Stop time tracking' });
+            timeEndpoints.createEl('li', { text: 'POST /api/tasks/:id/time/start-with-description - Start with description' });
+            timeEndpoints.createEl('li', { text: 'GET /api/time/active - Get active time tracking' });
+            timeEndpoints.createEl('li', { text: 'GET /api/time/summary - Get time tracking summary' });
+            timeEndpoints.createEl('li', { text: 'GET /api/tasks/:id/time - Get task time entries' });
+
+            // Pomodoro endpoints
+            apiEndpointsContent.createEl('h5', { text: 'Pomodoro', attr: { style: 'margin: 16px 0 8px 0; font-weight: 600; color: var(--text-normal);' } });
+            const pomodoroEndpoints = apiEndpointsContent.createEl('ul');
+            pomodoroEndpoints.createEl('li', { text: 'POST /api/pomodoro/start - Start pomodoro session' });
+            pomodoroEndpoints.createEl('li', { text: 'POST /api/pomodoro/stop - Stop pomodoro session' });
+            pomodoroEndpoints.createEl('li', { text: 'POST /api/pomodoro/pause - Pause pomodoro session' });
+            pomodoroEndpoints.createEl('li', { text: 'POST /api/pomodoro/resume - Resume pomodoro session' });
+            pomodoroEndpoints.createEl('li', { text: 'GET /api/pomodoro/status - Get pomodoro status' });
+            pomodoroEndpoints.createEl('li', { text: 'GET /api/pomodoro/sessions - Get pomodoro sessions' });
+            pomodoroEndpoints.createEl('li', { text: 'GET /api/pomodoro/stats - Get pomodoro statistics' });
+
+            // Webhook endpoints
+            apiEndpointsContent.createEl('h5', { text: 'Webhooks', attr: { style: 'margin: 16px 0 8px 0; font-weight: 600; color: var(--text-normal);' } });
+            const webhookEndpoints = apiEndpointsContent.createEl('ul');
+            webhookEndpoints.createEl('li', { text: 'POST /api/webhooks - Create a webhook' });
+            webhookEndpoints.createEl('li', { text: 'GET /api/webhooks - List webhooks' });
+            webhookEndpoints.createEl('li', { text: 'DELETE /api/webhooks/:id - Delete a webhook' });
+            webhookEndpoints.createEl('li', { text: 'GET /api/webhooks/deliveries - Get webhook deliveries' });
+
+            // System endpoints
+            apiEndpointsContent.createEl('h5', { text: 'System & Utilities', attr: { style: 'margin: 16px 0 8px 0; font-weight: 600; color: var(--text-normal);' } });
+            const systemEndpoints = apiEndpointsContent.createEl('ul');
+            systemEndpoints.createEl('li', { text: 'GET /api/health - API health check' });
+            systemEndpoints.createEl('li', { text: 'POST /api/nlp/parse - Parse natural language' });
+            systemEndpoints.createEl('li', { text: 'POST /api/nlp/create - Create task from natural language' });
+            systemEndpoints.createEl('li', { text: 'GET /api/filter-options - Get available filter options' });
+            systemEndpoints.createEl('li', { text: 'GET /api/stats - Get system statistics' });
+            systemEndpoints.createEl('li', { text: 'GET /api/docs - API documentation (JSON)' });
+            systemEndpoints.createEl('li', { text: 'GET /api/docs/ui - API documentation (Web UI)' });
         }
 
         // Webhooks Section
@@ -304,9 +396,27 @@ function renderICSSubscriptionsList(container: HTMLElement, plugin: TaskNotesPlu
         enabledToggle.checked = subscription.enabled;
         
         const nameInput = createCardInput('text', 'Calendar name', subscription.name);
-        const urlInput = subscription.type === 'remote' ? createCardUrlInput('ICS/iCal URL', subscription.url) : null;
+        
+        // Create type dropdown
+        const typeSelect = document.createElement('select');
+        typeSelect.className = 'tasknotes-settings__card-input';
+        typeSelect.innerHTML = `
+            <option value="remote" ${subscription.type === 'remote' ? 'selected' : ''}>Remote URL</option>
+            <option value="local" ${subscription.type === 'local' ? 'selected' : ''}>Local File</option>
+        `;
+        
+        // Create input based on type
+        let sourceInput: HTMLElement;
+        if (subscription.type === 'remote') {
+            sourceInput = createCardUrlInput('ICS/iCal URL', subscription.url);
+        } else {
+            const fileInput = createCardInput('text', 'Local file path (e.g., Calendar.ics)', subscription.filePath || '');
+            fileInput.setAttribute('placeholder', 'Calendar.ics');
+            sourceInput = fileInput;
+        }
+        
         const colorInput = createCardInput('color', '', subscription.color);
-        const refreshInput = createCardNumberInput(5, 1440, 5, subscription.refreshInterval || 60); // Already in minutes
+        const refreshInput = createCardNumberInput(5, 1440, 5, subscription.refreshInterval || 60);
         
         // Update handlers
         const updateSubscription = async (updates: Partial<typeof subscription>) => {
@@ -322,13 +432,40 @@ function renderICSSubscriptionsList(container: HTMLElement, plugin: TaskNotesPlu
             }
         };
         
+        // Update handlers
         enabledToggle.addEventListener('change', () => updateSubscription({ enabled: enabledToggle.checked }));
         nameInput.addEventListener('blur', () => updateSubscription({ name: nameInput.value.trim() }));
-        if (urlInput) urlInput.addEventListener('blur', () => updateSubscription({ url: urlInput.value.trim() }));
         colorInput.addEventListener('change', () => updateSubscription({ color: colorInput.value }));
         refreshInput.addEventListener('blur', () => {
             const minutes = parseInt(refreshInput.value) || 60;
-            updateSubscription({ refreshInterval: minutes }); // Already in minutes
+            updateSubscription({ refreshInterval: minutes });
+        });
+
+        // Type change handler - re-render the subscription list to update input type
+        typeSelect.addEventListener('change', async () => {
+            const newType = typeSelect.value as 'remote' | 'local';
+            const updates: any = { type: newType };
+            
+            // Clear the old source when switching types
+            if (newType === 'remote') {
+                updates.url = '';
+                updates.filePath = undefined;
+            } else {
+                updates.filePath = '';
+                updates.url = undefined;
+            }
+            
+            await updateSubscription(updates);
+        });
+
+        // Source input handler (URL or file path)
+        sourceInput.addEventListener('blur', () => {
+            const value = (sourceInput as HTMLInputElement).value.trim();
+            if (subscription.type === 'remote') {
+                updateSubscription({ url: value });
+            } else {
+                updateSubscription({ filePath: value });
+            }
         });
 
         // Create meta badges
@@ -362,24 +499,15 @@ function renderICSSubscriptionsList(container: HTMLElement, plugin: TaskNotesPlu
         const contentRows: { label: string; input: HTMLElement; fullWidth?: boolean; }[] = [
             { label: 'Enabled:', input: enabledToggle },
             { label: 'Name:', input: nameInput, fullWidth: true },
+            { label: 'Type:', input: typeSelect },
+            { 
+                label: subscription.type === 'remote' ? 'URL:' : 'File Path:', 
+                input: sourceInput, 
+                fullWidth: true 
+            },
             { label: 'Color:', input: colorInput },
             { label: 'Refresh (min):', input: refreshInput }
         ];
-        
-        // Add URL row for remote subscriptions
-        if (urlInput) {
-            contentRows.splice(2, 0, { label: 'URL:', input: urlInput, fullWidth: true });
-        }
-        
-        // Add file path info for local subscriptions
-        if (subscription.type === 'local' && subscription.filePath) {
-            const filePathSpan = document.createElement('span');
-            filePathSpan.textContent = subscription.filePath;
-            filePathSpan.style.fontFamily = 'monospace';
-            filePathSpan.style.fontSize = '0.85rem';
-            filePathSpan.style.color = 'var(--text-muted)';
-            contentRows.splice(2, 0, { label: 'File:', input: filePathSpan, fullWidth: true });
-        }
 
         const card = createCard(container, {
             id: subscription.id,
@@ -450,74 +578,6 @@ function renderICSSubscriptionsList(container: HTMLElement, plugin: TaskNotesPlu
     });
 }
 
-function renderAddICSForm(container: HTMLElement, plugin: TaskNotesPlugin, save: () => void): void {
-    container.empty();
-
-    const formContainer = container.createDiv('add-ics-form');
-    const nameInput = formContainer.createEl('input', {
-        type: 'text',
-        placeholder: 'Calendar name',
-        cls: 'settings-input ics-name-input'
-    });
-
-    const urlInput = formContainer.createEl('input', {
-        type: 'url',
-        placeholder: 'ICS/iCal URL',
-        cls: 'settings-input ics-url-input'
-    });
-
-    const colorInput = formContainer.createEl('input', {
-        type: 'color',
-        value: '#6366f1',
-        cls: 'settings-color-picker ics-color-input'
-    });
-
-    const addButton = formContainer.createEl('button', {
-        text: 'Add Subscription',
-        cls: 'tn-btn tn-btn--primary'
-    });
-
-    addButton.addEventListener('click', async () => {
-        const name = nameInput.value.trim();
-        const url = urlInput.value.trim();
-        const color = colorInput.value;
-
-        if (!name || !url) {
-            new Notice('Please provide both name and URL');
-            return;
-        }
-
-        if (!plugin.icsSubscriptionService) {
-            new Notice('ICS subscription service not available');
-            return;
-        }
-
-        addButton.textContent = 'Adding...';
-        addButton.disabled = true;
-
-        try {
-            await plugin.icsSubscriptionService.addSubscription({
-                name,
-                url,
-                color,
-                enabled: true,
-                type: 'remote',
-                refreshInterval: 60 // 1 hour in minutes
-            });
-            new Notice(`Added subscription "${name}"`);
-            nameInput.value = '';
-            urlInput.value = '';
-            colorInput.value = '#6366f1';
-            renderIntegrationsTab(container.parentElement!.parentElement!, plugin, save);
-        } catch (error) {
-            console.error('Error adding subscription:', error);
-            new Notice('Failed to add subscription');
-        } finally {
-            addButton.textContent = 'Add Subscription';
-            addButton.disabled = false;
-        }
-    });
-}
 
 function renderWebhookList(container: HTMLElement, plugin: TaskNotesPlugin, save: () => void): void {
     // Clear existing webhook content
@@ -570,7 +630,25 @@ function renderWebhookList(container: HTMLElement, plugin: TaskNotesPlugin, save
         activeToggle.addEventListener('change', () => {
             webhook.active = activeToggle.checked;
             save();
-            renderWebhookList(container, plugin, save);
+            
+            // Update the status badge in place instead of re-rendering entire list
+            const card = activeToggle.closest('.tasknotes-settings__card');
+            if (card) {
+                const statusBadge = card.querySelector('.tasknotes-settings__card-status-badge--active, .tasknotes-settings__card-status-badge--inactive');
+                if (statusBadge) {
+                    statusBadge.textContent = webhook.active ? 'Active' : 'Inactive';
+                    statusBadge.className = webhook.active ? 
+                        'tasknotes-settings__card-status-badge tasknotes-settings__card-status-badge--active' : 
+                        'tasknotes-settings__card-status-badge tasknotes-settings__card-status-badge--inactive';
+                }
+                
+                // Update test button disabled state
+                const testButton = card.querySelector('[aria-label*="Test"]') as HTMLButtonElement;
+                if (testButton) {
+                    testButton.disabled = !webhook.active || !webhook.url;
+                }
+            }
+            
             new Notice(`Webhook ${webhook.active ? 'enabled' : 'disabled'}`);
         });
         
