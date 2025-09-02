@@ -21,7 +21,8 @@ import {
     createCardUrlInput,
     createCardNumberInput,
     createInfoBadge,
-    createEditHeaderButton
+    createEditHeaderButton,
+    showCardEmptyState
 } from '../components/CardComponent';
 
 // interface WebhookItem extends ListEditorItem, WebhookConfig {}
@@ -305,7 +306,7 @@ function renderICSSubscriptionsList(container: HTMLElement, plugin: TaskNotesPlu
         const nameInput = createCardInput('text', 'Calendar name', subscription.name);
         const urlInput = subscription.type === 'remote' ? createCardUrlInput('ICS/iCal URL', subscription.url) : null;
         const colorInput = createCardInput('color', '', subscription.color);
-        const refreshInput = createCardNumberInput(5, 1440, 5, subscription.refreshInterval / 60000); // Convert ms to minutes
+        const refreshInput = createCardNumberInput(5, 1440, 5, subscription.refreshInterval || 60); // Already in minutes
         
         // Update handlers
         const updateSubscription = async (updates: Partial<typeof subscription>) => {
@@ -327,7 +328,7 @@ function renderICSSubscriptionsList(container: HTMLElement, plugin: TaskNotesPlu
         colorInput.addEventListener('change', () => updateSubscription({ color: colorInput.value }));
         refreshInput.addEventListener('blur', () => {
             const minutes = parseInt(refreshInput.value) || 60;
-            updateSubscription({ refreshInterval: minutes * 60000 }); // Convert back to ms
+            updateSubscription({ refreshInterval: minutes }); // Already in minutes
         });
 
         // Create meta badges
@@ -501,7 +502,7 @@ function renderAddICSForm(container: HTMLElement, plugin: TaskNotesPlugin, save:
                 color,
                 enabled: true,
                 type: 'remote',
-                refreshInterval: 3600000 // 1 hour
+                refreshInterval: 60 // 1 hour in minutes
             });
             new Notice(`Added subscription "${name}"`);
             nameInput.value = '';
@@ -528,112 +529,70 @@ function renderWebhookList(container: HTMLElement, plugin: TaskNotesPlugin, save
     const webhooksContainer = container.createDiv('tasknotes-webhooks-container');
     
     if (!plugin.settings.webhooks || plugin.settings.webhooks.length === 0) {
-        const emptyState = webhooksContainer.createDiv('tasknotes-webhooks-empty-state');
-        emptyState.createSpan('tasknotes-webhooks-empty-icon');
-        emptyState.createSpan({
-            text: 'No webhooks configured. Add a webhook to receive real-time notifications.',
-            cls: 'tasknotes-webhooks-empty-text'
-        });
+        showCardEmptyState(
+            webhooksContainer,
+            'No webhooks configured. Add a webhook to receive real-time notifications.',
+            'Add Webhook',
+            () => {
+                // This is a bit of a hack, but it's the easiest way to trigger the add webhook modal
+                const addWebhookButton = container.closest('.settings-tab-content')?.querySelector('button.tn-btn--primary');
+                if (addWebhookButton) {
+                    (addWebhookButton as HTMLElement).click();
+                }
+            }
+        );
         return;
     }
 
     plugin.settings.webhooks.forEach((webhook, index) => {
-        const webhookCard = webhooksContainer.createDiv('tasknotes-webhook-card');
-        
-        // Header section with URL and status
-        const webhookHeader = webhookCard.createDiv('tasknotes-webhook-header');
-        const urlSection = webhookHeader.createDiv('tasknotes-webhook-url-section');
-        urlSection.createSpan('tasknotes-webhook-url-icon');
-        urlSection.createSpan({
-            text: webhook.url,
-            cls: 'tasknotes-webhook-url'
-        });
+        const statusBadge = createStatusBadge(
+            webhook.active ? 'Active' : 'Inactive',
+            webhook.active ? 'active' : 'inactive'
+        );
 
-        const statusSection = webhookHeader.createDiv('tasknotes-webhook-status-section');
-        const statusIndicator = statusSection.createSpan({
-            cls: `tasknotes-webhook-status-indicator ${webhook.active ? 'active' : 'inactive'}`
-        });
-        statusIndicator.createSpan({
-            text: webhook.active ? 'Active' : 'Inactive',
-            cls: 'tasknotes-webhook-status-text'
-        });
+        const successBadge = createInfoBadge(`✓ ${webhook.successCount || 0}`);
+        const failureBadge = createInfoBadge(`✗ ${webhook.failureCount || 0}`);
 
-        // Content section with details
-        const webhookContent = webhookCard.createDiv('tasknotes-webhook-content');
-        
-        // Events row
-        const eventsRow = webhookContent.createDiv('tasknotes-webhook-detail-row');
-        eventsRow.createSpan({
-            text: 'Events:',
-            cls: 'tasknotes-webhook-detail-label'
-        });
-        eventsRow.createSpan({
-            text: webhook.events.join(', '),
-            cls: 'tasknotes-webhook-detail-value'
-        });
-
-        // Statistics row
-        const statsRow = webhookContent.createDiv('tasknotes-webhook-detail-row');
-        statsRow.createSpan({
-            text: 'Statistics:',
-            cls: 'tasknotes-webhook-detail-label'
-        });
-        const statsValue = statsRow.createSpan('tasknotes-webhook-stats');
-        const successSpan = statsValue.createSpan('tasknotes-webhook-stat-success');
-        successSpan.createSpan({ text: `✓ ${webhook.successCount || 0}` });
-        const failureSpan = statsValue.createSpan('tasknotes-webhook-stat-failure');
-        failureSpan.createSpan({ text: `✗ ${webhook.failureCount || 0}` });
-
-        // Actions section
-        const webhookActions = webhookCard.createDiv('tasknotes-webhook-actions');
-        
-        // Toggle button
-        const toggleBtn = webhookActions.createEl('button', {
-            cls: `tasknotes-webhook-action-btn ${webhook.active ? 'disable' : 'enable'}`,
-            attr: {
-                'aria-label': webhook.active ? 'Disable webhook' : 'Enable webhook'
+        createCard(webhooksContainer, {
+            id: webhook.id,
+            header: {
+                primaryText: webhook.url,
+                secondaryText: `Events: ${webhook.events.join(', ')}`,
+                meta: [statusBadge, successBadge, failureBadge],
+                actions: [
+                    createDeleteHeaderButton(async () => {
+                        const confirmed = await showConfirmationModal(plugin.app, {
+                            title: 'Delete Webhook',
+                            message: `Are you sure you want to delete this webhook?\n\nURL: ${webhook.url}\n\nThis action cannot be undone.`, 
+                            confirmText: 'Delete',
+                            cancelText: 'Cancel',
+                            isDestructive: true
+                        });
+                        
+                        if (confirmed) {
+                            plugin.settings.webhooks.splice(index, 1);
+                            save();
+                            renderWebhookList(container, plugin, save);
+                            new Notice('Webhook deleted');
+                        }
+                    })
+                ]
+            },
+            actions: {
+                buttons: [
+                    {
+                        text: webhook.active ? 'Disable' : 'Enable',
+                        variant: webhook.active ? 'warning' : 'primary',
+                        onClick: async () => {
+                            webhook.active = !webhook.active;
+                            save();
+                            renderWebhookList(container, plugin, save);
+                            new Notice(`Webhook ${webhook.active ? 'enabled' : 'disabled'}`);
+                        }
+                    }
+                ]
             }
         });
-        toggleBtn.createSpan({
-            text: webhook.active ? 'Disable' : 'Enable',
-            cls: 'tasknotes-webhook-action-text'
-        });
-        
-        toggleBtn.onclick = async () => {
-            webhook.active = !webhook.active;
-            save();
-            renderWebhookList(container, plugin, save);
-            new Notice(`Webhook ${webhook.active ? 'enabled' : 'disabled'}`);
-        };
-
-        // Delete button
-        const deleteBtn = webhookActions.createEl('button', {
-            cls: 'tasknotes-webhook-action-btn delete',
-            attr: {
-                'aria-label': 'Delete webhook'
-            }
-        });
-        deleteBtn.createSpan({
-            text: 'Delete',
-            cls: 'tasknotes-webhook-action-text'
-        });
-        
-        deleteBtn.onclick = async () => {
-            const confirmed = await showConfirmationModal(plugin.app, {
-                title: 'Delete Webhook',
-                message: `Are you sure you want to delete this webhook?\n\nURL: ${webhook.url}\n\nThis action cannot be undone.`,
-                confirmText: 'Delete',
-                cancelText: 'Cancel',
-                isDestructive: true
-            });
-            
-            if (confirmed) {
-                plugin.settings.webhooks.splice(index, 1);
-                save();
-                renderWebhookList(container, plugin, save);
-                new Notice('Webhook deleted');
-            }
-        };
     });
 }
 

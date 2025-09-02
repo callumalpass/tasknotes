@@ -9,6 +9,7 @@ import {
     createNumberSetting,
     createHelpText
 } from '../components/settingHelpers';
+import { createCard, createDeleteHeaderButton, createCardInput, createCardSelect, createCardNumberInput, showCardEmptyState } from '../components/CardComponent';
 // import { ListEditorComponent, ListEditorItem } from '../components/ListEditorComponent';
 import { ProjectSelectModal } from '../../modals/ProjectSelectModal';
 import { splitListPreservingLinksAndQuotes } from '../../utils/stringSplit';
@@ -305,23 +306,22 @@ function renderDefaultProjectsList(container: HTMLElement, plugin: TaskNotesPlug
 
     const projectsList = container.createDiv('default-projects-list');
     selectedFiles.forEach(file => {
-        const projectItem = projectsList.createDiv('default-project-item');
-        projectItem.createSpan({ text: file.name.replace(/\.md$/, ''), cls: 'project-name' });
-        
-        const removeBtn = projectItem.createEl('button', { 
-            text: '×', 
-            cls: 'remove-project-btn',
-            attr: { 'aria-label': `Remove ${file.name} from default projects` }
-        });
-        
-        removeBtn.addEventListener('click', () => {
-            const index = selectedFiles.indexOf(file);
-            if (index > -1) {
-                selectedFiles.splice(index, 1);
-                const projectLinks = selectedFiles.map(f => `[[${f.path.replace(/\.md$/, '')}]]`).join(', ');
-                plugin.settings.taskCreationDefaults.defaultProjects = projectLinks;
-                save();
-                renderDefaultProjectsList(container, plugin, save, selectedFiles);
+        createCard(projectsList, {
+            id: file.path,
+            header: {
+                primaryText: file.name.replace(/\.md$/, ''),
+                actions: [
+                    createDeleteHeaderButton(() => {
+                        const index = selectedFiles.indexOf(file);
+                        if (index > -1) {
+                            selectedFiles.splice(index, 1);
+                            const projectLinks = selectedFiles.map(f => `[[${f.path.replace(/\.md$/, '')}]]`).join(', ');
+                            plugin.settings.taskCreationDefaults.defaultProjects = projectLinks;
+                            save();
+                            renderDefaultProjectsList(container, plugin, save, selectedFiles);
+                        }
+                    }, `Remove ${file.name} from default projects`)
+                ]
             }
         });
     });

@@ -216,7 +216,7 @@ export interface CardButton {
     /** Optional Obsidian icon name */
     icon?: string;
     /** Button style variant */
-    variant?: 'primary' | 'secondary' | 'delete';
+    variant?: 'primary' | 'secondary' | 'delete' | 'warning' | 'default';
     /** Click handler */
     onClick: () => void;
     /** Whether button is disabled */
@@ -352,8 +352,8 @@ export function createCard(container: HTMLElement, config: CardConfig): HTMLElem
                 cls: 'tasknotes-card-action-btn'
             });
 
-            if (buttonConfig.variant === 'delete') {
-                button.addClass('tasknotes-card-action-btn--delete');
+            if (buttonConfig.variant) {
+                button.addClass(`tasknotes-card-action-btn--${buttonConfig.variant}`);
             }
 
             if (buttonConfig.icon) {
