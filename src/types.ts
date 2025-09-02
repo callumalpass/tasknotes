@@ -244,6 +244,7 @@ export interface TaskInfo {
 	icsEventId?: string[]; // Links to ICS calendar event IDs
 	reminders?: Reminder[]; // Task reminders
 	customProperties?: Record<string, any>; // Custom properties from Bases or other sources
+	basesData?: any; // Raw Bases data for formula computation (internal use)
 }
 
 export interface TaskCreationData extends Partial<TaskInfo> {

@@ -122,11 +122,60 @@ function getPropertyValue(task: TaskInfo, propertyId: string, plugin: TaskNotesP
         }
         
         // Handle Bases formula properties
-        if (propertyId.startsWith('formula.')) {
-            // TODO: Implement dynamic formula computation by accessing Bases property system
-            // This requires integration with Bases' formula computation engine
-            const formulaName = propertyId.substring(8);
-            return `[${formulaName}]`; // Placeholder - formulas need Bases computation integration
+        if (propertyId.startsWith('formula.') && task.basesData) {
+            try {
+                const formulaName = propertyId.substring(8); // Remove 'formula.' prefix
+                const basesData = task.basesData;
+                
+                // Safe debug logging for TESTST formula
+                if (formulaName === 'TESTST' && !(window as any)._basesDataLogged) {
+                    (window as any)._basesDataLogged = true;
+                    const hasFormulaResults = !!basesData?.formulaResults;
+                    const hasCachedOutputs = !!basesData?.formulaResults?.cachedFormulaOutputs;
+                    const hasTestst = !!basesData?.formulaResults?.cachedFormulaOutputs?.TESTST;
+                    console.debug(`[TaskNotes] Formula debug - hasFormulaResults: ${hasFormulaResults}, hasCachedOutputs: ${hasCachedOutputs}, hasTestst: ${hasTestst}`);
+                    
+                    // Show what formulas ARE available in cache
+                    if (hasCachedOutputs) {
+                        const availableCachedFormulas = Object.keys(basesData.formulaResults.cachedFormulaOutputs);
+                        console.debug('[TaskNotes] Available cached formulas:', availableCachedFormulas.length ? availableCachedFormulas : 'NONE');
+                        
+                        // Show values of available formulas
+                        availableCachedFormulas.forEach(name => {
+                            const value = basesData.formulaResults.cachedFormulaOutputs[name];
+                            console.debug(`[TaskNotes] Cached ${name}:`, JSON.stringify(value));
+                        });
+                    }
+                    
+                    // Also check what formulas are DEFINED (even if not cached for this item)
+                    if (basesData.formulaResults?.formulas) {
+                        const definedFormulas = Object.keys(basesData.formulaResults.formulas);
+                        console.debug('[TaskNotes] Defined formulas:', definedFormulas.length ? definedFormulas : 'NONE');
+                    }
+                    
+                    if (hasTestst) {
+                        const teststValue = basesData.formulaResults.cachedFormulaOutputs.TESTST;
+                        console.debug('[TaskNotes] TESTST cached value:', JSON.stringify(teststValue));
+                    }
+                }
+                
+                // Access the formula computation system
+                const formulaResults = basesData?.formulaResults;
+                if (formulaResults?.cachedFormulaOutputs && formulaResults.cachedFormulaOutputs[formulaName] !== undefined) {
+                    const cached = formulaResults.cachedFormulaOutputs[formulaName];
+                    // Bases stores results as {icon: "...", data: actualValue}
+                    if (cached && typeof cached === 'object' && 'data' in cached) {
+                        return cached.data;
+                    }
+                    // Fallback: return the cached value directly
+                    return cached;
+                }
+                
+                return '[Formula]'; // Fallback if computation fails
+            } catch (error) {
+                console.debug(`[TaskNotes] Error computing formula ${propertyId}:`, error);
+                return '[Formula Error]';
+            }
         }
         
         // Fallback: try to get arbitrary property from frontmatter

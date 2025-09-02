@@ -583,7 +583,7 @@ export class TaskEditModal extends TaskModal {
             }
 
             const metadata = this.app.metadataCache.getFileCache(file);
-            const frontmatter = metadata?.frontmatter || {};
+            const frontmatter: Record<string, any> = metadata?.frontmatter || {};
 
             // Compare current values with original frontmatter
             const userFieldConfigs = this.plugin.settings?.userFields || [];
