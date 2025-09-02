@@ -204,7 +204,7 @@ export function renderDefaultsTab(container: HTMLElement, plugin: TaskNotesPlugi
     });
 
     // Reminder Defaults Section
-    createSectionHeader(container, 'Default Reminders');
+    createSectionHeader(container, 'Default reminders');
     createHelpText(container, 'Configure default reminders that will be added to new tasks.');
 
     // Reminder list - using card layout
@@ -411,17 +411,7 @@ function renderRemindersList(container: HTMLElement, plugin: TaskNotesPlugin, sa
         const timingText = formatReminderTiming(reminder);
 
         const descInput = createCardInput('text', 'Reminder description', reminder.description);
-        descInput.addEventListener('input', () => {
-            reminder.description = descInput.value;
-            save();
-            const card = container.querySelector(`[data-card-id="${reminder.id}"]`);
-            if (card) {
-                const primaryText = card.querySelector('.tasknotes-card-primary-text');
-                if (primaryText) {
-                    primaryText.textContent = reminder.description || 'Unnamed Reminder';
-                }
-            }
-        });
+        
 
         const typeSelect = createCardSelect([
             { value: 'relative', label: 'Relative (before/after task dates)' },
@@ -433,7 +423,7 @@ function renderRemindersList(container: HTMLElement, plugin: TaskNotesPlugin, sa
             save();
             const card = container.querySelector(`[data-card-id="${reminder.id}"]`);
             if (card) {
-                const secondaryText = card.querySelector('.tasknotes-card-secondary-text');
+                const secondaryText = card.querySelector('.tasknotes-settings__card-secondary-text');
                 if (secondaryText) {
                     secondaryText.textContent = formatReminderTiming(reminder);
                 }
@@ -444,13 +434,7 @@ function renderRemindersList(container: HTMLElement, plugin: TaskNotesPlugin, sa
             ? renderRelativeReminderConfig(reminder, updateCallback)
             : renderAbsoluteReminderConfig(reminder, updateCallback);
 
-        typeSelect.addEventListener('change', () => {
-            reminder.type = typeSelect.value as any;
-            save();
-            renderRemindersList(container, plugin, save);
-        });
-
-        createCard(container, {
+        const card = createCard(container, {
             id: reminder.id,
             header: {
                 primaryText: reminder.description || 'Unnamed Reminder',
@@ -467,14 +451,50 @@ function renderRemindersList(container: HTMLElement, plugin: TaskNotesPlugin, sa
                 sections: [
                     {
                         rows: [
-                            { label: 'Description:', input: descInput, fullWidth: true },
-                            { label: 'Type:', input: typeSelect, fullWidth: true }
+                            { label: 'Description:', input: descInput },
+                            { label: 'Type:', input: typeSelect }
                         ]
                     },
                     {
                         rows: configRows
                     }
                 ]
+            }
+        });
+
+        descInput.addEventListener('input', () => {
+            reminder.description = descInput.value;
+            save();
+            const primaryText = card.querySelector('.tasknotes-settings__card-primary-text');
+            if (primaryText) {
+                primaryText.textContent = reminder.description || 'Unnamed Reminder';
+            }
+        });
+
+        typeSelect.addEventListener('change', () => {
+            reminder.type = typeSelect.value as any;
+            save();
+            
+            // Re-render only the config rows
+            const newConfigRows = reminder.type === 'relative'
+                ? renderRelativeReminderConfig(reminder, updateCallback)
+                : renderAbsoluteReminderConfig(reminder, updateCallback);
+            
+            const content = card.querySelector('.tasknotes-settings__card-content');
+            if (content && content.children[1]) {
+                const newSection = document.createElement('div');
+                newConfigRows.forEach(row => {
+                    const configRow = newSection.createDiv('tasknotes-settings__card-config-row');
+                    if (row.fullWidth) {
+                        configRow.style.flexDirection = 'column';
+                        configRow.style.alignItems = 'flex-start';
+                        configRow.style.gap = '0.5rem';
+                    }
+                    const label = configRow.createSpan('tasknotes-settings__card-config-label');
+                    label.textContent = row.label;
+                    configRow.appendChild(row.input);
+                });
+                content.replaceChild(newSection, content.children[1]);
             }
         });
     });

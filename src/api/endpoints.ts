@@ -1,0 +1,45 @@
+export const API_ENDPOINTS = {
+    tasks: [
+        { method: 'GET', path: '/api/tasks', description: 'List all tasks with filtering' },
+        { method: 'POST', path: '/api/tasks', description: 'Create a new task' },
+        { method: 'GET', path: '/api/tasks/:id', description: 'Get a specific task' },
+        { method: 'PUT', path: '/api/tasks/:id', description: 'Update a task' },
+        { method: 'DELETE', path: '/api/tasks/:id', description: 'Delete a task' },
+        { method: 'POST', path: '/api/tasks/:id/toggle-status', description: 'Toggle task status' },
+        { method: 'POST', path: '/api/tasks/:id/archive', description: 'Archive a task' },
+        { method: 'POST', path: '/api/tasks/:id/complete-instance', description: 'Complete recurring instance' },
+        { method: 'POST', path: '/api/tasks/query', description: 'Advanced task query' },
+    ],
+    timeTracking: [
+        { method: 'POST', path: '/api/tasks/:id/time/start', description: 'Start time tracking' },
+        { method: 'POST', path: '/api/tasks/:id/time/stop', description: 'Stop time tracking' },
+        { method: 'POST', path: '/api/tasks/:id/time/start-with-description', description: 'Start with description' },
+        { method: 'GET', path: '/api/time/active', description: 'Get active time tracking' },
+        { method: 'GET', path: '/api/time/summary', description: 'Get time tracking summary' },
+        { method: 'GET', path: '/api/tasks/:id/time', description: 'Get task time entries' },
+    ],
+    pomodoro: [
+        { method: 'POST', path: '/api/pomodoro/start', description: 'Start pomodoro session' },
+        { method: 'POST', path: '/api/pomodoro/stop', description: 'Stop pomodoro session' },
+        { method: 'POST', path: '/api/pomodoro/pause', description: 'Pause pomodoro session' },
+        { method: 'POST', path: '/api/pomodoro/resume', description: 'Resume pomodoro session' },
+        { method: 'GET', path: '/api/pomodoro/status', description: 'Get pomodoro status' },
+        { method: 'GET', path: '/api/pomodoro/sessions', description: 'Get pomodoro sessions' },
+        { method: 'GET', path: '/api/pomodoro/stats', description: 'Get pomodoro statistics' },
+    ],
+    webhooks: [
+        { method: 'POST', path: '/api/webhooks', description: 'Create a webhook' },
+        { method: 'GET', path: '/api/webhooks', description: 'List webhooks' },
+        { method: 'DELETE', path: '/api/webhooks/:id', description: 'Delete a webhook' },
+        { method: 'GET', path: '/api/webhooks/deliveries', description: 'Get webhook deliveries' },
+    ],
+    system: [
+        { method: 'GET', path: '/api/health', description: 'API health check' },
+        { method: 'POST', path: '/api/nlp/parse', description: 'Parse natural language' },
+        { method: 'POST', path: '/api/nlp/create', description: 'Create task from natural language' },
+        { method: 'GET', path: '/api/filter-options', description: 'Get available filter options' },
+        { method: 'GET', path: '/api/stats', description: 'Get system statistics' },
+        { method: 'GET', path: '/api/docs', description: 'API documentation (JSON)' },
+        { method: 'GET', path: '/api/docs/ui', description: 'API documentation (Web UI)' },
+    ]
+};

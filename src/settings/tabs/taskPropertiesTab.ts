@@ -356,34 +356,7 @@ function renderPriorityList(container: HTMLElement, plugin: TaskNotesPlugin, sav
         const colorInput = createCardInput('color', '', priority.color);
         const weightInput = createCardNumberInput(0, undefined, 1, priority.weight);
 
-        valueInput.addEventListener('change', () => {
-            priority.value = valueInput.value;
-            save();
-            renderPriorityList(container, plugin, save);
-        });
-
-        labelInput.addEventListener('change', () => {
-            priority.label = labelInput.value;
-            save();
-            renderPriorityList(container, plugin, save);
-        });
-
-        colorInput.addEventListener('change', () => {
-            priority.color = colorInput.value;
-            save();
-            renderPriorityList(container, plugin, save);
-        });
-
-        weightInput.addEventListener('input', () => {
-            const weight = parseInt(weightInput.value);
-            if (!isNaN(weight) && weight >= 0) {
-                priority.weight = weight;
-                save();
-                renderPriorityList(container, plugin, save);
-            }
-        });
-
-        createCard(container, {
+        const card = createCard(container, {
             id: priority.id,
             colorIndicator: { color: priority.color },
             header: {
@@ -410,6 +383,35 @@ function renderPriorityList(container: HTMLElement, plugin: TaskNotesPlugin, sav
                         { label: 'Weight:', input: weightInput }
                     ]
                 }]
+            }
+        });
+
+        valueInput.addEventListener('change', () => {
+            priority.value = valueInput.value;
+            save();
+        });
+
+        labelInput.addEventListener('change', () => {
+            priority.label = labelInput.value;
+            card.querySelector('.tasknotes-settings__card-primary-text')!.textContent = priority.label || priority.value || 'untitled';
+            save();
+        });
+
+        colorInput.addEventListener('change', () => {
+            priority.color = colorInput.value;
+            const colorIndicator = card.querySelector('.tasknotes-settings__card-color-indicator') as HTMLElement;
+            if (colorIndicator) {
+                colorIndicator.style.backgroundColor = priority.color;
+            }
+            save();
+        });
+
+        weightInput.addEventListener('input', () => {
+            const weight = parseInt(weightInput.value);
+            if (!isNaN(weight) && weight >= 0) {
+                priority.weight = weight;
+                card.querySelector('.tasknotes-settings__card-secondary-text')!.textContent = `Weight: ${priority.weight}`;
+                save();
             }
         });
     });
@@ -584,7 +586,8 @@ function renderUserFieldsList(container: HTMLElement, plugin: TaskNotesPlugin, s
             { value: 'text', label: 'Text' },
             { value: 'number', label: 'Number' },
             { value: 'boolean', label: 'Boolean' },
-            { value: 'date', label: 'Date' }
+            { value: 'date', label: 'Date' },
+            { value: 'list', label: 'List' }
         ], field.type);
 
         nameInput.addEventListener('change', () => {

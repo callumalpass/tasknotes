@@ -1,6 +1,7 @@
 import { Notice, Platform, Modal, Setting, setIcon, App } from 'obsidian';
 import TaskNotesPlugin from '../../main';
 import { WebhookConfig } from '../../types';
+import { API_ENDPOINTS } from '../../api/endpoints';
 import { 
     createSectionHeader, 
     createTextSetting, 
@@ -236,59 +237,14 @@ export function renderIntegrationsTab(container: HTMLElement, plugin: TaskNotesP
                 apiEndpointsContent.style.display = isExpanded ? 'none' : 'block';
                 apiToggleIcon.textContent = isExpanded ? '▶' : '▼';
             });
-            
-            // Tasks endpoints
-            apiEndpointsContent.createEl('h5', { text: 'Tasks', attr: { style: 'margin: 16px 0 8px 0; font-weight: 600; color: var(--text-normal);' } });
-            const taskEndpoints = apiEndpointsContent.createEl('ul');
-            taskEndpoints.createEl('li', { text: 'GET /api/tasks - List all tasks with filtering' });
-            taskEndpoints.createEl('li', { text: 'POST /api/tasks - Create a new task' });
-            taskEndpoints.createEl('li', { text: 'GET /api/tasks/:id - Get a specific task' });
-            taskEndpoints.createEl('li', { text: 'PUT /api/tasks/:id - Update a task' });
-            taskEndpoints.createEl('li', { text: 'DELETE /api/tasks/:id - Delete a task' });
-            taskEndpoints.createEl('li', { text: 'POST /api/tasks/:id/toggle-status - Toggle task status' });
-            taskEndpoints.createEl('li', { text: 'POST /api/tasks/:id/archive - Archive a task' });
-            taskEndpoints.createEl('li', { text: 'POST /api/tasks/:id/complete-instance - Complete recurring instance' });
-            taskEndpoints.createEl('li', { text: 'POST /api/tasks/query - Advanced task query' });
 
-            // Time tracking endpoints
-            apiEndpointsContent.createEl('h5', { text: 'Time Tracking', attr: { style: 'margin: 16px 0 8px 0; font-weight: 600; color: var(--text-normal);' } });
-            const timeEndpoints = apiEndpointsContent.createEl('ul');
-            timeEndpoints.createEl('li', { text: 'POST /api/tasks/:id/time/start - Start time tracking' });
-            timeEndpoints.createEl('li', { text: 'POST /api/tasks/:id/time/stop - Stop time tracking' });
-            timeEndpoints.createEl('li', { text: 'POST /api/tasks/:id/time/start-with-description - Start with description' });
-            timeEndpoints.createEl('li', { text: 'GET /api/time/active - Get active time tracking' });
-            timeEndpoints.createEl('li', { text: 'GET /api/time/summary - Get time tracking summary' });
-            timeEndpoints.createEl('li', { text: 'GET /api/tasks/:id/time - Get task time entries' });
-
-            // Pomodoro endpoints
-            apiEndpointsContent.createEl('h5', { text: 'Pomodoro', attr: { style: 'margin: 16px 0 8px 0; font-weight: 600; color: var(--text-normal);' } });
-            const pomodoroEndpoints = apiEndpointsContent.createEl('ul');
-            pomodoroEndpoints.createEl('li', { text: 'POST /api/pomodoro/start - Start pomodoro session' });
-            pomodoroEndpoints.createEl('li', { text: 'POST /api/pomodoro/stop - Stop pomodoro session' });
-            pomodoroEndpoints.createEl('li', { text: 'POST /api/pomodoro/pause - Pause pomodoro session' });
-            pomodoroEndpoints.createEl('li', { text: 'POST /api/pomodoro/resume - Resume pomodoro session' });
-            pomodoroEndpoints.createEl('li', { text: 'GET /api/pomodoro/status - Get pomodoro status' });
-            pomodoroEndpoints.createEl('li', { text: 'GET /api/pomodoro/sessions - Get pomodoro sessions' });
-            pomodoroEndpoints.createEl('li', { text: 'GET /api/pomodoro/stats - Get pomodoro statistics' });
-
-            // Webhook endpoints
-            apiEndpointsContent.createEl('h5', { text: 'Webhooks', attr: { style: 'margin: 16px 0 8px 0; font-weight: 600; color: var(--text-normal);' } });
-            const webhookEndpoints = apiEndpointsContent.createEl('ul');
-            webhookEndpoints.createEl('li', { text: 'POST /api/webhooks - Create a webhook' });
-            webhookEndpoints.createEl('li', { text: 'GET /api/webhooks - List webhooks' });
-            webhookEndpoints.createEl('li', { text: 'DELETE /api/webhooks/:id - Delete a webhook' });
-            webhookEndpoints.createEl('li', { text: 'GET /api/webhooks/deliveries - Get webhook deliveries' });
-
-            // System endpoints
-            apiEndpointsContent.createEl('h5', { text: 'System & Utilities', attr: { style: 'margin: 16px 0 8px 0; font-weight: 600; color: var(--text-normal);' } });
-            const systemEndpoints = apiEndpointsContent.createEl('ul');
-            systemEndpoints.createEl('li', { text: 'GET /api/health - API health check' });
-            systemEndpoints.createEl('li', { text: 'POST /api/nlp/parse - Parse natural language' });
-            systemEndpoints.createEl('li', { text: 'POST /api/nlp/create - Create task from natural language' });
-            systemEndpoints.createEl('li', { text: 'GET /api/filter-options - Get available filter options' });
-            systemEndpoints.createEl('li', { text: 'GET /api/stats - Get system statistics' });
-            systemEndpoints.createEl('li', { text: 'GET /api/docs - API documentation (JSON)' });
-            systemEndpoints.createEl('li', { text: 'GET /api/docs/ui - API documentation (Web UI)' });
+            Object.entries(API_ENDPOINTS).forEach(([category, endpoints]) => {
+                apiEndpointsContent.createEl('h5', { text: category, attr: { style: 'margin: 16px 0 8px 0; font-weight: 600; color: var(--text-normal);' } });
+                const endpointList = apiEndpointsContent.createEl('ul');
+                endpoints.forEach(endpoint => {
+                    endpointList.createEl('li', { text: `${endpoint.method} ${endpoint.path} - ${endpoint.description}` });
+                });
+            });
         }
 
         // Webhooks Section
@@ -444,18 +400,69 @@ function renderICSSubscriptionsList(container: HTMLElement, plugin: TaskNotesPlu
         // Type change handler - re-render the subscription list to update input type
         typeSelect.addEventListener('change', async () => {
             const newType = typeSelect.value as 'remote' | 'local';
-            const updates: any = { type: newType };
+            const oldType = subscription.type;
             
-            // Clear the old source when switching types
+            // Update the subscription object
+            subscription.type = newType;
             if (newType === 'remote') {
-                updates.url = '';
-                updates.filePath = undefined;
+                subscription.url = subscription.filePath || ''; // Transfer old local path to url if exists
+                subscription.filePath = undefined;
             } else {
-                updates.filePath = '';
-                updates.url = undefined;
+                subscription.filePath = subscription.url || ''; // Transfer old url to local path if exists
+                subscription.url = undefined;
             }
-            
-            await updateSubscription(updates);
+            save();
+
+            // Dynamically replace the source input element
+            const card = typeSelect.closest('.tasknotes-settings__card');
+            if (card) {
+                const sourceInputContainer = card.querySelector('.tasknotes-settings__card-config-row:nth-child(4)'); // Assuming it's the 4th row
+                if (sourceInputContainer) {
+                    const oldSourceInput = sourceInputContainer.querySelector('input');
+                    if (oldSourceInput) {
+                        oldSourceInput.remove();
+                    }
+
+                    let newSourceInput: HTMLElement;
+                    if (newType === 'remote') {
+                        newSourceInput = createCardUrlInput('ICS/iCal URL', subscription.url);
+                    } else {
+                        const fileInput = createCardInput('text', 'Local file path (e.g., Calendar.ics)', subscription.filePath || '');
+                        fileInput.setAttribute('placeholder', 'Calendar.ics');
+                        newSourceInput = fileInput;
+                    }
+
+                    // Re-add event listener for the new input
+                    newSourceInput.addEventListener('blur', () => {
+                        const value = (newSourceInput as HTMLInputElement).value.trim();
+                        if (subscription.type === 'remote') {
+                            updateSubscription({ url: value });
+                        } else {
+                            updateSubscription({ filePath: value });
+                        }
+                    });
+
+                    sourceInputContainer.appendChild(newSourceInput);
+
+                    // Update the label for the source input
+                    const labelElement = sourceInputContainer.querySelector('.tasknotes-settings__card-config-label');
+                    if (labelElement) {
+                        labelElement.textContent = newType === 'remote' ? 'URL:' : 'File Path:';
+                    }
+
+                    // Update the secondary text in the header
+                    const secondaryText = card.querySelector('.tasknotes-settings__card-secondary-text');
+                    if (secondaryText) {
+                        secondaryText.textContent = newType === 'remote' ? 'Remote Calendar' : 'Local File';
+                    }
+
+                    // Update the type badge
+                    const typeBadge = card.querySelector('.tasknotes-settings__card-meta .info-badge'); // Assuming info-badge is the class for type badge
+                    if (typeBadge) {
+                        typeBadge.textContent = newType === 'remote' ? 'Remote' : 'Local File';
+                    }
+                }
+            }
         });
 
         // Source input handler (URL or file path)
@@ -526,7 +533,7 @@ function renderICSSubscriptionsList(container: HTMLElement, plugin: TaskNotesPlu
                     createDeleteHeaderButton(async () => {
                         const confirmed = await showConfirmationModal(plugin.app, {
                             title: 'Delete Subscription',
-                            message: `Are you sure you want to delete the subscription "${subscription.name}"? This action cannot be undone.`,
+                            message: `Are you sure you want to delete the subscription "${subscription.name}"? This action cannot be undone.`, 
                             confirmText: 'Delete',
                             cancelText: 'Cancel',
                             isDestructive: true
@@ -757,18 +764,7 @@ function renderWebhookList(container: HTMLElement, plugin: TaskNotesPlugin, save
                             modal.open();
                         }
                     },
-                    {
-                        text: 'Test',
-                        icon: 'send',
-                        variant: 'primary',
-                        disabled: !webhook.active || !webhook.url,
-                        onClick: async () => {
-                            // Test webhook by sending a sample payload
-                            new Notice('Testing webhook...');
-                            // You could implement actual testing logic here
-                            setTimeout(() => new Notice('Test payload sent (feature not implemented yet)'), 1000);
-                        }
-                    }
+                    
                 ]
             }
         });
