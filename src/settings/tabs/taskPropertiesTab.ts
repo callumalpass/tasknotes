@@ -15,7 +15,10 @@ import {
     createCardInput, 
     setupCardDragAndDrop,
     createDeleteHeaderButton,
-    CardConfig 
+    CardConfig,
+    showCardEmptyState,
+    createCardNumberInput,
+    createCardSelect
 } from '../components/CardComponent';
 // import { ListEditorComponent, ListEditorItem } from '../components/ListEditorComponent';
 
@@ -28,6 +31,11 @@ import {
  */
 export function renderTaskPropertiesTab(container: HTMLElement, plugin: TaskNotesPlugin, save: () => void): void {
     container.empty();
+
+    // Ensure user fields array exists
+    if (!Array.isArray(plugin.settings.userFields)) {
+        plugin.settings.userFields = [];
+    }
 
     // Custom Statuses Section
     createSectionHeader(container, 'Task Statuses');
@@ -152,11 +160,6 @@ export function renderTaskPropertiesTab(container: HTMLElement, plugin: TaskNote
     createSectionHeader(container, 'Custom User Fields');
     createHelpText(container, 'Define custom frontmatter properties to appear as type-aware filter options across views. Each row: Display Name, Property Name, Type.');
 
-    // Ensure user fields array exists
-    if (!Array.isArray(plugin.settings.userFields)) {
-        plugin.settings.userFields = [];
-    }
-
     // Migrate legacy single field if present
     if (plugin.settings.userField && plugin.settings.userField.enabled) {
         const legacy = plugin.settings.userField;
@@ -183,6 +186,9 @@ export function renderTaskPropertiesTab(container: HTMLElement, plugin: TaskNote
         .addButton(button => button
             .setButtonText('Add user field')
             .onClick(async () => {
+                if (!plugin.settings.userFields) {
+                    plugin.settings.userFields = [];
+                }
                 const newId = `field_${Date.now()}`;
                 const newField = {
                     id: newId,
@@ -190,11 +196,10 @@ export function renderTaskPropertiesTab(container: HTMLElement, plugin: TaskNote
                     key: '',
                     type: 'text' as const
                 };
-                plugin.settings.userFields = plugin.settings.userFields || [];
                 plugin.settings.userFields.push(newField);
                 save();
                 renderUserFieldsList(userFieldsContainer, plugin, save);
-            }));
+            }));;
 
 }
 
@@ -202,219 +207,23 @@ function renderStatusList(container: HTMLElement, plugin: TaskNotesPlugin, save:
     container.empty();
     
     if (!plugin.settings.customStatuses || plugin.settings.customStatuses.length === 0) {
-        const emptyState = container.createDiv('tasknotes-statuses-empty-state');
-        emptyState.createSpan('tasknotes-statuses-empty-icon');
-        emptyState.createSpan({
-            text: 'No custom statuses configured. Add a status to get started.',
-            cls: 'tasknotes-statuses-empty-text'
-        });
-        return;
-    }
-
-    // Get sorted statuses
-    const sortedStatuses = [...plugin.settings.customStatuses].sort((a, b) => a.order - b.order);
-
-    sortedStatuses.forEach((status, index) => {
-        const statusCard = container.createDiv('tasknotes-status-card');
-        statusCard.setAttribute('data-status-id', status.id);
-        
-        // Drag handle
-        const dragHandle = statusCard.createDiv('tasknotes-status-drag-handle');
-        dragHandle.textContent = '⋮⋮';
-        dragHandle.draggable = true;
-        setTooltip(dragHandle, 'Drag to reorder', { placement: 'top' });
-
-        // Header section with color indicator and main info
-        const statusHeader = statusCard.createDiv('tasknotes-status-header');
-        
-        // Color indicator
-        const colorIndicator = statusHeader.createDiv('tasknotes-status-color-indicator');
-        colorIndicator.style.setProperty('--status-color', status.color);
-        
-        const statusInfo = statusHeader.createDiv('tasknotes-status-info');
-        
-        // Status value and label in header
-        statusInfo.createSpan({
-            text: status.value || 'untitled',
-            cls: 'tasknotes-status-value-text'
-        });
-        
-        statusInfo.createSpan({
-            text: status.label || 'No label',
-            cls: 'tasknotes-status-label-text'
-        });
-
-        // Completed status indicator
-        const statusMeta = statusHeader.createDiv('tasknotes-status-meta');
-        if (status.isCompleted) {
-            statusMeta.createSpan({
-                text: 'Completed',
-                cls: 'tasknotes-status-completed-indicator'
-            });
-        }
-
-        // Status configuration section
-        const statusConfig = statusCard.createDiv('tasknotes-status-config');
-        
-        // Value input row
-        const valueRow = statusConfig.createDiv('tasknotes-status-config-row');
-        valueRow.createSpan({
-            text: 'Value:',
-            cls: 'tasknotes-status-config-label'
-        });
-        const valueInput = valueRow.createEl('input', {
-            type: 'text',
-            value: status.value,
-            cls: 'tasknotes-status-input',
-            attr: {
-                'placeholder': 'in-progress',
-                'aria-label': `Status value for ${status.label || 'status'}`
+        showCardEmptyState(
+            container,
+            'No custom statuses configured. Add a status to get started.',
+            'Add Status',
+            () => {
+                const addStatusButton = document.querySelector('[data-setting-name="Add new status"] button');
+                if (addStatusButton) {
+                    (addStatusButton as HTMLElement).click();
+                }
             }
-        });
-        
-        // Label input row
-        const labelRow = statusConfig.createDiv('tasknotes-status-config-row');
-        labelRow.createSpan({
-            text: 'Label:',
-            cls: 'tasknotes-status-config-label'
-        });
-        const labelInput = labelRow.createEl('input', {
-            type: 'text',
-            value: status.label,
-            cls: 'tasknotes-status-input',
-            attr: {
-                'placeholder': 'In Progress',
-                'aria-label': `Status label for ${status.value || 'status'}`
-            }
-        });
-
-        // Options row (color and completed)
-        const optionsRow = statusConfig.createDiv('tasknotes-status-options-row');
-        
-        // Color picker
-        const colorSection = optionsRow.createDiv('tasknotes-status-color-section');
-        colorSection.createSpan({
-            text: 'Color:',
-            cls: 'tasknotes-status-option-label'
-        });
-        const colorInput = colorSection.createEl('input', {
-            type: 'color',
-            value: status.color,
-            cls: 'tasknotes-status-color-input',
-            attr: {
-                'aria-label': `Color for status ${status.label || status.value}`
-            }
-        });
-        
-        // Completed toggle
-        const completedSection = optionsRow.createDiv('tasknotes-status-completed-section');
-        const completedLabel = completedSection.createEl('label', {
-            cls: 'tasknotes-status-completed-label'
-        });
-        const completedToggle = completedLabel.createEl('input', {
-            type: 'checkbox',
-            cls: 'tasknotes-status-completed-checkbox',
-            attr: {
-                'aria-label': `Mark status ${status.label || status.value} as completed`
-            }
-        });
-        completedLabel.createSpan({
-            text: 'Completed',
-            cls: 'tasknotes-status-completed-text'
-        });
-
-        // Actions section
-        const statusActions = statusCard.createDiv('tasknotes-status-actions');
-        
-        const deleteBtn = statusActions.createEl('button', {
-            cls: 'tasknotes-status-action-btn delete',
-            attr: {
-                'aria-label': `Delete status ${status.label || status.value}`,
-                'title': 'Delete status'
-            }
-        });
-        deleteBtn.createSpan({
-            text: 'Delete',
-            cls: 'tasknotes-status-action-text'
-        });
-
-        if (plugin.settings.customStatuses.length <= 1) {
-            deleteBtn.disabled = true;
-            deleteBtn.style.opacity = '0.3';
-        }
-
-        // Event listeners
-        valueInput.addEventListener('input', () => {
-            status.value = valueInput.value;
-            statusInfo.querySelector('.tasknotes-status-value-text')!.textContent = status.value || 'untitled';
-            save();
-        });
-
-        labelInput.addEventListener('input', () => {
-            status.label = labelInput.value;
-            statusInfo.querySelector('.tasknotes-status-label-text')!.textContent = status.label || 'No label';
-            save();
-        });
-
-        colorInput.addEventListener('input', () => {
-            status.color = colorInput.value;
-            colorIndicator.style.setProperty('--status-color', status.color);
-            save();
-        });
-
-        completedToggle.checked = status.isCompleted;
-        completedToggle.addEventListener('change', () => {
-            status.isCompleted = completedToggle.checked;
-            // Update completed indicator
-            if (status.isCompleted && !statusMeta.querySelector('.tasknotes-status-completed-indicator')) {
-                statusMeta.createSpan({
-                    text: 'Completed',
-                    cls: 'tasknotes-status-completed-indicator'
-                });
-            } else if (!status.isCompleted) {
-                const indicator = statusMeta.querySelector('.tasknotes-status-completed-indicator');
-                if (indicator) indicator.remove();
-            }
-            save();
-        });
-        
-        deleteBtn.addEventListener('click', () => {
-            if (plugin.settings.customStatuses.length <= 1) {
-                new Notice('You must have at least one status');
-                return;
-            }
-            
-            plugin.settings.customStatuses = plugin.settings.customStatuses.filter(s => s.id !== status.id);
-            save();
-            renderStatusList(container, plugin, save);
-        });
-
-        // Add drag and drop functionality
-        setupStatusDragAndDrop(statusCard, status, container, plugin, save);
-    });
-}
-
-/**
- * DEMONSTRATION: New card system version of renderStatusList
- * This shows how the new reusable system dramatically reduces code
- */
-function renderStatusListNewSystem(container: HTMLElement, plugin: TaskNotesPlugin, save: () => void): void {
-    container.empty();
-    
-    if (!plugin.settings.customStatuses || plugin.settings.customStatuses.length === 0) {
-        const emptyState = container.createDiv('tasknotes-statuses-empty-state');
-        emptyState.createSpan('tasknotes-statuses-empty-icon');
-        emptyState.createSpan({
-            text: 'No custom statuses configured. Add a status to get started.',
-            cls: 'tasknotes-statuses-empty-text'
-        });
+        );
         return;
     }
 
     const sortedStatuses = [...plugin.settings.customStatuses].sort((a, b) => a.order - b.order);
 
     sortedStatuses.forEach((status) => {
-        // Create inputs using new helpers
         const valueInput = createCardInput('text', 'in-progress', status.value);
         const labelInput = createCardInput('text', 'In Progress', status.label);
         const colorInput = createCardInput('color', '', status.color);
@@ -424,10 +233,21 @@ function renderStatusListNewSystem(container: HTMLElement, plugin: TaskNotesPlug
         completedCheckbox.checked = status.isCompleted || false;
         completedCheckbox.addClass('tasknotes-card-input');
 
-        // Create status meta  
         const metaElements = status.isCompleted ? [createStatusBadge('Completed', 'completed')] : [];
 
-        // Create card with new reusable system (60+ lines reduced to ~15 lines!)
+        const deleteStatus = () => {
+            const confirmDelete = confirm(`Are you sure you want to delete the status "${status.label || status.value}"?`);
+            if (confirmDelete) {
+                const statusIndex = plugin.settings.customStatuses.findIndex(s => s.id === status.id);
+                if (statusIndex !== -1) {
+                    plugin.settings.customStatuses.splice(statusIndex, 1);
+                    plugin.settings.customStatuses.forEach((s, i) => { s.order = i; });
+                    save();
+                    renderStatusList(container, plugin, save);
+                }
+            }
+        };
+
         const cardConfig: CardConfig = {
             id: status.id,
             draggable: true,
@@ -436,7 +256,7 @@ function renderStatusListNewSystem(container: HTMLElement, plugin: TaskNotesPlug
                 primaryText: status.value || 'untitled',
                 secondaryText: status.label || 'No label',
                 meta: metaElements,
-                actions: [createDeleteHeaderButton(() => deleteStatus(status, plugin, save, container))]
+                actions: [createDeleteHeaderButton(deleteStatus)]
             },
             content: {
                 sections: [{
@@ -451,270 +271,146 @@ function renderStatusListNewSystem(container: HTMLElement, plugin: TaskNotesPlug
         };
 
         const statusCard = createCard(container, cardConfig);
-        setupStatusEventListeners(statusCard, status, valueInput, labelInput, colorInput, completedCheckbox, save);
-        setupCardDragAndDrop(statusCard, container, (draggedId, targetId, insertBefore) => 
-            reorderStatus(draggedId, targetId, insertBefore, plugin, save, container));
-    });
-}
 
-function deleteStatus(status: StatusConfig, plugin: TaskNotesPlugin, save: () => void, container: HTMLElement): void {
-    const confirmDelete = confirm(`Are you sure you want to delete the status "${status.label || status.value}"?`);
-    if (confirmDelete) {
-        const statusIndex = plugin.settings.customStatuses.findIndex(s => s.id === status.id);
-        if (statusIndex !== -1) {
-            plugin.settings.customStatuses.splice(statusIndex, 1);
-            plugin.settings.customStatuses.forEach((s, i) => { s.order = i; });
+        valueInput.addEventListener('change', () => {
+            status.value = valueInput.value;
+            statusCard.querySelector('.tasknotes-card-primary-text')!.textContent = status.value || 'untitled';
             save();
-            renderStatusList(container, plugin, save); // Re-render using current system
-        }
-    }
-}
-
-function setupStatusEventListeners(
-    statusCard: HTMLElement, 
-    status: StatusConfig, 
-    valueInput: HTMLInputElement, 
-    labelInput: HTMLInputElement, 
-    colorInput: HTMLInputElement, 
-    completedCheckbox: HTMLInputElement, 
-    save: () => void
-): void {
-    valueInput.addEventListener('change', () => {
-        status.value = valueInput.value;
-        statusCard.querySelector('.tasknotes-card-primary-text')!.textContent = status.value || 'untitled';
-        save();
-    });
-
-    labelInput.addEventListener('change', () => {
-        status.label = labelInput.value;
-        statusCard.querySelector('.tasknotes-card-secondary-text')!.textContent = status.label || 'No label';
-        save();
-    });
-
-    colorInput.addEventListener('change', () => {
-        status.color = colorInput.value;
-        const colorIndicator = statusCard.querySelector('.tasknotes-card-color-indicator') as HTMLElement;
-        if (colorIndicator) {
-            colorIndicator.style.backgroundColor = status.color;
-        }
-        save();
-    });
-
-    completedCheckbox.addEventListener('change', () => {
-        status.isCompleted = completedCheckbox.checked;
-        const metaContainer = statusCard.querySelector('.tasknotes-card-meta');
-        if (metaContainer) {
-            metaContainer.empty();
-            if (status.isCompleted) {
-                metaContainer.appendChild(createStatusBadge('Completed', 'completed'));
+        });
+    
+        labelInput.addEventListener('change', () => {
+            status.label = labelInput.value;
+            statusCard.querySelector('.tasknotes-card-secondary-text')!.textContent = status.label || 'No label';
+            save();
+        });
+    
+        colorInput.addEventListener('change', () => {
+            status.color = colorInput.value;
+            const colorIndicator = statusCard.querySelector('.tasknotes-card-color-indicator') as HTMLElement;
+            if (colorIndicator) {
+                colorIndicator.style.backgroundColor = status.color;
             }
-        }
-        save();
+            save();
+        });
+    
+        completedCheckbox.addEventListener('change', () => {
+            status.isCompleted = completedCheckbox.checked;
+            const metaContainer = statusCard.querySelector('.tasknotes-card-meta');
+            if (metaContainer) {
+                metaContainer.empty();
+                if (status.isCompleted) {
+                    metaContainer.appendChild(createStatusBadge('Completed', 'completed'));
+                }
+            }
+            save();
+        });
+
+        setupCardDragAndDrop(statusCard, container, (draggedId, targetId, insertBefore) => {
+            const draggedIndex = plugin.settings.customStatuses.findIndex(s => s.id === draggedId);
+            const targetIndex = plugin.settings.customStatuses.findIndex(s => s.id === targetId);
+        
+            if (draggedIndex === -1 || targetIndex === -1) return;
+        
+            const reorderedStatuses = [...plugin.settings.customStatuses];
+            const [draggedStatus] = reorderedStatuses.splice(draggedIndex, 1);
+            
+            let newIndex = targetIndex;
+            if (draggedIndex < targetIndex) newIndex = targetIndex - 1;
+            if (!insertBefore) newIndex++;
+            
+            reorderedStatuses.splice(newIndex, 0, draggedStatus);
+            reorderedStatuses.forEach((s, i) => { s.order = i; });
+            
+            plugin.settings.customStatuses = reorderedStatuses;
+            save();
+            renderStatusList(container, plugin, save);
+        });
     });
 }
 
-function reorderStatus(
-    draggedId: string, 
-    targetId: string, 
-    insertBefore: boolean, 
-    plugin: TaskNotesPlugin, 
-    save: () => void, 
-    container: HTMLElement
-): void {
-    const draggedIndex = plugin.settings.customStatuses.findIndex(s => s.id === draggedId);
-    const targetIndex = plugin.settings.customStatuses.findIndex(s => s.id === targetId);
 
-    if (draggedIndex === -1 || targetIndex === -1) return;
-
-    const reorderedStatuses = [...plugin.settings.customStatuses];
-    const [draggedStatus] = reorderedStatuses.splice(draggedIndex, 1);
-    
-    let newIndex = targetIndex;
-    if (draggedIndex < targetIndex) newIndex = targetIndex - 1;
-    if (!insertBefore) newIndex++;
-    
-    reorderedStatuses.splice(newIndex, 0, draggedStatus);
-    reorderedStatuses.forEach((s, i) => { s.order = i; });
-    
-    plugin.settings.customStatuses = reorderedStatuses;
-    save();
-    renderStatusList(container, plugin, save); // Re-render using current system
-}
 
 function renderPriorityList(container: HTMLElement, plugin: TaskNotesPlugin, save: () => void): void {
     container.empty();
     
     if (!plugin.settings.customPriorities || plugin.settings.customPriorities.length === 0) {
-        const emptyState = container.createDiv('tasknotes-priorities-empty-state');
-        emptyState.createSpan('tasknotes-priorities-empty-icon');
-        emptyState.createSpan({
-            text: 'No custom priorities configured. Add a priority to get started.',
-            cls: 'tasknotes-priorities-empty-text'
-        });
+        showCardEmptyState(
+            container,
+            'No custom priorities configured. Add a priority to get started.',
+            'Add Priority',
+            () => {
+                const addPriorityButton = document.querySelector('[data-setting-name="Add new priority"] button');
+                if (addPriorityButton) {
+                    (addPriorityButton as HTMLElement).click();
+                }
+            }
+        );
         return;
     }
     
     const sortedPriorities = [...plugin.settings.customPriorities].sort((a, b) => b.weight - a.weight);
     
     sortedPriorities.forEach((priority, index) => {
-        const priorityCard = container.createDiv('tasknotes-priority-card');
-        
-        // Header section with color indicator and main info
-        const priorityHeader = priorityCard.createDiv('tasknotes-priority-header');
-        
-        // Color indicator
-        const colorIndicator = priorityHeader.createDiv('tasknotes-priority-color-indicator');
-        colorIndicator.style.setProperty('--priority-color', priority.color);
-        
-        const priorityInfo = priorityHeader.createDiv('tasknotes-priority-info');
-        
-        // Priority value and label in header
-        priorityInfo.createSpan({
-            text: priority.value || 'untitled',
-            cls: 'tasknotes-priority-value-text'
-        });
-        
-        priorityInfo.createSpan({
-            text: priority.label || 'No label',
-            cls: 'tasknotes-priority-label-text'
-        });
+        const valueInput = createCardInput('text', 'high', priority.value);
+        const labelInput = createCardInput('text', 'High Priority', priority.label);
+        const colorInput = createCardInput('color', '', priority.color);
+        const weightInput = createCardNumberInput(0, undefined, 1, priority.weight);
 
-        // Weight indicator in header
-        const priorityMeta = priorityHeader.createDiv('tasknotes-priority-meta');
-        priorityMeta.createSpan({
-            text: `Weight: ${priority.weight}`,
-            cls: 'tasknotes-priority-weight-indicator'
-        });
-
-        // Priority configuration section
-        const priorityConfig = priorityCard.createDiv('tasknotes-priority-config');
-        
-        // Value input row
-        const valueRow = priorityConfig.createDiv('tasknotes-priority-config-row');
-        valueRow.createSpan({
-            text: 'Value:',
-            cls: 'tasknotes-priority-config-label'
-        });
-        const valueInput = valueRow.createEl('input', {
-            type: 'text',
-            value: priority.value,
-            cls: 'tasknotes-priority-input',
-            attr: {
-                'placeholder': 'high',
-                'aria-label': `Priority value for ${priority.label || 'priority'}`
-            }
-        });
-        
-        // Label input row
-        const labelRow = priorityConfig.createDiv('tasknotes-priority-config-row');
-        labelRow.createSpan({
-            text: 'Label:',
-            cls: 'tasknotes-priority-config-label'
-        });
-        const labelInput = labelRow.createEl('input', {
-            type: 'text',
-            value: priority.label,
-            cls: 'tasknotes-priority-input',
-            attr: {
-                'placeholder': 'High Priority',
-                'aria-label': `Priority label for ${priority.value || 'priority'}`
-            }
-        });
-
-        // Options row (color and weight)
-        const optionsRow = priorityConfig.createDiv('tasknotes-priority-options-row');
-        
-        // Color picker
-        const colorSection = optionsRow.createDiv('tasknotes-priority-color-section');
-        colorSection.createSpan({
-            text: 'Color:',
-            cls: 'tasknotes-priority-option-label'
-        });
-        const colorInput = colorSection.createEl('input', {
-            type: 'color',
-            value: priority.color,
-            cls: 'tasknotes-priority-color-input',
-            attr: {
-                'aria-label': `Color for priority ${priority.label || priority.value}`
-            }
-        });
-        
-        // Weight input
-        const weightSection = optionsRow.createDiv('tasknotes-priority-weight-section');
-        weightSection.createSpan({
-            text: 'Weight:',
-            cls: 'tasknotes-priority-option-label'
-        });
-        const weightInput = weightSection.createEl('input', {
-            type: 'number',
-            value: priority.weight.toString(),
-            cls: 'tasknotes-priority-weight-input',
-            attr: {
-                'placeholder': '10',
-                'min': '0',
-                'aria-label': `Weight for priority ${priority.label || priority.value}`
-            }
-        });
-
-        // Actions section
-        const priorityActions = priorityCard.createDiv('tasknotes-priority-actions');
-        
-        const deleteBtn = priorityActions.createEl('button', {
-            cls: 'tasknotes-priority-action-btn delete',
-            attr: {
-                'aria-label': `Delete priority ${priority.label || priority.value}`,
-                'title': 'Delete priority'
-            }
-        });
-        deleteBtn.createSpan({
-            text: 'Delete',
-            cls: 'tasknotes-priority-action-text'
-        });
-
-        if (plugin.settings.customPriorities.length <= 1) {
-            deleteBtn.disabled = true;
-            deleteBtn.style.opacity = '0.3';
-        }
-
-        // Event listeners
-        valueInput.addEventListener('input', () => {
+        valueInput.addEventListener('change', () => {
             priority.value = valueInput.value;
-            priorityInfo.querySelector('.tasknotes-priority-value-text')!.textContent = priority.value || 'untitled';
             save();
+            renderPriorityList(container, plugin, save);
         });
 
-        labelInput.addEventListener('input', () => {
+        labelInput.addEventListener('change', () => {
             priority.label = labelInput.value;
-            priorityInfo.querySelector('.tasknotes-priority-label-text')!.textContent = priority.label || 'No label';
             save();
+            renderPriorityList(container, plugin, save);
         });
 
-        colorInput.addEventListener('input', () => {
+        colorInput.addEventListener('change', () => {
             priority.color = colorInput.value;
-            colorIndicator.style.setProperty('--priority-color', priority.color);
             save();
+            renderPriorityList(container, plugin, save);
         });
 
         weightInput.addEventListener('input', () => {
             const weight = parseInt(weightInput.value);
             if (!isNaN(weight) && weight >= 0) {
                 priority.weight = weight;
-                priorityMeta.querySelector('.tasknotes-priority-weight-indicator')!.textContent = `Weight: ${priority.weight}`;
                 save();
-                // Re-render to maintain weight-based sorting
                 renderPriorityList(container, plugin, save);
             }
         });
-        
-        deleteBtn.addEventListener('click', () => {
-            if (plugin.settings.customPriorities.length <= 1) {
-                new Notice('You must have at least one priority');
-                return;
+
+        createCard(container, {
+            id: priority.id,
+            colorIndicator: { color: priority.color },
+            header: {
+                primaryText: priority.label || priority.value || 'untitled',
+                secondaryText: `Weight: ${priority.weight}`,
+                actions: [
+                    createDeleteHeaderButton(() => {
+                        if (plugin.settings.customPriorities.length <= 1) {
+                            new Notice('You must have at least one priority');
+                            return;
+                        }
+                        plugin.settings.customPriorities.splice(index, 1);
+                        save();
+                        renderPriorityList(container, plugin, save);
+                    }, 'Delete priority')
+                ]
+            },
+            content: {
+                sections: [{
+                    rows: [
+                        { label: 'Value:', input: valueInput },
+                        { label: 'Label:', input: labelInput },
+                        { label: 'Color:', input: colorInput },
+                        { label: 'Weight:', input: weightInput }
+                    ]
+                }]
             }
-            
-            plugin.settings.customPriorities = plugin.settings.customPriorities.filter(p => p.id !== priority.id);
-            save();
-            renderPriorityList(container, plugin, save);
         });
     });
 }
@@ -861,142 +557,79 @@ function renderFieldMappingTable(container: HTMLElement, plugin: TaskNotesPlugin
 
 function renderUserFieldsList(container: HTMLElement, plugin: TaskNotesPlugin, save: () => void): void {
     container.empty();
+
+    if (!plugin.settings.userFields) {
+        plugin.settings.userFields = [];
+    }
     
-    if (!plugin.settings.userFields || plugin.settings.userFields.length === 0) {
-        const emptyState = container.createDiv('tasknotes-user-fields-empty-state');
-        emptyState.createSpan('tasknotes-user-fields-empty-icon');
-        emptyState.createSpan({
-            text: 'No custom user fields configured. Add a field to create custom properties for your tasks.',
-            cls: 'tasknotes-user-fields-empty-text'
-        });
+    if (plugin.settings.userFields.length === 0) {
+        showCardEmptyState(
+            container,
+            'No custom user fields configured. Add a field to create custom properties for your tasks.',
+            'Add User Field',
+            () => {
+                const addUserFieldButton = document.querySelector('[data-setting-name="Add new user field"] button');
+                if (addUserFieldButton) {
+                    (addUserFieldButton as HTMLElement).click();
+                }
+            }
+        );
         return;
     }
 
     plugin.settings.userFields.forEach((field, index) => {
-        const fieldCard = container.createDiv('tasknotes-user-field-card');
-        
-        // Header section with field info
-        const fieldHeader = fieldCard.createDiv('tasknotes-user-field-header');
-        
-        const fieldInfo = fieldHeader.createDiv('tasknotes-user-field-info');
-        
-        // Display name (primary)
-        fieldInfo.createSpan({
-            text: field.displayName || 'Unnamed Field',
-            cls: 'tasknotes-user-field-name-text'
-        });
-        
-        // Property key (secondary)
-        fieldInfo.createSpan({
-            text: field.key || 'no-key',
-            cls: 'tasknotes-user-field-key-text'
-        });
-
-        // Type indicator
-        const fieldMeta = fieldHeader.createDiv('tasknotes-user-field-meta');
-        fieldMeta.createSpan({
-            text: field.type.charAt(0).toUpperCase() + field.type.slice(1),
-            cls: 'tasknotes-user-field-type-indicator'
-        });
-
-        // Field configuration section
-        const fieldConfig = fieldCard.createDiv('tasknotes-user-field-config');
-        
-        // Display name input row
-        const nameRow = fieldConfig.createDiv('tasknotes-user-field-config-row');
-        nameRow.createSpan({
-            text: 'Display Name:',
-            cls: 'tasknotes-user-field-config-label'
-        });
-        const nameInput = nameRow.createEl('input', {
-            type: 'text',
-            value: field.displayName || '',
-            cls: 'tasknotes-user-field-input',
-            attr: {
-                'placeholder': 'Display Name',
-                'aria-label': 'Field display name'
-            }
-        });
-        
-        // Property key input row
-        const keyRow = fieldConfig.createDiv('tasknotes-user-field-config-row');
-        keyRow.createSpan({
-            text: 'Property Key:',
-            cls: 'tasknotes-user-field-config-label'
-        });
-        const keyInput = keyRow.createEl('input', {
-            type: 'text',
-            value: field.key || '',
-            cls: 'tasknotes-user-field-input',
-            attr: {
-                'placeholder': 'property-name',
-                'aria-label': 'Frontmatter property key'
-            }
-        });
-
-        // Type selector row
-        const typeRow = fieldConfig.createDiv('tasknotes-user-field-config-row');
-        typeRow.createSpan({
-            text: 'Type:',
-            cls: 'tasknotes-user-field-config-label'
-        });
-        const typeSelect = typeRow.createEl('select', {
-            cls: 'tasknotes-user-field-type-select',
-            attr: {
-                'aria-label': 'Field data type'
-            }
-        });
-        
-        const options = [
+        const nameInput = createCardInput('text', 'Display Name', field.displayName);
+        const keyInput = createCardInput('text', 'property-name', field.key);
+        const typeSelect = createCardSelect([
             { value: 'text', label: 'Text' },
             { value: 'number', label: 'Number' },
             { value: 'boolean', label: 'Boolean' },
             { value: 'date', label: 'Date' }
-        ];
-        options.forEach(option => {
-            const opt = typeSelect.createEl('option', { value: option.value, text: option.label });
-            if (field.type === option.value) opt.selected = true;
-        });
+        ], field.type);
 
-        // Actions section
-        const fieldActions = fieldCard.createDiv('tasknotes-user-field-actions');
-        
-        const deleteBtn = fieldActions.createEl('button', {
-            cls: 'tasknotes-user-field-action-btn delete',
-            attr: {
-                'aria-label': `Delete field ${field.displayName || field.key}`,
-                'title': 'Delete field'
-            }
-        });
-        deleteBtn.createSpan({
-            text: 'Delete',
-            cls: 'tasknotes-user-field-action-text'
-        });
-
-        // Event listeners
-        nameInput.addEventListener('input', () => {
+        nameInput.addEventListener('change', () => {
             field.displayName = nameInput.value;
-            fieldInfo.querySelector('.tasknotes-user-field-name-text')!.textContent = field.displayName || 'Unnamed Field';
             save();
+            renderUserFieldsList(container, plugin, save);
         });
 
-        keyInput.addEventListener('input', () => {
+        keyInput.addEventListener('change', () => {
             field.key = keyInput.value;
-            fieldInfo.querySelector('.tasknotes-user-field-key-text')!.textContent = field.key || 'no-key';
             save();
+            renderUserFieldsList(container, plugin, save);
         });
 
         typeSelect.addEventListener('change', () => {
             field.type = typeSelect.value as any;
-            fieldMeta.querySelector('.tasknotes-user-field-type-indicator')!.textContent = 
-                field.type.charAt(0).toUpperCase() + field.type.slice(1);
-            save();
-        });
-        
-        deleteBtn.addEventListener('click', () => {
-            plugin.settings.userFields = (plugin.settings.userFields || []).filter(f => f.id !== field.id);
             save();
             renderUserFieldsList(container, plugin, save);
+        });
+
+        createCard(container, {
+            id: field.id,
+            header: {
+                primaryText: field.displayName || 'Unnamed Field',
+                secondaryText: field.key || 'no-key',
+                meta: [createStatusBadge(field.type.charAt(0).toUpperCase() + field.type.slice(1), 'default')],
+                actions: [
+                    createDeleteHeaderButton(() => {
+                        if (plugin.settings.userFields) {
+                            plugin.settings.userFields.splice(index, 1);
+                            save();
+                            renderUserFieldsList(container, plugin, save);
+                        }
+                    }, 'Delete field')
+                ]
+            },
+            content: {
+                sections: [{
+                    rows: [
+                        { label: 'Display Name:', input: nameInput },
+                        { label: 'Property Key:', input: keyInput },
+                        { label: 'Type:', input: typeSelect }
+                    ]
+                }]
+            }
         });
     });
 }

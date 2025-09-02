@@ -9,7 +9,7 @@ import {
     createNumberSetting,
     createHelpText
 } from '../components/settingHelpers';
-import { createCard, createDeleteHeaderButton, createCardInput, createCardSelect, createCardNumberInput, showCardEmptyState } from '../components/CardComponent';
+import { createCard, createDeleteHeaderButton, createCardInput, createCardSelect, createCardNumberInput, showCardEmptyState, CardRow } from '../components/CardComponent';
 // import { ListEditorComponent, ListEditorItem } from '../components/ListEditorComponent';
 import { ProjectSelectModal } from '../../modals/ProjectSelectModal';
 import { splitListPreservingLinksAndQuotes } from '../../utils/stringSplit';
@@ -327,109 +327,10 @@ function renderDefaultProjectsList(container: HTMLElement, plugin: TaskNotesPlug
     });
 }
 
-/* function renderReminderItem(container: HTMLElement, reminder: ReminderItem, updateItem: (updates: Partial<ReminderItem>) => void, deleteItem: () => void): void {
-    // Type dropdown
-    const typeSelect = container.createEl('select', {
-        cls: 'settings-dropdown settings-view__dropdown',
-        attr: {
-            'aria-label': 'Reminder type',
-            'id': `reminder-type-${reminder.id}`
-        }
-    });
 
-    const typeOptions = [
-        { value: 'relative', label: 'Relative' },
-        { value: 'absolute', label: 'Absolute' }
-    ];
 
-    typeOptions.forEach(option => {
-        const optionEl = typeSelect.createEl('option', {
-            value: option.value,
-            text: option.label
-        });
-        if (option.value === reminder.type) {
-            optionEl.selected = true;
-        }
-    });
-
-    typeSelect.addEventListener('change', () => {
-        const newType = typeSelect.value as 'relative' | 'absolute';
-        if (newType === 'relative') {
-            updateItem({ 
-                type: newType,
-                relatedTo: 'due',
-                offset: 1,
-                unit: 'hours',
-                direction: 'before',
-                absoluteTime: undefined,
-                absoluteDate: undefined
-            });
-        } else {
-            updateItem({ 
-                type: newType,
-                absoluteTime: '09:00',
-                absoluteDate: new Date().toISOString().split('T')[0],
-                relatedTo: undefined,
-                offset: undefined,
-                unit: undefined,
-                direction: undefined
-            });
-        }
-    });
-
-    // Description input
-    const descInput = container.createEl('input', {
-        type: 'text',
-        value: reminder.description || '',
-        cls: 'settings-input settings-view__input',
-        attr: {
-            'placeholder': 'Reminder description',
-            'aria-label': 'Reminder description'
-        }
-    });
-
-    descInput.addEventListener('input', () => {
-        updateItem({ description: descInput.value });
-    });
-
-    // Configuration container
-    const configContainer = container.createDiv('reminder-config');
-    
-    if (reminder.type === 'relative') {
-        renderRelativeReminderConfig(configContainer, reminder, updateItem);
-    } else {
-        renderAbsoluteReminderConfig(configContainer, reminder, updateItem);
-    }
-
-    // Delete button
-    const deleteButton = container.createEl('button', {
-        text: '×',
-        cls: 'settings-delete-button settings-view__delete-button',
-        attr: {
-            'aria-label': 'Delete reminder',
-            'title': 'Delete reminder'
-        }
-    });
-
-    deleteButton.addEventListener('click', () => {
-        deleteItem();
-    });
-} */
-
-function renderRelativeReminderConfig(container: HTMLElement, reminder: DefaultReminder, updateItem: (updates: Partial<DefaultReminder>) => void): void {
-    container.empty();
-    
-    // Offset input
-    const offsetInput = container.createEl('input', {
-        type: 'number',
-        value: (reminder.offset || 1).toString(),
-        cls: 'settings-input settings-view__input reminder-offset',
-        attr: {
-            'min': '1',
-            'aria-label': 'Reminder offset amount'
-        }
-    });
-
+function renderRelativeReminderConfig(reminder: DefaultReminder, updateItem: (updates: Partial<DefaultReminder>) => void): CardRow[] {
+    const offsetInput = createCardNumberInput(1, undefined, 1, reminder.offset);
     offsetInput.addEventListener('input', () => {
         const offset = parseInt(offsetInput.value);
         if (!isNaN(offset) && offset > 0) {
@@ -437,250 +338,144 @@ function renderRelativeReminderConfig(container: HTMLElement, reminder: DefaultR
         }
     });
 
-    // Unit dropdown
-    const unitSelect = container.createEl('select', {
-        cls: 'settings-dropdown settings-view__dropdown reminder-unit'
-    });
-
-    const unitOptions = [
+    const unitSelect = createCardSelect([
         { value: 'minutes', label: 'minutes' },
         { value: 'hours', label: 'hours' },
         { value: 'days', label: 'days' }
-    ];
-
-    unitOptions.forEach(option => {
-        const optionEl = unitSelect.createEl('option', {
-            value: option.value,
-            text: option.label
-        });
-        if (option.value === reminder.unit) {
-            optionEl.selected = true;
-        }
-    });
-
+    ], reminder.unit);
     unitSelect.addEventListener('change', () => {
         updateItem({ unit: unitSelect.value as any });
     });
 
-    // Direction dropdown
-    const directionSelect = container.createEl('select', {
-        cls: 'settings-dropdown settings-view__dropdown reminder-direction'
-    });
-
-    const directionOptions = [
+    const directionSelect = createCardSelect([
         { value: 'before', label: 'before' },
         { value: 'after', label: 'after' }
-    ];
-
-    directionOptions.forEach(option => {
-        const optionEl = directionSelect.createEl('option', {
-            value: option.value,
-            text: option.label
-        });
-        if (option.value === reminder.direction) {
-            optionEl.selected = true;
-        }
-    });
-
+    ], reminder.direction);
     directionSelect.addEventListener('change', () => {
         updateItem({ direction: directionSelect.value as any });
     });
 
-    // Related to dropdown
-    const relatedToSelect = container.createEl('select', {
-        cls: 'settings-dropdown settings-view__dropdown reminder-related-to'
-    });
-
-    const relatedToOptions = [
+    const relatedToSelect = createCardSelect([
         { value: 'due', label: 'due date' },
         { value: 'scheduled', label: 'scheduled date' }
-    ];
-
-    relatedToOptions.forEach(option => {
-        const optionEl = relatedToSelect.createEl('option', {
-            value: option.value,
-            text: option.label
-        });
-        if (option.value === reminder.relatedTo) {
-            optionEl.selected = true;
-        }
-    });
-
+    ], reminder.relatedTo);
     relatedToSelect.addEventListener('change', () => {
         updateItem({ relatedTo: relatedToSelect.value as any });
     });
+
+    return [
+        { label: 'Offset:', input: offsetInput },
+        { label: 'Unit:', input: unitSelect },
+        { label: 'Direction:', input: directionSelect },
+        { label: 'Related to:', input: relatedToSelect }
+    ];
 }
 
-function renderAbsoluteReminderConfig(container: HTMLElement, reminder: DefaultReminder, updateItem: (updates: Partial<DefaultReminder>) => void): void {
-    container.empty();
-
-    // Date input
-    const dateInput = container.createEl('input', {
-        type: 'date',
-        value: reminder.absoluteDate || new Date().toISOString().split('T')[0],
-        cls: 'settings-input settings-view__input reminder-date',
-        attr: {
-            'aria-label': 'Reminder date'
-        }
-    });
-
+function renderAbsoluteReminderConfig(reminder: DefaultReminder, updateItem: (updates: Partial<DefaultReminder>) => void): CardRow[] {
+    const dateInput = createCardInput('date', reminder.absoluteDate || new Date().toISOString().split('T')[0]);
     dateInput.addEventListener('input', () => {
         updateItem({ absoluteDate: dateInput.value });
     });
 
-    // Time input
-    const timeInput = container.createEl('input', {
-        type: 'time',
-        value: reminder.absoluteTime || '09:00',
-        cls: 'settings-input settings-view__input reminder-time',
-        attr: {
-            'aria-label': 'Reminder time'
-        }
-    });
-
+    const timeInput = createCardInput('time', reminder.absoluteTime || '09:00');
     timeInput.addEventListener('input', () => {
         updateItem({ absoluteTime: timeInput.value });
     });
+
+    return [
+        { label: 'Date:', input: dateInput },
+        { label: 'Time:', input: timeInput }
+    ];
 }
 
 function renderRemindersList(container: HTMLElement, plugin: TaskNotesPlugin, save: () => void): void {
     container.empty();
     
     if (!plugin.settings.taskCreationDefaults.defaultReminders || plugin.settings.taskCreationDefaults.defaultReminders.length === 0) {
-        const emptyState = container.createDiv('tasknotes-reminders-empty-state');
-        emptyState.createSpan('tasknotes-reminders-empty-icon');
-        emptyState.createSpan({
-            text: 'No default reminders configured. Add a reminder to automatically notify you about new tasks.',
-            cls: 'tasknotes-reminders-empty-text'
-        });
+        showCardEmptyState(
+            container,
+            'No default reminders configured. Add a reminder to automatically notify you about new tasks.',
+            'Add Reminder',
+            () => {
+                // Trigger the add reminder button
+                const addReminderButton = document.querySelector('[data-setting-name="Add default reminder"] button');
+                if (addReminderButton) {
+                    (addReminderButton as HTMLElement).click();
+                }
+            }
+        );
         return;
     }
 
     plugin.settings.taskCreationDefaults.defaultReminders.forEach((reminder, index) => {
-        const reminderCard = container.createDiv('tasknotes-reminder-card');
-        
-        // Header section with reminder info
-        const reminderHeader = reminderCard.createDiv('tasknotes-reminder-header');
-        
-        const reminderInfo = reminderHeader.createDiv('tasknotes-reminder-info');
-        
-        // Primary info (reminder description)
-        reminderInfo.createSpan({
-            text: reminder.description || 'Unnamed Reminder',
-            cls: 'tasknotes-reminder-description-text'
-        });
-        
-        // Secondary info (timing info)
         const timingText = formatReminderTiming(reminder);
-        reminderInfo.createSpan({
-            text: timingText,
-            cls: 'tasknotes-reminder-timing-text'
-        });
 
-        // Type indicator
-        const reminderMeta = reminderHeader.createDiv('tasknotes-reminder-meta');
-        reminderMeta.createSpan({
-            text: reminder.type === 'relative' ? 'Relative' : 'Absolute',
-            cls: 'tasknotes-reminder-type-indicator'
-        });
-
-        // Reminder configuration section
-        const reminderConfig = reminderCard.createDiv('tasknotes-reminder-config');
-        
-        // Description input row
-        const descRow = reminderConfig.createDiv('tasknotes-reminder-config-row');
-        descRow.createSpan({
-            text: 'Description:',
-            cls: 'tasknotes-reminder-config-label'
-        });
-        const descInput = descRow.createEl('input', {
-            type: 'text',
-            value: reminder.description || '',
-            cls: 'tasknotes-reminder-input',
-            attr: {
-                'placeholder': 'Reminder description',
-                'aria-label': 'Reminder description'
-            }
-        });
-        
-        // Type selector row
-        const typeRow = reminderConfig.createDiv('tasknotes-reminder-config-row');
-        typeRow.createSpan({
-            text: 'Type:',
-            cls: 'tasknotes-reminder-config-label'
-        });
-        const typeSelect = typeRow.createEl('select', {
-            cls: 'tasknotes-reminder-type-select',
-            attr: {
-                'aria-label': 'Reminder type'
-            }
-        });
-        
-        const typeOptions = [
-            { value: 'relative', label: 'Relative (before/after task dates)' },
-            { value: 'absolute', label: 'Absolute (specific date/time)' }
-        ];
-        typeOptions.forEach(option => {
-            const opt = typeSelect.createEl('option', { value: option.value, text: option.label });
-            if (reminder.type === option.value) opt.selected = true;
-        });
-
-        // Configuration details section (changes based on type)
-        const configSection = reminderConfig.createDiv('tasknotes-reminder-config-details');
-        renderReminderConfigDetails(configSection, reminder, (updates) => {
-            Object.assign(reminder, updates);
-            save();
-            // Update timing display
-            const timingElement = reminderInfo.querySelector('.tasknotes-reminder-timing-text');
-            if (timingElement) {
-                timingElement.textContent = formatReminderTiming(reminder);
-            }
-        });
-
-        // Actions section
-        const reminderActions = reminderCard.createDiv('tasknotes-reminder-actions');
-        
-        const deleteBtn = reminderActions.createEl('button', {
-            cls: 'tasknotes-reminder-action-btn delete',
-            attr: {
-                'aria-label': `Delete reminder ${reminder.description}`,
-                'title': 'Delete reminder'
-            }
-        });
-        deleteBtn.createSpan({
-            text: 'Delete',
-            cls: 'tasknotes-reminder-action-text'
-        });
-
-        // Event listeners
+        const descInput = createCardInput('text', 'Reminder description', reminder.description);
         descInput.addEventListener('input', () => {
             reminder.description = descInput.value;
-            reminderInfo.querySelector('.tasknotes-reminder-description-text')!.textContent = reminder.description || 'Unnamed Reminder';
             save();
+            const card = container.querySelector(`[data-card-id="${reminder.id}"]`);
+            if (card) {
+                const primaryText = card.querySelector('.tasknotes-card-primary-text');
+                if (primaryText) {
+                    primaryText.textContent = reminder.description || 'Unnamed Reminder';
+                }
+            }
         });
+
+        const typeSelect = createCardSelect([
+            { value: 'relative', label: 'Relative (before/after task dates)' },
+            { value: 'absolute', label: 'Absolute (specific date/time)' }
+        ], reminder.type);
+
+        const updateCallback = (updates: Partial<DefaultReminder>) => {
+            Object.assign(reminder, updates);
+            save();
+            const card = container.querySelector(`[data-card-id="${reminder.id}"]`);
+            if (card) {
+                const secondaryText = card.querySelector('.tasknotes-card-secondary-text');
+                if (secondaryText) {
+                    secondaryText.textContent = formatReminderTiming(reminder);
+                }
+            }
+        };
+
+        const configRows = reminder.type === 'relative'
+            ? renderRelativeReminderConfig(reminder, updateCallback)
+            : renderAbsoluteReminderConfig(reminder, updateCallback);
 
         typeSelect.addEventListener('change', () => {
             reminder.type = typeSelect.value as any;
-            reminderMeta.querySelector('.tasknotes-reminder-type-indicator')!.textContent = 
-                reminder.type === 'relative' ? 'Relative' : 'Absolute';
-            
-            // Re-render configuration details for new type
-            renderReminderConfigDetails(configSection, reminder, (updates) => {
-                Object.assign(reminder, updates);
-                save();
-                const timingElement = reminderInfo.querySelector('.tasknotes-reminder-timing-text');
-                if (timingElement) {
-                    timingElement.textContent = formatReminderTiming(reminder);
-                }
-            });
-            save();
-        });
-        
-        deleteBtn.addEventListener('click', () => {
-            plugin.settings.taskCreationDefaults.defaultReminders = 
-                plugin.settings.taskCreationDefaults.defaultReminders.filter(r => r.id !== reminder.id);
             save();
             renderRemindersList(container, plugin, save);
+        });
+
+        createCard(container, {
+            id: reminder.id,
+            header: {
+                primaryText: reminder.description || 'Unnamed Reminder',
+                secondaryText: timingText,
+                actions: [
+                    createDeleteHeaderButton(() => {
+                        plugin.settings.taskCreationDefaults.defaultReminders.splice(index, 1);
+                        save();
+                        renderRemindersList(container, plugin, save);
+                    }, 'Delete reminder')
+                ]
+            },
+            content: {
+                sections: [
+                    {
+                        rows: [
+                            { label: 'Description:', input: descInput, fullWidth: true },
+                            { label: 'Type:', input: typeSelect, fullWidth: true }
+                        ]
+                    },
+                    {
+                        rows: configRows
+                    }
+                ]
+            }
         });
     });
 }
@@ -699,12 +494,3 @@ function formatReminderTiming(reminder: DefaultReminder): string {
     }
 }
 
-function renderReminderConfigDetails(container: HTMLElement, reminder: DefaultReminder, updateItem: (updates: Partial<DefaultReminder>) => void): void {
-    container.empty();
-    
-    if (reminder.type === 'relative') {
-        renderRelativeReminderConfig(container, reminder, updateItem);
-    } else {
-        renderAbsoluteReminderConfig(container, reminder, updateItem);
-    }
-}

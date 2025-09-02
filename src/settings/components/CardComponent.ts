@@ -399,7 +399,7 @@ export function createDeleteHeaderButton(onClick: () => void, tooltip?: string):
 /**
  * Creates a simple input element with card styling
  */
-export function createCardInput(type: 'text' | 'number' | 'color' | 'checkbox' = 'text', placeholder?: string, value?: string): HTMLInputElement {
+export function createCardInput(type: 'text' | 'number' | 'color' | 'checkbox' | 'date' | 'time' = 'text', placeholder?: string, value?: string): HTMLInputElement {
     const input = document.createElement('input');
     input.type = type;
     input.addClass('tasknotes-card-input');
