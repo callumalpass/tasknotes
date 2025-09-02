@@ -245,6 +245,12 @@ export function buildTasknotesAgendaViewFactory(plugin: TaskNotesPlugin) {
           if (svg) { svg.classList.add('chevron'); svg.setAttribute('width', '16'); svg.setAttribute('height', '16'); } else { toggleBtn.textContent = '▸'; }
           header.appendChild(toggleBtn);
 
+          // Add a consistent group label span used by tests and for copyable day key
+          const labelSpan = document.createElement('span');
+          labelSpan.className = 'tn-bases-group-label';
+          labelSpan.textContent = dayKey;
+          header.appendChild(labelSpan);
+
           const headerText = document.createElement('div');
           headerText.className = 'agenda-view__day-header-text';
           const displayDate = convertUTCToLocalCalendarDate(date);
