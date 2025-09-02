@@ -98,7 +98,7 @@
  * ```typescript
  * function renderStatusList(container: HTMLElement) {
  *   container.empty();
- *   const statusContainer = container.createDiv('tasknotes-webhooks-container');
+ *   const statusContainer = container.createDiv('tasknotes-statuses-container');
  *   plugin.settings.statuses.forEach(status => {
  *     const card = statusContainer.createDiv('tasknotes-status-card');
  *     // ... 20+ lines of manual DOM creation per item
@@ -227,28 +227,27 @@ export interface CardButton {
  * Creates a deduplicated card component
  */
 export function createCard(container: HTMLElement, config: CardConfig): HTMLElement {
-    const card = container.createDiv('tasknotes-card');
+    const card = container.createDiv('tasknotes-settings__card');
     
     if (config.id) {
         card.setAttribute('data-card-id', config.id);
     }
     
     if (config.draggable) {
-        card.addClass('tasknotes-card--draggable');
-    }
-
-    // Create drag handle if draggable
-    let dragHandle: HTMLElement | null = null;
-    if (config.draggable) {
-        dragHandle = card.createDiv('tasknotes-card-drag-handle');
-        dragHandle.textContent = '⋮⋮';
-        dragHandle.draggable = true;
+        card.addClass('tasknotes-settings__card--draggable');
     }
 
     // Create header
-    const header = card.createDiv('tasknotes-card-header');
+    const header = card.createDiv('tasknotes-settings__card-header');
+    
+    // Create drag handle if draggable - place it in the header
+    let dragHandle: HTMLElement | null = null;
     if (config.draggable) {
-        header.addClass('tasknotes-card-header--with-drag-handle');
+        header.addClass('tasknotes-settings__card-header--with-drag-handle');
+        dragHandle = header.createDiv('tasknotes-settings__card-drag-handle');
+        dragHandle.textContent = '⋮⋮';
+        dragHandle.draggable = true;
+        dragHandle.title = 'Drag to reorder';
     }
 
     // Left side of header with color indicator and info
@@ -260,7 +259,7 @@ export function createCard(container: HTMLElement, config: CardConfig): HTMLElem
 
     // Color indicator
     if (config.colorIndicator) {
-        const colorIndicator = headerLeft.createDiv('tasknotes-card-color-indicator');
+        const colorIndicator = headerLeft.createDiv('tasknotes-settings__card-color-indicator');
         colorIndicator.style.backgroundColor = config.colorIndicator.color;
         if (config.colorIndicator.cssVar) {
             colorIndicator.style.setProperty('--card-color', config.colorIndicator.color);
@@ -268,12 +267,12 @@ export function createCard(container: HTMLElement, config: CardConfig): HTMLElem
     }
 
     // Header info
-    const headerInfo = headerLeft.createDiv('tasknotes-card-info');
-    const primaryText = headerInfo.createSpan('tasknotes-card-primary-text');
+    const headerInfo = headerLeft.createDiv('tasknotes-settings__card-info');
+    const primaryText = headerInfo.createSpan('tasknotes-settings__card-primary-text');
     primaryText.textContent = config.header.primaryText;
     
     if (config.header.secondaryText) {
-        const secondaryText = headerInfo.createSpan('tasknotes-card-secondary-text');
+        const secondaryText = headerInfo.createSpan('tasknotes-settings__card-secondary-text');
         secondaryText.textContent = config.header.secondaryText;
     }
 
@@ -285,7 +284,7 @@ export function createCard(container: HTMLElement, config: CardConfig): HTMLElem
 
     // Meta elements
     if (config.header.meta && config.header.meta.length > 0) {
-        const headerMeta = headerRight.createDiv('tasknotes-card-meta');
+        const headerMeta = headerRight.createDiv('tasknotes-settings__card-meta');
         config.header.meta.forEach(metaEl => {
             headerMeta.appendChild(metaEl);
         });
@@ -293,14 +292,14 @@ export function createCard(container: HTMLElement, config: CardConfig): HTMLElem
 
     // Header actions (delete, edit buttons in header)
     if (config.header.actions && config.header.actions.length > 0) {
-        const headerActions = headerRight.createDiv('tasknotes-card-header-actions');
+        const headerActions = headerRight.createDiv('tasknotes-settings__card-header-actions');
         config.header.actions.forEach(actionConfig => {
             const button = headerActions.createEl('button', {
-                cls: 'tasknotes-card-header-btn'
+                cls: 'tasknotes-settings__card-header-btn'
             });
 
             if (actionConfig.variant === 'delete') {
-                button.addClass('tasknotes-card-header-btn--delete');
+                button.addClass('tasknotes-settings__card-header-btn--delete');
             }
 
             const icon = button.createSpan();
@@ -316,14 +315,14 @@ export function createCard(container: HTMLElement, config: CardConfig): HTMLElem
 
     // Create content sections
     if (config.content && config.content.sections.length > 0) {
-        const content = card.createDiv('tasknotes-card-content');
+        const content = card.createDiv('tasknotes-settings__card-content');
         if (config.draggable) {
-            content.addClass('tasknotes-card-content--with-drag-handle');
+            content.addClass('tasknotes-settings__card-content--with-drag-handle');
         }
 
         config.content.sections.forEach(section => {
             section.rows.forEach(row => {
-                const configRow = content.createDiv('tasknotes-card-config-row');
+                const configRow = content.createDiv('tasknotes-settings__card-config-row');
                 
                 if (row.fullWidth) {
                     configRow.style.flexDirection = 'column';
@@ -331,7 +330,7 @@ export function createCard(container: HTMLElement, config: CardConfig): HTMLElem
                     configRow.style.gap = '0.5rem';
                 }
 
-                const label = configRow.createSpan('tasknotes-card-config-label');
+                const label = configRow.createSpan('tasknotes-settings__card-config-label');
                 label.textContent = row.label;
 
                 configRow.appendChild(row.input);
@@ -341,19 +340,19 @@ export function createCard(container: HTMLElement, config: CardConfig): HTMLElem
 
     // Create actions
     if (config.actions && config.actions.buttons.length > 0) {
-        const actions = card.createDiv('tasknotes-card-actions');
+        const actions = card.createDiv('tasknotes-settings__card-actions');
         if (config.draggable) {
-            actions.addClass('tasknotes-card-actions--with-drag-handle');
+            actions.addClass('tasknotes-settings__card-actions--with-drag-handle');
         }
 
         config.actions.buttons.forEach(buttonConfig => {
             const button = actions.createEl('button', {
                 text: buttonConfig.text,
-                cls: 'tasknotes-card-action-btn'
+                cls: 'tasknotes-settings__card-action-btn'
             });
 
             if (buttonConfig.variant) {
-                button.addClass(`tasknotes-card-action-btn--${buttonConfig.variant}`);
+                button.addClass(`tasknotes-settings__card-action-btn--${buttonConfig.variant}`);
             }
 
             if (buttonConfig.icon) {
@@ -378,8 +377,8 @@ export function createCard(container: HTMLElement, config: CardConfig): HTMLElem
  */
 export function createStatusBadge(text: string, variant: 'active' | 'inactive' | 'completed' | 'default' = 'default'): HTMLElement {
     const badge = document.createElement('span');
-    badge.addClass('tasknotes-card-status-badge');
-    badge.addClass(`tasknotes-card-status-badge--${variant}`);
+    badge.addClass('tasknotes-settings__card-status-badge');
+    badge.addClass(`tasknotes-settings__card-status-badge--${variant}`);
     badge.textContent = text;
     return badge;
 }
@@ -402,7 +401,7 @@ export function createDeleteHeaderButton(onClick: () => void, tooltip?: string):
 export function createCardInput(type: 'text' | 'number' | 'color' | 'checkbox' | 'date' | 'time' = 'text', placeholder?: string, value?: string): HTMLInputElement {
     const input = document.createElement('input');
     input.type = type;
-    input.addClass('tasknotes-card-input');
+    input.addClass('tasknotes-settings__card-input');
     
     if (placeholder) {
         input.placeholder = placeholder;
@@ -420,7 +419,7 @@ export function createCardInput(type: 'text' | 'number' | 'color' | 'checkbox' |
  */
 export function createCardSelect(options: Array<{value: string, label: string}>, selectedValue?: string): HTMLSelectElement {
     const select = document.createElement('select');
-    select.addClass('tasknotes-card-input');
+    select.addClass('tasknotes-settings__card-input');
     
     options.forEach(option => {
         const optionEl = select.createEl('option', {
@@ -444,7 +443,7 @@ export function setupCardDragAndDrop(
     container: HTMLElement, 
     onReorder: (draggedId: string, targetId: string, insertBefore: boolean) => void
 ): void {
-    const dragHandle = card.querySelector('.tasknotes-card-drag-handle') as HTMLElement;
+    const dragHandle = card.querySelector('.tasknotes-settings__card-drag-handle') as HTMLElement;
     if (!dragHandle) return;
 
     const cardId = card.getAttribute('data-card-id');
@@ -453,38 +452,38 @@ export function setupCardDragAndDrop(
     dragHandle.addEventListener('dragstart', (e) => {
         if (e.dataTransfer) {
             e.dataTransfer.setData('text/plain', cardId);
-            card.addClass('tasknotes-card--dragging');
+            card.addClass('tasknotes-settings__card--dragging');
         }
     });
 
     dragHandle.addEventListener('dragend', () => {
-        card.removeClass('tasknotes-card--dragging');
+        card.removeClass('tasknotes-settings__card--dragging');
     });
 
     card.addEventListener('dragover', (e) => {
         e.preventDefault();
-        const draggingCard = container.querySelector('.tasknotes-card--dragging') as HTMLElement;
+        const draggingCard = container.querySelector('.tasknotes-settings__card--dragging') as HTMLElement;
         if (draggingCard && draggingCard !== card) {
             const rect = card.getBoundingClientRect();
             const midpoint = rect.top + rect.height / 2;
             
-            card.removeClass('tasknotes-card--drag-over-top', 'tasknotes-card--drag-over-bottom');
+            card.removeClass('tasknotes-settings__card--drag-over-top', 'tasknotes-settings__card--drag-over-bottom');
             
             if (e.clientY < midpoint) {
-                card.addClass('tasknotes-card--drag-over-top');
+                card.addClass('tasknotes-settings__card--drag-over-top');
             } else {
-                card.addClass('tasknotes-card--drag-over-bottom');
+                card.addClass('tasknotes-settings__card--drag-over-bottom');
             }
         }
     });
 
     card.addEventListener('dragleave', () => {
-        card.removeClass('tasknotes-card--drag-over-top', 'tasknotes-card--drag-over-bottom');
+        card.removeClass('tasknotes-settings__card--drag-over-top', 'tasknotes-settings__card--drag-over-bottom');
     });
 
     card.addEventListener('drop', (e) => {
         e.preventDefault();
-        card.removeClass('tasknotes-card--drag-over-top', 'tasknotes-card--drag-over-bottom');
+        card.removeClass('tasknotes-settings__card--drag-over-top', 'tasknotes-settings__card--drag-over-bottom');
 
         const draggedCardId = e.dataTransfer!.getData('text/plain');
         const targetCardId = cardId;
@@ -520,7 +519,7 @@ export function createEditHeaderButton(onClick: () => void, tooltip?: string): C
  */
 export function createCardTextarea(placeholder?: string, value?: string, rows: number = 3): HTMLTextAreaElement {
     const textarea = document.createElement('textarea');
-    textarea.addClass('tasknotes-card-input');
+    textarea.addClass('tasknotes-settings__card-input');
     textarea.rows = rows;
     
     if (placeholder) {
@@ -554,7 +553,7 @@ export function createCardNumberInput(min?: number, max?: number, step?: number,
 export function createCardUrlInput(placeholder?: string, value?: string): HTMLInputElement {
     const input = document.createElement('input');
     input.type = 'url';
-    input.addClass('tasknotes-card-input');
+    input.addClass('tasknotes-settings__card-input');
     
     if (placeholder) {
         input.placeholder = placeholder;
@@ -586,7 +585,7 @@ export function createSimpleCard(container: HTMLElement, rows: CardRow[]): HTMLE
  */
 export function createInfoBadge(text: string): HTMLElement {
     const badge = document.createElement('span');
-    badge.addClass('tasknotes-card-info-badge');
+    badge.addClass('tasknotes-settings__card-info-badge');
     badge.textContent = text;
     return badge;
 }
@@ -596,8 +595,8 @@ export function createInfoBadge(text: string): HTMLElement {
  */
 export function showCardLoading(container: HTMLElement, message: string = 'Loading...'): void {
     container.empty();
-    const loadingCard = container.createDiv('tasknotes-card');
-    const loadingContent = loadingCard.createDiv('tasknotes-card-content');
+    const loadingCard = container.createDiv('tasknotes-settings__card');
+    const loadingContent = loadingCard.createDiv('tasknotes-settings__card-content');
     loadingContent.style.textAlign = 'center';
     loadingContent.style.padding = '2rem';
     loadingContent.style.color = 'var(--text-muted)';
@@ -609,11 +608,11 @@ export function showCardLoading(container: HTMLElement, message: string = 'Loadi
  */
 export function showCardEmptyState(container: HTMLElement, message: string, actionText?: string, onAction?: () => void): void {
     container.empty();
-    const emptyState = container.createDiv('tasknotes-webhooks-empty-state');
-    emptyState.createSpan('tasknotes-webhooks-empty-icon');
+    const emptyState = container.createDiv('tasknotes-settings__empty-state');
+    emptyState.createSpan('tasknotes-settings__empty-icon');
     const messageEl = emptyState.createSpan({
         text: message,
-        cls: 'tasknotes-webhooks-empty-text'
+        cls: 'tasknotes-settings__empty-text'
     });
     
     if (actionText && onAction) {

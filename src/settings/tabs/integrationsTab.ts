@@ -190,7 +190,7 @@ export function renderIntegrationsTab(container: HTMLElement, plugin: TaskNotesP
             });
 
             // API endpoint info
-            const apiInfoContainer = container.createDiv('settings-help-section');
+            const apiInfoContainer = container.createDiv('tasknotes-settings__help-section');
             apiInfoContainer.createEl('h4', { text: 'API Endpoints:' });
             const endpointsList = apiInfoContainer.createEl('ul');
             endpointsList.createEl('li', { text: 'GET /tasks - List all tasks' });
@@ -388,7 +388,7 @@ function renderICSSubscriptionsList(container: HTMLElement, plugin: TaskNotesPlu
             },
             header: {
                 primaryText: subscription.name,
-                secondaryText: subscription.type === 'remote' ? subscription.url : subscription.filePath,
+                secondaryText: subscription.type === 'remote' ? 'Remote Calendar' : 'Local File',
                 meta: metaBadges,
                 actions: [
                     createEditHeaderButton(() => {
@@ -426,7 +426,7 @@ function renderICSSubscriptionsList(container: HTMLElement, plugin: TaskNotesPlu
                 buttons: [{
                     text: 'Refresh Now',
                     icon: 'refresh-cw',
-                    variant: 'secondary',
+                    variant: subscription.enabled ? 'primary' : 'secondary',
                     disabled: !subscription.enabled,
                     onClick: async () => {
                         if (!subscription.enabled) {
@@ -552,12 +552,86 @@ function renderWebhookList(container: HTMLElement, plugin: TaskNotesPlugin, save
 
         const successBadge = createInfoBadge(`✓ ${webhook.successCount || 0}`);
         const failureBadge = createInfoBadge(`✗ ${webhook.failureCount || 0}`);
+        
+        // Create inputs for inline editing
+        const urlInput = createCardUrlInput('Webhook URL', webhook.url);
+        const activeToggle = createCardInput('checkbox');
+        activeToggle.checked = webhook.active;
+        
+        // Update handlers
+        urlInput.addEventListener('blur', () => {
+            if (urlInput.value.trim() !== webhook.url) {
+                webhook.url = urlInput.value.trim();
+                save();
+                new Notice('Webhook URL updated');
+            }
+        });
+        
+        activeToggle.addEventListener('change', () => {
+            webhook.active = activeToggle.checked;
+            save();
+            renderWebhookList(container, plugin, save);
+            new Notice(`Webhook ${webhook.active ? 'enabled' : 'disabled'}`);
+        });
+        
+        // Format webhook creation date
+        const createdDate = webhook.createdAt ? new Date(webhook.createdAt) : null;
+        const createdText = createdDate ? `Created ${getRelativeTime(createdDate)}` : 'Creation date unknown';
+        
+        // Create events display as a formatted string
+        const eventsDisplay = document.createElement('div');
+        eventsDisplay.style.display = 'flex';
+        eventsDisplay.style.flexWrap = 'wrap';
+        eventsDisplay.style.gap = '0.5rem';
+        eventsDisplay.style.alignItems = 'center';
+        eventsDisplay.style.minHeight = '1.5rem';
+        eventsDisplay.style.lineHeight = '1.5rem';
+        
+        if (webhook.events.length === 0) {
+            const noEventsSpan = document.createElement('span');
+            noEventsSpan.textContent = 'No events selected';
+            noEventsSpan.style.color = 'var(--text-muted)';
+            noEventsSpan.style.fontStyle = 'italic';
+            noEventsSpan.style.lineHeight = '1.5rem';
+            eventsDisplay.appendChild(noEventsSpan);
+        } else {
+            webhook.events.forEach((event, i) => {
+                const eventBadge = createInfoBadge(event);
+                eventBadge.style.marginBottom = '0';
+                eventBadge.style.flexShrink = '0';
+                eventsDisplay.appendChild(eventBadge);
+            });
+        }
+        
+        // Create transform file display if exists
+        const transformDisplay = webhook.transformFile ? 
+            (() => {
+                const span = document.createElement('span');
+                span.textContent = webhook.transformFile;
+                span.style.fontFamily = 'monospace';
+                span.style.fontSize = '0.85rem';
+                span.style.color = 'var(--text-muted)';
+                span.style.lineHeight = '1.5rem';
+                span.style.padding = '0.25rem 0.5rem';
+                span.style.background = 'var(--background-modifier-form-field)';
+                span.style.borderRadius = '4px';
+                span.style.border = '1px solid var(--background-modifier-border)';
+                return span;
+            })() : 
+            (() => {
+                const span = document.createElement('span');
+                span.textContent = 'Raw payload (no transform)';
+                span.style.color = 'var(--text-muted)';
+                span.style.fontStyle = 'italic';
+                span.style.lineHeight = '1.5rem';
+                return span;
+            })();
 
         createCard(webhooksContainer, {
             id: webhook.id,
             header: {
-                primaryText: webhook.url,
-                secondaryText: `Events: ${webhook.events.join(', ')}`,
+                primaryText: 'Webhook',
+                secondaryText: createdText,
                 meta: [statusBadge, successBadge, failureBadge],
                 actions: [
                     createDeleteHeaderButton(async () => {
@@ -578,16 +652,44 @@ function renderWebhookList(container: HTMLElement, plugin: TaskNotesPlugin, save
                     })
                 ]
             },
+            content: {
+                sections: [
+                    {
+                        rows: [
+                            { label: 'Active:', input: activeToggle },
+                            { label: 'URL:', input: urlInput, fullWidth: true },
+                            { label: 'Events:', input: eventsDisplay, fullWidth: true },
+                            { label: 'Transform:', input: transformDisplay, fullWidth: true }
+                        ]
+                    }
+                ]
+            },
             actions: {
                 buttons: [
                     {
-                        text: webhook.active ? 'Disable' : 'Enable',
-                        variant: webhook.active ? 'warning' : 'primary',
+                        text: 'Edit Events',
+                        icon: 'settings',
+                        variant: 'secondary',
                         onClick: async () => {
-                            webhook.active = !webhook.active;
-                            save();
-                            renderWebhookList(container, plugin, save);
-                            new Notice(`Webhook ${webhook.active ? 'enabled' : 'disabled'}`);
+                            const modal = new WebhookEditModal(plugin.app, webhook, async (updatedConfig: Partial<WebhookConfig>) => {
+                                Object.assign(webhook, updatedConfig);
+                                save();
+                                renderWebhookList(container, plugin, save);
+                                new Notice('Webhook updated');
+                            });
+                            modal.open();
+                        }
+                    },
+                    {
+                        text: 'Test',
+                        icon: 'send',
+                        variant: 'primary',
+                        disabled: !webhook.active || !webhook.url,
+                        onClick: async () => {
+                            // Test webhook by sending a sample payload
+                            new Notice('Testing webhook...');
+                            // You could implement actual testing logic here
+                            setTimeout(() => new Notice('Test payload sent (feature not implemented yet)'), 1000);
                         }
                     }
                 ]
@@ -641,6 +743,162 @@ class SecretNoticeModal extends Modal {
         closeBtn.onclick = () => this.close();
     }
     
+    onClose(): void {
+        const { contentEl } = this;
+        contentEl.empty();
+    }
+}
+
+/**
+ * Modal for editing existing webhooks
+ */
+class WebhookEditModal extends Modal {
+    private webhook: WebhookConfig;
+    private selectedEvents: string[];
+    private transformFile: string;
+    private corsHeaders: boolean;
+    private onSubmit: (config: Partial<WebhookConfig>) => void;
+
+    constructor(app: App, webhook: WebhookConfig, onSubmit: (config: Partial<WebhookConfig>) => void) {
+        super(app);
+        this.webhook = webhook;
+        this.selectedEvents = [...webhook.events];
+        this.transformFile = webhook.transformFile || '';
+        this.corsHeaders = webhook.corsHeaders ?? true;
+        this.onSubmit = onSubmit;
+    }
+
+    onOpen(): void {
+        const { contentEl } = this;
+        contentEl.empty();
+        contentEl.addClass('tasknotes-webhook-modal');
+
+        // Modal header with icon
+        const header = contentEl.createDiv({ cls: 'tasknotes-webhook-modal-header' });
+        const headerIcon = header.createSpan({ cls: 'tasknotes-webhook-modal-icon' });
+        setIcon(headerIcon, 'webhook');
+        header.createEl('h2', { text: 'Edit Webhook', cls: 'tasknotes-webhook-modal-title' });
+
+        // Events selection section
+        const eventsSection = contentEl.createDiv({ cls: 'tasknotes-webhook-modal-section' });
+        const eventsHeader = eventsSection.createDiv({ cls: 'tasknotes-webhook-modal-subsection-header' });
+        const eventsIcon = eventsHeader.createSpan();
+        setIcon(eventsIcon, 'zap');
+        eventsHeader.createEl('h3', { text: 'Events to subscribe to' });
+
+        const eventsGrid = eventsSection.createDiv({ cls: 'tasknotes-webhook-events-list' });
+        const availableEvents = [
+            { id: 'task.created', label: 'Task Created', desc: 'When new tasks are created' },
+            { id: 'task.updated', label: 'Task Updated', desc: 'When tasks are modified' },
+            { id: 'task.completed', label: 'Task Completed', desc: 'When tasks are marked complete' },
+            { id: 'task.deleted', label: 'Task Deleted', desc: 'When tasks are deleted' },
+            { id: 'task.archived', label: 'Task Archived', desc: 'When tasks are archived' },
+            { id: 'task.unarchived', label: 'Task Unarchived', desc: 'When tasks are unarchived' },
+            { id: 'time.started', label: 'Time Started', desc: 'When time tracking starts' },
+            { id: 'time.stopped', label: 'Time Stopped', desc: 'When time tracking stops' },
+            { id: 'pomodoro.started', label: 'Pomodoro Started', desc: 'When pomodoro sessions begin' },
+            { id: 'pomodoro.completed', label: 'Pomodoro Completed', desc: 'When pomodoro sessions finish' },
+            { id: 'pomodoro.interrupted', label: 'Pomodoro Interrupted', desc: 'When pomodoro sessions are stopped' },
+            { id: 'recurring.instance.completed', label: 'Recurring Instance Completed', desc: 'When recurring task instances complete' },
+            { id: 'reminder.triggered', label: 'Reminder Triggered', desc: 'When task reminders activate' }
+        ];
+
+        availableEvents.forEach(event => {
+            new Setting(eventsGrid)
+                .setName(event.label)
+                .setDesc(event.desc)
+                .addToggle(toggle => {
+                    toggle.toggleEl.setAttribute('aria-label', `Subscribe to ${event.label} events`);
+                    return toggle
+                        .setValue(this.selectedEvents.includes(event.id))
+                        .onChange((value) => {
+                            if (value) {
+                                this.selectedEvents.push(event.id);
+                            } else {
+                                const index = this.selectedEvents.indexOf(event.id);
+                                if (index > -1) {
+                                    this.selectedEvents.splice(index, 1);
+                                }
+                            }
+                        });
+                });
+        });
+
+        // Transform file section
+        const transformSection = contentEl.createDiv({ cls: 'tasknotes-webhook-modal-section' });
+        const transformHeader = transformSection.createDiv({ cls: 'tasknotes-webhook-modal-subsection-header' });
+        const transformIcon = transformHeader.createSpan();
+        setIcon(transformIcon, 'file-code');
+        transformHeader.createEl('h3', { text: 'Transform Configuration (Optional)' });
+
+        new Setting(transformSection)
+            .setName('Transform File')
+            .setDesc('Path to a .js or .json file in your vault that transforms webhook payloads')
+            .addText(text => {
+                text.inputEl.setAttribute('aria-label', 'Transform file path');
+                return text
+                    .setPlaceholder('discord-transform.js')
+                    .setValue(this.transformFile)
+                    .onChange((value) => {
+                        this.transformFile = value;
+                    });
+            });
+
+        // CORS headers section
+        const corsSection = contentEl.createDiv({ cls: 'tasknotes-webhook-modal-section' });
+        const corsHeader = corsSection.createDiv({ cls: 'tasknotes-webhook-modal-subsection-header' });
+        const corsIcon = corsHeader.createSpan();
+        setIcon(corsIcon, 'settings');
+        corsHeader.createEl('h3', { text: 'Headers Configuration' });
+
+        new Setting(corsSection)
+            .setName('Include custom headers')
+            .setDesc('Include TaskNotes headers (event type, signature, delivery ID). Turn off for Discord, Slack, and other services with strict CORS policies.')
+            .addToggle(toggle => {
+                toggle.toggleEl.setAttribute('aria-label', 'Include custom headers');
+                return toggle
+                    .setValue(this.corsHeaders)
+                    .onChange((value) => {
+                        this.corsHeaders = value;
+                    });
+            });
+
+        // Buttons section
+        const buttonContainer = contentEl.createDiv({ cls: 'tasknotes-webhook-modal-buttons' });
+
+        const cancelBtn = buttonContainer.createEl('button', {
+            text: 'Cancel',
+            cls: 'tasknotes-webhook-modal-btn cancel',
+            attr: { 'aria-label': 'Cancel webhook editing' }
+        });
+        const cancelIcon = cancelBtn.createSpan({ cls: 'tasknotes-webhook-modal-btn-icon' });
+        setIcon(cancelIcon, 'x');
+        cancelBtn.onclick = () => this.close();
+
+        const saveBtn = buttonContainer.createEl('button', {
+            text: 'Save Changes',
+            cls: 'tasknotes-webhook-modal-btn save mod-cta',
+            attr: { 'aria-label': 'Save webhook changes' }
+        });
+        const saveIcon = saveBtn.createSpan({ cls: 'tasknotes-webhook-modal-btn-icon' });
+        setIcon(saveIcon, 'save');
+
+        saveBtn.onclick = () => {
+            if (this.selectedEvents.length === 0) {
+                new Notice('Please select at least one event');
+                return;
+            }
+
+            this.onSubmit({
+                events: this.selectedEvents as any[],
+                transformFile: this.transformFile.trim() || undefined,
+                corsHeaders: this.corsHeaders
+            });
+
+            this.close();
+        };
+    }
+
     onClose(): void {
         const { contentEl } = this;
         contentEl.empty();

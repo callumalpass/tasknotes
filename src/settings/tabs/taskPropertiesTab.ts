@@ -42,7 +42,7 @@ export function renderTaskPropertiesTab(container: HTMLElement, plugin: TaskNote
     createHelpText(container, 'Customize the status options available for your tasks. These statuses control the task lifecycle and determine when tasks are considered complete.');
 
     // Status help section
-    const statusHelpContainer = container.createDiv('settings-help-section');
+    const statusHelpContainer = container.createDiv('tasknotes-settings__help-section');
     statusHelpContainer.createEl('h4', { text: 'How statuses work:' });
     const statusHelpList = statusHelpContainer.createEl('ul');
     statusHelpList.createEl('li', { text: 'Value: The internal identifier stored in your task files (e.g., "in-progress")' });
@@ -87,7 +87,7 @@ export function renderTaskPropertiesTab(container: HTMLElement, plugin: TaskNote
     createHelpText(container, 'Customize the priority levels available for your tasks. Priority weights determine sorting order and visual hierarchy in your task views.');
 
     // Priority help section
-    const priorityHelpContainer = container.createDiv('settings-help-section');
+    const priorityHelpContainer = container.createDiv('tasknotes-settings__help-section');
     priorityHelpContainer.createEl('h4', { text: 'How priorities work:' });
     const priorityHelpList = priorityHelpContainer.createEl('ul');
     priorityHelpList.createEl('li', { text: 'Value: The internal identifier stored in your task files (e.g., "high")' });
@@ -129,7 +129,7 @@ export function renderTaskPropertiesTab(container: HTMLElement, plugin: TaskNote
     createSectionHeader(container, 'Field Mapping');
     
     // Warning message
-    const warning = container.createDiv('settings-warning');
+    const warning = container.createDiv('tasknotes-settings__warning');
     warning.createEl('strong', { text: '⚠️ Warning: ' });
     warning.appendText('TaskNotes will read AND write using these property names. Changing these after creating tasks may cause inconsistencies.');
     
@@ -274,19 +274,19 @@ function renderStatusList(container: HTMLElement, plugin: TaskNotesPlugin, save:
 
         valueInput.addEventListener('change', () => {
             status.value = valueInput.value;
-            statusCard.querySelector('.tasknotes-card-primary-text')!.textContent = status.value || 'untitled';
+            statusCard.querySelector('.tasknotes-settings__card-primary-text')!.textContent = status.value || 'untitled';
             save();
         });
     
         labelInput.addEventListener('change', () => {
             status.label = labelInput.value;
-            statusCard.querySelector('.tasknotes-card-secondary-text')!.textContent = status.label || 'No label';
+            statusCard.querySelector('.tasknotes-settings__card-secondary-text')!.textContent = status.label || 'No label';
             save();
         });
     
         colorInput.addEventListener('change', () => {
             status.color = colorInput.value;
-            const colorIndicator = statusCard.querySelector('.tasknotes-card-color-indicator') as HTMLElement;
+            const colorIndicator = statusCard.querySelector('.tasknotes-settings__card-color-indicator') as HTMLElement;
             if (colorIndicator) {
                 colorIndicator.style.backgroundColor = status.color;
             }
@@ -295,7 +295,7 @@ function renderStatusList(container: HTMLElement, plugin: TaskNotesPlugin, save:
     
         completedCheckbox.addEventListener('change', () => {
             status.isCompleted = completedCheckbox.checked;
-            const metaContainer = statusCard.querySelector('.tasknotes-card-meta');
+            const metaContainer = statusCard.querySelector('.tasknotes-settings__card-meta');
             if (metaContainer) {
                 metaContainer.empty();
                 if (status.isCompleted) {
@@ -500,10 +500,10 @@ function setupStatusDragAndDrop(statusRow: HTMLElement, status: StatusConfig, co
 
 function renderFieldMappingTable(container: HTMLElement, plugin: TaskNotesPlugin, save: () => void): void {
     // Create mapping table
-    const table = container.createEl('table', { cls: 'settings-table' });
+    const table = container.createEl('table', { cls: 'tasknotes-settings__table' });
     const header = table.createEl('tr');
-    header.createEl('th', { cls: 'settings-table-header', text: 'TaskNotes field' });
-    header.createEl('th', { cls: 'settings-table-header', text: 'Your property name' });
+    header.createEl('th', { cls: 'tasknotes-settings__table-header', text: 'TaskNotes field' });
+    header.createEl('th', { cls: 'tasknotes-settings__table-header', text: 'Your property name' });
 
     const fieldMappings: Array<[keyof FieldMapping, string]> = [
         ['title', 'Title'],
@@ -528,10 +528,10 @@ function renderFieldMappingTable(container: HTMLElement, plugin: TaskNotesPlugin
     ];
 
     fieldMappings.forEach(([field, label]) => {
-        const row = table.createEl('tr', { cls: 'settings-table-row' });
-        const labelCell = row.createEl('td', { cls: 'settings-table-cell' });
+        const row = table.createEl('tr', { cls: 'tasknotes-settings__table-row' });
+        const labelCell = row.createEl('td', { cls: 'tasknotes-settings__table-cell' });
         labelCell.textContent = label;
-        const inputCell = row.createEl('td', { cls: 'settings-table-cell' });
+        const inputCell = row.createEl('td', { cls: 'tasknotes-settings__table-cell' });
         
         const input = inputCell.createEl('input', {
             type: 'text',

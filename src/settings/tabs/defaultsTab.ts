@@ -266,7 +266,7 @@ export function renderDefaultsTab(container: HTMLElement, plugin: TaskNotesPlugi
 
     // Template Variables Help
     if (plugin.settings.taskCreationDefaults.useBodyTemplate) {
-        const helpContainer = container.createDiv('settings-help-section');
+        const helpContainer = container.createDiv('tasknotes-settings__help-section');
         helpContainer.createEl('h4', { text: 'Template variables:' });
         const helpList = helpContainer.createEl('ul');
         helpList.createEl('li', { text: '{{title}} - Task title' });
