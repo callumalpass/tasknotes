@@ -273,8 +273,17 @@ export default class TaskNotesPlugin extends Plugin {
 		this.migrationPromise = this.performEarlyMigrationCheck();
 
 		// Defer expensive initialization until layout is ready
-		this.app.workspace.onLayoutReady(() => {
+		this.app.workspace.onLayoutReady(async () => {
 			this.initializeAfterLayoutReady();
+			// Experimental: register Bases integrations when feature flag enabled
+			try {
+				if (this.settings?.enableBasesPOC) {
+					const { registerBasesTaskList } = await import('./bases/registration');
+					await registerBasesTaskList(this);
+				}
+			} catch (e) {
+				console.warn('[TaskNotes][Bases] Registration failed:', e);
+			}
 		});
 
 		// At the very end of onload, resolve the promise to signal readiness
