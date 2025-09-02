@@ -1091,3 +1091,1018 @@
 .tasknotes-plugin .property-item label:hover {
     color: var(--tn-text-accent);
 }
+
+/* ================================================
+   NEW LIST EDITOR COMPONENT STYLES
+   ================================================ */
+
+/* List Container for new ListEditorComponent */
+.tasknotes-plugin .settings-view__list-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--tn-spacing-xs);
+    margin-bottom: var(--tn-spacing-md);
+}
+
+/* Add Button Container */
+.tasknotes-plugin .settings-view__add-button-container {
+    display: flex;
+    justify-content: flex-start;
+    margin-top: var(--tn-spacing-sm);
+}
+
+/* Property Toggles for Appearance Tab */
+.tasknotes-plugin .property-toggles {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--tn-spacing-sm);
+    margin-top: var(--tn-spacing-md);
+    padding: var(--tn-spacing-md);
+    background: var(--tn-bg-secondary);
+    border-radius: var(--tn-radius-sm);
+}
+
+.tasknotes-plugin .property-toggle {
+    display: flex;
+    align-items: center;
+    gap: var(--tn-spacing-xs);
+    padding: var(--tn-spacing-xs);
+}
+
+.tasknotes-plugin .property-toggle input[type="checkbox"] {
+    margin: 0;
+}
+
+.tasknotes-plugin .property-toggle label {
+    cursor: pointer;
+    color: var(--tn-text-normal);
+    font-size: var(--tn-font-size-sm);
+}
+
+/* Reminder Configuration Styles */
+.tasknotes-plugin .reminder-config {
+    display: flex;
+    align-items: center;
+    gap: var(--tn-spacing-xs);
+    flex-wrap: wrap;
+}
+
+.tasknotes-plugin .reminder-offset,
+.tasknotes-plugin .reminder-unit,
+.tasknotes-plugin .reminder-direction,
+.tasknotes-plugin .reminder-related-to {
+    min-width: 80px;
+}
+
+.tasknotes-plugin .reminder-date,
+.tasknotes-plugin .reminder-time {
+    min-width: 120px;
+}
+
+/* Webhook and ICS Subscription Lists */
+.tasknotes-plugin .webhooks-list .settings-view__item-row,
+.tasknotes-plugin .ics-subscriptions-list .settings-view__item-row {
+    grid-template-columns: 1fr 1fr 1fr 40px 40px;
+    gap: var(--tn-spacing-sm);
+}
+
+/* Add ICS Form */
+.tasknotes-plugin .add-ics-form {
+    display: flex;
+    gap: var(--tn-spacing-sm);
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: var(--tn-spacing-lg);
+    padding: var(--tn-spacing-md);
+    background: var(--tn-bg-secondary);
+    border-radius: var(--tn-radius-sm);
+}
+
+.tasknotes-plugin .ics-name-input,
+.tasknotes-plugin .ics-url-input {
+    flex: 1;
+    min-width: 200px;
+}
+
+.tasknotes-plugin .ics-color-input {
+    width: 40px;
+    height: 32px;
+    border: 1px solid var(--tn-border-color);
+    border-radius: var(--tn-radius-sm);
+    cursor: pointer;
+}
+
+/* ICS Subscriptions List Specific Styles */
+.tasknotes-plugin .ics-subscriptions-list {
+    margin-bottom: var(--tn-spacing-lg);
+}
+
+.tasknotes-plugin .ics-subscription-row {
+    display: flex;
+    align-items: center;
+    gap: var(--tn-spacing-md);
+    padding: var(--tn-spacing-md);
+    background: var(--tn-bg-secondary);
+    border: 1px solid var(--tn-border-color);
+    border-radius: var(--tn-radius-sm);
+    margin-bottom: var(--tn-spacing-sm);
+}
+
+.tasknotes-plugin .ics-subscription-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.tasknotes-plugin .ics-subscription-name {
+    font-weight: var(--tn-font-weight-medium);
+    color: var(--tn-text-normal);
+    margin-bottom: var(--tn-spacing-xs);
+}
+
+.tasknotes-plugin .ics-subscription-url {
+    font-size: var(--tn-font-size-sm);
+    color: var(--tn-text-muted);
+    word-break: break-all;
+}
+
+.tasknotes-plugin .ics-subscription-color {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 1px solid var(--tn-border-color);
+    flex-shrink: 0;
+}
+
+.tasknotes-plugin .ics-subscription-status {
+    display: flex;
+    align-items: center;
+}
+
+.tasknotes-plugin .ics-subscription-enabled {
+    margin: 0;
+}
+
+.tasknotes-plugin .ics-subscription-actions {
+    display: flex;
+    gap: var(--tn-spacing-xs);
+    align-items: center;
+}
+
+.tasknotes-plugin .ics-subscription-refresh,
+.tasknotes-plugin .ics-subscription-delete {
+    padding: var(--tn-spacing-xs) var(--tn-spacing-sm);
+    font-size: var(--tn-font-size-sm);
+    border-radius: var(--tn-radius-sm);
+    cursor: pointer;
+    border: 1px solid var(--tn-border-color);
+    background: var(--tn-bg-primary);
+    color: var(--tn-text-normal);
+    transition: all var(--tn-transition-fast);
+}
+
+.tasknotes-plugin .ics-subscription-refresh:hover {
+    background: var(--tn-interactive-hover);
+}
+
+.tasknotes-plugin .ics-subscription-delete:hover {
+    background: var(--tn-color-red-bg);
+    color: var(--tn-color-red);
+    border-color: var(--tn-color-red);
+}
+
+/* Default Projects List */
+.tasknotes-plugin .default-projects-list {
+    margin-top: var(--tn-spacing-sm);
+    margin-bottom: var(--tn-spacing-sm);
+}
+
+.tasknotes-plugin .default-project-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--tn-spacing-xs) var(--tn-spacing-sm);
+    margin-bottom: var(--tn-spacing-xs);
+    background: var(--tn-bg-secondary);
+    border: 1px solid var(--tn-border-color);
+    border-radius: var(--tn-radius-sm);
+}
+
+.tasknotes-plugin .project-name {
+    font-size: var(--tn-font-size-sm);
+    color: var(--tn-text-normal);
+}
+
+.tasknotes-plugin .remove-project-btn {
+    background: none;
+    border: none;
+    color: var(--tn-text-muted);
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 1;
+    padding: 2px 4px;
+    border-radius: var(--tn-radius-xs);
+    transition: all var(--tn-transition-fast);
+}
+
+.tasknotes-plugin .remove-project-btn:hover {
+    color: var(--tn-color-red);
+    background: var(--tn-color-red-bg);
+}
+
+/* Dropdown and Input Consistency */
+.tasknotes-plugin .settings-view__dropdown {
+    padding: var(--tn-spacing-xs) var(--tn-spacing-sm);
+    border: 1px solid var(--tn-border-color);
+    border-radius: var(--tn-radius-sm);
+    background: var(--tn-bg-primary);
+    color: var(--tn-text-normal);
+    font-size: var(--tn-font-size-sm);
+    min-width: 80px;
+}
+
+.tasknotes-plugin .settings-view__color-picker {
+    width: 40px;
+    height: 32px;
+    border: 1px solid var(--tn-border-color);
+    border-radius: var(--tn-radius-sm);
+    background: var(--tn-bg-primary);
+    cursor: pointer;
+    padding: 0;
+}
+
+.tasknotes-plugin .settings-view__checkbox {
+    margin: 0;
+    cursor: pointer;
+}
+
+/* Status and Priority Grid Adjustments */
+.tasknotes-plugin .status-list .settings-view__item-row {
+    grid-template-columns: 20px 20px 1fr 1fr 40px 40px 40px;
+    gap: var(--tn-spacing-sm);
+    align-items: center;
+}
+
+.tasknotes-plugin .priority-list .settings-view__item-row {
+    grid-template-columns: 20px 1fr 1fr 40px 80px 40px;
+    gap: var(--tn-spacing-sm);
+    align-items: center;
+}
+
+.tasknotes-plugin .user-fields .settings-view__item-row {
+    grid-template-columns: 1fr 1fr 140px 40px;
+    gap: var(--tn-spacing-sm);
+    align-items: center;
+}
+
+/* Responsive adjustments for new components */
+@media (max-width: 768px) {
+    .tasknotes-plugin .property-toggles {
+        grid-template-columns: 1fr;
+    }
+    
+    .tasknotes-plugin .reminder-config {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--tn-spacing-xs);
+    }
+    
+    .tasknotes-plugin .reminder-config .settings-view__dropdown,
+    .tasknotes-plugin .reminder-config .settings-view__input {
+        width: 100%;
+        min-width: unset;
+    }
+    
+    .tasknotes-plugin .add-ics-form {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .tasknotes-plugin .ics-name-input,
+    .tasknotes-plugin .ics-url-input {
+        min-width: unset;
+    }
+    
+    .tasknotes-plugin .ics-subscription-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--tn-spacing-sm);
+    }
+    
+    .tasknotes-plugin .ics-subscription-actions {
+        justify-content: center;
+    }
+}
+
+/* ================================================
+   CARD-BASED LIST COMPONENTS
+   ================================================ */
+
+/* Shared Card Container Styles */
+.tasknotes-statuses-container,
+.tasknotes-priorities-container,
+.tasknotes-user-fields-container,
+.tasknotes-reminders-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+/* Shared Empty State Styles */
+.tasknotes-statuses-empty-state,
+.tasknotes-priorities-empty-state,
+.tasknotes-user-fields-empty-state,
+.tasknotes-reminders-empty-state {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 2rem;
+    background: var(--background-modifier-form-field);
+    border: 1px dashed var(--background-modifier-border);
+    border-radius: 8px;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.tasknotes-statuses-empty-icon,
+.tasknotes-priorities-empty-icon,
+.tasknotes-user-fields-empty-icon,
+.tasknotes-reminders-empty-icon {
+    display: flex;
+    align-items: center;
+    opacity: 0.6;
+}
+
+.tasknotes-statuses-empty-text,
+.tasknotes-priorities-empty-text,
+.tasknotes-user-fields-empty-text,
+.tasknotes-reminders-empty-text {
+    flex: 1;
+}
+
+/* Shared Card Base Styles */
+.tasknotes-status-card,
+.tasknotes-priority-card,
+.tasknotes-user-field-card,
+.tasknotes-reminder-card,
+.tasknotes-subscription-card {
+    background: var(--background-primary);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 8px;
+    padding: 0;
+    overflow: hidden;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.tasknotes-status-card:hover,
+.tasknotes-priority-card:hover,
+.tasknotes-user-field-card:hover,
+.tasknotes-reminder-card:hover,
+.tasknotes-subscription-card:hover {
+    border-color: var(--interactive-accent);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
+}
+
+/* Drag Handles */
+.tasknotes-status-drag-handle {
+    position: absolute;
+    left: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: grab;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    padding: 0.25rem;
+    border-radius: 3px;
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+}
+
+.tasknotes-status-drag-handle:hover {
+    opacity: 1;
+    background: var(--background-modifier-hover);
+}
+
+.tasknotes-status-card.dragging {
+    opacity: 0.5;
+    transform: rotate(2deg);
+}
+
+/* Card Headers */
+.tasknotes-status-header,
+.tasknotes-priority-header,
+.tasknotes-user-field-header,
+.tasknotes-reminder-header,
+.tasknotes-subscription-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    background: var(--background-secondary);
+    border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.tasknotes-status-card .tasknotes-status-header {
+    padding-left: 2.25rem; /* Account for drag handle */
+}
+
+/* Color Indicators */
+.tasknotes-status-color-indicator,
+.tasknotes-priority-color-indicator,
+.tasknotes-subscription-color-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--status-color, var(--priority-color, var(--subscription-color, var(--text-muted))));
+    flex-shrink: 0;
+    margin-right: 0.75rem;
+    border: 2px solid var(--background-primary);
+    box-shadow: 0 0 0 1px var(--background-modifier-border);
+}
+
+/* Header Info Sections */
+.tasknotes-status-info,
+.tasknotes-priority-info,
+.tasknotes-user-field-info,
+.tasknotes-reminder-info,
+.tasknotes-subscription-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+    flex: 1;
+    min-width: 0;
+}
+
+/* Primary Text (Value/Name) */
+.tasknotes-status-value-text,
+.tasknotes-priority-value-text,
+.tasknotes-user-field-name-text,
+.tasknotes-reminder-description-text,
+.tasknotes-subscription-name-text {
+    font-weight: 600;
+    color: var(--text-normal);
+    font-size: 0.95rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Secondary Text (Label/Key/Timing) */
+.tasknotes-status-label-text,
+.tasknotes-priority-label-text,
+.tasknotes-user-field-key-text,
+.tasknotes-reminder-timing-text,
+.tasknotes-subscription-url-text {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Meta Indicators */
+.tasknotes-status-meta,
+.tasknotes-priority-meta,
+.tasknotes-user-field-meta,
+.tasknotes-reminder-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
+
+.tasknotes-status-completed-indicator,
+.tasknotes-priority-weight-indicator,
+.tasknotes-user-field-type-indicator,
+.tasknotes-reminder-type-indicator {
+    padding: 0.25rem 0.75rem;
+    border-radius: 16px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    background: var(--background-modifier-form-field);
+    color: var(--text-muted);
+    border: 1px solid var(--background-modifier-border);
+}
+
+.tasknotes-status-completed-indicator {
+    background: var(--color-green);
+    background: rgba(var(--color-green-rgb), 0.15);
+    color: var(--color-green);
+    border-color: var(--color-green);
+}
+
+/* Card Configuration Sections */
+.tasknotes-status-config,
+.tasknotes-priority-config,
+.tasknotes-user-field-config,
+.tasknotes-reminder-config,
+.tasknotes-subscription-config {
+    padding: 0.75rem 1rem;
+}
+
+.tasknotes-status-card .tasknotes-status-config {
+    padding-left: 2.25rem; /* Account for drag handle */
+}
+
+/* Config Rows */
+.tasknotes-status-config-row,
+.tasknotes-priority-config-row,
+.tasknotes-user-field-config-row,
+.tasknotes-reminder-config-row,
+.tasknotes-subscription-config-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.tasknotes-status-config-row:last-child,
+.tasknotes-priority-config-row:last-child,
+.tasknotes-user-field-config-row:last-child,
+.tasknotes-reminder-config-row:last-child {
+    margin-bottom: 0;
+}
+
+/* Config Labels */
+.tasknotes-status-config-label,
+.tasknotes-priority-config-label,
+.tasknotes-user-field-config-label,
+.tasknotes-reminder-config-label {
+    font-weight: 500;
+    color: var(--text-normal);
+    min-width: 5rem;
+    flex-shrink: 0;
+    font-size: 0.9rem;
+}
+
+/* Input Styles */
+.tasknotes-status-input,
+.tasknotes-priority-input,
+.tasknotes-user-field-input,
+.tasknotes-reminder-input {
+    flex: 1;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 4px;
+    background: var(--background-modifier-form-field);
+    color: var(--text-normal);
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+}
+
+.tasknotes-status-input:focus,
+.tasknotes-priority-input:focus,
+.tasknotes-user-field-input:focus,
+.tasknotes-reminder-input:focus {
+    border-color: var(--interactive-accent);
+    box-shadow: 0 0 0 2px rgba(var(--interactive-accent-rgb), 0.2);
+    outline: none;
+}
+
+/* Color Inputs */
+.tasknotes-status-color-input,
+.tasknotes-priority-color-input {
+    width: 3rem;
+    height: 2.5rem;
+    padding: 0;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 4px;
+    cursor: pointer;
+    background: none;
+}
+
+/* Weight Input */
+.tasknotes-priority-weight-input {
+    width: 5rem;
+    flex: none;
+}
+
+/* Select Dropdowns */
+.tasknotes-user-field-type-select,
+.tasknotes-reminder-type-select {
+    padding: 0.6rem 0.75rem;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 4px;
+    background: var(--background-modifier-form-field);
+    color: var(--text-normal);
+    font-size: 0.9rem;
+    cursor: pointer;
+    line-height: 1.2;
+    min-height: 2.4rem;
+}
+
+/* Options Rows (special horizontal layouts) */
+.tasknotes-status-options-row,
+.tasknotes-priority-options-row {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.tasknotes-status-color-section,
+.tasknotes-priority-color-section,
+.tasknotes-priority-weight-section {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.tasknotes-status-completed-section {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.tasknotes-status-option-label,
+.tasknotes-priority-option-label {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-normal);
+}
+
+/* Completed Checkbox */
+.tasknotes-status-completed-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    font-size: 0.85rem;
+}
+
+.tasknotes-status-completed-checkbox {
+    margin: 0;
+}
+
+.tasknotes-status-completed-text {
+    color: var(--text-normal);
+}
+
+/* Reminder Config Details */
+.tasknotes-reminder-config-details {
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--background-modifier-border);
+}
+
+/* Card Actions */
+.tasknotes-status-actions,
+.tasknotes-priority-actions,
+.tasknotes-user-field-actions,
+.tasknotes-reminder-actions,
+.tasknotes-subscription-actions {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    background: var(--background-modifier-form-field);
+    border-top: 1px solid var(--background-modifier-border);
+}
+
+.tasknotes-status-card .tasknotes-status-actions {
+    padding-left: 2.25rem; /* Account for drag handle */
+}
+
+/* Action Buttons */
+.tasknotes-status-action-btn,
+.tasknotes-priority-action-btn,
+.tasknotes-user-field-action-btn,
+.tasknotes-reminder-action-btn,
+.tasknotes-subscription-action-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 4px;
+    background: var(--background-primary);
+    color: var(--text-normal);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tasknotes-status-action-btn:hover,
+.tasknotes-priority-action-btn:hover,
+.tasknotes-user-field-action-btn:hover,
+.tasknotes-reminder-action-btn:hover,
+.tasknotes-subscription-action-btn:hover {
+    background: var(--background-modifier-hover);
+    border-color: var(--interactive-accent);
+}
+
+.tasknotes-status-action-btn.delete,
+.tasknotes-priority-action-btn.delete,
+.tasknotes-user-field-action-btn.delete,
+.tasknotes-reminder-action-btn.delete,
+.tasknotes-subscription-action-btn.delete {
+    background: var(--color-red);
+    color: white;
+    border-color: var(--color-red);
+}
+
+.tasknotes-status-action-btn.delete:hover,
+.tasknotes-priority-action-btn.delete:hover,
+.tasknotes-user-field-action-btn.delete:hover,
+.tasknotes-reminder-action-btn.delete:hover {
+    background: var(--color-red);
+    opacity: 0.9;
+}
+
+.tasknotes-status-action-text,
+.tasknotes-priority-action-text,
+.tasknotes-user-field-action-text,
+.tasknotes-reminder-action-text {
+    font-weight: 500;
+}
+
+/* Dark theme adjustments */
+.theme-dark .tasknotes-status-card:hover,
+.theme-dark .tasknotes-priority-card:hover,
+.theme-dark .tasknotes-user-field-card:hover,
+.theme-dark .tasknotes-reminder-card:hover,
+.theme-dark .tasknotes-subscription-card:hover {
+    box-shadow: 0 2px 8px rgba(255, 255, 255, 0.1);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .tasknotes-status-options-row,
+    .tasknotes-priority-options-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .tasknotes-status-config-row,
+    .tasknotes-priority-config-row,
+    .tasknotes-user-field-config-row,
+    .tasknotes-reminder-config-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .tasknotes-status-config-label,
+    .tasknotes-priority-config-label,
+    .tasknotes-user-field-config-label,
+    .tasknotes-reminder-config-label {
+        min-width: unset;
+        font-size: 0.85rem;
+    }
+    
+    .tasknotes-status-input,
+    .tasknotes-priority-input,
+    .tasknotes-user-field-input,
+    .tasknotes-reminder-input {
+        width: 100%;
+    }
+    
+    .tasknotes-status-card .tasknotes-status-header,
+    .tasknotes-status-card .tasknotes-status-config,
+    .tasknotes-status-card .tasknotes-status-actions {
+        padding-left: 1rem; /* Remove drag handle offset on mobile */
+    }
+    
+    .tasknotes-status-drag-handle {
+        display: none; /* Hide drag handles on mobile */
+    }
+}
+
+/* Settings Warning Messages */
+.settings-warning {
+    background: rgba(var(--color-yellow-rgb), 0.1);
+    border: 1px solid rgba(var(--color-yellow-rgb), 0.3);
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    margin: 1rem 0;
+    color: var(--text-normal);
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.settings-warning strong {
+    color: var(--color-yellow);
+    font-weight: 500;
+}
+
+/* Accessibility improvements */
+.tasknotes-status-action-btn:focus,
+.tasknotes-priority-action-btn:focus,
+.tasknotes-user-field-action-btn:focus,
+.tasknotes-reminder-action-btn:focus,
+.tasknotes-subscription-action-btn:focus {
+    outline: 2px solid var(--interactive-accent);
+    outline-offset: 2px;
+}
+
+/* ================================================
+   FIELD MAPPING TABLE STYLING
+   ================================================ */
+
+/* Field Mapping Table Container */
+.settings-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: var(--background-primary);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    margin-top: 1rem;
+}
+
+/* Table Header */
+.settings-table-header {
+    background: var(--background-secondary);
+    color: var(--text-normal);
+    font-weight: 600;
+    font-size: 0.9rem;
+    padding: 1rem 1.25rem;
+    text-align: left;
+    border-bottom: 1px solid var(--background-modifier-border);
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.settings-table-header:first-child {
+    border-top-left-radius: 8px;
+}
+
+.settings-table-header:last-child {
+    border-top-right-radius: 8px;
+}
+
+/* Table Rows */
+.settings-table-row {
+    transition: all 0.2s ease;
+    background: var(--background-primary);
+}
+
+.settings-table-row:nth-child(even) {
+    background: var(--background-modifier-form-field);
+}
+
+.settings-table-row:hover {
+    background: var(--background-modifier-hover);
+    box-shadow: inset 3px 0 0 var(--interactive-accent);
+}
+
+.settings-table-row:last-child .settings-table-cell:first-child {
+    border-bottom-left-radius: 8px;
+}
+
+.settings-table-row:last-child .settings-table-cell:last-child {
+    border-bottom-right-radius: 8px;
+}
+
+/* Table Cells */
+.settings-table-cell {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--background-modifier-border);
+    vertical-align: middle;
+    font-size: 0.9rem;
+}
+
+.settings-table-cell:first-child {
+    font-weight: 500;
+    color: var(--text-normal);
+    background: var(--background-modifier-form-field);
+    min-width: 180px;
+    width: 35%;
+}
+
+.settings-table-cell:last-child {
+    width: 65%;
+}
+
+/* Remove border from last row */
+.settings-table-row:last-child .settings-table-cell {
+    border-bottom: none;
+}
+
+/* Field Mapping Input Styling */
+.field-mapping-input {
+    width: 100%;
+    max-width: none;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 6px;
+    background: var(--background-primary);
+    color: var(--text-normal);
+    font-size: 0.9rem;
+    font-family: var(--font-monospace);
+    transition: all 0.2s ease;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.field-mapping-input:focus {
+    border-color: var(--interactive-accent);
+    box-shadow: 0 0 0 2px rgba(var(--interactive-accent-rgb), 0.2);
+    outline: none;
+    background: var(--background-modifier-form-field);
+}
+
+.field-mapping-input:hover {
+    border-color: var(--interactive-hover);
+}
+
+/* Placeholder styling */
+.field-mapping-input::placeholder {
+    color: var(--text-faint);
+    font-style: italic;
+    opacity: 0.7;
+}
+
+/* Dark theme adjustments for field mapping */
+.theme-dark .settings-table {
+    box-shadow: 0 1px 3px rgba(255, 255, 255, 0.1);
+}
+
+.theme-dark .field-mapping-input {
+    box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.05);
+}
+
+/* Responsive field mapping table */
+@media (max-width: 768px) {
+    .settings-table {
+        font-size: 0.85rem;
+    }
+    
+    .settings-table-header,
+    .settings-table-cell {
+        padding: 0.75rem 1rem;
+    }
+    
+    .settings-table-cell:first-child {
+        min-width: 120px;
+        width: 40%;
+    }
+    
+    .settings-table-cell:last-child {
+        width: 60%;
+    }
+    
+    .field-mapping-input {
+        padding: 0.625rem 0.75rem;
+        font-size: 0.85rem;
+    }
+}
+
+/* Very small screens - stack table */
+@media (max-width: 480px) {
+    .settings-table,
+    .settings-table-row,
+    .settings-table-cell {
+        display: block;
+    }
+    
+    .settings-table-header {
+        display: none;
+    }
+    
+    .settings-table-row {
+        margin-bottom: 1rem;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        background: var(--background-primary) !important;
+    }
+    
+    .settings-table-cell {
+        border-bottom: 1px solid var(--background-modifier-border);
+        border-radius: 0;
+        position: relative;
+    }
+    
+    .settings-table-cell:first-child {
+        background: var(--background-secondary);
+        font-weight: 600;
+        padding: 0.75rem 1rem;
+        color: var(--text-normal);
+        border-bottom: 1px solid var(--background-modifier-border);
+    }
+    
+    .settings-table-cell:first-child::before {
+        content: "TaskNotes Field: ";
+        font-weight: 500;
+        color: var(--text-muted);
+    }
+    
+    .settings-table-cell:last-child {
+        padding: 1rem;
+        border-bottom: none;
+    }
+    
+    .settings-table-cell:last-child::before {
+        content: "Your Property Name";
+        display: block;
+        font-weight: 500;
+        color: var(--text-muted);
+        font-size: 0.8rem;
+        margin-bottom: 0.5rem;
+    }
+}
