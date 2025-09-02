@@ -65,10 +65,11 @@ export function getBasesPropertyRowConfig(basesContainer: any, pathToProps: Map<
       visible: true
     }));
 
-    // Debug logging
+    // Debug logging (only when TaskNotes Bases logs are enabled in settings)
     try {
+      const settingsLogsOn = !!((controller?.plugin?.settings?.basesPOCLogs));
       const tnCfg = (fullCfg?.tasknotes ?? {}) as any;
-      const debug = !!(tnCfg?.debug ?? fullCfg?.['tasknotes.debug']);
+      const debug = settingsLogsOn && !!(tnCfg?.debug ?? fullCfg?.['tasknotes.debug']);
       if (debug) {
         console.debug('[TaskNotes][Bases] Third-row selection from order:', { orderedIds, selected });
         // Log up to 3 samples of available keys per item for formula detection

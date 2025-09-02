@@ -114,17 +114,19 @@ export function getTaskNotesTasklistRows(basesContainer: any, pathToProps: Map<s
     let row3Ids: string[] | undefined;
     let row4Ids: string[] | undefined;
 
-    // Debug logging (support both full config and query lookups)
-    let debug = !!(data['tasknotes.debug']
+    // Debug logging (support both full config and query lookups) but only if settings logs are enabled
+    const settingsLogsOn = !!(controller?.plugin?.settings?.basesPOCLogs);
+    let debugCfg = !!(data['tasknotes.debug']
       ?? data?.tasknotes?.debug
       ?? (fullCfg as any)['tasknotes.debug']
       ?? (fullCfg as any)?.tasknotes?.debug);
-    if (!debug) {
+    if (!debugCfg) {
       try {
-        debug = !!(query?.getViewConfig?.('tasknotes.debug')
+        debugCfg = !!(query?.getViewConfig?.('tasknotes.debug')
           ?? (query?.getViewConfig?.('tasknotes') as any)?.debug);
       } catch (_) { /* ignore */ }
     }
+    const debug = settingsLogsOn && debugCfg;
     if (debug) {
       console.debug('[TaskNotes][Bases] tasklist-rows config detected:', tn);
     }
@@ -151,17 +153,13 @@ export function getTaskNotesTasklistRows(basesContainer: any, pathToProps: Map<s
       }
     }
 
-    // Log parsed rows when logs are enabled in settings
+    // Log parsed rows when Logs are enabled in settings (only when debug config is also on)
     try {
-      const settingsLogsOn = !!(controller?.plugin?.settings?.basesPOCLogs);
-      if (settingsLogsOn) {
-        console.log('[TaskNotes][Bases] PARSED_ROWS_UNCONDITIONAL:', { row3Ids, row4Ids });
+      const settingsLogsOn2 = !!(controller?.plugin?.settings?.basesPOCLogs);
+      if (settingsLogsOn2 && debug) {
+        console.debug('[TaskNotes][Bases] Parsed rows:', { row3Ids, row4Ids });
       }
     } catch (_) { /* ignore */ }
-
-    if (debug) {
-      console.debug('[TaskNotes][Bases] Parsed rows:', { row3Ids, row4Ids });
-    }
 
     // Fallback: if no row3 configured, use Bases 'order'
     if (!row3Ids || row3Ids.length === 0) {

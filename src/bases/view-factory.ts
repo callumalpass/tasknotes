@@ -76,6 +76,15 @@ export function buildTasknotesTaskListViewFactory(plugin: TaskNotesPlugin) {
       if (!currentRoot) return;
       try {
         const dataItems = extractDataItems();
+        try {
+          if (plugin.settings?.basesAdvancedDataLogs) {
+            const raw = Array.from(((basesContainer as any)?.results as Map<any, any> | undefined)?.entries?.() || []);
+            console.log('[TaskNotes][Bases][ADVANCED-DUMP]', {
+              size: (basesContainer as any)?.results instanceof Map ? (basesContainer as any).results.size : undefined,
+              results: raw
+            });
+          }
+        } catch (_) { /* ignore */ }
         const taskNotes = await identifyTaskNotesFromBasesData(dataItems);
 
         // Clear previous expand/collapse buttons (keep search input)
