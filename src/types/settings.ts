@@ -105,6 +105,9 @@ export interface TaskNotesSettings {
 	defaultVisibleProperties?: string[];
 	// Recurring task behavior
 	maintainDueDateOffsetInRecurring: boolean;
+	// Experimental Bases POC (default false; optional in persisted data)
+	enableBasesPOC?: boolean;
+	basesPOCLogs?: boolean;
 }
 
 export interface DefaultReminder {

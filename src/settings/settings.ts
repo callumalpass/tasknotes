@@ -1671,6 +1671,27 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 			cls: 'settings-help-note'
 		});
 
+		// Experimental / Bases POC
+		new Setting(container).setName('Experimental / Bases POC').setHeading();
+		new Setting(container)
+			.setName('Enable Bases integration (POC)')
+			.setDesc('Registers TaskNotes views with Obsidian Bases when the Bases plugin is available. Default off.')
+			.addToggle(toggle => toggle
+				.setValue(!!this.plugin.settings.enableBasesPOC)
+				.onChange(async (value) => {
+					this.plugin.settings.enableBasesPOC = value;
+					await this.plugin.saveSettings();
+				}));
+		new Setting(container)
+			.setName('Enable Bases POC logs')
+			.setDesc('Log extra diagnostics to console for Bases integration components')
+			.addToggle(toggle => toggle
+				.setValue(!!this.plugin.settings.basesPOCLogs)
+				.onChange(async (value) => {
+					this.plugin.settings.basesPOCLogs = value;
+					await this.plugin.saveSettings();
+				}));
+
 		// Status bar toggle
 		new Setting(container)
 			.setName('Show tracked tasks in status bar')
