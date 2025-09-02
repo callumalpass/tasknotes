@@ -15,6 +15,7 @@ import { PriorityContextMenu } from '../components/PriorityContextMenu';
 import { RecurrenceContextMenu } from '../components/RecurrenceContextMenu';
 import { createTaskClickHandler, createTaskHoverHandler } from '../utils/clickHandlers';
 import { ReminderModal } from '../modals/ReminderModal';
+import { renderValueWithLinks } from './renderers/linkRenderer';
 
 export interface TaskCardOptions {
     showDueDate: boolean;
@@ -24,6 +25,15 @@ export interface TaskCardOptions {
     showRecurringControls: boolean;
     groupByDate: boolean;
     targetDate?: Date;
+    // Optional extra property rows for integrations (e.g., Bases)
+    extraPropertiesRow?: {
+        selected: { id: string; displayName: string; visible: boolean; tnLabel?: string | null; tnSeparator?: string }[];
+        getValue: (taskPath: string, propId: string) => unknown;
+    };
+    extraPropertiesRows?: Array<{
+        selected: { id: string; displayName: string; visible: boolean; tnLabel?: string | null; tnSeparator?: string }[];
+        getValue: (taskPath: string, propId: string) => unknown;
+    }>;
 }
 
 export const DEFAULT_TASK_CARD_OPTIONS: TaskCardOptions = {
@@ -443,7 +453,9 @@ function addMetadataSeparators(metadataLine: HTMLElement, metadataElements: HTML
     } else {
         metadataLine.style.display = 'none';
     }
+
 }
+
 
 /**
  * Create a minimalist, unified task card element
@@ -873,7 +885,61 @@ export function createTaskCard(task: TaskInfo, plugin: TaskNotesPlugin, visibleP
     
     // Add separators between metadata elements
     addMetadataSeparators(metadataLine, metadataElements);
-    
+
+    // External properties rows (e.g., Bases): support multiple rows while preserving legacy single-row option
+    const extRows = opts.extraPropertiesRows ?? (opts.extraPropertiesRow ? [opts.extraPropertiesRow] : []);
+    for (const row of extRows) {
+        if (!row || !Array.isArray(row.selected)) continue;
+        const items = row.selected.filter(p => p?.visible);
+        if (items.length === 0) continue;
+        const propRow = contentContainer.createEl('div', { cls: 'task-card__properties' });
+        const frag = document.createDocumentFragment();
+        for (const p of items) {
+            const value = row.getValue(task.path, p.id);
+            if (value === undefined || value === null) continue;
+            if (typeof value === 'string' && value.trim() === '') continue;
+            if (Array.isArray(value) && value.length === 0) continue;
+            const chip = document.createElement('span');
+            chip.className = 'task-card__property';
+            const labelOverride = (p as any).tnLabel as (string | null | undefined);
+            const sepOverride = (p as any).tnSeparator as (string | undefined);
+            if (labelOverride !== null) {
+                const labelText = (labelOverride !== undefined) ? labelOverride : p.displayName;
+                const separator = (sepOverride !== undefined) ? sepOverride : ': ';
+                const labelEl = document.createElement('span');
+                labelEl.className = 'task-card__property-label';
+                labelEl.textContent = labelText + separator;
+                chip.appendChild(labelEl);
+            }
+            const valueEl = document.createElement('span');
+            valueEl.className = 'task-card__property-value';
+            if (typeof value === 'string' || Array.isArray(value)) {
+                const isTagsProp = p.id === 'tags' || p.id.endsWith('.tags') || p.displayName.toLowerCase() === 'tags';
+                const looksLikeTags = isTagsProp ? true : (Array.isArray(value) ? (value as unknown[]).every(v => typeof v === 'string' && String(v).trim().startsWith('#')) : String(value).trim().startsWith('#'));
+                if (looksLikeTags) {
+                    const tags = require('./renderers/tagRenderer') as typeof import('./renderers/tagRenderer');
+                    tags.renderTagsValue(valueEl, value);
+                } else {
+                    renderValueWithLinks(valueEl, value, { metadataCache: plugin.app.metadataCache, workspace: plugin.app.workspace });
+                }
+            } else if (value instanceof Date) {
+                valueEl.textContent = value.toLocaleString();
+            } else if (typeof value === 'object') {
+                try {
+                    valueEl.textContent = JSON.stringify(value);
+                } catch {
+                    valueEl.textContent = String(value);
+                }
+            } else {
+                valueEl.textContent = String(value);
+            }
+            chip.appendChild(valueEl);
+            frag.appendChild(chip);
+        }
+        if (frag.childNodes.length > 0) propRow.appendChild(frag);
+        else propRow.remove();
+    }
+
     // Add click handlers with single/double click distinction
     const { clickHandler, dblclickHandler } = createTaskClickHandler({
         task,
