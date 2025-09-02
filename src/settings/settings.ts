@@ -1691,6 +1691,15 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 					this.plugin.settings.basesPOCLogs = value;
 					await this.plugin.saveSettings();
 				}));
+		new Setting(container)
+			.setName('Enable advanced Bases data logs')
+			.setDesc('Dump full Bases results (metadata, properties, formulas) to console for inspection. WARNING: verbose')
+			.addToggle(toggle => toggle
+				.setValue(!!this.plugin.settings.basesAdvancedDataLogs)
+				.onChange(async (value) => {
+					this.plugin.settings.basesAdvancedDataLogs = value;
+					await this.plugin.saveSettings();
+				}));
 
 		// Status bar toggle
 		new Setting(container)

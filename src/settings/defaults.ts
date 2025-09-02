@@ -246,5 +246,6 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	maintainDueDateOffsetInRecurring: false,
 	// Experimental Bases POC gating and logs (default off)
 	enableBasesPOC: false,
-	basesPOCLogs: false
+	basesPOCLogs: false,
+	basesAdvancedDataLogs: false
 };

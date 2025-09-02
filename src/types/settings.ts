@@ -108,6 +108,7 @@ export interface TaskNotesSettings {
 	// Experimental Bases POC (default false; optional in persisted data)
 	enableBasesPOC?: boolean;
 	basesPOCLogs?: boolean;
+	basesAdvancedDataLogs?: boolean;
 }
 
 export interface DefaultReminder {
