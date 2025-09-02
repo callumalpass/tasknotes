@@ -1440,7 +1440,326 @@
     flex: 1;
 }
 
-/* Shared Card Base Styles */
+/* Base Card Styles - Deduplicated System */
+.tasknotes-card {
+    background: var(--background-primary);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 8px;
+    padding: 0;
+    margin-bottom: 0.75rem;
+    overflow: hidden;
+    transition: all 0.2s ease, transform 0.2s ease;
+    position: relative;
+}
+
+.tasknotes-card:hover {
+    border-color: var(--interactive-accent);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
+}
+
+/* Card Modifiers */
+.tasknotes-card--draggable {
+    cursor: grab;
+}
+
+.tasknotes-card--dragging {
+    opacity: 0.5;
+    transform: rotate(2deg);
+}
+
+/* Base Card Header */
+.tasknotes-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0.75rem;
+    background: var(--background-secondary);
+    border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.tasknotes-card-header--with-drag-handle {
+    padding-left: 2rem; /* Account for drag handle */
+}
+
+/* Header Action Buttons (like delete in header) */
+.tasknotes-card-header-actions {
+    display: flex;
+    gap: 0.25rem;
+    align-items: center;
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
+.tasknotes-card-header-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 3px;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tasknotes-card-header-btn:hover {
+    background: var(--background-modifier-hover);
+    color: var(--text-normal);
+}
+
+.tasknotes-card-header-btn--delete:hover {
+    background: var(--color-red);
+    color: white;
+}
+
+/* Card Content Section */
+.tasknotes-card-content {
+    padding: 0.5rem 0.75rem;
+}
+
+.tasknotes-card-content--with-drag-handle {
+    padding-left: 2rem; /* Account for drag handle */
+}
+
+/* Card Actions Section */
+.tasknotes-card-actions {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    background: var(--background-modifier-form-field);
+    border-top: 1px solid var(--background-modifier-border);
+}
+
+.tasknotes-card-actions--with-drag-handle {
+    padding-left: 2rem; /* Account for drag handle */
+}
+
+/* Card Info Section (in header) */
+.tasknotes-card-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+    flex: 1;
+    min-width: 0;
+}
+
+/* Card Primary Text */
+.tasknotes-card-primary-text {
+    font-weight: 600;
+    color: var(--text-normal);
+    font-size: 0.95rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Card Secondary Text */
+.tasknotes-card-secondary-text {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Card Meta Section */
+.tasknotes-card-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
+
+/* Card Color Indicator */
+.tasknotes-card-color-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-right: 0.75rem;
+    border: 2px solid var(--background-primary);
+    box-shadow: 0 0 0 1px var(--background-modifier-border);
+}
+
+/* Drag Handle */
+.tasknotes-card-drag-handle {
+    position: absolute;
+    left: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: grab;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    padding: 0.25rem;
+    border-radius: 3px;
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+}
+
+.tasknotes-card-drag-handle:hover {
+    opacity: 1;
+    background: var(--background-modifier-hover);
+}
+
+/* Config Rows */
+.tasknotes-card-config-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.375rem;
+}
+
+.tasknotes-card-config-row:last-child {
+    margin-bottom: 0;
+}
+
+/* Config Labels */
+.tasknotes-card-config-label {
+    font-weight: 500;
+    color: var(--text-normal);
+    min-width: 5rem;
+    flex-shrink: 0;
+    font-size: 0.9rem;
+}
+
+/* Base Input Styles */
+.tasknotes-card-input {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 4px;
+    background: var(--background-modifier-form-field);
+    color: var(--text-normal);
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+}
+
+/* Text inputs should flex to fill available space */
+.tasknotes-card-input[type="text"],
+.tasknotes-card-input[type="number"],
+.tasknotes-card-input[type="color"],
+.tasknotes-card-input[type="url"],
+.tasknotes-card-input[type="email"],
+textarea.tasknotes-card-input {
+    flex: 1;
+}
+
+/* Checkbox inputs should have proper sizing and no text-input styling */
+.tasknotes-card-input[type="checkbox"] {
+    width: 1.2rem;
+    height: 1.2rem;
+    flex: none;
+    margin: 0;
+    padding: 0;
+    background: var(--background-primary);
+    border: 1px solid var(--background-modifier-border);
+    cursor: pointer;
+}
+
+.tasknotes-card-input:focus {
+    border-color: var(--interactive-accent);
+    box-shadow: 0 0 0 2px rgba(var(--interactive-accent-rgb), 0.2);
+    outline: none;
+}
+
+/* Base Action Button */
+.tasknotes-card-action-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 4px;
+    background: var(--background-primary);
+    color: var(--text-normal);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-weight: 500;
+}
+
+.tasknotes-card-action-btn:hover {
+    background: var(--background-modifier-hover);
+    border-color: var(--interactive-accent);
+}
+
+.tasknotes-card-action-btn--delete {
+    background: var(--color-red);
+    color: white;
+    border-color: var(--color-red);
+}
+
+.tasknotes-card-action-btn--delete:hover {
+    background: var(--color-red);
+    opacity: 0.9;
+}
+
+/* Status Badges */
+.tasknotes-card-status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 16px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    background: var(--background-modifier-form-field);
+    color: var(--text-muted);
+    border: 1px solid var(--background-modifier-border);
+}
+
+.tasknotes-card-status-badge--active {
+    background: rgba(var(--color-green-rgb), 0.15);
+    color: var(--color-green);
+    border-color: var(--color-green);
+}
+
+.tasknotes-card-status-badge--inactive {
+    background: rgba(var(--color-red-rgb), 0.15);
+    color: var(--color-red);
+    border-color: var(--color-red);
+}
+
+.tasknotes-card-status-badge--completed {
+    background: rgba(var(--color-green-rgb), 0.15);
+    color: var(--color-green);
+    border-color: var(--color-green);
+}
+
+/* Drag Over States */
+.tasknotes-card--drag-over-top {
+    border-top: 3px solid var(--interactive-accent);
+}
+
+.tasknotes-card--drag-over-bottom {
+    border-bottom: 3px solid var(--interactive-accent);
+}
+
+/* Info badge styling */
+.tasknotes-card-info-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 16px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    background: var(--background-modifier-border);
+    color: var(--text-muted);
+    border: 1px solid transparent;
+}
+
+/* Hide header when primary text is empty */
+.tasknotes-card-header .tasknotes-card-primary-text:empty {
+    display: none;
+}
+
+.tasknotes-card-header:has(.tasknotes-card-primary-text:empty) {
+    display: none;
+}
+
+/* Adjust content padding when header is hidden */
+.tasknotes-card:has(.tasknotes-card-header:not(:visible)) .tasknotes-card-content {
+    padding-top: 0.75rem;
+}
+
+/* Legacy card classes for backwards compatibility */
 .tasknotes-status-card,
 .tasknotes-priority-card,
 .tasknotes-user-field-card,

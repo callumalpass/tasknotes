@@ -9,6 +9,14 @@ import {
     // createListHeaders,
     createButtonSetting
 } from '../components/settingHelpers';
+import { 
+    createCard, 
+    createStatusBadge, 
+    createCardInput, 
+    setupCardDragAndDrop,
+    createDeleteHeaderButton,
+    CardConfig 
+} from '../components/CardComponent';
 // import { ListEditorComponent, ListEditorItem } from '../components/ListEditorComponent';
 
 // interface StatusItem extends ListEditorItem, StatusConfig {}
@@ -384,6 +392,153 @@ function renderStatusList(container: HTMLElement, plugin: TaskNotesPlugin, save:
         // Add drag and drop functionality
         setupStatusDragAndDrop(statusCard, status, container, plugin, save);
     });
+}
+
+/**
+ * DEMONSTRATION: New card system version of renderStatusList
+ * This shows how the new reusable system dramatically reduces code
+ */
+function renderStatusListNewSystem(container: HTMLElement, plugin: TaskNotesPlugin, save: () => void): void {
+    container.empty();
+    
+    if (!plugin.settings.customStatuses || plugin.settings.customStatuses.length === 0) {
+        const emptyState = container.createDiv('tasknotes-statuses-empty-state');
+        emptyState.createSpan('tasknotes-statuses-empty-icon');
+        emptyState.createSpan({
+            text: 'No custom statuses configured. Add a status to get started.',
+            cls: 'tasknotes-statuses-empty-text'
+        });
+        return;
+    }
+
+    const sortedStatuses = [...plugin.settings.customStatuses].sort((a, b) => a.order - b.order);
+
+    sortedStatuses.forEach((status) => {
+        // Create inputs using new helpers
+        const valueInput = createCardInput('text', 'in-progress', status.value);
+        const labelInput = createCardInput('text', 'In Progress', status.label);
+        const colorInput = createCardInput('color', '', status.color);
+        
+        const completedCheckbox = document.createElement('input');
+        completedCheckbox.type = 'checkbox';
+        completedCheckbox.checked = status.isCompleted || false;
+        completedCheckbox.addClass('tasknotes-card-input');
+
+        // Create status meta  
+        const metaElements = status.isCompleted ? [createStatusBadge('Completed', 'completed')] : [];
+
+        // Create card with new reusable system (60+ lines reduced to ~15 lines!)
+        const cardConfig: CardConfig = {
+            id: status.id,
+            draggable: true,
+            colorIndicator: { color: status.color, cssVar: '--status-color' },
+            header: {
+                primaryText: status.value || 'untitled',
+                secondaryText: status.label || 'No label',
+                meta: metaElements,
+                actions: [createDeleteHeaderButton(() => deleteStatus(status, plugin, save, container))]
+            },
+            content: {
+                sections: [{
+                    rows: [
+                        { label: 'Value:', input: valueInput },
+                        { label: 'Label:', input: labelInput },
+                        { label: 'Color:', input: colorInput },
+                        { label: 'Completed:', input: completedCheckbox }
+                    ]
+                }]
+            }
+        };
+
+        const statusCard = createCard(container, cardConfig);
+        setupStatusEventListeners(statusCard, status, valueInput, labelInput, colorInput, completedCheckbox, save);
+        setupCardDragAndDrop(statusCard, container, (draggedId, targetId, insertBefore) => 
+            reorderStatus(draggedId, targetId, insertBefore, plugin, save, container));
+    });
+}
+
+function deleteStatus(status: StatusConfig, plugin: TaskNotesPlugin, save: () => void, container: HTMLElement): void {
+    const confirmDelete = confirm(`Are you sure you want to delete the status "${status.label || status.value}"?`);
+    if (confirmDelete) {
+        const statusIndex = plugin.settings.customStatuses.findIndex(s => s.id === status.id);
+        if (statusIndex !== -1) {
+            plugin.settings.customStatuses.splice(statusIndex, 1);
+            plugin.settings.customStatuses.forEach((s, i) => { s.order = i; });
+            save();
+            renderStatusList(container, plugin, save); // Re-render using current system
+        }
+    }
+}
+
+function setupStatusEventListeners(
+    statusCard: HTMLElement, 
+    status: StatusConfig, 
+    valueInput: HTMLInputElement, 
+    labelInput: HTMLInputElement, 
+    colorInput: HTMLInputElement, 
+    completedCheckbox: HTMLInputElement, 
+    save: () => void
+): void {
+    valueInput.addEventListener('change', () => {
+        status.value = valueInput.value;
+        statusCard.querySelector('.tasknotes-card-primary-text')!.textContent = status.value || 'untitled';
+        save();
+    });
+
+    labelInput.addEventListener('change', () => {
+        status.label = labelInput.value;
+        statusCard.querySelector('.tasknotes-card-secondary-text')!.textContent = status.label || 'No label';
+        save();
+    });
+
+    colorInput.addEventListener('change', () => {
+        status.color = colorInput.value;
+        const colorIndicator = statusCard.querySelector('.tasknotes-card-color-indicator') as HTMLElement;
+        if (colorIndicator) {
+            colorIndicator.style.backgroundColor = status.color;
+        }
+        save();
+    });
+
+    completedCheckbox.addEventListener('change', () => {
+        status.isCompleted = completedCheckbox.checked;
+        const metaContainer = statusCard.querySelector('.tasknotes-card-meta');
+        if (metaContainer) {
+            metaContainer.empty();
+            if (status.isCompleted) {
+                metaContainer.appendChild(createStatusBadge('Completed', 'completed'));
+            }
+        }
+        save();
+    });
+}
+
+function reorderStatus(
+    draggedId: string, 
+    targetId: string, 
+    insertBefore: boolean, 
+    plugin: TaskNotesPlugin, 
+    save: () => void, 
+    container: HTMLElement
+): void {
+    const draggedIndex = plugin.settings.customStatuses.findIndex(s => s.id === draggedId);
+    const targetIndex = plugin.settings.customStatuses.findIndex(s => s.id === targetId);
+
+    if (draggedIndex === -1 || targetIndex === -1) return;
+
+    const reorderedStatuses = [...plugin.settings.customStatuses];
+    const [draggedStatus] = reorderedStatuses.splice(draggedIndex, 1);
+    
+    let newIndex = targetIndex;
+    if (draggedIndex < targetIndex) newIndex = targetIndex - 1;
+    if (!insertBefore) newIndex++;
+    
+    reorderedStatuses.splice(newIndex, 0, draggedStatus);
+    reorderedStatuses.forEach((s, i) => { s.order = i; });
+    
+    plugin.settings.customStatuses = reorderedStatuses;
+    save();
+    renderStatusList(container, plugin, save); // Re-render using current system
 }
 
 function renderPriorityList(container: HTMLElement, plugin: TaskNotesPlugin, save: () => void): void {

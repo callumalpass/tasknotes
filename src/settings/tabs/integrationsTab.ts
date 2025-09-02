@@ -1,6 +1,6 @@
-import { Notice, Platform } from 'obsidian';
+import { Notice, Platform, Modal, Setting, setIcon, App } from 'obsidian';
 import TaskNotesPlugin from '../../main';
-// import { WebhookConfig } from '../../types';
+import { WebhookConfig } from '../../types';
 import { 
     createSectionHeader, 
     createTextSetting, 
@@ -13,6 +13,16 @@ import {
 } from '../components/settingHelpers';
 // import { ListEditorComponent, ListEditorItem } from '../components/ListEditorComponent';
 import { showConfirmationModal } from '../../modals/ConfirmationModal';
+import { 
+    createCard, 
+    createStatusBadge, 
+    createCardInput, 
+    createDeleteHeaderButton,
+    createCardUrlInput,
+    createCardNumberInput,
+    createInfoBadge,
+    createEditHeaderButton
+} from '../components/CardComponent';
 
 // interface WebhookItem extends ListEditorItem, WebhookConfig {}
 // interface ICSSubscriptionItem extends ListEditorItem {
@@ -23,6 +33,28 @@ import { showConfirmationModal } from '../../modals/ConfirmationModal';
 //     color: string;
 //     lastSync?: string;
 // }
+
+/**
+ * Helper function to format relative time (e.g., "2 hours ago", "5 minutes ago")
+ */
+function getRelativeTime(date: Date): string {
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffSeconds = Math.floor(diffMs / 1000);
+    const diffMinutes = Math.floor(diffSeconds / 60);
+    const diffHours = Math.floor(diffMinutes / 60);
+    const diffDays = Math.floor(diffHours / 24);
+    
+    if (diffDays > 0) {
+        return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+    } else if (diffHours > 0) {
+        return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+    } else if (diffMinutes > 0) {
+        return `${diffMinutes} minute${diffMinutes > 1 ? 's' : ''} ago`;
+    } else {
+        return 'Just now';
+    }
+}
 
 /**
  * Renders the Integrations tab - external connections and API settings
@@ -183,9 +215,36 @@ export function renderIntegrationsTab(container: HTMLElement, plugin: TaskNotesP
             desc: 'Register a new webhook endpoint',
             buttonText: 'Add Webhook',
             onClick: async () => {
-                // For now, show a notice that this feature is coming soon
-                // The full modal implementation would be quite complex
-                new Notice('Webhook configuration modal coming soon. Use the API tab to configure webhooks manually for now.');
+                const modal = new WebhookModal(plugin.app, async (webhookConfig: Partial<WebhookConfig>) => {
+                    // Generate ID and secret
+                    const webhook: WebhookConfig = {
+                        id: `wh_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
+                        url: webhookConfig.url || '',
+                        events: webhookConfig.events || [],
+                        secret: generateWebhookSecret(),
+                        active: true,
+                        createdAt: new Date().toISOString(),
+                        failureCount: 0,
+                        successCount: 0,
+                        transformFile: webhookConfig.transformFile,
+                        corsHeaders: webhookConfig.corsHeaders
+                    };
+
+                    if (!plugin.settings.webhooks) {
+                        plugin.settings.webhooks = [];
+                    }
+
+                    plugin.settings.webhooks.push(webhook);
+                    save();
+                    
+                    // Re-render webhook list to show the new webhook
+                    renderWebhookList(container.querySelector('.tasknotes-webhooks-container')?.parentElement || container, plugin, save);
+                    
+                    // Show success message with secret
+                    new SecretNoticeModal(plugin.app, webhook.secret).open();
+                    new Notice('Webhook created successfully');
+                });
+                modal.open();
             }
         });
     }
@@ -238,145 +297,155 @@ function renderICSSubscriptionsList(container: HTMLElement, plugin: TaskNotesPlu
         return;
     }
 
-    // Create subscription cards container
-    const subscriptionsContainer = container.createDiv('tasknotes-webhooks-container');
-    
     subscriptions.forEach(subscription => {
-        const subscriptionCard = subscriptionsContainer.createDiv('tasknotes-subscription-card');
-        
-        // Header section with name, URL and status
-        const subscriptionHeader = subscriptionCard.createDiv('tasknotes-subscription-header');
-        
-        const urlSection = subscriptionHeader.createDiv('tasknotes-webhook-url-section');
-        const colorIndicator = urlSection.createDiv('tasknotes-subscription-color-indicator');
-        colorIndicator.style.setProperty('--subscription-color', subscription.color);
-        colorIndicator.style.backgroundColor = subscription.color;
-        
-        const subscriptionInfo = urlSection.createDiv('tasknotes-subscription-info');
-        subscriptionInfo.createSpan({
-            text: subscription.name,
-            cls: 'tasknotes-subscription-name-text'
-        });
-        subscriptionInfo.createSpan({
-            text: subscription.url,
-            cls: 'tasknotes-subscription-url-text'
-        });
-
-        // Status section
-        const statusSection = subscriptionHeader.createDiv('tasknotes-webhook-status-section');
-        const statusIndicator = statusSection.createSpan({
-            cls: `tasknotes-webhook-status-indicator ${subscription.enabled ? 'active' : 'inactive'}`
-        });
-        statusIndicator.createSpan({
-            text: subscription.enabled ? 'Enabled' : 'Disabled',
-            cls: 'tasknotes-webhook-status-text'
-        });
-
-        // Config section with enable/disable toggle
-        const subscriptionConfig = subscriptionCard.createDiv('tasknotes-subscription-config');
-        
-        const enabledRow = subscriptionConfig.createDiv('tasknotes-subscription-config-row');
-        const enabledLabel = enabledRow.createSpan({
-            text: 'Enabled:',
-            cls: 'tasknotes-webhook-detail-label'
-        });
-        const enabledToggle = enabledRow.createEl('input', {
-            type: 'checkbox',
-            cls: 'tasknotes-status-input'
-        });
+        // Create input elements
+        const enabledToggle = createCardInput('checkbox');
         enabledToggle.checked = subscription.enabled;
-        enabledToggle.addEventListener('change', async () => {
+        
+        const nameInput = createCardInput('text', 'Calendar name', subscription.name);
+        const urlInput = subscription.type === 'remote' ? createCardUrlInput('ICS/iCal URL', subscription.url) : null;
+        const colorInput = createCardInput('color', '', subscription.color);
+        const refreshInput = createCardNumberInput(5, 1440, 5, subscription.refreshInterval / 60000); // Convert ms to minutes
+        
+        // Update handlers
+        const updateSubscription = async (updates: Partial<typeof subscription>) => {
             try {
-                await plugin.icsSubscriptionService!.updateSubscription(subscription.id, {
-                    enabled: enabledToggle.checked
-                });
+                await plugin.icsSubscriptionService!.updateSubscription(subscription.id, updates);
                 save();
-                // Update status indicator
-                if (enabledToggle.checked) {
-                    statusIndicator.className = 'tasknotes-webhook-status-indicator active';
-                    statusIndicator.querySelector('.tasknotes-webhook-status-text')!.textContent = 'Enabled';
-                } else {
-                    statusIndicator.className = 'tasknotes-webhook-status-indicator inactive';
-                    statusIndicator.querySelector('.tasknotes-webhook-status-text')!.textContent = 'Disabled';
-                }
+                renderICSSubscriptionsList(container, plugin, save);
             } catch (error) {
-                console.error('Error toggling subscription:', error);
+                console.error('Error updating subscription:', error);
                 new Notice('Failed to update subscription');
-                // Revert toggle on error
-                enabledToggle.checked = !enabledToggle.checked;
-            }
-        });
-
-        // Actions section
-        const subscriptionActions = subscriptionCard.createDiv('tasknotes-subscription-actions');
-        
-        // Refresh button
-        const refreshBtn = subscriptionActions.createEl('button', {
-            cls: 'tasknotes-subscription-action-btn',
-            attr: {
-                'aria-label': 'Refresh subscription'
-            }
-        });
-        refreshBtn.createSpan({
-            text: 'Refresh',
-            cls: 'tasknotes-webhook-action-text'
-        });
-        
-        refreshBtn.onclick = async () => {
-            if (!subscription.enabled) {
-                new Notice('Enable the subscription first');
-                return;
-            }
-            
-            const originalText = refreshBtn.querySelector('.tasknotes-webhook-action-text')!.textContent;
-            refreshBtn.querySelector('.tasknotes-webhook-action-text')!.textContent = 'Refreshing...';
-            refreshBtn.setAttribute('disabled', 'true');
-            
-            try {
-                await plugin.icsSubscriptionService!.refreshSubscription(subscription.id);
-                new Notice(`Refreshed "${subscription.name}"`);
-            } catch (error) {
-                console.error('Error refreshing subscription:', error);
-                new Notice('Failed to refresh subscription');
-            } finally {
-                refreshBtn.querySelector('.tasknotes-webhook-action-text')!.textContent = originalText;
-                refreshBtn.removeAttribute('disabled');
+                // Revert changes if needed
+                renderICSSubscriptionsList(container, plugin, save);
             }
         };
-
-        // Delete button
-        const deleteBtn = subscriptionActions.createEl('button', {
-            cls: 'tasknotes-subscription-action-btn delete',
-            attr: {
-                'aria-label': 'Delete subscription'
-            }
-        });
-        deleteBtn.createSpan({
-            text: 'Delete',
-            cls: 'tasknotes-webhook-action-text'
-        });
         
-        deleteBtn.onclick = async () => {
-            const confirmed = await showConfirmationModal(plugin.app, {
-                title: 'Delete Subscription',
-                message: `Are you sure you want to delete the subscription "${subscription.name}"? This action cannot be undone.`,
-                confirmText: 'Delete',
-                cancelText: 'Cancel',
-                isDestructive: true
-            });
+        enabledToggle.addEventListener('change', () => updateSubscription({ enabled: enabledToggle.checked }));
+        nameInput.addEventListener('blur', () => updateSubscription({ name: nameInput.value.trim() }));
+        if (urlInput) urlInput.addEventListener('blur', () => updateSubscription({ url: urlInput.value.trim() }));
+        colorInput.addEventListener('change', () => updateSubscription({ color: colorInput.value }));
+        refreshInput.addEventListener('blur', () => {
+            const minutes = parseInt(refreshInput.value) || 60;
+            updateSubscription({ refreshInterval: minutes * 60000 }); // Convert back to ms
+        });
 
-            if (confirmed) {
-                try {
-                    // Note: deleteSubscription method needs to be implemented
-                    // await plugin.icsSubscriptionService!.deleteSubscription(subscription.id);
-                    new Notice('Delete subscription functionality coming soon');
-                    // renderIntegrationsTab(container.parentElement!, plugin, save);
-                } catch (error) {
-                    console.error('Error deleting subscription:', error);
-                    new Notice('Failed to delete subscription');
-                }
+        // Create meta badges
+        const statusBadge = createStatusBadge(
+            subscription.enabled ? 'Enabled' : 'Disabled',
+            subscription.enabled ? 'active' : 'inactive'
+        );
+        
+        const typeBadge = createInfoBadge(
+            subscription.type === 'remote' ? 'Remote' : 'Local File'
+        );
+        
+        const metaBadges = [statusBadge, typeBadge];
+        
+        // Add last sync badge if available
+        if (subscription.lastFetched) {
+            const lastSyncDate = new Date(subscription.lastFetched);
+            const timeAgo = getRelativeTime(lastSyncDate);
+            const syncBadge = createInfoBadge(`Synced ${timeAgo}`);
+            metaBadges.push(syncBadge);
+        }
+        
+        // Add error badge if there's an error
+        if (subscription.lastError) {
+            const errorBadge = createStatusBadge('Error', 'inactive');
+            errorBadge.title = subscription.lastError; // Show error on hover
+            metaBadges.push(errorBadge);
+        }
+
+        // Build content rows
+        const contentRows: { label: string; input: HTMLElement; fullWidth?: boolean; }[] = [
+            { label: 'Enabled:', input: enabledToggle },
+            { label: 'Name:', input: nameInput, fullWidth: true },
+            { label: 'Color:', input: colorInput },
+            { label: 'Refresh (min):', input: refreshInput }
+        ];
+        
+        // Add URL row for remote subscriptions
+        if (urlInput) {
+            contentRows.splice(2, 0, { label: 'URL:', input: urlInput, fullWidth: true });
+        }
+        
+        // Add file path info for local subscriptions
+        if (subscription.type === 'local' && subscription.filePath) {
+            const filePathSpan = document.createElement('span');
+            filePathSpan.textContent = subscription.filePath;
+            filePathSpan.style.fontFamily = 'monospace';
+            filePathSpan.style.fontSize = '0.85rem';
+            filePathSpan.style.color = 'var(--text-muted)';
+            contentRows.splice(2, 0, { label: 'File:', input: filePathSpan, fullWidth: true });
+        }
+
+        const card = createCard(container, {
+            id: subscription.id,
+            colorIndicator: {
+                color: subscription.color
+            },
+            header: {
+                primaryText: subscription.name,
+                secondaryText: subscription.type === 'remote' ? subscription.url : subscription.filePath,
+                meta: metaBadges,
+                actions: [
+                    createEditHeaderButton(() => {
+                        // Toggle between edit and view mode by focusing the name input
+                        nameInput.focus();
+                        nameInput.select();
+                    }, 'Edit subscription'),
+                    createDeleteHeaderButton(async () => {
+                        const confirmed = await showConfirmationModal(plugin.app, {
+                            title: 'Delete Subscription',
+                            message: `Are you sure you want to delete the subscription "${subscription.name}"? This action cannot be undone.`,
+                            confirmText: 'Delete',
+                            cancelText: 'Cancel',
+                            isDestructive: true
+                        });
+
+                        if (confirmed) {
+                            try {
+                                await plugin.icsSubscriptionService!.removeSubscription(subscription.id);
+                                new Notice(`Deleted subscription "${subscription.name}"`);
+                                save();
+                                renderICSSubscriptionsList(container, plugin, save);
+                            } catch (error) {
+                                console.error('Error deleting subscription:', error);
+                                new Notice('Failed to delete subscription');
+                            }
+                        }
+                    }, 'Delete subscription')
+                ]
+            },
+            content: {
+                sections: [{ rows: contentRows }]
+            },
+            actions: {
+                buttons: [{
+                    text: 'Refresh Now',
+                    icon: 'refresh-cw',
+                    variant: 'secondary',
+                    disabled: !subscription.enabled,
+                    onClick: async () => {
+                        if (!subscription.enabled) {
+                            new Notice('Enable the subscription first');
+                            return;
+                        }
+                        
+                        try {
+                            await plugin.icsSubscriptionService!.refreshSubscription(subscription.id);
+                            new Notice(`Refreshed "${subscription.name}"`);
+                            // Re-render to show updated sync time
+                            renderICSSubscriptionsList(container, plugin, save);
+                        } catch (error) {
+                            console.error('Error refreshing subscription:', error);
+                            new Notice('Failed to refresh subscription');
+                        }
+                    }
+                }]
             }
-        };
+        });
     });
 }
 
@@ -566,4 +635,254 @@ function renderWebhookList(container: HTMLElement, plugin: TaskNotesPlugin, save
             }
         };
     });
+}
+
+/**
+ * Generate secure webhook secret
+ */
+function generateWebhookSecret(): string {
+    return Array.from(crypto.getRandomValues(new Uint8Array(32)))
+        .map(b => b.toString(16).padStart(2, '0'))
+        .join('');
+}
+
+/**
+ * Modal for displaying webhook secret after creation
+ */
+class SecretNoticeModal extends Modal {
+    private secret: string;
+    
+    constructor(app: App, secret: string) {
+        super(app);
+        this.secret = secret;
+    }
+    
+    onOpen(): void {
+        const { contentEl } = this;
+        contentEl.empty();
+        contentEl.addClass('tasknotes-webhook-modal');
+        
+        const notice = contentEl.createDiv({ cls: 'tasknotes-webhook-secret-notice' });
+        
+        const title = notice.createDiv({ cls: 'tasknotes-webhook-secret-title' });
+        const titleIcon = title.createSpan();
+        setIcon(titleIcon, 'shield-check');
+        title.createSpan({ text: 'Webhook Secret Generated' });
+        
+        const content = notice.createDiv({ cls: 'tasknotes-webhook-secret-content' });
+        content.createEl('p', { text: 'Your webhook secret has been generated. Save this secret as you won\'t be able to view it again:' });
+        content.createEl('code', { text: this.secret, cls: 'tasknotes-webhook-secret-code' });
+        content.createEl('p', { text: 'Use this secret to verify webhook payloads in your receiving application.' });
+        
+        const buttonContainer = contentEl.createDiv({ cls: 'tasknotes-webhook-modal-buttons' });
+        const closeBtn = buttonContainer.createEl('button', {
+            text: 'Got it',
+            cls: 'tasknotes-webhook-modal-btn save'
+        });
+        closeBtn.onclick = () => this.close();
+    }
+    
+    onClose(): void {
+        const { contentEl } = this;
+        contentEl.empty();
+    }
+}
+
+/**
+ * Modal for adding/editing webhooks
+ */
+class WebhookModal extends Modal {
+    private url = '';
+    private selectedEvents: string[] = [];
+    private transformFile = '';
+    private corsHeaders = true;
+    private onSubmit: (config: Partial<WebhookConfig>) => void;
+
+    constructor(app: App, onSubmit: (config: Partial<WebhookConfig>) => void) {
+        super(app);
+        this.onSubmit = onSubmit;
+    }
+
+    onOpen(): void {
+        const { contentEl } = this;
+        contentEl.empty();
+        contentEl.addClass('tasknotes-webhook-modal');
+
+        // Modal header with icon
+        const header = contentEl.createDiv({ cls: 'tasknotes-webhook-modal-header' });
+        const headerIcon = header.createSpan({ cls: 'tasknotes-webhook-modal-icon' });
+        setIcon(headerIcon, 'webhook');
+        header.createEl('h2', { text: 'Add Webhook', cls: 'tasknotes-webhook-modal-title' });
+
+        // URL input section
+        const urlSection = contentEl.createDiv({ cls: 'tasknotes-webhook-modal-section' });
+        new Setting(urlSection)
+            .setName('Webhook URL')
+            .setDesc('The endpoint where webhook payloads will be sent')
+            .addText(text => {
+                text.inputEl.setAttribute('aria-label', 'Webhook URL');
+                return text
+                    .setPlaceholder('https://your-service.com/webhook')
+                    .setValue(this.url)
+                    .onChange((value) => {
+                        this.url = value;
+                    });
+            });
+
+        // Events selection section
+        const eventsSection = contentEl.createDiv({ cls: 'tasknotes-webhook-modal-section' });
+        const eventsHeader = eventsSection.createDiv({ cls: 'tasknotes-webhook-modal-subsection-header' });
+        const eventsIcon = eventsHeader.createSpan();
+        setIcon(eventsIcon, 'zap');
+        eventsHeader.createEl('h3', { text: 'Events to subscribe to' });
+
+        const eventsGrid = eventsSection.createDiv({ cls: 'tasknotes-webhook-events-list' });
+        const availableEvents = [
+            { id: 'task.created', label: 'Task Created', desc: 'When new tasks are created' },
+            { id: 'task.updated', label: 'Task Updated', desc: 'When tasks are modified' },
+            { id: 'task.completed', label: 'Task Completed', desc: 'When tasks are marked complete' },
+            { id: 'task.deleted', label: 'Task Deleted', desc: 'When tasks are deleted' },
+            { id: 'task.archived', label: 'Task Archived', desc: 'When tasks are archived' },
+            { id: 'task.unarchived', label: 'Task Unarchived', desc: 'When tasks are unarchived' },
+            { id: 'time.started', label: 'Time Started', desc: 'When time tracking starts' },
+            { id: 'time.stopped', label: 'Time Stopped', desc: 'When time tracking stops' },
+            { id: 'pomodoro.started', label: 'Pomodoro Started', desc: 'When pomodoro sessions begin' },
+            { id: 'pomodoro.completed', label: 'Pomodoro Completed', desc: 'When pomodoro sessions finish' },
+            { id: 'pomodoro.interrupted', label: 'Pomodoro Interrupted', desc: 'When pomodoro sessions are stopped' },
+            { id: 'recurring.instance.completed', label: 'Recurring Instance Completed', desc: 'When recurring task instances complete' },
+            { id: 'reminder.triggered', label: 'Reminder Triggered', desc: 'When task reminders activate' }
+        ];
+
+        availableEvents.forEach(event => {
+            new Setting(eventsGrid)
+                .setName(event.label)
+                .setDesc(event.desc)
+                .addToggle(toggle => {
+                    toggle.toggleEl.setAttribute('aria-label', `Subscribe to ${event.label} events`);
+                    return toggle
+                        .setValue(this.selectedEvents.includes(event.id))
+                        .onChange((value) => {
+                            if (value) {
+                                this.selectedEvents.push(event.id);
+                            } else {
+                                const index = this.selectedEvents.indexOf(event.id);
+                                if (index > -1) {
+                                    this.selectedEvents.splice(index, 1);
+                                }
+                            }
+                        });
+                });
+        });
+
+        // Transform file section
+        const transformSection = contentEl.createDiv({ cls: 'tasknotes-webhook-modal-section' });
+        const transformHeader = transformSection.createDiv({ cls: 'tasknotes-webhook-modal-subsection-header' });
+        const transformIcon = transformHeader.createSpan();
+        setIcon(transformIcon, 'file-code');
+        transformHeader.createEl('h3', { text: 'Transform Configuration (Optional)' });
+
+        new Setting(transformSection)
+            .setName('Transform File')
+            .setDesc('Path to a .js or .json file in your vault that transforms webhook payloads')
+            .addText(text => {
+                text.inputEl.setAttribute('aria-label', 'Transform file path');
+                return text
+                    .setPlaceholder('discord-transform.js')
+                    .setValue(this.transformFile)
+                    .onChange((value) => {
+                        this.transformFile = value;
+                    });
+            });
+
+        // Transform help section
+        const transformHelp = transformSection.createDiv({ cls: 'tasknotes-webhook-transform-help' });
+        const helpHeader = transformHelp.createDiv({ cls: 'tasknotes-webhook-help-header' });
+        const helpIcon = helpHeader.createSpan();
+        setIcon(helpIcon, 'info');
+        helpHeader.createSpan({ text: 'Transform files allow you to customize webhook payloads:' });
+
+        const helpList = transformHelp.createEl('ul', { cls: 'tasknotes-webhook-help-list' });
+        const jsLi = helpList.createEl('li');
+        jsLi.createEl('strong', { text: '.js files:' });
+        jsLi.appendText(' Custom JavaScript transforms');
+
+        const jsonLi = helpList.createEl('li');
+        jsonLi.createEl('strong', { text: '.json files:' });
+        jsonLi.appendText(' Templates with ');
+        jsonLi.createEl('code', { text: '${data.task.title}' });
+
+        const emptyLi = helpList.createEl('li');
+        emptyLi.createEl('strong', { text: 'Leave empty:' });
+        emptyLi.appendText(' Send raw data');
+
+        const helpExample = transformHelp.createDiv({ cls: 'tasknotes-webhook-help-example' });
+        helpExample.createEl('strong', { text: 'Example:' });
+        helpExample.appendText(' ');
+        helpExample.createEl('code', { text: 'discord-transform.js' });
+
+        // CORS headers section
+        const corsSection = contentEl.createDiv({ cls: 'tasknotes-webhook-modal-section' });
+        const corsHeader = corsSection.createDiv({ cls: 'tasknotes-webhook-modal-subsection-header' });
+        const corsIcon = corsHeader.createSpan();
+        setIcon(corsIcon, 'settings');
+        corsHeader.createEl('h3', { text: 'Headers Configuration' });
+
+        new Setting(corsSection)
+            .setName('Include custom headers')
+            .setDesc('Include TaskNotes headers (event type, signature, delivery ID). Turn off for Discord, Slack, and other services with strict CORS policies.')
+            .addToggle(toggle => {
+                toggle.toggleEl.setAttribute('aria-label', 'Include custom headers');
+                return toggle
+                    .setValue(this.corsHeaders)
+                    .onChange((value) => {
+                        this.corsHeaders = value;
+                    });
+            });
+
+        // Buttons section
+        const buttonContainer = contentEl.createDiv({ cls: 'tasknotes-webhook-modal-buttons' });
+
+        const cancelBtn = buttonContainer.createEl('button', {
+            text: 'Cancel',
+            cls: 'tasknotes-webhook-modal-btn cancel',
+            attr: { 'aria-label': 'Cancel webhook creation' }
+        });
+        const cancelIcon = cancelBtn.createSpan({ cls: 'tasknotes-webhook-modal-btn-icon' });
+        setIcon(cancelIcon, 'x');
+        cancelBtn.onclick = () => this.close();
+
+        const saveBtn = buttonContainer.createEl('button', {
+            text: 'Add Webhook',
+            cls: 'tasknotes-webhook-modal-btn save mod-cta',
+            attr: { 'aria-label': 'Create webhook' }
+        });
+        const saveIcon = saveBtn.createSpan({ cls: 'tasknotes-webhook-modal-btn-icon' });
+        setIcon(saveIcon, 'plus');
+
+        saveBtn.onclick = () => {
+            if (!this.url.trim()) {
+                new Notice('Webhook URL is required');
+                return;
+            }
+
+            if (this.selectedEvents.length === 0) {
+                new Notice('Please select at least one event');
+                return;
+            }
+
+            this.onSubmit({
+                url: this.url.trim(),
+                events: this.selectedEvents as any[],
+                transformFile: this.transformFile.trim() || undefined,
+                corsHeaders: this.corsHeaders
+            });
+
+            this.close();
+        };
+    }
+
+    onClose(): void {
+        const { contentEl } = this;
+        contentEl.empty();
+    }
 }
