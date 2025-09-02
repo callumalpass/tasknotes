@@ -66,6 +66,42 @@ export class HTTPAPIService implements IWebhookNotifier {
 		this.router.registerController(this.webhookController);
 	}
 
+	/**
+	 * Generate OpenAPI spec from all registered controllers
+	 */
+	generateOpenAPISpec(): any {
+		const { generateOpenAPISpec } = require('../utils/OpenAPIDecorators');
+		
+		// Get base spec structure
+		const spec = generateOpenAPISpec(this.systemController);
+		
+		// Collect endpoints from all controllers
+		const allControllers = [
+			this.tasksController,
+			this.timeTrackingController, 
+			this.pomodoroController,
+			this.systemController,
+			this.webhookController
+		];
+		
+		// Merge paths from all controllers
+		spec.paths = {};
+		for (const controller of allControllers) {
+			const controllerSpec = generateOpenAPISpec(controller);
+			if (controllerSpec.paths) {
+				Object.assign(spec.paths, controllerSpec.paths);
+			}
+		}
+		
+		// Update server URL
+		spec.servers = [{
+			url: `http://localhost:${this.plugin.settings.apiPort}`,
+			description: 'TaskNotes API Server'
+		}];
+		
+		return spec;
+	}
+
 	private async handleCORSPreflight(req: IncomingMessage, res: ServerResponse): Promise<void> {
 		res.statusCode = 200;
 		res.setHeader('Access-Control-Allow-Origin', '*');

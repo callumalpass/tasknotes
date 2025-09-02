@@ -1,7 +1,7 @@
 import { Notice, Platform, Modal, Setting, setIcon, App } from 'obsidian';
 import TaskNotesPlugin from '../../main';
 import { WebhookConfig } from '../../types';
-import { API_ENDPOINTS } from '../../api/endpoints';
+import { loadAPIEndpoints } from '../../api/loadAPIEndpoints';
 import { 
     createSectionHeader, 
     createTextSetting, 
@@ -238,13 +238,8 @@ export function renderIntegrationsTab(container: HTMLElement, plugin: TaskNotesP
                 apiToggleIcon.textContent = isExpanded ? '▶' : '▼';
             });
 
-            Object.entries(API_ENDPOINTS).forEach(([category, endpoints]) => {
-                apiEndpointsContent.createEl('h5', { text: category, attr: { style: 'margin: 16px 0 8px 0; font-weight: 600; color: var(--text-normal);' } });
-                const endpointList = apiEndpointsContent.createEl('ul');
-                endpoints.forEach(endpoint => {
-                    endpointList.createEl('li', { text: `${endpoint.method} ${endpoint.path} - ${endpoint.description}` });
-                });
-            });
+            // Fetch live API documentation
+            loadAPIEndpoints(apiEndpointsContent, plugin.settings.apiPort);
         }
 
         // Webhooks Section

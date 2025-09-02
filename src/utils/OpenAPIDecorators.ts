@@ -147,7 +147,11 @@ function extractPathAndMethod(methodName: string): { path: string; method: strin
  * Generate OpenAPI specification from decorated methods
  */
 export function generateOpenAPISpec(controllerInstance: any): any {
-	const endpoints: OpenAPIEndpoint[] = Reflect.getMetadata(OPENAPI_ENDPOINTS_KEY, controllerInstance.constructor) || [];
+	// Get endpoints from @OpenAPI decorators
+	const openAPIEndpoints: OpenAPIEndpoint[] = Reflect.getMetadata(OPENAPI_ENDPOINTS_KEY, controllerInstance.constructor) || [];
+	
+	// Also get routes from @Get/@Post/etc decorators
+	const routes: RouteInfo[] = getRoutes(controllerInstance.constructor) || [];
 	
 	const spec = {
 		openapi: '3.0.0',
@@ -185,12 +189,59 @@ export function generateOpenAPISpec(controllerInstance: any): any {
 		}
 	};
 	
-	// Group endpoints by path and method
-	for (const endpoint of endpoints) {
+	// Add endpoints from @OpenAPI decorators
+	for (const endpoint of openAPIEndpoints) {
 		if (!spec.paths[endpoint.path]) {
 			spec.paths[endpoint.path] = {};
 		}
-		spec.paths[endpoint.path][endpoint.method] = endpoint.operation;
+		spec.paths[endpoint.path][endpoint.method.toLowerCase()] = endpoint.operation;
+	}
+	
+	// Add routes from @Get/@Post/etc decorators (with basic documentation)
+	for (const route of routes) {
+		if (!spec.paths[route.path]) {
+			spec.paths[route.path] = {};
+		}
+		
+		// Only add if not already defined by @OpenAPI decorator
+		if (!spec.paths[route.path][route.method.toLowerCase()]) {
+			spec.paths[route.path][route.method.toLowerCase()] = {
+				summary: `${route.method.toUpperCase()} ${route.path}`,
+				description: `${route.method.toUpperCase()} endpoint for ${route.path}`,
+				responses: {
+					'200': {
+						description: 'Success',
+						content: {
+							'application/json': {
+								schema: {
+									$ref: '#/components/schemas/APIResponse'
+								}
+							}
+						}
+					},
+					'400': {
+						description: 'Bad Request',
+						content: {
+							'application/json': {
+								schema: {
+									$ref: '#/components/schemas/Error'
+								}
+							}
+						}
+					},
+					'500': {
+						description: 'Internal Server Error',
+						content: {
+							'application/json': {
+								schema: {
+									$ref: '#/components/schemas/Error'
+								}
+							}
+						}
+					}
+				}
+			};
+		}
 	}
 	
 	return spec;
