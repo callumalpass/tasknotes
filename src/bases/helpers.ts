@@ -9,7 +9,7 @@ export interface BasesDataItem {
   properties?: Record<string, any>;
   frontmatter?: Record<string, any>;
   name?: string;
-  formulaResults?: Record<string, any>;
+  basesData?: any; // Raw Bases data for formula computation
 }
 
 /**
@@ -59,7 +59,8 @@ export function createTaskInfoFromBasesData(basesItem: BasesDataItem): TaskInfo 
     timeEntries: props.timeEntries,
     reminders: props.reminders,
     icsEventId: props.icsEventId,
-    customProperties: Object.keys(customProperties).length > 0 ? customProperties : undefined
+    customProperties: Object.keys(customProperties).length > 0 ? customProperties : undefined,
+    basesData: basesItem.basesData // Pass raw Bases data for formula computation
   };
 
   return taskInfo;

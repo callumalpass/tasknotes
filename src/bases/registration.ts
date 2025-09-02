@@ -11,18 +11,20 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 
   const attemptRegistration = async (): Promise<boolean> => {
     try {
+      // Simple registration approach that was working before
       const bases: any = ((plugin.app as any).internalPlugins as any).getEnabledPluginById?.('bases');
       if (!bases?.registrations) return false;
 
+      // Register factory if it doesn't exist
       if (!bases.registrations.tasknotesTaskList) {
         const factory = buildTasknotesTaskListViewFactory(plugin);
         bases.registrations.tasknotesTaskList = {
-          name: 'TaskNotes',
-          icon: 'tasknotes-simple',
-          factory,
-          options: () => ({ description: 'TaskNotes view' })
+          name: 'TaskNotes Task List',
+          icon: 'check-square',
+          factory
+          // Removing options function temporarily to fix the error
         };
-        console.log('[TaskNotes][Bases] Registered TaskNotes');
+        console.log('[TaskNotes][Bases] Registered TaskNotes Task List');
       }
 
       // Refresh existing Bases views
@@ -35,7 +37,6 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 
       return true;
     } catch (e) {
-      // Silently handle registration failures
       return false;
     }
   };

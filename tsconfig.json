@@ -16,6 +16,14 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "skipLibCheck": true,
+    "noImplicitReturns": false,
+    "noImplicitThis": false,
+    "paths": {
+      "obsidian": ["./node_modules/obsidian"]
+    },
+    "types": [
+      "obsidian-typings"
+    ],
     "lib": [
       "DOM",
       "DOM.Iterable",
