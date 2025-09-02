@@ -20,11 +20,9 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
         const factory = buildTasknotesTaskListViewFactory(plugin);
         bases.registrations.tasknotesTaskList = {
           name: 'TaskNotes Task List',
-          icon: 'check-square',
+          icon: 'tasknotes-simple',
           factory
-          // Removing options function temporarily to fix the error
         };
-        console.log('[TaskNotes][Bases] Registered TaskNotes Task List');
       }
 
       // Refresh existing Bases views

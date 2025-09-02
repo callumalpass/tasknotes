@@ -122,56 +122,51 @@ function getPropertyValue(task: TaskInfo, propertyId: string, plugin: TaskNotesP
         }
         
         // Handle Bases formula properties
-        if (propertyId.startsWith('formula.') && task.basesData) {
+        if (propertyId.startsWith('formula.')) {
             try {
                 const formulaName = propertyId.substring(8); // Remove 'formula.' prefix
                 const basesData = task.basesData;
                 
-                // Safe debug logging for TESTST formula
-                if (formulaName === 'TESTST' && !(window as any)._basesDataLogged) {
-                    (window as any)._basesDataLogged = true;
-                    const hasFormulaResults = !!basesData?.formulaResults;
-                    const hasCachedOutputs = !!basesData?.formulaResults?.cachedFormulaOutputs;
-                    const hasTestst = !!basesData?.formulaResults?.cachedFormulaOutputs?.TESTST;
-                    console.debug(`[TaskNotes] Formula debug - hasFormulaResults: ${hasFormulaResults}, hasCachedOutputs: ${hasCachedOutputs}, hasTestst: ${hasTestst}`);
-                    
-                    // Show what formulas ARE available in cache
-                    if (hasCachedOutputs) {
-                        const availableCachedFormulas = Object.keys(basesData.formulaResults.cachedFormulaOutputs);
-                        console.debug('[TaskNotes] Available cached formulas:', availableCachedFormulas.length ? availableCachedFormulas : 'NONE');
-                        
-                        // Show values of available formulas
-                        availableCachedFormulas.forEach(name => {
-                            const value = basesData.formulaResults.cachedFormulaOutputs[name];
-                            console.debug(`[TaskNotes] Cached ${name}:`, JSON.stringify(value));
-                        });
-                    }
-                    
-                    // Also check what formulas are DEFINED (even if not cached for this item)
-                    if (basesData.formulaResults?.formulas) {
-                        const definedFormulas = Object.keys(basesData.formulaResults.formulas);
-                        console.debug('[TaskNotes] Defined formulas:', definedFormulas.length ? definedFormulas : 'NONE');
-                    }
-                    
-                    if (hasTestst) {
-                        const teststValue = basesData.formulaResults.cachedFormulaOutputs.TESTST;
-                        console.debug('[TaskNotes] TESTST cached value:', JSON.stringify(teststValue));
-                    }
+                if (!basesData?.formulaResults) {
+                    return '';
                 }
-                
-                // Access the formula computation system
-                const formulaResults = basesData?.formulaResults;
+                // Access cached formula results from Bases
+                const formulaResults = basesData.formulaResults;
                 if (formulaResults?.cachedFormulaOutputs && formulaResults.cachedFormulaOutputs[formulaName] !== undefined) {
                     const cached = formulaResults.cachedFormulaOutputs[formulaName];
-                    // Bases stores results as {icon: "...", data: actualValue}
-                    if (cached && typeof cached === 'object' && 'data' in cached) {
-                        return cached.data;
+                    
+                    // Handle Bases formula result objects
+                    if (cached && typeof cached === 'object' && 'icon' in cached) {
+                        // Return data value if present (e.g., {icon: "lucide-binary", data: 11})
+                        if ('data' in cached && cached.data !== null && cached.data !== undefined) {
+                            return cached.data;
+                        }
+                        
+                        // Handle date results (e.g., {icon: "lucide-calendar", date: "2025-09-01"})
+                        if (cached.icon === 'lucide-calendar' && 'date' in cached) {
+                            return cached.date;
+                        }
+                        
+                        // Handle missing/empty data indicators
+                        if (cached.icon === 'lucide-file-question' || cached.icon === 'lucide-help-circle') {
+                            return ''; // Show empty cell but keep column visible
+                        }
+                        
+                        // Handle other icon-only results (status indicators, etc.)
+                        return cached.icon ? cached.icon.replace('lucide-', '') : '';
                     }
-                    // Fallback: return the cached value directly
-                    return cached;
+                    
+                    // Handle direct scalar values
+                    if (cached !== null && cached !== undefined && cached !== '') {
+                        return cached;
+                    }
+                    
+                    // Return empty string for null/undefined (maintains column visibility)
+                    return '';
                 }
                 
-                return '[Formula]'; // Fallback if computation fails
+                // No cached result available
+                return '';
             } catch (error) {
                 console.debug(`[TaskNotes] Error computing formula ${propertyId}:`, error);
                 return '[Formula Error]';
