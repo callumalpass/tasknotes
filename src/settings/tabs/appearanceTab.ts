@@ -27,24 +27,33 @@ export function renderAppearanceTab(container: HTMLElement, plugin: TaskNotesPlu
         .setName('Default visible properties')
         .setDesc('Choose which properties appear on task cards by default.');
 
-    // Create property toggles
-    const propertyOptions = [
-        { key: 'status', label: 'Status' },
-        { key: 'priority', label: 'Priority' },
-        { key: 'due', label: 'Due Date' },
-        { key: 'scheduled', label: 'Scheduled Date' },
-        { key: 'contexts', label: 'Contexts' },
-        { key: 'tags', label: 'Tags' },
-        { key: 'projects', label: 'Projects' },
-        { key: 'timeEstimate', label: 'Time Estimate' },
-        { key: 'recurrence', label: 'Recurrence' }
-    ];
+    // Create property toggles organized by category like PropertyVisibilityDropdown
+    const propertyGroups: Record<string, Array<{key: string, label: string}>> = {
+        core: [
+            { key: 'status', label: 'Status Dot' },
+            { key: 'priority', label: 'Priority Dot' },
+            { key: 'due', label: 'Due Date' },
+            { key: 'scheduled', label: 'Scheduled Date' },
+            { key: 'timeEstimate', label: 'Time Estimate' },
+            { key: 'totalTrackedTime', label: 'Total Tracked Time' },
+            { key: 'recurrence', label: 'Recurrence' },
+            { key: 'completedDate', label: 'Completed Date' },
+            { key: 'file.ctime', label: 'Created Date' },
+            { key: 'file.mtime', label: 'Modified Date' }
+        ],
+        organization: [
+            { key: 'projects', label: 'Projects' },
+            { key: 'contexts', label: 'Contexts' },
+            { key: 'tags', label: 'Tags' }
+        ],
+        user: []
+    };
 
     // Add user fields to options
     if (plugin.settings.userFields) {
         plugin.settings.userFields.forEach(field => {
             if (field.displayName && field.key) {
-                propertyOptions.push({
+                propertyGroups.user.push({
                     key: field.key,
                     label: field.displayName
                 });
@@ -53,39 +62,58 @@ export function renderAppearanceTab(container: HTMLElement, plugin: TaskNotesPlu
     }
 
     const defaultVisible = plugin.settings.defaultVisibleProperties || [];
-    const propertyTogglesContainer = visiblePropsContainer.createDiv('property-toggles');
+    const propertyTogglesContainer = visiblePropsContainer.createDiv('tasknotes-settings__properties-container');
     
-    propertyOptions.forEach(prop => {
-        const toggleContainer = propertyTogglesContainer.createDiv('property-toggle');
-        const checkbox = toggleContainer.createEl('input', {
-            type: 'checkbox',
-            cls: 'settings-checkbox',
-            attr: {
-                'id': `visible-prop-${prop.key}`,
-                'aria-label': `Show ${prop.label} on task cards`
-            }
-        });
+    // Render each property group
+    const renderPropertyGroup = (groupName: string, properties: {key: string, label: string}[]) => {
+        if (properties.length === 0) return;
         
-        checkbox.checked = defaultVisible.includes(prop.key);
+        const groupContainer = propertyTogglesContainer.createDiv('tasknotes-settings__property-group');
+        const groupHeader = groupContainer.createDiv('tasknotes-settings__property-group-header');
+        groupHeader.textContent = groupName;
         
-        toggleContainer.createEl('label', {
-            text: prop.label,
-            attr: { 'for': `visible-prop-${prop.key}` }
-        });
-
-        checkbox.addEventListener('change', () => {
-            let updatedVisible = [...defaultVisible];
-            if (checkbox.checked) {
-                if (!updatedVisible.includes(prop.key)) {
-                    updatedVisible.push(prop.key);
+        const groupToggles = groupContainer.createDiv('tasknotes-settings__property-toggles');
+        
+        properties.forEach(prop => {
+            const toggleContainer = groupToggles.createDiv('tasknotes-settings__property-toggle');
+            const checkbox = toggleContainer.createEl('input', {
+                type: 'checkbox',
+                cls: 'tasknotes-settings__property-checkbox',
+                attr: {
+                    'id': `visible-prop-${prop.key}`,
+                    'aria-label': `Show ${prop.label} on task cards`
                 }
-            } else {
-                updatedVisible = updatedVisible.filter(key => key !== prop.key);
-            }
-            plugin.settings.defaultVisibleProperties = updatedVisible;
-            save();
+            });
+            
+            checkbox.checked = defaultVisible.includes(prop.key);
+            
+            const label = toggleContainer.createEl('label', {
+                text: prop.label,
+                cls: 'tasknotes-settings__property-label',
+                attr: { 'for': `visible-prop-${prop.key}` }
+            });
+
+            checkbox.addEventListener('change', () => {
+                let updatedVisible = [...defaultVisible];
+                if (checkbox.checked) {
+                    if (!updatedVisible.includes(prop.key)) {
+                        updatedVisible.push(prop.key);
+                    }
+                } else {
+                    updatedVisible = updatedVisible.filter(key => key !== prop.key);
+                }
+                plugin.settings.defaultVisibleProperties = updatedVisible;
+                save();
+            });
         });
-    });
+    };
+    
+    // Render groups in order
+    renderPropertyGroup('CORE PROPERTIES', propertyGroups.core);
+    renderPropertyGroup('ORGANIZATION', propertyGroups.organization);
+    if (propertyGroups.user.length > 0) {
+        renderPropertyGroup('CUSTOM PROPERTIES', propertyGroups.user);
+    }
 
     // Task Filenames Section
     createSectionHeader(container, 'Task Filenames');
