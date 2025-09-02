@@ -37,6 +37,7 @@
 		"jest": "^30.1.1",
 		"jest-environment-jsdom": "^30.1.1",
 		"obsidian": "latest",
+		"obsidian-typings": "^4.49.0",
 		"ts-jest": "^29.1.1",
 		"tslib": "^2.8.1",
 		"typescript": "^5.9.2"
