@@ -162,13 +162,10 @@ export class SystemController extends BaseController {
 	@Get('/api/docs')
 	async handleOpenAPISpec(req: IncomingMessage, res: ServerResponse): Promise<void> {
 		try {
-			const spec = generateOpenAPISpec(this.httpAPIService || this);
-			
-			// Update server URL based on current port
-			spec.servers = [{
-				url: `http://localhost:${this.plugin.settings.apiPort}`,
-				description: 'TaskNotes API Server'
-			}];
+			// Use HTTPAPIService's method to get spec from all controllers
+			const spec = this.httpAPIService && this.httpAPIService.generateOpenAPISpec 
+				? this.httpAPIService.generateOpenAPISpec()
+				: generateOpenAPISpec(this);
 			
 			res.statusCode = 200;
 			res.setHeader('Content-Type', 'application/json');

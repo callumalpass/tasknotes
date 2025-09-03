@@ -9,7 +9,7 @@ import {
 } from 'obsidian-daily-notes-interface';
 import { TaskNotesSettings } from './types/settings';
 import { DEFAULT_SETTINGS } from './settings/defaults';
-import { TaskNotesSettingTab } from './settings/settings';
+import { TaskNotesSettingTab } from './settings/TaskNotesSettingTab';
 import {
 	MINI_CALENDAR_VIEW_TYPE,
 	ADVANCED_CALENDAR_VIEW_TYPE,
