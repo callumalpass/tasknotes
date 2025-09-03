@@ -377,6 +377,54 @@ select.tasknotes-settings__card-input {
 }
 
 /* ================================================
+   COLLAPSIBLE CARD FUNCTIONALITY
+   ================================================ */
+
+/* Collapsible card support */
+.tasknotes-settings__card--collapsible {
+    transition: all 0.2s ease;
+}
+
+.tasknotes-settings__card--collapsible .tasknotes-settings__card-content,
+.tasknotes-settings__card--collapsible .tasknotes-settings__card-actions {
+    transition: all 0.2s ease;
+    overflow: hidden;
+}
+
+/* Collapsed state - hide content and actions */
+.tasknotes-settings__card--collapsed .tasknotes-settings__card-content {
+    max-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    opacity: 0;
+    border: none;
+}
+
+.tasknotes-settings__card--collapsed .tasknotes-settings__card-actions {
+    max-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    opacity: 0;
+    border: none;
+}
+
+/* Collapse button styling */
+.tasknotes-settings__card-collapse-btn {
+    opacity: 0.7;
+    transition: all 0.2s ease;
+}
+
+.tasknotes-settings__card-collapse-btn:hover {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+/* Visual indicator for collapsed cards */
+.tasknotes-settings__card--collapsed {
+    opacity: 0.9;
+}
+
+/* ================================================
    WEBHOOK MODAL STYLES
    ================================================ */
 

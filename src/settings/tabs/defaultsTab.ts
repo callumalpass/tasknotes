@@ -308,6 +308,8 @@ function renderDefaultProjectsList(container: HTMLElement, plugin: TaskNotesPlug
     selectedFiles.forEach(file => {
         createCard(projectsList, {
             id: file.path,
+            collapsible: true,
+            defaultCollapsed: true,
             header: {
                 primaryText: file.name.replace(/\.md$/, ''),
                 actions: [
@@ -436,6 +438,8 @@ function renderRemindersList(container: HTMLElement, plugin: TaskNotesPlugin, sa
 
         const card = createCard(container, {
             id: reminder.id,
+            collapsible: true,
+            defaultCollapsed: true,
             header: {
                 primaryText: reminder.description || 'Unnamed Reminder',
                 secondaryText: timingText,

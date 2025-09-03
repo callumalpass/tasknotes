@@ -251,6 +251,8 @@ function renderStatusList(container: HTMLElement, plugin: TaskNotesPlugin, save:
         const cardConfig: CardConfig = {
             id: status.id,
             draggable: true,
+            collapsible: true,
+            defaultCollapsed: true,
             colorIndicator: { color: status.color, cssVar: '--status-color' },
             header: {
                 primaryText: status.value || 'untitled',
@@ -358,6 +360,8 @@ function renderPriorityList(container: HTMLElement, plugin: TaskNotesPlugin, sav
 
         const card = createCard(container, {
             id: priority.id,
+            collapsible: true,
+            defaultCollapsed: true,
             colorIndicator: { color: priority.color },
             header: {
                 primaryText: priority.label || priority.value || 'untitled',
@@ -610,6 +614,8 @@ function renderUserFieldsList(container: HTMLElement, plugin: TaskNotesPlugin, s
 
         createCard(container, {
             id: field.id,
+            collapsible: true,
+            defaultCollapsed: true,
             header: {
                 primaryText: field.displayName || 'Unnamed Field',
                 secondaryText: field.key || 'no-key',

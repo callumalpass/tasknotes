@@ -27,6 +27,25 @@
  * });
  * ```
  * 
+ * 1b. COLLAPSIBLE CARD:
+ * ```typescript
+ * const card = createCard(container, {
+ *   collapsible: true,
+ *   defaultCollapsed: true,
+ *   header: {
+ *     primaryText: "Collapsible Setting",
+ *     secondaryText: "Click chevron to expand"
+ *   },
+ *   content: {
+ *     sections: [{
+ *       rows: [
+ *         { label: 'Setting:', input: createCardInput('text', 'Value') }
+ *       ]
+ *     }]
+ *   }
+ * });
+ * ```
+ * 
  * 2. CARD WITH STATUS AND DELETE:
  * ```typescript
  * const statusBadge = createStatusBadge('Active', 'active');
@@ -148,6 +167,12 @@
  * - setupCardDragAndDrop() - Enable drag & drop reordering
  * - showCardLoading() - Loading state utility
  * - showCardEmptyState() - Empty state with optional action
+ * 
+ * COLLAPSIBLE CARDS:
+ * - Set collapsible: true to enable fold/unfold button
+ * - Set defaultCollapsed: true to start collapsed
+ * - Chevron button appears in header actions area
+ * - Content and actions sections hide when collapsed
  */
 
 import { setIcon } from 'obsidian';
@@ -160,6 +185,10 @@ export interface CardConfig {
     id?: string;
     /** Enable drag and drop functionality */
     draggable?: boolean;
+    /** Enable collapsible functionality with fold/unfold button */
+    collapsible?: boolean;
+    /** Whether the card should start collapsed (only applies if collapsible is true) */
+    defaultCollapsed?: boolean;
     /** Color indicator on the left side of the card */
     colorIndicator?: {
         color: string;
@@ -236,6 +265,13 @@ export function createCard(container: HTMLElement, config: CardConfig): HTMLElem
     if (config.draggable) {
         card.addClass('tasknotes-settings__card--draggable');
     }
+    
+    if (config.collapsible) {
+        card.addClass('tasknotes-settings__card--collapsible');
+        if (config.defaultCollapsed) {
+            card.addClass('tasknotes-settings__card--collapsed');
+        }
+    }
 
     // Create header
     const header = card.createDiv('tasknotes-settings__card-header');
@@ -292,7 +328,8 @@ export function createCard(container: HTMLElement, config: CardConfig): HTMLElem
 
     // Header actions (delete, edit buttons in header)
     if (config.header.actions && config.header.actions.length > 0) {
-        const headerActions = headerRight.createDiv('tasknotes-settings__card-header-actions');
+        const headerActions = headerRight.querySelector('.tasknotes-settings__card-header-actions') ||
+                             headerRight.createDiv('tasknotes-settings__card-header-actions');
         config.header.actions.forEach(actionConfig => {
             const button = headerActions.createEl('button', {
                 cls: 'tasknotes-settings__card-header-btn'
@@ -311,6 +348,38 @@ export function createCard(container: HTMLElement, config: CardConfig): HTMLElem
 
             button.onclick = actionConfig.onClick;
         });
+    }
+
+    // Add collapse button if collapsible - AFTER other header actions
+    if (config.collapsible) {
+        const headerActions = headerRight.querySelector('.tasknotes-settings__card-header-actions') || 
+                             headerRight.createDiv('tasknotes-settings__card-header-actions');
+        
+        const collapseButton = headerActions.createEl('button', {
+            cls: 'tasknotes-settings__card-header-btn tasknotes-settings__card-collapse-btn'
+        });
+        
+        const collapseIcon = collapseButton.createSpan();
+        const isCollapsed = config.defaultCollapsed || false;
+        setIcon(collapseIcon, isCollapsed ? 'chevron-down' : 'chevron-up');
+        
+        collapseButton.title = isCollapsed ? 'Expand card' : 'Collapse card';
+        
+        collapseButton.onclick = () => {
+            const isCurrentlyCollapsed = card.hasClass('tasknotes-settings__card--collapsed');
+            
+            if (isCurrentlyCollapsed) {
+                // Expand
+                card.removeClass('tasknotes-settings__card--collapsed');
+                setIcon(collapseIcon, 'chevron-up');
+                collapseButton.title = 'Collapse card';
+            } else {
+                // Collapse
+                card.addClass('tasknotes-settings__card--collapsed');
+                setIcon(collapseIcon, 'chevron-down');
+                collapseButton.title = 'Expand card';
+            }
+        };
     }
 
     // Create content sections

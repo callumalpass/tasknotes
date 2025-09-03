@@ -512,6 +512,8 @@ function renderICSSubscriptionsList(container: HTMLElement, plugin: TaskNotesPlu
 
         const card = createCard(container, {
             id: subscription.id,
+            collapsible: true,
+            defaultCollapsed: true,
             colorIndicator: {
                 color: subscription.color
             },
@@ -520,11 +522,6 @@ function renderICSSubscriptionsList(container: HTMLElement, plugin: TaskNotesPlu
                 secondaryText: subscription.type === 'remote' ? 'Remote Calendar' : 'Local File',
                 meta: metaBadges,
                 actions: [
-                    createEditHeaderButton(() => {
-                        // Toggle between edit and view mode by focusing the name input
-                        nameInput.focus();
-                        nameInput.select();
-                    }, 'Edit subscription'),
                     createDeleteHeaderButton(async () => {
                         const confirmed = await showConfirmationModal(plugin.app, {
                             title: 'Delete Subscription',
@@ -708,6 +705,8 @@ function renderWebhookList(container: HTMLElement, plugin: TaskNotesPlugin, save
 
         createCard(webhooksContainer, {
             id: webhook.id,
+            collapsible: true,
+            defaultCollapsed: true,
             header: {
                 primaryText: 'Webhook',
                 secondaryText: createdText,
