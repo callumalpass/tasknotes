@@ -586,11 +586,16 @@ export function renderAppearanceTab(container: HTMLElement, plugin: TaskNotesPlu
         ariaLabel: 'Project autosuggest display row 3'
     });
 
-    // More detailed help text with better formatting
-    const detailedHelp = container.createDiv('settings-view__help-note settings-view__help-note--detailed');
-    detailedHelp.innerHTML = `
-        <strong>Available properties:</strong> file.basename, file.name, file.path, file.parent, title, aliases, and any frontmatter key<br>
-        <strong>Available flags:</strong> n or n(Label) for field labels, s for search inclusion<br>
-        <strong>Example:</strong> <code>{title|n(Title)|s}</code> displays "Title: My Project" and includes title in search
-    `;
+    // Detailed help section following the pattern from taskPropertiesTab
+    const helpContainer = container.createDiv('tasknotes-settings__help-section');
+    helpContainer.createEl('h4', { text: 'Token syntax:' });
+    const helpList = helpContainer.createEl('ul');
+    helpList.createEl('li', { text: 'Properties: file.basename, file.name, file.path, file.parent, title, aliases, and any frontmatter key' });
+    helpList.createEl('li', { text: 'n or n(Label): Shows field name before value (e.g., "Title: My Project")' });
+    helpList.createEl('li', { text: 's: Includes field in + search (in addition to default searchable fields)' });
+    helpList.createEl('li', { text: 'Example: {title|n(Title)|s} displays "Title: My Project" and includes title in search' });
+    helpContainer.createEl('p', {
+        text: 'Combine multiple flags with pipes. Default searchable fields are always included: filename, title (via field mapping), and aliases.',
+        cls: 'settings-help-note'
+    });
 }
