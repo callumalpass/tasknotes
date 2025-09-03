@@ -527,4 +527,64 @@ export function renderAppearanceTab(container: HTMLElement, plugin: TaskNotesPlu
             save();
         }
     });
+
+    // Project Autosuggest Section
+    createSectionHeader(container, 'Project Autosuggest');
+    createHelpText(container, 'Configure how project suggestions appear when typing + in the natural language input.');
+
+    createToggleSetting(container, {
+        name: 'Enable fuzzy matching (experimental)',
+        desc: 'When enabled: Allows fuzzy matching for project names (slower, better for finding projects with typos). When disabled: Uses exact prefix matching (faster performance, recommended for large vaults).',
+        getValue: () => plugin.settings.projectAutosuggest?.enableFuzzy ?? false,
+        setValue: async (value: boolean) => {
+            if (!plugin.settings.projectAutosuggest) {
+                plugin.settings.projectAutosuggest = { enableFuzzy: false, rows: [] };
+            }
+            plugin.settings.projectAutosuggest.enableFuzzy = value;
+            save();
+        }
+    });
+
+    // Display rows configuration
+    const getRows = (): string[] => (plugin.settings.projectAutosuggest?.rows ?? []).slice(0, 3);
+    
+    const setRow = async (idx: number, value: string) => {
+        if (!plugin.settings.projectAutosuggest) {
+            plugin.settings.projectAutosuggest = { enableFuzzy: false, rows: [] };
+        }
+        const current = plugin.settings.projectAutosuggest.rows ?? [];
+        const next = [...current];
+        next[idx] = value;
+        plugin.settings.projectAutosuggest.rows = next.slice(0, 3);
+        save();
+    };
+
+    createTextSetting(container, {
+        name: 'Display row 1',
+        desc: 'First display row. Use tokens like {title|n(Title)}, {aliases|n(Aliases)}, {file.path|n(Path)|s}. Flags: n or n(Label) shows field name; s includes that field in + search.',
+        placeholder: '{title|n(Title)}',
+        getValue: () => getRows()[0] || '',
+        setValue: async (value: string) => setRow(0, value),
+        ariaLabel: 'Project autosuggest display row 1'
+    });
+
+    createTextSetting(container, {
+        name: 'Display row 2',
+        desc: 'Second display row (optional). Same token syntax as row 1.',
+        placeholder: '{aliases|n(Aliases)}',
+        getValue: () => getRows()[1] || '',
+        setValue: async (value: string) => setRow(1, value),
+        ariaLabel: 'Project autosuggest display row 2'
+    });
+
+    createTextSetting(container, {
+        name: 'Display row 3',
+        desc: 'Third display row (optional). Same token syntax as row 1.',
+        placeholder: '{file.path|n(Path)}',
+        getValue: () => getRows()[2] || '',
+        setValue: async (value: string) => setRow(2, value),
+        ariaLabel: 'Project autosuggest display row 3'
+    });
+
+    createHelpText(container, 'Available properties: file.basename, file.name, file.path, file.parent, title, aliases, and any frontmatter key. Available flags: n or n(Label) for field labels, s for search inclusion.');
 }

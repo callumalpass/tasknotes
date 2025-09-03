@@ -15,7 +15,7 @@ The natural language input field includes auto-suggestion functionality that act
 - **@** - Shows available contexts from existing tasks
 - **#** - Shows available tags from existing tasks
 - **+** - Shows files from your vault as project suggestions
-- **\*** - Shows available status options (configurable trigger in Settings → Misc)
+- **\*** - Shows available status options (configurable trigger in Settings → Features)
 
 #### Project Suggestions
 
@@ -38,7 +38,7 @@ Selecting a project suggestion inserts it as `+[[filename]]`, creating a wikilin
 
 #### Enhanced Project Auto‑suggester (configurable cards)
 
-Project suggestions can display configurable multi‑row cards and support smarter search. Configure up to 3 rows using a simple token syntax in Settings → Misc → Project Autosuggest.
+Project suggestions can display configurable multi‑row cards and support smarter search. Configure up to 3 rows using a simple token syntax in Settings → Appearance & UI → Project Autosuggest.
 
 - Properties: file.basename, file.name, file.path, file.parent, title, aliases, and any frontmatter key
 - Flags:
