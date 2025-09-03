@@ -346,39 +346,39 @@ export function createCard(container: HTMLElement, config: CardConfig): HTMLElem
                 button.title = actionConfig.tooltip;
             }
 
-            button.onclick = actionConfig.onClick;
+            button.onclick = (e) => {
+                e.stopPropagation(); // Prevent header click from firing
+                actionConfig.onClick();
+            };
         });
     }
 
-    // Add collapse button if collapsible - AFTER other header actions
+    // Add collapsible functionality if enabled
     if (config.collapsible) {
-        const headerActions = headerRight.querySelector('.tasknotes-settings__card-header-actions') || 
-                             headerRight.createDiv('tasknotes-settings__card-header-actions');
-        
-        const collapseButton = headerActions.createEl('button', {
-            cls: 'tasknotes-settings__card-header-btn tasknotes-settings__card-collapse-btn'
-        });
-        
-        const collapseIcon = collapseButton.createSpan();
-        const isCollapsed = config.defaultCollapsed || false;
-        setIcon(collapseIcon, isCollapsed ? 'chevron-down' : 'chevron-up');
-        
-        collapseButton.title = isCollapsed ? 'Expand card' : 'Collapse card';
-        
-        collapseButton.onclick = () => {
+        // Create toggle function
+        const toggleCollapse = () => {
             const isCurrentlyCollapsed = card.hasClass('tasknotes-settings__card--collapsed');
             
             if (isCurrentlyCollapsed) {
                 // Expand
                 card.removeClass('tasknotes-settings__card--collapsed');
-                setIcon(collapseIcon, 'chevron-up');
-                collapseButton.title = 'Collapse card';
+                header.title = 'Collapse card';
             } else {
                 // Collapse
                 card.addClass('tasknotes-settings__card--collapsed');
-                setIcon(collapseIcon, 'chevron-down');
-                collapseButton.title = 'Expand card';
+                header.title = 'Expand card';
             }
+        };
+        
+        // Make entire header clickable
+        header.addClass('tasknotes-settings__card-header--clickable');
+        header.title = config.defaultCollapsed ? 'Expand card' : 'Collapse card';
+        header.onclick = (e) => {
+            // Don't trigger if clicking on action buttons
+            if ((e.target as Element).closest('.tasknotes-settings__card-header-actions')) {
+                return;
+            }
+            toggleCollapse();
         };
     }
 

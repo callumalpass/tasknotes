@@ -430,6 +430,16 @@ select.tasknotes-settings__card-input {
     opacity: 0.9;
 }
 
+/* Clickable header styling */
+.tasknotes-settings__card-header--clickable {
+    cursor: pointer;
+    user-select: none;
+}
+
+.tasknotes-settings__card-header--clickable:hover {
+    background: var(--background-modifier-hover);
+}
+
 /* ================================================
    WEBHOOK MODAL STYLES
    ================================================ */

@@ -121,7 +121,7 @@ export function renderAppearanceTab(container: HTMLElement, plugin: TaskNotesPlu
 
     createToggleSetting(container, {
         name: 'Store title in filename',
-        desc: 'Use the task title as the filename (recommended for browsing)',
+        desc: 'Use the task title as the filename. Filename will update when the task title is changed (Recommended).',
         getValue: () => plugin.settings.storeTitleInFilename,
         setValue: async (value: boolean) => {
             plugin.settings.storeTitleInFilename = value;
@@ -136,7 +136,7 @@ export function renderAppearanceTab(container: HTMLElement, plugin: TaskNotesPlu
             name: 'Filename format',
             desc: 'How task filenames should be generated',
             options: [
-                { value: 'title', label: 'Task title' },
+                { value: 'title', label: 'Task title (Non-updating)' },
                 { value: 'zettel', label: 'Zettelkasten format (YYMMDD + base36 seconds since midnight)' },
                 { value: 'timestamp', label: 'Full timestamp (YYYY-MM-DD-HHMMSS)' },
                 { value: 'custom', label: 'Custom template' }
