@@ -586,5 +586,11 @@ export function renderAppearanceTab(container: HTMLElement, plugin: TaskNotesPlu
         ariaLabel: 'Project autosuggest display row 3'
     });
 
-    createHelpText(container, 'Available properties: file.basename, file.name, file.path, file.parent, title, aliases, and any frontmatter key. Available flags: n or n(Label) for field labels, s for search inclusion.');
+    // More detailed help text with better formatting
+    const detailedHelp = container.createDiv('settings-view__help-note settings-view__help-note--detailed');
+    detailedHelp.innerHTML = `
+        <strong>Available properties:</strong> file.basename, file.name, file.path, file.parent, title, aliases, and any frontmatter key<br>
+        <strong>Available flags:</strong> n or n(Label) for field labels, s for search inclusion<br>
+        <strong>Example:</strong> <code>{title|n(Title)|s}</code> displays "Title: My Project" and includes title in search
+    `;
 }
