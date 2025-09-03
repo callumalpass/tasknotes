@@ -253,6 +253,12 @@ select.tasknotes-settings__card-input {
 }
 
 /* Header Actions */
+.tasknotes-settings__card-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
 .tasknotes-settings__card-header-btn {
     width: 20px;
     height: 20px;
