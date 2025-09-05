@@ -272,6 +272,17 @@ export default class TaskNotesPlugin extends Plugin {
 		// Start migration check early (before views can be opened)
 		this.migrationPromise = this.performEarlyMigrationCheck();
 
+		// Early registration attempt for Bases integration
+		if (this.settings?.enableBasesPOC) {
+			try {
+				const { registerBasesTaskList } = await import('./bases/registration');
+				await registerBasesTaskList(this);
+			} catch (e) {
+				console.debug('[TaskNotes][Bases] Early registration failed:', e);
+			}
+		}
+
+
 		// Defer expensive initialization until layout is ready
 		this.app.workspace.onLayoutReady(() => {
 			this.initializeAfterLayoutReady();
@@ -394,6 +405,16 @@ export default class TaskNotesPlugin extends Plugin {
 
 			// Defer heavy service initialization until needed
 			this.initializeServicesLazily();
+
+			// Register TaskNotes views with Bases plugin (if enabled)
+			if (this.settings?.enableBasesPOC) {
+				try {
+					const { registerBasesTaskList } = await import('./bases/registration');
+					await registerBasesTaskList(this);
+				} catch (e) {
+					console.debug('[TaskNotes][Bases] Registration failed:', e);
+				}
+			}
 
 		} catch (error) {
 			console.error('Error during post-layout initialization:', error);

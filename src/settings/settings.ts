@@ -43,6 +43,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 			{ id: 'pomodoro', name: 'Pomodoro' },
 			{ id: 'notifications', name: 'Notifications' },
 			{ id: 'api', name: 'HTTP API' },
+			{ id: 'integrations', name: 'Integrations' },
 			{ id: 'misc', name: 'Misc' }
 		];
 
@@ -149,6 +150,9 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 				break;
 			case 'api':
 				this.renderAPITab();
+				break;
+			case 'integrations':
+				this.renderIntegrationsTab();
 				break;
 			case 'misc':
 				this.renderMiscTab();
@@ -3768,6 +3772,39 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 		return Array.from(crypto.getRandomValues(new Uint8Array(32)))
 			.map(b => b.toString(16).padStart(2, '0'))
 			.join('');
+	}
+
+	private renderIntegrationsTab(): void {
+		const container = this.tabContents['integrations'];
+
+		// Integrations settings
+		new Setting(container).setName('Plugin integrations').setHeading();
+
+		container.createEl('p', {
+			text: 'Configure integration with other Obsidian plugins.',
+			cls: 'settings-help-note'
+		});
+
+		// Bases POC toggle
+		new Setting(container)
+			.setName('Bases integration (Proof of Concept)')
+			.setDesc('Enable TaskNotes views to be used within Obsidian Bases plugin. This is experimental and requires the Bases plugin to be installed.')
+			.addToggle(toggle => {
+				toggle.toggleEl.setAttribute('aria-label', 'Enable Bases integration proof of concept');
+				return toggle
+					.setValue(this.plugin.settings.enableBasesPOC)
+					.onChange(async (value) => {
+						this.plugin.settings.enableBasesPOC = value;
+						await this.plugin.saveSettings();
+						
+						// Show notice about restart requirement
+						if (value) {
+							new Notice('Bases integration enabled. Please restart Obsidian to complete the setup.');
+						} else {
+							new Notice('Bases integration disabled. Please restart Obsidian to complete the removal.');
+						}
+					});
+			});
 	}
 }
 

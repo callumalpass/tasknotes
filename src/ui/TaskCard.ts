@@ -116,6 +116,71 @@ function getPropertyValue(task: TaskInfo, propertyId: string, plugin: TaskNotesP
             return getUserPropertyValue(task, propertyId, plugin);
         }
         
+        // Check custom properties from Bases or other sources
+        if (task.customProperties && propertyId in task.customProperties) {
+            return task.customProperties[propertyId];
+        }
+        
+        // Handle Bases formula properties
+        if (propertyId.startsWith('formula.')) {
+            try {
+                const formulaName = propertyId.substring(8); // Remove 'formula.' prefix
+                const basesData = task.basesData;
+                
+                if (!basesData?.formulaResults) {
+                    return '';
+                }
+                // Access cached formula results from Bases
+                const formulaResults = basesData.formulaResults;
+                if (formulaResults?.cachedFormulaOutputs && formulaResults.cachedFormulaOutputs[formulaName] !== undefined) {
+                    const cached = formulaResults.cachedFormulaOutputs[formulaName];
+                    
+                    // Handle Bases formula result objects
+                    if (cached && typeof cached === 'object' && 'icon' in cached) {
+                        // Return data value if present (e.g., {icon: "lucide-binary", data: 11})
+                        if ('data' in cached && cached.data !== null && cached.data !== undefined) {
+                            return cached.data;
+                        }
+                        
+                        // Handle date results (e.g., {icon: "lucide-calendar", date: "2025-09-01"})
+                        if (cached.icon === 'lucide-calendar' && 'date' in cached) {
+                            return cached.date;
+                        }
+                        
+                        // Handle missing/empty data indicators
+                        if (cached.icon === 'lucide-file-question' || cached.icon === 'lucide-help-circle') {
+                            return ''; // Show empty cell but keep column visible
+                        }
+                        
+                        // Handle other icon-only results (status indicators, etc.)
+                        return cached.icon ? cached.icon.replace('lucide-', '') : '';
+                    }
+                    
+                    // Handle direct scalar values
+                    if (cached !== null && cached !== undefined && cached !== '') {
+                        return cached;
+                    }
+                    
+                    // Return empty string for null/undefined (maintains column visibility)
+                    return '';
+                }
+                
+                // No cached result available
+                return '';
+            } catch (error) {
+                console.debug(`[TaskNotes] Error computing formula ${propertyId}:`, error);
+                return '[Formula Error]';
+            }
+        }
+        
+        // Fallback: try to get arbitrary property from frontmatter
+        if (task.path) {
+            const value = getFrontmatterValue(task.path, propertyId, plugin);
+            if (value !== undefined) {
+                return value;
+            }
+        }
+        
         return null;
     } catch (error) {
         console.warn(`TaskCard: Error getting property ${propertyId}:`, error);
@@ -261,6 +326,9 @@ function renderPropertyMetadata(
             PROPERTY_RENDERERS[propertyId](element, value, task, plugin);
         } else if (propertyId.startsWith('user:')) {
             renderUserProperty(element, propertyId, value, plugin);
+        } else {
+            // Fallback: render arbitrary property with generic format
+            renderGenericProperty(element, propertyId, value);
         }
         return element;
     } catch (error) {
@@ -318,6 +386,68 @@ interface UserField {
     key: string;
     type: 'text' | 'number' | 'date' | 'boolean' | 'list';
     displayName?: string;
+}
+
+/**
+ * Render generic property with smart formatting
+ */
+function renderGenericProperty(element: HTMLElement, propertyId: string, value: unknown): void {
+    // Handle formula properties - show just the formula name, not "formula.TESTST"
+    let displayName: string;
+    if (propertyId.startsWith('formula.')) {
+        displayName = propertyId.substring(8); // Remove "formula." prefix
+    } else {
+        displayName = propertyId.charAt(0).toUpperCase() + propertyId.slice(1);
+    }
+    
+    let displayValue: string;
+    
+    if (Array.isArray(value)) {
+        // Handle arrays by joining with commas
+        const filtered = value.filter(v => v !== null && v !== undefined && v !== '');
+        displayValue = filtered.join(', ');
+    } else if (typeof value === 'object' && value !== null) {
+        // Handle Date objects specially
+        if (value instanceof Date) {
+            displayValue = formatDateTimeForDisplay(value.toISOString(), {
+                dateFormat: 'MMM d, yyyy',
+                timeFormat: '',
+                showTime: false
+            });
+        }
+        // Handle objects with meaningful toString methods or simple key-value pairs
+        else if (typeof value.toString === 'function' && value.toString() !== '[object Object]') {
+            displayValue = value.toString();
+        }
+        // For simple objects with a few key-value pairs, show them nicely
+        else {
+            const entries = Object.entries(value as Record<string, any>);
+            if (entries.length <= 3) {
+                displayValue = entries
+                    .map(([k, v]) => `${k}: ${v}`)
+                    .join(', ');
+            } else {
+                // Fallback to JSON for complex objects
+                displayValue = JSON.stringify(value);
+            }
+        }
+    } else if (typeof value === 'boolean') {
+        // Handle booleans with checkmark/x symbols for better visual
+        displayValue = value ? '✓' : '✗';
+    } else if (typeof value === 'number') {
+        // Format numbers with appropriate precision
+        displayValue = Number.isInteger(value) ? String(value) : value.toFixed(2);
+    } else {
+        // Handle strings and other primitive types
+        displayValue = String(value);
+    }
+    
+    // Truncate very long values to keep card readable
+    if (displayValue.length > 100) {
+        displayValue = displayValue.substring(0, 97) + '...';
+    }
+    
+    element.textContent = `${displayName}: ${displayValue}`;
 }
 
 /**

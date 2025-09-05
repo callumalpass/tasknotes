@@ -115,6 +115,8 @@ export interface TaskNotesSettings {
 	userField?: UserFieldMapping;
 	// Default visible properties for task cards (when no saved view is active)
 	defaultVisibleProperties?: string[];
+	// Bases integration settings
+	enableBasesPOC: boolean;
 	// Recurring task behavior
 	maintainDueDateOffsetInRecurring: boolean;
 }
