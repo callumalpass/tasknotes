@@ -653,7 +653,13 @@ export function getCurrentTimestamp(): string {
  * Get current date in YYYY-MM-DD format for completion dates
  */
 export function getCurrentDateString(): string {
-    return formatDateForStorage(new Date());
+    // For user actions (task completion), use local date extraction
+    // This ensures completion is recorded as user's local calendar day
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
 }
 
 /**

@@ -57,7 +57,7 @@ import { createTaskLinkOverlay, dispatchTaskUpdate } from './editor/TaskLinkOver
 import { createReadingModeTaskLinkProcessor } from './editor/ReadingModeTaskLinkProcessor';
 import { createProjectNoteDecorations, dispatchProjectSubtasksUpdate } from './editor/ProjectNoteDecorations';
 import { DragDropManager } from './utils/DragDropManager';
-import { formatDateForStorage, getTodayLocal, createUTCDateFromLocalCalendarDate } from './utils/dateUtils';
+import { formatDateForStorage, getTodayLocal, createUTCDateFromLocalCalendarDate, parseDateToLocal } from './utils/dateUtils';
 import { ICSSubscriptionService } from './services/ICSSubscriptionService';
 import { ICSNoteService } from './services/ICSNoteService';
 import { MigrationService } from './services/MigrationService';
@@ -1414,15 +1414,23 @@ private injectCustomStyles(): void {
 	 */
 	async toggleRecurringTaskComplete(task: TaskInfo, date?: Date): Promise<TaskInfo> {
 		try {
-			const targetDate = date || this.selectedDate;
+			// Let TaskService handle the date logic (defaults to local today, not selectedDate)
 			const updatedTask = await this.taskService.toggleRecurringTaskComplete(task, date);
 
-			// Determine if task was completed or marked incomplete
+			// For notification, determine the actual completion date from the task
+			// Use local today if no explicit date provided
+			const targetDate = date || (() => {
+				const todayLocal = getTodayLocal();
+				return createUTCDateFromLocalCalendarDate(todayLocal);
+			})();
+			
 			const dateStr = formatDateForStorage(targetDate);
 			const wasCompleted = updatedTask.complete_instances?.includes(dateStr);
 			const action = wasCompleted ? 'completed' : 'marked incomplete';
 
-			new Notice(`Recurring task ${action} for ${format(targetDate, 'MMM d')}`);
+			// Format date for display: convert UTC-anchored date back to local display
+			const displayDate = parseDateToLocal(dateStr);
+			new Notice(`Recurring task ${action} for ${format(displayDate, 'MMM d')}`);
 			return updatedTask;
 		} catch (error) {
 			console.error('Failed to toggle recurring task completion:', error);

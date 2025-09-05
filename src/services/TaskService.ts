@@ -3,7 +3,7 @@ import { FilenameContext, generateTaskFilename, generateUniqueFilename } from '.
 import { Notice, TFile, normalizePath, stringifyYaml } from 'obsidian';
 import { TemplateData, mergeTemplateFrontmatter, processTemplate } from '../utils/templateProcessor';
 import { addDTSTARTToRecurrenceRule, ensureFolderExists, updateToNextScheduledOccurrence } from '../utils/helpers';
-import { formatDateForStorage, getCurrentDateString, getCurrentTimestamp } from '../utils/dateUtils';
+import { formatDateForStorage, getCurrentDateString, getCurrentTimestamp, getTodayLocal, createUTCDateFromLocalCalendarDate } from '../utils/dateUtils';
 import { format } from 'date-fns';
 
 import TaskNotesPlugin from '../main';
@@ -1201,8 +1201,12 @@ export class TaskService {
             throw new Error('Task is not recurring');
         }
 
-        // Use the provided date or fall back to the currently selected date
-        const targetDate = date || this.plugin.selectedDate;
+        // Default to local today instead of selectedDate for recurring task completion
+        // This ensures completion is recorded for user's actual calendar day unless explicitly overridden
+        const targetDate = date || (() => {
+            const todayLocal = getTodayLocal();
+            return createUTCDateFromLocalCalendarDate(todayLocal);
+        })();
         const dateStr = formatDateForStorage(targetDate);
         
         // Check current completion status for this date using fresh data
