@@ -30,8 +30,39 @@ export const FileSuggestHelper = {
       }
       const qLower = (query || '').toLowerCase();
 
+      // Get filtering settings
+      const requiredTags = plugin.settings?.projectAutosuggest?.requiredTags ?? [];
+      const includeFolders = plugin.settings?.projectAutosuggest?.includeFolders ?? [];
+
       for (const file of files) {
         const cache = plugin.app.metadataCache.getFileCache(file);
+
+        // Apply tag filtering - use native Obsidian API
+        if (requiredTags.length > 0) {
+          // Get tags from both native tag detection and frontmatter
+          const nativeTags = cache?.tags?.map(t => t.tag.replace('#', '')) || [];
+          const frontmatterTags = cache?.frontmatter?.tags || [];
+          const allTags = [
+            ...nativeTags,
+            ...(Array.isArray(frontmatterTags) ? frontmatterTags : [frontmatterTags].filter(Boolean))
+          ];
+          
+          // Check if file has ANY of the required tags
+          const hasRequiredTag = requiredTags.some(reqTag => allTags.includes(reqTag));
+          if (!hasRequiredTag) {
+            continue; // Skip this file
+          }
+        }
+
+        // Apply folder filtering
+        if (includeFolders.length > 0) {
+          const isInIncludedFolder = includeFolders.some(folder => 
+            file.path.startsWith(folder) || file.path.startsWith(folder + '/')
+          );
+          if (!isInIncludedFolder) {
+            continue; // Skip this file
+          }
+        }
 
         // Gather fields
         const basename = file.basename;

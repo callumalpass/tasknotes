@@ -19,6 +19,8 @@ export interface ProjectAutosuggestSettings {
 	enableFuzzy: boolean;
 	rows: string[]; // up to 3 rows; each uses {property|flags} format
 	showAdvanced?: boolean; // Show advanced configuration options
+	requiredTags?: string[]; // Show notes that have ANY of these tags
+	includeFolders?: string[]; // Only show notes in these folders (empty = all folders)
 }
 
 export interface TaskNotesSettings {

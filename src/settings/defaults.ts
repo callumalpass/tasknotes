@@ -155,7 +155,9 @@ export const DEFAULT_PROJECT_AUTOSUGGEST: ProjectAutosuggestSettings = {
 		'{aliases|n(Aliases)}',
 		'{file.path|n(Path)}'
 	],
-	showAdvanced: false
+	showAdvanced: false,
+	requiredTags: [],
+	includeFolders: []
 };
 
 export const DEFAULT_SETTINGS: TaskNotesSettings = {

@@ -532,6 +532,44 @@ export function renderAppearanceTab(container: HTMLElement, plugin: TaskNotesPlu
     createSectionHeader(container, 'Project Autosuggest');
     createHelpText(container, 'Customize how project suggestions display when typing + in task creation.');
 
+    // Tag filtering
+    createTextSetting(container, {
+        name: 'Required tags',
+        desc: 'Show only notes with any of these tags (comma-separated). Leave empty to show all notes.',
+        placeholder: 'project, active, important',
+        getValue: () => plugin.settings.projectAutosuggest?.requiredTags?.join(', ') ?? '',
+        setValue: async (value: string) => {
+            if (!plugin.settings.projectAutosuggest) {
+                plugin.settings.projectAutosuggest = { enableFuzzy: false, rows: [], showAdvanced: false, requiredTags: [], includeFolders: [] };
+            }
+            plugin.settings.projectAutosuggest.requiredTags = value
+                .split(',')
+                .map(tag => tag.trim())
+                .filter(tag => tag.length > 0);
+            save();
+        },
+        ariaLabel: 'Required tags for project suggestions'
+    });
+
+    // Folder filtering  
+    createTextSetting(container, {
+        name: 'Include folders',
+        desc: 'Show only notes in these folders (comma-separated paths). Leave empty to show all folders.',
+        placeholder: 'Projects/, Work/Active, Personal',
+        getValue: () => plugin.settings.projectAutosuggest?.includeFolders?.join(', ') ?? '',
+        setValue: async (value: string) => {
+            if (!plugin.settings.projectAutosuggest) {
+                plugin.settings.projectAutosuggest = { enableFuzzy: false, rows: [], showAdvanced: false, requiredTags: [], includeFolders: [] };
+            }
+            plugin.settings.projectAutosuggest.includeFolders = value
+                .split(',')
+                .map(folder => folder.trim())
+                .filter(folder => folder.length > 0);
+            save();
+        },
+        ariaLabel: 'Include folders for project suggestions'
+    });
+
     createToggleSetting(container, {
         name: 'Customize suggestion display',
         desc: 'Show advanced options to configure how project suggestions appear and what information they display.',

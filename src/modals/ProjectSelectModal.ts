@@ -24,9 +24,53 @@ export class ProjectSelectModal extends FuzzySuggestModal<TAbstractFile> {
     }
 
     getItems(): TAbstractFile[] {
-        return this.app.vault.getAllLoadedFiles().filter(file => 
+        const allFiles = this.app.vault.getAllLoadedFiles().filter(file => 
             file instanceof TFile && file.extension === 'md' && !file.path.includes('.trash')
         );
+
+        // Get filtering settings
+        const requiredTags = this.plugin.settings?.projectAutosuggest?.requiredTags ?? [];
+        const includeFolders = this.plugin.settings?.projectAutosuggest?.includeFolders ?? [];
+
+        // Apply filtering if any filters are configured
+        if (requiredTags.length === 0 && includeFolders.length === 0) {
+            return allFiles; // No filtering needed
+        }
+
+        return allFiles.filter(file => {
+            if (!(file instanceof TFile)) return false;
+            
+            const cache = this.app.metadataCache.getFileCache(file);
+
+            // Apply tag filtering - use native Obsidian API
+            if (requiredTags.length > 0) {
+                // Get tags from both native tag detection and frontmatter
+                const nativeTags = cache?.tags?.map(t => t.tag.replace('#', '')) || [];
+                const frontmatterTags = cache?.frontmatter?.tags || [];
+                const allTags = [
+                    ...nativeTags,
+                    ...(Array.isArray(frontmatterTags) ? frontmatterTags : [frontmatterTags].filter(Boolean))
+                ];
+                
+                // Check if file has ANY of the required tags
+                const hasRequiredTag = requiredTags.some(reqTag => allTags.includes(reqTag));
+                if (!hasRequiredTag) {
+                    return false; // Skip this file
+                }
+            }
+
+            // Apply folder filtering
+            if (includeFolders.length > 0) {
+                const isInIncludedFolder = includeFolders.some(folder => 
+                    file.path.startsWith(folder) || file.path.startsWith(folder + '/')
+                );
+                if (!isInIncludedFolder) {
+                    return false; // Skip this file
+                }
+            }
+
+            return true; // File passed all filters
+        });
     }
 
     getItemText(file: TAbstractFile): string {
