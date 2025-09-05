@@ -530,11 +530,11 @@ export function renderAppearanceTab(container: HTMLElement, plugin: TaskNotesPlu
 
     // Project Autosuggest Section
     createSectionHeader(container, 'Project Autosuggest');
-    createHelpText(container, 'Configure how project suggestions appear when typing + in the natural language input.');
+    createHelpText(container, 'Customize how project suggestions display when typing + in task creation.');
 
     createToggleSetting(container, {
-        name: 'Enable fuzzy matching (experimental)',
-        desc: 'When enabled: Allows fuzzy matching for project names (slower, better for finding projects with typos). When disabled: Uses exact prefix matching (faster performance, recommended for large vaults).',
+        name: 'Enable fuzzy matching',
+        desc: 'Allow typos and partial matches in project search. May be slower in large vaults.',
         getValue: () => plugin.settings.projectAutosuggest?.enableFuzzy ?? false,
         setValue: async (value: boolean) => {
             if (!plugin.settings.projectAutosuggest) {
@@ -546,6 +546,8 @@ export function renderAppearanceTab(container: HTMLElement, plugin: TaskNotesPlu
     });
 
     // Display rows configuration
+    createHelpText(container, 'Configure up to 3 lines of information to show for each project suggestion.');
+    
     const getRows = (): string[] => (plugin.settings.projectAutosuggest?.rows ?? []).slice(0, 3);
     
     const setRow = async (idx: number, value: string) => {
@@ -560,8 +562,8 @@ export function renderAppearanceTab(container: HTMLElement, plugin: TaskNotesPlu
     };
 
     createTextSetting(container, {
-        name: 'Display row 1',
-        desc: 'First display row. Use tokens like {title|n(Title)}, {aliases|n(Aliases)}, {file.path|n(Path)|s}. Flags: n or n(Label) shows field name; s includes that field in + search.',
+        name: 'Row 1',
+        desc: 'Format: {property|flags}. Properties: title, aliases, file.path, file.parent. Flags: n(Label) shows label, s makes searchable. Example: {title|n(Title)|s}',
         placeholder: '{title|n(Title)}',
         getValue: () => getRows()[0] || '',
         setValue: async (value: string) => setRow(0, value),
@@ -569,8 +571,8 @@ export function renderAppearanceTab(container: HTMLElement, plugin: TaskNotesPlu
     });
 
     createTextSetting(container, {
-        name: 'Display row 2',
-        desc: 'Second display row (optional). Same token syntax as row 1.',
+        name: 'Row 2 (optional)',
+        desc: 'Common patterns: {aliases|n(Aliases)}, {file.parent|n(Folder)}, literal:Custom Text',
         placeholder: '{aliases|n(Aliases)}',
         getValue: () => getRows()[1] || '',
         setValue: async (value: string) => setRow(1, value),
@@ -578,24 +580,24 @@ export function renderAppearanceTab(container: HTMLElement, plugin: TaskNotesPlu
     });
 
     createTextSetting(container, {
-        name: 'Display row 3',
-        desc: 'Third display row (optional). Same token syntax as row 1.',
+        name: 'Row 3 (optional)',
+        desc: 'Additional info like {file.path|n(Path)} or custom frontmatter fields',
         placeholder: '{file.path|n(Path)}',
         getValue: () => getRows()[2] || '',
         setValue: async (value: string) => setRow(2, value),
         ariaLabel: 'Project autosuggest display row 3'
     });
 
-    // Detailed help section following the pattern from taskPropertiesTab
+    // Concise help section
     const helpContainer = container.createDiv('tasknotes-settings__help-section');
-    helpContainer.createEl('h4', { text: 'Token syntax:' });
+    helpContainer.createEl('h4', { text: 'Quick Reference' });
     const helpList = helpContainer.createEl('ul');
-    helpList.createEl('li', { text: 'Properties: file.basename, file.name, file.path, file.parent, title, aliases, and any frontmatter key' });
-    helpList.createEl('li', { text: 'n or n(Label): Shows field name before value (e.g., "Title: My Project")' });
-    helpList.createEl('li', { text: 's: Includes field in + search (in addition to default searchable fields)' });
-    helpList.createEl('li', { text: 'Example: {title|n(Title)|s} displays "Title: My Project" and includes title in search' });
+    helpList.createEl('li', { text: 'Available properties: title, aliases, file.path, file.parent, or any frontmatter field' });
+    helpList.createEl('li', { text: 'Add labels: {title|n(Title)} → "Title: My Project"' });
+    helpList.createEl('li', { text: 'Make searchable: {description|s} includes description in + search' });
+    helpList.createEl('li', { text: 'Static text: literal:My Custom Label' });
     helpContainer.createEl('p', {
-        text: 'Combine multiple flags with pipes. Default searchable fields are always included: filename, title (via field mapping), and aliases.',
+        text: 'Filename, title, and aliases are always searchable by default.',
         cls: 'settings-help-note'
     });
 }
