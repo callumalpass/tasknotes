@@ -530,7 +530,7 @@ export function renderAppearanceTab(container: HTMLElement, plugin: TaskNotesPlu
 
     // Project Autosuggest Section
     createSectionHeader(container, 'Project Autosuggest');
-    createHelpText(container, 'Customize how project suggestions display when typing + in task creation.');
+    createHelpText(container, 'Customize how project suggestions display during task creation.');
 
     // Tag filtering
     createTextSetting(container, {
