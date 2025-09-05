@@ -154,7 +154,8 @@ export const DEFAULT_PROJECT_AUTOSUGGEST: ProjectAutosuggestSettings = {
 		'{title|n(Title)}',
 		'{aliases|n(Aliases)}',
 		'{file.path|n(Path)}'
-	]
+	],
+	showAdvanced: false
 };
 
 export const DEFAULT_SETTINGS: TaskNotesSettings = {

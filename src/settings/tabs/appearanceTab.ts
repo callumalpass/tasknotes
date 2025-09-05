@@ -533,71 +533,89 @@ export function renderAppearanceTab(container: HTMLElement, plugin: TaskNotesPlu
     createHelpText(container, 'Customize how project suggestions display when typing + in task creation.');
 
     createToggleSetting(container, {
-        name: 'Enable fuzzy matching',
-        desc: 'Allow typos and partial matches in project search. May be slower in large vaults.',
-        getValue: () => plugin.settings.projectAutosuggest?.enableFuzzy ?? false,
+        name: 'Customize suggestion display',
+        desc: 'Show advanced options to configure how project suggestions appear and what information they display.',
+        getValue: () => plugin.settings.projectAutosuggest?.showAdvanced ?? false,
         setValue: async (value: boolean) => {
             if (!plugin.settings.projectAutosuggest) {
-                plugin.settings.projectAutosuggest = { enableFuzzy: false, rows: [] };
+                plugin.settings.projectAutosuggest = { enableFuzzy: false, rows: [], showAdvanced: false };
             }
-            plugin.settings.projectAutosuggest.enableFuzzy = value;
+            plugin.settings.projectAutosuggest.showAdvanced = value;
             save();
+            // Refresh the settings display
+            renderAppearanceTab(container, plugin, save);
         }
     });
 
-    // Display rows configuration
-    createHelpText(container, 'Configure up to 3 lines of information to show for each project suggestion.');
-    
-    const getRows = (): string[] => (plugin.settings.projectAutosuggest?.rows ?? []).slice(0, 3);
-    
-    const setRow = async (idx: number, value: string) => {
-        if (!plugin.settings.projectAutosuggest) {
-            plugin.settings.projectAutosuggest = { enableFuzzy: false, rows: [] };
-        }
-        const current = plugin.settings.projectAutosuggest.rows ?? [];
-        const next = [...current];
-        next[idx] = value;
-        plugin.settings.projectAutosuggest.rows = next.slice(0, 3);
-        save();
-    };
+    // Only show advanced settings if enabled
+    if (plugin.settings.projectAutosuggest?.showAdvanced) {
+        createToggleSetting(container, {
+            name: 'Enable fuzzy matching',
+            desc: 'Allow typos and partial matches in project search. May be slower in large vaults.',
+            getValue: () => plugin.settings.projectAutosuggest?.enableFuzzy ?? false,
+            setValue: async (value: boolean) => {
+                if (!plugin.settings.projectAutosuggest) {
+                    plugin.settings.projectAutosuggest = { enableFuzzy: false, rows: [], showAdvanced: false };
+                }
+                plugin.settings.projectAutosuggest.enableFuzzy = value;
+                save();
+            }
+        });
 
-    createTextSetting(container, {
-        name: 'Row 1',
-        desc: 'Format: {property|flags}. Properties: title, aliases, file.path, file.parent. Flags: n(Label) shows label, s makes searchable. Example: {title|n(Title)|s}',
-        placeholder: '{title|n(Title)}',
-        getValue: () => getRows()[0] || '',
-        setValue: async (value: string) => setRow(0, value),
-        ariaLabel: 'Project autosuggest display row 1'
-    });
+        // Display rows configuration
+        createHelpText(container, 'Configure up to 3 lines of information to show for each project suggestion.');
+        
+        const getRows = (): string[] => (plugin.settings.projectAutosuggest?.rows ?? []).slice(0, 3);
+        
+        const setRow = async (idx: number, value: string) => {
+            if (!plugin.settings.projectAutosuggest) {
+                plugin.settings.projectAutosuggest = { enableFuzzy: false, rows: [], showAdvanced: false };
+            }
+            const current = plugin.settings.projectAutosuggest.rows ?? [];
+            const next = [...current];
+            next[idx] = value;
+            plugin.settings.projectAutosuggest.rows = next.slice(0, 3);
+            save();
+        };
 
-    createTextSetting(container, {
-        name: 'Row 2 (optional)',
-        desc: 'Common patterns: {aliases|n(Aliases)}, {file.parent|n(Folder)}, literal:Custom Text',
-        placeholder: '{aliases|n(Aliases)}',
-        getValue: () => getRows()[1] || '',
-        setValue: async (value: string) => setRow(1, value),
-        ariaLabel: 'Project autosuggest display row 2'
-    });
+        createTextSetting(container, {
+            name: 'Row 1',
+            desc: 'Format: {property|flags}. Properties: title, aliases, file.path, file.parent. Flags: n(Label) shows label, s makes searchable. Example: {title|n(Title)|s}',
+            placeholder: '{title|n(Title)}',
+            getValue: () => getRows()[0] || '',
+            setValue: async (value: string) => setRow(0, value),
+            ariaLabel: 'Project autosuggest display row 1'
+        });
 
-    createTextSetting(container, {
-        name: 'Row 3 (optional)',
-        desc: 'Additional info like {file.path|n(Path)} or custom frontmatter fields',
-        placeholder: '{file.path|n(Path)}',
-        getValue: () => getRows()[2] || '',
-        setValue: async (value: string) => setRow(2, value),
-        ariaLabel: 'Project autosuggest display row 3'
-    });
+        createTextSetting(container, {
+            name: 'Row 2 (optional)',
+            desc: 'Common patterns: {aliases|n(Aliases)}, {file.parent|n(Folder)}, literal:Custom Text',
+            placeholder: '{aliases|n(Aliases)}',
+            getValue: () => getRows()[1] || '',
+            setValue: async (value: string) => setRow(1, value),
+            ariaLabel: 'Project autosuggest display row 2'
+        });
 
-    // Concise help section
-    const helpContainer = container.createDiv('tasknotes-settings__help-section');
-    helpContainer.createEl('h4', { text: 'Quick Reference' });
-    const helpList = helpContainer.createEl('ul');
-    helpList.createEl('li', { text: 'Available properties: title, aliases, file.path, file.parent, or any frontmatter field' });
-    helpList.createEl('li', { text: 'Add labels: {title|n(Title)} → "Title: My Project"' });
-    helpList.createEl('li', { text: 'Make searchable: {description|s} includes description in + search' });
-    helpList.createEl('li', { text: 'Static text: literal:My Custom Label' });
-    helpContainer.createEl('p', {
-        text: 'Filename, title, and aliases are always searchable by default.',
-        cls: 'settings-help-note'
-    });
+        createTextSetting(container, {
+            name: 'Row 3 (optional)',
+            desc: 'Additional info like {file.path|n(Path)} or custom frontmatter fields',
+            placeholder: '{file.path|n(Path)}',
+            getValue: () => getRows()[2] || '',
+            setValue: async (value: string) => setRow(2, value),
+            ariaLabel: 'Project autosuggest display row 3'
+        });
+
+        // Concise help section
+        const helpContainer = container.createDiv('tasknotes-settings__help-section');
+        helpContainer.createEl('h4', { text: 'Quick Reference' });
+        const helpList = helpContainer.createEl('ul');
+        helpList.createEl('li', { text: 'Available properties: title, aliases, file.path, file.parent, or any frontmatter field' });
+        helpList.createEl('li', { text: 'Add labels: {title|n(Title)} → "Title: My Project"' });
+        helpList.createEl('li', { text: 'Make searchable: {description|s} includes description in + search' });
+        helpList.createEl('li', { text: 'Static text: literal:My Custom Label' });
+        helpContainer.createEl('p', {
+            text: 'Filename, title, and aliases are always searchable by default.',
+            cls: 'settings-help-note'
+        });
+    }
 }

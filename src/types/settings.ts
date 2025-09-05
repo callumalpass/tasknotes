@@ -18,6 +18,7 @@ export interface UserMappedField {
 export interface ProjectAutosuggestSettings {
 	enableFuzzy: boolean;
 	rows: string[]; // up to 3 rows; each uses {property|flags} format
+	showAdvanced?: boolean; // Show advanced configuration options
 }
 
 export interface TaskNotesSettings {
