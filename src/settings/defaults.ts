@@ -1,5 +1,5 @@
 import { FieldMapping, StatusConfig, PriorityConfig } from '../types';
-import { TaskNotesSettings, TaskCreationDefaults, CalendarViewSettings, ICSIntegrationSettings } from '../types/settings';
+import { TaskNotesSettings, TaskCreationDefaults, CalendarViewSettings, ICSIntegrationSettings, ProjectAutosuggestSettings } from '../types/settings';
 
 // Default field mapping maintains backward compatibility
 export const DEFAULT_FIELD_MAPPING: FieldMapping = {
@@ -148,6 +148,18 @@ export const DEFAULT_ICS_INTEGRATION_SETTINGS: ICSIntegrationSettings = {
 	customICSNoteFilenameTemplate: '{title}' // Simple title template for ICS notes
 };
 
+export const DEFAULT_PROJECT_AUTOSUGGEST: ProjectAutosuggestSettings = {
+	enableFuzzy: false,
+	rows: [
+		'{title|n(Title)}',
+		'{aliases|n(Aliases)}',
+		'{file.path|n(Path)}'
+	],
+	showAdvanced: false,
+	requiredTags: [],
+	includeFolders: []
+};
+
 export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	tasksFolder: 'TaskNotes/Tasks',
 	moveArchivedTasks: false,
@@ -190,6 +202,9 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 
 	singleClickAction: 'edit',
 	doubleClickAction: 'openNote',
+	// Autosuggest project card defaults
+	projectAutosuggest: DEFAULT_PROJECT_AUTOSUGGEST,
+
 	// Inline task conversion defaults
 	inlineTaskConvertFolder: '{{currentNotePath}}',
 	// Performance defaults

@@ -13,7 +13,7 @@ import type { App } from 'obsidian';
 const createMockApp = (mockApp: any): App => mockApp as unknown as App;
 
 // Mock only essential external dependencies
-jest.mock('obsidian');
+jest.unmock('obsidian');
 
 // Mock helper functions
 jest.mock('../../../src/utils/helpers', () => ({
