@@ -6,7 +6,7 @@ import { buildTasknotesTaskListViewFactory } from './view-factory';
  * Register TaskNotes Task List view with Bases plugin
  */
 export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<void> {
-  if (!plugin.settings.enableBasesPOC) return;
+  if (!plugin.settings.enableBases) return;
   if (!requireApiVersion('1.9.12')) return;
 
   const attemptRegistration = async (): Promise<boolean> => {

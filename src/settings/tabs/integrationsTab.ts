@@ -64,8 +64,30 @@ function getRelativeTime(date: Date): string {
 export function renderIntegrationsTab(container: HTMLElement, plugin: TaskNotesPlugin, save: () => void): void {
     container.empty();
 
+    // Bases Integration Section
+    createSectionHeader(container, 'Bases integration');
+    createHelpText(container, 'Configure integration with the Obsidian Bases plugin. This is an experimental feature, and currently relies on undocumented Obsidian APIs. Behaviour may change or break. ');
+
+    // Bases toggle
+    createToggleSetting(container, {
+        name: 'Enable Bases integration',
+        desc: 'Enable TaskNotes views to be used within Obsidian Bases plugin. Bases plugin must be enabled for this to work.',
+        getValue: () => plugin.settings.enableBases,
+        setValue: async (value: boolean) => {
+            plugin.settings.enableBases = value;
+            save();
+            
+            // Show notice about restart requirement
+            if (value) {
+                new Notice('Bases integration enabled. Please restart Obsidian to complete the setup.');
+            } else {
+                new Notice('Bases integration disabled. Please restart Obsidian to complete the removal.');
+            }
+        }
+    });
+
     // Calendar Subscriptions Section (ICS)
-    createSectionHeader(container, 'Calendar Subscriptions');
+    createSectionHeader(container, 'Calendar subscriptions');
     createHelpText(container, 'Subscribe to external calendars via ICS/iCal URLs to view events alongside your tasks.');
 
     // Default settings for ICS integration
@@ -123,7 +145,7 @@ export function renderIntegrationsTab(container: HTMLElement, plugin: TaskNotesP
     }
 
     // ICS Subscriptions List - Add proper section header
-    createSectionHeader(container, 'Calendar Subscriptions List');
+    createSectionHeader(container, 'Calendar subscriptions list');
     const icsContainer = container.createDiv('ics-subscriptions-container');
     renderICSSubscriptionsList(icsContainer, plugin, save);
 
@@ -294,31 +316,8 @@ export function renderIntegrationsTab(container: HTMLElement, plugin: TaskNotesP
     }
 
     // Other Integrations Section
-    createSectionHeader(container, 'Plugin Integrations');
+    createSectionHeader(container, 'Other plugin integrations');
     createHelpText(container, 'Configure integrations with other Obsidian plugins.');
-
-    // Bases integration (commented out for now due to type issues)
-    // const basesFiles = (plugin.app as any).plugins?.plugins?.['bases']?.settings?.files || [];
-    // if (basesFiles.length > 0) {
-    //     createDropdownSetting(container, {
-    //         name: 'Bases integration',
-    //         desc: 'Integrate with Bases plugin for enhanced data management',
-    //         options: [
-    //             { value: '', label: 'Disabled' },
-    //             ...basesFiles.map((file: any) => ({
-    //                 value: file.path,
-    //                 label: file.name || file.path
-    //             }))
-    //         ],
-    //         getValue: () => (plugin.settings.icsIntegration as any).basesIntegration || '',
-    //         setValue: async (value: string) => {
-    //             (plugin.settings.icsIntegration as any).basesIntegration = value;
-    //             save();
-    //         }
-    //     });
-    // } else {
-    //     createHelpText(container, 'Install the Bases plugin to enable enhanced data management features.');
-    // }
 }
 
 function renderICSSubscriptionsList(container: HTMLElement, plugin: TaskNotesPlugin, save: () => void): void {

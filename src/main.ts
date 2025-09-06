@@ -273,7 +273,7 @@ export default class TaskNotesPlugin extends Plugin {
 		this.migrationPromise = this.performEarlyMigrationCheck();
 
 		// Early registration attempt for Bases integration
-		if (this.settings?.enableBasesPOC) {
+		if (this.settings?.enableBases) {
 			try {
 				const { registerBasesTaskList } = await import('./bases/registration');
 				await registerBasesTaskList(this);
@@ -407,7 +407,7 @@ export default class TaskNotesPlugin extends Plugin {
 			this.initializeServicesLazily();
 
 			// Register TaskNotes views with Bases plugin (if enabled)
-			if (this.settings?.enableBasesPOC) {
+			if (this.settings?.enableBases) {
 				try {
 					const { registerBasesTaskList } = await import('./bases/registration');
 					await registerBasesTaskList(this);

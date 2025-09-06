@@ -3792,9 +3792,9 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 			.addToggle(toggle => {
 				toggle.toggleEl.setAttribute('aria-label', 'Enable Bases integration proof of concept');
 				return toggle
-					.setValue(this.plugin.settings.enableBasesPOC)
+					.setValue(this.plugin.settings.enableBases)
 					.onChange(async (value) => {
-						this.plugin.settings.enableBasesPOC = value;
+						this.plugin.settings.enableBases = value;
 						await this.plugin.saveSettings();
 						
 						// Show notice about restart requirement
