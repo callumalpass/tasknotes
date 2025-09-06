@@ -1,5 +1,5 @@
 import TaskNotesPlugin from '../main';
-import { TextComponent, debounce, setTooltip, ButtonComponent, setIcon } from 'obsidian';
+import { TextComponent, debounce, setTooltip, ButtonComponent, setIcon, TFile } from 'obsidian';
 import { BasesDataItem, identifyTaskNotesFromBasesData, renderTaskNotesInBasesView } from './helpers';
 import { getTaskNotesTasklistRows } from './tasklist-rows';
 import { buildSearchIndex, filterTasksBySearch } from './search';
@@ -119,6 +119,105 @@ export function buildTasknotesAgendaViewFactory(plugin: TaskNotesPlugin) {
     itemsContainer.className = 'tn-bases-items-container';
     itemsContainer.style.cssText = 'margin-top: 12px;';
     root.appendChild(itemsContainer);
+
+    /**
+     * Add "+New" button to the right side of the controls
+     */
+    const addNewTaskButton = () => {
+      // Remove any existing "+New" button first
+      controls.querySelectorAll('.filter-bar__new-task-button').forEach(el => el.remove());
+
+      const newTaskButton = new ButtonComponent(controls)
+        .setTooltip('Create new task')
+        .setClass('filter-bar__new-task-button')
+        .onClick(() => {
+          createNewTaskWithContext();
+        });
+      newTaskButton.buttonEl.addClass('clickable-icon');
+      newTaskButton.buttonEl.addClass('has-text-icon');
+
+      // Clear any existing content and build manually
+      newTaskButton.buttonEl.empty();
+
+      // Add icon
+      const iconEl = newTaskButton.buttonEl.createSpan({ cls: 'button-icon' });
+      setIcon(iconEl, 'plus');
+
+      // Add text
+      const textEl = newTaskButton.buttonEl.createSpan({ cls: 'button-text', text: 'New' });
+    };
+
+    /**
+     * Context-aware task creation based on workspace position
+     */
+    const createNewTaskWithContext = () => {
+      try {
+        // Detect workspace position and determine context
+        const context = detectWorkspaceContext();
+
+        if (context.isInSidebar) {
+          // Sidebar mode: Use active file as project context
+          const activeFile = plugin.app.workspace.getActiveFile();
+          if (activeFile) {
+            const projectReference = `[[${activeFile.basename}]]`;
+            plugin.openTaskCreationModal({
+              projects: [projectReference]
+            });
+          } else {
+            // No active file, create standalone task
+            plugin.openTaskCreationModal();
+          }
+        } else {
+          // Main content mode: Create standalone task
+          plugin.openTaskCreationModal();
+        }
+      } catch (error) {
+        console.error('[TaskNotes][Bases] Error creating new task:', error);
+        // Fallback to basic task creation
+        plugin.openTaskCreationModal();
+      }
+    };
+
+    /**
+     * Detect if the Bases view is in sidebar vs main content area
+     */
+    const detectWorkspaceContext = () => {
+      try {
+        // Try to find the workspace leaf containing this view
+        const workspace = plugin.app.workspace;
+        let currentLeaf = null;
+
+        // Search through all leaves to find the one containing our view
+        workspace.iterateAllLeaves((leaf) => {
+          if (leaf.view && leaf.view.containerEl &&
+              leaf.view.containerEl.contains(viewContainerEl)) {
+            currentLeaf = leaf;
+          }
+        });
+
+        if (!currentLeaf) {
+          // Fallback: assume main content if we can't determine
+          return { isInSidebar: false, leaf: null };
+        }
+
+        // Check if the leaf is in a sidebar by examining its parent structure
+        const leafEl = currentLeaf.containerEl;
+        const isInLeftSidebar = leafEl.closest('.workspace-split.mod-left-split') !== null;
+        const isInRightSidebar = leafEl.closest('.workspace-split.mod-right-split') !== null;
+        const isInSidebar = isInLeftSidebar || isInRightSidebar;
+
+        return {
+          isInSidebar,
+          isInLeftSidebar,
+          isInRightSidebar,
+          leaf: currentLeaf
+        };
+      } catch (error) {
+        console.error('[TaskNotes][Bases] Error detecting workspace context:', error);
+        // Safe fallback
+        return { isInSidebar: false, leaf: null };
+      }
+    };
 
     const extractDataItems = (): BasesDataItem[] => {
       const dataItems: BasesDataItem[] = [];
@@ -366,6 +465,9 @@ export function buildTasknotesAgendaViewFactory(plugin: TaskNotesPlugin) {
             }
             GroupingUtils.collapseAllGroups(BASES_TASK_LIST_VIEW_TYPE, 'bases:agenda', names, plugin);
           });
+
+          // Add "+New" button after expand/collapse buttons
+          addNewTaskButton();
         } catch (_) { /* ignore */ }
       } catch (error) {
         console.error('[TaskNotes][BasesPOC] Error rendering Bases Agenda:', error);
