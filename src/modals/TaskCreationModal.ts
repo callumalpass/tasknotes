@@ -177,7 +177,8 @@ class NLPSuggest extends AbstractInputSuggest<TagSuggestion | ContextSuggestion 
             const statusService = new StatusSuggestionService(
                 this.plugin.settings.customStatuses,
                 this.plugin.settings.customPriorities,
-                this.plugin.settings.nlpDefaultToScheduled
+                this.plugin.settings.nlpDefaultToScheduled,
+                this.plugin.settings.nlpLanguage
             );
             return statusService.getStatusSuggestions(
                 queryAfterTrigger,
@@ -510,14 +511,16 @@ export class TaskCreationModal extends TaskModal {
         this.nlParser = new NaturalLanguageParser(
             plugin.settings.customStatuses,
             plugin.settings.customPriorities,
-            plugin.settings.nlpDefaultToScheduled
+            plugin.settings.nlpDefaultToScheduled,
+            plugin.settings.nlpLanguage
         );
 
         // Use injected service or create default one
         this.statusSuggestionService = statusSuggestionService || new StatusSuggestionService(
             plugin.settings.customStatuses,
             plugin.settings.customPriorities,
-            plugin.settings.nlpDefaultToScheduled
+            plugin.settings.nlpDefaultToScheduled,
+            plugin.settings.nlpLanguage
         );
     }
 

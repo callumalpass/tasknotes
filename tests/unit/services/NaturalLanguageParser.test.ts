@@ -214,6 +214,13 @@ describe('NaturalLanguageParser', () => {
       expect(result.projects).toEqual(['[[../../Untitled 9|Untitled 9]]']);
       expect(result.title).toBe('this is a test');
     });
+
+    it('should handle projects with hyphens', () => {
+      const result = parser.parseInput('Update +project-with-hyphens documentation');
+
+      expect(result.projects).toEqual(['project-with-hyphens']);
+      expect(result.title).toBe('Update documentation');
+    });
   });
 
   describe('Priority Extraction', () => {
@@ -487,6 +494,17 @@ describe('NaturalLanguageParser', () => {
       expect(result.title).toBe('Review');
     });
 
+    it('should parse second/third/fourth weekdays', () => {
+      let result = parser.parseInput('Meeting every second monday');
+      expect(result.recurrence).toBe('FREQ=MONTHLY;BYDAY=MO;BYSETPOS=2');
+
+      result = parser.parseInput('Meeting every third wednesday');
+      expect(result.recurrence).toBe('FREQ=MONTHLY;BYDAY=WE;BYSETPOS=3');
+
+      result = parser.parseInput('Meeting every fourth friday');
+      expect(result.recurrence).toBe('FREQ=MONTHLY;BYDAY=FR;BYSETPOS=4');
+    });
+
     it('should validate RRule strings and reject invalid ones', () => {
       // Mock an invalid scenario internally
       const result = parser.parseInput('Meeting with invalid recurrence pattern');
@@ -522,6 +540,13 @@ describe('NaturalLanguageParser', () => {
       const result = parser.parseInput('Long meeting 1h30m');
 
       expect(result.estimate).toBe(90); // 1 hour 30 minutes = 90 minutes
+      expect(result.title).toBe('Long meeting');
+    });
+
+    it('should parse combined format with space', () => {
+      const result = parser.parseInput('Long meeting 1h 30m');
+
+      expect(result.estimate).toBe(90);
       expect(result.title).toBe('Long meeting');
     });
 
@@ -633,6 +658,12 @@ describe('NaturalLanguageParser', () => {
       expect(result.title).toBe('Untitled Task');
       expect(result.tags).toEqual(['tag']);
       expect(result.contexts).toEqual(['context']);
+    });
+
+    it('should not match keywords that are substrings of other words', () => {
+      const result = parser.parseInput('This is a task for the donec project');
+      expect(result.status).toBeUndefined();
+      expect(result.title).toBe('This is a task for the donec project');
     });
   });
 
