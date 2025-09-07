@@ -43,6 +43,36 @@ describe('Language Configuration System', () => {
             expect(languageRegistry['ja'].name).toBe('日本語');
             expect(languageRegistry['ja'].code).toBe('ja');
         });
+
+        it('should contain Italian configuration', () => {
+            expect(languageRegistry['it']).toBeDefined();
+            expect(languageRegistry['it'].name).toBe('Italiano');
+            expect(languageRegistry['it'].code).toBe('it');
+        });
+
+        it('should contain Dutch configuration', () => {
+            expect(languageRegistry['nl']).toBeDefined();
+            expect(languageRegistry['nl'].name).toBe('Nederlands');
+            expect(languageRegistry['nl'].code).toBe('nl');
+        });
+
+        it('should contain Portuguese configuration', () => {
+            expect(languageRegistry['pt']).toBeDefined();
+            expect(languageRegistry['pt'].name).toBe('Português');
+            expect(languageRegistry['pt'].code).toBe('pt');
+        });
+
+        it('should contain Swedish configuration', () => {
+            expect(languageRegistry['sv']).toBeDefined();
+            expect(languageRegistry['sv'].name).toBe('Svenska');
+            expect(languageRegistry['sv'].code).toBe('sv');
+        });
+
+        it('should contain Ukrainian configuration', () => {
+            expect(languageRegistry['uk']).toBeDefined();
+            expect(languageRegistry['uk'].name).toBe('Українська');
+            expect(languageRegistry['uk'].code).toBe('uk');
+        });
     });
 
     describe('getAvailableLanguages', () => {
@@ -55,7 +85,12 @@ describe('Language Configuration System', () => {
                 { value: 'de', label: 'Deutsch' },
                 { value: 'ru', label: 'Русский' },
                 { value: 'zh', label: '中文' },
-                { value: 'ja', label: '日本語' }
+                { value: 'ja', label: '日本語' },
+                { value: 'it', label: 'Italiano' },
+                { value: 'nl', label: 'Nederlands' },
+                { value: 'pt', label: 'Português' },
+                { value: 'sv', label: 'Svenska' },
+                { value: 'uk', label: 'Українська' }
             ]);
         });
     });
@@ -97,7 +132,7 @@ describe('Language Configuration System', () => {
         it('should fallback to English for unsupported system language', () => {
             // Mock navigator.language
             const originalNavigator = global.navigator;
-            const mockNavigator = { language: 'it-IT' }; // Italian not supported yet
+            const mockNavigator = { language: 'ko-KR' }; // Korean not supported
             Object.defineProperty(global, 'navigator', {
                 value: mockNavigator,
                 writable: true
@@ -134,7 +169,7 @@ describe('Language Configuration System', () => {
 
     describe('Language Configuration Structure', () => {
         it('should have consistent structure across all languages', () => {
-            const languages = ['en', 'es', 'fr', 'de', 'ru', 'zh', 'ja'];
+            const languages = ['en', 'es', 'fr', 'de', 'ru', 'zh', 'ja', 'it', 'nl', 'pt', 'sv', 'uk'];
             
             languages.forEach(langCode => {
                 const config = languageRegistry[langCode];

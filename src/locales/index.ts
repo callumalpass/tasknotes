@@ -6,6 +6,11 @@ import { deConfig } from './de';
 import { ruConfig } from './ru';
 import { zhConfig } from './zh';
 import { jaConfig } from './ja';
+import { itConfig } from './it';
+import { nlConfig } from './nl';
+import { ptConfig } from './pt';
+import { svConfig } from './sv';
+import { ukConfig } from './uk';
 
 /**
  * Registry of all available language configurations
@@ -17,7 +22,12 @@ export const languageRegistry: LanguageRegistry = {
     de: deConfig,
     ru: ruConfig,
     zh: zhConfig,
-    ja: jaConfig
+    ja: jaConfig,
+    it: itConfig,
+    nl: nlConfig,
+    pt: ptConfig,
+    sv: svConfig,
+    uk: ukConfig
 };
 
 /**

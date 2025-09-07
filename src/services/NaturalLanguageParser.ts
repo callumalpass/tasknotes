@@ -240,7 +240,7 @@ export class NaturalLanguageParser {
         
         // Build regex patterns from language config with proper escaping and boundary handling
         // Use lookahead/lookbehind for non-ASCII languages where \b doesn't work well
-        const isNonAscii = ['ru', 'zh', 'ja'].includes(this.languageConfig.code);
+        const isNonAscii = ['ru', 'zh', 'ja', 'uk'].includes(this.languageConfig.code);
         const boundary = isNonAscii ? '(?:^|\\s)' : '\\b';
         const endBoundary = isNonAscii ? '(?=\\s|$)' : '\\b';
         
@@ -293,7 +293,7 @@ export class NaturalLanguageParser {
         const langConfig = this.languageConfig.fallbackStatus;
         
         // Use appropriate boundary matching for different languages
-        const isNonAscii = ['ru', 'zh', 'ja'].includes(this.languageConfig.code);
+        const isNonAscii = ['ru', 'zh', 'ja', 'uk'].includes(this.languageConfig.code);
         const boundary = isNonAscii ? '(?:^|\\s)' : '\\b';
         const endBoundary = isNonAscii ? '(?=\\s|$)' : '\\b';
         
@@ -574,7 +574,7 @@ export class NaturalLanguageParser {
         const patterns = [];
         
         // Use appropriate boundary matching for different languages
-        const isNonAscii = ['ru', 'zh', 'ja'].includes(this.languageConfig.code);
+        const isNonAscii = ['ru', 'zh', 'ja', 'uk'].includes(this.languageConfig.code);
         const boundary = isNonAscii ? '(?:^|\\s)' : '\\b';
         const endBoundary = isNonAscii ? '(?=\\s|$)' : '\\b';
         
@@ -793,7 +793,7 @@ export class NaturalLanguageParser {
         const langConfig = this.languageConfig.timeEstimate;
         
         // Use appropriate boundary matching for different languages
-        const isNonAscii = ['ru', 'zh', 'ja'].includes(this.languageConfig.code);
+        const isNonAscii = ['ru', 'zh', 'ja', 'uk'].includes(this.languageConfig.code);
         const boundary = isNonAscii ? '(?:^|\\s)' : '\\b';
         const endBoundary = isNonAscii ? '(?=\\s|$)' : '\\b';
         

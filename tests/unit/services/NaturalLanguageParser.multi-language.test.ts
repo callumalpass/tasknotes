@@ -253,6 +253,171 @@ describe('NaturalLanguageParser Multi-Language', () => {
         });
     });
 
+    describe('Italian Language', () => {
+        let parser: NaturalLanguageParser;
+
+        beforeEach(() => {
+            // Use empty configs to test language fallback patterns
+            parser = new NaturalLanguageParser([], [], true, 'it');
+        });
+
+        it('should parse Italian priority keywords', () => {
+            const result = parser.parseInput('riunione urgente domani');
+            expect(result.priority).toBe('urgent');
+            expect(result.title).toMatch(/riunione/);
+        });
+
+        it('should parse Italian status keywords', () => {
+            const result = parser.parseInput('attività completato');
+            expect(result.status).toBe('done');
+            expect(result.title).toBe('attività');
+        });
+
+        it('should parse Italian time estimates', () => {
+            const result = parser.parseInput('attività 2 ore 30 minuti');
+            expect(result.estimate).toBe(150); // 2*60 + 30 = 150 minutes
+            expect(result.title).toBe('attività');
+        });
+
+        it('should parse Italian recurrence patterns', () => {
+            const result = parser.parseInput('riunione giornaliera team');
+            expect(result.recurrence).toBe('FREQ=DAILY');
+            expect(result.title).toMatch(/riunione.*team/);
+        });
+    });
+
+    describe('Dutch Language', () => {
+        let parser: NaturalLanguageParser;
+
+        beforeEach(() => {
+            // Use empty configs to test language fallback patterns
+            parser = new NaturalLanguageParser([], [], true, 'nl');
+        });
+
+        it('should parse Dutch priority keywords', () => {
+            const result = parser.parseInput('vergadering urgent morgen');
+            expect(result.priority).toBe('urgent');
+            expect(result.title).toMatch(/vergadering/);
+        });
+
+        it('should parse Dutch status keywords', () => {
+            const result = parser.parseInput('taak voltooid');
+            expect(result.status).toBe('done');
+            expect(result.title).toBe('taak');
+        });
+
+        it('should parse Dutch time estimates', () => {
+            const result = parser.parseInput('taak 2 uur 30 minuten');
+            expect(result.estimate).toBe(150); // 2*60 + 30 = 150 minutes
+            expect(result.title).toBe('taak');
+        });
+
+        it('should parse Dutch recurrence patterns', () => {
+            const result = parser.parseInput('vergadering dagelijks team');
+            expect(result.recurrence).toBe('FREQ=DAILY');
+            expect(result.title).toMatch(/vergadering.*team/);
+        });
+    });
+
+    describe('Portuguese Language', () => {
+        let parser: NaturalLanguageParser;
+
+        beforeEach(() => {
+            // Use empty configs to test language fallback patterns
+            parser = new NaturalLanguageParser([], [], true, 'pt');
+        });
+
+        it('should parse Portuguese priority keywords', () => {
+            const result = parser.parseInput('reunião urgente amanhã');
+            expect(result.priority).toBe('urgent');
+            expect(result.title).toMatch(/reunião/);
+        });
+
+        it('should parse Portuguese status keywords', () => {
+            const result = parser.parseInput('tarefa concluído');
+            expect(result.status).toBe('done');
+            expect(result.title).toBe('tarefa');
+        });
+
+        it('should parse Portuguese time estimates', () => {
+            const result = parser.parseInput('tarefa 2 horas 30 minutos');
+            expect(result.estimate).toBe(150); // 2*60 + 30 = 150 minutes
+            expect(result.title).toBe('tarefa');
+        });
+
+        it('should parse Portuguese recurrence patterns', () => {
+            const result = parser.parseInput('reunião diária equipe');
+            expect(result.recurrence).toBe('FREQ=DAILY');
+            expect(result.title).toMatch(/reunião.*equipe/);
+        });
+    });
+
+    describe('Swedish Language', () => {
+        let parser: NaturalLanguageParser;
+
+        beforeEach(() => {
+            // Use empty configs to test language fallback patterns
+            parser = new NaturalLanguageParser([], [], true, 'sv');
+        });
+
+        it('should parse Swedish priority keywords', () => {
+            const result = parser.parseInput('möte brådskande imorgon');
+            expect(result.priority).toBe('urgent');
+            expect(result.title).toMatch(/möte/);
+        });
+
+        it('should parse Swedish status keywords', () => {
+            const result = parser.parseInput('uppgift klar');
+            expect(result.status).toBe('done');
+            expect(result.title).toBe('uppgift');
+        });
+
+        it('should parse Swedish time estimates', () => {
+            const result = parser.parseInput('uppgift 2 timmar 30 minuter');
+            expect(result.estimate).toBe(150); // 2*60 + 30 = 150 minutes
+            expect(result.title).toBe('uppgift');
+        });
+
+        it('should parse Swedish recurrence patterns', () => {
+            const result = parser.parseInput('möte dagligen team');
+            expect(result.recurrence).toBe('FREQ=DAILY');
+            expect(result.title).toMatch(/möte.*team/);
+        });
+    });
+
+    describe('Ukrainian Language', () => {
+        let parser: NaturalLanguageParser;
+
+        beforeEach(() => {
+            // Use empty configs to test language fallback patterns
+            parser = new NaturalLanguageParser([], [], true, 'uk');
+        });
+
+        it('should parse Ukrainian priority keywords', () => {
+            const result = parser.parseInput('зустріч терміново завтра');
+            expect(result.priority).toBe('urgent');
+            expect(result.title).toMatch(/зустріч/);
+        });
+
+        it('should parse Ukrainian status keywords', () => {
+            const result = parser.parseInput('завдання виконано');
+            expect(result.status).toBe('done');
+            expect(result.title).toBe('завдання');
+        });
+
+        it('should parse Ukrainian time estimates', () => {
+            const result = parser.parseInput('завдання 2 години 30 хвилин');
+            expect(result.estimate).toBe(150); // 2*60 + 30 = 150 minutes
+            expect(result.title).toBe('завдання');
+        });
+
+        it('should parse Ukrainian recurrence patterns', () => {
+            const result = parser.parseInput('зустріч щодня команда');
+            expect(result.recurrence).toBe('FREQ=DAILY');
+            expect(result.title).toMatch(/зустріч.*команда/);
+        });
+    });
+
     describe('Language Fallback', () => {
         it('should fallback to English for unsupported language codes', () => {
             const parser = new NaturalLanguageParser(mockStatusConfigs, mockPriorityConfigs, true, 'unsupported');
