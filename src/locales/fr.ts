@@ -35,6 +35,16 @@ export const frConfig: NLPLanguageConfig = {
             sunday: ['dimanche']
         },
         
+        pluralWeekdays: {
+            monday: ['lundi'],
+            tuesday: ['mardi'],
+            wednesday: ['mercredi'],
+            thursday: ['jeudi'],
+            friday: ['vendredi'],
+            saturday: ['samedi'],
+            sunday: ['dimanche']
+        },
+        
         ordinals: {
             first: ['premier', 'première'],
             second: ['deuxième', 'second', 'seconde'],

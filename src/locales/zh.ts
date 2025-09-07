@@ -35,6 +35,16 @@ export const zhConfig: NLPLanguageConfig = {
             sunday: ['周日', '星期日', '礼拜日']
         },
         
+        pluralWeekdays: {
+            monday: ['周一', '星期一', '礼拜一'],
+            tuesday: ['周二', '星期二', '礼拜二'],
+            wednesday: ['周三', '星期三', '礼拜三'],
+            thursday: ['周四', '星期四', '礼拜四'],
+            friday: ['周五', '星期五', '礼拜五'],
+            saturday: ['周六', '星期六', '礼拜六'],
+            sunday: ['周日', '星期日', '礼拜日']
+        },
+        
         ordinals: {
             first: ['第一个', '第一', '首个'],
             second: ['第二个', '第二'],

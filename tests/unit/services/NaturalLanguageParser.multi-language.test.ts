@@ -220,6 +220,39 @@ describe('NaturalLanguageParser Multi-Language', () => {
         });
     });
 
+    describe('Japanese Language', () => {
+        let parser: NaturalLanguageParser;
+
+        beforeEach(() => {
+            // Use empty configs to test language fallback patterns
+            parser = new NaturalLanguageParser([], [], true, 'ja');
+        });
+
+        it('should parse Japanese priority keywords', () => {
+            const result = parser.parseInput('会議 緊急 明日');
+            expect(result.priority).toBe('urgent');
+            expect(result.title).toMatch(/会議/);
+        });
+
+        it('should parse Japanese status keywords', () => {
+            const result = parser.parseInput('タスク 完了');
+            expect(result.status).toBe('done');
+            expect(result.title).toBe('タスク');
+        });
+
+        it('should parse Japanese time estimates', () => {
+            const result = parser.parseInput('タスク 2 時間 30 分');
+            expect(result.estimate).toBe(150); // 2*60 + 30 = 150 minutes
+            expect(result.title).toBe('タスク');
+        });
+
+        it('should parse Japanese recurrence patterns', () => {
+            const result = parser.parseInput('会議 毎日 チーム');
+            expect(result.recurrence).toBe('FREQ=DAILY');
+            expect(result.title).toMatch(/会議.*チーム/);
+        });
+    });
+
     describe('Language Fallback', () => {
         it('should fallback to English for unsupported language codes', () => {
             const parser = new NaturalLanguageParser(mockStatusConfigs, mockPriorityConfigs, true, 'unsupported');

@@ -26,13 +26,23 @@ export const enConfig: NLPLanguageConfig = {
         other: ['other'],
         
         weekdays: {
-            monday: ['monday', 'mondays'],
-            tuesday: ['tuesday', 'tuesdays'],
-            wednesday: ['wednesday', 'wednesdays'],
-            thursday: ['thursday', 'thursdays'],
-            friday: ['friday', 'fridays'],
-            saturday: ['saturday', 'saturdays'],
-            sunday: ['sunday', 'sundays']
+            monday: ['monday'],
+            tuesday: ['tuesday'],
+            wednesday: ['wednesday'],
+            thursday: ['thursday'],
+            friday: ['friday'],
+            saturday: ['saturday'],
+            sunday: ['sunday']
+        },
+        
+        pluralWeekdays: {
+            monday: ['mondays'],
+            tuesday: ['tuesdays'],
+            wednesday: ['wednesdays'],
+            thursday: ['thursdays'],
+            friday: ['fridays'],
+            saturday: ['saturdays'],
+            sunday: ['sundays']
         },
         
         ordinals: {

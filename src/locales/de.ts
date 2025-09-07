@@ -26,13 +26,23 @@ export const deConfig: NLPLanguageConfig = {
         other: ['andere', 'anderen', 'anderes'],
         
         weekdays: {
-            monday: ['montag', 'montags'],
-            tuesday: ['dienstag', 'dienstags'],
-            wednesday: ['mittwoch', 'mittwochs'],
-            thursday: ['donnerstag', 'donnerstags'],
-            friday: ['freitag', 'freitags'],
-            saturday: ['samstag', 'samstags'],
-            sunday: ['sonntag', 'sonntags']
+            monday: ['montag'],
+            tuesday: ['dienstag'],
+            wednesday: ['mittwoch'],
+            thursday: ['donnerstag'],
+            friday: ['freitag'],
+            saturday: ['samstag'],
+            sunday: ['sonntag']
+        },
+        
+        pluralWeekdays: {
+            monday: ['montags'],
+            tuesday: ['dienstags'],
+            wednesday: ['mittwochs'],
+            thursday: ['donnerstags'],
+            friday: ['freitags'],
+            saturday: ['samstags'],
+            sunday: ['sonntags']
         },
         
         ordinals: {

@@ -49,6 +49,17 @@ export interface NLPLanguageConfig {
             sunday: string[];
         };
         
+        /** Plural weekday forms for recurrence (e.g. "mondays" implies recurring) */
+        pluralWeekdays: {
+            monday: string[];
+            tuesday: string[];
+            wednesday: string[];
+            thursday: string[];
+            friday: string[];
+            saturday: string[];
+            sunday: string[];
+        };
+        
         /** Ordinal indicators for "every [ordinal] [weekday]" */
         ordinals: {
             first: string[];

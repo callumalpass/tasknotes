@@ -27,6 +27,22 @@ interface RegexPattern {
 }
 
 /**
+ * Pipeline processor for modular parsing stages
+ */
+interface ParseProcessor {
+    name: string;
+    process(text: string, result: ParsedTaskData): string;
+}
+
+/**
+ * Processing context passed through the pipeline
+ */
+interface ProcessingContext {
+    text: string;
+    result: ParsedTaskData;
+}
+
+/**
  * Service for parsing natural language input into structured task data.
  * This refined version centralizes date parsing, pre-compiles regexes for performance,
  * and uses a more declarative pattern-matching approach for maintainability.
@@ -37,6 +53,7 @@ export class NaturalLanguageParser {
     private readonly statusConfigs: StatusConfig[];
     private readonly defaultToScheduled: boolean;
     private readonly languageConfig: NLPLanguageConfig;
+    private readonly processingPipeline: ParseProcessor[];
 
     constructor(
         statusConfigs: StatusConfig[] = [], 
@@ -53,6 +70,9 @@ export class NaturalLanguageParser {
         // Pre-compile regex patterns for performance (fallback patterns only)
         this.priorityPatterns = this.buildPriorityPatterns(priorityConfigs);
         this.statusPatterns = this.buildFallbackStatusPatterns();
+        
+        // Initialize the processing pipeline
+        this.processingPipeline = this.buildProcessingPipeline();
     }
 
     /**
@@ -60,33 +80,53 @@ export class NaturalLanguageParser {
      */
     private getChronoParser(): any {
         const locale = this.languageConfig.chronoLocale;
-        
-        // Map locale codes to chrono parsers
-        switch (locale) {
-            case 'es':
-                return (chrono as any).es || chrono; // fallback to default if not available
-            case 'fr':
-                return (chrono as any).fr || chrono;
-            case 'de':
-                return (chrono as any).de || chrono;
-            case 'nl':
-                return (chrono as any).nl || chrono;
-            case 'ru':
-                return (chrono as any).ru || chrono;
-            case 'ja':
-                return (chrono as any).ja || chrono;
-            case 'pt':
-                return (chrono as any).pt || chrono;
-            case 'zh':
-                return (chrono as any).zh || chrono;
-            default:
-                return chrono; // Default English parser
-        }
+        return (chrono as any)[locale] || chrono;
     }
 
     /**
-     * Parse natural language input into structured task data.
-     * The order of operations is crucial to avoid conflicts (e.g., parse recurrence before dates).
+     * Build the modular processing pipeline.
+     * Each processor is self-contained and operates on the current state.
+     */
+    private buildProcessingPipeline(): ParseProcessor[] {
+        return [
+            {
+                name: 'extractTags',
+                process: (text: string, result: ParsedTaskData) => this.extractTags(text, result)
+            },
+            {
+                name: 'extractContexts', 
+                process: (text: string, result: ParsedTaskData) => this.extractContexts(text, result)
+            },
+            {
+                name: 'extractProjects',
+                process: (text: string, result: ParsedTaskData) => this.extractProjects(text, result)
+            },
+            {
+                name: 'extractPriority',
+                process: (text: string, result: ParsedTaskData) => this.extractPriority(text, result)
+            },
+            {
+                name: 'extractStatus',
+                process: (text: string, result: ParsedTaskData) => this.extractStatus(text, result)
+            },
+            {
+                name: 'extractRecurrence',
+                process: (text: string, result: ParsedTaskData) => this.extractRecurrence(text, result)
+            },
+            {
+                name: 'extractTimeEstimate',
+                process: (text: string, result: ParsedTaskData) => this.extractTimeEstimate(text, result)
+            },
+            {
+                name: 'parseUnifiedDatesAndTimes',
+                process: (text: string, result: ParsedTaskData) => this.parseUnifiedDatesAndTimes(text, result)
+            }
+        ];
+    }
+
+    /**
+     * Parse natural language input into structured task data using a modular pipeline architecture.
+     * Each processing stage is self-contained and can be easily reordered, added, or removed.
      */
     public parseInput(input: string): ParsedTaskData {
         const result: ParsedTaskData = {
@@ -102,29 +142,17 @@ export class NaturalLanguageParser {
             result.details = details;
         }
 
-        // 2. Process text, extracting components and shrinking the workingText
+        // 2. Run through the processing pipeline
         let remainingText = workingText;
         
-        // Extract simple, unambiguous patterns first
-        remainingText = this.extractTags(remainingText, result);
-        remainingText = this.extractContexts(remainingText, result);
-        remainingText = this.extractProjects(remainingText, result);
-
-        // Extract configured keywords
-        remainingText = this.extractPriority(remainingText, result);
-        remainingText = this.extractStatus(remainingText, result);
-
-        // Extract explicit due/scheduled date patterns first
-        remainingText = this.extractExplicitDates(remainingText, result);
-
-        // Extract recurrence BEFORE general date parsing to prevent chrono from consuming keywords like "daily" or "weekly"
-        remainingText = this.extractRecurrence(remainingText, result);
-
-        // Extract time estimate
-        remainingText = this.extractTimeEstimate(remainingText, result);
-
-        // Extract all remaining dates and times in one pass with context
-        remainingText = this.parseDatesAndTimes(remainingText, result);
+        for (const processor of this.processingPipeline) {
+            try {
+                remainingText = processor.process(remainingText, result);
+            } catch (error) {
+                console.debug(`Error in processor ${processor.name}:`, error);
+                // Continue with other processors even if one fails
+            }
+        }
 
         // 3. The remainder is the title
         result.title = remainingText.trim();
@@ -212,7 +240,7 @@ export class NaturalLanguageParser {
         
         // Build regex patterns from language config with proper escaping and boundary handling
         // Use lookahead/lookbehind for non-ASCII languages where \b doesn't work well
-        const isNonAscii = ['ru', 'zh'].includes(this.languageConfig.code);
+        const isNonAscii = ['ru', 'zh', 'ja'].includes(this.languageConfig.code);
         const boundary = isNonAscii ? '(?:^|\\s)' : '\\b';
         const endBoundary = isNonAscii ? '(?=\\s|$)' : '\\b';
         
@@ -265,7 +293,7 @@ export class NaturalLanguageParser {
         const langConfig = this.languageConfig.fallbackStatus;
         
         // Use appropriate boundary matching for different languages
-        const isNonAscii = ['ru', 'zh'].includes(this.languageConfig.code);
+        const isNonAscii = ['ru', 'zh', 'ja'].includes(this.languageConfig.code);
         const boundary = isNonAscii ? '(?:^|\\s)' : '\\b';
         const endBoundary = isNonAscii ? '(?=\\s|$)' : '\\b';
         
@@ -371,60 +399,123 @@ export class NaturalLanguageParser {
     }
 
     /**
-     * Extract explicit due/scheduled date patterns with trigger words
+     * Unified method to parse all dates and times with internationalized context awareness.
+     * Combines the functionality of extractExplicitDates and parseDatesAndTimes.
      */
-    private extractExplicitDates(text: string, result: ParsedTaskData): string {
+    private parseUnifiedDatesAndTimes(text: string, result: ParsedTaskData): string {
         let workingText = text;
+        
+        try {
+            const chronoParser = this.getChronoParser();
+            const langTriggers = this.languageConfig.dateTriggers;
+            
+            // First, try to find explicit trigger patterns
+            const triggerPatterns = [
+                { 
+                    type: 'due', 
+                    regex: new RegExp(`\\b(${langTriggers.due.map(t => this.escapeRegex(t)).join('|')})`, 'i') 
+                },
+                { 
+                    type: 'scheduled', 
+                    regex: new RegExp(`\\b(${langTriggers.scheduled.map(t => this.escapeRegex(t)).join('|')})`, 'i') 
+                }
+            ];
 
-        // Patterns that identify trigger words and their positions from language config
-        const langTriggers = this.languageConfig.dateTriggers;
-        const triggerPatterns = [
-            { 
-                type: 'due', 
-                regex: new RegExp(`\\b(${langTriggers.due.join('|').replace(/\s/g, '\\s+')})`, 'i') 
-            },
-            { 
-                type: 'scheduled', 
-                regex: new RegExp(`\\b(${langTriggers.scheduled.join('|').replace(/\s/g, '\\s+')})`, 'i') 
-            }
-        ];
-
-        // Process each trigger pattern
-        for (const triggerPattern of triggerPatterns) {
-            const match = workingText.match(triggerPattern.regex);
-            if (match) {
-                // Get the position where the date text starts (after the trigger)
-                const triggerEnd = match.index! + match[0].length;
-                const remainingText = workingText.substring(triggerEnd);
-                
-                // Use chrono-node to parse from this position onward
-                const chronoParsed = this.parseChronoFromPosition(remainingText);
-                
-                if (chronoParsed.success) {
-                    // Assign to the correct field based on trigger type
-                    if (triggerPattern.type === 'due') {
-                        result.dueDate = chronoParsed.date;
-                        if (chronoParsed.time) {
-                            result.dueTime = chronoParsed.time;
-                        }
-                    } else {
-                        result.scheduledDate = chronoParsed.date;
-                        if (chronoParsed.time) {
-                            result.scheduledTime = chronoParsed.time;
-                        }
-                    }
+            // Check for explicit triggers first
+            for (const triggerPattern of triggerPatterns) {
+                const match = workingText.match(triggerPattern.regex);
+                if (match) {
+                    // Get the position where the date text starts (after the trigger)
+                    const triggerEnd = match.index! + match[0].length;
+                    const remainingText = workingText.substring(triggerEnd);
                     
-                    // Remove the entire matched expression (trigger + date) from working text
-                    workingText = workingText.replace(triggerPattern.regex, '');
-                    if (chronoParsed.matchedText) {
-                        workingText = workingText.replace(chronoParsed.matchedText, '');
+                    // Use chrono-node to parse from this position onward
+                    const chronoParsed = this.parseChronoFromPosition(remainingText);
+                    
+                    if (chronoParsed.success) {
+                        // Assign to the correct field based on trigger type
+                        if (triggerPattern.type === 'due') {
+                            result.dueDate = chronoParsed.date;
+                            if (chronoParsed.time) {
+                                result.dueTime = chronoParsed.time;
+                            }
+                        } else {
+                            result.scheduledDate = chronoParsed.date;
+                            if (chronoParsed.time) {
+                                result.scheduledTime = chronoParsed.time;
+                            }
+                        }
+                        
+                        // Remove the entire matched expression (trigger + date) from working text
+                        workingText = workingText.replace(triggerPattern.regex, '');
+                        if (chronoParsed.matchedText) {
+                            workingText = workingText.replace(chronoParsed.matchedText, '');
+                        }
+                        workingText = this.cleanupWhitespace(workingText);
+                        return workingText; // Early return after finding explicit trigger
                     }
-                    workingText = this.cleanupWhitespace(workingText);
-                    break; // Only match first occurrence
                 }
             }
-        }
+            
+            // If no explicit triggers found, parse all remaining dates with context
+            const parsedResults = chronoParser.parse(text, new Date(), { forwardDate: true });
+            if (parsedResults.length === 0) {
+                return text;
+            }
+            
+            const primaryMatch = parsedResults[0];
+            const dateText = primaryMatch.text;
+            
+            const startDate = primaryMatch.start.date();
+            const endDate = primaryMatch.end?.date();
 
+            // Create internationalized patterns for context detection
+            const dueKeywordPattern = new RegExp(`\\b(${langTriggers.due.map(t => this.escapeRegex(t)).join('|')})\\b`, 'i');
+            const scheduledKeywordPattern = new RegExp(`\\b(${langTriggers.scheduled.map(t => this.escapeRegex(t)).join('|')})\\b`, 'i');
+            
+            let isDue = dueKeywordPattern.test(primaryMatch.text);
+            let isScheduled = scheduledKeywordPattern.test(primaryMatch.text);
+            
+            // Handle date ranges (e.g., "from tomorrow to next friday")
+            if (endDate && isValid(endDate) && endDate.getTime() !== startDate.getTime()) {
+                result.scheduledDate = format(startDate, 'yyyy-MM-dd');
+                if (primaryMatch.start.isCertain('hour')) {
+                    result.scheduledTime = format(startDate, 'HH:mm');
+                }
+                result.dueDate = format(endDate, 'yyyy-MM-dd');
+                if (primaryMatch.end?.isCertain('hour')) {
+                    result.dueTime = format(endDate, 'HH:mm');
+                }
+            } 
+            // Handle single dates
+            else if (isValid(startDate)) {
+                const dateString = format(startDate, 'yyyy-MM-dd');
+                const timeString = primaryMatch.start.isCertain('hour') ? format(startDate, 'HH:mm') : undefined;
+
+                // Prioritize explicit keywords, otherwise use default setting
+                if (isDue && !isScheduled) {
+                    result.dueDate = dateString;
+                    result.dueTime = timeString;
+                } else if (isScheduled && !isDue) {
+                    result.scheduledDate = dateString;
+                    result.scheduledTime = timeString;
+                } else if (this.defaultToScheduled) {
+                    result.scheduledDate = dateString;
+                    result.scheduledTime = timeString;
+                } else {
+                    result.dueDate = dateString;
+                    result.dueTime = timeString;
+                }
+            }
+
+            // Remove the date text from the working text
+            workingText = workingText.replace(dateText, '').trim();
+            workingText = this.cleanupWhitespace(workingText);
+            
+        } catch (error) {
+            console.debug('Error in unified date parsing:', error);
+        }
+        
         return workingText;
     }
 
@@ -472,7 +563,8 @@ export class NaturalLanguageParser {
     }
 
     /**
-     * Builds recurrence patterns from language configuration.
+     * Builds comprehensive recurrence patterns from language configuration.
+     * Includes all patterns previously hardcoded in fallbackPatterns.
      */
     private buildRecurrencePatterns(): Array<{
         regex: RegExp;
@@ -481,17 +573,24 @@ export class NaturalLanguageParser {
         const lang = this.languageConfig.recurrence;
         const patterns = [];
         
-        // "every [ordinal] [weekday]" patterns
-        const everyKeywords = lang.every.join('|');
-        const ordinalPatterns = [
-            ...lang.ordinals.first.map(o => `(${o})`),
-            ...lang.ordinals.second.map(o => `(${o})`),
-            ...lang.ordinals.third.map(o => `(${o})`),
-            ...lang.ordinals.fourth.map(o => `(${o})`),
-            ...lang.ordinals.last.map(o => `(${o})`)
-        ].join('|');
+        // Use appropriate boundary matching for different languages
+        const isNonAscii = ['ru', 'zh', 'ja'].includes(this.languageConfig.code);
+        const boundary = isNonAscii ? '(?:^|\\s)' : '\\b';
+        const endBoundary = isNonAscii ? '(?=\\s|$)' : '\\b';
         
-        const weekdayPatterns = [
+        // Helper function to escape and join patterns
+        const escapeAndJoin = (patterns: string[]) => patterns.map(p => this.escapeRegex(p)).join('|');
+        
+        // 1. "every [ordinal] [weekday]" patterns (HIGHEST PRIORITY - must be first)
+        const everyKeywords = escapeAndJoin(lang.every);
+        const ordinalPatterns = escapeAndJoin([
+            ...lang.ordinals.first,
+            ...lang.ordinals.second,
+            ...lang.ordinals.third,
+            ...lang.ordinals.fourth,
+            ...lang.ordinals.last
+        ]);
+        const weekdayPatterns = escapeAndJoin([
             ...lang.weekdays.monday,
             ...lang.weekdays.tuesday,
             ...lang.weekdays.wednesday,
@@ -499,23 +598,22 @@ export class NaturalLanguageParser {
             ...lang.weekdays.friday,
             ...lang.weekdays.saturday,
             ...lang.weekdays.sunday
-        ].join('|');
+        ]);
         
         patterns.push({
-            regex: new RegExp(`\\b(${everyKeywords})\\s+(${ordinalPatterns})\\s+(${weekdayPatterns})\\b`, 'i'),
+            regex: new RegExp(`${boundary}(${everyKeywords})\\s+(${ordinalPatterns})\\s+(${weekdayPatterns})${endBoundary}`, 'i'),
             handler: (match: RegExpMatchArray) => {
-                // Map ordinals to positions
                 const ordinalText = match[2].toLowerCase();
                 const dayText = match[3].toLowerCase();
                 
-                // Find which ordinal this is
+                // Find ordinal position
                 let position = 1;
                 if (lang.ordinals.second.some(o => o.toLowerCase() === ordinalText)) position = 2;
                 else if (lang.ordinals.third.some(o => o.toLowerCase() === ordinalText)) position = 3;
                 else if (lang.ordinals.fourth.some(o => o.toLowerCase() === ordinalText)) position = 4;
                 else if (lang.ordinals.last.some(o => o.toLowerCase() === ordinalText)) position = -1;
                 
-                // Find which day this is
+                // Find weekday
                 let rruleDay = 'MO';
                 if (lang.weekdays.tuesday.some(d => d.toLowerCase() === dayText)) rruleDay = 'TU';
                 else if (lang.weekdays.wednesday.some(d => d.toLowerCase() === dayText)) rruleDay = 'WE';
@@ -528,33 +626,116 @@ export class NaturalLanguageParser {
             }
         });
         
-        // Add other patterns with language support...
-        // For brevity, I'll add a few key ones and can extend later
+        // 2. "every [N] [period]" patterns (e.g., "every 3 days")
+        const periodPatterns = escapeAndJoin([
+            ...lang.periods.day,
+            ...lang.periods.week,
+            ...lang.periods.month,
+            ...lang.periods.year
+        ]);
         
-        // Simple frequency patterns with proper escaping and boundary handling
-        const isNonAscii = ['ru', 'zh'].includes(this.languageConfig.code);
-        const boundary = isNonAscii ? '(?:^|\\s)' : '\\b';
-        const endBoundary = isNonAscii ? '(?=\\s|$)' : '\\b';
+        patterns.push({
+            regex: new RegExp(`${boundary}(${everyKeywords})\\s+(\\d+)\\s+(${periodPatterns})${endBoundary}`, 'i'),
+            handler: (match: RegExpMatchArray) => {
+                const interval = parseInt(match[2]);
+                const periodText = match[3].toLowerCase();
+                
+                // Determine frequency based on period
+                let freq = 'DAILY';
+                if (lang.periods.week.some(p => p.toLowerCase() === periodText)) freq = 'WEEKLY';
+                else if (lang.periods.month.some(p => p.toLowerCase() === periodText)) freq = 'MONTHLY';
+                else if (lang.periods.year.some(p => p.toLowerCase() === periodText)) freq = 'YEARLY';
+                
+                return `FREQ=${freq};INTERVAL=${interval}`;
+            }
+        });
         
-        const dailyPatterns = lang.frequencies.daily.map(p => this.escapeRegex(p)).join('|');
+        // 3. "every other [period]" patterns (e.g., "every other week")
+        const otherKeywords = escapeAndJoin(lang.other);
+        
+        patterns.push({
+            regex: new RegExp(`${boundary}(${everyKeywords})\\s+(${otherKeywords})\\s+(${periodPatterns})${endBoundary}`, 'i'),
+            handler: (match: RegExpMatchArray) => {
+                const periodText = match[3].toLowerCase();
+                
+                // Determine frequency
+                let freq = 'DAILY';
+                if (lang.periods.week.some(p => p.toLowerCase() === periodText)) freq = 'WEEKLY';
+                else if (lang.periods.month.some(p => p.toLowerCase() === periodText)) freq = 'MONTHLY';
+                else if (lang.periods.year.some(p => p.toLowerCase() === periodText)) freq = 'YEARLY';
+                
+                return `FREQ=${freq};INTERVAL=2`;
+            }
+        });
+        
+        // 4. "every [weekday]" patterns (explicit "every" keyword)
+        patterns.push({
+            regex: new RegExp(`${boundary}(${everyKeywords})\\s+(${weekdayPatterns})${endBoundary}`, 'i'),
+            handler: (match: RegExpMatchArray) => {
+                const dayText = match[2].toLowerCase();
+                
+                // Find weekday
+                let rruleDay = 'MO';
+                if (lang.weekdays.tuesday.some(d => d.toLowerCase() === dayText)) rruleDay = 'TU';
+                else if (lang.weekdays.wednesday.some(d => d.toLowerCase() === dayText)) rruleDay = 'WE';
+                else if (lang.weekdays.thursday.some(d => d.toLowerCase() === dayText)) rruleDay = 'TH';
+                else if (lang.weekdays.friday.some(d => d.toLowerCase() === dayText)) rruleDay = 'FR';
+                else if (lang.weekdays.saturday.some(d => d.toLowerCase() === dayText)) rruleDay = 'SA';
+                else if (lang.weekdays.sunday.some(d => d.toLowerCase() === dayText)) rruleDay = 'SU';
+                
+                return `FREQ=WEEKLY;BYDAY=${rruleDay}`;
+            }
+        });
+        
+        // 5. Plural weekdays patterns (e.g., "mondays", "tuesdays") - indicates recurrence
+        const pluralWeekdayPatterns = escapeAndJoin([
+            ...lang.pluralWeekdays.monday,
+            ...lang.pluralWeekdays.tuesday,
+            ...lang.pluralWeekdays.wednesday,
+            ...lang.pluralWeekdays.thursday,
+            ...lang.pluralWeekdays.friday,
+            ...lang.pluralWeekdays.saturday,
+            ...lang.pluralWeekdays.sunday
+        ]);
+        
+        patterns.push({
+            regex: new RegExp(`${boundary}(${pluralWeekdayPatterns})${endBoundary}`, 'i'),
+            handler: (match: RegExpMatchArray) => {
+                const dayText = match[1].toLowerCase();
+                
+                // Find which plural weekday this is
+                let rruleDay = 'MO';
+                if (lang.pluralWeekdays.tuesday.some(d => d.toLowerCase() === dayText)) rruleDay = 'TU';
+                else if (lang.pluralWeekdays.wednesday.some(d => d.toLowerCase() === dayText)) rruleDay = 'WE';
+                else if (lang.pluralWeekdays.thursday.some(d => d.toLowerCase() === dayText)) rruleDay = 'TH';
+                else if (lang.pluralWeekdays.friday.some(d => d.toLowerCase() === dayText)) rruleDay = 'FR';
+                else if (lang.pluralWeekdays.saturday.some(d => d.toLowerCase() === dayText)) rruleDay = 'SA';
+                else if (lang.pluralWeekdays.sunday.some(d => d.toLowerCase() === dayText)) rruleDay = 'SU';
+                
+                return `FREQ=WEEKLY;BYDAY=${rruleDay}`;
+            }
+        });
+        
+        // 6. General frequency patterns (daily, weekly, monthly, yearly)
+        const dailyPatterns = escapeAndJoin(lang.frequencies.daily);
         patterns.push({
             regex: new RegExp(`${boundary}(${dailyPatterns})${endBoundary}`, 'i'),
             handler: () => 'FREQ=DAILY'
         });
         
-        const weeklyPatterns = lang.frequencies.weekly.map(p => this.escapeRegex(p)).join('|');
+        const weeklyPatterns = escapeAndJoin(lang.frequencies.weekly);
         patterns.push({
             regex: new RegExp(`${boundary}(${weeklyPatterns})${endBoundary}`, 'i'),
             handler: () => 'FREQ=WEEKLY'
         });
         
-        const monthlyPatterns = lang.frequencies.monthly.map(p => this.escapeRegex(p)).join('|');
+        const monthlyPatterns = escapeAndJoin(lang.frequencies.monthly);
         patterns.push({
             regex: new RegExp(`${boundary}(${monthlyPatterns})${endBoundary}`, 'i'),
             handler: () => 'FREQ=MONTHLY'
         });
         
-        const yearlyPatterns = lang.frequencies.yearly.map(p => this.escapeRegex(p)).join('|');
+        const yearlyPatterns = escapeAndJoin(lang.frequencies.yearly);
         patterns.push({
             regex: new RegExp(`${boundary}(${yearlyPatterns})${endBoundary}`, 'i'),
             handler: () => 'FREQ=YEARLY'
@@ -564,75 +745,11 @@ export class NaturalLanguageParser {
     }
 
     /**
-     * Extracts recurrence from text and generates rrule strings using language-aware patterns.
+     * Extracts recurrence from text and generates rrule strings using comprehensive language-aware patterns.
+     * All patterns are now internationalized and sourced from language configurations.
      */
     private extractRecurrence(text: string, result: ParsedTaskData): string {
         const recurrencePatterns = this.buildRecurrencePatterns();
-        
-        // Keep the original hardcoded patterns as fallback for complex cases
-        const fallbackPatterns = [
-            // "every [ordinal] [weekday]" (e.g., "every second monday") - MUST be first for priority
-            {
-                regex: /\bevery\s+(first|second|third|fourth|last)\s+(monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/i,
-                handler: (match: RegExpMatchArray) => {
-                    const ordinal = match[1].toLowerCase();
-                    const dayName = match[2].toLowerCase();
-                    const rruleDay = dayName.toUpperCase().substring(0, 2);
-                    const position = { first: 1, second: 2, third: 3, fourth: 4, last: -1 }[ordinal] || 1;
-                    return `FREQ=MONTHLY;BYDAY=${rruleDay};BYSETPOS=${position}`;
-                }
-            },
-            // "every [N] period" (e.g., "every 3 days")
-            {
-                regex: /\bevery\s+(\d+)\s+(days?|weeks?|months?|years?)\b/i,
-                handler: (match: RegExpMatchArray) => {
-                    const interval = parseInt(match[1]);
-                    const period = match[2].replace(/s$/, '').toLowerCase();
-                    const freqMap: Record<string, string> = {
-                        'day': 'DAILY',
-                        'week': 'WEEKLY', 
-                        'month': 'MONTHLY',
-                        'year': 'YEARLY'
-                    };
-                    return `FREQ=${freqMap[period]};INTERVAL=${interval}`;
-                }
-            },
-            // "every other period" (e.g., "every other week")
-            {
-                regex: /\bevery\s+other\s+(day|week|month|year)\b/i,
-                handler: (match: RegExpMatchArray) => {
-                    const period = match[1].toLowerCase();
-                    const freqMap: Record<string, string> = {
-                        'day': 'DAILY',
-                        'week': 'WEEKLY',
-                        'month': 'MONTHLY', 
-                        'year': 'YEARLY'
-                    };
-                    return `FREQ=${freqMap[period]};INTERVAL=2`;
-                }
-            },
-            // "every [weekday]" - ONLY with explicit "every" keyword
-            {
-                regex: /\bevery\s+(monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/i,
-                handler: (match: RegExpMatchArray) => {
-                    const day = match[1].toUpperCase().substring(0, 2);
-                    return `FREQ=WEEKLY;BYDAY=${day}`;
-                }
-            },
-            // Plural weekdays (e.g., "mondays", "tuesdays") - only plurals indicate recurrence
-            {
-                regex: /\b(mondays|tuesdays|wednesdays|thursdays|fridays|saturdays|sundays)\b/i,
-                handler: (match: RegExpMatchArray) => {
-                    const day = match[1].replace(/s$/, '').toUpperCase().substring(0, 2);
-                    return `FREQ=WEEKLY;BYDAY=${day}`;
-                }
-            },
-            // General frequencies
-            { regex: /\b(daily|every day)\b/i, handler: () => 'FREQ=DAILY' },
-            { regex: /\b(weekly|every week)\b/i, handler: () => 'FREQ=WEEKLY' },
-            { regex: /\b(monthly|every month)\b/i, handler: () => 'FREQ=MONTHLY' },
-            { regex: /\b(yearly|annually|every year)\b/i, handler: () => 'FREQ=YEARLY' }
-        ];
 
         for (const pattern of recurrencePatterns) {
             const match = text.match(pattern.regex);
@@ -676,7 +793,7 @@ export class NaturalLanguageParser {
         const langConfig = this.languageConfig.timeEstimate;
         
         // Use appropriate boundary matching for different languages
-        const isNonAscii = ['ru', 'zh'].includes(this.languageConfig.code);
+        const isNonAscii = ['ru', 'zh', 'ja'].includes(this.languageConfig.code);
         const boundary = isNonAscii ? '(?:^|\\s)' : '\\b';
         const endBoundary = isNonAscii ? '(?=\\s|$)' : '\\b';
         
@@ -716,69 +833,6 @@ export class NaturalLanguageParser {
         return workingText;
     }
 
-    /**
-     * A unified and robust method to parse all date and time information using chrono-node.
-     * It intelligently handles keywords like "due" and "scheduled" and date ranges.
-     */
-    private parseDatesAndTimes(text: string, result: ParsedTaskData): string {
-        let workingText = text;
-        try {
-            const chronoParser = this.getChronoParser();
-            const parsedResults = chronoParser.parse(text, new Date(), { forwardDate: true });
-            if (parsedResults.length === 0) {
-                return text;
-            }
-            
-            const primaryMatch = parsedResults[0];
-            const dateText = primaryMatch.text;
-            
-            const startDate = primaryMatch.start.date();
-            const endDate = primaryMatch.end?.date();
-
-            let isDue = /due|by|deadline/i.test(primaryMatch.text);
-            let isScheduled = /scheduled|from|start|on/i.test(primaryMatch.text);
-            
-            // Handle date ranges (e.g., "from tomorrow to next friday")
-            if (endDate && isValid(endDate) && endDate.getTime() !== startDate.getTime()) {
-                result.scheduledDate = format(startDate, 'yyyy-MM-dd');
-                if (primaryMatch.start.isCertain('hour')) {
-                    result.scheduledTime = format(startDate, 'HH:mm');
-                }
-                result.dueDate = format(endDate, 'yyyy-MM-dd');
-                if (primaryMatch.end?.isCertain('hour')) {
-                    result.dueTime = format(endDate, 'HH:mm');
-                }
-            } 
-            // Handle single dates
-            else if (isValid(startDate)) {
-                const dateString = format(startDate, 'yyyy-MM-dd');
-                const timeString = primaryMatch.start.isCertain('hour') ? format(startDate, 'HH:mm') : undefined;
-
-                // Prioritize explicit keywords, otherwise use default setting
-                if (isDue && !isScheduled) {
-                    result.dueDate = dateString;
-                    result.dueTime = timeString;
-                } else if (isScheduled && !isDue) {
-                    result.scheduledDate = dateString;
-                    result.scheduledTime = timeString;
-                } else if (this.defaultToScheduled) {
-                    result.scheduledDate = dateString;
-                    result.scheduledTime = timeString;
-                } else {
-                    result.dueDate = dateString;
-                    result.dueTime = timeString;
-                }
-            }
-
-            // Clean the parsed date text from the string
-            workingText = this.cleanupWhitespace(workingText.replace(dateText, ''));
-
-        } catch (error) {
-            console.debug('Chrono-node parsing failed:', error);
-        }
-
-        return workingText;
-    }
 
     /**
      * Ensures the final parsed data is valid and clean.

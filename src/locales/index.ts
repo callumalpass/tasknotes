@@ -5,6 +5,7 @@ import { frConfig } from './fr';
 import { deConfig } from './de';
 import { ruConfig } from './ru';
 import { zhConfig } from './zh';
+import { jaConfig } from './ja';
 
 /**
  * Registry of all available language configurations
@@ -15,7 +16,8 @@ export const languageRegistry: LanguageRegistry = {
     fr: frConfig,
     de: deConfig,
     ru: ruConfig,
-    zh: zhConfig
+    zh: zhConfig,
+    ja: jaConfig
 };
 
 /**

@@ -37,6 +37,12 @@ describe('Language Configuration System', () => {
             expect(languageRegistry['zh'].name).toBe('中文');
             expect(languageRegistry['zh'].code).toBe('zh');
         });
+
+        it('should contain Japanese configuration', () => {
+            expect(languageRegistry['ja']).toBeDefined();
+            expect(languageRegistry['ja'].name).toBe('日本語');
+            expect(languageRegistry['ja'].code).toBe('ja');
+        });
     });
 
     describe('getAvailableLanguages', () => {
@@ -48,7 +54,8 @@ describe('Language Configuration System', () => {
                 { value: 'fr', label: 'Français' },
                 { value: 'de', label: 'Deutsch' },
                 { value: 'ru', label: 'Русский' },
-                { value: 'zh', label: '中文' }
+                { value: 'zh', label: '中文' },
+                { value: 'ja', label: '日本語' }
             ]);
         });
     });
@@ -127,7 +134,7 @@ describe('Language Configuration System', () => {
 
     describe('Language Configuration Structure', () => {
         it('should have consistent structure across all languages', () => {
-            const languages = ['en', 'es', 'fr', 'de', 'ru', 'zh'];
+            const languages = ['en', 'es', 'fr', 'de', 'ru', 'zh', 'ja'];
             
             languages.forEach(langCode => {
                 const config = languageRegistry[langCode];
