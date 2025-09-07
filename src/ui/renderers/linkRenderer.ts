@@ -8,7 +8,18 @@ export interface LinkServices {
   workspace: App['workspace'];
 }
 
-const LINK_REGEX = /\[\[([^\[\]]+)\]\]|\[([^\]]+)\]\(([^)]+)\)/g;
+/** Type for hover-link event payload */
+interface HoverLinkEvent {
+  event: MouseEvent;
+  source: string;
+  hoverParent: HTMLElement;
+  targetEl: HTMLElement;
+  linktext: string;
+  sourcePath: string;
+}
+
+// Enhanced regex to handle more link types including autolinks and reference-style links
+const LINK_REGEX = /\[\[([^\[\]]+)\]\]|\[([^\]]+)\]\(([^)]+)\)|<(https?:\/\/[^\s>]+)>|\[([^\]]+)\]\s*\[([^\]]*)\]/g;
 
 /** Enhanced internal link creation with better error handling and accessibility */
 export function appendInternalLink(
@@ -66,14 +77,15 @@ export function appendInternalLink(
   linkEl.addEventListener('mouseover', (event) => {
     const file = deps.metadataCache.getFirstLinkpathDest(filePath, '');
     if (file instanceof TFile) {
-      deps.workspace.trigger('hover-link', {
-        event,
+      const hoverEvent: HoverLinkEvent = {
+        event: event as MouseEvent,
         source: hoverSource,
         hoverParent: container,
         targetEl: linkEl,
         linktext: filePath,
         sourcePath: file.path
-      } as any);
+      };
+      deps.workspace.trigger('hover-link', hoverEvent);
     }
   });
 }
@@ -81,6 +93,7 @@ export function appendInternalLink(
 /** Render a text string, converting WikiLinks and Markdown links */
 export interface RenderLinksOptions {
   renderPlain?: (container: HTMLElement, text: string, deps: LinkServices) => void;
+  onTagClick?: (tag: string, event: MouseEvent) => void | Promise<void>;
 }
 
 export function renderTextWithLinks(
@@ -92,6 +105,7 @@ export function renderTextWithLinks(
   let lastIndex = 0;
   let match: RegExpExecArray | null;
 
+  // First, handle wikilinks and markdown links
   while ((match = LINK_REGEX.exec(text)) !== null) {
     const [full, wikiInner, mdText, mdHref] = match as any;
     const start = match.index;
@@ -124,8 +138,62 @@ export function renderTextWithLinks(
     lastIndex = start + full.length;
   }
 
-  if (lastIndex < text.length) {
-    container.appendChild(document.createTextNode(text.slice(lastIndex)));
+  // Handle remaining text, checking for tags if onTagClick is provided
+  const remainingText = text.slice(lastIndex);
+  if (remainingText && options?.onTagClick) {
+    // Look for tags in the remaining text
+    const tagRegex = /(^|\s)(#\w+)/g;
+    let tagLastIndex = 0;
+    let tagMatch: RegExpExecArray | null;
+
+    while ((tagMatch = tagRegex.exec(remainingText)) !== null) {
+      const [, prefix, tag] = tagMatch;
+      const tagStart = tagMatch.index;
+
+      // Add text before the tag
+      if (tagStart > tagLastIndex) {
+        container.appendChild(document.createTextNode(remainingText.slice(tagLastIndex, tagStart)));
+      }
+
+      // Add the prefix (space or start of string)
+      if (prefix) {
+        container.appendChild(document.createTextNode(prefix));
+      }
+
+      // Create clickable tag
+      const tagEl = container.createEl('a', {
+        cls: 'tag',
+        text: tag,
+        attr: { 
+          'href': tag,
+          'role': 'button',
+          'tabindex': '0'
+        }
+      });
+
+      tagEl.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        options.onTagClick!(tag, e as MouseEvent);
+      });
+      
+      tagEl.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          options.onTagClick!(tag, e as any);
+        }
+      });
+
+      tagLastIndex = tagStart + prefix.length + tag.length;
+    }
+
+    // Add any remaining text after the last tag
+    if (tagLastIndex < remainingText.length) {
+      container.appendChild(document.createTextNode(remainingText.slice(tagLastIndex)));
+    }
+  } else if (remainingText) {
+    // No tag handling, just add the remaining text
+    container.appendChild(document.createTextNode(remainingText));
   }
 }
 
@@ -152,9 +220,20 @@ export function renderValueWithLinks(
 
 /**
  * Check if a project string is in wikilink format [[Note Name]]
+ * Enhanced to handle edge cases like escaped brackets
  */
 function isWikilink(text: string): boolean {
-  return Boolean(text && text.startsWith('[[') && text.endsWith(']]'));
+  if (!text || typeof text !== 'string') return false;
+  
+  // Check for basic format
+  if (!text.startsWith('[[') || !text.endsWith(']]')) return false;
+  
+  // Check for escaped brackets (not a real wikilink)
+  if (text.startsWith('\\[[') || text.endsWith('\\]]')) return false;
+  
+  // Ensure there's actual content between the brackets
+  const content = text.slice(2, -2).trim();
+  return content.length > 0;
 }
 
 /**

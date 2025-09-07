@@ -270,9 +270,13 @@ const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
     'contexts': (element, value, _, plugin) => {
         if (Array.isArray(value)) {
             const tagServices: TagServices = {
-                onTagClick: (context, _event) => {
-                    // Could implement context search/filter here
-                    console.log('Context clicked:', context);
+                onTagClick: async (context, _event) => {
+                    // Remove @ prefix if present for search
+                    const searchTag = context.startsWith('@') ? context.slice(1) : context;
+                    const success = await plugin.openTagsPane(`#${searchTag}`);
+                    if (!success) {
+                        console.log('Could not open search pane, context clicked:', context);
+                    }
                 }
             };
             renderContextsValue(element, value, tagServices);
@@ -282,10 +286,11 @@ const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
         if (Array.isArray(value)) {
             const tagServices: TagServices = {
                 onTagClick: async (tag, _event) => {
-                    // Open the tags pane and filter by this tag
-                    const success = await plugin.openTagsPane(tag);
+                    // Remove # prefix if present for search
+                    const searchTag = tag.startsWith('#') ? tag.slice(1) : tag;
+                    const success = await plugin.openTagsPane(`#${searchTag}`);
                     if (!success) {
-                        console.log('Could not open tags pane, tag clicked:', tag);
+                        console.log('Could not open search pane, tag clicked:', tag);
                     }
                 }
             };
@@ -406,16 +411,18 @@ function renderUserProperty(element: HTMLElement, propertyId: string, value: unk
     // Create value container
     const valueContainer = element.createEl('span');
     
+    // Create shared services to avoid redundant object creation
+    const linkServices: LinkServices = {
+        metadataCache: plugin.app.metadataCache,
+        workspace: plugin.app.workspace
+    };
+
     // Check if the value might contain links or tags and render appropriately
     if (typeof value === 'string' && value.trim() !== '') {
         const stringValue = value.trim();
         
         // Check if string contains links or tags
         if (stringValue.includes('[[') || stringValue.includes('](') || (stringValue.includes('#') && /\s#\w+|\#\w+/.test(stringValue))) {
-            const linkServices: LinkServices = {
-                metadataCache: plugin.app.metadataCache,
-                workspace: plugin.app.workspace
-            };
             renderTextWithLinks(valueContainer, stringValue, linkServices);
         } else {
             // Format according to field type
@@ -423,11 +430,23 @@ function renderUserProperty(element: HTMLElement, propertyId: string, value: unk
             valueContainer.textContent = displayValue;
         }
     } else if (userField.type === 'list' && Array.isArray(value)) {
-        // Handle list fields - check each item for links/tags
+        // Handle list fields - avoid recursive renderPropertyValue call to prevent stack overflow
         const validItems = value.filter(item => item !== null && item !== undefined);
         validItems.forEach((item, idx) => {
             if (idx > 0) valueContainer.appendChild(document.createTextNode(', '));
-            renderPropertyValue(valueContainer, item, plugin);
+            
+            // Render each list item directly instead of recursively calling renderPropertyValue
+            if (typeof item === 'string' && item.trim() !== '') {
+                const itemString = item.trim();
+                if (itemString.includes('[[') || itemString.includes('](') || (itemString.includes('#') && /\s#\w+|\#\w+/.test(itemString))) {
+                    const itemContainer = valueContainer.createEl('span');
+                    renderTextWithLinks(itemContainer, itemString, linkServices);
+                } else {
+                    valueContainer.appendChild(document.createTextNode(String(item)));
+                }
+            } else {
+                valueContainer.appendChild(document.createTextNode(String(item)));
+            }
         });
     } else {
         // Use standard formatting for other types or empty values
@@ -463,7 +482,7 @@ function renderGenericProperty(element: HTMLElement, propertyId: string, value: 
     }
     
     // Add property label
-    const labelSpan = element.createEl('span', { text: `${displayName}: ` });
+    element.createEl('span', { text: `${displayName}: ` });
     
     // Create value container
     const valueContainer = element.createEl('span');
@@ -491,23 +510,18 @@ function renderPropertyValue(container: HTMLElement, value: unknown, plugin?: Ta
             workspace: plugin.app.workspace
         };
         
-        // If the string contains wikilinks or markdown links, render with link support
-        if (value.includes('[[') || (value.includes('[') && value.includes(']('))) {
-            renderTextWithLinks(container, value, linkServices);
-            return;
-        }
-        
-        // For tags in generic properties (check for tag patterns like #tag or space#tag)
-        if (value.includes('#') && (/\s#\w+|\#\w+/.test(value))) {
-            const tagServices: TagServices = {
+        // If the string contains wikilinks, markdown links, or tags, render with enhanced support
+        if (value.includes('[[') || (value.includes('[') && value.includes('](')) || (value.includes('#') && /\s#\w+|\#\w+/.test(value))) {
+            renderTextWithLinks(container, value, linkServices, {
                 onTagClick: async (tag, _event) => {
-                    const success = await plugin.openTagsPane(tag);
+                    // Remove # prefix if present for search
+                    const searchTag = tag.startsWith('#') ? tag.slice(1) : tag;
+                    const success = await plugin.openTagsPane(`#${searchTag}`);
                     if (!success) {
-                        console.log('Could not open tags pane, generic property tag clicked:', tag);
+                        console.log('Could not open search pane, generic property tag clicked:', tag);
                     }
                 }
-            };
-            renderTagsValue(container, value, tagServices);
+            });
             return;
         }
         
@@ -1637,13 +1651,11 @@ export function updateTaskCard(element: HTMLElement, task: TaskInfo, plugin: Tas
  */
 class DeleteTaskConfirmationModal extends Modal {
     private task: TaskInfo;
-    private plugin: TaskNotesPlugin;
     private onConfirm: () => Promise<void>;
 
-    constructor(app: App, task: TaskInfo, plugin: TaskNotesPlugin, onConfirm: () => Promise<void>) {
+    constructor(app: App, task: TaskInfo, onConfirm: () => Promise<void>) {
         super(app);
         this.task = task;
-        this.plugin = plugin;
         this.onConfirm = onConfirm;
     }
 
@@ -1711,7 +1723,6 @@ export async function showDeleteConfirmationModal(task: TaskInfo, plugin: TaskNo
         const modal = new DeleteTaskConfirmationModal(
             plugin.app,
             task,
-            plugin,
             async () => {
                 try {
                     await plugin.taskService.deleteTask(task);

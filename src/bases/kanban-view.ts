@@ -1,67 +1,59 @@
 import TaskNotesPlugin from '../main';
 import { BasesDataItem, identifyTaskNotesFromBasesData } from './helpers';
 import { TaskInfo } from '../types';
+import { getBasesGroupByConfig, BasesGroupByConfig } from './group-by';
+import { getGroupNameComparator } from './group-ordering';
+import { getBasesSortComparator } from './sorting';
+import { createTaskCard } from '../ui/TaskCard';
+// Removed unused imports - using local BasesContainerLike interface for compatibility
 
-export interface BasesContainerLike {
+// Use the same interface as base-view-factory for compatibility
+interface BasesContainerLike {
   results?: Map<any, any>;
   query?: { 
     on?: (event: string, cb: () => void) => void; 
     off?: (event: string, cb: () => void) => void;
+    getViewConfig?: (key: string) => any;
   };
   viewContainerEl?: HTMLElement;
-  controller?: any;
-}
-
-/**
- * Extract minimal groupBy configuration from Bases container
- */
-function getBasesGroupByProperty(basesContainer: BasesContainerLike): string | null {
-  try {
-    const controller = (basesContainer as any)?.controller ?? basesContainer;
-    const query = basesContainer?.query ?? controller?.query;
-    const fullCfg = controller?.getViewConfig?.() ?? {};
-    
-    // Try to get groupBy from various locations in Bases config
-    let groupBy = fullCfg?.groupBy 
-      ?? (fullCfg as any)?.data?.groupBy
-      ?? query?.getViewConfig?.('groupBy');
-    
-    if (typeof groupBy === 'string') return groupBy;
-    return null;
-  } catch (e) {
-    console.debug('[TaskNotes][Bases] getBasesGroupByProperty failed:', e);
-    return null;
-  }
-}
-
-/**
- * Get group value for a task based on the groupBy property
- */
-function getTaskGroupValue(task: TaskInfo, groupBy: string): string {
-  switch (groupBy) {
-    case 'status':
-      return task.status || 'open';
-    case 'priority':
-      return task.priority || 'normal';
-    case 'project':
-    case 'projects':
-      return task.projects?.[0] || 'No Project';
-    case 'context':
-    case 'contexts':
-      return task.contexts?.[0] || 'uncategorized';
-    default:
-      return 'uncategorized';
-  }
+  controller?: {
+    runQuery?: () => Promise<void>;
+    getViewConfig?: () => any;
+  };
 }
 
 export function buildTasknotesKanbanViewFactory(plugin: TaskNotesPlugin) {
   return function tasknotesKanbanViewFactory(basesContainer: BasesContainerLike) {
     let currentRoot: HTMLElement | null = null;
 
-    const viewContainerEl = (basesContainer as any)?.viewContainerEl as HTMLElement | undefined;
+    // Validate the container has the required properties
+    if (!basesContainer || !basesContainer.viewContainerEl) {
+      console.error('[TaskNotes][Bases] Invalid Bases container provided');
+      return { 
+        destroy: () => {},
+        load: () => {},
+        unload: () => {},
+        refresh: () => {},
+        onDataUpdated: () => {},
+        onResize: () => {},
+        getEphemeralState: () => ({ scrollTop: 0 }),
+        setEphemeralState: () => {}
+      };
+    }
+
+    const viewContainerEl = basesContainer.viewContainerEl;
     if (!viewContainerEl) {
       console.error('[TaskNotes][Bases] No viewContainerEl found');
-      return { destroy: () => {} } as any;
+      return { 
+        destroy: () => {},
+        load: () => {},
+        unload: () => {},
+        refresh: () => {},
+        onDataUpdated: () => {},
+        onResize: () => {},
+        getEphemeralState: () => ({ scrollTop: 0 }),
+        setEphemeralState: () => {}
+      };
     }
 
     // Clear container
@@ -80,15 +72,15 @@ export function buildTasknotesKanbanViewFactory(plugin: TaskNotesPlugin) {
 
     const extractDataItems = (): BasesDataItem[] => {
       const dataItems: BasesDataItem[] = [];
-      const results = (basesContainer as any)?.results as Map<any, any> | undefined;
+      const results = basesContainer.results;
       if (results && results instanceof Map) {
         for (const [, value] of results.entries()) {
           dataItems.push({
-            key: (value as any)?.file?.path || (value as any)?.path,
+            key: value?.file?.path || value?.path,
             data: value,
-            file: (value as any)?.file,
-            path: (value as any)?.file?.path || (value as any)?.path,
-            properties: (value as any)?.properties || (value as any)?.frontmatter
+            file: value?.file,
+            path: value?.file?.path || value?.path,
+            properties: value?.properties || value?.frontmatter
           });
         }
       }
@@ -114,37 +106,59 @@ export function buildTasknotesKanbanViewFactory(plugin: TaskNotesPlugin) {
           return;
         }
 
-        // Get groupBy property from Bases config
-        const groupBy = getBasesGroupByProperty(basesContainer) || 'status';
+        // Build path -> props map for dynamic property access
+        const pathToProps = new Map<string, Record<string, any>>(
+          dataItems.filter(i => !!i.path).map(i => [i.path || '', i.properties || {}])
+        );
 
-        // Group tasks
+        // Get advanced groupBy configuration
+        const groupByConfig = getBasesGroupByConfig(basesContainer, pathToProps);
+        
+        // Group tasks using the advanced system
         const groups = new Map<string, TaskInfo[]>();
-        for (const task of taskNotes) {
-          const groupValue = getTaskGroupValue(task, groupBy);
-          if (!groups.has(groupValue)) {
-            groups.set(groupValue, []);
+        
+        if (groupByConfig) {
+          // Use dynamic groupBy from Bases configuration
+          for (const task of taskNotes) {
+            const groupValues = groupByConfig.getGroupValues(task.path);
+            
+            // Tasks can belong to multiple groups (e.g., multiple tags)
+            for (const groupValue of groupValues) {
+              if (!groups.has(groupValue)) {
+                groups.set(groupValue, []);
+              }
+              groups.get(groupValue)!.push(task);
+            }
           }
-          groups.get(groupValue)!.push(task);
-        }
-
-        // Add empty columns for common values
-        const allGroupValues = new Set(groups.keys());
-        if (groupBy === 'status') {
+        } else {
+          // Fallback to status grouping when no groupBy is configured
+          for (const task of taskNotes) {
+            const groupValue = task.status || 'open';
+            if (!groups.has(groupValue)) {
+              groups.set(groupValue, []);
+            }
+            groups.get(groupValue)!.push(task);
+          }
+          
+          // Add empty status columns
           plugin.statusManager.getAllStatuses().forEach(status => {
-            allGroupValues.add(status.value);
-          });
-        } else if (groupBy === 'priority') {
-          plugin.priorityManager.getAllPriorities().forEach(priority => {
-            allGroupValues.add(priority.value);
+            if (!groups.has(status.value)) {
+              groups.set(status.value, []);
+            }
           });
         }
 
-        // Create columns
-        const columnIds = Array.from(allGroupValues).sort();
+        // Get sorting configuration for group names
+        const sortComparator = getBasesSortComparator(basesContainer, pathToProps);
+        const firstSortEntry = sortComparator ? { id: groupByConfig?.normalizedId || 'status', direction: 'ASC' as const } : null;
+        const groupNameComparator = getGroupNameComparator(firstSortEntry);
+
+        // Create columns with proper ordering
+        const columnIds = Array.from(groups.keys()).sort(groupNameComparator);
         
         for (const columnId of columnIds) {
           const tasks = groups.get(columnId) || [];
-          const columnEl = createColumnElement(columnId, tasks, groupBy);
+          const columnEl = createColumnElement(columnId, tasks, groupByConfig);
           board.appendChild(columnEl);
         }
 
@@ -154,7 +168,7 @@ export function buildTasknotesKanbanViewFactory(plugin: TaskNotesPlugin) {
     };
 
     // Reuse existing kanban column creation logic
-    const createColumnElement = (columnId: string, tasks: TaskInfo[], groupBy: string): HTMLElement => {
+    const createColumnElement = (columnId: string, tasks: TaskInfo[], groupByConfig: BasesGroupByConfig | null): HTMLElement => {
       const columnEl = document.createElement('div');
       columnEl.className = 'kanban-view__column';
       columnEl.dataset.columnId = columnId;
@@ -162,8 +176,35 @@ export function buildTasknotesKanbanViewFactory(plugin: TaskNotesPlugin) {
       // Column header
       const headerEl = columnEl.createDiv({ cls: 'kanban-view__column-header' });
       
-      // Title
-      const title = formatColumnTitle(columnId, groupBy);
+      // Title - format based on property type and use TaskNotes display values
+      let title: string;
+      
+      if (groupByConfig) {
+        const propertyId = groupByConfig.normalizedId.toLowerCase();
+        
+        // Map Bases property IDs to TaskNotes native properties and use display values
+        if (propertyId === 'status' || propertyId === 'note.status') {
+          const statusConfig = plugin.statusManager.getStatusConfig(columnId);
+          title = statusConfig?.label || columnId;
+        } else if (propertyId === 'priority' || propertyId === 'note.priority') {
+          const priorityConfig = plugin.priorityManager.getPriorityConfig(columnId);
+          title = priorityConfig?.label || columnId;
+        } else if (propertyId === 'projects' || propertyId === 'project' || propertyId === 'note.projects' || propertyId === 'note.project') {
+          title = columnId === 'none' ? 'No Project' : columnId;
+        } else if (propertyId === 'contexts' || propertyId === 'context' || propertyId === 'note.contexts' || propertyId === 'note.context') {
+          title = columnId === 'none' ? 'Uncategorized' : `@${columnId}`;
+        } else if (propertyId.includes('tag')) {
+          // Handle tags properties
+          title = columnId === 'none' ? 'Untagged' : `#${columnId}`;
+        } else {
+          // For custom properties, show the value directly (not prefixed)
+          title = columnId === 'none' ? 'None' : columnId;
+        }
+      } else {
+        // Fallback for status grouping
+        const statusConfig = plugin.statusManager.getStatusConfig(columnId);
+        title = statusConfig?.label || columnId;
+      }
       headerEl.createEl('div', { cls: 'kanban-view__column-title', text: title });
       
       // Count
@@ -179,7 +220,6 @@ export function buildTasknotesKanbanViewFactory(plugin: TaskNotesPlugin) {
       // Render tasks using existing TaskCard system
       tasks.forEach(task => {
         const visibleProperties = plugin.settings.defaultVisibleProperties;
-        const { createTaskCard } = require('../ui/TaskCard');
         const taskCard = createTaskCard(task, plugin, visibleProperties, {
           showDueDate: true,
           showCheckbox: false,
@@ -198,39 +238,55 @@ export function buildTasknotesKanbanViewFactory(plugin: TaskNotesPlugin) {
         tasksContainer.appendChild(taskCard);
       });
 
-      // Add drop handlers
+      // Add drop handlers - enhanced for dynamic groupBy
       addColumnDropHandlers(columnEl, async (taskPath: string, targetColumnId: string) => {
         try {
           const task = await plugin.cacheManager.getCachedTaskInfo(taskPath);
-          if (task) {
-            let propertyToUpdate: string;
-            let valueToSet: any;
+          if (task && groupByConfig) {
+            // Map Bases property IDs to TaskNotes native properties for updates
+            const originalPropertyId = groupByConfig.normalizedId;
+            const propertyId = originalPropertyId.toLowerCase();
             
-            switch (groupBy) {
-              case 'status':
-                propertyToUpdate = 'status';
-                valueToSet = targetColumnId;
-                break;
-              case 'priority':
-                propertyToUpdate = 'priority';
-                valueToSet = targetColumnId;
-                break;
-              case 'context':
-              case 'contexts':
-                propertyToUpdate = 'contexts';
-                valueToSet = targetColumnId === 'uncategorized' ? [] : [targetColumnId];
-                break;
-              case 'project':
-              case 'projects':
-                propertyToUpdate = 'projects';
-                valueToSet = targetColumnId === 'No Project' ? [] : [targetColumnId];
-                break;
-              default:
-                throw new Error(`Unsupported groupBy for drag-and-drop: ${groupBy}`);
+            // Handle different property types
+            let valueToSet: any;
+            if (targetColumnId === 'none' || targetColumnId === 'uncategorized') {
+              valueToSet = null; // Clear the property
+            } else {
+              // For most properties, set the single value
+              // For array properties, determine if we should use array or single value
+              valueToSet = targetColumnId;
             }
             
-            await plugin.updateTaskProperty(task, propertyToUpdate as keyof TaskInfo, valueToSet, { silent: true });
+            // For native TaskNotes properties, use TaskNotes update methods directly
+            if (propertyId === 'status' || propertyId === 'note.status') {
+              await plugin.updateTaskProperty(task, 'status', valueToSet, { silent: true });
+            } else if (propertyId === 'priority' || propertyId === 'note.priority') {
+              await plugin.updateTaskProperty(task, 'priority', valueToSet, { silent: true });
+            } else if (propertyId === 'projects' || propertyId === 'project' || propertyId === 'note.projects' || propertyId === 'note.project') {
+              const projectValue = valueToSet ? (Array.isArray(valueToSet) ? valueToSet : [valueToSet]) : [];
+              await plugin.updateTaskProperty(task, 'projects', projectValue, { silent: true });
+            } else if (propertyId === 'contexts' || propertyId === 'context' || propertyId === 'note.contexts' || propertyId === 'note.context') {
+              const contextValue = valueToSet ? (Array.isArray(valueToSet) ? valueToSet : [valueToSet]) : [];
+              await plugin.updateTaskProperty(task, 'contexts', contextValue, { silent: true });
+            } else {
+              // For custom properties, update frontmatter directly
+              try {
+                const file = plugin.app.vault.getAbstractFileByPath(task.path);
+                if (file && 'stat' in file) { // Check if it's a TFile
+                  await plugin.app.fileManager.processFrontMatter(file as any, (frontmatter: any) => {
+                    frontmatter[originalPropertyId] = valueToSet;
+                  });
+                }
+              } catch (frontmatterError) {
+                console.warn('[TaskNotes][Bases] Frontmatter update failed for custom property:', frontmatterError);
+              }
+            }
+            
             // Refresh the view
+            await render();
+          } else if (task && !groupByConfig) {
+            // Fallback to status update when no groupBy config
+            await plugin.updateTaskProperty(task, 'status', targetColumnId, { silent: true });
             await render();
           }
         } catch (e) {
@@ -241,23 +297,7 @@ export function buildTasknotesKanbanViewFactory(plugin: TaskNotesPlugin) {
       return columnEl;
     };
 
-    // Reuse existing column title formatting
-    const formatColumnTitle = (id: string, groupBy: string): string => {
-      switch (groupBy) {
-        case 'status':
-          return plugin.statusManager.getStatusConfig(id)?.label || id;
-        case 'priority':
-          return plugin.priorityManager.getPriorityConfig(id)?.label || id;
-        case 'context':
-        case 'contexts':
-          return id === 'uncategorized' ? 'Uncategorized' : `@${id}`;
-        case 'project':
-        case 'projects':
-          return id === 'No Project' ? 'No Project' : id;
-        default:
-          return id;
-      }
-    };
+    // Column title formatting now handled in createColumnElement with groupBy config
 
     // Reuse existing drop handler logic
     const addColumnDropHandlers = (columnEl: HTMLElement, onDropTask: (taskPath: string, targetColumnId: string) => void | Promise<void>) => {
@@ -286,16 +326,19 @@ export function buildTasknotesKanbanViewFactory(plugin: TaskNotesPlugin) {
       });
     };
 
+    // Kick off initial async render
+    void render();
+
     // Set up lifecycle following the working pattern from base-view-factory
     let queryListener: (() => void) | null = null;
 
     const component = {
-      onload: () => {
+      load: () => {
         // Set up query listener
-        if ((basesContainer as any)?.query?.on && !queryListener) {
+        if (basesContainer.query?.on && !queryListener) {
           queryListener = () => void render();
           try {
-            (basesContainer as any).query.on('change', queryListener);
+            basesContainer.query.on('change', queryListener);
           } catch (e) {
             // Query listener registration may fail for various reasons
             console.debug('[TaskNotes][Bases] Query listener registration failed:', e);
@@ -303,7 +346,7 @@ export function buildTasknotesKanbanViewFactory(plugin: TaskNotesPlugin) {
         }
         
         // Trigger initial formula computation on load (like base-view-factory)
-        const controller = (basesContainer as any)?.controller;
+        const controller = basesContainer.controller;
         if (controller?.runQuery) {
           controller.runQuery().then(() => {
             void render(); // Re-render with computed formulas
@@ -317,11 +360,11 @@ export function buildTasknotesKanbanViewFactory(plugin: TaskNotesPlugin) {
           void render();
         }
       },
-      onunload: () => {
+      unload: () => {
         // Cleanup query listener
-        if (queryListener && (basesContainer as any)?.query?.off) {
+        if (queryListener && basesContainer.query?.off) {
           try {
-            (basesContainer as any).query.off('change', queryListener);
+            basesContainer.query.off('change', queryListener);
           } catch (e) {
             // Query listener removal may fail if already disposed
             console.debug('[TaskNotes][Bases] Query listener cleanup failed:', e);
@@ -333,6 +376,9 @@ export function buildTasknotesKanbanViewFactory(plugin: TaskNotesPlugin) {
       onDataUpdated: () => {
         void render();
       },
+      onResize: () => {
+        // Handle resize - no-op for now
+      },
       getEphemeralState: () => {
         return { scrollTop: currentRoot?.scrollTop || 0 };
       },
@@ -342,9 +388,9 @@ export function buildTasknotesKanbanViewFactory(plugin: TaskNotesPlugin) {
         }
       },
       destroy: () => {
-        if (queryListener && (basesContainer as any)?.query?.off) {
+        if (queryListener && basesContainer.query?.off) {
           try {
-            (basesContainer as any).query.off('change', queryListener);
+            basesContainer.query.off('change', queryListener);
           } catch (e) {
             // Query listener removal may fail if already disposed
           }
@@ -357,50 +403,7 @@ export function buildTasknotesKanbanViewFactory(plugin: TaskNotesPlugin) {
       }
     };
 
-    // Add Bases lifecycle shims (matching base-view-factory pattern)
-    (component as any).load = () => {
-      if ((basesContainer as any)?.query?.on && !queryListener) {
-        queryListener = () => void render();
-        try {
-          (basesContainer as any).query.on('change', queryListener);
-        } catch (e) {
-          // Query listener registration may fail for various reasons
-          console.debug('[TaskNotes][Bases] Query listener registration failed:', e);
-        }
-      }
-      
-      // Trigger initial formula computation on load
-      const controller = (basesContainer as any)?.controller;
-      if (controller?.runQuery) {
-        controller.runQuery().then(() => {
-          void render(); // Re-render with computed formulas
-        }).catch((e: any) => {
-          console.warn('[TaskNotes][Bases] Initial kanban formula computation failed:', e);
-          // Still render even if formulas fail
-          void render();
-        });
-      } else {
-        // No formula computation needed, just render
-        void render();
-      }
-    };
-    
-    (component as any).unload = () => {
-      if (queryListener && (basesContainer as any)?.query?.off) {
-        try {
-          (basesContainer as any).query.off('change', queryListener);
-        } catch (e) {
-          // Query listener removal may fail if already disposed
-          console.debug('[TaskNotes][Bases] Query listener cleanup failed:', e);
-        }
-      }
-      if (currentRoot) {
-        currentRoot.remove();
-        currentRoot = null;
-      }
-      queryListener = null;
-    };
-
-    return component as any;
+    return component;
   };
 }
+

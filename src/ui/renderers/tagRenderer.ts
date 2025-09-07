@@ -1,7 +1,7 @@
 // Tag rendering utilities following TaskNotes coding standards
 
 export interface TagServices {
-  onTagClick?: (tag: string, event: MouseEvent) => void;
+  onTagClick?: (tag: string, event: MouseEvent | KeyboardEvent) => void | Promise<void>;
 }
 
 /** Render a single tag string as an Obsidian-like tag element */
@@ -96,7 +96,7 @@ export function renderContextsValue(
         el.addEventListener('keydown', (e) => {
           if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault();
-            services.onTagClick!(normalized, e as any);
+            services.onTagClick!(normalized, e);
           }
         });
       }
@@ -110,7 +110,38 @@ export function renderContextsValue(
       
     validContexts.forEach((context, idx) => {
       if (idx > 0) container.appendChild(document.createTextNode(', '));
-      renderContextsValue(container, context, services);
+      
+      // Render each context directly instead of recursively calling renderContextsValue
+      const normalized = normalizeContext(context);
+      
+      if (normalized) {
+        const el = container.createEl('span', {
+          cls: 'context-tag',
+          text: normalized,
+          attr: {
+            'role': 'button',
+            'tabindex': '0'
+          }
+        });
+        
+        if (services?.onTagClick) {
+          el.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            services.onTagClick!(normalized, e as MouseEvent);
+          });
+          
+          el.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              services.onTagClick!(normalized, e);
+            }
+          });
+        }
+      } else {
+        // If normalization fails, render as plain text
+        container.appendChild(document.createTextNode(String(context)));
+      }
     });
     return;
   }
@@ -118,18 +149,46 @@ export function renderContextsValue(
   if (value != null) container.appendChild(document.createTextNode(String(value)));
 }
 
-/** Normalize arbitrary tag strings into #tag form */
+/** 
+ * Normalize arbitrary tag strings into #tag form 
+ * Enhanced to handle spaces and special characters
+ */
 export function normalizeTag(raw: string): string | null {
+  if (!raw || typeof raw !== 'string') return null;
+  
   const s = raw.trim();
   if (!s) return null;
-  if (s.startsWith('#')) return s;
-  return `#${s}`;
+  
+  // Already has # prefix
+  if (s.startsWith('#')) {
+    // Remove invalid characters and spaces
+    const cleaned = s.replace(/[^\w#-]/g, '');
+    return cleaned.length > 1 ? cleaned : null;
+  }
+  
+  // Add # prefix and clean
+  const cleaned = s.replace(/[^\w-]/g, '');
+  return cleaned ? `#${cleaned}` : null;
 }
 
-/** Normalize context strings into @context form */
+/** 
+ * Normalize context strings into @context form 
+ * Enhanced to handle spaces and special characters
+ */
 export function normalizeContext(raw: string): string | null {
+  if (!raw || typeof raw !== 'string') return null;
+  
   const s = raw.trim();
   if (!s) return null;
-  if (s.startsWith('@')) return s;
-  return `@${s}`;
+  
+  // Already has @ prefix
+  if (s.startsWith('@')) {
+    // Remove invalid characters and spaces
+    const cleaned = s.replace(/[^\w@-]/g, '');
+    return cleaned.length > 1 ? cleaned : null;
+  }
+  
+  // Add @ prefix and clean
+  const cleaned = s.replace(/[^\w-]/g, '');
+  return cleaned ? `@${cleaned}` : null;
 }
