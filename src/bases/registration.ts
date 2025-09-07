@@ -1,9 +1,10 @@
 import TaskNotesPlugin from '../main';
 import { requireApiVersion } from 'obsidian';
 import { buildTasknotesTaskListViewFactory } from './view-factory';
+import { buildTasknotesKanbanViewFactory } from './kanban-view';
 
 /**
- * Register TaskNotes Task List view with Bases plugin
+ * Register TaskNotes views with Bases plugin
  */
 export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<void> {
   if (!plugin.settings.enableBases) return;
@@ -15,13 +16,23 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
       const bases: any = ((plugin.app as any).internalPlugins as any).getEnabledPluginById?.('bases');
       if (!bases?.registrations) return false;
 
-      // Register factory if it doesn't exist
+      // Register Task List factory if it doesn't exist
       if (!bases.registrations.tasknotesTaskList) {
         const factory = buildTasknotesTaskListViewFactory(plugin);
         bases.registrations.tasknotesTaskList = {
           name: 'TaskNotes Task List',
           icon: 'tasknotes-simple',
           factory
+        };
+      }
+
+      // Register Kanban factory if it doesn't exist
+      if (!bases.registrations.tasknotesKanban) {
+        const kanbanFactory = buildTasknotesKanbanViewFactory(plugin);
+        bases.registrations.tasknotesKanban = {
+          name: 'TaskNotes Kanban',
+          icon: 'layout-grid',
+          factory: kanbanFactory
         };
       }
 

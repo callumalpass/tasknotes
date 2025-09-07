@@ -15,6 +15,17 @@ import { PriorityContextMenu } from '../components/PriorityContextMenu';
 import { RecurrenceContextMenu } from '../components/RecurrenceContextMenu';
 import { createTaskClickHandler, createTaskHoverHandler } from '../utils/clickHandlers';
 import { ReminderModal } from '../modals/ReminderModal';
+import { 
+    renderProjectLinks, 
+    renderTextWithLinks, 
+    renderValueWithLinks, 
+    type LinkServices 
+} from './renderers/linkRenderer';
+import { 
+    renderTagsValue, 
+    renderContextsValue, 
+    type TagServices 
+} from './renderers/tagRenderer';
 
 export interface TaskCardOptions {
     showDueDate: boolean;
@@ -249,19 +260,33 @@ const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
     },
     'projects': (element, value, _, plugin) => {
         if (Array.isArray(value)) {
-            renderProjectLinks(element, value as string[], plugin);
+            const linkServices: LinkServices = {
+                metadataCache: plugin.app.metadataCache,
+                workspace: plugin.app.workspace
+            };
+            renderProjectLinks(element, value as string[], linkServices);
         }
     },
-    'contexts': (element, value) => {
+    'contexts': (element, value, _, plugin) => {
         if (Array.isArray(value)) {
-            const validContexts = flattenAndFilter(value);
-            element.textContent = `@${validContexts.join(', @')}`;
+            const tagServices: TagServices = {
+                onTagClick: (context, _event) => {
+                    // Could implement context search/filter here
+                    console.log('Context clicked:', context);
+                }
+            };
+            renderContextsValue(element, value, tagServices);
         }
     },
-    'tags': (element, value) => {
+    'tags': (element, value, _, plugin) => {
         if (Array.isArray(value)) {
-            const validTags = flattenAndFilter(value);
-            element.textContent = `#${validTags.join(' #')}`;
+            const tagServices: TagServices = {
+                onTagClick: (tag, _event) => {
+                    // Could implement tag search/filter here
+                    console.log('Tag clicked:', tag);
+                }
+            };
+            renderTagsValue(element, value, tagServices);
         }
     },
     'timeEstimate': (element, value, _, plugin) => {
@@ -328,7 +353,7 @@ function renderPropertyMetadata(
             renderUserProperty(element, propertyId, value, plugin);
         } else {
             // Fallback: render arbitrary property with generic format
-            renderGenericProperty(element, propertyId, value);
+            renderGenericProperty(element, propertyId, value, plugin);
         }
         return element;
     } catch (error) {
@@ -359,7 +384,7 @@ function flattenAndFilter(value: any[]): string[] {
 }
 
 /**
- * Render user-defined property with type safety
+ * Render user-defined property with type safety and enhanced link/tag support
  */
 function renderUserProperty(element: HTMLElement, propertyId: string, value: unknown, plugin: TaskNotesPlugin): void {
     const fieldId = propertyId.slice(5);
@@ -370,12 +395,46 @@ function renderUserProperty(element: HTMLElement, propertyId: string, value: unk
         return;
     }
     
-    const displayValue = formatUserPropertyValue(value, userField);
     const fieldName = userField.displayName || fieldId;
     
-    element.textContent = displayValue.trim() !== '' 
-        ? `${fieldName}: ${displayValue}`
-        : `${fieldName}: (empty)`;
+    // Add field label
+    element.createEl('span', { text: `${fieldName}: ` });
+    
+    // Create value container
+    const valueContainer = element.createEl('span');
+    
+    // Check if the value might contain links or tags and render appropriately
+    if (typeof value === 'string' && value.trim() !== '') {
+        const stringValue = value.trim();
+        
+        // Check if string contains links or tags
+        if (stringValue.includes('[[') || stringValue.includes('](') || (stringValue.includes('#') && /\s#\w+|\#\w+/.test(stringValue))) {
+            const linkServices: LinkServices = {
+                metadataCache: plugin.app.metadataCache,
+                workspace: plugin.app.workspace
+            };
+            renderTextWithLinks(valueContainer, stringValue, linkServices);
+        } else {
+            // Format according to field type
+            const displayValue = formatUserPropertyValue(value, userField);
+            valueContainer.textContent = displayValue;
+        }
+    } else if (userField.type === 'list' && Array.isArray(value)) {
+        // Handle list fields - check each item for links/tags
+        const validItems = value.filter(item => item !== null && item !== undefined);
+        validItems.forEach((item, idx) => {
+            if (idx > 0) valueContainer.appendChild(document.createTextNode(', '));
+            renderPropertyValue(valueContainer, item, plugin);
+        });
+    } else {
+        // Use standard formatting for other types or empty values
+        const displayValue = formatUserPropertyValue(value, userField);
+        if (displayValue.trim() !== '') {
+            valueContainer.textContent = displayValue;
+        } else {
+            valueContainer.textContent = '(empty)';
+        }
+    }
 }
 
 /**
@@ -389,9 +448,9 @@ interface UserField {
 }
 
 /**
- * Render generic property with smart formatting
+ * Render generic property with smart formatting and link detection
  */
-function renderGenericProperty(element: HTMLElement, propertyId: string, value: unknown): void {
+function renderGenericProperty(element: HTMLElement, propertyId: string, value: unknown, plugin?: TaskNotesPlugin): void {
     // Handle formula properties - show just the formula name, not "formula.TESTST"
     let displayName: string;
     if (propertyId.startsWith('formula.')) {
@@ -400,13 +459,60 @@ function renderGenericProperty(element: HTMLElement, propertyId: string, value: 
         displayName = propertyId.charAt(0).toUpperCase() + propertyId.slice(1);
     }
     
-    let displayValue: string;
+    // Add property label
+    const labelSpan = element.createEl('span', { text: `${displayName}: ` });
+    
+    // Create value container
+    const valueContainer = element.createEl('span');
     
     if (Array.isArray(value)) {
-        // Handle arrays by joining with commas
+        // Handle arrays - render each item separately to detect links
         const filtered = value.filter(v => v !== null && v !== undefined && v !== '');
-        displayValue = filtered.join(', ');
-    } else if (typeof value === 'object' && value !== null) {
+        filtered.forEach((item, idx) => {
+            if (idx > 0) valueContainer.appendChild(document.createTextNode(', '));
+            renderPropertyValue(valueContainer, item, plugin);
+        });
+    } else {
+        renderPropertyValue(valueContainer, value, plugin);
+    }
+}
+
+/**
+ * Render a single property value with link detection
+ */
+function renderPropertyValue(container: HTMLElement, value: unknown, plugin?: TaskNotesPlugin): void {
+    if (typeof value === 'string' && plugin) {
+        // Check if string contains links and render appropriately
+        const linkServices: LinkServices = {
+            metadataCache: plugin.app.metadataCache,
+            workspace: plugin.app.workspace
+        };
+        
+        // If the string contains wikilinks or markdown links, render with link support
+        if (value.includes('[[') || (value.includes('[') && value.includes(']('))) {
+            renderTextWithLinks(container, value, linkServices);
+            return;
+        }
+        
+        // For tags in generic properties (check for tag patterns like #tag or space#tag)
+        if (value.includes('#') && (/\s#\w+|\#\w+/.test(value))) {
+            const tagServices: TagServices = {
+                onTagClick: (tag, _event) => {
+                    console.log('Tag clicked in generic property:', tag);
+                }
+            };
+            renderTagsValue(container, value, tagServices);
+            return;
+        }
+        
+        // Plain string
+        container.appendChild(document.createTextNode(value));
+        return;
+    }
+    
+    let displayValue: string;
+    
+    if (typeof value === 'object' && value !== null) {
         // Handle Date objects specially
         if (value instanceof Date) {
             displayValue = formatDateTimeForDisplay(value.toISOString(), {
@@ -447,7 +553,7 @@ function renderGenericProperty(element: HTMLElement, propertyId: string, value: 
         displayValue = displayValue.substring(0, 97) + '...';
     }
     
-    element.textContent = `${displayName}: ${displayValue}`;
+    container.appendChild(document.createTextNode(displayValue));
 }
 
 /**
@@ -1613,107 +1719,6 @@ export async function showDeleteConfirmationModal(task: TaskInfo, plugin: TaskNo
     });
 }
 
-/**
- * Check if a project string is in wikilink format [[Note Name]]
- */
-function isWikilinkProject(project: string): boolean {
-    return Boolean(project && project.startsWith('[[') && project.endsWith(']]'));
-}
-
-/**
- * Render project links in a container element, handling both plain text and wikilink projects
- */
-function renderProjectLinks(container: HTMLElement, projects: string[], plugin: TaskNotesPlugin): void {
-    container.innerHTML = '';
-    
-    // Flatten nested arrays and filter out null/undefined values before processing
-    const validProjects = projects
-        .flat(2) // Flatten up to 2 levels deep to handle nested arrays
-        .filter(project => project !== null && project !== undefined && typeof project === 'string');
-    
-    validProjects.forEach((project, index) => {
-        if (index > 0) {
-            const separator = document.createTextNode(', ');
-            container.appendChild(separator);
-        }
-        
-        const plusText = document.createTextNode('+');
-        container.appendChild(plusText);
-        
-        if (isWikilinkProject(project)) {
-            // Parse the wikilink to separate path and display text
-            const linkContent = project.slice(2, -2);
-            let filePath = linkContent;
-            let displayText = linkContent;
-            
-            // Handle alias syntax: [[path|alias]]
-            if (linkContent.includes('|')) {
-                const parts = linkContent.split('|');
-                filePath = parts[0];
-                displayText = parts[1];
-            }
-            
-            // Create a clickable link showing the display text (alias if available)
-            const linkEl = container.createEl('a', {
-                cls: 'task-card__project-link internal-link',
-                text: displayText,
-                attr: { 
-                    'data-href': filePath,
-                    'role': 'button',
-                    'tabindex': '0'
-                }
-            });
-            
-            // Add click handler to open the note
-            linkEl.addEventListener('click', async (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                
-                try {
-                    // Resolve the link to get the actual file
-                    const file = plugin.app.metadataCache.getFirstLinkpathDest(filePath, '');
-                    if (file instanceof TFile) {
-                        // Open the file in the current leaf
-                        await plugin.app.workspace.getLeaf(false).openFile(file);
-                    } else {
-                        // File not found, show notice
-                        new Notice(`Note "${displayText}" not found`);
-                    }
-                } catch (error) {
-                    console.error('Error opening project link:', error);
-                    new Notice(`Failed to open note "${displayText}"`);
-                }
-            });
-            
-            // Add keyboard support for accessibility
-            linkEl.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    linkEl.click();
-                }
-            });
-            
-            // Add hover preview for the project link
-            linkEl.addEventListener('mouseover', (event) => {
-                const file = plugin.app.metadataCache.getFirstLinkpathDest(filePath, '');
-                if (file instanceof TFile) {
-                    plugin.app.workspace.trigger('hover-link', {
-                        event,
-                        source: 'tasknotes-project-link',
-                        hoverParent: container,
-                        targetEl: linkEl,
-                        linktext: filePath,
-                        sourcePath: file.path
-                    });
-                }
-            });
-        } else {
-            // Plain text project
-            const textNode = document.createTextNode(project);
-            container.appendChild(textNode);
-        }
-    });
-}
 
 /**
  * Clean up event listeners and resources for a task card
