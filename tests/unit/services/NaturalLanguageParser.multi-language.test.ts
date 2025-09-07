@@ -121,6 +121,105 @@ describe('NaturalLanguageParser Multi-Language', () => {
         });
     });
 
+    describe('German Language', () => {
+        let parser: NaturalLanguageParser;
+
+        beforeEach(() => {
+            // Use empty configs to test language fallback patterns
+            parser = new NaturalLanguageParser([], [], true, 'de');
+        });
+
+        it('should parse German priority keywords', () => {
+            const result = parser.parseInput('meeting dringend morgen');
+            expect(result.priority).toBe('urgent');
+            expect(result.title).toMatch(/meeting/);
+        });
+
+        it('should parse German status keywords', () => {
+            const result = parser.parseInput('aufgabe erledigt');
+            expect(result.status).toBe('done');
+            expect(result.title).toBe('aufgabe');
+        });
+
+        it('should parse German time estimates', () => {
+            const result = parser.parseInput('aufgabe 2 stunden 30 minuten');
+            expect(result.estimate).toBe(150); // 2*60 + 30 = 150 minutes
+            expect(result.title).toBe('aufgabe');
+        });
+
+        it('should parse German recurrence patterns', () => {
+            const result = parser.parseInput('meeting täglich team');
+            expect(result.recurrence).toBe('FREQ=DAILY');
+            expect(result.title).toMatch(/meeting.*team/);
+        });
+    });
+
+    describe('Russian Language', () => {
+        let parser: NaturalLanguageParser;
+
+        beforeEach(() => {
+            // Use empty configs to test language fallback patterns
+            parser = new NaturalLanguageParser([], [], true, 'ru');
+        });
+
+        it('should parse Russian priority keywords', () => {
+            const result = parser.parseInput('встреча срочно завтра');
+            expect(result.priority).toBe('urgent');
+            expect(result.title).toMatch(/встреча/);
+        });
+
+        it('should parse Russian status keywords', () => {
+            const result = parser.parseInput('задача выполнено');
+            expect(result.status).toBe('done');
+            expect(result.title).toBe('задача');
+        });
+
+        it('should parse Russian time estimates', () => {
+            const result = parser.parseInput('задача 2 часа 30 минут');
+            expect(result.estimate).toBe(150); // 2*60 + 30 = 150 minutes
+            expect(result.title).toBe('задача');
+        });
+
+        it('should parse Russian recurrence patterns', () => {
+            const result = parser.parseInput('встреча ежедневно команда');
+            expect(result.recurrence).toBe('FREQ=DAILY');
+            expect(result.title).toMatch(/встреча.*команда/);
+        });
+    });
+
+    describe('Chinese Language', () => {
+        let parser: NaturalLanguageParser;
+
+        beforeEach(() => {
+            // Use empty configs to test language fallback patterns
+            parser = new NaturalLanguageParser([], [], true, 'zh');
+        });
+
+        it('should parse Chinese priority keywords', () => {
+            const result = parser.parseInput('会议 紧急 明天');
+            expect(result.priority).toBe('urgent');
+            expect(result.title).toMatch(/会议/);
+        });
+
+        it('should parse Chinese status keywords', () => {
+            const result = parser.parseInput('任务 完成');
+            expect(result.status).toBe('done');
+            expect(result.title).toBe('任务');
+        });
+
+        it('should parse Chinese time estimates', () => {
+            const result = parser.parseInput('任务 2 小时 30 分钟');
+            expect(result.estimate).toBe(150); // 2*60 + 30 = 150 minutes
+            expect(result.title).toBe('任务');
+        });
+
+        it('should parse Chinese recurrence patterns', () => {
+            const result = parser.parseInput('会议 每天 团队');
+            expect(result.recurrence).toBe('FREQ=DAILY');
+            expect(result.title).toMatch(/会议.*团队/);
+        });
+    });
+
     describe('Language Fallback', () => {
         it('should fallback to English for unsupported language codes', () => {
             const parser = new NaturalLanguageParser(mockStatusConfigs, mockPriorityConfigs, true, 'unsupported');

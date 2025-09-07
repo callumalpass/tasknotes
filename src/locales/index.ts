@@ -2,6 +2,9 @@ import { LanguageRegistry, NLPLanguageConfig } from './types';
 import { enConfig } from './en';
 import { esConfig } from './es';
 import { frConfig } from './fr';
+import { deConfig } from './de';
+import { ruConfig } from './ru';
+import { zhConfig } from './zh';
 
 /**
  * Registry of all available language configurations
@@ -9,7 +12,10 @@ import { frConfig } from './fr';
 export const languageRegistry: LanguageRegistry = {
     en: enConfig,
     es: esConfig,
-    fr: frConfig
+    fr: frConfig,
+    de: deConfig,
+    ru: ruConfig,
+    zh: zhConfig
 };
 
 /**

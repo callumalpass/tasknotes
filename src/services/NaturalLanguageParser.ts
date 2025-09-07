@@ -210,21 +210,26 @@ export class NaturalLanguageParser {
         const patterns: RegexPattern[] = [];
         const langConfig = this.languageConfig.fallbackPriority;
         
-        // Build regex patterns from language config with proper escaping
+        // Build regex patterns from language config with proper escaping and boundary handling
+        // Use lookahead/lookbehind for non-ASCII languages where \b doesn't work well
+        const isNonAscii = ['ru', 'zh'].includes(this.languageConfig.code);
+        const boundary = isNonAscii ? '(?:^|\\s)' : '\\b';
+        const endBoundary = isNonAscii ? '(?=\\s|$)' : '\\b';
+        
         patterns.push({ 
-            regex: new RegExp(`\\b(${langConfig.urgent.map(p => this.escapeRegex(p)).join('|')})\\b`, 'i'), 
+            regex: new RegExp(`${boundary}(${langConfig.urgent.map(p => this.escapeRegex(p)).join('|')})${endBoundary}`, 'i'), 
             value: 'urgent' 
         });
         patterns.push({ 
-            regex: new RegExp(`\\b(${langConfig.high.map(p => this.escapeRegex(p)).join('|')})\\b`, 'i'), 
+            regex: new RegExp(`${boundary}(${langConfig.high.map(p => this.escapeRegex(p)).join('|')})${endBoundary}`, 'i'), 
             value: 'high' 
         });
         patterns.push({ 
-            regex: new RegExp(`\\b(${langConfig.normal.map(p => this.escapeRegex(p)).join('|')})\\b`, 'i'), 
+            regex: new RegExp(`${boundary}(${langConfig.normal.map(p => this.escapeRegex(p)).join('|')})${endBoundary}`, 'i'), 
             value: 'normal' 
         });
         patterns.push({ 
-            regex: new RegExp(`\\b(${langConfig.low.map(p => this.escapeRegex(p)).join('|')})\\b`, 'i'), 
+            regex: new RegExp(`${boundary}(${langConfig.low.map(p => this.escapeRegex(p)).join('|')})${endBoundary}`, 'i'), 
             value: 'low' 
         });
         
@@ -259,25 +264,30 @@ export class NaturalLanguageParser {
     private buildFallbackStatusPatterns(): RegexPattern[] {
         const langConfig = this.languageConfig.fallbackStatus;
         
+        // Use appropriate boundary matching for different languages
+        const isNonAscii = ['ru', 'zh'].includes(this.languageConfig.code);
+        const boundary = isNonAscii ? '(?:^|\\s)' : '\\b';
+        const endBoundary = isNonAscii ? '(?=\\s|$)' : '\\b';
+        
         return [
             { 
-                regex: new RegExp(`\\b(${langConfig.open.map(p => this.escapeRegex(p)).join('|')})\\b`, 'i'), 
+                regex: new RegExp(`${boundary}(${langConfig.open.map(p => this.escapeRegex(p)).join('|')})${endBoundary}`, 'i'), 
                 value: 'open' 
             },
             { 
-                regex: new RegExp(`\\b(${langConfig.inProgress.map(p => this.escapeRegex(p)).join('|')})\\b`, 'i'), 
+                regex: new RegExp(`${boundary}(${langConfig.inProgress.map(p => this.escapeRegex(p)).join('|')})${endBoundary}`, 'i'), 
                 value: 'in-progress' 
             },
             { 
-                regex: new RegExp(`\\b(${langConfig.done.map(p => this.escapeRegex(p)).join('|')})\\b`, 'i'), 
+                regex: new RegExp(`${boundary}(${langConfig.done.map(p => this.escapeRegex(p)).join('|')})${endBoundary}`, 'i'), 
                 value: 'done' 
             },
             { 
-                regex: new RegExp(`\\b(${langConfig.cancelled.map(p => this.escapeRegex(p)).join('|')})\\b`, 'i'), 
+                regex: new RegExp(`${boundary}(${langConfig.cancelled.map(p => this.escapeRegex(p)).join('|')})${endBoundary}`, 'i'), 
                 value: 'cancelled' 
             },
             { 
-                regex: new RegExp(`\\b(${langConfig.waiting.map(p => this.escapeRegex(p)).join('|')})\\b`, 'i'), 
+                regex: new RegExp(`${boundary}(${langConfig.waiting.map(p => this.escapeRegex(p)).join('|')})${endBoundary}`, 'i'), 
                 value: 'waiting' 
             }
         ];
@@ -521,28 +531,32 @@ export class NaturalLanguageParser {
         // Add other patterns with language support...
         // For brevity, I'll add a few key ones and can extend later
         
-        // Simple frequency patterns with proper escaping
+        // Simple frequency patterns with proper escaping and boundary handling
+        const isNonAscii = ['ru', 'zh'].includes(this.languageConfig.code);
+        const boundary = isNonAscii ? '(?:^|\\s)' : '\\b';
+        const endBoundary = isNonAscii ? '(?=\\s|$)' : '\\b';
+        
         const dailyPatterns = lang.frequencies.daily.map(p => this.escapeRegex(p)).join('|');
         patterns.push({
-            regex: new RegExp(`\\b(${dailyPatterns})\\b`, 'i'),
+            regex: new RegExp(`${boundary}(${dailyPatterns})${endBoundary}`, 'i'),
             handler: () => 'FREQ=DAILY'
         });
         
         const weeklyPatterns = lang.frequencies.weekly.map(p => this.escapeRegex(p)).join('|');
         patterns.push({
-            regex: new RegExp(`\\b(${weeklyPatterns})\\b`, 'i'),
+            regex: new RegExp(`${boundary}(${weeklyPatterns})${endBoundary}`, 'i'),
             handler: () => 'FREQ=WEEKLY'
         });
         
         const monthlyPatterns = lang.frequencies.monthly.map(p => this.escapeRegex(p)).join('|');
         patterns.push({
-            regex: new RegExp(`\\b(${monthlyPatterns})\\b`, 'i'),
+            regex: new RegExp(`${boundary}(${monthlyPatterns})${endBoundary}`, 'i'),
             handler: () => 'FREQ=MONTHLY'
         });
         
         const yearlyPatterns = lang.frequencies.yearly.map(p => this.escapeRegex(p)).join('|');
         patterns.push({
-            regex: new RegExp(`\\b(${yearlyPatterns})\\b`, 'i'),
+            regex: new RegExp(`${boundary}(${yearlyPatterns})${endBoundary}`, 'i'),
             handler: () => 'FREQ=YEARLY'
         });
         
@@ -661,20 +675,25 @@ export class NaturalLanguageParser {
     private extractTimeEstimate(text: string, result: ParsedTaskData): string {
         const langConfig = this.languageConfig.timeEstimate;
         
+        // Use appropriate boundary matching for different languages
+        const isNonAscii = ['ru', 'zh'].includes(this.languageConfig.code);
+        const boundary = isNonAscii ? '(?:^|\\s)' : '\\b';
+        const endBoundary = isNonAscii ? '(?=\\s|$)' : '\\b';
+        
         const patterns = [
             // Combined format: 1h30m
             { 
-                regex: new RegExp(`\\b(\\d+)(${langConfig.hours.join('|')})\\s*(\\d+)(${langConfig.minutes.join('|')})\\b`, 'i'), 
+                regex: new RegExp(`${boundary}(\\d+)(${langConfig.hours.map(p => this.escapeRegex(p)).join('|')})\\s*(\\d+)(${langConfig.minutes.map(p => this.escapeRegex(p)).join('|')})${endBoundary}`, 'i'), 
                 handler: (m: RegExpMatchArray) => parseInt(m[1]) * 60 + parseInt(m[3]) 
             },
             // Hours: 1hr, 2 hours, 3h
             { 
-                regex: new RegExp(`\\b(\\d+)\\s*(${langConfig.hours.join('|')})\\b`, 'i'), 
+                regex: new RegExp(`${boundary}(\\d+)\\s*(${langConfig.hours.map(p => this.escapeRegex(p)).join('|')})${endBoundary}`, 'i'), 
                 handler: (m: RegExpMatchArray) => parseInt(m[1]) * 60 
             },
             // Minutes: 30min, 45 m, 15 minutes
             { 
-                regex: new RegExp(`\\b(\\d+)\\s*(${langConfig.minutes.join('|')})\\b`, 'i'), 
+                regex: new RegExp(`${boundary}(\\d+)\\s*(${langConfig.minutes.map(p => this.escapeRegex(p)).join('|')})${endBoundary}`, 'i'), 
                 handler: (m: RegExpMatchArray) => parseInt(m[1]) 
             },
         ];

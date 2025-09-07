@@ -19,6 +19,24 @@ describe('Language Configuration System', () => {
             expect(languageRegistry['fr'].name).toBe('Français');
             expect(languageRegistry['fr'].code).toBe('fr');
         });
+
+        it('should contain German configuration', () => {
+            expect(languageRegistry['de']).toBeDefined();
+            expect(languageRegistry['de'].name).toBe('Deutsch');
+            expect(languageRegistry['de'].code).toBe('de');
+        });
+
+        it('should contain Russian configuration', () => {
+            expect(languageRegistry['ru']).toBeDefined();
+            expect(languageRegistry['ru'].name).toBe('Русский');
+            expect(languageRegistry['ru'].code).toBe('ru');
+        });
+
+        it('should contain Chinese configuration', () => {
+            expect(languageRegistry['zh']).toBeDefined();
+            expect(languageRegistry['zh'].name).toBe('中文');
+            expect(languageRegistry['zh'].code).toBe('zh');
+        });
     });
 
     describe('getAvailableLanguages', () => {
@@ -27,7 +45,10 @@ describe('Language Configuration System', () => {
             expect(languages).toEqual([
                 { value: 'en', label: 'English' },
                 { value: 'es', label: 'Español' },
-                { value: 'fr', label: 'Français' }
+                { value: 'fr', label: 'Français' },
+                { value: 'de', label: 'Deutsch' },
+                { value: 'ru', label: 'Русский' },
+                { value: 'zh', label: '中文' }
             ]);
         });
     });
@@ -69,7 +90,7 @@ describe('Language Configuration System', () => {
         it('should fallback to English for unsupported system language', () => {
             // Mock navigator.language
             const originalNavigator = global.navigator;
-            const mockNavigator = { language: 'de-DE' }; // German not supported yet
+            const mockNavigator = { language: 'it-IT' }; // Italian not supported yet
             Object.defineProperty(global, 'navigator', {
                 value: mockNavigator,
                 writable: true
@@ -106,7 +127,7 @@ describe('Language Configuration System', () => {
 
     describe('Language Configuration Structure', () => {
         it('should have consistent structure across all languages', () => {
-            const languages = ['en', 'es', 'fr'];
+            const languages = ['en', 'es', 'fr', 'de', 'ru', 'zh'];
             
             languages.forEach(langCode => {
                 const config = languageRegistry[langCode];
