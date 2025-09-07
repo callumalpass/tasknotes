@@ -197,4 +197,65 @@ describe('FieldMapper - boolean status handling', () => {
             expect(convertedTaskData.status).toBe('true');
         });
     });
+
+    describe('null reminders handling', () => {
+        it('should filter out null reminders from array', () => {
+            const frontmatter = {
+                title: 'Test Task',
+                reminders: [null, { id: 'valid-reminder', type: 'relative' }, null]
+            };
+
+            const taskInfo = fieldMapper.mapFromFrontmatter(frontmatter, 'test-task.md');
+
+            expect(Array.isArray(taskInfo.reminders)).toBe(true);
+            expect(taskInfo.reminders).toHaveLength(1);
+            expect(taskInfo.reminders[0]).toEqual({ id: 'valid-reminder', type: 'relative' });
+        });
+
+        it('should handle null reminders value by not setting reminders property', () => {
+            const frontmatter = {
+                title: 'Test Task',
+                reminders: null
+            };
+
+            const taskInfo = fieldMapper.mapFromFrontmatter(frontmatter, 'test-task.md');
+
+            expect(taskInfo.reminders).toBeUndefined();
+        });
+
+        it('should handle undefined reminders value by not setting reminders property', () => {
+            const frontmatter = {
+                title: 'Test Task',
+                reminders: undefined
+            };
+
+            const taskInfo = fieldMapper.mapFromFrontmatter(frontmatter, 'test-task.md');
+
+            expect(taskInfo.reminders).toBeUndefined();
+        });
+
+        it('should handle array of all null reminders by not setting reminders property', () => {
+            const frontmatter = {
+                title: 'Test Task',
+                reminders: [null, null, undefined]
+            };
+
+            const taskInfo = fieldMapper.mapFromFrontmatter(frontmatter, 'test-task.md');
+
+            expect(taskInfo.reminders).toBeUndefined();
+        });
+
+        it('should handle valid single reminder properly', () => {
+            const frontmatter = {
+                title: 'Test Task',
+                reminders: { id: 'valid-reminder', type: 'absolute' }
+            };
+
+            const taskInfo = fieldMapper.mapFromFrontmatter(frontmatter, 'test-task.md');
+
+            expect(Array.isArray(taskInfo.reminders)).toBe(true);
+            expect(taskInfo.reminders).toHaveLength(1);
+            expect(taskInfo.reminders[0]).toEqual({ id: 'valid-reminder', type: 'absolute' });
+        });
+    });
 });

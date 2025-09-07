@@ -127,8 +127,15 @@ export class FieldMapper {
 
         if (frontmatter[this.mapping.reminders] !== undefined) {
             const reminders = frontmatter[this.mapping.reminders];
-            // Ensure reminders is always an array
-            mapped.reminders = Array.isArray(reminders) ? reminders : [reminders];
+            // Ensure reminders is always an array and filter out null/undefined values
+            if (Array.isArray(reminders)) {
+                const filteredReminders = reminders.filter(r => r != null);
+                if (filteredReminders.length > 0) {
+                    mapped.reminders = filteredReminders;
+                }
+            } else if (reminders != null) {
+                mapped.reminders = [reminders];
+            }
         }
 
         // Handle tags array (includes archive tag)
