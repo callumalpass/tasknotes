@@ -131,6 +131,9 @@ describe('Off-by-One Completion Date Bug', () => {
       emitter: {
         trigger: jest.fn()
       },
+      settings: {
+        maintainDueDateOffsetInRecurring: false
+      },
       selectedDate: new Date('2025-01-21T14:00:00Z') // Tuesday 14:00 UTC (Wednesday 00:00 AEST)
     };
 

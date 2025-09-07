@@ -32,7 +32,7 @@ export function renderGeneralTab(container: HTMLElement, plugin: TaskNotesPlugin
 
     createToggleSetting(container, {
         name: 'Move archived tasks to folder',
-        desc: 'Automatically move completed tasks to an archive folder',
+        desc: 'Automatically move archived tasks to an archive folder',
         getValue: () => plugin.settings.moveArchivedTasks,
         setValue: async (value: boolean) => {
             plugin.settings.moveArchivedTasks = value;

@@ -837,12 +837,21 @@ export default class TaskNotesPlugin extends Plugin {
 	}
 
 	onunload() {
+		// Unregister Bases views
+		if (this.settings?.enableBases) {
+			try {
+				const { unregisterBasesViews } = require('./bases/registration');
+				unregisterBasesViews(this);
+			} catch (e) {
+				console.debug('[TaskNotes][Bases] Unregistration failed:', e);
+			}
+		}
+
 		// Clean up performance monitoring
 		const cacheStats = perfMonitor.getStats('cache-initialization');
 		if (cacheStats && cacheStats.count > 0) {
 			perfMonitor.logSummary();
 		}
-
 
 		// Clean up Pomodoro service
 		if (this.pomodoroService) {
@@ -1307,6 +1316,80 @@ export default class TaskNotesPlugin extends Plugin {
 
 	async activateKanbanView() {
 		return this.activateView(KANBAN_VIEW_TYPE);
+	}
+
+	/**
+	 * Open and activate the search pane with a tag query
+	 * (Renamed from openSearchPaneWithTag for cleaner API)
+	 */
+	async openTagsPane(tag: string): Promise<boolean> {
+		const { workspace } = this.app;
+		
+		try {
+			// Try to find existing search view first
+			let searchLeaf = workspace.getLeavesOfType('search').first();
+			
+			if (!searchLeaf) {
+				// Try to create/activate the search view in left sidebar
+				const leftLeaf = workspace.getLeftLeaf(false);
+				
+				if (!leftLeaf) {
+					console.warn('Could not get left leaf for search pane');
+					return false;
+				}
+				
+				try {
+					await leftLeaf.setViewState({
+						type: 'search',
+						active: true
+					});
+					searchLeaf = leftLeaf;
+				} catch (error) {
+					console.warn('Failed to create search view:', error);
+					return false;
+				}
+			}
+			
+			// Ensure we have a valid search leaf
+			if (!searchLeaf || !searchLeaf.view) {
+				console.warn('No search leaf available');
+				return false;
+			}
+			
+			// Set the search query to "tag:#tagname"
+			const searchQuery = `tag:${tag}`;
+			const searchView = searchLeaf.view as any;
+			
+			// Try different methods to set the search query based on Obsidian version
+			if (typeof searchView.setQuery === 'function') {
+				// Newer Obsidian versions
+				searchView.setQuery(searchQuery);
+			} else if (typeof searchView.searchComponent?.setValue === 'function') {
+				// Alternative method
+				searchView.searchComponent.setValue(searchQuery);
+			} else if (searchView.searchInputEl) {
+				// Fallback: set the input value directly
+				searchView.searchInputEl.value = searchQuery;
+				// Trigger search if possible
+				if (typeof searchView.startSearch === 'function') {
+					searchView.startSearch();
+				}
+			} else {
+				console.warn('[TaskNotes] Could not find method to set search query');
+				new Notice('Search pane opened but could not set tag query');
+				return false;
+			}
+			
+			// Reveal and focus the search pane
+			workspace.revealLeaf(searchLeaf);
+			workspace.setActiveLeaf(searchLeaf, { focus: true });
+			
+			return true;
+		} catch (error) {
+			console.error('[TaskNotes] Error opening search pane with tag:', error);
+			new Notice(`Failed to open search pane for tag: ${tag}`);
+			return false;
+		}
 	}
 
 

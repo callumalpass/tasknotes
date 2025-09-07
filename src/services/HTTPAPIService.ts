@@ -89,7 +89,7 @@ export class HTTPAPIService implements IWebhookNotifier {
 		for (const controller of allControllers) {
 			const controllerSpec = generateOpenAPISpec(controller);
 			if (controllerSpec.paths) {
-				Object.assign(spec.paths, controllerSpec.paths);
+				spec.paths = { ...spec.paths, ...controllerSpec.paths };
 			}
 		}
 		

@@ -88,6 +88,9 @@ describe('Context Menu Completion Date Fix (Corrected)', () => {
       emitter: {
         trigger: jest.fn()
       },
+      settings: {
+        maintainDueDateOffsetInRecurring: false
+      },
       selectedDate: new Date('2025-01-15T23:00:00Z') // Late evening UTC
     };
 
