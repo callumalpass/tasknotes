@@ -25,6 +25,12 @@ export function augmentEl(el: HTMLElement): HTMLElement {
   (el as any).empty = function() { this.innerHTML=''; return this; };
   (el as any).addClass = function(...classes: string[]) { this.classList.add(...classes); return this; };
   (el as any).removeClass = function(...classes: string[]) { this.classList.remove(...classes); return this; };
+  (el as any).querySelector = function(selector: string) { 
+    return HTMLElement.prototype.querySelector.call(this, selector); 
+  };
+  (el as any).getBoundingClientRect = function() { return { top: 0, left: 0, bottom: 100, right: 100, width: 100, height: 100 }; };
+  (el as any).closest = function(selector: string) { return HTMLElement.prototype.closest.call(this, selector); };
+  (el as any).contains = function(other: Node) { return HTMLElement.prototype.contains.call(this, other); };
   return el;
 }
 

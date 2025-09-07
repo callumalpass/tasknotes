@@ -711,10 +711,12 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 			{ id: 'tags', name: 'Tags', category: 'organization' }
 		];
 
-		new Setting(container)
+		const defaultPropertiesSetting = new Setting(container)
 			.setName('Default visible properties')
-			.setDesc('Choose which properties appear on task cards by default. You can temporarily change these in each view and save custom combinations to saved views.')
-			.setClass('setting-item-default-properties');
+			.setDesc('Choose which properties appear on task cards by default. You can temporarily change these in each view and save custom combinations to saved views.');
+		
+		// Add CSS class to the setting container
+		defaultPropertiesSetting.settingEl.addClass('setting-item-default-properties');
 
 		// Create container for property toggles
 		const propertiesContainer = container.createDiv('default-properties-container');

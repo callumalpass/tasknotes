@@ -398,8 +398,16 @@ export class FilterBar extends EventEmitter {
      */
     private render(): void {
         try {
-            this.container.empty();
-            this.container.addClass('advanced-filter-bar');
+            if (typeof this.container.empty === 'function') {
+                this.container.empty();
+            } else {
+                this.container.innerHTML = '';
+            }
+            if (typeof this.container.addClass === 'function') {
+                this.container.addClass('advanced-filter-bar');
+            } else if (this.container.classList) {
+                this.container.classList.add('advanced-filter-bar');
+            }
 
             // 1. Top Controls (Filter Icon + Templates Button)
             this.renderTopControls();
@@ -416,8 +424,19 @@ export class FilterBar extends EventEmitter {
     private renderFallbackUI(): void {
         try {
             if (this.container.children.length === 0) {
-                this.container.addClass('advanced-filter-bar');
-                const errorDiv = this.container.createDiv({ cls: 'filter-bar-error' });
+                if (typeof this.container.addClass === 'function') {
+                    this.container.addClass('advanced-filter-bar');
+                } else if (this.container.classList) {
+                    this.container.classList.add('advanced-filter-bar');
+                }
+                let errorDiv: HTMLElement;
+                if (typeof this.container.createDiv === 'function') {
+                    errorDiv = this.container.createDiv({ cls: 'filter-bar-error' });
+                } else {
+                    errorDiv = document.createElement('div');
+                    errorDiv.className = 'filter-bar-error';
+                    this.container.appendChild(errorDiv);
+                }
                 errorDiv.textContent = 'Filter bar temporarily unavailable';
             }
         } catch (error) {
@@ -2321,7 +2340,10 @@ export class FilterBar extends EventEmitter {
 
     /** Update filter toggle badge and tooltip */
     private updateFilterToggleBadge(): void {
-        const el = this.container.querySelector('.filter-bar__filter-toggle') as HTMLElement | null;
+        let el: HTMLElement | null = null;
+        if (typeof this.container.querySelector === 'function') {
+            el = this.container.querySelector('.filter-bar__filter-toggle') as HTMLElement | null;
+        }
         if (!el) return;
         const active = this.hasActiveFilters();
         el.classList.toggle('has-active-filters', active);
