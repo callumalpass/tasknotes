@@ -34,13 +34,6 @@ interface ParseProcessor {
     process(text: string, result: ParsedTaskData): string;
 }
 
-/**
- * Processing context passed through the pipeline
- */
-interface ProcessingContext {
-    text: string;
-    result: ParsedTaskData;
-}
 
 /**
  * Service for parsing natural language input into structured task data.
