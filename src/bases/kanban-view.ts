@@ -286,30 +286,120 @@ export function buildTasknotesKanbanViewFactory(plugin: TaskNotesPlugin) {
       });
     };
 
-    // Set up lifecycle
+    // Set up lifecycle following the working pattern from base-view-factory
+    let queryListener: (() => void) | null = null;
+
     const component = {
       onload: () => {
-        void render();
+        // Set up query listener
+        if ((basesContainer as any)?.query?.on && !queryListener) {
+          queryListener = () => void render();
+          try {
+            (basesContainer as any).query.on('change', queryListener);
+          } catch (e) {
+            // Query listener registration may fail for various reasons
+            console.debug('[TaskNotes][Bases] Query listener registration failed:', e);
+          }
+        }
+        
+        // Trigger initial formula computation on load (like base-view-factory)
+        const controller = (basesContainer as any)?.controller;
+        if (controller?.runQuery) {
+          controller.runQuery().then(() => {
+            void render(); // Re-render with computed formulas
+          }).catch((e: any) => {
+            console.warn('[TaskNotes][Bases] Initial kanban formula computation failed:', e);
+            // Still render even if formulas fail
+            void render();
+          });
+        } else {
+          // No formula computation needed, just render
+          void render();
+        }
       },
       onunload: () => {
-        // Cleanup if needed
+        // Cleanup query listener
+        if (queryListener && (basesContainer as any)?.query?.off) {
+          try {
+            (basesContainer as any).query.off('change', queryListener);
+          } catch (e) {
+            // Query listener removal may fail if already disposed
+            console.debug('[TaskNotes][Bases] Query listener cleanup failed:', e);
+          }
+        }
+        queryListener = null;
       },
-      refresh: render
+      refresh: render,
+      onDataUpdated: () => {
+        void render();
+      },
+      getEphemeralState: () => {
+        return { scrollTop: currentRoot?.scrollTop || 0 };
+      },
+      setEphemeralState: (state: any) => {
+        if (state?.scrollTop && currentRoot) {
+          currentRoot.scrollTop = state.scrollTop;
+        }
+      },
+      destroy: () => {
+        if (queryListener && (basesContainer as any)?.query?.off) {
+          try {
+            (basesContainer as any).query.off('change', queryListener);
+          } catch (e) {
+            // Query listener removal may fail if already disposed
+          }
+        }
+        if (currentRoot) {
+          currentRoot.remove();
+          currentRoot = null;
+        }
+        queryListener = null;
+      }
     };
 
-    // Listen for Bases query changes
-    const queryListener = () => void render();
-    basesContainer?.query?.on?.('change', queryListener);
-
-    // Add Bases lifecycle shims
-    (component as any).load = component.onload;
+    // Add Bases lifecycle shims (matching base-view-factory pattern)
+    (component as any).load = () => {
+      if ((basesContainer as any)?.query?.on && !queryListener) {
+        queryListener = () => void render();
+        try {
+          (basesContainer as any).query.on('change', queryListener);
+        } catch (e) {
+          // Query listener registration may fail for various reasons
+          console.debug('[TaskNotes][Bases] Query listener registration failed:', e);
+        }
+      }
+      
+      // Trigger initial formula computation on load
+      const controller = (basesContainer as any)?.controller;
+      if (controller?.runQuery) {
+        controller.runQuery().then(() => {
+          void render(); // Re-render with computed formulas
+        }).catch((e: any) => {
+          console.warn('[TaskNotes][Bases] Initial kanban formula computation failed:', e);
+          // Still render even if formulas fail
+          void render();
+        });
+      } else {
+        // No formula computation needed, just render
+        void render();
+      }
+    };
+    
     (component as any).unload = () => {
-      basesContainer?.query?.off?.('change', queryListener);
-      component.onunload();
+      if (queryListener && (basesContainer as any)?.query?.off) {
+        try {
+          (basesContainer as any).query.off('change', queryListener);
+        } catch (e) {
+          // Query listener removal may fail if already disposed
+          console.debug('[TaskNotes][Bases] Query listener cleanup failed:', e);
+        }
+      }
+      if (currentRoot) {
+        currentRoot.remove();
+        currentRoot = null;
+      }
+      queryListener = null;
     };
-
-    // Initial render
-    void render();
 
     return component as any;
   };

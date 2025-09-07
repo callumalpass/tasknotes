@@ -1309,6 +1309,90 @@ export default class TaskNotesPlugin extends Plugin {
 		return this.activateView(KANBAN_VIEW_TYPE);
 	}
 
+	/**
+	 * Open and activate the tags pane/view with a specific tag filter
+	 */
+	async openTagsPane(tag?: string) {
+		const { workspace } = this.app;
+		
+		try {
+			// Try to find existing tags view first
+			let tagsLeaf = workspace.getLeavesOfType('tag').first();
+			
+			if (!tagsLeaf) {
+				// Common view type names for tags in Obsidian
+				const possibleTypes = ['tags', 'tag', 'tags-view', 'tag-view'];
+				
+				for (const type of possibleTypes) {
+					const leaves = workspace.getLeavesOfType(type);
+					if (leaves.length > 0) {
+						tagsLeaf = leaves[0];
+						break;
+					}
+				}
+			}
+			
+			if (!tagsLeaf) {
+				// Try to create/activate the tags view in right sidebar
+				const rightLeaf = workspace.getRightLeaf(false);
+				
+				if (!rightLeaf) {
+					console.warn('Could not get right leaf for tags pane');
+					return false;
+				}
+				
+				// Try different view types
+				const viewTypes = ['tag', 'tags', 'tags-view'];
+				let success = false;
+				
+				for (const viewType of viewTypes) {
+					try {
+						await rightLeaf.setViewState({
+							type: viewType,
+							active: true,
+							state: tag ? { tag } : undefined
+						});
+						tagsLeaf = rightLeaf;
+						success = true;
+						break;
+					} catch (error) {
+						// Continue to next view type
+						console.debug(`Failed to set view type ${viewType}:`, error);
+					}
+				}
+				
+				if (!success) {
+					console.warn('Could not open tags pane - view type not found');
+					return false;
+				}
+			}
+			
+			// If we have a specific tag to search for, try to set it
+			if (tag && tagsLeaf?.view && 'setTag' in tagsLeaf.view) {
+				try {
+					(tagsLeaf.view as any).setTag(tag);
+				} catch (error) {
+					console.debug('Could not set specific tag in tags view:', error);
+				}
+			}
+			
+			// Ensure we have a valid leaf before revealing
+			if (!tagsLeaf) {
+				console.warn('No tags leaf available to reveal');
+				return false;
+			}
+			
+			// Reveal and focus the tags pane
+			workspace.revealLeaf(tagsLeaf);
+			workspace.setActiveLeaf(tagsLeaf, { focus: true });
+			
+			return true;
+		} catch (error) {
+			console.error('Error opening tags pane:', error);
+			return false;
+		}
+	}
+
 
 	getLeafOfType(viewType: string): WorkspaceLeaf | null {
 		const { workspace } = this.app;

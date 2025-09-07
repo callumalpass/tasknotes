@@ -281,9 +281,12 @@ const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
     'tags': (element, value, _, plugin) => {
         if (Array.isArray(value)) {
             const tagServices: TagServices = {
-                onTagClick: (tag, _event) => {
-                    // Could implement tag search/filter here
-                    console.log('Tag clicked:', tag);
+                onTagClick: async (tag, _event) => {
+                    // Open the tags pane and filter by this tag
+                    const success = await plugin.openTagsPane(tag);
+                    if (!success) {
+                        console.log('Could not open tags pane, tag clicked:', tag);
+                    }
                 }
             };
             renderTagsValue(element, value, tagServices);
@@ -497,8 +500,11 @@ function renderPropertyValue(container: HTMLElement, value: unknown, plugin?: Ta
         // For tags in generic properties (check for tag patterns like #tag or space#tag)
         if (value.includes('#') && (/\s#\w+|\#\w+/.test(value))) {
             const tagServices: TagServices = {
-                onTagClick: (tag, _event) => {
-                    console.log('Tag clicked in generic property:', tag);
+                onTagClick: async (tag, _event) => {
+                    const success = await plugin.openTagsPane(tag);
+                    if (!success) {
+                        console.log('Could not open tags pane, generic property tag clicked:', tag);
+                    }
                 }
             };
             renderTagsValue(container, value, tagServices);
