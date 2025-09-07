@@ -51,6 +51,15 @@ describe('NaturalLanguageParser Multi-Language', () => {
             expect(result.recurrence).toBe('FREQ=DAILY');
             expect(result.title).toBe('standup meeting');
         });
+
+        it('should parse various English recurrence patterns', () => {
+            let result = parser.parseInput('weekly report');
+            expect(result.recurrence).toBe('FREQ=WEEKLY');
+            result = parser.parseInput('meeting every 2 months');
+            expect(result.recurrence).toBe('FREQ=MONTHLY;INTERVAL=2');
+            result = parser.parseInput('cleanup every other day');
+            expect(result.recurrence).toBe('FREQ=DAILY;INTERVAL=2');
+        });
     });
 
     describe('Spanish Language', () => {
@@ -64,13 +73,32 @@ describe('NaturalLanguageParser Multi-Language', () => {
         it('should parse Spanish priority keywords', () => {
             const result = parser.parseInput('reunión urgente mañana');
             expect(result.priority).toBe('urgent');
-            // Note: chrono-node's Spanish support is partial, so "mañana" may not be parsed
             expect(result.title).toMatch(/reunión/);
+        });
+
+        it('should parse various Spanish priority keywords', () => {
+            let result = parser.parseInput('tarea de prioridad alta');
+            expect(result.priority).toBe('high');
+            expect(result.title).toBe('tarea de prioridad');
+
+            result = parser.parseInput('tarea de prioridad baja');
+            expect(result.priority).toBe('low');
+            expect(result.title).toBe('tarea de prioridad');
         });
 
         it('should parse Spanish status keywords', () => {
             const result = parser.parseInput('tarea en progreso');
             expect(result.status).toBe('in-progress');
+            expect(result.title).toBe('tarea');
+        });
+
+        it('should parse various Spanish status keywords', () => {
+            let result = parser.parseInput('tarea hecho');
+            expect(result.status).toBe('done');
+            expect(result.title).toBe('tarea');
+
+            result = parser.parseInput('tarea cancelado');
+            expect(result.status).toBe('cancelled');
             expect(result.title).toBe('tarea');
         });
 
@@ -85,6 +113,16 @@ describe('NaturalLanguageParser Multi-Language', () => {
             expect(result.recurrence).toBe('FREQ=DAILY');
             expect(result.title).toMatch(/reunión.*equipo/);
         });
+
+        it('should parse complex Spanish recurrence patterns', () => {
+            let result = parser.parseInput('reunión semanal');
+            expect(result.recurrence).toBe('FREQ=WEEKLY');
+            expect(result.title).toBe('reunión');
+
+            result = parser.parseInput('revisión cada 2 meses');
+            expect(result.recurrence).toBe('FREQ=MONTHLY;INTERVAL=2');
+            expect(result.title).toBe('revisión');
+        });
     });
 
     describe('French Language', () => {
@@ -98,13 +136,32 @@ describe('NaturalLanguageParser Multi-Language', () => {
         it('should parse French priority keywords', () => {
             const result = parser.parseInput('réunion urgent demain');
             expect(result.priority).toBe('urgent');
-            // Note: chrono-node French support may vary for different date words
             expect(result.title).toMatch(/réunion/);
+        });
+
+        it('should parse various French priority keywords', () => {
+            let result = parser.parseInput('tâche de priorité important');
+            expect(result.priority).toBe('high');
+            expect(result.title).toBe('tâche de priorité');
+
+            result = parser.parseInput('tâche de priorité bas');
+            expect(result.priority).toBe('low');
+            expect(result.title).toBe('tâche de priorité');
         });
 
         it('should parse French status keywords', () => {
             const result = parser.parseInput('tâche en cours');
             expect(result.status).toBe('in-progress');
+            expect(result.title).toBe('tâche');
+        });
+
+        it('should parse various French status keywords', () => {
+            let result = parser.parseInput('tâche fait');
+            expect(result.status).toBe('done');
+            expect(result.title).toBe('tâche');
+
+            result = parser.parseInput('tâche abandonné');
+            expect(result.status).toBe('cancelled');
             expect(result.title).toBe('tâche');
         });
 
@@ -118,6 +175,16 @@ describe('NaturalLanguageParser Multi-Language', () => {
             const result = parser.parseInput('réunion quotidienne équipe');
             expect(result.recurrence).toBe('FREQ=DAILY');
             expect(result.title).toMatch(/réunion.*équipe/);
+        });
+
+        it('should parse complex French recurrence patterns', () => {
+            let result = parser.parseInput('rapport hebdomadaire');
+            expect(result.recurrence).toBe('FREQ=WEEKLY');
+            expect(result.title).toBe('rapport');
+
+            result = parser.parseInput('réunion tous les 2 mois');
+            expect(result.recurrence).toBe('FREQ=MONTHLY;INTERVAL=2');
+            expect(result.title).toBe('réunion');
         });
     });
 
@@ -135,10 +202,30 @@ describe('NaturalLanguageParser Multi-Language', () => {
             expect(result.title).toMatch(/meeting/);
         });
 
+        it('should parse various German priority keywords', () => {
+            let result = parser.parseInput('Aufgabe mit hohe Priorität');
+            expect(result.priority).toBe('high');
+            expect(result.title).toBe('Aufgabe mit Priorität');
+
+            result = parser.parseInput('Aufgabe mit niedrige Priorität');
+            expect(result.priority).toBe('low');
+            expect(result.title).toBe('Aufgabe mit Priorität');
+        });
+
         it('should parse German status keywords', () => {
             const result = parser.parseInput('aufgabe erledigt');
             expect(result.status).toBe('done');
             expect(result.title).toBe('aufgabe');
+        });
+
+        it('should parse various German status keywords', () => {
+            let result = parser.parseInput('Aufgabe in arbeit');
+            expect(result.status).toBe('in-progress');
+            expect(result.title).toBe('Aufgabe');
+
+            result = parser.parseInput('Aufgabe abgesagt');
+            expect(result.status).toBe('cancelled');
+            expect(result.title).toBe('Aufgabe');
         });
 
         it('should parse German time estimates', () => {
@@ -151,6 +238,16 @@ describe('NaturalLanguageParser Multi-Language', () => {
             const result = parser.parseInput('meeting täglich team');
             expect(result.recurrence).toBe('FREQ=DAILY');
             expect(result.title).toMatch(/meeting.*team/);
+        });
+
+        it('should parse complex German recurrence patterns', () => {
+            let result = parser.parseInput('wöchentlich Bericht');
+            expect(result.recurrence).toBe('FREQ=WEEKLY');
+            expect(result.title).toBe('Bericht');
+
+            result = parser.parseInput('alle 2 Monate überprüfen');
+            expect(result.recurrence).toBe('FREQ=MONTHLY;INTERVAL=2');
+            expect(result.title).toBe('überprüfen');
         });
     });
 
@@ -168,9 +265,29 @@ describe('NaturalLanguageParser Multi-Language', () => {
             expect(result.title).toMatch(/встреча/);
         });
 
+        it('should parse various Russian priority keywords', () => {
+            let result = parser.parseInput('задача высокий приоритет');
+            expect(result.priority).toBe('high');
+            expect(result.title).toBe('задача приоритет');
+
+            result = parser.parseInput('задача низкий приоритет');
+            expect(result.priority).toBe('low');
+            expect(result.title).toBe('задача приоритет');
+        });
+
         it('should parse Russian status keywords', () => {
             const result = parser.parseInput('задача выполнено');
             expect(result.status).toBe('done');
+            expect(result.title).toBe('задача');
+        });
+
+        it('should parse various Russian status keywords', () => {
+            let result = parser.parseInput('задача в процессе');
+            expect(result.status).toBe('in-progress');
+            expect(result.title).toBe('задача');
+
+            result = parser.parseInput('задача отменено');
+            expect(result.status).toBe('cancelled');
             expect(result.title).toBe('задача');
         });
 
@@ -184,6 +301,16 @@ describe('NaturalLanguageParser Multi-Language', () => {
             const result = parser.parseInput('встреча ежедневно команда');
             expect(result.recurrence).toBe('FREQ=DAILY');
             expect(result.title).toMatch(/встреча.*команда/);
+        });
+
+        it('should parse complex Russian recurrence patterns', () => {
+            let result = parser.parseInput('еженедельно отчет');
+            expect(result.recurrence).toBe('FREQ=WEEKLY');
+            expect(result.title).toBe('отчет');
+
+            result = parser.parseInput('каждый 2 месяц');
+            expect(result.recurrence).toBe('FREQ=MONTHLY;INTERVAL=2');
+            expect(result.title).toBe('Untitled Task');
         });
     });
 
@@ -201,9 +328,29 @@ describe('NaturalLanguageParser Multi-Language', () => {
             expect(result.title).toMatch(/会议/);
         });
 
+        it('should parse various Chinese priority keywords', () => {
+            let result = parser.parseInput('任务 高 优先级');
+            expect(result.priority).toBe('high');
+            expect(result.title).toBe('任务 优先级');
+
+            result = parser.parseInput('任务 低 优先级');
+            expect(result.priority).toBe('low');
+            expect(result.title).toBe('任务 优先级');
+        });
+
         it('should parse Chinese status keywords', () => {
             const result = parser.parseInput('任务 完成');
             expect(result.status).toBe('done');
+            expect(result.title).toBe('任务');
+        });
+
+        it('should parse various Chinese status keywords', () => {
+            let result = parser.parseInput('任务 进行中');
+            expect(result.status).toBe('in-progress');
+            expect(result.title).toBe('任务');
+
+            result = parser.parseInput('任务 已取消');
+            expect(result.status).toBe('cancelled');
             expect(result.title).toBe('任务');
         });
 
@@ -217,6 +364,16 @@ describe('NaturalLanguageParser Multi-Language', () => {
             const result = parser.parseInput('会议 每天 团队');
             expect(result.recurrence).toBe('FREQ=DAILY');
             expect(result.title).toMatch(/会议.*团队/);
+        });
+
+        it('should parse complex Chinese recurrence patterns', () => {
+            let result = parser.parseInput('每周 报告');
+            expect(result.recurrence).toBe('FREQ=WEEKLY');
+            expect(result.title).toBe('报告');
+
+            result = parser.parseInput('每 2 个月 检查');
+            expect(result.recurrence).toBe('FREQ=MONTHLY;INTERVAL=2');
+            expect(result.title).toBe('检查');
         });
     });
 
@@ -234,9 +391,29 @@ describe('NaturalLanguageParser Multi-Language', () => {
             expect(result.title).toMatch(/会議/);
         });
 
+        it('should parse various Japanese priority keywords', () => {
+            let result = parser.parseInput('タスク 優先度 高');
+            expect(result.priority).toBe('high');
+            expect(result.title).toBe('タスク 優先度');
+
+            result = parser.parseInput('タスク 優先度 低');
+            expect(result.priority).toBe('low');
+            expect(result.title).toBe('タスク 優先度');
+        });
+
         it('should parse Japanese status keywords', () => {
             const result = parser.parseInput('タスク 完了');
             expect(result.status).toBe('done');
+            expect(result.title).toBe('タスク');
+        });
+
+        it('should parse various Japanese status keywords', () => {
+            let result = parser.parseInput('タスク 進行中');
+            expect(result.status).toBe('in-progress');
+            expect(result.title).toBe('タスク');
+
+            result = parser.parseInput('タスク キャンセル');
+            expect(result.status).toBe('cancelled');
             expect(result.title).toBe('タスク');
         });
 
@@ -250,6 +427,16 @@ describe('NaturalLanguageParser Multi-Language', () => {
             const result = parser.parseInput('会議 毎日 チーム');
             expect(result.recurrence).toBe('FREQ=DAILY');
             expect(result.title).toMatch(/会議.*チーム/);
+        });
+
+        it('should parse complex Japanese recurrence patterns', () => {
+            let result = parser.parseInput('毎週 レポート');
+            expect(result.recurrence).toBe('FREQ=WEEKLY');
+            expect(result.title).toBe('レポート');
+
+            result = parser.parseInput('毎 2 ヶ月 確認');
+            expect(result.recurrence).toBe('FREQ=MONTHLY;INTERVAL=2');
+            expect(result.title).toBe('確認');
         });
     });
 
@@ -267,9 +454,29 @@ describe('NaturalLanguageParser Multi-Language', () => {
             expect(result.title).toMatch(/riunione/);
         });
 
+        it('should parse various Italian priority keywords', () => {
+            let result = parser.parseInput('attività con priorità alta');
+            expect(result.priority).toBe('high');
+            expect(result.title).toBe('attività con priorità');
+
+            result = parser.parseInput('attività con priorità bassa');
+            expect(result.priority).toBe('low');
+            expect(result.title).toBe('attività con priorità');
+        });
+
         it('should parse Italian status keywords', () => {
             const result = parser.parseInput('attività completato');
             expect(result.status).toBe('done');
+            expect(result.title).toBe('attività');
+        });
+
+        it('should parse various Italian status keywords', () => {
+            let result = parser.parseInput('attività in corso');
+            expect(result.status).toBe('in-progress');
+            expect(result.title).toBe('attività');
+
+            result = parser.parseInput('attività annullato');
+            expect(result.status).toBe('cancelled');
             expect(result.title).toBe('attività');
         });
 
@@ -283,6 +490,16 @@ describe('NaturalLanguageParser Multi-Language', () => {
             const result = parser.parseInput('riunione giornaliera team');
             expect(result.recurrence).toBe('FREQ=DAILY');
             expect(result.title).toMatch(/riunione.*team/);
+        });
+
+        it('should parse complex Italian recurrence patterns', () => {
+            let result = parser.parseInput('rapporto settimanale');
+            expect(result.recurrence).toBe('FREQ=WEEKLY');
+            expect(result.title).toBe('rapporto');
+
+            result = parser.parseInput('controllo ogni 2 mesi');
+            expect(result.recurrence).toBe('FREQ=MONTHLY;INTERVAL=2');
+            expect(result.title).toBe('controllo');
         });
     });
 
@@ -300,9 +517,29 @@ describe('NaturalLanguageParser Multi-Language', () => {
             expect(result.title).toMatch(/vergadering/);
         });
 
+        it('should parse various Dutch priority keywords', () => {
+            let result = parser.parseInput('taak met hoge prioriteit');
+            expect(result.priority).toBe('high');
+            expect(result.title).toBe('taak met prioriteit');
+
+            result = parser.parseInput('taak met lage prioriteit');
+            expect(result.priority).toBe('low');
+            expect(result.title).toBe('taak met prioriteit');
+        });
+
         it('should parse Dutch status keywords', () => {
             const result = parser.parseInput('taak voltooid');
             expect(result.status).toBe('done');
+            expect(result.title).toBe('taak');
+        });
+
+        it('should parse various Dutch status keywords', () => {
+            let result = parser.parseInput('taak in uitvoering');
+            expect(result.status).toBe('in-progress');
+            expect(result.title).toBe('taak');
+
+            result = parser.parseInput('taak geannuleerd');
+            expect(result.status).toBe('cancelled');
             expect(result.title).toBe('taak');
         });
 
@@ -316,6 +553,16 @@ describe('NaturalLanguageParser Multi-Language', () => {
             const result = parser.parseInput('vergadering dagelijks team');
             expect(result.recurrence).toBe('FREQ=DAILY');
             expect(result.title).toMatch(/vergadering.*team/);
+        });
+
+        it('should parse complex Dutch recurrence patterns', () => {
+            let result = parser.parseInput('wekelijks rapport');
+            expect(result.recurrence).toBe('FREQ=WEEKLY');
+            expect(result.title).toBe('rapport');
+
+            result = parser.parseInput('elke 2 maanden controleren');
+            expect(result.recurrence).toBe('FREQ=MONTHLY;INTERVAL=2');
+            expect(result.title).toBe('controleren');
         });
     });
 
@@ -333,9 +580,29 @@ describe('NaturalLanguageParser Multi-Language', () => {
             expect(result.title).toMatch(/reunião/);
         });
 
+        it('should parse various Portuguese priority keywords', () => {
+            let result = parser.parseInput('tarefa com prioridade alta');
+            expect(result.priority).toBe('high');
+            expect(result.title).toBe('tarefa com prioridade');
+
+            result = parser.parseInput('tarefa com prioridade baixa');
+            expect(result.priority).toBe('low');
+            expect(result.title).toBe('tarefa com prioridade');
+        });
+
         it('should parse Portuguese status keywords', () => {
             const result = parser.parseInput('tarefa concluído');
             expect(result.status).toBe('done');
+            expect(result.title).toBe('tarefa');
+        });
+
+        it('should parse various Portuguese status keywords', () => {
+            let result = parser.parseInput('tarefa em andamento');
+            expect(result.status).toBe('in-progress');
+            expect(result.title).toBe('tarefa');
+
+            result = parser.parseInput('tarefa cancelado');
+            expect(result.status).toBe('cancelled');
             expect(result.title).toBe('tarefa');
         });
 
@@ -349,6 +616,16 @@ describe('NaturalLanguageParser Multi-Language', () => {
             const result = parser.parseInput('reunião diária equipe');
             expect(result.recurrence).toBe('FREQ=DAILY');
             expect(result.title).toMatch(/reunião.*equipe/);
+        });
+
+        it('should parse complex Portuguese recurrence patterns', () => {
+            let result = parser.parseInput('relatório semanal');
+            expect(result.recurrence).toBe('FREQ=WEEKLY');
+            expect(result.title).toBe('relatório');
+
+            result = parser.parseInput('verificar cada 2 meses');
+            expect(result.recurrence).toBe('FREQ=MONTHLY;INTERVAL=2');
+            expect(result.title).toBe('verificar');
         });
     });
 
@@ -366,9 +643,29 @@ describe('NaturalLanguageParser Multi-Language', () => {
             expect(result.title).toMatch(/möte/);
         });
 
+        it('should parse various Swedish priority keywords', () => {
+            let result = parser.parseInput('uppgift med hög prioritet');
+            expect(result.priority).toBe('high');
+            expect(result.title).toBe('uppgift med prioritet');
+
+            result = parser.parseInput('uppgift med låg prioritet');
+            expect(result.priority).toBe('low');
+            expect(result.title).toBe('uppgift med prioritet');
+        });
+
         it('should parse Swedish status keywords', () => {
             const result = parser.parseInput('uppgift klar');
             expect(result.status).toBe('done');
+            expect(result.title).toBe('uppgift');
+        });
+
+        it('should parse various Swedish status keywords', () => {
+            let result = parser.parseInput('uppgift pågående');
+            expect(result.status).toBe('in-progress');
+            expect(result.title).toBe('uppgift');
+
+            result = parser.parseInput('uppgift avbruten');
+            expect(result.status).toBe('cancelled');
             expect(result.title).toBe('uppgift');
         });
 
@@ -382,6 +679,16 @@ describe('NaturalLanguageParser Multi-Language', () => {
             const result = parser.parseInput('möte dagligen team');
             expect(result.recurrence).toBe('FREQ=DAILY');
             expect(result.title).toMatch(/möte.*team/);
+        });
+
+        it('should parse complex Swedish recurrence patterns', () => {
+            let result = parser.parseInput('veckovis rapport');
+            expect(result.recurrence).toBe('FREQ=WEEKLY');
+            expect(result.title).toBe('rapport');
+
+            result = parser.parseInput('kontroll varje annan månad');
+            expect(result.recurrence).toBe('FREQ=MONTHLY;INTERVAL=2');
+            expect(result.title).toBe('kontroll');
         });
     });
 
@@ -399,9 +706,29 @@ describe('NaturalLanguageParser Multi-Language', () => {
             expect(result.title).toMatch(/зустріч/);
         });
 
+        it('should parse various Ukrainian priority keywords', () => {
+            let result = parser.parseInput('завдання високий пріоритет');
+            expect(result.priority).toBe('high');
+            expect(result.title).toBe('завдання пріоритет');
+
+            result = parser.parseInput('завдання низький пріоритет');
+            expect(result.priority).toBe('low');
+            expect(result.title).toBe('завдання пріоритет');
+        });
+
         it('should parse Ukrainian status keywords', () => {
             const result = parser.parseInput('завдання виконано');
             expect(result.status).toBe('done');
+            expect(result.title).toBe('завдання');
+        });
+
+        it('should parse various Ukrainian status keywords', () => {
+            let result = parser.parseInput('завдання в процесі');
+            expect(result.status).toBe('in-progress');
+            expect(result.title).toBe('завдання');
+
+            result = parser.parseInput('завдання скасовано');
+            expect(result.status).toBe('cancelled');
             expect(result.title).toBe('завдання');
         });
 
@@ -415,6 +742,16 @@ describe('NaturalLanguageParser Multi-Language', () => {
             const result = parser.parseInput('зустріч щодня команда');
             expect(result.recurrence).toBe('FREQ=DAILY');
             expect(result.title).toMatch(/зустріч.*команда/);
+        });
+
+        it('should parse complex Ukrainian recurrence patterns', () => {
+            let result = parser.parseInput('щотижня звіт');
+            expect(result.recurrence).toBe('FREQ=WEEKLY');
+            expect(result.title).toBe('звіт');
+
+            result = parser.parseInput('перевірка кожен 2 місяці');
+            expect(result.recurrence).toBe('FREQ=MONTHLY;INTERVAL=2');
+            expect(result.title).toBe('перевірка');
         });
     });
 
