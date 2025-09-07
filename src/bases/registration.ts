@@ -33,7 +33,7 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
       if (!bases.registrations.tasknotesKanban) {
         bases.registrations.tasknotesKanban = {
           name: 'TaskNotes Kanban',
-          icon: 'layout-grid',
+          icon: 'tasknotes-simple',
           factory: buildTasknotesKanbanViewFactory(plugin)
         };
         console.log('[TaskNotes][Bases] Successfully registered tasknotesKanban view');
