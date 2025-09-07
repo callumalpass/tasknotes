@@ -16,10 +16,10 @@ export const frConfig: NLPLanguageConfig = {
     
     recurrence: {
         frequencies: {
-            daily: ['quotidien', 'quotidiennement', 'chaque jour', 'tous les jours'],
-            weekly: ['hebdomadaire', 'chaque semaine', 'toutes les semaines'],
-            monthly: ['mensuel', 'mensuellement', 'chaque mois', 'tous les mois'],
-            yearly: ['annuel', 'annuellement', 'chaque année', 'tous les ans']
+            daily: ['quotidien', 'quotidienne', 'quotidiennement', 'chaque jour', 'tous les jours', 'journalier', 'journalière'],
+            weekly: ['hebdomadaire', 'chaque semaine', 'toutes les semaines', 'par semaine'],
+            monthly: ['mensuel', 'mensuelle', 'mensuellement', 'chaque mois', 'tous les mois', 'par mois'],
+            yearly: ['annuel', 'annuelle', 'annuellement', 'chaque année', 'tous les ans', 'par an', 'par année']
         },
         
         every: ['chaque', 'tous les', 'toutes les'],
@@ -65,9 +65,9 @@ export const frConfig: NLPLanguageConfig = {
     },
     
     fallbackPriority: {
-        urgent: ['urgent', 'critique', 'maximum'],
-        high: ['élevé', 'élevée', 'haut', 'haute', 'important', 'importante'],
-        normal: ['moyen', 'moyenne', 'normal', 'normale'],
-        low: ['faible', 'bas', 'basse', 'mineur', 'mineure']
+        urgent: ['urgent', 'urgente', 'critique', 'maximum', 'prioritaire'],
+        high: ['élevé', 'élevée', 'haut', 'haute', 'important', 'importante', 'supérieur', 'supérieure'],
+        normal: ['moyen', 'moyenne', 'normal', 'normale', 'standard', 'régulier', 'régulière'],
+        low: ['faible', 'bas', 'basse', 'mineur', 'mineure', 'minimum']
     }
 };

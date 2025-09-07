@@ -210,21 +210,21 @@ export class NaturalLanguageParser {
         const patterns: RegexPattern[] = [];
         const langConfig = this.languageConfig.fallbackPriority;
         
-        // Build regex patterns from language config
+        // Build regex patterns from language config with proper escaping
         patterns.push({ 
-            regex: new RegExp(`\\b(${langConfig.urgent.join('|')})\\b`, 'i'), 
+            regex: new RegExp(`\\b(${langConfig.urgent.map(p => this.escapeRegex(p)).join('|')})\\b`, 'i'), 
             value: 'urgent' 
         });
         patterns.push({ 
-            regex: new RegExp(`\\b(${langConfig.high.join('|')})\\b`, 'i'), 
+            regex: new RegExp(`\\b(${langConfig.high.map(p => this.escapeRegex(p)).join('|')})\\b`, 'i'), 
             value: 'high' 
         });
         patterns.push({ 
-            regex: new RegExp(`\\b(${langConfig.normal.join('|')})\\b`, 'i'), 
+            regex: new RegExp(`\\b(${langConfig.normal.map(p => this.escapeRegex(p)).join('|')})\\b`, 'i'), 
             value: 'normal' 
         });
         patterns.push({ 
-            regex: new RegExp(`\\b(${langConfig.low.join('|')})\\b`, 'i'), 
+            regex: new RegExp(`\\b(${langConfig.low.map(p => this.escapeRegex(p)).join('|')})\\b`, 'i'), 
             value: 'low' 
         });
         
@@ -261,23 +261,23 @@ export class NaturalLanguageParser {
         
         return [
             { 
-                regex: new RegExp(`\\b(${langConfig.open.join('|')})\\b`, 'i'), 
+                regex: new RegExp(`\\b(${langConfig.open.map(p => this.escapeRegex(p)).join('|')})\\b`, 'i'), 
                 value: 'open' 
             },
             { 
-                regex: new RegExp(`\\b(${langConfig.inProgress.join('|')})\\b`, 'i'), 
+                regex: new RegExp(`\\b(${langConfig.inProgress.map(p => this.escapeRegex(p)).join('|')})\\b`, 'i'), 
                 value: 'in-progress' 
             },
             { 
-                regex: new RegExp(`\\b(${langConfig.done.join('|')})\\b`, 'i'), 
+                regex: new RegExp(`\\b(${langConfig.done.map(p => this.escapeRegex(p)).join('|')})\\b`, 'i'), 
                 value: 'done' 
             },
             { 
-                regex: new RegExp(`\\b(${langConfig.cancelled.join('|')})\\b`, 'i'), 
+                regex: new RegExp(`\\b(${langConfig.cancelled.map(p => this.escapeRegex(p)).join('|')})\\b`, 'i'), 
                 value: 'cancelled' 
             },
             { 
-                regex: new RegExp(`\\b(${langConfig.waiting.join('|')})\\b`, 'i'), 
+                regex: new RegExp(`\\b(${langConfig.waiting.map(p => this.escapeRegex(p)).join('|')})\\b`, 'i'), 
                 value: 'waiting' 
             }
         ];
@@ -521,26 +521,26 @@ export class NaturalLanguageParser {
         // Add other patterns with language support...
         // For brevity, I'll add a few key ones and can extend later
         
-        // Simple frequency patterns
-        const dailyPatterns = lang.frequencies.daily.join('|');
+        // Simple frequency patterns with proper escaping
+        const dailyPatterns = lang.frequencies.daily.map(p => this.escapeRegex(p)).join('|');
         patterns.push({
             regex: new RegExp(`\\b(${dailyPatterns})\\b`, 'i'),
             handler: () => 'FREQ=DAILY'
         });
         
-        const weeklyPatterns = lang.frequencies.weekly.join('|');
+        const weeklyPatterns = lang.frequencies.weekly.map(p => this.escapeRegex(p)).join('|');
         patterns.push({
             regex: new RegExp(`\\b(${weeklyPatterns})\\b`, 'i'),
             handler: () => 'FREQ=WEEKLY'
         });
         
-        const monthlyPatterns = lang.frequencies.monthly.join('|');
+        const monthlyPatterns = lang.frequencies.monthly.map(p => this.escapeRegex(p)).join('|');
         patterns.push({
             regex: new RegExp(`\\b(${monthlyPatterns})\\b`, 'i'),
             handler: () => 'FREQ=MONTHLY'
         });
         
-        const yearlyPatterns = lang.frequencies.yearly.join('|');
+        const yearlyPatterns = lang.frequencies.yearly.map(p => this.escapeRegex(p)).join('|');
         patterns.push({
             regex: new RegExp(`\\b(${yearlyPatterns})\\b`, 'i'),
             handler: () => 'FREQ=YEARLY'

@@ -50,37 +50,57 @@ describe('Language Configuration System', () => {
         it('should return supported language if available', () => {
             // Mock navigator.language
             const originalNavigator = global.navigator;
-            (global as any).navigator = { language: 'es-ES' };
+            const mockNavigator = { language: 'es-ES' };
+            Object.defineProperty(global, 'navigator', {
+                value: mockNavigator,
+                writable: true
+            });
             
             const detected = detectSystemLanguage();
             expect(detected).toBe('es');
             
             // Restore original navigator
-            global.navigator = originalNavigator;
+            Object.defineProperty(global, 'navigator', {
+                value: originalNavigator,
+                writable: true
+            });
         });
 
         it('should fallback to English for unsupported system language', () => {
             // Mock navigator.language
             const originalNavigator = global.navigator;
-            (global as any).navigator = { language: 'de-DE' }; // German not supported yet
+            const mockNavigator = { language: 'de-DE' }; // German not supported yet
+            Object.defineProperty(global, 'navigator', {
+                value: mockNavigator,
+                writable: true
+            });
             
             const detected = detectSystemLanguage();
             expect(detected).toBe('en');
             
             // Restore original navigator
-            global.navigator = originalNavigator;
+            Object.defineProperty(global, 'navigator', {
+                value: originalNavigator,
+                writable: true
+            });
         });
 
         it('should fallback to English when navigator is not available', () => {
             // Mock no navigator
             const originalNavigator = global.navigator;
-            (global as any).navigator = undefined;
+            Object.defineProperty(global, 'navigator', {
+                value: undefined,
+                writable: true
+            });
             
             const detected = detectSystemLanguage();
             expect(detected).toBe('en');
             
             // Restore original navigator
-            global.navigator = originalNavigator;
+            Object.defineProperty(global, 'navigator', {
+                value: originalNavigator,
+                writable: true
+            });
         });
     });
 

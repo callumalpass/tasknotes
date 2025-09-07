@@ -16,10 +16,10 @@ export const esConfig: NLPLanguageConfig = {
     
     recurrence: {
         frequencies: {
-            daily: ['diario', 'diariamente', 'cada día', 'todos los días'],
-            weekly: ['semanal', 'semanalmente', 'cada semana'],
-            monthly: ['mensual', 'mensualmente', 'cada mes'],
-            yearly: ['anual', 'anualmente', 'cada año']
+            daily: ['diario', 'diaria', 'diariamente', 'cada día', 'todos los días', 'a diario'],
+            weekly: ['semanal', 'semanalmente', 'cada semana', 'todas las semanas', 'por semana'],
+            monthly: ['mensual', 'mensualmente', 'cada mes', 'todos los meses', 'por mes'],
+            yearly: ['anual', 'anualmente', 'cada año', 'todos los años', 'por año']
         },
         
         every: ['cada', 'todos los', 'todas las'],
@@ -65,9 +65,9 @@ export const esConfig: NLPLanguageConfig = {
     },
     
     fallbackPriority: {
-        urgent: ['urgente', 'crítico', 'máximo'],
-        high: ['alto', 'alta', 'importante'],
-        normal: ['medio', 'media', 'normal'],
-        low: ['bajo', 'baja', 'menor']
+        urgent: ['urgente', 'crítico', 'crítica', 'máximo', 'máxima', 'prioritario', 'prioritaria'],
+        high: ['alto', 'alta', 'importante', 'elevado', 'elevada'],
+        normal: ['medio', 'media', 'normal', 'regular', 'estándar'],
+        low: ['bajo', 'baja', 'menor', 'mínimo', 'mínima']
     }
 };
