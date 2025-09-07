@@ -274,7 +274,12 @@ export function buildTasknotesKanbanViewFactory(plugin: TaskNotesPlugin) {
                 const file = plugin.app.vault.getAbstractFileByPath(task.path);
                 if (file && 'stat' in file) { // Check if it's a TFile
                   await plugin.app.fileManager.processFrontMatter(file as any, (frontmatter: any) => {
-                    frontmatter[originalPropertyId] = valueToSet;
+                    // Extract the actual property name from Bases property ID
+                    // e.g., "note.note.projects" -> "projects"
+                    const propertyName = originalPropertyId.includes('.') 
+                      ? originalPropertyId.split('.').pop()! 
+                      : originalPropertyId;
+                    frontmatter[propertyName] = valueToSet;
                   });
                 }
               } catch (frontmatterError) {
