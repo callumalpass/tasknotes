@@ -1,4 +1,4 @@
-import { App, Notice, TFile, setIcon } from 'obsidian';
+import { App, Notice, TFile, setIcon, setTooltip } from 'obsidian';
 import TaskNotesPlugin from '../main';
 import { TaskModal } from './TaskModal';
 import { TaskInfo } from '../types';
@@ -8,6 +8,7 @@ import { format } from 'date-fns';
 import { generateRecurringInstances, extractTaskInfo, calculateTotalTimeSpent, formatTime, updateToNextScheduledOccurrence, sanitizeTags } from '../utils/helpers';
 import { splitListPreservingLinksAndQuotes } from '../utils/stringSplit';
 import { ReminderContextMenu } from '../components/ReminderContextMenu';
+import { renderProjectLinks, type LinkServices } from '../ui/renderers/linkRenderer';
 
 export interface TaskEditOptions {
     task: TaskInfo;
@@ -722,6 +723,52 @@ export class TaskEditModal extends TaskModal {
         
         cancelButton.addEventListener('click', () => {
             this.close();
+        });
+    }
+
+    protected renderProjectsList(): void {
+        if (!this.projectsList) return;
+        
+        this.projectsList.empty();
+
+        if (this.selectedProjectFiles.length === 0) {
+            return;
+        }
+
+        // Create LinkServices for the renderProjectLinks function
+        const linkServices: LinkServices = {
+            metadataCache: this.app.metadataCache,
+            workspace: this.app.workspace
+        };
+
+        this.selectedProjectFiles.forEach(file => {
+            const projectItem = this.projectsList.createDiv({ cls: 'task-project-item' });
+            
+            // Info container
+            const infoEl = projectItem.createDiv({ cls: 'task-project-info' });
+            
+            // Create clickable project name using existing renderProjectLinks functionality
+            const nameEl = infoEl.createDiv({ cls: 'task-project-name clickable-project' });
+            
+            // Use the file name as a wikilink format for consistent handling
+            const projectAsWikilink = `[[${file.path}|${file.name}]]`;
+            renderProjectLinks(nameEl, [projectAsWikilink], linkServices);
+            
+            // File path (if different from name)
+            if (file.path !== file.name) {
+                const pathEl = infoEl.createDiv({ cls: 'task-project-path' });
+                pathEl.textContent = file.path;
+            }
+            
+            // Remove button
+            const removeBtn = projectItem.createEl('button', { 
+                cls: 'task-project-remove',
+                text: '×'
+            });
+            setTooltip(removeBtn, 'Remove project', { placement: 'top' });
+            removeBtn.addEventListener('click', () => {
+                this.removeProject(file);
+            });
         });
     }
 

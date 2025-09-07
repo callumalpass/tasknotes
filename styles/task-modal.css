@@ -721,6 +721,31 @@
     font-size: var(--font-ui-small);
 }
 
+/* Make clickable project names in edit modal look and behave like links */
+.tasknotes-plugin .clickable-project .internal-link {
+    color: var(--link-color);
+    text-decoration: none;
+    cursor: pointer;
+    font-weight: var(--font-weight-medium);
+    font-size: var(--font-ui-small);
+    border-radius: var(--radius-xs);
+    padding: 1px 2px;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.tasknotes-plugin .clickable-project .internal-link:hover {
+    background-color: var(--background-modifier-hover);
+    color: var(--link-color-hover);
+    text-decoration: underline;
+}
+
+/* Remove the default + prefix for clickable projects since they're now clearly links */
+.tasknotes-plugin .clickable-project .internal-link::before {
+    content: '+';
+    color: var(--text-muted);
+    margin-right: 2px;
+}
+
 .tasknotes-plugin .task-project-path {
     font-size: var(--font-ui-smaller);
     color: var(--text-muted);
