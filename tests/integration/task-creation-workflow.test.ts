@@ -452,9 +452,7 @@ describe('Task Creation Workflow Integration', () => {
       expect(result.cacheUpdated).toBe(false);
     });
 
-    it.skip('should handle invalid characters in task titles', async () => {
-      // TODO: This test has test isolation issues - passes individually but fails in suite
-      // The functionality works correctly, but the test environment has mock pollution
+    it('should handle invalid characters in task titles', async () => {
       const taskData = {
         title: 'Task with invalid chars: <>:"|?*\\/[]'
       };

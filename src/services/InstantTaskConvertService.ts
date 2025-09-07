@@ -239,8 +239,6 @@ export class InstantTaskConvertService {
             console.error('Error during instant task conversion:', error);
             if (error.message.includes('file already exists')) {
                 new Notice('A file with this name already exists. Please try again or rename the task.');
-            } else if (error.message.includes('invalid characters')) {
-                new Notice('Task title contains invalid characters for filename.');
             } else {
                 new Notice('Failed to convert task. Please try again.');
             }
@@ -322,18 +320,6 @@ export class InstantTaskConvertService {
     private validateTaskData(parsedData: ParsedTaskData): { isValid: boolean; error?: string } {
         if (!parsedData.title || parsedData.title.trim().length === 0) {
             return { isValid: false, error: 'Task title cannot be empty.' };
-        }
-
-
-        // Validate against dangerous characters for file operations
-        const basicDangerousChars = /[<>:"/\\|?*]/;
-        const hasControlChars = parsedData.title.split('').some(char => {
-            const code = char.charCodeAt(0);
-            return code <= 31 || code === 127;
-        });
-        
-        if (basicDangerousChars.test(parsedData.title) || hasControlChars) {
-            return { isValid: false, error: 'Task title contains invalid characters for file operations.' };
         }
 
         // Validate date formats if present
