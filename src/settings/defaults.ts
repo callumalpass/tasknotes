@@ -197,6 +197,7 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	useDefaultsOnInstantConvert: true,
 	enableNaturalLanguageInput: true,
 	nlpDefaultToScheduled: true,
+	nlpLanguage: 'en', // Default to English
 		// NLP status suggestion trigger
 		statusSuggestionTrigger: '*',
 

@@ -60,6 +60,7 @@ export interface TaskNotesSettings {
 	useDefaultsOnInstantConvert: boolean;
 	enableNaturalLanguageInput: boolean;
 	nlpDefaultToScheduled: boolean;
+	nlpLanguage: string; // Language code for natural language processing (e.g., 'en', 'es', 'fr')
 
 		// NLP status suggestion trigger (empty to disable)
 		statusSuggestionTrigger: string;

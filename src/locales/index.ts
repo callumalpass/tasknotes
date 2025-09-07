@@ -1,0 +1,47 @@
+import { LanguageRegistry, NLPLanguageConfig } from './types';
+import { enConfig } from './en';
+import { esConfig } from './es';
+import { frConfig } from './fr';
+
+/**
+ * Registry of all available language configurations
+ */
+export const languageRegistry: LanguageRegistry = {
+    en: enConfig,
+    es: esConfig,
+    fr: frConfig
+};
+
+/**
+ * Get available languages as options for settings dropdown
+ */
+export function getAvailableLanguages(): Array<{ value: string; label: string }> {
+    return Object.values(languageRegistry).map(config => ({
+        value: config.code,
+        label: config.name
+    }));
+}
+
+/**
+ * Get language configuration by code, fallback to English
+ */
+export function getLanguageConfig(languageCode: string): NLPLanguageConfig {
+    return languageRegistry[languageCode] || languageRegistry['en'];
+}
+
+/**
+ * Detect system language and return supported language code
+ * Falls back to English if system language is not supported
+ */
+export function detectSystemLanguage(): string {
+    // Try to detect from browser/system locale
+    const systemLang = typeof navigator !== 'undefined' 
+        ? navigator.language?.split('-')[0] 
+        : 'en';
+    
+    // Return system language if supported, otherwise default to English
+    return languageRegistry[systemLang] ? systemLang : 'en';
+}
+
+// Re-export types for convenience
+export * from './types';
