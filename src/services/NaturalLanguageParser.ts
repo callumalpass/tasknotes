@@ -40,13 +40,21 @@ interface ParseProcessor {
  * This refined version centralizes date parsing, pre-compiles regexes for performance,
  * and uses a more declarative pattern-matching approach for maintainability.
  */
+interface BoundaryConfig {
+    boundary: string;
+    endBoundary: string;
+    isNonAscii: boolean;
+}
+
 export class NaturalLanguageParser {
     private readonly statusPatterns: RegexPattern[];
     private readonly priorityPatterns: RegexPattern[];
+    private readonly recurrencePatterns: Array<{regex: RegExp; handler: (match: RegExpMatchArray) => string}>;
     private readonly statusConfigs: StatusConfig[];
     private readonly defaultToScheduled: boolean;
     private readonly languageConfig: NLPLanguageConfig;
     private readonly processingPipeline: ParseProcessor[];
+    private readonly boundaries: BoundaryConfig;
 
     constructor(
         statusConfigs: StatusConfig[] = [], 
@@ -60,12 +68,29 @@ export class NaturalLanguageParser {
         // Store status configs for string-based matching
         this.statusConfigs = statusConfigs;
 
-        // Pre-compile regex patterns for performance (fallback patterns only)
+        // Create boundary configuration once for all pattern building
+        this.boundaries = this.createBoundaryConfig();
+        
+        // Pre-compile regex patterns for performance
         this.priorityPatterns = this.buildPriorityPatterns(priorityConfigs);
         this.statusPatterns = this.buildFallbackStatusPatterns();
+        this.recurrencePatterns = this.buildRecurrencePatterns();
         
         // Initialize the processing pipeline
         this.processingPipeline = this.buildProcessingPipeline();
+    }
+
+    /**
+     * Creates boundary configuration based on language characteristics.
+     * Non-ASCII languages (with accented characters, non-Latin scripts) need flexible boundaries.
+     */
+    private createBoundaryConfig(): BoundaryConfig {
+        const isNonAscii = ['ru', 'zh', 'ja', 'uk', 'fr'].includes(this.languageConfig.code);
+        return {
+            boundary: isNonAscii ? '(?:^|\\s)' : '\\b',
+            endBoundary: isNonAscii ? '(?=\\s|$)' : '\\b',
+            isNonAscii
+        };
     }
 
     /**
@@ -219,6 +244,10 @@ export class NaturalLanguageParser {
 
     /**
      * Pre-builds priority regex patterns from configuration for efficiency.
+     * Creates patterns for both custom priority configs and language fallbacks.
+     * 
+     * @param configs Custom priority configurations
+     * @returns Array of compiled regex patterns with their corresponding priority values
      */
     private buildPriorityPatterns(configs: PriorityConfig[]): RegexPattern[] {
         if (configs.length > 0) {
@@ -232,10 +261,7 @@ export class NaturalLanguageParser {
         const langConfig = this.languageConfig.fallbackPriority;
         
         // Build regex patterns from language config with proper escaping and boundary handling
-        // Use lookahead/lookbehind for non-ASCII languages where \b doesn't work well
-        const isNonAscii = ['ru', 'zh', 'ja', 'uk', 'fr'].includes(this.languageConfig.code);
-        const boundary = isNonAscii ? '(?:^|\\s)' : '\\b';
-        const endBoundary = isNonAscii ? '(?=\\s|$)' : '\\b';
+        const { boundary, endBoundary } = this.boundaries;
         
         patterns.push({ 
             regex: new RegExp(`${boundary}(${langConfig.urgent.map(p => this.escapeRegex(p)).join('|')})${endBoundary}`, 'i'), 
@@ -281,14 +307,19 @@ export class NaturalLanguageParser {
 
     /**
      * Pre-builds fallback status regex patterns using language config.
+     * Uses appropriate word boundaries for different language types (ASCII vs non-ASCII).
+     * 
+     * Pattern examples:
+     * - English: \b(done|completed|finished)\b
+     * - French: (?:^|\s)(terminé|fini|accompli)(?=\s|$)
+     * 
+     * @returns Array of compiled status regex patterns
      */
     private buildFallbackStatusPatterns(): RegexPattern[] {
         const langConfig = this.languageConfig.fallbackStatus;
         
-        // Use appropriate boundary matching for different languages
-        const isNonAscii = ['ru', 'zh', 'ja', 'uk', 'fr'].includes(this.languageConfig.code);
-        const boundary = isNonAscii ? '(?:^|\\s)' : '\\b';
-        const endBoundary = isNonAscii ? '(?=\\s|$)' : '\\b';
+        // Use pre-configured boundary matching
+        const { boundary, endBoundary } = this.boundaries;
         
         return [
             { 
@@ -394,6 +425,20 @@ export class NaturalLanguageParser {
     /**
      * Unified method to parse all dates and times with internationalized context awareness.
      * Combines the functionality of extractExplicitDates and parseDatesAndTimes.
+     * 
+     * Processing order:
+     * 1. Look for explicit trigger patterns: "due tomorrow", "scheduled for friday"
+     * 2. Parse implicit dates using chrono-node with language-specific parser
+     * 3. Determine if date is due/scheduled based on context and defaultToScheduled setting
+     * 
+     * Trigger pattern examples:
+     * - English: "due\s+", "scheduled\s+for"
+     * - French: "échéance\s+", "programmé\s+pour" 
+     * - German: "fällig\s+am", "geplant\s+für"
+     * 
+     * @param text Input text to parse
+     * @param result ParsedTaskData object to populate with date/time fields
+     * @returns Text with date/time patterns removed
      */
     private parseUnifiedDatesAndTimes(text: string, result: ParsedTaskData): string {
         let workingText = text;
@@ -513,7 +558,14 @@ export class NaturalLanguageParser {
     }
 
     /**
-     * Use chrono-node to parse date starting from a specific position
+     * Use chrono-node to parse date starting from a specific position.
+     * Uses language-specific chrono parser and validates that match starts near beginning.
+     * 
+     * Position validation: Match must start within first 3 characters to account for
+     * prepositions like "on", "at", "le", "am" in different languages.
+     * 
+     * @param text Text to parse (typically after a trigger word)
+     * @returns Parsed date result with success flag, formatted date/time, and matched text
      */
     private parseChronoFromPosition(text: string): { 
         success: boolean; 
@@ -557,7 +609,7 @@ export class NaturalLanguageParser {
 
     /**
      * Builds comprehensive recurrence patterns from language configuration.
-     * Includes all patterns previously hardcoded in fallbackPatterns.
+     * Patterns are ordered by priority (most specific first) and cached for performance.
      */
     private buildRecurrencePatterns(): Array<{
         regex: RegExp;
@@ -566,15 +618,32 @@ export class NaturalLanguageParser {
         const lang = this.languageConfig.recurrence;
         const patterns = [];
         
-        // Use appropriate boundary matching for different languages
-        const isNonAscii = ['ru', 'zh', 'ja', 'uk', 'fr'].includes(this.languageConfig.code);
-        const boundary = isNonAscii ? '(?:^|\\s)' : '\\b';
-        const endBoundary = isNonAscii ? '(?=\\s|$)' : '\\b';
+        // Use pre-configured boundary matching
+        const { boundary, endBoundary } = this.boundaries;
         
         // Helper function to escape and join patterns
         const escapeAndJoin = (patterns: string[]) => patterns.map(p => this.escapeRegex(p)).join('|');
         
-        // 1. "every [ordinal] [weekday]" patterns (HIGHEST PRIORITY - must be first)
+        // Build patterns in priority order (most specific first)
+        patterns.push(...this.buildOrdinalWeekdayPatterns(lang, boundary, endBoundary, escapeAndJoin));
+        patterns.push(...this.buildIntervalPatterns(lang, boundary, endBoundary, escapeAndJoin));
+        patterns.push(...this.buildEveryOtherPatterns(lang, boundary, endBoundary, escapeAndJoin));
+        patterns.push(...this.buildWeekdayPatterns(lang, boundary, endBoundary, escapeAndJoin));
+        patterns.push(...this.buildFrequencyPatterns(lang, boundary, endBoundary, escapeAndJoin));
+        
+        return patterns;
+    }
+
+    /**
+     * Builds "every [ordinal] [weekday]" patterns (e.g., "every second monday").
+     * These have highest priority as they are most specific.
+     */
+    private buildOrdinalWeekdayPatterns(
+        lang: any, 
+        boundary: string, 
+        endBoundary: string, 
+        escapeAndJoin: (patterns: string[]) => string
+    ) {
         const everyKeywords = escapeAndJoin(lang.every);
         const ordinalPatterns = escapeAndJoin([
             ...lang.ordinals.first,
@@ -593,7 +662,7 @@ export class NaturalLanguageParser {
             ...lang.weekdays.sunday
         ]);
         
-        patterns.push({
+        return [{
             regex: new RegExp(`${boundary}(${everyKeywords})\\s+(${ordinalPatterns})\\s+(${weekdayPatterns})${endBoundary}`, 'i'),
             handler: (match: RegExpMatchArray) => {
                 const ordinalText = match[2].toLowerCase();
@@ -601,25 +670,28 @@ export class NaturalLanguageParser {
                 
                 // Find ordinal position
                 let position = 1;
-                if (lang.ordinals.second.some(o => o.toLowerCase() === ordinalText)) position = 2;
-                else if (lang.ordinals.third.some(o => o.toLowerCase() === ordinalText)) position = 3;
-                else if (lang.ordinals.fourth.some(o => o.toLowerCase() === ordinalText)) position = 4;
-                else if (lang.ordinals.last.some(o => o.toLowerCase() === ordinalText)) position = -1;
+                if (lang.ordinals.second.some((o: string) => o.toLowerCase() === ordinalText)) position = 2;
+                else if (lang.ordinals.third.some((o: string) => o.toLowerCase() === ordinalText)) position = 3;
+                else if (lang.ordinals.fourth.some((o: string) => o.toLowerCase() === ordinalText)) position = 4;
+                else if (lang.ordinals.last.some((o: string) => o.toLowerCase() === ordinalText)) position = -1;
                 
                 // Find weekday
-                let rruleDay = 'MO';
-                if (lang.weekdays.tuesday.some(d => d.toLowerCase() === dayText)) rruleDay = 'TU';
-                else if (lang.weekdays.wednesday.some(d => d.toLowerCase() === dayText)) rruleDay = 'WE';
-                else if (lang.weekdays.thursday.some(d => d.toLowerCase() === dayText)) rruleDay = 'TH';
-                else if (lang.weekdays.friday.some(d => d.toLowerCase() === dayText)) rruleDay = 'FR';
-                else if (lang.weekdays.saturday.some(d => d.toLowerCase() === dayText)) rruleDay = 'SA';
-                else if (lang.weekdays.sunday.some(d => d.toLowerCase() === dayText)) rruleDay = 'SU';
-                
+                const rruleDay = this.getWeekdayRRuleCode(dayText, lang);
                 return `FREQ=MONTHLY;BYDAY=${rruleDay};BYSETPOS=${position}`;
             }
-        });
-        
-        // 2. "every [N] [period]" patterns (e.g., "every 3 days")
+        }];
+    }
+
+    /**
+     * Builds "every [N] [period]" patterns (e.g., "every 3 days", "every 2 weeks").
+     */
+    private buildIntervalPatterns(
+        lang: any, 
+        boundary: string, 
+        endBoundary: string, 
+        escapeAndJoin: (patterns: string[]) => string
+    ) {
+        const everyKeywords = escapeAndJoin(lang.every);
         const periodPatterns = escapeAndJoin([
             ...lang.periods.day,
             ...lang.periods.week,
@@ -627,60 +699,64 @@ export class NaturalLanguageParser {
             ...lang.periods.year
         ]);
         
-        patterns.push({
+        return [{
             regex: new RegExp(`${boundary}(${everyKeywords})\\s+(\\d+)\\s+(${periodPatterns})${endBoundary}`, 'i'),
             handler: (match: RegExpMatchArray) => {
                 const interval = parseInt(match[2]);
                 const periodText = match[3].toLowerCase();
-                
-                // Determine frequency based on period
-                let freq = 'DAILY';
-                if (lang.periods.week.some(p => p.toLowerCase() === periodText)) freq = 'WEEKLY';
-                else if (lang.periods.month.some(p => p.toLowerCase() === periodText)) freq = 'MONTHLY';
-                else if (lang.periods.year.some(p => p.toLowerCase() === periodText)) freq = 'YEARLY';
-                
+                const freq = this.getPeriodFrequency(periodText, lang);
                 return `FREQ=${freq};INTERVAL=${interval}`;
             }
-        });
-        
-        // 3. "every other [period]" patterns (e.g., "every other week")
+        }];
+    }
+
+    /**
+     * Builds "every other [period]" patterns (e.g., "every other week").
+     */
+    private buildEveryOtherPatterns(
+        lang: any, 
+        boundary: string, 
+        endBoundary: string, 
+        escapeAndJoin: (patterns: string[]) => string
+    ) {
+        const everyKeywords = escapeAndJoin(lang.every);
         const otherKeywords = escapeAndJoin(lang.other);
+        const periodPatterns = escapeAndJoin([
+            ...lang.periods.day,
+            ...lang.periods.week,
+            ...lang.periods.month,
+            ...lang.periods.year
+        ]);
         
-        patterns.push({
+        return [{
             regex: new RegExp(`${boundary}(${everyKeywords})\\s+(${otherKeywords})\\s+(${periodPatterns})${endBoundary}`, 'i'),
             handler: (match: RegExpMatchArray) => {
                 const periodText = match[3].toLowerCase();
-                
-                // Determine frequency
-                let freq = 'DAILY';
-                if (lang.periods.week.some(p => p.toLowerCase() === periodText)) freq = 'WEEKLY';
-                else if (lang.periods.month.some(p => p.toLowerCase() === periodText)) freq = 'MONTHLY';
-                else if (lang.periods.year.some(p => p.toLowerCase() === periodText)) freq = 'YEARLY';
-                
+                const freq = this.getPeriodFrequency(periodText, lang);
                 return `FREQ=${freq};INTERVAL=2`;
             }
-        });
-        
-        // 4. "every [weekday]" patterns (explicit "every" keyword)
-        patterns.push({
-            regex: new RegExp(`${boundary}(${everyKeywords})\\s+(${weekdayPatterns})${endBoundary}`, 'i'),
-            handler: (match: RegExpMatchArray) => {
-                const dayText = match[2].toLowerCase();
-                
-                // Find weekday
-                let rruleDay = 'MO';
-                if (lang.weekdays.tuesday.some(d => d.toLowerCase() === dayText)) rruleDay = 'TU';
-                else if (lang.weekdays.wednesday.some(d => d.toLowerCase() === dayText)) rruleDay = 'WE';
-                else if (lang.weekdays.thursday.some(d => d.toLowerCase() === dayText)) rruleDay = 'TH';
-                else if (lang.weekdays.friday.some(d => d.toLowerCase() === dayText)) rruleDay = 'FR';
-                else if (lang.weekdays.saturday.some(d => d.toLowerCase() === dayText)) rruleDay = 'SA';
-                else if (lang.weekdays.sunday.some(d => d.toLowerCase() === dayText)) rruleDay = 'SU';
-                
-                return `FREQ=WEEKLY;BYDAY=${rruleDay}`;
-            }
-        });
-        
-        // 5. Plural weekdays patterns (e.g., "mondays", "tuesdays") - indicates recurrence
+        }];
+    }
+
+    /**
+     * Builds weekday patterns ("every [weekday]" and plural weekdays).
+     */
+    private buildWeekdayPatterns(
+        lang: any, 
+        boundary: string, 
+        endBoundary: string, 
+        escapeAndJoin: (patterns: string[]) => string
+    ) {
+        const everyKeywords = escapeAndJoin(lang.every);
+        const weekdayPatterns = escapeAndJoin([
+            ...lang.weekdays.monday,
+            ...lang.weekdays.tuesday,
+            ...lang.weekdays.wednesday,
+            ...lang.weekdays.thursday,
+            ...lang.weekdays.friday,
+            ...lang.weekdays.saturday,
+            ...lang.weekdays.sunday
+        ]);
         const pluralWeekdayPatterns = escapeAndJoin([
             ...lang.pluralWeekdays.monday,
             ...lang.pluralWeekdays.tuesday,
@@ -691,60 +767,99 @@ export class NaturalLanguageParser {
             ...lang.pluralWeekdays.sunday
         ]);
         
-        patterns.push({
-            regex: new RegExp(`${boundary}(${pluralWeekdayPatterns})${endBoundary}`, 'i'),
-            handler: (match: RegExpMatchArray) => {
-                const dayText = match[1].toLowerCase();
-                
-                // Find which plural weekday this is
-                let rruleDay = 'MO';
-                if (lang.pluralWeekdays.tuesday.some(d => d.toLowerCase() === dayText)) rruleDay = 'TU';
-                else if (lang.pluralWeekdays.wednesday.some(d => d.toLowerCase() === dayText)) rruleDay = 'WE';
-                else if (lang.pluralWeekdays.thursday.some(d => d.toLowerCase() === dayText)) rruleDay = 'TH';
-                else if (lang.pluralWeekdays.friday.some(d => d.toLowerCase() === dayText)) rruleDay = 'FR';
-                else if (lang.pluralWeekdays.saturday.some(d => d.toLowerCase() === dayText)) rruleDay = 'SA';
-                else if (lang.pluralWeekdays.sunday.some(d => d.toLowerCase() === dayText)) rruleDay = 'SU';
-                
-                return `FREQ=WEEKLY;BYDAY=${rruleDay}`;
+        return [
+            // "every [weekday]" patterns
+            {
+                regex: new RegExp(`${boundary}(${everyKeywords})\\s+(${weekdayPatterns})${endBoundary}`, 'i'),
+                handler: (match: RegExpMatchArray) => {
+                    const dayText = match[2].toLowerCase();
+                    const rruleDay = this.getWeekdayRRuleCode(dayText, lang);
+                    return `FREQ=WEEKLY;BYDAY=${rruleDay}`;
+                }
+            },
+            // Plural weekdays ("mondays", "tuesdays")
+            {
+                regex: new RegExp(`${boundary}(${pluralWeekdayPatterns})${endBoundary}`, 'i'),
+                handler: (match: RegExpMatchArray) => {
+                    const dayText = match[1].toLowerCase();
+                    const rruleDay = this.getPluralWeekdayRRuleCode(dayText, lang);
+                    return `FREQ=WEEKLY;BYDAY=${rruleDay}`;
+                }
             }
-        });
-        
-        // 6. General frequency patterns (daily, weekly, monthly, yearly)
-        const dailyPatterns = escapeAndJoin(lang.frequencies.daily);
-        patterns.push({
-            regex: new RegExp(`${boundary}(${dailyPatterns})${endBoundary}`, 'i'),
-            handler: () => 'FREQ=DAILY'
-        });
-        
-        const weeklyPatterns = escapeAndJoin(lang.frequencies.weekly);
-        patterns.push({
-            regex: new RegExp(`${boundary}(${weeklyPatterns})${endBoundary}`, 'i'),
-            handler: () => 'FREQ=WEEKLY'
-        });
-        
-        const monthlyPatterns = escapeAndJoin(lang.frequencies.monthly);
-        patterns.push({
-            regex: new RegExp(`${boundary}(${monthlyPatterns})${endBoundary}`, 'i'),
-            handler: () => 'FREQ=MONTHLY'
-        });
-        
-        const yearlyPatterns = escapeAndJoin(lang.frequencies.yearly);
-        patterns.push({
-            regex: new RegExp(`${boundary}(${yearlyPatterns})${endBoundary}`, 'i'),
-            handler: () => 'FREQ=YEARLY'
-        });
-        
-        return patterns;
+        ];
     }
 
     /**
-     * Extracts recurrence from text and generates rrule strings using comprehensive language-aware patterns.
-     * All patterns are now internationalized and sourced from language configurations.
+     * Builds general frequency patterns (daily, weekly, monthly, yearly).
+     */
+    private buildFrequencyPatterns(
+        lang: any, 
+        boundary: string, 
+        endBoundary: string, 
+        escapeAndJoin: (patterns: string[]) => string
+    ) {
+        return [
+            {
+                regex: new RegExp(`${boundary}(${escapeAndJoin(lang.frequencies.daily)})${endBoundary}`, 'i'),
+                handler: () => 'FREQ=DAILY'
+            },
+            {
+                regex: new RegExp(`${boundary}(${escapeAndJoin(lang.frequencies.weekly)})${endBoundary}`, 'i'),
+                handler: () => 'FREQ=WEEKLY'
+            },
+            {
+                regex: new RegExp(`${boundary}(${escapeAndJoin(lang.frequencies.monthly)})${endBoundary}`, 'i'),
+                handler: () => 'FREQ=MONTHLY'
+            },
+            {
+                regex: new RegExp(`${boundary}(${escapeAndJoin(lang.frequencies.yearly)})${endBoundary}`, 'i'),
+                handler: () => 'FREQ=YEARLY'
+            }
+        ];
+    }
+
+    /**
+     * Helper to determine frequency type from period text.
+     */
+    private getPeriodFrequency(periodText: string, lang: any): string {
+        if (lang.periods.week.some((p: string) => p.toLowerCase() === periodText)) return 'WEEKLY';
+        if (lang.periods.month.some((p: string) => p.toLowerCase() === periodText)) return 'MONTHLY';
+        if (lang.periods.year.some((p: string) => p.toLowerCase() === periodText)) return 'YEARLY';
+        return 'DAILY'; // default
+    }
+
+    /**
+     * Helper to get RRule weekday code from weekday text.
+     */
+    private getWeekdayRRuleCode(dayText: string, lang: any): string {
+        if (lang.weekdays.tuesday.some((d: string) => d.toLowerCase() === dayText)) return 'TU';
+        if (lang.weekdays.wednesday.some((d: string) => d.toLowerCase() === dayText)) return 'WE';
+        if (lang.weekdays.thursday.some((d: string) => d.toLowerCase() === dayText)) return 'TH';
+        if (lang.weekdays.friday.some((d: string) => d.toLowerCase() === dayText)) return 'FR';
+        if (lang.weekdays.saturday.some((d: string) => d.toLowerCase() === dayText)) return 'SA';
+        if (lang.weekdays.sunday.some((d: string) => d.toLowerCase() === dayText)) return 'SU';
+        return 'MO'; // default to Monday
+    }
+
+    /**
+     * Helper to get RRule weekday code from plural weekday text.
+     */
+    private getPluralWeekdayRRuleCode(dayText: string, lang: any): string {
+        if (lang.pluralWeekdays.tuesday.some((d: string) => d.toLowerCase() === dayText)) return 'TU';
+        if (lang.pluralWeekdays.wednesday.some((d: string) => d.toLowerCase() === dayText)) return 'WE';
+        if (lang.pluralWeekdays.thursday.some((d: string) => d.toLowerCase() === dayText)) return 'TH';
+        if (lang.pluralWeekdays.friday.some((d: string) => d.toLowerCase() === dayText)) return 'FR';
+        if (lang.pluralWeekdays.saturday.some((d: string) => d.toLowerCase() === dayText)) return 'SA';
+        if (lang.pluralWeekdays.sunday.some((d: string) => d.toLowerCase() === dayText)) return 'SU';
+        return 'MO'; // default to Monday
+    }
+
+    /**
+     * Extracts recurrence from text and generates rrule strings using cached language-aware patterns.
+     * All patterns are internationalized and sourced from language configurations.
      */
     private extractRecurrence(text: string, result: ParsedTaskData): string {
-        const recurrencePatterns = this.buildRecurrencePatterns();
-
-        for (const pattern of recurrencePatterns) {
+        for (const pattern of this.recurrencePatterns) {
             const match = text.match(pattern.regex);
             if (match) {
                 const rruleString = pattern.handler(match);
@@ -781,14 +896,22 @@ export class NaturalLanguageParser {
 
     /**
      * Extracts time estimate from text using language-aware patterns.
+     * Supports combined formats (1h30m), hours only (2hrs), and minutes only (45min).
+     * 
+     * Pattern examples:
+     * - Combined: "2h 30m" → 150 minutes
+     * - Hours: "3 hours" → 180 minutes  
+     * - Minutes: "45 minutes" → 45 minutes
+     * 
+     * @param text Input text to parse
+     * @param result ParsedTaskData object to populate
+     * @returns Text with time estimate patterns removed
      */
     private extractTimeEstimate(text: string, result: ParsedTaskData): string {
         const langConfig = this.languageConfig.timeEstimate;
         
-        // Use appropriate boundary matching for different languages
-        const isNonAscii = ['ru', 'zh', 'ja', 'uk', 'fr'].includes(this.languageConfig.code);
-        const boundary = isNonAscii ? '(?:^|\\s)' : '\\b';
-        const endBoundary = isNonAscii ? '(?=\\s|$)' : '\\b';
+        // Use pre-configured boundary matching
+        const { boundary, endBoundary } = this.boundaries;
         
         const patterns = [
             // Combined format: 1h30m
