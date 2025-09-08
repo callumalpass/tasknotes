@@ -332,8 +332,38 @@ describe('TaskCard Component', () => {
       expect(metadataLine?.textContent).toContain('Due:');
       expect(metadataLine?.textContent).toContain('Scheduled:');
       expect(metadataLine?.textContent).toContain('@work, @urgent');
-      expect(metadataLine?.textContent).toContain('30m spent');
+      // Time tracking info should only show when explicitly configured as visible properties
+      expect(metadataLine?.textContent).not.toContain('30m spent');
+      expect(metadataLine?.textContent).not.toContain('60m estimated');
+    });
+
+    it('should show time tracking properties when explicitly enabled', () => {
+      const task = TaskFactory.createTask({
+        timeEstimate: 60,
+        timeEntries: [{ startTime: '2025-01-15T10:00:00Z', endTime: '2025-01-15T10:30:00Z' }],
+        totalTrackedTime: 30
+      });
+
+      // Test with timeEstimate and totalTrackedTime properties explicitly enabled
+      const visibleProperties = ['timeEstimate', 'totalTrackedTime'];
+      const card = createTaskCard(task, mockPlugin, visibleProperties);
+      const metadataLine = card.querySelector('.task-card__metadata');
+
       expect(metadataLine?.textContent).toContain('60m estimated');
+      expect(metadataLine?.textContent).toContain('30m tracked');
+    });
+
+    it('should not show totalTrackedTime when value is 0', () => {
+      const task = TaskFactory.createTask({
+        totalTrackedTime: 0
+      });
+
+      // Enable totalTrackedTime property but value is 0
+      const visibleProperties = ['totalTrackedTime'];
+      const card = createTaskCard(task, mockPlugin, visibleProperties);
+      const metadataLine = card.querySelector('.task-card__metadata');
+
+      expect(metadataLine?.textContent).not.toContain('tracked');
     });
 
     it('should create clickable project links for wikilink projects', () => {
