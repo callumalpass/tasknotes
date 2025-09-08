@@ -145,7 +145,11 @@ export const DEFAULT_ICS_INTEGRATION_SETTINGS: ICSIntegrationSettings = {
 	defaultNoteTemplate: '',
 	defaultNoteFolder: '',
 	icsNoteFilenameFormat: 'title', // Default to using the event title for ICS notes
-	customICSNoteFilenameTemplate: '{title}' // Simple title template for ICS notes
+	customICSNoteFilenameTemplate: '{title}', // Simple title template for ICS notes
+	// Automatic export defaults
+	enableAutoExport: false,
+	autoExportPath: 'tasknotes-calendar.ics',
+	autoExportInterval: 60 // 60 minutes by default
 };
 
 export const DEFAULT_PROJECT_AUTOSUGGEST: ProjectAutosuggestSettings = {

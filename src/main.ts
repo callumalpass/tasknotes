@@ -66,6 +66,7 @@ import { StatusBarService } from './services/StatusBarService';
 import { ProjectSubtasksService } from './services/ProjectSubtasksService';
 import { ExpandedProjectsService } from './services/ExpandedProjectsService';
 import { NotificationService } from './services/NotificationService';
+import { AutoExportService } from './services/AutoExportService';
 // Type-only import for HTTPAPIService (actual import is dynamic on desktop only)
 import type { HTTPAPIService } from './services/HTTPAPIService';
 
@@ -143,6 +144,9 @@ export default class TaskNotesPlugin extends Plugin {
 
 	// ICS note service for creating notes/tasks from ICS events
 	icsNoteService: ICSNoteService;
+
+	// Auto export service for continuous ICS export
+	autoExportService: AutoExportService;
 
 	// Migration service
 	migrationService: MigrationService;
@@ -438,6 +442,10 @@ export default class TaskNotesPlugin extends Plugin {
 
 				// Initialize ICS note service
 				this.icsNoteService = new ICSNoteService(this);
+
+				// Initialize auto export service
+				this.autoExportService = new AutoExportService(this);
+				this.autoExportService.start();
 
 				// Initialize HTTP API service if enabled (desktop only)
 				await this.initializeHTTPAPI();
@@ -866,6 +874,11 @@ export default class TaskNotesPlugin extends Plugin {
 		// Clean up ICS subscription service
 		if (this.icsSubscriptionService) {
 			this.icsSubscriptionService.destroy();
+		}
+
+		// Clean up auto export service
+		if (this.autoExportService) {
+			this.autoExportService.destroy();
 		}
 
 		// Clean up TaskLinkDetectionService

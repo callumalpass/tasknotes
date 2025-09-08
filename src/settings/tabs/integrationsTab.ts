@@ -200,6 +200,101 @@ export function renderIntegrationsTab(container: HTMLElement, plugin: TaskNotesP
         }
     });
 
+    // Automatic ICS Export Section
+    createSectionHeader(container, 'Automatic ICS export');
+    createHelpText(container, 'Automatically export all your tasks to an ICS file.');
+
+    createToggleSetting(container, {
+        name: 'Enable automatic export',
+        desc: 'Automatically keep an ICS file updated with all your tasks',
+        getValue: () => plugin.settings.icsIntegration.enableAutoExport,
+        setValue: async (value: boolean) => {
+            plugin.settings.icsIntegration.enableAutoExport = value;
+            save();
+            new Notice('Please reload Obsidian for the automatic export changes to take effect.');
+            // Re-render to show/hide export settings
+            renderIntegrationsTab(container, plugin, save);
+        }
+    });
+
+    if (plugin.settings.icsIntegration.enableAutoExport) {
+        createTextSetting(container, {
+            name: 'Export file path',
+            desc: 'Path where the ICS file will be saved (relative to vault root)',
+            placeholder: 'tasknotes-calendar.ics',
+            getValue: () => plugin.settings.icsIntegration.autoExportPath,
+            setValue: async (value: string) => {
+                plugin.settings.icsIntegration.autoExportPath = value || 'tasknotes-calendar.ics';
+                save();
+            }
+        });
+
+        createNumberSetting(container, {
+            name: 'Update interval (between 5 and 1440 minutes)',
+            desc: 'How often to update the export file',
+            placeholder: '60',
+            min: 5,
+            max: 1440, // 24 hours max
+            getValue: () => plugin.settings.icsIntegration.autoExportInterval,
+            setValue: async (value: number) => {
+                plugin.settings.icsIntegration.autoExportInterval = Math.max(5, value || 60);
+                save();
+                // Restart the auto export service with new interval
+                if (plugin.autoExportService) {
+                    plugin.autoExportService.updateInterval(plugin.settings.icsIntegration.autoExportInterval);
+                }
+            }
+        });
+
+        // Show current export status
+        const statusContainer = container.createDiv('auto-export-status');
+        statusContainer.style.marginTop = '10px';
+        statusContainer.style.padding = '10px';
+        statusContainer.style.backgroundColor = 'var(--background-secondary)';
+        statusContainer.style.borderRadius = '4px';
+
+        if (plugin.autoExportService) {
+            const lastExport = plugin.autoExportService.getLastExportTime();
+            const nextExport = plugin.autoExportService.getNextExportTime();
+            
+            statusContainer.innerHTML = `
+                <div style="font-weight: 500; margin-bottom: 5px;">Export Status:</div>
+                <div style="font-size: 0.9em; opacity: 0.8;">
+                    ${lastExport ? `Last export: ${lastExport.toLocaleString()}` : 'No exports yet'}<br>
+                    ${nextExport ? `Next export: ${nextExport.toLocaleString()}` : 'Not scheduled'}
+                </div>
+            `;
+        } else {
+            statusContainer.innerHTML = `
+                <div style="font-weight: 500; color: var(--text-warning);">
+                    Auto export service not initialized - please restart Obsidian
+                </div>
+            `;
+        }
+
+        // Manual export trigger button
+        createButtonSetting(container, {
+            name: 'Export now',
+            desc: 'Manually trigger an immediate export',
+            buttonText: 'Export Now',
+            onClick: async () => {
+                if (plugin.autoExportService) {
+                    try {
+                        await plugin.autoExportService.exportNow();
+                        new Notice('Tasks exported successfully');
+                        // Re-render to update status
+                        renderIntegrationsTab(container, plugin, save);
+                    } catch (error) {
+                        console.error('Manual export failed:', error);
+                        new Notice('Export failed - check console for details');
+                    }
+                } else {
+                    new Notice('Auto export service not available');
+                }
+            }
+        });
+    }
+
     // HTTP API Section (Skip on mobile)
     if (!Platform.isMobile) {
         createSectionHeader(container, 'HTTP API');
