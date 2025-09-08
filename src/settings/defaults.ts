@@ -32,7 +32,9 @@ export const DEFAULT_STATUSES: StatusConfig[] = [
 		label: 'None',
 		color: '#cccccc',
 		isCompleted: false,
-		order: 0
+		order: 0,
+		autoArchive: false,
+		autoArchiveDelay: 5
 	},
 	{
 		id: 'open',
@@ -40,7 +42,9 @@ export const DEFAULT_STATUSES: StatusConfig[] = [
 		label: 'Open',
 		color: '#808080',
 		isCompleted: false,
-		order: 1
+		order: 1,
+		autoArchive: false,
+		autoArchiveDelay: 5
 	},
 	{
 		id: 'in-progress',
@@ -48,7 +52,9 @@ export const DEFAULT_STATUSES: StatusConfig[] = [
 		label: 'In progress',
 		color: '#0066cc',
 		isCompleted: false,
-		order: 2
+		order: 2,
+		autoArchive: false,
+		autoArchiveDelay: 5
 	},
 	{
 		id: 'done',
@@ -56,7 +62,9 @@ export const DEFAULT_STATUSES: StatusConfig[] = [
 		label: 'Done',
 		color: '#00aa00',
 		isCompleted: true,
-		order: 3
+		order: 3,
+		autoArchive: false,
+		autoArchiveDelay: 5
 	}
 ];
 

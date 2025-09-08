@@ -188,7 +188,9 @@ export class StatusManager {
             label: 'New status',
             color: '#808080',
             isCompleted: false,
-            order
+            order,
+            autoArchive: false,
+            autoArchiveDelay: 5
         };
     }
 }

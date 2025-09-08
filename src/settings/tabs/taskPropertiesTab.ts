@@ -49,6 +49,7 @@ export function renderTaskPropertiesTab(container: HTMLElement, plugin: TaskNote
     statusHelpList.createEl('li', { text: 'Label: The display name shown in the interface (e.g., "In Progress")' });
     statusHelpList.createEl('li', { text: 'Color: Visual indicator color for the status dot and badges' });
     statusHelpList.createEl('li', { text: 'Completed: When checked, tasks with this status are considered finished and may be filtered differently' });
+    statusHelpList.createEl('li', { text: 'Auto-archive: When enabled, tasks will be automatically archived after the specified delay (1-1440 minutes)' });
     statusHelpContainer.createEl('p', {
         text: 'The order below determines the sequence when cycling through statuses by clicking on task status badges.',
         cls: 'settings-help-note'
@@ -73,7 +74,9 @@ export function renderTaskPropertiesTab(container: HTMLElement, plugin: TaskNote
                     color: '#6366f1',
                     completed: false,
                     isCompleted: false,
-                    order: plugin.settings.customStatuses.length
+                    order: plugin.settings.customStatuses.length,
+                    autoArchive: false,
+                    autoArchiveDelay: 5
                 };
                 plugin.settings.customStatuses.push(newStatus);
                 save();
@@ -233,6 +236,13 @@ function renderStatusList(container: HTMLElement, plugin: TaskNotesPlugin, save:
         completedCheckbox.checked = status.isCompleted || false;
         completedCheckbox.addClass('tasknotes-card-input');
 
+        const autoArchiveCheckbox = document.createElement('input');
+        autoArchiveCheckbox.type = 'checkbox';
+        autoArchiveCheckbox.checked = status.autoArchive || false;
+        autoArchiveCheckbox.addClass('tasknotes-card-input');
+
+        const autoArchiveDelayInput = createCardNumberInput(1, 1440, 1, status.autoArchiveDelay || 5);
+
         const metaElements = status.isCompleted ? [createStatusBadge('Completed', 'completed')] : [];
 
         const deleteStatus = () => {
@@ -266,13 +276,27 @@ function renderStatusList(container: HTMLElement, plugin: TaskNotesPlugin, save:
                         { label: 'Value:', input: valueInput },
                         { label: 'Label:', input: labelInput },
                         { label: 'Color:', input: colorInput },
-                        { label: 'Completed:', input: completedCheckbox }
+                        { label: 'Completed:', input: completedCheckbox },
+                        { label: 'Auto-archive:', input: autoArchiveCheckbox },
+                        { label: 'Delay (minutes):', input: autoArchiveDelayInput }
                     ]
                 }]
             }
         };
 
         const statusCard = createCard(container, cardConfig);
+
+        // Function to show/hide the delay input based on auto-archive setting
+        const updateDelayInputVisibility = () => {
+            // Find the delay input row by looking for the input element's parent row
+            const delayRow = autoArchiveDelayInput.closest('.tasknotes-settings__card-config-row') as HTMLElement;
+            if (delayRow) {
+                delayRow.style.display = status.autoArchive ? 'flex' : 'none';
+            }
+        };
+
+        // Set initial visibility
+        updateDelayInputVisibility();
 
         valueInput.addEventListener('change', () => {
             status.value = valueInput.value;
@@ -305,6 +329,21 @@ function renderStatusList(container: HTMLElement, plugin: TaskNotesPlugin, save:
                 }
             }
             save();
+        });
+
+        autoArchiveCheckbox.addEventListener('change', () => {
+            status.autoArchive = autoArchiveCheckbox.checked;
+            save();
+            // Update delay input visibility without re-rendering
+            updateDelayInputVisibility();
+        });
+
+        autoArchiveDelayInput.addEventListener('change', () => {
+            const value = parseInt(autoArchiveDelayInput.value);
+            if (!isNaN(value) && value >= 1 && value <= 1440) {
+                status.autoArchiveDelay = value;
+                save();
+            }
         });
 
         setupCardDragAndDrop(statusCard, container, (draggedId, targetId, insertBefore) => {
