@@ -1253,6 +1253,22 @@ export default class TaskNotesPlugin extends Plugin {
 				await this.refreshCache();
 			}
 		});
+		
+		// Export commands
+		this.addCommand({
+			id: 'export-all-tasks-ics',
+			name: 'Export all tasks as ICS file',
+			callback: async () => {
+				try {
+					const allTasks = await this.cacheManager.getAllTasks();
+					const { CalendarExportService } = await import('./services/CalendarExportService');
+					CalendarExportService.downloadAllTasksICSFile(allTasks);
+				} catch (error) {
+					console.error('Error exporting all tasks as ICS:', error);
+					new Notice('Failed to export tasks as ICS file');
+				}
+			}
+		});
 
 	}
 
