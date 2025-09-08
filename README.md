@@ -45,7 +45,7 @@ Since each task is a full note, you can write detailed descriptions, jot down th
 - Filtering and grouping options
 
 ### Calendar Integration
-j
+
 - Month view displaying tasks and notes
 - Mini calendar view for compact layouts
 - ICS/iCal feed subscriptions
