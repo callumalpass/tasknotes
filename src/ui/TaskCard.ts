@@ -303,7 +303,7 @@ const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
         }
     },
     'totalTrackedTime': (element, value, _, plugin) => {
-        if (typeof value === 'number') {
+        if (typeof value === 'number' && value > 0) {
             element.textContent = `${plugin.formatTime(value)} tracked`;
         }
     },
@@ -1108,24 +1108,6 @@ export function createTaskCard(task: TaskInfo, plugin: TaskNotesPlugin, visibleP
         }
     }
     
-    // Legacy: Add time spent information if timeEstimate or totalTrackedTime properties are not explicitly configured
-    const timeSpent = calculateTotalTimeSpent(task.timeEntries || []);
-    const hasTimeEstimate = propertiesToShow.includes('timeEstimate');
-    const hasTotalTrackedTime = propertiesToShow.includes('totalTrackedTime');
-    if (!hasTimeEstimate && !hasTotalTrackedTime && (task.timeEstimate || timeSpent > 0)) {
-        const timeInfo: string[] = [];
-        if (timeSpent > 0) {
-            timeInfo.push(`${plugin.formatTime(timeSpent)} spent`);
-        }
-        if (task.timeEstimate) {
-            timeInfo.push(`${plugin.formatTime(task.timeEstimate)} estimated`);
-        }
-        const timeSpan = metadataLine.createEl('span', {
-            cls: 'task-card__metadata-property task-card__metadata-property--time'
-        });
-        timeSpan.textContent = timeInfo.join(', ');
-        metadataElements.push(timeSpan);
-    }
     
     // Add separators between metadata elements
     addMetadataSeparators(metadataLine, metadataElements);
@@ -1620,24 +1602,6 @@ export function updateTaskCard(element: HTMLElement, task: TaskInfo, plugin: Tas
             }
         }
         
-        // Legacy: Add time spent information if timeEstimate or totalTrackedTime properties are not explicitly configured
-        const timeSpent = calculateTotalTimeSpent(task.timeEntries || []);
-        const hasTimeEstimate = propertiesToShow.includes('timeEstimate');
-        const hasTotalTrackedTime = propertiesToShow.includes('totalTrackedTime');
-        if (!hasTimeEstimate && !hasTotalTrackedTime && (task.timeEstimate || timeSpent > 0)) {
-            const timeInfo: string[] = [];
-            if (timeSpent > 0) {
-                timeInfo.push(`${plugin.formatTime(timeSpent)} spent`);
-            }
-            if (task.timeEstimate) {
-                timeInfo.push(`${plugin.formatTime(task.timeEstimate)} estimated`);
-            }
-            const timeSpan = metadataLine.createEl('span', {
-                cls: 'task-card__metadata-property task-card__metadata-property--time'
-            });
-            timeSpan.textContent = timeInfo.join(', ');
-            metadataElements.push(timeSpan);
-        }
         
         // Add separators between metadata elements
         addMetadataSeparators(metadataLine, metadataElements);
