@@ -15,19 +15,13 @@ export interface BasesDataItem {
 /**
  * Create TaskInfo object from a single Bases data item
  */
-export function createTaskInfoFromBasesData(basesItem: BasesDataItem): TaskInfo | null {
-  if (!basesItem?.path) return null;
-
-  const props = basesItem.properties || basesItem.frontmatter || {};
-
-  // Separate known TaskNotes properties from custom properties
+function createTaskInfoFromProperties(props: Record<string, any>, basesItem: BasesDataItem): TaskInfo {
   const knownProperties = new Set([
-    'title', 'status', 'priority', 'archived', 'due', 'scheduled', 'contexts', 
-    'projects', 'tags', 'timeEstimate', 'completedDate', 'recurrence', 
+    'title', 'status', 'priority', 'archived', 'due', 'scheduled', 'contexts',
+    'projects', 'tags', 'timeEstimate', 'completedDate', 'recurrence',
     'dateCreated', 'dateModified', 'timeEntries', 'reminders', 'icsEventId'
   ]);
 
-  // Extract custom properties from frontmatter
   const customProperties: Record<string, any> = {};
   Object.keys(props).forEach(key => {
     if (!knownProperties.has(key)) {
@@ -35,12 +29,7 @@ export function createTaskInfoFromBasesData(basesItem: BasesDataItem): TaskInfo 
     }
   });
 
-  // Note: Bases formula properties are handled dynamically in the TaskCard rendering layer
-  // since they require access to the Bases property computation system
-  
-
-
-  const taskInfo: TaskInfo = {
+  return {
     title: props.title || basesItem.name || basesItem.path!.split('/').pop()?.replace('.md', '') || 'Untitled',
     status: props.status || 'open',
     priority: props.priority || 'normal',
@@ -60,10 +49,24 @@ export function createTaskInfoFromBasesData(basesItem: BasesDataItem): TaskInfo 
     reminders: props.reminders,
     icsEventId: props.icsEventId,
     customProperties: Object.keys(customProperties).length > 0 ? customProperties : undefined,
-    basesData: basesItem.basesData // Pass raw Bases data for formula computation
+    basesData: basesItem.basesData
   };
+}
 
-  return taskInfo;
+export function createTaskInfoFromBasesData(basesItem: BasesDataItem, plugin?: TaskNotesPlugin): TaskInfo | null {
+  if (!basesItem?.path) return null;
+
+  const props = basesItem.properties || basesItem.frontmatter || {};
+
+  if (plugin?.fieldMapper) {
+    const mappedTaskInfo = plugin.fieldMapper.mapFromFrontmatter(props, basesItem.path, plugin.settings.storeTitleInFilename);
+    return {
+      ...createTaskInfoFromProperties(mappedTaskInfo, basesItem),
+      customProperties: mappedTaskInfo.customProperties
+    };
+  } else {
+    return createTaskInfoFromProperties(props, basesItem);
+  }
 }
 
 /**
@@ -71,13 +74,15 @@ export function createTaskInfoFromBasesData(basesItem: BasesDataItem): TaskInfo 
  */
 export async function identifyTaskNotesFromBasesData(
   dataItems: BasesDataItem[],
-  toTaskInfo: (item: BasesDataItem) => TaskInfo | null = createTaskInfoFromBasesData
+  plugin?: TaskNotesPlugin,
+  toTaskInfo?: (item: BasesDataItem, plugin?: TaskNotesPlugin) => TaskInfo | null
 ): Promise<TaskInfo[]> {
+  const taskInfoConverter = toTaskInfo || createTaskInfoFromBasesData;
   const taskNotes: TaskInfo[] = [];
   for (const item of dataItems) {
     if (!item?.path) continue;
     try {
-      const taskInfo = toTaskInfo(item);
+      const taskInfo = taskInfoConverter(item, plugin);
       if (taskInfo) taskNotes.push(taskInfo);
     } catch (error) {
       console.warn('[TaskNotes][BasesPOC] Error converting Bases item to TaskInfo:', error);
@@ -185,15 +190,29 @@ export async function renderTaskNotesInBasesView(
       // Map common property names to TaskNotes property names
       visibleProperties = visibleProperties.map(propId => {
         let mappedId = propId;
+        
+        // First, try reverse field mapping for user's custom property names
+        const internalFieldName = plugin.fieldMapper?.fromUserField(propId);
+        if (internalFieldName) {
+          // User has a custom field mapping for this property
+          // Map it to the internal TaskNotes property name for proper rendering
+          mappedId = internalFieldName;
+        }
         // Handle dotted properties like task.due -> due
-        if (propId.startsWith('task.')) {
+        else if (propId.startsWith('task.')) {
           mappedId = propId.substring(5);
         }
         // Handle note properties like note.projects -> projects
         else if (propId.startsWith('note.')) {
           const stripped = propId.substring(5);
+          
+          // Try reverse field mapping on the stripped property name
+          const strippedInternalFieldName = plugin.fieldMapper?.fromUserField(stripped);
+          if (strippedInternalFieldName) {
+            mappedId = strippedInternalFieldName;
+          }
           // Map specific note properties to TaskNotes property names
-          if (stripped === 'dateCreated') mappedId = 'dateCreated';
+          else if (stripped === 'dateCreated') mappedId = 'dateCreated';
           else if (stripped === 'dateModified') mappedId = 'dateModified';
           else if (stripped === 'completedDate') mappedId = 'completedDate';
           else mappedId = stripped; // projects, contexts, tags, and any other arbitrary properties

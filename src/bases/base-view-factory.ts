@@ -118,7 +118,7 @@ export function buildTasknotesBaseViewFactory(plugin: TaskNotesPlugin, config: V
         }
         
         
-        const taskNotes = await identifyTaskNotesFromBasesData(dataItems);
+        const taskNotes = await identifyTaskNotesFromBasesData(dataItems, plugin);
         
 
         // Render body
