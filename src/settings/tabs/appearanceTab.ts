@@ -54,7 +54,7 @@ export function renderAppearanceTab(container: HTMLElement, plugin: TaskNotesPlu
         plugin.settings.userFields.forEach(field => {
             if (field.displayName && field.key) {
                 propertyGroups.user.push({
-                    key: field.key,
+                    key: `user:${field.id}`,
                     label: field.displayName
                 });
             }
