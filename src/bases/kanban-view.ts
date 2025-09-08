@@ -92,7 +92,7 @@ export function buildTasknotesKanbanViewFactory(plugin: TaskNotesPlugin) {
       
       try {
         const dataItems = extractDataItems();
-        const taskNotes = await identifyTaskNotesFromBasesData(dataItems);
+        const taskNotes = await identifyTaskNotesFromBasesData(dataItems, plugin);
 
         // Clear board
         board.innerHTML = '';

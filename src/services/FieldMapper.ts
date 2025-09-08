@@ -273,6 +273,19 @@ export class FieldMapper {
     }
 
     /**
+     * Convert user's property name back to internal field name
+     * This is the reverse of toUserField()
+     */
+    fromUserField(userPropertyName: string): keyof FieldMapping | null {
+        for (const [internalName, userName] of Object.entries(this.mapping)) {
+            if (userName === userPropertyName) {
+                return internalName as keyof FieldMapping;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Validate that a mapping has no empty field names
      */
     static validateMapping(mapping: FieldMapping): { valid: boolean; errors: string[] } {
