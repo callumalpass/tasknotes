@@ -1,4 +1,5 @@
 import { EVENT_TASK_DELETED, EVENT_TASK_UPDATED, TaskCreationData, TaskInfo, TimeEntry, IWebhookNotifier } from '../types';
+import { AutoArchiveService } from './AutoArchiveService';
 import { FilenameContext, generateTaskFilename, generateUniqueFilename } from '../utils/filenameGenerator';
 import { Notice, TFile, normalizePath, stringifyYaml } from 'obsidian';
 import { TemplateData, mergeTemplateFrontmatter, processTemplate } from '../utils/templateProcessor';
@@ -10,6 +11,7 @@ import TaskNotesPlugin from '../main';
 
 export class TaskService {
     private webhookNotifier?: IWebhookNotifier;
+    private autoArchiveService?: AutoArchiveService;
     
     constructor(private plugin: TaskNotesPlugin) {}
     
@@ -19,6 +21,13 @@ export class TaskService {
      */
     setWebhookNotifier(notifier: IWebhookNotifier): void {
         this.webhookNotifier = notifier;
+    }
+
+    /**
+     * Set auto-archive service for handling automatic archiving
+     */
+    setAutoArchiveService(service: AutoArchiveService): void {
+        this.autoArchiveService = service;
     }
 
     /**
@@ -585,6 +594,24 @@ export class TaskService {
                     console.warn('Failed to trigger webhook for property update:', error);
                 }
             }
+
+            // Handle auto-archive if status property changed
+            if (this.autoArchiveService && property === 'status' && value !== task.status) {
+                try {
+                    const statusConfig = this.plugin.statusManager.getStatusConfig(value as string);
+                    if (statusConfig) {
+                        if (statusConfig.autoArchive) {
+                            // Schedule for auto-archive
+                            await this.autoArchiveService.scheduleAutoArchive(updatedTask as TaskInfo, statusConfig);
+                        } else {
+                            // Cancel any pending auto-archive since new status doesn't have auto-archive
+                            await this.autoArchiveService.cancelAutoArchive((updatedTask as TaskInfo).path);
+                        }
+                    }
+                } catch (error) {
+                    console.warn('Failed to handle auto-archive for status property change:', error);
+                }
+            }
             
             // Step 5: Return authoritative data
             return updatedTask as TaskInfo;
@@ -1124,6 +1151,24 @@ export class TaskService {
                     }
                 } catch (error) {
                     console.warn('Failed to trigger webhook for task update:', error);
+                }
+            }
+
+            // Handle auto-archive if status changed
+            if (this.autoArchiveService && updates.status !== undefined && updates.status !== originalTask.status) {
+                try {
+                    const statusConfig = this.plugin.statusManager.getStatusConfig(updatedTask.status);
+                    if (statusConfig) {
+                        if (statusConfig.autoArchive) {
+                            // Schedule for auto-archive
+                            await this.autoArchiveService.scheduleAutoArchive(updatedTask, statusConfig);
+                        } else {
+                            // Cancel any pending auto-archive since new status doesn't have auto-archive
+                            await this.autoArchiveService.cancelAutoArchive(updatedTask.path);
+                        }
+                    }
+                } catch (error) {
+                    console.warn('Failed to handle auto-archive for status change:', error);
                 }
             }
 

@@ -429,6 +429,8 @@ export interface StatusConfig {
 	color: string;        // Hex color for UI elements
 	isCompleted: boolean; // Whether this counts as "done"
 	order: number;        // Sort order (for cycling)
+	autoArchive: boolean; // Whether to auto-archive tasks with this status
+	autoArchiveDelay: number; // Minutes to wait before auto-archiving
 }
 
 export interface PriorityConfig {
@@ -575,6 +577,14 @@ export interface WebhookDelivery {
 	lastAttempt?: string;
 	responseStatus?: number;
 	error?: string;
+}
+
+// Auto-archive types
+export interface PendingAutoArchive {
+	taskPath: string;
+	statusChangeTimestamp: number;
+	archiveAfterTimestamp: number;
+	statusValue: string;
 }
 
 // Webhook notification interface for loose coupling

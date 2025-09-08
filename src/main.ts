@@ -52,6 +52,7 @@ import { StatusManager } from './services/StatusManager';
 import { PriorityManager } from './services/PriorityManager';
 import { TaskService } from './services/TaskService';
 import { FilterService } from './services/FilterService';
+import { AutoArchiveService } from './services/AutoArchiveService';
 import { ViewStateManager } from './services/ViewStateManager';
 import { createTaskLinkOverlay, dispatchTaskUpdate } from './editor/TaskLinkOverlay';
 import { createReadingModeTaskLinkProcessor } from './editor/ReadingModeTaskLinkProcessor';
@@ -130,6 +131,7 @@ export default class TaskNotesPlugin extends Plugin {
 	viewStateManager: ViewStateManager;
 	projectSubtasksService: ProjectSubtasksService;
 	expandedProjectsService: ExpandedProjectsService;
+	autoArchiveService: AutoArchiveService;
 
 	// Editor services
 	taskLinkDetectionService?: import('./services/TaskLinkDetectionService').TaskLinkDetectionService;
@@ -218,10 +220,14 @@ export default class TaskNotesPlugin extends Plugin {
 		this.viewStateManager = new ViewStateManager(this.app, this);
 		this.projectSubtasksService = new ProjectSubtasksService(this);
 		this.expandedProjectsService = new ExpandedProjectsService(this);
+		this.autoArchiveService = new AutoArchiveService(this);
 		this.dragDropManager = new DragDropManager(this);
 		this.migrationService = new MigrationService(this.app);
 		this.statusBarService = new StatusBarService(this);
 		this.notificationService = new NotificationService(this);
+
+		// Connect AutoArchiveService to TaskService for status-based auto-archiving
+		this.taskService.setAutoArchiveService(this.autoArchiveService);
 
 		// Note: View registration and heavy operations moved to onLayoutReady
 
@@ -399,6 +405,9 @@ export default class TaskNotesPlugin extends Plugin {
 
 			// Initialize notification service
 			await this.notificationService.initialize();
+
+			// Initialize and start auto-archive service
+			await this.autoArchiveService.start();
 
 			// Initialize date change detection to refresh tasks at midnight
 			this.setupDateChangeDetection();
@@ -861,6 +870,11 @@ export default class TaskNotesPlugin extends Plugin {
 		// Clean up FilterService
 		if (this.filterService) {
 			this.filterService.cleanup();
+		}
+
+		// Clean up AutoArchiveService
+		if (this.autoArchiveService) {
+			this.autoArchiveService.stop();
 		}
 
 		// Clean up ICS subscription service
