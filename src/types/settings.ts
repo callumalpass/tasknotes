@@ -162,6 +162,10 @@ export interface ICSIntegrationSettings {
 	// Filename settings for ICS event notes
 	icsNoteFilenameFormat: 'title' | 'zettel' | 'timestamp' | 'custom';
 	customICSNoteFilenameTemplate: string; // Template for custom format
+	// Automatic export settings
+	enableAutoExport: boolean;       // Whether to automatically export tasks to ICS file
+	autoExportPath: string;          // Path where the ICS file should be saved
+	autoExportInterval: number;      // Export interval in minutes (default: 60)
 }
 
 export interface CalendarViewSettings {

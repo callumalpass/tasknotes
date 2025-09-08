@@ -410,6 +410,167 @@ export class CalendarExportService {
     }
 
     /**
+     * Fold ICS lines to comply with RFC 5545 (max 75 octets per line)
+     */
+    private static foldICSLines(content: string): string {
+        const lines = content.split('\r\n');
+        const foldedLines: string[] = [];
+        
+        lines.forEach(line => {
+            if (line.length <= 75) {
+                foldedLines.push(line);
+            } else {
+                // Fold long lines by breaking at 75 characters and continuing with space
+                let remainingLine = line;
+                while (remainingLine.length > 75) {
+                    foldedLines.push(remainingLine.substring(0, 75));
+                    remainingLine = ' ' + remainingLine.substring(75); // Continue with space
+                }
+                if (remainingLine.length > 0) {
+                    foldedLines.push(remainingLine);
+                }
+            }
+        });
+        
+        return foldedLines.join('\r\n');
+    }
+
+    /**
+     * Generate ICS content for multiple tasks
+     */
+    static generateMultipleTasksICSContent(tasks: TaskInfo[]): string {
+        const now = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+        
+        const lines = [
+            'BEGIN:VCALENDAR',
+            'VERSION:2.0',
+            'PRODID:-//TaskNotes//EN',
+            'CALSCALE:GREGORIAN'
+        ];
+
+        // Add each task as a VEVENT
+        tasks.forEach((task, index) => {
+            const uid = `${task.path.replace(/[^a-zA-Z0-9]/g, '-')}-${index}-${Date.now()}@tasknotes`;
+            
+            lines.push('BEGIN:VEVENT');
+            lines.push(`UID:${uid}`);
+            lines.push(`DTSTAMP:${now}`);
+            
+            // Add title
+            lines.push(`SUMMARY:${this.escapeICSText(task.title)}`);
+            
+            // Add dates - ensure every event has a DTSTART (required by ICS standard)
+            let { startICS, endICS } = this.getICSDateFormat(task);
+            
+            // If no start date, use task creation date or current date as fallback
+            if (!startICS) {
+                let fallbackDate: Date;
+                if (task.dateCreated) {
+                    // Use task creation date if available
+                    fallbackDate = new Date(task.dateCreated);
+                } else {
+                    // Fallback to current date
+                    fallbackDate = new Date();
+                }
+                startICS = this.formatDateToICS(fallbackDate);
+                
+                // Set end time to 1 hour after start for tasks without duration
+                if (!endICS) {
+                    const endDate = new Date(fallbackDate.getTime() + 60 * 60 * 1000); // +1 hour
+                    endICS = this.formatDateToICS(endDate);
+                }
+            } else if (!endICS) {
+                // If we have start but no end, add 1 hour duration
+                const startDate = this.parseICSDate(startICS);
+                const endDate = new Date(startDate.getTime() + 60 * 60 * 1000); // +1 hour
+                endICS = this.formatDateToICS(endDate);
+            }
+            
+            lines.push(`DTSTART:${startICS}`);
+            lines.push(`DTEND:${endICS}`);
+            
+            // Add description
+            const description = this.buildDescription(task);
+            if (description) {
+                lines.push(`DESCRIPTION:${this.escapeICSText(description)}`);
+            }
+            
+            // Add location from contexts
+            if (task.contexts && task.contexts.length > 0) {
+                lines.push(`LOCATION:${this.escapeICSText(task.contexts.join(', '))}`);
+            }
+            
+            // Add categories from tags
+            if (task.tags && task.tags.length > 0) {
+                lines.push(`CATEGORIES:${task.tags.map(t => this.escapeICSText(t)).join(',')}`);
+            }
+            
+            // Map priority (ICS uses 1-9, with 1 being highest)
+            if (task.priority) {
+                const priorityMap: Record<string, string> = {
+                    'highest': '1',
+                    'high': '3',
+                    'medium': '5',
+                    'low': '7',
+                    'lowest': '9'
+                };
+                const icsPriority = priorityMap[task.priority] || '5';
+                lines.push(`PRIORITY:${icsPriority}`);
+            }
+            
+            // Map status
+            if (task.status) {
+                const statusMap: Record<string, string> = {
+                    'done': 'COMPLETED',
+                    'in-progress': 'IN-PROCESS',
+                    'todo': 'NEEDS-ACTION',
+                    'cancelled': 'CANCELLED'
+                };
+                const icsStatus = statusMap[task.status] || 'NEEDS-ACTION';
+                lines.push(`STATUS:${icsStatus}`);
+            }
+            
+            lines.push('END:VEVENT');
+        });
+        
+        lines.push('END:VCALENDAR');
+        
+        // Join lines and ensure proper ICS line folding (max 75 chars per line)
+        return this.foldICSLines(lines.join('\r\n'));
+    }
+
+    /**
+     * Download ICS file for all tasks
+     */
+    static downloadAllTasksICSFile(tasks: TaskInfo[]): void {
+        try {
+            if (!tasks || tasks.length === 0) {
+                new Notice('No tasks found to export');
+                return;
+            }
+
+            const icsContent = this.generateMultipleTasksICSContent(tasks);
+            const blob = new Blob([icsContent], { type: 'text/calendar' });
+            const url = URL.createObjectURL(blob);
+            
+            const date = new Date().toISOString().split('T')[0];
+            const filename = `tasknotes-all-tasks-${date}.ics`;
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            
+            URL.revokeObjectURL(url);
+            
+            new Notice(`Downloaded ${filename} with ${tasks.length} task${tasks.length === 1 ? '' : 's'}`);
+        } catch (error) {
+            console.error('Failed to download all tasks ICS file:', error);
+            new Notice('Failed to download calendar file');
+        }
+    }
+
+    /**
      * Download ICS file for a task
      */
     static downloadICSFile(task: TaskInfo): void {

@@ -1399,7 +1399,10 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 							defaultNoteTemplate: '',
 							defaultNoteFolder: '',
 							icsNoteFilenameFormat: 'title',
-							customICSNoteFilenameTemplate: '{title}'
+							customICSNoteFilenameTemplate: '{title}',
+							enableAutoExport: false,
+							autoExportPath: 'tasknotes-calendar.ics',
+							autoExportInterval: 60
 						};
 					}
 					this.plugin.settings.icsIntegration.defaultNoteTemplate = value;
@@ -1418,7 +1421,10 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 							defaultNoteTemplate: '',
 							defaultNoteFolder: '',
 							icsNoteFilenameFormat: 'title',
-							customICSNoteFilenameTemplate: '{title}'
+							customICSNoteFilenameTemplate: '{title}',
+							enableAutoExport: false,
+							autoExportPath: 'tasknotes-calendar.ics',
+							autoExportInterval: 60
 						};
 					}
 					this.plugin.settings.icsIntegration.defaultNoteFolder = value;
@@ -1445,7 +1451,10 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 							defaultNoteTemplate: '',
 							defaultNoteFolder: '',
 							icsNoteFilenameFormat: 'title',
-							customICSNoteFilenameTemplate: '{title}'
+							customICSNoteFilenameTemplate: '{title}',
+							enableAutoExport: false,
+							autoExportPath: 'tasknotes-calendar.ics',
+							autoExportInterval: 60
 						};
 					}
 					this.plugin.settings.icsIntegration.icsNoteFilenameFormat = value;
@@ -1468,7 +1477,10 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 									defaultNoteTemplate: '',
 									defaultNoteFolder: '',
 									icsNoteFilenameFormat: 'title',
-									customICSNoteFilenameTemplate: '{title}'
+									customICSNoteFilenameTemplate: '{title}',
+									enableAutoExport: false,
+									autoExportPath: 'tasknotes-calendar.ics',
+									autoExportInterval: 60
 								};
 							}
 							this.plugin.settings.icsIntegration.customICSNoteFilenameTemplate = value;

@@ -67,6 +67,7 @@ import { StatusBarService } from './services/StatusBarService';
 import { ProjectSubtasksService } from './services/ProjectSubtasksService';
 import { ExpandedProjectsService } from './services/ExpandedProjectsService';
 import { NotificationService } from './services/NotificationService';
+import { AutoExportService } from './services/AutoExportService';
 // Type-only import for HTTPAPIService (actual import is dynamic on desktop only)
 import type { HTTPAPIService } from './services/HTTPAPIService';
 
@@ -145,6 +146,9 @@ export default class TaskNotesPlugin extends Plugin {
 
 	// ICS note service for creating notes/tasks from ICS events
 	icsNoteService: ICSNoteService;
+
+	// Auto export service for continuous ICS export
+	autoExportService: AutoExportService;
 
 	// Migration service
 	migrationService: MigrationService;
@@ -447,6 +451,10 @@ export default class TaskNotesPlugin extends Plugin {
 
 				// Initialize ICS note service
 				this.icsNoteService = new ICSNoteService(this);
+
+				// Initialize auto export service
+				this.autoExportService = new AutoExportService(this);
+				this.autoExportService.start();
 
 				// Initialize HTTP API service if enabled (desktop only)
 				await this.initializeHTTPAPI();
@@ -882,6 +890,11 @@ export default class TaskNotesPlugin extends Plugin {
 			this.icsSubscriptionService.destroy();
 		}
 
+		// Clean up auto export service
+		if (this.autoExportService) {
+			this.autoExportService.destroy();
+		}
+
 		// Clean up TaskLinkDetectionService
 		if (this.taskLinkDetectionService) {
 			this.taskLinkDetectionService.cleanup();
@@ -1265,6 +1278,22 @@ export default class TaskNotesPlugin extends Plugin {
 			name: 'Refresh cache',
 			callback: async () => {
 				await this.refreshCache();
+			}
+		});
+		
+		// Export commands
+		this.addCommand({
+			id: 'export-all-tasks-ics',
+			name: 'Export all tasks as ICS file',
+			callback: async () => {
+				try {
+					const allTasks = await this.cacheManager.getAllTasks();
+					const { CalendarExportService } = await import('./services/CalendarExportService');
+					CalendarExportService.downloadAllTasksICSFile(allTasks);
+				} catch (error) {
+					console.error('Error exporting all tasks as ICS:', error);
+					new Notice('Failed to export tasks as ICS file');
+				}
 			}
 		});
 
