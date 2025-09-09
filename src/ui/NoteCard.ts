@@ -88,8 +88,10 @@ export function createNoteCard(note: NoteInfo, plugin: TaskNotesPlugin, options:
     
     // Other metadata (date, path) if needed
     if (opts.showCreatedDate && note.createdDate) {
+        const timeFormat = plugin.settings.calendarViewSettings.timeFormat;
+        const dateFormat = timeFormat === '12' ? 'MMM d, yyyy h:mm a' : 'MMM d, yyyy HH:mm';
         const dateStr = note.createdDate.indexOf('T') > 0 
-            ? formatDateForDisplay(note.createdDate, 'MMM d, yyyy h:mm a') 
+            ? formatDateForDisplay(note.createdDate, dateFormat) 
             : note.createdDate;
         contentContainer.createDiv({ 
             cls: 'note-card__metadata',
@@ -168,8 +170,10 @@ export function updateNoteCard(element: HTMLElement, note: NoteInfo, plugin: Tas
     // Update created date
     const dateEl = element.querySelector('.note-card__metadata') as HTMLElement;
     if (dateEl && opts.showCreatedDate && note.createdDate) {
+        const timeFormat = plugin.settings.calendarViewSettings.timeFormat;
+        const dateFormat = timeFormat === '12' ? 'MMM d, yyyy h:mm a' : 'MMM d, yyyy HH:mm';
         const dateStr = note.createdDate.indexOf('T') > 0 
-            ? formatDateForDisplay(note.createdDate, 'MMM d, yyyy h:mm a') 
+            ? formatDateForDisplay(note.createdDate, dateFormat) 
             : note.createdDate;
         dateEl.textContent = `Created: ${dateStr}`;
     }

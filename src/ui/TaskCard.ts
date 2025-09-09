@@ -8,7 +8,8 @@ import {
     isTodayTimeAware,
     isOverdueTimeAware,
     getDatePart,
-    getTimePart
+    getTimePart,
+    createTimeFormatHelper
 } from '../utils/dateUtils';
 import { DateContextMenu } from '../components/DateContextMenu';
 import { PriorityContextMenu } from '../components/PriorityContextMenu';
@@ -312,24 +313,24 @@ const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
             element.textContent = `Recurring: ${getRecurrenceDisplayText(value)}`;
         }
     },
-    'completedDate': (element, value) => {
+    'completedDate': (element, value, task, plugin) => {
         if (typeof value === 'string') {
             element.textContent = `Completed: ${formatDateTimeForDisplay(value, {
-                dateFormat: 'MMM d', timeFormat: 'h:mm a', showTime: false
+                dateFormat: 'MMM d', showTime: false, userTimeFormat: plugin.settings.calendarViewSettings.timeFormat
             })}`;
         }
     },
-    'file.ctime': (element, value) => {
+    'file.ctime': (element, value, task, plugin) => {
         if (typeof value === 'string') {
             element.textContent = `Created: ${formatDateTimeForDisplay(value, {
-                dateFormat: 'MMM d', timeFormat: 'h:mm a', showTime: false
+                dateFormat: 'MMM d', showTime: false, userTimeFormat: plugin.settings.calendarViewSettings.timeFormat
             })}`;
         }
     },
-    'file.mtime': (element, value) => {
+    'file.mtime': (element, value, task, plugin) => {
         if (typeof value === 'string') {
             element.textContent = `Modified: ${formatDateTimeForDisplay(value, {
-                dateFormat: 'MMM d', timeFormat: 'h:mm a', showTime: false
+                dateFormat: 'MMM d', showTime: false, userTimeFormat: plugin.settings.calendarViewSettings.timeFormat
             })}`;
         }
     }
@@ -616,26 +617,27 @@ function renderDueDateProperty(element: HTMLElement, due: string, task: TaskInfo
     const isDueToday = isTodayTimeAware(due);
     const isDueOverdue = isOverdueTimeAware(due);
     
+    const userTimeFormat = plugin.settings.calendarViewSettings.timeFormat;
     let dueDateText = '';
     if (isDueToday) {
         const timeDisplay = formatDateTimeForDisplay(due, {
             dateFormat: '',
-            timeFormat: 'h:mm a',
-            showTime: true
+            showTime: true,
+            userTimeFormat
         });
         dueDateText = timeDisplay.trim() === '' ? 'Due: Today' : `Due: Today at ${timeDisplay}`;
     } else if (isDueOverdue) {
         const display = formatDateTimeForDisplay(due, {
             dateFormat: 'MMM d',
-            timeFormat: 'h:mm a',
-            showTime: true
+            showTime: true,
+            userTimeFormat
         });
         dueDateText = `Due: ${display} (overdue)`;
     } else {
         const display = formatDateTimeForDisplay(due, {
             dateFormat: 'MMM d',
-            timeFormat: 'h:mm a',
-            showTime: true
+            showTime: true,
+            userTimeFormat
         });
         dueDateText = `Due: ${display}`;
     }
@@ -652,26 +654,27 @@ function renderScheduledDateProperty(element: HTMLElement, scheduled: string, ta
     const isScheduledToday = isTodayTimeAware(scheduled);
     const isScheduledPast = isOverdueTimeAware(scheduled);
     
+    const userTimeFormat = plugin.settings.calendarViewSettings.timeFormat;
     let scheduledDateText = '';
     if (isScheduledToday) {
         const timeDisplay = formatDateTimeForDisplay(scheduled, {
             dateFormat: '',
-            timeFormat: 'h:mm a',
-            showTime: true
+            showTime: true,
+            userTimeFormat
         });
         scheduledDateText = timeDisplay.trim() === '' ? 'Scheduled: Today' : `Scheduled: Today at ${timeDisplay}`;
     } else if (isScheduledPast) {
         const display = formatDateTimeForDisplay(scheduled, {
             dateFormat: 'MMM d',
-            timeFormat: 'h:mm a',
-            showTime: true
+            showTime: true,
+            userTimeFormat
         });
         scheduledDateText = `Scheduled: ${display} (past)`;
     } else {
         const display = formatDateTimeForDisplay(scheduled, {
             dateFormat: 'MMM d',
-            timeFormat: 'h:mm a',
-            showTime: true
+            showTime: true,
+            userTimeFormat
         });
         scheduledDateText = `Scheduled: ${display}`;
     }

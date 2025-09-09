@@ -1788,7 +1788,9 @@ export class AdvancedCalendarView extends ItemView {
             
             
             // Show success feedback
-            new Notice(`Task "${task.title}" scheduled for ${format(dropDate, dropInfo.allDay ? 'MMM d, yyyy' : 'MMM d, yyyy h:mm a')}`);
+            const timeFormat = this.plugin.settings.calendarViewSettings.timeFormat;
+            const dateFormat = dropInfo.allDay ? 'MMM d, yyyy' : (timeFormat === '12' ? 'MMM d, yyyy h:mm a' : 'MMM d, yyyy HH:mm');
+            new Notice(`Task "${task.title}" scheduled for ${format(dropDate, dateFormat)}`);
             
             // Remove any event that FullCalendar might have created from the drop
             if (dropInfo.draggedEl) {
