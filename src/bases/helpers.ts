@@ -1,5 +1,6 @@
 import TaskNotesPlugin from '../main';
 import { TaskInfo } from '../types';
+import { setIcon } from 'obsidian';
 
 export interface BasesDataItem {
   key?: string;
@@ -314,6 +315,185 @@ async function renderAllTasksAsync(
 /**
  * Render a raw Bases data item for debugging/inspection
  */
+/**
+ * Show performance warning dialog for large datasets
+ */
+export async function showPerformanceWarning(taskCount: number): Promise<boolean> {
+  return new Promise((resolve) => {
+    // Create modal overlay
+    const overlay = document.createElement('div');
+    overlay.className = 'tn-performance-warning-overlay';
+    overlay.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      backdrop-filter: blur(2px);
+    `;
+
+    // Create modal content
+    const modal = document.createElement('div');
+    modal.className = 'tn-performance-warning-modal';
+    modal.style.cssText = `
+      background: var(--background-primary);
+      border: 1px solid var(--background-modifier-border);
+      border-radius: 8px;
+      padding: 24px;
+      max-width: 480px;
+      margin: 20px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    `;
+
+    // Warning icon and title
+    const header = document.createElement('div');
+    header.style.cssText = 'display: flex; align-items: center; margin-bottom: 16px;';
+    
+    // Create warning icon using Lucide
+    const iconEl = document.createElement('div');
+    iconEl.style.cssText = 'margin-right: 12px; color: var(--text-warning); display: flex; align-items: center;';
+    setIcon(iconEl, 'alert-triangle');
+    header.appendChild(iconEl);
+    
+    // Create title text
+    const titleEl = document.createElement('div');
+    titleEl.style.cssText = 'font-size: 18px; font-weight: 600; color: var(--text-normal);';
+    titleEl.textContent = 'Performance Warning';
+    header.appendChild(titleEl);
+    modal.appendChild(header);
+
+    // Warning message
+    const message = document.createElement('div');
+    message.style.cssText = 'margin-bottom: 20px; line-height: 1.5; color: var(--text-normal);';
+    
+    // Create intro paragraph
+    const intro = document.createElement('p');
+    intro.style.cssText = 'margin: 0 0 12px 0;';
+    intro.textContent = 'This query returned ';
+    
+    const taskCountStrong = document.createElement('strong');
+    taskCountStrong.textContent = taskCount.toLocaleString() + ' tasks';
+    intro.appendChild(taskCountStrong);
+    
+    const introEnd = document.createTextNode(', which may cause performance issues:');
+    intro.appendChild(introEnd);
+    message.appendChild(intro);
+    
+    // Create issues list
+    const issuesList = document.createElement('ul');
+    issuesList.style.cssText = 'margin: 0 0 12px 20px; padding: 0;';
+    
+    const issues = ['Slow rendering and UI freezing', 'Decreased responsiveness'];
+    issues.forEach(issue => {
+      const li = document.createElement('li');
+      li.textContent = issue;
+      issuesList.appendChild(li);
+    });
+    message.appendChild(issuesList);
+    
+    // Create advice paragraph
+    const advice = document.createElement('p');
+    advice.style.cssText = 'margin: 0; font-weight: 500;';
+    advice.textContent = 'Consider refining your filter query to show fewer results, or continue if you need to see all tasks.';
+    message.appendChild(advice);
+    
+    modal.appendChild(message);
+
+    // Buttons
+    const buttonContainer = document.createElement('div');
+    buttonContainer.style.cssText = 'display: flex; gap: 12px; justify-content: flex-end;';
+
+    const cancelButton = document.createElement('button');
+    cancelButton.textContent = 'Cancel';
+    cancelButton.style.cssText = `
+      padding: 8px 16px;
+      border: 1px solid var(--background-modifier-border);
+      background: var(--background-secondary);
+      color: var(--text-normal);
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    `;
+
+    const continueButton = document.createElement('button');
+    continueButton.textContent = `Load All ${taskCount.toLocaleString()} Tasks`;
+    continueButton.style.cssText = `
+      padding: 8px 16px;
+      border: none;
+      background: var(--interactive-accent);
+      color: var(--text-on-accent);
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+    `;
+
+    // Button hover effects
+    cancelButton.addEventListener('mouseenter', () => {
+      cancelButton.style.background = 'var(--background-modifier-hover)';
+    });
+    cancelButton.addEventListener('mouseleave', () => {
+      cancelButton.style.background = 'var(--background-secondary)';
+    });
+
+    continueButton.addEventListener('mouseenter', () => {
+      continueButton.style.opacity = '0.9';
+    });
+    continueButton.addEventListener('mouseleave', () => {
+      continueButton.style.opacity = '1';
+    });
+
+    // Event handlers
+    const cleanup = () => {
+      overlay.remove();
+    };
+
+    cancelButton.addEventListener('click', () => {
+      cleanup();
+      resolve(false);
+    });
+
+    continueButton.addEventListener('click', () => {
+      cleanup();
+      resolve(true);
+    });
+
+    // Close on overlay click
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) {
+        cleanup();
+        resolve(false);
+      }
+    });
+
+    // Close on Escape key
+    const handleKeydown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        cleanup();
+        document.removeEventListener('keydown', handleKeydown);
+        resolve(false);
+      }
+    };
+    document.addEventListener('keydown', handleKeydown);
+
+    buttonContainer.appendChild(cancelButton);
+    buttonContainer.appendChild(continueButton);
+    modal.appendChild(buttonContainer);
+    overlay.appendChild(modal);
+    
+    // Add to document
+    document.body.appendChild(overlay);
+
+    // Focus the continue button by default
+    setTimeout(() => continueButton.focus(), 100);
+  });
+}
+
 export function renderBasesDataItem(container: HTMLElement, item: BasesDataItem, index: number): void {
   const itemEl = document.createElement('div');
   itemEl.className = 'tn-bases-data-item';

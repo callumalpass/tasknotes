@@ -5,9 +5,10 @@
  * It handles formula computation, data transformation, and rendering of TaskNotes items in Bases views.
  */
 import TaskNotesPlugin from '../main';
-import { BasesDataItem, identifyTaskNotesFromBasesData, getBasesVisibleProperties } from './helpers';
+import { BasesDataItem, identifyTaskNotesFromBasesData, getBasesVisibleProperties, showPerformanceWarning } from './helpers';
 import { TaskInfo } from '../types';
 import { createTaskCard, updateTaskCard } from '../ui/TaskCard';
+import { setIcon } from 'obsidian';
 
 export interface BasesContainerLike {
   results?: Map<any, any>;
@@ -19,6 +20,7 @@ export interface BasesContainerLike {
 export interface ViewConfig {
   errorPrefix: string;
 }
+
 
 export function buildTasknotesBaseViewFactory(plugin: TaskNotesPlugin, config: ViewConfig) {
   return function tasknotesBaseViewFactory(basesContainer: BasesContainerLike) {
@@ -121,6 +123,47 @@ export function buildTasknotesBaseViewFactory(plugin: TaskNotesPlugin, config: V
         const taskNotes = await identifyTaskNotesFromBasesData(dataItems, plugin, undefined, renderCancellation);
         
         if (renderCancellation.cancelled) return;
+
+        // Performance warning for large datasets
+        if (taskNotes.length > 1000) {
+          const shouldContinue = await showPerformanceWarning(taskNotes.length);
+          if (!shouldContinue || renderCancellation.cancelled) {
+            // Show partial message
+            itemsContainer.innerHTML = '';
+            const partialEl = document.createElement('div');
+            partialEl.className = 'tn-bases-partial';
+            partialEl.style.cssText = 'padding: 20px; text-align: center; color: var(--text-muted);';
+            
+            // Create icon and title
+            const titleDiv = document.createElement('div');
+            titleDiv.style.cssText = 'margin-bottom: 8px; display: flex; align-items: center; justify-content: center; gap: 8px;';
+            
+            const iconEl = document.createElement('div');
+            iconEl.style.cssText = 'color: var(--text-warning); display: flex; align-items: center;';
+            setIcon(iconEl, 'alert-triangle');
+            titleDiv.appendChild(iconEl);
+            
+            const titleText = document.createElement('span');
+            titleText.textContent = 'Performance limit reached';
+            titleDiv.appendChild(titleText);
+            partialEl.appendChild(titleDiv);
+            
+            // Create description
+            const description = document.createElement('div');
+            description.style.cssText = 'font-size: 0.9em;';
+            description.textContent = `Found ${taskNotes.length} tasks, but loading was cancelled to prevent performance issues.`;
+            partialEl.appendChild(description);
+            
+            // Create advice
+            const advice = document.createElement('div');
+            advice.style.cssText = 'font-size: 0.9em; margin-top: 8px;';
+            advice.textContent = 'Consider refining your query to show fewer results.';
+            partialEl.appendChild(advice);
+            
+            itemsContainer.appendChild(partialEl);
+            return;
+          }
+        }
 
         if (taskNotes.length === 0) {
             itemsContainer.innerHTML = '';
