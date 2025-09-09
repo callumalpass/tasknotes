@@ -71,6 +71,7 @@ export function createTaskInfoFromBasesData(basesItem: BasesDataItem, plugin?: T
 
 /**
  * Identify TaskNotes from Bases data by converting all items to TaskInfo
+ * Uses batch processing with async yielding to prevent UI freezing
  */
 export async function identifyTaskNotesFromBasesData(
   dataItems: BasesDataItem[],
@@ -79,15 +80,28 @@ export async function identifyTaskNotesFromBasesData(
 ): Promise<TaskInfo[]> {
   const taskInfoConverter = toTaskInfo || createTaskInfoFromBasesData;
   const taskNotes: TaskInfo[] = [];
-  for (const item of dataItems) {
-    if (!item?.path) continue;
-    try {
-      const taskInfo = taskInfoConverter(item, plugin);
-      if (taskInfo) taskNotes.push(taskInfo);
-    } catch (error) {
-      console.warn('[TaskNotes][BasesPOC] Error converting Bases item to TaskInfo:', error);
+  
+  // Process in batches to avoid blocking the UI
+  const batchSize = 50;
+  for (let i = 0; i < dataItems.length; i += batchSize) {
+    const batch = dataItems.slice(i, i + batchSize);
+    
+    for (const item of batch) {
+      if (!item?.path) continue;
+      try {
+        const taskInfo = taskInfoConverter(item, plugin);
+        if (taskInfo) taskNotes.push(taskInfo);
+      } catch (error) {
+        console.warn('[TaskNotes][BasesPOC] Error converting Bases item to TaskInfo:', error);
+      }
+    }
+    
+    // Yield control to prevent UI freezing using requestAnimationFrame for smoother performance
+    if (i + batchSize < dataItems.length) {
+      await new Promise(resolve => requestAnimationFrame(resolve));
     }
   }
+  
   return taskNotes;
 }
 
@@ -163,12 +177,41 @@ export async function renderTaskNotesInBasesView(
   plugin: TaskNotesPlugin,
   basesContainer?: any
 ): Promise<void> {
-  const { createTaskCard } = await import('../ui/TaskCard');
 
   const taskListEl = document.createElement('div');
   taskListEl.className = 'tn-bases-tasknotes-list';
   taskListEl.style.cssText = 'display: flex; flex-direction: column; gap: 1px;';
   container.appendChild(taskListEl);
+
+  // Show loading indicator for large datasets
+  let loadingIndicator: HTMLElement | null = null;
+  if (taskNotes.length > 200) {
+    loadingIndicator = container.createEl('div', {
+      cls: 'tn-bases-loading',
+      text: `Loading ${taskNotes.length} tasks...`
+    });
+    loadingIndicator.style.cssText = 'padding: 20px; text-align: center; color: var(--text-muted);';
+  }
+
+  // Render all tasks asynchronously with smooth batching
+  await renderAllTasksAsync(taskListEl, taskNotes, plugin, basesContainer);
+
+  // Remove loading indicator
+  if (loadingIndicator) {
+    loadingIndicator.remove();
+  }
+}
+
+/**
+ * Render all tasks asynchronously with smooth batching - simpler approach
+ */
+async function renderAllTasksAsync(
+  container: HTMLElement,
+  taskNotes: TaskInfo[],
+  plugin: TaskNotesPlugin,
+  basesContainer: any
+): Promise<void> {
+  const { createTaskCard } = await import('../ui/TaskCard');
 
   // Get visible properties from Bases
   let visibleProperties: string[] | undefined;
@@ -184,50 +227,35 @@ export async function renderTaskNotesInBasesView(
     const basesVisibleProperties = getBasesVisibleProperties(basesContainer);
     
     if (basesVisibleProperties.length > 0) {
-      // Extract just the property IDs for TaskCard
-      visibleProperties = basesVisibleProperties.map(p => p.id);
-      
-      // Map common property names to TaskNotes property names
-      visibleProperties = visibleProperties.map(propId => {
+      visibleProperties = basesVisibleProperties.map(p => p.id).map(propId => {
         let mappedId = propId;
         
-        // First, try reverse field mapping for user's custom property names
+        // Apply field mappings (same logic as before)
         const internalFieldName = plugin.fieldMapper?.fromUserField(propId);
         if (internalFieldName) {
-          // User has a custom field mapping for this property
-          // Map it to the internal TaskNotes property name for proper rendering
           mappedId = internalFieldName;
         }
-        // Handle dotted properties like task.due -> due
         else if (propId.startsWith('task.')) {
           mappedId = propId.substring(5);
         }
-        // Handle note properties like note.projects -> projects
         else if (propId.startsWith('note.')) {
           const stripped = propId.substring(5);
-          
-          // Try reverse field mapping on the stripped property name
           const strippedInternalFieldName = plugin.fieldMapper?.fromUserField(stripped);
           if (strippedInternalFieldName) {
             mappedId = strippedInternalFieldName;
           }
-          // Map specific note properties to TaskNotes property names
           else if (stripped === 'dateCreated') mappedId = 'dateCreated';
           else if (stripped === 'dateModified') mappedId = 'dateModified';
           else if (stripped === 'completedDate') mappedId = 'completedDate';
-          else mappedId = stripped; // projects, contexts, tags, and any other arbitrary properties
+          else mappedId = stripped;
         }
-        // Handle file properties
         else if (propId === 'file.ctime') mappedId = 'dateCreated';
         else if (propId === 'file.mtime') mappedId = 'dateModified';
-        else if (propId === 'file.name') mappedId = 'title'; // Map file name to title
-        // Handle formula properties like formula.TESTST -> formula.TESTST (keep as-is for now)
+        else if (propId === 'file.name') mappedId = 'title';
         else if (propId.startsWith('formula.')) {
-          mappedId = propId; // Keep the full formula.TESTST format for property lookup
+          mappedId = propId;
         }
         
-        // Pass through arbitrary properties unchanged
-        // These will be handled by the generic property renderer in TaskCard
         return mappedId;
       });
     }
@@ -240,15 +268,31 @@ export async function renderTaskNotesInBasesView(
     ];
   }
 
-  for (const taskInfo of taskNotes) {
-    try {
-      const taskCard = createTaskCard(taskInfo, plugin, visibleProperties, cardOptions);
-      taskListEl.appendChild(taskCard);
-    } catch (error) {
-      console.warn('[TaskNotes][BasesPOC] Error creating task card:', error);
+  // Render all tasks in smooth batches
+  const batchSize = 25; // Good balance of speed vs smoothness
+  for (let i = 0; i < taskNotes.length; i += batchSize) {
+    const batch = taskNotes.slice(i, i + batchSize);
+    const fragment = document.createDocumentFragment();
+    
+    for (const taskInfo of batch) {
+      try {
+        const taskCard = createTaskCard(taskInfo, plugin, visibleProperties, cardOptions);
+        fragment.appendChild(taskCard);
+      } catch (error) {
+        console.warn('[TaskNotes][AsyncRender] Error creating task card:', error);
+      }
+    }
+    
+    // Add the entire batch at once
+    container.appendChild(fragment);
+    
+    // Yield control using requestAnimationFrame for smooth rendering
+    if (i + batchSize < taskNotes.length) {
+      await new Promise(resolve => requestAnimationFrame(resolve));
     }
   }
 }
+
 
 /**
  * Render a raw Bases data item for debugging/inspection
