@@ -168,6 +168,24 @@ export function renderAppearanceTab(container: HTMLElement, plugin: TaskNotesPlu
         }
     }
 
+    // Display Formatting Section
+    createSectionHeader(container, 'Display Formatting');
+    createHelpText(container, 'Configure how dates, times, and other data are displayed across the plugin.');
+
+    createDropdownSetting(container, {
+        name: 'Time format',
+        desc: 'Display time in 12-hour or 24-hour format throughout the plugin',
+        options: [
+            { value: '12', label: '12-hour (AM/PM)' },
+            { value: '24', label: '24-hour' }
+        ],
+        getValue: () => plugin.settings.calendarViewSettings.timeFormat,
+        setValue: async (value: string) => {
+            plugin.settings.calendarViewSettings.timeFormat = value as '12' | '24';
+            save();
+        }
+    });
+
     // Calendar View Section
     createSectionHeader(container, 'Calendar View');
     createHelpText(container, 'Customize the appearance and behavior of the calendar view.');
@@ -225,19 +243,6 @@ export function renderAppearanceTab(container: HTMLElement, plugin: TaskNotesPlu
         }
     });
 
-    createDropdownSetting(container, {
-        name: 'Time format',
-        desc: 'Display time in 12-hour or 24-hour format',
-        options: [
-            { value: '12', label: '12-hour (AM/PM)' },
-            { value: '24', label: '24-hour' }
-        ],
-        getValue: () => plugin.settings.calendarViewSettings.timeFormat,
-        setValue: async (value: string) => {
-            plugin.settings.calendarViewSettings.timeFormat = value as '12' | '24';
-            save();
-        }
-    });
 
     createToggleSetting(container, {
         name: 'Show weekends',
