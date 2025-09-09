@@ -76,7 +76,8 @@ export function createTaskInfoFromBasesData(basesItem: BasesDataItem, plugin?: T
 export async function identifyTaskNotesFromBasesData(
   dataItems: BasesDataItem[],
   plugin?: TaskNotesPlugin,
-  toTaskInfo?: (item: BasesDataItem, plugin?: TaskNotesPlugin) => TaskInfo | null
+  toTaskInfo?: (item: BasesDataItem, plugin?: TaskNotesPlugin) => TaskInfo | null,
+  cancellation?: { cancelled: boolean }
 ): Promise<TaskInfo[]> {
   const taskInfoConverter = toTaskInfo || createTaskInfoFromBasesData;
   const taskNotes: TaskInfo[] = [];
@@ -84,6 +85,12 @@ export async function identifyTaskNotesFromBasesData(
   // Process in batches to avoid blocking the UI
   const batchSize = 50;
   for (let i = 0; i < dataItems.length; i += batchSize) {
+    // Check for cancellation before processing each batch
+    if (cancellation?.cancelled) {
+      console.debug('[TaskNotes][Helpers] Task identification cancelled');
+      return [];
+    }
+    
     const batch = dataItems.slice(i, i + batchSize);
     
     for (const item of batch) {
@@ -175,7 +182,8 @@ export async function renderTaskNotesInBasesView(
   container: HTMLElement,
   taskNotes: TaskInfo[],
   plugin: TaskNotesPlugin,
-  basesContainer?: any
+  basesContainer?: any,
+  cancellation?: { cancelled: boolean } | null
 ): Promise<void> {
 
   const taskListEl = document.createElement('div');
@@ -194,7 +202,7 @@ export async function renderTaskNotesInBasesView(
   }
 
   // Render all tasks asynchronously with smooth batching
-  await renderAllTasksAsync(taskListEl, taskNotes, plugin, basesContainer);
+  await renderAllTasksAsync(taskListEl, taskNotes, plugin, basesContainer, cancellation);
 
   // Remove loading indicator
   if (loadingIndicator) {
@@ -209,7 +217,8 @@ async function renderAllTasksAsync(
   container: HTMLElement,
   taskNotes: TaskInfo[],
   plugin: TaskNotesPlugin,
-  basesContainer: any
+  basesContainer: any,
+  cancellation?: { cancelled: boolean } | null
 ): Promise<void> {
   const { createTaskCard } = await import('../ui/TaskCard');
 
@@ -268,9 +277,17 @@ async function renderAllTasksAsync(
     ];
   }
 
-  // Render all tasks in smooth batches
-  const batchSize = 25; // Good balance of speed vs smoothness
+  // Render all tasks in very small batches for less blocking
+  const batchSize = taskNotes.length > 1000 ? 5 : 10; // Smaller batches for large datasets
+  const yieldDelay = taskNotes.length > 1000 ? 50 : 16; // Longer delays for large datasets
+  
   for (let i = 0; i < taskNotes.length; i += batchSize) {
+    // Check for cancellation before processing each batch
+    if (cancellation?.cancelled) {
+      console.debug('[TaskNotes][AsyncRender] Async rendering cancelled');
+      return;
+    }
+    
     const batch = taskNotes.slice(i, i + batchSize);
     const fragment = document.createDocumentFragment();
     
@@ -286,9 +303,9 @@ async function renderAllTasksAsync(
     // Add the entire batch at once
     container.appendChild(fragment);
     
-    // Yield control using requestAnimationFrame for smooth rendering
+    // Use longer delays to be less blocking, especially for large datasets
     if (i + batchSize < taskNotes.length) {
-      await new Promise(resolve => requestAnimationFrame(resolve));
+      await new Promise(resolve => setTimeout(resolve, yieldDelay));
     }
   }
 }
