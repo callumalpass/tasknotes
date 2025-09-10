@@ -36,6 +36,11 @@
     outline: none;
 }
 
+/* Hide CodeMirror widgetBuffer img when it's adjacent to our widget and our widget is on top of note (not last-child) */
+.cm-content > .cm-line:not(:last-child):has(.project-note-subtasks) img.cm-widgetBuffer {
+    display: none !important;
+}
+
 /* Hide CodeMirror cursor when it's adjacent to our widget */
 .cm-line:has(.project-note-subtasks) .cm-cursor,
 .cm-line:has(.project-note-subtasks) + .cm-line .cm-cursor {
