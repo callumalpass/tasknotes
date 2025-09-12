@@ -79,7 +79,7 @@ export class TaskService {
             
             // Handle single project (first one if multiple) 
             const project = Array.isArray(taskData.projects) && taskData.projects.length > 0
-                ? taskData.projects[0]
+                ? taskData.projects[0].replace(/\[{2}(.*)]{2}/, '$1') //remove the brackets from links if presents
                 : '';
             processedPath = processedPath.replace(/\{\{project\}\}/g, project);
             
