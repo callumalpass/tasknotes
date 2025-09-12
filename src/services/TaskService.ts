@@ -87,7 +87,7 @@ export class TaskService {
             
             //Handle multiple projects
             const projects = Array.isArray(taskData.projects) && taskData.projects.length > 0
-                ? taskData.projects.join('/')
+                ? taskData.projects.map(project => project.replace(/\[{2}(.*)]{2}/, '$1')).join('/')
                 : '';
             processedPath = processedPath.replace(/\{\{projects\}\}/g, projects);
             
