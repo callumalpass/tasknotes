@@ -38,7 +38,9 @@ export class TaskService {
      * 
      * Supported task variables:
      * - {{context}} - First context from the task's contexts array
-     * - {{project}} - First project from the task's projects array  
+     * - {{project}} - First project from the task's projects array
+     * - {{contexts}} - All contexts joined by `/`
+     * - {{projects}} - All projects joined by `/`
      * - {{priority}} - Task priority (e.g., "high", "medium", "low")
      * - {{status}} - Task status (e.g., "todo", "in-progress", "done")
      * - {{title}} - Task title (sanitized for folder names)
@@ -82,6 +84,18 @@ export class TaskService {
                 ? taskData.projects[0].replace(/\[{2}(.*)]{2}/, '$1') //remove the brackets from links if presents
                 : '';
             processedPath = processedPath.replace(/\{\{project\}\}/g, project);
+            
+            //Handle multiple projects
+            const projects = Array.isArray(taskData.projects) && taskData.projects.length > 0
+                ? taskData.projects.map(project => project.replace(/\[{2}(.*)]{2}/, '$1')).join('/')
+                : '';
+            processedPath = processedPath.replace(/\{\{projects\}\}/g, projects);
+            
+            // Handle multiple contexts
+            const contexts = Array.isArray(taskData.contexts) && taskData.contexts.length > 0
+                ? taskData.contexts.join('/')
+                : '';
+            processedPath = processedPath.replace(/\{\{contexts\}\}/g, contexts);
             
             // Handle priority
             const priority = taskData.priority || '';
