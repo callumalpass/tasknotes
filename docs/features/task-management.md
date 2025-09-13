@@ -6,6 +6,8 @@ TaskNotes provides a system for managing tasks, which is built on the principle 
 
 You can create and edit tasks in a variety of ways. The primary method is through the **Task Creation Modal**, which can be accessed via the "Create new task" command or by clicking on dates or time slots in the calendar views. This modal provides an interface for setting all available task properties, including title, status, priority, and due dates.
 
+When creating a task, the title will be automatically sanitized to remove any characters that are forbidden in filenames.
+
 TaskNotes also supports **Natural Language Creation**, which allows you to create tasks by typing descriptions in plain English. The built-in parser can extract structured data from phrases like "Buy groceries tomorrow at 3pm @home #errands high priority."
 
 ### Auto-Suggestions in Natural Language Input
@@ -125,13 +127,22 @@ Tasks can have subtasks created directly from their context menu. When viewing a
 
 ### Template Integration
 
-Projects support template variables for automated workflows. The `{{parentNote}}` variable inserts the parent note as a properly formatted markdown link. For project organization, it's recommended to use it as a YAML list item (e.g., `project:\n  - {{parentNote}}`) to align with the projects system behavior when creating tasks from project notes through instant conversion.
+Projects support template variables for automated workflows. The `{{parentNote}}` variable inserts the parent note as a properly formatted markdown link. For project organization, it's recommended to use it as a YAML list item (e.g., `project:
+  - {{parentNote}}`) to align with the projects system behavior when creating tasks from project notes through instant conversion.
+
+## Automation
+
+### Auto-Archiving
+
+TaskNotes can automatically archive tasks when they are set to a specific status. This feature is useful for keeping your task list clean and organized.
+
+To enable auto-archiving, go to the TaskNotes settings and select the "Automation" tab. From there, you can enable the "Auto-archive tasks" option and select the status that should trigger the archive. You can also configure a timeout period, which will delay the archiving of the task for a specified amount of time.
 
 ## File Management and Templates
 
 TaskNotes provides a system for managing your task files. You can specify a **Default Tasks Folder** where all new tasks will be created, and you can choose from a variety of **Filename Generation** patterns, including title-based, timestamp-based, and Zettelkasten-style.
 
-TaskNotes also supports **Templates** for both the YAML frontmatter and the body of your task notes. You can use templates to pre-fill common values, add boilerplate text, and create a consistent structure for your tasks. Templates can also include variables, such as `{{title}}`, `{{date}}`, and `{{parentNote}}` (which inserts the parent note as a properly formatted markdown link), which will be automatically replaced with the appropriate values when a new task is created.
+TaskNotes also supports **Templates** for both the YAML frontmatter and the body of your task notes. You can use templates to pre-fill common values, add boilerplate text, and create a consistent structure for your tasks. Templates can also include variables, such as `{{title}}`, `{{date}}`, `{{contexts}}`, `{{projects}}`, and `{{parentNote}}` (which inserts the parent note as a properly formatted markdown link), which will be automatically replaced with the appropriate values when a new task is created.
 
 ## Recurring Tasks
 
@@ -167,6 +178,22 @@ Recurring tasks require:
 All recurrence rules now include DTSTART (start date and optionally time):
 - **Date-only**: `DTSTART:20250804;FREQ=DAILY` (pattern instances appear all-day)
 - **Date and time**: `DTSTART:20250804T090000Z;FREQ=DAILY` (pattern instances appear at 9:00 AM)
+
+### Recurring Task Due Date
+
+When a recurring task is completed, the scheduled date is advanced to the next occurrence. By default, the due date is not changed. However, you can enable the `Maintain due date offset in recurring tasks` setting to automatically update the due date as well.
+
+When this setting is enabled, the offset between the original scheduled date and due date is calculated. This offset is then applied to the new scheduled date to determine the new due date.
+
+For example, consider a task with the following properties:
+
+- **Scheduled Date**: 2025-01-01
+- **Due Date**: 2025-01-03
+- **Recurrence**: Every week
+
+In this case, the due date is 2 days after the scheduled date. When this task is completed, the new scheduled date will be 2025-01-08. If the `Maintain due date offset in recurring tasks` setting is enabled, the new due date will be set to 2025-01-10, preserving the 2-day offset.
+
+To enable this feature, go to the TaskNotes settings and select the "Features" tab. From there, you can enable the `Maintain due date offset in recurring tasks` option.
 
 ### Recurrence Pattern Examples
 

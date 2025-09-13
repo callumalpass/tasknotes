@@ -1,3 +1,4 @@
+
 # TaskNotes NLP API
 
 TaskNotes now exposes its natural language parsing capabilities through API endpoints, allowing external clients to parse task descriptions and create tasks using natural language input.
@@ -11,7 +12,8 @@ Parses natural language input and returns structured task data without creating 
 **Request:**
 ```json
 {
-  "text": "Review PR #123 tomorrow high priority @work"
+  "text": "Review PR #123 tomorrow high priority @work",
+  "locale": "en"
 }
 ```
 
@@ -58,7 +60,8 @@ Parses natural language input and creates a task in one step.
 **Request:**
 ```json
 {
-  "text": "Call mom due friday 2pm #personal"
+  "text": "Call mom due friday 2pm #personal",
+  "locale": "en"
 }
 ```
 
@@ -135,6 +138,25 @@ The NLP parser can extract the following from text input:
 - **Keywords**: "done", "completed", "todo", "in-progress"
 - **Custom**: Uses your configured status types
 
+### Multi-language Support
+
+The NLP parser supports multiple languages. You can specify the language to use for parsing by providing a `locale` parameter in the request body. The following locales are supported:
+
+- `en` (English)
+- `de` (German)
+- `es` (Spanish)
+- `fr` (French)
+- `it` (Italian)
+- `ja` (Japanese)
+- `nl` (Dutch)
+- `pt` (Portuguese)
+- `ru` (Russian)
+- `sv` (Swedish)
+- `uk` (Ukrainian)
+- `zh` (Chinese)
+
+If no locale is provided, the parser will default to English.
+
 ## Example Inputs
 
 | Input | Extracted |
@@ -166,21 +188,21 @@ Common errors:
 ### JavaScript Example
 ```javascript
 // Parse text only
-async function parseTask(text) {
+async function parseTask(text, locale = 'en') {
   const response = await fetch('http://localhost:8080/api/nlp/parse', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ text })
+    body: JSON.stringify({ text, locale })
   });
   return response.json();
 }
 
 // Parse and create task
-async function createTaskFromText(text) {
+async function createTaskFromText(text, locale = 'en') {
   const response = await fetch('http://localhost:8080/api/nlp/create', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ text })
+    body: JSON.stringify({ text, locale })
   });
   return response.json();
 }
@@ -190,14 +212,14 @@ async function createTaskFromText(text) {
 ```python
 import requests
 
-def parse_task(text):
+def parse_task(text, locale='en'):
     response = requests.post('http://localhost:8080/api/nlp/parse', 
-                           json={'text': text})
+                           json={'text': text, 'locale': locale})
     return response.json()
 
-def create_task_from_text(text):
+def create_task_from_text(text, locale='en'):
     response = requests.post('http://localhost:8080/api/nlp/create', 
-                           json={'text': text})
+                           json={'text': text, 'locale': locale})
     return response.json()
 ```
 

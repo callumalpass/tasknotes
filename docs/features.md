@@ -1,4 +1,3 @@
-
 # Features
 
 TaskNotes is a task and note management plugin for Obsidian. It includes features for task management, inline task integration, time management, and calendar integration.
@@ -15,6 +14,7 @@ TaskNotes provides a system for managing tasks. You can create, edit, and organi
 - **Planning**: Time estimates and recurring patterns.
 - **Tracking**: Automatic creation and modification dates.
 - **Reminders**: Custom notifications for tasks using relative or absolute timing.
+- **Auto-archive**: Automatically archive tasks based on their status.
 
 For more detailed information, see the [Task Management](features/task-management.md) documentation.
 
@@ -25,7 +25,7 @@ TaskNotes provides comprehensive filtering capabilities through a hierarchical q
 - **Quick Search**: Instant text-based filtering
 - **Query Builder**: Complex hierarchical filter conditions with AND/OR logic
 - **Saved Views**: Named filter configurations for quick access
-- **Sorting and Grouping**: Multiple options for organizing task display
+- **Sorting and Grouping**: Multiple options for organizing task display, including by tags and custom user fields.
 
 For more detailed information, see the [Filtering and Views](features/filtering-and-views.md) documentation.
 
@@ -35,8 +35,9 @@ TaskNotes integrates with the Obsidian editor, which allows you to manage your t
 
 - **Task Link Overlays**: Interactive widgets that display task information and allow for quick edits.
 - **Instant Task Conversion**: A feature to convert checkbox tasks into TaskNotes.
+- **`create inline task` command**: A command to create a new task from within the editor.
 - **Project Subtasks Widget**: A collapsible widget that displays tasks linked to the current project note.
-- **Natural Language Processing**: A feature to create tasks from conversational language, with automatic parsing of dates, priorities, and other details.
+- **Natural Language Processing**: A feature to create tasks from conversational language, with automatic parsing of dates, priorities, and other details. Supports 12 languages.
 
 For more detailed information, see the [Inline Task Integration](features/inline-tasks.md) documentation.
 
@@ -55,20 +56,35 @@ For more detailed information, see the [Time Management](features/time-managemen
 TaskNotes includes calendar integration features, such as:
 
 - **ICS Calendar Subscriptions**: A feature to subscribe to external calendar feeds from Google Calendar, Outlook, and other services.
+- **ICS Export**: Export your task list as an ICS file, with automatic updates.
 - **Advanced Calendar View**: A calendar with multiple view modes (month, week, day, year, and configurable custom days), drag-and-drop scheduling, and time-blocking capabilities.
 - **Time-blocking**: A feature to create focused work periods and link them to your tasks.
 
 For more detailed information, see the [Calendar Integration](features/calendar-integration.md) documentation.
 
-## Workflows
+## User Fields
 
-TaskNotes can be configured to support various workflows and use cases. Common workflows include:
+TaskNotes allows you to define your own custom fields for tasks. This feature allows you to:
 
-- **Habit Tracking**: Using recurring tasks with completion tracking via the calendar interface
-- **Project Management**: Organizing tasks with project links and filtering
-- **Time Management**: Combining time tracking, Pomodoro sessions, and scheduling
+- **Add custom data**: Add any data you want to your tasks.
+- **Filter and sort**: Filter and sort your tasks based on your custom fields.
+- **Use in templates**: Use your custom fields in templates.
 
-For detailed workflow examples, see the [Workflows](workflows.md) documentation.
+For more detailed information, see the [User Fields](features/user-fields.md) documentation.
+
+## Integrations
+
+TaskNotes integrates with other Obsidian plugins, such as:
+
+- **Bases**: A deep integration with the Bases plugin, allowing you to use TaskNotes tasks in your Bases databases.
+
+For more detailed information, see the [Integrations](features/integrations.md) documentation.
+
+## REST API
+
+TaskNotes provides a REST API that allows you to interact with the plugin from other applications.
+
+For more detailed information, see the [HTTP API](HTTP_API.md) documentation.
 
 ## View Types
 
@@ -76,7 +92,7 @@ TaskNotes provides multiple view types for different perspectives on your tasks:
 
 - **[Task List View](views/task-list.md)** - Filtering, sorting, and grouping capabilities
 - **[Agenda View](views/agenda-view.md)** - Daily and weekly planning view
-- **[Kanban View](views/kanban-view.md)** - Card-based task organization  
+- **[Kanban View](views/kanban-view.md)** - Card-based task organization
 - **[Calendar Views](views/calendar-views.md)** - Visual scheduling and time-blocking
 - **[Notes View](views/notes-view.md)** - Date-based note browsing
 - **[Pomodoro View](views/pomodoro-view.md)** - Focus timer with task integration
@@ -90,5 +106,3 @@ Configure TaskNotes to match your workflow:
 - **[Calendar Settings](settings/calendar-settings.md)** - Calendar appearance and behavior
 - **[Advanced Settings](settings/advanced-settings.md)** - Field mapping and customization
 - **[Misc Settings](settings/misc-settings.md)** - Additional plugin features
-
-
