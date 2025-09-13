@@ -1827,8 +1827,25 @@ export class AdvancedCalendarView extends ItemView {
         if (!arg.event.extendedProps) {
             return;
         }
-        
+
         const { taskInfo, icsEvent, timeblock, eventType, isCompleted, isRecurringInstance, instanceDate, subscriptionName } = arg.event.extendedProps;
+
+        // Check if we're in a list view
+        const isListView = arg.view.type.startsWith('list');
+
+        // Apply enhanced task card styling for list view task events (but not ICS events)
+        if (isListView && taskInfo && eventType !== 'ics' && (eventType === 'scheduled' || eventType === 'due' || eventType === 'recurring' || eventType === 'timeEntry')) {
+            this.enhanceListViewTaskEvent(arg, taskInfo, eventType, isCompleted);
+            return;
+        }
+
+        // For ICS events in list view, ensure they don't get any task card classes
+        if (isListView && eventType === 'ics') {
+            // Just set the basic attributes and return - don't add any task card styling
+            arg.el.setAttribute('data-event-type', 'ics');
+            arg.el.setAttribute('data-ics-event', 'true');
+            return;
+        }
         
         // Set common event type attribute for all events
         arg.el.setAttribute('data-event-type', eventType || 'unknown');
@@ -2098,6 +2115,187 @@ export class AdvancedCalendarView extends ItemView {
         
         // Update the header toolbar in case it needs to refresh
         this.calendar.setOption('headerToolbar', this.getHeaderToolbarConfig());
+    }
+
+    /**
+     * Get current visible properties for event cards
+     */
+    private getCurrentVisibleProperties(): string[] | undefined {
+        // Use the FilterBar's method which handles temporary state
+        return this.filterBar?.getCurrentVisibleProperties();
+    }
+
+    /**
+     * Enhance list view task events to look like task cards
+     */
+    private enhanceListViewTaskEvent(arg: any, taskInfo: TaskInfo, eventType: string, isCompleted: boolean): void {
+        const { el, event } = arg;
+
+        // Add task card classes
+        el.classList.add('fc-task-event', 'fc-list-task-card');
+        el.setAttribute('data-task-path', taskInfo.path);
+        el.setAttribute('data-event-type', eventType);
+
+        // Apply priority and status colors as CSS custom properties
+        const priorityConfig = this.plugin.priorityManager.getPriorityConfig(taskInfo.priority);
+        if (priorityConfig) {
+            el.style.setProperty('--priority-color', priorityConfig.color);
+        }
+
+        const statusConfig = this.plugin.statusManager.getStatusConfig(taskInfo.status);
+        if (statusConfig) {
+            el.style.setProperty('--current-status-color', statusConfig.color);
+        }
+
+        // Get visible properties for metadata display
+        const visibleProperties = this.getCurrentVisibleProperties() || ['due', 'scheduled', 'projects', 'contexts', 'tags'];
+
+        // Find the main event content elements
+        const titleElement = el.querySelector('.fc-list-event-title, .fc-event-title');
+        const timeElement = el.querySelector('.fc-list-event-time, .fc-event-time');
+
+        if (titleElement) {
+            // Clear and rebuild the content with task card structure
+            titleElement.innerHTML = '';
+
+            // Create main title row with indicators and title on same line
+            const titleRow = titleElement.createEl('div', { cls: 'fc-task-title-row' });
+
+            // Add status dot
+            if (!visibleProperties || visibleProperties.includes('status')) {
+                const statusDot = titleRow.createEl('span', { cls: 'fc-task-status-dot' });
+                if (statusConfig) {
+                    statusDot.style.borderColor = statusConfig.color;
+                }
+            }
+
+            // Add priority dot
+            if (taskInfo.priority && priorityConfig && (!visibleProperties || visibleProperties.includes('priority'))) {
+                const priorityDot = titleRow.createEl('span', {
+                    cls: 'fc-task-priority-dot',
+                    attr: { 'aria-label': `Priority: ${priorityConfig.label}` }
+                });
+                priorityDot.style.borderColor = priorityConfig.color;
+            }
+
+            // Add recurring indicator
+            if (taskInfo.recurrence) {
+                const recurringIndicator = titleRow.createEl('span', {
+                    cls: 'fc-task-recurring-indicator',
+                    text: '🔄',
+                    attr: { 'aria-label': 'Recurring task' }
+                });
+            }
+
+            // Add title
+            const titleText = titleRow.createEl('span', {
+                cls: 'fc-task-title',
+                text: taskInfo.title
+            });
+
+            if (isCompleted) {
+                titleText.style.textDecoration = 'line-through';
+                titleText.style.opacity = '0.7';
+            }
+
+            // Add metadata based on visible properties
+            const metadataContainer = titleElement.createEl('div', { cls: 'fc-task-metadata' });
+            this.addTaskMetadataToListEvent(metadataContainer, taskInfo, visibleProperties, eventType);
+        }
+
+        // Add hover preview and context menu
+        this.addTaskInteractionsToListEvent(el, taskInfo);
+    }
+
+    /**
+     * Add task metadata to list view events
+     */
+    private addTaskMetadataToListEvent(container: HTMLElement, taskInfo: TaskInfo, visibleProperties: string[], eventType: string): void {
+        const metadataElements: HTMLElement[] = [];
+
+        for (const propertyId of visibleProperties) {
+            // Skip status and priority as they're shown as dots
+            if (propertyId === 'status' || propertyId === 'priority') continue;
+
+            // Skip the property that's already shown as the event type
+            if ((propertyId === 'due' && eventType === 'due') ||
+                (propertyId === 'scheduled' && (eventType === 'scheduled' || eventType === 'recurring'))) {
+                continue;
+            }
+
+            let element: HTMLElement | null = null;
+
+            switch (propertyId) {
+                case 'projects':
+                    if (taskInfo.projects && taskInfo.projects.length > 0) {
+                        element = container.createEl('span', { cls: 'fc-task-projects' });
+                        element.textContent = `📁 ${taskInfo.projects.join(', ')}`;
+                    }
+                    break;
+                case 'contexts':
+                    if (taskInfo.contexts && taskInfo.contexts.length > 0) {
+                        element = container.createEl('span', { cls: 'fc-task-contexts' });
+                        element.textContent = `@ ${taskInfo.contexts.join(', ')}`;
+                    }
+                    break;
+                case 'tags':
+                    if (taskInfo.tags && taskInfo.tags.length > 0) {
+                        element = container.createEl('span', { cls: 'fc-task-tags' });
+                        element.textContent = `# ${taskInfo.tags.join(', ')}`;
+                    }
+                    break;
+                case 'timeEstimate':
+                    if (taskInfo.timeEstimate) {
+                        element = container.createEl('span', { cls: 'fc-task-time-estimate' });
+                        element.textContent = `⏱️ ${this.plugin.formatTime(taskInfo.timeEstimate)}`;
+                    }
+                    break;
+            }
+
+            if (element) {
+                metadataElements.push(element);
+            }
+        }
+
+        // Add separators between metadata elements
+        if (metadataElements.length > 1) {
+            for (let i = 1; i < metadataElements.length; i++) {
+                const separator = container.createEl('span', {
+                    cls: 'fc-task-metadata-separator',
+                    text: ' • '
+                });
+                metadataElements[i].insertAdjacentElement('beforebegin', separator);
+            }
+        }
+    }
+
+    /**
+     * Add task interactions (hover and context menu) to list view events
+     */
+    private addTaskInteractionsToListEvent(el: HTMLElement, taskInfo: TaskInfo): void {
+        // Add hover preview
+        el.addEventListener('mouseover', (event: MouseEvent) => {
+            const file = this.plugin.app.vault.getAbstractFileByPath(taskInfo.path);
+            if (file) {
+                this.plugin.app.workspace.trigger('hover-link', {
+                    event,
+                    source: 'tasknotes-advanced-calendar-list',
+                    hoverParent: el,
+                    targetEl: el,
+                    linktext: taskInfo.path,
+                    sourcePath: taskInfo.path
+                });
+            }
+        });
+
+        // Add context menu
+        el.addEventListener('contextmenu', async (jsEvent: MouseEvent) => {
+            jsEvent.preventDefault();
+            jsEvent.stopPropagation();
+
+            const targetDate = new Date();
+            await this.showTaskContextMenuForEvent(jsEvent, taskInfo, targetDate);
+        });
     }
 
     async refreshEvents() {
