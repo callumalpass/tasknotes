@@ -693,7 +693,7 @@ export function formatTimestampForDisplay(timestampString: string, formatString?
     if (!timestampString) {
         return timestampString;
     }
-    
+
     try {
         const parsed = parseTimestamp(timestampString);
         if (isValid(parsed)) {

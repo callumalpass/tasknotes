@@ -15,8 +15,13 @@ export const format = jest.fn((date: Date, formatStr: string) => {
   } else if (formatStr === 'MMM d, yyyy') {
     return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
   } else if (formatStr === 'MMM d, yyyy h:mm a') {
-    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) + ' ' + 
+    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) + ' ' +
            date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+  } else if (formatStr === 'MMM d, yyyy HH:mm') {
+    const dateStr = date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${dateStr} ${hours}:${minutes}`;
   } else if (formatStr === 'h:mm a') {
     return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
   } else if (formatStr === 'HH:mm') {

@@ -301,12 +301,18 @@ describe('DateUtils', () => {
     });
 
     describe('formatTimestampForDisplay', () => {
-      it('should format timestamp for display', () => {
+      it('should format timestamp for display with 24-hour format by default', () => {
         const result = formatTimestampForDisplay('2025-01-15T14:30:00Z');
         // Since this is a UTC timestamp, when displayed in local timezone it may show a different time
-        // Just check that it contains the expected date pattern
+        // Just check that it contains the expected date pattern and 24-hour time format
         expect(result).toMatch(/Jan \d{1,2}, 2025/);
-        expect(result).toMatch(/\d{1,2}:\d{2} (AM|PM)/);
+        expect(result).toMatch(/\d{2}:\d{2}/); // 24-hour format
+      });
+
+      it('should format timestamp for display with 12-hour format when requested', () => {
+        const result = formatTimestampForDisplay('2025-01-15T14:30:00Z', undefined, '12');
+        expect(result).toMatch(/Jan \d{1,2}, 2025/);
+        expect(result).toMatch(/\d{1,2}:\d{2} (AM|PM)/); // 12-hour format
       });
 
       it('should return original on format error', () => {
@@ -391,10 +397,16 @@ describe('DateUtils', () => {
     });
 
     describe('formatDateTimeForDisplay', () => {
-      it('should format datetime with default options', () => {
+      it('should format datetime with default options (24-hour format)', () => {
         const result = formatDateTimeForDisplay('2025-01-15T14:30:00');
         expect(result).toContain('Jan 15, 2025');
-        expect(result).toContain('2:30 PM');
+        expect(result).toContain('14:30'); // 24-hour format by default
+      });
+
+      it('should format datetime with 12-hour format when requested', () => {
+        const result = formatDateTimeForDisplay('2025-01-15T14:30:00', { userTimeFormat: '12' });
+        expect(result).toContain('Jan 15, 2025');
+        expect(result).toContain('2:30 PM'); // 12-hour format when explicitly requested
       });
 
       it('should format date-only with date format only', () => {
