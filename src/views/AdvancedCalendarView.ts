@@ -2158,11 +2158,11 @@ export class AdvancedCalendarView extends ItemView {
             titleElement.innerHTML = '';
 
             // Create main title row with indicators and title on same line
-            const titleRow = titleElement.createEl('div', { cls: 'fc-task-title-row' });
+            const titleRow = titleElement.createEl('div', { cls: 'fc-list-task-title-row' });
 
             // Add status dot
             if (!visibleProperties || visibleProperties.includes('status')) {
-                const statusDot = titleRow.createEl('span', { cls: 'fc-task-status-dot' });
+                const statusDot = titleRow.createEl('span', { cls: 'fc-list-task-status-dot' });
                 if (statusConfig) {
                     statusDot.style.borderColor = statusConfig.color;
                 }
@@ -2171,7 +2171,7 @@ export class AdvancedCalendarView extends ItemView {
             // Add priority dot
             if (taskInfo.priority && priorityConfig && (!visibleProperties || visibleProperties.includes('priority'))) {
                 const priorityDot = titleRow.createEl('span', {
-                    cls: 'fc-task-priority-dot',
+                    cls: 'fc-list-task-priority-dot',
                     attr: { 'aria-label': `Priority: ${priorityConfig.label}` }
                 });
                 priorityDot.style.borderColor = priorityConfig.color;
@@ -2180,7 +2180,7 @@ export class AdvancedCalendarView extends ItemView {
             // Add recurring indicator
             if (taskInfo.recurrence) {
                 const recurringIndicator = titleRow.createEl('span', {
-                    cls: 'fc-task-recurring-indicator',
+                    cls: 'fc-list-task-recurring-indicator',
                     text: '🔄',
                     attr: { 'aria-label': 'Recurring task' }
                 });
@@ -2188,7 +2188,7 @@ export class AdvancedCalendarView extends ItemView {
 
             // Add title
             const titleText = titleRow.createEl('span', {
-                cls: 'fc-task-title',
+                cls: 'fc-list-task-title',
                 text: taskInfo.title
             });
 
@@ -2198,7 +2198,7 @@ export class AdvancedCalendarView extends ItemView {
             }
 
             // Add metadata based on visible properties
-            const metadataContainer = titleElement.createEl('div', { cls: 'fc-task-metadata' });
+            const metadataContainer = titleElement.createEl('div', { cls: 'fc-list-task-metadata' });
             this.addTaskMetadataToListEvent(metadataContainer, taskInfo, visibleProperties, eventType);
         }
 
@@ -2227,25 +2227,25 @@ export class AdvancedCalendarView extends ItemView {
             switch (propertyId) {
                 case 'projects':
                     if (taskInfo.projects && taskInfo.projects.length > 0) {
-                        element = container.createEl('span', { cls: 'fc-task-projects' });
+                        element = container.createEl('span', { cls: 'fc-list-task-projects' });
                         element.textContent = `📁 ${taskInfo.projects.join(', ')}`;
                     }
                     break;
                 case 'contexts':
                     if (taskInfo.contexts && taskInfo.contexts.length > 0) {
-                        element = container.createEl('span', { cls: 'fc-task-contexts' });
+                        element = container.createEl('span', { cls: 'fc-list-task-contexts' });
                         element.textContent = `@ ${taskInfo.contexts.join(', ')}`;
                     }
                     break;
                 case 'tags':
                     if (taskInfo.tags && taskInfo.tags.length > 0) {
-                        element = container.createEl('span', { cls: 'fc-task-tags' });
+                        element = container.createEl('span', { cls: 'fc-list-task-tags' });
                         element.textContent = `# ${taskInfo.tags.join(', ')}`;
                     }
                     break;
                 case 'timeEstimate':
                     if (taskInfo.timeEstimate) {
-                        element = container.createEl('span', { cls: 'fc-task-time-estimate' });
+                        element = container.createEl('span', { cls: 'fc-list-task-time-estimate' });
                         element.textContent = `⏱️ ${this.plugin.formatTime(taskInfo.timeEstimate)}`;
                     }
                     break;
@@ -2260,7 +2260,7 @@ export class AdvancedCalendarView extends ItemView {
         if (metadataElements.length > 1) {
             for (let i = 1; i < metadataElements.length; i++) {
                 const separator = container.createEl('span', {
-                    cls: 'fc-task-metadata-separator',
+                    cls: 'fc-list-task-metadata-separator',
                     text: ' • '
                 });
                 metadataElements[i].insertAdjacentElement('beforebegin', separator);

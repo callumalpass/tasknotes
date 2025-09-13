@@ -907,27 +907,69 @@
     color: var(--text-normal);
 }
 
-/* List View Task Card Enhancements - Only apply to task events with fc-list-task-card class */
-/* Target only the title cell for task card styling */
-.fc-list-event.fc-list-task-card:not([data-ics-event="true"]) .fc-list-event-title {
+/* ===== CLEAN LIST VIEW STYLING - NO INHERITANCE ===== */
+
+/* Base styling for ALL list events - completely independent from calendar views */
+.fc-list-event {
+    /* Reset any inherited styling from calendar views */
+    opacity: 1 !important;
+    border: none !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+.fc-list-event .fc-list-event-time {
+    /* Consistent time styling for all events */
+    font-size: inherit !important;
+    color: inherit !important;
+    font-weight: inherit !important;
+    vertical-align: top;
+}
+
+.fc-list-event .fc-list-event-title {
+    /* Base title styling - clean and consistent */
     padding: 8px 12px;
-    border-radius: 6px;
-    background-color: var(--background-primary);
-    /* Remove border to match ICS events */
-    border: none;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    transition: all 0.2s ease;
+    border: none !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    font-size: inherit !important;
+    font-weight: inherit !important;
+    color: inherit !important;
     display: table-cell;
     vertical-align: top;
 }
 
-.fc-list-event.fc-list-task-card:not([data-ics-event="true"]):hover .fc-list-event-title {
-    background-color: var(--background-modifier-hover);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+.fc-list-event .fc-list-event-dot {
+    /* Standard dot styling for all events */
+    border: inherit !important;
+    background: inherit !important;
+}
+
+/* ===== TASK-SPECIFIC ENHANCEMENTS ===== */
+
+/* Task events get enhanced styling while preserving base */
+.fc-list-event.fc-list-task-card .fc-list-event-title {
+    /* Add subtle background and shadow for task cards */
+    background-color: var(--background-primary) !important;
+    border-radius: 6px !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
+    transition: all 0.2s ease;
+}
+
+.fc-list-event.fc-list-task-card:hover .fc-list-event-title {
+    background-color: var(--background-modifier-hover) !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important;
+}
+
+/* Hide default FullCalendar dot for tasks since we have custom indicators */
+.fc-list-event.fc-list-task-card .fc-list-event-dot {
+    display: none;
 }
 
 /* Task title row with indicators on same line */
-.fc-task-title-row {
+.fc-list-task-title-row {
     display: flex;
     align-items: center;
     gap: 6px;
@@ -936,8 +978,8 @@
 }
 
 /* Status and priority dots */
-.fc-task-status-dot,
-.fc-task-priority-dot {
+.fc-list-task-status-dot,
+.fc-list-task-priority-dot {
     width: 8px;
     height: 8px;
     border-radius: 50%;
@@ -946,23 +988,23 @@
     flex-shrink: 0;
 }
 
-.fc-task-priority-dot {
+.fc-list-task-priority-dot {
     background-color: var(--priority-color, currentColor);
 }
 
-.fc-task-status-dot {
+.fc-list-task-status-dot {
     border-color: var(--current-status-color, var(--text-muted));
 }
 
 /* Recurring indicator */
-.fc-task-recurring-indicator {
+.fc-list-task-recurring-indicator {
     font-size: 12px;
     opacity: 0.8;
     flex-shrink: 0;
 }
 
 /* Task title */
-.fc-task-title {
+.fc-list-task-title {
     font-weight: 500 !important;
     color: var(--text-normal) !important;
     font-size: 14px !important;
@@ -970,7 +1012,7 @@
 }
 
 /* Task metadata */
-.fc-task-metadata {
+.fc-list-task-metadata {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
@@ -980,93 +1022,47 @@
     margin-top: 2px;
 }
 
-.fc-task-metadata > span {
+.fc-list-task-metadata > span {
     background-color: var(--background-secondary);
     padding: 2px 6px;
     border-radius: 3px;
     font-size: 11px;
 }
 
-.fc-task-projects {
+.fc-list-task-projects {
     background-color: rgba(var(--color-blue-rgb, 13 110 253), 0.1) !important;
     color: var(--color-blue) !important;
 }
 
-.fc-task-contexts {
+.fc-list-task-contexts {
     background-color: rgba(var(--color-green-rgb, 25 135 84), 0.1) !important;
     color: var(--color-green) !important;
 }
 
-.fc-task-tags {
+.fc-list-task-tags {
     background-color: rgba(var(--color-purple-rgb, 102 16 242), 0.1) !important;
     color: var(--color-purple) !important;
 }
 
-.fc-task-time-estimate {
+.fc-list-task-time-estimate {
     background-color: rgba(var(--color-orange-rgb, 255 159 67), 0.1) !important;
     color: var(--color-orange) !important;
 }
 
-.fc-task-metadata-separator {
+.fc-list-task-metadata-separator {
     color: var(--text-faint);
     font-weight: 300;
 }
 
-/* Override FullCalendar's default list event styling for task cards */
-.fc-list-event.fc-list-task-card:not([data-ics-event="true"]) .fc-list-event-dot {
-    display: none; /* Hide the default dot since we have our own indicators */
-}
-
-.fc-list-event.fc-list-task-card:not([data-ics-event="true"]) .fc-list-event-time {
-    font-size: inherit;
-    color: inherit;
-    vertical-align: top;
-}
-
-/* Reset ICS events in list view to use clean, consistent styling */
-.fc-list-event[data-ics-event="true"] {
-    /* Reset any inherited styling */
-    opacity: 1 !important;
-    border: none !important;
-    border-radius: 0 !important;
-    background: inherit !important;
-    box-shadow: none !important;
-}
-
-.fc-list-event[data-ics-event="true"] .fc-list-event-title {
-    /* Reset title styling to match task items */
-    padding: inherit !important;
-    border: none !important;
-    border-radius: 0 !important;
-    background: inherit !important;
-    box-shadow: none !important;
-    font-size: inherit !important;
-    font-weight: inherit !important;
-    color: inherit !important;
-}
-
-.fc-list-event[data-ics-event="true"] .fc-list-event-time {
-    /* Reset time styling to match task items */
-    font-size: inherit !important;
-    color: inherit !important;
-    font-weight: inherit !important;
-}
-
-.fc-list-event[data-ics-event="true"] .fc-list-event-dot {
-    /* Reset dot styling */
-    border: inherit !important;
-    background: inherit !important;
-}
-
 /* Responsive design for smaller screens */
 @media (max-width: 768px) {
-    .fc-task-metadata {
+    .fc-list-task-metadata {
         flex-direction: column;
         align-items: flex-start;
         gap: 4px;
     }
 
-    .fc-task-indicators {
+    .fc-list-task-title-row {
         gap: 4px;
     }
 }
