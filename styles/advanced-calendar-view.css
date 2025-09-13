@@ -919,6 +919,11 @@
     box-shadow: none !important;
 }
 
+/* Consistent light hover background for ALL list events */
+.fc-list-event:hover {
+    background-color: var(--background-modifier-hover) !important;
+}
+
 .fc-list-event .fc-list-event-time {
     /* Consistent time styling for all events */
     font-size: inherit !important;
@@ -949,19 +954,15 @@
 
 /* ===== TASK-SPECIFIC ENHANCEMENTS ===== */
 
-/* Task events get enhanced styling while preserving base */
+/* Task events get ONLY functional enhancements - NO visual styling differences */
 .fc-list-event.fc-list-task-card .fc-list-event-title {
-    /* Add subtle background and shadow for task cards */
-    background-color: var(--background-primary) !important;
-    border-radius: 6px !important;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
-    transition: all 0.2s ease;
+    /* Keep base styling identical to ICS events - no background, borders, or shadows */
+    background-color: transparent !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
 }
 
-.fc-list-event.fc-list-task-card:hover .fc-list-event-title {
-    background-color: var(--background-modifier-hover) !important;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important;
-}
+/* Remove task-specific hover - now handled by base .fc-list-event:hover */
 
 /* Hide default FullCalendar dot for tasks since we have custom indicators */
 .fc-list-event.fc-list-task-card .fc-list-event-dot {
