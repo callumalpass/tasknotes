@@ -12,7 +12,9 @@
     border-radius: 4px;
 }
 
-.fc-event[data-ics-event="true"]:before {
+/* Only apply calendar emoji to ICS events in non-list views */
+.fc-daygrid-event[data-ics-event="true"]:before,
+.fc-timegrid-event[data-ics-event="true"]:before {
     content: "📅";
     position: absolute;
     top: 2px;
@@ -86,14 +88,16 @@
     box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
 
-/* ICS Events */
-.fc-ics-event {
+/* ICS Events - only in non-list views */
+.fc-daygrid-event.fc-ics-event,
+.fc-timegrid-event.fc-ics-event {
     border-radius: 4px;
     border-width: 2px !important;
     border-style: solid !important;
 }
 
-.fc-ics-event:hover {
+.fc-daygrid-event.fc-ics-event:hover,
+.fc-timegrid-event.fc-ics-event:hover {
     box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
 
@@ -909,7 +913,8 @@
     padding: 8px 12px;
     border-radius: 6px;
     background-color: var(--background-primary);
-    border: 1px solid var(--background-modifier-border);
+    /* Remove border to match ICS events */
+    border: none;
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     transition: all 0.2s ease;
     display: table-cell;
@@ -1013,12 +1018,45 @@
 }
 
 .fc-list-event.fc-list-task-card:not([data-ics-event="true"]) .fc-list-event-time {
-    font-size: 12px;
-    color: var(--text-muted);
+    font-size: inherit;
+    color: inherit;
     vertical-align: top;
 }
 
-/* Let FullCalendar handle its own table structure - don't override */
+/* Reset ICS events in list view to use clean, consistent styling */
+.fc-list-event[data-ics-event="true"] {
+    /* Reset any inherited styling */
+    opacity: 1 !important;
+    border: none !important;
+    border-radius: 0 !important;
+    background: inherit !important;
+    box-shadow: none !important;
+}
+
+.fc-list-event[data-ics-event="true"] .fc-list-event-title {
+    /* Reset title styling to match task items */
+    padding: inherit !important;
+    border: none !important;
+    border-radius: 0 !important;
+    background: inherit !important;
+    box-shadow: none !important;
+    font-size: inherit !important;
+    font-weight: inherit !important;
+    color: inherit !important;
+}
+
+.fc-list-event[data-ics-event="true"] .fc-list-event-time {
+    /* Reset time styling to match task items */
+    font-size: inherit !important;
+    color: inherit !important;
+    font-weight: inherit !important;
+}
+
+.fc-list-event[data-ics-event="true"] .fc-list-event-dot {
+    /* Reset dot styling */
+    border: inherit !important;
+    background: inherit !important;
+}
 
 /* Responsive design for smaller screens */
 @media (max-width: 768px) {

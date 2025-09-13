@@ -1833,17 +1833,18 @@ export class AdvancedCalendarView extends ItemView {
         // Check if we're in a list view
         const isListView = arg.view.type.startsWith('list');
 
-        // Apply enhanced task card styling for list view task events (but not ICS events)
-        if (isListView && taskInfo && eventType !== 'ics' && (eventType === 'scheduled' || eventType === 'due' || eventType === 'recurring' || eventType === 'timeEntry')) {
-            this.enhanceListViewTaskEvent(arg, taskInfo, eventType, isCompleted);
+        // Handle ICS events FIRST in list view - they should be completely untouched
+        if (isListView && eventType === 'ics') {
+            // Just set the basic attributes and return immediately
+            arg.el.setAttribute('data-event-type', 'ics');
+            arg.el.setAttribute('data-ics-event', 'true');
+            // Don't call any other styling or processing
             return;
         }
 
-        // For ICS events in list view, ensure they don't get any task card classes
-        if (isListView && eventType === 'ics') {
-            // Just set the basic attributes and return - don't add any task card styling
-            arg.el.setAttribute('data-event-type', 'ics');
-            arg.el.setAttribute('data-ics-event', 'true');
+        // Apply enhanced task card styling for list view task events
+        if (isListView && taskInfo && (eventType === 'scheduled' || eventType === 'due' || eventType === 'recurring' || eventType === 'timeEntry')) {
+            this.enhanceListViewTaskEvent(arg, taskInfo, eventType, isCompleted);
             return;
         }
         
@@ -1852,9 +1853,7 @@ export class AdvancedCalendarView extends ItemView {
         
         // Handle ICS events
         if (eventType === 'ics') {
-            // Add visual styling for ICS events
-            arg.el.style.borderStyle = 'solid';
-            arg.el.style.borderWidth = '2px';
+            // Add data attributes and class for ICS events
             arg.el.setAttribute('data-ics-event', 'true');
             arg.el.setAttribute('data-subscription', subscriptionName || 'Unknown');
             arg.el.classList.add('fc-ics-event');
