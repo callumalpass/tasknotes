@@ -14,6 +14,7 @@ import {
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import multiMonthPlugin from '@fullcalendar/multimonth';
+import listPlugin from '@fullcalendar/list';
 import interactionPlugin from '@fullcalendar/interaction';
 import TaskNotesPlugin from '../main';
 import {
@@ -462,7 +463,7 @@ export class AdvancedCalendarView extends ItemView {
         const toolbarConfig = {
             left: 'prev,next today',
             center: isNarrowView ? '' : 'title', // Hide title in narrow views
-            right: 'refreshICS multiMonthYear,dayGridMonth,timeGridWeek,timeGridCustom,timeGridDay'
+            right: 'refreshICS multiMonthYear,dayGridMonth,timeGridWeek,timeGridCustom,timeGridDay,listWeek'
         };
         console.log('Header toolbar config:', toolbarConfig);
         return toolbarConfig;
@@ -561,7 +562,7 @@ export class AdvancedCalendarView extends ItemView {
         console.log('Initializing calendar with headerToolbar:', headerToolbar);
         
         this.calendar = new Calendar(calendarEl as HTMLElement, {
-            plugins: [dayGridPlugin, timeGridPlugin, multiMonthPlugin, interactionPlugin],
+            plugins: [dayGridPlugin, timeGridPlugin, multiMonthPlugin, listPlugin, interactionPlugin],
             initialView: calendarSettings.defaultView,
             headerToolbar: headerToolbar,
             customButtons: customButtons,
