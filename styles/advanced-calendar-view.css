@@ -663,14 +663,25 @@
 
 /* Clean today styling */
 .advanced-calendar-view .fc-daygrid-day.fc-day-today {
-    background: color-mix(in srgb, var(--interactive-accent) 8%, transparent) !important;
+    background: color-mix(in srgb, var(--interactive-accent) 8%, var(--background-primary)) !important;
     border: 2px solid var(--interactive-accent);
     position: relative;
 }
 
 .advanced-calendar-view .fc-daygrid-day.fc-day-today .fc-daygrid-day-number {
     font-weight: 600;
-    color: var(--interactive-accent);
+    color: var(--interactive-accent) !important;
+}
+
+/* Fix today styling specifically for multi-month (year) view */
+.advanced-calendar-view .fc-multimonth-daygrid .fc-daygrid-day.fc-day-today {
+    background: color-mix(in srgb, var(--interactive-accent) 8%, var(--background-primary)) !important;
+    border: 2px solid var(--interactive-accent) !important;
+}
+
+.advanced-calendar-view .fc-multimonth-daygrid .fc-daygrid-day.fc-day-today .fc-daygrid-day-number {
+    font-weight: 600;
+    color: var(--interactive-accent) !important;
 }
 
 .advanced-calendar-view .fc-daygrid-day.fc-day-today::before {
@@ -687,8 +698,8 @@
 
 /* Header cells */
 .advanced-calendar-view .fc-col-header-cell {
-    background: var(--background-primary);
-    color: var(--text-muted);
+    background: var(--background-primary) !important;
+    color: var(--text-muted) !important;
     font-weight: 400;
     font-size: 0.75rem;
     /* text-transform: lowercase; */
@@ -696,12 +707,51 @@
     padding: 0.5rem 0.5rem;
 }
 
+/* Day cells - ensure proper theme colors */
+.advanced-calendar-view .fc-daygrid-day {
+    background: var(--background-primary) !important;
+    color: var(--text-normal) !important;
+}
+
+/* Multi-month (year view) styling */
+.advanced-calendar-view .fc-multimonth-daygrid .fc-daygrid-day {
+    background: var(--background-primary) !important;
+    color: var(--text-normal) !important;
+}
+
+/* Multi-month month headers */
+.advanced-calendar-view .fc-multimonth-header {
+    background: var(--background-secondary) !important;
+    color: var(--text-normal) !important;
+}
+
+.advanced-calendar-view .fc-multimonth-title {
+    background: var(--background-secondary) !important;
+    color: var(--text-normal) !important;
+}
+
+/* Multi-month day headers (Mon, Tue, etc.) */
+.advanced-calendar-view .fc-multimonth .fc-col-header-cell {
+    background: var(--background-secondary) !important;
+    color: var(--text-muted) !important;
+}
+
 /* Day numbers */
 .advanced-calendar-view .fc-daygrid-day-number {
-    color: var(--text-normal);
+    color: var(--text-normal) !important;
     font-weight: 400;
     font-size: 0.9rem;
     padding: 0.5rem;
+}
+
+/* List view day headers */
+.advanced-calendar-view .fc-list-day-cushion {
+    background: var(--background-secondary) !important;
+    color: var(--text-normal) !important;
+}
+
+.advanced-calendar-view .fc-list-day {
+    background: var(--background-secondary) !important;
 }
 
 /* Clean event styling */
@@ -862,49 +912,59 @@
     border: none !important;
 }
 
-/* ICS Refresh Button in FullCalendar Toolbar */
-/* Use consistent button system for refresh ICS button */
+/* ICS Refresh Button - Match exact styling of other FullCalendar buttons */
 .advanced-calendar-view .fc-refreshICS-button {
-    background: transparent;
-    border: none;
-    box-shadow: none;
-    color: var(--text-normal);
-    transition: all 0.2s ease;
-    font-weight: normal;
-    font-size: 13px;
-    padding: 4px 8px;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    color: var(--text-muted) !important;
+    font-size: 0.8rem !important;
+    font-weight: 400 !important;
+    padding: 0.3rem 0.6rem !important;
+    border-radius: 4px !important;
+    transition: all 0.2s ease !important;
 }
 
 .advanced-calendar-view .fc-refreshICS-button .fc-icon,
 .advanced-calendar-view .fc-refreshICS-button .fc-button-label {
-    color: var(--text-normal);
-    font-size: 13px;
+    color: var(--text-muted) !important;
+    font-size: 0.8rem !important;
+    font-weight: 400 !important;
     line-height: 1.2;
     display: inline;
     visibility: visible;
 }
 
-.advanced-calendar-view .fc-refreshICS-button:hover {
-    background: var(--tn-interactive-hover);
-    box-shadow: none;
-    color: var(--text-normal);
+/* Hover state - match other buttons exactly */
+.advanced-calendar-view .fc-refreshICS-button:hover:not(:disabled) {
+    background: var(--tn-interactive-hover) !important;
+    color: var(--text-normal) !important;
+    border: none !important;
+    box-shadow: none !important;
 }
 
-.advanced-calendar-view .fc-refreshICS-button:hover .fc-icon,
-.advanced-calendar-view .fc-refreshICS-button:hover .fc-button-label {
-    color: var(--text-normal);
+.advanced-calendar-view .fc-refreshICS-button:hover:not(:disabled) .fc-icon,
+.advanced-calendar-view .fc-refreshICS-button:hover:not(:disabled) .fc-button-label {
+    color: var(--text-normal) !important;
 }
 
+/* Active/Focus state - match other buttons */
+.advanced-calendar-view .fc-refreshICS-button:active,
 .advanced-calendar-view .fc-refreshICS-button:focus {
-    outline: 2px solid var(--tn-interactive-accent);
-    outline-offset: 2px;
-    box-shadow: none;
+    background: var(--tn-interactive-hover) !important;
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+    color: var(--text-normal) !important;
 }
 
-/* Ensure button content is visible and matches other FC buttons */
-.advanced-calendar-view .fc-refreshICS-button,
-.advanced-calendar-view .fc-refreshICS-button * {
-    color: var(--text-normal);
+/* Disabled state - match other buttons */
+.advanced-calendar-view .fc-refreshICS-button:disabled {
+    background: transparent !important;
+    color: var(--text-faint) !important;
+    opacity: 0.5 !important;
+    border: none !important;
+    box-shadow: none !important;
 }
 
 /* ===== CLEAN LIST VIEW STYLING - NO INHERITANCE ===== */
@@ -922,6 +982,12 @@
 /* Consistent light hover background for ALL list events */
 .fc-list-event:hover {
     background-color: var(--background-modifier-hover) !important;
+}
+
+/* Fix time element color on hover in list view */
+.fc-list-event:hover .fc-list-event-time {
+    color: inherit !important;
+    background-color: transparent !important;
 }
 
 .fc-list-event .fc-list-event-time {

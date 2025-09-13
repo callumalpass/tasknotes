@@ -566,11 +566,21 @@ export class AdvancedCalendarView extends ItemView {
             initialView: calendarSettings.defaultView,
             headerToolbar: headerToolbar,
             customButtons: customButtons,
+
+            // Custom button text for clean, short labels
+            buttonText: {
+                multiMonthYear: 'Y',
+                dayGridMonth: 'M',
+                timeGridWeek: 'W',
+                timeGridDay: 'D',
+                listWeek: 'List'
+            },
+
             views: {
                 timeGridCustom: {
                     type: 'timeGrid',
                     duration: { days: calendarSettings.customDayCount || 3 },
-                    buttonText: `${calendarSettings.customDayCount || 3} days`
+                    buttonText: `${calendarSettings.customDayCount || 3}D`
                 }
             },
             height: '100%',
@@ -2108,7 +2118,7 @@ export class AdvancedCalendarView extends ItemView {
             timeGridCustom: {
                 type: 'timeGrid',
                 duration: { days: calendarSettings.customDayCount || 3 },
-                buttonText: `${calendarSettings.customDayCount || 3} days`
+                buttonText: `${calendarSettings.customDayCount || 3} D`
             }
         });
         
