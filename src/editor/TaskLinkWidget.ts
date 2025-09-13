@@ -199,17 +199,18 @@ export class TaskLinkWidget extends WidgetType {
         // Due date info with calendar icon
         if (this.taskInfo.due) {
             // Format due date with time if available
+            const userTimeFormat = this.plugin.settings.calendarViewSettings.timeFormat;
             const displayText = formatDateTimeForDisplay(this.taskInfo.due, {
                 dateFormat: 'MMM d',
-                timeFormat: 'h:mm a',
-                showTime: true
+                showTime: true,
+                userTimeFormat
             });
             
             // Create tooltip with full date/time info
             const tooltipText = formatDateTimeForDisplay(this.taskInfo.due, {
                 dateFormat: 'MMM d, yyyy',
-                timeFormat: 'h:mm a',
-                showTime: true
+                showTime: true,
+                userTimeFormat
             });
             
             const dueDateSpan = container.createEl('span', {
@@ -256,17 +257,18 @@ export class TaskLinkWidget extends WidgetType {
         // Scheduled date info with clock icon
         if (this.taskInfo.scheduled && (!this.taskInfo.due || this.taskInfo.scheduled !== this.taskInfo.due)) {
             // Format scheduled date with time if available
+            const userTimeFormat = this.plugin.settings.calendarViewSettings.timeFormat;
             const displayText = formatDateTimeForDisplay(this.taskInfo.scheduled, {
                 dateFormat: 'MMM d',
-                timeFormat: 'h:mm a',
-                showTime: true
+                showTime: true,
+                userTimeFormat
             });
             
             // Create tooltip with full date/time info
             const tooltipText = formatDateTimeForDisplay(this.taskInfo.scheduled, {
                 dateFormat: 'MMM d, yyyy',
-                timeFormat: 'h:mm a',
-                showTime: true
+                showTime: true,
+                userTimeFormat
             });
             
             const scheduledSpan = container.createEl('span', {

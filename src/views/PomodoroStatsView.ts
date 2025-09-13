@@ -204,7 +204,8 @@ export class PomodoroStatsView extends ItemView {
             const sessionEl = this.recentSessionsEl.createDiv({ cls: 'pomodoro-session-item pomodoro-stats-view__session-item' });
             
             const dateEl = sessionEl.createSpan({ cls: 'session-date pomodoro-stats-view__session-date' });
-            dateEl.textContent = format(new Date(session.startTime), 'MMM d, HH:mm');
+            const timeFormat = this.plugin.settings.calendarViewSettings.timeFormat;
+            dateEl.textContent = format(new Date(session.startTime), timeFormat === '12' ? 'MMM d, h:mm a' : 'MMM d, HH:mm');
             
             const durationEl = sessionEl.createSpan({ cls: 'session-duration pomodoro-stats-view__session-duration' });
             const actualDuration = getSessionDuration(session);

@@ -55,8 +55,11 @@ jest.mock('../../../src/utils/dateUtils', () => ({
   isTodayTimeAware: jest.fn((date) => date === '2025-01-15'),
   isOverdueTimeAware: jest.fn((date) => date === '2020-01-01'),
   formatDateTimeForDisplay: jest.fn((date, options) => {
-    if (options?.dateFormat === '') return '2:30 PM';
-    if (date === '2025-01-15T14:30:00') return 'Jan 15, 2025 2:30 PM';
+    if (options?.dateFormat === '') return options?.userTimeFormat === '12' ? '2:30 PM' : '14:30';
+    if (date === '2025-01-15T14:30:00') {
+      return options?.userTimeFormat === '12' ? 'Jan 15, 2025 2:30 PM' : 'Jan 15, 2025 14:30';
+    }
+    if (date === '2025-01-15') return 'Jan 15, 2025';
     return 'Jan 15, 2025';
   }),
   getDatePart: jest.fn((date) => date?.split('T')[0] || ''),
@@ -165,7 +168,10 @@ describe('TaskCard Component', () => {
         singleClickAction: 'edit',
         doubleClickAction: 'none',
         showExpandableSubtasks: true,
-        subtaskChevronPosition: 'right'
+        subtaskChevronPosition: 'right',
+        calendarViewSettings: {
+          timeFormat: '12' // Default to 12-hour format for test consistency
+        }
       }
     };
 

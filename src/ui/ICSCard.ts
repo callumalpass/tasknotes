@@ -3,6 +3,7 @@ import TaskNotesPlugin from '../main';
 import { ICSEvent } from '../types';
 import { format } from 'date-fns';
 import { ICSEventContextMenu } from '../components/ICSEventContextMenu';
+import { formatTime } from '../utils/dateUtils';
 
 export interface ICSCardOptions {
     showDate: boolean;
@@ -12,17 +13,18 @@ export const DEFAULT_ICS_CARD_OPTIONS: ICSCardOptions = {
     showDate: true
 };
 
-function formatTimeRange(icsEvent: ICSEvent): string {
+function formatTimeRange(icsEvent: ICSEvent, plugin: TaskNotesPlugin): string {
     try {
         if (!icsEvent.start) return '';
         const start = new Date(icsEvent.start);
         if (icsEvent.allDay) {
             return 'All day';
         }
-        const startText = format(start, 'h:mm a');
+        const timeFormat = plugin.settings.calendarViewSettings.timeFormat;
+        const startText = formatTime(start, timeFormat);
         if (icsEvent.end) {
             const end = new Date(icsEvent.end);
-            const endText = format(end, 'h:mm a');
+            const endText = formatTime(end, timeFormat);
             return `${startText} – ${endText}`;
         }
         return startText;
@@ -75,7 +77,7 @@ export function createICSEventCard(icsEvent: ICSEvent, plugin: TaskNotesPlugin, 
     // Metadata line: time range • location • source
     const metadata = content.createEl('div', { cls: 'task-card__metadata' });
     const parts: string[] = [];
-    const timeText = formatTimeRange(icsEvent);
+    const timeText = formatTimeRange(icsEvent, plugin);
     if (timeText) parts.push(timeText);
     if (icsEvent.location) parts.push(icsEvent.location);
     parts.push(sourceName);
@@ -133,7 +135,7 @@ export function updateICSEventCard(element: HTMLElement, icsEvent: ICSEvent, plu
     const metadata = element.querySelector('.task-card__metadata') as HTMLElement | null;
     if (metadata) {
         const parts: string[] = [];
-        const timeText = formatTimeRange(icsEvent);
+        const timeText = formatTimeRange(icsEvent, plugin);
         if (timeText) parts.push(timeText);
         if (icsEvent.location) parts.push(icsEvent.location);
         parts.push(sourceName);

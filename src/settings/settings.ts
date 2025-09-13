@@ -890,21 +890,6 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 		new Setting(container).setName('Time settings').setHeading();
 
 		new Setting(container)
-			.setName('Time format')
-			.setDesc('Display times in 12-hour or 24-hour format')
-			.addDropdown(dropdown => {
-				dropdown.selectEl.setAttribute('aria-label', 'Time format');
-				return dropdown
-					.addOption('12', '12-hour (9:00 AM)')
-					.addOption('24', '24-hour (09:00)')
-					.setValue(this.plugin.settings.calendarViewSettings.timeFormat)
-					.onChange(async (value: any) => {
-						this.plugin.settings.calendarViewSettings.timeFormat = value;
-						await this.plugin.saveSettings();
-					});
-			});
-
-		new Setting(container)
 			.setName('Time slot duration')
 			.setDesc('Duration of each time slot in week and day views')
 			.addDropdown(dropdown => {
