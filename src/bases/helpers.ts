@@ -1,5 +1,6 @@
 import TaskNotesPlugin from '../main';
 import { TaskInfo } from '../types';
+import { setIcon } from 'obsidian';
 
 export interface BasesDataItem {
   key?: string;
@@ -71,23 +72,44 @@ export function createTaskInfoFromBasesData(basesItem: BasesDataItem, plugin?: T
 
 /**
  * Identify TaskNotes from Bases data by converting all items to TaskInfo
+ * Uses batch processing with async yielding to prevent UI freezing
  */
 export async function identifyTaskNotesFromBasesData(
   dataItems: BasesDataItem[],
   plugin?: TaskNotesPlugin,
-  toTaskInfo?: (item: BasesDataItem, plugin?: TaskNotesPlugin) => TaskInfo | null
+  toTaskInfo?: (item: BasesDataItem, plugin?: TaskNotesPlugin) => TaskInfo | null,
+  cancellation?: { cancelled: boolean }
 ): Promise<TaskInfo[]> {
   const taskInfoConverter = toTaskInfo || createTaskInfoFromBasesData;
   const taskNotes: TaskInfo[] = [];
-  for (const item of dataItems) {
-    if (!item?.path) continue;
-    try {
-      const taskInfo = taskInfoConverter(item, plugin);
-      if (taskInfo) taskNotes.push(taskInfo);
-    } catch (error) {
-      console.warn('[TaskNotes][BasesPOC] Error converting Bases item to TaskInfo:', error);
+  
+  // Process in batches to avoid blocking the UI
+  const batchSize = 50;
+  for (let i = 0; i < dataItems.length; i += batchSize) {
+    // Check for cancellation before processing each batch
+    if (cancellation?.cancelled) {
+      console.debug('[TaskNotes][Helpers] Task identification cancelled');
+      return [];
+    }
+    
+    const batch = dataItems.slice(i, i + batchSize);
+    
+    for (const item of batch) {
+      if (!item?.path) continue;
+      try {
+        const taskInfo = taskInfoConverter(item, plugin);
+        if (taskInfo) taskNotes.push(taskInfo);
+      } catch (error) {
+        console.warn('[TaskNotes][BasesPOC] Error converting Bases item to TaskInfo:', error);
+      }
+    }
+    
+    // Yield control to prevent UI freezing using requestAnimationFrame for smoother performance
+    if (i + batchSize < dataItems.length) {
+      await new Promise(resolve => requestAnimationFrame(resolve));
     }
   }
+  
   return taskNotes;
 }
 
@@ -161,14 +183,45 @@ export async function renderTaskNotesInBasesView(
   container: HTMLElement,
   taskNotes: TaskInfo[],
   plugin: TaskNotesPlugin,
-  basesContainer?: any
+  basesContainer?: any,
+  cancellation?: { cancelled: boolean } | null
 ): Promise<void> {
-  const { createTaskCard } = await import('../ui/TaskCard');
 
   const taskListEl = document.createElement('div');
   taskListEl.className = 'tn-bases-tasknotes-list';
   taskListEl.style.cssText = 'display: flex; flex-direction: column; gap: 1px;';
   container.appendChild(taskListEl);
+
+  // Show loading indicator for large datasets
+  let loadingIndicator: HTMLElement | null = null;
+  if (taskNotes.length > 200) {
+    loadingIndicator = container.createEl('div', {
+      cls: 'tn-bases-loading',
+      text: `Loading ${taskNotes.length} tasks...`
+    });
+    loadingIndicator.style.cssText = 'padding: 20px; text-align: center; color: var(--text-muted);';
+  }
+
+  // Render all tasks asynchronously with smooth batching
+  await renderAllTasksAsync(taskListEl, taskNotes, plugin, basesContainer, cancellation);
+
+  // Remove loading indicator
+  if (loadingIndicator) {
+    loadingIndicator.remove();
+  }
+}
+
+/**
+ * Render all tasks asynchronously with smooth batching - simpler approach
+ */
+async function renderAllTasksAsync(
+  container: HTMLElement,
+  taskNotes: TaskInfo[],
+  plugin: TaskNotesPlugin,
+  basesContainer: any,
+  cancellation?: { cancelled: boolean } | null
+): Promise<void> {
+  const { createTaskCard } = await import('../ui/TaskCard');
 
   // Get visible properties from Bases
   let visibleProperties: string[] | undefined;
@@ -184,50 +237,35 @@ export async function renderTaskNotesInBasesView(
     const basesVisibleProperties = getBasesVisibleProperties(basesContainer);
     
     if (basesVisibleProperties.length > 0) {
-      // Extract just the property IDs for TaskCard
-      visibleProperties = basesVisibleProperties.map(p => p.id);
-      
-      // Map common property names to TaskNotes property names
-      visibleProperties = visibleProperties.map(propId => {
+      visibleProperties = basesVisibleProperties.map(p => p.id).map(propId => {
         let mappedId = propId;
         
-        // First, try reverse field mapping for user's custom property names
+        // Apply field mappings (same logic as before)
         const internalFieldName = plugin.fieldMapper?.fromUserField(propId);
         if (internalFieldName) {
-          // User has a custom field mapping for this property
-          // Map it to the internal TaskNotes property name for proper rendering
           mappedId = internalFieldName;
         }
-        // Handle dotted properties like task.due -> due
         else if (propId.startsWith('task.')) {
           mappedId = propId.substring(5);
         }
-        // Handle note properties like note.projects -> projects
         else if (propId.startsWith('note.')) {
           const stripped = propId.substring(5);
-          
-          // Try reverse field mapping on the stripped property name
           const strippedInternalFieldName = plugin.fieldMapper?.fromUserField(stripped);
           if (strippedInternalFieldName) {
             mappedId = strippedInternalFieldName;
           }
-          // Map specific note properties to TaskNotes property names
           else if (stripped === 'dateCreated') mappedId = 'dateCreated';
           else if (stripped === 'dateModified') mappedId = 'dateModified';
           else if (stripped === 'completedDate') mappedId = 'completedDate';
-          else mappedId = stripped; // projects, contexts, tags, and any other arbitrary properties
+          else mappedId = stripped;
         }
-        // Handle file properties
         else if (propId === 'file.ctime') mappedId = 'dateCreated';
         else if (propId === 'file.mtime') mappedId = 'dateModified';
-        else if (propId === 'file.name') mappedId = 'title'; // Map file name to title
-        // Handle formula properties like formula.TESTST -> formula.TESTST (keep as-is for now)
+        else if (propId === 'file.name') mappedId = 'title';
         else if (propId.startsWith('formula.')) {
-          mappedId = propId; // Keep the full formula.TESTST format for property lookup
+          mappedId = propId;
         }
         
-        // Pass through arbitrary properties unchanged
-        // These will be handled by the generic property renderer in TaskCard
         return mappedId;
       });
     }
@@ -240,19 +278,222 @@ export async function renderTaskNotesInBasesView(
     ];
   }
 
-  for (const taskInfo of taskNotes) {
-    try {
-      const taskCard = createTaskCard(taskInfo, plugin, visibleProperties, cardOptions);
-      taskListEl.appendChild(taskCard);
-    } catch (error) {
-      console.warn('[TaskNotes][BasesPOC] Error creating task card:', error);
+  // Render all tasks in very small batches for less blocking
+  const batchSize = taskNotes.length > 1000 ? 5 : 10; // Smaller batches for large datasets
+  const yieldDelay = taskNotes.length > 1000 ? 50 : 16; // Longer delays for large datasets
+  
+  for (let i = 0; i < taskNotes.length; i += batchSize) {
+    // Check for cancellation before processing each batch
+    if (cancellation?.cancelled) {
+      console.debug('[TaskNotes][AsyncRender] Async rendering cancelled');
+      return;
+    }
+    
+    const batch = taskNotes.slice(i, i + batchSize);
+    const fragment = document.createDocumentFragment();
+    
+    for (const taskInfo of batch) {
+      try {
+        const taskCard = createTaskCard(taskInfo, plugin, visibleProperties, cardOptions);
+        fragment.appendChild(taskCard);
+      } catch (error) {
+        console.warn('[TaskNotes][AsyncRender] Error creating task card:', error);
+      }
+    }
+    
+    // Add the entire batch at once
+    container.appendChild(fragment);
+    
+    // Use longer delays to be less blocking, especially for large datasets
+    if (i + batchSize < taskNotes.length) {
+      await new Promise(resolve => setTimeout(resolve, yieldDelay));
     }
   }
 }
 
+
 /**
  * Render a raw Bases data item for debugging/inspection
  */
+/**
+ * Show performance warning dialog for large datasets
+ */
+export async function showPerformanceWarning(taskCount: number): Promise<boolean> {
+  return new Promise((resolve) => {
+    // Create modal overlay
+    const overlay = document.createElement('div');
+    overlay.className = 'tn-performance-warning-overlay';
+    overlay.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      backdrop-filter: blur(2px);
+    `;
+
+    // Create modal content
+    const modal = document.createElement('div');
+    modal.className = 'tn-performance-warning-modal';
+    modal.style.cssText = `
+      background: var(--background-primary);
+      border: 1px solid var(--background-modifier-border);
+      border-radius: 8px;
+      padding: 24px;
+      max-width: 480px;
+      margin: 20px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    `;
+
+    // Warning icon and title
+    const header = document.createElement('div');
+    header.style.cssText = 'display: flex; align-items: center; margin-bottom: 16px;';
+    
+    // Create warning icon using Lucide
+    const iconEl = document.createElement('div');
+    iconEl.style.cssText = 'margin-right: 12px; color: var(--text-warning); display: flex; align-items: center;';
+    setIcon(iconEl, 'alert-triangle');
+    header.appendChild(iconEl);
+    
+    // Create title text
+    const titleEl = document.createElement('div');
+    titleEl.style.cssText = 'font-size: 18px; font-weight: 600; color: var(--text-normal);';
+    titleEl.textContent = 'Performance Warning';
+    header.appendChild(titleEl);
+    modal.appendChild(header);
+
+    // Warning message
+    const message = document.createElement('div');
+    message.style.cssText = 'margin-bottom: 20px; line-height: 1.5; color: var(--text-normal);';
+    
+    // Create intro paragraph
+    const intro = document.createElement('p');
+    intro.style.cssText = 'margin: 0 0 12px 0;';
+    intro.textContent = 'This query returned ';
+    
+    const taskCountStrong = document.createElement('strong');
+    taskCountStrong.textContent = taskCount.toLocaleString() + ' tasks';
+    intro.appendChild(taskCountStrong);
+    
+    const introEnd = document.createTextNode(', which may cause performance issues:');
+    intro.appendChild(introEnd);
+    message.appendChild(intro);
+    
+    // Create issues list
+    const issuesList = document.createElement('ul');
+    issuesList.style.cssText = 'margin: 0 0 12px 20px; padding: 0;';
+    
+    const issues = ['Slow rendering and UI freezing', 'Decreased responsiveness'];
+    issues.forEach(issue => {
+      const li = document.createElement('li');
+      li.textContent = issue;
+      issuesList.appendChild(li);
+    });
+    message.appendChild(issuesList);
+    
+    // Create advice paragraph
+    const advice = document.createElement('p');
+    advice.style.cssText = 'margin: 0; font-weight: 500;';
+    advice.textContent = 'Consider refining your filter query to show fewer results, or continue if you need to see all tasks.';
+    message.appendChild(advice);
+    
+    modal.appendChild(message);
+
+    // Buttons
+    const buttonContainer = document.createElement('div');
+    buttonContainer.style.cssText = 'display: flex; gap: 12px; justify-content: flex-end;';
+
+    const cancelButton = document.createElement('button');
+    cancelButton.textContent = 'Cancel';
+    cancelButton.style.cssText = `
+      padding: 8px 16px;
+      border: 1px solid var(--background-modifier-border);
+      background: var(--background-secondary);
+      color: var(--text-normal);
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    `;
+
+    const continueButton = document.createElement('button');
+    continueButton.textContent = `Load All ${taskCount.toLocaleString()} Tasks`;
+    continueButton.style.cssText = `
+      padding: 8px 16px;
+      border: none;
+      background: var(--interactive-accent);
+      color: var(--text-on-accent);
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+    `;
+
+    // Button hover effects
+    cancelButton.addEventListener('mouseenter', () => {
+      cancelButton.style.background = 'var(--background-modifier-hover)';
+    });
+    cancelButton.addEventListener('mouseleave', () => {
+      cancelButton.style.background = 'var(--background-secondary)';
+    });
+
+    continueButton.addEventListener('mouseenter', () => {
+      continueButton.style.opacity = '0.9';
+    });
+    continueButton.addEventListener('mouseleave', () => {
+      continueButton.style.opacity = '1';
+    });
+
+    // Event handlers
+    const cleanup = () => {
+      overlay.remove();
+    };
+
+    cancelButton.addEventListener('click', () => {
+      cleanup();
+      resolve(false);
+    });
+
+    continueButton.addEventListener('click', () => {
+      cleanup();
+      resolve(true);
+    });
+
+    // Close on overlay click
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) {
+        cleanup();
+        resolve(false);
+      }
+    });
+
+    // Close on Escape key
+    const handleKeydown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        cleanup();
+        document.removeEventListener('keydown', handleKeydown);
+        resolve(false);
+      }
+    };
+    document.addEventListener('keydown', handleKeydown);
+
+    buttonContainer.appendChild(cancelButton);
+    buttonContainer.appendChild(continueButton);
+    modal.appendChild(buttonContainer);
+    overlay.appendChild(modal);
+    
+    // Add to document
+    document.body.appendChild(overlay);
+
+    // Focus the continue button by default
+    setTimeout(() => continueButton.focus(), 100);
+  });
+}
+
 export function renderBasesDataItem(container: HTMLElement, item: BasesDataItem, index: number): void {
   const itemEl = document.createElement('div');
   itemEl.className = 'tn-bases-data-item';

@@ -3,14 +3,12 @@
  * 
  * This module provides a factory function that creates TaskNotes views within the Bases plugin.
  * It handles formula computation, data transformation, and rendering of TaskNotes items in Bases views.
- * 
- * Key features:
- * - Formula computation with access to TaskNote properties
- * - Proper handling of missing/empty formula values
- * - Integration with Bases' view lifecycle management
  */
 import TaskNotesPlugin from '../main';
-import { BasesDataItem, identifyTaskNotesFromBasesData, renderTaskNotesInBasesView } from './helpers';
+import { BasesDataItem, identifyTaskNotesFromBasesData, getBasesVisibleProperties, showPerformanceWarning } from './helpers';
+import { TaskInfo } from '../types';
+import { createTaskCard, updateTaskCard } from '../ui/TaskCard';
+import { setIcon } from 'obsidian';
 
 export interface BasesContainerLike {
   results?: Map<any, any>;
@@ -23,13 +21,15 @@ export interface ViewConfig {
   errorPrefix: string;
 }
 
+
 export function buildTasknotesBaseViewFactory(plugin: TaskNotesPlugin, config: ViewConfig) {
   return function tasknotesBaseViewFactory(basesContainer: BasesContainerLike) {
     let currentRoot: HTMLElement | null = null;
+    let currentRenderCancellation: { cancelled: boolean } | null = null;
 
     const viewContainerEl = (basesContainer as any)?.viewContainerEl as HTMLElement | undefined;
     if (!viewContainerEl) {
-      console.error('[TaskNotes][BasesPOC] No viewContainerEl found');
+      console.error('[TaskNotes][Bases] No viewContainerEl found');
       return { destroy: () => {} } as any;
     }
 
@@ -40,7 +40,6 @@ export function buildTasknotesBaseViewFactory(plugin: TaskNotesPlugin, config: V
     root.className = 'tn-bases-integration tasknotes-plugin tasknotes-container';
     viewContainerEl.appendChild(root);
     currentRoot = root;
-
 
     const itemsContainer = document.createElement('div');
     itemsContainer.className = 'tn-bases-items-container';
@@ -62,92 +61,188 @@ export function buildTasknotesBaseViewFactory(plugin: TaskNotesPlugin, config: V
             properties: (value as any)?.properties || (value as any)?.frontmatter,
             basesData: value
           };
-          
           dataItems.push(item);
         }
       }
-      
       return dataItems;
     };
 
     const render = async () => {
       if (!currentRoot) return;
+      
+      if (currentRenderCancellation) {
+        currentRenderCancellation.cancelled = true;
+      }
+      
+      const renderCancellation = { cancelled: false };
+      currentRenderCancellation = renderCancellation;
+      
+      const startTime = performance.now();
+      
       try {
         const dataItems = extractDataItems();
         
-        // Compute Bases formulas for TaskNotes items
-        // This ensures formulas have access to TaskNote-specific properties
+        // --- Formula Computation (leaving as is) ---
         const ctxFormulas = (basesContainer as any)?.ctx?.formulas;
         if (ctxFormulas && dataItems.length > 0) {
-          for (let i = 0; i < dataItems.length; i++) {
-            const item = dataItems[i];
-            const itemFormulaResults = item.basesData?.formulaResults;
-            if (!itemFormulaResults?.cachedFormulaOutputs) continue;
-            
-            for (const formulaName of Object.keys(ctxFormulas)) {
-              const formula = ctxFormulas[formulaName];
-              if (formula && typeof formula.getValue === 'function') {
-                try {
-                  const baseData = item.basesData;
-                  const taskProperties = item.properties || {};
-                  
-                  let result;
-                  
-                  // Temporarily merge TaskNote properties into frontmatter for formula access
-                  // This preserves Bases' internal object structure while providing item-specific data
-                  if (baseData.frontmatter && Object.keys(taskProperties).length > 0) {
-                    const originalFrontmatter = baseData.frontmatter;
-                    baseData.frontmatter = { ...originalFrontmatter, ...taskProperties };
-                    result = formula.getValue(baseData);
-                    baseData.frontmatter = originalFrontmatter; // Restore original state
-                  } else {
-                    result = formula.getValue(baseData);
-                  }
-                  
-                  // Store computed result for TaskCard rendering
-                  if (result !== undefined) {
-                    itemFormulaResults.cachedFormulaOutputs[formulaName] = result;
-                  }
-                } catch (e) {
-                  // Formulas may fail for various reasons (missing data, syntax errors, etc.)
-                  // This is expected behavior and doesn't require action
+            const formulaBatchSize = 25;
+            for (let i = 0; i < dataItems.length; i += formulaBatchSize) {
+                if (renderCancellation.cancelled) return;
+                const batch = dataItems.slice(i, i + formulaBatchSize);
+                for (const item of batch) {
+                    const itemFormulaResults = item.basesData?.formulaResults;
+                    if (!itemFormulaResults?.cachedFormulaOutputs) continue;
+                    for (const formulaName of Object.keys(ctxFormulas)) {
+                        const formula = ctxFormulas[formulaName];
+                        if (formula && typeof formula.getValue === 'function') {
+                            try {
+                                const baseData = item.basesData;
+                                const taskProperties = item.properties || {};
+                                let result;
+                                if (baseData.frontmatter && Object.keys(taskProperties).length > 0) {
+                                    const originalFrontmatter = baseData.frontmatter;
+                                    baseData.frontmatter = { ...originalFrontmatter, ...taskProperties };
+                                    result = formula.getValue(baseData);
+                                    baseData.frontmatter = originalFrontmatter;
+                                } else {
+                                    result = formula.getValue(baseData);
+                                }
+                                if (result !== undefined) {
+                                    itemFormulaResults.cachedFormulaOutputs[formulaName] = result;
+                                }
+                            } catch (e) { /* Formula errors are expected */ }
+                        }
+                    }
                 }
-              }
+                if (i + formulaBatchSize < dataItems.length) {
+                    await new Promise(resolve => requestAnimationFrame(resolve));
+                }
             }
+        }
+
+        const taskNotes = await identifyTaskNotesFromBasesData(dataItems, plugin, undefined, renderCancellation);
+        
+        if (renderCancellation.cancelled) return;
+
+        // Performance warning for large datasets
+        if (taskNotes.length > 1000) {
+          const shouldContinue = await showPerformanceWarning(taskNotes.length);
+          if (!shouldContinue || renderCancellation.cancelled) {
+            // Show partial message
+            itemsContainer.innerHTML = '';
+            const partialEl = document.createElement('div');
+            partialEl.className = 'tn-bases-partial';
+            partialEl.style.cssText = 'padding: 20px; text-align: center; color: var(--text-muted);';
+            
+            // Create icon and title
+            const titleDiv = document.createElement('div');
+            titleDiv.style.cssText = 'margin-bottom: 8px; display: flex; align-items: center; justify-content: center; gap: 8px;';
+            
+            const iconEl = document.createElement('div');
+            iconEl.style.cssText = 'color: var(--text-warning); display: flex; align-items: center;';
+            setIcon(iconEl, 'alert-triangle');
+            titleDiv.appendChild(iconEl);
+            
+            const titleText = document.createElement('span');
+            titleText.textContent = 'Performance limit reached';
+            titleDiv.appendChild(titleText);
+            partialEl.appendChild(titleDiv);
+            
+            // Create description
+            const description = document.createElement('div');
+            description.style.cssText = 'font-size: 0.9em;';
+            description.textContent = `Found ${taskNotes.length} tasks, but loading was cancelled to prevent performance issues.`;
+            partialEl.appendChild(description);
+            
+            // Create advice
+            const advice = document.createElement('div');
+            advice.style.cssText = 'font-size: 0.9em; margin-top: 8px;';
+            advice.textContent = 'Consider refining your query to show fewer results.';
+            partialEl.appendChild(advice);
+            
+            itemsContainer.appendChild(partialEl);
+            return;
           }
         }
-        
-        
-        const taskNotes = await identifyTaskNotesFromBasesData(dataItems, plugin);
-        
 
-        // Render body
-        itemsContainer.innerHTML = '';
         if (taskNotes.length === 0) {
-          const emptyEl = document.createElement('div');
-          emptyEl.className = 'tn-bases-empty';
-          emptyEl.style.cssText = 'padding: 20px; text-align: center; color: #666;';
-          emptyEl.textContent = 'No TaskNotes tasks found for this Base.';
-          itemsContainer.appendChild(emptyEl);
-        } else {
-          // Build a map from task path to its properties/frontmatter
-          const pathToProps = new Map<string, Record<string, any>>(
-            dataItems.filter(i => !!i.path).map(i => [i.path || '', (i as any).properties || (i as any).frontmatter || {}])
-          );
-
-
-          // Apply Bases sorting if configured
-          const { getBasesSortComparator } = await import('./sorting');
-          const sortComparator = getBasesSortComparator(basesContainer, pathToProps);
-          if (sortComparator) {
-            taskNotes.sort(sortComparator);
-          }
-
-          // Render tasks using existing helper
-          await renderTaskNotesInBasesView(itemsContainer, taskNotes, plugin, basesContainer);
+            itemsContainer.innerHTML = '';
+            const emptyEl = document.createElement('div');
+            emptyEl.className = 'tn-bases-empty';
+            emptyEl.style.cssText = 'padding: 20px; text-align: center; color: var(--text-muted);';
+            emptyEl.textContent = 'No TaskNotes tasks found for this Base.';
+            itemsContainer.appendChild(emptyEl);
+            return;
         }
+
+        // --- Start of new rendering logic ---
+
+        // 1. Get card options and visible properties
+        let visibleProperties: string[] | undefined;
+        const cardOptions = {
+            showCheckbox: false,
+            showArchiveButton: false,
+            showTimeTracking: false,
+            showRecurringControls: true,
+            groupByDate: false
+        };
+
+        if (basesContainer) {
+            const basesVisibleProperties = getBasesVisibleProperties(basesContainer);
+            if (basesVisibleProperties.length > 0) {
+                visibleProperties = basesVisibleProperties.map(p => p.id).map(propId => {
+                    let mappedId = propId;
+                    const internalFieldName = plugin.fieldMapper?.fromUserField(propId);
+                    if (internalFieldName) mappedId = internalFieldName;
+                    else if (propId.startsWith('task.')) mappedId = propId.substring(5);
+                    else if (propId.startsWith('note.')) {
+                        const stripped = propId.substring(5);
+                        const strippedInternalFieldName = plugin.fieldMapper?.fromUserField(stripped);
+                        if (strippedInternalFieldName) mappedId = strippedInternalFieldName;
+                        else if (stripped === 'dateCreated') mappedId = 'dateCreated';
+                        else if (stripped === 'dateModified') mappedId = 'dateModified';
+                        else if (stripped === 'completedDate') mappedId = 'completedDate';
+                        else mappedId = stripped;
+                    }
+                    else if (propId === 'file.ctime') mappedId = 'dateCreated';
+                    else if (propId === 'file.mtime') mappedId = 'dateModified';
+                    else if (propId === 'file.name') mappedId = 'title';
+                    else if (propId.startsWith('formula.')) mappedId = propId;
+                    return mappedId;
+                });
+            }
+        }
+
+        if (!visibleProperties || visibleProperties.length === 0) {
+            visibleProperties = plugin.settings.defaultVisibleProperties || ['due', 'scheduled', 'projects', 'contexts', 'tags'];
+        }
+
+        // 2. Apply sorting
+        const pathToProps = new Map<string, Record<string, any>>(
+            dataItems.filter(i => !!i.path).map(i => [i.path || '', (i as any).properties || (i as any).frontmatter || {}])
+        );
+        const { getBasesSortComparator } = await import('./sorting');
+        const sortComparator = getBasesSortComparator(basesContainer, pathToProps);
+        if (sortComparator) {
+            taskNotes.sort(sortComparator);
+        }
+
+        // 3. Use the shared DOMReconciler
+        plugin.domReconciler.updateList<TaskInfo>(
+            itemsContainer,
+            taskNotes,
+            (task) => task.path, // getKey
+            (task) => createTaskCard(task, plugin, visibleProperties, cardOptions), // renderItem
+            (element, task) => updateTaskCard(element, task, plugin, visibleProperties, cardOptions) // updateItem
+        );
+        
+        const elapsed = performance.now() - startTime;
+        if (dataItems.length > 100 || elapsed > 1000) {
+          console.log(`[TaskNotes][Bases] Rendered ${taskNotes.length} tasks in ${elapsed.toFixed(0)}ms`);
+        }
+        
       } catch (error: any) {
-        console.error(`[TaskNotes][BasesPOC] Error rendering Bases ${config.errorPrefix}:`, error);
+        console.error(`[TaskNotes][Bases] Error rendering Bases ${config.errorPrefix}:`, error);
         const errorEl = document.createElement('div');
         errorEl.className = 'tn-bases-error';
         errorEl.style.cssText = 'padding: 20px; color: #d73a49; background: #ffeaea; border-radius: 4px; margin: 10px 0;';
@@ -156,23 +251,15 @@ export function buildTasknotesBaseViewFactory(plugin: TaskNotesPlugin, config: V
       }
     };
 
-    // Kick off initial async render
     void render();
 
-    // Create view object with proper listener management
     let queryListener: (() => void) | null = null;
     
     const viewObject = {
       refresh: render,
-      onResize: () => {
-        // Handle resize - no-op for now
-      },
-      onDataUpdated: () => {
-        void render();
-      },
-      getEphemeralState: () => {
-        return { scrollTop: currentRoot?.scrollTop || 0 };
-      },
+      onResize: () => {},
+      onDataUpdated: () => { void render(); },
+      getEphemeralState: () => ({ scrollTop: currentRoot?.scrollTop || 0 }),
       setEphemeralState: (state: any) => {
         if (state?.scrollTop && currentRoot) {
           currentRoot.scrollTop = state.scrollTop;
@@ -180,11 +267,7 @@ export function buildTasknotesBaseViewFactory(plugin: TaskNotesPlugin, config: V
       },
       destroy: () => {
         if (queryListener && (basesContainer as any)?.query?.off) {
-          try {
-            (basesContainer as any).query.off('change', queryListener);
-          } catch (e) {
-            // Query listener removal may fail if already disposed
-          }
+          try { (basesContainer as any).query.off('change', queryListener); } catch (e) {}
         }
         if (currentRoot) {
           currentRoot.remove();
@@ -195,30 +278,18 @@ export function buildTasknotesBaseViewFactory(plugin: TaskNotesPlugin, config: V
       load: () => {
         if ((basesContainer as any)?.query?.on && !queryListener) {
           queryListener = () => void render();
-          try {
-            (basesContainer as any).query.on('change', queryListener);
-          } catch (e) {
-            // Query listener registration may fail for various reasons
-          }
+          try { (basesContainer as any).query.on('change', queryListener); } catch (e) {}
         }
-        
-        // Trigger initial formula computation on load
         const controller = (basesContainer as any)?.controller;
         if (controller?.runQuery) {
-          controller.runQuery().then(() => {
-            void render(); // Re-render with computed formulas
-          }).catch((e: any) => {
+          controller.runQuery().then(() => { void render(); }).catch((e: any) => {
             console.warn('[TaskNotes][Bases] Initial formula computation failed:', e);
           });
         }
       },
       unload: () => {
         if (queryListener && (basesContainer as any)?.query?.off) {
-          try {
-            (basesContainer as any).query.off('change', queryListener);
-          } catch (e) {
-            // Query listener removal may fail if already disposed
-          }
+          try { (basesContainer as any).query.off('change', queryListener); } catch (e) {}
         }
         if (currentRoot) {
           currentRoot.remove();
