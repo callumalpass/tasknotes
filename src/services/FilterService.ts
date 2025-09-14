@@ -8,6 +8,8 @@ import { FilterUtils, FilterValidationError, FilterEvaluationError, TaskProperty
 import { isDueByRRule, filterEmptyProjects, getEffectiveTaskStatus } from '../utils/helpers';
 import { format } from 'date-fns';
 import { splitListPreservingLinksAndQuotes } from '../utils/stringSplit';
+import { TaskRelationshipUtils } from '../utils/TaskRelationshipUtils';
+
 import {
     getTodayString,
     isBeforeDateSafe,
@@ -30,6 +32,7 @@ export class FilterService extends EventEmitter {
     private cacheManager: MinimalNativeCache;
     private statusManager: StatusManager;
     private priorityManager: PriorityManager;
+    private taskRelationshipUtils: TaskRelationshipUtils;
 
     // Query result caching for repeated filter operations
     private indexQueryCache = new Map<string, Set<string>>();
@@ -55,6 +58,7 @@ export class FilterService extends EventEmitter {
         this.cacheManager = cacheManager;
         this.statusManager = statusManager;
         this.priorityManager = priorityManager;
+        this.taskRelationshipUtils = new TaskRelationshipUtils(plugin);
     }
 
     /**
@@ -76,8 +80,11 @@ export class FilterService extends EventEmitter {
             // Apply full filter query to the reduced candidate set
             const filteredTasks = candidateTasks.filter(task => this.evaluateFilterNode(query, task, targetDate));
 
+            // Apply subtask filtering if enabled
+            const finalFilteredTasks = this.taskRelationshipUtils.filterSubtasks(filteredTasks);
+
             // Sort the filtered results (flat sort)
-            const sortedTasks = this.sortTasks(filteredTasks, query.sortKey || 'due', query.sortDirection || 'asc');
+            const sortedTasks = this.sortTasks(finalFilteredTasks, query.sortKey || 'due', query.sortDirection || 'asc');
 
             // Expose current sort to group ordering logic (used when groupKey === sortKey)
             this.currentSortKey = (query.sortKey || 'due');

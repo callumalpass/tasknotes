@@ -273,5 +273,7 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	// Bases integration defaults
 	enableBases: true,
 	// Recurring task behavior defaults
-	maintainDueDateOffsetInRecurring: false
+	maintainDueDateOffsetInRecurring: false,
+	// View display defaults
+	hideChildTasks: false // Show subtasks by default
 };

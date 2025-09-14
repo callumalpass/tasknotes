@@ -503,6 +503,18 @@ export function renderAppearanceTab(container: HTMLElement, plugin: TaskNotesPlu
         }
     });
 
+    createToggleSetting(container, {
+        name: 'Hide subtasks',
+        desc: 'When enabled, subtasks (tasks that reference other tasks as projects) will be hidden from all views and only shown as expandable subtasks under their parent tasks',
+        getValue: () => plugin.settings.hideChildTasks,
+        setValue: async (value: boolean) => {
+            plugin.settings.hideChildTasks = value;
+            save();
+            // Refresh views to apply the change
+            plugin.notifyDataChanged();
+        }
+    });
+
     if (plugin.settings.showExpandableSubtasks) {
         createDropdownSetting(container, {
             name: 'Subtask chevron position',
