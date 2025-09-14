@@ -1565,12 +1565,9 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
                 await this.plugin.taskService.updateProperty(taskInfo, 'scheduled', newDateString);
                 new Notice('Rescheduled next occurrence. This does not change the recurrence pattern.');
                 
-                // The refresh will happen automatically via EVENT_TASK_UPDATED listener
-                
             } else if (isPatternInstance) {
                 // Dragging Pattern Instances: Updates DTSTART in RRULE and recalculates task.scheduled
                 await this.handlePatternInstanceDrop(taskInfo, newStart, allDay);
-                // Note: handlePatternInstanceDrop already calls refreshEvents()
                 
             } else if (isRecurringInstance) {
                 // Legacy support: Handle old-style recurring instances (time changes only)
@@ -1587,8 +1584,6 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
                 }
                 
                 await this.plugin.taskService.updateProperty(taskInfo, 'scheduled', updatedScheduled);
-                
-                // The refresh will happen automatically via EVENT_TASK_UPDATED listener
                 
             } else {
                 // Handle non-recurring events normally
@@ -1609,8 +1604,9 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
             
             // For recurring tasks, we need special handling
             if (isRecurringUpdate) {
-                console.log('Recurring task drop completed', { 
+                console.log('[AdvancedCalendarView] Recurring task drop completed - letting ViewPerformanceService handle update', {
                     taskPath: taskInfo.path,
+                    type: isPatternInstance ? 'pattern' : isNextScheduledOccurrence ? 'next-occurrence' : 'legacy',
                     newStart: newStart?.toISOString(),
                     isPatternInstance,
                     isNextScheduledOccurrence
@@ -1629,26 +1625,14 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
                     const freshTask = await this.plugin.cacheManager.getTaskInfo(taskInfo.path);
                     
                     if (freshTask && freshTask.recurrence !== originalRecurrence) {
-                        console.log('Task data confirmed updated, refreshing calendar');
-                        
-                        // Remove all existing events for this task to ensure clean state
-                        if (this.calendar) {
-                            const allEvents = this.calendar.getEvents();
-                            const taskEvents = allEvents.filter(event => 
-                                event.extendedProps.taskInfo?.path === taskInfo.path
-                            );
-                            
-                            taskEvents.forEach(event => event.remove());
-                            
-                            // Force a complete refresh
-                            await this.refreshEvents();
-                        }
+                        console.log('Task data confirmed updated - ViewPerformanceService will handle calendar update');
+
+                        // Don't do manual refresh - let the centralized service handle it
+                        // The updateProperty call already triggered EVENT_TASK_UPDATED
                     } else {
-                        console.log('Task data not yet updated, waiting longer...');
-                        // Try again after another delay
-                        setTimeout(async () => {
-                            await this.refreshEvents();
-                        }, 1000);
+                        console.log('Task data not yet updated, but ViewPerformanceService will handle it when ready');
+
+                        // Don't force additional refreshes - trust the centralized system
                     }
                 }, 1500); // 1.5 second initial delay for slow systems
             }
@@ -2658,15 +2642,37 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 
             // Generate new events for the task
             const newEvents = await this.generateEventsForTaskByPath(taskPath);
+            const eventsAfterRemoval = this.calendar.getEvents().length;
 
             // Add new events to calendar
             for (const event of newEvents) {
+                // Check for duplicate before adding
+                const existingEvent = this.calendar.getEventById(event.id!);
+                if (existingEvent) {
+                    console.warn(`[AdvancedCalendarView] Duplicate event detected: ${event.id} (source: ${existingEvent.source?.id}), removing existing before adding new`);
+                    existingEvent.remove();
+                }
+
+                console.log(`[AdvancedCalendarView] Adding event: ${event.id} for task ${taskPath}`);
                 this.calendar.addEvent(event);
             }
 
             // Verify final state
             const allEventsAfter = this.calendar.getEvents();
-            console.log(`[AdvancedCalendarView] After update: ${allEventsAfter.length} total events, added ${newEvents.length} for task ${taskPath}`);
+            const expectedAfter = eventsAfterRemoval + newEvents.length;
+
+            if (allEventsAfter.length !== expectedAfter) {
+                console.error(`[AdvancedCalendarView] EVENT ADDITION INCONSISTENCY! Expected ${expectedAfter}, got ${allEventsAfter.length}. AfterRemoval: ${eventsAfterRemoval}, Added: ${newEvents.length}`);
+
+                // EMERGENCY: Calendar state is corrupted, trigger controlled full refresh to recover
+                console.error(`[AdvancedCalendarView] Calendar state corrupted, triggering emergency full refresh`);
+                setTimeout(() => {
+                    this.refreshEvents(true);
+                }, 100); // Small delay to let current operation complete
+
+            } else {
+                console.log(`[AdvancedCalendarView] After update: ${allEventsAfter.length} total events, added ${newEvents.length} for task ${taskPath}`);
+            }
 
         } catch (error) {
             console.error(`[AdvancedCalendarView] Error updating specific event for ${taskPath}:`, error);
@@ -2677,6 +2683,7 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
     private removeEventsForTask(taskPath: string): void {
         if (!this.calendar) return;
 
+        const eventsBefore = this.calendar.getEvents().length;
         const events = this.calendar.getEvents();
         const eventsToRemove = events.filter(event => {
             // More comprehensive event matching
@@ -2692,11 +2699,70 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
             );
         });
 
+        console.log(`[AdvancedCalendarView] Found ${eventsToRemove.length} events to remove for task ${taskPath}`);
         eventsToRemove.forEach(event => {
-            console.log(`[AdvancedCalendarView] Removing event: ${event.id} for task ${taskPath}`);
-            event.remove();
+            console.log(`[AdvancedCalendarView] Removing event: ${event.id} (source: ${event.source?.id}) for task ${taskPath}`);
+
+            // Try multiple removal approaches for better reliability
+            try {
+                event.remove();
+
+                // Double-check removal worked by trying to find the event again
+                if (this.calendar) {
+                    const stillExists = this.calendar.getEventById(event.id);
+                    if (stillExists) {
+                        console.warn(`[AdvancedCalendarView] Event ${event.id} still exists after .remove(), trying alternative removal`);
+
+                        // Alternative: Remove by ID directly from calendar
+                        const allEvents = this.calendar.getEvents();
+                        const matchingEvents = allEvents.filter(e => e.id === event.id);
+                        matchingEvents.forEach(e => {
+                            try {
+                                e.remove();
+                            } catch (err) {
+                                console.error(`[AdvancedCalendarView] Failed to remove event ${e.id}:`, err);
+                            }
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error(`[AdvancedCalendarView] Error removing event ${event.id}:`, error);
+            }
         });
-        console.log(`[AdvancedCalendarView] Removed ${eventsToRemove.length} events for task ${taskPath}`);
+
+        // Verify removal worked
+        const eventsAfter = this.calendar.getEvents().length;
+        const expectedAfter = eventsBefore - eventsToRemove.length;
+
+        if (eventsAfter !== expectedAfter) {
+            console.error(`[AdvancedCalendarView] EVENT REMOVAL FAILED! Expected ${expectedAfter} events, got ${eventsAfter}. Before: ${eventsBefore}, ToRemove: ${eventsToRemove.length}`);
+
+            // Emergency: Try to find remaining events for this task
+            const remainingEvents = this.calendar.getEvents().filter(event => {
+                const taskInfo = event.extendedProps?.taskInfo;
+                const eventId = event.id;
+                return (
+                    taskInfo?.path === taskPath ||
+                    eventId?.includes(taskPath) ||
+                    eventId?.startsWith(`scheduled-${taskPath}`) ||
+                    eventId?.startsWith(`due-${taskPath}`)
+                );
+            });
+
+            if (remainingEvents.length > 0) {
+                console.error(`[AdvancedCalendarView] Found ${remainingEvents.length} remaining events that should have been removed:`,
+                    remainingEvents.map(e => ({ id: e.id, source: e.source?.id })));
+
+                // EMERGENCY: Removal completely failed, trigger controlled full refresh to recover
+                console.error(`[AdvancedCalendarView] Event removal failed, triggering emergency full refresh to prevent corruption`);
+                setTimeout(() => {
+                    this.refreshEvents(true);
+                }, 100); // Small delay to let current operation complete
+                return; // Don't continue with selective update
+            }
+        } else {
+            console.log(`[AdvancedCalendarView] Successfully removed ${eventsToRemove.length} events. Total: ${eventsBefore} → ${eventsAfter}`);
+        }
     }
 
     private async generateEventsForTaskByPath(taskPath: string): Promise<EventInput[]> {
@@ -2841,8 +2907,10 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
             plugin: this.plugin,
             subscriptionName: subscriptionName,
             onUpdate: () => {
-                // Refresh the calendar to show any newly created/linked notes
-                this.refreshEvents();
+                // For ICS events, we might need manual refresh since they're not managed by ViewPerformanceService
+                // But let's try trusting the system first
+                console.log('[AdvancedCalendarView] ICS event updated - checking if refresh needed');
+                // Could add selective refresh logic here if needed
             }
         });
         
@@ -2855,8 +2923,8 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
             plugin: this.plugin,
             targetDate: targetDate,
             onUpdate: () => {
-                // Refresh the calendar to show any updates
-                this.refreshEvents();
+                // Don't refresh manually - ViewPerformanceService will handle task updates
+                console.log('[AdvancedCalendarView] Task context menu update - trusting ViewPerformanceService');
             }
         });
         
@@ -2940,7 +3008,7 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
                         if (confirmed) {
                             await this.plugin.taskService.deleteTimeEntry(taskInfo, timeEntryIndex);
                             new Notice('Time entry deleted');
-                            this.refreshEvents();
+                            console.log('[AdvancedCalendarView] Time entry deleted - trusting ViewPerformanceService for update');
                         }
                     } catch (error) {
                         console.error('Error deleting time entry:', error);
