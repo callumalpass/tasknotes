@@ -987,82 +987,79 @@ export function createTaskCard(task: TaskInfo, plugin: TaskNotesPlugin, visibleP
         attr: { style: 'display: none;' }
     });
     
-    plugin.projectSubtasksService.isTaskUsedAsProject(task.path).then((isProject: boolean) => {
-        if (isProject) {
-            projectIndicatorPlaceholder.className = 'task-card__project-indicator';
-            projectIndicatorPlaceholder.removeAttribute('style');
-            projectIndicatorPlaceholder.setAttribute('aria-label', 'This task is used as a project (click to filter subtasks)');
-            setTooltip(projectIndicatorPlaceholder, 'This task is used as a project (click to filter subtasks)', { placement: 'top' });
-            
-            // Use Obsidian's built-in folder icon for project tasks
-            setIcon(projectIndicatorPlaceholder, 'folder');
-            
-            // Add click handler to filter subtasks
-            projectIndicatorPlaceholder.addEventListener('click', async (e) => {
+    // Use synchronous project status check for better performance
+    const isProject = plugin.projectSubtasksService.isTaskUsedAsProjectSync(task.path);
+
+    if (isProject) {
+        projectIndicatorPlaceholder.className = 'task-card__project-indicator';
+        projectIndicatorPlaceholder.removeAttribute('style');
+        projectIndicatorPlaceholder.setAttribute('aria-label', 'This task is used as a project (click to filter subtasks)');
+        setTooltip(projectIndicatorPlaceholder, 'This task is used as a project (click to filter subtasks)', { placement: 'top' });
+
+        // Use Obsidian's built-in folder icon for project tasks
+        setIcon(projectIndicatorPlaceholder, 'folder');
+
+        // Add click handler to filter subtasks
+        projectIndicatorPlaceholder.addEventListener('click', async (e) => {
+            e.stopPropagation(); // Don't trigger card click
+            try {
+                await plugin.applyProjectSubtaskFilter(task);
+            } catch (error) {
+                console.error('Error filtering project subtasks:', error);
+                new Notice('Failed to filter project subtasks');
+            }
+        });
+
+        // Add chevron for expandable subtasks if feature is enabled
+        if (plugin.settings?.showExpandableSubtasks) {
+            chevronPlaceholder.className = 'task-card__chevron';
+            chevronPlaceholder.removeAttribute('style');
+
+            const isExpanded = plugin.expandedProjectsService?.isExpanded(task.path) || false;
+            if (isExpanded) {
+                chevronPlaceholder.classList.add('task-card__chevron--expanded');
+            }
+
+            chevronPlaceholder.setAttribute('aria-label', isExpanded ? 'Collapse subtasks' : 'Expand subtasks');
+            setTooltip(chevronPlaceholder, isExpanded ? 'Collapse subtasks' : 'Expand subtasks', { placement: 'top' });
+
+            // Use Obsidian's built-in chevron-right icon
+            setIcon(chevronPlaceholder, 'chevron-right');
+
+            // Add click handler to toggle expansion
+            chevronPlaceholder.addEventListener('click', async (e) => {
                 e.stopPropagation(); // Don't trigger card click
                 try {
-                    await plugin.applyProjectSubtaskFilter(task);
+                    if (!plugin.expandedProjectsService) {
+                        console.error('ExpandedProjectsService not initialized');
+                        new Notice('Service not available. Please try reloading the plugin.');
+                        return;
+                    }
+
+                    const newExpanded = plugin.expandedProjectsService.toggle(task.path);
+                    chevronPlaceholder.classList.toggle('task-card__chevron--expanded', newExpanded);
+                    chevronPlaceholder.setAttribute('aria-label', newExpanded ? 'Collapse subtasks' : 'Expand subtasks');
+                    setTooltip(chevronPlaceholder, newExpanded ? 'Collapse subtasks' : 'Expand subtasks', { placement: 'top' });
+
+                    // Toggle subtasks display
+                    await toggleSubtasks(card, task, plugin, newExpanded);
                 } catch (error) {
-                    console.error('Error filtering project subtasks:', error);
-                    new Notice('Failed to filter project subtasks');
+                    console.error('Error toggling subtasks:', error);
+                    new Notice('Failed to toggle subtasks');
                 }
             });
-            
-            // Add chevron for expandable subtasks if feature is enabled
-            if (plugin.settings?.showExpandableSubtasks) {
-                chevronPlaceholder.className = 'task-card__chevron';
-                chevronPlaceholder.removeAttribute('style');
-                
-                const isExpanded = plugin.expandedProjectsService?.isExpanded(task.path) || false;
-                if (isExpanded) {
-                    chevronPlaceholder.classList.add('task-card__chevron--expanded');
-                }
-                
-                chevronPlaceholder.setAttribute('aria-label', isExpanded ? 'Collapse subtasks' : 'Expand subtasks');
-                setTooltip(chevronPlaceholder, isExpanded ? 'Collapse subtasks' : 'Expand subtasks', { placement: 'top' });
-                
-                // Use Obsidian's built-in chevron-right icon
-                setIcon(chevronPlaceholder, 'chevron-right');
-                
-                // Add click handler to toggle expansion
-                chevronPlaceholder.addEventListener('click', async (e) => {
-                    e.stopPropagation(); // Don't trigger card click
-                    try {
-                        if (!plugin.expandedProjectsService) {
-                            console.error('ExpandedProjectsService not initialized');
-                            new Notice('Service not available. Please try reloading the plugin.');
-                            return;
-                        }
-                        
-                        const newExpanded = plugin.expandedProjectsService.toggle(task.path);
-                        chevronPlaceholder.classList.toggle('task-card__chevron--expanded', newExpanded);
-                        chevronPlaceholder.setAttribute('aria-label', newExpanded ? 'Collapse subtasks' : 'Expand subtasks');
-                        setTooltip(chevronPlaceholder, newExpanded ? 'Collapse subtasks' : 'Expand subtasks', { placement: 'top' });
-                        
-                        // Toggle subtasks display
-                        await toggleSubtasks(card, task, plugin, newExpanded);
-                    } catch (error) {
-                        console.error('Error toggling subtasks:', error);
-                        new Notice('Failed to toggle subtasks');
-                    }
+
+            // If already expanded, show subtasks
+            if (isExpanded) {
+                toggleSubtasks(card, task, plugin, true).catch(error => {
+                    console.error('Error showing initial subtasks:', error);
                 });
-                
-                // If already expanded, show subtasks
-                if (isExpanded) {
-                    toggleSubtasks(card, task, plugin, true).catch(error => {
-                        console.error('Error showing initial subtasks:', error);
-                    });
-                }
             }
-        } else {
-            projectIndicatorPlaceholder.remove();
-            chevronPlaceholder.remove();
         }
-    }).catch((error: any) => {
-        console.error('Error checking if task is used as project:', error);
+    } else {
         projectIndicatorPlaceholder.remove();
         chevronPlaceholder.remove();
-    });
+    }
     
     // Main content container
     const contentContainer = mainRow.createEl('div', { cls: 'task-card__content' });

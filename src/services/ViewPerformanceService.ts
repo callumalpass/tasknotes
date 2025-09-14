@@ -175,10 +175,14 @@ export class ViewPerformanceService {
                 // Too many updates, do full refresh
                 await handler.refresh();
             } else {
-                // Process selective updates
-                for (const path of pathsToUpdate) {
-                    await handler.updateForTask(path, 'update');
-                }
+                // Process selective updates in parallel for better performance
+                const updatePromises = pathsToUpdate.map(path =>
+                    handler.updateForTask(path, 'update').catch(error => {
+                        console.error(`[ViewPerformanceService] Error updating task ${path} in ${viewId}:`, error);
+                        // Don't rethrow - let other updates continue
+                    })
+                );
+                await Promise.all(updatePromises);
             }
 
         } catch (error) {

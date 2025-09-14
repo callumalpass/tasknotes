@@ -413,6 +413,9 @@ export default class TaskNotesPlugin extends Plugin {
 			// Initialize notification service
 			await this.notificationService.initialize();
 
+			// Build project status cache for better TaskCard performance
+			await this.projectSubtasksService.buildProjectStatusCache();
+
 			// Initialize and start auto-archive service
 			await this.autoArchiveService.start();
 
