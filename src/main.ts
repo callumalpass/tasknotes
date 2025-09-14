@@ -52,6 +52,7 @@ import { StatusManager } from './services/StatusManager';
 import { PriorityManager } from './services/PriorityManager';
 import { TaskService } from './services/TaskService';
 import { FilterService } from './services/FilterService';
+import { ViewPerformanceService } from './services/ViewPerformanceService';
 import { AutoArchiveService } from './services/AutoArchiveService';
 import { ViewStateManager } from './services/ViewStateManager';
 import { createTaskLinkOverlay, dispatchTaskUpdate } from './editor/TaskLinkOverlay';
@@ -133,6 +134,7 @@ export default class TaskNotesPlugin extends Plugin {
 	projectSubtasksService: ProjectSubtasksService;
 	expandedProjectsService: ExpandedProjectsService;
 	autoArchiveService: AutoArchiveService;
+	viewPerformanceService: ViewPerformanceService;
 
 	// Editor services
 	taskLinkDetectionService?: import('./services/TaskLinkDetectionService').TaskLinkDetectionService;
@@ -229,6 +231,7 @@ export default class TaskNotesPlugin extends Plugin {
 		this.migrationService = new MigrationService(this.app);
 		this.statusBarService = new StatusBarService(this);
 		this.notificationService = new NotificationService(this);
+		this.viewPerformanceService = new ViewPerformanceService(this);
 
 		// Connect AutoArchiveService to TaskService for status-based auto-archiving
 		this.taskService.setAutoArchiveService(this.autoArchiveService);
@@ -878,6 +881,11 @@ export default class TaskNotesPlugin extends Plugin {
 		// Clean up FilterService
 		if (this.filterService) {
 			this.filterService.cleanup();
+		}
+
+		// Clean up ViewPerformanceService
+		if (this.viewPerformanceService) {
+			this.viewPerformanceService.destroy();
 		}
 
 		// Clean up AutoArchiveService

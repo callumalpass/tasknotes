@@ -2855,11 +2855,16 @@ export class AdvancedCalendarView extends ItemView {
      */
     private async cleanupTaskVersionCache(): Promise<void> {
         try {
-            // This would need integration with CacheManager to get all known task paths
-            // const existingPaths = new Set<string>();
+            const allTaskPaths = this.plugin.cacheManager.getAllTaskPaths();
+            const existingPaths = new Set(allTaskPaths);
 
-            // Get all task paths from cache manager if available
-            // For now, we'll implement a basic cleanup based on cache size
+            for (const taskPath of this.taskVersionCache.keys()) {
+                if (!existingPaths.has(taskPath)) {
+                    this.taskVersionCache.delete(taskPath);
+                }
+            }
+
+            // As a fallback, clear cache if it gets too large
             if (this.taskVersionCache.size > 1000) {
                 // Clear cache if it gets too large - full refresh will repopulate it
                 console.log('Task version cache too large, clearing for memory management');

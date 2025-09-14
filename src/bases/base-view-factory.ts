@@ -26,6 +26,9 @@ export interface ViewConfig {
 export function buildTasknotesBaseViewFactory(plugin: TaskNotesPlugin, config: ViewConfig) {
   return function tasknotesBaseViewFactory(basesContainer: BasesContainerLike) {
     let currentRoot: HTMLElement | null = null;
+    let eventListener: any = null;
+    let updateDebounceTimer: number | null = null;
+    let currentTaskElements = new Map<string, HTMLElement>();
 
     const viewContainerEl = (basesContainer as any)?.viewContainerEl as HTMLElement | undefined;
     if (!viewContainerEl) {
@@ -144,7 +147,9 @@ export function buildTasknotesBaseViewFactory(plugin: TaskNotesPlugin, config: V
           }
 
           // Render tasks using existing helper
-          await renderTaskNotesInBasesView(itemsContainer, taskNotes, plugin, basesContainer);
+          // Clear existing task elements tracking before re-render
+          currentTaskElements.clear();
+          await renderTaskNotesInBasesView(itemsContainer, taskNotes, plugin, basesContainer, currentTaskElements);
         }
       } catch (error: any) {
         console.error(`[TaskNotes][BasesPOC] Error rendering Bases ${config.errorPrefix}:`, error);
@@ -156,8 +161,87 @@ export function buildTasknotesBaseViewFactory(plugin: TaskNotesPlugin, config: V
       }
     };
 
+    // Setup selective update handling for real-time task changes
+    const setupTaskUpdateListener = () => {
+      if (!eventListener) {
+        const { EVENT_TASK_UPDATED } = require('../types');
+        eventListener = plugin.emitter.on(EVENT_TASK_UPDATED, async (eventData: any) => {
+          try {
+            const updatedTask = eventData?.task || eventData?.taskInfo;
+            if (!updatedTask || !updatedTask.path) return;
+
+            // Check if this task affects our current Bases view
+            const currentTasks = extractDataItems();
+            const relevantTask = currentTasks.find(item => item.path === updatedTask.path);
+
+            if (relevantTask) {
+              // Task is visible in this Bases view - perform selective update
+              await selectiveUpdateTaskInBasesView(updatedTask);
+            }
+          } catch (error) {
+            console.error('[TaskNotes][Bases] Error in selective task update:', error);
+            // Fallback to full refresh
+            debouncedFullRefresh();
+          }
+        });
+      }
+    };
+
+    // Selective update for a single task within Bases view
+    const selectiveUpdateTaskInBasesView = async (updatedTask: any) => {
+      if (!currentRoot) return;
+
+      try {
+        const taskElement = currentTaskElements.get(updatedTask.path);
+        if (taskElement) {
+          // Update existing task element
+          const { updateTaskCard } = await import('../ui/TaskCard');
+          const basesProperties = (basesContainer as any)?.ctx?.formulas ?
+            Object.keys((basesContainer as any).ctx.formulas) : [];
+
+          updateTaskCard(taskElement, updatedTask, plugin, basesProperties, {
+            showDueDate: true,
+            showCheckbox: false,
+            showArchiveButton: false,
+            showTimeTracking: false,
+            showRecurringControls: true,
+          });
+
+          // Add update animation
+          taskElement.classList.add('task-card--updated');
+          window.setTimeout(() => {
+            taskElement.classList.remove('task-card--updated');
+          }, 1000);
+
+          console.log(`[TaskNotes][Bases] Selectively updated task: ${updatedTask.path}`);
+        } else {
+          // Task not currently visible, might need to be added - refresh to be safe
+          debouncedFullRefresh();
+        }
+      } catch (error) {
+        console.error('[TaskNotes][Bases] Error in selective task update:', error);
+        debouncedFullRefresh();
+      }
+    };
+
+    // Debounced refresh to prevent multiple rapid refreshes
+    const debouncedFullRefresh = () => {
+      if (updateDebounceTimer) {
+        clearTimeout(updateDebounceTimer);
+      }
+
+      updateDebounceTimer = window.setTimeout(async () => {
+        console.log('[TaskNotes][Bases] Performing debounced full refresh');
+        await render();
+        updateDebounceTimer = null;
+      }, 150);
+    };
+
     // Kick off initial async render
     void render();
+
+    // Setup real-time updates
+    setupTaskUpdateListener();
 
     // Create view object with proper listener management
     let queryListener: (() => void) | null = null;
@@ -179,6 +263,19 @@ export function buildTasknotesBaseViewFactory(plugin: TaskNotesPlugin, config: V
         }
       },
       destroy: () => {
+        // Clean up task update listener
+        if (eventListener) {
+          plugin.emitter.offref(eventListener);
+          eventListener = null;
+        }
+
+        // Clean up debounce timer
+        if (updateDebounceTimer) {
+          clearTimeout(updateDebounceTimer);
+          updateDebounceTimer = null;
+        }
+
+        // Clean up query listener
         if (queryListener && (basesContainer as any)?.query?.off) {
           try {
             (basesContainer as any).query.off('change', queryListener);
@@ -186,11 +283,16 @@ export function buildTasknotesBaseViewFactory(plugin: TaskNotesPlugin, config: V
             // Query listener removal may fail if already disposed
           }
         }
+
+        // Clean up DOM and state
         if (currentRoot) {
           currentRoot.remove();
           currentRoot = null;
         }
+        currentTaskElements.clear();
         queryListener = null;
+
+        console.log('[TaskNotes][Bases] Cleaned up view with real-time updates');
       },
       load: () => {
         if ((basesContainer as any)?.query?.on && !queryListener) {

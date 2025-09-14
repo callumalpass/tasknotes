@@ -12,14 +12,19 @@ import {
 // No helper functions needed from helpers
 import { perfMonitor } from '../utils/PerformanceMonitor';
 import { createTaskCard, updateTaskCard, refreshParentTaskSubtasks } from '../ui/TaskCard';
+import { initializeViewPerformance, cleanupViewPerformance, OptimizedView, selectiveUpdateForListView } from '../utils/viewOptimizations';
 import { FilterBar } from '../ui/FilterBar';
 import { GroupingUtils } from '../utils/GroupingUtils';
 import { FilterHeading } from '../ui/FilterHeading';
 import { GroupCountUtils } from '../utils/GroupCountUtils';
 
-export class TaskListView extends ItemView {
+export class TaskListView extends ItemView implements OptimizedView {
     plugin: TaskNotesPlugin;
-    
+
+    // Performance optimization properties
+    viewPerformanceService?: import('../services/ViewPerformanceService').ViewPerformanceService;
+    performanceConfig?: import('../services/ViewPerformanceService').ViewPerformanceConfig;
+
     // UI elements
     private taskListContainer: HTMLElement | null = null;
     private loadingIndicator: HTMLElement | null = null;
@@ -35,7 +40,7 @@ export class TaskListView extends ItemView {
     private currentQuery: FilterQuery;
     
     // Task item tracking for dynamic updates
-    private taskElements: Map<string, HTMLElement> = new Map();
+    taskElements: Map<string, HTMLElement> = new Map();
     
     // Event listeners
     private listeners: EventRef[] = [];
@@ -96,53 +101,8 @@ export class TaskListView extends ItemView {
         });
         this.listeners.push(dateChangeListener);
         
-        // Listen for individual task updates
-        const taskUpdateListener = this.plugin.emitter.on(EVENT_TASK_UPDATED, async ({ path, originalTask, updatedTask }) => {
-            if (!path || !updatedTask) {
-                console.error('EVENT_TASK_UPDATED received invalid data:', { path, originalTask, updatedTask });
-                return;
-            }
-            
-            // Check if any parent task cards need their subtasks refreshed
-            await refreshParentTaskSubtasks(updatedTask, this.plugin, this.contentEl);
-            
-            // Check if this task is currently visible in our view
-            const taskElement = this.taskElements.get(path);
-            if (taskElement) {
-                // Task is visible - update it in place using TaskCard's update function
-                try {
-                    const visibleProperties = this.getCurrentVisibleProperties();
-                    updateTaskCard(taskElement, updatedTask, this.plugin, visibleProperties, {
-                        showDueDate: true,
-                        showCheckbox: false,
-                        showArchiveButton: true,
-                        showTimeTracking: true,
-                        showRecurringControls: true,
-                        groupByDate: false
-                    });
-                    
-                    // Add update animation for real user updates
-                    taskElement.classList.add('task-updated');
-                    setTimeout(() => {
-                        taskElement.classList.remove('task-updated');
-                    }, 1000);
-                } catch (error) {
-                    console.error('Error updating task card:', error);
-                    // Fallback to refresh if update fails
-                    this.refreshTasks();
-                }
-            } else {
-                // Task not currently visible - it might now match our filters, so refresh
-                this.refreshTasks();
-            }
-            
-            // Update FilterBar options when tasks are updated (may have new properties, contexts, etc.)
-            if (this.filterBar) {
-                const updatedFilterOptions = await this.plugin.filterService.getFilterOptions();
-                this.filterBar.updateFilterOptions(updatedFilterOptions);
-            }
-        });
-        this.listeners.push(taskUpdateListener);
+        // Performance optimization: Use ViewPerformanceService instead of direct task listeners
+        // The service will handle debouncing and selective updates
         
         // Listen for filter service data changes
         const filterDataListener = this.plugin.filterService.on('data-changed', () => {
@@ -167,8 +127,16 @@ export class TaskListView extends ItemView {
             if (savedQuery) {
                 this.currentQuery = savedQuery;
             }
-            
+
             await this.refresh();
+
+            // Initialize performance optimizations
+            initializeViewPerformance(this, {
+                viewId: TASK_LIST_VIEW_TYPE,
+                debounceDelay: 100,
+                maxBatchSize: 8,
+                changeDetectionEnabled: true
+            });
         } catch (error) {
             console.error('TaskListView: Error during onOpen:', error);
             // Fall back to the old polling approach if onReady fails
@@ -200,10 +168,13 @@ export class TaskListView extends ItemView {
     }
     
     async onClose() {
+        // Clean up performance optimizations
+        cleanupViewPerformance(this);
+
         // Remove event listeners
         this.listeners.forEach(listener => this.plugin.emitter.offref(listener));
         this.functionListeners.forEach(unsubscribe => unsubscribe());
-        
+
         // Clean up FilterBar
         if (this.filterBar) {
             this.filterBar.destroy();
@@ -215,7 +186,7 @@ export class TaskListView extends ItemView {
             this.filterHeading.destroy();
             this.filterHeading = null;
         }
-        
+
         this.contentEl.empty();
     }
     
@@ -232,8 +203,13 @@ export class TaskListView extends ItemView {
             await this.render();
         });
     }
-    
-    
+
+    // OptimizedView interface implementation
+    async updateForTask(taskPath: string, operation: 'update' | 'delete' | 'create'): Promise<void> {
+        // Use the generic list view selective update implementation
+        await selectiveUpdateForListView(this, taskPath, operation);
+    }
+
     async render() {
         const container = this.contentEl.createDiv({ cls: 'tasknotes-plugin tasknotes-container task-list-view-container' });
         
