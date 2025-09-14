@@ -509,7 +509,7 @@ export class TaskListView extends ItemView implements OptimizedView {
      * Render a flat task list using DOMReconciler for optimal performance
      */
     private renderTaskListWithReconciler(container: HTMLElement, tasks: TaskInfo[]) {
-        
+
         // Clear any elements without proper keys to avoid DOMReconciler confusion
         Array.from(container.children).forEach(child => {
             const element = child as HTMLElement;
@@ -517,10 +517,9 @@ export class TaskListView extends ItemView implements OptimizedView {
                 element.remove();
             }
         });
-        
-        
+
         try {
-            
+
             this.plugin.domReconciler.updateList<TaskInfo>(
                 container,
                 tasks,
@@ -718,13 +717,13 @@ export class TaskListView extends ItemView implements OptimizedView {
             const visibleProperties = this.getCurrentVisibleProperties();
             const taskCard = createTaskCard(task, this.plugin, visibleProperties, {
                 showDueDate: true,
-                showCheckbox: false, // TaskListView doesn't use checkboxes 
+                showCheckbox: false, // TaskListView doesn't use checkboxes
                 showArchiveButton: true,
                 showTimeTracking: true,
                 showRecurringControls: true,
                 groupByDate: false
             });
-            
+
             // Ensure the key is set for reconciler
             taskCard.dataset.key = task.path;
             

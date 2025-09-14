@@ -1426,6 +1426,7 @@ export function updateTaskCard(element: HTMLElement, task: TaskInfo, plugin: Tas
         existingRecurringIndicator.setAttribute('aria-label', `Recurring: ${frequencyDisplay}`);
     }
 
+
     // Update reminder indicator
     const existingReminderIndicator = element.querySelector('.task-card__reminder-indicator');
     if (task.reminders && task.reminders.length > 0 && !existingReminderIndicator) {
