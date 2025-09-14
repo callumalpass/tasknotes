@@ -34,6 +34,7 @@ export class MinimalNativeCache extends Events {
     private tasksByDate: Map<string, Set<string>> = new Map(); // YYYY-MM-DD -> task paths
     private tasksByStatus: Map<string, Set<string>> = new Map(); // status -> task paths
     private overdueTasks: Set<string> = new Set(); // overdue task paths
+    private projectReferences: Map<string, Set<string>> = new Map(); // project path -> Set<task paths that reference it>
     
     // Initialization state
     private initialized = false;
@@ -216,16 +217,17 @@ export class MinimalNativeCache extends Events {
      */
     private async indexTaskFile(file: TFile, frontmatter: any): Promise<void> {
         if (!this.fieldMapper) return;
-        
+
         try {
             const taskInfo = this.extractTaskInfoFromNative(file.path, frontmatter);
             if (!taskInfo) return;
-            
+
             // Update only essential indexes
             this.updateDateIndex(file.path, taskInfo);
             this.updateStatusIndex(file.path, taskInfo.status);
             this.updateOverdueIndex(file.path, taskInfo);
-            
+            this.updateProjectReferencesIndex(file.path, taskInfo.projects);
+
         } catch (error) {
             console.error(`Error indexing task ${file.path}:`, error);
         }
@@ -249,22 +251,77 @@ export class MinimalNativeCache extends Events {
     }
     
     /**
-     * Get all tasks by scanning native metadata cache
+     * Get all tasks by scanning native metadata cache with lazy evaluation
      */
     async getAllTasks(): Promise<TaskInfo[]> {
+        return this.getFilteredTasks();
+    }
+
+    /**
+     * Get filtered tasks with optional predicate for efficient querying
+     */
+    async getFilteredTasks(predicate?: (file: TFile, frontmatter: any) => boolean): Promise<TaskInfo[]> {
         const markdownFiles = this.app.vault.getMarkdownFiles()
             .filter(file => this.isValidFile(file.path));
-        
+
         const tasks: TaskInfo[] = [];
-        for (const file of markdownFiles) {
-            const metadata = this.app.metadataCache.getFileCache(file);
-            if (metadata?.frontmatter && this.isTaskFile(metadata.frontmatter)) {
-                const taskInfo = this.extractTaskInfoFromNative(file.path, metadata.frontmatter);
-                if (taskInfo) tasks.push(taskInfo);
+
+        // Process in batches to avoid blocking the main thread
+        const batchSize = 100;
+        for (let i = 0; i < markdownFiles.length; i += batchSize) {
+            const batch = markdownFiles.slice(i, i + batchSize);
+
+            for (const file of batch) {
+                const metadata = this.app.metadataCache.getFileCache(file);
+                if (metadata?.frontmatter && this.isTaskFile(metadata.frontmatter)) {
+                    // Apply optional filter early
+                    if (predicate && !predicate(file, metadata.frontmatter)) {
+                        continue;
+                    }
+
+                    const taskInfo = this.extractTaskInfoFromNative(file.path, metadata.frontmatter);
+                    if (taskInfo) tasks.push(taskInfo);
+                }
+            }
+
+            // Yield control between batches for better UI responsiveness
+            if (i + batchSize < markdownFiles.length) {
+                await new Promise(resolve => setTimeout(resolve, 1));
             }
         }
-        
+
         return tasks;
+    }
+
+    /**
+     * Stream tasks with callback for memory-efficient processing
+     */
+    async streamTasks(callback: (task: TaskInfo) => boolean | Promise<boolean>): Promise<void> {
+        const markdownFiles = this.app.vault.getMarkdownFiles()
+            .filter(file => this.isValidFile(file.path));
+
+        const batchSize = 50; // Smaller batch for streaming
+        for (let i = 0; i < markdownFiles.length; i += batchSize) {
+            const batch = markdownFiles.slice(i, i + batchSize);
+
+            for (const file of batch) {
+                const metadata = this.app.metadataCache.getFileCache(file);
+                if (metadata?.frontmatter && this.isTaskFile(metadata.frontmatter)) {
+                    const taskInfo = this.extractTaskInfoFromNative(file.path, metadata.frontmatter);
+                    if (taskInfo) {
+                        const shouldContinue = await callback(taskInfo);
+                        if (!shouldContinue) {
+                            return; // Early exit if callback returns false
+                        }
+                    }
+                }
+            }
+
+            // Yield control between batches
+            if (i + batchSize < markdownFiles.length) {
+                await new Promise(resolve => setTimeout(resolve, 1));
+            }
+        }
     }
     
     /**
@@ -274,6 +331,24 @@ export class MinimalNativeCache extends Events {
         this.ensureIndexesBuilt();
         const taskPaths = this.tasksByDate.get(date) || new Set();
         return Array.from(taskPaths);
+    }
+
+    /**
+     * Get tasks that reference a specific project file (O(1) lookup)
+     */
+    getTasksReferencingProject(projectPath: string): string[] {
+        this.ensureIndexesBuilt();
+        const referencingTasks = this.projectReferences.get(projectPath) || new Set();
+        return Array.from(referencingTasks);
+    }
+
+    /**
+     * Check if a file is used as a project (O(1) lookup)
+     */
+    isFileUsedAsProject(filePath: string): boolean {
+        this.ensureIndexesBuilt();
+        const referencingTasks = this.projectReferences.get(filePath);
+        return referencingTasks ? referencingTasks.size > 0 : false;
     }
     
     /**
@@ -956,7 +1031,53 @@ export class MinimalNativeCache extends Events {
             }
         }
     }
-    
+
+    private updateProjectReferencesIndex(taskPath: string, projects: string[] | null | undefined): void {
+        // Remove this task from all existing project references
+        for (const referencingTasks of this.projectReferences.values()) {
+            referencingTasks.delete(taskPath);
+        }
+
+        // Add to new project references
+        if (projects && projects.length > 0) {
+            for (const projectRef of projects) {
+                if (!projectRef || typeof projectRef !== 'string') continue;
+
+                let resolvedPath: string | null = null;
+
+                // Resolve wikilink format [[Note Name]]
+                if (projectRef.startsWith('[[') && projectRef.endsWith(']]')) {
+                    const linkedNoteName = projectRef.slice(2, -2).trim();
+                    const resolvedFile = this.app.metadataCache.getFirstLinkpathDest(linkedNoteName, '');
+                    if (resolvedFile) {
+                        resolvedPath = resolvedFile.path;
+                    }
+                } else {
+                    // Plain text reference - try to resolve
+                    const trimmedRef = projectRef.trim();
+                    const file = this.app.vault.getAbstractFileByPath(trimmedRef);
+                    if (file instanceof TFile) {
+                        resolvedPath = file.path;
+                    } else {
+                        // Try to find by basename
+                        const matchingFile = this.app.vault.getMarkdownFiles()
+                            .find(f => f.basename === trimmedRef);
+                        if (matchingFile) {
+                            resolvedPath = matchingFile.path;
+                        }
+                    }
+                }
+
+                if (resolvedPath) {
+                    if (!this.projectReferences.has(resolvedPath)) {
+                        this.projectReferences.set(resolvedPath, new Set());
+                    }
+                    this.projectReferences.get(resolvedPath)!.add(taskPath);
+                }
+            }
+        }
+    }
+
     // ========================================
     // EVENT HANDLERS
     // ========================================
@@ -1290,7 +1411,7 @@ export class MinimalNativeCache extends Events {
         }
     }
     
-    private isValidFile(path: string): boolean {
+    isValidFile(path: string): boolean {
         return !this.excludedFolders.some(folder => path.startsWith(folder));
     }
     
@@ -1299,20 +1420,26 @@ export class MinimalNativeCache extends Events {
         for (const taskSet of this.tasksByDate.values()) {
             taskSet.delete(path);
         }
-        
+
         // Remove from status indexes
         for (const statusSet of this.tasksByStatus.values()) {
             statusSet.delete(path);
         }
-        
+
         // Remove from overdue tasks
         this.overdueTasks.delete(path);
+
+        // Remove from project references indexes
+        for (const referencingTasks of this.projectReferences.values()) {
+            referencingTasks.delete(path);
+        }
     }
     
     private clearAllIndexes(): void {
         this.tasksByDate.clear();
         this.tasksByStatus.clear();
         this.overdueTasks.clear();
+        this.projectReferences.clear();
     }
     
     // ========================================
@@ -1363,6 +1490,7 @@ export class MinimalNativeCache extends Events {
             this.updateDateIndex(path, taskInfo);
             this.updateStatusIndex(path, taskInfo.status);
             this.updateOverdueIndex(path, taskInfo);
+            this.updateProjectReferencesIndex(path, taskInfo.projects);
         }
     }
     

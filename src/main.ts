@@ -416,6 +416,9 @@ export default class TaskNotesPlugin extends Plugin {
 			// Build project status cache for better TaskCard performance
 			await this.projectSubtasksService.buildProjectStatusCache();
 
+			// Ensure MinimalNativeCache project indexes are warmed up
+			await this.warmupProjectIndexes();
+
 			// Initialize and start auto-archive service
 			await this.autoArchiveService.start();
 
@@ -545,6 +548,50 @@ export default class TaskNotesPlugin extends Plugin {
 				console.error('Error during lazy service initialization:', error);
 			}
 		}, 10); // Small delay to ensure startup completes first
+	}
+
+	/**
+	 * Warmup project indexes in MinimalNativeCache for better performance
+	 */
+	private async warmupProjectIndexes(): Promise<void> {
+		try {
+			// Force MinimalNativeCache to build its indexes, including project references
+			// This will populate the projectReferences Map during startup
+			const warmupStartTime = Date.now();
+
+			// Trigger index building by accessing an indexed method
+			// This is more efficient than calling getAllTasks() which creates TaskInfo objects
+			const markdownFiles = this.app.vault.getMarkdownFiles()
+				.filter(file => this.cacheManager.isValidFile(file.path));
+
+			// Process in small batches to avoid blocking startup
+			const batchSize = 25;
+			let processedCount = 0;
+
+			for (let i = 0; i < markdownFiles.length; i += batchSize) {
+				const batch = markdownFiles.slice(i, i + batchSize);
+
+				for (const file of batch) {
+					const metadata = this.app.metadataCache.getFileCache(file);
+					if (metadata?.frontmatter) {
+						// This internally builds project references index
+						this.cacheManager.isFileUsedAsProject(file.path);
+						processedCount++;
+					}
+				}
+
+				// Yield control between batches to maintain startup responsiveness
+				if (i + batchSize < markdownFiles.length) {
+					await new Promise(resolve => setTimeout(resolve, 1));
+				}
+			}
+
+			const duration = Date.now() - warmupStartTime;
+			console.log(`[TaskNotes] Project indexes warmed up in ${duration}ms (${processedCount} files processed)`);
+
+		} catch (error) {
+			console.error('[TaskNotes] Error during project index warmup:', error);
+		}
 	}
 
 	/**
