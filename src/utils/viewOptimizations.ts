@@ -68,12 +68,14 @@ export function shouldRefreshForDateBasedView(
 ): boolean {
     if (!originalTask) return true;
 
-    // For date-based views (calendars, agendas), check if date-related fields changed
+    // For date-based views (calendars, agendas), check if date-related fields or visual properties changed
     return originalTask.due !== updatedTask.due ||
            originalTask.scheduled !== updatedTask.scheduled ||
            originalTask.status !== updatedTask.status ||
            originalTask.completedDate !== updatedTask.completedDate ||
-           originalTask.recurrence !== updatedTask.recurrence;
+           originalTask.recurrence !== updatedTask.recurrence ||
+           originalTask.priority !== updatedTask.priority || // Priority affects event visual appearance
+           originalTask.title !== updatedTask.title; // Title changes should be reflected
 }
 
 /**

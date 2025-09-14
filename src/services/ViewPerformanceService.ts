@@ -82,19 +82,21 @@ export class ViewPerformanceService {
      * Setup global event listener for task updates
      */
     private setupGlobalEventListener(): void {
-        this.eventListener = this.plugin.emitter.on(EVENT_TASK_UPDATED, async (eventData: any) => {
-            const updatedTask = eventData?.task || eventData?.taskInfo;
-            const originalTask = eventData?.originalTask;
-
-            if (!updatedTask || !updatedTask.path) {
-                console.log('[ViewPerformanceService] Invalid task update event, triggering full refresh for all views');
+        this.eventListener = this.plugin.emitter.on(EVENT_TASK_UPDATED, async ({ path, originalTask, updatedTask }) => {
+            if (!path || !updatedTask) {
+                console.log('[ViewPerformanceService] Invalid task update event - missing path or updatedTask, triggering full refresh for all views');
                 await this.triggerFullRefreshForAllViews();
                 return;
             }
 
+            // Ensure the updatedTask has the path (sometimes it might be missing from the task object itself)
+            if (!updatedTask.path) {
+                updatedTask.path = path;
+            }
+
             // Check global change detection
             if (!this.hasTaskChanged(updatedTask)) {
-                console.log(`[ViewPerformanceService] Skipping update for ${updatedTask.path} - no changes detected`);
+                console.log(`[ViewPerformanceService] Skipping update for ${path} - no changes detected`);
                 return;
             }
 
@@ -137,7 +139,9 @@ export class ViewPerformanceService {
         // Add to pending updates
         const pendingUpdates = this.viewPendingUpdates.get(viewId);
         if (pendingUpdates) {
+            const wasAlreadyPending = pendingUpdates.has(taskPath);
             pendingUpdates.add(taskPath);
+            console.log(`[ViewPerformanceService] Scheduled update for ${viewId}: ${taskPath} (already pending: ${wasAlreadyPending})`);
         }
 
         // Clear existing timer
@@ -225,8 +229,10 @@ export class ViewPerformanceService {
 
         if (cachedVersion !== currentVersion) {
             this.globalTaskVersionCache.set(task.path, currentVersion);
+            console.log(`[ViewPerformanceService] Task ${task.path} changed: ${cachedVersion} -> ${currentVersion}`);
             return true;
         }
+        console.log(`[ViewPerformanceService] Task ${task.path} unchanged: ${currentVersion}`);
         return false;
     }
 

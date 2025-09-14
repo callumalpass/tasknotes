@@ -7,7 +7,7 @@ import { RecurrenceContextMenu } from '../components/RecurrenceContextMenu';
 import { createTaskClickHandler, createTaskHoverHandler } from '../utils/clickHandlers';
 import { TimeblockInfoModal } from '../modals/TimeblockInfoModal';
 import { format, startOfDay, endOfDay } from 'date-fns';
-import { Calendar, EventApi } from '@fullcalendar/core';
+import { Calendar, EventApi, EventInput } from '@fullcalendar/core';
 import { 
     createDailyNote, 
     getDailyNote, 
@@ -23,7 +23,6 @@ import TaskNotesPlugin from '../main';
 import {
     ADVANCED_CALENDAR_VIEW_TYPE,
     EVENT_DATA_CHANGED,
-    EVENT_TASK_UPDATED,
     EVENT_DATE_CHANGED,
     EVENT_TIMEBLOCKING_TOGGLED,
     TaskInfo,
@@ -38,6 +37,7 @@ import { TaskEditModal } from '../modals/TaskEditModal';
 import { UnscheduledTasksSelectorModal, ScheduleTaskOptions } from '../modals/UnscheduledTasksSelectorModal';
 import { TimeblockCreationModal } from '../modals/TimeblockCreationModal';
 import { FilterBar } from '../ui/FilterBar';
+import { OptimizedView, initializeViewPerformance, cleanupViewPerformance, shouldRefreshForDateBasedView } from '../utils/viewOptimizations';
 import {
     hasTimeComponent,
     getDatePart,
@@ -84,8 +84,11 @@ interface CalendarEvent {
     };
 }
 
-export class AdvancedCalendarView extends ItemView {
+export class AdvancedCalendarView extends ItemView implements OptimizedView {
     plugin: TaskNotesPlugin;
+    viewPerformanceService?: import('../services/ViewPerformanceService').ViewPerformanceService;
+    performanceConfig?: import('../services/ViewPerformanceService').ViewPerformanceConfig;
+
     private calendar: Calendar | null = null;
     private listeners: EventRef[] = [];
     private functionListeners: (() => void)[] = [];
@@ -101,14 +104,9 @@ export class AdvancedCalendarView extends ItemView {
     // Track if we're waiting for a recurring task update
     private pendingRecurringUpdate = false;
 
-    // Performance optimization: Change detection and cache management
-    private taskVersionCache = new Map<string, string>(); // taskPath -> dateModified
-    private lastKnownTaskCount = 0;
+    // Legacy performance state (will be removed after migration)
     private lastRefreshTime = 0;
-
-    // Debouncing for cross-view performance
     private updateDebounceTimer: number | null = null;
-    private pendingUpdates = new Set<string>();
 
 
     // View toggles (keeping for calendar-specific display options)
@@ -1877,21 +1875,22 @@ export class AdvancedCalendarView extends ItemView {
             
             // Update the task's scheduled date
             await this.plugin.taskService.updateProperty(task, 'scheduled', scheduledDate);
-            
-            
+
+
             // Show success feedback
             const timeFormat = this.plugin.settings.calendarViewSettings.timeFormat;
             const dateFormat = dropInfo.allDay ? 'MMM d, yyyy' : (timeFormat === '12' ? 'MMM d, yyyy h:mm a' : 'MMM d, yyyy HH:mm');
             new Notice(`Task "${task.title}" scheduled for ${format(dropDate, dateFormat)}`);
-            
+
             // Remove any event that FullCalendar might have created from the drop
             if (dropInfo.draggedEl) {
                 // Remove the dragged element to prevent it from being rendered as an event
                 dropInfo.draggedEl.remove();
             }
-            
-            // Refresh calendar to show the new event with proper task data
-            this.refreshEvents();
+
+            // Don't do full refresh - let the centralized ViewPerformanceService handle the update
+            // The updateProperty call above will trigger an EVENT_TASK_UPDATED that will be processed efficiently
+            console.log(`[AdvancedCalendarView] Task drag-drop completed for ${taskPath}, letting ViewPerformanceService handle update`);
             
         } catch (error) {
             console.error('Error handling external drop:', error);
@@ -2144,28 +2143,13 @@ export class AdvancedCalendarView extends ItemView {
         });
         this.listeners.push(dateChangeListener);
         
-        // Listen for task updates - use debounced selective updates for cross-view performance
-        const taskUpdateListener = this.plugin.emitter.on(EVENT_TASK_UPDATED, async (eventData: any) => {
-            // Try to extract task info from event data
-            const updatedTask = eventData?.task || eventData?.taskInfo;
-
-            if (updatedTask && updatedTask.path) {
-                // Check if task actually changed to avoid unnecessary updates
-                if (!this.hasTaskChanged(updatedTask)) {
-                    console.log(`Skipping update for ${updatedTask.path} - no changes detected`);
-                    return;
-                }
-
-                // Add to pending updates and debounce to avoid refresh storms when multiple views are open
-                this.pendingUpdates.add(updatedTask.path);
-                this.debouncedUpdateCalendar();
-            } else {
-                // Fallback to full refresh if we can't identify the specific task
-                console.log('Task update event missing path info, doing full refresh');
-                this.debouncedFullRefresh();
-            }
+        // Initialize centralized performance optimizations
+        initializeViewPerformance(this, {
+            viewId: ADVANCED_CALENDAR_VIEW_TYPE,
+            debounceDelay: 500, // Even longer delay to batch rapid priority changes
+            maxBatchSize: 10,   // Higher batch size to avoid triggering full refreshes
+            changeDetectionEnabled: true
         });
-        this.listeners.push(taskUpdateListener);
         
         // Listen for filter service data changes
         const filterDataListener = this.plugin.filterService.on('data-changed', () => {
@@ -2610,13 +2594,161 @@ export class AdvancedCalendarView extends ItemView {
         // Status dots are visual indicators only - use context menu for status changes
     }
 
+    // OptimizedView interface implementation
+    async updateForTask(taskPath: string, operation: 'update' | 'delete' | 'create'): Promise<void> {
+        if (!this.calendar) return;
+
+        try {
+            console.log(`[AdvancedCalendarView] Processing ${operation} for ${taskPath}`);
+
+            switch (operation) {
+                case 'update':
+                    await this.updateSpecificEvent(taskPath);
+                    break;
+                case 'delete':
+                    this.removeEventsForTask(taskPath);
+                    break;
+                case 'create':
+                    // For new tasks, we need to check if they should be visible in current date range
+                    const task = await this.plugin.cacheManager.getTaskInfo(taskPath);
+                    if (task && this.shouldTaskBeVisible(task)) {
+                        await this.updateSpecificEvent(taskPath);
+                    } else {
+                        console.log(`[AdvancedCalendarView] New task ${taskPath} not visible in current view, skipping`);
+                    }
+                    break;
+            }
+        } catch (error) {
+            console.error(`[AdvancedCalendarView] Error in selective update for ${taskPath}:`, error);
+            // Fallback to partial refresh
+            await this.refreshEvents(false);
+        }
+    }
+
+    async refresh(force = false): Promise<void> {
+        await this.refreshEvents(force);
+    }
+
+    shouldRefreshForTask(originalTask: TaskInfo | undefined, updatedTask: TaskInfo): boolean {
+        return shouldRefreshForDateBasedView(originalTask, updatedTask);
+    }
+
+    // Helper methods for selective updates
+    private async updateSpecificEvent(taskPath: string): Promise<void> {
+        if (!this.calendar) return;
+
+        try {
+            // Get current events count before removal for debugging
+            const allEventsBefore = this.calendar.getEvents();
+            const existingEventsForTask = allEventsBefore.filter(event => {
+                const taskInfo = event.extendedProps?.taskInfo;
+                const eventId = event.id;
+                return (
+                    taskInfo?.path === taskPath ||
+                    eventId?.includes(taskPath) ||
+                    eventId?.startsWith(`scheduled-${taskPath}`) ||
+                    eventId?.startsWith(`due-${taskPath}`)
+                );
+            });
+
+            console.log(`[AdvancedCalendarView] Before update: ${allEventsBefore.length} total events, ${existingEventsForTask.length} for this task`);
+
+            // Remove existing events for this task
+            this.removeEventsForTask(taskPath);
+
+            // Generate new events for the task
+            const newEvents = await this.generateEventsForTaskByPath(taskPath);
+
+            // Add new events to calendar
+            for (const event of newEvents) {
+                this.calendar.addEvent(event);
+            }
+
+            // Verify final state
+            const allEventsAfter = this.calendar.getEvents();
+            console.log(`[AdvancedCalendarView] After update: ${allEventsAfter.length} total events, added ${newEvents.length} for task ${taskPath}`);
+
+        } catch (error) {
+            console.error(`[AdvancedCalendarView] Error updating specific event for ${taskPath}:`, error);
+            throw error;
+        }
+    }
+
+    private removeEventsForTask(taskPath: string): void {
+        if (!this.calendar) return;
+
+        const events = this.calendar.getEvents();
+        const eventsToRemove = events.filter(event => {
+            // More comprehensive event matching
+            const taskInfo = event.extendedProps?.taskInfo;
+            const eventId = event.id;
+
+            return (
+                taskInfo?.path === taskPath ||
+                eventId?.includes(taskPath.replace(/\s/g, '-')) || // Handle ID formatting
+                eventId?.startsWith(`scheduled-${taskPath}`) ||
+                eventId?.startsWith(`due-${taskPath}`) ||
+                eventId?.includes(taskPath)
+            );
+        });
+
+        eventsToRemove.forEach(event => {
+            console.log(`[AdvancedCalendarView] Removing event: ${event.id} for task ${taskPath}`);
+            event.remove();
+        });
+        console.log(`[AdvancedCalendarView] Removed ${eventsToRemove.length} events for task ${taskPath}`);
+    }
+
+    private async generateEventsForTaskByPath(taskPath: string): Promise<EventInput[]> {
+        try {
+            const taskInfo = await this.plugin.cacheManager.getTaskInfo(taskPath);
+            if (!taskInfo) return [];
+
+            // Use the existing comprehensive event generation method
+            const calendarEvents = await this.generateEventsForTask(taskInfo);
+
+            // Convert CalendarEvent[] to EventInput[]
+            return calendarEvents.map(event => ({
+                id: event.id,
+                title: event.title,
+                start: event.start,
+                end: event.end,
+                allDay: event.allDay,
+                backgroundColor: event.backgroundColor,
+                borderColor: event.borderColor,
+                textColor: event.textColor,
+                editable: event.editable,
+                extendedProps: event.extendedProps
+            }));
+
+        } catch (error) {
+            console.error(`[AdvancedCalendarView] Error generating events for ${taskPath}:`, error);
+            return [];
+        }
+    }
+
+    private shouldTaskBeVisible(task: TaskInfo): boolean {
+        if (!this.calendar) return false;
+
+        // Check if task has dates that would make it visible in current calendar view
+        const currentView = this.calendar.view;
+        const viewStart = currentView.activeStart;
+        const viewEnd = currentView.activeEnd;
+
+        // Check various date fields that could make the task visible
+        const taskDates = [
+            task.due && new Date(task.due),
+            task.scheduled && new Date(task.scheduled),
+            task.completedDate && new Date(task.completedDate)
+        ].filter(Boolean) as Date[];
+
+        return taskDates.some(date => date >= viewStart && date <= viewEnd);
+    }
+
     async refreshEvents(force = false) {
         if (this.calendar) {
             try {
-                if (force) {
-                    // Clear caches on forced refresh
-                    this.taskVersionCache.clear();
-                }
+                // Force refresh - centralized service handles caching
 
                 // For a complete refresh, remove all event sources and re-add them
                 // This ensures FullCalendar doesn't cache any stale positions
@@ -2628,253 +2760,25 @@ export class AdvancedCalendarView extends ItemView {
                 // Update tracking variables
                 this.lastRefreshTime = Date.now();
 
-                // Update task count for change detection (estimate based on cache)
-                this.lastKnownTaskCount = this.taskVersionCache.size;
+                // Update tracking - centralized service handles change detection
 
                 console.log(`Full refresh completed`);
             } catch (error) {
                 console.error('Calendar refresh failed:', error);
-                // Clear potentially corrupted cache
-                this.taskVersionCache.clear();
+                // Error handling - centralized service will handle recovery
                 throw error;
             }
         }
     }
 
-    /**
-     * Update only events related to a specific task, avoiding full calendar refresh
-     * @param taskPath - Path to the task file
-     * @param operation - Type of update operation
-     * @returns Promise<boolean> - Success status, false triggers fallback refresh
-     */
-    async updateSpecificEvent(
-        taskPath: string,
-        operation: 'update' | 'delete' | 'create'
-    ): Promise<boolean> {
-        try {
-            if (!this.calendar) return false;
 
-            const existingEvents = this.calendar.getEvents();
-            const taskEvents = existingEvents.filter(e =>
-                e.extendedProps?.taskInfo?.path === taskPath ||
-                e.id?.includes(taskPath) // Handle recurring event IDs
-            );
 
-            switch (operation) {
-                case 'update':
-                    return await this.updateTaskEvents(taskPath, taskEvents);
-                case 'delete':
-                    return this.deleteTaskEvents(taskEvents);
-                case 'create':
-                    return await this.createTaskEvents(taskPath);
-                default:
-                    return false;
-            }
-        } catch (error) {
-            console.error(`Failed to update specific event for ${taskPath}:`, error);
-            return false; // Triggers fallback refresh
-        }
-    }
 
-    /**
-     * Update existing events for a task
-     */
-    private async updateTaskEvents(taskPath: string, existingEvents: EventApi[]): Promise<boolean> {
-        // Get fresh task data
-        const freshTask = await this.plugin.cacheManager.getTaskInfo(taskPath);
-        if (!freshTask) {
-            // Task was deleted, remove events
-            existingEvents.forEach(e => e.remove());
-            return true;
-        }
 
-        // Remove old events for this task
-        existingEvents.forEach(e => e.remove());
 
-        // Generate new events for updated task
-        const newEvents = await this.generateEventsForTask(freshTask);
 
-        // Add new events to calendar
-        newEvents.forEach(eventData => {
-            this.calendar!.addEvent(eventData);
-        });
 
-        return true;
-    }
-
-    /**
-     * Delete events for a task
-     */
-    private deleteTaskEvents(taskEvents: EventApi[]): boolean {
-        taskEvents.forEach(e => e.remove());
-        return true;
-    }
-
-    /**
-     * Create events for a new task
-     */
-    private async createTaskEvents(taskPath: string): Promise<boolean> {
-        const newTask = await this.plugin.cacheManager.getTaskInfo(taskPath);
-        if (!newTask) return false;
-
-        const newEvents = await this.generateEventsForTask(newTask);
-        newEvents.forEach(eventData => {
-            this.calendar!.addEvent(eventData);
-        });
-
-        return true;
-    }
-
-    /**
-     * Check if task has actually changed since last update
-     */
-    private hasTaskChanged(task: TaskInfo): boolean {
-        const cachedVersion = this.taskVersionCache.get(task.path);
-        const currentVersion = task.dateModified || Date.now().toString();
-
-        if (cachedVersion !== currentVersion) {
-            this.taskVersionCache.set(task.path, currentVersion);
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * Check if we need a full refresh vs selective update
-     */
-    private shouldDoFullRefresh(): boolean {
-        const timeSinceLastRefresh = Date.now() - this.lastRefreshTime;
-        const cacheSize = this.taskVersionCache.size;
-
-        // Full refresh if:
-        // - Haven't refreshed in 5+ minutes (stale cache)
-        // - Significant change in task count (bulk operations)
-        // - Cache seems corrupted
-        return timeSinceLastRefresh > 5 * 60 * 1000 ||
-               Math.abs(cacheSize - this.lastKnownTaskCount) > 10 ||
-               cacheSize === 0;
-    }
-
-    /**
-     * Intelligent update method that chooses between full refresh and selective update
-     */
-    async updateCalendarForTask(taskPath: string, operation: 'update' | 'delete' | 'create' = 'update'): Promise<void> {
-        // Check if we need full refresh
-        if (this.shouldDoFullRefresh()) {
-            console.log('Performing full calendar refresh (cache stale or bulk changes detected)');
-            await this.refreshEvents();
-            return;
-        }
-
-        // Try selective update first
-        const success = await this.updateSpecificEvent(taskPath, operation);
-
-        if (!success) {
-            console.log(`Selective update failed for ${taskPath}, falling back to full refresh`);
-            await this.refreshEvents();
-        } else {
-            console.log(`Selective update successful for ${taskPath}`);
-        }
-    }
-
-    /**
-     * Debounced update to avoid refresh storms when multiple views are open
-     */
-    private debouncedUpdateCalendar(): void {
-        if (this.updateDebounceTimer) {
-            clearTimeout(this.updateDebounceTimer);
-        }
-
-        this.updateDebounceTimer = window.setTimeout(async () => {
-            try {
-                const pathsToUpdate = Array.from(this.pendingUpdates);
-                this.pendingUpdates.clear();
-
-                console.log(`Processing batched updates for ${pathsToUpdate.length} tasks`);
-
-                if (pathsToUpdate.length > 5) {
-                    // Too many updates, do full refresh
-                    await this.refreshEvents();
-                } else {
-                    // Process selective updates
-                    for (const path of pathsToUpdate) {
-                        await this.updateCalendarForTask(path, 'update');
-                    }
-                }
-
-                // Update FilterBar options once for all updates
-                if (this.filterBar && pathsToUpdate.length > 0) {
-                    const updatedFilterOptions = await this.plugin.filterService.getFilterOptions();
-                    this.filterBar.updateFilterOptions(updatedFilterOptions);
-                }
-
-                // Periodic cache cleanup
-                if (Math.random() < 0.1) { // 10% chance to clean up
-                    await this.cleanupTaskVersionCache();
-                }
-            } catch (error) {
-                console.error('Error in debounced calendar update:', error);
-                // Fallback to full refresh on error
-                await this.refreshEvents();
-            } finally {
-                this.updateDebounceTimer = null;
-            }
-        }, 100); // 100ms debounce delay
-    }
-
-    /**
-     * Debounced full refresh to avoid multiple simultaneous refreshes
-     */
-    private debouncedFullRefresh(): void {
-        if (this.updateDebounceTimer) {
-            clearTimeout(this.updateDebounceTimer);
-        }
-
-        // Clear pending selective updates since we're doing a full refresh
-        this.pendingUpdates.clear();
-
-        this.updateDebounceTimer = window.setTimeout(async () => {
-            try {
-                await this.refreshEvents();
-
-                // Update FilterBar options
-                if (this.filterBar) {
-                    const updatedFilterOptions = await this.plugin.filterService.getFilterOptions();
-                    this.filterBar.updateFilterOptions(updatedFilterOptions);
-                }
-            } catch (error) {
-                console.error('Error in debounced full refresh:', error);
-            } finally {
-                this.updateDebounceTimer = null;
-            }
-        }, 150); // Slightly longer delay for full refresh
-    }
-
-    /**
-     * Periodic cache cleanup to prevent unbounded growth
-     */
-    private async cleanupTaskVersionCache(): Promise<void> {
-        try {
-            const allTaskPaths = this.plugin.cacheManager.getAllTaskPaths();
-            const existingPaths = new Set(allTaskPaths);
-
-            for (const taskPath of this.taskVersionCache.keys()) {
-                if (!existingPaths.has(taskPath)) {
-                    this.taskVersionCache.delete(taskPath);
-                }
-            }
-
-            // As a fallback, clear cache if it gets too large
-            if (this.taskVersionCache.size > 1000) {
-                // Clear cache if it gets too large - full refresh will repopulate it
-                console.log('Task version cache too large, clearing for memory management');
-                this.taskVersionCache.clear();
-                this.lastRefreshTime = 0; // Force full refresh next time
-            }
-        } catch (error) {
-            console.error('Error cleaning up task version cache:', error);
-        }
-    }
+    // Old performance methods removed - now using centralized ViewPerformanceService
 
     async onClose() {
         // Clean up resize handling
@@ -2888,9 +2792,8 @@ export class AdvancedCalendarView extends ItemView {
             this.resizeTimeout = null;
         }
 
-        // Clean up caches for memory management
-        this.taskVersionCache.clear();
-        this.pendingUpdates.clear();
+        // Clean up centralized performance optimizations
+        cleanupViewPerformance(this);
 
         // Clean up debounce timer
         if (this.updateDebounceTimer) {
