@@ -1035,6 +1035,19 @@
     display: none;
 }
 
+/* Style the status dot in graphic column */
+.fc-list-event-status-dot {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: auto;
+}
+
+/* Prevent graphic column from getting hover background */
+.fc-list-event:hover .fc-list-event-graphic {
+    background-color: transparent !important;
+}
+
 /* Task title row with indicators on same line */
 .fc-list-task-title-row {
     display: flex;

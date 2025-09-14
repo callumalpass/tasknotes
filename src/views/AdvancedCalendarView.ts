@@ -2162,6 +2162,22 @@ export class AdvancedCalendarView extends ItemView {
         // Find the main event content elements
         const titleElement = el.querySelector('.fc-list-event-title, .fc-event-title');
         const timeElement = el.querySelector('.fc-list-event-time, .fc-event-time');
+        const graphicElement = el.querySelector('.fc-list-event-graphic');
+
+        // Add status-colored dot to the graphic column
+        if (graphicElement && statusConfig) {
+            graphicElement.innerHTML = '';
+            const statusDot = graphicElement.createEl('div', {
+                cls: 'fc-list-event-status-dot'
+            });
+            statusDot.style.width = '10px';
+            statusDot.style.height = '10px';
+            statusDot.style.borderRadius = '50%';
+            statusDot.style.border = `2px solid ${statusConfig.color}`;
+            // Only fill background if task is completed
+            statusDot.style.backgroundColor = isCompleted ? statusConfig.color : 'transparent';
+            statusDot.setAttribute('aria-label', `Status: ${statusConfig.label || taskInfo.status}`);
+        }
 
         if (titleElement) {
             // Clear and rebuild the content with task card structure
@@ -2170,13 +2186,6 @@ export class AdvancedCalendarView extends ItemView {
             // Create main title row with indicators and title on same line
             const titleRow = titleElement.createEl('div', { cls: 'fc-list-task-title-row' });
 
-            // Add status dot
-            if (!visibleProperties || visibleProperties.includes('status')) {
-                const statusDot = titleRow.createEl('span', { cls: 'fc-list-task-status-dot' });
-                if (statusConfig) {
-                    statusDot.style.borderColor = statusConfig.color;
-                }
-            }
 
             // Add priority dot
             if (taskInfo.priority && priorityConfig && (!visibleProperties || visibleProperties.includes('priority'))) {
