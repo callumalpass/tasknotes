@@ -1,36 +1,25 @@
 # <img src="tasknotes-gradient.svg" width="32" height="32" style="vertical-align: middle;"> TaskNotes for Obsidian
 
-A task management plugin where each task is stored as an individual note using YAML frontmatter with calendar, kanban and pomodoro integration.
+Task management plugin where each task lives as a separate note with YAML frontmatter. Features calendar integration, Kanban boards, time tracking, and Pomodoro timer.
 
 ![Downloads](https://img.shields.io/github/downloads/callumalpass/tasknotes/main.js)
-![Screenshot of biblib Obsidian plugin](https://github.com/callumalpass/tasknotes/blob/main/media/175266750_comp.gif)
+![Screenshot of TaskNotes plugin](https://github.com/callumalpass/tasknotes/blob/main/media/175266750_comp.gif)
 
-**[ Documentation](https://callumalpass.github.io/tasknotes/)**
-
-### Quick Links
-
-- **[Getting Started](./docs/index.md)** - Core concepts and setup
-- **[Features Overview](./docs/features.md)** - Complete feature list
-- **[Views Guide](./docs/views.md)** - All available view types
-- **[Settings](./docs/settings.md)** - Configuration options
-- **[HTTP API](./docs/HTTP_API.md)** - External integrations
-- **[Troubleshooting](./docs/troubleshooting.md)** - Common issues
+**[📖 Documentation](https://callumalpass.github.io/tasknotes/)**
 
 ## Overview
 
-TaskNotes treats each task as an individual Markdown file with YAML frontmatter containing the task's metadata (due date, status, priority, etc.) and the note body for additional context, descriptions, or progress notes. This creates a flexible system where tasks can be as simple or detailed as needed.
+Each task is a full Markdown note with structured metadata in YAML frontmatter. This means your tasks have all the benefits of regular notes - linking, tagging, graph view, and unlimited content - while still working as structured data for filtering and organization.
 
-The plugin includes several views: calendar, kanban boards, filtered task lists, and a daily agenda. Tasks can link to projects using Obsidian's note linking. Recurring tasks track completion per instance.
+The plugin supports time tracking, recurring tasks, calendar integration with external ICS feeds, and integration with the Obsidian Bases plugin.
 
-You can track time on tasks with start/stop buttons and view session history. There's also a pomodoro timer that connects to tasks, with configurable work/break periods and stats.
+## Why YAML Frontmatter?
 
-## Rationale
+YAML is a standard data format that works with many tools, so you can easily extract and transform your task data into other formats. This keeps your data portable and aligns with Obsidian's file-over-app philosophy.
 
-Using YAML frontmatter for task storage has multiple benefits. YAML is a standard data format that works with many tools, so you can easily extract and transform your task data into other formats. This keeps your data portable and aligns with Obsidian's file-over-app philosophy.
+The frontmatter is extensible—add custom fields like "assigned-to" or "attachments" and use tools like Obsidian Bases to work with that data. This flexibility makes features like time-tracking natural, since there's an obvious place to store timing information.
 
-The frontmatter is also extensible—you can add custom fields like "assigned-to" or "attachments" and use other tools like Obsidian Bases to work with that data. This flexibility made it easy to add features like time-tracking, which is tricky in other task formats where there's no obvious place to store timing information.
-
-Since each task is a full note, you can write detailed descriptions, jot down thoughts as you work, and connect tasks to other notes through Obsidian's linking and graph features. The frontmatter compatibility with Bases also means you can use that plugin for different views and bulk operations if you want.
+Each task being a full note means you can write descriptions, jot down thoughts as you work, and connect tasks to other notes through Obsidian's linking and graph features. Bases integration provides custom views on your task data.
 
 ## Core Features
 
@@ -100,6 +89,7 @@ Since each task is a full note, you can write detailed descriptions, jot down th
 ## YAML Structure
 
 ### Task Example
+
 ```yaml
 title: "Complete documentation"
 status: "in-progress"
