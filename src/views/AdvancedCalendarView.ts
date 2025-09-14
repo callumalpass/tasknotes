@@ -299,7 +299,6 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
         });
         
         this.filterBar.on('manageViews', () => {
-            console.log('Manage views requested');
         });
         
         // Listen for filter changes
@@ -481,7 +480,6 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
             center: isNarrowView ? '' : 'title', // Hide title in narrow views
             right: 'refreshICS multiMonthYear,dayGridMonth,timeGridWeek,timeGridCustom,timeGridDay,listWeek'
         };
-        console.log('Header toolbar config:', toolbarConfig);
         return toolbarConfig;
     }
 
@@ -491,12 +489,10 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
                 text: 'Refresh',
                 hint: 'Refresh Calendar Subscriptions',
                 click: () => {
-                    console.log('Refresh ICS button clicked!');
                     this.handleRefreshClick();
                 }
             }
         };
-        console.log('Custom buttons:', customButtons);
         return customButtons;
     }
 
@@ -574,8 +570,6 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
         const customButtons = this.getCustomButtons();
         const headerToolbar = this.getHeaderToolbarConfig();
         
-        console.log('Initializing calendar with customButtons:', customButtons);
-        console.log('Initializing calendar with headerToolbar:', headerToolbar);
         
         this.calendar = new Calendar(calendarEl as HTMLElement, {
             plugins: [dayGridPlugin, timeGridPlugin, multiMonthPlugin, listPlugin, interactionPlugin],
@@ -1643,18 +1637,15 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
                 
                 // Use a longer delay for slow systems
                 setTimeout(async () => {
-                    console.log('Checking if task data has been updated...');
                     
                     // Get fresh task data to verify the update went through
                     const freshTask = await this.plugin.cacheManager.getTaskInfo(taskInfo.path);
                     
                     if (freshTask && freshTask.recurrence !== originalRecurrence) {
-                        console.log('Task data confirmed updated - ViewPerformanceService will handle calendar update');
 
                         // Don't do manual refresh - let the centralized service handle it
                         // The updateProperty call already triggered EVENT_TASK_UPDATED
                     } else {
-                        console.log('Task data not yet updated, but ViewPerformanceService will handle it when ready');
 
                         // Don't force additional refreshes - trust the centralized system
                     }
@@ -2664,8 +2655,6 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
         this.pendingRefreshTasks.clear();
         this.eventSourceRefreshTimer = null;
 
-        console.log(`[AdvancedCalendarView] Performing batched event source refresh for ${tasksToRefresh.length} tasks:`, tasksToRefresh);
-
         try {
             const eventSources = this.calendar.getEventSources();
             if (eventSources.length > 0) {
@@ -2681,7 +2670,6 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
         } catch (refetchError) {
             console.error(`[AdvancedCalendarView] Error during event source refetch:`, refetchError);
             // Fallback to full refresh if refetch fails
-            console.log(`[AdvancedCalendarView] Refetch failed, falling back to full refresh`);
             await this.refreshEvents(false);
         }
     }
@@ -2705,7 +2693,6 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 
                 // Update tracking - centralized service handles change detection
 
-                console.log(`Full refresh completed`);
             } catch (error) {
                 console.error('Calendar refresh failed:', error);
                 // Error handling - centralized service will handle recovery
