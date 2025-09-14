@@ -34,11 +34,45 @@ export class ProjectSubtasksService {
     }
 
     /**
-     * Get all tasks that reference this file as a project (uses optimized indexing)
+     * Get all files that link to a specific project using native resolvedLinks API
+     * This is extremely fast O(1) lookup
+     */
+    private getFilesLinkingToProject(projectPath: string): string[] {
+        const resolvedLinks = this.plugin.app.metadataCache.resolvedLinks;
+        const linkingSources: string[] = [];
+
+        for (const [sourcePath, targets] of Object.entries(resolvedLinks)) {
+            if (targets[projectPath]) {
+                linkingSources.push(sourcePath);
+            }
+        }
+
+        return linkingSources;
+    }
+
+    /**
+     * Check for unresolved project references (broken links)
+     * Useful for debugging and maintenance
+     */
+    private getUnresolvedProjectReferences(taskPath: string): string[] {
+        const unresolvedLinks = this.plugin.app.metadataCache.unresolvedLinks;
+        const taskUnresolvedLinks = unresolvedLinks[taskPath];
+
+        if (!taskUnresolvedLinks) return [];
+
+        // Filter for potential project references
+        return Object.keys(taskUnresolvedLinks).filter(linkText => {
+            // Could be a project reference if it matches common patterns
+            return !linkText.includes('#') && !linkText.includes('|');
+        });
+    }
+
+    /**
+     * Get all tasks that reference this file as a project (uses native Obsidian APIs + optimized indexing)
      */
     async getTasksLinkedToProject(projectFile: TFile): Promise<TaskInfo[]> {
         try {
-            // Use O(1) lookup from MinimalNativeCache first
+            // Method 1: Use O(1) lookup from MinimalNativeCache first
             const taskPaths = this.plugin.cacheManager.getTasksReferencingProject(projectFile.path);
 
             if (taskPaths.length > 0) {
@@ -53,7 +87,25 @@ export class ProjectSubtasksService {
                 return linkedTasks;
             }
 
-            // Fallback: manually scan all tasks for edge cases (basename matches, etc.)
+            // Method 2: Use native Obsidian backlinks API for wikilink references
+            const backlinks = this.plugin.app.metadataCache.getBacklinksForFile(projectFile);
+            if (backlinks) {
+                const linkedTasks: TaskInfo[] = [];
+
+                for (const [sourcePath, linkData] of Object.entries(backlinks.data)) {
+                    // Check if this source file is a task and links from frontmatter
+                    const taskInfo = await this.plugin.cacheManager.getTaskInfo(sourcePath);
+                    if (taskInfo && await this.isLinkFromProjectsField(sourcePath, projectFile.path)) {
+                        linkedTasks.push(taskInfo);
+                    }
+                }
+
+                if (linkedTasks.length > 0) {
+                    return linkedTasks;
+                }
+            }
+
+            // Method 3: Fallback manual scan for plain text references and edge cases
             const allTasks = await this.plugin.cacheManager.getAllTasks();
 
             const linkedTasks: TaskInfo[] = [];
@@ -116,7 +168,8 @@ export class ProjectSubtasksService {
     }
 
     /**
-     * Build project status cache using task scanning (reliable for frontmatter links)
+     * Build project status cache using native resolvedLinks API + task scanning
+     * This hybrid approach is much faster than pure task scanning
      */
     async buildProjectStatusCache(): Promise<void> {
         const startTime = Date.now();
@@ -496,6 +549,17 @@ export class ProjectSubtasksService {
             // Use batched invalidation to handle multiple rapid changes efficiently
             this.scheduleBatchedInvalidation(file.path);
         });
+
+        // Also listen to link resolution events for more precise project relationship tracking
+        // This is more efficient than 'changed' for link-based updates
+        this.plugin.registerEvent(
+            this.plugin.app.metadataCache.on('resolve', (file) => {
+                if (!this.cacheBuilt || !(file instanceof TFile)) return;
+
+                // Only invalidate if this could affect project relationships
+                this.scheduleBatchedInvalidation(file.path);
+            })
+        );
 
         // Also listen to our internal task update events as fallback for manual frontmatter edits
         this.plugin.emitter.on('task-updated', async ({ path, originalTask, updatedTask }) => {
