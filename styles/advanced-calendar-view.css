@@ -1069,7 +1069,24 @@
 }
 
 .fc-list-task-priority-dot {
+    cursor: pointer;
+}
+
+.fc-list-task-priority-dot {
     background-color: var(--priority-color, currentColor);
+}
+
+/* Recurring indicator styling */
+.fc-list-task-recurring-indicator {
+    width: 12px;
+    height: 12px;
+    flex-shrink: 0;
+    opacity: 0.7;
+    cursor: pointer;
+}
+
+.fc-list-task-recurring-indicator:hover {
+    opacity: 1;
 }
 
 .fc-list-task-status-dot {

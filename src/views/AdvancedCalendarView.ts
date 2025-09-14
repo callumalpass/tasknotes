@@ -1,7 +1,10 @@
-import { ItemView, WorkspaceLeaf, TFile, Notice, EventRef, Menu, Modal, setTooltip } from 'obsidian';
+import { ItemView, WorkspaceLeaf, TFile, Notice, EventRef, Menu, Modal, setTooltip, setIcon } from 'obsidian';
 import { ICSEventInfoModal } from '../modals/ICSEventInfoModal';
 import { ICSEventContextMenu } from '../components/ICSEventContextMenu';
 import { TaskContextMenu } from '../components/TaskContextMenu';
+import { PriorityContextMenu } from '../components/PriorityContextMenu';
+import { RecurrenceContextMenu } from '../components/RecurrenceContextMenu';
+import { createTaskClickHandler, createTaskHoverHandler } from '../utils/clickHandlers';
 import { TimeblockInfoModal } from '../modals/TimeblockInfoModal';
 import { format, startOfDay, endOfDay } from 'date-fns';
 import { Calendar } from '@fullcalendar/core';
@@ -2194,14 +2197,50 @@ export class AdvancedCalendarView extends ItemView {
                     attr: { 'aria-label': `Priority: ${priorityConfig.label}` }
                 });
                 priorityDot.style.borderColor = priorityConfig.color;
+
+                // Add click context menu for priority
+                priorityDot.addEventListener('click', (e: MouseEvent) => {
+                    e.stopPropagation(); // Don't trigger card click
+                    const menu = new PriorityContextMenu({
+                        currentValue: taskInfo.priority,
+                        onSelect: async (newPriority) => {
+                            try {
+                                await this.plugin.updateTaskProperty(taskInfo, 'priority', newPriority);
+                            } catch (error) {
+                                console.error('Error updating priority:', error);
+                                new Notice('Failed to update priority');
+                            }
+                        },
+                        plugin: this.plugin
+                    });
+                    menu.show(e as MouseEvent);
+                });
             }
 
             // Add recurring indicator
             if (taskInfo.recurrence) {
                 const recurringIndicator = titleRow.createEl('span', {
                     cls: 'fc-list-task-recurring-indicator',
-                    text: '🔄',
                     attr: { 'aria-label': 'Recurring task' }
+                });
+                setIcon(recurringIndicator, 'rotate-ccw');
+
+                // Add click context menu for recurrence
+                recurringIndicator.addEventListener('click', (e: MouseEvent) => {
+                    e.stopPropagation(); // Don't trigger card click
+                    const menu = new RecurrenceContextMenu({
+                        currentValue: typeof taskInfo.recurrence === 'string' ? taskInfo.recurrence : undefined,
+                        onSelect: async (newRecurrence: string | null) => {
+                            try {
+                                await this.plugin.updateTaskProperty(taskInfo, 'recurrence', newRecurrence || undefined);
+                            } catch (error) {
+                                console.error('Error updating recurrence:', error);
+                                new Notice('Failed to update recurrence');
+                            }
+                        },
+                        app: this.plugin.app
+                    });
+                    menu.show(e as MouseEvent);
                 });
             }
 
@@ -2247,7 +2286,9 @@ export class AdvancedCalendarView extends ItemView {
                 case 'projects':
                     if (taskInfo.projects && taskInfo.projects.length > 0) {
                         element = container.createEl('span', { cls: 'fc-list-task-projects' });
-                        element.textContent = `📁 ${taskInfo.projects.join(', ')}`;
+                        const iconSpan = element.createEl('span', { cls: 'fc-list-task-projects-icon' });
+                        setIcon(iconSpan, 'folder');
+                        element.createEl('span', { text: ` ${taskInfo.projects.join(', ')}` });
                     }
                     break;
                 case 'contexts':
@@ -2291,29 +2332,32 @@ export class AdvancedCalendarView extends ItemView {
      * Add task interactions (hover and context menu) to list view events
      */
     private addTaskInteractionsToListEvent(el: HTMLElement, taskInfo: TaskInfo): void {
-        // Add hover preview
-        el.addEventListener('mouseover', (event: MouseEvent) => {
-            const file = this.plugin.app.vault.getAbstractFileByPath(taskInfo.path);
-            if (file) {
-                this.plugin.app.workspace.trigger('hover-link', {
-                    event,
-                    source: 'tasknotes-advanced-calendar-list',
-                    hoverParent: el,
-                    targetEl: el,
-                    linktext: taskInfo.path,
-                    sourcePath: taskInfo.path
-                });
+        const targetDate = this.plugin.selectedDate || new Date();
+
+        // Add hover preview using TaskCard hover handler
+        el.addEventListener('mouseover', createTaskHoverHandler(taskInfo, this.plugin));
+
+        // Add click handlers with single/double click distinction like TaskCard
+        const { clickHandler, dblclickHandler } = createTaskClickHandler({
+            task: taskInfo,
+            plugin: this.plugin,
+            excludeSelector: '.fc-list-task-priority-dot, .fc-list-task-recurring-indicator',
+            contextMenuHandler: async (e) => {
+                await this.showTaskContextMenuForEvent(e, taskInfo, targetDate);
             }
         });
+
+        el.addEventListener('click', clickHandler);
+        el.addEventListener('dblclick', dblclickHandler);
 
         // Add context menu
         el.addEventListener('contextmenu', async (jsEvent: MouseEvent) => {
             jsEvent.preventDefault();
             jsEvent.stopPropagation();
-
-            const targetDate = new Date();
             await this.showTaskContextMenuForEvent(jsEvent, taskInfo, targetDate);
         });
+
+        // Status dots are visual indicators only - use context menu for status changes
     }
 
     async refreshEvents() {
