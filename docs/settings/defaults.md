@@ -3,7 +3,7 @@
 
 These settings control the default properties for new tasks, such as the default status, priority, and folder location. You can also configure templates for new tasks.
 
-[← Back to Settings](settings.md)
+[← Back to Settings](../settings.md)
 
 ## Basic Defaults
 

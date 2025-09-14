@@ -1,4 +1,4 @@
-# ChronoSync Timezone Quick Reference
+# TaskNotes Timezone Quick Reference
 
 ## 🚀 Quick Cheat Sheet
 

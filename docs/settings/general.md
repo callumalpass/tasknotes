@@ -3,7 +3,7 @@
 
 These settings control the foundational aspects of the plugin, such as task identification, file storage, and click behavior.
 
-[← Back to Settings](settings.md)
+[← Back to Settings](../settings.md)
 
 ## Task Storage
 

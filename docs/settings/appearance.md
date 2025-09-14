@@ -3,7 +3,7 @@
 
 These settings control the visual appearance of the plugin, including the calendar, task cards, and other UI elements.
 
-[← Back to Settings](settings.md)
+[← Back to Settings](../settings.md)
 
 ## Task Cards
 

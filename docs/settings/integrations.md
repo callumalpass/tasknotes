@@ -3,7 +3,7 @@
 
 These settings control the integration with other plugins and services, such as Bases and external calendars.
 
-[← Back to Settings](settings.md)
+[← Back to Settings](../settings.md)
 
 ## Bases integration
 

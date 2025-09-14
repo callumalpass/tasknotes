@@ -5,6 +5,7 @@ TaskNotes provides integration with ICS calendar events, allowing you to create 
 ## Overview
 
 The ICS integration allows you to:
+
 - View detailed information about calendar events
 - Create notes from calendar events with customizable templates
 - Generate tasks from events with proper scheduling and context
@@ -26,6 +27,7 @@ When you interact with a calendar event in TaskNotes, an information modal displ
 ### Related Content
 
 The modal shows a list of existing notes and tasks that are linked to the calendar event. Content is automatically categorized as:
+
 - **Task** - Files containing the configured task tag
 - **Note** - Files without the task tag
 
@@ -54,6 +56,7 @@ The note creation process allows customization of the generated content:
 ### Template Usage
 
 When a template is specified:
+
 - The template file is processed with ICS-specific variables
 - Standard TaskNotes template variables are also available
 - Template content replaces the default event description format
@@ -62,6 +65,7 @@ When a template is specified:
 ### Default Content
 
 Without a template, notes include:
+
 - Event title as the main heading
 - Formatted start and end times
 - Location information
@@ -95,12 +99,14 @@ Task content includes formatted event details similar to note creation, providin
 You can establish connections between existing vault content and calendar events:
 
 ### Link Process
+
 1. Select an existing markdown file from your vault
 2. The file's frontmatter is updated to include the event ID
 3. The modification date is updated to reflect the change
 4. The connection appears in the related content list
 
 ### Bidirectional References
+
 - Calendar events can display all linked content
 - Content files maintain references to their associated events
 - Multiple pieces of content can be linked to a single event
@@ -151,21 +157,27 @@ All standard TaskNotes template variables remain available:
 ICS integration settings are located in the Advanced Settings section:
 
 ### Default Templates
+
 Configure template files for consistent content creation from events. Templates are optional and the system provides sensible defaults when not specified.
 
 ### Default Folders
+
 Set destination folders for content created from events. This helps organize ICS-generated content separately from other vault content if desired.
 
 ### Filename Formats
+
 The system uses the standard TaskNotes filename generation with event-specific context, ensuring unique and descriptive filenames for created content.
 
 ## Technical Implementation
 
 ### Event Identification
+
 Calendar events are identified by their unique ICS event ID, which is maintained in the frontmatter of created content. This allows the system to track relationships even if event details change.
 
 ### Content Type Detection
+
 The system distinguishes between tasks and notes by checking for the presence of the configured task tag in the content's frontmatter tags array, rather than relying on file structure or naming conventions.
 
 ### Error Handling
+
 The integration includes error boundaries for network issues, file operations, and template processing. Failed operations provide user feedback without interrupting the overall workflow.

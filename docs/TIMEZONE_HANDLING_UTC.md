@@ -1,14 +1,14 @@
-# UTC-Based Timezone Handling in ChronoSync
+# UTC-Based Timezone Handling in TaskNotes
 
 ## Overview
 
-ChronoSync implements a UTC-based timezone approach to ensure consistent date handling across all timezones while maintaining intuitive user behavior. This document explains the technical implementation, design decisions, and best practices for developers working with the codebase.
+TaskNotes implements a UTC-based timezone approach to ensure consistent date handling across all timezones while maintaining intuitive user behavior. This document explains the technical implementation, design decisions, and best practices for developers working with the codebase.
 
 ## Core Architecture
 
 ### The UTC Midnight Convention
 
-ChronoSync follows a **UTC Midnight Convention** that operates on two key principles:
+TaskNotes follows a **UTC Midnight Convention** that operates on two key principles:
 
 1. **User-facing operations** use local dates for intuitive behavior
 2. **Internal calculations** use UTC to prevent timezone-dependent bugs
@@ -263,7 +263,7 @@ const rruleDate = createUTCDateForRRule(dateStr); // Interpreted as UTC - CONSIS
 
 ### Timezone-Aware Test Cases
 
-ChronoSync includes comprehensive tests for timezone handling:
+TaskNotes includes comprehensive tests for timezone handling:
 
 1. **Basic Date Functions**: Test date creation, parsing, and formatting across timezones
 2. **Recurring Task Logic**: Verify RRule calculations work correctly regardless of user timezone
@@ -355,6 +355,6 @@ The UTC-based approach maintains backward compatibility:
 
 ## Conclusion
 
-The UTC-based timezone approach provides ChronoSync with robust, consistent date handling that prevents timezone-related bugs while maintaining intuitive user behavior. By following the guidelines in this document, developers can ensure their code works correctly for users in all timezones.
+The UTC-based timezone approach provides TaskNotes with robust, consistent date handling that prevents timezone-related bugs while maintaining intuitive user behavior. By following the guidelines in this document, developers can ensure their code works correctly for users in all timezones.
 
 For quick reference, see the [Timezone Quick Reference Guide](TIMEZONE_QUICK_REFERENCE.md) for common patterns and functions.

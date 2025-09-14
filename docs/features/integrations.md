@@ -3,7 +3,7 @@
 
 TaskNotes integrates with other Obsidian plugins.
 
-[← Back to Features](features.md)
+[← Back to Features](../features.md)
 
 ## Bases
 

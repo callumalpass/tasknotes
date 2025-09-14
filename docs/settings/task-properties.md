@@ -3,7 +3,7 @@
 
 These settings allow you to define custom statuses, priorities, and user fields for your tasks.
 
-[← Back to Settings](settings.md)
+[← Back to Settings](../settings.md)
 
 ## Task Statuses
 

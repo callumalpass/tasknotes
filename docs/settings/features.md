@@ -2,7 +2,7 @@
 
 These settings allow you to enable, disable, and configure the various features of the plugin, such as inline tasks, natural language processing, the Pomodoro timer, and notifications.
 
-[← Back to Settings](settings.md)
+[← Back to Settings](../settings.md)
 
 ## Inline Tasks
 

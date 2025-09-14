@@ -3,7 +3,7 @@
 
 TaskNotes allows you to define your own custom fields for tasks. This feature allows you to add custom data to your tasks and use it for filtering, sorting, and grouping.
 
-[← Back to Features](features.md)
+[← Back to Features](../features.md)
 
 ## Creating User Fields
 
