@@ -1379,6 +1379,26 @@ export function updateTaskCard(element: HTMLElement, task: TaskInfo, plugin: Tas
             // Update existing priority dot
             existingPriorityDot.style.borderColor = priorityConfig.color;
             existingPriorityDot.setAttribute('aria-label', `Priority: ${priorityConfig.label}`);
+
+            // Remove old event listener and add new one with updated task data
+            const newPriorityDot = existingPriorityDot.cloneNode(true) as HTMLElement;
+            newPriorityDot.addEventListener('click', (e) => {
+                e.stopPropagation(); // Don't trigger card click
+                const menu = new PriorityContextMenu({
+                    currentValue: task.priority,
+                    onSelect: async (newPriority) => {
+                        try {
+                            await plugin.updateTaskProperty(task, 'priority', newPriority);
+                        } catch (error) {
+                            console.error('Error updating priority:', error);
+                            new Notice('Failed to update priority');
+                        }
+                    },
+                    plugin: plugin
+                });
+                menu.show(e as MouseEvent);
+            });
+            existingPriorityDot.replaceWith(newPriorityDot);
         }
     } else if (existingPriorityDot) {
         // Remove priority dot if it shouldn't be visible or task no longer has priority
