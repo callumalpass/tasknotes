@@ -587,7 +587,10 @@ export default class TaskNotesPlugin extends Plugin {
 			}
 
 			const duration = Date.now() - warmupStartTime;
-			console.log(`[TaskNotes] Project indexes warmed up in ${duration}ms (${processedCount} files processed)`);
+			// Only log slow warmup for debugging large vaults
+			if (duration > 5000) {
+				console.log(`[TaskNotes] Project indexes warmed up in ${duration}ms (${processedCount} files processed)`);
+			}
 
 		} catch (error) {
 			console.error('[TaskNotes] Error during project index warmup:', error);

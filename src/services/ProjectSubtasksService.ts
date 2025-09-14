@@ -238,7 +238,10 @@ export class ProjectSubtasksService {
             }
 
             const duration = Date.now() - startTime;
-            console.log(`[ProjectSubtasksService] Incremental update completed in ${duration}ms for ${pathsToRemove.size + pathsToAdd.size} paths`);
+            // Only log slow incremental updates for debugging
+            if (duration > 100) {
+                console.log(`[ProjectSubtasksService] Incremental update took ${duration}ms for ${pathsToRemove.size + pathsToAdd.size} paths`);
+            }
 
         } catch (error) {
             console.error('Error during incremental project cache update:', error);
@@ -432,7 +435,10 @@ export class ProjectSubtasksService {
         this.batchedInvalidations.clear();
         this.batchedInvalidationTimeout = null;
 
-        console.log(`[ProjectSubtasksService] Processing batched invalidations for ${filePaths.length} files`);
+        // Only log batched processing for larger batches
+        if (filePaths.length > 5) {
+            console.log(`[ProjectSubtasksService] Processing batched invalidations for ${filePaths.length} files`);
+        }
 
         try {
             // Check if any of the files have project changes that require cache updates
@@ -499,7 +505,7 @@ export class ProjectSubtasksService {
             const projectsChanged = JSON.stringify(originalTask?.projects) !== JSON.stringify(updatedTask?.projects);
 
             if (projectsChanged) {
-                console.log(`[ProjectSubtasksService] Project references changed for ${path}, using incremental update`);
+                // Reduced logging for normal incremental updates
 
                 try {
                     // Use incremental update instead of full rebuild
