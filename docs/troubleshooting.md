@@ -17,7 +17,7 @@ This section covers common issues and their solutions when using TaskNotes.
 
 **Solutions**:
 
-1. Check that task files include the task tag configured in settings (default: `#task`)
+1. Check that task files include the task tag configured in settings (default: `task`)
 2. Verify task files are not in folders listed in "Excluded folders" setting
 3. Ensure YAML frontmatter is properly formatted with opening and closing `---` lines
 4. Try closing and reopening TaskNotes views to refresh the cache

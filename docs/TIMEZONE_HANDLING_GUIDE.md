@@ -1,8 +1,8 @@
-# ChronoSync Timezone Handling Guide
+# TaskNotes Timezone Handling Guide
 
 ## Overview
 
-ChronoSync uses a **UTC Midnight Convention** to ensure consistent date handling across all timezones. This guide explains how to handle dates correctly to avoid timezone-related bugs.
+TaskNotes uses a **UTC Midnight Convention** to ensure consistent date handling across all timezones. This guide explains how to handle dates correctly to avoid timezone-related bugs.
 
 ## Core Principle: Local Dates for Users, UTC for RRule
 
@@ -126,7 +126,7 @@ const calendarDate = formatDateForStorage(date); // This now returns local anywa
 
 ### What About `formatDateForStorage()`?
 
-This function now just calls `formatDateForStorage()` internally. It exists for backward compatibility but always returns local dates. You can use either, but prefer `formatDateForStorage()` for clarity.
+This function converts Date objects to YYYY-MM-DD format using local timezone components. It ensures consistent date formatting for storage and display purposes.
 
 ## Testing Your Code
 

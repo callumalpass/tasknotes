@@ -51,4 +51,4 @@ Related notes and tasks are automatically identified by their ICS event ID field
 
 ## Time-blocking
 
-The Advanced Calendar supports time-blocking, which is a time management method that involves scheduling out parts of your day. You can create time blocks directly in the calendar, and you can link them to specific tasks. Time blocks are stored in the frontmatter of your daily notes.
+The Advanced Calendar supports time-blocking, which is a time management method that involves scheduling out parts of your day. You can create time blocks by holding the Shift key while selecting a time range in the calendar. Time blocks are stored in the frontmatter of your daily notes and can be linked to specific tasks.

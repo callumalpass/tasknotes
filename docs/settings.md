@@ -1,41 +1,41 @@
 # Settings
 
-TaskNotes provides a variety of settings to customize its behavior and appearance. The settings are organized into several categories, each controlling a different aspect of the plugin.
+TaskNotes provides a variety of settings to customize its behavior and appearance. The settings are organized into several tabs, each controlling a different aspect of the plugin.
 
 [← Back to Documentation](index.md)
 
-## Task Defaults
+## General
 
-These settings control the default properties for new tasks, such as the default status, priority, and folder location. You can also configure templates for new tasks, and set up filename generation patterns.
+These settings control the foundational aspects of the plugin, such as task identification, file storage, and click behavior.
 
-For more detailed information, see the [Task Defaults](settings/task-defaults.md) documentation.
+For more detailed information, see the [General Settings](settings/general.md) documentation.
 
-## Inline Task Settings
+## Features
 
-These settings control the behavior of TaskNotes' inline task management features, such as the Task Link Overlay and Instant Task Conversion. You can also configure the natural language processor from this section.
+These settings allow you to enable, disable, and configure the various features of the plugin, such as inline tasks, natural language processing, the Pomodoro timer, and notifications.
 
-For more detailed information, see the [Inline Task Settings](settings/inline-task-settings.md) documentation.
+For more detailed information, see the [Features Settings](settings/features.md) documentation.
 
-## Calendar Settings
+## Defaults & Templates
 
-These settings control the appearance and behavior of the calendar views, including the default view mode, time slot duration, and event visibility. You can also manage your external calendar subscriptions from this section.
+These settings control the default properties for new tasks, such as the default status, priority, and folder location. You can also configure templates for new tasks.
 
-For more detailed information, see the [Calendar Settings](settings/calendar-settings.md) documentation.
+For more detailed information, see the [Defaults & Templates Settings](settings/defaults.md) documentation.
 
-## Advanced Settings
+## Appearance & UI
 
-These settings provide more advanced customization options, such as field mapping, custom status and priority workflows, and user-defined fields. You can also configure the Pomodoro timer from this section.
+These settings control the visual appearance of the plugin, including the calendar, task cards, and other UI elements.
 
-**User Fields** allow you to define custom frontmatter properties that become filterable across all TaskNotes views, supporting text, number, date, boolean, and list data types with intelligent parsing.
+For more detailed information, see the [Appearance & UI Settings](settings/appearance.md) documentation.
 
-For more detailed information, see the [Advanced Settings](settings/advanced-settings.md) documentation.
+## Task Properties
 
-## Misc Settings
+These settings allow you to define custom statuses, priorities, and user fields for your tasks.
 
-These settings control various plugin features and display options, including status bar visibility, project subtasks widget, and performance tuning.
+For more detailed information, see the [Task Properties Settings](settings/task-properties.md) documentation.
 
-For more detailed information, see the [Misc Settings](settings/misc-settings.md) documentation.
+## Integrations
 
-## Property-based Identification (Boolean note)
+These settings control the integration with other plugins and services, such as Bases and external calendars.
 
-If you identify task files by a frontmatter property, enter boolean values as true/false (without quotes) in Settings. Obsidian stores checkbox properties as real booleans; TaskNotes matches them correctly (e.g., setting "true" matches frontmatter `true`). See [Property-based Task Identification](settings/property-identification.md) for examples.
+For more detailed information, see the [Integrations Settings](settings/integrations.md) documentation.

@@ -1,94 +1,73 @@
-
 # Features
 
-TaskNotes is a task and note management plugin for Obsidian. It includes features for task management, inline task integration, time management, and calendar integration.
-
-[← Back to Documentation](index.md)
+TaskNotes covers the full spectrum of task management, from basic organization to advanced workflows with time tracking and calendar integration.
 
 ## Task Management
 
-TaskNotes provides a system for managing tasks. You can create, edit, and organize tasks with a variety of properties, including:
+Tasks support configurable status and priority levels, along with due dates, scheduled dates, contexts, and tags. Time estimates and recurring patterns help with planning, while automatic creation and modification timestamps keep everything tracked.
 
-- **Status and Priority**: Configurable status and priority levels.
-- **Scheduling**: Due dates and scheduled dates.
-- **Organization**: Contexts and tags.
-- **Planning**: Time estimates and recurring patterns.
-- **Tracking**: Automatic creation and modification dates.
-- **Reminders**: Custom notifications for tasks using relative or absolute timing.
+Custom reminders use either relative timing ("3 days before due") or absolute dates. Tasks can auto-archive based on their completion status, keeping your active lists clean.
 
-For more detailed information, see the [Task Management](features/task-management.md) documentation.
+See [Task Management](features/task-management.md) for details.
 
 ## Filtering and Views
 
-TaskNotes provides comprehensive filtering capabilities through a hierarchical query builder. The FilterBar is available in multiple views and supports:
+The FilterBar appears across multiple views, offering instant text search plus a hierarchical query builder for complex conditions using AND/OR logic. Saved views let you store frequently-used filter combinations, while sorting and grouping options organize tasks by tags, custom fields, or other properties.
 
-- **Quick Search**: Instant text-based filtering
-- **Query Builder**: Complex hierarchical filter conditions with AND/OR logic
-- **Saved Views**: Named filter configurations for quick access
-- **Sorting and Grouping**: Multiple options for organizing task display
-
-For more detailed information, see the [Filtering and Views](features/filtering-and-views.md) documentation.
+See [Filtering and Views](features/filtering-and-views.md) for details.
 
 ## Inline Task Integration
 
-TaskNotes integrates with the Obsidian editor, which allows you to manage your tasks from within your notes. Key features include:
+Task management happens directly within your notes through interactive widgets that overlay task links, showing information and allowing quick edits without leaving the editor. Convert existing checkbox tasks instantly, or create new tasks with the `create inline task` command.
 
-- **Task Link Overlays**: Interactive widgets that display task information and allow for quick edits.
-- **Instant Task Conversion**: A feature to convert checkbox tasks into TaskNotes.
-- **Project Subtasks Widget**: A collapsible widget that displays tasks linked to the current project note.
-- **Natural Language Processing**: A feature to create tasks from conversational language, with automatic parsing of dates, priorities, and other details.
+Project notes can display collapsible widgets showing all linked subtasks. Natural language processing turns conversational text into structured tasks, automatically parsing dates, priorities, and other details across 12 languages.
 
-For more detailed information, see the [Inline Task Integration](features/inline-tasks.md) documentation.
+See [Inline Task Integration](features/inline-tasks.md) for details.
 
 ## Time Management
 
-TaskNotes includes time management tools, such as:
+Built-in time tracking records work sessions for individual tasks, while the integrated Pomodoro timer helps maintain focus during work periods. Analytics and statistics show patterns in your productivity over time.
 
-- **Time Tracking**: A time tracker to record the time you spend on each task.
-- **Pomodoro Timer**: A Pomodoro timer to work in focused intervals.
-- **Productivity Analytics**: Statistics and visualizations to show your work habits.
-
-For more detailed information, see the [Time Management](features/time-management.md) documentation.
+See [Time Management](features/time-management.md) for details.
 
 ## Calendar Integration
 
-TaskNotes includes calendar integration features, such as:
+External ICS feeds from Google Calendar, Outlook, and similar services sync into TaskNotes, while ICS export lets other systems access your task data with automatic updates.
 
-- **ICS Calendar Subscriptions**: A feature to subscribe to external calendar feeds from Google Calendar, Outlook, and other services.
-- **Advanced Calendar View**: A calendar with multiple view modes (month, week, day, year, and configurable custom days), drag-and-drop scheduling, and time-blocking capabilities.
-- **Time-blocking**: A feature to create focused work periods and link them to your tasks.
+The advanced calendar view supports multiple formats (month, week, day, year, plus configurable custom day ranges) with drag-and-drop task scheduling. Time-blocking creates focused work periods that link directly to specific tasks.
 
-For more detailed information, see the [Calendar Integration](features/calendar-integration.md) documentation.
+See [Calendar Integration](features/calendar-integration.md) for details.
 
-## Workflows
+## User Fields
 
-TaskNotes can be configured to support various workflows and use cases. Common workflows include:
+Custom fields extend task structure with any data you need. These fields work in filtering, sorting, and templates, letting you adapt TaskNotes to specialized workflows without losing functionality.
 
-- **Habit Tracking**: Using recurring tasks with completion tracking via the calendar interface
-- **Project Management**: Organizing tasks with project links and filtering
-- **Time Management**: Combining time tracking, Pomodoro sessions, and scheduling
+See [User Fields](features/user-fields.md) for details.
 
-For detailed workflow examples, see the [Workflows](workflows.md) documentation.
+## Integrations
+
+Deep integration with the Bases plugin lets TaskNotes tasks function as data sources within Bases databases, combining structured task management with Bases' analysis capabilities.
+
+See [Integrations](features/integrations.md) for details.
+
+## REST API
+
+External applications can interact with TaskNotes through its REST API, enabling automation, reporting, and integration with other tools in your workflow.
+
+See [HTTP API](HTTP_API.md) for details.
 
 ## View Types
 
-TaskNotes provides multiple view types for different perspectives on your tasks:
+Different views suit different work styles:
 
-- **[Task List View](views/task-list.md)** - Filtering, sorting, and grouping capabilities
-- **[Agenda View](views/agenda-view.md)** - Daily and weekly planning view
-- **[Kanban View](views/kanban-view.md)** - Card-based task organization  
-- **[Calendar Views](views/calendar-views.md)** - Visual scheduling and time-blocking
-- **[Notes View](views/notes-view.md)** - Date-based note browsing
-- **[Pomodoro View](views/pomodoro-view.md)** - Focus timer with task integration
+[Task List View](views/task-list.md) handles filtering, sorting, and grouping. [Agenda View](views/agenda-view.md) focuses on daily and weekly planning. [Kanban View](views/kanban-view.md) organizes tasks as cards across status columns.
+
+[Calendar Views](views/calendar-views.md) provide visual scheduling with time-blocking. [Notes View](views/notes-view.md) browses content by date. [Pomodoro View](views/pomodoro-view.md) integrates focus timing with task tracking.
 
 ## Settings
 
-Configure TaskNotes to match your workflow:
+Configuration adapts TaskNotes to your workflow:
 
-- **[Task Defaults](settings/task-defaults.md)** - Default properties and templates
-- **[Inline Task Settings](settings/inline-task-settings.md)** - Editor integration options
-- **[Calendar Settings](settings/calendar-settings.md)** - Calendar appearance and behavior
-- **[Advanced Settings](settings/advanced-settings.md)** - Field mapping and customization
-- **[Misc Settings](settings/misc-settings.md)** - Additional plugin features
+[Task Defaults](settings/task-defaults.md) sets default properties and templates. [Inline Task Settings](settings/inline-task-settings.md) controls editor integration. [Calendar Settings](settings/calendar-settings.md) handles appearance and behavior.
 
-
+[Advanced Settings](settings/advanced-settings.md) covers field mapping and customization. [Misc Settings](settings/misc-settings.md) contains additional plugin features.

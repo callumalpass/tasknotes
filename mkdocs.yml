@@ -44,19 +44,39 @@ nav:
     - Inline Task Integration: features/inline-tasks.md
     - Time Management: features/time-management.md
     - Calendar Integration: features/calendar-integration.md
+    - ICS Integration: features/ics-integration.md
+    - Filtering & Views: features/filtering-and-views.md
+    - Third-party Integrations: features/integrations.md
+    - User Fields: features/user-fields.md
   - Views:
     - Overview: views.md
     - Task List View: views/task-list.md
     - Notes View: views/notes-view.md
     - Agenda View: views/agenda-view.md
     - Kanban View: views/kanban-view.md
+    - Calendar Views: views/calendar-views.md
     - Pomodoro View: views/pomodoro-view.md
   - Settings:
     - Overview: settings.md
+    - General: settings/general.md
+    - Features: settings/features.md
+    - Task Properties: settings/task-properties.md
+    - Defaults & Templates: settings/defaults.md
     - Task Defaults: settings/task-defaults.md
+    - Appearance & UI: settings/appearance.md
     - Inline Task Settings: settings/inline-task-settings.md
     - Calendar Settings: settings/calendar-settings.md
+    - Integrations: settings/integrations.md
     - Advanced Settings: settings/advanced-settings.md
+  - APIs & Integration:
+    - HTTP API: HTTP_API.md
+    - NLP API: nlp-api.md
+    - Webhooks: webhooks.md
+    - Workflows: workflows.md
+  - Advanced Topics:
+    - Timezone Handling: TIMEZONE_HANDLING_GUIDE.md
+    - UTC Implementation: TIMEZONE_HANDLING_UTC.md
+    - Timezone Quick Reference: TIMEZONE_QUICK_REFERENCE.md
   - Release Notes: releases.md
   - Troubleshooting: troubleshooting.md
 

@@ -1,34 +1,23 @@
 # Core Concepts
 
-TaskNotes is a task and note management plugin for Obsidian that is built on the principle of "one note per task." This means that each task is a Markdown note, and all task-related information is stored in the note's YAML frontmatter.
+TaskNotes follows the "one note per task" principle, where each task lives as a separate Markdown note with structured metadata in YAML frontmatter.
 
 ## The Note-Per-Task Approach
 
-TaskNotes uses individual Markdown notes for each task, rather than a centralized database or a proprietary format. This approach has several implications:
+Individual Markdown notes replace centralized databases or proprietary formats. Each task file can be read, edited, and backed up with any text editor or automation tool.
 
-**Data Ownership and Portability**: Each task is a standard Markdown file that you can read, edit, and back up with any text editor or automation tool.
+The note body holds additional context like research findings, meeting notes, or links to related documents. Since tasks are proper notes, they work with Obsidian's backlinking, graph visualization, and tag management.
 
-**Rich Context and Flexibility**: You can include additional content in the body of each task note, such as research findings, meeting notes, or links to related documents.
-
-**Obsidian Integration**: By treating tasks as notes, TaskNotes can use Obsidian's core features, such as backlinking, graph visualization, and tag management.
-
-Storing each task as a separate file can lead to a large number of small files, which may not be ideal for all organizational preferences.
+This approach does create many small files, which may not suit every organizational preference.
 
 ## YAML Frontmatter for Structured Data
 
-TaskNotes uses YAML frontmatter to store structured task metadata, such as due dates, priority levels, and status. This human-readable format has several implications:
+Task metadata like due dates, priorities, and status live in YAML frontmatter. This widely adopted standard has broad tool support, letting you integrate task data with external systems and extend the data model with custom fields.
 
-**Standardization and Extensibility**: YAML is a widely adopted standard with broad tool support, which allows you to integrate your task data with external systems. You can also extend the data model by adding custom fields to the frontmatter.
+TaskNotes uses Obsidian's native metadata cache for performance, even with large task counts. The YAML format works with other Obsidian plugins like Bases, and plain text files integrate naturally with version control systems like Git.
 
-**Performance and Compatibility**: By using Obsidian's native metadata cache, TaskNotes can maintain good performance, even with a large number of tasks. The use of YAML frontmatter also allows for compatibility with other Obsidian plugins, such as Bases.
+## Methodology-Agnostic Design
 
-**Version Control and Collaboration**: Since tasks are stored as plain text files, they can be used with version control systems like Git.
+TaskNotes doesn't enforce any specific productivity methodology. The tools adapt to various approaches:
 
-## A Methodology-Agnostic Approach
-
-TaskNotes does not enforce a specific task management methodology. It provides a set of tools that can be adapted to a variety of productivity systems, including:
-
-- **Getting Things Done (GTD)**: Contexts, status workflows, and calendar integration can be used to support GTD principles.
-- **Timeboxing and Time-blocking**: Calendar integration and time tracking features can be used for time-based planning.
-- **Project-based Organization**: The projects feature, along with tags, contexts, and linking capabilities, can be used for project-centric workflows.
-- **Kanban and Agile**: The Kanban view and customizable status systems can be used to support agile development processes and other visual workflows.
+Getting Things Done benefits from contexts, status workflows, and calendar integration. Time-based planning uses calendar integration and time tracking features. Project-centric workflows leverage the projects feature with tags, contexts, and linking. Kanban and Agile methodologies work with the Kanban view and customizable status systems.

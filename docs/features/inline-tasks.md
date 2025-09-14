@@ -34,6 +34,12 @@ Task link overlays work in both Live Preview and Reading modes:
 
 The overlays support drag-and-drop to calendar views and provide keyboard shortcuts for quick navigation (Ctrl/Cmd+Click to open the source file).
 
+## Create Inline Task Command
+
+The `Create inline task` command allows you to create a new task from the current line in the editor. This command is available in the command palette.
+
+When you run the command, the current line is used as the title of the new task. The line is then replaced with a link to the new task file.
+
 ## Instant Task Conversion
 
 The **Instant Task Conversion** feature transforms lines in your notes into TaskNotes files. This works with both checkbox tasks and regular lines of text. When available, a "convert" button appears next to the content in edit mode. Clicking this button creates a new task note using the line's text as the title and replaces the original line with a link to the new task file.
@@ -161,7 +167,9 @@ The Project Subtasks widget shows the saved view name and completion counts just
 
 ## Natural Language Processing
 
-TaskNotes includes a **Natural Language Processor (NLP)** that parses task descriptions written in English to extract structured data. This allows for task creation from conversational language, such as "Prepare quarterly report due Friday #work high priority," which would automatically set the due date, tag, and priority.
+TaskNotes includes a **Natural Language Processor (NLP)** that parses task descriptions to extract structured data. This allows for task creation from conversational language, such as "Prepare quarterly report due Friday #work high priority," which would automatically set the due date, tag, and priority.
+
+The NLP engine supports multiple languages, including English, Japanese, German, Russian, and Chinese.
 
 The NLP engine supports syntax for:
 
