@@ -23,8 +23,6 @@ import { GroupCountUtils } from '../utils/GroupCountUtils';
 import TaskNotesPlugin from '../main';
 import { createNoteCard } from '../ui/NoteCard';
 
-// No helper functions needed from helpers
-
 
 
 
@@ -1031,6 +1029,8 @@ export class AgendaView extends ItemView implements OptimizedView {
      */
     private createTaskItemElement(task: TaskInfo, date?: Date): HTMLElement {
         const visibleProperties = this.getCurrentVisibleProperties();
+
+
         const taskCard = createTaskCard(task, this.plugin, visibleProperties, {
             showDueDate: !this.groupByDate,
             showCheckbox: false,
@@ -1045,10 +1045,7 @@ export class AgendaView extends ItemView implements OptimizedView {
             this.taskElements.set(task.path, taskCard);
         }
 
-        // Add completion status class if task is completed
-        if (this.plugin.statusManager.isCompletedStatus(task.status)) {
-            taskCard.classList.add('done');
-        }
+        // TaskCard handles its own completion styling with proper effective status
 
         // Add drag functionality
         this.addDragHandlers(taskCard, task);

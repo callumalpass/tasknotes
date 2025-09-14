@@ -3,13 +3,14 @@ import { TaskInfo } from '../types';
 import TaskNotesPlugin from '../main';
 import { TaskContextMenu } from '../components/TaskContextMenu';
 import { calculateTotalTimeSpent, getEffectiveTaskStatus, getRecurrenceDisplayText, filterEmptyProjects } from '../utils/helpers';
-import { 
+import {
     formatDateTimeForDisplay,
     isTodayTimeAware,
     isOverdueTimeAware,
     getDatePart,
     getTimePart,
-    createTimeFormatHelper
+    createTimeFormatHelper,
+    formatDateForStorage
 } from '../utils/dateUtils';
 import { DateContextMenu } from '../components/DateContextMenu';
 import { PriorityContextMenu } from '../components/PriorityContextMenu';
@@ -712,20 +713,22 @@ export function createTaskCard(task: TaskInfo, plugin: TaskNotesPlugin, visibleP
     const targetDate = opts.targetDate || plugin.selectedDate || new Date();
     
     // Determine effective status for recurring tasks
-    const effectiveStatus = task.recurrence 
+    const effectiveStatus = task.recurrence
         ? getEffectiveTaskStatus(task, targetDate)
         : task.status;
-    
+
     // Main container with BEM class structure
     const card = document.createElement('div');
-    
+
     // Store task path for circular reference detection
     (card as any)._taskPath = task.path;
-    
+
     const isActivelyTracked = plugin.getActiveTimeSession(task) !== null;
-    const isCompleted = plugin.statusManager.isCompletedStatus(effectiveStatus);
+    const isCompleted = task.recurrence
+        ? (task.complete_instances?.includes(formatDateForStorage(targetDate)) || false)  // Direct check of complete_instances
+        : plugin.statusManager.isCompletedStatus(effectiveStatus);  // Regular tasks use status config
     const isRecurring = !!task.recurrence;
-    
+
     // Build BEM class names
     const cardClasses = ['task-card'];
     
@@ -1194,7 +1197,9 @@ export function updateTaskCard(element: HTMLElement, task: TaskInfo, plugin: Tas
     
     // Update main element classes using BEM structure
     const isActivelyTracked = plugin.getActiveTimeSession(task) !== null;
-    const isCompleted = plugin.statusManager.isCompletedStatus(effectiveStatus);
+    const isCompleted = task.recurrence
+        ? (task.complete_instances?.includes(formatDateForStorage(targetDate)) || false)  // Direct check of complete_instances
+        : plugin.statusManager.isCompletedStatus(effectiveStatus);  // Regular tasks use status config
     const isRecurring = !!task.recurrence;
     
     // Build BEM class names for update
