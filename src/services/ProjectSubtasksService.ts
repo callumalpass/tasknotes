@@ -101,36 +101,61 @@ export class ProjectSubtasksService {
     }
 
     /**
-     * Build project status cache using Obsidian's link tracking (much more efficient)
+     * Build project status cache using task scanning (reliable for frontmatter links)
      */
     async buildProjectStatusCache(): Promise<void> {
         const startTime = Date.now();
         try {
             this.projectStatusCache.clear();
 
-            const resolvedLinks = this.plugin.app.metadataCache.resolvedLinks;
+            // Get all tasks and files
+            const allTasks = await this.plugin.cacheManager.getAllTasks();
             const allFiles = this.plugin.app.vault.getMarkdownFiles();
 
-            let projectsFound = 0;
+            // Initialize all files as non-projects
+            const projectPaths = new Set<string>();
 
-            // For each file, check if it has incoming links from project fields
-            for (const file of allFiles) {
-                let isProject = false;
+            // Scan tasks to find which files are referenced as projects
+            for (const task of allTasks) {
+                if (!task.projects || task.projects.length === 0) continue;
 
-                // Check if any other files link to this one
-                for (const [sourceFilePath, links] of Object.entries(resolvedLinks)) {
-                    if (links[file.path] && links[file.path] > 0) {
-                        // This file is linked from sourceFilePath
-                        // Now check if the link is from a projects field
-                        if (await this.isLinkFromProjectsField(sourceFilePath, file.path)) {
-                            isProject = true;
-                            projectsFound++;
-                            break;
+                for (const projectRef of task.projects) {
+                    if (!projectRef || typeof projectRef !== 'string') continue;
+
+                    let projectPath: string | null = null;
+
+                    // Check wikilink format [[Note Name]]
+                    if (projectRef.startsWith('[[') && projectRef.endsWith(']]')) {
+                        const linkedNoteName = projectRef.slice(2, -2).trim();
+                        // Try to resolve the link
+                        const resolvedFile = this.plugin.app.metadataCache.getFirstLinkpathDest(linkedNoteName, '');
+                        if (resolvedFile) {
+                            projectPath = resolvedFile.path;
+                        }
+                    } else {
+                        // Plain text reference - find matching file
+                        const trimmedRef = projectRef.trim();
+                        const file = this.plugin.app.vault.getAbstractFileByPath(trimmedRef);
+                        if (file instanceof TFile) {
+                            projectPath = file.path;
+                        } else {
+                            // Try to find by basename
+                            const matchingFile = allFiles.find(f => f.basename === trimmedRef);
+                            if (matchingFile) {
+                                projectPath = matchingFile.path;
+                            }
                         }
                     }
-                }
 
-                this.projectStatusCache.set(file.path, isProject);
+                    if (projectPath) {
+                        projectPaths.add(projectPath);
+                    }
+                }
+            }
+
+            // Set cache for all files
+            for (const file of allFiles) {
+                this.projectStatusCache.set(file.path, projectPaths.has(file.path));
             }
 
             this.cacheBuilt = true;
