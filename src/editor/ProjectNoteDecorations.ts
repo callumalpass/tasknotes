@@ -640,7 +640,7 @@ class ProjectNoteDecorationsPlugin implements PluginValue {
     
     constructor(view: EditorView, private plugin: TaskNotesPlugin) {
         this.view = view;
-        this.projectService = new ProjectSubtasksService(plugin);
+        this.projectService = plugin.projectSubtasksService;
         this.decorations = this.buildDecorations(view);
         
         // Set up event listeners for data changes
