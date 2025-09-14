@@ -338,27 +338,52 @@ export class ProjectSubtasksService {
 
     /**
      * Check if a project is still referenced by other tasks (excluding specified task)
+     * Uses native Obsidian APIs for maximum performance
      */
     private async isProjectReferencedByOtherTasks(projectPath: string, excludeTaskPath: string): Promise<boolean> {
-        // Use streaming to find match early and avoid loading all tasks
-        let isReferenced = false;
+        try {
+            // Method 1: Fast check using native resolvedLinks API
+            const linkingSources = this.getFilesLinkingToProject(projectPath);
 
-        await this.plugin.cacheManager.streamTasks(async (task) => {
-            if (task.path === excludeTaskPath) return true; // Skip the task we're updating
-            if (!task.projects || task.projects.length === 0) return true;
+            for (const sourcePath of linkingSources) {
+                if (sourcePath === excludeTaskPath) continue; // Skip the task we're updating
 
-            for (const projectRef of task.projects) {
-                const resolvedPath = await this.resolveProjectReference(projectRef, this.plugin.app.vault.getMarkdownFiles());
-                if (resolvedPath === projectPath) {
-                    isReferenced = true;
-                    return false; // Stop streaming - we found a match
+                // Check if this linking file is a task with project references
+                const taskInfo = await this.plugin.cacheManager.getTaskInfo(sourcePath);
+                if (taskInfo && await this.isLinkFromProjectsField(sourcePath, projectPath)) {
+                    return true; // Found another task referencing this project
                 }
             }
 
-            return true; // Continue streaming
-        });
+            // Method 2: Check if any tasks in MinimalNativeCache reference this project
+            const referencingTasks = this.plugin.cacheManager.getTasksReferencingProject(projectPath);
+            for (const taskPath of referencingTasks) {
+                if (taskPath !== excludeTaskPath) {
+                    return true; // Found another task referencing this project
+                }
+            }
 
-        return isReferenced;
+            // Method 3: Fast basename check for plain text references (rare fallback)
+            const projectBasename = this.plugin.app.vault.getAbstractFileByPath(projectPath)?.name?.replace('.md', '');
+            if (projectBasename) {
+                // Only check a small sample of recent tasks for plain text references
+                const recentTasks = await this.plugin.cacheManager.getFilteredTasks((file, frontmatter) => {
+                    return frontmatter.projects?.some((p: string) =>
+                        typeof p === 'string' && p.trim() === projectBasename && file.path !== excludeTaskPath
+                    );
+                });
+                if (recentTasks.length > 0) {
+                    return true;
+                }
+            }
+
+            return false;
+
+        } catch (error) {
+            console.error('Error checking if project is referenced by other tasks:', error);
+            // Fallback: assume it's still referenced to be safe
+            return true;
+        }
     }
 
     /**
