@@ -113,7 +113,9 @@ export async function selectiveUpdateForListView(
                 // Task is visible - update it in place
                 const updatedTask = await view.plugin.cacheManager.getTaskInfo(taskPath);
                 if (updatedTask) {
-                    await updateTaskElementInPlace(taskElement, updatedTask, view.plugin);
+                    // Get visible properties from the view instead of extracting from DOM
+                    const visibleProperties = (view as any).getCurrentVisibleProperties?.() || ['due', 'scheduled', 'projects', 'contexts', 'tags'];
+                    await updateTaskElementInPlace(taskElement, updatedTask, view.plugin, visibleProperties);
                 } else {
                     // Task was deleted, remove from view
                     taskElement.remove();
@@ -144,14 +146,12 @@ export async function selectiveUpdateForListView(
 async function updateTaskElementInPlace(
     element: HTMLElement,
     taskInfo: TaskInfo,
-    plugin: TaskNotesPlugin
+    plugin: TaskNotesPlugin,
+    visibleProperties: string[]
 ): Promise<void> {
     try {
         // Use the existing updateTaskCard function if available
         const { updateTaskCard } = await import('../ui/TaskCard');
-
-        // Get current visible properties from the view
-        const visibleProperties = extractVisiblePropertiesFromElement(element);
 
         updateTaskCard(element, taskInfo, plugin, visibleProperties, {
             showDueDate: true,
