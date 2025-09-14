@@ -555,41 +555,17 @@ export default class TaskNotesPlugin extends Plugin {
 	 */
 	private async warmupProjectIndexes(): Promise<void> {
 		try {
-			// Force MinimalNativeCache to build its indexes, including project references
-			// This will populate the projectReferences Map during startup
+			// Simple approach: just trigger the lazy index building once
+			// This is much more efficient than processing individual files
 			const warmupStartTime = Date.now();
 
-			// Trigger index building by accessing an indexed method
-			// This is more efficient than calling getAllTasks() which creates TaskInfo objects
-			const markdownFiles = this.app.vault.getMarkdownFiles()
-				.filter(file => this.cacheManager.isValidFile(file.path));
-
-			// Process in small batches to avoid blocking startup
-			const batchSize = 25;
-			let processedCount = 0;
-
-			for (let i = 0; i < markdownFiles.length; i += batchSize) {
-				const batch = markdownFiles.slice(i, i + batchSize);
-
-				for (const file of batch) {
-					const metadata = this.app.metadataCache.getFileCache(file);
-					if (metadata?.frontmatter) {
-						// This internally builds project references index
-						this.cacheManager.isFileUsedAsProject(file.path);
-						processedCount++;
-					}
-				}
-
-				// Yield control between batches to maintain startup responsiveness
-				if (i + batchSize < markdownFiles.length) {
-					await new Promise(resolve => setTimeout(resolve, 1));
-				}
-			}
+			// Trigger index building with a single call - this will process all files internally
+			this.cacheManager.getTasksForDate(new Date().toISOString().split('T')[0]);
 
 			const duration = Date.now() - warmupStartTime;
 			// Only log slow warmup for debugging large vaults
-			if (duration > 5000) {
-				console.log(`[TaskNotes] Project indexes warmed up in ${duration}ms (${processedCount} files processed)`);
+			if (duration > 2000) {
+				console.log(`[TaskNotes] Project indexes warmed up in ${duration}ms`);
 			}
 
 		} catch (error) {

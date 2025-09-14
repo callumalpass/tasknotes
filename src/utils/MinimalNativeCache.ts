@@ -1214,10 +1214,10 @@ export class MinimalNativeCache extends Events {
             }
         }
         
-        // Log if we timed out (for debugging slow systems)
+        // Log if we timed out (for debugging slow systems) - only log very slow waits
         const elapsed = Date.now() - startTime;
-        if (elapsed > 500) {
-            console.debug(`MinimalNativeCache: Waited ${elapsed}ms for fresh data on ${file.path}`);
+        if (elapsed > 3000) {
+            console.warn(`MinimalNativeCache: Waited ${elapsed}ms for fresh data on ${file.path} - consider investigating file system performance`);
         }
     }
     
@@ -1267,10 +1267,10 @@ export class MinimalNativeCache extends Events {
             }
         }
         
-        // Log if we timed out (for debugging)
+        // Log if we timed out (for debugging) - only log very slow waits
         const elapsed = Date.now() - startTime;
-        if (elapsed > 500) {
-            console.debug(`MinimalNativeCache: Waited ${elapsed}ms for fresh task data on ${file.path}`, expectedChanges);
+        if (elapsed > 3000) {
+            console.warn(`MinimalNativeCache: Waited ${elapsed}ms for fresh task data on ${file.path}`, expectedChanges);
         }
     }
     
