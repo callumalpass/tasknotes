@@ -12,7 +12,9 @@
     border-radius: 4px;
 }
 
-.fc-event[data-ics-event="true"]:before {
+/* Only apply calendar emoji to ICS events in non-list views */
+.fc-daygrid-event[data-ics-event="true"]:before,
+.fc-timegrid-event[data-ics-event="true"]:before {
     content: "📅";
     position: absolute;
     top: 2px;
@@ -86,14 +88,16 @@
     box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
 
-/* ICS Events */
-.fc-ics-event {
+/* ICS Events - only in non-list views */
+.fc-daygrid-event.fc-ics-event,
+.fc-timegrid-event.fc-ics-event {
     border-radius: 4px;
     border-width: 2px !important;
     border-style: solid !important;
 }
 
-.fc-ics-event:hover {
+.fc-daygrid-event.fc-ics-event:hover,
+.fc-timegrid-event.fc-ics-event:hover {
     box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
 
@@ -659,14 +663,25 @@
 
 /* Clean today styling */
 .advanced-calendar-view .fc-daygrid-day.fc-day-today {
-    background: color-mix(in srgb, var(--interactive-accent) 8%, transparent) !important;
+    background: color-mix(in srgb, var(--interactive-accent) 8%, var(--background-primary)) !important;
     border: 2px solid var(--interactive-accent);
     position: relative;
 }
 
 .advanced-calendar-view .fc-daygrid-day.fc-day-today .fc-daygrid-day-number {
     font-weight: 600;
-    color: var(--interactive-accent);
+    color: var(--interactive-accent) !important;
+}
+
+/* Fix today styling specifically for multi-month (year) view */
+.advanced-calendar-view .fc-multimonth-daygrid .fc-daygrid-day.fc-day-today {
+    background: color-mix(in srgb, var(--interactive-accent) 8%, var(--background-primary)) !important;
+    border: 2px solid var(--interactive-accent) !important;
+}
+
+.advanced-calendar-view .fc-multimonth-daygrid .fc-daygrid-day.fc-day-today .fc-daygrid-day-number {
+    font-weight: 600;
+    color: var(--interactive-accent) !important;
 }
 
 .advanced-calendar-view .fc-daygrid-day.fc-day-today::before {
@@ -683,8 +698,8 @@
 
 /* Header cells */
 .advanced-calendar-view .fc-col-header-cell {
-    background: var(--background-primary);
-    color: var(--text-muted);
+    background: var(--background-primary) !important;
+    color: var(--text-muted) !important;
     font-weight: 400;
     font-size: 0.75rem;
     /* text-transform: lowercase; */
@@ -692,12 +707,51 @@
     padding: 0.5rem 0.5rem;
 }
 
+/* Day cells - ensure proper theme colors */
+.advanced-calendar-view .fc-daygrid-day {
+    background: var(--background-primary) !important;
+    color: var(--text-normal) !important;
+}
+
+/* Multi-month (year view) styling */
+.advanced-calendar-view .fc-multimonth-daygrid .fc-daygrid-day {
+    background: var(--background-primary) !important;
+    color: var(--text-normal) !important;
+}
+
+/* Multi-month month headers */
+.advanced-calendar-view .fc-multimonth-header {
+    background: var(--background-secondary) !important;
+    color: var(--text-normal) !important;
+}
+
+.advanced-calendar-view .fc-multimonth-title {
+    background: var(--background-secondary) !important;
+    color: var(--text-normal) !important;
+}
+
+/* Multi-month day headers (Mon, Tue, etc.) */
+.advanced-calendar-view .fc-multimonth .fc-col-header-cell {
+    background: var(--background-secondary) !important;
+    color: var(--text-muted) !important;
+}
+
 /* Day numbers */
 .advanced-calendar-view .fc-daygrid-day-number {
-    color: var(--text-normal);
+    color: var(--text-normal) !important;
     font-weight: 400;
     font-size: 0.9rem;
     padding: 0.5rem;
+}
+
+/* List view day headers */
+.advanced-calendar-view .fc-list-day-cushion {
+    background: var(--background-secondary) !important;
+    color: var(--text-normal) !important;
+}
+
+.advanced-calendar-view .fc-list-day {
+    background: var(--background-secondary) !important;
 }
 
 /* Clean event styling */
@@ -858,47 +912,277 @@
     border: none !important;
 }
 
-/* ICS Refresh Button in FullCalendar Toolbar */
-/* Use consistent button system for refresh ICS button */
+/* ICS Refresh Button - Match exact styling of other FullCalendar buttons */
 .advanced-calendar-view .fc-refreshICS-button {
-    background: transparent;
-    border: none;
-    box-shadow: none;
-    color: var(--text-normal);
-    transition: all 0.2s ease;
-    font-weight: normal;
-    font-size: 13px;
-    padding: 4px 8px;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    color: var(--text-muted) !important;
+    font-size: 0.8rem !important;
+    font-weight: 400 !important;
+    padding: 0.3rem 0.6rem !important;
+    border-radius: 4px !important;
+    transition: all 0.2s ease !important;
 }
 
 .advanced-calendar-view .fc-refreshICS-button .fc-icon,
 .advanced-calendar-view .fc-refreshICS-button .fc-button-label {
-    color: var(--text-normal);
-    font-size: 13px;
+    color: var(--text-muted) !important;
+    font-size: 0.8rem !important;
+    font-weight: 400 !important;
     line-height: 1.2;
     display: inline;
     visibility: visible;
 }
 
-.advanced-calendar-view .fc-refreshICS-button:hover {
-    background: var(--tn-interactive-hover);
-    box-shadow: none;
-    color: var(--text-normal);
+/* Hover state - match other buttons exactly */
+.advanced-calendar-view .fc-refreshICS-button:hover:not(:disabled) {
+    background: var(--tn-interactive-hover) !important;
+    color: var(--text-normal) !important;
+    border: none !important;
+    box-shadow: none !important;
 }
 
-.advanced-calendar-view .fc-refreshICS-button:hover .fc-icon,
-.advanced-calendar-view .fc-refreshICS-button:hover .fc-button-label {
-    color: var(--text-normal);
+.advanced-calendar-view .fc-refreshICS-button:hover:not(:disabled) .fc-icon,
+.advanced-calendar-view .fc-refreshICS-button:hover:not(:disabled) .fc-button-label {
+    color: var(--text-normal) !important;
 }
 
+/* Active/Focus state - match other buttons */
+.advanced-calendar-view .fc-refreshICS-button:active,
 .advanced-calendar-view .fc-refreshICS-button:focus {
-    outline: 2px solid var(--tn-interactive-accent);
-    outline-offset: 2px;
-    box-shadow: none;
+    background: var(--tn-interactive-hover) !important;
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+    color: var(--text-normal) !important;
 }
 
-/* Ensure button content is visible and matches other FC buttons */
-.advanced-calendar-view .fc-refreshICS-button,
-.advanced-calendar-view .fc-refreshICS-button * {
-    color: var(--text-normal);
+/* Disabled state - match other buttons */
+.advanced-calendar-view .fc-refreshICS-button:disabled {
+    background: transparent !important;
+    color: var(--text-faint) !important;
+    opacity: 0.5 !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* ===== CLEAN LIST VIEW STYLING - NO INHERITANCE ===== */
+
+/* Base styling for ALL list events - completely independent from calendar views */
+.fc-list-event {
+    /* Reset any inherited styling from calendar views */
+    opacity: 1 !important;
+    border: none !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+/* Consistent light hover background for ALL list events */
+.fc-list-event:hover {
+    background-color: var(--background-modifier-hover) !important;
+}
+
+/* Fix time element color on hover in list view */
+.fc-list-event:hover .fc-list-event-time {
+    color: inherit !important;
+    background-color: transparent !important;
+}
+
+.fc-list-event .fc-list-event-time {
+    /* Consistent time styling for all events */
+    font-size: inherit !important;
+    color: inherit !important;
+    font-weight: inherit !important;
+    vertical-align: top;
+}
+
+.fc-list-event .fc-list-event-title {
+    /* Base title styling - clean and consistent */
+    padding: 8px 12px;
+    border: none !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    font-size: inherit !important;
+    font-weight: inherit !important;
+    color: inherit !important;
+    display: table-cell;
+    vertical-align: top;
+}
+
+
+.fc-list-event .fc-list-event-dot {
+    /* Standard dot styling for all events */
+    border: inherit !important;
+    background: inherit !important;
+}
+
+/* ===== TASK-SPECIFIC ENHANCEMENTS ===== */
+
+/* Task events get ONLY functional enhancements - NO visual styling differences */
+.fc-list-event.fc-list-task-card .fc-list-event-title {
+    /* Keep base styling identical to ICS events - no background, borders, or shadows */
+    background-color: transparent !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+}
+
+/* Remove task-specific hover - now handled by base .fc-list-event:hover */
+
+/* Hide default FullCalendar dot for tasks since we have custom indicators */
+.fc-list-event.fc-list-task-card .fc-list-event-dot {
+    display: none;
+}
+
+/* Style the status dot in graphic column */
+.fc-list-event-status-dot {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: auto;
+}
+
+/* Prevent graphic column from getting hover background */
+.fc-list-event:hover .fc-list-event-graphic {
+    background-color: transparent !important;
+}
+
+/* Task title row with indicators on same line */
+.fc-list-task-title-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    margin-bottom: 4px;
+}
+
+/* Metadata spacing without separators */
+.fc-list-task-metadata > span {
+    display: block;
+    margin: 2px 0;
+}
+
+/* Status and priority dots */
+.fc-list-task-status-dot,
+.fc-list-task-priority-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    border: 2px solid currentColor;
+    background-color: transparent;
+    flex-shrink: 0;
+}
+
+.fc-list-task-priority-dot {
+    cursor: pointer;
+}
+
+.fc-list-task-priority-dot {
+    background-color: var(--priority-color, currentColor);
+}
+
+/* Recurring indicator styling */
+.fc-list-task-recurring-indicator {
+    width: 12px;
+    height: 12px;
+    flex-shrink: 0;
+    opacity: 0.7;
+    cursor: pointer;
+}
+
+.fc-list-task-recurring-indicator:hover {
+    opacity: 1;
+}
+
+.fc-list-task-status-dot {
+    border-color: var(--current-status-color, var(--text-muted));
+}
+
+/* Recurring indicator */
+.fc-list-task-recurring-indicator {
+    font-size: 12px;
+    opacity: 0.8;
+    flex-shrink: 0;
+}
+
+/* Task title */
+.fc-list-task-title {
+    font-weight: 500 !important;
+    color: var(--text-normal) !important;
+    font-size: 14px !important;
+    flex-grow: 1;
+}
+
+/* Task metadata */
+.fc-list-task-metadata {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+
+.fc-list-task-metadata > span {
+    background-color: var(--background-secondary);
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 11px;
+}
+
+.fc-list-task-projects {
+    background-color: rgba(var(--color-blue-rgb, 13 110 253), 0.1) !important;
+    color: var(--color-blue) !important;
+}
+
+.fc-list-task-contexts {
+    background-color: rgba(var(--color-green-rgb, 25 135 84), 0.1) !important;
+    color: var(--color-green) !important;
+}
+
+.fc-list-task-tags {
+    background-color: rgba(var(--color-purple-rgb, 102 16 242), 0.1) !important;
+    color: var(--color-purple) !important;
+}
+
+.fc-list-task-time-estimate {
+    background-color: rgba(var(--color-orange-rgb, 255 159 67), 0.1) !important;
+    color: var(--color-orange) !important;
+}
+
+.fc-list-task-metadata-separator {
+    color: var(--text-faint);
+    font-weight: 300;
+}
+
+/* Responsive design for smaller screens */
+@media (max-width: 768px) {
+    .fc-list-task-metadata {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+
+    .fc-list-task-title-row {
+        gap: 4px;
+    }
+}
+
+/* Animation for newly added events */
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fc-list-event.fc-list-task-card[data-newly-added] {
+    animation: slideInUp 0.3s ease-out;
 }

@@ -1,7 +1,10 @@
-import { ItemView, WorkspaceLeaf, TFile, Notice, EventRef, Menu, Modal, setTooltip } from 'obsidian';
+import { ItemView, WorkspaceLeaf, TFile, Notice, EventRef, Menu, Modal, setTooltip, setIcon } from 'obsidian';
 import { ICSEventInfoModal } from '../modals/ICSEventInfoModal';
 import { ICSEventContextMenu } from '../components/ICSEventContextMenu';
 import { TaskContextMenu } from '../components/TaskContextMenu';
+import { PriorityContextMenu } from '../components/PriorityContextMenu';
+import { RecurrenceContextMenu } from '../components/RecurrenceContextMenu';
+import { createTaskClickHandler, createTaskHoverHandler } from '../utils/clickHandlers';
 import { TimeblockInfoModal } from '../modals/TimeblockInfoModal';
 import { format, startOfDay, endOfDay } from 'date-fns';
 import { Calendar } from '@fullcalendar/core';
@@ -14,6 +17,7 @@ import {
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import multiMonthPlugin from '@fullcalendar/multimonth';
+import listPlugin from '@fullcalendar/list';
 import interactionPlugin from '@fullcalendar/interaction';
 import TaskNotesPlugin from '../main';
 import {
@@ -34,16 +38,18 @@ import { TaskEditModal } from '../modals/TaskEditModal';
 import { UnscheduledTasksSelectorModal, ScheduleTaskOptions } from '../modals/UnscheduledTasksSelectorModal';
 import { TimeblockCreationModal } from '../modals/TimeblockCreationModal';
 import { FilterBar } from '../ui/FilterBar';
-import { 
-    hasTimeComponent, 
-    getDatePart, 
+import {
+    hasTimeComponent,
+    getDatePart,
     getTimePart,
     parseDateToLocal,
     parseDateToUTC,
     normalizeCalendarBoundariesToUTC,
     formatDateForStorage,
-    getTodayLocal
+    getTodayLocal,
+    formatDateTimeForDisplay
 } from '../utils/dateUtils';
+import { getRecurrenceDisplayText } from '../utils/helpers';
 import { 
     generateRecurringInstances,
     extractTimeblocksFromNote,
@@ -462,7 +468,7 @@ export class AdvancedCalendarView extends ItemView {
         const toolbarConfig = {
             left: 'prev,next today',
             center: isNarrowView ? '' : 'title', // Hide title in narrow views
-            right: 'refreshICS multiMonthYear,dayGridMonth,timeGridWeek,timeGridCustom,timeGridDay'
+            right: 'refreshICS multiMonthYear,dayGridMonth,timeGridWeek,timeGridCustom,timeGridDay,listWeek'
         };
         console.log('Header toolbar config:', toolbarConfig);
         return toolbarConfig;
@@ -561,15 +567,25 @@ export class AdvancedCalendarView extends ItemView {
         console.log('Initializing calendar with headerToolbar:', headerToolbar);
         
         this.calendar = new Calendar(calendarEl as HTMLElement, {
-            plugins: [dayGridPlugin, timeGridPlugin, multiMonthPlugin, interactionPlugin],
+            plugins: [dayGridPlugin, timeGridPlugin, multiMonthPlugin, listPlugin, interactionPlugin],
             initialView: calendarSettings.defaultView,
             headerToolbar: headerToolbar,
             customButtons: customButtons,
+
+            // Custom button text for clean, short labels
+            buttonText: {
+                multiMonthYear: 'Y',
+                dayGridMonth: 'M',
+                timeGridWeek: 'W',
+                timeGridDay: 'D',
+                listWeek: 'List'
+            },
+
             views: {
                 timeGridCustom: {
                     type: 'timeGrid',
                     duration: { days: calendarSettings.customDayCount || 3 },
-                    buttonText: `${calendarSettings.customDayCount || 3} days`
+                    buttonText: `${calendarSettings.customDayCount || 3}D`
                 }
             },
             height: '100%',
@@ -1394,6 +1410,12 @@ export class AdvancedCalendarView extends ItemView {
     handleEventClick(clickInfo: any) {
         const { taskInfo, icsEvent, timeblock, eventType, subscriptionName } = clickInfo.event.extendedProps;
         const jsEvent = clickInfo.jsEvent;
+
+        // Skip task events in list view - they have their own TaskCard-style handlers
+        const isListView = this.calendar?.view?.type === 'listWeek';
+        if (isListView && taskInfo && (eventType === 'scheduled' || eventType === 'due' || eventType === 'recurring')) {
+            return; // Let the custom handlers handle it
+        }
         
         if (eventType === 'timeEntry') {
             // Time entries open the task edit modal
@@ -1826,17 +1848,33 @@ export class AdvancedCalendarView extends ItemView {
         if (!arg.event.extendedProps) {
             return;
         }
-        
+
         const { taskInfo, icsEvent, timeblock, eventType, isCompleted, isRecurringInstance, instanceDate, subscriptionName } = arg.event.extendedProps;
+
+        // Check if we're in a list view
+        const isListView = arg.view.type.startsWith('list');
+
+        // Handle ICS events FIRST in list view - they should be completely untouched
+        if (isListView && eventType === 'ics') {
+            // Just set the basic attributes and return immediately
+            arg.el.setAttribute('data-event-type', 'ics');
+            arg.el.setAttribute('data-ics-event', 'true');
+            // Don't call any other styling or processing
+            return;
+        }
+
+        // Apply enhanced task card styling for list view task events
+        if (isListView && taskInfo && (eventType === 'scheduled' || eventType === 'due' || eventType === 'recurring' || eventType === 'timeEntry')) {
+            this.enhanceListViewTaskEvent(arg, taskInfo, eventType, isCompleted);
+            return;
+        }
         
         // Set common event type attribute for all events
         arg.el.setAttribute('data-event-type', eventType || 'unknown');
         
         // Handle ICS events
         if (eventType === 'ics') {
-            // Add visual styling for ICS events
-            arg.el.style.borderStyle = 'solid';
-            arg.el.style.borderWidth = '2px';
+            // Add data attributes and class for ICS events
             arg.el.setAttribute('data-ics-event', 'true');
             arg.el.setAttribute('data-subscription', subscriptionName || 'Unknown');
             arg.el.classList.add('fc-ics-event');
@@ -2091,12 +2129,404 @@ export class AdvancedCalendarView extends ItemView {
             timeGridCustom: {
                 type: 'timeGrid',
                 duration: { days: calendarSettings.customDayCount || 3 },
-                buttonText: `${calendarSettings.customDayCount || 3} days`
+                buttonText: `${calendarSettings.customDayCount || 3} D`
             }
         });
         
         // Update the header toolbar in case it needs to refresh
         this.calendar.setOption('headerToolbar', this.getHeaderToolbarConfig());
+    }
+
+    /**
+     * Get current visible properties for event cards
+     */
+    private getCurrentVisibleProperties(): string[] | undefined {
+        // Use the FilterBar's method which handles temporary state
+        return this.filterBar?.getCurrentVisibleProperties();
+    }
+
+    /**
+     * Enhance list view task events to look like task cards
+     */
+    private enhanceListViewTaskEvent(arg: any, taskInfo: TaskInfo, eventType: string, isCompleted: boolean): void {
+        const { el, event } = arg;
+
+        // Add task card classes
+        el.classList.add('fc-task-event', 'fc-list-task-card');
+        el.setAttribute('data-task-path', taskInfo.path);
+        el.setAttribute('data-event-type', eventType);
+
+        // Apply priority and status colors as CSS custom properties
+        const priorityConfig = this.plugin.priorityManager.getPriorityConfig(taskInfo.priority);
+        if (priorityConfig) {
+            el.style.setProperty('--priority-color', priorityConfig.color);
+        }
+
+        const statusConfig = this.plugin.statusManager.getStatusConfig(taskInfo.status);
+        if (statusConfig) {
+            el.style.setProperty('--current-status-color', statusConfig.color);
+        }
+
+        // Get visible properties for metadata display
+        const visibleProperties = this.getCurrentVisibleProperties() || ['due', 'scheduled', 'projects', 'contexts', 'tags'];
+
+        // Find the main event content elements
+        const titleElement = el.querySelector('.fc-list-event-title, .fc-event-title');
+        const timeElement = el.querySelector('.fc-list-event-time, .fc-event-time');
+        const graphicElement = el.querySelector('.fc-list-event-graphic');
+
+        // Add status-colored dot to the graphic column
+        if (graphicElement && statusConfig) {
+            graphicElement.innerHTML = '';
+            const statusDot = graphicElement.createEl('div', {
+                cls: 'fc-list-event-status-dot'
+            });
+            statusDot.style.width = '10px';
+            statusDot.style.height = '10px';
+            statusDot.style.borderRadius = '50%';
+            statusDot.style.border = `2px solid ${statusConfig.color}`;
+            // Only fill background if task is completed
+            statusDot.style.backgroundColor = isCompleted ? statusConfig.color : 'transparent';
+            statusDot.setAttribute('aria-label', `Status: ${statusConfig.label || taskInfo.status}`);
+        }
+
+        if (titleElement) {
+            // Completely clear all content including text nodes
+            while (titleElement.firstChild) {
+                titleElement.removeChild(titleElement.firstChild);
+            }
+
+            // Create main title row with indicators and title on same line
+            const titleRow = titleElement.createEl('div', { cls: 'fc-list-task-title-row' });
+
+
+            // Add priority dot
+            if (taskInfo.priority && priorityConfig && (!visibleProperties || visibleProperties.includes('priority'))) {
+                const priorityDot = titleRow.createEl('span', {
+                    cls: 'fc-list-task-priority-dot',
+                    attr: { 'aria-label': `Priority: ${priorityConfig.label}` }
+                });
+                priorityDot.style.borderColor = priorityConfig.color;
+
+                // Add click context menu for priority
+                priorityDot.addEventListener('click', (e: MouseEvent) => {
+                    e.stopPropagation(); // Don't trigger card click
+                    const menu = new PriorityContextMenu({
+                        currentValue: taskInfo.priority,
+                        onSelect: async (newPriority) => {
+                            try {
+                                await this.plugin.updateTaskProperty(taskInfo, 'priority', newPriority);
+                            } catch (error) {
+                                console.error('Error updating priority:', error);
+                                new Notice('Failed to update priority');
+                            }
+                        },
+                        plugin: this.plugin
+                    });
+                    menu.show(e as MouseEvent);
+                });
+            }
+
+            // Add recurring indicator
+            if (taskInfo.recurrence) {
+                const recurringIndicator = titleRow.createEl('span', {
+                    cls: 'fc-list-task-recurring-indicator',
+                    attr: { 'aria-label': 'Recurring task' }
+                });
+                setIcon(recurringIndicator, 'rotate-ccw');
+
+                // Add click context menu for recurrence
+                recurringIndicator.addEventListener('click', (e: MouseEvent) => {
+                    e.stopPropagation(); // Don't trigger card click
+                    const menu = new RecurrenceContextMenu({
+                        currentValue: typeof taskInfo.recurrence === 'string' ? taskInfo.recurrence : undefined,
+                        onSelect: async (newRecurrence: string | null) => {
+                            try {
+                                await this.plugin.updateTaskProperty(taskInfo, 'recurrence', newRecurrence || undefined);
+                            } catch (error) {
+                                console.error('Error updating recurrence:', error);
+                                new Notice('Failed to update recurrence');
+                            }
+                        },
+                        app: this.plugin.app
+                    });
+                    menu.show(e as MouseEvent);
+                });
+            }
+
+            // Add title
+            const titleText = titleRow.createEl('span', {
+                cls: 'fc-list-task-title',
+                text: taskInfo.title
+            });
+
+            if (isCompleted) {
+                titleText.style.textDecoration = 'line-through';
+                titleText.style.opacity = '0.7';
+            }
+
+            // Add metadata based on visible properties
+            const metadataContainer = titleElement.createEl('div', { cls: 'fc-list-task-metadata' });
+            this.addTaskMetadataToListEvent(metadataContainer, taskInfo, visibleProperties, eventType);
+        }
+
+        // Add hover preview and context menu
+        this.addTaskInteractionsToListEvent(el, taskInfo);
+    }
+
+    /**
+     * Render a single property for list view with comprehensive TaskCard compatibility
+     */
+    private renderListViewProperty(container: HTMLElement, propertyId: string, taskInfo: TaskInfo): HTMLElement | null {
+        // Get property value using TaskCard's logic patterns
+        let value: any = null;
+
+        switch (propertyId) {
+            case 'due':
+                value = taskInfo.due;
+                break;
+            case 'scheduled':
+                value = taskInfo.scheduled;
+                break;
+            case 'projects':
+                value = taskInfo.projects;
+                break;
+            case 'contexts':
+                value = taskInfo.contexts;
+                break;
+            case 'tags':
+                value = taskInfo.tags;
+                break;
+            case 'timeEstimate':
+                value = taskInfo.timeEstimate;
+                break;
+            case 'totalTrackedTime':
+                value = taskInfo.totalTrackedTime;
+                break;
+            case 'recurrence':
+                value = taskInfo.recurrence;
+                break;
+            case 'completedDate':
+                value = taskInfo.completedDate;
+                break;
+            case 'file.ctime':
+                value = taskInfo.dateCreated;
+                break;
+            case 'file.mtime':
+                value = taskInfo.dateModified;
+                break;
+            default:
+                // Handle user properties and custom properties
+                if (propertyId.startsWith('user:')) {
+                    const fieldId = propertyId.slice(5);
+                    const userField = this.plugin.settings.userFields?.find(f => f.id === fieldId);
+                    if (userField?.key) {
+                        value = (taskInfo as any)[userField.key];
+                    }
+                } else if (taskInfo.customProperties && propertyId in taskInfo.customProperties) {
+                    value = taskInfo.customProperties[propertyId];
+                }
+                break;
+        }
+
+        // Check if value is valid for display
+        if (!this.hasValidValue(value)) {
+            return null;
+        }
+
+        const element = container.createEl('span', {
+            cls: `fc-list-task-${propertyId.replace(':', '-').replace('.', '-')}`
+        });
+
+        // Render the property based on type
+        this.renderPropertyValue(element, propertyId, value, taskInfo);
+
+        return element;
+    }
+
+    /**
+     * Check if a value is valid for display (matching TaskCard logic)
+     */
+    private hasValidValue(value: any): boolean {
+        return value !== null &&
+               value !== undefined &&
+               !(Array.isArray(value) && value.length === 0) &&
+               !(typeof value === 'string' && value.trim() === '');
+    }
+
+    /**
+     * Render property value with proper formatting and interactions
+     */
+    private renderPropertyValue(element: HTMLElement, propertyId: string, value: any, taskInfo: TaskInfo): void {
+        switch (propertyId) {
+            case 'due':
+                this.renderDueDateProperty(element, value, taskInfo);
+                break;
+            case 'scheduled':
+                this.renderScheduledDateProperty(element, value, taskInfo);
+                break;
+            case 'projects':
+                this.renderProjectsProperty(element, value);
+                break;
+            case 'contexts':
+                this.renderContextsProperty(element, value);
+                break;
+            case 'tags':
+                this.renderTagsProperty(element, value);
+                break;
+            case 'timeEstimate':
+                element.textContent = `${this.plugin.formatTime(value)} estimated`;
+                break;
+            case 'totalTrackedTime':
+                if (value > 0) {
+                    element.textContent = `${this.plugin.formatTime(value)} tracked`;
+                }
+                break;
+            case 'recurrence':
+                element.textContent = `Recurring: ${this.getRecurrenceDisplayText(value)}`;
+                break;
+            case 'completedDate':
+                element.textContent = `Completed: ${this.formatDateForDisplay(value)}`;
+                break;
+            case 'file.ctime':
+                element.textContent = `Created: ${this.formatDateForDisplay(value)}`;
+                break;
+            case 'file.mtime':
+                element.textContent = `Modified: ${this.formatDateForDisplay(value)}`;
+                break;
+            default:
+                // Handle user properties and generic values
+                if (propertyId.startsWith('user:')) {
+                    const fieldId = propertyId.slice(5);
+                    const userField = this.plugin.settings.userFields?.find(f => f.id === fieldId);
+                    const fieldName = userField?.displayName || fieldId;
+                    element.textContent = `${fieldName}: ${String(value)}`;
+                } else {
+                    // Generic property
+                    const displayName = propertyId.charAt(0).toUpperCase() + propertyId.slice(1);
+                    element.textContent = `${displayName}: ${String(value)}`;
+                }
+                break;
+        }
+    }
+
+    // Helper methods for specific property rendering
+    private renderDueDateProperty(element: HTMLElement, due: string, taskInfo: TaskInfo): void {
+        const userTimeFormat = this.plugin.settings.calendarViewSettings.timeFormat;
+        const display = formatDateTimeForDisplay(due, {
+            dateFormat: 'MMM d',
+            showTime: true,
+            userTimeFormat
+        });
+        element.textContent = `Due: ${display}`;
+        element.classList.add('fc-list-task-date', 'fc-list-task-date--due');
+
+        // Add click handler for date editing (like TaskCard)
+        element.addEventListener('click', (e) => {
+            e.stopPropagation();
+            // TODO: Implement date context menu if needed
+        });
+    }
+
+    private renderScheduledDateProperty(element: HTMLElement, scheduled: string, taskInfo: TaskInfo): void {
+        const userTimeFormat = this.plugin.settings.calendarViewSettings.timeFormat;
+        const display = formatDateTimeForDisplay(scheduled, {
+            dateFormat: 'MMM d',
+            showTime: true,
+            userTimeFormat
+        });
+        element.textContent = `Scheduled: ${display}`;
+        element.classList.add('fc-list-task-date', 'fc-list-task-date--scheduled');
+    }
+
+    private renderProjectsProperty(element: HTMLElement, projects: string[]): void {
+        const iconSpan = element.createEl('span', { cls: 'fc-list-task-projects-icon' });
+        setIcon(iconSpan, 'folder');
+        element.createEl('span', { text: ` ${projects.join(', ')}` });
+    }
+
+    private renderContextsProperty(element: HTMLElement, contexts: string[]): void {
+        element.textContent = `@ ${contexts.join(', ')}`;
+        // TODO: Add click handlers for context search like TaskCard
+    }
+
+    private renderTagsProperty(element: HTMLElement, tags: string[]): void {
+        element.textContent = `# ${tags.join(', ')}`;
+        // TODO: Add click handlers for tag search like TaskCard
+    }
+
+    private getRecurrenceDisplayText(recurrence: string): string {
+        return getRecurrenceDisplayText(recurrence);
+    }
+
+    private formatDateForDisplay(dateString: string): string {
+        const userTimeFormat = this.plugin.settings.calendarViewSettings.timeFormat;
+        return formatDateTimeForDisplay(dateString, {
+            dateFormat: 'MMM d',
+            showTime: false,
+            userTimeFormat
+        });
+    }
+
+    /**
+     * Add task metadata to list view events
+     */
+    private addTaskMetadataToListEvent(container: HTMLElement, taskInfo: TaskInfo, visibleProperties: string[], eventType: string): void {
+        const metadataElements: HTMLElement[] = [];
+
+        for (const propertyId of visibleProperties) {
+            // Skip status and priority as they're shown as dots
+            if (propertyId === 'status' || propertyId === 'priority') continue;
+
+            // Skip the property that's already shown as the event type
+            if ((propertyId === 'due' && eventType === 'due') ||
+                (propertyId === 'scheduled' && (eventType === 'scheduled' || eventType === 'recurring'))) {
+                continue;
+            }
+
+            let element: HTMLElement | null = null;
+
+            // Use TaskCard's renderPropertyMetadata function for comprehensive property support
+            element = this.renderListViewProperty(container, propertyId, taskInfo);
+
+            if (element) {
+                metadataElements.push(element);
+            }
+        }
+
+        // No separators between metadata elements for cleaner appearance
+    }
+
+    /**
+     * Add task interactions (hover and context menu) to list view events
+     */
+    private addTaskInteractionsToListEvent(el: HTMLElement, taskInfo: TaskInfo): void {
+        const targetDate = this.plugin.selectedDate || new Date();
+
+        // Add hover preview using TaskCard hover handler
+        el.addEventListener('mouseover', createTaskHoverHandler(taskInfo, this.plugin));
+
+        // Add click handlers with single/double click distinction like TaskCard
+        const { clickHandler, dblclickHandler } = createTaskClickHandler({
+            task: taskInfo,
+            plugin: this.plugin,
+            excludeSelector: '.fc-list-task-priority-dot, .fc-list-task-recurring-indicator',
+            contextMenuHandler: async (e) => {
+                await this.showTaskContextMenuForEvent(e, taskInfo, targetDate);
+            }
+        });
+
+        el.addEventListener('click', clickHandler);
+        el.addEventListener('dblclick', dblclickHandler);
+
+        // Add context menu
+        el.addEventListener('contextmenu', async (jsEvent: MouseEvent) => {
+            jsEvent.preventDefault();
+            jsEvent.stopPropagation();
+            await this.showTaskContextMenuForEvent(jsEvent, taskInfo, targetDate);
+        });
+
+        // Status dots are visual indicators only - use context menu for status changes
     }
 
     async refreshEvents() {
