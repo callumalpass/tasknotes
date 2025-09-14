@@ -1,86 +1,50 @@
 # TaskNotes Documentation
 
-TaskNotes is a task and note management plugin for Obsidian. It is built on the principle of "one note per task," and it stores task information in YAML frontmatter.
+TaskNotes is a task and note management plugin for Obsidian that follows the "one note per task" principle. Task information is stored in YAML frontmatter, keeping your data in plain text files that work with any text editor.
 
-## Approach and Design
+## How It Works
 
-TaskNotes stores all task information in YAML frontmatter within each note. This means that your task data is stored in plain text files that can be read and edited with any text editor.
+The plugin treats each task as a separate note with structured metadata in the frontmatter. This approach aligns with Obsidian's "files over applications" philosophy - your tasks have structured data for organization while the note content remains completely flexible.
 
-The plugin follows Obsidian's "files over applications" philosophy. Each task has structured metadata in its frontmatter for filtering and organization, while the note content is free-form.
+TaskNotes builds on Obsidian's native metadata cache, which means it works well with other plugins and benefits from Obsidian's existing performance optimizations. Since task data lives in YAML frontmatter, you can add custom fields and modify property names to match your vault's existing structure.
 
-## Core Design Principles
-
-The plugin is built around several key principles:
-
-**Native Integration**: TaskNotes uses Obsidian's native metadata cache as its primary data source. This allows for compatibility with other plugins and takes advantage of Obsidian's existing performance optimizations.
-
-**Extensible Data Model**: Task data is stored in YAML frontmatter, which allows you to add custom fields as needed. The plugin's field mapping system allows you to customize property names to match your existing vault structure.
-
-**Multiple Views**: TaskNotes provides eight different view types, including task lists, calendar views, Kanban boards, and agenda views.
-
-**Workflow Agnostic**: The plugin does not enforce a specific task management methodology. It provides a set of tools that can be used to support a variety of approaches, such as Getting Things Done (GTD), timeboxing, and project-based organization.
+The plugin doesn't lock you into any specific task management methodology. Whether you prefer Getting Things Done, timeboxing, or project-based organization, TaskNotes provides the tools without forcing a particular workflow.
 
 ## Features
 
-TaskNotes includes the following capabilities:
+Each task supports standard properties like title, status, priority, due dates, contexts, and tags, plus time estimates, recurrence patterns, and reminders. Custom fields let you extend this structure however you need.
 
-**Task Properties**: Each task can include a title, status, priority, due date, scheduled date, contexts, tags, time estimate, recurrence pattern, and reminders. You can also add custom fields.
+The built-in time tracking records work sessions directly in each task's frontmatter. For focused work, there's an integrated Pomodoro timer that automatically logs sessions to your tasks.
 
-**Time Tracking**: A time tracking feature allows you to record the amount of time that you spend on tasks. This data is stored in the task's frontmatter as time entries with start and stop times.
+You can view your tasks through eight different interfaces: traditional task lists, calendar views (both mini and advanced), Kanban boards, agenda views, notes browsers, and Pomodoro tracking. Each view offers different ways to organize and interact with your data.
 
-**View Types**: Eight different views are provided: Task List, Notes, Agenda, Kanban, Mini Calendar, Advanced Calendar, Pomodoro, and Pomodoro Stats.
+The plugin integrates directly into Obsidian's editor with inline task widgets that show task information right in your notes. Convert existing checkbox tasks instantly, or use natural language processing to create structured tasks from plain text.
 
-**Editor Integration**: Inline task widgets display task information within your notes. An instant conversion feature transforms checkbox tasks into TaskNotes. A natural language parser can interpret phrases to create structured tasks.
+Calendar integration works with external ICS feeds from Google Calendar, Outlook, and similar services. The advanced calendar view supports time-blocking and lets you drag tasks to reschedule them visually.
 
-**Calendar Integration**: The plugin can subscribe to external ICS calendars from Google Calendar, Outlook, and other calendar systems. Time-blocking features are also included.
+## Why One Note Per Task?
 
-**External Tool Compatibility**: The YAML frontmatter format is compatible with other Obsidian plugins and can be processed by external tools.
+Individual task notes give you more than just basic task management. Each task can contain meeting notes, research, brainstorming, or any other content that makes sense alongside the task itself.
 
-## The One-Note-Per-Task Approach
+Since every task is a proper note, you get full access to Obsidian's linking system. Tasks can reference other notes, appear in your graph view, and show up in backlinks just like any other content in your vault.
 
-Using individual notes for each task has several implications:
+This approach gives you structured metadata when you need it (for filtering and organizing) while keeping the actual note content completely flexible. You're not limited to predefined fields or rigid templates.
 
-**Rich Context**: Each task note can contain additional content beyond the basic task properties.
+## Plain Text Advantages
 
-**Obsidian Integration**: Each task can be linked to other notes in the vault, which allows for the use of Obsidian's backlinking and graph visualization features.
+Your task data lives in standard Markdown files with YAML frontmatter. This means you can edit tasks with any text editor, process them with scripts, or migrate them to other systems without vendor lock-in.
 
-**Structured and Flexible**: The frontmatter provides structured metadata for filtering and organization, while the note content is free-form.
+YAML frontmatter is widely supported and human-readable, so other Obsidian plugins can work with your task data. You can extend the structure by adding new fields whenever you need them.
 
-**Portable Data**: Your task data is stored in standard Markdown files that can be read, edited, and processed by any text editor or automation tool.
-
-## YAML Frontmatter Benefits
-
-Using YAML frontmatter as the primary data storage has several implications:
-
-**Standardized Format**: YAML is a human-readable data format with broad tool support.
-
-**Extensibility**: You can add new fields to your task structure by including them in the frontmatter.
-
-**Tool Compatibility**: The YAML format is compatible with other Obsidian plugins and can be processed by external tools.
-
-**Version Control**: Since tasks are plain text files, they can be used with version control systems like Git.
-
-**Performance**: By using Obsidian's native metadata cache, the plugin can maintain good performance with a large number of tasks.
+Since everything is plain text, your tasks work naturally with version control systems like Git. The plugin leverages Obsidian's native metadata cache, so performance stays good even with thousands of tasks.
 
 ## Getting Started
 
-You can start with basic task creation and then explore more advanced features like calendar integration, time tracking, and custom workflows. The plugin includes default settings that can be customized.
+To begin using TaskNotes effectively:
 
-## Documentation Navigation
+1. **Install and Enable**: Install the plugin from the Obsidian Community Plugins directory
+2. **Create Your First Task**: Use the "Create Task" command or convert an existing checkbox
+3. **Explore Views**: Try the different view types to find what works for your workflow
+4. **Configure Settings**: Customize task properties, views, and integrations as needed
 
-### Core Documentation
-- **[Features](features.md)** - Complete overview of TaskNotes capabilities
-- **[Views](views.md)** - Guide to all available view types
-- **[Settings](settings.md)** - Configuration options and customization
-- **[Core Concepts](core-concepts.md)** - Understanding TaskNotes architecture
-- **[Workflows](workflows.md)** - Example workflows and use cases
-- **[Troubleshooting](troubleshooting.md)** - Common issues and solutions
-
-### API Documentation
-- **[HTTP API](HTTP_API.md)** - External integrations and automation
-- **[NLP API](nlp-api.md)** - Natural language processing features
-- **[Webhooks](webhooks.md)** - Event-driven integrations
-
-### Advanced Topics
-- **[Timezone Handling](TIMEZONE_HANDLING_GUIDE.md)** - Understanding timezone behavior
-- **[Release Notes](releases.md)** - Version history and updates
+The plugin includes default settings that can be customized to support various task management approaches. Use the navigation menu to explore features, configuration options, and advanced capabilities.
