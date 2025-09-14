@@ -35,14 +35,16 @@ export class ProjectSubtasksService {
 
     /**
      * Get all files that link to a specific project using native resolvedLinks API
-     * This is extremely fast O(1) lookup
+     * resolvedLinks format: Record<sourcePath, Record<targetPath, linkCount>>
      */
     private getFilesLinkingToProject(projectPath: string): string[] {
         const resolvedLinks = this.plugin.app.metadataCache.resolvedLinks;
         const linkingSources: string[] = [];
 
+        // Iterate through all source files and their targets
         for (const [sourcePath, targets] of Object.entries(resolvedLinks)) {
-            if (targets[projectPath]) {
+            // Check if this source file links to our project
+            if (targets && targets[projectPath] > 0) {
                 linkingSources.push(sourcePath);
             }
         }
@@ -263,27 +265,20 @@ export class ProjectSubtasksService {
 
     /**
      * Check if a project is still referenced by other tasks (excluding specified task)
-     * Uses native Obsidian APIs for maximum performance
+     * Uses correctly structured resolvedLinks API
      */
     private async isProjectReferencedByOtherTasks(projectPath: string, excludeTaskPath: string): Promise<boolean> {
         try {
-            // Method 1: Fast check using native resolvedLinks API
-            const linkingSources = this.getFilesLinkingToProject(projectPath);
+            // Use resolvedLinks API correctly: Record<sourcePath, Record<targetPath, linkCount>>
+            const resolvedLinks = this.plugin.app.metadataCache.resolvedLinks;
 
-            for (const sourcePath of linkingSources) {
+            for (const [sourcePath, targets] of Object.entries(resolvedLinks)) {
                 if (sourcePath === excludeTaskPath) continue; // Skip the task we're updating
+                if (!targets || !targets[projectPath]) continue; // This file doesn't link to our project
 
                 // Check if this linking file is a task with project references
                 const taskInfo = await this.plugin.cacheManager.getTaskInfo(sourcePath);
                 if (taskInfo && await this.isLinkFromProjectsField(sourcePath, projectPath)) {
-                    return true; // Found another task referencing this project
-                }
-            }
-
-            // Method 2: Check if any tasks in MinimalNativeCache reference this project
-            const referencingTasks = this.plugin.cacheManager.getTasksReferencingProject(projectPath);
-            for (const taskPath of referencingTasks) {
-                if (taskPath !== excludeTaskPath) {
                     return true; // Found another task referencing this project
                 }
             }
@@ -333,24 +328,40 @@ export class ProjectSubtasksService {
     }
 
     /**
-     * Get project status synchronously from cache (fast)
-     * Uses MinimalNativeCache for O(1) lookups when available
+     * Get project status synchronously using native resolvedLinks API (correct usage)
      */
     isTaskUsedAsProjectSync(taskPath: string): boolean {
         try {
-            // Try using MinimalNativeCache O(1) lookup first
-            return this.plugin.cacheManager.isFileUsedAsProject(taskPath);
-        } catch (error) {
-            // Fall back to legacy cache if MinimalNativeCache isn't ready
-            if (!this.cacheBuilt) {
-                this.cacheStats.misses++;
-                // Trigger async fallback and rebuild cache
-                this.handleCacheUnavailable(taskPath);
-                return false; // Conservative default until cache is ready
+            // Method 1: Direct check using resolvedLinks - now with correct API usage
+            const resolvedLinks = this.plugin.app.metadataCache.resolvedLinks;
+
+            // Check if any file links TO our taskPath
+            for (const [sourcePath, targets] of Object.entries(resolvedLinks)) {
+                if (targets && targets[taskPath] > 0) {
+                    // Quick check if this could be a project reference from frontmatter
+                    const sourceFile = this.plugin.app.vault.getAbstractFileByPath(sourcePath);
+                    if (sourceFile instanceof TFile) {
+                        const metadata = this.plugin.app.metadataCache.getFileCache(sourceFile);
+                        if (metadata?.frontmatter?.projects?.some((p: string) =>
+                            p?.startsWith('[[') && p?.endsWith(']]')
+                        )) {
+                            return true;
+                        }
+                    }
+                }
             }
 
-            this.cacheStats.hits++;
-            return this.projectStatusCache.get(taskPath) || false;
+            return false;
+
+        } catch (error) {
+            // Fallback to MinimalNativeCache
+            try {
+                return this.plugin.cacheManager.isFileUsedAsProject(taskPath);
+            } catch {
+                // Final fallback to legacy cache
+                this.cacheStats.misses++;
+                return this.projectStatusCache.get(taskPath) || false;
+            }
         }
     }
 
