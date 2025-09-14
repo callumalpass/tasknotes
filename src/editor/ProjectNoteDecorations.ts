@@ -642,10 +642,10 @@ class ProjectNoteDecorationsPlugin implements PluginValue {
         this.view = view;
         this.projectService = plugin.projectSubtasksService;
         this.decorations = this.buildDecorations(view);
-        
+
         // Set up event listeners for data changes
         this.setupEventListeners();
-        
+
         // Load tasks for current file asynchronously
         this.loadTasksForCurrentFile(view);
     }
@@ -755,23 +755,24 @@ class ProjectNoteDecorationsPlugin implements PluginValue {
     
     private async loadTasksForCurrentFile(view: EditorView) {
         const file = this.getFileFromView(view);
-        
+
+
         if (file instanceof TFile) {
             try {
                 const newTasks = await this.projectService.getTasksLinkedToProject(file);
-                
+
                 // Check if tasks actually changed
                 const tasksChanged = newTasks.length !== this.cachedTasks.length ||
                     newTasks.some((newTask, index) => {
                         const oldTask = this.cachedTasks[index];
-                        return !oldTask || 
+                        return !oldTask ||
                                newTask.title !== oldTask.title ||
                                newTask.status !== oldTask.status ||
                                newTask.priority !== oldTask.priority ||
                                newTask.due !== oldTask.due ||
                                newTask.path !== oldTask.path;
                     });
-                
+
                 if (tasksChanged) {
                     this.cachedTasks = newTasks;
                     this.dispatchUpdate();
@@ -834,23 +835,23 @@ class ProjectNoteDecorationsPlugin implements PluginValue {
 
     private buildDecorations(view: EditorView): DecorationSet {
         const builder = new RangeSetBuilder<Decoration>();
-        
+
         try {
             // Don't show widget in table cell editors
             if (this.isTableCellEditor(view)) {
                 return builder.finish();
             }
-            
+
             // Check if project subtasks widget is enabled
             if (!this.plugin.settings.showProjectSubtasks) {
                 return builder.finish();
             }
-            
+
             // Only show in live preview mode, not source mode
             if (!view.state.field(editorLivePreviewField)) {
                 return builder.finish();
             }
-            
+
             // Only build decorations if we have cached tasks
             if (this.cachedTasks.length === 0) {
                 return builder.finish();

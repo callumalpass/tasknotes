@@ -29,26 +29,48 @@ export class ProjectSubtasksService {
     }
 
     /**
-     * Get all tasks that reference this file as a project (using backlinks for efficiency)
+     * Get all tasks that reference this file as a project (fallback to manual scan)
      */
     async getTasksLinkedToProject(projectFile: TFile): Promise<TaskInfo[]> {
         try {
-            const backlinks = this.plugin.app.metadataCache.getBacklinksForFile(projectFile);
-            const linkedTasks: TaskInfo[] = [];
+            // Fallback: manually scan all tasks since frontmatter links aren't in backlinks
+            const allTasks = await this.plugin.cacheManager.getAllTasks();
 
-            // Check each file that links to the project
-            for (const sourceFilePath of Object.keys(backlinks.data)) {
-                // Verify the link comes from the projects field
-                if (await this.isLinkFromProjectsField(sourceFilePath, projectFile.path)) {
-                    // Get the task info for this source file
-                    try {
-                        const taskInfo = await this.plugin.cacheManager.getTaskInfo(sourceFilePath);
-                        if (taskInfo) {
-                            linkedTasks.push(taskInfo);
+            const linkedTasks: TaskInfo[] = [];
+            const projectBasename = projectFile.basename;
+            const projectPath = projectFile.path;
+
+            for (const task of allTasks) {
+                if (!task.projects || task.projects.length === 0) continue;
+
+                for (const projectRef of task.projects) {
+                    if (!projectRef || typeof projectRef !== 'string') continue;
+
+                    let matches = false;
+
+                    // Check wikilink format [[Note Name]]
+                    if (projectRef.startsWith('[[') && projectRef.endsWith(']]')) {
+                        const linkedNoteName = projectRef.slice(2, -2).trim();
+                        // Try to resolve the link
+                        const resolvedFile = this.plugin.app.metadataCache.getFirstLinkpathDest(linkedNoteName, '');
+                        if (resolvedFile && resolvedFile.path === projectFile.path) {
+                            matches = true;
                         }
-                    } catch (error) {
-                        console.error(`Error getting task info for ${sourceFilePath}:`, error);
-                        // Continue processing other links
+                        // Also check direct basename match
+                        if (linkedNoteName === projectBasename) {
+                            matches = true;
+                        }
+                    } else {
+                        // Plain text reference
+                        const trimmedRef = projectRef.trim();
+                        if (trimmedRef === projectBasename || trimmedRef === projectPath) {
+                            matches = true;
+                        }
+                    }
+
+                    if (matches) {
+                        linkedTasks.push(task);
+                        break; // Don't add the same task multiple times
                     }
                 }
             }
