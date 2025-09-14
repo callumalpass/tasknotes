@@ -121,7 +121,7 @@ export interface TaskNotesSettings {
 	// Recurring task behavior
 	maintainDueDateOffsetInRecurring: boolean;
 	// View display settings
-	hideChildTasks: boolean; // Whether to hide subtasks in views
+	hideSubtasks: boolean; // Whether to hide subtasks in views
 }
 
 export interface DefaultReminder {

@@ -275,5 +275,5 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	// Recurring task behavior defaults
 	maintainDueDateOffsetInRecurring: false,
 	// View display defaults
-	hideChildTasks: false // Show subtasks by default
+	hideSubtasks: false // Show subtasks by default
 };

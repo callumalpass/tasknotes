@@ -132,7 +132,7 @@ export class TaskRelationshipUtils {
             throw new TaskRelationshipError('Tasks array is required');
         }
 
-        if (!this.plugin.settings.hideChildTasks) {
+        if (!this.plugin.settings.hideSubtasks) {
             return tasks;
         }
 
