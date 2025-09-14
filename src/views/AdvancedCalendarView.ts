@@ -1408,6 +1408,12 @@ export class AdvancedCalendarView extends ItemView {
     handleEventClick(clickInfo: any) {
         const { taskInfo, icsEvent, timeblock, eventType, subscriptionName } = clickInfo.event.extendedProps;
         const jsEvent = clickInfo.jsEvent;
+
+        // Skip task events in list view - they have their own TaskCard-style handlers
+        const isListView = this.calendar?.view?.type === 'listWeek';
+        if (isListView && taskInfo && (eventType === 'scheduled' || eventType === 'due' || eventType === 'recurring')) {
+            return; // Let the custom handlers handle it
+        }
         
         if (eventType === 'timeEntry') {
             // Time entries open the task edit modal
