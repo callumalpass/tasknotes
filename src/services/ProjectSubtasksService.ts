@@ -7,7 +7,7 @@ export class ProjectSubtasksService {
     private projectStatusCache = new Map<string, boolean>();
     private cacheBuilt = false;
     private cacheVersion = 0;
-    private taskUpdateListener: EventRef | null = null;
+    private metadataChangeListener: EventRef | null = null;
     private cacheRebuildInProgress = false;
     private lastCacheUnavailableLog = 0;
 
@@ -25,44 +25,35 @@ export class ProjectSubtasksService {
 
     constructor(plugin: TaskNotesPlugin) {
         this.plugin = plugin;
-        this.setupTaskUpdateListener();
+        this.setupMetadataChangeListener();
     }
 
     /**
-     * Get all tasks that reference this file as a project
+     * Get all tasks that reference this file as a project (using backlinks for efficiency)
      */
     async getTasksLinkedToProject(projectFile: TFile): Promise<TaskInfo[]> {
         try {
-            const allTasks = await this.plugin.cacheManager.getAllTasks();
-            const projectFileName = projectFile.basename;
-            const projectPath = projectFile.path;
-            
-            return allTasks.filter(task => {
-                if (!task.projects || task.projects.length === 0) return false;
-                
-                return task.projects.some(project => {
-                    if (!project || typeof project !== 'string' || project.trim() === '') return false;
-                    
-                    // Check for wikilink format [[Note Name]]
-                    if (project.startsWith('[[') && project.endsWith(']]')) {
-                        const linkedNoteName = project.slice(2, -2).trim();
-                        if (!linkedNoteName) return false;
-                        
-                        // Try to resolve the link using Obsidian's metadata cache
-                        const resolvedFile = this.plugin.app.metadataCache.getFirstLinkpathDest(linkedNoteName, '');
-                        if (resolvedFile && resolvedFile.path === projectFile.path) {
-                            return true;
+            const backlinks = this.plugin.app.metadataCache.getBacklinksForFile(projectFile);
+            const linkedTasks: TaskInfo[] = [];
+
+            // Check each file that links to the project
+            for (const sourceFilePath of Object.keys(backlinks.data)) {
+                // Verify the link comes from the projects field
+                if (await this.isLinkFromProjectsField(sourceFilePath, projectFile.path)) {
+                    // Get the task info for this source file
+                    try {
+                        const taskInfo = await this.plugin.cacheManager.getTaskInfo(sourceFilePath);
+                        if (taskInfo) {
+                            linkedTasks.push(taskInfo);
                         }
-                        
-                        // Fallback to string matching
-                        return linkedNoteName === projectFileName || linkedNoteName === projectPath;
+                    } catch (error) {
+                        console.error(`Error getting task info for ${sourceFilePath}:`, error);
+                        // Continue processing other links
                     }
-                    
-                    // Check for plain text match
-                    const trimmedProject = String(project).trim();
-                    return trimmedProject === projectFileName || trimmedProject === projectPath;
-                });
-            });
+                }
+            }
+
+            return linkedTasks;
         } catch (error) {
             console.error('Error getting tasks linked to project:', error);
             return [];
@@ -88,64 +79,36 @@ export class ProjectSubtasksService {
     }
 
     /**
-     * Build project status cache for all tasks (synchronous lookup)
+     * Build project status cache using Obsidian's link tracking (much more efficient)
      */
     async buildProjectStatusCache(): Promise<void> {
         const startTime = Date.now();
         try {
-            const allTasks = await this.plugin.cacheManager.getAllTasks();
             this.projectStatusCache.clear();
 
-            // Create a reverse index: which tasks are used as projects
-            const projectReferences = new Map<string, Set<string>>();
+            const resolvedLinks = this.plugin.app.metadataCache.resolvedLinks;
+            const allFiles = this.plugin.app.vault.getMarkdownFiles();
 
-            for (const task of allTasks) {
-                if (!task.projects || task.projects.length === 0) continue;
+            let projectsFound = 0;
 
-                for (const project of task.projects) {
-                    if (!project || typeof project !== 'string' || project.trim() === '') continue;
+            // For each file, check if it has incoming links from project fields
+            for (const file of allFiles) {
+                let isProject = false;
 
-                    let projectPath: string | null = null;
-
-                    // Check for wikilink format [[Note Name]]
-                    if (project.startsWith('[[') && project.endsWith(']]')) {
-                        const linkedNoteName = project.slice(2, -2).trim();
-                        if (!linkedNoteName) continue;
-
-                        // Try to resolve the link using Obsidian's metadata cache
-                        const resolvedFile = this.plugin.app.metadataCache.getFirstLinkpathDest(linkedNoteName, '');
-                        if (resolvedFile) {
-                            projectPath = resolvedFile.path;
+                // Check if any other files link to this one
+                for (const [sourceFilePath, links] of Object.entries(resolvedLinks)) {
+                    if (links[file.path] && links[file.path] > 0) {
+                        // This file is linked from sourceFilePath
+                        // Now check if the link is from a projects field
+                        if (await this.isLinkFromProjectsField(sourceFilePath, file.path)) {
+                            isProject = true;
+                            projectsFound++;
+                            break;
                         }
-                    } else {
-                        // Plain text - need to find the matching file
-                        const trimmedProject = project.trim();
-                        const file = this.plugin.app.vault.getAbstractFileByPath(trimmedProject);
-                        if (file instanceof TFile) {
-                            projectPath = file.path;
-                        } else {
-                            // Try to find by basename
-                            const files = this.plugin.app.vault.getMarkdownFiles();
-                            const matchingFile = files.find(f => f.basename === trimmedProject);
-                            if (matchingFile) {
-                                projectPath = matchingFile.path;
-                            }
-                        }
-                    }
-
-                    if (projectPath) {
-                        if (!projectReferences.has(projectPath)) {
-                            projectReferences.set(projectPath, new Set());
-                        }
-                        projectReferences.get(projectPath)!.add(task.path);
                     }
                 }
-            }
 
-            // Build the cache based on the reverse index
-            for (const task of allTasks) {
-                const isProject = projectReferences.has(task.path) && projectReferences.get(task.path)!.size > 0;
-                this.projectStatusCache.set(task.path, isProject);
+                this.projectStatusCache.set(file.path, isProject);
             }
 
             this.cacheBuilt = true;
@@ -153,10 +116,46 @@ export class ProjectSubtasksService {
             this.cacheStats.rebuilds++;
             this.cacheStats.lastRebuildTime = Date.now();
             this.cacheStats.buildDuration = Date.now() - startTime;
+
         } catch (error) {
             console.error('Error building project status cache:', error);
             this.cacheBuilt = false;
             this.cacheStats.buildDuration = Date.now() - startTime;
+        }
+    }
+
+    /**
+     * Check if a link from source to target comes from the projects field
+     */
+    private async isLinkFromProjectsField(sourceFilePath: string, targetFilePath: string): Promise<boolean> {
+        try {
+            const sourceFile = this.plugin.app.vault.getAbstractFileByPath(sourceFilePath);
+            if (!(sourceFile instanceof TFile)) return false;
+
+            const metadata = this.plugin.app.metadataCache.getFileCache(sourceFile);
+            if (!metadata?.frontmatter?.projects) return false;
+
+            const projects = metadata.frontmatter.projects;
+            if (!Array.isArray(projects)) return false;
+
+            // Check if any project reference resolves to our target
+            for (const project of projects) {
+                if (!project || typeof project !== 'string') continue;
+
+                // Only check wikilink format [[Note Name]] since plain text doesn't create links
+                if (project.startsWith('[[') && project.endsWith(']]')) {
+                    const linkedNoteName = project.slice(2, -2).trim();
+                    const resolvedFile = this.plugin.app.metadataCache.getFirstLinkpathDest(linkedNoteName, sourceFilePath);
+                    if (resolvedFile && resolvedFile.path === targetFilePath) {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        } catch (error) {
+            console.error('Error checking if link is from projects field:', error);
+            return false;
         }
     }
 
@@ -219,29 +218,18 @@ export class ProjectSubtasksService {
     }
 
     /**
-     * Setup task update listener to invalidate cache when needed
+     * Setup metadata change listener to invalidate cache only when project links change
      */
-    private setupTaskUpdateListener(): void {
-        this.taskUpdateListener = this.plugin.emitter.on(EVENT_TASK_UPDATED, async ({ path, originalTask, updatedTask }) => {
-            if (!this.cacheBuilt) return;
+    private setupMetadataChangeListener(): void {
+        this.metadataChangeListener = this.plugin.app.metadataCache.on('changed', async (file, data, cache) => {
+            if (!this.cacheBuilt || !(file instanceof TFile)) return;
 
-            // Check if the update might affect project relationships
-            let shouldInvalidateCache = false;
 
-            // If the task has or had project references, invalidate cache
-            if (originalTask?.projects?.length || updatedTask?.projects?.length) {
-                shouldInvalidateCache = true;
-            }
-
-            // Also invalidate if the task might be referenced as a project by others
-            if (this.projectStatusCache.has(path)) {
-                shouldInvalidateCache = true;
-            }
-
-            if (shouldInvalidateCache) {
-                // Invalidate and rebuild cache asynchronously
+            // Check if this file's project references changed
+            if (await this.hasProjectLinksChanged(file, cache)) {
+                console.log(`[ProjectSubtasksService] Project links changed for: ${file.path}, triggering rebuild`);
+                // Only rebuild if project relationships actually changed
                 this.invalidateProjectStatusCache();
-                // Rebuild cache in background with proper error handling
                 this.rebuildCacheWithFallback().catch(error => {
                     console.error('[ProjectSubtasksService] Error during background cache rebuild:', error);
                 });
@@ -250,6 +238,65 @@ export class ProjectSubtasksService {
                 this.scheduleCleanupIfNeeded();
             }
         });
+
+        // Also listen to our internal task update events as fallback for manual frontmatter edits
+        this.plugin.emitter.on('task-updated', async ({ path, originalTask, updatedTask }) => {
+            if (!this.cacheBuilt) return;
+
+            // Check if project references changed
+            const projectsChanged = JSON.stringify(originalTask?.projects) !== JSON.stringify(updatedTask?.projects);
+
+            if (projectsChanged) {
+                this.invalidateProjectStatusCache();
+                this.rebuildCacheWithFallback().catch(error => {
+                    console.error('[ProjectSubtasksService] Error during background cache rebuild:', error);
+                });
+                this.scheduleCleanupIfNeeded();
+            }
+        });
+    }
+
+    /**
+     * Check if a file's project links have changed
+     */
+    private async hasProjectLinksChanged(file: TFile, newCache: any): Promise<boolean> {
+        try {
+            const newProjects = newCache?.frontmatter?.projects;
+
+            // Get the task info to compare old projects
+            const taskInfo = await this.plugin.cacheManager.getTaskInfo(file.path);
+            const oldProjects = taskInfo?.projects;
+
+            // Normalize to handle empty arrays vs undefined/null
+            const normalizedOld = oldProjects && oldProjects.length > 0 ? oldProjects : null;
+            const normalizedNew = newProjects && newProjects.length > 0 ? newProjects : null;
+
+            // Compare normalized values
+            if (!normalizedOld && !normalizedNew) {
+                return false;
+            }
+            if (!normalizedOld || !normalizedNew) {
+                return true;
+            }
+            // At this point, both have projects, so compare the actual arrays
+            if (!Array.isArray(normalizedOld) || !Array.isArray(normalizedNew)) {
+                return true;
+            }
+            if (normalizedOld.length !== normalizedNew.length) {
+                return true;
+            }
+
+            // Check if project references are the same
+            for (let i = 0; i < normalizedOld.length; i++) {
+                if (normalizedOld[i] !== normalizedNew[i]) {
+                    return true;
+                }
+            }
+            return false;
+        } catch (error) {
+            console.error('Error checking if project links changed:', error);
+            return true; // Conservative approach - assume changed if we can't determine
+        }
     }
 
     /**
@@ -341,9 +388,9 @@ export class ProjectSubtasksService {
      * Cleanup when service is destroyed
      */
     destroy(): void {
-        if (this.taskUpdateListener) {
-            this.plugin.emitter.offref(this.taskUpdateListener);
-            this.taskUpdateListener = null;
+        if (this.metadataChangeListener) {
+            this.plugin.app.metadataCache.offref(this.metadataChangeListener);
+            this.metadataChangeListener = null;
         }
         this.invalidateProjectStatusCache();
 
