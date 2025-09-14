@@ -106,6 +106,10 @@ export class AdvancedCalendarView extends ItemView {
     private lastKnownTaskCount = 0;
     private lastRefreshTime = 0;
 
+    // Debouncing for cross-view performance
+    private updateDebounceTimer: number | null = null;
+    private pendingUpdates = new Set<string>();
+
 
     // View toggles (keeping for calendar-specific display options)
     private showScheduled: boolean;
@@ -2140,7 +2144,7 @@ export class AdvancedCalendarView extends ItemView {
         });
         this.listeners.push(dateChangeListener);
         
-        // Listen for task updates - use selective updates when possible
+        // Listen for task updates - use debounced selective updates for cross-view performance
         const taskUpdateListener = this.plugin.emitter.on(EVENT_TASK_UPDATED, async (eventData: any) => {
             // Try to extract task info from event data
             const updatedTask = eventData?.task || eventData?.taskInfo;
@@ -2152,23 +2156,13 @@ export class AdvancedCalendarView extends ItemView {
                     return;
                 }
 
-                // Use intelligent update that chooses between selective and full refresh
-                await this.updateCalendarForTask(updatedTask.path, 'update');
-
-                // Periodic cache cleanup
-                if (Math.random() < 0.1) { // 10% chance to clean up on each update
-                    await this.cleanupTaskVersionCache();
-                }
+                // Add to pending updates and debounce to avoid refresh storms when multiple views are open
+                this.pendingUpdates.add(updatedTask.path);
+                this.debouncedUpdateCalendar();
             } else {
                 // Fallback to full refresh if we can't identify the specific task
                 console.log('Task update event missing path info, doing full refresh');
-                await this.refreshEvents();
-            }
-
-            // Update FilterBar options when tasks are updated (may have new properties, contexts, etc.)
-            if (this.filterBar) {
-                const updatedFilterOptions = await this.plugin.filterService.getFilterOptions();
-                this.filterBar.updateFilterOptions(updatedFilterOptions);
+                this.debouncedFullRefresh();
             }
         });
         this.listeners.push(taskUpdateListener);
@@ -2784,6 +2778,79 @@ export class AdvancedCalendarView extends ItemView {
     }
 
     /**
+     * Debounced update to avoid refresh storms when multiple views are open
+     */
+    private debouncedUpdateCalendar(): void {
+        if (this.updateDebounceTimer) {
+            clearTimeout(this.updateDebounceTimer);
+        }
+
+        this.updateDebounceTimer = window.setTimeout(async () => {
+            try {
+                const pathsToUpdate = Array.from(this.pendingUpdates);
+                this.pendingUpdates.clear();
+
+                console.log(`Processing batched updates for ${pathsToUpdate.length} tasks`);
+
+                if (pathsToUpdate.length > 5) {
+                    // Too many updates, do full refresh
+                    await this.refreshEvents();
+                } else {
+                    // Process selective updates
+                    for (const path of pathsToUpdate) {
+                        await this.updateCalendarForTask(path, 'update');
+                    }
+                }
+
+                // Update FilterBar options once for all updates
+                if (this.filterBar && pathsToUpdate.length > 0) {
+                    const updatedFilterOptions = await this.plugin.filterService.getFilterOptions();
+                    this.filterBar.updateFilterOptions(updatedFilterOptions);
+                }
+
+                // Periodic cache cleanup
+                if (Math.random() < 0.1) { // 10% chance to clean up
+                    await this.cleanupTaskVersionCache();
+                }
+            } catch (error) {
+                console.error('Error in debounced calendar update:', error);
+                // Fallback to full refresh on error
+                await this.refreshEvents();
+            } finally {
+                this.updateDebounceTimer = null;
+            }
+        }, 100); // 100ms debounce delay
+    }
+
+    /**
+     * Debounced full refresh to avoid multiple simultaneous refreshes
+     */
+    private debouncedFullRefresh(): void {
+        if (this.updateDebounceTimer) {
+            clearTimeout(this.updateDebounceTimer);
+        }
+
+        // Clear pending selective updates since we're doing a full refresh
+        this.pendingUpdates.clear();
+
+        this.updateDebounceTimer = window.setTimeout(async () => {
+            try {
+                await this.refreshEvents();
+
+                // Update FilterBar options
+                if (this.filterBar) {
+                    const updatedFilterOptions = await this.plugin.filterService.getFilterOptions();
+                    this.filterBar.updateFilterOptions(updatedFilterOptions);
+                }
+            } catch (error) {
+                console.error('Error in debounced full refresh:', error);
+            } finally {
+                this.updateDebounceTimer = null;
+            }
+        }, 150); // Slightly longer delay for full refresh
+    }
+
+    /**
      * Periodic cache cleanup to prevent unbounded growth
      */
     private async cleanupTaskVersionCache(): Promise<void> {
@@ -2818,6 +2885,13 @@ export class AdvancedCalendarView extends ItemView {
 
         // Clean up caches for memory management
         this.taskVersionCache.clear();
+        this.pendingUpdates.clear();
+
+        // Clean up debounce timer
+        if (this.updateDebounceTimer) {
+            clearTimeout(this.updateDebounceTimer);
+            this.updateDebounceTimer = null;
+        }
 
         // Clean up function listeners
         this.functionListeners.forEach(unsubscribe => unsubscribe());
