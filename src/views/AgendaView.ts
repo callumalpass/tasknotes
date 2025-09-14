@@ -1042,7 +1042,11 @@ export class AgendaView extends ItemView implements OptimizedView {
 
         // Track task element for selective updates
         if (task.path) {
-            this.taskElements.set(task.path, taskCard);
+            // For recurring tasks, include the date in the key to avoid conflicts between instances
+            const elementKey = task.recurrence && date
+                ? `${task.path}:${formatDateForStorage(date)}`
+                : task.path;
+            this.taskElements.set(elementKey, taskCard);
         }
 
         // TaskCard handles its own completion styling with proper effective status
@@ -1271,7 +1275,16 @@ export class AgendaView extends ItemView implements OptimizedView {
     async updateForTask(taskPath: string, operation: 'update' | 'delete' | 'create'): Promise<void> {
         // For AgendaView, selective updates are complex due to date-based grouping
         // Tasks can move between days, so we use a simplified approach:
-        // If the task is currently visible, try to update it; otherwise refresh
+        // For recurring tasks, always do full refresh since they can appear on multiple dates
+        // For regular tasks, try selective update if the task is currently visible
+
+        // Check if this is a recurring task by looking at the task info
+        const taskInfo = await this.plugin.cacheManager.getTaskInfo(taskPath);
+        if (taskInfo?.recurrence) {
+            // Recurring tasks: always do full refresh to avoid date-instance conflicts
+            await this.refresh();
+            return;
+        }
 
         const taskElement = this.taskElements.get(taskPath);
 
