@@ -105,49 +105,9 @@ export class ProjectSubtasksService {
                 }
             }
 
-            // Method 3: Fallback manual scan for plain text references and edge cases
-            const allTasks = await this.plugin.cacheManager.getAllTasks();
-
-            const linkedTasks: TaskInfo[] = [];
-            const projectBasename = projectFile.basename;
-            const projectPath = projectFile.path;
-
-            for (const task of allTasks) {
-                if (!task.projects || task.projects.length === 0) continue;
-
-                for (const projectRef of task.projects) {
-                    if (!projectRef || typeof projectRef !== 'string') continue;
-
-                    let matches = false;
-
-                    // Check wikilink format [[Note Name]]
-                    if (projectRef.startsWith('[[') && projectRef.endsWith(']]')) {
-                        const linkedNoteName = projectRef.slice(2, -2).trim();
-                        // Try to resolve the link
-                        const resolvedFile = this.plugin.app.metadataCache.getFirstLinkpathDest(linkedNoteName, '');
-                        if (resolvedFile && resolvedFile.path === projectFile.path) {
-                            matches = true;
-                        }
-                        // Also check direct basename match
-                        if (linkedNoteName === projectBasename) {
-                            matches = true;
-                        }
-                    } else {
-                        // Plain text reference
-                        const trimmedRef = projectRef.trim();
-                        if (trimmedRef === projectBasename || trimmedRef === projectPath) {
-                            matches = true;
-                        }
-                    }
-
-                    if (matches) {
-                        linkedTasks.push(task);
-                        break; // Don't add the same task multiple times
-                    }
-                }
-            }
-
-            return linkedTasks;
+            // No wikilink references found, return empty array
+            // Plain text project references don't create actual project relationships
+            return [];
         } catch (error) {
             console.error('Error getting tasks linked to project:', error);
             return [];
@@ -183,40 +143,20 @@ export class ProjectSubtasksService {
             // Initialize all files as non-projects
             const projectPaths = new Set<string>();
 
-            // Scan tasks to find which files are referenced as projects
+            // Scan tasks to find which files are referenced as projects (wikilinks only)
             for (const task of allTasks) {
                 if (!task.projects || task.projects.length === 0) continue;
 
                 for (const projectRef of task.projects) {
                     if (!projectRef || typeof projectRef !== 'string') continue;
 
-                    let projectPath: string | null = null;
-
-                    // Check wikilink format [[Note Name]]
+                    // Only handle wikilink format [[Note Name]] - plain text doesn't create project relationships
                     if (projectRef.startsWith('[[') && projectRef.endsWith(']]')) {
                         const linkedNoteName = projectRef.slice(2, -2).trim();
-                        // Try to resolve the link
                         const resolvedFile = this.plugin.app.metadataCache.getFirstLinkpathDest(linkedNoteName, '');
                         if (resolvedFile) {
-                            projectPath = resolvedFile.path;
+                            projectPaths.add(resolvedFile.path);
                         }
-                    } else {
-                        // Plain text reference - find matching file
-                        const trimmedRef = projectRef.trim();
-                        const file = this.plugin.app.vault.getAbstractFileByPath(trimmedRef);
-                        if (file instanceof TFile) {
-                            projectPath = file.path;
-                        } else {
-                            // Try to find by basename
-                            const matchingFile = allFiles.find(f => f.basename === trimmedRef);
-                            if (matchingFile) {
-                                projectPath = matchingFile.path;
-                            }
-                        }
-                    }
-
-                    if (projectPath) {
-                        projectPaths.add(projectPath);
                     }
                 }
             }
@@ -304,36 +244,21 @@ export class ProjectSubtasksService {
     }
 
     /**
-     * Resolve a project reference to its file path
+     * Resolve a project reference to its file path (wikilinks only)
      */
     private async resolveProjectReference(projectRef: string, allFiles: TFile[]): Promise<string | null> {
         if (!projectRef || typeof projectRef !== 'string') return null;
 
-        let projectPath: string | null = null;
-
-        // Check wikilink format [[Note Name]]
+        // Only handle wikilink format [[Note Name]] - plain text doesn't create project relationships
         if (projectRef.startsWith('[[') && projectRef.endsWith(']]')) {
             const linkedNoteName = projectRef.slice(2, -2).trim();
             const resolvedFile = this.plugin.app.metadataCache.getFirstLinkpathDest(linkedNoteName, '');
             if (resolvedFile) {
-                projectPath = resolvedFile.path;
-            }
-        } else {
-            // Plain text reference - find matching file
-            const trimmedRef = projectRef.trim();
-            const file = this.plugin.app.vault.getAbstractFileByPath(trimmedRef);
-            if (file instanceof TFile) {
-                projectPath = file.path;
-            } else {
-                // Try to find by basename
-                const matchingFile = allFiles.find(f => f.basename === trimmedRef);
-                if (matchingFile) {
-                    projectPath = matchingFile.path;
-                }
+                return resolvedFile.path;
             }
         }
 
-        return projectPath;
+        return null;
     }
 
     /**
@@ -360,20 +285,6 @@ export class ProjectSubtasksService {
             for (const taskPath of referencingTasks) {
                 if (taskPath !== excludeTaskPath) {
                     return true; // Found another task referencing this project
-                }
-            }
-
-            // Method 3: Fast basename check for plain text references (rare fallback)
-            const projectBasename = this.plugin.app.vault.getAbstractFileByPath(projectPath)?.name?.replace('.md', '');
-            if (projectBasename) {
-                // Only check a small sample of recent tasks for plain text references
-                const recentTasks = await this.plugin.cacheManager.getFilteredTasks((file, frontmatter) => {
-                    return frontmatter.projects?.some((p: string) =>
-                        typeof p === 'string' && p.trim() === projectBasename && file.path !== excludeTaskPath
-                    );
-                });
-                if (recentTasks.length > 0) {
-                    return true;
                 }
             }
 

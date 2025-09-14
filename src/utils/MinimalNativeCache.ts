@@ -1038,41 +1038,22 @@ export class MinimalNativeCache extends Events {
             referencingTasks.delete(taskPath);
         }
 
-        // Add to new project references
+        // Add to new project references (wikilinks only)
         if (projects && projects.length > 0) {
             for (const projectRef of projects) {
                 if (!projectRef || typeof projectRef !== 'string') continue;
 
-                let resolvedPath: string | null = null;
-
-                // Resolve wikilink format [[Note Name]]
+                // Only handle wikilink format [[Note Name]] - plain text doesn't create project relationships
                 if (projectRef.startsWith('[[') && projectRef.endsWith(']]')) {
                     const linkedNoteName = projectRef.slice(2, -2).trim();
                     const resolvedFile = this.app.metadataCache.getFirstLinkpathDest(linkedNoteName, '');
                     if (resolvedFile) {
-                        resolvedPath = resolvedFile.path;
-                    }
-                } else {
-                    // Plain text reference - try to resolve
-                    const trimmedRef = projectRef.trim();
-                    const file = this.app.vault.getAbstractFileByPath(trimmedRef);
-                    if (file instanceof TFile) {
-                        resolvedPath = file.path;
-                    } else {
-                        // Try to find by basename
-                        const matchingFile = this.app.vault.getMarkdownFiles()
-                            .find(f => f.basename === trimmedRef);
-                        if (matchingFile) {
-                            resolvedPath = matchingFile.path;
+                        const resolvedPath = resolvedFile.path;
+                        if (!this.projectReferences.has(resolvedPath)) {
+                            this.projectReferences.set(resolvedPath, new Set());
                         }
+                        this.projectReferences.get(resolvedPath)!.add(taskPath);
                     }
-                }
-
-                if (resolvedPath) {
-                    if (!this.projectReferences.has(resolvedPath)) {
-                        this.projectReferences.set(resolvedPath, new Set());
-                    }
-                    this.projectReferences.get(resolvedPath)!.add(taskPath);
                 }
             }
         }
