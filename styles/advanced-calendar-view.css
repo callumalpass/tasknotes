@@ -1012,6 +1012,7 @@
     vertical-align: top;
 }
 
+
 .fc-list-event .fc-list-event-dot {
     /* Standard dot styling for all events */
     border: inherit !important;
@@ -1055,6 +1056,12 @@
     gap: 6px;
     width: 100%;
     margin-bottom: 4px;
+}
+
+/* Metadata spacing without separators */
+.fc-list-task-metadata > span {
+    display: block;
+    margin: 2px 0;
 }
 
 /* Status and priority dots */

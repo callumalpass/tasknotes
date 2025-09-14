@@ -38,16 +38,18 @@ import { TaskEditModal } from '../modals/TaskEditModal';
 import { UnscheduledTasksSelectorModal, ScheduleTaskOptions } from '../modals/UnscheduledTasksSelectorModal';
 import { TimeblockCreationModal } from '../modals/TimeblockCreationModal';
 import { FilterBar } from '../ui/FilterBar';
-import { 
-    hasTimeComponent, 
-    getDatePart, 
+import {
+    hasTimeComponent,
+    getDatePart,
     getTimePart,
     parseDateToLocal,
     parseDateToUTC,
     normalizeCalendarBoundariesToUTC,
     formatDateForStorage,
-    getTodayLocal
+    getTodayLocal,
+    formatDateTimeForDisplay
 } from '../utils/dateUtils';
+import { getRecurrenceDisplayText } from '../utils/helpers';
 import { 
     generateRecurringInstances,
     extractTimeblocksFromNote,
@@ -2189,8 +2191,10 @@ export class AdvancedCalendarView extends ItemView {
         }
 
         if (titleElement) {
-            // Clear and rebuild the content with task card structure
-            titleElement.innerHTML = '';
+            // Completely clear all content including text nodes
+            while (titleElement.firstChild) {
+                titleElement.removeChild(titleElement.firstChild);
+            }
 
             // Create main title row with indicators and title on same line
             const titleRow = titleElement.createEl('div', { cls: 'fc-list-task-title-row' });
@@ -2271,6 +2275,200 @@ export class AdvancedCalendarView extends ItemView {
     }
 
     /**
+     * Render a single property for list view with comprehensive TaskCard compatibility
+     */
+    private renderListViewProperty(container: HTMLElement, propertyId: string, taskInfo: TaskInfo): HTMLElement | null {
+        // Get property value using TaskCard's logic patterns
+        let value: any = null;
+
+        switch (propertyId) {
+            case 'due':
+                value = taskInfo.due;
+                break;
+            case 'scheduled':
+                value = taskInfo.scheduled;
+                break;
+            case 'projects':
+                value = taskInfo.projects;
+                break;
+            case 'contexts':
+                value = taskInfo.contexts;
+                break;
+            case 'tags':
+                value = taskInfo.tags;
+                break;
+            case 'timeEstimate':
+                value = taskInfo.timeEstimate;
+                break;
+            case 'totalTrackedTime':
+                value = taskInfo.totalTrackedTime;
+                break;
+            case 'recurrence':
+                value = taskInfo.recurrence;
+                break;
+            case 'completedDate':
+                value = taskInfo.completedDate;
+                break;
+            case 'file.ctime':
+                value = taskInfo.dateCreated;
+                break;
+            case 'file.mtime':
+                value = taskInfo.dateModified;
+                break;
+            default:
+                // Handle user properties and custom properties
+                if (propertyId.startsWith('user:')) {
+                    const fieldId = propertyId.slice(5);
+                    const userField = this.plugin.settings.userFields?.find(f => f.id === fieldId);
+                    if (userField?.key) {
+                        value = (taskInfo as any)[userField.key];
+                    }
+                } else if (taskInfo.customProperties && propertyId in taskInfo.customProperties) {
+                    value = taskInfo.customProperties[propertyId];
+                }
+                break;
+        }
+
+        // Check if value is valid for display
+        if (!this.hasValidValue(value)) {
+            return null;
+        }
+
+        const element = container.createEl('span', {
+            cls: `fc-list-task-${propertyId.replace(':', '-').replace('.', '-')}`
+        });
+
+        // Render the property based on type
+        this.renderPropertyValue(element, propertyId, value, taskInfo);
+
+        return element;
+    }
+
+    /**
+     * Check if a value is valid for display (matching TaskCard logic)
+     */
+    private hasValidValue(value: any): boolean {
+        return value !== null &&
+               value !== undefined &&
+               !(Array.isArray(value) && value.length === 0) &&
+               !(typeof value === 'string' && value.trim() === '');
+    }
+
+    /**
+     * Render property value with proper formatting and interactions
+     */
+    private renderPropertyValue(element: HTMLElement, propertyId: string, value: any, taskInfo: TaskInfo): void {
+        switch (propertyId) {
+            case 'due':
+                this.renderDueDateProperty(element, value, taskInfo);
+                break;
+            case 'scheduled':
+                this.renderScheduledDateProperty(element, value, taskInfo);
+                break;
+            case 'projects':
+                this.renderProjectsProperty(element, value);
+                break;
+            case 'contexts':
+                this.renderContextsProperty(element, value);
+                break;
+            case 'tags':
+                this.renderTagsProperty(element, value);
+                break;
+            case 'timeEstimate':
+                element.textContent = `${this.plugin.formatTime(value)} estimated`;
+                break;
+            case 'totalTrackedTime':
+                if (value > 0) {
+                    element.textContent = `${this.plugin.formatTime(value)} tracked`;
+                }
+                break;
+            case 'recurrence':
+                element.textContent = `Recurring: ${this.getRecurrenceDisplayText(value)}`;
+                break;
+            case 'completedDate':
+                element.textContent = `Completed: ${this.formatDateForDisplay(value)}`;
+                break;
+            case 'file.ctime':
+                element.textContent = `Created: ${this.formatDateForDisplay(value)}`;
+                break;
+            case 'file.mtime':
+                element.textContent = `Modified: ${this.formatDateForDisplay(value)}`;
+                break;
+            default:
+                // Handle user properties and generic values
+                if (propertyId.startsWith('user:')) {
+                    const fieldId = propertyId.slice(5);
+                    const userField = this.plugin.settings.userFields?.find(f => f.id === fieldId);
+                    const fieldName = userField?.displayName || fieldId;
+                    element.textContent = `${fieldName}: ${String(value)}`;
+                } else {
+                    // Generic property
+                    const displayName = propertyId.charAt(0).toUpperCase() + propertyId.slice(1);
+                    element.textContent = `${displayName}: ${String(value)}`;
+                }
+                break;
+        }
+    }
+
+    // Helper methods for specific property rendering
+    private renderDueDateProperty(element: HTMLElement, due: string, taskInfo: TaskInfo): void {
+        const userTimeFormat = this.plugin.settings.calendarViewSettings.timeFormat;
+        const display = formatDateTimeForDisplay(due, {
+            dateFormat: 'MMM d',
+            showTime: true,
+            userTimeFormat
+        });
+        element.textContent = `Due: ${display}`;
+        element.classList.add('fc-list-task-date', 'fc-list-task-date--due');
+
+        // Add click handler for date editing (like TaskCard)
+        element.addEventListener('click', (e) => {
+            e.stopPropagation();
+            // TODO: Implement date context menu if needed
+        });
+    }
+
+    private renderScheduledDateProperty(element: HTMLElement, scheduled: string, taskInfo: TaskInfo): void {
+        const userTimeFormat = this.plugin.settings.calendarViewSettings.timeFormat;
+        const display = formatDateTimeForDisplay(scheduled, {
+            dateFormat: 'MMM d',
+            showTime: true,
+            userTimeFormat
+        });
+        element.textContent = `Scheduled: ${display}`;
+        element.classList.add('fc-list-task-date', 'fc-list-task-date--scheduled');
+    }
+
+    private renderProjectsProperty(element: HTMLElement, projects: string[]): void {
+        const iconSpan = element.createEl('span', { cls: 'fc-list-task-projects-icon' });
+        setIcon(iconSpan, 'folder');
+        element.createEl('span', { text: ` ${projects.join(', ')}` });
+    }
+
+    private renderContextsProperty(element: HTMLElement, contexts: string[]): void {
+        element.textContent = `@ ${contexts.join(', ')}`;
+        // TODO: Add click handlers for context search like TaskCard
+    }
+
+    private renderTagsProperty(element: HTMLElement, tags: string[]): void {
+        element.textContent = `# ${tags.join(', ')}`;
+        // TODO: Add click handlers for tag search like TaskCard
+    }
+
+    private getRecurrenceDisplayText(recurrence: string): string {
+        return getRecurrenceDisplayText(recurrence);
+    }
+
+    private formatDateForDisplay(dateString: string): string {
+        const userTimeFormat = this.plugin.settings.calendarViewSettings.timeFormat;
+        return formatDateTimeForDisplay(dateString, {
+            dateFormat: 'MMM d',
+            showTime: false,
+            userTimeFormat
+        });
+    }
+
+    /**
      * Add task metadata to list view events
      */
     private addTaskMetadataToListEvent(container: HTMLElement, taskInfo: TaskInfo, visibleProperties: string[], eventType: string): void {
@@ -2288,50 +2486,15 @@ export class AdvancedCalendarView extends ItemView {
 
             let element: HTMLElement | null = null;
 
-            switch (propertyId) {
-                case 'projects':
-                    if (taskInfo.projects && taskInfo.projects.length > 0) {
-                        element = container.createEl('span', { cls: 'fc-list-task-projects' });
-                        const iconSpan = element.createEl('span', { cls: 'fc-list-task-projects-icon' });
-                        setIcon(iconSpan, 'folder');
-                        element.createEl('span', { text: ` ${taskInfo.projects.join(', ')}` });
-                    }
-                    break;
-                case 'contexts':
-                    if (taskInfo.contexts && taskInfo.contexts.length > 0) {
-                        element = container.createEl('span', { cls: 'fc-list-task-contexts' });
-                        element.textContent = `@ ${taskInfo.contexts.join(', ')}`;
-                    }
-                    break;
-                case 'tags':
-                    if (taskInfo.tags && taskInfo.tags.length > 0) {
-                        element = container.createEl('span', { cls: 'fc-list-task-tags' });
-                        element.textContent = `# ${taskInfo.tags.join(', ')}`;
-                    }
-                    break;
-                case 'timeEstimate':
-                    if (taskInfo.timeEstimate) {
-                        element = container.createEl('span', { cls: 'fc-list-task-time-estimate' });
-                        element.textContent = `⏱️ ${this.plugin.formatTime(taskInfo.timeEstimate)}`;
-                    }
-                    break;
-            }
+            // Use TaskCard's renderPropertyMetadata function for comprehensive property support
+            element = this.renderListViewProperty(container, propertyId, taskInfo);
 
             if (element) {
                 metadataElements.push(element);
             }
         }
 
-        // Add separators between metadata elements
-        if (metadataElements.length > 1) {
-            for (let i = 1; i < metadataElements.length; i++) {
-                const separator = container.createEl('span', {
-                    cls: 'fc-list-task-metadata-separator',
-                    text: ' • '
-                });
-                metadataElements[i].insertAdjacentElement('beforebegin', separator);
-            }
-        }
+        // No separators between metadata elements for cleaner appearance
     }
 
     /**
