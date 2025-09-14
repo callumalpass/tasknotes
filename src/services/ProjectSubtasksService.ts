@@ -8,6 +8,20 @@ export class ProjectSubtasksService {
     private cacheBuilt = false;
     private cacheVersion = 0;
     private taskUpdateListener: EventRef | null = null;
+    private cacheRebuildInProgress = false;
+    private lastCacheUnavailableLog = 0;
+
+    // Cache health monitoring
+    private cacheStats = {
+        hits: 0,
+        misses: 0,
+        rebuilds: 0,
+        lastRebuildTime: 0,
+        buildDuration: 0
+    };
+
+    // Memory optimization
+    private lastCleanupTime = 0;
 
     constructor(plugin: TaskNotesPlugin) {
         this.plugin = plugin;
@@ -77,6 +91,7 @@ export class ProjectSubtasksService {
      * Build project status cache for all tasks (synchronous lookup)
      */
     async buildProjectStatusCache(): Promise<void> {
+        const startTime = Date.now();
         try {
             const allTasks = await this.plugin.cacheManager.getAllTasks();
             this.projectStatusCache.clear();
@@ -135,22 +150,64 @@ export class ProjectSubtasksService {
 
             this.cacheBuilt = true;
             this.cacheVersion = Date.now();
+            this.cacheStats.rebuilds++;
+            this.cacheStats.lastRebuildTime = Date.now();
+            this.cacheStats.buildDuration = Date.now() - startTime;
         } catch (error) {
             console.error('Error building project status cache:', error);
             this.cacheBuilt = false;
+            this.cacheStats.buildDuration = Date.now() - startTime;
         }
     }
 
     /**
      * Get project status synchronously from cache (fast)
+     * Falls back to async lookup if cache unavailable
      */
     isTaskUsedAsProjectSync(taskPath: string): boolean {
-        // If cache not built, return false (fallback)
+        // If cache not built, fall back to async lookup
         if (!this.cacheBuilt) {
-            return false;
+            this.cacheStats.misses++;
+            // Trigger async fallback and rebuild cache
+            this.handleCacheUnavailable(taskPath);
+            return false; // Conservative default until cache is ready
         }
 
+        this.cacheStats.hits++;
         return this.projectStatusCache.get(taskPath) || false;
+    }
+
+    /**
+     * Handle cache unavailability with graceful degradation
+     */
+    private handleCacheUnavailable(taskPath: string): void {
+        // Trigger cache rebuild if not already in progress
+        if (!this.cacheRebuildInProgress) {
+            this.rebuildCacheWithFallback();
+        }
+
+        // Log for debugging but don't spam
+        if (Date.now() - this.lastCacheUnavailableLog > 10000) { // 10 second throttle
+            console.warn('[ProjectSubtasksService] Cache unavailable, using fallback. Rebuilding...');
+            this.lastCacheUnavailableLog = Date.now();
+        }
+    }
+
+    /**
+     * Rebuild cache with error handling and progress tracking
+     */
+    private async rebuildCacheWithFallback(): Promise<void> {
+        if (this.cacheRebuildInProgress) return;
+
+        this.cacheRebuildInProgress = true;
+        try {
+            await this.buildProjectStatusCache();
+        } catch (error) {
+            console.error('[ProjectSubtasksService] Failed to rebuild cache:', error);
+            // Don't set cacheBuilt = true on failure
+        } finally {
+            this.cacheRebuildInProgress = false;
+        }
     }
 
     /**
@@ -184,14 +241,100 @@ export class ProjectSubtasksService {
             if (shouldInvalidateCache) {
                 // Invalidate and rebuild cache asynchronously
                 this.invalidateProjectStatusCache();
-                // Rebuild cache in background for better performance
-                setTimeout(() => {
-                    this.buildProjectStatusCache().catch(error => {
-                        console.error('Error rebuilding project status cache:', error);
-                    });
-                }, 100);
+                // Rebuild cache in background with proper error handling
+                this.rebuildCacheWithFallback().catch(error => {
+                    console.error('[ProjectSubtasksService] Error during background cache rebuild:', error);
+                });
+
+                // Periodic cleanup to optimize memory usage
+                this.scheduleCleanupIfNeeded();
             }
         });
+    }
+
+    /**
+     * Schedule cleanup if enough time has passed
+     */
+    private scheduleCleanupIfNeeded(): void {
+        const timeSinceLastCleanup = Date.now() - this.lastCleanupTime;
+
+        // Cleanup every 6 hours
+        const shouldCleanup = timeSinceLastCleanup > 6 * 60 * 60 * 1000;
+
+        if (shouldCleanup) {
+            this.lastCleanupTime = Date.now();
+
+            // Schedule cleanup asynchronously to not block cache rebuild
+            setTimeout(async () => {
+                try {
+                    const removedCount = await this.cleanupStaleEntries();
+                    if (removedCount > 0) {
+                        console.log(`[ProjectSubtasksService] Cleaned up ${removedCount} stale cache entries`);
+                    }
+                } catch (error) {
+                    console.error('[ProjectSubtasksService] Error during scheduled cleanup:', error);
+                }
+            }, 1000); // Small delay to let cache rebuild complete
+        }
+    }
+
+    /**
+     * Get cache health statistics for monitoring
+     */
+    getCacheHealth(): {
+        built: boolean;
+        size: number;
+        stats: typeof this.cacheStats;
+        hitRatio: number;
+        lastRebuildAge: number;
+        status: 'healthy' | 'degraded' | 'unavailable';
+    } {
+        const hitRatio = this.cacheStats.hits + this.cacheStats.misses > 0
+            ? this.cacheStats.hits / (this.cacheStats.hits + this.cacheStats.misses)
+            : 0;
+
+        const lastRebuildAge = Date.now() - this.cacheStats.lastRebuildTime;
+
+        let status: 'healthy' | 'degraded' | 'unavailable' = 'healthy';
+        if (!this.cacheBuilt) {
+            status = 'unavailable';
+        } else if (hitRatio < 0.9 || lastRebuildAge > 60 * 60 * 1000) { // Over 1 hour old
+            status = 'degraded';
+        }
+
+        return {
+            built: this.cacheBuilt,
+            size: this.projectStatusCache.size,
+            stats: { ...this.cacheStats },
+            hitRatio,
+            lastRebuildAge,
+            status
+        };
+    }
+
+    /**
+     * Clean up stale cache entries for deleted tasks
+     */
+    async cleanupStaleEntries(): Promise<number> {
+        if (!this.cacheBuilt) return 0;
+
+        try {
+            const allTaskPaths = this.plugin.cacheManager.getAllTaskPaths();
+            const existingPaths = new Set(allTaskPaths);
+
+            let removedCount = 0;
+            for (const taskPath of this.projectStatusCache.keys()) {
+                if (!existingPaths.has(taskPath)) {
+                    this.projectStatusCache.delete(taskPath);
+                    removedCount++;
+                }
+            }
+
+            return removedCount;
+        } catch (error) {
+            console.error('[ProjectSubtasksService] Error during cache cleanup:', error);
+            return 0;
+        }
     }
 
     /**
@@ -203,6 +346,15 @@ export class ProjectSubtasksService {
             this.taskUpdateListener = null;
         }
         this.invalidateProjectStatusCache();
+
+        // Reset all stats
+        this.cacheStats = {
+            hits: 0,
+            misses: 0,
+            rebuilds: 0,
+            lastRebuildTime: 0,
+            buildDuration: 0
+        };
     }
 
     /**
