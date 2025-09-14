@@ -54,8 +54,6 @@ export class ViewPerformanceService {
         });
         this.viewHandlers.set(config.viewId, handler);
         this.viewPendingUpdates.set(config.viewId, new Set());
-
-        console.log(`[ViewPerformanceService] Registered view: ${config.viewId}`);
     }
 
     /**
@@ -74,8 +72,6 @@ export class ViewPerformanceService {
         this.viewHandlers.delete(viewId);
         this.viewPendingUpdates.delete(viewId);
         this.updateInProgress.delete(viewId);
-
-        console.log(`[ViewPerformanceService] Unregistered view: ${viewId}`);
     }
 
     /**
@@ -84,7 +80,6 @@ export class ViewPerformanceService {
     private setupGlobalEventListener(): void {
         this.eventListener = this.plugin.emitter.on(EVENT_TASK_UPDATED, async ({ path, originalTask, updatedTask }) => {
             if (!path || !updatedTask) {
-                console.log('[ViewPerformanceService] Invalid task update event - missing path or updatedTask, triggering full refresh for all views');
                 await this.triggerFullRefreshForAllViews();
                 return;
             }
@@ -96,7 +91,6 @@ export class ViewPerformanceService {
 
             // Check global change detection
             if (!this.hasTaskChanged(updatedTask)) {
-                console.log(`[ViewPerformanceService] Skipping update for ${path} - no changes detected`);
                 return;
             }
 
@@ -114,7 +108,6 @@ export class ViewPerformanceService {
         for (const [viewId, handler] of this.viewHandlers) {
             // Check if this view should handle the update
             if (handler.shouldRefreshForTask && !handler.shouldRefreshForTask(originalTask, updatedTask)) {
-                console.log(`[ViewPerformanceService] Skipping update for ${viewId} - not relevant`);
                 continue;
             }
 
@@ -139,9 +132,7 @@ export class ViewPerformanceService {
         // Add to pending updates
         const pendingUpdates = this.viewPendingUpdates.get(viewId);
         if (pendingUpdates) {
-            const wasAlreadyPending = pendingUpdates.has(taskPath);
             pendingUpdates.add(taskPath);
-            console.log(`[ViewPerformanceService] Scheduled update for ${viewId}: ${taskPath} (already pending: ${wasAlreadyPending})`);
         }
 
         // Clear existing timer
@@ -163,7 +154,6 @@ export class ViewPerformanceService {
      */
     private async processPendingUpdatesForView(viewId: string): Promise<void> {
         if (this.updateInProgress.has(viewId)) {
-            console.log(`[ViewPerformanceService] Update already in progress for ${viewId}, skipping`);
             return;
         }
 
@@ -181,11 +171,8 @@ export class ViewPerformanceService {
             const pathsToUpdate = Array.from(pendingUpdates);
             pendingUpdates.clear();
 
-            console.log(`[ViewPerformanceService] Processing ${pathsToUpdate.length} updates for ${viewId}`);
-
             if (pathsToUpdate.length > config.maxBatchSize!) {
                 // Too many updates, do full refresh
-                console.log(`[ViewPerformanceService] Batch size exceeded for ${viewId}, doing full refresh`);
                 await handler.refresh();
             } else {
                 // Process selective updates
@@ -229,10 +216,8 @@ export class ViewPerformanceService {
 
         if (cachedVersion !== currentVersion) {
             this.globalTaskVersionCache.set(task.path, currentVersion);
-            console.log(`[ViewPerformanceService] Task ${task.path} changed: ${cachedVersion} -> ${currentVersion}`);
             return true;
         }
-        console.log(`[ViewPerformanceService] Task ${task.path} unchanged: ${currentVersion}`);
         return false;
     }
 
@@ -268,16 +253,13 @@ export class ViewPerformanceService {
                 }
             }
 
-            if (removedCount > 0) {
-                console.log(`[ViewPerformanceService] Cleaned up ${removedCount} stale cache entries`);
-            }
+            // Removed count tracking for performance
 
             // Update global task count
             this.globalTaskCount = existingPaths.size;
 
             // Fallback cleanup if cache gets too large
             if (this.globalTaskVersionCache.size > 2000) {
-                console.log('[ViewPerformanceService] Cache too large, clearing for memory management');
                 this.globalTaskVersionCache.clear();
                 this.lastGlobalRefreshTime = 0;
             }
@@ -331,7 +313,5 @@ export class ViewPerformanceService {
         this.viewConfigs.clear();
         this.updateInProgress.clear();
         this.globalTaskVersionCache.clear();
-
-        console.log('[ViewPerformanceService] Service destroyed');
     }
 }

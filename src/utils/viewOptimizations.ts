@@ -43,7 +43,6 @@ export function initializeViewPerformance(
         };
 
         view.viewPerformanceService.registerView(fullConfig, handler);
-        console.log(`[ViewOptimizations] Initialized performance for ${fullConfig.viewId}`);
     } else {
         console.warn(`[ViewOptimizations] ViewPerformanceService not available for ${fullConfig.viewId}`);
     }
@@ -55,7 +54,6 @@ export function initializeViewPerformance(
 export function cleanupViewPerformance(view: OptimizedView & ItemView): void {
     if (view.viewPerformanceService && view.performanceConfig) {
         view.viewPerformanceService.unregisterView(view.performanceConfig.viewId);
-        console.log(`[ViewOptimizations] Cleaned up performance for ${view.performanceConfig.viewId}`);
     }
 }
 
