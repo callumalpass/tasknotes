@@ -545,7 +545,7 @@ export function renderAppearanceTab(container: HTMLElement, plugin: TaskNotesPlu
         getValue: () => plugin.settings.projectAutosuggest?.requiredTags?.join(', ') ?? '',
         setValue: async (value: string) => {
             if (!plugin.settings.projectAutosuggest) {
-                plugin.settings.projectAutosuggest = { enableFuzzy: false, rows: [], showAdvanced: false, requiredTags: [], includeFolders: [] };
+                plugin.settings.projectAutosuggest = { enableFuzzy: false, rows: [], showAdvanced: false, requiredTags: [], includeFolders: [], propertyKey: '', propertyValue: '' };
             }
             plugin.settings.projectAutosuggest.requiredTags = value
                 .split(',')
@@ -564,7 +564,7 @@ export function renderAppearanceTab(container: HTMLElement, plugin: TaskNotesPlu
         getValue: () => plugin.settings.projectAutosuggest?.includeFolders?.join(', ') ?? '',
         setValue: async (value: string) => {
             if (!plugin.settings.projectAutosuggest) {
-                plugin.settings.projectAutosuggest = { enableFuzzy: false, rows: [], showAdvanced: false, requiredTags: [], includeFolders: [] };
+                plugin.settings.projectAutosuggest = { enableFuzzy: false, rows: [], showAdvanced: false, requiredTags: [], includeFolders: [], propertyKey: '', propertyValue: '' };
             }
             plugin.settings.projectAutosuggest.includeFolders = value
                 .split(',')
@@ -575,13 +575,44 @@ export function renderAppearanceTab(container: HTMLElement, plugin: TaskNotesPlu
         ariaLabel: 'Include folders for project suggestions'
     });
 
+    // Property filtering
+    createTextSetting(container, {
+        name: 'Required property key',
+        desc: 'Show only notes where this frontmatter property matches the value below. Leave empty to ignore.',
+        placeholder: 'type',
+        getValue: () => plugin.settings.projectAutosuggest?.propertyKey ?? '',
+        setValue: async (value: string) => {
+            if (!plugin.settings.projectAutosuggest) {
+                plugin.settings.projectAutosuggest = { enableFuzzy: false, rows: [], showAdvanced: false, requiredTags: [], includeFolders: [], propertyKey: '', propertyValue: '' };
+            }
+            plugin.settings.projectAutosuggest.propertyKey = value.trim();
+            save();
+        },
+        ariaLabel: 'Required frontmatter property key for project suggestions'
+    });
+
+    createTextSetting(container, {
+        name: 'Required property value',
+        desc: 'Only notes where the property equals this value are suggested. Leave empty to require the property to exist.',
+        placeholder: 'project',
+        getValue: () => plugin.settings.projectAutosuggest?.propertyValue ?? '',
+        setValue: async (value: string) => {
+            if (!plugin.settings.projectAutosuggest) {
+                plugin.settings.projectAutosuggest = { enableFuzzy: false, rows: [], showAdvanced: false, requiredTags: [], includeFolders: [], propertyKey: '', propertyValue: '' };
+            }
+            plugin.settings.projectAutosuggest.propertyValue = value.trim();
+            save();
+        },
+        ariaLabel: 'Required frontmatter property value for project suggestions'
+    });
+
     createToggleSetting(container, {
         name: 'Customize suggestion display',
         desc: 'Show advanced options to configure how project suggestions appear and what information they display.',
         getValue: () => plugin.settings.projectAutosuggest?.showAdvanced ?? false,
         setValue: async (value: boolean) => {
             if (!plugin.settings.projectAutosuggest) {
-                plugin.settings.projectAutosuggest = { enableFuzzy: false, rows: [], showAdvanced: false };
+                plugin.settings.projectAutosuggest = { enableFuzzy: false, rows: [], showAdvanced: false, requiredTags: [], includeFolders: [], propertyKey: '', propertyValue: '' };
             }
             plugin.settings.projectAutosuggest.showAdvanced = value;
             save();
@@ -596,14 +627,14 @@ export function renderAppearanceTab(container: HTMLElement, plugin: TaskNotesPlu
             name: 'Enable fuzzy matching',
             desc: 'Allow typos and partial matches in project search. May be slower in large vaults.',
             getValue: () => plugin.settings.projectAutosuggest?.enableFuzzy ?? false,
-            setValue: async (value: boolean) => {
-                if (!plugin.settings.projectAutosuggest) {
-                    plugin.settings.projectAutosuggest = { enableFuzzy: false, rows: [], showAdvanced: false };
-                }
-                plugin.settings.projectAutosuggest.enableFuzzy = value;
-                save();
+        setValue: async (value: boolean) => {
+            if (!plugin.settings.projectAutosuggest) {
+                plugin.settings.projectAutosuggest = { enableFuzzy: false, rows: [], showAdvanced: false, requiredTags: [], includeFolders: [], propertyKey: '', propertyValue: '' };
             }
-        });
+            plugin.settings.projectAutosuggest.enableFuzzy = value;
+            save();
+        }
+    });
 
         // Display rows configuration
         createHelpText(container, 'Configure up to 3 lines of information to show for each project suggestion.');
@@ -612,7 +643,7 @@ export function renderAppearanceTab(container: HTMLElement, plugin: TaskNotesPlu
         
         const setRow = async (idx: number, value: string) => {
             if (!plugin.settings.projectAutosuggest) {
-                plugin.settings.projectAutosuggest = { enableFuzzy: false, rows: [], showAdvanced: false };
+                plugin.settings.projectAutosuggest = { enableFuzzy: false, rows: [], showAdvanced: false, requiredTags: [], includeFolders: [], propertyKey: '', propertyValue: '' };
             }
             const current = plugin.settings.projectAutosuggest.rows ?? [];
             const next = [...current];

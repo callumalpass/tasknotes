@@ -34,6 +34,7 @@ Project suggestions search across:
 - File names (basename without extension)
 - Frontmatter titles (using your configured field mapping)
 - Frontmatter aliases
+- Optional filtering by required tags, folders, and a specific frontmatter property/value defined in Settings → Appearance & UI → Project Autosuggest
 
 Selecting a project suggestion inserts it as `+[[filename]]`, creating a wikilink to the file while maintaining the `+` project marker that the natural language parser recognizes.
 

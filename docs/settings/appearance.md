@@ -65,6 +65,7 @@ These settings control the visual appearance of the plugin, including the calend
 
 - **Required tags**: Show only notes with any of these tags (comma-separated). Leave empty to show all notes.
 - **Include folders**: Show only notes in these folders (comma-separated paths). Leave empty to show all folders.
+- **Required property key/value**: Filter notes by a frontmatter property. Provide the property name and, optionally, the value it must match (leave the value blank to require only that the property exists).
 - **Customize suggestion display**: Show advanced options to configure how project suggestions appear and what information they display.
 - **Enable fuzzy matching**: Allow typos and partial matches in project search. May be slower in large vaults.
 - **Row 1, 2, 3**: Configure up to 3 lines of information to show for each project suggestion.
