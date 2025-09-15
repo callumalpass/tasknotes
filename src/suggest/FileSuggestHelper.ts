@@ -2,6 +2,7 @@ import type TaskNotesPlugin from '../main';
 import { parseFrontMatterAliases } from 'obsidian';
 import { scoreMultiword } from '../utils/fuzzyMatch';
 import { parseDisplayFieldsRow } from '../utils/projectAutosuggestDisplayFieldsParser';
+import { getProjectPropertyFilter, matchesProjectProperty } from '../utils/projectFilterUtils';
 
 export interface FileSuggestionItem {
   insertText: string;   // usually basename
@@ -33,6 +34,7 @@ export const FileSuggestHelper = {
       // Get filtering settings
       const requiredTags = plugin.settings?.projectAutosuggest?.requiredTags ?? [];
       const includeFolders = plugin.settings?.projectAutosuggest?.includeFolders ?? [];
+      const propertyFilter = getProjectPropertyFilter(plugin.settings?.projectAutosuggest);
 
       for (const file of files) {
         const cache = plugin.app.metadataCache.getFileCache(file);
@@ -61,6 +63,13 @@ export const FileSuggestHelper = {
           );
           if (!isInIncludedFolder) {
             continue; // Skip this file
+          }
+        }
+
+        if (propertyFilter.enabled) {
+          const frontmatter = cache?.frontmatter;
+          if (!matchesProjectProperty(frontmatter, propertyFilter)) {
+            continue;
           }
         }
 
@@ -161,4 +170,3 @@ export const FileSuggestHelper = {
     });
   }
 };
-

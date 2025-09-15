@@ -169,7 +169,9 @@ export const DEFAULT_PROJECT_AUTOSUGGEST: ProjectAutosuggestSettings = {
 	],
 	showAdvanced: false,
 	requiredTags: [],
-	includeFolders: []
+	includeFolders: [],
+	propertyKey: '',
+	propertyValue: ''
 };
 
 export const DEFAULT_SETTINGS: TaskNotesSettings = {

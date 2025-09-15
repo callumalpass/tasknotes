@@ -50,7 +50,8 @@ describe('TaskCard Context Menu Event Handling', () => {
             projectSubtasksService: {
                 getSubtasks: jest.fn().mockResolvedValue([]),
                 sortTasks: jest.fn().mockReturnValue([]),
-                isTaskUsedAsProject: jest.fn().mockResolvedValue(false)
+                isTaskUsedAsProject: jest.fn().mockResolvedValue(false),
+                isTaskUsedAsProjectSync: jest.fn().mockReturnValue(false)
             },
             domReconciler: {
                 updateList: jest.fn()

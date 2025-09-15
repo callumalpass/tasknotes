@@ -21,6 +21,8 @@ export interface ProjectAutosuggestSettings {
 	showAdvanced?: boolean; // Show advanced configuration options
 	requiredTags?: string[]; // Show notes that have ANY of these tags
 	includeFolders?: string[]; // Only show notes in these folders (empty = all folders)
+	propertyKey?: string; // Frontmatter property name to match
+	propertyValue?: string; // Expected value for the property (empty = property must exist)
 }
 
 export interface TaskNotesSettings {

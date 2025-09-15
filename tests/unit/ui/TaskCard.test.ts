@@ -63,7 +63,13 @@ jest.mock('../../../src/utils/dateUtils', () => ({
     return 'Jan 15, 2025';
   }),
   getDatePart: jest.fn((date) => date?.split('T')[0] || ''),
-  getTimePart: jest.fn((date) => date?.includes('T') ? date.split('T')[1]?.split(':').slice(0, 2).join(':') : null)
+  getTimePart: jest.fn((date) => date?.includes('T') ? date.split('T')[1]?.split(':').slice(0, 2).join(':') : null),
+  formatDateForStorage: jest.fn((value: Date | string) => {
+    if (value instanceof Date) {
+      return value.toISOString().split('T')[0];
+    }
+    return value?.split('T')[0] || '';
+  })
 }));
 
 // Mock TaskContextMenu to use the mocked Menu internally
@@ -162,7 +168,8 @@ describe('TaskCard Component', () => {
         deleteTask: jest.fn()
       },
       projectSubtasksService: {
-        isTaskUsedAsProject: jest.fn().mockResolvedValue(false)
+        isTaskUsedAsProject: jest.fn().mockResolvedValue(false),
+        isTaskUsedAsProjectSync: jest.fn().mockReturnValue(false)
       },
       settings: {
         singleClickAction: 'edit',
@@ -953,6 +960,7 @@ describe('TaskCard Component', () => {
       const task = TaskFactory.createTask({ title: 'Project Task' });
       // Ensure this task is considered a project and chevron feature is on
       mockPlugin.projectSubtasksService.isTaskUsedAsProject.mockResolvedValue(true);
+      mockPlugin.projectSubtasksService.isTaskUsedAsProjectSync.mockReturnValue(true);
       mockPlugin.settings = { showExpandableSubtasks: true, subtaskChevronPosition: 'left' };
 
       const card = createTaskCard(task, mockPlugin);
@@ -968,6 +976,7 @@ describe('TaskCard Component', () => {
     it('should not add task-card--chevron-left when setting is right/default (create)', async () => {
       const task = TaskFactory.createTask({ title: 'Project Task' });
       mockPlugin.projectSubtasksService.isTaskUsedAsProject.mockResolvedValue(true);
+      mockPlugin.projectSubtasksService.isTaskUsedAsProjectSync.mockReturnValue(true);
       mockPlugin.settings = { showExpandableSubtasks: true, subtaskChevronPosition: 'right' };
 
       const card = createTaskCard(task, mockPlugin);
@@ -981,6 +990,7 @@ describe('TaskCard Component', () => {
       const task = TaskFactory.createTask({ title: 'Project Task' });
       // Start with right/default
       mockPlugin.projectSubtasksService.isTaskUsedAsProject.mockResolvedValue(true);
+      mockPlugin.projectSubtasksService.isTaskUsedAsProjectSync.mockReturnValue(true);
       mockPlugin.settings = { showExpandableSubtasks: true, subtaskChevronPosition: 'right' };
 
       const card = createTaskCard(task, mockPlugin);
