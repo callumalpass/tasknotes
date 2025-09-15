@@ -540,13 +540,32 @@ export class MinimalNativeCache extends Events {
     }
     
     /**
-     * Get all tags by computing on-demand
+     * Get all tags using native MetadataCache.getTags() for optimal performance
+     * This leverages Obsidian's pre-computed tag index rather than scanning all files
      */
     getAllTags(): string[] {
+        try {
+            // Use native MetadataCache.getTags() which returns Record<string, number>
+            // where keys are tag names and values are usage counts
+            const nativeTags = this.app.metadataCache.getTags();
+
+            if (nativeTags && typeof nativeTags === 'object') {
+                // Extract tag names and remove # prefix if present
+                const allTags = Object.keys(nativeTags)
+                    .map(tag => tag.startsWith('#') ? tag.slice(1) : tag)
+                    .filter(tag => tag.length > 0); // Remove empty tags
+
+                return Array.from(new Set(allTags)).sort(); // Remove duplicates and sort
+            }
+        } catch (error) {
+            console.warn('MinimalNativeCache: Failed to use native getTags(), falling back to manual scan:', error);
+        }
+
+        // Fallback to original implementation if native method fails
         const tags = new Set<string>();
         const markdownFiles = this.app.vault.getMarkdownFiles()
             .filter(file => this.isValidFile(file.path));
-        
+
         for (const file of markdownFiles) {
             const metadata = this.app.metadataCache.getFileCache(file);
             if (metadata?.frontmatter && this.isTaskFile(metadata.frontmatter)) {
@@ -556,7 +575,7 @@ export class MinimalNativeCache extends Events {
                 }
             }
         }
-        
+
         return Array.from(tags).sort();
     }
     
@@ -582,15 +601,58 @@ export class MinimalNativeCache extends Events {
     }
     
     /**
-     * Get all projects by computing on-demand
-     * Extracts project names from [[Note Name]] links in task project fields
-     * Returns actual project note names/paths that exist as links in tasks
+     * Get all projects using native MetadataCache.resolvedLinks for optimal performance
+     * This leverages Obsidian's pre-computed link index rather than scanning all task files
      */
     getAllProjects(): string[] {
+        try {
+            const projects = new Set<string>();
+            const resolvedLinks = this.app.metadataCache.resolvedLinks;
+
+            if (resolvedLinks && typeof resolvedLinks === 'object') {
+                // Iterate through all source files and their resolved links
+                for (const [sourcePath, targets] of Object.entries(resolvedLinks)) {
+                    if (!targets || !this.isValidFile(sourcePath)) continue;
+
+                    // Check if source file is a task with project references
+                    const metadata = this.app.metadataCache.getCache(sourcePath);
+                    if (!metadata?.frontmatter || !this.isTaskFile(metadata.frontmatter)) continue;
+
+                    // Check if this task has projects field with wikilinks
+                    const projectsField = metadata.frontmatter.projects;
+                    if (!Array.isArray(projectsField)) continue;
+
+                    // Check if projects field contains wikilinks (not just plain text)
+                    const hasWikilinks = projectsField.some((p: any) =>
+                        typeof p === 'string' && p.startsWith('[[') && p.endsWith(']]')
+                    );
+
+                    if (hasWikilinks) {
+                        // Add all linked files from this task as potential projects
+                        for (const targetPath of Object.keys(targets)) {
+                            if (targets[targetPath] > 0) {
+                                const targetFile = this.app.vault.getAbstractFileByPath(targetPath);
+                                if (targetFile instanceof TFile) {
+                                    projects.add(targetFile.basename);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (projects.size > 0) {
+                    return Array.from(projects).sort();
+                }
+            }
+        } catch (error) {
+            console.warn('MinimalNativeCache: Failed to use native resolvedLinks for projects, falling back to manual scan:', error);
+        }
+
+        // Fallback to original implementation if native method fails or returns no results
         const projects = new Set<string>();
         const markdownFiles = this.app.vault.getMarkdownFiles()
             .filter(file => this.isValidFile(file.path));
-        
+
         for (const file of markdownFiles) {
             const metadata = this.app.metadataCache.getFileCache(file);
             if (metadata?.frontmatter && this.isTaskFile(metadata.frontmatter)) {
@@ -612,7 +674,7 @@ export class MinimalNativeCache extends Events {
                 }
             }
         }
-        
+
         return Array.from(projects).sort();
     }
     
