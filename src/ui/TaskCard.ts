@@ -3,13 +3,14 @@ import { TaskInfo } from '../types';
 import TaskNotesPlugin from '../main';
 import { TaskContextMenu } from '../components/TaskContextMenu';
 import { calculateTotalTimeSpent, getEffectiveTaskStatus, getRecurrenceDisplayText, filterEmptyProjects } from '../utils/helpers';
-import { 
+import {
     formatDateTimeForDisplay,
     isTodayTimeAware,
     isOverdueTimeAware,
     getDatePart,
     getTimePart,
-    createTimeFormatHelper
+    createTimeFormatHelper,
+    formatDateForStorage
 } from '../utils/dateUtils';
 import { DateContextMenu } from '../components/DateContextMenu';
 import { PriorityContextMenu } from '../components/PriorityContextMenu';
@@ -712,20 +713,22 @@ export function createTaskCard(task: TaskInfo, plugin: TaskNotesPlugin, visibleP
     const targetDate = opts.targetDate || plugin.selectedDate || new Date();
     
     // Determine effective status for recurring tasks
-    const effectiveStatus = task.recurrence 
+    const effectiveStatus = task.recurrence
         ? getEffectiveTaskStatus(task, targetDate)
         : task.status;
-    
+
     // Main container with BEM class structure
     const card = document.createElement('div');
-    
+
     // Store task path for circular reference detection
     (card as any)._taskPath = task.path;
-    
+
     const isActivelyTracked = plugin.getActiveTimeSession(task) !== null;
-    const isCompleted = plugin.statusManager.isCompletedStatus(effectiveStatus);
+    const isCompleted = task.recurrence
+        ? (task.complete_instances?.includes(formatDateForStorage(targetDate)) || false)  // Direct check of complete_instances
+        : plugin.statusManager.isCompletedStatus(effectiveStatus);  // Regular tasks use status config
     const isRecurring = !!task.recurrence;
-    
+
     // Build BEM class names
     const cardClasses = ['task-card'];
     
@@ -984,82 +987,79 @@ export function createTaskCard(task: TaskInfo, plugin: TaskNotesPlugin, visibleP
         attr: { style: 'display: none;' }
     });
     
-    plugin.projectSubtasksService.isTaskUsedAsProject(task.path).then((isProject: boolean) => {
-        if (isProject) {
-            projectIndicatorPlaceholder.className = 'task-card__project-indicator';
-            projectIndicatorPlaceholder.removeAttribute('style');
-            projectIndicatorPlaceholder.setAttribute('aria-label', 'This task is used as a project (click to filter subtasks)');
-            setTooltip(projectIndicatorPlaceholder, 'This task is used as a project (click to filter subtasks)', { placement: 'top' });
-            
-            // Use Obsidian's built-in folder icon for project tasks
-            setIcon(projectIndicatorPlaceholder, 'folder');
-            
-            // Add click handler to filter subtasks
-            projectIndicatorPlaceholder.addEventListener('click', async (e) => {
+    // Use synchronous project status check for better performance
+    const isProject = plugin.projectSubtasksService.isTaskUsedAsProjectSync(task.path);
+
+    if (isProject) {
+        projectIndicatorPlaceholder.className = 'task-card__project-indicator';
+        projectIndicatorPlaceholder.removeAttribute('style');
+        projectIndicatorPlaceholder.setAttribute('aria-label', 'This task is used as a project (click to filter subtasks)');
+        setTooltip(projectIndicatorPlaceholder, 'This task is used as a project (click to filter subtasks)', { placement: 'top' });
+
+        // Use Obsidian's built-in folder icon for project tasks
+        setIcon(projectIndicatorPlaceholder, 'folder');
+
+        // Add click handler to filter subtasks
+        projectIndicatorPlaceholder.addEventListener('click', async (e) => {
+            e.stopPropagation(); // Don't trigger card click
+            try {
+                await plugin.applyProjectSubtaskFilter(task);
+            } catch (error) {
+                console.error('Error filtering project subtasks:', error);
+                new Notice('Failed to filter project subtasks');
+            }
+        });
+
+        // Add chevron for expandable subtasks if feature is enabled
+        if (plugin.settings?.showExpandableSubtasks) {
+            chevronPlaceholder.className = 'task-card__chevron';
+            chevronPlaceholder.removeAttribute('style');
+
+            const isExpanded = plugin.expandedProjectsService?.isExpanded(task.path) || false;
+            if (isExpanded) {
+                chevronPlaceholder.classList.add('task-card__chevron--expanded');
+            }
+
+            chevronPlaceholder.setAttribute('aria-label', isExpanded ? 'Collapse subtasks' : 'Expand subtasks');
+            setTooltip(chevronPlaceholder, isExpanded ? 'Collapse subtasks' : 'Expand subtasks', { placement: 'top' });
+
+            // Use Obsidian's built-in chevron-right icon
+            setIcon(chevronPlaceholder, 'chevron-right');
+
+            // Add click handler to toggle expansion
+            chevronPlaceholder.addEventListener('click', async (e) => {
                 e.stopPropagation(); // Don't trigger card click
                 try {
-                    await plugin.applyProjectSubtaskFilter(task);
+                    if (!plugin.expandedProjectsService) {
+                        console.error('ExpandedProjectsService not initialized');
+                        new Notice('Service not available. Please try reloading the plugin.');
+                        return;
+                    }
+
+                    const newExpanded = plugin.expandedProjectsService.toggle(task.path);
+                    chevronPlaceholder.classList.toggle('task-card__chevron--expanded', newExpanded);
+                    chevronPlaceholder.setAttribute('aria-label', newExpanded ? 'Collapse subtasks' : 'Expand subtasks');
+                    setTooltip(chevronPlaceholder, newExpanded ? 'Collapse subtasks' : 'Expand subtasks', { placement: 'top' });
+
+                    // Toggle subtasks display
+                    await toggleSubtasks(card, task, plugin, newExpanded);
                 } catch (error) {
-                    console.error('Error filtering project subtasks:', error);
-                    new Notice('Failed to filter project subtasks');
+                    console.error('Error toggling subtasks:', error);
+                    new Notice('Failed to toggle subtasks');
                 }
             });
-            
-            // Add chevron for expandable subtasks if feature is enabled
-            if (plugin.settings?.showExpandableSubtasks) {
-                chevronPlaceholder.className = 'task-card__chevron';
-                chevronPlaceholder.removeAttribute('style');
-                
-                const isExpanded = plugin.expandedProjectsService?.isExpanded(task.path) || false;
-                if (isExpanded) {
-                    chevronPlaceholder.classList.add('task-card__chevron--expanded');
-                }
-                
-                chevronPlaceholder.setAttribute('aria-label', isExpanded ? 'Collapse subtasks' : 'Expand subtasks');
-                setTooltip(chevronPlaceholder, isExpanded ? 'Collapse subtasks' : 'Expand subtasks', { placement: 'top' });
-                
-                // Use Obsidian's built-in chevron-right icon
-                setIcon(chevronPlaceholder, 'chevron-right');
-                
-                // Add click handler to toggle expansion
-                chevronPlaceholder.addEventListener('click', async (e) => {
-                    e.stopPropagation(); // Don't trigger card click
-                    try {
-                        if (!plugin.expandedProjectsService) {
-                            console.error('ExpandedProjectsService not initialized');
-                            new Notice('Service not available. Please try reloading the plugin.');
-                            return;
-                        }
-                        
-                        const newExpanded = plugin.expandedProjectsService.toggle(task.path);
-                        chevronPlaceholder.classList.toggle('task-card__chevron--expanded', newExpanded);
-                        chevronPlaceholder.setAttribute('aria-label', newExpanded ? 'Collapse subtasks' : 'Expand subtasks');
-                        setTooltip(chevronPlaceholder, newExpanded ? 'Collapse subtasks' : 'Expand subtasks', { placement: 'top' });
-                        
-                        // Toggle subtasks display
-                        await toggleSubtasks(card, task, plugin, newExpanded);
-                    } catch (error) {
-                        console.error('Error toggling subtasks:', error);
-                        new Notice('Failed to toggle subtasks');
-                    }
+
+            // If already expanded, show subtasks
+            if (isExpanded) {
+                toggleSubtasks(card, task, plugin, true).catch(error => {
+                    console.error('Error showing initial subtasks:', error);
                 });
-                
-                // If already expanded, show subtasks
-                if (isExpanded) {
-                    toggleSubtasks(card, task, plugin, true).catch(error => {
-                        console.error('Error showing initial subtasks:', error);
-                    });
-                }
             }
-        } else {
-            projectIndicatorPlaceholder.remove();
-            chevronPlaceholder.remove();
         }
-    }).catch((error: any) => {
-        console.error('Error checking if task is used as project:', error);
+    } else {
         projectIndicatorPlaceholder.remove();
         chevronPlaceholder.remove();
-    });
+    }
     
     // Main content container
     const contentContainer = mainRow.createEl('div', { cls: 'task-card__content' });
@@ -1194,7 +1194,9 @@ export function updateTaskCard(element: HTMLElement, task: TaskInfo, plugin: Tas
     
     // Update main element classes using BEM structure
     const isActivelyTracked = plugin.getActiveTimeSession(task) !== null;
-    const isCompleted = plugin.statusManager.isCompletedStatus(effectiveStatus);
+    const isCompleted = task.recurrence
+        ? (task.complete_instances?.includes(formatDateForStorage(targetDate)) || false)  // Direct check of complete_instances
+        : plugin.statusManager.isCompletedStatus(effectiveStatus);  // Regular tasks use status config
     const isRecurring = !!task.recurrence;
     
     // Build BEM class names for update
@@ -1379,6 +1381,26 @@ export function updateTaskCard(element: HTMLElement, task: TaskInfo, plugin: Tas
             // Update existing priority dot
             existingPriorityDot.style.borderColor = priorityConfig.color;
             existingPriorityDot.setAttribute('aria-label', `Priority: ${priorityConfig.label}`);
+
+            // Remove old event listener and add new one with updated task data
+            const newPriorityDot = existingPriorityDot.cloneNode(true) as HTMLElement;
+            newPriorityDot.addEventListener('click', (e) => {
+                e.stopPropagation(); // Don't trigger card click
+                const menu = new PriorityContextMenu({
+                    currentValue: task.priority,
+                    onSelect: async (newPriority) => {
+                        try {
+                            await plugin.updateTaskProperty(task, 'priority', newPriority);
+                        } catch (error) {
+                            console.error('Error updating priority:', error);
+                            new Notice('Failed to update priority');
+                        }
+                    },
+                    plugin: plugin
+                });
+                menu.show(e as MouseEvent);
+            });
+            existingPriorityDot.replaceWith(newPriorityDot);
         }
     } else if (existingPriorityDot) {
         // Remove priority dot if it shouldn't be visible or task no longer has priority
@@ -1403,6 +1425,7 @@ export function updateTaskCard(element: HTMLElement, task: TaskInfo, plugin: Tas
         const frequencyDisplay = getRecurrenceDisplayText(task.recurrence);
         existingRecurringIndicator.setAttribute('aria-label', `Recurring: ${frequencyDisplay}`);
     }
+
 
     // Update reminder indicator
     const existingReminderIndicator = element.querySelector('.task-card__reminder-indicator');

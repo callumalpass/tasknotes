@@ -7,7 +7,7 @@ import { RecurrenceContextMenu } from '../components/RecurrenceContextMenu';
 import { createTaskClickHandler, createTaskHoverHandler } from '../utils/clickHandlers';
 import { TimeblockInfoModal } from '../modals/TimeblockInfoModal';
 import { format, startOfDay, endOfDay } from 'date-fns';
-import { Calendar } from '@fullcalendar/core';
+import { Calendar, EventApi, EventInput } from '@fullcalendar/core';
 import { 
     createDailyNote, 
     getDailyNote, 
@@ -23,7 +23,6 @@ import TaskNotesPlugin from '../main';
 import {
     ADVANCED_CALENDAR_VIEW_TYPE,
     EVENT_DATA_CHANGED,
-    EVENT_TASK_UPDATED,
     EVENT_DATE_CHANGED,
     EVENT_TIMEBLOCKING_TOGGLED,
     TaskInfo,
@@ -38,6 +37,7 @@ import { TaskEditModal } from '../modals/TaskEditModal';
 import { UnscheduledTasksSelectorModal, ScheduleTaskOptions } from '../modals/UnscheduledTasksSelectorModal';
 import { TimeblockCreationModal } from '../modals/TimeblockCreationModal';
 import { FilterBar } from '../ui/FilterBar';
+import { OptimizedView, initializeViewPerformance, cleanupViewPerformance, shouldRefreshForDateBasedView } from '../utils/viewOptimizations';
 import {
     hasTimeComponent,
     getDatePart,
@@ -84,8 +84,11 @@ interface CalendarEvent {
     };
 }
 
-export class AdvancedCalendarView extends ItemView {
+export class AdvancedCalendarView extends ItemView implements OptimizedView {
     plugin: TaskNotesPlugin;
+    viewPerformanceService?: import('../services/ViewPerformanceService').ViewPerformanceService;
+    performanceConfig?: import('../services/ViewPerformanceService').ViewPerformanceConfig;
+
     private calendar: Calendar | null = null;
     private listeners: EventRef[] = [];
     private functionListeners: (() => void)[] = [];
@@ -100,8 +103,16 @@ export class AdvancedCalendarView extends ItemView {
     
     // Track if we're waiting for a recurring task update
     private pendingRecurringUpdate = false;
-    
-    
+
+    // Legacy performance state (will be removed after migration)
+    private lastRefreshTime = 0;
+    private updateDebounceTimer: number | null = null;
+
+    // Event source refresh debouncing to prevent FullCalendar corruption
+    private eventSourceRefreshTimer: number | null = null;
+    private pendingRefreshTasks = new Set<string>();
+
+
     // View toggles (keeping for calendar-specific display options)
     private showScheduled: boolean;
     private showDue: boolean;
@@ -288,7 +299,6 @@ export class AdvancedCalendarView extends ItemView {
         });
         
         this.filterBar.on('manageViews', () => {
-            console.log('Manage views requested');
         });
         
         // Listen for filter changes
@@ -470,7 +480,6 @@ export class AdvancedCalendarView extends ItemView {
             center: isNarrowView ? '' : 'title', // Hide title in narrow views
             right: 'refreshICS multiMonthYear,dayGridMonth,timeGridWeek,timeGridCustom,timeGridDay,listWeek'
         };
-        console.log('Header toolbar config:', toolbarConfig);
         return toolbarConfig;
     }
 
@@ -480,12 +489,10 @@ export class AdvancedCalendarView extends ItemView {
                 text: 'Refresh',
                 hint: 'Refresh Calendar Subscriptions',
                 click: () => {
-                    console.log('Refresh ICS button clicked!');
                     this.handleRefreshClick();
                 }
             }
         };
-        console.log('Custom buttons:', customButtons);
         return customButtons;
     }
 
@@ -563,8 +570,6 @@ export class AdvancedCalendarView extends ItemView {
         const customButtons = this.getCustomButtons();
         const headerToolbar = this.getHeaderToolbarConfig();
         
-        console.log('Initializing calendar with customButtons:', customButtons);
-        console.log('Initializing calendar with headerToolbar:', headerToolbar);
         
         this.calendar = new Calendar(calendarEl as HTMLElement, {
             plugins: [dayGridPlugin, timeGridPlugin, multiMonthPlugin, listPlugin, interactionPlugin],
@@ -914,7 +919,86 @@ export class AdvancedCalendarView extends ItemView {
                 console.error('Error getting timeblock events:', error);
             }
         }
-        
+
+        // Validate all events have proper structure to prevent FullCalendar crashes
+        const validEvents = events.filter(event => {
+            if (!event.extendedProps) {
+                console.error(`[AdvancedCalendarView] Event ${event.id} missing extendedProps, filtering out:`, event);
+                return false;
+            }
+            if (!event.id) {
+                console.error(`[AdvancedCalendarView] Event missing ID, filtering out:`, event);
+                return false;
+            }
+            return true;
+        });
+
+        if (validEvents.length !== events.length) {
+            console.error(`[AdvancedCalendarView] Filtered out ${events.length - validEvents.length} malformed events`);
+        }
+
+        // Generated events for calendar display
+        return validEvents;
+    }
+
+    /**
+     * Generate calendar events for a single task (extracted from getCalendarEvents)
+     * This method is used for selective updates to avoid regenerating all events
+     */
+    private async generateEventsForTask(task: TaskInfo): Promise<CalendarEvent[]> {
+        const events: CalendarEvent[] = [];
+
+        try {
+            // Get calendar's current visible range for recurring task generation
+            const calendarView = this.calendar?.view;
+            const today = getTodayLocal();
+            const rawVisibleStart = calendarView?.activeStart || startOfDay(today);
+            const rawVisibleEnd = calendarView?.activeEnd || endOfDay(today);
+            const { utcStart: visibleStart, utcEnd: visibleEnd } =
+                normalizeCalendarBoundariesToUTC(rawVisibleStart, rawVisibleEnd);
+
+            // Apply same logic as getCalendarEvents() but for single task
+            if (task.recurrence) {
+                // Recurring tasks: require scheduled date
+                if (task.scheduled && this.showRecurring) {
+                    const recurringEvents = this.generateRecurringTaskInstances(
+                        task, visibleStart, visibleEnd
+                    );
+                    events.push(...recurringEvents);
+                }
+            } else {
+                // Non-recurring tasks: show on scheduled date OR due date
+                const hasScheduled = !!task.scheduled;
+                const hasDue = !!task.due;
+
+                // Skip if neither scheduled nor due date exists
+                if (!hasScheduled && !hasDue) {
+                    return events;
+                }
+
+                // Add scheduled event if task has scheduled date
+                if (this.showScheduled && hasScheduled) {
+                    const scheduledEvent = this.createScheduledEvent(task);
+                    if (scheduledEvent) events.push(scheduledEvent);
+                }
+
+                // Add due event if task has due date
+                if (this.showDue && hasDue) {
+                    const dueEvent = this.createDueEvent(task);
+                    if (dueEvent) events.push(dueEvent);
+                }
+            }
+
+            // Add time entry events
+            if (this.showTimeEntries && task.timeEntries) {
+                const timeEvents = this.createTimeEntryEvents(task);
+                events.push(...timeEvents);
+            }
+
+        } catch (error) {
+            console.error(`Error generating events for task ${task.path}:`, error);
+        }
+
         return events;
     }
 
@@ -1408,6 +1492,10 @@ export class AdvancedCalendarView extends ItemView {
     }
 
     handleEventClick(clickInfo: any) {
+        if (!clickInfo?.event?.extendedProps) {
+            console.warn('[AdvancedCalendarView] Event clicked without extendedProps');
+            return;
+        }
         const { taskInfo, icsEvent, timeblock, eventType, subscriptionName } = clickInfo.event.extendedProps;
         const jsEvent = clickInfo.jsEvent;
 
@@ -1453,14 +1541,18 @@ export class AdvancedCalendarView extends ItemView {
     }
 
     async handleEventDrop(dropInfo: any) {
-        const { 
-            taskInfo, 
-            timeblock, 
-            eventType, 
-            isRecurringInstance, 
-            isNextScheduledOccurrence, 
-            isPatternInstance, 
-            originalDate 
+        if (!dropInfo?.event?.extendedProps) {
+            console.warn('[AdvancedCalendarView] Event dropped without extendedProps');
+            return;
+        }
+        const {
+            taskInfo,
+            timeblock,
+            eventType,
+            isRecurringInstance,
+            isNextScheduledOccurrence,
+            isPatternInstance,
+            originalDate
         } = dropInfo.event.extendedProps;
         
         if (eventType === 'timeEntry' || eventType === 'ics') {
@@ -1497,12 +1589,9 @@ export class AdvancedCalendarView extends ItemView {
                 await this.plugin.taskService.updateProperty(taskInfo, 'scheduled', newDateString);
                 new Notice('Rescheduled next occurrence. This does not change the recurrence pattern.');
                 
-                // The refresh will happen automatically via EVENT_TASK_UPDATED listener
-                
             } else if (isPatternInstance) {
                 // Dragging Pattern Instances: Updates DTSTART in RRULE and recalculates task.scheduled
                 await this.handlePatternInstanceDrop(taskInfo, newStart, allDay);
-                // Note: handlePatternInstanceDrop already calls refreshEvents()
                 
             } else if (isRecurringInstance) {
                 // Legacy support: Handle old-style recurring instances (time changes only)
@@ -1519,8 +1608,6 @@ export class AdvancedCalendarView extends ItemView {
                 }
                 
                 await this.plugin.taskService.updateProperty(taskInfo, 'scheduled', updatedScheduled);
-                
-                // The refresh will happen automatically via EVENT_TASK_UPDATED listener
                 
             } else {
                 // Handle non-recurring events normally
@@ -1541,12 +1628,7 @@ export class AdvancedCalendarView extends ItemView {
             
             // For recurring tasks, we need special handling
             if (isRecurringUpdate) {
-                console.log('Recurring task drop completed', { 
-                    taskPath: taskInfo.path,
-                    newStart: newStart?.toISOString(),
-                    isPatternInstance,
-                    isNextScheduledOccurrence
-                });
+                // Recurring task drop completed - ViewPerformanceService handles update
                 
                 // The EVENT_TASK_UPDATED will trigger refreshEvents()
                 // But on slow systems, we need to wait longer for file writes to complete
@@ -1555,32 +1637,17 @@ export class AdvancedCalendarView extends ItemView {
                 
                 // Use a longer delay for slow systems
                 setTimeout(async () => {
-                    console.log('Checking if task data has been updated...');
                     
                     // Get fresh task data to verify the update went through
                     const freshTask = await this.plugin.cacheManager.getTaskInfo(taskInfo.path);
                     
                     if (freshTask && freshTask.recurrence !== originalRecurrence) {
-                        console.log('Task data confirmed updated, refreshing calendar');
-                        
-                        // Remove all existing events for this task to ensure clean state
-                        if (this.calendar) {
-                            const allEvents = this.calendar.getEvents();
-                            const taskEvents = allEvents.filter(event => 
-                                event.extendedProps.taskInfo?.path === taskInfo.path
-                            );
-                            
-                            taskEvents.forEach(event => event.remove());
-                            
-                            // Force a complete refresh
-                            await this.refreshEvents();
-                        }
+
+                        // Don't do manual refresh - let the centralized service handle it
+                        // The updateProperty call already triggered EVENT_TASK_UPDATED
                     } else {
-                        console.log('Task data not yet updated, waiting longer...');
-                        // Try again after another delay
-                        setTimeout(async () => {
-                            await this.refreshEvents();
-                        }, 1000);
+
+                        // Don't force additional refreshes - trust the centralized system
                     }
                 }, 1500); // 1.5 second initial delay for slow systems
             }
@@ -1682,6 +1749,10 @@ export class AdvancedCalendarView extends ItemView {
     }
 
     async handleEventResize(resizeInfo: any) {
+        if (!resizeInfo?.event?.extendedProps) {
+            console.warn('[AdvancedCalendarView] Event resized without extendedProps');
+            return;
+        }
         const { taskInfo, timeblock, eventType, originalDate } = resizeInfo.event.extendedProps;
         
         if (eventType === 'timeblock') {
@@ -1807,21 +1878,22 @@ export class AdvancedCalendarView extends ItemView {
             
             // Update the task's scheduled date
             await this.plugin.taskService.updateProperty(task, 'scheduled', scheduledDate);
-            
-            
+
+
             // Show success feedback
             const timeFormat = this.plugin.settings.calendarViewSettings.timeFormat;
             const dateFormat = dropInfo.allDay ? 'MMM d, yyyy' : (timeFormat === '12' ? 'MMM d, yyyy h:mm a' : 'MMM d, yyyy HH:mm');
             new Notice(`Task "${task.title}" scheduled for ${format(dropDate, dateFormat)}`);
-            
+
             // Remove any event that FullCalendar might have created from the drop
             if (dropInfo.draggedEl) {
                 // Remove the dragged element to prevent it from being rendered as an event
                 dropInfo.draggedEl.remove();
             }
-            
-            // Refresh calendar to show the new event with proper task data
-            this.refreshEvents();
+
+            // Don't do full refresh - let the centralized ViewPerformanceService handle the update
+            // The updateProperty call above will trigger an EVENT_TASK_UPDATED that will be processed efficiently
+            // Task drag-drop completed - ViewPerformanceService handles update
             
         } catch (error) {
             console.error('Error handling external drop:', error);
@@ -1844,12 +1916,24 @@ export class AdvancedCalendarView extends ItemView {
     }
 
     handleEventDidMount(arg: any) {
-        // Check if we have extended props
-        if (!arg.event.extendedProps) {
+        // Check if we have the event and extended props
+        if (!arg?.event?.extendedProps) {
+            console.warn('[AdvancedCalendarView] Event mounted without extendedProps:', arg?.event);
             return;
         }
 
-        const { taskInfo, icsEvent, timeblock, eventType, isCompleted, isRecurringInstance, instanceDate, subscriptionName } = arg.event.extendedProps;
+        // Safely destructure with defaults to prevent runtime errors
+        const extendedProps = arg.event.extendedProps || {};
+        const {
+            taskInfo,
+            icsEvent,
+            timeblock,
+            eventType,
+            isCompleted = false,
+            isRecurringInstance = false,
+            instanceDate,
+            subscriptionName
+        } = extendedProps;
 
         // Check if we're in a list view
         const isListView = arg.view.type.startsWith('list');
@@ -1950,7 +2034,7 @@ export class AdvancedCalendarView extends ItemView {
         }
         
         // Apply visual styling based on event type and recurrence status
-        const { isNextScheduledOccurrence, isPatternInstance } = arg.event.extendedProps;
+        const { isNextScheduledOccurrence = false, isPatternInstance = false } = extendedProps;
         
         if (isNextScheduledOccurrence) {
             // Next scheduled occurrence: Normal task styling (solid border, full opacity)
@@ -2023,11 +2107,11 @@ export class AdvancedCalendarView extends ItemView {
                 
                 if (eventType === 'timeEntry') {
                     // Special context menu for time entries
-                    const { timeEntryIndex } = arg.event.extendedProps;
+                    const { timeEntryIndex } = extendedProps;
                     this.showTimeEntryContextMenu(jsEvent, taskInfo, timeEntryIndex);
                 } else {
                     // Standard task context menu for other event types
-                    const { isNextScheduledOccurrence, isPatternInstance } = arg.event.extendedProps;
+                    const { isNextScheduledOccurrence, isPatternInstance } = extendedProps;
                     
                     let targetDate: Date;
                     if ((isRecurringInstance || isNextScheduledOccurrence || isPatternInstance) && instanceDate) {
@@ -2074,16 +2158,13 @@ export class AdvancedCalendarView extends ItemView {
         });
         this.listeners.push(dateChangeListener);
         
-        // Listen for task updates
-        const taskUpdateListener = this.plugin.emitter.on(EVENT_TASK_UPDATED, async (eventData: any) => {
-            this.refreshEvents();
-            // Update FilterBar options when tasks are updated (may have new properties, contexts, etc.)
-            if (this.filterBar) {
-                const updatedFilterOptions = await this.plugin.filterService.getFilterOptions();
-                this.filterBar.updateFilterOptions(updatedFilterOptions);
-            }
+        // Initialize centralized performance optimizations
+        initializeViewPerformance(this, {
+            viewId: ADVANCED_CALENDAR_VIEW_TYPE,
+            debounceDelay: 200, // Shorter delay since we're using efficient event source refresh
+            maxBatchSize: 20,   // Higher batch size since source refresh handles many events efficiently
+            changeDetectionEnabled: true
         });
-        this.listeners.push(taskUpdateListener);
         
         // Listen for filter service data changes
         const filterDataListener = this.plugin.filterService.on('data-changed', () => {
@@ -2149,7 +2230,7 @@ export class AdvancedCalendarView extends ItemView {
      * Enhance list view task events to look like task cards
      */
     private enhanceListViewTaskEvent(arg: any, taskInfo: TaskInfo, eventType: string, isCompleted: boolean): void {
-        const { el, event } = arg;
+        const { el } = arg;
 
         // Add task card classes
         el.classList.add('fc-task-event', 'fc-list-task-card');
@@ -2172,7 +2253,6 @@ export class AdvancedCalendarView extends ItemView {
 
         // Find the main event content elements
         const titleElement = el.querySelector('.fc-list-event-title, .fc-event-title');
-        const timeElement = el.querySelector('.fc-list-event-time, .fc-event-time');
         const graphicElement = el.querySelector('.fc-list-event-graphic');
 
         // Add status-colored dot to the graphic column
@@ -2529,16 +2609,106 @@ export class AdvancedCalendarView extends ItemView {
         // Status dots are visual indicators only - use context menu for status changes
     }
 
-    async refreshEvents() {
-        if (this.calendar) {
-            // For a complete refresh, remove all event sources and re-add them
-            // This ensures FullCalendar doesn't cache any stale positions
-            this.calendar.removeAllEventSources();
-            this.calendar.addEventSource({
-                events: this.getCalendarEvents.bind(this)
-            });
+    // OptimizedView interface implementation
+    async updateForTask(taskPath: string, operation: 'update' | 'delete' | 'create'): Promise<void> {
+        if (!this.calendar) return;
+
+        try {
+            // Processing update using event source refresh
+
+            // Add task to pending refresh set and debounce to prevent rapid refreshes
+            this.pendingRefreshTasks.add(taskPath);
+            this.scheduleEventSourceRefresh();
+
+        } catch (error) {
+            console.error(`[AdvancedCalendarView] Error in event source refresh for ${taskPath}:`, error);
+            // Fallback to full refresh
+            await this.refreshEvents(false);
         }
     }
+
+    async refresh(force = false): Promise<void> {
+        await this.refreshEvents(force);
+    }
+
+    shouldRefreshForTask(originalTask: TaskInfo | undefined, updatedTask: TaskInfo): boolean {
+        return shouldRefreshForDateBasedView(originalTask, updatedTask);
+    }
+
+    // Debounced event source refresh to prevent FullCalendar corruption from rapid updates
+    private scheduleEventSourceRefresh(): void {
+        // Clear existing timer
+        if (this.eventSourceRefreshTimer) {
+            clearTimeout(this.eventSourceRefreshTimer);
+        }
+
+        // Schedule debounced refresh
+        this.eventSourceRefreshTimer = window.setTimeout(() => {
+            this.performEventSourceRefresh();
+        }, 150); // Short delay to batch rapid changes
+    }
+
+    private async performEventSourceRefresh(): Promise<void> {
+        if (!this.calendar) return;
+
+        const tasksToRefresh = Array.from(this.pendingRefreshTasks);
+        this.pendingRefreshTasks.clear();
+        this.eventSourceRefreshTimer = null;
+
+        try {
+            const eventSources = this.calendar.getEventSources();
+            if (eventSources.length > 0) {
+                // Refresh the main event source - this will regenerate all events cleanly
+
+                eventSources.forEach(source => {
+                    source.refetch();
+                });
+            } else {
+                // Fallback to full refresh if no event sources
+                await this.refreshEvents(false);
+            }
+        } catch (refetchError) {
+            console.error(`[AdvancedCalendarView] Error during event source refetch:`, refetchError);
+            // Fallback to full refresh if refetch fails
+            await this.refreshEvents(false);
+        }
+    }
+
+    // Simplified approach: Use FullCalendar's event source system with proper debouncing
+
+    async refreshEvents(force = false) {
+        if (this.calendar) {
+            try {
+                // Force refresh - centralized service handles caching
+
+                // For a complete refresh, remove all event sources and re-add them
+                // This ensures FullCalendar doesn't cache any stale positions
+                this.calendar.removeAllEventSources();
+                this.calendar.addEventSource({
+                    events: this.getCalendarEvents.bind(this)
+                });
+
+                // Update tracking variables
+                this.lastRefreshTime = Date.now();
+
+                // Update tracking - centralized service handles change detection
+
+            } catch (error) {
+                console.error('Calendar refresh failed:', error);
+                // Error handling - centralized service will handle recovery
+                throw error;
+            }
+        }
+    }
+
+
+
+
+
+
+
+
+    // Old performance methods removed - now using centralized ViewPerformanceService
 
     async onClose() {
         // Clean up resize handling
@@ -2546,12 +2716,28 @@ export class AdvancedCalendarView extends ItemView {
             this.resizeObserver.disconnect();
             this.resizeObserver = null;
         }
-        
+
         if (this.resizeTimeout) {
             window.clearTimeout(this.resizeTimeout);
             this.resizeTimeout = null;
         }
-        
+
+        // Clean up centralized performance optimizations
+        cleanupViewPerformance(this);
+
+        // Clean up debounce timers
+        if (this.updateDebounceTimer) {
+            clearTimeout(this.updateDebounceTimer);
+            this.updateDebounceTimer = null;
+        }
+
+        if (this.eventSourceRefreshTimer) {
+            clearTimeout(this.eventSourceRefreshTimer);
+            this.eventSourceRefreshTimer = null;
+        }
+
+        this.pendingRefreshTasks.clear();
+
         // Clean up function listeners
         this.functionListeners.forEach(unsubscribe => unsubscribe());
         this.functionListeners = [];
@@ -2592,8 +2778,9 @@ export class AdvancedCalendarView extends ItemView {
             plugin: this.plugin,
             subscriptionName: subscriptionName,
             onUpdate: () => {
-                // Refresh the calendar to show any newly created/linked notes
-                this.refreshEvents();
+                // For ICS events, we might need manual refresh since they're not managed by ViewPerformanceService
+                // But let's try trusting the system first
+                // Could add selective refresh logic here if needed
             }
         });
         
@@ -2606,8 +2793,7 @@ export class AdvancedCalendarView extends ItemView {
             plugin: this.plugin,
             targetDate: targetDate,
             onUpdate: () => {
-                // Refresh the calendar to show any updates
-                this.refreshEvents();
+                // Don't refresh manually - ViewPerformanceService will handle task updates
             }
         });
         
@@ -2691,7 +2877,6 @@ export class AdvancedCalendarView extends ItemView {
                         if (confirmed) {
                             await this.plugin.taskService.deleteTimeEntry(taskInfo, timeEntryIndex);
                             new Notice('Time entry deleted');
-                            this.refreshEvents();
                         }
                     } catch (error) {
                         console.error('Error deleting time entry:', error);

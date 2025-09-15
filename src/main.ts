@@ -52,6 +52,7 @@ import { StatusManager } from './services/StatusManager';
 import { PriorityManager } from './services/PriorityManager';
 import { TaskService } from './services/TaskService';
 import { FilterService } from './services/FilterService';
+import { ViewPerformanceService } from './services/ViewPerformanceService';
 import { AutoArchiveService } from './services/AutoArchiveService';
 import { ViewStateManager } from './services/ViewStateManager';
 import { createTaskLinkOverlay, dispatchTaskUpdate } from './editor/TaskLinkOverlay';
@@ -133,6 +134,7 @@ export default class TaskNotesPlugin extends Plugin {
 	projectSubtasksService: ProjectSubtasksService;
 	expandedProjectsService: ExpandedProjectsService;
 	autoArchiveService: AutoArchiveService;
+	viewPerformanceService: ViewPerformanceService;
 
 	// Editor services
 	taskLinkDetectionService?: import('./services/TaskLinkDetectionService').TaskLinkDetectionService;
@@ -229,6 +231,7 @@ export default class TaskNotesPlugin extends Plugin {
 		this.migrationService = new MigrationService(this.app);
 		this.statusBarService = new StatusBarService(this);
 		this.notificationService = new NotificationService(this);
+		this.viewPerformanceService = new ViewPerformanceService(this);
 
 		// Connect AutoArchiveService to TaskService for status-based auto-archiving
 		this.taskService.setAutoArchiveService(this.autoArchiveService);
@@ -410,6 +413,12 @@ export default class TaskNotesPlugin extends Plugin {
 			// Initialize notification service
 			await this.notificationService.initialize();
 
+			// Build project status cache for better TaskCard performance
+			await this.projectSubtasksService.buildProjectStatusCache();
+
+			// Ensure MinimalNativeCache project indexes are warmed up
+			await this.warmupProjectIndexes();
+
 			// Initialize and start auto-archive service
 			await this.autoArchiveService.start();
 
@@ -539,6 +548,29 @@ export default class TaskNotesPlugin extends Plugin {
 				console.error('Error during lazy service initialization:', error);
 			}
 		}, 10); // Small delay to ensure startup completes first
+	}
+
+	/**
+	 * Warmup project indexes in MinimalNativeCache for better performance
+	 */
+	private async warmupProjectIndexes(): Promise<void> {
+		try {
+			// Simple approach: just trigger the lazy index building once
+			// This is much more efficient than processing individual files
+			const warmupStartTime = Date.now();
+
+			// Trigger index building with a single call - this will process all files internally
+			this.cacheManager.getTasksForDate(new Date().toISOString().split('T')[0]);
+
+			const duration = Date.now() - warmupStartTime;
+			// Only log slow warmup for debugging large vaults
+			if (duration > 2000) {
+				console.log(`[TaskNotes] Project indexes warmed up in ${duration}ms`);
+			}
+
+		} catch (error) {
+			console.error('[TaskNotes] Error during project index warmup:', error);
+		}
 	}
 
 	/**
@@ -878,6 +910,11 @@ export default class TaskNotesPlugin extends Plugin {
 		// Clean up FilterService
 		if (this.filterService) {
 			this.filterService.cleanup();
+		}
+
+		// Clean up ViewPerformanceService
+		if (this.viewPerformanceService) {
+			this.viewPerformanceService.destroy();
 		}
 
 		// Clean up AutoArchiveService

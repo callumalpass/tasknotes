@@ -571,7 +571,7 @@ export class TaskService {
                     taskPath: task.path
                 });
             }
-            
+
             // Step 4: Notify system of change
             try {
                 this.plugin.emitter.trigger(EVENT_TASK_UPDATED, {
@@ -586,7 +586,7 @@ export class TaskService {
                 });
                 // Event emission errors shouldn't break the operation
             }
-            
+
             // Trigger webhooks for property updates
             if (this.webhookNotifier) {
                 try {

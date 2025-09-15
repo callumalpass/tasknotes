@@ -14,6 +14,7 @@ import { addDays, endOfWeek, format, isSameDay, startOfWeek } from 'date-fns';
 import { convertUTCToLocalCalendarDate, createUTCDateFromLocalCalendarDate, formatDateForStorage, getTodayLocal, isTodayUTC } from '../utils/dateUtils';
 import { createICSEventCard, updateICSEventCard } from '../ui/ICSCard';
 import { createTaskCard, refreshParentTaskSubtasks, updateTaskCard } from '../ui/TaskCard';
+import { initializeViewPerformance, cleanupViewPerformance, shouldRefreshForDateBasedView, OptimizedView } from '../utils/viewOptimizations';
 
 import { FilterBar } from '../ui/FilterBar';
 import { FilterHeading } from '../ui/FilterHeading';
@@ -22,7 +23,6 @@ import { GroupCountUtils } from '../utils/GroupCountUtils';
 import TaskNotesPlugin from '../main';
 import { createNoteCard } from '../ui/NoteCard';
 
-// No helper functions needed from helpers
 
 
 
@@ -30,10 +30,14 @@ import { createNoteCard } from '../ui/NoteCard';
 
 
 
-
-export class AgendaView extends ItemView {
+export class AgendaView extends ItemView implements OptimizedView {
     plugin: TaskNotesPlugin;
-    
+
+    // Performance optimization properties
+    viewPerformanceService?: import('../services/ViewPerformanceService').ViewPerformanceService;
+    performanceConfig?: import('../services/ViewPerformanceService').ViewPerformanceConfig;
+    private taskElements = new Map<string, HTMLElement>();
+
     // View settings
     private daysToShow = 7;
     private groupByDate = true;
@@ -103,23 +107,8 @@ export class AgendaView extends ItemView {
         });
         this.listeners.push(dateListener);
         
-        // Listen for individual task updates for granular DOM updates
-        const taskUpdateListener = this.plugin.emitter.on(EVENT_TASK_UPDATED, async ({ path, originalTask, updatedTask }) => {
-            // Check if any parent task cards need their subtasks refreshed
-            if (updatedTask) {
-                await refreshParentTaskSubtasks(updatedTask, this.plugin, this.contentEl);
-            }
-            
-            // For agenda view, since items are organized by date and can move between days,
-            // it's safer to do a refresh rather than try to update in place
-            this.refresh();
-            // Update FilterBar options when tasks are updated (may have new properties, contexts, etc.)
-            if (this.filterBar) {
-                const updatedFilterOptions = await this.plugin.filterService.getFilterOptions();
-                this.filterBar.updateFilterOptions(updatedFilterOptions);
-            }
-        });
-        this.listeners.push(taskUpdateListener);
+        // Performance optimization: Use ViewPerformanceService instead of direct task listeners
+        // The service will handle debouncing and selective updates
         
         // Listen for filter service data changes
         const filterDataListener = this.plugin.filterService.on('data-changed', () => {
@@ -175,15 +164,26 @@ export class AgendaView extends ItemView {
         
         // Hide loading indicator
         this.hideLoadingIndicator();
-        
+
+        // Initialize performance optimizations
+        initializeViewPerformance(this, {
+            viewId: AGENDA_VIEW_TYPE,
+            debounceDelay: 150, // Slightly longer delay for agenda since it's more complex
+            maxBatchSize: 3,    // Lower batch size since agenda items can move between days
+            changeDetectionEnabled: true
+        });
+
         // Register keyboard navigation
     }
     
     async onClose() {
+        // Clean up performance optimizations
+        cleanupViewPerformance(this);
+
         // Remove event listeners
         this.listeners.forEach(listener => this.plugin.emitter.offref(listener));
         this.functionListeners.forEach(unsubscribe => unsubscribe());
-        
+
         // Clean up FilterBar
         if (this.filterBar) {
             this.filterBar.destroy();
@@ -195,7 +195,10 @@ export class AgendaView extends ItemView {
             this.filterHeading.destroy();
             this.filterHeading = null;
         }
-        
+
+        // Clean up task elements tracking
+        this.taskElements.clear();
+
         // Clean up
         this.contentEl.empty();
     }
@@ -715,8 +718,9 @@ export class AgendaView extends ItemView {
      * Render grouped agenda using DOMReconciler for efficient updates
      */
     private renderGroupedAgendaWithReconciler(container: HTMLElement, agendaData: Array<{date: Date, tasks: TaskInfo[], notes: NoteInfo[], ics: import('../types').ICSEvent[]}>) {
-        // Clear container and create day sections
+        // Clear container and task elements tracking
         container.empty();
+        this.taskElements.clear();
 
         let hasAnyItems = false;
         agendaData.forEach(dayData => {
@@ -813,6 +817,9 @@ export class AgendaView extends ItemView {
      * Render flat agenda using DOMReconciler for efficient updates
      */
     private renderFlatAgendaWithReconciler(container: HTMLElement, agendaData: Array<{date: Date, tasks: TaskInfo[], notes: NoteInfo[], ics: import('../types').ICSEvent[]}>) {
+        // Clear task elements tracking
+        this.taskElements.clear();
+
         // Collect all items with their dates
         const allItems: Array<{type: 'task' | 'note' | 'ics', item: TaskInfo | NoteInfo | import('../types').ICSEvent, date: Date}> = [];
         
@@ -1022,6 +1029,8 @@ export class AgendaView extends ItemView {
      */
     private createTaskItemElement(task: TaskInfo, date?: Date): HTMLElement {
         const visibleProperties = this.getCurrentVisibleProperties();
+
+
         const taskCard = createTaskCard(task, this.plugin, visibleProperties, {
             showDueDate: !this.groupByDate,
             showCheckbox: false,
@@ -1030,15 +1039,21 @@ export class AgendaView extends ItemView {
             groupByDate: this.groupByDate,
             targetDate: date
         });
-        
-        // Add completion status class if task is completed
-        if (this.plugin.statusManager.isCompletedStatus(task.status)) {
-            taskCard.classList.add('done');
+
+        // Track task element for selective updates
+        if (task.path) {
+            // For recurring tasks, include the date in the key to avoid conflicts between instances
+            const elementKey = task.recurrence && date
+                ? `${task.path}:${formatDateForStorage(date)}`
+                : task.path;
+            this.taskElements.set(elementKey, taskCard);
         }
-        
+
+        // TaskCard handles its own completion styling with proper effective status
+
         // Add drag functionality
         this.addDragHandlers(taskCard, task);
-        
+
         return taskCard;
     }
     
@@ -1251,9 +1266,81 @@ export class AgendaView extends ItemView {
             this.updateFilterHeading();
         }
     }
-    
-    
-    
+
+    // OptimizedView interface implementation
+    shouldRefreshForTask(originalTask: TaskInfo | undefined, updatedTask: TaskInfo): boolean {
+        return shouldRefreshForDateBasedView(originalTask, updatedTask);
+    }
+
+    async updateForTask(taskPath: string, operation: 'update' | 'delete' | 'create'): Promise<void> {
+        // For AgendaView, selective updates are complex due to date-based grouping
+        // Tasks can move between days, so we use a simplified approach:
+        // For recurring tasks, always do full refresh since they can appear on multiple dates
+        // For regular tasks, try selective update if the task is currently visible
+
+        // Check if this is a recurring task by looking at the task info
+        const taskInfo = await this.plugin.cacheManager.getTaskInfo(taskPath);
+        if (taskInfo?.recurrence) {
+            // Recurring tasks: always do full refresh to avoid date-instance conflicts
+            await this.refresh();
+            return;
+        }
+
+        const taskElement = this.taskElements.get(taskPath);
+
+        switch (operation) {
+            case 'update':
+                if (taskElement) {
+                    const updatedTask = await this.plugin.cacheManager.getTaskInfo(taskPath);
+                    if (updatedTask) {
+                        try {
+                            // Get current visible properties
+                            const visibleProperties = this.plugin.settings.defaultVisibleProperties || ['due', 'scheduled'];
+
+                            updateTaskCard(taskElement, updatedTask, this.plugin, visibleProperties, {
+                                showDueDate: true,
+                                showCheckbox: false,
+                                showArchiveButton: true,
+                                showTimeTracking: true
+                            });
+
+                            // Update animation
+                            taskElement.classList.add('task-card--updated');
+                            window.setTimeout(() => {
+                                taskElement.classList.remove('task-card--updated');
+                            }, 1000);
+
+                            console.log(`[AgendaView] Selectively updated task: ${taskPath}`);
+                        } catch (error) {
+                            console.error('[AgendaView] Error in selective update:', error);
+                            // Fall back to full refresh
+                            await this.refresh();
+                        }
+                    } else {
+                        // Task was deleted, remove from tracking and DOM
+                        taskElement.remove();
+                        this.taskElements.delete(taskPath);
+                    }
+                } else {
+                    // Task not currently visible - might need to be added, refresh to be safe
+                    await this.refresh();
+                }
+                break;
+
+            case 'delete':
+                if (taskElement) {
+                    taskElement.remove();
+                    this.taskElements.delete(taskPath);
+                }
+                break;
+
+            case 'create':
+                // New tasks might appear in any date section, refresh to be safe
+                await this.refresh();
+                break;
+        }
+    }
+
     /**
      * Create day header element with chevron and click handlers
      */

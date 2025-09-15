@@ -10,10 +10,15 @@ import {
     SavedView
 } from '../types';
 import { createTaskCard, updateTaskCard, refreshParentTaskSubtasks } from '../ui/TaskCard';
+import { initializeViewPerformance, cleanupViewPerformance, OptimizedView, selectiveUpdateForListView } from '../utils/viewOptimizations';
 import { FilterBar } from '../ui/FilterBar';
 
-export class KanbanView extends ItemView {
+export class KanbanView extends ItemView implements OptimizedView {
     plugin: TaskNotesPlugin;
+
+    // Performance optimization properties
+    viewPerformanceService?: import('../services/ViewPerformanceService').ViewPerformanceService;
+    performanceConfig?: import('../services/ViewPerformanceService').ViewPerformanceConfig;
     
     // UI elements
     private boardContainer: HTMLElement | null = null;
@@ -21,7 +26,7 @@ export class KanbanView extends ItemView {
     // Filter system
     private filterBar: FilterBar | null = null;
     private currentQuery: FilterQuery;
-    private taskElements: Map<string, HTMLElement> = new Map();
+    taskElements: Map<string, HTMLElement> = new Map();
     private previousGroupKey: string | null = null;
 
     // Event listeners
@@ -77,46 +82,8 @@ export class KanbanView extends ItemView {
         });
         this.listeners.push(dataListener);
 
-        const taskUpdateListener = this.plugin.emitter.on(EVENT_TASK_UPDATED, async ({ path, originalTask, updatedTask }) => {
-            if (!path || !updatedTask) return;
-            
-            // Check if any parent task cards need their subtasks refreshed
-            await refreshParentTaskSubtasks(updatedTask, this.plugin, this.contentEl);
-            
-            // Check if this task is currently visible in our view
-            const taskElement = this.taskElements.get(path);
-            if (taskElement) {
-                // Task is visible - update it in place
-                try {
-                    const visibleProperties = this.getCurrentVisibleProperties();
-                    updateTaskCard(taskElement, updatedTask, this.plugin, visibleProperties, {
-                        showDueDate: true,
-                        showCheckbox: false,
-                        showTimeTracking: true
-                    });
-                    
-                    // Add update animation for real user updates
-                    taskElement.classList.add('task-card--updated');
-                    window.setTimeout(() => {
-                        taskElement.classList.remove('task-card--updated');
-                    }, 1000);
-                } catch (error) {
-                    console.error('Error updating task card in kanban:', error);
-                    // Fallback to refresh if update fails
-                    this.refresh();
-                }
-            } else {
-                // Task not currently visible or might have moved columns - refresh
-                this.refresh();
-            }
-            
-            // Update FilterBar options when tasks are updated (may have new properties, contexts, etc.)
-            if (this.filterBar) {
-                const updatedFilterOptions = await this.plugin.filterService.getFilterOptions();
-                this.filterBar.updateFilterOptions(updatedFilterOptions);
-            }
-        });
-        this.listeners.push(taskUpdateListener);
+        // Performance optimization: Use ViewPerformanceService instead of direct task listeners
+        // The service will handle debouncing and selective updates
         
         // Listen for filter service data changes
         const filterDataListener = this.plugin.filterService.on('data-changed', () => {
@@ -144,12 +111,23 @@ export class KanbanView extends ItemView {
         
         this.contentEl.empty();
         await this.render();
+
+        // Initialize performance optimizations
+        initializeViewPerformance(this, {
+            viewId: KANBAN_VIEW_TYPE,
+            debounceDelay: 120, // Slightly longer for kanban since tasks can move between columns
+            maxBatchSize: 5,    // Lower batch since kanban updates are more complex
+            changeDetectionEnabled: true
+        });
     }
 
     async onClose() {
+        // Clean up performance optimizations
+        cleanupViewPerformance(this);
+
         this.listeners.forEach(listener => this.plugin.emitter.offref(listener));
         this.functionListeners.forEach(unsubscribe => unsubscribe());
-        
+
         // Clean up FilterBar
         if (this.filterBar) {
             this.filterBar.destroy();
@@ -167,6 +145,12 @@ export class KanbanView extends ItemView {
             // First render - do full render
             await this.render();
         }
+    }
+
+    // OptimizedView interface implementation
+    async updateForTask(taskPath: string, operation: 'update' | 'delete' | 'create'): Promise<void> {
+        // Use the generic list view selective update implementation
+        await selectiveUpdateForListView(this, taskPath, operation);
     }
 
     async render() {

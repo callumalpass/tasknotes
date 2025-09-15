@@ -161,7 +161,8 @@ export async function renderTaskNotesInBasesView(
   container: HTMLElement,
   taskNotes: TaskInfo[],
   plugin: TaskNotesPlugin,
-  basesContainer?: any
+  basesContainer?: any,
+  taskElementsMap?: Map<string, HTMLElement>
 ): Promise<void> {
   const { createTaskCard } = await import('../ui/TaskCard');
 
@@ -244,6 +245,11 @@ export async function renderTaskNotesInBasesView(
     try {
       const taskCard = createTaskCard(taskInfo, plugin, visibleProperties, cardOptions);
       taskListEl.appendChild(taskCard);
+
+      // Track task elements for selective updates
+      if (taskElementsMap && taskInfo.path) {
+        taskElementsMap.set(taskInfo.path, taskCard);
+      }
     } catch (error) {
       console.warn('[TaskNotes][BasesPOC] Error creating task card:', error);
     }
