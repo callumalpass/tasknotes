@@ -135,9 +135,11 @@ Projects support template variables for automated workflows. The `{{parentNote}}
 
 ### Auto-Archiving
 
-TaskNotes can automatically archive tasks when they are set to a specific status. This feature is useful for keeping your task list clean and organized.
+TaskNotes can automatically archive tasks when they transition into a status that has auto-archiving enabled. This keeps completed work out of your active lists without requiring manual cleanup.
 
-To enable auto-archiving, go to the TaskNotes settings and select the "Automation" tab. From there, you can enable the "Auto-archive tasks" option and select the status that should trigger the archive. You can also configure a timeout period, which will delay the archiving of the task for a specified amount of time.
+Configure auto-archiving per status from **Settings → Task Properties → Task Statuses**. Each status card includes an **Auto-archive** toggle and a **Delay (minutes)** input (1–1440). When you turn the toggle on for a status, any task moved into that status is queued for archiving once the delay elapses. Moving the task to a different status before the timer expires cancels the pending archive automatically.
+
+The auto-archive queue runs in the background and persists across plugin restarts. If TaskNotes was closed while an archive was pending, the task will be archived shortly after the plugin loads again as long as it still matches the configured status.
 
 ## File Management and Templates
 
