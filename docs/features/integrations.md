@@ -19,7 +19,7 @@ TaskNotes integrates with the [Bases plugin](https://github.com/obsidian-communi
 
 To use the Bases integration, you need to have both the TaskNotes and Bases plugins installed and enabled.
 
-1.  **Enable the Integration**: Go to the TaskNotes settings and enable the "Bases Integration" option in the "Integrations" tab.
+1.  **Enable the Integration**: Open **Settings → TaskNotes → Integrations** and enable the "Bases integration" toggle (restart Obsidian after changing this setting).
 2.  **Create a View**: In Bases, create a new view and select either the "TaskNotes Task List" or "TaskNotes Kanban" view.
 
 Your tasks will now be available in the Bases view.

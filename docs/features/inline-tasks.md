@@ -4,7 +4,7 @@ TaskNotes integrates with the Obsidian editor to allow task management directly 
 
 ## Task Link Overlays
 
-When a wikilink to a task note is created, TaskNotes can replace it with an interactive **Task Link Overlay**. This widget displays information about the task, such as its status, priority, and due date. It also allows for actions like changing the status or priority, or opening the task for editing, directly from the note.
+When a wikilink to a task note is created, TaskNotes can replace it with an interactive **Task Link Overlay**. Enable or disable overlays from **Settings → TaskNotes → General → Task link overlay**. The widget displays information about the task, such as its status, priority, and due date, and allows actions like changing the status or priority or opening the task for editing directly from the note.
 
 ![Task Link Overlays in Live Preview mode](../assets/2025-07-17_21-03-55.png)
 
@@ -42,7 +42,7 @@ When you run the command, the current line is used as the title of the new task.
 
 ## Instant Task Conversion
 
-The **Instant Task Conversion** feature transforms lines in your notes into TaskNotes files. This works with both checkbox tasks and regular lines of text. When available, a "convert" button appears next to the content in edit mode. Clicking this button creates a new task note using the line's text as the title and replaces the original line with a link to the new task file.
+The **Instant Task Conversion** feature transforms lines in your notes into TaskNotes files. This works with both checkbox tasks and regular lines of text. Turn the feature on or off from **Settings → TaskNotes → General → Instant task convert**. When enabled, a "convert" button appears next to the content in edit mode. Clicking this button creates a new task note using the line's text as the title and replaces the original line with a link to the new task file.
 
 ### Supported Line Types
 
@@ -169,7 +169,7 @@ The Project Subtasks widget shows the saved view name and completion counts just
 
 TaskNotes includes a **Natural Language Processor (NLP)** that parses task descriptions to extract structured data. This allows for task creation from conversational language, such as "Prepare quarterly report due Friday #work high priority," which would automatically set the due date, tag, and priority.
 
-The NLP engine supports multiple languages, including English, Japanese, German, Russian, and Chinese.
+The NLP engine supports multiple languages, including English, Spanish, French, German, Italian, Japanese, Dutch, Portuguese, Russian, Swedish, Chinese, and Ukrainian.
 
 The NLP engine supports syntax for:
 

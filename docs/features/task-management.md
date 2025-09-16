@@ -126,11 +126,6 @@ TaskCards display visual indicators when tasks are used as projects. These indic
 
 Tasks can have subtasks created directly from their context menu. When viewing a task that serves as a project, you can select "Create subtask" to create a new task automatically linked to the current project.
 
-### Template Integration
-
-Projects support template variables for automated workflows. The `{{parentNote}}` variable inserts the parent note as a properly formatted markdown link. For project organization, it's recommended to use it as a YAML list item (e.g., `project:
-  - {{parentNote}}`) to align with the projects system behavior when creating tasks from project notes through instant conversion.
-
 ## Automation
 
 ### Auto-Archiving
@@ -145,7 +140,8 @@ The auto-archive queue runs in the background and persists across plugin restart
 
 TaskNotes provides a system for managing your task files. You can specify a **Default Tasks Folder** where all new tasks will be created, and you can choose from a variety of **Filename Generation** patterns, including title-based, timestamp-based, and Zettelkasten-style.
 
-TaskNotes also supports **Templates** for both the YAML frontmatter and the body of your task notes. You can use templates to pre-fill common values, add boilerplate text, and create a consistent structure for your tasks. Templates can also include variables, such as `{{title}}`, `{{date}}`, `{{contexts}}`, `{{projects}}`, and `{{parentNote}}` (which inserts the parent note as a properly formatted markdown link), which will be automatically replaced with the appropriate values when a new task is created.
+TaskNotes also supports **Templates** for both the YAML frontmatter and the body of your task notes. You can use templates to pre-fill common values, add boilerplate text, and create a consistent structure for your tasks. Templates can also include variables, such as `{{title}}`, `{{date}}`, `{{contexts}}`, `{{projects}}`, and `{{parentNote}}` (which inserts the parent note as a properly formatted markdown link), which will be automatically replaced with the appropriate values when a new task is created. When you want project notes to receive an automatic link during task creation or instant conversion, place `{{parentNote}}` inside a YAML list (for example, `projects:
+  - {{parentNote}}`) so the generated frontmatter matches TaskNotes' project linking format.
 
 ## Recurring Tasks
 
@@ -494,10 +490,10 @@ TaskNotes supports configuring default reminders that automatically apply to new
 
 #### Configuring Default Reminders
 
-Default reminders are configured in the TaskNotes settings under "Task Creation Defaults":
+Configure default reminders from TaskNotes settings:
 
-1. Navigate to Settings → TaskNotes → Task Defaults
-2. Scroll to the "Default Reminders" section
+1. Navigate to Settings → TaskNotes → Defaults & Templates
+2. Locate the **Default Reminders** section
 3. Use the form to add new default reminders
 4. Specify reminder type, timing, and optional descriptions
 
@@ -540,9 +536,8 @@ The task editing process provides full reminder management:
 
 Reminders work alongside calendar features:
 
-- Visual reminder indicators on task cards in calendar views
-- Quick reminder management through calendar context menus
-- Compatibility with drag-and-drop scheduling
+- Open reminder actions from calendar event context menus
+- Reminder schedules remain intact when you drag and drop tasks to new dates or times
 
 ### Field Mapping Support
 

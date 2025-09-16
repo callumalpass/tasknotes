@@ -15,7 +15,8 @@ Each user field has the following properties:
 - **Property Name**: The name of the field as it will be stored in the frontmatter of the task note.
 - **Type**: The data type of the field. The following types are supported:
     - **Text**: A single line of text.
-    - **Number**: A number.
+    - **Number**: A numeric value (supports ranges in filters and sorting).
+    - **Boolean**: A true/false value stored as a checkbox in the task modal.
     - **Date**: A date.
     - **List**: A list of values.
 

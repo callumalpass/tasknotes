@@ -119,7 +119,7 @@ Natural language dates are resolved dynamically when filters are evaluated, maki
 
 ### User-Defined Properties
 
-TaskNotes supports custom user fields that you define in **Settings → Advanced → User Fields**. These fields appear as filter options based on their configured type:
+TaskNotes supports custom user fields that you define in **Settings → TaskNotes → Task Properties → Custom User Fields**. These fields appear as filter options based on their configured type:
 
 - **Text fields**: Filter by string content with text operators
 - **Number fields**: Filter by numeric values with comparison operators
@@ -221,17 +221,17 @@ When you save a view, the following state is preserved:
 - **Load**: Apply a saved view configuration
 - **Delete**: Remove a saved view (requires confirmation)
 - **Reorder**: Drag and drop saved views to reorder them
-- Views persist across sessions using local storage
+- Saved views are stored in the plugin's data file, so they persist across vault restarts and device restarts
 
 
-### Saved Views Button Position
+### Views Button Alignment
 
-You can choose where the Saved Views button appears in the FilterBar:
+You can choose where the `Views` button (which opens saved views) appears in the FilterBar:
 
-- Right (default): Filter → Search → Saved Views
-- Left: Saved Views → Filter → Search
+- Right (default): Filter → Search → Views
+- Left: Views → Filter → Search
 
-This is configured via Settings → Misc → Saved Views button position.
+This is configured via **Settings → TaskNotes → Misc → Views button alignment**.
 
 Right position (default):
 
@@ -249,7 +249,7 @@ Available sort options:
 - `priority` - Priority level (by configured weight)
 - `title` - Alphabetical (A-Z)
 - `createdDate` - Date created (newest first)
-- User-defined fields (from Settings → Advanced → User Fields). Sorting is type‑aware (number/date/boolean/list). For list fields, empty or missing values sort last.
+- User-defined fields (from **Settings → TaskNotes → Task Properties → Custom User Fields**). Sorting is type‑aware (number/date/boolean/list). For list fields, empty or missing values sort last.
 
 When Group by matches the selected Sort user field, group header order follows the sort direction (asc/desc).
 

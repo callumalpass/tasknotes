@@ -12,7 +12,7 @@ The **Advanced Calendar** is a calendar with multiple view modes (month, week, d
 
 ## ICS Calendar Subscriptions
 
-TaskNotes can subscribe to external calendar feeds using the iCalendar (ICS) format. This allows you to display events from services like Google Calendar and Outlook alongside your tasks. You can add and manage your calendar subscriptions in the plugin's settings.
+TaskNotes can subscribe to external calendar feeds using the iCalendar (ICS) format. This allows you to display events from services like Google Calendar and Outlook alongside your tasks. Add and manage subscriptions from **Settings → TaskNotes → Integrations → Calendar subscriptions**.
 
 ### Creating Content from Calendar Events
 
@@ -51,4 +51,4 @@ Related notes and tasks are automatically identified by their ICS event ID field
 
 ## Time-blocking
 
-The Advanced Calendar supports time-blocking, which is a time management method that involves scheduling out parts of your day. You can create time blocks by holding the Shift key while selecting a time range in the calendar. Time blocks are stored in the frontmatter of your daily notes and can be linked to specific tasks.
+The Advanced Calendar supports time-blocking, which is a time management method that involves scheduling out parts of your day. Enable the feature under **Settings → TaskNotes → Appearance & UI → Timeblocking**. Once enabled, create time blocks by holding the Shift key while selecting a time range in the calendar. Time blocks are stored in the frontmatter of your daily notes and can be linked to specific tasks.
