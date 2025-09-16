@@ -805,7 +805,7 @@ export class MiniCalendarView extends ItemView {
         });
     }
 
-    private getTaskIndicatorInfo(tasks?: TaskInfo[]): { type: 'due' | 'scheduled' | 'completed'; count: number } | null {
+    private getTaskIndicatorInfo(tasks: TaskInfo[] | undefined, dateKey: string): { type: 'due' | 'scheduled' | 'completed'; count: number } | null {
         if (!tasks || tasks.length === 0) {
             return null;
         }
@@ -822,17 +822,26 @@ export class MiniCalendarView extends ItemView {
             const statusValue = task.status ?? '';
             const isCompleted = this.plugin.statusManager.isCompletedStatus(statusValue);
 
+            const taskDueDate = task.due ? getDatePart(task.due) : null;
+            const taskScheduledDate = task.scheduled ? getDatePart(task.scheduled) : null;
+            const matchesDue = taskDueDate === dateKey;
+            const matchesScheduled = taskScheduledDate === dateKey;
+
+            if (!matchesDue && !matchesScheduled) {
+                continue;
+            }
+
             if (isCompleted) {
                 completedCount++;
                 continue;
             }
 
-            if (task.due) {
+            if (matchesDue) {
                 dueCount++;
                 continue;
             }
 
-            if (task.scheduled) {
+            if (matchesScheduled) {
                 scheduledCount++;
             }
         }
@@ -909,7 +918,7 @@ export class MiniCalendarView extends ItemView {
                 
                 // Get task info for this date
                 const taskInfo = tasksCache.get(dateKey);
-                const indicatorInfo = this.getTaskIndicatorInfo(taskInfo?.tasks as TaskInfo[] | undefined);
+                const indicatorInfo = this.getTaskIndicatorInfo(taskInfo?.tasks as TaskInfo[] | undefined, dateKey);
 
                 if (indicatorInfo) {
                     // Create indicator element
@@ -1136,7 +1145,7 @@ export class MiniCalendarView extends ItemView {
 
         // Get task info for this date
         const taskInfo = tasksCache.get(dateKey);
-        const indicatorInfo = this.getTaskIndicatorInfo(taskInfo?.tasks as TaskInfo[] | undefined);
+        const indicatorInfo = this.getTaskIndicatorInfo(taskInfo?.tasks as TaskInfo[] | undefined, dateKey);
 
         if (indicatorInfo) {
             // Create indicator element
@@ -1343,8 +1352,8 @@ source: 'tasknotes-calendar',
         });
 
         const interactions = [
-            { action: 'Ctrl/Cmd+Hover', description: 'Preview the daily note for that date' },
-            { action: 'Click', description: 'Select the date and update the Agenda view' },
+            { action: 'Hover / Ctrl/Cmd + Hover', description: 'Preview the daily note for that date' },
+            { action: 'Click', description: 'Select the date and update the Agenda and Notes views' },
             { action: 'Ctrl/Cmd + Click', description: 'Open the daily note in the current workspace' },
             { action: 'Double-click', description: 'Open the daily note immediately' }
         ];
