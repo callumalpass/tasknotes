@@ -41,8 +41,8 @@
 /* Use consistent button system for view selector */
 .tasknotes-plugin .calendar-view__view-selector,
 .tasknotes-plugin .mini-calendar-view__view-selector {
-    margin-right: var(--tn-spacing-md);
-    min-width: 120px;
+    /* margin-right: var(--tn-spacing-md); */
+    /* min-width: 120px; */
     padding: var(--tn-spacing-xs) var(--tn-spacing-sm);
     border: none;
     box-shadow: none;
@@ -80,8 +80,9 @@
 .tasknotes-plugin .mini-calendar-view__month-display {
     font-weight: 500;
     font-size: var(--tn-font-size-lg);
-    min-width: 140px;
+    /* min-width: 140px; */
     text-align: center;
+    padding-inline: 5px;
     color: var(--tn-text-normal);
 }
 
@@ -116,6 +117,7 @@
     transition: opacity var(--tn-transition-fast);
     cursor: pointer;
     border-radius: var(--tn-radius-sm);
+    font-size: var(--tn-font-size-lg);
 }
 
 .tasknotes-plugin .calendar-view__today-button:hover,
