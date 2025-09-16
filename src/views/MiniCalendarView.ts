@@ -425,7 +425,7 @@ export class MiniCalendarView extends ItemView {
         // Previous Month Button
         const prevButton = navSection.createEl('button', { 
             text: '‹', 
-            cls: 'mini-calendar-view__nav-button mini-calendar-view__nav-button--prev',
+            cls: 'mini-calendar-view__nav-button mini-calendar-view__nav-button--prev tn-btn tn-btn--icon tn-btn--ghost',
             attr: {
                 'aria-label': 'Previous month',
                 'title': 'Previous month'
@@ -440,11 +440,11 @@ export class MiniCalendarView extends ItemView {
             cls: 'mini-calendar-view__month-display',
             text: format(this.plugin.selectedDate, 'MMMM yyyy')
         });
-        
+
         // Next Month Button
         const nextButton = navSection.createEl('button', { 
             text: '›', 
-            cls: 'mini-calendar-view__nav-button mini-calendar-view__nav-button--next',
+            cls: 'mini-calendar-view__nav-button mini-calendar-view__nav-button--next tn-btn tn-btn--icon tn-btn--ghost',
             attr: {
                 'aria-label': 'Next month',
                 'title': 'Next month'
@@ -457,7 +457,7 @@ export class MiniCalendarView extends ItemView {
         // Today button (moved to end)
         const todayButton = headerContainer.createEl('button', { 
             text: 'Today', 
-            cls: 'mini-calendar-view__today-button',
+            cls: 'mini-calendar-view__today-button tn-btn tn-btn--ghost tn-btn--sm',
             attr: {
                 'aria-label': 'Go to today',
                 'title': 'Go to today'
