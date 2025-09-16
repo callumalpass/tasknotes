@@ -103,6 +103,12 @@ export class MiniCalendarView extends ItemView {
             this.handleTaskUpdate(originalTask, updatedTask);
         });
         this.listeners.push(taskUpdateListener);
+
+        const indexBuiltListener = this.plugin.emitter.on('indexes-built', () => {
+            // Recolor calendar once essential indexes are ready
+            this.refresh();
+        });
+        this.listeners.push(indexBuiltListener);
     }
   
     getViewType(): string {
@@ -150,6 +156,7 @@ export class MiniCalendarView extends ItemView {
         
         // Create the calendar grid
         this.createCalendarGrid(container);
+        this.createLegend(container);
         this.colorizeCalendar();
     }
     
@@ -577,10 +584,7 @@ export class MiniCalendarView extends ItemView {
                 }
             });
             
-            // Add click handler
-            dayEl.addEventListener('click', () => {
-                this.plugin.setSelectedDate(dayDate);
-            });
+            this.setupDayInteractionEvents(dayEl, dayDate);
             
             // Add hover preview functionality for daily notes
             dayEl.addEventListener('mouseover', (event) => {
@@ -633,10 +637,7 @@ export class MiniCalendarView extends ItemView {
                 }
             });
             
-            // Add click handler
-            dayEl.addEventListener('click', () => {
-                this.plugin.setSelectedDate(dayDate);
-            });
+            this.setupDayInteractionEvents(dayEl, dayDate);
             
             // Add hover preview functionality for daily notes
             dayEl.addEventListener('mouseover', (event) => {
@@ -680,10 +681,7 @@ export class MiniCalendarView extends ItemView {
                 }
             });
             
-            // Add click handler
-            dayEl.addEventListener('click', () => {
-                this.plugin.setSelectedDate(dayDate);
-            });
+            this.setupDayInteractionEvents(dayEl, dayDate);
             
             // Add hover preview functionality for daily notes
             dayEl.addEventListener('mouseover', (event) => {
@@ -806,7 +804,54 @@ export class MiniCalendarView extends ItemView {
         });
         });
     }
-    
+
+    private getTaskIndicatorInfo(tasks?: TaskInfo[]): { type: 'due' | 'scheduled' | 'completed'; count: number } | null {
+        if (!tasks || tasks.length === 0) {
+            return null;
+        }
+
+        let dueCount = 0;
+        let scheduledCount = 0;
+        let completedCount = 0;
+
+        for (const task of tasks) {
+            if (!task || task.archived) {
+                continue;
+            }
+
+            const statusValue = task.status ?? '';
+            const isCompleted = this.plugin.statusManager.isCompletedStatus(statusValue);
+
+            if (isCompleted) {
+                completedCount++;
+                continue;
+            }
+
+            if (task.due) {
+                dueCount++;
+                continue;
+            }
+
+            if (task.scheduled) {
+                scheduledCount++;
+            }
+        }
+
+        if (dueCount > 0) {
+            return { type: 'due', count: dueCount };
+        }
+
+        if (scheduledCount > 0) {
+            return { type: 'scheduled', count: scheduledCount };
+        }
+
+        if (completedCount > 0) {
+            return { type: 'completed', count: completedCount };
+        }
+
+        return null;
+    }
+
     // Method to colorize calendar for tasks (tasks tab)
     async colorizeCalendarForTasks() {
         // First clear all existing colorization
@@ -864,41 +909,36 @@ export class MiniCalendarView extends ItemView {
                 
                 // Get task info for this date
                 const taskInfo = tasksCache.get(dateKey);
-                
-                if (taskInfo && (taskInfo.hasDue || taskInfo.hasScheduled)) {
+                const indicatorInfo = this.getTaskIndicatorInfo(taskInfo?.tasks as TaskInfo[] | undefined);
+
+                if (indicatorInfo) {
                     // Create indicator element
                     const indicator = document.createElement('div');
                     indicator.className = 'task-indicator';
                     
-                    // Different styling for completed, due, scheduled, and archived tasks
-                    // Priority order: archived > completed > due > scheduled
+                    // Different styling for due, scheduled, completed (due wins)
                     let taskStatus = '';
-                    if (taskInfo.hasArchived) {
-                        // Archived tasks get a different style
-                        day.classList.add('mini-calendar-view__day--has-archived-tasks');
-                        indicator.classList.add('archived-tasks');
-                        taskStatus = 'Archived';
-                    } else if (taskInfo.hasCompleted) {
-                        // Completed tasks
-                        day.classList.add('mini-calendar-view__day--has-completed-tasks');
-                        indicator.classList.add('completed-tasks');
-                        taskStatus = 'Completed';
-                    } else if (taskInfo.hasDue) {
-                        // Due tasks (prioritized over scheduled)
+                    if (indicatorInfo.type === 'due') {
+                        // Due tasks (highest priority)
                         day.classList.add('mini-calendar-view__day--has-tasks');
                         indicator.classList.add('due-tasks');
                         taskStatus = 'Due';
-                    } else if (taskInfo.hasScheduled) {
+                    } else if (indicatorInfo.type === 'scheduled') {
                         // Scheduled tasks
                         day.classList.add('mini-calendar-view__day--has-scheduled-tasks');
                         indicator.classList.add('scheduled-tasks');
                         taskStatus = 'Scheduled';
+                    } else if (indicatorInfo.type === 'completed') {
+                        // Completed tasks (lowest priority)
+                        day.classList.add('mini-calendar-view__day--has-completed-tasks');
+                        indicator.classList.add('completed-tasks');
+                        taskStatus = 'Completed';
                     }
-                    
+
                     // Add tooltip with task count information
-                    indicator.setAttribute('aria-label', `${taskStatus} tasks (${taskInfo.count})`);
-                    setTooltip(indicator, `${taskStatus} tasks (${taskInfo.count})`, { placement: 'top' });
-                    
+                    indicator.setAttribute('aria-label', `${taskStatus} tasks (${indicatorInfo.count})`);
+                    setTooltip(indicator, `${taskStatus} tasks (${indicatorInfo.count})`, { placement: 'top' });
+
                     // Add indicator to the day cell
                     day.appendChild(indicator);
                 }
@@ -1088,44 +1128,43 @@ export class MiniCalendarView extends ItemView {
     private updateSingleCalendarCell(dayEl: HTMLElement, dateKey: string, tasksCache: Map<string, any>) {
         // Remove existing task indicators and classes
         dayEl.querySelectorAll('.task-indicator').forEach(el => el.remove());
-        dayEl.classList.remove('has-tasks', 'has-scheduled-tasks', 'has-completed-tasks', 'has-archived-tasks');
-        
+        dayEl.classList.remove(
+            'mini-calendar-view__day--has-tasks',
+            'mini-calendar-view__day--has-scheduled-tasks',
+            'mini-calendar-view__day--has-completed-tasks'
+        );
+
         // Get task info for this date
         const taskInfo = tasksCache.get(dateKey);
-        
-        if (taskInfo && (taskInfo.hasDue || taskInfo.hasScheduled)) {
+        const indicatorInfo = this.getTaskIndicatorInfo(taskInfo?.tasks as TaskInfo[] | undefined);
+
+        if (indicatorInfo) {
             // Create indicator element
             const indicator = document.createElement('div');
             indicator.className = 'task-indicator';
             
-            // Different styling for completed, due, scheduled, and archived tasks
-            // Priority order: archived > completed > due > scheduled
+            // Different styling for due, scheduled, completed (due wins)
             let taskStatus = '';
-            if (taskInfo.hasArchived) {
-                // Archived tasks get a different style
-                dayEl.classList.add('has-archived-tasks');
-                indicator.classList.add('archived-tasks');
-                taskStatus = 'Archived';
-            } else if (taskInfo.hasCompleted) {
-                // Completed tasks
-                dayEl.classList.add('has-completed-tasks');
-                indicator.classList.add('completed-tasks');
-                taskStatus = 'Completed';
-            } else if (taskInfo.hasDue) {
-                // Due tasks (prioritized over scheduled)
-                dayEl.classList.add('has-tasks');
+            if (indicatorInfo.type === 'due') {
+                // Due tasks (highest priority)
+                dayEl.classList.add('mini-calendar-view__day--has-tasks');
                 indicator.classList.add('due-tasks');
                 taskStatus = 'Due';
-            } else if (taskInfo.hasScheduled) {
+            } else if (indicatorInfo.type === 'scheduled') {
                 // Scheduled tasks
-                dayEl.classList.add('has-scheduled-tasks');
+                dayEl.classList.add('mini-calendar-view__day--has-scheduled-tasks');
                 indicator.classList.add('scheduled-tasks');
                 taskStatus = 'Scheduled';
+            } else if (indicatorInfo.type === 'completed') {
+                // Completed tasks
+                dayEl.classList.add('mini-calendar-view__day--has-completed-tasks');
+                indicator.classList.add('completed-tasks');
+                taskStatus = 'Completed';
             }
             
             // Add tooltip with task count information
-            indicator.setAttribute('aria-label', `${taskStatus} tasks (${taskInfo.count})`);
-            setTooltip(indicator, `${taskStatus} tasks (${taskInfo.count})`, { placement: 'top' });
+            indicator.setAttribute('aria-label', `${taskStatus} tasks (${indicatorInfo.count})`);
+            setTooltip(indicator, `${taskStatus} tasks (${indicatorInfo.count})`, { placement: 'top' });
             
             // Add indicator to the day cell
             dayEl.appendChild(indicator);
@@ -1253,6 +1292,97 @@ source: 'tasknotes-calendar',
             // Daily Notes interface not available, return null
             return null;
         }
+    }
+
+    private createLegend(container: HTMLElement): void {
+        const legend = container.createEl('details', {
+            cls: 'mini-calendar-view__legend'
+        });
+        legend.createEl('summary', {
+            cls: 'mini-calendar-view__legend-summary',
+            text: 'Legend'
+        });
+
+        const indicatorsSection = legend.createDiv({
+            cls: 'mini-calendar-view__legend-section'
+        });
+        indicatorsSection.createSpan({
+            cls: 'mini-calendar-view__legend-section-title',
+            text: 'Indicators'
+        });
+
+        const indicatorItems = [
+            { dotClass: 'mini-calendar-view__legend-dot--due', label: 'Due task' },
+            { dotClass: 'mini-calendar-view__legend-dot--scheduled', label: 'Scheduled task' },
+            { dotClass: 'mini-calendar-view__legend-dot--completed', label: 'Completed task' },
+            { dotClass: 'mini-calendar-view__legend-dot--notes', label: 'Notes present' },
+            { dotClass: 'mini-calendar-view__legend-dot--daily', label: 'Daily note exists' }
+        ];
+
+        indicatorItems.forEach(item => {
+            const legendItem = indicatorsSection.createDiv({
+                cls: 'mini-calendar-view__legend-item'
+            });
+
+            legendItem.createSpan({
+                cls: `mini-calendar-view__legend-dot ${item.dotClass}`
+            });
+
+            legendItem.createSpan({
+                cls: 'mini-calendar-view__legend-label',
+                text: item.label
+            });
+        });
+
+        const interactionsSection = legend.createDiv({
+            cls: 'mini-calendar-view__legend-section'
+        });
+        interactionsSection.createSpan({
+            cls: 'mini-calendar-view__legend-section-title',
+            text: 'Interactions'
+        });
+
+        const interactions = [
+            { action: 'Ctrl/Cmd+Hover', description: 'Preview the daily note for that date' },
+            { action: 'Click', description: 'Select the date and update the Agenda view' },
+            { action: 'Ctrl/Cmd + Click', description: 'Open the daily note in the current workspace' },
+            { action: 'Double-click', description: 'Open the daily note immediately' }
+        ];
+
+        interactions.forEach(item => {
+            const interactionRow = interactionsSection.createDiv({
+                cls: 'mini-calendar-view__legend-interaction'
+            });
+
+            interactionRow.createSpan({
+                cls: 'mini-calendar-view__legend-action',
+                text: item.action
+            });
+
+            interactionRow.createSpan({
+                cls: 'mini-calendar-view__legend-description',
+                text: item.description
+            });
+        });
+    }
+
+    private setupDayInteractionEvents(dayEl: HTMLElement, dayDate: Date): void {
+        dayEl.addEventListener('click', (event: MouseEvent) => {
+            this.plugin.setSelectedDate(dayDate);
+
+            if (event.ctrlKey || event.metaKey) {
+                event.preventDefault();
+                event.stopPropagation();
+                void this.plugin.navigateToDailyNote(dayDate);
+            }
+        });
+
+        dayEl.addEventListener('dblclick', (event: MouseEvent) => {
+            event.preventDefault();
+            event.stopPropagation();
+            this.plugin.setSelectedDate(dayDate);
+            void this.plugin.navigateToDailyNote(dayDate);
+        });
     }
     
     /**
