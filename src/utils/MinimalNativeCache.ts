@@ -63,7 +63,7 @@ export class MinimalNativeCache extends Events {
         this.settings = settings;
         this.taskTag = settings.taskTag;
         this.excludedFolders = settings.excludedFolders
-            ? settings.excludedFolders.split(',').map(folder => folder.trim())
+            ? settings.excludedFolders.split(',').map(folder => folder.trim()).filter(folder => folder.length > 0)
             : [];
         this.fieldMapper = fieldMapper;
         this.disableNoteIndexing = settings.disableNoteIndexing;
@@ -1498,8 +1498,8 @@ export class MinimalNativeCache extends Events {
         storeTitleInFilename = false
     ): void {
         this.taskTag = taskTag;
-        this.excludedFolders = excludedFolders 
-            ? excludedFolders.split(',').map(folder => folder.trim())
+        this.excludedFolders = excludedFolders
+            ? excludedFolders.split(',').map(folder => folder.trim()).filter(folder => folder.length > 0)
             : [];
         this.fieldMapper = fieldMapper;
         this.disableNoteIndexing = disableNoteIndexing;
