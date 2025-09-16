@@ -112,9 +112,12 @@ export class ProjectSubtasksService {
             if (!(sourceFile instanceof TFile)) return false;
 
             const metadata = this.plugin.app.metadataCache.getFileCache(sourceFile);
-            if (!metadata?.frontmatter?.projects) return false;
 
-            const projects = metadata.frontmatter.projects;
+            // Use the user's configured field mapping for projects
+            const projectsFieldName = this.plugin.fieldMapper.toUserField('projects');
+            if (!metadata?.frontmatter?.[projectsFieldName]) return false;
+
+            const projects = metadata.frontmatter[projectsFieldName];
             if (!Array.isArray(projects)) return false;
 
             // Check if any project reference resolves to our target
@@ -172,7 +175,10 @@ export class ProjectSubtasksService {
 
                 // Check if source has projects frontmatter
                 const metadata = this.plugin.app.metadataCache.getCache(sourcePath);
-                const projects = metadata?.frontmatter?.projects;
+
+                // Use the user's configured field mapping for projects
+                const projectsFieldName = this.plugin.fieldMapper.toUserField('projects');
+                const projects = metadata?.frontmatter?.[projectsFieldName];
 
                 if (Array.isArray(projects) && projects.some((p: any) =>
                     typeof p === 'string' && p.startsWith('[[') && p.endsWith(']]')

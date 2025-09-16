@@ -619,7 +619,8 @@ export class MinimalNativeCache extends Events {
                     if (!metadata?.frontmatter || !this.isTaskFile(metadata.frontmatter)) continue;
 
                     // Check if this task has projects field with wikilinks
-                    const projectsField = metadata.frontmatter.projects;
+                    const projectsFieldName = this.fieldMapper?.toUserField('projects') || 'projects';
+                    const projectsField = metadata.frontmatter[projectsFieldName];
                     if (!Array.isArray(projectsField)) continue;
 
                     // Check if projects field contains wikilinks (not just plain text)
