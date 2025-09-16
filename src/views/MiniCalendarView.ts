@@ -1352,8 +1352,8 @@ source: 'tasknotes-calendar',
         });
 
         const interactions = [
-            { action: 'Hover / Ctrl/Cmd + Hover', description: 'Preview the daily note for that date' },
-            { action: 'Click', description: 'Select the date and update the Agenda and Notes views' },
+            { action: 'Ctrl/Cmd + Hover', description: 'Preview the daily note for that date' },
+            { action: 'Click', description: 'Select the date and update the Agenda views' },
             { action: 'Ctrl/Cmd + Click', description: 'Open the daily note in the current workspace' },
             { action: 'Double-click', description: 'Open the daily note immediately' }
         ];
