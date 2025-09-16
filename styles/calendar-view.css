@@ -713,8 +713,7 @@
 
 .tasknotes-plugin .mini-calendar-view__day--today {
     background: none !important;
-    color: var(--tn-text-normal);
-    border: 1px solid color-mix(in srgb, var(--tn-interactive-accent) 80%, transparent);
+    color: var(--tn-text-on-accent);
 }
 
 .tasknotes-plugin .mini-calendar-view__day--today::after {
