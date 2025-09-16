@@ -74,6 +74,31 @@
    NOTECARD ELEMENTS (BEM __element)
    ================================================================= */
 
+.tasknotes-plugin .note-card__main-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 0;
+    width: 100%;
+}
+
+.tasknotes-plugin .note-card__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    margin-right: 8px;
+    flex-shrink: 0;
+    color: var(--tn-text-muted);
+    align-self: center;
+    opacity: 0.7;
+}
+
+.tasknotes-plugin .note-card__icon svg {
+    width: 16px;
+    height: 16px;
+}
+
 .tasknotes-plugin .note-card__content {
     flex: 1;
     display: flex;
