@@ -49,3 +49,12 @@ These settings allow you to enable, disable, and configure the various features 
 ## Recurring Tasks
 
 - **Maintain due date offset in recurring tasks**: When completing recurring tasks, maintain the offset between due and scheduled dates.
+
+## Timeblocking
+
+- **Enable timeblocking**: Enable timeblock functionality for lightweight scheduling in daily notes.
+- **Show timeblocks**: Display timeblocks from daily notes by default.
+
+### Usage
+
+In the advanced calendar view, hold Shift + drag to create timeblocks. Drag to move existing timeblocks. Resize edges to adjust duration.

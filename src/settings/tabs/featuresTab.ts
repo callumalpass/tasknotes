@@ -367,4 +367,34 @@ export function renderFeaturesTab(container: HTMLElement, plugin: TaskNotesPlugi
             save();
         }
     });
+
+    // Timeblocking Section
+    createSectionHeader(container, 'Timeblocking');
+    createHelpText(container, 'Configure timeblock functionality for lightweight scheduling in daily notes.');
+
+    createToggleSetting(container, {
+        name: 'Enable timeblocking',
+        desc: 'Enable timeblock functionality for lightweight scheduling in daily notes',
+        getValue: () => plugin.settings.calendarViewSettings.enableTimeblocking,
+        setValue: async (value: boolean) => {
+            plugin.settings.calendarViewSettings.enableTimeblocking = value;
+            save();
+            // Re-render to show/hide timeblocks visibility setting
+            renderFeaturesTab(container, plugin, save);
+        }
+    });
+
+    if (plugin.settings.calendarViewSettings.enableTimeblocking) {
+        createToggleSetting(container, {
+            name: 'Show timeblocks',
+            desc: 'Display timeblocks from daily notes by default',
+            getValue: () => plugin.settings.calendarViewSettings.defaultShowTimeblocks,
+            setValue: async (value: boolean) => {
+                plugin.settings.calendarViewSettings.defaultShowTimeblocks = value;
+                save();
+            }
+        });
+
+        createHelpText(container, 'Usage: In the advanced calendar view, hold Shift + drag to create timeblocks. Drag to move existing timeblocks. Resize edges to adjust duration.');
+    }
 }
