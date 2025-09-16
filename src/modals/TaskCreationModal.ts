@@ -734,6 +734,12 @@ export class TaskCreationModal extends TaskModal {
         if (parsed.tags && parsed.tags.length > 0) this.tags = sanitizeTags(parsed.tags.join(', '));
         if (parsed.details) this.details = parsed.details;
         if (parsed.recurrence) this.recurrenceRule = parsed.recurrence;
+        if (parsed.estimate !== undefined) {
+            this.timeEstimate = parsed.estimate > 0 ? parsed.estimate : 0;
+            if (this.timeEstimateInput) {
+                this.timeEstimateInput.value = this.timeEstimate > 0 ? this.timeEstimate.toString() : '';
+            }
+        }
 
         // Update form inputs if they exist
         if (this.titleInput) this.titleInput.value = this.title;
