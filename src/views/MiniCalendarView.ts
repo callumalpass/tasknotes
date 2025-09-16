@@ -1353,9 +1353,9 @@ source: 'tasknotes-calendar',
 
         const interactions = [
             { action: 'Ctrl/Cmd + Hover', description: 'Preview the daily note for that date' },
-            { action: 'Click', description: 'Select the date and update the Agenda views' },
-            { action: 'Ctrl/Cmd + Click', description: 'Open the daily note in the current workspace' },
-            { action: 'Double-click', description: 'Open the daily note immediately' }
+            { action: 'Click', description: 'Select the date and update the Agenda view' },
+            { action: 'Ctrl/Cmd + Click', description: 'Open the daily note' },
+            { action: 'Double-click', description: 'Open the daily note' }
         ];
 
         interactions.forEach(item => {
