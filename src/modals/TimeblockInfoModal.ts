@@ -6,6 +6,7 @@ import {
     getAllDailyNotes,
     appHasDailyNotesPluginLoaded
 } from 'obsidian-daily-notes-interface';
+import { formatDateForStorage } from '../utils/dateUtils';
 
 export interface TimeBlock {
     title: string;
@@ -23,6 +24,7 @@ export interface TimeBlock {
 export class TimeblockInfoModal extends Modal {
     private timeblock: TimeBlock;
     private eventDate: Date;
+    private timeblockDate: string;
     private plugin: TaskNotesPlugin;
     private originalTimeblock: TimeBlock;
     
@@ -35,12 +37,13 @@ export class TimeblockInfoModal extends Modal {
     private selectedAttachments: TAbstractFile[] = [];
     private attachmentsList: HTMLElement;
 
-    constructor(app: App, plugin: TaskNotesPlugin, timeblock: TimeBlock, eventDate: Date) {
+    constructor(app: App, plugin: TaskNotesPlugin, timeblock: TimeBlock, eventDate: Date, timeblockDate?: string) {
         super(app);
         this.plugin = plugin;
         this.timeblock = { ...timeblock }; // Create a copy for editing
         this.originalTimeblock = timeblock; // Keep original for comparison
         this.eventDate = eventDate;
+        this.timeblockDate = timeblockDate || formatDateForStorage(eventDate);
     }
 
     async onOpen() {
@@ -280,8 +283,8 @@ export class TimeblockInfoModal extends Modal {
         }
 
         // Get daily note for the date
-        const dateStr = this.eventDate.toISOString().split('T')[0]; // YYYY-MM-DD
-        const moment = (window as any).moment(dateStr);
+        const dateStr = this.timeblockDate;
+        const moment = (window as any).moment(dateStr, 'YYYY-MM-DD');
         const allDailyNotes = getAllDailyNotes();
         const dailyNote = getDailyNote(moment, allDailyNotes);
 
@@ -406,8 +409,8 @@ export class TimeblockInfoModal extends Modal {
         }
 
         // Get daily note for the date
-        const dateStr = this.eventDate.toISOString().split('T')[0]; // YYYY-MM-DD
-        const moment = (window as any).moment(dateStr);
+        const dateStr = this.timeblockDate;
+        const moment = (window as any).moment(dateStr, 'YYYY-MM-DD');
         const allDailyNotes = getAllDailyNotes();
         const dailyNote = getDailyNote(moment, allDailyNotes);
 
