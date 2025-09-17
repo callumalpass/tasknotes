@@ -40,10 +40,6 @@ These settings control the visual appearance of the plugin, including the calend
 - **Show recurring tasks**: Display recurring task instances by default.
 - **Show ICS events**: Display events from ICS subscriptions by default.
 
-## Timeblocking
-
-- **Enable timeblocking**: Enable timeblock functionality for lightweight scheduling in daily notes.
-- **Show timeblocks**: Display timeblocks from daily notes by default.
 
 ## Time Settings
 

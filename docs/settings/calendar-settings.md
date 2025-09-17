@@ -20,7 +20,7 @@ You can control which types of events are shown by default in the calendar views
 
 ## Timeblocking Features
 
-You can enable or disable the **Timeblocking** feature, which allows you to create and manage timeblocks in the calendar views.
+You can enable or disable the **Timeblocking** feature in the Features tab, which allows you to create and manage timeblocks in the calendar views. Usage: hold Shift + drag in the advanced calendar view to create timeblocks.
 
 ## External Calendar Integration
 

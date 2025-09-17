@@ -369,33 +369,6 @@ export function renderAppearanceTab(container: HTMLElement, plugin: TaskNotesPlu
         }
     });
 
-    // Timeblocking section
-    createSectionHeader(container, 'Timeblocking');
-    createHelpText(container, 'Configure timeblock functionality for lightweight scheduling in daily notes.');
-
-    createToggleSetting(container, {
-        name: 'Enable timeblocking',
-        desc: 'Enable timeblock functionality for lightweight scheduling in daily notes',
-        getValue: () => plugin.settings.calendarViewSettings.enableTimeblocking,
-        setValue: async (value: boolean) => {
-            plugin.settings.calendarViewSettings.enableTimeblocking = value;
-            save();
-            // Re-render to show/hide timeblocks visibility setting
-            renderAppearanceTab(container, plugin, save);
-        }
-    });
-
-    if (plugin.settings.calendarViewSettings.enableTimeblocking) {
-        createToggleSetting(container, {
-            name: 'Show timeblocks',
-            desc: 'Display timeblocks from daily notes by default',
-            getValue: () => plugin.settings.calendarViewSettings.defaultShowTimeblocks,
-            setValue: async (value: boolean) => {
-                plugin.settings.calendarViewSettings.defaultShowTimeblocks = value;
-                save();
-            }
-        });
-    }
 
     // Time Settings
     createSectionHeader(container, 'Time Settings');
