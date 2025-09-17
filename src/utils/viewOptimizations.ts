@@ -73,7 +73,9 @@ export function shouldRefreshForDateBasedView(
            originalTask.completedDate !== updatedTask.completedDate ||
            originalTask.recurrence !== updatedTask.recurrence ||
            originalTask.priority !== updatedTask.priority || // Priority affects event visual appearance
-           originalTask.title !== updatedTask.title; // Title changes should be reflected
+           originalTask.title !== updatedTask.title || // Title changes should be reflected
+           originalTask.archived !== updatedTask.archived || // Archived tasks should disappear from date-based views
+           originalTask.path !== updatedTask.path; // Path changes indicate the file moved and need re-render
 }
 
 /**
