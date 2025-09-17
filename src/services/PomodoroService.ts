@@ -28,6 +28,9 @@ export class PomodoroService {
     private activeAudioContexts: Set<AudioContext> = new Set();
     private cleanupTimeouts: Set<number> = new Set();
     private webhookNotifier?: IWebhookNotifier;
+    private lastSelectedTaskPath?: string;
+    private lastSelectedTaskPathLoaded = false;
+    private lastWorkSessionTaskPath?: string;
 
     constructor(plugin: TaskNotesPlugin) {
         this.plugin = plugin;
@@ -136,6 +139,8 @@ export class PomodoroService {
     }
 
     async saveLastSelectedTask(taskPath: string | undefined) {
+        this.lastSelectedTaskPath = taskPath;
+        this.lastSelectedTaskPathLoaded = true;
         try {
             const data = await this.plugin.loadData() || {};
             data.lastSelectedTaskPath = taskPath;
@@ -146,9 +151,19 @@ export class PomodoroService {
     }
 
     async getLastSelectedTaskPath(): Promise<string | undefined> {
+        if (this.lastSelectedTaskPathLoaded) {
+            return this.lastSelectedTaskPath;
+        }
         try {
             const data = await this.plugin.loadData();
-            return data?.lastSelectedTaskPath;
+            const path = data?.lastSelectedTaskPath;
+            if (typeof path === 'string' && path.trim().length > 0) {
+                this.lastSelectedTaskPath = path;
+            } else {
+                this.lastSelectedTaskPath = undefined;
+            }
+            this.lastSelectedTaskPathLoaded = true;
+            return this.lastSelectedTaskPath;
         } catch (error) {
             console.error('Failed to load last selected task:', error);
             return undefined;
@@ -190,7 +205,13 @@ export class PomodoroService {
                 // endTime will be set when paused or completed
             }]
         };
-        
+
+        if (task?.path) {
+            this.lastWorkSessionTaskPath = task.path;
+            this.lastSelectedTaskPath = task.path;
+            this.lastSelectedTaskPathLoaded = true;
+        }
+
         this.state.currentSession = session;
         this.state.isRunning = true;
         this.state.timeRemaining = durationSeconds;
@@ -481,6 +502,72 @@ export class PomodoroService {
         }
     }
 
+    private async autoStartWorkSession(): Promise<void> {
+        if (this.state.isRunning) {
+            return;
+        }
+
+        try {
+            const task = await this.getAutoStartTask();
+            if (task) {
+                await this.startPomodoro(task);
+            } else {
+                await this.startPomodoro();
+            }
+        } catch (error) {
+            console.error('Failed to auto-start work session:', error);
+        }
+    }
+
+    private async getAutoStartTask(): Promise<TaskInfo | undefined> {
+        const candidatePaths: string[] = [];
+
+        if (this.lastWorkSessionTaskPath) {
+            candidatePaths.push(this.lastWorkSessionTaskPath);
+        }
+
+        if (this.state.currentSession?.taskPath) {
+            candidatePaths.push(this.state.currentSession.taskPath);
+        }
+
+        const persistedPath = await this.getLastSelectedTaskPath();
+        if (persistedPath) {
+            candidatePaths.push(persistedPath);
+        }
+
+        const uniquePaths = Array.from(new Set(candidatePaths.filter(path => typeof path === 'string' && path.length > 0)));
+
+        for (const path of uniquePaths) {
+            try {
+                const task = await this.plugin.cacheManager.getTaskInfo(path);
+                if (!task) {
+                    this.clearCachedTaskPath(path);
+                    continue;
+                }
+                if (task.archived || this.plugin.statusManager.isCompletedStatus(task.status)) {
+                    this.clearCachedTaskPath(path);
+                    continue;
+                }
+                return task;
+            } catch (error) {
+                console.warn(`Failed to load task for auto-start (${path}):`, error);
+            }
+        }
+
+        return undefined;
+    }
+
+    private clearCachedTaskPath(path: string): void {
+        if (this.lastWorkSessionTaskPath === path) {
+            this.lastWorkSessionTaskPath = undefined;
+        }
+
+        if (this.lastSelectedTaskPath === path) {
+            this.lastSelectedTaskPath = undefined;
+            this.lastSelectedTaskPathLoaded = true;
+        }
+    }
+
     private async completePomodoro() {
         this.stopTimer();
         
@@ -491,7 +578,11 @@ export class PomodoroService {
         const session = this.state.currentSession;
         session.completed = true;
         session.endTime = getCurrentTimestamp();
-        
+
+        if (session.type === 'work' && session.taskPath) {
+            this.lastWorkSessionTaskPath = session.taskPath;
+        }
+
         // End the current active period if it's still running
         if (session.activePeriods.length > 0) {
             const currentPeriod = session.activePeriods[session.activePeriods.length - 1];
@@ -595,7 +686,9 @@ export class PomodoroService {
             
             // Auto-start work if configured, otherwise just prepare the timer
             if (this.plugin.settings.pomodoroAutoStartWork) {
-                const timeout = setTimeout(() => this.startPomodoro(), 1000) as unknown as number;
+                const timeout = setTimeout(() => {
+                    this.autoStartWorkSession();
+                }, 1000) as unknown as number;
                 this.cleanupTimeouts.add(timeout);
             }
         }
@@ -756,6 +849,17 @@ export class PomodoroService {
 
         // Update the current session's task
         this.state.currentSession.taskPath = task?.path;
+
+        if (task?.path) {
+            this.lastWorkSessionTaskPath = task.path;
+            this.lastSelectedTaskPath = task.path;
+            this.lastSelectedTaskPathLoaded = true;
+        } else {
+            this.lastWorkSessionTaskPath = undefined;
+            this.lastSelectedTaskPath = undefined;
+            this.lastSelectedTaskPathLoaded = true;
+        }
+
         await this.saveState();
 
         // Emit tick event to update UI
