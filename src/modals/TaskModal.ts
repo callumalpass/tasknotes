@@ -39,6 +39,7 @@ export abstract class TaskModal extends Modal {
     protected contextsInput: HTMLInputElement;
     protected projectsInput: HTMLInputElement;
     protected tagsInput: HTMLInputElement;
+    protected timeEstimateInput: HTMLInputElement;
     protected projectsList: HTMLElement;
     protected actionBar: HTMLElement;
     protected detailsContainer: HTMLElement;
@@ -288,6 +289,8 @@ export abstract class TaskModal extends Modal {
                     .onChange(value => {
                         this.timeEstimate = parseInt(value) || 0;
                     });
+
+                this.timeEstimateInput = text.inputEl;
             });
 
         // Dynamic user fields
