@@ -81,6 +81,7 @@ interface CalendarEvent {
         recurringTemplateTime?: string; // Original scheduled time
         subscriptionName?: string; // For ICS events
         attachments?: string[]; // For timeblocks
+        originalDate?: string; // For timeblock daily note reference
     };
 }
 
@@ -1015,6 +1016,8 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
             const start = parseDateToLocal(startDate);
             const end = new Date(start.getTime() + (task.timeEstimate * 60 * 1000));
             endDate = format(end, "yyyy-MM-dd'T'HH:mm");
+        } else if (!hasTime) {
+            endDate = this.calculateAllDayEndDate(startDate, task.timeEstimate);
         }
         
         // Get priority-based color for border
@@ -1231,6 +1234,8 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
             const start = parseDateToLocal(eventStart);
             const end = new Date(start.getTime() + (task.timeEstimate * 60 * 1000));
             endDate = format(end, "yyyy-MM-dd'T'HH:mm");
+        } else if (!hasTime) {
+            endDate = this.calculateAllDayEndDate(eventStart, task.timeEstimate);
         }
         
         // Get priority-based color for border
@@ -1273,6 +1278,8 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
             const start = parseDateToLocal(eventStart);
             const end = new Date(start.getTime() + (task.timeEstimate * 60 * 1000));
             endDate = format(end, "yyyy-MM-dd'T'HH:mm");
+        } else if (!hasTime) {
+            endDate = this.calculateAllDayEndDate(eventStart, task.timeEstimate);
         }
         
         // Get priority-based color for border
@@ -1305,6 +1312,18 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
                 recurringTemplateTime: templateTime
             }
         };
+    }
+
+    private calculateAllDayEndDate(startDate: string, timeEstimate?: number): string | undefined {
+        if (!timeEstimate || timeEstimate <= 0) {
+            return undefined;
+        }
+
+        const minutesPerDay = 60 * 24;
+        const start = parseDateToLocal(startDate);
+        const days = Math.max(1, Math.ceil(timeEstimate / minutesPerDay));
+        const end = new Date(start.getTime() + (days * minutesPerDay * 60 * 1000));
+        return format(end, 'yyyy-MM-dd');
     }
 
     // Event handlers
@@ -1496,7 +1515,7 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
             console.warn('[AdvancedCalendarView] Event clicked without extendedProps');
             return;
         }
-        const { taskInfo, icsEvent, timeblock, eventType, subscriptionName } = clickInfo.event.extendedProps;
+        const { taskInfo, icsEvent, timeblock, eventType, subscriptionName, originalDate } = clickInfo.event.extendedProps;
         const jsEvent = clickInfo.jsEvent;
 
         // Skip task events in list view - they have their own TaskCard-style handlers
@@ -1515,8 +1534,8 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
         }
         
         if (eventType === 'timeblock') {
-            // Timeblocks are read-only for now, could add editing later
-            this.showTimeblockInfo(timeblock, clickInfo.event.start);
+            // Timeblocks can be edited via modal
+            this.showTimeblockInfo(timeblock, clickInfo.event.start, originalDate);
             return;
         }
         
@@ -2767,8 +2786,8 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
         modal.open();
     }
 
-    private showTimeblockInfo(timeblock: TimeBlock, eventDate: Date): void {
-        const modal = new TimeblockInfoModal(this.app, this.plugin, timeblock, eventDate);
+    private showTimeblockInfo(timeblock: TimeBlock, eventDate: Date, originalDate?: string): void {
+        const modal = new TimeblockInfoModal(this.app, this.plugin, timeblock, eventDate, originalDate);
         modal.open();
     }
 

@@ -1,6 +1,6 @@
 import { ItemView } from 'obsidian';
 import { ViewPerformanceService, ViewPerformanceConfig, ViewUpdateHandler } from '../services/ViewPerformanceService';
-import { TaskInfo } from '../types';
+import { TaskInfo, TimeEntry } from '../types';
 import TaskNotesPlugin from '../main';
 
 /**
@@ -67,13 +67,19 @@ export function shouldRefreshForDateBasedView(
     if (!originalTask) return true;
 
     // For date-based views (calendars, agendas), check if date-related fields or visual properties changed
+    const timeEntriesChanged = !areTimeEntriesEqual(originalTask.timeEntries, updatedTask.timeEntries);
     return originalTask.due !== updatedTask.due ||
            originalTask.scheduled !== updatedTask.scheduled ||
            originalTask.status !== updatedTask.status ||
            originalTask.completedDate !== updatedTask.completedDate ||
            originalTask.recurrence !== updatedTask.recurrence ||
            originalTask.priority !== updatedTask.priority || // Priority affects event visual appearance
-           originalTask.title !== updatedTask.title; // Title changes should be reflected
+           originalTask.title !== updatedTask.title || // Title changes should be reflected
+           originalTask.archived !== updatedTask.archived || // Archived tasks should disappear from date-based views
+           originalTask.path !== updatedTask.path || // Path changes indicate the file moved and need re-render
+           originalTask.timeEstimate !== updatedTask.timeEstimate || // Duration changes affect multi-day rendering
+           originalTask.totalTrackedTime !== updatedTask.totalTrackedTime || // Time tracking summary changes event info
+           timeEntriesChanged; // Time entry adjustments affect rendered segments
 }
 
 /**
@@ -219,4 +225,23 @@ export class ViewPerformanceMonitor {
         this.startTimer(operation);
         return fn().finally(() => this.endTimer(operation));
     }
+}
+
+function areTimeEntriesEqual(a?: TimeEntry[], b?: TimeEntry[]): boolean {
+    if (a === b) return true;
+    if (!a || !b) return a === b;
+    if (a.length !== b.length) return false;
+
+    for (let i = 0; i < a.length; i++) {
+        const entryA = a[i];
+        const entryB = b[i];
+        if (entryA.startTime !== entryB.startTime ||
+            entryA.endTime !== entryB.endTime ||
+            entryA.description !== entryB.description ||
+            entryA.duration !== entryB.duration) {
+            return false;
+        }
+    }
+
+    return true;
 }
