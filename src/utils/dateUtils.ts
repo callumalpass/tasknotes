@@ -996,10 +996,10 @@ export function isOverdueTimeAware(dateString: string, isCompleted?: boolean, hi
             // Task has a specific time; it's overdue if that moment has passed
             return isBefore(taskDateUTC, now);
         } else {
-            // Task is date-only. It's overdue if the UTC anchor is before
-            // the start of the user's current local day
-            const todayLocalStart = startOfDay(new Date()); // User's midnight
-            return isBefore(taskDateUTC, todayLocalStart);
+            // Task is date-only. Compare using UTC anchors for both the task date
+            // and "today" to avoid timezone drift (UTC Anchor principle).
+            const todayUTCAnchor = parseDateToUTC(getTodayString());
+            return isBefore(taskDateUTC, todayUTCAnchor);
         }
     } catch (error) {
         console.error('Error checking overdue status:', { dateString, error });
