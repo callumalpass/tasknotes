@@ -1015,6 +1015,8 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
             const start = parseDateToLocal(startDate);
             const end = new Date(start.getTime() + (task.timeEstimate * 60 * 1000));
             endDate = format(end, "yyyy-MM-dd'T'HH:mm");
+        } else if (!hasTime) {
+            endDate = this.calculateAllDayEndDate(startDate, task.timeEstimate);
         }
         
         // Get priority-based color for border
@@ -1231,6 +1233,8 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
             const start = parseDateToLocal(eventStart);
             const end = new Date(start.getTime() + (task.timeEstimate * 60 * 1000));
             endDate = format(end, "yyyy-MM-dd'T'HH:mm");
+        } else if (!hasTime) {
+            endDate = this.calculateAllDayEndDate(eventStart, task.timeEstimate);
         }
         
         // Get priority-based color for border
@@ -1273,6 +1277,8 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
             const start = parseDateToLocal(eventStart);
             const end = new Date(start.getTime() + (task.timeEstimate * 60 * 1000));
             endDate = format(end, "yyyy-MM-dd'T'HH:mm");
+        } else if (!hasTime) {
+            endDate = this.calculateAllDayEndDate(eventStart, task.timeEstimate);
         }
         
         // Get priority-based color for border
@@ -1305,6 +1311,18 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
                 recurringTemplateTime: templateTime
             }
         };
+    }
+
+    private calculateAllDayEndDate(startDate: string, timeEstimate?: number): string | undefined {
+        if (!timeEstimate || timeEstimate <= 0) {
+            return undefined;
+        }
+
+        const minutesPerDay = 60 * 24;
+        const start = parseDateToLocal(startDate);
+        const days = Math.max(1, Math.ceil(timeEstimate / minutesPerDay));
+        const end = new Date(start.getTime() + (days * minutesPerDay * 60 * 1000));
+        return format(end, 'yyyy-MM-dd');
     }
 
     // Event handlers
