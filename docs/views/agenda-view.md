@@ -4,7 +4,9 @@ The Agenda View displays a chronological list of tasks and notes, sorted by thei
 
 ## FilterBar Integration
 
-The Agenda View includes the same FilterBar functionality as the Task List View, allowing you to filter, sort, and save views of your tasks. See the [Task List View](task-list.md) documentation for complete FilterBar functionality details.
+The Agenda View includes the same FilterBar functionality as the Task List View, allowing you to filter, sort, and save views of your tasks. This includes support for hierarchical subgrouping, where tasks can be organized into primary groups and then further subdivided into subgroups.
+
+See the [Task List View](task-list.md) documentation for complete FilterBar functionality details, including subgrouping configuration.
 
 
 ### Saved view heading, counts, and collapsible groups
