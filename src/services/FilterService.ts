@@ -177,7 +177,13 @@ export class FilterService extends EventEmitter {
                 };
 
                 const svc = new HierarchicalGroupingService(resolver);
-                const hierarchicalGroups = svc.group(sortedTasks, query.groupKey as TaskGroupKey, subgroupKey);
+                const hierarchicalGroups = svc.group(
+                    sortedTasks,
+                    query.groupKey as TaskGroupKey,
+                    subgroupKey,
+                    this.currentSortDirection,
+                    this.plugin?.settings?.userFields || []
+                );
 
                 // Ensure primary group order matches the same order used for flat groups
                 // (e.g., status order) instead of insertion order influenced by the current task sort.

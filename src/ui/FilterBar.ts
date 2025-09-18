@@ -1523,7 +1523,7 @@ export class FilterBar extends EventEmitter {
                 // Update only display section and badge to avoid destroying DOM (keeps toggle element stable for tests)
                 this.updateDisplaySection();
                 this.updateFilterToggleBadge();
-                this.emitQueryChange();
+                this.emitImmediateQueryChange();
             });
         setTooltip(groupDropdown.selectEl, 'Group tasks by a common property', { placement: 'top' });
 
@@ -1818,7 +1818,7 @@ export class FilterBar extends EventEmitter {
                             this.updateExpandCollapseButtons();
                             this.updateDisplaySection();
                             this.updateFilterToggleBadge();
-                            this.emitQueryChange();
+                            this.emitImmediateQueryChange();
 
                         });
                     });

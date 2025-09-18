@@ -20,9 +20,14 @@ import { FilterBar } from '../ui/FilterBar';
 import { FilterHeading } from '../ui/FilterHeading';
 import { FilterService } from '../services/FilterService';
 import { GroupCountUtils } from '../utils/GroupCountUtils';
+import { GroupingUtils } from '../utils/GroupingUtils';
+import { HierarchicalGroupingService } from '../services/HierarchicalGroupingService';
 import TaskNotesPlugin from '../main';
+import { splitListPreservingLinksAndQuotes } from '../utils/stringSplit';
+
 import { createNoteCard } from '../ui/NoteCard';
 
+// No helper functions needed from helpers
 
 
 
@@ -45,21 +50,21 @@ export class AgendaView extends ItemView implements OptimizedView {
     private showOverdueOnToday = true;
     private showNotes = true;
     private showICSEvents = true;
-    
+
     // Filter system
     private filterBar: FilterBar | null = null;
     private filterHeading: FilterHeading | null = null;
     private currentQuery: FilterQuery;
-    
+
     // Event listeners
     private listeners: EventRef[] = [];
     private functionListeners: (() => void)[] = [];
-    
+
     constructor(leaf: WorkspaceLeaf, plugin: TaskNotesPlugin) {
         super(leaf);
         this.plugin = plugin;
         this.startDate = new Date(plugin.selectedDate);
-        
+
         // Initialize with default query - will be properly set when plugin services are ready
         this.currentQuery = {
             type: 'group',
@@ -70,18 +75,18 @@ export class AgendaView extends ItemView implements OptimizedView {
             sortDirection: 'asc',
             groupKey: 'none' // Agenda groups by date internally
         };
-        
+
         // Register event listeners
         this.registerEvents();
     }
-    
+
     registerEvents(): void {
         // Clean up any existing listeners
         this.listeners.forEach(listener => this.plugin.emitter.offref(listener));
         this.listeners = [];
         this.functionListeners.forEach(unsubscribe => unsubscribe());
         this.functionListeners = [];
-        
+
         // Listen for data changes
         const dataListener = this.plugin.emitter.on(EVENT_DATA_CHANGED, async () => {
             this.refresh();
@@ -92,13 +97,13 @@ export class AgendaView extends ItemView implements OptimizedView {
             }
         });
         this.listeners.push(dataListener);
-        
+
         // Listen for date changes to refresh recurring task states
         const dateChangeListener = this.plugin.emitter.on(EVENT_DATE_CHANGED, async () => {
             this.refresh();
         });
         this.listeners.push(dateChangeListener);
-        
+
         // Listen for date selection changes
         const dateListener = this.plugin.emitter.on(EVENT_DATE_SELECTED, (date: Date) => {
             this.startDate = new Date(date);
@@ -106,10 +111,10 @@ export class AgendaView extends ItemView implements OptimizedView {
             this.refresh();
         });
         this.listeners.push(dateListener);
-        
+
         // Performance optimization: Use ViewPerformanceService instead of direct task listeners
         // The service will handle debouncing and selective updates
-        
+
         // Listen for filter service data changes
         const filterDataListener = this.plugin.filterService.on('data-changed', () => {
             this.refresh();
@@ -124,44 +129,44 @@ export class AgendaView extends ItemView implements OptimizedView {
             this.functionListeners.push(icsListener);
         }
     }
-    
+
     getViewType(): string {
         return AGENDA_VIEW_TYPE;
     }
-    
+
     getDisplayText(): string {
         return 'Agenda';
     }
-    
+
     getIcon(): string {
         return 'calendar-clock';
     }
-    
+
     async onOpen() {
         // Wait for the plugin to be fully initialized before proceeding
         await this.plugin.onReady();
-        
+
         // Wait for migration to complete before initializing UI
         await this.plugin.waitForMigration();
-        
+
         // Load saved filter state
         const savedQuery = this.plugin.viewStateManager.getFilterState(AGENDA_VIEW_TYPE);
         if (savedQuery) {
             this.currentQuery = savedQuery;
         }
-        
+
         const contentEl = this.contentEl;
         contentEl.empty();
-        
+
         // Add container
         const container = contentEl.createDiv({ cls: 'tasknotes-plugin agenda-view' });
-        
+
         // Show loading indicator
         this.showLoadingIndicator();
-        
+
         // Render the view
         await this.renderView(container);
-        
+
         // Hide loading indicator
         this.hideLoadingIndicator();
 
@@ -175,7 +180,7 @@ export class AgendaView extends ItemView implements OptimizedView {
 
         // Register keyboard navigation
     }
-    
+
     async onClose() {
         // Clean up performance optimizations
         cleanupViewPerformance(this);
@@ -202,29 +207,29 @@ export class AgendaView extends ItemView implements OptimizedView {
         // Clean up
         this.contentEl.empty();
     }
-    
+
     private async renderView(container: HTMLElement) {
         // Clear existing content
         container.empty();
-        
+
         // Create controls
         await this.createAgendaControls(container);
-        
+
         // Create agenda content
         await this.renderAgendaContent(container);
     }
-    
+
     private async createAgendaControls(container: HTMLElement) {
         const controlsContainer = container.createDiv({ cls: 'agenda-view__controls' });
-        
+
         // Header section with date range and navigation (like tasks view)
         const headerSection = controlsContainer.createDiv({ cls: 'agenda-view__header' });
-        
+
         const headerContent = headerSection.createDiv({ cls: 'agenda-view__header-content' });
-        
+
         // Left section: Navigation controls
         const navSection = headerContent.createDiv({ cls: 'agenda-view__nav-section' });
-        
+
         const prevButton = navSection.createEl('button', {
             cls: 'agenda-view__nav-button agenda-view__nav-button--prev',
             text: '‹',
@@ -234,7 +239,7 @@ export class AgendaView extends ItemView implements OptimizedView {
             }
         });
         prevButton.addClass('clickable-icon');
-        
+
         const nextButton = navSection.createEl('button', {
             cls: 'agenda-view__nav-button agenda-view__nav-button--next',
             text: '›',
@@ -244,25 +249,25 @@ export class AgendaView extends ItemView implements OptimizedView {
             }
         });
         nextButton.addClass('clickable-icon');
-        
+
         // Center section: Current period display
         const titleSection = headerContent.createDiv({ cls: 'agenda-view__title-section' });
-        titleSection.createDiv({ 
+        titleSection.createDiv({
             cls: 'agenda-view__period-title',
             text: this.getCurrentPeriodText()
         });
-        
+
         // Right section: Today button
         const actionsSection = headerContent.createDiv({ cls: 'agenda-view__actions-section' });
-        
+
         prevButton.addEventListener('click', () => {
             this.navigateToPreviousPeriod();
         });
-        
+
         nextButton.addEventListener('click', () => {
             this.navigateToNextPeriod();
         });
-        
+
         // Today button
         const todayButton = actionsSection.createEl('button', {
             text: 'Today',
@@ -273,7 +278,7 @@ export class AgendaView extends ItemView implements OptimizedView {
             }
         });
         todayButton.addClass('clickable-icon');
-        
+
         todayButton.addEventListener('click', () => {
             const today = getTodayLocal();
             this.startDate = today;
@@ -306,28 +311,28 @@ export class AgendaView extends ItemView implements OptimizedView {
                 new Notice('Failed to refresh calendar subscriptions');
             }
         });
-        
+
         // FilterBar section (like tasks view)
         const filterBarContainer = controlsContainer.createDiv({ cls: 'agenda-view__filter-container' });
-        
+
         // Wait for cache to be initialized with actual data
         await this.waitForCacheReady();
-        
+
         // Initialize with default query from FilterService
         this.currentQuery = this.plugin.filterService.createDefaultQuery();
         this.currentQuery.sortKey = 'scheduled';
         this.currentQuery.sortDirection = 'asc';
         this.currentQuery.groupKey = 'none';
-        
+
         // Load saved filter state if it exists
         const savedQuery = this.plugin.viewStateManager.getFilterState(AGENDA_VIEW_TYPE);
         if (savedQuery) {
             this.currentQuery = savedQuery;
         }
-        
+
         // Get filter options from FilterService
         const filterOptions = await this.plugin.filterService.getFilterOptions();
-        
+
         // Create new FilterBar
         this.filterBar = new FilterBar(
             this.app,
@@ -342,14 +347,14 @@ export class AgendaView extends ItemView implements OptimizedView {
         // Get saved views for the FilterBar
         const savedViews = this.plugin.viewStateManager.getSavedViews();
         this.filterBar.updateSavedViews(savedViews);
-        
+
         // Listen for saved view events
         this.filterBar.on('saveView', ({ name, query, viewOptions, visibleProperties }) => {
             const savedView = this.plugin.viewStateManager.saveView(name, query, viewOptions, visibleProperties);
             // Set the newly saved view as active to prevent incorrect view matching
             this.filterBar!.setActiveSavedView(savedView);
         });
-        
+
         this.filterBar.on('deleteView', (viewId: string) => {
             this.plugin.viewStateManager.deleteView(viewId);
             // Don't update here - the ViewStateManager event will handle it
@@ -364,16 +369,16 @@ export class AgendaView extends ItemView implements OptimizedView {
         this.plugin.viewStateManager.on('saved-views-changed', (updatedViews: readonly SavedView[]) => {
             this.filterBar?.updateSavedViews(updatedViews);
         });
-        
+
         this.filterBar.on('reorderViews', (fromIndex: number, toIndex: number) => {
             this.plugin.viewStateManager.reorderSavedViews(fromIndex, toIndex);
         });
-        
+
         this.filterBar.on('manageViews', () => {
             console.log('Manage views requested');
         });
-        
-        
+
+
         // Listen for filter changes
         this.filterBar.on('queryChange', async (newQuery: FilterQuery) => {
             this.currentQuery = newQuery;
@@ -433,8 +438,8 @@ export class AgendaView extends ItemView implements OptimizedView {
 
         // Create filter heading with integrated controls
         this.filterHeading = new FilterHeading(container);
-        
-        // Add expand/collapse controls to the heading container  
+
+        // Add expand/collapse controls to the heading container
         const headingContainer = container.querySelector('.filter-heading') as HTMLElement;
         if (headingContainer) {
             const headingContent = headingContainer.querySelector('.filter-heading__content') as HTMLElement;
@@ -444,7 +449,7 @@ export class AgendaView extends ItemView implements OptimizedView {
                 this.createExpandCollapseButtons(controlsContainer);
             }
         }
-        
+
         // Initialize heading immediately
         this.updateFilterHeading();
 
@@ -459,7 +464,7 @@ export class AgendaView extends ItemView implements OptimizedView {
         // Always show controls for agenda view (unlike task list which is conditional)
         container.style.display = 'flex';
         container.empty();
-        
+
         // Expand all button
         const expandAllBtn = new ButtonComponent(container)
             .setIcon('list-tree')
@@ -483,7 +488,7 @@ export class AgendaView extends ItemView implements OptimizedView {
             });
         expandAllBtn.buttonEl.addClass('clickable-icon');
 
-        // Collapse all button  
+        // Collapse all button
         const collapseAllBtn = new ButtonComponent(container)
             .setIcon('list-collapse')
             .setTooltip('Collapse All Days')
@@ -570,11 +575,11 @@ export class AgendaView extends ItemView implements OptimizedView {
 
         // Update the view options in the FilterBar to reflect the loaded state
         this.setupViewOptions();
-        
+
         // Refresh the view to apply the changes
         this.refresh();
     }
-    
+
     /**
      * Render period selector as custom button in FilterBar
      */
@@ -586,18 +591,18 @@ export class AgendaView extends ItemView implements OptimizedView {
             { value: '30', text: '30 days' },
             { value: 'week', text: 'This week' },
         ];
-        
+
         periods.forEach(period => {
-            const option = periodSelect.createEl('option', { 
-                value: period.value, 
-                text: period.text 
+            const option = periodSelect.createEl('option', {
+                value: period.value,
+                text: period.text
             });
             if ((period.value === '7' && this.daysToShow === 7) ||
                 (period.value === 'week' && this.daysToShow === -1)) {
                 option.selected = true;
             }
         });
-        
+
         periodSelect.addEventListener('change', () => {
             const value = periodSelect.value;
             if (value === 'week') {
@@ -605,14 +610,14 @@ export class AgendaView extends ItemView implements OptimizedView {
             } else {
                 this.daysToShow = parseInt(value);
             }
-            
+
             // Date range is handled internally by getAgendaDates()
-            
+
             this.refresh();
         });
     }
-    
-    
+
+
     /**
      * Get date range for FilterService query
      */
@@ -634,23 +639,23 @@ export class AgendaView extends ItemView implements OptimizedView {
             const notesForDate = await this.plugin.cacheManager.getNotesForDate(dayData.date);
             return { ...dayData, notes: notesForDate };
         });
-        
+
         return Promise.all(notesPromises);
     }
-    
+
     private async renderAgendaContent(container: HTMLElement) {
         // Find existing content container or create new one
         let contentContainer = container.querySelector('.agenda-view__content') as HTMLElement;
         if (!contentContainer) {
             contentContainer = container.createDiv({ cls: 'agenda-view__content' });
         }
-        
+
         try {
             const dates = this.getAgendaDates();
-            
+
             // Use FilterService to get tasks for each date (properly handles recurring tasks)
             const agendaData: Array<{date: Date; tasks: TaskInfo[]; ics: import('../types').ICSEvent[]}> = [];
-            
+
             for (const date of dates) {
                 // Use FilterService's getTasksForDate which properly handles recurring tasks
                 const tasksForDate = await this.plugin.filterService.getTasksForDate(
@@ -664,15 +669,15 @@ export class AgendaView extends ItemView implements OptimizedView {
                     const allIcs = this.plugin.icsSubscriptionService.getAllEvents();
                     icsForDate = this.filterICSEventsForDate(allIcs, date);
                 }
-                
+
                 agendaData.push({ date, tasks: tasksForDate, ics: icsForDate });
             }
-            
+
             // Get notes separately and add them to the agenda data
             const agendaDataWithNotes = await this.addNotesToAgendaData(agendaData.map(d => ({ date: d.date, tasks: d.tasks })));
             // Merge ICS back into enriched data
             const merged = agendaDataWithNotes.map((d, i) => ({ ...d, ics: agendaData[i].ics }));
-            
+
             // Use DOMReconciler-based rendering
             if (this.groupByDate) {
                 this.renderGroupedAgendaWithReconciler(contentContainer, merged);
@@ -707,13 +712,13 @@ export class AgendaView extends ItemView implements OptimizedView {
             return [];
         }
     }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     /**
      * Render grouped agenda using DOMReconciler for efficient updates
      */
@@ -754,15 +759,87 @@ export class AgendaView extends ItemView implements OptimizedView {
                 // Add click handlers for collapse/expand
                 this.addDayHeaderClickHandlers(dayHeader, daySection, itemsContainer, dayKey);
 
-                // Collect items for this day
+                // Determine subgrouping state for this day
+                const subgroupKey = (this.currentQuery as any)?.subgroupKey;
+                const hasSubgroups = subgroupKey && subgroupKey !== 'none' && dayData.tasks.length > 0;
+
+                // Collect items for this day (tasks go here only when no subgroups)
                 const dayItems: Array<{type: 'task' | 'note' | 'ics', item: any, date: Date}> = [];
 
-                // Add tasks
-                dayData.tasks.forEach(task => {
-                    dayItems.push({ type: 'task', item: task, date: dayData.date });
-                });
+                if (!hasSubgroups) {
+                    // Flat tasks list when no subgroups are active
+                    dayData.tasks.forEach(task => {
+                        dayItems.push({ type: 'task', item: task, date: dayData.date });
+                    });
+                } else {
+                    // Render task subgroups (like TaskListView)
+                    const subgroupsContainer = itemsContainer.createDiv({ cls: 'task-subgroups-container' });
+                    const subgroups = this.computeSubgroupsForDay(dayData.tasks, subgroupKey);
+                    const visibleProperties = this.getCurrentVisibleProperties();
 
-                // Add notes
+                    for (const [subgroupName, subgroupTasks] of subgroups) {
+                        const subgroupSection = subgroupsContainer.createDiv({ cls: 'task-subgroup' });
+                        subgroupSection.setAttribute('data-subgroup', subgroupName);
+
+                        const header = subgroupSection.createDiv({ cls: 'task-subgroup-header' });
+                        const toggleBtn = header.createEl('button', { cls: 'task-subgroup-toggle', attr: { 'aria-label': 'Toggle subgroup' } });
+                        try { setIcon(toggleBtn, 'chevron-right'); } catch { /* ignore */ }
+                        const svg = toggleBtn.querySelector('svg');
+                        if (svg) { svg.classList.add('chevron'); svg.setAttr('width', '16'); svg.setAttr('height', '16'); } else { toggleBtn.textContent = '▸'; }
+
+                        header.createSpan({ cls: 'task-subgroup-name', text: subgroupName });
+
+                        // Count badge for tasks in subgroup
+                        const stats = GroupCountUtils.calculateGroupStats(subgroupTasks, this.plugin);
+                        const countText = GroupCountUtils.formatGroupCount(stats.completed, stats.total).text;
+                        header.createDiv({ cls: 'agenda-view__item-count', text: countText });
+
+                        // Content list
+                        const listEl = subgroupSection.createDiv({ cls: 'task-cards' });
+
+                        // Initial collapsed state from preferences
+                        const collapsedSubInitially = GroupingUtils.isSubgroupCollapsed(AGENDA_VIEW_TYPE, subgroupKey, dayKey, subgroupName, this.plugin);
+                        if (collapsedSubInitially) { subgroupSection.addClass('is-collapsed'); listEl.style.display = 'none'; }
+                        toggleBtn.setAttr('aria-expanded', String(!collapsedSubInitially));
+
+                        // Click handlers to toggle subgroup
+                        this.registerDomEvent(header, 'click', (e: MouseEvent) => {
+                            const target = e.target as HTMLElement;
+                            if (target.closest('a')) return;
+                            const willCollapse = !subgroupSection.hasClass('is-collapsed');
+                            GroupingUtils.setSubgroupCollapsed(AGENDA_VIEW_TYPE, subgroupKey, dayKey, subgroupName, willCollapse, this.plugin);
+                            subgroupSection.toggleClass('is-collapsed', willCollapse);
+                            listEl.style.display = willCollapse ? 'none' : '';
+                            toggleBtn.setAttr('aria-expanded', String(!willCollapse));
+                        });
+                        this.registerDomEvent(toggleBtn, 'click', (e: MouseEvent) => {
+                            e.preventDefault(); e.stopPropagation();
+                            const willCollapse = !subgroupSection.hasClass('is-collapsed');
+                            GroupingUtils.setSubgroupCollapsed(AGENDA_VIEW_TYPE, subgroupKey, dayKey, subgroupName, willCollapse, this.plugin);
+                            subgroupSection.toggleClass('is-collapsed', willCollapse);
+                            listEl.style.display = willCollapse ? 'none' : '';
+                            toggleBtn.setAttr('aria-expanded', String(!willCollapse));
+                        });
+
+                        // Render tasks in subgroup
+                        this.plugin.domReconciler.updateList(
+                            listEl,
+                            subgroupTasks,
+                            (t) => `task-${t.path}`,
+                            (t) => this.createTaskItemElement(t, dayData.date),
+                            (el, t) => updateTaskCard(el, t, this.plugin, visibleProperties, {
+                                showDueDate: !this.groupByDate,
+                                showCheckbox: false,
+                                showTimeTracking: true,
+                                showRecurringControls: true,
+                                groupByDate: this.groupByDate,
+                                targetDate: dayData.date
+                            })
+                        );
+                    }
+                }
+
+                // Notes and ICS (always below tasks/subgroups)
                 dayData.notes.forEach(note => {
                     dayItems.push({ type: 'note', item: note, date: dayData.date });
                 });
@@ -779,15 +856,19 @@ export class AgendaView extends ItemView implements OptimizedView {
                             return 0;
                         }
                     });
-                    
+
                     sortedIcsEvents.forEach(ics => {
                         dayItems.push({ type: 'ics', item: ics, date: dayData.date });
                     });
                 }
 
                 // Use DOMReconciler for this day's items
+                // prevents the reconciler from wiping out the subgroup DOM
+                const listTarget = hasSubgroups
+                    ? itemsContainer.createDiv({ cls: 'agenda-view__misc-items' })
+                    : itemsContainer;
                 this.plugin.domReconciler.updateList(
-                    itemsContainer,
+                    listTarget,
                     dayItems,
                     (item) => `${item.type}-${(item.item as any).path || (item.item as any).id || 'unknown'}`,
                     (item) => this.createDayItemElement(item),
@@ -812,7 +893,7 @@ export class AgendaView extends ItemView implements OptimizedView {
             return;
         }
     }
-    
+
     /**
      * Render flat agenda using DOMReconciler for efficient updates
      */
@@ -822,13 +903,13 @@ export class AgendaView extends ItemView implements OptimizedView {
 
         // Collect all items with their dates
         const allItems: Array<{type: 'task' | 'note' | 'ics', item: TaskInfo | NoteInfo | import('../types').ICSEvent, date: Date}> = [];
-        
+
         agendaData.forEach(dayData => {
             // Tasks are already filtered by FilterService, no need to re-filter
             dayData.tasks.forEach(task => {
                 allItems.push({ type: 'task', item: task, date: dayData.date });
             });
-            
+
             dayData.notes.forEach(note => {
                 allItems.push({ type: 'note', item: note, date: dayData.date });
             });
@@ -845,29 +926,29 @@ export class AgendaView extends ItemView implements OptimizedView {
                         return 0;
                     }
                 });
-                
+
                 sortedIcsEvents.forEach(ics => {
                     allItems.push({ type: 'ics', item: ics, date: dayData.date });
                 });
             }
         });
-        
+
         if (allItems.length === 0) {
             container.empty();
             const emptyMessage = container.createDiv({ cls: 'agenda-view__empty' });
             new Setting(emptyMessage)
                 .setName('No items found')
                 .setHeading();
-            emptyMessage.createEl('p', { 
+            emptyMessage.createEl('p', {
                 text: 'No items found for the selected period.',
                 cls: 'agenda-view__empty-description'
             });
             return;
         }
-        
+
         // Sort by date
         allItems.sort((a, b) => a.date.getTime() - b.date.getTime());
-        
+
         // Use DOMReconciler to update the list
         this.plugin.domReconciler.updateList(
             container,
@@ -877,7 +958,7 @@ export class AgendaView extends ItemView implements OptimizedView {
             (element, item) => this.updateFlatAgendaItemElement(element, item)
         );
     }
-    
+
     /**
      * Create agenda item element for reconciler
      */
@@ -947,7 +1028,7 @@ export class AgendaView extends ItemView implements OptimizedView {
             return this.createICSEventItemElement(item.item as import('../types').ICSEvent);
         }
     }
-    
+
     /**
      * Update agenda item element for reconciler
      */
@@ -986,7 +1067,7 @@ export class AgendaView extends ItemView implements OptimizedView {
         }
         // Note updates are handled automatically by the note card structure
     }
-    
+
     /**
      * Create flat agenda item element for reconciler
      */
@@ -995,7 +1076,7 @@ export class AgendaView extends ItemView implements OptimizedView {
         if (item.type === 'note') return this.createNoteItemElement(item.item as NoteInfo, item.date);
         return this.createICSEventItemElement(item.item as import('../types').ICSEvent);
     }
-    
+
     /**
      * Update flat agenda item element for reconciler
      */
@@ -1015,7 +1096,7 @@ export class AgendaView extends ItemView implements OptimizedView {
         }
         // Note updates are handled automatically by the note card structure
     }
-    
+
     /**
      * Get current visible properties for task cards
      */
@@ -1023,7 +1104,7 @@ export class AgendaView extends ItemView implements OptimizedView {
         // Use the FilterBar's method which handles temporary state
         return this.filterBar?.getCurrentVisibleProperties();
     }
-    
+
     /**
      * Create task item element
      */
@@ -1056,7 +1137,7 @@ export class AgendaView extends ItemView implements OptimizedView {
 
         return taskCard;
     }
-    
+
     /**
      * Create note item element
      */
@@ -1068,17 +1149,17 @@ export class AgendaView extends ItemView implements OptimizedView {
             maxTags: 3,
             showDailyNoteBadge: false
         });
-        
+
         // Add date if not grouping by date
         if (!this.groupByDate && date) {
             // FIX: Convert UTC-anchored date to local calendar date for proper display formatting
             const displayDate = convertUTCToLocalCalendarDate(date);
-            noteCard.createSpan({ 
-                cls: 'agenda-view__note-date', 
-                text: format(displayDate, 'MMM d') 
+            noteCard.createSpan({
+                cls: 'agenda-view__note-date',
+                text: format(displayDate, 'MMM d')
             });
         }
-        
+
         return noteCard;
     }
 
@@ -1089,7 +1170,7 @@ export class AgendaView extends ItemView implements OptimizedView {
         const icsCard = createICSEventCard(icsEvent, this.plugin, {});
         return icsCard;
     }
-    
+
     /**
      * Add drag handlers to task cards for dragging to calendar
      */
@@ -1113,24 +1194,24 @@ export class AgendaView extends ItemView implements OptimizedView {
             }
         });
     }
-    
+
     private openFile(path: string) {
         const file = this.app.vault.getAbstractFileByPath(path);
         if (file instanceof TFile) {
             this.app.workspace.getLeaf(false).openFile(file);
         }
     }
-    
+
     private getAgendaDates(): Date[] {
         const dates: Date[] = [];
-        
+
         if (this.daysToShow === -1) {
             // Week view - show current week based on startDate
             const firstDaySetting = this.plugin.settings.calendarViewSettings.firstDay || 0;
             const weekStartOptions = { weekStartsOn: firstDaySetting as 0 | 1 | 2 | 3 | 4 | 5 | 6 };
             const weekStart = startOfWeek(this.startDate, weekStartOptions);
             const weekEnd = endOfWeek(this.startDate, weekStartOptions);
-            
+
             let currentDate = weekStart;
             while (currentDate <= weekEnd) {
                 // Create UTC date that represents this calendar date
@@ -1147,10 +1228,10 @@ export class AgendaView extends ItemView implements OptimizedView {
                 dates.push(normalizedDate);
             }
         }
-        
+
         return dates;
     }
-    
+
     private navigateToPreviousPeriod() {
         if (this.daysToShow === -1) {
             // Week view - go to previous week
@@ -1159,13 +1240,13 @@ export class AgendaView extends ItemView implements OptimizedView {
             // Fixed days - go back by the number of days shown
             this.startDate = addDays(this.startDate, -this.daysToShow);
         }
-        
+
         // Date range is handled internally by getAgendaDates()
-        
+
         this.updatePeriodDisplay();
         this.refresh();
     }
-    
+
     private navigateToNextPeriod() {
         if (this.daysToShow === -1) {
             // Week view - go to next week
@@ -1174,28 +1255,28 @@ export class AgendaView extends ItemView implements OptimizedView {
             // Fixed days - go forward by the number of days shown
             this.startDate = addDays(this.startDate, this.daysToShow);
         }
-        
+
         // Date range is handled internally by getAgendaDates()
-        
+
         this.updatePeriodDisplay();
         this.refresh();
     }
-    
+
     private updatePeriodDisplay(): void {
         const currentPeriodDisplay = this.contentEl.querySelector('.agenda-view__period-title');
         if (currentPeriodDisplay) {
             currentPeriodDisplay.textContent = this.getCurrentPeriodText();
         }
     }
-    
+
     private getCurrentPeriodText(): string {
         const dates = this.getAgendaDates();
         if (dates.length === 0) return '';
-        
+
         // FIX: Convert UTC-anchored dates to local calendar dates for proper display formatting
         const start = convertUTCToLocalCalendarDate(dates[0]);
         const end = convertUTCToLocalCalendarDate(dates[dates.length - 1]);
-        
+
         // Use original UTC dates for isSameDay comparison since it's UTC-aware
         if (isSameDay(dates[0], dates[dates.length - 1])) {
             return format(start, 'EEEE, MMMM d, yyyy');
@@ -1203,17 +1284,17 @@ export class AgendaView extends ItemView implements OptimizedView {
             return `${format(start, 'MMM d')} - ${format(end, 'MMM d, yyyy')}`;
         }
     }
-    
+
     private showLoadingIndicator() {
         const container = this.contentEl.querySelector('.agenda-view');
         if (!container || container.querySelector('.agenda-view__loading')) return;
-        
+
         const indicator = document.createElement('div');
         indicator.className = 'agenda-view__loading';
         indicator.textContent = 'Loading agenda...';
         container.prepend(indicator);
     }
-    
+
     private hideLoadingIndicator() {
         const indicator = this.contentEl.querySelector('.agenda-view__loading');
         if (indicator) {
@@ -1397,7 +1478,56 @@ export class AgendaView extends ItemView implements OptimizedView {
             countText = `${itemCount}`;
         }
 
-        dayHeader.createDiv({ cls: 'agenda-view__item-count', text: countText });
+        // Right side container (holds subgroup actions and count, like TaskList)
+        const right = dayHeader.createDiv({ cls: 'task-group-right' });
+
+
+        // Right side: subgroup actions (only when a subgroup is active)
+        const subgroupKey = (this.currentQuery as any)?.subgroupKey;
+        if (subgroupKey && subgroupKey !== 'none') {
+            const actions = right.createDiv({ cls: 'task-subgroup-actions' });
+
+            const expandBtn = actions.createEl('button', { cls: 'task-subgroup-action', attr: { 'aria-label': 'Expand all subgroups' } });
+            try { setIcon(expandBtn, 'list-tree'); } catch { /* ignore */ }
+            this.registerDomEvent(expandBtn, 'click', (e: MouseEvent) => {
+                e.preventDefault(); e.stopPropagation();
+                GroupingUtils.expandAllSubgroups(AGENDA_VIEW_TYPE, dayKey, subgroupKey, this.plugin);
+                const section = dayHeader.parentElement as HTMLElement;
+                section?.querySelectorAll('.task-subgroup').forEach((sub: Element) => {
+                    const el = sub as HTMLElement;
+                    el.classList.remove('is-collapsed');
+                    const btn = el.querySelector('.task-subgroup-toggle') as HTMLElement;
+                    if (btn) btn.setAttr('aria-expanded', 'true');
+                    const content = el.querySelector('.task-cards') as HTMLElement;
+                    if (content) content.style.display = '';
+                });
+            });
+
+            const collapseBtn = actions.createEl('button', { cls: 'task-subgroup-action', attr: { 'aria-label': 'Collapse all subgroups' } });
+            try { setIcon(collapseBtn, 'list-collapse'); } catch { /* ignore */ }
+            this.registerDomEvent(collapseBtn, 'click', (e: MouseEvent) => {
+                e.preventDefault(); e.stopPropagation();
+                // Collect subgroup names under this day
+                const section = dayHeader.parentElement as HTMLElement;
+                const names: string[] = [];
+                section?.querySelectorAll('.task-subgroup').forEach((sub: Element) => {
+                    const name = (sub as HTMLElement).getAttribute('data-subgroup');
+                    if (name) names.push(name);
+                });
+                GroupingUtils.collapseAllSubgroups(AGENDA_VIEW_TYPE, dayKey, subgroupKey, names, this.plugin);
+                section?.querySelectorAll('.task-subgroup').forEach((sub: Element) => {
+                    const el = sub as HTMLElement;
+                    el.classList.add('is-collapsed');
+                    const btn = el.querySelector('.task-subgroup-toggle') as HTMLElement;
+                    if (btn) btn.setAttr('aria-expanded', 'false');
+                    const content = el.querySelector('.task-cards') as HTMLElement;
+                    if (content) content.style.display = 'none';
+                });
+            });
+        }
+
+        // Item count badge (keep at the far right, inside right container like TaskList)
+        right.createSpan({ cls: 'agenda-view__item-count', text: countText });
 
         // Set initial ARIA state
         const collapsedInitially = this.isDayCollapsed(dayKey);
@@ -1471,6 +1601,159 @@ export class AgendaView extends ItemView implements OptimizedView {
         }
         // Note updates are handled automatically by the note card structure
     }
+
+
+    /**
+     * Compute subgroups for a given day using the same value resolution as HierarchicalGroupingService
+     */
+    private computeSubgroupsForDay(tasks: TaskInfo[], subgroupKey: string): Map<string, TaskInfo[]> {
+        // Resolver for user fields mirrors FilterService
+        const resolver = (task: TaskInfo, fieldIdOrKey: string): string[] => {
+            const userFields = this.plugin?.settings?.userFields || [];
+            const field = userFields.find((f: any) => (f.id || f.key) === fieldIdOrKey || f.key === fieldIdOrKey);
+            const missingLabel = `No ${field?.displayName || field?.key || fieldIdOrKey}`;
+            if (!field) return [missingLabel];
+            try {
+                const app = this.plugin.cacheManager.getApp();
+                const file = app.vault.getAbstractFileByPath(task.path);
+                if (!file) return [missingLabel];
+                const fm = app.metadataCache.getFileCache(file as any)?.frontmatter;
+                const raw = fm ? fm[field.key] : undefined;
+                switch (field.type) {
+                    case 'boolean': {
+                        if (typeof raw === 'boolean') return [raw ? 'true' : 'false'];
+                        if (raw == null) return [missingLabel];
+                        const s = String(raw).trim().toLowerCase();
+                        if (s === 'true' || s === 'false') return [s];
+                        return [missingLabel];
+                    }
+                    case 'number': {
+                        if (typeof raw === 'number') return [String(raw)];
+                        if (typeof raw === 'string') {
+                            const match = raw.match(/^(\d+(?:\.\d+)?)/);
+                            return match ? [match[1]] : [missingLabel];
+                        }
+                        return [missingLabel];
+                    }
+                    case 'date': {
+                        return raw ? [String(raw)] : [missingLabel];
+                    }
+                    case 'list': {
+                        // Mirror FilterService: normalize list values and exclude raw wikilink tokens
+                        const normalizeUserListValue = (rawVal: any): string[] => {
+                            const tokens: string[] = [];
+                            const pushToken = (s: string) => {
+                                if (!s) return;
+                                const trimmed = String(s).trim();
+                                if (!trimmed) return;
+                                const m = trimmed.match(/^\[\[([^|\]]+)(?:\|([^\]]+))?\]\]$/);
+                                if (m) {
+                                    const target = m[1] || '';
+                                    const alias = m[2];
+                                    const base = alias || target.split('#')[0].split('/').pop() || target;
+                                    if (base) tokens.push(base);
+                                    tokens.push(trimmed); // keep raw as fallback
+                                    return;
+                                }
+                                tokens.push(trimmed);
+                            };
+                            if (Array.isArray(rawVal)) {
+                                for (const v of rawVal) pushToken(String(v));
+                            } else if (typeof rawVal === 'string') {
+                                const parts = splitListPreservingLinksAndQuotes(rawVal);
+                                for (const p of parts) pushToken(p);
+                            } else if (rawVal != null) {
+                                pushToken(String(rawVal));
+                            }
+                            // Deduplicate while preserving order
+                            const seen = new Set<string>();
+                            const out: string[] = [];
+                            for (const t of tokens) { if (!seen.has(t)) { seen.add(t); out.push(t); } }
+                            return out;
+                        };
+                        const tokens = normalizeUserListValue(raw).filter(t => !/^\[\[/.test(t));
+                        return tokens.length > 0 ? tokens : [missingLabel];
+                    }
+                    case 'text':
+                    default: {
+                        const s = String(raw ?? '').trim();
+                        return s ? [s] : [missingLabel];
+                    }
+                }
+            } catch {
+                return [missingLabel];
+            }
+        };
+
+        // Use HierarchicalGroupingService value resolution to ensure parity
+        const svc = new HierarchicalGroupingService(resolver);
+        // We call group() using the subgroupKey as "primary" and a benign secondary key.
+        // Then flatten per primary with de-duplication.
+        const hierarchical = svc.group(tasks, subgroupKey as any, 'tags' as any);
+        const result = new Map<string, TaskInfo[]>();
+        for (const [primary, subMap] of hierarchical) {
+            const arr: TaskInfo[] = [];
+            const seen = new Set<string>();
+            for (const tasksArr of subMap.values()) {
+                for (const t of tasksArr) {
+                    if (!seen.has(t.path)) { seen.add(t.path); arr.push(t); }
+                }
+            }
+            result.set(primary, arr);
+        }
+
+        // Sort subgroup keys consistently to mirror TaskList behavior
+        const sorted = new Map<string, TaskInfo[]>();
+        const dir = ((this.currentQuery as any)?.sortDirection as 'asc'|'desc') || 'asc';
+
+        const sortKeys = (keys: string[], subgroupKeyInner: string): string[] => {
+            // Handle dynamic user fields with type-aware sorting
+            if (typeof subgroupKeyInner === 'string' && subgroupKeyInner.startsWith('user:')) {
+                const fieldId = subgroupKeyInner.slice(5);
+                const userFields = this.plugin?.settings?.userFields || [];
+                const field = userFields.find((f: any) => (f.id || f.key) === fieldId);
+                const isMissing = (k: string) => /^No\s/i.test(k);
+
+                const ascCompare = (a: string, b: string) => {
+                    if (isMissing(a) && !isMissing(b)) return -1;
+                    if (!isMissing(a) && isMissing(b)) return 1;
+                    if (field?.type === 'number') {
+                        const na = parseFloat(a), nb = parseFloat(b);
+                        const va = isNaN(na) ? Number.POSITIVE_INFINITY : na;
+                        const vb = isNaN(nb) ? Number.POSITIVE_INFINITY : nb;
+                        if (va !== vb) return va - vb;
+                    } else if (field?.type === 'boolean') {
+                        const va = a === 'true' ? 0 : a === 'false' ? 1 : 2;
+                        const vb = b === 'true' ? 0 : b === 'false' ? 1 : 2;
+                        if (va !== vb) return va - vb;
+                    } else if (field?.type === 'date') {
+                        const ta = Date.parse(a); const tb = Date.parse(b);
+                        const va = isNaN(ta) ? Number.POSITIVE_INFINITY : ta;
+                        const vb = isNaN(tb) ? Number.POSITIVE_INFINITY : tb;
+                        if (va !== vb) return va - vb;
+                    }
+                    return a.localeCompare(b);
+                };
+
+                const sortedUser = keys.slice().sort(ascCompare);
+                return dir === 'desc' ? sortedUser.reverse() : sortedUser;
+            }
+
+            // Default alphabetical with missing-first for asc
+            const isMissing = (k: string) => /^No\s/i.test(k);
+            const asc = keys.slice().sort((a, b) => {
+                if (isMissing(a) && !isMissing(b)) return -1;
+                if (!isMissing(a) && isMissing(b)) return 1;
+                return a.localeCompare(b);
+            });
+            return dir === 'desc' ? asc.reverse() : asc;
+        };
+
+        const orderedKeys = sortKeys(Array.from(result.keys()), subgroupKey);
+        for (const k of orderedKeys) sorted.set(k, result.get(k)!);
+        return sorted;
+    }
+
 
     /**
      * Check if a day is collapsed

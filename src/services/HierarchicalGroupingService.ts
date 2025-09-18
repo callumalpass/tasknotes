@@ -9,7 +9,13 @@ export class HierarchicalGroupingService {
     private resolveUserFieldValues?: (task: TaskInfo, fieldIdOrKey: string) => string[]
   ) {}
 
-  group(tasks: TaskInfo[], primaryKey: TaskGroupKey, subgroupKey: TaskGroupKey): Map<string, Map<string, TaskInfo[]>> {
+  group(
+    tasks: TaskInfo[],
+    primaryKey: TaskGroupKey,
+    subgroupKey: TaskGroupKey,
+    sortDirection: 'asc' | 'desc' = 'asc',
+    userFields: any[] = []
+  ): Map<string, Map<string, TaskInfo[]>> {
     const hierarchical = new Map<string, Map<string, TaskInfo[]>>();
 
     const getValues = (task: TaskInfo, key: TaskGroupKey): string[] => {
@@ -107,7 +113,83 @@ export class HierarchicalGroupingService {
       }
     }
 
-    return hierarchical;
+    // Sort subgroups within each primary group
+    const sortedHierarchical = new Map<string, Map<string, TaskInfo[]>>();
+    for (const [primaryName, subgroups] of hierarchical) {
+      const sortedSubgroups = this.sortSubgroups(subgroups, subgroupKey, sortDirection, userFields);
+      sortedHierarchical.set(primaryName, sortedSubgroups);
+    }
+
+    return sortedHierarchical;
+  }
+
+  /**
+   * Sort subgroups consistently with AgendaView logic
+   */
+  private sortSubgroups(
+    subgroups: Map<string, TaskInfo[]>,
+    subgroupKey: TaskGroupKey,
+    sortDirection: 'asc' | 'desc',
+    userFields: any[]
+  ): Map<string, TaskInfo[]> {
+    const keys = Array.from(subgroups.keys());
+    const sortedKeys = this.sortSubgroupKeys(keys, subgroupKey, sortDirection, userFields);
+
+    const sorted = new Map<string, TaskInfo[]>();
+    for (const key of sortedKeys) {
+      sorted.set(key, subgroups.get(key)!);
+    }
+    return sorted;
+  }
+
+  /**
+   * Sort subgroup keys with "No <field>" positioning and type-aware sorting
+   */
+  private sortSubgroupKeys(
+    keys: string[],
+    subgroupKey: TaskGroupKey,
+    sortDirection: 'asc' | 'desc',
+    userFields: any[]
+  ): string[] {
+    const isMissing = (k: string) => /^No\s/i.test(k);
+
+    // Handle dynamic user fields with type-aware sorting
+    if (typeof subgroupKey === 'string' && subgroupKey.startsWith('user:')) {
+      const fieldId = subgroupKey.slice(5);
+      const field = userFields.find((f: any) => (f.id || f.key) === fieldId);
+
+      const ascCompare = (a: string, b: string) => {
+        if (isMissing(a) && !isMissing(b)) return -1;
+        if (!isMissing(a) && isMissing(b)) return 1;
+        if (field?.type === 'number') {
+          const na = parseFloat(a), nb = parseFloat(b);
+          const va = isNaN(na) ? Number.POSITIVE_INFINITY : na;
+          const vb = isNaN(nb) ? Number.POSITIVE_INFINITY : nb;
+          if (va !== vb) return va - vb;
+        } else if (field?.type === 'boolean') {
+          const va = a === 'true' ? 0 : a === 'false' ? 1 : 2;
+          const vb = b === 'true' ? 0 : b === 'false' ? 1 : 2;
+          if (va !== vb) return va - vb;
+        } else if (field?.type === 'date') {
+          const ta = Date.parse(a); const tb = Date.parse(b);
+          const va = isNaN(ta) ? Number.POSITIVE_INFINITY : ta;
+          const vb = isNaN(tb) ? Number.POSITIVE_INFINITY : tb;
+          if (va !== vb) return va - vb;
+        }
+        return a.localeCompare(b);
+      };
+
+      const sortedUser = keys.slice().sort(ascCompare);
+      return sortDirection === 'desc' ? sortedUser.reverse() : sortedUser;
+    }
+
+    // Default alphabetical with missing-first for asc
+    const asc = keys.slice().sort((a, b) => {
+      if (isMissing(a) && !isMissing(b)) return -1;
+      if (!isMissing(a) && isMissing(b)) return 1;
+      return a.localeCompare(b);
+    });
+    return sortDirection === 'desc' ? asc.reverse() : asc;
   }
 }
 
