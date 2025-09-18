@@ -217,6 +217,30 @@ export const en: TranslationTree = {
         languageChanged: 'Language changed to {language}.'
     },
     modals: {
+        task: {
+            actions: {
+                due: 'Set due date',
+                scheduled: 'Set scheduled date',
+                status: 'Set status',
+                priority: 'Set priority',
+                recurrence: 'Set recurrence',
+                reminders: 'Set reminders'
+            }
+        },
+        taskCreation: {
+            title: 'Create task',
+            actions: {
+                fillFromNaturalLanguage: 'Fill form from natural language',
+                hideDetailedOptions: 'Hide detailed options',
+                showDetailedOptions: 'Show detailed options'
+            },
+            notices: {
+                titleRequired: 'Please enter a task title',
+                success: 'Task "{title}" created successfully',
+                successShortened: 'Task "{title}" created successfully (filename shortened due to length)',
+                failure: 'Failed to create task: {message}'
+            }
+        },
         storageLocation: {
             title: {
                 migrate: 'Migrate pomodoro data?',

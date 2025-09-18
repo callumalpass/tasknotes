@@ -217,6 +217,30 @@ export const fr: TranslationTree = {
         languageChanged: 'Langue changée pour {language}.'
     },
     modals: {
+        task: {
+            actions: {
+                due: 'Définir l\'échéance',
+                scheduled: 'Définir la date planifiée',
+                status: 'Définir le statut',
+                priority: 'Définir la priorité',
+                recurrence: 'Définir la récurrence',
+                reminders: 'Définir les rappels'
+            }
+        },
+        taskCreation: {
+            title: 'Créer une tâche',
+            actions: {
+                fillFromNaturalLanguage: 'Remplir le formulaire avec le langage naturel',
+                hideDetailedOptions: 'Masquer les options détaillées',
+                showDetailedOptions: 'Afficher les options détaillées'
+            },
+            notices: {
+                titleRequired: 'Veuillez saisir un titre de tâche',
+                success: 'Tâche "{title}" créée avec succès',
+                successShortened: 'Tâche "{title}" créée avec succès (nom de fichier raccourci)',
+                failure: 'Échec de la création de la tâche : {message}'
+            }
+        },
         storageLocation: {
             title: {
                 migrate: 'Migrer les données Pomodoro ?',

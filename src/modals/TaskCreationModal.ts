@@ -524,8 +524,12 @@ export class TaskCreationModal extends TaskModal {
         );
     }
 
+    private t(key: string, params?: Record<string, string | number>): string {
+        return this.plugin.i18n.translate(key, params);
+    }
+
     getModalTitle(): string {
-        return 'Create task';
+        return this.t('modals.taskCreation.title');
     }
 
     protected createModalContent(): void {
@@ -642,7 +646,7 @@ export class TaskCreationModal extends TaskModal {
         // NLP-specific icons (only if NLP is enabled)
         if (this.plugin.settings.enableNaturalLanguageInput) {
             // Fill form icon
-            this.createActionIcon(this.actionBar, 'wand', 'Fill form from natural language', (icon, event) => {
+            this.createActionIcon(this.actionBar, 'wand', this.t('modals.taskCreation.actions.fillFromNaturalLanguage'), (icon, event) => {
                 const input = this.nlInput?.value.trim();
                 if (input) {
                     this.parseAndFillForm(input);
@@ -651,14 +655,18 @@ export class TaskCreationModal extends TaskModal {
 
             // Expand/collapse icon
             this.createActionIcon(this.actionBar, this.isExpanded ? 'chevron-up' : 'chevron-down',
-                this.isExpanded ? 'Hide detailed options' : 'Show detailed options', (icon, event) => {
+                this.isExpanded
+                    ? this.t('modals.taskCreation.actions.hideDetailedOptions')
+                    : this.t('modals.taskCreation.actions.showDetailedOptions'), (icon, event) => {
                 this.toggleDetailedForm();
                 // Update icon and tooltip
                 const iconEl = icon.querySelector('.icon');
                 if (iconEl) {
                     setIcon(iconEl as HTMLElement, this.isExpanded ? 'chevron-up' : 'chevron-down');
                 }
-                setTooltip(icon, this.isExpanded ? 'Hide detailed options' : 'Show detailed options', { placement: 'top' });
+                setTooltip(icon, this.isExpanded
+                    ? this.t('modals.taskCreation.actions.hideDetailedOptions')
+                    : this.t('modals.taskCreation.actions.showDetailedOptions'), { placement: 'top' });
             });
 
             // Add separator
@@ -670,32 +678,32 @@ export class TaskCreationModal extends TaskModal {
         }
 
         // Due date icon
-        this.createActionIcon(this.actionBar, 'calendar', 'Set due date', (icon, event) => {
+        this.createActionIcon(this.actionBar, 'calendar', this.t('modals.task.actions.due'), (icon, event) => {
             this.showDateContextMenu(event, 'due');
         }, 'due-date');
 
         // Scheduled date icon
-        this.createActionIcon(this.actionBar, 'calendar-clock', 'Set scheduled date', (icon, event) => {
+        this.createActionIcon(this.actionBar, 'calendar-clock', this.t('modals.task.actions.scheduled'), (icon, event) => {
             this.showDateContextMenu(event, 'scheduled');
         }, 'scheduled-date');
 
         // Status icon
-        this.createActionIcon(this.actionBar, 'dot-square', 'Set status', (icon, event) => {
+        this.createActionIcon(this.actionBar, 'dot-square', this.t('modals.task.actions.status'), (icon, event) => {
             this.showStatusContextMenu(event);
         }, 'status');
 
         // Priority icon
-        this.createActionIcon(this.actionBar, 'star', 'Set priority', (icon, event) => {
+        this.createActionIcon(this.actionBar, 'star', this.t('modals.task.actions.priority'), (icon, event) => {
             this.showPriorityContextMenu(event);
         }, 'priority');
 
         // Recurrence icon
-        this.createActionIcon(this.actionBar, 'refresh-ccw', 'Set recurrence', (icon, event) => {
+        this.createActionIcon(this.actionBar, 'refresh-ccw', this.t('modals.task.actions.recurrence'), (icon, event) => {
             this.showRecurrenceContextMenu(event);
         }, 'recurrence');
 
         // Reminder icon
-        this.createActionIcon(this.actionBar, 'bell', 'Set reminders', (icon, event) => {
+        this.createActionIcon(this.actionBar, 'bell', this.t('modals.task.actions.reminders'), (icon, event) => {
             this.showReminderContextMenu(event);
         }, 'reminders');
 
@@ -851,7 +859,7 @@ export class TaskCreationModal extends TaskModal {
         }
 
         if (!this.validateForm()) {
-            new Notice('Please enter a task title');
+            new Notice(this.t('modals.taskCreation.notices.titleRequired'));
             return;
         }
 
@@ -864,9 +872,9 @@ export class TaskCreationModal extends TaskModal {
             const actualFilename = result.file.basename;
             
             if (actualFilename.startsWith('task-') && actualFilename !== expectedFilename) {
-                new Notice(`Task "${result.taskInfo.title}" created successfully (filename shortened due to length)`);
+                new Notice(this.t('modals.taskCreation.notices.successShortened', { title: result.taskInfo.title }));
             } else {
-                new Notice(`Task "${result.taskInfo.title}" created successfully`);
+                new Notice(this.t('modals.taskCreation.notices.success', { title: result.taskInfo.title }));
             }
 
             if (this.options.onTaskCreated) {
@@ -877,7 +885,8 @@ export class TaskCreationModal extends TaskModal {
 
         } catch (error) {
             console.error('Failed to create task:', error);
-            new Notice('Failed to create task: ' + error.message);
+            const message = error instanceof Error && error.message ? error.message : String(error);
+            new Notice(this.t('modals.taskCreation.notices.failure', { message }));
         }
     }
 

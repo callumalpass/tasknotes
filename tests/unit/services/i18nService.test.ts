@@ -8,6 +8,7 @@ describe('I18nService', () => {
         expect(i18n.translate('common.systemDefault')).toBe('System default');
         expect(i18n.translate('views.pomodoroStats.sections.week')).toBe('This week');
         expect(i18n.translate('views.pomodoro.buttons.start')).toBe('Start');
+        expect(i18n.translate('modals.taskCreation.notices.titleRequired')).toBe('Please enter a task title');
     });
 
     it('switches locales and translates using fallback when key missing', () => {
@@ -17,6 +18,7 @@ describe('I18nService', () => {
         expect(i18n.translate('common.systemDefault')).toBe('Langue du système');
         expect(i18n.translate('views.pomodoroStats.sections.week')).toBe('Cette semaine');
         expect(i18n.translate('views.pomodoro.buttons.start')).toBe('Démarrer');
+        expect(i18n.translate('modals.taskCreation.notices.titleRequired')).toBe('Veuillez saisir un titre de tâche');
 
         // Non-existent key falls back to English key (returns key when no locale has it)
         expect(i18n.translate('views.nonexistent.key')).toBe('views.nonexistent.key');
