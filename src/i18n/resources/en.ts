@@ -12,6 +12,29 @@ export const en: TranslationTree = {
         languages: {
             en: 'English',
             fr: 'French'
+        },
+        weekdays: {
+            sunday: 'Sunday',
+            monday: 'Monday',
+            tuesday: 'Tuesday',
+            wednesday: 'Wednesday',
+            thursday: 'Thursday',
+            friday: 'Friday',
+            saturday: 'Saturday'
+        },
+        months: {
+            january: 'January',
+            february: 'February',
+            march: 'March',
+            april: 'April',
+            may: 'May',
+            june: 'June',
+            july: 'July',
+            august: 'August',
+            september: 'September',
+            october: 'October',
+            november: 'November',
+            december: 'December'
         }
     },
     views: {
@@ -218,6 +241,22 @@ export const en: TranslationTree = {
     },
     modals: {
         task: {
+            titlePlaceholder: 'What needs to be done?',
+            titleLabel: 'Title',
+            titleDetailedPlaceholder: 'Task title...',
+            detailsLabel: 'Details',
+            detailsPlaceholder: 'Add more details...',
+            projectsLabel: 'Projects',
+            projectsAdd: 'Add Project',
+            projectsTooltip: 'Select a project note using fuzzy search',
+            projectsRemoveTooltip: 'Remove project',
+            contextsLabel: 'Contexts',
+            contextsPlaceholder: 'context1, context2',
+            tagsLabel: 'Tags',
+            tagsPlaceholder: 'tag1, tag2',
+            timeEstimateLabel: 'Time estimate (minutes)',
+            timeEstimatePlaceholder: '30',
+            customFieldsLabel: 'Custom Fields',
             actions: {
                 due: 'Set due date',
                 scheduled: 'Set scheduled date',
@@ -225,6 +264,47 @@ export const en: TranslationTree = {
                 priority: 'Set priority',
                 recurrence: 'Set recurrence',
                 reminders: 'Set reminders'
+            },
+            buttons: {
+                openNote: 'Open note',
+                save: 'Save'
+            },
+            tooltips: {
+                dueValue: 'Due: {value}',
+                scheduledValue: 'Scheduled: {value}',
+                statusValue: 'Status: {value}',
+                priorityValue: 'Priority: {value}',
+                recurrenceValue: 'Recurrence: {value}',
+                remindersSingle: '1 reminder set',
+                remindersPlural: '{count} reminders set'
+            },
+            dateMenu: {
+                dueTitle: 'Set Due Date',
+                scheduledTitle: 'Set Scheduled Date'
+            },
+            userFields: {
+                textPlaceholder: 'Enter {field}...',
+                numberPlaceholder: '0',
+                datePlaceholder: 'YYYY-MM-DD',
+                listPlaceholder: 'item1, item2, item3',
+                pickDate: 'Pick {field} date'
+            },
+            recurrence: {
+                daily: 'Daily',
+                weekly: 'Weekly',
+                everyTwoWeeks: 'Every 2 weeks',
+                weekdays: 'Weekdays',
+                weeklyOn: 'Weekly on {days}',
+                monthly: 'Monthly',
+                everyThreeMonths: 'Every 3 months',
+                monthlyOnOrdinal: 'Monthly on the {ordinal}',
+                monthlyByWeekday: 'Monthly (by weekday)',
+                yearly: 'Yearly',
+                yearlyOn: 'Yearly on {month} {day}',
+                custom: 'Custom',
+                countSuffix: '{count} times',
+                untilSuffix: 'until {date}',
+                ordinal: '{number}{suffix}'
             }
         },
         taskCreation: {
@@ -234,11 +314,43 @@ export const en: TranslationTree = {
                 hideDetailedOptions: 'Hide detailed options',
                 showDetailedOptions: 'Show detailed options'
             },
+            nlPlaceholder: 'Buy groceries tomorrow at 3pm @home #errands\n\nAdd details here...',
             notices: {
                 titleRequired: 'Please enter a task title',
                 success: 'Task "{title}" created successfully',
                 successShortened: 'Task "{title}" created successfully (filename shortened due to length)',
                 failure: 'Failed to create task: {message}'
+            }
+        },
+        taskEdit: {
+            title: 'Edit task',
+            sections: {
+                completions: 'Completions',
+                taskInfo: 'Task Information'
+            },
+            metadata: {
+                totalTrackedTime: 'Total tracked time:',
+                created: 'Created:',
+                modified: 'Modified:',
+                file: 'File:'
+            },
+            buttons: {
+                archive: 'Archive',
+                unarchive: 'Unarchive'
+            },
+            notices: {
+                titleRequired: 'Please enter a task title',
+                noChanges: 'No changes to save',
+                updateSuccess: 'Task "{title}" updated successfully',
+                updateFailure: 'Failed to update task: {message}',
+                fileMissing: 'Could not find task file: {path}',
+                openNoteFailure: 'Failed to open task note',
+                archiveSuccess: 'Task {action} successfully',
+                archiveFailure: 'Failed to archive task'
+            },
+            archiveAction: {
+                archived: 'archived',
+                unarchived: 'unarchived'
             }
         },
         storageLocation: {

@@ -12,6 +12,29 @@ export const fr: TranslationTree = {
         languages: {
             en: 'Anglais',
             fr: 'Français'
+        },
+        weekdays: {
+            sunday: 'Dimanche',
+            monday: 'Lundi',
+            tuesday: 'Mardi',
+            wednesday: 'Mercredi',
+            thursday: 'Jeudi',
+            friday: 'Vendredi',
+            saturday: 'Samedi'
+        },
+        months: {
+            january: 'Janvier',
+            february: 'Février',
+            march: 'Mars',
+            april: 'Avril',
+            may: 'Mai',
+            june: 'Juin',
+            july: 'Juillet',
+            august: 'Août',
+            september: 'Septembre',
+            october: 'Octobre',
+            november: 'Novembre',
+            december: 'Décembre'
         }
     },
     views: {
@@ -218,6 +241,22 @@ export const fr: TranslationTree = {
     },
     modals: {
         task: {
+            titlePlaceholder: 'Quel est votre prochain objectif ?',
+            titleLabel: 'Titre',
+            titleDetailedPlaceholder: 'Titre de la tâche...',
+            detailsLabel: 'Détails',
+            detailsPlaceholder: 'Ajoutez davantage de détails...',
+            projectsLabel: 'Projets',
+            projectsAdd: 'Ajouter un projet',
+            projectsTooltip: 'Sélectionnez une note de projet via la recherche floue',
+            projectsRemoveTooltip: 'Retirer le projet',
+            contextsLabel: 'Contextes',
+            contextsPlaceholder: 'contexte1, contexte2',
+            tagsLabel: 'Tags',
+            tagsPlaceholder: 'tag1, tag2',
+            timeEstimateLabel: 'Estimation (minutes)',
+            timeEstimatePlaceholder: '30',
+            customFieldsLabel: 'Champs personnalisés',
             actions: {
                 due: 'Définir l\'échéance',
                 scheduled: 'Définir la date planifiée',
@@ -225,6 +264,47 @@ export const fr: TranslationTree = {
                 priority: 'Définir la priorité',
                 recurrence: 'Définir la récurrence',
                 reminders: 'Définir les rappels'
+            },
+            buttons: {
+                openNote: 'Ouvrir la note',
+                save: 'Enregistrer'
+            },
+            tooltips: {
+                dueValue: 'Échéance : {value}',
+                scheduledValue: 'Planifiée : {value}',
+                statusValue: 'Statut : {value}',
+                priorityValue: 'Priorité : {value}',
+                recurrenceValue: 'Récurrence : {value}',
+                remindersSingle: '1 rappel défini',
+                remindersPlural: '{count} rappels définis'
+            },
+            dateMenu: {
+                dueTitle: 'Définir l\'échéance',
+                scheduledTitle: 'Définir la date planifiée'
+            },
+            userFields: {
+                textPlaceholder: 'Saisir {field}...',
+                numberPlaceholder: '0',
+                datePlaceholder: 'AAAA-MM-JJ',
+                listPlaceholder: 'élément1, élément2, élément3',
+                pickDate: 'Choisir la date {field}'
+            },
+            recurrence: {
+                daily: 'Quotidien',
+                weekly: 'Hebdomadaire',
+                everyTwoWeeks: 'Toutes les 2 semaines',
+                weekdays: 'Jours ouvrés',
+                weeklyOn: 'Chaque semaine le {days}',
+                monthly: 'Mensuel',
+                everyThreeMonths: 'Tous les 3 mois',
+                monthlyOnOrdinal: 'Chaque mois le {ordinal}',
+                monthlyByWeekday: 'Mensuel (par jour de semaine)',
+                yearly: 'Annuel',
+                yearlyOn: 'Chaque année le {month} {day}',
+                custom: 'Personnalisé',
+                countSuffix: '{count} occurrences',
+                untilSuffix: 'jusqu\'au {date}',
+                ordinal: '{number}e'
             }
         },
         taskCreation: {
@@ -234,11 +314,43 @@ export const fr: TranslationTree = {
                 hideDetailedOptions: 'Masquer les options détaillées',
                 showDetailedOptions: 'Afficher les options détaillées'
             },
+            nlPlaceholder: 'Acheter des courses demain à 15h @maison #courses\n\nAjoutez des détails ici...',
             notices: {
                 titleRequired: 'Veuillez saisir un titre de tâche',
                 success: 'Tâche "{title}" créée avec succès',
                 successShortened: 'Tâche "{title}" créée avec succès (nom de fichier raccourci)',
                 failure: 'Échec de la création de la tâche : {message}'
+            }
+        },
+        taskEdit: {
+            title: 'Modifier la tâche',
+            sections: {
+                completions: 'Achèvements',
+                taskInfo: 'Informations sur la tâche'
+            },
+            metadata: {
+                totalTrackedTime: 'Temps suivi total :',
+                created: 'Créée :',
+                modified: 'Modifiée :',
+                file: 'Fichier :'
+            },
+            buttons: {
+                archive: 'Archiver',
+                unarchive: 'Désarchiver'
+            },
+            notices: {
+                titleRequired: 'Veuillez saisir un titre de tâche',
+                noChanges: 'Aucune modification à enregistrer',
+                updateSuccess: 'Tâche "{title}" mise à jour avec succès',
+                updateFailure: 'Échec de la mise à jour de la tâche : {message}',
+                fileMissing: 'Impossible de trouver le fichier de la tâche : {path}',
+                openNoteFailure: 'Impossible d\'ouvrir la note de la tâche',
+                archiveSuccess: 'Tâche {action} avec succès',
+                archiveFailure: 'Échec de l\'archivage de la tâche'
+            },
+            archiveAction: {
+                archived: 'archivée',
+                unarchived: 'désarchivée'
             }
         },
         storageLocation: {

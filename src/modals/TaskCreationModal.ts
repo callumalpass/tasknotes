@@ -524,12 +524,12 @@ export class TaskCreationModal extends TaskModal {
         );
     }
 
-    private t(key: string, params?: Record<string, string | number>): string {
-        return this.plugin.i18n.translate(key, params);
-    }
-
     getModalTitle(): string {
         return this.t('modals.taskCreation.title');
+    }
+
+    protected isCreationMode(): boolean {
+        return true;
     }
 
     protected createModalContent(): void {
@@ -573,7 +573,7 @@ export class TaskCreationModal extends TaskModal {
         this.nlInput = nlContainer.createEl('textarea', {
             cls: 'nl-input',
             attr: {
-                placeholder: 'Buy groceries tomorrow at 3pm @home #errands\n\nAdd details here...',
+                placeholder: this.t('modals.taskCreation.nlPlaceholder'),
                 rows: '3'
             }
         });
