@@ -96,6 +96,117 @@ export class FilterService extends EventEmitter {
     }
 
     /**
+     * Additive API: returns standard groups and optional hierarchicalGroups when subgroupKey is set
+     */
+    async getHierarchicalGroupedTasks(query: FilterQuery, targetDate?: Date): Promise<{
+        groups: Map<string, TaskInfo[]>;
+        hierarchicalGroups?: Map<string, Map<string, TaskInfo[]>>;
+    }> {
+        try {
+            // Allow incomplete filters while building
+            FilterUtils.validateFilterNode(query, false);
+
+            // Reuse the same pipeline as getGroupedTasks to avoid behavior drift
+            let candidateTaskPaths = this.getIndexOptimizedTaskPaths(query);
+            const candidateTasks = await this.pathsToTaskInfos(Array.from(candidateTaskPaths));
+            const filteredTasks = candidateTasks.filter(task => this.evaluateFilterNode(query, task, targetDate));
+
+            const sortedTasks = this.sortTasks(
+                filteredTasks,
+                query.sortKey || 'due',
+                query.sortDirection || 'asc'
+            );
+
+            // Preserve current sort for group ordering
+            this.currentSortKey = (query.sortKey || 'due');
+            this.currentSortDirection = (query.sortDirection || 'asc');
+
+            const groups = this.groupTasks(sortedTasks, query.groupKey || 'none', targetDate);
+
+            // Compute hierarchical grouping only when both keys are active
+            const subgroupKey = (query as any).subgroupKey as TaskGroupKey | undefined;
+            if (subgroupKey && subgroupKey !== 'none' && (query.groupKey && query.groupKey !== 'none')) {
+                // Lazy import to avoid circular deps at module load
+                const { HierarchicalGroupingService } = await import('./HierarchicalGroupingService');
+
+                // Resolver that mirrors user-field extraction logic used elsewhere in this service
+                const resolver = (task: TaskInfo, fieldIdOrKey: string): string[] => {
+                    const userFields = this.plugin?.settings?.userFields || [];
+                    const field = userFields.find((f: any) => (f.id || f.key) === fieldIdOrKey || f.key === fieldIdOrKey);
+                    const missingLabel = `No ${field?.displayName || field?.key || fieldIdOrKey}`;
+                    if (!field) return [missingLabel];
+                    try {
+                        const app = this.cacheManager.getApp();
+                        const file = app.vault.getAbstractFileByPath(task.path);
+                        if (!file) return [missingLabel];
+                        const fm = app.metadataCache.getFileCache(file as any)?.frontmatter;
+                        const raw = fm ? fm[field.key] : undefined;
+                        switch (field.type) {
+                            case 'boolean': {
+                                if (typeof raw === 'boolean') return [raw ? 'true' : 'false'];
+                                if (raw == null) return [missingLabel];
+                                const s = String(raw).trim().toLowerCase();
+                                if (s === 'true' || s === 'false') return [s];
+                                return [missingLabel];
+                            }
+                            case 'number': {
+                                if (typeof raw === 'number') return [String(raw)];
+                                if (typeof raw === 'string') {
+                                    const match = raw.match(/^(\d+(?:\.\d+)?)/);
+                                    return match ? [match[1]] : [missingLabel];
+                                }
+                                return [missingLabel];
+                            }
+                            case 'date': {
+                                return raw ? [String(raw)] : [missingLabel];
+                            }
+                            case 'list': {
+                                // For grouping: use display tokens only (exclude raw wikilink tokens)
+                                const tokens = this.normalizeUserListValue(raw).filter(t => !/^\[\[/.test(t));
+                                return tokens.length > 0 ? tokens : [missingLabel];
+                            }
+                            case 'text':
+                            default: {
+                                const s = String(raw ?? '').trim();
+                                return s ? [s] : [missingLabel];
+                            }
+                        }
+                    } catch {
+                        return [missingLabel];
+                    }
+                };
+
+                const svc = new HierarchicalGroupingService(resolver);
+                const hierarchicalGroups = svc.group(sortedTasks, query.groupKey as TaskGroupKey, subgroupKey);
+
+                // Ensure primary group order matches the same order used for flat groups
+                // (e.g., status order) instead of insertion order influenced by the current task sort.
+                const orderedPrimaryKeys = Array.from(groups.keys()); // already sorted via sortGroups()
+                const orderedHierarchical = new Map<string, Map<string, TaskInfo[]>>();
+                for (const key of orderedPrimaryKeys) {
+                    const sub = hierarchicalGroups.get(key);
+                    if (sub) orderedHierarchical.set(key, sub);
+                }
+                // Safety: include any primaries that might exist only in hierarchicalGroups
+                for (const [key, sub] of hierarchicalGroups) {
+                    if (!orderedHierarchical.has(key)) orderedHierarchical.set(key, sub);
+                }
+
+                return { groups, hierarchicalGroups: orderedHierarchical };
+            }
+
+            return { groups };
+        } catch (error) {
+            if (error instanceof FilterValidationError || error instanceof FilterEvaluationError) {
+                console.error('Filter error (hierarchical):', error.message, { nodeId: (error as any).nodeId });
+                return { groups: new Map<string, TaskInfo[]>() };
+            }
+            throw error;
+        }
+    }
+
+
+    /**
      * Get optimized task paths using index-backed filtering
      * Analyzes the filter query to find safe optimization opportunities
      * Returns a reduced set of candidate task paths for further processing
@@ -614,7 +725,7 @@ export class FilterService extends EventEmitter {
             if (!taskProject || typeof taskProject !== 'string') {
                 return false;
             }
-            
+
             const taskProjectName = this.extractProjectName(taskProject);
             if (!taskProjectName) {
                 return false;
@@ -712,22 +823,22 @@ export class FilterService extends EventEmitter {
         // For wikilink format, resolve to actual file path
         if (projectValue.startsWith('[[') && projectValue.endsWith(']]')) {
             const linkContent = projectValue.slice(2, -2);
-            
+
             // Parse the wikilink manually since Obsidian's parseLinktext seems unreliable
             let linkPath = linkContent;
-            
+
             const pipeIndex = linkContent.indexOf('|');
             if (pipeIndex !== -1) {
                 linkPath = linkContent.substring(0, pipeIndex).trim();
             }
-            
+
             // Always try to resolve using Obsidian's API - this handles relative paths correctly
             const resolvedFile = this.plugin.app.metadataCache.getFirstLinkpathDest(linkPath, '');
             if (resolvedFile) {
                 // Return the absolute file path (vault-relative) without .md extension
                 return resolvedFile.path.replace(/\.md$/, '');
             }
-            
+
             // If file doesn't exist, clean up the link path (ignore alias part)
             return linkPath.replace(/\.md$/, '');
         }
@@ -736,13 +847,13 @@ export class FilterService extends EventEmitter {
         if (projectValue.includes('|')) {
             const parts = projectValue.split('|');
             const pathPart = parts[0].trim();
-            
+
             // Try to resolve the path part using Obsidian's API
             const resolvedFile = this.plugin.app.metadataCache.getFirstLinkpathDest(pathPart, '');
             if (resolvedFile) {
                 return resolvedFile.path.replace(/\.md$/, '');
             }
-            
+
             return pathPart.replace(/\.md$/, '');
         }
 
@@ -752,7 +863,7 @@ export class FilterService extends EventEmitter {
             if (resolvedFile) {
                 return resolvedFile.path.replace(/\.md$/, '');
             }
-            
+
             return projectValue.replace(/\.md$/, '');
         }
 
@@ -774,12 +885,12 @@ export class FilterService extends EventEmitter {
         if (!absolutePathOrName || absolutePathOrName === 'No Project') {
             return absolutePathOrName;
         }
-        
+
         // If it's already an absolute path, return as wikilink
         if (absolutePathOrName.includes('/') || absolutePathOrName.endsWith('.md')) {
             return `[[${absolutePathOrName}]]`;
         }
-        
+
         // For non-path values (plain text projects), return as simple wikilink
         return `[[${absolutePathOrName}]]`;
     }
@@ -983,7 +1094,7 @@ export class FilterService extends EventEmitter {
         // Sort by the first tag alphabetically (case-insensitive)
         const firstTagA = normalizedTagsA[0].toLowerCase();
         const firstTagB = normalizedTagsB[0].toLowerCase();
-        
+
         return firstTagA.localeCompare(firstTagB);
     }
 

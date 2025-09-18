@@ -8,6 +8,8 @@ import { isValidDateInput } from '../utils/dateUtils';
 import { showConfirmationModal } from '../modals/ConfirmationModal';
 import { DateContextMenu } from '../components/DateContextMenu';
 import { PropertyVisibilityDropdown } from './PropertyVisibilityDropdown';
+import { SubgroupMenuBuilder } from '../components/SubgroupMenuBuilder';
+
 
 class SaveViewModal extends Modal {
     private name: string;
@@ -329,19 +331,19 @@ export class FilterBar extends EventEmitter {
 
         if (matchingView && this.activeSavedView?.id !== matchingView.id) {
             this.activeSavedView = matchingView;
-            
+
             // Clear temporary properties if they match the saved view's properties
             if (this.temporaryVisibleProperties && matchingView.visibleProperties) {
                 const tempPropsSet = new Set(this.temporaryVisibleProperties);
                 const savedPropsSet = new Set(matchingView.visibleProperties);
-                
+
                 // Check if the sets are equal (same properties)
-                if (tempPropsSet.size === savedPropsSet.size && 
+                if (tempPropsSet.size === savedPropsSet.size &&
                     [...tempPropsSet].every(prop => savedPropsSet.has(prop))) {
                     this.temporaryVisibleProperties = null;
                 }
             }
-            
+
             this.updateViewSelectorButtonState();
             // Emit event when active saved view changes
             this.emit('activeSavedViewChanged', matchingView);
@@ -459,11 +461,11 @@ export class FilterBar extends EventEmitter {
                     this.toggleViewSelectorDropdown();
                 });
             this.viewSelectorButton.buttonEl.addClass('clickable-icon');
-            
+
             // Add chevrons-up-down icon
             const chevronContainer = this.viewSelectorButton.buttonEl.createDiv('filter-bar__chevron-container');
             setIcon(chevronContainer, 'chevrons-up-down');
-            
+
             this.updateViewSelectorButtonState();
         };
         const makeFilterToggle = () => {
@@ -475,17 +477,17 @@ export class FilterBar extends EventEmitter {
                 });
             filterToggle.buttonEl.addClass('clickable-icon');
             filterToggle.buttonEl.addClass('has-text-icon');
-            
+
             // Clear any existing content and build manually
             filterToggle.buttonEl.empty();
-            
+
             // Add icon
             const iconEl = filterToggle.buttonEl.createSpan({ cls: 'button-icon' });
             setIcon(iconEl, 'list-filter');
-            
+
             // Add text
             const textEl = filterToggle.buttonEl.createSpan({ cls: 'button-text', text: 'Filters' });
-            
+
             // Right-click quick clear
             filterToggle.buttonEl.addEventListener('contextmenu', (e) => {
                 e.preventDefault();
@@ -501,20 +503,20 @@ export class FilterBar extends EventEmitter {
                 .setClass('filter-bar__properties-button')
                 .onClick((event) => {
                     // Ensure we have a proper MouseEvent
-                    const mouseEvent = event instanceof MouseEvent ? event : 
+                    const mouseEvent = event instanceof MouseEvent ? event :
                         new MouseEvent('click', { bubbles: true, cancelable: true });
                     this.showPropertiesDropdown(mouseEvent);
                 });
             propertiesButton.buttonEl.addClass('clickable-icon');
             propertiesButton.buttonEl.addClass('has-text-icon');
-            
+
             // Clear any existing content and build manually
             propertiesButton.buttonEl.empty();
-            
+
             // Add icon
             const iconEl = propertiesButton.buttonEl.createSpan({ cls: 'button-icon' });
             setIcon(iconEl, 'list');
-            
+
             // Add text
             const textEl = propertiesButton.buttonEl.createSpan({ cls: 'button-text', text: 'Properties' });
         };
@@ -531,30 +533,32 @@ export class FilterBar extends EventEmitter {
         const makeSortGroupButton = () => {
             // Don't show sort/group button on advanced calendar view
             if (this.viewType === 'advanced-calendar') return;
-            
-            const sortGroupButton = new ButtonComponent(topControls)
+
+            // Wrap button in a container so tests and CSS can target the wrapper
+            const wrapper = topControls.createDiv('filter-bar__sort-group-button');
+
+            const sortGroupButton = new ButtonComponent(wrapper)
                 .setTooltip('Sort and group options')
-                .setClass('filter-bar__sort-group-button')
                 .onClick((event) => {
                     this.showSortGroupContextMenu(event);
                 });
             sortGroupButton.buttonEl.addClass('clickable-icon');
             sortGroupButton.buttonEl.addClass('has-text-icon');
-            
+
             // Clear any existing content and build manually
             sortGroupButton.buttonEl.empty();
-            
+
             // Add icon
             const iconEl = sortGroupButton.buttonEl.createSpan({ cls: 'button-icon' });
             setIcon(iconEl, 'arrow-up-down');
-            
+
             // Add text
-            const textEl = sortGroupButton.buttonEl.createSpan({ cls: 'button-text', text: 'Sort' });
+            sortGroupButton.buttonEl.createSpan({ cls: 'button-text', text: 'Sort' });
         };
         const makeNewTaskButton = () => {
             // Don't show new task button on subtask widget
             if (this.viewType === 'subtask-widget') return;
-            
+
             const newTaskButton = new ButtonComponent(topControls)
                 .setTooltip('Create new task')
                 .setClass('filter-bar__new-task-button')
@@ -563,14 +567,14 @@ export class FilterBar extends EventEmitter {
                 });
             newTaskButton.buttonEl.addClass('clickable-icon');
             newTaskButton.buttonEl.addClass('has-text-icon');
-            
+
             // Clear any existing content and build manually
-            newTaskButton.buttonEl.empty();
-            
+            if ((newTaskButton.buttonEl as any).empty) { (newTaskButton.buttonEl as any).empty(); } else { newTaskButton.buttonEl.innerHTML = ''; }
+
             // Add icon
             const iconEl = newTaskButton.buttonEl.createSpan({ cls: 'button-icon' });
             setIcon(iconEl, 'plus');
-            
+
             // Add text
             const textEl = newTaskButton.buttonEl.createSpan({ cls: 'button-text', text: 'New' });
         };
@@ -600,7 +604,7 @@ export class FilterBar extends EventEmitter {
 
         // Order controls based on alignment preference
         if (this.viewsButtonAlignment === 'left') {
-            // Left: Views -> Search Box -> Sort -> Filter -> Properties -> New 
+            // Left: Views -> Search Box -> Sort -> Filter -> Properties -> New
             makeViewsButton();
             makeSearchInput();
             makeSortGroupButton();
@@ -664,32 +668,32 @@ export class FilterBar extends EventEmitter {
             const containerRect = this.container.getBoundingClientRect();
             const buttonRect = filterButton.getBoundingClientRect();
             const filterBoxRect = this.mainFilterBox.getBoundingClientRect();
-            
+
             // Calculate ideal position aligned with filter button
             let leftOffset = buttonRect.left - containerRect.left;
-            
+
             // Find the parent pane/leaf to get the actual available space
             const parentLeaf = this.container.closest('.workspace-leaf');
             if (parentLeaf) {
                 const leafRect = parentLeaf.getBoundingClientRect();
                 const margin = 30; // generous margin from pane edge
-                
+
                 // Calculate how far right the popup would extend
                 const popupRightEdge = containerRect.left + leftOffset + filterBoxRect.width;
                 const maxAllowedRight = leafRect.right - margin;
-                
+
                 if (popupRightEdge > maxAllowedRight) {
                     // Calculate how much we need to shift left
                     const overflow = popupRightEdge - maxAllowedRight;
                     leftOffset = leftOffset - overflow;
-                    
+
                     // Ensure it doesn't go off the left edge of the container
                     if (leftOffset < 0) {
                         leftOffset = 0;
                     }
                 }
             }
-            
+
             // Position the filter box
             this.mainFilterBox.style.left = `${leftOffset}px`;
         }
@@ -1703,7 +1707,7 @@ export class FilterBar extends EventEmitter {
     private showSortGroupContextMenu(event: MouseEvent): void {
         try {
             const menu = new Menu();
-            
+
             // Build sort options
             const builtInSortOptions: Record<string, string> = {
                 'due': 'Due Date',
@@ -1727,7 +1731,7 @@ export class FilterBar extends EventEmitter {
                 item.setTitle('SORT');
                 item.setDisabled(true);
             });
-            
+
             Object.entries(sortOptions).forEach(([key, label]) => {
                 menu.addItem(item => {
                     item.setTitle(label);
@@ -1748,7 +1752,7 @@ export class FilterBar extends EventEmitter {
                 item.setTitle('ORDER');
                 item.setDisabled(true);
             });
-            
+
             menu.addItem(item => {
                 item.setTitle('Ascending');
                 if (this.currentQuery.sortDirection === 'asc') {
@@ -1760,7 +1764,7 @@ export class FilterBar extends EventEmitter {
                     this.updateDisplaySection();
                 });
             });
-            
+
             menu.addItem(item => {
                 item.setTitle('Descending');
                 if (this.currentQuery.sortDirection === 'desc') {
@@ -1800,7 +1804,7 @@ export class FilterBar extends EventEmitter {
                     item.setTitle('GROUP');
                     item.setDisabled(true);
                 });
-                
+
                 Object.entries(groupOptions).forEach(([key, label]) => {
                     menu.addItem(item => {
                         item.setTitle(label);
@@ -1809,14 +1813,30 @@ export class FilterBar extends EventEmitter {
                         }
                         item.onClick(() => {
                             this.currentQuery.groupKey = key as any;
+                            // Reset subgroup when primary group changes (backward-compatible default)
+                            (this.currentQuery as any).subgroupKey = 'none' as any;
                             this.updateExpandCollapseButtons();
                             this.updateDisplaySection();
                             this.updateFilterToggleBadge();
                             this.emitQueryChange();
+
                         });
                     });
                 });
             }
+
+
+            // SUBGROUP section (always available; Agenda hides GROUP but still shows SUBGROUP)
+            SubgroupMenuBuilder.addToMenu(
+                menu,
+                this.currentQuery as any,
+                this.filterOptions,
+                (key) => {
+                    (this.currentQuery as any).subgroupKey = key as any;
+                    this.emitImmediateQueryChange();
+                    this.updateDisplaySection();
+                }
+            );
 
             // Show menu at mouse position
             menu.showAtMouseEvent(event);
@@ -1829,6 +1849,7 @@ export class FilterBar extends EventEmitter {
     /**
      * Create a new task
      */
+
     private createNewTask(): void {
         try {
             // Use the plugin's existing task creation functionality
@@ -1871,7 +1892,7 @@ export class FilterBar extends EventEmitter {
             console.warn('FilterBar: Invalid properties array received:', properties);
             return;
         }
-        
+
         this.temporaryVisibleProperties = properties;
         this.emit('propertiesChanged', properties);
     }
@@ -1885,7 +1906,7 @@ export class FilterBar extends EventEmitter {
                this.plugin.settings.defaultVisibleProperties ||
                this.getDefaultFallbackProperties();
     }
-    
+
     /**
      * Get default fallback properties when no configuration exists
      */
@@ -1906,19 +1927,19 @@ export class FilterBar extends EventEmitter {
     public setActiveSavedView(view: SavedView | null): void {
         this.isSettingSavedView = true;
         this.activeSavedView = view;
-        
+
         // Clear temporary properties when setting a saved view as active
         if (view && this.temporaryVisibleProperties && view.visibleProperties) {
             const tempPropsSet = new Set(this.temporaryVisibleProperties);
             const savedPropsSet = new Set(view.visibleProperties);
-            
+
             // Check if the sets are equal (same properties)
-            if (tempPropsSet.size === savedPropsSet.size && 
+            if (tempPropsSet.size === savedPropsSet.size &&
                 [...tempPropsSet].every(prop => savedPropsSet.has(prop))) {
                 this.temporaryVisibleProperties = null;
             }
         }
-        
+
         this.updateViewSelectorButtonState();
         this.emit('activeSavedViewChanged', view);
         this.isSettingSavedView = false;
@@ -1942,9 +1963,9 @@ export class FilterBar extends EventEmitter {
         new SaveViewModal(this.app, (name) => {
             const currentViewOptions = this.getCurrentViewOptions();
             const currentProperties = this.getCurrentVisibleProperties();
-            this.emit('saveView', { 
-                name, 
-                query: this.currentQuery, 
+            this.emit('saveView', {
+                name,
+                query: this.currentQuery,
                 viewOptions: currentViewOptions,
                 visibleProperties: currentProperties
             });
@@ -1985,7 +2006,7 @@ export class FilterBar extends EventEmitter {
 
         // Clear the active saved view
         this.activeSavedView = null;
-        
+
         // Clear temporary properties
         this.temporaryVisibleProperties = null;
 
@@ -2026,7 +2047,7 @@ export class FilterBar extends EventEmitter {
 
         // Clear the active saved view
         this.activeSavedView = null;
-        
+
         // Clear temporary properties
         this.temporaryVisibleProperties = null;
 
@@ -2071,10 +2092,10 @@ export class FilterBar extends EventEmitter {
         this.isLoadingSavedView = true;
         this.currentQuery = FilterUtils.deepCloneFilterQuery(view.query);
         this.activeSavedView = view;
-        
+
         // Clear temporary properties when loading a saved view
         this.temporaryVisibleProperties = null;
-        
+
         this.render();
         this.emitQueryChange();
 
@@ -2082,7 +2103,7 @@ export class FilterBar extends EventEmitter {
         if (view.viewOptions) {
             this.emit('loadViewOptions', view.viewOptions);
         }
-        
+
         // Emit properties change if the saved view has visible properties
         if (view.visibleProperties) {
             this.emit('propertiesChanged', view.visibleProperties);
@@ -2119,7 +2140,7 @@ export class FilterBar extends EventEmitter {
             // Note: With context menu approach, we don't need to update UI elements
             // as the context menu is rebuilt each time it's shown.
             // Just update expand/collapse buttons visibility which is still relevant.
-            
+
             // Update expand/collapse buttons visibility
             this.updateExpandCollapseButtons();
         } catch (error) {
