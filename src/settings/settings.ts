@@ -2799,7 +2799,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 							const hasExistingData = data?.pomodoroHistory && Array.isArray(data.pomodoroHistory) && data.pomodoroHistory.length > 0;
 
 							// Show confirmation dialog using Obsidian's Modal API
-							const confirmed = await showStorageLocationConfirmationModal(this.app, hasExistingData);
+							const confirmed = await showStorageLocationConfirmationModal(this.plugin, hasExistingData);
 							if (!confirmed) {
 								dropdown.setValue('plugin'); // Reset to plugin storage if user cancels
 								return;

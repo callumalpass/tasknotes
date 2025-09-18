@@ -275,7 +275,7 @@ export function renderFeaturesTab(container: HTMLElement, plugin: TaskNotesPlugi
                 const hasExistingData = data?.pomodoroHistory && Array.isArray(data.pomodoroHistory) && data.pomodoroHistory.length > 0;
                 
                 // Show confirmation modal for storage location change
-                const confirmed = await showStorageLocationConfirmationModal(plugin.app, hasExistingData);
+                const confirmed = await showStorageLocationConfirmationModal(plugin, hasExistingData);
                 
                 if (confirmed) {
                     plugin.settings.pomodoroStorageLocation = newLocation;

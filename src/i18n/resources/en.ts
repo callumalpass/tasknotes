@@ -215,6 +215,34 @@ export const en: TranslationTree = {
     },
     notices: {
         languageChanged: 'Language changed to {language}.'
+    },
+    modals: {
+        storageLocation: {
+            title: {
+                migrate: 'Migrate pomodoro data?',
+                switch: 'Switch to daily notes storage?'
+            },
+            message: {
+                migrate: 'This will migrate your existing pomodoro session data to daily notes frontmatter. The data will be grouped by date and stored in each daily note.',
+                switch: 'Pomodoro session data will be stored in daily notes frontmatter instead of the plugin data file.'
+            },
+            whatThisMeans: 'What this means:',
+            bullets: {
+                dailyNotesRequired: 'Daily Notes core plugin must remain enabled',
+                storedInNotes: 'Data will be stored in your daily notes frontmatter',
+                migrateData: 'Existing plugin data will be migrated and then cleared',
+                futureSessions: 'Future sessions will be saved to daily notes',
+                dataLongevity: 'This provides better data longevity with your notes'
+            },
+            finalNote: {
+                migrate: '⚠️ Make sure you have backups if needed. This change cannot be automatically undone.',
+                switch: 'You can switch back to plugin storage at any time in the future.'
+            },
+            buttons: {
+                migrate: 'Migrate data',
+                switch: 'Switch storage'
+            }
+        }
     }
 };
 
