@@ -379,6 +379,42 @@ export const en: TranslationTree = {
                 switch: 'Switch storage'
             }
         }
+    },
+    contextMenus: {
+        ics: {
+            showDetails: 'Show details',
+            createTask: 'Create task from event',
+            createNote: 'Create note from event',
+            linkNote: 'Link existing note',
+            copyTitle: 'Copy title',
+            copyLocation: 'Copy location',
+            copyUrl: 'Copy URL',
+            copyMarkdown: 'Copy as markdown',
+            subscriptionUnknown: 'Unknown calendar',
+            notices: {
+                copyTitleSuccess: 'Event title copied to clipboard',
+                copyLocationSuccess: 'Location copied to clipboard',
+                copyUrlSuccess: 'Event URL copied to clipboard',
+                copyMarkdownSuccess: 'Event details copied as markdown',
+                copyFailure: 'Failed to copy to clipboard',
+                taskCreated: 'Task created: {title}',
+                taskCreateFailure: 'Failed to create task from event',
+                noteCreated: 'Note created successfully',
+                creationFailure: 'Failed to open creation modal',
+                linkSuccess: 'Linked note "{name}" to event',
+                linkFailure: 'Failed to link note',
+                linkSelectionFailure: 'Failed to open note selection'
+            },
+            markdown: {
+                titleFallback: 'Untitled Event',
+                calendar: '**Calendar:** {value}',
+                date: '**Date & Time:** {value}',
+                location: '**Location:** {value}',
+                descriptionHeading: '### Description',
+                url: '**URL:** {value}',
+                at: ' at {time}'
+            }
+        }
     }
 };
 

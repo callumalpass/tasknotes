@@ -379,6 +379,42 @@ export const fr: TranslationTree = {
                 switch: 'Changer de stockage'
             }
         }
+    },
+    contextMenus: {
+        ics: {
+            showDetails: 'Afficher les détails',
+            createTask: 'Créer une tâche depuis l\'événement',
+            createNote: 'Créer une note depuis l\'événement',
+            linkNote: 'Lier une note existante',
+            copyTitle: 'Copier le titre',
+            copyLocation: 'Copier le lieu',
+            copyUrl: 'Copier l\'URL',
+            copyMarkdown: 'Copier en markdown',
+            subscriptionUnknown: 'Calendrier inconnu',
+            notices: {
+                copyTitleSuccess: 'Titre de l\'événement copié dans le presse-papiers',
+                copyLocationSuccess: 'Lieu copié dans le presse-papiers',
+                copyUrlSuccess: 'URL de l\'événement copiée dans le presse-papiers',
+                copyMarkdownSuccess: 'Détails de l\'événement copiés en markdown',
+                copyFailure: 'Impossible de copier dans le presse-papiers',
+                taskCreated: 'Tâche créée : {title}',
+                taskCreateFailure: 'Impossible de créer une tâche depuis l\'événement',
+                noteCreated: 'Note créée avec succès',
+                creationFailure: 'Impossible d\'ouvrir la fenêtre de création',
+                linkSuccess: 'Note "{name}" liée à l\'événement',
+                linkFailure: 'Impossible de lier la note',
+                linkSelectionFailure: 'Impossible d\'ouvrir la sélection de note'
+            },
+            markdown: {
+                titleFallback: 'Événement sans titre',
+                calendar: '**Calendrier :** {value}',
+                date: '**Date et heure :** {value}',
+                location: '**Lieu :** {value}',
+                descriptionHeading: '### Description',
+                url: '**URL :** {value}',
+                at: ' à {time}'
+            }
+        }
     }
 };
 
