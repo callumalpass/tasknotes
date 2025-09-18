@@ -59,7 +59,7 @@ export class KanbanView extends ItemView implements OptimizedView {
     }
 
     getDisplayText(): string {
-        return 'Kanban';
+        return this.plugin.i18n.translate('views.kanban.title');
     }
 
     getIcon(): string {

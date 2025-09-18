@@ -71,6 +71,7 @@ import { NotificationService } from './services/NotificationService';
 import { AutoExportService } from './services/AutoExportService';
 // Type-only import for HTTPAPIService (actual import is dynamic on desktop only)
 import type { HTTPAPIService } from './services/HTTPAPIService';
+import { createI18nService, I18nService } from './i18n';
 
 // Type definitions for better type safety
 interface TaskUpdateEventData {
@@ -81,6 +82,7 @@ interface TaskUpdateEventData {
 
 export default class TaskNotesPlugin extends Plugin {
 	settings: TaskNotesSettings;
+	i18n: I18nService;
 
 	// Track cache-related settings to avoid unnecessary re-indexing
 	private previousCacheSettings: {
@@ -174,6 +176,18 @@ export default class TaskNotesPlugin extends Plugin {
 	private migrationComplete = false;
 	private migrationPromise: Promise<void> | null = null;
 
+	private getSystemUILocale(): string {
+		if (typeof navigator !== 'undefined' && navigator.language) {
+			return navigator.language;
+		}
+		return 'en';
+	}
+
+	private refreshLocalizedViews(): void {
+		// Views source their labels via getDisplayText; they'll pick up translations on next refresh.
+		// For now we don't force-refresh to avoid disrupting the workspace layout.
+	}
+
 	async onload() {
 		// Create the promise and store its resolver
 		this.readyPromise = new Promise(resolve => {
@@ -181,6 +195,20 @@ export default class TaskNotesPlugin extends Plugin {
 		});
 
 		await this.loadSettings();
+
+		this.i18n = createI18nService({
+			initialLocale: this.settings.uiLanguage ?? 'system',
+			getSystemLocale: () => this.getSystemUILocale()
+		});
+
+		this.i18n.on('locale-changed', ({ current }) => {
+			if (!this.initializationComplete) {
+				return;
+			}
+			const languageLabel = this.i18n.resolveKey(`common.languages.${current}`) || current;
+			new Notice(this.i18n.translate('notices.languageChanged', { language: languageLabel }));
+			this.refreshLocalizedViews();
+		});
 
 		// Register TaskNotes icon with transparent cutouts
 		addIcon('tasknotes-simple', `<g>

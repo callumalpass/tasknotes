@@ -36,7 +36,7 @@ export class NotesView extends ItemView {
     }
     
     getDisplayText(): string {
-        return 'Notes';
+        return this.plugin.i18n.translate('views.notes.title');
     }
     
     getIcon(): string {

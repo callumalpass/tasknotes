@@ -156,7 +156,7 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
     }
 
     getDisplayText(): string {
-        return 'Advanced Calendar';
+        return this.plugin.i18n.translate('views.advancedCalendar.title');
     }
 
     getIcon(): string {

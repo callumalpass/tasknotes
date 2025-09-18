@@ -103,7 +103,7 @@ export class StatsView extends ItemView {
     }
     
     getDisplayText(): string {
-        return 'Statistics';
+        return this.plugin.i18n.translate('views.stats.title');
     }
     
     getIcon(): string {

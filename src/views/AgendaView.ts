@@ -135,7 +135,7 @@ export class AgendaView extends ItemView implements OptimizedView {
     }
 
     getDisplayText(): string {
-        return 'Agenda';
+        return this.plugin.i18n.translate('views.agenda.title');
     }
 
     getIcon(): string {

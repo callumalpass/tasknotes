@@ -11,6 +11,7 @@ import {
 } from '../components/settingHelpers';
 import { showStorageLocationConfirmationModal } from '../../modals/StorageLocationConfirmationModal';
 import { getAvailableLanguages } from '../../locales';
+import type { TranslationKey } from '../../i18n';
 
 /**
  * Renders the Features tab - optional plugin modules and their configuration
@@ -18,13 +19,26 @@ import { getAvailableLanguages } from '../../locales';
 export function renderFeaturesTab(container: HTMLElement, plugin: TaskNotesPlugin, save: () => void): void {
     container.empty();
 
+    const translate = (key: TranslationKey, params?: Record<string, string | number>) => plugin.i18n.translate(key, params);
+
+    const uiLanguageOptions = (() => {
+        const options: Array<{ value: string; label: string }> = [
+            { value: 'system', label: translate('common.systemDefault') }
+        ];
+        for (const code of plugin.i18n.getAvailableLocales()) {
+            const label = plugin.i18n.resolveKey(`common.languages.${code}`) || code;
+            options.push({ value: code, label });
+        }
+        return options;
+    })();
+
     // Inline Tasks Section
-    createSectionHeader(container, 'Inline Tasks');
-    createHelpText(container, 'Configure inline task features for seamless task management within any note.');
+    createSectionHeader(container, translate('settings.features.inlineTasks.header'));
+    createHelpText(container, translate('settings.features.inlineTasks.description'));
 
     createToggleSetting(container, {
-        name: 'Task link overlay',
-        desc: 'Show interactive overlays when hovering over task links',
+        name: translate('settings.features.overlays.taskLinkToggle.name'),
+        desc: translate('settings.features.overlays.taskLinkToggle.description'),
         getValue: () => plugin.settings.enableTaskLinkOverlay,
         setValue: async (value: boolean) => {
             plugin.settings.enableTaskLinkOverlay = value;
@@ -33,8 +47,8 @@ export function renderFeaturesTab(container: HTMLElement, plugin: TaskNotesPlugi
     });
 
     createToggleSetting(container, {
-        name: 'Instant task convert',
-        desc: 'Enable instant conversion of text to tasks using keyboard shortcuts',
+        name: translate('settings.features.instantConvert.toggle.name'),
+        desc: translate('settings.features.instantConvert.toggle.description'),
         getValue: () => plugin.settings.enableInstantTaskConvert,
         setValue: async (value: boolean) => {
             plugin.settings.enableInstantTaskConvert = value;
@@ -46,8 +60,8 @@ export function renderFeaturesTab(container: HTMLElement, plugin: TaskNotesPlugi
 
     if (plugin.settings.enableInstantTaskConvert) {
         createTextSetting(container, {
-            name: 'Inline task convert folder',
-            desc: 'Folder for inline task conversion. Use {{currentNotePath}} for relative to current note',
+            name: translate('settings.features.instantConvert.folder.name'),
+            desc: translate('settings.features.instantConvert.folder.description'),
             placeholder: 'TaskNotes',
             getValue: () => plugin.settings.inlineTaskConvertFolder,
             setValue: async (value: string) => {
@@ -58,12 +72,12 @@ export function renderFeaturesTab(container: HTMLElement, plugin: TaskNotesPlugi
     }
 
     // Natural Language Processing Section
-    createSectionHeader(container, 'Natural Language Processing');
-    createHelpText(container, 'Enable smart parsing of task details from natural language input.');
+    createSectionHeader(container, translate('settings.features.nlp.header'));
+    createHelpText(container, translate('settings.features.nlp.description'));
 
     createToggleSetting(container, {
-        name: 'Enable natural language task input',
-        desc: 'Parse due dates, priorities, and contexts from natural language when creating tasks',
+        name: translate('settings.features.nlp.enable.name'),
+        desc: translate('settings.features.nlp.enable.description'),
         getValue: () => plugin.settings.enableNaturalLanguageInput,
         setValue: async (value: boolean) => {
             plugin.settings.enableNaturalLanguageInput = value;
@@ -75,8 +89,8 @@ export function renderFeaturesTab(container: HTMLElement, plugin: TaskNotesPlugi
 
     if (plugin.settings.enableNaturalLanguageInput) {
         createToggleSetting(container, {
-            name: 'Default to scheduled',
-            desc: 'When NLP detects a date without context, treat it as scheduled rather than due',
+            name: translate('settings.features.nlp.defaultToScheduled.name'),
+            desc: translate('settings.features.nlp.defaultToScheduled.description'),
             getValue: () => plugin.settings.nlpDefaultToScheduled,
             setValue: async (value: boolean) => {
                 plugin.settings.nlpDefaultToScheduled = value;
@@ -85,8 +99,8 @@ export function renderFeaturesTab(container: HTMLElement, plugin: TaskNotesPlugi
         });
 
         createDropdownSetting(container, {
-            name: 'NLP language',
-            desc: 'Language for natural language processing patterns and date parsing',
+            name: translate('settings.features.nlp.language.name'),
+            desc: translate('settings.features.nlp.language.description'),
             options: getAvailableLanguages(),
             getValue: () => plugin.settings.nlpLanguage,
             setValue: async (value: string) => {
@@ -96,8 +110,8 @@ export function renderFeaturesTab(container: HTMLElement, plugin: TaskNotesPlugi
         });
 
         createTextSetting(container, {
-            name: 'Status suggestion trigger',
-            desc: 'Text to trigger status suggestions (leave empty to disable)',
+            name: translate('settings.features.nlp.statusTrigger.name'),
+            desc: translate('settings.features.nlp.statusTrigger.description'),
             placeholder: '@',
             getValue: () => plugin.settings.statusSuggestionTrigger,
             setValue: async (value: string) => {
@@ -107,14 +121,31 @@ export function renderFeaturesTab(container: HTMLElement, plugin: TaskNotesPlugi
         });
     }
 
+    // UI Language Section
+    createSectionHeader(container, translate('settings.features.uiLanguage.header'));
+    createHelpText(container, translate('settings.features.uiLanguage.description'));
+
+    createDropdownSetting(container, {
+        name: translate('settings.features.uiLanguage.dropdown.name'),
+        desc: translate('settings.features.uiLanguage.dropdown.description'),
+        options: uiLanguageOptions,
+        getValue: () => plugin.settings.uiLanguage ?? 'system',
+        setValue: async (value: string) => {
+            plugin.settings.uiLanguage = value;
+            plugin.i18n.setLocale(value);
+            save();
+            renderFeaturesTab(container, plugin, save);
+        }
+    });
+
     // Pomodoro Timer Section
-    createSectionHeader(container, 'Pomodoro Timer');
-    createHelpText(container, 'Built-in Pomodoro timer for time management and productivity tracking.');
+    createSectionHeader(container, translate('settings.features.pomodoro.header'));
+    createHelpText(container, translate('settings.features.pomodoro.description'));
 
     // Work duration
     createNumberSetting(container, {
-        name: 'Work duration',
-        desc: 'Duration of work intervals in minutes',
+        name: translate('settings.features.pomodoro.workDuration.name'),
+        desc: translate('settings.features.pomodoro.workDuration.description'),
         placeholder: '25',
         min: 1,
         max: 120,
@@ -127,8 +158,8 @@ export function renderFeaturesTab(container: HTMLElement, plugin: TaskNotesPlugi
 
     // Short break duration  
     createNumberSetting(container, {
-        name: 'Short break duration',
-        desc: 'Duration of short breaks in minutes',
+        name: translate('settings.features.pomodoro.shortBreak.name'),
+        desc: translate('settings.features.pomodoro.shortBreak.description'),
         placeholder: '5',
         min: 1,
         max: 60,
@@ -141,8 +172,8 @@ export function renderFeaturesTab(container: HTMLElement, plugin: TaskNotesPlugi
 
     // Long break duration
     createNumberSetting(container, {
-        name: 'Long break duration',
-        desc: 'Duration of long breaks in minutes',
+        name: translate('settings.features.pomodoro.longBreak.name'),
+        desc: translate('settings.features.pomodoro.longBreak.description'),
         placeholder: '15',
         min: 1,
         max: 120,
@@ -155,8 +186,8 @@ export function renderFeaturesTab(container: HTMLElement, plugin: TaskNotesPlugi
 
     // Long break interval
     createNumberSetting(container, {
-        name: 'Long break interval',
-        desc: 'Number of work sessions before a long break',
+        name: translate('settings.features.pomodoro.longBreakInterval.name'),
+        desc: translate('settings.features.pomodoro.longBreakInterval.description'),
         placeholder: '4',
         min: 1,
         max: 10,
@@ -169,8 +200,8 @@ export function renderFeaturesTab(container: HTMLElement, plugin: TaskNotesPlugi
 
     // Auto-start options
     createToggleSetting(container, {
-        name: 'Auto-start breaks',
-        desc: 'Automatically start break timers after work sessions',
+        name: translate('settings.features.pomodoro.autoStartBreaks.name'),
+        desc: translate('settings.features.pomodoro.autoStartBreaks.description'),
         getValue: () => plugin.settings.pomodoroAutoStartBreaks,
         setValue: async (value: boolean) => {
             plugin.settings.pomodoroAutoStartBreaks = value;
@@ -179,8 +210,8 @@ export function renderFeaturesTab(container: HTMLElement, plugin: TaskNotesPlugi
     });
 
     createToggleSetting(container, {
-        name: 'Auto-start work',
-        desc: 'Automatically start work sessions after breaks',
+        name: translate('settings.features.pomodoro.autoStartWork.name'),
+        desc: translate('settings.features.pomodoro.autoStartWork.description'),
         getValue: () => plugin.settings.pomodoroAutoStartWork,
         setValue: async (value: boolean) => {
             plugin.settings.pomodoroAutoStartWork = value;
@@ -190,8 +221,8 @@ export function renderFeaturesTab(container: HTMLElement, plugin: TaskNotesPlugi
 
     // Notification settings
     createToggleSetting(container, {
-        name: 'Pomodoro notifications',
-        desc: 'Show notifications when Pomodoro sessions end',
+        name: translate('settings.features.pomodoro.notifications.name'),
+        desc: translate('settings.features.pomodoro.notifications.description'),
         getValue: () => plugin.settings.pomodoroNotifications,
         setValue: async (value: boolean) => {
             plugin.settings.pomodoroNotifications = value;

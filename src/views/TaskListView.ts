@@ -70,7 +70,7 @@ export class TaskListView extends ItemView implements OptimizedView {
     }
 
     getDisplayText(): string {
-        return 'Tasks';
+        return this.plugin.i18n.translate('views.taskList.title');
     }
 
     getIcon(): string {
