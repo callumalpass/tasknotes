@@ -6,8 +6,8 @@ export interface TagServices {
 
 /** Render a single tag string as an Obsidian-like tag element */
 export function renderTag(
-  container: HTMLElement, 
-  tag: string, 
+  container: HTMLElement,
+  tag: string,
   services?: TagServices
 ): void {
   if (!tag || typeof tag !== 'string') return;
@@ -18,7 +18,7 @@ export function renderTag(
   const el = container.createEl('a', {
     cls: 'tag',
     text: normalized,
-    attr: { 
+    attr: {
       'href': normalized,
       'role': 'button',
       'tabindex': '0'
@@ -32,7 +32,7 @@ export function renderTag(
       e.stopPropagation();
       services.onTagClick!(normalized, e as MouseEvent);
     });
-    
+
     // Add keyboard support
     el.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') {
@@ -45,8 +45,8 @@ export function renderTag(
 
 /** Render a list or single tag value into a container */
 export function renderTagsValue(
-  container: HTMLElement, 
-  value: unknown, 
+  container: HTMLElement,
+  value: unknown,
   services?: TagServices
 ): void {
   if (typeof value === 'string') {
@@ -57,7 +57,7 @@ export function renderTagsValue(
     const validTags = value
       .flat(2)
       .filter(t => t !== null && t !== undefined && typeof t === 'string');
-      
+
     validTags.forEach((t, idx) => {
       if (idx > 0) container.appendChild(document.createTextNode(' '));
       renderTag(container, String(t), services);
@@ -70,7 +70,7 @@ export function renderTagsValue(
 
 /** Render contexts with @ prefix */
 export function renderContextsValue(
-  container: HTMLElement, 
+  container: HTMLElement,
   value: unknown,
   services?: TagServices
 ): void {
@@ -85,14 +85,14 @@ export function renderContextsValue(
           'tabindex': '0'
         }
       });
-      
+
       if (services?.onTagClick) {
         el.addEventListener('click', (e) => {
           e.preventDefault();
           e.stopPropagation();
           services.onTagClick!(normalized, e as MouseEvent);
         });
-        
+
         el.addEventListener('keydown', (e) => {
           if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault();
@@ -107,13 +107,13 @@ export function renderContextsValue(
     const validContexts = value
       .flat(2)
       .filter(c => c !== null && c !== undefined && typeof c === 'string');
-      
+
     validContexts.forEach((context, idx) => {
       if (idx > 0) container.appendChild(document.createTextNode(', '));
-      
+
       // Render each context directly instead of recursively calling renderContextsValue
       const normalized = normalizeContext(context);
-      
+
       if (normalized) {
         const el = container.createEl('span', {
           cls: 'context-tag',
@@ -123,14 +123,14 @@ export function renderContextsValue(
             'tabindex': '0'
           }
         });
-        
+
         if (services?.onTagClick) {
           el.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
             services.onTagClick!(normalized, e as MouseEvent);
           });
-          
+
           el.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' || e.key === ' ') {
               e.preventDefault();
@@ -149,46 +149,41 @@ export function renderContextsValue(
   if (value != null) container.appendChild(document.createTextNode(String(value)));
 }
 
-/** 
- * Normalize arbitrary tag strings into #tag form 
+/**
+ * Normalize arbitrary tag strings into #tag form
  * Enhanced to handle spaces and special characters
  */
 export function normalizeTag(raw: string): string | null {
   if (!raw || typeof raw !== 'string') return null;
-  
   const s = raw.trim();
   if (!s) return null;
-  
-  // Already has # prefix
-  if (s.startsWith('#')) {
-    // Remove invalid characters and spaces
-    const cleaned = s.replace(/[^\w#-]/g, '');
+
+  // Clean input: keep word chars, hyphens, and slashes for hierarchical tags
+  const hasPrefix = s.startsWith('#');
+  const cleaned = s.replace(/[^\w#/-]/g, '');
+
+  if (hasPrefix) {
     return cleaned.length > 1 ? cleaned : null;
   }
-  
-  // Add # prefix and clean
-  const cleaned = s.replace(/[^\w-]/g, '');
-  return cleaned ? `#${cleaned}` : null;
-}
 
-/** 
- * Normalize context strings into @context form 
+  return cleaned ? `#${cleaned}` : null;
+}/**
+ * Normalize context strings into @context form
  * Enhanced to handle spaces and special characters
  */
 export function normalizeContext(raw: string): string | null {
   if (!raw || typeof raw !== 'string') return null;
-  
+
   const s = raw.trim();
   if (!s) return null;
-  
-  // Already has @ prefix
-  if (s.startsWith('@')) {
-    // Remove invalid characters and spaces
-    const cleaned = s.replace(/[^\w@-]/g, '');
+
+  // Clean input: keep word chars, hyphens, and slashes for hierarchical contexts
+  const hasPrefix = s.startsWith('@');
+  const cleaned = s.replace(/[^\w@/-]/g, '');
+
+  if (hasPrefix) {
     return cleaned.length > 1 ? cleaned : null;
   }
-  
-  // Add @ prefix and clean
-  const cleaned = s.replace(/[^\w-]/g, '');
+
   return cleaned ? `@${cleaned}` : null;
 }
