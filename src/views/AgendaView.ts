@@ -787,7 +787,10 @@ export class AgendaView extends ItemView implements OptimizedView {
                         const svg = toggleBtn.querySelector('svg');
                         if (svg) { svg.classList.add('chevron'); svg.setAttr('width', '16'); svg.setAttr('height', '16'); } else { toggleBtn.textContent = '▸'; }
 
-                        header.createSpan({ cls: 'task-subgroup-name', text: subgroupName });
+                        // Format subgroup name to match TaskListView exactly
+                        const formattedSubgroupName = this.formatSubgroupName(subgroupName);
+
+                        header.createSpan({ cls: 'task-subgroup-name', text: formattedSubgroupName });
 
                         // Count badge for tasks in subgroup
                         const stats = GroupCountUtils.calculateGroupStats(subgroupTasks, this.plugin);
@@ -1602,6 +1605,14 @@ export class AgendaView extends ItemView implements OptimizedView {
         // Note updates are handled automatically by the note card structure
     }
 
+
+    /**
+     * Format subgroup name to match TaskListView exactly
+     */
+    private formatSubgroupName(groupName: string): string {
+        // Use the same formatting logic as TaskListView
+        return GroupingUtils.formatGroupName(groupName, this.plugin);
+    }
 
     /**
      * Compute subgroups for a given day using the same value resolution as HierarchicalGroupingService
