@@ -395,7 +395,7 @@ export class TaskContextMenu {
                         type: 'google',
                         task: task,
                         useScheduledAsDue: true
-                    });
+                    }, this.t.bind(this));
                 });
             });
             
@@ -408,7 +408,7 @@ export class TaskContextMenu {
                         type: 'outlook',
                         task: task,
                         useScheduledAsDue: true
-                    });
+                    }, this.t.bind(this));
                 });
             });
             
@@ -421,7 +421,7 @@ export class TaskContextMenu {
                         type: 'yahoo',
                         task: task,
                         useScheduledAsDue: true
-                    });
+                    }, this.t.bind(this));
                 });
             });
             
@@ -432,7 +432,7 @@ export class TaskContextMenu {
                 subItem.setTitle(this.t('contextMenus.task.calendar.downloadIcs'));
                 subItem.setIcon('download');
                 subItem.onClick(() => {
-                    CalendarExportService.downloadICSFile(task);
+                    CalendarExportService.downloadICSFile(task, this.t.bind(this));
                 });
             });
         });

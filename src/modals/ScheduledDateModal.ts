@@ -2,23 +2,26 @@ import { App, Modal, Setting } from 'obsidian';
 import { format, add } from 'date-fns';
 import { TaskInfo } from '../types';
 import TaskNotesPlugin from '../main';
-import { 
-    validateDateTimeInput, 
-    getDatePart, 
+import {
+    validateDateTimeInput,
+    getDatePart,
     getTimePart,
     combineDateAndTime
 } from '../utils/dateUtils';
+import { TranslationKey } from '../i18n/types';
 
 export class ScheduledDateModal extends Modal {
     private task: TaskInfo;
     private plugin: TaskNotesPlugin;
     private scheduledDateInput: HTMLInputElement;
     private scheduledTimeInput: HTMLInputElement;
+    private translate: (key: TranslationKey, variables?: Record<string, any>) => string;
 
     constructor(app: App, task: TaskInfo, plugin: TaskNotesPlugin) {
         super(app);
         this.task = task;
         this.plugin = plugin;
+        this.translate = plugin.i18n.translate;
     }
 
     onOpen() {
@@ -27,22 +30,22 @@ export class ScheduledDateModal extends Modal {
         contentEl.addClass('tasknotes-plugin');
         
         // Set up modal accessibility
-        this.titleEl.setText('Set scheduled date');
+        this.titleEl.setText(this.translate('modals.scheduledDate.title'));
         this.titleEl.setAttribute('id', 'scheduled-date-modal-title');
         this.containerEl.setAttribute('aria-labelledby', 'scheduled-date-modal-title');
         this.containerEl.setAttribute('role', 'dialog');
         this.containerEl.setAttribute('aria-modal', 'true');
 
         // Task title display
-        contentEl.createEl('p', { 
-            text: `Task: ${this.task.title}`,
+        contentEl.createEl('p', {
+            text: this.translate('modals.scheduledDate.taskLabel', { title: this.task.title }),
             cls: 'scheduled-date-modal__task-title'
         });
 
         // Scheduled date and time inputs
         const dateTimeSetting = new Setting(contentEl)
-            .setName('Scheduled Date & Time')
-            .setDesc('Enter scheduled date and optional time (leave time empty for date-only)');
+            .setName(this.translate('modals.scheduledDate.sections.dateTime'))
+            .setDesc(this.translate('modals.scheduledDate.descriptions.dateTime'));
 
         // Create a container for the date and time inputs
         const dateTimeContainer = dateTimeSetting.controlEl.createDiv({ cls: 'modal-form__datetime-container' });

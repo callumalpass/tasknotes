@@ -270,7 +270,7 @@ export class AgendaView extends ItemView implements OptimizedView {
 
         // Today button
         const todayButton = actionsSection.createEl('button', {
-            text: 'Today',
+            text: this.plugin.i18n.translate('views.agenda.today'),
             cls: 'agenda-view__today-button',
             attr: {
                 'aria-label': 'Go to today',
@@ -289,7 +289,7 @@ export class AgendaView extends ItemView implements OptimizedView {
 
         // Refresh ICS button (always show; handle availability on click)
         const refreshBtn = actionsSection.createEl('button', {
-            text: 'Refresh calendars',
+            text: this.plugin.i18n.translate('views.agenda.refreshCalendars'),
             cls: 'agenda-view__today-button',
             attr: {
                 'aria-label': 'Refresh calendar subscriptions',
@@ -299,16 +299,16 @@ export class AgendaView extends ItemView implements OptimizedView {
         refreshBtn.addClass('clickable-icon');
         refreshBtn.addEventListener('click', async () => {
             if (!this.plugin.icsSubscriptionService) {
-                new Notice('Calendar service not ready yet');
+                new Notice(this.plugin.i18n.translate('views.agenda.notices.calendarNotReady'));
                 return;
             }
             try {
                 await this.plugin.icsSubscriptionService.refreshAllSubscriptions();
-                new Notice('Calendar subscriptions refreshed');
+                new Notice(this.plugin.i18n.translate('views.agenda.notices.calendarRefreshed'));
                 this.refresh();
             } catch (e) {
                 console.error('Failed to refresh ICS subscriptions', e);
-                new Notice('Failed to refresh calendar subscriptions');
+                new Notice(this.plugin.i18n.translate('views.agenda.notices.refreshFailed'));
             }
         });
 
@@ -468,7 +468,7 @@ export class AgendaView extends ItemView implements OptimizedView {
         // Expand all button
         const expandAllBtn = new ButtonComponent(container)
             .setIcon('list-tree')
-            .setTooltip('Expand All Days')
+            .setTooltip(this.plugin.i18n.translate('views.agenda.expandAllDays'))
             .setClass('agenda-view-control-button')
             .onClick(() => {
                 // Expand all visible day sections
@@ -491,7 +491,7 @@ export class AgendaView extends ItemView implements OptimizedView {
         // Collapse all button
         const collapseAllBtn = new ButtonComponent(container)
             .setIcon('list-collapse')
-            .setTooltip('Collapse All Days')
+            .setTooltip(this.plugin.i18n.translate('views.agenda.collapseAllDays'))
             .setClass('agenda-view-control-button')
             .onClick(() => {
                 // Collapse all visible day sections
@@ -884,7 +884,7 @@ export class AgendaView extends ItemView implements OptimizedView {
             container.empty();
             const emptyMessage = container.createDiv({ cls: 'agenda-view__empty' });
             new Setting(emptyMessage)
-                .setName('No items scheduled')
+                .setName(this.plugin.i18n.translate('views.agenda.empty.noItemsScheduled'))
                 .setHeading();
             emptyMessage.createEl('p', {
                 text: 'No items scheduled for this period.',
@@ -940,7 +940,7 @@ export class AgendaView extends ItemView implements OptimizedView {
             container.empty();
             const emptyMessage = container.createDiv({ cls: 'agenda-view__empty' });
             new Setting(emptyMessage)
-                .setName('No items found')
+                .setName(this.plugin.i18n.translate('views.agenda.empty.noItemsFound'))
                 .setHeading();
             emptyMessage.createEl('p', {
                 text: 'No items found for the selected period.',
@@ -998,7 +998,7 @@ export class AgendaView extends ItemView implements OptimizedView {
             const dateFormatted = format(displayDate, 'MMMM d');
 
             if (isTodayUTC(item.date)) {
-                headerText.createSpan({ cls: 'agenda-view__day-name agenda-view__day-name--today', text: 'Today' });
+                headerText.createSpan({ cls: 'agenda-view__day-name agenda-view__day-name--today', text: this.plugin.i18n.translate('views.agenda.today') });
                 headerText.createSpan({ cls: 'agenda-view__day-date', text: ` • ${dateFormatted}` });
             } else {
                 headerText.createSpan({ cls: 'agenda-view__day-name', text: dayName });
@@ -1460,7 +1460,7 @@ export class AgendaView extends ItemView implements OptimizedView {
         const dateFormatted = format(displayDate, 'MMMM d');
 
         if (isTodayUTC(dayData.date)) {
-            headerText.createSpan({ cls: 'agenda-view__day-name agenda-view__day-name--today', text: 'Today' });
+            headerText.createSpan({ cls: 'agenda-view__day-name agenda-view__day-name--today', text: this.plugin.i18n.translate('views.agenda.today') });
             headerText.createSpan({ cls: 'agenda-view__day-date', text: ` • ${dateFormatted}` });
         } else {
             headerText.createSpan({ cls: 'agenda-view__day-name', text: dayName });

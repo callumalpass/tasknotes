@@ -1,5 +1,7 @@
 import { GroupCountUtils } from '../utils/GroupCountUtils';
 import { SavedView } from '../types';
+import { TranslationKey } from '../i18n/types';
+import TaskNotesPlugin from '../main';
 
 /**
  * Utility class for creating and managing filter heading displays
@@ -11,9 +13,11 @@ export class FilterHeading {
     private countElement: HTMLElement | null = null;
     private dividerElement: HTMLElement | null = null;
     private instanceId: string;
+    private plugin: TaskNotesPlugin;
 
-    constructor(container: HTMLElement) {
+    constructor(container: HTMLElement, plugin: TaskNotesPlugin) {
         this.container = container;
+        this.plugin = plugin;
         this.instanceId = 'fh-' + Math.random().toString(36).substr(2, 9);
         this.render();
     }
@@ -31,7 +35,7 @@ export class FilterHeading {
         // View name element
         this.headingElement = headingContent.createEl('h2', {
             cls: 'filter-heading__title',
-            text: 'All'
+            text: this.plugin.i18n.translate('ui.filterHeading.allViewName')
         });
         
         // Count element
@@ -48,7 +52,7 @@ export class FilterHeading {
         if (!this.headingElement || !this.countElement) return;
 
         // Update view name
-        const viewName = activeSavedView?.name || 'All';
+        const viewName = activeSavedView?.name || this.plugin.i18n.translate('ui.filterHeading.allViewName');
         this.headingElement.textContent = viewName;
 
         // Update count

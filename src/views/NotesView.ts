@@ -116,7 +116,7 @@ export class NotesView extends ItemView {
         const formattedDate = formatDateForDisplay(this.plugin.selectedDate.toISOString(), 'EEEE, MMMM d, yyyy');
         const titleContainer = headerContainer.createDiv();
         new Setting(titleContainer)
-            .setName('Notes')
+            .setName(this.plugin.i18n.translate('views.notes.title'))
             .setHeading();
         titleContainer.createEl('div', {
             text: formattedDate,
@@ -143,7 +143,7 @@ export class NotesView extends ItemView {
             refreshButton.classList.add('is-loading');
             refreshButton.disabled = true;
             const originalText = refreshButton.textContent;
-            refreshButton.textContent = 'Refreshing...';
+            refreshButton.textContent = this.plugin.i18n.translate('views.notes.refreshButton');
             
             try {
                 // Force refresh through CacheManager
@@ -183,7 +183,7 @@ export class NotesView extends ItemView {
             
             if (this.plugin.settings.disableNoteIndexing) {
                 new Setting(emptyState)
-                    .setName('Note indexing disabled')
+                    .setName(this.plugin.i18n.translate('views.notes.notices.indexingDisabled'))
                     .setHeading();
                 emptyState.createEl('p', {
                     text: 'Note indexing has been disabled in settings for better performance. To view notes, enable note indexing in Settings > TaskNotes > General > Performance settings and restart the plugin.',
@@ -191,7 +191,7 @@ export class NotesView extends ItemView {
                 });
             } else {
                 new Setting(emptyState)
-                    .setName('No notes found')
+                    .setName(this.plugin.i18n.translate('views.notes.empty.noNotesFound'))
                     .setHeading();
                 emptyState.createEl('p', {
                     text: 'No notes found for the selected date. Try selecting a different date in the Mini Calendar view or create some notes.',

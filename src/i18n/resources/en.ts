@@ -39,13 +39,36 @@ export const en: TranslationTree = {
     },
     views: {
         agenda: {
-            title: 'Agenda'
+            title: 'Agenda',
+            today: 'Today',
+            refreshCalendars: 'Refresh calendars',
+            expandAllDays: 'Expand All Days',
+            collapseAllDays: 'Collapse All Days',
+            notices: {
+                calendarNotReady: 'Calendar service not ready yet',
+                calendarRefreshed: 'Calendar subscriptions refreshed',
+                refreshFailed: 'Failed to refresh'
+            },
+            empty: {
+                noItemsScheduled: 'No items scheduled',
+                noItemsFound: 'No items found'
+            }
         },
         taskList: {
-            title: 'Tasks'
+            title: 'Tasks',
+            expandAllGroups: 'Expand All Groups',
+            collapseAllGroups: 'Collapse All Groups',
+            noTasksFound: 'No tasks found for the selected filters.'
         },
         notes: {
-            title: 'Notes'
+            title: 'Notes',
+            refreshButton: 'Refreshing...',
+            notices: {
+                indexingDisabled: 'Note indexing disabled'
+            },
+            empty: {
+                noNotesFound: 'No notes found'
+            }
         },
         miniCalendar: {
             title: 'Mini Calendar'
@@ -54,7 +77,17 @@ export const en: TranslationTree = {
             title: 'Advanced Calendar'
         },
         kanban: {
-            title: 'Kanban'
+            title: 'Kanban',
+            newTask: 'New task',
+            addCard: '+ Add a card',
+            noTasks: 'No tasks',
+            notices: {
+                loadFailed: 'Failed to load Kanban board',
+                movedTask: 'Task moved to "{0}"'
+            },
+            errors: {
+                loadingBoard: 'Error loading board.'
+            }
         },
         pomodoro: {
             title: 'Pomodoro',
@@ -141,7 +174,20 @@ export const en: TranslationTree = {
             }
         },
         stats: {
-            title: 'Statistics'
+            title: 'Statistics',
+            taskProjectStats: 'Task & Project Statistics',
+            sections: {
+                filters: 'Filters',
+                overview: 'Overview',
+                today: 'Today',
+                thisWeek: 'This Week',
+                thisMonth: 'This Month',
+                projectBreakdown: 'Project Breakdown',
+                dateRange: 'Date Range'
+            },
+            filters: {
+                minTime: 'Min Time (minutes)'
+            }
         }
     },
     settings: {
@@ -1543,6 +1589,292 @@ export const en: TranslationTree = {
                 dateLabel: 'Date',
                 timeLabel: 'Time (optional)',
                 select: 'Select'
+            }
+        }
+    },
+    services: {
+        pomodoro: {
+            notices: {
+                alreadyRunning: 'A pomodoro is already running',
+                resumeCurrentSession: 'Resume the current session instead of starting a new one',
+                timerAlreadyRunning: 'A timer is already running',
+                resumeSessionInstead: 'Resume the current session instead of starting a new one',
+                shortBreakStarted: 'Short break started',
+                longBreakStarted: 'Long break started',
+                paused: 'Pomodoro paused',
+                resumed: 'Pomodoro resumed',
+                stoppedAndReset: 'Pomodoro stopped and reset',
+                migrationSuccess: 'Successfully migrated {count} pomodoro sessions to daily notes.',
+                migrationFailure: 'Failed to migrate pomodoro data. Please try again or check the console for details.'
+            }
+        },
+        icsSubscription: {
+            notices: {
+                calendarNotFound: 'Calendar "{name}" not found (404). Please check the ICS URL is correct and the calendar is publicly accessible.',
+                calendarAccessDenied: 'Calendar "{name}" access denied (500). This may be due to Microsoft Outlook server restrictions. Try regenerating the ICS URL from your calendar settings.',
+                fetchRemoteFailed: 'Failed to fetch remote calendar "{name}": {error}',
+                readLocalFailed: 'Failed to read local calendar "{name}": {error}'
+            }
+        },
+        calendarExport: {
+            notices: {
+                generateLinkFailed: 'Failed to generate calendar link',
+                noTasksToExport: 'No tasks found to export',
+                downloadSuccess: 'Downloaded {filename} with {count} task{plural}',
+                downloadFailed: 'Failed to download calendar file',
+                singleDownloadSuccess: 'Downloaded {filename}'
+            }
+        },
+        instantTaskConvert: {
+            notices: {
+                noCheckboxTasks: 'No checkbox tasks found in the current note.',
+                convertingTasks: 'Converting {count} task{plural}...',
+                conversionSuccess: '✅ Successfully converted {count} task{plural} to TaskNotes!',
+                partialConversion: 'Converted {successCount} task{successPlural}. {failureCount} failed.',
+                batchConversionFailed: 'Failed to perform batch conversion. Please try again.',
+                invalidParameters: 'Invalid input parameters.',
+                emptyLine: 'Current line is empty or contains no valid content.',
+                parseError: 'Error parsing task: {error}',
+                invalidTaskData: 'Invalid task data.',
+                replaceLineFailed: 'Failed to replace task line.',
+                conversionComplete: 'Task converted: {title}',
+                conversionCompleteShortened: 'Task converted: "{title}" (filename shortened due to length)',
+                fileExists: 'A file with this name already exists. Please try again or rename the task.',
+                conversionFailed: 'Failed to convert task. Please try again.'
+            }
+        },
+        icsNote: {
+            notices: {
+                templateNotFound: 'Template not found: {path}',
+                templateProcessError: 'Error processing template: {template}',
+                linkedToEvent: 'Linked note to ICS event: {title}'
+            }
+        },
+        task: {
+            notices: {
+                templateNotFound: 'Task body template not found: {path}',
+                templateReadError: 'Error reading task body template: {template}',
+                moveTaskFailed: 'Failed to move {operation} task: {error}'
+            }
+        },
+        autoExport: {
+            notices: {
+                exportFailed: 'TaskNotes auto export failed: {error}'
+            }
+        },
+        notification: {
+            notices: {
+                // NotificationService uses Notice for in-app notifications
+                // but the message comes from the reminder content, so no hardcoded strings to translate
+            }
+        }
+    },
+    ui: {
+        icsCard: {
+            untitledEvent: 'Untitled event',
+            allDay: 'All day',
+            calendarEvent: 'Calendar event',
+            calendarFallback: 'Calendar'
+        },
+        noteCard: {
+            createdLabel: 'Created:',
+            dailyBadge: 'Daily',
+            dailyTooltip: 'Daily note'
+        },
+        filterHeading: {
+            allViewName: 'All'
+        },
+        filterBar: {
+            saveView: 'Save view',
+            saveViewNamePlaceholder: 'Enter view name...',
+            saveButton: 'Save',
+            views: 'Views',
+            savedFilterViews: 'Saved filter views',
+            filters: 'Filters',
+            properties: 'Properties',
+            sort: 'Sort',
+            newTask: 'New',
+            expandAllGroups: 'Expand All Groups',
+            collapseAllGroups: 'Collapse All Groups',
+            searchTasksPlaceholder: 'Search tasks...',
+            searchTasksTooltip: 'Search task titles',
+            filterUnavailable: 'Filter bar temporarily unavailable',
+            toggleFilter: 'Toggle filter',
+            activeFiltersTooltip: 'Active filters – Click to modify, right-click to clear',
+            configureVisibleProperties: 'Configure visible properties',
+            sortAndGroupOptions: 'Sort and group options',
+            createNewTask: 'Create new task',
+            filter: 'Filter',
+            displayOrganization: 'Display & Organization',
+            viewOptions: 'View Options',
+            addFilter: 'Add filter',
+            addFilterGroup: 'Add filter group',
+            addFilterTooltip: 'Add a new filter condition',
+            addFilterGroupTooltip: 'Add a nested filter group',
+            clearAllFilters: 'Clear all filters and groups',
+            saveCurrentFilter: 'Save current filter as view',
+            closeFilterModal: 'Close filter modal',
+            deleteFilterGroup: 'Delete filter group',
+            deleteCondition: 'Delete condition',
+            all: 'All',
+            any: 'Any',
+            followingAreTrue: 'of the following are true:',
+            where: 'where',
+            selectProperty: 'Select...',
+            chooseProperty: 'Choose which task property to filter by',
+            chooseOperator: 'Choose how to compare the property value',
+            enterValue: 'Enter the value to filter by',
+            selectValue: 'Select a {property} to filter by',
+            sortBy: 'Sort by:',
+            toggleSortDirection: 'Toggle sort direction',
+            chooseSortMethod: 'Choose how to sort tasks',
+            groupBy: 'Group by:',
+            chooseGroupMethod: 'Group tasks by a common property',
+            toggleViewOption: 'Toggle {option}',
+            expandCollapseFilters: 'Click to expand/collapse filter conditions',
+            expandCollapseSort: 'Click to expand/collapse sorting and grouping options',
+            expandCollapseViewOptions: 'Click to expand/collapse view-specific options',
+            naturalLanguageDates: 'Natural Language Dates',
+            naturalLanguageExamples: 'Show natural language date examples',
+            enterNumericValue: 'Enter a numeric value to filter by',
+            enterDateValue: 'Enter a date using natural language or ISO format',
+            pickDateTime: 'Pick date & time',
+            noSavedViews: 'No saved views',
+            savedViews: 'Saved views',
+            yourSavedFilters: 'Your saved filter configurations',
+            dragToReorder: 'Drag to reorder views',
+            loadSavedView: 'Load saved view: {name}',
+            deleteView: 'Delete view',
+            deleteViewTitle: 'Delete View',
+            deleteViewMessage: 'Are you sure you want to delete the view "{name}"?',
+            manageAllReminders: 'Manage All Reminders...',
+            clearAllReminders: 'Clear All Reminders',
+            customRecurrence: 'Custom recurrence...',
+            clearRecurrence: 'Clear recurrence',
+            sort: {
+                dueDate: 'Due Date',
+                scheduledDate: 'Scheduled Date',
+                priority: 'Priority',
+                title: 'Title',
+                createdDate: 'Created Date',
+                tags: 'Tags',
+                ascending: 'Ascending',
+                descending: 'Descending'
+            },
+            group: {
+                none: 'None',
+                status: 'Status',
+                priority: 'Priority',
+                context: 'Context',
+                project: 'Project',
+                dueDate: 'Due Date',
+                scheduledDate: 'Scheduled Date',
+                tags: 'Tags'
+            }
+        }
+    },
+    components: {
+        propertyVisibilityDropdown: {
+            coreProperties: 'CORE PROPERTIES',
+            organization: 'ORGANIZATION',
+            customProperties: 'CUSTOM PROPERTIES',
+            failed: 'Failed to show properties menu',
+            properties: {
+                statusDot: 'Status Dot',
+                priorityDot: 'Priority Dot',
+                dueDate: 'Due Date',
+                scheduledDate: 'Scheduled Date',
+                timeEstimate: 'Time Estimate',
+                totalTrackedTime: 'Total Tracked Time',
+                recurrence: 'Recurrence',
+                completedDate: 'Completed Date',
+                createdDate: 'Created Date',
+                modifiedDate: 'Modified Date',
+                projects: 'Projects',
+                contexts: 'Contexts',
+                tags: 'Tags'
+            }
+        },
+        reminderContextMenu: {
+            remindBeforeDue: 'Remind before due...',
+            remindBeforeScheduled: 'Remind before scheduled...',
+            manageAllReminders: 'Manage All Reminders...',
+            clearAllReminders: 'Clear All Reminders',
+            quickReminders: {
+                atTime: 'At time of event',
+                fiveMinutesBefore: '5 minutes before',
+                fifteenMinutesBefore: '15 minutes before',
+                oneHourBefore: '1 hour before',
+                oneDayBefore: '1 day before'
+            }
+        },
+        recurrenceContextMenu: {
+            daily: 'Daily',
+            weeklyOn: 'Weekly on {day}',
+            everyTwoWeeksOn: 'Every 2 weeks on {day}',
+            monthlyOnThe: 'Monthly on the {ordinal}',
+            everyThreeMonthsOnThe: 'Every 3 months on the {ordinal}',
+            yearlyOn: 'Yearly on {month} {ordinal}',
+            weekdaysOnly: 'Weekdays only',
+            customRecurrence: 'Custom recurrence...',
+            clearRecurrence: 'Clear recurrence',
+            customRecurrenceModal: {
+                title: 'Custom Recurrence',
+                startDate: 'Start date',
+                startDateDesc: 'The date when the recurrence pattern begins',
+                startTime: 'Start time',
+                startTimeDesc: 'The time when recurring instances should appear (optional)',
+                frequency: 'Frequency',
+                interval: 'Interval',
+                intervalDesc: 'Every X days/weeks/months/years',
+                daysOfWeek: 'Days of week',
+                daysOfWeekDesc: 'Select specific days (for weekly recurrence)',
+                monthlyRecurrence: 'Monthly recurrence',
+                monthlyRecurrenceDesc: 'Choose how to repeat monthly',
+                yearlyRecurrence: 'Yearly recurrence',
+                yearlyRecurrenceDesc: 'Choose how to repeat yearly',
+                endCondition: 'End condition',
+                endConditionDesc: 'Choose when the recurrence should end',
+                neverEnds: 'Never ends',
+                endAfterOccurrences: 'End after {count} occurrences',
+                endOnDate: 'End on {date}',
+                onDayOfMonth: 'On day {day} of each month',
+                onTheWeekOfMonth: 'On the {week} {day} of each month',
+                onDateOfYear: 'On {month} {day} each year',
+                onTheWeekOfYear: 'On the {week} {day} of {month} each year',
+                frequencies: {
+                    daily: 'Daily',
+                    weekly: 'Weekly',
+                    monthly: 'Monthly',
+                    yearly: 'Yearly'
+                },
+                weekPositions: {
+                    first: 'first',
+                    second: 'second',
+                    third: 'third',
+                    fourth: 'fourth',
+                    last: 'last'
+                },
+                weekdays: {
+                    monday: 'Monday',
+                    tuesday: 'Tuesday',
+                    wednesday: 'Wednesday',
+                    thursday: 'Thursday',
+                    friday: 'Friday',
+                    saturday: 'Saturday',
+                    sunday: 'Sunday'
+                },
+                weekdaysShort: {
+                    mon: 'Mon',
+                    tue: 'Tue',
+                    wed: 'Wed',
+                    thu: 'Thu',
+                    fri: 'Fri',
+                    sat: 'Sat',
+                    sun: 'Sun'
+                },
+                cancel: 'Cancel',
+                save: 'Save'
             }
         }
     }

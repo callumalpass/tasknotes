@@ -6,12 +6,17 @@ import { getCurrentTimestamp, formatDateForStorage } from '../utils/dateUtils';
 import { generateICSNoteFilename, generateUniqueFilename, ICSFilenameContext } from '../utils/filenameGenerator';
 import { ensureFolderExists } from '../utils/helpers';
 import { processTemplate, ICSTemplateData } from '../utils/templateProcessor';
+import { TranslationKey } from '../i18n/types';
 
 /**
  * Service for creating notes and tasks from ICS calendar events
  */
 export class ICSNoteService {
     constructor(private plugin: TaskNotesPlugin) {}
+
+    private translate(key: TranslationKey, variables?: Record<string, any>): string {
+        return this.plugin.i18n.translate(key, variables);
+    }
 
     /**
      * Create a new task from an ICS event
@@ -170,11 +175,11 @@ export class ICSNoteService {
                         bodyContent = processed.body || bodyContent;
                     } else {
                         console.warn(`ICS note template not found: ${templatePath}`);
-                        new Notice(`Template not found: ${templatePath}`);
+                        new Notice(this.translate('services.icsNote.notices.templateNotFound', { path: templatePath }));
                     }
                 } catch (error) {
                     console.error('Error processing ICS note template:', error);
-                    new Notice(`Error processing template: ${overrides.template}`);
+                    new Notice(this.translate('services.icsNote.notices.templateProcessError', { template: overrides.template }));
                 }
             }
 
@@ -291,7 +296,7 @@ export class ICSNoteService {
                 frontmatter.dateModified = getCurrentTimestamp();
             });
 
-            new Notice(`Linked note to ICS event: ${icsEvent.title}`);
+            new Notice(this.translate('services.icsNote.notices.linkedToEvent', { title: icsEvent.title }));
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : String(error);
             console.error('Error linking note to ICS event:', {

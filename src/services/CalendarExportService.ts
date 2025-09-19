@@ -1,12 +1,15 @@
 import { TaskInfo } from '../types';
 import { format, parseISO } from 'date-fns';
 import { Notice } from 'obsidian';
+import { TranslationKey } from '../i18n/types';
 
 export interface CalendarURLOptions {
     type: 'google' | 'outlook' | 'yahoo' | 'ics';
     task: TaskInfo;
     useScheduledAsDue?: boolean; // If task has no due date, use scheduled as end time
 }
+
+type TranslateFn = (key: TranslationKey, variables?: Record<string, any>) => string;
 
 export class CalendarExportService {
     /**
@@ -32,13 +35,13 @@ export class CalendarExportService {
     /**
      * Open calendar URL in browser
      */
-    static openCalendarURL(options: CalendarURLOptions): void {
+    static openCalendarURL(options: CalendarURLOptions, translate?: TranslateFn): void {
         try {
             const url = this.generateCalendarURL(options);
             window.open(url, '_blank');
         } catch (error) {
             console.error('Failed to generate calendar URL:', error);
-            new Notice('Failed to generate calendar link');
+            new Notice(translate ? translate('services.calendarExport.notices.generateLinkFailed') : 'Failed to generate calendar link');
         }
     }
 
@@ -542,56 +545,57 @@ export class CalendarExportService {
     /**
      * Download ICS file for all tasks
      */
-    static downloadAllTasksICSFile(tasks: TaskInfo[]): void {
+    static downloadAllTasksICSFile(tasks: TaskInfo[], translate?: TranslateFn): void {
         try {
             if (!tasks || tasks.length === 0) {
-                new Notice('No tasks found to export');
+                new Notice(translate ? translate('services.calendarExport.notices.noTasksToExport') : 'No tasks found to export');
                 return;
             }
 
             const icsContent = this.generateMultipleTasksICSContent(tasks);
             const blob = new Blob([icsContent], { type: 'text/calendar' });
             const url = URL.createObjectURL(blob);
-            
+
             const date = new Date().toISOString().split('T')[0];
             const filename = `tasknotes-all-tasks-${date}.ics`;
-            
+
             const a = document.createElement('a');
             a.href = url;
             a.download = filename;
             a.click();
-            
+
             URL.revokeObjectURL(url);
-            
-            new Notice(`Downloaded ${filename} with ${tasks.length} task${tasks.length === 1 ? '' : 's'}`);
+
+            const pluralSuffix = tasks.length === 1 ? '' : 's';
+            new Notice(translate ? translate('services.calendarExport.notices.downloadSuccess', { filename, count: tasks.length, plural: pluralSuffix }) : `Downloaded ${filename} with ${tasks.length} task${pluralSuffix}`);
         } catch (error) {
             console.error('Failed to download all tasks ICS file:', error);
-            new Notice('Failed to download calendar file');
+            new Notice(translate ? translate('services.calendarExport.notices.downloadFailed') : 'Failed to download calendar file');
         }
     }
 
     /**
      * Download ICS file for a task
      */
-    static downloadICSFile(task: TaskInfo): void {
+    static downloadICSFile(task: TaskInfo, translate?: TranslateFn): void {
         try {
             const icsContent = this.generateICSContent(task);
             const blob = new Blob([icsContent], { type: 'text/calendar' });
             const url = URL.createObjectURL(blob);
-            
+
             const filename = `${task.title.replace(/[^a-zA-Z0-9]/g, '-')}.ics`;
-            
+
             const a = document.createElement('a');
             a.href = url;
             a.download = filename;
             a.click();
-            
+
             URL.revokeObjectURL(url);
-            
-            new Notice(`Downloaded ${filename}`);
+
+            new Notice(translate ? translate('services.calendarExport.notices.singleDownloadSuccess', { filename }) : `Downloaded ${filename}`);
         } catch (error) {
             console.error('Failed to download ICS file:', error);
-            new Notice('Failed to download calendar file');
+            new Notice(translate ? translate('services.calendarExport.notices.downloadFailed') : 'Failed to download calendar file');
         }
     }
 }

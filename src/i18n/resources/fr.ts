@@ -39,13 +39,36 @@ export const fr: TranslationTree = {
     },
     views: {
         agenda: {
-            title: 'Agenda'
+            title: 'Agenda',
+            today: 'Aujourd\'hui',
+            refreshCalendars: 'Actualiser les calendriers',
+            expandAllDays: 'Déplier tous les jours',
+            collapseAllDays: 'Replier tous les jours',
+            notices: {
+                calendarNotReady: 'Service de calendrier pas encore prêt',
+                calendarRefreshed: 'Abonnements calendrier actualisés',
+                refreshFailed: 'Échec de l\'actualisation'
+            },
+            empty: {
+                noItemsScheduled: 'Aucun élément planifié',
+                noItemsFound: 'Aucun élément trouvé'
+            }
         },
         taskList: {
-            title: 'Tâches'
+            title: 'Tâches',
+            expandAllGroups: 'Déplier tous les groupes',
+            collapseAllGroups: 'Replier tous les groupes',
+            noTasksFound: 'Aucune tâche trouvée pour les filtres sélectionnés.'
         },
         notes: {
-            title: 'Notes'
+            title: 'Notes',
+            refreshButton: 'Actualisation...',
+            notices: {
+                indexingDisabled: 'Indexation des notes désactivée'
+            },
+            empty: {
+                noNotesFound: 'Aucune note trouvée'
+            }
         },
         miniCalendar: {
             title: 'Mini calendrier'
@@ -54,7 +77,17 @@ export const fr: TranslationTree = {
             title: 'Calendrier avancé'
         },
         kanban: {
-            title: 'Kanban'
+            title: 'Kanban',
+            newTask: 'Nouvelle tâche',
+            addCard: '+ Ajouter une carte',
+            noTasks: 'Aucune tâche',
+            notices: {
+                loadFailed: 'Échec du chargement du tableau Kanban',
+                movedTask: 'Tâche déplacée vers "{0}"'
+            },
+            errors: {
+                loadingBoard: 'Erreur lors du chargement du tableau.'
+            }
         },
         pomodoro: {
             title: 'Pomodoro',
@@ -141,7 +174,20 @@ export const fr: TranslationTree = {
             }
         },
         stats: {
-            title: 'Statistiques'
+            title: 'Statistiques',
+            taskProjectStats: 'Statistiques des tâches et projets',
+            sections: {
+                filters: 'Filtres',
+                overview: 'Aperçu',
+                today: 'Aujourd\'hui',
+                thisWeek: 'Cette semaine',
+                thisMonth: 'Ce mois',
+                projectBreakdown: 'Répartition par projet',
+                dateRange: 'Plage de dates'
+            },
+            filters: {
+                minTime: 'Temps min (minutes)'
+            }
         }
     },
     settings: {
@@ -1543,6 +1589,292 @@ export const fr: TranslationTree = {
                 dateLabel: 'Date',
                 timeLabel: 'Heure (optionnel)',
                 select: 'Sélectionner'
+            }
+        }
+    },
+    services: {
+        pomodoro: {
+            notices: {
+                alreadyRunning: 'Un pomodoro est déjà en cours',
+                resumeCurrentSession: 'Reprendre la session actuelle au lieu d\'en démarrer une nouvelle',
+                timerAlreadyRunning: 'Un minuteur est déjà en cours',
+                resumeSessionInstead: 'Reprendre la session actuelle au lieu d\'en démarrer une nouvelle',
+                shortBreakStarted: 'Pause courte démarrée',
+                longBreakStarted: 'Pause longue démarrée',
+                paused: 'Pomodoro mis en pause',
+                resumed: 'Pomodoro repris',
+                stoppedAndReset: 'Pomodoro arrêté et remis à zéro',
+                migrationSuccess: '{count} sessions pomodoro migrées avec succès vers les notes quotidiennes.',
+                migrationFailure: 'Échec de la migration des données pomodoro. Veuillez réessayer ou vérifier la console pour plus de détails.'
+            }
+        },
+        icsSubscription: {
+            notices: {
+                calendarNotFound: 'Calendrier "{name}" introuvable (404). Veuillez vérifier que l\'URL ICS est correcte et que le calendrier est accessible publiquement.',
+                calendarAccessDenied: 'Accès refusé au calendrier "{name}" (500). Cela peut être dû aux restrictions du serveur Microsoft Outlook. Essayez de régénérer l\'URL ICS depuis les paramètres de votre calendrier.',
+                fetchRemoteFailed: 'Échec de la récupération du calendrier distant "{name}" : {error}',
+                readLocalFailed: 'Échec de la lecture du calendrier local "{name}" : {error}'
+            }
+        },
+        calendarExport: {
+            notices: {
+                generateLinkFailed: 'Échec de la génération du lien calendrier',
+                noTasksToExport: 'Aucune tâche trouvée à exporter',
+                downloadSuccess: 'Téléchargé {filename} avec {count} tâche{plural}',
+                downloadFailed: 'Échec du téléchargement du fichier calendrier',
+                singleDownloadSuccess: 'Téléchargé {filename}'
+            }
+        },
+        instantTaskConvert: {
+            notices: {
+                noCheckboxTasks: 'Aucune tâche à cocher trouvée dans la note actuelle.',
+                convertingTasks: 'Conversion de {count} tâche{plural}...',
+                conversionSuccess: '✅ {count} tâche{plural} converties avec succès en TaskNotes !',
+                partialConversion: '{successCount} tâche{successPlural} convertie{successPlural}. {failureCount} ont échoué.',
+                batchConversionFailed: 'Échec de la conversion par lot. Veuillez réessayer.',
+                invalidParameters: 'Paramètres d\'entrée invalides.',
+                emptyLine: 'La ligne actuelle est vide ou ne contient aucun contenu valide.',
+                parseError: 'Erreur d\'analyse de la tâche : {error}',
+                invalidTaskData: 'Données de tâche invalides.',
+                replaceLineFailed: 'Échec du remplacement de la ligne de tâche.',
+                conversionComplete: 'Tâche convertie : {title}',
+                conversionCompleteShortened: 'Tâche convertie : "{title}" (nom de fichier raccourci en raison de la longueur)',
+                fileExists: 'Un fichier avec ce nom existe déjà. Veuillez réessayer ou renommer la tâche.',
+                conversionFailed: 'Échec de la conversion de la tâche. Veuillez réessayer.'
+            }
+        },
+        icsNote: {
+            notices: {
+                templateNotFound: 'Modèle introuvable : {path}',
+                templateProcessError: 'Erreur de traitement du modèle : {template}',
+                linkedToEvent: 'Note liée à l\'événement ICS : {title}'
+            }
+        },
+        task: {
+            notices: {
+                templateNotFound: 'Modèle de corps de tâche introuvable : {path}',
+                templateReadError: 'Erreur de lecture du modèle de corps de tâche : {template}',
+                moveTaskFailed: 'Échec du déplacement de la tâche {operation} : {error}'
+            }
+        },
+        autoExport: {
+            notices: {
+                exportFailed: 'Échec de l\'export automatique TaskNotes : {error}'
+            }
+        },
+        notification: {
+            notices: {
+                // NotificationService uses Notice for in-app notifications
+                // but the message comes from the reminder content, so no hardcoded strings to translate
+            }
+        }
+    },
+    ui: {
+        icsCard: {
+            untitledEvent: 'Événement sans titre',
+            allDay: 'Toute la journée',
+            calendarEvent: 'Événement de calendrier',
+            calendarFallback: 'Calendrier'
+        },
+        noteCard: {
+            createdLabel: 'Créée :',
+            dailyBadge: 'Quotidien',
+            dailyTooltip: 'Note quotidienne'
+        },
+        filterHeading: {
+            allViewName: 'Toutes'
+        },
+        filterBar: {
+            saveView: 'Enregistrer la vue',
+            saveViewNamePlaceholder: 'Entrez le nom de la vue...',
+            saveButton: 'Enregistrer',
+            views: 'Vues',
+            savedFilterViews: 'Vues de filtre enregistrées',
+            filters: 'Filtres',
+            properties: 'Propriétés',
+            sort: 'Tri',
+            newTask: 'Nouvelle',
+            expandAllGroups: 'Déplier tous les groupes',
+            collapseAllGroups: 'Replier tous les groupes',
+            searchTasksPlaceholder: 'Rechercher des tâches...',
+            searchTasksTooltip: 'Rechercher dans les titres de tâches',
+            filterUnavailable: 'Barre de filtre temporairement indisponible',
+            toggleFilter: 'Basculer le filtre',
+            activeFiltersTooltip: 'Filtres actifs – Cliquez pour modifier, clic droit pour effacer',
+            configureVisibleProperties: 'Configurer les propriétés visibles',
+            sortAndGroupOptions: 'Options de tri et regroupement',
+            createNewTask: 'Créer une nouvelle tâche',
+            filter: 'Filtre',
+            displayOrganization: 'Affichage et organisation',
+            viewOptions: 'Options de vue',
+            addFilter: 'Ajouter un filtre',
+            addFilterGroup: 'Ajouter un groupe de filtres',
+            addFilterTooltip: 'Ajouter une nouvelle condition de filtre',
+            addFilterGroupTooltip: 'Ajouter un groupe de filtres imbriqué',
+            clearAllFilters: 'Effacer tous les filtres et groupes',
+            saveCurrentFilter: 'Enregistrer le filtre actuel comme vue',
+            closeFilterModal: 'Fermer la fenêtre de filtre',
+            deleteFilterGroup: 'Supprimer le groupe de filtres',
+            deleteCondition: 'Supprimer la condition',
+            all: 'Toutes',
+            any: 'N\'importe laquelle',
+            followingAreTrue: 'des conditions suivantes sont vraies :',
+            where: 'où',
+            selectProperty: 'Sélectionner...',
+            chooseProperty: 'Choisissez quelle propriété de tâche filtrer',
+            chooseOperator: 'Choisissez comment comparer la valeur de propriété',
+            enterValue: 'Entrez la valeur à filtrer',
+            selectValue: 'Sélectionnez un {property} à filtrer',
+            sortBy: 'Trier par :',
+            toggleSortDirection: 'Basculer la direction de tri',
+            chooseSortMethod: 'Choisissez comment trier les tâches',
+            groupBy: 'Grouper par :',
+            chooseGroupMethod: 'Grouper les tâches par une propriété commune',
+            toggleViewOption: 'Basculer {option}',
+            expandCollapseFilters: 'Cliquez pour déplier/replier les conditions de filtre',
+            expandCollapseSort: 'Cliquez pour déplier/replier les options de tri et regroupement',
+            expandCollapseViewOptions: 'Cliquez pour déplier/replier les options spécifiques à la vue',
+            naturalLanguageDates: 'Dates en langage naturel',
+            naturalLanguageExamples: 'Afficher les exemples de dates en langage naturel',
+            enterNumericValue: 'Entrez une valeur numérique à filtrer',
+            enterDateValue: 'Entrez une date en langage naturel ou format ISO',
+            pickDateTime: 'Choisir date et heure',
+            noSavedViews: 'Aucune vue enregistrée',
+            savedViews: 'Vues enregistrées',
+            yourSavedFilters: 'Vos configurations de filtres enregistrées',
+            dragToReorder: 'Glissez pour réorganiser les vues',
+            loadSavedView: 'Charger la vue enregistrée : {name}',
+            deleteView: 'Supprimer la vue',
+            deleteViewTitle: 'Supprimer la vue',
+            deleteViewMessage: 'Êtes-vous sûr de vouloir supprimer la vue "{name}" ?',
+            manageAllReminders: 'Gérer tous les rappels...',
+            clearAllReminders: 'Effacer tous les rappels',
+            customRecurrence: 'Récurrence personnalisée...',
+            clearRecurrence: 'Effacer la récurrence',
+            sort: {
+                dueDate: 'Date d\'échéance',
+                scheduledDate: 'Date planifiée',
+                priority: 'Priorité',
+                title: 'Titre',
+                createdDate: 'Date de création',
+                tags: 'Tags',
+                ascending: 'Croissant',
+                descending: 'Décroissant'
+            },
+            group: {
+                none: 'Aucun',
+                status: 'Statut',
+                priority: 'Priorité',
+                context: 'Contexte',
+                project: 'Projet',
+                dueDate: 'Date d\'échéance',
+                scheduledDate: 'Date planifiée',
+                tags: 'Tags'
+            }
+        }
+    },
+    components: {
+        propertyVisibilityDropdown: {
+            coreProperties: 'PROPRIÉTÉS PRINCIPALES',
+            organization: 'ORGANISATION',
+            customProperties: 'PROPRIÉTÉS PERSONNALISÉES',
+            failed: 'Impossible d\'afficher le menu des propriétés',
+            properties: {
+                statusDot: 'Point de statut',
+                priorityDot: 'Point de priorité',
+                dueDate: 'Date d\'échéance',
+                scheduledDate: 'Date planifiée',
+                timeEstimate: 'Estimation de temps',
+                totalTrackedTime: 'Temps suivi total',
+                recurrence: 'Récurrence',
+                completedDate: 'Date d\'achèvement',
+                createdDate: 'Date de création',
+                modifiedDate: 'Date de modification',
+                projects: 'Projets',
+                contexts: 'Contextes',
+                tags: 'Tags'
+            }
+        },
+        reminderContextMenu: {
+            remindBeforeDue: 'Rappeler avant l\'échéance...',
+            remindBeforeScheduled: 'Rappeler avant la date planifiée...',
+            manageAllReminders: 'Gérer tous les rappels...',
+            clearAllReminders: 'Effacer tous les rappels',
+            quickReminders: {
+                atTime: 'À l\'heure de l\'événement',
+                fiveMinutesBefore: '5 minutes avant',
+                fifteenMinutesBefore: '15 minutes avant',
+                oneHourBefore: '1 heure avant',
+                oneDayBefore: '1 jour avant'
+            }
+        },
+        recurrenceContextMenu: {
+            daily: 'Quotidien',
+            weeklyOn: 'Hebdomadaire le {day}',
+            everyTwoWeeksOn: 'Toutes les 2 semaines le {day}',
+            monthlyOnThe: 'Mensuel le {ordinal}',
+            everyThreeMonthsOnThe: 'Tous les 3 mois le {ordinal}',
+            yearlyOn: 'Annuel le {month} {ordinal}',
+            weekdaysOnly: 'Jours ouvrés seulement',
+            customRecurrence: 'Récurrence personnalisée...',
+            clearRecurrence: 'Effacer la récurrence',
+            customRecurrenceModal: {
+                title: 'Récurrence personnalisée',
+                startDate: 'Date de début',
+                startDateDesc: 'La date à laquelle le modèle de récurrence commence',
+                startTime: 'Heure de début',
+                startTimeDesc: 'L\'heure à laquelle les instances récurrentes doivent apparaître (optionnel)',
+                frequency: 'Fréquence',
+                interval: 'Intervalle',
+                intervalDesc: 'Tous les X jours/semaines/mois/années',
+                daysOfWeek: 'Jours de la semaine',
+                daysOfWeekDesc: 'Sélectionnez des jours spécifiques (pour la récurrence hebdomadaire)',
+                monthlyRecurrence: 'Récurrence mensuelle',
+                monthlyRecurrenceDesc: 'Choisissez comment répéter mensuellement',
+                yearlyRecurrence: 'Récurrence annuelle',
+                yearlyRecurrenceDesc: 'Choisissez comment répéter annuellement',
+                endCondition: 'Condition de fin',
+                endConditionDesc: 'Choisissez quand la récurrence doit se terminer',
+                neverEnds: 'Ne se termine jamais',
+                endAfterOccurrences: 'Se termine après {count} occurrences',
+                endOnDate: 'Se termine le {date}',
+                onDayOfMonth: 'Le jour {day} de chaque mois',
+                onTheWeekOfMonth: 'Le {week} {day} de chaque mois',
+                onDateOfYear: 'Le {month} {day} de chaque année',
+                onTheWeekOfYear: 'Le {week} {day} de {month} chaque année',
+                frequencies: {
+                    daily: 'Quotidien',
+                    weekly: 'Hebdomadaire',
+                    monthly: 'Mensuel',
+                    yearly: 'Annuel'
+                },
+                weekPositions: {
+                    first: 'premier',
+                    second: 'deuxième',
+                    third: 'troisième',
+                    fourth: 'quatrième',
+                    last: 'dernier'
+                },
+                weekdays: {
+                    monday: 'Lundi',
+                    tuesday: 'Mardi',
+                    wednesday: 'Mercredi',
+                    thursday: 'Jeudi',
+                    friday: 'Vendredi',
+                    saturday: 'Samedi',
+                    sunday: 'Dimanche'
+                },
+                weekdaysShort: {
+                    mon: 'Lun',
+                    tue: 'Mar',
+                    wed: 'Mer',
+                    thu: 'Jeu',
+                    fri: 'Ven',
+                    sat: 'Sam',
+                    sun: 'Dim'
+                },
+                cancel: 'Annuler',
+                save: 'Enregistrer'
             }
         }
     }

@@ -9,23 +9,25 @@ import { showConfirmationModal } from '../modals/ConfirmationModal';
 import { DateContextMenu } from '../components/DateContextMenu';
 import { PropertyVisibilityDropdown } from './PropertyVisibilityDropdown';
 import { SubgroupMenuBuilder } from '../components/SubgroupMenuBuilder';
-
+import { TranslationKey } from '../i18n/types';
 
 class SaveViewModal extends Modal {
     private name: string;
     private onSubmit: (name: string) => void;
+    private translate: (key: TranslationKey, vars?: Record<string, string>) => string;
 
-    constructor(app: App, onSubmit: (name: string) => void) {
+    constructor(app: App, onSubmit: (name: string) => void, translate: (key: TranslationKey, vars?: Record<string, string>) => string) {
         super(app);
         this.onSubmit = onSubmit;
+        this.translate = translate;
     }
 
     onOpen() {
         const { contentEl } = this;
-        contentEl.createEl('h2', { text: 'Save view' });
+        contentEl.createEl('h2', { text: this.translate('ui.filterBar.saveView') });
 
         const textComponent = new TextComponent(contentEl)
-            .setPlaceholder('Enter view name...')
+            .setPlaceholder(this.translate('ui.filterBar.saveViewNamePlaceholder'))
             .onChange((value) => {
                 this.name = value;
             });
@@ -33,7 +35,7 @@ class SaveViewModal extends Modal {
 
         const buttonContainer = contentEl.createDiv({ cls: 'modal-button-container' });
         new ButtonComponent(buttonContainer)
-            .setButtonText('Save')
+            .setButtonText(this.translate('ui.filterBar.saveButton'))
             .setCta()
             .onClick(() => {
                 if (this.name) {
@@ -454,9 +456,9 @@ export class FilterBar extends EventEmitter {
 
         const makeViewsButton = () => {
             this.viewSelectorButton = new ButtonComponent(topControls)
-                .setButtonText('Views')
+                .setButtonText(this.plugin.i18n.translate('ui.filterBar.views'))
                 .setClass('filter-bar__templates-button')
-                .setTooltip('Saved filter views')
+                .setTooltip(this.plugin.i18n.translate('ui.filterBar.savedFilterViews'))
                 .onClick(() => {
                     this.toggleViewSelectorDropdown();
                 });
@@ -470,7 +472,7 @@ export class FilterBar extends EventEmitter {
         };
         const makeFilterToggle = () => {
             const filterToggle = new ButtonComponent(topControls)
-                .setTooltip('Toggle filter')
+                .setTooltip(this.plugin.i18n.translate('ui.filterBar.toggleFilter'))
                 .setClass('filter-bar__filter-toggle')
                 .onClick(() => {
                     this.toggleMainFilterBox();
@@ -486,8 +488,7 @@ export class FilterBar extends EventEmitter {
             setIcon(iconEl, 'list-filter');
 
             // Add text
-            const textEl = filterToggle.buttonEl.createSpan({ cls: 'button-text', text: 'Filters' });
-
+            const textEl = filterToggle.buttonEl.createSpan({ cls: 'button-text', text: this.plugin.i18n.translate('ui.filterBar.filters') });
             // Right-click quick clear
             filterToggle.buttonEl.addEventListener('contextmenu', (e) => {
                 e.preventDefault();
@@ -1016,8 +1017,8 @@ export class FilterBar extends EventEmitter {
         setTooltip(conjunctionContainer, 'Choose whether ALL or ANY of the conditions must match', { placement: 'top' });
 
         new DropdownComponent(conjunctionContainer)
-            .addOption('and', depth === 0 ? 'All' : 'All')
-            .addOption('or', depth === 0 ? 'Any' : 'Any')
+            .addOption('and', depth === 0 ? this.plugin.i18n.translate('ui.filterBar.all') : this.plugin.i18n.translate('ui.filterBar.all'))
+            .addOption('or', depth === 0 ? this.plugin.i18n.translate('ui.filterBar.any') : this.plugin.i18n.translate('ui.filterBar.any'))
             .setValue(group.conjunction || 'and') // Defensive fallback
             .onChange((value) => {
                 group.conjunction = value as 'and' | 'or';
@@ -1026,7 +1027,7 @@ export class FilterBar extends EventEmitter {
             });
 
         conjunctionContainer.createSpan({
-            text: 'of the following are true:',
+            text: this.plugin.i18n.translate('ui.filterBar.followingAreTrue'),
             cls: 'filter-bar__conjunction-text'
         });
 
@@ -1090,7 +1091,7 @@ export class FilterBar extends EventEmitter {
 
         // Prefix (where/and/or)
         conditionContainer.createSpan({
-            text: index === 0 ? 'where' : parentGroup.conjunction,
+            text: index === 0 ? this.plugin.i18n.translate('ui.filterBar.where') : parentGroup.conjunction,
             cls: 'filter-bar__condition-prefix'
         });
 
@@ -1970,7 +1971,7 @@ export class FilterBar extends EventEmitter {
                 visibleProperties: currentProperties
             });
             this.toggleViewSelectorDropdown();
-        }).open();
+        }, this.plugin.i18n.translate).open();
     }
 
     /**

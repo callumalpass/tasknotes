@@ -1,5 +1,7 @@
 import { App, Modal, Setting, Notice } from 'obsidian';
 import { MigrationService } from '../services/MigrationService';
+import { TranslationKey } from '../i18n/types';
+import type TaskNotesPlugin from '../main';
 
 /**
  * Modal for migrating legacy RecurrenceInfo to rrule format
@@ -7,10 +9,14 @@ import { MigrationService } from '../services/MigrationService';
 export class MigrationModal extends Modal {
     private migrationService: MigrationService;
     private migrationCount = 0;
+    private plugin: TaskNotesPlugin;
+    private translate: (key: TranslationKey, variables?: Record<string, any>) => string;
 
-    constructor(app: App, migrationService: MigrationService) {
+    constructor(app: App, migrationService: MigrationService, plugin: TaskNotesPlugin) {
         super(app);
         this.migrationService = migrationService;
+        this.plugin = plugin;
+        this.translate = plugin.i18n.translate;
     }
 
     async onOpen() {
@@ -21,27 +27,27 @@ export class MigrationModal extends Modal {
         this.migrationCount = await this.migrationService.getMigrationCount();
 
         new Setting(contentEl)
-            .setName('Recurrence system migration')
+            .setName(this.translate('modals.migration.title'))
             .setHeading();
 
-        contentEl.createEl('p', { 
-            text: 'TaskNotes has an updated, more powerful recurrence system based on the RFC 5545 standard. This migration will convert your existing recurring tasks to use the new format.'
+        contentEl.createEl('p', {
+            text: this.translate('modals.migration.description')
         });
 
-        contentEl.createEl('p', { 
-            text: `Found ${this.migrationCount} task(s) that need migration.`
+        contentEl.createEl('p', {
+            text: this.translate('modals.migration.tasksFound', { count: this.migrationCount })
         });
 
         if (this.migrationCount === 0) {
-            contentEl.createEl('p', { 
-                text: 'No migration needed! All your tasks are already using the new recurrence format.',
+            contentEl.createEl('p', {
+                text: this.translate('modals.migration.noMigrationNeeded'),
                 cls: 'text-success'
             });
 
             new Setting(contentEl)
                 .addButton(button => {
                     button
-                        .setButtonText('Close')
+                        .setButtonText(this.translate('common.close'))
                         .setCta()
                         .onClick(() => this.close());
                 });
@@ -51,39 +57,39 @@ export class MigrationModal extends Modal {
         // Warning section
         const warningEl = contentEl.createDiv('migration-warning');
         new Setting(warningEl)
-            .setName('⚠️ Important notes')
+            .setName(this.translate('modals.migration.warnings.title'))
             .setHeading();
         
         const warningList = warningEl.createEl('ul');
-        warningList.createEl('li', { text: 'We strongly recommend backing up your vault before proceeding.' });
-        warningList.createEl('li', { text: 'The migration will convert your recurrence objects to standardized rrule strings.' });
-        warningList.createEl('li', { text: 'You can continue using your tasks normally after migration.' });
-        warningList.createEl('li', { text: 'The migration is permanent - your legacy recurrence objects will be replaced.' });
+        warningList.createEl('li', { text: this.translate('modals.migration.warnings.backup') });
+        warningList.createEl('li', { text: this.translate('modals.migration.warnings.conversion') });
+        warningList.createEl('li', { text: this.translate('modals.migration.warnings.normalUsage') });
+        warningList.createEl('li', { text: this.translate('modals.migration.warnings.permanent') });
 
         // Benefits section
         const benefitsEl = contentEl.createDiv('migration-benefits');
         new Setting(benefitsEl)
-            .setName('✨ What You Get')
+            .setName(this.translate('modals.migration.benefits.title'))
             .setHeading();
         
         const benefitsList = benefitsEl.createEl('ul');
-        benefitsList.createEl('li', { text: 'More powerful recurrence patterns (e.g., "every other Tuesday", "last Friday of the month")' });
-        benefitsList.createEl('li', { text: 'Better performance for calendar views' });
-        benefitsList.createEl('li', { text: 'Improved compatibility with calendar standards' });
-        benefitsList.createEl('li', { text: 'Enhanced natural language processing for task creation' });
+        benefitsList.createEl('li', { text: this.translate('modals.migration.benefits.powerfulPatterns') });
+        benefitsList.createEl('li', { text: this.translate('modals.migration.benefits.performance') });
+        benefitsList.createEl('li', { text: this.translate('modals.migration.benefits.compatibility') });
+        benefitsList.createEl('li', { text: this.translate('modals.migration.benefits.nlp') });
 
         // Progress section (initially hidden)
         const progressEl = contentEl.createDiv('migration-progress');
         progressEl.style.display = 'none';
         
         new Setting(progressEl)
-            .setName('Migration progress')
+            .setName(this.translate('modals.migration.progress.title'))
             .setHeading();
         const progressBar = progressEl.createEl('progress');
         progressBar.max = this.migrationCount;
         progressBar.value = 0;
         
-        const progressText = progressEl.createEl('p', { text: 'Preparing migration...' });
+        const progressText = progressEl.createEl('p', { text: this.translate('modals.migration.progress.preparing') });
 
         // Action buttons
         const buttonContainer = contentEl.createDiv('migration-buttons');
@@ -91,11 +97,11 @@ export class MigrationModal extends Modal {
         buttonContainer.style.gap = '10px';
         buttonContainer.style.marginTop = '20px';
 
-        const cancelButton = buttonContainer.createEl('button', { text: 'Cancel' });
+        const cancelButton = buttonContainer.createEl('button', { text: this.translate('common.cancel') });
         cancelButton.onclick = () => this.close();
 
-        const migrateButton = buttonContainer.createEl('button', { 
-            text: `Migrate ${this.migrationCount} Task(s)`,
+        const migrateButton = buttonContainer.createEl('button', {
+            text: this.translate('modals.migration.buttons.migrate', { count: this.migrationCount }),
             cls: 'mod-cta'
         });
 
@@ -111,16 +117,16 @@ export class MigrationModal extends Modal {
                 const result = await this.migrationService.performMigration(
                     (current, total, fileName) => {
                         progressBar.value = current;
-                        progressText.textContent = `Migrating ${current}/${total}: ${fileName}`;
+                        progressText.textContent = this.translate('modals.migration.progress.migrating', { current, total, fileName });
                     }
                 );
 
-                progressText.textContent = `Migration completed! ${result.success} files migrated successfully.`;
+                progressText.textContent = this.translate('modals.migration.progress.completed', { count: result.success });
 
                 if (result.errors.length > 0) {
                     const errorEl = progressEl.createDiv('migration-errors');
                     new Setting(errorEl)
-                        .setName('⚠️ Errors Encountered')
+                        .setName(this.translate('modals.migration.errors.title'))
                         .setHeading();
                     const errorList = errorEl.createEl('ul');
                     
@@ -128,19 +134,19 @@ export class MigrationModal extends Modal {
                         errorList.createEl('li', { text: error });
                     });
 
-                    new Notice(`Migration completed with ${result.errors.length} errors. Check the migration modal for details.`, 10000);
+                    new Notice(this.translate('modals.migration.notices.completedWithErrors', { count: result.errors.length }), 10000);
                 } else {
-                    new Notice(`Migration completed successfully! ${result.success} tasks migrated.`, 5000);
+                    new Notice(this.translate('modals.migration.notices.success', { count: result.success }), 5000);
                 }
 
                 // Update button
-                migrateButton.textContent = 'Migration Complete';
-                cancelButton.textContent = 'Close';
+                migrateButton.textContent = this.translate('modals.migration.buttons.completed');
+                cancelButton.textContent = this.translate('common.close');
                 cancelButton.disabled = false;
 
             } catch (error) {
-                progressText.textContent = `Migration failed: ${error instanceof Error ? error.message : String(error)}`;
-                new Notice(`Migration failed: ${error instanceof Error ? error.message : String(error)}`, 10000);
+                progressText.textContent = this.translate('modals.migration.progress.failed', { error: error instanceof Error ? error.message : String(error) });
+                new Notice(this.translate('modals.migration.notices.failed', { error: error instanceof Error ? error.message : String(error) }), 10000);
                 
                 // Re-enable buttons
                 migrateButton.disabled = false;
@@ -158,7 +164,7 @@ export class MigrationModal extends Modal {
 /**
  * Show a simple migration prompt notice
  */
-export function showMigrationPrompt(app: App, migrationService: MigrationService): void {
+export function showMigrationPrompt(app: App, migrationService: MigrationService, plugin: TaskNotesPlugin): void {
     const notice = new Notice('', 0); // Persistent notice
     
     const container = notice.messageEl.createDiv();
@@ -168,7 +174,7 @@ export function showMigrationPrompt(app: App, migrationService: MigrationService
     container.style.padding = '8px';
     
     const message = container.createSpan();
-    message.textContent = 'TaskNotes has an updated recurrence system. Migrate your existing recurring tasks to continue using them.';
+    message.textContent = plugin.i18n.translate('modals.migration.prompt.message');
     message.style.lineHeight = '1.4';
     message.style.marginBottom = '4px';
     
@@ -179,17 +185,17 @@ export function showMigrationPrompt(app: App, migrationService: MigrationService
     buttonContainer.style.alignItems = 'center';
     
     const migrateButton = buttonContainer.createEl('button', {
-        text: 'Migrate Now',
+        text: plugin.i18n.translate('modals.migration.prompt.migrateNow'),
         cls: 'mod-cta'
     });
     
     const laterButton = buttonContainer.createEl('button', {
-        text: 'Remind Later'
+        text: plugin.i18n.translate('modals.migration.prompt.remindLater')
     });
     
     migrateButton.onclick = () => {
         notice.hide();
-        const modal = new MigrationModal(app, migrationService);
+        const modal = new MigrationModal(app, migrationService, plugin);
         modal.open();
     };
     

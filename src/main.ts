@@ -1354,7 +1354,7 @@ export default class TaskNotesPlugin extends Plugin {
 				try {
 					const allTasks = await this.cacheManager.getAllTasks();
 					const { CalendarExportService } = await import('./services/CalendarExportService');
-					CalendarExportService.downloadAllTasksICSFile(allTasks);
+					CalendarExportService.downloadAllTasksICSFile(allTasks, this.i18n.translate.bind(this.i18n));
 				} catch (error) {
 					console.error('Error exporting all tasks as ICS:', error);
 					new Notice('Failed to export tasks as ICS file');

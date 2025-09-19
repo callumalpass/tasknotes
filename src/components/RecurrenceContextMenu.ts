@@ -1,4 +1,6 @@
 import { Menu, Modal, App, Setting } from 'obsidian';
+import { TranslationKey } from '../i18n/types';
+import TaskNotesPlugin from '../main';
 
 export interface RecurrenceOption {
     label: string;
@@ -10,15 +12,18 @@ export interface RecurrenceContextMenuOptions {
     currentValue?: string;
     onSelect: (value: string | null) => void;
     app: App;
+    plugin: TaskNotesPlugin;
 }
 
 export class RecurrenceContextMenu {
     private menu: Menu;
     private options: RecurrenceContextMenuOptions;
+    private translate: (key: TranslationKey, vars?: Record<string, string>) => string;
 
     constructor(options: RecurrenceContextMenuOptions) {
         this.menu = new Menu();
         this.options = options;
+        this.translate = options.plugin.i18n.translate;
         this.buildMenu();
     }
 
@@ -52,7 +57,7 @@ export class RecurrenceContextMenu {
 
         // Add custom recurrence option
         this.menu.addItem(item => {
-            item.setTitle('Custom recurrence...');
+            item.setTitle(this.translate('components.recurrenceContextMenu.customRecurrence'));
             item.setIcon('settings');
             item.onClick(async () => {
                 this.showCustomRecurrenceModal();
@@ -62,7 +67,7 @@ export class RecurrenceContextMenu {
         // Add clear option if there's a current value
         if (this.options.currentValue) {
             this.menu.addItem(item => {
-                item.setTitle('Clear recurrence');
+                item.setTitle(this.translate('components.recurrenceContextMenu.clearRecurrence'));
                 item.setIcon('x');
                 item.onClick(async () => {
                     this.options.onSelect(null);
@@ -100,49 +105,49 @@ export class RecurrenceContextMenu {
 
         // Daily
         options.push({
-            label: 'Daily',
+            label: this.translate('components.recurrenceContextMenu.daily'),
             value: `DTSTART:${todayDTSTART};FREQ=DAILY;INTERVAL=1`,
             icon: 'calendar-days'
         });
 
         // Weekly (for current day of week)
         options.push({
-            label: `Weekly on ${dayName}`,
+            label: this.translate('components.recurrenceContextMenu.weeklyOn', { day: dayName }),
             value: `DTSTART:${todayDTSTART};FREQ=WEEKLY;INTERVAL=1;BYDAY=${currentDay}`,
             icon: 'calendar'
         });
 
         // Every 2 weeks (for current day of week)
         options.push({
-            label: `Every 2 weeks on ${dayName}`,
+            label: this.translate('components.recurrenceContextMenu.everyTwoWeeksOn', { day: dayName }),
             value: `DTSTART:${todayDTSTART};FREQ=WEEKLY;INTERVAL=2;BYDAY=${currentDay}`,
             icon: 'calendar'
         });
 
         // Monthly (on current date)
         options.push({
-            label: `Monthly on the ${this.getOrdinal(currentDate)}`,
+            label: this.translate('components.recurrenceContextMenu.monthlyOnThe', { ordinal: this.getOrdinal(currentDate) }),
             value: `DTSTART:${todayDTSTART};FREQ=MONTHLY;INTERVAL=1;BYMONTHDAY=${currentDate}`,
             icon: 'calendar-range'
         });
 
         // Every 3 months (on current date)
         options.push({
-            label: `Every 3 months on the ${this.getOrdinal(currentDate)}`,
+            label: this.translate('components.recurrenceContextMenu.everyThreeMonthsOnThe', { ordinal: this.getOrdinal(currentDate) }),
             value: `DTSTART:${todayDTSTART};FREQ=MONTHLY;INTERVAL=3;BYMONTHDAY=${currentDate}`,
             icon: 'calendar-range'
         });
 
         // Yearly (on current date)
         options.push({
-            label: `Yearly on ${currentMonthName} ${this.getOrdinal(currentDate)}`,
+            label: this.translate('components.recurrenceContextMenu.yearlyOn', { month: currentMonthName, ordinal: this.getOrdinal(currentDate) }),
             value: `DTSTART:${todayDTSTART};FREQ=YEARLY;INTERVAL=1;BYMONTH=${currentMonth};BYMONTHDAY=${currentDate}`,
             icon: 'calendar-clock'
         });
 
         // Weekdays only
         options.push({
-            label: 'Weekdays only',
+            label: this.translate('components.recurrenceContextMenu.weekdaysOnly'),
             value: `DTSTART:${todayDTSTART};FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR`,
             icon: 'briefcase'
         });

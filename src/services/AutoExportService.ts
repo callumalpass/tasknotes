@@ -1,6 +1,7 @@
 import { Notice } from 'obsidian';
 import TaskNotesPlugin from '../main';
 import { CalendarExportService } from './CalendarExportService';
+import { TranslationKey } from '../i18n/types';
 
 export class AutoExportService {
     private plugin: TaskNotesPlugin;
@@ -10,6 +11,10 @@ export class AutoExportService {
 
     constructor(plugin: TaskNotesPlugin) {
         this.plugin = plugin;
+    }
+
+    private translate(key: TranslationKey, variables?: Record<string, any>): string {
+        return this.plugin.i18n.translate(key, variables);
     }
 
     /**
@@ -118,7 +123,7 @@ export class AutoExportService {
             
             // Only show notice for manual exports or first few failures
             if (!this.lastExportTime || (Date.now() - this.lastExportTime.getTime()) > 6 * 60 * 60 * 1000) {
-                new Notice(`TaskNotes auto export failed: ${error instanceof Error ? error.message : String(error)}`);
+                new Notice(this.translate('services.autoExport.notices.exportFailed', { error: error instanceof Error ? error.message : String(error) }));
             }
         }
     }

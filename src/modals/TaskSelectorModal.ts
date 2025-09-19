@@ -3,27 +3,30 @@ import { TaskInfo } from '../types';
 import { isPastDate, isToday } from '../utils/dateUtils';
 import { filterEmptyProjects } from '../utils/helpers';
 import type TaskNotesPlugin from '../main';
+import { TranslationKey } from '../i18n/types';
 
 export class TaskSelectorModal extends FuzzySuggestModal<TaskInfo> {
     private tasks: TaskInfo[];
     private onChooseTask: (task: TaskInfo | null) => void;
     private plugin: TaskNotesPlugin;
+    private translate: (key: TranslationKey, variables?: Record<string, any>) => string;
 
     constructor(app: App, plugin: TaskNotesPlugin, tasks: TaskInfo[], onChooseTask: (task: TaskInfo | null) => void) {
         super(app);
         this.plugin = plugin;
         this.tasks = tasks;
         this.onChooseTask = onChooseTask;
+        this.translate = plugin.i18n.translate;
         
-        this.setPlaceholder('Type to search for a task...');
+        this.setPlaceholder(this.translate('modals.taskSelector.placeholder'));
         this.setInstructions([
-            { command: '↑↓', purpose: 'to navigate' },
-            { command: '↵', purpose: 'to select' },
-            { command: 'esc', purpose: 'to dismiss' },
+            { command: '↑↓', purpose: this.translate('modals.taskSelector.instructions.navigate') },
+            { command: '↵', purpose: this.translate('modals.taskSelector.instructions.select') },
+            { command: 'esc', purpose: this.translate('modals.taskSelector.instructions.dismiss') },
         ]);
         
         // Set modal title for accessibility
-        this.titleEl.setText('Select Task');
+        this.titleEl.setText(this.translate('modals.taskSelector.title'));
         this.titleEl.setAttribute('id', 'task-selector-title');
         
         // Set aria attributes on the modal
@@ -106,10 +109,10 @@ export class TaskSelectorModal extends FuzzySuggestModal<TaskInfo> {
             let dueDateClass = 'task-selector-modal__due-date';
             
             if (isOverdue) {
-                dueDateText = `Overdue (${task.due})`;
+                dueDateText = this.translate('modals.taskSelector.dueDate.overdue', { date: task.due });
                 dueDateClass += ' task-selector-modal__due-date--overdue';
             } else if (isDueToday) {
-                dueDateText = 'Due today';
+                dueDateText = this.translate('modals.taskSelector.dueDate.today');
                 dueDateClass += ' task-selector-modal__due-date--today';
             }
             
@@ -166,7 +169,7 @@ export class TaskSelectorModal extends FuzzySuggestModal<TaskInfo> {
                             this.close();
                         } else {
                             // File not found, show notice
-                            new Notice(`Note "${noteName}" not found`);
+                            new Notice(this.translate('modals.taskSelector.notices.noteNotFound', { name: noteName }));
                         }
                     });
                 } else {

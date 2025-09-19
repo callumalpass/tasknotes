@@ -1,4 +1,5 @@
 import { App, Modal, Setting } from 'obsidian';
+import { getTranslate } from '../i18n';
 
 export interface TextInputModalOptions {
     title: string;
@@ -18,9 +19,10 @@ export class TextInputModal extends Modal {
 
     constructor(app: App, options: TextInputModalOptions) {
         super(app);
+        const translate = getTranslate();
         this.options = {
-            confirmText: 'Confirm',
-            cancelText: 'Cancel',
+            confirmText: translate('common.confirm'),
+            cancelText: translate('common.cancel'),
             ...options
         };
     }

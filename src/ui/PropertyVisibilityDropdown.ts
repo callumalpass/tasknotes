@@ -1,5 +1,6 @@
 import { Menu } from 'obsidian';
 import type TaskNotesPlugin from '../main';
+import { TranslationKey } from '../i18n/types';
 
 interface PropertyDefinition {
     id: string;
@@ -33,11 +34,11 @@ export class PropertyVisibilityDropdown {
             const propertyGroups = this.groupProperties(allProperties);
             
             // Add property groups efficiently
-            this.addPropertyGroup(menu, 'CORE PROPERTIES', propertyGroups.core);
-            this.addPropertyGroup(menu, 'ORGANIZATION', propertyGroups.organization);
-            
+            this.addPropertyGroup(menu, this.plugin.i18n.translate('components.propertyVisibilityDropdown.coreProperties'), propertyGroups.core);
+            this.addPropertyGroup(menu, this.plugin.i18n.translate('components.propertyVisibilityDropdown.organization'), propertyGroups.organization);
+
             if (propertyGroups.user.length > 0) {
-                this.addPropertyGroup(menu, 'CUSTOM PROPERTIES', propertyGroups.user);
+                this.addPropertyGroup(menu, this.plugin.i18n.translate('components.propertyVisibilityDropdown.customProperties'), propertyGroups.user);
             }
             
             // Show menu using the most reliable method
@@ -46,7 +47,7 @@ export class PropertyVisibilityDropdown {
         } catch (error) {
             console.error('PropertyVisibilityDropdown: Error showing menu:', error);
             // Provide user feedback on error
-            this.plugin.app.workspace.trigger('notice', 'Failed to show properties menu');
+            this.plugin.app.workspace.trigger('notice', this.plugin.i18n.translate('components.propertyVisibilityDropdown.failed'));
         }
     }
     
@@ -101,23 +102,23 @@ export class PropertyVisibilityDropdown {
         
         // Core properties - use array spread for better performance
         properties.push(...[
-            { id: 'status', name: 'Status Dot', category: 'core' as const },
-            { id: 'priority', name: 'Priority Dot', category: 'core' as const },
-            { id: 'due', name: 'Due Date', category: 'core' as const },
-            { id: 'scheduled', name: 'Scheduled Date', category: 'core' as const },
-            { id: 'timeEstimate', name: 'Time Estimate', category: 'core' as const },
-            { id: 'totalTrackedTime', name: 'Total Tracked Time', category: 'core' as const },
-            { id: 'recurrence', name: 'Recurrence', category: 'core' as const },
-            { id: 'completedDate', name: 'Completed Date', category: 'core' as const },
-            { id: 'file.ctime', name: 'Created Date', category: 'core' as const },
-            { id: 'file.mtime', name: 'Modified Date', category: 'core' as const }
+            { id: 'status', name: this.plugin.i18n.translate('components.propertyVisibilityDropdown.properties.statusDot'), category: 'core' as const },
+            { id: 'priority', name: this.plugin.i18n.translate('components.propertyVisibilityDropdown.properties.priorityDot'), category: 'core' as const },
+            { id: 'due', name: this.plugin.i18n.translate('components.propertyVisibilityDropdown.properties.dueDate'), category: 'core' as const },
+            { id: 'scheduled', name: this.plugin.i18n.translate('components.propertyVisibilityDropdown.properties.scheduledDate'), category: 'core' as const },
+            { id: 'timeEstimate', name: this.plugin.i18n.translate('components.propertyVisibilityDropdown.properties.timeEstimate'), category: 'core' as const },
+            { id: 'totalTrackedTime', name: this.plugin.i18n.translate('components.propertyVisibilityDropdown.properties.totalTrackedTime'), category: 'core' as const },
+            { id: 'recurrence', name: this.plugin.i18n.translate('components.propertyVisibilityDropdown.properties.recurrence'), category: 'core' as const },
+            { id: 'completedDate', name: this.plugin.i18n.translate('components.propertyVisibilityDropdown.properties.completedDate'), category: 'core' as const },
+            { id: 'file.ctime', name: this.plugin.i18n.translate('components.propertyVisibilityDropdown.properties.createdDate'), category: 'core' as const },
+            { id: 'file.mtime', name: this.plugin.i18n.translate('components.propertyVisibilityDropdown.properties.modifiedDate'), category: 'core' as const }
         ]);
         
         // Organization properties
         properties.push(...[
-            { id: 'projects', name: 'Projects', category: 'organization' as const },
-            { id: 'contexts', name: 'Contexts', category: 'organization' as const },
-            { id: 'tags', name: 'Tags', category: 'organization' as const }
+            { id: 'projects', name: this.plugin.i18n.translate('components.propertyVisibilityDropdown.properties.projects'), category: 'organization' as const },
+            { id: 'contexts', name: this.plugin.i18n.translate('components.propertyVisibilityDropdown.properties.contexts'), category: 'organization' as const },
+            { id: 'tags', name: this.plugin.i18n.translate('components.propertyVisibilityDropdown.properties.tags'), category: 'organization' as const }
         ]);
         
         // User-defined properties with error handling

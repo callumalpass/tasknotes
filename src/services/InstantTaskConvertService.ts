@@ -9,12 +9,17 @@ import { StatusManager } from './StatusManager';
 import { PriorityManager } from './PriorityManager';
 import { dispatchTaskUpdate } from '../editor/TaskLinkOverlay';
 import { splitListPreservingLinksAndQuotes } from '../utils/stringSplit';
+import { TranslationKey } from '../i18n/types';
 
 export class InstantTaskConvertService {
     private plugin: TaskNotesPlugin;
     private statusManager: StatusManager;
     private priorityManager: PriorityManager;
     private nlParser: NaturalLanguageParser;
+
+    private translate(key: TranslationKey, variables?: Record<string, any>): string {
+        return this.plugin.i18n.translate(key, variables);
+    }
 
     constructor(
         plugin: TaskNotesPlugin,
@@ -41,32 +46,35 @@ export class InstantTaskConvertService {
             const checkboxTasks = this.findAllCheckboxTasks(editor);
             
             if (checkboxTasks.length === 0) {
-                new Notice('No checkbox tasks found in the current note.');
+                new Notice(this.translate('services.instantTaskConvert.notices.noCheckboxTasks'));
                 return;
             }
             
-            new Notice(`Converting ${checkboxTasks.length} task${checkboxTasks.length === 1 ? '' : 's'}...`);
+            const plural = checkboxTasks.length === 1 ? '' : 's';
+            new Notice(this.translate('services.instantTaskConvert.notices.convertingTasks', { count: checkboxTasks.length, plural }));
             
             // Batch process tasks for better performance
             const result = await this.batchConvertTasksOptimized(editor, checkboxTasks);
             
             // Show summary
             if (result.failures.length === 0) {
-                new Notice(`✅ Successfully converted ${result.successCount} task${result.successCount === 1 ? '' : 's'} to TaskNotes!`);
+                const plural = result.successCount === 1 ? '' : 's';
+                new Notice(this.translate('services.instantTaskConvert.notices.conversionSuccess', { count: result.successCount, plural }));
             } else {
-                let message = `Converted ${result.successCount} task${result.successCount === 1 ? '' : 's'}.`;
-                if (result.failures.length > 0) {
-                    message += ` ${result.failures.length} failed.`;
-                }
-                new Notice(message);
-                
+                const successPlural = result.successCount === 1 ? '' : 's';
+                new Notice(this.translate('services.instantTaskConvert.notices.partialConversion', {
+                    successCount: result.successCount,
+                    successPlural,
+                    failureCount: result.failures.length
+                }));
+
                 // Log failures for debugging
                 console.warn('Batch conversion failures:', result.failures);
             }
             
         } catch (error) {
             console.error('Error during batch task conversion:', error);
-            new Notice('Failed to perform batch conversion. Please try again.');
+            new Notice(this.translate('services.instantTaskConvert.notices.batchConversionFailed'));
         }
     }
 
@@ -131,7 +139,7 @@ export class InstantTaskConvertService {
             // Validate input parameters
             const validationResult = this.validateInputParameters(editor, lineNumber);
             if (!validationResult.isValid) {
-                new Notice(validationResult.error || 'Invalid input parameters.');
+                new Notice(this.translate('services.instantTaskConvert.notices.invalidParameters'));
                 return;
             }
 
@@ -152,7 +160,7 @@ export class InstantTaskConvertService {
                 const taskTitle = this.extractLineContentAsTitle(currentLine);
                 
                 if (!taskTitle.trim()) {
-                    new Notice('Current line is empty or contains no valid content.');
+                    new Notice(this.translate('services.instantTaskConvert.notices.emptyLine'));
                     return;
                 }
                 
@@ -178,7 +186,7 @@ export class InstantTaskConvertService {
             } else {
                 // Line is a checkbox task, process normally
                 if (taskLineInfo.error || !taskLineInfo.parsedData) {
-                    new Notice(`Error parsing task: ${taskLineInfo.error || 'No data extracted'}`);
+                    new Notice(this.translate('services.instantTaskConvert.notices.parseError', { error: taskLineInfo.error || 'No data extracted' }));
                     return;
                 }
                 
@@ -201,7 +209,7 @@ export class InstantTaskConvertService {
             // Validate final parsed data before proceeding
             const taskValidation = this.validateTaskData(parsedData);
             if (!taskValidation.isValid) {
-                new Notice(taskValidation.error || 'Invalid task data.');
+                new Notice(this.translate('services.instantTaskConvert.notices.invalidTaskData'));
                 return;
             }
 
@@ -212,7 +220,7 @@ export class InstantTaskConvertService {
             const replaceResult = await this.replaceOriginalTaskLines(editor, selectionInfo, file, parsedData.title);
             
             if (!replaceResult.success) {
-                new Notice(replaceResult.error || 'Failed to replace task line.');
+                new Notice(this.translate('services.instantTaskConvert.notices.replaceLineFailed'));
                 // Clean up the created file since replacement failed
                 try {
                     await this.plugin.app.vault.delete(file);
@@ -227,9 +235,9 @@ export class InstantTaskConvertService {
             const actualFilename = file.basename;
             
             if (actualFilename.startsWith('task-') && actualFilename !== expectedFilename) {
-                new Notice(`Task converted: "${parsedData.title}" (filename shortened due to length)`);
+                new Notice(this.translate('services.instantTaskConvert.notices.conversionCompleteShortened', { title: parsedData.title }));
             } else {
-                new Notice(`Task converted: ${parsedData.title}`);
+                new Notice(this.translate('services.instantTaskConvert.notices.conversionComplete', { title: parsedData.title }));
             }
             
             // Trigger immediate refresh of task link overlays to show the inline widget
@@ -238,9 +246,9 @@ export class InstantTaskConvertService {
         } catch (error) {
             console.error('Error during instant task conversion:', error);
             if (error.message.includes('file already exists')) {
-                new Notice('A file with this name already exists. Please try again or rename the task.');
+                new Notice(this.translate('services.instantTaskConvert.notices.fileExists'));
             } else {
-                new Notice('Failed to convert task. Please try again.');
+                new Notice(this.translate('services.instantTaskConvert.notices.conversionFailed'));
             }
         }
     }

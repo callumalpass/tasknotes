@@ -3,6 +3,7 @@ import ICAL from 'ical.js';
 import { ICSSubscription, ICSEvent, ICSCache } from '../types';
 import { EventEmitter } from '../utils/EventEmitter';
 import TaskNotesPlugin from '../main';
+import { TranslationKey } from '../i18n/types';
 
 export class ICSSubscriptionService extends EventEmitter {
     private plugin: TaskNotesPlugin;
@@ -10,6 +11,10 @@ export class ICSSubscriptionService extends EventEmitter {
     private cache: Map<string, ICSCache> = new Map();
     private refreshTimers: Map<string, number> = new Map();
     private fileWatchers: Map<string, () => void> = new Map(); // For local file change tracking
+
+    private translate(key: TranslationKey, variables?: Record<string, any>): string {
+        return this.plugin.i18n.translate(key, variables);
+    }
 
     constructor(plugin: TaskNotesPlugin) {
         super();
@@ -199,14 +204,14 @@ export class ICSSubscriptionService extends EventEmitter {
             // Show user notification for errors with more helpful message
             if (subscription.type === 'remote') {
                 if (errorMessage.includes('404')) {
-                    new Notice(`Calendar "${subscription.name}" not found (404). Please check the ICS URL is correct and the calendar is publicly accessible.`);
+                    new Notice(this.translate('services.icsSubscription.notices.calendarNotFound', { name: subscription.name }));
                 } else if (errorMessage.includes('500') || errorMessage.includes('OwaBasicUnsupportedException')) {
-                    new Notice(`Calendar "${subscription.name}" access denied (500). This may be due to Microsoft Outlook server restrictions. Try regenerating the ICS URL from your calendar settings.`);
+                    new Notice(this.translate('services.icsSubscription.notices.calendarAccessDenied', { name: subscription.name }));
                 } else {
-                    new Notice(`Failed to fetch remote calendar "${subscription.name}": ${errorMessage}`);
+                    new Notice(this.translate('services.icsSubscription.notices.fetchRemoteFailed', { name: subscription.name, error: errorMessage }));
                 }
             } else {
-                new Notice(`Failed to read local calendar "${subscription.name}": ${errorMessage}`);
+                new Notice(this.translate('services.icsSubscription.notices.readLocalFailed', { name: subscription.name, error: errorMessage }));
             }
         }
     }

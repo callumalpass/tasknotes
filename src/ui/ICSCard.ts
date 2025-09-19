@@ -4,6 +4,7 @@ import { ICSEvent } from '../types';
 import { format } from 'date-fns';
 import { ICSEventContextMenu } from '../components/ICSEventContextMenu';
 import { formatTime } from '../utils/dateUtils';
+import { TranslationKey } from '../i18n/types';
 
 export interface ICSCardOptions {
     showDate: boolean;
@@ -18,7 +19,7 @@ function formatTimeRange(icsEvent: ICSEvent, plugin: TaskNotesPlugin): string {
         if (!icsEvent.start) return '';
         const start = new Date(icsEvent.start);
         if (icsEvent.allDay) {
-            return 'All day';
+            return plugin.i18n.translate('ui.icsCard.allDay');
         }
         const timeFormat = plugin.settings.calendarViewSettings.timeFormat;
         const startText = formatTime(start, timeFormat);
@@ -47,14 +48,14 @@ export function createICSEventCard(icsEvent: ICSEvent, plugin: TaskNotesPlugin, 
     // Determine subscription color and name
     const subscription = plugin.icsSubscriptionService?.getSubscriptions().find(s => s.id === icsEvent.subscriptionId);
     const color = subscription?.color || 'var(--color-accent)';
-    const sourceName = subscription?.name || 'Calendar';
+    const sourceName = subscription?.name || plugin.i18n.translate('ui.icsCard.calendarFallback');
 
     // Main row
     const mainRow = card.createEl('div', { cls: 'task-card__main-row' });
 
     // Left indicator area: calendar icon (no ring/checkbox)
     const leftIconWrap = mainRow.createEl('span', { cls: 'ics-card__icon' });
-    const leftIcon = leftIconWrap.createDiv({ attr: { 'aria-label': 'Calendar event' } });
+    const leftIcon = leftIconWrap.createDiv({ attr: { 'aria-label': plugin.i18n.translate('ui.icsCard.calendarEvent') } });
     setIcon(leftIcon, 'calendar');
     // Inline layout styling to mimic status area spacing without the ring
     const wrapEl = leftIconWrap as HTMLElement;
@@ -72,7 +73,7 @@ export function createICSEventCard(icsEvent: ICSEvent, plugin: TaskNotesPlugin, 
 
     // Content
     const content = mainRow.createEl('div', { cls: 'task-card__content' });
-    content.createEl('div', { cls: 'task-card__title', text: icsEvent.title || 'Untitled event' });
+    content.createEl('div', { cls: 'task-card__title', text: icsEvent.title || plugin.i18n.translate('ui.icsCard.untitledEvent') });
 
     // Metadata line: time range • location • source
     const metadata = content.createEl('div', { cls: 'task-card__metadata' });
@@ -122,7 +123,7 @@ export function updateICSEventCard(element: HTMLElement, icsEvent: ICSEvent, plu
 
     const subscription = plugin.icsSubscriptionService?.getSubscriptions().find(s => s.id === icsEvent.subscriptionId);
     const color = subscription?.color || 'var(--color-accent)';
-    const sourceName = subscription?.name || 'Calendar';
+    const sourceName = subscription?.name || plugin.i18n.translate('ui.icsCard.calendarFallback');
 
     // Update icon color on wrapper to propagate to svg (icons use currentColor)
     element.style.setProperty('--current-status-color', color);
@@ -130,7 +131,7 @@ export function updateICSEventCard(element: HTMLElement, icsEvent: ICSEvent, plu
     if (iconWrap) iconWrap.style.color = color;
 
     const titleEl = element.querySelector('.task-card__title') as HTMLElement | null;
-    if (titleEl) titleEl.textContent = icsEvent.title || 'Untitled event';
+    if (titleEl) titleEl.textContent = icsEvent.title || plugin.i18n.translate('ui.icsCard.untitledEvent');
 
     const metadata = element.querySelector('.task-card__metadata') as HTMLElement | null;
     if (metadata) {
