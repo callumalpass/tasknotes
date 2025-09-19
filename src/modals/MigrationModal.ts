@@ -1,6 +1,6 @@
 import { App, Modal, Setting, Notice } from 'obsidian';
 import { MigrationService } from '../services/MigrationService';
-import { TranslationKey } from '../i18n/types';
+import { TranslationKey } from '../i18n';
 import type TaskNotesPlugin from '../main';
 
 /**

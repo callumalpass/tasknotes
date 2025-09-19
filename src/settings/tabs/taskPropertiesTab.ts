@@ -1,7 +1,7 @@
 import { Notice, setTooltip, Setting } from 'obsidian';
 import TaskNotesPlugin from '../../main';
 import { StatusConfig, FieldMapping } from '../../types';
-import { TranslationKey } from '../../i18n/types';
+import { TranslationKey } from '../../i18n';
 // import { UserMappedField } from '../../types/settings';
 import { 
     createSectionHeader, 

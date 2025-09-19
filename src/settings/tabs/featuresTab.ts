@@ -261,9 +261,9 @@ export function renderFeaturesTab(container: HTMLElement, plugin: TaskNotesPlugi
     // Storage location setting
     createDropdownSetting(container, {
         name: translate('settings.features.dataStorage.name'),
-        desc: 'Where to store Pomodoro session history',
+        desc: translate('settings.features.dataStorage.description'),
         options: [
-            { value: 'plugin', label: 'Plugin data (recommended)' },
+            { value: 'plugin', label: translate('settings.features.dataStorage.pluginData') },
             { value: 'daily-notes', label: translate('settings.features.dataStorage.dailyNotes') }
         ],
         getValue: () => plugin.settings.pomodoroStorageLocation,
@@ -280,7 +280,7 @@ export function renderFeaturesTab(container: HTMLElement, plugin: TaskNotesPlugi
                 if (confirmed) {
                     plugin.settings.pomodoroStorageLocation = newLocation;
                     save();
-                    new Notice(`Pomodoro storage location changed to ${newLocation === 'plugin' ? 'plugin data' : 'daily notes'}`);
+                    new Notice(translate('settings.features.dataStorage.notices.locationChanged', { location: newLocation === 'plugin' ? translate('settings.features.dataStorage.pluginData') : translate('settings.features.dataStorage.dailyNotes') }));
                 } else {
                     // Reset the dropdown to the current value
                     renderFeaturesTab(container, plugin, save);
@@ -291,7 +291,7 @@ export function renderFeaturesTab(container: HTMLElement, plugin: TaskNotesPlugi
 
     // Notifications Section
     createSectionHeader(container, translate('settings.features.notifications.header'));
-    createHelpText(container, 'Configure task reminder notifications and alerts.');
+    createHelpText(container, translate('settings.features.notifications.description'));
 
     createToggleSetting(container, {
         name: translate('settings.features.notifications.enableName'),
@@ -323,7 +323,7 @@ export function renderFeaturesTab(container: HTMLElement, plugin: TaskNotesPlugi
 
     // Performance & Behavior Section
     createSectionHeader(container, translate('settings.features.performance.header'));
-    createHelpText(container, 'Configure plugin performance and behavioral options.');
+    createHelpText(container, translate('settings.features.performance.description'));
 
     createToggleSetting(container, {
         name: translate('settings.features.overdue.hideCompletedName'),
@@ -363,7 +363,7 @@ export function renderFeaturesTab(container: HTMLElement, plugin: TaskNotesPlugi
 
     // Time Tracking Section
     createSectionHeader(container, translate('settings.features.timeTrackingSection.header'));
-    createHelpText(container, 'Configure automatic time tracking behaviors.');
+    createHelpText(container, translate('settings.features.timeTrackingSection.description'));
 
     createToggleSetting(container, {
         name: translate('settings.features.timeTracking.autoStopName'),
@@ -387,7 +387,7 @@ export function renderFeaturesTab(container: HTMLElement, plugin: TaskNotesPlugi
 
     // Recurring Tasks Section
     createSectionHeader(container, translate('settings.features.recurringSection.header'));
-    createHelpText(container, 'Configure behavior for recurring task management.');
+    createHelpText(container, translate('settings.features.recurringSection.description'));
 
     createToggleSetting(container, {
         name: translate('settings.features.recurring.maintainOffsetName'),
@@ -401,7 +401,7 @@ export function renderFeaturesTab(container: HTMLElement, plugin: TaskNotesPlugi
 
     // Timeblocking Section
     createSectionHeader(container, translate('settings.features.timeblocking.header'));
-    createHelpText(container, 'Configure timeblock functionality for lightweight scheduling in daily notes.');
+    createHelpText(container, translate('settings.features.timeblocking.description'));
 
     createToggleSetting(container, {
         name: translate('settings.features.timeblocking.enableName'),
@@ -426,6 +426,6 @@ export function renderFeaturesTab(container: HTMLElement, plugin: TaskNotesPlugi
             }
         });
 
-        createHelpText(container, 'Usage: In the advanced calendar view, hold Shift + drag to create timeblocks. Drag to move existing timeblocks. Resize edges to adjust duration.');
+        createHelpText(container, translate('settings.features.timeblocking.usage'));
     }
 }

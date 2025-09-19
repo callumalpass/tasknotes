@@ -334,7 +334,7 @@ export class TaskLinkWidget extends WidgetType {
                     onSelect: async (newRecurrence: string | null) => {
                         try {
                             await this.plugin.updateTaskProperty(this.taskInfo, 'recurrence', newRecurrence || undefined);
-                            
+
                             // Update the widget's internal task data
                             this.taskInfo.recurrence = newRecurrence || undefined;
                         } catch (error) {
@@ -342,7 +342,8 @@ export class TaskLinkWidget extends WidgetType {
                             new Notice('Failed to update recurrence');
                         }
                     },
-                    app: this.plugin.app
+                    app: this.plugin.app,
+                    plugin: this.plugin
                 });
                 menu.show(e as MouseEvent);
             });

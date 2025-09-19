@@ -8,7 +8,7 @@ import {
     getTimePart,
     combineDateAndTime
 } from '../utils/dateUtils';
-import { TranslationKey } from '../i18n/types';
+import { TranslationKey } from '../i18n';
 
 export class ScheduledDateModal extends Modal {
     private task: TaskInfo;

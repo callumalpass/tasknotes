@@ -9,7 +9,7 @@ import { showConfirmationModal } from '../modals/ConfirmationModal';
 import { DateContextMenu } from '../components/DateContextMenu';
 import { PropertyVisibilityDropdown } from './PropertyVisibilityDropdown';
 import { SubgroupMenuBuilder } from '../components/SubgroupMenuBuilder';
-import { TranslationKey } from '../i18n/types';
+import { TranslationKey } from '../i18n';
 
 class SaveViewModal extends Modal {
     private name: string;
@@ -100,6 +100,7 @@ export class FilterBar extends EventEmitter {
     private enableGroupExpandCollapse = true;
     private forceShowExpandCollapse = false;
     private viewType?: string;
+    private translate: (key: TranslationKey, vars?: Record<string, string>) => string;
 
     constructor(
         app: App,
@@ -120,6 +121,7 @@ export class FilterBar extends EventEmitter {
         this.enableGroupExpandCollapse = options?.enableGroupExpandCollapse ?? true;
         this.forceShowExpandCollapse = options?.forceShowExpandCollapse ?? false;
         this.viewType = options?.viewType;
+        this.translate = (key: TranslationKey, vars?: Record<string, string>) => this.plugin.i18n.translate(key, vars);
 
         // Initialize drag and drop handler
         this.dragDropHandler = new DragDropHandler((fromIndex, toIndex) => {
@@ -1463,12 +1465,12 @@ export class FilterBar extends EventEmitter {
 
         // Build sort dropdown options, including dynamic user fields
         const builtInSortOptions: Record<string, string> = {
-            'due': 'Due Date',
-            'scheduled': 'Scheduled Date',
-            'priority': 'Priority',
-            'title': 'Title',
-            'dateCreated': 'Created Date',
-            'tags': 'Tags'
+            'due': this.translate('ui.filterBar.sortOptions.dueDate'),
+            'scheduled': this.translate('ui.filterBar.sortOptions.scheduledDate'),
+            'priority': this.translate('ui.filterBar.sortOptions.priority'),
+            'title': this.translate('ui.filterBar.sortOptions.title'),
+            'dateCreated': this.translate('ui.filterBar.sortOptions.createdDate'),
+            'tags': this.translate('ui.filterBar.sortOptions.tags')
         };
         const sortOptions: Record<string, string> = { ...builtInSortOptions };
         const sortUserProps = this.filterOptions.userProperties || [];
@@ -1711,12 +1713,12 @@ export class FilterBar extends EventEmitter {
 
             // Build sort options
             const builtInSortOptions: Record<string, string> = {
-                'due': 'Due Date',
-                'scheduled': 'Scheduled Date',
-                'priority': 'Priority',
-                'title': 'Title',
-                'dateCreated': 'Created Date',
-                'tags': 'Tags'
+                'due': this.translate('ui.filterBar.sortOptions.dueDate'),
+                'scheduled': this.translate('ui.filterBar.sortOptions.scheduledDate'),
+                'priority': this.translate('ui.filterBar.sortOptions.priority'),
+                'title': this.translate('ui.filterBar.sortOptions.title'),
+                'dateCreated': this.translate('ui.filterBar.sortOptions.createdDate'),
+                'tags': this.translate('ui.filterBar.sortOptions.tags')
             };
             const sortOptions: Record<string, string> = { ...builtInSortOptions };
             const sortUserProps = this.filterOptions.userProperties || [];

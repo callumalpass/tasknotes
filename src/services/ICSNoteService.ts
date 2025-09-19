@@ -6,7 +6,7 @@ import { getCurrentTimestamp, formatDateForStorage } from '../utils/dateUtils';
 import { generateICSNoteFilename, generateUniqueFilename, ICSFilenameContext } from '../utils/filenameGenerator';
 import { ensureFolderExists } from '../utils/helpers';
 import { processTemplate, ICSTemplateData } from '../utils/templateProcessor';
-import { TranslationKey } from '../i18n/types';
+import { TranslationKey } from '../i18n';
 
 /**
  * Service for creating notes and tasks from ICS calendar events

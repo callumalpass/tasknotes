@@ -550,7 +550,8 @@ export abstract class TaskModal extends Modal {
                 this.recurrenceRule = value || '';
                 this.updateRecurrenceIconState();
             },
-            app: this.app
+            app: this.app,
+            plugin: this.plugin
         });
         
         menu.show(event);

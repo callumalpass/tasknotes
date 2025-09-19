@@ -961,6 +961,31 @@ export const en: TranslationTree = {
                     staticText: 'Static text: literal:My Custom Label',
                     alwaysSearchable: 'Filename, title, and aliases are always searchable by default.'
                 }
+            },
+            dataStorage: {
+                name: 'Storage Location',
+                description: 'Where to store Pomodoro session history',
+                pluginData: 'Plugin data (recommended)',
+                dailyNotes: 'Daily Notes',
+                notices: {
+                    locationChanged: 'Pomodoro storage location changed to {location}'
+                }
+            },
+            notifications: {
+                description: 'Configure task reminder notifications and alerts.'
+            },
+            performance: {
+                description: 'Configure plugin performance and behavioral options.'
+            },
+            timeTrackingSection: {
+                description: 'Configure automatic time tracking behaviors.'
+            },
+            recurringSection: {
+                description: 'Configure behavior for recurring task management.'
+            },
+            timeblocking: {
+                description: 'Configure timeblock functionality for lightweight scheduling in daily notes.',
+                usage: 'Usage: In the advanced calendar view, hold Shift + drag to create timeblocks. Drag to move existing timeblocks. Resize edges to adjust duration.'
             }
         },
         integrations: {
@@ -1065,11 +1090,10 @@ export const en: TranslationTree = {
                     refreshNow: 'Refresh Now',
                     deleteSubscription: 'Delete subscription'
                 },
-                confirmations: {
-                    deleteTitle: 'Delete Subscription',
-                    deleteMessage: 'Are you sure you want to delete the subscription "{name}"? This action cannot be undone.',
-                    deleteConfirm: 'Delete',
-                    deleteCancel: 'Cancel'
+                confirmDelete: {
+                    title: 'Delete Subscription',
+                    message: 'Are you sure you want to delete the subscription "{name}"? This action cannot be undone.',
+                    confirmText: 'Delete'
                 }
             },
             autoExport: {
@@ -1143,8 +1167,10 @@ export const en: TranslationTree = {
                     description: 'Register a new webhook endpoint',
                     buttonText: 'Add Webhook'
                 },
-                emptyState: 'No webhooks configured. Add a webhook to receive real-time notifications.',
-                emptyStateButton: 'Add Webhook',
+                emptyState: {
+                    message: 'No webhooks configured. Add a webhook to receive real-time notifications.',
+                    buttonText: 'Add Webhook'
+                },
                 labels: {
                     active: 'Active:',
                     url: 'URL:',
@@ -1173,11 +1199,33 @@ export const en: TranslationTree = {
                     deleted: 'Webhook deleted',
                     updated: 'Webhook updated'
                 },
-                confirmations: {
-                    deleteTitle: 'Delete Webhook',
-                    deleteMessage: 'Are you sure you want to delete this webhook?\n\nURL: {url}\n\nThis action cannot be undone.',
-                    deleteConfirm: 'Delete',
-                    deleteCancel: 'Cancel'
+                confirmDelete: {
+                    title: 'Delete Webhook',
+                    message: 'Are you sure you want to delete this webhook?\n\nURL: {url}\n\nThis action cannot be undone.',
+                    confirmText: 'Delete'
+                },
+                cardHeader: 'Webhook',
+                cardFields: {
+                    active: 'Active:',
+                    url: 'URL:',
+                    events: 'Events:',
+                    transform: 'Transform:'
+                },
+                eventsDisplay: {
+                    noEvents: 'No events selected'
+                },
+                transformDisplay: {
+                    noTransform: 'Raw payload (no transform)'
+                },
+                secretModal: {
+                    title: 'Webhook Secret Generated',
+                    description: 'Your webhook secret has been generated. Save this secret as you won\'t be able to view it again:',
+                    usage: 'Use this secret to verify webhook payloads in your receiving application.',
+                    gotIt: 'Got it'
+                },
+                editModal: {
+                    title: 'Edit Webhook',
+                    eventsHeader: 'Events to subscribe to'
                 },
                 events: {
                     taskCreated: {
@@ -1751,7 +1799,7 @@ export const en: TranslationTree = {
             clearAllReminders: 'Clear All Reminders',
             customRecurrence: 'Custom recurrence...',
             clearRecurrence: 'Clear recurrence',
-            sort: {
+            sortOptions: {
                 dueDate: 'Due Date',
                 scheduledDate: 'Scheduled Date',
                 priority: 'Priority',

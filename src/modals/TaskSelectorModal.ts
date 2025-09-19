@@ -3,7 +3,7 @@ import { TaskInfo } from '../types';
 import { isPastDate, isToday } from '../utils/dateUtils';
 import { filterEmptyProjects } from '../utils/helpers';
 import type TaskNotesPlugin from '../main';
-import { TranslationKey } from '../i18n/types';
+import { TranslationKey } from '../i18n';
 
 export class TaskSelectorModal extends FuzzySuggestModal<TaskInfo> {
     private tasks: TaskInfo[];

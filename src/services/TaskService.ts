@@ -8,7 +8,7 @@ import { formatDateForStorage, getCurrentDateString, getCurrentTimestamp, getTod
 import { format } from 'date-fns';
 
 import TaskNotesPlugin from '../main';
-import { TranslationKey } from '../i18n/types';
+import { TranslationKey } from '../i18n';
 
 export class TaskService {
     private webhookNotifier?: IWebhookNotifier;

@@ -2,7 +2,7 @@ import { Menu } from 'obsidian';
 import TaskNotesPlugin from '../main';
 import { TaskInfo, Reminder } from '../types';
 import { ReminderModal } from '../modals/ReminderModal';
-import { TranslationKey } from '../i18n/types';
+import { TranslationKey } from '../i18n';
 
 export class ReminderContextMenu {
 	private plugin: TaskNotesPlugin;

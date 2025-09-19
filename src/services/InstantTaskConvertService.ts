@@ -9,7 +9,7 @@ import { StatusManager } from './StatusManager';
 import { PriorityManager } from './PriorityManager';
 import { dispatchTaskUpdate } from '../editor/TaskLinkOverlay';
 import { splitListPreservingLinksAndQuotes } from '../utils/stringSplit';
-import { TranslationKey } from '../i18n/types';
+import { TranslationKey } from '../i18n';
 
 export class InstantTaskConvertService {
     private plugin: TaskNotesPlugin;

@@ -261,16 +261,16 @@ export function renderIntegrationsTab(container: HTMLElement, plugin: TaskNotesP
             const nextExport = plugin.autoExportService.getNextExportTime();
             
             statusContainer.innerHTML = `
-                <div style="font-weight: 500; margin-bottom: 5px;">Export Status:</div>
+                <div style="font-weight: 500; margin-bottom: 5px;">${translate('settings.integrations.autoExport.status.title')}:</div>
                 <div style="font-size: 0.9em; opacity: 0.8;">
-                    ${lastExport ? `Last export: ${lastExport.toLocaleString()}` : 'No exports yet'}<br>
-                    ${nextExport ? `Next export: ${nextExport.toLocaleString()}` : 'Not scheduled'}
+                    ${lastExport ? translate('settings.integrations.autoExport.status.lastExport', { time: lastExport.toLocaleString() }) : translate('settings.integrations.autoExport.status.noExports')}<br>
+                    ${nextExport ? translate('settings.integrations.autoExport.status.nextExport', { time: nextExport.toLocaleString() }) : translate('settings.integrations.autoExport.status.notScheduled')}
                 </div>
             `;
         } else {
             statusContainer.innerHTML = `
                 <div style="font-weight: 500; color: var(--text-warning);">
-                    Auto export service not initialized - please restart Obsidian
+                    ${translate('settings.integrations.autoExport.status.serviceNotInitialized')}
                 </div>
             `;
         }
@@ -476,7 +476,7 @@ function renderICSSubscriptionsList(container: HTMLElement, plugin: TaskNotesPlu
                 renderICSSubscriptionsList(container, plugin, save);
             } catch (error) {
                 console.error('Error updating subscription:', error);
-                new Notice('Failed to update subscription');
+                new Notice(translate('settings.integrations.subscriptionsList.notices.updateFailure'));
                 // Revert changes if needed
                 renderICSSubscriptionsList(container, plugin, save);
             }
@@ -623,22 +623,22 @@ function renderICSSubscriptionsList(container: HTMLElement, plugin: TaskNotesPlu
                 actions: [
                     createDeleteHeaderButton(async () => {
                         const confirmed = await showConfirmationModal(plugin.app, {
-                            title: 'Delete Subscription',
-                            message: `Are you sure you want to delete the subscription "${subscription.name}"? This action cannot be undone.`, 
-                            confirmText: 'Delete',
-                            cancelText: 'Cancel',
+                            title: translate('settings.integrations.subscriptionsList.confirmDelete.title'),
+                            message: translate('settings.integrations.subscriptionsList.confirmDelete.message', { name: subscription.name }),
+                            confirmText: translate('settings.integrations.subscriptionsList.confirmDelete.confirmText'),
+                            cancelText: translate('common.cancel'),
                             isDestructive: true
                         });
 
                         if (confirmed) {
                             try {
                                 await plugin.icsSubscriptionService!.removeSubscription(subscription.id);
-                                new Notice(`Deleted subscription "${subscription.name}"`);
+                                new Notice(translate('settings.integrations.subscriptionsList.notices.deleteSuccess', { name: subscription.name }));
                                 save();
                                 renderICSSubscriptionsList(container, plugin, save);
                             } catch (error) {
                                 console.error('Error deleting subscription:', error);
-                                new Notice('Failed to delete subscription');
+                                new Notice(translate('settings.integrations.subscriptionsList.notices.deleteFailure'));
                             }
                         }
                     }, 'Delete subscription')
@@ -649,24 +649,24 @@ function renderICSSubscriptionsList(container: HTMLElement, plugin: TaskNotesPlu
             },
             actions: {
                 buttons: [{
-                    text: 'Refresh Now',
+                    text: translate('settings.integrations.subscriptionsList.refreshNow'),
                     icon: 'refresh-cw',
                     variant: subscription.enabled ? 'primary' : 'secondary',
                     disabled: !subscription.enabled,
                     onClick: async () => {
                         if (!subscription.enabled) {
-                            new Notice('Enable the subscription first');
+                            new Notice(translate('settings.integrations.subscriptionsList.notices.enableFirst'));
                             return;
                         }
                         
                         try {
                             await plugin.icsSubscriptionService!.refreshSubscription(subscription.id);
-                            new Notice(`Refreshed "${subscription.name}"`);
+                            new Notice(translate('settings.integrations.subscriptionsList.notices.refreshSuccess', { name: subscription.name }));
                             // Re-render to show updated sync time
                             renderICSSubscriptionsList(container, plugin, save);
                         } catch (error) {
                             console.error('Error refreshing subscription:', error);
-                            new Notice('Failed to refresh subscription');
+                            new Notice(translate('settings.integrations.subscriptionsList.notices.refreshFailure'));
                         }
                     }
                 }]
@@ -690,8 +690,8 @@ function renderWebhookList(container: HTMLElement, plugin: TaskNotesPlugin, save
     if (!plugin.settings.webhooks || plugin.settings.webhooks.length === 0) {
         showCardEmptyState(
             webhooksContainer,
-            'No webhooks configured. Add a webhook to receive real-time notifications.',
-            'Add Webhook',
+            translate('settings.integrations.webhooks.emptyState.message'),
+            translate('settings.integrations.webhooks.emptyState.buttonText'),
             () => {
                 // This is a bit of a hack, but it's the easiest way to trigger the add webhook modal
                 const addWebhookButton = container.closest('.settings-tab-content')?.querySelector('button.tn-btn--primary');
@@ -722,7 +722,7 @@ function renderWebhookList(container: HTMLElement, plugin: TaskNotesPlugin, save
             if (urlInput.value.trim() !== webhook.url) {
                 webhook.url = urlInput.value.trim();
                 save();
-                new Notice('Webhook URL updated');
+                new Notice(translate('settings.integrations.webhooks.notices.urlUpdated'));
             }
         });
         
@@ -748,7 +748,7 @@ function renderWebhookList(container: HTMLElement, plugin: TaskNotesPlugin, save
                 }
             }
             
-            new Notice(`Webhook ${webhook.active ? 'enabled' : 'disabled'}`);
+            new Notice(webhook.active ? translate('settings.integrations.webhooks.notices.enabled') : translate('settings.integrations.webhooks.notices.disabled'));
         });
         
         // Format webhook creation date
@@ -766,7 +766,7 @@ function renderWebhookList(container: HTMLElement, plugin: TaskNotesPlugin, save
         
         if (webhook.events.length === 0) {
             const noEventsSpan = document.createElement('span');
-            noEventsSpan.textContent = 'No events selected';
+            noEventsSpan.textContent = translate('settings.integrations.webhooks.eventsDisplay.noEvents');
             noEventsSpan.style.color = 'var(--text-muted)';
             noEventsSpan.style.fontStyle = 'italic';
             noEventsSpan.style.lineHeight = '1.5rem';
@@ -797,7 +797,7 @@ function renderWebhookList(container: HTMLElement, plugin: TaskNotesPlugin, save
             })() : 
             (() => {
                 const span = document.createElement('span');
-                span.textContent = 'Raw payload (no transform)';
+                span.textContent = translate('settings.integrations.webhooks.transformDisplay.noTransform');
                 span.style.color = 'var(--text-muted)';
                 span.style.fontStyle = 'italic';
                 span.style.lineHeight = '1.5rem';
@@ -809,16 +809,16 @@ function renderWebhookList(container: HTMLElement, plugin: TaskNotesPlugin, save
             collapsible: true,
             defaultCollapsed: true,
             header: {
-                primaryText: 'Webhook',
+                primaryText: translate('settings.integrations.webhooks.cardHeader'),
                 secondaryText: createdText,
                 meta: [statusBadge, successBadge, failureBadge],
                 actions: [
                     createDeleteHeaderButton(async () => {
                         const confirmed = await showConfirmationModal(plugin.app, {
-                            title: 'Delete Webhook',
-                            message: `Are you sure you want to delete this webhook?\n\nURL: ${webhook.url}\n\nThis action cannot be undone.`, 
-                            confirmText: 'Delete',
-                            cancelText: 'Cancel',
+                            title: translate('settings.integrations.webhooks.confirmDelete.title'),
+                            message: translate('settings.integrations.webhooks.confirmDelete.message', { url: webhook.url }),
+                            confirmText: translate('settings.integrations.webhooks.confirmDelete.confirmText'),
+                            cancelText: translate('common.cancel'),
                             isDestructive: true
                         });
                         
@@ -826,7 +826,7 @@ function renderWebhookList(container: HTMLElement, plugin: TaskNotesPlugin, save
                             plugin.settings.webhooks.splice(index, 1);
                             save();
                             renderWebhookList(container, plugin, save);
-                            new Notice('Webhook deleted');
+                            new Notice(translate('settings.integrations.webhooks.notices.deleted'));
                         }
                     })
                 ]
@@ -835,10 +835,10 @@ function renderWebhookList(container: HTMLElement, plugin: TaskNotesPlugin, save
                 sections: [
                     {
                         rows: [
-                            { label: 'Active:', input: activeToggle },
-                            { label: 'URL:', input: urlInput },
-                            { label: 'Events:', input: eventsDisplay },
-                            { label: 'Transform:', input: transformDisplay }
+                            { label: translate('settings.integrations.webhooks.cardFields.active'), input: activeToggle },
+                            { label: translate('settings.integrations.webhooks.cardFields.url'), input: urlInput },
+                            { label: translate('settings.integrations.webhooks.cardFields.events'), input: eventsDisplay },
+                            { label: translate('settings.integrations.webhooks.cardFields.transform'), input: transformDisplay }
                         ]
                     }
                 ]
@@ -846,7 +846,7 @@ function renderWebhookList(container: HTMLElement, plugin: TaskNotesPlugin, save
             actions: {
                 buttons: [
                     {
-                        text: 'Edit Events',
+                        text: translate('settings.integrations.webhooks.editEvents'),
                         icon: 'settings',
                         variant: 'secondary',
                         onClick: async () => {
@@ -854,7 +854,7 @@ function renderWebhookList(container: HTMLElement, plugin: TaskNotesPlugin, save
                                 Object.assign(webhook, updatedConfig);
                                 save();
                                 renderWebhookList(container, plugin, save);
-                                new Notice('Webhook updated');
+                                new Notice(translate('settings.integrations.webhooks.notices.updated'));
                             });
                             modal.open();
                         }

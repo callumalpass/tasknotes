@@ -961,6 +961,31 @@ export const fr: TranslationTree = {
                     staticText: 'Texte statique : literal:Mon Label Personnalisé',
                     alwaysSearchable: 'Le nom de fichier, titre et alias sont toujours cherchables par défaut.'
                 }
+            },
+            dataStorage: {
+                name: 'Emplacement de stockage',
+                description: 'Où stocker l\'historique des sessions Pomodoro',
+                pluginData: 'Données du plugin (recommandé)',
+                dailyNotes: 'Notes quotidiennes',
+                notices: {
+                    locationChanged: 'Emplacement de stockage Pomodoro changé vers {location}'
+                }
+            },
+            notifications: {
+                description: 'Configurez les notifications de rappel de tâches et les alertes.'
+            },
+            performance: {
+                description: 'Configurez les options de performance et de comportement du plugin.'
+            },
+            timeTrackingSection: {
+                description: 'Configurez les comportements de suivi automatique du temps.'
+            },
+            recurringSection: {
+                description: 'Configurez le comportement pour la gestion des tâches récurrentes.'
+            },
+            timeblocking: {
+                description: 'Configurez la fonctionnalité de blocs de temps pour la planification légère dans les notes quotidiennes.',
+                usage: 'Utilisation : Dans la vue calendrier avancée, maintenez Shift + glissez pour créer des blocs de temps. Glissez pour déplacer les blocs de temps existants. Redimensionnez les bords pour ajuster la durée.'
             }
         },
         integrations: {
@@ -1065,11 +1090,10 @@ export const fr: TranslationTree = {
                     refreshNow: 'Actualiser maintenant',
                     deleteSubscription: 'Supprimer l\'abonnement'
                 },
-                confirmations: {
-                    deleteTitle: 'Supprimer l\'abonnement',
-                    deleteMessage: 'Voulez-vous vraiment supprimer l\'abonnement "{name}" ? Cette action ne peut pas être annulée.',
-                    deleteConfirm: 'Supprimer',
-                    deleteCancel: 'Annuler'
+                confirmDelete: {
+                    title: 'Supprimer l\'abonnement',
+                    message: 'Voulez-vous vraiment supprimer l\'abonnement "{name}" ? Cette action ne peut pas être annulée.',
+                    confirmText: 'Supprimer'
                 }
             },
             autoExport: {
@@ -1143,8 +1167,10 @@ export const fr: TranslationTree = {
                     description: 'Enregistrer un nouveau point de terminaison webhook',
                     buttonText: 'Ajouter un webhook'
                 },
-                emptyState: 'Aucun webhook configuré. Ajoutez un webhook pour recevoir des notifications en temps réel.',
-                emptyStateButton: 'Ajouter un webhook',
+                emptyState: {
+                    message: 'Aucun webhook configuré. Ajoutez un webhook pour recevoir des notifications en temps réel.',
+                    buttonText: 'Ajouter un webhook'
+                },
                 labels: {
                     active: 'Actif :',
                     url: 'URL :',
@@ -1173,11 +1199,33 @@ export const fr: TranslationTree = {
                     deleted: 'Webhook supprimé',
                     updated: 'Webhook mis à jour'
                 },
-                confirmations: {
-                    deleteTitle: 'Supprimer le webhook',
-                    deleteMessage: 'Voulez-vous vraiment supprimer ce webhook ?\n\nURL : {url}\n\nCette action ne peut pas être annulée.',
-                    deleteConfirm: 'Supprimer',
-                    deleteCancel: 'Annuler'
+                confirmDelete: {
+                    title: 'Supprimer le webhook',
+                    message: 'Voulez-vous vraiment supprimer ce webhook ?\n\nURL : {url}\n\nCette action ne peut pas être annulée.',
+                    confirmText: 'Supprimer'
+                },
+                cardHeader: 'Webhook',
+                cardFields: {
+                    active: 'Actif :',
+                    url: 'URL :',
+                    events: 'Événements :',
+                    transform: 'Transformation :'
+                },
+                eventsDisplay: {
+                    noEvents: 'Aucun événement sélectionné'
+                },
+                transformDisplay: {
+                    noTransform: 'Données brutes (aucune transformation)'
+                },
+                secretModal: {
+                    title: 'Secret webhook généré',
+                    description: 'Votre secret webhook a été généré. Sauvegardez ce secret car vous ne pourrez plus le voir :',
+                    usage: 'Utilisez ce secret pour vérifier les données webhook dans votre application réceptrice.',
+                    gotIt: 'Compris'
+                },
+                editModal: {
+                    title: 'Modifier le webhook',
+                    eventsHeader: 'Événements auxquels s\'abonner'
                 },
                 events: {
                     taskCreated: {
@@ -1751,7 +1799,7 @@ export const fr: TranslationTree = {
             clearAllReminders: 'Effacer tous les rappels',
             customRecurrence: 'Récurrence personnalisée...',
             clearRecurrence: 'Effacer la récurrence',
-            sort: {
+            sortOptions: {
                 dueDate: 'Date d\'échéance',
                 scheduledDate: 'Date planifiée',
                 priority: 'Priorité',

@@ -1,7 +1,7 @@
 import { TaskInfo } from '../types';
 import { format, parseISO } from 'date-fns';
 import { Notice } from 'obsidian';
-import { TranslationKey } from '../i18n/types';
+import { TranslationKey } from '../i18n';
 
 export interface CalendarURLOptions {
     type: 'google' | 'outlook' | 'yahoo' | 'ics';

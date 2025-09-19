@@ -18,7 +18,7 @@ import {
     TaskInfo,
     IWebhookNotifier
 } from '../types';
-import { TranslationKey } from '../i18n/types';
+import { TranslationKey } from '../i18n';
 import { getCurrentTimestamp, formatDateForStorage, getTodayLocal, parseDateToLocal, createUTCDateFromLocalCalendarDate } from '../utils/dateUtils';
 import { getSessionDuration, timerWorker } from '../utils/pomodoroUtils';
 

@@ -712,7 +712,7 @@ export class KanbanView extends ItemView implements OptimizedView {
                         }
                         
                         await this.plugin.updateTaskProperty(task, propertyToUpdate, valueToSet, { silent: true });
-                        new Notice(this.plugin.i18n.translate('views.kanban.notices.movedTask', this.formatColumnTitle(targetColumnId, this.currentQuery.groupKey)));
+                        new Notice(this.plugin.i18n.translate('views.kanban.notices.movedTask', { '0': this.formatColumnTitle(targetColumnId, this.currentQuery.groupKey) }));
                     } catch (error) {
                         console.error('Failed to move task:', error);
                         new Notice('Failed to move task');

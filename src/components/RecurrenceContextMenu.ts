@@ -1,5 +1,5 @@
 import { Menu, Modal, App, Setting } from 'obsidian';
-import { TranslationKey } from '../i18n/types';
+import { TranslationKey } from '../i18n';
 import TaskNotesPlugin from '../main';
 
 export interface RecurrenceOption {

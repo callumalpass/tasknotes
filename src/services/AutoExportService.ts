@@ -1,7 +1,7 @@
 import { Notice } from 'obsidian';
 import TaskNotesPlugin from '../main';
 import { CalendarExportService } from './CalendarExportService';
-import { TranslationKey } from '../i18n/types';
+import { TranslationKey } from '../i18n';
 
 export class AutoExportService {
     private plugin: TaskNotesPlugin;

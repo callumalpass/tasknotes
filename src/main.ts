@@ -794,7 +794,7 @@ export default class TaskNotesPlugin extends Plugin {
 			if (needsMigration) {
 				// Show migration prompt after a small delay to ensure UI is ready
 				setTimeout(() => {
-					showMigrationPrompt(this.app, this.migrationService);
+					showMigrationPrompt(this.app, this.migrationService, this);
 				}, 1000);
 			}
 		} catch (error) {

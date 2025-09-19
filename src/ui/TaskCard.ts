@@ -937,7 +937,8 @@ export function createTaskCard(task: TaskInfo, plugin: TaskNotesPlugin, visibleP
                         new Notice('Failed to update recurrence');
                     }
                 },
-                app: plugin.app
+                app: plugin.app,
+                plugin: plugin
             });
             menu.show(e as MouseEvent);
         });

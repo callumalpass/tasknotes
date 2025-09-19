@@ -773,7 +773,8 @@ export class TaskContextMenu {
                 const recurrenceMenu = new RecurrenceContextMenu({
                     currentValue: typeof currentValue === 'string' ? currentValue : undefined,
                     onSelect: onSelect,
-                    app: plugin.app
+                    app: plugin.app,
+                    plugin: plugin
                 });
                 recurrenceMenu['showCustomRecurrenceModal']();
             });

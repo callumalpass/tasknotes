@@ -1,6 +1,6 @@
 import { GroupCountUtils } from '../utils/GroupCountUtils';
 import { SavedView } from '../types';
-import { TranslationKey } from '../i18n/types';
+import { TranslationKey } from '../i18n';
 import TaskNotesPlugin from '../main';
 
 /**

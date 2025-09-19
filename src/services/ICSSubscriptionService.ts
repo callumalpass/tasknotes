@@ -3,7 +3,7 @@ import ICAL from 'ical.js';
 import { ICSSubscription, ICSEvent, ICSCache } from '../types';
 import { EventEmitter } from '../utils/EventEmitter';
 import TaskNotesPlugin from '../main';
-import { TranslationKey } from '../i18n/types';
+import { TranslationKey } from '../i18n';
 
 export class ICSSubscriptionService extends EventEmitter {
     private plugin: TaskNotesPlugin;

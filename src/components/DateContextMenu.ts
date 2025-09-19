@@ -6,6 +6,7 @@ export interface DateOption {
     icon?: string;
     isToday?: boolean;
     isCustom?: boolean;
+    category?: string;
 }
 
 export interface DateContextMenuOptions {
@@ -30,8 +31,8 @@ export class DateContextMenu {
         this.buildMenu();
     }
 
-    private t(key: string, fallback?: string): string {
-        return this.options.plugin?.i18n.translate(key) || fallback || key;
+    private t(key: string, fallback?: string, params?: Record<string, string | number>): string {
+        return this.options.plugin?.i18n.translate(key, params) || fallback || key;
     }
 
     private buildMenu(): void {
