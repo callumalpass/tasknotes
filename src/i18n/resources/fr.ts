@@ -252,6 +252,44 @@ export const fr: TranslationTree = {
                 typeDesc: 'Type de notifications à afficher',
                 systemLabel: 'Notifications système',
                 inAppLabel: 'Notifications dans l\'application'
+            },
+            overdue: {
+                hideCompletedName: 'Masquer les tâches terminées des retards',
+                hideCompletedDesc: 'Exclure les tâches terminées du calcul des tâches en retard'
+            },
+            indexing: {
+                disableName: 'Désactiver l\'indexation des notes',
+                disableDesc: 'Désactiver l\'indexation automatique du contenu des notes pour de meilleures performances'
+            },
+            suggestions: {
+                debounceName: 'Délai des suggestions',
+                debounceDesc: 'Délai en millisecondes avant d\'afficher les suggestions'
+            },
+            timeTracking: {
+                autoStopName: 'Arrêt automatique du suivi du temps',
+                autoStopDesc: 'Arrêter automatiquement le suivi du temps lorsqu\'une tâche est marquée comme terminée',
+                stopNotificationName: 'Notification d\'arrêt du suivi du temps',
+                stopNotificationDesc: 'Afficher une notification lorsque le suivi du temps est automatiquement arrêté'
+            },
+            recurring: {
+                maintainOffsetName: 'Maintenir le décalage de date d\'échéance dans les tâches récurrentes',
+                maintainOffsetDesc: 'Conserver le décalage entre la date d\'échéance et la date planifiée lors de l\'achèvement des tâches récurrentes'
+            },
+            timeblocking: {
+                header: 'Planification par blocs',
+                enableName: 'Activer la planification par blocs',
+                enableDesc: 'Activer la fonctionnalité de planification par blocs pour une programmation légère dans les notes quotidiennes',
+                showBlocksName: 'Afficher les blocs de temps',
+                showBlocksDesc: 'Afficher les blocs de temps des notes quotidiennes par défaut'
+            },
+            performance: {
+                header: 'Performance et comportement'
+            },
+            timeTrackingSection: {
+                header: 'Suivi du temps'
+            },
+            recurringSection: {
+                header: 'Tâches récurrentes'
             }
         }
     },

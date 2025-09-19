@@ -252,6 +252,44 @@ export const en: TranslationTree = {
                 typeDesc: 'Type of notifications to show',
                 systemLabel: 'System notifications',
                 inAppLabel: 'In-app notifications'
+            },
+            overdue: {
+                hideCompletedName: 'Hide completed tasks from overdue',
+                hideCompletedDesc: 'Exclude completed tasks from overdue task calculations'
+            },
+            indexing: {
+                disableName: 'Disable note indexing',
+                disableDesc: 'Disable automatic indexing of note content for better performance'
+            },
+            suggestions: {
+                debounceName: 'Suggestion debounce',
+                debounceDesc: 'Delay in milliseconds before showing suggestions'
+            },
+            timeTracking: {
+                autoStopName: 'Auto-stop time tracking',
+                autoStopDesc: 'Automatically stop time tracking when a task is marked complete',
+                stopNotificationName: 'Time tracking stop notification',
+                stopNotificationDesc: 'Show notification when time tracking is automatically stopped'
+            },
+            recurring: {
+                maintainOffsetName: 'Maintain due date offset in recurring tasks',
+                maintainOffsetDesc: 'Keep the offset between due date and scheduled date when recurring tasks are completed'
+            },
+            timeblocking: {
+                header: 'Timeblocking',
+                enableName: 'Enable timeblocking',
+                enableDesc: 'Enable timeblock functionality for lightweight scheduling in daily notes',
+                showBlocksName: 'Show timeblocks',
+                showBlocksDesc: 'Display timeblocks from daily notes by default'
+            },
+            performance: {
+                header: 'Performance & Behavior'
+            },
+            timeTrackingSection: {
+                header: 'Time Tracking'
+            },
+            recurringSection: {
+                header: 'Recurring Tasks'
             }
         }
     },

@@ -322,12 +322,12 @@ export function renderFeaturesTab(container: HTMLElement, plugin: TaskNotesPlugi
     }
 
     // Performance & Behavior Section
-    createSectionHeader(container, 'Performance & Behavior');
+    createSectionHeader(container, translate('settings.features.performance.header'));
     createHelpText(container, 'Configure plugin performance and behavioral options.');
 
     createToggleSetting(container, {
-        name: 'Hide completed tasks from overdue',
-        desc: 'Exclude completed tasks from overdue task calculations',
+        name: translate('settings.features.overdue.hideCompletedName'),
+        desc: translate('settings.features.overdue.hideCompletedDesc'),
         getValue: () => plugin.settings.hideCompletedFromOverdue,
         setValue: async (value: boolean) => {
             plugin.settings.hideCompletedFromOverdue = value;
@@ -336,8 +336,8 @@ export function renderFeaturesTab(container: HTMLElement, plugin: TaskNotesPlugi
     });
 
     createToggleSetting(container, {
-        name: 'Disable note indexing',
-        desc: 'Disable automatic indexing of notes for better performance (may reduce some features)',
+        name: translate('settings.features.indexing.disableName'),
+        desc: translate('settings.features.indexing.disableDesc'),
         getValue: () => plugin.settings.disableNoteIndexing,
         setValue: async (value: boolean) => {
             plugin.settings.disableNoteIndexing = value;
@@ -348,8 +348,8 @@ export function renderFeaturesTab(container: HTMLElement, plugin: TaskNotesPlugi
     // Suggestion debounce setting
     if (plugin.settings.suggestionDebounceMs !== undefined) {
         createNumberSetting(container, {
-            name: 'Suggestion debounce',
-            desc: 'Debounce delay for file suggestions in milliseconds (0 = disabled)',
+            name: translate('settings.features.suggestions.debounceName'),
+            desc: translate('settings.features.suggestions.debounceDesc'),
             placeholder: '300',
             min: 0,
             max: 2000,
@@ -362,12 +362,12 @@ export function renderFeaturesTab(container: HTMLElement, plugin: TaskNotesPlugi
     }
 
     // Time Tracking Section
-    createSectionHeader(container, 'Time Tracking');
+    createSectionHeader(container, translate('settings.features.timeTrackingSection.header'));
     createHelpText(container, 'Configure automatic time tracking behaviors.');
 
     createToggleSetting(container, {
-        name: 'Auto-stop tracking on complete',
-        desc: 'Automatically stop time tracking when a task is marked complete',
+        name: translate('settings.features.timeTracking.autoStopName'),
+        desc: translate('settings.features.timeTracking.autoStopDesc'),
         getValue: () => plugin.settings.autoStopTimeTrackingOnComplete,
         setValue: async (value: boolean) => {
             plugin.settings.autoStopTimeTrackingOnComplete = value;
@@ -376,8 +376,8 @@ export function renderFeaturesTab(container: HTMLElement, plugin: TaskNotesPlugi
     });
 
     createToggleSetting(container, {
-        name: 'Time tracking stop notification',
-        desc: 'Show notification when time tracking is automatically stopped',
+        name: translate('settings.features.timeTracking.stopNotificationName'),
+        desc: translate('settings.features.timeTracking.stopNotificationDesc'),
         getValue: () => plugin.settings.autoStopTimeTrackingNotification,
         setValue: async (value: boolean) => {
             plugin.settings.autoStopTimeTrackingNotification = value;
@@ -386,12 +386,12 @@ export function renderFeaturesTab(container: HTMLElement, plugin: TaskNotesPlugi
     });
 
     // Recurring Tasks Section
-    createSectionHeader(container, 'Recurring Tasks');
+    createSectionHeader(container, translate('settings.features.recurringSection.header'));
     createHelpText(container, 'Configure behavior for recurring task management.');
 
     createToggleSetting(container, {
-        name: 'Maintain due date offset in recurring tasks',
-        desc: 'When completing recurring tasks, maintain the offset between due and scheduled dates',
+        name: translate('settings.features.recurring.maintainOffsetName'),
+        desc: translate('settings.features.recurring.maintainOffsetDesc'),
         getValue: () => plugin.settings.maintainDueDateOffsetInRecurring,
         setValue: async (value: boolean) => {
             plugin.settings.maintainDueDateOffsetInRecurring = value;
@@ -400,12 +400,12 @@ export function renderFeaturesTab(container: HTMLElement, plugin: TaskNotesPlugi
     });
 
     // Timeblocking Section
-    createSectionHeader(container, 'Timeblocking');
+    createSectionHeader(container, translate('settings.features.timeblocking.header'));
     createHelpText(container, 'Configure timeblock functionality for lightweight scheduling in daily notes.');
 
     createToggleSetting(container, {
-        name: 'Enable timeblocking',
-        desc: 'Enable timeblock functionality for lightweight scheduling in daily notes',
+        name: translate('settings.features.timeblocking.enableName'),
+        desc: translate('settings.features.timeblocking.enableDesc'),
         getValue: () => plugin.settings.calendarViewSettings.enableTimeblocking,
         setValue: async (value: boolean) => {
             plugin.settings.calendarViewSettings.enableTimeblocking = value;
@@ -417,8 +417,8 @@ export function renderFeaturesTab(container: HTMLElement, plugin: TaskNotesPlugi
 
     if (plugin.settings.calendarViewSettings.enableTimeblocking) {
         createToggleSetting(container, {
-            name: 'Show timeblocks',
-            desc: 'Display timeblocks from daily notes by default',
+            name: translate('settings.features.timeblocking.showBlocksName'),
+            desc: translate('settings.features.timeblocking.showBlocksDesc'),
             getValue: () => plugin.settings.calendarViewSettings.defaultShowTimeblocks,
             setValue: async (value: boolean) => {
                 plugin.settings.calendarViewSettings.defaultShowTimeblocks = value;
