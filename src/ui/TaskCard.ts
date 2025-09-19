@@ -75,10 +75,15 @@ function attachDateClickHandler(
                     }
                     await plugin.updateTaskProperty(task, dateType, finalValue);
                 } catch (error) {
-                    console.error(`Error updating ${dateType} date:`, error);
-                    new Notice(`Failed to update ${dateType} date`);
+                    const errorMessage = error instanceof Error ? error.message : String(error);
+                    console.error(`Error updating ${dateType} date:`, errorMessage);
+                    const noticeKey = dateType === 'due'
+                        ? 'contextMenus.task.notices.updateDueDateFailure'
+                        : 'contextMenus.task.notices.updateScheduledFailure';
+                    new Notice(plugin.i18n.translate(noticeKey, { message: errorMessage }));
                 }
-            }
+            },
+            plugin
         });
         menu.show(e as MouseEvent);
     });
@@ -1780,9 +1785,9 @@ async function toggleSubtasks(card: HTMLElement, task: TaskInfo, plugin: TaskNot
             }
         
         // Show loading state
-        const loadingEl = subtasksContainer.createEl('div', { 
+        const loadingEl = subtasksContainer.createEl('div', {
             cls: 'task-card__subtasks-loading',
-            text: 'Loading subtasks...'
+            text: plugin.i18n.translate('contextMenus.task.subtasks.loading')
         });
         
         try {
@@ -1810,7 +1815,7 @@ async function toggleSubtasks(card: HTMLElement, task: TaskInfo, plugin: TaskNot
             if (subtasks.length === 0) {
                 subtasksContainer.createEl('div', {
                     cls: 'task-card__subtasks-loading',
-                    text: 'No subtasks found'
+                    text: plugin.i18n.translate('contextMenus.task.subtasks.noSubtasks')
                 });
                 return;
             }
@@ -1865,7 +1870,7 @@ async function toggleSubtasks(card: HTMLElement, task: TaskInfo, plugin: TaskNot
             
         } catch (error) {
             console.error('Error loading subtasks:', error);
-            loadingEl.textContent = 'Failed to load subtasks';
+            loadingEl.textContent = plugin.i18n.translate('contextMenus.task.subtasks.loadFailed');
         }
         
     } else {

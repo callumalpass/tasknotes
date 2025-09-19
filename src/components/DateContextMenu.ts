@@ -17,6 +17,7 @@ export interface DateContextMenuOptions {
     includeDue?: boolean;
     showRelativeDates?: boolean;
     title?: string;
+    plugin?: any;
 }
 
 export class DateContextMenu {
@@ -29,8 +30,11 @@ export class DateContextMenu {
         this.buildMenu();
     }
 
+    private t(key: string, fallback?: string): string {
+        return this.options.plugin?.i18n.translate(key) || fallback || key;
+    }
+
     private buildMenu(): void {
-        // Add title if provided
         if (this.options.title) {
             this.menu.addItem(item => {
                 item.setTitle(this.options.title!);
@@ -39,85 +43,53 @@ export class DateContextMenu {
             });
             this.menu.addSeparator();
         }
-        
+
         const dateOptions = this.getDateOptions();
-        
-        // Add increment/decrement options first (if they exist)
-        const incrementOptions = dateOptions.filter(option => 
-            option.label.startsWith('+') || option.label.startsWith('-')
-        );
-        
+
+        const incrementOptions = dateOptions.filter(option => option.category === 'increment');
         if (incrementOptions.length > 0) {
             incrementOptions.forEach(option => {
                 this.menu.addItem(item => {
-                    let title = option.label;
-                    if (option.icon) {
-                        item.setIcon(option.icon);
-                    }
-                    
-                    item.setTitle(title);
-                    
+                    if (option.icon) item.setIcon(option.icon);
+                    item.setTitle(option.label);
                     item.onClick(async () => {
                         this.options.onSelect(option.value, null);
                     });
                 });
             });
-            
             this.menu.addSeparator();
         }
 
-        // Add basic date options (Today, Tomorrow, etc.)
-        const basicOptions = dateOptions.filter(option => 
-            !option.label.startsWith('+') && !option.label.startsWith('-') &&
-            !['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].includes(option.label)
-        );
-        
+        const basicOptions = dateOptions.filter(option => option.category === 'basic');
         basicOptions.forEach(option => {
             this.menu.addItem(item => {
-                let title = option.label;
-                if (option.icon) {
-                    item.setIcon(option.icon);
-                }
-                
-                // Highlight current selection with visual indicator
-                if (option.value && option.value === this.options.currentValue) {
-                    title = `✓ ${option.label}`;
-                }
-                
+                if (option.icon) item.setIcon(option.icon);
+                const isSelected = option.value && option.value === this.options.currentValue;
+                const title = isSelected
+                    ? this.t('contextMenus.date.selected', '✓ {label}', { label: option.label })
+                    : option.label;
                 item.setTitle(title);
-                
                 item.onClick(async () => {
                     this.options.onSelect(option.value, null);
                 });
             });
         });
 
-        // Add weekdays submenu
-        const weekdayOptions = dateOptions.filter(option => 
-            ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].includes(option.label)
-        );
-        
+        const weekdayOptions = dateOptions.filter(option => option.category === 'weekday');
         if (weekdayOptions.length > 0) {
             this.menu.addSeparator();
-            
             this.menu.addItem(item => {
-                item.setTitle('Weekdays');
+                item.setTitle(this.t('contextMenus.date.weekdaysLabel', 'Weekdays'));
                 item.setIcon('calendar');
-                
                 const submenu = (item as any).setSubmenu();
-                
                 weekdayOptions.forEach(option => {
                     submenu.addItem((subItem: any) => {
-                        let title = option.label;
-                        
-                        // Highlight current selection with visual indicator
-                        if (option.value && option.value === this.options.currentValue) {
-                            title = `✓ ${option.label}`;
-                        }
-                        
+                        const isSelected = option.value && option.value === this.options.currentValue;
+                        const title = isSelected
+                            ? this.t('contextMenus.date.selected', '✓ {label}', { label: option.label })
+                            : option.label;
                         subItem.setTitle(title);
                         subItem.setIcon('calendar');
-                        
                         subItem.onClick(async () => {
                             this.options.onSelect(option.value, null);
                         });
@@ -126,22 +98,19 @@ export class DateContextMenu {
             });
         }
 
-        // Add separator before custom options
         this.menu.addSeparator();
 
-        // Add custom date picker option
         this.menu.addItem(item => {
-            item.setTitle('Pick date & time...');
+            item.setTitle(this.t('contextMenus.date.pickDateTime', 'Pick date & time…'));
             item.setIcon('calendar');
             item.onClick(async () => {
                 this.showDateTimePicker();
             });
         });
 
-        // Add clear option if there's a current value
         if (this.options.currentValue) {
             this.menu.addItem(item => {
-                item.setTitle('Clear date');
+                item.setTitle(this.t('contextMenus.date.clearDate', 'Clear date'));
                 item.setIcon('x');
                 item.onClick(async () => {
                     this.options.onSelect(null, null);
@@ -154,103 +123,93 @@ export class DateContextMenu {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const today = (window as any).moment();
         const options: DateOption[] = [];
+        const locale = this.options.plugin?.i18n.getCurrentLocale() || 'en';
+        const weekdayFormatter = new Intl.DateTimeFormat(locale, { weekday: 'long' });
+        const monthFormatter = new Intl.DateTimeFormat(locale, { month: 'long' });
 
-        // Add increment/decrement options if there's an existing date
         if (this.options.currentValue) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const currentDate = (window as any).moment(this.options.currentValue);
-            
             options.push({
-                label: '+1 day',
+                label: this.t('contextMenus.date.increment.plusOneDay', '+1 day'),
                 value: currentDate.clone().add(1, 'day').format('YYYY-MM-DD'),
-                icon: 'plus'
+                icon: 'plus',
+                category: 'increment'
             });
-
             options.push({
-                label: '-1 day',
+                label: this.t('contextMenus.date.increment.minusOneDay', '-1 day'),
                 value: currentDate.clone().subtract(1, 'day').format('YYYY-MM-DD'),
-                icon: 'minus'
+                icon: 'minus',
+                category: 'increment'
             });
-
             options.push({
-                label: '+1 week',
+                label: this.t('contextMenus.date.increment.plusOneWeek', '+1 week'),
                 value: currentDate.clone().add(1, 'week').format('YYYY-MM-DD'),
-                icon: 'plus-circle'
+                icon: 'plus-circle',
+                category: 'increment'
             });
-
             options.push({
-                label: '-1 week',
+                label: this.t('contextMenus.date.increment.minusOneWeek', '-1 week'),
                 value: currentDate.clone().subtract(1, 'week').format('YYYY-MM-DD'),
-                icon: 'minus-circle'
+                icon: 'minus-circle',
+                category: 'increment'
             });
         }
 
-        // Today option
         options.push({
-            label: 'Today',
+            label: this.t('contextMenus.date.basic.today', 'Today'),
             value: today.format('YYYY-MM-DD'),
             icon: 'calendar-check',
-            isToday: true
+            isToday: true,
+            category: 'basic'
         });
 
-        // Tomorrow option
         options.push({
-            label: 'Tomorrow',
+            label: this.t('contextMenus.date.basic.tomorrow', 'Tomorrow'),
             value: today.clone().add(1, 'day').format('YYYY-MM-DD'),
-            icon: 'calendar-plus'
+            icon: 'calendar-plus',
+            category: 'basic'
         });
 
-        // Add weekday options
-        const weekdays = [
-            { name: 'Monday', day: 1 },
-            { name: 'Tuesday', day: 2 },
-            { name: 'Wednesday', day: 3 },
-            { name: 'Thursday', day: 4 },
-            { name: 'Friday', day: 5 },
-            { name: 'Saturday', day: 6 },
-            { name: 'Sunday', day: 0 }
-        ];
-
-        weekdays.forEach(weekday => {
-            let targetDate = today.clone().day(weekday.day);
-            
-            // If the target day is today or has passed this week, get next week's occurrence
+        const weekdayCodes = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+        weekdayCodes.forEach((dayName, index) => {
+            let targetDate = today.clone().day(index);
             if (targetDate.isSameOrBefore(today, 'day')) {
                 targetDate = targetDate.add(1, 'week');
             }
-            
+            const label = this.t(`common.weekdays.${dayName.toLowerCase()}` as const, dayName);
             options.push({
-                label: weekday.name,
+                label,
                 value: targetDate.format('YYYY-MM-DD'),
-                icon: 'calendar'
+                icon: 'calendar',
+                category: 'weekday'
             });
         });
 
-        // This weekend (Saturday)
         const nextSaturday = today.clone().day(6);
         if (nextSaturday.isBefore(today) || nextSaturday.isSame(today, 'day')) {
             nextSaturday.add(1, 'week');
         }
         options.push({
-            label: 'This weekend',
+            label: this.t('contextMenus.date.basic.thisWeekend', 'This weekend'),
             value: nextSaturday.format('YYYY-MM-DD'),
-            icon: 'calendar-days'
+            icon: 'calendar-days',
+            category: 'basic'
         });
 
-        // Next week (Monday)
         const nextMonday = today.clone().day(1).add(1, 'week');
         options.push({
-            label: 'Next week',
+            label: this.t('contextMenus.date.basic.nextWeek', 'Next week'),
             value: nextMonday.format('YYYY-MM-DD'),
-            icon: 'calendar-plus'
+            icon: 'calendar-plus',
+            category: 'basic'
         });
 
-        // Next month
         const nextMonth = today.clone().add(1, 'month').startOf('month');
         options.push({
-            label: 'Next month',
+            label: this.t('contextMenus.date.basic.nextMonth', 'Next month'),
             value: nextMonth.format('YYYY-MM-DD'),
-            icon: 'calendar-range'
+            icon: 'calendar-range',
+            category: 'basic'
         });
 
         return options;
@@ -316,7 +275,7 @@ export class DateContextMenu {
 
         const title = document.createElement('h3');
         title.className = 'date-picker-modal__header-title';
-        title.textContent = 'Set date & time';
+        title.textContent = this.t('contextMenus.date.modal.title', 'Set date & time');
 
         header.appendChild(icon);
         header.appendChild(title);
@@ -327,7 +286,7 @@ export class DateContextMenu {
         const container = document.createElement('div');
         container.className = 'date-picker-modal__section';
 
-        const label = this.createInputLabel('calendar', 'Date');
+        const label = this.createInputLabel('calendar', this.t('contextMenus.date.modal.dateLabel', 'Date'));
         const inputContainer = this.createInputContainer();
         const input = this.createDateInput();
 
@@ -346,7 +305,7 @@ export class DateContextMenu {
         const container = document.createElement('div');
         container.className = 'date-picker-modal__section date-picker-modal__section--buttons';
 
-        const label = this.createInputLabel('clock', 'Time (optional)');
+        const label = this.createInputLabel('clock', this.t('contextMenus.date.modal.timeLabel', 'Time (optional)'));
         const inputContainer = this.createInputContainer();
         const input = this.createTimeInput();
 
@@ -418,8 +377,8 @@ export class DateContextMenu {
         const container = document.createElement('div');
         container.className = 'date-picker-modal__buttons';
 
-        const cancelButton = this.createButton('Cancel', false);
-        const selectButton = this.createButton('Select', true);
+        const cancelButton = this.createButton(this.t('common.cancel', 'Cancel'), false);
+        const selectButton = this.createButton(this.t('contextMenus.date.modal.select', 'Select'), true);
 
         container.appendChild(cancelButton);
         container.appendChild(selectButton);

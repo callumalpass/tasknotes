@@ -232,8 +232,8 @@ export function renderFeaturesTab(container: HTMLElement, plugin: TaskNotesPlugi
 
     // Sound settings
     createToggleSetting(container, {
-        name: 'Sound enabled',
-        desc: 'Play sound when Pomodoro sessions end',
+        name: translate('settings.features.pomodoroSound.enabledName'),
+        desc: translate('settings.features.pomodoroSound.enabledDesc'),
         getValue: () => plugin.settings.pomodoroSoundEnabled,
         setValue: async (value: boolean) => {
             plugin.settings.pomodoroSoundEnabled = value;
@@ -245,8 +245,8 @@ export function renderFeaturesTab(container: HTMLElement, plugin: TaskNotesPlugi
 
     if (plugin.settings.pomodoroSoundEnabled) {
         createNumberSetting(container, {
-            name: 'Sound volume',
-            desc: 'Volume for Pomodoro sounds (0-100)',
+            name: translate('settings.features.pomodoroSound.volumeName'),
+            desc: translate('settings.features.pomodoroSound.volumeDesc'),
             placeholder: '50',
             min: 0,
             max: 100,
@@ -260,11 +260,11 @@ export function renderFeaturesTab(container: HTMLElement, plugin: TaskNotesPlugi
 
     // Storage location setting
     createDropdownSetting(container, {
-        name: 'Pomodoro data storage',
+        name: translate('settings.features.dataStorage.name'),
         desc: 'Where to store Pomodoro session history',
         options: [
             { value: 'plugin', label: 'Plugin data (recommended)' },
-            { value: 'daily-notes', label: 'Daily notes' }
+            { value: 'daily-notes', label: translate('settings.features.dataStorage.dailyNotes') }
         ],
         getValue: () => plugin.settings.pomodoroStorageLocation,
         setValue: async (value: string) => {
@@ -290,12 +290,12 @@ export function renderFeaturesTab(container: HTMLElement, plugin: TaskNotesPlugi
     });
 
     // Notifications Section
-    createSectionHeader(container, 'Notifications');
+    createSectionHeader(container, translate('settings.features.notifications.header'));
     createHelpText(container, 'Configure task reminder notifications and alerts.');
 
     createToggleSetting(container, {
-        name: 'Enable notifications',
-        desc: 'Enable task reminder notifications',
+        name: translate('settings.features.notifications.enableName'),
+        desc: translate('settings.features.notifications.enableDesc'),
         getValue: () => plugin.settings.enableNotifications,
         setValue: async (value: boolean) => {
             plugin.settings.enableNotifications = value;
@@ -307,11 +307,11 @@ export function renderFeaturesTab(container: HTMLElement, plugin: TaskNotesPlugi
 
     if (plugin.settings.enableNotifications) {
         createDropdownSetting(container, {
-            name: 'Notification type',
-            desc: 'Type of notifications to show',
+            name: translate('settings.features.notifications.typeName'),
+            desc: translate('settings.features.notifications.typeDesc'),
             options: [
-                { value: 'in-app', label: 'In-app notifications' },
-                { value: 'system', label: 'System notifications' }
+                { value: 'in-app', label: translate('settings.features.notifications.inAppLabel') },
+                { value: 'system', label: translate('settings.features.notifications.systemLabel') }
             ],
             getValue: () => plugin.settings.notificationType,
             setValue: async (value: string) => {

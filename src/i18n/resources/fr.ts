@@ -233,6 +233,25 @@ export const fr: TranslationTree = {
                     name: "Langue de l'interface",
                     description: "Sélectionnez la langue utilisée pour le texte de l'interface TaskNotes"
                 }
+            },
+            pomodoroSound: {
+                enabledName: 'Son activé',
+                enabledDesc: 'Jouer un son à la fin des sessions Pomodoro',
+                volumeName: 'Volume du son',
+                volumeDesc: 'Volume des sons Pomodoro (0-100)'
+            },
+            dataStorage: {
+                name: 'Stockage des données Pomodoro',
+                dailyNotes: 'Notes quotidiennes'
+            },
+            notifications: {
+                header: 'Notifications',
+                enableName: 'Activer les notifications',
+                enableDesc: 'Activer les notifications de rappel de tâches',
+                typeName: 'Type de notification',
+                typeDesc: 'Type de notifications à afficher',
+                systemLabel: 'Notifications système',
+                inAppLabel: 'Notifications dans l\'application'
             }
         }
     },
@@ -381,6 +400,77 @@ export const fr: TranslationTree = {
         }
     },
     contextMenus: {
+        task: {
+            status: 'Statut',
+            statusSelected: '✓ {label}',
+            priority: 'Priorité',
+            prioritySelected: '✓ {label}',
+            dueDate: 'Échéance',
+            scheduledDate: 'Date planifiée',
+            reminders: 'Rappels',
+            remindBeforeDue: 'Rappeler avant l\'échéance…',
+            remindBeforeScheduled: 'Rappeler avant la date planifiée…',
+            manageReminders: 'Gérer tous les rappels…',
+            clearReminders: 'Supprimer tous les rappels',
+            startTimeTracking: 'Commencer le suivi du temps',
+            stopTimeTracking: 'Arrêter le suivi du temps',
+            archive: 'Archiver',
+            unarchive: 'Désarchiver',
+            openNote: 'Ouvrir la note',
+            copyTitle: 'Copier le titre de la tâche',
+            noteActions: 'Actions sur la note',
+            rename: 'Renommer',
+            renameTitle: 'Renommer le fichier',
+            renamePlaceholder: 'Saisir un nouveau nom',
+            delete: 'Supprimer',
+            deleteTitle: 'Supprimer le fichier',
+            deleteMessage: 'Voulez-vous vraiment supprimer "{name}" ?',
+            deleteConfirm: 'Supprimer',
+            copyPath: 'Copier le chemin',
+            copyUrl: 'Copier l\'URL Obsidian',
+            showInExplorer: 'Afficher dans l\'explorateur de fichiers',
+            addToCalendar: 'Ajouter au calendrier',
+            calendar: {
+                google: 'Google Agenda',
+                outlook: 'Outlook Agenda',
+                yahoo: 'Yahoo Agenda',
+                downloadIcs: 'Télécharger le fichier .ics'
+            },
+            recurrence: 'Récurrence',
+            clearRecurrence: 'Effacer la récurrence',
+            customRecurrence: 'Récurrence personnalisée...',
+            createSubtask: 'Créer une sous-tâche',
+            subtasks: {
+                loading: 'Chargement des sous-tâches...',
+                noSubtasks: 'Aucune sous-tâche trouvée',
+                loadFailed: 'Échec du chargement des sous-tâches'
+            },
+            markComplete: 'Marquer comme terminée pour cette date',
+            markIncomplete: 'Marquer comme incomplète pour cette date',
+            quickReminders: {
+                atTime: 'À l\'heure de l\'événement',
+                fiveMinutes: '5 minutes avant',
+                fifteenMinutes: '15 minutes avant',
+                oneHour: '1 heure avant',
+                oneDay: '1 jour avant'
+            },
+            notices: {
+                toggleCompletionFailure: 'Impossible de modifier l\'achèvement récurrent : {message}',
+                updateDueDateFailure: 'Impossible de mettre à jour l\'échéance : {message}',
+                updateScheduledFailure: 'Impossible de mettre à jour la date planifiée : {message}',
+                updateRemindersFailure: 'Impossible de mettre à jour les rappels',
+                clearRemindersFailure: 'Impossible de supprimer les rappels',
+                addReminderFailure: 'Impossible d\'ajouter un rappel',
+                archiveFailure: 'Impossible de modifier l\'archivage de la tâche : {message}',
+                copyTitleSuccess: 'Titre de la tâche copié dans le presse-papiers',
+                copyFailure: 'Impossible de copier dans le presse-papiers',
+                renameSuccess: 'Renommé en "{name}"',
+                renameFailure: 'Impossible de renommer le fichier',
+                copyPathSuccess: 'Chemin du fichier copié dans le presse-papiers',
+                copyUrlSuccess: 'URL Obsidian copiée dans le presse-papiers',
+                updateRecurrenceFailure: 'Impossible de mettre à jour la récurrence : {message}'
+            }
+        },
         ics: {
             showDetails: 'Afficher les détails',
             createTask: 'Créer une tâche depuis l\'événement',
@@ -413,6 +503,31 @@ export const fr: TranslationTree = {
                 descriptionHeading: '### Description',
                 url: '**URL :** {value}',
                 at: ' à {time}'
+            }
+        },
+        date: {
+            increment: {
+                plusOneDay: '+1 jour',
+                minusOneDay: '-1 jour',
+                plusOneWeek: '+1 semaine',
+                minusOneWeek: '-1 semaine'
+            },
+            basic: {
+                today: 'Aujourd\'hui',
+                tomorrow: 'Demain',
+                thisWeekend: 'Ce week-end',
+                nextWeek: 'La semaine prochaine',
+                nextMonth: 'Le mois prochain'
+            },
+            weekdaysLabel: 'Jours de la semaine',
+            selected: '✓ {label}',
+            pickDateTime: 'Choisir date et heure…',
+            clearDate: 'Effacer la date',
+            modal: {
+                title: 'Définir date et heure',
+                dateLabel: 'Date',
+                timeLabel: 'Heure (optionnel)',
+                select: 'Sélectionner'
             }
         }
     }

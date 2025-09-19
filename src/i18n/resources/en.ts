@@ -233,6 +233,25 @@ export const en: TranslationTree = {
                     name: 'UI language',
                     description: 'Select the language used for TaskNotes interface text'
                 }
+            },
+            pomodoroSound: {
+                enabledName: 'Sound enabled',
+                enabledDesc: 'Play sound when Pomodoro sessions end',
+                volumeName: 'Sound volume',
+                volumeDesc: 'Volume for Pomodoro sounds (0-100)'
+            },
+            dataStorage: {
+                name: 'Pomodoro data storage',
+                dailyNotes: 'Daily notes'
+            },
+            notifications: {
+                header: 'Notifications',
+                enableName: 'Enable notifications',
+                enableDesc: 'Enable task reminder notifications',
+                typeName: 'Notification type',
+                typeDesc: 'Type of notifications to show',
+                systemLabel: 'System notifications',
+                inAppLabel: 'In-app notifications'
             }
         }
     },
@@ -381,6 +400,77 @@ export const en: TranslationTree = {
         }
     },
     contextMenus: {
+        task: {
+            status: 'Status',
+            statusSelected: '✓ {label}',
+            priority: 'Priority',
+            prioritySelected: '✓ {label}',
+            dueDate: 'Due date',
+            scheduledDate: 'Scheduled date',
+            reminders: 'Reminders',
+            remindBeforeDue: 'Remind before due…',
+            remindBeforeScheduled: 'Remind before scheduled…',
+            manageReminders: 'Manage all reminders…',
+            clearReminders: 'Clear all reminders',
+            startTimeTracking: 'Start time tracking',
+            stopTimeTracking: 'Stop time tracking',
+            archive: 'Archive',
+            unarchive: 'Unarchive',
+            openNote: 'Open note',
+            copyTitle: 'Copy task title',
+            noteActions: 'Note actions',
+            rename: 'Rename',
+            renameTitle: 'Rename File',
+            renamePlaceholder: 'Enter new name',
+            delete: 'Delete',
+            deleteTitle: 'Delete File',
+            deleteMessage: 'Are you sure you want to delete "{name}"?',
+            deleteConfirm: 'Delete',
+            copyPath: 'Copy path',
+            copyUrl: 'Copy Obsidian URL',
+            showInExplorer: 'Show in file explorer',
+            addToCalendar: 'Add to calendar',
+            calendar: {
+                google: 'Google Calendar',
+                outlook: 'Outlook Calendar',
+                yahoo: 'Yahoo Calendar',
+                downloadIcs: 'Download .ics file'
+            },
+            recurrence: 'Recurrence',
+            clearRecurrence: 'Clear recurrence',
+            customRecurrence: 'Custom recurrence...',
+            createSubtask: 'Create subtask',
+            subtasks: {
+                loading: 'Loading subtasks...',
+                noSubtasks: 'No subtasks found',
+                loadFailed: 'Failed to load subtasks'
+            },
+            markComplete: 'Mark complete for this date',
+            markIncomplete: 'Mark incomplete for this date',
+            quickReminders: {
+                atTime: 'At time of event',
+                fiveMinutes: '5 minutes before',
+                fifteenMinutes: '15 minutes before',
+                oneHour: '1 hour before',
+                oneDay: '1 day before'
+            },
+            notices: {
+                toggleCompletionFailure: 'Failed to toggle recurring task completion: {message}',
+                updateDueDateFailure: 'Failed to update task due date: {message}',
+                updateScheduledFailure: 'Failed to update task scheduled date: {message}',
+                updateRemindersFailure: 'Failed to update reminders',
+                clearRemindersFailure: 'Failed to clear reminders',
+                addReminderFailure: 'Failed to add reminder',
+                archiveFailure: 'Failed to toggle task archive: {message}',
+                copyTitleSuccess: 'Task title copied to clipboard',
+                copyFailure: 'Failed to copy to clipboard',
+                renameSuccess: 'Renamed to "{name}"',
+                renameFailure: 'Failed to rename file',
+                copyPathSuccess: 'File path copied to clipboard',
+                copyUrlSuccess: 'Obsidian URL copied to clipboard',
+                updateRecurrenceFailure: 'Failed to update task recurrence: {message}'
+            }
+        },
         ics: {
             showDetails: 'Show details',
             createTask: 'Create task from event',
@@ -413,6 +503,31 @@ export const en: TranslationTree = {
                 descriptionHeading: '### Description',
                 url: '**URL:** {value}',
                 at: ' at {time}'
+            }
+        },
+        date: {
+            increment: {
+                plusOneDay: '+1 day',
+                minusOneDay: '-1 day',
+                plusOneWeek: '+1 week',
+                minusOneWeek: '-1 week'
+            },
+            basic: {
+                today: 'Today',
+                tomorrow: 'Tomorrow',
+                thisWeekend: 'This weekend',
+                nextWeek: 'Next week',
+                nextMonth: 'Next month'
+            },
+            weekdaysLabel: 'Weekdays',
+            selected: '✓ {label}',
+            pickDateTime: 'Pick date & time…',
+            clearDate: 'Clear date',
+            modal: {
+                title: 'Set date & time',
+                dateLabel: 'Date',
+                timeLabel: 'Time (optional)',
+                select: 'Select'
             }
         }
     }
