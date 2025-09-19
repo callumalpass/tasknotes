@@ -42,6 +42,14 @@ export const fr: TranslationTree = {
             title: 'Agenda quotidien',
             today: 'Aujourd\'hui',
             refreshCalendars: 'Actualiser les calendriers',
+            actions: {
+                previousPeriod: 'Période précédente',
+                nextPeriod: 'Période suivante',
+                goToToday: 'Aller à aujourd\'hui',
+                refreshCalendars: 'Actualiser les abonnements calendrier'
+            },
+            loading: 'Chargement de l\'agenda...',
+            dayToggle: 'Basculer l\'affichage du jour',
             expandAllDays: 'Déplier tous les jours',
             collapseAllDays: 'Replier tous les jours',
             notices: {
@@ -1673,6 +1681,35 @@ export const fr: TranslationTree = {
                 singleDownloadSuccess: 'Téléchargé {filename}'
             }
         },
+        filter: {
+            groupLabels: {
+                noProject: 'Aucun projet',
+                noTags: 'Aucune étiquette',
+                invalidDate: 'Date invalide',
+                due: {
+                    overdue: 'En retard',
+                    today: 'Aujourd\'hui',
+                    tomorrow: 'Demain',
+                    nextSevenDays: 'Prochains sept jours',
+                    later: 'Plus tard',
+                    none: 'Aucune date d\'échéance'
+                },
+                scheduled: {
+                    past: 'Planification passée',
+                    today: 'Aujourd\'hui',
+                    tomorrow: 'Demain',
+                    nextSevenDays: 'Prochains sept jours',
+                    later: 'Plus tard',
+                    none: 'Aucune date planifiée'
+                }
+            },
+            errors: {
+                noDatesProvided: 'Aucune date fournie'
+            },
+            folders: {
+                root: '(Racine)'
+            }
+        },
         instantTaskConvert: {
             notices: {
                 noCheckboxTasks: 'Aucune tâche à cocher trouvée dans la note actuelle.',
@@ -1751,6 +1788,9 @@ export const fr: TranslationTree = {
             activeFiltersTooltip: 'Filtres actifs – Cliquez pour modifier, clic droit pour effacer',
             configureVisibleProperties: 'Configurer les propriétés visibles',
             sortAndGroupOptions: 'Options de tri et regroupement',
+            sortMenuHeader: 'Tri',
+            orderMenuHeader: 'Ordre',
+            groupMenuHeader: 'Groupe',
             createNewTask: 'Créer une nouvelle tâche',
             filter: 'Filtre',
             displayOrganization: 'Affichage et organisation',
@@ -1818,6 +1858,9 @@ export const fr: TranslationTree = {
                 dueDate: 'Date d\'échéance',
                 scheduledDate: 'Date planifiée',
                 tags: 'Étiquettes'
+            },
+            notices: {
+                propertiesMenuFailed: 'Impossible d\'afficher le menu des propriétés'
             }
         }
     },

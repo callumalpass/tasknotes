@@ -443,7 +443,7 @@ export class FilterBar extends EventEmitter {
                     errorDiv.className = 'filter-bar-error';
                     this.container.appendChild(errorDiv);
                 }
-                errorDiv.textContent = 'Filter bar temporarily unavailable';
+                errorDiv.textContent = this.translate('ui.filterBar.filterUnavailable');
             }
         } catch (error) {
             console.error('Error rendering fallback FilterBar UI:', error);
@@ -502,7 +502,7 @@ export class FilterBar extends EventEmitter {
         };
         const makePropertiesButton = () => {
             const propertiesButton = new ButtonComponent(topControls)
-                .setTooltip('Configure visible properties')
+                .setTooltip(this.translate('ui.filterBar.configureVisibleProperties'))
                 .setClass('filter-bar__properties-button')
                 .onClick((event) => {
                     // Ensure we have a proper MouseEvent
@@ -521,13 +521,13 @@ export class FilterBar extends EventEmitter {
             setIcon(iconEl, 'list');
 
             // Add text
-            const textEl = propertiesButton.buttonEl.createSpan({ cls: 'button-text', text: 'Properties' });
+            propertiesButton.buttonEl.createSpan({ cls: 'button-text', text: this.translate('ui.filterBar.properties') });
         };
         const makeSearchInput = () => {
             this.searchInput = new TextComponent(topControls)
-                .setPlaceholder('Search tasks...');
+                .setPlaceholder(this.translate('ui.filterBar.searchTasksPlaceholder'));
             this.searchInput.inputEl.addClass('filter-bar__search-input');
-            setTooltip(this.searchInput.inputEl, 'Search task titles', { placement: 'top' });
+            setTooltip(this.searchInput.inputEl, this.translate('ui.filterBar.searchTasksTooltip'), { placement: 'top' });
             this.searchInput.onChange(() => {
                 this.isUserTyping = true;
                 this.debouncedHandleSearchInput();
@@ -541,7 +541,7 @@ export class FilterBar extends EventEmitter {
             const wrapper = topControls.createDiv('filter-bar__sort-group-button');
 
             const sortGroupButton = new ButtonComponent(wrapper)
-                .setTooltip('Sort and group options')
+                .setTooltip(this.translate('ui.filterBar.sortAndGroupOptions'))
                 .onClick((event) => {
                     this.showSortGroupContextMenu(event);
                 });
@@ -556,14 +556,14 @@ export class FilterBar extends EventEmitter {
             setIcon(iconEl, 'arrow-up-down');
 
             // Add text
-            sortGroupButton.buttonEl.createSpan({ cls: 'button-text', text: 'Sort' });
+            sortGroupButton.buttonEl.createSpan({ cls: 'button-text', text: this.translate('ui.filterBar.sort') });
         };
         const makeNewTaskButton = () => {
             // Don't show new task button on subtask widget
             if (this.viewType === 'subtask-widget') return;
 
             const newTaskButton = new ButtonComponent(topControls)
-                .setTooltip('Create new task')
+                .setTooltip(this.translate('ui.filterBar.createNewTask'))
                 .setClass('filter-bar__new-task-button')
                 .onClick(() => {
                     this.createNewTask();
@@ -579,7 +579,7 @@ export class FilterBar extends EventEmitter {
             setIcon(iconEl, 'plus');
 
             // Add text
-            const textEl = newTaskButton.buttonEl.createSpan({ cls: 'button-text', text: 'New' });
+            newTaskButton.buttonEl.createSpan({ cls: 'button-text', text: this.translate('ui.filterBar.newTask') });
         };
 
         // Create expand/collapse button functions
@@ -590,7 +590,7 @@ export class FilterBar extends EventEmitter {
                 // Expand button first (always to the left of collapse)
                 const expandAllBtn = new ButtonComponent(topControls)
                     .setIcon('list-tree')
-                    .setTooltip('Expand All Groups')
+                    .setTooltip(this.translate('ui.filterBar.expandAllGroups'))
                     .setClass('filter-bar__expand-groups')
                     .onClick(() => this.emit('expandAllGroups'));
                 expandAllBtn.buttonEl.addClass('clickable-icon');
@@ -598,7 +598,7 @@ export class FilterBar extends EventEmitter {
                 // Collapse button second
                 const collapseAllBtn = new ButtonComponent(topControls)
                     .setIcon('list-collapse')
-                    .setTooltip('Collapse All Groups')
+                    .setTooltip(this.translate('ui.filterBar.collapseAllGroups'))
                     .setClass('filter-bar__collapse-groups')
                     .onClick(() => this.emit('collapseAllGroups'));
                 collapseAllBtn.buttonEl.addClass('clickable-icon');
@@ -1731,7 +1731,7 @@ export class FilterBar extends EventEmitter {
 
             // Sort section
             menu.addItem(item => {
-                item.setTitle('SORT');
+                item.setTitle(this.translate('ui.filterBar.sortMenuHeader'));
                 item.setDisabled(true);
             });
 
@@ -1752,12 +1752,12 @@ export class FilterBar extends EventEmitter {
             // Order section
             menu.addSeparator();
             menu.addItem(item => {
-                item.setTitle('ORDER');
+                item.setTitle(this.translate('ui.filterBar.orderMenuHeader'));
                 item.setDisabled(true);
             });
 
             menu.addItem(item => {
-                item.setTitle('Ascending');
+                item.setTitle(this.translate('ui.filterBar.sortOptions.ascending'));
                 if (this.currentQuery.sortDirection === 'asc') {
                     item.setIcon('check');
                 }
@@ -1769,7 +1769,7 @@ export class FilterBar extends EventEmitter {
             });
 
             menu.addItem(item => {
-                item.setTitle('Descending');
+                item.setTitle(this.translate('ui.filterBar.sortOptions.descending'));
                 if (this.currentQuery.sortDirection === 'desc') {
                     item.setIcon('check');
                 }
@@ -1783,14 +1783,14 @@ export class FilterBar extends EventEmitter {
             // Group section (hidden on agenda view)
             if (this.viewType !== 'agenda') {
                 const builtInGroupOptions: Record<string, string> = {
-                    'none': 'None',
-                    'status': 'Status',
-                    'priority': 'Priority',
-                    'context': 'Context',
-                    'project': 'Project',
-                    'due': 'Due Date',
-                    'scheduled': 'Scheduled Date',
-                    'tags': 'Tags'
+                    'none': this.translate('ui.filterBar.group.none'),
+                    'status': this.translate('ui.filterBar.group.status'),
+                    'priority': this.translate('ui.filterBar.group.priority'),
+                    'context': this.translate('ui.filterBar.group.context'),
+                    'project': this.translate('ui.filterBar.group.project'),
+                    'due': this.translate('ui.filterBar.group.dueDate'),
+                    'scheduled': this.translate('ui.filterBar.group.scheduledDate'),
+                    'tags': this.translate('ui.filterBar.group.tags')
                 };
 
                 const groupOptions: Record<string, string> = { ...builtInGroupOptions };
@@ -1804,7 +1804,7 @@ export class FilterBar extends EventEmitter {
 
                 menu.addSeparator();
                 menu.addItem(item => {
-                    item.setTitle('GROUP');
+                    item.setTitle(this.translate('ui.filterBar.groupMenuHeader'));
                     item.setDisabled(true);
                 });
 
@@ -1883,7 +1883,7 @@ export class FilterBar extends EventEmitter {
         } catch (error) {
             console.error('FilterBar: Error showing properties dropdown:', error);
             // Show user-friendly error message
-            this.plugin.app.workspace.trigger('notice', 'Failed to show properties menu');
+            this.plugin.app.workspace.trigger('notice', this.translate('ui.filterBar.notices.propertiesMenuFailed'));
         }
     }
 
@@ -2371,7 +2371,11 @@ export class FilterBar extends EventEmitter {
         if (!el) return;
         const active = this.hasActiveFilters();
         el.classList.toggle('has-active-filters', active);
-        setTooltip(el, active ? 'Active filters – Click to modify, right-click to clear' : 'Toggle filter', { placement: 'top' });
+        setTooltip(
+            el,
+            active ? this.translate('ui.filterBar.activeFiltersTooltip') : this.translate('ui.filterBar.toggleFilter'),
+            { placement: 'top' }
+        );
 
 
     }

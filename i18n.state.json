@@ -124,6 +124,30 @@
       "source": "d5b76810351937ce81e0ad11fcd8f5be2976cf1a",
       "translation": "90297b9d34fc59a5c52c009938756cc05fd54395"
     },
+    "views.agenda.actions.previousPeriod": {
+      "source": "0aab6a575e143c08cf2e8b9390ff5e673b15b168",
+      "translation": "5e420e76da006b2d42208ceae8f2be79c7c6e143"
+    },
+    "views.agenda.actions.nextPeriod": {
+      "source": "0630852d72f5339b88fc5c456822239238bd4104",
+      "translation": "0f0cc84373893d2db2b3239c117c62a0e1211d80"
+    },
+    "views.agenda.actions.goToToday": {
+      "source": "22819a02167d15aaee9f2cb00e9dd113a1b4ed2c",
+      "translation": "1d7f2fbc1a250867d13d7d13cdb783c089b9a7eb"
+    },
+    "views.agenda.actions.refreshCalendars": {
+      "source": "811da4c322f8ee8f76faf7b08da3e5a007819d3a",
+      "translation": "8e73cbbf26f1f3fc4cd88ea4b9fa73fda065e0a1"
+    },
+    "views.agenda.loading": {
+      "source": "1bd14be47e620b3eacfd384df39a3aa971263735",
+      "translation": "ce685281807a1f02f6dcc52f68fda812a8f6009b"
+    },
+    "views.agenda.dayToggle": {
+      "source": "220784160f3936b2206258f03ef0605ea1a8715e",
+      "translation": "dff1772220f3045e2fdc9f15c24032364d020ba8"
+    },
     "views.agenda.expandAllDays": {
       "source": "33b8d30645a1ce956eaf14b6a6575859f94aa724",
       "translation": "20f1266ccd989a3aa82182479b5ec4834c1428fc"
@@ -4060,6 +4084,74 @@
       "source": "f37a7ee7392781b6c4d3978fb1e072914e5f5ff7",
       "translation": "5d4affbafc7a8379bdf8375a6997426fe2ac72d6"
     },
+    "services.filter.groupLabels.noProject": {
+      "source": "c326b75775bf901d2023c5998bd2549e8cc27e3b",
+      "translation": "c77f3894fec70f53190df99f2c45ee352388c052"
+    },
+    "services.filter.groupLabels.noTags": {
+      "source": "ea3d32deac740b8c0ec2a88044355a1ef5eaba37",
+      "translation": "5f381d7cea88f508e0f97812e6eb9047168caf90"
+    },
+    "services.filter.groupLabels.invalidDate": {
+      "source": "3f45d8ccffe75e10e46696189989b5121bdc235b",
+      "translation": "f578ca409acad33143fec735d55971c44b605422"
+    },
+    "services.filter.groupLabels.due.overdue": {
+      "source": "07217c77199fa0aee628e3030b3992714cddd4d9",
+      "translation": "40c1dde321e2b081103f8be23b928c08db7f1511"
+    },
+    "services.filter.groupLabels.due.today": {
+      "source": "24345a14377fd821d3932f4e82f6431640955b0b",
+      "translation": "baca97f697fbf114ca2b08c97c106dde47583c4a"
+    },
+    "services.filter.groupLabels.due.tomorrow": {
+      "source": "1948bf2dfa8fbc1f07ad3b6f0e2b3ee39f87e495",
+      "translation": "2ab7e70a795413277c5fb24b3bd9b35c5c06598a"
+    },
+    "services.filter.groupLabels.due.nextSevenDays": {
+      "source": "510f7d04e3048fec61f75ac026b3918e9a4f46dd",
+      "translation": "c90c121b9774feb9147f0e9b7944139ba4a9060e"
+    },
+    "services.filter.groupLabels.due.later": {
+      "source": "56e2f5d3634ea4aac5b56f1548e92680dd4cdd05",
+      "translation": "1f42ab3b0f65d3f1e3172a73235358af99b08ef3"
+    },
+    "services.filter.groupLabels.due.none": {
+      "source": "8110358f8dcd473fb97f7f3c80ed56414f220931",
+      "translation": "c0d3578b2b2cf68d85a6cbe774b7084f33a2da5a"
+    },
+    "services.filter.groupLabels.scheduled.past": {
+      "source": "0527acf631a91833592dc0d571a4366ce4369e1b",
+      "translation": "8a57515e29575beec0159b64dd0d5ca5b1d24407"
+    },
+    "services.filter.groupLabels.scheduled.today": {
+      "source": "24345a14377fd821d3932f4e82f6431640955b0b",
+      "translation": "baca97f697fbf114ca2b08c97c106dde47583c4a"
+    },
+    "services.filter.groupLabels.scheduled.tomorrow": {
+      "source": "1948bf2dfa8fbc1f07ad3b6f0e2b3ee39f87e495",
+      "translation": "2ab7e70a795413277c5fb24b3bd9b35c5c06598a"
+    },
+    "services.filter.groupLabels.scheduled.nextSevenDays": {
+      "source": "510f7d04e3048fec61f75ac026b3918e9a4f46dd",
+      "translation": "c90c121b9774feb9147f0e9b7944139ba4a9060e"
+    },
+    "services.filter.groupLabels.scheduled.later": {
+      "source": "56e2f5d3634ea4aac5b56f1548e92680dd4cdd05",
+      "translation": "1f42ab3b0f65d3f1e3172a73235358af99b08ef3"
+    },
+    "services.filter.groupLabels.scheduled.none": {
+      "source": "6fbc51ebbe0f989b2cd9670f3cc8b8ad0635ee06",
+      "translation": "50c28edaadb7115a267e939f9443795a5bd7b173"
+    },
+    "services.filter.errors.noDatesProvided": {
+      "source": "cec9ef11cb4ffb0117e8d2607e4d48d6d2de3a5b",
+      "translation": "098c2443b3b01cd34f9bc9d7057d3a6081262b4e"
+    },
+    "services.filter.folders.root": {
+      "source": "d666a7cf10aea60e203cfcc3a7e09fbb7ba15365",
+      "translation": "7ce210ff96c6bdda7bc3338c7cbf4f95b0a752c3"
+    },
     "services.instantTaskConvert.notices.noCheckboxTasks": {
       "source": "677353a1e0ae08cbf609f1707fff391ab0a67aa7",
       "translation": "ceb31675a70ad0928403895c881d77d2274c4260"
@@ -4247,6 +4339,18 @@
     "ui.filterBar.sortAndGroupOptions": {
       "source": "6d74b8c68e9095d4c31833619a598aecf1c3ddbf",
       "translation": "1d1331ff7e99e826d12090632b1fd7f27dd2305c"
+    },
+    "ui.filterBar.sortMenuHeader": {
+      "source": "adc4e96a478be02a8147b100bd68113f38b89f80",
+      "translation": "c05261e0f7a7dc4664ed5a45672bb75db91ccea7"
+    },
+    "ui.filterBar.orderMenuHeader": {
+      "source": "1d75774c0f96b6ee44eb6643c9fea71b50b90ea8",
+      "translation": "5c32e6311ccfd7e9b147f06b0cf51680b9d4532b"
+    },
+    "ui.filterBar.groupMenuHeader": {
+      "source": "171a0606f7c74580fd3982cf57c49d604104120a",
+      "translation": "1026d22e2a7c1aae2be863f5be84cc05d7677e65"
     },
     "ui.filterBar.createNewTask": {
       "source": "5f80d7a8fe673e68c503e8500f81f243db25ed15",
@@ -4503,6 +4607,10 @@
     "ui.filterBar.group.tags": {
       "source": "848eed0fbd5429f556b2982dec3ea87136e33e44",
       "translation": "e26c690ca57a3cd9f3b5ba1a396e84299da3f09d"
+    },
+    "ui.filterBar.notices.propertiesMenuFailed": {
+      "source": "e9df8763e0af720e4edcfd8f3bd87af75a69f7a1",
+      "translation": "f484ebd4deb515f1b3e665d1e67fa8fae2f8fb1b"
     },
     "components.propertyVisibilityDropdown.coreProperties": {
       "source": "b3cfb1af6a8f2011725da9badb151b1c72b0e6ec",

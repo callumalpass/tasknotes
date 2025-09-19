@@ -42,6 +42,14 @@ export const en: TranslationTree = {
             title: 'Agenda',
             today: 'Today',
             refreshCalendars: 'Refresh calendars',
+            actions: {
+                previousPeriod: 'Previous period',
+                nextPeriod: 'Next period',
+                goToToday: 'Go to today',
+                refreshCalendars: 'Refresh calendar subscriptions'
+            },
+            loading: 'Loading agenda...',
+            dayToggle: 'Toggle day',
             expandAllDays: 'Expand All Days',
             collapseAllDays: 'Collapse All Days',
             notices: {
@@ -1673,6 +1681,35 @@ export const en: TranslationTree = {
                 singleDownloadSuccess: 'Downloaded {filename}'
             }
         },
+        filter: {
+            groupLabels: {
+                noProject: 'No project',
+                noTags: 'No tags',
+                invalidDate: 'Invalid date',
+                due: {
+                    overdue: 'Overdue',
+                    today: 'Today',
+                    tomorrow: 'Tomorrow',
+                    nextSevenDays: 'Next seven days',
+                    later: 'Later',
+                    none: 'No due date'
+                },
+                scheduled: {
+                    past: 'Past scheduled',
+                    today: 'Today',
+                    tomorrow: 'Tomorrow',
+                    nextSevenDays: 'Next seven days',
+                    later: 'Later',
+                    none: 'No scheduled date'
+                }
+            },
+            errors: {
+                noDatesProvided: 'No dates provided'
+            },
+            folders: {
+                root: '(Root)'
+            }
+        },
         instantTaskConvert: {
             notices: {
                 noCheckboxTasks: 'No checkbox tasks found in the current note.',
@@ -1751,6 +1788,9 @@ export const en: TranslationTree = {
             activeFiltersTooltip: 'Active filters – Click to modify, right-click to clear',
             configureVisibleProperties: 'Configure visible properties',
             sortAndGroupOptions: 'Sort and group options',
+            sortMenuHeader: 'Sort',
+            orderMenuHeader: 'Order',
+            groupMenuHeader: 'Group',
             createNewTask: 'Create new task',
             filter: 'Filter',
             displayOrganization: 'Display & Organization',
@@ -1818,6 +1858,9 @@ export const en: TranslationTree = {
                 dueDate: 'Due Date',
                 scheduledDate: 'Scheduled Date',
                 tags: 'Tags'
+            },
+            notices: {
+                propertiesMenuFailed: 'Failed to show properties menu'
             }
         }
     },
