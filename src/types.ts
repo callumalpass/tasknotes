@@ -64,6 +64,8 @@ export interface FilterQuery extends FilterGroup {
 	sortKey?: TaskSortKey;
 	sortDirection?: SortDirection;
 	groupKey?: TaskGroupKey;
+	// Secondary grouping key for hierarchical grouping (optional)
+	subgroupKey?: TaskGroupKey;
 }
 
 // A named, persistent configuration that encapsulates the entire state

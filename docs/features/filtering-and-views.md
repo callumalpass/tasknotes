@@ -271,6 +271,29 @@ Available grouping options:
 
 **Project Grouping**: Tasks with multiple projects appear in each project group.
 
+### Hierarchical Subgrouping
+
+TaskNotes supports two-level hierarchical grouping, where tasks are first grouped by a primary criterion, then further organized into subgroups within each primary group.
+
+![Subgrouping demonstration](../assets/subgroups.gif)
+
+**How to Enable Subgrouping:**
+1. Set a primary grouping option (e.g., "Status")
+2. Access the sort/group context menu (three-dot button in FilterBar)
+3. Select a subgroup option from the "SUBGROUP" section
+4. Tasks will be organized with primary groups containing subgroups
+
+**Available Subgroup Options:**
+- Any grouping option except the current primary group
+- User-defined custom fields (when configured)
+- "None" to disable subgrouping
+
+**Subgroup Behavior:**
+- Subgroups are sorted consistently with the current sort direction
+- "No [field]" subgroups (e.g., "No Priority") are positioned based on sort order
+- Subgroup state (expanded/collapsed) is preserved per view
+- Both TaskListView and AgendaView support hierarchical subgrouping
+
 ## Performance Considerations
 
 The FilterBar includes several performance optimizations:
