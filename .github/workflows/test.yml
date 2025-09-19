@@ -26,7 +26,41 @@ jobs:
     - name: Install dependencies
       run: npm ci --prefer-offline --no-audit
       timeout-minutes: 5
-      
+
+    - name: Check i18n manifest is up-to-date
+      run: |
+        echo "🔍 Checking if i18n manifest and state files are up-to-date..."
+        npm run i18n:sync
+        if [[ -n "$(git status --porcelain)" ]]; then
+          echo "❌ Error: i18n manifest or state files are out of date."
+          echo "📝 Files that need to be committed:"
+          git status --porcelain
+          echo ""
+          echo "🔧 Please run 'npm run i18n:sync' locally and commit the changes:"
+          echo "   npm run i18n:sync"
+          echo "   git add i18n.manifest.json i18n.state.json"
+          echo "   git commit -m 'chore: update i18n manifest and state files'"
+          echo ""
+          echo "📊 Current diff:"
+          git diff --name-only
+          if git diff --quiet i18n.manifest.json; then
+            echo "ℹ️  No manifest changes"
+          else
+            echo "📄 Manifest changes:"
+            git diff i18n.manifest.json | head -20
+          fi
+          if git diff --quiet i18n.state.json; then
+            echo "ℹ️  No state changes"
+          else
+            echo "📄 State changes:"
+            git diff i18n.state.json | head -20
+          fi
+          exit 1
+        else
+          echo "✅ i18n files are up-to-date."
+        fi
+      timeout-minutes: 3
+
     - name: Debug environment
       run: |
         echo "Node version: $(node --version)"
