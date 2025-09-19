@@ -3200,6 +3200,94 @@
       "source": "05282acf7678258da0d996e5fbee70a567b92187",
       "translation": "c13447e51fba9156d2fa6a1720e72bf94aecbd75"
     },
+    "notices.exportTasksFailed": {
+      "source": "91fa8ddb011b35634762b9184731cd9d6893b139",
+      "translation": "ff30240ef05c53aeda0d7d10e7a2fa0f55c09a30"
+    },
+    "commands.openCalendarView": {
+      "source": "d7dce352d3bf5b12479770b86495263f84275492",
+      "translation": "93ef7fa71140819bcd7ff92af774e58e45d12867"
+    },
+    "commands.openAdvancedCalendarView": {
+      "source": "b30e3fa144b53f11e5a0bd3d0d0c4b1532b8ce5b",
+      "translation": "6763d0db8e089614161ebd08ede65e9a152ef21f"
+    },
+    "commands.openTasksView": {
+      "source": "767b41fb3b53b193d0a250eed7ed025f2c7ead0a",
+      "translation": "f3f3dbf4d450d287e93657c63535b644bbbab453"
+    },
+    "commands.openNotesView": {
+      "source": "1f42739a5592c924475f7b44133ba90211acddba",
+      "translation": "fbee6d823aa81affb7cf4eafad65d4254d38703b"
+    },
+    "commands.openAgendaView": {
+      "source": "8497bcbfd3a589408c7f7541e705729f239dcfc7",
+      "translation": "f4ac85af35d7ddc432ad313847a5cf11400eb69f"
+    },
+    "commands.openPomodoroView": {
+      "source": "4ad63872d163e0910a3b42dfaae19cf28faaee96",
+      "translation": "b1f1069c12857b86ce3707099f8240981070cbab"
+    },
+    "commands.openKanbanView": {
+      "source": "55371d31ef02417119568e5d18662fa3567de9a5",
+      "translation": "98a00a03d738ee19d276e060a7bc6edb5a086ab8"
+    },
+    "commands.openPomodoroStats": {
+      "source": "4beae2ec6f89c2fb78f208b3a74917e0d8f4d35d",
+      "translation": "d99ffe78cd0420128c91d6235824a26a52f42205"
+    },
+    "commands.openStatisticsView": {
+      "source": "ddff620f8a4d10c3c20a028fb132fb630bf118aa",
+      "translation": "0dcd4a5775f475c1bb88dca849005842e412d8db"
+    },
+    "commands.createNewTask": {
+      "source": "5f80d7a8fe673e68c503e8500f81f243db25ed15",
+      "translation": "cba0259d3c1b0d8e817dbb924415a19c2106814e"
+    },
+    "commands.convertToTaskNote": {
+      "source": "eed084972179de97f6646b6c0f326a8af8dfbbdf",
+      "translation": "4341010563fcfaa6abbeead0a13d6e7c659dfc43"
+    },
+    "commands.convertAllTasksInNote": {
+      "source": "7bdf3e19eba23b184cbcfc5f6ef62b5a54413513",
+      "translation": "cd208efac566b6b61f4d7a49e72a90e3c8d6824f"
+    },
+    "commands.insertTaskNoteLink": {
+      "source": "4ab2f821377b45ac7b25e38801211deb28e8a81c",
+      "translation": "2d889e763b3d3eb41754ce54525a0a5218eb337e"
+    },
+    "commands.createInlineTask": {
+      "source": "77d9f7a2d6665173b5076b856a29591527ca8dc5",
+      "translation": "de31bc450ed076d272eac778b7763c030387f35d"
+    },
+    "commands.quickActionsCurrentTask": {
+      "source": "fcb1318f9d3affce584b2a5a3bab5f916d510a16",
+      "translation": "a42545bee8f20d24bb75e1276f43772f7cd94430"
+    },
+    "commands.goToTodayNote": {
+      "source": "d8e399babd3e67be6eb8a4d6588926527f3df1f1",
+      "translation": "33d02e260e2551ae4921768165657e34400e4437"
+    },
+    "commands.startPomodoro": {
+      "source": "fd071d1627b954f18c0ec7ed0591e1ceea2d9c29",
+      "translation": "1a7d0030d0359cebf0da9348bfcd872bdf72445d"
+    },
+    "commands.stopPomodoro": {
+      "source": "2a5e8cc09ea563e72856309a152171a01dd9b87b",
+      "translation": "4ec183481d100c5d4f1dc9310d294fc8c4007d62"
+    },
+    "commands.pauseResumePomodoro": {
+      "source": "1ac6f3fd60f918b25cfb95be70b9d43f3b3281bb",
+      "translation": "d042f8fdcc1772c2440370e505cd61b54a792ba4"
+    },
+    "commands.refreshCache": {
+      "source": "0b56ae2b187bdf931d24258272f284d7046ad543",
+      "translation": "ca133f674cab588006a7a0d061471980248242c8"
+    },
+    "commands.exportAllTasksIcs": {
+      "source": "3f3714587b4802efeb6baf380a59615b8faf0c10",
+      "translation": "e4c5963ce721f4bb182d474d1a9c0c604325c274"
+    },
     "modals.task.titlePlaceholder": {
       "source": "c8196f1d1039c2fb290add52ee990c571173d6f1",
       "translation": "4ad6efca173a22d4bf622d5729c3ad13612e6902"

@@ -1,4 +1,4 @@
-import { Notice, Plugin, WorkspaceLeaf, Editor, MarkdownView, TFile, Platform, addIcon } from 'obsidian';
+import { Notice, Plugin, WorkspaceLeaf, Editor, MarkdownView, TFile, Platform, addIcon, Command, Hotkey } from 'obsidian';
 import { EditorView } from '@codemirror/view';
 import { format } from 'date-fns';
 import {
@@ -71,7 +71,16 @@ import { NotificationService } from './services/NotificationService';
 import { AutoExportService } from './services/AutoExportService';
 // Type-only import for HTTPAPIService (actual import is dynamic on desktop only)
 import type { HTTPAPIService } from './services/HTTPAPIService';
-import { createI18nService, I18nService } from './i18n';
+import { createI18nService, I18nService, TranslationKey } from './i18n';
+
+interface TranslatedCommandDefinition {
+	id: string;
+	nameKey: TranslationKey;
+	callback?: () => void | Promise<void>;
+	editorCallback?: (editor: Editor, view: MarkdownView) => void | Promise<void>;
+	checkCallback?: (checking: boolean) => boolean | void;
+	hotkeys?: Hotkey[];
+}
 
 // Type definitions for better type safety
 interface TaskUpdateEventData {
@@ -166,6 +175,10 @@ export default class TaskNotesPlugin extends Plugin {
 	// HTTP API service
 	apiService?: HTTPAPIService;
 
+	// Command localization support
+	private commandDefinitions: TranslatedCommandDefinition[] = [];
+	private registeredCommands = new Map<string, string>();
+
 	// Event listener cleanup
 	private taskUpdateListenerForEditor: import('obsidian').EventRef | null = null;
 
@@ -208,6 +221,7 @@ export default class TaskNotesPlugin extends Plugin {
 			const languageLabel = this.i18n.resolveKey(`common.languages.${current}`) || current;
 			new Notice(this.i18n.translate('notices.languageChanged', { language: languageLabel }));
 			this.refreshLocalizedViews();
+			this.refreshCommandTranslations();
 		});
 
 		// Register TaskNotes icon with transparent cutouts
@@ -1176,192 +1190,229 @@ export default class TaskNotesPlugin extends Plugin {
 	}
 
 	addCommands() {
-		// View commands
-		this.addCommand({
-			id: 'open-calendar-view',
-			name: 'Open mini calendar view',
-			callback: async () => {
-				await this.activateCalendarView();
-			}
-		});
-
-		this.addCommand({
-			id: 'open-advanced-calendar-view',
-			name: 'Open advanced calendar view',
-			callback: async () => {
-				await this.activateAdvancedCalendarView();
-			}
-		});
-
-		this.addCommand({
-			id: 'open-tasks-view',
-			name: 'Open tasks view',
-			callback: async () => {
-				await this.activateTasksView();
-			}
-		});
-
-		this.addCommand({
-			id: 'open-notes-view',
-			name: 'Open notes view',
-			callback: async () => {
-				await this.activateNotesView();
-			}
-		});
-
-		this.addCommand({
-			id: 'open-agenda-view',
-			name: 'Open agenda view',
-			callback: async () => {
-				await this.activateAgendaView();
-			}
-		});
-
-		this.addCommand({
-			id: 'open-pomodoro-view',
-			name: 'Open pomodoro timer',
-			callback: async () => {
-				await this.activatePomodoroView();
-			}
-		});
-
-		this.addCommand({
-			id: 'open-kanban-view',
-			name: 'Open kanban board',
-			callback: async () => {
-				await this.activateKanbanView();
-			}
-		});
-
-		this.addCommand({
-			id: 'open-pomodoro-stats',
-			name: 'Open pomodoro statistics',
-			callback: async () => {
-				await this.activatePomodoroStatsView();
-			}
-		});
-
-		this.addCommand({
-			id: 'open-statistics',
-			name: 'Open task & project statistics',
-			callback: async () => {
-				await this.activateStatsView();
-			}
-		});
-
-		// Task commands
-		this.addCommand({
-			id: 'create-new-task',
-			name: 'Create new task',
-			callback: () => {
-				this.openTaskCreationModal();
-			}
-		});
-
-		this.addCommand({
-			id: 'convert-to-tasknote',
-			name: 'Convert task to TaskNote',
-			editorCallback: async (editor: Editor) => {
-				await this.convertTaskToTaskNote(editor);
-			}
-		});
-
-		this.addCommand({
-			id: 'batch-convert-all-tasks',
-			name: 'Convert all tasks in note',
-			editorCallback: async (editor: Editor) => {
-				await this.batchConvertAllTasks(editor);
-			}
-		});
-
-		this.addCommand({
-			id: 'insert-tasknote-link',
-			name: 'Insert tasknote link',
-			editorCallback: (editor: Editor) => {
-				this.insertTaskNoteLink(editor);
-			}
-		});
-
-		this.addCommand({
-			id: 'create-inline-task',
-			name: 'Create new inline task',
-			editorCallback: async (editor: Editor) => {
-				await this.createInlineTask(editor);
-			}
-		});
-
-		this.addCommand({
-			id: 'quick-actions-current-task',
-			name: 'Quick actions for current task',
-			callback: async () => {
-				await this.openQuickActionsForCurrentTask();
-			}
-		});
-
-		// Note commands
-		this.addCommand({
-			id: 'go-to-today',
-			name: 'Go to today\'s note',
-			callback: async () => {
-				await this.navigateToCurrentDailyNote();
-			}
-		});
-
-		// Pomodoro commands
-		this.addCommand({
-			id: 'start-pomodoro',
-			name: 'Start pomodoro timer',
-			callback: async () => {
-				await this.pomodoroService.startPomodoro();
-			}
-		});
-
-		this.addCommand({
-			id: 'stop-pomodoro',
-			name: 'Stop pomodoro timer',
-			callback: async () => {
-				await this.pomodoroService.stopPomodoro();
-			}
-		});
-
-		this.addCommand({
-			id: 'pause-pomodoro',
-			name: 'Pause/resume pomodoro timer',
-			callback: async () => {
-				const state = this.pomodoroService.getState();
-				if (state.isRunning) {
-					await this.pomodoroService.pausePomodoro();
-				} else if (state.currentSession) {
-					await this.pomodoroService.resumePomodoro();
+		this.commandDefinitions = [
+			{
+				id: 'open-calendar-view',
+				nameKey: 'commands.openCalendarView',
+				callback: async () => {
+					await this.activateCalendarView();
+				}
+			},
+			{
+				id: 'open-advanced-calendar-view',
+				nameKey: 'commands.openAdvancedCalendarView',
+				callback: async () => {
+					await this.activateAdvancedCalendarView();
+				}
+			},
+			{
+				id: 'open-tasks-view',
+				nameKey: 'commands.openTasksView',
+				callback: async () => {
+					await this.activateTasksView();
+				}
+			},
+			{
+				id: 'open-notes-view',
+				nameKey: 'commands.openNotesView',
+				callback: async () => {
+					await this.activateNotesView();
+				}
+			},
+			{
+				id: 'open-agenda-view',
+				nameKey: 'commands.openAgendaView',
+				callback: async () => {
+					await this.activateAgendaView();
+				}
+			},
+			{
+				id: 'open-pomodoro-view',
+				nameKey: 'commands.openPomodoroView',
+				callback: async () => {
+					await this.activatePomodoroView();
+				}
+			},
+			{
+				id: 'open-kanban-view',
+				nameKey: 'commands.openKanbanView',
+				callback: async () => {
+					await this.activateKanbanView();
+				}
+			},
+			{
+				id: 'open-pomodoro-stats',
+				nameKey: 'commands.openPomodoroStats',
+				callback: async () => {
+					await this.activatePomodoroStatsView();
+				}
+			},
+			{
+				id: 'open-statistics',
+				nameKey: 'commands.openStatisticsView',
+				callback: async () => {
+					await this.activateStatsView();
+				}
+			},
+			{
+				id: 'create-new-task',
+				nameKey: 'commands.createNewTask',
+				callback: () => {
+					this.openTaskCreationModal();
+				}
+			},
+			{
+				id: 'convert-to-tasknote',
+				nameKey: 'commands.convertToTaskNote',
+				editorCallback: async (editor: Editor) => {
+					await this.convertTaskToTaskNote(editor);
+				}
+			},
+			{
+				id: 'batch-convert-all-tasks',
+				nameKey: 'commands.convertAllTasksInNote',
+				editorCallback: async (editor: Editor) => {
+					await this.batchConvertAllTasks(editor);
+				}
+			},
+			{
+				id: 'insert-tasknote-link',
+				nameKey: 'commands.insertTaskNoteLink',
+				editorCallback: (editor: Editor) => {
+					this.insertTaskNoteLink(editor);
+				}
+			},
+			{
+				id: 'create-inline-task',
+				nameKey: 'commands.createInlineTask',
+				editorCallback: async (editor: Editor) => {
+					await this.createInlineTask(editor);
+				}
+			},
+			{
+				id: 'quick-actions-current-task',
+				nameKey: 'commands.quickActionsCurrentTask',
+				callback: async () => {
+					await this.openQuickActionsForCurrentTask();
+				}
+			},
+			{
+				id: 'go-to-today',
+				nameKey: 'commands.goToTodayNote',
+				callback: async () => {
+					await this.navigateToCurrentDailyNote();
+				}
+			},
+			{
+				id: 'start-pomodoro',
+				nameKey: 'commands.startPomodoro',
+				callback: async () => {
+					await this.pomodoroService.startPomodoro();
+				}
+			},
+			{
+				id: 'stop-pomodoro',
+				nameKey: 'commands.stopPomodoro',
+				callback: async () => {
+					await this.pomodoroService.stopPomodoro();
+				}
+			},
+			{
+				id: 'pause-pomodoro',
+				nameKey: 'commands.pauseResumePomodoro',
+				callback: async () => {
+					const state = this.pomodoroService.getState();
+					if (state.isRunning) {
+						await this.pomodoroService.pausePomodoro();
+					} else if (state.currentSession) {
+						await this.pomodoroService.resumePomodoro();
+					}
+				}
+			},
+			{
+				id: 'refresh-cache',
+				nameKey: 'commands.refreshCache',
+				callback: async () => {
+					await this.refreshCache();
+				}
+			},
+			{
+				id: 'export-all-tasks-ics',
+				nameKey: 'commands.exportAllTasksIcs',
+				callback: async () => {
+					try {
+						const allTasks = await this.cacheManager.getAllTasks();
+						const { CalendarExportService } = await import('./services/CalendarExportService');
+						CalendarExportService.downloadAllTasksICSFile(allTasks, this.i18n.translate.bind(this.i18n));
+					} catch (error) {
+						console.error('Error exporting all tasks as ICS:', error);
+					new Notice(this.i18n.translate('notices.exportTasksFailed'));
+					}
 				}
 			}
-		});
+		];
 
-		// Cache management commands
-		this.addCommand({
-			id: 'refresh-cache',
-			name: 'Refresh cache',
-			callback: async () => {
-				await this.refreshCache();
+		this.registerCommands();
+	}
+
+	private registerCommands(): void {
+		this.registeredCommands.clear();
+		for (const definition of this.commandDefinitions) {
+			const commandConfig: Command = {
+				id: definition.id,
+				name: this.i18n.translate(definition.nameKey)
+			};
+			if (definition.callback) {
+				commandConfig.callback = () => {
+					void definition.callback?.();
+				};
 			}
-		});
-		
-		// Export commands
-		this.addCommand({
-			id: 'export-all-tasks-ics',
-			name: 'Export all tasks as ICS file',
-			callback: async () => {
-				try {
-					const allTasks = await this.cacheManager.getAllTasks();
-					const { CalendarExportService } = await import('./services/CalendarExportService');
-					CalendarExportService.downloadAllTasksICSFile(allTasks, this.i18n.translate.bind(this.i18n));
-				} catch (error) {
-					console.error('Error exporting all tasks as ICS:', error);
-					new Notice('Failed to export tasks as ICS file');
+			if (definition.editorCallback) {
+				commandConfig.editorCallback = (editor: Editor, view: MarkdownView) => {
+					void definition.editorCallback?.(editor, view);
+				};
+			}
+			if (definition.checkCallback) {
+				commandConfig.checkCallback = definition.checkCallback;
+			}
+			if (definition.hotkeys) {
+				commandConfig.hotkeys = definition.hotkeys;
+			}
+			const registered = this.addCommand(commandConfig);
+			this.registeredCommands.set(definition.id, registered.id);
+		}
+	}
+
+	private refreshCommandTranslations(): void {
+		if (!this.commandDefinitions.length) {
+			return;
+		}
+
+		const commandsApi = this.app.commands;
+		if (!commandsApi) {
+			return;
+		}
+
+		const removeCommand = (commandsApi as any).removeCommand as ((id: string) => void) | undefined;
+		if (typeof removeCommand === 'function') {
+			for (const fullId of this.registeredCommands.values()) {
+				removeCommand.call(commandsApi, fullId);
+			}
+			this.registerCommands();
+			return;
+		}
+
+		// Fallback: update names in place if removal API not available
+		for (const definition of this.commandDefinitions) {
+			const fullId = this.registeredCommands.get(definition.id) ?? `${this.manifest.id}:${definition.id}`;
+			const command = (commandsApi as any).commands?.[fullId];
+			if (command) {
+				command.name = this.i18n.translate(definition.nameKey);
+				if (typeof (commandsApi as any).updateCommand === 'function') {
+					(commandsApi as any).updateCommand(fullId, command);
 				}
 			}
-		});
-
+		}
 	}
 
 	// Helper method to create or activate a view of specific type

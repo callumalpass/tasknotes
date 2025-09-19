@@ -1373,7 +1373,31 @@ export const en: TranslationTree = {
         }
     },
     notices: {
-        languageChanged: 'Language changed to {language}.'
+        languageChanged: 'Language changed to {language}.',
+        exportTasksFailed: 'Failed to export tasks as ICS file'
+    },
+    commands: {
+        openCalendarView: 'Open mini calendar view',
+        openAdvancedCalendarView: 'Open advanced calendar view',
+        openTasksView: 'Open tasks view',
+        openNotesView: 'Open notes view',
+        openAgendaView: 'Open agenda view',
+        openPomodoroView: 'Open pomodoro timer',
+        openKanbanView: 'Open kanban board',
+        openPomodoroStats: 'Open pomodoro statistics',
+        openStatisticsView: 'Open task & project statistics',
+        createNewTask: 'Create new task',
+        convertToTaskNote: 'Convert task to TaskNote',
+        convertAllTasksInNote: 'Convert all tasks in note',
+        insertTaskNoteLink: 'Insert tasknote link',
+        createInlineTask: 'Create new inline task',
+        quickActionsCurrentTask: 'Quick actions for current task',
+        goToTodayNote: "Go to today's note",
+        startPomodoro: 'Start pomodoro timer',
+        stopPomodoro: 'Stop pomodoro timer',
+        pauseResumePomodoro: 'Pause/resume pomodoro timer',
+        refreshCache: 'Refresh cache',
+        exportAllTasksIcs: 'Export all tasks as ICS file'
     },
     modals: {
         task: {
