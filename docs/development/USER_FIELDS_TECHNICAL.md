@@ -8,7 +8,7 @@ User Fields extend TaskNotes' filtering system by allowing users to define custo
 
 ### Core Components
 
-**Settings Interface** (`src/settings/settings.ts`)
+**Settings Interface** (`src/settings/TaskNotesSettingTab.ts`)
 - User field configuration UI in Advanced Settings
 - Real-time validation and field management
 - Immediate filter option refresh on changes

@@ -16,7 +16,7 @@ export class MigrationModal extends Modal {
         super(app);
         this.migrationService = migrationService;
         this.plugin = plugin;
-        this.translate = plugin.i18n.translate;
+        this.translate = plugin.i18n.translate.bind(plugin.i18n);
     }
 
     async onOpen() {

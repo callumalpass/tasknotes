@@ -2,7 +2,7 @@ import { TranslationTree } from '../types';
 
 export const fr: TranslationTree = {
     common: {
-        appName: 'TaskNotes',
+        appName: 'Notes de tâches',
         cancel: 'Annuler',
         confirm: 'Confirmer',
         close: 'Fermer',
@@ -39,7 +39,7 @@ export const fr: TranslationTree = {
     },
     views: {
         agenda: {
-            title: 'Agenda',
+            title: 'Agenda quotidien',
             today: 'Aujourd\'hui',
             refreshCalendars: 'Actualiser les calendriers',
             expandAllDays: 'Déplier tous les jours',
@@ -61,7 +61,7 @@ export const fr: TranslationTree = {
             noTasksFound: 'Aucune tâche trouvée pour les filtres sélectionnés.'
         },
         notes: {
-            title: 'Notes',
+            title: 'Bloc-notes',
             refreshButton: 'Actualisation...',
             notices: {
                 indexingDisabled: 'Indexation des notes désactivée'
@@ -77,7 +77,7 @@ export const fr: TranslationTree = {
             title: 'Calendrier avancé'
         },
         kanban: {
-            title: 'Kanban',
+            title: 'Tableau Kanban',
             newTask: 'Nouvelle tâche',
             addCard: '+ Ajouter une carte',
             noTasks: 'Aucune tâche',
@@ -90,9 +90,9 @@ export const fr: TranslationTree = {
             }
         },
         pomodoro: {
-            title: 'Pomodoro',
+            title: 'Sessions Pomodoro',
             status: {
-                focus: 'Focus',
+                focus: 'Concentration',
                 ready: 'Prêt à démarrer',
                 paused: 'En pause',
                 working: 'En travail',
@@ -107,7 +107,7 @@ export const fr: TranslationTree = {
             },
             buttons: {
                 start: 'Démarrer',
-                pause: 'Pause',
+                pause: 'Mettre en pause',
                 stop: 'Arrêter',
                 resume: 'Reprendre',
                 startShortBreak: 'Commencer la pause courte',
@@ -158,15 +158,15 @@ export const fr: TranslationTree = {
                 }
             },
             stats: {
-                pomodoros: 'Pomodoros',
+                pomodoros: 'Sessions',
                 streak: 'Série',
-                minutes: 'Minutes',
+                minutes: 'Minutes totales',
                 average: 'Durée moy.',
                 completion: 'Taux d\'achèvement'
             },
             recents: {
                 empty: 'Aucune session enregistrée pour le moment',
-                duration: '{minutes} min',
+                duration: 'Durée : {minutes} min',
                 status: {
                     completed: 'Terminée',
                     interrupted: 'Interrompue'
@@ -508,7 +508,7 @@ export const fr: TranslationTree = {
                     name: 'Identifier les tâches par',
                     description: 'Choisissez d\'identifier les tâches par tag ou par une propriété frontmatter',
                     options: {
-                        tag: 'Tag',
+                        tag: 'Étiquette',
                         property: 'Propriété'
                     }
                 },
@@ -614,7 +614,7 @@ export const fr: TranslationTree = {
                     weight: 'Poids :'
                 },
                 placeholders: {
-                    value: 'high',
+                    value: 'elevee',
                     label: 'Priorité élevée'
                 },
                 weightLabel: 'Poids : {weight}',
@@ -655,7 +655,7 @@ export const fr: TranslationTree = {
                     archiveTag: 'Tag d\'archive',
                     timeEntries: 'Entrées de temps',
                     completeInstances: 'Instances complètes',
-                    pomodoros: 'Pomodoros',
+                    pomodoros: 'Sessions Pomodoro',
                     icsEventId: 'ID d\'événement ICS',
                     icsEventTag: 'Tag d\'événement ICS',
                     reminders: 'Rappels'
@@ -684,7 +684,7 @@ export const fr: TranslationTree = {
                     text: 'Texte',
                     number: 'Nombre',
                     boolean: 'Booléen',
-                    date: 'Date',
+                    date: 'Date (AAAA-MM-JJ)',
                     list: 'Liste'
                 },
                 defaultNames: {
@@ -720,7 +720,7 @@ export const fr: TranslationTree = {
                     modifiedDate: 'Date de modification',
                     projects: 'Projets',
                     contexts: 'Contextes',
-                    tags: 'Tags'
+                    tags: 'Étiquettes'
                 }
             },
             taskFilenames: {
@@ -920,7 +920,7 @@ export const fr: TranslationTree = {
                 requiredPropertyKey: {
                     name: 'Clé de propriété requise',
                     description: 'Afficher seulement les notes où cette propriété frontmatter correspond à la valeur ci-dessous. Laisser vide pour ignorer.',
-                    placeholder: 'type'
+                    placeholder: 'type-projet'
                 },
                 requiredPropertyValue: {
                     name: 'Valeur de propriété requise',
@@ -1358,9 +1358,9 @@ export const fr: TranslationTree = {
             },
             timeFormats: {
                 justNow: 'À l\'instant',
-                minutesAgo: '{minutes} minute{plural} ago',
-                hoursAgo: '{hours} heure{plural} ago',
-                daysAgo: '{days} jour{plural} ago'
+                minutesAgo: 'il y a {minutes} minute{plural}',
+                hoursAgo: 'il y a {hours} heure{plural}',
+                daysAgo: 'il y a {days} jour{plural}'
             }
         }
     },
@@ -1380,8 +1380,8 @@ export const fr: TranslationTree = {
             projectsRemoveTooltip: 'Retirer le projet',
             contextsLabel: 'Contextes',
             contextsPlaceholder: 'contexte1, contexte2',
-            tagsLabel: 'Tags',
-            tagsPlaceholder: 'tag1, tag2',
+            tagsLabel: 'Étiquettes',
+            tagsPlaceholder: 'etiquette1, etiquette2',
             timeEstimateLabel: 'Estimation (minutes)',
             timeEstimatePlaceholder: '30',
             customFieldsLabel: 'Champs personnalisés',
@@ -1511,9 +1511,9 @@ export const fr: TranslationTree = {
     contextMenus: {
         task: {
             status: 'Statut',
-            statusSelected: '✓ {label}',
+            statusSelected: 'Statut sélectionné : {label}',
             priority: 'Priorité',
-            prioritySelected: '✓ {label}',
+            prioritySelected: 'Priorité sélectionnée : {label}',
             dueDate: 'Échéance',
             scheduledDate: 'Date planifiée',
             reminders: 'Rappels',
@@ -1609,7 +1609,7 @@ export const fr: TranslationTree = {
                 calendar: '**Calendrier :** {value}',
                 date: '**Date et heure :** {value}',
                 location: '**Lieu :** {value}',
-                descriptionHeading: '### Description',
+                descriptionHeading: '### Détails',
                 url: '**URL :** {value}',
                 at: ' à {time}'
             }
@@ -1629,12 +1629,12 @@ export const fr: TranslationTree = {
                 nextMonth: 'Le mois prochain'
             },
             weekdaysLabel: 'Jours de la semaine',
-            selected: '✓ {label}',
+            selected: 'Date sélectionnée : {label}',
             pickDateTime: 'Choisir date et heure…',
             clearDate: 'Effacer la date',
             modal: {
                 title: 'Définir date et heure',
-                dateLabel: 'Date',
+                dateLabel: 'Date (AAAA-MM-JJ)',
                 timeLabel: 'Heure (optionnel)',
                 select: 'Sélectionner'
             }
@@ -1805,7 +1805,7 @@ export const fr: TranslationTree = {
                 priority: 'Priorité',
                 title: 'Titre',
                 createdDate: 'Date de création',
-                tags: 'Tags',
+                tags: 'Étiquettes',
                 ascending: 'Croissant',
                 descending: 'Décroissant'
             },
@@ -1817,7 +1817,7 @@ export const fr: TranslationTree = {
                 project: 'Projet',
                 dueDate: 'Date d\'échéance',
                 scheduledDate: 'Date planifiée',
-                tags: 'Tags'
+                tags: 'Étiquettes'
             }
         }
     },
@@ -1840,7 +1840,7 @@ export const fr: TranslationTree = {
                 modifiedDate: 'Date de modification',
                 projects: 'Projets',
                 contexts: 'Contextes',
-                tags: 'Tags'
+                tags: 'Étiquettes'
             }
         },
         reminderContextMenu: {

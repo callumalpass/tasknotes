@@ -23,7 +23,7 @@ export class RecurrenceContextMenu {
     constructor(options: RecurrenceContextMenuOptions) {
         this.menu = new Menu();
         this.options = options;
-        this.translate = options.plugin.i18n.translate;
+        this.translate = options.plugin.i18n.translate.bind(options.plugin.i18n);
         this.buildMenu();
     }
 

@@ -16,7 +16,7 @@ export class TaskSelectorModal extends FuzzySuggestModal<TaskInfo> {
         this.plugin = plugin;
         this.tasks = tasks;
         this.onChooseTask = onChooseTask;
-        this.translate = plugin.i18n.translate;
+        this.translate = plugin.i18n.translate.bind(plugin.i18n);
         
         this.setPlaceholder(this.translate('modals.taskSelector.placeholder'));
         this.setInstructions([

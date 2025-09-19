@@ -30,7 +30,7 @@ describe('I18nService', () => {
             getSystemLocale: () => 'fr'
         });
         expect(i18n.getCurrentLocale()).toBe('fr');
-        expect(i18n.translate('views.notes.title')).toBe('Notes');
+        expect(i18n.translate('views.notes.title')).toBe('Bloc-notes');
     });
 
     it('exposes available locales from resources', () => {

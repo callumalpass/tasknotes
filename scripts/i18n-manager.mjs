@@ -117,6 +117,25 @@ function getAvailableLocales() {
 
 // --- Commands ---
 
+function normalizeStateEntry(entry) {
+    if (!entry) {
+        return { source: '', translation: '' };
+    }
+
+    if (typeof entry === 'string') {
+        return { source: entry, translation: '' };
+    }
+
+    if (typeof entry === 'object') {
+        return {
+            source: entry.source ?? '',
+            translation: entry.translation ?? ''
+        };
+    }
+
+    return { source: '', translation: '' };
+}
+
 /** `sync`: Updates manifest and state files. */
 async function sync() {
     console.log('Syncing i18n files...');
@@ -158,23 +177,27 @@ async function sync() {
 
             if (translatedValue === undefined) {
                 // Key is missing from translation file
-                newState[locale][key] = ''; // Mark as untranslated
-            } else if (translatedValue === sourceMap[key]) {
-                // Value is identical to source, likely untranslated
-                newState[locale][key] = ''; // Mark as untranslated
-            } else {
-                // Check if the translation is stale
-                const previousStateHash = currentState[locale]?.[key];
-                if (previousStateHash === sourceHash) {
-                    // Translation is up-to-date
-                    newState[locale][key] = sourceHash;
-                } else {
-                    // Translation exists but might be stale. We assume it's stale.
-                    // A more advanced system might check if the translation itself has changed.
-                    // For now, we preserve the old hash to signify it's stale.
-                    newState[locale][key] = previousStateHash || '';
-                }
+                newState[locale][key] = null;
+                continue;
             }
+
+            const translationHash = hash(translatedValue);
+            const previousEntry = normalizeStateEntry(currentState[locale]?.[key]);
+
+            let confirmedSource = previousEntry.source;
+
+            if (previousEntry.source === sourceHash) {
+                confirmedSource = sourceHash;
+            } else if (previousEntry.translation && previousEntry.translation !== translationHash) {
+                confirmedSource = sourceHash;
+            } else if (!previousEntry.source) {
+                confirmedSource = sourceHash;
+            }
+
+            newState[locale][key] = {
+                source: confirmedSource,
+                translation: translationHash
+            };
         }
     }
     saveJson(STATE_PATH, newState);
@@ -202,13 +225,13 @@ async function verify() {
 
         for (const key in manifest) {
             const sourceHash = manifest[key];
-            const stateHash = state[locale]?.[key];
+            const entry = normalizeStateEntry(state[locale]?.[key]);
 
             localeStats[locale].total++;
 
-            if (!stateHash || stateHash === '') {
+            if (!state[locale]?.[key] || !entry.translation) {
                 missingTranslations.push({ locale, key });
-            } else if (sourceHash !== stateHash) {
+            } else if (entry.source !== sourceHash) {
                 staleTranslations.push({ locale, key });
                 localeStats[locale].stale++;
             } else {
@@ -298,10 +321,10 @@ async function status() {
 
         for (const key in manifest) {
             const sourceHash = manifest[key];
-            const stateHash = state[locale]?.[key];
+            const entry = normalizeStateEntry(state[locale]?.[key]);
 
-            if (stateHash && stateHash !== '') {
-                if (sourceHash === stateHash) {
+            if (entry.translation) {
+                if (entry.source === sourceHash) {
                     translated++;
                 } else {
                     stale++;

@@ -29,7 +29,7 @@ export class UnscheduledTasksSelectorModal extends FuzzySuggestModal<TaskInfo> {
         this.plugin = plugin;
         this.onScheduleTask = onScheduleTask;
         this.defaultScheduleOptions = defaultScheduleOptions;
-        this.translate = plugin.i18n.translate;
+        this.translate = plugin.i18n.translate.bind(plugin.i18n);
         
         this.setPlaceholder(this.translate('modals.unscheduledTasksSelector.placeholder'));
         this.setInstructions([
