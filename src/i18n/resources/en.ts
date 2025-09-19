@@ -291,6 +291,983 @@ export const en: TranslationTree = {
             recurringSection: {
                 header: 'Recurring Tasks'
             }
+        },
+        defaults: {
+            header: {
+                basicDefaults: 'Basic Defaults',
+                dateDefaults: 'Date Defaults',
+                defaultReminders: 'Default reminders',
+                bodyTemplate: 'Body Template',
+                instantTaskConversion: 'Instant Task Conversion'
+            },
+            description: {
+                basicDefaults: 'Set default values for new tasks to speed up task creation.',
+                dateDefaults: 'Set default due and scheduled dates for new tasks.',
+                defaultReminders: 'Configure default reminders that will be added to new tasks.',
+                bodyTemplate: 'Configure a template file to use for new task content.',
+                instantTaskConversion: 'Configure behavior when converting text to tasks instantly.'
+            },
+            basicDefaults: {
+                defaultStatus: {
+                    name: 'Default status',
+                    description: 'Default status for new tasks'
+                },
+                defaultPriority: {
+                    name: 'Default priority',
+                    description: 'Default priority for new tasks'
+                },
+                defaultContexts: {
+                    name: 'Default contexts',
+                    description: 'Comma-separated list of default contexts (e.g., @home, @work)',
+                    placeholder: '@home, @work'
+                },
+                defaultTags: {
+                    name: 'Default tags',
+                    description: 'Comma-separated list of default tags (without #)',
+                    placeholder: 'important, urgent'
+                },
+                defaultProjects: {
+                    name: 'Default projects',
+                    description: 'Default project links for new tasks',
+                    selectButton: 'Select Projects',
+                    selectTooltip: 'Choose project notes to link by default',
+                    removeTooltip: 'Remove {name} from default projects'
+                },
+                useParentNoteAsProject: {
+                    name: 'Use parent note as project during instant conversion',
+                    description: 'Automatically link the parent note as a project when using instant task conversion'
+                },
+                defaultTimeEstimate: {
+                    name: 'Default time estimate',
+                    description: 'Default time estimate in minutes (0 = no default)',
+                    placeholder: '60'
+                },
+                defaultRecurrence: {
+                    name: 'Default recurrence',
+                    description: 'Default recurrence pattern for new tasks'
+                }
+            },
+            dateDefaults: {
+                defaultDueDate: {
+                    name: 'Default due date',
+                    description: 'Default due date for new tasks'
+                },
+                defaultScheduledDate: {
+                    name: 'Default scheduled date',
+                    description: 'Default scheduled date for new tasks'
+                }
+            },
+            reminders: {
+                addReminder: {
+                    name: 'Add default reminder',
+                    description: 'Create a new default reminder that will be added to all new tasks',
+                    buttonText: 'Add reminder'
+                },
+                emptyState: 'No default reminders configured. Add a reminder to automatically notify you about new tasks.',
+                emptyStateButton: 'Add Reminder',
+                reminderDescription: 'Reminder description',
+                unnamedReminder: 'Unnamed Reminder',
+                deleteTooltip: 'Delete reminder',
+                fields: {
+                    description: 'Description:',
+                    type: 'Type:',
+                    offset: 'Offset:',
+                    unit: 'Unit:',
+                    direction: 'Direction:',
+                    relatedTo: 'Related to:',
+                    date: 'Date:',
+                    time: 'Time:'
+                },
+                types: {
+                    relative: 'Relative (before/after task dates)',
+                    absolute: 'Absolute (specific date/time)'
+                },
+                units: {
+                    minutes: 'minutes',
+                    hours: 'hours',
+                    days: 'days'
+                },
+                directions: {
+                    before: 'before',
+                    after: 'after'
+                },
+                relatedTo: {
+                    due: 'due date',
+                    scheduled: 'scheduled date'
+                }
+            },
+            bodyTemplate: {
+                useBodyTemplate: {
+                    name: 'Use body template',
+                    description: 'Use a template file for task body content'
+                },
+                bodyTemplateFile: {
+                    name: 'Body template file',
+                    description: 'Path to template file for task body content. Supports template variables like {{title}}, {{date}}, {{time}}, {{priority}}, {{status}}, etc.',
+                    placeholder: 'Templates/Task Template.md',
+                    ariaLabel: 'Path to body template file'
+                },
+                variablesHeader: 'Template variables:',
+                variables: {
+                    title: '{{title}} - Task title',
+                    details: '{{details}} - User-provided details from modal',
+                    date: '{{date}} - Current date (YYYY-MM-DD)',
+                    time: '{{time}} - Current time (HH:MM)',
+                    priority: '{{priority}} - Task priority',
+                    status: '{{status}} - Task status',
+                    contexts: '{{contexts}} - Task contexts',
+                    tags: '{{tags}} - Task tags',
+                    projects: '{{projects}} - Task projects'
+                }
+            },
+            instantConversion: {
+                useDefaultsOnInstantConvert: {
+                    name: 'Use task defaults on instant convert',
+                    description: 'Apply default task settings when converting text to tasks instantly'
+                }
+            },
+            options: {
+                noDefault: 'No default',
+                none: 'None',
+                today: 'Today',
+                tomorrow: 'Tomorrow',
+                nextWeek: 'Next week',
+                daily: 'Daily',
+                weekly: 'Weekly',
+                monthly: 'Monthly',
+                yearly: 'Yearly'
+            }
+        },
+        general: {
+            taskStorage: {
+                header: 'Task Storage',
+                description: 'Configure where tasks are stored and how they are identified.',
+                defaultFolder: {
+                    name: 'Default tasks folder',
+                    description: 'Default location for new tasks'
+                },
+                moveArchived: {
+                    name: 'Move archived tasks to folder',
+                    description: 'Automatically move archived tasks to an archive folder'
+                },
+                archiveFolder: {
+                    name: 'Archive folder',
+                    description: 'Folder to move tasks to when archived'
+                }
+            },
+            taskIdentification: {
+                header: 'Task Identification',
+                description: 'Choose how TaskNotes identifies notes as tasks.',
+                identifyBy: {
+                    name: 'Identify tasks by',
+                    description: 'Choose whether to identify tasks by tag or by a frontmatter property',
+                    options: {
+                        tag: 'Tag',
+                        property: 'Property'
+                    }
+                },
+                taskTag: {
+                    name: 'Task tag',
+                    description: 'Tag that identifies notes as tasks (without #)'
+                },
+                taskProperty: {
+                    name: 'Task property name',
+                    description: 'The frontmatter property name (e.g., "category")'
+                },
+                taskPropertyValue: {
+                    name: 'Task property value',
+                    description: 'The value that identifies a note as a task (e.g., "task")'
+                }
+            },
+            folderManagement: {
+                header: 'Folder Management',
+                excludedFolders: {
+                    name: 'Excluded folders',
+                    description: 'Comma-separated list of folders to exclude from Notes tab'
+                }
+            },
+            taskInteraction: {
+                header: 'Task Interaction',
+                description: 'Configure how clicking on tasks behaves.',
+                singleClick: {
+                    name: 'Single-click action',
+                    description: 'Action performed when single-clicking a task card'
+                },
+                doubleClick: {
+                    name: 'Double-click action',
+                    description: 'Action performed when double-clicking a task card'
+                },
+                actions: {
+                    edit: 'Edit task',
+                    openNote: 'Open note',
+                    none: 'No action'
+                }
+            }
+        },
+        taskProperties: {
+            taskStatuses: {
+                header: 'Task Statuses',
+                description: 'Customize the status options available for your tasks. These statuses control the task lifecycle and determine when tasks are considered complete.',
+                howTheyWork: {
+                    title: 'How statuses work:',
+                    value: 'Value: The internal identifier stored in your task files (e.g., "in-progress")',
+                    label: 'Label: The display name shown in the interface (e.g., "In Progress")',
+                    color: 'Color: Visual indicator color for the status dot and badges',
+                    completed: 'Completed: When checked, tasks with this status are considered finished and may be filtered differently',
+                    autoArchive: 'Auto-archive: When enabled, tasks will be automatically archived after the specified delay (1-1440 minutes)',
+                    orderNote: 'The order below determines the sequence when cycling through statuses by clicking on task status badges.'
+                },
+                addNew: {
+                    name: 'Add new status',
+                    description: 'Create a new status option for your tasks',
+                    buttonText: 'Add status'
+                },
+                validationNote: 'Note: You must have at least 2 statuses, and at least one status must be marked as "Completed".',
+                emptyState: 'No custom statuses configured. Add a status to get started.',
+                emptyStateButton: 'Add Status',
+                fields: {
+                    value: 'Value:',
+                    label: 'Label:',
+                    color: 'Color:',
+                    completed: 'Completed:',
+                    autoArchive: 'Auto-archive:',
+                    delayMinutes: 'Delay (minutes):'
+                },
+                placeholders: {
+                    value: 'in-progress',
+                    label: 'In Progress'
+                },
+                badges: {
+                    completed: 'Completed'
+                },
+                deleteConfirm: 'Are you sure you want to delete the status "{label}"?'
+            },
+            taskPriorities: {
+                header: 'Task Priorities',
+                description: 'Customize the priority levels available for your tasks. Priority weights determine sorting order and visual hierarchy in your task views.',
+                howTheyWork: {
+                    title: 'How priorities work:',
+                    value: 'Value: The internal identifier stored in your task files (e.g., "high")',
+                    label: 'Display Label: The display name shown in the interface (e.g., "High Priority")',
+                    color: 'Color: Visual indicator color for the priority dot and badges',
+                    weight: 'Weight: Numeric value for sorting (higher weights appear first in lists)',
+                    weightNote: 'Tasks are automatically sorted by priority weight in descending order (highest weight first). Weights can be any positive number.'
+                },
+                addNew: {
+                    name: 'Add new priority',
+                    description: 'Create a new priority level for your tasks',
+                    buttonText: 'Add priority'
+                },
+                validationNote: 'Note: You must have at least 1 priority. Higher weights take precedence in sorting and visual hierarchy.',
+                emptyState: 'No custom priorities configured. Add a priority to get started.',
+                emptyStateButton: 'Add Priority',
+                fields: {
+                    value: 'Value:',
+                    label: 'Label:',
+                    color: 'Color:',
+                    weight: 'Weight:'
+                },
+                placeholders: {
+                    value: 'high',
+                    label: 'High Priority'
+                },
+                weightLabel: 'Weight: {weight}',
+                deleteConfirm: 'You must have at least one priority',
+                deleteTooltip: 'Delete priority'
+            },
+            fieldMapping: {
+                header: 'Field Mapping',
+                warning: '⚠️ Warning: TaskNotes will read AND write using these property names. Changing these after creating tasks may cause inconsistencies.',
+                description: 'Configure which frontmatter properties TaskNotes should use for each field.',
+                resetButton: {
+                    name: 'Reset field mappings',
+                    description: 'Reset all field mappings to default values',
+                    buttonText: 'Reset to Defaults'
+                },
+                notices: {
+                    resetSuccess: 'Field mappings reset to defaults',
+                    resetFailure: 'Failed to reset field mappings',
+                    updateFailure: 'Failed to update field mapping for {label}. Please try again.'
+                },
+                table: {
+                    fieldHeader: 'TaskNotes field',
+                    propertyHeader: 'Your property name'
+                },
+                fields: {
+                    title: 'Title',
+                    status: 'Status',
+                    priority: 'Priority',
+                    due: 'Due date',
+                    scheduled: 'Scheduled date',
+                    contexts: 'Contexts',
+                    projects: 'Projects',
+                    timeEstimate: 'Time estimate',
+                    recurrence: 'Recurrence',
+                    dateCreated: 'Created date',
+                    completedDate: 'Completed date',
+                    dateModified: 'Modified date',
+                    archiveTag: 'Archive tag',
+                    timeEntries: 'Time entries',
+                    completeInstances: 'Complete instances',
+                    pomodoros: 'Pomodoros',
+                    icsEventId: 'ICS Event ID',
+                    icsEventTag: 'ICS Event Tag',
+                    reminders: 'Reminders'
+                }
+            },
+            customUserFields: {
+                header: 'Custom User Fields',
+                description: 'Define custom frontmatter properties to appear as type-aware filter options across views. Each row: Display Name, Property Name, Type.',
+                addNew: {
+                    name: 'Add new user field',
+                    description: 'Create a new custom field that will appear in filters and views',
+                    buttonText: 'Add user field'
+                },
+                emptyState: 'No custom user fields configured. Add a field to create custom properties for your tasks.',
+                emptyStateButton: 'Add User Field',
+                fields: {
+                    displayName: 'Display Name:',
+                    propertyKey: 'Property Key:',
+                    type: 'Type:'
+                },
+                placeholders: {
+                    displayName: 'Display Name',
+                    propertyKey: 'property-name'
+                },
+                types: {
+                    text: 'Text',
+                    number: 'Number',
+                    boolean: 'Boolean',
+                    date: 'Date',
+                    list: 'List'
+                },
+                defaultNames: {
+                    unnamedField: 'Unnamed Field',
+                    noKey: 'no-key'
+                },
+                deleteTooltip: 'Delete field'
+            }
+        },
+        appearance: {
+            taskCards: {
+                header: 'Task Cards',
+                description: 'Configure how task cards are displayed across all views.',
+                defaultVisibleProperties: {
+                    name: 'Default visible properties',
+                    description: 'Choose which properties appear on task cards by default.'
+                },
+                propertyGroups: {
+                    coreProperties: 'CORE PROPERTIES',
+                    organization: 'ORGANIZATION',
+                    customProperties: 'CUSTOM PROPERTIES'
+                },
+                properties: {
+                    status: 'Status Dot',
+                    priority: 'Priority Dot',
+                    due: 'Due Date',
+                    scheduled: 'Scheduled Date',
+                    timeEstimate: 'Time Estimate',
+                    totalTrackedTime: 'Total Tracked Time',
+                    recurrence: 'Recurrence',
+                    completedDate: 'Completed Date',
+                    createdDate: 'Created Date',
+                    modifiedDate: 'Modified Date',
+                    projects: 'Projects',
+                    contexts: 'Contexts',
+                    tags: 'Tags'
+                }
+            },
+            taskFilenames: {
+                header: 'Task Filenames',
+                description: 'Configure how task files are named when created.',
+                storeTitleInFilename: {
+                    name: 'Store title in filename',
+                    description: 'Use the task title as the filename. Filename will update when the task title is changed (Recommended).'
+                },
+                filenameFormat: {
+                    name: 'Filename format',
+                    description: 'How task filenames should be generated',
+                    options: {
+                        title: 'Task title (Non-updating)',
+                        zettel: 'Zettelkasten format (YYMMDD + base36 seconds since midnight)',
+                        timestamp: 'Full timestamp (YYYY-MM-DD-HHMMSS)',
+                        custom: 'Custom template'
+                    }
+                },
+                customTemplate: {
+                    name: 'Custom filename template',
+                    description: 'Template for custom filenames. Available variables: {title}, {titleLower}, {titleUpper}, {titleSnake}, {titleKebab}, {titleCamel}, {titlePascal}, {date}, {shortDate}, {time}, {time12}, {time24}, {timestamp}, {dateTime}, {year}, {month}, {monthName}, {monthNameShort}, {day}, {dayName}, {dayNameShort}, {hour}, {hour12}, {minute}, {second}, {milliseconds}, {ms}, {ampm}, {week}, {quarter}, {unix}, {unixMs}, {timezone}, {timezoneShort}, {utcOffset}, {utcOffsetShort}, {utcZ}, {zettel}, {nano}, {priority}, {priorityShort}, {status}, {statusShort}, {dueDate}, {scheduledDate}',
+                    placeholder: '{date}-{title}-{dueDate}',
+                    helpText: 'Note: {dueDate} and {scheduledDate} are in YYYY-MM-DD format and will be empty if not set.'
+                }
+            },
+            displayFormatting: {
+                header: 'Display Formatting',
+                description: 'Configure how dates, times, and other data are displayed across the plugin.',
+                timeFormat: {
+                    name: 'Time format',
+                    description: 'Display time in 12-hour or 24-hour format throughout the plugin',
+                    options: {
+                        twelveHour: '12-hour (AM/PM)',
+                        twentyFourHour: '24-hour'
+                    }
+                }
+            },
+            calendarView: {
+                header: 'Calendar View',
+                description: 'Customize the appearance and behavior of the calendar view.',
+                defaultView: {
+                    name: 'Default view',
+                    description: 'The calendar view shown when opening the calendar tab',
+                    options: {
+                        monthGrid: 'Month Grid',
+                        weekTimeline: 'Week Timeline',
+                        dayTimeline: 'Day Timeline',
+                        yearView: 'Year View',
+                        customMultiDay: 'Custom Multi-Day'
+                    }
+                },
+                customDayCount: {
+                    name: 'Custom view day count',
+                    description: 'Number of days to show in custom multi-day view',
+                    placeholder: '3'
+                },
+                firstDayOfWeek: {
+                    name: 'First day of week',
+                    description: 'Which day should be the first column in week views'
+                },
+                showWeekends: {
+                    name: 'Show weekends',
+                    description: 'Display weekends in calendar views'
+                },
+                showWeekNumbers: {
+                    name: 'Show week numbers',
+                    description: 'Display week numbers in calendar views'
+                },
+                showTodayHighlight: {
+                    name: 'Show today highlight',
+                    description: 'Highlight the current day in calendar views'
+                },
+                showCurrentTimeIndicator: {
+                    name: 'Show current time indicator',
+                    description: 'Display a line showing the current time in timeline views'
+                },
+                selectionMirror: {
+                    name: 'Selection mirror',
+                    description: 'Show a visual preview while dragging to select time ranges'
+                },
+                calendarLocale: {
+                    name: 'Calendar locale',
+                    description: 'Calendar locale for date formatting and calendar system (e.g., "en", "fa" for Farsi/Persian, "de" for German). Leave empty to auto-detect from browser.',
+                    placeholder: 'Auto-detect'
+                }
+            },
+            defaultEventVisibility: {
+                header: 'Default Event Visibility',
+                description: 'Configure which event types are visible by default when opening the Advanced Calendar. Users can still toggle these on/off in the calendar view.',
+                showScheduledTasks: {
+                    name: 'Show scheduled tasks',
+                    description: 'Display tasks with scheduled dates by default'
+                },
+                showDueDates: {
+                    name: 'Show due dates',
+                    description: 'Display task due dates by default'
+                },
+                showDueWhenScheduled: {
+                    name: 'Show due dates when scheduled',
+                    description: 'Display due dates even for tasks that already have scheduled dates'
+                },
+                showTimeEntries: {
+                    name: 'Show time entries',
+                    description: 'Display completed time tracking entries by default'
+                },
+                showRecurringTasks: {
+                    name: 'Show recurring tasks',
+                    description: 'Display recurring task instances by default'
+                },
+                showICSEvents: {
+                    name: 'Show ICS events',
+                    description: 'Display events from ICS subscriptions by default'
+                }
+            },
+            timeSettings: {
+                header: 'Time Settings',
+                description: 'Configure time-related display settings for timeline views.',
+                timeSlotDuration: {
+                    name: 'Time slot duration',
+                    description: 'Duration of each time slot in timeline views',
+                    options: {
+                        fifteenMinutes: '15 minutes',
+                        thirtyMinutes: '30 minutes',
+                        sixtyMinutes: '60 minutes'
+                    }
+                },
+                startTime: {
+                    name: 'Start time',
+                    description: 'Earliest time shown in timeline views (HH:MM format)',
+                    placeholder: '06:00'
+                },
+                endTime: {
+                    name: 'End time',
+                    description: 'Latest time shown in timeline views (HH:MM format)',
+                    placeholder: '22:00'
+                },
+                initialScrollTime: {
+                    name: 'Initial scroll time',
+                    description: 'Time to scroll to when opening timeline views (HH:MM format)',
+                    placeholder: '09:00'
+                }
+            },
+            uiElements: {
+                header: 'UI Elements',
+                description: 'Configure the display of various UI elements.',
+                showTrackedTasksInStatusBar: {
+                    name: 'Show tracked tasks in status bar',
+                    description: 'Display currently tracked tasks in Obsidian\'s status bar'
+                },
+                showProjectSubtasksWidget: {
+                    name: 'Show project subtasks widget',
+                    description: 'Display a widget showing subtasks for the current project note'
+                },
+                projectSubtasksPosition: {
+                    name: 'Project subtasks position',
+                    description: 'Where to position the project subtasks widget',
+                    options: {
+                        top: 'Top of note',
+                        bottom: 'Bottom of note'
+                    }
+                },
+                showExpandableSubtasks: {
+                    name: 'Show expandable subtasks',
+                    description: 'Allow expanding/collapsing subtask sections in task cards'
+                },
+                subtaskChevronPosition: {
+                    name: 'Subtask chevron position',
+                    description: 'Position of expand/collapse chevrons in task cards',
+                    options: {
+                        left: 'Left side',
+                        right: 'Right side'
+                    }
+                },
+                viewsButtonAlignment: {
+                    name: 'Views button alignment',
+                    description: 'Alignment of the views/filters button in the task interface',
+                    options: {
+                        left: 'Left side',
+                        right: 'Right side'
+                    }
+                }
+            },
+            projectAutosuggest: {
+                header: 'Project Autosuggest',
+                description: 'Customize how project suggestions display during task creation.',
+                requiredTags: {
+                    name: 'Required tags',
+                    description: 'Show only notes with any of these tags (comma-separated). Leave empty to show all notes.',
+                    placeholder: 'project, active, important'
+                },
+                includeFolders: {
+                    name: 'Include folders',
+                    description: 'Show only notes in these folders (comma-separated paths). Leave empty to show all folders.',
+                    placeholder: 'Projects/, Work/Active, Personal'
+                },
+                requiredPropertyKey: {
+                    name: 'Required property key',
+                    description: 'Show only notes where this frontmatter property matches the value below. Leave empty to ignore.',
+                    placeholder: 'type'
+                },
+                requiredPropertyValue: {
+                    name: 'Required property value',
+                    description: 'Only notes where the property equals this value are suggested. Leave empty to require the property to exist.',
+                    placeholder: 'project'
+                },
+                customizeDisplay: {
+                    name: 'Customize suggestion display',
+                    description: 'Show advanced options to configure how project suggestions appear and what information they display.'
+                },
+                enableFuzzyMatching: {
+                    name: 'Enable fuzzy matching',
+                    description: 'Allow typos and partial matches in project search. May be slower in large vaults.'
+                },
+                displayRowsHelp: 'Configure up to 3 lines of information to show for each project suggestion.',
+                displayRows: {
+                    row1: {
+                        name: 'Row 1',
+                        description: 'Format: {property|flags}. Properties: title, aliases, file.path, file.parent. Flags: n(Label) shows label, s makes searchable. Example: {title|n(Title)|s}',
+                        placeholder: '{title|n(Title)}'
+                    },
+                    row2: {
+                        name: 'Row 2 (optional)',
+                        description: 'Common patterns: {aliases|n(Aliases)}, {file.parent|n(Folder)}, literal:Custom Text',
+                        placeholder: '{aliases|n(Aliases)}'
+                    },
+                    row3: {
+                        name: 'Row 3 (optional)',
+                        description: 'Additional info like {file.path|n(Path)} or custom frontmatter fields',
+                        placeholder: '{file.path|n(Path)}'
+                    }
+                },
+                quickReference: {
+                    header: 'Quick Reference',
+                    properties: 'Available properties: title, aliases, file.path, file.parent, or any frontmatter field',
+                    labels: 'Add labels: {title|n(Title)} → "Title: My Project"',
+                    searchable: 'Make searchable: {description|s} includes description in + search',
+                    staticText: 'Static text: literal:My Custom Label',
+                    alwaysSearchable: 'Filename, title, and aliases are always searchable by default.'
+                }
+            }
+        },
+        integrations: {
+            basesIntegration: {
+                header: 'Bases integration',
+                description: 'Configure integration with the Obsidian Bases plugin. This is an experimental feature, and currently relies on undocumented Obsidian APIs. Behaviour may change or break.',
+                enable: {
+                    name: 'Enable Bases integration',
+                    description: 'Enable TaskNotes views to be used within Obsidian Bases plugin. Bases plugin must be enabled for this to work.'
+                },
+                notices: {
+                    enabled: 'Bases integration enabled. Please restart Obsidian to complete the setup.',
+                    disabled: 'Bases integration disabled. Please restart Obsidian to complete the removal.'
+                }
+            },
+            calendarSubscriptions: {
+                header: 'Calendar subscriptions',
+                description: 'Subscribe to external calendars via ICS/iCal URLs to view events alongside your tasks.',
+                defaultNoteTemplate: {
+                    name: 'Default note template',
+                    description: 'Path to template file for notes created from ICS events',
+                    placeholder: 'Templates/Event Template.md'
+                },
+                defaultNoteFolder: {
+                    name: 'Default note folder',
+                    description: 'Folder for notes created from ICS events',
+                    placeholder: 'Calendar/Events'
+                },
+                filenameFormat: {
+                    name: 'ICS note filename format',
+                    description: 'How filenames are generated for notes created from ICS events',
+                    options: {
+                        title: 'Event title',
+                        zettel: 'Zettelkasten format',
+                        timestamp: 'Timestamp',
+                        custom: 'Custom template'
+                    }
+                },
+                customTemplate: {
+                    name: 'Custom ICS filename template',
+                    description: 'Template for custom ICS event filenames',
+                    placeholder: '{date}-{title}'
+                }
+            },
+            subscriptionsList: {
+                header: 'Calendar subscriptions list',
+                addSubscription: {
+                    name: 'Add Calendar Subscription',
+                    description: 'Add a new calendar subscription from ICS/iCal URL or local file',
+                    buttonText: 'Add Subscription'
+                },
+                refreshAll: {
+                    name: 'Refresh all subscriptions',
+                    description: 'Manually refresh all enabled calendar subscriptions',
+                    buttonText: 'Refresh All'
+                },
+                newCalendarName: 'New Calendar',
+                emptyState: 'No calendar subscriptions configured. Add a subscription to sync external calendars.',
+                notices: {
+                    addSuccess: 'New calendar subscription added - please configure the details',
+                    addFailure: 'Failed to add subscription',
+                    serviceUnavailable: 'ICS subscription service not available',
+                    refreshSuccess: 'All calendar subscriptions refreshed successfully',
+                    refreshFailure: 'Failed to refresh some calendar subscriptions',
+                    updateFailure: 'Failed to update subscription',
+                    deleteSuccess: 'Deleted subscription "{name}"',
+                    deleteFailure: 'Failed to delete subscription',
+                    enableFirst: 'Enable the subscription first',
+                    refreshSubscriptionSuccess: 'Refreshed "{name}"',
+                    refreshSubscriptionFailure: 'Failed to refresh subscription'
+                },
+                labels: {
+                    enabled: 'Enabled:',
+                    name: 'Name:',
+                    type: 'Type:',
+                    url: 'URL:',
+                    filePath: 'File Path:',
+                    color: 'Color:',
+                    refreshMinutes: 'Refresh (min):'
+                },
+                typeOptions: {
+                    remote: 'Remote URL',
+                    local: 'Local File'
+                },
+                placeholders: {
+                    calendarName: 'Calendar name',
+                    url: 'ICS/iCal URL',
+                    filePath: 'Local file path (e.g., Calendar.ics)',
+                    localFile: 'Calendar.ics'
+                },
+                statusLabels: {
+                    enabled: 'Enabled',
+                    disabled: 'Disabled',
+                    remote: 'Remote',
+                    localFile: 'Local File',
+                    remoteCalendar: 'Remote Calendar',
+                    localFileCalendar: 'Local File',
+                    synced: 'Synced {timeAgo}',
+                    error: 'Error'
+                },
+                actions: {
+                    refreshNow: 'Refresh Now',
+                    deleteSubscription: 'Delete subscription'
+                },
+                confirmations: {
+                    deleteTitle: 'Delete Subscription',
+                    deleteMessage: 'Are you sure you want to delete the subscription "{name}"? This action cannot be undone.',
+                    deleteConfirm: 'Delete',
+                    deleteCancel: 'Cancel'
+                }
+            },
+            autoExport: {
+                header: 'Automatic ICS export',
+                description: 'Automatically export all your tasks to an ICS file.',
+                enable: {
+                    name: 'Enable automatic export',
+                    description: 'Automatically keep an ICS file updated with all your tasks'
+                },
+                filePath: {
+                    name: 'Export file path',
+                    description: 'Path where the ICS file will be saved (relative to vault root)',
+                    placeholder: 'tasknotes-calendar.ics'
+                },
+                interval: {
+                    name: 'Update interval (between 5 and 1440 minutes)',
+                    description: 'How often to update the export file',
+                    placeholder: '60'
+                },
+                exportNow: {
+                    name: 'Export now',
+                    description: 'Manually trigger an immediate export',
+                    buttonText: 'Export Now'
+                },
+                status: {
+                    title: 'Export Status:',
+                    lastExport: 'Last export: {time}',
+                    nextExport: 'Next export: {time}',
+                    noExports: 'No exports yet',
+                    notScheduled: 'Not scheduled',
+                    notInitialized: 'Auto export service not initialized - please restart Obsidian'
+                },
+                notices: {
+                    reloadRequired: 'Please reload Obsidian for the automatic export changes to take effect.',
+                    exportSuccess: 'Tasks exported successfully',
+                    exportFailure: 'Export failed - check console for details',
+                    serviceUnavailable: 'Auto export service not available'
+                }
+            },
+            httpApi: {
+                header: 'HTTP API',
+                description: 'Enable HTTP API for external integrations and automations.',
+                enable: {
+                    name: 'Enable HTTP API',
+                    description: 'Start local HTTP server for API access'
+                },
+                port: {
+                    name: 'API port',
+                    description: 'Port number for the HTTP API server',
+                    placeholder: '3000'
+                },
+                authToken: {
+                    name: 'API authentication token',
+                    description: 'Token required for API authentication (leave empty for no auth)',
+                    placeholder: 'your-secret-token'
+                },
+                endpoints: {
+                    header: 'Available API Endpoints',
+                    expandIcon: '▶',
+                    collapseIcon: '▼'
+                }
+            },
+            webhooks: {
+                header: 'Webhooks',
+                description: {
+                    overview: 'Webhooks send real-time notifications to external services when TaskNotes events occur.',
+                    usage: 'Configure webhooks to integrate with automation tools, sync services, or custom applications.'
+                },
+                addWebhook: {
+                    name: 'Add Webhook',
+                    description: 'Register a new webhook endpoint',
+                    buttonText: 'Add Webhook'
+                },
+                emptyState: 'No webhooks configured. Add a webhook to receive real-time notifications.',
+                emptyStateButton: 'Add Webhook',
+                labels: {
+                    active: 'Active:',
+                    url: 'URL:',
+                    events: 'Events:',
+                    transform: 'Transform:'
+                },
+                placeholders: {
+                    url: 'Webhook URL',
+                    noEventsSelected: 'No events selected',
+                    rawPayload: 'Raw payload (no transform)'
+                },
+                statusLabels: {
+                    active: 'Active',
+                    inactive: 'Inactive',
+                    created: 'Created {timeAgo}'
+                },
+                actions: {
+                    editEvents: 'Edit Events',
+                    delete: 'Delete'
+                },
+                notices: {
+                    urlUpdated: 'Webhook URL updated',
+                    enabled: 'Webhook enabled',
+                    disabled: 'Webhook disabled',
+                    created: 'Webhook created successfully',
+                    deleted: 'Webhook deleted',
+                    updated: 'Webhook updated'
+                },
+                confirmations: {
+                    deleteTitle: 'Delete Webhook',
+                    deleteMessage: 'Are you sure you want to delete this webhook?\n\nURL: {url}\n\nThis action cannot be undone.',
+                    deleteConfirm: 'Delete',
+                    deleteCancel: 'Cancel'
+                },
+                events: {
+                    taskCreated: {
+                        label: 'Task Created',
+                        description: 'When new tasks are created'
+                    },
+                    taskUpdated: {
+                        label: 'Task Updated',
+                        description: 'When tasks are modified'
+                    },
+                    taskCompleted: {
+                        label: 'Task Completed',
+                        description: 'When tasks are marked complete'
+                    },
+                    taskDeleted: {
+                        label: 'Task Deleted',
+                        description: 'When tasks are deleted'
+                    },
+                    taskArchived: {
+                        label: 'Task Archived',
+                        description: 'When tasks are archived'
+                    },
+                    taskUnarchived: {
+                        label: 'Task Unarchived',
+                        description: 'When tasks are unarchived'
+                    },
+                    timeStarted: {
+                        label: 'Time Started',
+                        description: 'When time tracking starts'
+                    },
+                    timeStopped: {
+                        label: 'Time Stopped',
+                        description: 'When time tracking stops'
+                    },
+                    pomodoroStarted: {
+                        label: 'Pomodoro Started',
+                        description: 'When pomodoro sessions begin'
+                    },
+                    pomodoroCompleted: {
+                        label: 'Pomodoro Completed',
+                        description: 'When pomodoro sessions finish'
+                    },
+                    pomodoroInterrupted: {
+                        label: 'Pomodoro Interrupted',
+                        description: 'When pomodoro sessions are stopped'
+                    },
+                    recurringCompleted: {
+                        label: 'Recurring Instance Completed',
+                        description: 'When recurring task instances complete'
+                    },
+                    reminderTriggered: {
+                        label: 'Reminder Triggered',
+                        description: 'When task reminders activate'
+                    }
+                },
+                modals: {
+                    secretGenerated: {
+                        title: 'Webhook Secret Generated',
+                        description: 'Your webhook secret has been generated. Save this secret as you won\'t be able to view it again:',
+                        usage: 'Use this secret to verify webhook payloads in your receiving application.',
+                        buttonText: 'Got it'
+                    },
+                    edit: {
+                        title: 'Edit Webhook',
+                        eventsSection: 'Events to subscribe to',
+                        transformSection: 'Transform Configuration (Optional)',
+                        headersSection: 'Headers Configuration',
+                        transformFile: {
+                            name: 'Transform File',
+                            description: 'Path to a .js or .json file in your vault that transforms webhook payloads',
+                            placeholder: 'discord-transform.js'
+                        },
+                        customHeaders: {
+                            name: 'Include custom headers',
+                            description: 'Include TaskNotes headers (event type, signature, delivery ID). Turn off for Discord, Slack, and other services with strict CORS policies.'
+                        },
+                        buttons: {
+                            cancel: 'Cancel',
+                            save: 'Save Changes'
+                        },
+                        notices: {
+                            selectAtLeastOneEvent: 'Please select at least one event'
+                        }
+                    },
+                    add: {
+                        title: 'Add Webhook',
+                        eventsSection: 'Events to subscribe to',
+                        transformSection: 'Transform Configuration (Optional)',
+                        headersSection: 'Headers Configuration',
+                        url: {
+                            name: 'Webhook URL',
+                            description: 'The endpoint where webhook payloads will be sent',
+                            placeholder: 'https://your-service.com/webhook'
+                        },
+                        transformFile: {
+                            name: 'Transform File',
+                            description: 'Path to a .js or .json file in your vault that transforms webhook payloads',
+                            placeholder: 'discord-transform.js'
+                        },
+                        customHeaders: {
+                            name: 'Include custom headers',
+                            description: 'Include TaskNotes headers (event type, signature, delivery ID). Turn off for Discord, Slack, and other services with strict CORS policies.'
+                        },
+                        transformHelp: {
+                            title: 'Transform files allow you to customize webhook payloads:',
+                            jsFiles: '.js files:',
+                            jsDescription: ' Custom JavaScript transforms',
+                            jsonFiles: '.json files:',
+                            jsonDescription: ' Templates with ',
+                            jsonVariable: '${data.task.title}',
+                            leaveEmpty: 'Leave empty:',
+                            leaveEmptyDescription: ' Send raw data',
+                            example: 'Example:',
+                            exampleFile: 'discord-transform.js'
+                        },
+                        buttons: {
+                            cancel: 'Cancel',
+                            add: 'Add Webhook'
+                        },
+                        notices: {
+                            urlRequired: 'Webhook URL is required',
+                            selectAtLeastOneEvent: 'Please select at least one event'
+                        }
+                    }
+                }
+            },
+            otherIntegrations: {
+                header: 'Other plugin integrations',
+                description: 'Configure integrations with other Obsidian plugins.'
+            },
+            timeFormats: {
+                justNow: 'Just now',
+                minutesAgo: '{minutes} minute{plural} ago',
+                hoursAgo: '{hours} hour{plural} ago',
+                daysAgo: '{days} day{plural} ago'
+            }
         }
     },
     notices: {

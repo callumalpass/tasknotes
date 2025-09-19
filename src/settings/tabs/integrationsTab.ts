@@ -1,6 +1,7 @@
 import { Notice, Platform, Modal, Setting, setIcon, App } from 'obsidian';
 import TaskNotesPlugin from '../../main';
 import { WebhookConfig } from '../../types';
+import { TranslationKey } from '../../i18n';
 import { loadAPIEndpoints } from '../../api/loadAPIEndpoints';
 import { 
     createSectionHeader, 
@@ -39,22 +40,22 @@ import {
 /**
  * Helper function to format relative time (e.g., "2 hours ago", "5 minutes ago")
  */
-function getRelativeTime(date: Date): string {
+function getRelativeTime(date: Date, translate: (key: TranslationKey, params?: Record<string, string | number>) => string): string {
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
     const diffSeconds = Math.floor(diffMs / 1000);
     const diffMinutes = Math.floor(diffSeconds / 60);
     const diffHours = Math.floor(diffMinutes / 60);
     const diffDays = Math.floor(diffHours / 24);
-    
+
     if (diffDays > 0) {
-        return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+        return translate('settings.integrations.timeFormats.daysAgo', { days: diffDays, plural: diffDays > 1 ? 's' : '' });
     } else if (diffHours > 0) {
-        return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+        return translate('settings.integrations.timeFormats.hoursAgo', { hours: diffHours, plural: diffHours > 1 ? 's' : '' });
     } else if (diffMinutes > 0) {
-        return `${diffMinutes} minute${diffMinutes > 1 ? 's' : ''} ago`;
+        return translate('settings.integrations.timeFormats.minutesAgo', { minutes: diffMinutes, plural: diffMinutes > 1 ? 's' : '' });
     } else {
-        return 'Just now';
+        return translate('settings.integrations.timeFormats.justNow');
     }
 }
 
@@ -64,14 +65,16 @@ function getRelativeTime(date: Date): string {
 export function renderIntegrationsTab(container: HTMLElement, plugin: TaskNotesPlugin, save: () => void): void {
     container.empty();
 
+    const translate = (key: TranslationKey, params?: Record<string, string | number>) => plugin.i18n.translate(key, params);
+
     // Bases Integration Section
-    createSectionHeader(container, 'Bases integration');
-    createHelpText(container, 'Configure integration with the Obsidian Bases plugin. This is an experimental feature, and currently relies on undocumented Obsidian APIs. Behaviour may change or break. ');
+    createSectionHeader(container, translate('settings.integrations.basesIntegration.header'));
+    createHelpText(container, translate('settings.integrations.basesIntegration.description'));
 
     // Bases toggle
     createToggleSetting(container, {
-        name: 'Enable Bases integration',
-        desc: 'Enable TaskNotes views to be used within Obsidian Bases plugin. Bases plugin must be enabled for this to work.',
+        name: translate('settings.integrations.basesIntegration.enable.name'),
+        desc: translate('settings.integrations.basesIntegration.enable.description'),
         getValue: () => plugin.settings.enableBases,
         setValue: async (value: boolean) => {
             plugin.settings.enableBases = value;
@@ -79,22 +82,22 @@ export function renderIntegrationsTab(container: HTMLElement, plugin: TaskNotesP
             
             // Show notice about restart requirement
             if (value) {
-                new Notice('Bases integration enabled. Please restart Obsidian to complete the setup.');
+                new Notice(translate('settings.integrations.basesIntegration.notices.enabled'));
             } else {
-                new Notice('Bases integration disabled. Please restart Obsidian to complete the removal.');
+                new Notice(translate('settings.integrations.basesIntegration.notices.disabled'));
             }
         }
     });
 
     // Calendar Subscriptions Section (ICS)
-    createSectionHeader(container, 'Calendar subscriptions');
-    createHelpText(container, 'Subscribe to external calendars via ICS/iCal URLs to view events alongside your tasks.');
+    createSectionHeader(container, translate('settings.integrations.calendarSubscriptions.header'));
+    createHelpText(container, translate('settings.integrations.calendarSubscriptions.description'));
 
     // Default settings for ICS integration
     createTextSetting(container, {
-        name: 'Default note template',
-        desc: 'Path to template file for notes created from ICS events',
-        placeholder: 'Templates/Event Template.md',
+        name: translate('settings.integrations.calendarSubscriptions.defaultNoteTemplate.name'),
+        desc: translate('settings.integrations.calendarSubscriptions.defaultNoteTemplate.description'),
+        placeholder: translate('settings.integrations.calendarSubscriptions.defaultNoteTemplate.placeholder'),
         getValue: () => plugin.settings.icsIntegration.defaultNoteTemplate,
         setValue: async (value: string) => {
             plugin.settings.icsIntegration.defaultNoteTemplate = value;
@@ -103,9 +106,9 @@ export function renderIntegrationsTab(container: HTMLElement, plugin: TaskNotesP
     });
 
     createTextSetting(container, {
-        name: 'Default note folder',
-        desc: 'Folder for notes created from ICS events',
-        placeholder: 'Calendar/Events',
+        name: translate('settings.integrations.calendarSubscriptions.defaultNoteFolder.name'),
+        desc: translate('settings.integrations.calendarSubscriptions.defaultNoteFolder.description'),
+        placeholder: translate('settings.integrations.calendarSubscriptions.defaultNoteFolder.placeholder'),
         getValue: () => plugin.settings.icsIntegration.defaultNoteFolder,
         setValue: async (value: string) => {
             plugin.settings.icsIntegration.defaultNoteFolder = value;
@@ -114,13 +117,13 @@ export function renderIntegrationsTab(container: HTMLElement, plugin: TaskNotesP
     });
 
     createDropdownSetting(container, {
-        name: 'ICS note filename format',
-        desc: 'How filenames are generated for notes created from ICS events',
+        name: translate('settings.integrations.calendarSubscriptions.filenameFormat.name'),
+        desc: translate('settings.integrations.calendarSubscriptions.filenameFormat.description'),
         options: [
-            { value: 'title', label: 'Event title' },
-            { value: 'zettel', label: 'Zettelkasten format' },
-            { value: 'timestamp', label: 'Timestamp' },
-            { value: 'custom', label: 'Custom template' }
+            { value: 'title', label: translate('settings.integrations.calendarSubscriptions.filenameFormat.options.title') },
+            { value: 'zettel', label: translate('settings.integrations.calendarSubscriptions.filenameFormat.options.zettel') },
+            { value: 'timestamp', label: translate('settings.integrations.calendarSubscriptions.filenameFormat.options.timestamp') },
+            { value: 'custom', label: translate('settings.integrations.calendarSubscriptions.filenameFormat.options.custom') }
         ],
         getValue: () => plugin.settings.icsIntegration.icsNoteFilenameFormat,
         setValue: async (value: string) => {
@@ -133,9 +136,9 @@ export function renderIntegrationsTab(container: HTMLElement, plugin: TaskNotesP
 
     if (plugin.settings.icsIntegration.icsNoteFilenameFormat === 'custom') {
         createTextSetting(container, {
-            name: 'Custom ICS filename template',
-            desc: 'Template for custom ICS event filenames',
-            placeholder: '{date}-{title}',
+            name: translate('settings.integrations.calendarSubscriptions.customTemplate.name'),
+            desc: translate('settings.integrations.calendarSubscriptions.customTemplate.description'),
+            placeholder: translate('settings.integrations.calendarSubscriptions.customTemplate.placeholder'),
             getValue: () => plugin.settings.icsIntegration.customICSNoteFilenameTemplate,
             setValue: async (value: string) => {
                 plugin.settings.icsIntegration.customICSNoteFilenameTemplate = value;
@@ -145,19 +148,19 @@ export function renderIntegrationsTab(container: HTMLElement, plugin: TaskNotesP
     }
 
     // ICS Subscriptions List - Add proper section header
-    createSectionHeader(container, 'Calendar subscriptions list');
+    createSectionHeader(container, translate('settings.integrations.subscriptionsList.header'));
     const icsContainer = container.createDiv('ics-subscriptions-container');
     renderICSSubscriptionsList(icsContainer, plugin, save);
 
     // Add subscription button
     createButtonSetting(container, {
-        name: 'Add Calendar Subscription',
-        desc: 'Add a new calendar subscription from ICS/iCal URL or local file',
-        buttonText: 'Add Subscription',
+        name: translate('settings.integrations.subscriptionsList.addSubscription.name'),
+        desc: translate('settings.integrations.subscriptionsList.addSubscription.description'),
+        buttonText: translate('settings.integrations.subscriptionsList.addSubscription.buttonText'),
         onClick: async () => {
             // Create a new subscription with temporary values
             const newSubscription = {
-                name: 'New Calendar',
+                name: translate('settings.integrations.subscriptionsList.newCalendarName'),
                 url: '',
                 color: '#6366f1',
                 enabled: false, // Start disabled until user fills in details
@@ -166,52 +169,52 @@ export function renderIntegrationsTab(container: HTMLElement, plugin: TaskNotesP
             };
 
             if (!plugin.icsSubscriptionService) {
-                new Notice('ICS subscription service not available');
+                new Notice(translate('settings.integrations.subscriptionsList.notices.serviceUnavailable'));
                 return;
             }
 
             try {
                 await plugin.icsSubscriptionService.addSubscription(newSubscription);
-                new Notice('New calendar subscription added - please configure the details');
+                new Notice(translate('settings.integrations.subscriptionsList.notices.addSuccess'));
                 // Re-render to show the new subscription card
                 renderICSSubscriptionsList(icsContainer, plugin, save);
             } catch (error) {
                 console.error('Error adding subscription:', error);
-                new Notice('Failed to add subscription');
+                new Notice(translate('settings.integrations.subscriptionsList.notices.addFailure'));
             }
         }
     });
 
     // Refresh all subscriptions button
     createButtonSetting(container, {
-        name: 'Refresh all subscriptions',
-        desc: 'Manually refresh all enabled calendar subscriptions',
-        buttonText: 'Refresh All',
+        name: translate('settings.integrations.subscriptionsList.refreshAll.name'),
+        desc: translate('settings.integrations.subscriptionsList.refreshAll.description'),
+        buttonText: translate('settings.integrations.subscriptionsList.refreshAll.buttonText'),
         onClick: async () => {
             if (plugin.icsSubscriptionService) {
                 try {
                     await plugin.icsSubscriptionService.refreshAllSubscriptions();
-                    new Notice('All calendar subscriptions refreshed successfully');
+                    new Notice(translate('settings.integrations.subscriptionsList.notices.refreshSuccess'));
                 } catch (error) {
                     console.error('Error refreshing subscriptions:', error);
-                    new Notice('Failed to refresh some calendar subscriptions');
+                    new Notice(translate('settings.integrations.subscriptionsList.notices.refreshFailure'));
                 }
             }
         }
     });
 
     // Automatic ICS Export Section
-    createSectionHeader(container, 'Automatic ICS export');
-    createHelpText(container, 'Automatically export all your tasks to an ICS file.');
+    createSectionHeader(container, translate('settings.integrations.autoExport.header'));
+    createHelpText(container, translate('settings.integrations.autoExport.description'));
 
     createToggleSetting(container, {
-        name: 'Enable automatic export',
-        desc: 'Automatically keep an ICS file updated with all your tasks',
+        name: translate('settings.integrations.autoExport.enable.name'),
+        desc: translate('settings.integrations.autoExport.enable.description'),
         getValue: () => plugin.settings.icsIntegration.enableAutoExport,
         setValue: async (value: boolean) => {
             plugin.settings.icsIntegration.enableAutoExport = value;
             save();
-            new Notice('Please reload Obsidian for the automatic export changes to take effect.');
+            new Notice(translate('settings.integrations.autoExport.notices.reloadRequired'));
             // Re-render to show/hide export settings
             renderIntegrationsTab(container, plugin, save);
         }
@@ -219,9 +222,9 @@ export function renderIntegrationsTab(container: HTMLElement, plugin: TaskNotesP
 
     if (plugin.settings.icsIntegration.enableAutoExport) {
         createTextSetting(container, {
-            name: 'Export file path',
-            desc: 'Path where the ICS file will be saved (relative to vault root)',
-            placeholder: 'tasknotes-calendar.ics',
+            name: translate('settings.integrations.autoExport.filePath.name'),
+            desc: translate('settings.integrations.autoExport.filePath.description'),
+            placeholder: translate('settings.integrations.autoExport.filePath.placeholder'),
             getValue: () => plugin.settings.icsIntegration.autoExportPath,
             setValue: async (value: string) => {
                 plugin.settings.icsIntegration.autoExportPath = value || 'tasknotes-calendar.ics';
@@ -230,9 +233,9 @@ export function renderIntegrationsTab(container: HTMLElement, plugin: TaskNotesP
         });
 
         createNumberSetting(container, {
-            name: 'Update interval (between 5 and 1440 minutes)',
-            desc: 'How often to update the export file',
-            placeholder: '60',
+            name: translate('settings.integrations.autoExport.interval.name'),
+            desc: translate('settings.integrations.autoExport.interval.description'),
+            placeholder: translate('settings.integrations.autoExport.interval.placeholder'),
             min: 5,
             max: 1440, // 24 hours max
             getValue: () => plugin.settings.icsIntegration.autoExportInterval,
@@ -274,22 +277,22 @@ export function renderIntegrationsTab(container: HTMLElement, plugin: TaskNotesP
 
         // Manual export trigger button
         createButtonSetting(container, {
-            name: 'Export now',
-            desc: 'Manually trigger an immediate export',
-            buttonText: 'Export Now',
+            name: translate('settings.integrations.autoExport.exportNow.name'),
+            desc: translate('settings.integrations.autoExport.exportNow.description'),
+            buttonText: translate('settings.integrations.autoExport.exportNow.buttonText'),
             onClick: async () => {
                 if (plugin.autoExportService) {
                     try {
                         await plugin.autoExportService.exportNow();
-                        new Notice('Tasks exported successfully');
+                        new Notice(translate('settings.integrations.autoExport.notices.exportSuccess'));
                         // Re-render to update status
                         renderIntegrationsTab(container, plugin, save);
                     } catch (error) {
                         console.error('Manual export failed:', error);
-                        new Notice('Export failed - check console for details');
+                        new Notice(translate('settings.integrations.autoExport.notices.exportFailure'));
                     }
                 } else {
-                    new Notice('Auto export service not available');
+                    new Notice(translate('settings.integrations.autoExport.notices.serviceUnavailable'));
                 }
             }
         });
@@ -297,12 +300,12 @@ export function renderIntegrationsTab(container: HTMLElement, plugin: TaskNotesP
 
     // HTTP API Section (Skip on mobile)
     if (!Platform.isMobile) {
-        createSectionHeader(container, 'HTTP API');
-        createHelpText(container, 'Enable HTTP API for external integrations and automations.');
+        createSectionHeader(container, translate('settings.integrations.httpApi.header'));
+        createHelpText(container, translate('settings.integrations.httpApi.description'));
 
         createToggleSetting(container, {
-            name: 'Enable HTTP API',
-            desc: 'Start local HTTP server for API access',
+            name: translate('settings.integrations.httpApi.enable.name'),
+            desc: translate('settings.integrations.httpApi.enable.description'),
             getValue: () => plugin.settings.enableAPI,
             setValue: async (value: boolean) => {
                 plugin.settings.enableAPI = value;
@@ -314,9 +317,9 @@ export function renderIntegrationsTab(container: HTMLElement, plugin: TaskNotesP
 
         if (plugin.settings.enableAPI) {
             createNumberSetting(container, {
-                name: 'API port',
-                desc: 'Port number for the HTTP API server',
-                placeholder: '3000',
+                name: translate('settings.integrations.httpApi.port.name'),
+                desc: translate('settings.integrations.httpApi.port.description'),
+                placeholder: translate('settings.integrations.httpApi.port.placeholder'),
                 min: 1024,
                 max: 65535,
                 getValue: () => plugin.settings.apiPort,
@@ -327,9 +330,9 @@ export function renderIntegrationsTab(container: HTMLElement, plugin: TaskNotesP
             });
 
             createTextSetting(container, {
-                name: 'API authentication token',
-                desc: 'Token required for API authentication (leave empty for no auth)',
-                placeholder: 'your-secret-token',
+                name: translate('settings.integrations.httpApi.authToken.name'),
+                desc: translate('settings.integrations.httpApi.authToken.description'),
+                placeholder: translate('settings.integrations.httpApi.authToken.placeholder'),
                 getValue: () => plugin.settings.apiAuthToken,
                 setValue: async (value: string) => {
                     plugin.settings.apiAuthToken = value;
@@ -342,8 +345,8 @@ export function renderIntegrationsTab(container: HTMLElement, plugin: TaskNotesP
             const apiHeader = apiInfoContainer.createDiv('tasknotes-settings__collapsible-header');
             const apiHeaderContent = apiHeader.createDiv('tasknotes-settings__collapsible-header-content');
             const apiToggleIcon = apiHeaderContent.createSpan('tasknotes-settings__collapsible-icon');
-            apiToggleIcon.textContent = '▶';
-            apiHeaderContent.createSpan({ text: 'Available API Endpoints', cls: 'tasknotes-settings__collapsible-title' });
+            apiToggleIcon.textContent = translate('settings.integrations.httpApi.endpoints.expandIcon');
+            apiHeaderContent.createSpan({ text: translate('settings.integrations.httpApi.endpoints.header'), cls: 'tasknotes-settings__collapsible-title' });
             
             const apiEndpointsContent = apiInfoContainer.createDiv('tasknotes-settings__collapsible-content');
             apiEndpointsContent.style.display = 'none'; // Start collapsed
@@ -352,7 +355,7 @@ export function renderIntegrationsTab(container: HTMLElement, plugin: TaskNotesP
             apiHeader.addEventListener('click', () => {
                 const isExpanded = apiEndpointsContent.style.display !== 'none';
                 apiEndpointsContent.style.display = isExpanded ? 'none' : 'block';
-                apiToggleIcon.textContent = isExpanded ? '▶' : '▼';
+                apiToggleIcon.textContent = isExpanded ? translate('settings.integrations.httpApi.endpoints.expandIcon') : translate('settings.integrations.httpApi.endpoints.collapseIcon');
             });
 
             // Fetch live API documentation
@@ -360,21 +363,21 @@ export function renderIntegrationsTab(container: HTMLElement, plugin: TaskNotesP
         }
 
         // Webhooks Section
-        createSectionHeader(container, 'Webhooks');
+        createSectionHeader(container, translate('settings.integrations.webhooks.header'));
         
         // Webhook description
         const webhookDescEl = container.createDiv('setting-item-description');
-        webhookDescEl.createEl('p', { text: 'Webhooks send real-time notifications to external services when TaskNotes events occur.' });
-        webhookDescEl.createEl('p', { text: 'Configure webhooks to integrate with automation tools, sync services, or custom applications.' });
+        webhookDescEl.createEl('p', { text: translate('settings.integrations.webhooks.description.overview') });
+        webhookDescEl.createEl('p', { text: translate('settings.integrations.webhooks.description.usage') });
 
         // Webhook management
         renderWebhookList(container, plugin, save);
         
         // Add webhook button
         createButtonSetting(container, {
-            name: 'Add Webhook',
-            desc: 'Register a new webhook endpoint',
-            buttonText: 'Add Webhook',
+            name: translate('settings.integrations.webhooks.addWebhook.name'),
+            desc: translate('settings.integrations.webhooks.addWebhook.description'),
+            buttonText: translate('settings.integrations.webhooks.addWebhook.buttonText'),
             onClick: async () => {
                 const modal = new WebhookModal(plugin.app, async (webhookConfig: Partial<WebhookConfig>) => {
                     // Generate ID and secret
@@ -403,7 +406,7 @@ export function renderIntegrationsTab(container: HTMLElement, plugin: TaskNotesP
                     
                     // Show success message with secret
                     new SecretNoticeModal(plugin.app, webhook.secret).open();
-                    new Notice('Webhook created successfully');
+                    new Notice(translate('settings.integrations.webhooks.notices.created'));
                 });
                 modal.open();
             }
@@ -411,15 +414,17 @@ export function renderIntegrationsTab(container: HTMLElement, plugin: TaskNotesP
     }
 
     // Other Integrations Section
-    createSectionHeader(container, 'Other plugin integrations');
-    createHelpText(container, 'Configure integrations with other Obsidian plugins.');
+    createSectionHeader(container, translate('settings.integrations.otherIntegrations.header'));
+    createHelpText(container, translate('settings.integrations.otherIntegrations.description'));
 }
 
 function renderICSSubscriptionsList(container: HTMLElement, plugin: TaskNotesPlugin, save: () => void): void {
     container.empty();
 
+    const translate = (key: TranslationKey, params?: Record<string, string | number>) => plugin.i18n.translate(key, params);
+
     if (!plugin.icsSubscriptionService) {
-        createHelpText(container, 'ICS subscription service not available.');
+        createHelpText(container, translate('settings.integrations.subscriptionsList.notices.serviceUnavailable'));
         return;
     }
 
@@ -429,7 +434,7 @@ function renderICSSubscriptionsList(container: HTMLElement, plugin: TaskNotesPlu
         const emptyState = container.createDiv('tasknotes-webhooks-empty-state');
         emptyState.createSpan('tasknotes-webhooks-empty-icon');
         emptyState.createSpan({
-            text: 'No calendar subscriptions configured. Add a subscription to sync external calendars.',
+            text: translate('settings.integrations.subscriptionsList.emptyState'),
             cls: 'tasknotes-webhooks-empty-text'
         });
         return;
@@ -579,7 +584,7 @@ function renderICSSubscriptionsList(container: HTMLElement, plugin: TaskNotesPlu
         // Add last sync badge if available
         if (subscription.lastFetched) {
             const lastSyncDate = new Date(subscription.lastFetched);
-            const timeAgo = getRelativeTime(lastSyncDate);
+            const timeAgo = getRelativeTime(lastSyncDate, translate);
             const syncBadge = createInfoBadge(`Synced ${timeAgo}`);
             metaBadges.push(syncBadge);
         }
@@ -672,6 +677,8 @@ function renderICSSubscriptionsList(container: HTMLElement, plugin: TaskNotesPlu
 
 
 function renderWebhookList(container: HTMLElement, plugin: TaskNotesPlugin, save: () => void): void {
+    const translate = (key: TranslationKey, params?: Record<string, string | number>) => plugin.i18n.translate(key, params);
+
     // Clear existing webhook content
     const existingContainer = container.querySelector('.tasknotes-webhooks-container');
     if (existingContainer) {
@@ -746,7 +753,7 @@ function renderWebhookList(container: HTMLElement, plugin: TaskNotesPlugin, save
         
         // Format webhook creation date
         const createdDate = webhook.createdAt ? new Date(webhook.createdAt) : null;
-        const createdText = createdDate ? `Created ${getRelativeTime(createdDate)}` : 'Creation date unknown';
+        const createdText = createdDate ? translate('settings.integrations.webhooks.statusLabels.created', { timeAgo: getRelativeTime(createdDate, translate) }) : 'Creation date unknown';
         
         // Create events display as a formatted string
         const eventsDisplay = document.createElement('div');

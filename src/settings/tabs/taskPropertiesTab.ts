@@ -1,6 +1,7 @@
 import { Notice, setTooltip, Setting } from 'obsidian';
 import TaskNotesPlugin from '../../main';
 import { StatusConfig, FieldMapping } from '../../types';
+import { TranslationKey } from '../../i18n/types';
 // import { UserMappedField } from '../../types/settings';
 import { 
     createSectionHeader, 
@@ -32,26 +33,28 @@ import {
 export function renderTaskPropertiesTab(container: HTMLElement, plugin: TaskNotesPlugin, save: () => void): void {
     container.empty();
 
+    const translate = (key: TranslationKey, params?: Record<string, string | number>) => plugin.i18n.translate(key, params);
+
     // Ensure user fields array exists
     if (!Array.isArray(plugin.settings.userFields)) {
         plugin.settings.userFields = [];
     }
 
     // Custom Statuses Section
-    createSectionHeader(container, 'Task Statuses');
-    createHelpText(container, 'Customize the status options available for your tasks. These statuses control the task lifecycle and determine when tasks are considered complete.');
+    createSectionHeader(container, translate('settings.taskProperties.taskStatuses.header'));
+    createHelpText(container, translate('settings.taskProperties.taskStatuses.description'));
 
     // Status help section
     const statusHelpContainer = container.createDiv('tasknotes-settings__help-section');
-    statusHelpContainer.createEl('h4', { text: 'How statuses work:' });
+    statusHelpContainer.createEl('h4', { text: translate('settings.taskProperties.taskStatuses.howTheyWork.title') });
     const statusHelpList = statusHelpContainer.createEl('ul');
-    statusHelpList.createEl('li', { text: 'Value: The internal identifier stored in your task files (e.g., "in-progress")' });
-    statusHelpList.createEl('li', { text: 'Label: The display name shown in the interface (e.g., "In Progress")' });
-    statusHelpList.createEl('li', { text: 'Color: Visual indicator color for the status dot and badges' });
-    statusHelpList.createEl('li', { text: 'Completed: When checked, tasks with this status are considered finished and may be filtered differently' });
-    statusHelpList.createEl('li', { text: 'Auto-archive: When enabled, tasks will be automatically archived after the specified delay (1-1440 minutes)' });
+    statusHelpList.createEl('li', { text: translate('settings.taskProperties.taskStatuses.howTheyWork.value') });
+    statusHelpList.createEl('li', { text: translate('settings.taskProperties.taskStatuses.howTheyWork.label') });
+    statusHelpList.createEl('li', { text: translate('settings.taskProperties.taskStatuses.howTheyWork.color') });
+    statusHelpList.createEl('li', { text: translate('settings.taskProperties.taskStatuses.howTheyWork.completed') });
+    statusHelpList.createEl('li', { text: translate('settings.taskProperties.taskStatuses.howTheyWork.autoArchive') });
     statusHelpContainer.createEl('p', {
-        text: 'The order below determines the sequence when cycling through statuses by clicking on task status badges.',
+        text: translate('settings.taskProperties.taskStatuses.howTheyWork.orderNote'),
         cls: 'settings-help-note'
     });
 
@@ -61,10 +64,10 @@ export function renderTaskPropertiesTab(container: HTMLElement, plugin: TaskNote
     
     // Add status button
     new Setting(container)
-        .setName('Add new status')
-        .setDesc('Create a new status option for your tasks')
+        .setName(translate('settings.taskProperties.taskStatuses.addNew.name'))
+        .setDesc(translate('settings.taskProperties.taskStatuses.addNew.description'))
         .addButton(button => button
-            .setButtonText('Add status')
+            .setButtonText(translate('settings.taskProperties.taskStatuses.addNew.buttonText'))
             .onClick(async () => {
                 const newId = `status_${Date.now()}`;
                 const newStatus = {
@@ -83,22 +86,22 @@ export function renderTaskPropertiesTab(container: HTMLElement, plugin: TaskNote
                 renderStatusList(statusList, plugin, save);
             }));
 
-    createValidationNote(container, 'Note: You must have at least 2 statuses, and at least one status must be marked as "Completed".');
+    createValidationNote(container, translate('settings.taskProperties.taskStatuses.validationNote'));
 
     // Custom Priorities Section
-    createSectionHeader(container, 'Task Priorities');
-    createHelpText(container, 'Customize the priority levels available for your tasks. Priority weights determine sorting order and visual hierarchy in your task views.');
+    createSectionHeader(container, translate('settings.taskProperties.taskPriorities.header'));
+    createHelpText(container, translate('settings.taskProperties.taskPriorities.description'));
 
     // Priority help section
     const priorityHelpContainer = container.createDiv('tasknotes-settings__help-section');
-    priorityHelpContainer.createEl('h4', { text: 'How priorities work:' });
+    priorityHelpContainer.createEl('h4', { text: translate('settings.taskProperties.taskPriorities.howTheyWork.title') });
     const priorityHelpList = priorityHelpContainer.createEl('ul');
-    priorityHelpList.createEl('li', { text: 'Value: The internal identifier stored in your task files (e.g., "high")' });
-    priorityHelpList.createEl('li', { text: 'Display Label: The display name shown in the interface (e.g., "High Priority")' });
-    priorityHelpList.createEl('li', { text: 'Color: Visual indicator color for the priority dot and badges' });
-    priorityHelpList.createEl('li', { text: 'Weight: Numeric value for sorting (higher weights appear first in lists)' });
+    priorityHelpList.createEl('li', { text: translate('settings.taskProperties.taskPriorities.howTheyWork.value') });
+    priorityHelpList.createEl('li', { text: translate('settings.taskProperties.taskPriorities.howTheyWork.label') });
+    priorityHelpList.createEl('li', { text: translate('settings.taskProperties.taskPriorities.howTheyWork.color') });
+    priorityHelpList.createEl('li', { text: translate('settings.taskProperties.taskPriorities.howTheyWork.weight') });
     priorityHelpContainer.createEl('p', {
-        text: 'Tasks are automatically sorted by priority weight in descending order (highest weight first). Weights can be any positive number.',
+        text: translate('settings.taskProperties.taskPriorities.howTheyWork.weightNote'),
         cls: 'settings-help-note'
     });
 
@@ -108,10 +111,10 @@ export function renderTaskPropertiesTab(container: HTMLElement, plugin: TaskNote
     
     // Add priority button
     new Setting(container)
-        .setName('Add new priority')
-        .setDesc('Create a new priority level for your tasks')
+        .setName(translate('settings.taskProperties.taskPriorities.addNew.name'))
+        .setDesc(translate('settings.taskProperties.taskPriorities.addNew.description'))
         .addButton(button => button
-            .setButtonText('Add priority')
+            .setButtonText(translate('settings.taskProperties.taskPriorities.addNew.buttonText'))
             .onClick(async () => {
                 const newId = `priority_${Date.now()}`;
                 const newPriority = {
@@ -126,24 +129,23 @@ export function renderTaskPropertiesTab(container: HTMLElement, plugin: TaskNote
                 renderPriorityList(priorityList, plugin, save);
             }));
 
-    createValidationNote(container, 'Note: You must have at least 1 priority. Higher weights take precedence in sorting and visual hierarchy.');
+    createValidationNote(container, translate('settings.taskProperties.taskPriorities.validationNote'));
 
     // Field Mapping Section
-    createSectionHeader(container, 'Field Mapping');
-    
+    createSectionHeader(container, translate('settings.taskProperties.fieldMapping.header'));
+
     // Warning message
     const warning = container.createDiv('tasknotes-settings__warning');
-    warning.createEl('strong', { text: '⚠️ Warning: ' });
-    warning.appendText('TaskNotes will read AND write using these property names. Changing these after creating tasks may cause inconsistencies.');
-    
-    createHelpText(container, 'Configure which frontmatter properties TaskNotes should use for each field.');
+    warning.appendText(translate('settings.taskProperties.fieldMapping.warning'));
+
+    createHelpText(container, translate('settings.taskProperties.fieldMapping.description'));
 
     renderFieldMappingTable(container, plugin, save);
 
     createButtonSetting(container, {
-        name: 'Reset field mappings',
-        desc: 'Reset all field mappings to default values',
-        buttonText: 'Reset to Defaults',
+        name: translate('settings.taskProperties.fieldMapping.resetButton.name'),
+        desc: translate('settings.taskProperties.fieldMapping.resetButton.description'),
+        buttonText: translate('settings.taskProperties.fieldMapping.resetButton.buttonText'),
         onClick: async () => {
             // Import the DEFAULT_FIELD_MAPPING - we'll need to check if this is accessible
             try {
@@ -151,17 +153,17 @@ export function renderTaskPropertiesTab(container: HTMLElement, plugin: TaskNote
                 plugin.settings.fieldMapping = { ...DEFAULT_FIELD_MAPPING };
                 save();
                 renderTaskPropertiesTab(container.parentElement!, plugin, save);
-                new Notice('Field mappings reset to defaults');
+                new Notice(translate('settings.taskProperties.fieldMapping.notices.resetSuccess'));
             } catch (error) {
                 console.error('Error resetting field mappings:', error);
-                new Notice('Failed to reset field mappings');
+                new Notice(translate('settings.taskProperties.fieldMapping.notices.resetFailure'));
             }
         }
     });
 
     // Custom User Fields Section
-    createSectionHeader(container, 'Custom User Fields');
-    createHelpText(container, 'Define custom frontmatter properties to appear as type-aware filter options across views. Each row: Display Name, Property Name, Type.');
+    createSectionHeader(container, translate('settings.taskProperties.customUserFields.header'));
+    createHelpText(container, translate('settings.taskProperties.customUserFields.description'));
 
     // Migrate legacy single field if present
     if (plugin.settings.userField && plugin.settings.userField.enabled) {
@@ -184,10 +186,10 @@ export function renderTaskPropertiesTab(container: HTMLElement, plugin: TaskNote
     
     // Add user field button
     new Setting(container)
-        .setName('Add new user field')
-        .setDesc('Create a new custom field that will appear in filters and views')
+        .setName(translate('settings.taskProperties.customUserFields.addNew.name'))
+        .setDesc(translate('settings.taskProperties.customUserFields.addNew.description'))
         .addButton(button => button
-            .setButtonText('Add user field')
+            .setButtonText(translate('settings.taskProperties.customUserFields.addNew.buttonText'))
             .onClick(async () => {
                 if (!plugin.settings.userFields) {
                     plugin.settings.userFields = [];
@@ -208,12 +210,14 @@ export function renderTaskPropertiesTab(container: HTMLElement, plugin: TaskNote
 
 function renderStatusList(container: HTMLElement, plugin: TaskNotesPlugin, save: () => void): void {
     container.empty();
-    
+
+    const translate = (key: TranslationKey, params?: Record<string, string | number>) => plugin.i18n.translate(key, params);
+
     if (!plugin.settings.customStatuses || plugin.settings.customStatuses.length === 0) {
         showCardEmptyState(
             container,
-            'No custom statuses configured. Add a status to get started.',
-            'Add Status',
+            translate('settings.taskProperties.taskStatuses.emptyState'),
+            translate('settings.taskProperties.taskStatuses.emptyStateButton'),
             () => {
                 const addStatusButton = document.querySelector('[data-setting-name="Add new status"] button');
                 if (addStatusButton) {
@@ -227,8 +231,8 @@ function renderStatusList(container: HTMLElement, plugin: TaskNotesPlugin, save:
     const sortedStatuses = [...plugin.settings.customStatuses].sort((a, b) => a.order - b.order);
 
     sortedStatuses.forEach((status) => {
-        const valueInput = createCardInput('text', 'in-progress', status.value);
-        const labelInput = createCardInput('text', 'In Progress', status.label);
+        const valueInput = createCardInput('text', translate('settings.taskProperties.taskStatuses.placeholders.value'), status.value);
+        const labelInput = createCardInput('text', translate('settings.taskProperties.taskStatuses.placeholders.label'), status.label);
         const colorInput = createCardInput('color', '', status.color);
         
         const completedCheckbox = document.createElement('input');
@@ -243,10 +247,10 @@ function renderStatusList(container: HTMLElement, plugin: TaskNotesPlugin, save:
 
         const autoArchiveDelayInput = createCardNumberInput(1, 1440, 1, status.autoArchiveDelay || 5);
 
-        const metaElements = status.isCompleted ? [createStatusBadge('Completed', 'completed')] : [];
+        const metaElements = status.isCompleted ? [createStatusBadge(translate('settings.taskProperties.taskStatuses.badges.completed'), 'completed')] : [];
 
         const deleteStatus = () => {
-            const confirmDelete = confirm(`Are you sure you want to delete the status "${status.label || status.value}"?`);
+            const confirmDelete = confirm(translate('settings.taskProperties.taskStatuses.deleteConfirm', { label: status.label || status.value }));
             if (confirmDelete) {
                 const statusIndex = plugin.settings.customStatuses.findIndex(s => s.id === status.id);
                 if (statusIndex !== -1) {
@@ -273,12 +277,12 @@ function renderStatusList(container: HTMLElement, plugin: TaskNotesPlugin, save:
             content: {
                 sections: [{
                     rows: [
-                        { label: 'Value:', input: valueInput },
-                        { label: 'Label:', input: labelInput },
-                        { label: 'Color:', input: colorInput },
-                        { label: 'Completed:', input: completedCheckbox },
-                        { label: 'Auto-archive:', input: autoArchiveCheckbox },
-                        { label: 'Delay (minutes):', input: autoArchiveDelayInput }
+                        { label: translate('settings.taskProperties.taskStatuses.fields.value'), input: valueInput },
+                        { label: translate('settings.taskProperties.taskStatuses.fields.label'), input: labelInput },
+                        { label: translate('settings.taskProperties.taskStatuses.fields.color'), input: colorInput },
+                        { label: translate('settings.taskProperties.taskStatuses.fields.completed'), input: completedCheckbox },
+                        { label: translate('settings.taskProperties.taskStatuses.fields.autoArchive'), input: autoArchiveCheckbox },
+                        { label: translate('settings.taskProperties.taskStatuses.fields.delayMinutes'), input: autoArchiveDelayInput }
                     ]
                 }]
             }
@@ -325,7 +329,7 @@ function renderStatusList(container: HTMLElement, plugin: TaskNotesPlugin, save:
             if (metaContainer) {
                 metaContainer.empty();
                 if (status.isCompleted) {
-                    metaContainer.appendChild(createStatusBadge('Completed', 'completed'));
+                    metaContainer.appendChild(createStatusBadge(translate('settings.taskProperties.taskStatuses.badges.completed'), 'completed'));
                 }
             }
             save();
@@ -373,12 +377,14 @@ function renderStatusList(container: HTMLElement, plugin: TaskNotesPlugin, save:
 
 function renderPriorityList(container: HTMLElement, plugin: TaskNotesPlugin, save: () => void): void {
     container.empty();
-    
+
+    const translate = (key: TranslationKey, params?: Record<string, string | number>) => plugin.i18n.translate(key, params);
+
     if (!plugin.settings.customPriorities || plugin.settings.customPriorities.length === 0) {
         showCardEmptyState(
             container,
-            'No custom priorities configured. Add a priority to get started.',
-            'Add Priority',
+            translate('settings.taskProperties.taskPriorities.emptyState'),
+            translate('settings.taskProperties.taskPriorities.emptyStateButton'),
             () => {
                 const addPriorityButton = document.querySelector('[data-setting-name="Add new priority"] button');
                 if (addPriorityButton) {
@@ -392,8 +398,8 @@ function renderPriorityList(container: HTMLElement, plugin: TaskNotesPlugin, sav
     const sortedPriorities = [...plugin.settings.customPriorities].sort((a, b) => b.weight - a.weight);
     
     sortedPriorities.forEach((priority, index) => {
-        const valueInput = createCardInput('text', 'high', priority.value);
-        const labelInput = createCardInput('text', 'High Priority', priority.label);
+        const valueInput = createCardInput('text', translate('settings.taskProperties.taskPriorities.placeholders.value'), priority.value);
+        const labelInput = createCardInput('text', translate('settings.taskProperties.taskPriorities.placeholders.label'), priority.label);
         const colorInput = createCardInput('color', '', priority.color);
         const weightInput = createCardNumberInput(0, undefined, 1, priority.weight);
 
@@ -404,26 +410,26 @@ function renderPriorityList(container: HTMLElement, plugin: TaskNotesPlugin, sav
             colorIndicator: { color: priority.color },
             header: {
                 primaryText: priority.label || priority.value || 'untitled',
-                secondaryText: `Weight: ${priority.weight}`,
+                secondaryText: translate('settings.taskProperties.taskPriorities.weightLabel', { weight: priority.weight }),
                 actions: [
                     createDeleteHeaderButton(() => {
                         if (plugin.settings.customPriorities.length <= 1) {
-                            new Notice('You must have at least one priority');
+                            new Notice(translate('settings.taskProperties.taskPriorities.deleteConfirm'));
                             return;
                         }
                         plugin.settings.customPriorities.splice(index, 1);
                         save();
                         renderPriorityList(container, plugin, save);
-                    }, 'Delete priority')
+                    }, translate('settings.taskProperties.taskPriorities.deleteTooltip'))
                 ]
             },
             content: {
                 sections: [{
                     rows: [
-                        { label: 'Value:', input: valueInput },
-                        { label: 'Label:', input: labelInput },
-                        { label: 'Color:', input: colorInput },
-                        { label: 'Weight:', input: weightInput }
+                        { label: translate('settings.taskProperties.taskPriorities.fields.value'), input: valueInput },
+                        { label: translate('settings.taskProperties.taskPriorities.fields.label'), input: labelInput },
+                        { label: translate('settings.taskProperties.taskPriorities.fields.color'), input: colorInput },
+                        { label: translate('settings.taskProperties.taskPriorities.fields.weight'), input: weightInput }
                     ]
                 }]
             }
@@ -453,7 +459,7 @@ function renderPriorityList(container: HTMLElement, plugin: TaskNotesPlugin, sav
             const weight = parseInt(weightInput.value);
             if (!isNaN(weight) && weight >= 0) {
                 priority.weight = weight;
-                card.querySelector('.tasknotes-settings__card-secondary-text')!.textContent = `Weight: ${priority.weight}`;
+                card.querySelector('.tasknotes-settings__card-secondary-text')!.textContent = translate('settings.taskProperties.taskPriorities.weightLabel', { weight: priority.weight });
                 save();
             }
         });
@@ -544,32 +550,34 @@ function setupStatusDragAndDrop(statusRow: HTMLElement, status: StatusConfig, co
 }
 
 function renderFieldMappingTable(container: HTMLElement, plugin: TaskNotesPlugin, save: () => void): void {
+    const translate = (key: TranslationKey, params?: Record<string, string | number>) => plugin.i18n.translate(key, params);
+
     // Create mapping table
     const table = container.createEl('table', { cls: 'tasknotes-settings__table' });
     const header = table.createEl('tr');
-    header.createEl('th', { cls: 'tasknotes-settings__table-header', text: 'TaskNotes field' });
-    header.createEl('th', { cls: 'tasknotes-settings__table-header', text: 'Your property name' });
+    header.createEl('th', { cls: 'tasknotes-settings__table-header', text: translate('settings.taskProperties.fieldMapping.table.fieldHeader') });
+    header.createEl('th', { cls: 'tasknotes-settings__table-header', text: translate('settings.taskProperties.fieldMapping.table.propertyHeader') });
 
     const fieldMappings: Array<[keyof FieldMapping, string]> = [
-        ['title', 'Title'],
-        ['status', 'Status'],
-        ['priority', 'Priority'],
-        ['due', 'Due date'],
-        ['scheduled', 'Scheduled date'],
-        ['contexts', 'Contexts'],
-        ['projects', 'Projects'],
-        ['timeEstimate', 'Time estimate'],
-        ['recurrence', 'Recurrence'],
-        ['dateCreated', 'Created date'],
-        ['completedDate', 'Completed date'],
-        ['dateModified', 'Modified date'],
-        ['archiveTag', 'Archive tag'],
-        ['timeEntries', 'Time entries'],
-        ['completeInstances', 'Complete instances'],
-        ['pomodoros', 'Pomodoros'],
-        ['icsEventId', 'ICS Event ID'],
-        ['icsEventTag', 'ICS Event Tag'],
-        ['reminders', 'Reminders']
+        ['title', translate('settings.taskProperties.fieldMapping.fields.title')],
+        ['status', translate('settings.taskProperties.fieldMapping.fields.status')],
+        ['priority', translate('settings.taskProperties.fieldMapping.fields.priority')],
+        ['due', translate('settings.taskProperties.fieldMapping.fields.due')],
+        ['scheduled', translate('settings.taskProperties.fieldMapping.fields.scheduled')],
+        ['contexts', translate('settings.taskProperties.fieldMapping.fields.contexts')],
+        ['projects', translate('settings.taskProperties.fieldMapping.fields.projects')],
+        ['timeEstimate', translate('settings.taskProperties.fieldMapping.fields.timeEstimate')],
+        ['recurrence', translate('settings.taskProperties.fieldMapping.fields.recurrence')],
+        ['dateCreated', translate('settings.taskProperties.fieldMapping.fields.dateCreated')],
+        ['completedDate', translate('settings.taskProperties.fieldMapping.fields.completedDate')],
+        ['dateModified', translate('settings.taskProperties.fieldMapping.fields.dateModified')],
+        ['archiveTag', translate('settings.taskProperties.fieldMapping.fields.archiveTag')],
+        ['timeEntries', translate('settings.taskProperties.fieldMapping.fields.timeEntries')],
+        ['completeInstances', translate('settings.taskProperties.fieldMapping.fields.completeInstances')],
+        ['pomodoros', translate('settings.taskProperties.fieldMapping.fields.pomodoros')],
+        ['icsEventId', translate('settings.taskProperties.fieldMapping.fields.icsEventId')],
+        ['icsEventTag', translate('settings.taskProperties.fieldMapping.fields.icsEventTag')],
+        ['reminders', translate('settings.taskProperties.fieldMapping.fields.reminders')]
     ];
 
     fieldMappings.forEach(([field, label]) => {
@@ -594,7 +602,7 @@ function renderFieldMappingTable(container: HTMLElement, plugin: TaskNotesPlugin
                 save();
             } catch (error) {
                 console.error(`Error updating field mapping for ${field}:`, error);
-                new Notice(`Failed to update field mapping for ${label}. Please try again.`);
+                new Notice(translate('settings.taskProperties.fieldMapping.notices.updateFailure', { label }));
             }
         });
     });
@@ -603,15 +611,17 @@ function renderFieldMappingTable(container: HTMLElement, plugin: TaskNotesPlugin
 function renderUserFieldsList(container: HTMLElement, plugin: TaskNotesPlugin, save: () => void): void {
     container.empty();
 
+    const translate = (key: TranslationKey, params?: Record<string, string | number>) => plugin.i18n.translate(key, params);
+
     if (!plugin.settings.userFields) {
         plugin.settings.userFields = [];
     }
-    
+
     if (plugin.settings.userFields.length === 0) {
         showCardEmptyState(
             container,
-            'No custom user fields configured. Add a field to create custom properties for your tasks.',
-            'Add User Field',
+            translate('settings.taskProperties.customUserFields.emptyState'),
+            translate('settings.taskProperties.customUserFields.emptyStateButton'),
             () => {
                 const addUserFieldButton = document.querySelector('[data-setting-name="Add new user field"] button');
                 if (addUserFieldButton) {
@@ -623,14 +633,14 @@ function renderUserFieldsList(container: HTMLElement, plugin: TaskNotesPlugin, s
     }
 
     plugin.settings.userFields.forEach((field, index) => {
-        const nameInput = createCardInput('text', 'Display Name', field.displayName);
-        const keyInput = createCardInput('text', 'property-name', field.key);
+        const nameInput = createCardInput('text', translate('settings.taskProperties.customUserFields.placeholders.displayName'), field.displayName);
+        const keyInput = createCardInput('text', translate('settings.taskProperties.customUserFields.placeholders.propertyKey'), field.key);
         const typeSelect = createCardSelect([
-            { value: 'text', label: 'Text' },
-            { value: 'number', label: 'Number' },
-            { value: 'boolean', label: 'Boolean' },
-            { value: 'date', label: 'Date' },
-            { value: 'list', label: 'List' }
+            { value: 'text', label: translate('settings.taskProperties.customUserFields.types.text') },
+            { value: 'number', label: translate('settings.taskProperties.customUserFields.types.number') },
+            { value: 'boolean', label: translate('settings.taskProperties.customUserFields.types.boolean') },
+            { value: 'date', label: translate('settings.taskProperties.customUserFields.types.date') },
+            { value: 'list', label: translate('settings.taskProperties.customUserFields.types.list') }
         ], field.type);
 
         nameInput.addEventListener('change', () => {
@@ -656,8 +666,8 @@ function renderUserFieldsList(container: HTMLElement, plugin: TaskNotesPlugin, s
             collapsible: true,
             defaultCollapsed: true,
             header: {
-                primaryText: field.displayName || 'Unnamed Field',
-                secondaryText: field.key || 'no-key',
+                primaryText: field.displayName || translate('settings.taskProperties.customUserFields.defaultNames.unnamedField'),
+                secondaryText: field.key || translate('settings.taskProperties.customUserFields.defaultNames.noKey'),
                 meta: [createStatusBadge(field.type.charAt(0).toUpperCase() + field.type.slice(1), 'default')],
                 actions: [
                     createDeleteHeaderButton(() => {
@@ -666,15 +676,15 @@ function renderUserFieldsList(container: HTMLElement, plugin: TaskNotesPlugin, s
                             save();
                             renderUserFieldsList(container, plugin, save);
                         }
-                    }, 'Delete field')
+                    }, translate('settings.taskProperties.customUserFields.deleteTooltip'))
                 ]
             },
             content: {
                 sections: [{
                     rows: [
-                        { label: 'Display Name:', input: nameInput },
-                        { label: 'Property Key:', input: keyInput },
-                        { label: 'Type:', input: typeSelect }
+                        { label: translate('settings.taskProperties.customUserFields.fields.displayName'), input: nameInput },
+                        { label: translate('settings.taskProperties.customUserFields.fields.propertyKey'), input: keyInput },
+                        { label: translate('settings.taskProperties.customUserFields.fields.type'), input: typeSelect }
                     ]
                 }]
             }
