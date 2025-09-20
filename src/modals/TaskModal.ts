@@ -372,7 +372,8 @@ export abstract class TaskModal extends Modal {
                                         onSelect: (value) => {
                                             text.setValue(value || '');
                                             this.userFields[field.key] = value || null;
-                                        }
+                                        },
+                                        plugin: this.plugin
                                     });
                                     menu.showAtElement(btn);
                                 });
@@ -492,6 +493,7 @@ export abstract class TaskModal extends Modal {
             currentValue: currentValue ? getDatePart(currentValue) : undefined,
             currentTime: currentValue ? getTimePart(currentValue) : undefined,
             title: title,
+            plugin: this.plugin,
             onSelect: (value: string | null, time: string | null) => {
                 if (value) {
                     // Combine date and time if both are provided
