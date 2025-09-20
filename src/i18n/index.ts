@@ -3,10 +3,14 @@ import type { I18nServiceOptions } from './types';
 import { TranslationResources } from './types';
 import { en } from './resources/en';
 import { fr } from './resources/fr';
+import { ru } from './resources/ru';
+import { zh } from './resources/zh';
 
 export const translationResources = {
     en,
-    fr
+    fr,
+    ru,
+    zh
 } satisfies TranslationResources;
 
 export type TranslationKey = string;
