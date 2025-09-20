@@ -1,0 +1,1998 @@
+import type { TranslationTree } from '../types';
+
+export const zh: TranslationTree = {
+    common: {
+        appName: 'TaskNotes',
+        cancel: '取消',
+        confirm: '确认',
+        close: '关闭',
+        save: '保存',
+        language: '语言',
+        systemDefault: '系统默认',
+        languages: {
+            en: '英语',
+            fr: '法语',
+            ru: '俄语',
+            zh: '中文'
+        },
+        weekdays: {
+            sunday: '星期日',
+            monday: '星期一',
+            tuesday: '星期二',
+            wednesday: '星期三',
+            thursday: '星期四',
+            friday: '星期五',
+            saturday: '星期六'
+        },
+        months: {
+            january: '一月',
+            february: '二月',
+            march: '三月',
+            april: '四月',
+            may: '五月',
+            june: '六月',
+            july: '七月',
+            august: '八月',
+            september: '九月',
+            october: '十月',
+            november: '十一月',
+            december: '十二月'
+        }
+    },
+    views: {
+        agenda: {
+            title: '议程',
+            today: '今天',
+            refreshCalendars: '刷新日历',
+            actions: {
+                previousPeriod: '上一时段',
+                nextPeriod: '下一时段',
+                goToToday: '转到今天',
+                refreshCalendars: '刷新日历订阅'
+            },
+            loading: '正在加载议程...',
+            dayToggle: '切换日期',
+            expandAllDays: '展开所有天',
+            collapseAllDays: '折叠所有天',
+            notices: {
+                calendarNotReady: '日历服务尚未准备就绪',
+                calendarRefreshed: '日历订阅已刷新',
+                refreshFailed: '刷新失败'
+            },
+            empty: {
+                noItemsScheduled: '没有安排的项目',
+                noItemsFound: '未找到项目'
+            }
+        },
+        taskList: {
+            title: '任务',
+            expandAllGroups: '展开所有分组',
+            collapseAllGroups: '折叠所有分组',
+            noTasksFound: '未找到符合所选筛选条件的任务。'
+        },
+        notes: {
+            title: '笔记',
+            refreshButton: '正在刷新...',
+            notices: {
+                indexingDisabled: '笔记索引已禁用'
+            },
+            empty: {
+                noNotesFound: '未找到笔记'
+            }
+        },
+        miniCalendar: {
+            title: '迷你日历'
+        },
+        advancedCalendar: {
+            title: '高级日历'
+        },
+        kanban: {
+            title: '看板',
+            newTask: '新任务',
+            addCard: '+ 添加卡片',
+            noTasks: '没有任务',
+            notices: {
+                loadFailed: '看板加载失败',
+                movedTask: '任务已移动到"{0}"'
+            },
+            errors: {
+                loadingBoard: '加载看板时出错。'
+            }
+        },
+        pomodoro: {
+            title: '番茄钟',
+            status: {
+                focus: '专注',
+                ready: '准备开始',
+                paused: '已暂停',
+                working: '工作中',
+                shortBreak: '短休息',
+                longBreak: '长休息',
+                breakPrompt: '做得很好！是时候{length}休息了',
+                breakLength: {
+                    short: '短',
+                    long: '长'
+                },
+                breakComplete: '休息完成！准备好进行下一个番茄钟了吗？'
+            },
+            buttons: {
+                start: '开始',
+                pause: '暂停',
+                stop: '停止',
+                resume: '继续',
+                startShortBreak: '开始短休息',
+                startLongBreak: '开始长休息',
+                skipBreak: '跳过休息',
+                chooseTask: '选择任务...',
+                changeTask: '更换任务...',
+                clearTask: '清除任务',
+                selectDifferentTask: '选择其他任务'
+            },
+            notices: {
+                noTasks: '未找到未归档的任务。请先创建一些任务。',
+                loadFailed: '加载任务失败'
+            },
+            statsLabel: '今日完成'
+        },
+        pomodoroStats: {
+            title: '番茄钟统计',
+            heading: '番茄钟统计数据',
+            refresh: '刷新',
+            sections: {
+                overview: '概览',
+                today: '今天',
+                week: '本周',
+                allTime: '全部时间',
+                recent: '最近的会话'
+            },
+            overviewCards: {
+                todayPomos: {
+                    label: '今日番茄钟',
+                    change: {
+                        more: '比昨天多{count}个',
+                        less: '比昨天少{count}个'
+                    }
+                },
+                totalPomos: {
+                    label: '总番茄钟数'
+                },
+                todayFocus: {
+                    label: '今日专注时间',
+                    change: {
+                        more: '比昨天多{duration}',
+                        less: '比昨天少{duration}'
+                    }
+                },
+                totalFocus: {
+                    label: '总专注时长'
+                }
+            },
+            stats: {
+                pomodoros: '番茄钟',
+                streak: '连击',
+                minutes: '分钟',
+                average: '平均时长',
+                completion: '完成率'
+            },
+            recents: {
+                empty: '尚未记录会话',
+                duration: '{minutes}分钟',
+                status: {
+                    completed: '已完成',
+                    interrupted: '已中断'
+                }
+            }
+        },
+        stats: {
+            title: '统计',
+            taskProjectStats: '任务和项目统计',
+            sections: {
+                filters: '筛选器',
+                overview: '概览',
+                today: '今天',
+                thisWeek: '本周',
+                thisMonth: '本月',
+                projectBreakdown: '项目分解',
+                dateRange: '日期范围'
+            },
+            filters: {
+                minTime: '最少时间（分钟）'
+            }
+        }
+    },
+    settings: {
+        tabs: {
+            general: '常规',
+            taskProperties: '任务属性',
+            defaults: '默认值和模板',
+            appearance: '外观和界面',
+            features: '功能',
+            integrations: '集成'
+        },
+        features: {
+            inlineTasks: {
+                header: '内联任务',
+                description: '配置内联任务功能，在任何笔记中无缝管理任务。'
+            },
+            overlays: {
+                taskLinkToggle: {
+                    name: '任务链接覆盖',
+                    description: '悬停在任务链接上时显示交互式覆盖'
+                }
+            },
+            instantConvert: {
+                toggle: {
+                    name: '即时任务转换',
+                    description: '启用使用键盘快捷键即时将文本转换为任务'
+                },
+                folder: {
+                    name: '内联任务转换文件夹',
+                    description: '内联任务转换的文件夹。使用{{currentNotePath}}相对于当前笔记'
+                }
+            },
+            nlp: {
+                header: '自然语言处理',
+                description: '启用从自然语言输入智能解析任务详情。',
+                enable: {
+                    name: '启用自然语言任务输入',
+                    description: '创建任务时从自然语言解析到期日期、优先级和上下文'
+                },
+                defaultToScheduled: {
+                    name: '默认为已安排',
+                    description: '当NLP检测到无上下文的日期时，将其视为已安排而不是到期'
+                },
+                language: {
+                    name: 'NLP语言',
+                    description: '自然语言处理模式和日期解析的语言'
+                },
+                statusTrigger: {
+                    name: '状态建议触发器',
+                    description: '触发状态建议的文本（留空以禁用）'
+                }
+            },
+            pomodoro: {
+                header: '番茄钟计时器',
+                description: '内置番茄钟计时器，用于时间管理和生产力跟踪。',
+                workDuration: {
+                    name: '工作时长',
+                    description: '工作间隔的持续时间（分钟）'
+                },
+                shortBreak: {
+                    name: '短休息时长',
+                    description: '短休息的持续时间（分钟）'
+                },
+                longBreak: {
+                    name: '长休息时长',
+                    description: '长休息的持续时间（分钟）'
+                },
+                longBreakInterval: {
+                    name: '长休息间隔',
+                    description: '长休息前的工作会话数'
+                },
+                autoStartBreaks: {
+                    name: '自动开始休息',
+                    description: '工作会话后自动开始休息计时器'
+                },
+                autoStartWork: {
+                    name: '自动开始工作',
+                    description: '休息后自动开始工作会话'
+                },
+                notifications: {
+                    name: '番茄钟通知',
+                    description: '番茄钟会话结束时显示通知'
+                }
+            },
+            uiLanguage: {
+                header: '界面语言',
+                description: '更改TaskNotes菜单、通知和视图的语言。',
+                dropdown: {
+                    name: '界面语言',
+                    description: '选择TaskNotes界面文本使用的语言'
+                }
+            },
+            pomodoroSound: {
+                enabledName: '启用声音',
+                enabledDesc: '番茄钟会话结束时播放声音',
+                volumeName: '声音音量',
+                volumeDesc: '番茄钟声音的音量（0-100）'
+            },
+            dataStorage: {
+                name: '番茄钟数据存储',
+                dailyNotes: '日记'
+            },
+            notifications: {
+                header: '通知',
+                enableName: '启用通知',
+                enableDesc: '启用任务提醒通知',
+                typeName: '通知类型',
+                typeDesc: '要显示的通知类型',
+                systemLabel: '系统通知',
+                inAppLabel: '应用内通知'
+            },
+            overdue: {
+                hideCompletedName: '在逾期中隐藏已完成的任务',
+                hideCompletedDesc: '从逾期任务计算中排除已完成的任务'
+            },
+            indexing: {
+                disableName: '禁用笔记索引',
+                disableDesc: '禁用笔记内容的自动索引以提高性能'
+            },
+            suggestions: {
+                debounceName: '建议防抖',
+                debounceDesc: '显示建议前的延迟毫秒数'
+            },
+            timeTracking: {
+                autoStopName: '自动停止时间跟踪',
+                autoStopDesc: '任务标记为完成时自动停止时间跟踪',
+                stopNotificationName: '时间跟踪停止通知',
+                stopNotificationDesc: '自动停止时间跟踪时显示通知'
+            },
+            recurring: {
+                maintainOffsetName: '在重复任务中保持到期日期偏移',
+                maintainOffsetDesc: '重复任务完成时保持到期日期和安排日期之间的偏移'
+            },
+            timeblocking: {
+                header: '时间块',
+                enableName: '启用时间块',
+                enableDesc: '启用时间块功能，在日记中进行轻量级调度',
+                showBlocksName: '显示时间块',
+                showBlocksDesc: '默认显示日记中的时间块'
+            },
+            performance: {
+                header: '性能和行为'
+            },
+            timeTrackingSection: {
+                header: '时间跟踪'
+            },
+            recurringSection: {
+                header: '重复任务'
+            }
+        },
+        defaults: {
+            header: {
+                basicDefaults: '基本默认值',
+                dateDefaults: '日期默认值',
+                defaultReminders: '默认提醒',
+                bodyTemplate: '正文模板',
+                instantTaskConversion: '即时任务转换'
+            },
+            description: {
+                basicDefaults: '为新任务设置默认值以加快任务创建。',
+                dateDefaults: '为新任务设置默认到期和安排日期。',
+                defaultReminders: '配置将添加到新任务的默认提醒。',
+                bodyTemplate: '配置用于新任务内容的模板文件。',
+                instantTaskConversion: '配置即时转换文本为任务时的行为。'
+            },
+            basicDefaults: {
+                defaultStatus: {
+                    name: '默认状态',
+                    description: '新任务的默认状态'
+                },
+                defaultPriority: {
+                    name: '默认优先级',
+                    description: '新任务的默认优先级'
+                },
+                defaultContexts: {
+                    name: '默认上下文',
+                    description: '默认上下文的逗号分隔列表（例如，@家，@工作）',
+                    placeholder: '@家，@工作'
+                },
+                defaultTags: {
+                    name: '默认标签',
+                    description: '默认标签的逗号分隔列表（不含#）',
+                    placeholder: '重要，紧急'
+                },
+                defaultProjects: {
+                    name: '默认项目',
+                    description: '新任务的默认项目链接',
+                    selectButton: '选择项目',
+                    selectTooltip: '选择默认链接的项目笔记',
+                    removeTooltip: '从默认项目中移除{name}'
+                },
+                useParentNoteAsProject: {
+                    name: '即时转换时使用父笔记作为项目',
+                    description: '使用即时任务转换时自动将父笔记链接为项目'
+                },
+                defaultTimeEstimate: {
+                    name: '默认时间估计',
+                    description: '默认时间估计（分钟）（0 = 无默认值）',
+                    placeholder: '60'
+                },
+                defaultRecurrence: {
+                    name: '默认重复',
+                    description: '新任务的默认重复模式'
+                }
+            },
+            dateDefaults: {
+                defaultDueDate: {
+                    name: '默认到期日期',
+                    description: '新任务的默认到期日期'
+                },
+                defaultScheduledDate: {
+                    name: '默认安排日期',
+                    description: '新任务的默认安排日期'
+                }
+            },
+            reminders: {
+                addReminder: {
+                    name: '添加默认提醒',
+                    description: '创建一个新的默认提醒，将添加到所有新任务',
+                    buttonText: '添加提醒'
+                },
+                emptyState: '未配置默认提醒。添加提醒以自动通知您有关新任务的信息。',
+                emptyStateButton: '添加提醒',
+                reminderDescription: '提醒描述',
+                unnamedReminder: '未命名提醒',
+                deleteTooltip: '删除提醒',
+                fields: {
+                    description: '描述：',
+                    type: '类型：',
+                    offset: '偏移：',
+                    unit: '单位：',
+                    direction: '方向：',
+                    relatedTo: '相关于：',
+                    date: '日期：',
+                    time: '时间：'
+                },
+                types: {
+                    relative: '相对（任务日期前/后）',
+                    absolute: '绝对（特定日期/时间）'
+                },
+                units: {
+                    minutes: '分钟',
+                    hours: '小时',
+                    days: '天'
+                },
+                directions: {
+                    before: '之前',
+                    after: '之后'
+                },
+                relatedTo: {
+                    due: '到期日期',
+                    scheduled: '安排日期'
+                }
+            },
+            bodyTemplate: {
+                useBodyTemplate: {
+                    name: '使用正文模板',
+                    description: '为任务正文内容使用模板文件'
+                },
+                bodyTemplateFile: {
+                    name: '正文模板文件',
+                    description: '任务正文内容的模板文件路径。支持模板变量如{{title}}、{{date}}、{{time}}、{{priority}}、{{status}}等。',
+                    placeholder: 'Templates/Task Template.md',
+                    ariaLabel: '正文模板文件路径'
+                },
+                variablesHeader: '模板变量：',
+                variables: {
+                    title: '{{title}} - 任务标题',
+                    details: '{{details}} - 用户从模态框提供的详情',
+                    date: '{{date}} - 当前日期（YYYY-MM-DD）',
+                    time: '{{time}} - 当前时间（HH:MM）',
+                    priority: '{{priority}} - 任务优先级',
+                    status: '{{status}} - 任务状态',
+                    contexts: '{{contexts}} - 任务上下文',
+                    tags: '{{tags}} - 任务标签',
+                    projects: '{{projects}} - 任务项目'
+                }
+            },
+            instantConversion: {
+                useDefaultsOnInstantConvert: {
+                    name: '即时转换时使用任务默认值',
+                    description: '即时转换文本为任务时应用默认任务设置'
+                }
+            },
+            options: {
+                noDefault: '无默认值',
+                none: '无',
+                today: '今天',
+                tomorrow: '明天',
+                nextWeek: '下周',
+                daily: '每日',
+                weekly: '每周',
+                monthly: '每月',
+                yearly: '每年'
+            }
+        },
+        general: {
+            taskStorage: {
+                header: '任务存储',
+                description: '配置任务存储位置和识别方式。',
+                defaultFolder: {
+                    name: '默认任务文件夹',
+                    description: '新任务的默认位置'
+                },
+                moveArchived: {
+                    name: '将归档任务移动到文件夹',
+                    description: '自动将归档任务移动到归档文件夹'
+                },
+                archiveFolder: {
+                    name: '归档文件夹',
+                    description: '归档时移动任务到的文件夹'
+                }
+            },
+            taskIdentification: {
+                header: '任务识别',
+                description: '选择TaskNotes如何识别笔记为任务。',
+                identifyBy: {
+                    name: '识别任务通过',
+                    description: '选择是通过标签还是通过前置属性识别任务',
+                    options: {
+                        tag: '标签',
+                        property: '属性'
+                    }
+                },
+                taskTag: {
+                    name: '任务标签',
+                    description: '识别笔记为任务的标签（不含#）'
+                },
+                taskProperty: {
+                    name: '任务属性名称',
+                    description: '前置属性名称（例如，"category"）'
+                },
+                taskPropertyValue: {
+                    name: '任务属性值',
+                    description: '识别笔记为任务的值（例如，"task"）'
+                }
+            },
+            folderManagement: {
+                header: '文件夹管理',
+                excludedFolders: {
+                    name: '排除文件夹',
+                    description: '从笔记选项卡中排除的文件夹的逗号分隔列表'
+                }
+            },
+            taskInteraction: {
+                header: '任务交互',
+                description: '配置点击任务的行为。',
+                singleClick: {
+                    name: '单击操作',
+                    description: '单击任务卡片时执行的操作'
+                },
+                doubleClick: {
+                    name: '双击操作',
+                    description: '双击任务卡片时执行的操作'
+                },
+                actions: {
+                    edit: '编辑任务',
+                    openNote: '打开笔记',
+                    none: '无操作'
+                }
+            }
+        },
+        taskProperties: {
+            taskStatuses: {
+                header: '任务状态',
+                description: '自定义任务可用的状态选项。这些状态控制任务生命周期并确定何时任务被视为完成。',
+                howTheyWork: {
+                    title: '状态如何工作：',
+                    value: '值：存储在任务文件中的内部标识符（例如，"进行中"）',
+                    label: '标签：在界面中显示的显示名称（例如，"进行中"）',
+                    color: '颜色：状态点和徽章的视觉指示器颜色',
+                    completed: '已完成：选中时，具有此状态的任务被视为已完成，可能以不同方式过滤',
+                    autoArchive: '自动归档：启用时，任务将在指定延迟后自动归档（1-1440分钟）',
+                    orderNote: '下面的顺序确定点击任务状态徽章时循环状态的顺序。'
+                },
+                addNew: {
+                    name: '添加新状态',
+                    description: '为您的任务创建新的状态选项',
+                    buttonText: '添加状态'
+                },
+                validationNote: '注意：您必须至少有2个状态，并且至少一个状态必须标记为"已完成"。',
+                emptyState: '未配置自定义状态。添加状态以开始。',
+                emptyStateButton: '添加状态',
+                fields: {
+                    value: '值：',
+                    label: '标签：',
+                    color: '颜色：',
+                    completed: '已完成：',
+                    autoArchive: '自动归档：',
+                    delayMinutes: '延迟（分钟）：'
+                },
+                placeholders: {
+                    value: '进行中',
+                    label: '进行中'
+                },
+                badges: {
+                    completed: '已完成'
+                },
+                deleteConfirm: '您确定要删除状态"{label}"吗？'
+            },
+            taskPriorities: {
+                header: '任务优先级',
+                description: '自定义任务可用的优先级级别。优先级权重确定任务视图中的排序顺序和视觉层次。',
+                howTheyWork: {
+                    title: '优先级如何工作：',
+                    value: '值：存储在任务文件中的内部标识符（例如，"高"）',
+                    label: '显示标签：在界面中显示的显示名称（例如，"高优先级"）',
+                    color: '颜色：优先级点和徽章的视觉指示器颜色',
+                    weight: '权重：用于排序的数值（权重高的优先出现在列表中）',
+                    weightNote: '任务按优先级权重降序自动排序（最高权重优先）。权重可以是任何正数。'
+                },
+                addNew: {
+                    name: '添加新优先级',
+                    description: '为您的任务创建新的优先级级别',
+                    buttonText: '添加优先级'
+                },
+                validationNote: '注意：您必须至少有1个优先级。较高的权重在排序和视觉层次中优先。',
+                emptyState: '未配置自定义优先级。添加优先级以开始。',
+                emptyStateButton: '添加优先级',
+                fields: {
+                    value: '值：',
+                    label: '标签：',
+                    color: '颜色：',
+                    weight: '权重：'
+                },
+                placeholders: {
+                    value: '高',
+                    label: '高优先级'
+                },
+                weightLabel: '权重：{weight}',
+                deleteConfirm: '您必须至少有一个优先级',
+                deleteTooltip: '删除优先级'
+            },
+            fieldMapping: {
+                header: '字段映射',
+                warning: '⚠️ 警告：TaskNotes将使用这些属性名称进行读取和写入。在创建任务后更改这些可能导致不一致。',
+                description: '配置TaskNotes应为每个字段使用的前置属性。',
+                resetButton: {
+                    name: '重置字段映射',
+                    description: '将所有字段映射重置为默认值',
+                    buttonText: '重置为默认值'
+                },
+                notices: {
+                    resetSuccess: '字段映射已重置为默认值',
+                    resetFailure: '重置字段映射失败',
+                    updateFailure: '更新{label}的字段映射失败。请重试。'
+                },
+                table: {
+                    fieldHeader: 'TaskNotes字段',
+                    propertyHeader: '您的属性名称'
+                },
+                fields: {
+                    title: '标题',
+                    status: '状态',
+                    priority: '优先级',
+                    due: '到期日期',
+                    scheduled: '安排日期',
+                    contexts: '上下文',
+                    projects: '项目',
+                    timeEstimate: '时间估计',
+                    recurrence: '重复',
+                    dateCreated: '创建日期',
+                    completedDate: '完成日期',
+                    dateModified: '修改日期',
+                    archiveTag: '归档标签',
+                    timeEntries: '时间条目',
+                    completeInstances: '完成实例',
+                    pomodoros: '番茄钟',
+                    icsEventId: 'ICS事件ID',
+                    icsEventTag: 'ICS事件标签',
+                    reminders: '提醒'
+                }
+            },
+            customUserFields: {
+                header: '自定义用户字段',
+                description: '定义自定义前置属性，作为类型感知过滤选项出现在各个视图中。每行：显示名称、属性名称、类型。',
+                addNew: {
+                    name: '添加新用户字段',
+                    description: '创建将出现在过滤器和视图中的新自定义字段',
+                    buttonText: '添加用户字段'
+                },
+                emptyState: '未配置自定义用户字段。添加字段为您的任务创建自定义属性。',
+                emptyStateButton: '添加用户字段',
+                fields: {
+                    displayName: '显示名称：',
+                    propertyKey: '属性键：',
+                    type: '类型：'
+                },
+                placeholders: {
+                    displayName: '显示名称',
+                    propertyKey: '属性名称'
+                },
+                types: {
+                    text: '文本',
+                    number: '数字',
+                    boolean: '布尔值',
+                    date: '日期',
+                    list: '列表'
+                },
+                defaultNames: {
+                    unnamedField: '未命名字段',
+                    noKey: '无键'
+                },
+                deleteTooltip: '删除字段'
+            }
+        },
+        appearance: {
+            taskCards: {
+                header: '任务卡片',
+                description: '配置任务卡片在所有视图中的显示方式。',
+                defaultVisibleProperties: {
+                    name: '默认可见属性',
+                    description: '选择默认在任务卡片上显示的属性。'
+                },
+                propertyGroups: {
+                    coreProperties: '核心属性',
+                    organization: '组织',
+                    customProperties: '自定义属性'
+                },
+                properties: {
+                    status: '状态点',
+                    priority: '优先级点',
+                    due: '到期日期',
+                    scheduled: '安排日期',
+                    timeEstimate: '时间估计',
+                    totalTrackedTime: '总跟踪时间',
+                    recurrence: '重复',
+                    completedDate: '完成日期',
+                    createdDate: '创建日期',
+                    modifiedDate: '修改日期',
+                    projects: '项目',
+                    contexts: '上下文',
+                    tags: '标签'
+                }
+            },
+            taskFilenames: {
+                header: '任务文件名',
+                description: '配置创建任务文件时的命名方式。',
+                storeTitleInFilename: {
+                    name: '在文件名中存储标题',
+                    description: '使用任务标题作为文件名。任务标题更改时文件名会更新（推荐）。'
+                },
+                filenameFormat: {
+                    name: '文件名格式',
+                    description: '任务文件名的生成方式',
+                    options: {
+                        title: '任务标题（不更新）',
+                        zettel: 'Zettelkasten格式（YYMMDD + base36自午夜以来的秒数）',
+                        timestamp: '完整时间戳（YYYY-MM-DD-HHMMSS）',
+                        custom: '自定义模板'
+                    }
+                },
+                customTemplate: {
+                    name: '自定义文件名模板',
+                    description: '自定义文件名的模板。可用变量：{title}、{titleLower}、{titleUpper}、{titleSnake}、{titleKebab}、{titleCamel}、{titlePascal}、{date}、{shortDate}、{time}、{time12}、{time24}、{timestamp}、{dateTime}、{year}、{month}、{monthName}、{monthNameShort}、{day}、{dayName}、{dayNameShort}、{hour}、{hour12}、{minute}、{second}、{milliseconds}、{ms}、{ampm}、{week}、{quarter}、{unix}、{unixMs}、{timezone}、{timezoneShort}、{utcOffset}、{utcOffsetShort}、{utcZ}、{zettel}、{nano}、{priority}、{priorityShort}、{status}、{statusShort}、{dueDate}、{scheduledDate}',
+                    placeholder: '{date}-{title}-{dueDate}',
+                    helpText: '注意：{dueDate}和{scheduledDate}格式为YYYY-MM-DD，如果未设置则为空。'
+                }
+            },
+            displayFormatting: {
+                header: '显示格式',
+                description: '配置整个插件中日期、时间和其他数据的显示方式。',
+                timeFormat: {
+                    name: '时间格式',
+                    description: '在整个插件中以12小时或24小时格式显示时间',
+                    options: {
+                        twelveHour: '12小时（AM/PM）',
+                        twentyFourHour: '24小时'
+                    }
+                }
+            },
+            calendarView: {
+                header: '日历视图',
+                description: '自定义日历视图的外观和行为。',
+                defaultView: {
+                    name: '默认视图',
+                    description: '打开日历选项卡时显示的日历视图',
+                    options: {
+                        monthGrid: '月网格',
+                        weekTimeline: '周时间线',
+                        dayTimeline: '日时间线',
+                        yearView: '年视图',
+                        customMultiDay: '自定义多日'
+                    }
+                },
+                customDayCount: {
+                    name: '自定义视图天数',
+                    description: '自定义多日视图中显示的天数',
+                    placeholder: '3'
+                },
+                firstDayOfWeek: {
+                    name: '一周的第一天',
+                    description: '周视图中应作为第一列的日期'
+                },
+                showWeekends: {
+                    name: '显示周末',
+                    description: '在日历视图中显示周末'
+                },
+                showWeekNumbers: {
+                    name: '显示周数',
+                    description: '在日历视图中显示周数'
+                },
+                showTodayHighlight: {
+                    name: '显示今日高亮',
+                    description: '在日历视图中高亮当前日期'
+                },
+                showCurrentTimeIndicator: {
+                    name: '显示当前时间指示器',
+                    description: '在时间线视图中显示显示当前时间的线'
+                },
+                selectionMirror: {
+                    name: '选择镜像',
+                    description: '拖拽选择时间范围时显示视觉预览'
+                },
+                calendarLocale: {
+                    name: '日历区域设置',
+                    description: '日期格式和日历系统的日历区域设置（例如，"en"、"fa"表示波斯语/波斯文、"de"表示德语）。留空以从浏览器自动检测。',
+                    placeholder: '自动检测'
+                }
+            },
+            defaultEventVisibility: {
+                header: '默认事件可见性',
+                description: '配置打开高级日历时默认可见的事件类型。用户仍可在日历视图中切换这些开/关。',
+                showScheduledTasks: {
+                    name: '显示安排的任务',
+                    description: '默认显示有安排日期的任务'
+                },
+                showDueDates: {
+                    name: '显示到期日期',
+                    description: '默认显示任务到期日期'
+                },
+                showDueWhenScheduled: {
+                    name: '安排时显示到期日期',
+                    description: '即使对于已有安排日期的任务也显示到期日期'
+                },
+                showTimeEntries: {
+                    name: '显示时间条目',
+                    description: '默认显示已完成的时间跟踪条目'
+                },
+                showRecurringTasks: {
+                    name: '显示重复任务',
+                    description: '默认显示重复任务实例'
+                },
+                showICSEvents: {
+                    name: '显示ICS事件',
+                    description: '默认显示来自ICS订阅的事件'
+                }
+            },
+            timeSettings: {
+                header: '时间设置',
+                description: '配置时间线视图的时间相关显示设置。',
+                timeSlotDuration: {
+                    name: '时间段持续时间',
+                    description: '时间线视图中每个时间段的持续时间',
+                    options: {
+                        fifteenMinutes: '15分钟',
+                        thirtyMinutes: '30分钟',
+                        sixtyMinutes: '60分钟'
+                    }
+                },
+                startTime: {
+                    name: '开始时间',
+                    description: '时间线视图中显示的最早时间（HH:MM格式）',
+                    placeholder: '06:00'
+                },
+                endTime: {
+                    name: '结束时间',
+                    description: '时间线视图中显示的最晚时间（HH:MM格式）',
+                    placeholder: '22:00'
+                },
+                initialScrollTime: {
+                    name: '初始滚动时间',
+                    description: '打开时间线视图时滚动到的时间（HH:MM格式）',
+                    placeholder: '09:00'
+                }
+            },
+            uiElements: {
+                header: '界面元素',
+                description: '配置各种界面元素的显示。',
+                showTrackedTasksInStatusBar: {
+                    name: '在状态栏中显示跟踪的任务',
+                    description: '在Obsidian状态栏中显示当前跟踪的任务'
+                },
+                showProjectSubtasksWidget: {
+                    name: '显示项目子任务小部件',
+                    description: '显示显示当前项目笔记子任务的小部件'
+                },
+                projectSubtasksPosition: {
+                    name: '项目子任务位置',
+                    description: '项目子任务小部件的定位位置',
+                    options: {
+                        top: '笔记顶部',
+                        bottom: '笔记底部'
+                    }
+                },
+                showExpandableSubtasks: {
+                    name: '显示可展开子任务',
+                    description: '允许在任务卡片中展开/折叠子任务部分'
+                },
+                subtaskChevronPosition: {
+                    name: '子任务chevron位置',
+                    description: '任务卡片中展开/折叠chevron的位置',
+                    options: {
+                        left: '左侧',
+                        right: '右侧'
+                    }
+                },
+                viewsButtonAlignment: {
+                    name: '视图按钮对齐',
+                    description: '任务界面中视图/过滤器按钮的对齐方式',
+                    options: {
+                        left: '左侧',
+                        right: '右侧'
+                    }
+                }
+            },
+            projectAutosuggest: {
+                header: '项目自动建议',
+                description: '自定义任务创建期间项目建议的显示方式。',
+                requiredTags: {
+                    name: '必需标签',
+                    description: '仅显示具有这些标签之一的笔记（逗号分隔）。留空以显示所有笔记。',
+                    placeholder: '项目，活动，重要'
+                },
+                includeFolders: {
+                    name: '包含文件夹',
+                    description: '仅显示这些文件夹中的笔记（逗号分隔路径）。留空以显示所有文件夹。',
+                    placeholder: '项目/，工作/活动，个人'
+                },
+                requiredPropertyKey: {
+                    name: '必需属性键',
+                    description: '仅显示此前置属性与下面值匹配的笔记。留空以忽略。',
+                    placeholder: 'type'
+                },
+                requiredPropertyValue: {
+                    name: '必需属性值',
+                    description: '仅建议属性等于此值的笔记。留空以要求属性存在。',
+                    placeholder: 'project'
+                },
+                customizeDisplay: {
+                    name: '自定义建议显示',
+                    description: '显示高级选项以配置项目建议的显示方式及其显示的信息。'
+                },
+                enableFuzzyMatching: {
+                    name: '启用模糊匹配',
+                    description: '在项目搜索中允许拼写错误和部分匹配。在大型库中可能较慢。'
+                },
+                displayRowsHelp: '配置为每个项目建议显示最多3行信息。',
+                displayRows: {
+                    row1: {
+                        name: '第1行',
+                        description: '格式：{property|flags}。属性：title、aliases、file.path、file.parent。标志：n(Label)显示标签，s使其可搜索。示例：{title|n(Title)|s}',
+                        placeholder: '{title|n(Title)}'
+                    },
+                    row2: {
+                        name: '第2行（可选）',
+                        description: '常见模式：{aliases|n(Aliases)}、{file.parent|n(Folder)}、literal:自定义文本',
+                        placeholder: '{aliases|n(Aliases)}'
+                    },
+                    row3: {
+                        name: '第3行（可选）',
+                        description: '其他信息如{file.path|n(Path)}或自定义前置字段',
+                        placeholder: '{file.path|n(Path)}'
+                    }
+                },
+                quickReference: {
+                    header: '快速参考',
+                    properties: '可用属性：title、aliases、file.path、file.parent或任何前置字段',
+                    labels: '添加标签：{title|n(Title)} → "Title: My Project"',
+                    searchable: '使其可搜索：{description|s}在+搜索中包含描述',
+                    staticText: '静态文本：literal:My Custom Label',
+                    alwaysSearchable: '文件名、标题和别名默认始终可搜索。'
+                }
+            },
+            dataStorage: {
+                name: '存储位置',
+                description: '番茄钟会话历史的存储位置',
+                pluginData: '插件数据（推荐）',
+                dailyNotes: '日记',
+                notices: {
+                    locationChanged: '番茄钟存储位置已更改为{location}'
+                }
+            },
+            notifications: {
+                description: '配置任务提醒通知和警报。'
+            },
+            performance: {
+                description: '配置插件性能和行为选项。'
+            },
+            timeTrackingSection: {
+                description: '配置自动时间跟踪行为。'
+            },
+            recurringSection: {
+                description: '配置重复任务管理的行为。'
+            },
+            timeblocking: {
+                description: '配置时间块功能，在日记中进行轻量级调度。',
+                usage: '用法：在高级日历视图中，按住Shift + 拖拽创建时间块。拖拽移动现有时间块。调整边缘以调整持续时间。'
+            }
+        },
+        integrations: {
+            basesIntegration: {
+                header: 'Bases集成',
+                description: '配置与Obsidian Bases插件的集成。这是一个实验性功能，目前依赖于未记录的Obsidian API。行为可能会改变或中断。',
+                enable: {
+                    name: '启用Bases集成',
+                    description: '启用TaskNotes视图在Obsidian Bases插件中使用。必须启用Bases插件才能工作。'
+                },
+                notices: {
+                    enabled: 'Bases集成已启用。请重启Obsidian以完成设置。',
+                    disabled: 'Bases集成已禁用。请重启Obsidian以完成移除。'
+                }
+            },
+            calendarSubscriptions: {
+                header: '日历订阅',
+                description: '通过ICS/iCal URL订阅外部日历，以查看事件和任务。',
+                defaultNoteTemplate: {
+                    name: '默认笔记模板',
+                    description: '从ICS事件创建笔记的模板文件路径',
+                    placeholder: 'Templates/Event Template.md'
+                },
+                defaultNoteFolder: {
+                    name: '默认笔记文件夹',
+                    description: '从ICS事件创建笔记的文件夹',
+                    placeholder: 'Calendar/Events'
+                },
+                filenameFormat: {
+                    name: 'ICS笔记文件名格式',
+                    description: '从ICS事件创建笔记的文件名生成方式',
+                    options: {
+                        title: '事件标题',
+                        zettel: 'Zettelkasten格式',
+                        timestamp: '时间戳',
+                        custom: '自定义模板'
+                    }
+                },
+                customTemplate: {
+                    name: '自定义ICS文件名模板',
+                    description: '自定义ICS事件文件名的模板',
+                    placeholder: '{date}-{title}'
+                }
+            },
+            subscriptionsList: {
+                header: '日历订阅列表',
+                addSubscription: {
+                    name: '添加日历订阅',
+                    description: '从ICS/iCal URL或本地文件添加新的日历订阅',
+                    buttonText: '添加订阅'
+                },
+                refreshAll: {
+                    name: '刷新所有订阅',
+                    description: '手动刷新所有启用的日历订阅',
+                    buttonText: '刷新全部'
+                },
+                newCalendarName: '新日历',
+                emptyState: '未配置日历订阅。添加订阅以同步外部日历。',
+                notices: {
+                    addSuccess: '新日历订阅已添加 - 请配置详细信息',
+                    addFailure: '添加订阅失败',
+                    serviceUnavailable: 'ICS订阅服务不可用',
+                    refreshSuccess: '所有日历订阅刷新成功',
+                    refreshFailure: '刷新某些日历订阅失败',
+                    updateFailure: '更新订阅失败',
+                    deleteSuccess: '删除订阅"{name}"',
+                    deleteFailure: '删除订阅失败',
+                    enableFirst: '请先启用订阅',
+                    refreshSubscriptionSuccess: '刷新"{name}"',
+                    refreshSubscriptionFailure: '刷新订阅失败'
+                },
+                labels: {
+                    enabled: '已启用：',
+                    name: '名称：',
+                    type: '类型：',
+                    url: 'URL：',
+                    filePath: '文件路径：',
+                    color: '颜色：',
+                    refreshMinutes: '刷新（分钟）：'
+                },
+                typeOptions: {
+                    remote: '远程URL',
+                    local: '本地文件'
+                },
+                placeholders: {
+                    calendarName: '日历名称',
+                    url: 'ICS/iCal URL',
+                    filePath: '本地文件路径（例如，Calendar.ics）',
+                    localFile: 'Calendar.ics'
+                },
+                statusLabels: {
+                    enabled: '已启用',
+                    disabled: '已禁用',
+                    remote: '远程',
+                    localFile: '本地文件',
+                    remoteCalendar: '远程日历',
+                    localFileCalendar: '本地文件',
+                    synced: '{timeAgo}已同步',
+                    error: '错误'
+                },
+                actions: {
+                    refreshNow: '立即刷新',
+                    deleteSubscription: '删除订阅'
+                },
+                confirmDelete: {
+                    title: '删除订阅',
+                    message: '您确定要删除订阅"{name}"吗？此操作无法撤销。',
+                    confirmText: '删除'
+                }
+            },
+            autoExport: {
+                header: '自动ICS导出',
+                description: '自动将所有任务导出到ICS文件。',
+                enable: {
+                    name: '启用自动导出',
+                    description: '自动保持ICS文件与所有任务更新'
+                },
+                filePath: {
+                    name: '导出文件路径',
+                    description: 'ICS文件保存的路径（相对于库根目录）',
+                    placeholder: 'tasknotes-calendar.ics'
+                },
+                interval: {
+                    name: '更新间隔（5到1440分钟之间）',
+                    description: '更新导出文件的频率',
+                    placeholder: '60'
+                },
+                exportNow: {
+                    name: '立即导出',
+                    description: '手动触发立即导出',
+                    buttonText: '立即导出'
+                },
+                status: {
+                    title: '导出状态：',
+                    lastExport: '上次导出：{time}',
+                    nextExport: '下次导出：{time}',
+                    noExports: '尚未导出',
+                    notScheduled: '未计划',
+                    notInitialized: '自动导出服务未初始化 - 请重启Obsidian'
+                },
+                notices: {
+                    reloadRequired: '请重新加载Obsidian以使自动导出更改生效。',
+                    exportSuccess: '任务导出成功',
+                    exportFailure: '导出失败 - 检查控制台获取详细信息',
+                    serviceUnavailable: '自动导出服务不可用'
+                }
+            },
+            httpApi: {
+                header: 'HTTP API',
+                description: '启用HTTP API进行外部集成和自动化。',
+                enable: {
+                    name: '启用HTTP API',
+                    description: '启动本地HTTP服务器进行API访问'
+                },
+                port: {
+                    name: 'API端口',
+                    description: 'HTTP API服务器的端口号',
+                    placeholder: '3000'
+                },
+                authToken: {
+                    name: 'API认证令牌',
+                    description: 'API认证所需的令牌（留空表示无认证）',
+                    placeholder: 'your-secret-token'
+                },
+                endpoints: {
+                    header: '可用API端点',
+                    expandIcon: '▶',
+                    collapseIcon: '▼'
+                }
+            },
+            webhooks: {
+                header: 'Webhooks',
+                description: {
+                    overview: 'Webhooks在TaskNotes事件发生时向外部服务发送实时通知。',
+                    usage: '配置webhooks以与自动化工具、同步服务或自定义应用程序集成。'
+                },
+                addWebhook: {
+                    name: '添加Webhook',
+                    description: '注册新的webhook端点',
+                    buttonText: '添加Webhook'
+                },
+                emptyState: {
+                    message: '未配置webhooks。添加webhook以接收实时通知。',
+                    buttonText: '添加Webhook'
+                },
+                labels: {
+                    active: '活动：',
+                    url: 'URL：',
+                    events: '事件：',
+                    transform: '转换：'
+                },
+                placeholders: {
+                    url: 'Webhook URL',
+                    noEventsSelected: '未选择事件',
+                    rawPayload: '原始载荷（无转换）'
+                },
+                statusLabels: {
+                    active: '活动',
+                    inactive: '非活动',
+                    created: '创建于{timeAgo}'
+                },
+                actions: {
+                    editEvents: '编辑事件',
+                    delete: '删除'
+                },
+                notices: {
+                    urlUpdated: 'Webhook URL已更新',
+                    enabled: 'Webhook已启用',
+                    disabled: 'Webhook已禁用',
+                    created: 'Webhook创建成功',
+                    deleted: 'Webhook已删除',
+                    updated: 'Webhook已更新'
+                },
+                confirmDelete: {
+                    title: '删除Webhook',
+                    message: '您确定要删除此webhook吗？\n\nURL：{url}\n\n此操作无法撤销。',
+                    confirmText: '删除'
+                },
+                cardHeader: 'Webhook',
+                cardFields: {
+                    active: '活动：',
+                    url: 'URL：',
+                    events: '事件：',
+                    transform: '转换：'
+                },
+                eventsDisplay: {
+                    noEvents: '未选择事件'
+                },
+                transformDisplay: {
+                    noTransform: '原始载荷（无转换）'
+                },
+                secretModal: {
+                    title: 'Webhook密钥已生成',
+                    description: '您的webhook密钥已生成。保存此密钥，因为您无法再次查看它：',
+                    usage: '使用此密钥在您的接收应用程序中验证webhook载荷。',
+                    gotIt: '知道了'
+                },
+                editModal: {
+                    title: '编辑Webhook',
+                    eventsHeader: '要订阅的事件'
+                },
+                events: {
+                    taskCreated: {
+                        label: '任务已创建',
+                        description: '创建新任务时'
+                    },
+                    taskUpdated: {
+                        label: '任务已更新',
+                        description: '修改任务时'
+                    },
+                    taskCompleted: {
+                        label: '任务已完成',
+                        description: '标记任务为完成时'
+                    },
+                    taskDeleted: {
+                        label: '任务已删除',
+                        description: '删除任务时'
+                    },
+                    taskArchived: {
+                        label: '任务已归档',
+                        description: '归档任务时'
+                    },
+                    taskUnarchived: {
+                        label: '任务已取消归档',
+                        description: '取消归档任务时'
+                    },
+                    timeStarted: {
+                        label: '时间已开始',
+                        description: '开始时间跟踪时'
+                    },
+                    timeStopped: {
+                        label: '时间已停止',
+                        description: '停止时间跟踪时'
+                    },
+                    pomodoroStarted: {
+                        label: '番茄钟已开始',
+                        description: '番茄钟会话开始时'
+                    },
+                    pomodoroCompleted: {
+                        label: '番茄钟已完成',
+                        description: '番茄钟会话完成时'
+                    },
+                    pomodoroInterrupted: {
+                        label: '番茄钟已中断',
+                        description: '番茄钟会话停止时'
+                    },
+                    recurringCompleted: {
+                        label: '重复实例已完成',
+                        description: '重复任务实例完成时'
+                    },
+                    reminderTriggered: {
+                        label: '提醒已触发',
+                        description: '任务提醒激活时'
+                    }
+                },
+                modals: {
+                    secretGenerated: {
+                        title: 'Webhook密钥已生成',
+                        description: '您的webhook密钥已生成。保存此密钥，因为您无法再次查看它：',
+                        usage: '使用此密钥在您的接收应用程序中验证webhook载荷。',
+                        buttonText: '知道了'
+                    },
+                    edit: {
+                        title: '编辑Webhook',
+                        eventsSection: '要订阅的事件',
+                        transformSection: '转换配置（可选）',
+                        headersSection: '标头配置',
+                        transformFile: {
+                            name: '转换文件',
+                            description: '库中转换webhook载荷的.js或.json文件路径',
+                            placeholder: 'discord-transform.js'
+                        },
+                        customHeaders: {
+                            name: '包含自定义标头',
+                            description: '包含TaskNotes标头（事件类型、签名、交付ID）。对于Discord、Slack和其他具有严格CORS策略的服务，请关闭。'
+                        },
+                        buttons: {
+                            cancel: '取消',
+                            save: '保存更改'
+                        },
+                        notices: {
+                            selectAtLeastOneEvent: '请至少选择一个事件'
+                        }
+                    },
+                    add: {
+                        title: '添加Webhook',
+                        eventsSection: '要订阅的事件',
+                        transformSection: '转换配置（可选）',
+                        headersSection: '标头配置',
+                        url: {
+                            name: 'Webhook URL',
+                            description: '将发送webhook载荷的端点',
+                            placeholder: 'https://your-service.com/webhook'
+                        },
+                        transformFile: {
+                            name: '转换文件',
+                            description: '库中转换webhook载荷的.js或.json文件路径',
+                            placeholder: 'discord-transform.js'
+                        },
+                        customHeaders: {
+                            name: '包含自定义标头',
+                            description: '包含TaskNotes标头（事件类型、签名、交付ID）。对于Discord、Slack和其他具有严格CORS策略的服务，请关闭。'
+                        },
+                        transformHelp: {
+                            title: '转换文件允许您自定义webhook载荷：',
+                            jsFiles: '.js文件：',
+                            jsDescription: ' 自定义JavaScript转换',
+                            jsonFiles: '.json文件：',
+                            jsonDescription: ' 使用模板',
+                            jsonVariable: '${data.task.title}',
+                            leaveEmpty: '留空：',
+                            leaveEmptyDescription: ' 发送原始数据',
+                            example: '示例：',
+                            exampleFile: 'discord-transform.js'
+                        },
+                        buttons: {
+                            cancel: '取消',
+                            add: '添加Webhook'
+                        },
+                        notices: {
+                            urlRequired: '需要Webhook URL',
+                            selectAtLeastOneEvent: '请至少选择一个事件'
+                        }
+                    }
+                }
+            },
+            otherIntegrations: {
+                header: '其他插件集成',
+                description: '配置与其他Obsidian插件的集成。'
+            },
+            timeFormats: {
+                justNow: '刚刚',
+                minutesAgo: '{minutes}分钟{plural}前',
+                hoursAgo: '{hours}小时{plural}前',
+                daysAgo: '{days}天{plural}前'
+            }
+        }
+    },
+    notices: {
+        languageChanged: '语言已更改为{language}。',
+        exportTasksFailed: '导出任务为ICS文件失败'
+    },
+    commands: {
+        openCalendarView: '打开迷你日历视图',
+        openAdvancedCalendarView: '打开高级日历视图',
+        openTasksView: '打开任务视图',
+        openNotesView: '打开笔记视图',
+        openAgendaView: '打开议程视图',
+        openPomodoroView: '打开番茄钟计时器',
+        openKanbanView: '打开看板',
+        openPomodoroStats: '打开番茄钟统计',
+        openStatisticsView: '打开任务和项目统计',
+        createNewTask: '创建新任务',
+        convertToTaskNote: '转换任务为TaskNote',
+        convertAllTasksInNote: '转换笔记中的所有任务',
+        insertTaskNoteLink: '插入任务笔记链接',
+        createInlineTask: '创建新内联任务',
+        quickActionsCurrentTask: '当前任务的快速操作',
+        goToTodayNote: '转到今日笔记',
+        startPomodoro: '开始番茄钟计时器',
+        stopPomodoro: '停止番茄钟计时器',
+        pauseResumePomodoro: '暂停/恢复番茄钟计时器',
+        refreshCache: '刷新缓存',
+        exportAllTasksIcs: '导出所有任务为ICS文件'
+    },
+    modals: {
+        task: {
+            titlePlaceholder: '需要做什么？',
+            titleLabel: '标题',
+            titleDetailedPlaceholder: '任务标题...',
+            detailsLabel: '详情',
+            detailsPlaceholder: '添加更多详情...',
+            projectsLabel: '项目',
+            projectsAdd: '添加项目',
+            projectsTooltip: '使用模糊搜索选择项目笔记',
+            projectsRemoveTooltip: '移除项目',
+            contextsLabel: '上下文',
+            contextsPlaceholder: '上下文1，上下文2',
+            tagsLabel: '标签',
+            tagsPlaceholder: '标签1，标签2',
+            timeEstimateLabel: '时间估计（分钟）',
+            timeEstimatePlaceholder: '30',
+            customFieldsLabel: '自定义字段',
+            actions: {
+                due: '设置到期日期',
+                scheduled: '设置安排日期',
+                status: '设置状态',
+                priority: '设置优先级',
+                recurrence: '设置重复',
+                reminders: '设置提醒'
+            },
+            buttons: {
+                openNote: '打开笔记',
+                save: '保存'
+            },
+            tooltips: {
+                dueValue: '到期：{value}',
+                scheduledValue: '安排：{value}',
+                statusValue: '状态：{value}',
+                priorityValue: '优先级：{value}',
+                recurrenceValue: '重复：{value}',
+                remindersSingle: '设置了1个提醒',
+                remindersPlural: '设置了{count}个提醒'
+            },
+            dateMenu: {
+                dueTitle: '设置到期日期',
+                scheduledTitle: '设置安排日期'
+            },
+            userFields: {
+                textPlaceholder: '输入{field}...',
+                numberPlaceholder: '0',
+                datePlaceholder: 'YYYY-MM-DD',
+                listPlaceholder: '项目1，项目2，项目3',
+                pickDate: '选择{field}日期'
+            },
+            recurrence: {
+                daily: '每日',
+                weekly: '每周',
+                everyTwoWeeks: '每2周',
+                weekdays: '工作日',
+                weeklyOn: '每周{days}',
+                monthly: '每月',
+                everyThreeMonths: '每3个月',
+                monthlyOnOrdinal: '每月{ordinal}',
+                monthlyByWeekday: '每月（按工作日）',
+                yearly: '每年',
+                yearlyOn: '每年{month}{day}',
+                custom: '自定义',
+                countSuffix: '{count}次',
+                untilSuffix: '直到{date}',
+                ordinal: '{number}{suffix}'
+            }
+        },
+        taskCreation: {
+            title: '创建任务',
+            actions: {
+                fillFromNaturalLanguage: '从自然语言填写表单',
+                hideDetailedOptions: '隐藏详细选项',
+                showDetailedOptions: '显示详细选项'
+            },
+            nlPlaceholder: '明天下午3点@家买杂货 #差事\n\n在这里添加详情...',
+            notices: {
+                titleRequired: '请输入任务标题',
+                success: '任务"{title}"创建成功',
+                successShortened: '任务"{title}"创建成功（因长度而缩短文件名）',
+                failure: '创建任务失败：{message}'
+            }
+        },
+        taskEdit: {
+            title: '编辑任务',
+            sections: {
+                completions: '完成',
+                taskInfo: '任务信息'
+            },
+            metadata: {
+                totalTrackedTime: '总跟踪时间：',
+                created: '创建：',
+                modified: '修改：',
+                file: '文件：'
+            },
+            buttons: {
+                archive: '归档',
+                unarchive: '取消归档'
+            },
+            notices: {
+                titleRequired: '请输入任务标题',
+                noChanges: '没有要保存的更改',
+                updateSuccess: '任务"{title}"更新成功',
+                updateFailure: '更新任务失败：{message}',
+                fileMissing: '找不到任务文件：{path}',
+                openNoteFailure: '打开任务笔记失败',
+                archiveSuccess: '任务{action}成功',
+                archiveFailure: '归档任务失败'
+            },
+            archiveAction: {
+                archived: '已归档',
+                unarchived: '已取消归档'
+            }
+        },
+        storageLocation: {
+            title: {
+                migrate: '迁移番茄钟数据？',
+                switch: '切换到日记存储？'
+            },
+            message: {
+                migrate: '这将把现有的番茄钟会话数据迁移到日记前置数据。数据将按日期分组并存储在每个日记中。',
+                switch: '番茄钟会话数据将存储在日记前置数据中，而不是插件数据文件中。'
+            },
+            whatThisMeans: '这意味着：',
+            bullets: {
+                dailyNotesRequired: '日记核心插件必须保持启用',
+                storedInNotes: '数据将存储在您的日记前置数据中',
+                migrateData: '现有插件数据将迁移然后清除',
+                futureSessions: '未来的会话将保存到日记',
+                dataLongevity: '这提供了与您的笔记更好的数据持久性'
+            },
+            finalNote: {
+                migrate: '⚠️ 如果需要，请确保您有备份。此更改无法自动撤销。',
+                switch: '您可以随时在将来切换回插件存储。'
+            },
+            buttons: {
+                migrate: '迁移数据',
+                switch: '切换存储'
+            }
+        }
+    },
+    contextMenus: {
+        task: {
+            status: '状态',
+            statusSelected: '✓ {label}',
+            priority: '优先级',
+            prioritySelected: '✓ {label}',
+            dueDate: '到期日期',
+            scheduledDate: '安排日期',
+            reminders: '提醒',
+            remindBeforeDue: '到期前提醒...',
+            remindBeforeScheduled: '安排前提醒...',
+            manageReminders: '管理所有提醒...',
+            clearReminders: '清除所有提醒',
+            startTimeTracking: '开始时间跟踪',
+            stopTimeTracking: '停止时间跟踪',
+            archive: '归档',
+            unarchive: '取消归档',
+            openNote: '打开笔记',
+            copyTitle: '复制任务标题',
+            noteActions: '笔记操作',
+            rename: '重命名',
+            renameTitle: '重命名文件',
+            renamePlaceholder: '输入新名称',
+            delete: '删除',
+            deleteTitle: '删除文件',
+            deleteMessage: '您确定要删除"{name}"吗？',
+            deleteConfirm: '删除',
+            copyPath: '复制路径',
+            copyUrl: '复制Obsidian URL',
+            showInExplorer: '在文件浏览器中显示',
+            addToCalendar: '添加到日历',
+            calendar: {
+                google: 'Google日历',
+                outlook: 'Outlook日历',
+                yahoo: 'Yahoo日历',
+                downloadIcs: '下载.ics文件'
+            },
+            recurrence: '重复',
+            clearRecurrence: '清除重复',
+            customRecurrence: '自定义重复...',
+            createSubtask: '创建子任务',
+            subtasks: {
+                loading: '正在加载子任务...',
+                noSubtasks: '未找到子任务',
+                loadFailed: '加载子任务失败'
+            },
+            markComplete: '标记此日期完成',
+            markIncomplete: '标记此日期未完成',
+            quickReminders: {
+                atTime: '在事件时间',
+                fiveMinutes: '提前5分钟',
+                fifteenMinutes: '提前15分钟',
+                oneHour: '提前1小时',
+                oneDay: '提前1天'
+            },
+            notices: {
+                toggleCompletionFailure: '切换重复任务完成失败：{message}',
+                updateDueDateFailure: '更新任务到期日期失败：{message}',
+                updateScheduledFailure: '更新任务安排日期失败：{message}',
+                updateRemindersFailure: '更新提醒失败',
+                clearRemindersFailure: '清除提醒失败',
+                addReminderFailure: '添加提醒失败',
+                archiveFailure: '切换任务归档失败：{message}',
+                copyTitleSuccess: '任务标题已复制到剪贴板',
+                copyFailure: '复制到剪贴板失败',
+                renameSuccess: '重命名为"{name}"',
+                renameFailure: '重命名文件失败',
+                copyPathSuccess: '文件路径已复制到剪贴板',
+                copyUrlSuccess: 'Obsidian URL已复制到剪贴板',
+                updateRecurrenceFailure: '更新任务重复失败：{message}'
+            }
+        },
+        ics: {
+            showDetails: '显示详情',
+            createTask: '从事件创建任务',
+            createNote: '从事件创建笔记',
+            linkNote: '链接现有笔记',
+            copyTitle: '复制标题',
+            copyLocation: '复制位置',
+            copyUrl: '复制URL',
+            copyMarkdown: '复制为markdown',
+            subscriptionUnknown: '未知日历',
+            notices: {
+                copyTitleSuccess: '事件标题已复制到剪贴板',
+                copyLocationSuccess: '位置已复制到剪贴板',
+                copyUrlSuccess: '事件URL已复制到剪贴板',
+                copyMarkdownSuccess: '事件详情已复制为markdown',
+                copyFailure: '复制到剪贴板失败',
+                taskCreated: '任务已创建：{title}',
+                taskCreateFailure: '从事件创建任务失败',
+                noteCreated: '笔记创建成功',
+                creationFailure: '打开创建模态框失败',
+                linkSuccess: '已将笔记"{name}"链接到事件',
+                linkFailure: '链接笔记失败',
+                linkSelectionFailure: '打开笔记选择失败'
+            },
+            markdown: {
+                titleFallback: '无标题事件',
+                calendar: '**日历：** {value}',
+                date: '**日期和时间：** {value}',
+                location: '**位置：** {value}',
+                descriptionHeading: '### 描述',
+                url: '**URL：** {value}',
+                at: ' 在{time}'
+            }
+        },
+        date: {
+            increment: {
+                plusOneDay: '+1天',
+                minusOneDay: '-1天',
+                plusOneWeek: '+1周',
+                minusOneWeek: '-1周'
+            },
+            basic: {
+                today: '今天',
+                tomorrow: '明天',
+                thisWeekend: '本周末',
+                nextWeek: '下周',
+                nextMonth: '下个月'
+            },
+            weekdaysLabel: '工作日',
+            selected: '✓ {label}',
+            pickDateTime: '选择日期和时间...',
+            clearDate: '清除日期',
+            modal: {
+                title: '设置日期和时间',
+                dateLabel: '日期',
+                timeLabel: '时间（可选）',
+                select: '选择'
+            }
+        }
+    },
+    services: {
+        pomodoro: {
+            notices: {
+                alreadyRunning: '番茄钟已经在运行',
+                resumeCurrentSession: '恢复当前会话而不是开始新的',
+                timerAlreadyRunning: '计时器已经在运行',
+                resumeSessionInstead: '恢复当前会话而不是开始新的',
+                shortBreakStarted: '短休息已开始',
+                longBreakStarted: '长休息已开始',
+                paused: '番茄钟已暂停',
+                resumed: '番茄钟已恢复',
+                stoppedAndReset: '番茄钟已停止并重置',
+                migrationSuccess: '成功将{count}个番茄钟会话迁移到日记。',
+                migrationFailure: '迁移番茄钟数据失败。请重试或检查控制台获取详细信息。'
+            }
+        },
+        icsSubscription: {
+            notices: {
+                calendarNotFound: '找不到日历"{name}"（404）。请检查ICS URL是否正确且日历可公开访问。',
+                calendarAccessDenied: '日历"{name}"访问被拒绝（500）。这可能是由于Microsoft Outlook服务器限制。尝试从日历设置重新生成ICS URL。',
+                fetchRemoteFailed: '获取远程日历"{name}"失败：{error}',
+                readLocalFailed: '读取本地日历"{name}"失败：{error}'
+            }
+        },
+        calendarExport: {
+            notices: {
+                generateLinkFailed: '生成日历链接失败',
+                noTasksToExport: '没有找到要导出的任务',
+                downloadSuccess: '下载了{filename}，包含{count}个任务{plural}',
+                downloadFailed: '下载日历文件失败',
+                singleDownloadSuccess: '下载了{filename}'
+            }
+        },
+        filter: {
+            groupLabels: {
+                noProject: '无项目',
+                noTags: '无标签',
+                invalidDate: '无效日期',
+                due: {
+                    overdue: '逾期',
+                    today: '今天',
+                    tomorrow: '明天',
+                    nextSevenDays: '接下来七天',
+                    later: '以后',
+                    none: '无到期日期'
+                },
+                scheduled: {
+                    past: '过去安排',
+                    today: '今天',
+                    tomorrow: '明天',
+                    nextSevenDays: '接下来七天',
+                    later: '以后',
+                    none: '无安排日期'
+                }
+            },
+            errors: {
+                noDatesProvided: '未提供日期'
+            },
+            folders: {
+                root: '（根目录）'
+            }
+        },
+        instantTaskConvert: {
+            notices: {
+                noCheckboxTasks: '在当前笔记中未找到复选框任务。',
+                convertingTasks: '正在转换{count}个任务{plural}...',
+                conversionSuccess: '✅ 成功将{count}个任务{plural}转换为TaskNotes！',
+                partialConversion: '转换了{successCount}个任务{successPlural}。{failureCount}个失败。',
+                batchConversionFailed: '批量转换失败。请重试。',
+                invalidParameters: '无效的输入参数。',
+                emptyLine: '当前行为空或不包含有效内容。',
+                parseError: '解析任务错误：{error}',
+                invalidTaskData: '无效的任务数据。',
+                replaceLineFailed: '替换任务行失败。',
+                conversionComplete: '任务已转换：{title}',
+                conversionCompleteShortened: '任务已转换："{title}"（因长度而缩短文件名）',
+                fileExists: '此名称的文件已存在。请重试或重命名任务。',
+                conversionFailed: '转换任务失败。请重试。'
+            }
+        },
+        icsNote: {
+            notices: {
+                templateNotFound: '找不到模板：{path}',
+                templateProcessError: '处理模板错误：{template}',
+                linkedToEvent: '已将笔记链接到ICS事件：{title}'
+            }
+        },
+        task: {
+            notices: {
+                templateNotFound: '找不到任务正文模板：{path}',
+                templateReadError: '读取任务正文模板错误：{template}',
+                moveTaskFailed: '移动{operation}任务失败：{error}'
+            }
+        },
+        autoExport: {
+            notices: {
+                exportFailed: 'TaskNotes自动导出失败：{error}'
+            }
+        },
+        notification: {
+            notices: {
+                // NotificationService使用Notice进行应用内通知
+                // 但消息来自提醒内容，所以没有硬编码字符串需要翻译
+            }
+        }
+    },
+    ui: {
+        icsCard: {
+            untitledEvent: '无标题事件',
+            allDay: '全天',
+            calendarEvent: '日历事件',
+            calendarFallback: '日历'
+        },
+        noteCard: {
+            createdLabel: '创建：',
+            dailyBadge: '日记',
+            dailyTooltip: '日记'
+        },
+        filterHeading: {
+            allViewName: '全部'
+        },
+        filterBar: {
+            saveView: '保存视图',
+            saveViewNamePlaceholder: '输入视图名称...',
+            saveButton: '保存',
+            views: '视图',
+            savedFilterViews: '已保存的过滤视图',
+            filters: '过滤器',
+            properties: '属性',
+            sort: '排序',
+            newTask: '新建',
+            expandAllGroups: '展开所有分组',
+            collapseAllGroups: '折叠所有分组',
+            searchTasksPlaceholder: '搜索任务...',
+            searchTasksTooltip: '搜索任务标题',
+            filterUnavailable: '过滤栏暂时不可用',
+            toggleFilter: '切换过滤器',
+            activeFiltersTooltip: '活动过滤器 – 点击修改，右键清除',
+            configureVisibleProperties: '配置可见属性',
+            sortAndGroupOptions: '排序和分组选项',
+            sortMenuHeader: '排序',
+            orderMenuHeader: '顺序',
+            groupMenuHeader: '分组',
+            createNewTask: '创建新任务',
+            filter: '过滤器',
+            displayOrganization: '显示和组织',
+            viewOptions: '视图选项',
+            addFilter: '添加过滤器',
+            addFilterGroup: '添加过滤组',
+            addFilterTooltip: '添加新的过滤条件',
+            addFilterGroupTooltip: '添加嵌套过滤组',
+            clearAllFilters: '清除所有过滤器和组',
+            saveCurrentFilter: '将当前过滤器保存为视图',
+            closeFilterModal: '关闭过滤模态框',
+            deleteFilterGroup: '删除过滤组',
+            deleteCondition: '删除条件',
+            all: '全部',
+            any: '任何',
+            followingAreTrue: '以下为真：',
+            where: '其中',
+            selectProperty: '选择...',
+            chooseProperty: '选择要过滤的任务属性',
+            chooseOperator: '选择如何比较属性值',
+            enterValue: '输入要过滤的值',
+            selectValue: '选择要过滤的{property}',
+            sortBy: '排序依据：',
+            toggleSortDirection: '切换排序方向',
+            chooseSortMethod: '选择如何排序任务',
+            groupBy: '分组依据：',
+            chooseGroupMethod: '按共同属性分组任务',
+            toggleViewOption: '切换{option}',
+            expandCollapseFilters: '点击展开/折叠过滤条件',
+            expandCollapseSort: '点击展开/折叠排序和分组选项',
+            expandCollapseViewOptions: '点击展开/折叠视图特定选项',
+            naturalLanguageDates: '自然语言日期',
+            naturalLanguageExamples: '显示自然语言日期示例',
+            enterNumericValue: '输入要过滤的数值',
+            enterDateValue: '使用自然语言或ISO格式输入日期',
+            pickDateTime: '选择日期和时间',
+            noSavedViews: '没有保存的视图',
+            savedViews: '保存的视图',
+            yourSavedFilters: '您保存的过滤配置',
+            dragToReorder: '拖拽重新排序视图',
+            loadSavedView: '加载保存的视图：{name}',
+            deleteView: '删除视图',
+            deleteViewTitle: '删除视图',
+            deleteViewMessage: '您确定要删除视图"{name}"吗？',
+            manageAllReminders: '管理所有提醒...',
+            clearAllReminders: '清除所有提醒',
+            customRecurrence: '自定义重复...',
+            clearRecurrence: '清除重复',
+            sortOptions: {
+                dueDate: '到期日期',
+                scheduledDate: '安排日期',
+                priority: '优先级',
+                title: '标题',
+                createdDate: '创建日期',
+                tags: '标签',
+                ascending: '升序',
+                descending: '降序'
+            },
+            group: {
+                none: '无',
+                status: '状态',
+                priority: '优先级',
+                context: '上下文',
+                project: '项目',
+                dueDate: '到期日期',
+                scheduledDate: '安排日期',
+                tags: '标签'
+            },
+            notices: {
+                propertiesMenuFailed: '显示属性菜单失败'
+            }
+        }
+    },
+    components: {
+        propertyVisibilityDropdown: {
+            coreProperties: '核心属性',
+            organization: '组织',
+            customProperties: '自定义属性',
+            failed: '显示属性菜单失败',
+            properties: {
+                statusDot: '状态点',
+                priorityDot: '优先级点',
+                dueDate: '到期日期',
+                scheduledDate: '安排日期',
+                timeEstimate: '时间估计',
+                totalTrackedTime: '总跟踪时间',
+                recurrence: '重复',
+                completedDate: '完成日期',
+                createdDate: '创建日期',
+                modifiedDate: '修改日期',
+                projects: '项目',
+                contexts: '上下文',
+                tags: '标签'
+            }
+        },
+        reminderContextMenu: {
+            remindBeforeDue: '到期前提醒...',
+            remindBeforeScheduled: '安排前提醒...',
+            manageAllReminders: '管理所有提醒...',
+            clearAllReminders: '清除所有提醒',
+            quickReminders: {
+                atTime: '在事件时间',
+                fiveMinutesBefore: '提前5分钟',
+                fifteenMinutesBefore: '提前15分钟',
+                oneHourBefore: '提前1小时',
+                oneDayBefore: '提前1天'
+            }
+        },
+        recurrenceContextMenu: {
+            daily: '每日',
+            weeklyOn: '每周{day}',
+            everyTwoWeeksOn: '每2周{day}',
+            monthlyOnThe: '每月{ordinal}',
+            everyThreeMonthsOnThe: '每3个月{ordinal}',
+            yearlyOn: '每年{month}{ordinal}',
+            weekdaysOnly: '仅工作日',
+            customRecurrence: '自定义重复...',
+            clearRecurrence: '清除重复',
+            customRecurrenceModal: {
+                title: '自定义重复',
+                startDate: '开始日期',
+                startDateDesc: '重复模式开始的日期',
+                startTime: '开始时间',
+                startTimeDesc: '重复实例应出现的时间（可选）',
+                frequency: '频率',
+                interval: '间隔',
+                intervalDesc: '每X天/周/月/年',
+                daysOfWeek: '一周中的天',
+                daysOfWeekDesc: '选择特定天（用于每周重复）',
+                monthlyRecurrence: '每月重复',
+                monthlyRecurrenceDesc: '选择如何每月重复',
+                yearlyRecurrence: '每年重复',
+                yearlyRecurrenceDesc: '选择如何每年重复',
+                endCondition: '结束条件',
+                endConditionDesc: '选择重复何时结束',
+                neverEnds: '永不结束',
+                endAfterOccurrences: '{count}次后结束',
+                endOnDate: '在{date}结束',
+                onDayOfMonth: '每月{day}日',
+                onTheWeekOfMonth: '每月第{week}个{day}',
+                onDateOfYear: '每年{month}{day}',
+                onTheWeekOfYear: '每年{month}第{week}个{day}',
+                frequencies: {
+                    daily: '每日',
+                    weekly: '每周',
+                    monthly: '每月',
+                    yearly: '每年'
+                },
+                weekPositions: {
+                    first: '第一',
+                    second: '第二',
+                    third: '第三',
+                    fourth: '第四',
+                    last: '最后'
+                },
+                weekdays: {
+                    monday: '星期一',
+                    tuesday: '星期二',
+                    wednesday: '星期三',
+                    thursday: '星期四',
+                    friday: '星期五',
+                    saturday: '星期六',
+                    sunday: '星期日'
+                },
+                weekdaysShort: {
+                    mon: '周一',
+                    tue: '周二',
+                    wed: '周三',
+                    thu: '周四',
+                    fri: '周五',
+                    sat: '周六',
+                    sun: '周日'
+                },
+                cancel: '取消',
+                save: '保存'
+            }
+        }
+    }
+};
