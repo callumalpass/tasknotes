@@ -11,7 +11,9 @@ export const en: TranslationTree = {
         systemDefault: 'System default',
         languages: {
             en: 'English',
-            fr: 'French'
+            fr: 'French',
+            ru: 'Russian',
+            zh: 'Chinese'
         },
         weekdays: {
             sunday: 'Sunday',
@@ -1537,6 +1539,80 @@ export const en: TranslationTree = {
             buttons: {
                 migrate: 'Migrate data',
                 switch: 'Switch storage'
+            }
+        },
+        dueDate: {
+            title: 'Set Due Date',
+            taskLabel: 'Task: {title}',
+            sections: {
+                dateTime: 'Due Date & Time',
+                quickOptions: 'Quick Options'
+            },
+            descriptions: {
+                dateTime: 'Set when this task should be completed'
+            },
+            inputs: {
+                date: {
+                    ariaLabel: 'Due date for task',
+                    placeholder: 'YYYY-MM-DD'
+                },
+                time: {
+                    ariaLabel: 'Due time for task (optional)',
+                    placeholder: 'HH:MM'
+                }
+            },
+            quickOptions: {
+                today: 'Today',
+                todayAriaLabel: 'Set due date to today',
+                tomorrow: 'Tomorrow',
+                tomorrowAriaLabel: 'Set due date to tomorrow',
+                nextWeek: 'Next week',
+                nextWeekAriaLabel: 'Set due date to next week',
+                now: 'Now',
+                nowAriaLabel: 'Set due date and time to now',
+                clear: 'Clear',
+                clearAriaLabel: 'Clear due date'
+            },
+            errors: {
+                invalidDateTime: 'Please enter a valid date and time format',
+                updateFailed: 'Failed to update due date. Please try again.'
+            }
+        },
+        scheduledDate: {
+            title: 'Set Scheduled Date',
+            taskLabel: 'Task: {title}',
+            sections: {
+                dateTime: 'Scheduled Date & Time',
+                quickOptions: 'Quick Options'
+            },
+            descriptions: {
+                dateTime: 'Set when you plan to work on this task'
+            },
+            inputs: {
+                date: {
+                    ariaLabel: 'Scheduled date for task',
+                    placeholder: 'YYYY-MM-DD'
+                },
+                time: {
+                    ariaLabel: 'Scheduled time for task (optional)',
+                    placeholder: 'HH:MM'
+                }
+            },
+            quickOptions: {
+                today: 'Today',
+                todayAriaLabel: 'Set scheduled date to today',
+                tomorrow: 'Tomorrow',
+                tomorrowAriaLabel: 'Set scheduled date to tomorrow',
+                nextWeek: 'Next week',
+                nextWeekAriaLabel: 'Set scheduled date to next week',
+                now: 'Now',
+                nowAriaLabel: 'Set scheduled date and time to now',
+                clear: 'Clear',
+                clearAriaLabel: 'Clear scheduled date'
+            },
+            errors: {
+                invalidDateTime: 'Please enter a valid date and time format',
+                updateFailed: 'Failed to update scheduled date. Please try again.'
             }
         }
     },

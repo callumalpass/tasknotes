@@ -1540,6 +1540,80 @@ export const ru: TranslationTree = {
                 migrate: 'Мигрировать данные',
                 switch: 'Переключить хранилище'
             }
+        },
+        dueDate: {
+            title: 'Установить срок выполнения',
+            taskLabel: 'Задача: {title}',
+            sections: {
+                dateTime: 'Дата и время выполнения',
+                quickOptions: 'Быстрые опции'
+            },
+            descriptions: {
+                dateTime: 'Установить когда эта задача должна быть выполнена'
+            },
+            inputs: {
+                date: {
+                    ariaLabel: 'Дата выполнения задачи',
+                    placeholder: 'ГГГГ-ММ-ДД'
+                },
+                time: {
+                    ariaLabel: 'Время выполнения задачи (необязательно)',
+                    placeholder: 'ЧЧ:ММ'
+                }
+            },
+            quickOptions: {
+                today: 'Сегодня',
+                todayAriaLabel: 'Установить срок выполнения на сегодня',
+                tomorrow: 'Завтра',
+                tomorrowAriaLabel: 'Установить срок выполнения на завтра',
+                nextWeek: 'Следующая неделя',
+                nextWeekAriaLabel: 'Установить срок выполнения на следующую неделю',
+                now: 'Сейчас',
+                nowAriaLabel: 'Установить дату и время выполнения на сейчас',
+                clear: 'Очистить',
+                clearAriaLabel: 'Очистить срок выполнения'
+            },
+            errors: {
+                invalidDateTime: 'Пожалуйста, введите корректный формат даты и времени',
+                updateFailed: 'Не удалось обновить срок выполнения. Попробуйте снова.'
+            }
+        },
+        scheduledDate: {
+            title: 'Установить запланированную дату',
+            taskLabel: 'Задача: {title}',
+            sections: {
+                dateTime: 'Запланированная дата и время',
+                quickOptions: 'Быстрые опции'
+            },
+            descriptions: {
+                dateTime: 'Установить когда вы планируете работать над этой задачей'
+            },
+            inputs: {
+                date: {
+                    ariaLabel: 'Запланированная дата задачи',
+                    placeholder: 'ГГГГ-ММ-ДД'
+                },
+                time: {
+                    ariaLabel: 'Запланированное время задачи (необязательно)',
+                    placeholder: 'ЧЧ:ММ'
+                }
+            },
+            quickOptions: {
+                today: 'Сегодня',
+                todayAriaLabel: 'Установить запланированную дату на сегодня',
+                tomorrow: 'Завтра',
+                tomorrowAriaLabel: 'Установить запланированную дату на завтра',
+                nextWeek: 'Следующая неделя',
+                nextWeekAriaLabel: 'Установить запланированную дату на следующую неделю',
+                now: 'Сейчас',
+                nowAriaLabel: 'Установить запланированную дату и время на сейчас',
+                clear: 'Очистить',
+                clearAriaLabel: 'Очистить запланированную дату'
+            },
+            errors: {
+                invalidDateTime: 'Пожалуйста, введите корректный формат даты и времени',
+                updateFailed: 'Не удалось обновить запланированную дату. Попробуйте снова.'
+            }
         }
     },
     contextMenus: {

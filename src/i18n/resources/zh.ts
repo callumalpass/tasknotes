@@ -1540,6 +1540,80 @@ export const zh: TranslationTree = {
                 migrate: '迁移数据',
                 switch: '切换存储'
             }
+        },
+        dueDate: {
+            title: '设置到期日期',
+            taskLabel: '任务：{title}',
+            sections: {
+                dateTime: '到期日期和时间',
+                quickOptions: '快速选项'
+            },
+            descriptions: {
+                dateTime: '设置此任务应何时完成'
+            },
+            inputs: {
+                date: {
+                    ariaLabel: '任务到期日期',
+                    placeholder: 'YYYY-MM-DD'
+                },
+                time: {
+                    ariaLabel: '任务到期时间（可选）',
+                    placeholder: 'HH:MM'
+                }
+            },
+            quickOptions: {
+                today: '今天',
+                todayAriaLabel: '将到期日期设为今天',
+                tomorrow: '明天',
+                tomorrowAriaLabel: '将到期日期设为明天',
+                nextWeek: '下周',
+                nextWeekAriaLabel: '将到期日期设为下周',
+                now: '现在',
+                nowAriaLabel: '将到期日期和时间设为现在',
+                clear: '清除',
+                clearAriaLabel: '清除到期日期'
+            },
+            errors: {
+                invalidDateTime: '请输入有效的日期和时间格式',
+                updateFailed: '更新到期日期失败。请重试。'
+            }
+        },
+        scheduledDate: {
+            title: '设置安排日期',
+            taskLabel: '任务：{title}',
+            sections: {
+                dateTime: '安排日期和时间',
+                quickOptions: '快速选项'
+            },
+            descriptions: {
+                dateTime: '设置您计划何时处理此任务'
+            },
+            inputs: {
+                date: {
+                    ariaLabel: '任务安排日期',
+                    placeholder: 'YYYY-MM-DD'
+                },
+                time: {
+                    ariaLabel: '任务安排时间（可选）',
+                    placeholder: 'HH:MM'
+                }
+            },
+            quickOptions: {
+                today: '今天',
+                todayAriaLabel: '将安排日期设为今天',
+                tomorrow: '明天',
+                tomorrowAriaLabel: '将安排日期设为明天',
+                nextWeek: '下周',
+                nextWeekAriaLabel: '将安排日期设为下周',
+                now: '现在',
+                nowAriaLabel: '将安排日期和时间设为现在',
+                clear: '清除',
+                clearAriaLabel: '清除安排日期'
+            },
+            errors: {
+                invalidDateTime: '请输入有效的日期和时间格式',
+                updateFailed: '更新安排日期失败。请重试。'
+            }
         }
     },
     contextMenus: {

@@ -11,7 +11,9 @@ export const fr: TranslationTree = {
         systemDefault: 'Langue du système',
         languages: {
             en: 'Anglais',
-            fr: 'Français'
+            fr: 'Français',
+            ru: 'Russe',
+            zh: 'Chinois'
         },
         weekdays: {
             sunday: 'Dimanche',
@@ -1537,6 +1539,80 @@ export const fr: TranslationTree = {
             buttons: {
                 migrate: 'Migrer les données',
                 switch: 'Changer de stockage'
+            }
+        },
+        dueDate: {
+            title: 'Définir la date d\'échéance',
+            taskLabel: 'Tâche : {title}',
+            sections: {
+                dateTime: 'Date et heure d\'échéance',
+                quickOptions: 'Options rapides'
+            },
+            descriptions: {
+                dateTime: 'Définir quand cette tâche doit être terminée'
+            },
+            inputs: {
+                date: {
+                    ariaLabel: 'Date d\'échéance de la tâche',
+                    placeholder: 'AAAA-MM-JJ'
+                },
+                time: {
+                    ariaLabel: 'Heure d\'échéance de la tâche (optionnel)',
+                    placeholder: 'HH:MM'
+                }
+            },
+            quickOptions: {
+                today: 'Aujourd\'hui',
+                todayAriaLabel: 'Définir la date d\'échéance à aujourd\'hui',
+                tomorrow: 'Demain',
+                tomorrowAriaLabel: 'Définir la date d\'échéance à demain',
+                nextWeek: 'La semaine prochaine',
+                nextWeekAriaLabel: 'Définir la date d\'échéance à la semaine prochaine',
+                now: 'Maintenant',
+                nowAriaLabel: 'Définir la date et l\'heure d\'échéance à maintenant',
+                clear: 'Effacer',
+                clearAriaLabel: 'Effacer la date d\'échéance'
+            },
+            errors: {
+                invalidDateTime: 'Veuillez saisir un format de date et d\'heure valide',
+                updateFailed: 'Échec de la mise à jour de la date d\'échéance. Veuillez réessayer.'
+            }
+        },
+        scheduledDate: {
+            title: 'Définir la date planifiée',
+            taskLabel: 'Tâche : {title}',
+            sections: {
+                dateTime: 'Date et heure planifiées',
+                quickOptions: 'Options rapides'
+            },
+            descriptions: {
+                dateTime: 'Définir quand vous prévoyez de travailler sur cette tâche'
+            },
+            inputs: {
+                date: {
+                    ariaLabel: 'Date planifiée de la tâche',
+                    placeholder: 'AAAA-MM-JJ'
+                },
+                time: {
+                    ariaLabel: 'Heure planifiée de la tâche (optionnel)',
+                    placeholder: 'HH:MM'
+                }
+            },
+            quickOptions: {
+                today: 'Aujourd\'hui',
+                todayAriaLabel: 'Définir la date planifiée à aujourd\'hui',
+                tomorrow: 'Demain',
+                tomorrowAriaLabel: 'Définir la date planifiée à demain',
+                nextWeek: 'La semaine prochaine',
+                nextWeekAriaLabel: 'Définir la date planifiée à la semaine prochaine',
+                now: 'Maintenant',
+                nowAriaLabel: 'Définir la date et l\'heure planifiées à maintenant',
+                clear: 'Effacer',
+                clearAriaLabel: 'Effacer la date planifiée'
+            },
+            errors: {
+                invalidDateTime: 'Veuillez saisir un format de date et d\'heure valide',
+                updateFailed: 'Échec de la mise à jour de la date planifiée. Veuillez réessayer.'
             }
         }
     },

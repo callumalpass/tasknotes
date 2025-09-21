@@ -55,7 +55,7 @@ export const zhConfig: NLPLanguageConfig = {
         
         periods: {
             day: ['天', '日'],
-            week: ['周', '星期', '礼拜'],
+            week: ['周', '星期'],
             month: ['月', '个月'],
             year: ['年']
         }
