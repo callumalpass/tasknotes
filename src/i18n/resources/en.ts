@@ -13,7 +13,10 @@ export const en: TranslationTree = {
             en: 'English',
             fr: 'French',
             ru: 'Russian',
-            zh: 'Chinese'
+            zh: 'Chinese',
+            de: 'German',
+            es: 'Spanish',
+            ja: 'Japanese'
         },
         weekdays: {
             sunday: 'Sunday',

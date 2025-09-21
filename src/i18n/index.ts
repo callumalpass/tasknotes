@@ -5,12 +5,18 @@ import { en } from './resources/en';
 import { fr } from './resources/fr';
 import { ru } from './resources/ru';
 import { zh } from './resources/zh';
+import { de } from './resources/de';
+import { es } from './resources/es';
+import { ja } from './resources/ja';
 
 export const translationResources = {
     en,
     fr,
     ru,
-    zh
+    zh,
+    de,
+    es,
+    ja
 } satisfies TranslationResources;
 
 export type TranslationKey = string;
