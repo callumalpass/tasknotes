@@ -170,6 +170,8 @@ export class FilterUtils {
             'tags': ['contains', 'does-not-contain', 'is-empty', 'is-not-empty'],
             'contexts': ['contains', 'does-not-contain', 'is-empty', 'is-not-empty'],
             'projects': ['contains', 'does-not-contain', 'is-empty', 'is-not-empty'],
+            'blockedBy': ['contains', 'does-not-contain', 'is-empty', 'is-not-empty'],
+            'blocking': ['contains', 'does-not-contain', 'is-empty', 'is-not-empty'],
 
             // Date properties
             'due': ['is', 'is-not', 'is-before', 'is-after', 'is-on-or-before', 'is-on-or-after', 'is-empty', 'is-not-empty'],
@@ -180,6 +182,8 @@ export class FilterUtils {
 
             // Boolean properties
             'archived': ['is-checked', 'is-not-checked'],
+            'dependencies.isBlocked': ['is-checked', 'is-not-checked'],
+            'dependencies.isBlocking': ['is-checked', 'is-not-checked'],
 
             // Numeric properties
             'timeEstimate': ['is', 'is-not', 'is-greater-than', 'is-less-than', 'is-greater-than-or-equal', 'is-less-than-or-equal'],
@@ -233,6 +237,10 @@ export class FilterUtils {
                 return task.contexts || [];
             case 'projects':
                 return task.projects || [];
+            case 'blockedBy':
+                return task.blockedBy || [];
+            case 'blocking':
+                return task.blocking || [];
             case 'due':
                 return task.due;
             case 'scheduled':
@@ -252,6 +260,10 @@ export class FilterUtils {
             case 'status.isCompleted':
                 // This requires StatusManager - will be handled by caller
                 return undefined;
+            case 'dependencies.isBlocked':
+                return task.isBlocked === true;
+            case 'dependencies.isBlocking':
+                return task.isBlocking === true;
             default:
                 throw new FilterEvaluationError(`Unknown property: ${property}`);
         }

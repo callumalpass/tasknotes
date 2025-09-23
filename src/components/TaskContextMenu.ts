@@ -8,6 +8,7 @@ import { showConfirmationModal } from '../modals/ConfirmationModal';
 import { showTextInputModal } from '../modals/TextInputModal';
 import { DateContextMenu } from './DateContextMenu';
 import { RecurrenceContextMenu } from './RecurrenceContextMenu';
+import { parseDependencyInput, resolveDependencyEntry } from '../utils/dependencyUtils';
 
 export interface TaskContextMenuOptions {
     task: TaskInfo;
@@ -182,9 +183,19 @@ export class TaskContextMenu {
                 });
             }
         });
-        
+
         this.menu.addSeparator();
-        
+
+        this.menu.addItem((item) => {
+            item.setTitle(this.t('contextMenus.task.dependencies.title'));
+            item.setIcon('git-branch');
+
+            const submenu = (item as any).setSubmenu();
+            this.addDependencyMenuItems(submenu, task, plugin);
+        });
+
+        this.menu.addSeparator();
+
         // Time Tracking
         this.menu.addItem((item) => {
             const activeSession = plugin.getActiveTimeSession(task);
@@ -482,6 +493,169 @@ export class TaskContextMenu {
         setTimeout(() => {
             this.updateMainMenuIconColors(task, plugin);
         }, 10);
+    }
+
+    private addDependencyMenuItems(menu: Menu, task: TaskInfo, plugin: TaskNotesPlugin): void {
+        menu.addItem((subItem: any) => {
+            subItem.setTitle(this.t('contextMenus.task.dependencies.addBlockedBy'));
+            subItem.setIcon('link-2');
+            subItem.onClick(async () => {
+                try {
+                    const value = await showTextInputModal(plugin.app, {
+                        title: this.t('contextMenus.task.dependencies.addBlockedByTitle'),
+                        placeholder: this.t('contextMenus.task.dependencies.inputPlaceholder')
+                    });
+
+                    if (!value) {
+                        return;
+                    }
+
+                    const additions = parseDependencyInput(value);
+                    if (additions.length === 0) {
+                        new Notice(this.t('contextMenus.task.dependencies.notices.noEntries'));
+                        return;
+                    }
+
+                    const existing = [...blockedByEntries];
+                    const combined = this.dedupeDependencyEntries([...existing, ...additions]);
+                    await plugin.updateTaskProperty(task, 'blockedBy', combined);
+                    new Notice(this.t('contextMenus.task.dependencies.notices.blockedByAdded', { count: additions.length }));
+                    this.options.onUpdate?.();
+                } catch (error) {
+                    console.error('Failed to add blocked-by dependency:', error);
+                    new Notice(this.t('contextMenus.task.dependencies.notices.updateFailed'));
+                }
+            });
+        });
+
+        const blockedByEntries = task.blockedBy ?? [];
+        if (blockedByEntries.length > 0) {
+            menu.addItem((subItem: any) => {
+                subItem.setTitle(this.t('contextMenus.task.dependencies.removeBlockedBy'));
+                subItem.setIcon('unlink');
+                const innerMenu = (subItem as any).setSubmenu();
+                blockedByEntries.forEach((entry) => {
+                    innerMenu.addItem((item: any) => {
+                        item.setTitle(entry);
+                        item.onClick(async () => {
+                            try {
+                                const remaining = blockedByEntries.filter(existing => existing !== entry);
+                                await plugin.updateTaskProperty(task, 'blockedBy', remaining.length > 0 ? remaining : undefined);
+                                new Notice(this.t('contextMenus.task.dependencies.notices.blockedByRemoved'));
+                                this.options.onUpdate?.();
+                            } catch (error) {
+                                console.error('Failed to remove blocked-by dependency:', error);
+                                new Notice(this.t('contextMenus.task.dependencies.notices.updateFailed'));
+                            }
+                        });
+                    });
+                });
+            });
+        }
+
+        menu.addSeparator();
+
+        menu.addItem((subItem: any) => {
+            subItem.setTitle(this.t('contextMenus.task.dependencies.addBlocking'));
+            subItem.setIcon('git-branch-plus');
+            subItem.onClick(async () => {
+                try {
+                    const value = await showTextInputModal(plugin.app, {
+                        title: this.t('contextMenus.task.dependencies.addBlockingTitle'),
+                        placeholder: this.t('contextMenus.task.dependencies.inputPlaceholder')
+                    });
+
+                    if (!value) {
+                        return;
+                    }
+
+                    const entries = parseDependencyInput(value);
+                    if (entries.length === 0) {
+                        new Notice(this.t('contextMenus.task.dependencies.notices.noEntries'));
+                        return;
+                    }
+
+                    const { added, raw, unresolved } = this.resolveBlockingEntries(task, entries, plugin);
+
+                    if (added.length > 0) {
+                        await plugin.taskService.updateBlockingRelationships(task, added, [], raw);
+                        new Notice(this.t('contextMenus.task.dependencies.notices.blockingAdded', { count: added.length }));
+                        this.options.onUpdate?.();
+                    }
+
+                    if (unresolved.length > 0) {
+                        new Notice(this.t('contextMenus.task.dependencies.notices.unresolved', {
+                            entries: unresolved.join(', ')
+                        }));
+                    }
+                } catch (error) {
+                    console.error('Failed to add blocking dependency:', error);
+                    new Notice(this.t('contextMenus.task.dependencies.notices.updateFailed'));
+                }
+            });
+        });
+
+        const blockingEntries = task.blocking ?? [];
+        if (blockingEntries.length > 0) {
+            menu.addItem((subItem: any) => {
+                subItem.setTitle(this.t('contextMenus.task.dependencies.removeBlocking'));
+                subItem.setIcon('git-branch-minus');
+                const innerMenu = (subItem as any).setSubmenu();
+                blockingEntries.forEach((path) => {
+                    const file = plugin.app.vault.getAbstractFileByPath(path);
+                    const label = file instanceof TFile
+                        ? plugin.app.metadataCache.fileToLinktext(file, task.path, false)
+                        : path.split('/').pop() || path;
+                    innerMenu.addItem((item: any) => {
+                        item.setTitle(label);
+                        item.onClick(async () => {
+                            try {
+                                await plugin.taskService.updateBlockingRelationships(task, [], [path], {});
+                                new Notice(this.t('contextMenus.task.dependencies.notices.blockingRemoved'));
+                                this.options.onUpdate?.();
+                            } catch (error) {
+                                console.error('Failed to remove blocking dependency:', error);
+                                new Notice(this.t('contextMenus.task.dependencies.notices.updateFailed'));
+                            }
+                        });
+                    });
+                });
+            });
+        }
+    }
+
+    private dedupeDependencyEntries(entries: string[]): string[] {
+        const seen = new Set<string>();
+        const result: string[] = [];
+        for (const entry of entries) {
+            const key = entry.trim();
+            if (!seen.has(key)) {
+                seen.add(key);
+                result.push(entry);
+            }
+        }
+        return result;
+    }
+
+    private resolveBlockingEntries(task: TaskInfo, entries: string[], plugin: TaskNotesPlugin): { added: string[]; raw: Record<string, string>; unresolved: string[] } {
+        const added: string[] = [];
+        const raw: Record<string, string> = {};
+        const unresolved: string[] = [];
+
+        for (const entry of entries) {
+            const resolved = resolveDependencyEntry(plugin.app, task.path, entry);
+            if (!resolved) {
+                unresolved.push(entry);
+                continue;
+            }
+
+            if (!added.includes(resolved.path)) {
+                added.push(resolved.path);
+                raw[resolved.path] = entry;
+            }
+        }
+
+        return { added, raw, unresolved };
     }
     
     private updateMainMenuIconColors(task: TaskInfo, plugin: TaskNotesPlugin): void {

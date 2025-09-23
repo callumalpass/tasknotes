@@ -84,11 +84,11 @@ export type FilterProperty =
 	// Text properties
 	| 'title' | 'path'
 	// Select properties
-	| 'status' | 'priority' | 'tags' | 'contexts' | 'projects'
+	| 'status' | 'priority' | 'tags' | 'contexts' | 'projects' | 'blockedBy' | 'blocking'
 	// Date properties
 	| 'due' | 'scheduled' | 'completedDate' | 'file.ctime' | 'file.mtime'
 	// Boolean properties
-	| 'archived'
+	| 'archived' | 'dependencies.isBlocked' | 'dependencies.isBlocking'
 	// Numeric properties
 	| 'timeEstimate'
 	// Special properties
@@ -131,6 +131,8 @@ export const FILTER_PROPERTIES: PropertyDefinition[] = [
 	{ id: 'tags', label: 'Tags', category: 'select', supportedOperators: ['contains', 'does-not-contain', 'is-empty', 'is-not-empty'], valueInputType: 'select' },
 	{ id: 'contexts', label: 'Contexts', category: 'select', supportedOperators: ['contains', 'does-not-contain', 'is-empty', 'is-not-empty'], valueInputType: 'select' },
 	{ id: 'projects', label: 'Projects', category: 'select', supportedOperators: ['contains', 'does-not-contain', 'is-empty', 'is-not-empty'], valueInputType: 'select' },
+	{ id: 'blockedBy', label: 'Blocked By', category: 'select', supportedOperators: ['contains', 'does-not-contain', 'is-empty', 'is-not-empty'], valueInputType: 'text' },
+	{ id: 'blocking', label: 'Blocking', category: 'select', supportedOperators: ['contains', 'does-not-contain', 'is-empty', 'is-not-empty'], valueInputType: 'text' },
 	
 	// Date properties
 	{ id: 'due', label: 'Due Date', category: 'date', supportedOperators: ['is', 'is-not', 'is-before', 'is-after', 'is-on-or-before', 'is-on-or-after', 'is-empty', 'is-not-empty'], valueInputType: 'date' },
@@ -141,13 +143,15 @@ export const FILTER_PROPERTIES: PropertyDefinition[] = [
 	
 	// Boolean properties
 	{ id: 'archived', label: 'Archived', category: 'boolean', supportedOperators: ['is-checked', 'is-not-checked'], valueInputType: 'none' },
-	
+
 	// Numeric properties
 	{ id: 'timeEstimate', label: 'Time Estimate', category: 'numeric', supportedOperators: ['is', 'is-not', 'is-greater-than', 'is-less-than', 'is-greater-than-or-equal', 'is-less-than-or-equal'], valueInputType: 'number' },
-	
+
 	// Special properties
 	{ id: 'recurrence', label: 'Recurrence', category: 'special', supportedOperators: ['is-empty', 'is-not-empty'], valueInputType: 'none' },
-	{ id: 'status.isCompleted', label: 'Completed', category: 'boolean', supportedOperators: ['is-checked', 'is-not-checked'], valueInputType: 'none' }
+	{ id: 'status.isCompleted', label: 'Completed', category: 'boolean', supportedOperators: ['is-checked', 'is-not-checked'], valueInputType: 'none' },
+	{ id: 'dependencies.isBlocked', label: 'Blocked', category: 'boolean', supportedOperators: ['is-checked', 'is-not-checked'], valueInputType: 'none' },
+	{ id: 'dependencies.isBlocking', label: 'Blocking Others', category: 'boolean', supportedOperators: ['is-checked', 'is-not-checked'], valueInputType: 'none' }
 ];
 
 // Operator metadata for UI generation
@@ -247,6 +251,10 @@ export interface TaskInfo {
 	reminders?: Reminder[]; // Task reminders
 	customProperties?: Record<string, any>; // Custom properties from Bases or other sources
 	basesData?: any; // Raw Bases data for formula computation (internal use)
+	blockedBy?: string[]; // Raw dependency entries referencing blocking tasks
+	blocking?: string[]; // Task paths that this task is blocking
+	isBlocked?: boolean; // True if any blocking dependency is incomplete
+	isBlocking?: boolean; // True if this task blocks at least one other task
 }
 
 export interface TaskCreationData extends Partial<TaskInfo> {
@@ -418,6 +426,7 @@ export interface FieldMapping {
 	archiveTag: string;  // For the archive tag in the tags array
 	timeEntries: string;
 	completeInstances: string;
+	blockedBy: string;
 	pomodoros: string;  // For daily note pomodoro tracking
 	icsEventId: string;  // For linking to ICS calendar events (stored as array in frontmatter)
 	icsEventTag: string;  // Tag used for ICS event-related content
@@ -593,4 +602,3 @@ export interface PendingAutoArchive {
 export interface IWebhookNotifier {
 	triggerWebhook(event: WebhookEvent, data: any): Promise<void>;
 }
-

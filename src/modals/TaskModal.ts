@@ -26,10 +26,16 @@ export abstract class TaskModal extends Modal {
     protected timeEstimate = 0;
     protected recurrenceRule = '';
     protected reminders: Reminder[] = [];
-    
+
     // User-defined fields (dynamic based on settings)
     protected userFields: Record<string, any> = {};
-    
+
+    // Dependency fields
+    protected blockedByRaw = '';
+    protected blockingRaw = '';
+    protected blockedByInput?: HTMLTextAreaElement;
+    protected blockingInput?: HTMLTextAreaElement;
+
     // Project link storage
     protected selectedProjectFiles: TAbstractFile[] = [];
     
@@ -305,8 +311,37 @@ export abstract class TaskModal extends Modal {
                 this.timeEstimateInput = text.inputEl;
             });
 
+        this.createDependencyFields(container);
+
         // Dynamic user fields
         this.createUserFields(container);
+    }
+
+    protected createDependencyFields(container: HTMLElement): void {
+        const header = container.createDiv({ cls: 'detail-label-section', text: this.t('modals.task.dependencies.label') });
+        header.addClass('dependencies-section-header');
+
+        const blockedSetting = new Setting(container)
+            .setName(this.t('modals.task.dependencies.blockedBy'))
+            .setDesc(this.t('modals.task.dependencies.blockedByHint'));
+        this.blockedByInput = blockedSetting.controlEl.createEl('textarea', { cls: 'tasknotes-dependency-input' });
+        this.blockedByInput.rows = 3;
+        this.blockedByInput.placeholder = this.t('modals.task.dependencies.placeholder');
+        this.blockedByInput.value = this.blockedByRaw;
+        this.blockedByInput.addEventListener('input', (event) => {
+            this.blockedByRaw = (event.target as HTMLTextAreaElement).value;
+        });
+
+        const blockingSetting = new Setting(container)
+            .setName(this.t('modals.task.dependencies.blocking'))
+            .setDesc(this.t('modals.task.dependencies.blockingHint'));
+        this.blockingInput = blockingSetting.controlEl.createEl('textarea', { cls: 'tasknotes-dependency-input' });
+        this.blockingInput.rows = 3;
+        this.blockingInput.placeholder = this.t('modals.task.dependencies.placeholder');
+        this.blockingInput.value = this.blockingRaw;
+        this.blockingInput.addEventListener('input', (event) => {
+            this.blockingRaw = (event.target as HTMLTextAreaElement).value;
+        });
     }
 
     protected createUserFields(container: HTMLElement): void {

@@ -2,14 +2,13 @@ import { TFile, setIcon, Notice, Modal, App, setTooltip } from 'obsidian';
 import { TaskInfo } from '../types';
 import TaskNotesPlugin from '../main';
 import { TaskContextMenu } from '../components/TaskContextMenu';
-import { calculateTotalTimeSpent, getEffectiveTaskStatus, getRecurrenceDisplayText, filterEmptyProjects } from '../utils/helpers';
+import { getEffectiveTaskStatus, getRecurrenceDisplayText, filterEmptyProjects } from '../utils/helpers';
 import {
     formatDateTimeForDisplay,
     isTodayTimeAware,
     isOverdueTimeAware,
     getDatePart,
     getTimePart,
-    createTimeFormatHelper,
     formatDateForStorage
 } from '../utils/dateUtils';
 import { DateContextMenu } from '../components/DateContextMenu';
@@ -20,7 +19,6 @@ import { ReminderModal } from '../modals/ReminderModal';
 import { 
     renderProjectLinks, 
     renderTextWithLinks, 
-    renderValueWithLinks, 
     type LinkServices 
 } from './renderers/linkRenderer';
 import { 
@@ -1068,6 +1066,23 @@ export function createTaskCard(task: TaskInfo, plugin: TaskNotesPlugin, visibleP
     }
     
     // Main content container
+    const blockingToggle = mainRow.createEl('div', { cls: 'task-card__blocking-toggle' });
+    if (task.blocking && task.blocking.length > 0) {
+        blockingToggle.classList.add('is-visible');
+        const toggleLabel = plugin.i18n.translate('ui.taskCard.blockingToggle', { count: task.blocking.length });
+        blockingToggle.setAttribute('aria-label', toggleLabel);
+        setIcon(blockingToggle, 'git-branch');
+        setTooltip(blockingToggle, toggleLabel, { placement: 'top' });
+
+        blockingToggle.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            const expanded = blockingToggle.classList.toggle('task-card__blocking-toggle--expanded');
+            await toggleBlockingTasks(card, task, plugin, expanded);
+        });
+    } else {
+        blockingToggle.classList.add('is-hidden');
+    }
+
     const contentContainer = mainRow.createEl('div', { cls: 'task-card__content' });
     
     // Context menu icon (appears on hover)
@@ -1089,12 +1104,19 @@ export function createTaskCard(task: TaskInfo, plugin: TaskNotesPlugin, visibleP
     });
     
     // First line: Task title
-    const titleEl = contentContainer.createEl('div', { 
-        cls: 'task-card__title',
-        text: task.title
-    });
+    const titleEl = contentContainer.createEl('div', { cls: 'task-card__title' });
+    const titleTextEl = titleEl.createSpan({ cls: 'task-card__title-text', text: task.title });
     if (plugin.statusManager.isCompletedStatus(effectiveStatus)) {
-        titleEl.classList.add('completed');
+        titleTextEl.classList.add('completed');
+    }
+
+    if (task.isBlocked) {
+        const blockedBadge = titleEl.createSpan({
+            cls: 'task-card__badge task-card__badge--blocked',
+            attr: { 'aria-label': plugin.i18n.translate('ui.taskCard.blockedBadge') }
+        });
+        setIcon(blockedBadge, 'octagon');
+        setTooltip(blockedBadge, plugin.i18n.translate('ui.taskCard.blockedBadgeTooltip'), { placement: 'top' });
     }
     
     // Second line: Metadata (dynamic based on visible properties)
@@ -1302,9 +1324,9 @@ export function updateTaskCard(element: HTMLElement, task: TaskInfo, plugin: Tas
                         element.dataset.status = newEffectiveStatus;
                         
                         // Update the title completion styling
-                        const titleEl = element.querySelector('.task-card__title') as HTMLElement;
-                        if (titleEl) {
-                            titleEl.classList.toggle('completed', isNowCompleted);
+                        const titleText = element.querySelector('.task-card__title-text') as HTMLElement;
+                        if (titleText) {
+                            titleText.classList.toggle('completed', isNowCompleted);
                         }
                     } else {
                         // For regular tasks, cycle to next status
@@ -1603,12 +1625,53 @@ export function updateTaskCard(element: HTMLElement, task: TaskInfo, plugin: Tas
     }).catch((error: any) => {
         console.error('Error checking if task is used as project in update:', error);
     });
-    
+
+    const blockingToggleEl = element.querySelector('.task-card__blocking-toggle') as HTMLElement;
+    if (blockingToggleEl) {
+        if (task.blocking && task.blocking.length > 0) {
+            blockingToggleEl.classList.add('is-visible');
+            blockingToggleEl.classList.remove('is-hidden');
+            const toggleLabel = plugin.i18n.translate('ui.taskCard.blockingToggle', { count: task.blocking.length });
+            blockingToggleEl.setAttribute('aria-label', toggleLabel);
+            setTooltip(blockingToggleEl, toggleLabel, { placement: 'top' });
+            blockingToggleEl.dataset.count = String(task.blocking.length);
+            if (blockingToggleEl.classList.contains('task-card__blocking-toggle--expanded')) {
+                toggleBlockingTasks(element, task, plugin, true).catch(error => {
+                    console.error('Error refreshing blocking tasks:', error);
+                });
+            }
+        } else {
+            blockingToggleEl.classList.remove('is-visible', 'task-card__blocking-toggle--expanded');
+            blockingToggleEl.classList.add('is-hidden');
+            const existingBlockingContainer = element.querySelector('.task-card__blocking');
+            if (existingBlockingContainer) {
+                existingBlockingContainer.remove();
+            }
+        }
+    }
+
     // Update title
-    const titleEl = element.querySelector('.task-card__title') as HTMLElement;
-    if (titleEl) {
-        titleEl.textContent = task.title;
-        titleEl.classList.toggle('completed', plugin.statusManager.isCompletedStatus(effectiveStatus));
+    const titleText = element.querySelector('.task-card__title-text') as HTMLElement;
+    if (titleText) {
+        titleText.textContent = task.title;
+        titleText.classList.toggle('completed', plugin.statusManager.isCompletedStatus(effectiveStatus));
+    }
+
+    const existingBadge = element.querySelector('.task-card__badge--blocked') as HTMLElement;
+    if (task.isBlocked) {
+        if (!existingBadge) {
+            const titleContainer = element.querySelector('.task-card__title') as HTMLElement;
+                if (titleContainer) {
+                const badge = titleContainer.createSpan({
+                    cls: 'task-card__badge task-card__badge--blocked',
+                    attr: { 'aria-label': plugin.i18n.translate('ui.taskCard.blockedBadge') }
+                });
+                setIcon(badge, 'octagon');
+                setTooltip(badge, plugin.i18n.translate('ui.taskCard.blockedBadgeTooltip'), { placement: 'top' });
+            }
+        }
+    } else if (existingBadge) {
+        existingBadge.remove();
     }
     
     // Update metadata line
@@ -1891,6 +1954,55 @@ async function toggleSubtasks(card: HTMLElement, task: TaskInfo, plugin: TaskNot
     } catch (error) {
         console.error('Error in toggleSubtasks:', error);
         throw error;
+    }
+}
+
+async function toggleBlockingTasks(card: HTMLElement, task: TaskInfo, plugin: TaskNotesPlugin, shouldExpand: boolean): Promise<void> {
+    let container = card.querySelector('.task-card__blocking') as HTMLElement | null;
+
+    if (!shouldExpand) {
+        if (container) {
+            container.remove();
+        }
+        return;
+    }
+
+    if (!container) {
+        container = card.createDiv({ cls: 'task-card__blocking' });
+    }
+
+    container.empty();
+    const loadingEl = container.createDiv({ cls: 'task-card__blocking-loading', text: plugin.i18n.translate('ui.taskCard.loadingDependencies') });
+
+    try {
+        const dependentInfos = task.blocking
+            ? await Promise.all(task.blocking.map(path => plugin.cacheManager.getTaskInfo(path)))
+            : [];
+        const dependents = dependentInfos.filter((info): info is TaskInfo => Boolean(info));
+
+        loadingEl.remove();
+
+        if (dependents.length === 0) {
+            container.createDiv({ cls: 'task-card__blocking-empty', text: plugin.i18n.translate('ui.taskCard.blockingEmpty') });
+            return;
+        }
+
+        dependents.forEach((dependentTask) => {
+            const dependentCard = createTaskCard(dependentTask, plugin, undefined, {
+                showDueDate: true,
+                showCheckbox: false,
+                showArchiveButton: false,
+                showTimeTracking: false,
+                showRecurringControls: true,
+                groupByDate: false
+            });
+            dependentCard.classList.add('task-card--dependency');
+            container!.appendChild(dependentCard);
+        });
+
+    } catch (error) {
+        console.error('Error loading blocking tasks:', error);
+        loadingEl.textContent = plugin.i18n.translate('ui.taskCard.blockingLoadError');
     }
 }
 

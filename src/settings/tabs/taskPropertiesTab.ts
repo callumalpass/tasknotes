@@ -574,6 +574,7 @@ function renderFieldMappingTable(container: HTMLElement, plugin: TaskNotesPlugin
         ['archiveTag', translate('settings.taskProperties.fieldMapping.fields.archiveTag')],
         ['timeEntries', translate('settings.taskProperties.fieldMapping.fields.timeEntries')],
         ['completeInstances', translate('settings.taskProperties.fieldMapping.fields.completeInstances')],
+        ['blockedBy', translate('settings.taskProperties.fieldMapping.fields.blockedBy')],
         ['pomodoros', translate('settings.taskProperties.fieldMapping.fields.pomodoros')],
         ['icsEventId', translate('settings.taskProperties.fieldMapping.fields.icsEventId')],
         ['icsEventTag', translate('settings.taskProperties.fieldMapping.fields.icsEventTag')],

@@ -119,6 +119,15 @@ export class FieldMapper {
             mapped.complete_instances = validateCompleteInstances(frontmatter[this.mapping.completeInstances]);
         }
 
+        if (this.mapping.blockedBy && frontmatter[this.mapping.blockedBy] !== undefined) {
+            const blocked = frontmatter[this.mapping.blockedBy];
+            if (Array.isArray(blocked)) {
+                mapped.blockedBy = blocked.filter(item => typeof item === 'string');
+            } else if (typeof blocked === 'string' && blocked.trim().length > 0) {
+                mapped.blockedBy = [blocked];
+            }
+        }
+
         if (frontmatter[this.mapping.icsEventId] !== undefined) {
             const icsEventId = frontmatter[this.mapping.icsEventId];
             // Ensure icsEventId is always an array
@@ -222,6 +231,10 @@ export class FieldMapper {
 
         if (taskData.complete_instances !== undefined) {
             frontmatter[this.mapping.completeInstances] = taskData.complete_instances;
+        }
+
+        if (taskData.blockedBy !== undefined) {
+            frontmatter[this.mapping.blockedBy] = taskData.blockedBy;
         }
 
         if (taskData.icsEventId !== undefined && taskData.icsEventId.length > 0) {

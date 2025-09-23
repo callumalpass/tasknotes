@@ -4,6 +4,7 @@ import { FilenameContext, generateTaskFilename, generateUniqueFilename } from '.
 import { Notice, TFile, normalizePath, stringifyYaml } from 'obsidian';
 import { TemplateData, mergeTemplateFrontmatter, processTemplate } from '../utils/templateProcessor';
 import { addDTSTARTToRecurrenceRule, ensureFolderExists, updateToNextScheduledOccurrence } from '../utils/helpers';
+import { formatDependencyLink, resolveDependencyEntry } from '../utils/dependencyUtils';
 import { formatDateForStorage, getCurrentDateString, getCurrentTimestamp, getTodayLocal, createUTCDateFromLocalCalendarDate } from '../utils/dateUtils';
 import { format } from 'date-fns';
 
@@ -1104,6 +1105,7 @@ export class TaskService {
                 if (updates.hasOwnProperty('timeEstimate') && updates.timeEstimate === undefined) delete frontmatter[this.plugin.fieldMapper.toUserField('timeEstimate')];
                 if (updates.hasOwnProperty('completedDate') && updates.completedDate === undefined) delete frontmatter[this.plugin.fieldMapper.toUserField('completedDate')];
                 if (updates.hasOwnProperty('recurrence') && updates.recurrence === undefined) delete frontmatter[this.plugin.fieldMapper.toUserField('recurrence')];
+                if (updates.hasOwnProperty('blockedBy') && updates.blockedBy === undefined) delete frontmatter[this.plugin.fieldMapper.toUserField('blockedBy')];
 
                 if (isRenameNeeded) {
                     delete frontmatter[this.plugin.fieldMapper.toUserField('title')];
@@ -1243,6 +1245,93 @@ export class TaskService {
             
             throw new Error(`Failed to update task: ${errorMessage}`);
         }
+    }
+
+    async updateBlockingRelationships(
+        blockingTask: TaskInfo,
+        addedPaths: string[],
+        removedPaths: string[],
+        rawEntries: Record<string, string> = {}
+    ): Promise<void> {
+        const uniqueRemovals = Array.from(new Set(removedPaths));
+        const uniqueAdditions = Array.from(new Set(addedPaths));
+
+        for (const path of uniqueRemovals) {
+            const blockedTask = await this.plugin.cacheManager.getTaskInfo(path);
+            if (!blockedTask) {
+                continue;
+            }
+
+            const updatedBlockedBy = this.computeBlockedByUpdate(blockedTask, blockingTask.path, 'remove');
+            if (updatedBlockedBy === null) {
+                continue;
+            }
+
+            const updates: Partial<TaskInfo> = {
+                blockedBy: updatedBlockedBy.length > 0 ? updatedBlockedBy : undefined
+            };
+            await this.updateTask(blockedTask, updates);
+        }
+
+        for (const path of uniqueAdditions) {
+            const blockedTask = await this.plugin.cacheManager.getTaskInfo(path);
+            if (!blockedTask) {
+                continue;
+            }
+
+            const rawEntry = rawEntries[path];
+            const updatedBlockedBy = this.computeBlockedByUpdate(blockedTask, blockingTask.path, 'add', rawEntry);
+            if (updatedBlockedBy === null) {
+                continue;
+            }
+
+            await this.updateTask(blockedTask, { blockedBy: updatedBlockedBy });
+        }
+    }
+
+    private computeBlockedByUpdate(
+        blockedTask: TaskInfo,
+        blockingTaskPath: string,
+        action: 'add' | 'remove',
+        rawEntry?: string
+    ): string[] | null {
+        const existing = Array.isArray(blockedTask.blockedBy) ? [...blockedTask.blockedBy] : [];
+        if (existing.length === 0 && action === 'remove') {
+            return null;
+        }
+
+        let modified = false;
+        let hasExistingEntry = false;
+        const result: string[] = [];
+
+        for (const entry of existing) {
+            const resolved = resolveDependencyEntry(this.plugin.app, blockedTask.path, entry);
+            if (resolved && resolved.path === blockingTaskPath) {
+                hasExistingEntry = true;
+                if (action === 'remove') {
+                    modified = true;
+                    continue; // skip to remove
+                }
+            }
+            result.push(entry);
+        }
+
+        if (action === 'add') {
+            if (!hasExistingEntry) {
+                const trimmed = rawEntry?.trim();
+                const entryToAdd = trimmed && trimmed.length > 0
+                    ? trimmed
+                    : formatDependencyLink(this.plugin.app, blockedTask.path, blockingTaskPath);
+                result.push(entryToAdd);
+                modified = true;
+            }
+        }
+
+        if (!modified) {
+            return null;
+        }
+
+        return result;
     }
 
     /**

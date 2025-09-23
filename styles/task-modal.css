@@ -243,6 +243,26 @@
     color: var(--text-muted);
 }
 
+.tasknotes-plugin .tasknotes-dependency-input {
+    width: 100%;
+    min-height: 60px;
+    padding: var(--size-4-2);
+    font-size: var(--font-ui-medium);
+    line-height: 1.4;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: var(--radius-s);
+    background: var(--background-secondary);
+    color: var(--text-normal);
+    resize: vertical;
+    transition: all 0.2s ease;
+}
+
+.tasknotes-plugin .tasknotes-dependency-input:focus {
+    outline: none;
+    border-color: var(--interactive-accent);
+    background: var(--background-primary);
+}
+
 /* =====================================================================
    ADDITIONAL FIELDS - SETTINGS STYLE
    ===================================================================== */

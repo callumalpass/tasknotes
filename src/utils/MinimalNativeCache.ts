@@ -9,6 +9,7 @@ import {
     formatDateForStorage
 } from './dateUtils';
 import { filterEmptyProjects, calculateTotalTimeSpent } from './helpers';
+import { resolveDependencyEntry } from './dependencyUtils';
 import { TaskNotesSettings } from '../types/settings';
 
 /**
@@ -36,6 +37,8 @@ export class MinimalNativeCache extends Events {
     private timeEstimatesByPath: Map<string, number> = new Map(); // path -> timeEstimate
     private overdueTasks: Set<string> = new Set(); // overdue task paths
     private projectReferences: Map<string, Set<string>> = new Map(); // project path -> Set<task paths that reference it>
+    private dependencySources: Map<string, Set<string>> = new Map(); // task path -> blocking task paths
+    private dependencyTargets: Map<string, Set<string>> = new Map(); // task path -> tasks blocked by this task
     
     // Initialization state
     private initialized = false;
@@ -351,6 +354,24 @@ export class MinimalNativeCache extends Events {
         this.ensureIndexesBuilt();
         const referencingTasks = this.projectReferences.get(filePath);
         return referencingTasks ? referencingTasks.size > 0 : false;
+    }
+
+    getBlockingTaskPaths(taskPath: string): string[] {
+        const blockers = this.dependencySources.get(taskPath);
+        return blockers ? Array.from(blockers) : [];
+    }
+
+    getBlockedTaskPaths(taskPath: string): string[] {
+        const blocked = this.dependencyTargets.get(taskPath);
+        return blocked ? Array.from(blocked) : [];
+    }
+
+    isTaskBlocked(taskPath: string): boolean {
+        const blockers = this.dependencySources.get(taskPath);
+        if (!blockers || blockers.size === 0) {
+            return false;
+        }
+        return this.calculateIsBlocked(Array.from(blockers));
     }
     
     /**
@@ -1141,6 +1162,111 @@ export class MinimalNativeCache extends Events {
         }
     }
 
+    private updateDependencyIndexes(taskPath: string, blockedByEntries: string[]): { resolvedBlockers: string[]; blocking: string[] } {
+        const previousBlockers = this.dependencySources.get(taskPath);
+        if (previousBlockers) {
+            for (const blockerPath of previousBlockers) {
+                const blockedSet = this.dependencyTargets.get(blockerPath);
+                if (blockedSet) {
+                    blockedSet.delete(taskPath);
+                    if (blockedSet.size === 0) {
+                        this.dependencyTargets.delete(blockerPath);
+                    }
+                }
+            }
+        }
+        this.dependencySources.delete(taskPath);
+
+        const resolvedBlockers: string[] = [];
+        const uniqueBlockers = new Set<string>();
+
+        for (const entry of blockedByEntries) {
+            const resolved = resolveDependencyEntry(this.app, taskPath, entry);
+            if (!resolved) {
+                continue;
+            }
+            if (resolved.path === taskPath) {
+                continue; // Skip self-references
+            }
+            if (!uniqueBlockers.has(resolved.path)) {
+                uniqueBlockers.add(resolved.path);
+                resolvedBlockers.push(resolved.path);
+            }
+        }
+
+        if (uniqueBlockers.size > 0) {
+            this.dependencySources.set(taskPath, uniqueBlockers);
+            for (const blockerPath of uniqueBlockers) {
+                if (!this.dependencyTargets.has(blockerPath)) {
+                    this.dependencyTargets.set(blockerPath, new Set());
+                }
+                this.dependencyTargets.get(blockerPath)!.add(taskPath);
+            }
+        }
+
+        const blockingSet = this.dependencyTargets.get(taskPath);
+        const blocking = blockingSet ? Array.from(blockingSet) : [];
+
+        return { resolvedBlockers, blocking };
+    }
+
+    private calculateIsBlocked(resolvedBlockers: string[]): boolean {
+        if (resolvedBlockers.length === 0) {
+            return false;
+        }
+
+        for (const blockerPath of resolvedBlockers) {
+            const status = this.getStatusForTaskPath(blockerPath);
+            if (!status) {
+                return true; // Treat unresolved status as blocking
+            }
+            if (!this.isStatusCompleted(status)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private getStatusForTaskPath(path: string): string | undefined {
+        const cached = this.lastKnownTaskInfo.get(path);
+        if (cached) {
+            return cached.status;
+        }
+
+        const file = this.app.vault.getAbstractFileByPath(path);
+        if (!(file instanceof TFile)) {
+            return undefined;
+        }
+
+        const metadata = this.app.metadataCache.getFileCache(file);
+        if (!metadata?.frontmatter || !this.fieldMapper || !this.isTaskFile(metadata.frontmatter)) {
+            return undefined;
+        }
+
+        try {
+            const mapped = this.fieldMapper.mapFromFrontmatter(metadata.frontmatter, path, this.storeTitleInFilename);
+            return mapped.status;
+        } catch (error) {
+            console.error(`Failed to resolve status for dependency task ${path}:`, error);
+            return undefined;
+        }
+    }
+
+    private isStatusCompleted(statusValue: string | undefined): boolean {
+        if (!statusValue) {
+            return false;
+        }
+
+        const statuses = this.settings.customStatuses || [];
+        const match = statuses.find(status => status.value === statusValue);
+        if (match) {
+            return match.isCompleted;
+        }
+
+        const lower = statusValue.toLowerCase();
+        return lower === 'done' || lower === 'completed' || lower === 'complete';
+    }
     // ========================================
     // EVENT HANDLERS
     // ========================================
@@ -1442,7 +1568,14 @@ export class MinimalNativeCache extends Events {
         
         try {
             const mappedTask = this.fieldMapper.mapFromFrontmatter(frontmatter, path, this.storeTitleInFilename);
-            
+
+            const blockedByEntries = Array.isArray(mappedTask.blockedBy)
+                ? mappedTask.blockedBy.filter((entry: unknown) => typeof entry === 'string') as string[]
+                : [];
+            const { resolvedBlockers, blocking } = this.updateDependencyIndexes(path, blockedByEntries);
+            const isBlocked = this.calculateIsBlocked(resolvedBlockers);
+            const isBlocking = blocking.length > 0;
+
             // Calculate total tracked time from time entries
             const totalTrackedTime = mappedTask.timeEntries ? calculateTotalTimeSpent(mappedTask.timeEntries) : 0;
             
@@ -1466,7 +1599,11 @@ export class MinimalNativeCache extends Events {
                 totalTrackedTime: totalTrackedTime,
                 dateCreated: mappedTask.dateCreated,
                 dateModified: mappedTask.dateModified,
-                reminders: mappedTask.reminders
+                reminders: mappedTask.reminders,
+                blockedBy: blockedByEntries.length > 0 ? blockedByEntries : undefined,
+                blocking: blocking.length > 0 ? blocking : undefined,
+                isBlocked: blockedByEntries.length > 0 ? isBlocked : false,
+                isBlocking: isBlocking
             };
         } catch (error) {
             console.error(`Error extracting task info from native metadata for ${path}:`, error);
@@ -1499,14 +1636,26 @@ export class MinimalNativeCache extends Events {
         for (const referencingTasks of this.projectReferences.values()) {
             referencingTasks.delete(path);
         }
+
+        // Remove from dependency indexes
+        this.dependencySources.delete(path);
+        this.dependencyTargets.delete(path);
+        for (const blockerSet of this.dependencySources.values()) {
+            blockerSet.delete(path);
+        }
+        for (const blockedSet of this.dependencyTargets.values()) {
+            blockedSet.delete(path);
+        }
     }
-    
+
     private clearAllIndexes(): void {
         this.tasksByDate.clear();
         this.tasksByStatus.clear();
         this.timeEstimatesByPath.clear();
         this.overdueTasks.clear();
         this.projectReferences.clear();
+        this.dependencySources.clear();
+        this.dependencyTargets.clear();
     }
     
     // ========================================
@@ -1558,6 +1707,7 @@ export class MinimalNativeCache extends Events {
             this.updateStatusIndex(path, taskInfo.status);
             this.updateOverdueIndex(path, taskInfo);
             this.updateProjectReferencesIndex(path, taskInfo.projects);
+            this.updateDependencyIndexes(path, taskInfo.blockedBy || []);
         }
     }
     

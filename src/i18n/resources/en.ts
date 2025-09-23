@@ -668,6 +668,7 @@ export const en: TranslationTree = {
                     archiveTag: 'Archive tag',
                     timeEntries: 'Time entries',
                     completeInstances: 'Complete instances',
+                    blockedBy: 'Blocked by',
                     pomodoros: 'Pomodoros',
                     icsEventId: 'ICS Event ID',
                     icsEventTag: 'ICS Event Tag',
@@ -1430,6 +1431,14 @@ export const en: TranslationTree = {
             tagsPlaceholder: 'tag1, tag2',
             timeEstimateLabel: 'Time estimate (minutes)',
             timeEstimatePlaceholder: '30',
+            dependencies: {
+                label: 'Dependencies',
+                blockedBy: 'Blocked by',
+                blockedByHint: 'Add tasks that must be completed before this one. Use wiki-links (e.g., [[Task Note]]), one per line.',
+                blocking: 'Blocking',
+                blockingHint: 'Tasks that are waiting on this task. Use wiki-links, one per line.',
+                placeholder: '[[Task Note]]'
+            },
             customFieldsLabel: 'Custom Fields',
             actions: {
                 due: 'Set due date',
@@ -1493,7 +1502,8 @@ export const en: TranslationTree = {
                 titleRequired: 'Please enter a task title',
                 success: 'Task "{title}" created successfully',
                 successShortened: 'Task "{title}" created successfully (filename shortened due to length)',
-                failure: 'Failed to create task: {message}'
+                failure: 'Failed to create task: {message}',
+                blockingUnresolved: 'Could not resolve: {entries}'
             }
         },
         taskEdit: {
@@ -1517,6 +1527,8 @@ export const en: TranslationTree = {
                 noChanges: 'No changes to save',
                 updateSuccess: 'Task "{title}" updated successfully',
                 updateFailure: 'Failed to update task: {message}',
+                dependenciesUpdateSuccess: 'Dependencies updated',
+                blockingUnresolved: 'Could not resolve: {entries}',
                 fileMissing: 'Could not find task file: {path}',
                 openNoteFailure: 'Failed to open task note',
                 archiveSuccess: 'Task {action} successfully',
@@ -1669,6 +1681,25 @@ export const en: TranslationTree = {
             clearRecurrence: 'Clear recurrence',
             customRecurrence: 'Custom recurrence...',
             createSubtask: 'Create subtask',
+            dependencies: {
+                title: 'Dependencies',
+                addBlockedBy: 'Add “blocked by”…',
+                addBlockedByTitle: 'Add tasks this depends on',
+                addBlocking: 'Add “blocking”…',
+                addBlockingTitle: 'Add tasks this blocks',
+                removeBlockedBy: 'Remove blocked-by…',
+                removeBlocking: 'Remove blocking…',
+                inputPlaceholder: '[[Task Note]]',
+                notices: {
+                    noEntries: 'Please enter at least one task',
+                    blockedByAdded: '{count} dependency added',
+                    blockedByRemoved: 'Dependency removed',
+                    blockingAdded: '{count} dependent task added',
+                    blockingRemoved: 'Dependent task removed',
+                    unresolved: 'Could not resolve: {entries}',
+                    updateFailed: 'Failed to update dependencies'
+                }
+            },
             subtasks: {
                 loading: 'Loading subtasks...',
                 noSubtasks: 'No subtasks found',
@@ -1877,6 +1908,14 @@ export const en: TranslationTree = {
             createdLabel: 'Created:',
             dailyBadge: 'Daily',
             dailyTooltip: 'Daily note'
+        },
+        taskCard: {
+            blockedBadge: 'Blocked',
+            blockedBadgeTooltip: 'This task is waiting on another task',
+            blockingToggle: 'Blocking {count} tasks',
+            loadingDependencies: 'Loading dependencies...',
+            blockingEmpty: 'No dependent tasks',
+            blockingLoadError: 'Failed to load dependencies'
         },
         filterHeading: {
             allViewName: 'All'

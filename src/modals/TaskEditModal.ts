@@ -4,8 +4,8 @@ import { TaskModal } from './TaskModal';
 import { TaskInfo } from '../types';
 import { getCurrentTimestamp, formatDateForStorage, generateUTCCalendarDates, getUTCStartOfWeek, getUTCEndOfWeek, getUTCStartOfMonth, getUTCEndOfMonth, getTodayLocal, parseDateAsLocal } from '../utils/dateUtils';
 import { formatTimestampForDisplay } from '../utils/dateUtils';
-import { format } from 'date-fns';
 import { generateRecurringInstances, extractTaskInfo, calculateTotalTimeSpent, formatTime, updateToNextScheduledOccurrence, sanitizeTags } from '../utils/helpers';
+import { parseDependencyInput, resolveDependencyEntry } from '../utils/dependencyUtils';
 import { splitListPreservingLinksAndQuotes } from '../utils/stringSplit';
 import { ReminderContextMenu } from '../components/ReminderContextMenu';
 import { renderProjectLinks, type LinkServices } from '../ui/renderers/linkRenderer';
@@ -21,6 +21,10 @@ export class TaskEditModal extends TaskModal {
     private metadataContainer: HTMLElement;
     private completedInstancesChanges: Set<string> = new Set();
     private calendarWrapper: HTMLElement | null = null;
+    private initialBlockedBy: string[] = [];
+    private initialBlockingPaths: string[] = [];
+    private pendingBlockingUpdates: { added: string[]; removed: string[]; raw: Record<string, string> } = { added: [], removed: [], raw: {} };
+    private unresolvedBlockingEntries: string[] = [];
 
     constructor(app: App, plugin: TaskNotesPlugin, options: TaskEditOptions) {
         super(app, plugin);
@@ -81,6 +85,13 @@ export class TaskEditModal extends TaskModal {
         // Initialize reminders
         this.reminders = this.task.reminders ? [...this.task.reminders] : [];
 
+        this.blockedByRaw = this.task.blockedBy ? this.task.blockedBy.join('\n') : '';
+        this.initialBlockedBy = this.task.blockedBy ? [...this.task.blockedBy] : [];
+        this.initialBlockingPaths = this.task.blocking ? [...this.task.blocking] : [];
+        this.blockingRaw = this.formatBlockingList(this.task.blocking || []);
+        this.pendingBlockingUpdates = { added: [], removed: [], raw: {} };
+        this.unresolvedBlockingEntries = [];
+
         // Initialize user fields from frontmatter
         await this.initializeUserFields();
     }
@@ -113,6 +124,42 @@ export class TaskEditModal extends TaskModal {
         } catch (error) {
             console.error('Error initializing user fields:', error);
         }
+    }
+
+    private formatBlockingList(paths: string[]): string {
+        if (!paths || paths.length === 0) {
+            return '';
+        }
+
+        const entries = paths.map(path => {
+            const file = this.app.vault.getAbstractFileByPath(path);
+            if (file instanceof TFile) {
+                const linktext = this.app.metadataCache.fileToLinktext(file, this.task.path, false);
+                return `[[${linktext}]]`;
+            }
+            const basename = path.split('/').pop()?.replace(/\.md$/i, '') || path;
+            return `[[${basename}]]`;
+        });
+
+        return entries.join('\n');
+    }
+
+    private arraysEqual(a: string[], b: string[]): boolean {
+        if (a.length !== b.length) {
+            return false;
+        }
+
+        const normalize = (arr: string[]) => arr.map(item => item.trim()).sort();
+        const normalizedA = normalize(a);
+        const normalizedB = normalize(b);
+
+        for (let i = 0; i < normalizedA.length; i++) {
+            if (normalizedA[i] !== normalizedB[i]) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private convertLegacyRecurrenceToString(recurrence: { frequency?: string; days_of_week?: string[]; day_of_month?: number }): string {
@@ -434,20 +481,62 @@ export class TaskEditModal extends TaskModal {
 
         try {
             const changes = this.getChanges();
-            
-            if (Object.keys(changes).length === 0) {
+            const hasBlockingChanges = this.pendingBlockingUpdates.added.length > 0 || this.pendingBlockingUpdates.removed.length > 0;
+            const hasTaskChanges = Object.keys(changes).length > 0;
+
+            if (this.unresolvedBlockingEntries.length > 0 && !hasBlockingChanges) {
+                new Notice(this.t('modals.taskEdit.notices.blockingUnresolved', {
+                    entries: this.unresolvedBlockingEntries.join(', ')
+                }));
+                this.unresolvedBlockingEntries = [];
+            }
+
+            if (!hasTaskChanges && !hasBlockingChanges) {
                 new Notice(this.t('modals.taskEdit.notices.noChanges'));
                 this.close();
                 return;
             }
 
-            const updatedTask = await this.plugin.taskService.updateTask(this.task, changes);
+            let updatedTask = this.task;
 
-            new Notice(this.t('modals.taskEdit.notices.updateSuccess', { title: updatedTask.title }));
-            
+            if (hasTaskChanges) {
+                updatedTask = await this.plugin.taskService.updateTask(this.task, changes);
+                this.task = updatedTask;
+            }
+
+            if (hasBlockingChanges) {
+                await this.plugin.taskService.updateBlockingRelationships(
+                    updatedTask,
+                    this.pendingBlockingUpdates.added,
+                    this.pendingBlockingUpdates.removed,
+                    this.pendingBlockingUpdates.raw
+                );
+
+                const refreshed = await this.plugin.cacheManager.getTaskInfo(updatedTask.path);
+                if (refreshed) {
+                    updatedTask = refreshed;
+                    this.task = refreshed;
+                }
+            }
+
+            if (this.unresolvedBlockingEntries.length > 0) {
+                new Notice(this.t('modals.taskEdit.notices.blockingUnresolved', {
+                    entries: this.unresolvedBlockingEntries.join(', ')
+                }));
+            }
+
             if (this.options.onTaskUpdated) {
                 this.options.onTaskUpdated(updatedTask);
             }
+
+            if (hasTaskChanges) {
+                new Notice(this.t('modals.taskEdit.notices.updateSuccess', { title: updatedTask.title }));
+            } else if (hasBlockingChanges) {
+                new Notice(this.t('modals.taskEdit.notices.dependenciesUpdateSuccess'));
+            }
+
+            this.pendingBlockingUpdates = { added: [], removed: [], raw: {} };
+            this.unresolvedBlockingEntries = [];
 
         } catch (error) {
             console.error('Failed to update task:', error);
@@ -540,6 +629,48 @@ export class TaskEditModal extends TaskModal {
         if (JSON.stringify(newReminders) !== JSON.stringify(oldReminders)) {
             changes.reminders = newReminders.length > 0 ? newReminders : undefined;
         }
+
+        const blockedInputValue = this.blockedByInput ? this.blockedByInput.value : this.blockedByRaw;
+        const newBlockedEntries = parseDependencyInput(blockedInputValue);
+        if (!this.arraysEqual(newBlockedEntries, this.initialBlockedBy)) {
+            changes.blockedBy = newBlockedEntries.length > 0 ? newBlockedEntries : undefined;
+        }
+
+        const blockingInputValue = this.blockingInput ? this.blockingInput.value : this.blockingRaw;
+        const blockingEntries = parseDependencyInput(blockingInputValue);
+        const resolvedBlocking = new Map<string, string>();
+        const unresolvedEntries: string[] = [];
+
+        for (const entry of blockingEntries) {
+            const resolved = resolveDependencyEntry(this.app, this.task.path, entry);
+            if (!resolved) {
+                unresolvedEntries.push(entry);
+                continue;
+            }
+            resolvedBlocking.set(resolved.path, entry);
+        }
+
+        const newBlockingPaths = Array.from(resolvedBlocking.keys());
+        const originalPaths = new Set(this.initialBlockingPaths);
+        const newPathSet = new Set(newBlockingPaths);
+
+        const addedPaths = newBlockingPaths.filter(path => !originalPaths.has(path));
+        const removedPaths = this.initialBlockingPaths.filter(path => !newPathSet.has(path));
+
+        const rawAdditions: Record<string, string> = {};
+        for (const path of addedPaths) {
+            const raw = resolvedBlocking.get(path);
+            if (raw) {
+                rawAdditions[path] = raw;
+            }
+        }
+
+        this.pendingBlockingUpdates = {
+            added: addedPaths,
+            removed: removedPaths,
+            raw: rawAdditions
+        };
+        this.unresolvedBlockingEntries = unresolvedEntries;
 
         // Apply completed instances changes
         if (this.completedInstancesChanges.size > 0) {

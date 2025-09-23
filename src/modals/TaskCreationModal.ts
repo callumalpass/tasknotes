@@ -9,6 +9,7 @@ import { NaturalLanguageParser, ParsedTaskData as NLParsedTaskData } from '../se
 import { StatusSuggestionService, StatusSuggestion } from '../services/StatusSuggestionService';
 import { combineDateAndTime } from '../utils/dateUtils';
 import { splitListPreservingLinksAndQuotes } from '../utils/stringSplit';
+import { parseDependencyInput, resolveDependencyEntry } from '../utils/dependencyUtils';
 import { ProjectMetadataResolver, ProjectEntry } from '../utils/projectMetadataResolver';
 import { parseDisplayFieldsRow } from '../utils/projectAutosuggestDisplayFieldsParser';
 
@@ -499,6 +500,7 @@ export class TaskCreationModal extends TaskModal {
     private nlPreviewContainer: HTMLElement;
     private nlButtonContainer: HTMLElement;
     private nlpSuggest: NLPSuggest;
+    private creationBlockingUpdates: { rawEntries: string[]; added: string[]; raw: Record<string, string>; unresolved: string[] } = { rawEntries: [], added: [], raw: {}, unresolved: [] };
 
     constructor(
         app: App,
@@ -866,19 +868,54 @@ export class TaskCreationModal extends TaskModal {
         try {
             const taskData = this.buildTaskData();
             const result = await this.plugin.taskService.createTask(taskData);
+            let createdTask = result.taskInfo;
 
             // Check if filename was changed due to length constraints
             const expectedFilename = result.taskInfo.title.replace(/[<>:"/\\|?*]/g, '').trim();
             const actualFilename = result.file.basename;
             
             if (actualFilename.startsWith('task-') && actualFilename !== expectedFilename) {
-                new Notice(this.t('modals.taskCreation.notices.successShortened', { title: result.taskInfo.title }));
+                new Notice(this.t('modals.taskCreation.notices.successShortened', { title: createdTask.title }));
             } else {
-                new Notice(this.t('modals.taskCreation.notices.success', { title: result.taskInfo.title }));
+                new Notice(this.t('modals.taskCreation.notices.success', { title: createdTask.title }));
+            }
+
+            if (this.creationBlockingUpdates.rawEntries.length > 0) {
+                const addedPaths: string[] = [];
+                const rawMap: Record<string, string> = {};
+                const unresolved: string[] = [];
+
+                for (const entry of this.creationBlockingUpdates.rawEntries) {
+                    const resolved = resolveDependencyEntry(this.app, createdTask.path, entry);
+                    if (!resolved) {
+                        unresolved.push(entry);
+                        continue;
+                    }
+                    if (!addedPaths.includes(resolved.path)) {
+                        addedPaths.push(resolved.path);
+                        rawMap[resolved.path] = entry;
+                    }
+                }
+
+                if (addedPaths.length > 0) {
+                    await this.plugin.taskService.updateBlockingRelationships(createdTask, addedPaths, [], rawMap);
+                    const refreshed = await this.plugin.cacheManager.getTaskInfo(createdTask.path);
+                    if (refreshed) {
+                        createdTask = refreshed;
+                    }
+                }
+
+                if (unresolved.length > 0) {
+                    new Notice(this.t('modals.taskCreation.notices.blockingUnresolved', {
+                        entries: unresolved.join(', ')
+                    }));
+                }
+
+                this.creationBlockingUpdates = { rawEntries: [], added: [], raw: {}, unresolved: [] };
             }
 
             if (this.options.onTaskCreated) {
-                this.options.onTaskCreated(result.taskInfo);
+                this.options.onTaskCreated(createdTask);
             }
 
             this.close();
@@ -927,6 +964,19 @@ export class TaskCreationModal extends TaskModal {
             dateModified: now,
             // Add user fields as custom frontmatter properties
             customFrontmatter: this.buildCustomFrontmatter()
+        };
+
+        const blockedEntries = parseDependencyInput(this.blockedByInput ? this.blockedByInput.value : this.blockedByRaw);
+        if (blockedEntries.length > 0) {
+            taskData.blockedBy = blockedEntries;
+        }
+
+        const blockingEntries = parseDependencyInput(this.blockingInput ? this.blockingInput.value : this.blockingRaw);
+        this.creationBlockingUpdates = {
+            rawEntries: blockingEntries,
+            added: [],
+            raw: {},
+            unresolved: []
         };
 
         // Add details if provided
