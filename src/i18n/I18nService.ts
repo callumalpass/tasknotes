@@ -52,6 +52,23 @@ export class I18nService extends Events {
         return Object.keys(this.resources);
     }
 
+    /**
+     * Get native language names (endonyms) for language selection UI.
+     * These are not translated but shown in their native scripts.
+     */
+    getNativeLanguageName(languageCode: string): string {
+        const nativeNames: Record<string, string> = {
+            'en': 'English',
+            'fr': 'Français',
+            'de': 'Deutsch',
+            'es': 'Español',
+            'ru': 'Русский',
+            'zh': '中文',
+            'ja': '日本語'
+        };
+        return nativeNames[languageCode] || languageCode;
+    }
+
     getCurrentLocale(): string {
         return this.currentLocale;
     }

@@ -243,7 +243,7 @@ export default class TaskNotesPlugin extends Plugin {
 			if (!this.initializationComplete) {
 				return;
 			}
-			const languageLabel = this.i18n.resolveKey(`common.languages.${current}`) || current;
+			const languageLabel = this.i18n.getNativeLanguageName(current);
 			new Notice(this.i18n.translate('notices.languageChanged', { language: languageLabel }));
 			this.refreshLocalizedViews();
 			this.refreshCommandTranslations();

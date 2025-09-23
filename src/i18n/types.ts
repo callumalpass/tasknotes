@@ -27,6 +27,7 @@ export interface II18nService {
     getCurrentLocale(): string;
     setLocale(locale: string): void;
     getAvailableLocales(): string[];
+    getNativeLanguageName(languageCode: string): string;
     translate(key: string, params?: InterpolationValues): string;
     translatePlural(baseKey: string, count: number, params?: InterpolationValues): string;
     resolveKey(key: string): string | undefined;

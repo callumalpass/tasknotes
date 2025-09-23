@@ -140,7 +140,8 @@ export function renderGeneralTab(container: HTMLElement, plugin: TaskNotesPlugin
             { value: 'system', label: translate('common.systemDefault') }
         ];
         for (const code of plugin.i18n.getAvailableLocales()) {
-            const label = plugin.i18n.resolveKey(`common.languages.${code}`) || code;
+            // Use native language names (endonyms) for better UX
+            const label = plugin.i18n.getNativeLanguageName(code);
             options.push({ value: code, label });
         }
         return options;
