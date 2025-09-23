@@ -153,6 +153,13 @@ describe('NaturalLanguageParser', () => {
       expect(result.priority).toBe('urgent');
       expect(result.title).toBe('Meeting');
     });
+
+    it('should extract tags with hyphens correctly', () => {
+      const result = parser.parseInput('Configure #Home-Assistant integration');
+
+      expect(result.tags).toEqual(['Home-Assistant']);
+      expect(result.title).toBe('Configure integration');
+    });
   });
 
   describe('Projects Extraction', () => {
