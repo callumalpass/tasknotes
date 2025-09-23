@@ -102,4 +102,93 @@ export class GroupingUtils {
         next[groupingKey] = collapsed;
         plugin.viewStateManager.setViewPreferences(viewType, { ...prefs, collapsedGroups: next });
     }
+
+    // ========================= Subgroup helpers =========================
+
+    /**
+     * Check if a specific subgroup is collapsed for given primary group
+     */
+    static isSubgroupCollapsed(viewType: string, subgroupKey: string, primaryGroup: string, subgroupName: string, plugin: TaskNotesPlugin): boolean {
+        try {
+            const prefs = plugin.viewStateManager.getViewPreferences<any>(viewType) || {};
+            const collapsed = prefs.collapsedSubgroups || {};
+            return !!collapsed?.[subgroupKey]?.[primaryGroup]?.[subgroupName];
+        } catch {
+            return false;
+        }
+    }
+
+    /**
+     * Set collapsed state for a specific subgroup within a primary group
+     */
+    static setSubgroupCollapsed(viewType: string, subgroupKey: string, primaryGroup: string, subgroupName: string, collapsed: boolean, plugin: TaskNotesPlugin): void {
+        const prefs = plugin.viewStateManager.getViewPreferences<any>(viewType) || {};
+        const next = { ...prefs } as any;
+        if (!next.collapsedSubgroups) next.collapsedSubgroups = {};
+        if (!next.collapsedSubgroups[subgroupKey]) next.collapsedSubgroups[subgroupKey] = {};
+        if (!next.collapsedSubgroups[subgroupKey][primaryGroup]) next.collapsedSubgroups[subgroupKey][primaryGroup] = {};
+        next.collapsedSubgroups[subgroupKey][primaryGroup][subgroupName] = collapsed;
+        plugin.viewStateManager.setViewPreferences(viewType, next);
+    }
+
+    /**
+     * Expand all subgroups within a primary group (clear collapsed flags)
+     */
+    static expandAllSubgroups(viewType: string, primaryGroup: string, subgroupKey: string, plugin: TaskNotesPlugin): void {
+        const prefs = plugin.viewStateManager.getViewPreferences<any>(viewType) || {};
+        const next = { ...prefs } as any;
+        if (!next.collapsedSubgroups) next.collapsedSubgroups = {};
+        if (!next.collapsedSubgroups[subgroupKey]) next.collapsedSubgroups[subgroupKey] = {};
+        next.collapsedSubgroups[subgroupKey][primaryGroup] = {};
+        plugin.viewStateManager.setViewPreferences(viewType, next);
+    }
+
+    /**
+     * Collapse all given subgroups within a primary group
+     */
+    static collapseAllSubgroups(viewType: string, primaryGroup: string, subgroupKey: string, subgroupNames: string[], plugin: TaskNotesPlugin): void {
+        const prefs = plugin.viewStateManager.getViewPreferences<any>(viewType) || {};
+        const next = { ...prefs } as any;
+        if (!next.collapsedSubgroups) next.collapsedSubgroups = {};
+        if (!next.collapsedSubgroups[subgroupKey]) next.collapsedSubgroups[subgroupKey] = {};
+        const collapsed: Record<string, boolean> = {};
+        subgroupNames.forEach(name => { collapsed[name] = true; });
+        next.collapsedSubgroups[subgroupKey][primaryGroup] = collapsed;
+        plugin.viewStateManager.setViewPreferences(viewType, next);
+    }
+
+    /**
+     * Expand all subgroups globally for a subgroup key
+     */
+    static expandAllSubgroupsGlobally(viewType: string, subgroupKey: string, plugin: TaskNotesPlugin): void {
+        const prefs = plugin.viewStateManager.getViewPreferences<any>(viewType) || {};
+        const next = { ...prefs } as any;
+        if (!next.collapsedSubgroups) next.collapsedSubgroups = {};
+        next.collapsedSubgroups[subgroupKey] = {};
+        plugin.viewStateManager.setViewPreferences(viewType, next);
+    }
+
+    /**
+     * Collapse all subgroups globally for specific primary/subgroup pairs
+     */
+    static collapseAllSubgroupsGlobally(
+        viewType: string,
+        subgroupKey: string,
+        items: { primaryGroup: string; subgroupName: string }[],
+        plugin: TaskNotesPlugin
+    ): void {
+        const prefs = plugin.viewStateManager.getViewPreferences<any>(viewType) || {};
+        const next = { ...prefs } as any;
+        if (!next.collapsedSubgroups) next.collapsedSubgroups = {};
+        if (!next.collapsedSubgroups[subgroupKey]) next.collapsedSubgroups[subgroupKey] = {};
+
+        for (const { primaryGroup, subgroupName } of items) {
+            if (!next.collapsedSubgroups[subgroupKey][primaryGroup]) {
+                next.collapsedSubgroups[subgroupKey][primaryGroup] = {};
+            }
+            next.collapsedSubgroups[subgroupKey][primaryGroup][subgroupName] = true;
+        }
+
+        plugin.viewStateManager.setViewPreferences(viewType, next);
+    }
 }

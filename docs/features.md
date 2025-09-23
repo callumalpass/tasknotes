@@ -14,6 +14,8 @@ See [Task Management](features/task-management.md) for details.
 
 The FilterBar appears across multiple views, offering instant text search plus a hierarchical query builder for complex conditions using AND/OR logic. Saved views let you store frequently-used filter combinations, while sorting and grouping options organize tasks by tags, custom fields, or other properties.
 
+Advanced hierarchical subgrouping allows two-level organization, where tasks are first grouped by one criterion (e.g., status) and then subdivided by another (e.g., priority), providing enhanced visual organization for complex task lists.
+
 See [Filtering and Views](features/filtering-and-views.md) for details.
 
 ## Inline Task Integration

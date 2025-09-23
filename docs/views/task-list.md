@@ -118,8 +118,29 @@ Available grouping options:
 - `priority` - By priority level
 - `context` - By first context
 - `project` - By project (tasks can appear in multiple groups)
+- `due` - By due date ranges (Today, Tomorrow, This week, etc.)
+- `scheduled` - By scheduled date ranges
 
 Note: When Group by equals the Sort user field, group headers follow the selected sort direction.
+
+#### Hierarchical Subgrouping
+
+The Task List View supports two-level hierarchical grouping for enhanced organization:
+
+1. **Enable Primary Grouping**: Choose any grouping option (e.g., "Status")
+2. **Add Subgrouping**: Use the sort/group menu (⋯ button) to select a subgroup option
+3. **View Structure**: Tasks appear under primary groups, then organized into subgroups
+
+**Example**: Group by "Status" with "Priority" subgroups creates:
+- **Open** (primary group)
+  - High priority (subgroup)
+  - Medium priority (subgroup)
+  - Low priority (subgroup)
+- **In Progress** (primary group)
+  - High priority (subgroup)
+  - etc.
+
+Subgroup state (expanded/collapsed) is preserved between sessions, and subgroups are sorted according to the current sort direction.
 
 ### Project Group Headers
 
@@ -127,8 +148,6 @@ When grouping tasks by project, the project group headers are interactive:
 - **Clickable Navigation**: Project headers that are wikilinks (e.g., `[[Project Name]]`) can be clicked to open the corresponding project note
 - **Hover Previews**: Use Ctrl+hover on project headers to preview project notes without opening them
 - **Error Handling**: Clicking on project headers for missing files shows appropriate error messages
-- `due` - By due date ranges (Today, Tomorrow, This week, etc.)
-- `scheduled` - By scheduled date ranges
 
 
 ### Group Controls: Expand/Collapse All
