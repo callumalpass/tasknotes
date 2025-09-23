@@ -3,6 +3,7 @@ import { NoteInfo } from '../types';
 import TaskNotesPlugin from '../main';
 import { formatDateForDisplay } from '../utils/dateUtils';
 import { getAllDailyNotes } from 'obsidian-daily-notes-interface';
+import { TranslationKey } from '../i18n';
 
 export interface NoteCardOptions {
     showCreatedDate: boolean;
@@ -50,10 +51,10 @@ export function createNoteCard(note: NoteInfo, plugin: TaskNotesPlugin, options:
     
     // Daily note badge (if enabled and applicable)
     if (opts.showDailyNoteBadge && isDailyNote) {
-        item.createSpan({ 
+        item.createSpan({
             cls: 'note-card__badge',
-            text: 'Daily',
-            attr: { title: 'Daily note' }
+            text: plugin.i18n.translate('ui.noteCard.dailyBadge'),
+            attr: { title: plugin.i18n.translate('ui.noteCard.dailyTooltip') }
         });
     }
     
@@ -101,10 +102,10 @@ export function createNoteCard(note: NoteInfo, plugin: TaskNotesPlugin, options:
         const dateStr = note.createdDate.indexOf('T') > 0 
             ? formatDateForDisplay(note.createdDate, dateFormat) 
             : note.createdDate;
-        contentContainer.createDiv({ 
+        contentContainer.createDiv({
             cls: 'note-card__metadata',
-            text: `Created: ${dateStr}`,
-            attr: { title: `Created: ${dateStr}` }
+            text: `${plugin.i18n.translate('ui.noteCard.createdLabel')} ${dateStr}`,
+            attr: { title: `${plugin.i18n.translate('ui.noteCard.createdLabel')} ${dateStr}` }
         });
     }
     
@@ -198,7 +199,7 @@ export function updateNoteCard(element: HTMLElement, note: NoteInfo, plugin: Tas
         const dateStr = note.createdDate.indexOf('T') > 0 
             ? formatDateForDisplay(note.createdDate, dateFormat) 
             : note.createdDate;
-        dateEl.textContent = `Created: ${dateStr}`;
+        dateEl.textContent = `${plugin.i18n.translate('ui.noteCard.createdLabel')} ${dateStr}`;
     }
     
     // Update path

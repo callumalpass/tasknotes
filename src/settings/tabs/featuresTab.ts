@@ -11,6 +11,7 @@ import {
 } from '../components/settingHelpers';
 import { showStorageLocationConfirmationModal } from '../../modals/StorageLocationConfirmationModal';
 import { getAvailableLanguages } from '../../locales';
+import type { TranslationKey } from '../../i18n';
 
 /**
  * Renders the Features tab - optional plugin modules and their configuration
@@ -18,13 +19,15 @@ import { getAvailableLanguages } from '../../locales';
 export function renderFeaturesTab(container: HTMLElement, plugin: TaskNotesPlugin, save: () => void): void {
     container.empty();
 
+    const translate = (key: TranslationKey, params?: Record<string, string | number>) => plugin.i18n.translate(key, params);
+
     // Inline Tasks Section
-    createSectionHeader(container, 'Inline Tasks');
-    createHelpText(container, 'Configure inline task features for seamless task management within any note.');
+    createSectionHeader(container, translate('settings.features.inlineTasks.header'));
+    createHelpText(container, translate('settings.features.inlineTasks.description'));
 
     createToggleSetting(container, {
-        name: 'Task link overlay',
-        desc: 'Show interactive overlays when hovering over task links',
+        name: translate('settings.features.overlays.taskLinkToggle.name'),
+        desc: translate('settings.features.overlays.taskLinkToggle.description'),
         getValue: () => plugin.settings.enableTaskLinkOverlay,
         setValue: async (value: boolean) => {
             plugin.settings.enableTaskLinkOverlay = value;
@@ -33,8 +36,8 @@ export function renderFeaturesTab(container: HTMLElement, plugin: TaskNotesPlugi
     });
 
     createToggleSetting(container, {
-        name: 'Instant task convert',
-        desc: 'Enable instant conversion of text to tasks using keyboard shortcuts',
+        name: translate('settings.features.instantConvert.toggle.name'),
+        desc: translate('settings.features.instantConvert.toggle.description'),
         getValue: () => plugin.settings.enableInstantTaskConvert,
         setValue: async (value: boolean) => {
             plugin.settings.enableInstantTaskConvert = value;
@@ -46,8 +49,8 @@ export function renderFeaturesTab(container: HTMLElement, plugin: TaskNotesPlugi
 
     if (plugin.settings.enableInstantTaskConvert) {
         createTextSetting(container, {
-            name: 'Inline task convert folder',
-            desc: 'Folder for inline task conversion. Use {{currentNotePath}} for relative to current note',
+            name: translate('settings.features.instantConvert.folder.name'),
+            desc: translate('settings.features.instantConvert.folder.description'),
             placeholder: 'TaskNotes',
             getValue: () => plugin.settings.inlineTaskConvertFolder,
             setValue: async (value: string) => {
@@ -58,12 +61,12 @@ export function renderFeaturesTab(container: HTMLElement, plugin: TaskNotesPlugi
     }
 
     // Natural Language Processing Section
-    createSectionHeader(container, 'Natural Language Processing');
-    createHelpText(container, 'Enable smart parsing of task details from natural language input.');
+    createSectionHeader(container, translate('settings.features.nlp.header'));
+    createHelpText(container, translate('settings.features.nlp.description'));
 
     createToggleSetting(container, {
-        name: 'Enable natural language task input',
-        desc: 'Parse due dates, priorities, and contexts from natural language when creating tasks',
+        name: translate('settings.features.nlp.enable.name'),
+        desc: translate('settings.features.nlp.enable.description'),
         getValue: () => plugin.settings.enableNaturalLanguageInput,
         setValue: async (value: boolean) => {
             plugin.settings.enableNaturalLanguageInput = value;
@@ -75,8 +78,8 @@ export function renderFeaturesTab(container: HTMLElement, plugin: TaskNotesPlugi
 
     if (plugin.settings.enableNaturalLanguageInput) {
         createToggleSetting(container, {
-            name: 'Default to scheduled',
-            desc: 'When NLP detects a date without context, treat it as scheduled rather than due',
+            name: translate('settings.features.nlp.defaultToScheduled.name'),
+            desc: translate('settings.features.nlp.defaultToScheduled.description'),
             getValue: () => plugin.settings.nlpDefaultToScheduled,
             setValue: async (value: boolean) => {
                 plugin.settings.nlpDefaultToScheduled = value;
@@ -85,8 +88,8 @@ export function renderFeaturesTab(container: HTMLElement, plugin: TaskNotesPlugi
         });
 
         createDropdownSetting(container, {
-            name: 'NLP language',
-            desc: 'Language for natural language processing patterns and date parsing',
+            name: translate('settings.features.nlp.language.name'),
+            desc: translate('settings.features.nlp.language.description'),
             options: getAvailableLanguages(),
             getValue: () => plugin.settings.nlpLanguage,
             setValue: async (value: string) => {
@@ -96,8 +99,8 @@ export function renderFeaturesTab(container: HTMLElement, plugin: TaskNotesPlugi
         });
 
         createTextSetting(container, {
-            name: 'Status suggestion trigger',
-            desc: 'Text to trigger status suggestions (leave empty to disable)',
+            name: translate('settings.features.nlp.statusTrigger.name'),
+            desc: translate('settings.features.nlp.statusTrigger.description'),
             placeholder: '@',
             getValue: () => plugin.settings.statusSuggestionTrigger,
             setValue: async (value: string) => {
@@ -108,13 +111,13 @@ export function renderFeaturesTab(container: HTMLElement, plugin: TaskNotesPlugi
     }
 
     // Pomodoro Timer Section
-    createSectionHeader(container, 'Pomodoro Timer');
-    createHelpText(container, 'Built-in Pomodoro timer for time management and productivity tracking.');
+    createSectionHeader(container, translate('settings.features.pomodoro.header'));
+    createHelpText(container, translate('settings.features.pomodoro.description'));
 
     // Work duration
     createNumberSetting(container, {
-        name: 'Work duration',
-        desc: 'Duration of work intervals in minutes',
+        name: translate('settings.features.pomodoro.workDuration.name'),
+        desc: translate('settings.features.pomodoro.workDuration.description'),
         placeholder: '25',
         min: 1,
         max: 120,
@@ -127,8 +130,8 @@ export function renderFeaturesTab(container: HTMLElement, plugin: TaskNotesPlugi
 
     // Short break duration  
     createNumberSetting(container, {
-        name: 'Short break duration',
-        desc: 'Duration of short breaks in minutes',
+        name: translate('settings.features.pomodoro.shortBreak.name'),
+        desc: translate('settings.features.pomodoro.shortBreak.description'),
         placeholder: '5',
         min: 1,
         max: 60,
@@ -141,8 +144,8 @@ export function renderFeaturesTab(container: HTMLElement, plugin: TaskNotesPlugi
 
     // Long break duration
     createNumberSetting(container, {
-        name: 'Long break duration',
-        desc: 'Duration of long breaks in minutes',
+        name: translate('settings.features.pomodoro.longBreak.name'),
+        desc: translate('settings.features.pomodoro.longBreak.description'),
         placeholder: '15',
         min: 1,
         max: 120,
@@ -155,8 +158,8 @@ export function renderFeaturesTab(container: HTMLElement, plugin: TaskNotesPlugi
 
     // Long break interval
     createNumberSetting(container, {
-        name: 'Long break interval',
-        desc: 'Number of work sessions before a long break',
+        name: translate('settings.features.pomodoro.longBreakInterval.name'),
+        desc: translate('settings.features.pomodoro.longBreakInterval.description'),
         placeholder: '4',
         min: 1,
         max: 10,
@@ -169,8 +172,8 @@ export function renderFeaturesTab(container: HTMLElement, plugin: TaskNotesPlugi
 
     // Auto-start options
     createToggleSetting(container, {
-        name: 'Auto-start breaks',
-        desc: 'Automatically start break timers after work sessions',
+        name: translate('settings.features.pomodoro.autoStartBreaks.name'),
+        desc: translate('settings.features.pomodoro.autoStartBreaks.description'),
         getValue: () => plugin.settings.pomodoroAutoStartBreaks,
         setValue: async (value: boolean) => {
             plugin.settings.pomodoroAutoStartBreaks = value;
@@ -179,8 +182,8 @@ export function renderFeaturesTab(container: HTMLElement, plugin: TaskNotesPlugi
     });
 
     createToggleSetting(container, {
-        name: 'Auto-start work',
-        desc: 'Automatically start work sessions after breaks',
+        name: translate('settings.features.pomodoro.autoStartWork.name'),
+        desc: translate('settings.features.pomodoro.autoStartWork.description'),
         getValue: () => plugin.settings.pomodoroAutoStartWork,
         setValue: async (value: boolean) => {
             plugin.settings.pomodoroAutoStartWork = value;
@@ -190,8 +193,8 @@ export function renderFeaturesTab(container: HTMLElement, plugin: TaskNotesPlugi
 
     // Notification settings
     createToggleSetting(container, {
-        name: 'Pomodoro notifications',
-        desc: 'Show notifications when Pomodoro sessions end',
+        name: translate('settings.features.pomodoro.notifications.name'),
+        desc: translate('settings.features.pomodoro.notifications.description'),
         getValue: () => plugin.settings.pomodoroNotifications,
         setValue: async (value: boolean) => {
             plugin.settings.pomodoroNotifications = value;
@@ -201,8 +204,8 @@ export function renderFeaturesTab(container: HTMLElement, plugin: TaskNotesPlugi
 
     // Sound settings
     createToggleSetting(container, {
-        name: 'Sound enabled',
-        desc: 'Play sound when Pomodoro sessions end',
+        name: translate('settings.features.pomodoroSound.enabledName'),
+        desc: translate('settings.features.pomodoroSound.enabledDesc'),
         getValue: () => plugin.settings.pomodoroSoundEnabled,
         setValue: async (value: boolean) => {
             plugin.settings.pomodoroSoundEnabled = value;
@@ -214,8 +217,8 @@ export function renderFeaturesTab(container: HTMLElement, plugin: TaskNotesPlugi
 
     if (plugin.settings.pomodoroSoundEnabled) {
         createNumberSetting(container, {
-            name: 'Sound volume',
-            desc: 'Volume for Pomodoro sounds (0-100)',
+            name: translate('settings.features.pomodoroSound.volumeName'),
+            desc: translate('settings.features.pomodoroSound.volumeDesc'),
             placeholder: '50',
             min: 0,
             max: 100,
@@ -229,11 +232,11 @@ export function renderFeaturesTab(container: HTMLElement, plugin: TaskNotesPlugi
 
     // Storage location setting
     createDropdownSetting(container, {
-        name: 'Pomodoro data storage',
-        desc: 'Where to store Pomodoro session history',
+        name: translate('settings.features.dataStorage.name'),
+        desc: translate('settings.features.dataStorage.description'),
         options: [
-            { value: 'plugin', label: 'Plugin data (recommended)' },
-            { value: 'daily-notes', label: 'Daily notes' }
+            { value: 'plugin', label: translate('settings.features.dataStorage.pluginData') },
+            { value: 'daily-notes', label: translate('settings.features.dataStorage.dailyNotes') }
         ],
         getValue: () => plugin.settings.pomodoroStorageLocation,
         setValue: async (value: string) => {
@@ -244,12 +247,12 @@ export function renderFeaturesTab(container: HTMLElement, plugin: TaskNotesPlugi
                 const hasExistingData = data?.pomodoroHistory && Array.isArray(data.pomodoroHistory) && data.pomodoroHistory.length > 0;
                 
                 // Show confirmation modal for storage location change
-                const confirmed = await showStorageLocationConfirmationModal(plugin.app, hasExistingData);
+                const confirmed = await showStorageLocationConfirmationModal(plugin, hasExistingData);
                 
                 if (confirmed) {
                     plugin.settings.pomodoroStorageLocation = newLocation;
                     save();
-                    new Notice(`Pomodoro storage location changed to ${newLocation === 'plugin' ? 'plugin data' : 'daily notes'}`);
+                    new Notice(translate('settings.features.dataStorage.notices.locationChanged', { location: newLocation === 'plugin' ? translate('settings.features.dataStorage.pluginData') : translate('settings.features.dataStorage.dailyNotes') }));
                 } else {
                     // Reset the dropdown to the current value
                     renderFeaturesTab(container, plugin, save);
@@ -259,12 +262,12 @@ export function renderFeaturesTab(container: HTMLElement, plugin: TaskNotesPlugi
     });
 
     // Notifications Section
-    createSectionHeader(container, 'Notifications');
-    createHelpText(container, 'Configure task reminder notifications and alerts.');
+    createSectionHeader(container, translate('settings.features.notifications.header'));
+    createHelpText(container, translate('settings.features.notifications.description'));
 
     createToggleSetting(container, {
-        name: 'Enable notifications',
-        desc: 'Enable task reminder notifications',
+        name: translate('settings.features.notifications.enableName'),
+        desc: translate('settings.features.notifications.enableDesc'),
         getValue: () => plugin.settings.enableNotifications,
         setValue: async (value: boolean) => {
             plugin.settings.enableNotifications = value;
@@ -276,11 +279,11 @@ export function renderFeaturesTab(container: HTMLElement, plugin: TaskNotesPlugi
 
     if (plugin.settings.enableNotifications) {
         createDropdownSetting(container, {
-            name: 'Notification type',
-            desc: 'Type of notifications to show',
+            name: translate('settings.features.notifications.typeName'),
+            desc: translate('settings.features.notifications.typeDesc'),
             options: [
-                { value: 'in-app', label: 'In-app notifications' },
-                { value: 'system', label: 'System notifications' }
+                { value: 'in-app', label: translate('settings.features.notifications.inAppLabel') },
+                { value: 'system', label: translate('settings.features.notifications.systemLabel') }
             ],
             getValue: () => plugin.settings.notificationType,
             setValue: async (value: string) => {
@@ -291,12 +294,12 @@ export function renderFeaturesTab(container: HTMLElement, plugin: TaskNotesPlugi
     }
 
     // Performance & Behavior Section
-    createSectionHeader(container, 'Performance & Behavior');
-    createHelpText(container, 'Configure plugin performance and behavioral options.');
+    createSectionHeader(container, translate('settings.features.performance.header'));
+    createHelpText(container, translate('settings.features.performance.description'));
 
     createToggleSetting(container, {
-        name: 'Hide completed tasks from overdue',
-        desc: 'Exclude completed tasks from overdue task calculations',
+        name: translate('settings.features.overdue.hideCompletedName'),
+        desc: translate('settings.features.overdue.hideCompletedDesc'),
         getValue: () => plugin.settings.hideCompletedFromOverdue,
         setValue: async (value: boolean) => {
             plugin.settings.hideCompletedFromOverdue = value;
@@ -305,8 +308,8 @@ export function renderFeaturesTab(container: HTMLElement, plugin: TaskNotesPlugi
     });
 
     createToggleSetting(container, {
-        name: 'Disable note indexing',
-        desc: 'Disable automatic indexing of notes for better performance (may reduce some features)',
+        name: translate('settings.features.indexing.disableName'),
+        desc: translate('settings.features.indexing.disableDesc'),
         getValue: () => plugin.settings.disableNoteIndexing,
         setValue: async (value: boolean) => {
             plugin.settings.disableNoteIndexing = value;
@@ -317,8 +320,8 @@ export function renderFeaturesTab(container: HTMLElement, plugin: TaskNotesPlugi
     // Suggestion debounce setting
     if (plugin.settings.suggestionDebounceMs !== undefined) {
         createNumberSetting(container, {
-            name: 'Suggestion debounce',
-            desc: 'Debounce delay for file suggestions in milliseconds (0 = disabled)',
+            name: translate('settings.features.suggestions.debounceName'),
+            desc: translate('settings.features.suggestions.debounceDesc'),
             placeholder: '300',
             min: 0,
             max: 2000,
@@ -331,12 +334,12 @@ export function renderFeaturesTab(container: HTMLElement, plugin: TaskNotesPlugi
     }
 
     // Time Tracking Section
-    createSectionHeader(container, 'Time Tracking');
-    createHelpText(container, 'Configure automatic time tracking behaviors.');
+    createSectionHeader(container, translate('settings.features.timeTrackingSection.header'));
+    createHelpText(container, translate('settings.features.timeTrackingSection.description'));
 
     createToggleSetting(container, {
-        name: 'Auto-stop tracking on complete',
-        desc: 'Automatically stop time tracking when a task is marked complete',
+        name: translate('settings.features.timeTracking.autoStopName'),
+        desc: translate('settings.features.timeTracking.autoStopDesc'),
         getValue: () => plugin.settings.autoStopTimeTrackingOnComplete,
         setValue: async (value: boolean) => {
             plugin.settings.autoStopTimeTrackingOnComplete = value;
@@ -345,8 +348,8 @@ export function renderFeaturesTab(container: HTMLElement, plugin: TaskNotesPlugi
     });
 
     createToggleSetting(container, {
-        name: 'Time tracking stop notification',
-        desc: 'Show notification when time tracking is automatically stopped',
+        name: translate('settings.features.timeTracking.stopNotificationName'),
+        desc: translate('settings.features.timeTracking.stopNotificationDesc'),
         getValue: () => plugin.settings.autoStopTimeTrackingNotification,
         setValue: async (value: boolean) => {
             plugin.settings.autoStopTimeTrackingNotification = value;
@@ -355,12 +358,12 @@ export function renderFeaturesTab(container: HTMLElement, plugin: TaskNotesPlugi
     });
 
     // Recurring Tasks Section
-    createSectionHeader(container, 'Recurring Tasks');
-    createHelpText(container, 'Configure behavior for recurring task management.');
+    createSectionHeader(container, translate('settings.features.recurringSection.header'));
+    createHelpText(container, translate('settings.features.recurringSection.description'));
 
     createToggleSetting(container, {
-        name: 'Maintain due date offset in recurring tasks',
-        desc: 'When completing recurring tasks, maintain the offset between due and scheduled dates',
+        name: translate('settings.features.recurring.maintainOffsetName'),
+        desc: translate('settings.features.recurring.maintainOffsetDesc'),
         getValue: () => plugin.settings.maintainDueDateOffsetInRecurring,
         setValue: async (value: boolean) => {
             plugin.settings.maintainDueDateOffsetInRecurring = value;
@@ -369,12 +372,12 @@ export function renderFeaturesTab(container: HTMLElement, plugin: TaskNotesPlugi
     });
 
     // Timeblocking Section
-    createSectionHeader(container, 'Timeblocking');
-    createHelpText(container, 'Configure timeblock functionality for lightweight scheduling in daily notes.');
+    createSectionHeader(container, translate('settings.features.timeblocking.header'));
+    createHelpText(container, translate('settings.features.timeblocking.description'));
 
     createToggleSetting(container, {
-        name: 'Enable timeblocking',
-        desc: 'Enable timeblock functionality for lightweight scheduling in daily notes',
+        name: translate('settings.features.timeblocking.enableName'),
+        desc: translate('settings.features.timeblocking.enableDesc'),
         getValue: () => plugin.settings.calendarViewSettings.enableTimeblocking,
         setValue: async (value: boolean) => {
             plugin.settings.calendarViewSettings.enableTimeblocking = value;
@@ -386,8 +389,8 @@ export function renderFeaturesTab(container: HTMLElement, plugin: TaskNotesPlugi
 
     if (plugin.settings.calendarViewSettings.enableTimeblocking) {
         createToggleSetting(container, {
-            name: 'Show timeblocks',
-            desc: 'Display timeblocks from daily notes by default',
+            name: translate('settings.features.timeblocking.showBlocksName'),
+            desc: translate('settings.features.timeblocking.showBlocksDesc'),
             getValue: () => plugin.settings.calendarViewSettings.defaultShowTimeblocks,
             setValue: async (value: boolean) => {
                 plugin.settings.calendarViewSettings.defaultShowTimeblocks = value;
@@ -395,6 +398,6 @@ export function renderFeaturesTab(container: HTMLElement, plugin: TaskNotesPlugi
             }
         });
 
-        createHelpText(container, 'Usage: In the advanced calendar view, hold Shift + drag to create timeblocks. Drag to move existing timeblocks. Resize edges to adjust duration.');
+        createHelpText(container, translate('settings.features.timeblocking.usage'));
     }
 }

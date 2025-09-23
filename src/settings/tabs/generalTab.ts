@@ -1,12 +1,13 @@
 // import { TAbstractFile } from 'obsidian';
 import TaskNotesPlugin from '../../main';
-import { 
-    createSectionHeader, 
-    createTextSetting, 
-    createToggleSetting, 
+import {
+    createSectionHeader,
+    createTextSetting,
+    createToggleSetting,
     createDropdownSetting,
     createHelpText
 } from '../components/settingHelpers';
+import { TranslationKey } from '../../i18n';
 
 /**
  * Renders the General tab - foundational settings for task identification and storage
@@ -14,13 +15,15 @@ import {
 export function renderGeneralTab(container: HTMLElement, plugin: TaskNotesPlugin, save: () => void): void {
     container.empty();
 
+    const translate = (key: TranslationKey, params?: Record<string, string | number>) => plugin.i18n.translate(key, params);
+
     // Tasks Storage Section
-    createSectionHeader(container, 'Task Storage');
-    createHelpText(container, 'Configure where tasks are stored and how they are identified.');
+    createSectionHeader(container, translate('settings.general.taskStorage.header'));
+    createHelpText(container, translate('settings.general.taskStorage.description'));
 
     createTextSetting(container, {
-        name: 'Default tasks folder',
-        desc: 'Default location for new tasks',
+        name: translate('settings.general.taskStorage.defaultFolder.name'),
+        desc: translate('settings.general.taskStorage.defaultFolder.description'),
         placeholder: 'TaskNotes',
         getValue: () => plugin.settings.tasksFolder,
         setValue: async (value: string) => {
@@ -31,8 +34,8 @@ export function renderGeneralTab(container: HTMLElement, plugin: TaskNotesPlugin
     });
 
     createToggleSetting(container, {
-        name: 'Move archived tasks to folder',
-        desc: 'Automatically move archived tasks to an archive folder',
+        name: translate('settings.general.taskStorage.moveArchived.name'),
+        desc: translate('settings.general.taskStorage.moveArchived.description'),
         getValue: () => plugin.settings.moveArchivedTasks,
         setValue: async (value: boolean) => {
             plugin.settings.moveArchivedTasks = value;
@@ -44,8 +47,8 @@ export function renderGeneralTab(container: HTMLElement, plugin: TaskNotesPlugin
 
     if (plugin.settings.moveArchivedTasks) {
         createTextSetting(container, {
-            name: 'Archive folder',
-            desc: 'Folder to move tasks to when archived',
+            name: translate('settings.general.taskStorage.archiveFolder.name'),
+            desc: translate('settings.general.taskStorage.archiveFolder.description'),
             placeholder: 'TaskNotes/Archive',
             getValue: () => plugin.settings.archiveFolder,
             setValue: async (value: string) => {
@@ -57,15 +60,15 @@ export function renderGeneralTab(container: HTMLElement, plugin: TaskNotesPlugin
     }
 
     // Task Identification Section
-    createSectionHeader(container, 'Task Identification');
-    createHelpText(container, 'Choose how TaskNotes identifies notes as tasks.');
+    createSectionHeader(container, translate('settings.general.taskIdentification.header'));
+    createHelpText(container, translate('settings.general.taskIdentification.description'));
 
     createDropdownSetting(container, {
-        name: 'Identify tasks by',
-        desc: 'Choose whether to identify tasks by tag or by a frontmatter property',
+        name: translate('settings.general.taskIdentification.identifyBy.name'),
+        desc: translate('settings.general.taskIdentification.identifyBy.description'),
         options: [
-            { value: 'tag', label: 'Tag' },
-            { value: 'property', label: 'Property' }
+            { value: 'tag', label: translate('settings.general.taskIdentification.identifyBy.options.tag') },
+            { value: 'property', label: translate('settings.general.taskIdentification.identifyBy.options.property') }
         ],
         getValue: () => plugin.settings.taskIdentificationMethod,
         setValue: async (value: string) => {
@@ -79,8 +82,8 @@ export function renderGeneralTab(container: HTMLElement, plugin: TaskNotesPlugin
 
     if (plugin.settings.taskIdentificationMethod === 'tag') {
         createTextSetting(container, {
-            name: 'Task tag',
-            desc: 'Tag that identifies notes as tasks (without #)',
+            name: translate('settings.general.taskIdentification.taskTag.name'),
+            desc: translate('settings.general.taskIdentification.taskTag.description'),
             placeholder: 'task',
             getValue: () => plugin.settings.taskTag,
             setValue: async (value: string) => {
@@ -91,8 +94,8 @@ export function renderGeneralTab(container: HTMLElement, plugin: TaskNotesPlugin
         });
     } else {
         createTextSetting(container, {
-            name: 'Task property name',
-            desc: 'The frontmatter property name (e.g., "category")',
+            name: translate('settings.general.taskIdentification.taskProperty.name'),
+            desc: translate('settings.general.taskIdentification.taskProperty.description'),
             placeholder: 'category',
             getValue: () => plugin.settings.taskPropertyName,
             setValue: async (value: string) => {
@@ -102,8 +105,8 @@ export function renderGeneralTab(container: HTMLElement, plugin: TaskNotesPlugin
         });
 
         createTextSetting(container, {
-            name: 'Task property value',
-            desc: 'The value that identifies a note as a task (e.g., "task")',
+            name: translate('settings.general.taskIdentification.taskPropertyValue.name'),
+            desc: translate('settings.general.taskIdentification.taskPropertyValue.description'),
             placeholder: 'task',
             getValue: () => plugin.settings.taskPropertyValue,
             setValue: async (value: string) => {
@@ -114,11 +117,11 @@ export function renderGeneralTab(container: HTMLElement, plugin: TaskNotesPlugin
     }
 
     // Folder Management Section
-    createSectionHeader(container, 'Folder Management');
+    createSectionHeader(container, translate('settings.general.folderManagement.header'));
 
     createTextSetting(container, {
-        name: 'Excluded folders',
-        desc: 'Comma-separated list of folders to exclude from Notes tab',
+        name: translate('settings.general.folderManagement.excludedFolders.name'),
+        desc: translate('settings.general.folderManagement.excludedFolders.description'),
         placeholder: 'Templates, Archive',
         getValue: () => plugin.settings.excludedFolders,
         setValue: async (value: string) => {
@@ -128,16 +131,45 @@ export function renderGeneralTab(container: HTMLElement, plugin: TaskNotesPlugin
         ariaLabel: 'Excluded folder paths'
     });
 
-    // Task Interaction Section
-    createSectionHeader(container, 'Task Interaction');
-    createHelpText(container, 'Configure how clicking on tasks behaves.');
+    // UI Language Section
+    createSectionHeader(container, translate('settings.features.uiLanguage.header'));
+    createHelpText(container, translate('settings.features.uiLanguage.description'));
+
+    const uiLanguageOptions = (() => {
+        const options: Array<{ value: string; label: string }> = [
+            { value: 'system', label: translate('common.systemDefault') }
+        ];
+        for (const code of plugin.i18n.getAvailableLocales()) {
+            // Use native language names (endonyms) for better UX
+            const label = plugin.i18n.getNativeLanguageName(code);
+            options.push({ value: code, label });
+        }
+        return options;
+    })();
 
     createDropdownSetting(container, {
-        name: 'Single-click action',
-        desc: 'Action performed when single-clicking a task card',
+        name: translate('settings.features.uiLanguage.dropdown.name'),
+        desc: translate('settings.features.uiLanguage.dropdown.description'),
+        options: uiLanguageOptions,
+        getValue: () => plugin.settings.uiLanguage ?? 'system',
+        setValue: async (value: string) => {
+            plugin.settings.uiLanguage = value;
+            plugin.i18n.setLocale(value);
+            save();
+            renderGeneralTab(container, plugin, save);
+        }
+    });
+
+    // Task Interaction Section
+    createSectionHeader(container, translate('settings.general.taskInteraction.header'));
+    createHelpText(container, translate('settings.general.taskInteraction.description'));
+
+    createDropdownSetting(container, {
+        name: translate('settings.general.taskInteraction.singleClick.name'),
+        desc: translate('settings.general.taskInteraction.singleClick.description'),
         options: [
-            { value: 'edit', label: 'Edit task' },
-            { value: 'openNote', label: 'Open note' }
+            { value: 'edit', label: translate('settings.general.taskInteraction.actions.edit') },
+            { value: 'openNote', label: translate('settings.general.taskInteraction.actions.openNote') }
         ],
         getValue: () => plugin.settings.singleClickAction,
         setValue: async (value: string) => {
@@ -147,12 +179,12 @@ export function renderGeneralTab(container: HTMLElement, plugin: TaskNotesPlugin
     });
 
     createDropdownSetting(container, {
-        name: 'Double-click action',
-        desc: 'Action performed when double-clicking a task card',
+        name: translate('settings.general.taskInteraction.doubleClick.name'),
+        desc: translate('settings.general.taskInteraction.doubleClick.description'),
         options: [
-            { value: 'edit', label: 'Edit task' },
-            { value: 'openNote', label: 'Open note' },
-            { value: 'none', label: 'No action' }
+            { value: 'edit', label: translate('settings.general.taskInteraction.actions.edit') },
+            { value: 'openNote', label: translate('settings.general.taskInteraction.actions.openNote') },
+            { value: 'none', label: translate('settings.general.taskInteraction.actions.none') }
         ],
         getValue: () => plugin.settings.doubleClickAction,
         setValue: async (value: string) => {

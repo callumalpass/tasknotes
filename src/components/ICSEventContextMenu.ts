@@ -23,13 +23,21 @@ export class ICSEventContextMenu {
         this.buildMenu();
     }
 
+    private t(key: string, params?: Record<string, string | number>): string {
+        return this.options.plugin.i18n.translate(key, params);
+    }
+
+    private getLocale(): string {
+        return this.options.plugin.i18n.getCurrentLocale() || 'en';
+    }
+
     private buildMenu(): void {
         const { icsEvent, plugin, subscriptionName } = this.options;
 
         // Show details option
         this.menu.addItem((item) =>
             item
-                .setTitle("Show details")
+                .setTitle(this.t('contextMenus.ics.showDetails'))
                 .setIcon("info")
                 .onClick(() => {
                     const modal = new ICSEventInfoModal(plugin.app, plugin, icsEvent, subscriptionName);
@@ -42,7 +50,7 @@ export class ICSEventContextMenu {
         // Create task from event
         this.menu.addItem((item) =>
             item
-                .setTitle("Create task from event")
+                .setTitle(this.t('contextMenus.ics.createTask'))
                 .setIcon("check-circle")
                 .onClick(async () => {
                     await this.createTaskFromEvent();
@@ -52,7 +60,7 @@ export class ICSEventContextMenu {
         // Create note from event
         this.menu.addItem((item) =>
             item
-                .setTitle("Create note from event")
+                .setTitle(this.t('contextMenus.ics.createNote'))
                 .setIcon("file-plus")
                 .onClick(() => {
                     this.createNoteFromEvent();
@@ -62,7 +70,7 @@ export class ICSEventContextMenu {
         // Link existing note
         this.menu.addItem((item) =>
             item
-                .setTitle("Link existing note")
+                .setTitle(this.t('contextMenus.ics.linkNote'))
                 .setIcon("link")
                 .onClick(() => {
                     this.linkExistingNote();
@@ -74,14 +82,14 @@ export class ICSEventContextMenu {
         // Copy title option
         this.menu.addItem((item) =>
             item
-                .setTitle("Copy title")
+                .setTitle(this.t('contextMenus.ics.copyTitle'))
                 .setIcon("copy")
                 .onClick(async () => {
                     try {
                         await navigator.clipboard.writeText(icsEvent.title);
-                        new Notice('Event title copied to clipboard');
+                        new Notice(this.t('contextMenus.ics.notices.copyTitleSuccess'));
                     } catch (error) {
-                        new Notice('Failed to copy to clipboard');
+                        new Notice(this.t('contextMenus.ics.notices.copyFailure'));
                     }
                 })
         );
@@ -90,14 +98,14 @@ export class ICSEventContextMenu {
         if (icsEvent.location) {
             this.menu.addItem((item) =>
                 item
-                    .setTitle("Copy location")
+                    .setTitle(this.t('contextMenus.ics.copyLocation'))
                     .setIcon("map-pin")
                     .onClick(async () => {
                         try {
                             await navigator.clipboard.writeText(icsEvent.location!);
-                            new Notice('Location copied to clipboard');
+                            new Notice(this.t('contextMenus.ics.notices.copyLocationSuccess'));
                         } catch (error) {
-                            new Notice('Failed to copy to clipboard');
+                            new Notice(this.t('contextMenus.ics.notices.copyFailure'));
                         }
                     })
             );
@@ -107,14 +115,14 @@ export class ICSEventContextMenu {
         if (icsEvent.url) {
             this.menu.addItem((item) =>
                 item
-                    .setTitle("Copy URL")
+                    .setTitle(this.t('contextMenus.ics.copyUrl'))
                     .setIcon("external-link")
                     .onClick(async () => {
                         try {
                             await navigator.clipboard.writeText(icsEvent.url!);
-                            new Notice('Event URL copied to clipboard');
+                            new Notice(this.t('contextMenus.ics.notices.copyUrlSuccess'));
                         } catch (error) {
-                            new Notice('Failed to copy to clipboard');
+                            new Notice(this.t('contextMenus.ics.notices.copyFailure'));
                         }
                     })
             );
@@ -123,15 +131,15 @@ export class ICSEventContextMenu {
         // Copy event details as markdown
         this.menu.addItem((item) =>
             item
-                .setTitle("Copy as markdown")
+                .setTitle(this.t('contextMenus.ics.copyMarkdown'))
                 .setIcon("file-text")
                 .onClick(async () => {
                     const markdown = this.formatEventAsMarkdown();
                     try {
                         await navigator.clipboard.writeText(markdown);
-                        new Notice('Event details copied as markdown');
+                        new Notice(this.t('contextMenus.ics.notices.copyMarkdownSuccess'));
                     } catch (error) {
-                        new Notice('Failed to copy to clipboard');
+                        new Notice(this.t('contextMenus.ics.notices.copyFailure'));
                     }
                 })
         );
@@ -141,7 +149,7 @@ export class ICSEventContextMenu {
         await SafeAsync.execute(
             async () => {
                 const result = await this.options.plugin.icsNoteService.createTaskFromICS(this.options.icsEvent);
-                new Notice(`Task created: ${result.taskInfo.title}`);
+                new Notice(this.t('contextMenus.ics.notices.taskCreated', { title: result.taskInfo.title }));
                 
                 // Open the created task file
                 const file = this.options.plugin.app.vault.getAbstractFileByPath(result.file.path);
@@ -155,7 +163,7 @@ export class ICSEventContextMenu {
                 }
             },
             {
-                errorMessage: 'Failed to create task from event'
+                errorMessage: this.t('contextMenus.ics.notices.taskCreateFailure')
             }
         );
     }
@@ -164,9 +172,9 @@ export class ICSEventContextMenu {
         try {
             const modal = new ICSNoteCreationModal(this.options.plugin.app, this.options.plugin, {
                 icsEvent: this.options.icsEvent,
-                subscriptionName: this.options.subscriptionName || 'Unknown Calendar',
+                subscriptionName: this.options.subscriptionName || this.t('contextMenus.ics.subscriptionUnknown'),
                 onContentCreated: async (file: TFile) => {
-                    new Notice('Note created successfully');
+                    new Notice(this.t('contextMenus.ics.notices.noteCreated'));
                     await this.options.plugin.app.workspace.getLeaf().openFile(file);
                     
                     // Trigger update callback if provided
@@ -179,7 +187,7 @@ export class ICSEventContextMenu {
             modal.open();
         } catch (error) {
             console.error('Error opening creation modal:', error);
-            new Notice('Failed to open creation modal');
+            new Notice(this.t('contextMenus.ics.notices.creationFailure'));
         }
     }
 
@@ -190,7 +198,7 @@ export class ICSEventContextMenu {
                     await SafeAsync.execute(
                         async () => {
                             await this.options.plugin.icsNoteService.linkNoteToICS(file.path, this.options.icsEvent);
-                            new Notice(`Linked note "${file.name}" to event`);
+                            new Notice(this.t('contextMenus.ics.notices.linkSuccess', { name: file.name }));
                             
                             // Trigger update callback if provided
                             if (this.options.onUpdate) {
@@ -198,14 +206,14 @@ export class ICSEventContextMenu {
                             }
                         },
                         {
-                            errorMessage: 'Failed to link note'
+                            errorMessage: this.t('contextMenus.ics.notices.linkFailure')
                         }
                     );
                 });
                 modal.open();
             },
             {
-                errorMessage: 'Failed to open note selection'
+                errorMessage: this.t('contextMenus.ics.notices.linkSelectionFailure')
             }
         );
     }
@@ -213,49 +221,54 @@ export class ICSEventContextMenu {
     private formatEventAsMarkdown(): string {
         const { icsEvent, subscriptionName } = this.options;
         const lines: string[] = [];
-        
-        lines.push(`## ${icsEvent.title || 'Untitled Event'}`);
+
+        const title = icsEvent.title || this.t('contextMenus.ics.markdown.titleFallback');
+        lines.push(`## ${title}`);
         lines.push('');
-        
+
         if (subscriptionName) {
-            lines.push(`**Calendar:** ${subscriptionName}`);
+            lines.push(this.t('contextMenus.ics.markdown.calendar', { value: subscriptionName }));
         }
-        
-        // Format date/time
+
+        const locale = this.getLocale();
         const startDate = new Date(icsEvent.start);
-        let dateText = startDate.toLocaleDateString('en-US', { 
-            weekday: 'long', 
-            year: 'numeric', 
-            month: 'long', 
-            day: 'numeric' 
+        const dateFormatter = new Intl.DateTimeFormat(locale, {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
         });
-        
+        const timeFormatter = new Intl.DateTimeFormat(locale, {
+            hour: 'numeric',
+            minute: '2-digit'
+        });
+
+        let dateText = dateFormatter.format(startDate);
         if (!icsEvent.allDay) {
-            dateText += ` at ${startDate.toLocaleTimeString()}`;
-            
+            dateText += this.t('contextMenus.ics.markdown.at', { time: timeFormatter.format(startDate) });
             if (icsEvent.end) {
                 const endDate = new Date(icsEvent.end);
-                dateText += ` - ${endDate.toLocaleTimeString()}`;
+                dateText += ` - ${timeFormatter.format(endDate)}`;
             }
         }
-        
-        lines.push(`**Date & Time:** ${dateText}`);
-        
+
+        lines.push(this.t('contextMenus.ics.markdown.date', { value: dateText }));
+
         if (icsEvent.location) {
-            lines.push(`**Location:** ${icsEvent.location}`);
+            lines.push(this.t('contextMenus.ics.markdown.location', { value: icsEvent.location }));
         }
-        
+
         if (icsEvent.description) {
             lines.push('');
-            lines.push('### Description');
+            lines.push(this.t('contextMenus.ics.markdown.descriptionHeading'));
             lines.push(icsEvent.description);
         }
-        
+
         if (icsEvent.url) {
             lines.push('');
-            lines.push(`**URL:** ${icsEvent.url}`);
+            lines.push(this.t('contextMenus.ics.markdown.url', { value: icsEvent.url }));
         }
-        
+
         return lines.join('\n');
     }
 

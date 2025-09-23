@@ -103,7 +103,7 @@ export class StatsView extends ItemView {
     }
     
     getDisplayText(): string {
-        return 'Statistics';
+        return this.plugin.i18n.translate('views.stats.title');
     }
     
     getIcon(): string {
@@ -146,7 +146,7 @@ export class StatsView extends ItemView {
         // Header
         const header = container.createDiv({ cls: 'stats-header stats-view__header' });
         new Setting(header)
-            .setName('Task & Project Statistics')
+            .setName(this.plugin.i18n.translate('views.stats.taskProjectStats'))
             .setHeading();
         
         // Refresh button
@@ -161,7 +161,7 @@ export class StatsView extends ItemView {
         // Filters section
         const filtersSection = container.createDiv({ cls: 'stats-section stats-view__section' });
         new Setting(filtersSection)
-            .setName('Filters')
+            .setName(this.plugin.i18n.translate('views.stats.sections.filters'))
             .setHeading();
         this.filtersEl = filtersSection.createDiv({ cls: 'stats-filters stats-view__filters' });
         this.renderFilters();
@@ -169,35 +169,35 @@ export class StatsView extends ItemView {
         // Overview section
         const overviewSection = container.createDiv({ cls: 'stats-section stats-view__section' });
         new Setting(overviewSection)
-            .setName('Overview')
+            .setName(this.plugin.i18n.translate('views.stats.sections.overview'))
             .setHeading();
         this.overviewStatsEl = overviewSection.createDiv({ cls: 'stats-overview-grid stats-view__overview-grid' });
         
         // Today's stats
         const todaySection = container.createDiv({ cls: 'stats-section stats-view__section' });
         new Setting(todaySection)
-            .setName('Today')
+            .setName(this.plugin.i18n.translate('views.stats.sections.today'))
             .setHeading();
         this.todayStatsEl = todaySection.createDiv({ cls: 'stats-grid stats-view__stats-grid' });
         
         // This week's stats
         const weekSection = container.createDiv({ cls: 'stats-section stats-view__section' });
         new Setting(weekSection)
-            .setName('This Week')
+            .setName(this.plugin.i18n.translate('views.stats.sections.thisWeek'))
             .setHeading();
         this.weekStatsEl = weekSection.createDiv({ cls: 'stats-grid stats-view__stats-grid' });
         
         // This month's stats
         const monthSection = container.createDiv({ cls: 'stats-section stats-view__section' });
         new Setting(monthSection)
-            .setName('This Month')
+            .setName(this.plugin.i18n.translate('views.stats.sections.thisMonth'))
             .setHeading();
         this.monthStatsEl = monthSection.createDiv({ cls: 'stats-grid stats-view__stats-grid' });
         
         // Project breakdown
         const projectsSection = container.createDiv({ cls: 'stats-section stats-view__section' });
         new Setting(projectsSection)
-            .setName('Project Breakdown')
+            .setName(this.plugin.i18n.translate('views.stats.sections.projectBreakdown'))
             .setHeading();
         this.projectsStatsEl = projectsSection.createDiv({ cls: 'stats-projects stats-view__projects' });
         
@@ -630,7 +630,7 @@ export class StatsView extends ItemView {
         // Date range filter
         const dateRangeContainer = filterGrid.createDiv({ cls: 'stats-view__filter-item' });
         const dateRangeLabel = dateRangeContainer.createDiv({ cls: 'stats-view__filter-label' });
-        dateRangeLabel.textContent = 'Date Range';
+        dateRangeLabel.textContent = this.plugin.i18n.translate('views.stats.sections.dateRange');
         
         const dateRangeSelect = dateRangeContainer.createEl('select', { cls: 'stats-view__filter-select' });
         const dateOptions = [
@@ -666,7 +666,7 @@ export class StatsView extends ItemView {
         // Minimum time filter
         const minTimeContainer = filterGrid.createDiv({ cls: 'stats-view__filter-item' });
         const minTimeLabel = minTimeContainer.createDiv({ cls: 'stats-view__filter-label' });
-        minTimeLabel.textContent = 'Min Time (minutes)';
+        minTimeLabel.textContent = this.plugin.i18n.translate('views.stats.filters.minTime');
         
         const minTimeInput = minTimeContainer.createEl('input', { 
             cls: 'stats-view__filter-input',

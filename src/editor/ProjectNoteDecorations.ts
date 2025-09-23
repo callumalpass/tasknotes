@@ -285,7 +285,7 @@ export class ProjectSubtasksWidget extends WidgetType {
             });
 
             // Create filter heading with integrated controls
-            this.filterHeading = new FilterHeading(container);
+            this.filterHeading = new FilterHeading(container, this.plugin);
             
             // Add expand/collapse controls to the heading container
             const headingContainer = container.querySelector('.filter-heading') as HTMLElement;

@@ -13,6 +13,7 @@ import { createCard, createDeleteHeaderButton, createCardInput, createCardSelect
 // import { ListEditorComponent, ListEditorItem } from '../components/ListEditorComponent';
 import { ProjectSelectModal } from '../../modals/ProjectSelectModal';
 import { splitListPreservingLinksAndQuotes } from '../../utils/stringSplit';
+import type { TranslationKey } from '../../i18n';
 
 // interface ReminderItem extends ListEditorItem, DefaultReminder {}
 
@@ -22,13 +23,15 @@ import { splitListPreservingLinksAndQuotes } from '../../utils/stringSplit';
 export function renderDefaultsTab(container: HTMLElement, plugin: TaskNotesPlugin, save: () => void): void {
     container.empty();
 
+    const translate = (key: TranslationKey, params?: Record<string, string | number>) => plugin.i18n.translate(key, params);
+
     // Basic Defaults Section
-    createSectionHeader(container, 'Basic Defaults');
-    createHelpText(container, 'Set default values for new tasks to speed up task creation.');
+    createSectionHeader(container, translate('settings.defaults.header.basicDefaults'));
+    createHelpText(container, translate('settings.defaults.description.basicDefaults'));
 
     createDropdownSetting(container, {
-        name: 'Default status',
-        desc: 'Default status for new tasks',
+        name: translate('settings.defaults.basicDefaults.defaultStatus.name'),
+        desc: translate('settings.defaults.basicDefaults.defaultStatus.description'),
         options: plugin.settings.customStatuses.map(status => ({
             value: status.value,
             label: status.label || status.value
@@ -41,10 +44,10 @@ export function renderDefaultsTab(container: HTMLElement, plugin: TaskNotesPlugi
     });
 
     createDropdownSetting(container, {
-        name: 'Default priority',
-        desc: 'Default priority for new tasks',
+        name: translate('settings.defaults.basicDefaults.defaultPriority.name'),
+        desc: translate('settings.defaults.basicDefaults.defaultPriority.description'),
         options: [
-            { value: '', label: 'No default' },
+            { value: '', label: translate('settings.defaults.options.noDefault') },
             ...plugin.settings.customPriorities.map(priority => ({
                 value: priority.value,
                 label: priority.label || priority.value
@@ -58,9 +61,9 @@ export function renderDefaultsTab(container: HTMLElement, plugin: TaskNotesPlugi
     });
 
     createTextSetting(container, {
-        name: 'Default contexts',
-        desc: 'Comma-separated list of default contexts (e.g., @home, @work)',
-        placeholder: '@home, @work',
+        name: translate('settings.defaults.basicDefaults.defaultContexts.name'),
+        desc: translate('settings.defaults.basicDefaults.defaultContexts.description'),
+        placeholder: translate('settings.defaults.basicDefaults.defaultContexts.placeholder'),
         getValue: () => plugin.settings.taskCreationDefaults.defaultContexts,
         setValue: async (value: string) => {
             plugin.settings.taskCreationDefaults.defaultContexts = value;
@@ -69,9 +72,9 @@ export function renderDefaultsTab(container: HTMLElement, plugin: TaskNotesPlugi
     });
 
     createTextSetting(container, {
-        name: 'Default tags',
-        desc: 'Comma-separated list of default tags (without #)',
-        placeholder: 'important, urgent',
+        name: translate('settings.defaults.basicDefaults.defaultTags.name'),
+        desc: translate('settings.defaults.basicDefaults.defaultTags.description'),
+        placeholder: translate('settings.defaults.basicDefaults.defaultTags.placeholder'),
         getValue: () => plugin.settings.taskCreationDefaults.defaultTags,
         setValue: async (value: string) => {
             plugin.settings.taskCreationDefaults.defaultTags = value;
@@ -85,11 +88,11 @@ export function renderDefaultsTab(container: HTMLElement, plugin: TaskNotesPlugi
     const defaultProjectsSettingDiv = defaultProjectsContainer.createDiv();
     
     new Setting(defaultProjectsSettingDiv)
-        .setName('Default projects')
-        .setDesc('Default project links for new tasks')
+        .setName(translate('settings.defaults.basicDefaults.defaultProjects.name'))
+        .setDesc(translate('settings.defaults.basicDefaults.defaultProjects.description'))
         .addButton(button => {
-            button.setButtonText('Select Projects')
-                  .setTooltip('Choose project notes to link by default')
+            button.setButtonText(translate('settings.defaults.basicDefaults.defaultProjects.selectButton'))
+                  .setTooltip(translate('settings.defaults.basicDefaults.defaultProjects.selectTooltip'))
                   .onClick(() => {
                       const modal = new ProjectSelectModal(
                           plugin.app,
@@ -101,7 +104,7 @@ export function renderDefaultsTab(container: HTMLElement, plugin: TaskNotesPlugi
                                   const projectLinks = selectedDefaultProjectFiles.map(f => `[[${f.path.replace(/\.md$/, '')}]]`).join(', ');
                                   plugin.settings.taskCreationDefaults.defaultProjects = projectLinks;
                                   save();
-                                  renderDefaultProjectsList(defaultProjectsContainer, plugin, save, selectedDefaultProjectFiles);
+                                  renderDefaultProjectsList(defaultProjectsContainer, plugin, save, selectedDefaultProjectFiles, translate);
                               }
                           }
                       );
@@ -126,11 +129,11 @@ export function renderDefaultsTab(container: HTMLElement, plugin: TaskNotesPlugi
         });
     }
 
-    renderDefaultProjectsList(defaultProjectsContainer, plugin, save, selectedDefaultProjectFiles);
+    renderDefaultProjectsList(defaultProjectsContainer, plugin, save, selectedDefaultProjectFiles, translate);
 
     createToggleSetting(container, {
-        name: 'Use parent note as project during instant conversion',
-        desc: 'Automatically link the parent note as a project when using instant task conversion',
+        name: translate('settings.defaults.basicDefaults.useParentNoteAsProject.name'),
+        desc: translate('settings.defaults.basicDefaults.useParentNoteAsProject.description'),
         getValue: () => plugin.settings.taskCreationDefaults.useParentNoteAsProject,
         setValue: async (value: boolean) => {
             plugin.settings.taskCreationDefaults.useParentNoteAsProject = value;
@@ -139,9 +142,9 @@ export function renderDefaultsTab(container: HTMLElement, plugin: TaskNotesPlugi
     });
 
     createNumberSetting(container, {
-        name: 'Default time estimate',
-        desc: 'Default time estimate in minutes (0 = no default)',
-        placeholder: '60',
+        name: translate('settings.defaults.basicDefaults.defaultTimeEstimate.name'),
+        desc: translate('settings.defaults.basicDefaults.defaultTimeEstimate.description'),
+        placeholder: translate('settings.defaults.basicDefaults.defaultTimeEstimate.placeholder'),
         min: 0,
         getValue: () => plugin.settings.taskCreationDefaults.defaultTimeEstimate,
         setValue: async (value: number) => {
@@ -151,14 +154,14 @@ export function renderDefaultsTab(container: HTMLElement, plugin: TaskNotesPlugi
     });
 
     createDropdownSetting(container, {
-        name: 'Default recurrence',
-        desc: 'Default recurrence pattern for new tasks',
+        name: translate('settings.defaults.basicDefaults.defaultRecurrence.name'),
+        desc: translate('settings.defaults.basicDefaults.defaultRecurrence.description'),
         options: [
-            { value: 'none', label: 'None' },
-            { value: 'daily', label: 'Daily' },
-            { value: 'weekly', label: 'Weekly' },
-            { value: 'monthly', label: 'Monthly' },
-            { value: 'yearly', label: 'Yearly' }
+            { value: 'none', label: translate('settings.defaults.options.none') },
+            { value: 'daily', label: translate('settings.defaults.options.daily') },
+            { value: 'weekly', label: translate('settings.defaults.options.weekly') },
+            { value: 'monthly', label: translate('settings.defaults.options.monthly') },
+            { value: 'yearly', label: translate('settings.defaults.options.yearly') }
         ],
         getValue: () => plugin.settings.taskCreationDefaults.defaultRecurrence,
         setValue: async (value: string) => {
@@ -168,17 +171,17 @@ export function renderDefaultsTab(container: HTMLElement, plugin: TaskNotesPlugi
     });
 
     // Date Defaults Section
-    createSectionHeader(container, 'Date Defaults');
-    createHelpText(container, 'Set default due and scheduled dates for new tasks.');
+    createSectionHeader(container, translate('settings.defaults.header.dateDefaults'));
+    createHelpText(container, translate('settings.defaults.description.dateDefaults'));
 
     createDropdownSetting(container, {
-        name: 'Default due date',
-        desc: 'Default due date for new tasks',
+        name: translate('settings.defaults.dateDefaults.defaultDueDate.name'),
+        desc: translate('settings.defaults.dateDefaults.defaultDueDate.description'),
         options: [
-            { value: 'none', label: 'None' },
-            { value: 'today', label: 'Today' },
-            { value: 'tomorrow', label: 'Tomorrow' },
-            { value: 'next-week', label: 'Next week' }
+            { value: 'none', label: translate('settings.defaults.options.none') },
+            { value: 'today', label: translate('settings.defaults.options.today') },
+            { value: 'tomorrow', label: translate('settings.defaults.options.tomorrow') },
+            { value: 'next-week', label: translate('settings.defaults.options.nextWeek') }
         ],
         getValue: () => plugin.settings.taskCreationDefaults.defaultDueDate,
         setValue: async (value: string) => {
@@ -188,13 +191,13 @@ export function renderDefaultsTab(container: HTMLElement, plugin: TaskNotesPlugi
     });
 
     createDropdownSetting(container, {
-        name: 'Default scheduled date',
-        desc: 'Default scheduled date for new tasks',
+        name: translate('settings.defaults.dateDefaults.defaultScheduledDate.name'),
+        desc: translate('settings.defaults.dateDefaults.defaultScheduledDate.description'),
         options: [
-            { value: 'none', label: 'None' },
-            { value: 'today', label: 'Today' },
-            { value: 'tomorrow', label: 'Tomorrow' },
-            { value: 'next-week', label: 'Next week' }
+            { value: 'none', label: translate('settings.defaults.options.none') },
+            { value: 'today', label: translate('settings.defaults.options.today') },
+            { value: 'tomorrow', label: translate('settings.defaults.options.tomorrow') },
+            { value: 'next-week', label: translate('settings.defaults.options.nextWeek') }
         ],
         getValue: () => plugin.settings.taskCreationDefaults.defaultScheduledDate,
         setValue: async (value: string) => {
@@ -204,19 +207,19 @@ export function renderDefaultsTab(container: HTMLElement, plugin: TaskNotesPlugi
     });
 
     // Reminder Defaults Section
-    createSectionHeader(container, 'Default reminders');
-    createHelpText(container, 'Configure default reminders that will be added to new tasks.');
+    createSectionHeader(container, translate('settings.defaults.header.defaultReminders'));
+    createHelpText(container, translate('settings.defaults.description.defaultReminders'));
 
     // Reminder list - using card layout
     const remindersContainer = container.createDiv('tasknotes-reminders-container');
-    renderRemindersList(remindersContainer, plugin, save);
+    renderRemindersList(remindersContainer, plugin, save, translate);
     
     // Add reminder button
     new Setting(container)
-        .setName('Add default reminder')
-        .setDesc('Create a new default reminder that will be added to all new tasks')
+        .setName(translate('settings.defaults.reminders.addReminder.name'))
+        .setDesc(translate('settings.defaults.reminders.addReminder.description'))
         .addButton(button => button
-            .setButtonText('Add reminder')
+            .setButtonText(translate('settings.defaults.reminders.addReminder.buttonText'))
             .onClick(async () => {
                 const newId = `reminder_${Date.now()}`;
                 const newReminder = {
@@ -231,16 +234,16 @@ export function renderDefaultsTab(container: HTMLElement, plugin: TaskNotesPlugi
                 plugin.settings.taskCreationDefaults.defaultReminders = plugin.settings.taskCreationDefaults.defaultReminders || [];
                 plugin.settings.taskCreationDefaults.defaultReminders.push(newReminder);
                 save();
-                renderRemindersList(remindersContainer, plugin, save);
+                renderRemindersList(remindersContainer, plugin, save, translate);
             }));
 
     // Template Settings Section
-    createSectionHeader(container, 'Body Template');
-    createHelpText(container, 'Configure a template file to use for new task content.');
+    createSectionHeader(container, translate('settings.defaults.header.bodyTemplate'));
+    createHelpText(container, translate('settings.defaults.description.bodyTemplate'));
 
     createToggleSetting(container, {
-        name: 'Use body template',
-        desc: 'Use a template file for task body content',
+        name: translate('settings.defaults.bodyTemplate.useBodyTemplate.name'),
+        desc: translate('settings.defaults.bodyTemplate.useBodyTemplate.description'),
         getValue: () => plugin.settings.taskCreationDefaults.useBodyTemplate,
         setValue: async (value: boolean) => {
             plugin.settings.taskCreationDefaults.useBodyTemplate = value;
@@ -252,41 +255,41 @@ export function renderDefaultsTab(container: HTMLElement, plugin: TaskNotesPlugi
 
     if (plugin.settings.taskCreationDefaults.useBodyTemplate) {
         createTextSetting(container, {
-            name: 'Body template file',
-            desc: 'Path to template file for task body content. Supports template variables like {{title}}, {{date}}, {{time}}, {{priority}}, {{status}}, etc.',
-            placeholder: 'Templates/Task Template.md',
+            name: translate('settings.defaults.bodyTemplate.bodyTemplateFile.name'),
+            desc: translate('settings.defaults.bodyTemplate.bodyTemplateFile.description'),
+            placeholder: translate('settings.defaults.bodyTemplate.bodyTemplateFile.placeholder'),
             getValue: () => plugin.settings.taskCreationDefaults.bodyTemplate,
             setValue: async (value: string) => {
                 plugin.settings.taskCreationDefaults.bodyTemplate = value;
                 save();
             },
-            ariaLabel: 'Path to body template file'
+            ariaLabel: translate('settings.defaults.bodyTemplate.bodyTemplateFile.ariaLabel')
         });
     }
 
     // Template Variables Help
     if (plugin.settings.taskCreationDefaults.useBodyTemplate) {
         const helpContainer = container.createDiv('tasknotes-settings__help-section');
-        helpContainer.createEl('h4', { text: 'Template variables:' });
+        helpContainer.createEl('h4', { text: translate('settings.defaults.bodyTemplate.variablesHeader') });
         const helpList = helpContainer.createEl('ul');
-        helpList.createEl('li', { text: '{{title}} - Task title' });
-        helpList.createEl('li', { text: '{{details}} - User-provided details from modal' });
-        helpList.createEl('li', { text: '{{date}} - Current date (YYYY-MM-DD)' });
-        helpList.createEl('li', { text: '{{time}} - Current time (HH:MM)' });
-        helpList.createEl('li', { text: '{{priority}} - Task priority' });
-        helpList.createEl('li', { text: '{{status}} - Task status' });
-        helpList.createEl('li', { text: '{{contexts}} - Task contexts' });
-        helpList.createEl('li', { text: '{{tags}} - Task tags' });
-        helpList.createEl('li', { text: '{{projects}} - Task projects' });
+        helpList.createEl('li', { text: translate('settings.defaults.bodyTemplate.variables.title') });
+        helpList.createEl('li', { text: translate('settings.defaults.bodyTemplate.variables.details') });
+        helpList.createEl('li', { text: translate('settings.defaults.bodyTemplate.variables.date') });
+        helpList.createEl('li', { text: translate('settings.defaults.bodyTemplate.variables.time') });
+        helpList.createEl('li', { text: translate('settings.defaults.bodyTemplate.variables.priority') });
+        helpList.createEl('li', { text: translate('settings.defaults.bodyTemplate.variables.status') });
+        helpList.createEl('li', { text: translate('settings.defaults.bodyTemplate.variables.contexts') });
+        helpList.createEl('li', { text: translate('settings.defaults.bodyTemplate.variables.tags') });
+        helpList.createEl('li', { text: translate('settings.defaults.bodyTemplate.variables.projects') });
     }
 
     // Instant Conversion Section
-    createSectionHeader(container, 'Instant Task Conversion');
-    createHelpText(container, 'Configure behavior when converting text to tasks instantly.');
+    createSectionHeader(container, translate('settings.defaults.header.instantTaskConversion'));
+    createHelpText(container, translate('settings.defaults.description.instantTaskConversion'));
 
     createToggleSetting(container, {
-        name: 'Use task defaults on instant convert',
-        desc: 'Apply default task settings when converting text to tasks instantly',
+        name: translate('settings.defaults.instantConversion.useDefaultsOnInstantConvert.name'),
+        desc: translate('settings.defaults.instantConversion.useDefaultsOnInstantConvert.description'),
         getValue: () => plugin.settings.useDefaultsOnInstantConvert,
         setValue: async (value: boolean) => {
             plugin.settings.useDefaultsOnInstantConvert = value;
@@ -295,7 +298,7 @@ export function renderDefaultsTab(container: HTMLElement, plugin: TaskNotesPlugi
     });
 }
 
-function renderDefaultProjectsList(container: HTMLElement, plugin: TaskNotesPlugin, save: () => void, selectedFiles: TAbstractFile[]): void {
+function renderDefaultProjectsList(container: HTMLElement, plugin: TaskNotesPlugin, save: () => void, selectedFiles: TAbstractFile[], translate: (key: TranslationKey, params?: Record<string, string | number>) => string): void {
     // Remove existing projects list
     const existingList = container.querySelector('.default-projects-list');
     if (existingList) {
@@ -320,9 +323,9 @@ function renderDefaultProjectsList(container: HTMLElement, plugin: TaskNotesPlug
                             const projectLinks = selectedFiles.map(f => `[[${f.path.replace(/\.md$/, '')}]]`).join(', ');
                             plugin.settings.taskCreationDefaults.defaultProjects = projectLinks;
                             save();
-                            renderDefaultProjectsList(container, plugin, save, selectedFiles);
+                            renderDefaultProjectsList(container, plugin, save, selectedFiles, translate);
                         }
-                    }, `Remove ${file.name} from default projects`)
+                    }, translate('settings.defaults.basicDefaults.defaultProjects.removeTooltip', { name: file.name }))
                 ]
             }
         });
@@ -331,7 +334,7 @@ function renderDefaultProjectsList(container: HTMLElement, plugin: TaskNotesPlug
 
 
 
-function renderRelativeReminderConfig(reminder: DefaultReminder, updateItem: (updates: Partial<DefaultReminder>) => void): CardRow[] {
+function renderRelativeReminderConfig(reminder: DefaultReminder, updateItem: (updates: Partial<DefaultReminder>) => void, translate: (key: TranslationKey, params?: Record<string, string | number>) => string): CardRow[] {
     const offsetInput = createCardNumberInput(1, undefined, 1, reminder.offset);
     offsetInput.addEventListener('input', () => {
         const offset = parseInt(offsetInput.value);
@@ -341,39 +344,39 @@ function renderRelativeReminderConfig(reminder: DefaultReminder, updateItem: (up
     });
 
     const unitSelect = createCardSelect([
-        { value: 'minutes', label: 'minutes' },
-        { value: 'hours', label: 'hours' },
-        { value: 'days', label: 'days' }
+        { value: 'minutes', label: translate('settings.defaults.reminders.units.minutes') },
+        { value: 'hours', label: translate('settings.defaults.reminders.units.hours') },
+        { value: 'days', label: translate('settings.defaults.reminders.units.days') }
     ], reminder.unit);
     unitSelect.addEventListener('change', () => {
         updateItem({ unit: unitSelect.value as any });
     });
 
     const directionSelect = createCardSelect([
-        { value: 'before', label: 'before' },
-        { value: 'after', label: 'after' }
+        { value: 'before', label: translate('settings.defaults.reminders.directions.before') },
+        { value: 'after', label: translate('settings.defaults.reminders.directions.after') }
     ], reminder.direction);
     directionSelect.addEventListener('change', () => {
         updateItem({ direction: directionSelect.value as any });
     });
 
     const relatedToSelect = createCardSelect([
-        { value: 'due', label: 'due date' },
-        { value: 'scheduled', label: 'scheduled date' }
+        { value: 'due', label: translate('settings.defaults.reminders.relatedTo.due') },
+        { value: 'scheduled', label: translate('settings.defaults.reminders.relatedTo.scheduled') }
     ], reminder.relatedTo);
     relatedToSelect.addEventListener('change', () => {
         updateItem({ relatedTo: relatedToSelect.value as any });
     });
 
     return [
-        { label: 'Offset:', input: offsetInput },
-        { label: 'Unit:', input: unitSelect },
-        { label: 'Direction:', input: directionSelect },
-        { label: 'Related to:', input: relatedToSelect }
+        { label: translate('settings.defaults.reminders.fields.offset'), input: offsetInput },
+        { label: translate('settings.defaults.reminders.fields.unit'), input: unitSelect },
+        { label: translate('settings.defaults.reminders.fields.direction'), input: directionSelect },
+        { label: translate('settings.defaults.reminders.fields.relatedTo'), input: relatedToSelect }
     ];
 }
 
-function renderAbsoluteReminderConfig(reminder: DefaultReminder, updateItem: (updates: Partial<DefaultReminder>) => void): CardRow[] {
+function renderAbsoluteReminderConfig(reminder: DefaultReminder, updateItem: (updates: Partial<DefaultReminder>) => void, translate: (key: TranslationKey, params?: Record<string, string | number>) => string): CardRow[] {
     const dateInput = createCardInput('date', reminder.absoluteDate || new Date().toISOString().split('T')[0]);
     dateInput.addEventListener('input', () => {
         updateItem({ absoluteDate: dateInput.value });
@@ -385,19 +388,19 @@ function renderAbsoluteReminderConfig(reminder: DefaultReminder, updateItem: (up
     });
 
     return [
-        { label: 'Date:', input: dateInput },
-        { label: 'Time:', input: timeInput }
+        { label: translate('settings.defaults.reminders.fields.date'), input: dateInput },
+        { label: translate('settings.defaults.reminders.fields.time'), input: timeInput }
     ];
 }
 
-function renderRemindersList(container: HTMLElement, plugin: TaskNotesPlugin, save: () => void): void {
+function renderRemindersList(container: HTMLElement, plugin: TaskNotesPlugin, save: () => void, translate: (key: TranslationKey, params?: Record<string, string | number>) => string): void {
     container.empty();
     
     if (!plugin.settings.taskCreationDefaults.defaultReminders || plugin.settings.taskCreationDefaults.defaultReminders.length === 0) {
         showCardEmptyState(
             container,
-            'No default reminders configured. Add a reminder to automatically notify you about new tasks.',
-            'Add Reminder',
+            translate('settings.defaults.reminders.emptyState'),
+            translate('settings.defaults.reminders.emptyStateButton'),
             () => {
                 // Trigger the add reminder button
                 const addReminderButton = document.querySelector('[data-setting-name="Add default reminder"] button');
@@ -410,14 +413,14 @@ function renderRemindersList(container: HTMLElement, plugin: TaskNotesPlugin, sa
     }
 
     plugin.settings.taskCreationDefaults.defaultReminders.forEach((reminder, index) => {
-        const timingText = formatReminderTiming(reminder);
+        const timingText = formatReminderTiming(reminder, translate);
 
-        const descInput = createCardInput('text', 'Reminder description', reminder.description);
+        const descInput = createCardInput('text', translate('settings.defaults.reminders.reminderDescription'), reminder.description);
         
 
         const typeSelect = createCardSelect([
-            { value: 'relative', label: 'Relative (before/after task dates)' },
-            { value: 'absolute', label: 'Absolute (specific date/time)' }
+            { value: 'relative', label: translate('settings.defaults.reminders.types.relative') },
+            { value: 'absolute', label: translate('settings.defaults.reminders.types.absolute') }
         ], reminder.type);
 
         const updateCallback = (updates: Partial<DefaultReminder>) => {
@@ -427,36 +430,36 @@ function renderRemindersList(container: HTMLElement, plugin: TaskNotesPlugin, sa
             if (card) {
                 const secondaryText = card.querySelector('.tasknotes-settings__card-secondary-text');
                 if (secondaryText) {
-                    secondaryText.textContent = formatReminderTiming(reminder);
+                    secondaryText.textContent = formatReminderTiming(reminder, translate);
                 }
             }
         };
 
         const configRows = reminder.type === 'relative'
-            ? renderRelativeReminderConfig(reminder, updateCallback)
-            : renderAbsoluteReminderConfig(reminder, updateCallback);
+            ? renderRelativeReminderConfig(reminder, updateCallback, translate)
+            : renderAbsoluteReminderConfig(reminder, updateCallback, translate);
 
         const card = createCard(container, {
             id: reminder.id,
             collapsible: true,
             defaultCollapsed: true,
             header: {
-                primaryText: reminder.description || 'Unnamed Reminder',
+                primaryText: reminder.description || translate('settings.defaults.reminders.unnamedReminder'),
                 secondaryText: timingText,
                 actions: [
                     createDeleteHeaderButton(() => {
                         plugin.settings.taskCreationDefaults.defaultReminders.splice(index, 1);
                         save();
-                        renderRemindersList(container, plugin, save);
-                    }, 'Delete reminder')
+                        renderRemindersList(container, plugin, save, translate);
+                    }, translate('settings.defaults.reminders.deleteTooltip'))
                 ]
             },
             content: {
                 sections: [
                     {
                         rows: [
-                            { label: 'Description:', input: descInput },
-                            { label: 'Type:', input: typeSelect }
+                            { label: translate('settings.defaults.reminders.fields.description'), input: descInput },
+                            { label: translate('settings.defaults.reminders.fields.type'), input: typeSelect }
                         ]
                     },
                     {
@@ -471,7 +474,7 @@ function renderRemindersList(container: HTMLElement, plugin: TaskNotesPlugin, sa
             save();
             const primaryText = card.querySelector('.tasknotes-settings__card-primary-text');
             if (primaryText) {
-                primaryText.textContent = reminder.description || 'Unnamed Reminder';
+                primaryText.textContent = reminder.description || translate('settings.defaults.reminders.unnamedReminder');
             }
         });
 
@@ -481,8 +484,8 @@ function renderRemindersList(container: HTMLElement, plugin: TaskNotesPlugin, sa
             
             // Re-render only the config rows
             const newConfigRows = reminder.type === 'relative'
-                ? renderRelativeReminderConfig(reminder, updateCallback)
-                : renderAbsoluteReminderConfig(reminder, updateCallback);
+                ? renderRelativeReminderConfig(reminder, updateCallback, translate)
+                : renderAbsoluteReminderConfig(reminder, updateCallback, translate);
             
             const content = card.querySelector('.tasknotes-settings__card-content');
             if (content && content.children[1]) {
@@ -504,16 +507,16 @@ function renderRemindersList(container: HTMLElement, plugin: TaskNotesPlugin, sa
     });
 }
 
-function formatReminderTiming(reminder: DefaultReminder): string {
+function formatReminderTiming(reminder: DefaultReminder, translate: (key: TranslationKey, params?: Record<string, string | number>) => string): string {
     if (reminder.type === 'relative') {
-        const direction = reminder.direction === 'before' ? 'before' : 'after';
-        const unit = reminder.unit || 'hours';
+        const direction = reminder.direction === 'before' ? translate('settings.defaults.reminders.directions.before') : translate('settings.defaults.reminders.directions.after');
+        const unit = translate(`settings.defaults.reminders.units.${reminder.unit || 'hours'}` as TranslationKey);
         const offset = reminder.offset || 1;
-        const relatedTo = reminder.relatedTo === 'due' ? 'due date' : 'scheduled date';
+        const relatedTo = reminder.relatedTo === 'due' ? translate('settings.defaults.reminders.relatedTo.due') : translate('settings.defaults.reminders.relatedTo.scheduled');
         return `${offset} ${unit} ${direction} ${relatedTo}`;
     } else {
-        const date = reminder.absoluteDate || 'No date';
-        const time = reminder.absoluteTime || 'No time';
+        const date = reminder.absoluteDate || translate('settings.defaults.reminders.fields.date');
+        const time = reminder.absoluteTime || translate('settings.defaults.reminders.fields.time');
         return `${date} at ${time}`;
     }
 }

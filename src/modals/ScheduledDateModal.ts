@@ -2,23 +2,26 @@ import { App, Modal, Setting } from 'obsidian';
 import { format, add } from 'date-fns';
 import { TaskInfo } from '../types';
 import TaskNotesPlugin from '../main';
-import { 
-    validateDateTimeInput, 
-    getDatePart, 
+import {
+    validateDateTimeInput,
+    getDatePart,
     getTimePart,
     combineDateAndTime
 } from '../utils/dateUtils';
+import { TranslationKey } from '../i18n';
 
 export class ScheduledDateModal extends Modal {
     private task: TaskInfo;
     private plugin: TaskNotesPlugin;
     private scheduledDateInput: HTMLInputElement;
     private scheduledTimeInput: HTMLInputElement;
+    private translate: (key: TranslationKey, variables?: Record<string, any>) => string;
 
     constructor(app: App, task: TaskInfo, plugin: TaskNotesPlugin) {
         super(app);
         this.task = task;
         this.plugin = plugin;
+        this.translate = plugin.i18n.translate.bind(plugin.i18n);
     }
 
     onOpen() {
@@ -27,22 +30,22 @@ export class ScheduledDateModal extends Modal {
         contentEl.addClass('tasknotes-plugin');
         
         // Set up modal accessibility
-        this.titleEl.setText('Set scheduled date');
+        this.titleEl.setText(this.translate('modals.scheduledDate.title'));
         this.titleEl.setAttribute('id', 'scheduled-date-modal-title');
         this.containerEl.setAttribute('aria-labelledby', 'scheduled-date-modal-title');
         this.containerEl.setAttribute('role', 'dialog');
         this.containerEl.setAttribute('aria-modal', 'true');
 
         // Task title display
-        contentEl.createEl('p', { 
-            text: `Task: ${this.task.title}`,
+        contentEl.createEl('p', {
+            text: this.translate('modals.scheduledDate.taskLabel', { title: this.task.title }),
             cls: 'scheduled-date-modal__task-title'
         });
 
         // Scheduled date and time inputs
         const dateTimeSetting = new Setting(contentEl)
-            .setName('Scheduled Date & Time')
-            .setDesc('Enter scheduled date and optional time (leave time empty for date-only)');
+            .setName(this.translate('modals.scheduledDate.sections.dateTime'))
+            .setDesc(this.translate('modals.scheduledDate.descriptions.dateTime'));
 
         // Create a container for the date and time inputs
         const dateTimeContainer = dateTimeSetting.controlEl.createDiv({ cls: 'modal-form__datetime-container' });
@@ -51,9 +54,9 @@ export class ScheduledDateModal extends Modal {
         this.scheduledDateInput = dateTimeContainer.createEl('input', {
             type: 'date',
             cls: 'modal-form__input modal-form__input--date',
-            attr: { 
-                'aria-label': 'Scheduled date for task',
-                'placeholder': 'YYYY-MM-DD'
+            attr: {
+                'aria-label': this.translate('modals.scheduledDate.inputs.date.ariaLabel'),
+                'placeholder': this.translate('modals.scheduledDate.inputs.date.placeholder')
             }
         });
         this.scheduledDateInput.value = getDatePart(this.task.scheduled || '');
@@ -62,9 +65,9 @@ export class ScheduledDateModal extends Modal {
         this.scheduledTimeInput = dateTimeContainer.createEl('input', {
             type: 'time',
             cls: 'modal-form__input modal-form__input--time',
-            attr: { 
-                'aria-label': 'Scheduled time for task (optional)',
-                'placeholder': 'HH:MM'
+            attr: {
+                'aria-label': this.translate('modals.scheduledDate.inputs.time.ariaLabel'),
+                'placeholder': this.translate('modals.scheduledDate.inputs.time.placeholder')
             }
         });
         this.scheduledTimeInput.value = getTimePart(this.task.scheduled || '') || '';
@@ -92,46 +95,46 @@ export class ScheduledDateModal extends Modal {
         // Quick date buttons
         const quickDatesContainer = contentEl.createDiv({ cls: 'modal-form__group' });
         new Setting(quickDatesContainer)
-            .setName('Quick options')
+            .setName(this.translate('modals.scheduledDate.sections.quickOptions'))
             .setHeading();
 
         const buttonsContainer = quickDatesContainer.createDiv({ cls: 'modal-form__quick-actions' });
 
         // Today button
-        const todayBtn = buttonsContainer.createEl('button', { 
-            text: 'Today', 
+        const todayBtn = buttonsContainer.createEl('button', {
+            text: this.translate('modals.scheduledDate.quickOptions.today'),
             cls: 'modal-form__button modal-form__button--quick-date',
-            attr: { 'aria-label': 'Set scheduled date to today' }
+            attr: { 'aria-label': this.translate('modals.scheduledDate.quickOptions.todayAriaLabel') }
         });
         todayBtn.addEventListener('click', () => {
             this.scheduledDateInput.value = format(new Date(), 'yyyy-MM-dd');
         });
 
         // Tomorrow button
-        const tomorrowBtn = buttonsContainer.createEl('button', { 
-            text: 'Tomorrow', 
+        const tomorrowBtn = buttonsContainer.createEl('button', {
+            text: this.translate('modals.scheduledDate.quickOptions.tomorrow'),
             cls: 'modal-form__button modal-form__button--quick-date',
-            attr: { 'aria-label': 'Set scheduled date to tomorrow' }
+            attr: { 'aria-label': this.translate('modals.scheduledDate.quickOptions.tomorrowAriaLabel') }
         });
         tomorrowBtn.addEventListener('click', () => {
             this.scheduledDateInput.value = format(add(new Date(), { days: 1 }), 'yyyy-MM-dd');
         });
 
         // Next week button
-        const nextWeekBtn = buttonsContainer.createEl('button', { 
-            text: 'Next week', 
+        const nextWeekBtn = buttonsContainer.createEl('button', {
+            text: this.translate('modals.scheduledDate.quickOptions.nextWeek'),
             cls: 'modal-form__button modal-form__button--quick-date',
-            attr: { 'aria-label': 'Set scheduled date to next week' }
+            attr: { 'aria-label': this.translate('modals.scheduledDate.quickOptions.nextWeekAriaLabel') }
         });
         nextWeekBtn.addEventListener('click', () => {
             this.scheduledDateInput.value = format(add(new Date(), { weeks: 1 }), 'yyyy-MM-dd');
         });
 
         // Now button (today with current time)
-        const nowBtn = buttonsContainer.createEl('button', { 
-            text: 'Now', 
+        const nowBtn = buttonsContainer.createEl('button', {
+            text: this.translate('modals.scheduledDate.quickOptions.now'),
             cls: 'modal-form__button modal-form__button--quick-date',
-            attr: { 'aria-label': 'Set scheduled date and time to now' }
+            attr: { 'aria-label': this.translate('modals.scheduledDate.quickOptions.nowAriaLabel') }
         });
         nowBtn.addEventListener('click', () => {
             const now = new Date();
@@ -140,10 +143,10 @@ export class ScheduledDateModal extends Modal {
         });
 
         // Clear button
-        const clearBtn = buttonsContainer.createEl('button', { 
-            text: 'Clear', 
+        const clearBtn = buttonsContainer.createEl('button', {
+            text: this.translate('modals.scheduledDate.quickOptions.clear'),
             cls: 'modal-form__button modal-form__button--quick-date modal-form__button--quick-date--clear',
-            attr: { 'aria-label': 'Clear scheduled date' }
+            attr: { 'aria-label': this.translate('modals.scheduledDate.quickOptions.clearAriaLabel') }
         });
         clearBtn.addEventListener('click', () => {
             this.scheduledDateInput.value = '';
@@ -153,14 +156,14 @@ export class ScheduledDateModal extends Modal {
         // Action buttons
         const buttonContainer = contentEl.createDiv({ cls: 'modal-form__buttons' });
         
-        const saveButton = buttonContainer.createEl('button', { 
-            text: 'Save',
+        const saveButton = buttonContainer.createEl('button', {
+            text: this.translate('common.save'),
             cls: 'modal-form__button modal-form__button--primary'
         });
         saveButton.addEventListener('click', () => this.save());
 
-        const cancelButton = buttonContainer.createEl('button', { 
-            text: 'Cancel',
+        const cancelButton = buttonContainer.createEl('button', {
+            text: this.translate('common.cancel'),
             cls: 'modal-form__button modal-form__button--secondary'
         });
         cancelButton.addEventListener('click', () => this.close());
@@ -185,8 +188,8 @@ export class ScheduledDateModal extends Modal {
         // Validate the final value
         if (!validateDateTimeInput(dateValue, timeValue)) {
             // Show error message
-            const errorEl = this.contentEl.createEl('div', { 
-                text: 'Please enter a valid date and time format',
+            const errorEl = this.contentEl.createEl('div', {
+                text: this.translate('modals.scheduledDate.errors.invalidDateTime'),
                 cls: 'modal-form__error',
                 attr: {
                     'role': 'alert',
@@ -214,8 +217,8 @@ export class ScheduledDateModal extends Modal {
             this.close();
         } catch (error) {
             console.error('Failed to update scheduled date:', error);
-            const errorEl = this.contentEl.createEl('div', { 
-                text: 'Failed to update scheduled date. Please try again.',
+            const errorEl = this.contentEl.createEl('div', {
+                text: this.translate('modals.scheduledDate.errors.updateFailed'),
                 cls: 'modal-form__error'
             });
             window.setTimeout(() => errorEl.remove(), 3000);

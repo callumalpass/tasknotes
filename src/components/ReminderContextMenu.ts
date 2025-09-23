@@ -2,6 +2,7 @@ import { Menu } from 'obsidian';
 import TaskNotesPlugin from '../main';
 import { TaskInfo, Reminder } from '../types';
 import { ReminderModal } from '../modals/ReminderModal';
+import { TranslationKey } from '../i18n';
 
 export class ReminderContextMenu {
 	private plugin: TaskNotesPlugin;
@@ -25,15 +26,15 @@ export class ReminderContextMenu {
 		const menu = new Menu();
 
 		// Quick Add sections
-		this.addQuickRemindersSection(menu, 'due', 'Remind before due...');
-		this.addQuickRemindersSection(menu, 'scheduled', 'Remind before scheduled...');
+		this.addQuickRemindersSection(menu, 'due', this.plugin.i18n.translate('components.reminderContextMenu.remindBeforeDue'));
+		this.addQuickRemindersSection(menu, 'scheduled', this.plugin.i18n.translate('components.reminderContextMenu.remindBeforeScheduled'));
 
 		menu.addSeparator();
 
 		// Manage reminders
 		menu.addItem(item => {
 			item
-				.setTitle('Manage All Reminders...')
+				.setTitle(this.plugin.i18n.translate('components.reminderContextMenu.manageAllReminders'))
 				.setIcon('settings')
 				.onClick(() => {
 					this.openReminderModal();
@@ -44,7 +45,7 @@ export class ReminderContextMenu {
 		if (this.task.reminders && this.task.reminders.length > 0) {
 			menu.addItem(item => {
 				item
-					.setTitle('Clear All Reminders')
+					.setTitle(this.plugin.i18n.translate('components.reminderContextMenu.clearAllReminders'))
 					.setIcon('trash')
 					.onClick(async () => {
 						await this.clearAllReminders();
@@ -89,11 +90,11 @@ export class ReminderContextMenu {
 		const menu = new Menu();
 
 		const quickOptions = [
-			{ label: 'At time of event', offset: 'PT0M' },
-			{ label: '5 minutes before', offset: '-PT5M' },
-			{ label: '15 minutes before', offset: '-PT15M' },
-			{ label: '1 hour before', offset: '-PT1H' },
-			{ label: '1 day before', offset: '-P1D' }
+			{ label: this.plugin.i18n.translate('components.reminderContextMenu.quickReminders.atTime'), offset: 'PT0M' },
+			{ label: this.plugin.i18n.translate('components.reminderContextMenu.quickReminders.fiveMinutesBefore'), offset: '-PT5M' },
+			{ label: this.plugin.i18n.translate('components.reminderContextMenu.quickReminders.fifteenMinutesBefore'), offset: '-PT15M' },
+			{ label: this.plugin.i18n.translate('components.reminderContextMenu.quickReminders.oneHourBefore'), offset: '-PT1H' },
+			{ label: this.plugin.i18n.translate('components.reminderContextMenu.quickReminders.oneDayBefore'), offset: '-P1D' }
 		];
 
 		quickOptions.forEach(option => {

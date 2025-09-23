@@ -59,14 +59,45 @@ describe('FilterBar SUBGROUP menu integration', () => {
   it('adds a SUBGROUP header and options to the sort/group menu', () => {
     const menu = setupMenuMock();
 
-    const fb = new FilterBar(app as any, { settings: {} } as any, container, query, filterOptions, 'right');
+    // Mock plugin with i18n service
+    const mockPlugin = {
+      settings: {},
+      i18n: {
+        translate: jest.fn((key: string) => {
+          const translations: Record<string, string> = {
+            'ui.filterBar.groupMenuHeader': 'Group',
+            'ui.filterBar.sortMenuHeader': 'Sort',
+            'ui.filterBar.orderMenuHeader': 'Order',
+            'ui.filterBar.sortOptions.ascending': 'Ascending',
+            'ui.filterBar.sortOptions.descending': 'Descending',
+            'ui.filterBar.group.none': 'None',
+            'ui.filterBar.group.status': 'Status',
+            'ui.filterBar.group.priority': 'Priority',
+            'ui.filterBar.group.context': 'Context',
+            'ui.filterBar.group.project': 'Project',
+            'ui.filterBar.group.dueDate': 'Due Date',
+            'ui.filterBar.group.scheduledDate': 'Scheduled Date',
+            'ui.filterBar.group.tags': 'Tags',
+            'ui.filterBar.sortOptions.dueDate': 'Due Date',
+            'ui.filterBar.sortOptions.scheduledDate': 'Scheduled Date',
+            'ui.filterBar.sortOptions.priority': 'Priority',
+            'ui.filterBar.sortOptions.title': 'Title',
+            'ui.filterBar.sortOptions.createdDate': 'Created Date',
+            'ui.filterBar.sortOptions.tags': 'Tags'
+          };
+          return translations[key] || key;
+        })
+      }
+    };
+
+    const fb = new FilterBar(app as any, mockPlugin as any, container, query, filterOptions, 'right');
 
     // Directly test the menu building logic instead of relying on DOM manipulation
     // This follows dependency injection and mocking principles
     const mockEvent = { preventDefault: jest.fn(), stopPropagation: jest.fn() } as any;
     (fb as any).showSortGroupContextMenu(mockEvent);
 
-    // Verify that a SUBGROUP header was added
+    // Verify that a SUBGROUP header was added (still hardcoded in SubgroupMenuBuilder)
     const hasSubgroupHeader = menu.items.some((it: any) => it.setTitle?.mock?.calls?.some((c: any[]) => c[0] === 'SUBGROUP'));
     expect(hasSubgroupHeader).toBe(true);
 
@@ -83,14 +114,45 @@ describe('FilterBar SUBGROUP menu integration', () => {
   it('resets subgroup to none when primary GROUP changes', () => {
     const menu = setupMenuMock();
 
-    const fb = new FilterBar(app as any, { settings: {} } as any, container, query, filterOptions, 'right');
+    // Mock plugin with i18n service
+    const mockPlugin = {
+      settings: {},
+      i18n: {
+        translate: jest.fn((key: string) => {
+          const translations: Record<string, string> = {
+            'ui.filterBar.groupMenuHeader': 'Group',
+            'ui.filterBar.sortMenuHeader': 'Sort',
+            'ui.filterBar.orderMenuHeader': 'Order',
+            'ui.filterBar.sortOptions.ascending': 'Ascending',
+            'ui.filterBar.sortOptions.descending': 'Descending',
+            'ui.filterBar.group.none': 'None',
+            'ui.filterBar.group.status': 'Status',
+            'ui.filterBar.group.priority': 'Priority',
+            'ui.filterBar.group.context': 'Context',
+            'ui.filterBar.group.project': 'Project',
+            'ui.filterBar.group.dueDate': 'Due Date',
+            'ui.filterBar.group.scheduledDate': 'Scheduled Date',
+            'ui.filterBar.group.tags': 'Tags',
+            'ui.filterBar.sortOptions.dueDate': 'Due Date',
+            'ui.filterBar.sortOptions.scheduledDate': 'Scheduled Date',
+            'ui.filterBar.sortOptions.priority': 'Priority',
+            'ui.filterBar.sortOptions.title': 'Title',
+            'ui.filterBar.sortOptions.createdDate': 'Created Date',
+            'ui.filterBar.sortOptions.tags': 'Tags'
+          };
+          return translations[key] || key;
+        })
+      }
+    };
+
+    const fb = new FilterBar(app as any, mockPlugin as any, container, query, filterOptions, 'right');
 
     // Open menu directly
     const mockEvent = { preventDefault: jest.fn(), stopPropagation: jest.fn() } as any;
     (fb as any).showSortGroupContextMenu(mockEvent);
 
-    // Find index of GROUP header
-    const groupHeaderIndex = menu.items.findIndex((it: any) => it.setTitle?.mock?.calls?.some((c: any[]) => c[0] === 'GROUP'));
+    // Find index of GROUP header (now translated as 'Group')
+    const groupHeaderIndex = menu.items.findIndex((it: any) => it.setTitle?.mock?.calls?.some((c: any[]) => c[0] === 'Group'));
     expect(groupHeaderIndex).toBeGreaterThanOrEqual(0);
 
     // Find a 'Priority' item AFTER the GROUP header (so we pick the GROUP option, not SORT)

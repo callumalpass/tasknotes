@@ -70,7 +70,7 @@ export class TaskListView extends ItemView implements OptimizedView {
     }
 
     getDisplayText(): string {
-        return 'Tasks';
+        return this.plugin.i18n.translate('views.taskList.title');
     }
 
     getIcon(): string {
@@ -308,8 +308,7 @@ export class TaskListView extends ItemView implements OptimizedView {
         });
 
         // Create filter heading with integrated controls
-        this.filterHeading = new FilterHeading(container);
-
+        this.filterHeading = new FilterHeading(container, this.plugin);
         // Add expand/collapse controls to the heading container
         const headingContainer = container.querySelector('.filter-heading') as HTMLElement;
         if (headingContainer) {
@@ -368,7 +367,7 @@ export class TaskListView extends ItemView implements OptimizedView {
         // Expand all button
         const expandAllBtn = new ButtonComponent(container)
             .setIcon('list-tree')
-            .setTooltip('Expand All Groups')
+            .setTooltip(this.plugin.i18n.translate('views.taskList.expandAllGroups'))
             .setClass('task-view-control-button')
             .onClick(() => {
                 const key = this.currentQuery.groupKey || 'none';
@@ -384,7 +383,7 @@ export class TaskListView extends ItemView implements OptimizedView {
         // Collapse all button
         const collapseAllBtn = new ButtonComponent(container)
             .setIcon('list-collapse')
-            .setTooltip('Collapse All Groups')
+            .setTooltip(this.plugin.i18n.translate('views.taskList.collapseAllGroups'))
             .setClass('task-view-control-button')
             .onClick(() => {
                 const key = this.currentQuery.groupKey || 'none';
@@ -498,7 +497,7 @@ export class TaskListView extends ItemView implements OptimizedView {
             // Clear everything and show placeholder
             container.empty();
             this.taskElements.clear();
-            container.createEl('p', { text: 'No tasks found for the selected filters.' });
+            container.createEl('p', { text: this.plugin.i18n.translate('views.taskList.noTasksFound') });
             return;
         }
 

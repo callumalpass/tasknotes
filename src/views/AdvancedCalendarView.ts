@@ -156,7 +156,7 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
     }
 
     getDisplayText(): string {
-        return 'Advanced Calendar';
+        return this.plugin.i18n.translate('views.advancedCalendar.title');
     }
 
     getIcon(): string {
@@ -2347,7 +2347,8 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
                                 new Notice('Failed to update recurrence');
                             }
                         },
-                        app: this.plugin.app
+                        app: this.plugin.app,
+                        plugin: this.plugin
                     });
                     menu.show(e as MouseEvent);
                 });

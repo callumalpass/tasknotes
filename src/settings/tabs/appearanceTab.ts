@@ -1,9 +1,10 @@
 import { Setting } from 'obsidian';
 import TaskNotesPlugin from '../../main';
-import { 
-    createSectionHeader, 
-    createTextSetting, 
-    createToggleSetting, 
+import type { TranslationKey } from '../../i18n';
+import {
+    createSectionHeader,
+    createTextSetting,
+    createToggleSetting,
     createDropdownSetting,
     createNumberSetting,
     createHelpText
@@ -15,36 +16,38 @@ import {
 export function renderAppearanceTab(container: HTMLElement, plugin: TaskNotesPlugin, save: () => void): void {
     container.empty();
 
+    const translate = (key: TranslationKey, params?: Record<string, string | number>) => plugin.i18n.translate(key, params);
+
     // Task Cards Section
-    createSectionHeader(container, 'Task Cards');
-    createHelpText(container, 'Configure how task cards are displayed across all views.');
+    createSectionHeader(container, translate('settings.appearance.taskCards.header'));
+    createHelpText(container, translate('settings.appearance.taskCards.description'));
 
     // Default visible properties
     const visiblePropsContainer = container.createDiv('visible-properties-container');
     const visiblePropsSetting = visiblePropsContainer.createDiv();
     
     new Setting(visiblePropsSetting)
-        .setName('Default visible properties')
-        .setDesc('Choose which properties appear on task cards by default.');
+        .setName(translate('settings.appearance.taskCards.defaultVisibleProperties.name'))
+        .setDesc(translate('settings.appearance.taskCards.defaultVisibleProperties.description'));
 
     // Create property toggles organized by category like PropertyVisibilityDropdown
     const propertyGroups: Record<string, Array<{key: string, label: string}>> = {
         core: [
-            { key: 'status', label: 'Status Dot' },
-            { key: 'priority', label: 'Priority Dot' },
-            { key: 'due', label: 'Due Date' },
-            { key: 'scheduled', label: 'Scheduled Date' },
-            { key: 'timeEstimate', label: 'Time Estimate' },
-            { key: 'totalTrackedTime', label: 'Total Tracked Time' },
-            { key: 'recurrence', label: 'Recurrence' },
-            { key: 'completedDate', label: 'Completed Date' },
-            { key: 'file.ctime', label: 'Created Date' },
-            { key: 'file.mtime', label: 'Modified Date' }
+            { key: 'status', label: translate('settings.appearance.taskCards.properties.status') },
+            { key: 'priority', label: translate('settings.appearance.taskCards.properties.priority') },
+            { key: 'due', label: translate('settings.appearance.taskCards.properties.due') },
+            { key: 'scheduled', label: translate('settings.appearance.taskCards.properties.scheduled') },
+            { key: 'timeEstimate', label: translate('settings.appearance.taskCards.properties.timeEstimate') },
+            { key: 'totalTrackedTime', label: translate('settings.appearance.taskCards.properties.totalTrackedTime') },
+            { key: 'recurrence', label: translate('settings.appearance.taskCards.properties.recurrence') },
+            { key: 'completedDate', label: translate('settings.appearance.taskCards.properties.completedDate') },
+            { key: 'file.ctime', label: translate('settings.appearance.taskCards.properties.createdDate') },
+            { key: 'file.mtime', label: translate('settings.appearance.taskCards.properties.modifiedDate') }
         ],
         organization: [
-            { key: 'projects', label: 'Projects' },
-            { key: 'contexts', label: 'Contexts' },
-            { key: 'tags', label: 'Tags' }
+            { key: 'projects', label: translate('settings.appearance.taskCards.properties.projects') },
+            { key: 'contexts', label: translate('settings.appearance.taskCards.properties.contexts') },
+            { key: 'tags', label: translate('settings.appearance.taskCards.properties.tags') }
         ],
         user: []
     };
@@ -109,19 +112,19 @@ export function renderAppearanceTab(container: HTMLElement, plugin: TaskNotesPlu
     };
     
     // Render groups in order
-    renderPropertyGroup('CORE PROPERTIES', propertyGroups.core);
-    renderPropertyGroup('ORGANIZATION', propertyGroups.organization);
+    renderPropertyGroup(translate('settings.appearance.taskCards.propertyGroups.coreProperties'), propertyGroups.core);
+    renderPropertyGroup(translate('settings.appearance.taskCards.propertyGroups.organization'), propertyGroups.organization);
     if (propertyGroups.user.length > 0) {
-        renderPropertyGroup('CUSTOM PROPERTIES', propertyGroups.user);
+        renderPropertyGroup(translate('settings.appearance.taskCards.propertyGroups.customProperties'), propertyGroups.user);
     }
 
     // Task Filenames Section
-    createSectionHeader(container, 'Task Filenames');
-    createHelpText(container, 'Configure how task files are named when created.');
+    createSectionHeader(container, translate('settings.appearance.taskFilenames.header'));
+    createHelpText(container, translate('settings.appearance.taskFilenames.description'));
 
     createToggleSetting(container, {
-        name: 'Store title in filename',
-        desc: 'Use the task title as the filename. Filename will update when the task title is changed (Recommended).',
+        name: translate('settings.appearance.taskFilenames.storeTitleInFilename.name'),
+        desc: translate('settings.appearance.taskFilenames.storeTitleInFilename.description'),
         getValue: () => plugin.settings.storeTitleInFilename,
         setValue: async (value: boolean) => {
             plugin.settings.storeTitleInFilename = value;
@@ -133,13 +136,13 @@ export function renderAppearanceTab(container: HTMLElement, plugin: TaskNotesPlu
 
     if (!plugin.settings.storeTitleInFilename) {
         createDropdownSetting(container, {
-            name: 'Filename format',
-            desc: 'How task filenames should be generated',
+            name: translate('settings.appearance.taskFilenames.filenameFormat.name'),
+            desc: translate('settings.appearance.taskFilenames.filenameFormat.description'),
             options: [
-                { value: 'title', label: 'Task title (Non-updating)' },
-                { value: 'zettel', label: 'Zettelkasten format (YYMMDD + base36 seconds since midnight)' },
-                { value: 'timestamp', label: 'Full timestamp (YYYY-MM-DD-HHMMSS)' },
-                { value: 'custom', label: 'Custom template' }
+                { value: 'title', label: translate('settings.appearance.taskFilenames.filenameFormat.options.title') },
+                { value: 'zettel', label: translate('settings.appearance.taskFilenames.filenameFormat.options.zettel') },
+                { value: 'timestamp', label: translate('settings.appearance.taskFilenames.filenameFormat.options.timestamp') },
+                { value: 'custom', label: translate('settings.appearance.taskFilenames.filenameFormat.options.custom') }
             ],
             getValue: () => plugin.settings.taskFilenameFormat,
             setValue: async (value: string) => {
@@ -153,9 +156,9 @@ export function renderAppearanceTab(container: HTMLElement, plugin: TaskNotesPlu
 
         if (plugin.settings.taskFilenameFormat === 'custom') {
             createTextSetting(container, {
-                name: 'Custom filename template',
-                desc: 'Template for custom filenames. Available variables: {title}, {titleLower}, {titleUpper}, {titleSnake}, {titleKebab}, {titleCamel}, {titlePascal}, {date}, {shortDate}, {time}, {time12}, {time24}, {timestamp}, {dateTime}, {year}, {month}, {monthName}, {monthNameShort}, {day}, {dayName}, {dayNameShort}, {hour}, {hour12}, {minute}, {second}, {milliseconds}, {ms}, {ampm}, {week}, {quarter}, {unix}, {unixMs}, {timezone}, {timezoneShort}, {utcOffset}, {utcOffsetShort}, {utcZ}, {zettel}, {nano}, {priority}, {priorityShort}, {status}, {statusShort}, {dueDate}, {scheduledDate}',
-                placeholder: '{date}-{title}-{dueDate}',
+                name: translate('settings.appearance.taskFilenames.customTemplate.name'),
+                desc: translate('settings.appearance.taskFilenames.customTemplate.description'),
+                placeholder: translate('settings.appearance.taskFilenames.customTemplate.placeholder'),
                 getValue: () => plugin.settings.customFilenameTemplate,
                 setValue: async (value: string) => {
                     plugin.settings.customFilenameTemplate = value;
@@ -164,20 +167,20 @@ export function renderAppearanceTab(container: HTMLElement, plugin: TaskNotesPlu
                 ariaLabel: 'Custom filename template with variables'
             });
 
-            createHelpText(container, 'Note: {dueDate} and {scheduledDate} are in YYYY-MM-DD format and will be empty if not set.');
+            createHelpText(container, translate('settings.appearance.taskFilenames.customTemplate.helpText'));
         }
     }
 
     // Display Formatting Section
-    createSectionHeader(container, 'Display Formatting');
-    createHelpText(container, 'Configure how dates, times, and other data are displayed across the plugin.');
+    createSectionHeader(container, translate('settings.appearance.displayFormatting.header'));
+    createHelpText(container, translate('settings.appearance.displayFormatting.description'));
 
     createDropdownSetting(container, {
-        name: 'Time format',
-        desc: 'Display time in 12-hour or 24-hour format throughout the plugin',
+        name: translate('settings.appearance.displayFormatting.timeFormat.name'),
+        desc: translate('settings.appearance.displayFormatting.timeFormat.description'),
         options: [
-            { value: '12', label: '12-hour (AM/PM)' },
-            { value: '24', label: '24-hour' }
+            { value: '12', label: translate('settings.appearance.displayFormatting.timeFormat.options.twelveHour') },
+            { value: '24', label: translate('settings.appearance.displayFormatting.timeFormat.options.twentyFourHour') }
         ],
         getValue: () => plugin.settings.calendarViewSettings.timeFormat,
         setValue: async (value: string) => {
@@ -187,18 +190,18 @@ export function renderAppearanceTab(container: HTMLElement, plugin: TaskNotesPlu
     });
 
     // Calendar View Section
-    createSectionHeader(container, 'Calendar View');
-    createHelpText(container, 'Customize the appearance and behavior of the calendar view.');
+    createSectionHeader(container, translate('settings.appearance.calendarView.header'));
+    createHelpText(container, translate('settings.appearance.calendarView.description'));
 
     createDropdownSetting(container, {
-        name: 'Default view',
-        desc: 'The calendar view shown when opening the calendar tab',
+        name: translate('settings.appearance.calendarView.defaultView.name'),
+        desc: translate('settings.appearance.calendarView.defaultView.description'),
         options: [
-            { value: 'dayGridMonth', label: 'Month Grid' },
-            { value: 'timeGridWeek', label: 'Week Timeline' },
-            { value: 'timeGridDay', label: 'Day Timeline' },
-            { value: 'multiMonthYear', label: 'Year View' },
-            { value: 'timeGridCustom', label: 'Custom Multi-Day' }
+            { value: 'dayGridMonth', label: translate('settings.appearance.calendarView.defaultView.options.monthGrid') },
+            { value: 'timeGridWeek', label: translate('settings.appearance.calendarView.defaultView.options.weekTimeline') },
+            { value: 'timeGridDay', label: translate('settings.appearance.calendarView.defaultView.options.dayTimeline') },
+            { value: 'multiMonthYear', label: translate('settings.appearance.calendarView.defaultView.options.yearView') },
+            { value: 'timeGridCustom', label: translate('settings.appearance.calendarView.defaultView.options.customMultiDay') }
         ],
         getValue: () => plugin.settings.calendarViewSettings.defaultView,
         setValue: async (value: string) => {
@@ -211,9 +214,9 @@ export function renderAppearanceTab(container: HTMLElement, plugin: TaskNotesPlu
 
     if (plugin.settings.calendarViewSettings.defaultView === 'timeGridCustom') {
         createNumberSetting(container, {
-            name: 'Custom view day count',
-            desc: 'Number of days to show in custom multi-day view',
-            placeholder: '3',
+            name: translate('settings.appearance.calendarView.customDayCount.name'),
+            desc: translate('settings.appearance.calendarView.customDayCount.description'),
+            placeholder: translate('settings.appearance.calendarView.customDayCount.placeholder'),
             min: 2,
             max: 10,
             getValue: () => plugin.settings.calendarViewSettings.customDayCount,
@@ -225,16 +228,16 @@ export function renderAppearanceTab(container: HTMLElement, plugin: TaskNotesPlu
     }
 
     createDropdownSetting(container, {
-        name: 'First day of week',
-        desc: 'Which day should be the first column in week views',
+        name: translate('settings.appearance.calendarView.firstDayOfWeek.name'),
+        desc: translate('settings.appearance.calendarView.firstDayOfWeek.description'),
         options: [
-            { value: '0', label: 'Sunday' },
-            { value: '1', label: 'Monday' },
-            { value: '2', label: 'Tuesday' },
-            { value: '3', label: 'Wednesday' },
-            { value: '4', label: 'Thursday' },
-            { value: '5', label: 'Friday' },
-            { value: '6', label: 'Saturday' }
+            { value: '0', label: translate('common.weekdays.sunday') },
+            { value: '1', label: translate('common.weekdays.monday') },
+            { value: '2', label: translate('common.weekdays.tuesday') },
+            { value: '3', label: translate('common.weekdays.wednesday') },
+            { value: '4', label: translate('common.weekdays.thursday') },
+            { value: '5', label: translate('common.weekdays.friday') },
+            { value: '6', label: translate('common.weekdays.saturday') }
         ],
         getValue: () => plugin.settings.calendarViewSettings.firstDay.toString(),
         setValue: async (value: string) => {
@@ -245,8 +248,8 @@ export function renderAppearanceTab(container: HTMLElement, plugin: TaskNotesPlu
 
 
     createToggleSetting(container, {
-        name: 'Show weekends',
-        desc: 'Display weekends in calendar views',
+        name: translate('settings.appearance.calendarView.showWeekends.name'),
+        desc: translate('settings.appearance.calendarView.showWeekends.description'),
         getValue: () => plugin.settings.calendarViewSettings.showWeekends,
         setValue: async (value: boolean) => {
             plugin.settings.calendarViewSettings.showWeekends = value;
@@ -255,8 +258,8 @@ export function renderAppearanceTab(container: HTMLElement, plugin: TaskNotesPlu
     });
 
     createToggleSetting(container, {
-        name: 'Show week numbers',
-        desc: 'Display week numbers in calendar views',
+        name: translate('settings.appearance.calendarView.showWeekNumbers.name'),
+        desc: translate('settings.appearance.calendarView.showWeekNumbers.description'),
         getValue: () => plugin.settings.calendarViewSettings.weekNumbers,
         setValue: async (value: boolean) => {
             plugin.settings.calendarViewSettings.weekNumbers = value;
@@ -265,8 +268,8 @@ export function renderAppearanceTab(container: HTMLElement, plugin: TaskNotesPlu
     });
 
     createToggleSetting(container, {
-        name: 'Show today highlight',
-        desc: 'Highlight the current day in calendar views',
+        name: translate('settings.appearance.calendarView.showTodayHighlight.name'),
+        desc: translate('settings.appearance.calendarView.showTodayHighlight.description'),
         getValue: () => plugin.settings.calendarViewSettings.showTodayHighlight,
         setValue: async (value: boolean) => {
             plugin.settings.calendarViewSettings.showTodayHighlight = value;
@@ -275,8 +278,8 @@ export function renderAppearanceTab(container: HTMLElement, plugin: TaskNotesPlu
     });
 
     createToggleSetting(container, {
-        name: 'Show current time indicator',
-        desc: 'Display a line showing the current time in timeline views',
+        name: translate('settings.appearance.calendarView.showCurrentTimeIndicator.name'),
+        desc: translate('settings.appearance.calendarView.showCurrentTimeIndicator.description'),
         getValue: () => plugin.settings.calendarViewSettings.nowIndicator,
         setValue: async (value: boolean) => {
             plugin.settings.calendarViewSettings.nowIndicator = value;
@@ -285,8 +288,8 @@ export function renderAppearanceTab(container: HTMLElement, plugin: TaskNotesPlu
     });
 
     createToggleSetting(container, {
-        name: 'Selection mirror',
-        desc: 'Show a visual preview while dragging to select time ranges',
+        name: translate('settings.appearance.calendarView.selectionMirror.name'),
+        desc: translate('settings.appearance.calendarView.selectionMirror.description'),
         getValue: () => plugin.settings.calendarViewSettings.selectMirror,
         setValue: async (value: boolean) => {
             plugin.settings.calendarViewSettings.selectMirror = value;
@@ -295,9 +298,9 @@ export function renderAppearanceTab(container: HTMLElement, plugin: TaskNotesPlu
     });
 
     createTextSetting(container, {
-        name: 'Calendar locale',
-        desc: 'Calendar locale for date formatting and calendar system (e.g., "en", "fa" for Farsi/Persian, "de" for German). Leave empty to auto-detect from browser.',
-        placeholder: 'Auto-detect',
+        name: translate('settings.appearance.calendarView.calendarLocale.name'),
+        desc: translate('settings.appearance.calendarView.calendarLocale.description'),
+        placeholder: translate('settings.appearance.calendarView.calendarLocale.placeholder'),
         getValue: () => plugin.settings.calendarViewSettings.locale || '',
         setValue: async (value: string) => {
             plugin.settings.calendarViewSettings.locale = value;
@@ -306,12 +309,12 @@ export function renderAppearanceTab(container: HTMLElement, plugin: TaskNotesPlu
     });
 
     // Default event visibility section
-    createSectionHeader(container, 'Default Event Visibility');
-    createHelpText(container, 'Configure which event types are visible by default when opening the Advanced Calendar. Users can still toggle these on/off in the calendar view.');
+    createSectionHeader(container, translate('settings.appearance.defaultEventVisibility.header'));
+    createHelpText(container, translate('settings.appearance.defaultEventVisibility.description'));
 
     createToggleSetting(container, {
-        name: 'Show scheduled tasks',
-        desc: 'Display tasks with scheduled dates by default',
+        name: translate('settings.appearance.defaultEventVisibility.showScheduledTasks.name'),
+        desc: translate('settings.appearance.defaultEventVisibility.showScheduledTasks.description'),
         getValue: () => plugin.settings.calendarViewSettings.defaultShowScheduled,
         setValue: async (value: boolean) => {
             plugin.settings.calendarViewSettings.defaultShowScheduled = value;
@@ -320,8 +323,8 @@ export function renderAppearanceTab(container: HTMLElement, plugin: TaskNotesPlu
     });
 
     createToggleSetting(container, {
-        name: 'Show due dates',
-        desc: 'Display task due dates by default',
+        name: translate('settings.appearance.defaultEventVisibility.showDueDates.name'),
+        desc: translate('settings.appearance.defaultEventVisibility.showDueDates.description'),
         getValue: () => plugin.settings.calendarViewSettings.defaultShowDue,
         setValue: async (value: boolean) => {
             plugin.settings.calendarViewSettings.defaultShowDue = value;
@@ -330,8 +333,8 @@ export function renderAppearanceTab(container: HTMLElement, plugin: TaskNotesPlu
     });
 
     createToggleSetting(container, {
-        name: 'Show due dates when scheduled',
-        desc: 'Display due dates even for tasks that already have scheduled dates',
+        name: translate('settings.appearance.defaultEventVisibility.showDueWhenScheduled.name'),
+        desc: translate('settings.appearance.defaultEventVisibility.showDueWhenScheduled.description'),
         getValue: () => plugin.settings.calendarViewSettings.defaultShowDueWhenScheduled,
         setValue: async (value: boolean) => {
             plugin.settings.calendarViewSettings.defaultShowDueWhenScheduled = value;
@@ -340,8 +343,8 @@ export function renderAppearanceTab(container: HTMLElement, plugin: TaskNotesPlu
     });
 
     createToggleSetting(container, {
-        name: 'Show time entries',
-        desc: 'Display completed time tracking entries by default',
+        name: translate('settings.appearance.defaultEventVisibility.showTimeEntries.name'),
+        desc: translate('settings.appearance.defaultEventVisibility.showTimeEntries.description'),
         getValue: () => plugin.settings.calendarViewSettings.defaultShowTimeEntries,
         setValue: async (value: boolean) => {
             plugin.settings.calendarViewSettings.defaultShowTimeEntries = value;
@@ -350,8 +353,8 @@ export function renderAppearanceTab(container: HTMLElement, plugin: TaskNotesPlu
     });
 
     createToggleSetting(container, {
-        name: 'Show recurring tasks',
-        desc: 'Display recurring task instances by default',
+        name: translate('settings.appearance.defaultEventVisibility.showRecurringTasks.name'),
+        desc: translate('settings.appearance.defaultEventVisibility.showRecurringTasks.description'),
         getValue: () => plugin.settings.calendarViewSettings.defaultShowRecurring,
         setValue: async (value: boolean) => {
             plugin.settings.calendarViewSettings.defaultShowRecurring = value;
@@ -360,8 +363,8 @@ export function renderAppearanceTab(container: HTMLElement, plugin: TaskNotesPlu
     });
 
     createToggleSetting(container, {
-        name: 'Show ICS events',
-        desc: 'Display events from ICS subscriptions by default',
+        name: translate('settings.appearance.defaultEventVisibility.showICSEvents.name'),
+        desc: translate('settings.appearance.defaultEventVisibility.showICSEvents.description'),
         getValue: () => plugin.settings.calendarViewSettings.defaultShowICSEvents,
         setValue: async (value: boolean) => {
             plugin.settings.calendarViewSettings.defaultShowICSEvents = value;
@@ -371,16 +374,16 @@ export function renderAppearanceTab(container: HTMLElement, plugin: TaskNotesPlu
 
 
     // Time Settings
-    createSectionHeader(container, 'Time Settings');
-    createHelpText(container, 'Configure time-related display settings for timeline views.');
+    createSectionHeader(container, translate('settings.appearance.timeSettings.header'));
+    createHelpText(container, translate('settings.appearance.timeSettings.description'));
 
     createDropdownSetting(container, {
-        name: 'Time slot duration',
-        desc: 'Duration of each time slot in timeline views',
+        name: translate('settings.appearance.timeSettings.timeSlotDuration.name'),
+        desc: translate('settings.appearance.timeSettings.timeSlotDuration.description'),
         options: [
-            { value: '00:15:00', label: '15 minutes' },
-            { value: '00:30:00', label: '30 minutes' },
-            { value: '01:00:00', label: '60 minutes' }
+            { value: '00:15:00', label: translate('settings.appearance.timeSettings.timeSlotDuration.options.fifteenMinutes') },
+            { value: '00:30:00', label: translate('settings.appearance.timeSettings.timeSlotDuration.options.thirtyMinutes') },
+            { value: '01:00:00', label: translate('settings.appearance.timeSettings.timeSlotDuration.options.sixtyMinutes') }
         ],
         getValue: () => plugin.settings.calendarViewSettings.slotDuration,
         setValue: async (value: string) => {
@@ -390,9 +393,9 @@ export function renderAppearanceTab(container: HTMLElement, plugin: TaskNotesPlu
     });
 
     createTextSetting(container, {
-        name: 'Start time',
-        desc: 'Earliest time shown in timeline views (HH:MM format)',
-        placeholder: '06:00',
+        name: translate('settings.appearance.timeSettings.startTime.name'),
+        desc: translate('settings.appearance.timeSettings.startTime.description'),
+        placeholder: translate('settings.appearance.timeSettings.startTime.placeholder'),
         getValue: () => plugin.settings.calendarViewSettings.slotMinTime.slice(0, 5), // Remove seconds
         setValue: async (value: string) => {
             plugin.settings.calendarViewSettings.slotMinTime = value + ':00';
@@ -401,9 +404,9 @@ export function renderAppearanceTab(container: HTMLElement, plugin: TaskNotesPlu
     });
 
     createTextSetting(container, {
-        name: 'End time',
-        desc: 'Latest time shown in timeline views (HH:MM format)',
-        placeholder: '22:00',
+        name: translate('settings.appearance.timeSettings.endTime.name'),
+        desc: translate('settings.appearance.timeSettings.endTime.description'),
+        placeholder: translate('settings.appearance.timeSettings.endTime.placeholder'),
         getValue: () => plugin.settings.calendarViewSettings.slotMaxTime.slice(0, 5), // Remove seconds
         setValue: async (value: string) => {
             plugin.settings.calendarViewSettings.slotMaxTime = value + ':00';
@@ -412,9 +415,9 @@ export function renderAppearanceTab(container: HTMLElement, plugin: TaskNotesPlu
     });
 
     createTextSetting(container, {
-        name: 'Initial scroll time',
-        desc: 'Time to scroll to when opening timeline views (HH:MM format)',
-        placeholder: '09:00',
+        name: translate('settings.appearance.timeSettings.initialScrollTime.name'),
+        desc: translate('settings.appearance.timeSettings.initialScrollTime.description'),
+        placeholder: translate('settings.appearance.timeSettings.initialScrollTime.placeholder'),
         getValue: () => plugin.settings.calendarViewSettings.scrollTime.slice(0, 5), // Remove seconds
         setValue: async (value: string) => {
             plugin.settings.calendarViewSettings.scrollTime = value + ':00';
@@ -423,12 +426,12 @@ export function renderAppearanceTab(container: HTMLElement, plugin: TaskNotesPlu
     });
 
     // UI Elements Section
-    createSectionHeader(container, 'UI Elements');
-    createHelpText(container, 'Configure the display of various UI elements.');
+    createSectionHeader(container, translate('settings.appearance.uiElements.header'));
+    createHelpText(container, translate('settings.appearance.uiElements.description'));
 
     createToggleSetting(container, {
-        name: 'Show tracked tasks in status bar',
-        desc: 'Display currently tracked tasks in Obsidian\'s status bar',
+        name: translate('settings.appearance.uiElements.showTrackedTasksInStatusBar.name'),
+        desc: translate('settings.appearance.uiElements.showTrackedTasksInStatusBar.description'),
         getValue: () => plugin.settings.showTrackedTasksInStatusBar,
         setValue: async (value: boolean) => {
             plugin.settings.showTrackedTasksInStatusBar = value;
@@ -437,8 +440,8 @@ export function renderAppearanceTab(container: HTMLElement, plugin: TaskNotesPlu
     });
 
     createToggleSetting(container, {
-        name: 'Show project subtasks widget',
-        desc: 'Display a widget showing subtasks for the current project note',
+        name: translate('settings.appearance.uiElements.showProjectSubtasksWidget.name'),
+        desc: translate('settings.appearance.uiElements.showProjectSubtasksWidget.description'),
         getValue: () => plugin.settings.showProjectSubtasks,
         setValue: async (value: boolean) => {
             plugin.settings.showProjectSubtasks = value;
@@ -450,11 +453,11 @@ export function renderAppearanceTab(container: HTMLElement, plugin: TaskNotesPlu
 
     if (plugin.settings.showProjectSubtasks) {
         createDropdownSetting(container, {
-            name: 'Project subtasks position',
-            desc: 'Where to position the project subtasks widget',
+            name: translate('settings.appearance.uiElements.projectSubtasksPosition.name'),
+            desc: translate('settings.appearance.uiElements.projectSubtasksPosition.description'),
             options: [
-                { value: 'top', label: 'Top of note' },
-                { value: 'bottom', label: 'Bottom of note' }
+                { value: 'top', label: translate('settings.appearance.uiElements.projectSubtasksPosition.options.top') },
+                { value: 'bottom', label: translate('settings.appearance.uiElements.projectSubtasksPosition.options.bottom') }
             ],
             getValue: () => plugin.settings.projectSubtasksPosition,
             setValue: async (value: string) => {
@@ -465,8 +468,8 @@ export function renderAppearanceTab(container: HTMLElement, plugin: TaskNotesPlu
     }
 
     createToggleSetting(container, {
-        name: 'Show expandable subtasks',
-        desc: 'Allow expanding/collapsing subtask sections in task cards',
+        name: translate('settings.appearance.uiElements.showExpandableSubtasks.name'),
+        desc: translate('settings.appearance.uiElements.showExpandableSubtasks.description'),
         getValue: () => plugin.settings.showExpandableSubtasks,
         setValue: async (value: boolean) => {
             plugin.settings.showExpandableSubtasks = value;
@@ -478,11 +481,11 @@ export function renderAppearanceTab(container: HTMLElement, plugin: TaskNotesPlu
 
     if (plugin.settings.showExpandableSubtasks) {
         createDropdownSetting(container, {
-            name: 'Subtask chevron position',
-            desc: 'Position of expand/collapse chevrons in task cards',
+            name: translate('settings.appearance.uiElements.subtaskChevronPosition.name'),
+            desc: translate('settings.appearance.uiElements.subtaskChevronPosition.description'),
             options: [
-                { value: 'left', label: 'Left side' },
-                { value: 'right', label: 'Right side' }
+                { value: 'left', label: translate('settings.appearance.uiElements.subtaskChevronPosition.options.left') },
+                { value: 'right', label: translate('settings.appearance.uiElements.subtaskChevronPosition.options.right') }
             ],
             getValue: () => plugin.settings.subtaskChevronPosition,
             setValue: async (value: string) => {
@@ -493,11 +496,11 @@ export function renderAppearanceTab(container: HTMLElement, plugin: TaskNotesPlu
     }
 
     createDropdownSetting(container, {
-        name: 'Views button alignment',
-        desc: 'Alignment of the views/filters button in the task interface',
+        name: translate('settings.appearance.uiElements.viewsButtonAlignment.name'),
+        desc: translate('settings.appearance.uiElements.viewsButtonAlignment.description'),
         options: [
-            { value: 'left', label: 'Left side' },
-            { value: 'right', label: 'Right side' }
+            { value: 'left', label: translate('settings.appearance.uiElements.viewsButtonAlignment.options.left') },
+            { value: 'right', label: translate('settings.appearance.uiElements.viewsButtonAlignment.options.right') }
         ],
         getValue: () => plugin.settings.viewsButtonAlignment,
         setValue: async (value: string) => {
@@ -507,14 +510,14 @@ export function renderAppearanceTab(container: HTMLElement, plugin: TaskNotesPlu
     });
 
     // Project Autosuggest Section
-    createSectionHeader(container, 'Project Autosuggest');
-    createHelpText(container, 'Customize how project suggestions display during task creation.');
+    createSectionHeader(container, translate('settings.appearance.projectAutosuggest.header'));
+    createHelpText(container, translate('settings.appearance.projectAutosuggest.description'));
 
     // Tag filtering
     createTextSetting(container, {
-        name: 'Required tags',
-        desc: 'Show only notes with any of these tags (comma-separated). Leave empty to show all notes.',
-        placeholder: 'project, active, important',
+        name: translate('settings.appearance.projectAutosuggest.requiredTags.name'),
+        desc: translate('settings.appearance.projectAutosuggest.requiredTags.description'),
+        placeholder: translate('settings.appearance.projectAutosuggest.requiredTags.placeholder'),
         getValue: () => plugin.settings.projectAutosuggest?.requiredTags?.join(', ') ?? '',
         setValue: async (value: string) => {
             if (!plugin.settings.projectAutosuggest) {
@@ -531,9 +534,9 @@ export function renderAppearanceTab(container: HTMLElement, plugin: TaskNotesPlu
 
     // Folder filtering  
     createTextSetting(container, {
-        name: 'Include folders',
-        desc: 'Show only notes in these folders (comma-separated paths). Leave empty to show all folders.',
-        placeholder: 'Projects/, Work/Active, Personal',
+        name: translate('settings.appearance.projectAutosuggest.includeFolders.name'),
+        desc: translate('settings.appearance.projectAutosuggest.includeFolders.description'),
+        placeholder: translate('settings.appearance.projectAutosuggest.includeFolders.placeholder'),
         getValue: () => plugin.settings.projectAutosuggest?.includeFolders?.join(', ') ?? '',
         setValue: async (value: string) => {
             if (!plugin.settings.projectAutosuggest) {
@@ -550,9 +553,9 @@ export function renderAppearanceTab(container: HTMLElement, plugin: TaskNotesPlu
 
     // Property filtering
     createTextSetting(container, {
-        name: 'Required property key',
-        desc: 'Show only notes where this frontmatter property matches the value below. Leave empty to ignore.',
-        placeholder: 'type',
+        name: translate('settings.appearance.projectAutosuggest.requiredPropertyKey.name'),
+        desc: translate('settings.appearance.projectAutosuggest.requiredPropertyKey.description'),
+        placeholder: translate('settings.appearance.projectAutosuggest.requiredPropertyKey.placeholder'),
         getValue: () => plugin.settings.projectAutosuggest?.propertyKey ?? '',
         setValue: async (value: string) => {
             if (!plugin.settings.projectAutosuggest) {
@@ -565,9 +568,9 @@ export function renderAppearanceTab(container: HTMLElement, plugin: TaskNotesPlu
     });
 
     createTextSetting(container, {
-        name: 'Required property value',
-        desc: 'Only notes where the property equals this value are suggested. Leave empty to require the property to exist.',
-        placeholder: 'project',
+        name: translate('settings.appearance.projectAutosuggest.requiredPropertyValue.name'),
+        desc: translate('settings.appearance.projectAutosuggest.requiredPropertyValue.description'),
+        placeholder: translate('settings.appearance.projectAutosuggest.requiredPropertyValue.placeholder'),
         getValue: () => plugin.settings.projectAutosuggest?.propertyValue ?? '',
         setValue: async (value: string) => {
             if (!plugin.settings.projectAutosuggest) {
@@ -580,8 +583,8 @@ export function renderAppearanceTab(container: HTMLElement, plugin: TaskNotesPlu
     });
 
     createToggleSetting(container, {
-        name: 'Customize suggestion display',
-        desc: 'Show advanced options to configure how project suggestions appear and what information they display.',
+        name: translate('settings.appearance.projectAutosuggest.customizeDisplay.name'),
+        desc: translate('settings.appearance.projectAutosuggest.customizeDisplay.description'),
         getValue: () => plugin.settings.projectAutosuggest?.showAdvanced ?? false,
         setValue: async (value: boolean) => {
             if (!plugin.settings.projectAutosuggest) {
@@ -597,8 +600,8 @@ export function renderAppearanceTab(container: HTMLElement, plugin: TaskNotesPlu
     // Only show advanced settings if enabled
     if (plugin.settings.projectAutosuggest?.showAdvanced) {
         createToggleSetting(container, {
-            name: 'Enable fuzzy matching',
-            desc: 'Allow typos and partial matches in project search. May be slower in large vaults.',
+            name: translate('settings.appearance.projectAutosuggest.enableFuzzyMatching.name'),
+            desc: translate('settings.appearance.projectAutosuggest.enableFuzzyMatching.description'),
             getValue: () => plugin.settings.projectAutosuggest?.enableFuzzy ?? false,
         setValue: async (value: boolean) => {
             if (!plugin.settings.projectAutosuggest) {
@@ -610,7 +613,7 @@ export function renderAppearanceTab(container: HTMLElement, plugin: TaskNotesPlu
     });
 
         // Display rows configuration
-        createHelpText(container, 'Configure up to 3 lines of information to show for each project suggestion.');
+        createHelpText(container, translate('settings.appearance.projectAutosuggest.displayRowsHelp'));
         
         const getRows = (): string[] => (plugin.settings.projectAutosuggest?.rows ?? []).slice(0, 3);
         
@@ -626,27 +629,27 @@ export function renderAppearanceTab(container: HTMLElement, plugin: TaskNotesPlu
         };
 
         createTextSetting(container, {
-            name: 'Row 1',
-            desc: 'Format: {property|flags}. Properties: title, aliases, file.path, file.parent. Flags: n(Label) shows label, s makes searchable. Example: {title|n(Title)|s}',
-            placeholder: '{title|n(Title)}',
+            name: translate('settings.appearance.projectAutosuggest.displayRows.row1.name'),
+            desc: translate('settings.appearance.projectAutosuggest.displayRows.row1.description'),
+            placeholder: translate('settings.appearance.projectAutosuggest.displayRows.row1.placeholder'),
             getValue: () => getRows()[0] || '',
             setValue: async (value: string) => setRow(0, value),
             ariaLabel: 'Project autosuggest display row 1'
         });
 
         createTextSetting(container, {
-            name: 'Row 2 (optional)',
-            desc: 'Common patterns: {aliases|n(Aliases)}, {file.parent|n(Folder)}, literal:Custom Text',
-            placeholder: '{aliases|n(Aliases)}',
+            name: translate('settings.appearance.projectAutosuggest.displayRows.row2.name'),
+            desc: translate('settings.appearance.projectAutosuggest.displayRows.row2.description'),
+            placeholder: translate('settings.appearance.projectAutosuggest.displayRows.row2.placeholder'),
             getValue: () => getRows()[1] || '',
             setValue: async (value: string) => setRow(1, value),
             ariaLabel: 'Project autosuggest display row 2'
         });
 
         createTextSetting(container, {
-            name: 'Row 3 (optional)',
-            desc: 'Additional info like {file.path|n(Path)} or custom frontmatter fields',
-            placeholder: '{file.path|n(Path)}',
+            name: translate('settings.appearance.projectAutosuggest.displayRows.row3.name'),
+            desc: translate('settings.appearance.projectAutosuggest.displayRows.row3.description'),
+            placeholder: translate('settings.appearance.projectAutosuggest.displayRows.row3.placeholder'),
             getValue: () => getRows()[2] || '',
             setValue: async (value: string) => setRow(2, value),
             ariaLabel: 'Project autosuggest display row 3'
@@ -654,14 +657,14 @@ export function renderAppearanceTab(container: HTMLElement, plugin: TaskNotesPlu
 
         // Concise help section
         const helpContainer = container.createDiv('tasknotes-settings__help-section');
-        helpContainer.createEl('h4', { text: 'Quick Reference' });
+        helpContainer.createEl('h4', { text: translate('settings.appearance.projectAutosuggest.quickReference.header') });
         const helpList = helpContainer.createEl('ul');
-        helpList.createEl('li', { text: 'Available properties: title, aliases, file.path, file.parent, or any frontmatter field' });
-        helpList.createEl('li', { text: 'Add labels: {title|n(Title)} → "Title: My Project"' });
-        helpList.createEl('li', { text: 'Make searchable: {description|s} includes description in + search' });
-        helpList.createEl('li', { text: 'Static text: literal:My Custom Label' });
+        helpList.createEl('li', { text: translate('settings.appearance.projectAutosuggest.quickReference.properties') });
+        helpList.createEl('li', { text: translate('settings.appearance.projectAutosuggest.quickReference.labels') });
+        helpList.createEl('li', { text: translate('settings.appearance.projectAutosuggest.quickReference.searchable') });
+        helpList.createEl('li', { text: translate('settings.appearance.projectAutosuggest.quickReference.staticText') });
         helpContainer.createEl('p', {
-            text: 'Filename, title, and aliases are always searchable by default.',
+            text: translate('settings.appearance.projectAutosuggest.quickReference.alwaysSearchable'),
             cls: 'settings-help-note'
         });
     }

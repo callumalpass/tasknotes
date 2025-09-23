@@ -26,12 +26,16 @@ export class TaskContextMenu {
         this.buildMenu();
     }
 
+    private t(key: string, params?: Record<string, string | number>): string {
+        return this.options.plugin.i18n.translate(key, params);
+    }
+
     private buildMenu(): void {
         const { task, plugin } = this.options;
 
         // Status submenu
         this.menu.addItem((item) => {
-            item.setTitle('Status');
+            item.setTitle(this.t('contextMenus.task.status'));
             item.setIcon('circle');
             
             const submenu = (item as any).setSubmenu();
@@ -46,7 +50,9 @@ export class TaskContextMenu {
             const isCompletedForDate = task.complete_instances?.includes(dateStr) || false;
             
             this.menu.addItem((item) => {
-                item.setTitle(isCompletedForDate ? 'Mark incomplete for this date' : 'Mark complete for this date');
+                item.setTitle(isCompletedForDate
+                    ? this.t('contextMenus.task.markIncomplete')
+                    : this.t('contextMenus.task.markComplete'));
                 item.setIcon(isCompletedForDate ? 'x' : 'check');
                 item.onClick(async () => {
                     try {
@@ -58,7 +64,7 @@ export class TaskContextMenu {
                             error: errorMessage,
                             taskPath: task.path
                         });
-                        new Notice(`Failed to toggle recurring task completion: ${errorMessage}`);
+                        new Notice(this.t('contextMenus.task.notices.toggleCompletionFailure', { message: errorMessage }));
                     }
                 });
             });
@@ -68,7 +74,7 @@ export class TaskContextMenu {
         
         // Priority submenu
         this.menu.addItem((item) => {
-            item.setTitle('Priority');
+            item.setTitle(this.t('contextMenus.task.priority'));
             item.setIcon('star');
             
             const submenu = (item as any).setSubmenu();
@@ -79,7 +85,7 @@ export class TaskContextMenu {
         
         // Due Date submenu
         this.menu.addItem((item) => {
-            item.setTitle('Due date');
+            item.setTitle(this.t('contextMenus.task.dueDate'));
             item.setIcon('calendar');
             
             const submenu = (item as any).setSubmenu();
@@ -93,7 +99,7 @@ export class TaskContextMenu {
                         error: errorMessage,
                         taskPath: task.path
                     });
-                    new Notice(`Failed to update task due date: ${errorMessage}`);
+                    new Notice(this.t('contextMenus.task.notices.updateDueDateFailure', { message: errorMessage }));
                 }
             }, () => {
                 plugin.openDueDateModal(task);
@@ -102,7 +108,7 @@ export class TaskContextMenu {
         
         // Scheduled Date submenu
         this.menu.addItem((item) => {
-            item.setTitle('Scheduled date');
+            item.setTitle(this.t('contextMenus.task.scheduledDate'));
             item.setIcon('calendar-clock');
             
             const submenu = (item as any).setSubmenu();
@@ -116,7 +122,7 @@ export class TaskContextMenu {
                         error: errorMessage,
                         taskPath: task.path
                     });
-                    new Notice(`Failed to update task scheduled date: ${errorMessage}`);
+                    new Notice(this.t('contextMenus.task.notices.updateScheduledFailure', { message: errorMessage }));
                 }
             }, () => {
                 plugin.openScheduledDateModal(task);
@@ -125,20 +131,20 @@ export class TaskContextMenu {
         
         // Reminders submenu
         this.menu.addItem((item) => {
-            item.setTitle('Reminders');
+            item.setTitle(this.t('contextMenus.task.reminders'));
             item.setIcon('bell');
             
             const submenu = (item as any).setSubmenu();
             
             // Quick Add sections
-            this.addQuickRemindersSection(submenu, task, plugin, 'due', 'Remind before due...');
-            this.addQuickRemindersSection(submenu, task, plugin, 'scheduled', 'Remind before scheduled...');
+            this.addQuickRemindersSection(submenu, task, plugin, 'due', this.t('contextMenus.task.remindBeforeDue'));
+            this.addQuickRemindersSection(submenu, task, plugin, 'scheduled', this.t('contextMenus.task.remindBeforeScheduled'));
             
             submenu.addSeparator();
             
             // Manage reminders
             submenu.addItem((subItem: any) => {
-                subItem.setTitle('Manage All Reminders...');
+                subItem.setTitle(this.t('contextMenus.task.manageReminders'));
                 subItem.setIcon('settings');
                 subItem.onClick(() => {
                     const modal = new ReminderModal(
@@ -151,7 +157,7 @@ export class TaskContextMenu {
                                 this.options.onUpdate?.();
                             } catch (error) {
                                 console.error('Error updating reminders:', error);
-                                new Notice('Failed to update reminders');
+                                new Notice(this.t('contextMenus.task.notices.updateRemindersFailure'));
                             }
                         }
                     );
@@ -162,7 +168,7 @@ export class TaskContextMenu {
             // Clear reminders (if any exist)
             if (task.reminders && task.reminders.length > 0) {
                 submenu.addItem((subItem: any) => {
-                    subItem.setTitle('Clear All Reminders');
+                    subItem.setTitle(this.t('contextMenus.task.clearReminders'));
                     subItem.setIcon('trash');
                     subItem.onClick(async () => {
                         try {
@@ -170,7 +176,7 @@ export class TaskContextMenu {
                             this.options.onUpdate?.();
                         } catch (error) {
                             console.error('Error clearing reminders:', error);
-                            new Notice('Failed to clear reminders');
+                            new Notice(this.t('contextMenus.task.notices.clearRemindersFailure'));
                         }
                     });
                 });
@@ -182,7 +188,9 @@ export class TaskContextMenu {
         // Time Tracking
         this.menu.addItem((item) => {
             const activeSession = plugin.getActiveTimeSession(task);
-            item.setTitle(activeSession ? 'Stop time tracking' : 'Start time tracking');
+            item.setTitle(activeSession
+                ? this.t('contextMenus.task.stopTimeTracking')
+                : this.t('contextMenus.task.startTimeTracking'));
             item.setIcon(activeSession ? 'pause' : 'play');
             item.onClick(async () => {
                 const activeSession = plugin.getActiveTimeSession(task);
@@ -197,7 +205,9 @@ export class TaskContextMenu {
         
         // Archive/Unarchive
         this.menu.addItem((item) => {
-            item.setTitle(task.archived ? 'Unarchive' : 'Archive');
+            item.setTitle(task.archived
+                ? this.t('contextMenus.task.unarchive')
+                : this.t('contextMenus.task.archive'));
             item.setIcon(task.archived ? 'archive-restore' : 'archive');
             item.onClick(async () => {
                 try {
@@ -209,16 +219,16 @@ export class TaskContextMenu {
                         error: errorMessage,
                         taskPath: task.path
                     });
-                    new Notice(`Failed to toggle task archive: ${errorMessage}`);
-                }
-            });
+                    new Notice(this.t('contextMenus.task.notices.archiveFailure', { message: errorMessage }));
+            }
+        });
         });
         
         this.menu.addSeparator();
         
         // Open Note
         this.menu.addItem((item) => {
-            item.setTitle('Open note');
+            item.setTitle(this.t('contextMenus.task.openNote'));
             item.setIcon('file-text');
             item.onClick(() => {
                 const file = plugin.app.vault.getAbstractFileByPath(task.path);
@@ -230,21 +240,21 @@ export class TaskContextMenu {
 
         // Copy Task Title
         this.menu.addItem((item) => {
-            item.setTitle('Copy task title');
+            item.setTitle(this.t('contextMenus.task.copyTitle'));
             item.setIcon('copy');
             item.onClick(async () => {
                 try {
                     await navigator.clipboard.writeText(task.title);
-                    new Notice('Task title copied to clipboard');
+                    new Notice(this.t('contextMenus.task.notices.copyTitleSuccess'));
                 } catch (error) {
-                    new Notice('Failed to copy to clipboard');
+                    new Notice(this.t('contextMenus.task.notices.copyFailure'));
                 }
             });
         });
 
         // Note actions submenu
         this.menu.addItem((item) => {
-            item.setTitle('Note actions');
+            item.setTitle(this.t('contextMenus.task.noteActions'));
             item.setIcon('file-text');
             
             const submenu = (item as any).setSubmenu();
@@ -262,15 +272,15 @@ export class TaskContextMenu {
                 
                 // Add common file actions (these will either supplement or replace the native menu)
                 submenu.addItem((subItem: any) => {
-                    subItem.setTitle('Rename');
+                    subItem.setTitle(this.t('contextMenus.task.rename'));
                     subItem.setIcon('pencil');
                     subItem.onClick(async () => {
                         try {
                             // Modal-based rename
                             const currentName = file.basename;
                             const newName = await showTextInputModal(plugin.app, {
-                                title: 'Rename File',
-                                placeholder: 'Enter new name',
+                                title: this.t('contextMenus.task.renameTitle'),
+                                placeholder: this.t('contextMenus.task.renamePlaceholder'),
                                 initialValue: currentName
                             });
                             
@@ -284,7 +294,7 @@ export class TaskContextMenu {
                                 
                                 // Rename the file
                                 await plugin.app.vault.rename(file, newPath);
-                                new Notice(`Renamed to "${finalName}"`);
+                                new Notice(this.t('contextMenus.task.notices.renameSuccess', { name: finalName }));
                                 
                                 // Trigger update callback
                                 if (this.options.onUpdate) {
@@ -293,21 +303,21 @@ export class TaskContextMenu {
                             }
                         } catch (error) {
                             console.error('Error renaming file:', error);
-                            new Notice('Failed to rename file');
+                            new Notice(this.t('contextMenus.task.notices.renameFailure'));
                         }
                     });
                 });
                 
                 submenu.addItem((subItem: any) => {
-                    subItem.setTitle('Delete');
+                    subItem.setTitle(this.t('contextMenus.task.delete'));
                     subItem.setIcon('trash');
                     subItem.onClick(async () => {
                         // Show confirmation and delete
                         const confirmed = await showConfirmationModal(plugin.app, {
-                            title: 'Delete File',
-                            message: `Are you sure you want to delete "${file.name}"?`,
-                            confirmText: 'Delete',
-                            cancelText: 'Cancel',
+                            title: this.t('contextMenus.task.deleteTitle'),
+                            message: this.t('contextMenus.task.deleteMessage', { name: file.name }),
+                            confirmText: this.t('contextMenus.task.deleteConfirm'),
+                            cancelText: this.t('common.cancel'),
                             isDestructive: true
                         });
                         if (confirmed) {
@@ -319,28 +329,28 @@ export class TaskContextMenu {
                 submenu.addSeparator();
                 
                 submenu.addItem((subItem: any) => {
-                    subItem.setTitle('Copy path');
+                    subItem.setTitle(this.t('contextMenus.task.copyPath'));
                     subItem.setIcon('copy');
                     subItem.onClick(async () => {
                         try {
                             await navigator.clipboard.writeText(file.path);
-                            new Notice('File path copied to clipboard');
+                            new Notice(this.t('contextMenus.task.notices.copyPathSuccess'));
                         } catch (error) {
-                            new Notice('Failed to copy file path');
+                            new Notice(this.t('contextMenus.task.notices.copyFailure'));
                         }
                     });
                 });
                 
                 submenu.addItem((subItem: any) => {
-                    subItem.setTitle('Copy Obsidian URL');
+                    subItem.setTitle(this.t('contextMenus.task.copyUrl'));
                     subItem.setIcon('link');
                     subItem.onClick(async () => {
                         try {
                             const url = `obsidian://open?vault=${encodeURIComponent(plugin.app.vault.getName())}&file=${encodeURIComponent(file.path)}`;
                             await navigator.clipboard.writeText(url);
-                            new Notice('Obsidian URL copied to clipboard');
+                            new Notice(this.t('contextMenus.task.notices.copyUrlSuccess'));
                         } catch (error) {
-                            new Notice('Failed to copy Obsidian URL');
+                            new Notice(this.t('contextMenus.task.notices.copyFailure'));
                         }
                     });
                 });
@@ -348,7 +358,7 @@ export class TaskContextMenu {
                 submenu.addSeparator();
                 
                 submenu.addItem((subItem: any) => {
-                    subItem.setTitle('Show in file explorer');
+                    subItem.setTitle(this.t('contextMenus.task.showInExplorer'));
                     subItem.setIcon('folder-open');
                     subItem.onClick(() => {
                         // Reveal file in file explorer
@@ -371,47 +381,47 @@ export class TaskContextMenu {
         
         // Add to Calendar submenu
         this.menu.addItem((item) => {
-            item.setTitle('Add to calendar');
+            item.setTitle(this.t('contextMenus.task.addToCalendar'));
             item.setIcon('calendar-plus');
             
             const submenu = (item as any).setSubmenu();
             
             // Google Calendar
             submenu.addItem((subItem: any) => {
-                subItem.setTitle('Google Calendar');
+                subItem.setTitle(this.t('contextMenus.task.calendar.google'));
                 subItem.setIcon('external-link');
                 subItem.onClick(() => {
                     CalendarExportService.openCalendarURL({
                         type: 'google',
                         task: task,
                         useScheduledAsDue: true
-                    });
+                    }, this.t.bind(this));
                 });
             });
             
             // Outlook Calendar
             submenu.addItem((subItem: any) => {
-                subItem.setTitle('Outlook Calendar');
+                subItem.setTitle(this.t('contextMenus.task.calendar.outlook'));
                 subItem.setIcon('external-link');
                 subItem.onClick(() => {
                     CalendarExportService.openCalendarURL({
                         type: 'outlook',
                         task: task,
                         useScheduledAsDue: true
-                    });
+                    }, this.t.bind(this));
                 });
             });
             
             // Yahoo Calendar
             submenu.addItem((subItem: any) => {
-                subItem.setTitle('Yahoo Calendar');
+                subItem.setTitle(this.t('contextMenus.task.calendar.yahoo'));
                 subItem.setIcon('external-link');
                 subItem.onClick(() => {
                     CalendarExportService.openCalendarURL({
                         type: 'yahoo',
                         task: task,
                         useScheduledAsDue: true
-                    });
+                    }, this.t.bind(this));
                 });
             });
             
@@ -419,10 +429,10 @@ export class TaskContextMenu {
             
             // Download ICS file
             submenu.addItem((subItem: any) => {
-                subItem.setTitle('Download .ics file');
+                subItem.setTitle(this.t('contextMenus.task.calendar.downloadIcs'));
                 subItem.setIcon('download');
                 subItem.onClick(() => {
-                    CalendarExportService.downloadICSFile(task);
+                    CalendarExportService.downloadICSFile(task, this.t.bind(this));
                 });
             });
         });
@@ -431,7 +441,7 @@ export class TaskContextMenu {
         
         // Recurrence submenu  
         this.menu.addItem((item) => {
-            item.setTitle('Recurrence');
+            item.setTitle(this.t('contextMenus.task.recurrence'));
             item.setIcon('refresh-ccw');
             
             const submenu = (item as any).setSubmenu();
@@ -446,7 +456,7 @@ export class TaskContextMenu {
                         error: errorMessage,
                         taskPath: task.path
                     });
-                    new Notice(`Failed to update task recurrence: ${errorMessage}`);
+                    new Notice(this.t('contextMenus.task.notices.updateRecurrenceFailure', { message: errorMessage }));
                 }
             }, plugin);
         });
@@ -455,7 +465,7 @@ export class TaskContextMenu {
         
         // Create subtask
         this.menu.addItem((item) => {
-            item.setTitle('Create subtask');
+            item.setTitle(this.t('contextMenus.task.createSubtask'));
             item.setIcon('plus');
             item.onClick(() => {
                 const taskFile = plugin.app.vault.getAbstractFileByPath(task.path);
@@ -477,27 +487,29 @@ export class TaskContextMenu {
     private updateMainMenuIconColors(task: TaskInfo, plugin: TaskNotesPlugin): void {
         const menuEl = document.querySelector('.menu');
         if (!menuEl) return;
-        
+
         const menuItems = menuEl.querySelectorAll('.menu-item');
-        
+        const statusTitle = this.t('contextMenus.task.status');
+        const priorityTitle = this.t('contextMenus.task.priority');
+
         // Find status and priority menu items and apply colors
         menuItems.forEach((menuItem: Element) => {
             const titleEl = menuItem.querySelector('.menu-item-title');
             const iconEl = menuItem.querySelector('.menu-item-icon');
-            
+
             if (titleEl && iconEl) {
                 const title = titleEl.textContent;
-                
+
                 // Apply status color
-                if (title === 'Status') {
+                if (title === statusTitle) {
                     const statusConfig = plugin.settings.customStatuses.find(s => s.value === task.status);
                     if (statusConfig && statusConfig.color) {
                         (iconEl as HTMLElement).style.color = statusConfig.color;
                     }
                 }
-                
+
                 // Apply priority color
-                else if (title === 'Priority') {
+                else if (title === priorityTitle) {
                     const priorityConfig = plugin.settings.customPriorities.find(p => p.value === task.priority);
                     if (priorityConfig && priorityConfig.color) {
                         (iconEl as HTMLElement).style.color = priorityConfig.color;
@@ -519,9 +531,9 @@ export class TaskContextMenu {
                 
                 // Highlight current selection with visual indicator
                 if (option.value === task.status) {
-                    title = `✓ ${option.label}`;
+                    title = this.t('contextMenus.task.statusSelected', { label: option.label });
                 }
-                
+
                 item.setTitle(title);
                 
                 item.onClick(async () => {
@@ -566,9 +578,9 @@ export class TaskContextMenu {
                 
                 // Highlight current selection with visual indicator
                 if (priority.value === task.priority) {
-                    title = `✓ ${priority.label}`;
+                    title = this.t('contextMenus.task.prioritySelected', { label: priority.label });
                 }
-                
+
                 item.setTitle(title);
                 
                 item.onClick(async () => {
@@ -607,99 +619,71 @@ export class TaskContextMenu {
             onSelect: (value: string | null) => {
                 onSelect(value);
             },
-            onCustomDate: onCustomDate
+            onCustomDate: onCustomDate,
+            plugin: this.options.plugin
         });
-        
-        // Get the date options from DateContextMenu and add them to this submenu
+
         const dateOptions = dateContextMenu.getDateOptions();
-        
-        // Add increment/decrement options first (if they exist)
-        const incrementOptions = dateOptions.filter((option: any) => 
-            option.label.startsWith('+') || option.label.startsWith('-')
-        );
-        
+
+        const incrementOptions = dateOptions.filter((option: any) => option.category === 'increment');
         if (incrementOptions.length > 0) {
             incrementOptions.forEach((option: any) => {
                 submenu.addItem((item: any) => {
+                    if (option.icon) item.setIcon(option.icon);
                     item.setTitle(option.label);
-                    if (option.icon) {
-                        item.setIcon(option.icon);
-                    }
-                    item.onClick(() => {
-                        onSelect(option.value);
-                    });
+                    item.onClick(() => onSelect(option.value));
                 });
             });
-            
             submenu.addSeparator();
         }
 
-        // Add basic date options (Today, Tomorrow, etc.)
-        const basicOptions = dateOptions.filter((option: any) => 
-            !option.label.startsWith('+') && !option.label.startsWith('-') &&
-            !['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].includes(option.label)
-        );
-        
+        const basicOptions = dateOptions.filter((option: any) => option.category === 'basic');
         basicOptions.forEach((option: any) => {
             submenu.addItem((item: any) => {
+                if (option.icon) item.setIcon(option.icon);
                 const isSelected = option.value === currentValue;
-                item.setTitle(isSelected ? `✓ ${option.label}` : option.label);
-                if (option.icon) {
-                    item.setIcon(option.icon);
-                }
-                item.onClick(() => {
-                    onSelect(option.value);
-                });
+                const title = isSelected
+                    ? this.t('contextMenus.date.selected', { label: option.label })
+                    : option.label;
+                item.setTitle(title);
+                item.onClick(() => onSelect(option.value));
             });
         });
 
-        // Add weekdays submenu
-        const weekdayOptions = dateOptions.filter((option: any) => 
-            ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].includes(option.label)
-        );
-        
+        const weekdayOptions = dateOptions.filter((option: any) => option.category === 'weekday');
         if (weekdayOptions.length > 0) {
             submenu.addSeparator();
-            
             submenu.addItem((item: any) => {
-                item.setTitle('Weekdays');
+                item.setTitle(this.t('contextMenus.date.weekdaysLabel'));
                 item.setIcon('calendar');
-                
                 const weekdaySubmenu = (item as any).setSubmenu();
-                
                 weekdayOptions.forEach((option: any) => {
                     weekdaySubmenu.addItem((subItem: any) => {
                         const isSelected = option.value === currentValue;
-                        subItem.setTitle(isSelected ? `✓ ${option.label}` : option.label);
+                        const title = isSelected
+                            ? this.t('contextMenus.date.selected', { label: option.label })
+                            : option.label;
+                        subItem.setTitle(title);
                         subItem.setIcon('calendar');
-                        
-                        subItem.onClick(() => {
-                            onSelect(option.value);
-                        });
+                        subItem.onClick(() => onSelect(option.value));
                     });
                 });
             });
         }
-        
+
         submenu.addSeparator();
-        
-        // Custom date picker
+
         submenu.addItem((item: any) => {
-            item.setTitle('Pick date & time...');
+            item.setTitle(this.t('contextMenus.date.pickDateTime'));
             item.setIcon('calendar');
-            item.onClick(() => {
-                onCustomDate();
-            });
+            item.onClick(() => onCustomDate());
         });
-        
-        // Clear option if there's a current value
+
         if (currentValue) {
             submenu.addItem((item: any) => {
-                item.setTitle('Clear date');
+                item.setTitle(this.t('contextMenus.date.clearDate'));
                 item.setIcon('x');
-                item.onClick(() => {
-                    onSelect(null);
-                });
+                item.onClick(() => onSelect(null));
             });
         }
     }
@@ -732,37 +716,37 @@ export class TaskContextMenu {
         
         const recurrenceOptions = [
             {
-                label: 'Daily',
+                label: this.t('modals.task.recurrence.daily'),
                 value: `DTSTART:${todayDTSTART};FREQ=DAILY;INTERVAL=1`,
                 icon: 'calendar-days'
             },
             {
-                label: `Weekly on ${dayName}`,
+                label: this.t('modals.task.recurrence.weeklyOn', { days: dayName }),
                 value: `DTSTART:${todayDTSTART};FREQ=WEEKLY;INTERVAL=1;BYDAY=${currentDay}`,
                 icon: 'calendar'
             },
             {
-                label: `Every 2 weeks on ${dayName}`,
+                label: this.t('modals.task.recurrence.everyTwoWeeks'),
                 value: `DTSTART:${todayDTSTART};FREQ=WEEKLY;INTERVAL=2;BYDAY=${currentDay}`,
                 icon: 'calendar'
             },
             {
-                label: `Monthly on the ${getOrdinal(currentDate)}`,
+                label: this.t('modals.task.recurrence.monthlyOnOrdinal', { ordinal: getOrdinal(currentDate) }),
                 value: `DTSTART:${todayDTSTART};FREQ=MONTHLY;INTERVAL=1;BYMONTHDAY=${currentDate}`,
                 icon: 'calendar-range'
             },
             {
-                label: `Every 3 months on the ${getOrdinal(currentDate)}`,
+                label: this.t('modals.task.recurrence.everyThreeMonths'),
                 value: `DTSTART:${todayDTSTART};FREQ=MONTHLY;INTERVAL=3;BYMONTHDAY=${currentDate}`,
                 icon: 'calendar-range'
             },
             {
-                label: `Yearly on ${currentMonthName} ${getOrdinal(currentDate)}`,
+                label: this.t('modals.task.recurrence.yearlyOn', { month: currentMonthName, day: getOrdinal(currentDate) }),
                 value: `DTSTART:${todayDTSTART};FREQ=YEARLY;INTERVAL=1;BYMONTH=${currentMonth};BYMONTHDAY=${currentDate}`,
                 icon: 'calendar-clock'
             },
             {
-                label: 'Weekdays only',
+                label: this.t('modals.task.recurrence.weekdays'),
                 value: `DTSTART:${todayDTSTART};FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR`,
                 icon: 'briefcase'
             }
@@ -783,13 +767,14 @@ export class TaskContextMenu {
         
         // Custom recurrence option
         submenu.addItem((item: any) => {
-            item.setTitle('Custom recurrence...');
+            item.setTitle(this.t('contextMenus.task.customRecurrence'));
             item.setIcon('settings');
             item.onClick(() => {
                 const recurrenceMenu = new RecurrenceContextMenu({
                     currentValue: typeof currentValue === 'string' ? currentValue : undefined,
                     onSelect: onSelect,
-                    app: plugin.app
+                    app: plugin.app,
+                    plugin: plugin
                 });
                 recurrenceMenu['showCustomRecurrenceModal']();
             });
@@ -798,7 +783,7 @@ export class TaskContextMenu {
         // Clear option if there's a current value
         if (currentValue) {
             submenu.addItem((item: any) => {
-                item.setTitle('Clear recurrence');
+                item.setTitle(this.t('contextMenus.task.clearRecurrence'));
                 item.setIcon('x');
                 item.onClick(() => {
                     onSelect(null);
@@ -855,18 +840,19 @@ export class TaskContextMenu {
             const reminderSubmenu = (subItem as any).setSubmenu();
             
             const quickOptions = [
-                { label: 'At time of event', offset: 'PT0M' },
-                { label: '5 minutes before', offset: '-PT5M' },
-                { label: '15 minutes before', offset: '-PT15M' },
-                { label: '1 hour before', offset: '-PT1H' },
-                { label: '1 day before', offset: '-P1D' }
+                { labelKey: 'contextMenus.task.quickReminders.atTime', offset: 'PT0M' },
+                { labelKey: 'contextMenus.task.quickReminders.fiveMinutes', offset: '-PT5M' },
+                { labelKey: 'contextMenus.task.quickReminders.fifteenMinutes', offset: '-PT15M' },
+                { labelKey: 'contextMenus.task.quickReminders.oneHour', offset: '-PT1H' },
+                { labelKey: 'contextMenus.task.quickReminders.oneDay', offset: '-P1D' }
             ];
 
             quickOptions.forEach(option => {
                 reminderSubmenu.addItem((reminderItem: any) => {
-                    reminderItem.setTitle(option.label);
+                    const label = this.t(option.labelKey);
+                    reminderItem.setTitle(label);
                     reminderItem.onClick(async () => {
-                        await this.addQuickReminder(task, plugin, anchor, option.offset, option.label);
+                        await this.addQuickReminder(task, plugin, anchor, option.offset, label);
                     });
                 });
             });

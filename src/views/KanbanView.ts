@@ -59,7 +59,7 @@ export class KanbanView extends ItemView implements OptimizedView {
     }
 
     getDisplayText(): string {
-        return 'Kanban';
+        return this.plugin.i18n.translate('views.kanban.title');
     }
 
     getIcon(): string {
@@ -249,7 +249,7 @@ export class KanbanView extends ItemView implements OptimizedView {
         // Add new task button
         const newTaskButton = leftActions.createEl('button', { 
             cls: 'kanban-view__new-task-button',
-            text: 'New task'
+            text: this.plugin.i18n.translate('views.kanban.newTask')
         });
         newTaskButton.addEventListener('click', () => {
             this.plugin.openTaskCreationModal();
@@ -297,7 +297,7 @@ export class KanbanView extends ItemView implements OptimizedView {
         // Show loading indicator only if board is empty
         let loadingIndicator: HTMLElement | null = null;
         if (this.boardContainer.children.length === 0) {
-            loadingIndicator = this.boardContainer.createDiv({ cls: 'kanban-view__loading', text: 'Loading board...' });
+            loadingIndicator = this.boardContainer.createDiv({ cls: 'kanban-view__loading', text: this.plugin.i18n.translate('common.loading') });
         }
 
         try {
@@ -338,7 +338,7 @@ export class KanbanView extends ItemView implements OptimizedView {
                 containerExists: !!this.boardContainer
             });
             
-            new Notice("Failed to load Kanban board. See console for details.");
+            new Notice(this.plugin.i18n.translate('views.kanban.notices.loadFailed'));
             
             // Remove loading indicator if it exists
             if (loadingIndicator) {
@@ -347,7 +347,7 @@ export class KanbanView extends ItemView implements OptimizedView {
             
             // Show error state
             this.boardContainer.empty();
-            this.boardContainer.createDiv({ cls: 'kanban-view__error', text: 'Error loading board.' });
+            this.boardContainer.createDiv({ cls: 'kanban-view__error', text: this.plugin.i18n.translate('views.kanban.errors.loadingBoard') });
         }
     }
 
@@ -407,7 +407,7 @@ export class KanbanView extends ItemView implements OptimizedView {
             // Empty column placeholder
             const emptyEl = bodyEl.createDiv({ 
                 cls: 'kanban-view__column-empty',
-                text: 'No tasks'
+                text: this.plugin.i18n.translate('views.kanban.noTasks')
             });
             
             // Make empty columns droppable
@@ -431,7 +431,7 @@ export class KanbanView extends ItemView implements OptimizedView {
         // Add "Add Card" button
         const addCardButton = bodyEl.createEl('button', {
             cls: 'kanban-view__add-card-button',
-            text: '+ Add a card'
+            text: this.plugin.i18n.translate('views.kanban.addCard')
         });
         addCardButton.addEventListener('click', () => {
             this.openTaskCreationModalForColumn(columnId);
@@ -712,7 +712,7 @@ export class KanbanView extends ItemView implements OptimizedView {
                         }
                         
                         await this.plugin.updateTaskProperty(task, propertyToUpdate, valueToSet, { silent: true });
-                        new Notice(`Task moved to "${this.formatColumnTitle(targetColumnId, this.currentQuery.groupKey)}"`);
+                        new Notice(this.plugin.i18n.translate('views.kanban.notices.movedTask', { '0': this.formatColumnTitle(targetColumnId, this.currentQuery.groupKey) }));
                     } catch (error) {
                         console.error('Failed to move task:', error);
                         new Notice('Failed to move task');
@@ -853,7 +853,7 @@ export class KanbanView extends ItemView implements OptimizedView {
             // Empty column placeholder
             const emptyEl = tasksContainer.createDiv({ 
                 cls: 'kanban-view__column-empty',
-                text: 'No tasks'
+                text: this.plugin.i18n.translate('views.kanban.noTasks')
             });
             
             // Make empty columns droppable
@@ -872,7 +872,7 @@ export class KanbanView extends ItemView implements OptimizedView {
         // Add "Add Card" button
         const addCardButton = bodyEl.createEl('button', {
             cls: 'kanban-view__add-card-button',
-            text: '+ Add a card'
+            text: this.plugin.i18n.translate('views.kanban.addCard')
         });
         addCardButton.addEventListener('click', () => {
             this.openTaskCreationModalForColumn(columnId);
@@ -917,7 +917,7 @@ export class KanbanView extends ItemView implements OptimizedView {
                 tasksContainer.empty();
                 const emptyEl = tasksContainer.createDiv({ 
                     cls: 'kanban-view__column-empty',
-                    text: 'No tasks'
+                    text: this.plugin.i18n.translate('views.kanban.noTasks')
                 });
                 this.addColumnDropHandlers(emptyEl);
             } else {

@@ -116,7 +116,7 @@ export class MiniCalendarView extends ItemView {
     }
   
     getDisplayText(): string {
-        return 'Mini Calendar';
+        return this.plugin.i18n.translate('views.miniCalendar.title');
     }
   
     getIcon(): string {

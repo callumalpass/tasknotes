@@ -21,12 +21,14 @@ import {
     parseDateToUTC,
     isTodayUTC
 } from '../utils/dateUtils';
+import { TranslationKey } from '../i18n';
 
 /**
  * Unified filtering, sorting, and grouping service for all task views.
  * Provides performance-optimized data retrieval using CacheManager indexes.
  */
 export class FilterService extends EventEmitter {
+    private static lastInstance: FilterService | null = null;
     private cacheManager: MinimalNativeCache;
     private statusManager: StatusManager;
     private priorityManager: PriorityManager;
@@ -55,6 +57,90 @@ export class FilterService extends EventEmitter {
         this.cacheManager = cacheManager;
         this.statusManager = statusManager;
         this.priorityManager = priorityManager;
+        FilterService.lastInstance = this;
+    }
+
+    private translate(key: TranslationKey, fallback: string, vars?: Record<string, string | number>): string {
+        try {
+            if (this.plugin?.i18n) {
+                return this.plugin.i18n.translate(key, vars);
+            }
+        } catch (error) {
+            console.error('FilterService translation error:', error);
+        }
+        return fallback;
+    }
+
+    private static translateStatic(key: TranslationKey, fallback: string): string {
+        const instance = FilterService.lastInstance;
+        if (instance) {
+            return instance.translate(key, fallback);
+        }
+        return fallback;
+    }
+
+    private getLocale(): string {
+        try {
+            const locale = this.plugin?.i18n?.getCurrentLocale?.();
+            if (locale) {
+                return locale;
+            }
+        } catch (error) {
+            console.error('FilterService locale error:', error);
+        }
+        return 'en';
+    }
+
+    private getDueGroupLabel(code: 'overdue' | 'today' | 'tomorrow' | 'nextSevenDays' | 'later' | 'none' | 'invalid'): string {
+        switch (code) {
+            case 'overdue':
+                return this.translate('services.filter.groupLabels.due.overdue', 'Overdue');
+            case 'today':
+                return this.translate('services.filter.groupLabels.due.today', 'Today');
+            case 'tomorrow':
+                return this.translate('services.filter.groupLabels.due.tomorrow', 'Tomorrow');
+            case 'nextSevenDays':
+                return this.translate('services.filter.groupLabels.due.nextSevenDays', 'Next seven days');
+            case 'later':
+                return this.translate('services.filter.groupLabels.due.later', 'Later');
+            case 'none':
+                return this.translate('services.filter.groupLabels.due.none', 'No due date');
+            case 'invalid':
+            default:
+                return this.translate('services.filter.groupLabels.invalidDate', 'Invalid date');
+        }
+    }
+
+    private getScheduledGroupLabel(code: 'past' | 'today' | 'tomorrow' | 'nextSevenDays' | 'later' | 'none' | 'invalid'): string {
+        switch (code) {
+            case 'past':
+                return this.translate('services.filter.groupLabels.scheduled.past', 'Past scheduled');
+            case 'today':
+                return this.translate('services.filter.groupLabels.scheduled.today', 'Today');
+            case 'tomorrow':
+                return this.translate('services.filter.groupLabels.scheduled.tomorrow', 'Tomorrow');
+            case 'nextSevenDays':
+                return this.translate('services.filter.groupLabels.scheduled.nextSevenDays', 'Next seven days');
+            case 'later':
+                return this.translate('services.filter.groupLabels.scheduled.later', 'Later');
+            case 'none':
+                return this.translate('services.filter.groupLabels.scheduled.none', 'No scheduled date');
+            case 'invalid':
+            default:
+                return this.translate('services.filter.groupLabels.invalidDate', 'Invalid date');
+        }
+    }
+
+    private getNoProjectLabel(): string {
+        return this.translate('services.filter.groupLabels.noProject', 'No project');
+    }
+
+    private getNoTagsLabel(): string {
+        return this.translate('services.filter.groupLabels.noTags', 'No tags');
+    }
+
+    private getInvalidDateLabel(): string {
+        return this.translate('services.filter.groupLabels.invalidDate', 'Invalid date');
     }
 
     /**
@@ -888,7 +974,8 @@ export class FilterService extends EventEmitter {
      * Converts an absolute path back to a proper wikilink format.
      */
     getPreferredProjectFormat(absolutePathOrName: string): string {
-        if (!absolutePathOrName || absolutePathOrName === 'No Project') {
+        const noProjectLabel = this.getNoProjectLabel();
+        if (!absolutePathOrName || absolutePathOrName === noProjectLabel) {
             return absolutePathOrName;
         }
 
@@ -1258,7 +1345,7 @@ export class FilterService extends EventEmitter {
                     }
                 } else {
                     // Task has no projects - add to "No Project" group
-                    const noProjectGroup = 'No Project';
+                    const noProjectGroup = this.getNoProjectLabel();
                     if (!groups.has(noProjectGroup)) {
                         groups.set(noProjectGroup, []);
                     }
@@ -1276,7 +1363,7 @@ export class FilterService extends EventEmitter {
                     }
                 } else {
                     // Task has no tags - add to "No Tags" group
-                    const noTagsGroup = 'No Tags';
+                    const noTagsGroup = this.getNoTagsLabel();
                     if (!groups.has(noTagsGroup)) {
                         groups.set(noTagsGroup, []);
                     }
@@ -1407,12 +1494,12 @@ export class FilterService extends EventEmitter {
                 if (task.due) {
                     return this.getDateGroupFromDateStringWithTask(task.due, isCompleted, hideCompletedFromOverdue);
                 }
-                return 'No due date';
+                return this.getDueGroupLabel('none');
             }
         }
 
         // Non-recurring task - use completion-aware logic
-        if (!task.due) return 'No due date';
+        if (!task.due) return this.getDueGroupLabel('none');
         return this.getDateGroupFromDateStringWithTask(task.due, isCompleted, hideCompletedFromOverdue);
     }
 
@@ -1426,27 +1513,27 @@ export class FilterService extends EventEmitter {
         // Use time-aware overdue detection with completion-aware logic
         // For categorization purposes, we need the task to determine completion status
         // This call is for categorization only, specific task overdue checks happen elsewhere
-        if (isOverdueTimeAware(dateString)) return 'Overdue';
+        if (isOverdueTimeAware(dateString)) return this.getDueGroupLabel('overdue');
 
         // Extract date part for day-level comparisons
         const datePart = getDatePart(dateString);
-        if (isSameDateSafe(datePart, todayStr)) return 'Today';
+        if (isSameDateSafe(datePart, todayStr)) return this.getDueGroupLabel('today');
 
         try {
             const tomorrow = new Date();
             tomorrow.setDate(tomorrow.getDate() + 1);
             const tomorrowStr = format(tomorrow, 'yyyy-MM-dd');
-            if (isSameDateSafe(datePart, tomorrowStr)) return 'Tomorrow';
+            if (isSameDateSafe(datePart, tomorrowStr)) return this.getDueGroupLabel('tomorrow');
 
             const thisWeek = new Date();
             thisWeek.setDate(thisWeek.getDate() + 7);
             const thisWeekStr = format(thisWeek, 'yyyy-MM-dd');
-            if (isBeforeDateSafe(datePart, thisWeekStr) || isSameDateSafe(datePart, thisWeekStr)) return 'Next seven days';
+            if (isBeforeDateSafe(datePart, thisWeekStr) || isSameDateSafe(datePart, thisWeekStr)) return this.getDueGroupLabel('nextSevenDays');
 
-            return 'Later';
+            return this.getDueGroupLabel('later');
         } catch (error) {
             console.error(`Error categorizing date ${dateString}:`, error);
-            return 'Invalid Date';
+            return this.getInvalidDateLabel();
         }
     }
 
@@ -1476,32 +1563,32 @@ export class FilterService extends EventEmitter {
         const todayStr = getTodayString();
 
         // Use completion-aware overdue detection
-        if (isOverdueTimeAware(dateString, isCompleted, hideCompletedFromOverdue)) return 'Overdue';
+        if (isOverdueTimeAware(dateString, isCompleted, hideCompletedFromOverdue)) return this.getDueGroupLabel('overdue');
 
         // Extract date part for day-level comparisons
         const datePart = getDatePart(dateString);
-        if (isSameDateSafe(datePart, todayStr)) return 'Today';
+        if (isSameDateSafe(datePart, todayStr)) return this.getDueGroupLabel('today');
 
         try {
             const tomorrow = new Date();
             tomorrow.setDate(tomorrow.getDate() + 1);
             const tomorrowStr = format(tomorrow, 'yyyy-MM-dd');
-            if (isSameDateSafe(datePart, tomorrowStr)) return 'Tomorrow';
+            if (isSameDateSafe(datePart, tomorrowStr)) return this.getDueGroupLabel('tomorrow');
 
             const thisWeek = new Date();
             thisWeek.setDate(thisWeek.getDate() + 7);
             const thisWeekStr = format(thisWeek, 'yyyy-MM-dd');
-            if (isBeforeDateSafe(datePart, thisWeekStr) || isSameDateSafe(datePart, thisWeekStr)) return 'Next seven days';
+            if (isBeforeDateSafe(datePart, thisWeekStr) || isSameDateSafe(datePart, thisWeekStr)) return this.getDueGroupLabel('nextSevenDays');
 
-            return 'Later';
+            return this.getDueGroupLabel('later');
         } catch (error) {
             console.error(`Error categorizing date ${dateString}:`, error);
-            return 'Invalid Date';
+            return this.getInvalidDateLabel();
         }
     }
 
     private getScheduledDateGroup(task: TaskInfo, targetDate?: Date): string {
-        if (!task.scheduled) return 'No scheduled date';
+        if (!task.scheduled) return this.getScheduledGroupLabel('none');
 
         const isCompleted = this.statusManager.isCompletedStatus(task.status);
         const hideCompletedFromOverdue = this.plugin?.settings?.hideCompletedFromOverdue ?? true;
@@ -1516,27 +1603,27 @@ export class FilterService extends EventEmitter {
         const todayStr = getTodayString();
 
         // Use completion-aware overdue detection for past scheduled
-        if (isOverdueTimeAware(scheduledDate, isCompleted, hideCompletedFromOverdue)) return 'Past scheduled';
+        if (isOverdueTimeAware(scheduledDate, isCompleted, hideCompletedFromOverdue)) return this.getScheduledGroupLabel('past');
 
         // Extract date part for day-level comparisons
         const datePart = getDatePart(scheduledDate);
-        if (isSameDateSafe(datePart, todayStr)) return 'Today';
+        if (isSameDateSafe(datePart, todayStr)) return this.getScheduledGroupLabel('today');
 
         try {
             const tomorrow = new Date();
             tomorrow.setDate(tomorrow.getDate() + 1);
             const tomorrowStr = format(tomorrow, 'yyyy-MM-dd');
-            if (isSameDateSafe(datePart, tomorrowStr)) return 'Tomorrow';
+            if (isSameDateSafe(datePart, tomorrowStr)) return this.getScheduledGroupLabel('tomorrow');
 
             const thisWeek = new Date();
             thisWeek.setDate(thisWeek.getDate() + 7);
             const thisWeekStr = format(thisWeek, 'yyyy-MM-dd');
-            if (isBeforeDateSafe(datePart, thisWeekStr) || isSameDateSafe(datePart, thisWeekStr)) return 'Next seven days';
+            if (isBeforeDateSafe(datePart, thisWeekStr) || isSameDateSafe(datePart, thisWeekStr)) return this.getScheduledGroupLabel('nextSevenDays');
 
-            return 'Later';
+            return this.getScheduledGroupLabel('later');
         } catch (error) {
             console.error(`Error categorizing scheduled date ${scheduledDate}:`, error);
-            return 'Invalid Date';
+            return this.getInvalidDateLabel();
         }
     }
 
@@ -1548,27 +1635,27 @@ export class FilterService extends EventEmitter {
         const todayStr = getTodayString();
 
         // Use time-aware overdue detection for past scheduled
-        if (isOverdueTimeAware(scheduledDate)) return 'Past scheduled';
+        if (isOverdueTimeAware(scheduledDate)) return this.getScheduledGroupLabel('past');
 
         // Extract date part for day-level comparisons
         const datePart = getDatePart(scheduledDate);
-        if (isSameDateSafe(datePart, todayStr)) return 'Today';
+        if (isSameDateSafe(datePart, todayStr)) return this.getScheduledGroupLabel('today');
 
         try {
             const tomorrow = new Date();
             tomorrow.setDate(tomorrow.getDate() + 1);
             const tomorrowStr = format(tomorrow, 'yyyy-MM-dd');
-            if (isSameDateSafe(datePart, tomorrowStr)) return 'Tomorrow';
+            if (isSameDateSafe(datePart, tomorrowStr)) return this.getScheduledGroupLabel('tomorrow');
 
             const thisWeek = new Date();
             thisWeek.setDate(thisWeek.getDate() + 7);
             const thisWeekStr = format(thisWeek, 'yyyy-MM-dd');
-            if (isBeforeDateSafe(datePart, thisWeekStr) || isSameDateSafe(datePart, thisWeekStr)) return 'Next seven days';
+            if (isBeforeDateSafe(datePart, thisWeekStr) || isSameDateSafe(datePart, thisWeekStr)) return this.getScheduledGroupLabel('nextSevenDays');
 
-            return 'Later';
+            return this.getScheduledGroupLabel('later');
         } catch (error) {
             console.error(`Error categorizing scheduled date ${scheduledDate}:`, error);
-            return 'Invalid Date';
+            return this.getInvalidDateLabel();
         }
     }
 
@@ -1609,10 +1696,11 @@ export class FilterService extends EventEmitter {
 
                 case 'due': {
                     // Sort by logical due date order
-                    const dueDateOrder = ['Overdue', 'Today', 'Tomorrow', 'Next seven days', 'Later', 'No due date'];
+                    const dueOrderKeys: Array<'overdue' | 'today' | 'tomorrow' | 'nextSevenDays' | 'later' | 'none'> = ['overdue', 'today', 'tomorrow', 'nextSevenDays', 'later', 'none'];
+                    const dueOrderMap = new Map(dueOrderKeys.map((key, index) => [this.getDueGroupLabel(key), index]));
                     sortedKeys = Array.from(groups.keys()).sort((a, b) => {
-                        const indexA = dueDateOrder.indexOf(a);
-                        const indexB = dueDateOrder.indexOf(b);
+                        const indexA = dueOrderMap.get(a) ?? dueOrderKeys.length;
+                        const indexB = dueOrderMap.get(b) ?? dueOrderKeys.length;
                         return indexA - indexB;
                     });
                     break;
@@ -1620,10 +1708,11 @@ export class FilterService extends EventEmitter {
 
                 case 'scheduled': {
                     // Sort by logical scheduled date order
-                    const scheduledDateOrder = ['Past scheduled', 'Today', 'Tomorrow', 'Next seven days', 'Later', 'No scheduled date'];
+                    const scheduledOrderKeys: Array<'past' | 'today' | 'tomorrow' | 'nextSevenDays' | 'later' | 'none'> = ['past', 'today', 'tomorrow', 'nextSevenDays', 'later', 'none'];
+                    const scheduledOrderMap = new Map(scheduledOrderKeys.map((key, index) => [this.getScheduledGroupLabel(key), index]));
                     sortedKeys = Array.from(groups.keys()).sort((a, b) => {
-                        const indexA = scheduledDateOrder.indexOf(a);
-                        const indexB = scheduledDateOrder.indexOf(b);
+                        const indexA = scheduledOrderMap.get(a) ?? scheduledOrderKeys.length;
+                        const indexB = scheduledOrderMap.get(b) ?? scheduledOrderKeys.length;
                         return indexA - indexB;
                     });
                     break;
@@ -1632,24 +1721,26 @@ export class FilterService extends EventEmitter {
                 case 'project':
                     // Sort projects alphabetically with "No Project" at the end
                     sortedKeys = Array.from(groups.keys()).sort((a, b) => {
-                        if (a === 'No Project') return 1;
-                        if (b === 'No Project') return -1;
-                        return a.localeCompare(b);
+                        const noProjectLabel = this.getNoProjectLabel();
+                        if (a === noProjectLabel) return 1;
+                        if (b === noProjectLabel) return -1;
+                        return a.localeCompare(b, this.getLocale());
                     });
                     break;
 
                 case 'tags':
                     // Sort tags alphabetically with "No Tags" at the end
                     sortedKeys = Array.from(groups.keys()).sort((a, b) => {
-                        if (a === 'No Tags') return 1;
-                        if (b === 'No Tags') return -1;
-                        return a.localeCompare(b);
+                        const noTagsLabel = this.getNoTagsLabel();
+                        if (a === noTagsLabel) return 1;
+                        if (b === noTagsLabel) return -1;
+                        return a.localeCompare(b, this.getLocale());
                     });
                     break;
 
                 default:
                     // Alphabetical sort for contexts and others
-                    sortedKeys = Array.from(groups.keys()).sort();
+                    sortedKeys = Array.from(groups.keys()).sort((a, b) => a.localeCompare(b, this.getLocale()));
             }
         }
 
@@ -2024,7 +2115,7 @@ export class FilterService extends EventEmitter {
      * Generate date range for agenda views from array of dates
      */
     static createDateRangeFromDates(dates: Date[]): { start: string; end: string } {
-        if (dates.length === 0) throw new Error('No dates provided');
+        if (dates.length === 0) throw new Error(FilterService.translateStatic('services.filter.errors.noDatesProvided', 'No dates provided'));
         const startDate = dates[0];
         const endDate = dates[dates.length - 1];
 
@@ -2195,7 +2286,8 @@ export class FilterService extends EventEmitter {
         const folders = Array.from(folderSet).sort();
 
         // Replace empty string with a user-friendly label for root folder
-        return folders.map(folder => folder === '' ? '(Root)' : folder);
+        const rootLabel = this.translate('services.filter.folders.root', '(Root)');
+        return folders.map(folder => folder === '' ? rootLabel : folder);
     }
 
     /**

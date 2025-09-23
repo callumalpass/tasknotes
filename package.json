@@ -19,7 +19,10 @@
 		"test:performance": "jest --testPathPatterns=performance --detectOpenHandles --passWithNoTests",
 		"test:build": "node -e \"console.log('Build test passed - plugin bundle created successfully')\"",
 		"lint": "eslint src/ --ext .ts",
-		"typecheck": "tsc --noEmit"
+		"typecheck": "tsc --noEmit",
+		"i18n:sync": "node scripts/i18n-manager.mjs sync",
+		"i18n:verify": "node scripts/i18n-manager.mjs verify",
+		"i18n:status": "node scripts/i18n-manager.mjs status"
 	},
 	"keywords": [],
 	"author": "",

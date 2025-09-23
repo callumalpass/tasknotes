@@ -4,6 +4,7 @@ import { TaskInfo } from '../types';
 import { isPastDate, isToday, hasTimeComponent, getDatePart, parseDateToLocal } from '../utils/dateUtils';
 import { filterEmptyProjects } from '../utils/helpers';
 import TaskNotesPlugin from '../main';
+import { TranslationKey } from '../i18n';
 
 export interface ScheduleTaskOptions {
     date?: Date;
@@ -16,10 +17,11 @@ export class UnscheduledTasksSelectorModal extends FuzzySuggestModal<TaskInfo> {
     private tasks: TaskInfo[];
     private onScheduleTask: (task: TaskInfo | null, options?: ScheduleTaskOptions) => void;
     private defaultScheduleOptions?: ScheduleTaskOptions;
+    private translate: (key: TranslationKey, variables?: Record<string, any>) => string;
 
     constructor(
-        app: App, 
-        plugin: TaskNotesPlugin, 
+        app: App,
+        plugin: TaskNotesPlugin,
         onScheduleTask: (task: TaskInfo | null, options?: ScheduleTaskOptions) => void,
         defaultScheduleOptions?: ScheduleTaskOptions
     ) {
@@ -27,16 +29,17 @@ export class UnscheduledTasksSelectorModal extends FuzzySuggestModal<TaskInfo> {
         this.plugin = plugin;
         this.onScheduleTask = onScheduleTask;
         this.defaultScheduleOptions = defaultScheduleOptions;
+        this.translate = plugin.i18n.translate.bind(plugin.i18n);
         
-        this.setPlaceholder('Type to search for an unscheduled task...');
+        this.setPlaceholder(this.translate('modals.unscheduledTasksSelector.placeholder'));
         this.setInstructions([
-            { command: '↑↓', purpose: 'to navigate' },
-            { command: '↵', purpose: 'to schedule task' },
-            { command: 'esc', purpose: 'to dismiss' },
+            { command: '↑↓', purpose: this.translate('modals.unscheduledTasksSelector.instructions.navigate') },
+            { command: '↵', purpose: this.translate('modals.unscheduledTasksSelector.instructions.schedule') },
+            { command: 'esc', purpose: this.translate('modals.unscheduledTasksSelector.instructions.dismiss') },
         ]);
         
         // Set modal title for accessibility
-        this.titleEl.setText('Schedule Task');
+        this.titleEl.setText(this.translate('modals.unscheduledTasksSelector.title'));
         this.titleEl.setAttribute('id', 'unscheduled-tasks-selector-title');
         
         // Set aria attributes on the modal
@@ -256,7 +259,7 @@ function renderProjectLinksForSelector(container: HTMLElement, projects: string[
                     await plugin.app.workspace.getLeaf(false).openFile(file);
                 } else {
                     // File not found, show notice
-                    new Notice(`Note "${noteName}" not found`);
+                    new Notice(this.translate('modals.unscheduledTasksSelector.notices.noteNotFound', { name: noteName }));
                 }
             });
         } else {

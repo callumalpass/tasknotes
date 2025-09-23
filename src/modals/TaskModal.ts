@@ -50,6 +50,18 @@ export abstract class TaskModal extends Modal {
         this.plugin = plugin;
     }
 
+    protected t(key: string, params?: Record<string, string | number>): string {
+        return this.plugin.i18n.translate(key, params);
+    }
+
+    protected isEditMode(): boolean {
+        return false;
+    }
+
+    protected isCreationMode(): boolean {
+        return false;
+    }
+
     abstract initializeFormData(): Promise<void>;
     abstract handleSave(): Promise<void>;
     abstract getModalTitle(): string;
@@ -97,7 +109,7 @@ export abstract class TaskModal extends Modal {
         this.titleInput = titleContainer.createEl('input', {
             type: 'text',
             cls: 'title-input',
-            placeholder: 'What needs to be done?'
+            placeholder: this.t('modals.task.titlePlaceholder')
         });
         
         this.titleInput.value = this.title;
@@ -110,32 +122,32 @@ export abstract class TaskModal extends Modal {
         this.actionBar = container.createDiv('action-bar');
 
         // Due date icon
-        this.createActionIcon(this.actionBar, 'calendar', 'Set due date', (icon, event) => {
+        this.createActionIcon(this.actionBar, 'calendar', this.t('modals.task.actions.due'), (icon, event) => {
             this.showDateContextMenu(event, 'due');
         }, 'due-date');
 
         // Scheduled date icon
-        this.createActionIcon(this.actionBar, 'calendar-clock', 'Set scheduled date', (icon, event) => {
+        this.createActionIcon(this.actionBar, 'calendar-clock', this.t('modals.task.actions.scheduled'), (icon, event) => {
             this.showDateContextMenu(event, 'scheduled');
         }, 'scheduled-date');
 
         // Status icon
-        this.createActionIcon(this.actionBar, 'dot-square', 'Set status', (icon, event) => {
+        this.createActionIcon(this.actionBar, 'dot-square', this.t('modals.task.actions.status'), (icon, event) => {
             this.showStatusContextMenu(event);
         }, 'status');
 
         // Priority icon
-        this.createActionIcon(this.actionBar, 'star', 'Set priority', (icon, event) => {
+        this.createActionIcon(this.actionBar, 'star', this.t('modals.task.actions.priority'), (icon, event) => {
             this.showPriorityContextMenu(event);
         }, 'priority');
 
         // Recurrence icon
-        this.createActionIcon(this.actionBar, 'refresh-ccw', 'Set recurrence', (icon, event) => {
+        this.createActionIcon(this.actionBar, 'refresh-ccw', this.t('modals.task.actions.recurrence'), (icon, event) => {
             this.showRecurrenceContextMenu(event);
         }, 'recurrence');
 
         // Reminder icon
-        this.createActionIcon(this.actionBar, 'bell', 'Set reminders', (icon, event) => {
+        this.createActionIcon(this.actionBar, 'bell', this.t('modals.task.actions.reminders'), (icon, event) => {
             this.showReminderContextMenu(event);
         }, 'reminders');
 
@@ -181,17 +193,17 @@ export abstract class TaskModal extends Modal {
         // Title field appears in details section for:
         // 1. Edit modals (always)
         // 2. Creation modals when NLP is enabled (since the main title input is replaced by NLP textarea)
-        const isEditModal = this.getModalTitle() === 'Edit task';
-        const isCreationWithNLP = this.getModalTitle() === 'Create task' && this.plugin.settings.enableNaturalLanguageInput;
-        
+        const isEditModal = this.isEditMode();
+        const isCreationWithNLP = this.isCreationMode() && this.plugin.settings.enableNaturalLanguageInput;
+
         if (isEditModal || isCreationWithNLP) {
             const titleLabel = this.detailsContainer.createDiv('detail-label');
-            titleLabel.textContent = 'Title';
+            titleLabel.textContent = this.t('modals.task.titleLabel');
             
             const titleInputDetailed = this.detailsContainer.createEl('input', {
                 type: 'text',
                 cls: 'title-input-detailed',
-                placeholder: 'Task title...'
+                placeholder: this.t('modals.task.titleDetailedPlaceholder')
             });
             
             titleInputDetailed.value = this.title;
@@ -206,13 +218,13 @@ export abstract class TaskModal extends Modal {
         }
 
         // Details textarea (only for creation modals, not edit modals)
-        if (this.getModalTitle() !== 'Edit task') {
+        if (!this.isEditMode()) {
             const detailsLabel = this.detailsContainer.createDiv('detail-label');
-            detailsLabel.textContent = 'Details';
+            detailsLabel.textContent = this.t('modals.task.detailsLabel');
             
             this.detailsInput = this.detailsContainer.createEl('textarea', {
                 cls: 'details-input',
-                placeholder: 'Add more details...'
+                placeholder: this.t('modals.task.detailsPlaceholder')
             });
             
             this.detailsInput.value = this.details;
@@ -228,10 +240,10 @@ export abstract class TaskModal extends Modal {
     protected createAdditionalFields(container: HTMLElement): void {
         // Projects - now using note selection instead of text input
         new Setting(container)
-            .setName('Projects')
+            .setName(this.t('modals.task.projectsLabel'))
             .addButton(button => {
-                button.setButtonText('Add Project')
-                    .setTooltip('Select a project note using fuzzy search')
+                button.setButtonText(this.t('modals.task.projectsAdd'))
+                    .setTooltip(this.t('modals.task.projectsTooltip'))
                     .onClick(() => {
                         const modal = new ProjectSelectModal(this.app, this.plugin, (file) => {
                             this.addProject(file);
@@ -248,9 +260,9 @@ export abstract class TaskModal extends Modal {
 
         // Contexts input with autocomplete
         new Setting(container)
-            .setName('Contexts')
+            .setName(this.t('modals.task.contextsLabel'))
             .addText(text => {
-                text.setPlaceholder('context1, context2')
+                text.setPlaceholder(this.t('modals.task.contextsPlaceholder'))
                     .setValue(this.contexts)
                     .onChange(value => {
                         this.contexts = value;
@@ -265,9 +277,9 @@ export abstract class TaskModal extends Modal {
 
         // Tags input with autocomplete
         new Setting(container)
-            .setName('Tags')
+            .setName(this.t('modals.task.tagsLabel'))
             .addText(text => {
-                text.setPlaceholder('tag1, tag2')
+                text.setPlaceholder(this.t('modals.task.tagsPlaceholder'))
                     .setValue(this.tags)
                     .onChange(value => {
                         this.tags = sanitizeTags(value);
@@ -282,9 +294,9 @@ export abstract class TaskModal extends Modal {
 
         // Time estimate
         new Setting(container)
-            .setName('Time estimate (minutes)')
+            .setName(this.t('modals.task.timeEstimateLabel'))
             .addText(text => {
-                text.setPlaceholder('30')
+                text.setPlaceholder(this.t('modals.task.timeEstimatePlaceholder'))
                     .setValue(this.timeEstimate.toString())
                     .onChange(value => {
                         this.timeEstimate = parseInt(value) || 0;
@@ -303,7 +315,7 @@ export abstract class TaskModal extends Modal {
         // Add a section separator if there are user fields
         if (userFieldConfigs.length > 0) {
             const separator = container.createDiv({ cls: 'user-fields-separator' });
-            separator.createDiv({ text: 'Custom Fields', cls: 'detail-label-section' });
+            separator.createDiv({ text: this.t('modals.task.customFieldsLabel'), cls: 'detail-label-section' });
         }
 
         for (const field of userFieldConfigs) {
@@ -327,7 +339,7 @@ export abstract class TaskModal extends Modal {
                     new Setting(container)
                         .setName(field.displayName)
                         .addText(text => {
-                            text.setPlaceholder('0')
+                            text.setPlaceholder(this.t('modals.task.userFields.numberPlaceholder'))
                                 .setValue(currentValue ? String(currentValue) : '')
                                 .onChange(value => {
                                     const numValue = parseFloat(value);
@@ -340,7 +352,7 @@ export abstract class TaskModal extends Modal {
                     new Setting(container)
                         .setName(field.displayName)
                         .addText(text => {
-                            text.setPlaceholder('YYYY-MM-DD')
+                            text.setPlaceholder(this.t('modals.task.userFields.datePlaceholder'))
                                 .setValue(currentValue ? String(currentValue) : '')
                                 .onChange(value => {
                                     this.userFields[field.key] = value || null;
@@ -351,7 +363,7 @@ export abstract class TaskModal extends Modal {
                             if (parent) parent.addClass('tn-date-control');
                             const btn = parent?.createEl('button', { cls: 'user-field-date-picker-btn' });
                             if (btn) {
-                                btn.setAttribute('aria-label', `Pick ${field.displayName.toLowerCase()} date`);
+                                btn.setAttribute('aria-label', this.t('modals.task.userFields.pickDate', { field: field.displayName }));
                                 setIcon(btn, 'calendar');
                                 btn.addEventListener('click', (e) => {
                                     e.preventDefault();
@@ -360,7 +372,8 @@ export abstract class TaskModal extends Modal {
                                         onSelect: (value) => {
                                             text.setValue(value || '');
                                             this.userFields[field.key] = value || null;
-                                        }
+                                        },
+                                        plugin: this.plugin
                                     });
                                     menu.showAtElement(btn);
                                 });
@@ -375,7 +388,7 @@ export abstract class TaskModal extends Modal {
                             const displayValue = Array.isArray(currentValue) ? 
                                 currentValue.join(', ') : (currentValue ? String(currentValue) : '');
                             
-                            text.setPlaceholder('item1, item2, item3')
+                            text.setPlaceholder(this.t('modals.task.userFields.listPlaceholder'))
                                 .setValue(displayValue)
                                 .onChange(value => {
                                     if (!value.trim()) {
@@ -398,7 +411,7 @@ export abstract class TaskModal extends Modal {
                     new Setting(container)
                         .setName(field.displayName)
                         .addText(text => {
-                            text.setPlaceholder(`Enter ${field.displayName.toLowerCase()}...`)
+                            text.setPlaceholder(this.t('modals.task.userFields.textPlaceholder', { field: field.displayName }))
                                 .setValue(currentValue ? String(currentValue) : '')
                                 .onChange(value => {
                                     this.userFields[field.key] = value || null;
@@ -417,10 +430,10 @@ export abstract class TaskModal extends Modal {
         const buttonContainer = container.createDiv('button-container');
 
         // Add "Open note" button for edit modals only
-        if (this.getModalTitle() === 'Edit task') {
+        if (this.isEditMode()) {
             const openNoteButton = buttonContainer.createEl('button', {
                 cls: 'open-note-button',
-                text: 'Open note'
+                text: this.t('modals.task.buttons.openNote')
             });
             
             openNoteButton.addEventListener('click', async () => {
@@ -434,7 +447,7 @@ export abstract class TaskModal extends Modal {
         // Save button
         const saveButton = buttonContainer.createEl('button', {
             cls: 'save-button',
-            text: 'Save'
+            text: this.t('modals.task.buttons.save')
         });
         
         saveButton.addEventListener('click', async () => {
@@ -445,7 +458,7 @@ export abstract class TaskModal extends Modal {
         // Cancel button
         const cancelButton = buttonContainer.createEl('button', {
             cls: 'cancel-button',
-            text: 'Cancel'
+            text: this.t('common.cancel')
         });
         
         cancelButton.addEventListener('click', () => {
@@ -472,12 +485,15 @@ export abstract class TaskModal extends Modal {
 
     protected showDateContextMenu(event: MouseEvent, type: 'due' | 'scheduled'): void {
         const currentValue = type === 'due' ? this.dueDate : this.scheduledDate;
-        const title = type === 'due' ? 'Set Due Date' : 'Set Scheduled Date';
+        const title = type === 'due'
+            ? this.t('modals.task.dateMenu.dueTitle')
+            : this.t('modals.task.dateMenu.scheduledTitle');
         
         const menu = new DateContextMenu({
             currentValue: currentValue ? getDatePart(currentValue) : undefined,
             currentTime: currentValue ? getTimePart(currentValue) : undefined,
             title: title,
+            plugin: this.plugin,
             onSelect: (value: string | null, time: string | null) => {
                 if (value) {
                     // Combine date and time if both are provided
@@ -536,7 +552,8 @@ export abstract class TaskModal extends Modal {
                 this.recurrenceRule = value || '';
                 this.updateRecurrenceIconState();
             },
-            app: this.app
+            app: this.app,
+            plugin: this.plugin
         });
         
         menu.show(event);
@@ -699,10 +716,10 @@ export abstract class TaskModal extends Modal {
         if (dueDateIcon) {
             if (this.dueDate) {
                 dueDateIcon.classList.add('has-value');
-                setTooltip(dueDateIcon, `Due: ${this.dueDate}`, { placement: 'top' });
+                setTooltip(dueDateIcon, this.t('modals.task.tooltips.dueValue', { value: this.dueDate }), { placement: 'top' });
             } else {
                 dueDateIcon.classList.remove('has-value');
-                setTooltip(dueDateIcon, 'Set due date', { placement: 'top' });
+                setTooltip(dueDateIcon, this.t('modals.task.actions.due'), { placement: 'top' });
             }
         }
 
@@ -711,10 +728,10 @@ export abstract class TaskModal extends Modal {
         if (scheduledDateIcon) {
             if (this.scheduledDate) {
                 scheduledDateIcon.classList.add('has-value');
-                setTooltip(scheduledDateIcon, `Scheduled: ${this.scheduledDate}`, { placement: 'top' });
+                setTooltip(scheduledDateIcon, this.t('modals.task.tooltips.scheduledValue', { value: this.scheduledDate }), { placement: 'top' });
             } else {
                 scheduledDateIcon.classList.remove('has-value');
-                setTooltip(scheduledDateIcon, 'Set scheduled date', { placement: 'top' });
+                setTooltip(scheduledDateIcon, this.t('modals.task.actions.scheduled'), { placement: 'top' });
             }
         }
 
@@ -727,10 +744,10 @@ export abstract class TaskModal extends Modal {
             
             if (this.status && statusConfig && statusConfig.value !== this.getDefaultStatus()) {
                 statusIcon.classList.add('has-value');
-                setTooltip(statusIcon, `Status: ${statusLabel}`, { placement: 'top' });
+                setTooltip(statusIcon, this.t('modals.task.tooltips.statusValue', { value: statusLabel }), { placement: 'top' });
             } else {
                 statusIcon.classList.remove('has-value');
-                setTooltip(statusIcon, 'Set status', { placement: 'top' });
+                setTooltip(statusIcon, this.t('modals.task.actions.status'), { placement: 'top' });
             }
 
             // Apply status color to the icon
@@ -751,10 +768,10 @@ export abstract class TaskModal extends Modal {
             
             if (this.priority && priorityConfig && priorityConfig.value !== this.getDefaultPriority()) {
                 priorityIcon.classList.add('has-value');
-                setTooltip(priorityIcon, `Priority: ${priorityLabel}`, { placement: 'top' });
+                setTooltip(priorityIcon, this.t('modals.task.tooltips.priorityValue', { value: priorityLabel }), { placement: 'top' });
             } else {
                 priorityIcon.classList.remove('has-value');
-                setTooltip(priorityIcon, 'Set priority', { placement: 'top' });
+                setTooltip(priorityIcon, this.t('modals.task.actions.priority'), { placement: 'top' });
             }
 
             // Apply priority color to the icon
@@ -771,10 +788,10 @@ export abstract class TaskModal extends Modal {
         if (recurrenceIcon) {
             if (this.recurrenceRule && this.recurrenceRule.trim()) {
                 recurrenceIcon.classList.add('has-value');
-                setTooltip(recurrenceIcon, `Recurrence: ${this.getRecurrenceDisplayText()}`, { placement: 'top' });
+                setTooltip(recurrenceIcon, this.t('modals.task.tooltips.recurrenceValue', { value: this.getRecurrenceDisplayText() }), { placement: 'top' });
             } else {
                 recurrenceIcon.classList.remove('has-value');
-                setTooltip(recurrenceIcon, 'Set recurrence', { placement: 'top' });
+                setTooltip(recurrenceIcon, this.t('modals.task.actions.recurrence'), { placement: 'top' });
             }
         }
 
@@ -784,11 +801,13 @@ export abstract class TaskModal extends Modal {
             if (this.reminders && this.reminders.length > 0) {
                 reminderIcon.classList.add('has-value');
                 const count = this.reminders.length;
-                const tooltip = count === 1 ? '1 reminder set' : `${count} reminders set`;
+                const tooltip = count === 1
+                    ? this.t('modals.task.tooltips.remindersSingle')
+                    : this.t('modals.task.tooltips.remindersPlural', { count });
                 setTooltip(reminderIcon, tooltip, { placement: 'top' });
             } else {
                 reminderIcon.classList.remove('has-value');
-                setTooltip(reminderIcon, 'Set reminders', { placement: 'top' });
+                setTooltip(reminderIcon, this.t('modals.task.actions.reminders'), { placement: 'top' });
             }
         }
     }
@@ -897,7 +916,7 @@ export abstract class TaskModal extends Modal {
                 cls: 'task-project-remove',
                 text: '×'
             });
-            setTooltip(removeBtn, 'Remove project', { placement: 'top' });
+            setTooltip(removeBtn, this.t('modals.task.projectsRemoveTooltip'), { placement: 'top' });
             removeBtn.addEventListener('click', () => {
                 this.removeProject(file);
             });

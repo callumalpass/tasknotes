@@ -1,23 +1,24 @@
 import { Notice } from 'obsidian';
 import TaskNotesPlugin from '../main';
-import { 
-    createDailyNote, 
-    getDailyNote, 
+import {
+    createDailyNote,
+    getDailyNote,
     getAllDailyNotes,
     appHasDailyNotesPluginLoaded
 } from 'obsidian-daily-notes-interface';
-import { 
-    PomodoroSession, 
+import {
+    PomodoroSession,
     PomodoroState,
     PomodoroSessionHistory,
     PomodoroHistoryStats,
-    EVENT_POMODORO_START, 
-    EVENT_POMODORO_COMPLETE, 
-    EVENT_POMODORO_INTERRUPT, 
+    EVENT_POMODORO_START,
+    EVENT_POMODORO_COMPLETE,
+    EVENT_POMODORO_INTERRUPT,
     EVENT_POMODORO_TICK,
     TaskInfo,
     IWebhookNotifier
 } from '../types';
+import { TranslationKey } from '../i18n';
 import { getCurrentTimestamp, formatDateForStorage, getTodayLocal, parseDateToLocal, createUTCDateFromLocalCalendarDate } from '../utils/dateUtils';
 import { getSessionDuration, timerWorker } from '../utils/pomodoroUtils';
 
@@ -31,6 +32,10 @@ export class PomodoroService {
     private lastSelectedTaskPath?: string;
     private lastSelectedTaskPathLoaded = false;
     private lastWorkSessionTaskPath?: string;
+
+    private translate(key: TranslationKey, variables?: Record<string, any>): string {
+        return this.plugin.i18n.translate(key, variables);
+    }
 
     constructor(plugin: TaskNotesPlugin) {
         this.plugin = plugin;
@@ -172,13 +177,13 @@ export class PomodoroService {
 
     async startPomodoro(task?: TaskInfo, durationMinutes?: number) {
         if (this.state.isRunning) {
-            new Notice('A pomodoro is already running');
+            new Notice(this.translate('services.pomodoro.notices.alreadyRunning'));
             return;
         }
         
         // Check if there's a paused session that should be resumed instead
         if (this.state.currentSession && !this.state.isRunning) {
-            new Notice('Resume the current session instead of starting a new one');
+            new Notice(this.translate('services.pomodoro.notices.resumeCurrentSession'));
             return;
         }
         
@@ -253,13 +258,13 @@ export class PomodoroService {
 
     async startBreak(isLongBreak = false) {
         if (this.state.isRunning) {
-            new Notice('A timer is already running');
+            new Notice(this.translate('services.pomodoro.notices.timerAlreadyRunning'));
             return;
         }
-        
+
         // Check if there's a paused session
         if (this.state.currentSession && !this.state.isRunning) {
-            new Notice('Resume the current session instead of starting a new one');
+            new Notice(this.translate('services.pomodoro.notices.resumeSessionInstead'));
             return;
         }
 
@@ -289,7 +294,7 @@ export class PomodoroService {
         await this.saveState();
         this.startTimer();
         
-        new Notice(`${isLongBreak ? 'Long' : 'Short'} break started`);
+        new Notice(this.translate(isLongBreak ? 'services.pomodoro.notices.longBreakStarted' : 'services.pomodoro.notices.shortBreakStarted'));
     }
 
     async pausePomodoro() {
@@ -328,7 +333,7 @@ export class PomodoroService {
             session: this.state.currentSession 
         });
         
-        new Notice('Pomodoro paused');
+        new Notice(this.translate('services.pomodoro.notices.paused'));
     }
 
     async resumePomodoro() {
@@ -370,7 +375,7 @@ export class PomodoroService {
             session: this.state.currentSession 
         });
         
-        new Notice('Pomodoro resumed');
+        new Notice(this.translate('services.pomodoro.notices.resumed'));
     }
 
     async stopPomodoro() {
@@ -440,7 +445,7 @@ export class PomodoroService {
         });
         
         if (wasRunning) {
-            new Notice('Pomodoro stopped and reset');
+            new Notice(this.translate('services.pomodoro.notices.stoppedAndReset'));
         }
     }
 
@@ -1220,10 +1225,10 @@ export class PomodoroService {
             data.pomodoroHistory = [];
             await this.plugin.saveData(data);
 
-            new Notice(`Successfully migrated ${pluginHistory.length} pomodoro sessions to daily notes.`);
+            new Notice(this.translate('services.pomodoro.notices.migrationSuccess', { count: pluginHistory.length }));
         } catch (error) {
             console.error('Failed to migrate pomodoro data to daily notes:', error);
-            new Notice('Failed to migrate pomodoro data. Please try again or check the console for details.');
+            new Notice(this.translate('services.pomodoro.notices.migrationFailure'));
             throw error;
         }
     }

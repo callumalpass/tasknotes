@@ -26,6 +26,7 @@ import TaskNotesPlugin from '../main';
 import { splitListPreservingLinksAndQuotes } from '../utils/stringSplit';
 
 import { createNoteCard } from '../ui/NoteCard';
+import { TranslationKey } from '../i18n';
 
 // No helper functions needed from helpers
 
@@ -80,6 +81,37 @@ export class AgendaView extends ItemView implements OptimizedView {
         this.registerEvents();
     }
 
+    private translate(key: TranslationKey, vars?: Record<string, string | number>): string {
+        return this.plugin.i18n.translate(key, vars);
+    }
+
+    private getLocale(): string {
+        const locale = this.plugin.i18n.getCurrentLocale();
+        if (!locale || locale === '') {
+            return 'en';
+        }
+        if (locale === 'en') {
+            return 'en-US';
+        }
+        return locale;
+    }
+
+    private formatDateLocalized(date: Date, options: Intl.DateTimeFormatOptions): string {
+        return new Intl.DateTimeFormat(this.getLocale(), options).format(date);
+    }
+
+    private formatWeekday(date: Date): string {
+        const weekdayKeys: TranslationKey[] = [
+            'common.weekdays.sunday',
+            'common.weekdays.monday',
+            'common.weekdays.tuesday',
+            'common.weekdays.wednesday',
+            'common.weekdays.thursday',
+            'common.weekdays.friday',
+            'common.weekdays.saturday'
+        ];
+        return this.translate(weekdayKeys[date.getDay()]);
+    }
     registerEvents(): void {
         // Clean up any existing listeners
         this.listeners.forEach(listener => this.plugin.emitter.offref(listener));
@@ -135,7 +167,7 @@ export class AgendaView extends ItemView implements OptimizedView {
     }
 
     getDisplayText(): string {
-        return 'Agenda';
+        return this.plugin.i18n.translate('views.agenda.title');
     }
 
     getIcon(): string {
@@ -234,8 +266,8 @@ export class AgendaView extends ItemView implements OptimizedView {
             cls: 'agenda-view__nav-button agenda-view__nav-button--prev',
             text: '‹',
             attr: {
-                'aria-label': 'Previous period',
-                'title': 'Previous period'
+                'aria-label': this.translate('views.agenda.actions.previousPeriod'),
+                'title': this.translate('views.agenda.actions.previousPeriod')
             }
         });
         prevButton.addClass('clickable-icon');
@@ -244,8 +276,8 @@ export class AgendaView extends ItemView implements OptimizedView {
             cls: 'agenda-view__nav-button agenda-view__nav-button--next',
             text: '›',
             attr: {
-                'aria-label': 'Next period',
-                'title': 'Next period'
+                'aria-label': this.translate('views.agenda.actions.nextPeriod'),
+                'title': this.translate('views.agenda.actions.nextPeriod')
             }
         });
         nextButton.addClass('clickable-icon');
@@ -270,11 +302,11 @@ export class AgendaView extends ItemView implements OptimizedView {
 
         // Today button
         const todayButton = actionsSection.createEl('button', {
-            text: 'Today',
+            text: this.translate('views.agenda.today'),
             cls: 'agenda-view__today-button',
             attr: {
-                'aria-label': 'Go to today',
-                'title': 'Go to today'
+                'aria-label': this.translate('views.agenda.actions.goToToday'),
+                'title': this.translate('views.agenda.actions.goToToday')
             }
         });
         todayButton.addClass('clickable-icon');
@@ -289,26 +321,26 @@ export class AgendaView extends ItemView implements OptimizedView {
 
         // Refresh ICS button (always show; handle availability on click)
         const refreshBtn = actionsSection.createEl('button', {
-            text: 'Refresh calendars',
+            text: this.translate('views.agenda.refreshCalendars'),
             cls: 'agenda-view__today-button',
             attr: {
-                'aria-label': 'Refresh calendar subscriptions',
-                'title': 'Refresh calendar subscriptions'
+                'aria-label': this.translate('views.agenda.actions.refreshCalendars'),
+                'title': this.translate('views.agenda.actions.refreshCalendars')
             }
         });
         refreshBtn.addClass('clickable-icon');
         refreshBtn.addEventListener('click', async () => {
             if (!this.plugin.icsSubscriptionService) {
-                new Notice('Calendar service not ready yet');
+                new Notice(this.plugin.i18n.translate('views.agenda.notices.calendarNotReady'));
                 return;
             }
             try {
                 await this.plugin.icsSubscriptionService.refreshAllSubscriptions();
-                new Notice('Calendar subscriptions refreshed');
+                new Notice(this.plugin.i18n.translate('views.agenda.notices.calendarRefreshed'));
                 this.refresh();
             } catch (e) {
                 console.error('Failed to refresh ICS subscriptions', e);
-                new Notice('Failed to refresh calendar subscriptions');
+                new Notice(this.plugin.i18n.translate('views.agenda.notices.refreshFailed'));
             }
         });
 
@@ -437,7 +469,7 @@ export class AgendaView extends ItemView implements OptimizedView {
         });
 
         // Create filter heading with integrated controls
-        this.filterHeading = new FilterHeading(container);
+        this.filterHeading = new FilterHeading(container, this.plugin);
 
         // Add expand/collapse controls to the heading container
         const headingContainer = container.querySelector('.filter-heading') as HTMLElement;
@@ -468,7 +500,7 @@ export class AgendaView extends ItemView implements OptimizedView {
         // Expand all button
         const expandAllBtn = new ButtonComponent(container)
             .setIcon('list-tree')
-            .setTooltip('Expand All Days')
+            .setTooltip(this.plugin.i18n.translate('views.agenda.expandAllDays'))
             .setClass('agenda-view-control-button')
             .onClick(() => {
                 // Expand all visible day sections
@@ -491,7 +523,7 @@ export class AgendaView extends ItemView implements OptimizedView {
         // Collapse all button
         const collapseAllBtn = new ButtonComponent(container)
             .setIcon('list-collapse')
-            .setTooltip('Collapse All Days')
+            .setTooltip(this.plugin.i18n.translate('views.agenda.collapseAllDays'))
             .setClass('agenda-view-control-button')
             .onClick(() => {
                 // Collapse all visible day sections
@@ -884,7 +916,7 @@ export class AgendaView extends ItemView implements OptimizedView {
             container.empty();
             const emptyMessage = container.createDiv({ cls: 'agenda-view__empty' });
             new Setting(emptyMessage)
-                .setName('No items scheduled')
+                .setName(this.plugin.i18n.translate('views.agenda.empty.noItemsScheduled'))
                 .setHeading();
             emptyMessage.createEl('p', {
                 text: 'No items scheduled for this period.',
@@ -940,7 +972,7 @@ export class AgendaView extends ItemView implements OptimizedView {
             container.empty();
             const emptyMessage = container.createDiv({ cls: 'agenda-view__empty' });
             new Setting(emptyMessage)
-                .setName('No items found')
+                .setName(this.plugin.i18n.translate('views.agenda.empty.noItemsFound'))
                 .setHeading();
             emptyMessage.createEl('p', {
                 text: 'No items found for the selected period.',
@@ -998,7 +1030,7 @@ export class AgendaView extends ItemView implements OptimizedView {
             const dateFormatted = format(displayDate, 'MMMM d');
 
             if (isTodayUTC(item.date)) {
-                headerText.createSpan({ cls: 'agenda-view__day-name agenda-view__day-name--today', text: 'Today' });
+                headerText.createSpan({ cls: 'agenda-view__day-name agenda-view__day-name--today', text: this.plugin.i18n.translate('views.agenda.today') });
                 headerText.createSpan({ cls: 'agenda-view__day-date', text: ` • ${dateFormatted}` });
             } else {
                 headerText.createSpan({ cls: 'agenda-view__day-name', text: dayName });
@@ -1282,9 +1314,19 @@ export class AgendaView extends ItemView implements OptimizedView {
 
         // Use original UTC dates for isSameDay comparison since it's UTC-aware
         if (isSameDay(dates[0], dates[dates.length - 1])) {
-            return format(start, 'EEEE, MMMM d, yyyy');
+            return this.formatDateLocalized(start, {
+                weekday: 'long',
+                month: 'long',
+                day: 'numeric',
+                year: 'numeric'
+            });
         } else {
-            return `${format(start, 'MMM d')} - ${format(end, 'MMM d, yyyy')}`;
+            const sameYear = start.getFullYear() === end.getFullYear();
+            const startLabel = this.formatDateLocalized(start, sameYear
+                ? { month: 'short', day: 'numeric' }
+                : { month: 'short', day: 'numeric', year: 'numeric' });
+            const endLabel = this.formatDateLocalized(end, { month: 'short', day: 'numeric', year: 'numeric' });
+            return `${startLabel} - ${endLabel}`;
         }
     }
 
@@ -1294,7 +1336,7 @@ export class AgendaView extends ItemView implements OptimizedView {
 
         const indicator = document.createElement('div');
         indicator.className = 'agenda-view__loading';
-        indicator.textContent = 'Loading agenda...';
+        indicator.textContent = this.translate('views.agenda.loading');
         container.prepend(indicator);
     }
 
@@ -1436,7 +1478,7 @@ export class AgendaView extends ItemView implements OptimizedView {
         // Create toggle button first (consistent with TaskList view)
         const toggleBtn = dayHeader.createEl('button', {
             cls: 'task-group-toggle',
-            attr: { 'aria-label': 'Toggle day' }
+            attr: { 'aria-label': this.translate('views.agenda.dayToggle') }
         });
         try {
             setIcon(toggleBtn, 'chevron-right');
@@ -1456,11 +1498,11 @@ export class AgendaView extends ItemView implements OptimizedView {
         const headerText = dayHeader.createDiv({ cls: 'agenda-view__day-header-text' });
         // FIX: Convert UTC-anchored date to local calendar date for proper display formatting
         const displayDate = convertUTCToLocalCalendarDate(dayData.date);
-        const dayName = format(displayDate, 'EEEE');
-        const dateFormatted = format(displayDate, 'MMMM d');
+        const dayName = this.formatWeekday(displayDate);
+        const dateFormatted = this.formatDateLocalized(displayDate, { month: 'long', day: 'numeric' });
 
         if (isTodayUTC(dayData.date)) {
-            headerText.createSpan({ cls: 'agenda-view__day-name agenda-view__day-name--today', text: 'Today' });
+            headerText.createSpan({ cls: 'agenda-view__day-name agenda-view__day-name--today', text: this.translate('views.agenda.today') });
             headerText.createSpan({ cls: 'agenda-view__day-date', text: ` • ${dateFormatted}` });
         } else {
             headerText.createSpan({ cls: 'agenda-view__day-name', text: dayName });
