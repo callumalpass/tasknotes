@@ -33,6 +33,7 @@ export class MinimalNativeCache extends Events {
     // Only essential indexes - everything else computed on-demand
     private tasksByDate: Map<string, Set<string>> = new Map(); // YYYY-MM-DD -> task paths
     private tasksByStatus: Map<string, Set<string>> = new Map(); // status -> task paths
+    private timeEstimatesByPath: Map<string, number> = new Map(); // path -> timeEstimate
     private overdueTasks: Set<string> = new Set(); // overdue task paths
     private projectReferences: Map<string, Set<string>> = new Map(); // project path -> Set<task paths that reference it>
     
@@ -225,6 +226,7 @@ export class MinimalNativeCache extends Events {
             // Update only essential indexes
             this.updateDateIndex(file.path, taskInfo);
             this.updateStatusIndex(file.path, taskInfo.status);
+            this.updateTimeEstimateIndex(file.path, taskInfo);
             this.updateOverdueIndex(file.path, taskInfo);
             this.updateProjectReferencesIndex(file.path, taskInfo.projects);
 
@@ -366,6 +368,14 @@ export class MinimalNativeCache extends Events {
     getOverdueTaskPaths(): Set<string> {
         this.ensureIndexesBuilt();
         return new Set(this.overdueTasks);
+    }
+
+    /**
+     * Get all time estimates by path (uses essential index)
+     */
+    getAllTimeEstimates(): Map<string, number> {
+        this.ensureIndexesBuilt();
+        return this.timeEstimatesByPath;
     }
     
     /**
@@ -1122,6 +1132,15 @@ export class MinimalNativeCache extends Events {
         }
     }
 
+    private updateTimeEstimateIndex(path: string, taskInfo: TaskInfo): void {
+        if (taskInfo.timeEstimate !== undefined && taskInfo.timeEstimate > 0) {
+            this.timeEstimatesByPath.set(path, taskInfo.timeEstimate);
+        } else {
+            // Remove from index if timeEstimate is not set or is zero
+            this.timeEstimatesByPath.delete(path);
+        }
+    }
+
     // ========================================
     // EVENT HANDLERS
     // ========================================
@@ -1470,6 +1489,9 @@ export class MinimalNativeCache extends Events {
             statusSet.delete(path);
         }
 
+        // Remove from time estimate index
+        this.timeEstimatesByPath.delete(path);
+
         // Remove from overdue tasks
         this.overdueTasks.delete(path);
 
@@ -1482,6 +1504,7 @@ export class MinimalNativeCache extends Events {
     private clearAllIndexes(): void {
         this.tasksByDate.clear();
         this.tasksByStatus.clear();
+        this.timeEstimatesByPath.clear();
         this.overdueTasks.clear();
         this.projectReferences.clear();
     }
@@ -1552,6 +1575,7 @@ export class MinimalNativeCache extends Events {
             indexSizes: {
                 tasksByDate: this.tasksByDate.size,
                 tasksByStatus: this.tasksByStatus.size,
+                timeEstimatesByPath: this.timeEstimatesByPath.size,
                 overdueTasks: this.overdueTasks.size
             },
             memoryFootprint: 'Minimal - only essential indexes'

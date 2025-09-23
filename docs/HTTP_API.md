@@ -551,6 +551,40 @@ GET /api/stats
 }
 ```
 
+#### Get Aggregated Time Estimates
+
+```
+GET /api/time-stats
+```
+
+Aggregates the `timeEstimate` for tasks within a given date range. The range can be a predefined period or a custom start/end date.
+
+**Query Parameters:**
+
+- `range` - A predefined range. Can be one of `daily`, `weekly`, `monthly`, `yearly`.
+- `start` - A start date for a custom range, in `YYYY-MM-DD` format. Must be used with `end`.
+- `end` - An end date for a custom range, in `YYYY-MM-DD` format. Must be used with `start`.
+
+**Examples:**
+```bash
+# Get total estimated time for tasks this week
+curl "http://localhost:8080/api/time-stats?range=weekly"
+
+# Get total estimated time for a custom range
+curl "http://localhost:8080/api/time-stats?start=2025-01-01&end=2025-01-31"
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "totalMinutes": 750
+  }
+}
+```
+
 ### Pomodoro
 
 Control pomodoro sessions programmatically through the API.

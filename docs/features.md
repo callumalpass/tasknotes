@@ -26,7 +26,7 @@ See [Inline Task Integration](features/inline-tasks.md) for details.
 
 ## Time Management
 
-Built-in time tracking records work sessions for individual tasks, while the integrated Pomodoro timer helps maintain focus during work periods. Analytics and statistics show patterns in your productivity over time.
+Built-in time tracking records work sessions for individual tasks, while the integrated Pomodoro timer helps maintain focus during work periods. Analytics and statistics show patterns in your productivity over time. A dedicated Time Statistics view allows for aggregating task time estimates over various periods.
 
 See [Time Management](features/time-management.md) for details.
 
