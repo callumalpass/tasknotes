@@ -102,7 +102,7 @@ function buildCSS() {
     
     // Write the combined CSS to styles.css
     try {
-        writeFileSync('styles.css', combinedCSS);
+        writeFileSync('build/styles.css', combinedCSS);
         console.log('[OK] Built styles.css successfully');
         
         // Count lines for reference

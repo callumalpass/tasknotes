@@ -19,7 +19,6 @@ import {
 	POMODORO_VIEW_TYPE,
 	POMODORO_STATS_VIEW_TYPE,
 	STATS_VIEW_TYPE,
-	TIME_STATS_VIEW_TYPE,
 	KANBAN_VIEW_TYPE,
 	TaskInfo,
 	EVENT_DATE_SELECTED,
@@ -35,7 +34,6 @@ import { AgendaView } from './views/AgendaView';
 import { PomodoroView } from './views/PomodoroView';
 import { PomodoroStatsView } from './views/PomodoroStatsView';
 import { StatsView } from './views/StatsView';
-import { TimeStatsView } from './views/TimeStatsView';
 import { KanbanView } from './views/KanbanView';
 import { TaskCreationModal } from './modals/TaskCreationModal';
 import { TaskEditModal } from './modals/TaskEditModal';
@@ -276,9 +274,7 @@ export default class TaskNotesPlugin extends Plugin {
 			await this.activatePomodoroStatsView();
 		});
 
-		this.addRibbonIcon('hourglass', 'Open Time Stats', async () => {
-			await this.activateTimeStatsView();
-		});
+		
 
 		this.addRibbonIcon('tasknotes-simple', 'Create new task', () => {
 			this.openTaskCreationModal();
@@ -396,10 +392,7 @@ export default class TaskNotesPlugin extends Plugin {
 				STATS_VIEW_TYPE,
 				(leaf) => new StatsView(leaf, this)
 			);
-			this.registerView(
-				TIME_STATS_VIEW_TYPE,
-				(leaf) => new TimeStatsView(leaf, this)
-			);
+			
 			this.registerView(
 				KANBAN_VIEW_TYPE,
 				(leaf) => new KanbanView(leaf, this)
@@ -1234,14 +1227,6 @@ export default class TaskNotesPlugin extends Plugin {
 			}
 		});
 
-		this.addCommand({
-			id: 'open-time-stats-view',
-			name: 'Open Time Stats View',
-			callback: async () => {
-				await this.activateTimeStatsView();
-			}
-		});
-
 		// Task commands
 		this.addCommand({
 			id: 'create-new-task',
@@ -1415,9 +1400,6 @@ export default class TaskNotesPlugin extends Plugin {
 		return this.activateView(STATS_VIEW_TYPE);
 	}
 
-	async activateTimeStatsView() {
-		return this.activateView(TIME_STATS_VIEW_TYPE);
-	}
 
 	async activateKanbanView() {
 		return this.activateView(KANBAN_VIEW_TYPE);
