@@ -33,6 +33,27 @@ describe('TaskCreationModal - projects with commas', () => {
           defaultReminders: []
         }
       },
+      i18n: {
+        translate: jest.fn((key: string, params?: Record<string, string | number>) => {
+          // Mock translations for specific keys used in tests
+          const translations: Record<string, string> = {
+            'modals.taskCreation.notices.success': 'Task "{title}" created successfully',
+            'modals.taskCreation.notices.failure': 'Failed to create task: {message}',
+            'modals.taskCreation.notices.titleRequired': 'Please enter a task title'
+          };
+
+          let result = translations[key] || key;
+
+          // Handle parameter substitution
+          if (params) {
+            Object.entries(params).forEach(([param, value]) => {
+              result = result.replace(`{${param}}`, String(value));
+            });
+          }
+
+          return result;
+        })
+      }
     };
   });
 

@@ -51,7 +51,8 @@ describe('MigrationModal', () => {
       style: {}
     } as any;
 
-    migrationModal = new MigrationModal(mockApp, mockMigrationService);
+    const mockPlugin = PluginFactory.createMockPlugin();
+    migrationModal = new MigrationModal(mockApp, mockMigrationService, mockPlugin);
     
     // Override the contentEl after construction
     (migrationModal as any).contentEl = mockContentEl;

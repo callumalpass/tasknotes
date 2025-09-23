@@ -518,7 +518,33 @@ export const PluginFactory = {
       },
       getActiveTimeSession: jest.fn().mockReturnValue(null),
       selectedDate: new Date(),
-      
+
+      i18n: {
+        translate: jest.fn((key: string, params?: Record<string, string | number>) => {
+          // Mock translations for specific keys used in tests
+          const translations: Record<string, string> = {
+            'modals.taskCreation.notices.success': 'Task "{title}" created successfully',
+            'modals.taskCreation.notices.failure': 'Failed to create task: {message}',
+            'modals.taskCreation.notices.titleRequired': 'Please enter a task title',
+            'modals.migration.title': 'Migrate Tasks',
+            'modals.migration.description': 'Migration description',
+            'modals.migration.buttons.migrate': 'Migrate',
+            'modals.migration.buttons.cancel': 'Cancel'
+          };
+
+          let result = translations[key] || key;
+
+          // Handle parameter substitution
+          if (params) {
+            Object.entries(params).forEach(([param, value]) => {
+              result = result.replace(`{${param}}`, String(value));
+            });
+          }
+
+          return result;
+        })
+      },
+
       // Calendar integration methods that are missing from test failures
       toggleRecurringTaskComplete: jest.fn().mockImplementation(async (_task, _targetDate) => {
         return { success: true, taskUpdated: true };
