@@ -131,6 +131,34 @@ export function renderGeneralTab(container: HTMLElement, plugin: TaskNotesPlugin
         ariaLabel: 'Excluded folder paths'
     });
 
+    // UI Language Section
+    createSectionHeader(container, translate('settings.features.uiLanguage.header'));
+    createHelpText(container, translate('settings.features.uiLanguage.description'));
+
+    const uiLanguageOptions = (() => {
+        const options: Array<{ value: string; label: string }> = [
+            { value: 'system', label: translate('common.systemDefault') }
+        ];
+        for (const code of plugin.i18n.getAvailableLocales()) {
+            const label = plugin.i18n.resolveKey(`common.languages.${code}`) || code;
+            options.push({ value: code, label });
+        }
+        return options;
+    })();
+
+    createDropdownSetting(container, {
+        name: translate('settings.features.uiLanguage.dropdown.name'),
+        desc: translate('settings.features.uiLanguage.dropdown.description'),
+        options: uiLanguageOptions,
+        getValue: () => plugin.settings.uiLanguage ?? 'system',
+        setValue: async (value: string) => {
+            plugin.settings.uiLanguage = value;
+            plugin.i18n.setLocale(value);
+            save();
+            renderGeneralTab(container, plugin, save);
+        }
+    });
+
     // Task Interaction Section
     createSectionHeader(container, translate('settings.general.taskInteraction.header'));
     createHelpText(container, translate('settings.general.taskInteraction.description'));

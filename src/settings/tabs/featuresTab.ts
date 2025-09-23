@@ -21,17 +21,6 @@ export function renderFeaturesTab(container: HTMLElement, plugin: TaskNotesPlugi
 
     const translate = (key: TranslationKey, params?: Record<string, string | number>) => plugin.i18n.translate(key, params);
 
-    const uiLanguageOptions = (() => {
-        const options: Array<{ value: string; label: string }> = [
-            { value: 'system', label: translate('common.systemDefault') }
-        ];
-        for (const code of plugin.i18n.getAvailableLocales()) {
-            const label = plugin.i18n.resolveKey(`common.languages.${code}`) || code;
-            options.push({ value: code, label });
-        }
-        return options;
-    })();
-
     // Inline Tasks Section
     createSectionHeader(container, translate('settings.features.inlineTasks.header'));
     createHelpText(container, translate('settings.features.inlineTasks.description'));
@@ -120,23 +109,6 @@ export function renderFeaturesTab(container: HTMLElement, plugin: TaskNotesPlugi
             }
         });
     }
-
-    // UI Language Section
-    createSectionHeader(container, translate('settings.features.uiLanguage.header'));
-    createHelpText(container, translate('settings.features.uiLanguage.description'));
-
-    createDropdownSetting(container, {
-        name: translate('settings.features.uiLanguage.dropdown.name'),
-        desc: translate('settings.features.uiLanguage.dropdown.description'),
-        options: uiLanguageOptions,
-        getValue: () => plugin.settings.uiLanguage ?? 'system',
-        setValue: async (value: string) => {
-            plugin.settings.uiLanguage = value;
-            plugin.i18n.setLocale(value);
-            save();
-            renderFeaturesTab(container, plugin, save);
-        }
-    });
 
     // Pomodoro Timer Section
     createSectionHeader(container, translate('settings.features.pomodoro.header'));

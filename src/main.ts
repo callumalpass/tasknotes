@@ -1,4 +1,4 @@
-import { Notice, Plugin, WorkspaceLeaf, Editor, MarkdownView, TFile, Platform, addIcon, Command, Hotkey } from 'obsidian';
+import { Notice, Plugin, WorkspaceLeaf, Editor, MarkdownView, TFile, Platform, addIcon, Command, Hotkey, getLanguage } from 'obsidian';
 import { EditorView } from '@codemirror/view';
 import { format } from 'date-fns';
 import {
@@ -189,10 +189,35 @@ export default class TaskNotesPlugin extends Plugin {
 	private migrationComplete = false;
 	private migrationPromise: Promise<void> | null = null;
 
+	/**
+	 * Get the system UI locale with proper priority order for TaskNotes plugin.
+	 *
+	 * Priority order for "System default" language setting:
+	 * 1. Obsidian's configured language (what users expect for plugin behavior)
+	 * 2. Browser/system locale (fallback if Obsidian language unavailable)
+	 * 3. English (ultimate fallback)
+	 *
+	 * This ensures that when users select "System default", TaskNotes respects
+	 * their Obsidian language setting first, which is the most intuitive behavior
+	 * for an Obsidian plugin.
+	 */
 	private getSystemUILocale(): string {
+		// Priority 1: Get Obsidian's configured language (this is what users expect!)
+		try {
+			const obsidianLanguage = getLanguage();
+			if (obsidianLanguage) {
+				return obsidianLanguage;
+			}
+		} catch (error) {
+			// Silently continue to next attempt if getLanguage() fails
+		}
+
+		// Priority 2: Fall back to browser/system locale
 		if (typeof navigator !== 'undefined' && navigator.language) {
 			return navigator.language;
 		}
+
+		// Priority 3: Ultimate fallback
 		return 'en';
 	}
 
