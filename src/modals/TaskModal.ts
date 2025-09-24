@@ -451,7 +451,9 @@ export abstract class TaskModal extends Modal {
         });
         
         saveButton.addEventListener('click', async () => {
+            saveButton.disabled = true;
             await this.handleSave();
+            saveButton.disabled = false;
             this.close();
         });
 
