@@ -723,7 +723,9 @@ export class TaskEditModal extends TaskModal {
         });
         
         saveButton.addEventListener('click', async () => {
+            saveButton.disabled = true;
             await this.handleSave();
+            saveButton.disabled = false;
             this.close();
         });
 
