@@ -539,6 +539,28 @@ export class TaskService {
                     updatedTask.completedDate = undefined;
                 }
             }
+
+            // Handle blocking dependency chain updates when task status changes
+            if (property === 'status') {
+                const wasCompleted = this.plugin.statusManager.isCompletedStatus(freshTask.status);
+                const isNowCompleted = this.plugin.statusManager.isCompletedStatus(value);
+
+                // If task is being completed, remove it from blocked tasks' blockedBy arrays
+                if (!wasCompleted && isNowCompleted && freshTask.blocking && freshTask.blocking.length > 0) {
+                    // Process blocking relationships asynchronously to avoid blocking the main update
+                    this.updateBlockedTasksAfterCompletion(freshTask.path, freshTask.blocking).catch((error: any) => {
+                        console.error('Failed to update blocked tasks after completion:', error);
+                    });
+                }
+
+                // If task is being marked as incomplete, add it back to blocked tasks' blockedBy arrays
+                if (wasCompleted && !isNowCompleted && freshTask.blocking && freshTask.blocking.length > 0) {
+                    // Process blocking relationships asynchronously
+                    this.addBackToBlockedTasksAfterReopening(freshTask.path, freshTask.blocking).catch((error: any) => {
+                        console.error('Failed to update blocked tasks after reopening:', error);
+                    });
+                }
+            }
             
             // Step 2: Persist to file
             await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
@@ -1275,21 +1297,26 @@ export class TaskService {
     }
 
     async updateBlockingRelationships(
-        blockingTask: TaskInfo,
-        addedPaths: string[],
-        removedPaths: string[],
+        currentTask: TaskInfo,
+        addedBlockedTaskPaths: string[],
+        removedBlockedTaskPaths: string[],
         rawEntries: Record<string, string> = {}
     ): Promise<void> {
-        const uniqueRemovals = Array.from(new Set(removedPaths));
-        const uniqueAdditions = Array.from(new Set(addedPaths));
+        // This method is called when the current task's "blocking" list is updated in the UI.
+        // The current task is the one blocking other tasks.
+        // We need to update the blockedBy field of the tasks that this task is blocking.
 
-        for (const path of uniqueRemovals) {
-            const blockedTask = await this.plugin.cacheManager.getTaskInfo(path);
+        const uniqueRemovals = Array.from(new Set(removedBlockedTaskPaths));
+        const uniqueAdditions = Array.from(new Set(addedBlockedTaskPaths));
+
+        // Remove current task from the blockedBy field of tasks it's no longer blocking
+        for (const blockedTaskPath of uniqueRemovals) {
+            const blockedTask = await this.plugin.cacheManager.getTaskInfo(blockedTaskPath);
             if (!blockedTask) {
                 continue;
             }
 
-            const updatedBlockedBy = this.computeBlockedByUpdate(blockedTask, blockingTask.path, 'remove');
+            const updatedBlockedBy = this.computeBlockedByUpdate(blockedTask, currentTask.path, 'remove');
             if (updatedBlockedBy === null) {
                 continue;
             }
@@ -1300,14 +1327,16 @@ export class TaskService {
             await this.updateTask(blockedTask, updates);
         }
 
-        for (const path of uniqueAdditions) {
-            const blockedTask = await this.plugin.cacheManager.getTaskInfo(path);
+        // Add current task to the blockedBy field of tasks it's now blocking
+        for (const blockedTaskPath of uniqueAdditions) {
+            const blockedTask = await this.plugin.cacheManager.getTaskInfo(blockedTaskPath);
             if (!blockedTask) {
                 continue;
             }
 
-            const rawEntry = rawEntries[path];
-            const updatedBlockedBy = this.computeBlockedByUpdate(blockedTask, blockingTask.path, 'add', rawEntry);
+            // Don't use the raw entry from the UI since it was created relative to the current task's path
+            // Instead, always generate a new link from the blocked task's perspective
+            const updatedBlockedBy = this.computeBlockedByUpdate(blockedTask, currentTask.path, 'add');
             if (updatedBlockedBy === null) {
                 continue;
             }
@@ -1359,6 +1388,56 @@ export class TaskService {
         }
 
         return result;
+    }
+
+    /**
+     * Remove a completed task from the blockedBy arrays of all tasks it was blocking
+     */
+    private async updateBlockedTasksAfterCompletion(completedTaskPath: string, blockedTaskPaths: string[]): Promise<void> {
+        for (const blockedPath of blockedTaskPaths) {
+            try {
+                const blockedTask = await this.plugin.cacheManager.getTaskInfo(blockedPath);
+                if (!blockedTask) {
+                    continue;
+                }
+
+                const updatedBlockedBy = this.computeBlockedByUpdate(blockedTask, completedTaskPath, 'remove');
+                if (updatedBlockedBy === null) {
+                    continue;
+                }
+
+                const updates: Partial<TaskInfo> = {
+                    blockedBy: updatedBlockedBy.length > 0 ? updatedBlockedBy : undefined
+                };
+                await this.updateTask(blockedTask, updates);
+            } catch (error) {
+                console.error(`Failed to update blocked task ${blockedPath} after completion of ${completedTaskPath}:`, error);
+            }
+        }
+    }
+
+    /**
+     * Add a reopened task back to the blockedBy arrays of all tasks it should block
+     */
+    private async addBackToBlockedTasksAfterReopening(reopenedTaskPath: string, blockedTaskPaths: string[]): Promise<void> {
+        for (const blockedPath of blockedTaskPaths) {
+            try {
+                const blockedTask = await this.plugin.cacheManager.getTaskInfo(blockedPath);
+                if (!blockedTask) {
+                    continue;
+                }
+
+                // Generate appropriate link from the blocked task's perspective
+                const updatedBlockedBy = this.computeBlockedByUpdate(blockedTask, reopenedTaskPath, 'add');
+                if (updatedBlockedBy === null) {
+                    continue;
+                }
+
+                await this.updateTask(blockedTask, { blockedBy: updatedBlockedBy });
+            } catch (error) {
+                console.error(`Failed to update blocked task ${blockedPath} after reopening ${reopenedTaskPath}:`, error);
+            }
+        }
     }
 
     /**

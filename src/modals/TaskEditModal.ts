@@ -25,11 +25,6 @@ export class TaskEditModal extends TaskModal {
     private pendingBlockingUpdates: { added: string[]; removed: string[]; raw: Record<string, string> } = { added: [], removed: [], raw: {} };
     private unresolvedBlockingEntries: string[] = [];
 
-    // TODO: Blocking/blocked functionality still needs work:
-    // - Edit modal is not pulling existing "blocking" data from tasks
-    // - Blocked tasks do not automatically update when blocking tasks are completed
-    // - Need to implement proper dependency chain updates
-
     constructor(app: App, plugin: TaskNotesPlugin, options: TaskEditOptions) {
         super(app, plugin);
         this.task = options.task;
