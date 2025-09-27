@@ -194,7 +194,7 @@ export class KanbanView extends ItemView implements OptimizedView {
             this.currentQuery,
             filterOptions,
             this.plugin.settings.viewsButtonAlignment || 'right',
-            { enableGroupExpandCollapse: false }
+            { enableGroupExpandCollapse: false, viewType: KANBAN_VIEW_TYPE }
         );
         
         // Get saved views for the FilterBar
@@ -290,7 +290,7 @@ export class KanbanView extends ItemView implements OptimizedView {
         const currentGroupKey = this.currentQuery.groupKey || null;
         if (this.previousGroupKey !== null && this.previousGroupKey !== currentGroupKey) {
             this.boardContainer.empty();
-            this.columnOrder = [];
+            // Column order is now managed per grouping type
         }
         this.previousGroupKey = currentGroupKey;
         
@@ -357,14 +357,15 @@ export class KanbanView extends ItemView implements OptimizedView {
         this.taskElements.clear();
 
         // Get all possible columns from the grouped tasks
-        const allColumns = Array.from(groupedTasks.keys()).sort();
+        const allColumns = Array.from(groupedTasks.keys());
 
-        // Initialize column order if empty
-        if (this.columnOrder.length === 0) {
-            this.columnOrder = [...allColumns];
-            if (this.columnOrder.length > 0) {
-                this.saveColumnOrder();
-            }
+        // Get current grouping key
+        const groupKey = this.currentQuery.groupKey || 'none';
+
+        // Initialize column order for this grouping if empty
+        if (!this.columnOrderByGroupKey.has(groupKey)) {
+            this.columnOrderByGroupKey.set(groupKey, this.getDefaultColumnOrder(allColumns, groupKey));
+            this.saveColumnOrder();
         }
 
         // Use the render method with order for consistency
@@ -461,15 +462,56 @@ export class KanbanView extends ItemView implements OptimizedView {
         // to avoid conflicts between header and column drop zones
     }
 
-    private columnOrder: string[] = [];
+    private columnOrderByGroupKey: Map<string, string[]> = new Map();
+
+    /**
+     * Get default column order based on grouping type
+     */
+    private getDefaultColumnOrder(allColumns: string[], groupKey: string): string[] {
+        switch (groupKey) {
+            case 'status':
+                // Use status manager order
+                const statusOrder = this.plugin.statusManager.getStatusesByOrder().map(s => s.value);
+                const orderedStatuses = statusOrder.filter(status => allColumns.includes(status));
+                const remainingColumns = allColumns.filter(col => !orderedStatuses.includes(col));
+                return [...orderedStatuses, ...remainingColumns.sort()];
+
+            case 'priority':
+                // Use priority manager order (highest weight first)
+                const priorityOrder = this.plugin.priorityManager.getPrioritiesByWeight().map(p => p.value);
+                const orderedPriorities = priorityOrder.filter(priority => allColumns.includes(priority));
+                const remainingPriorities = allColumns.filter(col => !orderedPriorities.includes(col));
+                return [...orderedPriorities, ...remainingPriorities.sort()];
+
+            default:
+                // For other groupings, use alphabetical order
+                return [...allColumns].sort();
+        }
+    }
+
+    /**
+     * Get current column order for the active grouping
+     */
+    private getCurrentColumnOrder(): string[] {
+        const groupKey = this.currentQuery.groupKey || 'none';
+        return this.columnOrderByGroupKey.get(groupKey) || [];
+    }
+
+    /**
+     * Set current column order for the active grouping
+     */
+    private setCurrentColumnOrder(order: string[]): void {
+        const groupKey = this.currentQuery.groupKey || 'none';
+        this.columnOrderByGroupKey.set(groupKey, order);
+    }
 
     /**
      * Load column order from view preferences
      */
     private loadColumnOrder(): void {
-        const preferences = this.plugin.viewStateManager.getViewPreferences<{ columnOrder?: string[] }>(KANBAN_VIEW_TYPE);
-        if (preferences?.columnOrder) {
-            this.columnOrder = [...preferences.columnOrder];
+        const preferences = this.plugin.viewStateManager.getViewPreferences<{ columnOrderByGroupKey?: Record<string, string[]> }>(KANBAN_VIEW_TYPE);
+        if (preferences?.columnOrderByGroupKey) {
+            this.columnOrderByGroupKey = new Map(Object.entries(preferences.columnOrderByGroupKey));
         }
     }
 
@@ -477,30 +519,35 @@ export class KanbanView extends ItemView implements OptimizedView {
      * Save column order to view preferences
      */
     private saveColumnOrder(): void {
-        const preferences = this.plugin.viewStateManager.getViewPreferences<{ columnOrder?: string[] }>(KANBAN_VIEW_TYPE) || {};
-        preferences.columnOrder = [...this.columnOrder];
+        const preferences = this.plugin.viewStateManager.getViewPreferences<{ columnOrderByGroupKey?: Record<string, string[]> }>(KANBAN_VIEW_TYPE) || {};
+        preferences.columnOrderByGroupKey = Object.fromEntries(this.columnOrderByGroupKey);
         this.plugin.viewStateManager.setViewPreferences(KANBAN_VIEW_TYPE, preferences);
     }
 
     private async reorderColumns(sourceColumnId: string, targetColumnId: string) {
         // Get current column order or create it from DOM
-        if (this.columnOrder.length === 0) {
+        let columnOrder = this.getCurrentColumnOrder();
+        if (columnOrder.length === 0) {
             const columns = this.boardContainer?.querySelectorAll('.kanban-view__column');
-            this.columnOrder = Array.from(columns || []).map(col => 
+            columnOrder = Array.from(columns || []).map(col =>
                 (col as HTMLElement).dataset.columnId || ''
             ).filter(id => id);
+            this.setCurrentColumnOrder(columnOrder);
         }
 
-        const sourceIndex = this.columnOrder.indexOf(sourceColumnId);
-        const targetIndex = this.columnOrder.indexOf(targetColumnId);
+        const sourceIndex = columnOrder.indexOf(sourceColumnId);
+        const targetIndex = columnOrder.indexOf(targetColumnId);
 
         if (sourceIndex === -1 || targetIndex === -1) return;
 
         // Remove source column from its current position
-        const [movedColumn] = this.columnOrder.splice(sourceIndex, 1);
-        
+        const [movedColumn] = columnOrder.splice(sourceIndex, 1);
+
         // Insert it at the target position
-        this.columnOrder.splice(targetIndex, 0, movedColumn);
+        columnOrder.splice(targetIndex, 0, movedColumn);
+
+        // Update the order for this grouping
+        this.setCurrentColumnOrder(columnOrder);
 
         // Save the new column order to preferences
         this.saveColumnOrder();
@@ -548,8 +595,11 @@ export class KanbanView extends ItemView implements OptimizedView {
         
         this.taskElements.clear();
         
+        // Get current column order for this grouping
+        let columnOrder = this.getCurrentColumnOrder();
+
         // Render columns in the stored order first
-        this.columnOrder.forEach(columnId => {
+        columnOrder.forEach(columnId => {
             if (groupedTasks.has(columnId)) {
                 const columnTasks = groupedTasks.get(columnId) || [];
                 this.renderColumn(boardEl, columnId, columnTasks);
@@ -559,34 +609,35 @@ export class KanbanView extends ItemView implements OptimizedView {
         // Clean up obsolete columns and add new ones
         const taskBasedColumns = Array.from(groupedTasks.keys());
         let allColumns = taskBasedColumns;
-        
+
         // If grouping by status, include all configured statuses to show empty columns
         if (this.currentQuery.groupKey === 'status') {
             const configuredStatuses = this.plugin.statusManager.getAllStatuses().map(s => s.value);
             allColumns = [...new Set([...taskBasedColumns, ...configuredStatuses])];
         }
-        
+
         let orderChanged = false;
-        
+
         // Remove columns that no longer exist
-        const initialLength = this.columnOrder.length;
-        this.columnOrder = this.columnOrder.filter(columnId => allColumns.includes(columnId));
-        if (this.columnOrder.length !== initialLength) {
+        const initialLength = columnOrder.length;
+        columnOrder = columnOrder.filter(columnId => allColumns.includes(columnId));
+        if (columnOrder.length !== initialLength) {
             orderChanged = true;
         }
-        
+
         // Add any new columns that aren't in our order yet
         allColumns.forEach(columnId => {
-            if (!this.columnOrder.includes(columnId)) {
-                this.columnOrder.push(columnId);
+            if (!columnOrder.includes(columnId)) {
+                columnOrder.push(columnId);
                 orderChanged = true;
                 const columnTasks = groupedTasks.get(columnId) || [];
                 this.renderColumn(boardEl, columnId, columnTasks);
             }
         });
 
-        // Save column order if it changed
+        // Update and save column order if it changed
         if (orderChanged) {
+            this.setCurrentColumnOrder(columnOrder);
             this.saveColumnOrder();
         }
     }
@@ -746,41 +797,44 @@ export class KanbanView extends ItemView implements OptimizedView {
             allColumns = [...new Set([...taskBasedColumns, ...configuredStatuses])];
         }
         
-        allColumns = allColumns.sort();
+        // Get current grouping key
+        const groupKey = this.currentQuery.groupKey || 'none';
 
-        // Initialize column order if empty
-        if (this.columnOrder.length === 0) {
-            this.columnOrder = [...allColumns];
-            if (this.columnOrder.length > 0) {
-                this.saveColumnOrder();
-            }
+        // Initialize column order for this grouping if empty
+        if (!this.columnOrderByGroupKey.has(groupKey)) {
+            this.columnOrderByGroupKey.set(groupKey, this.getDefaultColumnOrder(allColumns, groupKey));
+            this.saveColumnOrder();
         }
+
+        // Get current column order for this grouping
+        let columnOrder = this.getCurrentColumnOrder();
 
         // Clean up obsolete columns and add new ones
         let orderChanged = false;
-        
+
         // Remove columns that no longer exist
-        const initialLength = this.columnOrder.length;
-        this.columnOrder = this.columnOrder.filter(columnId => allColumns.includes(columnId));
-        if (this.columnOrder.length !== initialLength) {
+        const initialLength = columnOrder.length;
+        columnOrder = columnOrder.filter(columnId => allColumns.includes(columnId));
+        if (columnOrder.length !== initialLength) {
             orderChanged = true;
         }
-        
+
         // Add any new columns that aren't in our order yet
         allColumns.forEach(columnId => {
-            if (!this.columnOrder.includes(columnId)) {
-                this.columnOrder.push(columnId);
+            if (!columnOrder.includes(columnId)) {
+                columnOrder.push(columnId);
                 orderChanged = true;
             }
         });
 
-        // Save column order if it changed
+        // Update and save column order if it changed
         if (orderChanged) {
+            this.setCurrentColumnOrder(columnOrder);
             this.saveColumnOrder();
         }
 
         // Create column data in the stored order
-        const orderedColumns = this.columnOrder.map(columnId => ({
+        const orderedColumns = columnOrder.map(columnId => ({
             id: columnId,
             tasks: groupedTasks.get(columnId) || []
         }));
