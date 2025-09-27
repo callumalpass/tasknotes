@@ -564,7 +564,8 @@ export function renderAppearanceTab(container: HTMLElement, plugin: TaskNotesPlu
             plugin.settings.projectAutosuggest.propertyKey = value.trim();
             save();
         },
-        ariaLabel: 'Required frontmatter property key for project suggestions'
+        ariaLabel: 'Required frontmatter property key for project suggestions',
+        debounceMs: 500 // Prevent rapid save calls while typing
     });
 
     createTextSetting(container, {
@@ -579,7 +580,8 @@ export function renderAppearanceTab(container: HTMLElement, plugin: TaskNotesPlu
             plugin.settings.projectAutosuggest.propertyValue = value.trim();
             save();
         },
-        ariaLabel: 'Required frontmatter property value for project suggestions'
+        ariaLabel: 'Required frontmatter property value for project suggestions',
+        debounceMs: 500 // Prevent rapid save calls while typing
     });
 
     createToggleSetting(container, {
