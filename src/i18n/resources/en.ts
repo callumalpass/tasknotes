@@ -230,7 +230,7 @@ export const en: TranslationTree = {
                 },
                 folder: {
                     name: 'Inline task convert folder',
-                    description: 'Folder for inline task conversion. Use {{currentNotePath}} for relative to current note'
+                    description: 'Folder for inline task conversion. Use {{currentNotePath}} for relative to current note, {{currentNoteTitle}} for current note title'
                 }
             },
             nlp: {

@@ -223,6 +223,64 @@ describe('TaskService', () => {
       );
     });
 
+    it('should handle inline conversion context with currentNoteTitle variable', async () => {
+      mockPlugin.settings.inlineTaskConvertFolder = 'Tasks/{{currentNoteTitle}}';
+
+      const mockCurrentFile = new TFile('Projects/MyProject/HAB NB 1.md');
+      Object.defineProperty(mockCurrentFile, 'basename', { value: 'HAB NB 1', writable: false });
+      mockPlugin.app.workspace.getActiveFile.mockReturnValue(mockCurrentFile);
+
+      const taskData: TaskCreationData = {
+        title: 'Task in note specific folder',
+        creationContext: 'inline-conversion'
+      };
+
+      await taskService.createTask(taskData);
+
+      expect(mockPlugin.app.vault.create).toHaveBeenCalledWith(
+        'Tasks/HAB NB 1/task-in-note-specific-folder.md',
+        expect.stringContaining('title: Task in note specific folder')
+      );
+    });
+
+    it('should handle inline conversion context with both currentNotePath and currentNoteTitle variables', async () => {
+      mockPlugin.settings.inlineTaskConvertFolder = '{{currentNotePath}}/{{currentNoteTitle}}';
+
+      const mockCurrentFile = new TFile('Projects/MyProject/HAB NB 1.md');
+      Object.defineProperty(mockCurrentFile, 'basename', { value: 'HAB NB 1', writable: false });
+      mockCurrentFile.parent = { path: 'Projects/MyProject' } as any;
+      mockPlugin.app.workspace.getActiveFile.mockReturnValue(mockCurrentFile);
+
+      const taskData: TaskCreationData = {
+        title: 'Combined template task',
+        creationContext: 'inline-conversion'
+      };
+
+      await taskService.createTask(taskData);
+
+      expect(mockPlugin.app.vault.create).toHaveBeenCalledWith(
+        'Projects/MyProject/HAB NB 1/combined-template-task.md',
+        expect.stringContaining('title: Combined template task')
+      );
+    });
+
+    it('should handle inline conversion context with currentNoteTitle when no active file', async () => {
+      mockPlugin.settings.inlineTaskConvertFolder = 'Tasks/{{currentNoteTitle}}';
+      mockPlugin.app.workspace.getActiveFile.mockReturnValue(null);
+
+      const taskData: TaskCreationData = {
+        title: 'No active file task',
+        creationContext: 'inline-conversion'
+      };
+
+      await taskService.createTask(taskData);
+
+      expect(mockPlugin.app.vault.create).toHaveBeenCalledWith(
+        'Tasks//no-active-file-task.md',
+        expect.stringContaining('title: No active file task')
+      );
+    });
+
     it('should validate required fields', async () => {
       await expect(taskService.createTask({ title: '' })).rejects.toThrow('Title is required');
       await expect(taskService.createTask({ title: '   ' })).rejects.toThrow('Title is required');

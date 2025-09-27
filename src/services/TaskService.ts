@@ -264,13 +264,23 @@ export class TaskService {
                 const inlineFolder = this.plugin.settings.inlineTaskConvertFolder || '';
                 if (inlineFolder.trim()) {
                     // Inline folder is configured, use it
-                    if (inlineFolder.includes('{{currentNotePath}}')) {
-                        // Get current file's folder path
+                    folder = inlineFolder;
+
+                    // Handle currentNotePath and currentNoteTitle template variables
+                    if (inlineFolder.includes('{{currentNotePath}}') || inlineFolder.includes('{{currentNoteTitle}}')) {
                         const currentFile = this.plugin.app.workspace.getActiveFile();
-                        const currentFolderPath = currentFile?.parent?.path || '';
-                        folder = inlineFolder.replace(/\{\{currentNotePath\}\}/g, currentFolderPath);
-                    } else {
-                        folder = inlineFolder;
+
+                        if (inlineFolder.includes('{{currentNotePath}}')) {
+                            // Get current file's folder path
+                            const currentFolderPath = currentFile?.parent?.path || '';
+                            folder = folder.replace(/\{\{currentNotePath\}\}/g, currentFolderPath);
+                        }
+
+                        if (inlineFolder.includes('{{currentNoteTitle}}')) {
+                            // Get current file's title (basename without extension)
+                            const currentNoteTitle = currentFile?.basename || '';
+                            folder = folder.replace(/\{\{currentNoteTitle\}\}/g, currentNoteTitle);
+                        }
                     }
                     // Process task and date variables in the inline folder path
                     folder = this.processFolderTemplate(folder, taskData);
