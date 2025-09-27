@@ -1106,7 +1106,9 @@ export function createTaskCard(task: TaskInfo, plugin: TaskNotesPlugin, visibleP
     // First line: Task title
     const titleEl = contentContainer.createEl('div', { cls: 'task-card__title' });
     const titleTextEl = titleEl.createSpan({ cls: 'task-card__title-text', text: task.title });
-    if (plugin.statusManager.isCompletedStatus(effectiveStatus)) {
+
+    if (isCompleted) {
+        titleEl.classList.add('completed');
         titleTextEl.classList.add('completed');
     }
 
@@ -1325,8 +1327,12 @@ export function updateTaskCard(element: HTMLElement, task: TaskInfo, plugin: Tas
                         
                         // Update the title completion styling
                         const titleText = element.querySelector('.task-card__title-text') as HTMLElement;
+                        const titleContainer = element.querySelector('.task-card__title') as HTMLElement;
                         if (titleText) {
                             titleText.classList.toggle('completed', isNowCompleted);
+                        }
+                        if (titleContainer) {
+                            titleContainer.classList.toggle('completed', isNowCompleted);
                         }
                     } else {
                         // For regular tasks, cycle to next status
@@ -1652,9 +1658,14 @@ export function updateTaskCard(element: HTMLElement, task: TaskInfo, plugin: Tas
 
     // Update title
     const titleText = element.querySelector('.task-card__title-text') as HTMLElement;
+    const titleContainer = element.querySelector('.task-card__title') as HTMLElement;
+    const titleIsCompleted = isCompleted;
     if (titleText) {
         titleText.textContent = task.title;
-        titleText.classList.toggle('completed', plugin.statusManager.isCompletedStatus(effectiveStatus));
+        titleText.classList.toggle('completed', titleIsCompleted);
+    }
+    if (titleContainer) {
+        titleContainer.classList.toggle('completed', titleIsCompleted);
     }
 
     const existingBadge = element.querySelector('.task-card__badge--blocked') as HTMLElement;
