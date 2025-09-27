@@ -747,10 +747,25 @@ export class KanbanView extends ItemView implements OptimizedView {
                         // Map current grouping to actual TaskInfo property or custom field
                         const groupKey = this.currentQuery.groupKey;
 
+                        console.log('KanbanView: Attempting to move task', {
+                            taskPath,
+                            targetColumnId,
+                            groupKey,
+                            isCustomField: groupKey?.startsWith('user:')
+                        });
+
                         if (groupKey?.startsWith('user:')) {
                             // Handle custom field update via frontmatter
                             const fieldId = groupKey.replace('user:', '');
-                            await this.updateCustomFieldProperty(task, fieldId, targetColumnId);
+                            console.log('KanbanView: Updating custom field', { fieldId, value: targetColumnId });
+
+                            try {
+                                await this.updateCustomFieldProperty(task, fieldId, targetColumnId);
+                                console.log('KanbanView: Custom field update successful');
+                            } catch (customFieldError) {
+                                console.error('KanbanView: Custom field update failed:', customFieldError);
+                                throw customFieldError;
+                            }
                         } else {
                             // Handle built-in properties
                             let propertyToUpdate: keyof TaskInfo;
@@ -1195,19 +1210,38 @@ export class KanbanView extends ItemView implements OptimizedView {
      * Update a custom field property via frontmatter
      */
     private async updateCustomFieldProperty(task: TaskInfo, fieldId: string, value: string): Promise<void> {
+        console.log('KanbanView: updateCustomFieldProperty called', {
+            taskPath: task.path,
+            fieldId,
+            value
+        });
+
         const file = this.plugin.app.vault.getAbstractFileByPath(task.path);
         if (!file || !('stat' in file)) {
+            console.error('KanbanView: File not found', task.path);
             throw new Error(`File not found: ${task.path}`);
         }
 
+        console.log('KanbanView: File found, processing frontmatter');
+
         await this.plugin.app.fileManager.processFrontMatter(file as any, (frontmatter: any) => {
+            console.log('KanbanView: Processing frontmatter', {
+                beforeValue: frontmatter[fieldId],
+                fieldId,
+                newValue: value
+            });
+
             // Handle special "uncategorized" case by clearing the field
             if (value === 'uncategorized' || value === 'none') {
                 delete frontmatter[fieldId];
+                console.log('KanbanView: Cleared field', fieldId);
             } else {
                 frontmatter[fieldId] = value;
+                console.log('KanbanView: Set field', { fieldId, value });
             }
         });
+
+        console.log('KanbanView: Frontmatter update completed');
     }
 
     /**
