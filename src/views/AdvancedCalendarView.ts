@@ -624,6 +624,7 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
             slotDuration: calendarSettings.slotDuration,
             slotLabelInterval: this.getSlotLabelInterval(calendarSettings.slotDuration),
             allDaySlot: this.showAllDaySlot,
+            eventMinHeight: calendarSettings.eventMinHeight,
             
             // Time format
             eventTimeFormat: this.getTimeFormat(calendarSettings.timeFormat),

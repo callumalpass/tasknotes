@@ -146,7 +146,9 @@ export const DEFAULT_CALENDAR_VIEW_SETTINGS: CalendarViewSettings = {
 	selectMirror: true,
 	weekNumbers: false,
 	// Today highlighting
-	showTodayHighlight: true
+	showTodayHighlight: true,
+	// Event display
+	eventMinHeight: 15 // FullCalendar default
 };
 
 export const DEFAULT_ICS_INTEGRATION_SETTINGS: ICSIntegrationSettings = {

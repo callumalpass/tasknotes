@@ -204,4 +204,6 @@ export interface CalendarViewSettings {
 	weekNumbers: boolean;
 	// Today highlighting
 	showTodayHighlight: boolean;
+	// Event display
+	eventMinHeight: number; // Minimum height for events (FullCalendar eventMinHeight)
 }
