@@ -511,7 +511,7 @@ export const en: TranslationTree = {
                 },
                 archiveFolder: {
                     name: 'Archive folder',
-                    description: 'Folder to move tasks to when archived'
+                    description: 'Folder to move tasks to when archived. Supports template variables like {{year}}, {{month}}, {{priority}}, etc.'
                 }
             },
             taskIdentification: {

@@ -726,7 +726,15 @@ export class TaskService {
             try {
                 if (!isCurrentlyArchived && this.plugin.settings.archiveFolder?.trim()) {
                     // Archiving: Move to archive folder
-                    const archiveFolder = this.plugin.settings.archiveFolder.trim();
+                    const archiveFolderTemplate = this.plugin.settings.archiveFolder.trim();
+                    // Process template variables in archive folder path
+                    const archiveFolder = this.processFolderTemplate(archiveFolderTemplate, {
+                        title: updatedTask.title || '',
+                        priority: updatedTask.priority,
+                        status: updatedTask.status,
+                        contexts: updatedTask.contexts,
+                        projects: updatedTask.projects
+                    });
                     
                     // Ensure archive folder exists
                     await ensureFolderExists(this.plugin.app.vault, archiveFolder);
