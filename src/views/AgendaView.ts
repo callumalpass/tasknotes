@@ -3,7 +3,6 @@ import {
     EVENT_DATA_CHANGED,
     EVENT_DATE_CHANGED,
     EVENT_DATE_SELECTED,
-    EVENT_TASK_UPDATED,
     FilterQuery,
     NoteInfo,
     SavedView,
@@ -13,7 +12,7 @@ import { EventRef, ItemView, Notice, Setting, TFile, WorkspaceLeaf, setIcon, But
 import { addDays, endOfWeek, format, isSameDay, startOfWeek } from 'date-fns';
 import { convertUTCToLocalCalendarDate, createUTCDateFromLocalCalendarDate, formatDateForStorage, getTodayLocal, isTodayUTC } from '../utils/dateUtils';
 import { createICSEventCard, updateICSEventCard } from '../ui/ICSCard';
-import { createTaskCard, refreshParentTaskSubtasks, updateTaskCard } from '../ui/TaskCard';
+import { createTaskCard, updateTaskCard } from '../ui/TaskCard';
 import { initializeViewPerformance, cleanupViewPerformance, shouldRefreshForDateBasedView, OptimizedView } from '../utils/viewOptimizations';
 
 import { FilterBar } from '../ui/FilterBar';

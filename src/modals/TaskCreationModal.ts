@@ -230,7 +230,7 @@ class NLPSuggest extends AbstractInputSuggest<TagSuggestion | ContextSuggestion 
                     getFrontmatter: (entry) => {
                         // entry.path refers to a markdown file path
                         const file = appRef?.vault.getAbstractFileByPath(entry.path);
-                        // @ts-ignore obsidian typing: we only read cache.frontmatter
+                        // @ts-expect-error obsidian typing: we only read cache.frontmatter
                         const cache = file ? appRef?.metadataCache.getFileCache(file as any) : undefined;
                         return cache?.frontmatter || {};
                     },

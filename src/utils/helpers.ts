@@ -672,7 +672,7 @@ export function getNextUncompletedOccurrence(task: TaskInfo): Date | null {
  * @param task Task info object
  * @param maintainDueOffset Whether to maintain the due date offset (from settings)
  */
-export function updateToNextScheduledOccurrence(task: TaskInfo, maintainDueOffset: boolean = true): { scheduled: string | null; due: string | null } {
+export function updateToNextScheduledOccurrence(task: TaskInfo, maintainDueOffset = true): { scheduled: string | null; due: string | null } {
 	const nextOccurrence = getNextUncompletedOccurrence(task);
 	let nextScheduleStr: string | null = null;
 	let nextDueStr: string | null = null;

@@ -1,4 +1,4 @@
-async function loadAPIEndpoints(container: HTMLElement, apiPort: number = 8080): Promise<void> {
+async function loadAPIEndpoints(container: HTMLElement, apiPort = 8080): Promise<void> {
     // Show loading message first
     const loadingEl = container.createEl('p', { 
         text: 'Loading API endpoints...',

@@ -140,13 +140,14 @@ export class ProjectSelectModal extends FuzzySuggestModal<TAbstractFile> {
                     case 'aliases':
                         // Already handled above
                         break;
-                    default:
+                    default: {
                         // Custom frontmatter field
                         const customValue = cache.frontmatter[fieldKey];
                         if (customValue != null) {
                             value = Array.isArray(customValue) ? customValue.join(' ') : String(customValue);
                         }
                         break;
+                    }
                 }
                 
                 if (value) {
@@ -204,7 +205,7 @@ export class ProjectSelectModal extends FuzzySuggestModal<TAbstractFile> {
             });
             
             // Always show filename first
-            const filenameEl = container.createDiv({ cls: 'project-name', text: file.basename });
+            container.createDiv({ cls: 'project-name', text: file.basename });
             
             // Render configured rows
             for (let i = 0; i < Math.min(rowConfigs.length, 3); i++) {

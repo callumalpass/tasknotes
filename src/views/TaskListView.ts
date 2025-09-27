@@ -4,14 +4,13 @@ import {
     TASK_LIST_VIEW_TYPE,
     TaskInfo,
     EVENT_DATA_CHANGED,
-    EVENT_TASK_UPDATED,
     EVENT_DATE_CHANGED,
     FilterQuery,
     SavedView
 } from '../types';
 // No helper functions needed from helpers
 import { perfMonitor } from '../utils/PerformanceMonitor';
-import { createTaskCard, updateTaskCard, refreshParentTaskSubtasks } from '../ui/TaskCard';
+import { createTaskCard, updateTaskCard } from '../ui/TaskCard';
 import { initializeViewPerformance, cleanupViewPerformance, OptimizedView, selectiveUpdateForListView } from '../utils/viewOptimizations';
 import { FilterBar } from '../ui/FilterBar';
 import { GroupingUtils } from '../utils/GroupingUtils';
@@ -738,7 +737,7 @@ export class TaskListView extends ItemView implements OptimizedView {
             try { setIcon(expandAllBtn, 'list-tree'); } catch (_) { expandAllBtn.textContent = '+'; }
             const collapseAllBtn = subgroupActions.createEl('button', { cls: 'task-subgroup-action clickable-icon', attr: { 'aria-label': 'Collapse all subgroups' } });
             try { setIcon(collapseAllBtn, 'list-collapse'); } catch (_) { collapseAllBtn.textContent = '−'; }
-            const countEl = rightSide.createSpan({
+            rightSide.createSpan({
                 text: ` ${GroupCountUtils.formatGroupCount(groupStats.completed, groupStats.total).text}`,
                 cls: 'agenda-view__item-count'
             });

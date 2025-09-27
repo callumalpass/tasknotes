@@ -12,7 +12,7 @@ export class StatusSuggestionService {
         statusConfigs: StatusConfig[],
         priorityConfigs: any[],
         defaultToScheduled: boolean,
-        languageCode: string = 'en'
+        languageCode = 'en'
     ) {
         this.nlpParser = new NaturalLanguageParser(
             statusConfigs,

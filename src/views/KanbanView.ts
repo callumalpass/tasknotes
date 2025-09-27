@@ -3,13 +3,13 @@ import TaskNotesPlugin from '../main';
 import { 
     KANBAN_VIEW_TYPE, 
     EVENT_DATA_CHANGED, 
-    EVENT_TASK_UPDATED, 
+ 
     TaskInfo,
     FilterQuery,
     TaskGroupKey,
     SavedView
 } from '../types';
-import { createTaskCard, updateTaskCard, refreshParentTaskSubtasks } from '../ui/TaskCard';
+import { createTaskCard, updateTaskCard } from '../ui/TaskCard';
 import { initializeViewPerformance, cleanupViewPerformance, OptimizedView, selectiveUpdateForListView } from '../utils/viewOptimizations';
 import { FilterBar } from '../ui/FilterBar';
 

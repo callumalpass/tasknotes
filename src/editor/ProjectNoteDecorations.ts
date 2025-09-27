@@ -1,5 +1,5 @@
 import { Decoration, DecorationSet, EditorView, PluginSpec, PluginValue, ViewPlugin, ViewUpdate, WidgetType } from '@codemirror/view';
-import { EVENT_DATA_CHANGED, EVENT_TASK_DELETED, EVENT_TASK_UPDATED, EVENT_DATE_CHANGED, FilterQuery, SUBTASK_WIDGET_VIEW_TYPE, TaskInfo, SavedView } from '../types';
+import { EVENT_DATA_CHANGED, EVENT_TASK_DELETED, EVENT_TASK_UPDATED, EVENT_DATE_CHANGED, FilterQuery, SUBTASK_WIDGET_VIEW_TYPE, TaskInfo } from '../types';
 import { EventRef, TFile, editorInfoField, editorLivePreviewField, setIcon, ButtonComponent } from 'obsidian';
 import { Extension, RangeSetBuilder, StateEffect } from '@codemirror/state';
 
