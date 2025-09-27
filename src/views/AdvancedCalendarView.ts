@@ -1377,8 +1377,16 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
         
         // Only override time estimate if it's an intentional drag operation
         if (allDay) {
-            // For all-day events, don't override user's default time estimate
-            // Let TaskCreationModal use the default setting
+            // For all-day events, calculate duration in days if multi-day selection
+            const dayDurationMillis = 24 * 60 * 60 * 1000; // milliseconds in a day
+            const daysDuration = Math.round((end.getTime() - start.getTime()) / dayDurationMillis);
+
+            if (daysDuration > 1) {
+                // Multi-day selection: set time estimate based on days
+                const minutesPerDay = 60 * 24;
+                prePopulatedValues.timeEstimate = daysDuration * minutesPerDay;
+            }
+            // For single-day all-day events, let TaskCreationModal use the default setting
         } else if (isDragOperation) {
             // User dragged to select a specific duration, use that
             prePopulatedValues.timeEstimate = durationMinutes;
