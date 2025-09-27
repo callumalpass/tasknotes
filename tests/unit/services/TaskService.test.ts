@@ -281,6 +281,59 @@ describe('TaskService', () => {
       );
     });
 
+    it('should handle project template variables correctly by extracting basenames from wikilinks', async () => {
+      mockPlugin.settings.tasksFolder = 'projects/{{context}}/{{project}}/tasks';
+
+      // Mock metadataCache to resolve project links
+      const mockFile = { basename: 'testProject Root' };
+      mockPlugin.app.metadataCache.getFirstLinkpathDest = jest.fn().mockReturnValue(mockFile);
+
+      const taskData: TaskCreationData = {
+        title: 'Test Task with Project Link',
+        contexts: ['testContext'],
+        projects: ['[[projects/testContext/testProject/testProject Root]]']
+      };
+
+      await taskService.createTask(taskData);
+
+      expect(mockPlugin.app.vault.create).toHaveBeenCalledWith(
+        'projects/testContext/testProject Root/tasks/test-task-with-project-link.md',
+        expect.stringContaining('title: Test Task with Project Link')
+      );
+    });
+
+    it('should handle project template variables with pipe syntax correctly', async () => {
+      mockPlugin.settings.tasksFolder = 'projects/{{project}}/tasks';
+
+      const taskData: TaskCreationData = {
+        title: 'Test Task with Pipe Syntax',
+        projects: ['[[long/path/to/project|Display Name]]']
+      };
+
+      await taskService.createTask(taskData);
+
+      expect(mockPlugin.app.vault.create).toHaveBeenCalledWith(
+        'projects/Display Name/tasks/test-task-with-pipe-syntax.md',
+        expect.stringContaining('title: Test Task with Pipe Syntax')
+      );
+    });
+
+    it('should handle project template variables for non-wikilink projects', async () => {
+      mockPlugin.settings.tasksFolder = 'projects/{{project}}/tasks';
+
+      const taskData: TaskCreationData = {
+        title: 'Test Task with Simple Project',
+        projects: ['Simple Project Name']
+      };
+
+      await taskService.createTask(taskData);
+
+      expect(mockPlugin.app.vault.create).toHaveBeenCalledWith(
+        'projects/Simple Project Name/tasks/test-task-with-simple-project.md',
+        expect.stringContaining('title: Test Task with Simple Project')
+      );
+    });
+
     it('should validate required fields', async () => {
       await expect(taskService.createTask({ title: '' })).rejects.toThrow('Title is required');
       await expect(taskService.createTask({ title: '   ' })).rejects.toThrow('Title is required');

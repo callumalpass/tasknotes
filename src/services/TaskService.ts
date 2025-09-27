@@ -84,15 +84,15 @@ export class TaskService {
                 : '';
             processedPath = processedPath.replace(/\{\{context\}\}/g, context);
             
-            // Handle single project (first one if multiple) 
+            // Handle single project (first one if multiple)
             const project = Array.isArray(taskData.projects) && taskData.projects.length > 0
-                ? taskData.projects[0].replace(/\[{2}(.*)]{2}/, '$1') //remove the brackets from links if presents
+                ? this.extractProjectBasename(taskData.projects[0])
                 : '';
             processedPath = processedPath.replace(/\{\{project\}\}/g, project);
-            
+
             //Handle multiple projects
             const projects = Array.isArray(taskData.projects) && taskData.projects.length > 0
-                ? taskData.projects.map(project => project.replace(/\[{2}(.*)]{2}/, '$1')).join('/')
+                ? taskData.projects.map(project => this.extractProjectBasename(project)).join('/')
                 : '';
             processedPath = processedPath.replace(/\{\{projects\}\}/g, projects);
             
@@ -1472,5 +1472,48 @@ export class TaskService {
         
         // Step 5: Return authoritative data
         return updatedTask;
+    }
+
+    /**
+     * Extract the basename from a project string, handling wikilink format
+     * Examples:
+     * - "[[projects/testContext/testProject/testProject Root]]" -> "testProject Root"
+     * - "[[path|display text]]" -> "display text"
+     * - "simple string" -> "simple string"
+     */
+    private extractProjectBasename(project: string): string {
+        if (!project) return '';
+
+        // Check if it's a wikilink format [[...]]
+        const linkMatch = project.match(/^\[\[([^\]]+)\]\]$/);
+        if (linkMatch) {
+            const linkContent = linkMatch[1];
+
+            // Handle pipe syntax: "path|display" -> use "display"
+            if (linkContent.includes('|')) {
+                return linkContent.split('|')[1].trim();
+            }
+
+            // Try to resolve the file using Obsidian's metadata cache
+            if (this.plugin.app?.metadataCache) {
+                try {
+                    const file = this.plugin.app.metadataCache.getFirstLinkpathDest(linkContent, '');
+                    if (file) {
+                        // Return the file's basename (name without extension)
+                        return file.basename;
+                    }
+                } catch (error) {
+                    // File resolution failed, fall back to manual extraction
+                    console.debug('Error resolving project file:', error);
+                }
+            }
+
+            // Fallback: extract basename manually from the path
+            const pathParts = linkContent.split('/');
+            return pathParts[pathParts.length - 1] || linkContent;
+        }
+
+        // For non-wikilink strings, return as-is
+        return project;
     }
 }
