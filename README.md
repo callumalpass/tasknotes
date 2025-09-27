@@ -141,7 +141,7 @@ curl http://localhost:8080/api/stats
 
 The API enables browser integrations:
 - **Bookmarklets** for one-click task creation from any webpage
-- **Browser extensions**: [for example](https://github.com/callumalpass/tasknotesbrowser-extension)
+- **Browser extensions**: [for example](https://github.com/callumalpass/tasknotes-browser-extension) 
 - **Automation** with Zapier, IFTTT, and similar services
 
 ### Documentation
