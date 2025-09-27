@@ -733,7 +733,9 @@ export const es: TranslationTree = {
                     modifiedDate: 'Fecha de modificación',
                     projects: 'Proyectos',
                     contexts: 'Contextos',
-                    tags: 'Etiquetas'
+                    tags: 'Etiquetas',
+                    blocked: 'Bloqueada',
+                    blocking: 'Bloqueando'
                 }
             },
             taskFilenames: {
@@ -1869,6 +1871,16 @@ export const es: TranslationTree = {
             dailyBadge: 'Diario',
             dailyTooltip: 'Nota diaria'
         },
+        taskCard: {
+            blockedBadge: 'Bloqueada',
+            blockedBadgeTooltip: 'Esta tarea está esperando otra tarea',
+            blockingBadge: 'Bloqueando',
+            blockingBadgeTooltip: 'Esta tarea bloquea otra tarea',
+            blockingToggle: 'Bloqueando {count} tareas',
+            loadingDependencies: 'Cargando dependencias...',
+            blockingEmpty: 'Sin tareas dependientes',
+            blockingLoadError: 'No se pudieron cargar las dependencias'
+        },
         filterHeading: {
             allViewName: 'Todos'
         },
@@ -1986,7 +1998,9 @@ export const es: TranslationTree = {
                 modifiedDate: 'Fecha de modificación',
                 projects: 'Proyectos',
                 contexts: 'Contextos',
-                tags: 'Etiquetas'
+                tags: 'Etiquetas',
+                blocked: 'Bloqueada',
+                blocking: 'Bloqueando'
             }
         },
         reminderContextMenu: {

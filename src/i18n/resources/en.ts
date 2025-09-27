@@ -734,7 +734,9 @@ export const en: TranslationTree = {
                     modifiedDate: 'Modified Date',
                     projects: 'Projects',
                     contexts: 'Contexts',
-                    tags: 'Tags'
+                    tags: 'Tags',
+                    blocked: 'Blocked',
+                    blocking: 'Blocking'
                 }
             },
             taskFilenames: {
@@ -1912,6 +1914,8 @@ export const en: TranslationTree = {
         taskCard: {
             blockedBadge: 'Blocked',
             blockedBadgeTooltip: 'This task is waiting on another task',
+            blockingBadge: 'Blocking',
+            blockingBadgeTooltip: 'This task is blocking another task',
             blockingToggle: 'Blocking {count} tasks',
             loadingDependencies: 'Loading dependencies...',
             blockingEmpty: 'No dependent tasks',
@@ -2034,7 +2038,9 @@ export const en: TranslationTree = {
                 modifiedDate: 'Modified Date',
                 projects: 'Projects',
                 contexts: 'Contexts',
-                tags: 'Tags'
+                tags: 'Tags',
+                blocked: 'Blocked',
+                blocking: 'Blocking'
             }
         },
         reminderContextMenu: {

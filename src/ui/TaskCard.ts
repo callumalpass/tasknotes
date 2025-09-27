@@ -96,7 +96,9 @@ function getDefaultVisibleProperties(): string[] {
         'scheduled',   // Scheduled date
         'projects',    // Projects
         'contexts',    // Contexts
-        'tags'         // Tags
+        'tags',        // Tags
+        'blocked',     // Blocked indicator
+        'blocking'     // Blocking indicator
     ];
 }
 
@@ -109,6 +111,8 @@ const PROPERTY_EXTRACTORS: Record<string, (task: TaskInfo) => any> = {
     'projects': (task) => task.projects,
     'contexts': (task) => task.contexts,
     'tags': (task) => task.tags,
+    'blocked': (task) => task.isBlocked,
+    'blocking': (task) => task.isBlocking,
     'timeEstimate': (task) => task.timeEstimate,
     'totalTrackedTime': (task) => task.totalTrackedTime,
     'recurrence': (task) => task.recurrence,
@@ -1112,15 +1116,6 @@ export function createTaskCard(task: TaskInfo, plugin: TaskNotesPlugin, visibleP
         titleTextEl.classList.add('completed');
     }
 
-    if (task.isBlocked) {
-        const blockedBadge = titleEl.createSpan({
-            cls: 'task-card__badge task-card__badge--blocked',
-            attr: { 'aria-label': plugin.i18n.translate('ui.taskCard.blockedBadge') }
-        });
-        setIcon(blockedBadge, 'octagon');
-        setTooltip(blockedBadge, plugin.i18n.translate('ui.taskCard.blockedBadgeTooltip'), { placement: 'top' });
-    }
-    
     // Second line: Metadata (dynamic based on visible properties)
     const metadataLine = contentContainer.createEl('div', { cls: 'task-card__metadata' });
     const metadataElements: HTMLElement[] = [];
@@ -1132,19 +1127,52 @@ export function createTaskCard(task: TaskInfo, plugin: TaskNotesPlugin, visibleP
     
     // Render each visible property
     for (const propertyId of propertiesToShow) {
-        // Skip status and priority - they're shown as dots
         if (propertyId === 'status' || propertyId === 'priority') continue;
-        
+
+        if (propertyId === 'blocked') {
+            if (task.isBlocked) {
+                const blockedLabel = plugin.i18n.translate('ui.taskCard.blockedBadge');
+                const blockedCount = task.blockedBy?.length ?? 0;
+                const pillText = blockedCount > 0
+                    ? `${blockedLabel} (${blockedCount})`
+                    : blockedLabel;
+                const blockedPill = metadataLine.createSpan({
+                    cls: 'task-card__metadata-pill task-card__metadata-pill--blocked',
+                    text: pillText
+                });
+                setTooltip(blockedPill, plugin.i18n.translate('ui.taskCard.blockedBadgeTooltip'), { placement: 'top' });
+                metadataElements.push(blockedPill);
+            }
+            continue;
+        }
+
+        if (propertyId === 'blocking') {
+            if (task.isBlocking) {
+                const blockingLabel = plugin.i18n.translate('ui.taskCard.blockingBadge');
+                const blockingCount = task.blocking?.length ?? 0;
+                const pillText = blockingCount > 0
+                    ? `${blockingLabel} (${blockingCount})`
+                    : blockingLabel;
+                const blockingPill = metadataLine.createSpan({
+                    cls: 'task-card__metadata-pill task-card__metadata-pill--blocking',
+                    text: pillText
+                });
+                setTooltip(blockingPill, plugin.i18n.translate('ui.taskCard.blockingBadgeTooltip'), { placement: 'top' });
+                metadataElements.push(blockingPill);
+            }
+            continue;
+        }
+
         const element = renderPropertyMetadata(metadataLine, propertyId, task, plugin);
         if (element) {
             metadataElements.push(element);
         }
     }
-    
-    
+
+
     // Add separators between metadata elements
     addMetadataSeparators(metadataLine, metadataElements);
-    
+
     // Add click handlers with single/double click distinction
     const { clickHandler, dblclickHandler } = createTaskClickHandler({
         task,
@@ -1668,23 +1696,11 @@ export function updateTaskCard(element: HTMLElement, task: TaskInfo, plugin: Tas
         titleContainer.classList.toggle('completed', titleIsCompleted);
     }
 
-    const existingBadge = element.querySelector('.task-card__badge--blocked') as HTMLElement;
-    if (task.isBlocked) {
-        if (!existingBadge) {
-            const titleContainer = element.querySelector('.task-card__title') as HTMLElement;
-                if (titleContainer) {
-                const badge = titleContainer.createSpan({
-                    cls: 'task-card__badge task-card__badge--blocked',
-                    attr: { 'aria-label': plugin.i18n.translate('ui.taskCard.blockedBadge') }
-                });
-                setIcon(badge, 'octagon');
-                setTooltip(badge, plugin.i18n.translate('ui.taskCard.blockedBadgeTooltip'), { placement: 'top' });
-            }
-        }
-    } else if (existingBadge) {
-        existingBadge.remove();
+    const legacyBlockedBadge = element.querySelector('.task-card__badge--blocked');
+    if (legacyBlockedBadge) {
+        legacyBlockedBadge.remove();
     }
-    
+
     // Update metadata line
     const metadataLine = element.querySelector('.task-card__metadata') as HTMLElement;
     if (metadataLine) {
@@ -1697,11 +1713,43 @@ export function updateTaskCard(element: HTMLElement, task: TaskInfo, plugin: Tas
                                 plugin.settings.defaultVisibleProperties || 
                                 getDefaultVisibleProperties();
         
-        // Render each visible property
         for (const propertyId of propertiesToShow) {
-            // Skip status and priority - they're shown as dots
             if (propertyId === 'status' || propertyId === 'priority') continue;
-            
+
+            if (propertyId === 'blocked') {
+                if (task.isBlocked) {
+                    const blockedLabel = plugin.i18n.translate('ui.taskCard.blockedBadge');
+                    const blockedCount = task.blockedBy?.length ?? 0;
+                    const pillText = blockedCount > 0
+                        ? `${blockedLabel} (${blockedCount})`
+                        : blockedLabel;
+                    const blockedPill = metadataLine.createSpan({
+                        cls: 'task-card__metadata-pill task-card__metadata-pill--blocked',
+                        text: pillText
+                    });
+                    setTooltip(blockedPill, plugin.i18n.translate('ui.taskCard.blockedBadgeTooltip'), { placement: 'top' });
+                    metadataElements.push(blockedPill);
+                }
+                continue;
+            }
+
+            if (propertyId === 'blocking') {
+                if (task.isBlocking) {
+                    const blockingLabel = plugin.i18n.translate('ui.taskCard.blockingBadge');
+                    const blockingCount = task.blocking?.length ?? 0;
+                    const pillText = blockingCount > 0
+                        ? `${blockingLabel} (${blockingCount})`
+                        : blockingLabel;
+                    const blockingPill = metadataLine.createSpan({
+                        cls: 'task-card__metadata-pill task-card__metadata-pill--blocking',
+                        text: pillText
+                    });
+                    setTooltip(blockingPill, plugin.i18n.translate('ui.taskCard.blockingBadgeTooltip'), { placement: 'top' });
+                    metadataElements.push(blockingPill);
+                }
+                continue;
+            }
+
             const element = renderPropertyMetadata(metadataLine, propertyId, task, plugin);
             if (element) {
                 metadataElements.push(element);

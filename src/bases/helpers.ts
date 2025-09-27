@@ -239,7 +239,7 @@ export async function renderTaskNotesInBasesView(
   // Use plugin default properties if no Bases properties available
   if (!visibleProperties || visibleProperties.length === 0) {
     visibleProperties = plugin.settings.defaultVisibleProperties || [
-      'due', 'scheduled', 'projects', 'contexts', 'tags'
+      'due', 'scheduled', 'projects', 'contexts', 'tags', 'blocked', 'blocking'
     ];
   }
 

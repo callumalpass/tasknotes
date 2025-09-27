@@ -35,6 +35,8 @@ export function renderAppearanceTab(container: HTMLElement, plugin: TaskNotesPlu
         core: [
             { key: 'status', label: translate('settings.appearance.taskCards.properties.status') },
             { key: 'priority', label: translate('settings.appearance.taskCards.properties.priority') },
+            { key: 'blocked', label: translate('settings.appearance.taskCards.properties.blocked') },
+            { key: 'blocking', label: translate('settings.appearance.taskCards.properties.blocking') },
             { key: 'due', label: translate('settings.appearance.taskCards.properties.due') },
             { key: 'scheduled', label: translate('settings.appearance.taskCards.properties.scheduled') },
             { key: 'timeEstimate', label: translate('settings.appearance.taskCards.properties.timeEstimate') },

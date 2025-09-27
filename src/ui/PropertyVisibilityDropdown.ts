@@ -104,6 +104,8 @@ export class PropertyVisibilityDropdown {
         properties.push(...[
             { id: 'status', name: this.plugin.i18n.translate('components.propertyVisibilityDropdown.properties.statusDot'), category: 'core' as const },
             { id: 'priority', name: this.plugin.i18n.translate('components.propertyVisibilityDropdown.properties.priorityDot'), category: 'core' as const },
+            { id: 'blocked', name: this.plugin.i18n.translate('components.propertyVisibilityDropdown.properties.blocked'), category: 'core' as const },
+            { id: 'blocking', name: this.plugin.i18n.translate('components.propertyVisibilityDropdown.properties.blocking'), category: 'core' as const },
             { id: 'due', name: this.plugin.i18n.translate('components.propertyVisibilityDropdown.properties.dueDate'), category: 'core' as const },
             { id: 'scheduled', name: this.plugin.i18n.translate('components.propertyVisibilityDropdown.properties.scheduledDate'), category: 'core' as const },
             { id: 'timeEstimate', name: this.plugin.i18n.translate('components.propertyVisibilityDropdown.properties.timeEstimate'), category: 'core' as const },

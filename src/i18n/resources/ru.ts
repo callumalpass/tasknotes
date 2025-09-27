@@ -733,7 +733,9 @@ export const ru: TranslationTree = {
                     modifiedDate: 'Дата изменения',
                     projects: 'Проекты',
                     contexts: 'Контексты',
-                    tags: 'Теги'
+                    tags: 'Теги',
+                    blocked: 'Заблокирована',
+                    blocking: 'Блокирует'
                 }
             },
             taskFilenames: {
@@ -1902,6 +1904,8 @@ export const ru: TranslationTree = {
         taskCard: {
             blockedBadge: 'Заблокирована',
             blockedBadgeTooltip: 'Эта задача ожидает другую задачу',
+            blockingBadge: 'Блокирует',
+            blockingBadgeTooltip: 'Эта задача блокирует другую задачу',
             blockingToggle: 'Блокирует {count} задач',
             loadingDependencies: 'Загрузка зависимостей…',
             blockingEmpty: 'Нет зависимых задач',
@@ -2024,7 +2028,9 @@ export const ru: TranslationTree = {
                 modifiedDate: 'Дата изменения',
                 projects: 'Проекты',
                 contexts: 'Контексты',
-                tags: 'Теги'
+                tags: 'Теги',
+                blocked: 'Заблокирована',
+                blocking: 'Блокирует'
             }
         },
         reminderContextMenu: {

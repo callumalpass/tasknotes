@@ -733,7 +733,9 @@ export const zh: TranslationTree = {
                     modifiedDate: '修改日期',
                     projects: '项目',
                     contexts: '上下文',
-                    tags: '标签'
+                    tags: '标签',
+                    blocked: '已阻塞',
+                    blocking: '阻塞中'
                 }
             },
             taskFilenames: {
@@ -1869,6 +1871,16 @@ export const zh: TranslationTree = {
             dailyBadge: '日记',
             dailyTooltip: '日记'
         },
+        taskCard: {
+            blockedBadge: '已阻塞',
+            blockedBadgeTooltip: '此任务正在等待其他任务',
+            blockingBadge: '阻塞中',
+            blockingBadgeTooltip: '此任务正在阻塞其他任务',
+            blockingToggle: '阻塞 {count} 个任务',
+            loadingDependencies: '正在加载依赖…',
+            blockingEmpty: '没有依赖的任务',
+            blockingLoadError: '无法加载依赖'
+        },
         filterHeading: {
             allViewName: '全部'
         },
@@ -1986,7 +1998,9 @@ export const zh: TranslationTree = {
                 modifiedDate: '修改日期',
                 projects: '项目',
                 contexts: '上下文',
-                tags: '标签'
+                tags: '标签',
+                blocked: '已阻塞',
+                blocking: '阻塞中'
             }
         },
         reminderContextMenu: {

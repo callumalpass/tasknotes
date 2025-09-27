@@ -1968,7 +1968,7 @@ export class FilterBar extends EventEmitter {
      * Get default fallback properties when no configuration exists
      */
     private getDefaultFallbackProperties(): string[] {
-        return ['status', 'priority', 'due', 'scheduled', 'projects', 'contexts', 'tags'];
+        return ['status', 'priority', 'due', 'scheduled', 'projects', 'contexts', 'tags', 'blocked', 'blocking'];
     }
 
     /**

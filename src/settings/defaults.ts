@@ -276,7 +276,9 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 		'scheduled',   // Scheduled date
 		'projects',    // Projects
 		'contexts',    // Contexts
-		'tags'         // Tags
+		'tags',        // Tags
+		'blocked',     // Blocked indicator
+		'blocking'     // Blocking indicator
 	],
 	// Bases integration defaults
 	enableBases: true,

@@ -733,7 +733,9 @@ export const ja: TranslationTree = {
                     modifiedDate: '変更日',
                     projects: 'プロジェクト',
                     contexts: 'コンテキスト',
-                    tags: 'タグ'
+                    tags: 'タグ',
+                    blocked: 'ブロック中',
+                    blocking: 'ブロックしている'
                 }
             },
             taskFilenames: {
@@ -1869,6 +1871,16 @@ export const ja: TranslationTree = {
             dailyBadge: 'デイリー',
             dailyTooltip: 'デイリーノート'
         },
+        taskCard: {
+            blockedBadge: 'ブロック中',
+            blockedBadgeTooltip: 'このタスクは他のタスクを待っています',
+            blockingBadge: 'ブロックしている',
+            blockingBadgeTooltip: 'このタスクは他のタスクをブロックしています',
+            blockingToggle: '{count} 件のタスクをブロック',
+            loadingDependencies: '依存関係を読み込み中…',
+            blockingEmpty: '依存タスクはありません',
+            blockingLoadError: '依存関係の読み込みに失敗しました'
+        },
         filterHeading: {
             allViewName: 'すべて'
         },
@@ -1986,7 +1998,9 @@ export const ja: TranslationTree = {
                 modifiedDate: '変更日',
                 projects: 'プロジェクト',
                 contexts: 'コンテキスト',
-                tags: 'タグ'
+                tags: 'タグ',
+                blocked: 'ブロック中',
+                blocking: 'ブロックしている'
             }
         },
         reminderContextMenu: {
