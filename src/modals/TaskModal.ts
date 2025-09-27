@@ -10,6 +10,7 @@ import { sanitizeTags, splitFrontmatterAndBody } from '../utils/helpers';
 import { ProjectSelectModal } from './ProjectSelectModal';
 import { TaskInfo, Reminder } from '../types';
 import { formatDependencyLink, resolveDependencyEntry } from '../utils/dependencyUtils';
+import { appendInternalLink, type LinkServices } from '../ui/renderers/linkRenderer';
 
 interface DependencyItem {
     raw: string;
@@ -86,6 +87,13 @@ export abstract class TaskModal extends Modal {
         this.renderBlockingList();
     }
 
+    protected getLinkServices(): LinkServices {
+        return {
+            metadataCache: this.plugin.app.metadataCache,
+            workspace: this.plugin.app.workspace
+        };
+    }
+
     protected renderBlockedByList(): void {
         this.renderDependencyList(this.blockedByList, this.blockedByItems, (index) => {
             this.blockedByItems.splice(index, 1);
@@ -111,6 +119,8 @@ export abstract class TaskModal extends Modal {
             return;
         }
 
+        const linkServices = this.getLinkServices();
+
         items.forEach((item, index) => {
             const itemEl = listEl.createDiv({ cls: 'task-project-item' });
             if (item.unresolved) {
@@ -121,14 +131,20 @@ export abstract class TaskModal extends Modal {
             const infoEl = itemEl.createDiv({ cls: 'task-project-info' });
             const nameEl = infoEl.createSpan({ cls: 'task-project-name' });
 
-            if (item.path) {
-                nameEl.textContent = item.name;
+            if (item.path && !item.unresolved) {
+                nameEl.addClass('clickable-dependency');
+                appendInternalLink(nameEl, item.path.replace(/\.md$/i, ''), item.name, linkServices, {
+                    cssClass: 'task-dependency-link internal-link',
+                    hoverSource: 'tasknotes-dependency-link',
+                    showErrorNotices: true
+                });
                 if (item.path !== item.name) {
                     infoEl.createDiv({ cls: 'task-project-path', text: item.path });
                 }
             } else {
                 nameEl.textContent = item.name;
-                infoEl.createDiv({ cls: 'task-project-path', text: item.raw });
+                const pathText = item.path ?? item.raw;
+                infoEl.createDiv({ cls: 'task-project-path', text: pathText });
             }
 
             const removeBtn = itemEl.createEl('button', {
