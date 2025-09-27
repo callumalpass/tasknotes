@@ -1072,7 +1072,9 @@ export class KanbanView extends ItemView implements OptimizedView {
     private formatColumnTitle(id: string, groupBy: TaskGroupKey): string {
         // Handle custom fields (user: prefix)
         if (typeof groupBy === 'string' && groupBy.startsWith('user:')) {
-            if (id === 'uncategorized' || id === 'none') {
+            // Handle sentinel values that represent "no value"
+            const sentinelValues = ['uncategorized', 'none', 'no-value', 'empty', 'non-numeric', 'no-date'];
+            if (sentinelValues.includes(id)) {
                 return 'Uncategorized';
             }
             return id;
@@ -1209,8 +1211,9 @@ export class KanbanView extends ItemView implements OptimizedView {
         }
 
         await this.plugin.app.fileManager.processFrontMatter(file as any, (frontmatter: any) => {
-            // Handle special "uncategorized" case by clearing the field
-            if (value === 'uncategorized' || value === 'none') {
+            // Handle sentinel values that represent "no value" by clearing the field
+            const sentinelValues = ['uncategorized', 'none', 'no-value', 'empty', 'non-numeric', 'no-date'];
+            if (sentinelValues.includes(value)) {
                 delete frontmatter[actualFieldName];
             } else {
                 frontmatter[actualFieldName] = value;
