@@ -52,6 +52,7 @@ import { StatusManager } from './services/StatusManager';
 import { PriorityManager } from './services/PriorityManager';
 import { TaskService } from './services/TaskService';
 import { FilterService } from './services/FilterService';
+import { TaskStatsService } from './services/TaskStatsService';
 import { ViewPerformanceService } from './services/ViewPerformanceService';
 import { AutoArchiveService } from './services/AutoArchiveService';
 import { ViewStateManager } from './services/ViewStateManager';
@@ -141,6 +142,7 @@ export default class TaskNotesPlugin extends Plugin {
 	// Business logic services
 	taskService: TaskService;
 	filterService: FilterService;
+	taskStatsService: TaskStatsService;
 	viewStateManager: ViewStateManager;
 	projectSubtasksService: ProjectSubtasksService;
 	expandedProjectsService: ExpandedProjectsService;
@@ -290,6 +292,7 @@ export default class TaskNotesPlugin extends Plugin {
 			this.priorityManager,
 			this
 		);
+		this.taskStatsService = new TaskStatsService(this.cacheManager);
 		this.viewStateManager = new ViewStateManager(this.app, this);
 		this.projectSubtasksService = new ProjectSubtasksService(this);
 		this.expandedProjectsService = new ExpandedProjectsService(this);
@@ -337,6 +340,8 @@ export default class TaskNotesPlugin extends Plugin {
 		this.addRibbonIcon('bar-chart-3', 'Open pomodoro stats', async () => {
 			await this.activatePomodoroStatsView();
 		});
+
+		
 
 		this.addRibbonIcon('tasknotes-simple', 'Create new task', () => {
 			this.openTaskCreationModal();
@@ -454,6 +459,7 @@ export default class TaskNotesPlugin extends Plugin {
 				STATS_VIEW_TYPE,
 				(leaf) => new StatsView(leaf, this)
 			);
+			
 			this.registerView(
 				KANBAN_VIEW_TYPE,
 				(leaf) => new KanbanView(leaf, this)
@@ -1497,6 +1503,7 @@ export default class TaskNotesPlugin extends Plugin {
 	async activateStatsView() {
 		return this.activateView(STATS_VIEW_TYPE);
 	}
+
 
 	async activateKanbanView() {
 		return this.activateView(KANBAN_VIEW_TYPE);

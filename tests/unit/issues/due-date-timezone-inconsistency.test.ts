@@ -136,15 +136,16 @@ describe('Due Date Timezone Inconsistency Bug', () => {
     });
 
     describe('Comparison with current implementation', () => {
-        it('should show current behavior NO LONGER matches simulation (bug fixed)', () => {
-            // Test that our simulation (showing the bug) no longer matches actual behavior
+        it('should verify date formatting is consistent', () => {
+            // Test that date formatting produces consistent results
             const testDate = '2024-10-01T14:00:00.000Z';
             const date = parseDate(testDate);
-            
-            // Current implementation (now uses UTC methods)
+
+            // Current implementation should use UTC methods consistently
             const actualFormat = formatDateForStorage(date);
-            
-            // Get current timezone offset
+            expect(actualFormat).toBe('2024-10-01');
+
+            // Verify round-trip consistency
             const offsetMinutes = new Date().getTimezoneOffset();
             const offsetHours = -offsetMinutes / 60; // Convert to hours, flip sign
             

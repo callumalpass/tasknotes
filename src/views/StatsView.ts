@@ -13,6 +13,7 @@ import { createTaskCard } from '../ui/TaskCard';
 interface ProjectStats {
     projectName: string;
     totalTimeSpent: number;
+    totalTimeEstimate: number;
     taskCount: number;
     completedTaskCount: number;
     avgTimePerTask: number;
@@ -21,6 +22,8 @@ interface ProjectStats {
 
 interface OverallStats {
     totalTimeSpent: number;
+
+    totalTimeEstimate: number;
     totalTasks: number;
     completedTasks: number;
     activeProjects: number;
@@ -49,6 +52,7 @@ interface ProjectDrilldownData {
     projectName: string;
     tasks: TaskInfo[];
     totalTimeSpent: number;
+    totalTimeEstimate: number;
     completionRate: number;
     timeByDay: TimeByDay[];
     recentActivity: TaskInfo[];
@@ -478,11 +482,13 @@ export class StatsView extends ItemView {
     
     private calculateOverallStats(tasks: TaskInfo[]): OverallStats {
         let totalTimeSpent = 0;
+        let totalTimeEstimate = 0;
         let completedTasks = 0;
         const uniqueProjects = new Set<string>();
         
         for (const task of tasks) {
             totalTimeSpent += calculateTotalTimeSpent(task.timeEntries || []);
+            totalTimeEstimate += task.timeEstimate || 0;
             
             if (this.plugin.statusManager.isCompletedStatus(task.status)) {
                 completedTasks++;
@@ -497,6 +503,7 @@ export class StatsView extends ItemView {
         
         return {
             totalTimeSpent,
+            totalTimeEstimate,
             totalTasks: tasks.length,
             completedTasks,
             activeProjects: uniqueProjects.size,
@@ -544,6 +551,7 @@ export class StatsView extends ItemView {
         const projectMap = new Map<string, {
             tasks: TaskInfo[];
             totalTime: number;
+            totalTimeEstimate: number; // Add this
             completedCount: number;
             lastActivity: string | undefined;
         }>();
@@ -551,6 +559,7 @@ export class StatsView extends ItemView {
         // Group tasks by project - follow FilterService pattern exactly
         for (const task of tasks) {
             const timeSpent = calculateTotalTimeSpent(task.timeEntries || []);
+            const timeEstimate = task.timeEstimate || 0;
             const isCompleted = this.plugin.statusManager.isCompletedStatus(task.status);
             
             // Get last activity date
@@ -574,6 +583,7 @@ export class StatsView extends ItemView {
                     projectMap.set(consolidatedProject, {
                         tasks: [],
                         totalTime: 0,
+                        totalTimeEstimate: 0, // Add this
                         completedCount: 0,
                         lastActivity: undefined
                     });
@@ -584,6 +594,7 @@ export class StatsView extends ItemView {
                 
                 projectData.tasks.push(task);
                 projectData.totalTime += timeSpent;
+                projectData.totalTimeEstimate += timeEstimate; // Add this
                 if (isCompleted) projectData.completedCount++;
                 
                 // Update last activity if this is more recent
@@ -599,6 +610,7 @@ export class StatsView extends ItemView {
             projectStats.push({
                 projectName: consolidatedProjectName,
                 totalTimeSpent: data.totalTime,
+                totalTimeEstimate: data.totalTimeEstimate, // Add this
                 taskCount: data.tasks.length,
                 completedTaskCount: data.completedCount,
                 avgTimePerTask: data.tasks.length > 0 ? data.totalTime / data.tasks.length : 0,
@@ -838,8 +850,8 @@ export class StatsView extends ItemView {
         // Total Time
         const totalTimeCard = container.createDiv({ cls: 'stats-overview-card stats-view__overview-card' });
         const totalTimeValue = totalTimeCard.createDiv({ cls: 'overview-value stats-view__overview-value' });
-        totalTimeValue.textContent = formatTime(stats.totalTimeSpent);
-        totalTimeCard.createDiv({ cls: 'overview-label stats-view__overview-label', text: 'Total Time Tracked' });
+        totalTimeValue.textContent = `${formatTime(stats.totalTimeSpent)} / ${formatTime(stats.totalTimeEstimate)}`;
+        totalTimeCard.createDiv({ cls: 'overview-label stats-view__overview-label', text: 'Time Tracked / Estimated' });
         
         // Total Tasks
         const totalTasksCard = container.createDiv({ cls: 'stats-overview-card stats-view__overview-card' });
@@ -878,8 +890,8 @@ export class StatsView extends ItemView {
         
         // Time Tracked
         const timeCard = container.createDiv({ cls: 'stats-stat-card stats-view__stat-card' });
-        timeCard.createDiv({ cls: 'stat-value stats-view__stat-value', text: formatTime(stats.overall.totalTimeSpent) });
-        timeCard.createDiv({ cls: 'stat-label stats-view__stat-label', text: 'Time Tracked' });
+        timeCard.createDiv({ cls: 'stat-value stats-view__stat-value', text: `${formatTime(stats.overall.totalTimeSpent)} / ${formatTime(stats.overall.totalTimeEstimate)}` });
+        timeCard.createDiv({ cls: 'stat-label stats-view__stat-label', text: 'Time Tracked / Estimated' });
         
         // Tasks
         const tasksCard = container.createDiv({ cls: 'stats-stat-card stats-view__stat-card' });
@@ -925,9 +937,6 @@ export class StatsView extends ItemView {
             }
         };
         
-        // Calculate max time for relative bar sizing
-        const maxTime = Math.max(...projects.map(p => p.totalTimeSpent));
-        
         for (const project of projects) {
             const projectClasses = ['stats-project-item', 'stats-view__project-item', 'stats-view__project-item--clickable'];
             
@@ -970,15 +979,26 @@ export class StatsView extends ItemView {
             const statsContainer = contentGrid.createDiv({ cls: 'stats-view__stats-container' });
 
             // Time visualization bar
-            if (project.totalTimeSpent > 0) {
+            if (project.totalTimeSpent > 0 || project.totalTimeEstimate > 0) {
                 const timeBar = statsContainer.createDiv({ cls: 'stats-view__time-bar' });
                 const timeBarVisual = timeBar.createDiv({ cls: 'stats-view__time-bar-visual' });
                 const timeBarFill = timeBarVisual.createDiv({ cls: 'stats-view__time-bar-fill' });
-                const timePercentage = maxTime > 0 ? (project.totalTimeSpent / maxTime) * 100 : 0;
-                timeBarFill.style.width = `${timePercentage}%`;
-                
+
+                let timePercentage = 0;
+                if (project.totalTimeEstimate > 0) {
+                    timePercentage = (project.totalTimeSpent / project.totalTimeEstimate) * 100;
+                } else if (project.totalTimeSpent > 0) {
+                    timePercentage = 100; // No estimate, but time spent
+                    timeBarFill.style.backgroundColor = 'var(--color-base-40)'; // Use a neutral color
+                }
+
+                timeBarFill.style.width = `${Math.min(timePercentage, 100)}%`;
+                if (timePercentage > 100) {
+                    timeBarFill.style.backgroundColor = 'var(--color-red)'; // Over budget
+                }
+
                 const timeLabel = timeBar.createDiv({ cls: 'stats-view__time-bar-label' });
-                timeLabel.textContent = formatTime(project.totalTimeSpent);
+                timeLabel.textContent = `${formatTime(project.totalTimeSpent)} / ${formatTime(project.totalTimeEstimate)}`;
             }
 
             // Additional stats
@@ -1278,6 +1298,8 @@ export class StatsView extends ItemView {
         const totalTimeSpent = projectTasks.reduce((sum, task) => 
             sum + calculateTotalTimeSpent(task.timeEntries || []), 0);
         
+        const totalTimeEstimate = projectTasks.reduce((sum, task) => sum + (task.timeEstimate || 0), 0);
+
         const completedTasks = projectTasks.filter(task => 
             this.plugin.statusManager.isCompletedStatus(task.status)).length;
         
@@ -1343,6 +1365,7 @@ export class StatsView extends ItemView {
             projectName,
             tasks: projectTasks,
             totalTimeSpent,
+            totalTimeEstimate,
             completionRate,
             timeByDay,
             recentActivity
@@ -1368,7 +1391,7 @@ export class StatsView extends ItemView {
         const statsGrid = overviewEl.createDiv({ cls: 'stats-view__drilldown-stats' });
         
         const totalTimeCard = statsGrid.createDiv({ cls: 'stats-view__drilldown-card' });
-        totalTimeCard.createDiv({ cls: 'stats-view__drilldown-value', text: formatTime(data.totalTimeSpent) });
+        totalTimeCard.createDiv({ cls: 'stats-view__drilldown-value', text: `${formatTime(data.totalTimeSpent)} / ${formatTime(data.totalTimeEstimate)}` });
         totalTimeCard.createDiv({ cls: 'stats-view__drilldown-label', text: 'Total Time' });
         
         const tasksCard = statsGrid.createDiv({ cls: 'stats-view__drilldown-card' });
@@ -1381,8 +1404,9 @@ export class StatsView extends ItemView {
         
         // Add average time per task
         const avgTimeCard = statsGrid.createDiv({ cls: 'stats-view__drilldown-card' });
-        const avgTime = data.tasks.length > 0 ? data.totalTimeSpent / data.tasks.length : 0;
-        avgTimeCard.createDiv({ cls: 'stats-view__drilldown-value', text: formatTime(avgTime) });
+        const avgTimeSpent = data.tasks.length > 0 ? data.totalTimeSpent / data.tasks.length : 0;
+        const avgTimeEstimate = data.tasks.length > 0 ? data.totalTimeEstimate / data.tasks.length : 0;
+        avgTimeCard.createDiv({ cls: 'stats-view__drilldown-value', text: `${formatTime(avgTimeSpent)} / ${formatTime(avgTimeEstimate)}` });
         avgTimeCard.createDiv({ cls: 'stats-view__drilldown-label', text: 'Avg per Task' });
         
         // Activity chart
