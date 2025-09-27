@@ -1,0 +1,13 @@
+/* Task Card Note Widget Styles */
+
+.task-card-note-widget {
+    /* Simple border container with a little padding - let task card handle its own styling */
+    border: 1px solid var(--background-modifier-border);
+    margin: var(--cs-spacing-md) 0;
+    padding: var(--cs-spacing-sm);
+}
+
+.task-card-note-widget__card {
+    /* Reset margins for the inner task card */
+    margin: 0 !important;
+}
