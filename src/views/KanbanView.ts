@@ -509,9 +509,22 @@ export class KanbanView extends ItemView implements OptimizedView {
      * Load column order from view preferences
      */
     private loadColumnOrder(): void {
-        const preferences = this.plugin.viewStateManager.getViewPreferences<{ columnOrderByGroupKey?: Record<string, string[]> }>(KANBAN_VIEW_TYPE);
+        const preferences = this.plugin.viewStateManager.getViewPreferences<{
+            columnOrderByGroupKey?: Record<string, string[]>;
+            columnOrder?: string[]; // Legacy format from previous version
+        }>(KANBAN_VIEW_TYPE);
+
         if (preferences?.columnOrderByGroupKey) {
+            // New format exists, use it
             this.columnOrderByGroupKey = new Map(Object.entries(preferences.columnOrderByGroupKey));
+        } else if (preferences?.columnOrder) {
+            // Migrate from legacy format: assume it was for status grouping (most common)
+            console.log('TaskNotes: Migrating legacy column order to new per-grouping format');
+            this.columnOrderByGroupKey = new Map([
+                ['status', [...preferences.columnOrder]]
+            ]);
+            // Save the migrated data immediately to complete the migration
+            this.saveColumnOrder();
         }
     }
 
@@ -519,8 +532,18 @@ export class KanbanView extends ItemView implements OptimizedView {
      * Save column order to view preferences
      */
     private saveColumnOrder(): void {
-        const preferences = this.plugin.viewStateManager.getViewPreferences<{ columnOrderByGroupKey?: Record<string, string[]> }>(KANBAN_VIEW_TYPE) || {};
+        const preferences = this.plugin.viewStateManager.getViewPreferences<{
+            columnOrderByGroupKey?: Record<string, string[]>;
+            columnOrder?: string[]; // Legacy format - will be cleaned up
+        }>(KANBAN_VIEW_TYPE) || {};
+
         preferences.columnOrderByGroupKey = Object.fromEntries(this.columnOrderByGroupKey);
+
+        // Clean up legacy columnOrder if it exists (migration cleanup)
+        if (preferences.columnOrder) {
+            delete preferences.columnOrder;
+        }
+
         this.plugin.viewStateManager.setViewPreferences(KANBAN_VIEW_TYPE, preferences);
     }
 
