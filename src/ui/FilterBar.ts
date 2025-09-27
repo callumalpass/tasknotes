@@ -1,5 +1,5 @@
 import { App, ButtonComponent, DropdownComponent, Modal, TextComponent, debounce, setTooltip, setIcon, Menu } from 'obsidian';
-import { FILTER_OPERATORS, FILTER_PROPERTIES, FilterCondition, FilterGroup, FilterNode, FilterOperator, FilterOptions, FilterProperty, FilterQuery, PropertyDefinition, SavedView, TaskGroupKey, TaskSortKey } from '../types';
+import { FILTER_OPERATORS, FILTER_PROPERTIES, FilterCondition, FilterGroup, FilterNode, FilterOperator, FilterOptions, FilterProperty, FilterQuery, PropertyDefinition, SavedView, TaskGroupKey, TaskSortKey, KANBAN_VIEW_TYPE } from '../types';
 
 import { DragDropHandler } from './DragDropHandler';
 import { EventEmitter } from '../utils/EventEmitter';
@@ -127,7 +127,7 @@ export class FilterBar extends EventEmitter {
      */
     private getDefaultGroupKey(): TaskGroupKey {
         // Kanban view should default to status grouping for better UX
-        if (this.viewType === 'kanban') {
+        if (this.viewType === KANBAN_VIEW_TYPE) {
             return 'status';
         }
         // Other views default to no grouping
