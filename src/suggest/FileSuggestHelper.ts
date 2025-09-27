@@ -102,7 +102,6 @@ export const FileSuggestHelper = {
             if (prop === 'file.path') {
               val = file.path;
             } else if (prop === 'file.parent') {
-              // @ts-expect-error parent typing on TFile
               val = (file.parent?.path || '') as string;
             } else if (prop === 'file.basename') {
               val = basename; // already default, but harmless
