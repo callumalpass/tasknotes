@@ -744,49 +744,58 @@ export class KanbanView extends ItemView implements OptimizedView {
                 const task = await this.plugin.cacheManager.getCachedTaskInfo(taskPath);
                 if (task) {
                     try {
-                        // Map current grouping to actual TaskInfo property
-                        let propertyToUpdate: keyof TaskInfo;
-                        let valueToSet: any;
-                        
-                        switch (this.currentQuery.groupKey) {
-                            case 'status':
-                                propertyToUpdate = 'status';
-                                valueToSet = targetColumnId;
-                                break;
-                            case 'priority':
-                                propertyToUpdate = 'priority';
-                                valueToSet = targetColumnId;
-                                break;
-                            case 'context':
-                                propertyToUpdate = 'contexts';
-                                // For contexts, set as array with single value
-                                valueToSet = [targetColumnId];
-                                break;
-                            case 'project':
-                                propertyToUpdate = 'projects';
-                                // For projects, set as array with proper wikilink format
-                                if (targetColumnId === 'No Project') {
-                                    valueToSet = [];
-                                } else {
-                                    // Check if task already has this project in a different format
-                                    const existingFormat = this.findExistingProjectFormat(task, targetColumnId);
-                                    if (existingFormat) {
-                                        // Preserve the existing format by setting projects to only include this one
-                                        valueToSet = [existingFormat];
+                        // Map current grouping to actual TaskInfo property or custom field
+                        const groupKey = this.currentQuery.groupKey;
+
+                        if (groupKey?.startsWith('user:')) {
+                            // Handle custom field update via frontmatter
+                            const fieldId = groupKey.replace('user:', '');
+                            await this.updateCustomFieldProperty(task, fieldId, targetColumnId);
+                        } else {
+                            // Handle built-in properties
+                            let propertyToUpdate: keyof TaskInfo;
+                            let valueToSet: any;
+
+                            switch (groupKey) {
+                                case 'status':
+                                    propertyToUpdate = 'status';
+                                    valueToSet = targetColumnId;
+                                    break;
+                                case 'priority':
+                                    propertyToUpdate = 'priority';
+                                    valueToSet = targetColumnId;
+                                    break;
+                                case 'context':
+                                    propertyToUpdate = 'contexts';
+                                    // For contexts, set as array with single value
+                                    valueToSet = [targetColumnId];
+                                    break;
+                                case 'project':
+                                    propertyToUpdate = 'projects';
+                                    // For projects, set as array with proper wikilink format
+                                    if (targetColumnId === 'No Project') {
+                                        valueToSet = [];
                                     } else {
-                                        // Use a reasonable default format (simple wikilink with absolute path)
-                                        // Add .md extension if it's a file path
-                                        const wikilinkPath = targetColumnId.includes('/') ? `${targetColumnId}.md` : targetColumnId;
-                                        valueToSet = [`[[${wikilinkPath}]]`];
+                                        // Check if task already has this project in a different format
+                                        const existingFormat = this.findExistingProjectFormat(task, targetColumnId);
+                                        if (existingFormat) {
+                                            // Preserve the existing format by setting projects to only include this one
+                                            valueToSet = [existingFormat];
+                                        } else {
+                                            // Use a reasonable default format (simple wikilink with absolute path)
+                                            // Add .md extension if it's a file path
+                                            const wikilinkPath = targetColumnId.includes('/') ? `${targetColumnId}.md` : targetColumnId;
+                                            valueToSet = [`[[${wikilinkPath}]]`];
+                                        }
                                     }
-                                }
-                                break;
-                            default:
-                                throw new Error(`Unsupported groupBy: ${this.currentQuery.groupKey}`);
+                                    break;
+                                default:
+                                    throw new Error(`Unsupported groupBy: ${groupKey}`);
+                            }
+
+                            await this.plugin.updateTaskProperty(task, propertyToUpdate, valueToSet, { silent: true });
                         }
-                        
-                        await this.plugin.updateTaskProperty(task, propertyToUpdate, valueToSet, { silent: true });
-                        new Notice(this.plugin.i18n.translate('views.kanban.notices.movedTask', { '0': this.formatColumnTitle(targetColumnId, this.currentQuery.groupKey) }));
+                        new Notice(this.plugin.i18n.translate('views.kanban.notices.movedTask', { '0': this.formatColumnTitle(targetColumnId, this.currentQuery.groupKey || 'none') }));
                     } catch (error) {
                         console.error('Failed to move task:', error);
                         new Notice('Failed to move task');
@@ -1061,6 +1070,14 @@ export class KanbanView extends ItemView implements OptimizedView {
     }, 150);
 
     private formatColumnTitle(id: string, groupBy: TaskGroupKey): string {
+        // Handle custom fields (user: prefix)
+        if (typeof groupBy === 'string' && groupBy.startsWith('user:')) {
+            if (id === 'uncategorized' || id === 'none') {
+                return 'Uncategorized';
+            }
+            return id;
+        }
+
         switch (groupBy) {
             case 'status':
                 return this.plugin.statusManager.getStatusConfig(id)?.label || id;
@@ -1172,6 +1189,25 @@ export class KanbanView extends ItemView implements OptimizedView {
             // For non-path projects, just show as text
             titleEl.textContent = title;
         }
+    }
+
+    /**
+     * Update a custom field property via frontmatter
+     */
+    private async updateCustomFieldProperty(task: TaskInfo, fieldId: string, value: string): Promise<void> {
+        const file = this.plugin.app.vault.getAbstractFileByPath(task.path);
+        if (!file || !('stat' in file)) {
+            throw new Error(`File not found: ${task.path}`);
+        }
+
+        await this.plugin.app.fileManager.processFrontMatter(file as any, (frontmatter: any) => {
+            // Handle special "uncategorized" case by clearing the field
+            if (value === 'uncategorized' || value === 'none') {
+                delete frontmatter[fieldId];
+            } else {
+                frontmatter[fieldId] = value;
+            }
+        });
     }
 
     /**
