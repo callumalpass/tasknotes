@@ -1437,7 +1437,11 @@ export const en: TranslationTree = {
                 blockedByHint: 'Add tasks that must be completed before this one. Use wiki-links (e.g., [[Task Note]]), one per line.',
                 blocking: 'Blocking',
                 blockingHint: 'Tasks that are waiting on this task. Use wiki-links, one per line.',
-                placeholder: '[[Task Note]]'
+                placeholder: '[[Task Note]]',
+                addTaskButton: 'Add task',
+                selectTaskTooltip: 'Select a task note using fuzzy search',
+                removeTaskTooltip: 'Remove task',
+                empty: 'No tasks selected'
             },
             customFieldsLabel: 'Custom Fields',
             actions: {

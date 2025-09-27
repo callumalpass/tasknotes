@@ -9,7 +9,6 @@ import { NaturalLanguageParser, ParsedTaskData as NLParsedTaskData } from '../se
 import { StatusSuggestionService, StatusSuggestion } from '../services/StatusSuggestionService';
 import { combineDateAndTime } from '../utils/dateUtils';
 import { splitListPreservingLinksAndQuotes } from '../utils/stringSplit';
-import { parseDependencyInput, resolveDependencyEntry } from '../utils/dependencyUtils';
 import { ProjectMetadataResolver, ProjectEntry } from '../utils/projectMetadataResolver';
 import { parseDisplayFieldsRow } from '../utils/projectAutosuggestDisplayFieldsParser';
 
@@ -500,7 +499,6 @@ export class TaskCreationModal extends TaskModal {
     private nlPreviewContainer: HTMLElement;
     private nlButtonContainer: HTMLElement;
     private nlpSuggest: NLPSuggest;
-    private creationBlockingUpdates: { rawEntries: string[]; added: string[]; raw: Record<string, string>; unresolved: string[] } = { rawEntries: [], added: [], raw: {}, unresolved: [] };
 
     constructor(
         app: App,
@@ -821,6 +819,9 @@ export class TaskCreationModal extends TaskModal {
         if (this.options.prePopulatedValues) {
             this.applyPrePopulatedValues(this.options.prePopulatedValues);
         }
+
+        this.details = this.normalizeDetails(this.details);
+        this.originalDetails = this.details;
     }
 
     private applyPrePopulatedValues(values: Partial<TaskInfo>): void {
@@ -880,22 +881,21 @@ export class TaskCreationModal extends TaskModal {
                 new Notice(this.t('modals.taskCreation.notices.success', { title: createdTask.title }));
             }
 
-            if (this.creationBlockingUpdates.rawEntries.length > 0) {
+            if (this.blockingItems.length > 0) {
                 const addedPaths: string[] = [];
                 const rawMap: Record<string, string> = {};
                 const unresolved: string[] = [];
 
-                for (const entry of this.creationBlockingUpdates.rawEntries) {
-                    const resolved = resolveDependencyEntry(this.app, createdTask.path, entry);
-                    if (!resolved) {
-                        unresolved.push(entry);
-                        continue;
+                this.blockingItems.forEach(item => {
+                    if (item.path) {
+                        if (!addedPaths.includes(item.path)) {
+                            addedPaths.push(item.path);
+                            rawMap[item.path] = item.raw;
+                        }
+                    } else {
+                        unresolved.push(item.raw);
                     }
-                    if (!addedPaths.includes(resolved.path)) {
-                        addedPaths.push(resolved.path);
-                        rawMap[resolved.path] = entry;
-                    }
-                }
+                });
 
                 if (addedPaths.length > 0) {
                     await this.plugin.taskService.updateBlockingRelationships(createdTask, addedPaths, [], rawMap);
@@ -911,7 +911,7 @@ export class TaskCreationModal extends TaskModal {
                     }));
                 }
 
-                this.creationBlockingUpdates = { rawEntries: [], added: [], raw: {}, unresolved: [] };
+                this.blockingItems = [];
             }
 
             if (this.options.onTaskCreated) {
@@ -966,24 +966,15 @@ export class TaskCreationModal extends TaskModal {
             customFrontmatter: this.buildCustomFrontmatter()
         };
 
-        const blockedEntries = parseDependencyInput(this.blockedByInput ? this.blockedByInput.value : this.blockedByRaw);
+        const blockedEntries = this.blockedByItems.map(item => item.raw);
         if (blockedEntries.length > 0) {
             taskData.blockedBy = blockedEntries;
         }
 
-        const blockingEntries = parseDependencyInput(this.blockingInput ? this.blockingInput.value : this.blockingRaw);
-        this.creationBlockingUpdates = {
-            rawEntries: blockingEntries,
-            added: [],
-            raw: {},
-            unresolved: []
-        };
-
         // Add details if provided
-        if (this.details.trim()) {
-            // You might want to add the details to the task content or as a separate field
-            // For now, we'll add it as part of the task description
-            taskData.details = this.details.trim();
+        const normalizedDetails = this.normalizeDetails(this.details).trimEnd();
+        if (normalizedDetails.length > 0) {
+            taskData.details = normalizedDetails;
         }
 
         return taskData;

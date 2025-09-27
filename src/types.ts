@@ -255,6 +255,7 @@ export interface TaskInfo {
 	blocking?: string[]; // Task paths that this task is blocking
 	isBlocked?: boolean; // True if any blocking dependency is incomplete
 	isBlocking?: boolean; // True if this task blocks at least one other task
+	details?: string; // Optional task body content
 }
 
 export interface TaskCreationData extends Partial<TaskInfo> {

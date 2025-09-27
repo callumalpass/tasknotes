@@ -1421,6 +1421,18 @@ export const fr: TranslationTree = {
             tagsPlaceholder: 'etiquette1, etiquette2',
             timeEstimateLabel: 'Estimation (minutes)',
             timeEstimatePlaceholder: '30',
+            dependencies: {
+                label: 'Dépendances',
+                blockedBy: 'Bloqué par',
+                blockedByHint: 'Ajoutez les tâches qui doivent être terminées avant celle-ci. Utilisez des liens wiki (ex. [[Note de tâche]]), une par ligne.',
+                blocking: 'Bloquant',
+                blockingHint: 'Tâches en attente de cette tâche. Utilisez des liens wiki, une par ligne.',
+                placeholder: '[[Note de tâche]]',
+                addTaskButton: 'Ajouter une tâche',
+                selectTaskTooltip: 'Sélectionnez une note de tâche via la recherche floue',
+                removeTaskTooltip: 'Retirer la tâche',
+                empty: 'Aucune tâche sélectionnée'
+            },
             customFieldsLabel: 'Champs personnalisés',
             actions: {
                 due: 'Définir l\'échéance',
@@ -1484,7 +1496,8 @@ export const fr: TranslationTree = {
                 titleRequired: 'Veuillez saisir un titre de tâche',
                 success: 'Tâche "{title}" créée avec succès',
                 successShortened: 'Tâche "{title}" créée avec succès (nom de fichier raccourci)',
-                failure: 'Échec de la création de la tâche : {message}'
+                failure: 'Échec de la création de la tâche : {message}',
+                blockingUnresolved: 'Impossible de résoudre : {entries}'
             }
         },
         taskEdit: {
@@ -1508,6 +1521,8 @@ export const fr: TranslationTree = {
                 noChanges: 'Aucune modification à enregistrer',
                 updateSuccess: 'Tâche "{title}" mise à jour avec succès',
                 updateFailure: 'Échec de la mise à jour de la tâche : {message}',
+                dependenciesUpdateSuccess: 'Dépendances mises à jour',
+                blockingUnresolved: 'Impossible de résoudre : {entries}',
                 fileMissing: 'Impossible de trouver le fichier de la tâche : {path}',
                 openNoteFailure: 'Impossible d\'ouvrir la note de la tâche',
                 archiveSuccess: 'Tâche {action} avec succès',
@@ -1660,6 +1675,25 @@ export const fr: TranslationTree = {
             clearRecurrence: 'Effacer la récurrence',
             customRecurrence: 'Récurrence personnalisée...',
             createSubtask: 'Créer une sous-tâche',
+            dependencies: {
+                title: 'Dépendances',
+                addBlockedBy: 'Ajouter « bloqué par »…',
+                addBlockedByTitle: 'Ajouter des tâches dont dépend celle-ci',
+                addBlocking: 'Ajouter « bloquant »…',
+                addBlockingTitle: 'Ajouter des tâches bloquées par celle-ci',
+                removeBlockedBy: 'Retirer « bloqué par »…',
+                removeBlocking: 'Retirer « bloquant »…',
+                inputPlaceholder: '[[Note de tâche]]',
+                notices: {
+                    noEntries: 'Veuillez saisir au moins une tâche',
+                    blockedByAdded: '{count} dépendance ajoutée',
+                    blockedByRemoved: 'Dépendance retirée',
+                    blockingAdded: '{count} tâche dépendante ajoutée',
+                    blockingRemoved: 'Tâche dépendante retirée',
+                    unresolved: 'Impossible de résoudre : {entries}',
+                    updateFailed: 'Impossible de mettre à jour les dépendances'
+                }
+            },
             subtasks: {
                 loading: 'Chargement des sous-tâches...',
                 noSubtasks: 'Aucune sous-tâche trouvée',
@@ -1868,6 +1902,14 @@ export const fr: TranslationTree = {
             createdLabel: 'Créée :',
             dailyBadge: 'Quotidien',
             dailyTooltip: 'Note quotidienne'
+        },
+        taskCard: {
+            blockedBadge: 'Bloqué',
+            blockedBadgeTooltip: 'Cette tâche attend une autre tâche',
+            blockingToggle: 'Bloque {count} tâches',
+            loadingDependencies: 'Chargement des dépendances…',
+            blockingEmpty: 'Aucune tâche dépendante',
+            blockingLoadError: 'Échec du chargement des dépendances'
         },
         filterHeading: {
             allViewName: 'Toutes'

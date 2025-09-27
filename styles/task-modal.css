@@ -243,25 +243,6 @@
     color: var(--text-muted);
 }
 
-.tasknotes-plugin .tasknotes-dependency-input {
-    width: 100%;
-    min-height: 60px;
-    padding: var(--size-4-2);
-    font-size: var(--font-ui-medium);
-    line-height: 1.4;
-    border: 1px solid var(--background-modifier-border);
-    border-radius: var(--radius-s);
-    background: var(--background-secondary);
-    color: var(--text-normal);
-    resize: vertical;
-    transition: all 0.2s ease;
-}
-
-.tasknotes-plugin .tasknotes-dependency-input:focus {
-    outline: none;
-    border-color: var(--interactive-accent);
-    background: var(--background-primary);
-}
 
 /* =====================================================================
    ADDITIONAL FIELDS - SETTINGS STYLE
@@ -739,6 +720,15 @@
     font-weight: var(--font-weight-medium);
     color: var(--text-normal);
     font-size: var(--font-ui-small);
+}
+
+.tasknotes-plugin .task-project-item--unresolved {
+    border: 1px solid var(--color-orange);
+    background: color-mix(in srgb, var(--color-orange) 12%, var(--background-secondary));
+}
+
+.tasknotes-plugin .task-project-item--unresolved .task-project-name {
+    color: var(--color-orange);
 }
 
 /* Make clickable project names in edit modal look and behave like links */

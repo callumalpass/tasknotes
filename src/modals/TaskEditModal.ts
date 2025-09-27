@@ -5,7 +5,6 @@ import { TaskInfo } from '../types';
 import { getCurrentTimestamp, formatDateForStorage, generateUTCCalendarDates, getUTCStartOfWeek, getUTCEndOfWeek, getUTCStartOfMonth, getUTCEndOfMonth, getTodayLocal, parseDateAsLocal } from '../utils/dateUtils';
 import { formatTimestampForDisplay } from '../utils/dateUtils';
 import { generateRecurringInstances, extractTaskInfo, calculateTotalTimeSpent, formatTime, updateToNextScheduledOccurrence, sanitizeTags } from '../utils/helpers';
-import { parseDependencyInput, resolveDependencyEntry } from '../utils/dependencyUtils';
 import { splitListPreservingLinksAndQuotes } from '../utils/stringSplit';
 import { ReminderContextMenu } from '../components/ReminderContextMenu';
 import { renderProjectLinks, type LinkServices } from '../ui/renderers/linkRenderer';
@@ -26,10 +25,19 @@ export class TaskEditModal extends TaskModal {
     private pendingBlockingUpdates: { added: string[]; removed: string[]; raw: Record<string, string> } = { added: [], removed: [], raw: {} };
     private unresolvedBlockingEntries: string[] = [];
 
+    // TODO: Blocking/blocked functionality still needs work:
+    // - Edit modal is not pulling existing "blocking" data from tasks
+    // - Blocked tasks do not automatically update when blocking tasks are completed
+    // - Need to implement proper dependency chain updates
+
     constructor(app: App, plugin: TaskNotesPlugin, options: TaskEditOptions) {
         super(app, plugin);
         this.task = options.task;
         this.options = options;
+    }
+
+    protected getCurrentTaskPath(): string | undefined {
+        return this.task.path;
     }
 
 
@@ -81,14 +89,20 @@ export class TaskEditModal extends TaskModal {
         } else {
             this.recurrenceRule = '';
         }
-        
+
         // Initialize reminders
         this.reminders = this.task.reminders ? [...this.task.reminders] : [];
 
-        this.blockedByRaw = this.task.blockedBy ? this.task.blockedBy.join('\n') : '';
-        this.initialBlockedBy = this.task.blockedBy ? [...this.task.blockedBy] : [];
-        this.initialBlockingPaths = this.task.blocking ? [...this.task.blocking] : [];
-        this.blockingRaw = this.formatBlockingList(this.task.blocking || []);
+        this.details = this.normalizeDetails(this.details);
+        this.originalDetails = this.details;
+
+        this.blockedByItems = (this.task.blockedBy ?? []).map(raw => this.createDependencyItemFromRaw(raw, this.task.path));
+        this.initialBlockedBy = this.blockedByItems.map(item => item.raw);
+
+        this.blockingItems = (this.task.blocking ?? []).map(path => this.createDependencyItemFromPath(path));
+        this.initialBlockingPaths = this.blockingItems
+            .filter(item => item.path)
+            .map(item => item.path!);
         this.pendingBlockingUpdates = { added: [], removed: [], raw: {} };
         this.unresolvedBlockingEntries = [];
 
@@ -124,24 +138,6 @@ export class TaskEditModal extends TaskModal {
         } catch (error) {
             console.error('Error initializing user fields:', error);
         }
-    }
-
-    private formatBlockingList(paths: string[]): string {
-        if (!paths || paths.length === 0) {
-            return '';
-        }
-
-        const entries = paths.map(path => {
-            const file = this.app.vault.getAbstractFileByPath(path);
-            if (file instanceof TFile) {
-                const linktext = this.app.metadataCache.fileToLinktext(file, this.task.path, false);
-                return `[[${linktext}]]`;
-            }
-            const basename = path.split('/').pop()?.replace(/\.md$/i, '') || path;
-            return `[[${basename}]]`;
-        });
-
-        return entries.join('\n');
     }
 
     private arraysEqual(a: string[], b: string[]): boolean {
@@ -233,34 +229,40 @@ export class TaskEditModal extends TaskModal {
 
     private async refreshTaskData(): Promise<void> {
         try {
-            // Get the file from the path
             const file = this.app.vault.getAbstractFileByPath(this.task.path);
             if (!file || !(file instanceof TFile)) {
                 console.warn('Could not find file for task:', this.task.path);
                 return;
             }
 
-            // Read the file content
             const content = await this.app.vault.read(file);
-            
-            // Extract fresh task info
-            const freshTaskInfo = extractTaskInfo(
-                this.app,
-                content,
-                this.task.path,
-                file,
-                this.plugin.fieldMapper,
-                this.plugin.settings.storeTitleInFilename
-            );
+            this.details = this.extractDetailsFromContent(content);
+            this.originalDetails = this.details;
 
-            if (freshTaskInfo) {
-                // Update task data with fresh information
-                this.task = freshTaskInfo;
-                this.options.task = freshTaskInfo;
+            const cachedTaskInfo = await this.plugin.cacheManager.getTaskInfo(this.task.path);
+
+            if (cachedTaskInfo) {
+                cachedTaskInfo.details = this.details;
+                this.task = cachedTaskInfo;
+                this.options.task = cachedTaskInfo;
+            } else {
+                const freshTaskInfo = extractTaskInfo(
+                    this.app,
+                    content,
+                    this.task.path,
+                    file,
+                    this.plugin.fieldMapper,
+                    this.plugin.settings.storeTitleInFilename
+                );
+
+                if (freshTaskInfo) {
+                    freshTaskInfo.details = this.details;
+                    this.task = freshTaskInfo;
+                    this.options.task = freshTaskInfo;
+                }
             }
         } catch (error) {
             console.warn('Could not refresh task data:', error);
-            // Continue with existing task data if refresh fails
         }
     }
 
@@ -502,6 +504,11 @@ export class TaskEditModal extends TaskModal {
             if (hasTaskChanges) {
                 updatedTask = await this.plugin.taskService.updateTask(this.task, changes);
                 this.task = updatedTask;
+                if (Object.prototype.hasOwnProperty.call(changes as any, 'details')) {
+                    const updatedDetails = ((changes as any).details ?? '').toString();
+                    this.details = updatedDetails;
+                    this.originalDetails = updatedDetails;
+                }
             }
 
             if (hasBlockingChanges) {
@@ -630,25 +637,21 @@ export class TaskEditModal extends TaskModal {
             changes.reminders = newReminders.length > 0 ? newReminders : undefined;
         }
 
-        const blockedInputValue = this.blockedByInput ? this.blockedByInput.value : this.blockedByRaw;
-        const newBlockedEntries = parseDependencyInput(blockedInputValue);
+        const newBlockedEntries = this.blockedByItems.map(item => item.raw);
         if (!this.arraysEqual(newBlockedEntries, this.initialBlockedBy)) {
             changes.blockedBy = newBlockedEntries.length > 0 ? newBlockedEntries : undefined;
         }
 
-        const blockingInputValue = this.blockingInput ? this.blockingInput.value : this.blockingRaw;
-        const blockingEntries = parseDependencyInput(blockingInputValue);
         const resolvedBlocking = new Map<string, string>();
         const unresolvedEntries: string[] = [];
 
-        for (const entry of blockingEntries) {
-            const resolved = resolveDependencyEntry(this.app, this.task.path, entry);
-            if (!resolved) {
-                unresolvedEntries.push(entry);
-                continue;
+        this.blockingItems.forEach(item => {
+            if (item.path) {
+                resolvedBlocking.set(item.path, item.raw);
+            } else {
+                unresolvedEntries.push(item.raw);
             }
-            resolvedBlocking.set(resolved.path, entry);
-        }
+        });
 
         const newBlockingPaths = Array.from(resolvedBlocking.keys());
         const originalPaths = new Set(this.initialBlockingPaths);
@@ -671,6 +674,12 @@ export class TaskEditModal extends TaskModal {
             raw: rawAdditions
         };
         this.unresolvedBlockingEntries = unresolvedEntries;
+
+        const normalizedDetails = this.normalizeDetails(this.details);
+        const normalizedOriginal = this.normalizeDetails(this.originalDetails);
+        if (normalizedDetails !== normalizedOriginal) {
+            changes.details = normalizedDetails.trimEnd();
+        }
 
         // Apply completed instances changes
         if (this.completedInstancesChanges.size > 0) {

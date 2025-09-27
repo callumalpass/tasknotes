@@ -3,7 +3,7 @@ import { AutoArchiveService } from './AutoArchiveService';
 import { FilenameContext, generateTaskFilename, generateUniqueFilename } from '../utils/filenameGenerator';
 import { Notice, TFile, normalizePath, stringifyYaml } from 'obsidian';
 import { TemplateData, mergeTemplateFrontmatter, processTemplate } from '../utils/templateProcessor';
-import { addDTSTARTToRecurrenceRule, ensureFolderExists, updateToNextScheduledOccurrence } from '../utils/helpers';
+import { addDTSTARTToRecurrenceRule, ensureFolderExists, updateToNextScheduledOccurrence, splitFrontmatterAndBody } from '../utils/helpers';
 import { formatDependencyLink, resolveDependencyEntry } from '../utils/dependencyUtils';
 import { formatDateForStorage, getCurrentDateString, getCurrentTimestamp, getTodayLocal, createUTCDateFromLocalCalendarDate } from '../utils/dateUtils';
 import { format } from 'date-fns';
@@ -347,7 +347,10 @@ export class TaskService {
 
             // Apply template processing (both frontmatter and body)
             const templateResult = await this.applyTemplate(taskData);
-            
+            const normalizedBody = templateResult.body
+                ? templateResult.body.replace(/\r\n/g, '\n').trimEnd()
+                : (taskData.details ? taskData.details.replace(/\r\n/g, '\n').trimEnd() : '');
+
             // Merge template frontmatter with base frontmatter
             // User-defined values take precedence over template frontmatter
             let finalFrontmatter = mergeTemplateFrontmatter(frontmatter, templateResult.frontmatter);
@@ -360,10 +363,9 @@ export class TaskService {
             // Prepare file content
             const yamlHeader = stringifyYaml(finalFrontmatter);
             let content = `---\n${yamlHeader}---\n\n`;
-            
-            // Add processed body content if any
-            if (templateResult.body && templateResult.body.trim()) {
-                content += `${templateResult.body.trim()}\n\n`;
+
+            if (normalizedBody.length > 0) {
+                content += `${normalizedBody}\n`;
             }
 
             // Create the file
@@ -380,7 +382,8 @@ export class TaskService {
                 priority: finalFrontmatter.priority || completeTaskData.priority || priority,
                 path: file.path,
                 tags: tagsArray,
-                archived: false
+                archived: false,
+                details: normalizedBody
             };
 
             // Wait for fresh data and update cache
@@ -993,7 +996,7 @@ export class TaskService {
      * Update a task with multiple property changes following the deterministic data flow pattern
      * This is the centralized method for bulk task updates used by the TaskEditModal
      */
-    async updateTask(originalTask: TaskInfo, updates: Partial<TaskInfo>): Promise<TaskInfo> {
+    async updateTask(originalTask: TaskInfo, updates: Partial<TaskInfo> & { details?: string }): Promise<TaskInfo> {
         try {
             const file = this.plugin.app.vault.getAbstractFileByPath(originalTask.path);
             if (!(file instanceof TFile)) {
@@ -1053,6 +1056,13 @@ export class TaskService {
             }
 
             // Step 1: Persist frontmatter changes to the file at its original path
+            let normalizedDetails: string | null = null;
+            if (Object.prototype.hasOwnProperty.call(updates, 'details')) {
+                normalizedDetails = typeof updates.details === 'string'
+                    ? updates.details.replace(/\r\n/g, '\n')
+                    : '';
+            }
+
             await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
                 const completeTaskData: Partial<TaskInfo> = {
                     ...originalTask,
@@ -1133,6 +1143,19 @@ export class TaskService {
                 await this.plugin.app.fileManager.renameFile(file, newPath);
             }
 
+            // Step 2b: Update body content if details changed
+            if (normalizedDetails !== null) {
+                const targetFile = this.plugin.app.vault.getAbstractFileByPath(newPath);
+                if (targetFile instanceof TFile) {
+                    const currentContent = await this.plugin.app.vault.read(targetFile);
+                    const { frontmatter: frontmatterText } = splitFrontmatterAndBody(currentContent);
+                    const frontmatterBlock = frontmatterText !== null ? `---\n${frontmatterText}\n---\n\n` : '';
+                    const bodyContent = normalizedDetails.trimEnd();
+                    const finalBody = bodyContent.length > 0 ? `${bodyContent}\n` : '';
+                    await this.plugin.app.vault.modify(targetFile, `${frontmatterBlock}${finalBody}`);
+                }
+            }
+
             // Step 3: Construct the final authoritative state
             const updatedTask: TaskInfo = {
                 ...originalTask,
@@ -1141,6 +1164,10 @@ export class TaskService {
                 path: newPath,
                 dateModified: getCurrentTimestamp()
             };
+
+            if (normalizedDetails !== null) {
+                updatedTask.details = normalizedDetails;
+            }
 
             if (updates.status !== undefined && !originalTask.recurrence) {
                 if (this.plugin.statusManager.isCompletedStatus(updates.status)) {

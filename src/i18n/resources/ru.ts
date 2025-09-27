@@ -1421,6 +1421,18 @@ export const ru: TranslationTree = {
             tagsPlaceholder: 'тег1, тег2',
             timeEstimateLabel: 'Оценка времени (минуты)',
             timeEstimatePlaceholder: '30',
+            dependencies: {
+                label: 'Зависимости',
+                blockedBy: 'Заблокирована',
+                blockedByHint: 'Добавьте задачи, которые должны быть выполнены раньше. Используйте вики-ссылки (например, [[Задача]]), по одной на строку.',
+                blocking: 'Блокирует',
+                blockingHint: 'Задачи, ожидающие эту задачу. Используйте вики-ссылки, по одной на строку.',
+                placeholder: '[[Задача]]',
+                addTaskButton: 'Добавить задачу',
+                selectTaskTooltip: 'Выберите заметку задачи с помощью нечеткого поиска',
+                removeTaskTooltip: 'Удалить задачу',
+                empty: 'Задачи не выбраны'
+            },
             customFieldsLabel: 'Пользовательские поля',
             actions: {
                 due: 'Установить срок выполнения',
@@ -1484,7 +1496,8 @@ export const ru: TranslationTree = {
                 titleRequired: 'Пожалуйста, введите название задачи',
                 success: 'Задача "{title}" успешно создана',
                 successShortened: 'Задача "{title}" успешно создана (имя файла сокращено из-за длины)',
-                failure: 'Не удалось создать задачу: {message}'
+                failure: 'Не удалось создать задачу: {message}',
+                blockingUnresolved: 'Не удалось определить: {entries}'
             }
         },
         taskEdit: {
@@ -1508,6 +1521,8 @@ export const ru: TranslationTree = {
                 noChanges: 'Нет изменений для сохранения',
                 updateSuccess: 'Задача "{title}" успешно обновлена',
                 updateFailure: 'Не удалось обновить задачу: {message}',
+                dependenciesUpdateSuccess: 'Зависимости обновлены',
+                blockingUnresolved: 'Не удалось определить: {entries}',
                 fileMissing: 'Не удалось найти файл задачи: {path}',
                 openNoteFailure: 'Не удалось открыть заметку задачи',
                 archiveSuccess: 'Задача {action} успешно',
@@ -1660,6 +1675,25 @@ export const ru: TranslationTree = {
             clearRecurrence: 'Очистить повторение',
             customRecurrence: 'Пользовательское повторение...',
             createSubtask: 'Создать подзадачу',
+            dependencies: {
+                title: 'Зависимости',
+                addBlockedBy: 'Добавить «заблокирована»…',
+                addBlockedByTitle: 'Добавить задачи, от которых зависит текущая',
+                addBlocking: 'Добавить «блокирует»…',
+                addBlockingTitle: 'Добавить задачи, которые блокирует текущая',
+                removeBlockedBy: 'Удалить «заблокирована»…',
+                removeBlocking: 'Удалить «блокирует»…',
+                inputPlaceholder: '[[Задача]]',
+                notices: {
+                    noEntries: 'Введите хотя бы одну задачу',
+                    blockedByAdded: 'Добавлена {count} зависимость',
+                    blockedByRemoved: 'Зависимость удалена',
+                    blockingAdded: 'Добавлено {count} зависимых задач',
+                    blockingRemoved: 'Зависимая задача удалена',
+                    unresolved: 'Не удалось определить: {entries}',
+                    updateFailed: 'Не удалось обновить зависимости'
+                }
+            },
             subtasks: {
                 loading: 'Загрузка подзадач...',
                 noSubtasks: 'Подзадачи не найдены',
@@ -1868,6 +1902,14 @@ export const ru: TranslationTree = {
             createdLabel: 'Создано:',
             dailyBadge: 'Ежедневно',
             dailyTooltip: 'Ежедневная заметка'
+        },
+        taskCard: {
+            blockedBadge: 'Заблокирована',
+            blockedBadgeTooltip: 'Эта задача ожидает другую задачу',
+            blockingToggle: 'Блокирует {count} задач',
+            loadingDependencies: 'Загрузка зависимостей…',
+            blockingEmpty: 'Нет зависимых задач',
+            blockingLoadError: 'Не удалось загрузить зависимости'
         },
         filterHeading: {
             allViewName: 'Все'

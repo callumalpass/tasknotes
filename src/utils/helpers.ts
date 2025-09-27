@@ -292,6 +292,23 @@ export function extractTaskInfo(
 	};
 }
 
+export function splitFrontmatterAndBody(content: string): { frontmatter: string | null; body: string } {
+	if (content.startsWith('---')) {
+		const match = content.match(/^---\s*\r?\n([\s\S]*?)\r?\n---\s*\r?\n?([\s\S]*)$/);
+		if (match) {
+			return {
+				frontmatter: match[1],
+				body: match[2] || ''
+			};
+		}
+	}
+
+	return {
+		frontmatter: null,
+		body: content
+	};
+}
+
 /**
  * Checks if a task is overdue (either due date or scheduled date is in the past)
  * @deprecated Use isOverdueTimeAware from dateUtils.ts instead. This function has timezone
@@ -1358,4 +1375,3 @@ export function sanitizeTags(tags: string): string {
 		.filter(tag => tag.length > 0) // Remove empty tags
 		.join(', ');
 }
-

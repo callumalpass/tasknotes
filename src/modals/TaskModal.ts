@@ -6,16 +6,189 @@ import { StatusContextMenu } from '../components/StatusContextMenu';
 import { RecurrenceContextMenu } from '../components/RecurrenceContextMenu';
 import { ReminderContextMenu } from '../components/ReminderContextMenu';
 import { getDatePart, getTimePart, combineDateAndTime } from '../utils/dateUtils';
-import { sanitizeTags } from '../utils/helpers';
+import { sanitizeTags, splitFrontmatterAndBody } from '../utils/helpers';
 import { ProjectSelectModal } from './ProjectSelectModal';
 import { TaskInfo, Reminder } from '../types';
+import { formatDependencyLink, resolveDependencyEntry } from '../utils/dependencyUtils';
+
+interface DependencyItem {
+    raw: string;
+    name: string;
+    path?: string;
+    unresolved?: boolean;
+}
 
 export abstract class TaskModal extends Modal {
     plugin: TaskNotesPlugin;
+
+    // Dependency item definition
+    protected createDependencyItemFromFile(file: TFile, options: { sourcePath?: string } = {}): DependencyItem {
+        const sourcePath = options.sourcePath ?? this.getDependencySourcePath();
+        const raw = formatDependencyLink(this.plugin.app, sourcePath, file.path);
+        return {
+            raw,
+            path: file.path,
+            name: file.basename
+        };
+    }
+
+    protected createDependencyItemFromRaw(raw: string, sourcePath?: string): DependencyItem {
+        const resolution = resolveDependencyEntry(this.plugin.app, sourcePath ?? this.getDependencySourcePath(), raw);
+        if (resolution) {
+            const name = resolution.file?.basename || resolution.path.split('/').pop() || raw;
+            return {
+                raw,
+                path: resolution.path,
+                name
+            };
+        }
+
+        const cleaned = raw.replace(/^\[\[/, '').replace(/\]\]$/, '');
+        return {
+            raw,
+            name: cleaned || raw,
+            unresolved: true
+        };
+    }
+
+    protected createDependencyItemFromPath(path: string): DependencyItem {
+        const sourcePath = this.getDependencySourcePath();
+        const file = this.plugin.app.vault.getAbstractFileByPath(path);
+        if (file instanceof TFile) {
+            return {
+                raw: formatDependencyLink(this.plugin.app, sourcePath, file.path),
+                path: file.path,
+                name: file.basename
+            };
+        }
+
+        const basename = path.split('/').pop() || path;
+        const raw = `[[${basename.replace(/\.md$/i, '')}]]`;
+        return {
+            raw,
+            path,
+            name: basename.replace(/\.md$/i, ''),
+            unresolved: true
+        };
+    }
+
+    protected getDependencySourcePath(): string {
+        return this.getCurrentTaskPath() || this.plugin.app.workspace.getActiveFile()?.path || '';
+    }
+
+    // Overridden by subclasses that manage an existing task
+    protected getCurrentTaskPath(): string | undefined {
+        return undefined;
+    }
+
+    protected renderDependencyLists(): void {
+        this.renderBlockedByList();
+        this.renderBlockingList();
+    }
+
+    protected renderBlockedByList(): void {
+        this.renderDependencyList(this.blockedByList, this.blockedByItems, (index) => {
+            this.blockedByItems.splice(index, 1);
+            this.renderBlockedByList();
+        });
+    }
+
+    protected renderBlockingList(): void {
+        this.renderDependencyList(this.blockingList, this.blockingItems, (index) => {
+            this.blockingItems.splice(index, 1);
+            this.renderBlockingList();
+        });
+    }
+
+    private renderDependencyList(listEl: HTMLElement | undefined, items: DependencyItem[], onRemove: (index: number) => void): void {
+        if (!listEl) {
+            return;
+        }
+
+        listEl.empty();
+
+        if (items.length === 0) {
+            listEl.createDiv({
+                cls: 'task-projects-empty',
+                text: this.t('modals.task.dependencies.empty')
+            });
+            return;
+        }
+
+        items.forEach((item, index) => {
+            const itemEl = listEl.createDiv({ cls: 'task-project-item' });
+            if (item.unresolved) {
+                itemEl.addClass('task-project-item--unresolved');
+                setTooltip(itemEl, this.t('contextMenus.task.dependencies.notices.unresolved', { entries: item.raw }), { placement: 'top' });
+            }
+
+            const infoEl = itemEl.createDiv({ cls: 'task-project-info' });
+            const nameEl = infoEl.createSpan({ cls: 'task-project-name' });
+
+            if (item.path) {
+                nameEl.textContent = item.name;
+                if (item.path !== item.name) {
+                    infoEl.createDiv({ cls: 'task-project-path', text: item.path });
+                }
+            } else {
+                nameEl.textContent = item.name;
+                infoEl.createDiv({ cls: 'task-project-path', text: item.raw });
+            }
+
+            const removeBtn = itemEl.createEl('button', {
+                cls: 'task-project-remove',
+                text: '×'
+            });
+            setTooltip(removeBtn, this.t('modals.task.dependencies.removeTaskTooltip'), { placement: 'top' });
+            removeBtn.addEventListener('click', (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                onRemove(index);
+            });
+        });
+    }
+
+    protected extractDetailsFromContent(content: string): string {
+        const { body } = splitFrontmatterAndBody(content);
+        return body.replace(/\r\n/g, '\n').trimEnd();
+    }
+
+    protected normalizeDetails(value: string): string {
+        return value.replace(/\r\n/g, '\n');
+    }
+
+    protected addBlockedByTask(file: TFile): void {
+        const currentPath = this.getCurrentTaskPath();
+        if (currentPath && file.path === currentPath) {
+            return;
+        }
+        const item = this.createDependencyItemFromFile(file);
+        const exists = this.blockedByItems.some(existing => existing.path === item.path || existing.raw === item.raw);
+        if (exists) {
+            return;
+        }
+        this.blockedByItems.push(item);
+        this.renderBlockedByList();
+    }
+
+    protected addBlockingTask(file: TFile): void {
+        const currentPath = this.getCurrentTaskPath();
+        if (currentPath && file.path === currentPath) {
+            return;
+        }
+        const item = this.createDependencyItemFromFile(file);
+        const exists = this.blockingItems.some(existing => existing.path === item.path);
+        if (exists) {
+            return;
+        }
+        this.blockingItems.push(item);
+        this.renderBlockingList();
+    }
     
     // Core task properties
     protected title = '';
     protected details = '';
+    protected originalDetails = '';
     protected dueDate = '';
     protected scheduledDate = '';
     protected priority = 'normal';
@@ -31,10 +204,10 @@ export abstract class TaskModal extends Modal {
     protected userFields: Record<string, any> = {};
 
     // Dependency fields
-    protected blockedByRaw = '';
-    protected blockingRaw = '';
-    protected blockedByInput?: HTMLTextAreaElement;
-    protected blockingInput?: HTMLTextAreaElement;
+    protected blockedByItems: DependencyItem[] = [];
+    protected blockingItems: DependencyItem[] = [];
+    protected blockedByList?: HTMLElement;
+    protected blockingList?: HTMLElement;
 
     // Project link storage
     protected selectedProjectFiles: TAbstractFile[] = [];
@@ -321,27 +494,45 @@ export abstract class TaskModal extends Modal {
         const header = container.createDiv({ cls: 'detail-label-section', text: this.t('modals.task.dependencies.label') });
         header.addClass('dependencies-section-header');
 
-        const blockedSetting = new Setting(container)
+        new Setting(container)
             .setName(this.t('modals.task.dependencies.blockedBy'))
-            .setDesc(this.t('modals.task.dependencies.blockedByHint'));
-        this.blockedByInput = blockedSetting.controlEl.createEl('textarea', { cls: 'tasknotes-dependency-input' });
-        this.blockedByInput.rows = 3;
-        this.blockedByInput.placeholder = this.t('modals.task.dependencies.placeholder');
-        this.blockedByInput.value = this.blockedByRaw;
-        this.blockedByInput.addEventListener('input', (event) => {
-            this.blockedByRaw = (event.target as HTMLTextAreaElement).value;
-        });
+            .setDesc(this.t('modals.task.dependencies.blockedByHint'))
+            .addButton(button => {
+                button.setButtonText(this.t('modals.task.dependencies.addTaskButton'))
+                    .setTooltip(this.t('modals.task.dependencies.selectTaskTooltip'))
+                    .onClick(() => {
+                        const modal = new ProjectSelectModal(this.app, this.plugin, (file) => {
+                            if (file instanceof TFile) {
+                                this.addBlockedByTask(file);
+                            }
+                        });
+                        modal.open();
+                    });
+                button.buttonEl.addClasses(['tn-btn', 'tn-btn--ghost']);
+            });
 
-        const blockingSetting = new Setting(container)
+        this.blockedByList = container.createDiv({ cls: 'task-projects-list' });
+
+        new Setting(container)
             .setName(this.t('modals.task.dependencies.blocking'))
-            .setDesc(this.t('modals.task.dependencies.blockingHint'));
-        this.blockingInput = blockingSetting.controlEl.createEl('textarea', { cls: 'tasknotes-dependency-input' });
-        this.blockingInput.rows = 3;
-        this.blockingInput.placeholder = this.t('modals.task.dependencies.placeholder');
-        this.blockingInput.value = this.blockingRaw;
-        this.blockingInput.addEventListener('input', (event) => {
-            this.blockingRaw = (event.target as HTMLTextAreaElement).value;
-        });
+            .setDesc(this.t('modals.task.dependencies.blockingHint'))
+            .addButton(button => {
+                button.setButtonText(this.t('modals.task.dependencies.addTaskButton'))
+                    .setTooltip(this.t('modals.task.dependencies.selectTaskTooltip'))
+                    .onClick(() => {
+                        const modal = new ProjectSelectModal(this.app, this.plugin, (file) => {
+                            if (file instanceof TFile) {
+                                this.addBlockingTask(file);
+                            }
+                        });
+                        modal.open();
+                    });
+                button.buttonEl.addClasses(['tn-btn', 'tn-btn--ghost']);
+            });
+
+        this.blockingList = container.createDiv({ cls: 'task-projects-list' });
+
+        this.renderDependencyLists();
     }
 
     protected createUserFields(container: HTMLElement): void {
