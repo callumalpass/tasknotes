@@ -1422,16 +1422,12 @@ export const fr: TranslationTree = {
             timeEstimateLabel: 'Estimation (minutes)',
             timeEstimatePlaceholder: '30',
             dependencies: {
-                label: 'Dépendances',
                 blockedBy: 'Bloqué par',
-                blockedByHint: 'Ajoutez les tâches qui doivent être terminées avant celle-ci. Utilisez des liens wiki (ex. [[Note de tâche]]), une par ligne.',
                 blocking: 'Bloquant',
-                blockingHint: 'Tâches en attente de cette tâche. Utilisez des liens wiki, une par ligne.',
                 placeholder: '[[Note de tâche]]',
                 addTaskButton: 'Ajouter une tâche',
                 selectTaskTooltip: 'Sélectionnez une note de tâche via la recherche floue',
-                removeTaskTooltip: 'Retirer la tâche',
-                empty: 'Aucune tâche sélectionnée'
+                removeTaskTooltip: 'Retirer la tâche'
             },
             customFieldsLabel: 'Champs personnalisés',
             actions: {

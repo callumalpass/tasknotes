@@ -108,10 +108,6 @@ export abstract class TaskModal extends Modal {
         listEl.empty();
 
         if (items.length === 0) {
-            listEl.createDiv({
-                cls: 'task-projects-empty',
-                text: this.t('modals.task.dependencies.empty')
-            });
             return;
         }
 
@@ -491,12 +487,8 @@ export abstract class TaskModal extends Modal {
     }
 
     protected createDependencyFields(container: HTMLElement): void {
-        const header = container.createDiv({ cls: 'detail-label-section', text: this.t('modals.task.dependencies.label') });
-        header.addClass('dependencies-section-header');
-
         new Setting(container)
             .setName(this.t('modals.task.dependencies.blockedBy'))
-            .setDesc(this.t('modals.task.dependencies.blockedByHint'))
             .addButton(button => {
                 button.setButtonText(this.t('modals.task.dependencies.addTaskButton'))
                     .setTooltip(this.t('modals.task.dependencies.selectTaskTooltip'))
@@ -515,7 +507,6 @@ export abstract class TaskModal extends Modal {
 
         new Setting(container)
             .setName(this.t('modals.task.dependencies.blocking'))
-            .setDesc(this.t('modals.task.dependencies.blockingHint'))
             .addButton(button => {
                 button.setButtonText(this.t('modals.task.dependencies.addTaskButton'))
                     .setTooltip(this.t('modals.task.dependencies.selectTaskTooltip'))

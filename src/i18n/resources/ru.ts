@@ -1422,16 +1422,12 @@ export const ru: TranslationTree = {
             timeEstimateLabel: 'Оценка времени (минуты)',
             timeEstimatePlaceholder: '30',
             dependencies: {
-                label: 'Зависимости',
                 blockedBy: 'Заблокирована',
-                blockedByHint: 'Добавьте задачи, которые должны быть выполнены раньше. Используйте вики-ссылки (например, [[Задача]]), по одной на строку.',
                 blocking: 'Блокирует',
-                blockingHint: 'Задачи, ожидающие эту задачу. Используйте вики-ссылки, по одной на строку.',
                 placeholder: '[[Задача]]',
                 addTaskButton: 'Добавить задачу',
                 selectTaskTooltip: 'Выберите заметку задачи с помощью нечеткого поиска',
-                removeTaskTooltip: 'Удалить задачу',
-                empty: 'Задачи не выбраны'
+                removeTaskTooltip: 'Удалить задачу'
             },
             customFieldsLabel: 'Пользовательские поля',
             actions: {
