@@ -26,12 +26,12 @@ class SaveViewModal extends Modal {
         const { contentEl } = this;
 
         try {
-            // Create header with fallback text
-            const headerText = this.translate ? this.translate('ui.filterBar.saveView') : 'Save view';
+            // Create header
+            const headerText = this.translate('ui.filterBar.saveView');
             contentEl.createEl('h2', { text: headerText });
 
-            // Create text input with fallback placeholder
-            const placeholderText = this.translate ? this.translate('ui.filterBar.saveViewNamePlaceholder') : 'Enter view name...';
+            // Create text input
+            const placeholderText = this.translate('ui.filterBar.saveViewNamePlaceholder');
             const textComponent = new TextComponent(contentEl)
                 .setPlaceholder(placeholderText)
                 .onChange((value) => {
@@ -41,7 +41,7 @@ class SaveViewModal extends Modal {
 
             // Create button container and save button
             const buttonContainer = contentEl.createDiv({ cls: 'modal-button-container' });
-            const buttonText = this.translate ? this.translate('ui.filterBar.saveButton') : 'Save';
+            const buttonText = this.translate('ui.filterBar.saveButton');
             new ButtonComponent(buttonContainer)
                 .setButtonText(buttonText)
                 .setCta()
@@ -2018,12 +2018,12 @@ export class FilterBar extends EventEmitter {
      */
     private showSaveViewDialog(): void {
         try {
-            // Ensure we have a valid translate function
+            // Ensure we have a valid translate function with fallback
             const translate = this.plugin?.i18n?.translate ?
                 this.plugin.i18n.translate.bind(this.plugin.i18n) :
-                null;
+                (key: string) => key; // Fallback: return the key as-is
 
-            console.log('Opening SaveViewModal with translate function:', !!translate);
+            console.log('Opening SaveViewModal with translate function:', !!this.plugin?.i18n?.translate);
 
             const modal = new SaveViewModal(this.app, (name) => {
                 console.log('SaveViewModal submitted with name:', name);
