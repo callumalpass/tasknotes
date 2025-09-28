@@ -14,6 +14,7 @@ export interface TextSettingOptions {
     getValue: () => string;
     setValue: (value: string) => void;
     ariaLabel?: string;
+    debounceMs?: number; // Optional debounce time in milliseconds
 }
 
 export interface DropdownSettingOptions {
@@ -65,20 +66,27 @@ export function createTextSetting(container: HTMLElement, options: TextSettingOp
         .setName(options.name)
         .setDesc(options.desc)
         .addText(text => {
-            text.setValue(options.getValue())
-                .onChange(options.setValue);
-            
+            text.setValue(options.getValue());
+
+            // Use debounced onChange if debounceMs is specified
+            if (options.debounceMs && options.debounceMs > 0) {
+                const debouncedSetValue = debounce(options.setValue, options.debounceMs);
+                text.onChange(debouncedSetValue);
+            } else {
+                text.onChange(options.setValue);
+            }
+
             if (options.placeholder) {
                 text.setPlaceholder(options.placeholder);
             }
-            
+
             if (options.ariaLabel) {
                 text.inputEl.setAttribute('aria-label', options.ariaLabel);
             }
-            
+
             // Apply consistent styling
             text.inputEl.addClass('settings-view__input');
-            
+
             return text;
         });
 }
