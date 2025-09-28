@@ -486,7 +486,7 @@ export abstract class TaskModal extends Modal {
 			this.actionBar,
 			"calendar",
 			this.t("modals.task.actions.due"),
-			(icon, event) => {
+			(_, event) => {
 				this.showDateContextMenu(event, "due");
 			},
 			"due-date"
@@ -497,7 +497,7 @@ export abstract class TaskModal extends Modal {
 			this.actionBar,
 			"calendar-clock",
 			this.t("modals.task.actions.scheduled"),
-			(icon, event) => {
+			(_, event) => {
 				this.showDateContextMenu(event, "scheduled");
 			},
 			"scheduled-date"
@@ -508,7 +508,7 @@ export abstract class TaskModal extends Modal {
 			this.actionBar,
 			"dot-square",
 			this.t("modals.task.actions.status"),
-			(icon, event) => {
+			(_, event) => {
 				this.showStatusContextMenu(event);
 			},
 			"status"
@@ -519,7 +519,7 @@ export abstract class TaskModal extends Modal {
 			this.actionBar,
 			"star",
 			this.t("modals.task.actions.priority"),
-			(icon, event) => {
+			(_, event) => {
 				this.showPriorityContextMenu(event);
 			},
 			"priority"
@@ -530,7 +530,7 @@ export abstract class TaskModal extends Modal {
 			this.actionBar,
 			"refresh-ccw",
 			this.t("modals.task.actions.recurrence"),
-			(icon, event) => {
+			(_, event) => {
 				this.showRecurrenceContextMenu(event);
 			},
 			"recurrence"
@@ -541,7 +541,7 @@ export abstract class TaskModal extends Modal {
 			this.actionBar,
 			"bell",
 			this.t("modals.task.actions.reminders"),
-			(icon, event) => {
+			(_, event) => {
 				this.showReminderContextMenu(event);
 			},
 			"reminders"
@@ -722,7 +722,7 @@ export abstract class TaskModal extends Modal {
 
 	protected createOrganizationFields(container: HTMLElement): void {
 		// Add to project section
-		const projectSetting = new Setting(container)
+		new Setting(container)
 			.setName(this.t("modals.task.organization.projects"))
 			.addButton((button) => {
 				button
@@ -741,7 +741,7 @@ export abstract class TaskModal extends Modal {
 		this.projectsList = container.createDiv({ cls: "task-projects-list" });
 
 		// Add subtasks section
-		const subtaskSetting = new Setting(container)
+		new Setting(container)
 			.setName(this.t("modals.task.organization.subtasks"))
 			.addButton((button) => {
 				button
@@ -1598,7 +1598,7 @@ class ContextSuggest extends AbstractInputSuggest<ContextSuggestion> {
 		this.input = inputEl;
 	}
 
-	protected async getSuggestions(query: string): Promise<ContextSuggestion[]> {
+	protected async getSuggestions(_: string): Promise<ContextSuggestion[]> {
 		// Handle comma-separated values
 		const currentValues = this.input.value.split(",").map((v: string) => v.trim());
 		const currentQuery = currentValues[currentValues.length - 1];
@@ -1662,7 +1662,7 @@ class TagSuggest extends AbstractInputSuggest<TagSuggestion> {
 		this.input = inputEl;
 	}
 
-	protected async getSuggestions(query: string): Promise<TagSuggestion[]> {
+	protected async getSuggestions(_: string): Promise<TagSuggestion[]> {
 		// Handle comma-separated values
 		const currentValues = this.input.value.split(",").map((v: string) => v.trim());
 		const currentQuery = currentValues[currentValues.length - 1];
@@ -1729,7 +1729,7 @@ class UserFieldSuggest extends AbstractInputSuggest<UserFieldSuggestion> {
 		this.fieldConfig = fieldConfig;
 	}
 
-	protected async getSuggestions(query: string): Promise<UserFieldSuggestion[]> {
+	protected async getSuggestions(_: string): Promise<UserFieldSuggestion[]> {
 		const isListField = this.fieldConfig.type === "list";
 
 		// Get current token or full value

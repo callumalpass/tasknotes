@@ -6,7 +6,6 @@ import {
 	setTooltip,
 	parseFrontMatterAliases,
 	TFile,
-	TAbstractFile,
 } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { TaskModal } from "./TaskModal";
@@ -212,7 +211,6 @@ class NLPSuggest extends AbstractInputSuggest<
 					getFrontmatter: (entry) => {
 						// entry.path refers to a markdown file path
 						const file = appRef?.vault.getAbstractFileByPath(entry.path);
-						// @ts-ignore obsidian typing: we only read cache.frontmatter
 						const cache = file
 							? appRef?.metadataCache.getFileCache(file as any)
 							: undefined;
