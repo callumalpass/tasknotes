@@ -2,8 +2,7 @@
 
 Task management plugin where each task lives as a separate note with YAML frontmatter. Features calendar integration, Kanban boards, time tracking, and Pomodoro timer.
 
-![Downloads](https://img.shields.io/github/downloads/callumalpass/tasknotes/main.js)
-![Screenshot of TaskNotes plugin](https://github.com/callumalpass/tasknotes/blob/main/media/175266750_comp.gif)
+<img src="https://github.com/user-attachments/assets/4f68646e-e3cb-4d0c-86cd-c1574a97fba0" />
 
 **[📖 Documentation](https://callumalpass.github.io/tasknotes/)**
 
@@ -20,6 +19,8 @@ YAML is a standard data format that works with many tools, so you can easily ext
 The frontmatter is extensible—add custom fields like "assigned-to" or "attachments" and use tools like Obsidian Bases to work with that data. This flexibility makes features like time-tracking natural, since there's an obvious place to store timing information.
 
 Each task being a full note means you can write descriptions, jot down thoughts as you work, and connect tasks to other notes through Obsidian's linking and graph features. Bases integration provides custom views on your task data.
+
+![Screenshot of TaskNotes plugin](https://github.com/callumalpass/tasknotes/blob/main/media/175266750_comp.gif)
 
 ## Core Features
 
@@ -115,29 +116,6 @@ complete_instances: ["2024-01-08"]
 ## HTTP API
 
 TaskNotes includes an optional HTTP API server for external integrations. This enables creating tasks from browsers, automation tools, mobile apps, and custom scripts.
-
-### Quick Start
-
-1. Enable the HTTP API in Settings → HTTP API tab (desktop only)
-2. Configure port (default: 8080) and optional auth token  
-3. Restart Obsidian to start the server
-
-### Basic Usage
-```bash
-# Health check
-curl http://localhost:8080/api/health
-
-# List all tasks
-curl http://localhost:8080/api/tasks
-
-# Create a task
-curl -X POST http://localhost:8080/api/tasks \
-  -H "Content-Type: application/json" \
-  -d '{"title": "New task", "priority": "High"}'
-
-# Get task statistics
-curl http://localhost:8080/api/stats
-```
 
 ### Browser Integration
 
