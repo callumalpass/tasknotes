@@ -23,6 +23,7 @@ export class SubgroupMenuBuilder {
 			due: "Due Date",
 			scheduled: "Scheduled Date",
 			tags: "Tags",
+			completedDate: "Completed Date",
 		} as const;
 
 		const options: Record<string, string> = {};

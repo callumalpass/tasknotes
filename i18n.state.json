@@ -4936,6 +4936,10 @@
       "source": "886cbff9d9df761ec642945e519631a23ed173a2",
       "translation": "c3ae74d4763f2029465abfeeec924b77d9d218e1"
     },
+    "ui.filterBar.sortOptions.status": {
+      "source": "bae7d5be70820ed56467bd9a63744e23b47bd711",
+      "translation": "bae7d5be70820ed56467bd9a63744e23b47bd711"
+    },
     "ui.filterBar.sortOptions.title": {
       "source": "768e0c1c69573fb588f61f1308a015c11468e05f",
       "translation": "950701e758d18a72134a6b8948c7cf42867c0eb9"
@@ -4988,6 +4992,7 @@
       "source": "848eed0fbd5429f556b2982dec3ea87136e33e44",
       "translation": "848eed0fbd5429f556b2982dec3ea87136e33e44"
     },
+    "ui.filterBar.group.completedDate": null,
     "ui.filterBar.notices.propertiesMenuFailed": {
       "source": "e9df8763e0af720e4edcfd8f3bd87af75a69f7a1",
       "translation": "61031394986a0d06ec5548a0f054f66de47c1736"
@@ -10270,6 +10275,10 @@
       "source": "886cbff9d9df761ec642945e519631a23ed173a2",
       "translation": "48f9c9750a53cc8f910fa331f141f80f025af271"
     },
+    "ui.filterBar.sortOptions.status": {
+      "source": "bae7d5be70820ed56467bd9a63744e23b47bd711",
+      "translation": "87cf2a843e2e43a05edc326327fca7e1388bc196"
+    },
     "ui.filterBar.sortOptions.title": {
       "source": "768e0c1c69573fb588f61f1308a015c11468e05f",
       "translation": "98a5efa60beb882ed4dbac1ac013f73418acda77"
@@ -10322,6 +10331,7 @@
       "source": "848eed0fbd5429f556b2982dec3ea87136e33e44",
       "translation": "d830f4246090d5a2c2647ce5f622aa9e62dd472b"
     },
+    "ui.filterBar.group.completedDate": null,
     "ui.filterBar.notices.propertiesMenuFailed": {
       "source": "e9df8763e0af720e4edcfd8f3bd87af75a69f7a1",
       "translation": "0644f495396344b8c866086150382c5e2b26fd77"
@@ -15679,6 +15689,10 @@
       "source": "886cbff9d9df761ec642945e519631a23ed173a2",
       "translation": "eede91d2f77e0901ba7ebf704f4ea2e1738e04dc"
     },
+    "ui.filterBar.sortOptions.status": {
+      "source": "bae7d5be70820ed56467bd9a63744e23b47bd711",
+      "translation": "659499f38a5647a0d307be6f23a5d367a167fbf7"
+    },
     "ui.filterBar.sortOptions.title": {
       "source": "768e0c1c69573fb588f61f1308a015c11468e05f",
       "translation": "eb97899aedcd5609782b5ccb4ffa390e0e66a3eb"
@@ -15731,6 +15745,7 @@
       "source": "848eed0fbd5429f556b2982dec3ea87136e33e44",
       "translation": "e26c690ca57a3cd9f3b5ba1a396e84299da3f09d"
     },
+    "ui.filterBar.group.completedDate": null,
     "ui.filterBar.notices.propertiesMenuFailed": {
       "source": "e9df8763e0af720e4edcfd8f3bd87af75a69f7a1",
       "translation": "f484ebd4deb515f1b3e665d1e67fa8fae2f8fb1b"
@@ -21013,6 +21028,10 @@
       "source": "886cbff9d9df761ec642945e519631a23ed173a2",
       "translation": "edf69de9e405e36ed4ed4703019ea42701fdcde7"
     },
+    "ui.filterBar.sortOptions.status": {
+      "source": "bae7d5be70820ed56467bd9a63744e23b47bd711",
+      "translation": "0a409cee235c7f6064ee84956d3cbb8e45973ca3"
+    },
     "ui.filterBar.sortOptions.title": {
       "source": "768e0c1c69573fb588f61f1308a015c11468e05f",
       "translation": "47b4753f220d4e6205ab2eb57371e940cbbdfd46"
@@ -21065,6 +21084,7 @@
       "source": "848eed0fbd5429f556b2982dec3ea87136e33e44",
       "translation": "26fff73dfc904d36bd4a195fd03bac87b1c1db4a"
     },
+    "ui.filterBar.group.completedDate": null,
     "ui.filterBar.notices.propertiesMenuFailed": {
       "source": "e9df8763e0af720e4edcfd8f3bd87af75a69f7a1",
       "translation": "ff97a46d536253e14b0dd4d164a47fa032a27b2e"
@@ -26422,6 +26442,10 @@
       "source": "886cbff9d9df761ec642945e519631a23ed173a2",
       "translation": "b5b6ddbf62afe4383eba7628e4ab66877476e51c"
     },
+    "ui.filterBar.sortOptions.status": {
+      "source": "bae7d5be70820ed56467bd9a63744e23b47bd711",
+      "translation": "f7f293b5c58cf8a1508319db3e59577951e44343"
+    },
     "ui.filterBar.sortOptions.title": {
       "source": "768e0c1c69573fb588f61f1308a015c11468e05f",
       "translation": "3de49828e86a4016140f16781af6cceba1ad3c3c"
@@ -26474,6 +26498,7 @@
       "source": "848eed0fbd5429f556b2982dec3ea87136e33e44",
       "translation": "5e52520af44e38fb9f11292b7215841854a01d1e"
     },
+    "ui.filterBar.group.completedDate": null,
     "ui.filterBar.notices.propertiesMenuFailed": {
       "source": "e9df8763e0af720e4edcfd8f3bd87af75a69f7a1",
       "translation": "7311d052585143a499c55944cfb51de46ff29501"
@@ -31756,6 +31781,10 @@
       "source": "886cbff9d9df761ec642945e519631a23ed173a2",
       "translation": "7cabe771ebffbab6a13b58923112b60e51c47e97"
     },
+    "ui.filterBar.sortOptions.status": {
+      "source": "bae7d5be70820ed56467bd9a63744e23b47bd711",
+      "translation": "62e951a692ff8f4e8a0e9049d726f42685237d0d"
+    },
     "ui.filterBar.sortOptions.title": {
       "source": "768e0c1c69573fb588f61f1308a015c11468e05f",
       "translation": "748d7dc7e3212d62e207d204624705af70ea635c"
@@ -31808,6 +31837,7 @@
       "source": "848eed0fbd5429f556b2982dec3ea87136e33e44",
       "translation": "ae0a7afecee1e83d27e322e287cb9bf351ea0018"
     },
+    "ui.filterBar.group.completedDate": null,
     "ui.filterBar.notices.propertiesMenuFailed": {
       "source": "e9df8763e0af720e4edcfd8f3bd87af75a69f7a1",
       "translation": "1f237bc20f759ef50decd45f362077fe5b5fa74a"

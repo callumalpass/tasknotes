@@ -2141,6 +2141,7 @@ export const en: TranslationTree = {
 				dueDate: "Due Date",
 				scheduledDate: "Scheduled Date",
 				tags: "Tags",
+				completedDate: "Completed Date",
 			},
 			notices: {
 				propertiesMenuFailed: "Failed to show properties menu",

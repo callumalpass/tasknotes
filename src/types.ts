@@ -39,6 +39,7 @@ export type TaskSortKey =
 	| "status"
 	| "title"
 	| "dateCreated"
+	| "completedDate"
 	| "tags"
 	| `user:${string}`;
 export type TaskGroupKey =
@@ -50,6 +51,7 @@ export type TaskGroupKey =
 	| "scheduled"
 	| "status"
 	| "tags"
+	| "completedDate"
 	| `user:${string}`;
 export type SortDirection = "asc" | "desc";
 

@@ -22,7 +22,7 @@ import {
 	TaskPropertyValue,
 } from "../utils/FilterUtils";
 import { isDueByRRule, filterEmptyProjects, getEffectiveTaskStatus } from "../utils/helpers";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { splitListPreservingLinksAndQuotes } from "../utils/stringSplit";
 import {
 	getTodayString,
@@ -1292,11 +1292,17 @@ export class FilterService extends EventEmitter {
 					case "priority":
 						comparison = this.comparePriorities(a.priority, b.priority);
 						break;
+					case "status":
+						comparison = this.compareStatuses(a.status, b.status);
+						break;
 					case "title":
 						comparison = a.title.localeCompare(b.title);
 						break;
 					case "dateCreated":
 						comparison = this.compareDates(a.dateCreated, b.dateCreated);
+						break;
+					case "completedDate":
+						comparison = this.compareDates(a.completedDate, b.completedDate);
 						break;
 					case "tags":
 						comparison = this.compareTags(a.tags, b.tags);
@@ -1347,6 +1353,17 @@ export class FilterService extends EventEmitter {
 
 		// Higher weight = higher priority, so reverse for ascending order
 		return weightB - weightA;
+	}
+
+	/**
+	 * Compare statuses using StatusManager order
+	 */
+	private compareStatuses(statusA: string, statusB: string): number {
+		const orderA = this.statusManager.getStatusOrder(statusA);
+		const orderB = this.statusManager.getStatusOrder(statusB);
+
+		// Lower order = higher priority in status sequence
+		return orderA - orderB;
 	}
 
 	/**
@@ -1585,6 +1602,9 @@ export class FilterService extends EventEmitter {
 							break;
 						case "scheduled":
 							groupValue = this.getScheduledDateGroup(task, targetDate);
+							break;
+						case "completedDate":
+							groupValue = this.getCompletedDateGroup(task);
 							break;
 						default:
 							groupValue = "unknown";
@@ -1884,6 +1904,22 @@ export class FilterService extends EventEmitter {
 	}
 
 	/**
+	 * Get group label for completed date grouping
+	 */
+	private getCompletedDateGroup(task: TaskInfo): string {
+		if (!task.completedDate) return "Not completed";
+
+		try {
+			// Format the completed date as a readable string
+			const completedDate = parseISO(task.completedDate);
+			return format(completedDate, "yyyy-MM-dd");
+		} catch (error) {
+			console.error(`Error formatting completed date ${task.completedDate}:`, error);
+			return "Invalid date";
+		}
+	}
+
+	/**
 	 * Sort groups according to logical order
 	 */
 	private sortGroups(
@@ -1973,6 +2009,19 @@ export class FilterService extends EventEmitter {
 						if (a === noTagsLabel) return 1;
 						if (b === noTagsLabel) return -1;
 						return a.localeCompare(b, this.getLocale());
+					});
+					break;
+
+				case "completedDate":
+					// Sort completed dates chronologically with "Not completed" at the end
+					sortedKeys = Array.from(groups.keys()).sort((a, b) => {
+						const notCompletedLabel = "Not completed";
+						if (a === notCompletedLabel) return 1;
+						if (b === notCompletedLabel) return -1;
+						if (a === "Invalid date") return 1;
+						if (b === "Invalid date") return -1;
+						// YYYY-MM-DD format sorts chronologically in reverse (newest first)
+						return b.localeCompare(a);
 					});
 					break;
 
