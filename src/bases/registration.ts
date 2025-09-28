@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import TaskNotesPlugin from "../main";
 import { requireApiVersion } from "obsidian";
 import { buildTasknotesTaskListViewFactory } from "./view-factory";

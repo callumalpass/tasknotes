@@ -22,47 +22,6 @@ import { splitListPreservingLinksAndQuotes } from "../utils/stringSplit";
 import { ProjectMetadataResolver, ProjectEntry } from "../utils/projectMetadataResolver";
 import { parseDisplayFieldsRow } from "../utils/projectAutosuggestDisplayFieldsParser";
 
-interface TriggerDetectionResult {
-	trigger: "@" | "#" | "+" | null;
-	triggerIndex: number;
-	queryAfterTrigger: string;
-}
-
-/**
- * Pure function to detect suggestion triggers in text
- * @param textBeforeCursor - Text before cursor position
- * @returns Trigger detection result with trigger type, index, and query
- */
-function detectSuggestionTrigger(textBeforeCursor: string): TriggerDetectionResult {
-	// Find the last @, #, or + before cursor
-	const lastAtIndex = textBeforeCursor.lastIndexOf("@");
-	const lastHashIndex = textBeforeCursor.lastIndexOf("#");
-	const lastPlusIndex = textBeforeCursor.lastIndexOf("+");
-
-	let triggerIndex = -1;
-	let trigger: "@" | "#" | "+" | null = null;
-
-	// Find the most recent trigger
-	if (lastAtIndex >= lastHashIndex && lastAtIndex >= lastPlusIndex && lastAtIndex !== -1) {
-		triggerIndex = lastAtIndex;
-		trigger = "@";
-	} else if (lastHashIndex >= lastPlusIndex && lastHashIndex !== -1) {
-		triggerIndex = lastHashIndex;
-		trigger = "#";
-	} else if (lastPlusIndex !== -1) {
-		triggerIndex = lastPlusIndex;
-		trigger = "+";
-	}
-
-	// Extract the query after the trigger
-	const queryAfterTrigger = triggerIndex !== -1 ? textBeforeCursor.slice(triggerIndex + 1) : "";
-
-	return {
-		trigger,
-		triggerIndex,
-		queryAfterTrigger,
-	};
-}
 
 export interface TaskCreationOptions {
 	prePopulatedValues?: Partial<TaskInfo>;

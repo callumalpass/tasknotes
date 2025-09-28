@@ -1530,7 +1530,7 @@ export class FilterService extends EventEmitter {
 						if (!groups.has(absolutePath)) {
 							groups.set(absolutePath, []);
 						}
-						groups.get(absolutePath)!.push(task);
+						groups.get(absolutePath)?.push(task);
 					}
 				} else {
 					// Task has no projects - add to "No Project" group
@@ -1538,7 +1538,7 @@ export class FilterService extends EventEmitter {
 					if (!groups.has(noProjectGroup)) {
 						groups.set(noProjectGroup, []);
 					}
-					groups.get(noProjectGroup)!.push(task);
+					groups.get(noProjectGroup)?.push(task);
 				}
 			} else if (groupKey === "tags") {
 				const taskTags = task.tags || [];
@@ -1548,7 +1548,7 @@ export class FilterService extends EventEmitter {
 						if (!groups.has(tag)) {
 							groups.set(tag, []);
 						}
-						groups.get(tag)!.push(task);
+						groups.get(tag)?.push(task);
 					}
 				} else {
 					// Task has no tags - add to "No Tags" group
@@ -1556,7 +1556,7 @@ export class FilterService extends EventEmitter {
 					if (!groups.has(noTagsGroup)) {
 						groups.set(noTagsGroup, []);
 					}
-					groups.get(noTagsGroup)!.push(task);
+					groups.get(noTagsGroup)?.push(task);
 				}
 			} else {
 				// For all other grouping types, use single group assignment
@@ -1594,7 +1594,7 @@ export class FilterService extends EventEmitter {
 				if (!groups.has(groupValue)) {
 					groups.set(groupValue, []);
 				}
-				groups.get(groupValue)!.push(task);
+				groups.get(groupValue)?.push(task);
 			}
 		}
 
@@ -1986,7 +1986,10 @@ export class FilterService extends EventEmitter {
 
 		// Rebuild map in sorted order
 		for (const key of sortedKeys) {
-			sortedGroups.set(key, groups.get(key)!);
+			const group = groups.get(key);
+		if (group) {
+			sortedGroups.set(key, group);
+		}
 		}
 
 		return sortedGroups;

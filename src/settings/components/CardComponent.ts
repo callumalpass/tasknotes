@@ -715,7 +715,7 @@ export function showCardEmptyState(
 	container.empty();
 	const emptyState = container.createDiv("tasknotes-settings__empty-state");
 	emptyState.createSpan("tasknotes-settings__empty-icon");
-	const messageEl = emptyState.createSpan({
+	emptyState.createSpan({
 		text: message,
 		cls: "tasknotes-settings__empty-text",
 	});

@@ -128,7 +128,7 @@ export function buildTasknotesKanbanViewFactory(plugin: TaskNotesPlugin) {
 							if (!groups.has(groupValue)) {
 								groups.set(groupValue, []);
 							}
-							groups.get(groupValue)!.push(task);
+							groups.get(groupValue)?.push(task);
 						}
 					}
 				} else {
@@ -138,7 +138,7 @@ export function buildTasknotesKanbanViewFactory(plugin: TaskNotesPlugin) {
 						if (!groups.has(groupValue)) {
 							groups.set(groupValue, []);
 						}
-						groups.get(groupValue)!.push(task);
+						groups.get(groupValue)?.push(task);
 					}
 
 					// Add empty status columns
@@ -322,7 +322,7 @@ export function buildTasknotesKanbanViewFactory(plugin: TaskNotesPlugin) {
 											// Extract the actual property name from Bases property ID
 											// e.g., "note.note.projects" -> "projects"
 											const propertyName = originalPropertyId.includes(".")
-												? originalPropertyId.split(".").pop()!
+												? originalPropertyId.split(".").pop() || originalPropertyId
 												: originalPropertyId;
 											frontmatter[propertyName] = valueToSet;
 										}

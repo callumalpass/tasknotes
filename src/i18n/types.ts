@@ -1,4 +1,4 @@
-import { EventRef, Events } from "obsidian";
+import { EventRef } from "obsidian";
 
 export type TranslationValue = string | TranslationTree;
 

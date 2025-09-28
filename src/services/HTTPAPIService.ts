@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { createServer, IncomingMessage, ServerResponse, Server } from "http";
 import { parse } from "url";
 import { IWebhookNotifier } from "../types";

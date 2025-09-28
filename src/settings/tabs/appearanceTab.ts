@@ -140,7 +140,7 @@ export function renderAppearanceTab(
 
 			checkbox.checked = defaultVisible.includes(prop.key);
 
-			const label = toggleContainer.createEl("label", {
+			toggleContainer.createEl("label", {
 				text: prop.label,
 				cls: "tasknotes-settings__property-label",
 				attr: { for: `visible-prop-${prop.key}` },

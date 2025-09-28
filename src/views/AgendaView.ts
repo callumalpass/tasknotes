@@ -439,7 +439,7 @@ export class AgendaView extends ItemView implements OptimizedView {
 			this.currentQuery = newQuery;
 			// Save the filter state (but always update date range based on current view)
 			const queryToSave = newQuery;
-			await this.plugin.viewStateManager.setFilterState(AGENDA_VIEW_TYPE, queryToSave);
+			this.plugin.viewStateManager.setFilterState(AGENDA_VIEW_TYPE, queryToSave);
 			this.refresh();
 		});
 

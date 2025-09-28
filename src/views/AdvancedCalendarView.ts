@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import {
 	ItemView,
 	WorkspaceLeaf,
@@ -337,7 +338,7 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 		// Listen for filter changes
 		this.filterBar.on("queryChange", async (newQuery: FilterQuery) => {
 			this.currentQuery = newQuery;
-			await this.plugin.viewStateManager.setFilterState(
+			this.plugin.viewStateManager.setFilterState(
 				ADVANCED_CALENDAR_VIEW_TYPE,
 				newQuery
 			);

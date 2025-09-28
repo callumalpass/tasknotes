@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { MinimalNativeCache } from "../utils/MinimalNativeCache";
 import { TaskInfo } from "../types";
 

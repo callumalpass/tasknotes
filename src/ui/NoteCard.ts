@@ -3,7 +3,6 @@ import { NoteInfo } from "../types";
 import TaskNotesPlugin from "../main";
 import { formatDateForDisplay } from "../utils/dateUtils";
 import { getAllDailyNotes } from "obsidian-daily-notes-interface";
-import { TranslationKey } from "../i18n";
 
 export interface NoteCardOptions {
 	showCreatedDate: boolean;

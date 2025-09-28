@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import {
 	Notice,
 	Plugin,
@@ -73,7 +74,6 @@ import {
 } from "./editor/ProjectNoteDecorations";
 import {
 	createTaskCardNoteDecorations,
-	dispatchTaskCardUpdate,
 } from "./editor/TaskCardNoteDecorations";
 import { DragDropManager } from "./utils/DragDropManager";
 import {
@@ -380,6 +380,7 @@ export default class TaskNotesPlugin extends Plugin {
 				const { registerBasesTaskList } = await import("./bases/registration");
 				await registerBasesTaskList(this);
 			} catch (e) {
+				// eslint-disable-next-line no-console
 				console.debug("[TaskNotes][Bases] Early registration failed:", e);
 			}
 		}
@@ -659,6 +660,7 @@ export default class TaskNotesPlugin extends Plugin {
 			const duration = Date.now() - warmupStartTime;
 			// Only log slow warmup for debugging large vaults
 			if (duration > 2000) {
+				// eslint-disable-next-line no-console
 				console.log(`[TaskNotes] Project indexes warmed up in ${duration}ms`);
 			}
 		} catch (error) {
@@ -998,12 +1000,11 @@ export default class TaskNotesPlugin extends Plugin {
 	onunload() {
 		// Unregister Bases views
 		if (this.settings?.enableBases) {
-			try {
-				const { unregisterBasesViews } = require("./bases/registration");
+			import("./bases/registration").then(({ unregisterBasesViews }) => {
 				unregisterBasesViews(this);
-			} catch (e) {
+			}).catch(e => {
 				console.debug("[TaskNotes][Bases] Unregistration failed:", e);
-			}
+			});
 		}
 
 		// Clean up performance monitoring

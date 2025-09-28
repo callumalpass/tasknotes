@@ -489,6 +489,7 @@ export class TaskService {
 			return { file, taskInfo };
 		} catch (error) {
 			const errorMessage = error instanceof Error ? error.message : String(error);
+			// eslint-disable-next-line no-console
 			console.error("Error creating task:", {
 				error: errorMessage,
 				stack: error instanceof Error ? error.stack : undefined,
@@ -546,6 +547,7 @@ export class TaskService {
 				return processTemplate(templateContent, templateTaskData);
 			} else {
 				// Template file not found, log error and return details as-is
+				// eslint-disable-next-line no-console
 				console.warn(`Task body template not found: ${templatePath}`);
 				new Notice(
 					this.translate("services.task.notices.templateNotFound", { path: templatePath })
@@ -675,12 +677,13 @@ export class TaskService {
 						[property]: value,
 					});
 				}
-				await this.plugin.cacheManager.updateTaskInfoInCache(
+				this.plugin.cacheManager.updateTaskInfoInCache(
 					task.path,
 					updatedTask as TaskInfo
 				);
 			} catch (cacheError) {
 				// Cache errors shouldn't break the operation, just log them
+				// eslint-disable-next-line no-console
 				console.error("Error updating task cache:", {
 					error: cacheError instanceof Error ? cacheError.message : String(cacheError),
 					taskPath: task.path,
@@ -728,6 +731,7 @@ export class TaskService {
 					}
 				}
 			} catch (eventError) {
+				// eslint-disable-next-line no-console
 				console.error("Error emitting task update event:", {
 					error: eventError instanceof Error ? eventError.message : String(eventError),
 					taskPath: task.path,
@@ -790,6 +794,7 @@ export class TaskService {
 			return updatedTask as TaskInfo;
 		} catch (error) {
 			const errorMessage = error instanceof Error ? error.message : String(error);
+			// eslint-disable-next-line no-console
 			console.error("Error updating task property:", {
 				error: errorMessage,
 				stack: error instanceof Error ? error.stack : undefined,
@@ -955,7 +960,7 @@ export class TaskService {
 					archived: updatedTask.archived,
 				});
 			}
-			await this.plugin.cacheManager.updateTaskInfoInCache(updatedTask.path, updatedTask);
+			this.plugin.cacheManager.updateTaskInfoInCache(updatedTask.path, updatedTask);
 		} catch (cacheError) {
 			console.error("Error updating cache for archived task:", cacheError);
 		}
@@ -1039,7 +1044,7 @@ export class TaskService {
 					timeEntries: updatedTask.timeEntries,
 				});
 			}
-			await this.plugin.cacheManager.updateTaskInfoInCache(task.path, updatedTask);
+			this.plugin.cacheManager.updateTaskInfoInCache(task.path, updatedTask);
 		} catch (cacheError) {
 			console.error("Error updating cache for time tracking start:", cacheError);
 		}
@@ -1125,7 +1130,7 @@ export class TaskService {
 					timeEntries: updatedTask.timeEntries,
 				});
 			}
-			await this.plugin.cacheManager.updateTaskInfoInCache(task.path, updatedTask);
+			this.plugin.cacheManager.updateTaskInfoInCache(task.path, updatedTask);
 		} catch (cacheError) {
 			console.error("Error updating cache for time tracking stop:", cacheError);
 		}
@@ -1415,9 +1420,10 @@ export class TaskService {
 						await this.plugin.cacheManager.waitForFreshTaskData(finalFile, keyChanges);
 					}
 				}
-				await this.plugin.cacheManager.updateTaskInfoInCache(newPath, updatedTask);
+				this.plugin.cacheManager.updateTaskInfoInCache(newPath, updatedTask);
 			} catch (cacheError) {
 				// Cache errors shouldn't break the operation, just log them
+				// eslint-disable-next-line no-console
 				console.error("Error updating task cache:", {
 					error: cacheError instanceof Error ? cacheError.message : String(cacheError),
 					taskPath: newPath,
@@ -1432,6 +1438,7 @@ export class TaskService {
 					updatedTask: updatedTask,
 				});
 			} catch (eventError) {
+				// eslint-disable-next-line no-console
 				console.error("Error emitting task update event:", {
 					error: eventError instanceof Error ? eventError.message : String(eventError),
 					taskPath: newPath,
@@ -1644,6 +1651,7 @@ export class TaskService {
 			}
 		} catch (error) {
 			const errorMessage = error instanceof Error ? error.message : String(error);
+			// eslint-disable-next-line no-console
 			console.error("Error deleting task:", {
 				error: errorMessage,
 				stack: error instanceof Error ? error.stack : undefined,
@@ -1783,7 +1791,7 @@ export class TaskService {
 				}
 				await this.plugin.cacheManager.waitForFreshTaskData(file, expectedChanges);
 			}
-			await this.plugin.cacheManager.updateTaskInfoInCache(freshTask.path, updatedTask);
+			this.plugin.cacheManager.updateTaskInfoInCache(freshTask.path, updatedTask);
 		} catch (cacheError) {
 			console.error("Error updating cache for recurring task:", cacheError);
 		}
@@ -1859,7 +1867,7 @@ export class TaskService {
 					timeEntries: updatedTask.timeEntries,
 				});
 			}
-			await this.plugin.cacheManager.updateTaskInfoInCache(task.path, updatedTask);
+			this.plugin.cacheManager.updateTaskInfoInCache(task.path, updatedTask);
 		} catch (cacheError) {
 			console.error("Error updating cache for time entry deletion:", cacheError);
 		}

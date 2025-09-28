@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { TFile, App, Events, EventRef, parseLinktext } from "obsidian";
 import { TaskInfo, NoteInfo } from "../types";
 import { FieldMapper } from "../services/FieldMapper";

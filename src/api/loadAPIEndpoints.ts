@@ -1,4 +1,4 @@
-async function loadAPIEndpoints(container: HTMLElement, apiPort: number = 8080): Promise<void> {
+async function loadAPIEndpoints(container: HTMLElement, apiPort = 8080): Promise<void> {
 	// Show loading message first
 	const loadingEl = container.createEl("p", {
 		text: "Loading API endpoints...",
@@ -6,8 +6,10 @@ async function loadAPIEndpoints(container: HTMLElement, apiPort: number = 8080):
 	});
 
 	try {
+		// eslint-disable-next-line no-console
 		console.log(`Fetching API documentation from http://localhost:${apiPort}/api/docs`);
 		const response = await fetch(`http://localhost:${apiPort}/api/docs`);
+		// eslint-disable-next-line no-console
 		console.log("API docs response:", response.status, response.statusText);
 
 		if (!response.ok) {
@@ -15,6 +17,7 @@ async function loadAPIEndpoints(container: HTMLElement, apiPort: number = 8080):
 		}
 
 		const openApiSpec = await response.json();
+		// eslint-disable-next-line no-console
 		console.log("OpenAPI spec loaded:", openApiSpec);
 
 		// Remove loading message
