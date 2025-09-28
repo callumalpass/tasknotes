@@ -46,6 +46,7 @@ export const zh: TranslationTree = {
 		agenda: {
 			title: "议程",
 			today: "今天",
+			overdue: "逾期",
 			refreshCalendars: "刷新日历",
 			actions: {
 				previousPeriod: "上一时段",
@@ -55,6 +56,7 @@ export const zh: TranslationTree = {
 			},
 			loading: "正在加载议程...",
 			dayToggle: "切换日期",
+			overdueToggle: "切换逾期部分",
 			expandAllDays: "展开所有天",
 			collapseAllDays: "折叠所有天",
 			notices: {
@@ -301,10 +303,12 @@ export const zh: TranslationTree = {
 			},
 			dataStorage: {
 				name: "番茄钟数据存储",
+				description: "配置番茄钟会话数据的存储位置和管理方式。",
 				dailyNotes: "日记",
 			},
 			notifications: {
 				header: "通知",
+				description: "配置任务提醒通知和警报。",
 				enableName: "启用通知",
 				enableDesc: "启用任务提醒通知",
 				typeName: "通知类型",
@@ -336,19 +340,25 @@ export const zh: TranslationTree = {
 			},
 			timeblocking: {
 				header: "时间块",
+				description:
+					"配置时间块功能，在日记中进行轻量级调度。在高级日历视图中，按住Shift + 点击并拖拽创建时间块。",
 				enableName: "启用时间块",
 				enableDesc: "启用时间块功能，在日记中进行轻量级调度",
 				showBlocksName: "显示时间块",
 				showBlocksDesc: "默认显示日记中的时间块",
+				usage: "用法：在高级日历视图中，按住Shift + 拖拽创建时间块。拖拽移动现有时间块。调整边缘以修改持续时间。",
 			},
 			performance: {
 				header: "性能和行为",
+				description: "配置插件性能和行为选项。",
 			},
 			timeTrackingSection: {
 				header: "时间跟踪",
+				description: "配置自动时间跟踪行为。",
 			},
 			recurringSection: {
 				header: "重复任务",
+				description: "配置重复任务管理的行为。",
 			},
 		},
 		defaults: {
@@ -673,6 +683,7 @@ export const zh: TranslationTree = {
 					archiveTag: "归档标签",
 					timeEntries: "时间条目",
 					completeInstances: "完成实例",
+					blockedBy: "被阻止",
 					pomodoros: "番茄钟",
 					icsEventId: "ICS事件ID",
 					icsEventTag: "ICS事件标签",

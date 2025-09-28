@@ -46,6 +46,7 @@ export const ja: TranslationTree = {
 		agenda: {
 			title: "アジェンダ",
 			today: "今日",
+			overdue: "期限切れ",
 			refreshCalendars: "カレンダーを更新",
 			actions: {
 				previousPeriod: "前の期間",
@@ -55,6 +56,7 @@ export const ja: TranslationTree = {
 			},
 			loading: "アジェンダを読み込み中...",
 			dayToggle: "日の切り替え",
+			overdueToggle: "期限切れセクションの切り替え",
 			expandAllDays: "すべての日を展開",
 			collapseAllDays: "すべての日を折りたたみ",
 			notices: {
@@ -307,10 +309,12 @@ export const ja: TranslationTree = {
 			},
 			dataStorage: {
 				name: "ポモドーロデータストレージ",
+				description: "ポモドーロセッションデータの保存場所と管理方法を設定します。",
 				dailyNotes: "デイリーノート",
 			},
 			notifications: {
 				header: "通知",
+				description: "タスクリマインダー通知とアラートを設定します。",
 				enableName: "通知を有効にする",
 				enableDesc: "タスクリマインダー通知を有効にする",
 				typeName: "通知タイプ",
@@ -344,20 +348,26 @@ export const ja: TranslationTree = {
 			},
 			timeblocking: {
 				header: "タイムブロッキング",
+				description:
+					"デイリーノートでの軽量スケジューリングのためのタイムブロック機能を設定します。アドバンスドカレンダービューで、Shift + クリック＆ドラッグでタイムブロックを作成できます。",
 				enableName: "タイムブロッキングを有効にする",
 				enableDesc:
 					"デイリーノートでの軽量スケジューリングのためのタイムブロック機能を有効にする",
 				showBlocksName: "タイムブロックを表示",
 				showBlocksDesc: "デイリーノートからのタイムブロックをデフォルトで表示",
+				usage: "使用方法：アドバンスドカレンダービューで、Shift + ドラッグでタイムブロックを作成。ドラッグで既存のブロックを移動。端を調整して時間を変更。",
 			},
 			performance: {
 				header: "パフォーマンスと動作",
+				description: "プラグインのパフォーマンスと動作オプションを設定します。",
 			},
 			timeTrackingSection: {
 				header: "時間追跡",
+				description: "自動時間追跡の動作を設定します。",
 			},
 			recurringSection: {
 				header: "繰り返しタスク",
+				description: "繰り返しタスク管理の動作を設定します。",
 			},
 		},
 		defaults: {
@@ -697,6 +707,7 @@ export const ja: TranslationTree = {
 					archiveTag: "アーカイブタグ",
 					timeEntries: "時間エントリ",
 					completeInstances: "完了インスタンス",
+					blockedBy: "ブロック元",
 					pomodoros: "ポモドーロ",
 					icsEventId: "ICSイベントID",
 					icsEventTag: "ICSイベントタグ",
@@ -913,6 +924,11 @@ export const ja: TranslationTree = {
 					name: "初期スクロール時刻",
 					description: "タイムラインビューを開く際にスクロールする時刻（HH:MM形式）",
 					placeholder: "09:00",
+				},
+				eventMinHeight: {
+					name: "イベント最小高さ",
+					description: "タイムラインビューでのイベントの最小高さ（ピクセル）",
+					placeholder: "15",
 				},
 			},
 			uiElements: {
