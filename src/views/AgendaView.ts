@@ -26,6 +26,7 @@ import {
 	formatDateForStorage,
 	getTodayLocal,
 	isTodayUTC,
+	parseDateToUTC,
 } from "../utils/dateUtils";
 import { createICSEventCard, updateICSEventCard } from "../ui/ICSCard";
 import { createTaskCard, refreshParentTaskSubtasks, updateTaskCard } from "../ui/TaskCard";
@@ -870,8 +871,8 @@ export class AgendaView extends ItemView implements OptimizedView {
 			// Render overdue tasks
 			const overdueItems: Array<{ type: "task"; item: TaskInfo; date: Date }> = [];
 			overdueTasks.forEach((task) => {
-				// Use a placeholder date for overdue tasks (they don't have a specific agenda date)
-				overdueItems.push({ type: "task", item: task, date: new Date() });
+				const anchorDate = this.resolveTaskTargetDate(task);
+				overdueItems.push({ type: "task", item: task, date: anchorDate });
 			});
 
 			// Use DOMReconciler for overdue tasks
@@ -879,7 +880,7 @@ export class AgendaView extends ItemView implements OptimizedView {
 				itemsContainer,
 				overdueItems,
 				(item) => `task-${item.item.path}`,
-				(item) => this.createTaskItemElement(item.item, undefined),
+				(item) => this.createTaskItemElement(item.item, item.date),
 				(element, item) => this.updateDayItemElement(element, item)
 			);
 		}
@@ -1140,8 +1141,8 @@ export class AgendaView extends ItemView implements OptimizedView {
 
 		// Add overdue tasks first (they will appear at the top)
 		overdueTasks.forEach((task) => {
-			// Use a very early date for overdue tasks so they appear first when sorted
-			allItems.push({ type: "task", item: task, date: new Date(0) });
+			const anchorDate = this.resolveTaskTargetDate(task);
+			allItems.push({ type: "task", item: task, date: anchorDate });
 		});
 
 		agendaData.forEach((dayData) => {
@@ -1416,6 +1417,42 @@ export class AgendaView extends ItemView implements OptimizedView {
 		this.addDragHandlers(taskCard, task);
 
 		return taskCard;
+	}
+
+	/**
+	 * Determine the anchor date used for task card logic (recurrence status, completion, etc.)
+	 */
+	private resolveTaskTargetDate(task: TaskInfo): Date {
+		const candidateStrings: string[] = [];
+
+		if (task.recurrence) {
+			if (task.scheduled) candidateStrings.push(task.scheduled);
+		} else {
+			if (task.scheduled) candidateStrings.push(task.scheduled);
+			if (task.due) candidateStrings.push(task.due);
+		}
+
+		const candidateDates = candidateStrings
+			.map((value) => {
+				try {
+					return parseDateToUTC(value);
+				} catch (error) {
+					console.warn("Failed to parse overdue anchor date", { value, error });
+					return null;
+				}
+			})
+			.filter((date): date is Date => !!date && !isNaN(date.getTime()))
+			.sort((a, b) => a.getTime() - b.getTime());
+
+		if (candidateDates.length > 0) {
+			return candidateDates[0];
+		}
+
+		if (this.plugin.selectedDate) {
+			return new Date(this.plugin.selectedDate);
+		}
+
+		return new Date();
 	}
 
 	/**
