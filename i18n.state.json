@@ -702,6 +702,7 @@
       "source": "a8ea1773561dda5137ea4680450999490130cbc2",
       "translation": "fd40ddc8086bd7ed6b29903a740f68a950d16304"
     },
+    "settings.features.dataStorage.description": null,
     "settings.features.dataStorage.dailyNotes": {
       "source": "35a87462db1b9c1e553a3118185225d378be3e27",
       "translation": "21107641ae7c2617bf86b90957c159cd68b0032a"
@@ -710,6 +711,7 @@
       "source": "753a22b2eb617204efee4644795034b8ace1ee14",
       "translation": "d140cb0ed30e2b776d29c59d57a3d45cedcf0aa2"
     },
+    "settings.features.notifications.description": null,
     "settings.features.notifications.enableName": {
       "source": "da3967d004ec4b3493b04e53997991851767517e",
       "translation": "4e1b1787861cd9a90c04c282d2fdb0952faf6a8d"
@@ -786,6 +788,7 @@
       "source": "d20cc29abb0ef8f4d49f2dfa3ab4e53db3a0fe7c",
       "translation": "205a235d7e3e1488fb7982d6e5d83c6e7c3d7d13"
     },
+    "settings.features.timeblocking.description": null,
     "settings.features.timeblocking.enableName": {
       "source": "50379298a9bbad30a8c2cdebca13115860f53477",
       "translation": "12803679bede609e7ee424a83e60c63071d94d8b"
@@ -802,18 +805,22 @@
       "source": "aa5fefffaa575baf8c18eb7ec5ef79e9b773399a",
       "translation": "79619fbc45e0bfeaa713d62994a31dfa432cfe4b"
     },
+    "settings.features.timeblocking.usage": null,
     "settings.features.performance.header": {
       "source": "47a90976a23af061fed8b191748a031b1d7218a6",
       "translation": "d20469ef8f37e26d8eb56d4af20fa023e2cad0f9"
     },
+    "settings.features.performance.description": null,
     "settings.features.timeTrackingSection.header": {
       "source": "edac2c002638327299df79bbdf20f54bf331737c",
       "translation": "6ae7f50884039f01a63885353597592a20983f8a"
     },
+    "settings.features.timeTrackingSection.description": null,
     "settings.features.recurringSection.header": {
       "source": "cd5f29ad0ff529fa95f130e62ace80fa836a4550",
       "translation": "f8d65c41fbeffee5100a9a76ed32a87e19dc15b4"
     },
+    "settings.features.recurringSection.description": null,
     "settings.defaults.header.basicDefaults": {
       "source": "83fdac0f6e43ee01edc1eb61b9e6ed821c742942",
       "translation": "80363d5ffaba4ae488ae2594a4eb63c7e9830452"
@@ -2339,14 +2346,6 @@
     "settings.appearance.recurringSection.description": {
       "source": "1d5d9e14e6b6541bc31c38623049716e8c4b7e73",
       "translation": "52098c026a74d9e35ecb6c4f4ac533364edcd791"
-    },
-    "settings.appearance.timeblocking.description": {
-      "source": "252929b7f1be8b11b51be502f7b1116c5597a161",
-      "translation": "2e98c2160d69f07b79f80b8672d11b5b8e580c70"
-    },
-    "settings.appearance.timeblocking.usage": {
-      "source": "77651b48bcc03d80b4974768b370b9fb15c14ece",
-      "translation": "818e018aaa9cb5a2555c0f0af2f4083f7314f165"
     },
     "settings.integrations.basesIntegration.header": {
       "source": "7779226f542f49cd31f9b42321e37ae3302c48a9",
@@ -6043,6 +6042,7 @@
       "source": "a8ea1773561dda5137ea4680450999490130cbc2",
       "translation": "3ee183a85512c5927b506c7d51190dbd18eb9bca"
     },
+    "settings.features.dataStorage.description": null,
     "settings.features.dataStorage.dailyNotes": {
       "source": "35a87462db1b9c1e553a3118185225d378be3e27",
       "translation": "0a538b773287c910023b981ccfe2314c1b1480bb"
@@ -6051,6 +6051,7 @@
       "source": "753a22b2eb617204efee4644795034b8ace1ee14",
       "translation": "6b3d32eac87e612d7eb87706b2d58e9f9cfa0304"
     },
+    "settings.features.notifications.description": null,
     "settings.features.notifications.enableName": {
       "source": "da3967d004ec4b3493b04e53997991851767517e",
       "translation": "ded8ebd8205aa19bdd8fb0ebf7807a2c9d1f111c"
@@ -6127,6 +6128,7 @@
       "source": "d20cc29abb0ef8f4d49f2dfa3ab4e53db3a0fe7c",
       "translation": "4e36b221ac10a0d6f8044e3df4e7934029b97271"
     },
+    "settings.features.timeblocking.description": null,
     "settings.features.timeblocking.enableName": {
       "source": "50379298a9bbad30a8c2cdebca13115860f53477",
       "translation": "f34ec8669909e1d5b883a4bd3e63794658734db9"
@@ -6143,18 +6145,22 @@
       "source": "aa5fefffaa575baf8c18eb7ec5ef79e9b773399a",
       "translation": "769bf451c05de9668f887ce627efba564e246809"
     },
+    "settings.features.timeblocking.usage": null,
     "settings.features.performance.header": {
       "source": "47a90976a23af061fed8b191748a031b1d7218a6",
       "translation": "f2969fd3c1eab0b565f981567c632657c52e8778"
     },
+    "settings.features.performance.description": null,
     "settings.features.timeTrackingSection.header": {
       "source": "edac2c002638327299df79bbdf20f54bf331737c",
       "translation": "cf72f3d44628a6ec117a3f731f42ed5741b1a941"
     },
+    "settings.features.timeTrackingSection.description": null,
     "settings.features.recurringSection.header": {
       "source": "cd5f29ad0ff529fa95f130e62ace80fa836a4550",
       "translation": "4c0ca3e381fd1cdee36c8fd640e48cb88a056469"
     },
+    "settings.features.recurringSection.description": null,
     "settings.defaults.header.basicDefaults": {
       "source": "83fdac0f6e43ee01edc1eb61b9e6ed821c742942",
       "translation": "940770aee591823371c5d8ce9e68d40c2ec916d6"
@@ -7680,14 +7686,6 @@
     "settings.appearance.recurringSection.description": {
       "source": "1d5d9e14e6b6541bc31c38623049716e8c4b7e73",
       "translation": "8217fb3a597d05761a158faa147637db12972f26"
-    },
-    "settings.appearance.timeblocking.description": {
-      "source": "252929b7f1be8b11b51be502f7b1116c5597a161",
-      "translation": "8a7877b0c59aa72757d07e64c46b7a645ce97de0"
-    },
-    "settings.appearance.timeblocking.usage": {
-      "source": "77651b48bcc03d80b4974768b370b9fb15c14ece",
-      "translation": "977d3652b5e478c737397d67fde8f64b0759898a"
     },
     "settings.integrations.basesIntegration.header": {
       "source": "7779226f542f49cd31f9b42321e37ae3302c48a9",
@@ -11384,6 +11382,7 @@
       "source": "a8ea1773561dda5137ea4680450999490130cbc2",
       "translation": "2a7192e08c18338ea14298d6e26c2536474d5cf0"
     },
+    "settings.features.dataStorage.description": null,
     "settings.features.dataStorage.dailyNotes": {
       "source": "35a87462db1b9c1e553a3118185225d378be3e27",
       "translation": "baa8cd04e6ec801f04325a4587d95eac3b782b33"
@@ -11392,6 +11391,7 @@
       "source": "753a22b2eb617204efee4644795034b8ace1ee14",
       "translation": "753a22b2eb617204efee4644795034b8ace1ee14"
     },
+    "settings.features.notifications.description": null,
     "settings.features.notifications.enableName": {
       "source": "da3967d004ec4b3493b04e53997991851767517e",
       "translation": "8c64d8727f1e730c07db01c4b7a792d878854b3f"
@@ -11468,6 +11468,7 @@
       "source": "d20cc29abb0ef8f4d49f2dfa3ab4e53db3a0fe7c",
       "translation": "9a4650036fc33aec859867fae23a9b56135272a5"
     },
+    "settings.features.timeblocking.description": null,
     "settings.features.timeblocking.enableName": {
       "source": "50379298a9bbad30a8c2cdebca13115860f53477",
       "translation": "25e8f1b2cd9df270085d9f9050f71cabf06a3ba0"
@@ -11484,18 +11485,22 @@
       "source": "aa5fefffaa575baf8c18eb7ec5ef79e9b773399a",
       "translation": "eef3a57233240a40952bc4ce94eccf6872a7be9d"
     },
+    "settings.features.timeblocking.usage": null,
     "settings.features.performance.header": {
       "source": "47a90976a23af061fed8b191748a031b1d7218a6",
       "translation": "b15816fc0db697d158ca74a4fc65e4e433a1d7ae"
     },
+    "settings.features.performance.description": null,
     "settings.features.timeTrackingSection.header": {
       "source": "edac2c002638327299df79bbdf20f54bf331737c",
       "translation": "372d20a0ff1c5632d00024db206a4f6f538f916f"
     },
+    "settings.features.timeTrackingSection.description": null,
     "settings.features.recurringSection.header": {
       "source": "cd5f29ad0ff529fa95f130e62ace80fa836a4550",
       "translation": "a5f7f40f1cc5116d99e65b8b4bd8dcb32682b8a8"
     },
+    "settings.features.recurringSection.description": null,
     "settings.defaults.header.basicDefaults": {
       "source": "83fdac0f6e43ee01edc1eb61b9e6ed821c742942",
       "translation": "179dd7674abbae3de5db541d4f16ad224bf498e6"
@@ -13021,14 +13026,6 @@
     "settings.appearance.recurringSection.description": {
       "source": "1d5d9e14e6b6541bc31c38623049716e8c4b7e73",
       "translation": "c603e83a6d1d917e980d02cee0dc5cca972e6e8d"
-    },
-    "settings.appearance.timeblocking.description": {
-      "source": "252929b7f1be8b11b51be502f7b1116c5597a161",
-      "translation": "4f3af8362ff4b38e6d49abf71312f2b6b014838b"
-    },
-    "settings.appearance.timeblocking.usage": {
-      "source": "77651b48bcc03d80b4974768b370b9fb15c14ece",
-      "translation": "969b4ab0d90273918dea38019d6fb3d4f990b905"
     },
     "settings.integrations.basesIntegration.header": {
       "source": "7779226f542f49cd31f9b42321e37ae3302c48a9",
@@ -16800,6 +16797,7 @@
       "source": "a8ea1773561dda5137ea4680450999490130cbc2",
       "translation": "bd5bee95f43ab7a2cc6380da16f81aaf3232b67a"
     },
+    "settings.features.dataStorage.description": null,
     "settings.features.dataStorage.dailyNotes": {
       "source": "35a87462db1b9c1e553a3118185225d378be3e27",
       "translation": "cebf629bacc73b1e319b8750aba27eb8ad45a95c"
@@ -16808,6 +16806,7 @@
       "source": "753a22b2eb617204efee4644795034b8ace1ee14",
       "translation": "7a66c0d0363156136f2bb94180578ee9a567b66d"
     },
+    "settings.features.notifications.description": null,
     "settings.features.notifications.enableName": {
       "source": "da3967d004ec4b3493b04e53997991851767517e",
       "translation": "1f784fa805a3cd9ba73a12ef455a7847b98455f9"
@@ -16884,6 +16883,7 @@
       "source": "d20cc29abb0ef8f4d49f2dfa3ab4e53db3a0fe7c",
       "translation": "f2fcea03bcd83ad35153c28849555e493cb14802"
     },
+    "settings.features.timeblocking.description": null,
     "settings.features.timeblocking.enableName": {
       "source": "50379298a9bbad30a8c2cdebca13115860f53477",
       "translation": "ba9cfdd86e67a17c6615db24f5c7b6498a593b43"
@@ -16900,18 +16900,22 @@
       "source": "aa5fefffaa575baf8c18eb7ec5ef79e9b773399a",
       "translation": "5231a6ed848122b41df2022f01ad9668d9f4d2bb"
     },
+    "settings.features.timeblocking.usage": null,
     "settings.features.performance.header": {
       "source": "47a90976a23af061fed8b191748a031b1d7218a6",
       "translation": "da5409584240adcb2fbbbded90b39905b207a1f3"
     },
+    "settings.features.performance.description": null,
     "settings.features.timeTrackingSection.header": {
       "source": "edac2c002638327299df79bbdf20f54bf331737c",
       "translation": "853a9fb14099e7c9542a5d1d67c6d6b58fffdf6f"
     },
+    "settings.features.timeTrackingSection.description": null,
     "settings.features.recurringSection.header": {
       "source": "cd5f29ad0ff529fa95f130e62ace80fa836a4550",
       "translation": "77c4460b544a9124d89441d892cbf8507bc65679"
     },
+    "settings.features.recurringSection.description": null,
     "settings.defaults.header.basicDefaults": {
       "source": "83fdac0f6e43ee01edc1eb61b9e6ed821c742942",
       "translation": "a8cbd2031798496d97b226faa390feaeb95dbcb6"
@@ -18437,14 +18441,6 @@
     "settings.appearance.recurringSection.description": {
       "source": "1d5d9e14e6b6541bc31c38623049716e8c4b7e73",
       "translation": "93898b212d23bd89de129e380206728a2beb3920"
-    },
-    "settings.appearance.timeblocking.description": {
-      "source": "252929b7f1be8b11b51be502f7b1116c5597a161",
-      "translation": "2410f4d8922444cf5a1eaf3dd80828e2434a5bed"
-    },
-    "settings.appearance.timeblocking.usage": {
-      "source": "77651b48bcc03d80b4974768b370b9fb15c14ece",
-      "translation": "aae13ce2c4eef219f03cfa1f075de42d21bada15"
     },
     "settings.integrations.basesIntegration.header": {
       "source": "7779226f542f49cd31f9b42321e37ae3302c48a9",
@@ -22141,6 +22137,7 @@
       "source": "a8ea1773561dda5137ea4680450999490130cbc2",
       "translation": "a5f1aff33318b552203531097b4601656f07dff0"
     },
+    "settings.features.dataStorage.description": null,
     "settings.features.dataStorage.dailyNotes": {
       "source": "35a87462db1b9c1e553a3118185225d378be3e27",
       "translation": "1728eb98fab798fedcd65c9b92e2d65cbdc99448"
@@ -22149,6 +22146,7 @@
       "source": "753a22b2eb617204efee4644795034b8ace1ee14",
       "translation": "ee3c35f31147fec923ebe20dd899c59a13f25384"
     },
+    "settings.features.notifications.description": null,
     "settings.features.notifications.enableName": {
       "source": "da3967d004ec4b3493b04e53997991851767517e",
       "translation": "468e167ec35ce215d8639b94dc260bcc77e120c6"
@@ -22225,6 +22223,7 @@
       "source": "d20cc29abb0ef8f4d49f2dfa3ab4e53db3a0fe7c",
       "translation": "d3b8d0692a009a981d32bff05867c02291ea2552"
     },
+    "settings.features.timeblocking.description": null,
     "settings.features.timeblocking.enableName": {
       "source": "50379298a9bbad30a8c2cdebca13115860f53477",
       "translation": "bef079b15c3594897a8200086165e94193b97dc6"
@@ -22241,18 +22240,22 @@
       "source": "aa5fefffaa575baf8c18eb7ec5ef79e9b773399a",
       "translation": "3bf71ad88f1c2c9bcddef51957cf262799729bdb"
     },
+    "settings.features.timeblocking.usage": null,
     "settings.features.performance.header": {
       "source": "47a90976a23af061fed8b191748a031b1d7218a6",
       "translation": "62751ef0553e888c9e2d9a00606bf1f95d2789e1"
     },
+    "settings.features.performance.description": null,
     "settings.features.timeTrackingSection.header": {
       "source": "edac2c002638327299df79bbdf20f54bf331737c",
       "translation": "2f259234c1d65dc11f358672e1d07b75bc192e31"
     },
+    "settings.features.timeTrackingSection.description": null,
     "settings.features.recurringSection.header": {
       "source": "cd5f29ad0ff529fa95f130e62ace80fa836a4550",
       "translation": "2790d0e72f91ee2a7b5a2e462de03080d55bfa58"
     },
+    "settings.features.recurringSection.description": null,
     "settings.defaults.header.basicDefaults": {
       "source": "83fdac0f6e43ee01edc1eb61b9e6ed821c742942",
       "translation": "d65bceeb285486dceceb4ff7b9fb7739b0e755d9"
@@ -23778,14 +23781,6 @@
     "settings.appearance.recurringSection.description": {
       "source": "1d5d9e14e6b6541bc31c38623049716e8c4b7e73",
       "translation": "20ca2d8de2414631f815faf8f2186b1658be9271"
-    },
-    "settings.appearance.timeblocking.description": {
-      "source": "252929b7f1be8b11b51be502f7b1116c5597a161",
-      "translation": "5afe1b3eae8659126999228ca6f5057515588e1f"
-    },
-    "settings.appearance.timeblocking.usage": {
-      "source": "77651b48bcc03d80b4974768b370b9fb15c14ece",
-      "translation": "c906144967e67f51ca03a426358c84753b4080ae"
     },
     "settings.integrations.basesIntegration.header": {
       "source": "7779226f542f49cd31f9b42321e37ae3302c48a9",
@@ -27557,6 +27552,7 @@
       "source": "a8ea1773561dda5137ea4680450999490130cbc2",
       "translation": "c9af5045b9bb21a9cf1edc62efe598e254a86c83"
     },
+    "settings.features.dataStorage.description": null,
     "settings.features.dataStorage.dailyNotes": {
       "source": "35a87462db1b9c1e553a3118185225d378be3e27",
       "translation": "bf50d671381d2c434c36887c0fcad60947e6b4f5"
@@ -27565,6 +27561,7 @@
       "source": "753a22b2eb617204efee4644795034b8ace1ee14",
       "translation": "7a66c0d0363156136f2bb94180578ee9a567b66d"
     },
+    "settings.features.notifications.description": null,
     "settings.features.notifications.enableName": {
       "source": "da3967d004ec4b3493b04e53997991851767517e",
       "translation": "d88f65ec02a9620492c721825ec8e7f44b76108f"
@@ -27641,6 +27638,7 @@
       "source": "d20cc29abb0ef8f4d49f2dfa3ab4e53db3a0fe7c",
       "translation": "93fcff18f5080cf382e59bdfe14fbd42205ad295"
     },
+    "settings.features.timeblocking.description": null,
     "settings.features.timeblocking.enableName": {
       "source": "50379298a9bbad30a8c2cdebca13115860f53477",
       "translation": "29b837d93e9281208523a66b8f1356ab87ef8870"
@@ -27657,18 +27655,22 @@
       "source": "aa5fefffaa575baf8c18eb7ec5ef79e9b773399a",
       "translation": "26dbb8a0bac597d0832cbd7e5f49556c957d703d"
     },
+    "settings.features.timeblocking.usage": null,
     "settings.features.performance.header": {
       "source": "47a90976a23af061fed8b191748a031b1d7218a6",
       "translation": "6edb49c008109d53a291f07248fac076d1ddc0d3"
     },
+    "settings.features.performance.description": null,
     "settings.features.timeTrackingSection.header": {
       "source": "edac2c002638327299df79bbdf20f54bf331737c",
       "translation": "f2f8e6c81729063347c9129009e2bf77629dbe40"
     },
+    "settings.features.timeTrackingSection.description": null,
     "settings.features.recurringSection.header": {
       "source": "cd5f29ad0ff529fa95f130e62ace80fa836a4550",
       "translation": "a494fec9acc52ee5b25f67d1af09d93e12d7fc6b"
     },
+    "settings.features.recurringSection.description": null,
     "settings.defaults.header.basicDefaults": {
       "source": "83fdac0f6e43ee01edc1eb61b9e6ed821c742942",
       "translation": "089c04d76b0f2a13f4714a79069c23a742a86aab"
@@ -29194,14 +29196,6 @@
     "settings.appearance.recurringSection.description": {
       "source": "1d5d9e14e6b6541bc31c38623049716e8c4b7e73",
       "translation": "793dccb55ccc24e14c51eb0db51c7436af4ce9f2"
-    },
-    "settings.appearance.timeblocking.description": {
-      "source": "252929b7f1be8b11b51be502f7b1116c5597a161",
-      "translation": "cf1df670565c2cf95a3075e55711848a771b0403"
-    },
-    "settings.appearance.timeblocking.usage": {
-      "source": "77651b48bcc03d80b4974768b370b9fb15c14ece",
-      "translation": "a424f6bf46928f1b7a75080f662e3729f3b4d062"
     },
     "settings.integrations.basesIntegration.header": {
       "source": "7779226f542f49cd31f9b42321e37ae3302c48a9",
