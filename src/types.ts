@@ -50,6 +50,7 @@ export type TaskGroupKey =
 	| "scheduled"
 	| "status"
 	| "tags"
+	| "completedDate"
 	| `user:${string}`;
 export type SortDirection = "asc" | "desc";
 
