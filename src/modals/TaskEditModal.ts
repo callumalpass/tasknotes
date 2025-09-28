@@ -2,7 +2,7 @@
 import { App, Notice, TFile, setIcon, setTooltip } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { TaskModal } from "./TaskModal";
-import { TaskInfo } from "../types";
+import { TaskDependency, TaskInfo } from "../types";
 import {
 	getCurrentTimestamp,
 	formatDateForStorage,
@@ -38,12 +38,12 @@ export class TaskEditModal extends TaskModal {
 	private metadataContainer: HTMLElement;
 	private completedInstancesChanges: Set<string> = new Set();
 	private calendarWrapper: HTMLElement | null = null;
-	private initialBlockedBy: string[] = [];
+	private initialBlockedBy: TaskDependency[] = [];
 	private initialBlockingPaths: string[] = [];
 	private pendingBlockingUpdates: {
 		added: string[];
 		removed: string[];
-		raw: Record<string, string>;
+		raw: Record<string, TaskDependency>;
 	} = { added: [], removed: [], raw: {} };
 	private unresolvedBlockingEntries: string[] = [];
 
@@ -116,10 +116,10 @@ export class TaskEditModal extends TaskModal {
 		this.details = this.normalizeDetails(this.details);
 		this.originalDetails = this.details;
 
-		this.blockedByItems = (this.task.blockedBy ?? []).map((raw) =>
-			this.createDependencyItemFromRaw(raw, this.task.path)
+		this.blockedByItems = (this.task.blockedBy ?? []).map((dependency) =>
+			this.createDependencyItemFromDependency(dependency, this.task.path)
 		);
-		this.initialBlockedBy = this.blockedByItems.map((item) => item.raw);
+		this.initialBlockedBy = this.blockedByItems.map((item) => ({ ...item.dependency }));
 
 		this.blockingItems = (this.task.blocking ?? []).map((path) =>
 			this.createDependencyItemFromPath(path)
@@ -164,17 +164,25 @@ export class TaskEditModal extends TaskModal {
 		}
 	}
 
-	private arraysEqual(a: string[], b: string[]): boolean {
+	private dependenciesEqual(a: TaskDependency[], b: TaskDependency[]): boolean {
 		if (a.length !== b.length) {
 			return false;
 		}
 
-		const normalize = (arr: string[]) => arr.map((item) => item.trim()).sort();
-		const normalizedA = normalize(a);
-		const normalizedB = normalize(b);
+		const sortDependencies = (deps: TaskDependency[]) =>
+			[...deps].sort((left, right) => left.uid.localeCompare(right.uid));
 
-		for (let i = 0; i < normalizedA.length; i++) {
-			if (normalizedA[i] !== normalizedB[i]) {
+		const sortedA = sortDependencies(a);
+		const sortedB = sortDependencies(b);
+
+		for (let i = 0; i < sortedA.length; i++) {
+			const depA = sortedA[i];
+			const depB = sortedB[i];
+			if (
+				depA.uid !== depB.uid ||
+				depA.reltype !== depB.reltype ||
+				(depA.gap || "") !== (depB.gap || "")
+			) {
 				return false;
 			}
 		}
@@ -677,19 +685,22 @@ export class TaskEditModal extends TaskModal {
 			changes.reminders = newReminders.length > 0 ? newReminders : undefined;
 		}
 
-		const newBlockedEntries = this.blockedByItems.map((item) => item.raw);
-		if (!this.arraysEqual(newBlockedEntries, this.initialBlockedBy)) {
-			changes.blockedBy = newBlockedEntries.length > 0 ? newBlockedEntries : undefined;
+		const newBlockedDependencies = this.blockedByItems.map((item) => ({
+			...item.dependency,
+		}));
+		if (!this.dependenciesEqual(newBlockedDependencies, this.initialBlockedBy)) {
+			changes.blockedBy =
+				newBlockedDependencies.length > 0 ? newBlockedDependencies : undefined;
 		}
 
-		const resolvedBlocking = new Map<string, string>();
+		const resolvedBlocking = new Map<string, TaskDependency>();
 		const unresolvedEntries: string[] = [];
 
 		this.blockingItems.forEach((item) => {
 			if (item.path) {
-				resolvedBlocking.set(item.path, item.raw);
+				resolvedBlocking.set(item.path, { ...item.dependency });
 			} else {
-				unresolvedEntries.push(item.raw);
+				unresolvedEntries.push(item.dependency.uid);
 			}
 		});
 
@@ -700,11 +711,11 @@ export class TaskEditModal extends TaskModal {
 		const addedPaths = newBlockingPaths.filter((path) => !originalPaths.has(path));
 		const removedPaths = this.initialBlockingPaths.filter((path) => !newPathSet.has(path));
 
-		const rawAdditions: Record<string, string> = {};
+		const rawAdditions: Record<string, TaskDependency> = {};
 		for (const path of addedPaths) {
 			const raw = resolvedBlocking.get(path);
 			if (raw) {
-				rawAdditions[path] = raw;
+				rawAdditions[path] = { ...raw };
 			}
 		}
 

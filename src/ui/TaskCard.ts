@@ -1178,7 +1178,7 @@ export function createTaskCard(
 		chevronPlaceholder.remove();
 	}
 
-	// Main content container
+	// Blocking toggle sits left of the main content row
 	const blockingToggle = mainRow.createEl("div", { cls: "task-card__blocking-toggle" });
 	if (task.blocking && task.blocking.length > 0) {
 		blockingToggle.classList.add("is-visible");

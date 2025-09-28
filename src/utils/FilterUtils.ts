@@ -347,7 +347,7 @@ export class FilterUtils {
 			case "projects":
 				return task.projects || [];
 			case "blockedBy":
-				return task.blockedBy || [];
+				return task.blockedBy?.map((dependency) => dependency.uid) || [];
 			case "blocking":
 				return task.blocking || [];
 			case "due":

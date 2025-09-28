@@ -445,6 +445,18 @@ export interface RecurrenceInfo {
 	month_of_year?: number; // For yearly recurrence: 1-12
 }
 
+export type TaskDependencyRelType =
+	| "FINISHTOSTART"
+	| "FINISHTOFINISH"
+	| "STARTTOSTART"
+	| "STARTTOFINISH";
+
+export interface TaskDependency {
+	uid: string; // Identifier for the blocking task (typically an Obsidian link)
+	reltype: TaskDependencyRelType; // Relationship type per RFC 9253 terminology
+	gap?: string; // Optional ISO 8601 duration offset between tasks
+}
+
 export interface TaskInfo {
 	id?: string; // Task identifier (typically same as path for API consistency)
 	title: string;
@@ -469,7 +481,7 @@ export interface TaskInfo {
 	reminders?: Reminder[]; // Task reminders
 	customProperties?: Record<string, any>; // Custom properties from Bases or other sources
 	basesData?: any; // Raw Bases data for formula computation (internal use)
-	blockedBy?: string[]; // Raw dependency entries referencing blocking tasks
+	blockedBy?: TaskDependency[]; // Dependencies that must be satisfied before this task can start
 	blocking?: string[]; // Task paths that this task is blocking
 	isBlocked?: boolean; // True if any blocking dependency is incomplete
 	isBlocking?: boolean; // True if this task blocks at least one other task

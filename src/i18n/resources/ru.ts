@@ -1791,6 +1791,7 @@ export const ru: TranslationTree = {
 					blockingAdded: "Добавлено {count} зависимых задач",
 					blockingRemoved: "Зависимая задача удалена",
 					unresolved: "Не удалось определить: {entries}",
+					noEligibleTasks: "Нет доступных подходящих задач",
 					updateFailed: "Не удалось обновить зависимости",
 				},
 			},

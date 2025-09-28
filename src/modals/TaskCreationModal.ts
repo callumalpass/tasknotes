@@ -8,7 +8,7 @@ import {
 } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { TaskModal } from "./TaskModal";
-import { TaskInfo, TaskCreationData } from "../types";
+import { TaskInfo, TaskCreationData, TaskDependency } from "../types";
 import { getCurrentTimestamp } from "../utils/dateUtils";
 import { generateTaskFilename, FilenameContext } from "../utils/filenameGenerator";
 import { calculateDefaultDate, sanitizeTags } from "../utils/helpers";
@@ -998,17 +998,17 @@ export class TaskCreationModal extends TaskModal {
 
 			if (this.blockingItems.length > 0) {
 				const addedPaths: string[] = [];
-				const rawMap: Record<string, string> = {};
+				const rawMap: Record<string, TaskDependency> = {};
 				const unresolved: string[] = [];
 
 				this.blockingItems.forEach((item) => {
 					if (item.path) {
 						if (!addedPaths.includes(item.path)) {
 							addedPaths.push(item.path);
-							rawMap[item.path] = item.raw;
+							rawMap[item.path] = { ...item.dependency };
 						}
 					} else {
-						unresolved.push(item.raw);
+						unresolved.push(item.dependency.uid);
 					}
 				});
 
@@ -1087,9 +1087,11 @@ export class TaskCreationModal extends TaskModal {
 			customFrontmatter: this.buildCustomFrontmatter(),
 		};
 
-		const blockedEntries = this.blockedByItems.map((item) => item.raw);
-		if (blockedEntries.length > 0) {
-			taskData.blockedBy = blockedEntries;
+		const blockedDependencies = this.blockedByItems.map((item) => ({
+			...item.dependency,
+		}));
+		if (blockedDependencies.length > 0) {
+			taskData.blockedBy = blockedDependencies;
 		}
 
 		// Add details if provided

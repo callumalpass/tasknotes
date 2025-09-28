@@ -259,7 +259,7 @@
 .tasknotes-plugin .task-card__recurring-indicator {
     position: absolute;
     top: 8px;
-    right: 26px;
+    right: 20px;
     width: 16px;
     height: 16px;
     color: var(--tn-text-muted);
@@ -294,7 +294,7 @@
     position: absolute;
     top: 8px;
     width: 16px;
-    right: 44px;
+    right: 40px;
     height: 16px;
     color: var(--tn-text-muted);
     opacity: 0.8;
@@ -324,7 +324,7 @@
 .tasknotes-plugin .task-card__project-indicator {
     position: absolute;
     top: 8px;
-    right: 62px;
+    right: 60px;
     width: 16px;
     height: 16px;
     color: var(--tn-text-muted);
@@ -353,7 +353,7 @@
 .tasknotes-plugin .task-card__chevron {
     position: absolute;
     top: 8px;
-    right: 80px; /* Position after project indicator */
+    right: 100px; /* Position after blocking toggle */
     width: 16px;
     height: 16px;
     color: var(--tn-text-muted);
@@ -401,20 +401,24 @@
 .tasknotes-plugin .task-card__blocking-toggle {
     position: absolute;
     top: 8px;
-    right: 56px;
-    width: 18px;
-    height: 18px;
+    right: 80px;
+    width: 16px;
+    height: 16px;
     color: var(--tn-text-muted);
-    opacity: 0;
+    opacity: 0.8;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: color var(--tn-transition-fast), opacity var(--tn-transition-fast);
+    transition: color var(--tn-transition-fast), background var(--tn-transition-fast), opacity var(--tn-transition-fast);
+    border-radius: var(--radius-s);
+    padding: 2px;
 }
 
-.tasknotes-plugin .task-card:hover .task-card__blocking-toggle.is-visible {
+.tasknotes-plugin .task-card__blocking-toggle:hover {
     opacity: 1;
+    color: var(--interactive-accent);
+    background: var(--background-modifier-hover);
 }
 
 .tasknotes-plugin .task-card__blocking-toggle svg {
@@ -424,6 +428,7 @@
 
 .tasknotes-plugin .task-card__blocking-toggle--expanded {
     color: var(--interactive-accent);
+    opacity: 1;
 }
 
 .tasknotes-plugin .task-card__blocking-toggle.is-hidden {

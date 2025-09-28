@@ -1,4 +1,9 @@
 import { FieldMapping, TaskInfo } from "../types";
+import {
+	normalizeDependencyEntry,
+	normalizeDependencyList,
+	serializeDependencies,
+} from "../utils/dependencyUtils";
 import { validateCompleteInstances } from "../utils/dateUtils";
 
 /**
@@ -124,11 +129,9 @@ export class FieldMapper {
 		}
 
 		if (this.mapping.blockedBy && frontmatter[this.mapping.blockedBy] !== undefined) {
-			const blocked = frontmatter[this.mapping.blockedBy];
-			if (Array.isArray(blocked)) {
-				mapped.blockedBy = blocked.filter((item) => typeof item === "string");
-			} else if (typeof blocked === "string" && blocked.trim().length > 0) {
-				mapped.blockedBy = [blocked];
+			const dependencies = normalizeDependencyList(frontmatter[this.mapping.blockedBy]);
+			if (dependencies) {
+				mapped.blockedBy = dependencies;
 			}
 		}
 
@@ -244,7 +247,14 @@ export class FieldMapper {
 		}
 
 		if (taskData.blockedBy !== undefined) {
-			frontmatter[this.mapping.blockedBy] = taskData.blockedBy;
+			if (Array.isArray(taskData.blockedBy)) {
+				const normalized = taskData.blockedBy
+					.map((item) => normalizeDependencyEntry(item))
+					.filter((item): item is NonNullable<ReturnType<typeof normalizeDependencyEntry>> => !!item);
+				frontmatter[this.mapping.blockedBy] = normalized.length > 0 ? serializeDependencies(normalized) : [];
+			} else {
+				frontmatter[this.mapping.blockedBy] = taskData.blockedBy;
+			}
 		}
 
 		if (taskData.icsEventId !== undefined && taskData.icsEventId.length > 0) {

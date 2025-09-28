@@ -1809,6 +1809,7 @@ export const fr: TranslationTree = {
 					blockingAdded: "{count} tâche dépendante ajoutée",
 					blockingRemoved: "Tâche dépendante retirée",
 					unresolved: "Impossible de résoudre : {entries}",
+					noEligibleTasks: "Aucune tâche correspondante disponible",
 					updateFailed: "Impossible de mettre à jour les dépendances",
 				},
 			},

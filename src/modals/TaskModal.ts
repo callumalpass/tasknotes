@@ -1,6 +1,7 @@
 import {
 	App,
 	Modal,
+	Notice,
 	Setting,
 	setIcon,
 	TAbstractFile,
@@ -17,12 +18,17 @@ import { ReminderContextMenu } from "../components/ReminderContextMenu";
 import { getDatePart, getTimePart, combineDateAndTime } from "../utils/dateUtils";
 import { sanitizeTags, splitFrontmatterAndBody } from "../utils/helpers";
 import { ProjectSelectModal } from "./ProjectSelectModal";
-import { TaskInfo, Reminder } from "../types";
-import { formatDependencyLink, resolveDependencyEntry } from "../utils/dependencyUtils";
+import { TaskDependency, TaskInfo, Reminder } from "../types";
+import {
+	DEFAULT_DEPENDENCY_RELTYPE,
+	formatDependencyLink,
+	resolveDependencyEntry,
+} from "../utils/dependencyUtils";
 import { appendInternalLink, type LinkServices } from "../ui/renderers/linkRenderer";
+import { TaskSelectorModal } from "./TaskSelectorModal";
 
 interface DependencyItem {
-	raw: string;
+	dependency: TaskDependency;
 	name: string;
 	path?: string;
 	unresolved?: boolean;
@@ -37,33 +43,39 @@ export abstract class TaskModal extends Modal {
 		options: { sourcePath?: string } = {}
 	): DependencyItem {
 		const sourcePath = options.sourcePath ?? this.getDependencySourcePath();
-		const raw = formatDependencyLink(this.plugin.app, sourcePath, file.path);
+		const uid = formatDependencyLink(this.plugin.app, sourcePath, file.path);
 		return {
-			raw,
+			dependency: { uid, reltype: DEFAULT_DEPENDENCY_RELTYPE },
 			path: file.path,
 			name: file.basename,
 		};
 	}
 
-	protected createDependencyItemFromRaw(raw: string, sourcePath?: string): DependencyItem {
+	protected createDependencyItemFromDependency(
+		dependency: TaskDependency,
+		sourcePath?: string
+	): DependencyItem {
 		const resolution = resolveDependencyEntry(
 			this.plugin.app,
 			sourcePath ?? this.getDependencySourcePath(),
-			raw
+			dependency
 		);
 		if (resolution) {
-			const name = resolution.file?.basename || resolution.path.split("/").pop() || raw;
+			const name =
+				resolution.file?.basename ||
+				resolution.path.split("/").pop() ||
+				dependency.uid;
 			return {
-				raw,
+				dependency,
 				path: resolution.path,
 				name,
 			};
 		}
 
-		const cleaned = raw.replace(/^\[\[/, "").replace(/\]\]$/, "");
+		const cleaned = dependency.uid.replace(/^\[\[/, "").replace(/\]\]$/, "");
 		return {
-			raw,
-			name: cleaned || raw,
+			dependency,
+			name: cleaned || dependency.uid,
 			unresolved: true,
 		};
 	}
@@ -73,16 +85,21 @@ export abstract class TaskModal extends Modal {
 		const file = this.plugin.app.vault.getAbstractFileByPath(path);
 		if (file instanceof TFile) {
 			return {
-				raw: formatDependencyLink(this.plugin.app, sourcePath, file.path),
+				dependency: {
+					uid: formatDependencyLink(this.plugin.app, sourcePath, file.path),
+					reltype: DEFAULT_DEPENDENCY_RELTYPE,
+				},
 				path: file.path,
 				name: file.basename,
 			};
 		}
 
 		const basename = path.split("/").pop() || path;
-		const raw = `[[${basename.replace(/\.md$/i, "")}]]`;
 		return {
-			raw,
+			dependency: {
+				uid: `[[${basename.replace(/\.md$/i, "")}]]`,
+				reltype: DEFAULT_DEPENDENCY_RELTYPE,
+			},
 			path,
 			name: basename.replace(/\.md$/i, ""),
 			unresolved: true,
@@ -148,7 +165,7 @@ export abstract class TaskModal extends Modal {
 				setTooltip(
 					itemEl,
 					this.t("contextMenus.task.dependencies.notices.unresolved", {
-						entries: item.raw,
+						entries: item.dependency.uid,
 					}),
 					{ placement: "top" }
 				);
@@ -175,7 +192,7 @@ export abstract class TaskModal extends Modal {
 				}
 			} else {
 				nameEl.textContent = item.name;
-				const pathText = item.path ?? item.raw;
+				const pathText = item.path ?? item.dependency.uid;
 				infoEl.createDiv({ cls: "task-project-path", text: pathText });
 			}
 
@@ -204,13 +221,24 @@ export abstract class TaskModal extends Modal {
 	}
 
 	protected addBlockedByTask(file: TFile): void {
-		const currentPath = this.getCurrentTaskPath();
-		if (currentPath && file.path === currentPath) {
-			return;
-		}
-		const item = this.createDependencyItemFromFile(file);
+		const dependency: TaskDependency = {
+			uid: formatDependencyLink(this.plugin.app, this.getDependencySourcePath(), file.path),
+			reltype: DEFAULT_DEPENDENCY_RELTYPE,
+		};
+		this.addBlockedByDependency(dependency);
+	}
+
+	protected addBlockingTask(file: TFile): void {
+		this.addBlockingTaskFromPath(file.path);
+	}
+
+	protected addBlockedByDependency(dependency: TaskDependency): void {
+		const sourcePath = this.getDependencySourcePath();
+		const item = this.createDependencyItemFromDependency(dependency, sourcePath);
 		const exists = this.blockedByItems.some(
-			(existing) => existing.path === item.path || existing.raw === item.raw
+			(existing) =>
+				existing.dependency.uid === item.dependency.uid ||
+				(item.path && existing.path === item.path)
 		);
 		if (exists) {
 			return;
@@ -219,18 +247,114 @@ export abstract class TaskModal extends Modal {
 		this.renderBlockedByList();
 	}
 
-	protected addBlockingTask(file: TFile): void {
+	protected addBlockingTaskFromPath(path: string): void {
 		const currentPath = this.getCurrentTaskPath();
-		if (currentPath && file.path === currentPath) {
+		if (currentPath && path === currentPath) {
 			return;
 		}
-		const item = this.createDependencyItemFromFile(file);
-		const exists = this.blockingItems.some((existing) => existing.path === item.path);
+		const item = this.createDependencyItemFromPath(path);
+		const exists = this.blockingItems.some(
+			(existing) => existing.path === item.path || existing.dependency.uid === item.dependency.uid
+		);
 		if (exists) {
 			return;
 		}
 		this.blockingItems.push(item);
 		this.renderBlockingList();
+	}
+
+	protected async openBlockedBySelector(): Promise<void> {
+		const sourcePath = this.getDependencySourcePath();
+		const currentPath = this.getCurrentTaskPath();
+		const existingUids = new Set(
+			this.blockedByItems.map((item) => item.dependency.uid)
+		);
+
+		await this.openTaskDependencySelector(
+			(candidate) => {
+				if (currentPath && candidate.path === currentPath) {
+					return false;
+				}
+				const candidateUid = formatDependencyLink(
+					this.plugin.app,
+					sourcePath,
+					candidate.path
+				);
+				return !existingUids.has(candidateUid);
+			},
+			(selected) => {
+				const dependency: TaskDependency = {
+					uid: formatDependencyLink(this.plugin.app, sourcePath, selected.path),
+					reltype: DEFAULT_DEPENDENCY_RELTYPE,
+				};
+				this.addBlockedByDependency(dependency);
+			}
+		);
+	}
+
+	protected async openBlockingSelector(): Promise<void> {
+		const sourcePath = this.getDependencySourcePath();
+		const currentPath = this.getCurrentTaskPath();
+		const existingPaths = new Set(
+			this.blockingItems
+				.map((item) => item.path)
+				.filter((path): path is string => typeof path === "string")
+		);
+		const existingUids = new Set(
+			this.blockingItems.map((item) => item.dependency.uid)
+		);
+
+		await this.openTaskDependencySelector(
+			(candidate) => {
+				if (currentPath && candidate.path === currentPath) {
+					return false;
+				}
+				if (existingPaths.has(candidate.path)) {
+					return false;
+				}
+				const candidateUid = formatDependencyLink(
+					this.plugin.app,
+					sourcePath,
+					candidate.path
+				);
+				return !existingUids.has(candidateUid);
+			},
+			(selected) => {
+				this.addBlockingTaskFromPath(selected.path);
+			}
+		);
+	}
+
+	private async openTaskDependencySelector(
+		filter: (candidate: TaskInfo) => boolean,
+		onSelect: (selected: TaskInfo) => void
+	): Promise<void> {
+		try {
+			const allTasks: TaskInfo[] =
+				(await this.plugin.cacheManager.getAllTasks?.()) ?? [];
+			const candidates = allTasks.filter(filter);
+
+			if (candidates.length === 0) {
+				new Notice(
+					this.t("contextMenus.task.dependencies.notices.noEligibleTasks")
+				);
+				return;
+			}
+
+			const modal = new TaskSelectorModal(
+				this.app,
+				this.plugin,
+				candidates,
+				(task) => {
+					if (!task) return;
+					onSelect(task);
+				}
+			);
+			modal.open();
+		} catch (error) {
+			console.error("Failed to open task selector for dependencies:", error);
+			new Notice(this.t("contextMenus.task.dependencies.notices.updateFailed"));
+		}
 	}
 
 	// Core task properties
@@ -576,12 +700,7 @@ export abstract class TaskModal extends Modal {
 					.setButtonText(this.t("modals.task.dependencies.addTaskButton"))
 					.setTooltip(this.t("modals.task.dependencies.selectTaskTooltip"))
 					.onClick(() => {
-						const modal = new ProjectSelectModal(this.app, this.plugin, (file) => {
-							if (file instanceof TFile) {
-								this.addBlockedByTask(file);
-							}
-						});
-						modal.open();
+						void this.openBlockedBySelector();
 					});
 				button.buttonEl.addClasses(["tn-btn", "tn-btn--ghost"]);
 			});
@@ -595,12 +714,7 @@ export abstract class TaskModal extends Modal {
 					.setButtonText(this.t("modals.task.dependencies.addTaskButton"))
 					.setTooltip(this.t("modals.task.dependencies.selectTaskTooltip"))
 					.onClick(() => {
-						const modal = new ProjectSelectModal(this.app, this.plugin, (file) => {
-							if (file instanceof TFile) {
-								this.addBlockingTask(file);
-							}
-						});
-						modal.open();
+						void this.openBlockingSelector();
 					});
 				button.buttonEl.addClasses(["tn-btn", "tn-btn--ghost"]);
 			});
