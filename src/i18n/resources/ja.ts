@@ -2036,6 +2036,7 @@ export const ja: TranslationTree = {
 				dueDate: "期限日",
 				scheduledDate: "予定日",
 				priority: "優先度",
+				status: "ステータス",
 				title: "タイトル",
 				createdDate: "作成日",
 				tags: "タグ",

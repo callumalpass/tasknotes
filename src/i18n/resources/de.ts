@@ -2085,6 +2085,7 @@ export const de: TranslationTree = {
 				dueDate: "Fälligkeitsdatum",
 				scheduledDate: "Planungsdatum",
 				priority: "Priorität",
+				status: "Status",
 				title: "Titel",
 				createdDate: "Erstellungsdatum",
 				tags: "Tags",

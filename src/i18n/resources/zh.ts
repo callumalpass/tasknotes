@@ -1978,6 +1978,7 @@ export const zh: TranslationTree = {
 				dueDate: "到期日期",
 				scheduledDate: "安排日期",
 				priority: "优先级",
+				status: "状态",
 				title: "标题",
 				createdDate: "创建日期",
 				tags: "标签",
