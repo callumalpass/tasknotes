@@ -1485,9 +1485,9 @@ export const en: TranslationTree = {
 		exportAllTasksIcs: "Export all tasks as ICS file",
 	},
 	modals: {
-		task: {
-			titlePlaceholder: "What needs to be done?",
-			titleLabel: "Title",
+			task: {
+				titlePlaceholder: "What needs to be done?",
+				titleLabel: "Title",
 			titleDetailedPlaceholder: "Task title...",
 			detailsLabel: "Details",
 			detailsPlaceholder: "Add more details...",
@@ -1508,6 +1508,20 @@ export const en: TranslationTree = {
 				addTaskButton: "Add task",
 				selectTaskTooltip: "Select a task note using fuzzy search",
 				removeTaskTooltip: "Remove task",
+			},
+			organization: {
+				projects: "Projects",
+				subtasks: "Subtasks",
+				addToProject: "Add to project",
+				addToProjectButton: "Add to project",
+				addSubtasks: "Add subtasks",
+				addSubtasksButton: "Add subtask",
+				addSubtasksTooltip: "Select tasks to make them subtasks of this task",
+				removeSubtaskTooltip: "Remove subtask",
+				notices: {
+					noEligibleSubtasks: "No eligible tasks available to assign as subtasks",
+					subtaskSelectFailed: "Failed to open subtask selector",
+				},
 			},
 			customFieldsLabel: "Custom Fields",
 			actions: {
@@ -1558,6 +1572,12 @@ export const en: TranslationTree = {
 				countSuffix: "{count} times",
 				untilSuffix: "until {date}",
 				ordinal: "{number}{suffix}",
+			},
+		},
+		taskSelector: {
+			dueDate: {
+				overdue: "Due: {date} (overdue)",
+				today: "Due: Today",
 			},
 		},
 		taskCreation: {
@@ -1774,6 +1794,25 @@ export const en: TranslationTree = {
 						updateFailed: "Failed to update dependencies",
 					},
 				},
+			organization: {
+				title: "Organization",
+				projects: "Projects",
+				addToProject: "Add to project…",
+				subtasks: "Subtasks",
+				addSubtasks: "Add subtasks…",
+				notices: {
+					alreadyInProject: "Task is already in this project",
+					alreadySubtask: "Task is already a subtask of this task",
+					addedToProject: "Added to project: {project}",
+					addedAsSubtask: "Added {subtask} as subtask of {parent}",
+					addToProjectFailed: "Failed to add task to project",
+					addAsSubtaskFailed: "Failed to add task as subtask",
+					projectSelectFailed: "Failed to open project selector",
+					subtaskSelectFailed: "Failed to open subtask selector",
+					noEligibleSubtasks: "No eligible tasks available to assign as subtasks",
+					currentTaskNotFound: "Current task file not found",
+				},
+			},
 			subtasks: {
 				loading: "Loading subtasks...",
 				noSubtasks: "No subtasks found",
