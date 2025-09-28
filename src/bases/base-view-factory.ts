@@ -205,6 +205,7 @@ export function buildTasknotesBaseViewFactory(plugin: TaskNotesPlugin, config: V
             showArchiveButton: false,
             showTimeTracking: false,
             showRecurringControls: true,
+            targetDate: new Date()
           });
 
           // Add update animation

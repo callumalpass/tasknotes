@@ -19,7 +19,8 @@ function createTaskInfoFromProperties(props: Record<string, any>, basesItem: Bas
   const knownProperties = new Set([
     'title', 'status', 'priority', 'archived', 'due', 'scheduled', 'contexts',
     'projects', 'tags', 'timeEstimate', 'completedDate', 'recurrence',
-    'dateCreated', 'dateModified', 'timeEntries', 'reminders', 'icsEventId'
+    'dateCreated', 'dateModified', 'timeEntries', 'reminders', 'icsEventId',
+    'complete_instances'
   ]);
 
   const customProperties: Record<string, any> = {};
@@ -48,6 +49,7 @@ function createTaskInfoFromProperties(props: Record<string, any>, basesItem: Bas
     timeEntries: props.timeEntries,
     reminders: props.reminders,
     icsEventId: props.icsEventId,
+    complete_instances: props.complete_instances,
     customProperties: Object.keys(customProperties).length > 0 ? customProperties : undefined,
     basesData: basesItem.basesData
   };
@@ -243,7 +245,12 @@ export async function renderTaskNotesInBasesView(
 
   for (const taskInfo of taskNotes) {
     try {
-      const taskCard = createTaskCard(taskInfo, plugin, visibleProperties, cardOptions);
+      // Pass current date as targetDate for proper recurring task completion styling
+      const cardOptionsWithDate = {
+        ...cardOptions,
+        targetDate: new Date()
+      };
+      const taskCard = createTaskCard(taskInfo, plugin, visibleProperties, cardOptionsWithDate);
       taskListEl.appendChild(taskCard);
 
       // Track task elements for selective updates
