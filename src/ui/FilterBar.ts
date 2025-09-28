@@ -2023,10 +2023,7 @@ export class FilterBar extends EventEmitter {
                 this.plugin.i18n.translate.bind(this.plugin.i18n) :
                 (key: string) => key; // Fallback: return the key as-is
 
-            console.log('Opening SaveViewModal with translate function:', !!this.plugin?.i18n?.translate);
-
             const modal = new SaveViewModal(this.app, (name) => {
-                console.log('SaveViewModal submitted with name:', name);
                 const currentViewOptions = this.getCurrentViewOptions();
                 const currentProperties = this.getCurrentVisibleProperties();
                 this.emit('saveView', {
