@@ -2072,6 +2072,9 @@
       "source": "62646b00e3d5abef4cb8139c5f21bf0907f360d1",
       "translation": "62646b00e3d5abef4cb8139c5f21bf0907f360d1"
     },
+    "settings.appearance.timeSettings.eventMinHeight.name": null,
+    "settings.appearance.timeSettings.eventMinHeight.description": null,
+    "settings.appearance.timeSettings.eventMinHeight.placeholder": null,
     "settings.appearance.uiElements.header": {
       "source": "828b5505ff4402471cfbb7fe32a6613ec912c004",
       "translation": "709549c13d57ab8b6a13700cf9254c270204d427"
@@ -7294,6 +7297,9 @@
       "source": "62646b00e3d5abef4cb8139c5f21bf0907f360d1",
       "translation": "62646b00e3d5abef4cb8139c5f21bf0907f360d1"
     },
+    "settings.appearance.timeSettings.eventMinHeight.name": null,
+    "settings.appearance.timeSettings.eventMinHeight.description": null,
+    "settings.appearance.timeSettings.eventMinHeight.placeholder": null,
     "settings.appearance.uiElements.header": {
       "source": "828b5505ff4402471cfbb7fe32a6613ec912c004",
       "translation": "10be4645ee2d13e47e7f1afbeaf9fa12b38fa443"
@@ -12516,6 +12522,9 @@
       "source": "62646b00e3d5abef4cb8139c5f21bf0907f360d1",
       "translation": "62646b00e3d5abef4cb8139c5f21bf0907f360d1"
     },
+    "settings.appearance.timeSettings.eventMinHeight.name": null,
+    "settings.appearance.timeSettings.eventMinHeight.description": null,
+    "settings.appearance.timeSettings.eventMinHeight.placeholder": null,
     "settings.appearance.uiElements.header": {
       "source": "828b5505ff4402471cfbb7fe32a6613ec912c004",
       "translation": "204838c5f595ef426b853a5596ca95a3ff4919fa"
@@ -17738,6 +17747,9 @@
       "source": "62646b00e3d5abef4cb8139c5f21bf0907f360d1",
       "translation": "62646b00e3d5abef4cb8139c5f21bf0907f360d1"
     },
+    "settings.appearance.timeSettings.eventMinHeight.name": null,
+    "settings.appearance.timeSettings.eventMinHeight.description": null,
+    "settings.appearance.timeSettings.eventMinHeight.placeholder": null,
     "settings.appearance.uiElements.header": {
       "source": "828b5505ff4402471cfbb7fe32a6613ec912c004",
       "translation": "b4c30d2d39de3d19332a04baf6b61cf48b27d396"
@@ -22960,6 +22972,9 @@
       "source": "62646b00e3d5abef4cb8139c5f21bf0907f360d1",
       "translation": "62646b00e3d5abef4cb8139c5f21bf0907f360d1"
     },
+    "settings.appearance.timeSettings.eventMinHeight.name": null,
+    "settings.appearance.timeSettings.eventMinHeight.description": null,
+    "settings.appearance.timeSettings.eventMinHeight.placeholder": null,
     "settings.appearance.uiElements.header": {
       "source": "828b5505ff4402471cfbb7fe32a6613ec912c004",
       "translation": "75785beb2b36517ada96d92b5cbaa63f07e474ff"
@@ -28182,6 +28197,9 @@
       "source": "62646b00e3d5abef4cb8139c5f21bf0907f360d1",
       "translation": "62646b00e3d5abef4cb8139c5f21bf0907f360d1"
     },
+    "settings.appearance.timeSettings.eventMinHeight.name": null,
+    "settings.appearance.timeSettings.eventMinHeight.description": null,
+    "settings.appearance.timeSettings.eventMinHeight.placeholder": null,
     "settings.appearance.uiElements.header": {
       "source": "828b5505ff4402471cfbb7fe32a6613ec912c004",
       "translation": "f14ac2e91c0708f59855fd80308cd30140248bf4"

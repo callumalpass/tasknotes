@@ -35,6 +35,7 @@ export interface NumberSettingOptions {
     min?: number;
     max?: number;
     ariaLabel?: string;
+    debounceMs?: number;
 }
 
 export interface ButtonSettingOptions {
@@ -118,6 +119,8 @@ export function createDropdownSetting(container: HTMLElement, options: DropdownS
  * Helper for creating standard number input settings
  */
 export function createNumberSetting(container: HTMLElement, options: NumberSettingOptions): Setting {
+    const setValue = options.debounceMs ? debounce(options.setValue, options.debounceMs) : options.setValue;
+
     return new Setting(container)
         .setName(options.name)
         .setDesc(options.desc)
@@ -128,7 +131,7 @@ export function createNumberSetting(container: HTMLElement, options: NumberSetti
                     if (!isNaN(num)) {
                         if (options.min !== undefined && num < options.min) return;
                         if (options.max !== undefined && num > options.max) return;
-                        options.setValue(num);
+                        setValue(num);
                     }
                 });
             

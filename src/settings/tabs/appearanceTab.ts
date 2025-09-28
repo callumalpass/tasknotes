@@ -425,6 +425,20 @@ export function renderAppearanceTab(container: HTMLElement, plugin: TaskNotesPlu
         }
     });
 
+    createNumberSetting(container, {
+        name: translate('settings.appearance.timeSettings.eventMinHeight.name'),
+        desc: translate('settings.appearance.timeSettings.eventMinHeight.description'),
+        placeholder: translate('settings.appearance.timeSettings.eventMinHeight.placeholder'),
+        min: 5,
+        max: 100,
+        debounceMs: 300,
+        getValue: () => plugin.settings.calendarViewSettings.eventMinHeight,
+        setValue: async (value: number) => {
+            plugin.settings.calendarViewSettings.eventMinHeight = value;
+            save();
+        }
+    });
+
     // UI Elements Section
     createSectionHeader(container, translate('settings.appearance.uiElements.header'));
     createHelpText(container, translate('settings.appearance.uiElements.description'));

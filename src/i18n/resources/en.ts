@@ -875,6 +875,11 @@ export const en: TranslationTree = {
                     name: 'Initial scroll time',
                     description: 'Time to scroll to when opening timeline views (HH:MM format)',
                     placeholder: '09:00'
+                },
+                eventMinHeight: {
+                    name: 'Event minimum height',
+                    description: 'Minimum height for events in timeline views (pixels)',
+                    placeholder: '15'
                 }
             },
             uiElements: {
