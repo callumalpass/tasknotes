@@ -54,6 +54,45 @@ export class TaskService {
 	}
 
 	/**
+	 * Sanitize title by removing problematic characters that could cause issues
+	 * This ensures consistency between what's stored and what's returned
+	 */
+	private sanitizeTitle(input: string): string {
+		if (!input || typeof input !== "string") {
+			return "untitled";
+		}
+
+		try {
+			// Remove or replace problematic characters
+			let sanitized = input
+				.trim()
+				// Replace multiple spaces with single space
+				.replace(/\s+/g, " ")
+				// Remove characters that are problematic in filenames and content
+				.replace(/[<>:"/\\|?*#\[\]]/g, "")
+				// Remove control characters separately
+				.replace(/./g, (char) => {
+					const code = char.charCodeAt(0);
+					return code <= 31 || (code >= 127 && code <= 159) ? "" : char;
+				})
+				// Remove leading/trailing dots
+				.replace(/^\.+|\.+$/g, "")
+				// Final trim in case we removed characters at the edges
+				.trim();
+
+			// Additional validation
+			if (!sanitized || sanitized.length === 0) {
+				sanitized = "untitled";
+			}
+
+			return sanitized;
+		} catch (error) {
+			console.error("Error sanitizing title:", error);
+			return "untitled";
+		}
+	}
+
+	/**
 	 * Set webhook notifier for triggering webhook events
 	 * Called after HTTPAPIService is initialized to avoid circular dependencies
 	 */
@@ -278,8 +317,8 @@ export class TaskService {
 				throw new Error("Title is required");
 			}
 
-			// Apply defaults for missing fields
-			const title = taskData.title.trim();
+			// Apply defaults for missing fields and sanitize title for consistent behavior
+			const title = this.sanitizeTitle(taskData.title.trim());
 			const priority = taskData.priority || this.plugin.settings.defaultTaskPriority;
 			const status = taskData.status || this.plugin.settings.defaultTaskStatus;
 			const dateCreated = taskData.dateCreated || getCurrentTimestamp();
