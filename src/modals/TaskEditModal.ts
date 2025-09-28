@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import { App, Notice, TFile, setIcon, setTooltip } from "obsidian";
+import { App, Notice, TFile, TAbstractFile, setIcon, setTooltip } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { TaskModal } from "./TaskModal";
 import { TaskDependency, TaskInfo } from "../types";
@@ -25,7 +25,6 @@ import {
 } from "../utils/helpers";
 import { splitListPreservingLinksAndQuotes } from "../utils/stringSplit";
 import { ReminderContextMenu } from "../components/ReminderContextMenu";
-import { renderProjectLinks, type LinkServices } from "../ui/renderers/linkRenderer";
 
 export interface TaskEditOptions {
 	task: TaskInfo;
@@ -115,6 +114,9 @@ export class TaskEditModal extends TaskModal {
 
 		this.details = this.normalizeDetails(this.details);
 		this.originalDetails = this.details;
+
+		// Initialize subtasks (tasks that have this task as a project)
+		await this.initializeSubtasks();
 
 		this.blockedByItems = (this.task.blockedBy ?? []).map((dependency) =>
 			this.createDependencyItemFromDependency(dependency, this.task.path)
@@ -530,6 +532,7 @@ export class TaskEditModal extends TaskModal {
 				this.pendingBlockingUpdates.added.length > 0 ||
 				this.pendingBlockingUpdates.removed.length > 0;
 			const hasTaskChanges = Object.keys(changes).length > 0;
+			const hasSubtaskChanges = this.hasSubtaskChanges();
 
 			if (this.unresolvedBlockingEntries.length > 0 && !hasBlockingChanges) {
 				new Notice(
@@ -540,7 +543,7 @@ export class TaskEditModal extends TaskModal {
 				this.unresolvedBlockingEntries = [];
 			}
 
-			if (!hasTaskChanges && !hasBlockingChanges) {
+			if (!hasTaskChanges && !hasBlockingChanges && !hasSubtaskChanges) {
 				new Notice(this.t("modals.taskEdit.notices.noChanges"));
 				this.close();
 				return;
@@ -571,6 +574,10 @@ export class TaskEditModal extends TaskModal {
 					updatedTask = refreshed;
 					this.task = refreshed;
 				}
+			}
+
+			if (hasSubtaskChanges) {
+				await this.applySubtaskChanges(updatedTask);
 			}
 
 			if (this.unresolvedBlockingEntries.length > 0) {
@@ -945,32 +952,19 @@ export class TaskEditModal extends TaskModal {
 			return;
 		}
 
-		// Create LinkServices for the renderProjectLinks function
-		const linkServices: LinkServices = {
-			metadataCache: this.app.metadataCache,
-			workspace: this.app.workspace,
-		};
-
 		this.selectedProjectFiles.forEach((file) => {
 			const projectItem = this.projectsList.createDiv({ cls: "task-project-item" });
-
-			// Info container
 			const infoEl = projectItem.createDiv({ cls: "task-project-info" });
-
-			// Create clickable project name using existing renderProjectLinks functionality
 			const nameEl = infoEl.createDiv({ cls: "task-project-name clickable-project" });
 
-			// Use the file name as a wikilink format for consistent handling
 			const projectAsWikilink = `[[${file.path}|${file.name}]]`;
-			renderProjectLinks(nameEl, [projectAsWikilink], linkServices);
+			this.renderProjectLinksWithoutPrefix(nameEl, [projectAsWikilink]);
 
-			// File path (if different from name)
 			if (file.path !== file.name) {
 				const pathEl = infoEl.createDiv({ cls: "task-project-path" });
 				pathEl.textContent = file.path;
 			}
 
-			// Remove button
 			const removeBtn = projectItem.createEl("button", {
 				cls: "task-project-remove",
 				text: "×",
@@ -982,6 +976,101 @@ export class TaskEditModal extends TaskModal {
 				this.removeProject(file);
 			});
 		});
+	}
+
+	protected async initializeSubtasks(): Promise<void> {
+		try {
+			const taskFile = this.app.vault.getAbstractFileByPath(this.task.path);
+			if (!(taskFile instanceof TFile)) return;
+
+			const subtasks = await this.plugin.projectSubtasksService.getTasksLinkedToProject(taskFile);
+			this.selectedSubtaskFiles = [];
+			this.initialSubtaskFiles = [];
+
+			for (const subtask of subtasks) {
+				const subtaskFile = this.app.vault.getAbstractFileByPath(subtask.path);
+				if (subtaskFile) {
+					this.selectedSubtaskFiles.push(subtaskFile);
+					this.initialSubtaskFiles.push(subtaskFile);
+				}
+			}
+		} catch (error) {
+			console.error("Error initializing subtasks:", error);
+		}
+	}
+
+	protected hasSubtaskChanges(): boolean {
+		// Check if subtasks have changed
+		const current = this.selectedSubtaskFiles.map(f => f.path).sort();
+		const initial = this.initialSubtaskFiles.map(f => f.path).sort();
+
+		return current.length !== initial.length ||
+			   current.some((path, index) => path !== initial[index]);
+	}
+
+	protected async applySubtaskChanges(task: TaskInfo): Promise<void> {
+		const currentTaskFile = this.app.vault.getAbstractFileByPath(task.path);
+		if (!(currentTaskFile instanceof TFile)) return;
+
+		const currentPaths = new Set(this.selectedSubtaskFiles.map(f => f.path));
+		const initialPaths = new Set(this.initialSubtaskFiles.map(f => f.path));
+
+		// Remove current task from tasks that should no longer be subtasks
+		const toRemove = this.initialSubtaskFiles.filter(f => !currentPaths.has(f.path));
+		for (const file of toRemove) {
+			await this.removeSubtaskRelation(file, currentTaskFile);
+		}
+
+		// Add current task to tasks that should become subtasks
+		const toAdd = this.selectedSubtaskFiles.filter(f => !initialPaths.has(f.path));
+		for (const file of toAdd) {
+			await this.addSubtaskRelation(file, currentTaskFile);
+		}
+
+		// Update the initial state to reflect changes
+		this.initialSubtaskFiles = [...this.selectedSubtaskFiles];
+	}
+
+	protected async addSubtaskRelation(subtaskFile: TAbstractFile, parentTaskFile: TFile): Promise<void> {
+		try {
+			const subtaskInfo = await this.plugin.cacheManager.getTaskInfo(subtaskFile.path);
+			if (!subtaskInfo) return;
+
+			const projectReference = this.buildProjectReference(parentTaskFile, subtaskFile.path);
+			const legacyReference = `[[${parentTaskFile.basename}]]`;
+			const currentProjects = Array.isArray(subtaskInfo.projects) ? subtaskInfo.projects : [];
+
+			if (
+				currentProjects.includes(projectReference) ||
+				currentProjects.includes(legacyReference)
+			) {
+				return;
+			}
+
+			const sanitizedProjects = currentProjects.filter((entry) => entry !== legacyReference);
+			const updatedProjects = [...sanitizedProjects, projectReference];
+			await this.plugin.updateTaskProperty(subtaskInfo, "projects", updatedProjects);
+		} catch (error) {
+			console.error("Failed to add subtask relation:", error);
+		}
+	}
+
+	protected async removeSubtaskRelation(subtaskFile: TAbstractFile, parentTaskFile: TFile): Promise<void> {
+		try {
+			const subtaskInfo = await this.plugin.cacheManager.getTaskInfo(subtaskFile.path);
+			if (!subtaskInfo) return;
+
+			const projectReference = this.buildProjectReference(parentTaskFile, subtaskFile.path);
+			const legacyReference = `[[${parentTaskFile.basename}]]`;
+			const currentProjects = Array.isArray(subtaskInfo.projects) ? subtaskInfo.projects : [];
+
+			const updatedProjects = currentProjects.filter(
+				(project) => project !== projectReference && project !== legacyReference
+			);
+			await this.plugin.updateTaskProperty(subtaskInfo, "projects", updatedProjects);
+		} catch (error) {
+			console.error("Failed to remove subtask relation:", error);
+		}
 	}
 
 	// Start expanded for edit modal - override parent property

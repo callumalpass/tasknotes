@@ -5,6 +5,7 @@ import {
 	AbstractInputSuggest,
 	setTooltip,
 	parseFrontMatterAliases,
+	TFile,
 } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { TaskModal } from "./TaskModal";
@@ -210,7 +211,6 @@ class NLPSuggest extends AbstractInputSuggest<
 					getFrontmatter: (entry) => {
 						// entry.path refers to a markdown file path
 						const file = appRef?.vault.getAbstractFileByPath(entry.path);
-						// @ts-ignore obsidian typing: we only read cache.frontmatter
 						const cache = file
 							? appRef?.metadataCache.getFileCache(file as any)
 							: undefined;
@@ -1036,6 +1036,11 @@ export class TaskCreationModal extends TaskModal {
 				this.blockingItems = [];
 			}
 
+			// Handle subtask assignments
+			if (this.selectedSubtaskFiles.length > 0) {
+				await this.applySubtaskAssignments(createdTask);
+			}
+
 			if (this.options.onTaskCreated) {
 				this.options.onTaskCreated(createdTask);
 			}
@@ -1135,4 +1140,34 @@ export class TaskCreationModal extends TaskModal {
 			super.createTitleInput(container);
 		}
 	}
+
+	protected async applySubtaskAssignments(createdTask: TaskInfo): Promise<void> {
+		const currentTaskFile = this.app.vault.getAbstractFileByPath(createdTask.path);
+		if (!(currentTaskFile instanceof TFile)) return;
+
+		for (const subtaskFile of this.selectedSubtaskFiles) {
+			try {
+				const subtaskInfo = await this.plugin.cacheManager.getTaskInfo(subtaskFile.path);
+				if (!subtaskInfo) continue;
+
+				const projectReference = this.buildProjectReference(currentTaskFile, subtaskFile.path);
+				const legacyReference = `[[${currentTaskFile.basename}]]`;
+				const currentProjects = Array.isArray(subtaskInfo.projects) ? subtaskInfo.projects : [];
+
+				if (
+					currentProjects.includes(projectReference) ||
+					currentProjects.includes(legacyReference)
+				) {
+					continue;
+				}
+
+				const sanitizedProjects = currentProjects.filter((entry) => entry !== legacyReference);
+				const updatedProjects = [...sanitizedProjects, projectReference];
+				await this.plugin.updateTaskProperty(subtaskInfo, "projects", updatedProjects);
+			} catch (error) {
+				console.error("Failed to assign subtask:", error);
+			}
+		}
+	}
+
 }

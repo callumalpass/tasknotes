@@ -9,6 +9,7 @@ import { DateContextMenu } from "./DateContextMenu";
 import { RecurrenceContextMenu } from "./RecurrenceContextMenu";
 import { showTextInputModal } from "../modals/TextInputModal";
 import { TaskSelectorModal } from "../modals/TaskSelectorModal";
+import { ProjectSelectModal } from "../modals/ProjectSelectModal";
 import {
 	DEFAULT_DEPENDENCY_RELTYPE,
 	formatDependencyLink,
@@ -232,6 +233,17 @@ export class TaskContextMenu {
 
 			const submenu = (item as any).setSubmenu();
 			this.addDependencyMenuItems(submenu, task, plugin);
+		});
+
+		// this.menu.addSeparator();
+
+		// Organization submenu (projects and subtasks)
+		this.menu.addItem((item) => {
+			item.setTitle(this.t("contextMenus.task.organization.title"));
+			item.setIcon("folder-tree");
+
+			const submenu = (item as any).setSubmenu();
+			this.addOrganizationMenuItems(submenu, task, plugin);
 		});
 
 		this.menu.addSeparator();
@@ -824,6 +836,140 @@ export class TaskContextMenu {
 
 	private getDependencyKey(entry: TaskDependency): string {
 		return `${entry.uid}::${entry.reltype}::${entry.gap ?? ""}`;
+	}
+
+	private addOrganizationMenuItems(menu: Menu, task: TaskInfo, plugin: TaskNotesPlugin): void {
+		// Add to project
+		menu.addItem((subItem: any) => {
+			subItem.setTitle(this.t("contextMenus.task.organization.addToProject"));
+			subItem.setIcon("folder-plus");
+			subItem.onClick(() => {
+				this.menu.hide();
+				void this.openProjectSelector(task, plugin);
+			});
+		});
+
+		// Add subtasks
+		menu.addItem((subItem: any) => {
+			subItem.setTitle(this.t("contextMenus.task.organization.addSubtasks"));
+			subItem.setIcon("indent");
+			subItem.onClick(() => {
+				this.menu.hide();
+				void this.openSubtaskAssignmentSelector(task, plugin);
+			});
+		});
+	}
+
+	private async openProjectSelector(task: TaskInfo, plugin: TaskNotesPlugin): Promise<void> {
+		try {
+			const selector = new ProjectSelectModal(plugin.app, plugin, async (projectFile) => {
+				if (!projectFile) return;
+				await this.addTaskToProject(task, plugin, projectFile);
+			});
+			selector.open();
+		} catch (error) {
+			console.error("Failed to open project selector:", error);
+			new Notice(this.t("contextMenus.task.organization.notices.projectSelectFailed"));
+		}
+	}
+
+	private async openSubtaskAssignmentSelector(task: TaskInfo, plugin: TaskNotesPlugin): Promise<void> {
+		try {
+			const cacheManager: any = plugin.cacheManager;
+			const allTasks: TaskInfo[] = (await cacheManager?.getAllTasks?.()) ?? [];
+
+			// Filter out the current task
+			const candidates = allTasks.filter(candidate => candidate.path !== task.path);
+
+			if (candidates.length === 0) {
+				new Notice(this.t("contextMenus.task.organization.notices.noEligibleSubtasks"));
+				return;
+			}
+
+			const selector = new TaskSelectorModal(plugin.app, plugin, candidates, async (subtask) => {
+				if (!subtask) return;
+				await this.assignTaskAsSubtask(task, plugin, subtask);
+			});
+			selector.open();
+		} catch (error) {
+			console.error("Failed to open subtask assignment selector:", error);
+			new Notice(this.t("contextMenus.task.organization.notices.subtaskSelectFailed"));
+		}
+	}
+
+	private async addTaskToProject(task: TaskInfo, plugin: TaskNotesPlugin, projectFile: any): Promise<void> {
+		try {
+			if (!(projectFile instanceof TFile)) {
+				new Notice(this.t("contextMenus.task.organization.notices.projectSelectFailed"));
+				return;
+			}
+
+			const projectReference = this.buildProjectReference(projectFile, task.path, plugin);
+			const legacyReference = `[[${projectFile.basename}]]`;
+			const currentProjects = Array.isArray(task.projects) ? task.projects : [];
+
+			if (
+				currentProjects.includes(projectReference) ||
+				currentProjects.includes(legacyReference)
+			) {
+				new Notice(this.t("contextMenus.task.organization.notices.alreadyInProject"));
+				return;
+			}
+
+			const sanitizedProjects = currentProjects.filter((entry) => entry !== legacyReference);
+			const updatedProjects = [...sanitizedProjects, projectReference];
+			const updatedTask = await plugin.updateTaskProperty(task, "projects", updatedProjects);
+			Object.assign(task, updatedTask);
+
+			new Notice(this.t("contextMenus.task.organization.notices.addedToProject", {
+				project: projectFile.basename
+			}));
+			this.options.onUpdate?.();
+		} catch (error) {
+			console.error("Failed to add task to project:", error);
+			new Notice(this.t("contextMenus.task.organization.notices.addToProjectFailed"));
+		}
+	}
+
+	private async assignTaskAsSubtask(task: TaskInfo, plugin: TaskNotesPlugin, subtask: TaskInfo): Promise<void> {
+		try {
+			const currentTaskFile = plugin.app.vault.getAbstractFileByPath(task.path);
+			if (!(currentTaskFile instanceof TFile)) {
+				new Notice(this.t("contextMenus.task.organization.notices.currentTaskNotFound"));
+				return;
+			}
+
+			const projectReference = this.buildProjectReference(currentTaskFile, subtask.path, plugin);
+			const legacyReference = `[[${currentTaskFile.basename}]]`;
+			const subtaskProjects = Array.isArray(subtask.projects) ? subtask.projects : [];
+
+			if (
+				subtaskProjects.includes(projectReference) ||
+				subtaskProjects.includes(legacyReference)
+			) {
+				new Notice(this.t("contextMenus.task.organization.notices.alreadySubtask"));
+				return;
+			}
+
+			const sanitizedProjects = subtaskProjects.filter((entry) => entry !== legacyReference);
+			const updatedProjects = [...sanitizedProjects, projectReference];
+			const updatedSubtask = await plugin.updateTaskProperty(subtask, "projects", updatedProjects);
+			Object.assign(subtask, updatedSubtask);
+
+			new Notice(this.t("contextMenus.task.organization.notices.addedAsSubtask", {
+				subtask: subtask.title,
+				parent: currentTaskFile.basename
+			}));
+			this.options.onUpdate?.();
+		} catch (error) {
+			console.error("Failed to assign task as subtask:", error);
+			new Notice(this.t("contextMenus.task.organization.notices.addAsSubtaskFailed"));
+		}
+	}
+
+	private buildProjectReference(targetFile: TFile, sourcePath: string, plugin: TaskNotesPlugin): string {
+		const linkText = plugin.app.metadataCache.fileToLinktext(targetFile, sourcePath, true);
+		return `[[${linkText}]]`;
 	}
 
 	private updateMainMenuIconColors(task: TaskInfo, plugin: TaskNotesPlugin): void {

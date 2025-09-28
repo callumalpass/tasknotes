@@ -24,7 +24,11 @@ import {
 	formatDependencyLink,
 	resolveDependencyEntry,
 } from "../utils/dependencyUtils";
-import { appendInternalLink, type LinkServices } from "../ui/renderers/linkRenderer";
+import {
+	appendInternalLink,
+	renderProjectLinks,
+	type LinkServices,
+} from "../ui/renderers/linkRenderer";
 import { TaskSelectorModal } from "./TaskSelectorModal";
 
 interface DependencyItem {
@@ -384,6 +388,10 @@ export abstract class TaskModal extends Modal {
 	// Project link storage
 	protected selectedProjectFiles: TAbstractFile[] = [];
 
+	// Subtask storage - tracks tasks that should become subtasks of this task
+	protected selectedSubtaskFiles: TAbstractFile[] = [];
+	protected initialSubtaskFiles: TAbstractFile[] = [];
+
 	// UI elements
 	protected titleInput: HTMLInputElement;
 	protected detailsInput: HTMLTextAreaElement;
@@ -392,6 +400,7 @@ export abstract class TaskModal extends Modal {
 	protected tagsInput: HTMLInputElement;
 	protected timeEstimateInput: HTMLInputElement;
 	protected projectsList: HTMLElement;
+	protected subtasksList: HTMLElement;
 	protected actionBar: HTMLElement;
 	protected detailsContainer: HTMLElement;
 	protected isExpanded = false;
@@ -477,7 +486,7 @@ export abstract class TaskModal extends Modal {
 			this.actionBar,
 			"calendar",
 			this.t("modals.task.actions.due"),
-			(icon, event) => {
+			(_, event) => {
 				this.showDateContextMenu(event, "due");
 			},
 			"due-date"
@@ -488,7 +497,7 @@ export abstract class TaskModal extends Modal {
 			this.actionBar,
 			"calendar-clock",
 			this.t("modals.task.actions.scheduled"),
-			(icon, event) => {
+			(_, event) => {
 				this.showDateContextMenu(event, "scheduled");
 			},
 			"scheduled-date"
@@ -499,7 +508,7 @@ export abstract class TaskModal extends Modal {
 			this.actionBar,
 			"dot-square",
 			this.t("modals.task.actions.status"),
-			(icon, event) => {
+			(_, event) => {
 				this.showStatusContextMenu(event);
 			},
 			"status"
@@ -510,7 +519,7 @@ export abstract class TaskModal extends Modal {
 			this.actionBar,
 			"star",
 			this.t("modals.task.actions.priority"),
-			(icon, event) => {
+			(_, event) => {
 				this.showPriorityContextMenu(event);
 			},
 			"priority"
@@ -521,7 +530,7 @@ export abstract class TaskModal extends Modal {
 			this.actionBar,
 			"refresh-ccw",
 			this.t("modals.task.actions.recurrence"),
-			(icon, event) => {
+			(_, event) => {
 				this.showRecurrenceContextMenu(event);
 			},
 			"recurrence"
@@ -532,7 +541,7 @@ export abstract class TaskModal extends Modal {
 			this.actionBar,
 			"bell",
 			this.t("modals.task.actions.reminders"),
-			(icon, event) => {
+			(_, event) => {
 				this.showReminderContextMenu(event);
 			},
 			"reminders"
@@ -626,25 +635,6 @@ export abstract class TaskModal extends Modal {
 	}
 
 	protected createAdditionalFields(container: HTMLElement): void {
-		// Projects - now using note selection instead of text input
-		new Setting(container).setName(this.t("modals.task.projectsLabel")).addButton((button) => {
-			button
-				.setButtonText(this.t("modals.task.projectsAdd"))
-				.setTooltip(this.t("modals.task.projectsTooltip"))
-				.onClick(() => {
-					const modal = new ProjectSelectModal(this.app, this.plugin, (file) => {
-						this.addProject(file);
-					});
-					modal.open();
-				});
-			// Add consistent button classes for transparent styling
-			button.buttonEl.addClasses(["tn-btn", "tn-btn--ghost"]);
-		});
-
-		// Projects list container
-		this.projectsList = container.createDiv({ cls: "task-projects-list" });
-		// Don't render immediately - will be rendered after form data is initialized
-
 		// Contexts input with autocomplete
 		new Setting(container).setName(this.t("modals.task.contextsLabel")).addText((text) => {
 			text.setPlaceholder(this.t("modals.task.contextsPlaceholder"))
@@ -686,6 +676,12 @@ export abstract class TaskModal extends Modal {
 			this.timeEstimateInput = text.inputEl;
 		});
 
+		// Visual separator between primary task details and dependency settings
+		container.createEl("hr", { cls: "task-modal__section-separator" });
+
+		// Organization fields (projects and subtasks)
+		this.createOrganizationFields(container);
+
 		this.createDependencyFields(container);
 
 		// Dynamic user fields
@@ -722,6 +718,45 @@ export abstract class TaskModal extends Modal {
 		this.blockingList = container.createDiv({ cls: "task-projects-list" });
 
 		this.renderDependencyLists();
+	}
+
+	protected createOrganizationFields(container: HTMLElement): void {
+		// Add to project section
+		new Setting(container)
+			.setName(this.t("modals.task.organization.projects"))
+			.addButton((button) => {
+				button
+					.setButtonText(this.t("modals.task.organization.addToProjectButton"))
+					.setTooltip(this.t("modals.task.projectsTooltip"))
+					.onClick(() => {
+						const modal = new ProjectSelectModal(this.app, this.plugin, (file) => {
+							this.addProject(file);
+						});
+						modal.open();
+					});
+				button.buttonEl.addClasses(["tn-btn", "tn-btn--ghost"]);
+			});
+
+		// Projects list container
+		this.projectsList = container.createDiv({ cls: "task-projects-list" });
+
+		// Add subtasks section
+		new Setting(container)
+			.setName(this.t("modals.task.organization.subtasks"))
+			.addButton((button) => {
+				button
+					.setButtonText(this.t("modals.task.organization.addSubtasksButton"))
+					.setTooltip(this.t("modals.task.organization.addSubtasksTooltip"))
+					.onClick(() => {
+						void this.openSubtaskSelector();
+					});
+				button.buttonEl.addClasses(["tn-btn", "tn-btn--ghost"]);
+			});
+
+		// Subtasks list container
+		this.subtasksList = container.createDiv({ cls: "task-projects-list" });
+
+		this.renderOrganizationLists();
 	}
 
 	protected createUserFields(container: HTMLElement): void {
@@ -1337,14 +1372,14 @@ export abstract class TaskModal extends Modal {
 		this.projects = this.selectedProjectFiles
 			.map((file) => {
 				// fileToLinktext expects TFile, so cast safely since we know these are markdown files
-				const linkText = this.app.metadataCache.fileToLinktext(
-					file as TFile,
-					sourcePath,
-					true
-				);
-				return `[[${linkText}]]`;
+				return this.buildProjectReference(file as TFile, sourcePath);
 			})
 			.join(", ");
+	}
+
+	protected buildProjectReference(targetFile: TFile, sourcePath: string): string {
+		const linkText = this.app.metadataCache.fileToLinktext(targetFile, sourcePath, true);
+		return `[[${linkText}]]`;
 	}
 
 	protected initializeProjectsFromStrings(projects: string[]): void {
@@ -1397,21 +1432,17 @@ export abstract class TaskModal extends Modal {
 
 		this.selectedProjectFiles.forEach((file) => {
 			const projectItem = this.projectsList.createDiv({ cls: "task-project-item" });
-
-			// Info container
 			const infoEl = projectItem.createDiv({ cls: "task-project-info" });
+			const nameEl = infoEl.createDiv({ cls: "task-project-name clickable-project" });
 
-			// File name
-			const nameEl = infoEl.createSpan({ cls: "task-project-name" });
-			nameEl.textContent = file.name;
+			const projectAsWikilink = `[[${file.path}|${file.name}]]`;
+			this.renderProjectLinksWithoutPrefix(nameEl, [projectAsWikilink]);
 
-			// File path (if different from name)
 			if (file.path !== file.name) {
 				const pathEl = infoEl.createDiv({ cls: "task-project-path" });
 				pathEl.textContent = file.path;
 			}
 
-			// Remove button
 			const removeBtn = projectItem.createEl("button", {
 				cls: "task-project-remove",
 				text: "×",
@@ -1423,6 +1454,120 @@ export abstract class TaskModal extends Modal {
 				this.removeProject(file);
 			});
 		});
+	}
+
+	// Subtask management methods
+	protected async openSubtaskSelector(): Promise<void> {
+		try {
+			const cacheManager: any = this.plugin.cacheManager;
+			const allTasks: TaskInfo[] = (await cacheManager?.getAllTasks?.()) ?? [];
+
+			// Filter out tasks that are already subtasks and the current task (if editing)
+			const currentTaskPath = this.isEditMode() ? (this as any).task?.path : undefined;
+			const candidates = allTasks.filter(candidate => {
+				if (currentTaskPath && candidate.path === currentTaskPath) return false;
+				return !this.selectedSubtaskFiles.some(existing => existing.path === candidate.path);
+			});
+
+			if (candidates.length === 0) {
+				new Notice(this.t("modals.task.organization.notices.noEligibleSubtasks"));
+				return;
+			}
+
+			const selector = new TaskSelectorModal(this.app, this.plugin, candidates, async (subtask) => {
+				if (!subtask) return;
+				const file = this.app.vault.getAbstractFileByPath(subtask.path);
+				if (file) {
+					this.addSubtask(file);
+				}
+			});
+			selector.open();
+		} catch (error) {
+			console.error("Failed to open subtask selector:", error);
+			new Notice(this.t("modals.task.organization.notices.subtaskSelectFailed"));
+		}
+	}
+
+	protected addSubtask(file: TAbstractFile): void {
+		// Avoid duplicates
+		if (this.selectedSubtaskFiles.some((existing) => existing.path === file.path)) {
+			return;
+		}
+
+		this.selectedSubtaskFiles.push(file);
+		this.renderSubtasksList();
+	}
+
+	protected removeSubtask(file: TAbstractFile): void {
+		this.selectedSubtaskFiles = this.selectedSubtaskFiles.filter(
+			(existing) => existing.path !== file.path
+		);
+		this.renderSubtasksList();
+	}
+
+	protected renderSubtasksList(): void {
+		if (!this.subtasksList) return;
+
+		this.subtasksList.empty();
+
+		if (this.selectedSubtaskFiles.length === 0) {
+			return;
+		}
+
+		this.selectedSubtaskFiles.forEach((file) => {
+			const subtaskItem = this.subtasksList.createDiv({ cls: "task-project-item" });
+			const infoEl = subtaskItem.createDiv({ cls: "task-project-info" });
+			const nameEl = infoEl.createDiv({ cls: "task-project-name clickable-project" });
+
+			const taskLink = `[[${file.path}|${file.name}]]`;
+			this.renderProjectLinksWithoutPrefix(nameEl, [taskLink]);
+
+			if (file.path !== file.name) {
+				const pathEl = infoEl.createDiv({ cls: "task-project-path" });
+				pathEl.textContent = file.path;
+			}
+
+			const removeBtn = subtaskItem.createEl("button", {
+				cls: "task-project-remove",
+				text: "×",
+			});
+			setTooltip(removeBtn, this.t("modals.task.organization.removeSubtaskTooltip"), {
+				placement: "top",
+			});
+			removeBtn.addEventListener("click", () => {
+				this.removeSubtask(file);
+			});
+		});
+	}
+
+	protected renderOrganizationLists(): void {
+		this.renderProjectsList();
+		this.renderSubtasksList();
+	}
+
+	protected renderProjectLinksWithoutPrefix(container: HTMLElement, links: string[]): void {
+		const linkServices: LinkServices = {
+			metadataCache: this.app.metadataCache,
+			workspace: this.app.workspace,
+		};
+
+		renderProjectLinks(container, links, linkServices);
+
+		Array.from(container.childNodes).forEach((node) => {
+			if (node.nodeType === Node.TEXT_NODE && node.textContent?.trim() === "+") {
+				node.remove();
+			}
+		});
+	}
+
+	protected toggleProjectsList(): void {
+		if (!this.projectsList) return;
+		this.projectsList.toggleClass("collapsed", !this.projectsList.hasClass("collapsed"));
+	}
+
+	protected toggleSubtasksList(): void {
+		if (!this.subtasksList) return;
+		this.subtasksList.toggleClass("collapsed", !this.subtasksList.hasClass("collapsed"));
 	}
 
 	protected validateForm(): boolean {
@@ -1453,7 +1598,7 @@ class ContextSuggest extends AbstractInputSuggest<ContextSuggestion> {
 		this.input = inputEl;
 	}
 
-	protected async getSuggestions(query: string): Promise<ContextSuggestion[]> {
+	protected async getSuggestions(_: string): Promise<ContextSuggestion[]> {
 		// Handle comma-separated values
 		const currentValues = this.input.value.split(",").map((v: string) => v.trim());
 		const currentQuery = currentValues[currentValues.length - 1];
@@ -1517,7 +1662,7 @@ class TagSuggest extends AbstractInputSuggest<TagSuggestion> {
 		this.input = inputEl;
 	}
 
-	protected async getSuggestions(query: string): Promise<TagSuggestion[]> {
+	protected async getSuggestions(_: string): Promise<TagSuggestion[]> {
 		// Handle comma-separated values
 		const currentValues = this.input.value.split(",").map((v: string) => v.trim());
 		const currentQuery = currentValues[currentValues.length - 1];
@@ -1584,7 +1729,7 @@ class UserFieldSuggest extends AbstractInputSuggest<UserFieldSuggestion> {
 		this.fieldConfig = fieldConfig;
 	}
 
-	protected async getSuggestions(query: string): Promise<UserFieldSuggestion[]> {
+	protected async getSuggestions(_: string): Promise<UserFieldSuggestion[]> {
 		const isListField = this.fieldConfig.type === "list";
 
 		// Get current token or full value
