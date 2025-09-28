@@ -734,8 +734,11 @@ export class AgendaView extends ItemView implements OptimizedView {
                 const evStart = new Date(ev.start);
                 const evEnd = ev.end ? new Date(ev.end) : null;
                 if (evEnd) {
-                    // Overlaps if start <= dayEnd and end >= dayStart
-                    return evStart <= dayEnd && evEnd >= dayStart;
+                    // All-day events use exclusive DTEND; subtract a millisecond so the
+                    // final day is inclusive without spilling into the next one.
+                    const effectiveEnd = ev.allDay ? new Date(evEnd.getTime() - 1) : evEnd;
+                    // Overlaps if start <= dayEnd and effective end >= dayStart
+                    return evStart <= dayEnd && effectiveEnd >= dayStart;
                 }
                 // No end: occurs on day if start between start and end of day
                 return evStart >= dayStart && evStart <= dayEnd;
