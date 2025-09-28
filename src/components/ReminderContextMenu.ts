@@ -1,7 +1,8 @@
-import { Menu } from "obsidian";
-import TaskNotesPlugin from "../main";
-import { TaskInfo, Reminder } from "../types";
-import { ReminderModal } from "../modals/ReminderModal";
+import { Menu } from 'obsidian';
+import TaskNotesPlugin from '../main';
+import { TaskInfo, Reminder } from '../types';
+import { ReminderModal } from '../modals/ReminderModal';
+import { TranslationKey } from '../i18n';
 
 export class ReminderContextMenu {
 	private plugin: TaskNotesPlugin;
@@ -25,25 +26,16 @@ export class ReminderContextMenu {
 		const menu = new Menu();
 
 		// Quick Add sections
-		this.addQuickRemindersSection(
-			menu,
-			"due",
-			this.plugin.i18n.translate("components.reminderContextMenu.remindBeforeDue")
-		);
-		this.addQuickRemindersSection(
-			menu,
-			"scheduled",
-			this.plugin.i18n.translate("components.reminderContextMenu.remindBeforeScheduled")
-		);
+		this.addQuickRemindersSection(menu, 'due', this.plugin.i18n.translate('components.reminderContextMenu.remindBeforeDue'));
+		this.addQuickRemindersSection(menu, 'scheduled', this.plugin.i18n.translate('components.reminderContextMenu.remindBeforeScheduled'));
 
 		menu.addSeparator();
 
 		// Manage reminders
-		menu.addItem((item) => {
-			item.setTitle(
-				this.plugin.i18n.translate("components.reminderContextMenu.manageAllReminders")
-			)
-				.setIcon("settings")
+		menu.addItem(item => {
+			item
+				.setTitle(this.plugin.i18n.translate('components.reminderContextMenu.manageAllReminders'))
+				.setIcon('settings')
 				.onClick(() => {
 					this.openReminderModal();
 				});
@@ -51,11 +43,10 @@ export class ReminderContextMenu {
 
 		// Clear reminders (if any exist)
 		if (this.task.reminders && this.task.reminders.length > 0) {
-			menu.addItem((item) => {
-				item.setTitle(
-					this.plugin.i18n.translate("components.reminderContextMenu.clearAllReminders")
-				)
-					.setIcon("trash")
+			menu.addItem(item => {
+				item
+					.setTitle(this.plugin.i18n.translate('components.reminderContextMenu.clearAllReminders'))
+					.setIcon('trash')
 					.onClick(async () => {
 						await this.clearAllReminders();
 					});
@@ -65,97 +56,71 @@ export class ReminderContextMenu {
 		if (event) {
 			menu.showAtMouseEvent(event);
 		} else {
-			menu.showAtMouseEvent(new MouseEvent("contextmenu"));
+			menu.showAtMouseEvent(new MouseEvent('contextmenu'));
 		}
 	}
 
-	private addQuickRemindersSection(menu: Menu, anchor: "due" | "scheduled", title: string): void {
-		const anchorDate = anchor === "due" ? this.task.due : this.task.scheduled;
-
+	private addQuickRemindersSection(menu: Menu, anchor: 'due' | 'scheduled', title: string): void {
+		const anchorDate = anchor === 'due' ? this.task.due : this.task.scheduled;
+		
 		if (!anchorDate) {
 			// If no anchor date, show disabled option
-			menu.addItem((item) => {
-				item.setTitle(title).setIcon("bell").setDisabled(true);
+			menu.addItem(item => {
+				item
+					.setTitle(title)
+					.setIcon('bell')
+					.setDisabled(true);
 			});
 			return;
 		}
 
 		// Add submenu for quick reminder options
-		menu.addItem((item) => {
-			item.setTitle(title)
-				.setIcon("bell")
+		menu.addItem(item => {
+			item
+				.setTitle(title)
+				.setIcon('bell')
 				.onClick((event) => {
 					// Only pass MouseEvent, ignore KeyboardEvent
-					this.showQuickReminderSubmenu(
-						anchor,
-						event instanceof MouseEvent ? event : undefined
-					);
+					this.showQuickReminderSubmenu(anchor, event instanceof MouseEvent ? event : undefined);
 				});
 		});
 	}
 
-	private showQuickReminderSubmenu(anchor: "due" | "scheduled", event?: MouseEvent): void {
+	private showQuickReminderSubmenu(anchor: 'due' | 'scheduled', event?: MouseEvent): void {
 		const menu = new Menu();
 
 		const quickOptions = [
-			{
-				label: this.plugin.i18n.translate(
-					"components.reminderContextMenu.quickReminders.atTime"
-				),
-				offset: "PT0M",
-			},
-			{
-				label: this.plugin.i18n.translate(
-					"components.reminderContextMenu.quickReminders.fiveMinutesBefore"
-				),
-				offset: "-PT5M",
-			},
-			{
-				label: this.plugin.i18n.translate(
-					"components.reminderContextMenu.quickReminders.fifteenMinutesBefore"
-				),
-				offset: "-PT15M",
-			},
-			{
-				label: this.plugin.i18n.translate(
-					"components.reminderContextMenu.quickReminders.oneHourBefore"
-				),
-				offset: "-PT1H",
-			},
-			{
-				label: this.plugin.i18n.translate(
-					"components.reminderContextMenu.quickReminders.oneDayBefore"
-				),
-				offset: "-P1D",
-			},
+			{ label: this.plugin.i18n.translate('components.reminderContextMenu.quickReminders.atTime'), offset: 'PT0M' },
+			{ label: this.plugin.i18n.translate('components.reminderContextMenu.quickReminders.fiveMinutesBefore'), offset: '-PT5M' },
+			{ label: this.plugin.i18n.translate('components.reminderContextMenu.quickReminders.fifteenMinutesBefore'), offset: '-PT15M' },
+			{ label: this.plugin.i18n.translate('components.reminderContextMenu.quickReminders.oneHourBefore'), offset: '-PT1H' },
+			{ label: this.plugin.i18n.translate('components.reminderContextMenu.quickReminders.oneDayBefore'), offset: '-P1D' }
 		];
 
-		quickOptions.forEach((option) => {
-			menu.addItem((item) => {
-				item.setTitle(option.label).onClick(async () => {
-					await this.addQuickReminder(anchor, option.offset, option.label);
-				});
+		quickOptions.forEach(option => {
+			menu.addItem(item => {
+				item
+					.setTitle(option.label)
+					.onClick(async () => {
+						await this.addQuickReminder(anchor, option.offset, option.label);
+					});
 			});
 		});
 
 		if (event) {
 			menu.showAtMouseEvent(event);
 		} else {
-			menu.showAtMouseEvent(new MouseEvent("contextmenu"));
+			menu.showAtMouseEvent(new MouseEvent('contextmenu'));
 		}
 	}
 
-	private async addQuickReminder(
-		anchor: "due" | "scheduled",
-		offset: string,
-		description: string
-	): Promise<void> {
+	private async addQuickReminder(anchor: 'due' | 'scheduled', offset: string, description: string): Promise<void> {
 		const reminder: Reminder = {
 			id: `rem_${Date.now()}`,
-			type: "relative",
+			type: 'relative',
 			relatedTo: anchor,
 			offset,
-			description,
+			description
 		};
 
 		const updatedReminders = [...(this.task.reminders || []), reminder];
@@ -168,24 +133,24 @@ export class ReminderContextMenu {
 
 	private async saveReminders(reminders: Reminder[]): Promise<void> {
 		let updatedTask: TaskInfo;
-
+		
 		// If task has a path, try to fetch the latest data to avoid overwriting changes
-		if (this.task.path && this.task.path.trim() !== "") {
+		if (this.task.path && this.task.path.trim() !== '') {
 			const freshTask = await this.plugin.cacheManager.getTaskInfo(this.task.path);
 			if (freshTask) {
 				// Use fresh task data as base if available
 				updatedTask = {
 					...freshTask,
-					reminders,
+					reminders
 				};
 				// Save to file since task exists
-				await this.plugin.taskService.updateProperty(updatedTask, "reminders", reminders);
+				await this.plugin.taskService.updateProperty(updatedTask, 'reminders', reminders);
 			} else {
 				// Task path exists but task not found in cache - this shouldn't happen in edit modal
 				// Use the provided task data
 				updatedTask = {
 					...this.task,
-					reminders,
+					reminders
 				};
 			}
 		} else {
@@ -193,10 +158,10 @@ export class ReminderContextMenu {
 			// Just update the in-memory task object
 			updatedTask = {
 				...this.task,
-				reminders,
+				reminders
 			};
 		}
-
+		
 		// Always notify the caller about the update (for local state management)
 		this.onUpdate(updatedTask);
 	}
