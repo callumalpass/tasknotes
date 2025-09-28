@@ -140,6 +140,7 @@
       "source": "24345a14377fd821d3932f4e82f6431640955b0b",
       "translation": "1ab33097cd8e13568f48934edb37a699300295dc"
     },
+    "views.agenda.overdue": null,
     "views.agenda.refreshCalendars": {
       "source": "d5b76810351937ce81e0ad11fcd8f5be2976cf1a",
       "translation": "44b77ab4610d9cccee0e9be7667a6bf176d32b94"
@@ -168,6 +169,7 @@
       "source": "220784160f3936b2206258f03ef0605ea1a8715e",
       "translation": "77c8567cddfd56e63f58e3ba996b8e264b505883"
     },
+    "views.agenda.overdueToggle": null,
     "views.agenda.expandAllDays": {
       "source": "33b8d30645a1ce956eaf14b6a6575859f94aa724",
       "translation": "dd7a37678a22f26c2275d8829f9a169c20663be2"
@@ -5479,6 +5481,7 @@
       "source": "24345a14377fd821d3932f4e82f6431640955b0b",
       "translation": "565e9824d995abb146d7f796e6cb377ef5bf2cb8"
     },
+    "views.agenda.overdue": null,
     "views.agenda.refreshCalendars": {
       "source": "d5b76810351937ce81e0ad11fcd8f5be2976cf1a",
       "translation": "f29261f16dab9a880f22dd108a21c106a4fdcd37"
@@ -5507,6 +5510,7 @@
       "source": "220784160f3936b2206258f03ef0605ea1a8715e",
       "translation": "97dc2ad4a48a3e355b348baf16b023de0f474629"
     },
+    "views.agenda.overdueToggle": null,
     "views.agenda.expandAllDays": {
       "source": "33b8d30645a1ce956eaf14b6a6575859f94aa724",
       "translation": "ddaa0dea4a7eff588d8edb9b837586aa77cf59ec"
@@ -10818,6 +10822,7 @@
       "source": "24345a14377fd821d3932f4e82f6431640955b0b",
       "translation": "baca97f697fbf114ca2b08c97c106dde47583c4a"
     },
+    "views.agenda.overdue": null,
     "views.agenda.refreshCalendars": {
       "source": "d5b76810351937ce81e0ad11fcd8f5be2976cf1a",
       "translation": "90297b9d34fc59a5c52c009938756cc05fd54395"
@@ -10846,6 +10851,7 @@
       "source": "220784160f3936b2206258f03ef0605ea1a8715e",
       "translation": "dff1772220f3045e2fdc9f15c24032364d020ba8"
     },
+    "views.agenda.overdueToggle": null,
     "views.agenda.expandAllDays": {
       "source": "33b8d30645a1ce956eaf14b6a6575859f94aa724",
       "translation": "20f1266ccd989a3aa82182479b5ec4834c1428fc"
@@ -16232,6 +16238,7 @@
       "source": "24345a14377fd821d3932f4e82f6431640955b0b",
       "translation": "574cd4fb795bbf0b38d31b2edd3860f822be0c1c"
     },
+    "views.agenda.overdue": null,
     "views.agenda.refreshCalendars": {
       "source": "d5b76810351937ce81e0ad11fcd8f5be2976cf1a",
       "translation": "304019e6c6b2ae7ab8a32eed2b01bec27b2a8664"
@@ -16260,6 +16267,7 @@
       "source": "220784160f3936b2206258f03ef0605ea1a8715e",
       "translation": "5d2056cba9c253a05ed8a4108ca34d6e1559fa59"
     },
+    "views.agenda.overdueToggle": null,
     "views.agenda.expandAllDays": {
       "source": "33b8d30645a1ce956eaf14b6a6575859f94aa724",
       "translation": "8b8820071365695ed3271147c6f3c35ea0f0b5e1"
@@ -21571,6 +21579,7 @@
       "source": "24345a14377fd821d3932f4e82f6431640955b0b",
       "translation": "5d5d2ea20a2583d5068219949a2230a19abff3b0"
     },
+    "views.agenda.overdue": null,
     "views.agenda.refreshCalendars": {
       "source": "d5b76810351937ce81e0ad11fcd8f5be2976cf1a",
       "translation": "c26b8b18cfcc8c5c19955521b24e007fb5ffc5ca"
@@ -21599,6 +21608,7 @@
       "source": "220784160f3936b2206258f03ef0605ea1a8715e",
       "translation": "a40ac69c8c43b38dfdf8cba93b9e0950ce9866e7"
     },
+    "views.agenda.overdueToggle": null,
     "views.agenda.expandAllDays": {
       "source": "33b8d30645a1ce956eaf14b6a6575859f94aa724",
       "translation": "b97498e400b3a2add0c13c504d4b23c2b7dda83c"
@@ -26985,6 +26995,7 @@
       "source": "24345a14377fd821d3932f4e82f6431640955b0b",
       "translation": "17e83cc25e229b05c4c91b60fba8d5cc7c0ef931"
     },
+    "views.agenda.overdue": null,
     "views.agenda.refreshCalendars": {
       "source": "d5b76810351937ce81e0ad11fcd8f5be2976cf1a",
       "translation": "635d6af967c01a298a5c96048c73a00d1951f282"
@@ -27013,6 +27024,7 @@
       "source": "220784160f3936b2206258f03ef0605ea1a8715e",
       "translation": "cef40f7ff3de66c06840476db8092c0ee892ed10"
     },
+    "views.agenda.overdueToggle": null,
     "views.agenda.expandAllDays": {
       "source": "33b8d30645a1ce956eaf14b6a6575859f94aa724",
       "translation": "f43e10783fd40fa0920fbbae6417b9526795e9c8"

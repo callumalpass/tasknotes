@@ -26,6 +26,7 @@ import {
 	formatDateForStorage,
 	getTodayLocal,
 	isTodayUTC,
+	parseDateToUTC,
 } from "../utils/dateUtils";
 import { createICSEventCard, updateICSEventCard } from "../ui/ICSCard";
 import { createTaskCard, refreshParentTaskSubtasks, updateTaskCard } from "../ui/TaskCard";
@@ -595,7 +596,7 @@ export class AgendaView extends ItemView implements OptimizedView {
 		const options = [
 			{
 				id: "showOverdueOnToday",
-				label: "Show overdue on today",
+				label: "Show overdue section",
 				value: this.showOverdueOnToday,
 				onChange: (value: boolean) => {
 					this.showOverdueOnToday = value;
@@ -727,28 +728,33 @@ export class AgendaView extends ItemView implements OptimizedView {
 		try {
 			const dates = this.getAgendaDates();
 
-			// Use FilterService to get tasks for each date (properly handles recurring tasks)
+			// Use the new enhanced agenda data method
+			const { dailyData, overdueTasks } = await this.plugin.filterService.getAgendaDataWithOverdue(
+				dates,
+				this.currentQuery,
+				this.showOverdueOnToday
+			);
+
+			// Process daily data and add ICS events
 			const agendaData: Array<{
 				date: Date;
 				tasks: TaskInfo[];
 				ics: import("../types").ICSEvent[];
 			}> = [];
 
-			for (const date of dates) {
-				// Use FilterService's getTasksForDate which properly handles recurring tasks
-				const tasksForDate = await this.plugin.filterService.getTasksForDate(
-					date,
-					this.currentQuery,
-					this.showOverdueOnToday
-				);
+			for (const dayData of dailyData) {
 				// Collect ICS events for this date
 				let icsForDate: import("../types").ICSEvent[] = [];
 				if (this.showICSEvents && this.plugin.icsSubscriptionService) {
 					const allIcs = this.plugin.icsSubscriptionService.getAllEvents();
-					icsForDate = this.filterICSEventsForDate(allIcs, date);
+					icsForDate = this.filterICSEventsForDate(allIcs, dayData.date);
 				}
 
-				agendaData.push({ date, tasks: tasksForDate, ics: icsForDate });
+				agendaData.push({
+					date: dayData.date,
+					tasks: dayData.tasks,
+					ics: icsForDate
+				});
 			}
 
 			// Get notes separately and add them to the agenda data
@@ -760,9 +766,9 @@ export class AgendaView extends ItemView implements OptimizedView {
 
 			// Use DOMReconciler-based rendering
 			if (this.groupByDate) {
-				this.renderGroupedAgendaWithReconciler(contentContainer, merged);
+				this.renderGroupedAgendaWithReconciler(contentContainer, merged, overdueTasks);
 			} else {
-				this.renderFlatAgendaWithReconciler(contentContainer, merged);
+				this.renderFlatAgendaWithReconciler(contentContainer, merged, overdueTasks);
 			}
 		} catch (error) {
 			console.error("Error rendering agenda content:", error);
@@ -825,13 +831,59 @@ export class AgendaView extends ItemView implements OptimizedView {
 			tasks: TaskInfo[];
 			notes: NoteInfo[];
 			ics: import("../types").ICSEvent[];
-		}>
+		}>,
+		overdueTasks: TaskInfo[] = []
 	) {
 		// Clear container and task elements tracking
 		container.empty();
 		this.taskElements.clear();
 
 		let hasAnyItems = false;
+
+		// Render overdue section if there are overdue tasks
+		if (overdueTasks.length > 0) {
+			hasAnyItems = true;
+			const overdueKey = "overdue";
+			const collapsedInitially = this.isDayCollapsed(overdueKey);
+
+			// Create overdue section (like task groups)
+			const overdueSection = container.createDiv({
+				cls: "agenda-view__day-section task-group agenda-view__overdue-section",
+			});
+			overdueSection.setAttribute("data-day", overdueKey);
+
+			// Create overdue header
+			const overdueHeader = this.createOverdueHeader(overdueTasks, overdueKey);
+			overdueSection.appendChild(overdueHeader);
+
+			// Create items container
+			const itemsContainer = overdueSection.createDiv({ cls: "agenda-view__day-items" });
+
+			// Apply initial collapsed state
+			if (collapsedInitially) {
+				overdueSection.addClass("is-collapsed");
+				itemsContainer.style.display = "none";
+			}
+
+			// Add click handlers for collapse/expand
+			this.addDayHeaderClickHandlers(overdueHeader, overdueSection, itemsContainer, overdueKey);
+
+			// Render overdue tasks
+			const overdueItems: Array<{ type: "task"; item: TaskInfo; date: Date }> = [];
+			overdueTasks.forEach((task) => {
+				const anchorDate = this.resolveTaskTargetDate(task);
+				overdueItems.push({ type: "task", item: task, date: anchorDate });
+			});
+
+			// Use DOMReconciler for overdue tasks
+			this.plugin.domReconciler.updateList(
+				itemsContainer,
+				overdueItems,
+				(item) => `task-${item.item.path}`,
+				(item) => this.createTaskItemElement(item.item, item.date),
+				(element, item) => this.updateDayItemElement(element, item)
+			);
+		}
 		agendaData.forEach((dayData) => {
 			const dateStr = formatDateForStorage(dayData.date);
 
@@ -1074,7 +1126,8 @@ export class AgendaView extends ItemView implements OptimizedView {
 			tasks: TaskInfo[];
 			notes: NoteInfo[];
 			ics: import("../types").ICSEvent[];
-		}>
+		}>,
+		overdueTasks: TaskInfo[] = []
 	) {
 		// Clear task elements tracking
 		this.taskElements.clear();
@@ -1085,6 +1138,12 @@ export class AgendaView extends ItemView implements OptimizedView {
 			item: TaskInfo | NoteInfo | import("../types").ICSEvent;
 			date: Date;
 		}> = [];
+
+		// Add overdue tasks first (they will appear at the top)
+		overdueTasks.forEach((task) => {
+			const anchorDate = this.resolveTaskTargetDate(task);
+			allItems.push({ type: "task", item: task, date: anchorDate });
+		});
 
 		agendaData.forEach((dayData) => {
 			// Tasks are already filtered by FilterService, no need to re-filter
@@ -1361,6 +1420,42 @@ export class AgendaView extends ItemView implements OptimizedView {
 	}
 
 	/**
+	 * Determine the anchor date used for task card logic (recurrence status, completion, etc.)
+	 */
+	private resolveTaskTargetDate(task: TaskInfo): Date {
+		const candidateStrings: string[] = [];
+
+		if (task.recurrence) {
+			if (task.scheduled) candidateStrings.push(task.scheduled);
+		} else {
+			if (task.scheduled) candidateStrings.push(task.scheduled);
+			if (task.due) candidateStrings.push(task.due);
+		}
+
+		const candidateDates = candidateStrings
+			.map((value) => {
+				try {
+					return parseDateToUTC(value);
+				} catch (error) {
+					console.warn("Failed to parse overdue anchor date", { value, error });
+					return null;
+				}
+			})
+			.filter((date): date is Date => !!date && !isNaN(date.getTime()))
+			.sort((a, b) => a.getTime() - b.getTime());
+
+		if (candidateDates.length > 0) {
+			return candidateDates[0];
+		}
+
+		if (this.plugin.selectedDate) {
+			return new Date(this.plugin.selectedDate);
+		}
+
+		return new Date();
+	}
+
+	/**
 	 * Create note item element
 	 */
 	private createNoteItemElement(note: NoteInfo, date?: Date): HTMLElement {
@@ -1548,19 +1643,20 @@ export class AgendaView extends ItemView implements OptimizedView {
 		if (!this.filterHeading || !this.filterBar) return;
 
 		try {
-			// Get all agenda data to calculate completion stats (same logic as renderAgendaContent)
+			// Get all agenda data to calculate completion stats using the new method
 			const dates = this.getAgendaDates();
-			const allTasks: TaskInfo[] = [];
+			const { dailyData, overdueTasks } = await this.plugin.filterService.getAgendaDataWithOverdue(
+				dates,
+				this.currentQuery,
+				this.showOverdueOnToday
+			);
 
-			for (const date of dates) {
-				// Use FilterService's getTasksForDate which properly handles recurring tasks
-				const tasksForDate = await this.plugin.filterService.getTasksForDate(
-					date,
-					this.currentQuery,
-					this.showOverdueOnToday
-				);
-				allTasks.push(...tasksForDate);
-			}
+			// Collect all tasks from daily data and overdue tasks
+			const allTasks: TaskInfo[] = [];
+			dailyData.forEach((dayData) => {
+				allTasks.push(...dayData.tasks);
+			});
+			allTasks.push(...overdueTasks);
 
 			// Calculate completion stats
 			const stats = GroupCountUtils.calculateGroupStats(allTasks, this.plugin);
@@ -1823,6 +1919,57 @@ export class AgendaView extends ItemView implements OptimizedView {
 		toggleBtn.setAttr("aria-expanded", String(!collapsedInitially));
 
 		return dayHeader;
+	}
+
+	/**
+	 * Create overdue header element with chevron and click handlers
+	 */
+	private createOverdueHeader(overdueTasks: TaskInfo[], overdueKey: string): HTMLElement {
+		const overdueHeader = document.createElement("div");
+		overdueHeader.className = "agenda-view__day-header task-group-header";
+		overdueHeader.setAttribute("data-day", overdueKey);
+
+		// Create toggle button first (consistent with day headers)
+		const toggleBtn = overdueHeader.createEl("button", {
+			cls: "task-group-toggle",
+			attr: { "aria-label": this.translate("views.agenda.overdueToggle") },
+		});
+		try {
+			setIcon(toggleBtn, "chevron-right");
+		} catch (_) {
+			// Ignore icon loading errors
+		}
+		const svg = toggleBtn.querySelector("svg");
+		if (svg) {
+			svg.classList.add("chevron");
+			svg.setAttr("width", "16");
+			svg.setAttr("height", "16");
+		} else {
+			toggleBtn.textContent = "▸";
+			toggleBtn.addClass("chevron-text");
+		}
+
+		const headerText = overdueHeader.createDiv({ cls: "agenda-view__day-header-text" });
+		headerText.createSpan({
+			cls: "agenda-view__day-name agenda-view__day-name--overdue",
+			text: this.translate("views.agenda.overdue"),
+		});
+
+		// Right side container (holds count)
+		const right = overdueHeader.createDiv({ cls: "task-group-right" });
+
+		// Task completion count for overdue tasks
+		const taskStats = GroupCountUtils.calculateGroupStats(overdueTasks, this.plugin);
+		const countText = GroupCountUtils.formatGroupCount(taskStats.completed, taskStats.total).text;
+
+		// Item count badge
+		right.createSpan({ cls: "agenda-view__item-count", text: countText });
+
+		// Set initial ARIA state
+		const collapsedInitially = this.isDayCollapsed(overdueKey);
+		toggleBtn.setAttr("aria-expanded", String(!collapsedInitially));
+
+		return overdueHeader;
 	}
 
 	/**
