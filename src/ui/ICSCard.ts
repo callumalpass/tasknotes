@@ -1,10 +1,8 @@
 import { setIcon } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { ICSEvent } from "../types";
-import { format } from "date-fns";
 import { ICSEventContextMenu } from "../components/ICSEventContextMenu";
 import { formatTime } from "../utils/dateUtils";
-import { TranslationKey } from "../i18n";
 
 export interface ICSCardOptions {
 	showDate: boolean;

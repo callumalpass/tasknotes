@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { IncomingMessage, ServerResponse } from "http";
 import { BaseController } from "./BaseController";
 import { WebhookConfig, WebhookDelivery, WebhookEvent, WebhookPayload } from "../types";

@@ -517,7 +517,7 @@ export class NaturalLanguageParser {
 				const match = workingText.match(triggerPattern.regex);
 				if (match) {
 					// Get the position where the date text starts (after the trigger)
-					const triggerEnd = match.index! + match[0].length;
+					const triggerEnd = (match.index || 0) + match[0].length;
 					const remainingText = workingText.substring(triggerEnd);
 
 					// Use chrono-node to parse from this position onward

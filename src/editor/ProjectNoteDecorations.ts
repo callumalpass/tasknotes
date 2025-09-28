@@ -16,7 +16,6 @@ import {
 	FilterQuery,
 	SUBTASK_WIDGET_VIEW_TYPE,
 	TaskInfo,
-	SavedView,
 } from "../types";
 import {
 	EventRef,

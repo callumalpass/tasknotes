@@ -4,7 +4,6 @@ import {
 	isSameDay,
 	isBefore,
 	isValid,
-	startOfDay,
 	addDays as addDaysFns,
 	addWeeks,
 	addMonths,

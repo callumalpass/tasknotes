@@ -60,7 +60,7 @@ export function getBasesGroupByConfig(
 		if (propsMap && typeof propsMap === "object") {
 			for (const id of Object.keys(propsMap)) {
 				idIndex.set(id, id);
-				const last = id.includes(".") ? id.split(".").pop()! : id;
+				const last = id.includes(".") ? id.split(".").pop() || id : id;
 				idIndex.set(last, id);
 				const dn = propsMap[id]?.getDisplayName?.();
 				if (typeof dn === "string" && dn.trim()) idIndex.set(dn.toLowerCase(), id);
@@ -81,7 +81,7 @@ export function getBasesGroupByConfig(
 			const props = pathToProps.get(taskPath) || {};
 			const v = props[normalizedId];
 			if (isNonEmpty(v)) return toStringTokens(v);
-			const last = normalizedId.includes(".") ? normalizedId.split(".").pop()! : normalizedId;
+			const last = normalizedId.includes(".") ? normalizedId.split(".").pop() || normalizedId : normalizedId;
 			return toStringTokens(props[last]);
 		};
 

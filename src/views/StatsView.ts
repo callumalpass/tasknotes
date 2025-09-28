@@ -262,7 +262,7 @@ export class StatsView extends ItemView {
 		}
 
 		// Get all tasks from the cache
-		const allTaskPaths = await this.plugin.cacheManager.getAllTaskPaths();
+		const allTaskPaths = this.plugin.cacheManager.getAllTaskPaths();
 		let tasks: TaskInfo[] = [];
 
 		for (const path of allTaskPaths) {
@@ -1194,7 +1194,7 @@ export class StatsView extends ItemView {
 	 */
 	private async calculateProjectTrend(projectName: string): Promise<TrendDataPoint[]> {
 		try {
-			const allTasks = await this.plugin.cacheManager.getAllTaskPaths();
+			const allTasks = this.plugin.cacheManager.getAllTaskPaths();
 			const projectTasks: TaskInfo[] = [];
 
 			// Get all tasks for this project
@@ -1389,7 +1389,7 @@ export class StatsView extends ItemView {
 	 * Get detailed data for project drill-down
 	 */
 	private async getProjectDrilldownData(projectName: string): Promise<ProjectDrilldownData> {
-		const allTasks = await this.plugin.cacheManager.getAllTaskPaths();
+		const allTasks = this.plugin.cacheManager.getAllTaskPaths();
 		const projectTasks: TaskInfo[] = [];
 
 		// Get all tasks for this project

@@ -38,7 +38,7 @@ export class DateContextMenu {
 	private buildMenu(): void {
 		if (this.options.title) {
 			this.menu.addItem((item) => {
-				item.setTitle(this.options.title!);
+				item.setTitle(this.options.title || "");
 				item.setIcon("calendar");
 				item.setDisabled(true);
 			});
@@ -127,9 +127,6 @@ export class DateContextMenu {
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		const today = (window as any).moment();
 		const options: DateOption[] = [];
-		const locale = this.options.plugin?.i18n.getCurrentLocale() || "en";
-		const weekdayFormatter = new Intl.DateTimeFormat(locale, { weekday: "long" });
-		const monthFormatter = new Intl.DateTimeFormat(locale, { month: "long" });
 
 		if (this.options.currentValue) {
 			const currentDate = (window as any).moment(this.options.currentValue);

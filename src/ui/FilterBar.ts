@@ -579,7 +579,7 @@ export class FilterBar extends EventEmitter {
 			setIcon(iconEl, "list-filter");
 
 			// Add text
-			const textEl = filterToggle.buttonEl.createSpan({
+			filterToggle.buttonEl.createSpan({
 				cls: "button-text",
 				text: this.plugin.i18n.translate("ui.filterBar.filters"),
 			});
@@ -1075,7 +1075,7 @@ export class FilterBar extends EventEmitter {
 		saveCurrentSection.style.textAlign = "center";
 		saveCurrentSection.style.padding = "8px";
 
-		const saveCurrentButton = new ButtonComponent(saveCurrentSection)
+		new ButtonComponent(saveCurrentSection)
 			.setButtonText("Save Current View")
 			.setClass("filter-bar__save-current-view-button")
 			.setTooltip("Save the current filter configuration as a new view")

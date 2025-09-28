@@ -74,7 +74,6 @@ import {
 } from "./editor/ProjectNoteDecorations";
 import {
 	createTaskCardNoteDecorations,
-	dispatchTaskCardUpdate,
 } from "./editor/TaskCardNoteDecorations";
 import { DragDropManager } from "./utils/DragDropManager";
 import {

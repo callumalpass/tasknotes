@@ -1,6 +1,5 @@
 import { Menu } from "obsidian";
 import type TaskNotesPlugin from "../main";
-import { TranslationKey } from "../i18n";
 
 interface PropertyDefinition {
 	id: string;

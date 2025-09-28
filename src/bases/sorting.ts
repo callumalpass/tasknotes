@@ -38,7 +38,7 @@ function buildPropertyIdIndex(propsMap: Record<string, any> | undefined): Map<st
 	if (!propsMap) return idIndex;
 	for (const id of Object.keys(propsMap)) {
 		idIndex.set(id, id);
-		const last = id.includes(".") ? id.split(".").pop()! : id;
+		const last = id.includes(".") ? id.split(".").pop() || id : id;
 		idIndex.set(last, id);
 		const dn = propsMap[id]?.getDisplayName?.();
 		if (typeof dn === "string" && dn.trim()) idIndex.set(dn.toLowerCase(), id);
@@ -108,7 +108,7 @@ export function getBasesSortComparator(
 			// Note: pathToProps covers note.*; we get task.* via the TaskInfo object in comparator below
 			const props = pathToProps.get(taskPath) || {};
 			if (Object.prototype.hasOwnProperty.call(props, propId)) return props[propId];
-			const last = propId.includes(".") ? propId.split(".").pop()! : propId;
+			const last = propId.includes(".") ? propId.split(".").pop() || propId : propId;
 			if (Object.prototype.hasOwnProperty.call(props, last)) return props[last];
 			return undefined;
 		};

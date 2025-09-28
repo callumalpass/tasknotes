@@ -107,7 +107,7 @@ export class ICSEventContextMenu {
 					.setIcon("map-pin")
 					.onClick(async () => {
 						try {
-							await navigator.clipboard.writeText(icsEvent.location!);
+							await navigator.clipboard.writeText(icsEvent.location || "");
 							new Notice(this.t("contextMenus.ics.notices.copyLocationSuccess"));
 						} catch (error) {
 							new Notice(this.t("contextMenus.ics.notices.copyFailure"));
@@ -124,7 +124,7 @@ export class ICSEventContextMenu {
 					.setIcon("external-link")
 					.onClick(async () => {
 						try {
-							await navigator.clipboard.writeText(icsEvent.url!);
+							await navigator.clipboard.writeText(icsEvent.url || "");
 							new Notice(this.t("contextMenus.ics.notices.copyUrlSuccess"));
 						} catch (error) {
 							new Notice(this.t("contextMenus.ics.notices.copyFailure"));
