@@ -2052,6 +2052,7 @@ export class FilterBar extends EventEmitter {
 					due: this.translate("ui.filterBar.group.dueDate"),
 					scheduled: this.translate("ui.filterBar.group.scheduledDate"),
 					tags: this.translate("ui.filterBar.group.tags"),
+					completedDate: this.translate("ui.filterBar.group.completedDate"),
 				};
 
 				const groupOptions: Record<string, string> = { ...builtInGroupOptions };
