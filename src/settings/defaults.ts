@@ -1,137 +1,143 @@
-import { FieldMapping, StatusConfig, PriorityConfig } from '../types';
-import { TaskNotesSettings, TaskCreationDefaults, CalendarViewSettings, ICSIntegrationSettings, ProjectAutosuggestSettings } from '../types/settings';
+import { FieldMapping, StatusConfig, PriorityConfig } from "../types";
+import {
+	TaskNotesSettings,
+	TaskCreationDefaults,
+	CalendarViewSettings,
+	ICSIntegrationSettings,
+	ProjectAutosuggestSettings,
+} from "../types/settings";
 
 // Default field mapping maintains backward compatibility
 export const DEFAULT_FIELD_MAPPING: FieldMapping = {
-	title: 'title',
-	status: 'status',
-	priority: 'priority',
-	due: 'due',
-	scheduled: 'scheduled',
-	contexts: 'contexts',
-	projects: 'projects',
-	timeEstimate: 'timeEstimate',
-	completedDate: 'completedDate',
-	dateCreated: 'dateCreated',
-	dateModified: 'dateModified',
-	recurrence: 'recurrence',
-	archiveTag: 'archived',
-	timeEntries: 'timeEntries',
-	completeInstances: 'complete_instances',
-	blockedBy: 'blockedBy',
-	pomodoros: 'pomodoros',
-	icsEventId: 'icsEventId',
-	icsEventTag: 'ics_event',
-	reminders: 'reminders'
+	title: "title",
+	status: "status",
+	priority: "priority",
+	due: "due",
+	scheduled: "scheduled",
+	contexts: "contexts",
+	projects: "projects",
+	timeEstimate: "timeEstimate",
+	completedDate: "completedDate",
+	dateCreated: "dateCreated",
+	dateModified: "dateModified",
+	recurrence: "recurrence",
+	archiveTag: "archived",
+	timeEntries: "timeEntries",
+	completeInstances: "complete_instances",
+	blockedBy: "blockedBy",
+	pomodoros: "pomodoros",
+	icsEventId: "icsEventId",
+	icsEventTag: "ics_event",
+	reminders: "reminders",
 };
 
 // Default status configuration matches current hardcoded behavior
 export const DEFAULT_STATUSES: StatusConfig[] = [
 	{
-		id: 'none',
-		value: 'none',
-		label: 'None',
-		color: '#cccccc',
+		id: "none",
+		value: "none",
+		label: "None",
+		color: "#cccccc",
 		isCompleted: false,
 		order: 0,
 		autoArchive: false,
-		autoArchiveDelay: 5
+		autoArchiveDelay: 5,
 	},
 	{
-		id: 'open',
-		value: 'open',
-		label: 'Open',
-		color: '#808080',
+		id: "open",
+		value: "open",
+		label: "Open",
+		color: "#808080",
 		isCompleted: false,
 		order: 1,
 		autoArchive: false,
-		autoArchiveDelay: 5
+		autoArchiveDelay: 5,
 	},
 	{
-		id: 'in-progress',
-		value: 'in-progress',
-		label: 'In progress',
-		color: '#0066cc',
+		id: "in-progress",
+		value: "in-progress",
+		label: "In progress",
+		color: "#0066cc",
 		isCompleted: false,
 		order: 2,
 		autoArchive: false,
-		autoArchiveDelay: 5
+		autoArchiveDelay: 5,
 	},
 	{
-		id: 'done',
-		value: 'done',
-		label: 'Done',
-		color: '#00aa00',
+		id: "done",
+		value: "done",
+		label: "Done",
+		color: "#00aa00",
 		isCompleted: true,
 		order: 3,
 		autoArchive: false,
-		autoArchiveDelay: 5
-	}
+		autoArchiveDelay: 5,
+	},
 ];
 
 // Default priority configuration matches current hardcoded behavior
 export const DEFAULT_PRIORITIES: PriorityConfig[] = [
 	{
-		id: 'none',
-		value: 'none',
-		label: 'None',
-		color: '#cccccc',
-		weight: 0
+		id: "none",
+		value: "none",
+		label: "None",
+		color: "#cccccc",
+		weight: 0,
 	},
 	{
-		id: 'low',
-		value: 'low',
-		label: 'Low',
-		color: '#00aa00',
-		weight: 1
+		id: "low",
+		value: "low",
+		label: "Low",
+		color: "#00aa00",
+		weight: 1,
 	},
 	{
-		id: 'normal',
-		value: 'normal',
-		label: 'Normal',
-		color: '#ffaa00',
-		weight: 2
+		id: "normal",
+		value: "normal",
+		label: "Normal",
+		color: "#ffaa00",
+		weight: 2,
 	},
 	{
-		id: 'high',
-		value: 'high',
-		label: 'High',
-		color: '#ff0000',
-		weight: 3
-	}
+		id: "high",
+		value: "high",
+		label: "High",
+		color: "#ff0000",
+		weight: 3,
+	},
 ];
 
 export const DEFAULT_TASK_CREATION_DEFAULTS: TaskCreationDefaults = {
-	defaultContexts: '',
-	defaultTags: '',
-	defaultProjects: '',
+	defaultContexts: "",
+	defaultTags: "",
+	defaultProjects: "",
 	useParentNoteAsProject: false,
 	defaultTimeEstimate: 0,
-	defaultRecurrence: 'none',
-	defaultDueDate: 'none',
-	defaultScheduledDate: 'today',
-	bodyTemplate: '',
+	defaultRecurrence: "none",
+	defaultDueDate: "none",
+	defaultScheduledDate: "today",
+	bodyTemplate: "",
 	useBodyTemplate: false,
-	defaultReminders: []
+	defaultReminders: [],
 };
 
 export const DEFAULT_CALENDAR_VIEW_SETTINGS: CalendarViewSettings = {
 	// Default view
-	defaultView: 'dayGridMonth',
+	defaultView: "dayGridMonth",
 	// Custom multi-day view settings
 	customDayCount: 3, // Default to 3 days as requested in issue #282
 	// Time settings
-	slotDuration: '00:30:00', // 30-minute slots
-	slotMinTime: '00:00:00', // Start at midnight
-	slotMaxTime: '24:00:00', // End at midnight next day
-	scrollTime: '08:00:00', // Scroll to 8 AM
+	slotDuration: "00:30:00", // 30-minute slots
+	slotMinTime: "00:00:00", // Start at midnight
+	slotMaxTime: "24:00:00", // End at midnight next day
+	scrollTime: "08:00:00", // Scroll to 8 AM
 	// Week settings
 	firstDay: 1, // Monday
 	// Display preferences
-	timeFormat: '24', // 24-hour format
+	timeFormat: "24", // 24-hour format
 	showWeekends: true,
 	// Locale settings
-	locale: '', // Empty string means auto-detect from browser
+	locale: "", // Empty string means auto-detect from browser
 	// Default event type visibility
 	defaultShowScheduled: true,
 	defaultShowDue: true,
@@ -149,50 +155,46 @@ export const DEFAULT_CALENDAR_VIEW_SETTINGS: CalendarViewSettings = {
 	// Today highlighting
 	showTodayHighlight: true,
 	// Event display
-	eventMinHeight: 15 // FullCalendar default
+	eventMinHeight: 15, // FullCalendar default
 };
 
 export const DEFAULT_ICS_INTEGRATION_SETTINGS: ICSIntegrationSettings = {
-	defaultNoteTemplate: '',
-	defaultNoteFolder: '',
-	icsNoteFilenameFormat: 'title', // Default to using the event title for ICS notes
-	customICSNoteFilenameTemplate: '{title}', // Simple title template for ICS notes
+	defaultNoteTemplate: "",
+	defaultNoteFolder: "",
+	icsNoteFilenameFormat: "title", // Default to using the event title for ICS notes
+	customICSNoteFilenameTemplate: "{title}", // Simple title template for ICS notes
 	// Automatic export defaults
 	enableAutoExport: false,
-	autoExportPath: 'tasknotes-calendar.ics',
-	autoExportInterval: 60 // 60 minutes by default
+	autoExportPath: "tasknotes-calendar.ics",
+	autoExportInterval: 60, // 60 minutes by default
 };
 
 export const DEFAULT_PROJECT_AUTOSUGGEST: ProjectAutosuggestSettings = {
 	enableFuzzy: false,
-	rows: [
-		'{title|n(Title)}',
-		'{aliases|n(Aliases)}',
-		'{file.path|n(Path)}'
-	],
+	rows: ["{title|n(Title)}", "{aliases|n(Aliases)}", "{file.path|n(Path)}"],
 	showAdvanced: false,
 	requiredTags: [],
 	includeFolders: [],
-	propertyKey: '',
-	propertyValue: ''
+	propertyKey: "",
+	propertyValue: "",
 };
 
 export const DEFAULT_SETTINGS: TaskNotesSettings = {
-	tasksFolder: 'TaskNotes/Tasks',
+	tasksFolder: "TaskNotes/Tasks",
 	moveArchivedTasks: false,
-	archiveFolder: 'TaskNotes/Archive',
-	taskTag: 'task',
-	taskIdentificationMethod: 'tag',  // Default to tag-based identification
-	taskPropertyName: '',
-	taskPropertyValue: '',
-	excludedFolders: '',  // Default to no excluded folders
-	defaultTaskPriority: 'normal',
-	defaultTaskStatus: 'open',
-	taskOrgFiltersCollapsed: false,  // Default to expanded
+	archiveFolder: "TaskNotes/Archive",
+	taskTag: "task",
+	taskIdentificationMethod: "tag", // Default to tag-based identification
+	taskPropertyName: "",
+	taskPropertyValue: "",
+	excludedFolders: "", // Default to no excluded folders
+	defaultTaskPriority: "normal",
+	defaultTaskStatus: "open",
+	taskOrgFiltersCollapsed: false, // Default to expanded
 	// Task filename defaults
-	taskFilenameFormat: 'zettel',  // Keep existing behavior as default
+	taskFilenameFormat: "zettel", // Keep existing behavior as default
 	storeTitleInFilename: true,
-	customFilenameTemplate: '{title}',  // Simple title template
+	customFilenameTemplate: "{title}", // Simple title template
 	// Task creation defaults
 	taskCreationDefaults: DEFAULT_TASK_CREATION_DEFAULTS,
 	// Calendar view defaults
@@ -207,25 +209,25 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	pomodoroNotifications: true,
 	pomodoroSoundEnabled: true,
 	pomodoroSoundVolume: 50,
-	pomodoroStorageLocation: 'plugin',
+	pomodoroStorageLocation: "plugin",
 	// Editor defaults
 	enableTaskLinkOverlay: true,
 	enableInstantTaskConvert: true,
 	useDefaultsOnInstantConvert: true,
 	enableNaturalLanguageInput: true,
 	nlpDefaultToScheduled: true,
-	nlpLanguage: 'en', // Default to English
-	uiLanguage: 'system',
-		// NLP status suggestion trigger
-		statusSuggestionTrigger: '*',
+	nlpLanguage: "en", // Default to English
+	uiLanguage: "system",
+	// NLP status suggestion trigger
+	statusSuggestionTrigger: "*",
 
-	singleClickAction: 'edit',
-	doubleClickAction: 'openNote',
+	singleClickAction: "edit",
+	doubleClickAction: "openNote",
 	// Autosuggest project card defaults
 	projectAutosuggest: DEFAULT_PROJECT_AUTOSUGGEST,
 
 	// Inline task conversion defaults
-	inlineTaskConvertFolder: '{{currentNotePath}}',
+	inlineTaskConvertFolder: "{{currentNotePath}}",
 	// Performance defaults
 	disableNoteIndexing: false,
 	// Suggestion performance defaults
@@ -244,13 +246,13 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	// Project subtasks widget defaults
 	showProjectSubtasks: true,
 	showExpandableSubtasks: true,
-	projectSubtasksPosition: 'bottom',
+	projectSubtasksPosition: "bottom",
 	// Task card in note defaults
 	showTaskCardInNote: true,
 	// Subtask chevron position default
-	subtaskChevronPosition: 'right',
+	subtaskChevronPosition: "right",
 	// Filter toolbar layout defaults
-	viewsButtonAlignment: 'right',
+	viewsButtonAlignment: "right",
 	// Overdue behavior defaults
 	hideCompletedFromOverdue: true,
 	// ICS integration defaults
@@ -259,29 +261,29 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	savedViews: [],
 	// Notification defaults
 	enableNotifications: true,
-	notificationType: 'system',
+	notificationType: "system",
 	// HTTP API defaults
 	enableAPI: false,
 	apiPort: 8080,
-	apiAuthToken: '',
+	apiAuthToken: "",
 	// Webhook defaults
 	webhooks: [],
 	// User Fields defaults (multiple)
 	userFields: [],
 	// Default visible properties for task cards
 	defaultVisibleProperties: [
-		'status',      // Status dot
-		'priority',    // Priority dot
-		'due',         // Due date
-		'scheduled',   // Scheduled date
-		'projects',    // Projects
-		'contexts',    // Contexts
-		'tags',        // Tags
-		'blocked',     // Blocked indicator
-		'blocking'     // Blocking indicator
+		"status", // Status dot
+		"priority", // Priority dot
+		"due", // Due date
+		"scheduled", // Scheduled date
+		"projects", // Projects
+		"contexts", // Contexts
+		"tags", // Tags
+		"blocked", // Blocked indicator
+		"blocking", // Blocking indicator
 	],
 	// Bases integration defaults
 	enableBases: true,
 	// Recurring task behavior defaults
-	maintainDueDateOffsetInRecurring: false
+	maintainDueDateOffsetInRecurring: false,
 };
