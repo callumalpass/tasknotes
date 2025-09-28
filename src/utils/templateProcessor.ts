@@ -129,26 +129,30 @@ function processTemplateBody(bodyContent: string, taskData: TemplateData | ICSTe
 function processTemplateVariablesForYaml(template: string, taskData: TemplateData | ICSTemplateData): string {
     let result = template;
     const now = new Date();
-    
+
     // {{title}} - Task title (quote if contains special characters)
     const title = taskData.title || '';
     const quotedTitle = needsYamlQuoting(title) ? `"${escapeYamlString(title)}"` : title;
     result = result.replace(/\{\{title\}\}/g, quotedTitle);
-    
+
     // {{priority}} - Task priority
     result = result.replace(/\{\{priority\}\}/g, taskData.priority || '');
-    
+
     // {{status}} - Task status
     result = result.replace(/\{\{status\}\}/g, taskData.status || '');
-    
+
     // {{contexts}} - Task contexts (comma-separated)
     const contexts = Array.isArray(taskData.contexts) ? taskData.contexts.join(', ') : '';
     result = result.replace(/\{\{contexts\}\}/g, contexts);
-    
+
     // {{tags}} - Task tags (comma-separated)
     const tags = Array.isArray(taskData.tags) ? taskData.tags.join(', ') : '';
     result = result.replace(/\{\{tags\}\}/g, tags);
-    
+
+    // {{hashtags}} - Task tags as space-separated hashtags
+    const hashtags = Array.isArray(taskData.tags) ? taskData.tags.map(tag => `#${tag}`).join(' ') : '';
+    result = result.replace(/\{\{hashtags\}\}/g, hashtags);
+
     // {{timeEstimate}} - Time estimate in minutes
     result = result.replace(/\{\{timeEstimate\}\}/g, taskData.timeEstimate?.toString() || '');
     
@@ -249,24 +253,28 @@ function escapeYamlString(str: string): string {
 function processTemplateVariables(template: string, taskData: TemplateData | ICSTemplateData): string {
     let result = template;
     const now = new Date();
-    
+
     // {{title}} - Task title
     result = result.replace(/\{\{title\}\}/g, taskData.title || '');
-    
+
     // {{priority}} - Task priority
     result = result.replace(/\{\{priority\}\}/g, taskData.priority || '');
-    
+
     // {{status}} - Task status
     result = result.replace(/\{\{status\}\}/g, taskData.status || '');
-    
+
     // {{contexts}} - Task contexts (comma-separated)
     const contexts = Array.isArray(taskData.contexts) ? taskData.contexts.join(', ') : '';
     result = result.replace(/\{\{contexts\}\}/g, contexts);
-    
+
     // {{tags}} - Task tags (comma-separated)
     const tags = Array.isArray(taskData.tags) ? taskData.tags.join(', ') : '';
     result = result.replace(/\{\{tags\}\}/g, tags);
-    
+
+    // {{hashtags}} - Task tags as space-separated hashtags
+    const hashtags = Array.isArray(taskData.tags) ? taskData.tags.map(tag => `#${tag}`).join(' ') : '';
+    result = result.replace(/\{\{hashtags\}\}/g, hashtags);
+
     // {{timeEstimate}} - Time estimate in minutes
     result = result.replace(/\{\{timeEstimate\}\}/g, taskData.timeEstimate?.toString() || '');
     

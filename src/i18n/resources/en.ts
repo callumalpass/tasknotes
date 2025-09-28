@@ -230,7 +230,7 @@ export const en: TranslationTree = {
                 },
                 folder: {
                     name: 'Inline task convert folder',
-                    description: 'Folder for inline task conversion. Use {{currentNotePath}} for relative to current note'
+                    description: 'Folder for inline task conversion. Use {{currentNotePath}} for relative to current note, {{currentNoteTitle}} for current note title'
                 }
             },
             nlp: {
@@ -511,7 +511,7 @@ export const en: TranslationTree = {
                 },
                 archiveFolder: {
                     name: 'Archive folder',
-                    description: 'Folder to move tasks to when archived'
+                    description: 'Folder to move tasks to when archived. Supports template variables like {{year}}, {{month}}, {{priority}}, etc.'
                 }
             },
             taskIdentification: {

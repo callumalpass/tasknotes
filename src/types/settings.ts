@@ -28,7 +28,7 @@ export interface ProjectAutosuggestSettings {
 export interface TaskNotesSettings {
 	tasksFolder: string;  // Now just a default location for new tasks
 	moveArchivedTasks: boolean; // Whether to move tasks to archive folder when archived
-	archiveFolder: string; // Folder to move archived tasks to
+	archiveFolder: string; // Folder to move archived tasks to, supports template variables
 	taskTag: string;      // The tag that identifies tasks
 	taskIdentificationMethod: 'tag' | 'property';  // Method to identify tasks
 	taskPropertyName: string;     // Property name for property-based identification
@@ -74,7 +74,7 @@ export interface TaskNotesSettings {
 	singleClickAction: 'edit' | 'openNote';
 	doubleClickAction: 'edit' | 'openNote' | 'none';
 	// Inline task conversion settings
-	inlineTaskConvertFolder: string; // Folder for inline task conversion, supports {{currentNotePath}}
+	inlineTaskConvertFolder: string; // Folder for inline task conversion, supports {{currentNotePath}} and {{currentNoteTitle}}
 	// Performance settings
 	disableNoteIndexing: boolean;
 	/** Optional debounce in milliseconds for inline file suggestions (0 = disabled) */
