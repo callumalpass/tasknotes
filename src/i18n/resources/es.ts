@@ -46,6 +46,7 @@ export const es: TranslationTree = {
 		agenda: {
 			title: "Agenda",
 			today: "Hoy",
+			overdue: "Vencido",
 			refreshCalendars: "Actualizar calendarios",
 			actions: {
 				previousPeriod: "Período anterior",
@@ -55,6 +56,7 @@ export const es: TranslationTree = {
 			},
 			loading: "Cargando agenda...",
 			dayToggle: "Cambiar día",
+			overdueToggle: "Alternar sección de vencidos",
 			expandAllDays: "Expandir todos los días",
 			collapseAllDays: "Contraer todos los días",
 			notices: {
@@ -234,7 +236,7 @@ export const es: TranslationTree = {
 				folder: {
 					name: "Carpeta de conversión de tareas en línea",
 					description:
-						"Carpeta para conversión de tareas en línea. Usa {{currentNotePath}} para relativo a la nota actual",
+						"Carpeta para conversión de tareas en línea. Usa {{currentNotePath}} para relativo a la nota actual, {{currentNoteTitle}} para título de nota actual",
 				},
 			},
 			nlp: {
@@ -313,10 +315,12 @@ export const es: TranslationTree = {
 			},
 			dataStorage: {
 				name: "Almacenamiento de datos de Pomodoro",
+				description: "Configura dónde se almacenan y gestionan los datos de sesión de Pomodoro.",
 				dailyNotes: "Notas diarias",
 			},
 			notifications: {
 				header: "Notificaciones",
+				description: "Configura notificaciones de recordatorio de tareas y alertas.",
 				enableName: "Habilitar notificaciones",
 				enableDesc: "Habilitar notificaciones de recordatorio de tareas",
 				typeName: "Tipo de notificación",
@@ -353,20 +357,26 @@ export const es: TranslationTree = {
 			},
 			timeblocking: {
 				header: "Bloqueo de tiempo",
+				description:
+					"Configura la funcionalidad de bloqueo de tiempo para programación ligera en notas diarias. En la vista de calendario avanzado, mantén Shift + clic y arrastra para crear bloques de tiempo.",
 				enableName: "Habilitar bloqueo de tiempo",
 				enableDesc:
 					"Habilitar funcionalidad de bloque de tiempo para programación ligera en notas diarias",
 				showBlocksName: "Mostrar bloques de tiempo",
 				showBlocksDesc: "Mostrar bloques de tiempo de notas diarias por defecto",
+				usage: "Uso: En la vista de calendario avanzado, mantén Shift + arrastra para crear bloques de tiempo. Arrastra para mover bloques existentes. Ajusta los bordes para cambiar la duración.",
 			},
 			performance: {
 				header: "Rendimiento y comportamiento",
+				description: "Configura opciones de rendimiento y comportamiento del plugin.",
 			},
 			timeTrackingSection: {
 				header: "Seguimiento de tiempo",
+				description: "Configura comportamientos automáticos de seguimiento de tiempo.",
 			},
 			recurringSection: {
 				header: "Tareas recurrentes",
+				description: "Configura comportamiento para gestión de tareas recurrentes.",
 			},
 		},
 		defaults: {
@@ -542,7 +552,8 @@ export const es: TranslationTree = {
 				},
 				archiveFolder: {
 					name: "Carpeta de archivo",
-					description: "Carpeta para mover tareas cuando se archiven",
+					description:
+						"Carpeta para mover tareas cuando se archiven. Soporta variables de plantilla como {{year}}, {{month}}, {{priority}}, etc.",
 				},
 			},
 			taskIdentification: {
@@ -714,6 +725,7 @@ export const es: TranslationTree = {
 					archiveTag: "Etiqueta de archivo",
 					timeEntries: "Entradas de tiempo",
 					completeInstances: "Instancias completas",
+					blockedBy: "Bloqueado por",
 					pomodoros: "Pomodoros",
 					icsEventId: "ID de evento ICS",
 					icsEventTag: "Etiqueta de evento ICS",
@@ -946,6 +958,11 @@ export const es: TranslationTree = {
 						"Hora a la que desplazarse al abrir vistas de línea de tiempo (formato HH:MM)",
 					placeholder: "09:00",
 				},
+				eventMinHeight: {
+					name: "Altura mínima del evento",
+					description: "Altura mínima para eventos en vistas de línea de tiempo (píxeles)",
+					placeholder: "15",
+				},
 			},
 			uiElements: {
 				header: "Elementos de interfaz",
@@ -967,6 +984,11 @@ export const es: TranslationTree = {
 						top: "Parte superior de la nota",
 						bottom: "Parte inferior de la nota",
 					},
+				},
+				showTaskCardInNote: {
+					name: "Mostrar tarjeta de tarea en nota",
+					description:
+						"Mostrar un widget de tarjeta de tarea en la parte superior de las notas de tareas que muestre los detalles y acciones de la tarea",
 				},
 				showExpandableSubtasks: {
 					name: "Mostrar subtareas expandibles",
@@ -1536,6 +1558,28 @@ export const es: TranslationTree = {
 			tagsPlaceholder: "etiqueta1, etiqueta2",
 			timeEstimateLabel: "Estimación de tiempo (minutos)",
 			timeEstimatePlaceholder: "30",
+			dependencies: {
+				blockedBy: "Bloqueado por",
+				blocking: "Bloqueando",
+				placeholder: "[[Nota de tarea]]",
+				addTaskButton: "Agregar tarea",
+				selectTaskTooltip: "Seleccionar una nota de tarea usando búsqueda difusa",
+				removeTaskTooltip: "Eliminar tarea",
+			},
+			organization: {
+				projects: "Proyectos",
+				subtasks: "Subtareas",
+				addToProject: "Agregar a proyecto",
+				addToProjectButton: "Agregar a proyecto",
+				addSubtasks: "Agregar subtareas",
+				addSubtasksButton: "Agregar subtarea",
+				addSubtasksTooltip: "Seleccionar tareas para convertirlas en subtareas de esta tarea",
+				removeSubtaskTooltip: "Eliminar subtarea",
+				notices: {
+					noEligibleSubtasks: "No hay tareas elegibles disponibles para asignar como subtareas",
+					subtaskSelectFailed: "Error al abrir selector de subtareas",
+				},
+			},
 			customFieldsLabel: "Campos personalizados",
 			actions: {
 				due: "Establecer fecha de vencimiento",
@@ -1779,7 +1823,46 @@ export const es: TranslationTree = {
 			recurrence: "Recurrencia",
 			clearRecurrence: "Limpiar recurrencia",
 			customRecurrence: "Recurrencia personalizada...",
+			dependencies: {
+				title: "Dependencias",
+				addBlockedBy: "Agregar bloqueado por…",
+				addBlockedByTitle: "Agregar tareas de las que esto depende",
+				addBlocking: "Agregar bloqueando…",
+				addBlockingTitle: "Agregar tareas que esto bloquea",
+				removeBlockedBy: "Eliminar bloqueado-por…",
+				removeBlocking: "Eliminar bloqueando…",
+				inputPlaceholder: "[[Nota de tarea]]",
+				notices: {
+					noEntries: "Por favor ingrese al menos una tarea",
+					blockedByAdded: "{count} dependencia agregada",
+					blockedByRemoved: "Dependencia eliminada",
+					blockingAdded: "{count} tarea dependiente agregada",
+					blockingRemoved: "Tarea dependiente eliminada",
+					unresolved: "No se pudo resolver: {entries}",
+					noEligibleTasks: "No hay tareas coincidentes disponibles",
+					updateFailed: "Error al actualizar dependencias",
+				},
+			},
 			createSubtask: "Crear subtarea",
+			organization: {
+				title: "Organización",
+				projects: "Proyectos",
+				addToProject: "Agregar a proyecto…",
+				subtasks: "Subtareas",
+				addSubtasks: "Agregar subtareas…",
+				notices: {
+					alreadyInProject: "La tarea ya está en este proyecto",
+					alreadySubtask: "La tarea ya es una subtarea de esta tarea",
+					addedToProject: "Agregado al proyecto: {project}",
+					addedAsSubtask: "{subtask} agregado como subtarea de {parent}",
+					addToProjectFailed: "Error al agregar tarea al proyecto",
+					addAsSubtaskFailed: "Error al agregar tarea como subtarea",
+					projectSelectFailed: "Error al abrir selector de proyecto",
+					subtaskSelectFailed: "Error al abrir selector de subtareas",
+					noEligibleSubtasks: "No hay tareas elegibles disponibles para asignar como subtareas",
+					currentTaskNotFound: "Archivo de tarea actual no encontrado",
+				},
+			},
 			subtasks: {
 				loading: "Cargando subtareas...",
 				noSubtasks: "No se encontraron subtareas",

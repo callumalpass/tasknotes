@@ -46,6 +46,7 @@ export const de: TranslationTree = {
 		agenda: {
 			title: "Agenda",
 			today: "Heute",
+			overdue: "Überfällig",
 			refreshCalendars: "Kalender aktualisieren",
 			actions: {
 				previousPeriod: "Vorherige Periode",
@@ -55,6 +56,7 @@ export const de: TranslationTree = {
 			},
 			loading: "Agenda wird geladen...",
 			dayToggle: "Tag umschalten",
+			overdueToggle: "Überfälligkeitsbereich umschalten",
 			expandAllDays: "Alle Tage ausklappen",
 			collapseAllDays: "Alle Tage einklappen",
 			notices: {
@@ -233,7 +235,7 @@ export const de: TranslationTree = {
 				folder: {
 					name: "Inline-Aufgabenkonvertierungsordner",
 					description:
-						"Ordner für Inline-Aufgabenkonvertierung. Verwende {{currentNotePath}} für relativ zur aktuellen Notiz",
+						"Ordner für Inline-Aufgabenkonvertierung. Verwende {{currentNotePath}} für relativ zur aktuellen Notiz, {{currentNoteTitle}} für aktuellen Notiztitel",
 				},
 			},
 			nlp: {
@@ -310,10 +312,12 @@ export const de: TranslationTree = {
 			},
 			dataStorage: {
 				name: "Pomodoro-Datenspeicherung",
+				description: "Konfiguriere, wo Pomodoro-Sitzungsdaten gespeichert und verwaltet werden.",
 				dailyNotes: "Tägliche Notizen",
 			},
 			notifications: {
 				header: "Benachrichtigungen",
+				description: "Konfiguriere Aufgabenerinnerungsbenachrichtigungen und Warnungen.",
 				enableName: "Benachrichtigungen aktivieren",
 				enableDesc: "Aufgabenerinnerungs-Benachrichtigungen aktivieren",
 				typeName: "Benachrichtigungstyp",
@@ -351,20 +355,26 @@ export const de: TranslationTree = {
 			},
 			timeblocking: {
 				header: "Zeitblockierung",
+				description:
+					"Konfiguriere Zeitblockfunktionalität für leichte Planung in täglichen Notizen. In der erweiterten Kalenderansicht, halte Shift + Klick und ziehe, um Zeitblöcke zu erstellen.",
 				enableName: "Zeitblockierung aktivieren",
 				enableDesc:
 					"Zeitblockfunktionalität für leichte Planung in täglichen Notizen aktivieren",
 				showBlocksName: "Zeitblöcke anzeigen",
 				showBlocksDesc: "Zeitblöcke aus täglichen Notizen standardmäßig anzeigen",
+				usage: "Verwendung: In der erweiterten Kalenderansicht, halte Shift + ziehen, um Zeitblöcke zu erstellen. Ziehen, um bestehende Zeitblöcke zu verschieben. Ränder anpassen, um Dauer zu ändern.",
 			},
 			performance: {
 				header: "Leistung & Verhalten",
+				description: "Konfiguriere Plugin-Leistung und Verhaltensoptionen.",
 			},
 			timeTrackingSection: {
 				header: "Zeiterfassung",
+				description: "Konfiguriere automatische Zeiterfassungsverhalten.",
 			},
 			recurringSection: {
 				header: "Wiederkehrende Aufgaben",
+				description: "Konfiguriere Verhalten für wiederkehrende Aufgabenverwaltung.",
 			},
 		},
 		defaults: {
@@ -538,7 +548,8 @@ export const de: TranslationTree = {
 				},
 				archiveFolder: {
 					name: "Archivordner",
-					description: "Ordner zum Verschieben von Aufgaben beim Archivieren",
+					description:
+						"Ordner zum Verschieben von Aufgaben beim Archivieren. Unterstützt Template-Variablen wie {{year}}, {{month}}, {{priority}}, etc.",
 				},
 			},
 			taskIdentification: {
@@ -710,6 +721,7 @@ export const de: TranslationTree = {
 					archiveTag: "Archiv-Tag",
 					timeEntries: "Zeiteinträge",
 					completeInstances: "Abgeschlossene Instanzen",
+					blockedBy: "Blockiert von",
 					pomodoros: "Pomodoros",
 					icsEventId: "ICS-Event-ID",
 					icsEventTag: "ICS-Event-Tag",
@@ -938,6 +950,11 @@ export const de: TranslationTree = {
 						"Zeit, zu der beim Öffnen von Timeline-Ansichten gescrollt wird (HH:MM Format)",
 					placeholder: "09:00",
 				},
+				eventMinHeight: {
+					name: "Event-Mindesthöhe",
+					description: "Mindesthöhe für Events in Timeline-Ansichten (Pixel)",
+					placeholder: "15",
+				},
 			},
 			uiElements: {
 				header: "UI-Elemente",
@@ -958,6 +975,11 @@ export const de: TranslationTree = {
 						top: "Oben in der Notiz",
 						bottom: "Unten in der Notiz",
 					},
+				},
+				showTaskCardInNote: {
+					name: "Aufgabenkarte in Notiz anzeigen",
+					description:
+						"Eine Aufgabenkarten-Widget oben in Aufgabennotizen anzeigen, das die Aufgabendetails und Aktionen zeigt",
 				},
 				showExpandableSubtasks: {
 					name: "Ausklappbare Unteraufgaben anzeigen",
@@ -1526,6 +1548,28 @@ export const de: TranslationTree = {
 			tagsPlaceholder: "tag1, tag2",
 			timeEstimateLabel: "Zeitschätzung (Minuten)",
 			timeEstimatePlaceholder: "30",
+			dependencies: {
+				blockedBy: "Blockiert von",
+				blocking: "Blockierend",
+				placeholder: "[[Aufgabennotiz]]",
+				addTaskButton: "Aufgabe hinzufügen",
+				selectTaskTooltip: "Aufgabennotiz mit unscharfer Suche auswählen",
+				removeTaskTooltip: "Aufgabe entfernen",
+			},
+			organization: {
+				projects: "Projekte",
+				subtasks: "Unteraufgaben",
+				addToProject: "Zu Projekt hinzufügen",
+				addToProjectButton: "Zu Projekt hinzufügen",
+				addSubtasks: "Unteraufgaben hinzufügen",
+				addSubtasksButton: "Unteraufgabe hinzufügen",
+				addSubtasksTooltip: "Aufgaben auswählen, um sie zu Unteraufgaben dieser Aufgabe zu machen",
+				removeSubtaskTooltip: "Unteraufgabe entfernen",
+				notices: {
+					noEligibleSubtasks: "Keine geeigneten Aufgaben verfügbar, um als Unteraufgaben zugewiesen zu werden",
+					subtaskSelectFailed: "Unteraufgaben-Auswahl konnte nicht geöffnet werden",
+				},
+			},
 			customFieldsLabel: "Benutzerdefinierte Felder",
 			actions: {
 				due: "Fälligkeitsdatum setzen",
@@ -1771,6 +1815,45 @@ export const de: TranslationTree = {
 			clearRecurrence: "Wiederholung löschen",
 			customRecurrence: "Benutzerdefinierte Wiederholung...",
 			createSubtask: "Unteraufgabe erstellen",
+			dependencies: {
+				title: "Abhängigkeiten",
+				addBlockedBy: "Blockiert von hinzufügen…",
+				addBlockedByTitle: "Aufgaben hinzufügen, von denen dies abhängt",
+				addBlocking: "Blockierend hinzufügen…",
+				addBlockingTitle: "Aufgaben hinzufügen, die dies blockiert",
+				removeBlockedBy: "Blockiert-von entfernen…",
+				removeBlocking: "Blockierend entfernen…",
+				inputPlaceholder: "[[Aufgabennotiz]]",
+				notices: {
+					noEntries: "Bitte geben Sie mindestens eine Aufgabe ein",
+					blockedByAdded: "{count} Abhängigkeit hinzugefügt",
+					blockedByRemoved: "Abhängigkeit entfernt",
+					blockingAdded: "{count} abhängige Aufgabe hinzugefügt",
+					blockingRemoved: "Abhängige Aufgabe entfernt",
+					unresolved: "Konnte nicht auflösen: {entries}",
+					noEligibleTasks: "Keine passenden Aufgaben verfügbar",
+					updateFailed: "Abhängigkeiten konnten nicht aktualisiert werden",
+				},
+			},
+			organization: {
+				title: "Organisation",
+				projects: "Projekte",
+				addToProject: "Zu Projekt hinzufügen…",
+				subtasks: "Unteraufgaben",
+				addSubtasks: "Unteraufgaben hinzufügen…",
+				notices: {
+					alreadyInProject: "Aufgabe ist bereits in diesem Projekt",
+					alreadySubtask: "Aufgabe ist bereits eine Unteraufgabe dieser Aufgabe",
+					addedToProject: "Zu Projekt hinzugefügt: {project}",
+					addedAsSubtask: "{subtask} als Unteraufgabe von {parent} hinzugefügt",
+					addToProjectFailed: "Hinzufügen der Aufgabe zum Projekt fehlgeschlagen",
+					addAsSubtaskFailed: "Hinzufügen der Aufgabe als Unteraufgabe fehlgeschlagen",
+					projectSelectFailed: "Projektauswahl konnte nicht geöffnet werden",
+					subtaskSelectFailed: "Unteraufgaben-Auswahl konnte nicht geöffnet werden",
+					noEligibleSubtasks: "Keine geeigneten Aufgaben verfügbar, um als Unteraufgaben zugewiesen zu werden",
+					currentTaskNotFound: "Aktuelle Aufgabendatei nicht gefunden",
+				},
+			},
 			subtasks: {
 				loading: "Unteraufgaben werden geladen...",
 				noSubtasks: "Keine Unteraufgaben gefunden",

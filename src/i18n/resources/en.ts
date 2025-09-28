@@ -310,10 +310,12 @@ export const en: TranslationTree = {
 			},
 			dataStorage: {
 				name: "Pomodoro data storage",
+				description: "Configure where pomodoro session data is stored and how it's managed.",
 				dailyNotes: "Daily notes",
 			},
 			notifications: {
 				header: "Notifications",
+				description: "Configure task reminder notifications and alerts.",
 				enableName: "Enable notifications",
 				enableDesc: "Enable task reminder notifications",
 				typeName: "Notification type",
@@ -347,20 +349,26 @@ export const en: TranslationTree = {
 			},
 			timeblocking: {
 				header: "Timeblocking",
+				description:
+					"Configure timeblock functionality for lightweight scheduling in daily notes. In the advanced calendar view, hold Shift + click and drag to create timeblocks.",
 				enableName: "Enable timeblocking",
 				enableDesc:
 					"Enable timeblock functionality for lightweight scheduling in daily notes",
 				showBlocksName: "Show timeblocks",
 				showBlocksDesc: "Display timeblocks from daily notes by default",
+				usage: "Usage: In the advanced calendar view, hold Shift + drag to create timeblocks. Drag to move existing timeblocks. Resize edges to adjust duration.",
 			},
 			performance: {
 				header: "Performance & Behavior",
+				description: "Configure plugin performance and behavioral options.",
 			},
 			timeTrackingSection: {
 				header: "Time Tracking",
+				description: "Configure automatic time tracking behaviors.",
 			},
 			recurringSection: {
 				header: "Recurring Tasks",
+				description: "Configure behavior for recurring task management.",
 			},
 		},
 		defaults: {
@@ -1059,11 +1067,6 @@ export const en: TranslationTree = {
 			},
 			recurringSection: {
 				description: "Configure behavior for recurring task management.",
-			},
-			timeblocking: {
-				description:
-					"Configure timeblock functionality for lightweight scheduling in daily notes.",
-				usage: "Usage: In the advanced calendar view, hold Shift + drag to create timeblocks. Drag to move existing timeblocks. Resize edges to adjust duration.",
 			},
 		},
 		integrations: {

@@ -46,6 +46,7 @@ export const fr: TranslationTree = {
 		agenda: {
 			title: "Agenda quotidien",
 			today: "Aujourd'hui",
+			overdue: "En retard",
 			refreshCalendars: "Actualiser les calendriers",
 			actions: {
 				previousPeriod: "Période précédente",
@@ -55,6 +56,7 @@ export const fr: TranslationTree = {
 			},
 			loading: "Chargement de l'agenda...",
 			dayToggle: "Basculer l'affichage du jour",
+			overdueToggle: "Basculer la section en retard",
 			expandAllDays: "Déplier tous les jours",
 			collapseAllDays: "Replier tous les jours",
 			notices: {
@@ -234,7 +236,7 @@ export const fr: TranslationTree = {
 				folder: {
 					name: "Dossier pour la conversion",
 					description:
-						"Dossier utilisé pour les tâches converties. Utilisez {{currentNotePath}} pour un chemin relatif à la note actuelle",
+						"Dossier utilisé pour les tâches converties. Utilisez {{currentNotePath}} pour un chemin relatif à la note actuelle, {{currentNoteTitle}} pour le titre de la note actuelle",
 				},
 			},
 			nlp: {
@@ -314,10 +316,12 @@ export const fr: TranslationTree = {
 			},
 			dataStorage: {
 				name: "Stockage des données Pomodoro",
+				description: "Configurez où les données de session pomodoro sont stockées et comment elles sont gérées.",
 				dailyNotes: "Notes quotidiennes",
 			},
 			notifications: {
 				header: "Notifications",
+				description: "Configurez les notifications de rappel de tâches et les alertes.",
 				enableName: "Activer les notifications",
 				enableDesc: "Activer les notifications de rappel de tâches",
 				typeName: "Type de notification",
@@ -354,20 +358,26 @@ export const fr: TranslationTree = {
 			},
 			timeblocking: {
 				header: "Planification par blocs",
+				description:
+					"Configurez la fonctionnalité de planification par blocs pour une programmation légère dans les notes quotidiennes. Dans la vue calendrier avancée, maintenez Shift + clic et glissez pour créer des blocs de temps.",
 				enableName: "Activer la planification par blocs",
 				enableDesc:
 					"Activer la fonctionnalité de planification par blocs pour une programmation légère dans les notes quotidiennes",
 				showBlocksName: "Afficher les blocs de temps",
 				showBlocksDesc: "Afficher les blocs de temps des notes quotidiennes par défaut",
+				usage: "Utilisation : Dans la vue calendrier avancée, maintenez Shift + glissez pour créer des blocs de temps. Glissez pour déplacer les blocs existants. Ajustez les bords pour modifier la durée.",
 			},
 			performance: {
 				header: "Performance et comportement",
+				description: "Configurez les options de performance et de comportement du plugin.",
 			},
 			timeTrackingSection: {
 				header: "Suivi du temps",
+				description: "Configurez les comportements de suivi automatique du temps.",
 			},
 			recurringSection: {
 				header: "Tâches récurrentes",
+				description: "Configurez le comportement pour la gestion des tâches récurrentes.",
 			},
 		},
 		defaults: {
@@ -545,7 +555,7 @@ export const fr: TranslationTree = {
 				archiveFolder: {
 					name: "Dossier d'archive",
 					description:
-						"Dossier vers lequel déplacer les tâches lorsqu'elles sont archivées",
+						"Dossier vers lequel déplacer les tâches lorsqu'elles sont archivées. Supporte les variables de modèle comme {{year}}, {{month}}, {{priority}}, etc.",
 				},
 			},
 			taskIdentification: {
@@ -717,6 +727,7 @@ export const fr: TranslationTree = {
 					archiveTag: "Tag d'archive",
 					timeEntries: "Entrées de temps",
 					completeInstances: "Instances complètes",
+					blockedBy: "Bloqué par",
 					pomodoros: "Sessions Pomodoro",
 					icsEventId: "ID d'événement ICS",
 					icsEventTag: "Tag d'événement ICS",
@@ -947,6 +958,11 @@ export const fr: TranslationTree = {
 						"Heure vers laquelle défiler à l'ouverture des vues chronologiques (format HH:MM)",
 					placeholder: "09:00",
 				},
+				eventMinHeight: {
+					name: "Hauteur minimale d'événement",
+					description: "Hauteur minimale pour les événements dans les vues chronologiques (pixels)",
+					placeholder: "15",
+				},
 			},
 			uiElements: {
 				header: "Éléments d'interface",
@@ -968,6 +984,11 @@ export const fr: TranslationTree = {
 						top: "Haut de la note",
 						bottom: "Bas de la note",
 					},
+				},
+				showTaskCardInNote: {
+					name: "Afficher la carte de tâche dans la note",
+					description:
+						"Afficher un widget de carte de tâche en haut des notes de tâche montrant les détails et actions de la tâche",
 				},
 				showExpandableSubtasks: {
 					name: "Afficher les sous-tâches extensibles",
