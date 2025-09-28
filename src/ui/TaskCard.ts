@@ -2210,6 +2210,11 @@ async function toggleBlockingTasks(
 
 	if (!container) {
 		container = card.createDiv({ cls: "task-card__blocking" });
+		// Prevent clicks within the dependency list from bubbling up to the parent card.
+		// Otherwise both the blocking task and the dependent task modals would open.
+		container.addEventListener("click", (event) => event.stopPropagation());
+		container.addEventListener("dblclick", (event) => event.stopPropagation());
+		container.addEventListener("contextmenu", (event) => event.stopPropagation());
 	}
 
 	container.empty();
