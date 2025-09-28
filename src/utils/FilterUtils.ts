@@ -395,9 +395,9 @@ export class FilterUtils {
 				case "is-not":
 					return !this.isEqual(taskValue, conditionValue, property);
 				case "contains":
-					return this.contains(taskValue, conditionValue);
+					return this.contains(taskValue, conditionValue, property);
 				case "does-not-contain":
-					return !this.contains(taskValue, conditionValue);
+					return !this.contains(taskValue, conditionValue, property);
 				case "is-before":
 					return this.isBefore(taskValue, conditionValue);
 				case "is-after":
@@ -475,46 +475,162 @@ export class FilterUtils {
 	}
 
 	/**
-	 * Contains comparison for text and arrays
+	 * Check if a tag matches another tag using hierarchical matching rules with substring fallback.
+	 * Supports Obsidian nested tags where 't/ef' matches 't/ef/project', 't/ef/task', etc.
+	 * Also supports substring matching for backward compatibility.
+	 * This function only handles positive matching - exclusion logic is handled by callers.
+	 *
+	 * @param taskTag - The tag from the task (e.g., 't/ef/project')
+	 * @param conditionTag - The condition tag without hyphen prefix (e.g., 't/ef')
+	 * @returns true if the tag matches according to hierarchical rules or substring matching
+	 */
+	static matchesHierarchicalTag(taskTag: string, conditionTag: string): boolean {
+		if (!taskTag || !conditionTag) return false;
+
+		const taskTagLower = taskTag.toLowerCase();
+		const conditionTagLower = conditionTag.toLowerCase();
+
+		// Exact match
+		if (taskTagLower === conditionTagLower) {
+			return true;
+		}
+
+		// Check if taskTag is a child of conditionTag
+		// 't/ef/project' should match when searching for 't/ef'
+		if (taskTagLower.startsWith(conditionTagLower + '/')) {
+			return true; // Hierarchical child match
+		}
+
+		// Fallback to substring matching for backward compatibility
+		// This allows 'proj' to match 'project/alpha' and 'urgent' to match 'priority/urgent'
+		if (taskTagLower.includes(conditionTagLower)) {
+			return true; // Substring match
+		}
+
+		return false;
+	}
+
+	/**
+	 * Enhanced tag matching that supports both inclusion and exclusion patterns.
+	 * Handles arrays of tag conditions with proper exclusion semantics.
+	 *
+	 * @param taskTags - Array of tags from the task
+	 * @param conditionTags - Array of condition tags (may include '-' prefix for exclusions)
+	 * @returns true if task tags match the conditions (all inclusions met, no exclusions found)
+	 */
+	static matchesTagConditions(taskTags: string[], conditionTags: string[]): boolean {
+		if (!Array.isArray(taskTags) || !Array.isArray(conditionTags)) return false;
+		if (conditionTags.length === 0) return true; // No conditions means match
+
+		const inclusions: string[] = [];
+		const exclusions: string[] = [];
+
+		// Separate inclusion and exclusion patterns
+		for (const condTag of conditionTags) {
+			if (typeof condTag === 'string' && condTag.startsWith('-')) {
+				const excludePattern = condTag.slice(1);
+				if (excludePattern) {
+					exclusions.push(excludePattern);
+				}
+			} else if (typeof condTag === 'string') {
+				inclusions.push(condTag);
+			}
+		}
+
+		// Check exclusions first - if any excluded tag is found, reject
+		for (const excludePattern of exclusions) {
+			const hasExcludedTag = taskTags.some(taskTag =>
+				this.matchesHierarchicalTag(taskTag, excludePattern)
+			);
+			if (hasExcludedTag) {
+				return false; // Excluded tag found
+			}
+		}
+
+		// If there are inclusion patterns, at least one must match
+		if (inclusions.length > 0) {
+			return inclusions.some(includePattern =>
+				taskTags.some(taskTag =>
+					this.matchesHierarchicalTag(taskTag, includePattern)
+				)
+			);
+		}
+
+		// If only exclusions were specified and none matched, include the item
+		return true;
+	}
+
+	/**
+	 * Enhanced contains comparison for text and arrays with hierarchical tag support
 	 */
 	private static contains(
 		taskValue: TaskPropertyValue,
-		conditionValue: TaskPropertyValue
+		conditionValue: TaskPropertyValue,
+		property?: FilterProperty
 	): boolean {
 		if (Array.isArray(taskValue)) {
 			// Array contains should be substring-based on each item when condition is string
 			if (Array.isArray(conditionValue)) {
 				// Any condition token partially matches any haystack token
-				return conditionValue.some((cv) =>
-					taskValue.some(
-						(tv) =>
-							typeof tv === "string" &&
-							typeof cv === "string" &&
-							tv.toLowerCase().includes(cv.toLowerCase())
-					)
-				);
+				if (property === "tags") {
+					// Use hierarchical tag matching for tags with proper exclusion handling
+					const taskTags = taskValue.filter((tv): tv is string => typeof tv === "string");
+					const condTags = conditionValue.filter((cv): cv is string => typeof cv === "string");
+					return FilterUtils.matchesTagConditions(taskTags, condTags);
+				} else {
+					// Use default substring matching for other properties
+					return conditionValue.some((cv) =>
+						taskValue.some(
+							(tv) =>
+								typeof tv === "string" &&
+								typeof cv === "string" &&
+								tv.toLowerCase().includes(cv.toLowerCase())
+						)
+					);
+				}
 			} else {
 				const cond =
 					typeof conditionValue === "string"
-						? conditionValue.toLowerCase()
-						: String(conditionValue ?? "").toLowerCase();
-				return taskValue.some(
-					(tv) => typeof tv === "string" && tv.toLowerCase().includes(cond)
-				);
+						? conditionValue
+						: String(conditionValue ?? "");
+				if (property === "tags") {
+					// Use hierarchical tag matching for tags with proper exclusion handling
+					const taskTags = taskValue.filter((tv): tv is string => typeof tv === "string");
+					return FilterUtils.matchesTagConditions(taskTags, [cond]);
+				} else {
+					// Use default substring matching for other properties
+					const condLower = cond.toLowerCase();
+					return taskValue.some(
+						(tv) => typeof tv === "string" && tv.toLowerCase().includes(condLower)
+					);
+				}
 			}
 		} else if (typeof taskValue === "string") {
 			if (Array.isArray(conditionValue)) {
 				// Task has string, condition is array
-				return conditionValue.some(
-					(cv) =>
-						typeof cv === "string" && taskValue.toLowerCase().includes(cv.toLowerCase())
-				);
+				if (property === "tags") {
+					// Use hierarchical tag matching for tags with proper exclusion handling
+					const condTags = conditionValue.filter((cv): cv is string => typeof cv === "string");
+					return FilterUtils.matchesTagConditions([taskValue], condTags);
+				} else {
+					// Use default substring matching for other properties
+					return conditionValue.some(
+						(cv) =>
+							typeof cv === "string" && taskValue.toLowerCase().includes(cv.toLowerCase())
+					);
+				}
 			} else {
 				// Both strings
-				return (
-					typeof conditionValue === "string" &&
-					taskValue.toLowerCase().includes(conditionValue.toLowerCase())
-				);
+				if (property === "tags" && typeof conditionValue === "string") {
+					// Use hierarchical tag matching for tags with proper exclusion handling
+					return FilterUtils.matchesTagConditions([taskValue], [conditionValue]);
+				} else {
+					// Use default substring matching for other properties
+					return (
+						typeof conditionValue === "string" &&
+						taskValue.toLowerCase().includes(conditionValue.toLowerCase())
+					);
+				}
 			}
 		}
 		return false;
