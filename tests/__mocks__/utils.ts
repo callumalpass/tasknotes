@@ -99,6 +99,21 @@ export const generateUniqueFilename = jest.fn().mockImplementation(async (baseFi
   return baseFilename;
 });
 
+export const sanitizeForFilename = jest.fn().mockImplementation((input: string) => {
+  if (!input || typeof input !== 'string') {
+    return 'untitled';
+  }
+
+  // Simulate the same logic as the real sanitizeForFilename function
+  return input
+    .trim()
+    .replace(/\s+/g, ' ')
+    .replace(/[<>:"/\\|?*#\[\]]/g, '')
+    .replace(/[\x00-\x1f\x7f-\x9f]/g, '')
+    .replace(/^\.+|\.+$/g, '')
+    .trim() || 'untitled';
+});
+
 // Mock for src/utils/dateUtils.ts
 export const getCurrentTimestamp = jest.fn(() => '2025-01-15T10:00:00.000+00:00');
 
@@ -139,6 +154,7 @@ export default {
   generateTaskFilename,
   validateFilename,
   generateUniqueFilename,
+  sanitizeForFilename,
   getCurrentTimestamp,
   hasTimeComponent,
   getDatePart,

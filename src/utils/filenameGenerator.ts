@@ -315,7 +315,7 @@ function generateCustomFilename(
 /**
  * Sanitizes a string to be safe for use as a filename
  */
-function sanitizeForFilename(input: string): string {
+export function sanitizeForFilename(input: string): string {
 	if (!input || typeof input !== "string") {
 		return "untitled";
 	}
