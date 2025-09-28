@@ -1,5 +1,5 @@
 import { App, ButtonComponent, DropdownComponent, Modal, TextComponent, debounce, setTooltip, setIcon, Menu } from 'obsidian';
-import { FILTER_OPERATORS, FILTER_PROPERTIES, FilterCondition, FilterGroup, FilterNode, FilterOperator, FilterOptions, FilterProperty, FilterQuery, PropertyDefinition, SavedView, TaskGroupKey, TaskSortKey } from '../types';
+import { FILTER_OPERATORS, FILTER_PROPERTIES, FilterCondition, FilterGroup, FilterNode, FilterOperator, FilterOptions, FilterProperty, FilterQuery, PropertyDefinition, SavedView, TaskGroupKey, TaskSortKey, KANBAN_VIEW_TYPE } from '../types';
 
 import { DragDropHandler } from './DragDropHandler';
 import { EventEmitter } from '../utils/EventEmitter';
@@ -24,25 +24,46 @@ class SaveViewModal extends Modal {
 
     onOpen() {
         const { contentEl } = this;
-        contentEl.createEl('h2', { text: this.translate('ui.filterBar.saveView') });
 
-        const textComponent = new TextComponent(contentEl)
-            .setPlaceholder(this.translate('ui.filterBar.saveViewNamePlaceholder'))
-            .onChange((value) => {
-                this.name = value;
-            });
-        textComponent.inputEl.style.width = '100%';
+        try {
+            // Create header
+            const headerText = this.translate('ui.filterBar.saveView');
+            contentEl.createEl('h2', { text: headerText });
 
-        const buttonContainer = contentEl.createDiv({ cls: 'modal-button-container' });
-        new ButtonComponent(buttonContainer)
-            .setButtonText(this.translate('ui.filterBar.saveButton'))
-            .setCta()
-            .onClick(() => {
-                if (this.name) {
-                    this.onSubmit(this.name);
-                    this.close();
-                }
-            });
+            // Create text input
+            const placeholderText = this.translate('ui.filterBar.saveViewNamePlaceholder');
+            const textComponent = new TextComponent(contentEl)
+                .setPlaceholder(placeholderText)
+                .onChange((value) => {
+                    this.name = value;
+                });
+            textComponent.inputEl.style.width = '100%';
+
+            // Create button container and save button
+            const buttonContainer = contentEl.createDiv({ cls: 'modal-button-container' });
+            const buttonText = this.translate('ui.filterBar.saveButton');
+            new ButtonComponent(buttonContainer)
+                .setButtonText(buttonText)
+                .setCta()
+                .onClick(() => {
+                    if (this.name && this.name.trim()) {
+                        this.onSubmit(this.name.trim());
+                        this.close();
+                    }
+                });
+
+            // Focus the text input
+            setTimeout(() => {
+                textComponent.inputEl.focus();
+            }, 100);
+        } catch (error) {
+            console.error('Error rendering SaveViewModal:', error);
+            // Fallback UI if rendering fails
+            contentEl.createEl('h2', { text: 'Save View' });
+            contentEl.createEl('p', { text: 'Error loading modal. Please try again.' });
+            const fallbackButton = contentEl.createEl('button', { text: 'Close' });
+            fallbackButton.onclick = () => this.close();
+        }
     }
 
     onClose() {
@@ -100,6 +121,18 @@ export class FilterBar extends EventEmitter {
     private enableGroupExpandCollapse = true;
     private forceShowExpandCollapse = false;
     private viewType?: string;
+
+    /**
+     * Get default group key based on view type
+     */
+    private getDefaultGroupKey(): TaskGroupKey {
+        // Kanban view should default to status grouping for better UX
+        if (this.viewType === KANBAN_VIEW_TYPE) {
+            return 'status';
+        }
+        // Other views default to no grouping
+        return 'none';
+    }
     private translate: (key: TranslationKey, vars?: Record<string, string>) => string;
 
     constructor(
@@ -920,6 +953,27 @@ export class FilterBar extends EventEmitter {
             // Add global handlers to ensure drop events work reliably
             this.dragDropHandler.setupGlobalHandlers(savedViewsSection);
         }
+
+        // Add a "Save Current View" button at the bottom of the dropdown
+        const saveCurrentSection = this.viewSelectorDropdown.createDiv('filter-bar__view-section');
+        saveCurrentSection.style.textAlign = 'center';
+        saveCurrentSection.style.padding = '8px';
+
+        const saveCurrentButton = new ButtonComponent(saveCurrentSection)
+            .setButtonText('Save Current View')
+            .setClass('filter-bar__save-current-view-button')
+            .setTooltip('Save the current filter configuration as a new view')
+            .onClick(() => {
+                this.showSaveViewDialog();
+                // Close the dropdown immediately when save button is clicked
+                if (this.viewSelectorDropdown && !this.viewSelectorDropdown.classList.contains('filter-bar__view-selector-dropdown--hidden')) {
+                    this.viewSelectorDropdown.classList.add('filter-bar__view-selector-dropdown--hidden');
+                    if (this.viewSelectorButton?.buttonEl) {
+                        this.viewSelectorButton.buttonEl.classList.remove('filter-bar__templates-button--active');
+                    }
+                }
+            });
+        // Don't add mod-cta class to avoid coloring
     }
 
     /**
@@ -1963,17 +2017,31 @@ export class FilterBar extends EventEmitter {
      * Show save view dialog
      */
     private showSaveViewDialog(): void {
-        new SaveViewModal(this.app, (name) => {
-            const currentViewOptions = this.getCurrentViewOptions();
-            const currentProperties = this.getCurrentVisibleProperties();
-            this.emit('saveView', {
-                name,
-                query: this.currentQuery,
-                viewOptions: currentViewOptions,
-                visibleProperties: currentProperties
-            });
-            this.toggleViewSelectorDropdown();
-        }, this.plugin.i18n.translate).open();
+        try {
+            // Ensure we have a valid translate function with fallback
+            const translate = this.plugin?.i18n?.translate ?
+                this.plugin.i18n.translate.bind(this.plugin.i18n) :
+                (key: string) => key; // Fallback: return the key as-is
+
+            console.log('Opening SaveViewModal with translate function:', !!this.plugin?.i18n?.translate);
+
+            const modal = new SaveViewModal(this.app, (name) => {
+                console.log('SaveViewModal submitted with name:', name);
+                const currentViewOptions = this.getCurrentViewOptions();
+                const currentProperties = this.getCurrentVisibleProperties();
+                this.emit('saveView', {
+                    name,
+                    query: this.currentQuery,
+                    viewOptions: currentViewOptions,
+                    visibleProperties: currentProperties
+                });
+                // Don't toggle dropdown here - it's now handled by the calling button
+            }, translate);
+
+            modal.open();
+        } catch (error) {
+            console.error('Error opening SaveViewModal:', error);
+        }
     }
 
     /**
@@ -2004,7 +2072,7 @@ export class FilterBar extends EventEmitter {
             children: [],
             sortKey: this.currentQuery.sortKey || 'due',
             sortDirection: this.currentQuery.sortDirection || 'asc',
-            groupKey: 'none'
+            groupKey: this.getDefaultGroupKey()
         };
 
         // Clear the active saved view
@@ -2045,7 +2113,7 @@ export class FilterBar extends EventEmitter {
             children: [],
             sortKey: this.currentQuery.sortKey || 'due',
             sortDirection: this.currentQuery.sortDirection || 'asc',
-            groupKey: 'none'
+            groupKey: this.getDefaultGroupKey()
         };
 
         // Clear the active saved view
