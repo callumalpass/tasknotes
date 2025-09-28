@@ -2568,12 +2568,16 @@ export class FilterService extends EventEmitter {
 			const hideCompletedFromOverdue =
 				this.plugin?.settings?.hideCompletedFromOverdue ?? true;
 
-			// Handle recurring tasks - they are not considered overdue in this context
-			// as they appear on their scheduled recurrence dates
+			// For recurring tasks, check if the current scheduled date is overdue
 			if (task.recurrence) {
+				// Only check scheduled date for recurring tasks (this is the current instance date)
+				if (task.scheduled) {
+					return isOverdueTimeAware(task.scheduled, isCompleted, hideCompletedFromOverdue);
+				}
 				return false;
 			}
 
+			// For non-recurring tasks, check both due and scheduled dates
 			// Check if due date is overdue
 			if (task.due) {
 				if (isOverdueTimeAware(task.due, isCompleted, hideCompletedFromOverdue)) {
