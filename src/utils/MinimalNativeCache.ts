@@ -2,6 +2,7 @@
 import { TFile, App, Events, EventRef, parseLinktext } from "obsidian";
 import { TaskInfo, NoteInfo, TaskDependency } from "../types";
 import { FieldMapper } from "../services/FieldMapper";
+import { FilterUtils } from "./FilterUtils";
 import {
 	getTodayString,
 	isBeforeDateSafe,
@@ -118,8 +119,11 @@ export class MinimalNativeCache extends Events {
 			}
 			return this.comparePropertyValues(frontmatterValue, propValue);
 		} else {
-			// Fallback to legacy tag-based method
-			return Array.isArray(frontmatter.tags) && frontmatter.tags.includes(this.taskTag);
+			// Fallback to legacy tag-based method with hierarchical support
+			if (!Array.isArray(frontmatter.tags)) return false;
+			return frontmatter.tags.some((tag: string) =>
+				FilterUtils.matchesHierarchicalTag(tag, this.taskTag)
+			);
 		}
 	}
 

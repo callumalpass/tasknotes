@@ -3,6 +3,7 @@ import { parseFrontMatterAliases } from "obsidian";
 import { scoreMultiword } from "../utils/fuzzyMatch";
 import { parseDisplayFieldsRow } from "../utils/projectAutosuggestDisplayFieldsParser";
 import { getProjectPropertyFilter, matchesProjectProperty } from "../utils/projectFilterUtils";
+import { FilterUtils } from "../utils/FilterUtils";
 
 export interface FileSuggestionItem {
 	insertText: string; // usually basename
@@ -59,8 +60,8 @@ export const FileSuggestHelper = {
 							: [frontmatterTags].filter(Boolean)),
 					];
 
-					// Check if file has ANY of the required tags
-					const hasRequiredTag = requiredTags.some((reqTag) => allTags.includes(reqTag));
+					// Check if file has ANY of the required tags using hierarchical matching with proper exclusion handling
+					const hasRequiredTag = FilterUtils.matchesTagConditions(allTags, requiredTags);
 					if (!hasRequiredTag) {
 						continue; // Skip this file
 					}
