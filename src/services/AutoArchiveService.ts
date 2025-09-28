@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { PendingAutoArchive, TaskInfo, StatusConfig } from "../types";
 import TaskNotesPlugin from "../main";
 

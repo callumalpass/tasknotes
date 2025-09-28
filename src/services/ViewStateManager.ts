@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { FilterQuery, ViewFilterState, ViewPreferences, SavedView } from "../types";
 import { EventEmitter } from "../utils/EventEmitter";
 import { FilterUtils } from "../utils/FilterUtils";

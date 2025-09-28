@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { App, Modal, Setting, Notice, TFile } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { ICSEvent, TaskInfo, NoteInfo } from "../types";

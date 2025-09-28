@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { ItemView } from "obsidian";
 import {
 	ViewPerformanceService,
