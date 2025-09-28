@@ -249,11 +249,12 @@ export class ViewPerformanceService {
             const allTaskPaths = this.plugin.cacheManager.getAllTaskPaths();
             const existingPaths = new Set(allTaskPaths);
 
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             let removedCount = 0;
             for (const taskPath of this.globalTaskVersionCache.keys()) {
                 if (!existingPaths.has(taskPath)) {
                     this.globalTaskVersionCache.delete(taskPath);
-                    removedCount++;
+                    removedCount++; // Keep count for potential debugging
                 }
             }
 

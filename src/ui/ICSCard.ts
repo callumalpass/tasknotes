@@ -5,6 +5,7 @@ import { format } from 'date-fns';
 import { ICSEventContextMenu } from '../components/ICSEventContextMenu';
 import { formatTime } from '../utils/dateUtils';
 import { TranslationKey } from '../i18n';
+import { ICSEventInfoModal } from '../modals/ICSEventInfoModal';
 
 export interface ICSCardOptions {
     showDate: boolean;
@@ -86,7 +87,6 @@ export function createICSEventCard(icsEvent: ICSEvent, plugin: TaskNotesPlugin, 
 
     // Left-click to open detailed info modal
     card.addEventListener('click', () => {
-        const { ICSEventInfoModal } = require('../modals/ICSEventInfoModal');
         const modal = new ICSEventInfoModal(plugin.app, plugin, icsEvent, sourceName);
         modal.open();
     });

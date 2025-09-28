@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { ItemView, WorkspaceLeaf, Notice, EventRef, debounce, TFile } from 'obsidian';
 import TaskNotesPlugin from '../main';
 import { 
@@ -230,7 +231,7 @@ export class KanbanView extends ItemView implements OptimizedView {
         this.filterBar.on('queryChange', async (newQuery: FilterQuery) => {
             this.currentQuery = newQuery;
             // Save the filter state
-            await this.plugin.viewStateManager.setFilterState(KANBAN_VIEW_TYPE, newQuery);
+            this.plugin.viewStateManager.setFilterState(KANBAN_VIEW_TYPE, newQuery);
             this.loadAndRenderBoard();
         });
 

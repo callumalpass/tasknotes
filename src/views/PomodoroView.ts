@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { ItemView, WorkspaceLeaf, Notice, EventRef, setTooltip } from 'obsidian';
 import TaskNotesPlugin from '../main';
 import { 

@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { TFile } from 'obsidian';
 import TaskNotesPlugin from '../main';
 import { TaskInfo } from '../types';

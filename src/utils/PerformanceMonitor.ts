@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { Platform } from 'obsidian';
 
 /**

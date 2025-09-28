@@ -104,6 +104,7 @@ export function registerBasesView(
     // Only register if it doesn't already exist (like the original implementation)
     if (!api.registrations[viewId]) {
       api.registrations[viewId] = registration;
+      // eslint-disable-next-line no-console
       console.log(`[TaskNotes][Bases] Successfully registered view: ${viewId}`);
     } else {
       console.debug(`[TaskNotes][Bases] View ${viewId} already registered, skipping`);
@@ -128,6 +129,7 @@ export function unregisterBasesView(app: App, viewId: string): boolean {
   try {
     if (api.registrations[viewId]) {
       delete api.registrations[viewId];
+      // eslint-disable-next-line no-console
       console.log(`[TaskNotes][Bases] Successfully unregistered view: ${viewId}`);
     }
     return true;

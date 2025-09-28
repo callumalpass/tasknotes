@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { createServer, IncomingMessage, ServerResponse, Server } from 'http';
 import { parse } from 'url';
 import { IWebhookNotifier } from '../types';
@@ -8,7 +9,7 @@ import { NaturalLanguageParser } from './NaturalLanguageParser';
 import { StatusManager } from './StatusManager';
 import TaskNotesPlugin from '../main';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { OpenAPIController } from '../utils/OpenAPIDecorators';
+import { OpenAPIController, generateOpenAPISpec } from '../utils/OpenAPIDecorators';
 import { APIRouter } from '../api/APIRouter';
 import { TasksController } from '../api/TasksController';
 import { TimeTrackingController } from '../api/TimeTrackingController';
@@ -71,8 +72,6 @@ export class HTTPAPIService implements IWebhookNotifier {
 	 * Generate OpenAPI spec from all registered controllers
 	 */
 	generateOpenAPISpec(): any {
-		const { generateOpenAPISpec } = require('../utils/OpenAPIDecorators');
-		
 		// Get base spec structure
 		const spec = generateOpenAPISpec(this.systemController);
 		

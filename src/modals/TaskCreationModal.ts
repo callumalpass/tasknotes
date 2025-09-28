@@ -23,6 +23,7 @@ interface TriggerDetectionResult {
  * @param textBeforeCursor - Text before cursor position
  * @returns Trigger detection result with trigger type, index, and query
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function detectSuggestionTrigger(textBeforeCursor: string): TriggerDetectionResult {
     // Find the last @, #, or + before cursor
     const lastAtIndex = textBeforeCursor.lastIndexOf('@');

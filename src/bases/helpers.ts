@@ -31,10 +31,10 @@ function createTaskInfoFromProperties(props: Record<string, any>, basesItem: Bas
   });
 
   return {
-    title: props.title || basesItem.name || basesItem.path!.split('/').pop()?.replace('.md', '') || 'Untitled',
+    title: props.title || basesItem.name || (basesItem.path?.split('/').pop()?.replace('.md', '') ?? 'Untitled'),
     status: props.status || 'open',
     priority: props.priority || 'normal',
-    path: basesItem.path!,
+    path: basesItem.path ?? '',
     archived: props.archived || false,
     due: props.due,
     scheduled: props.scheduled,
@@ -117,7 +117,7 @@ export function getBasesVisibleProperties(basesContainer: any): BasesSelectedPro
     if (propsMap && typeof propsMap === 'object') {
       for (const id of Object.keys(propsMap)) {
         idIndex.set(id, id);
-        const last = id.includes('.') ? id.split('.').pop()! : id;
+        const last = id.includes('.') ? (id.split('.').pop() ?? id) : id;
         idIndex.set(last, id);
         const dn = propsMap[id]?.getDisplayName?.();
         if (typeof dn === 'string' && dn.trim()) idIndex.set(dn.toLowerCase(), id);

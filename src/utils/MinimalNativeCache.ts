@@ -1,4 +1,5 @@
 import { TFile, App, Events, EventRef, parseLinktext } from 'obsidian';
+import { getAllDailyNotes } from 'obsidian-daily-notes-interface';
 import { TaskInfo, NoteInfo } from '../types';
 import { FieldMapper } from '../services/FieldMapper';
 import { 
@@ -392,7 +393,6 @@ export class MinimalNativeCache extends Events {
         
         // Use Obsidian's daily notes interface for daily notes detection
         try {
-            const { getAllDailyNotes } = require('obsidian-daily-notes-interface');
             const allDailyNotes = getAllDailyNotes();
             
             for (const [dateStr] of Object.entries(allDailyNotes)) {

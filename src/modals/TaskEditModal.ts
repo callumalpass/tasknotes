@@ -4,7 +4,6 @@ import { TaskModal } from './TaskModal';
 import { TaskInfo } from '../types';
 import { getCurrentTimestamp, formatDateForStorage, generateUTCCalendarDates, getUTCStartOfWeek, getUTCEndOfWeek, getUTCStartOfMonth, getUTCEndOfMonth, getTodayLocal, parseDateAsLocal } from '../utils/dateUtils';
 import { formatTimestampForDisplay } from '../utils/dateUtils';
-import { format } from 'date-fns';
 import { generateRecurringInstances, extractTaskInfo, calculateTotalTimeSpent, formatTime, updateToNextScheduledOccurrence, sanitizeTags } from '../utils/helpers';
 import { splitListPreservingLinksAndQuotes } from '../utils/stringSplit';
 import { ReminderContextMenu } from '../components/ReminderContextMenu';

@@ -6,8 +6,10 @@ async function loadAPIEndpoints(container: HTMLElement, apiPort = 8080): Promise
     });
 
     try {
+        // eslint-disable-next-line no-console
         console.log(`Fetching API documentation from http://localhost:${apiPort}/api/docs`);
         const response = await fetch(`http://localhost:${apiPort}/api/docs`);
+        // eslint-disable-next-line no-console
         console.log('API docs response:', response.status, response.statusText);
         
         if (!response.ok) {
@@ -15,6 +17,7 @@ async function loadAPIEndpoints(container: HTMLElement, apiPort = 8080): Promise
         }
         
         const openApiSpec = await response.json();
+        // eslint-disable-next-line no-console
         console.log('OpenAPI spec loaded:', openApiSpec);
         
         // Remove loading message
@@ -64,6 +67,7 @@ async function loadAPIEndpoints(container: HTMLElement, apiPort = 8080): Promise
         }
         
     } catch (error: any) {
+        // eslint-disable-next-line no-console
         console.error('Error loading API endpoints:', error);
         
         // Remove loading message

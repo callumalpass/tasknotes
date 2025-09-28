@@ -11,6 +11,7 @@
  */
 import TaskNotesPlugin from '../main';
 import { BasesDataItem, identifyTaskNotesFromBasesData, renderTaskNotesInBasesView } from './helpers';
+import { EVENT_TASK_UPDATED } from '../types';
 
 export interface BasesContainerLike {
   results?: Map<any, any>;
@@ -164,7 +165,6 @@ export function buildTasknotesBaseViewFactory(plugin: TaskNotesPlugin, config: V
     // Setup selective update handling for real-time task changes
     const setupTaskUpdateListener = () => {
       if (!eventListener) {
-        const { EVENT_TASK_UPDATED } = require('../types');
         eventListener = plugin.emitter.on(EVENT_TASK_UPDATED, async (eventData: any) => {
           try {
             const updatedTask = eventData?.task || eventData?.taskInfo;
@@ -214,6 +214,7 @@ export function buildTasknotesBaseViewFactory(plugin: TaskNotesPlugin, config: V
             taskElement.classList.remove('task-card--updated');
           }, 1000);
 
+          // eslint-disable-next-line no-console
           console.log(`[TaskNotes][Bases] Selectively updated task: ${updatedTask.path}`);
         } else {
           // Task not currently visible, might need to be added - refresh to be safe
@@ -232,6 +233,7 @@ export function buildTasknotesBaseViewFactory(plugin: TaskNotesPlugin, config: V
       }
 
       updateDebounceTimer = window.setTimeout(async () => {
+        // eslint-disable-next-line no-console
         console.log('[TaskNotes][Bases] Performing debounced full refresh');
         await render();
         updateDebounceTimer = null;
@@ -293,6 +295,7 @@ export function buildTasknotesBaseViewFactory(plugin: TaskNotesPlugin, config: V
         currentTaskElements.clear();
         queryListener = null;
 
+        // eslint-disable-next-line no-console
         console.log('[TaskNotes][Bases] Cleaned up view with real-time updates');
       },
       load: () => {
