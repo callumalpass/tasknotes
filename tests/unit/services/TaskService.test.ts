@@ -646,7 +646,9 @@ describe('TaskService', () => {
     });
 
     it('should handle cache errors gracefully', async () => {
-      mockPlugin.cacheManager.updateTaskInfoInCache.mockRejectedValue(new Error('Cache error'));
+      mockPlugin.cacheManager.updateTaskInfoInCache.mockImplementation(() => {
+        throw new Error('Cache error');
+      });
 
       // Should not throw, just log error
       const result = await taskService.updateProperty(task, 'priority', 'high');
@@ -872,7 +874,9 @@ describe('TaskService', () => {
     });
 
     it('should handle cache and event errors gracefully', async () => {
-      mockPlugin.cacheManager.updateTaskInfoInCache.mockRejectedValue(new Error('Cache error'));
+      mockPlugin.cacheManager.updateTaskInfoInCache.mockImplementation(() => {
+        throw new Error('Cache error');
+      });
       mockPlugin.emitter.trigger.mockImplementation(() => {
         throw new Error('Event error');
       });
