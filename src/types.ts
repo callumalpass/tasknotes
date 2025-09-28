@@ -39,6 +39,7 @@ export type TaskSortKey =
 	| "status"
 	| "title"
 	| "dateCreated"
+	| "completedDate"
 	| "tags"
 	| `user:${string}`;
 export type TaskGroupKey =
