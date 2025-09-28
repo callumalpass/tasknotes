@@ -14,7 +14,8 @@
       "eslint:recommended",
       "plugin:@typescript-eslint/eslint-recommended",
       "plugin:@typescript-eslint/recommended",
-      "plugin:obsidianmd/recommended"
+      "plugin:obsidianmd/recommended",
+      "prettier"
     ], 
     "parserOptions": {
         "sourceType": "module",
