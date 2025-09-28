@@ -1,137 +1,147 @@
-import { Notice } from 'obsidian';
-import TaskNotesPlugin from '../main';
-import { CalendarExportService } from './CalendarExportService';
-import { TranslationKey } from '../i18n';
+/* eslint-disable no-console */
+import { Notice } from "obsidian";
+import TaskNotesPlugin from "../main";
+import { CalendarExportService } from "./CalendarExportService";
+import { TranslationKey } from "../i18n";
 
 export class AutoExportService {
-    private plugin: TaskNotesPlugin;
-    private intervalId: number | null = null;
-    private lastExportTime: Date | null = null;
-    private nextExportTime: Date | null = null;
+	private plugin: TaskNotesPlugin;
+	private intervalId: number | null = null;
+	private lastExportTime: Date | null = null;
+	private nextExportTime: Date | null = null;
 
-    constructor(plugin: TaskNotesPlugin) {
-        this.plugin = plugin;
-    }
+	constructor(plugin: TaskNotesPlugin) {
+		this.plugin = plugin;
+	}
 
-    private translate(key: TranslationKey, variables?: Record<string, any>): string {
-        return this.plugin.i18n.translate(key, variables);
-    }
+	private translate(key: TranslationKey, variables?: Record<string, any>): string {
+		return this.plugin.i18n.translate(key, variables);
+	}
 
-    /**
-     * Start the automatic export service
-     */
-    start(): void {
-        if (!this.plugin.settings.icsIntegration.enableAutoExport) {
-            return;
-        }
+	/**
+	 * Start the automatic export service
+	 */
+	start(): void {
+		if (!this.plugin.settings.icsIntegration.enableAutoExport) {
+			return;
+		}
 
-        this.stop(); // Stop any existing interval
-        
-        const intervalMinutes = this.plugin.settings.icsIntegration.autoExportInterval;
-        const intervalMs = intervalMinutes * 60 * 1000;
+		this.stop(); // Stop any existing interval
 
-        // Set next export time
-        this.nextExportTime = new Date(Date.now() + intervalMs);
+		const intervalMinutes = this.plugin.settings.icsIntegration.autoExportInterval;
+		const intervalMs = intervalMinutes * 60 * 1000;
 
-        this.intervalId = setInterval(async () => {
-            await this.performExport();
-            // Update next export time
-            this.nextExportTime = new Date(Date.now() + intervalMs);
-        }, intervalMs) as unknown as number;
+		// Set next export time
+		this.nextExportTime = new Date(Date.now() + intervalMs);
 
-        console.log(`TaskNotes: Auto export started (interval: ${intervalMinutes} minutes)`);
-    }
+		this.intervalId = setInterval(async () => {
+			await this.performExport();
+			// Update next export time
+			this.nextExportTime = new Date(Date.now() + intervalMs);
+		}, intervalMs) as unknown as number;
 
-    /**
-     * Stop the automatic export service
-     */
-    stop(): void {
-        if (this.intervalId) {
-            clearInterval(this.intervalId);
-            this.intervalId = null;
-            this.nextExportTime = null;
-        }
-    }
+		console.log(`TaskNotes: Auto export started (interval: ${intervalMinutes} minutes)`);
+	}
 
-    /**
-     * Update the export interval and restart the service
-     */
-    updateInterval(newIntervalMinutes: number): void {
-        if (this.plugin.settings.icsIntegration.enableAutoExport) {
-            this.start(); // This will stop and restart with new interval
-        }
-    }
+	/**
+	 * Stop the automatic export service
+	 */
+	stop(): void {
+		if (this.intervalId) {
+			clearInterval(this.intervalId);
+			this.intervalId = null;
+			this.nextExportTime = null;
+		}
+	}
 
-    /**
-     * Manually trigger an export
-     */
-    async exportNow(): Promise<void> {
-        await this.performExport();
-    }
+	/**
+	 * Update the export interval and restart the service
+	 */
+	updateInterval(newIntervalMinutes: number): void {
+		if (this.plugin.settings.icsIntegration.enableAutoExport) {
+			this.start(); // This will stop and restart with new interval
+		}
+	}
 
-    /**
-     * Get the last export time
-     */
-    getLastExportTime(): Date | null {
-        return this.lastExportTime;
-    }
+	/**
+	 * Manually trigger an export
+	 */
+	async exportNow(): Promise<void> {
+		await this.performExport();
+	}
 
-    /**
-     * Get the next scheduled export time
-     */
-    getNextExportTime(): Date | null {
-        return this.nextExportTime;
-    }
+	/**
+	 * Get the last export time
+	 */
+	getLastExportTime(): Date | null {
+		return this.lastExportTime;
+	}
 
-    /**
-     * Perform the actual export
-     */
-    private async performExport(): Promise<void> {
-        try {
-            const exportPath = this.plugin.settings.icsIntegration.autoExportPath || 'tasknotes-calendar.ics';
-            
-            // Get all tasks
-            const allTasks = await this.plugin.cacheManager.getAllTasks();
-            
-            if (allTasks.length === 0) {
-                console.log('TaskNotes: Auto export skipped - no tasks found');
-                return;
-            }
+	/**
+	 * Get the next scheduled export time
+	 */
+	getNextExportTime(): Date | null {
+		return this.nextExportTime;
+	}
 
-            // Generate ICS content
-            const icsContent = CalendarExportService.generateMultipleTasksICSContent(allTasks);
-            
-            // Write to file - use path as-is since Obsidian handles normalization
-            const normalizedPath = exportPath;
-            
-            // Check if file exists
-            const fileExists = await this.plugin.app.vault.adapter.exists(normalizedPath);
-            
-            if (fileExists) {
-                // Update existing file
-                await this.plugin.app.vault.adapter.write(normalizedPath, icsContent);
-            } else {
-                // Create new file
-                await this.plugin.app.vault.create(normalizedPath, icsContent);
-            }
+	/**
+	 * Perform the actual export
+	 */
+	private async performExport(): Promise<void> {
+		try {
+			const exportPath =
+				this.plugin.settings.icsIntegration.autoExportPath || "tasknotes-calendar.ics";
 
-            this.lastExportTime = new Date();
-            console.log(`TaskNotes: Auto export completed - ${allTasks.length} tasks exported to ${exportPath}`);
+			// Get all tasks
+			const allTasks = await this.plugin.cacheManager.getAllTasks();
 
-        } catch (error) {
-            console.error('TaskNotes: Auto export failed:', error);
-            
-            // Only show notice for manual exports or first few failures
-            if (!this.lastExportTime || (Date.now() - this.lastExportTime.getTime()) > 6 * 60 * 60 * 1000) {
-                new Notice(this.translate('services.autoExport.notices.exportFailed', { error: error instanceof Error ? error.message : String(error) }));
-            }
-        }
-    }
+			if (allTasks.length === 0) {
+				console.log("TaskNotes: Auto export skipped - no tasks found");
+				return;
+			}
 
-    /**
-     * Clean up when the service is destroyed
-     */
-    destroy(): void {
-        this.stop();
-    }
+			// Generate ICS content
+			const icsContent = CalendarExportService.generateMultipleTasksICSContent(allTasks);
+
+			// Write to file - use path as-is since Obsidian handles normalization
+			const normalizedPath = exportPath;
+
+			// Check if file exists
+			const fileExists = await this.plugin.app.vault.adapter.exists(normalizedPath);
+
+			if (fileExists) {
+				// Update existing file
+				await this.plugin.app.vault.adapter.write(normalizedPath, icsContent);
+			} else {
+				// Create new file
+				await this.plugin.app.vault.create(normalizedPath, icsContent);
+			}
+
+			this.lastExportTime = new Date();
+			console.log(
+				`TaskNotes: Auto export completed - ${allTasks.length} tasks exported to ${exportPath}`
+			);
+		} catch (error) {
+			console.error("TaskNotes: Auto export failed:", error);
+
+			// Only show notice for manual exports or first few failures
+			if (
+				!this.lastExportTime ||
+				Date.now() - this.lastExportTime.getTime() > 6 * 60 * 60 * 1000
+			) {
+				new Notice(
+					this.translate("services.autoExport.notices.exportFailed", {
+						error: error instanceof Error ? error.message : String(error),
+					})
+				);
+			}
+		}
+	}
+
+	/**
+	 * Clean up when the service is destroyed
+	 */
+	destroy(): void {
+		this.stop();
+	}
 }

@@ -1,47 +1,62 @@
 // View types
-export const MINI_CALENDAR_VIEW_TYPE = 'tasknotes-mini-calendar-view';
-export const ADVANCED_CALENDAR_VIEW_TYPE = 'tasknotes-advanced-calendar-view';
-export const TASK_LIST_VIEW_TYPE = 'tasknotes-task-list-view';
-export const NOTES_VIEW_TYPE = 'tasknotes-notes-view';
-export const AGENDA_VIEW_TYPE = 'tasknotes-agenda-view';
-export const POMODORO_VIEW_TYPE = 'tasknotes-pomodoro-view';
-export const POMODORO_STATS_VIEW_TYPE = 'tasknotes-pomodoro-stats-view';
-export const STATS_VIEW_TYPE = 'tasknotes-stats-view';
-export const KANBAN_VIEW_TYPE = 'tasknotes-kanban-view';
-export const SUBTASK_WIDGET_VIEW_TYPE = 'tasknotes-subtask-widget-view';
+export const MINI_CALENDAR_VIEW_TYPE = "tasknotes-mini-calendar-view";
+export const ADVANCED_CALENDAR_VIEW_TYPE = "tasknotes-advanced-calendar-view";
+export const TASK_LIST_VIEW_TYPE = "tasknotes-task-list-view";
+export const NOTES_VIEW_TYPE = "tasknotes-notes-view";
+export const AGENDA_VIEW_TYPE = "tasknotes-agenda-view";
+export const POMODORO_VIEW_TYPE = "tasknotes-pomodoro-view";
+export const POMODORO_STATS_VIEW_TYPE = "tasknotes-pomodoro-stats-view";
+export const STATS_VIEW_TYPE = "tasknotes-stats-view";
+export const KANBAN_VIEW_TYPE = "tasknotes-kanban-view";
+export const SUBTASK_WIDGET_VIEW_TYPE = "tasknotes-subtask-widget-view";
 
 // Event types
-export const EVENT_DATE_SELECTED = 'date-selected';
-export const EVENT_TAB_CHANGED = 'tab-changed';
-export const EVENT_DATA_CHANGED = 'data-changed';
-export const EVENT_TASK_UPDATED = 'task-updated';
-export const EVENT_TASK_DELETED = 'task-deleted';
-export const EVENT_POMODORO_START = 'pomodoro-start';
-export const EVENT_POMODORO_COMPLETE = 'pomodoro-complete';
-export const EVENT_POMODORO_INTERRUPT = 'pomodoro-interrupt';
-export const EVENT_POMODORO_TICK = 'pomodoro-tick';
-export const EVENT_TIMEBLOCKING_TOGGLED = 'timeblocking-toggled';
-export const EVENT_TIMEBLOCK_UPDATED = 'timeblock-updated';
-export const EVENT_TIMEBLOCK_DELETED = 'timeblock-deleted';
-export const EVENT_DATE_CHANGED = 'date-changed';
+export const EVENT_DATE_SELECTED = "date-selected";
+export const EVENT_TAB_CHANGED = "tab-changed";
+export const EVENT_DATA_CHANGED = "data-changed";
+export const EVENT_TASK_UPDATED = "task-updated";
+export const EVENT_TASK_DELETED = "task-deleted";
+export const EVENT_POMODORO_START = "pomodoro-start";
+export const EVENT_POMODORO_COMPLETE = "pomodoro-complete";
+export const EVENT_POMODORO_INTERRUPT = "pomodoro-interrupt";
+export const EVENT_POMODORO_TICK = "pomodoro-tick";
+export const EVENT_TIMEBLOCKING_TOGGLED = "timeblocking-toggled";
+export const EVENT_TIMEBLOCK_UPDATED = "timeblock-updated";
+export const EVENT_TIMEBLOCK_DELETED = "timeblock-deleted";
+export const EVENT_DATE_CHANGED = "date-changed";
 
 // Calendar colorization modes
-export type ColorizeMode = 'tasks' | 'notes' | 'daily';
+export type ColorizeMode = "tasks" | "notes" | "daily";
 
 // Calendar display modes
-export type CalendarDisplayMode = 'month' | 'agenda';
+export type CalendarDisplayMode = "month" | "agenda";
 
 // Task sorting and grouping types
-export type TaskSortKey = 'due' | 'scheduled' | 'priority' | 'title' | 'dateCreated' | 'tags' | `user:${string}`;
-export type TaskGroupKey = 'none' | 'priority' | 'context' | 'project' | 'due' | 'scheduled' | 'status' | 'tags' | `user:${string}`;
-export type SortDirection = 'asc' | 'desc';
-
+export type TaskSortKey =
+	| "due"
+	| "scheduled"
+	| "priority"
+	| "title"
+	| "dateCreated"
+	| "tags"
+	| `user:${string}`;
+export type TaskGroupKey =
+	| "none"
+	| "priority"
+	| "context"
+	| "project"
+	| "due"
+	| "scheduled"
+	| "status"
+	| "tags"
+	| `user:${string}`;
+export type SortDirection = "asc" | "desc";
 
 // New Advanced Filtering System Types
 
 // A single filter rule
 export interface FilterCondition {
-	type: 'condition';
+	type: "condition";
 	id: string; // Unique ID for DOM management
 	property: FilterProperty; // The field to filter on (e.g., 'status', 'due', 'file.ctime')
 	operator: FilterOperator; // The comparison operator (e.g., 'is', 'contains')
@@ -50,9 +65,9 @@ export interface FilterCondition {
 
 // A logical grouping of conditions or other groups
 export interface FilterGroup {
-	type: 'group';
+	type: "group";
 	id: string; // Unique ID for DOM management and state tracking
-	conjunction: 'and' | 'or'; // How children are evaluated
+	conjunction: "and" | "or"; // How children are evaluated
 	children: FilterNode[]; // The contents of the group
 }
 
@@ -73,81 +88,256 @@ export interface SavedView {
 	id: string; // Unique ID for the view
 	name: string; // User-defined name (e.g., "High-Priority Work")
 	query: FilterQuery; // The complete configuration, including filters, sorting, and grouping
-	viewOptions?: {[key: string]: boolean}; // View-specific options (e.g., showOverdueOnToday, showNotes)
+	viewOptions?: { [key: string]: boolean }; // View-specific options (e.g., showOverdueOnToday, showNotes)
 	visibleProperties?: string[]; // Array of property IDs to display on task cards (e.g., ['due', 'priority', 'projects'])
 }
 
 // Property and operator definitions for the advanced filtering system
 export type FilterProperty =
 	// Placeholder for "Select..." option
-	| ''
+	| ""
 	// Text properties
-	| 'title' | 'path'
+	| "title"
+	| "path"
 	// Select properties
-	| 'status' | 'priority' | 'tags' | 'contexts' | 'projects'
+	| "status"
+	| "priority"
+	| "tags"
+	| "contexts"
+	| "projects"
 	// Date properties
-	| 'due' | 'scheduled' | 'completedDate' | 'file.ctime' | 'file.mtime'
+	| "due"
+	| "scheduled"
+	| "completedDate"
+	| "file.ctime"
+	| "file.mtime"
 	// Boolean properties
-	| 'archived'
+	| "archived"
 	// Numeric properties
-	| 'timeEstimate'
+	| "timeEstimate"
 	// Special properties
-	| 'recurrence' | 'status.isCompleted'
-		// Dynamic user-mapped properties
-		| `user:${string}`;
+	| "recurrence"
+	| "status.isCompleted"
+	// Dynamic user-mapped properties
+	| `user:${string}`;
 
 export type FilterOperator =
 	// Basic comparison
-	| 'is' | 'is-not'
+	| "is"
+	| "is-not"
 	// Text operators
-	| 'contains' | 'does-not-contain'
+	| "contains"
+	| "does-not-contain"
 	// Date operators
-	| 'is-before' | 'is-after' | 'is-on-or-before' | 'is-on-or-after'
+	| "is-before"
+	| "is-after"
+	| "is-on-or-before"
+	| "is-on-or-after"
 	// Existence operators
-	| 'is-empty' | 'is-not-empty'
+	| "is-empty"
+	| "is-not-empty"
 	// Boolean operators
-	| 'is-checked' | 'is-not-checked'
+	| "is-checked"
+	| "is-not-checked"
 	// Numeric operators
-	| 'is-greater-than' | 'is-less-than' | 'is-greater-than-or-equal' | 'is-less-than-or-equal';
+	| "is-greater-than"
+	| "is-less-than"
+	| "is-greater-than-or-equal"
+	| "is-less-than-or-equal";
 
 // Property metadata for UI generation
 export interface PropertyDefinition {
 	id: FilterProperty;
 	label: string;
-	category: 'text' | 'select' | 'date' | 'boolean' | 'numeric' | 'special';
+	category: "text" | "select" | "date" | "boolean" | "numeric" | "special";
 	supportedOperators: FilterOperator[];
-	valueInputType: 'text' | 'select' | 'multi-select' | 'date' | 'number' | 'none';
+	valueInputType: "text" | "select" | "multi-select" | "date" | "number" | "none";
 }
 
 // Predefined property definitions
 export const FILTER_PROPERTIES: PropertyDefinition[] = [
 	// Text properties
-	{ id: 'title', label: 'Title', category: 'text', supportedOperators: ['is', 'is-not', 'contains', 'does-not-contain', 'is-empty', 'is-not-empty'], valueInputType: 'text' },
-	{ id: 'path', label: 'Path', category: 'select', supportedOperators: ['contains', 'does-not-contain', 'is-empty', 'is-not-empty'], valueInputType: 'select' },
-	
+	{
+		id: "title",
+		label: "Title",
+		category: "text",
+		supportedOperators: [
+			"is",
+			"is-not",
+			"contains",
+			"does-not-contain",
+			"is-empty",
+			"is-not-empty",
+		],
+		valueInputType: "text",
+	},
+	{
+		id: "path",
+		label: "Path",
+		category: "select",
+		supportedOperators: ["contains", "does-not-contain", "is-empty", "is-not-empty"],
+		valueInputType: "select",
+	},
+
 	// Select properties
-	{ id: 'status', label: 'Status', category: 'select', supportedOperators: ['is', 'is-not', 'is-empty', 'is-not-empty'], valueInputType: 'select' },
-	{ id: 'priority', label: 'Priority', category: 'select', supportedOperators: ['is', 'is-not', 'is-empty', 'is-not-empty'], valueInputType: 'select' },
-	{ id: 'tags', label: 'Tags', category: 'select', supportedOperators: ['contains', 'does-not-contain', 'is-empty', 'is-not-empty'], valueInputType: 'select' },
-	{ id: 'contexts', label: 'Contexts', category: 'select', supportedOperators: ['contains', 'does-not-contain', 'is-empty', 'is-not-empty'], valueInputType: 'select' },
-	{ id: 'projects', label: 'Projects', category: 'select', supportedOperators: ['contains', 'does-not-contain', 'is-empty', 'is-not-empty'], valueInputType: 'select' },
-	
+	{
+		id: "status",
+		label: "Status",
+		category: "select",
+		supportedOperators: ["is", "is-not", "is-empty", "is-not-empty"],
+		valueInputType: "select",
+	},
+	{
+		id: "priority",
+		label: "Priority",
+		category: "select",
+		supportedOperators: ["is", "is-not", "is-empty", "is-not-empty"],
+		valueInputType: "select",
+	},
+	{
+		id: "tags",
+		label: "Tags",
+		category: "select",
+		supportedOperators: ["contains", "does-not-contain", "is-empty", "is-not-empty"],
+		valueInputType: "select",
+	},
+	{
+		id: "contexts",
+		label: "Contexts",
+		category: "select",
+		supportedOperators: ["contains", "does-not-contain", "is-empty", "is-not-empty"],
+		valueInputType: "select",
+	},
+	{
+		id: "projects",
+		label: "Projects",
+		category: "select",
+		supportedOperators: ["contains", "does-not-contain", "is-empty", "is-not-empty"],
+		valueInputType: "select",
+	},
+
 	// Date properties
-	{ id: 'due', label: 'Due Date', category: 'date', supportedOperators: ['is', 'is-not', 'is-before', 'is-after', 'is-on-or-before', 'is-on-or-after', 'is-empty', 'is-not-empty'], valueInputType: 'date' },
-	{ id: 'scheduled', label: 'Scheduled Date', category: 'date', supportedOperators: ['is', 'is-not', 'is-before', 'is-after', 'is-on-or-before', 'is-on-or-after', 'is-empty', 'is-not-empty'], valueInputType: 'date' },
-	{ id: 'completedDate', label: 'Completed Date', category: 'date', supportedOperators: ['is', 'is-not', 'is-before', 'is-after', 'is-on-or-before', 'is-on-or-after', 'is-empty', 'is-not-empty'], valueInputType: 'date' },
-	{ id: 'file.ctime', label: 'Created Date', category: 'date', supportedOperators: ['is', 'is-not', 'is-before', 'is-after', 'is-on-or-before', 'is-on-or-after', 'is-empty', 'is-not-empty'], valueInputType: 'date' },
-	{ id: 'file.mtime', label: 'Modified Date', category: 'date', supportedOperators: ['is', 'is-not', 'is-before', 'is-after', 'is-on-or-before', 'is-on-or-after', 'is-empty', 'is-not-empty'], valueInputType: 'date' },
-	
+	{
+		id: "due",
+		label: "Due Date",
+		category: "date",
+		supportedOperators: [
+			"is",
+			"is-not",
+			"is-before",
+			"is-after",
+			"is-on-or-before",
+			"is-on-or-after",
+			"is-empty",
+			"is-not-empty",
+		],
+		valueInputType: "date",
+	},
+	{
+		id: "scheduled",
+		label: "Scheduled Date",
+		category: "date",
+		supportedOperators: [
+			"is",
+			"is-not",
+			"is-before",
+			"is-after",
+			"is-on-or-before",
+			"is-on-or-after",
+			"is-empty",
+			"is-not-empty",
+		],
+		valueInputType: "date",
+	},
+	{
+		id: "completedDate",
+		label: "Completed Date",
+		category: "date",
+		supportedOperators: [
+			"is",
+			"is-not",
+			"is-before",
+			"is-after",
+			"is-on-or-before",
+			"is-on-or-after",
+			"is-empty",
+			"is-not-empty",
+		],
+		valueInputType: "date",
+	},
+	{
+		id: "file.ctime",
+		label: "Created Date",
+		category: "date",
+		supportedOperators: [
+			"is",
+			"is-not",
+			"is-before",
+			"is-after",
+			"is-on-or-before",
+			"is-on-or-after",
+			"is-empty",
+			"is-not-empty",
+		],
+		valueInputType: "date",
+	},
+	{
+		id: "file.mtime",
+		label: "Modified Date",
+		category: "date",
+		supportedOperators: [
+			"is",
+			"is-not",
+			"is-before",
+			"is-after",
+			"is-on-or-before",
+			"is-on-or-after",
+			"is-empty",
+			"is-not-empty",
+		],
+		valueInputType: "date",
+	},
+
 	// Boolean properties
-	{ id: 'archived', label: 'Archived', category: 'boolean', supportedOperators: ['is-checked', 'is-not-checked'], valueInputType: 'none' },
-	
+	{
+		id: "archived",
+		label: "Archived",
+		category: "boolean",
+		supportedOperators: ["is-checked", "is-not-checked"],
+		valueInputType: "none",
+	},
+
 	// Numeric properties
-	{ id: 'timeEstimate', label: 'Time Estimate', category: 'numeric', supportedOperators: ['is', 'is-not', 'is-greater-than', 'is-less-than', 'is-greater-than-or-equal', 'is-less-than-or-equal'], valueInputType: 'number' },
-	
+	{
+		id: "timeEstimate",
+		label: "Time Estimate",
+		category: "numeric",
+		supportedOperators: [
+			"is",
+			"is-not",
+			"is-greater-than",
+			"is-less-than",
+			"is-greater-than-or-equal",
+			"is-less-than-or-equal",
+		],
+		valueInputType: "number",
+	},
+
 	// Special properties
-	{ id: 'recurrence', label: 'Recurrence', category: 'special', supportedOperators: ['is-empty', 'is-not-empty'], valueInputType: 'none' },
-	{ id: 'status.isCompleted', label: 'Completed', category: 'boolean', supportedOperators: ['is-checked', 'is-not-checked'], valueInputType: 'none' }
+	{
+		id: "recurrence",
+		label: "Recurrence",
+		category: "special",
+		supportedOperators: ["is-empty", "is-not-empty"],
+		valueInputType: "none",
+	},
+	{
+		id: "status.isCompleted",
+		label: "Completed",
+		category: "boolean",
+		supportedOperators: ["is-checked", "is-not-checked"],
+		valueInputType: "none",
+	},
 ];
 
 // Operator metadata for UI generation
@@ -159,22 +349,22 @@ export interface OperatorDefinition {
 
 // Predefined operator definitions
 export const FILTER_OPERATORS: OperatorDefinition[] = [
-	{ id: 'is', label: 'is', requiresValue: true },
-	{ id: 'is-not', label: 'is not', requiresValue: true },
-	{ id: 'contains', label: 'contains', requiresValue: true },
-	{ id: 'does-not-contain', label: 'does not contain', requiresValue: true },
-	{ id: 'is-before', label: 'is before', requiresValue: true },
-	{ id: 'is-after', label: 'is after', requiresValue: true },
-	{ id: 'is-on-or-before', label: 'is on or before', requiresValue: true },
-	{ id: 'is-on-or-after', label: 'is on or after', requiresValue: true },
-	{ id: 'is-empty', label: 'is empty', requiresValue: false },
-	{ id: 'is-not-empty', label: 'is not empty', requiresValue: false },
-	{ id: 'is-checked', label: 'is checked', requiresValue: false },
-	{ id: 'is-not-checked', label: 'is not checked', requiresValue: false },
-	{ id: 'is-greater-than', label: 'is greater than', requiresValue: true },
-	{ id: 'is-less-than', label: 'is less than', requiresValue: true },
-	{ id: 'is-greater-than-or-equal', label: 'is equal or greater than', requiresValue: true },
-	{ id: 'is-less-than-or-equal', label: 'is equal or less than', requiresValue: true }
+	{ id: "is", label: "is", requiresValue: true },
+	{ id: "is-not", label: "is not", requiresValue: true },
+	{ id: "contains", label: "contains", requiresValue: true },
+	{ id: "does-not-contain", label: "does not contain", requiresValue: true },
+	{ id: "is-before", label: "is before", requiresValue: true },
+	{ id: "is-after", label: "is after", requiresValue: true },
+	{ id: "is-on-or-before", label: "is on or before", requiresValue: true },
+	{ id: "is-on-or-after", label: "is on or after", requiresValue: true },
+	{ id: "is-empty", label: "is empty", requiresValue: false },
+	{ id: "is-not-empty", label: "is not empty", requiresValue: false },
+	{ id: "is-checked", label: "is checked", requiresValue: false },
+	{ id: "is-not-checked", label: "is not checked", requiresValue: false },
+	{ id: "is-greater-than", label: "is greater than", requiresValue: true },
+	{ id: "is-less-than", label: "is less than", requiresValue: true },
+	{ id: "is-greater-than-or-equal", label: "is equal or greater than", requiresValue: true },
+	{ id: "is-less-than-or-equal", label: "is equal or less than", requiresValue: true },
 ];
 
 export interface FilterBarConfig {
@@ -217,10 +407,10 @@ export interface TimeInfo {
  * @deprecated Use rrule string instead. This interface will be removed in a future version.
  */
 export interface RecurrenceInfo {
-	frequency: 'daily' | 'weekly' | 'monthly' | 'yearly';
-	days_of_week?: string[];  // For weekly recurrence: ['mon', 'tue', etc.]
-	day_of_month?: number;    // For monthly/yearly recurrence: 1-31
-	month_of_year?: number;   // For yearly recurrence: 1-12
+	frequency: "daily" | "weekly" | "monthly" | "yearly";
+	days_of_week?: string[]; // For weekly recurrence: ['mon', 'tue', etc.]
+	day_of_month?: number; // For monthly/yearly recurrence: 1-31
+	month_of_year?: number; // For yearly recurrence: 1-12
 }
 
 export interface TaskInfo {
@@ -250,10 +440,10 @@ export interface TaskInfo {
 }
 
 export interface TaskCreationData extends Partial<TaskInfo> {
-    details?: string; // Optional details/description for file content
-    parentNote?: string; // Optional parent note name/path for template variable
-    creationContext?: 'inline-conversion' | 'manual-creation' | 'api' | 'import' | 'ics-event'; // Context for folder determination
-    customFrontmatter?: Record<string, any>; // Custom frontmatter properties (including user fields)
+	details?: string; // Optional details/description for file content
+	parentNote?: string; // Optional parent note name/path for template variable
+	creationContext?: "inline-conversion" | "manual-creation" | "api" | "import" | "ics-event"; // Context for folder determination
+	customFrontmatter?: Record<string, any>; // Custom frontmatter properties (including user fields)
 }
 
 export interface TimeEntry {
@@ -266,15 +456,15 @@ export interface TimeEntry {
 // Reminder types
 export interface Reminder {
 	id: string; // A unique ID for UI keying, e.g., 'rem_1678886400000'
-	type: 'absolute' | 'relative';
-	
+	type: "absolute" | "relative";
+
 	// For relative reminders
-	relatedTo?: 'due' | 'scheduled'; // The anchor date property
+	relatedTo?: "due" | "scheduled"; // The anchor date property
 	offset?: string; // ISO 8601 duration format, e.g., "-PT5M", "-PT1H", "-P2D"
-	
+
 	// For absolute reminders
 	absoluteTime?: string; // Full ISO 8601 timestamp, e.g., "2025-10-26T09:00:00"
-	
+
 	// Common properties
 	description?: string; // The notification message (optional, can be auto-generated)
 }
@@ -320,11 +510,11 @@ export interface TaskFrontmatter {
 	title: string;
 	dateCreated: string;
 	dateModified: string;
-	status: 'open' | 'in-progress' | 'done';
+	status: "open" | "in-progress" | "done";
 	due?: string;
 	scheduled?: string;
 	tags: string[];
-	priority: 'low' | 'normal' | 'high';
+	priority: "low" | "normal" | "high";
 	contexts?: string[];
 	projects?: string[];
 	recurrence?: string | RecurrenceInfo | undefined; // RFC 5545 recurrence rule string (preferred) or legacy RecurrenceInfo object (deprecated)
@@ -369,7 +559,7 @@ export interface PomodoroSession {
 	startTime: string; // ISO datetime when session was first created
 	endTime?: string; // ISO datetime when session completed/interrupted
 	plannedDuration: number; // planned duration in minutes
-	type: 'work' | 'short-break' | 'long-break';
+	type: "work" | "short-break" | "long-break";
 	completed: boolean;
 	interrupted?: boolean;
 	activePeriods: PomodoroTimePeriod[]; // Array of active timing periods (excludes pauses)
@@ -379,7 +569,7 @@ export interface PomodoroState {
 	isRunning: boolean;
 	currentSession?: PomodoroSession;
 	timeRemaining: number; // seconds
-	nextSessionType?: 'work' | 'short-break' | 'long-break'; // What type of session to start next when no current session
+	nextSessionType?: "work" | "short-break" | "long-break"; // What type of session to start next when no current session
 }
 
 export interface PomodoroSessionHistory {
@@ -387,7 +577,7 @@ export interface PomodoroSessionHistory {
 	startTime: string; // ISO datetime when session was created
 	endTime: string; // ISO datetime when session completed/interrupted
 	plannedDuration: number; // originally planned duration in minutes
-	type: 'work' | 'short-break' | 'long-break';
+	type: "work" | "short-break" | "long-break";
 	taskPath?: string; // optional task association
 	completed: boolean; // true if session finished normally, false if interrupted
 	activePeriods: PomodoroTimePeriod[]; // Array of active timing periods (excludes pauses)
@@ -414,33 +604,33 @@ export interface FieldMapping {
 	completedDate: string;
 	dateCreated: string;
 	dateModified: string;
-	recurrence: string;  // RFC 5545 recurrence rule string or legacy RecurrenceInfo object
-	archiveTag: string;  // For the archive tag in the tags array
+	recurrence: string; // RFC 5545 recurrence rule string or legacy RecurrenceInfo object
+	archiveTag: string; // For the archive tag in the tags array
 	timeEntries: string;
 	completeInstances: string;
-	pomodoros: string;  // For daily note pomodoro tracking
-	icsEventId: string;  // For linking to ICS calendar events (stored as array in frontmatter)
-	icsEventTag: string;  // Tag used for ICS event-related content
-	reminders: string;  // For task reminders
+	pomodoros: string; // For daily note pomodoro tracking
+	icsEventId: string; // For linking to ICS calendar events (stored as array in frontmatter)
+	icsEventTag: string; // Tag used for ICS event-related content
+	reminders: string; // For task reminders
 }
 
 export interface StatusConfig {
-	id: string;           // Unique identifier
-	value: string;        // What gets written to YAML
-	label: string;        // What displays in UI
-	color: string;        // Hex color for UI elements
+	id: string; // Unique identifier
+	value: string; // What gets written to YAML
+	label: string; // What displays in UI
+	color: string; // Hex color for UI elements
 	isCompleted: boolean; // Whether this counts as "done"
-	order: number;        // Sort order (for cycling)
+	order: number; // Sort order (for cycling)
 	autoArchive: boolean; // Whether to auto-archive tasks with this status
 	autoArchiveDelay: number; // Minutes to wait before auto-archiving
 }
 
 export interface PriorityConfig {
-	id: string;          // Unique identifier
-	value: string;       // What gets written to YAML
-	label: string;       // What displays in UI
-	color: string;       // Hex color for indicators
-	weight: number;      // For sorting (higher = more important)
+	id: string; // Unique identifier
+	value: string; // What gets written to YAML
+	label: string; // What displays in UI
+	color: string; // Hex color for indicators
+	weight: number; // For sorting (higher = more important)
 }
 
 // Template configuration for quick setup
@@ -464,13 +654,13 @@ export interface ExportedConfig {
 }
 
 // Kanban board types
-export type KanbanGroupByField = 'status' | 'priority' | 'context';
+export type KanbanGroupByField = "status" | "priority" | "context";
 
 export interface KanbanBoardConfig {
-	id: string;                          // Unique ID
-	name: string;                        // User-facing name
-	groupByField: KanbanGroupByField;    // What to group tasks by
-	columnOrder: string[];               // Order of column values
+	id: string; // Unique ID
+	name: string; // User-facing name
+	groupByField: KanbanGroupByField; // What to group tasks by
+	columnOrder: string[]; // Order of column values
 }
 
 // UI state management for filter preferences
@@ -501,7 +691,7 @@ export interface ICSSubscription {
 	name: string;
 	url?: string; // Optional for local files
 	filePath?: string; // Path to local ICS file
-	type: 'remote' | 'local'; // Type of ICS source
+	type: "remote" | "local"; // Type of ICS source
 	color: string;
 	enabled: boolean;
 	refreshInterval: number; // minutes (for remote) or check interval (for local)
@@ -530,20 +720,20 @@ export interface ICSCache {
 }
 
 // Webhook types
-export type WebhookEvent = 
-	| 'task.created'
-	| 'task.updated'
-	| 'task.deleted'
-	| 'task.completed'
-	| 'task.archived'
-	| 'task.unarchived'
-	| 'time.started'
-	| 'time.stopped'
-	| 'pomodoro.started'
-	| 'pomodoro.completed'
-	| 'pomodoro.interrupted'
-	| 'recurring.instance.completed'
-	| 'reminder.triggered';
+export type WebhookEvent =
+	| "task.created"
+	| "task.updated"
+	| "task.deleted"
+	| "task.completed"
+	| "task.archived"
+	| "task.unarchived"
+	| "time.started"
+	| "time.stopped"
+	| "pomodoro.started"
+	| "pomodoro.completed"
+	| "pomodoro.interrupted"
+	| "recurring.instance.completed"
+	| "reminder.triggered";
 
 export interface WebhookConfig {
 	id: string;
@@ -574,7 +764,7 @@ export interface WebhookDelivery {
 	webhookId: string;
 	event: WebhookEvent;
 	payload: WebhookPayload;
-	status: 'pending' | 'success' | 'failed';
+	status: "pending" | "success" | "failed";
 	attempts: number;
 	lastAttempt?: string;
 	responseStatus?: number;
@@ -593,4 +783,3 @@ export interface PendingAutoArchive {
 export interface IWebhookNotifier {
 	triggerWebhook(event: WebhookEvent, data: any): Promise<void>;
 }
-
