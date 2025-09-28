@@ -1,0 +1,14 @@
+{
+  "task.created": {
+    "text": "📝 New task: ${data.task.title}",
+    "channel": "#tasks"
+  },
+  "task.completed": {
+    "text": "✅ Completed: ${data.task.title}",
+    "channel": "#tasks"
+  },
+  "default": {
+    "text": "TaskNotes: ${event} event triggered",
+    "channel": "#general"
+  }
+}

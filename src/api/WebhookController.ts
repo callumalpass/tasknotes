@@ -286,58 +286,109 @@ export class WebhookController extends BaseController {
 
 	private async applyTransformation(transformFile: string, payload: WebhookPayload): Promise<any> {
 		try {
+			console.log(`🔧 Applying transformation: ${transformFile}`);
+
 			if (transformFile.endsWith('.js')) {
 				return await this.applyJSTransformation(transformFile, payload);
 			} else if (transformFile.endsWith('.json')) {
 				return await this.applyJSONTransformation(transformFile, payload);
 			}
-			
+
 			// Unknown file type, return original payload
+			console.warn(`⚠️ Unknown transform file type for ${transformFile}, using original payload`);
 			return payload;
 		} catch (error) {
-			console.error(`Transformation failed for ${transformFile}:`, error);
+			console.error(`❌ Transformation failed for ${transformFile}:`, error);
 			throw error;
 		}
 	}
 
 	private async applyJSTransformation(transformFile: string, payload: WebhookPayload): Promise<any> {
 		try {
+			console.log(`📂 Reading transform file: ${transformFile}`);
+
 			// Read transformation file from vault
-			const transformCode = await this.plugin.app.vault.adapter.read(transformFile);
-			
+			let transformCode: string;
+			try {
+				transformCode = await this.plugin.app.vault.adapter.read(transformFile);
+				console.log(`✅ Transform file loaded successfully (${transformCode.length} characters)`);
+			} catch (readError: any) {
+				throw new Error(`Failed to read transform file '${transformFile}': ${readError.message}. Please check the file path and ensure it exists in your vault.`);
+			}
+
+			// Validate file has content
+			if (!transformCode.trim()) {
+				throw new Error(`Transform file '${transformFile}' is empty. Please add a transform function.`);
+			}
+
+			// Check for transform function in the code
+			if (!transformCode.includes('function transform')) {
+				console.warn(`⚠️ Transform file '${transformFile}' may not contain a 'transform' function`);
+			}
+
+			console.log(`🔧 Executing transform function for event: ${payload.event}`);
+
 			// Create a safe execution context
 			const transform = new Function('payload', `
 				${transformCode}
 				if (typeof transform === 'function') {
+					console.log("🔥 transform file loaded");
 					return transform(payload);
 				} else {
-					throw new Error('Transform file must export a transform function');
+					throw new Error('Transform file must export a transform function. Expected: function transform(payload) { ... }');
 				}
 			`);
-			
-			return transform(payload);
-		} catch (error) {
-			console.error(`JS transformation error:`, error);
+
+			const result = transform(payload);
+			console.log(`✅ Transform completed successfully for ${transformFile}`);
+			return result;
+		} catch (error: any) {
+			console.error(`❌ JS transformation error for '${transformFile}':`, error.message);
 			throw error;
 		}
 	}
 
 	private async applyJSONTransformation(transformFile: string, payload: WebhookPayload): Promise<any> {
 		try {
+			console.log(`📂 Reading JSON template file: ${transformFile}`);
+
 			// Read template file from vault
-			const templateContent = await this.plugin.app.vault.adapter.read(transformFile);
-			const templates = JSON.parse(templateContent);
-			
+			let templateContent: string;
+			try {
+				templateContent = await this.plugin.app.vault.adapter.read(transformFile);
+				console.log(`✅ JSON template file loaded successfully (${templateContent.length} characters)`);
+			} catch (readError: any) {
+				throw new Error(`Failed to read template file '${transformFile}': ${readError.message}. Please check the file path and ensure it exists in your vault.`);
+			}
+
+			// Validate file has content
+			if (!templateContent.trim()) {
+				throw new Error(`Template file '${transformFile}' is empty. Please add JSON template content.`);
+			}
+
+			// Parse JSON template
+			let templates: any;
+			try {
+				templates = JSON.parse(templateContent);
+			} catch (parseError: any) {
+				throw new Error(`Invalid JSON in template file '${transformFile}': ${parseError.message}`);
+			}
+
+			console.log(`🔧 Applying JSON template for event: ${payload.event}`);
+
 			// Get template for this event or use default
 			const template = templates[payload.event] || templates.default;
 			if (!template) {
-				throw new Error(`No template found for event ${payload.event} and no default template`);
+				const availableEvents = Object.keys(templates).filter(key => key !== 'default');
+				throw new Error(`No template found for event '${payload.event}' and no default template. Available templates: ${availableEvents.join(', ')}`);
 			}
-			
+
 			// Apply template variable substitution
-			return this.interpolateTemplate(template, payload);
-		} catch (error) {
-			console.error(`JSON transformation error:`, error);
+			const result = this.interpolateTemplate(template, payload);
+			console.log(`✅ JSON template applied successfully for ${transformFile}`);
+			return result;
+		} catch (error: any) {
+			console.error(`❌ JSON transformation error for '${transformFile}':`, error.message);
 			throw error;
 		}
 	}
