@@ -675,7 +675,7 @@ export class TaskService {
 						[property]: value,
 					});
 				}
-				await this.plugin.cacheManager.updateTaskInfoInCache(
+				this.plugin.cacheManager.updateTaskInfoInCache(
 					task.path,
 					updatedTask as TaskInfo
 				);
@@ -955,7 +955,7 @@ export class TaskService {
 					archived: updatedTask.archived,
 				});
 			}
-			await this.plugin.cacheManager.updateTaskInfoInCache(updatedTask.path, updatedTask);
+			this.plugin.cacheManager.updateTaskInfoInCache(updatedTask.path, updatedTask);
 		} catch (cacheError) {
 			console.error("Error updating cache for archived task:", cacheError);
 		}
@@ -1039,7 +1039,7 @@ export class TaskService {
 					timeEntries: updatedTask.timeEntries,
 				});
 			}
-			await this.plugin.cacheManager.updateTaskInfoInCache(task.path, updatedTask);
+			this.plugin.cacheManager.updateTaskInfoInCache(task.path, updatedTask);
 		} catch (cacheError) {
 			console.error("Error updating cache for time tracking start:", cacheError);
 		}
@@ -1125,7 +1125,7 @@ export class TaskService {
 					timeEntries: updatedTask.timeEntries,
 				});
 			}
-			await this.plugin.cacheManager.updateTaskInfoInCache(task.path, updatedTask);
+			this.plugin.cacheManager.updateTaskInfoInCache(task.path, updatedTask);
 		} catch (cacheError) {
 			console.error("Error updating cache for time tracking stop:", cacheError);
 		}
@@ -1415,7 +1415,7 @@ export class TaskService {
 						await this.plugin.cacheManager.waitForFreshTaskData(finalFile, keyChanges);
 					}
 				}
-				await this.plugin.cacheManager.updateTaskInfoInCache(newPath, updatedTask);
+				this.plugin.cacheManager.updateTaskInfoInCache(newPath, updatedTask);
 			} catch (cacheError) {
 				// Cache errors shouldn't break the operation, just log them
 				console.error("Error updating task cache:", {
@@ -1783,7 +1783,7 @@ export class TaskService {
 				}
 				await this.plugin.cacheManager.waitForFreshTaskData(file, expectedChanges);
 			}
-			await this.plugin.cacheManager.updateTaskInfoInCache(freshTask.path, updatedTask);
+			this.plugin.cacheManager.updateTaskInfoInCache(freshTask.path, updatedTask);
 		} catch (cacheError) {
 			console.error("Error updating cache for recurring task:", cacheError);
 		}
@@ -1859,7 +1859,7 @@ export class TaskService {
 					timeEntries: updatedTask.timeEntries,
 				});
 			}
-			await this.plugin.cacheManager.updateTaskInfoInCache(task.path, updatedTask);
+			this.plugin.cacheManager.updateTaskInfoInCache(task.path, updatedTask);
 		} catch (cacheError) {
 			console.error("Error updating cache for time entry deletion:", cacheError);
 		}
