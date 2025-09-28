@@ -1,12 +1,12 @@
-import { IncomingMessage, ServerResponse } from "http";
-import { BaseController } from "./BaseController";
-import { NaturalLanguageParser } from "../services/NaturalLanguageParser";
-import { TaskCreationData, IWebhookNotifier } from "../types";
-import { TaskService } from "../services/TaskService";
-import { calculateDefaultDate } from "../utils/helpers";
-import TaskNotesPlugin from "../main";
+import { IncomingMessage, ServerResponse } from 'http';
+import { BaseController } from './BaseController';
+import { NaturalLanguageParser } from '../services/NaturalLanguageParser';
+import { TaskCreationData, IWebhookNotifier } from '../types';
+import { TaskService } from '../services/TaskService';
+import { calculateDefaultDate } from '../utils/helpers';
+import TaskNotesPlugin from '../main';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { generateOpenAPISpec, Get, Post } from "../utils/OpenAPIDecorators";
+import { generateOpenAPISpec, Get, Post } from '../utils/OpenAPIDecorators';
 
 export class SystemController extends BaseController {
 	constructor(
@@ -19,55 +19,47 @@ export class SystemController extends BaseController {
 		super();
 	}
 
-	@Get("/api/health")
+	@Get('/api/health')
 	async healthCheck(req: IncomingMessage, res: ServerResponse): Promise<void> {
 		const vaultName = this.plugin.app.vault.getName();
 		const adapter = this.plugin.app.vault.adapter as any;
-
+		
 		// Try to get vault path information
 		let vaultPath = null;
 		try {
 			// Check if adapter has basePath property (some adapters expose this)
-			if ("basePath" in adapter && typeof adapter.basePath === "string") {
+			if ('basePath' in adapter && typeof adapter.basePath === 'string') {
 				vaultPath = adapter.basePath;
-			} else if ("path" in adapter && typeof adapter.path === "string") {
+			} else if ('path' in adapter && typeof adapter.path === 'string') {
 				vaultPath = adapter.path;
 			}
 		} catch (error) {
 			// Silently fail if vault path isn't accessible
 		}
-
-		this.sendResponse(
-			res,
-			200,
-			this.successResponse({
-				status: "ok",
-				timestamp: new Date().toISOString(),
-				vault: {
-					name: vaultName,
-					path: vaultPath,
-				},
-			})
-		);
+		
+		this.sendResponse(res, 200, this.successResponse({ 
+			status: 'ok', 
+			timestamp: new Date().toISOString(),
+			vault: {
+				name: vaultName,
+				path: vaultPath
+			}
+		}));
 	}
 
-	@Post("/api/nlp/parse")
+	@Post('/api/nlp/parse')
 	async handleNLPParse(req: IncomingMessage, res: ServerResponse): Promise<void> {
 		try {
 			const body = await this.parseRequestBody(req);
-
-			if (!body.text || typeof body.text !== "string") {
-				this.sendResponse(
-					res,
-					400,
-					this.errorResponse("Text field is required and must be a string")
-				);
+			
+			if (!body.text || typeof body.text !== 'string') {
+				this.sendResponse(res, 400, this.errorResponse('Text field is required and must be a string'));
 				return;
 			}
 
 			// Parse the natural language input
 			const parsedData = this.nlParser.parseInput(body.text);
-
+			
 			// Convert ParsedTaskData to TaskCreationData format
 			const taskData: TaskCreationData = {
 				title: parsedData.title,
@@ -78,7 +70,7 @@ export class SystemController extends BaseController {
 				contexts: parsedData.contexts,
 				projects: parsedData.projects,
 				recurrence: parsedData.recurrence,
-				timeEstimate: parsedData.estimate,
+				timeEstimate: parsedData.estimate
 			};
 
 			// Handle dates
@@ -95,36 +87,28 @@ export class SystemController extends BaseController {
 				}
 			}
 
-			this.sendResponse(
-				res,
-				200,
-				this.successResponse({
-					parsed: parsedData,
-					taskData: taskData,
-				})
-			);
+			this.sendResponse(res, 200, this.successResponse({
+				parsed: parsedData,
+				taskData: taskData
+			}));
 		} catch (error: any) {
 			this.sendResponse(res, 500, this.errorResponse(error.message));
 		}
 	}
 
-	@Post("/api/nlp/create")
+	@Post('/api/nlp/create')
 	async handleNLPCreate(req: IncomingMessage, res: ServerResponse): Promise<void> {
 		try {
 			const body = await this.parseRequestBody(req);
-
-			if (!body.text || typeof body.text !== "string") {
-				this.sendResponse(
-					res,
-					400,
-					this.errorResponse("Text field is required and must be a string")
-				);
+			
+			if (!body.text || typeof body.text !== 'string') {
+				this.sendResponse(res, 400, this.errorResponse('Text field is required and must be a string'));
 				return;
 			}
 
 			// Parse the natural language input
 			const parsedData = this.nlParser.parseInput(body.text);
-
+			
 			// Convert ParsedTaskData to TaskCreationData format
 			const taskData: TaskCreationData = {
 				title: parsedData.title,
@@ -136,7 +120,7 @@ export class SystemController extends BaseController {
 				projects: parsedData.projects,
 				recurrence: parsedData.recurrence,
 				timeEstimate: parsedData.estimate,
-				creationContext: "api",
+				creationContext: 'api'
 			};
 
 			// Handle dates
@@ -158,58 +142,53 @@ export class SystemController extends BaseController {
 
 			// Create the task
 			const result = await this.taskService.createTask(taskData);
-
+			
 			// Trigger webhook for task creation via NLP
-			await this.webhookNotifier.triggerWebhook("task.created", {
+			await this.webhookNotifier.triggerWebhook('task.created', { 
 				task: result.taskInfo,
-				source: "nlp",
-				originalText: body.text,
+				source: 'nlp',
+				originalText: body.text
 			});
-
-			this.sendResponse(
-				res,
-				201,
-				this.successResponse({
-					task: result.taskInfo,
-					parsed: parsedData,
-				})
-			);
+			
+			this.sendResponse(res, 201, this.successResponse({
+				task: result.taskInfo,
+				parsed: parsedData
+			}));
 		} catch (error: any) {
 			this.sendResponse(res, 400, this.errorResponse(error.message));
 		}
 	}
 
-	@Get("/api/docs")
+	@Get('/api/docs')
 	async handleOpenAPISpec(req: IncomingMessage, res: ServerResponse): Promise<void> {
 		try {
 			// Use HTTPAPIService's method to get spec from all controllers
-			const spec =
-				this.httpAPIService && this.httpAPIService.generateOpenAPISpec
-					? this.httpAPIService.generateOpenAPISpec()
-					: generateOpenAPISpec(this);
-
+			const spec = this.httpAPIService && this.httpAPIService.generateOpenAPISpec 
+				? this.httpAPIService.generateOpenAPISpec()
+				: generateOpenAPISpec(this);
+			
 			res.statusCode = 200;
-			res.setHeader("Content-Type", "application/json");
-			res.setHeader("Access-Control-Allow-Origin", "*");
+			res.setHeader('Content-Type', 'application/json');
+			res.setHeader('Access-Control-Allow-Origin', '*');
 			res.end(JSON.stringify(spec, null, 2));
 		} catch (error: any) {
-			console.error("OpenAPI spec generation error:", error);
-			this.sendResponse(res, 500, this.errorResponse("Failed to generate API specification"));
+			console.error('OpenAPI spec generation error:', error);
+			this.sendResponse(res, 500, this.errorResponse('Failed to generate API specification'));
 		}
 	}
 
-	@Get("/api/docs/ui")
+	@Get('/api/docs/ui')
 	async handleSwaggerUI(req: IncomingMessage, res: ServerResponse): Promise<void> {
 		try {
 			const swaggerHTML = this.generateSwaggerUIHTML();
-
+			
 			res.statusCode = 200;
-			res.setHeader("Content-Type", "text/html");
-			res.setHeader("Access-Control-Allow-Origin", "*");
+			res.setHeader('Content-Type', 'text/html');
+			res.setHeader('Access-Control-Allow-Origin', '*');
 			res.end(swaggerHTML);
 		} catch (error: any) {
-			console.error("Swagger UI generation error:", error);
-			this.sendResponse(res, 500, this.errorResponse("Failed to generate API documentation"));
+			console.error('Swagger UI generation error:', error);
+			this.sendResponse(res, 500, this.errorResponse('Failed to generate API documentation'));
 		}
 	}
 
@@ -217,29 +196,23 @@ export class SystemController extends BaseController {
 		const defaults = this.plugin.settings.taskCreationDefaults;
 
 		// Apply default scheduled date if not provided
-		if (!taskData.scheduled && defaults.defaultScheduledDate !== "none") {
+		if (!taskData.scheduled && defaults.defaultScheduledDate !== 'none') {
 			taskData.scheduled = calculateDefaultDate(defaults.defaultScheduledDate);
 		}
 
-		// Apply default due date if not provided
-		if (!taskData.due && defaults.defaultDueDate !== "none") {
+		// Apply default due date if not provided  
+		if (!taskData.due && defaults.defaultDueDate !== 'none') {
 			taskData.due = calculateDefaultDate(defaults.defaultDueDate);
 		}
 
 		// Apply default contexts if not provided
 		if (!taskData.contexts && defaults.defaultContexts) {
-			taskData.contexts = defaults.defaultContexts
-				.split(",")
-				.map((c) => c.trim())
-				.filter((c) => c);
+			taskData.contexts = defaults.defaultContexts.split(',').map(c => c.trim()).filter(c => c);
 		}
 
 		// Apply default projects if not provided
 		if (!taskData.projects && defaults.defaultProjects) {
-			taskData.projects = defaults.defaultProjects
-				.split(",")
-				.map((p) => p.trim())
-				.filter((p) => p);
+			taskData.projects = defaults.defaultProjects.split(',').map(p => p.trim()).filter(p => p);
 		}
 
 		// Apply default time estimate if not provided
@@ -249,30 +222,19 @@ export class SystemController extends BaseController {
 
 		// Apply default tags if not provided
 		if (!taskData.tags && defaults.defaultTags) {
-			taskData.tags = defaults.defaultTags
-				.split(",")
-				.map((t) => t.trim())
-				.filter((t) => t);
+			taskData.tags = defaults.defaultTags.split(',').map(t => t.trim()).filter(t => t);
 		}
 
 		// Apply default recurrence if not provided
-		if (
-			!taskData.recurrence &&
-			defaults.defaultRecurrence &&
-			defaults.defaultRecurrence !== "none"
-		) {
+		if (!taskData.recurrence && defaults.defaultRecurrence && defaults.defaultRecurrence !== 'none') {
 			taskData.recurrence = {
-				frequency: defaults.defaultRecurrence,
+				frequency: defaults.defaultRecurrence
 			};
 		}
 
 		// Apply default reminders if not provided
-		if (
-			!taskData.reminders &&
-			defaults.defaultReminders &&
-			defaults.defaultReminders.length > 0
-		) {
-			const { convertDefaultRemindersToReminders } = await import("../utils/settingsUtils");
+		if (!taskData.reminders && defaults.defaultReminders && defaults.defaultReminders.length > 0) {
+			const { convertDefaultRemindersToReminders } = await import('../utils/settingsUtils');
 			taskData.reminders = convertDefaultRemindersToReminders(defaults.defaultReminders);
 		}
 	}
@@ -284,12 +246,12 @@ export class SystemController extends BaseController {
 			const sortedStatuses = [...statusConfigs].sort((a, b) => a.order - b.order);
 			return sortedStatuses[0].value;
 		}
-		return "open"; // fallback
+		return 'open'; // fallback
 	}
 
 	private generateSwaggerUIHTML(): string {
 		const port = this.plugin.settings.apiPort;
-
+		
 		return `<!DOCTYPE html>
 <html lang="en">
 <head>

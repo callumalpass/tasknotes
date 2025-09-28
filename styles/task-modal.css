@@ -243,6 +243,7 @@
     color: var(--text-muted);
 }
 
+
 /* =====================================================================
    ADDITIONAL FIELDS - SETTINGS STYLE
    ===================================================================== */
@@ -721,6 +722,15 @@
     font-size: var(--font-ui-small);
 }
 
+.tasknotes-plugin .task-project-item--unresolved {
+    border: 1px solid var(--color-orange);
+    background: color-mix(in srgb, var(--color-orange) 12%, var(--background-secondary));
+}
+
+.tasknotes-plugin .task-project-item--unresolved .task-project-name {
+    color: var(--color-orange);
+}
+
 /* Make clickable project names in edit modal look and behave like links */
 .tasknotes-plugin .clickable-project .internal-link {
     color: var(--link-color);
@@ -744,6 +754,24 @@
     content: '+';
     color: var(--text-muted);
     margin-right: 2px;
+}
+
+/* Style dependency items the same way when rendered as internal links */
+.tasknotes-plugin .clickable-dependency .task-dependency-link {
+    color: var(--link-color);
+    text-decoration: none;
+    cursor: pointer;
+    font-weight: var(--font-weight-medium);
+    font-size: var(--font-ui-small);
+    border-radius: var(--radius-xs);
+    padding: 1px 2px;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.tasknotes-plugin .clickable-dependency .task-dependency-link:hover {
+    background-color: var(--background-modifier-hover);
+    color: var(--link-color-hover);
+    text-decoration: underline;
 }
 
 .tasknotes-plugin .task-project-path {

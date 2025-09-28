@@ -30,6 +30,7 @@ Each task being a full note means you can write descriptions, jot down thoughts 
 - Project organization using note-based linking
 - Recurring tasks with per-date completion tracking
 - Time tracking with multiple sessions per task
+- Dependency management with blocked-by and blocking relationships
 - Archive function using tags 
 - Filtering and grouping options
 
