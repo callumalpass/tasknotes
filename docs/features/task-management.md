@@ -94,6 +94,7 @@ Each task in TaskNotes is a Markdown file with a YAML frontmatter block that sto
 - **Scheduled Date**: The date on which you plan to work on the task.
 - **Contexts**: Location or tool-based groupings (e.g., "@home", "@work").
 - **Projects**: Links to project notes in your vault that the task belongs to.
+- **Dependencies**: References to other tasks that must complete before this task can proceed, plus the reciprocal list of tasks blocked by the current one.
 - **Tags**: Standard Obsidian tags for categorization.
 - **Time Estimate**: The estimated time required to complete the task, in minutes.
 - **Recurrence**: The pattern for repeating tasks, using the RRule standard.
@@ -125,6 +126,31 @@ TaskCards display visual indicators when tasks are used as projects. These indic
 ### Subtask Creation
 
 Tasks can have subtasks created directly from their context menu. When viewing a task that serves as a project, you can select "Create subtask" to create a new task automatically linked to the current project.
+
+## Dependencies
+
+Task dependencies capture prerequisite work using RFC&nbsp;9253 terminology. Dependencies are stored in frontmatter as structured objects:
+
+```yaml
+blockedBy:
+  - uid: "[[Operations/Order hardware]]"
+    reltype: FINISHTOSTART
+    gap: P1D
+```
+
+- `uid` references the blocking task, typically through an Obsidian wikilink.
+- `reltype` supports `FINISHTOSTART`, `FINISHTOFINISH`, `STARTTOSTART`, and `STARTTOFINISH`. Newly created links default to `FINISHTOSTART`.
+- `gap` is optional and uses ISO&nbsp;8601 duration syntax (for example `PT4H` or `P2D`).
+
+Whenever a dependency is added, TaskNotes updates the upstream note’s `blocking` list so the reverse relationship stays synchronized. Removing a dependency automatically clears both sides.
+
+### Selecting dependencies in the UI
+
+- The task creation and edit modals expose “Blocked by” and “Blocking” buttons that launch a fuzzy task selector. The picker only offers valid tasks, excludes the current note, and prevents duplicate entries.
+- The task context menu provides the same selector, enabling dependency management directly from the Task List, Kanban, and calendar views.
+- Task cards show a fork icon whenever a task blocks other work. Clicking it expands an inline list of downstream tasks without triggering the parent card’s modal, so you can inspect dependents in place.
+
+These controls adopt sensible defaults while allowing you to adjust relationship type or gap when the schedule requires more precision.
 
 ## Automation
 

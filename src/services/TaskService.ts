@@ -2,6 +2,7 @@ import {
 	EVENT_TASK_DELETED,
 	EVENT_TASK_UPDATED,
 	TaskCreationData,
+	TaskDependency,
 	TaskInfo,
 	TimeEntry,
 	IWebhookNotifier,
@@ -24,7 +25,12 @@ import {
 	updateToNextScheduledOccurrence,
 	splitFrontmatterAndBody,
 } from "../utils/helpers";
-import { formatDependencyLink, resolveDependencyEntry } from "../utils/dependencyUtils";
+import {
+	DEFAULT_DEPENDENCY_RELTYPE,
+	formatDependencyLink,
+	normalizeDependencyEntry,
+	resolveDependencyEntry,
+} from "../utils/dependencyUtils";
 import {
 	formatDateForStorage,
 	getCurrentDateString,
@@ -1519,7 +1525,7 @@ export class TaskService {
 		currentTask: TaskInfo,
 		addedBlockedTaskPaths: string[],
 		removedBlockedTaskPaths: string[],
-		rawEntries: Record<string, string> = {}
+		rawEntries: Record<string, TaskDependency | string> = {}
 	): Promise<void> {
 		// This method is called when the current task's "blocking" list is updated in the UI.
 		// The current task is the one blocking other tasks.
@@ -1562,7 +1568,8 @@ export class TaskService {
 			const updatedBlockedBy = this.computeBlockedByUpdate(
 				blockedTask,
 				currentTask.path,
-				"add"
+				"add",
+				rawEntries[blockedTaskPath]
 			);
 			if (updatedBlockedBy === null) {
 				continue;
@@ -1576,16 +1583,21 @@ export class TaskService {
 		blockedTask: TaskInfo,
 		blockingTaskPath: string,
 		action: "add" | "remove",
-		rawEntry?: string
-	): string[] | null {
-		const existing = Array.isArray(blockedTask.blockedBy) ? [...blockedTask.blockedBy] : [];
+		rawEntry?: TaskDependency | string
+	): TaskDependency[] | null {
+		const existing = Array.isArray(blockedTask.blockedBy)
+			? blockedTask.blockedBy
+					.map((entry) => normalizeDependencyEntry(entry))
+					.filter((entry): entry is TaskDependency => !!entry)
+			: [];
+
 		if (existing.length === 0 && action === "remove") {
 			return null;
 		}
 
 		let modified = false;
 		let hasExistingEntry = false;
-		const result: string[] = [];
+		const result: TaskDependency[] = [];
 
 		for (const entry of existing) {
 			const resolved = resolveDependencyEntry(this.plugin.app, blockedTask.path, entry);
@@ -1599,16 +1611,18 @@ export class TaskService {
 			result.push(entry);
 		}
 
-		if (action === "add") {
-			if (!hasExistingEntry) {
-				const trimmed = rawEntry?.trim();
-				const entryToAdd =
-					trimmed && trimmed.length > 0
-						? trimmed
-						: formatDependencyLink(this.plugin.app, blockedTask.path, blockingTaskPath);
-				result.push(entryToAdd);
-				modified = true;
+		if (action === "add" && !hasExistingEntry) {
+			const normalizedIncoming = rawEntry ? normalizeDependencyEntry(rawEntry) : null;
+			const uid = formatDependencyLink(this.plugin.app, blockedTask.path, blockingTaskPath);
+			const dependency: TaskDependency = {
+				uid,
+				reltype: normalizedIncoming?.reltype ?? DEFAULT_DEPENDENCY_RELTYPE,
+			};
+			if (normalizedIncoming?.gap) {
+				dependency.gap = normalizedIncoming.gap;
 			}
+			result.push(dependency);
+			modified = true;
 		}
 
 		if (!modified) {

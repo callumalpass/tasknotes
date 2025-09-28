@@ -4041,6 +4041,7 @@
     "contextMenus.task.dependencies.notices.blockingAdded": null,
     "contextMenus.task.dependencies.notices.blockingRemoved": null,
     "contextMenus.task.dependencies.notices.unresolved": null,
+    "contextMenus.task.dependencies.notices.noEligibleTasks": null,
     "contextMenus.task.dependencies.notices.updateFailed": null,
     "contextMenus.task.subtasks.loading": {
       "source": "df656368163a3d196b63857636b0ee9e2a41273d",
@@ -9341,6 +9342,7 @@
     "contextMenus.task.dependencies.notices.blockingAdded": null,
     "contextMenus.task.dependencies.notices.blockingRemoved": null,
     "contextMenus.task.dependencies.notices.unresolved": null,
+    "contextMenus.task.dependencies.notices.noEligibleTasks": null,
     "contextMenus.task.dependencies.notices.updateFailed": null,
     "contextMenus.task.subtasks.loading": {
       "source": "df656368163a3d196b63857636b0ee9e2a41273d",
@@ -14710,6 +14712,10 @@
       "source": "545b04083e38f5969b9605a0ac51686b3124d5c8",
       "translation": "fc72ec3922b3f11d47e83b81791c5ca377fe498b"
     },
+    "contextMenus.task.dependencies.notices.noEligibleTasks": {
+      "source": "cbde1bf24f51daea65f8878a2dacd0ed80fd651a",
+      "translation": "26457a7e4405382836d58e61eebdfb3de8430d64"
+    },
     "contextMenus.task.dependencies.notices.updateFailed": {
       "source": "9d6d4726a51b50bb7ae7926ee341d84f79de7442",
       "translation": "524baeca9566ac70974aec26e31fdb9d6b42de85"
@@ -20013,6 +20019,7 @@
     "contextMenus.task.dependencies.notices.blockingAdded": null,
     "contextMenus.task.dependencies.notices.blockingRemoved": null,
     "contextMenus.task.dependencies.notices.unresolved": null,
+    "contextMenus.task.dependencies.notices.noEligibleTasks": null,
     "contextMenus.task.dependencies.notices.updateFailed": null,
     "contextMenus.task.subtasks.loading": {
       "source": "df656368163a3d196b63857636b0ee9e2a41273d",
@@ -25382,6 +25389,10 @@
       "source": "545b04083e38f5969b9605a0ac51686b3124d5c8",
       "translation": "546fd5c893b1f98feba0e33cc0262944e6647422"
     },
+    "contextMenus.task.dependencies.notices.noEligibleTasks": {
+      "source": "cbde1bf24f51daea65f8878a2dacd0ed80fd651a",
+      "translation": "87bb081776bd6577c5b88087fe22e8fbe78f7257"
+    },
     "contextMenus.task.dependencies.notices.updateFailed": {
       "source": "9d6d4726a51b50bb7ae7926ee341d84f79de7442",
       "translation": "36dd859841a66950608a9714ef907b38ba70de0c"
@@ -30685,6 +30696,7 @@
     "contextMenus.task.dependencies.notices.blockingAdded": null,
     "contextMenus.task.dependencies.notices.blockingRemoved": null,
     "contextMenus.task.dependencies.notices.unresolved": null,
+    "contextMenus.task.dependencies.notices.noEligibleTasks": null,
     "contextMenus.task.dependencies.notices.updateFailed": null,
     "contextMenus.task.subtasks.loading": {
       "source": "df656368163a3d196b63857636b0ee9e2a41273d",

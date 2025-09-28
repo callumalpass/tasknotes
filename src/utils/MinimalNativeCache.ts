@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 import { TFile, App, Events, EventRef, parseLinktext } from "obsidian";
-import { TaskInfo, NoteInfo } from "../types";
+import { TaskInfo, NoteInfo, TaskDependency } from "../types";
 import { FieldMapper } from "../services/FieldMapper";
 import {
 	getTodayString,
@@ -10,7 +10,7 @@ import {
 	formatDateForStorage,
 } from "./dateUtils";
 import { filterEmptyProjects, calculateTotalTimeSpent } from "./helpers";
-import { resolveDependencyEntry } from "./dependencyUtils";
+import { normalizeDependencyList, resolveDependencyEntry } from "./dependencyUtils";
 import { TaskNotesSettings } from "../types/settings";
 
 /**
@@ -1221,7 +1221,7 @@ export class MinimalNativeCache extends Events {
 
 	private updateDependencyIndexes(
 		taskPath: string,
-		blockedByEntries: string[]
+		blockedByEntries: TaskDependency[]
 	): { resolvedBlockers: string[]; blocking: string[] } {
 		const previousBlockers = this.dependencySources.get(taskPath);
 		if (previousBlockers) {
@@ -1646,11 +1646,7 @@ export class MinimalNativeCache extends Events {
 				this.storeTitleInFilename
 			);
 
-			const blockedByEntries = Array.isArray(mappedTask.blockedBy)
-				? (mappedTask.blockedBy.filter(
-						(entry: unknown) => typeof entry === "string"
-					) as string[])
-				: [];
+			const blockedByEntries = normalizeDependencyList(mappedTask.blockedBy) ?? [];
 			const { resolvedBlockers, blocking } = this.updateDependencyIndexes(
 				path,
 				blockedByEntries

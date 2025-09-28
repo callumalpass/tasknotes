@@ -1,14 +1,19 @@
 import { Menu, Notice, TFile } from "obsidian";
 import TaskNotesPlugin from "../main";
-import { TaskInfo } from "../types";
+import { TaskDependency, TaskInfo } from "../types";
 import { formatDateForStorage } from "../utils/dateUtils";
 import { ReminderModal } from "../modals/ReminderModal";
 import { CalendarExportService } from "../services/CalendarExportService";
 import { showConfirmationModal } from "../modals/ConfirmationModal";
-import { showTextInputModal } from "../modals/TextInputModal";
 import { DateContextMenu } from "./DateContextMenu";
 import { RecurrenceContextMenu } from "./RecurrenceContextMenu";
-import { parseDependencyInput, resolveDependencyEntry } from "../utils/dependencyUtils";
+import { showTextInputModal } from "../modals/TextInputModal";
+import { TaskSelectorModal } from "../modals/TaskSelectorModal";
+import {
+	DEFAULT_DEPENDENCY_RELTYPE,
+	formatDependencyLink,
+	normalizeDependencyEntry,
+} from "../utils/dependencyUtils";
 
 export interface TaskContextMenuOptions {
 	task: TaskInfo;
@@ -573,36 +578,9 @@ export class TaskContextMenu {
 		menu.addItem((subItem: any) => {
 			subItem.setTitle(this.t("contextMenus.task.dependencies.addBlockedBy"));
 			subItem.setIcon("link-2");
-			subItem.onClick(async () => {
-				try {
-					const value = await showTextInputModal(plugin.app, {
-						title: this.t("contextMenus.task.dependencies.addBlockedByTitle"),
-						placeholder: this.t("contextMenus.task.dependencies.inputPlaceholder"),
-					});
-
-					if (!value) {
-						return;
-					}
-
-					const additions = parseDependencyInput(value);
-					if (additions.length === 0) {
-						new Notice(this.t("contextMenus.task.dependencies.notices.noEntries"));
-						return;
-					}
-
-					const existing = [...blockedByEntries];
-					const combined = this.dedupeDependencyEntries([...existing, ...additions]);
-					await plugin.updateTaskProperty(task, "blockedBy", combined);
-					new Notice(
-						this.t("contextMenus.task.dependencies.notices.blockedByAdded", {
-							count: additions.length,
-						})
-					);
-					this.options.onUpdate?.();
-				} catch (error) {
-					console.error("Failed to add blocked-by dependency:", error);
-					new Notice(this.t("contextMenus.task.dependencies.notices.updateFailed"));
-				}
+			subItem.onClick(() => {
+				this.menu.hide();
+				void this.openBlockedBySelector(task, plugin);
 			});
 		});
 
@@ -612,19 +590,18 @@ export class TaskContextMenu {
 				subItem.setTitle(this.t("contextMenus.task.dependencies.removeBlockedBy"));
 				subItem.setIcon("unlink");
 				const innerMenu = (subItem as any).setSubmenu();
-				blockedByEntries.forEach((entry) => {
+				blockedByEntries.forEach((entry, index) => {
 					innerMenu.addItem((item: any) => {
-						item.setTitle(entry);
+						item.setTitle(entry.uid);
 						item.onClick(async () => {
 							try {
-								const remaining = blockedByEntries.filter(
-									(existing) => existing !== entry
-								);
-								await plugin.updateTaskProperty(
+								const remaining = blockedByEntries.filter((_, i) => i !== index);
+								const updatedTask = await plugin.updateTaskProperty(
 									task,
 									"blockedBy",
 									remaining.length > 0 ? remaining : undefined
 								);
+								Object.assign(task, updatedTask);
 								new Notice(
 									this.t(
 										"contextMenus.task.dependencies.notices.blockedByRemoved"
@@ -648,50 +625,9 @@ export class TaskContextMenu {
 		menu.addItem((subItem: any) => {
 			subItem.setTitle(this.t("contextMenus.task.dependencies.addBlocking"));
 			subItem.setIcon("git-branch-plus");
-			subItem.onClick(async () => {
-				try {
-					const value = await showTextInputModal(plugin.app, {
-						title: this.t("contextMenus.task.dependencies.addBlockingTitle"),
-						placeholder: this.t("contextMenus.task.dependencies.inputPlaceholder"),
-					});
-
-					if (!value) {
-						return;
-					}
-
-					const entries = parseDependencyInput(value);
-					if (entries.length === 0) {
-						new Notice(this.t("contextMenus.task.dependencies.notices.noEntries"));
-						return;
-					}
-
-					const { added, raw, unresolved } = this.resolveBlockingEntries(
-						task,
-						entries,
-						plugin
-					);
-
-					if (added.length > 0) {
-						await plugin.taskService.updateBlockingRelationships(task, added, [], raw);
-						new Notice(
-							this.t("contextMenus.task.dependencies.notices.blockingAdded", {
-								count: added.length,
-							})
-						);
-						this.options.onUpdate?.();
-					}
-
-					if (unresolved.length > 0) {
-						new Notice(
-							this.t("contextMenus.task.dependencies.notices.unresolved", {
-								entries: unresolved.join(", "),
-							})
-						);
-					}
-				} catch (error) {
-					console.error("Failed to add blocking dependency:", error);
-					new Notice(this.t("contextMenus.task.dependencies.notices.updateFailed"));
-				}
+			subItem.onClick(() => {
+				this.menu.hide();
+				void this.openBlockingSelector(task, plugin);
 			});
 		});
 
@@ -717,6 +653,10 @@ export class TaskContextMenu {
 									[path],
 									{}
 								);
+								const refreshed = await plugin.cacheManager.getTaskInfo(task.path);
+								if (refreshed) {
+									Object.assign(task, refreshed);
+								}
 								new Notice(
 									this.t("contextMenus.task.dependencies.notices.blockingRemoved")
 								);
@@ -734,42 +674,156 @@ export class TaskContextMenu {
 		}
 	}
 
-	private dedupeDependencyEntries(entries: string[]): string[] {
-		const seen = new Set<string>();
-		const result: string[] = [];
+	private dedupeDependencyEntries(entries: Array<TaskDependency | string>): TaskDependency[] {
+		const seen = new Map<string, TaskDependency>();
 		for (const entry of entries) {
-			const key = entry.trim();
-			if (!seen.has(key)) {
-				seen.add(key);
-				result.push(entry);
-			}
-		}
-		return result;
-	}
-
-	private resolveBlockingEntries(
-		task: TaskInfo,
-		entries: string[],
-		plugin: TaskNotesPlugin
-	): { added: string[]; raw: Record<string, string>; unresolved: string[] } {
-		const added: string[] = [];
-		const raw: Record<string, string> = {};
-		const unresolved: string[] = [];
-
-		for (const entry of entries) {
-			const resolved = resolveDependencyEntry(plugin.app, task.path, entry);
-			if (!resolved) {
-				unresolved.push(entry);
+			const normalized = normalizeDependencyEntry(entry);
+			if (!normalized) {
 				continue;
 			}
-
-			if (!added.includes(resolved.path)) {
-				added.push(resolved.path);
-				raw[resolved.path] = entry;
+			const key = this.getDependencyKey(normalized);
+			if (!seen.has(key)) {
+				seen.set(key, normalized);
 			}
 		}
+		return Array.from(seen.values());
+	}
 
-		return { added, raw, unresolved };
+	private async openBlockedBySelector(task: TaskInfo, plugin: TaskNotesPlugin): Promise<void> {
+		const existingUids = new Set(
+			(Array.isArray(task.blockedBy) ? task.blockedBy : []).map((dependency) => dependency.uid)
+		);
+		await this.openTaskDependencySelector(
+			plugin,
+			(candidate) => {
+				if (candidate.path === task.path) return false;
+				const candidateUid = formatDependencyLink(plugin.app, task.path, candidate.path);
+				return !existingUids.has(candidateUid);
+			},
+			async (selected) => {
+				await this.handleBlockedBySelection(task, plugin, selected);
+			}
+		);
+	}
+
+	private async openBlockingSelector(task: TaskInfo, plugin: TaskNotesPlugin): Promise<void> {
+		const existingPaths = new Set(task.blocking ?? []);
+		await this.openTaskDependencySelector(
+			plugin,
+			(candidate) => {
+				if (candidate.path === task.path) return false;
+				return !existingPaths.has(candidate.path);
+			},
+			async (selected) => {
+				await this.handleBlockingSelection(task, plugin, selected);
+			}
+		);
+	}
+
+	private async openTaskDependencySelector(
+		plugin: TaskNotesPlugin,
+		filter: (candidate: TaskInfo) => boolean,
+		onSelect: (selected: TaskInfo) => Promise<void>
+	): Promise<void> {
+		try {
+			const cacheManager: any = plugin.cacheManager;
+			const allTasks: TaskInfo[] = (await cacheManager?.getAllTasks?.()) ?? [];
+			const candidates = allTasks.filter(filter);
+
+			if (candidates.length === 0) {
+				new Notice(
+					this.t("contextMenus.task.dependencies.notices.noEligibleTasks")
+				);
+				return;
+			}
+
+			const selector = new TaskSelectorModal(plugin.app, plugin, candidates, async (task) => {
+				if (!task) return;
+				await onSelect(task);
+			});
+			selector.open();
+		} catch (error) {
+			console.error("Failed to open task selector for dependencies:", error);
+			new Notice(this.t("contextMenus.task.dependencies.notices.updateFailed"));
+		}
+	}
+
+	private async handleBlockedBySelection(
+		task: TaskInfo,
+		plugin: TaskNotesPlugin,
+		selectedTask: TaskInfo
+	): Promise<void> {
+		if (selectedTask.path === task.path) {
+			return;
+		}
+
+		try {
+			const dependency: TaskDependency = {
+				uid: formatDependencyLink(plugin.app, task.path, selectedTask.path),
+				reltype: DEFAULT_DEPENDENCY_RELTYPE,
+			};
+			const existing = Array.isArray(task.blockedBy) ? task.blockedBy : [];
+			const combined = this.dedupeDependencyEntries([...existing, dependency]);
+			if (combined.length === existing.length) {
+				return;
+			}
+
+			const updatedTask = await plugin.updateTaskProperty(task, "blockedBy", combined);
+			Object.assign(task, updatedTask);
+
+			new Notice(
+				this.t("contextMenus.task.dependencies.notices.blockedByAdded", { count: 1 })
+			);
+			this.options.onUpdate?.();
+		} catch (error) {
+			console.error("Failed to add blocked-by dependency via selector:", error);
+			new Notice(this.t("contextMenus.task.dependencies.notices.updateFailed"));
+		}
+	}
+
+	private async handleBlockingSelection(
+		task: TaskInfo,
+		plugin: TaskNotesPlugin,
+		selectedTask: TaskInfo
+	): Promise<void> {
+		const blockedPath = selectedTask.path;
+		if (blockedPath === task.path) {
+			return;
+		}
+		if (task.blocking?.includes(blockedPath)) {
+			return;
+		}
+
+		try {
+			const rawEntry: TaskDependency = {
+				uid: formatDependencyLink(plugin.app, blockedPath, task.path),
+				reltype: DEFAULT_DEPENDENCY_RELTYPE,
+			};
+			await plugin.taskService.updateBlockingRelationships(task, [blockedPath], [], {
+				[blockedPath]: rawEntry,
+			});
+
+			const refreshed = await plugin.cacheManager.getTaskInfo(task.path);
+			if (refreshed) {
+				Object.assign(task, refreshed);
+			} else if (Array.isArray(task.blocking)) {
+				task.blocking = Array.from(new Set([...task.blocking, blockedPath]));
+			} else {
+				task.blocking = [blockedPath];
+			}
+
+			new Notice(
+				this.t("contextMenus.task.dependencies.notices.blockingAdded", { count: 1 })
+			);
+			this.options.onUpdate?.();
+		} catch (error) {
+			console.error("Failed to add blocking dependency via selector:", error);
+			new Notice(this.t("contextMenus.task.dependencies.notices.updateFailed"));
+		}
+	}
+
+	private getDependencyKey(entry: TaskDependency): string {
+		return `${entry.uid}::${entry.reltype}::${entry.gap ?? ""}`;
 	}
 
 	private updateMainMenuIconColors(task: TaskInfo, plugin: TaskNotesPlugin): void {
