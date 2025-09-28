@@ -46,6 +46,7 @@ export const en: TranslationTree = {
 		agenda: {
 			title: "Agenda",
 			today: "Today",
+			overdue: "Overdue",
 			refreshCalendars: "Refresh calendars",
 			actions: {
 				previousPeriod: "Previous period",
@@ -55,6 +56,7 @@ export const en: TranslationTree = {
 			},
 			loading: "Loading agenda...",
 			dayToggle: "Toggle day",
+			overdueToggle: "Toggle overdue section",
 			expandAllDays: "Expand All Days",
 			collapseAllDays: "Collapse All Days",
 			notices: {

@@ -2554,6 +2554,87 @@ export class FilterService extends EventEmitter {
 	}
 
 	/**
+	 * Get overdue tasks for the agenda view
+	 * These are tasks that have due or scheduled dates before today
+	 */
+	async getOverdueTasks(baseQuery: FilterQuery): Promise<TaskInfo[]> {
+		// Get all tasks and filter using the base query
+		const allTaskPaths = this.cacheManager.getAllTaskPaths();
+		const allTasks = await this.pathsToTaskInfos(Array.from(allTaskPaths));
+		const filteredTasks = allTasks.filter((task) => this.evaluateFilterNode(baseQuery, task));
+
+		const overdueTasks = filteredTasks.filter((task) => {
+			const isCompleted = this.statusManager.isCompletedStatus(task.status);
+			const hideCompletedFromOverdue =
+				this.plugin?.settings?.hideCompletedFromOverdue ?? true;
+
+			// Handle recurring tasks - they are not considered overdue in this context
+			// as they appear on their scheduled recurrence dates
+			if (task.recurrence) {
+				return false;
+			}
+
+			// Check if due date is overdue
+			if (task.due) {
+				if (isOverdueTimeAware(task.due, isCompleted, hideCompletedFromOverdue)) {
+					return true;
+				}
+			}
+
+			// Check if scheduled date is overdue
+			if (task.scheduled) {
+				if (isOverdueTimeAware(task.scheduled, isCompleted, hideCompletedFromOverdue)) {
+					return true;
+				}
+			}
+
+			return false;
+		});
+
+		// Apply sorting to the overdue tasks
+		return this.sortTasks(
+			overdueTasks,
+			baseQuery.sortKey || "due",
+			baseQuery.sortDirection || "asc"
+		);
+	}
+
+	/**
+	 * Get enhanced agenda data with separate overdue section
+	 */
+	async getAgendaDataWithOverdue(
+		dates: Date[],
+		baseQuery: FilterQuery,
+		showOverdueSection = false
+	): Promise<{
+		dailyData: Array<{ date: Date; tasks: TaskInfo[] }>;
+		overdueTasks: TaskInfo[];
+	}> {
+		// Get tasks for each specific date (no overdue mixing)
+		const dailyData: Array<{ date: Date; tasks: TaskInfo[] }> = [];
+		for (const date of dates) {
+			const tasksForDate = await this.getTasksForDate(
+				date,
+				baseQuery,
+				false // Never include overdue in daily sections
+			);
+
+			dailyData.push({
+				date: new Date(date),
+				tasks: tasksForDate,
+			});
+		}
+
+		// Get overdue tasks separately if requested
+		const overdueTasks = showOverdueSection ? await this.getOverdueTasks(baseQuery) : [];
+
+		return {
+			dailyData,
+			overdueTasks,
+		};
+	}
+
+	/**
 	 * Get agenda data grouped by dates for agenda views
 	 * Simplified for new filter system
 	 */
