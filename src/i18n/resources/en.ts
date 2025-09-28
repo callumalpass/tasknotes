@@ -1575,6 +1575,16 @@ export const en: TranslationTree = {
 			},
 		},
 		taskSelector: {
+			title: "Select task",
+			placeholder: "Type to search for tasks...",
+			instructions: {
+				navigate: "to navigate",
+				select: "to select",
+				dismiss: "to cancel",
+			},
+			notices: {
+				noteNotFound: 'Could not find note "{name}"',
+			},
 			dueDate: {
 				overdue: "Due: {date} (overdue)",
 				today: "Due: Today",

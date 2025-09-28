@@ -3388,6 +3388,16 @@
     "modals.task.dependencies.addTaskButton": null,
     "modals.task.dependencies.selectTaskTooltip": null,
     "modals.task.dependencies.removeTaskTooltip": null,
+    "modals.task.organization.projects": null,
+    "modals.task.organization.subtasks": null,
+    "modals.task.organization.addToProject": null,
+    "modals.task.organization.addToProjectButton": null,
+    "modals.task.organization.addSubtasks": null,
+    "modals.task.organization.addSubtasksButton": null,
+    "modals.task.organization.addSubtasksTooltip": null,
+    "modals.task.organization.removeSubtaskTooltip": null,
+    "modals.task.organization.notices.noEligibleSubtasks": null,
+    "modals.task.organization.notices.subtaskSelectFailed": null,
     "modals.task.customFieldsLabel": {
       "source": "143b179529aecd0bdc5aa86599fe60057b83d32b",
       "translation": "7d3d8436efecaa9f20ce24761b137b89eac2bdcc"
@@ -3540,6 +3550,14 @@
       "source": "0fe4ddf98d535f0b7e919aec9630254b1d2ad167",
       "translation": "0fe4ddf98d535f0b7e919aec9630254b1d2ad167"
     },
+    "modals.taskSelector.title": null,
+    "modals.taskSelector.placeholder": null,
+    "modals.taskSelector.instructions.navigate": null,
+    "modals.taskSelector.instructions.select": null,
+    "modals.taskSelector.instructions.dismiss": null,
+    "modals.taskSelector.notices.noteNotFound": null,
+    "modals.taskSelector.dueDate.overdue": null,
+    "modals.taskSelector.dueDate.today": null,
     "modals.taskCreation.title": {
       "source": "f1f1450ff80aeab91cb0853329e2b454904866e2",
       "translation": "488d83103a8236915faa3e85250e6f7a4be0ee0b"
@@ -4043,6 +4061,21 @@
     "contextMenus.task.dependencies.notices.unresolved": null,
     "contextMenus.task.dependencies.notices.noEligibleTasks": null,
     "contextMenus.task.dependencies.notices.updateFailed": null,
+    "contextMenus.task.organization.title": null,
+    "contextMenus.task.organization.projects": null,
+    "contextMenus.task.organization.addToProject": null,
+    "contextMenus.task.organization.subtasks": null,
+    "contextMenus.task.organization.addSubtasks": null,
+    "contextMenus.task.organization.notices.alreadyInProject": null,
+    "contextMenus.task.organization.notices.alreadySubtask": null,
+    "contextMenus.task.organization.notices.addedToProject": null,
+    "contextMenus.task.organization.notices.addedAsSubtask": null,
+    "contextMenus.task.organization.notices.addToProjectFailed": null,
+    "contextMenus.task.organization.notices.addAsSubtaskFailed": null,
+    "contextMenus.task.organization.notices.projectSelectFailed": null,
+    "contextMenus.task.organization.notices.subtaskSelectFailed": null,
+    "contextMenus.task.organization.notices.noEligibleSubtasks": null,
+    "contextMenus.task.organization.notices.currentTaskNotFound": null,
     "contextMenus.task.subtasks.loading": {
       "source": "df656368163a3d196b63857636b0ee9e2a41273d",
       "translation": "a7339f070dc53929cab516aa05b587a0bd25319c"
@@ -8689,6 +8722,16 @@
     "modals.task.dependencies.addTaskButton": null,
     "modals.task.dependencies.selectTaskTooltip": null,
     "modals.task.dependencies.removeTaskTooltip": null,
+    "modals.task.organization.projects": null,
+    "modals.task.organization.subtasks": null,
+    "modals.task.organization.addToProject": null,
+    "modals.task.organization.addToProjectButton": null,
+    "modals.task.organization.addSubtasks": null,
+    "modals.task.organization.addSubtasksButton": null,
+    "modals.task.organization.addSubtasksTooltip": null,
+    "modals.task.organization.removeSubtaskTooltip": null,
+    "modals.task.organization.notices.noEligibleSubtasks": null,
+    "modals.task.organization.notices.subtaskSelectFailed": null,
     "modals.task.customFieldsLabel": {
       "source": "143b179529aecd0bdc5aa86599fe60057b83d32b",
       "translation": "f801a31165b3ed6f937579f5d006937f4e7f9d0e"
@@ -8841,6 +8884,14 @@
       "source": "0fe4ddf98d535f0b7e919aec9630254b1d2ad167",
       "translation": "0fe4ddf98d535f0b7e919aec9630254b1d2ad167"
     },
+    "modals.taskSelector.title": null,
+    "modals.taskSelector.placeholder": null,
+    "modals.taskSelector.instructions.navigate": null,
+    "modals.taskSelector.instructions.select": null,
+    "modals.taskSelector.instructions.dismiss": null,
+    "modals.taskSelector.notices.noteNotFound": null,
+    "modals.taskSelector.dueDate.overdue": null,
+    "modals.taskSelector.dueDate.today": null,
     "modals.taskCreation.title": {
       "source": "f1f1450ff80aeab91cb0853329e2b454904866e2",
       "translation": "fa53244edbfdb1336b1bca3df1c16839b71e3fa7"
@@ -9344,6 +9395,21 @@
     "contextMenus.task.dependencies.notices.unresolved": null,
     "contextMenus.task.dependencies.notices.noEligibleTasks": null,
     "contextMenus.task.dependencies.notices.updateFailed": null,
+    "contextMenus.task.organization.title": null,
+    "contextMenus.task.organization.projects": null,
+    "contextMenus.task.organization.addToProject": null,
+    "contextMenus.task.organization.subtasks": null,
+    "contextMenus.task.organization.addSubtasks": null,
+    "contextMenus.task.organization.notices.alreadyInProject": null,
+    "contextMenus.task.organization.notices.alreadySubtask": null,
+    "contextMenus.task.organization.notices.addedToProject": null,
+    "contextMenus.task.organization.notices.addedAsSubtask": null,
+    "contextMenus.task.organization.notices.addToProjectFailed": null,
+    "contextMenus.task.organization.notices.addAsSubtaskFailed": null,
+    "contextMenus.task.organization.notices.projectSelectFailed": null,
+    "contextMenus.task.organization.notices.subtaskSelectFailed": null,
+    "contextMenus.task.organization.notices.noEligibleSubtasks": null,
+    "contextMenus.task.organization.notices.currentTaskNotFound": null,
     "contextMenus.task.subtasks.loading": {
       "source": "df656368163a3d196b63857636b0ee9e2a41273d",
       "translation": "191253f1a369e755352737abb35969a9db4b4079"
@@ -14008,6 +14074,16 @@
       "source": "5be1bc9e1837b131abac53534235a44b4bca541e",
       "translation": "276b299a986fcd43e518ea337f28cfa18f0d8428"
     },
+    "modals.task.organization.projects": null,
+    "modals.task.organization.subtasks": null,
+    "modals.task.organization.addToProject": null,
+    "modals.task.organization.addToProjectButton": null,
+    "modals.task.organization.addSubtasks": null,
+    "modals.task.organization.addSubtasksButton": null,
+    "modals.task.organization.addSubtasksTooltip": null,
+    "modals.task.organization.removeSubtaskTooltip": null,
+    "modals.task.organization.notices.noEligibleSubtasks": null,
+    "modals.task.organization.notices.subtaskSelectFailed": null,
     "modals.task.customFieldsLabel": {
       "source": "143b179529aecd0bdc5aa86599fe60057b83d32b",
       "translation": "3b3eae0b1b54b8f551d41a0dea45ab0c79b93b7a"
@@ -14160,6 +14236,14 @@
       "source": "0fe4ddf98d535f0b7e919aec9630254b1d2ad167",
       "translation": "08283d1e721977b2fa053c3da59ec2ed1d77f737"
     },
+    "modals.taskSelector.title": null,
+    "modals.taskSelector.placeholder": null,
+    "modals.taskSelector.instructions.navigate": null,
+    "modals.taskSelector.instructions.select": null,
+    "modals.taskSelector.instructions.dismiss": null,
+    "modals.taskSelector.notices.noteNotFound": null,
+    "modals.taskSelector.dueDate.overdue": null,
+    "modals.taskSelector.dueDate.today": null,
     "modals.taskCreation.title": {
       "source": "f1f1450ff80aeab91cb0853329e2b454904866e2",
       "translation": "755f02296f51c5f77f9e4e2fc0f2e74a53baf796"
@@ -14720,6 +14804,21 @@
       "source": "9d6d4726a51b50bb7ae7926ee341d84f79de7442",
       "translation": "524baeca9566ac70974aec26e31fdb9d6b42de85"
     },
+    "contextMenus.task.organization.title": null,
+    "contextMenus.task.organization.projects": null,
+    "contextMenus.task.organization.addToProject": null,
+    "contextMenus.task.organization.subtasks": null,
+    "contextMenus.task.organization.addSubtasks": null,
+    "contextMenus.task.organization.notices.alreadyInProject": null,
+    "contextMenus.task.organization.notices.alreadySubtask": null,
+    "contextMenus.task.organization.notices.addedToProject": null,
+    "contextMenus.task.organization.notices.addedAsSubtask": null,
+    "contextMenus.task.organization.notices.addToProjectFailed": null,
+    "contextMenus.task.organization.notices.addAsSubtaskFailed": null,
+    "contextMenus.task.organization.notices.projectSelectFailed": null,
+    "contextMenus.task.organization.notices.subtaskSelectFailed": null,
+    "contextMenus.task.organization.notices.noEligibleSubtasks": null,
+    "contextMenus.task.organization.notices.currentTaskNotFound": null,
     "contextMenus.task.subtasks.loading": {
       "source": "df656368163a3d196b63857636b0ee9e2a41273d",
       "translation": "63cfd51c99bfb46671646eaf4b13acc1cab822e0"
@@ -19366,6 +19465,16 @@
     "modals.task.dependencies.addTaskButton": null,
     "modals.task.dependencies.selectTaskTooltip": null,
     "modals.task.dependencies.removeTaskTooltip": null,
+    "modals.task.organization.projects": null,
+    "modals.task.organization.subtasks": null,
+    "modals.task.organization.addToProject": null,
+    "modals.task.organization.addToProjectButton": null,
+    "modals.task.organization.addSubtasks": null,
+    "modals.task.organization.addSubtasksButton": null,
+    "modals.task.organization.addSubtasksTooltip": null,
+    "modals.task.organization.removeSubtaskTooltip": null,
+    "modals.task.organization.notices.noEligibleSubtasks": null,
+    "modals.task.organization.notices.subtaskSelectFailed": null,
     "modals.task.customFieldsLabel": {
       "source": "143b179529aecd0bdc5aa86599fe60057b83d32b",
       "translation": "f98bcee411bb492921551ff3e6d1dd449ecfe287"
@@ -19518,6 +19627,14 @@
       "source": "0fe4ddf98d535f0b7e919aec9630254b1d2ad167",
       "translation": "0fe4ddf98d535f0b7e919aec9630254b1d2ad167"
     },
+    "modals.taskSelector.title": null,
+    "modals.taskSelector.placeholder": null,
+    "modals.taskSelector.instructions.navigate": null,
+    "modals.taskSelector.instructions.select": null,
+    "modals.taskSelector.instructions.dismiss": null,
+    "modals.taskSelector.notices.noteNotFound": null,
+    "modals.taskSelector.dueDate.overdue": null,
+    "modals.taskSelector.dueDate.today": null,
     "modals.taskCreation.title": {
       "source": "f1f1450ff80aeab91cb0853329e2b454904866e2",
       "translation": "b97535ef518e4c84b8ad1bc5bbf98bc39821f03f"
@@ -20021,6 +20138,21 @@
     "contextMenus.task.dependencies.notices.unresolved": null,
     "contextMenus.task.dependencies.notices.noEligibleTasks": null,
     "contextMenus.task.dependencies.notices.updateFailed": null,
+    "contextMenus.task.organization.title": null,
+    "contextMenus.task.organization.projects": null,
+    "contextMenus.task.organization.addToProject": null,
+    "contextMenus.task.organization.subtasks": null,
+    "contextMenus.task.organization.addSubtasks": null,
+    "contextMenus.task.organization.notices.alreadyInProject": null,
+    "contextMenus.task.organization.notices.alreadySubtask": null,
+    "contextMenus.task.organization.notices.addedToProject": null,
+    "contextMenus.task.organization.notices.addedAsSubtask": null,
+    "contextMenus.task.organization.notices.addToProjectFailed": null,
+    "contextMenus.task.organization.notices.addAsSubtaskFailed": null,
+    "contextMenus.task.organization.notices.projectSelectFailed": null,
+    "contextMenus.task.organization.notices.subtaskSelectFailed": null,
+    "contextMenus.task.organization.notices.noEligibleSubtasks": null,
+    "contextMenus.task.organization.notices.currentTaskNotFound": null,
     "contextMenus.task.subtasks.loading": {
       "source": "df656368163a3d196b63857636b0ee9e2a41273d",
       "translation": "bbaa7a9197deb3252a5ddc17982410c99d180da5"
@@ -24685,6 +24817,16 @@
       "source": "5be1bc9e1837b131abac53534235a44b4bca541e",
       "translation": "baf47b08bc84a7f2983bc31b1288c23ccc06f11a"
     },
+    "modals.task.organization.projects": null,
+    "modals.task.organization.subtasks": null,
+    "modals.task.organization.addToProject": null,
+    "modals.task.organization.addToProjectButton": null,
+    "modals.task.organization.addSubtasks": null,
+    "modals.task.organization.addSubtasksButton": null,
+    "modals.task.organization.addSubtasksTooltip": null,
+    "modals.task.organization.removeSubtaskTooltip": null,
+    "modals.task.organization.notices.noEligibleSubtasks": null,
+    "modals.task.organization.notices.subtaskSelectFailed": null,
     "modals.task.customFieldsLabel": {
       "source": "143b179529aecd0bdc5aa86599fe60057b83d32b",
       "translation": "2808dd841af40296a1083d396549e6c47a7ac4d1"
@@ -24837,6 +24979,14 @@
       "source": "0fe4ddf98d535f0b7e919aec9630254b1d2ad167",
       "translation": "0fe4ddf98d535f0b7e919aec9630254b1d2ad167"
     },
+    "modals.taskSelector.title": null,
+    "modals.taskSelector.placeholder": null,
+    "modals.taskSelector.instructions.navigate": null,
+    "modals.taskSelector.instructions.select": null,
+    "modals.taskSelector.instructions.dismiss": null,
+    "modals.taskSelector.notices.noteNotFound": null,
+    "modals.taskSelector.dueDate.overdue": null,
+    "modals.taskSelector.dueDate.today": null,
     "modals.taskCreation.title": {
       "source": "f1f1450ff80aeab91cb0853329e2b454904866e2",
       "translation": "c53a9f0c094738447a069a768a690b9a5d3d4da7"
@@ -25397,6 +25547,21 @@
       "source": "9d6d4726a51b50bb7ae7926ee341d84f79de7442",
       "translation": "36dd859841a66950608a9714ef907b38ba70de0c"
     },
+    "contextMenus.task.organization.title": null,
+    "contextMenus.task.organization.projects": null,
+    "contextMenus.task.organization.addToProject": null,
+    "contextMenus.task.organization.subtasks": null,
+    "contextMenus.task.organization.addSubtasks": null,
+    "contextMenus.task.organization.notices.alreadyInProject": null,
+    "contextMenus.task.organization.notices.alreadySubtask": null,
+    "contextMenus.task.organization.notices.addedToProject": null,
+    "contextMenus.task.organization.notices.addedAsSubtask": null,
+    "contextMenus.task.organization.notices.addToProjectFailed": null,
+    "contextMenus.task.organization.notices.addAsSubtaskFailed": null,
+    "contextMenus.task.organization.notices.projectSelectFailed": null,
+    "contextMenus.task.organization.notices.subtaskSelectFailed": null,
+    "contextMenus.task.organization.notices.noEligibleSubtasks": null,
+    "contextMenus.task.organization.notices.currentTaskNotFound": null,
     "contextMenus.task.subtasks.loading": {
       "source": "df656368163a3d196b63857636b0ee9e2a41273d",
       "translation": "c8f1630a012f64517cf5df0d6bd34e83c4a9db0a"
@@ -30043,6 +30208,16 @@
     "modals.task.dependencies.addTaskButton": null,
     "modals.task.dependencies.selectTaskTooltip": null,
     "modals.task.dependencies.removeTaskTooltip": null,
+    "modals.task.organization.projects": null,
+    "modals.task.organization.subtasks": null,
+    "modals.task.organization.addToProject": null,
+    "modals.task.organization.addToProjectButton": null,
+    "modals.task.organization.addSubtasks": null,
+    "modals.task.organization.addSubtasksButton": null,
+    "modals.task.organization.addSubtasksTooltip": null,
+    "modals.task.organization.removeSubtaskTooltip": null,
+    "modals.task.organization.notices.noEligibleSubtasks": null,
+    "modals.task.organization.notices.subtaskSelectFailed": null,
     "modals.task.customFieldsLabel": {
       "source": "143b179529aecd0bdc5aa86599fe60057b83d32b",
       "translation": "40516c8f045553da81624db7da31da311d942c51"
@@ -30195,6 +30370,14 @@
       "source": "0fe4ddf98d535f0b7e919aec9630254b1d2ad167",
       "translation": "0fe4ddf98d535f0b7e919aec9630254b1d2ad167"
     },
+    "modals.taskSelector.title": null,
+    "modals.taskSelector.placeholder": null,
+    "modals.taskSelector.instructions.navigate": null,
+    "modals.taskSelector.instructions.select": null,
+    "modals.taskSelector.instructions.dismiss": null,
+    "modals.taskSelector.notices.noteNotFound": null,
+    "modals.taskSelector.dueDate.overdue": null,
+    "modals.taskSelector.dueDate.today": null,
     "modals.taskCreation.title": {
       "source": "f1f1450ff80aeab91cb0853329e2b454904866e2",
       "translation": "cf42fd678f460f971d827c93938c14a6045f3374"
@@ -30698,6 +30881,21 @@
     "contextMenus.task.dependencies.notices.unresolved": null,
     "contextMenus.task.dependencies.notices.noEligibleTasks": null,
     "contextMenus.task.dependencies.notices.updateFailed": null,
+    "contextMenus.task.organization.title": null,
+    "contextMenus.task.organization.projects": null,
+    "contextMenus.task.organization.addToProject": null,
+    "contextMenus.task.organization.subtasks": null,
+    "contextMenus.task.organization.addSubtasks": null,
+    "contextMenus.task.organization.notices.alreadyInProject": null,
+    "contextMenus.task.organization.notices.alreadySubtask": null,
+    "contextMenus.task.organization.notices.addedToProject": null,
+    "contextMenus.task.organization.notices.addedAsSubtask": null,
+    "contextMenus.task.organization.notices.addToProjectFailed": null,
+    "contextMenus.task.organization.notices.addAsSubtaskFailed": null,
+    "contextMenus.task.organization.notices.projectSelectFailed": null,
+    "contextMenus.task.organization.notices.subtaskSelectFailed": null,
+    "contextMenus.task.organization.notices.noEligibleSubtasks": null,
+    "contextMenus.task.organization.notices.currentTaskNotFound": null,
     "contextMenus.task.subtasks.loading": {
       "source": "df656368163a3d196b63857636b0ee9e2a41273d",
       "translation": "c183e871bd336972aaee4f7fd430a3ad53c8876f"
