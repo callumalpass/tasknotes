@@ -2125,6 +2125,7 @@ export const en: TranslationTree = {
 				dueDate: "Due Date",
 				scheduledDate: "Scheduled Date",
 				priority: "Priority",
+				status: "Status",
 				title: "Title",
 				createdDate: "Created Date",
 				tags: "Tags",

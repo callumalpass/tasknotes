@@ -2088,6 +2088,7 @@ export const es: TranslationTree = {
 				dueDate: "Fecha de vencimiento",
 				scheduledDate: "Fecha programada",
 				priority: "Prioridad",
+				status: "Estado",
 				title: "Título",
 				createdDate: "Fecha de creación",
 				tags: "Etiquetas",

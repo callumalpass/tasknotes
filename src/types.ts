@@ -36,6 +36,7 @@ export type TaskSortKey =
 	| "due"
 	| "scheduled"
 	| "priority"
+	| "status"
 	| "title"
 	| "dateCreated"
 	| "tags"

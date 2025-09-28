@@ -2103,6 +2103,7 @@ export const ru: TranslationTree = {
 				dueDate: "Срок выполнения",
 				scheduledDate: "Запланированная дата",
 				priority: "Приоритет",
+				status: "Статус",
 				title: "Название",
 				createdDate: "Дата создания",
 				tags: "Теги",
