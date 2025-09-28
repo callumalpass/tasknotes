@@ -1,8 +1,8 @@
 /* eslint-disable no-console */
-import { Notice, TFile, EventRef } from 'obsidian';
-import TaskNotesPlugin from '../main';
-import { TaskInfo, Reminder, EVENT_TASK_UPDATED } from '../types';
-import { parseDateToLocal } from '../utils/dateUtils';
+import { Notice, TFile, EventRef } from "obsidian";
+import TaskNotesPlugin from "../main";
+import { TaskInfo, Reminder, EVENT_TASK_UPDATED } from "../types";
+import { parseDateToLocal } from "../utils/dateUtils";
 
 interface NotificationQueueItem {
 	taskPath: string;
@@ -35,8 +35,8 @@ export class NotificationService {
 		}
 
 		// Request notification permission if using system notifications
-		if (this.plugin.settings.notificationType === 'system' && 'Notification' in window) {
-			if (Notification.permission === 'default') {
+		if (this.plugin.settings.notificationType === "system" && "Notification" in window) {
+			if (Notification.permission === "default") {
 				await Notification.requestPermission();
 			}
 		}
@@ -70,13 +70,16 @@ export class NotificationService {
 		this.broadScanInterval = setInterval(async () => {
 			const now = Date.now();
 			const timeSinceLastScan = now - this.lastBroadScanTime;
-			
+
 			// Check for system sleep/wake - if gap is significantly larger than interval, handle catch-up
-			if (timeSinceLastScan > this.BROAD_SCAN_INTERVAL + 60000) { // 1 minute tolerance
-				console.log('NotificationService: Detected potential system sleep, performing catch-up scan');
+			if (timeSinceLastScan > this.BROAD_SCAN_INTERVAL + 60000) {
+				// 1 minute tolerance
+				console.log(
+					"NotificationService: Detected potential system sleep, performing catch-up scan"
+				);
 				await this.handleSystemWakeUp();
 			}
-			
+
 			await this.scanTasksAndBuildQueue();
 			this.lastBroadScanTime = now;
 		}, this.BROAD_SCAN_INTERVAL) as unknown as number;
@@ -86,13 +89,16 @@ export class NotificationService {
 		this.quickCheckInterval = setInterval(() => {
 			const now = Date.now();
 			const timeSinceLastCheck = now - this.lastQuickCheckTime;
-			
+
 			// Check for system sleep/wake for quick checks too
-			if (timeSinceLastCheck > this.QUICK_CHECK_INTERVAL + 60000) { // 1 minute tolerance
-				console.log('NotificationService: Detected potential system sleep during quick check');
+			if (timeSinceLastCheck > this.QUICK_CHECK_INTERVAL + 60000) {
+				// 1 minute tolerance
+				console.log(
+					"NotificationService: Detected potential system sleep during quick check"
+				);
 				// Don't spam with catch-up, just process current queue
 			}
-			
+
 			this.checkNotificationQueue();
 			this.lastQuickCheckTime = now;
 		}, this.QUICK_CHECK_INTERVAL) as unknown as number;
@@ -129,7 +135,7 @@ export class NotificationService {
 					this.notificationQueue.push({
 						taskPath: task.path,
 						reminder,
-						notifyAt
+						notifyAt,
 					});
 				}
 			}
@@ -141,26 +147,26 @@ export class NotificationService {
 
 	private calculateNotificationTime(task: TaskInfo, reminder: Reminder): number | null {
 		try {
-			if (reminder.type === 'absolute') {
+			if (reminder.type === "absolute") {
 				// Absolute reminder - parse the timestamp directly
 				if (!reminder.absoluteTime) {
 					return null;
 				}
 				return parseDateToLocal(reminder.absoluteTime).getTime();
-			} else if (reminder.type === 'relative') {
+			} else if (reminder.type === "relative") {
 				// Relative reminder - calculate based on anchor date
 				if (!reminder.relatedTo || !reminder.offset) {
 					return null;
 				}
 
-				const anchorDateStr = reminder.relatedTo === 'due' ? task.due : task.scheduled;
+				const anchorDateStr = reminder.relatedTo === "due" ? task.due : task.scheduled;
 				if (!anchorDateStr) {
 					return null;
 				}
 
 				// Parse the anchor date
 				const anchorDate = parseDateToLocal(anchorDateStr);
-				
+
 				// Parse the ISO 8601 duration and apply offset
 				const offsetMs = this.parseISO8601Duration(reminder.offset);
 				if (offsetMs === null) {
@@ -170,7 +176,7 @@ export class NotificationService {
 				return anchorDate.getTime() + offsetMs;
 			}
 		} catch (error) {
-			console.error('Error calculating notification time:', error);
+			console.error("Error calculating notification time:", error);
 			return null;
 		}
 
@@ -179,16 +185,18 @@ export class NotificationService {
 
 	private parseISO8601Duration(duration: string): number | null {
 		// Parse ISO 8601 duration format (e.g., "-PT15M", "P2D", "-PT1H30M")
-		const match = duration.match(/^(-?)P(?:(\d+)Y)?(?:(\d+)M)?(?:(\d+)W)?(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?)?$/);
-		
+		const match = duration.match(
+			/^(-?)P(?:(\d+)Y)?(?:(\d+)M)?(?:(\d+)W)?(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?)?$/
+		);
+
 		if (!match) {
 			return null;
 		}
 
 		const [, sign, years, months, weeks, days, hours, minutes, seconds] = match;
-		
+
 		let totalMs = 0;
-		
+
 		// Note: For simplicity, we treat months as 30 days and years as 365 days
 		if (years) totalMs += parseInt(years) * 365 * 24 * 60 * 60 * 1000;
 		if (months) totalMs += parseInt(months) * 30 * 24 * 60 * 60 * 1000;
@@ -197,9 +205,9 @@ export class NotificationService {
 		if (hours) totalMs += parseInt(hours) * 60 * 60 * 1000;
 		if (minutes) totalMs += parseInt(minutes) * 60 * 1000;
 		if (seconds) totalMs += parseInt(seconds) * 1000;
-		
+
 		// Apply sign for negative durations (before the anchor date)
-		return sign === '-' ? -totalMs : totalMs;
+		return sign === "-" ? -totalMs : totalMs;
 	}
 
 	private checkNotificationQueue(): void {
@@ -208,12 +216,12 @@ export class NotificationService {
 
 		for (let i = 0; i < this.notificationQueue.length; i++) {
 			const item = this.notificationQueue[i];
-			
+
 			if (item.notifyAt <= now) {
 				// Trigger the notification
 				this.triggerNotification(item);
 				toRemove.push(i);
-				
+
 				// Mark as processed to avoid duplicates
 				const reminderId = `${item.taskPath}-${item.reminder.id}`;
 				this.processedReminders.add(reminderId);
@@ -248,19 +256,20 @@ export class NotificationService {
 		) as TaskInfo;
 
 		// Generate notification message
-		const message = item.reminder.description || this.generateDefaultMessage(task, item.reminder);
+		const message =
+			item.reminder.description || this.generateDefaultMessage(task, item.reminder);
 
-		if (this.plugin.settings.notificationType === 'system') {
+		if (this.plugin.settings.notificationType === "system") {
 			// System notification
-			if ('Notification' in window && Notification.permission === 'granted') {
-				const notification = new Notification('TaskNotes Reminder', {
+			if ("Notification" in window && Notification.permission === "granted") {
+				const notification = new Notification("TaskNotes Reminder", {
 					body: message,
-					tag: `tasknotes-${item.taskPath}-${item.reminder.id}`
+					tag: `tasknotes-${item.taskPath}-${item.reminder.id}`,
 				});
 
 				// Open task note when notification is clicked
 				notification.onclick = () => {
-					this.plugin.app.workspace.openLinkText(item.taskPath, '', false);
+					this.plugin.app.workspace.openLinkText(item.taskPath, "", false);
 					notification.close();
 				};
 			} else {
@@ -274,39 +283,39 @@ export class NotificationService {
 
 		// Trigger webhook for reminder
 		if (this.plugin.apiService) {
-			await this.plugin.apiService.triggerWebhook('reminder.triggered', {
+			await this.plugin.apiService.triggerWebhook("reminder.triggered", {
 				task,
 				reminder: item.reminder,
 				notificationTime: new Date(item.notifyAt).toISOString(),
 				message,
-				notificationType: this.plugin.settings.notificationType
+				notificationType: this.plugin.settings.notificationType,
 			});
 		}
 	}
 
 	private showInAppNotice(message: string, taskPath: string): void {
 		const notice = new Notice(message, 0); // 0 = persistent until clicked
-		
+
 		// Add click handler to open the task
-		(notice as any).noticeEl.addEventListener('click', () => {
-			this.plugin.app.workspace.openLinkText(taskPath, '', false);
+		(notice as any).noticeEl.addEventListener("click", () => {
+			this.plugin.app.workspace.openLinkText(taskPath, "", false);
 			notice.hide();
 		});
 
 		// Add styling to make it clickable
-		(notice as any).noticeEl.style.cursor = 'pointer';
+		(notice as any).noticeEl.style.cursor = "pointer";
 	}
 
 	private generateDefaultMessage(task: TaskInfo, reminder: Reminder): string {
-		if (reminder.type === 'absolute') {
+		if (reminder.type === "absolute") {
 			return `Reminder: ${task.title}`;
 		} else {
-			const anchor = reminder.relatedTo === 'due' ? 'due' : 'scheduled';
-			const offset = this.formatDurationForDisplay(reminder.offset || '');
-			
-			if (offset.startsWith('-')) {
+			const anchor = reminder.relatedTo === "due" ? "due" : "scheduled";
+			const offset = this.formatDurationForDisplay(reminder.offset || "");
+
+			if (offset.startsWith("-")) {
 				return `${task.title} is ${anchor} in ${offset.substring(1)}`;
-			} else if (offset === 'PT0S' || offset === 'PT0M') {
+			} else if (offset === "PT0S" || offset === "PT0M") {
 				return `${task.title} is ${anchor} now`;
 			} else {
 				return `${task.title} was ${anchor} ${offset} ago`;
@@ -323,15 +332,15 @@ export class NotificationService {
 		const hours = Math.floor(absMs / (60 * 60 * 1000));
 		const days = Math.floor(absMs / (24 * 60 * 60 * 1000));
 
-		let result = '';
+		let result = "";
 		if (days > 0) {
-			result = `${days} day${days > 1 ? 's' : ''}`;
+			result = `${days} day${days > 1 ? "s" : ""}`;
 		} else if (hours > 0) {
-			result = `${hours} hour${hours > 1 ? 's' : ''}`;
+			result = `${hours} hour${hours > 1 ? "s" : ""}`;
 		} else if (minutes > 0) {
-			result = `${minutes} minute${minutes > 1 ? 's' : ''}`;
+			result = `${minutes} minute${minutes > 1 ? "s" : ""}`;
 		} else {
-			result = 'now';
+			result = "now";
 		}
 
 		return ms < 0 ? `-${result}` : result;
@@ -350,55 +359,60 @@ export class NotificationService {
 				keysToRemove.push(key);
 			}
 		}
-		keysToRemove.forEach(key => this.processedReminders.delete(key));
+		keysToRemove.forEach((key) => this.processedReminders.delete(key));
 	}
 
 	private setupTaskUpdateListener(): void {
-		this.taskUpdateListener = this.plugin.emitter.on(EVENT_TASK_UPDATED, async ({ path, originalTask, updatedTask }) => {
-			if (!path || !updatedTask) {
-				return;
-			}
-
-			// Clear any existing notifications for this task path
-			this.removeNotificationsForTask(path);
-			
-			// Clear processed reminders for this task so they can trigger again if needed
-			this.clearProcessedRemindersForTask(path);
-
-			// Re-calculate notification times for the updated task within the current window
-			const now = Date.now();
-			const windowEnd = now + this.QUEUE_WINDOW;
-
-			if (updatedTask.reminders && updatedTask.reminders.length > 0) {
-				for (const reminder of updatedTask.reminders) {
-					const reminderId = `${path}-${reminder.id}`;
-					if (this.processedReminders.has(reminderId)) {
-						continue;
-					}
-
-					const notifyAt = this.calculateNotificationTime(updatedTask, reminder);
-					if (notifyAt === null) {
-						continue;
-					}
-
-					// Add to queue if within the next scan window
-					if (notifyAt > now && notifyAt <= windowEnd) {
-						this.notificationQueue.push({
-							taskPath: path,
-							reminder,
-							notifyAt
-						});
-					}
+		this.taskUpdateListener = this.plugin.emitter.on(
+			EVENT_TASK_UPDATED,
+			async ({ path, originalTask, updatedTask }) => {
+				if (!path || !updatedTask) {
+					return;
 				}
 
-				// Re-sort queue by notification time
-				this.notificationQueue.sort((a, b) => a.notifyAt - b.notifyAt);
+				// Clear any existing notifications for this task path
+				this.removeNotificationsForTask(path);
+
+				// Clear processed reminders for this task so they can trigger again if needed
+				this.clearProcessedRemindersForTask(path);
+
+				// Re-calculate notification times for the updated task within the current window
+				const now = Date.now();
+				const windowEnd = now + this.QUEUE_WINDOW;
+
+				if (updatedTask.reminders && updatedTask.reminders.length > 0) {
+					for (const reminder of updatedTask.reminders) {
+						const reminderId = `${path}-${reminder.id}`;
+						if (this.processedReminders.has(reminderId)) {
+							continue;
+						}
+
+						const notifyAt = this.calculateNotificationTime(updatedTask, reminder);
+						if (notifyAt === null) {
+							continue;
+						}
+
+						// Add to queue if within the next scan window
+						if (notifyAt > now && notifyAt <= windowEnd) {
+							this.notificationQueue.push({
+								taskPath: path,
+								reminder,
+								notifyAt,
+							});
+						}
+					}
+
+					// Re-sort queue by notification time
+					this.notificationQueue.sort((a, b) => a.notifyAt - b.notifyAt);
+				}
 			}
-		});
+		);
 	}
 
 	private removeNotificationsForTask(taskPath: string): void {
-		this.notificationQueue = this.notificationQueue.filter(item => item.taskPath !== taskPath);
+		this.notificationQueue = this.notificationQueue.filter(
+			(item) => item.taskPath !== taskPath
+		);
 	}
 
 	private async handleSystemWakeUp(): Promise<void> {
@@ -409,14 +423,14 @@ export class NotificationService {
 
 		// Check all processed reminders and remove ones that should have triggered
 		for (const key of this.processedReminders) {
-			const [taskPath, reminderId] = key.split('-', 2);
+			const [taskPath, reminderId] = key.split("-", 2);
 			if (!taskPath || !reminderId) continue;
 
 			// Try to get the task and check if the reminder time has passed
 			try {
 				const task = await this.plugin.cacheManager.getTaskInfo(taskPath);
 				if (task && task.reminders) {
-					const reminder = task.reminders.find(r => r.id === reminderId);
+					const reminder = task.reminders.find((r) => r.id === reminderId);
 					if (reminder) {
 						const notifyAt = this.calculateNotificationTime(task, reminder);
 						if (notifyAt && notifyAt <= now) {
@@ -430,7 +444,7 @@ export class NotificationService {
 			}
 		}
 
-		keysToRemove.forEach(key => this.processedReminders.delete(key));
+		keysToRemove.forEach((key) => this.processedReminders.delete(key));
 
 		// Perform a full scan to rebuild the queue with current data
 		await this.scanTasksAndBuildQueue();

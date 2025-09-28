@@ -1,10 +1,14 @@
-import { IncomingMessage, ServerResponse } from 'http';
-import { parse } from 'url';
+import { IncomingMessage, ServerResponse } from "http";
+import { parse } from "url";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { getRoutes, RouteInfo } from '../utils/OpenAPIDecorators';
+import { getRoutes, RouteInfo } from "../utils/OpenAPIDecorators";
 
-export type HTTPMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'OPTIONS';
-export type RouteHandler = (req: IncomingMessage, res: ServerResponse, params?: Record<string, string>) => Promise<void>;
+export type HTTPMethod = "GET" | "POST" | "PUT" | "DELETE" | "OPTIONS";
+export type RouteHandler = (
+	req: IncomingMessage,
+	res: ServerResponse,
+	params?: Record<string, string>
+) => Promise<void>;
 
 interface Route {
 	method: HTTPMethod;
@@ -21,9 +25,9 @@ export class APIRouter {
 		const paramNames: string[] = [];
 		const regexPattern = pattern.replace(/:([a-zA-Z_][a-zA-Z0-9_]*)/g, (match, paramName) => {
 			paramNames.push(paramName);
-			return '([^/]+)';
+			return "([^/]+)";
 		});
-		
+
 		const regex = new RegExp(`^${regexPattern}$`);
 		return { regex, paramNames };
 	}
@@ -35,33 +39,33 @@ export class APIRouter {
 			pattern,
 			handler,
 			regex,
-			paramNames
+			paramNames,
 		});
 	}
 
 	get(pattern: string, handler: RouteHandler): void {
-		this.register('GET', pattern, handler);
+		this.register("GET", pattern, handler);
 	}
 
 	post(pattern: string, handler: RouteHandler): void {
-		this.register('POST', pattern, handler);
+		this.register("POST", pattern, handler);
 	}
 
 	put(pattern: string, handler: RouteHandler): void {
-		this.register('PUT', pattern, handler);
+		this.register("PUT", pattern, handler);
 	}
 
 	delete(pattern: string, handler: RouteHandler): void {
-		this.register('DELETE', pattern, handler);
+		this.register("DELETE", pattern, handler);
 	}
 
 	options(pattern: string, handler: RouteHandler): void {
-		this.register('OPTIONS', pattern, handler);
+		this.register("OPTIONS", pattern, handler);
 	}
 
 	async route(req: IncomingMessage, res: ServerResponse): Promise<boolean> {
-		const parsedUrl = parse(req.url || '', true);
-		const pathname = parsedUrl.pathname || '';
+		const parsedUrl = parse(req.url || "", true);
+		const pathname = parsedUrl.pathname || "";
 		const method = req.method as HTTPMethod;
 
 		for (const route of this.routes) {
@@ -69,7 +73,7 @@ export class APIRouter {
 				const match = pathname.match(route.regex);
 				if (match) {
 					const params: Record<string, string> = {};
-					
+
 					// Extract route parameters
 					for (let i = 0; i < route.paramNames.length; i++) {
 						const paramName = route.paramNames[i];
@@ -94,10 +98,10 @@ export class APIRouter {
 	 */
 	registerController(controllerInstance: any): void {
 		const routes = getRoutes(controllerInstance.constructor);
-		
+
 		for (const routeInfo of routes) {
 			const handler = controllerInstance[routeInfo.handler];
-			if (typeof handler === 'function') {
+			if (typeof handler === "function") {
 				this.register(
 					routeInfo.method.toUpperCase() as HTTPMethod,
 					routeInfo.path,
