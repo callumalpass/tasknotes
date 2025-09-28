@@ -191,12 +191,14 @@ class TaskCardNoteDecorationsPlugin implements PluginValue {
 		}
 	}
 
-	private async loadTaskForCurrentFile(view: EditorView) {
+	private loadTaskForCurrentFile(view: EditorView) {
 		const file = this.getFileFromView(view);
 
 		if (file instanceof TFile) {
 			try {
-				const newTask = await this.plugin.cacheManager.getTaskInfo(file.path);
+				// Use getCachedTaskInfoSync which includes the isTaskFile check
+				// This will return null if the file is not a task note
+				const newTask = this.plugin.cacheManager.getCachedTaskInfoSync(file.path);
 
 				// Check if task actually changed
 				const taskChanged =
