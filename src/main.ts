@@ -59,6 +59,7 @@ import { ViewStateManager } from './services/ViewStateManager';
 import { createTaskLinkOverlay, dispatchTaskUpdate } from './editor/TaskLinkOverlay';
 import { createReadingModeTaskLinkProcessor } from './editor/ReadingModeTaskLinkProcessor';
 import { createProjectNoteDecorations, dispatchProjectSubtasksUpdate } from './editor/ProjectNoteDecorations';
+import { createTaskCardNoteDecorations, dispatchTaskCardUpdate } from './editor/TaskCardNoteDecorations';
 import { DragDropManager } from './utils/DragDropManager';
 import { formatDateForStorage, getTodayLocal, createUTCDateFromLocalCalendarDate, parseDateToLocal } from './utils/dateUtils';
 import { ICSSubscriptionService } from './services/ICSSubscriptionService';
@@ -467,6 +468,9 @@ export default class TaskNotesPlugin extends Plugin {
 
 			// Register essential editor extensions (now safe after layout ready)
 			this.registerEditorExtension(createTaskLinkOverlay(this));
+
+			// Register task card note decorations for live preview (before project subtasks to ensure proper ordering)
+			this.registerEditorExtension(createTaskCardNoteDecorations(this));
 
 			// Register project note decorations for live preview
 			this.registerEditorExtension(createProjectNoteDecorations(this));

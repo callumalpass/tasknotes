@@ -94,6 +94,8 @@ export interface TaskNotesSettings {
 	showProjectSubtasks: boolean;
 	showExpandableSubtasks: boolean;
 	projectSubtasksPosition: 'top' | 'bottom';
+	// Task card in note settings
+	showTaskCardInNote: boolean;
 	// Subtask chevron position in task cards
 	subtaskChevronPosition: 'left' | 'right';
 	// Filter toolbar layout

@@ -901,6 +901,10 @@ export const en: TranslationTree = {
                         bottom: 'Bottom of note'
                     }
                 },
+                showTaskCardInNote: {
+                    name: 'Show task card in note',
+                    description: 'Display a task card widget at the top of task notes showing the task details and actions'
+                },
                 showExpandableSubtasks: {
                     name: 'Show expandable subtasks',
                     description: 'Allow expanding/collapsing subtask sections in task cards'

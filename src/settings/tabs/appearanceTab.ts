@@ -481,6 +481,17 @@ export function renderAppearanceTab(container: HTMLElement, plugin: TaskNotesPlu
         });
     }
 
+    // Add task card in note setting
+    createToggleSetting(container, {
+        name: translate('settings.appearance.uiElements.showTaskCardInNote.name'),
+        desc: translate('settings.appearance.uiElements.showTaskCardInNote.description'),
+        getValue: () => plugin.settings.showTaskCardInNote,
+        setValue: async (value: boolean) => {
+            plugin.settings.showTaskCardInNote = value;
+            save();
+        }
+    });
+
     createToggleSetting(container, {
         name: translate('settings.appearance.uiElements.showExpandableSubtasks.name'),
         desc: translate('settings.appearance.uiElements.showExpandableSubtasks.description'),
