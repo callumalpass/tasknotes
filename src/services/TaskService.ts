@@ -1044,7 +1044,7 @@ export class TaskService {
 
                 const mappedFrontmatter = this.plugin.fieldMapper.mapToFrontmatter(
                     completeTaskData,
-                    this.plugin.settings.taskTag,
+                    this.plugin.settings.taskIdentificationMethod === 'tag' ? this.plugin.settings.taskTag : undefined,
                     this.plugin.settings.storeTitleInFilename
                 );
 
@@ -1053,6 +1053,18 @@ export class TaskService {
                         frontmatter[key] = mappedFrontmatter[key];
                     }
                 });
+
+                // Handle task identification based on settings
+                if (this.plugin.settings.taskIdentificationMethod === 'property') {
+                    const propName = this.plugin.settings.taskPropertyName;
+                    const propValue = this.plugin.settings.taskPropertyValue;
+                    if (propName && propValue) {
+                        // Coerce boolean-like strings to actual booleans for compatibility with Obsidian properties
+                        const lower = propValue.toLowerCase();
+                        const coercedValue = (lower === 'true' || lower === 'false') ? (lower === 'true') : propValue;
+                        frontmatter[propName] = coercedValue as any;
+                    }
+                }
 
                 // Handle custom frontmatter properties (including user fields)
                 if ((updates as any).customFrontmatter) {
@@ -1080,9 +1092,19 @@ export class TaskService {
                 }
 
                 if (updates.hasOwnProperty('tags')) {
-                    frontmatter.tags = updates.tags;
+                    let tagsToSet = updates.tags;
+                    // Remove task tag if using property identification
+                    if (this.plugin.settings.taskIdentificationMethod === 'property' && tagsToSet) {
+                        tagsToSet = tagsToSet.filter((tag: string) => tag !== this.plugin.settings.taskTag);
+                    }
+                    frontmatter.tags = tagsToSet;
                 } else if (originalTask.tags) {
-                    frontmatter.tags = originalTask.tags;
+                    let tagsToSet = originalTask.tags;
+                    // Remove task tag if using property identification
+                    if (this.plugin.settings.taskIdentificationMethod === 'property') {
+                        tagsToSet = tagsToSet.filter((tag: string) => tag !== this.plugin.settings.taskTag);
+                    }
+                    frontmatter.tags = tagsToSet;
                 }
             });
 
