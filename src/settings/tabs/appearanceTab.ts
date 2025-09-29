@@ -1,4 +1,4 @@
-import { Setting } from "obsidian";
+import { Setting, Notice } from "obsidian";
 import TaskNotesPlugin from "../../main";
 import type { TranslationKey } from "../../i18n";
 import {
@@ -530,8 +530,29 @@ export function renderAppearanceTab(
 		name: translate("settings.appearance.timeSettings.startTime.name"),
 		desc: translate("settings.appearance.timeSettings.startTime.description"),
 		placeholder: translate("settings.appearance.timeSettings.startTime.placeholder"),
-		getValue: () => plugin.settings.calendarViewSettings.slotMinTime.slice(0, 5), // Remove seconds
+		debounceMs: 500,
+		getValue: () => {
+			const timeValue = plugin.settings.calendarViewSettings.slotMinTime;
+			// Validate and fallback to default if invalid
+			if (!timeValue || timeValue.length < 5 || !/^\d{2}:\d{2}:\d{2}$/.test(timeValue)) {
+				return "00:00"; // Default start time
+			}
+			return timeValue.slice(0, 5); // Remove seconds
+		},
 		setValue: async (value: string) => {
+			// Validate time format (HH:MM)
+			if (!/^\d{2}:\d{2}$/.test(value)) {
+				new Notice("Invalid time format. Please use HH:MM format (e.g., 08:00)");
+				return;
+			}
+
+			// Validate time range (00:00 to 23:59)
+			const [hours, minutes] = value.split(":").map(Number);
+			if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
+				new Notice("Invalid time. Hours must be 00-23 and minutes must be 00-59");
+				return;
+			}
+
 			plugin.settings.calendarViewSettings.slotMinTime = value + ":00";
 			save();
 		},
@@ -541,8 +562,35 @@ export function renderAppearanceTab(
 		name: translate("settings.appearance.timeSettings.endTime.name"),
 		desc: translate("settings.appearance.timeSettings.endTime.description"),
 		placeholder: translate("settings.appearance.timeSettings.endTime.placeholder"),
-		getValue: () => plugin.settings.calendarViewSettings.slotMaxTime.slice(0, 5), // Remove seconds
+		debounceMs: 500,
+		getValue: () => {
+			const timeValue = plugin.settings.calendarViewSettings.slotMaxTime;
+			// Validate and fallback to default if invalid
+			if (!timeValue || timeValue.length < 5 || !/^\d{2}:\d{2}:\d{2}$/.test(timeValue)) {
+				return "24:00"; // Default end time
+			}
+			return timeValue.slice(0, 5); // Remove seconds
+		},
 		setValue: async (value: string) => {
+			// Validate time format (HH:MM)
+			if (!/^\d{2}:\d{2}$/.test(value)) {
+				new Notice("Invalid time format. Please use HH:MM format (e.g., 23:00)");
+				return;
+			}
+
+			// Validate time range (00:00 to 24:00 for end time)
+			const [hours, minutes] = value.split(":").map(Number);
+			if (hours < 0 || hours > 24 || minutes < 0 || minutes > 59) {
+				new Notice("Invalid time. Hours must be 00-24 and minutes must be 00-59");
+				return;
+			}
+
+			// Special case: 24:XX is only valid as 24:00
+			if (hours === 24 && minutes !== 0) {
+				new Notice("When hour is 24, minutes must be 00");
+				return;
+			}
+
 			plugin.settings.calendarViewSettings.slotMaxTime = value + ":00";
 			save();
 		},
@@ -552,8 +600,29 @@ export function renderAppearanceTab(
 		name: translate("settings.appearance.timeSettings.initialScrollTime.name"),
 		desc: translate("settings.appearance.timeSettings.initialScrollTime.description"),
 		placeholder: translate("settings.appearance.timeSettings.initialScrollTime.placeholder"),
-		getValue: () => plugin.settings.calendarViewSettings.scrollTime.slice(0, 5), // Remove seconds
+		debounceMs: 500,
+		getValue: () => {
+			const timeValue = plugin.settings.calendarViewSettings.scrollTime;
+			// Validate and fallback to default if invalid
+			if (!timeValue || timeValue.length < 5 || !/^\d{2}:\d{2}:\d{2}$/.test(timeValue)) {
+				return "08:00"; // Default scroll time
+			}
+			return timeValue.slice(0, 5); // Remove seconds
+		},
 		setValue: async (value: string) => {
+			// Validate time format (HH:MM)
+			if (!/^\d{2}:\d{2}$/.test(value)) {
+				new Notice("Invalid time format. Please use HH:MM format (e.g., 08:00)");
+				return;
+			}
+
+			// Validate time range (00:00 to 23:59)
+			const [hours, minutes] = value.split(":").map(Number);
+			if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
+				new Notice("Invalid time. Hours must be 00-23 and minutes must be 00-59");
+				return;
+			}
+
 			plugin.settings.calendarViewSettings.scrollTime = value + ":00";
 			save();
 		},

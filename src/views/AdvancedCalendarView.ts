@@ -535,6 +535,31 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 		return customButtons;
 	}
 
+	private sanitizeTimeSettings(settings: any) {
+		const isValidTimeFormat = (time: string): boolean => {
+			return typeof time === 'string' && /^\d{2}:\d{2}:\d{2}$/.test(time);
+		};
+
+		const sanitizedSettings = {
+			slotMinTime: isValidTimeFormat(settings.slotMinTime) ? settings.slotMinTime : "00:00:00",
+			slotMaxTime: isValidTimeFormat(settings.slotMaxTime) ? settings.slotMaxTime : "24:00:00",
+			scrollTime: isValidTimeFormat(settings.scrollTime) ? settings.scrollTime : "08:00:00",
+		};
+
+		// Log warnings if we had to sanitize any values
+		if (!isValidTimeFormat(settings.slotMinTime)) {
+			console.warn(`Invalid slotMinTime format: "${settings.slotMinTime}", using default "00:00:00"`);
+		}
+		if (!isValidTimeFormat(settings.slotMaxTime)) {
+			console.warn(`Invalid slotMaxTime format: "${settings.slotMaxTime}", using default "24:00:00"`);
+		}
+		if (!isValidTimeFormat(settings.scrollTime)) {
+			console.warn(`Invalid scrollTime format: "${settings.scrollTime}", using default "08:00:00"`);
+		}
+
+		return sanitizedSettings;
+	}
+
 	private async handleRefreshClick() {
 		if (!this.plugin.icsSubscriptionService) {
 			new Notice("ICS subscription service not available");
@@ -601,6 +626,9 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 
 		const calendarSettings = this.plugin.settings.calendarViewSettings;
 
+		// Validate and sanitize time settings to prevent calendar crashes
+		const sanitizedTimeSettings = this.sanitizeTimeSettings(calendarSettings);
+
 		// Apply today highlight setting
 		this.updateTodayHighlight();
 
@@ -657,9 +685,9 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 			navLinkDayClick: this.handleDateTitleClick.bind(this),
 
 			// Time view configuration
-			slotMinTime: calendarSettings.slotMinTime,
-			slotMaxTime: calendarSettings.slotMaxTime,
-			scrollTime: calendarSettings.scrollTime,
+			slotMinTime: sanitizedTimeSettings.slotMinTime,
+			slotMaxTime: sanitizedTimeSettings.slotMaxTime,
+			scrollTime: sanitizedTimeSettings.scrollTime,
 
 			// Time grid configurations
 			slotDuration: calendarSettings.slotDuration,
