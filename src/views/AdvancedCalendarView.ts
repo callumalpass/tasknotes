@@ -18,7 +18,7 @@ import { RecurrenceContextMenu } from "../components/RecurrenceContextMenu";
 import { createTaskClickHandler, createTaskHoverHandler } from "../utils/clickHandlers";
 import { TimeblockInfoModal } from "../modals/TimeblockInfoModal";
 import { format, startOfDay, endOfDay } from "date-fns";
-import { Calendar, EventApi, EventInput } from "@fullcalendar/core";
+import { Calendar } from "@fullcalendar/core";
 import {
 	createDailyNote,
 	getDailyNote,
@@ -41,7 +41,6 @@ import {
 	FilterQuery,
 	CalendarViewPreferences,
 	ICSEvent,
-	SavedView,
 } from "../types";
 import { TaskCreationModal } from "../modals/TaskCreationModal";
 import { TaskEditModal } from "../modals/TaskEditModal";
@@ -2925,7 +2924,6 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 	private async performEventSourceRefresh(): Promise<void> {
 		if (!this.calendar) return;
 
-		const tasksToRefresh = Array.from(this.pendingRefreshTasks);
 		this.pendingRefreshTasks.clear();
 		this.eventSourceRefreshTimer = null;
 

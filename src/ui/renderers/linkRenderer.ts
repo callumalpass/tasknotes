@@ -20,7 +20,7 @@ interface HoverLinkEvent {
 
 // Enhanced regex to handle more link types including autolinks and reference-style links
 const LINK_REGEX =
-	/\[\[([^\[\]]+)\]\]|\[([^\]]+)\]\(([^)]+)\)|<(https?:\/\/[^\s>]+)>|\[([^\]]+)\]\s*\[([^\]]*)\]/g;
+	/\[\[([^[\]]+)\]\]|\[([^\]]+)\]\(([^)]+)\)|<(https?:\/\/[^\s>]+)>|\[([^\]]+)\]\s*\[([^\]]*)\]/g;
 
 /** Enhanced internal link creation with better error handling and accessibility */
 export function appendInternalLink(

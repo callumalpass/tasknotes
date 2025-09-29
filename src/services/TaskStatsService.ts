@@ -58,7 +58,7 @@ export class TaskStatsService {
 				start.setHours(0, 0, 0, 0);
 				end.setHours(23, 59, 59, 999);
 				break;
-			case "weekly":
+			case "weekly": {
 				const dayOfWeek = now.getDay();
 				const diff = now.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1); // adjust when week starts on Sunday
 				start.setDate(diff);
@@ -66,6 +66,7 @@ export class TaskStatsService {
 				end.setDate(start.getDate() + 6);
 				end.setHours(23, 59, 59, 999);
 				break;
+			}
 			case "monthly":
 				start.setDate(1);
 				start.setHours(0, 0, 0, 0);

@@ -611,7 +611,7 @@ export function createEditHeaderButton(onClick: () => void, tooltip?: string): C
 export function createCardTextarea(
 	placeholder?: string,
 	value?: string,
-	rows: number = 3
+	rows = 3
 ): HTMLTextAreaElement {
 	const textarea = document.createElement("textarea");
 	textarea.addClass("tasknotes-settings__card-input");
@@ -693,7 +693,7 @@ export function createInfoBadge(text: string): HTMLElement {
 /**
  * Utility to clear a container and show loading state
  */
-export function showCardLoading(container: HTMLElement, message: string = "Loading..."): void {
+export function showCardLoading(container: HTMLElement, message = "Loading..."): void {
 	container.empty();
 	const loadingCard = container.createDiv("tasknotes-settings__card");
 	const loadingContent = loadingCard.createDiv("tasknotes-settings__card-content");

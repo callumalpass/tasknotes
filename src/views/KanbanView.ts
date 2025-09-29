@@ -3,13 +3,12 @@ import TaskNotesPlugin from "../main";
 import {
 	KANBAN_VIEW_TYPE,
 	EVENT_DATA_CHANGED,
-	EVENT_TASK_UPDATED,
 	TaskInfo,
 	FilterQuery,
 	TaskGroupKey,
 	SavedView,
 } from "../types";
-import { createTaskCard, updateTaskCard, refreshParentTaskSubtasks } from "../ui/TaskCard";
+import { createTaskCard, updateTaskCard } from "../ui/TaskCard";
 import {
 	initializeViewPerformance,
 	cleanupViewPerformance,
@@ -497,7 +496,7 @@ export class KanbanView extends ItemView implements OptimizedView {
 	 */
 	private getDefaultColumnOrder(allColumns: string[], groupKey: string): string[] {
 		switch (groupKey) {
-			case "status":
+			case "status": {
 				// Use status manager order
 				const statusOrder = this.plugin.statusManager
 					.getStatusesByOrder()
@@ -505,8 +504,9 @@ export class KanbanView extends ItemView implements OptimizedView {
 				const orderedStatuses = statusOrder.filter((status) => allColumns.includes(status));
 				const remainingColumns = allColumns.filter((col) => !orderedStatuses.includes(col));
 				return [...orderedStatuses, ...remainingColumns.sort()];
+			}
 
-			case "priority":
+			case "priority": {
 				// Use priority manager order (highest weight first)
 				const priorityOrder = this.plugin.priorityManager
 					.getPrioritiesByWeight()
@@ -518,6 +518,7 @@ export class KanbanView extends ItemView implements OptimizedView {
 					(col) => !orderedPriorities.includes(col)
 				);
 				return [...orderedPriorities, ...remainingPriorities.sort()];
+			}
 
 			default:
 				// For other groupings, use alphabetical order

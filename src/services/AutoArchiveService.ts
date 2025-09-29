@@ -8,7 +8,7 @@ import TaskNotesPlugin from "../main";
  */
 export class AutoArchiveService {
 	private plugin: TaskNotesPlugin;
-	private processorInterval: NodeJS.Timeout | null = null;
+	private processorInterval: ReturnType<typeof setInterval> | null = null;
 	private readonly PROCESSOR_INTERVAL_MS = 60000; // Check every 60 seconds
 
 	constructor(plugin: TaskNotesPlugin) {

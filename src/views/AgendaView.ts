@@ -3,7 +3,6 @@ import {
 	EVENT_DATA_CHANGED,
 	EVENT_DATE_CHANGED,
 	EVENT_DATE_SELECTED,
-	EVENT_TASK_UPDATED,
 	FilterQuery,
 	NoteInfo,
 	SavedView,
@@ -29,7 +28,7 @@ import {
 	parseDateToUTC,
 } from "../utils/dateUtils";
 import { createICSEventCard, updateICSEventCard } from "../ui/ICSCard";
-import { createTaskCard, refreshParentTaskSubtasks, updateTaskCard } from "../ui/TaskCard";
+import { createTaskCard, updateTaskCard } from "../ui/TaskCard";
 import {
 	initializeViewPerformance,
 	cleanupViewPerformance,

@@ -296,11 +296,7 @@ function renderProjectLinksForSelector(
 					await plugin.app.workspace.getLeaf(false).openFile(file);
 				} else {
 					// File not found, show notice
-					new Notice(
-						this.translate("modals.unscheduledTasksSelector.notices.noteNotFound", {
-							name: noteName,
-						})
-					);
+					new Notice(`Note not found: ${noteName}`);
 				}
 			});
 		} else {

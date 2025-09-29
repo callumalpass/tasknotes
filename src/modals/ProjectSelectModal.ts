@@ -158,7 +158,7 @@ export class ProjectSelectModal extends FuzzySuggestModal<TAbstractFile> {
 					case "aliases":
 						// Already handled above
 						break;
-					default:
+					default: {
 						// Custom frontmatter field
 						const customValue = cache.frontmatter[fieldKey];
 						if (customValue != null) {
@@ -167,6 +167,7 @@ export class ProjectSelectModal extends FuzzySuggestModal<TAbstractFile> {
 								: String(customValue);
 						}
 						break;
+					}
 				}
 
 				if (value) {
