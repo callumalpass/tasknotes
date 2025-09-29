@@ -12,14 +12,13 @@ import {
 	TASK_LIST_VIEW_TYPE,
 	TaskInfo,
 	EVENT_DATA_CHANGED,
-	EVENT_TASK_UPDATED,
 	EVENT_DATE_CHANGED,
 	FilterQuery,
 	SavedView,
 } from "../types";
 // No helper functions needed from helpers
 import { perfMonitor } from "../utils/PerformanceMonitor";
-import { createTaskCard, updateTaskCard, refreshParentTaskSubtasks } from "../ui/TaskCard";
+import { createTaskCard, updateTaskCard } from "../ui/TaskCard";
 import {
 	initializeViewPerformance,
 	cleanupViewPerformance,
@@ -833,7 +832,7 @@ export class TaskListView extends ItemView implements OptimizedView {
 			} catch (_) {
 				collapseAllBtn.textContent = "−";
 			}
-			const countEl = rightSide.createSpan({
+			rightSide.createSpan({
 				text: ` ${GroupCountUtils.formatGroupCount(groupStats.completed, groupStats.total).text}`,
 				cls: "agenda-view__item-count",
 			});

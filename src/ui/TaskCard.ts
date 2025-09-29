@@ -415,20 +415,6 @@ function hasValidValue(value: any): boolean {
 	);
 }
 
-/**
- * Flatten and filter array values
- */
-function flattenAndFilter(value: any[]): string[] {
-	return value
-		.flat(2)
-		.filter(
-			(item) =>
-				item !== null &&
-				item !== undefined &&
-				typeof item === "string" &&
-				item.trim() !== ""
-		);
-}
 
 /**
  * Render user-defined property with type safety and enhanced link/tag support
@@ -469,7 +455,7 @@ function renderUserProperty(
 		if (
 			stringValue.includes("[[") ||
 			stringValue.includes("](") ||
-			(stringValue.includes("#") && /\s#\w+|\#\w+/.test(stringValue))
+			(stringValue.includes("#") && /\s#\w+|#\w+/.test(stringValue))
 		) {
 			renderTextWithLinks(valueContainer, stringValue, linkServices);
 		} else {
@@ -489,7 +475,7 @@ function renderUserProperty(
 				if (
 					itemString.includes("[[") ||
 					itemString.includes("](") ||
-					(itemString.includes("#") && /\s#\w+|\#\w+/.test(itemString))
+					(itemString.includes("#") && /\s#\w+|#\w+/.test(itemString))
 				) {
 					const itemContainer = valueContainer.createEl("span");
 					renderTextWithLinks(itemContainer, itemString, linkServices);
@@ -575,7 +561,7 @@ function renderPropertyValue(
 		if (
 			value.includes("[[") ||
 			(value.includes("[") && value.includes("](")) ||
-			(value.includes("#") && /\s#\w+|\#\w+/.test(value))
+			(value.includes("#") && /\s#\w+|#\w+/.test(value))
 		) {
 			renderTextWithLinks(container, value, linkServices, {
 				onTagClick: async (tag, _event) => {

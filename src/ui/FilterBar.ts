@@ -694,29 +694,27 @@ export class FilterBar extends EventEmitter {
 			});
 		};
 
-		// Create expand/collapse button functions
-		const makeExpandCollapseButtons = () => {
-			const isGrouped = (this.currentQuery.groupKey || "none") !== "none";
-			const shouldShow =
-				this.enableGroupExpandCollapse && (isGrouped || this.forceShowExpandCollapse);
-			if (shouldShow) {
-				// Expand button first (always to the left of collapse)
-				const expandAllBtn = new ButtonComponent(topControls)
-					.setIcon("list-tree")
-					.setTooltip(this.translate("ui.filterBar.expandAllGroups"))
-					.setClass("filter-bar__expand-groups")
-					.onClick(() => this.emit("expandAllGroups"));
-				expandAllBtn.buttonEl.addClass("clickable-icon");
+		// Create expand/collapse buttons if needed
+		const isGrouped = (this.currentQuery.groupKey || "none") !== "none";
+		const shouldShow =
+			this.enableGroupExpandCollapse && (isGrouped || this.forceShowExpandCollapse);
+		if (shouldShow) {
+			// Expand button first (always to the left of collapse)
+			const expandAllBtn = new ButtonComponent(topControls)
+				.setIcon("list-tree")
+				.setTooltip(this.translate("ui.filterBar.expandAllGroups"))
+				.setClass("filter-bar__expand-groups")
+				.onClick(() => this.emit("expandAllGroups"));
+			expandAllBtn.buttonEl.addClass("clickable-icon");
 
-				// Collapse button second
-				const collapseAllBtn = new ButtonComponent(topControls)
-					.setIcon("list-collapse")
-					.setTooltip(this.translate("ui.filterBar.collapseAllGroups"))
-					.setClass("filter-bar__collapse-groups")
-					.onClick(() => this.emit("collapseAllGroups"));
-				collapseAllBtn.buttonEl.addClass("clickable-icon");
-			}
-		};
+			// Collapse button second
+			const collapseAllBtn = new ButtonComponent(topControls)
+				.setIcon("list-collapse")
+				.setTooltip(this.translate("ui.filterBar.collapseAllGroups"))
+				.setClass("filter-bar__collapse-groups")
+				.onClick(() => this.emit("collapseAllGroups"));
+			collapseAllBtn.buttonEl.addClass("clickable-icon");
+		}
 
 		// Order controls based on alignment preference
 		if (this.viewsButtonAlignment === "left") {

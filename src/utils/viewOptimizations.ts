@@ -200,24 +200,6 @@ async function updateTaskElementInPlace(
 	}
 }
 
-/**
- * Extract visible properties from an existing task element
- * This is a best-effort attempt to determine what properties are currently shown
- */
-function extractVisiblePropertiesFromElement(element: HTMLElement): string[] {
-	const properties: string[] = ["title"]; // Title is always visible
-
-	// Check for various property elements that might be present
-	if (element.querySelector('[data-property="due"]')) properties.push("due");
-	if (element.querySelector('[data-property="scheduled"]')) properties.push("scheduled");
-	if (element.querySelector('[data-property="priority"]')) properties.push("priority");
-	if (element.querySelector('[data-property="status"]')) properties.push("status");
-	if (element.querySelector('[data-property="contexts"]')) properties.push("contexts");
-	if (element.querySelector('[data-property="projects"]')) properties.push("projects");
-	if (element.querySelector('[data-property="tags"]')) properties.push("tags");
-
-	return properties;
-}
 
 /**
  * Performance monitoring utility for debugging

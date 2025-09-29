@@ -23,7 +23,6 @@ import {
 	createCardUrlInput,
 	createCardNumberInput,
 	createInfoBadge,
-	createEditHeaderButton,
 	showCardEmptyState,
 } from "../components/CardComponent";
 
@@ -313,23 +312,35 @@ export function renderIntegrationsTab(
 		statusContainer.style.backgroundColor = "var(--background-secondary)";
 		statusContainer.style.borderRadius = "4px";
 
+		statusContainer.empty();
+
 		if (plugin.autoExportService) {
 			const lastExport = plugin.autoExportService.getLastExportTime();
 			const nextExport = plugin.autoExportService.getNextExportTime();
 
-			statusContainer.innerHTML = `
-                <div style="font-weight: 500; margin-bottom: 5px;">${translate("settings.integrations.autoExport.status.title")}:</div>
-                <div style="font-size: 0.9em; opacity: 0.8;">
-                    ${lastExport ? translate("settings.integrations.autoExport.status.lastExport", { time: lastExport.toLocaleString() }) : translate("settings.integrations.autoExport.status.noExports")}<br>
-                    ${nextExport ? translate("settings.integrations.autoExport.status.nextExport", { time: nextExport.toLocaleString() }) : translate("settings.integrations.autoExport.status.notScheduled")}
-                </div>
-            `;
+			const titleDiv = statusContainer.createDiv();
+			titleDiv.style.fontWeight = "500";
+			titleDiv.style.marginBottom = "5px";
+			titleDiv.textContent = translate("settings.integrations.autoExport.status.title") + ":";
+
+			const statusDiv = statusContainer.createDiv();
+			statusDiv.style.fontSize = "0.9em";
+			statusDiv.style.opacity = "0.8";
+
+			const lastExportText = lastExport
+				? translate("settings.integrations.autoExport.status.lastExport", { time: lastExport.toLocaleString() })
+				: translate("settings.integrations.autoExport.status.noExports");
+			const nextExportText = nextExport
+				? translate("settings.integrations.autoExport.status.nextExport", { time: nextExport.toLocaleString() })
+				: translate("settings.integrations.autoExport.status.notScheduled");
+
+			statusDiv.textContent = lastExportText + "\n" + nextExportText;
+			statusDiv.style.whiteSpace = "pre-line";
 		} else {
-			statusContainer.innerHTML = `
-                <div style="font-weight: 500; color: var(--text-warning);">
-                    ${translate("settings.integrations.autoExport.status.serviceNotInitialized")}
-                </div>
-            `;
+			const errorDiv = statusContainer.createDiv();
+			errorDiv.style.fontWeight = "500";
+			errorDiv.style.color = "var(--text-warning)";
+			errorDiv.textContent = translate("settings.integrations.autoExport.status.serviceNotInitialized");
 		}
 
 		// Manual export trigger button
@@ -546,10 +557,18 @@ function renderICSSubscriptionsList(
 		// Create type dropdown
 		const typeSelect = document.createElement("select");
 		typeSelect.className = "tasknotes-settings__card-input";
-		typeSelect.innerHTML = `
-            <option value="remote" ${subscription.type === "remote" ? "selected" : ""}>Remote URL</option>
-            <option value="local" ${subscription.type === "local" ? "selected" : ""}>Local File</option>
-        `;
+
+		const remoteOption = document.createElement("option");
+		remoteOption.value = "remote";
+		remoteOption.textContent = "Remote URL";
+		remoteOption.selected = subscription.type === "remote";
+		typeSelect.appendChild(remoteOption);
+
+		const localOption = document.createElement("option");
+		localOption.value = "local";
+		localOption.textContent = "Local File";
+		localOption.selected = subscription.type === "local";
+		typeSelect.appendChild(localOption);
 
 		// Create input based on type
 		let sourceInput: HTMLElement;
@@ -602,7 +621,6 @@ function renderICSSubscriptionsList(
 		// Type change handler - re-render the subscription list to update input type
 		typeSelect.addEventListener("change", async () => {
 			const newType = typeSelect.value as "remote" | "local";
-			const oldType = subscription.type;
 
 			// Update the subscription object
 			subscription.type = newType;
@@ -728,7 +746,7 @@ function renderICSSubscriptionsList(
 			{ label: "Refresh (min):", input: refreshInput },
 		];
 
-		const card = createCard(container, {
+		createCard(container, {
 			id: subscription.id,
 			collapsible: true,
 			defaultCollapsed: true,
@@ -944,7 +962,7 @@ function renderWebhookList(
 			noEventsSpan.style.lineHeight = "1.5rem";
 			eventsDisplay.appendChild(noEventsSpan);
 		} else {
-			webhook.events.forEach((event, i) => {
+			webhook.events.forEach((event) => {
 				const eventBadge = createInfoBadge(event);
 				eventBadge.style.marginBottom = "0";
 				eventBadge.style.flexShrink = "0";
@@ -1127,7 +1145,6 @@ class SecretNoticeModal extends Modal {
  * Modal for editing existing webhooks
  */
 class WebhookEditModal extends Modal {
-	private webhook: WebhookConfig;
 	private selectedEvents: string[];
 	private transformFile: string;
 	private corsHeaders: boolean;
@@ -1139,7 +1156,6 @@ class WebhookEditModal extends Modal {
 		onSubmit: (config: Partial<WebhookConfig>) => void
 	) {
 		super(app);
-		this.webhook = webhook;
 		this.selectedEvents = [...webhook.events];
 		this.transformFile = webhook.transformFile || "";
 		this.corsHeaders = webhook.corsHeaders ?? true;

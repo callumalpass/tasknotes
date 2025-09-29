@@ -1,6 +1,6 @@
-import { Notice, setTooltip, Setting } from "obsidian";
+import { Notice, Setting } from "obsidian";
 import TaskNotesPlugin from "../../main";
-import { StatusConfig, FieldMapping } from "../../types";
+import { FieldMapping } from "../../types";
 import { TranslationKey } from "../../i18n";
 // import { UserMappedField } from '../../types/settings';
 import {
@@ -317,6 +317,7 @@ function renderStatusList(container: HTMLElement, plugin: TaskNotesPlugin, save:
 			: [];
 
 		const deleteStatus = () => {
+			// eslint-disable-next-line no-alert
 			const confirmDelete = confirm(
 				translate("settings.taskProperties.taskStatuses.deleteConfirm", {
 					label: status.label || status.value,
@@ -635,94 +636,6 @@ function renderPriorityList(
 	});
 }
 
-function setupStatusDragAndDrop(
-	statusRow: HTMLElement,
-	status: StatusConfig,
-	container: HTMLElement,
-	plugin: TaskNotesPlugin,
-	save: () => void
-): void {
-	statusRow.addEventListener("dragstart", (e) => {
-		if (e.dataTransfer) {
-			e.dataTransfer.setData("text/plain", status.id);
-			statusRow.classList.add("dragging");
-		}
-	});
-
-	statusRow.addEventListener("dragend", () => {
-		statusRow.classList.remove("dragging");
-		// Clean up all drag indicators
-		container.querySelectorAll(".drag-over-top, .drag-over-bottom").forEach((el) => {
-			el.classList.remove("drag-over-top", "drag-over-bottom");
-		});
-	});
-
-	statusRow.addEventListener("dragover", (e) => {
-		e.preventDefault();
-		const draggingRow = container.querySelector(".dragging") as HTMLElement;
-		if (draggingRow && draggingRow !== statusRow) {
-			const rect = statusRow.getBoundingClientRect();
-			const midpoint = rect.top + rect.height / 2;
-			if (e.clientY < midpoint) {
-				statusRow.classList.add("drag-over-top");
-				statusRow.classList.remove("drag-over-bottom");
-			} else {
-				statusRow.classList.add("drag-over-bottom");
-				statusRow.classList.remove("drag-over-top");
-			}
-		}
-	});
-
-	statusRow.addEventListener("dragleave", () => {
-		statusRow.classList.remove("drag-over-top", "drag-over-bottom");
-	});
-
-	statusRow.addEventListener("drop", (e) => {
-		e.preventDefault();
-		const draggedId = e.dataTransfer?.getData("text/plain");
-		if (!draggedId || draggedId === status.id) return;
-
-		// Clear drag visual indicators
-		statusRow.classList.remove("drag-over-top", "drag-over-bottom");
-
-		// Find the dragged and target statuses
-		const draggedIndex = plugin.settings.customStatuses.findIndex((s) => s.id === draggedId);
-		const targetIndex = plugin.settings.customStatuses.findIndex((s) => s.id === status.id);
-
-		if (draggedIndex === -1 || targetIndex === -1) return;
-
-		// Determine insertion point based on drop position
-		const rect = statusRow.getBoundingClientRect();
-		const midpoint = rect.top + rect.height / 2;
-		const insertBefore = e.clientY < midpoint;
-
-		// Reorder statuses array
-		const reorderedStatuses = [...plugin.settings.customStatuses];
-		const [draggedStatus] = reorderedStatuses.splice(draggedIndex, 1);
-
-		let insertIndex = targetIndex;
-		if (draggedIndex < targetIndex && !insertBefore) {
-			insertIndex = targetIndex; // Already adjusted due to removal
-		} else if (draggedIndex < targetIndex && insertBefore) {
-			insertIndex = targetIndex - 1;
-		} else if (draggedIndex > targetIndex && insertBefore) {
-			insertIndex = targetIndex;
-		} else if (draggedIndex > targetIndex && !insertBefore) {
-			insertIndex = targetIndex + 1;
-		}
-
-		reorderedStatuses.splice(insertIndex, 0, draggedStatus);
-
-		// Update order property based on new array position
-		reorderedStatuses.forEach((s, i) => {
-			s.order = i;
-		});
-
-		plugin.settings.customStatuses = reorderedStatuses;
-		save();
-		renderStatusList(container, plugin, save);
-	});
-}
 
 function renderFieldMappingTable(
 	container: HTMLElement,
