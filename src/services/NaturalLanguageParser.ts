@@ -334,6 +334,7 @@ export class NaturalLanguageParser {
 
 	/**
 	 * Pre-builds fallback status regex patterns using language config.
+	 * Only used when no user status configurations are provided.
 	 * Uses appropriate word boundaries for different language types (ASCII vs non-ASCII).
 	 *
 	 * Pattern examples:
@@ -343,6 +344,11 @@ export class NaturalLanguageParser {
 	 * @returns Array of compiled status regex patterns
 	 */
 	private buildFallbackStatusPatterns(): RegexPattern[] {
+		// Only build fallback patterns if no user status configs are provided
+		if (this.statusConfigs.length > 0) {
+			return [];
+		}
+
 		const langConfig = this.languageConfig.fallbackStatus;
 
 		// Use pre-configured boundary matching
@@ -389,7 +395,7 @@ export class NaturalLanguageParser {
 
 	/** Extracts status using string-based matching for custom statuses and regex for fallbacks. */
 	private extractStatus(text: string, result: ParsedTaskData): string {
-		// First try string-based matching for custom status configs (handles any characters)
+		// If user has defined custom status configs, only use those
 		if (this.statusConfigs.length > 0) {
 			// Sort by length (longest first) to prevent partial matches
 			const sortedConfigs = [...this.statusConfigs].sort(
@@ -412,9 +418,11 @@ export class NaturalLanguageParser {
 					}
 				}
 			}
+			// If user has custom configs but no match found, return without setting status
+			return text;
 		}
 
-		// Fallback to regex patterns for built-in status keywords
+		// Only use fallback regex patterns when no user status configs are provided
 		for (const pattern of this.statusPatterns) {
 			if (pattern.regex.test(text)) {
 				result.status = pattern.value;
