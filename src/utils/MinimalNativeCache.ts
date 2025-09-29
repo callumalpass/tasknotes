@@ -120,9 +120,10 @@ export class MinimalNativeCache extends Events {
 			return this.comparePropertyValues(frontmatterValue, propValue);
 		} else {
 			// Fallback to legacy tag-based method with hierarchical support
+			// Use exact matching (no substring fallback) for task identification
 			if (!Array.isArray(frontmatter.tags)) return false;
 			return frontmatter.tags.some((tag: string) =>
-				FilterUtils.matchesHierarchicalTag(tag, this.taskTag)
+				FilterUtils.matchesHierarchicalTagExact(tag, this.taskTag)
 			);
 		}
 	}

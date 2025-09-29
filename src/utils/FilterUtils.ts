@@ -511,6 +511,36 @@ export class FilterUtils {
 	}
 
 	/**
+	 * Check if a tag matches another tag using only hierarchical matching rules.
+	 * Supports Obsidian nested tags where 't/ef' matches 't/ef/project', 't/ef/task', etc.
+	 * Does NOT include substring matching fallback - use this for task identification
+	 * to prevent false positives like "pkm-task" matching "task".
+	 *
+	 * @param taskTag - The tag from the task (e.g., 't/ef/project')
+	 * @param conditionTag - The condition tag without hyphen prefix (e.g., 't/ef')
+	 * @returns true if the tag matches according to hierarchical rules only
+	 */
+	static matchesHierarchicalTagExact(taskTag: string, conditionTag: string): boolean {
+		if (!taskTag || !conditionTag) return false;
+
+		const taskTagLower = taskTag.toLowerCase();
+		const conditionTagLower = conditionTag.toLowerCase();
+
+		// Exact match
+		if (taskTagLower === conditionTagLower) {
+			return true;
+		}
+
+		// Check if taskTag is a child of conditionTag
+		// 't/ef/project' should match when searching for 't/ef'
+		if (taskTagLower.startsWith(conditionTagLower + '/')) {
+			return true; // Hierarchical child match
+		}
+
+		return false;
+	}
+
+	/**
 	 * Enhanced tag matching that supports both inclusion and exclusion patterns.
 	 * Handles arrays of tag conditions with proper exclusion semantics.
 	 *
