@@ -867,21 +867,155 @@ export class AgendaView extends ItemView implements OptimizedView {
 			// Add click handlers for collapse/expand
 			this.addDayHeaderClickHandlers(overdueHeader, overdueSection, itemsContainer, overdueKey);
 
-			// Render overdue tasks
-			const overdueItems: Array<{ type: "task"; item: TaskInfo; date: Date }> = [];
-			overdueTasks.forEach((task) => {
-				const anchorDate = this.resolveTaskTargetDate(task);
-				overdueItems.push({ type: "task", item: task, date: anchorDate });
-			});
+			// Determine subgrouping state for overdue tasks
+			const subgroupKey = (this.currentQuery as any)?.subgroupKey;
+			const hasSubgroups =
+				subgroupKey && subgroupKey !== "none" && overdueTasks.length > 0;
 
-			// Use DOMReconciler for overdue tasks
-			this.plugin.domReconciler.updateList(
-				itemsContainer,
-				overdueItems,
-				(item) => `task-${item.item.path}`,
-				(item) => this.createTaskItemElement(item.item, item.date),
-				(element, item) => this.updateDayItemElement(element, item)
-			);
+			// Render overdue tasks (flat or subgrouped)
+			const overdueItems: Array<{ type: "task"; item: TaskInfo; date: Date }> = [];
+
+			if (!hasSubgroups) {
+				// Flat tasks list when no subgroups are active
+				overdueTasks.forEach((task) => {
+					const anchorDate = this.resolveTaskTargetDate(task);
+					overdueItems.push({ type: "task", item: task, date: anchorDate });
+				});
+
+				// Use DOMReconciler for overdue tasks
+				this.plugin.domReconciler.updateList(
+					itemsContainer,
+					overdueItems,
+					(item) => `task-${item.item.path}`,
+					(item) => this.createTaskItemElement(item.item, item.date),
+					(element, item) => this.updateDayItemElement(element, item)
+				);
+			} else {
+				// Render task subgroups (like regular day sections)
+				const subgroupsContainer = itemsContainer.createDiv({
+					cls: "task-subgroups-container",
+				});
+				const subgroups = this.computeSubgroupsForDay(overdueTasks, subgroupKey);
+				const visibleProperties = this.getCurrentVisibleProperties();
+
+				for (const [subgroupName, subgroupTasks] of subgroups) {
+					const subgroupSection = subgroupsContainer.createDiv({
+						cls: "task-subgroup",
+					});
+					subgroupSection.setAttribute("data-subgroup", subgroupName);
+
+					const header = subgroupSection.createDiv({ cls: "task-subgroup-header" });
+					const toggleBtn = header.createEl("button", {
+						cls: "task-subgroup-toggle",
+						attr: { "aria-label": "Toggle subgroup" },
+					});
+					try {
+						setIcon(toggleBtn, "chevron-right");
+					} catch {
+						/* ignore */
+					}
+					const svg = toggleBtn.querySelector("svg");
+					if (svg) {
+						svg.classList.add("chevron");
+						svg.setAttr("width", "16");
+						svg.setAttr("height", "16");
+					} else {
+						toggleBtn.textContent = "▸";
+					}
+
+					// Format subgroup name to match TaskListView exactly
+					const formattedSubgroupName = this.formatSubgroupName(subgroupName);
+
+					header.createSpan({
+						cls: "task-subgroup-name",
+						text: formattedSubgroupName,
+					});
+
+					// Count badge for tasks in subgroup
+					const stats = GroupCountUtils.calculateGroupStats(
+						subgroupTasks,
+						this.plugin
+					);
+					const countText = GroupCountUtils.formatGroupCount(
+						stats.completed,
+						stats.total
+					).text;
+					header.createDiv({ cls: "agenda-view__item-count", text: countText });
+
+					// Content list
+					const listEl = subgroupSection.createDiv({ cls: "task-cards" });
+
+					// Initial collapsed state from preferences
+					const collapsedSubInitially = GroupingUtils.isSubgroupCollapsed(
+						AGENDA_VIEW_TYPE,
+						subgroupKey,
+						overdueKey,
+						subgroupName,
+						this.plugin
+					);
+					if (collapsedSubInitially) {
+						subgroupSection.addClass("is-collapsed");
+						listEl.style.display = "none";
+					}
+					toggleBtn.setAttr("aria-expanded", String(!collapsedSubInitially));
+
+					// Click handlers to toggle subgroup
+					this.registerDomEvent(header, "click", (e: MouseEvent) => {
+						const target = e.target as HTMLElement;
+						if (target.closest("a")) return;
+						const willCollapse = !subgroupSection.hasClass("is-collapsed");
+						GroupingUtils.setSubgroupCollapsed(
+							AGENDA_VIEW_TYPE,
+							subgroupKey,
+							overdueKey,
+							subgroupName,
+							willCollapse,
+							this.plugin
+						);
+						subgroupSection.toggleClass("is-collapsed", willCollapse);
+						listEl.style.display = willCollapse ? "none" : "";
+						toggleBtn.setAttr("aria-expanded", String(!willCollapse));
+					});
+					this.registerDomEvent(toggleBtn, "click", (e: MouseEvent) => {
+						e.preventDefault();
+						e.stopPropagation();
+						const willCollapse = !subgroupSection.hasClass("is-collapsed");
+						GroupingUtils.setSubgroupCollapsed(
+							AGENDA_VIEW_TYPE,
+							subgroupKey,
+							overdueKey,
+							subgroupName,
+							willCollapse,
+							this.plugin
+						);
+						subgroupSection.toggleClass("is-collapsed", willCollapse);
+						listEl.style.display = willCollapse ? "none" : "";
+						toggleBtn.setAttr("aria-expanded", String(!willCollapse));
+					});
+
+					// Render tasks in subgroup with proper anchor dates
+					const subgroupTasksWithDates = subgroupTasks.map((task) => ({
+						...task,
+						anchorDate: this.resolveTaskTargetDate(task),
+					}));
+
+					this.plugin.domReconciler.updateList(
+						listEl,
+						subgroupTasksWithDates,
+						(t) => `task-${t.path}`,
+						(t) => this.createTaskItemElement(t, t.anchorDate),
+						(el, t) =>
+							updateTaskCard(el, t, this.plugin, visibleProperties, {
+								showDueDate: !this.groupByDate,
+								showCheckbox: false,
+								showTimeTracking: true,
+								showRecurringControls: true,
+								groupByDate: this.groupByDate,
+								targetDate: t.anchorDate,
+							})
+					);
+				}
+			}
 		}
 		agendaData.forEach((dayData) => {
 			const dateStr = formatDateForStorage(dayData.date);
@@ -1954,14 +2088,85 @@ export class AgendaView extends ItemView implements OptimizedView {
 			text: this.translate("views.agenda.overdue"),
 		});
 
-		// Right side container (holds count)
+		// Right side container (holds subgroup actions and count, like regular days)
 		const right = overdueHeader.createDiv({ cls: "task-group-right" });
+
+		// Right side: subgroup actions (only when a subgroup is active)
+		const subgroupKey = (this.currentQuery as any)?.subgroupKey;
+		if (subgroupKey && subgroupKey !== "none") {
+			const actions = right.createDiv({ cls: "task-subgroup-actions" });
+
+			const expandBtn = actions.createEl("button", {
+				cls: "task-subgroup-action",
+				attr: { "aria-label": "Expand all subgroups" },
+			});
+			try {
+				setIcon(expandBtn, "list-tree");
+			} catch {
+				/* ignore */
+			}
+			this.registerDomEvent(expandBtn, "click", (e: MouseEvent) => {
+				e.preventDefault();
+				e.stopPropagation();
+				GroupingUtils.expandAllSubgroups(
+					AGENDA_VIEW_TYPE,
+					overdueKey,
+					subgroupKey,
+					this.plugin
+				);
+				const section = overdueHeader.parentElement as HTMLElement;
+				section?.querySelectorAll(".task-subgroup").forEach((sub: Element) => {
+					const el = sub as HTMLElement;
+					el.classList.remove("is-collapsed");
+					const btn = el.querySelector(".task-subgroup-toggle") as HTMLElement;
+					if (btn) btn.setAttr("aria-expanded", "true");
+					const content = el.querySelector(".task-cards") as HTMLElement;
+					if (content) content.style.display = "";
+				});
+			});
+
+			const collapseBtn = actions.createEl("button", {
+				cls: "task-subgroup-action",
+				attr: { "aria-label": "Collapse all subgroups" },
+			});
+			try {
+				setIcon(collapseBtn, "list-collapse");
+			} catch {
+				/* ignore */
+			}
+			this.registerDomEvent(collapseBtn, "click", (e: MouseEvent) => {
+				e.preventDefault();
+				e.stopPropagation();
+				// Collect subgroup names under overdue section
+				const section = overdueHeader.parentElement as HTMLElement;
+				const names: string[] = [];
+				section?.querySelectorAll(".task-subgroup").forEach((sub: Element) => {
+					const name = (sub as HTMLElement).getAttribute("data-subgroup");
+					if (name) names.push(name);
+				});
+				GroupingUtils.collapseAllSubgroups(
+					AGENDA_VIEW_TYPE,
+					overdueKey,
+					subgroupKey,
+					names,
+					this.plugin
+				);
+				section?.querySelectorAll(".task-subgroup").forEach((sub: Element) => {
+					const el = sub as HTMLElement;
+					el.classList.add("is-collapsed");
+					const btn = el.querySelector(".task-subgroup-toggle") as HTMLElement;
+					if (btn) btn.setAttr("aria-expanded", "false");
+					const content = el.querySelector(".task-cards") as HTMLElement;
+					if (content) content.style.display = "none";
+				});
+			});
+		}
 
 		// Task completion count for overdue tasks
 		const taskStats = GroupCountUtils.calculateGroupStats(overdueTasks, this.plugin);
 		const countText = GroupCountUtils.formatGroupCount(taskStats.completed, taskStats.total).text;
 
-		// Item count badge
+		// Item count badge (keep at the far right, inside right container like regular days)
 		right.createSpan({ cls: "agenda-view__item-count", text: countText });
 
 		// Set initial ARIA state
