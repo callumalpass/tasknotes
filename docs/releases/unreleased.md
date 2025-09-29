@@ -33,12 +33,14 @@ Example:
   - Only exact matches or hierarchical children (like "task/work") now identify notes as tasks
   - Thanks to @anareaty and @fastrick for reporting this issue
 - (#767) Fixed subgroups not rendering under the "Overdue" agenda group
-  - Overdue section now properly renders subgroups when enabled in Agenda View
-  - Added expand/collapse controls for overdue subgroups matching regular day sections
-  - Maintains consistent functionality and styling across all agenda groups
   - Thanks to @renatomen for reporting this issue
 - (#768) Fixed calendar view appearing empty in week and day views due to invalid time configuration values
   - Added time validation in settings UI with proper error messages and debouncing
   - Added runtime sanitization in calendar with safe defaults (00:00:00, 24:00:00, 08:00:00)
   - Prevents "Cannot read properties of null (reading 'years')" error from FullCalendar
   - Thanks to @kmaustral for reporting
+- (#769) Fixed NLP processor incorrectly assigning hardcoded "waiting" status when "blocked" appears in task titles
+  - NLP now only uses user-defined status configurations when available, ignoring hardcoded fallback patterns
+  - Prevents unexpected status assignments for users with custom status workflows
+  - Fallback patterns still work when no custom status configurations are defined
+  - Thanks to @renatomen for reporting this issue
