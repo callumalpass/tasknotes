@@ -6,90 +6,15 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thanks for suggesting a new feature! Please provide as much detail as possible to help us understand your request.
+        Thanks for suggesting a new feature!
 
-  - type: dropdown
-    id: feature-category
-    attributes:
-      label: Feature Category
-      description: Which area of TaskNotes would this feature affect?
-      options:
-        - Task Management (creating, editing, organizing tasks)
-        - Calendar Integration (views, navigation, scheduling)
-        - Time Management (tracking, Pomodoro, sessions)
-        - Editor Integration (task conversion, previews, shortcuts)
-        - Views (Calendar, Kanban, Agenda, Task List, Notes)
-        - Customization (themes, field mapping, statuses)
-        - Import/Export (data migration, backups)
-        - Performance (speed, memory usage)
-        - Mobile Support
-        - Other (please specify in description)
-    validations:
-      required: false
+        Please provide as much detail as possible. 
 
   - type: textarea
-    id: problem-statement
+    id: description
     attributes:
-      label: Problem Statement
-      description: What problem would this feature solve? What workflow or task is currently difficult or impossible?
-      placeholder: |
-        Describe the problem or limitation you're experiencing...
-        
-        For example:
-        - "I can't easily see which tasks are overdue across all my projects"
-        - "There's no way to bulk edit multiple tasks at once"
-        - "I need to track time spent on subtasks separately"
+      label: Feature Description
+      description: Please describe your feature request
     validations:
-      required: false
+      required: true
 
-  - type: textarea
-    id: proposed-solution
-    attributes:
-      label: Proposed Solution
-      description: Describe your ideal solution. How would this feature work?
-      placeholder: |
-        Describe how you envision this feature working...
-        
-        Be as specific as possible:
-        - Where would it appear in the UI?
-        - How would users interact with it?
-        - What would the workflow look like?
-    validations:
-      required: false
-
-  - type: textarea
-    id: use-case-examples
-    attributes:
-      label: Use Case Examples
-      description: Provide specific examples of how you would use this feature in your daily workflow
-      placeholder: |
-        Example scenarios where this feature would be helpful...
-        
-        For example:
-        - "When planning my week, I would use this to..."
-        - "During my daily review, this would help me..."
-        - "When working on a project, I could..."
-    validations:
-      required: false
-
-  - type: dropdown
-    id: priority-impact
-    attributes:
-      label: Priority/Impact
-      description: How important is this feature to your workflow?
-      options:
-        - Critical - I can't use TaskNotes effectively without this
-        - High - This would significantly improve my workflow
-        - Medium - This would be a nice improvement
-        - Low - This would be a minor convenience
-    validations:
-      required: false
-
-  - type: textarea
-    id: additional-context
-    attributes:
-      label: Additional Context
-      description: |
-        Any other context, mockups, references to similar features in other tools, or additional thoughts?
-      placeholder: |
-        Optional: Add any additional context, links, mockups, or references...

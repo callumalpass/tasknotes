@@ -1,73 +1,20 @@
 name: Bug Report
-description: Something isn't working as expected? Let us know!
+description: Report a bug or issue with TaskNotes
 title: "[Bug]: "
 labels: ["bug"]
 body:
   - type: markdown
     attributes:
       value: |
-        We're sorry to hear you're running into an issue! Thanks for taking the time to report it.
-        Please fill out the details below. The more info you provide, the faster we can help.
+        Thanks for taking the time to report this bug!
+
+        Please fill out the details below. The more info you provide, the faster we can help. 
 
   - type: textarea
-    id: bug-description
+    id: description
     attributes:
-      label: What's the bug?
-      description: "A clear and concise description of what the bug is. If you can, please include steps to reproduce it."
-      placeholder: |
-        What happened? For example:
-        1. I opened the calendar view...
-        2. I tried to drag a task to a new date...
-        3. The task disappeared and an error popped up.
+      label: Bug Description
+      description: Please describe the bug and any relevant details.
     validations:
       required: true
 
-  - type: textarea
-    id: expected-behavior
-    attributes:
-      label: What did you expect to happen?
-      description: A clear and concise description of what you expected to happen.
-    validations:
-      required: false
-
-  - type: dropdown
-    id: feature-context
-    attributes:
-      label: Which part of TaskNotes is affected?
-      description: If you know, which feature is related to the bug?
-      options:
-        - Task Management
-        - Calendar View
-        - Mini Calendar
-        - Task List View
-        - Kanban Board
-        - Agenda View
-        - Notes View
-        - Pomodoro Timer
-        - Time Tracking
-        - Editor Integration
-        - Settings
-        - Other
-    validations:
-      required: false
-
-  - type: textarea
-    id: screenshots
-    attributes:
-      label: Screenshots or Screen Recordings
-      description: |
-        If applicable, add screenshots or a screen recording to help explain the problem. It's often the best way to show what's going on!
-        You can drag and drop images or GIF's here.
-      placeholder: Drag and drop screenshots here...
-
-  - type: textarea
-    id: obsidian-debug-info
-    attributes:
-      label: Technical Details (Optional)
-      description: |
-        If you're comfortable, you can provide your Obsidian debug info. This can help us pinpoint the problem faster.
-        You can get this from: **Command palette** → **Show Debug Info** → Copy the output.
-      placeholder: |
-        Paste your debug info here...
-    validations:
-      required: false
