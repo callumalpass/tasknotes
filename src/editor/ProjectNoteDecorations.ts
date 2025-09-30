@@ -141,7 +141,7 @@ export class ProjectSubtasksWidget extends WidgetType {
 		this.editorView = view;
 
 		const container = document.createElement("div");
-		container.className = "tasknotes-plugin project-note-subtasks project-subtasks-widget";
+		container.className = "tasknotes-plugin project-note-subtasks project-subtasks-widget cm-widget-cursor-fix";
 
 		container.setAttribute("contenteditable", "false");
 		container.setAttribute("spellcheck", "false");
@@ -1008,7 +1008,7 @@ class ProjectNoteDecorationsPlugin implements PluginValue {
 					notePath,
 					this.version
 				),
-				side: 1, // Place widget after the position so cursor can't go past it
+				side: 1,
 			});
 
 			builder.add(insertPos, insertPos, widget);

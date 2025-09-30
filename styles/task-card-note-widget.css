@@ -1,7 +1,8 @@
-/* Task Card Note Widget Styles */
+/* Task Card Note Widget - minimal widget for inline task cards in notes */
 
 .task-card-note-widget {
-    /* Simple border container with a little padding - let task card handle its own styling */
+    display: block;
+    border-radius: var(--radius-s);
     border: 1px solid var(--background-modifier-border);
     margin: var(--cs-spacing-md) 0;
     padding: var(--cs-spacing-sm);

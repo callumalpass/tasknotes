@@ -62,7 +62,7 @@ export class TaskCardWidget extends WidgetType {
 
 	toDOM(view: EditorView): HTMLElement {
 		const container = document.createElement("div");
-		container.className = "tasknotes-plugin task-card-note-widget";
+		container.className = "tasknotes-plugin task-card-note-widget cm-widget-cursor-fix";
 
 		container.setAttribute("contenteditable", "false");
 		container.setAttribute("spellcheck", "false");
@@ -312,7 +312,7 @@ class TaskCardNoteDecorationsPlugin implements PluginValue {
 
 			const widget = Decoration.widget({
 				widget: new TaskCardWidget(this.plugin, this.cachedTask, this.version),
-				side: 1, // Place widget after the position so cursor can't go past it
+				side: 1,
 			});
 
 			builder.add(insertPos, insertPos, widget);
