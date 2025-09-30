@@ -15,6 +15,7 @@ import {
 	formatDependencyLink,
 	normalizeDependencyEntry,
 } from "../utils/dependencyUtils";
+import { generateLink } from "../utils/linkUtils";
 
 export interface TaskContextMenuOptions {
 	task: TaskInfo;
@@ -572,7 +573,7 @@ export class TaskContextMenu {
 			item.onClick(() => {
 				const taskFile = plugin.app.vault.getAbstractFileByPath(task.path);
 				if (taskFile instanceof TFile) {
-					const projectReference = `[[${taskFile.basename}]]`;
+					const projectReference = generateLink(plugin.app, taskFile, task.path);
 					plugin.openTaskCreationModal({
 						projects: [projectReference],
 					});
@@ -904,7 +905,7 @@ export class TaskContextMenu {
 				return;
 			}
 
-			const projectReference = this.buildProjectReference(projectFile, task.path, plugin);
+			const projectReference = generateLink(plugin.app, projectFile, task.path);
 			const legacyReference = `[[${projectFile.basename}]]`;
 			const currentProjects = Array.isArray(task.projects) ? task.projects : [];
 
@@ -939,7 +940,7 @@ export class TaskContextMenu {
 				return;
 			}
 
-			const projectReference = this.buildProjectReference(currentTaskFile, subtask.path, plugin);
+			const projectReference = generateLink(plugin.app, currentTaskFile, subtask.path);
 			const legacyReference = `[[${currentTaskFile.basename}]]`;
 			const subtaskProjects = Array.isArray(subtask.projects) ? subtask.projects : [];
 
@@ -968,8 +969,7 @@ export class TaskContextMenu {
 	}
 
 	private buildProjectReference(targetFile: TFile, sourcePath: string, plugin: TaskNotesPlugin): string {
-		const linkText = plugin.app.metadataCache.fileToLinktext(targetFile, sourcePath, true);
-		return `[[${linkText}]]`;
+		return generateLink(plugin.app, targetFile, sourcePath);
 	}
 
 	private updateMainMenuIconColors(task: TaskInfo, plugin: TaskNotesPlugin): void {
