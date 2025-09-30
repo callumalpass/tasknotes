@@ -27,10 +27,16 @@ Example:
 
 ## Fixed
 
+- (#768) Fixed calendar view crashes when tasks contain null values in grouping fields
+  - Added null/undefined checks in sort comparisons to prevent localeCompare errors
+  - Calendar now handles null values in tags, contexts, and custom fields gracefully
+  - Thanks to @kmaustral for reporting
+
 - (#601) Fixed Unicode characters not displaying in tags and contexts
   - Unicode characters (Š, Ė, Ž, Ą, etc.) are now properly preserved in tags and contexts
   - Affects Agenda View, Task List View, and all other views displaying tags
   - Thanks to @Kapinekas for reporting
+
 - (#778) Fixed cursor artifacts in CodeMirror widgets
   - Thanks to @jhedlund for the fix
 

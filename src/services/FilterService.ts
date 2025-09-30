@@ -1998,6 +1998,9 @@ export class FilterService extends EventEmitter {
 						const noProjectLabel = this.getNoProjectLabel();
 						if (a === noProjectLabel) return 1;
 						if (b === noProjectLabel) return -1;
+						// Handle null/undefined values
+						if (a == null) return 1;
+						if (b == null) return -1;
 						return a.localeCompare(b, this.getLocale());
 					});
 					break;
@@ -2008,6 +2011,9 @@ export class FilterService extends EventEmitter {
 						const noTagsLabel = this.getNoTagsLabel();
 						if (a === noTagsLabel) return 1;
 						if (b === noTagsLabel) return -1;
+						// Handle null/undefined values
+						if (a == null) return 1;
+						if (b == null) return -1;
 						return a.localeCompare(b, this.getLocale());
 					});
 					break;
@@ -2021,6 +2027,11 @@ export class FilterService extends EventEmitter {
 						if (a === "Invalid date") return 1;
 						if (b === "Invalid date") return -1;
 						// YYYY-MM-DD format sorts chronologically in reverse (newest first)
+						// Handle null/undefined values
+						if (a == null || b == null) {
+							if (a == null) return 1;
+							if (b == null) return -1;
+						}
 						return b.localeCompare(a);
 					});
 					break;
@@ -2028,7 +2039,7 @@ export class FilterService extends EventEmitter {
 				default:
 					// Alphabetical sort for contexts and others
 					sortedKeys = Array.from(groups.keys()).sort((a, b) =>
-						a.localeCompare(b, this.getLocale())
+						a == null ? 1 : b == null ? -1 : a.localeCompare(b, this.getLocale())
 					);
 			}
 		}
@@ -2063,13 +2074,13 @@ export class FilterService extends EventEmitter {
 					if (isNumA && isNumB) return numB - numA; // desc
 					if (isNumA && !isNumB) return -1;
 					if (!isNumA && isNumB) return 1;
-					return a.localeCompare(b);
+					return a == null ? 1 : b == null ? -1 : a.localeCompare(b);
 				});
 			case "boolean":
 				return groupKeys.sort((a, b) => {
 					if (a === "true" && b === "false") return -1;
 					if (a === "false" && b === "true") return 1;
-					return a.localeCompare(b);
+					return a == null ? 1 : b == null ? -1 : a.localeCompare(b);
 				});
 			case "date":
 				return groupKeys.sort((a, b) => {
@@ -2080,12 +2091,12 @@ export class FilterService extends EventEmitter {
 					if (isValidA && isValidB) return tA - tB; // asc
 					if (isValidA && !isValidB) return -1;
 					if (!isValidA && isValidB) return 1;
-					return a.localeCompare(b);
+					return a == null ? 1 : b == null ? -1 : a.localeCompare(b);
 				});
 			case "text":
 			case "list":
 			default:
-				return groupKeys.sort((a, b) => a.localeCompare(b));
+				return groupKeys.sort((a, b) => a == null ? 1 : b == null ? -1 : a.localeCompare(b));
 		}
 	}
 
