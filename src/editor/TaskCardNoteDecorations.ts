@@ -35,6 +35,13 @@ export class TaskCardWidget extends WidgetType {
 
 	// Override eq to ensure widget updates when task changes
 	eq(other: TaskCardWidget): boolean {
+		// Helper to check if task has active time tracking session
+		const hasActiveSession = (task: TaskInfo): boolean => {
+			if (!task.timeEntries || task.timeEntries.length === 0) return false;
+			const lastEntry = task.timeEntries[task.timeEntries.length - 1];
+			return !lastEntry.endTime; // Active if no endTime
+		};
+
 		// Check if the task data has changed
 		const taskEqual =
 			this.task.title === other.task.title &&
@@ -43,6 +50,8 @@ export class TaskCardWidget extends WidgetType {
 			this.task.due === other.task.due &&
 			this.task.scheduled === other.task.scheduled &&
 			this.task.path === other.task.path &&
+			this.task.archived === other.task.archived &&
+			hasActiveSession(this.task) === hasActiveSession(other.task) &&
 			JSON.stringify(this.task.contexts || []) ===
 				JSON.stringify(other.task.contexts || []) &&
 			JSON.stringify(this.task.projects || []) ===
@@ -200,14 +209,33 @@ class TaskCardNoteDecorationsPlugin implements PluginValue {
 				// This will return null if the file is not a task note
 				const newTask = this.plugin.cacheManager.getCachedTaskInfoSync(file.path);
 
-				// Check if task actually changed
+				// Helper to check if task has active time tracking session
+				const hasActiveSession = (task: TaskInfo | null): boolean => {
+					if (!task?.timeEntries || task.timeEntries.length === 0) return false;
+					const lastEntry = task.timeEntries[task.timeEntries.length - 1];
+					return !lastEntry.endTime;
+				};
+
+				// Check if task actually changed - must check all properties that affect widget display
 				const taskChanged =
 					this.cachedTask?.title !== newTask?.title ||
 					this.cachedTask?.status !== newTask?.status ||
 					this.cachedTask?.priority !== newTask?.priority ||
 					this.cachedTask?.due !== newTask?.due ||
 					this.cachedTask?.scheduled !== newTask?.scheduled ||
-					this.cachedTask?.path !== newTask?.path;
+					this.cachedTask?.path !== newTask?.path ||
+					this.cachedTask?.archived !== newTask?.archived ||
+					this.cachedTask?.timeEstimate !== newTask?.timeEstimate ||
+					this.cachedTask?.recurrence !== newTask?.recurrence ||
+					hasActiveSession(this.cachedTask) !== hasActiveSession(newTask) ||
+					JSON.stringify(this.cachedTask?.tags || []) !==
+						JSON.stringify(newTask?.tags || []) ||
+					JSON.stringify(this.cachedTask?.contexts || []) !==
+						JSON.stringify(newTask?.contexts || []) ||
+					JSON.stringify(this.cachedTask?.projects || []) !==
+						JSON.stringify(newTask?.projects || []) ||
+					JSON.stringify(this.cachedTask?.complete_instances || []) !==
+						JSON.stringify(newTask?.complete_instances || []);
 
 				if (taskChanged) {
 					this.cachedTask = newTask;
