@@ -85,6 +85,13 @@ export class ProjectSubtasksWidget extends WidgetType {
 
 	// Override eq to ensure widget updates when tasks change but preserves filter state
 	eq(other: ProjectSubtasksWidget): boolean {
+		// Helper to check if task has active time tracking session
+		const hasActiveSession = (task: TaskInfo): boolean => {
+			if (!task.timeEntries || task.timeEntries.length === 0) return false;
+			const lastEntry = task.timeEntries[task.timeEntries.length - 1];
+			return !lastEntry.endTime;
+		};
+
 		// Check if the tasks data has changed
 		const tasksEqual =
 			this.tasks.length === other.tasks.length &&
@@ -97,6 +104,8 @@ export class ProjectSubtasksWidget extends WidgetType {
 					task.due === otherTask.due &&
 					task.scheduled === otherTask.scheduled &&
 					task.path === otherTask.path &&
+					task.archived === otherTask.archived &&
+					hasActiveSession(task) === hasActiveSession(otherTask) &&
 					JSON.stringify(task.contexts || []) ===
 						JSON.stringify(otherTask.contexts || []) &&
 					JSON.stringify(task.projects || []) ===
@@ -872,7 +881,14 @@ class ProjectNoteDecorationsPlugin implements PluginValue {
 			try {
 				const newTasks = await this.projectService.getTasksLinkedToProject(file);
 
-				// Check if tasks actually changed
+				// Helper to check if task has active time tracking session
+				const hasActiveSession = (task: TaskInfo): boolean => {
+					if (!task.timeEntries || task.timeEntries.length === 0) return false;
+					const lastEntry = task.timeEntries[task.timeEntries.length - 1];
+					return !lastEntry.endTime;
+				};
+
+				// Check if tasks actually changed - must check all properties that affect widget display
 				const tasksChanged =
 					newTasks.length !== this.cachedTasks.length ||
 					newTasks.some((newTask, index) => {
@@ -883,7 +899,20 @@ class ProjectNoteDecorationsPlugin implements PluginValue {
 							newTask.status !== oldTask.status ||
 							newTask.priority !== oldTask.priority ||
 							newTask.due !== oldTask.due ||
-							newTask.path !== oldTask.path
+							newTask.scheduled !== oldTask.scheduled ||
+							newTask.path !== oldTask.path ||
+							newTask.archived !== oldTask.archived ||
+							newTask.timeEstimate !== oldTask.timeEstimate ||
+							newTask.recurrence !== oldTask.recurrence ||
+							hasActiveSession(newTask) !== hasActiveSession(oldTask) ||
+							JSON.stringify(newTask.tags || []) !==
+								JSON.stringify(oldTask.tags || []) ||
+							JSON.stringify(newTask.contexts || []) !==
+								JSON.stringify(oldTask.contexts || []) ||
+							JSON.stringify(newTask.projects || []) !==
+								JSON.stringify(oldTask.projects || []) ||
+							JSON.stringify(newTask.complete_instances || []) !==
+								JSON.stringify(oldTask.complete_instances || [])
 						);
 					});
 
