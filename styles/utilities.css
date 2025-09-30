@@ -2299,3 +2299,46 @@
     border-radius: 50%;
     animation: tn-spin 0.8s linear infinite;
 }
+
+
+/* ================================================
+   CODEMIRROR WIDGET UTILITIES
+   ================================================ */
+
+/**
+ * Widget Cursor Fix
+ *
+ * Minimal fix for CodeMirror widget artifacts.
+ * Only prevents editing inside widgets and hides visual artifacts.
+ * Does NOT hide the editor cursor to preserve normal editing experience.
+ *
+ * Fixes:
+ * - Prevents text selection inside widgets
+ * - Prevents contenteditable behavior
+ * - Hides widget buffer image artifacts
+ *
+ * Trade-offs:
+ * - Cursor may appear next to widgets (acceptable for normal editing UX)
+ * - Widget buffer artifacts are hidden
+ *
+ * Usage: Add .cm-widget-cursor-fix to your widget container element
+ */
+.cm-widget-cursor-fix {
+    /* Prevent text selection and editing inside widget */
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+
+    /* Prevent contenteditable behavior */
+    -webkit-user-modify: read-only;
+    -moz-user-modify: read-only;
+
+    /* Ensure no text cursor appears inside widget elements */
+    caret-color: transparent;
+}
+
+/* Hide CodeMirror widgetBuffer image artifacts only */
+.cm-content > .cm-line:has(.cm-widget-cursor-fix) img.cm-widgetBuffer {
+    display: none !important;
+}

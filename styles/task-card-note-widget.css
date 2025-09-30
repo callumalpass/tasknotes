@@ -1,89 +1,14 @@
-/* Task Card Note Widget Styles */
+/* Task Card Note Widget - minimal widget for inline task cards in notes */
 
 .task-card-note-widget {
-    /* Simple border container with a little padding - let task card handle its own styling */
+    display: block;
+    border-radius: var(--radius-s);
     border: 1px solid var(--background-modifier-border);
     margin: var(--cs-spacing-md) 0;
     padding: var(--cs-spacing-sm);
-
-    /* Prevent cursor and editing issues */
-    pointer-events: auto;
-    user-select: none;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    cursor: default;
-    
-    /* Prevent contenteditable behavior */
-    -webkit-user-modify: read-only;
-    -moz-user-modify: read-only;
-    
-    /* Ensure no text cursor appears */
-    caret-color: transparent;
-    outline: none;
-
 }
 
 .task-card-note-widget__card {
     /* Reset margins for the inner task card */
     margin: 0 !important;
-}
-
-/* Hide CodeMirror widgetBuffer img when it's adjacent to our widget */
-.cm-content > .cm-line:has(.task-card-note-widget) img.cm-widgetBuffer {
-    display: none !important;
-}
-
-/* Hide CodeMirror cursor when it's adjacent to our widget */
-.cm-line:has(.task-card-note-widget) .cm-cursor,
-.cm-line:has(.task-card-note-widget) + .cm-line .cm-cursor {
-    display: none !important;
-}
-
-/* Alternative approach - hide cursor specifically around widget */
-.task-card-note-widget + .cm-cursor,
-.task-card-note-widget ~ .cm-cursor {
-    display: none !important;
-}
-
-/* Hide cursor when widget is in focus context */
-.cm-focused .cm-line:has(.task-card-note-widget) .cm-cursor {
-    display: none !important;
-}
-
-/* More specific cursor hiding using new class and data attribute */
-.cm-line:has(.task-card-note-widget) .cm-cursor,
-.cm-line:has([data-widget-type="task-card"]) .cm-cursor {
-    display: none !important;
-}
-
-/* Hide any cursor that appears after our widget */
-.task-card-note-widget ~ .cm-cursor,
-[data-widget-type="task-card"] ~ .cm-cursor {
-    display: none !important;
-}
-
-/* Ensure widget creates proper isolation from editor cursor */
-.task-card-note-widget {
-    isolation: isolate;
-    z-index: 10;
-    position: relative;
-}
-
-/* Hide cursor in the entire editor when widget is present and focused */
-.cm-editor:has(.task-card-note-widget) .cm-cursor {
-    opacity: 0 !important;
-    visibility: hidden !important;
-}
-
-/* Comprehensive cursor hiding - use as fallback */
-.cm-content:has(.task-card-note-widget) .cm-cursor,
-.cm-scroller:has(.task-card-note-widget) .cm-cursor {
-    display: none !important;
-}
-
-/* Target cursor by position relative to widget */
-.task-card-note-widget + * .cm-cursor,
-.task-card-note-widget ~ * .cm-cursor {
-    display: none !important;
 }
