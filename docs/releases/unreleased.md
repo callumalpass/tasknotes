@@ -40,6 +40,12 @@ Example:
 - (#778) Fixed cursor artifacts in CodeMirror widgets
   - Thanks to @jhedlund for the fix
 
+- Fixed task card widgets in note editor not updating for archive and time tracking changes
+  - Task card widgets now properly detect when tasks are archived/unarchived
+  - Task card widgets now properly detect when time tracking starts/stops
+  - Blue "tracking" border now appears/disappears correctly in live preview
+  - Archive styling now updates correctly in live preview
+
 ## Changed
 
 - (#751) Status bar tracked task click behavior now opens task notes directly

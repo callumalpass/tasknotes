@@ -216,7 +216,7 @@ class TaskCardNoteDecorationsPlugin implements PluginValue {
 					return !lastEntry.endTime;
 				};
 
-				// Check if task actually changed
+				// Check if task actually changed - must check all properties that affect widget display
 				const taskChanged =
 					this.cachedTask?.title !== newTask?.title ||
 					this.cachedTask?.status !== newTask?.status ||
@@ -225,7 +225,17 @@ class TaskCardNoteDecorationsPlugin implements PluginValue {
 					this.cachedTask?.scheduled !== newTask?.scheduled ||
 					this.cachedTask?.path !== newTask?.path ||
 					this.cachedTask?.archived !== newTask?.archived ||
-					hasActiveSession(this.cachedTask) !== hasActiveSession(newTask);
+					this.cachedTask?.timeEstimate !== newTask?.timeEstimate ||
+					this.cachedTask?.recurrence !== newTask?.recurrence ||
+					hasActiveSession(this.cachedTask) !== hasActiveSession(newTask) ||
+					JSON.stringify(this.cachedTask?.tags || []) !==
+						JSON.stringify(newTask?.tags || []) ||
+					JSON.stringify(this.cachedTask?.contexts || []) !==
+						JSON.stringify(newTask?.contexts || []) ||
+					JSON.stringify(this.cachedTask?.projects || []) !==
+						JSON.stringify(newTask?.projects || []) ||
+					JSON.stringify(this.cachedTask?.complete_instances || []) !==
+						JSON.stringify(newTask?.complete_instances || []);
 
 				if (taskChanged) {
 					this.cachedTask = newTask;
