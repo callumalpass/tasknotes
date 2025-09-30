@@ -123,7 +123,7 @@ export class MinimalNativeCache extends Events {
 			// Use exact matching (no substring fallback) for task identification
 			if (!Array.isArray(frontmatter.tags)) return false;
 			return frontmatter.tags.some((tag: string) =>
-				FilterUtils.matchesHierarchicalTagExact(tag, this.taskTag)
+				typeof tag === 'string' && FilterUtils.matchesHierarchicalTagExact(tag, this.taskTag)
 			);
 		}
 	}
