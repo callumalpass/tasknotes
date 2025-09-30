@@ -27,8 +27,12 @@ Example:
 
 ## Fixed
 
-- (#776) Fixed screens failing to load with "toLowerCase is not a function" error
-  - Issue occurred when frontmatter tags array contained non-string values (numbers, booleans, etc.)
-  - Added type validation to filter out non-string values before processing tags
-  - Valid string tags continue to work normally while invalid types are safely skipped
-  - Thanks to @kmf and @Andre-Ioda for help debugging this issue
+- (#778) Fixed cursor artifacts in CodeMirror widgets
+  - Thanks to @jhedlund for the fix
+
+## Changed
+
+- Refactored widget cursor styles into reusable utility class
+  - Consolidated shared CSS into .cm-widget-cursor-fix utility
+  - Improved maintainability across widget components
+
