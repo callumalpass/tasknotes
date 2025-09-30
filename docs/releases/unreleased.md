@@ -42,6 +42,11 @@ Example:
 
 ## Changed
 
+- (#727) "Create New Inline Task" command now respects the "Include Current Note in Project" setting
+  - When enabled, the current note is automatically added as a project to inline tasks
+  - Provides consistency with instant convert functionality
+  - Thanks to @chrisfeagles for the suggestion
+
 - Improved link handling throughout the plugin using Obsidian's native APIs
   - Replaced manual wikilink generation with `FileManager.generateMarkdownLink()`
   - Now respects user's link format settings (wikilink vs markdown, relative paths)
