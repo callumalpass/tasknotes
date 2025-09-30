@@ -147,16 +147,17 @@ export function renderContextsValue(
 
 /**
  * Normalize arbitrary tag strings into #tag form
- * Enhanced to handle spaces and special characters
+ * Enhanced to handle spaces and special characters including Unicode
  */
 export function normalizeTag(raw: string): string | null {
 	if (!raw || typeof raw !== "string") return null;
 	const s = raw.trim();
 	if (!s) return null;
 
-	// Clean input: keep word chars, hyphens, and slashes for hierarchical tags
+	// Clean input: keep Unicode word chars, hyphens, and slashes for hierarchical tags
+	// Use \p{L} (Unicode letters), \p{N} (Unicode numbers), and _ (underscore)
 	const hasPrefix = s.startsWith("#");
-	const cleaned = s.replace(/[^\w#/-]/g, "");
+	const cleaned = s.replace(/[^\p{L}\p{N}_#/-]/gu, "");
 
 	if (hasPrefix) {
 		return cleaned.length > 1 ? cleaned : null;
@@ -165,7 +166,7 @@ export function normalizeTag(raw: string): string | null {
 	return cleaned ? `#${cleaned}` : null;
 } /**
  * Normalize context strings into @context form
- * Enhanced to handle spaces and special characters
+ * Enhanced to handle spaces and special characters including Unicode
  */
 export function normalizeContext(raw: string): string | null {
 	if (!raw || typeof raw !== "string") return null;
@@ -173,9 +174,10 @@ export function normalizeContext(raw: string): string | null {
 	const s = raw.trim();
 	if (!s) return null;
 
-	// Clean input: keep word chars, hyphens, and slashes for hierarchical contexts
+	// Clean input: keep Unicode word chars, hyphens, and slashes for hierarchical contexts
+	// Use \p{L} (Unicode letters), \p{N} (Unicode numbers), and _ (underscore)
 	const hasPrefix = s.startsWith("@");
-	const cleaned = s.replace(/[^\w@/-]/g, "");
+	const cleaned = s.replace(/[^\p{L}\p{N}_@/-]/gu, "");
 
 	if (hasPrefix) {
 		return cleaned.length > 1 ? cleaned : null;
