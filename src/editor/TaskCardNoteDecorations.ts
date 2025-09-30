@@ -35,6 +35,13 @@ export class TaskCardWidget extends WidgetType {
 
 	// Override eq to ensure widget updates when task changes
 	eq(other: TaskCardWidget): boolean {
+		// Helper to check if task has active time tracking session
+		const hasActiveSession = (task: TaskInfo): boolean => {
+			if (!task.timeEntries || task.timeEntries.length === 0) return false;
+			const lastEntry = task.timeEntries[task.timeEntries.length - 1];
+			return !lastEntry.endTime; // Active if no endTime
+		};
+
 		// Check if the task data has changed
 		const taskEqual =
 			this.task.title === other.task.title &&
@@ -43,6 +50,8 @@ export class TaskCardWidget extends WidgetType {
 			this.task.due === other.task.due &&
 			this.task.scheduled === other.task.scheduled &&
 			this.task.path === other.task.path &&
+			this.task.archived === other.task.archived &&
+			hasActiveSession(this.task) === hasActiveSession(other.task) &&
 			JSON.stringify(this.task.contexts || []) ===
 				JSON.stringify(other.task.contexts || []) &&
 			JSON.stringify(this.task.projects || []) ===
