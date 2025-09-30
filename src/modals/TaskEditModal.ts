@@ -25,6 +25,7 @@ import {
 } from "../utils/helpers";
 import { splitListPreservingLinksAndQuotes } from "../utils/stringSplit";
 import { ReminderContextMenu } from "../components/ReminderContextMenu";
+import { generateLinkWithDisplay } from "../utils/linkUtils";
 
 export interface TaskEditOptions {
 	task: TaskInfo;
@@ -953,11 +954,13 @@ export class TaskEditModal extends TaskModal {
 		}
 
 		this.selectedProjectFiles.forEach((file) => {
+			if (!(file instanceof TFile)) return;
+
 			const projectItem = this.projectsList.createDiv({ cls: "task-project-item" });
 			const infoEl = projectItem.createDiv({ cls: "task-project-info" });
 			const nameEl = infoEl.createDiv({ cls: "task-project-name clickable-project" });
 
-			const projectAsWikilink = `[[${file.path}|${file.name}]]`;
+			const projectAsWikilink = generateLinkWithDisplay(this.app, file, this.task.path, file.name);
 			this.renderProjectLinksWithoutPrefix(nameEl, [projectAsWikilink]);
 
 			if (file.path !== file.name) {

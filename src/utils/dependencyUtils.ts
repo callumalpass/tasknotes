@@ -1,6 +1,7 @@
-import { App, TFile } from "obsidian";
+import { App, TFile, parseLinktext } from "obsidian";
 import type { TaskDependency, TaskDependencyRelType } from "../types";
 import { splitListPreservingLinksAndQuotes } from "./stringSplit";
+import { generateLink } from "./linkUtils";
 
 export const DEFAULT_DEPENDENCY_RELTYPE: TaskDependencyRelType = "FINISHTOSTART";
 
@@ -127,11 +128,12 @@ export function resolveDependencyEntry(
 		return null;
 	}
 
+	// Use Obsidian's parseLinktext for proper wikilink parsing
+	// This handles both [[link]] and [[link|alias]] formats correctly
 	let target = trimmed;
 	if (trimmed.startsWith("[[") && trimmed.endsWith("]]")) {
 		const inner = trimmed.slice(2, -2).trim();
-		const pipeIndex = inner.indexOf("|");
-		target = pipeIndex >= 0 ? inner.substring(0, pipeIndex).trim() : inner;
+		target = parseLinktext(inner).path;
 	}
 
 	if (!target) {
@@ -154,10 +156,10 @@ export function resolveDependencyEntry(
 export function formatDependencyLink(app: App, sourcePath: string, targetPath: string): string {
 	const target = app.vault.getAbstractFileByPath(targetPath);
 	if (target instanceof TFile) {
-		const linktext = app.metadataCache.fileToLinktext(target, sourcePath, false);
-		return `[[${linktext}]]`;
+		return generateLink(app, target, sourcePath);
 	}
 
+	// For unresolved files, create a simple wikilink with the basename
 	const basename = targetPath.split("/").pop() || targetPath;
 	return `[[${basename.replace(/\.md$/i, "")}]]`;
 }

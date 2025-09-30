@@ -1,4 +1,4 @@
-import { ItemView, WorkspaceLeaf, Setting, EventRef } from "obsidian";
+import { ItemView, WorkspaceLeaf, Setting, EventRef, parseLinktext } from "obsidian";
 import {
 	format,
 	startOfWeek,
@@ -462,13 +462,8 @@ export class StatsView extends ItemView {
 
 		const linkContent = projectValue.slice(2, -2);
 
-		// Handle alias syntax: [[path|alias]]
-		const pipeIndex = linkContent.indexOf("|");
-		if (pipeIndex !== -1) {
-			return linkContent.substring(0, pipeIndex).trim();
-		}
-
-		return linkContent;
+		// Use Obsidian's parseLinktext to handle aliases properly
+		return parseLinktext(linkContent).path;
 	}
 
 	/**

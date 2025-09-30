@@ -32,10 +32,22 @@ Example:
   - Calendar now handles null values in tags, contexts, and custom fields gracefully
   - Thanks to @kmaustral for reporting
 
+- (#601) Fixed Unicode characters not displaying in tags and contexts
+  - Unicode characters (Š, Ė, Ž, Ą, etc.) are now properly preserved in tags and contexts
+  - Affects Agenda View, Task List View, and all other views displaying tags
+  - Thanks to @Kapinekas for reporting
+
 - (#778) Fixed cursor artifacts in CodeMirror widgets
   - Thanks to @jhedlund for the fix
 
 ## Changed
+
+- Improved link handling throughout the plugin using Obsidian's native APIs
+  - Replaced manual wikilink generation with `FileManager.generateMarkdownLink()`
+  - Now respects user's link format settings (wikilink vs markdown, relative paths)
+  - Replaced manual link parsing with `parseLinktext()` for proper alias handling
+  - Better compatibility with future Obsidian updates
+  - Added centralized link utilities in `linkUtils.ts`
 
 - Refactored widget cursor styles into reusable utility class
   - Consolidated shared CSS into .cm-widget-cursor-fix utility
