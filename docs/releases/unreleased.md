@@ -27,6 +27,10 @@ Example:
 
 ## Fixed
 
+- (#601) Fixed Unicode characters not displaying in tags and contexts
+  - Unicode characters (Š, Ė, Ž, Ą, etc.) are now properly preserved in tags and contexts
+  - Affects Agenda View, Task List View, and all other views displaying tags
+  - Thanks to @Kapinekas for reporting
 - (#778) Fixed cursor artifacts in CodeMirror widgets
   - Thanks to @jhedlund for the fix
 
