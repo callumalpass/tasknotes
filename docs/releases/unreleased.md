@@ -42,6 +42,11 @@ Example:
 
 ## Changed
 
+- (#751) Status bar tracked task click behavior now opens task notes directly
+  - Single tracked task: opens the task note immediately
+  - Multiple tracked tasks: shows selector modal to choose which task note to open
+  - Provides faster access to tracked tasks compared to previous task list view
+
 - Improved link handling throughout the plugin using Obsidian's native APIs
   - Replaced manual wikilink generation with `FileManager.generateMarkdownLink()`
   - Now respects user's link format settings (wikilink vs markdown, relative paths)

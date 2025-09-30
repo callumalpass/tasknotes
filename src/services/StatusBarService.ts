@@ -1,6 +1,7 @@
 import { TaskInfo } from "../types";
 import { RequestDeduplicator } from "../utils/RequestDeduplicator";
-import { setTooltip } from "obsidian";
+import { setTooltip, TFile } from "obsidian";
+import { TaskSelectorModal } from "../modals/TaskSelectorModal";
 
 export class StatusBarService {
 	private plugin: import("../main").default;
@@ -129,7 +130,7 @@ export class StatusBarService {
 	}
 
 	/**
-	 * Handle click on status bar - open tasks view with tracked tasks
+	 * Handle click on status bar - open task note(s)
 	 */
 	private async handleStatusBarClick(): Promise<void> {
 		try {
@@ -140,12 +141,30 @@ export class StatusBarService {
 				return;
 			}
 
-			// Open task list view
-			await this.plugin.activateTasksView();
-
-			// Set filter to show only tracked tasks
-			// Note: This would require extending the FilterService to support time-tracking filter
-			// For now, just open the tasks view - the user can see which tasks have active time tracking
+			if (trackedTasks.length === 1) {
+				// Single tracked task - open its note directly
+				const task = trackedTasks[0];
+				const file = this.plugin.app.vault.getAbstractFileByPath(task.path);
+				if (file instanceof TFile) {
+					await this.plugin.app.workspace.getLeaf(false).openFile(file);
+				}
+			} else {
+				// Multiple tracked tasks - show selector modal
+				const modal = new TaskSelectorModal(
+					this.plugin.app,
+					this.plugin,
+					trackedTasks,
+					async (selectedTask) => {
+						if (selectedTask) {
+							const file = this.plugin.app.vault.getAbstractFileByPath(selectedTask.path);
+							if (file instanceof TFile) {
+								await this.plugin.app.workspace.getLeaf(false).openFile(file);
+							}
+						}
+					}
+				);
+				modal.open();
+			}
 		} catch (error) {
 			console.error("Error handling status bar click:", error);
 		}
