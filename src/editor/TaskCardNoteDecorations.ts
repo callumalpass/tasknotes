@@ -209,6 +209,13 @@ class TaskCardNoteDecorationsPlugin implements PluginValue {
 				// This will return null if the file is not a task note
 				const newTask = this.plugin.cacheManager.getCachedTaskInfoSync(file.path);
 
+				// Helper to check if task has active time tracking session
+				const hasActiveSession = (task: TaskInfo | null): boolean => {
+					if (!task?.timeEntries || task.timeEntries.length === 0) return false;
+					const lastEntry = task.timeEntries[task.timeEntries.length - 1];
+					return !lastEntry.endTime;
+				};
+
 				// Check if task actually changed
 				const taskChanged =
 					this.cachedTask?.title !== newTask?.title ||
@@ -216,7 +223,9 @@ class TaskCardNoteDecorationsPlugin implements PluginValue {
 					this.cachedTask?.priority !== newTask?.priority ||
 					this.cachedTask?.due !== newTask?.due ||
 					this.cachedTask?.scheduled !== newTask?.scheduled ||
-					this.cachedTask?.path !== newTask?.path;
+					this.cachedTask?.path !== newTask?.path ||
+					this.cachedTask?.archived !== newTask?.archived ||
+					hasActiveSession(this.cachedTask) !== hasActiveSession(newTask);
 
 				if (taskChanged) {
 					this.cachedTask = newTask;
