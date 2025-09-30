@@ -2285,8 +2285,24 @@ export default class TaskNotesPlugin extends Plugin {
 				insertionPoint,
 			};
 
+			// Prepare pre-populated values
+			const prePopulatedValues: Partial<TaskInfo> = {};
+
+			// Include current note as project if enabled
+			if (this.settings.taskCreationDefaults.useParentNoteAsProject) {
+				const currentFile = this.app.workspace.getActiveFile();
+				if (currentFile) {
+					const parentNote = this.app.fileManager.generateMarkdownLink(
+						currentFile,
+						currentFile.path
+					);
+					prePopulatedValues.projects = [parentNote];
+				}
+			}
+
 			// Open task creation modal with callback to insert link
 			const modal = new TaskCreationModal(this.app, this, {
+				prePopulatedValues: Object.keys(prePopulatedValues).length > 0 ? prePopulatedValues : undefined,
 				onTaskCreated: (task: TaskInfo) => {
 					this.handleInlineTaskCreated(task, insertionContext);
 				},
