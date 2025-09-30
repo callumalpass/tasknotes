@@ -30,6 +30,7 @@ import {
 	type LinkServices,
 } from "../ui/renderers/linkRenderer";
 import { TaskSelectorModal } from "./TaskSelectorModal";
+import { generateLink, generateLinkWithDisplay } from "../utils/linkUtils";
 
 interface DependencyItem {
 	dependency: TaskDependency;
@@ -98,14 +99,19 @@ export abstract class TaskModal extends Modal {
 			};
 		}
 
+		// For unresolved dependencies, create a minimal file-like object to generate link
 		const basename = path.split("/").pop() || path;
+		const nameWithoutExt = basename.replace(/\.md$/i, "");
+
+		// Use a simple wikilink format for unresolved dependencies
+		// This will be resolved when the file is created
 		return {
 			dependency: {
-				uid: `[[${basename.replace(/\.md$/i, "")}]]`,
+				uid: `[[${nameWithoutExt}]]`,
 				reltype: DEFAULT_DEPENDENCY_RELTYPE,
 			},
 			path,
-			name: basename.replace(/\.md$/i, ""),
+			name: nameWithoutExt,
 			unresolved: true,
 		};
 	}
@@ -1378,8 +1384,7 @@ export abstract class TaskModal extends Modal {
 	}
 
 	protected buildProjectReference(targetFile: TFile, sourcePath: string): string {
-		const linkText = this.app.metadataCache.fileToLinktext(targetFile, sourcePath, true);
-		return `[[${linkText}]]`;
+		return generateLink(this.app, targetFile, sourcePath);
 	}
 
 	protected initializeProjectsFromStrings(projects: string[]): void {
@@ -1431,11 +1436,13 @@ export abstract class TaskModal extends Modal {
 		}
 
 		this.selectedProjectFiles.forEach((file) => {
+			if (!(file instanceof TFile)) return;
+
 			const projectItem = this.projectsList.createDiv({ cls: "task-project-item" });
 			const infoEl = projectItem.createDiv({ cls: "task-project-info" });
 			const nameEl = infoEl.createDiv({ cls: "task-project-name clickable-project" });
 
-			const projectAsWikilink = `[[${file.path}|${file.name}]]`;
+			const projectAsWikilink = generateLinkWithDisplay(this.app, file, this.getCurrentTaskPath() || "", file.name);
 			this.renderProjectLinksWithoutPrefix(nameEl, [projectAsWikilink]);
 
 			if (file.path !== file.name) {
@@ -1515,11 +1522,13 @@ export abstract class TaskModal extends Modal {
 		}
 
 		this.selectedSubtaskFiles.forEach((file) => {
+			if (!(file instanceof TFile)) return;
+
 			const subtaskItem = this.subtasksList.createDiv({ cls: "task-project-item" });
 			const infoEl = subtaskItem.createDiv({ cls: "task-project-info" });
 			const nameEl = infoEl.createDiv({ cls: "task-project-name clickable-project" });
 
-			const taskLink = `[[${file.path}|${file.name}]]`;
+			const taskLink = generateLinkWithDisplay(this.app, file, this.getCurrentTaskPath() || "", file.name);
 			this.renderProjectLinksWithoutPrefix(nameEl, [taskLink]);
 
 			if (file.path !== file.name) {

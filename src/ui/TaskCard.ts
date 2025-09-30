@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import { TFile, setIcon, Notice, Modal, App, setTooltip } from "obsidian";
+import { TFile, setIcon, Notice, Modal, App, setTooltip, parseLinktext } from "obsidian";
 import { TaskInfo } from "../types";
 import TaskNotesPlugin from "../main";
 import { TaskContextMenu } from "../components/TaskContextMenu";
@@ -2300,7 +2300,8 @@ export async function refreshParentTaskSubtasks(
 				project.startsWith("[[") &&
 				project.endsWith("]]")
 			) {
-				const linkedNoteName = project.slice(2, -2).trim();
+				const linkContent = project.slice(2, -2).trim();
+				const linkedNoteName = parseLinktext(linkContent).path;
 				// Check both exact match and resolved file match
 				const resolvedFile = plugin.app.metadataCache.getFirstLinkpathDest(
 					linkedNoteName,

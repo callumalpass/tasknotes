@@ -35,6 +35,7 @@ import { GroupingUtils } from "../utils/GroupingUtils";
 import { ProjectSubtasksService } from "../services/ProjectSubtasksService";
 import TaskNotesPlugin from "../main";
 import { createTaskCard } from "../ui/TaskCard";
+import { generateLink } from "../utils/linkUtils";
 
 // Define a state effect for project subtasks updates
 const projectSubtasksUpdateEffect = StateEffect.define<{ forceUpdate?: boolean }>();
@@ -691,8 +692,8 @@ export class ProjectSubtasksWidget extends WidgetType {
 			return;
 		}
 
-		// Create wikilink format for the project reference
-		const projectReference = `[[${currentFile.basename}]]`;
+		// Create link using Obsidian's API for proper format
+		const projectReference = generateLink(this.plugin.app, currentFile, currentFile.path);
 
 		// Open task creation modal with project pre-populated
 		this.plugin.openTaskCreationModal({

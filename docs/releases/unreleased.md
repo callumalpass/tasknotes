@@ -36,6 +36,13 @@ Example:
 
 ## Changed
 
+- Improved link handling throughout the plugin using Obsidian's native APIs
+  - Replaced manual wikilink generation with `FileManager.generateMarkdownLink()`
+  - Now respects user's link format settings (wikilink vs markdown, relative paths)
+  - Replaced manual link parsing with `parseLinktext()` for proper alias handling
+  - Better compatibility with future Obsidian updates
+  - Added centralized link utilities in `linkUtils.ts`
+
 - Refactored widget cursor styles into reusable utility class
   - Consolidated shared CSS into .cm-widget-cursor-fix utility
   - Improved maintainability across widget components

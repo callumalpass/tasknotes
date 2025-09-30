@@ -1,6 +1,6 @@
 // Link and tag rendering utilities for UI components
 
-import { App, TFile, Notice } from "obsidian";
+import { App, TFile, Notice, parseLinktext } from "obsidian";
 
 /** Minimal services required to render internal links (DI-friendly) */
 export interface LinkServices {
@@ -274,10 +274,11 @@ export function renderProjectLinks(
 			let displayText = linkContent;
 
 			// Handle alias syntax: [[path|alias]]
+			// Note: parseLinktext() doesn't preserve alias info, so we parse manually
 			if (linkContent.includes("|")) {
 				const parts = linkContent.split("|");
-				filePath = parts[0];
-				displayText = parts[1];
+				filePath = parts[0].trim();
+				displayText = parts[1].trim();
 			}
 
 			appendInternalLink(container, filePath, displayText, deps, {
