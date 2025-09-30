@@ -27,6 +27,11 @@ Example:
 
 ## Fixed
 
+- (#768) Fixed calendar view crashes when tasks contain null values in grouping fields
+  - Added null/undefined checks in sort comparisons to prevent localeCompare errors
+  - Calendar now handles null values in tags, contexts, and custom fields gracefully
+  - Thanks to @kmaustral for reporting
+
 - (#778) Fixed cursor artifacts in CodeMirror widgets
   - Thanks to @jhedlund for the fix
 
