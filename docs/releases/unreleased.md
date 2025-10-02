@@ -33,6 +33,15 @@ Example:
   - Added `focus()` method to view objects for proper restoration
   - Made root elements focusable to support Obsidian 1.10.0 view lifecycle
 
+- (#792, #800) Fixed markdown-style project and dependency links not being recognized in frontmatter
+  - Added support for markdown link format `[text](path)` in projects and blockedBy fields
+  - Handles URL-encoded paths like `[Car Maintenance](../../projects/Car%20Maintenance.md)`
+  - Markdown links now render as clickable links showing display text instead of raw `[text](path)` format
+  - Links are properly resolved for grouping, filtering, and project-task associations
+  - Previously only wikilink format `[[path]]` was supported
+  - Prevents automatic removal of project assignments when editing tasks
+  - Thanks to @minchinweb for reporting
+
 - (#780) Fixed "Cannot Create Timeblocks" error when daily notes folder doesn't exist
   - Added proper error handling when `createDailyNote` fails due to missing folder
   - Improved error messages to guide users to check Daily Notes plugin configuration

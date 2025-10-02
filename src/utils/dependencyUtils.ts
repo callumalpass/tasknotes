@@ -128,12 +128,30 @@ export function resolveDependencyEntry(
 		return null;
 	}
 
-	// Use Obsidian's parseLinktext for proper wikilink parsing
-	// This handles both [[link]] and [[link|alias]] formats correctly
+	// Parse link text to extract path (handles both wikilinks and markdown links)
 	let target = trimmed;
+
+	// Handle wikilinks: [[link]] or [[link|alias]]
 	if (trimmed.startsWith("[[") && trimmed.endsWith("]]")) {
 		const inner = trimmed.slice(2, -2).trim();
 		target = parseLinktext(inner).path;
+	}
+	// Handle markdown links: [text](path)
+	else {
+		const markdownMatch = trimmed.match(/^\[([^\]]*)\]\(([^)]+)\)$/);
+		if (markdownMatch) {
+			let linkPath = markdownMatch[2].trim();
+
+			// URL decode the link path - crucial for paths with spaces
+			try {
+				linkPath = decodeURIComponent(linkPath);
+			} catch (error) {
+				console.debug("Failed to decode URI component:", linkPath, error);
+			}
+
+			// Use parseLinktext to handle subpaths/headings
+			target = parseLinktext(linkPath).path;
+		}
 	}
 
 	if (!target) {

@@ -243,6 +243,34 @@ function isWikilink(text: string): boolean {
 }
 
 /**
+ * Check if a project string is in markdown link format [text](path)
+ */
+function isMarkdownLink(text: string): boolean {
+	if (!text || typeof text !== "string") return false;
+	return /^\[([^\]]*)\]\(([^)]+)\)$/.test(text);
+}
+
+/**
+ * Parse a markdown link to extract display text and file path
+ */
+function parseMarkdownLink(text: string): { displayText: string; filePath: string } | null {
+	const match = text.match(/^\[([^\]]*)\]\(([^)]+)\)$/);
+	if (!match) return null;
+
+	const displayText = match[1].trim();
+	let filePath = match[2].trim();
+
+	// URL decode the link path - crucial for paths with spaces
+	try {
+		filePath = decodeURIComponent(filePath);
+	} catch (error) {
+		console.debug("Failed to decode URI component:", filePath, error);
+	}
+
+	return { displayText, filePath };
+}
+
+/**
  * Render project links with custom formatting (enhanced from TaskCard)
  */
 export function renderProjectLinks(
@@ -286,6 +314,19 @@ export function renderProjectLinks(
 				hoverSource: "tasknotes-project-link",
 				showErrorNotices: true,
 			});
+		} else if (isMarkdownLink(project)) {
+			// Parse markdown link: [text](path)
+			const parsed = parseMarkdownLink(project);
+			if (parsed) {
+				appendInternalLink(container, parsed.filePath, parsed.displayText, deps, {
+					cssClass: "task-card__project-link internal-link",
+					hoverSource: "tasknotes-project-link",
+					showErrorNotices: true,
+				});
+			} else {
+				// Fallback to plain text if parsing fails
+				container.appendChild(document.createTextNode(project));
+			}
 		} else {
 			// Plain text project
 			container.appendChild(document.createTextNode(project));
