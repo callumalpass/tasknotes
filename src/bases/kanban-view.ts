@@ -71,8 +71,27 @@ export function buildTasknotesKanbanViewFactory(plugin: TaskNotesPlugin) {
 		board.className = "kanban-view__board";
 		root.appendChild(board);
 
+		// Uses public API (1.10.0+) when available, falls back to internal API
 		const extractDataItems = (): BasesDataItem[] => {
 			const dataItems: BasesDataItem[] = [];
+
+			// Try public API first (1.10.0+) - data is already filtered and sorted
+			const viewObject = (basesContainer as any);
+			if (viewObject.data?.data && Array.isArray(viewObject.data.data)) {
+				// Use BasesEntry objects from public API
+				for (const entry of viewObject.data.data) {
+					dataItems.push({
+						key: entry.file?.path || "",
+						data: entry,
+						file: entry.file,
+						path: entry.file?.path,
+						properties: (entry as any).frontmatter || (entry as any).properties,
+					});
+				}
+				return dataItems;
+			}
+
+			// Fallback to internal API for older versions
 			const results = basesContainer.results;
 			if (results && results instanceof Map) {
 				for (const [, value] of results.entries()) {
