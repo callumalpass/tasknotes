@@ -27,6 +27,12 @@ Example:
 
 ## Fixed
 
+- (#806) Fixed Bases views crashing on Obsidian 1.10.0 startup
+  - TaskNotes Bases views (Task List and Kanban) now restore correctly when already open at startup
+  - Added defensive checks in `setEphemeralState` to handle early lifecycle calls
+  - Added `focus()` method to view objects for proper restoration
+  - Made root elements focusable to support Obsidian 1.10.0 view lifecycle
+
 - (#780) Fixed "Cannot Create Timeblocks" error when daily notes folder doesn't exist
   - Added proper error handling when `createDailyNote` fails due to missing folder
   - Improved error messages to guide users to check Daily Notes plugin configuration
