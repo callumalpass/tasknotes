@@ -1059,6 +1059,7 @@ export class FilterService extends EventEmitter {
 	/**
 	 * Resolve project reference to absolute file path for consistent grouping.
 	 * Returns the absolute path if it resolves to a file, otherwise returns the original value.
+	 * Supports wikilinks ([[path]]), markdown links ([text](path)), and plain paths.
 	 */
 	resolveProjectToAbsolutePath(projectValue: string): string {
 		if (!projectValue || typeof projectValue !== "string") {
@@ -1069,64 +1070,65 @@ export class FilterService extends EventEmitter {
 			return projectValue;
 		}
 
-		// For wikilink format, resolve to actual file path
-		if (projectValue.startsWith("[[") && projectValue.endsWith("]]")) {
-			const linkContent = projectValue.slice(2, -2);
+		// Parse link formats (wikilinks and markdown links) to extract path
+		// This handles [[path]], [[path|alias]], and [text](path) formats
+		const linkPath = this.parseLinkToPath(projectValue);
 
-			// Parse the wikilink manually since Obsidian's parseLinktext seems unreliable
-			let linkPath = linkContent;
-
-			const pipeIndex = linkContent.indexOf("|");
-			if (pipeIndex !== -1) {
-				linkPath = linkContent.substring(0, pipeIndex).trim();
-			}
-
-			// Always try to resolve using Obsidian's API - this handles relative paths correctly
-			const resolvedFile = this.plugin.app.metadataCache.getFirstLinkpathDest(linkPath, "");
-			if (resolvedFile) {
-				// Return the absolute file path (vault-relative) without .md extension
-				return resolvedFile.path.replace(/\.md$/, "");
-			}
-
-			// If file doesn't exist, clean up the link path (ignore alias part)
-			return linkPath.replace(/\.md$/, "");
-		}
-
-		// Handle pipe syntax like "../projects/Genealogy|Genealogy" - extract path part
-		if (projectValue.includes("|")) {
-			const parts = projectValue.split("|");
-			const pathPart = parts[0].trim();
-
-			// Try to resolve the path part using Obsidian's API
-			const resolvedFile = this.plugin.app.metadataCache.getFirstLinkpathDest(pathPart, "");
-			if (resolvedFile) {
-				return resolvedFile.path.replace(/\.md$/, "");
-			}
-
-			return pathPart.replace(/\.md$/, "");
-		}
-
-		// Handle path-like strings - try to resolve if possible
-		if (projectValue.includes("/")) {
-			const resolvedFile = this.plugin.app.metadataCache.getFirstLinkpathDest(
-				projectValue,
-				""
-			);
-			if (resolvedFile) {
-				return resolvedFile.path.replace(/\.md$/, "");
-			}
-
-			return projectValue.replace(/\.md$/, "");
-		}
-
-		// For plain text projects, try to resolve as well (maybe it's a filename)
-		const resolvedFile = this.plugin.app.metadataCache.getFirstLinkpathDest(projectValue, "");
+		// Always try to resolve using Obsidian's API - this handles relative paths correctly
+		const resolvedFile = this.plugin.app.metadataCache.getFirstLinkpathDest(linkPath, "");
 		if (resolvedFile) {
+			// Return the absolute file path (vault-relative) without .md extension
 			return resolvedFile.path.replace(/\.md$/, "");
 		}
 
-		// For plain text projects that don't resolve to files, return as-is
-		return projectValue;
+		// If file doesn't exist, return the link path
+		return linkPath.replace(/\.md$/, "");
+	}
+
+	/**
+	 * Parse a link string (wikilink or markdown) to extract the path.
+	 * Handles [[wikilink]], [[path|alias]], and [text](path) formats.
+	 * For non-link strings, returns the input as-is.
+	 */
+	private parseLinkToPath(linkText: string): string {
+		if (!linkText) return linkText;
+
+		const trimmed = linkText.trim();
+
+		// Handle wikilinks: [[path]] or [[path|alias]]
+		if (trimmed.startsWith("[[") && trimmed.endsWith("]]")) {
+			const linkContent = trimmed.slice(2, -2);
+			const pipeIndex = linkContent.indexOf("|");
+			if (pipeIndex !== -1) {
+				return linkContent.substring(0, pipeIndex).trim();
+			}
+			return linkContent.trim();
+		}
+
+		// Handle markdown links: [text](path)
+		const markdownMatch = trimmed.match(/^\[([^\]]*)\]\(([^)]+)\)$/);
+		if (markdownMatch) {
+			let linkPath = markdownMatch[2].trim();
+
+			// URL decode the link path - crucial for paths with spaces like Car%20Maintenance.md
+			try {
+				linkPath = decodeURIComponent(linkPath);
+			} catch (error) {
+				// If decoding fails, use the original path
+				console.debug("Failed to decode URI component:", linkPath, error);
+			}
+
+			return linkPath;
+		}
+
+		// Handle legacy pipe syntax like "../projects/Genealogy|Genealogy"
+		if (trimmed.includes("|")) {
+			const parts = trimmed.split("|");
+			return parts[0].trim();
+		}
+
+		// Not a link format, return as-is
+		return trimmed;
 	}
 
 	/**
