@@ -15,7 +15,7 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 
 	const attemptRegistration = async (): Promise<boolean> => {
 		try {
-			// Register Task List view using wrapper (tries public API, then internal API)
+			// Register Task List view using wrapper
 			const taskListSuccess = registerBasesView(plugin, "tasknotesTaskList", {
 				name: "TaskNotes Task List",
 				icon: "tasknotes-simple",
