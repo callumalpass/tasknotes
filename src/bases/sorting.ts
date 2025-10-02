@@ -51,6 +51,8 @@ function buildPropertyIdIndex(propsMap: Record<string, any> | undefined): Map<st
  * Supported sort tokens:
  *  - Built-ins: file.basename, file.path, title, due, scheduled, priority
  *  - Any property id from query.properties (note.*)
+ *
+ * Uses public API (1.10.0+) when available via config.getSort()
  */
 export function getBasesSortComparator(
 	basesContainer: any,
@@ -61,16 +63,26 @@ export function getBasesSortComparator(
 		const query = (basesContainer?.query ?? controller?.query) as any;
 		if (!controller) return null;
 
-		const fullCfg = controller?.getViewConfig?.() ?? {};
-
-		// Extract sort configuration (array of entries)
+		// Try public API first (1.10.0+) - config.getSort()
 		let sort: any;
-		try {
-			sort = query?.getViewConfig?.("sort");
-		} catch (_) {
-			// Ignore errors accessing sort config
+		if (basesContainer?.config && typeof basesContainer.config.getSort === "function") {
+			try {
+				sort = basesContainer.config.getSort();
+			} catch (_) {
+				// Ignore errors accessing sort config
+			}
 		}
-		if (sort == null) sort = (fullCfg as any)?.sort;
+
+		// Fallback to internal API for older versions
+		if (sort == null) {
+			const fullCfg = controller?.getViewConfig?.() ?? {};
+			try {
+				sort = query?.getViewConfig?.("sort");
+			} catch (_) {
+				// Ignore errors accessing sort config
+			}
+			if (sort == null) sort = (fullCfg as any)?.sort;
+		}
 
 		if (!Array.isArray(sort) || sort.length === 0) return null;
 
