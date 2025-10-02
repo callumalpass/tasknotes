@@ -62,6 +62,7 @@ export function buildTasknotesKanbanViewFactory(plugin: TaskNotesPlugin) {
 		// Root container
 		const root = document.createElement("div");
 		root.className = "tn-bases-integration tasknotes-plugin kanban-view";
+		root.tabIndex = -1; // Make focusable without adding to tab order
 		viewContainerEl.appendChild(root);
 		currentRoot = root;
 
@@ -392,6 +393,17 @@ export function buildTasknotesKanbanViewFactory(plugin: TaskNotesPlugin) {
 		let queryListener: (() => void) | null = null;
 
 		const component = {
+			focus: () => {
+				// Focus the root element if it exists and is connected
+				try {
+					if (currentRoot && currentRoot.isConnected && typeof currentRoot.focus === "function") {
+						currentRoot.focus();
+					}
+				} catch (e) {
+					// Silently fail - focus is non-critical
+					console.debug("[TaskNotes][Bases] Failed to focus view:", e);
+				}
+			},
 			load: () => {
 				// Set up query listener
 				if (basesContainer.query?.on && !queryListener) {
@@ -448,8 +460,16 @@ export function buildTasknotesKanbanViewFactory(plugin: TaskNotesPlugin) {
 				return { scrollTop: currentRoot?.scrollTop || 0 };
 			},
 			setEphemeralState: (state: any) => {
-				if (state?.scrollTop && currentRoot) {
-					currentRoot.scrollTop = state.scrollTop;
+				if (!state) return;
+
+				try {
+					// Only set scroll if element exists and is connected to DOM
+					if (currentRoot && currentRoot.isConnected && state.scrollTop !== undefined) {
+						currentRoot.scrollTop = state.scrollTop;
+					}
+				} catch (e) {
+					// Silently fail - ephemeral state restoration is non-critical
+					console.debug("[TaskNotes][Bases] Failed to restore ephemeral state:", e);
 				}
 			},
 			destroy: () => {
