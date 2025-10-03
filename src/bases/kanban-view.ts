@@ -1,5 +1,5 @@
 import TaskNotesPlugin from "../main";
-import { BasesDataItem, identifyTaskNotesFromBasesData } from "./helpers";
+import { BasesDataItem, identifyTaskNotesFromBasesData, getBasesVisibleProperties } from "./helpers";
 import { TaskInfo } from "../types";
 import { getBasesGroupByConfig, BasesGroupByConfig } from "./group-by";
 import { getGroupNameComparator } from "./group-ordering";
@@ -132,47 +132,92 @@ export function buildTasknotesKanbanViewFactory(plugin: TaskNotesPlugin) {
 					dataItems.filter((i) => !!i.path).map((i) => [i.path || "", i.properties || {}])
 				);
 
-				// Get advanced groupBy configuration
-				const groupByConfig = getBasesGroupByConfig(basesContainer, pathToProps);
-
-				// Group tasks using the advanced system
+				// Group tasks
 				const groups = new Map<string, TaskInfo[]>();
+				let groupByPropertyId: string | null = null;
 
-				if (groupByConfig) {
-					// Use dynamic groupBy from Bases configuration
-					for (const task of taskNotes) {
-						const groupValues = groupByConfig.getGroupValues(task.path);
+				// Try to use public API (1.10.0+) data.groupedData
+				const viewObject = (basesContainer as any);
+				if (viewObject.data?.groupedData && Array.isArray(viewObject.data.groupedData)) {
+					// Get the groupBy property from config
+					if (viewObject.config?.groupBy && typeof viewObject.config.groupBy === "object") {
+						groupByPropertyId = viewObject.config.groupBy.property;
+					}
 
-						// Tasks can belong to multiple groups (e.g., multiple tags)
-						for (const groupValue of groupValues) {
+					// Use pre-grouped data from Bases
+					for (const group of viewObject.data.groupedData) {
+						// Get the key value (it's a Value object with .data property)
+						const keyValue = group.key?.data ?? "none";
+						const keyString = String(keyValue);
+
+						// Convert BasesEntry objects to TaskInfo
+						const groupTasks: TaskInfo[] = [];
+						for (const entry of group.entries) {
+							const task = taskNotes.find((t) => t.path === entry.file?.path);
+							if (task) groupTasks.push(task);
+						}
+
+						if (groupTasks.length > 0) {
+							groups.set(keyString, groupTasks);
+						}
+					}
+				} else {
+					// Fallback to manual grouping for older versions
+					const groupByConfig = getBasesGroupByConfig(basesContainer, pathToProps);
+
+					if (groupByConfig) {
+						groupByPropertyId = groupByConfig.normalizedId;
+						// Use dynamic groupBy from Bases configuration
+						for (const task of taskNotes) {
+							const groupValues = groupByConfig.getGroupValues(task.path);
+
+							// Tasks can belong to multiple groups (e.g., multiple tags)
+							for (const groupValue of groupValues) {
+								if (!groups.has(groupValue)) {
+									groups.set(groupValue, []);
+								}
+								groups.get(groupValue)?.push(task);
+							}
+						}
+					} else {
+						// Fallback to status grouping when no groupBy is configured
+						groupByPropertyId = "status";
+						for (const task of taskNotes) {
+							const groupValue = task.status || "open";
 							if (!groups.has(groupValue)) {
 								groups.set(groupValue, []);
 							}
 							groups.get(groupValue)?.push(task);
 						}
-					}
-				} else {
-					// Fallback to status grouping when no groupBy is configured
-					for (const task of taskNotes) {
-						const groupValue = task.status || "open";
-						if (!groups.has(groupValue)) {
-							groups.set(groupValue, []);
-						}
-						groups.get(groupValue)?.push(task);
-					}
 
-					// Add empty status columns
-					plugin.statusManager.getAllStatuses().forEach((status) => {
-						if (!groups.has(status.value)) {
-							groups.set(status.value, []);
-						}
-					});
+						// Add empty status columns
+						plugin.statusManager.getAllStatuses().forEach((status) => {
+							if (!groups.has(status.value)) {
+								groups.set(status.value, []);
+							}
+						});
+					}
 				}
+
+				// Get visible properties from Bases
+				const basesVisibleProps = getBasesVisibleProperties(basesContainer);
+				const visiblePropsIds = basesVisibleProps.length > 0
+					? basesVisibleProps.map((p) => {
+							// Map Bases property IDs to TaskNotes internal names
+							let mapped = p.id;
+							if (mapped.startsWith("note.")) {
+								mapped = mapped.substring(5);
+							} else if (mapped.startsWith("task.")) {
+								mapped = mapped.substring(5);
+							}
+							return mapped;
+						})
+					: (plugin.settings.defaultVisibleProperties || []);
 
 				// Get sorting configuration for group names
 				const sortComparator = getBasesSortComparator(basesContainer, pathToProps);
 				const firstSortEntry = sortComparator
-					? { id: groupByConfig?.normalizedId || "status", direction: "ASC" as const }
+					? { id: groupByPropertyId || "status", direction: "ASC" as const }
 					: null;
 				const groupNameComparator = getGroupNameComparator(firstSortEntry);
 
@@ -181,7 +226,7 @@ export function buildTasknotesKanbanViewFactory(plugin: TaskNotesPlugin) {
 
 				for (const columnId of columnIds) {
 					const tasks = groups.get(columnId) || [];
-					const columnEl = createColumnElement(columnId, tasks, groupByConfig);
+					const columnEl = createColumnElement(columnId, tasks, groupByPropertyId, visiblePropsIds);
 					board.appendChild(columnEl);
 				}
 			} catch (error) {
@@ -193,7 +238,8 @@ export function buildTasknotesKanbanViewFactory(plugin: TaskNotesPlugin) {
 		const createColumnElement = (
 			columnId: string,
 			tasks: TaskInfo[],
-			groupByConfig: BasesGroupByConfig | null
+			groupByPropertyId: string | null,
+			visibleProperties: string[]
 		): HTMLElement => {
 			const columnEl = document.createElement("div");
 			columnEl.className = "kanban-view__column";
@@ -205,8 +251,8 @@ export function buildTasknotesKanbanViewFactory(plugin: TaskNotesPlugin) {
 			// Title - format based on property type and use TaskNotes display values
 			let title: string;
 
-			if (groupByConfig) {
-				const propertyId = groupByConfig.normalizedId.toLowerCase();
+			if (groupByPropertyId) {
+				const propertyId = groupByPropertyId.toLowerCase();
 
 				// Map Bases property IDs to TaskNotes native properties and use display values
 				if (propertyId === "status" || propertyId === "note.status") {
@@ -255,7 +301,6 @@ export function buildTasknotesKanbanViewFactory(plugin: TaskNotesPlugin) {
 
 			// Render tasks using existing TaskCard system
 			tasks.forEach((task) => {
-				const visibleProperties = plugin.settings.defaultVisibleProperties;
 				const taskCard = createTaskCard(task, plugin, visibleProperties, {
 					showDueDate: true,
 					showCheckbox: false,
@@ -278,9 +323,9 @@ export function buildTasknotesKanbanViewFactory(plugin: TaskNotesPlugin) {
 			addColumnDropHandlers(columnEl, async (taskPath: string, targetColumnId: string) => {
 				try {
 					const task = await plugin.cacheManager.getCachedTaskInfo(taskPath);
-					if (task && groupByConfig) {
+					if (task && groupByPropertyId) {
 						// Map Bases property IDs to TaskNotes native properties for updates
-						const originalPropertyId = groupByConfig.normalizedId;
+						const originalPropertyId = groupByPropertyId;
 						const propertyId = originalPropertyId.toLowerCase();
 
 						// Handle different property types
@@ -358,7 +403,7 @@ export function buildTasknotesKanbanViewFactory(plugin: TaskNotesPlugin) {
 
 						// Refresh the view
 						await render();
-					} else if (task && !groupByConfig) {
+					} else if (task && !groupByPropertyId) {
 						// Fallback to status update when no groupBy config
 						await plugin.updateTaskProperty(task, "status", targetColumnId, {
 							silent: true,
