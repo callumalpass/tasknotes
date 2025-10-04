@@ -286,4 +286,6 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	enableBases: true,
 	// Recurring task behavior defaults
 	maintainDueDateOffsetInRecurring: false,
+	// Frontmatter link format defaults
+	useFrontmatterMarkdownLinks: false, // Default to wikilinks for compatibility
 };

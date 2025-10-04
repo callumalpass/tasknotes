@@ -385,8 +385,17 @@ export class MetadataCache {
 
 // FileManager mock class
 export class FileManager {
-  async generateMarkdownLink(file: TFile, sourcePath?: string): Promise<string> {
-    return `[[${file.basename}]]`;
+  generateMarkdownLink(file: TFile, sourcePath?: string, subpath?: string, alias?: string): string {
+    // Simulate Obsidian's behavior of respecting user settings
+    // For testing, we'll generate markdown link format when this is called
+    const fileName = file.basename;
+    const displayText = alias || fileName;
+    const path = file.path;
+    let link = `[${displayText}](${path})`;
+    if (subpath) {
+      link = `[${displayText}](${path}${subpath})`;
+    }
+    return link;
   }
 
   async processFrontMatter(file: TFile, fn: (frontmatter: any) => void): Promise<void> {

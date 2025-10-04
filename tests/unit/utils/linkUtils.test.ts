@@ -62,4 +62,34 @@ describe('linkUtils - frontmatter link format', () => {
       expect(link).toBe('[[Test Project|My Custom Display]]');
     });
   });
+
+  describe('markdown link mode (when useMarkdownLinks=true)', () => {
+    it('should generate markdown links when explicitly requested', () => {
+      const link = generateLink(mockApp, mockFile, 'tasks/My Task.md', '', '', true);
+
+      // Should be markdown format when enabled
+      expect(link).toMatch(/^\[.*\]\(.*\)$/);
+      expect(link).toBe('[Test Project](projects/Test Project.md)');
+    });
+
+    it('should generate markdown links with alias when provided', () => {
+      const link = generateLink(mockApp, mockFile, 'tasks/My Task.md', '', 'Custom Alias', true);
+      expect(link).toBe('[Custom Alias](projects/Test Project.md)');
+    });
+
+    it('should generate markdown links with subpath when provided', () => {
+      const link = generateLink(mockApp, mockFile, 'tasks/My Task.md', '#Section', '', true);
+      expect(link).toBe('[Test Project](projects/Test Project.md#Section)');
+    });
+
+    it('should generate wikilinks by default when useMarkdownLinks is false', () => {
+      const link = generateLink(mockApp, mockFile, 'tasks/My Task.md', '', '', false);
+      expect(link).toBe('[[Test Project]]');
+    });
+
+    it('should generate wikilinks by default when useMarkdownLinks is undefined', () => {
+      const link = generateLink(mockApp, mockFile, 'tasks/My Task.md');
+      expect(link).toBe('[[Test Project]]');
+    });
+  });
 });

@@ -171,6 +171,20 @@ export function renderGeneralTab(
 		},
 	});
 
+	// Frontmatter Section
+	createSectionHeader(container, "Frontmatter");
+	createHelpText(container, "Configure how links are formatted in frontmatter properties.");
+
+	createToggleSetting(container, {
+		name: "Use markdown links in frontmatter",
+		desc: "Generate markdown links ([text](path)) instead of wikilinks ([[link]]) in frontmatter properties. ⚠️ Requires the 'obsidian-frontmatter-markdown-links' plugin to work correctly.",
+		getValue: () => plugin.settings.useFrontmatterMarkdownLinks,
+		setValue: async (value: boolean) => {
+			plugin.settings.useFrontmatterMarkdownLinks = value;
+			save();
+		},
+	});
+
 	// Task Interaction Section
 	createSectionHeader(container, translate("settings.general.taskInteraction.header"));
 	createHelpText(container, translate("settings.general.taskInteraction.description"));
