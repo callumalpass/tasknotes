@@ -361,6 +361,14 @@ export class MetadataCache {
     this.cache.delete(path);
   }
 
+  fileToLinktext(file: TFile, sourcePath: string, omitMdExtension: boolean = true): string {
+    // Simple implementation: return basename without extension if omitMdExtension is true
+    if (omitMdExtension && file.extension === 'md') {
+      return file.basename;
+    }
+    return file.name;
+  }
+
   // Event management
   on(event: 'changed' | 'resolve' | 'resolved', callback: (...args: any[]) => void): void {
     this.emitter.on(event, callback);

@@ -42,15 +42,16 @@ export function parseLinkToPath(linkText: string): string {
 }
 
 /**
- * Generate a properly formatted markdown link using Obsidian's API.
- * This respects user's link format settings (wikilink vs markdown, relative paths, etc.)
+ * Generate a wikilink for use in frontmatter properties.
+ * Always generates wikilink format regardless of user settings because Obsidian
+ * does not support markdown links in frontmatter properties.
  *
  * @param app - Obsidian app instance
  * @param targetFile - The file to link to
  * @param sourcePath - The path of the file containing the link (for relative paths)
  * @param subpath - Optional subpath (e.g., heading anchor)
  * @param alias - Optional display alias
- * @returns A properly formatted link string
+ * @returns A wikilink string in the format [[link]] or [[link|alias]]
  */
 export function generateLink(
 	app: App,
@@ -59,12 +60,21 @@ export function generateLink(
 	subpath?: string,
 	alias?: string
 ): string {
-	return app.fileManager.generateMarkdownLink(
-		targetFile,
-		sourcePath,
-		subpath || "",
-		alias || ""
-	);
+	// Always generate wikilink format for frontmatter compatibility (issue #827)
+	// Obsidian does not support markdown links in frontmatter properties
+	const linktext = app.metadataCache.fileToLinktext(targetFile, sourcePath, true);
+	let link = `[[${linktext}`;
+
+	if (subpath) {
+		link += subpath;
+	}
+
+	if (alias) {
+		link += `|${alias}`;
+	}
+
+	link += ']]';
+	return link;
 }
 
 /**
@@ -74,19 +84,14 @@ export function generateLink(
  * @param app - Obsidian app instance
  * @param targetFile - The file to link to
  * @param sourcePath - The path of the file containing the link
- * @returns A link with basename as alias
+ * @returns A wikilink with basename as alias
  */
 export function generateLinkWithBasename(
 	app: App,
 	targetFile: TFile,
 	sourcePath: string
 ): string {
-	return app.fileManager.generateMarkdownLink(
-		targetFile,
-		sourcePath,
-		"",
-		targetFile.basename
-	);
+	return generateLink(app, targetFile, sourcePath, "", targetFile.basename);
 }
 
 /**
@@ -97,7 +102,7 @@ export function generateLinkWithBasename(
  * @param targetFile - The file to link to
  * @param sourcePath - The path of the file containing the link
  * @param displayName - Custom display name
- * @returns A link with custom display name as alias
+ * @returns A wikilink with custom display name as alias
  */
 export function generateLinkWithDisplay(
 	app: App,
@@ -105,10 +110,5 @@ export function generateLinkWithDisplay(
 	sourcePath: string,
 	displayName: string
 ): string {
-	return app.fileManager.generateMarkdownLink(
-		targetFile,
-		sourcePath,
-		"",
-		displayName
-	);
+	return generateLink(app, targetFile, sourcePath, "", displayName);
 }
