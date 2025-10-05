@@ -171,6 +171,23 @@ export function renderGeneralTab(
 		},
 	});
 
+	// Frontmatter Section - only show if user has markdown links enabled globally
+	const useMarkdownLinks = plugin.app.vault.getConfig('useMarkdownLinks');
+	if (useMarkdownLinks) {
+		createSectionHeader(container, translate("settings.general.frontmatter.header"));
+		createHelpText(container, translate("settings.general.frontmatter.description"));
+
+		createToggleSetting(container, {
+			name: translate("settings.general.frontmatter.useMarkdownLinks.name"),
+			desc: translate("settings.general.frontmatter.useMarkdownLinks.description"),
+			getValue: () => plugin.settings.useFrontmatterMarkdownLinks,
+			setValue: async (value: boolean) => {
+				plugin.settings.useFrontmatterMarkdownLinks = value;
+				save();
+			},
+		});
+	}
+
 	// Task Interaction Section
 	createSectionHeader(container, translate("settings.general.taskInteraction.header"));
 	createHelpText(container, translate("settings.general.taskInteraction.description"));

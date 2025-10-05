@@ -1292,6 +1292,10 @@
       "source": "4ff367979f5bdb70f928733dda339ca81435c4b1",
       "translation": "f03123a435174cef25cce4330e1d7c9c6ba5993d"
     },
+    "settings.general.frontmatter.header": null,
+    "settings.general.frontmatter.description": null,
+    "settings.general.frontmatter.useMarkdownLinks.name": null,
+    "settings.general.frontmatter.useMarkdownLinks.description": null,
     "settings.general.taskInteraction.header": {
       "source": "a8194c053a4f989c874659b7d4a0e99f5a4a3df5",
       "translation": "9765fd942e9dd3fe08dc3599d3754e21c0aaa271"
@@ -6818,6 +6822,10 @@
       "source": "4ff367979f5bdb70f928733dda339ca81435c4b1",
       "translation": "d7ff49bfccec1fc23a91f3ba5033c279f8833fea"
     },
+    "settings.general.frontmatter.header": null,
+    "settings.general.frontmatter.description": null,
+    "settings.general.frontmatter.useMarkdownLinks.name": null,
+    "settings.general.frontmatter.useMarkdownLinks.description": null,
     "settings.general.taskInteraction.header": {
       "source": "a8194c053a4f989c874659b7d4a0e99f5a4a3df5",
       "translation": "0c99bacc36ebbb163aa2813d5b0d18602725e551"
@@ -12344,6 +12352,10 @@
       "source": "4ff367979f5bdb70f928733dda339ca81435c4b1",
       "translation": "f429284d9f211ecd199f673e8b700b051af4fe51"
     },
+    "settings.general.frontmatter.header": null,
+    "settings.general.frontmatter.description": null,
+    "settings.general.frontmatter.useMarkdownLinks.name": null,
+    "settings.general.frontmatter.useMarkdownLinks.description": null,
     "settings.general.taskInteraction.header": {
       "source": "a8194c053a4f989c874659b7d4a0e99f5a4a3df5",
       "translation": "fbd07b9c2d07333ad938a9ffd3d17cf4cf06193f"
@@ -17804,6 +17816,10 @@
       "source": "4ff367979f5bdb70f928733dda339ca81435c4b1",
       "translation": "2bb6adcc292c5961c3bd4b7039b088a5aef92768"
     },
+    "settings.general.frontmatter.header": null,
+    "settings.general.frontmatter.description": null,
+    "settings.general.frontmatter.useMarkdownLinks.name": null,
+    "settings.general.frontmatter.useMarkdownLinks.description": null,
     "settings.general.taskInteraction.header": {
       "source": "a8194c053a4f989c874659b7d4a0e99f5a4a3df5",
       "translation": "b23138923158d6981b28c676c475f4d2d9018124"
@@ -23168,6 +23184,10 @@
       "source": "4ff367979f5bdb70f928733dda339ca81435c4b1",
       "translation": "4a6c60aef4be1329cd69b6137e9bdc046fda96e6"
     },
+    "settings.general.frontmatter.header": null,
+    "settings.general.frontmatter.description": null,
+    "settings.general.frontmatter.useMarkdownLinks.name": null,
+    "settings.general.frontmatter.useMarkdownLinks.description": null,
     "settings.general.taskInteraction.header": {
       "source": "a8194c053a4f989c874659b7d4a0e99f5a4a3df5",
       "translation": "83a4ef0c5d6972fcc165e451ce42dc6c996f1a85"
@@ -28610,6 +28630,10 @@
       "source": "4ff367979f5bdb70f928733dda339ca81435c4b1",
       "translation": "4c9da6382b78df24efdf07f811d8cf02f1cec7fe"
     },
+    "settings.general.frontmatter.header": null,
+    "settings.general.frontmatter.description": null,
+    "settings.general.frontmatter.useMarkdownLinks.name": null,
+    "settings.general.frontmatter.useMarkdownLinks.description": null,
     "settings.general.taskInteraction.header": {
       "source": "a8194c053a4f989c874659b7d4a0e99f5a4a3df5",
       "translation": "a88718a01e7ff2ad9d96ca1f171d99d9319307a2"

@@ -1652,7 +1652,7 @@ export class TaskService {
 
 		if (action === "add" && !hasExistingEntry) {
 			const normalizedIncoming = rawEntry ? normalizeDependencyEntry(rawEntry) : null;
-			const uid = formatDependencyLink(this.plugin.app, blockedTask.path, blockingTaskPath);
+			const uid = formatDependencyLink(this.plugin.app, blockedTask.path, blockingTaskPath, this.plugin.settings.useFrontmatterMarkdownLinks);
 			const dependency: TaskDependency = {
 				uid,
 				reltype: normalizedIncoming?.reltype ?? DEFAULT_DEPENDENCY_RELTYPE,

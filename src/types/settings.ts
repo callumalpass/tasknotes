@@ -125,6 +125,8 @@ export interface TaskNotesSettings {
 	enableBases: boolean;
 	// Recurring task behavior
 	maintainDueDateOffsetInRecurring: boolean;
+	// Frontmatter link format settings
+	useFrontmatterMarkdownLinks: boolean; // Use markdown links in frontmatter (requires obsidian-frontmatter-markdown-links plugin)
 }
 
 export interface DefaultReminder {

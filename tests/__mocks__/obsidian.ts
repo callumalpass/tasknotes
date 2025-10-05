@@ -361,6 +361,14 @@ export class MetadataCache {
     this.cache.delete(path);
   }
 
+  fileToLinktext(file: TFile, sourcePath: string, omitMdExtension: boolean = true): string {
+    // Simple implementation: return basename without extension if omitMdExtension is true
+    if (omitMdExtension && file.extension === 'md') {
+      return file.basename;
+    }
+    return file.name;
+  }
+
   // Event management
   on(event: 'changed' | 'resolve' | 'resolved', callback: (...args: any[]) => void): void {
     this.emitter.on(event, callback);
@@ -377,8 +385,17 @@ export class MetadataCache {
 
 // FileManager mock class
 export class FileManager {
-  async generateMarkdownLink(file: TFile, sourcePath?: string): Promise<string> {
-    return `[[${file.basename}]]`;
+  generateMarkdownLink(file: TFile, sourcePath?: string, subpath?: string, alias?: string): string {
+    // Simulate Obsidian's behavior of respecting user settings
+    // For testing, we'll generate markdown link format when this is called
+    const fileName = file.basename;
+    const displayText = alias || fileName;
+    const path = file.path;
+    let link = `[${displayText}](${path})`;
+    if (subpath) {
+      link = `[${displayText}](${path}${subpath})`;
+    }
+    return link;
   }
 
   async processFrontMatter(file: TFile, fn: (frontmatter: any) => void): Promise<void> {

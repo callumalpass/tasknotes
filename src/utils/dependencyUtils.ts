@@ -171,10 +171,10 @@ export function resolveDependencyEntry(
 	return null;
 }
 
-export function formatDependencyLink(app: App, sourcePath: string, targetPath: string): string {
+export function formatDependencyLink(app: App, sourcePath: string, targetPath: string, useMarkdownLinks?: boolean): string {
 	const target = app.vault.getAbstractFileByPath(targetPath);
 	if (target instanceof TFile) {
-		return generateLink(app, target, sourcePath);
+		return generateLink(app, target, sourcePath, "", "", useMarkdownLinks);
 	}
 
 	// For unresolved files, create a simple wikilink with the basename

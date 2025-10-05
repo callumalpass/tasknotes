@@ -48,7 +48,7 @@ export abstract class TaskModal extends Modal {
 		options: { sourcePath?: string } = {}
 	): DependencyItem {
 		const sourcePath = options.sourcePath ?? this.getDependencySourcePath();
-		const uid = formatDependencyLink(this.plugin.app, sourcePath, file.path);
+		const uid = formatDependencyLink(this.plugin.app, sourcePath, file.path, this.plugin.settings.useFrontmatterMarkdownLinks);
 		return {
 			dependency: { uid, reltype: DEFAULT_DEPENDENCY_RELTYPE },
 			path: file.path,
@@ -91,7 +91,7 @@ export abstract class TaskModal extends Modal {
 		if (file instanceof TFile) {
 			return {
 				dependency: {
-					uid: formatDependencyLink(this.plugin.app, sourcePath, file.path),
+					uid: formatDependencyLink(this.plugin.app, sourcePath, file.path, this.plugin.settings.useFrontmatterMarkdownLinks),
 					reltype: DEFAULT_DEPENDENCY_RELTYPE,
 				},
 				path: file.path,
@@ -232,7 +232,7 @@ export abstract class TaskModal extends Modal {
 
 	protected addBlockedByTask(file: TFile): void {
 		const dependency: TaskDependency = {
-			uid: formatDependencyLink(this.plugin.app, this.getDependencySourcePath(), file.path),
+			uid: formatDependencyLink(this.plugin.app, this.getDependencySourcePath(), file.path, this.plugin.settings.useFrontmatterMarkdownLinks),
 			reltype: DEFAULT_DEPENDENCY_RELTYPE,
 		};
 		this.addBlockedByDependency(dependency);
@@ -288,7 +288,8 @@ export abstract class TaskModal extends Modal {
 				const candidateUid = formatDependencyLink(
 					this.plugin.app,
 					sourcePath,
-					candidate.path
+					candidate.path,
+					this.plugin.settings.useFrontmatterMarkdownLinks
 				);
 				return !existingUids.has(candidateUid);
 			},
@@ -325,7 +326,8 @@ export abstract class TaskModal extends Modal {
 				const candidateUid = formatDependencyLink(
 					this.plugin.app,
 					sourcePath,
-					candidate.path
+					candidate.path,
+					this.plugin.settings.useFrontmatterMarkdownLinks
 				);
 				return !existingUids.has(candidateUid);
 			},
@@ -1384,7 +1386,7 @@ export abstract class TaskModal extends Modal {
 	}
 
 	protected buildProjectReference(targetFile: TFile, sourcePath: string): string {
-		return generateLink(this.app, targetFile, sourcePath);
+		return generateLink(this.app, targetFile, sourcePath, "", "", this.plugin.settings.useFrontmatterMarkdownLinks);
 	}
 
 	protected initializeProjectsFromStrings(projects: string[]): void {

@@ -42,29 +42,52 @@ export function parseLinkToPath(linkText: string): string {
 }
 
 /**
- * Generate a properly formatted markdown link using Obsidian's API.
- * This respects user's link format settings (wikilink vs markdown, relative paths, etc.)
+ * Generate a link for use in frontmatter properties.
+ * By default generates wikilink format because Obsidian does not support markdown links
+ * in frontmatter properties. Can be configured to use markdown links if the user has
+ * the obsidian-frontmatter-markdown-links plugin installed.
  *
  * @param app - Obsidian app instance
  * @param targetFile - The file to link to
  * @param sourcePath - The path of the file containing the link (for relative paths)
  * @param subpath - Optional subpath (e.g., heading anchor)
  * @param alias - Optional display alias
- * @returns A properly formatted link string
+ * @param useMarkdownLinks - If true, use Obsidian API which respects user's link format preference (requires third-party plugin for frontmatter)
+ * @returns A link string in wikilink or markdown format
  */
 export function generateLink(
 	app: App,
 	targetFile: TFile,
 	sourcePath: string,
 	subpath?: string,
-	alias?: string
+	alias?: string,
+	useMarkdownLinks?: boolean
 ): string {
-	return app.fileManager.generateMarkdownLink(
-		targetFile,
-		sourcePath,
-		subpath || "",
-		alias || ""
-	);
+	// If markdown links are explicitly requested, use Obsidian API
+	if (useMarkdownLinks) {
+		return app.fileManager.generateMarkdownLink(
+			targetFile,
+			sourcePath,
+			subpath || "",
+			alias || ""
+		);
+	}
+
+	// Default: generate wikilink format for frontmatter compatibility (issue #827)
+	// Obsidian does not support markdown links in frontmatter properties without a plugin
+	const linktext = app.metadataCache.fileToLinktext(targetFile, sourcePath, true);
+	let link = `[[${linktext}`;
+
+	if (subpath) {
+		link += subpath;
+	}
+
+	if (alias) {
+		link += `|${alias}`;
+	}
+
+	link += ']]';
+	return link;
 }
 
 /**
@@ -74,19 +97,16 @@ export function generateLink(
  * @param app - Obsidian app instance
  * @param targetFile - The file to link to
  * @param sourcePath - The path of the file containing the link
+ * @param useMarkdownLinks - If true, use Obsidian API which respects user's link format preference
  * @returns A link with basename as alias
  */
 export function generateLinkWithBasename(
 	app: App,
 	targetFile: TFile,
-	sourcePath: string
+	sourcePath: string,
+	useMarkdownLinks?: boolean
 ): string {
-	return app.fileManager.generateMarkdownLink(
-		targetFile,
-		sourcePath,
-		"",
-		targetFile.basename
-	);
+	return generateLink(app, targetFile, sourcePath, "", targetFile.basename, useMarkdownLinks);
 }
 
 /**
@@ -97,18 +117,15 @@ export function generateLinkWithBasename(
  * @param targetFile - The file to link to
  * @param sourcePath - The path of the file containing the link
  * @param displayName - Custom display name
+ * @param useMarkdownLinks - If true, use Obsidian API which respects user's link format preference
  * @returns A link with custom display name as alias
  */
 export function generateLinkWithDisplay(
 	app: App,
 	targetFile: TFile,
 	sourcePath: string,
-	displayName: string
+	displayName: string,
+	useMarkdownLinks?: boolean
 ): string {
-	return app.fileManager.generateMarkdownLink(
-		targetFile,
-		sourcePath,
-		"",
-		displayName
-	);
+	return generateLink(app, targetFile, sourcePath, "", displayName, useMarkdownLinks);
 }
