@@ -85,6 +85,8 @@ export interface TaskNotesSettings {
 	customPriorities: PriorityConfig[];
 	// Migration tracking
 	recurrenceMigrated?: boolean;
+	// Release notes tracking
+	lastSeenVersion?: string;
 	// Status bar settings
 	showTrackedTasksInStatusBar: boolean;
 	// Time tracking settings

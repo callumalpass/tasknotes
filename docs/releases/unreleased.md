@@ -25,6 +25,17 @@ Example:
 
 -->
 
+## Added
+
+- Added release notes viewer
+  - New view displays release notes in a dedicated tab when plugin updates
+  - Automatically opens after updating to a new version
+  - Access anytime via command palette "TaskNotes: View release notes" or Settings > General
+  - Release notes are rendered using native Obsidian markdown rendering
+  - Includes link to view all releases on GitHub
+  - Fully internationalized with i18n support
+  - Auto-generation system ensures correct version is loaded without manual updates
+
 ## Fixed
 
 - (#814) Fixed markdown links in projects field not being recognized on Project notes

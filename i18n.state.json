@@ -512,6 +512,9 @@
       "source": "77f4b7a081b20f78557dd404e14d91b89b52a27c",
       "translation": "a6bce6cf45ab6987a0491268052e0770559f80a4"
     },
+    "views.releaseNotes.title": null,
+    "views.releaseNotes.header": null,
+    "views.releaseNotes.viewAllLink": null,
     "settings.tabs.general": {
       "source": "9239ee2cda84eca4c3440e2a7b50148af67da3d4",
       "translation": "21a7b4ecae6d99d7c9ae0fe00f0cc0a33f1e2b6f"
@@ -3372,6 +3375,7 @@
       "source": "3f3714587b4802efeb6baf380a59615b8faf0c10",
       "translation": "2b3a3551e913a0618f09a1378c63fa6b832fe6cf"
     },
+    "commands.viewReleaseNotes": null,
     "modals.task.titlePlaceholder": {
       "source": "c8196f1d1039c2fb290add52ee990c571173d6f1",
       "translation": "03f97eff6f24910100617f3fcbc4665e2e65cd7e"
@@ -6042,6 +6046,9 @@
       "source": "77f4b7a081b20f78557dd404e14d91b89b52a27c",
       "translation": "01c1479a894b4e8a3b6e679bd3630c1389c7cd60"
     },
+    "views.releaseNotes.title": null,
+    "views.releaseNotes.header": null,
+    "views.releaseNotes.viewAllLink": null,
     "settings.tabs.general": {
       "source": "9239ee2cda84eca4c3440e2a7b50148af67da3d4",
       "translation": "9239ee2cda84eca4c3440e2a7b50148af67da3d4"
@@ -8902,6 +8909,7 @@
       "source": "3f3714587b4802efeb6baf380a59615b8faf0c10",
       "translation": "8f93640a115b91031d8f53e89543cc0bf04e300b"
     },
+    "commands.viewReleaseNotes": null,
     "modals.task.titlePlaceholder": {
       "source": "c8196f1d1039c2fb290add52ee990c571173d6f1",
       "translation": "dee0035d1027b937237c8bbdd6e77288df356ff4"
@@ -11572,6 +11580,9 @@
       "source": "77f4b7a081b20f78557dd404e14d91b89b52a27c",
       "translation": "b6a500e983b64d611aab3a9d5b2ec65fd4511f10"
     },
+    "views.releaseNotes.title": null,
+    "views.releaseNotes.header": null,
+    "views.releaseNotes.viewAllLink": null,
     "settings.tabs.general": {
       "source": "9239ee2cda84eca4c3440e2a7b50148af67da3d4",
       "translation": "5376df989fac86247d5cd9f983d11ece28e75fcd"
@@ -14432,6 +14443,7 @@
       "source": "3f3714587b4802efeb6baf380a59615b8faf0c10",
       "translation": "e4c5963ce721f4bb182d474d1a9c0c604325c274"
     },
+    "commands.viewReleaseNotes": null,
     "modals.task.titlePlaceholder": {
       "source": "c8196f1d1039c2fb290add52ee990c571173d6f1",
       "translation": "4ad6efca173a22d4bf622d5729c3ad13612e6902"
@@ -17036,6 +17048,9 @@
       "source": "77f4b7a081b20f78557dd404e14d91b89b52a27c",
       "translation": "7deced4ee8b6e75d5dcafff58c7bd89905c98fd6"
     },
+    "views.releaseNotes.title": null,
+    "views.releaseNotes.header": null,
+    "views.releaseNotes.viewAllLink": null,
     "settings.tabs.general": {
       "source": "9239ee2cda84eca4c3440e2a7b50148af67da3d4",
       "translation": "f0aaccbc0dcda37daa045cb4cda85177bedafdb0"
@@ -19890,6 +19905,7 @@
       "source": "3f3714587b4802efeb6baf380a59615b8faf0c10",
       "translation": "4f7b9505464a8b039fee24745afe2a1c951b81d3"
     },
+    "commands.viewReleaseNotes": null,
     "modals.task.titlePlaceholder": {
       "source": "c8196f1d1039c2fb290add52ee990c571173d6f1",
       "translation": "0e65840f941f2c5e030cf553e4e5a3cc315fe73d"
@@ -22419,6 +22435,9 @@
       "source": "77f4b7a081b20f78557dd404e14d91b89b52a27c",
       "translation": "a82231aecd1ee2ec08d32031cf19b6f6a4f2842e"
     },
+    "views.releaseNotes.title": null,
+    "views.releaseNotes.header": null,
+    "views.releaseNotes.viewAllLink": null,
     "settings.tabs.general": {
       "source": "9239ee2cda84eca4c3440e2a7b50148af67da3d4",
       "translation": "fdd17d17b54069e4f68253b0af0b1a50d389b199"
@@ -25246,6 +25265,7 @@
       "source": "3f3714587b4802efeb6baf380a59615b8faf0c10",
       "translation": "1ce699b6bccf33a45ff58320f4dfeb2593c3111e"
     },
+    "commands.viewReleaseNotes": null,
     "modals.task.titlePlaceholder": {
       "source": "c8196f1d1039c2fb290add52ee990c571173d6f1",
       "translation": "fb99b9f5be8916e4a7b038e3d1d9d9087f8a5653"
@@ -27850,6 +27870,9 @@
       "source": "77f4b7a081b20f78557dd404e14d91b89b52a27c",
       "translation": "227f72b88ebec3e37158e855352776b82662a27c"
     },
+    "views.releaseNotes.title": null,
+    "views.releaseNotes.header": null,
+    "views.releaseNotes.viewAllLink": null,
     "settings.tabs.general": {
       "source": "9239ee2cda84eca4c3440e2a7b50148af67da3d4",
       "translation": "f1484fa78b69777c083f5b19555ee4d232d70163"
@@ -30695,6 +30718,7 @@
       "source": "3f3714587b4802efeb6baf380a59615b8faf0c10",
       "translation": "f4fa2d18fff78b531c07f83bbc7753c26dbc05d9"
     },
+    "commands.viewReleaseNotes": null,
     "modals.task.titlePlaceholder": {
       "source": "c8196f1d1039c2fb290add52ee990c571173d6f1",
       "translation": "37d9b0a0a59872345ce5e206027f8eccf793e6fa"

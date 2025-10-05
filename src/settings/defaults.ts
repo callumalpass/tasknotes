@@ -238,6 +238,8 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	customPriorities: DEFAULT_PRIORITIES,
 	// Migration defaults
 	recurrenceMigrated: false,
+	// Release notes defaults
+	lastSeenVersion: undefined,
 	// Status bar defaults
 	showTrackedTasksInStatusBar: false,
 	// Time tracking defaults
