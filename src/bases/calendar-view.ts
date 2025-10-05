@@ -21,6 +21,7 @@ import { TaskContextMenu } from "../components/TaskContextMenu";
 import { TFile } from "obsidian";
 import { ICSEventInfoModal } from "../modals/ICSEventInfoModal";
 import { createTaskCard } from "../ui/TaskCard";
+import { createICSEventCard } from "../ui/ICSCard";
 
 interface BasesContainerLike {
 	results?: Map<any, any>;
@@ -793,17 +794,25 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 					select: handleDateSelect,
 					eventDrop: handleEventDrop,
 					eventResize: handleEventResize,
-					// Custom content renderer for list view - use TaskCard
+					// Custom content renderer for list view - use TaskCard and ICSCard
 					eventContent: (arg: any) => {
 						// Only customize list view rendering
-						if (arg.view.type === 'listWeek' && arg.event.extendedProps?.taskInfo) {
-							const taskInfo = arg.event.extendedProps.taskInfo;
-							const taskCard = createTaskCard(taskInfo, plugin);
+						if (arg.view.type === 'listWeek') {
+							const { taskInfo, icsEvent, eventType } = arg.event.extendedProps || {};
 
-							// Return object with domNodes to replace default content
-							return { domNodes: [taskCard] };
+							// Render task events with TaskCard
+							if (taskInfo && eventType !== 'ics') {
+								const taskCard = createTaskCard(taskInfo, plugin);
+								return { domNodes: [taskCard] };
+							}
+
+							// Render ICS events with ICSCard
+							if (icsEvent && eventType === 'ics') {
+								const icsCard = createICSEventCard(icsEvent, plugin);
+								return { domNodes: [icsCard] };
+							}
 						}
-						// Use default rendering for other views
+						// Use default rendering for other views and event types
 						return undefined;
 					},
 					eventDidMount: handleEventDidMount,
