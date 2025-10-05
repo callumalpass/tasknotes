@@ -3,6 +3,7 @@ import TaskNotesPlugin from "../main";
 import { requireApiVersion } from "obsidian";
 import { buildTasknotesTaskListViewFactory } from "./view-factory";
 import { buildTasknotesKanbanViewFactory } from "./kanban-view";
+import { buildTasknotesCalendarViewFactory } from "./calendar-view";
 import { registerBasesView, unregisterBasesView } from "./api";
 
 /**
@@ -29,8 +30,18 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 				factory: buildTasknotesKanbanViewFactory(plugin),
 			});
 
-			// Consider it successful if either view registered successfully
-			if (!taskListSuccess && !kanbanSuccess) {
+			// Register Calendar view (1.10.0+ only - requires public Bases API)
+			let calendarSuccess = false;
+			if (requireApiVersion("1.10.0")) {
+				calendarSuccess = registerBasesView(plugin, "tasknotesCalendar", {
+					name: "TaskNotes Calendar",
+					icon: "calendar",
+					factory: buildTasknotesCalendarViewFactory(plugin),
+				});
+			}
+
+			// Consider it successful if any view registered successfully
+			if (!taskListSuccess && !kanbanSuccess && !calendarSuccess) {
 				console.debug("[TaskNotes][Bases] Bases plugin not available for registration");
 				return false;
 			}
@@ -83,6 +94,7 @@ export function unregisterBasesViews(plugin: TaskNotesPlugin): void {
 		// Unregister views using wrapper (uses internal API as public API doesn't provide unregister)
 		unregisterBasesView(plugin, "tasknotesTaskList");
 		unregisterBasesView(plugin, "tasknotesKanban");
+		unregisterBasesView(plugin, "tasknotesCalendar");
 	} catch (error) {
 		console.error("[TaskNotes][Bases] Error during view unregistration:", error);
 	}

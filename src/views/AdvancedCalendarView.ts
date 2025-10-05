@@ -75,29 +75,23 @@ import {
 	updateTimeblockInDailyNote,
 	addDTSTARTToRecurrenceRuleWithDraggedTime,
 } from "../utils/helpers";
+import {
+	createScheduledEvent as createScheduledEventCore,
+	createDueEvent as createDueEventCore,
+	createTimeEntryEvents as createTimeEntryEventsCore,
+	createICSEvent as createICSEventCore,
+	generateRecurringTaskInstances as generateRecurringTaskInstancesCore,
+	createNextScheduledEvent as createNextScheduledEventCore,
+	createRecurringEvent as createRecurringEventCore,
+	getRecurringTime as getRecurringTimeCore,
+	hexToRgba,
+	calculateAllDayEndDate,
+	CalendarEvent,
+} from "../bases/calendar-core";
 
-interface CalendarEvent {
-	id: string;
-	title: string;
-	start: string;
-	end?: string;
-	allDay: boolean;
-	backgroundColor?: string;
-	borderColor?: string;
-	textColor?: string;
-	editable?: boolean;
-	extendedProps: {
-		taskInfo?: TaskInfo;
-		icsEvent?: ICSEvent;
-		timeblock?: TimeBlock;
-		eventType: "scheduled" | "due" | "timeEntry" | "recurring" | "ics" | "timeblock";
-		isCompleted?: boolean;
-		isRecurringInstance?: boolean;
-		isNextScheduledOccurrence?: boolean; // Flag for next scheduled occurrence
-		isPatternInstance?: boolean; // Flag for pattern instances
-		instanceDate?: string; // YYYY-MM-DD for this specific occurrence
-		recurringTemplateTime?: string; // Original scheduled time
-		subscriptionName?: string; // For ICS events
+// Extended calendar event with timeblock support
+interface AdvancedCalendarEvent extends CalendarEvent {
+	extendedProps: CalendarEvent["extendedProps"] & {
 		attachments?: string[]; // For timeblocks
 		originalDate?: string; // For timeblock daily note reference
 	};
@@ -1094,162 +1088,19 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 	}
 
 	createScheduledEvent(task: TaskInfo): CalendarEvent | null {
-		if (!task.scheduled) return null;
-
-		const hasTime = hasTimeComponent(task.scheduled);
-		const startDate = task.scheduled;
-
-		let endDate: string | undefined;
-		if (hasTime && task.timeEstimate) {
-			// Calculate end time based on time estimate
-			// Use parseDateToLocal for display purposes since this has time
-			const start = parseDateToLocal(startDate);
-			const end = new Date(start.getTime() + task.timeEstimate * 60 * 1000);
-			endDate = format(end, "yyyy-MM-dd'T'HH:mm");
-		} else if (!hasTime) {
-			endDate = this.calculateAllDayEndDate(startDate, task.timeEstimate);
-		}
-
-		// Get priority-based color for border
-		const priorityConfig = this.plugin.priorityManager.getPriorityConfig(task.priority);
-		const borderColor = priorityConfig?.color || "var(--color-accent)";
-
-		// Check if task is completed
-		const isCompleted = this.plugin.statusManager.isCompletedStatus(task.status);
-
-		return {
-			id: `scheduled-${task.path}`,
-			title: task.title,
-			start: startDate,
-			end: endDate,
-			allDay: !hasTime,
-			backgroundColor: "transparent",
-			borderColor: borderColor,
-			textColor: borderColor,
-			editable: true, // Tasks are also editable
-			extendedProps: {
-				taskInfo: task,
-				eventType: "scheduled",
-				isCompleted: isCompleted,
-			},
-		};
+		return createScheduledEventCore(task, this.plugin);
 	}
 
 	createDueEvent(task: TaskInfo): CalendarEvent | null {
-		if (!task.due) return null;
-
-		const hasTime = hasTimeComponent(task.due);
-		const startDate = task.due;
-
-		let endDate: string | undefined;
-		if (hasTime) {
-			// Fixed duration for due events (30 minutes)
-			const start = parseDateToLocal(startDate);
-			const end = new Date(start.getTime() + 30 * 60 * 1000);
-			endDate = format(end, "yyyy-MM-dd'T'HH:mm");
-		}
-
-		// Get priority-based color with faded background
-		const priorityConfig = this.plugin.priorityManager.getPriorityConfig(task.priority);
-		const borderColor = priorityConfig?.color || "var(--color-orange)";
-
-		// Create faded background color from priority color
-		const fadedBackground = this.hexToRgba(borderColor, 0.15);
-
-		// Check if task is completed
-		const isCompleted = this.plugin.statusManager.isCompletedStatus(task.status);
-
-		return {
-			id: `due-${task.path}`,
-			title: `DUE: ${task.title}`,
-			start: startDate,
-			end: endDate,
-			allDay: !hasTime,
-			backgroundColor: fadedBackground,
-			borderColor: borderColor,
-			textColor: borderColor,
-			editable: false, // Due events are not editable via drag (different from scheduled)
-			extendedProps: {
-				taskInfo: task,
-				eventType: "due",
-				isCompleted: isCompleted,
-			},
-		};
-	}
-
-	hexToRgba(hex: string, alpha: number): string {
-		// Remove # if present
-		hex = hex.replace("#", "");
-
-		// Parse hex color
-		const r = parseInt(hex.substring(0, 2), 16);
-		const g = parseInt(hex.substring(2, 4), 16);
-		const b = parseInt(hex.substring(4, 6), 16);
-
-		return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+		return createDueEventCore(task, this.plugin);
 	}
 
 	createTimeEntryEvents(task: TaskInfo): CalendarEvent[] {
-		if (!task.timeEntries) return [];
-
-		// Check if task is completed
-		const isCompleted = this.plugin.statusManager.isCompletedStatus(task.status);
-
-		return task.timeEntries
-			.filter((entry) => entry.endTime) // Only completed time entries
-			.map((entry, index) => ({
-				id: `timeentry-${task.path}-${index}`,
-				title: task.title,
-				start: entry.startTime,
-				end: entry.endTime!,
-				allDay: false,
-				backgroundColor: "var(--color-base-50)",
-				borderColor: "var(--color-base-40)",
-				textColor: "var(--text-on-accent)",
-				editable: false, // Time entries are read-only
-				extendedProps: {
-					taskInfo: task,
-					eventType: "timeEntry" as const,
-					isCompleted: isCompleted,
-					timeEntryIndex: index,
-				},
-			}));
+		return createTimeEntryEventsCore(task, this.plugin);
 	}
 
 	createICSEvent(icsEvent: ICSEvent): CalendarEvent | null {
-		try {
-			// Get subscription info for styling
-			const subscription = this.plugin.icsSubscriptionService
-				.getSubscriptions()
-				.find((sub) => sub.id === icsEvent.subscriptionId);
-
-			if (!subscription || !subscription.enabled) {
-				return null;
-			}
-
-			const backgroundColor = this.hexToRgba(subscription.color, 0.2);
-			const borderColor = subscription.color;
-
-			return {
-				id: icsEvent.id,
-				title: icsEvent.title,
-				start: icsEvent.start,
-				end: icsEvent.end,
-				allDay: icsEvent.allDay,
-				backgroundColor: backgroundColor,
-				borderColor: borderColor,
-				textColor: borderColor,
-				editable: false, // ICS events are not editable
-				extendedProps: {
-					icsEvent: icsEvent,
-					eventType: "ics",
-					subscriptionName: subscription.name,
-				},
-			};
-		} catch (error) {
-			console.error("Error creating ICS event:", error);
-			return null;
-		}
+		return createICSEventCore(icsEvent, this.plugin);
 	}
 
 	generateRecurringTaskInstances(
@@ -1257,74 +1108,11 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 		startDate: Date,
 		endDate: Date
 	): CalendarEvent[] {
-		if (!task.recurrence || !task.scheduled) {
-			return [];
-		}
-
-		const instances: CalendarEvent[] = [];
-		const hasOriginalTime = hasTimeComponent(task.scheduled);
-		const templateTime = this.getRecurringTime(task);
-
-		// Get the current scheduled date for comparison
-		const nextScheduledDate = getDatePart(task.scheduled);
-
-		// 1. Always create the next scheduled occurrence event (regardless of pattern)
-		const scheduledTime = hasOriginalTime ? getTimePart(task.scheduled) : null;
-		const scheduledEventStart = scheduledTime
-			? `${nextScheduledDate}T${scheduledTime}`
-			: nextScheduledDate;
-		const nextScheduledEvent = this.createNextScheduledEvent(
-			task,
-			scheduledEventStart,
-			nextScheduledDate,
-			scheduledTime || "09:00"
-		);
-		if (nextScheduledEvent) {
-			instances.push(nextScheduledEvent);
-		}
-
-		// 2. Generate pattern instances from recurrence rule
-		const recurringDates = generateRecurringInstances(task, startDate, endDate);
-
-		for (const date of recurringDates) {
-			const instanceDate = formatDateForStorage(date);
-
-			// Skip pattern instance if it conflicts with the next scheduled occurrence
-			if (instanceDate === nextScheduledDate) {
-				continue; // Already added the next scheduled occurrence above
-			}
-
-			// Create pattern instance with DTSTART time
-			const eventStart = hasOriginalTime ? `${instanceDate}T${templateTime}` : instanceDate;
-			const event = this.createRecurringEvent(task, eventStart, instanceDate, templateTime);
-			if (event) instances.push(event);
-		}
-
-		return instances;
+		return generateRecurringTaskInstancesCore(task, startDate, endDate, this.plugin);
 	}
 
 	getRecurringTime(task: TaskInfo): string {
-		// Extract time from DTSTART in recurrence rule, not from scheduled field
-		if (task.recurrence && typeof task.recurrence === "string") {
-			const dtstartMatch = task.recurrence.match(/DTSTART:(\d{8}(?:T\d{6}Z?)?)/);
-			if (dtstartMatch && dtstartMatch[1].includes("T")) {
-				// Parse time from YYYYMMDDTHHMMSSZ format
-				const timeStr = dtstartMatch[1].split("T")[1];
-				if (timeStr.length >= 4) {
-					const hours = timeStr.slice(0, 2);
-					const minutes = timeStr.slice(2, 4);
-					return `${hours}:${minutes}`;
-				}
-			}
-		}
-
-		// Fallback: if no time in DTSTART, use scheduled time or default
-		if (task.scheduled) {
-			const timePart = getTimePart(task.scheduled);
-			if (timePart) return timePart;
-		}
-
-		return "09:00"; // final fallback
+		return getRecurringTimeCore(task);
 	}
 
 	createNextScheduledEvent(
@@ -1333,47 +1121,7 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 		instanceDate: string,
 		templateTime: string
 	): CalendarEvent | null {
-		const hasTime = hasTimeComponent(eventStart);
-
-		// Calculate end time if time estimate is available
-		let endDate: string | undefined;
-		if (hasTime && task.timeEstimate) {
-			const start = parseDateToLocal(eventStart);
-			const end = new Date(start.getTime() + task.timeEstimate * 60 * 1000);
-			endDate = format(end, "yyyy-MM-dd'T'HH:mm");
-		} else if (!hasTime) {
-			endDate = this.calculateAllDayEndDate(eventStart, task.timeEstimate);
-		}
-
-		// Get priority-based color for border
-		const priorityConfig = this.plugin.priorityManager.getPriorityConfig(task.priority);
-		const borderColor = priorityConfig?.color || "var(--color-accent)";
-
-		// Check if this instance is completed
-		const isInstanceCompleted = task.complete_instances?.includes(instanceDate) || false;
-
-		// Next scheduled occurrence uses normal task styling (solid border, full opacity)
-		const backgroundColor = isInstanceCompleted ? "rgba(0,0,0,0.3)" : "transparent";
-
-		return {
-			id: `next-scheduled-${task.path}-${instanceDate}`,
-			title: task.title,
-			start: eventStart,
-			end: endDate,
-			allDay: !hasTime,
-			backgroundColor: backgroundColor,
-			borderColor: borderColor,
-			textColor: borderColor,
-			editable: true,
-			extendedProps: {
-				taskInfo: task,
-				eventType: "scheduled", // Use 'scheduled' instead of 'recurring' for next occurrence
-				isCompleted: isInstanceCompleted,
-				isNextScheduledOccurrence: true, // Flag to identify this as the next occurrence
-				instanceDate: instanceDate,
-				recurringTemplateTime: templateTime,
-			},
-		};
+		return createNextScheduledEventCore(task, eventStart, instanceDate, templateTime, this.plugin);
 	}
 
 	createRecurringEvent(
@@ -1382,60 +1130,11 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 		instanceDate: string,
 		templateTime: string
 	): CalendarEvent | null {
-		const hasTime = hasTimeComponent(eventStart);
-
-		// Calculate end time if time estimate is available
-		let endDate: string | undefined;
-		if (hasTime && task.timeEstimate) {
-			const start = parseDateToLocal(eventStart);
-			const end = new Date(start.getTime() + task.timeEstimate * 60 * 1000);
-			endDate = format(end, "yyyy-MM-dd'T'HH:mm");
-		} else if (!hasTime) {
-			endDate = this.calculateAllDayEndDate(eventStart, task.timeEstimate);
-		}
-
-		// Get priority-based color for border
-		const priorityConfig = this.plugin.priorityManager.getPriorityConfig(task.priority);
-		const borderColor = priorityConfig?.color || "var(--color-accent)";
-
-		// Check if this instance is completed
-		const isInstanceCompleted = task.complete_instances?.includes(instanceDate) || false;
-
-		// Pattern instances use recurring preview styling (dashed border, reduced opacity)
-		const backgroundColor = isInstanceCompleted ? "rgba(0,0,0,0.3)" : "transparent";
-
-		return {
-			id: `recurring-${task.path}-${instanceDate}`,
-			title: task.title,
-			start: eventStart,
-			end: endDate,
-			allDay: !hasTime,
-			backgroundColor: backgroundColor,
-			borderColor: borderColor,
-			textColor: borderColor,
-			editable: true, // Pattern instances are editable
-			extendedProps: {
-				taskInfo: task,
-				eventType: "recurring",
-				isCompleted: isInstanceCompleted,
-				isRecurringInstance: true,
-				isPatternInstance: true, // Flag to identify this as a pattern instance
-				instanceDate: instanceDate,
-				recurringTemplateTime: templateTime,
-			},
-		};
+		return createRecurringEventCore(task, eventStart, instanceDate, templateTime, this.plugin);
 	}
 
 	private calculateAllDayEndDate(startDate: string, timeEstimate?: number): string | undefined {
-		if (!timeEstimate || timeEstimate <= 0) {
-			return undefined;
-		}
-
-		const minutesPerDay = 60 * 24;
-		const start = parseDateToLocal(startDate);
-		const days = Math.max(1, Math.ceil(timeEstimate / minutesPerDay));
-		const end = new Date(start.getTime() + days * minutesPerDay * 60 * 1000);
-		return format(end, "yyyy-MM-dd");
+		return calculateAllDayEndDate(startDate, timeEstimate);
 	}
 
 	// Event handlers
