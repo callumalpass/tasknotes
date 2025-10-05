@@ -57,17 +57,16 @@
     padding: 0;
 }
 
-.tn-bases-tasknotes-list .task-group-toggle svg,
-.tn-bases-tasknotes-list .task-group-toggle .chevron {
+/* Default expanded state - chevron pointing down */
+.tn-bases-tasknotes-list .task-group .task-group-toggle svg {
     color: var(--tn-text-normal);
     transition: transform 0.2s ease;
-    transform: rotate(90deg); /* Default expanded state */
+    transform: rotate(90deg) !important;
 }
 
-/* Collapsed state - chevron at 0deg */
-.tn-bases-tasknotes-list .task-group.is-collapsed .task-group-toggle svg,
-.tn-bases-tasknotes-list .task-group.is-collapsed .task-group-toggle .chevron {
-    transform: rotate(0deg);
+/* Collapsed state - chevron pointing right */
+.tn-bases-tasknotes-list .task-group.is-collapsed .task-group-toggle svg {
+    transform: rotate(0deg) !important;
 }
 
 /* Hide task cards when collapsed */
