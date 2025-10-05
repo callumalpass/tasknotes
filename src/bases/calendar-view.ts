@@ -398,7 +398,18 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 						}
 					}
 
-					cardElement = createTaskCard(enrichedTask, plugin, visibleProperties);
+					// Get the target date from the event for proper recurring task completion
+					const targetDate = arg.event.start ? new Date(arg.event.start) : new Date();
+
+					cardElement = createTaskCard(enrichedTask, plugin, visibleProperties, {
+						targetDate: targetDate,
+						showDueDate: true,
+						showCheckbox: false,
+						showArchiveButton: false,
+						showTimeTracking: false,
+						showRecurringControls: true,
+						groupByDate: false,
+					});
 				}
 				// Render ICS events with ICSCard
 				else if (icsEvent && eventType === 'ics') {
