@@ -203,11 +203,6 @@ export function registerBasesView(
 		// Only register if it doesn't already exist
 		if (!api.registrations[viewId]) {
 			api.registrations[viewId] = registration;
-			console.debug(
-				`[TaskNotes][Bases] Successfully registered view via internal API: ${viewId}`
-			);
-		} else {
-			console.debug(`[TaskNotes][Bases] View ${viewId} already registered, skipping`);
 		}
 		return true;
 	} catch (error) {
@@ -230,7 +225,6 @@ export function unregisterBasesView(plugin: Plugin, viewId: string): boolean {
 	try {
 		if (api.registrations[viewId]) {
 			delete api.registrations[viewId];
-			console.debug(`[TaskNotes][Bases] Successfully unregistered view: ${viewId}`);
 		}
 		return true;
 	} catch (error) {

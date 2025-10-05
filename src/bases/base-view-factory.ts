@@ -198,7 +198,6 @@ export function buildTasknotesBaseViewFactory(plugin: TaskNotesPlugin, config: V
 					// Check if we have grouped data from Bases (public API)
 					if (viewContext.data?.groupedData && Array.isArray(viewContext.data.groupedData)) {
 						// Use grouped data from Bases
-						console.debug("[TaskNotes][Bases] List view rendering with groups");
 						await renderGroupedTasksInBasesView(
 							itemsContainer,
 							taskNotes,
@@ -298,8 +297,6 @@ export function buildTasknotesBaseViewFactory(plugin: TaskNotesPlugin, config: V
 						taskElement.classList.remove("task-card--updated");
 					}, 1000);
 
-					// eslint-disable-next-line no-console
-			console.debug(`[TaskNotes][Bases] Selectively updated task: ${updatedTask.path}`);
 				} else {
 					// Task not currently visible, might need to be added - refresh to be safe
 					debouncedFullRefresh();
@@ -317,8 +314,6 @@ export function buildTasknotesBaseViewFactory(plugin: TaskNotesPlugin, config: V
 			}
 
 			updateDebounceTimer = window.setTimeout(async () => {
-				// eslint-disable-next-line no-console
-			console.debug("[TaskNotes][Bases] Performing debounced full refresh");
 				await render();
 				updateDebounceTimer = null;
 			}, 150);
@@ -400,9 +395,6 @@ export function buildTasknotesBaseViewFactory(plugin: TaskNotesPlugin, config: V
 				}
 				currentTaskElements.clear();
 				queryListener = null;
-
-				// eslint-disable-next-line no-console
-			console.debug("[TaskNotes][Bases] Cleaned up view with real-time updates");
 			},
 			load() {
 				const query = controller.query || (basesContainer as any)?.query;
