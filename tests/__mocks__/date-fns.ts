@@ -28,6 +28,11 @@ export const format = jest.fn((date: Date, formatStr: string) => {
   if (formatStr === 'HHmmss') return `${String(hours).padStart(2, '0')}${String(minutes).padStart(2, '0')}${String(seconds).padStart(2, '0')}`;
   if (formatStr === 'HH:mm') return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
   if (formatStr === 'hh') return String(hours % 12 || 12).padStart(2, '0');
+  if (formatStr === 'h:mm a') {
+    const h = hours % 12 || 12;
+    const ampm = hours < 12 ? 'AM' : 'PM';
+    return `${h}:${String(minutes).padStart(2, '0')} ${ampm}`;
+  }
   if (formatStr === 'hh:mm a') {
     const h = hours % 12 || 12;
     const ampm = hours < 12 ? 'AM' : 'PM';
