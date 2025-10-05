@@ -75,6 +75,12 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 										displayName: "Show timeblocks",
 										default: calendarSettings.defaultShowTimeblocks,
 									},
+									{
+										type: "toggle",
+										key: "showPropertyBasedEvents",
+										displayName: "Show property-based events",
+										default: true,
+									},
 								],
 							},
 							{

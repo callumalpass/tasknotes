@@ -668,6 +668,7 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 				const showRecurring = (ctx?.config?.get('showRecurring') as boolean) ?? calendarDefaults.defaultShowRecurring;
 				const showTimeEntries = (ctx?.config?.get('showTimeEntries') as boolean) ?? calendarDefaults.defaultShowTimeEntries;
 				const showTimeblocks = (ctx?.config?.get('showTimeblocks') as boolean) ?? calendarDefaults.defaultShowTimeblocks;
+				const showPropertyBasedEvents = (ctx?.config?.get('showPropertyBasedEvents') as boolean) ?? true;
 				const startDateProperty = ctx?.config?.getAsPropertyId?.('startDateProperty');
 				const endDateProperty = ctx?.config?.getAsPropertyId?.('endDateProperty');
 
@@ -701,7 +702,7 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 				}
 
 				// Generate events from non-TaskNotes using configured properties
-				if (startDateProperty && ctx.data?.data) {
+				if (showPropertyBasedEvents && startDateProperty && ctx.data?.data) {
 					const taskNotePaths = new Set(taskNotes.map(t => t.path));
 					let propertyEventCount = 0;
 
