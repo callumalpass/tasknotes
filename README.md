@@ -2,6 +2,10 @@
 
 Task management plugin where each task lives as a separate note with YAML frontmatter. Features calendar integration, Kanban boards, time tracking, and Pomodoro timer.
 
+**UI Languages:** English · Deutsch · Español · Français · 日本語 · Русский · 中文
+
+**NLP Support:** English · Deutsch · Español · Français · Italiano · 日本語 · Nederlands · Português · Русский · Svenska · Українська · 中文
+
 <img src="https://github.com/user-attachments/assets/4f68646e-e3cb-4d0c-86cd-c1574a97fba0" />
 
 **[📖 Documentation](https://callumalpass.github.io/tasknotes/)**

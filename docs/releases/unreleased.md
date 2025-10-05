@@ -33,4 +33,3 @@ Example:
   - Added optional setting to enable markdown links in frontmatter for users with `obsidian-frontmatter-markdown-links` plugin
   - Setting only appears when user has markdown links enabled globally in Obsidian
   - Thanks to @nightroman for reporting
-
