@@ -179,7 +179,7 @@ export function renderGeneralTab(
 
 		createToggleSetting(container, {
 			name: "Use markdown links in frontmatter",
-			desc: "Generate markdown links ([text](path)) instead of wikilinks ([[link]]) in frontmatter properties. ⚠️ Requires the 'obsidian-frontmatter-markdown-links' plugin to work correctly.",
+			desc: "Generate markdown links ([text](path)) instead of wikilinks ([[link]]) in frontmatter properties.\n\n⚠️ Requires the 'obsidian-frontmatter-markdown-links' plugin to work correctly.",
 			getValue: () => plugin.settings.useFrontmatterMarkdownLinks,
 			setValue: async (value: boolean) => {
 				plugin.settings.useFrontmatterMarkdownLinks = value;
