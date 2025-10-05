@@ -364,6 +364,18 @@ export async function renderGroupedTasksInBasesView(
 		return;
 	}
 
+	// Check if this is actually ungrouped (single group with null/undefined/empty key)
+	if (groupedData.length === 1) {
+		const singleGroup = groupedData[0];
+		const groupKey = singleGroup.key?.data;
+		// If the key is null, undefined, empty string, or "Unknown", treat as ungrouped
+		if (groupKey === null || groupKey === undefined || groupKey === "" || String(groupKey) === "Unknown") {
+			// Render as flat list without group headers
+			await renderTaskNotesInBasesView(container, taskNotes, plugin, viewContext, taskElementsMap);
+			return;
+		}
+	}
+
 	// Create wrapper with proper class for CSS styling
 	const listWrapper = document.createElement("div");
 	listWrapper.className = "tn-bases-tasknotes-list";
