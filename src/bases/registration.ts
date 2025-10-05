@@ -37,6 +37,14 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 					name: "TaskNotes Calendar",
 					icon: "calendar",
 					factory: buildTasknotesCalendarViewFactory(plugin),
+					options: () => [
+						{
+							type: "toggle",
+							key: "showTimeblocks",
+							displayName: "Show timeblocks",
+							default: false,
+						},
+					],
 				});
 			}
 

@@ -71,7 +71,6 @@ import { getRecurrenceDisplayText } from "../utils/helpers";
 import {
 	generateRecurringInstances,
 	extractTimeblocksFromNote,
-	timeblockToCalendarEvent,
 	updateTimeblockInDailyNote,
 	addDTSTARTToRecurrenceRuleWithDraggedTime,
 } from "../utils/helpers";
@@ -87,6 +86,17 @@ import {
 	hexToRgba,
 	calculateAllDayEndDate,
 	CalendarEvent,
+	generateTaskTooltip,
+	applyRecurringTaskStyling,
+	handleRecurringTaskDrop,
+	handlePatternInstanceDrop,
+	getTargetDateForEvent,
+	handleTimeblockCreation,
+	handleTimeblockDrop,
+	handleTimeblockResize,
+	showTimeblockInfoModal,
+	applyTimeblockStyling,
+	generateTimeblockTooltip,
 } from "../bases/calendar-core";
 
 // Extended calendar event with timeblock support
@@ -1149,8 +1159,8 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 			jsEvent.shiftKey;
 
 		if (isTimeblockMode) {
-			// Create timeblock
-			this.handleTimeblockCreation(start, end, allDay);
+			// Create timeblock using shared handler
+			handleTimeblockCreation(start, end, allDay, this.plugin);
 		} else {
 			// Create task (default behavior)
 			this.handleTaskCreation(start, end, allDay);
@@ -1279,64 +1289,21 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 	}
 
 	async getTimeblockEvents(): Promise<CalendarEvent[]> {
-		const events: CalendarEvent[] = [];
-
-		try {
-			// Check if Daily Notes plugin is enabled
-			if (!appHasDailyNotesPluginLoaded()) {
-				return events;
-			}
-
-			// Get calendar's visible date range
-			const calendarView = this.calendar?.view;
-			if (!calendarView) return events;
-
-			const visibleStart = calendarView.activeStart;
-			const visibleEnd = calendarView.activeEnd;
-
-			// Get all daily notes
-			const allDailyNotes = getAllDailyNotes();
-
-			// Iterate through each day in the visible range
-			// Use UTC-based date iteration to avoid DST issues and ensure consistent date handling
-			const startDateString = formatDateForStorage(visibleStart);
-			const endDateString = formatDateForStorage(visibleEnd);
-
-			// Create UTC dates for proper iteration
-			const startUTC = new Date(`${startDateString}T00:00:00.000Z`);
-			const endUTC = new Date(`${endDateString}T00:00:00.000Z`);
-
-			for (
-				let currentUTC = new Date(startUTC);
-				currentUTC <= endUTC;
-				currentUTC.setUTCDate(currentUTC.getUTCDate() + 1)
-			) {
-				const dateString = formatDateForStorage(currentUTC);
-				// Use the date string to create moment for daily notes consistency
-				const currentDate = new Date(`${dateString}T12:00:00`);
-				const moment = (window as any).moment(currentDate);
-				const dailyNote = getDailyNote(moment, allDailyNotes);
-
-				if (dailyNote) {
-					try {
-						const content = await this.app.vault.read(dailyNote);
-						const timeblocks = extractTimeblocksFromNote(content, dailyNote.path);
-
-						// Convert timeblocks to calendar events
-						for (const timeblock of timeblocks) {
-							const calendarEvent = timeblockToCalendarEvent(timeblock, dateString);
-							events.push(calendarEvent);
-						}
-					} catch (error) {
-						console.error(`Error reading daily note ${dailyNote.path}:`, error);
-					}
-				}
-			}
-		} catch (error) {
-			console.error("Error getting timeblock events:", error);
+		// Check if Daily Notes plugin is enabled
+		if (!appHasDailyNotesPluginLoaded()) {
+			return [];
 		}
 
-		return events;
+		// Get calendar's visible date range
+		const calendarView = this.calendar?.view;
+		if (!calendarView) return [];
+
+		const visibleStart = calendarView.activeStart;
+		const visibleEnd = calendarView.activeEnd;
+
+		// Use shared timeblock event generation logic
+		const { generateTimeblockEvents } = await import("../bases/calendar-core");
+		return await generateTimeblockEvents(this.plugin, visibleStart, visibleEnd);
 	}
 
 	handleEventClick(clickInfo: any) {
@@ -1368,8 +1335,8 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 		}
 
 		if (eventType === "timeblock") {
-			// Timeblocks can be edited via modal
-			this.showTimeblockInfo(timeblock, clickInfo.event.start, originalDate);
+			// Timeblocks can be edited via modal using shared handler
+			showTimeblockInfoModal(timeblock, clickInfo.event.start, originalDate, this.plugin);
 			return;
 		}
 
@@ -1414,9 +1381,9 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 			return;
 		}
 
-		// Handle timeblock drops
+		// Handle timeblock drops using shared handler
 		if (eventType === "timeblock") {
-			await this.handleTimeblockDrop(dropInfo, timeblock, originalDate);
+			await handleTimeblockDrop(dropInfo, timeblock, originalDate, this.plugin);
 			return;
 		}
 
@@ -1428,48 +1395,9 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 			const newStart = dropInfo.event.start;
 			const allDay = dropInfo.event.allDay;
 
-			if (isNextScheduledOccurrence) {
-				// Dragging Next Scheduled Occurrence: Updates only task.scheduled (manual reschedule)
-				let newDateString: string;
-				if (allDay) {
-					// Fix: Use format() to extract local date components for timezone consistency
-					newDateString = format(newStart, "yyyy-MM-dd");
-				} else {
-					// Fix: Use format() for the entire date-time string to maintain local timezone consistency
-					newDateString = format(newStart, "yyyy-MM-dd'T'HH:mm");
-				}
-
-				// Update the scheduled field directly (manual reschedule of next occurrence)
-				await this.plugin.taskService.updateProperty(taskInfo, "scheduled", newDateString);
-				new Notice(
-					"Rescheduled next occurrence. This does not change the recurrence pattern."
-				);
-			} else if (isPatternInstance) {
-				// Dragging Pattern Instances: Updates DTSTART in RRULE and recalculates task.scheduled
-				await this.handlePatternInstanceDrop(taskInfo, newStart, allDay);
-			} else if (isRecurringInstance) {
-				// Legacy support: Handle old-style recurring instances (time changes only)
-				const originalDate = getDatePart(taskInfo.scheduled!);
-				let updatedScheduled: string;
-
-				if (allDay) {
-					updatedScheduled = originalDate;
-					new Notice(
-						"Updated recurring task to all-day. This affects all future instances."
-					);
-				} else {
-					const newTime = format(newStart, "HH:mm");
-					updatedScheduled = `${originalDate}T${newTime}`;
-					new Notice(
-						`Updated recurring task time to ${newTime}. This affects all future instances.`
-					);
-				}
-
-				await this.plugin.taskService.updateProperty(
-					taskInfo,
-					"scheduled",
-					updatedScheduled
-				);
+			// Use shared recurring task drop handler
+			if (isRecurringUpdate) {
+				await handleRecurringTaskDrop(dropInfo, taskInfo, this.plugin);
 			} else {
 				// Handle non-recurring events normally
 				let newDateString: string;
@@ -1516,73 +1444,6 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 		} catch (error) {
 			console.error("Error updating task date:", error);
 			dropInfo.revert();
-		}
-	}
-
-	private async handlePatternInstanceDrop(
-		taskInfo: TaskInfo,
-		newStart: Date,
-		allDay: boolean
-	): Promise<void> {
-		try {
-			if (!taskInfo.recurrence || typeof taskInfo.recurrence !== "string") {
-				throw new Error("Task does not have a valid RRULE string");
-			}
-
-			// Check if DTSTART already exists
-			const currentDtstartMatch = taskInfo.recurrence.match(/DTSTART:(\d{8}(?:T\d{6}Z?)?)/);
-			let updatedRRule: string;
-
-			if (!currentDtstartMatch) {
-				// No DTSTART exists - add it using the drag interaction
-				const ruleWithDTSTART = addDTSTARTToRecurrenceRuleWithDraggedTime(
-					taskInfo,
-					newStart,
-					allDay
-				);
-				if (!ruleWithDTSTART) {
-					throw new Error("Failed to add DTSTART to recurrence rule");
-				}
-				updatedRRule = ruleWithDTSTART;
-				new Notice(
-					"Added time information to recurring pattern. All future instances now appear at this time."
-				);
-			} else {
-				// DTSTART exists - update the time component
-				const currentDtstart = currentDtstartMatch[1];
-				let newDTSTART: string;
-
-				if (allDay) {
-					// For all-day, remove time component entirely (keep original date)
-					newDTSTART = currentDtstart.slice(0, 8); // Keep YYYYMMDD only
-				} else {
-					// Update only the time component, preserve the original date
-					const originalDate = currentDtstart.slice(0, 8); // YYYYMMDD
-					const hours = String(newStart.getHours()).padStart(2, "0");
-					const minutes = String(newStart.getMinutes()).padStart(2, "0");
-					newDTSTART = `${originalDate}T${hours}${minutes}00Z`;
-				}
-
-				// Update DTSTART in RRULE string
-				updatedRRule = taskInfo.recurrence.replace(
-					/DTSTART:[^;]+/,
-					`DTSTART:${newDTSTART}`
-				);
-				new Notice(
-					"Updated recurring pattern time. All future instances now appear at this time."
-				);
-			}
-
-			// Update the recurrence pattern
-			await this.plugin.taskService.updateProperty(taskInfo, "recurrence", updatedRRule);
-
-			// Note: Don't update scheduled date - it should remain independent
-			// Only the pattern timing changes, not the next occurrence timing
-
-			// The refresh will happen automatically via EVENT_TASK_UPDATED listener
-		} catch (error) {
-			console.error("Error updating pattern instance time:", error);
-			throw error;
 		}
 	}
 
@@ -1634,8 +1495,8 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 		const { taskInfo, timeblock, eventType, originalDate } = resizeInfo.event.extendedProps;
 
 		if (eventType === "timeblock") {
-			// Handle timeblock resize
-			await this.handleTimeblockResize(resizeInfo, timeblock, originalDate);
+			// Handle timeblock resize using shared handler
+			await handleTimeblockResize(resizeInfo, timeblock, originalDate, this.plugin);
 			return;
 		}
 
@@ -1872,15 +1733,10 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 			return;
 		}
 
-		// Handle timeblock events
-		if (eventType === "timeblock") {
-			// Add data attributes for timeblocks
-			arg.el.setAttribute("data-timeblock-id", timeblock?.id || "");
-
-			// Add visual styling for timeblocks
-			arg.el.style.borderStyle = "solid";
-			arg.el.style.borderWidth = "2px";
-			arg.el.classList.add("fc-timeblock-event");
+		// Handle timeblock events using shared handlers
+		if (eventType === "timeblock" && timeblock) {
+			// Apply timeblock styling
+			applyTimeblockStyling(arg.el, timeblock);
 
 			// Ensure timeblocks are editable (can be dragged/resized)
 			if (arg.event.setProp) {
@@ -1888,8 +1744,7 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 			}
 
 			// Add tooltip
-			const attachmentCount = timeblock?.attachments?.length || 0;
-			const tooltipText = `${timeblock?.title || "Timeblock"}${timeblock?.description ? ` - ${timeblock.description}` : ""}${attachmentCount > 0 ? ` (${attachmentCount} attachment${attachmentCount > 1 ? "s" : ""})` : ""}`;
+			const tooltipText = generateTimeblockTooltip(timeblock);
 			setTooltip(arg.el, tooltipText, { placement: "top" });
 
 			return;
@@ -1931,51 +1786,12 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 		}
 
 		// Apply visual styling based on event type and recurrence status
-		const { isNextScheduledOccurrence = false, isPatternInstance = false } = extendedProps;
+		applyRecurringTaskStyling(arg.el, extendedProps);
 
-		if (isNextScheduledOccurrence) {
-			// Next scheduled occurrence: Normal task styling (solid border, full opacity)
-			arg.el.style.borderStyle = "solid";
-			arg.el.style.borderWidth = "2px";
-			arg.el.setAttribute("data-next-scheduled", "true");
-			arg.el.classList.add("fc-next-scheduled-event");
-
-			// Apply dimmed appearance for completed instances
-			if (isCompleted) {
-				arg.el.style.opacity = "0.6";
-			}
-		} else if (isPatternInstance) {
-			// Pattern occurrences: Recurring preview styling (dashed border, reduced opacity)
-			arg.el.style.borderStyle = "dashed";
-			arg.el.style.borderWidth = "2px";
-			arg.el.style.opacity = isCompleted ? "0.4" : "0.7"; // Reduced opacity for pattern instances
-
-			arg.el.setAttribute("data-pattern-instance", "true");
-			arg.el.classList.add("fc-pattern-instance-event");
-		} else if (isRecurringInstance) {
-			// Legacy recurring instances (for backward compatibility)
-			arg.el.style.borderStyle = "dashed";
-			arg.el.style.borderWidth = "2px";
-
-			arg.el.setAttribute("data-recurring", "true");
-			arg.el.classList.add("fc-recurring-event");
-
-			// Apply dimmed appearance for completed instances
-			if (isCompleted) {
-				arg.el.style.opacity = "0.6";
-			}
-		}
-
-		// Apply strikethrough styling for completed tasks
-		if (isCompleted) {
-			const titleElement = arg.el.querySelector(".fc-event-title, .fc-event-title-container");
-			if (titleElement) {
-				titleElement.style.textDecoration = "line-through";
-			} else {
-				// Fallback: apply to the entire event element
-				arg.el.style.textDecoration = "line-through";
-			}
-			arg.el.classList.add("fc-completed-event");
+		// Add tooltip for task events
+		if (taskInfo) {
+			const tooltipText = generateTaskTooltip(taskInfo, this.plugin);
+			setTooltip(arg.el, tooltipText, { placement: "top" });
 		}
 
 		// Add hover preview and context menu event listeners
@@ -2008,26 +1824,8 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 					this.showTimeEntryContextMenu(jsEvent, taskInfo, timeEntryIndex);
 				} else {
 					// Standard task context menu for other event types
-					const { isNextScheduledOccurrence, isPatternInstance } = extendedProps;
-
-					let targetDate: Date;
-					if (
-						(isRecurringInstance || isNextScheduledOccurrence || isPatternInstance) &&
-						instanceDate
-					) {
-						// For all recurring-related events, use UTC anchor for instance date
-						targetDate = parseDateToUTC(instanceDate);
-					} else {
-						// For regular events, convert FullCalendar date to UTC anchor
-						const eventDate = arg.event.start;
-						if (eventDate) {
-							// Convert FullCalendar Date to date string preserving local date
-							const dateStr = format(eventDate, "yyyy-MM-dd");
-							targetDate = parseDateToUTC(dateStr);
-						} else {
-							targetDate = getTodayLocal();
-						}
-					}
+					// Use shared UTC-anchored target date logic
+					const targetDate = getTargetDateForEvent(arg);
 
 					// Use TaskContextMenu component directly
 					this.showTaskContextMenuForEvent(jsEvent, taskInfo, targetDate);
@@ -2291,7 +2089,7 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 		}
 
 		// Add hover preview and context menu
-		this.addTaskInteractionsToListEvent(el, taskInfo);
+		this.addTaskInteractionsToListEvent(el, taskInfo, arg);
 	}
 
 	/**
@@ -2547,8 +2345,9 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 	/**
 	 * Add task interactions (hover and context menu) to list view events
 	 */
-	private addTaskInteractionsToListEvent(el: HTMLElement, taskInfo: TaskInfo): void {
-		const targetDate = this.plugin.selectedDate || new Date();
+	private addTaskInteractionsToListEvent(el: HTMLElement, taskInfo: TaskInfo, arg: any): void {
+		// Use shared UTC-anchored target date logic
+		const targetDate = getTargetDateForEvent(arg);
 
 		// Add hover preview using TaskCard hover handler
 		el.addEventListener("mouseover", createTaskHoverHandler(taskInfo, this.plugin));
@@ -2733,16 +2532,6 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 		modal.open();
 	}
 
-	private showTimeblockInfo(timeblock: TimeBlock, eventDate: Date, originalDate?: string): void {
-		const modal = new TimeblockInfoModal(
-			this.app,
-			this.plugin,
-			timeblock,
-			eventDate,
-			originalDate
-		);
-		modal.open();
-	}
 
 	private showICSEventContextMenu(
 		jsEvent: MouseEvent,

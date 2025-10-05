@@ -15,8 +15,9 @@ import listPlugin from "@fullcalendar/list";
 import interactionPlugin from "@fullcalendar/interaction";
 import { startOfDay, endOfDay, format } from "date-fns";
 import { getTodayLocal, normalizeCalendarBoundariesToUTC } from "../utils/dateUtils";
-import { generateCalendarEvents, CalendarEvent } from "./calendar-core";
+import { generateCalendarEvents, CalendarEvent, generateTaskTooltip, applyRecurringTaskStyling, handleRecurringTaskDrop, getTargetDateForEvent, handleTimeblockCreation, handleTimeblockDrop, handleTimeblockResize, showTimeblockInfoModal, applyTimeblockStyling, generateTimeblockTooltip } from "./calendar-core";
 import { getBasesSortComparator } from "./sorting";
+import { TaskContextMenu } from "../components/TaskContextMenu";
 
 interface BasesContainerLike {
 	results?: Map<any, any>;
@@ -94,6 +95,227 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 			return dataItems;
 		};
 
+		// Handle date selection for task creation
+		const handleDateSelect = (selectInfo: any) => {
+			const { start, end, allDay, jsEvent } = selectInfo;
+
+			// Check if timeblocking is enabled and Shift key is held
+			const showTimeblocks = (currentViewContext?.config?.get('showTimeblocks') as boolean) ?? false;
+			const isTimeblockMode =
+				plugin.settings.calendarViewSettings.enableTimeblocking &&
+				showTimeblocks &&
+				jsEvent &&
+				jsEvent.shiftKey;
+
+			if (isTimeblockMode) {
+				// Create timeblock
+				handleTimeblockCreation(start, end, allDay, plugin);
+			} else {
+				// Create task with pre-populated date
+				const scheduledDate = allDay
+					? format(start, "yyyy-MM-dd")
+					: format(start, "yyyy-MM-dd'T'HH:mm");
+
+				const { TaskCreationModal } = require("../modals/TaskCreationModal");
+				const modal = new TaskCreationModal(plugin.app, plugin, {
+					prePopulatedValues: { scheduled: scheduledDate },
+				});
+				modal.open();
+			}
+
+			// Clear selection
+			calendar?.unselect();
+		};
+
+		// Handle event drag and drop
+		const handleEventDrop = async (dropInfo: any) => {
+			if (!dropInfo?.event?.extendedProps) {
+				console.warn("[TaskNotes][Bases][Calendar] Event dropped without extendedProps");
+				return;
+			}
+
+			const {
+				taskInfo,
+				timeblock,
+				eventType,
+				isRecurringInstance,
+				isNextScheduledOccurrence,
+				isPatternInstance,
+			} = dropInfo.event.extendedProps;
+
+			// Handle timeblock drops
+			if (eventType === "timeblock") {
+				const originalDate = format(dropInfo.oldEvent.start, "yyyy-MM-dd");
+				await handleTimeblockDrop(dropInfo, timeblock, originalDate, plugin);
+				return;
+			}
+
+			// Only allow scheduled and recurring events to be moved
+			if (eventType === "timeEntry" || eventType === "ics" || eventType === "due") {
+				dropInfo.revert();
+				return;
+			}
+
+			try {
+				const isRecurringUpdate =
+					isRecurringInstance || isNextScheduledOccurrence || isPatternInstance;
+
+				// Use shared recurring task drop handler
+				if (isRecurringUpdate) {
+					await handleRecurringTaskDrop(dropInfo, taskInfo, plugin);
+				} else {
+					// Handle non-recurring events normally
+					const newStart = dropInfo.event.start;
+					const allDay = dropInfo.event.allDay;
+					const newDateString = allDay
+						? format(newStart, "yyyy-MM-dd")
+						: format(newStart, "yyyy-MM-dd'T'HH:mm");
+
+					await plugin.taskService.updateProperty(taskInfo, "scheduled", newDateString);
+				}
+			} catch (error) {
+				console.error("[TaskNotes][Bases][Calendar] Error updating task date:", error);
+				dropInfo.revert();
+			}
+		};
+
+		// Handle event resize
+		const handleEventResize = async (resizeInfo: any) => {
+			if (!resizeInfo?.event?.extendedProps) {
+				console.warn("[TaskNotes][Bases][Calendar] Event resized without extendedProps");
+				return;
+			}
+
+			const { taskInfo, timeblock, eventType } = resizeInfo.event.extendedProps;
+
+			// Handle timeblock resize
+			if (eventType === "timeblock") {
+				const originalDate = format(resizeInfo.event.start, "yyyy-MM-dd");
+				await handleTimeblockResize(resizeInfo, timeblock, originalDate, plugin);
+				return;
+			}
+
+			// Only scheduled and recurring events can be resized
+			if (eventType !== "scheduled" && eventType !== "recurring") {
+				resizeInfo.revert();
+				return;
+			}
+
+			try {
+				const start = resizeInfo.event.start;
+				const end = resizeInfo.event.end;
+
+				if (start && end) {
+					const durationMinutes = Math.round((end.getTime() - start.getTime()) / (1000 * 60));
+					await plugin.taskService.updateProperty(taskInfo, "timeEstimate", durationMinutes);
+				}
+			} catch (error) {
+				console.error("[TaskNotes][Bases][Calendar] Error updating task duration:", error);
+				resizeInfo.revert();
+			}
+		};
+
+		// Handle event mount - add tooltips and context menus
+		const handleEventDidMount = (arg: any) => {
+			if (!arg?.event?.extendedProps) {
+				return;
+			}
+
+			const { taskInfo, timeblock, icsEvent, eventType, isCompleted } = arg.event.extendedProps;
+
+			// Set event type attribute
+			arg.el.setAttribute("data-event-type", eventType || "unknown");
+
+			// Handle timeblock events
+			if (eventType === "timeblock" && timeblock) {
+				// Apply timeblock styling
+				applyTimeblockStyling(arg.el, timeblock);
+
+				// Ensure timeblocks are editable
+				if (arg.event.setProp) {
+					arg.event.setProp("editable", true);
+				}
+
+				// Add tooltip
+				const { setTooltip } = require("obsidian");
+				const tooltipText = generateTimeblockTooltip(timeblock);
+				setTooltip(arg.el, tooltipText, { placement: "top" });
+				return;
+			}
+
+			// Add data attributes and classes for tasks
+			if (taskInfo && taskInfo.path) {
+				arg.el.setAttribute("data-task-path", taskInfo.path);
+				arg.el.classList.add("fc-task-event");
+
+				// Add tag classes to tasks
+				if (taskInfo.tags && taskInfo.tags.length > 0) {
+					taskInfo.tags.forEach((tag: string) => {
+						const sanitizedTag = tag.replace(/[^a-zA-Z0-9-_]/g, "");
+						if (sanitizedTag) {
+							arg.el.classList.add(`fc-tag-${sanitizedTag}`);
+						}
+					});
+				}
+
+				// Set editable based on event type
+				if (arg.event.setProp) {
+					switch (eventType) {
+						case "scheduled":
+						case "recurring":
+							arg.event.setProp("editable", true);
+							break;
+						case "due":
+						case "timeEntry":
+							arg.event.setProp("editable", false);
+							break;
+						default:
+							arg.event.setProp("editable", true);
+					}
+				}
+
+				// Apply recurring task styling (handles completion styling as well)
+				applyRecurringTaskStyling(arg.el, arg.event.extendedProps);
+			}
+
+			// Add hover tooltip for tasks and ICS events
+			const { setTooltip } = require("obsidian");
+			if (taskInfo) {
+				const tooltipText = generateTaskTooltip(taskInfo, plugin);
+				setTooltip(arg.el, tooltipText);
+			} else if (icsEvent) {
+				const tooltipText = icsEvent.description
+					? `${icsEvent.title}\n\n${icsEvent.description}`
+					: icsEvent.title;
+				setTooltip(arg.el, tooltipText);
+			}
+
+			// Add context menu for tasks (right-click)
+			if (taskInfo && eventType !== "timeEntry") {
+				arg.el.addEventListener("contextmenu", (e: MouseEvent) => {
+					e.preventDefault();
+					e.stopPropagation();
+
+					// Use shared UTC-anchored target date logic
+					const targetDate = getTargetDateForEvent(arg);
+
+					// Use shared TaskContextMenu component
+					const contextMenu = new TaskContextMenu({
+						task: taskInfo,
+						plugin: plugin,
+						targetDate: targetDate,
+						onUpdate: () => {
+							// Refresh calendar events when task is updated
+							if (calendar) {
+								calendar.refetchEvents();
+							}
+						},
+					});
+					contextMenu.show(e);
+				});
+			}
+		};
+
 		// Get calendar events from tasks
 		const getCalendarEvents = async (viewContext?: any): Promise<CalendarEvent[]> => {
 			try {
@@ -120,6 +342,9 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 				const { utcStart: visibleStart, utcEnd: visibleEnd } =
 					normalizeCalendarBoundariesToUTC(rawVisibleStart, rawVisibleEnd);
 
+				// Get view options from config (public API 1.10.0+)
+				const showTimeblocks = (ctx?.config?.get('showTimeblocks') as boolean) ?? false;
+
 				// Generate calendar events using shared logic
 				const events = await generateCalendarEvents(taskNotes, plugin, {
 					showScheduled: true,
@@ -127,7 +352,7 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 					showTimeEntries: true,
 					showRecurring: true,
 					showICSEvents: false, // ICS events not available in Bases context
-					showTimeblocks: false, // Timeblocks not available in Bases context
+					showTimeblocks: showTimeblocks && plugin.settings.calendarViewSettings.enableTimeblocking,
 					visibleStart,
 					visibleEnd,
 				});
@@ -246,8 +471,8 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 						day: "D",
 					},
 					height: "100%",
-					editable: false, // Disable editing in Bases view for simplicity
-					selectable: false,
+					editable: true, // Enable drag and drop
+					selectable: true, // Enable date selection for task creation
 					locale: navigator.language || "en",
 					firstDay: firstDay,
 					weekNumbers: !!calendarSettings.weekNumbers,
@@ -269,6 +494,15 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 						minute: "2-digit",
 						hour12: calendarSettings.timeFormat === "12",
 					},
+					// Event handlers
+					select: handleDateSelect,
+					eventDrop: handleEventDrop,
+					eventResize: handleEventResize,
+					eventDidMount: handleEventDidMount,
+					eventAllow: (dropInfo: any) => {
+						// Allow all drops to proceed visually
+						return true;
+					},
 					// Get events function
 					events: async (fetchInfo: any) => {
 						try {
@@ -278,10 +512,19 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 							return [];
 						}
 					},
-					// Event click handler - open task file
+					// Event click handler - open task file or timeblock modal
 					eventClick: (info: any) => {
 						try {
-							const taskInfo = info.event.extendedProps?.taskInfo;
+							const { taskInfo, timeblock, eventType } = info.event.extendedProps || {};
+
+							// Handle timeblock click
+							if (eventType === "timeblock" && timeblock) {
+								const originalDate = format(info.event.start, "yyyy-MM-dd");
+								showTimeblockInfoModal(timeblock, info.event.start, originalDate, plugin);
+								return;
+							}
+
+							// Handle task click
 							if (taskInfo?.path) {
 								plugin.app.workspace.openLinkText(taskInfo.path, "", false);
 							}
