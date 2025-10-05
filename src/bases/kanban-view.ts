@@ -109,6 +109,16 @@ export function buildTasknotesKanbanViewFactory(plugin: TaskNotesPlugin) {
 				// For legacy API, use controller/basesContainer
 				const viewContext = this?.data ? this : controller;
 
+				// Skip rendering if we have no data yet (prevents flickering during data updates)
+				// Check BEFORE any logging or processing
+				const hasGroupedData = !!(viewContext.data?.groupedData && Array.isArray(viewContext.data.groupedData) && viewContext.data.groupedData.length > 0);
+				const hasFlatData = !!(viewContext.data?.data && Array.isArray(viewContext.data.data) && viewContext.data.data.length > 0);
+				const hasLegacyResults = !!(viewContext.results && viewContext.results instanceof Map && viewContext.results.size > 0);
+
+				if (!hasGroupedData && !hasFlatData && !hasLegacyResults) {
+					return; // Skip render silently - no data available
+				}
+
 				console.log("[TaskNotes][Bases] Kanban render context:", {
 					hasThisData: !!this?.data,
 					hasThisConfig: !!this?.config,
@@ -116,12 +126,6 @@ export function buildTasknotesKanbanViewFactory(plugin: TaskNotesPlugin) {
 					usingContext: viewContext === this ? 'this' : 'controller',
 					groupedDataLength: viewContext?.data?.groupedData?.length
 				});
-
-				// Skip rendering if we have no data yet (prevents flickering during data updates)
-				if (!viewContext.data?.data && !viewContext.data?.groupedData && !viewContext.results) {
-					console.log("[TaskNotes][Bases] Skipping render - no data available");
-					return;
-				}
 
 				const dataItems = extractDataItems(viewContext);
 				const taskNotes = await identifyTaskNotesFromBasesData(dataItems, plugin);
