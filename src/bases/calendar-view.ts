@@ -44,6 +44,7 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 		let initRetryCount = 0;
 		const MAX_INIT_RETRIES = 10;
 		let currentViewContext: any = null; // Store current view context for event generation
+		let basesEntryByPath: Map<string, any> = new Map(); // Map task path to Bases entry for enrichment
 
 		// Detect which API is being used (should only be public API 1.10.0+)
 		const viewContainerEl = containerEl || basesContainer.viewContainerEl;
@@ -349,7 +350,55 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 
 				// Render task events with TaskCard
 				if (taskInfo && eventType !== 'ics' && eventType !== 'property-based') {
-					cardElement = createTaskCard(taskInfo, plugin, visibleProperties);
+					// Enrich TaskInfo with Bases data for formula and file property access
+					const enrichedTask = { ...taskInfo };
+					const basesEntry = basesEntryByPath.get(taskInfo.path);
+
+					if (basesEntry) {
+						// Add basesData for formula results
+						enrichedTask.basesData = {
+							formulaResults: {
+								cachedFormulaOutputs: {} as Record<string, any>
+							}
+						};
+
+						// Populate formula results from Bases entry
+						if (visibleProperties) {
+							for (const propId of visibleProperties) {
+								if (propId.startsWith('formula.')) {
+									const formulaName = propId.substring(8);
+									try {
+										const value = basesEntry.getValue?.(propId);
+										if (value) {
+											enrichedTask.basesData.formulaResults.cachedFormulaOutputs[formulaName] = value;
+										}
+									} catch (error) {
+										console.debug('[TaskNotes][Bases][Calendar] Error getting formula:', propId, error);
+									}
+								}
+							}
+						}
+
+						// Add file properties if not already present
+						if (!enrichedTask.dateCreated) {
+							try {
+								const ctimeValue = basesEntry.getValue?.('file.ctime');
+								if (ctimeValue?.data) enrichedTask.dateCreated = ctimeValue.data;
+							} catch (error) {
+								console.debug('[TaskNotes][Bases][Calendar] Error getting file.ctime:', error);
+							}
+						}
+						if (!enrichedTask.dateModified) {
+							try {
+								const mtimeValue = basesEntry.getValue?.('file.mtime');
+								if (mtimeValue?.data) enrichedTask.dateModified = mtimeValue.data;
+							} catch (error) {
+								console.debug('[TaskNotes][Bases][Calendar] Error getting file.mtime:', error);
+							}
+						}
+					}
+
+					cardElement = createTaskCard(enrichedTask, plugin, visibleProperties);
 				}
 				// Render ICS events with ICSCard
 				else if (icsEvent && eventType === 'ics') {
@@ -530,6 +579,18 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 				const taskNoteItems: BasesDataItem[] = [];
 				const allCachedTasks = await plugin.cacheManager.getAllTasks();
 				const cachedTaskPaths = new Set(allCachedTasks.map(t => t.path));
+
+				// Clear and rebuild the Bases entry mapping for task enrichment
+				basesEntryByPath.clear();
+
+				// Store Bases entries by path for enrichment
+				if (ctx.data?.data) {
+					for (const entry of ctx.data.data) {
+						if (entry.file?.path) {
+							basesEntryByPath.set(entry.file.path, entry);
+						}
+					}
+				}
 
 				for (const item of dataItems) {
 					if (item.path && cachedTaskPaths.has(item.path)) {
