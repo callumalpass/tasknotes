@@ -156,38 +156,6 @@
     border-radius: var(--tn-radius-sm);
 }
 
-/* Bases Calendar Overdue Section */
-.bases-calendar-overdue-section {
-    background: var(--tn-bg-secondary);
-    border: 1px solid var(--tn-border-color);
-    border-radius: var(--tn-radius-md);
-    margin: var(--tn-spacing-sm);
-    overflow: hidden;
-}
-
-.bases-calendar-overdue-header {
-    padding: var(--tn-spacing-sm) var(--tn-spacing-md);
-    background: var(--background-modifier-error-rgb);
-    background: rgba(var(--background-modifier-error-rgb), 0.1);
-    border-bottom: 1px solid var(--tn-border-color);
-}
-
-.bases-calendar-overdue-header h3 {
-    margin: 0;
-    font-size: var(--tn-font-size-md);
-    font-weight: var(--tn-font-weight-medium);
-    color: var(--text-error);
-}
-
-.bases-calendar-overdue-tasks {
-    padding: var(--tn-spacing-sm);
-    display: flex;
-    flex-direction: column;
-    gap: var(--tn-spacing-xs);
-    max-height: 300px;
-    overflow-y: auto;
-}
-
 /* Responsive design for Bases views */
 @media (max-width: 768px) {
     .tn-bases-kanban-board {
@@ -209,9 +177,5 @@
     .tn-bases-kanban-column {
         flex: 0 0 200px;
         min-width: 200px;
-    }
-
-    .bases-calendar-overdue-tasks {
-        max-height: 200px;
     }
 }
