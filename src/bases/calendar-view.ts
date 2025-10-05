@@ -22,6 +22,7 @@ import { TFile } from "obsidian";
 import { ICSEventInfoModal } from "../modals/ICSEventInfoModal";
 import { createTaskCard } from "../ui/TaskCard";
 import { createICSEventCard } from "../ui/ICSCard";
+import { createPropertyEventCard } from "../ui/PropertyEventCard";
 
 interface BasesContainerLike {
 	results?: Map<any, any>;
@@ -455,6 +456,7 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 						eventType: "property-based" as const,
 						filePath: file.path,
 						file: file,
+						basesEntry: entry, // Include full Bases entry for property access
 					},
 				};
 			} catch (error) {
@@ -794,14 +796,14 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 					select: handleDateSelect,
 					eventDrop: handleEventDrop,
 					eventResize: handleEventResize,
-					// Custom content renderer for list view - use TaskCard and ICSCard
+					// Custom content renderer for list view - use TaskCard, ICSCard, and PropertyEventCard
 					eventContent: (arg: any) => {
 						// Only customize list view rendering
 						if (arg.view.type === 'listWeek') {
-							const { taskInfo, icsEvent, eventType } = arg.event.extendedProps || {};
+							const { taskInfo, icsEvent, eventType, basesEntry } = arg.event.extendedProps || {};
 
 							// Render task events with TaskCard
-							if (taskInfo && eventType !== 'ics') {
+							if (taskInfo && eventType !== 'ics' && eventType !== 'property-based') {
 								const taskCard = createTaskCard(taskInfo, plugin);
 								return { domNodes: [taskCard] };
 							}
@@ -810,6 +812,16 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 							if (icsEvent && eventType === 'ics') {
 								const icsCard = createICSEventCard(icsEvent, plugin);
 								return { domNodes: [icsCard] };
+							}
+
+							// Render property-based events with PropertyEventCard
+							if (eventType === 'property-based' && basesEntry) {
+								const propertyCard = createPropertyEventCard(
+									basesEntry,
+									plugin,
+									currentViewContext?.config
+								);
+								return { domNodes: [propertyCard] };
 							}
 						}
 						// Use default rendering for other views and event types

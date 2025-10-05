@@ -35,6 +35,7 @@ export interface CalendarEvent {
 		eventType: "scheduled" | "due" | "timeEntry" | "recurring" | "ics" | "timeblock" | "property-based";
 		filePath?: string; // For property-based events
 		file?: any; // For property-based events
+		basesEntry?: any; // For property-based events - full Bases entry with getValue()
 		isCompleted?: boolean;
 		isRecurringInstance?: boolean;
 		isNextScheduledOccurrence?: boolean;
