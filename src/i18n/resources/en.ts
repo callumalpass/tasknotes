@@ -208,6 +208,7 @@ export const en: TranslationTree = {
 			title: "What's new in TaskNotes {version}",
 			header: "What's new in TaskNotes {version}",
 			viewAllLink: "View all release notes on GitHub →",
+			starMessage: "If you find TaskNotes useful, please consider giving it a star on GitHub",
 		},
 	},
 	settings: {

@@ -76,6 +76,14 @@ export class ReleaseNotesView extends ItemView {
 			e.preventDefault();
 			window.open(GITHUB_RELEASES_URL, "_blank");
 		});
+
+		// Star message
+		const starMessage = footer.createEl("p", {
+			text: this.plugin.i18n.translate("views.releaseNotes.starMessage"),
+		});
+		starMessage.style.marginTop = "16px";
+		starMessage.style.fontSize = "0.9em";
+		starMessage.style.color = "var(--text-muted)";
 	}
 
 	async onClose() {

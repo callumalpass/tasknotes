@@ -515,6 +515,7 @@
     "views.releaseNotes.title": null,
     "views.releaseNotes.header": null,
     "views.releaseNotes.viewAllLink": null,
+    "views.releaseNotes.starMessage": null,
     "settings.tabs.general": {
       "source": "9239ee2cda84eca4c3440e2a7b50148af67da3d4",
       "translation": "21a7b4ecae6d99d7c9ae0fe00f0cc0a33f1e2b6f"
@@ -6049,6 +6050,7 @@
     "views.releaseNotes.title": null,
     "views.releaseNotes.header": null,
     "views.releaseNotes.viewAllLink": null,
+    "views.releaseNotes.starMessage": null,
     "settings.tabs.general": {
       "source": "9239ee2cda84eca4c3440e2a7b50148af67da3d4",
       "translation": "9239ee2cda84eca4c3440e2a7b50148af67da3d4"
@@ -11583,6 +11585,7 @@
     "views.releaseNotes.title": null,
     "views.releaseNotes.header": null,
     "views.releaseNotes.viewAllLink": null,
+    "views.releaseNotes.starMessage": null,
     "settings.tabs.general": {
       "source": "9239ee2cda84eca4c3440e2a7b50148af67da3d4",
       "translation": "5376df989fac86247d5cd9f983d11ece28e75fcd"
@@ -17051,6 +17054,7 @@
     "views.releaseNotes.title": null,
     "views.releaseNotes.header": null,
     "views.releaseNotes.viewAllLink": null,
+    "views.releaseNotes.starMessage": null,
     "settings.tabs.general": {
       "source": "9239ee2cda84eca4c3440e2a7b50148af67da3d4",
       "translation": "f0aaccbc0dcda37daa045cb4cda85177bedafdb0"
@@ -22438,6 +22442,7 @@
     "views.releaseNotes.title": null,
     "views.releaseNotes.header": null,
     "views.releaseNotes.viewAllLink": null,
+    "views.releaseNotes.starMessage": null,
     "settings.tabs.general": {
       "source": "9239ee2cda84eca4c3440e2a7b50148af67da3d4",
       "translation": "fdd17d17b54069e4f68253b0af0b1a50d389b199"
@@ -27873,6 +27878,7 @@
     "views.releaseNotes.title": null,
     "views.releaseNotes.header": null,
     "views.releaseNotes.viewAllLink": null,
+    "views.releaseNotes.starMessage": null,
     "settings.tabs.general": {
       "source": "9239ee2cda84eca4c3440e2a7b50148af67da3d4",
       "translation": "f1484fa78b69777c083f5b19555ee4d232d70163"
