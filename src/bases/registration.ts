@@ -43,7 +43,7 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 						const options: any[] = [
 							{
 								type: "group",
-								displayName: "Display options",
+								displayName: "Events",
 								items: [
 									{
 										type: "toggle",
@@ -79,7 +79,7 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 							},
 							{
 								type: "group",
-								displayName: "Calendar settings",
+								displayName: "Layout",
 								items: [
 									{
 										type: "text",
@@ -174,7 +174,7 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 								// Add as a group
 								options.push({
 									type: "group",
-									displayName: "ICS Calendars",
+									displayName: "Calendar subscriptions",
 									items: icsToggles,
 								});
 							}
