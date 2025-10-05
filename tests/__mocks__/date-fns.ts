@@ -6,36 +6,101 @@ export const format = jest.fn((date: Date, formatStr: string) => {
   if (!date || isNaN(date.getTime())) {
     throw new Error('Invalid date');
   }
-  
-  if (formatStr === 'yyyy-MM-dd') {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  } else if (formatStr === 'MMM d, yyyy') {
+
+  const year = date.getFullYear();
+  const month = date.getMonth();
+  const day = date.getDate();
+  const hours = date.getHours();
+  const minutes = date.getMinutes();
+  const seconds = date.getSeconds();
+  const ms = date.getMilliseconds();
+
+  // Date formats
+  if (formatStr === 'yyyy') return String(year);
+  if (formatStr === 'MM') return String(month + 1).padStart(2, '0');
+  if (formatStr === 'dd') return String(day).padStart(2, '0');
+  if (formatStr === 'yyyy-MM-dd') return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
+  // Time formats
+  if (formatStr === 'HH') return String(hours).padStart(2, '0');
+  if (formatStr === 'mm') return String(minutes).padStart(2, '0');
+  if (formatStr === 'ss') return String(seconds).padStart(2, '0');
+  if (formatStr === 'HHmmss') return `${String(hours).padStart(2, '0')}${String(minutes).padStart(2, '0')}${String(seconds).padStart(2, '0')}`;
+  if (formatStr === 'HH:mm') return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+  if (formatStr === 'hh') return String(hours % 12 || 12).padStart(2, '0');
+  if (formatStr === 'h:mm a') {
+    const h = hours % 12 || 12;
+    const ampm = hours < 12 ? 'AM' : 'PM';
+    return `${h}:${String(minutes).padStart(2, '0')} ${ampm}`;
+  }
+  if (formatStr === 'hh:mm a') {
+    const h = hours % 12 || 12;
+    const ampm = hours < 12 ? 'AM' : 'PM';
+    return `${String(h).padStart(2, '0')}:${String(minutes).padStart(2, '0')} ${ampm}`;
+  }
+  if (formatStr === 'a') return hours < 12 ? 'AM' : 'PM';
+
+  // Combined date/time formats
+  if (formatStr === 'yyyy-MM-dd-HHmmss') return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}-${String(hours).padStart(2, '0')}${String(minutes).padStart(2, '0')}${String(seconds).padStart(2, '0')}`;
+  if (formatStr === 'yyyy-MM-dd-HHmm') return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}-${String(hours).padStart(2, '0')}${String(minutes).padStart(2, '0')}`;
+
+  // Short date formats
+  if (formatStr === 'yyMMdd') return `${String(year).slice(-2)}${String(month + 1).padStart(2, '0')}${String(day).padStart(2, '0')}`;
+
+  // Month/day names
+  if (formatStr === 'MMMM') return date.toLocaleDateString('en-US', { month: 'long' });
+  if (formatStr === 'MMM') return date.toLocaleDateString('en-US', { month: 'short' });
+  if (formatStr === 'EEEE') return date.toLocaleDateString('en-US', { weekday: 'long' });
+  if (formatStr === 'EEE') return date.toLocaleDateString('en-US', { weekday: 'short' });
+
+  // Week/quarter
+  if (formatStr === 'ww') {
+    const start = new Date(year, 0, 1);
+    const diff = (date.getTime() - start.getTime()) / (1000 * 60 * 60 * 24);
+    return String(Math.ceil((diff + start.getDay() + 1) / 7)).padStart(2, '0');
+  }
+  if (formatStr === 'q') return String(Math.floor(month / 3) + 1);
+
+  // Milliseconds
+  if (formatStr === 'SSS') return String(ms).padStart(3, '0');
+
+  // Timezone formats
+  if (formatStr === 'xxx') {
+    const offset = -date.getTimezoneOffset();
+    const sign = offset >= 0 ? '+' : '-';
+    const absOffset = Math.abs(offset);
+    const offsetHours = String(Math.floor(absOffset / 60)).padStart(2, '0');
+    const offsetMinutes = String(absOffset % 60).padStart(2, '0');
+    return `${sign}${offsetHours}:${offsetMinutes}`;
+  }
+  if (formatStr === 'xx') {
+    const offset = -date.getTimezoneOffset();
+    const sign = offset >= 0 ? '+' : '-';
+    const absOffset = Math.abs(offset);
+    const offsetHours = String(Math.floor(absOffset / 60)).padStart(2, '0');
+    const offsetMinutes = String(absOffset % 60).padStart(2, '0');
+    return `${sign}${offsetHours}${offsetMinutes}`;
+  }
+
+  // Legacy formats
+  if (formatStr === 'MMM d, yyyy') {
     return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-  } else if (formatStr === 'MMM d, yyyy h:mm a') {
+  }
+  if (formatStr === 'MMM d, yyyy h:mm a') {
     return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) + ' ' +
            date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
-  } else if (formatStr === 'MMM d, yyyy HH:mm') {
-    const dateStr = date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
-    return `${dateStr} ${hours}:${minutes}`;
-  } else if (formatStr === 'h:mm a') {
-    return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
-  } else if (formatStr === 'HH:mm') {
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
-    return `${hours}:${minutes}`;
-  } else if (formatStr === "yyyy-MM-dd'T'HH:mm") {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
-    return `${year}-${month}-${day}T${hours}:${minutes}`;
   }
+  if (formatStr === 'MMM d, yyyy HH:mm') {
+    const dateStr = date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    const hoursStr = String(hours).padStart(2, '0');
+    const minutesStr = String(minutes).padStart(2, '0');
+    return `${dateStr} ${hoursStr}:${minutesStr}`;
+  }
+  if (formatStr === "yyyy-MM-dd'T'HH:mm") {
+    return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}T${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+  }
+
+  // Default fallback
   return date.toISOString();
 });
 
