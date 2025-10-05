@@ -204,6 +204,12 @@ export const ru: TranslationTree = {
 				minTime: "Мин. время (минуты)",
 			},
 		},
+		releaseNotes: {
+			title: "Что нового в TaskNotes {version}",
+			header: "Что нового в TaskNotes {version}",
+			viewAllLink: "Посмотреть все примечания к выпуску на GitHub →",
+			starMessage: "Если TaskNotes полезен для вас, поставьте звезду на GitHub",
+		},
 	},
 	settings: {
 		tabs: {
@@ -1507,6 +1513,7 @@ export const ru: TranslationTree = {
 		pauseResumePomodoro: "Приостановить/возобновить таймер помодоро",
 		refreshCache: "Обновить кэш",
 		exportAllTasksIcs: "Экспортировать все задачи как файл ICS",
+		viewReleaseNotes: "Посмотреть примечания к выпуску",
 	},
 	modals: {
 		task: {
