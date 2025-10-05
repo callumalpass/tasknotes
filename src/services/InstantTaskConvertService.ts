@@ -445,7 +445,7 @@ export class InstantTaskConvertService {
 		let contextsArray: string[] = [];
 		let tagsArray = [this.plugin.settings.taskTag];
 		let timeEstimate: number | undefined;
-		let recurrence: import("../types").RecurrenceInfo | undefined;
+		let recurrence: string | import("../types").RecurrenceInfo | undefined;
 
 		// Extract parsed tags, contexts, and projects
 		const parsedTags = parsedData.tags || [];
@@ -511,13 +511,19 @@ export class InstantTaskConvertService {
 			// Remove duplicates
 			tagsArray = [...new Set(tagsArray)];
 
-			// Apply time estimate
-			if (defaults.defaultTimeEstimate && defaults.defaultTimeEstimate > 0) {
+			// Apply time estimate: parsed value takes priority over defaults
+			if (parsedData.timeEstimate !== undefined && parsedData.timeEstimate > 0) {
+				timeEstimate = parsedData.timeEstimate;
+			} else if (defaults.defaultTimeEstimate && defaults.defaultTimeEstimate > 0) {
 				timeEstimate = defaults.defaultTimeEstimate;
 			}
 
-			// Apply recurrence
-			if (defaults.defaultRecurrence && defaults.defaultRecurrence !== "none") {
+			// Apply recurrence: parsed value takes priority over defaults
+			if (parsedData.recurrence) {
+				// Use the RRule string directly (preferred format)
+				recurrence = parsedData.recurrence;
+			} else if (defaults.defaultRecurrence && defaults.defaultRecurrence !== "none") {
+				// Defaults use the legacy RecurrenceInfo format
 				recurrence = {
 					frequency: defaults.defaultRecurrence,
 				};
@@ -549,6 +555,14 @@ export class InstantTaskConvertService {
 			}
 			// Remove duplicates
 			tagsArray = [...new Set(tagsArray)];
+
+			// Handle time estimate from parsed data
+			timeEstimate = parsedData.timeEstimate;
+
+			// Handle recurrence from parsed data (use RRule string directly)
+			if (parsedData.recurrence) {
+				recurrence = parsedData.recurrence;
+			}
 		}
 
 		// Apply projects: handle default projects if enabled, otherwise just use parsed projects
@@ -886,6 +900,7 @@ export class InstantTaskConvertService {
 				dueTime: nlpResult.dueTime,
 				scheduledTime: nlpResult.scheduledTime,
 				recurrence: nlpResult.recurrence,
+				timeEstimate: nlpResult.estimate,
 				tags: nlpResult.tags && nlpResult.tags.length > 0 ? nlpResult.tags : undefined,
 				projects:
 					nlpResult.projects && nlpResult.projects.length > 0

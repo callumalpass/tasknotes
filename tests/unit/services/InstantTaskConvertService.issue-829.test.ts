@@ -101,10 +101,9 @@ describe('InstantTaskConvertService - Issue #829: Time Estimate Lost in Conversi
       expect(result).not.toBeNull();
       expect(result!.title).toBe('Practice guitar');
 
-      // BUG: Time estimate should be preserved but is currently lost
-      // This test will FAIL until the bug is fixed
-      expect(result).toHaveProperty('estimate');
-      expect((result as any).estimate).toBe(30);
+      // Time estimate should be preserved
+      expect(result).toHaveProperty('timeEstimate');
+      expect((result as any).timeEstimate).toBe(30);
     });
 
     it('should preserve time estimate with hours "Submit report 2 hours"', () => {
@@ -122,7 +121,7 @@ describe('InstantTaskConvertService - Issue #829: Time Estimate Lost in Conversi
 
       expect(result).not.toBeNull();
       expect(result!.title).toBe('Submit report');
-      expect((result as any).estimate).toBe(120);
+      expect((result as any).timeEstimate).toBe(120);
     });
 
     it('should preserve time estimate with complex format "Meeting 1h 30m"', () => {
@@ -140,7 +139,7 @@ describe('InstantTaskConvertService - Issue #829: Time Estimate Lost in Conversi
 
       expect(result).not.toBeNull();
       expect(result!.title).toBe('Meeting');
-      expect((result as any).estimate).toBe(90);
+      expect((result as any).timeEstimate).toBe(90);
     });
 
     it('should preserve time estimate alongside other properties', () => {
@@ -160,7 +159,7 @@ describe('InstantTaskConvertService - Issue #829: Time Estimate Lost in Conversi
 
       expect(result).not.toBeNull();
       expect(result!.title).toBe('Review code');
-      expect((result as any).estimate).toBe(45);
+      expect((result as any).timeEstimate).toBe(45);
       expect(result!.priority).toBe('high');
       expect(result!.tags).toEqual(['review']);
       expect(result!.contexts).toEqual(['work']);
@@ -222,7 +221,7 @@ describe('InstantTaskConvertService - Issue #829: Time Estimate Lost in Conversi
 
       expect(result).not.toBeNull();
       expect(result!.title).toBe('Workout');
-      expect((result as any).estimate).toBe(60);
+      expect((result as any).timeEstimate).toBe(60);
       expect(result!.recurrence).toBe('FREQ=DAILY');
       expect(result!.tags).toEqual(['fitness']);
       expect(result!.contexts).toEqual(['gym']);
@@ -237,6 +236,8 @@ describe('InstantTaskConvertService - Issue #829: Time Estimate Lost in Conversi
 
       const mockFile = { path: 'test-task.md', basename: 'test-task' } as TFile;
       mockPlugin.app.vault.create.mockResolvedValue(mockFile);
+      mockPlugin.app.workspace.getActiveFile = jest.fn().mockReturnValue(mockFile);
+      mockPlugin.app.metadataCache.fileToLinktext = jest.fn().mockReturnValue('test-task');
 
       // Mock TaskService.createTask to capture the data
       const createTaskSpy = jest.fn().mockResolvedValue({ file: mockFile });
@@ -285,7 +286,7 @@ describe('InstantTaskConvertService - Issue #829: Time Estimate Lost in Conversi
 
       expect(result).not.toBeNull();
       expect(result!.title).toBe('Simple task');
-      expect((result as any).estimate).toBeUndefined();
+      expect((result as any).timeEstimate).toBeUndefined();
     });
 
     it('should handle zero time estimate', () => {
@@ -304,7 +305,7 @@ describe('InstantTaskConvertService - Issue #829: Time Estimate Lost in Conversi
       expect(result).not.toBeNull();
       expect(result!.title).toBe('Quick task');
       // Zero estimates should be preserved as they might be intentional
-      expect((result as any).estimate).toBe(0);
+      expect((result as any).timeEstimate).toBe(0);
     });
   });
 });
