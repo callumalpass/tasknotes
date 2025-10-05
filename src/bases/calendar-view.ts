@@ -23,6 +23,7 @@ import { ICSEventInfoModal } from "../modals/ICSEventInfoModal";
 import { createTaskCard } from "../ui/TaskCard";
 import { createICSEventCard } from "../ui/ICSCard";
 import { createPropertyEventCard } from "../ui/PropertyEventCard";
+import { createTimeBlockCard } from "../ui/TimeBlockCard";
 
 interface BasesContainerLike {
 	results?: Map<any, any>;
@@ -430,6 +431,10 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 						plugin,
 						currentViewContext?.config
 					);
+				}
+				// Render timeblock events with TimeBlockCard
+				else if (eventType === 'timeblock' && timeblock) {
+					cardElement = createTimeBlockCard(timeblock, plugin);
 				}
 
 				// Replace the event element content with the card
