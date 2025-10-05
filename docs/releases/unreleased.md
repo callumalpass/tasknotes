@@ -27,6 +27,17 @@ Example:
 
 ## Added
 
+- Added TaskNotes Calendar view for Bases plugin integration (requires Bases 1.10.0+)
+  - Full-featured FullCalendar integration with month, week, day, year, and list views
+  - Property-based events: create calendar events from any note with date properties
+  - Configurable start date, end date, and title properties for flexible event creation
+  - Custom card rendering in list view for tasks, timeblocks, ICS events, and property-based events
+  - Comprehensive layout options: time format, weekends, all-day slot, today highlight, scrolling, and more
+  - Toggle visibility for scheduled tasks, due tasks, recurring tasks, time entries, timeblocks, and property-based events
+  - Robust date validation prevents calendar errors from malformed property data
+  - Minimalist styling with reduced backgrounds for cleaner appearance
+  - Drag-and-drop support for rescheduling property-based events with automatic frontmatter updates
+
 - Added grouped rendering support for Bases integration list and kanban views
   - List view displays collapsible groups with toggle controls
   - Kanban view renders grouped columns with drag-drop support
