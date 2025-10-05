@@ -194,7 +194,15 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 						const oldStartValue = frontmatter[startDateProperty];
 						if (oldStartValue) {
 							const oldStartDate = new Date(oldStartValue);
+							if (isNaN(oldStartDate.getTime())) {
+								console.warn(`[TaskNotes][Bases][Calendar] Invalid start date when dropping event: ${filePath}`);
+								return;
+							}
 							const newStartDate = new Date(oldStartDate.getTime() + timeDiffMs);
+							if (isNaN(newStartDate.getTime())) {
+								console.warn(`[TaskNotes][Bases][Calendar] Invalid calculated start date when dropping event: ${filePath}`);
+								return;
+							}
 							frontmatter[startDateProperty] = format(newStartDate, dropInfo.event.allDay ? "yyyy-MM-dd" : "yyyy-MM-dd'T'HH:mm");
 						}
 
@@ -203,7 +211,15 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 							const oldEndValue = frontmatter[endDateProperty];
 							if (oldEndValue) {
 								const oldEndDate = new Date(oldEndValue);
+								if (isNaN(oldEndDate.getTime())) {
+									console.warn(`[TaskNotes][Bases][Calendar] Invalid end date when dropping event: ${filePath}`);
+									return;
+								}
 								const newEndDate = new Date(oldEndDate.getTime() + timeDiffMs);
+								if (isNaN(newEndDate.getTime())) {
+									console.warn(`[TaskNotes][Bases][Calendar] Invalid calculated end date when dropping event: ${filePath}`);
+									return;
+								}
 								frontmatter[endDateProperty] = format(newEndDate, dropInfo.event.allDay ? "yyyy-MM-dd" : "yyyy-MM-dd'T'HH:mm");
 							}
 						}
@@ -290,6 +306,11 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 
 					// Update frontmatter
 					await plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
+						// Validate newEnd date
+						if (isNaN(newEnd.getTime())) {
+							console.warn(`[TaskNotes][Bases][Calendar] Invalid new end date when resizing event: ${filePath}`);
+							return;
+						}
 						frontmatter[endDateProperty] = format(newEnd, resizeInfo.event.allDay ? "yyyy-MM-dd" : "yyyy-MM-dd'T'HH:mm");
 					});
 				} catch (error) {
@@ -557,6 +578,13 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 				const file = entry.file;
 				if (!file) return null;
 
+				// Validate start date
+				const startDateObj = new Date(startDate);
+				if (isNaN(startDateObj.getTime())) {
+					console.warn(`[TaskNotes][Bases][Calendar] Invalid start date "${startDate}" for file: ${file.path}`);
+					return null;
+				}
+
 				// Parse start date
 				const hasTime = startDate.includes('T');
 
@@ -565,9 +593,20 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 				if (!eventEnd && !hasTime) {
 					// For all-day events without end date, use next day
 					const start = new Date(startDate);
+					if (isNaN(start.getTime())) {
+						console.warn(`[TaskNotes][Bases][Calendar] Invalid start date for end calculation: ${file.path}`);
+						return null;
+					}
 					const end = new Date(start);
 					end.setDate(end.getDate() + 1);
 					eventEnd = format(end, "yyyy-MM-dd");
+				} else if (eventEnd) {
+					// Validate end date if provided
+					const endDateObj = new Date(eventEnd);
+					if (isNaN(endDateObj.getTime())) {
+						console.warn(`[TaskNotes][Bases][Calendar] Invalid end date "${eventEnd}" for file: ${file.path}, skipping end date`);
+						eventEnd = undefined; // Skip invalid end date rather than failing the whole event
+					}
 				}
 
 				return {
@@ -588,7 +627,8 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 					},
 				};
 			} catch (error) {
-				console.error("[TaskNotes][Bases][Calendar] Error creating property-based event:", error);
+				const fileName = entry?.file?.path || 'unknown file';
+				console.error(`[TaskNotes][Bases][Calendar] Error creating property-based event for ${fileName}:`, error);
 				return null;
 			}
 		};
@@ -710,14 +750,30 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 
 							if (!dateValue) continue;
 
-							// Convert to date string
+							// Convert to date string with validation
 							let startDateStr: string;
 							if (dateValue instanceof Date) {
+								// Validate date before formatting
+								if (isNaN(dateValue.getTime())) {
+									console.warn(`[TaskNotes][Bases][Calendar] Invalid Date object for start date in file: ${file.path}`);
+									continue;
+								}
 								const hasTime = startValue.time === true;
-								startDateStr = hasTime
-									? format(dateValue, "yyyy-MM-dd'T'HH:mm")
-									: format(dateValue, "yyyy-MM-dd");
+								try {
+									startDateStr = hasTime
+										? format(dateValue, "yyyy-MM-dd'T'HH:mm")
+										: format(dateValue, "yyyy-MM-dd");
+								} catch (formatError) {
+									console.warn(`[TaskNotes][Bases][Calendar] Error formatting start date for file: ${file.path}`, formatError);
+									continue;
+								}
 							} else {
+								// String date - validate it can be parsed
+								const testDate = new Date(dateValue);
+								if (isNaN(testDate.getTime())) {
+									console.warn(`[TaskNotes][Bases][Calendar] Invalid date string "${dateValue}" for start date in file: ${file.path}`);
+									continue;
+								}
 								startDateStr = dateValue;
 							}
 
@@ -740,12 +796,27 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 
 									if (endDateValue) {
 										if (endDateValue instanceof Date) {
-											const hasTime = endValue.time === true;
-											endDateStr = hasTime
-												? format(endDateValue, "yyyy-MM-dd'T'HH:mm")
-												: format(endDateValue, "yyyy-MM-dd");
+											// Validate date before formatting
+											if (isNaN(endDateValue.getTime())) {
+												console.warn(`[TaskNotes][Bases][Calendar] Invalid Date object for end date in file: ${file.path}`);
+											} else {
+												const hasTime = endValue.time === true;
+												try {
+													endDateStr = hasTime
+														? format(endDateValue, "yyyy-MM-dd'T'HH:mm")
+														: format(endDateValue, "yyyy-MM-dd");
+												} catch (formatError) {
+													console.warn(`[TaskNotes][Bases][Calendar] Error formatting end date for file: ${file.path}`, formatError);
+												}
+											}
 										} else {
-											endDateStr = endDateValue;
+											// String date - validate it can be parsed
+											const testDate = new Date(endDateValue);
+											if (isNaN(testDate.getTime())) {
+												console.warn(`[TaskNotes][Bases][Calendar] Invalid date string "${endDateValue}" for end date in file: ${file.path}`);
+											} else {
+												endDateStr = endDateValue;
+											}
 										}
 									}
 								}
@@ -758,7 +829,8 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 								propertyEventCount++;
 							}
 						} catch (error) {
-							console.warn("[TaskNotes][Bases][Calendar] Error processing entry:", error);
+							const fileName = entry?.file?.path || 'unknown file';
+							console.warn(`[TaskNotes][Bases][Calendar] Error processing property-based entry for ${fileName}:`, error);
 						}
 					}
 				}
