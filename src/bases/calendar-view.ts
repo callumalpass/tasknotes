@@ -669,7 +669,8 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 			return {
 				slotMinTime: normalizeTime(settings.slotMinTime, "00:00:00"),
 				slotMaxTime: normalizeTime(settings.slotMaxTime, "24:00:00"),
-				scrollTime: normalizeTime(settings.scrollTime, "08:00:00"),
+				slotDuration: normalizeTime(settings.slotDuration, "00:30:00"),
+				scrollTime: normalizeTime(settings.scrollTime || "08:00:00", "08:00:00"),
 			};
 		};
 
@@ -699,16 +700,19 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 				const weekNumbers = (currentViewContext?.config?.get('weekNumbers') as boolean) ?? calendarSettings.weekNumbers;
 				const nowIndicator = (currentViewContext?.config?.get('nowIndicator') as boolean) ?? calendarSettings.nowIndicator;
 
-				// Validate and sanitize time settings
-				const sanitizedTimeSettings = sanitizeTimeSettings(calendarSettings);
+				// Get calendar settings from config with defaults
+				const slotMinTime = (currentViewContext?.config?.get('slotMinTime') as string) ?? calendarSettings.slotMinTime;
+				const slotMaxTime = (currentViewContext?.config?.get('slotMaxTime') as string) ?? calendarSettings.slotMaxTime;
+				const slotDuration = (currentViewContext?.config?.get('slotDuration') as string) ?? calendarSettings.slotDuration;
+				const firstDayStr = (currentViewContext?.config?.get('firstDay') as string) ?? String(calendarSettings.firstDay);
+				const firstDay = parseInt(firstDayStr, 10);
 
-				// Validate slotDuration
-				const isValidDuration = (dur: string): boolean => {
-					return typeof dur === 'string' && /^\d{2}:\d{2}(:\d{2})?$/.test(dur);
-				};
-				const slotDuration = isValidDuration(calendarSettings.slotDuration)
-					? calendarSettings.slotDuration
-					: "00:30:00";
+				// Validate and sanitize time settings
+				const sanitizedTimeSettings = sanitizeTimeSettings({
+					slotMinTime,
+					slotMaxTime,
+					slotDuration,
+				});
 
 				// Validate defaultView
 				const validViews = ['dayGridMonth', 'timeGridWeek', 'timeGridDay', 'listWeek', 'multiMonthYear'];
@@ -720,10 +724,6 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 				}
 
 				// Validate numeric settings
-				const firstDay = typeof calendarSettings.firstDay === 'number' &&
-					calendarSettings.firstDay >= 0 && calendarSettings.firstDay <= 6
-					? calendarSettings.firstDay
-					: 0;
 				const eventMinHeight = typeof calendarSettings.eventMinHeight === 'number' &&
 					calendarSettings.eventMinHeight > 0
 					? calendarSettings.eventMinHeight
@@ -764,7 +764,7 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 					slotMinTime: sanitizedTimeSettings.slotMinTime,
 					slotMaxTime: sanitizedTimeSettings.slotMaxTime,
 					scrollTime: sanitizedTimeSettings.scrollTime,
-					slotDuration: slotDuration,
+					slotDuration: sanitizedTimeSettings.slotDuration,
 					allDaySlot: true,
 					eventMinHeight: eventMinHeight,
 					eventTimeFormat: {

@@ -75,6 +75,48 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 										displayName: "Show timeblocks",
 										default: calendarSettings.defaultShowTimeblocks,
 									},
+								],
+							},
+							{
+								type: "group",
+								displayName: "Calendar settings",
+								items: [
+									{
+										type: "text",
+										key: "slotMinTime",
+										displayName: "Day start time",
+										default: calendarSettings.slotMinTime,
+										placeholder: "HH:mm:ss (e.g., 08:00:00)",
+									},
+									{
+										type: "text",
+										key: "slotMaxTime",
+										displayName: "Day end time",
+										default: calendarSettings.slotMaxTime,
+										placeholder: "HH:mm:ss (e.g., 20:00:00)",
+									},
+									{
+										type: "text",
+										key: "slotDuration",
+										displayName: "Time slot duration",
+										default: calendarSettings.slotDuration,
+										placeholder: "HH:mm:ss (e.g., 00:30:00)",
+									},
+									{
+										type: "dropdown",
+										key: "firstDay",
+										displayName: "Week starts on",
+										default: String(calendarSettings.firstDay),
+										options: {
+											"0": "Sunday",
+											"1": "Monday",
+											"2": "Tuesday",
+											"3": "Wednesday",
+											"4": "Thursday",
+											"5": "Friday",
+											"6": "Saturday",
+										},
+									},
 									{
 										type: "toggle",
 										key: "weekNumbers",
