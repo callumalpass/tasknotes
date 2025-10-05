@@ -25,6 +25,17 @@ Example:
 
 -->
 
+## Added
+
+- Added grouped rendering support for Bases integration list and kanban views
+  - List view displays collapsible groups with toggle controls
+  - Kanban view renders grouped columns with drag-drop support
+  - Automatically detects ungrouped views and renders as flat list
+
+## Changed
+
+- Migrated Bases integration to use public API (Bases 1.10.0+) with graceful fallback to internal API for older versions
+
 ## Fixed
 
 - (#816) Fixed template variables not processing in ICS subscription note folder paths
