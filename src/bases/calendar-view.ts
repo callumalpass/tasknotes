@@ -332,9 +332,12 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 
 				let cardElement: HTMLElement | null = null;
 
+				// Get visible properties from Bases view configuration
+				const visibleProperties = currentViewContext?.config?.getOrder?.() || undefined;
+
 				// Render task events with TaskCard
 				if (taskInfo && eventType !== 'ics' && eventType !== 'property-based') {
-					cardElement = createTaskCard(taskInfo, plugin);
+					cardElement = createTaskCard(taskInfo, plugin, visibleProperties);
 				}
 				// Render ICS events with ICSCard
 				else if (icsEvent && eventType === 'ics') {
