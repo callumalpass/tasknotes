@@ -89,10 +89,20 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 										options: {
 											"dayGridMonth": "Month",
 											"timeGridWeek": "Week",
+											"timeGridCustom": "Custom days",
 											"timeGridDay": "Day",
 											"listWeek": "List",
 											"multiMonthYear": "Year",
 										},
+									},
+									{
+										type: "slider",
+										key: "customDayCount",
+										displayName: "Custom day count",
+										default: calendarSettings.customDayCount || 3,
+										min: 1,
+										max: 14,
+										step: 1,
 									},
 									{
 										type: "text",

@@ -714,9 +714,10 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 					slotDuration,
 				});
 
-				// Get calendar view from config with validation
+				// Get calendar view and custom day count from config with validation
 				const configView = (currentViewContext?.config?.get('calendarView') as string) ?? calendarSettings.defaultView;
-				const validViews = ['dayGridMonth', 'timeGridWeek', 'timeGridDay', 'listWeek', 'multiMonthYear'];
+				const customDayCount = (currentViewContext?.config?.get('customDayCount') as number) ?? calendarSettings.customDayCount ?? 3;
+				const validViews = ['dayGridMonth', 'timeGridWeek', 'timeGridCustom', 'timeGridDay', 'listWeek', 'multiMonthYear'];
 				const defaultView = validViews.includes(configView)
 					? configView
 					: "dayGridMonth";
@@ -743,13 +744,20 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 					headerToolbar: {
 						left: "prev,next today",
 						center: "title",
-						right: "dayGridMonth,timeGridWeek,timeGridDay",
+						right: "dayGridMonth,timeGridWeek,timeGridCustom,timeGridDay",
 					},
 					buttonText: {
 						today: "Today",
 						month: "M",
 						week: "W",
 						day: "D",
+					},
+					views: {
+						timeGridCustom: {
+							type: 'timeGrid',
+							duration: { days: customDayCount },
+							buttonText: `${customDayCount}D`,
+						},
 					},
 					height: "100%",
 					editable: true, // Enable drag and drop
@@ -894,11 +902,33 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 					initializeCalendar();
 				}
 
-				// Check if view needs to be changed (from dropdown)
+				// Check if view or custom day count needs to be changed
 				if (calendar && viewContext?.config) {
 					const configView = viewContext.config.get('calendarView') as string;
 					const currentView = calendar.view?.type;
+					const newCustomDayCount = (viewContext.config.get('customDayCount') as number) ?? plugin.settings.calendarViewSettings.customDayCount ?? 3;
 
+					// Update custom day view configuration if count changed
+					const currentCustomView = (calendar as any).options?.views?.timeGridCustom;
+					if (currentCustomView && currentCustomView.duration?.days !== newCustomDayCount) {
+						try {
+							calendar.setOption('views', {
+								timeGridCustom: {
+									type: 'timeGrid',
+									duration: { days: newCustomDayCount },
+									buttonText: `${newCustomDayCount}D`,
+								},
+							});
+							// Re-render if currently on custom view
+							if (currentView === 'timeGridCustom') {
+								calendar.changeView('timeGridCustom');
+							}
+						} catch (viewError) {
+							console.debug("[TaskNotes][Bases][Calendar] Error updating custom view:", viewError);
+						}
+					}
+
+					// Change view if different from current
 					if (configView && currentView && configView !== currentView) {
 						try {
 							calendar.changeView(configView);
