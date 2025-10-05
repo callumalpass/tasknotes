@@ -368,8 +368,18 @@ export async function renderGroupedTasksInBasesView(
 	if (groupedData.length === 1) {
 		const singleGroup = groupedData[0];
 		const groupKey = singleGroup.key?.data;
+		const groupKeyStr = String(groupKey);
+		console.debug("[TaskNotes][Bases] Single group detected:", {
+			groupKey,
+			groupKeyStr,
+			keyType: typeof groupKey,
+			isNull: groupKey === null,
+			isUndefined: groupKey === undefined,
+			isEmpty: groupKey === "",
+		});
 		// If the key is null, undefined, empty string, or "Unknown", treat as ungrouped
-		if (groupKey === null || groupKey === undefined || groupKey === "" || String(groupKey) === "Unknown") {
+		if (groupKey === null || groupKey === undefined || groupKey === "" || groupKeyStr === "null" || groupKeyStr === "undefined" || groupKeyStr === "Unknown") {
+			console.debug("[TaskNotes][Bases] Rendering as flat list (no grouping)");
 			// Render as flat list without group headers
 			await renderTaskNotesInBasesView(container, taskNotes, plugin, viewContext, taskElementsMap);
 			return;
@@ -496,14 +506,28 @@ export async function renderGroupedTasksInBasesView(
 			cls: "agenda-view__item-count",
 		});
 
+		// Create task cards container BEFORE adding click handler
+		const taskCardsContainer = document.createElement("div");
+		taskCardsContainer.className = "tasks-container task-cards";
+		groupSection.appendChild(taskCardsContainer);
+
 		// Add click handler for toggle
 		headerElement.addEventListener("click", (e: MouseEvent) => {
 			const target = e.target as HTMLElement;
 			// Don't toggle if clicking on a link
 			if (target.closest("a")) return;
 
+			e.preventDefault();
+			e.stopPropagation();
+
 			const isCollapsed = groupSection.classList.toggle("is-collapsed");
 			toggleBtn.setAttribute("aria-expanded", String(!isCollapsed));
+
+			console.debug("[TaskNotes][Bases] Group toggled:", {
+				group: groupName,
+				isCollapsed,
+				classes: groupSection.className
+			});
 
 			// Toggle task cards visibility
 			if (isCollapsed) {
@@ -512,11 +536,6 @@ export async function renderGroupedTasksInBasesView(
 				taskCardsContainer.style.display = "";
 			}
 		});
-
-		// Create task cards container
-		const taskCardsContainer = document.createElement("div");
-		taskCardsContainer.className = "tasks-container task-cards";
-		groupSection.appendChild(taskCardsContainer);
 
 		// Collect TaskInfo for this group
 		const groupTasks: TaskInfo[] = [];
