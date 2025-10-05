@@ -304,6 +304,14 @@
     border: 1px solid var(--interactive-accent);
 }
 
+.tasknotes-plugin .open-note-button:focus-visible {
+	box-shadow: 0 0 0 3px var(--background-modifier-border-focus);
+}
+
+.tasknotes-plugin .archive-button:focus-visible {
+	box-shadow: 0 0 0 3px var(--background-modifier-border-focus);
+}
+
 .tasknotes-plugin .button-spacer {
     flex: 1;
 }
@@ -335,6 +343,10 @@
     box-shadow: none;
 }
 
+.tasknotes-plugin .save-button:focus-visible {
+	box-shadow: 0 0 0 3px var(--background-modifier-border-focus);
+}
+
 .tasknotes-plugin .cancel-button {
     background: transparent;
     color: var(--tn-text-normal);
@@ -346,6 +358,10 @@
 .tasknotes-plugin .cancel-button:hover {
     background: var(--tn-interactive-hover);
     box-shadow: none;
+}
+
+.tasknotes-plugin .cancel-button:focus-visible {
+	box-shadow: 0 0 0 3px var(--background-modifier-border-focus);
 }
 
 /* =====================================================================
@@ -394,8 +410,9 @@
    ===================================================================== */
 
 .tasknotes-plugin .action-icon:focus-visible {
-    outline: 2px solid var(--interactive-accent);
-    outline-offset: 2px;
+	outline: none;
+	box-shadow: 0 0 0 1px var(--interactive-accent);
+	transition: box-shadow 0.15s ease;
 }
 
 .tasknotes-plugin .title-input:focus-visible,

@@ -2,6 +2,7 @@ import { Menu } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { TaskInfo, Reminder } from "../types";
 import { ReminderModal } from "../modals/ReminderModal";
+import { ContextMenu } from "./ContextMenu";
 
 export class ReminderContextMenu {
 	private plugin: TaskNotesPlugin;
@@ -21,8 +22,8 @@ export class ReminderContextMenu {
 		this.onUpdate = onUpdate;
 	}
 
-	show(event?: MouseEvent): void {
-		const menu = new Menu();
+	show(event: UIEvent): void {
+		const menu = new ContextMenu();
 
 		// Quick Add sections
 		this.addQuickRemindersSection(
@@ -62,11 +63,7 @@ export class ReminderContextMenu {
 			});
 		}
 
-		if (event) {
-			menu.showAtMouseEvent(event);
-		} else {
-			menu.showAtMouseEvent(new MouseEvent("contextmenu"));
-		}
+		menu.show(event)
 	}
 
 	private addQuickRemindersSection(menu: Menu, anchor: "due" | "scheduled", title: string): void {
@@ -80,23 +77,15 @@ export class ReminderContextMenu {
 			return;
 		}
 
-		// Add submenu for quick reminder options
-		menu.addItem((item) => {
+		menu.addItem(item => {
 			item.setTitle(title)
-				.setIcon("bell")
-				.onClick((event) => {
-					// Only pass MouseEvent, ignore KeyboardEvent
-					this.showQuickReminderSubmenu(
-						anchor,
-						event instanceof MouseEvent ? event : undefined
-					);
-				});
-		});
+			item.setIcon("bell")
+
+			this.addQuickReminderSubmenu(item.setSubmenu(), anchor)
+		})
 	}
 
-	private showQuickReminderSubmenu(anchor: "due" | "scheduled", event?: MouseEvent): void {
-		const menu = new Menu();
-
+	private addQuickReminderSubmenu(subMenu: Menu, anchor: "due" | "scheduled"): void {
 		const quickOptions = [
 			{
 				label: this.plugin.i18n.translate(
@@ -131,18 +120,12 @@ export class ReminderContextMenu {
 		];
 
 		quickOptions.forEach((option) => {
-			menu.addItem((item) => {
+			subMenu.addItem((item) => {
 				item.setTitle(option.label).onClick(async () => {
 					await this.addQuickReminder(anchor, option.offset, option.label);
 				});
 			});
 		});
-
-		if (event) {
-			menu.showAtMouseEvent(event);
-		} else {
-			menu.showAtMouseEvent(new MouseEvent("contextmenu"));
-		}
 	}
 
 	private async addQuickReminder(

@@ -16,6 +16,7 @@ import {
 	normalizeDependencyEntry,
 } from "../utils/dependencyUtils";
 import { generateLink } from "../utils/linkUtils";
+import { ContextMenu } from "./ContextMenu";
 
 export interface TaskContextMenuOptions {
 	task: TaskInfo;
@@ -25,11 +26,11 @@ export interface TaskContextMenuOptions {
 }
 
 export class TaskContextMenu {
-	private menu: Menu;
+	private menu: ContextMenu;
 	private options: TaskContextMenuOptions;
 
 	constructor(options: TaskContextMenuOptions) {
-		this.menu = new Menu();
+		this.menu = new ContextMenu();
 		this.options = options;
 		this.buildMenu();
 	}
