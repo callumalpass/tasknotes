@@ -438,6 +438,9 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 					// Remove default FullCalendar classes that interfere with card styling
 					arg.el.classList.remove('fc-event', 'fc-event-start', 'fc-event-end');
 					return; // Skip default handling
+				} else {
+					// Fallback: Add consistent styling to events without custom cards
+					arg.el.classList.add('fc-event-default-list');
 				}
 			}
 
