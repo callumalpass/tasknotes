@@ -19,12 +19,7 @@ import { createTaskClickHandler, createTaskHoverHandler } from "../utils/clickHa
 import { TimeblockInfoModal } from "../modals/TimeblockInfoModal";
 import { format, startOfDay, endOfDay } from "date-fns";
 import { Calendar } from "@fullcalendar/core";
-import {
-	createDailyNote,
-	getDailyNote,
-	getAllDailyNotes,
-	appHasDailyNotesPluginLoaded,
-} from "obsidian-daily-notes-interface";
+import { appHasDailyNotesPluginLoaded } from "obsidian-daily-notes-interface";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import multiMonthPlugin from "@fullcalendar/multimonth";
@@ -97,6 +92,8 @@ import {
 	showTimeblockInfoModal,
 	applyTimeblockStyling,
 	generateTimeblockTooltip,
+	handleDateTitleClick,
+	addTaskHoverPreview,
 } from "../bases/calendar-core";
 
 // Extended calendar event with timeblock support
@@ -685,7 +682,7 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 
 			// Enable clickable date titles
 			navLinks: true,
-			navLinkDayClick: this.handleDateTitleClick.bind(this),
+			navLinkDayClick: (date: Date) => handleDateTitleClick(date, this.plugin),
 
 			// Time view configuration
 			slotMinTime: sanitizedTimeSettings.slotMinTime,
@@ -1245,49 +1242,6 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 		modal.open();
 	}
 
-	/**
-	 * Handle clicking on a date title to open/create daily note
-	 */
-	async handleDateTitleClick(date: Date) {
-		try {
-			// Check if Daily Notes plugin is enabled
-			if (!appHasDailyNotesPluginLoaded()) {
-				new Notice(
-					"Daily Notes core plugin is not enabled. Please enable it in Settings > Core plugins."
-				);
-				return;
-			}
-
-			// Convert date to moment for the API
-			const moment = (window as any).moment(date);
-
-			// Get all daily notes to check if one exists for this date
-			const allDailyNotes = getAllDailyNotes();
-			let dailyNote = getDailyNote(moment, allDailyNotes);
-
-			if (!dailyNote) {
-				// Daily note doesn't exist, create it
-				try {
-					dailyNote = await createDailyNote(moment);
-				} catch (error) {
-					const errorMessage = error instanceof Error ? error.message : String(error);
-					console.error("Failed to create daily note:", error);
-					new Notice(`Failed to create daily note: ${errorMessage}`);
-					return;
-				}
-			}
-
-			// Open the daily note
-			if (dailyNote) {
-				await this.app.workspace.getLeaf(false).openFile(dailyNote);
-			}
-		} catch (error) {
-			const errorMessage = error instanceof Error ? error.message : String(error);
-			console.error("Failed to navigate to daily note:", error);
-			new Notice(`Failed to navigate to daily note: ${errorMessage}`);
-		}
-	}
-
 	async getTimeblockEvents(): Promise<CalendarEvent[]> {
 		// Check if Daily Notes plugin is enabled
 		if (!appHasDailyNotesPluginLoaded()) {
@@ -1326,10 +1280,19 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 		}
 
 		if (eventType === "timeEntry") {
-			// Time entries open the task edit modal
-			if (taskInfo && jsEvent.button === 0 && !jsEvent.ctrlKey && !jsEvent.metaKey) {
-				const editModal = new TaskEditModal(this.app, this.plugin, { task: taskInfo });
-				editModal.open();
+			// Time entries: Ctrl/Cmd+click opens in new tab, regular click opens edit modal
+			if (taskInfo && jsEvent.button === 0) {
+				if (jsEvent.ctrlKey || jsEvent.metaKey) {
+					// Ctrl/Cmd + Click: Open task in new tab
+					const file = this.app.vault.getAbstractFileByPath(taskInfo.path);
+					if (file instanceof TFile) {
+						this.app.workspace.openLinkText(taskInfo.path, "", true);
+					}
+				} else {
+					// Regular click: Open edit modal
+					const editModal = new TaskEditModal(this.app, this.plugin, { task: taskInfo });
+					editModal.open();
+				}
 			}
 			return;
 		}
@@ -1798,19 +1761,7 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 		if (taskInfo) {
 			// Add hover preview functionality for all task-related events
 			if (eventType !== "ics") {
-				arg.el.addEventListener("mouseover", (event: MouseEvent) => {
-					const file = this.plugin.app.vault.getAbstractFileByPath(taskInfo.path);
-					if (file) {
-						this.plugin.app.workspace.trigger("hover-link", {
-							event,
-							source: "tasknotes-advanced-calendar",
-							hoverParent: arg.el,
-							targetEl: arg.el,
-							linktext: taskInfo.path,
-							sourcePath: taskInfo.path,
-						});
-					}
-				});
+				addTaskHoverPreview(arg.el, taskInfo, this.plugin, "tasknotes-advanced-calendar");
 			}
 
 			// Add context menu functionality

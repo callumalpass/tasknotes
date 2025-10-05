@@ -15,7 +15,7 @@ import listPlugin from "@fullcalendar/list";
 import interactionPlugin from "@fullcalendar/interaction";
 import { startOfDay, endOfDay, format } from "date-fns";
 import { getTodayLocal, normalizeCalendarBoundariesToUTC } from "../utils/dateUtils";
-import { generateCalendarEvents, CalendarEvent, generateTaskTooltip, applyRecurringTaskStyling, handleRecurringTaskDrop, getTargetDateForEvent, handleTimeblockCreation, handleTimeblockDrop, handleTimeblockResize, showTimeblockInfoModal, applyTimeblockStyling, generateTimeblockTooltip } from "./calendar-core";
+import { generateCalendarEvents, CalendarEvent, generateTaskTooltip, applyRecurringTaskStyling, handleRecurringTaskDrop, getTargetDateForEvent, handleTimeblockCreation, handleTimeblockDrop, handleTimeblockResize, showTimeblockInfoModal, applyTimeblockStyling, generateTimeblockTooltip, handleDateTitleClick, addTaskHoverPreview } from "./calendar-core";
 import { getBasesSortComparator } from "./sorting";
 import { TaskContextMenu } from "../components/TaskContextMenu";
 
@@ -290,6 +290,11 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 				setTooltip(arg.el, tooltipText);
 			}
 
+			// Add hover preview for tasks (Ctrl+hover to preview daily note)
+			if (taskInfo && eventType !== "ics") {
+				addTaskHoverPreview(arg.el, taskInfo, plugin, "tasknotes-bases-calendar");
+			}
+
 			// Add context menu for tasks (right-click)
 			if (taskInfo && eventType !== "timeEntry") {
 				arg.el.addEventListener("contextmenu", (e: MouseEvent) => {
@@ -344,12 +349,13 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 
 				// Get view options from config (public API 1.10.0+)
 				const showTimeblocks = (ctx?.config?.get('showTimeblocks') as boolean) ?? false;
+				const showTimeEntries = (ctx?.config?.get('showTimeEntries') as boolean) ?? true;
 
 				// Generate calendar events using shared logic
 				const events = await generateCalendarEvents(taskNotes, plugin, {
 					showScheduled: true,
 					showDue: true,
-					showTimeEntries: true,
+					showTimeEntries: showTimeEntries,
 					showRecurring: true,
 					showICSEvents: false, // ICS events not available in Bases context
 					showTimeblocks: showTimeblocks && plugin.settings.calendarViewSettings.enableTimeblocking,
@@ -478,6 +484,9 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 					weekNumbers: !!calendarSettings.weekNumbers,
 					weekends: calendarSettings.showWeekends ?? true,
 					nowIndicator: calendarSettings.nowIndicator ?? true,
+					// Enable clickable date titles
+					navLinks: true,
+					navLinkDayClick: (date: Date) => handleDateTitleClick(date, plugin),
 					slotMinTime: sanitizedTimeSettings.slotMinTime,
 					slotMaxTime: sanitizedTimeSettings.slotMaxTime,
 					scrollTime: sanitizedTimeSettings.scrollTime,
@@ -516,6 +525,7 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 					eventClick: (info: any) => {
 						try {
 							const { taskInfo, timeblock, eventType } = info.event.extendedProps || {};
+							const jsEvent = info.jsEvent;
 
 							// Handle timeblock click
 							if (eventType === "timeblock" && timeblock) {
@@ -524,9 +534,10 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 								return;
 							}
 
-							// Handle task click
+							// Handle task click - Ctrl/Cmd+click opens in new tab
 							if (taskInfo?.path) {
-								plugin.app.workspace.openLinkText(taskInfo.path, "", false);
+								const openInNewTab = jsEvent && (jsEvent.ctrlKey || jsEvent.metaKey);
+								plugin.app.workspace.openLinkText(taskInfo.path, "", openInNewTab);
 							}
 						} catch (error) {
 							console.error("[TaskNotes][Bases][Calendar] Error in eventClick:", error);

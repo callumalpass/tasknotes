@@ -40,6 +40,12 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 					options: () => [
 						{
 							type: "toggle",
+							key: "showTimeEntries",
+							displayName: "Show time entries",
+							default: true,
+						},
+						{
+							type: "toggle",
 							key: "showTimeblocks",
 							displayName: "Show timeblocks",
 							default: false,
