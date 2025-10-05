@@ -323,7 +323,40 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 				return;
 			}
 
-			const { taskInfo, timeblock, icsEvent, eventType, isCompleted } = arg.event.extendedProps;
+			const { taskInfo, timeblock, icsEvent, eventType, isCompleted, basesEntry } = arg.event.extendedProps;
+
+			// Custom rendering for list view - replace with card components
+			if (arg.view.type === 'listWeek') {
+				// Clear the default content
+				arg.el.innerHTML = '';
+
+				let cardElement: HTMLElement | null = null;
+
+				// Render task events with TaskCard
+				if (taskInfo && eventType !== 'ics' && eventType !== 'property-based') {
+					cardElement = createTaskCard(taskInfo, plugin);
+				}
+				// Render ICS events with ICSCard
+				else if (icsEvent && eventType === 'ics') {
+					cardElement = createICSEventCard(icsEvent, plugin);
+				}
+				// Render property-based events with PropertyEventCard
+				else if (eventType === 'property-based' && basesEntry) {
+					cardElement = createPropertyEventCard(
+						basesEntry,
+						plugin,
+						currentViewContext?.config
+					);
+				}
+
+				// Replace the event element content with the card
+				if (cardElement) {
+					arg.el.appendChild(cardElement);
+					// Remove default FullCalendar classes that interfere with card styling
+					arg.el.classList.remove('fc-event', 'fc-event-start', 'fc-event-end');
+					return; // Skip default handling
+				}
+			}
 
 			// Set event type attribute
 			arg.el.setAttribute("data-event-type", eventType || "unknown");
