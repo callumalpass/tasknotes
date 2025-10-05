@@ -14,7 +14,7 @@ import multiMonthPlugin from "@fullcalendar/multimonth";
 import listPlugin from "@fullcalendar/list";
 import interactionPlugin from "@fullcalendar/interaction";
 import { startOfDay, endOfDay, format } from "date-fns";
-import { getTodayLocal, normalizeCalendarBoundariesToUTC } from "../utils/dateUtils";
+import { getTodayLocal, normalizeCalendarBoundariesToUTC, parseDateToUTC, getTodayString } from "../utils/dateUtils";
 import { generateCalendarEvents, CalendarEvent, generateTaskTooltip, applyRecurringTaskStyling, handleRecurringTaskDrop, getTargetDateForEvent, handleTimeblockCreation, handleTimeblockDrop, handleTimeblockResize, showTimeblockInfoModal, applyTimeblockStyling, generateTimeblockTooltip, handleDateTitleClick, addTaskHoverPreview, createICSEvent } from "./calendar-core";
 import { getBasesSortComparator } from "./sorting";
 import { TaskContextMenu } from "../components/TaskContextMenu";
@@ -399,7 +399,15 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 					}
 
 					// Get the target date from the event for proper recurring task completion
-					const targetDate = arg.event.start ? new Date(arg.event.start) : new Date();
+					// Use UTC anchor pattern: FullCalendar gives us a Date object, format to YYYY-MM-DD string then parse to UTC
+					let targetDate: Date;
+					if (arg.event.start) {
+						const dateStr = format(arg.event.start, 'yyyy-MM-dd');
+						targetDate = parseDateToUTC(dateStr);
+					} else {
+						const todayStr = getTodayString();
+						targetDate = parseDateToUTC(todayStr);
+					}
 
 					cardElement = createTaskCard(enrichedTask, plugin, visibleProperties, {
 						targetDate: targetDate,
