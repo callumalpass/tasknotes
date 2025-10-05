@@ -486,14 +486,15 @@ export function buildTasknotesKanbanViewFactory(plugin: TaskNotesPlugin) {
 							}
 						}
 
-						// Refresh the view
-						await render();
+						// Don't manually render - let Bases detect the property change
+						// and trigger onDataUpdated() with proper context
+						// This prevents flickering from renders without proper 'this' context
 					} else if (task && !groupByPropertyId) {
 						// Fallback to status update when no groupBy config
 						await plugin.updateTaskProperty(task, "status", targetColumnId, {
 							silent: true,
 						});
-						await render();
+						// Don't manually render - let Bases detect the change
 					}
 				} catch (e) {
 					console.error("[TaskNotes][Bases] Move failed:", e);
