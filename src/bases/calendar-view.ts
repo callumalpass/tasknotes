@@ -796,37 +796,6 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 					select: handleDateSelect,
 					eventDrop: handleEventDrop,
 					eventResize: handleEventResize,
-					// Custom content renderer for list view - use TaskCard, ICSCard, and PropertyEventCard
-					eventContent: (arg: any) => {
-						// Only customize list view rendering
-						if (arg.view.type === 'listWeek') {
-							const { taskInfo, icsEvent, eventType, basesEntry } = arg.event.extendedProps || {};
-
-							// Render task events with TaskCard
-							if (taskInfo && eventType !== 'ics' && eventType !== 'property-based') {
-								const taskCard = createTaskCard(taskInfo, plugin);
-								return { domNodes: [taskCard] };
-							}
-
-							// Render ICS events with ICSCard
-							if (icsEvent && eventType === 'ics') {
-								const icsCard = createICSEventCard(icsEvent, plugin);
-								return { domNodes: [icsCard] };
-							}
-
-							// Render property-based events with PropertyEventCard
-							if (eventType === 'property-based' && basesEntry) {
-								const propertyCard = createPropertyEventCard(
-									basesEntry,
-									plugin,
-									currentViewContext?.config
-								);
-								return { domNodes: [propertyCard] };
-							}
-						}
-						// Return false to use default rendering for other views
-						return false;
-					},
 					eventDidMount: handleEventDidMount,
 					eventAllow: (dropInfo: any) => {
 						// Allow all drops to proceed visually
