@@ -35,7 +35,7 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 			if (requireApiVersion("1.10.0")) {
 				calendarSuccess = registerBasesView(plugin, "tasknotesCalendar", {
 					name: "TaskNotes Calendar",
-					icon: "calendar",
+					icon: "tasknotes-simple",
 					factory: buildTasknotesCalendarViewFactory(plugin),
 					options: () => {
 						const calendarSettings = plugin.settings.calendarViewSettings;
