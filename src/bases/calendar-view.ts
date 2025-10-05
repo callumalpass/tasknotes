@@ -839,11 +839,17 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 				// Get display options from config with defaults
 				const weekNumbers = (currentViewContext?.config?.get('weekNumbers') as boolean) ?? calendarSettings.weekNumbers;
 				const nowIndicator = (currentViewContext?.config?.get('nowIndicator') as boolean) ?? calendarSettings.nowIndicator;
+				const showWeekends = (currentViewContext?.config?.get('showWeekends') as boolean) ?? calendarSettings.showWeekends ?? true;
+				const showAllDaySlot = (currentViewContext?.config?.get('showAllDaySlot') as boolean) ?? true;
+				const showTodayHighlight = (currentViewContext?.config?.get('showTodayHighlight') as boolean) ?? calendarSettings.showTodayHighlight ?? true;
+				const selectMirror = (currentViewContext?.config?.get('selectMirror') as boolean) ?? calendarSettings.selectMirror ?? true;
 
 				// Get calendar settings from config with defaults
 				const slotMinTime = (currentViewContext?.config?.get('slotMinTime') as string) ?? calendarSettings.slotMinTime;
 				const slotMaxTime = (currentViewContext?.config?.get('slotMaxTime') as string) ?? calendarSettings.slotMaxTime;
 				const slotDuration = (currentViewContext?.config?.get('slotDuration') as string) ?? calendarSettings.slotDuration;
+				const scrollTime = (currentViewContext?.config?.get('scrollTime') as string) ?? calendarSettings.scrollTime;
+				const timeFormat = (currentViewContext?.config?.get('timeFormat') as string) ?? calendarSettings.timeFormat ?? "12";
 				const firstDayStr = (currentViewContext?.config?.get('firstDay') as string) ?? String(calendarSettings.firstDay);
 				const firstDay = parseInt(firstDayStr, 10);
 
@@ -852,6 +858,7 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 					slotMinTime,
 					slotMaxTime,
 					slotDuration,
+					scrollTime,
 				});
 
 				// Get calendar view and custom day count from config with validation
@@ -866,10 +873,12 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 				}
 
 				// Validate numeric settings
-				const eventMinHeight = typeof calendarSettings.eventMinHeight === 'number' &&
-					calendarSettings.eventMinHeight > 0
-					? calendarSettings.eventMinHeight
-					: 20;
+				const configEventMinHeight = (currentViewContext?.config?.get('eventMinHeight') as number);
+				const eventMinHeight = typeof configEventMinHeight === 'number' && configEventMinHeight > 0
+					? configEventMinHeight
+					: (typeof calendarSettings.eventMinHeight === 'number' && calendarSettings.eventMinHeight > 0
+						? calendarSettings.eventMinHeight
+						: 20);
 
 				calendar = new Calendar(calendarEl, {
 					plugins: [
@@ -904,10 +913,11 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 					height: "100%",
 					editable: true, // Enable drag and drop
 					selectable: true, // Enable date selection for task creation
+					selectMirror: selectMirror,
 					locale: navigator.language || "en",
 					firstDay: firstDay,
 					weekNumbers: !!weekNumbers,
-					weekends: calendarSettings.showWeekends ?? true,
+					weekends: showWeekends,
 					nowIndicator: nowIndicator ?? true,
 					// Enable clickable date titles
 					navLinks: true,
@@ -916,17 +926,17 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 					slotMaxTime: sanitizedTimeSettings.slotMaxTime,
 					scrollTime: sanitizedTimeSettings.scrollTime,
 					slotDuration: sanitizedTimeSettings.slotDuration,
-					allDaySlot: true,
+					allDaySlot: showAllDaySlot,
 					eventMinHeight: eventMinHeight,
 					eventTimeFormat: {
 						hour: "2-digit",
 						minute: "2-digit",
-						hour12: calendarSettings.timeFormat === "12",
+						hour12: timeFormat === "12",
 					},
 					slotLabelFormat: {
 						hour: "2-digit",
 						minute: "2-digit",
-						hour12: calendarSettings.timeFormat === "12",
+						hour12: timeFormat === "12",
 					},
 					// Event handlers
 					select: handleDateSelect,
@@ -1005,6 +1015,13 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 					if (calendar) {
 						try {
 							calendar.render();
+
+							// Apply today highlight setting
+							if (showTodayHighlight) {
+								calendarEl.removeClass("hide-today-highlight");
+							} else {
+								calendarEl.addClass("hide-today-highlight");
+							}
 						} catch (renderError) {
 							console.error("[TaskNotes][Bases][Calendar] Error rendering calendar:", renderError);
 						}
