@@ -74,6 +74,11 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 		viewContainerEl.appendChild(root);
 		currentRoot = root;
 
+		// Overdue section container (will be populated dynamically)
+		const overdueContainer = document.createElement("div");
+		overdueContainer.id = "bases-calendar-overdue-container";
+		root.appendChild(overdueContainer);
+
 		// Calendar container
 		const calendarEl = document.createElement("div");
 		calendarEl.id = "bases-calendar";
@@ -1017,6 +1022,111 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 		};
 
 		// Render function
+		// Render overdue section
+		const renderOverdueSection = async () => {
+			const overdueEl = overdueContainer;
+			if (!overdueEl) return;
+
+			// Clear existing content
+			overdueEl.innerHTML = '';
+
+			// Get overdue tasks (use empty filter query to match all)
+			const overdueTasks = await plugin.filterService.getOverdueTasks({
+				type: 'group',
+				id: 'bases-calendar-overdue',
+				conjunction: 'and',
+				children: []
+			});
+
+			if (overdueTasks.length === 0) return;
+
+			// Create overdue section
+			const section = overdueEl.createDiv({ cls: 'bases-calendar-overdue-section' });
+
+			// Header
+			const header = section.createDiv({ cls: 'bases-calendar-overdue-header' });
+			header.createEl('h3', { text: `Overdue (${overdueTasks.length})` });
+
+			// Task container
+			const taskContainer = section.createDiv({ cls: 'bases-calendar-overdue-tasks' });
+
+			// Get visible properties
+			let visibleProperties: string[] | undefined = undefined;
+			if (currentViewContext?.config?.getOrder) {
+				const basesProperties = currentViewContext.config.getOrder();
+				visibleProperties = basesProperties.map((propId: string) => {
+					if (propId.startsWith('note.')) {
+						return propId.substring(5);
+					}
+					return propId;
+				});
+			}
+
+			// Render each overdue task
+			for (const task of overdueTasks) {
+				// Enrich with Bases data if available
+				const enrichedTask = { ...task };
+				const basesEntry = basesEntryByPath.get(task.path);
+
+				if (basesEntry) {
+					enrichedTask.basesData = {
+						formulaResults: {
+							cachedFormulaOutputs: {} as Record<string, any>
+						}
+					};
+
+					if (visibleProperties) {
+						for (const propId of visibleProperties) {
+							if (propId.startsWith('formula.')) {
+								const formulaName = propId.substring(8);
+								try {
+									const value = basesEntry.getValue?.(propId);
+									if (value) {
+										enrichedTask.basesData.formulaResults.cachedFormulaOutputs[formulaName] = value;
+									}
+								} catch (error) {
+									console.debug('[TaskNotes][Bases][Calendar] Error getting formula:', propId, error);
+								}
+							}
+						}
+					}
+
+					if (!enrichedTask.dateCreated) {
+						try {
+							const ctimeValue = basesEntry.getValue?.('file.ctime');
+							if (ctimeValue?.data) enrichedTask.dateCreated = ctimeValue.data;
+						} catch (error) {
+							console.debug('[TaskNotes][Bases][Calendar] Error getting file.ctime:', error);
+						}
+					}
+					if (!enrichedTask.dateModified) {
+						try {
+							const mtimeValue = basesEntry.getValue?.('file.mtime');
+							if (mtimeValue?.data) enrichedTask.dateModified = mtimeValue.data;
+						} catch (error) {
+							console.debug('[TaskNotes][Bases][Calendar] Error getting file.mtime:', error);
+						}
+					}
+				}
+
+				// Use today as target date for overdue tasks
+				const todayStr = getTodayString();
+				const targetDate = parseDateToUTC(todayStr);
+
+				const taskCard = createTaskCard(enrichedTask, plugin, visibleProperties, {
+					targetDate: targetDate,
+					showDueDate: true,
+					showCheckbox: false,
+					showArchiveButton: false,
+					showTimeTracking: false,
+					showRecurringControls: true,
+					groupByDate: false,
+				});
+
+				taskContainer.appendChild(taskCard);
+			}
+		};
+
 		const render = async function (this: any) {
 			if (!currentRoot) return;
 
@@ -1035,6 +1145,9 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 				if (!calendar) {
 					initializeCalendar();
 				}
+
+				// Render overdue section
+				await renderOverdueSection();
 
 				// Check if view or custom day count needs to be changed
 				if (calendar && viewContext?.config) {
