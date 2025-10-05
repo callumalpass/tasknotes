@@ -1,5 +1,6 @@
 import TaskNotesPlugin from "../main";
 import { TaskInfo } from "../types";
+import { setIcon } from "obsidian";
 
 export interface BasesDataItem {
 	key?: string;
@@ -369,17 +370,8 @@ export async function renderGroupedTasksInBasesView(
 		const singleGroup = groupedData[0];
 		const groupKey = singleGroup.key?.data;
 		const groupKeyStr = String(groupKey);
-		console.debug("[TaskNotes][Bases] Single group detected:", {
-			groupKey,
-			groupKeyStr,
-			keyType: typeof groupKey,
-			isNull: groupKey === null,
-			isUndefined: groupKey === undefined,
-			isEmpty: groupKey === "",
-		});
 		// If the key is null, undefined, empty string, or "Unknown", treat as ungrouped
 		if (groupKey === null || groupKey === undefined || groupKey === "" || groupKeyStr === "null" || groupKeyStr === "undefined" || groupKeyStr === "Unknown") {
-			console.debug("[TaskNotes][Bases] Rendering as flat list (no grouping)");
 			// Render as flat list without group headers
 			await renderTaskNotesInBasesView(container, taskNotes, plugin, viewContext, taskElementsMap);
 			return;
@@ -480,28 +472,14 @@ export async function renderGroupedTasksInBasesView(
 		toggleBtn.setAttribute("aria-expanded", "true");
 		headerElement.appendChild(toggleBtn);
 
-		// Try to add chevron icon
-		try {
-			const { setIcon } = await import("obsidian");
-			setIcon(toggleBtn, "chevron-right");
-			const svg = toggleBtn.querySelector("svg");
-			if (svg) {
-				svg.classList.add("chevron");
-				svg.setAttribute("width", "16");
-				svg.setAttribute("height", "16");
+		// Add chevron icon
+		setIcon(toggleBtn, "chevron-right");
 
-				console.debug("[TaskNotes][Bases] SVG setup:", {
-					tagName: svg.tagName,
-					className: svg.className,
-					classList: Array.from(svg.classList),
-					parent: toggleBtn.className,
-					innerHTML: svg.outerHTML.substring(0, 100)
-				});
-			}
-		} catch (error) {
-			// Fallback to text chevron
-			toggleBtn.textContent = "▸";
-			toggleBtn.classList.add("chevron-text");
+		const svg = toggleBtn.querySelector("svg");
+		if (svg) {
+			svg.classList.add("chevron");
+			svg.setAttribute("width", "16");
+			svg.setAttribute("height", "16");
 		}
 
 		// Format group name and add count
@@ -530,15 +508,6 @@ export async function renderGroupedTasksInBasesView(
 
 			const isCollapsed = groupSection.classList.toggle("is-collapsed");
 			toggleBtn.setAttribute("aria-expanded", String(!isCollapsed));
-
-			const svg = toggleBtn.querySelector("svg");
-			console.debug("[TaskNotes][Bases] Group toggled:", {
-				group: groupName,
-				isCollapsed,
-				classes: groupSection.className,
-				svgTransform: svg ? window.getComputedStyle(svg).transform : "no svg",
-				svgStyle: svg ? svg.getAttribute("style") : "no svg"
-			});
 
 			// Toggle task cards visibility
 			if (isCollapsed) {
