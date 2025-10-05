@@ -37,40 +37,61 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 					name: "TaskNotes Calendar",
 					icon: "calendar",
 					factory: buildTasknotesCalendarViewFactory(plugin),
-					options: () => [
-						{
-							type: "toggle",
-							key: "showTimeEntries",
-							displayName: "Show time entries",
-							default: true,
-						},
-						{
-							type: "toggle",
-							key: "showTimeblocks",
-							displayName: "Show timeblocks",
-							default: false,
-						},
-						{
-							type: "property",
-							key: "startDateProperty",
-							displayName: "Start date property",
-							placeholder: "Select property for start date/time",
-							filter: (prop) => {
-								// Only show date-type properties (we'll check this more carefully in the implementation)
-								return prop.startsWith("note.") || prop.startsWith("file.");
+					options: () => {
+						const options: any[] = [
+							{
+								type: "toggle",
+								key: "showTimeEntries",
+								displayName: "Show time entries",
+								default: true,
 							},
-						},
-						{
-							type: "property",
-							key: "endDateProperty",
-							displayName: "End date property (optional)",
-							placeholder: "Select property for end date/time",
-							filter: (prop) => {
-								// Only show date-type properties
-								return prop.startsWith("note.") || prop.startsWith("file.");
+							{
+								type: "toggle",
+								key: "showTimeblocks",
+								displayName: "Show timeblocks",
+								default: false,
 							},
-						},
-					],
+							{
+								type: "property",
+								key: "startDateProperty",
+								displayName: "Start date property",
+								placeholder: "Select property for start date/time",
+								filter: (prop: string) => {
+									// Only show date-type properties
+									return prop.startsWith("note.") || prop.startsWith("file.");
+								},
+							},
+							{
+								type: "property",
+								key: "endDateProperty",
+								displayName: "End date property (optional)",
+								placeholder: "Select property for end date/time",
+								filter: (prop: string) => {
+									// Only show date-type properties
+									return prop.startsWith("note.") || prop.startsWith("file.");
+								},
+							},
+						];
+
+						// Add ICS calendar selector if subscriptions are available
+						if (plugin.icsSubscriptionService) {
+							const subscriptions = plugin.icsSubscriptionService.getSubscriptions();
+							if (subscriptions.length > 0) {
+								options.push({
+									type: "multiselect",
+									key: "selectedICSCalendars",
+									displayName: "ICS calendars to show",
+									options: subscriptions.map(sub => ({
+										value: sub.id,
+										label: sub.name,
+									})),
+									default: [],
+								});
+							}
+						}
+
+						return options;
+					},
 				});
 			}
 

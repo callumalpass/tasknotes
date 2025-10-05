@@ -15,10 +15,11 @@ import listPlugin from "@fullcalendar/list";
 import interactionPlugin from "@fullcalendar/interaction";
 import { startOfDay, endOfDay, format } from "date-fns";
 import { getTodayLocal, normalizeCalendarBoundariesToUTC } from "../utils/dateUtils";
-import { generateCalendarEvents, CalendarEvent, generateTaskTooltip, applyRecurringTaskStyling, handleRecurringTaskDrop, getTargetDateForEvent, handleTimeblockCreation, handleTimeblockDrop, handleTimeblockResize, showTimeblockInfoModal, applyTimeblockStyling, generateTimeblockTooltip, handleDateTitleClick, addTaskHoverPreview } from "./calendar-core";
+import { generateCalendarEvents, CalendarEvent, generateTaskTooltip, applyRecurringTaskStyling, handleRecurringTaskDrop, getTargetDateForEvent, handleTimeblockCreation, handleTimeblockDrop, handleTimeblockResize, showTimeblockInfoModal, applyTimeblockStyling, generateTimeblockTooltip, handleDateTitleClick, addTaskHoverPreview, createICSEvent } from "./calendar-core";
 import { getBasesSortComparator } from "./sorting";
 import { TaskContextMenu } from "../components/TaskContextMenu";
 import { TFile } from "obsidian";
+import { ICSEventInfoModal } from "../modals/ICSEventInfoModal";
 
 interface BasesContainerLike {
 	results?: Map<any, any>;
@@ -499,6 +500,7 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 				const showTimeEntries = (ctx?.config?.get('showTimeEntries') as boolean) ?? true;
 				const startDateProperty = ctx?.config?.getAsPropertyId?.('startDateProperty');
 				const endDateProperty = ctx?.config?.getAsPropertyId?.('endDateProperty');
+				const selectedICSCalendars = (ctx?.config?.get('selectedICSCalendars') as string[]) ?? [];
 
 				const events: CalendarEvent[] = [];
 
@@ -598,6 +600,20 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 							}
 						} catch (error) {
 							console.warn("[TaskNotes][Bases][Calendar] Error processing entry:", error);
+						}
+					}
+				}
+
+				// Generate events from selected ICS calendars
+				if (selectedICSCalendars.length > 0 && plugin.icsSubscriptionService) {
+					const allICSEvents = plugin.icsSubscriptionService.getAllEvents();
+					for (const icsEvent of allICSEvents) {
+						// Only include events from selected calendars
+						if (selectedICSCalendars.includes(icsEvent.subscriptionId)) {
+							const calendarEvent = createICSEvent(icsEvent, plugin);
+							if (calendarEvent) {
+								events.push(calendarEvent);
+							}
 						}
 					}
 				}
@@ -763,13 +779,20 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 					// Event click handler - open task file or timeblock modal
 					eventClick: (info: any) => {
 						try {
-							const { taskInfo, timeblock, eventType, filePath } = info.event.extendedProps || {};
+							const { taskInfo, timeblock, eventType, filePath, icsEvent, subscriptionName } = info.event.extendedProps || {};
 							const jsEvent = info.jsEvent;
 
 							// Handle timeblock click
 							if (eventType === "timeblock" && timeblock) {
 								const originalDate = format(info.event.start, "yyyy-MM-dd");
 								showTimeblockInfoModal(timeblock, info.event.start, originalDate, plugin);
+								return;
+							}
+
+							// Handle ICS event click - show info modal
+							if (eventType === "ics" && icsEvent) {
+								const modal = new ICSEventInfoModal(plugin.app, plugin, icsEvent, subscriptionName);
+								modal.open();
 								return;
 							}
 
