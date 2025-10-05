@@ -273,3 +273,9 @@ After the fix is stable, if there's user demand, implement Solution 2 to add an 
 - Only affects frontmatter link generation
 
 This keeps the fix simple now while leaving the door open for enhancement later.
+
+---
+
+# Issue #829 Analysis: Time Estimate Gets Lost in Instant Task Conversion
+
+See [issue-analysis/issue-829.md](./issue-analysis/issue-829.md) for full details.
