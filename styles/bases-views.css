@@ -8,6 +8,7 @@
     flex-direction: column;
     gap: var(--tn-spacing-xs);
     width: 100%;
+    padding: var(--tn-spacing-sm);
 }
 
 /* Task Group Section (matches TaskListView structure) */
@@ -19,9 +20,9 @@
 .tn-bases-tasknotes-list .task-group-header {
     display: flex;
     align-items: center;
-    gap: var(--tn-spacing-sm);
+    gap: var(--tn-spacing-xs);
     justify-content: flex-start;
-    padding: var(--tn-spacing-md) 0 var(--tn-spacing-sm);
+    padding: var(--tn-spacing-md) var(--tn-spacing-md) var(--tn-spacing-sm) var(--tn-spacing-sm);
     margin-bottom: var(--tn-spacing-sm);
     border-bottom: 1px solid var(--tn-border-color);
     position: relative;
@@ -41,41 +42,37 @@
 
 /* Toggle button for groups */
 .tn-bases-tasknotes-list .task-group-toggle {
-    display: contents;
+    display: flex;
     align-items: center;
     justify-content: center;
     width: 20px;
     height: 20px;
-    margin-right: var(--tn-spacing-xs);
+    flex-shrink: 0;
     border: none;
     background: transparent;
     color: var(--tn-text-normal);
     font-size: 14px;
     line-height: 1;
+    cursor: pointer;
+    padding: 0;
 }
 
-.tn-bases-tasknotes-list .task-group-toggle svg,
-.tn-bases-tasknotes-list .task-group-toggle .chevron,
-.tn-bases-tasknotes-list .task-group-toggle .chevron path {
+.tn-bases-tasknotes-list .task-group-toggle svg {
     color: var(--tn-text-normal);
-}
-
-.tn-bases-tasknotes-list .task-group-toggle svg,
-.tn-bases-tasknotes-list .task-group-toggle .chevron path {
-    stroke: currentColor;
+    transition: transform 0.2s ease;
 }
 
 .tn-bases-tasknotes-list .task-group-toggle .chevron {
-    transition: transform var(--tn-transition-fast);
+    transition: transform 0.2s ease;
 }
 
-/* Expanded state - chevron rotated */
-.tn-bases-tasknotes-list .task-group .task-group-toggle .chevron,
-.tn-bases-tasknotes-list .task-group .task-group-toggle svg {
+/* Expanded state - chevron rotated 90deg */
+.tn-bases-tasknotes-list .task-group:not(.is-collapsed) .task-group-toggle svg,
+.tn-bases-tasknotes-list .task-group:not(.is-collapsed) .task-group-toggle .chevron {
     transform: rotate(90deg);
 }
 
-/* Collapsed state - chevron normal */
+/* Collapsed state - chevron at 0deg */
 .tn-bases-tasknotes-list .task-group.is-collapsed .task-group-toggle svg,
 .tn-bases-tasknotes-list .task-group.is-collapsed .task-group-toggle .chevron {
     transform: rotate(0deg);
@@ -91,6 +88,7 @@
     display: flex;
     flex-direction: column;
     gap: var(--tn-spacing-xs);
+    padding-left: var(--tn-spacing-md);
 }
 
 /* Empty state */

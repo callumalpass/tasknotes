@@ -364,6 +364,11 @@ export async function renderGroupedTasksInBasesView(
 		return;
 	}
 
+	// Create wrapper with proper class for CSS styling
+	const listWrapper = document.createElement("div");
+	listWrapper.className = "tn-bases-tasknotes-list";
+	container.appendChild(listWrapper);
+
 	// Get visible properties from Bases
 	const basesVisibleProperties = getBasesVisibleProperties(viewContext);
 	let visibleProperties: string[] | undefined;
@@ -439,7 +444,7 @@ export async function renderGroupedTasksInBasesView(
 		const groupSection = document.createElement("div");
 		groupSection.className = "task-section task-group";
 		groupSection.setAttribute("data-group", groupName);
-		container.appendChild(groupSection);
+		listWrapper.appendChild(groupSection);
 
 		// Create group header
 		const headerElement = document.createElement("h3");
