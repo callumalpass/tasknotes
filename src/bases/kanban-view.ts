@@ -23,25 +23,19 @@ interface BasesContainerLike {
 }
 
 export function buildTasknotesKanbanViewFactory(plugin: TaskNotesPlugin) {
-	return function tasknotesKanbanViewFactory(basesContainer: BasesContainerLike) {
+	return function tasknotesKanbanViewFactory(basesContainer: BasesContainerLike, containerEl?: HTMLElement) {
 		let currentRoot: HTMLElement | null = null;
+		let cachedGroupByPropertyId: string | null | undefined = undefined; // undefined = not yet determined
 
-		// Validate the container has the required properties
-		if (!basesContainer || !basesContainer.viewContainerEl) {
-			console.error("[TaskNotes][Bases] Invalid Bases container provided");
-			return {
-				destroy: () => {},
-				load: () => {},
-				unload: () => {},
-				refresh: () => {},
-				onDataUpdated: () => {},
-				onResize: () => {},
-				getEphemeralState: () => ({ scrollTop: 0 }),
-				setEphemeralState: () => {},
-			};
-		}
+		// Detect which API is being used
+		// Public API (1.10.0+): (controller, containerEl)
+		// Legacy API: (container) where container.viewContainerEl exists
+		const viewContainerEl = containerEl || basesContainer.viewContainerEl;
 
-		const viewContainerEl = basesContainer.viewContainerEl;
+		// For public API, basesContainer is actually the QueryController/BasesView instance
+		// For legacy API, basesContainer is the BasesContainer
+		const controller = basesContainer as any;
+
 		if (!viewContainerEl) {
 			console.error("[TaskNotes][Bases] No viewContainerEl found");
 			return {
@@ -72,14 +66,14 @@ export function buildTasknotesKanbanViewFactory(plugin: TaskNotesPlugin) {
 		root.appendChild(board);
 
 		// Uses public API (1.10.0+) when available, falls back to internal API
-		const extractDataItems = (): BasesDataItem[] => {
+		const extractDataItems = (viewContext?: any): BasesDataItem[] => {
 			const dataItems: BasesDataItem[] = [];
+			const ctx = viewContext || controller;
 
-			// Try public API first (1.10.0+) - data is already filtered and sorted
-			const viewObject = (basesContainer as any);
-			if (viewObject.data?.data && Array.isArray(viewObject.data.data)) {
+			// Try public API first (1.10.0+) - viewContext.data.data contains BasesEntry[]
+			if (ctx.data?.data && Array.isArray(ctx.data.data)) {
 				// Use BasesEntry objects from public API
-				for (const entry of viewObject.data.data) {
+				for (const entry of ctx.data.data) {
 					dataItems.push({
 						key: entry.file?.path || "",
 						data: entry,
@@ -92,7 +86,7 @@ export function buildTasknotesKanbanViewFactory(plugin: TaskNotesPlugin) {
 			}
 
 			// Fallback to internal API for older versions
-			const results = basesContainer.results;
+			const results = ctx.results || basesContainer.results;
 			if (results && results instanceof Map) {
 				for (const [, value] of results.entries()) {
 					dataItems.push({
@@ -107,11 +101,28 @@ export function buildTasknotesKanbanViewFactory(plugin: TaskNotesPlugin) {
 			return dataItems;
 		};
 
-		const render = async () => {
+		const render = async function(this: any) {
 			if (!currentRoot) return;
 
 			try {
-				const dataItems = extractDataItems();
+				// For public API (1.10.0+), 'this' is the BasesView with data/config
+				// For legacy API, use controller/basesContainer
+				const viewContext = this?.data ? this : controller;
+				// Capture the BasesView instance for use in async callbacks (like drop handlers)
+				const basesViewInstance = this;
+
+				// Skip rendering if we have no data yet (prevents flickering during data updates)
+				// Check BEFORE any logging or processing
+				const hasGroupedData = !!(viewContext.data?.groupedData && Array.isArray(viewContext.data.groupedData) && viewContext.data.groupedData.length > 0);
+				const hasFlatData = !!(viewContext.data?.data && Array.isArray(viewContext.data.data) && viewContext.data.data.length > 0);
+				const hasLegacyResults = !!(viewContext.results && viewContext.results instanceof Map && viewContext.results.size > 0);
+
+				if (!hasGroupedData && !hasFlatData && !hasLegacyResults) {
+					return; // Skip render silently - no data available
+				}
+
+
+				const dataItems = extractDataItems(viewContext);
 				const taskNotes = await identifyTaskNotesFromBasesData(dataItems, plugin);
 
 				// Clear board
@@ -137,18 +148,72 @@ export function buildTasknotesKanbanViewFactory(plugin: TaskNotesPlugin) {
 				let groupByPropertyId: string | null = null;
 
 				// Try to use public API (1.10.0+) data.groupedData
-				const viewObject = (basesContainer as any);
-				if (viewObject.data?.groupedData && Array.isArray(viewObject.data.groupedData)) {
-					// Get the groupBy property from config
-					if (viewObject.config?.groupBy && typeof viewObject.config.groupBy === "object") {
-						groupByPropertyId = viewObject.config.groupBy.property;
+				if (viewContext.data?.groupedData && Array.isArray(viewContext.data.groupedData)) {
+					console.debug("[TaskNotes][Bases] Using public API groupedData", {
+						groupCount: viewContext.data.groupedData.length,
+						hasConfig: !!viewContext.config
+					});
+
+					// Try different ways to get groupBy from config
+					// Use cached groupBy if available, otherwise determine it
+					if (cachedGroupByPropertyId === undefined) {
+					// Get the groupBy property from config using public API
+					if (viewContext.config && typeof viewContext.config.getAsPropertyId === "function") {
+						try {
+							groupByPropertyId = viewContext.config.getAsPropertyId("groupBy");
+						} catch (e) {
+							// Fallback to get() method
+							if (typeof viewContext.config.get === "function") {
+								groupByPropertyId = viewContext.config.get("groupBy");
+							}
+						}
 					}
 
+					// If still null, infer from the grouped data
+					if (!groupByPropertyId && viewContext.data.groupedData.length > 0) {
+						// Check the group values to infer the property type
+						const firstGroup = viewContext.data.groupedData[0];
+						const keyData = firstGroup.key?.data;
+
+
+						// Try to infer property type from the values
+						const allKeys = viewContext.data.groupedData
+							.map((g: any) => String(g.key?.data || '').toLowerCase())
+							.filter((k: string) => k && k !== 'none');
+
+						// Check if values match known status values
+						const statusValues = new Set(['done', 'open', 'in-progress', 'waiting', 'todo', 'complete']);
+						const isProbablyStatus = allKeys.some((k: string) => statusValues.has(k));
+
+						// Check if values match known priority values
+						const priorityValues = new Set(['high', 'medium', 'low', 'urgent', 'normal']);
+						const isProbablyPriority = allKeys.some((k: string) => priorityValues.has(k));
+
+						if (isProbablyStatus) {
+							groupByPropertyId = "note.status";
+						} else if (isProbablyPriority) {
+							groupByPropertyId = "note.priority";
+						}
+						// Otherwise leave as null - dont default to status
+					}
+					
+					// Cache the determined value (even if null)
+					cachedGroupByPropertyId = groupByPropertyId;
+				} else {
+					// Use cached value
+					groupByPropertyId = cachedGroupByPropertyId;
+				}
+
 					// Use pre-grouped data from Bases
-					for (const group of viewObject.data.groupedData) {
+					for (const group of viewContext.data.groupedData) {
 						// Get the key value (it's a Value object with .data property)
 						const keyValue = group.key?.data ?? "none";
 						const keyString = String(keyValue);
+
+						console.debug("[TaskNotes][Bases] Processing group:", {
+							keyString,
+							entryCount: group.entries?.length
+						});
 
 						// Convert BasesEntry objects to TaskInfo
 						const groupTasks: TaskInfo[] = [];
@@ -161,7 +226,13 @@ export function buildTasknotesKanbanViewFactory(plugin: TaskNotesPlugin) {
 							groups.set(keyString, groupTasks);
 						}
 					}
+					console.debug("[TaskNotes][Bases] Final groups:", Array.from(groups.keys()));
 				} else {
+					console.debug("[TaskNotes][Bases] No groupedData available, using fallback grouping", {
+						hasData: !!viewContext.data,
+						hasGroupedData: !!viewContext.data?.groupedData,
+						isArray: Array.isArray(viewContext.data?.groupedData)
+					});
 					// Fallback to manual grouping for older versions
 					const groupByConfig = getBasesGroupByConfig(basesContainer, pathToProps);
 
@@ -214,8 +285,17 @@ export function buildTasknotesKanbanViewFactory(plugin: TaskNotesPlugin) {
 						})
 					: (plugin.settings.defaultVisibleProperties || []);
 
-				// Get sorting configuration for group names
-				const sortComparator = getBasesSortComparator(basesContainer, pathToProps);
+				// Get sorting configuration
+				const sortComparator = getBasesSortComparator(viewContext, pathToProps);
+
+				// Sort tasks within each group if sorting is configured
+				if (sortComparator) {
+					for (const [groupId, tasks] of groups.entries()) {
+						tasks.sort(sortComparator);
+					}
+				}
+
+				// Get group name ordering
 				const firstSortEntry = sortComparator
 					? { id: groupByPropertyId || "status", direction: "ASC" as const }
 					: null;
@@ -226,7 +306,7 @@ export function buildTasknotesKanbanViewFactory(plugin: TaskNotesPlugin) {
 
 				for (const columnId of columnIds) {
 					const tasks = groups.get(columnId) || [];
-					const columnEl = createColumnElement(columnId, tasks, groupByPropertyId, visiblePropsIds);
+					const columnEl = createColumnElement(columnId, tasks, groupByPropertyId, visiblePropsIds, basesViewInstance);
 					board.appendChild(columnEl);
 				}
 			} catch (error) {
@@ -239,7 +319,8 @@ export function buildTasknotesKanbanViewFactory(plugin: TaskNotesPlugin) {
 			columnId: string,
 			tasks: TaskInfo[],
 			groupByPropertyId: string | null,
-			visibleProperties: string[]
+			visibleProperties: string[],
+			basesViewInstance: any
 		): HTMLElement => {
 			const columnEl = document.createElement("div");
 			columnEl.className = "kanban-view__column";
@@ -341,11 +422,11 @@ export function buildTasknotesKanbanViewFactory(plugin: TaskNotesPlugin) {
 						// For native TaskNotes properties, use TaskNotes update methods directly
 						if (propertyId === "status" || propertyId === "note.status") {
 							await plugin.updateTaskProperty(task, "status", valueToSet, {
-								silent: true,
+								silent: false,
 							});
 						} else if (propertyId === "priority" || propertyId === "note.priority") {
 							await plugin.updateTaskProperty(task, "priority", valueToSet, {
-								silent: true,
+								silent: false,
 							});
 						} else if (
 							propertyId === "projects" ||
@@ -359,7 +440,7 @@ export function buildTasknotesKanbanViewFactory(plugin: TaskNotesPlugin) {
 									: [valueToSet]
 								: [];
 							await plugin.updateTaskProperty(task, "projects", projectValue, {
-								silent: true,
+								silent: false,
 							});
 						} else if (
 							propertyId === "contexts" ||
@@ -373,7 +454,7 @@ export function buildTasknotesKanbanViewFactory(plugin: TaskNotesPlugin) {
 									: [valueToSet]
 								: [];
 							await plugin.updateTaskProperty(task, "contexts", contextValue, {
-								silent: true,
+								silent: false,
 							});
 						} else {
 							// For custom properties, update frontmatter directly
@@ -401,14 +482,24 @@ export function buildTasknotesKanbanViewFactory(plugin: TaskNotesPlugin) {
 							}
 						}
 
-						// Refresh the view
-						await render();
+						// Trigger refresh after a brief delay to ensure file write completes
+						// and Bases has time to detect the change
+						setTimeout(() => {
+							if (basesViewInstance && typeof basesViewInstance.refresh === "function") {
+								basesViewInstance.refresh();
+							}
+						}, 100);
 					} else if (task && !groupByPropertyId) {
 						// Fallback to status update when no groupBy config
 						await plugin.updateTaskProperty(task, "status", targetColumnId, {
-							silent: true,
+							silent: false,
 						});
-						await render();
+						// Trigger refresh after a brief delay
+						setTimeout(() => {
+							if (basesViewInstance && typeof basesViewInstance.refresh === "function") {
+								basesViewInstance.refresh();
+							}
+						}, 100);
 					}
 				} catch (e) {
 					console.error("[TaskNotes][Bases] Move failed:", e);
@@ -457,7 +548,7 @@ export function buildTasknotesKanbanViewFactory(plugin: TaskNotesPlugin) {
 		let queryListener: (() => void) | null = null;
 
 		const component = {
-			focus: () => {
+			focus() {
 				// Focus the root element if it exists and is connected
 				try {
 					if (currentRoot && currentRoot.isConnected && typeof currentRoot.focus === "function") {
@@ -468,44 +559,29 @@ export function buildTasknotesKanbanViewFactory(plugin: TaskNotesPlugin) {
 					console.debug("[TaskNotes][Bases] Failed to focus view:", e);
 				}
 			},
-			load: () => {
+			load() {
 				// Set up query listener
-				if (basesContainer.query?.on && !queryListener) {
-					queryListener = () => void render();
+				const query = controller.query || basesContainer.query;
+				if (query?.on && !queryListener) {
+					queryListener = () => void render.call(this);
 					try {
-						basesContainer.query.on("change", queryListener);
+						query.on("change", queryListener);
 					} catch (e) {
 						// Query listener registration may fail for various reasons
 						console.debug("[TaskNotes][Bases] Query listener registration failed:", e);
 					}
 				}
 
-				// Trigger initial formula computation on load (like base-view-factory)
-				const controller = basesContainer.controller;
-				if (controller?.runQuery) {
-					controller
-						.runQuery()
-						.then(() => {
-							void render(); // Re-render with computed formulas
-						})
-						.catch((e: any) => {
-							console.warn(
-								"[TaskNotes][Bases] Initial kanban formula computation failed:",
-								e
-							);
-							// Still render even if formulas fail
-							void render();
-						});
-				} else {
-					// No formula computation needed, just render
-					void render();
-				}
+				// Initial render - data will be available via this.data (public API) or controller (legacy)
+				// onDataUpdated() will be called by the framework when data changes
+				void render.call(this);
 			},
-			unload: () => {
+			unload() {
 				// Cleanup query listener
-				if (queryListener && basesContainer.query?.off) {
+				const query = controller.query || basesContainer.query;
+				if (queryListener && query?.off) {
 					try {
-						basesContainer.query.off("change", queryListener);
+						query.off("change", queryListener);
 					} catch (e) {
 						// Query listener removal may fail if already disposed
 						console.debug("[TaskNotes][Bases] Query listener cleanup failed:", e);
@@ -513,17 +589,19 @@ export function buildTasknotesKanbanViewFactory(plugin: TaskNotesPlugin) {
 				}
 				queryListener = null;
 			},
-			refresh: render,
-			onDataUpdated: () => {
-				void render();
+			refresh() {
+				void render.call(this);
 			},
-			onResize: () => {
+			onDataUpdated() {
+				void render.call(this);
+			},
+			onResize() {
 				// Handle resize - no-op for now
 			},
-			getEphemeralState: () => {
+			getEphemeralState() {
 				return { scrollTop: currentRoot?.scrollTop || 0 };
 			},
-			setEphemeralState: (state: any) => {
+			setEphemeralState(state: any) {
 				if (!state) return;
 
 				try {
@@ -536,10 +614,11 @@ export function buildTasknotesKanbanViewFactory(plugin: TaskNotesPlugin) {
 					console.debug("[TaskNotes][Bases] Failed to restore ephemeral state:", e);
 				}
 			},
-			destroy: () => {
-				if (queryListener && basesContainer.query?.off) {
+			destroy() {
+				const query = controller.query || basesContainer.query;
+				if (queryListener && query?.off) {
 					try {
-						basesContainer.query.off("change", queryListener);
+						query.off("change", queryListener);
 					} catch (e) {
 						// Query listener removal may fail if already disposed
 					}

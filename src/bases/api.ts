@@ -169,8 +169,7 @@ export function registerBasesView(
 		try {
 			const success = (plugin as any).registerBasesView(viewId, registration);
 			if (success) {
-				// eslint-disable-next-line no-console
-				console.log(
+				console.debug(
 					`[TaskNotes][Bases] Successfully registered view via public API: ${viewId}`
 				);
 				return true;
@@ -178,7 +177,14 @@ export function registerBasesView(
 			console.debug(
 				`[TaskNotes][Bases] Public API returned false (Bases may be disabled), trying internal API`
 			);
-		} catch (error) {
+		} catch (error: any) {
+			// Check if error is because view already exists - treat as success
+			if (error?.message?.includes("already exists")) {
+				console.debug(
+					`[TaskNotes][Bases] View ${viewId} already registered via public API`
+				);
+				return true;
+			}
 			console.warn(
 				`[TaskNotes][Bases] Public API registration failed for ${viewId}, trying internal API:`,
 				error
@@ -197,12 +203,6 @@ export function registerBasesView(
 		// Only register if it doesn't already exist
 		if (!api.registrations[viewId]) {
 			api.registrations[viewId] = registration;
-			// eslint-disable-next-line no-console
-			console.log(
-				`[TaskNotes][Bases] Successfully registered view via internal API: ${viewId}`
-			);
-		} else {
-			console.debug(`[TaskNotes][Bases] View ${viewId} already registered, skipping`);
 		}
 		return true;
 	} catch (error) {
@@ -225,8 +225,6 @@ export function unregisterBasesView(plugin: Plugin, viewId: string): boolean {
 	try {
 		if (api.registrations[viewId]) {
 			delete api.registrations[viewId];
-			// eslint-disable-next-line no-console
-			console.log(`[TaskNotes][Bases] Successfully unregistered view: ${viewId}`);
 		}
 		return true;
 	} catch (error) {

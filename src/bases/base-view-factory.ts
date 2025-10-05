@@ -14,6 +14,7 @@ import {
 	BasesDataItem,
 	identifyTaskNotesFromBasesData,
 	renderTaskNotesInBasesView,
+	renderGroupedTasksInBasesView,
 } from "./helpers";
 import { EVENT_TASK_UPDATED } from "../types";
 
@@ -32,13 +33,21 @@ export interface ViewConfig {
 }
 
 export function buildTasknotesBaseViewFactory(plugin: TaskNotesPlugin, config: ViewConfig) {
-	return function tasknotesBaseViewFactory(basesContainer: BasesContainerLike) {
+	return function tasknotesBaseViewFactory(basesContainer: BasesContainerLike, containerEl?: HTMLElement) {
 		let currentRoot: HTMLElement | null = null;
 		let eventListener: any = null;
 		let updateDebounceTimer: number | null = null;
 		let currentTaskElements = new Map<string, HTMLElement>();
 
-		const viewContainerEl = (basesContainer as any)?.viewContainerEl as HTMLElement | undefined;
+		// Detect which API is being used
+		// Public API (1.10.0+): (controller, containerEl)
+		// Legacy API: (container) where container.viewContainerEl exists
+		const viewContainerEl = containerEl || (basesContainer as any)?.viewContainerEl;
+
+		// For public API, basesContainer is actually the QueryController/BasesView instance
+		// For legacy API, basesContainer is the BasesContainer
+		const controller = basesContainer as any;
+
 		if (!viewContainerEl) {
 			console.error("[TaskNotes][BasesPOC] No viewContainerEl found");
 			return { destroy: () => {} } as any;
@@ -60,14 +69,14 @@ export function buildTasknotesBaseViewFactory(plugin: TaskNotesPlugin, config: V
 
 		// Helper to extract items from Bases results
 		// Uses public API (1.10.0+) when available, falls back to internal API
-		const extractDataItems = (): BasesDataItem[] => {
+		const extractDataItems = (viewContext?: any): BasesDataItem[] => {
 			const dataItems: BasesDataItem[] = [];
+			const ctx = viewContext || controller;
 
-			// Try public API first (1.10.0+) - data is already filtered and sorted
-			const viewObject = (basesContainer as any);
-			if (viewObject.data?.data && Array.isArray(viewObject.data.data)) {
+			// Try public API first (1.10.0+) - viewContext.data.data contains BasesEntry[]
+			if (ctx.data?.data && Array.isArray(ctx.data.data)) {
 				// Use BasesEntry objects from public API
-				for (const entry of viewObject.data.data) {
+				for (const entry of ctx.data.data) {
 					const item = {
 						key: entry.file?.path || "",
 						data: entry,
@@ -82,7 +91,7 @@ export function buildTasknotesBaseViewFactory(plugin: TaskNotesPlugin, config: V
 			}
 
 			// Fallback to internal API for older versions
-			const results = (basesContainer as any)?.results as Map<any, any> | undefined;
+			const results = ctx.results || (basesContainer as any)?.results as Map<any, any> | undefined;
 
 			if (results && results instanceof Map) {
 				for (const [key, value] of results.entries()) {
@@ -102,15 +111,24 @@ export function buildTasknotesBaseViewFactory(plugin: TaskNotesPlugin, config: V
 			return dataItems;
 		};
 
-		const render = async () => {
+		const render = async function(this: any) {
 			if (!currentRoot) return;
 			try {
-				const dataItems = extractDataItems();
+				// For public API (1.10.0+), 'this' is the BasesView with data/config
+				// For legacy API, use controller/basesContainer
+				const viewContext = this?.data ? this : controller;
+
+				// Skip rendering if we have no data yet (prevents flickering during data updates)
+				if (!viewContext.data?.data && !viewContext.results) {
+					return;
+				}
+
+				const dataItems = extractDataItems(viewContext);
 
 				// Compute Bases formulas for TaskNotes items
 				// This ensures formulas have access to TaskNote-specific properties
-				const ctxFormulas = (basesContainer as any)?.ctx?.formulas;
-				if (ctxFormulas && dataItems.length > 0) {
+				const ctxFormulas = viewContext?.ctx?.formulas || (basesContainer as any)?.ctx?.formulas;
+				if (ctxFormulas && typeof ctxFormulas === 'object' && dataItems.length > 0) {
 					for (let i = 0; i < dataItems.length; i++) {
 						const item = dataItems[i];
 						const itemFormulaResults = item.basesData?.formulaResults;
@@ -177,29 +195,37 @@ export function buildTasknotesBaseViewFactory(plugin: TaskNotesPlugin, config: V
 							])
 					);
 
-					// Apply Bases sorting if configured (only needed for internal API)
-					// Public API (1.10.0+) already provides sorted data via this.data.data
-					const viewObject = (basesContainer as any);
-					const usingPublicAPI = viewObject.data?.data && Array.isArray(viewObject.data.data);
-
-					if (!usingPublicAPI) {
+					// Check if we have grouped data from Bases (public API)
+					if (viewContext.data?.groupedData && Array.isArray(viewContext.data.groupedData)) {
+						// Use grouped data from Bases
+						await renderGroupedTasksInBasesView(
+							itemsContainer,
+							taskNotes,
+							plugin,
+							viewContext,
+							pathToProps,
+							currentTaskElements
+						);
+					} else {
+						// Apply Bases sorting if configured
+						// Note: Public API data is not pre-sorted, so we always need to apply sorting
 						const { getBasesSortComparator } = await import("./sorting");
-						const sortComparator = getBasesSortComparator(basesContainer, pathToProps);
+						const sortComparator = getBasesSortComparator(viewContext, pathToProps);
 						if (sortComparator) {
 							taskNotes.sort(sortComparator);
 						}
-					}
 
-					// Render tasks using existing helper
-					// Clear existing task elements tracking before re-render
-					currentTaskElements.clear();
-					await renderTaskNotesInBasesView(
-						itemsContainer,
-						taskNotes,
-						plugin,
-						basesContainer,
-						currentTaskElements
-					);
+						// Render tasks using existing helper (flat list)
+						// Clear existing task elements tracking before re-render
+						currentTaskElements.clear();
+						await renderTaskNotesInBasesView(
+							itemsContainer,
+							taskNotes,
+							plugin,
+							viewContext,
+							currentTaskElements
+						);
+					}
 				}
 			} catch (error: any) {
 				console.error(
@@ -251,8 +277,9 @@ export function buildTasknotesBaseViewFactory(plugin: TaskNotesPlugin, config: V
 				if (taskElement) {
 					// Update existing task element
 					const { updateTaskCard } = await import("../ui/TaskCard");
-					const basesProperties = (basesContainer as any)?.ctx?.formulas
-						? Object.keys((basesContainer as any).ctx.formulas)
+					// Note: In selective update, we don't have viewContext, use controller
+					const basesProperties = controller?.ctx?.formulas && typeof controller.ctx.formulas === 'object'
+						? Object.keys(controller.ctx.formulas)
 						: [];
 
 					updateTaskCard(taskElement, updatedTask, plugin, basesProperties, {
@@ -270,8 +297,6 @@ export function buildTasknotesBaseViewFactory(plugin: TaskNotesPlugin, config: V
 						taskElement.classList.remove("task-card--updated");
 					}, 1000);
 
-					// eslint-disable-next-line no-console
-			console.log(`[TaskNotes][Bases] Selectively updated task: ${updatedTask.path}`);
 				} else {
 					// Task not currently visible, might need to be added - refresh to be safe
 					debouncedFullRefresh();
@@ -289,8 +314,6 @@ export function buildTasknotesBaseViewFactory(plugin: TaskNotesPlugin, config: V
 			}
 
 			updateDebounceTimer = window.setTimeout(async () => {
-				// eslint-disable-next-line no-console
-			console.log("[TaskNotes][Bases] Performing debounced full refresh");
 				await render();
 				updateDebounceTimer = null;
 			}, 150);
@@ -306,17 +329,19 @@ export function buildTasknotesBaseViewFactory(plugin: TaskNotesPlugin, config: V
 		let queryListener: (() => void) | null = null;
 
 		const viewObject = {
-			refresh: render,
-			onResize: () => {
+			refresh() {
+				void render.call(this);
+			},
+			onResize() {
 				// Handle resize - no-op for now
 			},
-			onDataUpdated: () => {
-				void render();
+			onDataUpdated() {
+				void render.call(this);
 			},
-			getEphemeralState: () => {
+			getEphemeralState() {
 				return { scrollTop: currentRoot?.scrollTop || 0 };
 			},
-			setEphemeralState: (state: any) => {
+			setEphemeralState(state: any) {
 				if (!state) return;
 
 				try {
@@ -329,7 +354,7 @@ export function buildTasknotesBaseViewFactory(plugin: TaskNotesPlugin, config: V
 					console.debug("[TaskNotes][Bases] Failed to restore ephemeral state:", e);
 				}
 			},
-			focus: () => {
+			focus() {
 				// Focus the root element if it exists and is connected
 				try {
 					if (currentRoot && currentRoot.isConnected && typeof currentRoot.focus === "function") {
@@ -340,7 +365,7 @@ export function buildTasknotesBaseViewFactory(plugin: TaskNotesPlugin, config: V
 					console.debug("[TaskNotes][Bases] Failed to focus view:", e);
 				}
 			},
-			destroy: () => {
+			destroy() {
 				// Clean up task update listener
 				if (eventListener) {
 					plugin.emitter.offref(eventListener);
@@ -354,9 +379,10 @@ export function buildTasknotesBaseViewFactory(plugin: TaskNotesPlugin, config: V
 				}
 
 				// Clean up query listener
-				if (queryListener && (basesContainer as any)?.query?.off) {
+				const query = controller.query || (basesContainer as any)?.query;
+				if (queryListener && query?.off) {
 					try {
-						(basesContainer as any).query.off("change", queryListener);
+						query.off("change", queryListener);
 					} catch (e) {
 						// Query listener removal may fail if already disposed
 					}
@@ -369,40 +395,27 @@ export function buildTasknotesBaseViewFactory(plugin: TaskNotesPlugin, config: V
 				}
 				currentTaskElements.clear();
 				queryListener = null;
-
-				// eslint-disable-next-line no-console
-			console.log("[TaskNotes][Bases] Cleaned up view with real-time updates");
 			},
-			load: () => {
-				if ((basesContainer as any)?.query?.on && !queryListener) {
-					queryListener = () => void render();
+			load() {
+				const query = controller.query || (basesContainer as any)?.query;
+				if (query?.on && !queryListener) {
+					queryListener = () => void render.call(this);
 					try {
-						(basesContainer as any).query.on("change", queryListener);
+						query.on("change", queryListener);
 					} catch (e) {
 						// Query listener registration may fail for various reasons
 					}
 				}
 
-				// Trigger initial formula computation on load
-				const controller = (basesContainer as any)?.controller;
-				if (controller?.runQuery) {
-					controller
-						.runQuery()
-						.then(() => {
-							void render(); // Re-render with computed formulas
-						})
-						.catch((e: any) => {
-							console.warn(
-								"[TaskNotes][Bases] Initial formula computation failed:",
-								e
-							);
-						});
-				}
+				// Initial render - data will be available via this.data (public API) or controller (legacy)
+				// onDataUpdated() will be called by the framework when data changes
+				void render.call(this);
 			},
-			unload: () => {
-				if (queryListener && (basesContainer as any)?.query?.off) {
+			unload() {
+				const query = controller.query || (basesContainer as any)?.query;
+				if (queryListener && query?.off) {
 					try {
-						(basesContainer as any).query.off("change", queryListener);
+						query.off("change", queryListener);
 					} catch (e) {
 						// Query listener removal may fail if already disposed
 					}

@@ -214,6 +214,9 @@ export default class TaskNotesPlugin extends Plugin {
 	private migrationComplete = false;
 	private migrationPromise: Promise<void> | null = null;
 
+	// Bases registration state management
+	private basesRegistered = false;
+
 	/**
 	 * Get the system UI locale with proper priority order for TaskNotes plugin.
 	 *
@@ -377,10 +380,11 @@ export default class TaskNotesPlugin extends Plugin {
 		this.migrationPromise = this.performEarlyMigrationCheck();
 
 		// Early registration attempt for Bases integration
-		if (this.settings?.enableBases) {
+		if (this.settings?.enableBases && !this.basesRegistered) {
 			try {
 				const { registerBasesTaskList } = await import("./bases/registration");
 				await registerBasesTaskList(this);
+				this.basesRegistered = true;
 			} catch (e) {
 				// eslint-disable-next-line no-console
 				console.debug("[TaskNotes][Bases] Early registration failed:", e);
@@ -507,11 +511,12 @@ export default class TaskNotesPlugin extends Plugin {
 			// Defer heavy service initialization until needed
 			this.initializeServicesLazily();
 
-			// Register TaskNotes views with Bases plugin (if enabled)
-			if (this.settings?.enableBases) {
+			// Register TaskNotes views with Bases plugin (if enabled and not already registered)
+			if (this.settings?.enableBases && !this.basesRegistered) {
 				try {
 					const { registerBasesTaskList } = await import("./bases/registration");
 					await registerBasesTaskList(this);
+					this.basesRegistered = true;
 				} catch (e) {
 					console.debug("[TaskNotes][Bases] Registration failed:", e);
 				}
@@ -1042,6 +1047,7 @@ export default class TaskNotesPlugin extends Plugin {
 		if (this.settings?.enableBases) {
 			import("./bases/registration").then(({ unregisterBasesViews }) => {
 				unregisterBasesViews(this);
+				this.basesRegistered = false;
 			}).catch(e => {
 				console.debug("[TaskNotes][Bases] Unregistration failed:", e);
 			});
