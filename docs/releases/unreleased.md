@@ -45,9 +45,17 @@ Example:
   - Users can now organize ICS notes in date-based hierarchies (e.g., `Daily/{{year}}/{{month}}/`)
   - Thanks to @j-peeters for reporting
 
+- (#813) Fixed subscribed ICS calendars irregularly disappearing from calendar views
+  - Added 5-minute grace period after cache expiration to keep events visible during refresh
+  - Trigger automatic background refresh when cache is stale or missing
+  - Initialize ICS service instances early so views can register event listeners before data loads
+  - Prevents disappearance during network errors or when calendar opens at Obsidian startup
+  - Thanks to @j-peeters for reporting
+
 - (#829) Fixed time estimates and recurrence patterns being lost during instant task conversion
   - Added `timeEstimate` field to `ParsedTaskData` interface
   - Time estimates from natural language parsing now properly transferred to task frontmatter
   - Parsed values now take priority over default settings
   - RRule strings passed directly without conversion (preferred format)
+  - Thanks to @Justin-Burg for reporting
 
