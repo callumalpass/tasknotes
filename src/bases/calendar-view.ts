@@ -824,8 +824,8 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 								return { domNodes: [propertyCard] };
 							}
 						}
-						// Use default rendering for other views and event types
-						return undefined;
+						// Return false to use default rendering for other views
+						return false;
 					},
 					eventDidMount: handleEventDidMount,
 					eventAllow: (dropInfo: any) => {
