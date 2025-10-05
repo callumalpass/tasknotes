@@ -558,7 +558,7 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 		};
 
 		// Create calendar event from property-based dates
-		const createPropertyBasedEvent = (entry: any, startDate: string, endDate?: string): CalendarEvent | null => {
+		const createPropertyBasedEvent = (entry: any, startDate: string, endDate?: string, title?: string): CalendarEvent | null => {
 			try {
 				const file = entry.file;
 				if (!file) return null;
@@ -593,7 +593,7 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 
 				return {
 					id: `property-${file.path}`,
-					title: file.basename || file.name,
+					title: title || file.basename || file.name,
 					start: startDate,
 					end: eventEnd,
 					allDay: !hasTime,
@@ -671,6 +671,7 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 				const showPropertyBasedEvents = (ctx?.config?.get('showPropertyBasedEvents') as boolean) ?? true;
 				const startDateProperty = ctx?.config?.getAsPropertyId?.('startDateProperty');
 				const endDateProperty = ctx?.config?.getAsPropertyId?.('endDateProperty');
+				const titleProperty = ctx?.config?.getAsPropertyId?.('titleProperty');
 
 				// Build list of selected ICS calendars from individual toggle options
 				const selectedICSCalendars: string[] = [];
@@ -798,8 +799,22 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 								}
 							}
 
+							// Try to get title from configured property
+							let eventTitle: string | undefined;
+							if (titleProperty) {
+								const titleValue = entry.getValue?.(titleProperty);
+								if (titleValue) {
+									// Extract string from Bases Value object
+									if (typeof titleValue.data === 'string' && titleValue.data.trim()) {
+										eventTitle = titleValue.data.trim();
+									} else if (typeof titleValue === 'string' && titleValue.trim()) {
+										eventTitle = titleValue.trim();
+									}
+								}
+							}
+
 							// Create event
-							const event = createPropertyBasedEvent(entry, startDateStr, endDateStr);
+							const event = createPropertyBasedEvent(entry, startDateStr, endDateStr, eventTitle);
 							if (event) {
 								events.push(event);
 								propertyEventCount++;
