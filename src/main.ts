@@ -328,6 +328,11 @@ export default class TaskNotesPlugin extends Plugin {
 		this.notificationService = new NotificationService(this);
 		this.viewPerformanceService = new ViewPerformanceService(this);
 
+		// Create ICS services early so views can register event listeners
+		// (initialization will be deferred to lazy loading)
+		this.icsSubscriptionService = new ICSSubscriptionService(this);
+		this.icsNoteService = new ICSNoteService(this);
+
 		// Connect AutoArchiveService to TaskService for status-based auto-archiving
 		this.taskService.setAutoArchiveService(this.autoArchiveService);
 
@@ -537,12 +542,8 @@ export default class TaskNotesPlugin extends Plugin {
 				this.pomodoroService = new PomodoroService(this);
 				await this.pomodoroService.initialize();
 
-				// Initialize ICS subscription service
-				this.icsSubscriptionService = new ICSSubscriptionService(this);
+				// Initialize ICS subscription service (instance already created in onload)
 				await this.icsSubscriptionService.initialize();
-
-				// Initialize ICS note service
-				this.icsNoteService = new ICSNoteService(this);
 
 				// Initialize auto export service
 				this.autoExportService = new AutoExportService(this);
