@@ -714,13 +714,14 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 					slotDuration,
 				});
 
-				// Validate defaultView
+				// Get calendar view from config with validation
+				const configView = (currentViewContext?.config?.get('calendarView') as string) ?? calendarSettings.defaultView;
 				const validViews = ['dayGridMonth', 'timeGridWeek', 'timeGridDay', 'listWeek', 'multiMonthYear'];
-				const defaultView = validViews.includes(calendarSettings.defaultView)
-					? calendarSettings.defaultView
+				const defaultView = validViews.includes(configView)
+					? configView
 					: "dayGridMonth";
-				if (!validViews.includes(calendarSettings.defaultView)) {
-					console.warn(`[TaskNotes][Bases][Calendar] Invalid defaultView: "${calendarSettings.defaultView}", using "dayGridMonth"`);
+				if (!validViews.includes(configView)) {
+					console.warn(`[TaskNotes][Bases][Calendar] Invalid calendarView: "${configView}", using "dayGridMonth"`);
 				}
 
 				// Validate numeric settings
@@ -831,6 +832,22 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 							console.error("[TaskNotes][Bases][Calendar] Error in eventClick:", error);
 						}
 					},
+					// Track view changes and sync to config
+					datesSet: (info: any) => {
+						try {
+							if (currentViewContext?.config && info.view?.type) {
+								const newView = info.view.type;
+								const currentConfigView = currentViewContext.config.get('calendarView');
+
+								// Only update if the view actually changed
+								if (currentConfigView !== newView) {
+									currentViewContext.config.set('calendarView', newView);
+								}
+							}
+						} catch (error) {
+							console.debug("[TaskNotes][Bases][Calendar] Error syncing view to config:", error);
+						}
+					},
 				});
 
 				// Render calendar
@@ -875,6 +892,20 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 				// Initialize calendar if not yet initialized
 				if (!calendar) {
 					initializeCalendar();
+				}
+
+				// Check if view needs to be changed (from dropdown)
+				if (calendar && viewContext?.config) {
+					const configView = viewContext.config.get('calendarView') as string;
+					const currentView = calendar.view?.type;
+
+					if (configView && currentView && configView !== currentView) {
+						try {
+							calendar.changeView(configView);
+						} catch (viewError) {
+							console.debug("[TaskNotes][Bases][Calendar] Error changing view:", viewError);
+						}
+					}
 				}
 
 				// Refresh calendar events

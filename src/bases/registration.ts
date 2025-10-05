@@ -82,6 +82,19 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 								displayName: "Layout",
 								items: [
 									{
+										type: "dropdown",
+										key: "calendarView",
+										displayName: "Calendar view",
+										default: calendarSettings.defaultView,
+										options: {
+											"dayGridMonth": "Month",
+											"timeGridWeek": "Week",
+											"timeGridDay": "Day",
+											"listWeek": "List",
+											"multiMonthYear": "Year",
+										},
+									},
+									{
 										type: "text",
 										key: "slotMinTime",
 										displayName: "Day start time",
