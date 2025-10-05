@@ -15,7 +15,11 @@ describe('Settings UI - User Fields (optional)', () => {
     // Provide Platform mock expected by settings.ts
     (global as any).Platform = { isMobile: false };
 
-    const app: any = { workspace: { onLayoutReady: (fn: any) => fn() }, metadataCache: {}, vault: {} };
+    const app: any = {
+      workspace: { onLayoutReady: (fn: any) => fn() },
+      metadataCache: {},
+      vault: { getConfig: jest.fn().mockReturnValue(false) }
+    };
     const plugin = new TaskNotesPlugin(app);
     // inject defaults
     (plugin as any).settings = { ...DEFAULT_SETTINGS };

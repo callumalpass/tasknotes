@@ -25,3 +25,11 @@ Example:
 
 -->
 
+## Fixed
+
+- (#827) Fixed project links being generated as markdown links for users with markdown links enabled in Obsidian settings
+  - Project links in frontmatter are now always generated as wikilinks `[[link]]` by default for Obsidian compatibility
+  - Obsidian does not support markdown links in frontmatter properties without third-party plugins
+  - Added optional setting to enable markdown links in frontmatter for users with `obsidian-frontmatter-markdown-links` plugin
+  - Setting only appears when user has markdown links enabled globally in Obsidian
+  - Thanks to @nightroman for reporting

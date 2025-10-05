@@ -702,7 +702,7 @@ export class ProjectSubtasksWidget extends WidgetType {
 		}
 
 		// Create link using Obsidian's API for proper format
-		const projectReference = generateLink(this.plugin.app, currentFile, currentFile.path);
+		const projectReference = generateLink(this.plugin.app, currentFile, currentFile.path, "", "", this.plugin.settings.useFrontmatterMarkdownLinks);
 
 		// Open task creation modal with project pre-populated
 		this.plugin.openTaskCreationModal({
