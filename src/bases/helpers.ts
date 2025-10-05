@@ -489,6 +489,14 @@ export async function renderGroupedTasksInBasesView(
 				svg.classList.add("chevron");
 				svg.setAttribute("width", "16");
 				svg.setAttribute("height", "16");
+
+				console.debug("[TaskNotes][Bases] SVG setup:", {
+					tagName: svg.tagName,
+					className: svg.className,
+					classList: Array.from(svg.classList),
+					parent: toggleBtn.className,
+					innerHTML: svg.outerHTML.substring(0, 100)
+				});
 			}
 		} catch (error) {
 			// Fallback to text chevron
@@ -523,10 +531,13 @@ export async function renderGroupedTasksInBasesView(
 			const isCollapsed = groupSection.classList.toggle("is-collapsed");
 			toggleBtn.setAttribute("aria-expanded", String(!isCollapsed));
 
+			const svg = toggleBtn.querySelector("svg");
 			console.debug("[TaskNotes][Bases] Group toggled:", {
 				group: groupName,
 				isCollapsed,
-				classes: groupSection.className
+				classes: groupSection.className,
+				svgTransform: svg ? window.getComputedStyle(svg).transform : "no svg",
+				svgStyle: svg ? svg.getAttribute("style") : "no svg"
 			});
 
 			// Toggle task cards visibility
