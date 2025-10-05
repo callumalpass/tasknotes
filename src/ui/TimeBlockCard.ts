@@ -1,10 +1,13 @@
 import { setIcon } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { TimeBlock } from "../types";
+import { showTimeblockInfoModal } from "../bases/calendar-core";
 
 export interface TimeBlockCardOptions {
 	showDescription: boolean;
 	showAttachments: boolean;
+	eventDate?: Date;
+	originalDate?: string;
 }
 
 export const DEFAULT_TIMEBLOCK_CARD_OPTIONS: TimeBlockCardOptions = {
@@ -90,27 +93,16 @@ export function createTimeBlockCard(
 		attachmentsEl.textContent = `📎 ${attachmentText}`;
 	}
 
-	// Click handler - could open timeblock modal or first attachment
+	// Click handler - open timeblock modal
 	card.addEventListener("click", (e) => {
-		// If there are attachments, open the first one
-		if (timeblock.attachments && timeblock.attachments.length > 0) {
-			// Extract file path from markdown link
-			const firstAttachment = timeblock.attachments[0];
-			const linkMatch = firstAttachment.match(/\[\[([^\]]+)\]\]/);
-			if (linkMatch) {
-				const openInNewTab = e.ctrlKey || e.metaKey;
-				plugin.app.workspace.openLinkText(linkMatch[1], "", openInNewTab);
-			}
+		if (opts.eventDate && opts.originalDate) {
+			showTimeblockInfoModal(timeblock, opts.eventDate, opts.originalDate, plugin);
 		}
-		// Otherwise, could open a timeblock info modal or do nothing
 	});
 
-	// Apply custom color if provided
+	// Apply custom color if provided (used for icon color)
 	if (timeblock.color) {
 		card.style.setProperty("--current-status-color", timeblock.color);
-		card.style.borderLeftColor = timeblock.color;
-		card.style.borderLeftWidth = "3px";
-		card.style.borderLeftStyle = "solid";
 	} else {
 		card.style.setProperty("--current-status-color", "var(--color-accent)");
 	}

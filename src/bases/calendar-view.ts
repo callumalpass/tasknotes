@@ -434,7 +434,11 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 				}
 				// Render timeblock events with TimeBlockCard
 				else if (eventType === 'timeblock' && timeblock) {
-					cardElement = createTimeBlockCard(timeblock, plugin);
+					const originalDate = arg.event.start ? format(arg.event.start, "yyyy-MM-dd") : undefined;
+					cardElement = createTimeBlockCard(timeblock, plugin, {
+						eventDate: arg.event.start,
+						originalDate: originalDate,
+					});
 				}
 
 				// Replace the event element content with the card
