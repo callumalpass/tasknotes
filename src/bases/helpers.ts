@@ -165,27 +165,55 @@ export function getBasesVisibleProperties(basesContainer: any): BasesSelectedPro
 		};
 
 		// Get visible properties from Bases order configuration
-		const fullCfg = controller?.getViewConfig?.() ?? {};
-
+		// Try public API first (1.10.0+) - config.getOrder()
 		let order: string[] | undefined;
-		try {
-			order =
-				(query?.getViewConfig?.("order") as string[] | undefined) ??
-				(fullCfg as any)?.order ??
-				(fullCfg as any)?.columns?.order;
-		} catch (_) {
-			order = (fullCfg as any)?.order ?? (fullCfg as any)?.columns?.order;
+		if (basesContainer?.config && typeof basesContainer.config.getOrder === "function") {
+			try {
+				order = basesContainer.config.getOrder();
+			} catch (_) {
+				// Ignore errors accessing order
+			}
+		}
+
+		// Fallback to internal API for older versions
+		if (!order || !Array.isArray(order) || order.length === 0) {
+			const fullCfg = controller?.getViewConfig?.() ?? {};
+			try {
+				order =
+					(query?.getViewConfig?.("order") as string[] | undefined) ??
+					(fullCfg as any)?.order ??
+					(fullCfg as any)?.columns?.order;
+			} catch (_) {
+				order = (fullCfg as any)?.order ?? (fullCfg as any)?.columns?.order;
+			}
 		}
 
 		if (!order || !Array.isArray(order) || order.length === 0) return [];
 
 		const orderedIds: string[] = order.map(normalizeToId).filter((id): id is string => !!id);
 
-		return orderedIds.map((id) => ({
-			id,
-			displayName: propsMap?.[id]?.getDisplayName?.() ?? id,
-			visible: true,
-		}));
+		return orderedIds.map((id) => {
+			// Try public API for display name (1.10.0+)
+			let displayName = id;
+			if (basesContainer?.config && typeof basesContainer.config.getDisplayName === "function") {
+				try {
+					const dn = basesContainer.config.getDisplayName(id);
+					if (typeof dn === "string" && dn.trim()) displayName = dn;
+				} catch (_) {
+					// Fall back to internal API
+				}
+			}
+			// Fallback to internal API
+			if (displayName === id) {
+				displayName = propsMap?.[id]?.getDisplayName?.() ?? id;
+			}
+
+			return {
+				id,
+				displayName,
+				visible: true,
+			};
+		});
 	} catch (e) {
 		console.debug("[TaskNotes][Bases] getBasesVisibleProperties failed:", e);
 		return [];

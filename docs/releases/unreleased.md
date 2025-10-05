@@ -27,6 +27,12 @@ Example:
 
 ## Fixed
 
+- (#814) Fixed markdown links in projects field not being recognized on Project notes
+  - Tasks with markdown-style project links `[text](path)` now appear in project's Subtasks section
+  - Updated project link detection to use `parseLinkToPath` utility which handles both wikilinks and markdown links
+  - Handles URL-encoded paths like `[z Test Project](z%20Test%20Project.md)`
+  - Thanks to @minchinweb for reporting
+
 - (#827) Fixed project links being generated as markdown links for users with markdown links enabled in Obsidian settings
   - Project links in frontmatter are now always generated as wikilinks `[[link]]` by default for Obsidian compatibility
   - Obsidian does not support markdown links in frontmatter properties without third-party plugins

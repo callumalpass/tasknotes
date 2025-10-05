@@ -59,8 +59,29 @@ export function buildTasknotesBaseViewFactory(plugin: TaskNotesPlugin, config: V
 		root.appendChild(itemsContainer);
 
 		// Helper to extract items from Bases results
+		// Uses public API (1.10.0+) when available, falls back to internal API
 		const extractDataItems = (): BasesDataItem[] => {
 			const dataItems: BasesDataItem[] = [];
+
+			// Try public API first (1.10.0+) - data is already filtered and sorted
+			const viewObject = (basesContainer as any);
+			if (viewObject.data?.data && Array.isArray(viewObject.data.data)) {
+				// Use BasesEntry objects from public API
+				for (const entry of viewObject.data.data) {
+					const item = {
+						key: entry.file?.path || "",
+						data: entry,
+						file: entry.file,
+						path: entry.file?.path,
+						properties: (entry as any).frontmatter || (entry as any).properties,
+						basesData: entry,
+					};
+					dataItems.push(item);
+				}
+				return dataItems;
+			}
+
+			// Fallback to internal API for older versions
 			const results = (basesContainer as any)?.results as Map<any, any> | undefined;
 
 			if (results && results instanceof Map) {
@@ -156,11 +177,17 @@ export function buildTasknotesBaseViewFactory(plugin: TaskNotesPlugin, config: V
 							])
 					);
 
-					// Apply Bases sorting if configured
-					const { getBasesSortComparator } = await import("./sorting");
-					const sortComparator = getBasesSortComparator(basesContainer, pathToProps);
-					if (sortComparator) {
-						taskNotes.sort(sortComparator);
+					// Apply Bases sorting if configured (only needed for internal API)
+					// Public API (1.10.0+) already provides sorted data via this.data.data
+					const viewObject = (basesContainer as any);
+					const usingPublicAPI = viewObject.data?.data && Array.isArray(viewObject.data.data);
+
+					if (!usingPublicAPI) {
+						const { getBasesSortComparator } = await import("./sorting");
+						const sortComparator = getBasesSortComparator(basesContainer, pathToProps);
+						if (sortComparator) {
+							taskNotes.sort(sortComparator);
+						}
 					}
 
 					// Render tasks using existing helper
