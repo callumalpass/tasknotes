@@ -744,13 +744,15 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 					headerToolbar: {
 						left: "prev,next today",
 						center: "title",
-						right: "dayGridMonth,timeGridWeek,timeGridCustom,timeGridDay",
+						right: "multiMonthYear,dayGridMonth,timeGridWeek,timeGridCustom,timeGridDay,listWeek",
 					},
 					buttonText: {
 						today: "Today",
 						month: "M",
 						week: "W",
 						day: "D",
+						year: "Y",
+						list: "L",
 					},
 					views: {
 						timeGridCustom: {
