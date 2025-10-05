@@ -108,6 +108,8 @@ export function buildTasknotesKanbanViewFactory(plugin: TaskNotesPlugin) {
 				// For public API (1.10.0+), 'this' is the BasesView with data/config
 				// For legacy API, use controller/basesContainer
 				const viewContext = this?.data ? this : controller;
+				// Capture the BasesView instance for use in async callbacks (like drop handlers)
+				const basesViewInstance = this;
 
 				// Skip rendering if we have no data yet (prevents flickering during data updates)
 				// Check BEFORE any logging or processing
@@ -311,7 +313,7 @@ export function buildTasknotesKanbanViewFactory(plugin: TaskNotesPlugin) {
 
 				for (const columnId of columnIds) {
 					const tasks = groups.get(columnId) || [];
-					const columnEl = createColumnElement(columnId, tasks, groupByPropertyId, visiblePropsIds);
+					const columnEl = createColumnElement(columnId, tasks, groupByPropertyId, visiblePropsIds, basesViewInstance);
 					board.appendChild(columnEl);
 				}
 			} catch (error) {
@@ -324,7 +326,8 @@ export function buildTasknotesKanbanViewFactory(plugin: TaskNotesPlugin) {
 			columnId: string,
 			tasks: TaskInfo[],
 			groupByPropertyId: string | null,
-			visibleProperties: string[]
+			visibleProperties: string[],
+			basesViewInstance: any
 		): HTMLElement => {
 			const columnEl = document.createElement("div");
 			columnEl.className = "kanban-view__column";
@@ -426,11 +429,11 @@ export function buildTasknotesKanbanViewFactory(plugin: TaskNotesPlugin) {
 						// For native TaskNotes properties, use TaskNotes update methods directly
 						if (propertyId === "status" || propertyId === "note.status") {
 							await plugin.updateTaskProperty(task, "status", valueToSet, {
-								silent: true,
+								silent: false,
 							});
 						} else if (propertyId === "priority" || propertyId === "note.priority") {
 							await plugin.updateTaskProperty(task, "priority", valueToSet, {
-								silent: true,
+								silent: false,
 							});
 						} else if (
 							propertyId === "projects" ||
@@ -444,7 +447,7 @@ export function buildTasknotesKanbanViewFactory(plugin: TaskNotesPlugin) {
 									: [valueToSet]
 								: [];
 							await plugin.updateTaskProperty(task, "projects", projectValue, {
-								silent: true,
+								silent: false,
 							});
 						} else if (
 							propertyId === "contexts" ||
@@ -458,7 +461,7 @@ export function buildTasknotesKanbanViewFactory(plugin: TaskNotesPlugin) {
 									: [valueToSet]
 								: [];
 							await plugin.updateTaskProperty(task, "contexts", contextValue, {
-								silent: true,
+								silent: false,
 							});
 						} else {
 							// For custom properties, update frontmatter directly
@@ -486,15 +489,24 @@ export function buildTasknotesKanbanViewFactory(plugin: TaskNotesPlugin) {
 							}
 						}
 
-						// Don't manually render - let Bases detect the property change
-						// and trigger onDataUpdated() with proper context
-						// This prevents flickering from renders without proper 'this' context
+						// Trigger refresh after a brief delay to ensure file write completes
+						// and Bases has time to detect the change
+						setTimeout(() => {
+							if (basesViewInstance && typeof basesViewInstance.refresh === "function") {
+								basesViewInstance.refresh();
+							}
+						}, 100);
 					} else if (task && !groupByPropertyId) {
 						// Fallback to status update when no groupBy config
 						await plugin.updateTaskProperty(task, "status", targetColumnId, {
-							silent: true,
+							silent: false,
 						});
-						// Don't manually render - let Bases detect the change
+						// Trigger refresh after a brief delay
+						setTimeout(() => {
+							if (basesViewInstance && typeof basesViewInstance.refresh === "function") {
+								basesViewInstance.refresh();
+							}
+						}, 100);
 					}
 				} catch (e) {
 					console.error("[TaskNotes][Bases] Move failed:", e);
