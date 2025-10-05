@@ -496,8 +496,12 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 					normalizeCalendarBoundariesToUTC(rawVisibleStart, rawVisibleEnd);
 
 				// Get view options from config (public API 1.10.0+)
-				const showTimeblocks = (ctx?.config?.get('showTimeblocks') as boolean) ?? false;
-				const showTimeEntries = (ctx?.config?.get('showTimeEntries') as boolean) ?? true;
+				const calendarDefaults = plugin.settings.calendarViewSettings;
+				const showScheduled = (ctx?.config?.get('showScheduled') as boolean) ?? calendarDefaults.defaultShowScheduled;
+				const showDue = (ctx?.config?.get('showDue') as boolean) ?? calendarDefaults.defaultShowDue;
+				const showRecurring = (ctx?.config?.get('showRecurring') as boolean) ?? calendarDefaults.defaultShowRecurring;
+				const showTimeEntries = (ctx?.config?.get('showTimeEntries') as boolean) ?? calendarDefaults.defaultShowTimeEntries;
+				const showTimeblocks = (ctx?.config?.get('showTimeblocks') as boolean) ?? calendarDefaults.defaultShowTimeblocks;
 				const startDateProperty = ctx?.config?.getAsPropertyId?.('startDateProperty');
 				const endDateProperty = ctx?.config?.getAsPropertyId?.('endDateProperty');
 
@@ -518,11 +522,11 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 				// Generate calendar events from TaskNotes using shared logic
 				if (taskNotes.length > 0) {
 					const taskEvents = await generateCalendarEvents(taskNotes, plugin, {
-						showScheduled: true,
-						showDue: true,
+						showScheduled: showScheduled,
+						showDue: showDue,
 						showTimeEntries: showTimeEntries,
-						showRecurring: true,
-						showICSEvents: false, // ICS events not available in Bases context
+						showRecurring: showRecurring,
+						showICSEvents: false, // ICS events handled separately in Bases
 						showTimeblocks: showTimeblocks && plugin.settings.calendarViewSettings.enableTimeblocking,
 						visibleStart,
 						visibleEnd,
@@ -691,6 +695,10 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 			try {
 				const calendarSettings = plugin.settings.calendarViewSettings || {};
 
+				// Get display options from config with defaults
+				const weekNumbers = (currentViewContext?.config?.get('weekNumbers') as boolean) ?? calendarSettings.weekNumbers;
+				const nowIndicator = (currentViewContext?.config?.get('nowIndicator') as boolean) ?? calendarSettings.nowIndicator;
+
 				// Validate and sanitize time settings
 				const sanitizedTimeSettings = sanitizeTimeSettings(calendarSettings);
 
@@ -747,9 +755,9 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 					selectable: true, // Enable date selection for task creation
 					locale: navigator.language || "en",
 					firstDay: firstDay,
-					weekNumbers: !!calendarSettings.weekNumbers,
+					weekNumbers: !!weekNumbers,
 					weekends: calendarSettings.showWeekends ?? true,
-					nowIndicator: calendarSettings.nowIndicator ?? true,
+					nowIndicator: nowIndicator ?? true,
 					// Enable clickable date titles
 					navLinks: true,
 					navLinkDayClick: (date: Date) => handleDateTitleClick(date, plugin),

@@ -38,18 +38,56 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 					icon: "calendar",
 					factory: buildTasknotesCalendarViewFactory(plugin),
 					options: () => {
+						const calendarSettings = plugin.settings.calendarViewSettings;
+
 						const options: any[] = [
 							{
-								type: "toggle",
-								key: "showTimeEntries",
-								displayName: "Show time entries",
-								default: true,
-							},
-							{
-								type: "toggle",
-								key: "showTimeblocks",
-								displayName: "Show timeblocks",
-								default: false,
+								type: "group",
+								displayName: "Display options",
+								items: [
+									{
+										type: "toggle",
+										key: "showScheduled",
+										displayName: "Show scheduled tasks",
+										default: calendarSettings.defaultShowScheduled,
+									},
+									{
+										type: "toggle",
+										key: "showDue",
+										displayName: "Show due tasks",
+										default: calendarSettings.defaultShowDue,
+									},
+									{
+										type: "toggle",
+										key: "showRecurring",
+										displayName: "Show recurring tasks",
+										default: calendarSettings.defaultShowRecurring,
+									},
+									{
+										type: "toggle",
+										key: "showTimeEntries",
+										displayName: "Show time entries",
+										default: calendarSettings.defaultShowTimeEntries,
+									},
+									{
+										type: "toggle",
+										key: "showTimeblocks",
+										displayName: "Show timeblocks",
+										default: calendarSettings.defaultShowTimeblocks,
+									},
+									{
+										type: "toggle",
+										key: "weekNumbers",
+										displayName: "Show week numbers",
+										default: calendarSettings.weekNumbers,
+									},
+									{
+										type: "toggle",
+										key: "nowIndicator",
+										displayName: "Show now indicator",
+										default: calendarSettings.nowIndicator,
+									},
+								],
 							},
 							{
 								type: "group",
