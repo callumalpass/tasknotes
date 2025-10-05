@@ -73,19 +73,23 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 							},
 						];
 
-						// Add ICS calendar selector if subscriptions are available
+						// Add individual toggle for each ICS calendar subscription
 						if (plugin.icsSubscriptionService) {
 							const subscriptions = plugin.icsSubscriptionService.getSubscriptions();
 							if (subscriptions.length > 0) {
+								// Create a group for ICS calendars
+								const icsToggles: any[] = subscriptions.map(sub => ({
+									type: "toggle",
+									key: `showICS_${sub.id}`,
+									displayName: sub.name,
+									default: true,
+								}));
+
+								// Add as a group
 								options.push({
-									type: "multiselect",
-									key: "selectedICSCalendars",
-									displayName: "ICS calendars to show",
-									options: subscriptions.map(sub => ({
-										value: sub.id,
-										label: sub.name,
-									})),
-									default: [],
+									type: "group",
+									displayName: "ICS Calendars",
+									items: icsToggles,
 								});
 							}
 						}

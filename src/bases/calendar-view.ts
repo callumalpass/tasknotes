@@ -500,7 +500,18 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 				const showTimeEntries = (ctx?.config?.get('showTimeEntries') as boolean) ?? true;
 				const startDateProperty = ctx?.config?.getAsPropertyId?.('startDateProperty');
 				const endDateProperty = ctx?.config?.getAsPropertyId?.('endDateProperty');
-				const selectedICSCalendars = (ctx?.config?.get('selectedICSCalendars') as string[]) ?? [];
+
+				// Build list of selected ICS calendars from individual toggle options
+				const selectedICSCalendars: string[] = [];
+				if (plugin.icsSubscriptionService) {
+					const subscriptions = plugin.icsSubscriptionService.getSubscriptions();
+					for (const sub of subscriptions) {
+						const isEnabled = (ctx?.config?.get(`showICS_${sub.id}`) as boolean) ?? true;
+						if (isEnabled) {
+							selectedICSCalendars.push(sub.id);
+						}
+					}
+				}
 
 				const events: CalendarEvent[] = [];
 
