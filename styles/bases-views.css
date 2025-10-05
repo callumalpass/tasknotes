@@ -22,7 +22,7 @@
     align-items: center;
     gap: var(--tn-spacing-xs);
     justify-content: flex-start;
-    padding: var(--tn-spacing-md) var(--tn-spacing-md) var(--tn-spacing-sm) var(--tn-spacing-sm);
+    padding: var(--tn-spacing-xs) var(--tn-spacing-md) var(--tn-spacing-xs) var(--tn-spacing-sm);
     margin-bottom: var(--tn-spacing-sm);
     border-bottom: 1px solid var(--tn-border-color);
     position: relative;
@@ -57,19 +57,11 @@
     padding: 0;
 }
 
-.tn-bases-tasknotes-list .task-group-toggle svg {
+.tn-bases-tasknotes-list .task-group-toggle svg,
+.tn-bases-tasknotes-list .task-group-toggle .chevron {
     color: var(--tn-text-normal);
     transition: transform 0.2s ease;
-}
-
-.tn-bases-tasknotes-list .task-group-toggle .chevron {
-    transition: transform 0.2s ease;
-}
-
-/* Expanded state - chevron rotated 90deg */
-.tn-bases-tasknotes-list .task-group:not(.is-collapsed) .task-group-toggle svg,
-.tn-bases-tasknotes-list .task-group:not(.is-collapsed) .task-group-toggle .chevron {
-    transform: rotate(90deg);
+    transform: rotate(90deg); /* Default expanded state */
 }
 
 /* Collapsed state - chevron at 0deg */
