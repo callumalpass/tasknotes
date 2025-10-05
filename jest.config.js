@@ -23,7 +23,9 @@ module.exports = {
     // Mock utility modules
     '^../../src/utils/helpers$': '<rootDir>/tests/__mocks__/utils.ts',
     '^../../src/utils/filenameGenerator$': '<rootDir>/tests/__mocks__/utils.ts',
-    '^../../src/utils/dateUtils$': '<rootDir>/tests/__mocks__/utils.ts'
+    '^../../src/utils/dateUtils$': '<rootDir>/tests/__mocks__/utils.ts',
+    // Mock markdown files (for release notes)
+    '\\.md$': '<rootDir>/tests/__mocks__/markdown.ts'
   },
   collectCoverageFrom: [
     'src/services/**/*.ts',
