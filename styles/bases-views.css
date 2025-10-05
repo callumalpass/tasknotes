@@ -1,0 +1,192 @@
+/* ================================================
+   BASES VIEWS - TaskNotes Integration Styles
+   ================================================ */
+
+/* Bases TaskNotes List View Container */
+.tn-bases-tasknotes-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--tn-spacing-xs);
+    width: 100%;
+}
+
+/* Task Group Section (matches TaskListView structure) */
+.tn-bases-tasknotes-list .task-section.task-group {
+    margin-bottom: var(--tn-spacing-md);
+}
+
+/* Group Header */
+.tn-bases-tasknotes-list .task-group-header {
+    display: flex;
+    align-items: center;
+    gap: var(--tn-spacing-sm);
+    justify-content: flex-start;
+    padding: var(--tn-spacing-md) 0 var(--tn-spacing-sm);
+    margin-bottom: var(--tn-spacing-sm);
+    border-bottom: 1px solid var(--tn-border-color);
+    position: relative;
+    font-size: var(--tn-font-size-lg);
+    font-weight: var(--tn-font-weight-medium);
+    color: var(--tn-text-normal);
+    letter-spacing: 0.01em;
+    line-height: 1.4;
+    cursor: pointer;
+}
+
+/* Count element within group headers */
+.tn-bases-tasknotes-list .task-group-header .agenda-view__item-count {
+    margin-left: auto;
+    margin-right: 0;
+}
+
+/* Toggle button for groups */
+.tn-bases-tasknotes-list .task-group-toggle {
+    display: contents;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    margin-right: var(--tn-spacing-xs);
+    border: none;
+    background: transparent;
+    color: var(--tn-text-normal);
+    font-size: 14px;
+    line-height: 1;
+}
+
+.tn-bases-tasknotes-list .task-group-toggle svg,
+.tn-bases-tasknotes-list .task-group-toggle .chevron,
+.tn-bases-tasknotes-list .task-group-toggle .chevron path {
+    color: var(--tn-text-normal);
+}
+
+.tn-bases-tasknotes-list .task-group-toggle svg,
+.tn-bases-tasknotes-list .task-group-toggle .chevron path {
+    stroke: currentColor;
+}
+
+.tn-bases-tasknotes-list .task-group-toggle .chevron {
+    transition: transform var(--tn-transition-fast);
+}
+
+/* Expanded state - chevron rotated */
+.tn-bases-tasknotes-list .task-group .task-group-toggle .chevron,
+.tn-bases-tasknotes-list .task-group .task-group-toggle svg {
+    transform: rotate(90deg);
+}
+
+/* Collapsed state - chevron normal */
+.tn-bases-tasknotes-list .task-group.is-collapsed .task-group-toggle svg,
+.tn-bases-tasknotes-list .task-group.is-collapsed .task-group-toggle .chevron {
+    transform: rotate(0deg);
+}
+
+/* Hide task cards when collapsed */
+.tn-bases-tasknotes-list .task-group.is-collapsed .task-cards {
+    display: none;
+}
+
+/* Task cards container */
+.tn-bases-tasknotes-list .tasks-container.task-cards {
+    display: flex;
+    flex-direction: column;
+    gap: var(--tn-spacing-xs);
+}
+
+/* Empty state */
+.tn-bases-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--tn-spacing-xl);
+    text-align: center;
+    color: var(--tn-text-muted);
+    background: var(--tn-bg-secondary);
+    border: 1px solid var(--tn-border-color);
+    border-radius: var(--tn-radius-md);
+    margin: var(--tn-spacing-lg) 0;
+}
+
+/* Kanban Board Styles */
+.tn-bases-kanban-board {
+    display: flex;
+    gap: var(--tn-spacing-md);
+    overflow-x: auto;
+    padding: var(--tn-spacing-sm);
+    min-height: 400px;
+}
+
+.tn-bases-kanban-column {
+    flex: 0 0 280px;
+    min-width: 280px;
+    display: flex;
+    flex-direction: column;
+    background: var(--tn-bg-secondary);
+    border: 1px solid var(--tn-border-color);
+    border-radius: var(--tn-radius-md);
+    overflow: hidden;
+}
+
+.tn-bases-kanban-column-header {
+    padding: var(--tn-spacing-md);
+    background: var(--tn-bg-primary);
+    border-bottom: 1px solid var(--tn-border-color);
+    font-weight: var(--tn-font-weight-medium);
+    color: var(--tn-text-normal);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.tn-bases-kanban-column-name {
+    font-size: var(--tn-font-size-md);
+}
+
+.tn-bases-kanban-column-count {
+    font-size: var(--tn-font-size-sm);
+    color: var(--tn-text-muted);
+    background: var(--tn-bg-secondary);
+    padding: 2px 8px;
+    border-radius: var(--tn-radius-sm);
+}
+
+.tn-bases-kanban-tasks {
+    flex: 1;
+    padding: var(--tn-spacing-sm);
+    display: flex;
+    flex-direction: column;
+    gap: var(--tn-spacing-xs);
+    overflow-y: auto;
+}
+
+/* Drag and drop styles */
+.tn-bases-kanban-tasks.drag-over {
+    background: var(--tn-interactive-hover);
+    border: 2px dashed var(--tn-interactive-accent);
+    border-radius: var(--tn-radius-sm);
+}
+
+/* Responsive design for Bases views */
+@media (max-width: 768px) {
+    .tn-bases-kanban-board {
+        gap: var(--tn-spacing-sm);
+    }
+
+    .tn-bases-kanban-column {
+        flex: 0 0 240px;
+        min-width: 240px;
+    }
+}
+
+@media (max-width: 480px) {
+    .tn-bases-tasknotes-list .task-group-header {
+        font-size: var(--tn-font-size-md);
+        padding: var(--tn-spacing-sm) 0 var(--tn-spacing-xs);
+    }
+
+    .tn-bases-kanban-column {
+        flex: 0 0 200px;
+        min-width: 200px;
+    }
+}

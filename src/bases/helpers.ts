@@ -446,6 +446,29 @@ export async function renderGroupedTasksInBasesView(
 		headerElement.className = "task-group-header task-list-view__group-header";
 		groupSection.appendChild(headerElement);
 
+		// Add toggle button (chevron)
+		const toggleBtn = document.createElement("button");
+		toggleBtn.className = "task-group-toggle";
+		toggleBtn.setAttribute("aria-label", "Toggle group");
+		toggleBtn.setAttribute("aria-expanded", "true");
+		headerElement.appendChild(toggleBtn);
+
+		// Try to add chevron icon
+		try {
+			const { setIcon } = await import("obsidian");
+			setIcon(toggleBtn, "chevron-right");
+			const svg = toggleBtn.querySelector("svg");
+			if (svg) {
+				svg.classList.add("chevron");
+				svg.setAttribute("width", "16");
+				svg.setAttribute("height", "16");
+			}
+		} catch (error) {
+			// Fallback to text chevron
+			toggleBtn.textContent = "▸";
+			toggleBtn.classList.add("chevron-text");
+		}
+
 		// Format group name and add count
 		const displayName = groupName === "null" || groupName === "undefined" ? "None" : groupName;
 		headerElement.createSpan({ text: displayName });
@@ -454,6 +477,23 @@ export async function renderGroupedTasksInBasesView(
 		headerElement.createSpan({
 			text: ` (${groupEntries.length})`,
 			cls: "agenda-view__item-count",
+		});
+
+		// Add click handler for toggle
+		headerElement.addEventListener("click", (e: MouseEvent) => {
+			const target = e.target as HTMLElement;
+			// Don't toggle if clicking on a link
+			if (target.closest("a")) return;
+
+			const isCollapsed = groupSection.classList.toggle("is-collapsed");
+			toggleBtn.setAttribute("aria-expanded", String(!isCollapsed));
+
+			// Toggle task cards visibility
+			if (isCollapsed) {
+				taskCardsContainer.style.display = "none";
+			} else {
+				taskCardsContainer.style.display = "";
+			}
 		});
 
 		// Create task cards container
