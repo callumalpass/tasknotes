@@ -11,6 +11,10 @@ export class ICSSubscriptionService extends EventEmitter {
 	private cache: Map<string, ICSCache> = new Map();
 	private refreshTimers: Map<string, number> = new Map();
 	private fileWatchers: Map<string, () => void> = new Map(); // For local file change tracking
+	private pendingRefreshes: Set<string> = new Set(); // Track in-progress refreshes to avoid duplicates
+
+	// Grace period after cache expiration to show stale data while refreshing (5 minutes)
+	private readonly CACHE_GRACE_PERIOD = 5 * 60 * 1000;
 
 	private translate(key: TranslationKey, variables?: Record<string, any>): string {
 		return this.plugin.i18n.translate(key, variables);
@@ -26,6 +30,8 @@ export class ICSSubscriptionService extends EventEmitter {
 		await this.loadSubscriptions();
 
 		// Start refresh timers and file watchers for enabled subscriptions
+		// Also immediately fetch subscriptions that don't have valid cache
+		const fetchPromises: Promise<void>[] = [];
 		this.subscriptions.forEach((subscription) => {
 			if (subscription.enabled) {
 				if (subscription.type === "remote") {
@@ -33,8 +39,17 @@ export class ICSSubscriptionService extends EventEmitter {
 				} else if (subscription.type === "local") {
 					this.startFileWatcher(subscription);
 				}
+
+				// Immediately fetch if no cache or cache is expired
+				const cache = this.cache.get(subscription.id);
+				if (!cache || new Date(cache.expires) <= new Date()) {
+					fetchPromises.push(this.fetchSubscription(subscription.id));
+				}
 			}
 		});
+
+		// Wait for initial fetches to complete
+		await Promise.allSettled(fetchPromises);
 
 		// Emit initial data load
 		this.emit("data-changed");
@@ -428,11 +443,47 @@ export class ICSSubscriptionService extends EventEmitter {
 
 	getAllEvents(): ICSEvent[] {
 		const allEvents: ICSEvent[] = [];
+		const now = new Date();
 
-		this.cache.forEach((cache) => {
-			// Check if cache is still valid
-			if (new Date(cache.expires) > new Date()) {
+		// Check all enabled subscriptions, not just those with cache
+		this.subscriptions.forEach((subscription) => {
+			if (!subscription.enabled) {
+				return;
+			}
+
+			const cache = this.cache.get(subscription.id);
+
+			if (!cache) {
+				// No cache exists - trigger immediate fetch
+				if (!this.pendingRefreshes.has(subscription.id)) {
+					this.pendingRefreshes.add(subscription.id);
+					this.fetchSubscription(subscription.id)
+						.finally(() => this.pendingRefreshes.delete(subscription.id));
+				}
+				return;
+			}
+
+			const expiryDate = new Date(cache.expires);
+			const gracePeriodEnd = new Date(expiryDate.getTime() + this.CACHE_GRACE_PERIOD);
+
+			// Return events if within grace period
+			if (now < gracePeriodEnd) {
 				allEvents.push(...cache.events);
+
+				// Trigger refresh if cache expired but within grace period
+				const isStale = now > expiryDate;
+				if (isStale && !this.pendingRefreshes.has(subscription.id)) {
+					this.pendingRefreshes.add(subscription.id);
+					this.fetchSubscription(subscription.id)
+						.finally(() => this.pendingRefreshes.delete(subscription.id));
+				}
+			} else {
+				// Cache is expired beyond grace period - trigger fetch
+				if (!this.pendingRefreshes.has(subscription.id)) {
+					this.pendingRefreshes.add(subscription.id);
+					this.fetchSubscription(subscription.id)
+						.finally(() => this.pendingRefreshes.delete(subscription.id));
+				}
 			}
 		});
 
@@ -441,9 +492,40 @@ export class ICSSubscriptionService extends EventEmitter {
 
 	getEventsForSubscription(subscriptionId: string): ICSEvent[] {
 		const cache = this.cache.get(subscriptionId);
-		if (!cache || new Date(cache.expires) <= new Date()) {
+		if (!cache) {
+			// No cache exists - trigger immediate fetch for enabled subscriptions
+			const subscription = this.subscriptions.find(sub => sub.id === subscriptionId);
+			if (subscription && subscription.enabled && !this.pendingRefreshes.has(subscriptionId)) {
+				this.pendingRefreshes.add(subscriptionId);
+				this.fetchSubscription(subscriptionId)
+					.finally(() => this.pendingRefreshes.delete(subscriptionId));
+			}
 			return [];
 		}
+
+		const now = new Date();
+		const expiryDate = new Date(cache.expires);
+		const gracePeriodEnd = new Date(expiryDate.getTime() + this.CACHE_GRACE_PERIOD);
+
+		// Return events if within grace period
+		if (now >= gracePeriodEnd) {
+			// Cache expired beyond grace period - trigger fetch
+			if (!this.pendingRefreshes.has(subscriptionId)) {
+				this.pendingRefreshes.add(subscriptionId);
+				this.fetchSubscription(subscriptionId)
+					.finally(() => this.pendingRefreshes.delete(subscriptionId));
+			}
+			return [];
+		}
+
+		// Trigger refresh if cache expired but within grace period
+		const isStale = now > expiryDate;
+		if (isStale && !this.pendingRefreshes.has(subscriptionId)) {
+			this.pendingRefreshes.add(subscriptionId);
+			this.fetchSubscription(subscriptionId)
+				.finally(() => this.pendingRefreshes.delete(subscriptionId));
+		}
+
 		return [...cache.events];
 	}
 
@@ -564,6 +646,9 @@ export class ICSSubscriptionService extends EventEmitter {
 
 		// Clear cache
 		this.cache.clear();
+
+		// Clear pending refreshes
+		this.pendingRefreshes.clear();
 
 		// Clear event listeners
 		this.removeAllListeners();
