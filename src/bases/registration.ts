@@ -29,6 +29,7 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 				factory: buildTasknotesKanbanViewFactory(plugin),
 			});
 
+			// Consider it successful if either view registered successfully
 			if (!taskListSuccess && !kanbanSuccess) {
 				console.debug("[TaskNotes][Bases] Bases plugin not available for registration");
 				return false;

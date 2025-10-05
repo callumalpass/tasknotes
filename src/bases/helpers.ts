@@ -337,6 +337,167 @@ export async function renderTaskNotesInBasesView(
 }
 
 /**
+ * Render grouped TaskNotes in Bases list view
+ * Uses grouped data from Bases API (public API 1.10.0+)
+ */
+export async function renderGroupedTasksInBasesView(
+	container: HTMLElement,
+	taskNotes: TaskInfo[],
+	plugin: TaskNotesPlugin,
+	viewContext: any,
+	pathToProps: Map<string, Record<string, any>>,
+	taskElementsMap?: Map<string, HTMLElement>
+): Promise<void> {
+	const { createTaskCard } = await import("../ui/TaskCard");
+
+	// Clear container and tracking map
+	container.innerHTML = "";
+	if (taskElementsMap) {
+		taskElementsMap.clear();
+	}
+
+	// Get groupedData from public API
+	const groupedData = viewContext?.data?.groupedData;
+	if (!Array.isArray(groupedData) || groupedData.length === 0) {
+		// No groups, fall back to flat rendering
+		await renderTaskNotesInBasesView(container, taskNotes, plugin, viewContext, taskElementsMap);
+		return;
+	}
+
+	// Get visible properties from Bases
+	const basesVisibleProperties = getBasesVisibleProperties(viewContext);
+	let visibleProperties: string[] | undefined;
+
+	if (basesVisibleProperties.length > 0) {
+		visibleProperties = basesVisibleProperties.map((p) => p.id);
+		// Map properties (same logic as renderTaskNotesInBasesView)
+		visibleProperties = visibleProperties.map((propId) => {
+			let mappedId = propId;
+			const internalFieldName = plugin.fieldMapper?.fromUserField(propId);
+			if (internalFieldName) {
+				mappedId = internalFieldName;
+			} else if (propId.startsWith("task.")) {
+				mappedId = propId.substring(5);
+			} else if (propId.startsWith("note.")) {
+				const stripped = propId.substring(5);
+				const strippedInternalFieldName = plugin.fieldMapper?.fromUserField(stripped);
+				if (strippedInternalFieldName) {
+					mappedId = strippedInternalFieldName;
+				} else if (stripped === "dateCreated") mappedId = "dateCreated";
+				else if (stripped === "dateModified") mappedId = "dateModified";
+				else if (stripped === "completedDate") mappedId = "completedDate";
+				else mappedId = stripped;
+			} else if (propId === "file.ctime") mappedId = "dateCreated";
+			else if (propId === "file.mtime") mappedId = "dateModified";
+			else if (propId === "file.name") mappedId = "title";
+			else if (propId.startsWith("formula.")) {
+				mappedId = propId;
+			}
+			return mappedId;
+		});
+	}
+
+	// Use plugin default properties if no Bases properties available
+	if (!visibleProperties || visibleProperties.length === 0) {
+		visibleProperties = plugin.settings.defaultVisibleProperties || [
+			"due",
+			"scheduled",
+			"projects",
+			"contexts",
+			"tags",
+			"blocked",
+			"blocking",
+		];
+	}
+
+	const cardOptions = {
+		showCheckbox: false,
+		showArchiveButton: false,
+		showTimeTracking: false,
+		showRecurringControls: true,
+		groupByDate: false,
+		targetDate: new Date(),
+	};
+
+	// Create a map from file path to TaskInfo for quick lookup
+	const tasksByPath = new Map<string, TaskInfo>();
+	taskNotes.forEach((task) => {
+		if (task.path) {
+			tasksByPath.set(task.path, task);
+		}
+	});
+
+	// Render each group
+	for (const group of groupedData) {
+		const groupKey = group.key?.data || "Unknown";
+		const groupName = String(groupKey);
+		const groupEntries = group.entries || [];
+
+		if (groupEntries.length === 0) continue;
+
+		// Create group section
+		const groupSection = document.createElement("div");
+		groupSection.className = "task-section task-group";
+		groupSection.setAttribute("data-group", groupName);
+		container.appendChild(groupSection);
+
+		// Create group header
+		const headerElement = document.createElement("h3");
+		headerElement.className = "task-group-header task-list-view__group-header";
+		groupSection.appendChild(headerElement);
+
+		// Format group name and add count
+		const displayName = groupName === "null" || groupName === "undefined" ? "None" : groupName;
+		headerElement.createSpan({ text: displayName });
+
+		// Add count
+		headerElement.createSpan({
+			text: ` (${groupEntries.length})`,
+			cls: "agenda-view__item-count",
+		});
+
+		// Create task cards container
+		const taskCardsContainer = document.createElement("div");
+		taskCardsContainer.className = "tasks-container task-cards";
+		groupSection.appendChild(taskCardsContainer);
+
+		// Collect TaskInfo for this group
+		const groupTasks: TaskInfo[] = [];
+		for (const entry of groupEntries) {
+			const filePath = entry.file?.path;
+			if (filePath) {
+				const task = tasksByPath.get(filePath);
+				if (task) {
+					groupTasks.push(task);
+				}
+			}
+		}
+
+		// Apply sorting within group
+		const { getBasesSortComparator } = await import("./sorting");
+		const sortComparator = getBasesSortComparator(viewContext, pathToProps);
+		if (sortComparator) {
+			groupTasks.sort(sortComparator);
+		}
+
+		// Render tasks in this group
+		for (const task of groupTasks) {
+			try {
+				const taskCard = createTaskCard(task, plugin, visibleProperties, cardOptions);
+				taskCardsContainer.appendChild(taskCard);
+
+				// Track task elements for selective updates
+				if (taskElementsMap && task.path) {
+					taskElementsMap.set(task.path, taskCard);
+				}
+			} catch (error) {
+				console.warn("[TaskNotes][Bases] Error creating task card:", error);
+			}
+		}
+	}
+}
+
+/**
  * Render a raw Bases data item for debugging/inspection
  */
 export function renderBasesDataItem(

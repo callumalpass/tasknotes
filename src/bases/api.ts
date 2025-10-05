@@ -178,7 +178,14 @@ export function registerBasesView(
 			console.debug(
 				`[TaskNotes][Bases] Public API returned false (Bases may be disabled), trying internal API`
 			);
-		} catch (error) {
+		} catch (error: any) {
+			// Check if error is because view already exists - treat as success
+			if (error?.message?.includes("already exists")) {
+				console.debug(
+					`[TaskNotes][Bases] View ${viewId} already registered via public API`
+				);
+				return true;
+			}
 			console.warn(
 				`[TaskNotes][Bases] Public API registration failed for ${viewId}, trying internal API:`,
 				error
