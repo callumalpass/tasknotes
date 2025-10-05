@@ -29,6 +29,14 @@ export class ReleaseNotesView extends ItemView {
 		return "book-open";
 	}
 
+	/**
+	 * Transform issue references like (#123) into clickable GitHub issue links
+	 */
+	private transformIssueLinks(markdown: string): string {
+		const repoUrl = "https://github.com/callumalpass/tasknotes";
+		return markdown.replace(/\(#(\d+)\)/g, `([#$1](${repoUrl}/issues/$1))`);
+	}
+
 	async onOpen() {
 		const { contentEl } = this;
 		contentEl.empty();
@@ -51,10 +59,11 @@ export class ReleaseNotesView extends ItemView {
 		const markdownContainer = container.createEl("div", { cls: "release-notes-content" });
 		markdownContainer.style.marginBottom = "30px";
 
-		// Render the markdown
+		// Transform issue references into clickable links and render the markdown
+		const transformedNotes = this.transformIssueLinks(this.releaseNotes);
 		await MarkdownRenderer.render(
 			this.plugin.app,
-			this.releaseNotes,
+			transformedNotes,
 			markdownContainer,
 			"",
 			this as any
