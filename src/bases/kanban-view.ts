@@ -25,6 +25,7 @@ interface BasesContainerLike {
 export function buildTasknotesKanbanViewFactory(plugin: TaskNotesPlugin) {
 	return function tasknotesKanbanViewFactory(basesContainer: BasesContainerLike, containerEl?: HTMLElement) {
 		let currentRoot: HTMLElement | null = null;
+		let cachedGroupByPropertyId: string | null | undefined = undefined; // undefined = not yet determined
 
 		// Detect which API is being used
 		// Public API (1.10.0+): (controller, containerEl)
@@ -155,27 +156,16 @@ export function buildTasknotesKanbanViewFactory(plugin: TaskNotesPlugin) {
 					});
 
 					// Try different ways to get groupBy from config
-					let groupByAttempts: any = {};
-					try {
-						groupByAttempts.get = viewContext.config?.get?.("groupBy");
-					} catch (e) { }
-					try {
-						groupByAttempts.getAsPropertyId = viewContext.config?.getAsPropertyId?.("groupBy");
-					} catch (e) { }
-
-					console.log("[TaskNotes][Bases] GroupBy attempts:", groupByAttempts);
-
+					// Use cached groupBy if available, otherwise determine it
+					if (cachedGroupByPropertyId === undefined) {
 					// Get the groupBy property from config using public API
 					if (viewContext.config && typeof viewContext.config.getAsPropertyId === "function") {
 						try {
 							groupByPropertyId = viewContext.config.getAsPropertyId("groupBy");
-							console.log("[TaskNotes][Bases] GroupBy property from getAsPropertyId:", groupByPropertyId);
 						} catch (e) {
-							console.warn("[TaskNotes][Bases] Error getting groupBy via getAsPropertyId:", e);
 							// Fallback to get() method
 							if (typeof viewContext.config.get === "function") {
 								groupByPropertyId = viewContext.config.get("groupBy");
-								console.log("[TaskNotes][Bases] GroupBy property from get():", groupByPropertyId);
 							}
 						}
 					}
@@ -186,11 +176,6 @@ export function buildTasknotesKanbanViewFactory(plugin: TaskNotesPlugin) {
 						const firstGroup = viewContext.data.groupedData[0];
 						const keyData = firstGroup.key?.data;
 
-						console.log("[TaskNotes][Bases] Inferring groupBy from data:", {
-							hasKey: !!firstGroup.key,
-							keyData,
-							keyType: typeof keyData
-						});
 
 						// Try to infer property type from the values
 						const allKeys = viewContext.data.groupedData
@@ -207,16 +192,18 @@ export function buildTasknotesKanbanViewFactory(plugin: TaskNotesPlugin) {
 
 						if (isProbablyStatus) {
 							groupByPropertyId = "note.status";
-							console.log("[TaskNotes][Bases] Inferred groupBy: note.status");
 						} else if (isProbablyPriority) {
 							groupByPropertyId = "note.priority";
-							console.log("[TaskNotes][Bases] Inferred groupBy: note.priority");
-						} else {
-							// Default to status for kanban views
-							groupByPropertyId = "note.status";
-							console.log("[TaskNotes][Bases] Using default groupBy: note.status");
 						}
+						// Otherwise leave as null - dont default to status
 					}
+					
+					// Cache the determined value (even if null)
+					cachedGroupByPropertyId = groupByPropertyId;
+				} else {
+					// Use cached value
+					groupByPropertyId = cachedGroupByPropertyId;
+				}
 
 					// Use pre-grouped data from Bases
 					for (const group of viewContext.data.groupedData) {
