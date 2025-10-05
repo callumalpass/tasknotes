@@ -20,6 +20,7 @@ import { getBasesSortComparator } from "./sorting";
 import { TaskContextMenu } from "../components/TaskContextMenu";
 import { TFile } from "obsidian";
 import { ICSEventInfoModal } from "../modals/ICSEventInfoModal";
+import { createTaskCard } from "../ui/TaskCard";
 
 interface BasesContainerLike {
 	results?: Map<any, any>;
@@ -792,6 +793,19 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 					select: handleDateSelect,
 					eventDrop: handleEventDrop,
 					eventResize: handleEventResize,
+					// Custom content renderer for list view - use TaskCard
+					eventContent: (arg: any) => {
+						// Only customize list view rendering
+						if (arg.view.type === 'listWeek' && arg.event.extendedProps?.taskInfo) {
+							const taskInfo = arg.event.extendedProps.taskInfo;
+							const taskCard = createTaskCard(taskInfo, plugin);
+
+							// Return object with domNodes to replace default content
+							return { domNodes: [taskCard] };
+						}
+						// Use default rendering for other views
+						return undefined;
+					},
 					eventDidMount: handleEventDidMount,
 					eventAllow: (dropInfo: any) => {
 						// Allow all drops to proceed visually
