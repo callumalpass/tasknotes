@@ -1,5 +1,6 @@
 import { TFile, Notice, normalizePath } from "obsidian";
 import { format } from "date-fns";
+import { processFolderTemplate, ICSTemplateData as ICSFolderTemplateData } from "../utils/folderTemplateProcessor";
 import TaskNotesPlugin from "../main";
 import { ICSEvent, TaskInfo, NoteInfo, TaskCreationData } from "../types";
 import { getCurrentTimestamp, formatDateForStorage } from "../utils/dateUtils";
@@ -121,8 +122,18 @@ export class ICSNoteService {
 				`${icsEvent.title} - ${format(new Date(icsEvent.start), "PPP")}`;
 
 			// Determine folder (safely handle missing icsIntegration settings)
-			const folder =
+			const rawFolder =
 				overrides?.folder || this.plugin.settings.icsIntegration?.defaultNoteFolder || "";
+
+			// Process folder template with ICS-specific data
+			const folder = processFolderTemplate(rawFolder, {
+				date: new Date(icsEvent.start),
+				icsData: {
+					title: icsEvent.title,
+					location: icsEvent.location,
+					description: icsEvent.description,
+				},
+			});
 
 			// Generate filename context for ICS events
 			// Use clean event title for filename template variables, not the formatted noteTitle

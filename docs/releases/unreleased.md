@@ -27,6 +27,13 @@ Example:
 
 ## Fixed
 
+- (#816) Fixed template variables not processing in ICS subscription note folder paths
+  - Template variables like `{{year}}`, `{{month}}`, `{{date}}` now work in ICS note folder settings
+  - Extracted folder template processing into shared utility for consistency
+  - Added support for ICS-specific variables: `{{icsEventTitle}}`, `{{icsEventLocation}}`, `{{icsEventDescription}}`
+  - Users can now organize ICS notes in date-based hierarchies (e.g., `Daily/{{year}}/{{month}}/`)
+  - Thanks to @j-peeters for reporting
+
 - (#829) Fixed time estimates and recurrence patterns being lost during instant task conversion
   - Added `timeEstimate` field to `ParsedTaskData` interface
   - Time estimates from natural language parsing now properly transferred to task frontmatter

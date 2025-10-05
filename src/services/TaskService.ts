@@ -39,6 +39,7 @@ import {
 	createUTCDateFromLocalCalendarDate,
 } from "../utils/dateUtils";
 import { format } from "date-fns";
+import { processFolderTemplate, TaskTemplateData } from "../utils/folderTemplateProcessor";
 
 import TaskNotesPlugin from "../main";
 import { TranslationKey } from "../i18n";
@@ -146,164 +147,25 @@ export class TaskService {
 		taskData?: TaskCreationData,
 		date: Date = new Date()
 	): string {
-		if (!folderTemplate) {
-			return folderTemplate;
-		}
+		// Convert TaskCreationData to TaskTemplateData
+		const templateData: TaskTemplateData | undefined = taskData
+			? {
+					title: taskData.title,
+					priority: taskData.priority,
+					status: taskData.status,
+					contexts: taskData.contexts,
+					projects: taskData.projects,
+					due: taskData.due,
+					scheduled: taskData.scheduled,
+			  }
+			: undefined;
 
-		let processedPath = folderTemplate;
-
-		// Replace task variables if taskData is provided
-		if (taskData) {
-			// Handle single context (first one if multiple)
-			const context =
-				Array.isArray(taskData.contexts) && taskData.contexts.length > 0
-					? taskData.contexts[0]
-					: "";
-			processedPath = processedPath.replace(/\{\{context\}\}/g, context);
-
-			// Handle single project (first one if multiple)
-			const project =
-				Array.isArray(taskData.projects) && taskData.projects.length > 0
-					? this.extractProjectBasename(taskData.projects[0])
-					: "";
-			processedPath = processedPath.replace(/\{\{project\}\}/g, project);
-
-			//Handle multiple projects
-			const projects =
-				Array.isArray(taskData.projects) && taskData.projects.length > 0
-					? taskData.projects
-							.map((project) => this.extractProjectBasename(project))
-							.join("/")
-					: "";
-			processedPath = processedPath.replace(/\{\{projects\}\}/g, projects);
-
-			// Handle multiple contexts
-			const contexts =
-				Array.isArray(taskData.contexts) && taskData.contexts.length > 0
-					? taskData.contexts.join("/")
-					: "";
-			processedPath = processedPath.replace(/\{\{contexts\}\}/g, contexts);
-
-			// Handle priority
-			const priority = taskData.priority || "";
-			processedPath = processedPath.replace(/\{\{priority\}\}/g, priority);
-
-			// Handle status
-			const status = taskData.status || "";
-			processedPath = processedPath.replace(/\{\{status\}\}/g, status);
-
-			// Handle title (sanitized for folder names)
-			const title = taskData.title ? taskData.title.replace(/[<>:"/\\|?*]/g, "_") : "";
-			processedPath = processedPath.replace(/\{\{title\}\}/g, title);
-
-			// Handle due date and scheduled date
-			const dueDate = taskData.due || "";
-			processedPath = processedPath.replace(/\{\{dueDate\}\}/g, dueDate);
-
-			const scheduledDate = taskData.scheduled || "";
-			processedPath = processedPath.replace(/\{\{scheduledDate\}\}/g, scheduledDate);
-
-			// Priority and status variations
-			const priorityShort = priority ? priority.substring(0, 1).toUpperCase() : "";
-			processedPath = processedPath.replace(/\{\{priorityShort\}\}/g, priorityShort);
-
-			const statusShort = status ? status.substring(0, 1).toUpperCase() : "";
-			processedPath = processedPath.replace(/\{\{statusShort\}\}/g, statusShort);
-
-			// Title variations (all sanitized for folder names)
-			const titleLower = title ? title.toLowerCase() : "";
-			processedPath = processedPath.replace(/\{\{titleLower\}\}/g, titleLower);
-
-			const titleUpper = title ? title.toUpperCase() : "";
-			processedPath = processedPath.replace(/\{\{titleUpper\}\}/g, titleUpper);
-
-			const titleSnake = title ? title.toLowerCase().replace(/\s+/g, "_") : "";
-			processedPath = processedPath.replace(/\{\{titleSnake\}\}/g, titleSnake);
-
-			const titleKebab = title ? title.toLowerCase().replace(/\s+/g, "-") : "";
-			processedPath = processedPath.replace(/\{\{titleKebab\}\}/g, titleKebab);
-
-			const titleCamel = title
-				? title
-						.replace(/(?:^\w|[A-Z]|\b\w)/g, (word, index) =>
-							index === 0 ? word.toLowerCase() : word.toUpperCase()
-						)
-						.replace(/\s+/g, "")
-				: "";
-			processedPath = processedPath.replace(/\{\{titleCamel\}\}/g, titleCamel);
-
-			const titlePascal = title
-				? title
-						.replace(/(?:^\w|[A-Z]|\b\w)/g, (word) => word.toUpperCase())
-						.replace(/\s+/g, "")
-				: "";
-			processedPath = processedPath.replace(/\{\{titlePascal\}\}/g, titlePascal);
-		}
-
-		// Replace date variables with current date values
-		processedPath = processedPath.replace(/\{\{year\}\}/g, format(date, "yyyy"));
-		processedPath = processedPath.replace(/\{\{month\}\}/g, format(date, "MM"));
-		processedPath = processedPath.replace(/\{\{day\}\}/g, format(date, "dd"));
-		processedPath = processedPath.replace(/\{\{date\}\}/g, format(date, "yyyy-MM-dd"));
-
-		// Time variables
-		processedPath = processedPath.replace(/\{\{time\}\}/g, format(date, "HHmmss"));
-		processedPath = processedPath.replace(
-			/\{\{timestamp\}\}/g,
-			format(date, "yyyy-MM-dd-HHmmss")
-		);
-		processedPath = processedPath.replace(/\{\{dateTime\}\}/g, format(date, "yyyy-MM-dd-HHmm"));
-		processedPath = processedPath.replace(/\{\{hour\}\}/g, format(date, "HH"));
-		processedPath = processedPath.replace(/\{\{minute\}\}/g, format(date, "mm"));
-		processedPath = processedPath.replace(/\{\{second\}\}/g, format(date, "ss"));
-
-		// New date format variations
-		processedPath = processedPath.replace(/\{\{shortDate\}\}/g, format(date, "yyMMdd"));
-		processedPath = processedPath.replace(/\{\{monthName\}\}/g, format(date, "MMMM"));
-		processedPath = processedPath.replace(/\{\{monthNameShort\}\}/g, format(date, "MMM"));
-		processedPath = processedPath.replace(/\{\{dayName\}\}/g, format(date, "EEEE"));
-		processedPath = processedPath.replace(/\{\{dayNameShort\}\}/g, format(date, "EEE"));
-		processedPath = processedPath.replace(/\{\{week\}\}/g, format(date, "ww"));
-		processedPath = processedPath.replace(/\{\{quarter\}\}/g, format(date, "q"));
-
-		// Time variations
-		processedPath = processedPath.replace(/\{\{time12\}\}/g, format(date, "hh:mm a"));
-		processedPath = processedPath.replace(/\{\{time24\}\}/g, format(date, "HH:mm"));
-		processedPath = processedPath.replace(/\{\{hourPadded\}\}/g, format(date, "HH"));
-		processedPath = processedPath.replace(/\{\{hour12\}\}/g, format(date, "hh"));
-		processedPath = processedPath.replace(/\{\{ampm\}\}/g, format(date, "a"));
-
-		// Unix timestamp and milliseconds
-		processedPath = processedPath.replace(
-			/\{\{unix\}\}/g,
-			Math.floor(date.getTime() / 1000).toString()
-		);
-		processedPath = processedPath.replace(/\{\{unixMs\}\}/g, date.getTime().toString());
-		processedPath = processedPath.replace(/\{\{milliseconds\}\}/g, format(date, "SSS"));
-		processedPath = processedPath.replace(/\{\{ms\}\}/g, format(date, "SSS"));
-
-		// Timezone support
-		processedPath = processedPath.replace(/\{\{timezone\}\}/g, format(date, "xxx"));
-		processedPath = processedPath.replace(/\{\{timezoneShort\}\}/g, format(date, "xx"));
-		processedPath = processedPath.replace(/\{\{utcOffset\}\}/g, format(date, "xxx"));
-		processedPath = processedPath.replace(/\{\{utcOffsetShort\}\}/g, format(date, "xx"));
-		processedPath = processedPath.replace(/\{\{utcZ\}\}/g, "Z");
-
-		// Date-based identifiers
-		const zettelId = (() => {
-			const datePart = format(date, "yyMMdd");
-			const midnight = new Date(date);
-			midnight.setHours(0, 0, 0, 0);
-			const secondsSinceMidnight = Math.floor((date.getTime() - midnight.getTime()) / 1000);
-			const randomPart = secondsSinceMidnight.toString(36);
-			return `${datePart}${randomPart}`;
-		})();
-		processedPath = processedPath.replace(/\{\{zettel\}\}/g, zettelId);
-
-		const nanoId = Date.now().toString() + Math.random().toString(36).substring(2, 7);
-		processedPath = processedPath.replace(/\{\{nano\}\}/g, nanoId);
-
-		return processedPath;
+		// Use the shared folder template processor utility
+		return processFolderTemplate(folderTemplate, {
+			date,
+			taskData: templateData,
+			extractProjectBasename: (project) => this.extractProjectBasename(project),
+		});
 	}
 
 	/**
