@@ -71,14 +71,13 @@ export function createPropertyEventCard(
 			// Get visible properties from Bases view configuration
 			const visibleProperties = viewConfig.getOrder?.() || [];
 
-			// Limit to first few properties to avoid clutter
-			const propertiesToShow = visibleProperties.slice(0, 3);
+			// Get date property IDs to skip
+			const startDatePropertyId = viewConfig.getAsPropertyId?.('startDateProperty');
+			const endDatePropertyId = viewConfig.getAsPropertyId?.('endDateProperty');
 
-			for (const propertyId of propertiesToShow) {
+			// Show all non-date visible properties
+			for (const propertyId of visibleProperties) {
 				// Skip the properties used for calendar dates (start/end)
-				const startDatePropertyId = viewConfig.getAsPropertyId?.('startDateProperty');
-				const endDatePropertyId = viewConfig.getAsPropertyId?.('endDateProperty');
-
 				if (propertyId === startDatePropertyId || propertyId === endDatePropertyId) {
 					continue;
 				}
