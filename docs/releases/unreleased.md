@@ -25,3 +25,11 @@ Example:
 
 -->
 
+## Fixed
+
+- (#829) Fixed time estimates and recurrence patterns being lost during instant task conversion
+  - Added `timeEstimate` field to `ParsedTaskData` interface
+  - Time estimates from natural language parsing now properly transferred to task frontmatter
+  - Parsed values now take priority over default settings
+  - RRule strings passed directly without conversion (preferred format)
+
