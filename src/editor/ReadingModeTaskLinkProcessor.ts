@@ -109,13 +109,9 @@ export class ReadingModeTaskLinkProcessor {
 	 */
 	private resolveLinkPath(linkPath: string, sourcePath: string): string | null {
 		try {
-			// Sanitize link path to prevent directory traversal
-			const sanitizedLinkPath = linkPath.replace(/\.\./g, "").trim();
-			if (!sanitizedLinkPath) return null;
-
-			// Use Obsidian's metadata cache to resolve the link
+			// Use Obsidian's metadata cache to resolve the link - it handles relative paths safely
 			const file = this.plugin.app.metadataCache.getFirstLinkpathDest(
-				sanitizedLinkPath,
+				linkPath,
 				sourcePath
 			);
 			return file?.path || null;
