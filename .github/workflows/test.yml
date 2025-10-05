@@ -71,7 +71,11 @@ jobs:
     - name: Run linter
       run: npm run lint || echo "Linting completed with warnings"
       timeout-minutes: 10
-      
+
+    - name: Generate release notes import
+      run: node generate-release-notes-import.mjs
+      timeout-minutes: 1
+
     - name: Run type check
       run: npm run typecheck
       timeout-minutes: 5

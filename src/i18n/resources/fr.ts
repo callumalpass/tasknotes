@@ -204,6 +204,12 @@ export const fr: TranslationTree = {
 				minTime: "Temps min (minutes)",
 			},
 		},
+		releaseNotes: {
+			title: "Nouveautés de TaskNotes {version}",
+			header: "Nouveautés de TaskNotes {version}",
+			viewAllLink: "Voir toutes les notes de version sur GitHub →",
+			starMessage: "Si vous trouvez TaskNotes utile, pensez à lui donner une étoile sur GitHub",
+		},
 	},
 	settings: {
 		tabs: {
@@ -1541,6 +1547,7 @@ export const fr: TranslationTree = {
 		pauseResumePomodoro: "Mettre en pause/reprendre le minuteur Pomodoro",
 		refreshCache: "Actualiser le cache",
 		exportAllTasksIcs: "Exporter toutes les tâches en fichier ICS",
+		viewReleaseNotes: "Voir les notes de version",
 	},
 	modals: {
 		task: {

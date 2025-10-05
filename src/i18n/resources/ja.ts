@@ -205,6 +205,12 @@ export const ja: TranslationTree = {
 				minTime: "最小時間（分）",
 			},
 		},
+		releaseNotes: {
+			title: "TaskNotes {version} の新機能",
+			header: "TaskNotes {version} の新機能",
+			viewAllLink: "GitHubですべてのリリースノートを表示 →",
+			starMessage: "TaskNotesが役に立ったら、GitHubでスターをお願いします",
+		},
 	},
 	settings: {
 		tabs: {
@@ -1487,6 +1493,7 @@ export const ja: TranslationTree = {
 		pauseResumePomodoro: "ポモドーロタイマーを一時停止/再開",
 		refreshCache: "キャッシュを更新",
 		exportAllTasksIcs: "すべてのタスクをICSファイルとしてエクスポート",
+		viewReleaseNotes: "リリースノートを表示",
 	},
 	modals: {
 		task: {

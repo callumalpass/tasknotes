@@ -1,4 +1,5 @@
 // import { TAbstractFile } from 'obsidian';
+import { Setting } from "obsidian";
 import TaskNotesPlugin from "../../main";
 import {
 	createSectionHeader,
@@ -226,4 +227,20 @@ export function renderGeneralTab(
 			save();
 		},
 	});
+
+	// Release Notes Section
+	createSectionHeader(container, "Release Notes");
+	createHelpText(container, `Current version: ${plugin.manifest.version}`);
+
+	new Setting(container)
+		.setName("View release notes")
+		.setDesc("See what's new in the latest version of TaskNotes")
+		.addButton((button) =>
+			button
+				.setButtonText("View release notes")
+				.setCta()
+				.onClick(async () => {
+					await plugin.activateReleaseNotesView();
+				})
+		);
 }

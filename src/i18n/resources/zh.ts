@@ -204,6 +204,12 @@ export const zh: TranslationTree = {
 				minTime: "最少时间（分钟）",
 			},
 		},
+		releaseNotes: {
+			title: "TaskNotes {version} 的新功能",
+			header: "TaskNotes {version} 的新功能",
+			viewAllLink: "在 GitHub 上查看所有版本说明 →",
+			starMessage: "如果您觉得 TaskNotes 有用，请在 GitHub 上给它加星",
+		},
 	},
 	settings: {
 		tabs: {
@@ -1432,6 +1438,7 @@ export const zh: TranslationTree = {
 		pauseResumePomodoro: "暂停/恢复番茄钟计时器",
 		refreshCache: "刷新缓存",
 		exportAllTasksIcs: "导出所有任务为ICS文件",
+		viewReleaseNotes: "查看版本说明",
 	},
 	modals: {
 		task: {
