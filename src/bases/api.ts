@@ -169,8 +169,7 @@ export function registerBasesView(
 		try {
 			const success = (plugin as any).registerBasesView(viewId, registration);
 			if (success) {
-				// eslint-disable-next-line no-console
-				console.log(
+				console.debug(
 					`[TaskNotes][Bases] Successfully registered view via public API: ${viewId}`
 				);
 				return true;
@@ -204,8 +203,7 @@ export function registerBasesView(
 		// Only register if it doesn't already exist
 		if (!api.registrations[viewId]) {
 			api.registrations[viewId] = registration;
-			// eslint-disable-next-line no-console
-			console.log(
+			console.debug(
 				`[TaskNotes][Bases] Successfully registered view via internal API: ${viewId}`
 			);
 		} else {
@@ -232,8 +230,7 @@ export function unregisterBasesView(plugin: Plugin, viewId: string): boolean {
 	try {
 		if (api.registrations[viewId]) {
 			delete api.registrations[viewId];
-			// eslint-disable-next-line no-console
-			console.log(`[TaskNotes][Bases] Successfully unregistered view: ${viewId}`);
+			console.debug(`[TaskNotes][Bases] Successfully unregistered view: ${viewId}`);
 		}
 		return true;
 	} catch (error) {

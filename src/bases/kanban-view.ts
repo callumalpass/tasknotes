@@ -121,13 +121,6 @@ export function buildTasknotesKanbanViewFactory(plugin: TaskNotesPlugin) {
 					return; // Skip render silently - no data available
 				}
 
-				console.log("[TaskNotes][Bases] Kanban render context:", {
-					hasThisData: !!this?.data,
-					hasThisConfig: !!this?.config,
-					hasControllerData: !!controller?.data,
-					usingContext: viewContext === this ? 'this' : 'controller',
-					groupedDataLength: viewContext?.data?.groupedData?.length
-				});
 
 				const dataItems = extractDataItems(viewContext);
 				const taskNotes = await identifyTaskNotesFromBasesData(dataItems, plugin);
@@ -156,7 +149,7 @@ export function buildTasknotesKanbanViewFactory(plugin: TaskNotesPlugin) {
 
 				// Try to use public API (1.10.0+) data.groupedData
 				if (viewContext.data?.groupedData && Array.isArray(viewContext.data.groupedData)) {
-					console.log("[TaskNotes][Bases] Using public API groupedData", {
+					console.debug("[TaskNotes][Bases] Using public API groupedData", {
 						groupCount: viewContext.data.groupedData.length,
 						hasConfig: !!viewContext.config
 					});
@@ -217,7 +210,7 @@ export function buildTasknotesKanbanViewFactory(plugin: TaskNotesPlugin) {
 						const keyValue = group.key?.data ?? "none";
 						const keyString = String(keyValue);
 
-						console.log("[TaskNotes][Bases] Processing group:", {
+						console.debug("[TaskNotes][Bases] Processing group:", {
 							keyString,
 							entryCount: group.entries?.length
 						});
@@ -233,9 +226,9 @@ export function buildTasknotesKanbanViewFactory(plugin: TaskNotesPlugin) {
 							groups.set(keyString, groupTasks);
 						}
 					}
-					console.log("[TaskNotes][Bases] Final groups:", Array.from(groups.keys()));
+					console.debug("[TaskNotes][Bases] Final groups:", Array.from(groups.keys()));
 				} else {
-					console.log("[TaskNotes][Bases] No groupedData available, using fallback grouping", {
+					console.debug("[TaskNotes][Bases] No groupedData available, using fallback grouping", {
 						hasData: !!viewContext.data,
 						hasGroupedData: !!viewContext.data?.groupedData,
 						isArray: Array.isArray(viewContext.data?.groupedData)

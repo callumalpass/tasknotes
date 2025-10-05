@@ -118,17 +118,8 @@ export function buildTasknotesBaseViewFactory(plugin: TaskNotesPlugin, config: V
 				// For legacy API, use controller/basesContainer
 				const viewContext = this?.data ? this : controller;
 
-				console.log("[TaskNotes][Bases] List view render context:", {
-					hasThisData: !!this?.data,
-					hasThisConfig: !!this?.config,
-					hasControllerData: !!controller?.data,
-					usingContext: viewContext === this ? 'this' : 'controller',
-					dataLength: viewContext?.data?.data?.length
-				});
-
 				// Skip rendering if we have no data yet (prevents flickering during data updates)
 				if (!viewContext.data?.data && !viewContext.results) {
-					console.log("[TaskNotes][Bases] List view: Skipping render - no data available");
 					return;
 				}
 
@@ -207,7 +198,7 @@ export function buildTasknotesBaseViewFactory(plugin: TaskNotesPlugin, config: V
 					// Check if we have grouped data from Bases (public API)
 					if (viewContext.data?.groupedData && Array.isArray(viewContext.data.groupedData)) {
 						// Use grouped data from Bases
-						console.log("[TaskNotes][Bases] List view rendering with groups");
+						console.debug("[TaskNotes][Bases] List view rendering with groups");
 						await renderGroupedTasksInBasesView(
 							itemsContainer,
 							taskNotes,
@@ -308,7 +299,7 @@ export function buildTasknotesBaseViewFactory(plugin: TaskNotesPlugin, config: V
 					}, 1000);
 
 					// eslint-disable-next-line no-console
-			console.log(`[TaskNotes][Bases] Selectively updated task: ${updatedTask.path}`);
+			console.debug(`[TaskNotes][Bases] Selectively updated task: ${updatedTask.path}`);
 				} else {
 					// Task not currently visible, might need to be added - refresh to be safe
 					debouncedFullRefresh();
@@ -327,7 +318,7 @@ export function buildTasknotesBaseViewFactory(plugin: TaskNotesPlugin, config: V
 
 			updateDebounceTimer = window.setTimeout(async () => {
 				// eslint-disable-next-line no-console
-			console.log("[TaskNotes][Bases] Performing debounced full refresh");
+			console.debug("[TaskNotes][Bases] Performing debounced full refresh");
 				await render();
 				updateDebounceTimer = null;
 			}, 150);
@@ -411,7 +402,7 @@ export function buildTasknotesBaseViewFactory(plugin: TaskNotesPlugin, config: V
 				queryListener = null;
 
 				// eslint-disable-next-line no-console
-			console.log("[TaskNotes][Bases] Cleaned up view with real-time updates");
+			console.debug("[TaskNotes][Bases] Cleaned up view with real-time updates");
 			},
 			load() {
 				const query = controller.query || (basesContainer as any)?.query;

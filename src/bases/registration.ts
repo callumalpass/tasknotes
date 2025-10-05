@@ -61,7 +61,7 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 
 	// Try immediate registration
 	if (await attemptRegistration()) {
-		console.log("[TaskNotes][Bases] Successfully registered views");
+		console.debug("[TaskNotes][Bases] Successfully registered views");
 		return;
 	}
 
@@ -69,7 +69,7 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 	for (let i = 0; i < 5; i++) {
 		await new Promise((r) => setTimeout(r, 200));
 		if (await attemptRegistration()) {
-			console.log("[TaskNotes][Bases] Successfully registered views on retry");
+			console.debug("[TaskNotes][Bases] Successfully registered views on retry");
 			return;
 		}
 	}
