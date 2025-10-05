@@ -174,12 +174,12 @@ export function renderGeneralTab(
 	// Frontmatter Section - only show if user has markdown links enabled globally
 	const useMarkdownLinks = plugin.app.vault.getConfig('useMarkdownLinks');
 	if (useMarkdownLinks) {
-		createSectionHeader(container, "Frontmatter");
-		createHelpText(container, "Configure how links are formatted in frontmatter properties.");
+		createSectionHeader(container, translate("settings.general.frontmatter.header"));
+		createHelpText(container, translate("settings.general.frontmatter.description"));
 
 		createToggleSetting(container, {
-			name: "Use markdown links in frontmatter",
-			desc: "Generate markdown links ([text](path)) instead of wikilinks ([[link]]) in frontmatter properties.\n\n⚠️ Requires the 'obsidian-frontmatter-markdown-links' plugin to work correctly.",
+			name: translate("settings.general.frontmatter.useMarkdownLinks.name"),
+			desc: translate("settings.general.frontmatter.useMarkdownLinks.description"),
 			getValue: () => plugin.settings.useFrontmatterMarkdownLinks,
 			setValue: async (value: boolean) => {
 				plugin.settings.useFrontmatterMarkdownLinks = value;

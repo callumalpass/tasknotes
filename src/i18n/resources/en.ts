@@ -573,6 +573,14 @@ export const en: TranslationTree = {
 					description: "Comma-separated list of folders to exclude from Notes tab",
 				},
 			},
+			frontmatter: {
+				header: "Frontmatter",
+				description: "Configure how links are formatted in frontmatter properties.",
+				useMarkdownLinks: {
+					name: "Use markdown links in frontmatter",
+					description: "Generate markdown links ([text](path)) instead of wikilinks ([[link]]) in frontmatter properties.\n\n⚠️ Requires the 'obsidian-frontmatter-markdown-links' plugin to work correctly.",
+				},
+			},
 			taskInteraction: {
 				header: "Task Interaction",
 				description: "Configure how clicking on tasks behaves.",
