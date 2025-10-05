@@ -18,6 +18,7 @@ import { getTodayLocal, normalizeCalendarBoundariesToUTC } from "../utils/dateUt
 import { generateCalendarEvents, CalendarEvent, generateTaskTooltip, applyRecurringTaskStyling, handleRecurringTaskDrop, getTargetDateForEvent, handleTimeblockCreation, handleTimeblockDrop, handleTimeblockResize, showTimeblockInfoModal, applyTimeblockStyling, generateTimeblockTooltip, handleDateTitleClick, addTaskHoverPreview } from "./calendar-core";
 import { getBasesSortComparator } from "./sorting";
 import { TaskContextMenu } from "../components/TaskContextMenu";
+import { TFile } from "obsidian";
 
 interface BasesContainerLike {
 	results?: Map<any, any>;
@@ -141,12 +142,70 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 				isRecurringInstance,
 				isNextScheduledOccurrence,
 				isPatternInstance,
+				filePath,
 			} = dropInfo.event.extendedProps;
 
 			// Handle timeblock drops
 			if (eventType === "timeblock") {
 				const originalDate = format(dropInfo.oldEvent.start, "yyyy-MM-dd");
 				await handleTimeblockDrop(dropInfo, timeblock, originalDate, plugin);
+				return;
+			}
+
+			// Handle property-based event drops
+			if (eventType === "property-based" && filePath) {
+				try {
+					const file = plugin.app.vault.getAbstractFileByPath(filePath);
+					if (!file || !(file instanceof TFile)) {
+						dropInfo.revert();
+						return;
+					}
+
+					const startDatePropertyId = currentViewContext?.config?.getAsPropertyId?.('startDateProperty');
+					const endDatePropertyId = currentViewContext?.config?.getAsPropertyId?.('endDateProperty');
+
+					if (!startDatePropertyId) {
+						dropInfo.revert();
+						return;
+					}
+
+					// Strip property prefix (e.g., "note.dateCreated" -> "dateCreated")
+					const startDateProperty = startDatePropertyId.includes('.')
+						? startDatePropertyId.split('.').pop()
+						: startDatePropertyId;
+					const endDateProperty = endDatePropertyId && endDatePropertyId.includes('.')
+						? endDatePropertyId.split('.').pop()
+						: endDatePropertyId;
+
+					// Calculate time shift (in milliseconds)
+					const oldStart = dropInfo.oldEvent.start;
+					const newStart = dropInfo.event.start;
+					const timeDiffMs = newStart.getTime() - oldStart.getTime();
+
+					// Update frontmatter
+					await plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
+						// Update start date
+						const oldStartValue = frontmatter[startDateProperty];
+						if (oldStartValue) {
+							const oldStartDate = new Date(oldStartValue);
+							const newStartDate = new Date(oldStartDate.getTime() + timeDiffMs);
+							frontmatter[startDateProperty] = format(newStartDate, dropInfo.event.allDay ? "yyyy-MM-dd" : "yyyy-MM-dd'T'HH:mm");
+						}
+
+						// Update end date if configured
+						if (endDateProperty) {
+							const oldEndValue = frontmatter[endDateProperty];
+							if (oldEndValue) {
+								const oldEndDate = new Date(oldEndValue);
+								const newEndDate = new Date(oldEndDate.getTime() + timeDiffMs);
+								frontmatter[endDateProperty] = format(newEndDate, dropInfo.event.allDay ? "yyyy-MM-dd" : "yyyy-MM-dd'T'HH:mm");
+							}
+						}
+					});
+				} catch (error) {
+					console.error("[TaskNotes][Bases][Calendar] Error updating property-based event:", error);
+					dropInfo.revert();
+				}
 				return;
 			}
 
@@ -186,12 +245,51 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 				return;
 			}
 
-			const { taskInfo, timeblock, eventType } = resizeInfo.event.extendedProps;
+			const { taskInfo, timeblock, eventType, filePath } = resizeInfo.event.extendedProps;
 
 			// Handle timeblock resize
 			if (eventType === "timeblock") {
 				const originalDate = format(resizeInfo.event.start, "yyyy-MM-dd");
 				await handleTimeblockResize(resizeInfo, timeblock, originalDate, plugin);
+				return;
+			}
+
+			// Handle property-based event resize
+			if (eventType === "property-based" && filePath) {
+				try {
+					const file = plugin.app.vault.getAbstractFileByPath(filePath);
+					if (!file || !(file instanceof TFile)) {
+						resizeInfo.revert();
+						return;
+					}
+
+					const endDatePropertyId = currentViewContext?.config?.getAsPropertyId?.('endDateProperty');
+
+					if (!endDatePropertyId) {
+						// No end date property configured, can't resize
+						resizeInfo.revert();
+						return;
+					}
+
+					// Strip property prefix (e.g., "note.dateModified" -> "dateModified")
+					const endDateProperty = endDatePropertyId.includes('.')
+						? endDatePropertyId.split('.').pop()
+						: endDatePropertyId;
+
+					const newEnd = resizeInfo.event.end;
+					if (!newEnd) {
+						resizeInfo.revert();
+						return;
+					}
+
+					// Update frontmatter
+					await plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
+						frontmatter[endDateProperty] = format(newEnd, resizeInfo.event.allDay ? "yyyy-MM-dd" : "yyyy-MM-dd'T'HH:mm");
+					});
+				} catch (error) {
+					console.error("[TaskNotes][Bases][Calendar] Error resizing property-based event:", error);
+					resizeInfo.revert();
+				}
 				return;
 			}
 
@@ -321,7 +419,48 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 			}
 		};
 
-		// Get calendar events from tasks
+		// Create calendar event from property-based dates
+		const createPropertyBasedEvent = (entry: any, startDate: string, endDate?: string): CalendarEvent | null => {
+			try {
+				const file = entry.file;
+				if (!file) return null;
+
+				// Parse start date
+				const hasTime = startDate.includes('T');
+
+				// Calculate end date if not provided
+				let eventEnd = endDate;
+				if (!eventEnd && !hasTime) {
+					// For all-day events without end date, use next day
+					const start = new Date(startDate);
+					const end = new Date(start);
+					end.setDate(end.getDate() + 1);
+					eventEnd = format(end, "yyyy-MM-dd");
+				}
+
+				return {
+					id: `property-${file.path}`,
+					title: file.basename || file.name,
+					start: startDate,
+					end: eventEnd,
+					allDay: !hasTime,
+					backgroundColor: "var(--color-accent)",
+					borderColor: "var(--color-accent)",
+					textColor: "var(--text-on-accent)",
+					editable: true, // Allow drag and resize
+					extendedProps: {
+						eventType: "property-based" as const,
+						filePath: file.path,
+						file: file,
+					},
+				};
+			} catch (error) {
+				console.error("[TaskNotes][Bases][Calendar] Error creating property-based event:", error);
+				return null;
+			}
+		};
+
+		// Get calendar events from tasks and property-based entries
 		const getCalendarEvents = async (viewContext?: any): Promise<CalendarEvent[]> => {
 			try {
 				// Use stored context if available, otherwise fall back to controller
@@ -333,11 +472,19 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 				}
 
 				const dataItems = extractDataItems(ctx);
-				const taskNotes = await identifyTaskNotesFromBasesData(dataItems, plugin);
 
-				if (taskNotes.length === 0) {
-					return [];
+				// Filter to only actual TaskNotes by checking if they're in the cache
+				const taskNoteItems: BasesDataItem[] = [];
+				const allCachedTasks = await plugin.cacheManager.getAllTasks();
+				const cachedTaskPaths = new Set(allCachedTasks.map(t => t.path));
+
+				for (const item of dataItems) {
+					if (item.path && cachedTaskPaths.has(item.path)) {
+						taskNoteItems.push(item);
+					}
 				}
+
+				const taskNotes = await identifyTaskNotesFromBasesData(taskNoteItems, plugin);
 
 				// Get calendar's visible date range for recurring task generation
 				const today = getTodayLocal();
@@ -350,18 +497,110 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 				// Get view options from config (public API 1.10.0+)
 				const showTimeblocks = (ctx?.config?.get('showTimeblocks') as boolean) ?? false;
 				const showTimeEntries = (ctx?.config?.get('showTimeEntries') as boolean) ?? true;
+				const startDateProperty = ctx?.config?.getAsPropertyId?.('startDateProperty');
+				const endDateProperty = ctx?.config?.getAsPropertyId?.('endDateProperty');
 
-				// Generate calendar events using shared logic
-				const events = await generateCalendarEvents(taskNotes, plugin, {
-					showScheduled: true,
-					showDue: true,
-					showTimeEntries: showTimeEntries,
-					showRecurring: true,
-					showICSEvents: false, // ICS events not available in Bases context
-					showTimeblocks: showTimeblocks && plugin.settings.calendarViewSettings.enableTimeblocking,
-					visibleStart,
-					visibleEnd,
-				});
+				const events: CalendarEvent[] = [];
+
+				// Generate calendar events from TaskNotes using shared logic
+				if (taskNotes.length > 0) {
+					const taskEvents = await generateCalendarEvents(taskNotes, plugin, {
+						showScheduled: true,
+						showDue: true,
+						showTimeEntries: showTimeEntries,
+						showRecurring: true,
+						showICSEvents: false, // ICS events not available in Bases context
+						showTimeblocks: showTimeblocks && plugin.settings.calendarViewSettings.enableTimeblocking,
+						visibleStart,
+						visibleEnd,
+					});
+					events.push(...taskEvents);
+				}
+
+				// Generate events from non-TaskNotes using configured properties
+				if (startDateProperty && ctx.data?.data) {
+					const taskNotePaths = new Set(taskNotes.map(t => t.path));
+					let propertyEventCount = 0;
+
+					for (const entry of ctx.data.data) {
+						try {
+							const file = entry.file;
+
+							// Skip if no file or is already a TaskNote
+							if (!file || taskNotePaths.has(file.path)) continue;
+
+							// Try to get start date from configured property
+							const startValue = entry.getValue?.(startDateProperty);
+							if (!startValue) continue;
+
+							// Extract date from Bases Value object
+							// Bases returns objects like: { icon: 'lucide-calendar', date: Date, time: boolean }
+							let dateValue: Date | string | null = null;
+
+							if (startValue.date instanceof Date) {
+								dateValue = startValue.date;
+							} else if (startValue.data instanceof Date) {
+								dateValue = startValue.data;
+							} else if (typeof startValue.data === 'string') {
+								dateValue = startValue.data;
+							} else if (startValue instanceof Date) {
+								dateValue = startValue;
+							}
+
+							if (!dateValue) continue;
+
+							// Convert to date string
+							let startDateStr: string;
+							if (dateValue instanceof Date) {
+								const hasTime = startValue.time === true;
+								startDateStr = hasTime
+									? format(dateValue, "yyyy-MM-dd'T'HH:mm")
+									: format(dateValue, "yyyy-MM-dd");
+							} else {
+								startDateStr = dateValue;
+							}
+
+							// Try to get end date if property is configured
+							let endDateStr: string | undefined;
+							if (endDateProperty) {
+								const endValue = entry.getValue?.(endDateProperty);
+								if (endValue) {
+									let endDateValue: Date | string | null = null;
+
+									if (endValue.date instanceof Date) {
+										endDateValue = endValue.date;
+									} else if (endValue.data instanceof Date) {
+										endDateValue = endValue.data;
+									} else if (typeof endValue.data === 'string') {
+										endDateValue = endValue.data;
+									} else if (endValue instanceof Date) {
+										endDateValue = endValue;
+									}
+
+									if (endDateValue) {
+										if (endDateValue instanceof Date) {
+											const hasTime = endValue.time === true;
+											endDateStr = hasTime
+												? format(endDateValue, "yyyy-MM-dd'T'HH:mm")
+												: format(endDateValue, "yyyy-MM-dd");
+										} else {
+											endDateStr = endDateValue;
+										}
+									}
+								}
+							}
+
+							// Create event
+							const event = createPropertyBasedEvent(entry, startDateStr, endDateStr);
+							if (event) {
+								events.push(event);
+								propertyEventCount++;
+							}
+						} catch (error) {
+							console.warn("[TaskNotes][Bases][Calendar] Error processing entry:", error);
+						}
+					}
+				}
 
 				// Validate events
 				return events.filter((event) => {
@@ -524,13 +763,20 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 					// Event click handler - open task file or timeblock modal
 					eventClick: (info: any) => {
 						try {
-							const { taskInfo, timeblock, eventType } = info.event.extendedProps || {};
+							const { taskInfo, timeblock, eventType, filePath } = info.event.extendedProps || {};
 							const jsEvent = info.jsEvent;
 
 							// Handle timeblock click
 							if (eventType === "timeblock" && timeblock) {
 								const originalDate = format(info.event.start, "yyyy-MM-dd");
 								showTimeblockInfoModal(timeblock, info.event.start, originalDate, plugin);
+								return;
+							}
+
+							// Handle property-based event click - Ctrl/Cmd+click opens in new tab
+							if (eventType === "property-based" && filePath) {
+								const openInNewTab = jsEvent && (jsEvent.ctrlKey || jsEvent.metaKey);
+								plugin.app.workspace.openLinkText(filePath, "", openInNewTab);
 								return;
 							}
 

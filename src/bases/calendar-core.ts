@@ -32,7 +32,9 @@ export interface CalendarEvent {
 		taskInfo?: TaskInfo;
 		icsEvent?: ICSEvent;
 		timeblock?: TimeBlock;
-		eventType: "scheduled" | "due" | "timeEntry" | "recurring" | "ics" | "timeblock";
+		eventType: "scheduled" | "due" | "timeEntry" | "recurring" | "ics" | "timeblock" | "property-based";
+		filePath?: string; // For property-based events
+		file?: any; // For property-based events
 		isCompleted?: boolean;
 		isRecurringInstance?: boolean;
 		isNextScheduledOccurrence?: boolean;

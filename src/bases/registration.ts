@@ -50,6 +50,26 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 							displayName: "Show timeblocks",
 							default: false,
 						},
+						{
+							type: "property",
+							key: "startDateProperty",
+							displayName: "Start date property",
+							placeholder: "Select property for start date/time",
+							filter: (prop) => {
+								// Only show date-type properties (we'll check this more carefully in the implementation)
+								return prop.startsWith("note.") || prop.startsWith("file.");
+							},
+						},
+						{
+							type: "property",
+							key: "endDateProperty",
+							displayName: "End date property (optional)",
+							placeholder: "Select property for end date/time",
+							filter: (prop) => {
+								// Only show date-type properties
+								return prop.startsWith("note.") || prop.startsWith("file.");
+							},
+						},
 					],
 				});
 			}
