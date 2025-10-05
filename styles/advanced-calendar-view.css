@@ -713,7 +713,7 @@
     color: var(--text-normal) !important;
 }
 
-/* Multi-month (year view) styling */
+/* Multi-month (year view) styling - minimalist */
 .advanced-calendar-view .fc-multimonth-daygrid .fc-daygrid-day {
     background: var(--background-primary) !important;
     color: var(--text-normal) !important;
@@ -721,19 +721,25 @@
 
 /* Multi-month month headers */
 .advanced-calendar-view .fc-multimonth-header {
-    background: var(--background-secondary) !important;
+    background: transparent !important;
     color: var(--text-normal) !important;
+    border-bottom: 1px solid var(--divider-color);
 }
 
 .advanced-calendar-view .fc-multimonth-title {
-    background: var(--background-secondary) !important;
+    background: transparent !important;
     color: var(--text-normal) !important;
+    font-weight: 500;
+    padding: 0.5rem;
 }
 
 /* Multi-month day headers (Mon, Tue, etc.) */
 .advanced-calendar-view .fc-multimonth .fc-col-header-cell {
-    background: var(--background-secondary) !important;
+    background: transparent !important;
     color: var(--text-muted) !important;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 /* Day numbers */
@@ -744,14 +750,17 @@
     padding: 0.5rem;
 }
 
-/* List view day headers */
+/* List view day headers - minimalist */
 .advanced-calendar-view .fc-list-day-cushion {
-    background: var(--background-secondary) !important;
+    background: transparent !important;
     color: var(--text-normal) !important;
+    font-weight: 500;
+    border-bottom: 1px solid var(--divider-color);
+    padding: 0.5rem 0.25rem;
 }
 
 .advanced-calendar-view .fc-list-day {
-    background: var(--background-secondary) !important;
+    background: transparent !important;
 }
 
 /* Clean event styling */

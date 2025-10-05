@@ -156,12 +156,12 @@
     border-radius: var(--tn-radius-sm);
 }
 
-/* Bases Calendar List View - ensure consistent event styling */
+/* Bases Calendar List View - minimalist styling */
 .fc-event-default-list {
     padding: var(--tn-spacing-xs) var(--tn-spacing-sm);
     margin: var(--tn-spacing-xs) 0;
-    background: var(--tn-bg-secondary);
-    border: 1px solid var(--tn-border-color);
+    background: transparent;
+    border: none;
     border-radius: var(--tn-radius-sm);
 }
 
@@ -184,8 +184,14 @@
 }
 
 #bases-calendar .fc-list-day-cushion {
-    background: var(--tn-bg-secondary);
-    padding: var(--tn-spacing-xs) var(--tn-spacing-sm);
+    background: transparent;
+    padding: var(--tn-spacing-sm) var(--tn-spacing-xs);
+    border-bottom: 1px solid var(--tn-divider-color);
+    font-weight: var(--tn-font-weight-medium);
+}
+
+#bases-calendar .fc-list-day {
+    background: transparent;
 }
 
 /* Responsive design for Bases views */
