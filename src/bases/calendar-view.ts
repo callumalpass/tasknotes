@@ -332,8 +332,20 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 
 				let cardElement: HTMLElement | null = null;
 
-				// Get visible properties from Bases view configuration
-				const visibleProperties = currentViewContext?.config?.getOrder?.() || undefined;
+				// Get visible properties from Bases view configuration and map to TaskCard property IDs
+				let visibleProperties: string[] | undefined = undefined;
+				if (currentViewContext?.config?.getOrder) {
+					const basesProperties = currentViewContext.config.getOrder();
+					visibleProperties = basesProperties.map((propId: string) => {
+						// Map Bases property IDs to TaskCard property IDs
+						// "note.status" → "status", "note.due" → "due", etc.
+						if (propId.startsWith('note.')) {
+							return propId.substring(5); // Remove "note." prefix
+						}
+						// Keep file properties, formulas, and user properties as-is
+						return propId;
+					});
+				}
 
 				// Render task events with TaskCard
 				if (taskInfo && eventType !== 'ics' && eventType !== 'property-based') {
