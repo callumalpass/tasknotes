@@ -91,3 +91,9 @@ Example:
   - Widget now renders correctly on startup without requiring workarounds
   - Thanks to @nightroman for reporting
 
+- (#810) Fixed recurring tasks with overdue due dates disappearing from agenda view
+  - Recurring tasks now check both `due` and `scheduled` dates for overdue status
+  - Previously only `scheduled` was checked for recurring tasks, causing tasks with overdue `due` dates to be hidden
+  - Ensures consistent overdue detection logic between recurring and non-recurring tasks
+  - Thanks to @skyrunner15 for reporting
+
