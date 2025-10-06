@@ -122,14 +122,24 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 				// Create timeblock
 				handleTimeblockCreation(start, end, allDay, plugin);
 			} else {
-				// Create task with pre-populated date
-				const scheduledDate = allDay
-					? format(start, "yyyy-MM-dd")
-					: format(start, "yyyy-MM-dd'T'HH:mm");
+				// Create task with pre-populated date and duration
+				// Parse slot duration from settings (format: "HH:mm:ss")
+				const slotDurationSetting = plugin.settings.calendarViewSettings.slotDuration || "00:30:00";
+				const [hours, minutes] = slotDurationSetting.split(':').map(Number);
+				const slotDurationMinutes = (hours * 60) + minutes;
+
+				// Use shared logic to calculate task creation values
+				const { calculateTaskCreationValues } = require("./calendar-core");
+				const prePopulatedValues = calculateTaskCreationValues(
+					start,
+					end,
+					allDay,
+					slotDurationMinutes
+				);
 
 				const { TaskCreationModal } = require("../modals/TaskCreationModal");
 				const modal = new TaskCreationModal(plugin.app, plugin, {
-					prePopulatedValues: { scheduled: scheduledDate },
+					prePopulatedValues,
 				});
 				modal.open();
 			}

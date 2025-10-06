@@ -34,3 +34,13 @@ Example:
   - Updated all date parsing throughout the codebase to handle date-only format correctly
   - Maintains compatibility with FullCalendar and preserves iCalendar RFC 5545 semantics for VALUE=DATE events
   - Thanks to @needo37 for reporting #854 and @realJohnDoe for reporting #695
+
+- (#859) Fixed multi-day task creation in Bases calendar view
+  - Extracted shared task creation logic to `calendar-core.ts` for consistency between calendar views
+  - Multi-day all-day selections now correctly set time estimate based on number of days dragged
+  - Timed task selections (week view) now correctly calculate duration in minutes
+  - Single-day clicks no longer override default time estimate settings
+  - Both Bases calendar and AdvancedCalendarView now use same logic for consistent behavior
+  - Fixed all-day task rendering to use 24-hour days (1440 minutes = 1 day on calendar)
+  - Follows UTC Anchor principle for date-only strings
+  - Thanks to @anareaty for reporting

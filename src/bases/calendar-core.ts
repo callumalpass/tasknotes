@@ -1052,3 +1052,57 @@ export async function handleDateTitleClick(date: Date, plugin: TaskNotesPlugin):
 		new Notice(`Failed to navigate to daily note: ${errorMessage}`);
 	}
 }
+
+/**
+ * Calculate pre-populated values for task creation from calendar date selection
+ *
+ * This shared logic is used by both AdvancedCalendarView and Bases calendar view
+ * to consistently handle multi-day selections, timed selections, and single clicks.
+ *
+ * @param start - Selection start date
+ * @param end - Selection end date
+ * @param allDay - Whether this is an all-day selection
+ * @param slotDurationMinutes - Calendar slot duration in minutes (for detecting drags vs clicks)
+ * @returns Pre-populated values object with scheduled date and optional timeEstimate
+ */
+export function calculateTaskCreationValues(
+	start: Date,
+	end: Date,
+	allDay: boolean,
+	slotDurationMinutes: number
+): { scheduled: string; timeEstimate?: number } {
+	// Pre-populate with selected date/time
+	const scheduledDate = allDay
+		? format(start, "yyyy-MM-dd")
+		: format(start, "yyyy-MM-dd'T'HH:mm");
+
+	const durationMinutes = Math.round((end.getTime() - start.getTime()) / (1000 * 60));
+
+	// Determine if this was a drag (intentional time selection) or just a click
+	// If duration is greater than slot duration, it's an intentional drag
+	const isDragOperation = !allDay && durationMinutes > slotDurationMinutes;
+
+	const prePopulatedValues: { scheduled: string; timeEstimate?: number } = {
+		scheduled: scheduledDate,
+	};
+
+	// Only override time estimate if it's an intentional drag operation
+	if (allDay) {
+		// For all-day events, calculate duration in days if multi-day selection
+		const dayDurationMillis = 24 * 60 * 60 * 1000; // milliseconds in a day
+		const daysDuration = Math.round((end.getTime() - start.getTime()) / dayDurationMillis);
+
+		if (daysDuration > 1) {
+			// Multi-day selection: set time estimate based on days
+			const minutesPerDay = 60 * 24;
+			prePopulatedValues.timeEstimate = daysDuration * minutesPerDay;
+		}
+		// For single-day all-day events, let TaskCreationModal use the default setting
+	} else if (isDragOperation) {
+		// User dragged to select a specific duration, use that
+		prePopulatedValues.timeEstimate = durationMinutes;
+	}
+	// For clicks (not drags), don't set timeEstimate to let default setting apply
+
+	return prePopulatedValues;
+}

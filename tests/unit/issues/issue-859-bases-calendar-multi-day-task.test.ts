@@ -142,8 +142,9 @@ describe('Issue #859: Multi-day task creation in Bases calendar view', () => {
 
         it('should work correctly for timed tasks (week view behavior)', () => {
             // 2 hour selection in week view (timed)
-            const start = new Date('2025-01-15T09:00:00.000Z');
-            const end = new Date('2025-01-15T11:00:00.000Z');
+            // Use local dates instead of UTC to avoid timezone issues
+            const start = new Date(2025, 0, 15, 9, 0); // Jan 15, 2025, 9:00 AM local
+            const end = new Date(2025, 0, 15, 11, 0); // Jan 15, 2025, 11:00 AM local
 
             const result = simulateBasesCalendarTaskCreationFixed(start, end, false);
 
@@ -154,8 +155,9 @@ describe('Issue #859: Multi-day task creation in Bases calendar view', () => {
 
         it('should not set time estimate for short timed selections (clicks)', () => {
             // Short click in week view (less than slot duration)
-            const start = new Date('2025-01-15T09:00:00.000Z');
-            const end = new Date('2025-01-15T09:15:00.000Z'); // 15 minutes < 30 minute slot
+            // Use local dates instead of UTC to avoid timezone issues
+            const start = new Date(2025, 0, 15, 9, 0); // Jan 15, 2025, 9:00 AM local
+            const end = new Date(2025, 0, 15, 9, 15); // Jan 15, 2025, 9:15 AM local (15 minutes < 30 minute slot)
 
             const result = simulateBasesCalendarTaskCreationFixed(start, end, false);
 
