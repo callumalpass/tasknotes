@@ -108,7 +108,9 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 			const { start, end, allDay, jsEvent } = selectInfo;
 
 			// Check if timeblocking is enabled and Shift key is held
-			const showTimeblocks = (currentViewContext?.config?.get('showTimeblocks') as boolean) ?? false;
+			// Use currentViewContext if available, otherwise fall back to controller
+			const ctx = currentViewContext || controller;
+			const showTimeblocks = (ctx?.config?.get('showTimeblocks') as boolean) ?? false;
 			const isTimeblockMode =
 				plugin.settings.calendarViewSettings.enableTimeblocking &&
 				showTimeblocks &&
@@ -168,8 +170,9 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 						return;
 					}
 
-					const startDatePropertyId = currentViewContext?.config?.getAsPropertyId?.('startDateProperty');
-					const endDatePropertyId = currentViewContext?.config?.getAsPropertyId?.('endDateProperty');
+					const ctx = currentViewContext || controller;
+					const startDatePropertyId = ctx?.config?.getAsPropertyId?.('startDateProperty');
+					const endDatePropertyId = ctx?.config?.getAsPropertyId?.('endDateProperty');
 
 					if (!startDatePropertyId) {
 						dropInfo.revert();
@@ -274,7 +277,8 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 						return;
 					}
 
-					const endDatePropertyId = currentViewContext?.config?.getAsPropertyId?.('endDateProperty');
+					const ctx = currentViewContext || controller;
+					const endDatePropertyId = ctx?.config?.getAsPropertyId?.('endDateProperty');
 
 					if (!endDatePropertyId) {
 						// No end date property configured, can't resize
@@ -343,8 +347,9 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 
 				// Get visible properties from Bases view configuration and map to TaskCard property IDs
 				let visibleProperties: string[] | undefined = undefined;
-				if (currentViewContext?.config?.getOrder) {
-					const basesProperties = currentViewContext.config.getOrder();
+				const ctx = currentViewContext || controller;
+				if (ctx?.config?.getOrder) {
+					const basesProperties = ctx.config.getOrder();
 					visibleProperties = basesProperties.map((propId: string) => {
 						// Map Bases property IDs to TaskCard property IDs
 						// "note.status" → "status", "note.due" → "due", etc.
