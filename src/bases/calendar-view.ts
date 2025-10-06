@@ -122,14 +122,24 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 				// Create timeblock
 				handleTimeblockCreation(start, end, allDay, plugin);
 			} else {
-				// Create task with pre-populated date
-				const scheduledDate = allDay
-					? format(start, "yyyy-MM-dd")
-					: format(start, "yyyy-MM-dd'T'HH:mm");
+				// Create task with pre-populated date and duration
+				// Parse slot duration from settings (format: "HH:mm:ss")
+				const slotDurationSetting = plugin.settings.calendarViewSettings.slotDuration || "00:30:00";
+				const [hours, minutes] = slotDurationSetting.split(':').map(Number);
+				const slotDurationMinutes = (hours * 60) + minutes;
+
+				// Use shared logic to calculate task creation values
+				const { calculateTaskCreationValues } = require("./calendar-core");
+				const prePopulatedValues = calculateTaskCreationValues(
+					start,
+					end,
+					allDay,
+					slotDurationMinutes
+				);
 
 				const { TaskCreationModal } = require("../modals/TaskCreationModal");
 				const modal = new TaskCreationModal(plugin.app, plugin, {
-					prePopulatedValues: { scheduled: scheduledDate },
+					prePopulatedValues,
 				});
 				modal.open();
 			}
@@ -345,7 +355,21 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 				const end = resizeInfo.event.end;
 
 				if (start && end) {
-					const durationMinutes = Math.round((end.getTime() - start.getTime()) / (1000 * 60));
+					let durationMinutes: number;
+
+					if (resizeInfo.event.allDay) {
+						// For all-day events, FullCalendar's end date is exclusive (next day at midnight)
+						// So we need to subtract 1 day to get the actual duration
+						// Example: Jan 15 to Jan 17 (2 days) gives end = Jan 18 00:00
+						const dayDurationMillis = 24 * 60 * 60 * 1000;
+						const daysDuration = Math.round((end.getTime() - start.getTime()) / dayDurationMillis);
+						const minutesPerDay = 60 * 24;
+						durationMinutes = daysDuration * minutesPerDay;
+					} else {
+						// For timed events, calculate duration directly
+						durationMinutes = Math.round((end.getTime() - start.getTime()) / (1000 * 60));
+					}
+
 					await plugin.taskService.updateProperty(taskInfo, "timeEstimate", durationMinutes);
 				}
 			} catch (error) {
