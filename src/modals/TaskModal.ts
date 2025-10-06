@@ -570,8 +570,8 @@ export abstract class TaskModal extends Modal {
 		iconContainer.setAttribute("aria-label", tooltip);
 		// Store initial tooltip for later updates but don't set title attribute
 		iconContainer.setAttribute("data-initial-tooltip", tooltip);
-		iconContainer.setAttribute("tabindex", "0")
-		iconContainer.setAttribute("role", "button")
+		iconContainer.setAttribute("tabindex", "0");
+		iconContainer.setAttribute("role", "button");
 		// Add data attribute for easier identification
 		if (dataType) {
 			iconContainer.setAttribute("data-type", dataType);
@@ -586,11 +586,13 @@ export abstract class TaskModal extends Modal {
 			onClick(iconContainer, event);
 		});
 
-		iconContainer.addEventListener("keydown", event => {
-			if (event.key === 'Enter') {
+		iconContainer.addEventListener("keydown", (event) => {
+			if (event.key === "Enter" || event.key === " ") {
+				event.preventDefault();
+				event.stopPropagation();
 				onClick(iconContainer, event);
 			}
-		})
+		});
 
 		return iconContainer;
 	}
@@ -909,7 +911,6 @@ export abstract class TaskModal extends Modal {
 			const openNoteButton = buttonContainer.createEl("button", {
 				cls: "open-note-button",
 				text: this.t("modals.task.buttons.openNote"),
-				attr: { "tabindex": 0 },
 			});
 
 			openNoteButton.addEventListener("click", async () => {
@@ -924,7 +925,6 @@ export abstract class TaskModal extends Modal {
 		const saveButton = buttonContainer.createEl("button", {
 			cls: "save-button",
 			text: this.t("modals.task.buttons.save"),
-			attr: { "tabindex": 0 },
 		});
 
 		saveButton.addEventListener("click", async () => {
@@ -941,7 +941,6 @@ export abstract class TaskModal extends Modal {
 		const cancelButton = buttonContainer.createEl("button", {
 			cls: "cancel-button",
 			text: this.t("common.cancel"),
-			attr: { "tabindex": 0 },
 		});
 
 		cancelButton.addEventListener("click", () => {
