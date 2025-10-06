@@ -15,7 +15,7 @@ import { ICSEventContextMenu } from "../components/ICSEventContextMenu";
 import { TaskContextMenu } from "../components/TaskContextMenu";
 import { PriorityContextMenu } from "../components/PriorityContextMenu";
 import { RecurrenceContextMenu } from "../components/RecurrenceContextMenu";
-import { createTaskClickHandler, createTaskHoverHandler } from "../utils/clickHandlers";
+import { createTaskClickHandler, createTaskHoverHandler, handleCalendarTaskClick } from "../utils/clickHandlers";
 import { TimeblockInfoModal } from "../modals/TimeblockInfoModal";
 import { format, startOfDay, endOfDay } from "date-fns";
 import { Calendar } from "@fullcalendar/core";
@@ -1282,19 +1282,9 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 		}
 
 		if (eventType === "timeEntry") {
-			// Time entries: Ctrl/Cmd+click opens in new tab, regular click opens edit modal
+			// Time entries: Use shared click handler
 			if (taskInfo && jsEvent.button === 0) {
-				if (jsEvent.ctrlKey || jsEvent.metaKey) {
-					// Ctrl/Cmd + Click: Open task in new tab
-					const file = this.app.vault.getAbstractFileByPath(taskInfo.path);
-					if (file instanceof TFile) {
-						this.app.workspace.openLinkText(taskInfo.path, "", true);
-					}
-				} else {
-					// Regular click: Open edit modal
-					const editModal = new TaskEditModal(this.app, this.plugin, { task: taskInfo });
-					editModal.open();
-				}
+				handleCalendarTaskClick(taskInfo, this.plugin, jsEvent, clickInfo.event.id);
 			}
 			return;
 		}
@@ -1311,17 +1301,9 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 			return;
 		}
 
-		// Handle different click types - removed right-click handling to avoid conflicts with eventDidMount
-		if (jsEvent.ctrlKey || jsEvent.metaKey) {
-			// Ctrl/Cmd + Click: Open task in new tab
-			const file = this.app.vault.getAbstractFileByPath(taskInfo.path);
-			if (file instanceof TFile) {
-				this.app.workspace.openLinkText(taskInfo.path, "", true);
-			}
-		} else if (jsEvent.button === 0) {
-			// Left click only: Open edit modal
-			const editModal = new TaskEditModal(this.app, this.plugin, { task: taskInfo });
-			editModal.open();
+		// Handle task clicks with single/double click detection based on user settings
+		if (taskInfo && jsEvent.button === 0) {
+			handleCalendarTaskClick(taskInfo, this.plugin, jsEvent, clickInfo.event.id);
 		}
 	}
 

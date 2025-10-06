@@ -20,6 +20,7 @@ import { getBasesSortComparator } from "./sorting";
 import { TaskContextMenu } from "../components/TaskContextMenu";
 import { TFile } from "obsidian";
 import { ICSEventInfoModal } from "../modals/ICSEventInfoModal";
+import { handleCalendarTaskClick } from "../utils/clickHandlers";
 import { createTaskCard } from "../ui/TaskCard";
 import { createICSEventCard } from "../ui/ICSCard";
 import { createPropertyEventCard } from "../ui/PropertyEventCard";
@@ -1043,17 +1044,17 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 								return;
 							}
 
-							// Handle property-based event click - Ctrl/Cmd+click opens in new tab
+							// Handle property-based event click - use shared click handler
 							if (eventType === "property-based" && filePath) {
-								const openInNewTab = jsEvent && (jsEvent.ctrlKey || jsEvent.metaKey);
-								plugin.app.workspace.openLinkText(filePath, "", openInNewTab);
+								// Create a minimal TaskInfo object for property-based events
+								const propertyTask: any = { path: filePath };
+								handleCalendarTaskClick(propertyTask, plugin, jsEvent, info.event.id);
 								return;
 							}
 
-							// Handle task click - Ctrl/Cmd+click opens in new tab
-							if (taskInfo?.path) {
-								const openInNewTab = jsEvent && (jsEvent.ctrlKey || jsEvent.metaKey);
-								plugin.app.workspace.openLinkText(taskInfo.path, "", openInNewTab);
+							// Handle task click with single/double click detection based on user settings
+							if (taskInfo?.path && jsEvent.button === 0) {
+								handleCalendarTaskClick(taskInfo, plugin, jsEvent, info.event.id);
 							}
 						} catch (error) {
 							console.error("[TaskNotes][Bases][Calendar] Error in eventClick:", error);
