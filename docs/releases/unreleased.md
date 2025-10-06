@@ -25,3 +25,12 @@ Example:
 
 -->
 
+## Fixed
+
+- (#854) (#695) Fixed all-day ICS calendar events displaying on wrong day and appearing twice
+  - All-day events now stored as date-only strings (YYYY-MM-DD) instead of UTC timestamps
+  - Events display on correct calendar date regardless of user timezone (fixes issue in PST, EST, and other negative UTC offset timezones)
+  - All-day events no longer appear twice in Agenda view
+  - Updated all date parsing throughout the codebase to handle date-only format correctly
+  - Maintains compatibility with FullCalendar and preserves iCalendar RFC 5545 semantics for VALUE=DATE events
+  - Thanks to @needo37 for reporting #854 and @realJohnDoe for reporting #695
