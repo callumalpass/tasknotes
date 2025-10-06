@@ -42,6 +42,13 @@ Example:
   - Kanban view renders grouped columns with drag-drop support
   - Automatically detects ungrouped views and renders as flat list
 
+- (#842) Added keyboard navigation support for task forms
+  - Action bar icons now focusable with proper tab order and ARIA attributes
+  - Enter and Space keys trigger actions on focused elements
+  - Added submenu support for reminders button for better keyboard accessibility
+  - Improved focus indicators for better visual feedback
+  - Thanks to @maybetm for this excellent contribution!
+
 ## Changed
 
 - Migrated Bases integration to use public API (Bases 1.10.0+) with graceful fallback to internal API for older versions
