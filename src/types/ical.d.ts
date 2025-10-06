@@ -24,8 +24,17 @@ declare module 'ical.js' {
     export class Time {
         constructor();
         isDate: boolean;
+        year: number;
+        month: number;
+        day: number;
+        hour: number;
+        minute: number;
+        second: number;
+        zone: any;
         fromJSDate(date: Date): void;
         toJSDate(): Date;
+        toUnixTime(): number;
+        toString(): string;
         compare(other: Time): number;
     }
 
