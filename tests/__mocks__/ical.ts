@@ -175,7 +175,12 @@ export const ICAL = {
     toJSDate(): Date {
       return new Date(this.year, this.month - 1, this.day, this.hour, this.minute, this.second);
     }
-    
+
+    toUnixTime(): number {
+      // Return Unix timestamp (seconds since epoch)
+      return Math.floor(this.toJSDate().getTime() / 1000);
+    }
+
     toString(): string {
       const year = this.year.toString().padStart(4, '0');
       const month = this.month.toString().padStart(2, '0');
@@ -260,7 +265,24 @@ class RecurIterator {
 // Parse ICAL string
 export function parse(str: string): any[] {
   const component = Component.fromString(str);
-  return [component.name, [], []]; // Simplified jCal format
+
+  // Build jCal format with actual components
+  const jCalComponents = [];
+  const events = component.getAllSubcomponents('vevent');
+
+  for (const event of events) {
+    const eventProperties = [];
+    const eventComponent = event as any;
+
+    // Add properties from the event component
+    for (const [key, value] of eventComponent.properties.entries()) {
+      eventProperties.push([key, {}, 'text', value]);
+    }
+
+    jCalComponents.push(['vevent', eventProperties, []]);
+  }
+
+  return [component.name, [], jCalComponents];
 }
 
 // Mock utilities for testing
