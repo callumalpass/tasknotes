@@ -45,7 +45,11 @@ export class ICSEventInfoModal extends Modal {
 		}
 
 		// Date/time
-		const startDate = new Date(this.icsEvent.start);
+		// For all-day events with date-only format (YYYY-MM-DD), append T00:00:00 to parse as local midnight
+		const startDateStr = this.icsEvent.allDay && /^\d{4}-\d{2}-\d{2}$/.test(this.icsEvent.start)
+			? this.icsEvent.start + 'T00:00:00'
+			: this.icsEvent.start;
+		const startDate = new Date(startDateStr);
 		let dateText = startDate.toLocaleDateString("en-US", {
 			weekday: "long",
 			year: "numeric",
@@ -57,7 +61,10 @@ export class ICSEventInfoModal extends Modal {
 			dateText += ` at ${startDate.toLocaleTimeString()}`;
 
 			if (this.icsEvent.end) {
-				const endDate = new Date(this.icsEvent.end);
+				const endDateStr = /^\d{4}-\d{2}-\d{2}$/.test(this.icsEvent.end)
+					? this.icsEvent.end + 'T00:00:00'
+					: this.icsEvent.end;
+				const endDate = new Date(endDateStr);
 				dateText += ` - ${endDate.toLocaleTimeString()}`;
 			}
 		}

@@ -253,7 +253,11 @@ export class ICSEventContextMenu {
 		}
 
 		const locale = this.getLocale();
-		const startDate = new Date(icsEvent.start);
+		// For all-day events with date-only format (YYYY-MM-DD), append T00:00:00 to parse as local midnight
+		const startDateStr = icsEvent.allDay && /^\d{4}-\d{2}-\d{2}$/.test(icsEvent.start)
+			? icsEvent.start + 'T00:00:00'
+			: icsEvent.start;
+		const startDate = new Date(startDateStr);
 		const dateFormatter = new Intl.DateTimeFormat(locale, {
 			weekday: "long",
 			year: "numeric",
@@ -271,7 +275,10 @@ export class ICSEventContextMenu {
 				time: timeFormatter.format(startDate),
 			});
 			if (icsEvent.end) {
-				const endDate = new Date(icsEvent.end);
+				const endDateStr = /^\d{4}-\d{2}-\d{2}$/.test(icsEvent.end)
+					? icsEvent.end + 'T00:00:00'
+					: icsEvent.end;
+				const endDate = new Date(endDateStr);
 				dateText += ` - ${timeFormatter.format(endDate)}`;
 			}
 		}

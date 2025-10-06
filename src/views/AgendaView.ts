@@ -803,14 +803,33 @@ export class AgendaView extends ItemView implements OptimizedView {
 				999
 			);
 			return events.filter((ev) => {
+				// For all-day events with date-only strings (YYYY-MM-DD format),
+				// compare calendar dates directly to avoid timezone issues
+				if (ev.allDay && /^\d{4}-\d{2}-\d{2}$/.test(ev.start)) {
+					const evStartDate = new Date(ev.start + 'T00:00:00'); // Local midnight
+					const evEndDate = ev.end ? new Date(ev.end + 'T00:00:00') : null;
+
+					if (evEndDate) {
+						// All-day events use exclusive DTEND in ICS format
+						// Subtract one day to get the actual last day of the event
+						const effectiveEndDate = new Date(evEndDate);
+						effectiveEndDate.setDate(effectiveEndDate.getDate() - 1);
+						effectiveEndDate.setHours(23, 59, 59, 999);
+
+						// Event overlaps if it starts before/on this day and ends after/on this day
+						return evStartDate <= dayEnd && effectiveEndDate >= dayStart;
+					}
+
+					// Single-day all-day event: check if it falls on this day
+					return evStartDate >= dayStart && evStartDate <= dayEnd;
+				}
+
+				// For timed events (ISO timestamp format)
 				const evStart = new Date(ev.start);
 				const evEnd = ev.end ? new Date(ev.end) : null;
 				if (evEnd) {
-					// All-day events use exclusive DTEND; subtract a millisecond so the
-					// final day is inclusive without spilling into the next one.
-					const effectiveEnd = ev.allDay ? new Date(evEnd.getTime() - 1) : evEnd;
-					// Overlaps if start <= dayEnd and effective end >= dayStart
-					return evStart <= dayEnd && effectiveEnd >= dayStart;
+					// Overlaps if start <= dayEnd and end >= dayStart
+					return evStart <= dayEnd && evEnd >= dayStart;
 				}
 				// No end: occurs on day if start between start and end of day
 				return evStart >= dayStart && evStart <= dayEnd;
