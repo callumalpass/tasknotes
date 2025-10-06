@@ -334,8 +334,8 @@ export function getTargetDateForEvent(eventArg: any): Date {
 export function calculateAllDayEndDate(startDate: string, timeEstimate?: number): string | undefined {
 	if (!timeEstimate) return undefined;
 
-	// For all-day events, add days based on time estimate (8 hours = 1 day)
-	const days = Math.ceil(timeEstimate / (8 * 60));
+	// For all-day events, add days based on time estimate (24 hours = 1 day)
+	const days = Math.ceil(timeEstimate / (24 * 60));
 	const start = new Date(startDate);
 	const end = new Date(start.getTime() + days * 24 * 60 * 60 * 1000);
 	return format(end, "yyyy-MM-dd");
