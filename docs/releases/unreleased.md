@@ -86,3 +86,8 @@ Example:
   - RRule strings passed directly without conversion (preferred format)
   - Thanks to @Justin-Burg for reporting
 
+- (#826) Fixed task card widget not appearing when Obsidian starts with task note open
+  - Deferred dispatch calls to avoid "EditorView.update not allowed during update" error
+  - Widget now renders correctly on startup without requiring workarounds
+  - Thanks to @nightroman for reporting
+
