@@ -1226,8 +1226,13 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 				void render.call(this);
 			},
 			onResize() {
-				if (calendar) {
-					calendar.updateSize();
+				if (calendar && calendarEl && calendarEl.isConnected) {
+					// Skip resize during window transfer (element in different document or no dimensions)
+					if (calendarEl.ownerDocument === document &&
+					    calendarEl.clientHeight > 0 &&
+					    calendarEl.clientWidth > 0) {
+						calendar.updateSize();
+					}
 				}
 			},
 			getEphemeralState() {
