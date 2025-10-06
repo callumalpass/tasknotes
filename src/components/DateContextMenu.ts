@@ -1,4 +1,5 @@
-import { Menu, setIcon } from "obsidian";
+import { setIcon } from "obsidian";
+import { ContextMenu } from "./ContextMenu";
 
 export interface DateOption {
 	label: string;
@@ -22,11 +23,11 @@ export interface DateContextMenuOptions {
 }
 
 export class DateContextMenu {
-	private menu: Menu;
+	private menu: ContextMenu;
 	private options: DateContextMenuOptions;
 
 	constructor(options: DateContextMenuOptions) {
-		this.menu = new Menu();
+		this.menu = new ContextMenu();
 		this.options = options;
 		this.buildMenu();
 	}
@@ -224,8 +225,8 @@ export class DateContextMenu {
 		return options;
 	}
 
-	public show(event: MouseEvent): void {
-		this.menu.showAtMouseEvent(event);
+	public show(event: UIEvent): void {
+		this.menu.show(event);
 	}
 
 	public showAtElement(element: HTMLElement): void {

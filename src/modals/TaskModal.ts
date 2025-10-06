@@ -563,14 +563,15 @@ export abstract class TaskModal extends Modal {
 		container: HTMLElement,
 		iconName: string,
 		tooltip: string,
-		onClick: (icon: HTMLElement, event: MouseEvent) => void,
+		onClick: (icon: HTMLElement, event: UIEvent) => void,
 		dataType?: string
 	): HTMLElement {
 		const iconContainer = container.createDiv("action-icon");
 		iconContainer.setAttribute("aria-label", tooltip);
 		// Store initial tooltip for later updates but don't set title attribute
 		iconContainer.setAttribute("data-initial-tooltip", tooltip);
-
+		iconContainer.setAttribute("tabindex", "0");
+		iconContainer.setAttribute("role", "button");
 		// Add data attribute for easier identification
 		if (dataType) {
 			iconContainer.setAttribute("data-type", dataType);
@@ -579,10 +580,18 @@ export abstract class TaskModal extends Modal {
 		const icon = iconContainer.createSpan("icon");
 		setIcon(icon, iconName);
 
-		iconContainer.addEventListener("click", (event) => {
+		iconContainer.addEventListener("click", event => {
 			event.preventDefault();
 			event.stopPropagation();
 			onClick(iconContainer, event);
+		});
+
+		iconContainer.addEventListener("keydown", (event) => {
+			if (event.key === "Enter" || event.key === " ") {
+				event.preventDefault();
+				event.stopPropagation();
+				onClick(iconContainer, event);
+			}
 		});
 
 		return iconContainer;
@@ -956,7 +965,7 @@ export abstract class TaskModal extends Modal {
 		}, 50);
 	}
 
-	protected showDateContextMenu(event: MouseEvent, type: "due" | "scheduled"): void {
+	protected showDateContextMenu(event: UIEvent, type: "due" | "scheduled"): void {
 		const currentValue = type === "due" ? this.dueDate : this.scheduledDate;
 		const title =
 			type === "due"
@@ -993,7 +1002,7 @@ export abstract class TaskModal extends Modal {
 		menu.show(event);
 	}
 
-	protected showStatusContextMenu(event: MouseEvent): void {
+	protected showStatusContextMenu(event: UIEvent): void {
 		const menu = new StatusContextMenu({
 			currentValue: this.status,
 			onSelect: (value) => {
@@ -1006,7 +1015,7 @@ export abstract class TaskModal extends Modal {
 		menu.show(event);
 	}
 
-	protected showPriorityContextMenu(event: MouseEvent): void {
+	protected showPriorityContextMenu(event: UIEvent): void {
 		const menu = new PriorityContextMenu({
 			currentValue: this.priority,
 			onSelect: (value) => {
@@ -1019,7 +1028,7 @@ export abstract class TaskModal extends Modal {
 		menu.show(event);
 	}
 
-	protected showRecurrenceContextMenu(event: MouseEvent): void {
+	protected showRecurrenceContextMenu(event: UIEvent): void {
 		const menu = new RecurrenceContextMenu({
 			currentValue: this.recurrenceRule,
 			onSelect: (value) => {
@@ -1033,7 +1042,7 @@ export abstract class TaskModal extends Modal {
 		menu.show(event);
 	}
 
-	protected showReminderContextMenu(event: MouseEvent): void {
+	protected showReminderContextMenu(event: UIEvent): void {
 		// Create a temporary task info object for the context menu
 		const tempTask: TaskInfo = {
 			title: this.title,

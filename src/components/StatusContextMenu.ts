@@ -1,5 +1,5 @@
-import { Menu } from "obsidian";
 import TaskNotesPlugin from "../main";
+import { ContextMenu } from "./ContextMenu";
 
 export interface StatusOption {
 	label: string;
@@ -15,11 +15,11 @@ export interface StatusContextMenuOptions {
 }
 
 export class StatusContextMenu {
-	private menu: Menu;
+	private menu: ContextMenu;
 	private options: StatusContextMenuOptions;
 
 	constructor(options: StatusContextMenuOptions) {
-		this.menu = new Menu();
+		this.menu = new ContextMenu();
 		this.options = options;
 		this.buildMenu();
 	}
@@ -73,8 +73,8 @@ export class StatusContextMenu {
 		return str.charAt(0).toUpperCase() + str.slice(1);
 	}
 
-	public show(event: MouseEvent): void {
-		this.menu.showAtMouseEvent(event);
+	public show(event: UIEvent): void {
+		this.menu.show(event);
 
 		// Apply color styling after menu is shown
 		setTimeout(() => {
