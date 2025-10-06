@@ -565,6 +565,23 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 				});
 			}
 
+			// Add hover preview for property-based events (Ctrl+hover to preview note)
+			if (eventType === "property-based" && arg.event.extendedProps.filePath) {
+				arg.el.addEventListener("mouseover", (event: MouseEvent) => {
+					const file = plugin.app.vault.getAbstractFileByPath(arg.event.extendedProps.filePath);
+					if (file) {
+						plugin.app.workspace.trigger("hover-link", {
+							event,
+							source: "tasknotes-bases-calendar",
+							hoverParent: arg.el,
+							targetEl: arg.el,
+							linktext: arg.event.extendedProps.filePath,
+							sourcePath: arg.event.extendedProps.filePath,
+						});
+					}
+				});
+			}
+
 			// Add context menu for property-based events (right-click)
 			if (eventType === "property-based" && arg.event.extendedProps.filePath) {
 				arg.el.addEventListener("contextmenu", (e: MouseEvent) => {
