@@ -22,10 +22,14 @@ export function createTaskClickHandler(options: ClickHandlerOptions) {
 
 	let clickTimeout: ReturnType<typeof setTimeout> | null = null;
 
-	const openNote = () => {
+	const openNote = (newTab: boolean = false) => {
 		const file = plugin.app.vault.getAbstractFileByPath(task.path);
 		if (file instanceof TFile) {
-			plugin.app.workspace.getLeaf(false).openFile(file);
+			if (newTab) {
+				plugin.app.workspace.openLinkText(task.path, "", true);
+			} else {
+				plugin.app.workspace.getLeaf(false).openFile(file);
+			}
 		}
 	};
 
@@ -40,7 +44,7 @@ export function createTaskClickHandler(options: ClickHandlerOptions) {
 		}
 
 		if (e.ctrlKey || e.metaKey) {
-			openNote();
+			openNote(true); // Open in new tab
 			return;
 		}
 
@@ -48,7 +52,7 @@ export function createTaskClickHandler(options: ClickHandlerOptions) {
 		if (action === "edit") {
 			await editTask();
 		} else if (action === "openNote") {
-			openNote();
+			openNote(false); // Open in current tab
 		}
 	};
 
@@ -149,10 +153,14 @@ export async function handleCalendarTaskClick(
 	jsEvent: MouseEvent,
 	eventId: string
 ) {
-	const openNote = () => {
+	const openNote = (newTab: boolean = false) => {
 		const file = plugin.app.vault.getAbstractFileByPath(task.path);
 		if (file instanceof TFile) {
-			plugin.app.workspace.getLeaf(false).openFile(file);
+			if (newTab) {
+				plugin.app.workspace.openLinkText(task.path, "", true);
+			} else {
+				plugin.app.workspace.getLeaf(false).openFile(file);
+			}
 		}
 	};
 
@@ -162,7 +170,7 @@ export async function handleCalendarTaskClick(
 
 	const handleSingleClick = async (e: MouseEvent) => {
 		if (e.ctrlKey || e.metaKey) {
-			openNote();
+			openNote(true); // Open in new tab
 			return;
 		}
 
@@ -170,7 +178,7 @@ export async function handleCalendarTaskClick(
 		if (action === "edit") {
 			await editTask();
 		} else if (action === "openNote") {
-			openNote();
+			openNote(false); // Open in current tab
 		}
 	};
 
