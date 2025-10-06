@@ -3,6 +3,7 @@ import TaskNotesPlugin from "../main";
 import { requireApiVersion } from "obsidian";
 import { buildTasknotesTaskListViewFactory } from "./view-factory";
 import { buildTasknotesKanbanViewFactory } from "./kanban-view";
+import { buildTasknotesCalendarViewFactory } from "./calendar-view";
 import { registerBasesView, unregisterBasesView } from "./api";
 
 /**
@@ -29,8 +30,252 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 				factory: buildTasknotesKanbanViewFactory(plugin),
 			});
 
-			// Consider it successful if either view registered successfully
-			if (!taskListSuccess && !kanbanSuccess) {
+			// Register Calendar view (1.10.0+ only - requires public Bases API)
+			let calendarSuccess = false;
+			if (requireApiVersion("1.10.0")) {
+				calendarSuccess = registerBasesView(plugin, "tasknotesCalendar", {
+					name: "TaskNotes Calendar",
+					icon: "tasknotes-simple",
+					factory: buildTasknotesCalendarViewFactory(plugin),
+					options: () => {
+						const calendarSettings = plugin.settings.calendarViewSettings;
+
+						const options: any[] = [
+							{
+								type: "group",
+								displayName: "Events",
+								items: [
+									{
+										type: "toggle",
+										key: "showScheduled",
+										displayName: "Show scheduled tasks",
+										default: calendarSettings.defaultShowScheduled,
+									},
+									{
+										type: "toggle",
+										key: "showDue",
+										displayName: "Show due tasks",
+										default: calendarSettings.defaultShowDue,
+									},
+									{
+										type: "toggle",
+										key: "showRecurring",
+										displayName: "Show recurring tasks",
+										default: calendarSettings.defaultShowRecurring,
+									},
+									{
+										type: "toggle",
+										key: "showTimeEntries",
+										displayName: "Show time entries",
+										default: calendarSettings.defaultShowTimeEntries,
+									},
+									{
+										type: "toggle",
+										key: "showTimeblocks",
+										displayName: "Show timeblocks",
+										default: calendarSettings.defaultShowTimeblocks,
+									},
+									{
+										type: "toggle",
+										key: "showPropertyBasedEvents",
+										displayName: "Show property-based events",
+										default: true,
+									},
+								],
+							},
+							{
+								type: "group",
+								displayName: "Layout",
+								items: [
+									{
+										type: "dropdown",
+										key: "calendarView",
+										displayName: "Calendar view",
+										default: calendarSettings.defaultView,
+										options: {
+											"dayGridMonth": "Month",
+											"timeGridWeek": "Week",
+											"timeGridCustom": "Custom days",
+											"timeGridDay": "Day",
+											"listWeek": "List",
+											"multiMonthYear": "Year",
+										},
+									},
+									{
+										type: "slider",
+										key: "customDayCount",
+										displayName: "Custom day count",
+										default: calendarSettings.customDayCount || 3,
+										min: 1,
+										max: 14,
+										step: 1,
+									},
+									{
+										type: "text",
+										key: "slotMinTime",
+										displayName: "Day start time",
+										default: calendarSettings.slotMinTime,
+										placeholder: "HH:mm:ss (e.g., 08:00:00)",
+									},
+									{
+										type: "text",
+										key: "slotMaxTime",
+										displayName: "Day end time",
+										default: calendarSettings.slotMaxTime,
+										placeholder: "HH:mm:ss (e.g., 20:00:00)",
+									},
+									{
+										type: "text",
+										key: "slotDuration",
+										displayName: "Time slot duration",
+										default: calendarSettings.slotDuration,
+										placeholder: "HH:mm:ss (e.g., 00:30:00)",
+									},
+									{
+										type: "dropdown",
+										key: "firstDay",
+										displayName: "Week starts on",
+										default: String(calendarSettings.firstDay),
+										options: {
+											"0": "Sunday",
+											"1": "Monday",
+											"2": "Tuesday",
+											"3": "Wednesday",
+											"4": "Thursday",
+											"5": "Friday",
+											"6": "Saturday",
+										},
+									},
+									{
+										type: "toggle",
+										key: "weekNumbers",
+										displayName: "Show week numbers",
+										default: calendarSettings.weekNumbers,
+									},
+									{
+										type: "toggle",
+										key: "nowIndicator",
+										displayName: "Show now indicator",
+										default: calendarSettings.nowIndicator,
+									},
+									{
+										type: "toggle",
+										key: "showWeekends",
+										displayName: "Show weekends",
+										default: calendarSettings.showWeekends,
+									},
+									{
+										type: "toggle",
+										key: "showAllDaySlot",
+										displayName: "Show all-day slot",
+										default: true,
+									},
+									{
+										type: "toggle",
+										key: "showTodayHighlight",
+										displayName: "Show today highlight",
+										default: calendarSettings.showTodayHighlight,
+									},
+									{
+										type: "toggle",
+										key: "selectMirror",
+										displayName: "Show selection preview",
+										default: calendarSettings.selectMirror,
+									},
+									{
+										type: "dropdown",
+										key: "timeFormat",
+										displayName: "Time format",
+										default: calendarSettings.timeFormat,
+										options: {
+											"12": "12-hour (AM/PM)",
+											"24": "24-hour",
+										},
+									},
+									{
+										type: "text",
+										key: "scrollTime",
+										displayName: "Initial scroll time",
+										default: calendarSettings.scrollTime,
+										placeholder: "HH:mm:ss (e.g., 08:00:00)",
+									},
+									{
+										type: "slider",
+										key: "eventMinHeight",
+										displayName: "Minimum event height (px)",
+										default: calendarSettings.eventMinHeight,
+										min: 15,
+										max: 100,
+										step: 5,
+									},
+								],
+							},
+							{
+								type: "group",
+								displayName: "Property-based events",
+								items: [
+									{
+										type: "property",
+										key: "startDateProperty",
+										displayName: "Start date property",
+										placeholder: "Select property for start date/time",
+										filter: (prop: string) => {
+											// Only show date-type properties
+											return prop.startsWith("note.") || prop.startsWith("file.");
+										},
+									},
+									{
+										type: "property",
+										key: "endDateProperty",
+										displayName: "End date property (optional)",
+										placeholder: "Select property for end date/time",
+										filter: (prop: string) => {
+											// Only show date-type properties
+											return prop.startsWith("note.") || prop.startsWith("file.");
+										},
+									},
+									{
+										type: "property",
+										key: "titleProperty",
+										displayName: "Title property (optional)",
+										placeholder: "Select property for event title",
+										filter: (prop: string) => {
+											// Show text properties (note, formula, file)
+											return prop.startsWith("note.") || prop.startsWith("formula.") || prop.startsWith("file.");
+										},
+									},
+								],
+							},
+						];
+
+						// Add individual toggle for each ICS calendar subscription
+						if (plugin.icsSubscriptionService) {
+							const subscriptions = plugin.icsSubscriptionService.getSubscriptions();
+							if (subscriptions.length > 0) {
+								// Create a group for ICS calendars
+								const icsToggles: any[] = subscriptions.map(sub => ({
+									type: "toggle",
+									key: `showICS_${sub.id}`,
+									displayName: sub.name,
+									default: true,
+								}));
+
+								// Add as a group
+								options.push({
+									type: "group",
+									displayName: "Calendar subscriptions",
+									items: icsToggles,
+								});
+							}
+						}
+
+						return options;
+					},
+				});
+			}
+
+			// Consider it successful if any view registered successfully
+			if (!taskListSuccess && !kanbanSuccess && !calendarSuccess) {
 				console.debug("[TaskNotes][Bases] Bases plugin not available for registration");
 				return false;
 			}
@@ -83,6 +328,7 @@ export function unregisterBasesViews(plugin: TaskNotesPlugin): void {
 		// Unregister views using wrapper (uses internal API as public API doesn't provide unregister)
 		unregisterBasesView(plugin, "tasknotesTaskList");
 		unregisterBasesView(plugin, "tasknotesKanban");
+		unregisterBasesView(plugin, "tasknotesCalendar");
 	} catch (error) {
 		console.error("[TaskNotes][Bases] Error during view unregistration:", error);
 	}

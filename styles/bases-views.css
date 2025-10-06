@@ -156,6 +156,44 @@
     border-radius: var(--tn-radius-sm);
 }
 
+/* Bases Calendar List View - minimalist styling */
+.fc-event-default-list {
+    padding: var(--tn-spacing-xs) var(--tn-spacing-sm);
+    margin: var(--tn-spacing-xs) 0;
+    background: transparent;
+    border: none;
+    border-radius: var(--tn-radius-sm);
+}
+
+/* Style FullCalendar list view structure */
+#bases-calendar .fc-list {
+    background: transparent;
+}
+
+#bases-calendar .fc-list-table {
+    background: transparent;
+}
+
+#bases-calendar .fc-list-event {
+    background: transparent;
+    border: none;
+}
+
+#bases-calendar .fc-list-event:hover {
+    background: var(--tn-interactive-hover);
+}
+
+#bases-calendar .fc-list-day-cushion {
+    background: transparent;
+    padding: var(--tn-spacing-sm) var(--tn-spacing-xs);
+    border-bottom: 1px solid var(--tn-divider-color);
+    font-weight: var(--tn-font-weight-medium);
+}
+
+#bases-calendar .fc-list-day {
+    background: transparent;
+}
+
 /* Responsive design for Bases views */
 @media (max-width: 768px) {
     .tn-bases-kanban-board {

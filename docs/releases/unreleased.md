@@ -27,6 +27,16 @@ Example:
 
 ## Added
 
+- Added Calendar view for Bases plugin integration (requires Bases 1.10.0+)
+  - Supports month, week, day, year, and list views
+  - Property-based events from note date properties (configurable start date, end date, and title properties)
+  - Custom card rendering in list view for tasks, timeblocks, ICS events, and property-based events
+  - Layout options: time format, weekend visibility, all-day slot, today highlight, scroll time, event height
+  - Visibility toggles for event types (scheduled, due, recurring, time entries, timeblocks, property-based)
+  - Date validation to handle invalid property values
+  - Drag-and-drop to update property-based event dates in frontmatter
+  - Full internationalization support for calendar features in 7 languages (English, French, Spanish, German, Japanese, Russian, Chinese)
+
 - Added grouped rendering support for Bases integration list and kanban views
   - List view displays collapsible groups with toggle controls
   - Kanban view renders grouped columns with drag-drop support
@@ -37,6 +47,16 @@ Example:
 - Migrated Bases integration to use public API (Bases 1.10.0+) with graceful fallback to internal API for older versions
 
 ## Fixed
+
+- (#825) Fixed single/double click settings not applying to calendar views
+  - Shared click handling now works consistently across Advanced Calendar and Bases Calendar
+  - Ctrl/Cmd+click opens tasks in new tab as expected
+  - Single and double-click actions respect user settings
+
+- (#699) Fixed Obsidian freezing when moving calendar tab to new window
+  - Skip calendar resize during window transfer to prevent freeze
+  - Calendar may display incorrectly after move but can be fixed by switching views
+  - Prevents complete UI lockup during tab transfer
 
 - (#816) Fixed template variables not processing in ICS subscription note folder paths
   - Template variables like `{{year}}`, `{{month}}`, `{{date}}` now work in ICS note folder settings

@@ -10,6 +10,9 @@ export const STATS_VIEW_TYPE = "tasknotes-stats-view";
 export const KANBAN_VIEW_TYPE = "tasknotes-kanban-view";
 export const SUBTASK_WIDGET_VIEW_TYPE = "tasknotes-subtask-widget-view";
 
+// Bases view IDs (for Bases plugin integration)
+export const BASES_CALENDAR_VIEW_ID = "tasknotesCalendar";
+
 // Event types
 export const EVENT_DATE_SELECTED = "date-selected";
 export const EVENT_TAB_CHANGED = "tab-changed";
