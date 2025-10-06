@@ -189,6 +189,7 @@ describe('TaskCard Component', () => {
     mockApp.workspace.getLeaf = jest.fn().mockReturnValue({
       openFile: jest.fn()
     });
+    mockApp.workspace.openLinkText = jest.fn();
     mockApp.workspace.trigger = jest.fn();
     mockApp.metadataCache = mockApp.metadataCache || {};
     mockApp.metadataCache.getFirstLinkpathDest = jest.fn();
@@ -568,12 +569,12 @@ describe('TaskCard Component', () => {
       });
 
       card.dispatchEvent(ctrlClickEvent);
-      
+
       // Wait for the async click handler to complete
       await new Promise(resolve => setTimeout(resolve, 10));
 
       expect(mockApp.vault.getAbstractFileByPath).toHaveBeenCalledWith(task.path);
-      expect(mockApp.workspace.getLeaf).toHaveBeenCalledWith(false);
+      expect(mockApp.workspace.openLinkText).toHaveBeenCalledWith(task.path, "", true);
     });
 
     it('should handle right-click context menu', async () => {
