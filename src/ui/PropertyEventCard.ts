@@ -26,7 +26,7 @@ export function createPropertyEventCard(
 
 	const file = entry.file;
 	if (!file) {
-		card.textContent = "Unknown file";
+		card.textContent = plugin.i18n.translate("ui.propertyEventCard.unknownFile");
 		return card;
 	}
 

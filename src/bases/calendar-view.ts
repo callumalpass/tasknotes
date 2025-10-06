@@ -963,18 +963,18 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 						right: "multiMonthYear,dayGridMonth,timeGridWeek,timeGridCustom,timeGridDay,listWeek",
 					},
 					buttonText: {
-						today: "Today",
-						month: "M",
-						week: "W",
-						day: "D",
-						year: "Y",
-						list: "L",
+						today: plugin.i18n.translate("views.basesCalendar.today"),
+						month: plugin.i18n.translate("views.basesCalendar.buttonText.month"),
+						week: plugin.i18n.translate("views.basesCalendar.buttonText.week"),
+						day: plugin.i18n.translate("views.basesCalendar.buttonText.day"),
+						year: plugin.i18n.translate("views.basesCalendar.buttonText.year"),
+						list: plugin.i18n.translate("views.basesCalendar.buttonText.list"),
 					},
 					views: {
 						timeGridCustom: {
 							type: 'timeGrid',
 							duration: { days: customDayCount },
-							buttonText: `${customDayCount}D`,
+							buttonText: plugin.i18n.translate("views.basesCalendar.buttonText.customDays", { count: customDayCount.toString() }),
 						},
 					},
 					height: "100%",
@@ -1098,10 +1098,12 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 				console.error("[TaskNotes][Bases][Calendar] Error initializing calendar:", error);
 				// Show error message in the container
 				if (calendarEl) {
+					const errorMessage = plugin.i18n.translate("views.basesCalendar.errors.failedToInitialize");
+					const errorDetails = error instanceof Error ? error.message : String(error);
 					calendarEl.innerHTML = `
 						<div style="padding: 20px; text-align: center; color: var(--text-error);">
-							<div style="margin-bottom: 10px;">Failed to initialize calendar</div>
-							<div style="font-size: 0.9em; opacity: 0.8;">${error instanceof Error ? error.message : String(error)}</div>
+							<div style="margin-bottom: 10px;">${errorMessage}</div>
+							<div style="font-size: 0.9em; opacity: 0.8;">${errorDetails}</div>
 						</div>
 					`;
 				}

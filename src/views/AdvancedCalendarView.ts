@@ -260,12 +260,16 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 		// Create mobile collapse toggle (only visible on mobile)
 		const mobileToggle = header.createDiv({ cls: "advanced-calendar-view__mobile-toggle" });
 		const toggleBtn = mobileToggle.createEl("button", {
-			text: this.headerCollapsed ? "Show filters" : "Hide filters",
+			text: this.headerCollapsed
+				? this.plugin.i18n.translate("views.advancedCalendar.filters.showFilters")
+				: this.plugin.i18n.translate("views.advancedCalendar.filters.hideFilters"),
 			cls: "advanced-calendar-view__collapse-btn",
 		});
 		toggleBtn.addEventListener("click", () => {
 			this.headerCollapsed = !this.headerCollapsed;
-			toggleBtn.textContent = this.headerCollapsed ? "Show filters" : "Hide filters";
+			toggleBtn.textContent = this.headerCollapsed
+				? this.plugin.i18n.translate("views.advancedCalendar.filters.showFilters")
+				: this.plugin.i18n.translate("views.advancedCalendar.filters.hideFilters");
 			this.saveViewPreferences();
 			this.updateHeaderVisibility();
 		});
@@ -367,7 +371,7 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 		const options = [
 			{
 				id: "icsEvents",
-				label: "Calendar subscriptions",
+				label: this.plugin.i18n.translate("views.advancedCalendar.viewOptions.calendarSubscriptions"),
 				value: this.showICSEvents,
 				onChange: (value: boolean) => {
 					this.showICSEvents = value;
@@ -377,7 +381,7 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 			},
 			{
 				id: "timeEntries",
-				label: "Time entries",
+				label: this.plugin.i18n.translate("views.advancedCalendar.viewOptions.timeEntries"),
 				value: this.showTimeEntries,
 				onChange: (value: boolean) => {
 					this.showTimeEntries = value;
@@ -387,7 +391,7 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 			},
 			{
 				id: "timeblocks",
-				label: "Timeblocks",
+				label: this.plugin.i18n.translate("views.advancedCalendar.viewOptions.timeblocks"),
 				value: this.showTimeblocks,
 				onChange: (value: boolean) => {
 					this.showTimeblocks = value;
@@ -397,7 +401,7 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 			},
 			{
 				id: "scheduled",
-				label: "Scheduled dates",
+				label: this.plugin.i18n.translate("views.advancedCalendar.viewOptions.scheduledDates"),
 				value: this.showScheduled,
 				onChange: (value: boolean) => {
 					this.showScheduled = value;
@@ -407,7 +411,7 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 			},
 			{
 				id: "due",
-				label: "Due dates",
+				label: this.plugin.i18n.translate("views.advancedCalendar.viewOptions.dueDates"),
 				value: this.showDue,
 				onChange: (value: boolean) => {
 					this.showDue = value;
@@ -417,7 +421,7 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 			},
 			{
 				id: "allDaySlot",
-				label: "All-day slot",
+				label: this.plugin.i18n.translate("views.advancedCalendar.viewOptions.allDaySlot"),
 				value: this.showAllDaySlot,
 				onChange: (value: boolean) => {
 					this.showAllDaySlot = value;
@@ -525,8 +529,8 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 	private getCustomButtons() {
 		const customButtons = {
 			refreshICS: {
-				text: "Refresh",
-				hint: "Refresh Calendar Subscriptions",
+				text: this.plugin.i18n.translate("views.advancedCalendar.buttons.refresh"),
+				hint: this.plugin.i18n.translate("views.advancedCalendar.buttons.refreshHint"),
 				click: () => {
 					this.handleRefreshClick();
 				},
@@ -562,18 +566,18 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 
 	private async handleRefreshClick() {
 		if (!this.plugin.icsSubscriptionService) {
-			new Notice("ICS subscription service not available");
+			new Notice(this.plugin.i18n.translate("views.advancedCalendar.notices.icsServiceNotAvailable"));
 			return;
 		}
 
 		try {
 			await this.plugin.icsSubscriptionService.refreshAllSubscriptions();
-			new Notice("All calendar subscriptions refreshed successfully");
+			new Notice(this.plugin.i18n.translate("views.advancedCalendar.notices.calendarRefreshedAll"));
 			// Force calendar to re-render with updated ICS events
 			this.refreshEvents();
 		} catch (error) {
 			console.error("Error refreshing subscriptions:", error);
-			new Notice("Failed to refresh some calendar subscriptions");
+			new Notice(this.plugin.i18n.translate("views.advancedCalendar.notices.refreshFailed"));
 		}
 	}
 
@@ -1223,9 +1227,7 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 	private handleTimeblockCreation(start: Date, end: Date, allDay: boolean) {
 		// Don't create timeblocks for all-day selections
 		if (allDay) {
-			new Notice(
-				"Timeblocks must have specific times. Please select a time range in week or day view."
-			);
+			new Notice(this.plugin.i18n.translate("views.advancedCalendar.notices.timeblockSpecificTime"));
 			return;
 		}
 
@@ -1439,13 +1441,26 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 
 			// Show success message
 			if (originalDate !== newDate) {
-				new Notice(`Moved timeblock "${timeblock.title}" to ${newDate}`);
+				new Notice(
+					this.plugin.i18n.translate("views.advancedCalendar.notices.timeblockMoved", {
+						title: timeblock.title,
+						date: newDate,
+					})
+				);
 			} else {
-				new Notice(`Updated timeblock "${timeblock.title}" time`);
+				new Notice(
+					this.plugin.i18n.translate("views.advancedCalendar.notices.timeblockUpdated", {
+						title: timeblock.title,
+					})
+				);
 			}
 		} catch (error) {
 			console.error("Error moving timeblock:", error);
-			new Notice(`Failed to move timeblock: ${error.message}`);
+			new Notice(
+				this.plugin.i18n.translate("views.advancedCalendar.notices.timeblockMoveFailed", {
+					message: error.message,
+				})
+			);
 			dropInfo.revert();
 		}
 	}
@@ -1512,7 +1527,7 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 			const endMinutes = endHour * 60 + endMin;
 
 			if (endMinutes <= startMinutes) {
-				new Notice("End time must be after start time");
+				new Notice(this.plugin.i18n.translate("views.advancedCalendar.notices.endTimeAfterStart"));
 				resizeInfo.revert();
 				return;
 			}
@@ -1530,10 +1545,18 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 			// Refresh calendar
 			this.refreshEvents();
 
-			new Notice(`Updated timeblock "${timeblock.title}" duration`);
+			new Notice(
+				this.plugin.i18n.translate("views.advancedCalendar.notices.timeblockResized", {
+					title: timeblock.title,
+				})
+			);
 		} catch (error) {
 			console.error("Error resizing timeblock:", error);
-			new Notice(`Failed to resize timeblock: ${error.message}`);
+			new Notice(
+				this.plugin.i18n.translate("views.advancedCalendar.notices.timeblockResizeFailed", {
+					message: error.message,
+				})
+			);
 			resizeInfo.revert();
 		}
 	}
@@ -1594,7 +1617,12 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 				: timeFormat === "12"
 					? "MMM d, yyyy h:mm a"
 					: "MMM d, yyyy HH:mm";
-			new Notice(`Task "${task.title}" scheduled for ${format(dropDate, dateFormat)}`);
+			new Notice(
+				this.plugin.i18n.translate("views.advancedCalendar.notices.taskScheduled", {
+					title: task.title,
+					date: format(dropDate, dateFormat),
+				})
+			);
 
 			// Remove any event that FullCalendar might have created from the drop
 			if (dropInfo.draggedEl) {
@@ -1607,7 +1635,7 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 			// Task drag-drop completed - ViewPerformanceService handles update
 		} catch (error) {
 			console.error("Error handling external drop:", error);
-			new Notice("Failed to schedule task");
+			new Notice(this.plugin.i18n.translate("views.advancedCalendar.notices.scheduleTaskFailed"));
 
 			// Remove any event that might have been created on error
 			if (dropInfo.draggedEl) {
@@ -2157,24 +2185,24 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 				this.renderTagsProperty(element, value);
 				break;
 			case "timeEstimate":
-				element.textContent = `${this.plugin.formatTime(value)} estimated`;
+				element.textContent = `${this.plugin.formatTime(value)} ${this.plugin.i18n.translate("views.advancedCalendar.timeEntry.estimatedSuffix")}`;
 				break;
 			case "totalTrackedTime":
 				if (value > 0) {
-					element.textContent = `${this.plugin.formatTime(value)} tracked`;
+					element.textContent = `${this.plugin.formatTime(value)} ${this.plugin.i18n.translate("views.advancedCalendar.timeEntry.trackedSuffix")}`;
 				}
 				break;
 			case "recurrence":
-				element.textContent = `Recurring: ${this.getRecurrenceDisplayText(value)}`;
+				element.textContent = `${this.plugin.i18n.translate("views.advancedCalendar.timeEntry.recurringPrefix")}${this.getRecurrenceDisplayText(value)}`;
 				break;
 			case "completedDate":
-				element.textContent = `Completed: ${this.formatDateForDisplay(value)}`;
+				element.textContent = `${this.plugin.i18n.translate("views.advancedCalendar.timeEntry.completedPrefix")}${this.formatDateForDisplay(value)}`;
 				break;
 			case "file.ctime":
-				element.textContent = `Created: ${this.formatDateForDisplay(value)}`;
+				element.textContent = `${this.plugin.i18n.translate("views.advancedCalendar.timeEntry.createdPrefix")}${this.formatDateForDisplay(value)}`;
 				break;
 			case "file.mtime":
-				element.textContent = `Modified: ${this.formatDateForDisplay(value)}`;
+				element.textContent = `${this.plugin.i18n.translate("views.advancedCalendar.timeEntry.modifiedPrefix")}${this.formatDateForDisplay(value)}`;
 				break;
 			default:
 				// Handle user properties and generic values
@@ -2202,7 +2230,7 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 			showTime: true,
 			userTimeFormat,
 		});
-		element.textContent = `Due: ${display}`;
+		element.textContent = `${this.plugin.i18n.translate("views.advancedCalendar.timeEntry.duePrefix")}${display}`;
 		element.classList.add("fc-list-task-date", "fc-list-task-date--due");
 
 		// Add click handler for date editing (like TaskCard)
@@ -2223,7 +2251,7 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 			showTime: true,
 			userTimeFormat,
 		});
-		element.textContent = `Scheduled: ${display}`;
+		element.textContent = `${this.plugin.i18n.translate("views.advancedCalendar.timeEntry.scheduledPrefix")}${display}`;
 		element.classList.add("fc-list-task-date", "fc-list-task-date--scheduled");
 	}
 
@@ -2530,7 +2558,7 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 		// Show task details option
 		menu.addItem((item) =>
 			item
-				.setTitle("Open task")
+				.setTitle(this.plugin.i18n.translate("views.advancedCalendar.contextMenus.openTask"))
 				.setIcon("edit")
 				.onClick(() => {
 					const editModal = new TaskEditModal(this.app, this.plugin, { task: taskInfo });
@@ -2543,13 +2571,13 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 		// Delete time entry option
 		menu.addItem((item) =>
 			item
-				.setTitle("Delete time entry")
+				.setTitle(this.plugin.i18n.translate("views.advancedCalendar.contextMenus.deleteTimeEntry"))
 				.setIcon("trash")
 				.onClick(async () => {
 					try {
 						const timeEntry = taskInfo.timeEntries?.[timeEntryIndex];
 						if (!timeEntry) {
-							new Notice("Time entry not found");
+							new Notice(this.plugin.i18n.translate("views.advancedCalendar.notices.timeEntryNotFound"));
 							return;
 						}
 
@@ -2573,9 +2601,13 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 						// Show confirmation
 						const confirmed = await new Promise<boolean>((resolve) => {
 							const confirmModal = new Modal(this.app);
-							confirmModal.setTitle("Delete Time Entry");
+							confirmModal.setTitle(
+								this.plugin.i18n.translate("views.advancedCalendar.contextMenus.deleteTimeEntryTitle")
+							);
 							confirmModal.setContent(
-								`Are you sure you want to delete this time entry${durationText}? This action cannot be undone.`
+								this.plugin.i18n.translate("views.advancedCalendar.contextMenus.deleteTimeEntryConfirm", {
+									duration: durationText,
+								})
 							);
 
 							const buttonContainer = confirmModal.contentEl.createDiv({
@@ -2587,10 +2619,10 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 							buttonContainer.style.marginTop = "20px";
 
 							const cancelBtn = buttonContainer.createEl("button", {
-								text: "Cancel",
+								text: this.plugin.i18n.translate("views.advancedCalendar.contextMenus.cancelButton"),
 							});
 							const deleteBtn = buttonContainer.createEl("button", {
-								text: "Delete",
+								text: this.plugin.i18n.translate("views.advancedCalendar.contextMenus.deleteButton"),
 								cls: "mod-warning",
 							});
 
@@ -2609,11 +2641,11 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 
 						if (confirmed) {
 							await this.plugin.taskService.deleteTimeEntry(taskInfo, timeEntryIndex);
-							new Notice("Time entry deleted");
+							new Notice(this.plugin.i18n.translate("views.advancedCalendar.notices.timeEntryDeleted"));
 						}
 					} catch (error) {
 						console.error("Error deleting time entry:", error);
-						new Notice("Failed to delete time entry");
+						new Notice(this.plugin.i18n.translate("views.advancedCalendar.notices.deleteTimeEntryFailed"));
 					}
 				})
 		);

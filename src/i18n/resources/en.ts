@@ -90,6 +90,76 @@ export const en: TranslationTree = {
 		},
 		advancedCalendar: {
 			title: "Advanced Calendar",
+			filters: {
+				showFilters: "Show filters",
+				hideFilters: "Hide filters",
+			},
+			viewOptions: {
+				calendarSubscriptions: "Calendar subscriptions",
+				timeEntries: "Time entries",
+				timeblocks: "Timeblocks",
+				scheduledDates: "Scheduled dates",
+				dueDates: "Due dates",
+				allDaySlot: "All-day slot",
+				scheduledTasks: "Scheduled tasks",
+				recurringTasks: "Recurring tasks",
+			},
+			buttons: {
+				refresh: "Refresh",
+				refreshHint: "Refresh Calendar Subscriptions",
+			},
+			notices: {
+				icsServiceNotAvailable: "ICS subscription service not available",
+				calendarRefreshedAll: "All calendar subscriptions refreshed successfully",
+				refreshFailed: "Failed to refresh some calendar subscriptions",
+				timeblockSpecificTime:
+					"Timeblocks must have specific times. Please select a time range in week or day view.",
+				timeblockMoved: 'Moved timeblock "{title}" to {date}',
+				timeblockUpdated: 'Updated timeblock "{title}" time',
+				timeblockMoveFailed: "Failed to move timeblock: {message}",
+				timeblockResized: 'Updated timeblock "{title}" duration',
+				timeblockResizeFailed: "Failed to resize timeblock: {message}",
+				taskScheduled: 'Task "{title}" scheduled for {date}',
+				scheduleTaskFailed: "Failed to schedule task",
+				endTimeAfterStart: "End time must be after start time",
+				timeEntryNotFound: "Time entry not found",
+				timeEntryDeleted: "Time entry deleted",
+				deleteTimeEntryFailed: "Failed to delete time entry",
+			},
+			timeEntry: {
+				estimatedSuffix: "estimated",
+				trackedSuffix: "tracked",
+				recurringPrefix: "Recurring: ",
+				completedPrefix: "Completed: ",
+				createdPrefix: "Created: ",
+				modifiedPrefix: "Modified: ",
+				duePrefix: "Due: ",
+				scheduledPrefix: "Scheduled: ",
+			},
+			contextMenus: {
+				openTask: "Open task",
+				deleteTimeEntry: "Delete time entry",
+				deleteTimeEntryTitle: "Delete Time Entry",
+				deleteTimeEntryConfirm:
+					"Are you sure you want to delete this time entry{duration}? This action cannot be undone.",
+				deleteButton: "Delete",
+				cancelButton: "Cancel",
+			},
+		},
+		basesCalendar: {
+			title: "Bases Calendar",
+			today: "Today",
+			buttonText: {
+				month: "M",
+				week: "W",
+				day: "D",
+				year: "Y",
+				list: "L",
+				customDays: "{count}D",
+			},
+			errors: {
+				failedToInitialize: "Failed to initialize calendar",
+			},
 		},
 		kanban: {
 			title: "Kanban",
@@ -2067,6 +2137,9 @@ export const en: TranslationTree = {
 			loadingDependencies: "Loading dependencies...",
 			blockingEmpty: "No dependent tasks",
 			blockingLoadError: "Failed to load dependencies",
+		},
+		propertyEventCard: {
+			unknownFile: "Unknown file",
 		},
 		filterHeading: {
 			allViewName: "All",
