@@ -90,6 +90,76 @@ export const ru: TranslationTree = {
 		},
 		advancedCalendar: {
 			title: "Расширенный календарь",
+			filters: {
+				showFilters: "Показать фильтры",
+				hideFilters: "Скрыть фильтры",
+			},
+			viewOptions: {
+				calendarSubscriptions: "Подписки на календари",
+				timeEntries: "Временные записи",
+				timeblocks: "Временные блоки",
+				scheduledDates: "Запланированные даты",
+				dueDates: "Сроки выполнения",
+				allDaySlot: "Слот на весь день",
+				scheduledTasks: "Запланированные задачи",
+				recurringTasks: "Повторяющиеся задачи",
+			},
+			buttons: {
+				refresh: "Обновить",
+				refreshHint: "Обновить подписки на календари",
+			},
+			notices: {
+				icsServiceNotAvailable: "Сервис подписки ICS недоступен",
+				calendarRefreshedAll: "Все подписки на календари успешно обновлены",
+				refreshFailed: "Не удалось обновить некоторые подписки на календари",
+				timeblockSpecificTime:
+					"Временные блоки должны иметь конкретное время. Выберите временной диапазон в недельном или дневном виде.",
+				timeblockMoved: 'Временной блок "{title}" перемещен на {date}',
+				timeblockUpdated: 'Время временного блока "{title}" обновлено',
+				timeblockMoveFailed: "Не удалось переместить временной блок: {message}",
+				timeblockResized: 'Длительность временного блока "{title}" обновлена',
+				timeblockResizeFailed: "Не удалось изменить размер временного блока: {message}",
+				taskScheduled: 'Задача "{title}" запланирована на {date}',
+				scheduleTaskFailed: "Не удалось запланировать задачу",
+				endTimeAfterStart: "Время окончания должно быть после времени начала",
+				timeEntryNotFound: "Временная запись не найдена",
+				timeEntryDeleted: "Временная запись удалена",
+				deleteTimeEntryFailed: "Не удалось удалить временную запись",
+			},
+			timeEntry: {
+				estimatedSuffix: "оценка",
+				trackedSuffix: "отслежено",
+				recurringPrefix: "Повторяющаяся: ",
+				completedPrefix: "Завершено: ",
+				createdPrefix: "Создано: ",
+				modifiedPrefix: "Изменено: ",
+				duePrefix: "Срок: ",
+				scheduledPrefix: "Запланировано: ",
+			},
+			contextMenus: {
+				openTask: "Открыть задачу",
+				deleteTimeEntry: "Удалить временную запись",
+				deleteTimeEntryTitle: "Удалить временную запись",
+				deleteTimeEntryConfirm:
+					"Вы уверены, что хотите удалить эту временную запись{duration}? Это действие нельзя отменить.",
+				deleteButton: "Удалить",
+				cancelButton: "Отмена",
+			},
+		},
+		basesCalendar: {
+			title: "Календарь Bases",
+			today: "Сегодня",
+			buttonText: {
+				month: "М",
+				week: "Н",
+				day: "Д",
+				year: "Г",
+				list: "С",
+				customDays: "{count}Д",
+			},
+			errors: {
+				failedToInitialize: "Не удалось инициализировать календарь",
+			},
 		},
 		kanban: {
 			title: "Канбан",
@@ -2035,6 +2105,9 @@ export const ru: TranslationTree = {
 			loadingDependencies: "Загрузка зависимостей…",
 			blockingEmpty: "Нет зависимых задач",
 			blockingLoadError: "Не удалось загрузить зависимости",
+		},
+		propertyEventCard: {
+			unknownFile: "Неизвестный файл",
 		},
 		filterHeading: {
 			allViewName: "Все",

@@ -90,6 +90,76 @@ export const es: TranslationTree = {
 		},
 		advancedCalendar: {
 			title: "Calendario Avanzado",
+			filters: {
+				showFilters: "Mostrar filtros",
+				hideFilters: "Ocultar filtros",
+			},
+			viewOptions: {
+				calendarSubscriptions: "Suscripciones de calendario",
+				timeEntries: "Entradas de tiempo",
+				timeblocks: "Bloques de tiempo",
+				scheduledDates: "Fechas programadas",
+				dueDates: "Fechas de vencimiento",
+				allDaySlot: "Espacio de día completo",
+				scheduledTasks: "Tareas programadas",
+				recurringTasks: "Tareas recurrentes",
+			},
+			buttons: {
+				refresh: "Actualizar",
+				refreshHint: "Actualizar suscripciones de calendario",
+			},
+			notices: {
+				icsServiceNotAvailable: "Servicio de suscripción ICS no disponible",
+				calendarRefreshedAll: "Todas las suscripciones de calendario se actualizaron correctamente",
+				refreshFailed: "Error al actualizar algunas suscripciones de calendario",
+				timeblockSpecificTime:
+					"Los bloques de tiempo deben tener horas específicas. Seleccione un rango de tiempo en la vista de semana o día.",
+				timeblockMoved: 'Bloque de tiempo "{title}" movido a {date}',
+				timeblockUpdated: 'Hora del bloque de tiempo "{title}" actualizada',
+				timeblockMoveFailed: "Error al mover el bloque de tiempo: {message}",
+				timeblockResized: 'Duración del bloque de tiempo "{title}" actualizada',
+				timeblockResizeFailed: "Error al redimensionar el bloque de tiempo: {message}",
+				taskScheduled: 'Tarea "{title}" programada para {date}',
+				scheduleTaskFailed: "Error al programar la tarea",
+				endTimeAfterStart: "La hora de fin debe ser posterior a la hora de inicio",
+				timeEntryNotFound: "Entrada de tiempo no encontrada",
+				timeEntryDeleted: "Entrada de tiempo eliminada",
+				deleteTimeEntryFailed: "Error al eliminar la entrada de tiempo",
+			},
+			timeEntry: {
+				estimatedSuffix: "estimado",
+				trackedSuffix: "registrado",
+				recurringPrefix: "Recurrente: ",
+				completedPrefix: "Completado: ",
+				createdPrefix: "Creado: ",
+				modifiedPrefix: "Modificado: ",
+				duePrefix: "Vence: ",
+				scheduledPrefix: "Programado: ",
+			},
+			contextMenus: {
+				openTask: "Abrir tarea",
+				deleteTimeEntry: "Eliminar entrada de tiempo",
+				deleteTimeEntryTitle: "Eliminar Entrada de Tiempo",
+				deleteTimeEntryConfirm:
+					"¿Estás seguro de que deseas eliminar esta entrada de tiempo{duration}? Esta acción no se puede deshacer.",
+				deleteButton: "Eliminar",
+				cancelButton: "Cancelar",
+			},
+		},
+		basesCalendar: {
+			title: "Calendario Bases",
+			today: "Hoy",
+			buttonText: {
+				month: "M",
+				week: "S",
+				day: "D",
+				year: "A",
+				list: "L",
+				customDays: "{count}D",
+			},
+			errors: {
+				failedToInitialize: "Error al inicializar el calendario",
+			},
 		},
 		kanban: {
 			title: "Kanban",
@@ -2099,6 +2169,9 @@ export const es: TranslationTree = {
 			loadingDependencies: "Cargando dependencias...",
 			blockingEmpty: "Sin tareas dependientes",
 			blockingLoadError: "No se pudieron cargar las dependencias",
+		},
+		propertyEventCard: {
+			unknownFile: "Archivo desconocido",
 		},
 		filterHeading: {
 			allViewName: "Todos",

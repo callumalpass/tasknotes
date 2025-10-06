@@ -90,6 +90,76 @@ export const fr: TranslationTree = {
 		},
 		advancedCalendar: {
 			title: "Calendrier avancé",
+			filters: {
+				showFilters: "Afficher les filtres",
+				hideFilters: "Masquer les filtres",
+			},
+			viewOptions: {
+				calendarSubscriptions: "Abonnements aux calendriers",
+				timeEntries: "Entrées de temps",
+				timeblocks: "Blocs de temps",
+				scheduledDates: "Dates planifiées",
+				dueDates: "Dates d'échéance",
+				allDaySlot: "Créneau toute la journée",
+				scheduledTasks: "Tâches planifiées",
+				recurringTasks: "Tâches récurrentes",
+			},
+			buttons: {
+				refresh: "Actualiser",
+				refreshHint: "Actualiser les abonnements aux calendriers",
+			},
+			notices: {
+				icsServiceNotAvailable: "Service d'abonnement ICS non disponible",
+				calendarRefreshedAll: "Tous les abonnements aux calendriers ont été actualisés avec succès",
+				refreshFailed: "Échec de l'actualisation de certains abonnements aux calendriers",
+				timeblockSpecificTime:
+					"Les blocs de temps doivent avoir des heures spécifiques. Veuillez sélectionner une plage horaire dans la vue semaine ou jour.",
+				timeblockMoved: 'Bloc de temps "{title}" déplacé vers {date}',
+				timeblockUpdated: 'Horaire du bloc de temps "{title}" mis à jour',
+				timeblockMoveFailed: "Échec du déplacement du bloc de temps : {message}",
+				timeblockResized: 'Durée du bloc de temps "{title}" mise à jour',
+				timeblockResizeFailed: "Échec du redimensionnement du bloc de temps : {message}",
+				taskScheduled: 'Tâche "{title}" planifiée pour {date}',
+				scheduleTaskFailed: "Échec de la planification de la tâche",
+				endTimeAfterStart: "L'heure de fin doit être après l'heure de début",
+				timeEntryNotFound: "Entrée de temps introuvable",
+				timeEntryDeleted: "Entrée de temps supprimée",
+				deleteTimeEntryFailed: "Échec de la suppression de l'entrée de temps",
+			},
+			timeEntry: {
+				estimatedSuffix: "estimé",
+				trackedSuffix: "suivi",
+				recurringPrefix: "Récurrent : ",
+				completedPrefix: "Terminé : ",
+				createdPrefix: "Créé : ",
+				modifiedPrefix: "Modifié : ",
+				duePrefix: "Échéance : ",
+				scheduledPrefix: "Planifié : ",
+			},
+			contextMenus: {
+				openTask: "Ouvrir la tâche",
+				deleteTimeEntry: "Supprimer l'entrée de temps",
+				deleteTimeEntryTitle: "Supprimer l'entrée de temps",
+				deleteTimeEntryConfirm:
+					"Êtes-vous sûr de vouloir supprimer cette entrée de temps{duration} ? Cette action ne peut pas être annulée.",
+				deleteButton: "Supprimer",
+				cancelButton: "Annuler",
+			},
+		},
+		basesCalendar: {
+			title: "Calendrier Bases",
+			today: "Aujourd'hui",
+			buttonText: {
+				month: "M",
+				week: "S",
+				day: "J",
+				year: "A",
+				list: "L",
+				customDays: "{count}J",
+			},
+			errors: {
+				failedToInitialize: "Échec de l'initialisation du calendrier",
+			},
 		},
 		kanban: {
 			title: "Tableau Kanban",
@@ -2070,6 +2140,9 @@ export const fr: TranslationTree = {
 			loadingDependencies: "Chargement des dépendances…",
 			blockingEmpty: "Aucune tâche dépendante",
 			blockingLoadError: "Échec du chargement des dépendances",
+		},
+		propertyEventCard: {
+			unknownFile: "Fichier inconnu",
 		},
 		filterHeading: {
 			allViewName: "Toutes",

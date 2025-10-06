@@ -90,6 +90,76 @@ export const zh: TranslationTree = {
 		},
 		advancedCalendar: {
 			title: "高级日历",
+			filters: {
+				showFilters: "显示筛选器",
+				hideFilters: "隐藏筛选器",
+			},
+			viewOptions: {
+				calendarSubscriptions: "日历订阅",
+				timeEntries: "时间条目",
+				timeblocks: "时间块",
+				scheduledDates: "计划日期",
+				dueDates: "截止日期",
+				allDaySlot: "全天时段",
+				scheduledTasks: "计划任务",
+				recurringTasks: "重复任务",
+			},
+			buttons: {
+				refresh: "刷新",
+				refreshHint: "刷新日历订阅",
+			},
+			notices: {
+				icsServiceNotAvailable: "ICS订阅服务不可用",
+				calendarRefreshedAll: "所有日历订阅已成功刷新",
+				refreshFailed: "刷新部分日历订阅失败",
+				timeblockSpecificTime:
+					"时间块必须有具体时间。请在周视图或日视图中选择时间范围。",
+				timeblockMoved: '时间块"{title}"已移动到{date}',
+				timeblockUpdated: '时间块"{title}"的时间已更新',
+				timeblockMoveFailed: "移动时间块失败：{message}",
+				timeblockResized: '时间块"{title}"的持续时间已更新',
+				timeblockResizeFailed: "调整时间块大小失败：{message}",
+				taskScheduled: '任务"{title}"已安排到{date}',
+				scheduleTaskFailed: "安排任务失败",
+				endTimeAfterStart: "结束时间必须晚于开始时间",
+				timeEntryNotFound: "未找到时间条目",
+				timeEntryDeleted: "时间条目已删除",
+				deleteTimeEntryFailed: "删除时间条目失败",
+			},
+			timeEntry: {
+				estimatedSuffix: "预估",
+				trackedSuffix: "已记录",
+				recurringPrefix: "重复：",
+				completedPrefix: "已完成：",
+				createdPrefix: "创建：",
+				modifiedPrefix: "修改：",
+				duePrefix: "截止：",
+				scheduledPrefix: "计划：",
+			},
+			contextMenus: {
+				openTask: "打开任务",
+				deleteTimeEntry: "删除时间条目",
+				deleteTimeEntryTitle: "删除时间条目",
+				deleteTimeEntryConfirm:
+					"确定要删除此时间条目{duration}吗？此操作无法撤销。",
+				deleteButton: "删除",
+				cancelButton: "取消",
+			},
+		},
+		basesCalendar: {
+			title: "Bases日历",
+			today: "今天",
+			buttonText: {
+				month: "月",
+				week: "周",
+				day: "日",
+				year: "年",
+				list: "列表",
+				customDays: "{count}天",
+			},
+			errors: {
+				failedToInitialize: "初始化日历失败",
+			},
 		},
 		kanban: {
 			title: "看板",
@@ -1918,6 +1988,9 @@ export const zh: TranslationTree = {
 			loadingDependencies: "正在加载依赖…",
 			blockingEmpty: "没有依赖的任务",
 			blockingLoadError: "无法加载依赖",
+		},
+		propertyEventCard: {
+			unknownFile: "未知文件",
 		},
 		filterHeading: {
 			allViewName: "全部",
