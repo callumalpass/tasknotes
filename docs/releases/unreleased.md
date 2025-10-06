@@ -97,3 +97,9 @@ Example:
   - Ensures consistent overdue detection logic between recurring and non-recurring tasks
   - Thanks to @skyrunner15 for reporting
 
+- (#822) Fixed mini calendar showing incorrect dates in negative UTC offset timezones
+  - Calendar tooltips and month displays now show correct dates for users in Americas/Pacific timezones
+  - UTC-anchored dates are now converted to local calendar dates before formatting
+  - Fixes off-by-one day error that affected date selection and display
+  - Thanks to @kenhsmith for reporting
+
