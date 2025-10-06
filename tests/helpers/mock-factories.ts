@@ -392,7 +392,9 @@ export const PluginFactory = {
       // Core MinimalNativeCache methods
       initialize: jest.fn(),
       getAllTasks: jest.fn().mockResolvedValue([]),
+      getAllTaskPaths: jest.fn().mockReturnValue(new Set()),
       getTaskInfo: jest.fn().mockResolvedValue(null),
+      getCachedTaskInfo: jest.fn().mockResolvedValue(null),
       updateTaskInfoInCache: jest.fn(),
       removeFromCache: jest.fn().mockResolvedValue(undefined),
       getAllTags: jest.fn().mockReturnValue([]),

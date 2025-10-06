@@ -2,8 +2,7 @@ import { FilterService } from '../../../src/services/FilterService';
 import { StatusManager } from '../../../src/services/StatusManager';
 import { PriorityManager } from '../../../src/services/PriorityManager';
 import { FilterQuery, TaskInfo } from '../../../src/types';
-import { createMockCacheManager, createMockTaskInfo } from '../../helpers/mock-factories';
-import { addDays, subDays } from 'date-fns';
+import { TaskFactory, PluginFactory } from '../../helpers/mock-factories';
 import { createUTCDateFromLocalCalendarDate, formatDateForStorage, getTodayLocal } from '../../../src/utils/dateUtils';
 
 describe('Issue #810 - Overdue tasks disappear in agenda view when clicking "today"', () => {
@@ -15,9 +14,14 @@ describe('Issue #810 - Overdue tasks disappear in agenda view when clicking "tod
 
     beforeEach(() => {
         // Setup mock services
-        statusManager = new StatusManager();
-        priorityManager = new PriorityManager();
-        mockCacheManager = createMockCacheManager();
+        statusManager = new StatusManager([
+            { id: 'open', value: ' ', label: 'Open', color: '#000000', isCompleted: false, order: 1 },
+            { id: 'done', value: 'x', label: 'Done', color: '#00ff00', isCompleted: true, order: 2 }
+        ]);
+        priorityManager = new PriorityManager([
+            { id: 'normal', value: 'normal', label: 'Normal', color: '#000000', weight: 0 }
+        ]);
+        mockCacheManager = PluginFactory.createMockPlugin().cacheManager;
 
         mockPlugin = {
             settings: {
@@ -39,30 +43,31 @@ describe('Issue #810 - Overdue tasks disappear in agenda view when clicking "tod
     });
 
     it('should show overdue tasks when showOverdueSection is enabled', async () => {
-        const today = getTodayLocal();
-        const yesterday = subDays(today, 1);
-        const tomorrow = addDays(today, 1);
+        // Use explicit dates for testing (UTC dates to match formatDateForStorage)
+        const today = new Date(Date.UTC(2025, 9, 6)); // Oct 6, 2025 UTC
+        const yesterday = new Date(Date.UTC(2025, 9, 5)); // Oct 5, 2025 UTC
+        const tomorrow = new Date(Date.UTC(2025, 9, 7)); // Oct 7, 2025 UTC
 
         // Create tasks with different dates
-        const overdueTask: TaskInfo = createMockTaskInfo({
+        const overdueTask: TaskInfo = TaskFactory.createTask({
             path: 'test-overdue.md',
             content: '- [ ] Overdue task',
             due: formatDateForStorage(yesterday),
             status: ' ',
         });
 
-        const todayTask: TaskInfo = createMockTaskInfo({
+        const todayTask: TaskInfo = TaskFactory.createTask({
             path: 'test-today.md',
             content: '- [ ] Today task',
             due: formatDateForStorage(today),
             status: ' ',
         });
 
-        const recurringOverdueTask: TaskInfo = createMockTaskInfo({
+        const recurringOverdueTask: TaskInfo = TaskFactory.createTask({
             path: 'test-recurring.md',
             content: '- [ ] Recurring task',
             scheduled: formatDateForStorage(yesterday),
-            recurrence: 'every day',
+            recurrence: 'RRULE:FREQ=DAILY',
             status: ' ',
         });
 
@@ -73,11 +78,11 @@ describe('Issue #810 - Overdue tasks disappear in agenda view when clicking "tod
             recurringOverdueTask.path
         ]);
 
-        mockCacheManager.getTaskInfo.mockImplementation((path: string) => {
-            if (path === overdueTask.path) return overdueTask;
-            if (path === todayTask.path) return todayTask;
-            if (path === recurringOverdueTask.path) return recurringOverdueTask;
-            return null;
+        mockCacheManager.getCachedTaskInfo.mockImplementation((path: string) => {
+            if (path === overdueTask.path) return Promise.resolve(overdueTask);
+            if (path === todayTask.path) return Promise.resolve(todayTask);
+            if (path === recurringOverdueTask.path) return Promise.resolve(recurringOverdueTask);
+            return Promise.resolve(null);
         });
 
         // Create a default filter query (no filters, just sorting)
@@ -123,11 +128,11 @@ describe('Issue #810 - Overdue tasks disappear in agenda view when clicking "tod
     });
 
     it('should include overdue tasks in overdue section after updating task due date to today', async () => {
-        const today = getTodayLocal();
-        const yesterday = subDays(today, 1);
+        const today = new Date(Date.UTC(2025, 9, 6)); // Oct 6, 2025 UTC
+        const yesterday = new Date(Date.UTC(2025, 9, 5)); // Oct 5, 2025 UTC
 
         // Create a task that was overdue but is now updated to today
-        const taskUpdatedToToday: TaskInfo = createMockTaskInfo({
+        const taskUpdatedToToday: TaskInfo = TaskFactory.createTask({
             path: 'test-updated.md',
             content: '- [ ] Task updated to today',
             due: formatDateForStorage(today),
@@ -136,7 +141,7 @@ describe('Issue #810 - Overdue tasks disappear in agenda view when clicking "tod
 
         // Mock the cache
         mockCacheManager.getAllTaskPaths.mockReturnValue([taskUpdatedToToday.path]);
-        mockCacheManager.getTaskInfo.mockReturnValue(taskUpdatedToToday);
+        mockCacheManager.getCachedTaskInfo.mockResolvedValue(taskUpdatedToToday);
 
         const query: FilterQuery = {
             type: 'group',
@@ -161,21 +166,21 @@ describe('Issue #810 - Overdue tasks disappear in agenda view when clicking "tod
     });
 
     it('should handle recurring tasks correctly - not show as overdue if current instance is today/future', async () => {
-        const today = getTodayLocal();
-        const yesterday = subDays(today, 1);
+        const today = new Date(Date.UTC(2025, 9, 6)); // Oct 6, 2025 UTC
+        const yesterday = new Date(Date.UTC(2025, 9, 5)); // Oct 5, 2025 UTC
 
         // Recurring task with scheduled date as yesterday
         // But the current instance (evaluated for today) should appear on today
-        const recurringTask: TaskInfo = createMockTaskInfo({
+        const recurringTask: TaskInfo = TaskFactory.createTask({
             path: 'test-recurring-today.md',
             content: '- [ ] Daily recurring task',
             scheduled: formatDateForStorage(today), // Current scheduled instance is today
-            recurrence: 'every day',
+            recurrence: 'RRULE:FREQ=DAILY',
             status: ' ',
         });
 
         mockCacheManager.getAllTaskPaths.mockReturnValue([recurringTask.path]);
-        mockCacheManager.getTaskInfo.mockReturnValue(recurringTask);
+        mockCacheManager.getCachedTaskInfo.mockResolvedValue(recurringTask);
 
         const query: FilterQuery = {
             type: 'group',
