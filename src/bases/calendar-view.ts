@@ -1064,11 +1064,14 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 								return;
 							}
 
-							// Handle property-based event click - use shared click handler
+							// Handle property-based event click - open file directly
 							if (eventType === "property-based" && filePath) {
-								// Create a minimal TaskInfo object for property-based events
-								const propertyTask: any = { path: filePath };
-								handleCalendarTaskClick(propertyTask, plugin, jsEvent, info.event.id);
+								const file = plugin.app.vault.getAbstractFileByPath(filePath);
+								if (file instanceof TFile) {
+									const isModKey = jsEvent.ctrlKey || jsEvent.metaKey;
+									const newLeaf = isModKey || jsEvent.button === 1; // Ctrl/Cmd+click or middle click
+									plugin.app.workspace.getLeaf(newLeaf).openFile(file);
+								}
 								return;
 							}
 
