@@ -86,6 +86,11 @@ Example:
   - RRule strings passed directly without conversion (preferred format)
   - Thanks to @Justin-Burg for reporting
 
+- (#826) Fixed task card widget not appearing when Obsidian starts with task note open
+  - Deferred dispatch calls to avoid "EditorView.update not allowed during update" error
+  - Widget now renders correctly on startup without requiring workarounds
+  - Thanks to @nightroman for reporting
+
 - (#810) Fixed recurring tasks with overdue due dates disappearing from agenda view
   - Recurring tasks now check both `due` and `scheduled` dates for overdue status
   - Previously only `scheduled` was checked for recurring tasks, causing tasks with overdue `due` dates to be hidden
