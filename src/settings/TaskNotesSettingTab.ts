@@ -19,7 +19,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 	plugin: TaskNotesPlugin;
 	private activeTab = "general";
 	private tabContents: Record<string, HTMLElement> = {};
-	private debouncedSave = debounce(() => this.plugin.saveSettings(), 500, true);
+	private debouncedSave = debounce(() => this.plugin.saveSettings(), 500);
 
 	constructor(app: App, plugin: TaskNotesPlugin) {
 		super(app, plugin);

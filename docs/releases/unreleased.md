@@ -27,6 +27,11 @@ Example:
 
 ## Fixed
 
+- (#789) Fixed folder path truncation in settings causing tasks to be created in wrong paths
+  - Changed debounce to trailing mode to ensure final value is saved instead of partial input
+  - Fixes issue where rapid typing, paste, or autocomplete would save incomplete folder paths
+  - Thanks to @sascha224 for reporting
+
 - (#806) Fixed Bases views crashing on Obsidian 1.10.0 startup
   - TaskNotes Bases views (Task List and Kanban) now restore correctly when already open at startup
   - Added defensive checks in `setEphemeralState` to handle early lifecycle calls
