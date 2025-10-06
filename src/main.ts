@@ -94,6 +94,8 @@ import { AutoExportService } from "./services/AutoExportService";
 // Type-only import for HTTPAPIService (actual import is dynamic on desktop only)
 import type { HTTPAPIService } from "./services/HTTPAPIService";
 import { createI18nService, I18nService, TranslationKey } from "./i18n";
+import { ReleaseNotesView, RELEASE_NOTES_VIEW_TYPE } from "./views/ReleaseNotesView";
+import { CURRENT_RELEASE_NOTES } from "./releaseNotes";
 
 interface TranslatedCommandDefinition {
 	id: string;
@@ -212,6 +214,9 @@ export default class TaskNotesPlugin extends Plugin {
 	private migrationComplete = false;
 	private migrationPromise: Promise<void> | null = null;
 
+	// Bases registration state management
+	private basesRegistered = false;
+
 	/**
 	 * Get the system UI locale with proper priority order for TaskNotes plugin.
 	 *
@@ -323,6 +328,11 @@ export default class TaskNotesPlugin extends Plugin {
 		this.notificationService = new NotificationService(this);
 		this.viewPerformanceService = new ViewPerformanceService(this);
 
+		// Create ICS services early so views can register event listeners
+		// (initialization will be deferred to lazy loading)
+		this.icsSubscriptionService = new ICSSubscriptionService(this);
+		this.icsNoteService = new ICSNoteService(this);
+
 		// Connect AutoArchiveService to TaskService for status-based auto-archiving
 		this.taskService.setAutoArchiveService(this.autoArchiveService);
 
@@ -375,10 +385,11 @@ export default class TaskNotesPlugin extends Plugin {
 		this.migrationPromise = this.performEarlyMigrationCheck();
 
 		// Early registration attempt for Bases integration
-		if (this.settings?.enableBases) {
+		if (this.settings?.enableBases && !this.basesRegistered) {
 			try {
 				const { registerBasesTaskList } = await import("./bases/registration");
 				await registerBasesTaskList(this);
+				this.basesRegistered = true;
 			} catch (e) {
 				// eslint-disable-next-line no-console
 				console.debug("[TaskNotes][Bases] Early registration failed:", e);
@@ -461,6 +472,11 @@ export default class TaskNotesPlugin extends Plugin {
 
 			this.registerView(KANBAN_VIEW_TYPE, (leaf) => new KanbanView(leaf, this));
 
+			this.registerView(
+				RELEASE_NOTES_VIEW_TYPE,
+				(leaf) => new ReleaseNotesView(leaf, this, CURRENT_RELEASE_NOTES, this.manifest.version)
+			);
+
 			// Register essential editor extensions (now safe after layout ready)
 			this.registerEditorExtension(createTaskLinkOverlay(this));
 
@@ -500,11 +516,12 @@ export default class TaskNotesPlugin extends Plugin {
 			// Defer heavy service initialization until needed
 			this.initializeServicesLazily();
 
-			// Register TaskNotes views with Bases plugin (if enabled)
-			if (this.settings?.enableBases) {
+			// Register TaskNotes views with Bases plugin (if enabled and not already registered)
+			if (this.settings?.enableBases && !this.basesRegistered) {
 				try {
 					const { registerBasesTaskList } = await import("./bases/registration");
 					await registerBasesTaskList(this);
+					this.basesRegistered = true;
 				} catch (e) {
 					console.debug("[TaskNotes][Bases] Registration failed:", e);
 				}
@@ -525,12 +542,8 @@ export default class TaskNotesPlugin extends Plugin {
 				this.pomodoroService = new PomodoroService(this);
 				await this.pomodoroService.initialize();
 
-				// Initialize ICS subscription service
-				this.icsSubscriptionService = new ICSSubscriptionService(this);
+				// Initialize ICS subscription service (instance already created in onload)
 				await this.icsSubscriptionService.initialize();
-
-				// Initialize ICS note service
-				this.icsNoteService = new ICSNoteService(this);
 
 				// Initialize auto export service
 				this.autoExportService = new AutoExportService(this);
@@ -639,6 +652,9 @@ export default class TaskNotesPlugin extends Plugin {
 
 				// Migration check was moved to early startup - just show prompts here if needed
 				await this.showMigrationPromptsIfNeeded();
+
+				// Check for version updates and show release notes if needed
+				await this.checkForVersionUpdate();
 			} catch (error) {
 				console.error("Error during lazy service initialization:", error);
 			}
@@ -887,6 +903,36 @@ export default class TaskNotesPlugin extends Plugin {
 	}
 
 	/**
+	 * Check for version updates and show release notes if needed
+	 */
+	private async checkForVersionUpdate(): Promise<void> {
+		try {
+			const currentVersion = this.manifest.version;
+			const lastSeenVersion = this.settings.lastSeenVersion;
+
+			// If this is a new install or version has changed, show release notes
+			if (lastSeenVersion && lastSeenVersion !== currentVersion) {
+				// Show release notes after a delay to ensure UI is ready
+				setTimeout(async () => {
+					await this.activateReleaseNotesView();
+					// Update lastSeenVersion immediately after showing the release notes
+					// This ensures they only show once per version
+					this.settings.lastSeenVersion = currentVersion;
+					await this.saveSettings();
+				}, 1500); // Slightly longer delay than migration to avoid conflicts
+			}
+
+			// Update lastSeenVersion if it hasn't been set yet (new install)
+			if (!lastSeenVersion) {
+				this.settings.lastSeenVersion = currentVersion;
+				await this.saveSettings();
+			}
+		} catch (error) {
+			console.error("Error checking for version update:", error);
+		}
+	}
+
+	/**
 	 * Public method for views to wait for migration completion
 	 */
 	async waitForMigration(): Promise<void> {
@@ -1002,6 +1048,7 @@ export default class TaskNotesPlugin extends Plugin {
 		if (this.settings?.enableBases) {
 			import("./bases/registration").then(({ unregisterBasesViews }) => {
 				unregisterBasesViews(this);
+				this.basesRegistered = false;
 			}).catch(e => {
 				console.debug("[TaskNotes][Bases] Unregistration failed:", e);
 			});
@@ -1429,6 +1476,13 @@ export default class TaskNotesPlugin extends Plugin {
 					}
 				},
 			},
+			{
+				id: "view-release-notes",
+				nameKey: "commands.viewReleaseNotes",
+				callback: async () => {
+					await this.activateReleaseNotesView();
+				},
+			},
 		];
 
 		this.registerCommands();
@@ -1558,6 +1612,10 @@ export default class TaskNotesPlugin extends Plugin {
 
 	async activateKanbanView() {
 		return this.activateView(KANBAN_VIEW_TYPE);
+	}
+
+	async activateReleaseNotesView() {
+		return this.activateView(RELEASE_NOTES_VIEW_TYPE);
 	}
 
 	/**

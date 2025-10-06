@@ -99,7 +99,7 @@ export class TaskCardWidget extends WidgetType {
 	}
 }
 
-class TaskCardNoteDecorationsPlugin implements PluginValue {
+export class TaskCardNoteDecorationsPlugin implements PluginValue {
 	decorations: DecorationSet;
 	private cachedTask: TaskInfo | null = null;
 	private currentFile: TFile | null = null;
@@ -190,13 +190,16 @@ class TaskCardNoteDecorationsPlugin implements PluginValue {
 		// Increment version and dispatch update effect
 		this.version++;
 		if (this.view && typeof this.view.dispatch === "function") {
-			try {
-				this.view.dispatch({
-					effects: [taskCardUpdateEffect.of({ forceUpdate: true })],
-				});
-			} catch (error) {
-				console.error("Error dispatching task card update:", error);
-			}
+			// Defer dispatch to avoid calling during active update cycle
+			queueMicrotask(() => {
+				try {
+					this.view.dispatch({
+						effects: [taskCardUpdateEffect.of({ forceUpdate: true })],
+					});
+				} catch (error) {
+					console.error("Error dispatching task card update:", error);
+				}
+			});
 		}
 	}
 

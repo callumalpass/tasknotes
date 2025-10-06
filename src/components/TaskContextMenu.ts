@@ -16,6 +16,7 @@ import {
 	normalizeDependencyEntry,
 } from "../utils/dependencyUtils";
 import { generateLink } from "../utils/linkUtils";
+import { ContextMenu } from "./ContextMenu";
 
 export interface TaskContextMenuOptions {
 	task: TaskInfo;
@@ -25,11 +26,11 @@ export interface TaskContextMenuOptions {
 }
 
 export class TaskContextMenu {
-	private menu: Menu;
+	private menu: ContextMenu;
 	private options: TaskContextMenuOptions;
 
 	constructor(options: TaskContextMenuOptions) {
-		this.menu = new Menu();
+		this.menu = new ContextMenu();
 		this.options = options;
 		this.buildMenu();
 	}
@@ -573,7 +574,7 @@ export class TaskContextMenu {
 			item.onClick(() => {
 				const taskFile = plugin.app.vault.getAbstractFileByPath(task.path);
 				if (taskFile instanceof TFile) {
-					const projectReference = generateLink(plugin.app, taskFile, task.path);
+					const projectReference = generateLink(plugin.app, taskFile, task.path, "", "", plugin.settings.useFrontmatterMarkdownLinks);
 					plugin.openTaskCreationModal({
 						projects: [projectReference],
 					});
@@ -710,7 +711,7 @@ export class TaskContextMenu {
 			plugin,
 			(candidate) => {
 				if (candidate.path === task.path) return false;
-				const candidateUid = formatDependencyLink(plugin.app, task.path, candidate.path);
+				const candidateUid = formatDependencyLink(plugin.app, task.path, candidate.path, plugin.settings.useFrontmatterMarkdownLinks);
 				return !existingUids.has(candidateUid);
 			},
 			async (selected) => {
@@ -772,7 +773,7 @@ export class TaskContextMenu {
 
 		try {
 			const dependency: TaskDependency = {
-				uid: formatDependencyLink(plugin.app, task.path, selectedTask.path),
+				uid: formatDependencyLink(plugin.app, task.path, selectedTask.path, plugin.settings.useFrontmatterMarkdownLinks),
 				reltype: DEFAULT_DEPENDENCY_RELTYPE,
 			};
 			const existing = Array.isArray(task.blockedBy) ? task.blockedBy : [];
@@ -809,7 +810,7 @@ export class TaskContextMenu {
 
 		try {
 			const rawEntry: TaskDependency = {
-				uid: formatDependencyLink(plugin.app, blockedPath, task.path),
+				uid: formatDependencyLink(plugin.app, blockedPath, task.path, plugin.settings.useFrontmatterMarkdownLinks),
 				reltype: DEFAULT_DEPENDENCY_RELTYPE,
 			};
 			await plugin.taskService.updateBlockingRelationships(task, [blockedPath], [], {
@@ -905,7 +906,7 @@ export class TaskContextMenu {
 				return;
 			}
 
-			const projectReference = generateLink(plugin.app, projectFile, task.path);
+			const projectReference = generateLink(plugin.app, projectFile, task.path, "", "", plugin.settings.useFrontmatterMarkdownLinks);
 			const legacyReference = `[[${projectFile.basename}]]`;
 			const currentProjects = Array.isArray(task.projects) ? task.projects : [];
 
@@ -940,7 +941,7 @@ export class TaskContextMenu {
 				return;
 			}
 
-			const projectReference = generateLink(plugin.app, currentTaskFile, subtask.path);
+			const projectReference = generateLink(plugin.app, currentTaskFile, subtask.path, "", "", plugin.settings.useFrontmatterMarkdownLinks);
 			const legacyReference = `[[${currentTaskFile.basename}]]`;
 			const subtaskProjects = Array.isArray(subtask.projects) ? subtask.projects : [];
 
@@ -969,7 +970,7 @@ export class TaskContextMenu {
 	}
 
 	private buildProjectReference(targetFile: TFile, sourcePath: string, plugin: TaskNotesPlugin): string {
-		return generateLink(plugin.app, targetFile, sourcePath);
+		return generateLink(plugin.app, targetFile, sourcePath, "", "", plugin.settings.useFrontmatterMarkdownLinks);
 	}
 
 	private updateMainMenuIconColors(task: TaskInfo, plugin: TaskNotesPlugin): void {

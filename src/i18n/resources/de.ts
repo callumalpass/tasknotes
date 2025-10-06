@@ -90,6 +90,76 @@ export const de: TranslationTree = {
 		},
 		advancedCalendar: {
 			title: "Erweiterter Kalender",
+			filters: {
+				showFilters: "Filter anzeigen",
+				hideFilters: "Filter ausblenden",
+			},
+			viewOptions: {
+				calendarSubscriptions: "Kalenderabonnements",
+				timeEntries: "Zeiteinträge",
+				timeblocks: "Zeitblöcke",
+				scheduledDates: "Geplante Termine",
+				dueDates: "Fälligkeitstermine",
+				allDaySlot: "Ganztägiger Slot",
+				scheduledTasks: "Geplante Aufgaben",
+				recurringTasks: "Wiederkehrende Aufgaben",
+			},
+			buttons: {
+				refresh: "Aktualisieren",
+				refreshHint: "Kalenderabonnements aktualisieren",
+			},
+			notices: {
+				icsServiceNotAvailable: "ICS-Abonnementdienst nicht verfügbar",
+				calendarRefreshedAll: "Alle Kalenderabonnements wurden erfolgreich aktualisiert",
+				refreshFailed: "Einige Kalenderabonnements konnten nicht aktualisiert werden",
+				timeblockSpecificTime:
+					"Zeitblöcke müssen spezifische Zeiten haben. Bitte wählen Sie einen Zeitbereich in der Wochen- oder Tagesansicht.",
+				timeblockMoved: 'Zeitblock "{title}" wurde nach {date} verschoben',
+				timeblockUpdated: 'Zeit des Zeitblocks "{title}" aktualisiert',
+				timeblockMoveFailed: "Fehler beim Verschieben des Zeitblocks: {message}",
+				timeblockResized: 'Dauer des Zeitblocks "{title}" aktualisiert',
+				timeblockResizeFailed: "Fehler beim Ändern der Zeitblockgröße: {message}",
+				taskScheduled: 'Aufgabe "{title}" für {date} geplant',
+				scheduleTaskFailed: "Fehler beim Planen der Aufgabe",
+				endTimeAfterStart: "Endzeit muss nach der Startzeit liegen",
+				timeEntryNotFound: "Zeiteintrag nicht gefunden",
+				timeEntryDeleted: "Zeiteintrag gelöscht",
+				deleteTimeEntryFailed: "Fehler beim Löschen des Zeiteintrags",
+			},
+			timeEntry: {
+				estimatedSuffix: "geschätzt",
+				trackedSuffix: "erfasst",
+				recurringPrefix: "Wiederkehrend: ",
+				completedPrefix: "Abgeschlossen: ",
+				createdPrefix: "Erstellt: ",
+				modifiedPrefix: "Geändert: ",
+				duePrefix: "Fällig: ",
+				scheduledPrefix: "Geplant: ",
+			},
+			contextMenus: {
+				openTask: "Aufgabe öffnen",
+				deleteTimeEntry: "Zeiteintrag löschen",
+				deleteTimeEntryTitle: "Zeiteintrag löschen",
+				deleteTimeEntryConfirm:
+					"Möchten Sie diesen Zeiteintrag{duration} wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
+				deleteButton: "Löschen",
+				cancelButton: "Abbrechen",
+			},
+		},
+		basesCalendar: {
+			title: "Bases-Kalender",
+			today: "Heute",
+			buttonText: {
+				month: "M",
+				week: "W",
+				day: "T",
+				year: "J",
+				list: "L",
+				customDays: "{count}T",
+			},
+			errors: {
+				failedToInitialize: "Fehler beim Initialisieren des Kalenders",
+			},
 		},
 		kanban: {
 			title: "Kanban",
@@ -203,6 +273,12 @@ export const de: TranslationTree = {
 			filters: {
 				minTime: "Min. Zeit (Minuten)",
 			},
+		},
+		releaseNotes: {
+			title: "Was ist neu in TaskNotes {version}",
+			header: "Was ist neu in TaskNotes {version}",
+			viewAllLink: "Alle Versionshinweise auf GitHub anzeigen →",
+			starMessage: "Wenn Sie TaskNotes nützlich finden, geben Sie ihm bitte einen Stern auf GitHub",
 		},
 	},
 	settings: {
@@ -1530,6 +1606,7 @@ export const de: TranslationTree = {
 		pauseResumePomodoro: "Pomodoro-Timer pausieren/fortsetzen",
 		refreshCache: "Cache aktualisieren",
 		exportAllTasksIcs: "Alle Aufgaben als ICS-Datei exportieren",
+		viewReleaseNotes: "Versionshinweise anzeigen",
 	},
 	modals: {
 		task: {
@@ -2089,6 +2166,9 @@ export const de: TranslationTree = {
 			loadingDependencies: "Abhängigkeiten werden geladen…",
 			blockingEmpty: "Keine abhängigen Aufgaben",
 			blockingLoadError: "Abhängigkeiten konnten nicht geladen werden",
+		},
+		propertyEventCard: {
+			unknownFile: "Unbekannte Datei",
 		},
 		filterHeading: {
 			allViewName: "Alle",

@@ -2583,9 +2583,17 @@ export class FilterService extends EventEmitter {
 
 			// For recurring tasks, check if the current scheduled date is overdue
 			if (task.recurrence) {
-				// Only check scheduled date for recurring tasks (this is the current instance date)
+				// For recurring tasks, check scheduled date (current instance)
+				// Also check due date if it exists (user may set both)
+				if (task.due) {
+					if (isOverdueTimeAware(task.due, isCompleted, hideCompletedFromOverdue)) {
+						return true;
+					}
+				}
 				if (task.scheduled) {
-					return isOverdueTimeAware(task.scheduled, isCompleted, hideCompletedFromOverdue);
+					if (isOverdueTimeAware(task.scheduled, isCompleted, hideCompletedFromOverdue)) {
+						return true;
+					}
 				}
 				return false;
 			}

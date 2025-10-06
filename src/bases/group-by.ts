@@ -27,6 +27,8 @@ function toStringTokens(value: unknown): string[] {
 /**
  * Read Bases view groupBy config and normalize it against query.properties
  * Returns a config object or null if groupBy is absent.
+ *
+ * Uses public API (1.10.0+) when available via config.get() and config.getAsPropertyId()
  */
 export function getBasesGroupByConfig(
 	basesContainer: any,
@@ -37,16 +39,33 @@ export function getBasesGroupByConfig(
 		const query = (basesContainer?.query ?? controller?.query) as any;
 		if (!controller) return null;
 
-		const fullCfg = controller?.getViewConfig?.() ?? {};
-
-		// Try multiple locations to fetch groupBy
+		// Try public API first (1.10.0+) - config.get() or config.getAsPropertyId()
 		let groupBy: any;
-		try {
-			groupBy = query?.getViewConfig?.("groupBy");
-		} catch (_) {
-			// ignore
+		if (basesContainer?.config) {
+			try {
+				// Try getAsPropertyId first for type-safe property access
+				if (typeof basesContainer.config.getAsPropertyId === "function") {
+					groupBy = basesContainer.config.getAsPropertyId("groupBy");
+				}
+				// Fall back to generic get
+				if (groupBy == null && typeof basesContainer.config.get === "function") {
+					groupBy = basesContainer.config.get("groupBy");
+				}
+			} catch (_) {
+				// ignore
+			}
 		}
-		if (groupBy == null) groupBy = (fullCfg as any)?.groupBy;
+
+		// Fallback to internal API for older versions
+		if (groupBy == null) {
+			const fullCfg = controller?.getViewConfig?.() ?? {};
+			try {
+				groupBy = query?.getViewConfig?.("groupBy");
+			} catch (_) {
+				// ignore
+			}
+			if (groupBy == null) groupBy = (fullCfg as any)?.groupBy;
+		}
 
 		if (!groupBy) return null; // No grouping configured
 
@@ -75,7 +94,20 @@ export function getBasesGroupByConfig(
 		const normalizedId = normalizeToId(token);
 		if (!normalizedId) return null;
 
-		const displayName: string = propsMap?.[normalizedId]?.getDisplayName?.() ?? normalizedId;
+		// Try public API for display name (1.10.0+)
+		let displayName: string = normalizedId;
+		if (basesContainer?.config && typeof basesContainer.config.getDisplayName === "function") {
+			try {
+				const dn = basesContainer.config.getDisplayName(normalizedId);
+				if (typeof dn === "string" && dn.trim()) displayName = dn;
+			} catch (_) {
+				// Fall back to internal API
+			}
+		}
+		// Fallback to internal API
+		if (displayName === normalizedId) {
+			displayName = propsMap?.[normalizedId]?.getDisplayName?.() ?? normalizedId;
+		}
 
 		const getGroupValues = (taskPath: string): string[] => {
 			const props = pathToProps.get(taskPath) || {};

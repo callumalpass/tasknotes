@@ -1,5 +1,6 @@
 import TaskNotesPlugin from "../main";
 import { TaskInfo } from "../types";
+import { setIcon } from "obsidian";
 
 export interface BasesDataItem {
 	key?: string;
@@ -165,27 +166,55 @@ export function getBasesVisibleProperties(basesContainer: any): BasesSelectedPro
 		};
 
 		// Get visible properties from Bases order configuration
-		const fullCfg = controller?.getViewConfig?.() ?? {};
-
+		// Try public API first (1.10.0+) - config.getOrder()
 		let order: string[] | undefined;
-		try {
-			order =
-				(query?.getViewConfig?.("order") as string[] | undefined) ??
-				(fullCfg as any)?.order ??
-				(fullCfg as any)?.columns?.order;
-		} catch (_) {
-			order = (fullCfg as any)?.order ?? (fullCfg as any)?.columns?.order;
+		if (basesContainer?.config && typeof basesContainer.config.getOrder === "function") {
+			try {
+				order = basesContainer.config.getOrder();
+			} catch (_) {
+				// Ignore errors accessing order
+			}
+		}
+
+		// Fallback to internal API for older versions
+		if (!order || !Array.isArray(order) || order.length === 0) {
+			const fullCfg = controller?.getViewConfig?.() ?? {};
+			try {
+				order =
+					(query?.getViewConfig?.("order") as string[] | undefined) ??
+					(fullCfg as any)?.order ??
+					(fullCfg as any)?.columns?.order;
+			} catch (_) {
+				order = (fullCfg as any)?.order ?? (fullCfg as any)?.columns?.order;
+			}
 		}
 
 		if (!order || !Array.isArray(order) || order.length === 0) return [];
 
 		const orderedIds: string[] = order.map(normalizeToId).filter((id): id is string => !!id);
 
-		return orderedIds.map((id) => ({
-			id,
-			displayName: propsMap?.[id]?.getDisplayName?.() ?? id,
-			visible: true,
-		}));
+		return orderedIds.map((id) => {
+			// Try public API for display name (1.10.0+)
+			let displayName = id;
+			if (basesContainer?.config && typeof basesContainer.config.getDisplayName === "function") {
+				try {
+					const dn = basesContainer.config.getDisplayName(id);
+					if (typeof dn === "string" && dn.trim()) displayName = dn;
+				} catch (_) {
+					// Fall back to internal API
+				}
+			}
+			// Fallback to internal API
+			if (displayName === id) {
+				displayName = propsMap?.[id]?.getDisplayName?.() ?? id;
+			}
+
+			return {
+				id,
+				displayName,
+				visible: true,
+			};
+		});
 	} catch (e) {
 		console.debug("[TaskNotes][Bases] getBasesVisibleProperties failed:", e);
 		return [];
@@ -304,6 +333,222 @@ export async function renderTaskNotesInBasesView(
 			}
 		} catch (error) {
 			console.warn("[TaskNotes][BasesPOC] Error creating task card:", error);
+		}
+	}
+}
+
+/**
+ * Render grouped TaskNotes in Bases list view
+ * Uses grouped data from Bases API (public API 1.10.0+)
+ */
+export async function renderGroupedTasksInBasesView(
+	container: HTMLElement,
+	taskNotes: TaskInfo[],
+	plugin: TaskNotesPlugin,
+	viewContext: any,
+	pathToProps: Map<string, Record<string, any>>,
+	taskElementsMap?: Map<string, HTMLElement>
+): Promise<void> {
+	const { createTaskCard } = await import("../ui/TaskCard");
+
+	// Clear container and tracking map
+	container.innerHTML = "";
+	if (taskElementsMap) {
+		taskElementsMap.clear();
+	}
+
+	// Get groupedData from public API
+	const groupedData = viewContext?.data?.groupedData;
+	if (!Array.isArray(groupedData) || groupedData.length === 0) {
+		// No groups, fall back to flat rendering
+		await renderTaskNotesInBasesView(container, taskNotes, plugin, viewContext, taskElementsMap);
+		return;
+	}
+
+	// Check if this is actually ungrouped (single group with null/undefined/empty key)
+	if (groupedData.length === 1) {
+		const singleGroup = groupedData[0];
+		const groupKey = singleGroup.key?.data;
+		const groupKeyStr = String(groupKey);
+		// If the key is null, undefined, empty string, or "Unknown", treat as ungrouped
+		if (groupKey === null || groupKey === undefined || groupKey === "" || groupKeyStr === "null" || groupKeyStr === "undefined" || groupKeyStr === "Unknown") {
+			// Render as flat list without group headers
+			await renderTaskNotesInBasesView(container, taskNotes, plugin, viewContext, taskElementsMap);
+			return;
+		}
+	}
+
+	// Create wrapper with proper class for CSS styling
+	const listWrapper = document.createElement("div");
+	listWrapper.className = "tn-bases-tasknotes-list";
+	container.appendChild(listWrapper);
+
+	// Get visible properties from Bases
+	const basesVisibleProperties = getBasesVisibleProperties(viewContext);
+	let visibleProperties: string[] | undefined;
+
+	if (basesVisibleProperties.length > 0) {
+		visibleProperties = basesVisibleProperties.map((p) => p.id);
+		// Map properties (same logic as renderTaskNotesInBasesView)
+		visibleProperties = visibleProperties.map((propId) => {
+			let mappedId = propId;
+			const internalFieldName = plugin.fieldMapper?.fromUserField(propId);
+			if (internalFieldName) {
+				mappedId = internalFieldName;
+			} else if (propId.startsWith("task.")) {
+				mappedId = propId.substring(5);
+			} else if (propId.startsWith("note.")) {
+				const stripped = propId.substring(5);
+				const strippedInternalFieldName = plugin.fieldMapper?.fromUserField(stripped);
+				if (strippedInternalFieldName) {
+					mappedId = strippedInternalFieldName;
+				} else if (stripped === "dateCreated") mappedId = "dateCreated";
+				else if (stripped === "dateModified") mappedId = "dateModified";
+				else if (stripped === "completedDate") mappedId = "completedDate";
+				else mappedId = stripped;
+			} else if (propId === "file.ctime") mappedId = "dateCreated";
+			else if (propId === "file.mtime") mappedId = "dateModified";
+			else if (propId === "file.name") mappedId = "title";
+			else if (propId.startsWith("formula.")) {
+				mappedId = propId;
+			}
+			return mappedId;
+		});
+	}
+
+	// Use plugin default properties if no Bases properties available
+	if (!visibleProperties || visibleProperties.length === 0) {
+		visibleProperties = plugin.settings.defaultVisibleProperties || [
+			"due",
+			"scheduled",
+			"projects",
+			"contexts",
+			"tags",
+			"blocked",
+			"blocking",
+		];
+	}
+
+	const cardOptions = {
+		showCheckbox: false,
+		showArchiveButton: false,
+		showTimeTracking: false,
+		showRecurringControls: true,
+		groupByDate: false,
+		targetDate: new Date(),
+	};
+
+	// Create a map from file path to TaskInfo for quick lookup
+	const tasksByPath = new Map<string, TaskInfo>();
+	taskNotes.forEach((task) => {
+		if (task.path) {
+			tasksByPath.set(task.path, task);
+		}
+	});
+
+	// Render each group
+	for (const group of groupedData) {
+		const groupKey = group.key?.data || "Unknown";
+		const groupName = String(groupKey);
+		const groupEntries = group.entries || [];
+
+		if (groupEntries.length === 0) continue;
+
+		// Create group section
+		const groupSection = document.createElement("div");
+		groupSection.className = "task-section task-group";
+		groupSection.setAttribute("data-group", groupName);
+		listWrapper.appendChild(groupSection);
+
+		// Create group header
+		const headerElement = document.createElement("h3");
+		headerElement.className = "task-group-header task-list-view__group-header";
+		groupSection.appendChild(headerElement);
+
+		// Add toggle button (chevron)
+		const toggleBtn = document.createElement("button");
+		toggleBtn.className = "task-group-toggle";
+		toggleBtn.setAttribute("aria-label", "Toggle group");
+		toggleBtn.setAttribute("aria-expanded", "true");
+		headerElement.appendChild(toggleBtn);
+
+		// Add chevron icon
+		setIcon(toggleBtn, "chevron-right");
+
+		const svg = toggleBtn.querySelector("svg");
+		if (svg) {
+			svg.classList.add("chevron");
+			svg.setAttribute("width", "16");
+			svg.setAttribute("height", "16");
+		}
+
+		// Format group name and add count
+		const displayName = groupName === "null" || groupName === "undefined" ? "None" : groupName;
+		headerElement.createSpan({ text: displayName });
+
+		// Add count
+		headerElement.createSpan({
+			text: ` (${groupEntries.length})`,
+			cls: "agenda-view__item-count",
+		});
+
+		// Create task cards container BEFORE adding click handler
+		const taskCardsContainer = document.createElement("div");
+		taskCardsContainer.className = "tasks-container task-cards";
+		groupSection.appendChild(taskCardsContainer);
+
+		// Add click handler for toggle
+		headerElement.addEventListener("click", (e: MouseEvent) => {
+			const target = e.target as HTMLElement;
+			// Don't toggle if clicking on a link
+			if (target.closest("a")) return;
+
+			e.preventDefault();
+			e.stopPropagation();
+
+			const isCollapsed = groupSection.classList.toggle("is-collapsed");
+			toggleBtn.setAttribute("aria-expanded", String(!isCollapsed));
+
+			// Toggle task cards visibility
+			if (isCollapsed) {
+				taskCardsContainer.style.display = "none";
+			} else {
+				taskCardsContainer.style.display = "";
+			}
+		});
+
+		// Collect TaskInfo for this group
+		const groupTasks: TaskInfo[] = [];
+		for (const entry of groupEntries) {
+			const filePath = entry.file?.path;
+			if (filePath) {
+				const task = tasksByPath.get(filePath);
+				if (task) {
+					groupTasks.push(task);
+				}
+			}
+		}
+
+		// Apply sorting within group
+		const { getBasesSortComparator } = await import("./sorting");
+		const sortComparator = getBasesSortComparator(viewContext, pathToProps);
+		if (sortComparator) {
+			groupTasks.sort(sortComparator);
+		}
+
+		// Render tasks in this group
+		for (const task of groupTasks) {
+			try {
+				const taskCard = createTaskCard(task, plugin, visibleProperties, cardOptions);
+				taskCardsContainer.appendChild(taskCard);
+
+				// Track task elements for selective updates
+				if (taskElementsMap && task.path) {
+					taskElementsMap.set(task.path, taskCard);
+				}
+			} catch (error) {
+				console.warn("[TaskNotes][Bases] Error creating task card:", error);
+			}
 		}
 	}
 }

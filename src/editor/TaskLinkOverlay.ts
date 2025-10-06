@@ -394,13 +394,8 @@ function resolveLinkPathSync(
 	}
 
 	try {
-		// Sanitize link path to prevent directory traversal
-		const sanitizedLinkPath = linkPath.replace(/\.\./g, "").trim();
-		if (!sanitizedLinkPath) {
-			return null;
-		}
-
-		const file = plugin.app.metadataCache.getFirstLinkpathDest(sanitizedLinkPath, sourcePath);
+		// Use Obsidian's API to resolve the link path - it handles relative paths safely
+		const file = plugin.app.metadataCache.getFirstLinkpathDest(linkPath, sourcePath);
 
 		// Validate result
 		if (!file || !file.path || typeof file.path !== "string") {

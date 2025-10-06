@@ -15,16 +15,11 @@ import { ICSEventContextMenu } from "../components/ICSEventContextMenu";
 import { TaskContextMenu } from "../components/TaskContextMenu";
 import { PriorityContextMenu } from "../components/PriorityContextMenu";
 import { RecurrenceContextMenu } from "../components/RecurrenceContextMenu";
-import { createTaskClickHandler, createTaskHoverHandler } from "../utils/clickHandlers";
+import { createTaskClickHandler, createTaskHoverHandler, handleCalendarTaskClick } from "../utils/clickHandlers";
 import { TimeblockInfoModal } from "../modals/TimeblockInfoModal";
 import { format, startOfDay, endOfDay } from "date-fns";
 import { Calendar } from "@fullcalendar/core";
-import {
-	createDailyNote,
-	getDailyNote,
-	getAllDailyNotes,
-	appHasDailyNotesPluginLoaded,
-} from "obsidian-daily-notes-interface";
+import { appHasDailyNotesPluginLoaded } from "obsidian-daily-notes-interface";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import multiMonthPlugin from "@fullcalendar/multimonth";
@@ -71,33 +66,39 @@ import { getRecurrenceDisplayText } from "../utils/helpers";
 import {
 	generateRecurringInstances,
 	extractTimeblocksFromNote,
-	timeblockToCalendarEvent,
 	updateTimeblockInDailyNote,
 	addDTSTARTToRecurrenceRuleWithDraggedTime,
 } from "../utils/helpers";
+import {
+	createScheduledEvent as createScheduledEventCore,
+	createDueEvent as createDueEventCore,
+	createTimeEntryEvents as createTimeEntryEventsCore,
+	createICSEvent as createICSEventCore,
+	generateRecurringTaskInstances as generateRecurringTaskInstancesCore,
+	createNextScheduledEvent as createNextScheduledEventCore,
+	createRecurringEvent as createRecurringEventCore,
+	getRecurringTime as getRecurringTimeCore,
+	hexToRgba,
+	calculateAllDayEndDate,
+	CalendarEvent,
+	generateTaskTooltip,
+	applyRecurringTaskStyling,
+	handleRecurringTaskDrop,
+	handlePatternInstanceDrop,
+	getTargetDateForEvent,
+	handleTimeblockCreation,
+	handleTimeblockDrop,
+	handleTimeblockResize,
+	showTimeblockInfoModal,
+	applyTimeblockStyling,
+	generateTimeblockTooltip,
+	handleDateTitleClick,
+	addTaskHoverPreview,
+} from "../bases/calendar-core";
 
-interface CalendarEvent {
-	id: string;
-	title: string;
-	start: string;
-	end?: string;
-	allDay: boolean;
-	backgroundColor?: string;
-	borderColor?: string;
-	textColor?: string;
-	editable?: boolean;
-	extendedProps: {
-		taskInfo?: TaskInfo;
-		icsEvent?: ICSEvent;
-		timeblock?: TimeBlock;
-		eventType: "scheduled" | "due" | "timeEntry" | "recurring" | "ics" | "timeblock";
-		isCompleted?: boolean;
-		isRecurringInstance?: boolean;
-		isNextScheduledOccurrence?: boolean; // Flag for next scheduled occurrence
-		isPatternInstance?: boolean; // Flag for pattern instances
-		instanceDate?: string; // YYYY-MM-DD for this specific occurrence
-		recurringTemplateTime?: string; // Original scheduled time
-		subscriptionName?: string; // For ICS events
+// Extended calendar event with timeblock support
+interface AdvancedCalendarEvent extends CalendarEvent {
+	extendedProps: CalendarEvent["extendedProps"] & {
 		attachments?: string[]; // For timeblocks
 		originalDate?: string; // For timeblock daily note reference
 	};
@@ -259,12 +260,16 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 		// Create mobile collapse toggle (only visible on mobile)
 		const mobileToggle = header.createDiv({ cls: "advanced-calendar-view__mobile-toggle" });
 		const toggleBtn = mobileToggle.createEl("button", {
-			text: this.headerCollapsed ? "Show filters" : "Hide filters",
+			text: this.headerCollapsed
+				? this.plugin.i18n.translate("views.advancedCalendar.filters.showFilters")
+				: this.plugin.i18n.translate("views.advancedCalendar.filters.hideFilters"),
 			cls: "advanced-calendar-view__collapse-btn",
 		});
 		toggleBtn.addEventListener("click", () => {
 			this.headerCollapsed = !this.headerCollapsed;
-			toggleBtn.textContent = this.headerCollapsed ? "Show filters" : "Hide filters";
+			toggleBtn.textContent = this.headerCollapsed
+				? this.plugin.i18n.translate("views.advancedCalendar.filters.showFilters")
+				: this.plugin.i18n.translate("views.advancedCalendar.filters.hideFilters");
 			this.saveViewPreferences();
 			this.updateHeaderVisibility();
 		});
@@ -366,7 +371,7 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 		const options = [
 			{
 				id: "icsEvents",
-				label: "Calendar subscriptions",
+				label: this.plugin.i18n.translate("views.advancedCalendar.viewOptions.calendarSubscriptions"),
 				value: this.showICSEvents,
 				onChange: (value: boolean) => {
 					this.showICSEvents = value;
@@ -376,7 +381,7 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 			},
 			{
 				id: "timeEntries",
-				label: "Time entries",
+				label: this.plugin.i18n.translate("views.advancedCalendar.viewOptions.timeEntries"),
 				value: this.showTimeEntries,
 				onChange: (value: boolean) => {
 					this.showTimeEntries = value;
@@ -386,7 +391,7 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 			},
 			{
 				id: "timeblocks",
-				label: "Timeblocks",
+				label: this.plugin.i18n.translate("views.advancedCalendar.viewOptions.timeblocks"),
 				value: this.showTimeblocks,
 				onChange: (value: boolean) => {
 					this.showTimeblocks = value;
@@ -396,7 +401,7 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 			},
 			{
 				id: "scheduled",
-				label: "Scheduled dates",
+				label: this.plugin.i18n.translate("views.advancedCalendar.viewOptions.scheduledDates"),
 				value: this.showScheduled,
 				onChange: (value: boolean) => {
 					this.showScheduled = value;
@@ -406,7 +411,7 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 			},
 			{
 				id: "due",
-				label: "Due dates",
+				label: this.plugin.i18n.translate("views.advancedCalendar.viewOptions.dueDates"),
 				value: this.showDue,
 				onChange: (value: boolean) => {
 					this.showDue = value;
@@ -416,7 +421,7 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 			},
 			{
 				id: "allDaySlot",
-				label: "All-day slot",
+				label: this.plugin.i18n.translate("views.advancedCalendar.viewOptions.allDaySlot"),
 				value: this.showAllDaySlot,
 				onChange: (value: boolean) => {
 					this.showAllDaySlot = value;
@@ -524,8 +529,8 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 	private getCustomButtons() {
 		const customButtons = {
 			refreshICS: {
-				text: "Refresh",
-				hint: "Refresh Calendar Subscriptions",
+				text: this.plugin.i18n.translate("views.advancedCalendar.buttons.refresh"),
+				hint: this.plugin.i18n.translate("views.advancedCalendar.buttons.refreshHint"),
 				click: () => {
 					this.handleRefreshClick();
 				},
@@ -561,18 +566,18 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 
 	private async handleRefreshClick() {
 		if (!this.plugin.icsSubscriptionService) {
-			new Notice("ICS subscription service not available");
+			new Notice(this.plugin.i18n.translate("views.advancedCalendar.notices.icsServiceNotAvailable"));
 			return;
 		}
 
 		try {
 			await this.plugin.icsSubscriptionService.refreshAllSubscriptions();
-			new Notice("All calendar subscriptions refreshed successfully");
+			new Notice(this.plugin.i18n.translate("views.advancedCalendar.notices.calendarRefreshedAll"));
 			// Force calendar to re-render with updated ICS events
 			this.refreshEvents();
 		} catch (error) {
 			console.error("Error refreshing subscriptions:", error);
-			new Notice("Failed to refresh some calendar subscriptions");
+			new Notice(this.plugin.i18n.translate("views.advancedCalendar.notices.refreshFailed"));
 		}
 	}
 
@@ -681,7 +686,7 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 
 			// Enable clickable date titles
 			navLinks: true,
-			navLinkDayClick: this.handleDateTitleClick.bind(this),
+			navLinkDayClick: (date: Date) => handleDateTitleClick(date, this.plugin),
 
 			// Time view configuration
 			slotMinTime: sanitizedTimeSettings.slotMinTime,
@@ -1094,162 +1099,19 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 	}
 
 	createScheduledEvent(task: TaskInfo): CalendarEvent | null {
-		if (!task.scheduled) return null;
-
-		const hasTime = hasTimeComponent(task.scheduled);
-		const startDate = task.scheduled;
-
-		let endDate: string | undefined;
-		if (hasTime && task.timeEstimate) {
-			// Calculate end time based on time estimate
-			// Use parseDateToLocal for display purposes since this has time
-			const start = parseDateToLocal(startDate);
-			const end = new Date(start.getTime() + task.timeEstimate * 60 * 1000);
-			endDate = format(end, "yyyy-MM-dd'T'HH:mm");
-		} else if (!hasTime) {
-			endDate = this.calculateAllDayEndDate(startDate, task.timeEstimate);
-		}
-
-		// Get priority-based color for border
-		const priorityConfig = this.plugin.priorityManager.getPriorityConfig(task.priority);
-		const borderColor = priorityConfig?.color || "var(--color-accent)";
-
-		// Check if task is completed
-		const isCompleted = this.plugin.statusManager.isCompletedStatus(task.status);
-
-		return {
-			id: `scheduled-${task.path}`,
-			title: task.title,
-			start: startDate,
-			end: endDate,
-			allDay: !hasTime,
-			backgroundColor: "transparent",
-			borderColor: borderColor,
-			textColor: borderColor,
-			editable: true, // Tasks are also editable
-			extendedProps: {
-				taskInfo: task,
-				eventType: "scheduled",
-				isCompleted: isCompleted,
-			},
-		};
+		return createScheduledEventCore(task, this.plugin);
 	}
 
 	createDueEvent(task: TaskInfo): CalendarEvent | null {
-		if (!task.due) return null;
-
-		const hasTime = hasTimeComponent(task.due);
-		const startDate = task.due;
-
-		let endDate: string | undefined;
-		if (hasTime) {
-			// Fixed duration for due events (30 minutes)
-			const start = parseDateToLocal(startDate);
-			const end = new Date(start.getTime() + 30 * 60 * 1000);
-			endDate = format(end, "yyyy-MM-dd'T'HH:mm");
-		}
-
-		// Get priority-based color with faded background
-		const priorityConfig = this.plugin.priorityManager.getPriorityConfig(task.priority);
-		const borderColor = priorityConfig?.color || "var(--color-orange)";
-
-		// Create faded background color from priority color
-		const fadedBackground = this.hexToRgba(borderColor, 0.15);
-
-		// Check if task is completed
-		const isCompleted = this.plugin.statusManager.isCompletedStatus(task.status);
-
-		return {
-			id: `due-${task.path}`,
-			title: `DUE: ${task.title}`,
-			start: startDate,
-			end: endDate,
-			allDay: !hasTime,
-			backgroundColor: fadedBackground,
-			borderColor: borderColor,
-			textColor: borderColor,
-			editable: false, // Due events are not editable via drag (different from scheduled)
-			extendedProps: {
-				taskInfo: task,
-				eventType: "due",
-				isCompleted: isCompleted,
-			},
-		};
-	}
-
-	hexToRgba(hex: string, alpha: number): string {
-		// Remove # if present
-		hex = hex.replace("#", "");
-
-		// Parse hex color
-		const r = parseInt(hex.substring(0, 2), 16);
-		const g = parseInt(hex.substring(2, 4), 16);
-		const b = parseInt(hex.substring(4, 6), 16);
-
-		return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+		return createDueEventCore(task, this.plugin);
 	}
 
 	createTimeEntryEvents(task: TaskInfo): CalendarEvent[] {
-		if (!task.timeEntries) return [];
-
-		// Check if task is completed
-		const isCompleted = this.plugin.statusManager.isCompletedStatus(task.status);
-
-		return task.timeEntries
-			.filter((entry) => entry.endTime) // Only completed time entries
-			.map((entry, index) => ({
-				id: `timeentry-${task.path}-${index}`,
-				title: task.title,
-				start: entry.startTime,
-				end: entry.endTime!,
-				allDay: false,
-				backgroundColor: "var(--color-base-50)",
-				borderColor: "var(--color-base-40)",
-				textColor: "var(--text-on-accent)",
-				editable: false, // Time entries are read-only
-				extendedProps: {
-					taskInfo: task,
-					eventType: "timeEntry" as const,
-					isCompleted: isCompleted,
-					timeEntryIndex: index,
-				},
-			}));
+		return createTimeEntryEventsCore(task, this.plugin);
 	}
 
 	createICSEvent(icsEvent: ICSEvent): CalendarEvent | null {
-		try {
-			// Get subscription info for styling
-			const subscription = this.plugin.icsSubscriptionService
-				.getSubscriptions()
-				.find((sub) => sub.id === icsEvent.subscriptionId);
-
-			if (!subscription || !subscription.enabled) {
-				return null;
-			}
-
-			const backgroundColor = this.hexToRgba(subscription.color, 0.2);
-			const borderColor = subscription.color;
-
-			return {
-				id: icsEvent.id,
-				title: icsEvent.title,
-				start: icsEvent.start,
-				end: icsEvent.end,
-				allDay: icsEvent.allDay,
-				backgroundColor: backgroundColor,
-				borderColor: borderColor,
-				textColor: borderColor,
-				editable: false, // ICS events are not editable
-				extendedProps: {
-					icsEvent: icsEvent,
-					eventType: "ics",
-					subscriptionName: subscription.name,
-				},
-			};
-		} catch (error) {
-			console.error("Error creating ICS event:", error);
-			return null;
-		}
+		return createICSEventCore(icsEvent, this.plugin);
 	}
 
 	generateRecurringTaskInstances(
@@ -1257,74 +1119,11 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 		startDate: Date,
 		endDate: Date
 	): CalendarEvent[] {
-		if (!task.recurrence || !task.scheduled) {
-			return [];
-		}
-
-		const instances: CalendarEvent[] = [];
-		const hasOriginalTime = hasTimeComponent(task.scheduled);
-		const templateTime = this.getRecurringTime(task);
-
-		// Get the current scheduled date for comparison
-		const nextScheduledDate = getDatePart(task.scheduled);
-
-		// 1. Always create the next scheduled occurrence event (regardless of pattern)
-		const scheduledTime = hasOriginalTime ? getTimePart(task.scheduled) : null;
-		const scheduledEventStart = scheduledTime
-			? `${nextScheduledDate}T${scheduledTime}`
-			: nextScheduledDate;
-		const nextScheduledEvent = this.createNextScheduledEvent(
-			task,
-			scheduledEventStart,
-			nextScheduledDate,
-			scheduledTime || "09:00"
-		);
-		if (nextScheduledEvent) {
-			instances.push(nextScheduledEvent);
-		}
-
-		// 2. Generate pattern instances from recurrence rule
-		const recurringDates = generateRecurringInstances(task, startDate, endDate);
-
-		for (const date of recurringDates) {
-			const instanceDate = formatDateForStorage(date);
-
-			// Skip pattern instance if it conflicts with the next scheduled occurrence
-			if (instanceDate === nextScheduledDate) {
-				continue; // Already added the next scheduled occurrence above
-			}
-
-			// Create pattern instance with DTSTART time
-			const eventStart = hasOriginalTime ? `${instanceDate}T${templateTime}` : instanceDate;
-			const event = this.createRecurringEvent(task, eventStart, instanceDate, templateTime);
-			if (event) instances.push(event);
-		}
-
-		return instances;
+		return generateRecurringTaskInstancesCore(task, startDate, endDate, this.plugin);
 	}
 
 	getRecurringTime(task: TaskInfo): string {
-		// Extract time from DTSTART in recurrence rule, not from scheduled field
-		if (task.recurrence && typeof task.recurrence === "string") {
-			const dtstartMatch = task.recurrence.match(/DTSTART:(\d{8}(?:T\d{6}Z?)?)/);
-			if (dtstartMatch && dtstartMatch[1].includes("T")) {
-				// Parse time from YYYYMMDDTHHMMSSZ format
-				const timeStr = dtstartMatch[1].split("T")[1];
-				if (timeStr.length >= 4) {
-					const hours = timeStr.slice(0, 2);
-					const minutes = timeStr.slice(2, 4);
-					return `${hours}:${minutes}`;
-				}
-			}
-		}
-
-		// Fallback: if no time in DTSTART, use scheduled time or default
-		if (task.scheduled) {
-			const timePart = getTimePart(task.scheduled);
-			if (timePart) return timePart;
-		}
-
-		return "09:00"; // final fallback
+		return getRecurringTimeCore(task);
 	}
 
 	createNextScheduledEvent(
@@ -1333,47 +1132,7 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 		instanceDate: string,
 		templateTime: string
 	): CalendarEvent | null {
-		const hasTime = hasTimeComponent(eventStart);
-
-		// Calculate end time if time estimate is available
-		let endDate: string | undefined;
-		if (hasTime && task.timeEstimate) {
-			const start = parseDateToLocal(eventStart);
-			const end = new Date(start.getTime() + task.timeEstimate * 60 * 1000);
-			endDate = format(end, "yyyy-MM-dd'T'HH:mm");
-		} else if (!hasTime) {
-			endDate = this.calculateAllDayEndDate(eventStart, task.timeEstimate);
-		}
-
-		// Get priority-based color for border
-		const priorityConfig = this.plugin.priorityManager.getPriorityConfig(task.priority);
-		const borderColor = priorityConfig?.color || "var(--color-accent)";
-
-		// Check if this instance is completed
-		const isInstanceCompleted = task.complete_instances?.includes(instanceDate) || false;
-
-		// Next scheduled occurrence uses normal task styling (solid border, full opacity)
-		const backgroundColor = isInstanceCompleted ? "rgba(0,0,0,0.3)" : "transparent";
-
-		return {
-			id: `next-scheduled-${task.path}-${instanceDate}`,
-			title: task.title,
-			start: eventStart,
-			end: endDate,
-			allDay: !hasTime,
-			backgroundColor: backgroundColor,
-			borderColor: borderColor,
-			textColor: borderColor,
-			editable: true,
-			extendedProps: {
-				taskInfo: task,
-				eventType: "scheduled", // Use 'scheduled' instead of 'recurring' for next occurrence
-				isCompleted: isInstanceCompleted,
-				isNextScheduledOccurrence: true, // Flag to identify this as the next occurrence
-				instanceDate: instanceDate,
-				recurringTemplateTime: templateTime,
-			},
-		};
+		return createNextScheduledEventCore(task, eventStart, instanceDate, templateTime, this.plugin);
 	}
 
 	createRecurringEvent(
@@ -1382,60 +1141,11 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 		instanceDate: string,
 		templateTime: string
 	): CalendarEvent | null {
-		const hasTime = hasTimeComponent(eventStart);
-
-		// Calculate end time if time estimate is available
-		let endDate: string | undefined;
-		if (hasTime && task.timeEstimate) {
-			const start = parseDateToLocal(eventStart);
-			const end = new Date(start.getTime() + task.timeEstimate * 60 * 1000);
-			endDate = format(end, "yyyy-MM-dd'T'HH:mm");
-		} else if (!hasTime) {
-			endDate = this.calculateAllDayEndDate(eventStart, task.timeEstimate);
-		}
-
-		// Get priority-based color for border
-		const priorityConfig = this.plugin.priorityManager.getPriorityConfig(task.priority);
-		const borderColor = priorityConfig?.color || "var(--color-accent)";
-
-		// Check if this instance is completed
-		const isInstanceCompleted = task.complete_instances?.includes(instanceDate) || false;
-
-		// Pattern instances use recurring preview styling (dashed border, reduced opacity)
-		const backgroundColor = isInstanceCompleted ? "rgba(0,0,0,0.3)" : "transparent";
-
-		return {
-			id: `recurring-${task.path}-${instanceDate}`,
-			title: task.title,
-			start: eventStart,
-			end: endDate,
-			allDay: !hasTime,
-			backgroundColor: backgroundColor,
-			borderColor: borderColor,
-			textColor: borderColor,
-			editable: true, // Pattern instances are editable
-			extendedProps: {
-				taskInfo: task,
-				eventType: "recurring",
-				isCompleted: isInstanceCompleted,
-				isRecurringInstance: true,
-				isPatternInstance: true, // Flag to identify this as a pattern instance
-				instanceDate: instanceDate,
-				recurringTemplateTime: templateTime,
-			},
-		};
+		return createRecurringEventCore(task, eventStart, instanceDate, templateTime, this.plugin);
 	}
 
 	private calculateAllDayEndDate(startDate: string, timeEstimate?: number): string | undefined {
-		if (!timeEstimate || timeEstimate <= 0) {
-			return undefined;
-		}
-
-		const minutesPerDay = 60 * 24;
-		const start = parseDateToLocal(startDate);
-		const days = Math.max(1, Math.ceil(timeEstimate / minutesPerDay));
-		const end = new Date(start.getTime() + days * minutesPerDay * 60 * 1000);
-		return format(end, "yyyy-MM-dd");
+		return calculateAllDayEndDate(startDate, timeEstimate);
 	}
 
 	// Event handlers
@@ -1450,8 +1160,8 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 			jsEvent.shiftKey;
 
 		if (isTimeblockMode) {
-			// Create timeblock
-			this.handleTimeblockCreation(start, end, allDay);
+			// Create timeblock using shared handler
+			handleTimeblockCreation(start, end, allDay, this.plugin);
 		} else {
 			// Create task (default behavior)
 			this.handleTaskCreation(start, end, allDay);
@@ -1517,9 +1227,7 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 	private handleTimeblockCreation(start: Date, end: Date, allDay: boolean) {
 		// Don't create timeblocks for all-day selections
 		if (allDay) {
-			new Notice(
-				"Timeblocks must have specific times. Please select a time range in week or day view."
-			);
+			new Notice(this.plugin.i18n.translate("views.advancedCalendar.notices.timeblockSpecificTime"));
 			return;
 		}
 
@@ -1536,108 +1244,22 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 		modal.open();
 	}
 
-	/**
-	 * Handle clicking on a date title to open/create daily note
-	 */
-	async handleDateTitleClick(date: Date) {
-		try {
-			// Check if Daily Notes plugin is enabled
-			if (!appHasDailyNotesPluginLoaded()) {
-				new Notice(
-					"Daily Notes core plugin is not enabled. Please enable it in Settings > Core plugins."
-				);
-				return;
-			}
-
-			// Convert date to moment for the API
-			const moment = (window as any).moment(date);
-
-			// Get all daily notes to check if one exists for this date
-			const allDailyNotes = getAllDailyNotes();
-			let dailyNote = getDailyNote(moment, allDailyNotes);
-
-			if (!dailyNote) {
-				// Daily note doesn't exist, create it
-				try {
-					dailyNote = await createDailyNote(moment);
-				} catch (error) {
-					const errorMessage = error instanceof Error ? error.message : String(error);
-					console.error("Failed to create daily note:", error);
-					new Notice(`Failed to create daily note: ${errorMessage}`);
-					return;
-				}
-			}
-
-			// Open the daily note
-			if (dailyNote) {
-				await this.app.workspace.getLeaf(false).openFile(dailyNote);
-			}
-		} catch (error) {
-			const errorMessage = error instanceof Error ? error.message : String(error);
-			console.error("Failed to navigate to daily note:", error);
-			new Notice(`Failed to navigate to daily note: ${errorMessage}`);
-		}
-	}
-
 	async getTimeblockEvents(): Promise<CalendarEvent[]> {
-		const events: CalendarEvent[] = [];
-
-		try {
-			// Check if Daily Notes plugin is enabled
-			if (!appHasDailyNotesPluginLoaded()) {
-				return events;
-			}
-
-			// Get calendar's visible date range
-			const calendarView = this.calendar?.view;
-			if (!calendarView) return events;
-
-			const visibleStart = calendarView.activeStart;
-			const visibleEnd = calendarView.activeEnd;
-
-			// Get all daily notes
-			const allDailyNotes = getAllDailyNotes();
-
-			// Iterate through each day in the visible range
-			// Use UTC-based date iteration to avoid DST issues and ensure consistent date handling
-			const startDateString = formatDateForStorage(visibleStart);
-			const endDateString = formatDateForStorage(visibleEnd);
-
-			// Create UTC dates for proper iteration
-			const startUTC = new Date(`${startDateString}T00:00:00.000Z`);
-			const endUTC = new Date(`${endDateString}T00:00:00.000Z`);
-
-			for (
-				let currentUTC = new Date(startUTC);
-				currentUTC <= endUTC;
-				currentUTC.setUTCDate(currentUTC.getUTCDate() + 1)
-			) {
-				const dateString = formatDateForStorage(currentUTC);
-				// Use the date string to create moment for daily notes consistency
-				const currentDate = new Date(`${dateString}T12:00:00`);
-				const moment = (window as any).moment(currentDate);
-				const dailyNote = getDailyNote(moment, allDailyNotes);
-
-				if (dailyNote) {
-					try {
-						const content = await this.app.vault.read(dailyNote);
-						const timeblocks = extractTimeblocksFromNote(content, dailyNote.path);
-
-						// Convert timeblocks to calendar events
-						for (const timeblock of timeblocks) {
-							const calendarEvent = timeblockToCalendarEvent(timeblock, dateString);
-							events.push(calendarEvent);
-						}
-					} catch (error) {
-						console.error(`Error reading daily note ${dailyNote.path}:`, error);
-					}
-				}
-			}
-		} catch (error) {
-			console.error("Error getting timeblock events:", error);
+		// Check if Daily Notes plugin is enabled
+		if (!appHasDailyNotesPluginLoaded()) {
+			return [];
 		}
 
-		return events;
+		// Get calendar's visible date range
+		const calendarView = this.calendar?.view;
+		if (!calendarView) return [];
+
+		const visibleStart = calendarView.activeStart;
+		const visibleEnd = calendarView.activeEnd;
+
+		// Use shared timeblock event generation logic
+		const { generateTimeblockEvents } = await import("../bases/calendar-core");
+		return await generateTimeblockEvents(this.plugin, visibleStart, visibleEnd);
 	}
 
 	handleEventClick(clickInfo: any) {
@@ -1660,17 +1282,16 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 		}
 
 		if (eventType === "timeEntry") {
-			// Time entries open the task edit modal
-			if (taskInfo && jsEvent.button === 0 && !jsEvent.ctrlKey && !jsEvent.metaKey) {
-				const editModal = new TaskEditModal(this.app, this.plugin, { task: taskInfo });
-				editModal.open();
+			// Time entries: Use shared click handler
+			if (taskInfo && jsEvent.button === 0) {
+				handleCalendarTaskClick(taskInfo, this.plugin, jsEvent, clickInfo.event.id);
 			}
 			return;
 		}
 
 		if (eventType === "timeblock") {
-			// Timeblocks can be edited via modal
-			this.showTimeblockInfo(timeblock, clickInfo.event.start, originalDate);
+			// Timeblocks can be edited via modal using shared handler
+			showTimeblockInfoModal(timeblock, clickInfo.event.start, originalDate, this.plugin);
 			return;
 		}
 
@@ -1680,17 +1301,9 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 			return;
 		}
 
-		// Handle different click types - removed right-click handling to avoid conflicts with eventDidMount
-		if (jsEvent.ctrlKey || jsEvent.metaKey) {
-			// Ctrl/Cmd + Click: Open task in new tab
-			const file = this.app.vault.getAbstractFileByPath(taskInfo.path);
-			if (file instanceof TFile) {
-				this.app.workspace.openLinkText(taskInfo.path, "", true);
-			}
-		} else if (jsEvent.button === 0) {
-			// Left click only: Open edit modal
-			const editModal = new TaskEditModal(this.app, this.plugin, { task: taskInfo });
-			editModal.open();
+		// Handle task clicks with single/double click detection based on user settings
+		if (taskInfo && jsEvent.button === 0) {
+			handleCalendarTaskClick(taskInfo, this.plugin, jsEvent, clickInfo.event.id);
 		}
 	}
 
@@ -1715,9 +1328,9 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 			return;
 		}
 
-		// Handle timeblock drops
+		// Handle timeblock drops using shared handler
 		if (eventType === "timeblock") {
-			await this.handleTimeblockDrop(dropInfo, timeblock, originalDate);
+			await handleTimeblockDrop(dropInfo, timeblock, originalDate, this.plugin);
 			return;
 		}
 
@@ -1729,48 +1342,9 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 			const newStart = dropInfo.event.start;
 			const allDay = dropInfo.event.allDay;
 
-			if (isNextScheduledOccurrence) {
-				// Dragging Next Scheduled Occurrence: Updates only task.scheduled (manual reschedule)
-				let newDateString: string;
-				if (allDay) {
-					// Fix: Use format() to extract local date components for timezone consistency
-					newDateString = format(newStart, "yyyy-MM-dd");
-				} else {
-					// Fix: Use format() for the entire date-time string to maintain local timezone consistency
-					newDateString = format(newStart, "yyyy-MM-dd'T'HH:mm");
-				}
-
-				// Update the scheduled field directly (manual reschedule of next occurrence)
-				await this.plugin.taskService.updateProperty(taskInfo, "scheduled", newDateString);
-				new Notice(
-					"Rescheduled next occurrence. This does not change the recurrence pattern."
-				);
-			} else if (isPatternInstance) {
-				// Dragging Pattern Instances: Updates DTSTART in RRULE and recalculates task.scheduled
-				await this.handlePatternInstanceDrop(taskInfo, newStart, allDay);
-			} else if (isRecurringInstance) {
-				// Legacy support: Handle old-style recurring instances (time changes only)
-				const originalDate = getDatePart(taskInfo.scheduled!);
-				let updatedScheduled: string;
-
-				if (allDay) {
-					updatedScheduled = originalDate;
-					new Notice(
-						"Updated recurring task to all-day. This affects all future instances."
-					);
-				} else {
-					const newTime = format(newStart, "HH:mm");
-					updatedScheduled = `${originalDate}T${newTime}`;
-					new Notice(
-						`Updated recurring task time to ${newTime}. This affects all future instances.`
-					);
-				}
-
-				await this.plugin.taskService.updateProperty(
-					taskInfo,
-					"scheduled",
-					updatedScheduled
-				);
+			// Use shared recurring task drop handler
+			if (isRecurringUpdate) {
+				await handleRecurringTaskDrop(dropInfo, taskInfo, this.plugin);
 			} else {
 				// Handle non-recurring events normally
 				let newDateString: string;
@@ -1820,73 +1394,6 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 		}
 	}
 
-	private async handlePatternInstanceDrop(
-		taskInfo: TaskInfo,
-		newStart: Date,
-		allDay: boolean
-	): Promise<void> {
-		try {
-			if (!taskInfo.recurrence || typeof taskInfo.recurrence !== "string") {
-				throw new Error("Task does not have a valid RRULE string");
-			}
-
-			// Check if DTSTART already exists
-			const currentDtstartMatch = taskInfo.recurrence.match(/DTSTART:(\d{8}(?:T\d{6}Z?)?)/);
-			let updatedRRule: string;
-
-			if (!currentDtstartMatch) {
-				// No DTSTART exists - add it using the drag interaction
-				const ruleWithDTSTART = addDTSTARTToRecurrenceRuleWithDraggedTime(
-					taskInfo,
-					newStart,
-					allDay
-				);
-				if (!ruleWithDTSTART) {
-					throw new Error("Failed to add DTSTART to recurrence rule");
-				}
-				updatedRRule = ruleWithDTSTART;
-				new Notice(
-					"Added time information to recurring pattern. All future instances now appear at this time."
-				);
-			} else {
-				// DTSTART exists - update the time component
-				const currentDtstart = currentDtstartMatch[1];
-				let newDTSTART: string;
-
-				if (allDay) {
-					// For all-day, remove time component entirely (keep original date)
-					newDTSTART = currentDtstart.slice(0, 8); // Keep YYYYMMDD only
-				} else {
-					// Update only the time component, preserve the original date
-					const originalDate = currentDtstart.slice(0, 8); // YYYYMMDD
-					const hours = String(newStart.getHours()).padStart(2, "0");
-					const minutes = String(newStart.getMinutes()).padStart(2, "0");
-					newDTSTART = `${originalDate}T${hours}${minutes}00Z`;
-				}
-
-				// Update DTSTART in RRULE string
-				updatedRRule = taskInfo.recurrence.replace(
-					/DTSTART:[^;]+/,
-					`DTSTART:${newDTSTART}`
-				);
-				new Notice(
-					"Updated recurring pattern time. All future instances now appear at this time."
-				);
-			}
-
-			// Update the recurrence pattern
-			await this.plugin.taskService.updateProperty(taskInfo, "recurrence", updatedRRule);
-
-			// Note: Don't update scheduled date - it should remain independent
-			// Only the pattern timing changes, not the next occurrence timing
-
-			// The refresh will happen automatically via EVENT_TASK_UPDATED listener
-		} catch (error) {
-			console.error("Error updating pattern instance time:", error);
-			throw error;
-		}
-	}
-
 	private async handleTimeblockDrop(
 		dropInfo: any,
 		timeblock: TimeBlock,
@@ -1916,13 +1423,26 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 
 			// Show success message
 			if (originalDate !== newDate) {
-				new Notice(`Moved timeblock "${timeblock.title}" to ${newDate}`);
+				new Notice(
+					this.plugin.i18n.translate("views.advancedCalendar.notices.timeblockMoved", {
+						title: timeblock.title,
+						date: newDate,
+					})
+				);
 			} else {
-				new Notice(`Updated timeblock "${timeblock.title}" time`);
+				new Notice(
+					this.plugin.i18n.translate("views.advancedCalendar.notices.timeblockUpdated", {
+						title: timeblock.title,
+					})
+				);
 			}
 		} catch (error) {
 			console.error("Error moving timeblock:", error);
-			new Notice(`Failed to move timeblock: ${error.message}`);
+			new Notice(
+				this.plugin.i18n.translate("views.advancedCalendar.notices.timeblockMoveFailed", {
+					message: error.message,
+				})
+			);
 			dropInfo.revert();
 		}
 	}
@@ -1935,8 +1455,8 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 		const { taskInfo, timeblock, eventType, originalDate } = resizeInfo.event.extendedProps;
 
 		if (eventType === "timeblock") {
-			// Handle timeblock resize
-			await this.handleTimeblockResize(resizeInfo, timeblock, originalDate);
+			// Handle timeblock resize using shared handler
+			await handleTimeblockResize(resizeInfo, timeblock, originalDate, this.plugin);
 			return;
 		}
 
@@ -1989,7 +1509,7 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 			const endMinutes = endHour * 60 + endMin;
 
 			if (endMinutes <= startMinutes) {
-				new Notice("End time must be after start time");
+				new Notice(this.plugin.i18n.translate("views.advancedCalendar.notices.endTimeAfterStart"));
 				resizeInfo.revert();
 				return;
 			}
@@ -2007,10 +1527,18 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 			// Refresh calendar
 			this.refreshEvents();
 
-			new Notice(`Updated timeblock "${timeblock.title}" duration`);
+			new Notice(
+				this.plugin.i18n.translate("views.advancedCalendar.notices.timeblockResized", {
+					title: timeblock.title,
+				})
+			);
 		} catch (error) {
 			console.error("Error resizing timeblock:", error);
-			new Notice(`Failed to resize timeblock: ${error.message}`);
+			new Notice(
+				this.plugin.i18n.translate("views.advancedCalendar.notices.timeblockResizeFailed", {
+					message: error.message,
+				})
+			);
 			resizeInfo.revert();
 		}
 	}
@@ -2071,7 +1599,12 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 				: timeFormat === "12"
 					? "MMM d, yyyy h:mm a"
 					: "MMM d, yyyy HH:mm";
-			new Notice(`Task "${task.title}" scheduled for ${format(dropDate, dateFormat)}`);
+			new Notice(
+				this.plugin.i18n.translate("views.advancedCalendar.notices.taskScheduled", {
+					title: task.title,
+					date: format(dropDate, dateFormat),
+				})
+			);
 
 			// Remove any event that FullCalendar might have created from the drop
 			if (dropInfo.draggedEl) {
@@ -2084,7 +1617,7 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 			// Task drag-drop completed - ViewPerformanceService handles update
 		} catch (error) {
 			console.error("Error handling external drop:", error);
-			new Notice("Failed to schedule task");
+			new Notice(this.plugin.i18n.translate("views.advancedCalendar.notices.scheduleTaskFailed"));
 
 			// Remove any event that might have been created on error
 			if (dropInfo.draggedEl) {
@@ -2173,15 +1706,10 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 			return;
 		}
 
-		// Handle timeblock events
-		if (eventType === "timeblock") {
-			// Add data attributes for timeblocks
-			arg.el.setAttribute("data-timeblock-id", timeblock?.id || "");
-
-			// Add visual styling for timeblocks
-			arg.el.style.borderStyle = "solid";
-			arg.el.style.borderWidth = "2px";
-			arg.el.classList.add("fc-timeblock-event");
+		// Handle timeblock events using shared handlers
+		if (eventType === "timeblock" && timeblock) {
+			// Apply timeblock styling
+			applyTimeblockStyling(arg.el, timeblock);
 
 			// Ensure timeblocks are editable (can be dragged/resized)
 			if (arg.event.setProp) {
@@ -2189,8 +1717,7 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 			}
 
 			// Add tooltip
-			const attachmentCount = timeblock?.attachments?.length || 0;
-			const tooltipText = `${timeblock?.title || "Timeblock"}${timeblock?.description ? ` - ${timeblock.description}` : ""}${attachmentCount > 0 ? ` (${attachmentCount} attachment${attachmentCount > 1 ? "s" : ""})` : ""}`;
+			const tooltipText = generateTimeblockTooltip(timeblock);
 			setTooltip(arg.el, tooltipText, { placement: "top" });
 
 			return;
@@ -2232,70 +1759,19 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 		}
 
 		// Apply visual styling based on event type and recurrence status
-		const { isNextScheduledOccurrence = false, isPatternInstance = false } = extendedProps;
+		applyRecurringTaskStyling(arg.el, extendedProps);
 
-		if (isNextScheduledOccurrence) {
-			// Next scheduled occurrence: Normal task styling (solid border, full opacity)
-			arg.el.style.borderStyle = "solid";
-			arg.el.style.borderWidth = "2px";
-			arg.el.setAttribute("data-next-scheduled", "true");
-			arg.el.classList.add("fc-next-scheduled-event");
-
-			// Apply dimmed appearance for completed instances
-			if (isCompleted) {
-				arg.el.style.opacity = "0.6";
-			}
-		} else if (isPatternInstance) {
-			// Pattern occurrences: Recurring preview styling (dashed border, reduced opacity)
-			arg.el.style.borderStyle = "dashed";
-			arg.el.style.borderWidth = "2px";
-			arg.el.style.opacity = isCompleted ? "0.4" : "0.7"; // Reduced opacity for pattern instances
-
-			arg.el.setAttribute("data-pattern-instance", "true");
-			arg.el.classList.add("fc-pattern-instance-event");
-		} else if (isRecurringInstance) {
-			// Legacy recurring instances (for backward compatibility)
-			arg.el.style.borderStyle = "dashed";
-			arg.el.style.borderWidth = "2px";
-
-			arg.el.setAttribute("data-recurring", "true");
-			arg.el.classList.add("fc-recurring-event");
-
-			// Apply dimmed appearance for completed instances
-			if (isCompleted) {
-				arg.el.style.opacity = "0.6";
-			}
-		}
-
-		// Apply strikethrough styling for completed tasks
-		if (isCompleted) {
-			const titleElement = arg.el.querySelector(".fc-event-title, .fc-event-title-container");
-			if (titleElement) {
-				titleElement.style.textDecoration = "line-through";
-			} else {
-				// Fallback: apply to the entire event element
-				arg.el.style.textDecoration = "line-through";
-			}
-			arg.el.classList.add("fc-completed-event");
+		// Add tooltip for task events
+		if (taskInfo) {
+			const tooltipText = generateTaskTooltip(taskInfo, this.plugin);
+			setTooltip(arg.el, tooltipText, { placement: "top" });
 		}
 
 		// Add hover preview and context menu event listeners
 		if (taskInfo) {
 			// Add hover preview functionality for all task-related events
 			if (eventType !== "ics") {
-				arg.el.addEventListener("mouseover", (event: MouseEvent) => {
-					const file = this.plugin.app.vault.getAbstractFileByPath(taskInfo.path);
-					if (file) {
-						this.plugin.app.workspace.trigger("hover-link", {
-							event,
-							source: "tasknotes-advanced-calendar",
-							hoverParent: arg.el,
-							targetEl: arg.el,
-							linktext: taskInfo.path,
-							sourcePath: taskInfo.path,
-						});
-					}
-				});
+				addTaskHoverPreview(arg.el, taskInfo, this.plugin, "tasknotes-advanced-calendar");
 			}
 
 			// Add context menu functionality
@@ -2309,26 +1785,8 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 					this.showTimeEntryContextMenu(jsEvent, taskInfo, timeEntryIndex);
 				} else {
 					// Standard task context menu for other event types
-					const { isNextScheduledOccurrence, isPatternInstance } = extendedProps;
-
-					let targetDate: Date;
-					if (
-						(isRecurringInstance || isNextScheduledOccurrence || isPatternInstance) &&
-						instanceDate
-					) {
-						// For all recurring-related events, use UTC anchor for instance date
-						targetDate = parseDateToUTC(instanceDate);
-					} else {
-						// For regular events, convert FullCalendar date to UTC anchor
-						const eventDate = arg.event.start;
-						if (eventDate) {
-							// Convert FullCalendar Date to date string preserving local date
-							const dateStr = format(eventDate, "yyyy-MM-dd");
-							targetDate = parseDateToUTC(dateStr);
-						} else {
-							targetDate = getTodayLocal();
-						}
-					}
+					// Use shared UTC-anchored target date logic
+					const targetDate = getTargetDateForEvent(arg);
 
 					// Use TaskContextMenu component directly
 					this.showTaskContextMenuForEvent(jsEvent, taskInfo, targetDate);
@@ -2592,7 +2050,7 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 		}
 
 		// Add hover preview and context menu
-		this.addTaskInteractionsToListEvent(el, taskInfo);
+		this.addTaskInteractionsToListEvent(el, taskInfo, arg);
 	}
 
 	/**
@@ -2709,24 +2167,24 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 				this.renderTagsProperty(element, value);
 				break;
 			case "timeEstimate":
-				element.textContent = `${this.plugin.formatTime(value)} estimated`;
+				element.textContent = `${this.plugin.formatTime(value)} ${this.plugin.i18n.translate("views.advancedCalendar.timeEntry.estimatedSuffix")}`;
 				break;
 			case "totalTrackedTime":
 				if (value > 0) {
-					element.textContent = `${this.plugin.formatTime(value)} tracked`;
+					element.textContent = `${this.plugin.formatTime(value)} ${this.plugin.i18n.translate("views.advancedCalendar.timeEntry.trackedSuffix")}`;
 				}
 				break;
 			case "recurrence":
-				element.textContent = `Recurring: ${this.getRecurrenceDisplayText(value)}`;
+				element.textContent = `${this.plugin.i18n.translate("views.advancedCalendar.timeEntry.recurringPrefix")}${this.getRecurrenceDisplayText(value)}`;
 				break;
 			case "completedDate":
-				element.textContent = `Completed: ${this.formatDateForDisplay(value)}`;
+				element.textContent = `${this.plugin.i18n.translate("views.advancedCalendar.timeEntry.completedPrefix")}${this.formatDateForDisplay(value)}`;
 				break;
 			case "file.ctime":
-				element.textContent = `Created: ${this.formatDateForDisplay(value)}`;
+				element.textContent = `${this.plugin.i18n.translate("views.advancedCalendar.timeEntry.createdPrefix")}${this.formatDateForDisplay(value)}`;
 				break;
 			case "file.mtime":
-				element.textContent = `Modified: ${this.formatDateForDisplay(value)}`;
+				element.textContent = `${this.plugin.i18n.translate("views.advancedCalendar.timeEntry.modifiedPrefix")}${this.formatDateForDisplay(value)}`;
 				break;
 			default:
 				// Handle user properties and generic values
@@ -2754,7 +2212,7 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 			showTime: true,
 			userTimeFormat,
 		});
-		element.textContent = `Due: ${display}`;
+		element.textContent = `${this.plugin.i18n.translate("views.advancedCalendar.timeEntry.duePrefix")}${display}`;
 		element.classList.add("fc-list-task-date", "fc-list-task-date--due");
 
 		// Add click handler for date editing (like TaskCard)
@@ -2775,7 +2233,7 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 			showTime: true,
 			userTimeFormat,
 		});
-		element.textContent = `Scheduled: ${display}`;
+		element.textContent = `${this.plugin.i18n.translate("views.advancedCalendar.timeEntry.scheduledPrefix")}${display}`;
 		element.classList.add("fc-list-task-date", "fc-list-task-date--scheduled");
 	}
 
@@ -2848,8 +2306,9 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 	/**
 	 * Add task interactions (hover and context menu) to list view events
 	 */
-	private addTaskInteractionsToListEvent(el: HTMLElement, taskInfo: TaskInfo): void {
-		const targetDate = this.plugin.selectedDate || new Date();
+	private addTaskInteractionsToListEvent(el: HTMLElement, taskInfo: TaskInfo, arg: any): void {
+		// Use shared UTC-anchored target date logic
+		const targetDate = getTargetDateForEvent(arg);
 
 		// Add hover preview using TaskCard hover handler
 		el.addEventListener("mouseover", createTaskHoverHandler(taskInfo, this.plugin));
@@ -3034,16 +2493,6 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 		modal.open();
 	}
 
-	private showTimeblockInfo(timeblock: TimeBlock, eventDate: Date, originalDate?: string): void {
-		const modal = new TimeblockInfoModal(
-			this.app,
-			this.plugin,
-			timeblock,
-			eventDate,
-			originalDate
-		);
-		modal.open();
-	}
 
 	private showICSEventContextMenu(
 		jsEvent: MouseEvent,
@@ -3091,7 +2540,7 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 		// Show task details option
 		menu.addItem((item) =>
 			item
-				.setTitle("Open task")
+				.setTitle(this.plugin.i18n.translate("views.advancedCalendar.contextMenus.openTask"))
 				.setIcon("edit")
 				.onClick(() => {
 					const editModal = new TaskEditModal(this.app, this.plugin, { task: taskInfo });
@@ -3104,13 +2553,13 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 		// Delete time entry option
 		menu.addItem((item) =>
 			item
-				.setTitle("Delete time entry")
+				.setTitle(this.plugin.i18n.translate("views.advancedCalendar.contextMenus.deleteTimeEntry"))
 				.setIcon("trash")
 				.onClick(async () => {
 					try {
 						const timeEntry = taskInfo.timeEntries?.[timeEntryIndex];
 						if (!timeEntry) {
-							new Notice("Time entry not found");
+							new Notice(this.plugin.i18n.translate("views.advancedCalendar.notices.timeEntryNotFound"));
 							return;
 						}
 
@@ -3134,9 +2583,13 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 						// Show confirmation
 						const confirmed = await new Promise<boolean>((resolve) => {
 							const confirmModal = new Modal(this.app);
-							confirmModal.setTitle("Delete Time Entry");
+							confirmModal.setTitle(
+								this.plugin.i18n.translate("views.advancedCalendar.contextMenus.deleteTimeEntryTitle")
+							);
 							confirmModal.setContent(
-								`Are you sure you want to delete this time entry${durationText}? This action cannot be undone.`
+								this.plugin.i18n.translate("views.advancedCalendar.contextMenus.deleteTimeEntryConfirm", {
+									duration: durationText,
+								})
 							);
 
 							const buttonContainer = confirmModal.contentEl.createDiv({
@@ -3148,10 +2601,10 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 							buttonContainer.style.marginTop = "20px";
 
 							const cancelBtn = buttonContainer.createEl("button", {
-								text: "Cancel",
+								text: this.plugin.i18n.translate("views.advancedCalendar.contextMenus.cancelButton"),
 							});
 							const deleteBtn = buttonContainer.createEl("button", {
-								text: "Delete",
+								text: this.plugin.i18n.translate("views.advancedCalendar.contextMenus.deleteButton"),
 								cls: "mod-warning",
 							});
 
@@ -3170,11 +2623,11 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 
 						if (confirmed) {
 							await this.plugin.taskService.deleteTimeEntry(taskInfo, timeEntryIndex);
-							new Notice("Time entry deleted");
+							new Notice(this.plugin.i18n.translate("views.advancedCalendar.notices.timeEntryDeleted"));
 						}
 					} catch (error) {
 						console.error("Error deleting time entry:", error);
-						new Notice("Failed to delete time entry");
+						new Notice(this.plugin.i18n.translate("views.advancedCalendar.notices.deleteTimeEntryFailed"));
 					}
 				})
 		);

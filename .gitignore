@@ -16,6 +16,9 @@ main.js
 # It's built from source files in styles/ directory during CI/build process.
 styles.css
 
+# Don't include the auto-generated release notes import file
+src/releaseNotes.ts
+
 # Exclude sourcemaps
 *.map
 
@@ -56,4 +59,6 @@ C/
 # Test output files
 jest-out.txt
 BASES_API_DOCUMENTATION.md
+BASES_API_EXPLORATION.md
+BASES_API_MIGRATION.md
 OBSIDIAN-SERVER-README.md

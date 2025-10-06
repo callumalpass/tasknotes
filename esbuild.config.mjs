@@ -1,6 +1,7 @@
 import esbuild from "esbuild";
 import process from "process";
 import builtins from "builtin-modules";
+import { readFileSync } from "fs";
 
 const banner =
 `/*
@@ -10,6 +11,20 @@ if you want to view the source, please visit the github repository of this plugi
 `;
 
 const prod = (process.argv[2] === "production");
+
+// Plugin to import markdown files as strings
+const markdownPlugin = {
+	name: 'markdown',
+	setup(build) {
+		build.onLoad({ filter: /\.md$/ }, async (args) => {
+			const text = readFileSync(args.path, 'utf8');
+			return {
+				contents: `export default ${JSON.stringify(text)}`,
+				loader: 'js',
+			};
+		});
+	}
+};
 
 const context = await esbuild.context({
 	banner: {
@@ -39,6 +54,7 @@ const context = await esbuild.context({
 	treeShaking: true,
 	outfile: "main.js",
 	minify: prod,
+	plugins: [markdownPlugin],
 });
 
 if (prod) {

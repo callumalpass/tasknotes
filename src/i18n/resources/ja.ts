@@ -90,6 +90,76 @@ export const ja: TranslationTree = {
 		},
 		advancedCalendar: {
 			title: "高度なカレンダー",
+			filters: {
+				showFilters: "フィルターを表示",
+				hideFilters: "フィルターを非表示",
+			},
+			viewOptions: {
+				calendarSubscriptions: "カレンダー購読",
+				timeEntries: "時間エントリ",
+				timeblocks: "タイムブロック",
+				scheduledDates: "予定日",
+				dueDates: "期限日",
+				allDaySlot: "終日スロット",
+				scheduledTasks: "予定タスク",
+				recurringTasks: "繰り返しタスク",
+			},
+			buttons: {
+				refresh: "更新",
+				refreshHint: "カレンダー購読を更新",
+			},
+			notices: {
+				icsServiceNotAvailable: "ICS購読サービスが利用できません",
+				calendarRefreshedAll: "すべてのカレンダー購読が正常に更新されました",
+				refreshFailed: "一部のカレンダー購読の更新に失敗しました",
+				timeblockSpecificTime:
+					"タイムブロックには具体的な時間が必要です。週表示または日表示で時間範囲を選択してください。",
+				timeblockMoved: 'タイムブロック「{title}」を{date}に移動しました',
+				timeblockUpdated: 'タイムブロック「{title}」の時間を更新しました',
+				timeblockMoveFailed: "タイムブロックの移動に失敗しました：{message}",
+				timeblockResized: 'タイムブロック「{title}」の期間を更新しました',
+				timeblockResizeFailed: "タイムブロックのサイズ変更に失敗しました：{message}",
+				taskScheduled: 'タスク「{title}」を{date}に予定しました',
+				scheduleTaskFailed: "タスクの予定に失敗しました",
+				endTimeAfterStart: "終了時刻は開始時刻より後である必要があります",
+				timeEntryNotFound: "時間エントリが見つかりません",
+				timeEntryDeleted: "時間エントリを削除しました",
+				deleteTimeEntryFailed: "時間エントリの削除に失敗しました",
+			},
+			timeEntry: {
+				estimatedSuffix: "見積",
+				trackedSuffix: "記録",
+				recurringPrefix: "繰り返し：",
+				completedPrefix: "完了：",
+				createdPrefix: "作成：",
+				modifiedPrefix: "変更：",
+				duePrefix: "期限：",
+				scheduledPrefix: "予定：",
+			},
+			contextMenus: {
+				openTask: "タスクを開く",
+				deleteTimeEntry: "時間エントリを削除",
+				deleteTimeEntryTitle: "時間エントリを削除",
+				deleteTimeEntryConfirm:
+					"この時間エントリ{duration}を削除してもよろしいですか？この操作は元に戻せません。",
+				deleteButton: "削除",
+				cancelButton: "キャンセル",
+			},
+		},
+		basesCalendar: {
+			title: "ベースカレンダー",
+			today: "今日",
+			buttonText: {
+				month: "月",
+				week: "週",
+				day: "日",
+				year: "年",
+				list: "一覧",
+				customDays: "{count}日",
+			},
+			errors: {
+				failedToInitialize: "カレンダーの初期化に失敗しました",
+			},
 		},
 		kanban: {
 			title: "かんばん",
@@ -204,6 +274,12 @@ export const ja: TranslationTree = {
 			filters: {
 				minTime: "最小時間（分）",
 			},
+		},
+		releaseNotes: {
+			title: "TaskNotes {version} の新機能",
+			header: "TaskNotes {version} の新機能",
+			viewAllLink: "GitHubですべてのリリースノートを表示 →",
+			starMessage: "TaskNotesが役に立ったら、GitHubでスターをお願いします",
 		},
 	},
 	settings: {
@@ -1487,6 +1563,7 @@ export const ja: TranslationTree = {
 		pauseResumePomodoro: "ポモドーロタイマーを一時停止/再開",
 		refreshCache: "キャッシュを更新",
 		exportAllTasksIcs: "すべてのタスクをICSファイルとしてエクスポート",
+		viewReleaseNotes: "リリースノートを表示",
 	},
 	modals: {
 		task: {
@@ -1974,6 +2051,9 @@ export const ja: TranslationTree = {
 			loadingDependencies: "依存関係を読み込み中…",
 			blockingEmpty: "依存タスクはありません",
 			blockingLoadError: "依存関係の読み込みに失敗しました",
+		},
+		propertyEventCard: {
+			unknownFile: "不明なファイル",
 		},
 		filterHeading: {
 			allViewName: "すべて",

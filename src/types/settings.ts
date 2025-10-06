@@ -85,6 +85,8 @@ export interface TaskNotesSettings {
 	customPriorities: PriorityConfig[];
 	// Migration tracking
 	recurrenceMigrated?: boolean;
+	// Release notes tracking
+	lastSeenVersion?: string;
 	// Status bar settings
 	showTrackedTasksInStatusBar: boolean;
 	// Time tracking settings
@@ -125,6 +127,8 @@ export interface TaskNotesSettings {
 	enableBases: boolean;
 	// Recurring task behavior
 	maintainDueDateOffsetInRecurring: boolean;
+	// Frontmatter link format settings
+	useFrontmatterMarkdownLinks: boolean; // Use markdown links in frontmatter (requires obsidian-frontmatter-markdown-links plugin)
 }
 
 export interface DefaultReminder {

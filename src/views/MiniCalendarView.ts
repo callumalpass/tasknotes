@@ -4,6 +4,7 @@ import {
 	formatDateForStorage,
 	getTodayLocal,
 	createUTCDateFromLocalCalendarDate,
+	convertUTCToLocalCalendarDate,
 } from "../utils/dateUtils";
 import TaskNotesPlugin from "../main";
 import { getAllDailyNotes, getDailyNote } from "obsidian-daily-notes-interface";
@@ -358,7 +359,7 @@ export class MiniCalendarView extends ItemView {
 			const dayEl = day as HTMLElement;
 			const ariaLabel = dayEl.getAttribute("aria-label") || "";
 			// Check if this element represents the new date
-			if (ariaLabel.includes(format(newDate, "EEEE, MMMM d, yyyy"))) {
+			if (ariaLabel.includes(format(convertUTCToLocalCalendarDate(newDate), "EEEE, MMMM d, yyyy"))) {
 				dayEl.classList.add("mini-calendar-view__day--selected");
 				dayEl.setAttribute("aria-selected", "true");
 				dayEl.setAttribute("tabindex", "0");
@@ -375,7 +376,7 @@ export class MiniCalendarView extends ItemView {
 	private updateMonthDisplay() {
 		const monthDisplay = this.contentEl.querySelector(".mini-calendar-view__month-display");
 		if (monthDisplay) {
-			monthDisplay.textContent = format(this.plugin.selectedDate, "MMMM yyyy");
+			monthDisplay.textContent = format(convertUTCToLocalCalendarDate(this.plugin.selectedDate), "MMMM yyyy");
 		}
 	}
 
@@ -464,7 +465,7 @@ export class MiniCalendarView extends ItemView {
 		// Current Month Display
 		navSection.createDiv({
 			cls: "mini-calendar-view__month-display",
-			text: format(this.plugin.selectedDate, "MMMM yyyy"),
+			text: format(convertUTCToLocalCalendarDate(this.plugin.selectedDate), "MMMM yyyy"),
 		});
 
 		// Next Month Button
@@ -539,7 +540,7 @@ export class MiniCalendarView extends ItemView {
 			cls: "mini-calendar-view__grid",
 			attr: {
 				role: "grid",
-				"aria-label": `Calendar for ${format(this.plugin.selectedDate, "MMMM yyyy")}`,
+				"aria-label": `Calendar for ${format(convertUTCToLocalCalendarDate(this.plugin.selectedDate), "MMMM yyyy")}`,
 				id: "calendar-grid",
 			},
 		});
@@ -601,7 +602,7 @@ export class MiniCalendarView extends ItemView {
 				attr: {
 					role: "gridcell",
 					tabindex: isSelected ? "0" : "-1",
-					"aria-label": format(dayDate, "EEEE, MMMM d, yyyy"),
+					"aria-label": format(convertUTCToLocalCalendarDate(dayDate), "EEEE, MMMM d, yyyy"),
 					"aria-selected": isSelected ? "true" : "false",
 				},
 			});
@@ -654,7 +655,7 @@ export class MiniCalendarView extends ItemView {
 					role: "gridcell",
 					tabindex: isSelected ? "0" : "-1",
 					"aria-label":
-						format(dayDate, "EEEE, MMMM d, yyyy") + (isToday ? " (Today)" : ""),
+						format(convertUTCToLocalCalendarDate(dayDate), "EEEE, MMMM d, yyyy") + (isToday ? " (Today)" : ""),
 					"aria-selected": isSelected ? "true" : "false",
 					"aria-current": isToday ? "date" : null,
 				},
@@ -699,7 +700,7 @@ export class MiniCalendarView extends ItemView {
 				attr: {
 					role: "gridcell",
 					tabindex: isSelected ? "0" : "-1",
-					"aria-label": format(dayDate, "EEEE, MMMM d, yyyy"),
+					"aria-label": format(convertUTCToLocalCalendarDate(dayDate), "EEEE, MMMM d, yyyy"),
 					"aria-selected": isSelected ? "true" : "false",
 				},
 			});

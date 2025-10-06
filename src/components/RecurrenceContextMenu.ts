@@ -1,6 +1,7 @@
-import { Menu, Modal, App, Setting } from "obsidian";
+import { App, Modal, Setting } from "obsidian";
 import { TranslationKey } from "../i18n";
 import TaskNotesPlugin from "../main";
+import { ContextMenu } from "./ContextMenu";
 
 export interface RecurrenceOption {
 	label: string;
@@ -16,12 +17,12 @@ export interface RecurrenceContextMenuOptions {
 }
 
 export class RecurrenceContextMenu {
-	private menu: Menu;
+	private menu: ContextMenu;
 	private options: RecurrenceContextMenuOptions;
 	private translate: (key: TranslationKey, vars?: Record<string, string>) => string;
 
 	constructor(options: RecurrenceContextMenuOptions) {
-		this.menu = new Menu();
+		this.menu = new ContextMenu();
 		this.options = options;
 		this.translate = options.plugin.i18n.translate.bind(options.plugin.i18n);
 		this.buildMenu();
@@ -199,15 +200,8 @@ export class RecurrenceContextMenu {
 		}).open();
 	}
 
-	public show(event: MouseEvent): void {
-		this.menu.showAtMouseEvent(event);
-	}
-
-	public showAtElement(element: HTMLElement): void {
-		this.menu.showAtPosition({
-			x: element.getBoundingClientRect().left,
-			y: element.getBoundingClientRect().bottom + 4,
-		});
+	public show(event: UIEvent): void {
+		this.menu.show(event);
 	}
 }
 

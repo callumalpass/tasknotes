@@ -5,6 +5,7 @@ import { ICSEventInfoModal } from "../modals/ICSEventInfoModal";
 import { ICSNoteCreationModal } from "../modals/ICSNoteCreationModal";
 import { ICSNoteLinkModal } from "../modals/ICSNoteLinkModal";
 import { SafeAsync } from "../utils/safeAsync";
+import { ContextMenu } from "./ContextMenu";
 
 export interface ICSEventContextMenuOptions {
 	icsEvent: ICSEvent;
@@ -14,11 +15,11 @@ export interface ICSEventContextMenuOptions {
 }
 
 export class ICSEventContextMenu {
-	private menu: Menu;
+	private menu: ContextMenu;
 	private options: ICSEventContextMenuOptions;
 
 	constructor(options: ICSEventContextMenuOptions) {
-		this.menu = new Menu();
+		this.menu = new ContextMenu();
 		this.options = options;
 		this.buildMenu();
 	}

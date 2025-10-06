@@ -18,6 +18,7 @@ export interface ParsedTaskData {
 		day_of_month?: number;
 		month_of_year?: number;
 	};
+	timeEstimate?: number;
 	tags?: string[];
 	contexts?: string[];
 	projects?: string[];

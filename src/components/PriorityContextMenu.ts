@@ -1,6 +1,6 @@
-import { Menu } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { PriorityConfig } from "../types";
+import { ContextMenu } from "./ContextMenu";
 
 export interface PriorityContextMenuOptions {
 	currentValue?: string;
@@ -9,12 +9,12 @@ export interface PriorityContextMenuOptions {
 }
 
 export class PriorityContextMenu {
-	private menu: Menu;
+	private menu: ContextMenu;
 	private options: PriorityContextMenuOptions;
 	private sortedPriorities: PriorityConfig[];
 
 	constructor(options: PriorityContextMenuOptions) {
-		this.menu = new Menu();
+		this.menu = new ContextMenu();
 		this.options = options;
 		this.buildMenu();
 	}
@@ -46,8 +46,8 @@ export class PriorityContextMenu {
 		});
 	}
 
-	public show(event: MouseEvent): void {
-		this.menu.showAtMouseEvent(event);
+	public show(event: UIEvent): void {
+		this.menu.show(event);
 
 		// Apply color styling after menu is shown
 		setTimeout(() => {

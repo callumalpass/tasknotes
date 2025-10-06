@@ -1,4 +1,5 @@
 // import { TAbstractFile } from 'obsidian';
+import { Setting } from "obsidian";
 import TaskNotesPlugin from "../../main";
 import {
 	createSectionHeader,
@@ -171,6 +172,23 @@ export function renderGeneralTab(
 		},
 	});
 
+	// Frontmatter Section - only show if user has markdown links enabled globally
+	const useMarkdownLinks = plugin.app.vault.getConfig('useMarkdownLinks');
+	if (useMarkdownLinks) {
+		createSectionHeader(container, translate("settings.general.frontmatter.header"));
+		createHelpText(container, translate("settings.general.frontmatter.description"));
+
+		createToggleSetting(container, {
+			name: translate("settings.general.frontmatter.useMarkdownLinks.name"),
+			desc: translate("settings.general.frontmatter.useMarkdownLinks.description"),
+			getValue: () => plugin.settings.useFrontmatterMarkdownLinks,
+			setValue: async (value: boolean) => {
+				plugin.settings.useFrontmatterMarkdownLinks = value;
+				save();
+			},
+		});
+	}
+
 	// Task Interaction Section
 	createSectionHeader(container, translate("settings.general.taskInteraction.header"));
 	createHelpText(container, translate("settings.general.taskInteraction.description"));
@@ -209,4 +227,20 @@ export function renderGeneralTab(
 			save();
 		},
 	});
+
+	// Release Notes Section
+	createSectionHeader(container, "Release Notes");
+	createHelpText(container, `Current version: ${plugin.manifest.version}`);
+
+	new Setting(container)
+		.setName("View release notes")
+		.setDesc("See what's new in the latest version of TaskNotes")
+		.addButton((button) =>
+			button
+				.setButtonText("View release notes")
+				.setCta()
+				.onClick(async () => {
+					await plugin.activateReleaseNotesView();
+				})
+		);
 }

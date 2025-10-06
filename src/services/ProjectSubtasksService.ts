@@ -2,6 +2,7 @@
 import { TFile } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { TaskInfo } from "../types";
+import { parseLinkToPath } from "../utils/linkUtils";
 
 export class ProjectSubtasksService {
 	private plugin: TaskNotesPlugin;
@@ -130,16 +131,22 @@ export class ProjectSubtasksService {
 			for (const project of projects) {
 				if (!project || typeof project !== "string") continue;
 
-				// Only check wikilink format [[Note Name]] since plain text doesn't create links
-				if (project.startsWith("[[") && project.endsWith("]]")) {
-					const linkedNoteName = project.slice(2, -2).trim();
-					const resolvedFile = this.plugin.app.metadataCache.getFirstLinkpathDest(
-						linkedNoteName,
-						sourceFilePath
-					);
-					if (resolvedFile && resolvedFile.path === targetFilePath) {
-						return true;
-					}
+				// Parse the link to extract the path (handles both wikilinks and markdown links)
+				const linkPath = parseLinkToPath(project);
+
+				// Skip if not a link format
+				if (linkPath === project && !project.startsWith("[[")) {
+					continue; // Plain text, not a link
+				}
+
+				// Resolve the link to get the actual file
+				const resolvedFile = this.plugin.app.metadataCache.getFirstLinkpathDest(
+					linkPath,
+					sourceFilePath
+				);
+
+				if (resolvedFile && resolvedFile.path === targetFilePath) {
+					return true;
 				}
 			}
 

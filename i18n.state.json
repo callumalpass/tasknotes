@@ -244,6 +244,206 @@
       "source": "c7c0400a48b0a60163285b5a39460bd17d8f40f9",
       "translation": "b8eb78590eb52506601d9696b34b0bed27cbf750"
     },
+    "views.advancedCalendar.filters.showFilters": {
+      "source": "b1ad23eb8650c000bf826d5bfa41ddd8709e9096",
+      "translation": "5269284b3fb9465d0b7805eb3eed7c089197b2ce"
+    },
+    "views.advancedCalendar.filters.hideFilters": {
+      "source": "4b97b05ba50bb5e22999f7465be01a16fb5c5dfc",
+      "translation": "82bf5770f6b3017c5280addb5bbb004a0febcf05"
+    },
+    "views.advancedCalendar.viewOptions.calendarSubscriptions": {
+      "source": "9b99ca62a8c206aeef3199afeb8c2d6ea70c3c3a",
+      "translation": "efa3533c4e46110cb13fbbefc736130b3cb95b22"
+    },
+    "views.advancedCalendar.viewOptions.timeEntries": {
+      "source": "2367ebf083af8b709878dfb6b2603726d99f1860",
+      "translation": "7e060ab1403fd3b2b6e67284008a536881a92fce"
+    },
+    "views.advancedCalendar.viewOptions.timeblocks": {
+      "source": "2bbaa0ba121390600edaf00a9d6ddd701149646a",
+      "translation": "d5778287b55f7086c9ab13058a668db928c5ce9c"
+    },
+    "views.advancedCalendar.viewOptions.scheduledDates": {
+      "source": "649cafef92532ca059c39cd54b95b865bc808505",
+      "translation": "77cb723ad53a63462500781cc24931d510a1ae20"
+    },
+    "views.advancedCalendar.viewOptions.dueDates": {
+      "source": "1e24cb73d2f5fd9a48411ccaeb58088c38d0e677",
+      "translation": "6175759b59f06b08d9340b617fc60d052075a76c"
+    },
+    "views.advancedCalendar.viewOptions.allDaySlot": {
+      "source": "e8ef14f3ed7f630bde84272df46b8a9c21817a4a",
+      "translation": "dc0aa37c3f12f224205ae9fbd4bfc17ca335a664"
+    },
+    "views.advancedCalendar.viewOptions.scheduledTasks": {
+      "source": "417b1aedac957bc15982e560e5edb0e77e595174",
+      "translation": "6e90d03568d4a4263910f99c423cacc8d619995f"
+    },
+    "views.advancedCalendar.viewOptions.recurringTasks": {
+      "source": "55fca782e4e70a77c4ea8e0cde12fa8e34a66fd5",
+      "translation": "f8d65c41fbeffee5100a9a76ed32a87e19dc15b4"
+    },
+    "views.advancedCalendar.buttons.refresh": {
+      "source": "56e3badc4e6c5cc95e0ea5a9a878b9bd09f319d4",
+      "translation": "87c65f265a185afe8ec1786ae022914c838dc286"
+    },
+    "views.advancedCalendar.buttons.refreshHint": {
+      "source": "8782c944728c04072190e694667351c7e66a3453",
+      "translation": "25812e1cef01be040b07618c1b65ad47fe7aa687"
+    },
+    "views.advancedCalendar.notices.icsServiceNotAvailable": {
+      "source": "23e97cd33f97a443133685a5e2a46690ae9c98b2",
+      "translation": "2fd45e6627baaa5182e69ceeec18c0a51de3bf4f"
+    },
+    "views.advancedCalendar.notices.calendarRefreshedAll": {
+      "source": "86a603b25bbf73b2583b74aed13b76ee62ff49e2",
+      "translation": "4e36ef99e48adf920275b788dcfb060a4dd63f76"
+    },
+    "views.advancedCalendar.notices.refreshFailed": {
+      "source": "592a19ff0403951ace3cff938ed7d5205a9fd7f6",
+      "translation": "0e4f87d41043e062f60307c85318c629fad1fef0"
+    },
+    "views.advancedCalendar.notices.timeblockSpecificTime": {
+      "source": "59875e6bb4c37d603251eef5c4ef092e2f866a40",
+      "translation": "5bca0a122e25128d21f1a5f898090eb7a2c031ee"
+    },
+    "views.advancedCalendar.notices.timeblockMoved": {
+      "source": "a5018dd2670d617d7bcf30c6ecda28507ca01ef5",
+      "translation": "06f6a425013820d80cd89f7e2504e49240e1fe23"
+    },
+    "views.advancedCalendar.notices.timeblockUpdated": {
+      "source": "c6a22117ac857d272eb4d8352f9b0056d5180af4",
+      "translation": "820cb2cce8d4866f24fe3d0606d8ffa160737c08"
+    },
+    "views.advancedCalendar.notices.timeblockMoveFailed": {
+      "source": "52440e4e251894bd845692b5fc3fba88b0087e0e",
+      "translation": "da3425d63650be6a5bb92453ee982d2a1d97a008"
+    },
+    "views.advancedCalendar.notices.timeblockResized": {
+      "source": "4a72e2295f6022af16a6a7db96f8a3dfd68ba435",
+      "translation": "ce2fb0f3e8c52c646b690659daec3b5f68a6a5df"
+    },
+    "views.advancedCalendar.notices.timeblockResizeFailed": {
+      "source": "4f59f13365a384e5e61748ffb8f176300e3f94a4",
+      "translation": "eca9006918c81ece55b9963778da9d66ddb0be31"
+    },
+    "views.advancedCalendar.notices.taskScheduled": {
+      "source": "3c3d491d54f4aa7dac1ac6b3047775211fb6d4ed",
+      "translation": "81798db93b3e4f011c3b49a0f73dc82b37860dd0"
+    },
+    "views.advancedCalendar.notices.scheduleTaskFailed": {
+      "source": "73ddf3c08fb02842751fc7f43da61c25ee20fbe6",
+      "translation": "504673fbc63814e94c7ca11ff0a2f0ff23c060f6"
+    },
+    "views.advancedCalendar.notices.endTimeAfterStart": {
+      "source": "468339327f19d1060b77fff4957224707e821025",
+      "translation": "88b5071453060e4bae428c611cc12f8b663b9dbb"
+    },
+    "views.advancedCalendar.notices.timeEntryNotFound": {
+      "source": "9f67e05e6524702ffddaa0f901aef7530233de75",
+      "translation": "3022e33558a88b2c10269c5d2f17e7d5016b1078"
+    },
+    "views.advancedCalendar.notices.timeEntryDeleted": {
+      "source": "914de749024db319c11a41942dd0ef811daf7a1e",
+      "translation": "eb545701eef21c2f16298bda1d03d7929441b482"
+    },
+    "views.advancedCalendar.notices.deleteTimeEntryFailed": {
+      "source": "0b94f0d5614d275e95d3d6c6758e5eef650ca7eb",
+      "translation": "677b21ce75d20d2d1dfc457ee572eb8f604f2b08"
+    },
+    "views.advancedCalendar.timeEntry.estimatedSuffix": {
+      "source": "781012cf77ddb2bda8f753acb966b20ceb58401b",
+      "translation": "59d1b6174e6186b11c3a621def605590a00dca50"
+    },
+    "views.advancedCalendar.timeEntry.trackedSuffix": {
+      "source": "4c54cc4d8b2e8d1062d92fad1ad9389fbe33c1ae",
+      "translation": "27314b6568abe51bfb2ac127e6231641376fbf04"
+    },
+    "views.advancedCalendar.timeEntry.recurringPrefix": {
+      "source": "c3bd7a97068e03157188fdabd053274e5a615ae0",
+      "translation": "318ff100d8984498ebb82d1c1bd48fd1ee001af4"
+    },
+    "views.advancedCalendar.timeEntry.completedPrefix": {
+      "source": "9eb7ebd9c53ce14af025a3731610e1217244b380",
+      "translation": "b080affa4a8f4e853291e64a6cd759a784e9fd8c"
+    },
+    "views.advancedCalendar.timeEntry.createdPrefix": {
+      "source": "e09271eeb7ec2f4aadefc9b4ea851f1e7a1c6a45",
+      "translation": "bfc9ef76f3d021d8104c26ce91a3cdc870a50f1d"
+    },
+    "views.advancedCalendar.timeEntry.modifiedPrefix": {
+      "source": "74cc96092fb742901ea283cf5ad84222d5797570",
+      "translation": "0d3bd12f3e79654d84e38ad6ec0d736e83e6a023"
+    },
+    "views.advancedCalendar.timeEntry.duePrefix": {
+      "source": "29f9b627bf05896ea5c9c2271e2007691998e942",
+      "translation": "50eca8679d5899d3579d665b5f073a9d0fa3e66d"
+    },
+    "views.advancedCalendar.timeEntry.scheduledPrefix": {
+      "source": "9a2c5f2ac079858ab1b707a5660739e0c3d39f01",
+      "translation": "2b9a284e8aae0d990c9cacf5017fb7fcde4d8ff3"
+    },
+    "views.advancedCalendar.contextMenus.openTask": {
+      "source": "a1f1752a56b277c54c186afbdf4829b4b8109bf0",
+      "translation": "ffaff84cf67d4b142d25b2875915126f02563c72"
+    },
+    "views.advancedCalendar.contextMenus.deleteTimeEntry": {
+      "source": "a8a028ddc7caeff05f6193ed5b5a51a34b963fe0",
+      "translation": "2266b6e63d0005a20800f091f287ba9222541ffd"
+    },
+    "views.advancedCalendar.contextMenus.deleteTimeEntryTitle": {
+      "source": "c3ee9c29bbc9347f89084e07518ce64c17037ecf",
+      "translation": "2266b6e63d0005a20800f091f287ba9222541ffd"
+    },
+    "views.advancedCalendar.contextMenus.deleteTimeEntryConfirm": {
+      "source": "fbefc6e49effaf889eb5c56ae48d2f2a1dc0355f",
+      "translation": "5a67745553f205f9640ed5f57046c6ae97c5cc58"
+    },
+    "views.advancedCalendar.contextMenus.deleteButton": {
+      "source": "f6fdbe48dc54dd86f63097a03bd24094dedd713a",
+      "translation": "ffa5a8a7e21d912a91eeac79a2f7c5ed6b681a57"
+    },
+    "views.advancedCalendar.contextMenus.cancelButton": {
+      "source": "77dfd2135f4db726c47299bb55be26f7f4525a46",
+      "translation": "07af7cb30fca13091b0c2f0831dc8283e9f24965"
+    },
+    "views.basesCalendar.title": {
+      "source": "adc89f488953710c9133a9451e24713baabe9e88",
+      "translation": "cac8cd0e70de10a0f0785ad1f4e923b116f526cc"
+    },
+    "views.basesCalendar.today": {
+      "source": "24345a14377fd821d3932f4e82f6431640955b0b",
+      "translation": "1ab33097cd8e13568f48934edb37a699300295dc"
+    },
+    "views.basesCalendar.buttonText.month": {
+      "source": "c63ae6dd4fc9f9dda66970e827d13f7c73fe841c",
+      "translation": "c63ae6dd4fc9f9dda66970e827d13f7c73fe841c"
+    },
+    "views.basesCalendar.buttonText.week": {
+      "source": "e2415cb7f63df0c9de23362326ad3c37a9adfc96",
+      "translation": "e2415cb7f63df0c9de23362326ad3c37a9adfc96"
+    },
+    "views.basesCalendar.buttonText.day": {
+      "source": "50c9e8d5fc98727b4bbc93cf5d64a68db647f04f",
+      "translation": "c2c53d66948214258a26ca9ca845d7ac0c17f8e7"
+    },
+    "views.basesCalendar.buttonText.year": {
+      "source": "23eb4d3f4155395a74e9d534f97ff4c1908f5aac",
+      "translation": "58668e7669fd564d99db5d581fcdb6a5618440b5"
+    },
+    "views.basesCalendar.buttonText.list": {
+      "source": "d160e0986aca4714714a16f29ec605af90be704d",
+      "translation": "d160e0986aca4714714a16f29ec605af90be704d"
+    },
+    "views.basesCalendar.buttonText.customDays": {
+      "source": "aa73278ad78de284702c875cbe2d73ccb8f9c5d3",
+      "translation": "17b1f4317dfccc4e2cf4ab36745827154f5ad3f2"
+    },
+    "views.basesCalendar.errors.failedToInitialize": {
+      "source": "72aed61f75cf862170b7a47f054f2ded50802aa7",
+      "translation": "5f3481a4da34007a1a41b26aaeac17a37148d4fd"
+    },
     "views.kanban.title": {
       "source": "3895546730917a6946acbef9a935ec44eb167ab7",
       "translation": "3895546730917a6946acbef9a935ec44eb167ab7"
@@ -511,6 +711,22 @@
     "views.stats.filters.minTime": {
       "source": "77f4b7a081b20f78557dd404e14d91b89b52a27c",
       "translation": "a6bce6cf45ab6987a0491268052e0770559f80a4"
+    },
+    "views.releaseNotes.title": {
+      "source": "5939771f391859041bc57e5e05b04235b1ef8ee7",
+      "translation": "13e0a79179479dd7bd03740e53af56d3b965f8fc"
+    },
+    "views.releaseNotes.header": {
+      "source": "5939771f391859041bc57e5e05b04235b1ef8ee7",
+      "translation": "13e0a79179479dd7bd03740e53af56d3b965f8fc"
+    },
+    "views.releaseNotes.viewAllLink": {
+      "source": "b37e5d2fb2faa630817557713df6363f4bd0f5cc",
+      "translation": "beead282ed357e1ec1e06f7d34a3e9dfe3309181"
+    },
+    "views.releaseNotes.starMessage": {
+      "source": "de98980ccdae9c93e30d1172d4c15c059ea0508c",
+      "translation": "3886f7795b91fd4ed8d6fcdf37424e5e0b59857d"
     },
     "settings.tabs.general": {
       "source": "9239ee2cda84eca4c3440e2a7b50148af67da3d4",
@@ -1292,6 +1508,10 @@
       "source": "4ff367979f5bdb70f928733dda339ca81435c4b1",
       "translation": "f03123a435174cef25cce4330e1d7c9c6ba5993d"
     },
+    "settings.general.frontmatter.header": null,
+    "settings.general.frontmatter.description": null,
+    "settings.general.frontmatter.useMarkdownLinks.name": null,
+    "settings.general.frontmatter.useMarkdownLinks.description": null,
     "settings.general.taskInteraction.header": {
       "source": "a8194c053a4f989c874659b7d4a0e99f5a4a3df5",
       "translation": "9765fd942e9dd3fe08dc3599d3754e21c0aaa271"
@@ -3368,6 +3588,10 @@
       "source": "3f3714587b4802efeb6baf380a59615b8faf0c10",
       "translation": "2b3a3551e913a0618f09a1378c63fa6b832fe6cf"
     },
+    "commands.viewReleaseNotes": {
+      "source": "04c2072af97cf70c22fbf9efa9b62eb2574d23d6",
+      "translation": "d69d1c26f388903bba0094ba00f61217c47fa732"
+    },
     "modals.task.titlePlaceholder": {
       "source": "c8196f1d1039c2fb290add52ee990c571173d6f1",
       "translation": "03f97eff6f24910100617f3fcbc4665e2e65cd7e"
@@ -4831,6 +5055,10 @@
       "source": "bf2839903d40700843ee6d42ee363cd98f74dfd5",
       "translation": "416c673a44b218e4deb751ab9547a91e2e17e654"
     },
+    "ui.propertyEventCard.unknownFile": {
+      "source": "b05d96bfbcef633c0d11626390d994c13bbf58d0",
+      "translation": "bf8015285c47d05140ad17709ff7c086b8cff6fd"
+    },
     "ui.filterHeading.allViewName": {
       "source": "6a72085653e4c5be8c7640c868ef787cbcf063d1",
       "translation": "4c7a986ffe2b7139e9c48df8ceb8e8e42ac24726"
@@ -5770,6 +5998,206 @@
       "source": "c7c0400a48b0a60163285b5a39460bd17d8f40f9",
       "translation": "eda863fa6d3616dbf53f79ee0f88d06e86ba6b6f"
     },
+    "views.advancedCalendar.filters.showFilters": {
+      "source": "b1ad23eb8650c000bf826d5bfa41ddd8709e9096",
+      "translation": "b5c1f16eef54b9f73aa2cce18a8fafaabd9cc4bf"
+    },
+    "views.advancedCalendar.filters.hideFilters": {
+      "source": "4b97b05ba50bb5e22999f7465be01a16fb5c5dfc",
+      "translation": "0d28dfed2237e6580c71ba73a04361a1fe62ab54"
+    },
+    "views.advancedCalendar.viewOptions.calendarSubscriptions": {
+      "source": "9b99ca62a8c206aeef3199afeb8c2d6ea70c3c3a",
+      "translation": "fb2be6dc29776b765d49d49218dd87ea71dfc715"
+    },
+    "views.advancedCalendar.viewOptions.timeEntries": {
+      "source": "2367ebf083af8b709878dfb6b2603726d99f1860",
+      "translation": "ac14b9518c0fb3f99010685892e454624ce9d695"
+    },
+    "views.advancedCalendar.viewOptions.timeblocks": {
+      "source": "2bbaa0ba121390600edaf00a9d6ddd701149646a",
+      "translation": "56e3d2fb7ebf05c718456bb4556bad05f1c2d8b8"
+    },
+    "views.advancedCalendar.viewOptions.scheduledDates": {
+      "source": "649cafef92532ca059c39cd54b95b865bc808505",
+      "translation": "1cc3de4803069f1fb5961dd34fd60194bef7a35c"
+    },
+    "views.advancedCalendar.viewOptions.dueDates": {
+      "source": "1e24cb73d2f5fd9a48411ccaeb58088c38d0e677",
+      "translation": "4de8998f4540e8348734752a6279bd341c3d4300"
+    },
+    "views.advancedCalendar.viewOptions.allDaySlot": {
+      "source": "e8ef14f3ed7f630bde84272df46b8a9c21817a4a",
+      "translation": "13f5b099f62919d2717a09531c6e9e668baa6411"
+    },
+    "views.advancedCalendar.viewOptions.scheduledTasks": {
+      "source": "417b1aedac957bc15982e560e5edb0e77e595174",
+      "translation": "9a47a77c7acfaff0613e799112b17bb86ae65462"
+    },
+    "views.advancedCalendar.viewOptions.recurringTasks": {
+      "source": "55fca782e4e70a77c4ea8e0cde12fa8e34a66fd5",
+      "translation": "4c0ca3e381fd1cdee36c8fd640e48cb88a056469"
+    },
+    "views.advancedCalendar.buttons.refresh": {
+      "source": "56e3badc4e6c5cc95e0ea5a9a878b9bd09f319d4",
+      "translation": "c725f8bffa86a8ba5464c672765f6d453b0ea543"
+    },
+    "views.advancedCalendar.buttons.refreshHint": {
+      "source": "8782c944728c04072190e694667351c7e66a3453",
+      "translation": "f4739286e51340063e44cdcd5a10c0b86665d10e"
+    },
+    "views.advancedCalendar.notices.icsServiceNotAvailable": {
+      "source": "23e97cd33f97a443133685a5e2a46690ae9c98b2",
+      "translation": "ac22af91dd64e561702a446cee01e3c44c947c28"
+    },
+    "views.advancedCalendar.notices.calendarRefreshedAll": {
+      "source": "86a603b25bbf73b2583b74aed13b76ee62ff49e2",
+      "translation": "e66bf45e40245c778b2fe01d19abff9388df7170"
+    },
+    "views.advancedCalendar.notices.refreshFailed": {
+      "source": "592a19ff0403951ace3cff938ed7d5205a9fd7f6",
+      "translation": "423ad1982dbe8fddf30a918fe1e80d4f63c5ffb4"
+    },
+    "views.advancedCalendar.notices.timeblockSpecificTime": {
+      "source": "59875e6bb4c37d603251eef5c4ef092e2f866a40",
+      "translation": "2ea085afaa983be7c89cde639e569c1d163af58c"
+    },
+    "views.advancedCalendar.notices.timeblockMoved": {
+      "source": "a5018dd2670d617d7bcf30c6ecda28507ca01ef5",
+      "translation": "3e93401d8f2ffe28aa8c3ca28817b4c1d9e27785"
+    },
+    "views.advancedCalendar.notices.timeblockUpdated": {
+      "source": "c6a22117ac857d272eb4d8352f9b0056d5180af4",
+      "translation": "17ee7a7d13191cd7a05c4ded39a8c94f8ab7db02"
+    },
+    "views.advancedCalendar.notices.timeblockMoveFailed": {
+      "source": "52440e4e251894bd845692b5fc3fba88b0087e0e",
+      "translation": "08457e41855fa4c6f10cffbe4b32bab4f2359639"
+    },
+    "views.advancedCalendar.notices.timeblockResized": {
+      "source": "4a72e2295f6022af16a6a7db96f8a3dfd68ba435",
+      "translation": "1ebc10f94a4fe5528dd3d34799edc359efbce574"
+    },
+    "views.advancedCalendar.notices.timeblockResizeFailed": {
+      "source": "4f59f13365a384e5e61748ffb8f176300e3f94a4",
+      "translation": "97e81b6e4492633ec39c721d5d8061433e41353b"
+    },
+    "views.advancedCalendar.notices.taskScheduled": {
+      "source": "3c3d491d54f4aa7dac1ac6b3047775211fb6d4ed",
+      "translation": "0de28ab16717ca3a9cd1064676112af096678c0d"
+    },
+    "views.advancedCalendar.notices.scheduleTaskFailed": {
+      "source": "73ddf3c08fb02842751fc7f43da61c25ee20fbe6",
+      "translation": "b5b2ad8383321d93bab8f70ce4e4a2c7ad78b5d1"
+    },
+    "views.advancedCalendar.notices.endTimeAfterStart": {
+      "source": "468339327f19d1060b77fff4957224707e821025",
+      "translation": "8e5e683c91650183110693221c1c683882323f53"
+    },
+    "views.advancedCalendar.notices.timeEntryNotFound": {
+      "source": "9f67e05e6524702ffddaa0f901aef7530233de75",
+      "translation": "b27f4f28946aed9c33eab2a4bbeb28a71ed1a0cd"
+    },
+    "views.advancedCalendar.notices.timeEntryDeleted": {
+      "source": "914de749024db319c11a41942dd0ef811daf7a1e",
+      "translation": "e6deb2cd24b869461d93efbeba653f498ef85f9e"
+    },
+    "views.advancedCalendar.notices.deleteTimeEntryFailed": {
+      "source": "0b94f0d5614d275e95d3d6c6758e5eef650ca7eb",
+      "translation": "acd14963f03e52892cd607b072085dadb78b362a"
+    },
+    "views.advancedCalendar.timeEntry.estimatedSuffix": {
+      "source": "781012cf77ddb2bda8f753acb966b20ceb58401b",
+      "translation": "ff6f61380974088b7094107166b5f26f4d6e6857"
+    },
+    "views.advancedCalendar.timeEntry.trackedSuffix": {
+      "source": "4c54cc4d8b2e8d1062d92fad1ad9389fbe33c1ae",
+      "translation": "ed3d4783c527551ff34f2c91d37d14ba505e7c8a"
+    },
+    "views.advancedCalendar.timeEntry.recurringPrefix": {
+      "source": "c3bd7a97068e03157188fdabd053274e5a615ae0",
+      "translation": "2c38539ca154f1489e17ec891961320773417071"
+    },
+    "views.advancedCalendar.timeEntry.completedPrefix": {
+      "source": "9eb7ebd9c53ce14af025a3731610e1217244b380",
+      "translation": "d891cfd870375904b30a6c255b7d171fe682751d"
+    },
+    "views.advancedCalendar.timeEntry.createdPrefix": {
+      "source": "e09271eeb7ec2f4aadefc9b4ea851f1e7a1c6a45",
+      "translation": "4b351d6759ea9089cf5e57587d029addda447a99"
+    },
+    "views.advancedCalendar.timeEntry.modifiedPrefix": {
+      "source": "74cc96092fb742901ea283cf5ad84222d5797570",
+      "translation": "48a679596f4aa8f9d013e742cdb828440c9a1055"
+    },
+    "views.advancedCalendar.timeEntry.duePrefix": {
+      "source": "29f9b627bf05896ea5c9c2271e2007691998e942",
+      "translation": "340c763d32e21123f2aea7deefeb3577998b9a1c"
+    },
+    "views.advancedCalendar.timeEntry.scheduledPrefix": {
+      "source": "9a2c5f2ac079858ab1b707a5660739e0c3d39f01",
+      "translation": "6c2f4635835ec0c709cdfc3834c5b11d1ab1ff83"
+    },
+    "views.advancedCalendar.contextMenus.openTask": {
+      "source": "a1f1752a56b277c54c186afbdf4829b4b8109bf0",
+      "translation": "a488f92ba3d33d295795eb271c34192dd6423703"
+    },
+    "views.advancedCalendar.contextMenus.deleteTimeEntry": {
+      "source": "a8a028ddc7caeff05f6193ed5b5a51a34b963fe0",
+      "translation": "44bc3797ce9c7a30c138c1b8d82da064720d1507"
+    },
+    "views.advancedCalendar.contextMenus.deleteTimeEntryTitle": {
+      "source": "c3ee9c29bbc9347f89084e07518ce64c17037ecf",
+      "translation": "74c1be32cf3a69fc39f546eb5f474ad9b87d05ed"
+    },
+    "views.advancedCalendar.contextMenus.deleteTimeEntryConfirm": {
+      "source": "fbefc6e49effaf889eb5c56ae48d2f2a1dc0355f",
+      "translation": "2cb203782841cbbd6b950cf58205a970a28f35ee"
+    },
+    "views.advancedCalendar.contextMenus.deleteButton": {
+      "source": "f6fdbe48dc54dd86f63097a03bd24094dedd713a",
+      "translation": "54e140f9f07354c67d82e4715c8ae1a311398525"
+    },
+    "views.advancedCalendar.contextMenus.cancelButton": {
+      "source": "77dfd2135f4db726c47299bb55be26f7f4525a46",
+      "translation": "c111e0ab9ddb1dfb79f8a12c741ba6dbdb07992a"
+    },
+    "views.basesCalendar.title": {
+      "source": "adc89f488953710c9133a9451e24713baabe9e88",
+      "translation": "d765d5a9eabfc0c147ee55725cc478c6863b119d"
+    },
+    "views.basesCalendar.today": {
+      "source": "24345a14377fd821d3932f4e82f6431640955b0b",
+      "translation": "565e9824d995abb146d7f796e6cb377ef5bf2cb8"
+    },
+    "views.basesCalendar.buttonText.month": {
+      "source": "c63ae6dd4fc9f9dda66970e827d13f7c73fe841c",
+      "translation": "c63ae6dd4fc9f9dda66970e827d13f7c73fe841c"
+    },
+    "views.basesCalendar.buttonText.week": {
+      "source": "e2415cb7f63df0c9de23362326ad3c37a9adfc96",
+      "translation": "02aa629c8b16cd17a44f3a0efec2feed43937642"
+    },
+    "views.basesCalendar.buttonText.day": {
+      "source": "50c9e8d5fc98727b4bbc93cf5d64a68db647f04f",
+      "translation": "50c9e8d5fc98727b4bbc93cf5d64a68db647f04f"
+    },
+    "views.basesCalendar.buttonText.year": {
+      "source": "23eb4d3f4155395a74e9d534f97ff4c1908f5aac",
+      "translation": "6dcd4ce23d88e2ee9568ba546c007c63d9131c1b"
+    },
+    "views.basesCalendar.buttonText.list": {
+      "source": "d160e0986aca4714714a16f29ec605af90be704d",
+      "translation": "d160e0986aca4714714a16f29ec605af90be704d"
+    },
+    "views.basesCalendar.buttonText.customDays": {
+      "source": "aa73278ad78de284702c875cbe2d73ccb8f9c5d3",
+      "translation": "aa73278ad78de284702c875cbe2d73ccb8f9c5d3"
+    },
+    "views.basesCalendar.errors.failedToInitialize": {
+      "source": "72aed61f75cf862170b7a47f054f2ded50802aa7",
+      "translation": "a7c2358fca077483433563cf885d3f30314b0d75"
+    },
     "views.kanban.title": {
       "source": "3895546730917a6946acbef9a935ec44eb167ab7",
       "translation": "3895546730917a6946acbef9a935ec44eb167ab7"
@@ -6037,6 +6465,22 @@
     "views.stats.filters.minTime": {
       "source": "77f4b7a081b20f78557dd404e14d91b89b52a27c",
       "translation": "01c1479a894b4e8a3b6e679bd3630c1389c7cd60"
+    },
+    "views.releaseNotes.title": {
+      "source": "5939771f391859041bc57e5e05b04235b1ef8ee7",
+      "translation": "d77248708380c01950bad45e2eee3593861fe33c"
+    },
+    "views.releaseNotes.header": {
+      "source": "5939771f391859041bc57e5e05b04235b1ef8ee7",
+      "translation": "d77248708380c01950bad45e2eee3593861fe33c"
+    },
+    "views.releaseNotes.viewAllLink": {
+      "source": "b37e5d2fb2faa630817557713df6363f4bd0f5cc",
+      "translation": "5411820364300214189c01bbd57acdd6e8ac0a04"
+    },
+    "views.releaseNotes.starMessage": {
+      "source": "de98980ccdae9c93e30d1172d4c15c059ea0508c",
+      "translation": "f41b51d65c2637f895c175954e78a9c70d470034"
     },
     "settings.tabs.general": {
       "source": "9239ee2cda84eca4c3440e2a7b50148af67da3d4",
@@ -6818,6 +7262,10 @@
       "source": "4ff367979f5bdb70f928733dda339ca81435c4b1",
       "translation": "d7ff49bfccec1fc23a91f3ba5033c279f8833fea"
     },
+    "settings.general.frontmatter.header": null,
+    "settings.general.frontmatter.description": null,
+    "settings.general.frontmatter.useMarkdownLinks.name": null,
+    "settings.general.frontmatter.useMarkdownLinks.description": null,
     "settings.general.taskInteraction.header": {
       "source": "a8194c053a4f989c874659b7d4a0e99f5a4a3df5",
       "translation": "0c99bacc36ebbb163aa2813d5b0d18602725e551"
@@ -8894,6 +9342,10 @@
       "source": "3f3714587b4802efeb6baf380a59615b8faf0c10",
       "translation": "8f93640a115b91031d8f53e89543cc0bf04e300b"
     },
+    "commands.viewReleaseNotes": {
+      "source": "04c2072af97cf70c22fbf9efa9b62eb2574d23d6",
+      "translation": "6b3d99d1c66a1ab48efa9303a68404ff95c10897"
+    },
     "modals.task.titlePlaceholder": {
       "source": "c8196f1d1039c2fb290add52ee990c571173d6f1",
       "translation": "dee0035d1027b937237c8bbdd6e77288df356ff4"
@@ -10357,6 +10809,10 @@
       "source": "bf2839903d40700843ee6d42ee363cd98f74dfd5",
       "translation": "ea75bda9950289522646f60a118631b8664049fb"
     },
+    "ui.propertyEventCard.unknownFile": {
+      "source": "b05d96bfbcef633c0d11626390d994c13bbf58d0",
+      "translation": "04758eeeadb4dda213c8c9618846a78996dbe9cb"
+    },
     "ui.filterHeading.allViewName": {
       "source": "6a72085653e4c5be8c7640c868ef787cbcf063d1",
       "translation": "a4114a83f4c6b03e326fda4a57471ca7c2d9fa96"
@@ -11296,6 +11752,206 @@
       "source": "c7c0400a48b0a60163285b5a39460bd17d8f40f9",
       "translation": "8241e64013516f3a26c53fccba0692b43df60338"
     },
+    "views.advancedCalendar.filters.showFilters": {
+      "source": "b1ad23eb8650c000bf826d5bfa41ddd8709e9096",
+      "translation": "cd8abbe3cddde674fdb6c1048120b1b892bd2f2e"
+    },
+    "views.advancedCalendar.filters.hideFilters": {
+      "source": "4b97b05ba50bb5e22999f7465be01a16fb5c5dfc",
+      "translation": "d8aa6c9b1d8c0e4030eefc177c8f2aa2ab2d50b1"
+    },
+    "views.advancedCalendar.viewOptions.calendarSubscriptions": {
+      "source": "9b99ca62a8c206aeef3199afeb8c2d6ea70c3c3a",
+      "translation": "d1070f067df2cc6fbc1d57fcf75ff44acf4ecff1"
+    },
+    "views.advancedCalendar.viewOptions.timeEntries": {
+      "source": "2367ebf083af8b709878dfb6b2603726d99f1860",
+      "translation": "abc93b428d68c113d4dc64427cd4027e270a9425"
+    },
+    "views.advancedCalendar.viewOptions.timeblocks": {
+      "source": "2bbaa0ba121390600edaf00a9d6ddd701149646a",
+      "translation": "c28720012a1c3176a97970a3cc82041d6d54f120"
+    },
+    "views.advancedCalendar.viewOptions.scheduledDates": {
+      "source": "649cafef92532ca059c39cd54b95b865bc808505",
+      "translation": "cd3c9023f9a961e682efe0e321d11b4da87f4e81"
+    },
+    "views.advancedCalendar.viewOptions.dueDates": {
+      "source": "1e24cb73d2f5fd9a48411ccaeb58088c38d0e677",
+      "translation": "3a684226a90a2075c4cef6e92eeea60fd9935ecb"
+    },
+    "views.advancedCalendar.viewOptions.allDaySlot": {
+      "source": "e8ef14f3ed7f630bde84272df46b8a9c21817a4a",
+      "translation": "cdf4faa7fb92a6af95c62c49174fe33a7a2c538a"
+    },
+    "views.advancedCalendar.viewOptions.scheduledTasks": {
+      "source": "417b1aedac957bc15982e560e5edb0e77e595174",
+      "translation": "8a78635ff1b077faf2ff0671b49ee8f8bd3f32da"
+    },
+    "views.advancedCalendar.viewOptions.recurringTasks": {
+      "source": "55fca782e4e70a77c4ea8e0cde12fa8e34a66fd5",
+      "translation": "a5f7f40f1cc5116d99e65b8b4bd8dcb32682b8a8"
+    },
+    "views.advancedCalendar.buttons.refresh": {
+      "source": "56e3badc4e6c5cc95e0ea5a9a878b9bd09f319d4",
+      "translation": "9d3b2a7d8b0d9634679efceda8296a8d14235392"
+    },
+    "views.advancedCalendar.buttons.refreshHint": {
+      "source": "8782c944728c04072190e694667351c7e66a3453",
+      "translation": "67984520c5aa8f1709957897614deb0d446d6dbd"
+    },
+    "views.advancedCalendar.notices.icsServiceNotAvailable": {
+      "source": "23e97cd33f97a443133685a5e2a46690ae9c98b2",
+      "translation": "a6bd7e22ed738770ebcbc7d4a8878f06170c45a2"
+    },
+    "views.advancedCalendar.notices.calendarRefreshedAll": {
+      "source": "86a603b25bbf73b2583b74aed13b76ee62ff49e2",
+      "translation": "c8ed26862cf9836a3ee1977ef0055626c86ed292"
+    },
+    "views.advancedCalendar.notices.refreshFailed": {
+      "source": "592a19ff0403951ace3cff938ed7d5205a9fd7f6",
+      "translation": "27bbc53630f8b744db902a31efd35522cccd1ad9"
+    },
+    "views.advancedCalendar.notices.timeblockSpecificTime": {
+      "source": "59875e6bb4c37d603251eef5c4ef092e2f866a40",
+      "translation": "8f105e8f93fcf36c0d7e3d8830ec392840a896ab"
+    },
+    "views.advancedCalendar.notices.timeblockMoved": {
+      "source": "a5018dd2670d617d7bcf30c6ecda28507ca01ef5",
+      "translation": "58212c831df5006e0f1f64b2e97105759ef1538c"
+    },
+    "views.advancedCalendar.notices.timeblockUpdated": {
+      "source": "c6a22117ac857d272eb4d8352f9b0056d5180af4",
+      "translation": "dafe1cb9ad3b9137a96e0cbf440bd3492d115e8a"
+    },
+    "views.advancedCalendar.notices.timeblockMoveFailed": {
+      "source": "52440e4e251894bd845692b5fc3fba88b0087e0e",
+      "translation": "ce60cbc8f16d62448d01d1431e2311f48568504a"
+    },
+    "views.advancedCalendar.notices.timeblockResized": {
+      "source": "4a72e2295f6022af16a6a7db96f8a3dfd68ba435",
+      "translation": "f379f63a379badf609be4af2032cb829442d818e"
+    },
+    "views.advancedCalendar.notices.timeblockResizeFailed": {
+      "source": "4f59f13365a384e5e61748ffb8f176300e3f94a4",
+      "translation": "7b2d41bd88f403d83895f3f921a426393596dcb1"
+    },
+    "views.advancedCalendar.notices.taskScheduled": {
+      "source": "3c3d491d54f4aa7dac1ac6b3047775211fb6d4ed",
+      "translation": "f28e5bdc0190412ef32bae6c8df33145ad2e6787"
+    },
+    "views.advancedCalendar.notices.scheduleTaskFailed": {
+      "source": "73ddf3c08fb02842751fc7f43da61c25ee20fbe6",
+      "translation": "9e02957ed9f28c7a1fd1cf6a51c709dba60cd8fe"
+    },
+    "views.advancedCalendar.notices.endTimeAfterStart": {
+      "source": "468339327f19d1060b77fff4957224707e821025",
+      "translation": "3002cdc1440bcff095157c01ea9e5d3deca80c2a"
+    },
+    "views.advancedCalendar.notices.timeEntryNotFound": {
+      "source": "9f67e05e6524702ffddaa0f901aef7530233de75",
+      "translation": "7979ff96176dba590371d52ccfebc0ff6e1b95e1"
+    },
+    "views.advancedCalendar.notices.timeEntryDeleted": {
+      "source": "914de749024db319c11a41942dd0ef811daf7a1e",
+      "translation": "a93536ecbac4ab7a81cfee0df7f8a041a6e84554"
+    },
+    "views.advancedCalendar.notices.deleteTimeEntryFailed": {
+      "source": "0b94f0d5614d275e95d3d6c6758e5eef650ca7eb",
+      "translation": "36d80ddcba09633face5ec0949ccd5589563d149"
+    },
+    "views.advancedCalendar.timeEntry.estimatedSuffix": {
+      "source": "781012cf77ddb2bda8f753acb966b20ceb58401b",
+      "translation": "8d23dcd8fb6eab5306343ab0b5ae6244a3576eb2"
+    },
+    "views.advancedCalendar.timeEntry.trackedSuffix": {
+      "source": "4c54cc4d8b2e8d1062d92fad1ad9389fbe33c1ae",
+      "translation": "302e512417fd1accb19f589bc9894ba07cd490f9"
+    },
+    "views.advancedCalendar.timeEntry.recurringPrefix": {
+      "source": "c3bd7a97068e03157188fdabd053274e5a615ae0",
+      "translation": "d8bfce2f8df385a4e67a02e7133a6cb65f9f6496"
+    },
+    "views.advancedCalendar.timeEntry.completedPrefix": {
+      "source": "9eb7ebd9c53ce14af025a3731610e1217244b380",
+      "translation": "6ee67a00237fd4648af92c257c0a0c78b5fa545b"
+    },
+    "views.advancedCalendar.timeEntry.createdPrefix": {
+      "source": "e09271eeb7ec2f4aadefc9b4ea851f1e7a1c6a45",
+      "translation": "7e608d6097354f975248338e73afee831c0ebb4b"
+    },
+    "views.advancedCalendar.timeEntry.modifiedPrefix": {
+      "source": "74cc96092fb742901ea283cf5ad84222d5797570",
+      "translation": "7e00c5424ce3ab73714bef7b9e475ad03807bcc8"
+    },
+    "views.advancedCalendar.timeEntry.duePrefix": {
+      "source": "29f9b627bf05896ea5c9c2271e2007691998e942",
+      "translation": "79418de322a2aba90439bb86dfce55dbd46eaf93"
+    },
+    "views.advancedCalendar.timeEntry.scheduledPrefix": {
+      "source": "9a2c5f2ac079858ab1b707a5660739e0c3d39f01",
+      "translation": "43489f889533913db4e93156cecf42ca9ac22402"
+    },
+    "views.advancedCalendar.contextMenus.openTask": {
+      "source": "a1f1752a56b277c54c186afbdf4829b4b8109bf0",
+      "translation": "11a5ab3c1f35c4561c9cbc1e8c227c56d05229a7"
+    },
+    "views.advancedCalendar.contextMenus.deleteTimeEntry": {
+      "source": "a8a028ddc7caeff05f6193ed5b5a51a34b963fe0",
+      "translation": "985a644bc433bb6a79b9204fbc22c127eb38f5d0"
+    },
+    "views.advancedCalendar.contextMenus.deleteTimeEntryTitle": {
+      "source": "c3ee9c29bbc9347f89084e07518ce64c17037ecf",
+      "translation": "985a644bc433bb6a79b9204fbc22c127eb38f5d0"
+    },
+    "views.advancedCalendar.contextMenus.deleteTimeEntryConfirm": {
+      "source": "fbefc6e49effaf889eb5c56ae48d2f2a1dc0355f",
+      "translation": "b0f65c157c7900434f619b5f00b17ae91cc58607"
+    },
+    "views.advancedCalendar.contextMenus.deleteButton": {
+      "source": "f6fdbe48dc54dd86f63097a03bd24094dedd713a",
+      "translation": "1acfc1c7d761310db2e5e876c0cade4d522cfed2"
+    },
+    "views.advancedCalendar.contextMenus.cancelButton": {
+      "source": "77dfd2135f4db726c47299bb55be26f7f4525a46",
+      "translation": "49ba3292420c74828e7892fadc66f3f4ee4c0111"
+    },
+    "views.basesCalendar.title": {
+      "source": "adc89f488953710c9133a9451e24713baabe9e88",
+      "translation": "8d89ccbefa4889905665945b9c29ffff22596e75"
+    },
+    "views.basesCalendar.today": {
+      "source": "24345a14377fd821d3932f4e82f6431640955b0b",
+      "translation": "baca97f697fbf114ca2b08c97c106dde47583c4a"
+    },
+    "views.basesCalendar.buttonText.month": {
+      "source": "c63ae6dd4fc9f9dda66970e827d13f7c73fe841c",
+      "translation": "c63ae6dd4fc9f9dda66970e827d13f7c73fe841c"
+    },
+    "views.basesCalendar.buttonText.week": {
+      "source": "e2415cb7f63df0c9de23362326ad3c37a9adfc96",
+      "translation": "02aa629c8b16cd17a44f3a0efec2feed43937642"
+    },
+    "views.basesCalendar.buttonText.day": {
+      "source": "50c9e8d5fc98727b4bbc93cf5d64a68db647f04f",
+      "translation": "58668e7669fd564d99db5d581fcdb6a5618440b5"
+    },
+    "views.basesCalendar.buttonText.year": {
+      "source": "23eb4d3f4155395a74e9d534f97ff4c1908f5aac",
+      "translation": "6dcd4ce23d88e2ee9568ba546c007c63d9131c1b"
+    },
+    "views.basesCalendar.buttonText.list": {
+      "source": "d160e0986aca4714714a16f29ec605af90be704d",
+      "translation": "d160e0986aca4714714a16f29ec605af90be704d"
+    },
+    "views.basesCalendar.buttonText.customDays": {
+      "source": "aa73278ad78de284702c875cbe2d73ccb8f9c5d3",
+      "translation": "5de56b1ab2623758e2b533e17cb8ac608d6a9013"
+    },
+    "views.basesCalendar.errors.failedToInitialize": {
+      "source": "72aed61f75cf862170b7a47f054f2ded50802aa7",
+      "translation": "ad58c48b248d00f8d5686e1de117c572c315bbb4"
+    },
     "views.kanban.title": {
       "source": "3895546730917a6946acbef9a935ec44eb167ab7",
       "translation": "89fa631aa01334f0cdbbfe97fb7b9df273091976"
@@ -11563,6 +12219,22 @@
     "views.stats.filters.minTime": {
       "source": "77f4b7a081b20f78557dd404e14d91b89b52a27c",
       "translation": "b6a500e983b64d611aab3a9d5b2ec65fd4511f10"
+    },
+    "views.releaseNotes.title": {
+      "source": "5939771f391859041bc57e5e05b04235b1ef8ee7",
+      "translation": "eb15567c6afcd90288bcd72e1a8b2529f4f9c30f"
+    },
+    "views.releaseNotes.header": {
+      "source": "5939771f391859041bc57e5e05b04235b1ef8ee7",
+      "translation": "eb15567c6afcd90288bcd72e1a8b2529f4f9c30f"
+    },
+    "views.releaseNotes.viewAllLink": {
+      "source": "b37e5d2fb2faa630817557713df6363f4bd0f5cc",
+      "translation": "bb9554fdea3b306e3154c79005b21c6230c2cc5b"
+    },
+    "views.releaseNotes.starMessage": {
+      "source": "de98980ccdae9c93e30d1172d4c15c059ea0508c",
+      "translation": "25d41272c6bff10b1fba1a61f6db2e8f9df40425"
     },
     "settings.tabs.general": {
       "source": "9239ee2cda84eca4c3440e2a7b50148af67da3d4",
@@ -12344,6 +13016,10 @@
       "source": "4ff367979f5bdb70f928733dda339ca81435c4b1",
       "translation": "f429284d9f211ecd199f673e8b700b051af4fe51"
     },
+    "settings.general.frontmatter.header": null,
+    "settings.general.frontmatter.description": null,
+    "settings.general.frontmatter.useMarkdownLinks.name": null,
+    "settings.general.frontmatter.useMarkdownLinks.description": null,
     "settings.general.taskInteraction.header": {
       "source": "a8194c053a4f989c874659b7d4a0e99f5a4a3df5",
       "translation": "fbd07b9c2d07333ad938a9ffd3d17cf4cf06193f"
@@ -14420,6 +15096,10 @@
       "source": "3f3714587b4802efeb6baf380a59615b8faf0c10",
       "translation": "e4c5963ce721f4bb182d474d1a9c0c604325c274"
     },
+    "commands.viewReleaseNotes": {
+      "source": "04c2072af97cf70c22fbf9efa9b62eb2574d23d6",
+      "translation": "e8e1d32313d229666301e29a37df418032835142"
+    },
     "modals.task.titlePlaceholder": {
       "source": "c8196f1d1039c2fb290add52ee990c571173d6f1",
       "translation": "4ad6efca173a22d4bf622d5729c3ad13612e6902"
@@ -15817,6 +16497,10 @@
       "source": "bf2839903d40700843ee6d42ee363cd98f74dfd5",
       "translation": "65c097fd6dc78b3b367c7d8d216bf4a826221389"
     },
+    "ui.propertyEventCard.unknownFile": {
+      "source": "b05d96bfbcef633c0d11626390d994c13bbf58d0",
+      "translation": "f105b138b4071770c5a4d791fb658ce6bee8899d"
+    },
     "ui.filterHeading.allViewName": {
       "source": "6a72085653e4c5be8c7640c868ef787cbcf063d1",
       "translation": "c5f641e4d1cc19bfedbfdf37bb7c1e13a471deb9"
@@ -16756,6 +17440,206 @@
       "source": "c7c0400a48b0a60163285b5a39460bd17d8f40f9",
       "translation": "769596d42919bbbf7e80b480bccc8dec736cb35c"
     },
+    "views.advancedCalendar.filters.showFilters": {
+      "source": "b1ad23eb8650c000bf826d5bfa41ddd8709e9096",
+      "translation": "e231c343630026af53f34b0eb2986d54872bdd1f"
+    },
+    "views.advancedCalendar.filters.hideFilters": {
+      "source": "4b97b05ba50bb5e22999f7465be01a16fb5c5dfc",
+      "translation": "bea007bd7d0eeee1b103475b5b0d5ce1c034d736"
+    },
+    "views.advancedCalendar.viewOptions.calendarSubscriptions": {
+      "source": "9b99ca62a8c206aeef3199afeb8c2d6ea70c3c3a",
+      "translation": "2287d63241f1d8aa5eadaf7392c317a92cf7866d"
+    },
+    "views.advancedCalendar.viewOptions.timeEntries": {
+      "source": "2367ebf083af8b709878dfb6b2603726d99f1860",
+      "translation": "9f3a0aaed5229d42a6ca26cb8f080eab7938435f"
+    },
+    "views.advancedCalendar.viewOptions.timeblocks": {
+      "source": "2bbaa0ba121390600edaf00a9d6ddd701149646a",
+      "translation": "2a6eed6ff7e9158aaeb01e4edecb8f9cad77ab6c"
+    },
+    "views.advancedCalendar.viewOptions.scheduledDates": {
+      "source": "649cafef92532ca059c39cd54b95b865bc808505",
+      "translation": "c1a4728e83ab35ff2b84086e1ba8d7c2fc6279d2"
+    },
+    "views.advancedCalendar.viewOptions.dueDates": {
+      "source": "1e24cb73d2f5fd9a48411ccaeb58088c38d0e677",
+      "translation": "7b83dfd5f7b333f1af13708f38d4bb811d8f79e5"
+    },
+    "views.advancedCalendar.viewOptions.allDaySlot": {
+      "source": "e8ef14f3ed7f630bde84272df46b8a9c21817a4a",
+      "translation": "50178469e3056dce733fca656cdfa80f2141df9c"
+    },
+    "views.advancedCalendar.viewOptions.scheduledTasks": {
+      "source": "417b1aedac957bc15982e560e5edb0e77e595174",
+      "translation": "d883727e3dcd5e83955521eb556d1afa126737d5"
+    },
+    "views.advancedCalendar.viewOptions.recurringTasks": {
+      "source": "55fca782e4e70a77c4ea8e0cde12fa8e34a66fd5",
+      "translation": "77c4460b544a9124d89441d892cbf8507bc65679"
+    },
+    "views.advancedCalendar.buttons.refresh": {
+      "source": "56e3badc4e6c5cc95e0ea5a9a878b9bd09f319d4",
+      "translation": "d9db02d07adb1f8ac772b955da9cb883381918fd"
+    },
+    "views.advancedCalendar.buttons.refreshHint": {
+      "source": "8782c944728c04072190e694667351c7e66a3453",
+      "translation": "771382412d241208363aa7ba8da7f5da76f5a0bc"
+    },
+    "views.advancedCalendar.notices.icsServiceNotAvailable": {
+      "source": "23e97cd33f97a443133685a5e2a46690ae9c98b2",
+      "translation": "35c6d16ea4d192552999a361ef6cac15e59def34"
+    },
+    "views.advancedCalendar.notices.calendarRefreshedAll": {
+      "source": "86a603b25bbf73b2583b74aed13b76ee62ff49e2",
+      "translation": "12438646064c25c583a055935f75223c176c373b"
+    },
+    "views.advancedCalendar.notices.refreshFailed": {
+      "source": "592a19ff0403951ace3cff938ed7d5205a9fd7f6",
+      "translation": "ce9020733fd0027832c5b2982099e3a10d08ea34"
+    },
+    "views.advancedCalendar.notices.timeblockSpecificTime": {
+      "source": "59875e6bb4c37d603251eef5c4ef092e2f866a40",
+      "translation": "d31e61032fa5d3aec05d0f7199b886215a137c24"
+    },
+    "views.advancedCalendar.notices.timeblockMoved": {
+      "source": "a5018dd2670d617d7bcf30c6ecda28507ca01ef5",
+      "translation": "68dda834caf9555f154a3fe19d422b98499b5b2f"
+    },
+    "views.advancedCalendar.notices.timeblockUpdated": {
+      "source": "c6a22117ac857d272eb4d8352f9b0056d5180af4",
+      "translation": "2f31bf54529d8fb3bbe1320d3516c1ad8c92b20a"
+    },
+    "views.advancedCalendar.notices.timeblockMoveFailed": {
+      "source": "52440e4e251894bd845692b5fc3fba88b0087e0e",
+      "translation": "142cddc7babb0c8a0872225e0d4c5ea12bffafff"
+    },
+    "views.advancedCalendar.notices.timeblockResized": {
+      "source": "4a72e2295f6022af16a6a7db96f8a3dfd68ba435",
+      "translation": "31bd73132a9342a3dbaa41129bee73d5484fdc96"
+    },
+    "views.advancedCalendar.notices.timeblockResizeFailed": {
+      "source": "4f59f13365a384e5e61748ffb8f176300e3f94a4",
+      "translation": "7e907a03e10c3f58aa7ebf298fa8e49d1c240d46"
+    },
+    "views.advancedCalendar.notices.taskScheduled": {
+      "source": "3c3d491d54f4aa7dac1ac6b3047775211fb6d4ed",
+      "translation": "bd27817443fe6f910af56ed80e5e2415ae3c2cd8"
+    },
+    "views.advancedCalendar.notices.scheduleTaskFailed": {
+      "source": "73ddf3c08fb02842751fc7f43da61c25ee20fbe6",
+      "translation": "ea2f64dc1834dd63aa96784458043c104d6fa6a1"
+    },
+    "views.advancedCalendar.notices.endTimeAfterStart": {
+      "source": "468339327f19d1060b77fff4957224707e821025",
+      "translation": "4d7321a1aebd03a48a0b56889ac9be64c8cf5ed5"
+    },
+    "views.advancedCalendar.notices.timeEntryNotFound": {
+      "source": "9f67e05e6524702ffddaa0f901aef7530233de75",
+      "translation": "707d253ee8b2e3924831af92d680f57e11e260cd"
+    },
+    "views.advancedCalendar.notices.timeEntryDeleted": {
+      "source": "914de749024db319c11a41942dd0ef811daf7a1e",
+      "translation": "4c3668840a00af0968cc8da92b23ea32216a4f2a"
+    },
+    "views.advancedCalendar.notices.deleteTimeEntryFailed": {
+      "source": "0b94f0d5614d275e95d3d6c6758e5eef650ca7eb",
+      "translation": "e5df00c675d1fa4d92fe742a023f928ee05e24d8"
+    },
+    "views.advancedCalendar.timeEntry.estimatedSuffix": {
+      "source": "781012cf77ddb2bda8f753acb966b20ceb58401b",
+      "translation": "3d7cd4cc3a2251452eabd6ed6c5be819ae89aa61"
+    },
+    "views.advancedCalendar.timeEntry.trackedSuffix": {
+      "source": "4c54cc4d8b2e8d1062d92fad1ad9389fbe33c1ae",
+      "translation": "fe7cf6418c2e11dc0bd5c47ca4bf5d7fb518af36"
+    },
+    "views.advancedCalendar.timeEntry.recurringPrefix": {
+      "source": "c3bd7a97068e03157188fdabd053274e5a615ae0",
+      "translation": "a9cbff68a34ea56fe2b83d75221b07d04431eb08"
+    },
+    "views.advancedCalendar.timeEntry.completedPrefix": {
+      "source": "9eb7ebd9c53ce14af025a3731610e1217244b380",
+      "translation": "886556b844ad628bf72491209c1e20304e58c722"
+    },
+    "views.advancedCalendar.timeEntry.createdPrefix": {
+      "source": "e09271eeb7ec2f4aadefc9b4ea851f1e7a1c6a45",
+      "translation": "3be32b832b10b3860230b86d17499cb1c268e2c3"
+    },
+    "views.advancedCalendar.timeEntry.modifiedPrefix": {
+      "source": "74cc96092fb742901ea283cf5ad84222d5797570",
+      "translation": "4aefc3c8ff25c69f6a1202f1c84fba4d878a1294"
+    },
+    "views.advancedCalendar.timeEntry.duePrefix": {
+      "source": "29f9b627bf05896ea5c9c2271e2007691998e942",
+      "translation": "f285c6438261ba6033c2f6679c5ddde3c168a704"
+    },
+    "views.advancedCalendar.timeEntry.scheduledPrefix": {
+      "source": "9a2c5f2ac079858ab1b707a5660739e0c3d39f01",
+      "translation": "6aaf50beca3c9b9e1dab3d258a07a1a5d7419cda"
+    },
+    "views.advancedCalendar.contextMenus.openTask": {
+      "source": "a1f1752a56b277c54c186afbdf4829b4b8109bf0",
+      "translation": "3d5d5438b047fb75e4c339fa9e2be75eab079d8e"
+    },
+    "views.advancedCalendar.contextMenus.deleteTimeEntry": {
+      "source": "a8a028ddc7caeff05f6193ed5b5a51a34b963fe0",
+      "translation": "fb0d10093c840ed5ad8373e1c886624dd971587d"
+    },
+    "views.advancedCalendar.contextMenus.deleteTimeEntryTitle": {
+      "source": "c3ee9c29bbc9347f89084e07518ce64c17037ecf",
+      "translation": "fb0d10093c840ed5ad8373e1c886624dd971587d"
+    },
+    "views.advancedCalendar.contextMenus.deleteTimeEntryConfirm": {
+      "source": "fbefc6e49effaf889eb5c56ae48d2f2a1dc0355f",
+      "translation": "168e83f356ba01b2affc1b31068aa779380d7abc"
+    },
+    "views.advancedCalendar.contextMenus.deleteButton": {
+      "source": "f6fdbe48dc54dd86f63097a03bd24094dedd713a",
+      "translation": "5cbdf1fd708232abb78ea2f8bc3cbfd907573b43"
+    },
+    "views.advancedCalendar.contextMenus.cancelButton": {
+      "source": "77dfd2135f4db726c47299bb55be26f7f4525a46",
+      "translation": "269b0f92e460f3dd51ddf582098d0a998d525974"
+    },
+    "views.basesCalendar.title": {
+      "source": "adc89f488953710c9133a9451e24713baabe9e88",
+      "translation": "9615f4f7235e90df0131c1af2be22f5e4cb8bf45"
+    },
+    "views.basesCalendar.today": {
+      "source": "24345a14377fd821d3932f4e82f6431640955b0b",
+      "translation": "574cd4fb795bbf0b38d31b2edd3860f822be0c1c"
+    },
+    "views.basesCalendar.buttonText.month": {
+      "source": "c63ae6dd4fc9f9dda66970e827d13f7c73fe841c",
+      "translation": "d9b59879f3b83656682a13244a4690ff63728156"
+    },
+    "views.basesCalendar.buttonText.week": {
+      "source": "e2415cb7f63df0c9de23362326ad3c37a9adfc96",
+      "translation": "c7803dadcdd4849e6de2b57776aad676608f7d79"
+    },
+    "views.basesCalendar.buttonText.day": {
+      "source": "50c9e8d5fc98727b4bbc93cf5d64a68db647f04f",
+      "translation": "15917f3b32616f3c61f1bd69a435a449c35fa12d"
+    },
+    "views.basesCalendar.buttonText.year": {
+      "source": "23eb4d3f4155395a74e9d534f97ff4c1908f5aac",
+      "translation": "6f14c2641c259cd65bcfe5ba57a7a0aa34468fe7"
+    },
+    "views.basesCalendar.buttonText.list": {
+      "source": "d160e0986aca4714714a16f29ec605af90be704d",
+      "translation": "8dd9980a93bd0b24e365d70f9d0c4a869dc60c31"
+    },
+    "views.basesCalendar.buttonText.customDays": {
+      "source": "aa73278ad78de284702c875cbe2d73ccb8f9c5d3",
+      "translation": "0753dde3fefe6f6187fc84f9baa52a674c1fe120"
+    },
+    "views.basesCalendar.errors.failedToInitialize": {
+      "source": "72aed61f75cf862170b7a47f054f2ded50802aa7",
+      "translation": "8996472ca92cacb8d5aec59fc20b468e99db965a"
+    },
     "views.kanban.title": {
       "source": "3895546730917a6946acbef9a935ec44eb167ab7",
       "translation": "aac432e010c04301f12f69c499d0dab775dccaea"
@@ -17023,6 +17907,22 @@
     "views.stats.filters.minTime": {
       "source": "77f4b7a081b20f78557dd404e14d91b89b52a27c",
       "translation": "7deced4ee8b6e75d5dcafff58c7bd89905c98fd6"
+    },
+    "views.releaseNotes.title": {
+      "source": "5939771f391859041bc57e5e05b04235b1ef8ee7",
+      "translation": "b04d2e20a60a122b2f4926df86d88940f3050b39"
+    },
+    "views.releaseNotes.header": {
+      "source": "5939771f391859041bc57e5e05b04235b1ef8ee7",
+      "translation": "b04d2e20a60a122b2f4926df86d88940f3050b39"
+    },
+    "views.releaseNotes.viewAllLink": {
+      "source": "b37e5d2fb2faa630817557713df6363f4bd0f5cc",
+      "translation": "968c8961a28e089f98db843076f0e224b4770f94"
+    },
+    "views.releaseNotes.starMessage": {
+      "source": "de98980ccdae9c93e30d1172d4c15c059ea0508c",
+      "translation": "e3b958998079c079c491b83f4f167887d8ba3c01"
     },
     "settings.tabs.general": {
       "source": "9239ee2cda84eca4c3440e2a7b50148af67da3d4",
@@ -17804,6 +18704,10 @@
       "source": "4ff367979f5bdb70f928733dda339ca81435c4b1",
       "translation": "2bb6adcc292c5961c3bd4b7039b088a5aef92768"
     },
+    "settings.general.frontmatter.header": null,
+    "settings.general.frontmatter.description": null,
+    "settings.general.frontmatter.useMarkdownLinks.name": null,
+    "settings.general.frontmatter.useMarkdownLinks.description": null,
     "settings.general.taskInteraction.header": {
       "source": "a8194c053a4f989c874659b7d4a0e99f5a4a3df5",
       "translation": "b23138923158d6981b28c676c475f4d2d9018124"
@@ -19874,6 +20778,10 @@
       "source": "3f3714587b4802efeb6baf380a59615b8faf0c10",
       "translation": "4f7b9505464a8b039fee24745afe2a1c951b81d3"
     },
+    "commands.viewReleaseNotes": {
+      "source": "04c2072af97cf70c22fbf9efa9b62eb2574d23d6",
+      "translation": "2add1152032ee15c68c3fc05a7923fc50d2d0c31"
+    },
     "modals.task.titlePlaceholder": {
       "source": "c8196f1d1039c2fb290add52ee990c571173d6f1",
       "translation": "0e65840f941f2c5e030cf553e4e5a3cc315fe73d"
@@ -21196,6 +22104,10 @@
       "source": "bf2839903d40700843ee6d42ee363cd98f74dfd5",
       "translation": "e11fa97001148e02b45549c6225f928c272a8a2f"
     },
+    "ui.propertyEventCard.unknownFile": {
+      "source": "b05d96bfbcef633c0d11626390d994c13bbf58d0",
+      "translation": "7e26218ee6c52bb6cb196956d6eb921ef274b02b"
+    },
     "ui.filterHeading.allViewName": {
       "source": "6a72085653e4c5be8c7640c868ef787cbcf063d1",
       "translation": "c15ccc4dc7402834fbb2a008be5ab901ff3114ed"
@@ -22135,6 +23047,206 @@
       "source": "c7c0400a48b0a60163285b5a39460bd17d8f40f9",
       "translation": "841de01ceebc15f8de562f8ba5798e295753568f"
     },
+    "views.advancedCalendar.filters.showFilters": {
+      "source": "b1ad23eb8650c000bf826d5bfa41ddd8709e9096",
+      "translation": "1a8f48c8c7dd4a6dc8168def67eee95176f5f8ae"
+    },
+    "views.advancedCalendar.filters.hideFilters": {
+      "source": "4b97b05ba50bb5e22999f7465be01a16fb5c5dfc",
+      "translation": "a09e4e4ea8d92426e0e80d347acf744c30e86506"
+    },
+    "views.advancedCalendar.viewOptions.calendarSubscriptions": {
+      "source": "9b99ca62a8c206aeef3199afeb8c2d6ea70c3c3a",
+      "translation": "e08ff3f6002d6014918a28e1ab5af7fc24dd7e1a"
+    },
+    "views.advancedCalendar.viewOptions.timeEntries": {
+      "source": "2367ebf083af8b709878dfb6b2603726d99f1860",
+      "translation": "f1cdef312ff54108c88b1039ce50bba3d97a0490"
+    },
+    "views.advancedCalendar.viewOptions.timeblocks": {
+      "source": "2bbaa0ba121390600edaf00a9d6ddd701149646a",
+      "translation": "e46ecb25e920daac8f7e82c77eed24d279ef49a4"
+    },
+    "views.advancedCalendar.viewOptions.scheduledDates": {
+      "source": "649cafef92532ca059c39cd54b95b865bc808505",
+      "translation": "0d1bbf698dac9df28680ece39aba6a56ba5b5578"
+    },
+    "views.advancedCalendar.viewOptions.dueDates": {
+      "source": "1e24cb73d2f5fd9a48411ccaeb58088c38d0e677",
+      "translation": "2c31cf2fe7fe24a77cff22723edbd2a7de9a2930"
+    },
+    "views.advancedCalendar.viewOptions.allDaySlot": {
+      "source": "e8ef14f3ed7f630bde84272df46b8a9c21817a4a",
+      "translation": "a8ba853ec82923cb8666ca681224f136e99d8e8a"
+    },
+    "views.advancedCalendar.viewOptions.scheduledTasks": {
+      "source": "417b1aedac957bc15982e560e5edb0e77e595174",
+      "translation": "8ef8f04af41e685d8c99712b8746343838df931c"
+    },
+    "views.advancedCalendar.viewOptions.recurringTasks": {
+      "source": "55fca782e4e70a77c4ea8e0cde12fa8e34a66fd5",
+      "translation": "2790d0e72f91ee2a7b5a2e462de03080d55bfa58"
+    },
+    "views.advancedCalendar.buttons.refresh": {
+      "source": "56e3badc4e6c5cc95e0ea5a9a878b9bd09f319d4",
+      "translation": "c2f668e54fb6decffdd97e6cdc0f1884f8626fc2"
+    },
+    "views.advancedCalendar.buttons.refreshHint": {
+      "source": "8782c944728c04072190e694667351c7e66a3453",
+      "translation": "051df2fef0df30c10b5ad2452efc4755ef4630b9"
+    },
+    "views.advancedCalendar.notices.icsServiceNotAvailable": {
+      "source": "23e97cd33f97a443133685a5e2a46690ae9c98b2",
+      "translation": "207787476f7652f6fa9ddefe11721257bfd94b28"
+    },
+    "views.advancedCalendar.notices.calendarRefreshedAll": {
+      "source": "86a603b25bbf73b2583b74aed13b76ee62ff49e2",
+      "translation": "d32beaacf72fdc72b96d0ca91bb854fe1d5228ed"
+    },
+    "views.advancedCalendar.notices.refreshFailed": {
+      "source": "592a19ff0403951ace3cff938ed7d5205a9fd7f6",
+      "translation": "007281156bb87287601c5e186c9672c5ad3d5eb2"
+    },
+    "views.advancedCalendar.notices.timeblockSpecificTime": {
+      "source": "59875e6bb4c37d603251eef5c4ef092e2f866a40",
+      "translation": "2f32d2174847eca9752b98950bac56392a9a62e8"
+    },
+    "views.advancedCalendar.notices.timeblockMoved": {
+      "source": "a5018dd2670d617d7bcf30c6ecda28507ca01ef5",
+      "translation": "18d6a8fea7276a09107d546dd95d8da2d6f6f64a"
+    },
+    "views.advancedCalendar.notices.timeblockUpdated": {
+      "source": "c6a22117ac857d272eb4d8352f9b0056d5180af4",
+      "translation": "723dd36f1f71c2a9823d3538b1565b1a295b96db"
+    },
+    "views.advancedCalendar.notices.timeblockMoveFailed": {
+      "source": "52440e4e251894bd845692b5fc3fba88b0087e0e",
+      "translation": "98b0579301eb2245c7f16b14b579c7cf68dc7bab"
+    },
+    "views.advancedCalendar.notices.timeblockResized": {
+      "source": "4a72e2295f6022af16a6a7db96f8a3dfd68ba435",
+      "translation": "75f3551fa4cc9641b98115d667963a55a728ce16"
+    },
+    "views.advancedCalendar.notices.timeblockResizeFailed": {
+      "source": "4f59f13365a384e5e61748ffb8f176300e3f94a4",
+      "translation": "72ae3ee29edd49cffa771e522ca75a6448644e4d"
+    },
+    "views.advancedCalendar.notices.taskScheduled": {
+      "source": "3c3d491d54f4aa7dac1ac6b3047775211fb6d4ed",
+      "translation": "a1a50353e00e8bda62116c251849de8104fd6372"
+    },
+    "views.advancedCalendar.notices.scheduleTaskFailed": {
+      "source": "73ddf3c08fb02842751fc7f43da61c25ee20fbe6",
+      "translation": "ad6a074a8b5d9f0357c5e1db766646483624946e"
+    },
+    "views.advancedCalendar.notices.endTimeAfterStart": {
+      "source": "468339327f19d1060b77fff4957224707e821025",
+      "translation": "bde4c5551bf0c75e13fda227eb368c9496cd3857"
+    },
+    "views.advancedCalendar.notices.timeEntryNotFound": {
+      "source": "9f67e05e6524702ffddaa0f901aef7530233de75",
+      "translation": "5c60282fc5679c52ab895e3497c0ab2d6984dfc4"
+    },
+    "views.advancedCalendar.notices.timeEntryDeleted": {
+      "source": "914de749024db319c11a41942dd0ef811daf7a1e",
+      "translation": "bed1d6a5eb1668116e19b44093f6adfaafdc334d"
+    },
+    "views.advancedCalendar.notices.deleteTimeEntryFailed": {
+      "source": "0b94f0d5614d275e95d3d6c6758e5eef650ca7eb",
+      "translation": "d24d17a36fe421a53c6b0eb982ef080469863a8f"
+    },
+    "views.advancedCalendar.timeEntry.estimatedSuffix": {
+      "source": "781012cf77ddb2bda8f753acb966b20ceb58401b",
+      "translation": "3d89c4fdd30b4d539cd9ee5707b590d0af43d12e"
+    },
+    "views.advancedCalendar.timeEntry.trackedSuffix": {
+      "source": "4c54cc4d8b2e8d1062d92fad1ad9389fbe33c1ae",
+      "translation": "9b068efb1f10e2572416e68e80fa8f0f0b2637bb"
+    },
+    "views.advancedCalendar.timeEntry.recurringPrefix": {
+      "source": "c3bd7a97068e03157188fdabd053274e5a615ae0",
+      "translation": "9e6f7aee4e2f158dc2c69c56c2bef974dc4b62a9"
+    },
+    "views.advancedCalendar.timeEntry.completedPrefix": {
+      "source": "9eb7ebd9c53ce14af025a3731610e1217244b380",
+      "translation": "9b54b1c4fd4f33c34e2bcb75ad0877a09cc71a35"
+    },
+    "views.advancedCalendar.timeEntry.createdPrefix": {
+      "source": "e09271eeb7ec2f4aadefc9b4ea851f1e7a1c6a45",
+      "translation": "1d36f2bf7dbc95f1280347bddcfcc04f20f96498"
+    },
+    "views.advancedCalendar.timeEntry.modifiedPrefix": {
+      "source": "74cc96092fb742901ea283cf5ad84222d5797570",
+      "translation": "bcec3a9e19ebdb4c955c14ecd729e9ae2aa2d2e6"
+    },
+    "views.advancedCalendar.timeEntry.duePrefix": {
+      "source": "29f9b627bf05896ea5c9c2271e2007691998e942",
+      "translation": "79fd6d0c0bd6909d0a47ce20c97a89dfffceabd1"
+    },
+    "views.advancedCalendar.timeEntry.scheduledPrefix": {
+      "source": "9a2c5f2ac079858ab1b707a5660739e0c3d39f01",
+      "translation": "322afc4a037c0d6f1e2d8b6d266ed16ab2b5e514"
+    },
+    "views.advancedCalendar.contextMenus.openTask": {
+      "source": "a1f1752a56b277c54c186afbdf4829b4b8109bf0",
+      "translation": "605876302b1272b5090969de525ed827f05e556f"
+    },
+    "views.advancedCalendar.contextMenus.deleteTimeEntry": {
+      "source": "a8a028ddc7caeff05f6193ed5b5a51a34b963fe0",
+      "translation": "49775793d9c284e8b68bc20a84c2aee3e4a9ba85"
+    },
+    "views.advancedCalendar.contextMenus.deleteTimeEntryTitle": {
+      "source": "c3ee9c29bbc9347f89084e07518ce64c17037ecf",
+      "translation": "49775793d9c284e8b68bc20a84c2aee3e4a9ba85"
+    },
+    "views.advancedCalendar.contextMenus.deleteTimeEntryConfirm": {
+      "source": "fbefc6e49effaf889eb5c56ae48d2f2a1dc0355f",
+      "translation": "715baad5cdd4d3544e4794b6031a4c21f0bd5788"
+    },
+    "views.advancedCalendar.contextMenus.deleteButton": {
+      "source": "f6fdbe48dc54dd86f63097a03bd24094dedd713a",
+      "translation": "86ea33aef5e95d4fcc0f64369dd9a131a61638b8"
+    },
+    "views.advancedCalendar.contextMenus.cancelButton": {
+      "source": "77dfd2135f4db726c47299bb55be26f7f4525a46",
+      "translation": "0ec753be8df955a117404fb634b01b45eb386e2a"
+    },
+    "views.basesCalendar.title": {
+      "source": "adc89f488953710c9133a9451e24713baabe9e88",
+      "translation": "8b0f5da924ee528afebb5f83da437ad880501e6a"
+    },
+    "views.basesCalendar.today": {
+      "source": "24345a14377fd821d3932f4e82f6431640955b0b",
+      "translation": "5d5d2ea20a2583d5068219949a2230a19abff3b0"
+    },
+    "views.basesCalendar.buttonText.month": {
+      "source": "c63ae6dd4fc9f9dda66970e827d13f7c73fe841c",
+      "translation": "a32a511826932e4b92bf622848959d3eefafffa0"
+    },
+    "views.basesCalendar.buttonText.week": {
+      "source": "e2415cb7f63df0c9de23362326ad3c37a9adfc96",
+      "translation": "7773e6c6b383c7ac349c432d615027188d976850"
+    },
+    "views.basesCalendar.buttonText.day": {
+      "source": "50c9e8d5fc98727b4bbc93cf5d64a68db647f04f",
+      "translation": "008c6d39e16797e95b4507f146676cf77f67bb9f"
+    },
+    "views.basesCalendar.buttonText.year": {
+      "source": "23eb4d3f4155395a74e9d534f97ff4c1908f5aac",
+      "translation": "c43ed2c2722af04d2631d8f6809d2d75330961a7"
+    },
+    "views.basesCalendar.buttonText.list": {
+      "source": "d160e0986aca4714714a16f29ec605af90be704d",
+      "translation": "67bbe9f7599fe8bbcb9dbc99e2d436b254233966"
+    },
+    "views.basesCalendar.buttonText.customDays": {
+      "source": "aa73278ad78de284702c875cbe2d73ccb8f9c5d3",
+      "translation": "e9509356398612ae229f35f7002b841eff235692"
+    },
+    "views.basesCalendar.errors.failedToInitialize": {
+      "source": "72aed61f75cf862170b7a47f054f2ded50802aa7",
+      "translation": "b775775226912aa14595d222e9da19885a97fac4"
+    },
     "views.kanban.title": {
       "source": "3895546730917a6946acbef9a935ec44eb167ab7",
       "translation": "66309b671dfd51f036ed30a4c5c4bf369bb35286"
@@ -22402,6 +23514,22 @@
     "views.stats.filters.minTime": {
       "source": "77f4b7a081b20f78557dd404e14d91b89b52a27c",
       "translation": "a82231aecd1ee2ec08d32031cf19b6f6a4f2842e"
+    },
+    "views.releaseNotes.title": {
+      "source": "5939771f391859041bc57e5e05b04235b1ef8ee7",
+      "translation": "92e2d6dcf90925e3073f30916467f8d01ead921a"
+    },
+    "views.releaseNotes.header": {
+      "source": "5939771f391859041bc57e5e05b04235b1ef8ee7",
+      "translation": "92e2d6dcf90925e3073f30916467f8d01ead921a"
+    },
+    "views.releaseNotes.viewAllLink": {
+      "source": "b37e5d2fb2faa630817557713df6363f4bd0f5cc",
+      "translation": "4caaa179ece78972b5be06967cd5e5c37ee1d241"
+    },
+    "views.releaseNotes.starMessage": {
+      "source": "de98980ccdae9c93e30d1172d4c15c059ea0508c",
+      "translation": "c2f8b36f59bc9f660cf0c1bd566fde7f11490dd6"
     },
     "settings.tabs.general": {
       "source": "9239ee2cda84eca4c3440e2a7b50148af67da3d4",
@@ -23168,6 +24296,10 @@
       "source": "4ff367979f5bdb70f928733dda339ca81435c4b1",
       "translation": "4a6c60aef4be1329cd69b6137e9bdc046fda96e6"
     },
+    "settings.general.frontmatter.header": null,
+    "settings.general.frontmatter.description": null,
+    "settings.general.frontmatter.useMarkdownLinks.name": null,
+    "settings.general.frontmatter.useMarkdownLinks.description": null,
     "settings.general.taskInteraction.header": {
       "source": "a8194c053a4f989c874659b7d4a0e99f5a4a3df5",
       "translation": "83a4ef0c5d6972fcc165e451ce42dc6c996f1a85"
@@ -25226,6 +26358,10 @@
       "source": "3f3714587b4802efeb6baf380a59615b8faf0c10",
       "translation": "1ce699b6bccf33a45ff58320f4dfeb2593c3111e"
     },
+    "commands.viewReleaseNotes": {
+      "source": "04c2072af97cf70c22fbf9efa9b62eb2574d23d6",
+      "translation": "060c1aa179717a8ebedce8eeae250cf12307291d"
+    },
     "modals.task.titlePlaceholder": {
       "source": "c8196f1d1039c2fb290add52ee990c571173d6f1",
       "translation": "fb99b9f5be8916e4a7b038e3d1d9d9087f8a5653"
@@ -26623,6 +27759,10 @@
       "source": "bf2839903d40700843ee6d42ee363cd98f74dfd5",
       "translation": "7345eb158c9296fc17f6f07f6604cad6509fd3b1"
     },
+    "ui.propertyEventCard.unknownFile": {
+      "source": "b05d96bfbcef633c0d11626390d994c13bbf58d0",
+      "translation": "fb1c8a7e162f1c1f2b149a2832b180a6229cd87d"
+    },
     "ui.filterHeading.allViewName": {
       "source": "6a72085653e4c5be8c7640c868ef787cbcf063d1",
       "translation": "fd08da7a630b6bbedbbb1a333d65423cbfdb2428"
@@ -27562,6 +28702,206 @@
       "source": "c7c0400a48b0a60163285b5a39460bd17d8f40f9",
       "translation": "d30e47d9102fbca9610686d941a97b7796ee2275"
     },
+    "views.advancedCalendar.filters.showFilters": {
+      "source": "b1ad23eb8650c000bf826d5bfa41ddd8709e9096",
+      "translation": "2543e66683f8c78d2f043d52b0856c356b7b707b"
+    },
+    "views.advancedCalendar.filters.hideFilters": {
+      "source": "4b97b05ba50bb5e22999f7465be01a16fb5c5dfc",
+      "translation": "4d481c666a97903f5daef2666086973f077501da"
+    },
+    "views.advancedCalendar.viewOptions.calendarSubscriptions": {
+      "source": "9b99ca62a8c206aeef3199afeb8c2d6ea70c3c3a",
+      "translation": "9dab5527fc38aa92f2fb093e2ac87f54532d5788"
+    },
+    "views.advancedCalendar.viewOptions.timeEntries": {
+      "source": "2367ebf083af8b709878dfb6b2603726d99f1860",
+      "translation": "1254bad3d3012ef98f6182da2c3c618deab2c8f3"
+    },
+    "views.advancedCalendar.viewOptions.timeblocks": {
+      "source": "2bbaa0ba121390600edaf00a9d6ddd701149646a",
+      "translation": "93fcff18f5080cf382e59bdfe14fbd42205ad295"
+    },
+    "views.advancedCalendar.viewOptions.scheduledDates": {
+      "source": "649cafef92532ca059c39cd54b95b865bc808505",
+      "translation": "d0f48e113d6802fdb4c3bbeda77a95fa817230ea"
+    },
+    "views.advancedCalendar.viewOptions.dueDates": {
+      "source": "1e24cb73d2f5fd9a48411ccaeb58088c38d0e677",
+      "translation": "9b3177f0b7007c72e0693d40d7eed5110e679a0d"
+    },
+    "views.advancedCalendar.viewOptions.allDaySlot": {
+      "source": "e8ef14f3ed7f630bde84272df46b8a9c21817a4a",
+      "translation": "e617104c2c1fcd17124c1567f8cdc2e8248822fc"
+    },
+    "views.advancedCalendar.viewOptions.scheduledTasks": {
+      "source": "417b1aedac957bc15982e560e5edb0e77e595174",
+      "translation": "d065d435b5058ec8bedac2662e700bd46ab9810e"
+    },
+    "views.advancedCalendar.viewOptions.recurringTasks": {
+      "source": "55fca782e4e70a77c4ea8e0cde12fa8e34a66fd5",
+      "translation": "a494fec9acc52ee5b25f67d1af09d93e12d7fc6b"
+    },
+    "views.advancedCalendar.buttons.refresh": {
+      "source": "56e3badc4e6c5cc95e0ea5a9a878b9bd09f319d4",
+      "translation": "38108eaa1d32994acea9c1bfccdd5ce955541a8f"
+    },
+    "views.advancedCalendar.buttons.refreshHint": {
+      "source": "8782c944728c04072190e694667351c7e66a3453",
+      "translation": "2889906ea8b1686d18d670a6e2dbf41eec5555e7"
+    },
+    "views.advancedCalendar.notices.icsServiceNotAvailable": {
+      "source": "23e97cd33f97a443133685a5e2a46690ae9c98b2",
+      "translation": "53fe2c5f1912e0eddd6b816d82d2a414a67a8401"
+    },
+    "views.advancedCalendar.notices.calendarRefreshedAll": {
+      "source": "86a603b25bbf73b2583b74aed13b76ee62ff49e2",
+      "translation": "c0bc9c9b55a3335d73522e4bca25ec91d8cc5def"
+    },
+    "views.advancedCalendar.notices.refreshFailed": {
+      "source": "592a19ff0403951ace3cff938ed7d5205a9fd7f6",
+      "translation": "1b8430af8fbde30186b96f40fcd79205b545c1a1"
+    },
+    "views.advancedCalendar.notices.timeblockSpecificTime": {
+      "source": "59875e6bb4c37d603251eef5c4ef092e2f866a40",
+      "translation": "b7b48cf66caa954b0739866b98283432fbc8559d"
+    },
+    "views.advancedCalendar.notices.timeblockMoved": {
+      "source": "a5018dd2670d617d7bcf30c6ecda28507ca01ef5",
+      "translation": "998cd0938a2bf2bec91169844afb39ad40dd0d6d"
+    },
+    "views.advancedCalendar.notices.timeblockUpdated": {
+      "source": "c6a22117ac857d272eb4d8352f9b0056d5180af4",
+      "translation": "45838ed74e0b35099ec00bc393bf11383a9d807b"
+    },
+    "views.advancedCalendar.notices.timeblockMoveFailed": {
+      "source": "52440e4e251894bd845692b5fc3fba88b0087e0e",
+      "translation": "b41812c8574224a05fe7f5adf4dff2d269fc46f5"
+    },
+    "views.advancedCalendar.notices.timeblockResized": {
+      "source": "4a72e2295f6022af16a6a7db96f8a3dfd68ba435",
+      "translation": "752291fa3cbf1e9885896ac91e3cedf5ecbec13f"
+    },
+    "views.advancedCalendar.notices.timeblockResizeFailed": {
+      "source": "4f59f13365a384e5e61748ffb8f176300e3f94a4",
+      "translation": "b17adfe8dfc68cea93bf3a40da21a6eaa419dc0e"
+    },
+    "views.advancedCalendar.notices.taskScheduled": {
+      "source": "3c3d491d54f4aa7dac1ac6b3047775211fb6d4ed",
+      "translation": "b29d876ab9866942890826dbe96b2ccdd1d8536e"
+    },
+    "views.advancedCalendar.notices.scheduleTaskFailed": {
+      "source": "73ddf3c08fb02842751fc7f43da61c25ee20fbe6",
+      "translation": "aa334eb7f562aa01651598892cc6ba55c1b04819"
+    },
+    "views.advancedCalendar.notices.endTimeAfterStart": {
+      "source": "468339327f19d1060b77fff4957224707e821025",
+      "translation": "baaf9dd038d2a33f9d7c8742b20edfe37d968633"
+    },
+    "views.advancedCalendar.notices.timeEntryNotFound": {
+      "source": "9f67e05e6524702ffddaa0f901aef7530233de75",
+      "translation": "29320fd87f800b7083d8e1781fe37795857bbc9f"
+    },
+    "views.advancedCalendar.notices.timeEntryDeleted": {
+      "source": "914de749024db319c11a41942dd0ef811daf7a1e",
+      "translation": "5d36e3f0211bc32804502530ee00fa2c7f8b1d9a"
+    },
+    "views.advancedCalendar.notices.deleteTimeEntryFailed": {
+      "source": "0b94f0d5614d275e95d3d6c6758e5eef650ca7eb",
+      "translation": "0c1163ff47cd8d0af1861fa6474006ce54621636"
+    },
+    "views.advancedCalendar.timeEntry.estimatedSuffix": {
+      "source": "781012cf77ddb2bda8f753acb966b20ceb58401b",
+      "translation": "545d6d310e96fe45d34b10bb9e44e178bfff05db"
+    },
+    "views.advancedCalendar.timeEntry.trackedSuffix": {
+      "source": "4c54cc4d8b2e8d1062d92fad1ad9389fbe33c1ae",
+      "translation": "d94731eaa902a3a34df74ea724c3e37f3008f756"
+    },
+    "views.advancedCalendar.timeEntry.recurringPrefix": {
+      "source": "c3bd7a97068e03157188fdabd053274e5a615ae0",
+      "translation": "a4896f957191c02caba8120918a85ca547118f25"
+    },
+    "views.advancedCalendar.timeEntry.completedPrefix": {
+      "source": "9eb7ebd9c53ce14af025a3731610e1217244b380",
+      "translation": "4fc47c7b6e532be9bca0e26fb998757773d99999"
+    },
+    "views.advancedCalendar.timeEntry.createdPrefix": {
+      "source": "e09271eeb7ec2f4aadefc9b4ea851f1e7a1c6a45",
+      "translation": "cefcfbea2c53e00aec22833564a61ee201378591"
+    },
+    "views.advancedCalendar.timeEntry.modifiedPrefix": {
+      "source": "74cc96092fb742901ea283cf5ad84222d5797570",
+      "translation": "32200091124490ac0f9b658c4816b27a77beb5d6"
+    },
+    "views.advancedCalendar.timeEntry.duePrefix": {
+      "source": "29f9b627bf05896ea5c9c2271e2007691998e942",
+      "translation": "464c21c0a961f85dedad949039023ce1dd6c58a7"
+    },
+    "views.advancedCalendar.timeEntry.scheduledPrefix": {
+      "source": "9a2c5f2ac079858ab1b707a5660739e0c3d39f01",
+      "translation": "664548abfd1fec042494639714994936e8cf534a"
+    },
+    "views.advancedCalendar.contextMenus.openTask": {
+      "source": "a1f1752a56b277c54c186afbdf4829b4b8109bf0",
+      "translation": "418d5e2cca35020d73fccc67bbf38c04abc4fee8"
+    },
+    "views.advancedCalendar.contextMenus.deleteTimeEntry": {
+      "source": "a8a028ddc7caeff05f6193ed5b5a51a34b963fe0",
+      "translation": "be6f44e21b79482dcdd357428dad158a6e043824"
+    },
+    "views.advancedCalendar.contextMenus.deleteTimeEntryTitle": {
+      "source": "c3ee9c29bbc9347f89084e07518ce64c17037ecf",
+      "translation": "be6f44e21b79482dcdd357428dad158a6e043824"
+    },
+    "views.advancedCalendar.contextMenus.deleteTimeEntryConfirm": {
+      "source": "fbefc6e49effaf889eb5c56ae48d2f2a1dc0355f",
+      "translation": "c51fb2974da5495db61814af51db5d806dcc53f9"
+    },
+    "views.advancedCalendar.contextMenus.deleteButton": {
+      "source": "f6fdbe48dc54dd86f63097a03bd24094dedd713a",
+      "translation": "3755f56f2f83187613e709269508ddfdb8018b9c"
+    },
+    "views.advancedCalendar.contextMenus.cancelButton": {
+      "source": "77dfd2135f4db726c47299bb55be26f7f4525a46",
+      "translation": "4d0b4688c787cf6c33c744bdad5f7d7f56b0feee"
+    },
+    "views.basesCalendar.title": {
+      "source": "adc89f488953710c9133a9451e24713baabe9e88",
+      "translation": "ad1212dc5de5f512e75c427ff71f6514ddf5ed92"
+    },
+    "views.basesCalendar.today": {
+      "source": "24345a14377fd821d3932f4e82f6431640955b0b",
+      "translation": "17e83cc25e229b05c4c91b60fba8d5cc7c0ef931"
+    },
+    "views.basesCalendar.buttonText.month": {
+      "source": "c63ae6dd4fc9f9dda66970e827d13f7c73fe841c",
+      "translation": "d9b59879f3b83656682a13244a4690ff63728156"
+    },
+    "views.basesCalendar.buttonText.week": {
+      "source": "e2415cb7f63df0c9de23362326ad3c37a9adfc96",
+      "translation": "451b86707b5a9f672141e2eed24e4f7ebda794d6"
+    },
+    "views.basesCalendar.buttonText.day": {
+      "source": "50c9e8d5fc98727b4bbc93cf5d64a68db647f04f",
+      "translation": "15917f3b32616f3c61f1bd69a435a449c35fa12d"
+    },
+    "views.basesCalendar.buttonText.year": {
+      "source": "23eb4d3f4155395a74e9d534f97ff4c1908f5aac",
+      "translation": "6f14c2641c259cd65bcfe5ba57a7a0aa34468fe7"
+    },
+    "views.basesCalendar.buttonText.list": {
+      "source": "d160e0986aca4714714a16f29ec605af90be704d",
+      "translation": "d46f82fdf0737a98342dd7ecacdf6d14e30ac868"
+    },
+    "views.basesCalendar.buttonText.customDays": {
+      "source": "aa73278ad78de284702c875cbe2d73ccb8f9c5d3",
+      "translation": "5c5b4fd5ba33a15949b29d65fe325a8bbb0b476b"
+    },
+    "views.basesCalendar.errors.failedToInitialize": {
+      "source": "72aed61f75cf862170b7a47f054f2ded50802aa7",
+      "translation": "c09c55d1f1ee55f4530f43f5f441294740df6799"
+    },
     "views.kanban.title": {
       "source": "3895546730917a6946acbef9a935ec44eb167ab7",
       "translation": "9dc1a19f2c82a4eb6d2adaba70db67268335ee34"
@@ -27829,6 +29169,22 @@
     "views.stats.filters.minTime": {
       "source": "77f4b7a081b20f78557dd404e14d91b89b52a27c",
       "translation": "227f72b88ebec3e37158e855352776b82662a27c"
+    },
+    "views.releaseNotes.title": {
+      "source": "5939771f391859041bc57e5e05b04235b1ef8ee7",
+      "translation": "f2780c1c443bdaf2d9eba3d81667be844efaf310"
+    },
+    "views.releaseNotes.header": {
+      "source": "5939771f391859041bc57e5e05b04235b1ef8ee7",
+      "translation": "f2780c1c443bdaf2d9eba3d81667be844efaf310"
+    },
+    "views.releaseNotes.viewAllLink": {
+      "source": "b37e5d2fb2faa630817557713df6363f4bd0f5cc",
+      "translation": "60abcbc397bbac657dcc27c7bb37870086d7dd18"
+    },
+    "views.releaseNotes.starMessage": {
+      "source": "de98980ccdae9c93e30d1172d4c15c059ea0508c",
+      "translation": "68e964844caa7bf91e74ffd31d2121483f126d1c"
     },
     "settings.tabs.general": {
       "source": "9239ee2cda84eca4c3440e2a7b50148af67da3d4",
@@ -28610,6 +29966,10 @@
       "source": "4ff367979f5bdb70f928733dda339ca81435c4b1",
       "translation": "4c9da6382b78df24efdf07f811d8cf02f1cec7fe"
     },
+    "settings.general.frontmatter.header": null,
+    "settings.general.frontmatter.description": null,
+    "settings.general.frontmatter.useMarkdownLinks.name": null,
+    "settings.general.frontmatter.useMarkdownLinks.description": null,
     "settings.general.taskInteraction.header": {
       "source": "a8194c053a4f989c874659b7d4a0e99f5a4a3df5",
       "translation": "a88718a01e7ff2ad9d96ca1f171d99d9319307a2"
@@ -30671,6 +32031,10 @@
       "source": "3f3714587b4802efeb6baf380a59615b8faf0c10",
       "translation": "f4fa2d18fff78b531c07f83bbc7753c26dbc05d9"
     },
+    "commands.viewReleaseNotes": {
+      "source": "04c2072af97cf70c22fbf9efa9b62eb2574d23d6",
+      "translation": "524c479f706f46cb1f6e70be920671d9ed610e5c"
+    },
     "modals.task.titlePlaceholder": {
       "source": "c8196f1d1039c2fb290add52ee990c571173d6f1",
       "translation": "37d9b0a0a59872345ce5e206027f8eccf793e6fa"
@@ -31992,6 +33356,10 @@
     "ui.taskCard.blockingLoadError": {
       "source": "bf2839903d40700843ee6d42ee363cd98f74dfd5",
       "translation": "463f189a0eae0a29eda0fa362b5ae36f65de1d00"
+    },
+    "ui.propertyEventCard.unknownFile": {
+      "source": "b05d96bfbcef633c0d11626390d994c13bbf58d0",
+      "translation": "9aba7b5e823e0ede4fd54f26dea7548edd2cca01"
     },
     "ui.filterHeading.allViewName": {
       "source": "6a72085653e4c5be8c7640c868ef787cbcf063d1",
