@@ -20,6 +20,36 @@ export class ICSSubscriptionService extends EventEmitter {
 		return this.plugin.i18n.translate(key, variables);
 	}
 
+	/**
+	 * Converts an ICAL.Time object to an ISO string with proper timezone handling.
+	 *
+	 * For timed events, uses toUnixTime() which correctly handles all timezones.
+	 * For all-day events, preserves the date without time conversion.
+	 *
+	 * This fixes issues with:
+	 * - Non-IANA timezones (e.g., TZID=Zurich without VTIMEZONE)
+	 * - Floating time events
+	 * - Outlook/Exchange timezone formats
+	 */
+	private icalTimeToISOString(icalTime: ICAL.Time): string {
+		// For all-day events, preserve the date without time
+		if (icalTime.isDate) {
+			return new Date(Date.UTC(
+				icalTime.year,
+				icalTime.month - 1,
+				icalTime.day
+			)).toISOString();
+		}
+
+		// For timed events, use toUnixTime() which correctly converts to UTC
+		// This handles all timezone cases properly, including:
+		// - Events with proper VTIMEZONE definitions
+		// - Events with non-IANA TZIDs (treated as floating)
+		// - Floating time events
+		const unixTime = icalTime.toUnixTime();
+		return new Date(unixTime * 1000).toISOString();
+	}
+
 	constructor(plugin: TaskNotesPlugin) {
 		super();
 		this.plugin = plugin;
@@ -316,8 +346,8 @@ export class ICSSubscriptionService extends EventEmitter {
 					}
 
 					const isAllDay = startDate.isDate;
-					const startISO = startDate.toJSDate().toISOString();
-					const endISO = endDate ? endDate.toJSDate().toISOString() : undefined;
+					const startISO = this.icalTimeToISOString(startDate);
+					const endISO = endDate ? this.icalTimeToISOString(endDate) : undefined;
 
 					// Generate unique ID
 					const uid = event.uid || `${subscriptionId}-${events.length}`;
@@ -393,9 +423,9 @@ export class ICSSubscriptionService extends EventEmitter {
 										subscriptionId: subscriptionId,
 										title: modifiedEvent.summary || summary,
 										description: modifiedEvent.description || description,
-										start: modifiedStart.toJSDate().toISOString(),
+										start: this.icalTimeToISOString(modifiedStart),
 										end: modifiedEnd
-											? modifiedEnd.toJSDate().toISOString()
+											? this.icalTimeToISOString(modifiedEnd)
 											: undefined,
 										allDay: modifiedStart.isDate,
 										location: modifiedEvent.location || location,
@@ -404,16 +434,14 @@ export class ICSSubscriptionService extends EventEmitter {
 								}
 							} else {
 								// Use the original recurring event instance
-								const instanceStart = occurrence.toJSDate().toISOString();
+								const instanceStart = this.icalTimeToISOString(occurrence);
 								let instanceEnd = endISO;
 
 								if (endDate && startDate) {
-									const duration =
-										endDate.toJSDate().getTime() -
-										startDate.toJSDate().getTime();
-									instanceEnd = new Date(
-										occurrence.toJSDate().getTime() + duration
-									).toISOString();
+									// Calculate duration using Unix timestamps for accuracy
+									const duration = endDate.toUnixTime() - startDate.toUnixTime();
+									const instanceEndTime = occurrence.toUnixTime() + duration;
+									instanceEnd = new Date(instanceEndTime * 1000).toISOString();
 								}
 
 								events.push({

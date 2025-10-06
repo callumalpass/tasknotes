@@ -102,6 +102,13 @@ Example:
   - Widget now renders correctly on startup without requiring workarounds
   - Thanks to @nightroman for reporting
 
+- (#781), (#841) Fixed ICS calendar events displaying incorrect times due to timezone conversion issues
+  - Events with non-IANA timezone identifiers (e.g., `TZID=Zurich` without VTIMEZONE) now display at correct local times
+  - Fixed Outlook/Exchange calendar events showing original timezone instead of user's local timezone
+  - Replaced unreliable `toJSDate()` conversion with `toUnixTime()` for accurate UTC timestamp handling
+  - Affects all ICS subscriptions including Infomaniak, Outlook, and other providers with non-standard timezone formats
+  - Thanks to @chrlaney for reporting and @wilf80 for detailed analysis
+
 - (#810) Fixed recurring tasks with overdue due dates disappearing from agenda view
   - Recurring tasks now check both `due` and `scheduled` dates for overdue status
   - Previously only `scheduled` was checked for recurring tasks, causing tasks with overdue `due` dates to be hidden
