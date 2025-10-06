@@ -18,7 +18,7 @@ import { getTodayLocal, normalizeCalendarBoundariesToUTC, parseDateToUTC, getTod
 import { generateCalendarEvents, CalendarEvent, generateTaskTooltip, applyRecurringTaskStyling, handleRecurringTaskDrop, getTargetDateForEvent, handleTimeblockCreation, handleTimeblockDrop, handleTimeblockResize, showTimeblockInfoModal, applyTimeblockStyling, generateTimeblockTooltip, handleDateTitleClick, addTaskHoverPreview, createICSEvent } from "./calendar-core";
 import { getBasesSortComparator } from "./sorting";
 import { TaskContextMenu } from "../components/TaskContextMenu";
-import { TFile } from "obsidian";
+import { Menu, TFile } from "obsidian";
 import { ICSEventInfoModal } from "../modals/ICSEventInfoModal";
 import { handleCalendarTaskClick } from "../utils/clickHandlers";
 import { createTaskCard } from "../ui/TaskCard";
@@ -554,6 +554,26 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 						},
 					});
 					contextMenu.show(e);
+				});
+			}
+
+			// Add context menu for property-based events (right-click)
+			if (eventType === "property-based" && arg.event.extendedProps.filePath) {
+				arg.el.addEventListener("contextmenu", (e: MouseEvent) => {
+					e.preventDefault();
+					e.stopPropagation();
+
+					const file = plugin.app.vault.getAbstractFileByPath(arg.event.extendedProps.filePath);
+
+					if (file instanceof TFile) {
+						const menu = new Menu();
+
+						// Trigger Obsidian's default file menu
+						plugin.app.workspace.trigger("file-menu", menu, file, "tasknotes-bases-calendar");
+
+						// Show menu at mouse position
+						menu.showAtPosition({ x: e.clientX, y: e.clientY });
+					}
 				});
 			}
 		};
