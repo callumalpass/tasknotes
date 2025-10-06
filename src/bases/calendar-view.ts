@@ -72,14 +72,15 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 		// Root container
 		const root = document.createElement("div");
 		root.className = "tn-bases-integration tasknotes-plugin advanced-calendar-view";
-		root.style.cssText = "height: 100%; display: flex; flex-direction: column;";
+		// For embedded views, use min-height to ensure calendar has dimensions, but don't force width
+		root.style.cssText = "min-height: 800px; height: 100%; display: flex; flex-direction: column;";
 		viewContainerEl.appendChild(root);
 		currentRoot = root;
 
 		// Calendar container
 		const calendarEl = document.createElement("div");
 		calendarEl.id = "bases-calendar";
-		calendarEl.style.cssText = "flex: 1; min-height: 0; overflow: auto;";
+		calendarEl.style.cssText = "flex: 1; min-height: 700px; overflow: auto;";
 		root.appendChild(calendarEl);
 
 		// Extract data items from Bases (public API 1.10.0+)
@@ -171,8 +172,23 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 					}
 
 					const ctx = currentViewContext || controller;
-					const startDatePropertyId = ctx?.config?.getAsPropertyId?.('startDateProperty');
-					const endDatePropertyId = ctx?.config?.getAsPropertyId?.('endDateProperty');
+
+					// Get property IDs with fallback for embedded views
+					let startDatePropertyId = ctx?.config?.getAsPropertyId?.('startDateProperty');
+					if (!startDatePropertyId) {
+						const rawValue = ctx?.config?.get('startDateProperty') as string;
+						if (rawValue && typeof rawValue === 'string') {
+							startDatePropertyId = rawValue as any;
+						}
+					}
+
+					let endDatePropertyId = ctx?.config?.getAsPropertyId?.('endDateProperty');
+					if (!endDatePropertyId) {
+						const rawValue = ctx?.config?.get('endDateProperty') as string;
+						if (rawValue && typeof rawValue === 'string') {
+							endDatePropertyId = rawValue as any;
+						}
+					}
 
 					if (!startDatePropertyId) {
 						dropInfo.revert();
@@ -278,7 +294,15 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 					}
 
 					const ctx = currentViewContext || controller;
-					const endDatePropertyId = ctx?.config?.getAsPropertyId?.('endDateProperty');
+
+					// Get property ID with fallback for embedded views
+					let endDatePropertyId = ctx?.config?.getAsPropertyId?.('endDateProperty');
+					if (!endDatePropertyId) {
+						const rawValue = ctx?.config?.get('endDateProperty') as string;
+						if (rawValue && typeof rawValue === 'string') {
+							endDatePropertyId = rawValue as any;
+						}
+					}
 
 					if (!endDatePropertyId) {
 						// No end date property configured, can't resize
@@ -715,9 +739,33 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 				const showTimeEntries = (ctx?.config?.get('showTimeEntries') as boolean) ?? calendarDefaults.defaultShowTimeEntries;
 				const showTimeblocks = (ctx?.config?.get('showTimeblocks') as boolean) ?? calendarDefaults.defaultShowTimeblocks;
 				const showPropertyBasedEvents = (ctx?.config?.get('showPropertyBasedEvents') as boolean) ?? true;
-				const startDateProperty = ctx?.config?.getAsPropertyId?.('startDateProperty');
-				const endDateProperty = ctx?.config?.getAsPropertyId?.('endDateProperty');
-				const titleProperty = ctx?.config?.getAsPropertyId?.('titleProperty');
+
+				// Try to get property IDs using getAsPropertyId, but fall back to raw string values
+				// This handles both standalone Bases views and embedded views
+				let startDateProperty = ctx?.config?.getAsPropertyId?.('startDateProperty');
+				if (!startDateProperty) {
+					// Fallback: try getting as raw string (for embedded views)
+					const rawValue = ctx?.config?.get('startDateProperty') as string;
+					if (rawValue && typeof rawValue === 'string') {
+						startDateProperty = rawValue as any;
+					}
+				}
+
+				let endDateProperty = ctx?.config?.getAsPropertyId?.('endDateProperty');
+				if (!endDateProperty) {
+					const rawValue = ctx?.config?.get('endDateProperty') as string;
+					if (rawValue && typeof rawValue === 'string') {
+						endDateProperty = rawValue as any;
+					}
+				}
+
+				let titleProperty = ctx?.config?.getAsPropertyId?.('titleProperty');
+				if (!titleProperty) {
+					const rawValue = ctx?.config?.get('titleProperty') as string;
+					if (rawValue && typeof rawValue === 'string') {
+						titleProperty = rawValue as any;
+					}
+				}
 
 				// Build list of selected ICS calendars from individual toggle options
 				const selectedICSCalendars: string[] = [];
@@ -934,16 +982,31 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 				return;
 			}
 
-			// Check if element is attached to DOM and has dimensions
-			if (!calendarEl.isConnected || calendarEl.clientHeight === 0) {
+			// Check if element is attached to DOM
+			if (!calendarEl.isConnected) {
 				if (initRetryCount >= MAX_INIT_RETRIES) {
-					console.error("[TaskNotes][Bases][Calendar] Failed to initialize after max retries");
+					console.error("[TaskNotes][Bases][Calendar] Failed to initialize after max retries - element not connected");
 					return;
 				}
 				initRetryCount++;
 				// Retry on next frame
 				requestAnimationFrame(() => initializeCalendar());
 				return;
+			}
+
+			// Check if element has dimensions (for embedded views, may need more time)
+			// Use offsetParent check which is more reliable for embedded contexts
+			const hasLayout = calendarEl.offsetParent !== null || calendarEl.clientHeight > 0;
+			if (!hasLayout) {
+				if (initRetryCount >= MAX_INIT_RETRIES) {
+					// Even if no layout yet, try to initialize anyway (might work in some embedded contexts)
+					console.warn("[TaskNotes][Bases][Calendar] Element has no layout after max retries, attempting initialization anyway");
+				} else {
+					initRetryCount++;
+					// Retry with longer delay for embedded views
+					setTimeout(() => initializeCalendar(), 100);
+					return;
+				}
 			}
 
 			try {
@@ -1024,6 +1087,9 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 						},
 					},
 					height: "100%",
+					expandRows: true, // Expand rows to fill available height
+					handleWindowResize: true, // Auto-resize on window resize
+					stickyHeaderDates: false, // Better for embedded views
 					editable: true, // Enable drag and drop
 					selectable: true, // Enable date selection for task creation
 					selectMirror: selectMirror,
@@ -1138,6 +1204,14 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 							} else {
 								calendarEl.addClass("hide-today-highlight");
 							}
+
+							// Force FullCalendar to recalculate size after DOM settles
+							// This is critical for embedded views where the container may not have final dimensions during initial render
+							setTimeout(() => {
+								if (calendar && calendarEl.isConnected) {
+									calendar.updateSize();
+								}
+							}, 100);
 						} catch (renderError) {
 							console.error("[TaskNotes][Bases][Calendar] Error rendering calendar:", renderError);
 						}
@@ -1248,7 +1322,8 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 					}
 				}
 
-				void render.call(this);
+				// Delay initial render to ensure DOM is ready (especially for embedded views)
+				setTimeout(() => void render.call(this), 0);
 			},
 			unload() {
 				const query = controller.query || basesContainer.query;

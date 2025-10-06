@@ -546,7 +546,21 @@
 /* FullCalendar overrides - Minimalist & Clean */
 .advanced-calendar-view .fc {
     height: 100%;
+    width: 100%;
     font-family: var(--font-interface);
+}
+
+/* Ensure calendar table expands to fill container width */
+.advanced-calendar-view .fc-view-harness {
+    width: 100%;
+}
+
+.advanced-calendar-view .fc-scrollgrid {
+    width: 100% !important;
+}
+
+.advanced-calendar-view .fc-scrollgrid-sync-table {
+    width: 100% !important;
 }
 
 /* Remove outer borders only */
