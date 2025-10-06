@@ -355,7 +355,21 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 				const end = resizeInfo.event.end;
 
 				if (start && end) {
-					const durationMinutes = Math.round((end.getTime() - start.getTime()) / (1000 * 60));
+					let durationMinutes: number;
+
+					if (resizeInfo.event.allDay) {
+						// For all-day events, FullCalendar's end date is exclusive (next day at midnight)
+						// So we need to subtract 1 day to get the actual duration
+						// Example: Jan 15 to Jan 17 (2 days) gives end = Jan 18 00:00
+						const dayDurationMillis = 24 * 60 * 60 * 1000;
+						const daysDuration = Math.round((end.getTime() - start.getTime()) / dayDurationMillis);
+						const minutesPerDay = 60 * 24;
+						durationMinutes = daysDuration * minutesPerDay;
+					} else {
+						// For timed events, calculate duration directly
+						durationMinutes = Math.round((end.getTime() - start.getTime()) / (1000 * 60));
+					}
+
 					await plugin.taskService.updateProperty(taskInfo, "timeEstimate", durationMinutes);
 				}
 			} catch (error) {
