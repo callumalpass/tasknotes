@@ -734,6 +734,19 @@ export const en: TranslationTree = {
 					none: "No action",
 				},
 			},
+			releaseNotes: {
+				header: "Release Notes",
+				description: "Current version: {version}",
+				showOnUpdate: {
+					name: "Show release notes after update",
+					description: "Automatically open release notes when TaskNotes is updated to a new version",
+				},
+				viewButton: {
+					name: "View release notes",
+					description: "See what's new in the latest version of TaskNotes",
+					buttonText: "View release notes",
+				},
+			},
 		},
 		taskProperties: {
 			taskStatuses: {

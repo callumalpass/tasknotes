@@ -1732,6 +1732,13 @@
       "source": "f34ac77f7e82d8fff22134b27bf4273f802d706e",
       "translation": "18d40157cc7b7a95546e4abd5757c68ceea993ec"
     },
+    "settings.general.releaseNotes.header": null,
+    "settings.general.releaseNotes.description": null,
+    "settings.general.releaseNotes.showOnUpdate.name": null,
+    "settings.general.releaseNotes.showOnUpdate.description": null,
+    "settings.general.releaseNotes.viewButton.name": null,
+    "settings.general.releaseNotes.viewButton.description": null,
+    "settings.general.releaseNotes.viewButton.buttonText": null,
     "settings.taskProperties.taskStatuses.header": {
       "source": "849a366260293fbbf551890f279d4a159f207849",
       "translation": "bf64692a5b81b6d793b11610575cff5b78f7ac09"
@@ -7670,6 +7677,13 @@
       "source": "f34ac77f7e82d8fff22134b27bf4273f802d706e",
       "translation": "ea64cfcb1d04bf32835ed72905b136a2ccb764b8"
     },
+    "settings.general.releaseNotes.header": null,
+    "settings.general.releaseNotes.description": null,
+    "settings.general.releaseNotes.showOnUpdate.name": null,
+    "settings.general.releaseNotes.showOnUpdate.description": null,
+    "settings.general.releaseNotes.viewButton.name": null,
+    "settings.general.releaseNotes.viewButton.description": null,
+    "settings.general.releaseNotes.viewButton.buttonText": null,
     "settings.taskProperties.taskStatuses.header": {
       "source": "849a366260293fbbf551890f279d4a159f207849",
       "translation": "947ccfa3792f82e11421a6487fa4fcede6095de7"
@@ -13608,6 +13622,13 @@
       "source": "f34ac77f7e82d8fff22134b27bf4273f802d706e",
       "translation": "77b96b458275d5a866c65734fd79db8e71e6793a"
     },
+    "settings.general.releaseNotes.header": null,
+    "settings.general.releaseNotes.description": null,
+    "settings.general.releaseNotes.showOnUpdate.name": null,
+    "settings.general.releaseNotes.showOnUpdate.description": null,
+    "settings.general.releaseNotes.viewButton.name": null,
+    "settings.general.releaseNotes.viewButton.description": null,
+    "settings.general.releaseNotes.viewButton.buttonText": null,
     "settings.taskProperties.taskStatuses.header": {
       "source": "849a366260293fbbf551890f279d4a159f207849",
       "translation": "52a6484f22731aa1601fb978b23c3a79c29f12e9"
@@ -19480,6 +19501,13 @@
       "source": "f34ac77f7e82d8fff22134b27bf4273f802d706e",
       "translation": "ee278ecd3881b5fa0d0b590666853589cee394e5"
     },
+    "settings.general.releaseNotes.header": null,
+    "settings.general.releaseNotes.description": null,
+    "settings.general.releaseNotes.showOnUpdate.name": null,
+    "settings.general.releaseNotes.showOnUpdate.description": null,
+    "settings.general.releaseNotes.viewButton.name": null,
+    "settings.general.releaseNotes.viewButton.description": null,
+    "settings.general.releaseNotes.viewButton.buttonText": null,
     "settings.taskProperties.taskStatuses.header": {
       "source": "849a366260293fbbf551890f279d4a159f207849",
       "translation": "e659b56c7420bffc483792689153d769feb0f6a4"
@@ -25256,6 +25284,13 @@
       "source": "f34ac77f7e82d8fff22134b27bf4273f802d706e",
       "translation": "ceb19c443ae81fbb1d58f82204fcf51af4369ddb"
     },
+    "settings.general.releaseNotes.header": null,
+    "settings.general.releaseNotes.description": null,
+    "settings.general.releaseNotes.showOnUpdate.name": null,
+    "settings.general.releaseNotes.showOnUpdate.description": null,
+    "settings.general.releaseNotes.viewButton.name": null,
+    "settings.general.releaseNotes.viewButton.description": null,
+    "settings.general.releaseNotes.viewButton.buttonText": null,
     "settings.taskProperties.taskStatuses.header": {
       "source": "849a366260293fbbf551890f279d4a159f207849",
       "translation": "af0eb7a9dcfde20a9c0362f6ac50c7d977e8679f"
@@ -31110,6 +31145,13 @@
       "source": "f34ac77f7e82d8fff22134b27bf4273f802d706e",
       "translation": "a2a8968def3eabe711f161678eef35ebecc0283e"
     },
+    "settings.general.releaseNotes.header": null,
+    "settings.general.releaseNotes.description": null,
+    "settings.general.releaseNotes.showOnUpdate.name": null,
+    "settings.general.releaseNotes.showOnUpdate.description": null,
+    "settings.general.releaseNotes.viewButton.name": null,
+    "settings.general.releaseNotes.viewButton.description": null,
+    "settings.general.releaseNotes.viewButton.buttonText": null,
     "settings.taskProperties.taskStatuses.header": {
       "source": "849a366260293fbbf551890f279d4a159f207849",
       "translation": "b7d4128dcdbe2875182bbe34053d09f02510bdea"

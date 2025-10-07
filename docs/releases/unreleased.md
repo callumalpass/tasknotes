@@ -40,4 +40,5 @@ Example:
   - Includes release dates extracted from git tags
   - Current version expanded by default with visual badge
   - Previous versions collapsed for easier navigation
+  - Added setting to disable automatic release notes display after updates
 
