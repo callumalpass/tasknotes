@@ -164,6 +164,18 @@ Configure template files for consistent content creation from events. Templates 
 
 Set destination folders for content created from events. This helps organize ICS-generated content separately from other vault content if desired.
 
+Folder paths support template variables for dynamic organization:
+
+- Date variables: `{{year}}`, `{{month}}`, `{{day}}`, `{{monthName}}`, etc.
+- ICS event variables: `{{icsEventTitle}}`, `{{icsEventLocation}}`, `{{icsEventDescription}}`
+- Other variables: See template variables section below
+
+Example folder paths:
+
+- `Daily/{{year}}/{{month}}/{{day}}` creates date-based hierarchy
+- `Events/{{year}}/{{icsEventTitle}}` organizes by year and event title
+- `Meetings/{{monthName}}` groups by month name
+
 ### Filename Formats
 
 The system uses the standard TaskNotes filename generation with event-specific context, ensuring unique and descriptive filenames for created content.
