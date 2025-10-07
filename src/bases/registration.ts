@@ -39,66 +39,67 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 					factory: buildTasknotesCalendarViewFactory(plugin),
 					options: () => {
 						const calendarSettings = plugin.settings.calendarViewSettings;
+						const t = (key: string) => plugin.i18n.translate(`views.basesCalendar.settings.${key}`);
 
 						const options: any[] = [
 							{
 								type: "group",
-								displayName: "Events",
+								displayName: t("groups.events"),
 								items: [
 									{
 										type: "toggle",
 										key: "showScheduled",
-										displayName: "Show scheduled tasks",
+										displayName: t("events.showScheduledTasks"),
 										default: calendarSettings.defaultShowScheduled,
 									},
 									{
 										type: "toggle",
 										key: "showDue",
-										displayName: "Show due tasks",
+										displayName: t("events.showDueTasks"),
 										default: calendarSettings.defaultShowDue,
 									},
 									{
 										type: "toggle",
 										key: "showRecurring",
-										displayName: "Show recurring tasks",
+										displayName: t("events.showRecurringTasks"),
 										default: calendarSettings.defaultShowRecurring,
 									},
 									{
 										type: "toggle",
 										key: "showTimeEntries",
-										displayName: "Show time entries",
+										displayName: t("events.showTimeEntries"),
 										default: calendarSettings.defaultShowTimeEntries,
 									},
 									{
 										type: "toggle",
 										key: "showTimeblocks",
-										displayName: "Show timeblocks",
+										displayName: t("events.showTimeblocks"),
 										default: calendarSettings.defaultShowTimeblocks,
 									},
 									{
 										type: "toggle",
 										key: "showPropertyBasedEvents",
-										displayName: "Show property-based events",
+										displayName: t("events.showPropertyBasedEvents"),
 										default: true,
 									},
 								],
 							},
 							{
 								type: "group",
-								displayName: "Date Navigation",
+								displayName: t("groups.dateNavigation"),
 								items: [
 									{
 										type: "text",
 										key: "initialDate",
-										displayName: "Navigate to date",
+										displayName: t("dateNavigation.navigateToDate"),
 										default: "",
-										placeholder: "YYYY-MM-DD (e.g., 2025-01-15) - leave empty to use property",
+										placeholder: t("dateNavigation.navigateToDatePlaceholder"),
 									},
 									{
 										type: "property",
 										key: "initialDateProperty",
-										displayName: "Navigate to date from property",
-										placeholder: "Select a date property (optional)",
+										displayName: t("dateNavigation.navigateToDateFromProperty"),
+										placeholder: t("dateNavigation.navigateToDateFromPropertyPlaceholder"),
 										filter: (prop: string) => {
 											// Show date-type properties from notes and files
 											return prop.startsWith("note.") || prop.startsWith("file.");
@@ -107,24 +108,24 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 									{
 										type: "dropdown",
 										key: "initialDateStrategy",
-										displayName: "Property navigation strategy",
+										displayName: t("dateNavigation.propertyNavigationStrategy"),
 										default: "first",
 										options: {
-											"first": "First result",
-											"earliest": "Earliest date",
-											"latest": "Latest date",
+											"first": t("dateNavigation.strategies.first"),
+											"earliest": t("dateNavigation.strategies.earliest"),
+											"latest": t("dateNavigation.strategies.latest"),
 										},
 									},
 								],
 							},
 							{
 								type: "group",
-								displayName: "Layout",
+								displayName: t("groups.layout"),
 								items: [
 									{
 										type: "dropdown",
 										key: "calendarView",
-										displayName: "Calendar view",
+										displayName: t("layout.calendarView"),
 										default: calendarSettings.defaultView,
 										options: {
 											"dayGridMonth": "Month",
@@ -138,7 +139,7 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 									{
 										type: "slider",
 										key: "customDayCount",
-										displayName: "Custom day count",
+										displayName: t("layout.customDayCount"),
 										default: calendarSettings.customDayCount || 3,
 										min: 1,
 										max: 14,
@@ -147,96 +148,96 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 									{
 										type: "text",
 										key: "slotMinTime",
-										displayName: "Day start time",
+										displayName: t("layout.dayStartTime"),
 										default: calendarSettings.slotMinTime,
-										placeholder: "HH:mm:ss (e.g., 08:00:00)",
+										placeholder: t("layout.dayStartTimePlaceholder"),
 									},
 									{
 										type: "text",
 										key: "slotMaxTime",
-										displayName: "Day end time",
+										displayName: t("layout.dayEndTime"),
 										default: calendarSettings.slotMaxTime,
-										placeholder: "HH:mm:ss (e.g., 20:00:00)",
+										placeholder: t("layout.dayEndTimePlaceholder"),
 									},
 									{
 										type: "text",
 										key: "slotDuration",
-										displayName: "Time slot duration",
+										displayName: t("layout.timeSlotDuration"),
 										default: calendarSettings.slotDuration,
-										placeholder: "HH:mm:ss (e.g., 00:30:00)",
+										placeholder: t("layout.timeSlotDurationPlaceholder"),
 									},
 									{
 										type: "dropdown",
 										key: "firstDay",
-										displayName: "Week starts on",
+										displayName: t("layout.weekStartsOn"),
 										default: String(calendarSettings.firstDay),
 										options: {
-											"0": "Sunday",
-											"1": "Monday",
-											"2": "Tuesday",
-											"3": "Wednesday",
-											"4": "Thursday",
-											"5": "Friday",
-											"6": "Saturday",
+											"0": plugin.i18n.translate("common.weekdays.sunday"),
+											"1": plugin.i18n.translate("common.weekdays.monday"),
+											"2": plugin.i18n.translate("common.weekdays.tuesday"),
+											"3": plugin.i18n.translate("common.weekdays.wednesday"),
+											"4": plugin.i18n.translate("common.weekdays.thursday"),
+											"5": plugin.i18n.translate("common.weekdays.friday"),
+											"6": plugin.i18n.translate("common.weekdays.saturday"),
 										},
 									},
 									{
 										type: "toggle",
 										key: "weekNumbers",
-										displayName: "Show week numbers",
+										displayName: t("layout.showWeekNumbers"),
 										default: calendarSettings.weekNumbers,
 									},
 									{
 										type: "toggle",
 										key: "nowIndicator",
-										displayName: "Show now indicator",
+										displayName: t("layout.showNowIndicator"),
 										default: calendarSettings.nowIndicator,
 									},
 									{
 										type: "toggle",
 										key: "showWeekends",
-										displayName: "Show weekends",
+										displayName: t("layout.showWeekends"),
 										default: calendarSettings.showWeekends,
 									},
 									{
 										type: "toggle",
 										key: "showAllDaySlot",
-										displayName: "Show all-day slot",
+										displayName: t("layout.showAllDaySlot"),
 										default: true,
 									},
 									{
 										type: "toggle",
 										key: "showTodayHighlight",
-										displayName: "Show today highlight",
+										displayName: t("layout.showTodayHighlight"),
 										default: calendarSettings.showTodayHighlight,
 									},
 									{
 										type: "toggle",
 										key: "selectMirror",
-										displayName: "Show selection preview",
+										displayName: t("layout.showSelectionPreview"),
 										default: calendarSettings.selectMirror,
 									},
 									{
 										type: "dropdown",
 										key: "timeFormat",
-										displayName: "Time format",
+										displayName: t("layout.timeFormat"),
 										default: calendarSettings.timeFormat,
 										options: {
-											"12": "12-hour (AM/PM)",
-											"24": "24-hour",
+											"12": t("layout.timeFormat12"),
+											"24": t("layout.timeFormat24"),
 										},
 									},
 									{
 										type: "text",
 										key: "scrollTime",
-										displayName: "Initial scroll time",
+										displayName: t("layout.initialScrollTime"),
 										default: calendarSettings.scrollTime,
-										placeholder: "HH:mm:ss (e.g., 08:00:00)",
+										placeholder: t("layout.initialScrollTimePlaceholder"),
 									},
 									{
 										type: "slider",
 										key: "eventMinHeight",
-										displayName: "Minimum event height (px)",
+										displayName: t("layout.minimumEventHeight"),
 										default: calendarSettings.eventMinHeight,
 										min: 15,
 										max: 100,
@@ -246,13 +247,13 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 							},
 							{
 								type: "group",
-								displayName: "Property-based events",
+								displayName: t("groups.propertyBasedEvents"),
 								items: [
 									{
 										type: "property",
 										key: "startDateProperty",
-										displayName: "Start date property",
-										placeholder: "Select property for start date/time",
+										displayName: t("propertyBasedEvents.startDateProperty"),
+										placeholder: t("propertyBasedEvents.startDatePropertyPlaceholder"),
 										filter: (prop: string) => {
 											// Only show date-type properties
 											return prop.startsWith("note.") || prop.startsWith("file.");
@@ -261,8 +262,8 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 									{
 										type: "property",
 										key: "endDateProperty",
-										displayName: "End date property (optional)",
-										placeholder: "Select property for end date/time",
+										displayName: t("propertyBasedEvents.endDateProperty"),
+										placeholder: t("propertyBasedEvents.endDatePropertyPlaceholder"),
 										filter: (prop: string) => {
 											// Only show date-type properties
 											return prop.startsWith("note.") || prop.startsWith("file.");
@@ -271,8 +272,8 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 									{
 										type: "property",
 										key: "titleProperty",
-										displayName: "Title property (optional)",
-										placeholder: "Select property for event title",
+										displayName: t("propertyBasedEvents.titleProperty"),
+										placeholder: t("propertyBasedEvents.titlePropertyPlaceholder"),
 										filter: (prop: string) => {
 											// Show text properties (note, formula, file)
 											return prop.startsWith("note.") || prop.startsWith("formula.") || prop.startsWith("file.");
@@ -297,7 +298,7 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 								// Add as a group
 								options.push({
 									type: "group",
-									displayName: "Calendar subscriptions",
+									displayName: t("groups.calendarSubscriptions"),
 									items: icsToggles,
 								});
 							}
