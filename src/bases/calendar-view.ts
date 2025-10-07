@@ -1080,48 +1080,6 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 						? calendarSettings.eventMinHeight
 						: 20);
 
-				// Get initial date from configured property
-				let initialDate = new Date();
-				const ctx = currentViewContext || controller;
-
-				// Try to get the initial date property configuration
-				let initialDatePropertyId = ctx?.config?.getAsPropertyId?.('initialDateProperty');
-				if (!initialDatePropertyId) {
-					const rawValue = ctx?.config?.get('initialDateProperty') as string;
-					if (rawValue && typeof rawValue === 'string') {
-						initialDatePropertyId = rawValue as any;
-					}
-				}
-
-				if (initialDatePropertyId && ctx.data?.data && ctx.data.data.length > 0) {
-					// Get the first entry's date property value
-					const firstEntry = ctx.data.data[0];
-					try {
-						const dateValue = firstEntry.getValue?.(initialDatePropertyId);
-						if (dateValue) {
-							// Extract date from Bases Value object
-							let extractedDate: Date | null = null;
-
-							if (dateValue.date instanceof Date) {
-								extractedDate = dateValue.date;
-							} else if (dateValue.data instanceof Date) {
-								extractedDate = dateValue.data;
-							} else if (typeof dateValue.data === 'string') {
-								extractedDate = new Date(dateValue.data);
-							} else if (dateValue instanceof Date) {
-								extractedDate = dateValue;
-							}
-
-							// Use the extracted date if valid
-							if (extractedDate && !isNaN(extractedDate.getTime())) {
-								initialDate = extractedDate;
-							}
-						}
-					} catch (error) {
-						console.debug('[TaskNotes][Bases][Calendar] Error reading initial date property:', error);
-					}
-				}
-
 				calendar = new Calendar(calendarEl, {
 					plugins: [
 						dayGridPlugin,
@@ -1131,7 +1089,7 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 						interactionPlugin,
 					],
 					initialView: defaultView,
-					initialDate: new Date(),
+					initialDate: new Date(), // Will be updated during render if property configured
 					headerToolbar: {
 						left: "prev,next today",
 						center: "title",
@@ -1351,6 +1309,49 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 							calendar.changeView(configView);
 						} catch (viewError) {
 							console.debug("[TaskNotes][Bases][Calendar] Error changing view:", viewError);
+						}
+					}
+
+					// Navigate to date from configured property (only on first render)
+					let initialDatePropertyId = viewContext.config.getAsPropertyId?.('initialDateProperty');
+					if (!initialDatePropertyId) {
+						const rawValue = viewContext.config.get('initialDateProperty') as string;
+						if (rawValue && typeof rawValue === 'string') {
+							initialDatePropertyId = rawValue as any;
+						}
+					}
+
+					console.log('[TaskNotes][Bases][Calendar] Initial date property config:', initialDatePropertyId);
+					console.log('[TaskNotes][Bases][Calendar] Data available:', viewContext.data?.data?.length || 0, 'entries');
+
+					if (initialDatePropertyId && viewContext.data?.data && viewContext.data.data.length > 0) {
+						const firstEntry = viewContext.data.data[0];
+						console.log('[TaskNotes][Bases][Calendar] First entry:', firstEntry.file?.path);
+						try {
+							const dateValue = firstEntry.getValue?.(initialDatePropertyId);
+							console.log('[TaskNotes][Bases][Calendar] Date value from property:', dateValue);
+							if (dateValue) {
+								let extractedDate: Date | null = null;
+
+								if (dateValue.date instanceof Date) {
+									extractedDate = dateValue.date;
+								} else if (dateValue.data instanceof Date) {
+									extractedDate = dateValue.data;
+								} else if (typeof dateValue.data === 'string') {
+									extractedDate = new Date(dateValue.data);
+								} else if (dateValue instanceof Date) {
+									extractedDate = dateValue;
+								}
+
+								console.log('[TaskNotes][Bases][Calendar] Extracted date:', extractedDate);
+
+								if (extractedDate && !isNaN(extractedDate.getTime())) {
+									console.log('[TaskNotes][Bases][Calendar] Navigating to date:', extractedDate);
+									calendar.gotoDate(extractedDate);
+								}
+							}
+						} catch (error) {
+							console.error('[TaskNotes][Bases][Calendar] Error reading initial date property:', error);
 						}
 					}
 				}
