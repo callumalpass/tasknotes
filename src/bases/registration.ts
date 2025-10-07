@@ -85,8 +85,15 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 							},
 							{
 								type: "group",
-								displayName: "Layout",
+								displayName: "Date Navigation",
 								items: [
+									{
+										type: "text",
+										key: "initialDate",
+										displayName: "Navigate to date",
+										default: "",
+										placeholder: "YYYY-MM-DD (e.g., 2025-01-15) - leave empty to use property",
+									},
 									{
 										type: "property",
 										key: "initialDateProperty",
@@ -97,6 +104,23 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 											return prop.startsWith("note.") || prop.startsWith("file.");
 										},
 									},
+									{
+										type: "dropdown",
+										key: "initialDateStrategy",
+										displayName: "Property navigation strategy",
+										default: "first",
+										options: {
+											"first": "First result",
+											"earliest": "Earliest date",
+											"latest": "Latest date",
+										},
+									},
+								],
+							},
+							{
+								type: "group",
+								displayName: "Layout",
+								items: [
 									{
 										type: "dropdown",
 										key: "calendarView",

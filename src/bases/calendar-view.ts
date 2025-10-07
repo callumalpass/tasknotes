@@ -1312,46 +1312,95 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 						}
 					}
 
-					// Navigate to date from configured property (only on first render)
-					let initialDatePropertyId = viewContext.config.getAsPropertyId?.('initialDateProperty');
-					if (!initialDatePropertyId) {
-						const rawValue = viewContext.config.get('initialDateProperty') as string;
-						if (rawValue && typeof rawValue === 'string') {
-							initialDatePropertyId = rawValue as any;
-						}
-					}
+					// Navigate to date - check hardcoded date first, then property-based
+					const hardcodedDate = viewContext.config.get('initialDate') as string;
 
-					console.log('[TaskNotes][Bases][Calendar] Initial date property config:', initialDatePropertyId);
-					console.log('[TaskNotes][Bases][Calendar] Data available:', viewContext.data?.data?.length || 0, 'entries');
-
-					if (initialDatePropertyId && viewContext.data?.data && viewContext.data.data.length > 0) {
-						const firstEntry = viewContext.data.data[0];
-						console.log('[TaskNotes][Bases][Calendar] First entry:', firstEntry.file?.path);
+					if (hardcodedDate && hardcodedDate.trim()) {
+						// Use hardcoded date
+						console.log('[TaskNotes][Bases][Calendar] Using hardcoded date:', hardcodedDate);
 						try {
-							const dateValue = firstEntry.getValue?.(initialDatePropertyId);
-							console.log('[TaskNotes][Bases][Calendar] Date value from property:', dateValue);
-							if (dateValue) {
-								let extractedDate: Date | null = null;
-
-								if (dateValue.date instanceof Date) {
-									extractedDate = dateValue.date;
-								} else if (dateValue.data instanceof Date) {
-									extractedDate = dateValue.data;
-								} else if (typeof dateValue.data === 'string') {
-									extractedDate = new Date(dateValue.data);
-								} else if (dateValue instanceof Date) {
-									extractedDate = dateValue;
-								}
-
-								console.log('[TaskNotes][Bases][Calendar] Extracted date:', extractedDate);
-
-								if (extractedDate && !isNaN(extractedDate.getTime())) {
-									console.log('[TaskNotes][Bases][Calendar] Navigating to date:', extractedDate);
-									calendar.gotoDate(extractedDate);
-								}
+							const targetDate = new Date(hardcodedDate);
+							if (!isNaN(targetDate.getTime())) {
+								console.log('[TaskNotes][Bases][Calendar] Navigating to hardcoded date:', targetDate);
+								calendar.gotoDate(targetDate);
 							}
 						} catch (error) {
-							console.error('[TaskNotes][Bases][Calendar] Error reading initial date property:', error);
+							console.error('[TaskNotes][Bases][Calendar] Invalid hardcoded date:', error);
+						}
+					} else {
+						// Use property-based navigation
+						let initialDatePropertyId = viewContext.config.getAsPropertyId?.('initialDateProperty');
+						if (!initialDatePropertyId) {
+							const rawValue = viewContext.config.get('initialDateProperty') as string;
+							if (rawValue && typeof rawValue === 'string') {
+								initialDatePropertyId = rawValue as any;
+							}
+						}
+
+						const strategy = (viewContext.config.get('initialDateStrategy') as string) || 'first';
+
+						console.log('[TaskNotes][Bases][Calendar] Initial date property:', initialDatePropertyId, 'strategy:', strategy);
+						console.log('[TaskNotes][Bases][Calendar] Data available:', viewContext.data?.data?.length || 0, 'entries');
+
+						if (initialDatePropertyId && viewContext.data?.data && viewContext.data.data.length > 0) {
+							try {
+								// Helper to extract date from Bases Value object
+								const extractDate = (dateValue: any): Date | null => {
+									if (!dateValue) return null;
+
+									let extracted: Date | null = null;
+									if (dateValue.date instanceof Date) {
+										extracted = dateValue.date;
+									} else if (dateValue.data instanceof Date) {
+										extracted = dateValue.data;
+									} else if (typeof dateValue.data === 'string') {
+										extracted = new Date(dateValue.data);
+									} else if (dateValue instanceof Date) {
+										extracted = dateValue;
+									}
+
+									return (extracted && !isNaN(extracted.getTime())) ? extracted : null;
+								};
+
+								let targetDate: Date | null = null;
+
+								if (strategy === 'first') {
+									// Use first result
+									const firstEntry = viewContext.data.data[0];
+									const dateValue = firstEntry.getValue?.(initialDatePropertyId);
+									targetDate = extractDate(dateValue);
+									console.log('[TaskNotes][Bases][Calendar] First result date:', targetDate);
+								} else {
+									// Collect all valid dates
+									const dates: Date[] = [];
+									for (const entry of viewContext.data.data) {
+										const dateValue = entry.getValue?.(initialDatePropertyId);
+										const extracted = extractDate(dateValue);
+										if (extracted) {
+											dates.push(extracted);
+										}
+									}
+
+									console.log('[TaskNotes][Bases][Calendar] Found', dates.length, 'valid dates');
+
+									if (dates.length > 0) {
+										if (strategy === 'earliest') {
+											targetDate = new Date(Math.min(...dates.map(d => d.getTime())));
+											console.log('[TaskNotes][Bases][Calendar] Earliest date:', targetDate);
+										} else if (strategy === 'latest') {
+											targetDate = new Date(Math.max(...dates.map(d => d.getTime())));
+											console.log('[TaskNotes][Bases][Calendar] Latest date:', targetDate);
+										}
+									}
+								}
+
+								if (targetDate) {
+									console.log('[TaskNotes][Bases][Calendar] Navigating to date:', targetDate);
+									calendar.gotoDate(targetDate);
+								}
+							} catch (error) {
+								console.error('[TaskNotes][Bases][Calendar] Error reading initial date property:', error);
+							}
 						}
 					}
 				}
