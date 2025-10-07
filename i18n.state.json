@@ -440,52 +440,190 @@
       "source": "aa73278ad78de284702c875cbe2d73ccb8f9c5d3",
       "translation": "17b1f4317dfccc4e2cf4ab36745827154f5ad3f2"
     },
-    "views.basesCalendar.settings.groups.dateNavigation": null,
-    "views.basesCalendar.settings.groups.events": null,
-    "views.basesCalendar.settings.groups.layout": null,
-    "views.basesCalendar.settings.groups.propertyBasedEvents": null,
-    "views.basesCalendar.settings.groups.calendarSubscriptions": null,
-    "views.basesCalendar.settings.dateNavigation.navigateToDate": null,
-    "views.basesCalendar.settings.dateNavigation.navigateToDatePlaceholder": null,
-    "views.basesCalendar.settings.dateNavigation.navigateToDateFromProperty": null,
-    "views.basesCalendar.settings.dateNavigation.navigateToDateFromPropertyPlaceholder": null,
-    "views.basesCalendar.settings.dateNavigation.propertyNavigationStrategy": null,
-    "views.basesCalendar.settings.dateNavigation.strategies.first": null,
-    "views.basesCalendar.settings.dateNavigation.strategies.earliest": null,
-    "views.basesCalendar.settings.dateNavigation.strategies.latest": null,
-    "views.basesCalendar.settings.events.showScheduledTasks": null,
-    "views.basesCalendar.settings.events.showDueTasks": null,
-    "views.basesCalendar.settings.events.showRecurringTasks": null,
-    "views.basesCalendar.settings.events.showTimeEntries": null,
-    "views.basesCalendar.settings.events.showTimeblocks": null,
-    "views.basesCalendar.settings.events.showPropertyBasedEvents": null,
-    "views.basesCalendar.settings.layout.calendarView": null,
-    "views.basesCalendar.settings.layout.customDayCount": null,
-    "views.basesCalendar.settings.layout.dayStartTime": null,
-    "views.basesCalendar.settings.layout.dayStartTimePlaceholder": null,
-    "views.basesCalendar.settings.layout.dayEndTime": null,
-    "views.basesCalendar.settings.layout.dayEndTimePlaceholder": null,
-    "views.basesCalendar.settings.layout.timeSlotDuration": null,
-    "views.basesCalendar.settings.layout.timeSlotDurationPlaceholder": null,
-    "views.basesCalendar.settings.layout.weekStartsOn": null,
-    "views.basesCalendar.settings.layout.showWeekNumbers": null,
-    "views.basesCalendar.settings.layout.showNowIndicator": null,
-    "views.basesCalendar.settings.layout.showWeekends": null,
-    "views.basesCalendar.settings.layout.showAllDaySlot": null,
-    "views.basesCalendar.settings.layout.showTodayHighlight": null,
-    "views.basesCalendar.settings.layout.showSelectionPreview": null,
-    "views.basesCalendar.settings.layout.timeFormat": null,
-    "views.basesCalendar.settings.layout.timeFormat12": null,
-    "views.basesCalendar.settings.layout.timeFormat24": null,
-    "views.basesCalendar.settings.layout.initialScrollTime": null,
-    "views.basesCalendar.settings.layout.initialScrollTimePlaceholder": null,
-    "views.basesCalendar.settings.layout.minimumEventHeight": null,
-    "views.basesCalendar.settings.propertyBasedEvents.startDateProperty": null,
-    "views.basesCalendar.settings.propertyBasedEvents.startDatePropertyPlaceholder": null,
-    "views.basesCalendar.settings.propertyBasedEvents.endDateProperty": null,
-    "views.basesCalendar.settings.propertyBasedEvents.endDatePropertyPlaceholder": null,
-    "views.basesCalendar.settings.propertyBasedEvents.titleProperty": null,
-    "views.basesCalendar.settings.propertyBasedEvents.titlePropertyPlaceholder": null,
+    "views.basesCalendar.settings.groups.dateNavigation": {
+      "source": "8487a72e02c205a734e6ec6a5684a99576039cb3",
+      "translation": "447a68387740ba7281dd48cc034168c1bb83cb9c"
+    },
+    "views.basesCalendar.settings.groups.events": {
+      "source": "c5497bca58468ae64aed6c0fd921109217988db3",
+      "translation": "15a69ae970a11a52e92689fe1c898c0777dd5966"
+    },
+    "views.basesCalendar.settings.groups.layout": {
+      "source": "972ad8d8a50397ba8c02433ed8f048eeb4074b85",
+      "translation": "972ad8d8a50397ba8c02433ed8f048eeb4074b85"
+    },
+    "views.basesCalendar.settings.groups.propertyBasedEvents": {
+      "source": "d31c8cee5b57ad516997269e170f40c08e9c56c7",
+      "translation": "26386ed585c8f6b363c1c1463baffa74104d1b53"
+    },
+    "views.basesCalendar.settings.groups.calendarSubscriptions": {
+      "source": "9b99ca62a8c206aeef3199afeb8c2d6ea70c3c3a",
+      "translation": "efa3533c4e46110cb13fbbefc736130b3cb95b22"
+    },
+    "views.basesCalendar.settings.dateNavigation.navigateToDate": {
+      "source": "2a47407705ef9a77de4778c38853a4122e38b1fd",
+      "translation": "b3a01d7806d06830f7d4a4f6723ae639cc0915df"
+    },
+    "views.basesCalendar.settings.dateNavigation.navigateToDatePlaceholder": {
+      "source": "5c6abb7b0eec92301b6084e8f47b1963bee3a2d3",
+      "translation": "d48425690d156898f3621ed757f5bac1907bc579"
+    },
+    "views.basesCalendar.settings.dateNavigation.navigateToDateFromProperty": {
+      "source": "1d41e70f496e85518af57ff9d0c3800425946fb2",
+      "translation": "98fec64dc6d6df9b7846c0a845364884fd7f4e3b"
+    },
+    "views.basesCalendar.settings.dateNavigation.navigateToDateFromPropertyPlaceholder": {
+      "source": "805bf18c2c60fd304e61e7e1335c9855759f9e73",
+      "translation": "4989273e6c834257dd545a2bc9f21dcce887c8f2"
+    },
+    "views.basesCalendar.settings.dateNavigation.propertyNavigationStrategy": {
+      "source": "06ebe214f61592cb1d00d06f7da4b0bbb65f9f59",
+      "translation": "1f8c2b79058007ac342e00acf9e1a4eec07b8432"
+    },
+    "views.basesCalendar.settings.dateNavigation.strategies.first": {
+      "source": "ffa400323e5094765e9a525699646ad72a390716",
+      "translation": "8858edc81c1d658a6c6bc3d8946d9dd8ffb2f206"
+    },
+    "views.basesCalendar.settings.dateNavigation.strategies.earliest": {
+      "source": "a82ed564751239856af5b7eb67b1f1bfef84e67d",
+      "translation": "7ec43592b56a79622223b0b47064780e9f64a5c6"
+    },
+    "views.basesCalendar.settings.dateNavigation.strategies.latest": {
+      "source": "42ffdcce79d33f576cb58283305ef7ab756c0478",
+      "translation": "13273aef51d3874da7084802f089b70eb43a1682"
+    },
+    "views.basesCalendar.settings.events.showScheduledTasks": {
+      "source": "0fd520d76ebff53e4708b9034c0a56b86c32d34c",
+      "translation": "62d69b5ca92b24559e0c6ef4a29ae2fee6d62096"
+    },
+    "views.basesCalendar.settings.events.showDueTasks": {
+      "source": "18bdeb26654a9715a97a62a65e4a96eb5078aebb",
+      "translation": "a55c0dfe5b2d0ae4539ba2082ed56b914e0c5de8"
+    },
+    "views.basesCalendar.settings.events.showRecurringTasks": {
+      "source": "a0cb06969984df001beafafd38566341051237cb",
+      "translation": "9c5d69492c72d4b0d158297522d00b7c2f7c1978"
+    },
+    "views.basesCalendar.settings.events.showTimeEntries": {
+      "source": "bc2fc63fe844da7026e953830dd63ed3ef7dcca8",
+      "translation": "da21509def7daacf64f6a0737063c0a4d3723606"
+    },
+    "views.basesCalendar.settings.events.showTimeblocks": {
+      "source": "6bbeac2719e460e9d080fa80a269b9a2387d15fd",
+      "translation": "37cfee694050604375abd25f345566c3a5363649"
+    },
+    "views.basesCalendar.settings.events.showPropertyBasedEvents": {
+      "source": "2cff9596706c3353997d8df5ed2dad6724932d57",
+      "translation": "aef9d7dddcc6797e5dd6c80f42d469fca2b6a4de"
+    },
+    "views.basesCalendar.settings.layout.calendarView": {
+      "source": "2b4d4585e106f1e6647cfabf1a31a9c441165a44",
+      "translation": "d256a4d045f0aa9a79a2948704284fac73dce92d"
+    },
+    "views.basesCalendar.settings.layout.customDayCount": {
+      "source": "1aadcb0d4d3400d00e2ad0a4cffa017ad1fac481",
+      "translation": "e7d36da2adbcbb1f8a24b00984c812e0c636e5b2"
+    },
+    "views.basesCalendar.settings.layout.dayStartTime": {
+      "source": "0f668f32458bf870e8823e6dd50a7fcc1dc595c7",
+      "translation": "78b8eee51d19827b871600dfe2826848c0c4db6d"
+    },
+    "views.basesCalendar.settings.layout.dayStartTimePlaceholder": {
+      "source": "76b7b3219aac0cf237e1aa634f4d4034665565d0",
+      "translation": "59ba112813ebed678db0566d2b4ac1afe8d51fcf"
+    },
+    "views.basesCalendar.settings.layout.dayEndTime": {
+      "source": "c7cb09793cab1cd532e4817ddfb425a19b2d029f",
+      "translation": "9ffd955a4c6ca8c126a9c0f0c5fee5d7c7696730"
+    },
+    "views.basesCalendar.settings.layout.dayEndTimePlaceholder": {
+      "source": "0133cae380a25a9edd58d66259a3164cfb8f475e",
+      "translation": "518ef0fb30de102eedb55458367b3ca170f66f41"
+    },
+    "views.basesCalendar.settings.layout.timeSlotDuration": {
+      "source": "29f4bf4e4e79c36f8416b3785304f0a28bf6d1ca",
+      "translation": "c9b0a00b02ec03bbc05189c56b545a66c7daf132"
+    },
+    "views.basesCalendar.settings.layout.timeSlotDurationPlaceholder": {
+      "source": "42dcf2fde11e354fe96a959abe2424d9339a8589",
+      "translation": "b4bbf64dc40534031d82ceb781e7b201e91f68a3"
+    },
+    "views.basesCalendar.settings.layout.weekStartsOn": {
+      "source": "c5ee02903b18157906dd2123eb7caaecc6881b5a",
+      "translation": "c8d224c187903f6721d87209ff3dd3b39a564ecf"
+    },
+    "views.basesCalendar.settings.layout.showWeekNumbers": {
+      "source": "181797ee5c8edfd86e0166c5012159efdebefee8",
+      "translation": "867134c8307a64ce7d8b6e9aadc9f6a2a380e9e0"
+    },
+    "views.basesCalendar.settings.layout.showNowIndicator": {
+      "source": "80bc9e34e9d741ed65ca981c5371f2598870dad8",
+      "translation": "d34f9553ec975a87ab960269b275219393df0ed2"
+    },
+    "views.basesCalendar.settings.layout.showWeekends": {
+      "source": "edb5cc0a9bbfccc244d956c3b04603799c1ffe51",
+      "translation": "e2707fa615739779974e2042adfe2f7e346ce6db"
+    },
+    "views.basesCalendar.settings.layout.showAllDaySlot": {
+      "source": "4eb52dd55c78e6438d4f27f83e795423564d7b96",
+      "translation": "e73a59a1abfbd2f40e375036672676cc0f0a751d"
+    },
+    "views.basesCalendar.settings.layout.showTodayHighlight": {
+      "source": "b48ddd6e3b547a7b98d846017f53e8e3e620fc3a",
+      "translation": "c0d62d67dd0a1b4367524f9bf342a3031d176698"
+    },
+    "views.basesCalendar.settings.layout.showSelectionPreview": {
+      "source": "d86127e56667e1a419f7b4b7fe3ea41a09a6a71c",
+      "translation": "d59481fe2c27204f5a4adf631b837a0677243c70"
+    },
+    "views.basesCalendar.settings.layout.timeFormat": {
+      "source": "8f3bd1539454f7f8c2dc8b30d6a7867c512fecd5",
+      "translation": "b325988f658c61fc1aa9cc0c5403508aa4dd4c55"
+    },
+    "views.basesCalendar.settings.layout.timeFormat12": {
+      "source": "b7f21d3e3081eb263ef1553fb5b635f390ab9c4d",
+      "translation": "d940c6edd779d0b32d994afb161d0182510712fc"
+    },
+    "views.basesCalendar.settings.layout.timeFormat24": {
+      "source": "18e86819267257b73fd125ff18108aa79f1f29bb",
+      "translation": "fd433058ac0b6cecddc079c14746732217596ba4"
+    },
+    "views.basesCalendar.settings.layout.initialScrollTime": {
+      "source": "57489455a18c7f3f66048b39c934497b1a858b6b",
+      "translation": "130ff066c96d41408f7f43efea63ed0c13c96d28"
+    },
+    "views.basesCalendar.settings.layout.initialScrollTimePlaceholder": {
+      "source": "76b7b3219aac0cf237e1aa634f4d4034665565d0",
+      "translation": "59ba112813ebed678db0566d2b4ac1afe8d51fcf"
+    },
+    "views.basesCalendar.settings.layout.minimumEventHeight": {
+      "source": "0c7471e72296e1a9ba5487514e4c96c819b4e53a",
+      "translation": "9899569d7041013b13d8870aef0d224eac9c84cf"
+    },
+    "views.basesCalendar.settings.propertyBasedEvents.startDateProperty": {
+      "source": "05c65e1fc55d32dc8aab0c001a11218e4ee4119c",
+      "translation": "14ffc61439bc59829f7f6f92e7422158c370036a"
+    },
+    "views.basesCalendar.settings.propertyBasedEvents.startDatePropertyPlaceholder": {
+      "source": "f46d1039527ed2dab5f0d0f1218cc0f45b2f6c42",
+      "translation": "f50ad701c635e3fc5683906fba84fff45d3319f8"
+    },
+    "views.basesCalendar.settings.propertyBasedEvents.endDateProperty": {
+      "source": "5bd23d448ccda903b2388615927c2d497117466f",
+      "translation": "3f889f55147475a5bc952513de8724a1ba86425d"
+    },
+    "views.basesCalendar.settings.propertyBasedEvents.endDatePropertyPlaceholder": {
+      "source": "de6b15cc54539a729805f78f216a9ad2a244fe6e",
+      "translation": "1c39eaa7415ee76a08576370727ab0200f8fb76d"
+    },
+    "views.basesCalendar.settings.propertyBasedEvents.titleProperty": {
+      "source": "d1b7e83b7d8fd3224fb93d8b8d9b4fe4a1991cab",
+      "translation": "dc8c3782d372762ffe446420e06aca86b3ec7115"
+    },
+    "views.basesCalendar.settings.propertyBasedEvents.titlePropertyPlaceholder": {
+      "source": "2311287f771d0c0daf22b8d55515a44afa35f7ce",
+      "translation": "6e7cfa869a30cb53ca14870a0fde857be1cde4df"
+    },
     "views.basesCalendar.errors.failedToInitialize": {
       "source": "72aed61f75cf862170b7a47f054f2ded50802aa7",
       "translation": "5f3481a4da34007a1a41b26aaeac17a37148d4fd"
@@ -6240,52 +6378,190 @@
       "source": "aa73278ad78de284702c875cbe2d73ccb8f9c5d3",
       "translation": "aa73278ad78de284702c875cbe2d73ccb8f9c5d3"
     },
-    "views.basesCalendar.settings.groups.dateNavigation": null,
-    "views.basesCalendar.settings.groups.events": null,
-    "views.basesCalendar.settings.groups.layout": null,
-    "views.basesCalendar.settings.groups.propertyBasedEvents": null,
-    "views.basesCalendar.settings.groups.calendarSubscriptions": null,
-    "views.basesCalendar.settings.dateNavigation.navigateToDate": null,
-    "views.basesCalendar.settings.dateNavigation.navigateToDatePlaceholder": null,
-    "views.basesCalendar.settings.dateNavigation.navigateToDateFromProperty": null,
-    "views.basesCalendar.settings.dateNavigation.navigateToDateFromPropertyPlaceholder": null,
-    "views.basesCalendar.settings.dateNavigation.propertyNavigationStrategy": null,
-    "views.basesCalendar.settings.dateNavigation.strategies.first": null,
-    "views.basesCalendar.settings.dateNavigation.strategies.earliest": null,
-    "views.basesCalendar.settings.dateNavigation.strategies.latest": null,
-    "views.basesCalendar.settings.events.showScheduledTasks": null,
-    "views.basesCalendar.settings.events.showDueTasks": null,
-    "views.basesCalendar.settings.events.showRecurringTasks": null,
-    "views.basesCalendar.settings.events.showTimeEntries": null,
-    "views.basesCalendar.settings.events.showTimeblocks": null,
-    "views.basesCalendar.settings.events.showPropertyBasedEvents": null,
-    "views.basesCalendar.settings.layout.calendarView": null,
-    "views.basesCalendar.settings.layout.customDayCount": null,
-    "views.basesCalendar.settings.layout.dayStartTime": null,
-    "views.basesCalendar.settings.layout.dayStartTimePlaceholder": null,
-    "views.basesCalendar.settings.layout.dayEndTime": null,
-    "views.basesCalendar.settings.layout.dayEndTimePlaceholder": null,
-    "views.basesCalendar.settings.layout.timeSlotDuration": null,
-    "views.basesCalendar.settings.layout.timeSlotDurationPlaceholder": null,
-    "views.basesCalendar.settings.layout.weekStartsOn": null,
-    "views.basesCalendar.settings.layout.showWeekNumbers": null,
-    "views.basesCalendar.settings.layout.showNowIndicator": null,
-    "views.basesCalendar.settings.layout.showWeekends": null,
-    "views.basesCalendar.settings.layout.showAllDaySlot": null,
-    "views.basesCalendar.settings.layout.showTodayHighlight": null,
-    "views.basesCalendar.settings.layout.showSelectionPreview": null,
-    "views.basesCalendar.settings.layout.timeFormat": null,
-    "views.basesCalendar.settings.layout.timeFormat12": null,
-    "views.basesCalendar.settings.layout.timeFormat24": null,
-    "views.basesCalendar.settings.layout.initialScrollTime": null,
-    "views.basesCalendar.settings.layout.initialScrollTimePlaceholder": null,
-    "views.basesCalendar.settings.layout.minimumEventHeight": null,
-    "views.basesCalendar.settings.propertyBasedEvents.startDateProperty": null,
-    "views.basesCalendar.settings.propertyBasedEvents.startDatePropertyPlaceholder": null,
-    "views.basesCalendar.settings.propertyBasedEvents.endDateProperty": null,
-    "views.basesCalendar.settings.propertyBasedEvents.endDatePropertyPlaceholder": null,
-    "views.basesCalendar.settings.propertyBasedEvents.titleProperty": null,
-    "views.basesCalendar.settings.propertyBasedEvents.titlePropertyPlaceholder": null,
+    "views.basesCalendar.settings.groups.dateNavigation": {
+      "source": "8487a72e02c205a734e6ec6a5684a99576039cb3",
+      "translation": "5cba3a19c4bdca7c7335ef59885db537d31a3571"
+    },
+    "views.basesCalendar.settings.groups.events": {
+      "source": "c5497bca58468ae64aed6c0fd921109217988db3",
+      "translation": "c7b33878f6390712ba7cb64c5e097fb1256af00d"
+    },
+    "views.basesCalendar.settings.groups.layout": {
+      "source": "972ad8d8a50397ba8c02433ed8f048eeb4074b85",
+      "translation": "dfe849d440286b98936aeb6cdd80891bdfb8b46a"
+    },
+    "views.basesCalendar.settings.groups.propertyBasedEvents": {
+      "source": "d31c8cee5b57ad516997269e170f40c08e9c56c7",
+      "translation": "9444566cc182225f4397098a7e9888258d302f17"
+    },
+    "views.basesCalendar.settings.groups.calendarSubscriptions": {
+      "source": "9b99ca62a8c206aeef3199afeb8c2d6ea70c3c3a",
+      "translation": "fb2be6dc29776b765d49d49218dd87ea71dfc715"
+    },
+    "views.basesCalendar.settings.dateNavigation.navigateToDate": {
+      "source": "2a47407705ef9a77de4778c38853a4122e38b1fd",
+      "translation": "fa66602b85f1f973639677da41fcafd2912bfff0"
+    },
+    "views.basesCalendar.settings.dateNavigation.navigateToDatePlaceholder": {
+      "source": "5c6abb7b0eec92301b6084e8f47b1963bee3a2d3",
+      "translation": "dc906cfcfd2607f05b9fe38900f07355a7205e9f"
+    },
+    "views.basesCalendar.settings.dateNavigation.navigateToDateFromProperty": {
+      "source": "1d41e70f496e85518af57ff9d0c3800425946fb2",
+      "translation": "65c4ada0cd92a8e6c484458c37cb7b49078b7c03"
+    },
+    "views.basesCalendar.settings.dateNavigation.navigateToDateFromPropertyPlaceholder": {
+      "source": "805bf18c2c60fd304e61e7e1335c9855759f9e73",
+      "translation": "04875199c95cbeafac4b392e8ca9bae515cecff8"
+    },
+    "views.basesCalendar.settings.dateNavigation.propertyNavigationStrategy": {
+      "source": "06ebe214f61592cb1d00d06f7da4b0bbb65f9f59",
+      "translation": "d0483d08c7b02a1ac1bcbe3e76e463853121f4de"
+    },
+    "views.basesCalendar.settings.dateNavigation.strategies.first": {
+      "source": "ffa400323e5094765e9a525699646ad72a390716",
+      "translation": "925138cd82a8cfc1eada791ee1d5aa8a93cfac60"
+    },
+    "views.basesCalendar.settings.dateNavigation.strategies.earliest": {
+      "source": "a82ed564751239856af5b7eb67b1f1bfef84e67d",
+      "translation": "c0f4923592225f05029ce8fd1370d67c0cc4d4ca"
+    },
+    "views.basesCalendar.settings.dateNavigation.strategies.latest": {
+      "source": "42ffdcce79d33f576cb58283305ef7ab756c0478",
+      "translation": "b21ebac9aec27ec836724168ee0c0570036ae3dd"
+    },
+    "views.basesCalendar.settings.events.showScheduledTasks": {
+      "source": "0fd520d76ebff53e4708b9034c0a56b86c32d34c",
+      "translation": "782fe03eaf88d8d6fe789582915b7e6f57849601"
+    },
+    "views.basesCalendar.settings.events.showDueTasks": {
+      "source": "18bdeb26654a9715a97a62a65e4a96eb5078aebb",
+      "translation": "d5d0c1043fae801c058724e24f6aa74412ab2eb1"
+    },
+    "views.basesCalendar.settings.events.showRecurringTasks": {
+      "source": "a0cb06969984df001beafafd38566341051237cb",
+      "translation": "fdc2866b822d871766cbae08417af82765c96da2"
+    },
+    "views.basesCalendar.settings.events.showTimeEntries": {
+      "source": "bc2fc63fe844da7026e953830dd63ed3ef7dcca8",
+      "translation": "49a681a68e39770004cbd331397711187028d01e"
+    },
+    "views.basesCalendar.settings.events.showTimeblocks": {
+      "source": "6bbeac2719e460e9d080fa80a269b9a2387d15fd",
+      "translation": "e9888a87d311a7832ae75c28b9be44be00d04bf3"
+    },
+    "views.basesCalendar.settings.events.showPropertyBasedEvents": {
+      "source": "2cff9596706c3353997d8df5ed2dad6724932d57",
+      "translation": "7ea0968c95eae822371f4902df32f54160e78296"
+    },
+    "views.basesCalendar.settings.layout.calendarView": {
+      "source": "2b4d4585e106f1e6647cfabf1a31a9c441165a44",
+      "translation": "48adfb353040e9a8732b5c1c71b001680ee082d3"
+    },
+    "views.basesCalendar.settings.layout.customDayCount": {
+      "source": "1aadcb0d4d3400d00e2ad0a4cffa017ad1fac481",
+      "translation": "c585fec878ba515866da41eb7d674ade38f4a26c"
+    },
+    "views.basesCalendar.settings.layout.dayStartTime": {
+      "source": "0f668f32458bf870e8823e6dd50a7fcc1dc595c7",
+      "translation": "a497b916e7f0b2437f82805314e87c9a4567c4fb"
+    },
+    "views.basesCalendar.settings.layout.dayStartTimePlaceholder": {
+      "source": "76b7b3219aac0cf237e1aa634f4d4034665565d0",
+      "translation": "ad25a67250e0227b6199e3d8bb3afafed51acf09"
+    },
+    "views.basesCalendar.settings.layout.dayEndTime": {
+      "source": "c7cb09793cab1cd532e4817ddfb425a19b2d029f",
+      "translation": "61d4e4800d5ea9040394d13f9bbfb3d99fd9f7e4"
+    },
+    "views.basesCalendar.settings.layout.dayEndTimePlaceholder": {
+      "source": "0133cae380a25a9edd58d66259a3164cfb8f475e",
+      "translation": "08705ebe7c3376c0c7e5f5d547aac2c3b6400b76"
+    },
+    "views.basesCalendar.settings.layout.timeSlotDuration": {
+      "source": "29f4bf4e4e79c36f8416b3785304f0a28bf6d1ca",
+      "translation": "4d08607798d125c35e593b8243d06900027cde58"
+    },
+    "views.basesCalendar.settings.layout.timeSlotDurationPlaceholder": {
+      "source": "42dcf2fde11e354fe96a959abe2424d9339a8589",
+      "translation": "84ed6d9e5a3898b4f62d998df68e77624024a797"
+    },
+    "views.basesCalendar.settings.layout.weekStartsOn": {
+      "source": "c5ee02903b18157906dd2123eb7caaecc6881b5a",
+      "translation": "f4f87c3bb9b4dee13dcdb36ba47ada815c5c840b"
+    },
+    "views.basesCalendar.settings.layout.showWeekNumbers": {
+      "source": "181797ee5c8edfd86e0166c5012159efdebefee8",
+      "translation": "261dbe011184cfead1b62050ba9e12766979103e"
+    },
+    "views.basesCalendar.settings.layout.showNowIndicator": {
+      "source": "80bc9e34e9d741ed65ca981c5371f2598870dad8",
+      "translation": "3d920acdfefface7c0a3247d2a44f2f6d5059ddb"
+    },
+    "views.basesCalendar.settings.layout.showWeekends": {
+      "source": "edb5cc0a9bbfccc244d956c3b04603799c1ffe51",
+      "translation": "430b594f66e3f580249483804dcf07ff39e1a8ef"
+    },
+    "views.basesCalendar.settings.layout.showAllDaySlot": {
+      "source": "4eb52dd55c78e6438d4f27f83e795423564d7b96",
+      "translation": "e7b4675bfa7c351f8b4bd8edd9d61a282476b3b9"
+    },
+    "views.basesCalendar.settings.layout.showTodayHighlight": {
+      "source": "b48ddd6e3b547a7b98d846017f53e8e3e620fc3a",
+      "translation": "837aabde5f379765e50d54769b54b24bc2f7755b"
+    },
+    "views.basesCalendar.settings.layout.showSelectionPreview": {
+      "source": "d86127e56667e1a419f7b4b7fe3ea41a09a6a71c",
+      "translation": "3c428baf9fc7f66a0bd6b1938c2845a950851452"
+    },
+    "views.basesCalendar.settings.layout.timeFormat": {
+      "source": "8f3bd1539454f7f8c2dc8b30d6a7867c512fecd5",
+      "translation": "f950b825ec943c0bff0206cf9162b4f2ddaaffe3"
+    },
+    "views.basesCalendar.settings.layout.timeFormat12": {
+      "source": "b7f21d3e3081eb263ef1553fb5b635f390ab9c4d",
+      "translation": "714ce671c6a3821d4dbc203120a81b5f2055b9e2"
+    },
+    "views.basesCalendar.settings.layout.timeFormat24": {
+      "source": "18e86819267257b73fd125ff18108aa79f1f29bb",
+      "translation": "1293de481e565fc37d455d8a1e44df4ae36c0c2f"
+    },
+    "views.basesCalendar.settings.layout.initialScrollTime": {
+      "source": "57489455a18c7f3f66048b39c934497b1a858b6b",
+      "translation": "a4b7f2754bdec75747fd6096ba2d5d97335b0d9e"
+    },
+    "views.basesCalendar.settings.layout.initialScrollTimePlaceholder": {
+      "source": "76b7b3219aac0cf237e1aa634f4d4034665565d0",
+      "translation": "ad25a67250e0227b6199e3d8bb3afafed51acf09"
+    },
+    "views.basesCalendar.settings.layout.minimumEventHeight": {
+      "source": "0c7471e72296e1a9ba5487514e4c96c819b4e53a",
+      "translation": "7d970abc24a1ea8ff9f516cbe6010c6d7fb9e325"
+    },
+    "views.basesCalendar.settings.propertyBasedEvents.startDateProperty": {
+      "source": "05c65e1fc55d32dc8aab0c001a11218e4ee4119c",
+      "translation": "e1595c21e6dff6aa736d8e689f6414b130ccc13f"
+    },
+    "views.basesCalendar.settings.propertyBasedEvents.startDatePropertyPlaceholder": {
+      "source": "f46d1039527ed2dab5f0d0f1218cc0f45b2f6c42",
+      "translation": "3007e1a9a6801368f65d63bda0125b68245081d7"
+    },
+    "views.basesCalendar.settings.propertyBasedEvents.endDateProperty": {
+      "source": "5bd23d448ccda903b2388615927c2d497117466f",
+      "translation": "d97ffbc5bc4028aa9c3d6831f467c519aae98881"
+    },
+    "views.basesCalendar.settings.propertyBasedEvents.endDatePropertyPlaceholder": {
+      "source": "de6b15cc54539a729805f78f216a9ad2a244fe6e",
+      "translation": "a62e0916b87c2e804a121d3d1f80974c7a889d0a"
+    },
+    "views.basesCalendar.settings.propertyBasedEvents.titleProperty": {
+      "source": "d1b7e83b7d8fd3224fb93d8b8d9b4fe4a1991cab",
+      "translation": "f1fa2209ea354774cbbebe72875edd0594a0af6b"
+    },
+    "views.basesCalendar.settings.propertyBasedEvents.titlePropertyPlaceholder": {
+      "source": "2311287f771d0c0daf22b8d55515a44afa35f7ce",
+      "translation": "2dd83e60f9e559b9979c15b91e588031aa9bbbdc"
+    },
     "views.basesCalendar.errors.failedToInitialize": {
       "source": "72aed61f75cf862170b7a47f054f2ded50802aa7",
       "translation": "a7c2358fca077483433563cf885d3f30314b0d75"
@@ -12040,52 +12316,190 @@
       "source": "aa73278ad78de284702c875cbe2d73ccb8f9c5d3",
       "translation": "5de56b1ab2623758e2b533e17cb8ac608d6a9013"
     },
-    "views.basesCalendar.settings.groups.dateNavigation": null,
-    "views.basesCalendar.settings.groups.events": null,
-    "views.basesCalendar.settings.groups.layout": null,
-    "views.basesCalendar.settings.groups.propertyBasedEvents": null,
-    "views.basesCalendar.settings.groups.calendarSubscriptions": null,
-    "views.basesCalendar.settings.dateNavigation.navigateToDate": null,
-    "views.basesCalendar.settings.dateNavigation.navigateToDatePlaceholder": null,
-    "views.basesCalendar.settings.dateNavigation.navigateToDateFromProperty": null,
-    "views.basesCalendar.settings.dateNavigation.navigateToDateFromPropertyPlaceholder": null,
-    "views.basesCalendar.settings.dateNavigation.propertyNavigationStrategy": null,
-    "views.basesCalendar.settings.dateNavigation.strategies.first": null,
-    "views.basesCalendar.settings.dateNavigation.strategies.earliest": null,
-    "views.basesCalendar.settings.dateNavigation.strategies.latest": null,
-    "views.basesCalendar.settings.events.showScheduledTasks": null,
-    "views.basesCalendar.settings.events.showDueTasks": null,
-    "views.basesCalendar.settings.events.showRecurringTasks": null,
-    "views.basesCalendar.settings.events.showTimeEntries": null,
-    "views.basesCalendar.settings.events.showTimeblocks": null,
-    "views.basesCalendar.settings.events.showPropertyBasedEvents": null,
-    "views.basesCalendar.settings.layout.calendarView": null,
-    "views.basesCalendar.settings.layout.customDayCount": null,
-    "views.basesCalendar.settings.layout.dayStartTime": null,
-    "views.basesCalendar.settings.layout.dayStartTimePlaceholder": null,
-    "views.basesCalendar.settings.layout.dayEndTime": null,
-    "views.basesCalendar.settings.layout.dayEndTimePlaceholder": null,
-    "views.basesCalendar.settings.layout.timeSlotDuration": null,
-    "views.basesCalendar.settings.layout.timeSlotDurationPlaceholder": null,
-    "views.basesCalendar.settings.layout.weekStartsOn": null,
-    "views.basesCalendar.settings.layout.showWeekNumbers": null,
-    "views.basesCalendar.settings.layout.showNowIndicator": null,
-    "views.basesCalendar.settings.layout.showWeekends": null,
-    "views.basesCalendar.settings.layout.showAllDaySlot": null,
-    "views.basesCalendar.settings.layout.showTodayHighlight": null,
-    "views.basesCalendar.settings.layout.showSelectionPreview": null,
-    "views.basesCalendar.settings.layout.timeFormat": null,
-    "views.basesCalendar.settings.layout.timeFormat12": null,
-    "views.basesCalendar.settings.layout.timeFormat24": null,
-    "views.basesCalendar.settings.layout.initialScrollTime": null,
-    "views.basesCalendar.settings.layout.initialScrollTimePlaceholder": null,
-    "views.basesCalendar.settings.layout.minimumEventHeight": null,
-    "views.basesCalendar.settings.propertyBasedEvents.startDateProperty": null,
-    "views.basesCalendar.settings.propertyBasedEvents.startDatePropertyPlaceholder": null,
-    "views.basesCalendar.settings.propertyBasedEvents.endDateProperty": null,
-    "views.basesCalendar.settings.propertyBasedEvents.endDatePropertyPlaceholder": null,
-    "views.basesCalendar.settings.propertyBasedEvents.titleProperty": null,
-    "views.basesCalendar.settings.propertyBasedEvents.titlePropertyPlaceholder": null,
+    "views.basesCalendar.settings.groups.dateNavigation": {
+      "source": "8487a72e02c205a734e6ec6a5684a99576039cb3",
+      "translation": "df5980b4f6dea6e9889ba9f95cbae73f350a0f21"
+    },
+    "views.basesCalendar.settings.groups.events": {
+      "source": "c5497bca58468ae64aed6c0fd921109217988db3",
+      "translation": "90066f4cf8705b344f102b9306d6b00f1581709e"
+    },
+    "views.basesCalendar.settings.groups.layout": {
+      "source": "972ad8d8a50397ba8c02433ed8f048eeb4074b85",
+      "translation": "f09e7eee2eefe89bbe9b61541500398dd8fb1519"
+    },
+    "views.basesCalendar.settings.groups.propertyBasedEvents": {
+      "source": "d31c8cee5b57ad516997269e170f40c08e9c56c7",
+      "translation": "6fec35fd7ccf21e929d42d132d55c7a3d477e8d5"
+    },
+    "views.basesCalendar.settings.groups.calendarSubscriptions": {
+      "source": "9b99ca62a8c206aeef3199afeb8c2d6ea70c3c3a",
+      "translation": "8fa5a0c55c39ccd6b214a4910bcdb42bd577aafe"
+    },
+    "views.basesCalendar.settings.dateNavigation.navigateToDate": {
+      "source": "2a47407705ef9a77de4778c38853a4122e38b1fd",
+      "translation": "4ae8748fca0ca5203f2c6498dc5055d9b6fd2d4f"
+    },
+    "views.basesCalendar.settings.dateNavigation.navigateToDatePlaceholder": {
+      "source": "5c6abb7b0eec92301b6084e8f47b1963bee3a2d3",
+      "translation": "8c66a173eaddaebe5d8ad21ef657f1b1b092f8b3"
+    },
+    "views.basesCalendar.settings.dateNavigation.navigateToDateFromProperty": {
+      "source": "1d41e70f496e85518af57ff9d0c3800425946fb2",
+      "translation": "d0274f2dcf022484b137b495086f8111e38c4fe6"
+    },
+    "views.basesCalendar.settings.dateNavigation.navigateToDateFromPropertyPlaceholder": {
+      "source": "805bf18c2c60fd304e61e7e1335c9855759f9e73",
+      "translation": "6b788a51aa066bf4acc9f4a0482a62948381c254"
+    },
+    "views.basesCalendar.settings.dateNavigation.propertyNavigationStrategy": {
+      "source": "06ebe214f61592cb1d00d06f7da4b0bbb65f9f59",
+      "translation": "142310c0618a5b19a4b56806d96dfae81a50649e"
+    },
+    "views.basesCalendar.settings.dateNavigation.strategies.first": {
+      "source": "ffa400323e5094765e9a525699646ad72a390716",
+      "translation": "61d84910136e38f2436fbd0fff59fa1d6f0d423a"
+    },
+    "views.basesCalendar.settings.dateNavigation.strategies.earliest": {
+      "source": "a82ed564751239856af5b7eb67b1f1bfef84e67d",
+      "translation": "bca85704187ff998f81c5e166c89633793a3b0b3"
+    },
+    "views.basesCalendar.settings.dateNavigation.strategies.latest": {
+      "source": "42ffdcce79d33f576cb58283305ef7ab756c0478",
+      "translation": "4eb1ded36e827aed48fa19423fcbef22cb8a1d28"
+    },
+    "views.basesCalendar.settings.events.showScheduledTasks": {
+      "source": "0fd520d76ebff53e4708b9034c0a56b86c32d34c",
+      "translation": "533ef41385b21112fd2cb1ad9bc3106a6e280b53"
+    },
+    "views.basesCalendar.settings.events.showDueTasks": {
+      "source": "18bdeb26654a9715a97a62a65e4a96eb5078aebb",
+      "translation": "23ae5138ff279431437bc2c322fd713c6012a652"
+    },
+    "views.basesCalendar.settings.events.showRecurringTasks": {
+      "source": "a0cb06969984df001beafafd38566341051237cb",
+      "translation": "a02df4070dfb22fc593ae3f2f1622fff9eeef9cd"
+    },
+    "views.basesCalendar.settings.events.showTimeEntries": {
+      "source": "bc2fc63fe844da7026e953830dd63ed3ef7dcca8",
+      "translation": "31a6b395d7a3a77a499b6ff4dea68a2c16ef588d"
+    },
+    "views.basesCalendar.settings.events.showTimeblocks": {
+      "source": "6bbeac2719e460e9d080fa80a269b9a2387d15fd",
+      "translation": "aab2bab034be5832bce2a09962b56837e4c585ba"
+    },
+    "views.basesCalendar.settings.events.showPropertyBasedEvents": {
+      "source": "2cff9596706c3353997d8df5ed2dad6724932d57",
+      "translation": "209c15ce7a671055e20674f0f7a235a865fb4030"
+    },
+    "views.basesCalendar.settings.layout.calendarView": {
+      "source": "2b4d4585e106f1e6647cfabf1a31a9c441165a44",
+      "translation": "20647d92a26a21036c8b9058ed08409b0bde3c6e"
+    },
+    "views.basesCalendar.settings.layout.customDayCount": {
+      "source": "1aadcb0d4d3400d00e2ad0a4cffa017ad1fac481",
+      "translation": "90710f98bfb77e7d3787746a23f0412835a8495c"
+    },
+    "views.basesCalendar.settings.layout.dayStartTime": {
+      "source": "0f668f32458bf870e8823e6dd50a7fcc1dc595c7",
+      "translation": "e3180159c9a136fc28c11d5da31bd36e7df6097f"
+    },
+    "views.basesCalendar.settings.layout.dayStartTimePlaceholder": {
+      "source": "76b7b3219aac0cf237e1aa634f4d4034665565d0",
+      "translation": "e2bf659b2559bc41b93fd9c0e0fc842be2973fad"
+    },
+    "views.basesCalendar.settings.layout.dayEndTime": {
+      "source": "c7cb09793cab1cd532e4817ddfb425a19b2d029f",
+      "translation": "07135cc7795aa6d59ab06717fc04cd2eb7927ce5"
+    },
+    "views.basesCalendar.settings.layout.dayEndTimePlaceholder": {
+      "source": "0133cae380a25a9edd58d66259a3164cfb8f475e",
+      "translation": "d6cb8baf01df36f9f0d664352de5ac9aabd5991a"
+    },
+    "views.basesCalendar.settings.layout.timeSlotDuration": {
+      "source": "29f4bf4e4e79c36f8416b3785304f0a28bf6d1ca",
+      "translation": "feb25242c02ddba197ef19c75d191703f67e3ccd"
+    },
+    "views.basesCalendar.settings.layout.timeSlotDurationPlaceholder": {
+      "source": "42dcf2fde11e354fe96a959abe2424d9339a8589",
+      "translation": "f91b444cf92bd0a247a23d6e7d846893676f1efc"
+    },
+    "views.basesCalendar.settings.layout.weekStartsOn": {
+      "source": "c5ee02903b18157906dd2123eb7caaecc6881b5a",
+      "translation": "a42d4d52511f97f3946357564da09ba5b9994fb2"
+    },
+    "views.basesCalendar.settings.layout.showWeekNumbers": {
+      "source": "181797ee5c8edfd86e0166c5012159efdebefee8",
+      "translation": "3682e667d989a4d7de57b6eb4a1021fa3f731d42"
+    },
+    "views.basesCalendar.settings.layout.showNowIndicator": {
+      "source": "80bc9e34e9d741ed65ca981c5371f2598870dad8",
+      "translation": "ff3399ad04b443bff75aa18be67780f745d62940"
+    },
+    "views.basesCalendar.settings.layout.showWeekends": {
+      "source": "edb5cc0a9bbfccc244d956c3b04603799c1ffe51",
+      "translation": "ae71b1a760b118d72cf43317a74e826a3035ffb8"
+    },
+    "views.basesCalendar.settings.layout.showAllDaySlot": {
+      "source": "4eb52dd55c78e6438d4f27f83e795423564d7b96",
+      "translation": "6a73f8a29640cc3b7ccc4b2678c74c71518ff1a6"
+    },
+    "views.basesCalendar.settings.layout.showTodayHighlight": {
+      "source": "b48ddd6e3b547a7b98d846017f53e8e3e620fc3a",
+      "translation": "a0f5f9363b86a0521623f9282440ff33153163d5"
+    },
+    "views.basesCalendar.settings.layout.showSelectionPreview": {
+      "source": "d86127e56667e1a419f7b4b7fe3ea41a09a6a71c",
+      "translation": "bdc608fe54cd39d27a26fa1ee53a273f1ea2ee15"
+    },
+    "views.basesCalendar.settings.layout.timeFormat": {
+      "source": "8f3bd1539454f7f8c2dc8b30d6a7867c512fecd5",
+      "translation": "c53687b88666797335a67059a3d96d775b631256"
+    },
+    "views.basesCalendar.settings.layout.timeFormat12": {
+      "source": "b7f21d3e3081eb263ef1553fb5b635f390ab9c4d",
+      "translation": "c80ada24ea42bb3d2e43fc5f00f75a3789f26a31"
+    },
+    "views.basesCalendar.settings.layout.timeFormat24": {
+      "source": "18e86819267257b73fd125ff18108aa79f1f29bb",
+      "translation": "3ae53cc15fb43f1bdfaf6917cbb04adcd1ce7700"
+    },
+    "views.basesCalendar.settings.layout.initialScrollTime": {
+      "source": "57489455a18c7f3f66048b39c934497b1a858b6b",
+      "translation": "72030bb2607ad5bb1e9edfd73c8c52f5b49ea997"
+    },
+    "views.basesCalendar.settings.layout.initialScrollTimePlaceholder": {
+      "source": "76b7b3219aac0cf237e1aa634f4d4034665565d0",
+      "translation": "e2bf659b2559bc41b93fd9c0e0fc842be2973fad"
+    },
+    "views.basesCalendar.settings.layout.minimumEventHeight": {
+      "source": "0c7471e72296e1a9ba5487514e4c96c819b4e53a",
+      "translation": "69932caff3a7e60d94199f6ab571fa8ac0288e11"
+    },
+    "views.basesCalendar.settings.propertyBasedEvents.startDateProperty": {
+      "source": "05c65e1fc55d32dc8aab0c001a11218e4ee4119c",
+      "translation": "203d111e33f69228908d5681133ccbe72f17dd99"
+    },
+    "views.basesCalendar.settings.propertyBasedEvents.startDatePropertyPlaceholder": {
+      "source": "f46d1039527ed2dab5f0d0f1218cc0f45b2f6c42",
+      "translation": "04291c6bf7e006887d94a4a4ba9d44dc4c528956"
+    },
+    "views.basesCalendar.settings.propertyBasedEvents.endDateProperty": {
+      "source": "5bd23d448ccda903b2388615927c2d497117466f",
+      "translation": "70f6d20fc5ae5e9f102d1f11906cd38047d9e2e2"
+    },
+    "views.basesCalendar.settings.propertyBasedEvents.endDatePropertyPlaceholder": {
+      "source": "de6b15cc54539a729805f78f216a9ad2a244fe6e",
+      "translation": "689cff473c07b6566df4bc7a7d4bf938277b1abc"
+    },
+    "views.basesCalendar.settings.propertyBasedEvents.titleProperty": {
+      "source": "d1b7e83b7d8fd3224fb93d8b8d9b4fe4a1991cab",
+      "translation": "df8bc5b6e5d1281021f969d2b8735a3210170d71"
+    },
+    "views.basesCalendar.settings.propertyBasedEvents.titlePropertyPlaceholder": {
+      "source": "2311287f771d0c0daf22b8d55515a44afa35f7ce",
+      "translation": "8f6bca226aa03040e8f219e8ac8f6fae28436a78"
+    },
     "views.basesCalendar.errors.failedToInitialize": {
       "source": "72aed61f75cf862170b7a47f054f2ded50802aa7",
       "translation": "ad58c48b248d00f8d5686e1de117c572c315bbb4"
@@ -17774,52 +18188,190 @@
       "source": "aa73278ad78de284702c875cbe2d73ccb8f9c5d3",
       "translation": "0753dde3fefe6f6187fc84f9baa52a674c1fe120"
     },
-    "views.basesCalendar.settings.groups.dateNavigation": null,
-    "views.basesCalendar.settings.groups.events": null,
-    "views.basesCalendar.settings.groups.layout": null,
-    "views.basesCalendar.settings.groups.propertyBasedEvents": null,
-    "views.basesCalendar.settings.groups.calendarSubscriptions": null,
-    "views.basesCalendar.settings.dateNavigation.navigateToDate": null,
-    "views.basesCalendar.settings.dateNavigation.navigateToDatePlaceholder": null,
-    "views.basesCalendar.settings.dateNavigation.navigateToDateFromProperty": null,
-    "views.basesCalendar.settings.dateNavigation.navigateToDateFromPropertyPlaceholder": null,
-    "views.basesCalendar.settings.dateNavigation.propertyNavigationStrategy": null,
-    "views.basesCalendar.settings.dateNavigation.strategies.first": null,
-    "views.basesCalendar.settings.dateNavigation.strategies.earliest": null,
-    "views.basesCalendar.settings.dateNavigation.strategies.latest": null,
-    "views.basesCalendar.settings.events.showScheduledTasks": null,
-    "views.basesCalendar.settings.events.showDueTasks": null,
-    "views.basesCalendar.settings.events.showRecurringTasks": null,
-    "views.basesCalendar.settings.events.showTimeEntries": null,
-    "views.basesCalendar.settings.events.showTimeblocks": null,
-    "views.basesCalendar.settings.events.showPropertyBasedEvents": null,
-    "views.basesCalendar.settings.layout.calendarView": null,
-    "views.basesCalendar.settings.layout.customDayCount": null,
-    "views.basesCalendar.settings.layout.dayStartTime": null,
-    "views.basesCalendar.settings.layout.dayStartTimePlaceholder": null,
-    "views.basesCalendar.settings.layout.dayEndTime": null,
-    "views.basesCalendar.settings.layout.dayEndTimePlaceholder": null,
-    "views.basesCalendar.settings.layout.timeSlotDuration": null,
-    "views.basesCalendar.settings.layout.timeSlotDurationPlaceholder": null,
-    "views.basesCalendar.settings.layout.weekStartsOn": null,
-    "views.basesCalendar.settings.layout.showWeekNumbers": null,
-    "views.basesCalendar.settings.layout.showNowIndicator": null,
-    "views.basesCalendar.settings.layout.showWeekends": null,
-    "views.basesCalendar.settings.layout.showAllDaySlot": null,
-    "views.basesCalendar.settings.layout.showTodayHighlight": null,
-    "views.basesCalendar.settings.layout.showSelectionPreview": null,
-    "views.basesCalendar.settings.layout.timeFormat": null,
-    "views.basesCalendar.settings.layout.timeFormat12": null,
-    "views.basesCalendar.settings.layout.timeFormat24": null,
-    "views.basesCalendar.settings.layout.initialScrollTime": null,
-    "views.basesCalendar.settings.layout.initialScrollTimePlaceholder": null,
-    "views.basesCalendar.settings.layout.minimumEventHeight": null,
-    "views.basesCalendar.settings.propertyBasedEvents.startDateProperty": null,
-    "views.basesCalendar.settings.propertyBasedEvents.startDatePropertyPlaceholder": null,
-    "views.basesCalendar.settings.propertyBasedEvents.endDateProperty": null,
-    "views.basesCalendar.settings.propertyBasedEvents.endDatePropertyPlaceholder": null,
-    "views.basesCalendar.settings.propertyBasedEvents.titleProperty": null,
-    "views.basesCalendar.settings.propertyBasedEvents.titlePropertyPlaceholder": null,
+    "views.basesCalendar.settings.groups.dateNavigation": {
+      "source": "8487a72e02c205a734e6ec6a5684a99576039cb3",
+      "translation": "4e0b207c74b14cd8a4e6a275afa1418c8c38767e"
+    },
+    "views.basesCalendar.settings.groups.events": {
+      "source": "c5497bca58468ae64aed6c0fd921109217988db3",
+      "translation": "e18b1ea15d9c1dddf7fad47d3ea1043ca30184e6"
+    },
+    "views.basesCalendar.settings.groups.layout": {
+      "source": "972ad8d8a50397ba8c02433ed8f048eeb4074b85",
+      "translation": "11c1317b4c46e0ab1ab71a0a80d34219b5fc07a1"
+    },
+    "views.basesCalendar.settings.groups.propertyBasedEvents": {
+      "source": "d31c8cee5b57ad516997269e170f40c08e9c56c7",
+      "translation": "1349a55abcf7b154a8531b04cb40179e3195926e"
+    },
+    "views.basesCalendar.settings.groups.calendarSubscriptions": {
+      "source": "9b99ca62a8c206aeef3199afeb8c2d6ea70c3c3a",
+      "translation": "2287d63241f1d8aa5eadaf7392c317a92cf7866d"
+    },
+    "views.basesCalendar.settings.dateNavigation.navigateToDate": {
+      "source": "2a47407705ef9a77de4778c38853a4122e38b1fd",
+      "translation": "54ceab04071c47bd8194d1bc48240748c089c7d2"
+    },
+    "views.basesCalendar.settings.dateNavigation.navigateToDatePlaceholder": {
+      "source": "5c6abb7b0eec92301b6084e8f47b1963bee3a2d3",
+      "translation": "5a9d17eead2ea07b4688e2e4ae92188b81500cd4"
+    },
+    "views.basesCalendar.settings.dateNavigation.navigateToDateFromProperty": {
+      "source": "1d41e70f496e85518af57ff9d0c3800425946fb2",
+      "translation": "d73931fd9f2373556b792bec8ada5044792a6ca9"
+    },
+    "views.basesCalendar.settings.dateNavigation.navigateToDateFromPropertyPlaceholder": {
+      "source": "805bf18c2c60fd304e61e7e1335c9855759f9e73",
+      "translation": "9281a7805b5c164e5a84703a4e648442c63b9f1f"
+    },
+    "views.basesCalendar.settings.dateNavigation.propertyNavigationStrategy": {
+      "source": "06ebe214f61592cb1d00d06f7da4b0bbb65f9f59",
+      "translation": "6abc1a0152c737c9ea1befb7494d3557276f9d04"
+    },
+    "views.basesCalendar.settings.dateNavigation.strategies.first": {
+      "source": "ffa400323e5094765e9a525699646ad72a390716",
+      "translation": "6b874b1d511eaee5d6db5a8bf009d3e04f51ac40"
+    },
+    "views.basesCalendar.settings.dateNavigation.strategies.earliest": {
+      "source": "a82ed564751239856af5b7eb67b1f1bfef84e67d",
+      "translation": "1bd7362f01dd4fdf57fbd235276758762f68aeff"
+    },
+    "views.basesCalendar.settings.dateNavigation.strategies.latest": {
+      "source": "42ffdcce79d33f576cb58283305ef7ab756c0478",
+      "translation": "1a5d4290219bcfef6c93b7bef1e2d45fa6f36b54"
+    },
+    "views.basesCalendar.settings.events.showScheduledTasks": {
+      "source": "0fd520d76ebff53e4708b9034c0a56b86c32d34c",
+      "translation": "1841ce58a64c3b4c02f353319598ba6286688c9f"
+    },
+    "views.basesCalendar.settings.events.showDueTasks": {
+      "source": "18bdeb26654a9715a97a62a65e4a96eb5078aebb",
+      "translation": "4c762bb48b7510d547142f815e12de70b1bf429d"
+    },
+    "views.basesCalendar.settings.events.showRecurringTasks": {
+      "source": "a0cb06969984df001beafafd38566341051237cb",
+      "translation": "d3a508edc866a66327c1dc6512ed2056ae110951"
+    },
+    "views.basesCalendar.settings.events.showTimeEntries": {
+      "source": "bc2fc63fe844da7026e953830dd63ed3ef7dcca8",
+      "translation": "97fdc815ba37b3c1fd8d6cc8391048d77b0f4fd9"
+    },
+    "views.basesCalendar.settings.events.showTimeblocks": {
+      "source": "6bbeac2719e460e9d080fa80a269b9a2387d15fd",
+      "translation": "566fde0467778fe3f0804ad54d816d541e921ab1"
+    },
+    "views.basesCalendar.settings.events.showPropertyBasedEvents": {
+      "source": "2cff9596706c3353997d8df5ed2dad6724932d57",
+      "translation": "b1d1145adae869cb9b070d09e6c385237bf71f4e"
+    },
+    "views.basesCalendar.settings.layout.calendarView": {
+      "source": "2b4d4585e106f1e6647cfabf1a31a9c441165a44",
+      "translation": "e6232bffd7d94bbe8c5b46960aa1844a0e04b8f7"
+    },
+    "views.basesCalendar.settings.layout.customDayCount": {
+      "source": "1aadcb0d4d3400d00e2ad0a4cffa017ad1fac481",
+      "translation": "a8c383e51fd4cf53dac4c9993fd8a661d073b006"
+    },
+    "views.basesCalendar.settings.layout.dayStartTime": {
+      "source": "0f668f32458bf870e8823e6dd50a7fcc1dc595c7",
+      "translation": "50901883f5d93cbd0c3b975dd65390685cb978bd"
+    },
+    "views.basesCalendar.settings.layout.dayStartTimePlaceholder": {
+      "source": "76b7b3219aac0cf237e1aa634f4d4034665565d0",
+      "translation": "267b74154f0e9311550905251545ae6edfefa72b"
+    },
+    "views.basesCalendar.settings.layout.dayEndTime": {
+      "source": "c7cb09793cab1cd532e4817ddfb425a19b2d029f",
+      "translation": "afba7137d79d20a7e2e79eaf67c3e85a95722251"
+    },
+    "views.basesCalendar.settings.layout.dayEndTimePlaceholder": {
+      "source": "0133cae380a25a9edd58d66259a3164cfb8f475e",
+      "translation": "9c5b3fef0189412da0d7d2ca9fa46668f72cf810"
+    },
+    "views.basesCalendar.settings.layout.timeSlotDuration": {
+      "source": "29f4bf4e4e79c36f8416b3785304f0a28bf6d1ca",
+      "translation": "682599b09ddfee2ff1e35279c93ca4078f8e140f"
+    },
+    "views.basesCalendar.settings.layout.timeSlotDurationPlaceholder": {
+      "source": "42dcf2fde11e354fe96a959abe2424d9339a8589",
+      "translation": "11ef7c65a18066af074d8c55613a6a6ff8bc9dbb"
+    },
+    "views.basesCalendar.settings.layout.weekStartsOn": {
+      "source": "c5ee02903b18157906dd2123eb7caaecc6881b5a",
+      "translation": "bb898d111a5f23ca0cba5dde06064862180fbe80"
+    },
+    "views.basesCalendar.settings.layout.showWeekNumbers": {
+      "source": "181797ee5c8edfd86e0166c5012159efdebefee8",
+      "translation": "65c4dfd4853c39e856a2990a0fdafcfd61231dfd"
+    },
+    "views.basesCalendar.settings.layout.showNowIndicator": {
+      "source": "80bc9e34e9d741ed65ca981c5371f2598870dad8",
+      "translation": "2bf95a23664ff28d7b96fdf8c50cf20961565416"
+    },
+    "views.basesCalendar.settings.layout.showWeekends": {
+      "source": "edb5cc0a9bbfccc244d956c3b04603799c1ffe51",
+      "translation": "e8e774da84c86b0613109fb2fadcda0f1a7cfe52"
+    },
+    "views.basesCalendar.settings.layout.showAllDaySlot": {
+      "source": "4eb52dd55c78e6438d4f27f83e795423564d7b96",
+      "translation": "5cc640e6a3456338d5ac6ba32b947761d57a813b"
+    },
+    "views.basesCalendar.settings.layout.showTodayHighlight": {
+      "source": "b48ddd6e3b547a7b98d846017f53e8e3e620fc3a",
+      "translation": "0567023037801be83dd40a7403f73c6b4bd228a5"
+    },
+    "views.basesCalendar.settings.layout.showSelectionPreview": {
+      "source": "d86127e56667e1a419f7b4b7fe3ea41a09a6a71c",
+      "translation": "7b171e47d76cf0269d4d5128f8479f12664cf5d0"
+    },
+    "views.basesCalendar.settings.layout.timeFormat": {
+      "source": "8f3bd1539454f7f8c2dc8b30d6a7867c512fecd5",
+      "translation": "054b19afc387c5047945bea10a9c7f39de1d24a5"
+    },
+    "views.basesCalendar.settings.layout.timeFormat12": {
+      "source": "b7f21d3e3081eb263ef1553fb5b635f390ab9c4d",
+      "translation": "0c5815237a75a1c0716d5589fea1592e178d5290"
+    },
+    "views.basesCalendar.settings.layout.timeFormat24": {
+      "source": "18e86819267257b73fd125ff18108aa79f1f29bb",
+      "translation": "6d50a6b09ee5de435bee28d6a4453ff996f8c625"
+    },
+    "views.basesCalendar.settings.layout.initialScrollTime": {
+      "source": "57489455a18c7f3f66048b39c934497b1a858b6b",
+      "translation": "875dc7d58bb1f303defa1a8d07068e12f6eedc12"
+    },
+    "views.basesCalendar.settings.layout.initialScrollTimePlaceholder": {
+      "source": "76b7b3219aac0cf237e1aa634f4d4034665565d0",
+      "translation": "267b74154f0e9311550905251545ae6edfefa72b"
+    },
+    "views.basesCalendar.settings.layout.minimumEventHeight": {
+      "source": "0c7471e72296e1a9ba5487514e4c96c819b4e53a",
+      "translation": "b29e0df7212084d973911cd7651a9e42e74f2007"
+    },
+    "views.basesCalendar.settings.propertyBasedEvents.startDateProperty": {
+      "source": "05c65e1fc55d32dc8aab0c001a11218e4ee4119c",
+      "translation": "a563266dbf5e822216ebb842629702644bb73636"
+    },
+    "views.basesCalendar.settings.propertyBasedEvents.startDatePropertyPlaceholder": {
+      "source": "f46d1039527ed2dab5f0d0f1218cc0f45b2f6c42",
+      "translation": "8ca06f9917d9b6728f6f40f11f350d710e463f8c"
+    },
+    "views.basesCalendar.settings.propertyBasedEvents.endDateProperty": {
+      "source": "5bd23d448ccda903b2388615927c2d497117466f",
+      "translation": "c33c484b40317aa9ee3c7adac319830073b08c2d"
+    },
+    "views.basesCalendar.settings.propertyBasedEvents.endDatePropertyPlaceholder": {
+      "source": "de6b15cc54539a729805f78f216a9ad2a244fe6e",
+      "translation": "11c3f4a48b0bc0c1c59838cc7bbe9c870495e400"
+    },
+    "views.basesCalendar.settings.propertyBasedEvents.titleProperty": {
+      "source": "d1b7e83b7d8fd3224fb93d8b8d9b4fe4a1991cab",
+      "translation": "0f9bfc2ef9868c164684f340348f52bc86e43e44"
+    },
+    "views.basesCalendar.settings.propertyBasedEvents.titlePropertyPlaceholder": {
+      "source": "2311287f771d0c0daf22b8d55515a44afa35f7ce",
+      "translation": "ae5bbe7b8087723440963c33a8ee1e568b873824"
+    },
     "views.basesCalendar.errors.failedToInitialize": {
       "source": "72aed61f75cf862170b7a47f054f2ded50802aa7",
       "translation": "8996472ca92cacb8d5aec59fc20b468e99db965a"
@@ -23427,52 +23979,190 @@
       "source": "aa73278ad78de284702c875cbe2d73ccb8f9c5d3",
       "translation": "e9509356398612ae229f35f7002b841eff235692"
     },
-    "views.basesCalendar.settings.groups.dateNavigation": null,
-    "views.basesCalendar.settings.groups.events": null,
-    "views.basesCalendar.settings.groups.layout": null,
-    "views.basesCalendar.settings.groups.propertyBasedEvents": null,
-    "views.basesCalendar.settings.groups.calendarSubscriptions": null,
-    "views.basesCalendar.settings.dateNavigation.navigateToDate": null,
-    "views.basesCalendar.settings.dateNavigation.navigateToDatePlaceholder": null,
-    "views.basesCalendar.settings.dateNavigation.navigateToDateFromProperty": null,
-    "views.basesCalendar.settings.dateNavigation.navigateToDateFromPropertyPlaceholder": null,
-    "views.basesCalendar.settings.dateNavigation.propertyNavigationStrategy": null,
-    "views.basesCalendar.settings.dateNavigation.strategies.first": null,
-    "views.basesCalendar.settings.dateNavigation.strategies.earliest": null,
-    "views.basesCalendar.settings.dateNavigation.strategies.latest": null,
-    "views.basesCalendar.settings.events.showScheduledTasks": null,
-    "views.basesCalendar.settings.events.showDueTasks": null,
-    "views.basesCalendar.settings.events.showRecurringTasks": null,
-    "views.basesCalendar.settings.events.showTimeEntries": null,
-    "views.basesCalendar.settings.events.showTimeblocks": null,
-    "views.basesCalendar.settings.events.showPropertyBasedEvents": null,
-    "views.basesCalendar.settings.layout.calendarView": null,
-    "views.basesCalendar.settings.layout.customDayCount": null,
-    "views.basesCalendar.settings.layout.dayStartTime": null,
-    "views.basesCalendar.settings.layout.dayStartTimePlaceholder": null,
-    "views.basesCalendar.settings.layout.dayEndTime": null,
-    "views.basesCalendar.settings.layout.dayEndTimePlaceholder": null,
-    "views.basesCalendar.settings.layout.timeSlotDuration": null,
-    "views.basesCalendar.settings.layout.timeSlotDurationPlaceholder": null,
-    "views.basesCalendar.settings.layout.weekStartsOn": null,
-    "views.basesCalendar.settings.layout.showWeekNumbers": null,
-    "views.basesCalendar.settings.layout.showNowIndicator": null,
-    "views.basesCalendar.settings.layout.showWeekends": null,
-    "views.basesCalendar.settings.layout.showAllDaySlot": null,
-    "views.basesCalendar.settings.layout.showTodayHighlight": null,
-    "views.basesCalendar.settings.layout.showSelectionPreview": null,
-    "views.basesCalendar.settings.layout.timeFormat": null,
-    "views.basesCalendar.settings.layout.timeFormat12": null,
-    "views.basesCalendar.settings.layout.timeFormat24": null,
-    "views.basesCalendar.settings.layout.initialScrollTime": null,
-    "views.basesCalendar.settings.layout.initialScrollTimePlaceholder": null,
-    "views.basesCalendar.settings.layout.minimumEventHeight": null,
-    "views.basesCalendar.settings.propertyBasedEvents.startDateProperty": null,
-    "views.basesCalendar.settings.propertyBasedEvents.startDatePropertyPlaceholder": null,
-    "views.basesCalendar.settings.propertyBasedEvents.endDateProperty": null,
-    "views.basesCalendar.settings.propertyBasedEvents.endDatePropertyPlaceholder": null,
-    "views.basesCalendar.settings.propertyBasedEvents.titleProperty": null,
-    "views.basesCalendar.settings.propertyBasedEvents.titlePropertyPlaceholder": null,
+    "views.basesCalendar.settings.groups.dateNavigation": {
+      "source": "8487a72e02c205a734e6ec6a5684a99576039cb3",
+      "translation": "57bf0f6969699757d18f7b4453086a172f435690"
+    },
+    "views.basesCalendar.settings.groups.events": {
+      "source": "c5497bca58468ae64aed6c0fd921109217988db3",
+      "translation": "bb9ac875319dcb0ce8fa96b7f5f64a680e4c7646"
+    },
+    "views.basesCalendar.settings.groups.layout": {
+      "source": "972ad8d8a50397ba8c02433ed8f048eeb4074b85",
+      "translation": "e88597e10d5cbedd09a3ef93788b860ec9966ed8"
+    },
+    "views.basesCalendar.settings.groups.propertyBasedEvents": {
+      "source": "d31c8cee5b57ad516997269e170f40c08e9c56c7",
+      "translation": "38909f0175ac6f3142ccda1f1aac16bf54a1b521"
+    },
+    "views.basesCalendar.settings.groups.calendarSubscriptions": {
+      "source": "9b99ca62a8c206aeef3199afeb8c2d6ea70c3c3a",
+      "translation": "033b97980f8cfe564611b9a179dd1d63d41f91ac"
+    },
+    "views.basesCalendar.settings.dateNavigation.navigateToDate": {
+      "source": "2a47407705ef9a77de4778c38853a4122e38b1fd",
+      "translation": "a19547af0ba78583a6a456399f0ccd71cf31e442"
+    },
+    "views.basesCalendar.settings.dateNavigation.navigateToDatePlaceholder": {
+      "source": "5c6abb7b0eec92301b6084e8f47b1963bee3a2d3",
+      "translation": "2ceeac1bd0e55db3c3ff2d475200f26c889e9eb8"
+    },
+    "views.basesCalendar.settings.dateNavigation.navigateToDateFromProperty": {
+      "source": "1d41e70f496e85518af57ff9d0c3800425946fb2",
+      "translation": "f6966e9858961eaeb6a93cc9c14892f8dc4cc51b"
+    },
+    "views.basesCalendar.settings.dateNavigation.navigateToDateFromPropertyPlaceholder": {
+      "source": "805bf18c2c60fd304e61e7e1335c9855759f9e73",
+      "translation": "d182f741aeca57c5d6e47b035b925d37616a82d0"
+    },
+    "views.basesCalendar.settings.dateNavigation.propertyNavigationStrategy": {
+      "source": "06ebe214f61592cb1d00d06f7da4b0bbb65f9f59",
+      "translation": "edeec8a3f4a3a4857c3e65a3d98329ac646903a2"
+    },
+    "views.basesCalendar.settings.dateNavigation.strategies.first": {
+      "source": "ffa400323e5094765e9a525699646ad72a390716",
+      "translation": "98abd804f5ff6de4a3712757ad0b85c05f197a9b"
+    },
+    "views.basesCalendar.settings.dateNavigation.strategies.earliest": {
+      "source": "a82ed564751239856af5b7eb67b1f1bfef84e67d",
+      "translation": "7dfc33a70912df6fc98fd52484d896dd28d5f61c"
+    },
+    "views.basesCalendar.settings.dateNavigation.strategies.latest": {
+      "source": "42ffdcce79d33f576cb58283305ef7ab756c0478",
+      "translation": "23d37253d32caa31749782731932c68330613859"
+    },
+    "views.basesCalendar.settings.events.showScheduledTasks": {
+      "source": "0fd520d76ebff53e4708b9034c0a56b86c32d34c",
+      "translation": "ff9ad5674b6e7b1e79902edd082f3bf7fbbb09c6"
+    },
+    "views.basesCalendar.settings.events.showDueTasks": {
+      "source": "18bdeb26654a9715a97a62a65e4a96eb5078aebb",
+      "translation": "4e595807c56ae1fc8abe4779eb1115d48224f921"
+    },
+    "views.basesCalendar.settings.events.showRecurringTasks": {
+      "source": "a0cb06969984df001beafafd38566341051237cb",
+      "translation": "43bda8697005c860e120eb52f694dfe5bff29fc8"
+    },
+    "views.basesCalendar.settings.events.showTimeEntries": {
+      "source": "bc2fc63fe844da7026e953830dd63ed3ef7dcca8",
+      "translation": "5712b6fadeed6e0f1e9006fd1e5a810c17bc304e"
+    },
+    "views.basesCalendar.settings.events.showTimeblocks": {
+      "source": "6bbeac2719e460e9d080fa80a269b9a2387d15fd",
+      "translation": "8bbb28dde6f6b4c67712dd19415ed8ea7236fc70"
+    },
+    "views.basesCalendar.settings.events.showPropertyBasedEvents": {
+      "source": "2cff9596706c3353997d8df5ed2dad6724932d57",
+      "translation": "fcecd9a116c3d8eb70d4cc744b1a349339b12bb1"
+    },
+    "views.basesCalendar.settings.layout.calendarView": {
+      "source": "2b4d4585e106f1e6647cfabf1a31a9c441165a44",
+      "translation": "2b0d6f8080071b5a913ac455eb24f4c6571a5384"
+    },
+    "views.basesCalendar.settings.layout.customDayCount": {
+      "source": "1aadcb0d4d3400d00e2ad0a4cffa017ad1fac481",
+      "translation": "8023fa493fbdceefae07500f67148b562ca8a575"
+    },
+    "views.basesCalendar.settings.layout.dayStartTime": {
+      "source": "0f668f32458bf870e8823e6dd50a7fcc1dc595c7",
+      "translation": "ad7076c8fea6ae68bb0ce52b47c635c5861d80a7"
+    },
+    "views.basesCalendar.settings.layout.dayStartTimePlaceholder": {
+      "source": "76b7b3219aac0cf237e1aa634f4d4034665565d0",
+      "translation": "80ed1ee7a98e307895a1ff98c48e73822c9f4394"
+    },
+    "views.basesCalendar.settings.layout.dayEndTime": {
+      "source": "c7cb09793cab1cd532e4817ddfb425a19b2d029f",
+      "translation": "589af4ac2ad106e1c390c8108fdf469eb66a8e64"
+    },
+    "views.basesCalendar.settings.layout.dayEndTimePlaceholder": {
+      "source": "0133cae380a25a9edd58d66259a3164cfb8f475e",
+      "translation": "90d338348a99b03fd058ebe13e3b0bb9728c464c"
+    },
+    "views.basesCalendar.settings.layout.timeSlotDuration": {
+      "source": "29f4bf4e4e79c36f8416b3785304f0a28bf6d1ca",
+      "translation": "4e68390aeb1d99c92210064e3037119bba4d78fd"
+    },
+    "views.basesCalendar.settings.layout.timeSlotDurationPlaceholder": {
+      "source": "42dcf2fde11e354fe96a959abe2424d9339a8589",
+      "translation": "f523d5d23e814daa0c269a9a0c1cff38fb16560d"
+    },
+    "views.basesCalendar.settings.layout.weekStartsOn": {
+      "source": "c5ee02903b18157906dd2123eb7caaecc6881b5a",
+      "translation": "ef0a6f46cc55b10e8e9c2e9f51724b2867beaf58"
+    },
+    "views.basesCalendar.settings.layout.showWeekNumbers": {
+      "source": "181797ee5c8edfd86e0166c5012159efdebefee8",
+      "translation": "1c2f6e30f63a82584dc88702bac4dc913fbcfc05"
+    },
+    "views.basesCalendar.settings.layout.showNowIndicator": {
+      "source": "80bc9e34e9d741ed65ca981c5371f2598870dad8",
+      "translation": "721ceb74578615cf952c38213f272ffcfd1cce1a"
+    },
+    "views.basesCalendar.settings.layout.showWeekends": {
+      "source": "edb5cc0a9bbfccc244d956c3b04603799c1ffe51",
+      "translation": "fc15d595015c0ffa8f79940b9c3e476a759e230d"
+    },
+    "views.basesCalendar.settings.layout.showAllDaySlot": {
+      "source": "4eb52dd55c78e6438d4f27f83e795423564d7b96",
+      "translation": "f5ccb69e0bbaf9762874c260650aeb3fbd4ad230"
+    },
+    "views.basesCalendar.settings.layout.showTodayHighlight": {
+      "source": "b48ddd6e3b547a7b98d846017f53e8e3e620fc3a",
+      "translation": "43e4e4ce972f0cc5f871bccf4d3e569586b7abe8"
+    },
+    "views.basesCalendar.settings.layout.showSelectionPreview": {
+      "source": "d86127e56667e1a419f7b4b7fe3ea41a09a6a71c",
+      "translation": "4afaba016f4c220bcb37a6bcee06c28a0265b7e7"
+    },
+    "views.basesCalendar.settings.layout.timeFormat": {
+      "source": "8f3bd1539454f7f8c2dc8b30d6a7867c512fecd5",
+      "translation": "747942b4fab4f2cb4013c0c018a2cc141a55356a"
+    },
+    "views.basesCalendar.settings.layout.timeFormat12": {
+      "source": "b7f21d3e3081eb263ef1553fb5b635f390ab9c4d",
+      "translation": "ed0707010118cfbe9b57b36887a756b7de8bb68f"
+    },
+    "views.basesCalendar.settings.layout.timeFormat24": {
+      "source": "18e86819267257b73fd125ff18108aa79f1f29bb",
+      "translation": "bbdcbc86e8e0d64831e3c2d9b317c13d822c99e5"
+    },
+    "views.basesCalendar.settings.layout.initialScrollTime": {
+      "source": "57489455a18c7f3f66048b39c934497b1a858b6b",
+      "translation": "5ed3a2ec09814c7c6ad4fe85bc4673c90a32f1ba"
+    },
+    "views.basesCalendar.settings.layout.initialScrollTimePlaceholder": {
+      "source": "76b7b3219aac0cf237e1aa634f4d4034665565d0",
+      "translation": "80ed1ee7a98e307895a1ff98c48e73822c9f4394"
+    },
+    "views.basesCalendar.settings.layout.minimumEventHeight": {
+      "source": "0c7471e72296e1a9ba5487514e4c96c819b4e53a",
+      "translation": "50663327fc5ba67975e8e5fa08adab8449d8d43e"
+    },
+    "views.basesCalendar.settings.propertyBasedEvents.startDateProperty": {
+      "source": "05c65e1fc55d32dc8aab0c001a11218e4ee4119c",
+      "translation": "76ca7e2d4d189ade6e69c3bbde68bf280ab93da1"
+    },
+    "views.basesCalendar.settings.propertyBasedEvents.startDatePropertyPlaceholder": {
+      "source": "f46d1039527ed2dab5f0d0f1218cc0f45b2f6c42",
+      "translation": "c5b5ece8555ab33dab55f84b84087c7328b3b0ad"
+    },
+    "views.basesCalendar.settings.propertyBasedEvents.endDateProperty": {
+      "source": "5bd23d448ccda903b2388615927c2d497117466f",
+      "translation": "90e79b7aaafdd5625ecd24acffc0dab1e6090fc5"
+    },
+    "views.basesCalendar.settings.propertyBasedEvents.endDatePropertyPlaceholder": {
+      "source": "de6b15cc54539a729805f78f216a9ad2a244fe6e",
+      "translation": "6c8be65fe4e01edb16f3a8019bb352b67d1994b2"
+    },
+    "views.basesCalendar.settings.propertyBasedEvents.titleProperty": {
+      "source": "d1b7e83b7d8fd3224fb93d8b8d9b4fe4a1991cab",
+      "translation": "466c484f67447dfd6f039a48c365dd4975934167"
+    },
+    "views.basesCalendar.settings.propertyBasedEvents.titlePropertyPlaceholder": {
+      "source": "2311287f771d0c0daf22b8d55515a44afa35f7ce",
+      "translation": "88b2b3dfb9d8b0af618270c47a55a5f38d759012"
+    },
     "views.basesCalendar.errors.failedToInitialize": {
       "source": "72aed61f75cf862170b7a47f054f2ded50802aa7",
       "translation": "b775775226912aa14595d222e9da19885a97fac4"
@@ -29128,52 +29818,190 @@
       "source": "aa73278ad78de284702c875cbe2d73ccb8f9c5d3",
       "translation": "5c5b4fd5ba33a15949b29d65fe325a8bbb0b476b"
     },
-    "views.basesCalendar.settings.groups.dateNavigation": null,
-    "views.basesCalendar.settings.groups.events": null,
-    "views.basesCalendar.settings.groups.layout": null,
-    "views.basesCalendar.settings.groups.propertyBasedEvents": null,
-    "views.basesCalendar.settings.groups.calendarSubscriptions": null,
-    "views.basesCalendar.settings.dateNavigation.navigateToDate": null,
-    "views.basesCalendar.settings.dateNavigation.navigateToDatePlaceholder": null,
-    "views.basesCalendar.settings.dateNavigation.navigateToDateFromProperty": null,
-    "views.basesCalendar.settings.dateNavigation.navigateToDateFromPropertyPlaceholder": null,
-    "views.basesCalendar.settings.dateNavigation.propertyNavigationStrategy": null,
-    "views.basesCalendar.settings.dateNavigation.strategies.first": null,
-    "views.basesCalendar.settings.dateNavigation.strategies.earliest": null,
-    "views.basesCalendar.settings.dateNavigation.strategies.latest": null,
-    "views.basesCalendar.settings.events.showScheduledTasks": null,
-    "views.basesCalendar.settings.events.showDueTasks": null,
-    "views.basesCalendar.settings.events.showRecurringTasks": null,
-    "views.basesCalendar.settings.events.showTimeEntries": null,
-    "views.basesCalendar.settings.events.showTimeblocks": null,
-    "views.basesCalendar.settings.events.showPropertyBasedEvents": null,
-    "views.basesCalendar.settings.layout.calendarView": null,
-    "views.basesCalendar.settings.layout.customDayCount": null,
-    "views.basesCalendar.settings.layout.dayStartTime": null,
-    "views.basesCalendar.settings.layout.dayStartTimePlaceholder": null,
-    "views.basesCalendar.settings.layout.dayEndTime": null,
-    "views.basesCalendar.settings.layout.dayEndTimePlaceholder": null,
-    "views.basesCalendar.settings.layout.timeSlotDuration": null,
-    "views.basesCalendar.settings.layout.timeSlotDurationPlaceholder": null,
-    "views.basesCalendar.settings.layout.weekStartsOn": null,
-    "views.basesCalendar.settings.layout.showWeekNumbers": null,
-    "views.basesCalendar.settings.layout.showNowIndicator": null,
-    "views.basesCalendar.settings.layout.showWeekends": null,
-    "views.basesCalendar.settings.layout.showAllDaySlot": null,
-    "views.basesCalendar.settings.layout.showTodayHighlight": null,
-    "views.basesCalendar.settings.layout.showSelectionPreview": null,
-    "views.basesCalendar.settings.layout.timeFormat": null,
-    "views.basesCalendar.settings.layout.timeFormat12": null,
-    "views.basesCalendar.settings.layout.timeFormat24": null,
-    "views.basesCalendar.settings.layout.initialScrollTime": null,
-    "views.basesCalendar.settings.layout.initialScrollTimePlaceholder": null,
-    "views.basesCalendar.settings.layout.minimumEventHeight": null,
-    "views.basesCalendar.settings.propertyBasedEvents.startDateProperty": null,
-    "views.basesCalendar.settings.propertyBasedEvents.startDatePropertyPlaceholder": null,
-    "views.basesCalendar.settings.propertyBasedEvents.endDateProperty": null,
-    "views.basesCalendar.settings.propertyBasedEvents.endDatePropertyPlaceholder": null,
-    "views.basesCalendar.settings.propertyBasedEvents.titleProperty": null,
-    "views.basesCalendar.settings.propertyBasedEvents.titlePropertyPlaceholder": null,
+    "views.basesCalendar.settings.groups.dateNavigation": {
+      "source": "8487a72e02c205a734e6ec6a5684a99576039cb3",
+      "translation": "9418cc43710bff3818e4d2251de159c0df30c7b9"
+    },
+    "views.basesCalendar.settings.groups.events": {
+      "source": "c5497bca58468ae64aed6c0fd921109217988db3",
+      "translation": "550e3280629d99d56abbe306c7755cd928652e96"
+    },
+    "views.basesCalendar.settings.groups.layout": {
+      "source": "972ad8d8a50397ba8c02433ed8f048eeb4074b85",
+      "translation": "b0961e172bcdbded747381024a85290431f6fde1"
+    },
+    "views.basesCalendar.settings.groups.propertyBasedEvents": {
+      "source": "d31c8cee5b57ad516997269e170f40c08e9c56c7",
+      "translation": "0034ac2842ad0d0b00af91bc00ce7c77fdb9954c"
+    },
+    "views.basesCalendar.settings.groups.calendarSubscriptions": {
+      "source": "9b99ca62a8c206aeef3199afeb8c2d6ea70c3c3a",
+      "translation": "9dab5527fc38aa92f2fb093e2ac87f54532d5788"
+    },
+    "views.basesCalendar.settings.dateNavigation.navigateToDate": {
+      "source": "2a47407705ef9a77de4778c38853a4122e38b1fd",
+      "translation": "c0efa068855bb9fb623f36c52244cdd39eb55b04"
+    },
+    "views.basesCalendar.settings.dateNavigation.navigateToDatePlaceholder": {
+      "source": "5c6abb7b0eec92301b6084e8f47b1963bee3a2d3",
+      "translation": "85d987dee62685c86ffea0d9d49761a080e991f6"
+    },
+    "views.basesCalendar.settings.dateNavigation.navigateToDateFromProperty": {
+      "source": "1d41e70f496e85518af57ff9d0c3800425946fb2",
+      "translation": "8f8c29c8ec653560d0da87e3b759b26d117fd778"
+    },
+    "views.basesCalendar.settings.dateNavigation.navigateToDateFromPropertyPlaceholder": {
+      "source": "805bf18c2c60fd304e61e7e1335c9855759f9e73",
+      "translation": "6be5728d27c1c34fc7851b3b6fe2d50239372231"
+    },
+    "views.basesCalendar.settings.dateNavigation.propertyNavigationStrategy": {
+      "source": "06ebe214f61592cb1d00d06f7da4b0bbb65f9f59",
+      "translation": "278275ce2f96a6370c668d1cab2c14384c305a62"
+    },
+    "views.basesCalendar.settings.dateNavigation.strategies.first": {
+      "source": "ffa400323e5094765e9a525699646ad72a390716",
+      "translation": "c34f494c014568360b6dc470ddacfcfabd55706a"
+    },
+    "views.basesCalendar.settings.dateNavigation.strategies.earliest": {
+      "source": "a82ed564751239856af5b7eb67b1f1bfef84e67d",
+      "translation": "489acdb644a11362c96f1f4efa03180f3b373739"
+    },
+    "views.basesCalendar.settings.dateNavigation.strategies.latest": {
+      "source": "42ffdcce79d33f576cb58283305ef7ab756c0478",
+      "translation": "5a494e5bdd35e23a33509f8bc447375702e9681a"
+    },
+    "views.basesCalendar.settings.events.showScheduledTasks": {
+      "source": "0fd520d76ebff53e4708b9034c0a56b86c32d34c",
+      "translation": "0f0222f10efe878727c2dcfe96c92342a9571658"
+    },
+    "views.basesCalendar.settings.events.showDueTasks": {
+      "source": "18bdeb26654a9715a97a62a65e4a96eb5078aebb",
+      "translation": "a7900ba5bb9844704fa978824ef146d6773f3e07"
+    },
+    "views.basesCalendar.settings.events.showRecurringTasks": {
+      "source": "a0cb06969984df001beafafd38566341051237cb",
+      "translation": "50058864686d78b4b08a89f32a2519204ce116ef"
+    },
+    "views.basesCalendar.settings.events.showTimeEntries": {
+      "source": "bc2fc63fe844da7026e953830dd63ed3ef7dcca8",
+      "translation": "94e17546496e8495053ce7abe24fa6a46a12b605"
+    },
+    "views.basesCalendar.settings.events.showTimeblocks": {
+      "source": "6bbeac2719e460e9d080fa80a269b9a2387d15fd",
+      "translation": "32b7f9391a2dbc16a5ac2d145573241b5817623a"
+    },
+    "views.basesCalendar.settings.events.showPropertyBasedEvents": {
+      "source": "2cff9596706c3353997d8df5ed2dad6724932d57",
+      "translation": "bfa690e67a0bdd2b20313be741c9a21d7ac287c8"
+    },
+    "views.basesCalendar.settings.layout.calendarView": {
+      "source": "2b4d4585e106f1e6647cfabf1a31a9c441165a44",
+      "translation": "daa7e0a040ffa5c57ffbc9184b0d335d8d8eda34"
+    },
+    "views.basesCalendar.settings.layout.customDayCount": {
+      "source": "1aadcb0d4d3400d00e2ad0a4cffa017ad1fac481",
+      "translation": "4fb424df11ed00a6944983a5e08350220fe6ad5c"
+    },
+    "views.basesCalendar.settings.layout.dayStartTime": {
+      "source": "0f668f32458bf870e8823e6dd50a7fcc1dc595c7",
+      "translation": "99e69a099befe98c44d4e0955be7e2043bc76429"
+    },
+    "views.basesCalendar.settings.layout.dayStartTimePlaceholder": {
+      "source": "76b7b3219aac0cf237e1aa634f4d4034665565d0",
+      "translation": "af17269c3cb0bc20879e603535be857ff46f1c99"
+    },
+    "views.basesCalendar.settings.layout.dayEndTime": {
+      "source": "c7cb09793cab1cd532e4817ddfb425a19b2d029f",
+      "translation": "2d3304285f821492239992eb4fa9d970ed588437"
+    },
+    "views.basesCalendar.settings.layout.dayEndTimePlaceholder": {
+      "source": "0133cae380a25a9edd58d66259a3164cfb8f475e",
+      "translation": "1181ba94be67fa966bee13af650bb0e28ced67f9"
+    },
+    "views.basesCalendar.settings.layout.timeSlotDuration": {
+      "source": "29f4bf4e4e79c36f8416b3785304f0a28bf6d1ca",
+      "translation": "e785eed3bde061fca9cfbd0545f358e4898bf6cf"
+    },
+    "views.basesCalendar.settings.layout.timeSlotDurationPlaceholder": {
+      "source": "42dcf2fde11e354fe96a959abe2424d9339a8589",
+      "translation": "fd33b47fedea685a26f4f3b27a7fccf19a0d919d"
+    },
+    "views.basesCalendar.settings.layout.weekStartsOn": {
+      "source": "c5ee02903b18157906dd2123eb7caaecc6881b5a",
+      "translation": "a3088924e1da30ccbee011791ef7101e20016d9a"
+    },
+    "views.basesCalendar.settings.layout.showWeekNumbers": {
+      "source": "181797ee5c8edfd86e0166c5012159efdebefee8",
+      "translation": "d81915fea955be14ce3b3223342d5171cdd0112f"
+    },
+    "views.basesCalendar.settings.layout.showNowIndicator": {
+      "source": "80bc9e34e9d741ed65ca981c5371f2598870dad8",
+      "translation": "1a0fdb388b2f6cd3cc91565d3e328a39a93f7192"
+    },
+    "views.basesCalendar.settings.layout.showWeekends": {
+      "source": "edb5cc0a9bbfccc244d956c3b04603799c1ffe51",
+      "translation": "3761c156895ee81491c176a6e152279ad617129f"
+    },
+    "views.basesCalendar.settings.layout.showAllDaySlot": {
+      "source": "4eb52dd55c78e6438d4f27f83e795423564d7b96",
+      "translation": "4f9d47135e6ff262db7f9a76e7a56f6dff749a18"
+    },
+    "views.basesCalendar.settings.layout.showTodayHighlight": {
+      "source": "b48ddd6e3b547a7b98d846017f53e8e3e620fc3a",
+      "translation": "a6585f396c47e88b81d60abf2c79d18f9a371ba1"
+    },
+    "views.basesCalendar.settings.layout.showSelectionPreview": {
+      "source": "d86127e56667e1a419f7b4b7fe3ea41a09a6a71c",
+      "translation": "c22e7588e4d82672631ad1c03bfc3ed262488e5b"
+    },
+    "views.basesCalendar.settings.layout.timeFormat": {
+      "source": "8f3bd1539454f7f8c2dc8b30d6a7867c512fecd5",
+      "translation": "b97fc0d94277a3899742081326cb409f203bf304"
+    },
+    "views.basesCalendar.settings.layout.timeFormat12": {
+      "source": "b7f21d3e3081eb263ef1553fb5b635f390ab9c4d",
+      "translation": "cdee9bdcc07a363223bd9a7c9c453f31bd06bf8e"
+    },
+    "views.basesCalendar.settings.layout.timeFormat24": {
+      "source": "18e86819267257b73fd125ff18108aa79f1f29bb",
+      "translation": "367c14ce3d1652bca73b64aabcd0750331d83ed7"
+    },
+    "views.basesCalendar.settings.layout.initialScrollTime": {
+      "source": "57489455a18c7f3f66048b39c934497b1a858b6b",
+      "translation": "45a368bbf67234d63185f7cd73b6bdc9201314ac"
+    },
+    "views.basesCalendar.settings.layout.initialScrollTimePlaceholder": {
+      "source": "76b7b3219aac0cf237e1aa634f4d4034665565d0",
+      "translation": "af17269c3cb0bc20879e603535be857ff46f1c99"
+    },
+    "views.basesCalendar.settings.layout.minimumEventHeight": {
+      "source": "0c7471e72296e1a9ba5487514e4c96c819b4e53a",
+      "translation": "1dc77fabfa7166ff86c4d70720c99e1a21d6a072"
+    },
+    "views.basesCalendar.settings.propertyBasedEvents.startDateProperty": {
+      "source": "05c65e1fc55d32dc8aab0c001a11218e4ee4119c",
+      "translation": "c1a169c76040d5baa529dee7a2edc6550ef02ca9"
+    },
+    "views.basesCalendar.settings.propertyBasedEvents.startDatePropertyPlaceholder": {
+      "source": "f46d1039527ed2dab5f0d0f1218cc0f45b2f6c42",
+      "translation": "907b7f881ff93ef2385f2154b549f05efddde387"
+    },
+    "views.basesCalendar.settings.propertyBasedEvents.endDateProperty": {
+      "source": "5bd23d448ccda903b2388615927c2d497117466f",
+      "translation": "9542000fd086fb3ed576f9e55b0fac857ad4b968"
+    },
+    "views.basesCalendar.settings.propertyBasedEvents.endDatePropertyPlaceholder": {
+      "source": "de6b15cc54539a729805f78f216a9ad2a244fe6e",
+      "translation": "a1e76f57664eca8ea8b8304bed2ef0526a14bb37"
+    },
+    "views.basesCalendar.settings.propertyBasedEvents.titleProperty": {
+      "source": "d1b7e83b7d8fd3224fb93d8b8d9b4fe4a1991cab",
+      "translation": "1ab268c5f6601f61da55ebcc573f813088fb3c41"
+    },
+    "views.basesCalendar.settings.propertyBasedEvents.titlePropertyPlaceholder": {
+      "source": "2311287f771d0c0daf22b8d55515a44afa35f7ce",
+      "translation": "52fa3c523656149f668f537e8967d6bfce9db6a9"
+    },
     "views.basesCalendar.errors.failedToInitialize": {
       "source": "72aed61f75cf862170b7a47f054f2ded50802aa7",
       "translation": "c09c55d1f1ee55f4530f43f5f441294740df6799"
