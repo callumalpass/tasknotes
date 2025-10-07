@@ -364,14 +364,14 @@ export const de: TranslationTree = {
 			},
 			instantConvert: {
 				toggle: {
-					name: "Sofortige Aufgabenkonvertierung",
+					name: "Konvertierungs-Button neben Checkboxen anzeigen",
 					description:
-						"Aktiviere sofortige Konvertierung von Text zu Aufgaben über Tastenkürzel",
+						"Zeige einen Inline-Button neben Markdown-Checkboxen an, der diese in TaskNotes konvertiert",
 				},
 				folder: {
-					name: "Inline-Aufgabenkonvertierungsordner",
+					name: "Ordner für konvertierte Aufgaben",
 					description:
-						"Ordner für Inline-Aufgabenkonvertierung. Verwende {{currentNotePath}} für relativ zur aktuellen Notiz, {{currentNoteTitle}} für aktuellen Notiztitel",
+						"Ordner, in dem aus Checkboxen konvertierte Aufgaben erstellt werden. Verwende {{currentNotePath}} für relativ zur aktuellen Notiz, {{currentNoteTitle}} für aktuellen Notiztitel",
 				},
 			},
 			nlp: {

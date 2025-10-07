@@ -365,14 +365,14 @@ export const fr: TranslationTree = {
 			},
 			instantConvert: {
 				toggle: {
-					name: "Conversion instantanée en tâche",
+					name: "Afficher le bouton de conversion à côté des cases à cocher",
 					description:
-						"Activer la conversion instantanée de texte en tâche via les raccourcis clavier",
+						"Afficher un bouton en ligne à côté des cases à cocher Markdown qui les convertit en TaskNotes",
 				},
 				folder: {
-					name: "Dossier pour la conversion",
+					name: "Dossier pour les tâches converties",
 					description:
-						"Dossier utilisé pour les tâches converties. Utilisez {{currentNotePath}} pour un chemin relatif à la note actuelle, {{currentNoteTitle}} pour le titre de la note actuelle",
+						"Dossier où les tâches converties depuis les cases à cocher seront créées. Utilisez {{currentNotePath}} pour un chemin relatif à la note actuelle, {{currentNoteTitle}} pour le titre de la note actuelle",
 				},
 			},
 			nlp: {

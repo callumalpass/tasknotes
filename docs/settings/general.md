@@ -21,7 +21,17 @@ These settings control the foundational aspects of the plugin, such as task iden
 
 - **Excluded folders**: A comma-separated list of folders to exclude from the Notes tab.
 
+## Frontmatter
+
+This section only appears when you have markdown links enabled globally in Obsidian settings.
+
+- **Use markdown links in frontmatter**: Enable markdown link format `[text](path)` for project and dependency links in frontmatter. Requires the `obsidian-frontmatter-markdown-links` plugin. When disabled (default), frontmatter uses wikilink format `[[path]]` which is natively supported by Obsidian.
+
 ## Task Interaction
 
 - **Single-click action**: The action to perform when single-clicking a task card. Can be either "Edit task" or "Open note".
 - **Double-click action**: The action to perform when double-clicking a task card. Can be "Edit task", "Open note", or "No action".
+
+## Release Notes
+
+- **View release notes**: Opens a dedicated tab showing release notes for the current version. Release notes are displayed automatically after updating to a new version, and can also be accessed anytime via command palette or this settings button.

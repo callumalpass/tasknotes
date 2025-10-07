@@ -365,14 +365,14 @@ export const ja: TranslationTree = {
 			},
 			instantConvert: {
 				toggle: {
-					name: "インスタントタスク変換",
+					name: "チェックボックスの横に変換ボタンを表示",
 					description:
-						"キーボードショートカットを使用したテキストからタスクへのインスタント変換を有効にする",
+						"MarkdownチェックボックスをTaskNotesに変換するインラインボタンを表示する",
 				},
 				folder: {
-					name: "インラインタスク変換フォルダー",
+					name: "変換されたタスクのフォルダー",
 					description:
-						"インラインタスク変換用のフォルダー。現在のノートに相対的にするには{{currentNotePath}}を使用",
+						"チェックボックスから変換されたタスクが作成されるフォルダー。現在のノートに相対的にするには{{currentNotePath}}を使用、現在のノートのタイトルには{{currentNoteTitle}}を使用",
 				},
 			},
 			nlp: {
