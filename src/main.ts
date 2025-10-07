@@ -910,16 +910,23 @@ export default class TaskNotesPlugin extends Plugin {
 			const currentVersion = this.manifest.version;
 			const lastSeenVersion = this.settings.lastSeenVersion;
 
-			// If this is a new install or version has changed, show release notes
+			// If this is a new install or version has changed, show release notes (if enabled)
 			if (lastSeenVersion && lastSeenVersion !== currentVersion) {
-				// Show release notes after a delay to ensure UI is ready
-				setTimeout(async () => {
-					await this.activateReleaseNotesView();
-					// Update lastSeenVersion immediately after showing the release notes
-					// This ensures they only show once per version
+				const showReleaseNotes = this.settings.showReleaseNotesOnUpdate ?? true;
+				if (showReleaseNotes) {
+					// Show release notes after a delay to ensure UI is ready
+					setTimeout(async () => {
+						await this.activateReleaseNotesView();
+						// Update lastSeenVersion immediately after showing the release notes
+						// This ensures they only show once per version
+						this.settings.lastSeenVersion = currentVersion;
+						await this.saveSettings();
+					}, 1500); // Slightly longer delay than migration to avoid conflicts
+				} else {
+					// Still update lastSeenVersion even if not showing release notes
 					this.settings.lastSeenVersion = currentVersion;
 					await this.saveSettings();
-				}, 1500); // Slightly longer delay than migration to avoid conflicts
+				}
 			}
 
 			// Update lastSeenVersion if it hasn't been set yet (new install)

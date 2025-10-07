@@ -232,6 +232,16 @@ export function renderGeneralTab(
 	createSectionHeader(container, "Release Notes");
 	createHelpText(container, `Current version: ${plugin.manifest.version}`);
 
+	createToggleSetting(container, {
+		name: "Show release notes after update",
+		desc: "Automatically open release notes when TaskNotes is updated to a new version",
+		getValue: () => plugin.settings.showReleaseNotesOnUpdate ?? true,
+		setValue: async (value: boolean) => {
+			plugin.settings.showReleaseNotesOnUpdate = value;
+			save();
+		},
+	});
+
 	new Setting(container)
 		.setName("View release notes")
 		.setDesc("See what's new in the latest version of TaskNotes")
