@@ -953,20 +953,20 @@
       "translation": "3359dcad83a76df0be54e809b9540c77eb9790c0"
     },
     "settings.features.instantConvert.toggle.name": {
-      "source": "81e1a89939ec0720411577234dab4416685e2635",
-      "translation": "5f5bcbcc0a0cce45d45bc903e16fc2599780f10c"
+      "source": "16369b5153949a6d227abdbcd6c22892fba063a1",
+      "translation": "7df5b73a6b1ff8e8b2dc0a6acdcd0fa9d974ca61"
     },
     "settings.features.instantConvert.toggle.description": {
-      "source": "a428a58ed7ebb4e5a034e542b4bfb67373bd7696",
-      "translation": "8e4c03bde138314539116cc3223384754dd4d3ba"
+      "source": "eed5789a053bf142162f60467c1fa80c1ed7830c",
+      "translation": "295c396883db0c01a7e1d2e7a8a92024133c825c"
     },
     "settings.features.instantConvert.folder.name": {
-      "source": "9d8c596d9c10766908bf23d7e0fe6c3faf35372c",
-      "translation": "e04a74cf0e8a98c97de446df731e162f984c01ad"
+      "source": "ee5974b000e8f6a84b0ad1dae3a0b0f106b5e7b2",
+      "translation": "a541248bdf00311c6909e85ed49f8a60c9ea9491"
     },
     "settings.features.instantConvert.folder.description": {
-      "source": "2c183492da2ee25b14f3c79f2e2d8d51f378d5ca",
-      "translation": "cb72e702c75e3dd1fa4fa631a317762bf0047cb2"
+      "source": "33e796dabe717d64dd57a6c2291295faf43e9a9d",
+      "translation": "2e0757ba233919acd3ac5ae46f8b168c83cf6f98"
     },
     "settings.features.nlp.header": {
       "source": "94d1773bc1b2af94b263c23d3b39694a5bab7e88",
@@ -6891,20 +6891,20 @@
       "translation": "5560805b75f9ca6c3f4c7d4b5dc67c6646bc51da"
     },
     "settings.features.instantConvert.toggle.name": {
-      "source": "81e1a89939ec0720411577234dab4416685e2635",
-      "translation": "a4d757b2a63299d677f563b66eabb56ade5d2fc4"
+      "source": "16369b5153949a6d227abdbcd6c22892fba063a1",
+      "translation": "709183df80b086b808df842e0514286dfdcf5ab1"
     },
     "settings.features.instantConvert.toggle.description": {
-      "source": "a428a58ed7ebb4e5a034e542b4bfb67373bd7696",
-      "translation": "bd2f5e96c4ac8f505248bd0dab8ea58bb7dfb1e2"
+      "source": "eed5789a053bf142162f60467c1fa80c1ed7830c",
+      "translation": "6e3c3147794ae84e8d5d3a054ff58b3a62c0cb83"
     },
     "settings.features.instantConvert.folder.name": {
-      "source": "9d8c596d9c10766908bf23d7e0fe6c3faf35372c",
-      "translation": "67dd02edf463d3393fd1ea906f55a19a11ffe125"
+      "source": "ee5974b000e8f6a84b0ad1dae3a0b0f106b5e7b2",
+      "translation": "5e5eaaf314eee9d7e9c8ff39976fe09a799118d3"
     },
     "settings.features.instantConvert.folder.description": {
-      "source": "2c183492da2ee25b14f3c79f2e2d8d51f378d5ca",
-      "translation": "75c4e79807770e72e2bda16c7c00f0d775d19782"
+      "source": "33e796dabe717d64dd57a6c2291295faf43e9a9d",
+      "translation": "cb5f4d53c5eb64d1cb28e215aed6661490e9dbdb"
     },
     "settings.features.nlp.header": {
       "source": "94d1773bc1b2af94b263c23d3b39694a5bab7e88",
@@ -12829,20 +12829,20 @@
       "translation": "de2fbdefad879f53a036d83e837991d22d01c576"
     },
     "settings.features.instantConvert.toggle.name": {
-      "source": "81e1a89939ec0720411577234dab4416685e2635",
-      "translation": "568ff1a386d128810b9813d59c54292e2438450c"
+      "source": "16369b5153949a6d227abdbcd6c22892fba063a1",
+      "translation": "b228a2b3e9bc93a8daaad83924b64ff32ddb234b"
     },
     "settings.features.instantConvert.toggle.description": {
-      "source": "a428a58ed7ebb4e5a034e542b4bfb67373bd7696",
-      "translation": "9044f2e51ed93fc55ab66377f29928feb9865eb7"
+      "source": "eed5789a053bf142162f60467c1fa80c1ed7830c",
+      "translation": "fc3d27f4f78783fd9717ca24348b4c9fb6e17096"
     },
     "settings.features.instantConvert.folder.name": {
-      "source": "9d8c596d9c10766908bf23d7e0fe6c3faf35372c",
-      "translation": "4b7053cc2866e941c0e19f1cd10d086cebf2cf76"
+      "source": "ee5974b000e8f6a84b0ad1dae3a0b0f106b5e7b2",
+      "translation": "72805f98121ccb3c39e45a8f2bc7dd3c56d30990"
     },
     "settings.features.instantConvert.folder.description": {
-      "source": "2c183492da2ee25b14f3c79f2e2d8d51f378d5ca",
-      "translation": "9b4d84103618ee0b09de32993ba27e9af81a6264"
+      "source": "33e796dabe717d64dd57a6c2291295faf43e9a9d",
+      "translation": "21c71cfc8f0da27d78330fa4fef9d54eb5f30434"
     },
     "settings.features.nlp.header": {
       "source": "94d1773bc1b2af94b263c23d3b39694a5bab7e88",
@@ -18701,20 +18701,20 @@
       "translation": "5d05953e7c032593e70cdfe0e72449dc89be55e1"
     },
     "settings.features.instantConvert.toggle.name": {
-      "source": "81e1a89939ec0720411577234dab4416685e2635",
-      "translation": "b78755628fa6f206068bb0e0f9eeec62ae308654"
+      "source": "16369b5153949a6d227abdbcd6c22892fba063a1",
+      "translation": "6e573765a0221000ace248f7a29474291f44d04b"
     },
     "settings.features.instantConvert.toggle.description": {
-      "source": "a428a58ed7ebb4e5a034e542b4bfb67373bd7696",
-      "translation": "36042dc4e5276648ac125359d48e86fa22e9fe79"
+      "source": "eed5789a053bf142162f60467c1fa80c1ed7830c",
+      "translation": "862227df587c18102a237f94b7bb2d800f3dd591"
     },
     "settings.features.instantConvert.folder.name": {
-      "source": "9d8c596d9c10766908bf23d7e0fe6c3faf35372c",
-      "translation": "f29e086c934c29fb2e867c2a8c8421d7980bbc1b"
+      "source": "ee5974b000e8f6a84b0ad1dae3a0b0f106b5e7b2",
+      "translation": "7cc42907acec2e352c3d2e68c7e2087f6d336d07"
     },
     "settings.features.instantConvert.folder.description": {
-      "source": "a5b35287ff4874ef7843ad0a0d45d112822fe182",
-      "translation": "0055dcaddd13bbe9449f94347835bf57dd1df292"
+      "source": "33e796dabe717d64dd57a6c2291295faf43e9a9d",
+      "translation": "66186af97aaeb7a2593510cef34025007165767f"
     },
     "settings.features.nlp.header": {
       "source": "94d1773bc1b2af94b263c23d3b39694a5bab7e88",
@@ -24492,20 +24492,20 @@
       "translation": "9dd59cfa99308687e6fba34ccb0dab93a0735753"
     },
     "settings.features.instantConvert.toggle.name": {
-      "source": "81e1a89939ec0720411577234dab4416685e2635",
-      "translation": "a48a947ded35a76d32928e81e37b64e9114ce27a"
+      "source": "16369b5153949a6d227abdbcd6c22892fba063a1",
+      "translation": "0b80a70cc7b685af112d88f8a6888ea230a9cb17"
     },
     "settings.features.instantConvert.toggle.description": {
-      "source": "a428a58ed7ebb4e5a034e542b4bfb67373bd7696",
-      "translation": "da207bc3d94309f573757b7902e515cc6e05e244"
+      "source": "eed5789a053bf142162f60467c1fa80c1ed7830c",
+      "translation": "41a0a40cfb2582123079f2d6d68580880477eed1"
     },
     "settings.features.instantConvert.folder.name": {
-      "source": "9d8c596d9c10766908bf23d7e0fe6c3faf35372c",
-      "translation": "8ec113d496bddb7e0dbff572c515c6badfdf9cc1"
+      "source": "ee5974b000e8f6a84b0ad1dae3a0b0f106b5e7b2",
+      "translation": "5c563bc4cf90c6941d79b8df0d0600142bb7c1a0"
     },
     "settings.features.instantConvert.folder.description": {
-      "source": "a5b35287ff4874ef7843ad0a0d45d112822fe182",
-      "translation": "af248f19bf811e99d92b80267a57c534247fdc4a"
+      "source": "33e796dabe717d64dd57a6c2291295faf43e9a9d",
+      "translation": "c38b79923fd4d29eaff9859cdb10c79b240748f9"
     },
     "settings.features.nlp.header": {
       "source": "94d1773bc1b2af94b263c23d3b39694a5bab7e88",
@@ -30331,20 +30331,20 @@
       "translation": "255fc47feda4b290634318dbff469eff35e5e91a"
     },
     "settings.features.instantConvert.toggle.name": {
-      "source": "81e1a89939ec0720411577234dab4416685e2635",
-      "translation": "de62e0031728f3c7a8f4f1e27cc539b14b3f0a8a"
+      "source": "16369b5153949a6d227abdbcd6c22892fba063a1",
+      "translation": "d2fe636ff89a7dd3a1a03153fbe41a3a57f571f5"
     },
     "settings.features.instantConvert.toggle.description": {
-      "source": "a428a58ed7ebb4e5a034e542b4bfb67373bd7696",
-      "translation": "78075a65c145b655a95122a6544bb5793edd1b0f"
+      "source": "eed5789a053bf142162f60467c1fa80c1ed7830c",
+      "translation": "ef74f1de1d973e265e2b90d101c0ec6bdc56f0f4"
     },
     "settings.features.instantConvert.folder.name": {
-      "source": "9d8c596d9c10766908bf23d7e0fe6c3faf35372c",
-      "translation": "16158ec221fbfbed981e3305102d1eba5c926fda"
+      "source": "ee5974b000e8f6a84b0ad1dae3a0b0f106b5e7b2",
+      "translation": "45ed959248436133c93867ff84ab12059ede7c27"
     },
     "settings.features.instantConvert.folder.description": {
-      "source": "a5b35287ff4874ef7843ad0a0d45d112822fe182",
-      "translation": "e52c6c5641c909614b0de89475ec548a76f453b0"
+      "source": "33e796dabe717d64dd57a6c2291295faf43e9a9d",
+      "translation": "2b77cf1580df101829235ace73aa8c05c28128d2"
     },
     "settings.features.nlp.header": {
       "source": "94d1773bc1b2af94b263c23d3b39694a5bab7e88",

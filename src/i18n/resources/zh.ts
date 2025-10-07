@@ -363,12 +363,12 @@ export const zh: TranslationTree = {
 			},
 			instantConvert: {
 				toggle: {
-					name: "即时任务转换",
-					description: "启用使用键盘快捷键即时将文本转换为任务",
+					name: "在复选框旁边显示转换按钮",
+					description: "在Markdown复选框旁边显示内联按钮，将其转换为TaskNotes",
 				},
 				folder: {
-					name: "内联任务转换文件夹",
-					description: "内联任务转换的文件夹。使用{{currentNotePath}}相对于当前笔记",
+					name: "已转换任务的文件夹",
+					description: "从复选框转换的任务将在其中创建的文件夹。使用{{currentNotePath}}相对于当前笔记，{{currentNoteTitle}}用于当前笔记标题",
 				},
 			},
 			nlp: {

@@ -365,14 +365,14 @@ export const es: TranslationTree = {
 			},
 			instantConvert: {
 				toggle: {
-					name: "Conversión instantánea de tareas",
+					name: "Mostrar botón de conversión junto a casillas de verificación",
 					description:
-						"Habilitar conversión instantánea de texto a tareas usando atajos de teclado",
+						"Mostrar un botón en línea junto a las casillas de verificación Markdown que las convierte en TaskNotes",
 				},
 				folder: {
-					name: "Carpeta de conversión de tareas en línea",
+					name: "Carpeta para tareas convertidas",
 					description:
-						"Carpeta para conversión de tareas en línea. Usa {{currentNotePath}} para relativo a la nota actual, {{currentNoteTitle}} para título de nota actual",
+						"Carpeta donde se crearán las tareas convertidas desde casillas de verificación. Usa {{currentNotePath}} para relativo a la nota actual, {{currentNoteTitle}} para título de nota actual",
 				},
 			},
 			nlp: {
