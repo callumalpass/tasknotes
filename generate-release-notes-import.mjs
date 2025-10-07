@@ -51,15 +51,15 @@ const currentMinorVersions = releaseFiles.filter(v =>
 	v.major === current.major && v.minor === current.minor
 );
 
-// Find the most recent version from previous minor series for context
+// Find all versions from previous minor series (e.g., 3.24.x)
 const previousMinorVersions = releaseFiles.filter(v =>
 	v.major === current.major && v.minor === current.minor - 1
 );
 
-// Bundle current minor + last patch from previous minor
+// Bundle current minor + all patches from previous minor
 const versionsToBundle = [
 	...currentMinorVersions.map(v => v.full),
-	...(previousMinorVersions.length > 0 ? [previousMinorVersions[0].full] : [])
+	...previousMinorVersions.map(v => v.full)
 ];
 
 // Generate imports and metadata
