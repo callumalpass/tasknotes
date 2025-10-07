@@ -15,6 +15,23 @@ Customize the status options available for your tasks. These statuses control th
 - **Completed**: When checked, tasks with this status are considered finished and may be filtered differently.
 - **Auto-archive**: When enabled, tasks will be automatically archived after the specified delay (1-1440 minutes).
 
+### Boolean Status Values
+
+TaskNotes supports using boolean values (`true` and `false`) as status values, which integrates with Obsidian's native checkbox property format:
+
+- When you set a task's status to `"true"` or `"false"` (case-insensitive), TaskNotes automatically converts it to a boolean in frontmatter
+- When reading tasks with boolean status values from frontmatter, they are converted back to the strings `"true"` or `"false"`
+- This allows you to use Obsidian's native checkbox property toggles in the Properties panel while maintaining compatibility with TaskNotes
+
+**Example:**
+```yaml
+---
+status: true    # Boolean checkbox in Obsidian
+---
+```
+
+This is useful for a simple binary task state that works with Obsidian's property editor.
+
 ## Task Priorities
 
 Customize the priority levels available for your tasks. Priority weights determine sorting order and visual hierarchy in your task views.
