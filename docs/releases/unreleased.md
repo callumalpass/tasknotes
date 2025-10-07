@@ -34,3 +34,10 @@ Example:
   - Supports both static views and dynamic filtered views
   - Full i18n support for all settings in French, Spanish, German, Japanese, Russian, and Chinese
 
+## Changed
+
+- Release notes now bundle all versions from current and previous minor series with collapsible sections
+  - Includes release dates extracted from git tags
+  - Current version expanded by default with visual badge
+  - Previous versions collapsed for easier navigation
+
