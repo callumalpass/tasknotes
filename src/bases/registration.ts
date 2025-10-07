@@ -88,6 +88,16 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 								displayName: "Layout",
 								items: [
 									{
+										type: "property",
+										key: "initialDateProperty",
+										displayName: "Navigate to date from property",
+										placeholder: "Select a date property (optional)",
+										filter: (prop: string) => {
+											// Show date-type properties from notes and files
+											return prop.startsWith("note.") || prop.startsWith("file.");
+										},
+									},
+									{
 										type: "dropdown",
 										key: "calendarView",
 										displayName: "Calendar view",
