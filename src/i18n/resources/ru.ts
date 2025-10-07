@@ -729,6 +729,19 @@ export const ru: TranslationTree = {
 					none: "Нет действия",
 				},
 			},
+			releaseNotes: {
+				header: "Примечания к выпуску",
+				description: "Текущая версия: {version}",
+				showOnUpdate: {
+					name: "Показывать примечания к выпуску после обновления",
+					description: "Автоматически открывать примечания к выпуску при обновлении TaskNotes до новой версии",
+				},
+				viewButton: {
+					name: "Просмотреть примечания к выпуску",
+					description: "Узнайте, что нового в последней версии TaskNotes",
+					buttonText: "Просмотреть примечания к выпуску",
+				},
+			},
 		},
 		taskProperties: {
 			taskStatuses: {

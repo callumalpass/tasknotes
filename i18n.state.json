@@ -1732,13 +1732,34 @@
       "source": "f34ac77f7e82d8fff22134b27bf4273f802d706e",
       "translation": "18d40157cc7b7a95546e4abd5757c68ceea993ec"
     },
-    "settings.general.releaseNotes.header": null,
-    "settings.general.releaseNotes.description": null,
-    "settings.general.releaseNotes.showOnUpdate.name": null,
-    "settings.general.releaseNotes.showOnUpdate.description": null,
-    "settings.general.releaseNotes.viewButton.name": null,
-    "settings.general.releaseNotes.viewButton.description": null,
-    "settings.general.releaseNotes.viewButton.buttonText": null,
+    "settings.general.releaseNotes.header": {
+      "source": "0ea4af908fe06688dd3fc02035189b08293c5074",
+      "translation": "b6b36ed9633e970196a05d5f475cf14d4ebe2298"
+    },
+    "settings.general.releaseNotes.description": {
+      "source": "75f4b2b14c446a50760e1b3401d8b741bf68b15f",
+      "translation": "eedc43a805049ca3793ef53e9f501cadb460e430"
+    },
+    "settings.general.releaseNotes.showOnUpdate.name": {
+      "source": "7008fe12e469c7d7d3ab5077b4dccf12974dcb9b",
+      "translation": "6229660626d5555e3ca037d7032548fce1711d1e"
+    },
+    "settings.general.releaseNotes.showOnUpdate.description": {
+      "source": "6e9a7487aa5eabbeb724f274443086ae16c5cd21",
+      "translation": "ee796a1f366c9a65c175015db7cdabfef67bed7a"
+    },
+    "settings.general.releaseNotes.viewButton.name": {
+      "source": "04c2072af97cf70c22fbf9efa9b62eb2574d23d6",
+      "translation": "d69d1c26f388903bba0094ba00f61217c47fa732"
+    },
+    "settings.general.releaseNotes.viewButton.description": {
+      "source": "e5e785094008b3d62d776aac0de1c7d590b02616",
+      "translation": "7db04fea756816583f9c75913d519604dd41788e"
+    },
+    "settings.general.releaseNotes.viewButton.buttonText": {
+      "source": "04c2072af97cf70c22fbf9efa9b62eb2574d23d6",
+      "translation": "d69d1c26f388903bba0094ba00f61217c47fa732"
+    },
     "settings.taskProperties.taskStatuses.header": {
       "source": "849a366260293fbbf551890f279d4a159f207849",
       "translation": "bf64692a5b81b6d793b11610575cff5b78f7ac09"
@@ -7677,13 +7698,34 @@
       "source": "f34ac77f7e82d8fff22134b27bf4273f802d706e",
       "translation": "ea64cfcb1d04bf32835ed72905b136a2ccb764b8"
     },
-    "settings.general.releaseNotes.header": null,
-    "settings.general.releaseNotes.description": null,
-    "settings.general.releaseNotes.showOnUpdate.name": null,
-    "settings.general.releaseNotes.showOnUpdate.description": null,
-    "settings.general.releaseNotes.viewButton.name": null,
-    "settings.general.releaseNotes.viewButton.description": null,
-    "settings.general.releaseNotes.viewButton.buttonText": null,
+    "settings.general.releaseNotes.header": {
+      "source": "0ea4af908fe06688dd3fc02035189b08293c5074",
+      "translation": "ab63972dfdcf266ecd863d434f2c71878b757db2"
+    },
+    "settings.general.releaseNotes.description": {
+      "source": "75f4b2b14c446a50760e1b3401d8b741bf68b15f",
+      "translation": "01d1c31b3de3d22eb76e5c86b4763eca97be0ccf"
+    },
+    "settings.general.releaseNotes.showOnUpdate.name": {
+      "source": "7008fe12e469c7d7d3ab5077b4dccf12974dcb9b",
+      "translation": "bbabe09a399b5685000d981d4f830312452d222a"
+    },
+    "settings.general.releaseNotes.showOnUpdate.description": {
+      "source": "6e9a7487aa5eabbeb724f274443086ae16c5cd21",
+      "translation": "c77956cc4d10dd4e933943c49f252334743f1f0e"
+    },
+    "settings.general.releaseNotes.viewButton.name": {
+      "source": "04c2072af97cf70c22fbf9efa9b62eb2574d23d6",
+      "translation": "19ef9ab3a718f13f42fe08b4dcbcdcb7f7e57601"
+    },
+    "settings.general.releaseNotes.viewButton.description": {
+      "source": "e5e785094008b3d62d776aac0de1c7d590b02616",
+      "translation": "1b99b1718e36b85a882dc405b4c38545c17c8186"
+    },
+    "settings.general.releaseNotes.viewButton.buttonText": {
+      "source": "04c2072af97cf70c22fbf9efa9b62eb2574d23d6",
+      "translation": "19ef9ab3a718f13f42fe08b4dcbcdcb7f7e57601"
+    },
     "settings.taskProperties.taskStatuses.header": {
       "source": "849a366260293fbbf551890f279d4a159f207849",
       "translation": "947ccfa3792f82e11421a6487fa4fcede6095de7"
@@ -13622,13 +13664,34 @@
       "source": "f34ac77f7e82d8fff22134b27bf4273f802d706e",
       "translation": "77b96b458275d5a866c65734fd79db8e71e6793a"
     },
-    "settings.general.releaseNotes.header": null,
-    "settings.general.releaseNotes.description": null,
-    "settings.general.releaseNotes.showOnUpdate.name": null,
-    "settings.general.releaseNotes.showOnUpdate.description": null,
-    "settings.general.releaseNotes.viewButton.name": null,
-    "settings.general.releaseNotes.viewButton.description": null,
-    "settings.general.releaseNotes.viewButton.buttonText": null,
+    "settings.general.releaseNotes.header": {
+      "source": "0ea4af908fe06688dd3fc02035189b08293c5074",
+      "translation": "2e76e48d93e8d245bf76ff562893e9b34be356b6"
+    },
+    "settings.general.releaseNotes.description": {
+      "source": "75f4b2b14c446a50760e1b3401d8b741bf68b15f",
+      "translation": "361c681e2389ce78208a9ff5921545b6168f4eb4"
+    },
+    "settings.general.releaseNotes.showOnUpdate.name": {
+      "source": "7008fe12e469c7d7d3ab5077b4dccf12974dcb9b",
+      "translation": "7af3dc22002ccd2378442cdb0da463bcd92cbdea"
+    },
+    "settings.general.releaseNotes.showOnUpdate.description": {
+      "source": "6e9a7487aa5eabbeb724f274443086ae16c5cd21",
+      "translation": "eab4be44d0b8ab419957b45e1cbead3854d95154"
+    },
+    "settings.general.releaseNotes.viewButton.name": {
+      "source": "04c2072af97cf70c22fbf9efa9b62eb2574d23d6",
+      "translation": "e8e1d32313d229666301e29a37df418032835142"
+    },
+    "settings.general.releaseNotes.viewButton.description": {
+      "source": "e5e785094008b3d62d776aac0de1c7d590b02616",
+      "translation": "7ca02180df7c040ab01b083840ab2eceb16442cf"
+    },
+    "settings.general.releaseNotes.viewButton.buttonText": {
+      "source": "04c2072af97cf70c22fbf9efa9b62eb2574d23d6",
+      "translation": "e8e1d32313d229666301e29a37df418032835142"
+    },
     "settings.taskProperties.taskStatuses.header": {
       "source": "849a366260293fbbf551890f279d4a159f207849",
       "translation": "52a6484f22731aa1601fb978b23c3a79c29f12e9"
@@ -19501,13 +19564,34 @@
       "source": "f34ac77f7e82d8fff22134b27bf4273f802d706e",
       "translation": "ee278ecd3881b5fa0d0b590666853589cee394e5"
     },
-    "settings.general.releaseNotes.header": null,
-    "settings.general.releaseNotes.description": null,
-    "settings.general.releaseNotes.showOnUpdate.name": null,
-    "settings.general.releaseNotes.showOnUpdate.description": null,
-    "settings.general.releaseNotes.viewButton.name": null,
-    "settings.general.releaseNotes.viewButton.description": null,
-    "settings.general.releaseNotes.viewButton.buttonText": null,
+    "settings.general.releaseNotes.header": {
+      "source": "0ea4af908fe06688dd3fc02035189b08293c5074",
+      "translation": "f26045b73a1ae4213283dfd9ceeaf99f85377d93"
+    },
+    "settings.general.releaseNotes.description": {
+      "source": "75f4b2b14c446a50760e1b3401d8b741bf68b15f",
+      "translation": "c2c4e719870e77eee822e03d6bee954bf4274013"
+    },
+    "settings.general.releaseNotes.showOnUpdate.name": {
+      "source": "7008fe12e469c7d7d3ab5077b4dccf12974dcb9b",
+      "translation": "b8013661730148175be4e0d3ff64780c87f69966"
+    },
+    "settings.general.releaseNotes.showOnUpdate.description": {
+      "source": "6e9a7487aa5eabbeb724f274443086ae16c5cd21",
+      "translation": "8ed8c798ec55d009452177534c7f32a3010a7a14"
+    },
+    "settings.general.releaseNotes.viewButton.name": {
+      "source": "04c2072af97cf70c22fbf9efa9b62eb2574d23d6",
+      "translation": "2add1152032ee15c68c3fc05a7923fc50d2d0c31"
+    },
+    "settings.general.releaseNotes.viewButton.description": {
+      "source": "e5e785094008b3d62d776aac0de1c7d590b02616",
+      "translation": "50af70ed32b82dc7b313c364fd572fca78f62b84"
+    },
+    "settings.general.releaseNotes.viewButton.buttonText": {
+      "source": "04c2072af97cf70c22fbf9efa9b62eb2574d23d6",
+      "translation": "2add1152032ee15c68c3fc05a7923fc50d2d0c31"
+    },
     "settings.taskProperties.taskStatuses.header": {
       "source": "849a366260293fbbf551890f279d4a159f207849",
       "translation": "e659b56c7420bffc483792689153d769feb0f6a4"
@@ -25284,13 +25368,34 @@
       "source": "f34ac77f7e82d8fff22134b27bf4273f802d706e",
       "translation": "ceb19c443ae81fbb1d58f82204fcf51af4369ddb"
     },
-    "settings.general.releaseNotes.header": null,
-    "settings.general.releaseNotes.description": null,
-    "settings.general.releaseNotes.showOnUpdate.name": null,
-    "settings.general.releaseNotes.showOnUpdate.description": null,
-    "settings.general.releaseNotes.viewButton.name": null,
-    "settings.general.releaseNotes.viewButton.description": null,
-    "settings.general.releaseNotes.viewButton.buttonText": null,
+    "settings.general.releaseNotes.header": {
+      "source": "0ea4af908fe06688dd3fc02035189b08293c5074",
+      "translation": "a5542d8036a0d1cfd8c21a095a9eab468c96bb7a"
+    },
+    "settings.general.releaseNotes.description": {
+      "source": "75f4b2b14c446a50760e1b3401d8b741bf68b15f",
+      "translation": "6a7a29c65255758ed9f8185b09d1df0cae9ce3c9"
+    },
+    "settings.general.releaseNotes.showOnUpdate.name": {
+      "source": "7008fe12e469c7d7d3ab5077b4dccf12974dcb9b",
+      "translation": "0390424f430f9fd0ae1efd3e7feeec2deab43f61"
+    },
+    "settings.general.releaseNotes.showOnUpdate.description": {
+      "source": "6e9a7487aa5eabbeb724f274443086ae16c5cd21",
+      "translation": "87ecc0493d7d41ebd4d7bee452de66a45f3d8f83"
+    },
+    "settings.general.releaseNotes.viewButton.name": {
+      "source": "04c2072af97cf70c22fbf9efa9b62eb2574d23d6",
+      "translation": "cec500d00ddc1cc0b3f638f1557a0db40a7487ee"
+    },
+    "settings.general.releaseNotes.viewButton.description": {
+      "source": "e5e785094008b3d62d776aac0de1c7d590b02616",
+      "translation": "df1ec3e6dba9bed7aac266532020ba6439a830d6"
+    },
+    "settings.general.releaseNotes.viewButton.buttonText": {
+      "source": "04c2072af97cf70c22fbf9efa9b62eb2574d23d6",
+      "translation": "cec500d00ddc1cc0b3f638f1557a0db40a7487ee"
+    },
     "settings.taskProperties.taskStatuses.header": {
       "source": "849a366260293fbbf551890f279d4a159f207849",
       "translation": "af0eb7a9dcfde20a9c0362f6ac50c7d977e8679f"
@@ -31145,13 +31250,34 @@
       "source": "f34ac77f7e82d8fff22134b27bf4273f802d706e",
       "translation": "a2a8968def3eabe711f161678eef35ebecc0283e"
     },
-    "settings.general.releaseNotes.header": null,
-    "settings.general.releaseNotes.description": null,
-    "settings.general.releaseNotes.showOnUpdate.name": null,
-    "settings.general.releaseNotes.showOnUpdate.description": null,
-    "settings.general.releaseNotes.viewButton.name": null,
-    "settings.general.releaseNotes.viewButton.description": null,
-    "settings.general.releaseNotes.viewButton.buttonText": null,
+    "settings.general.releaseNotes.header": {
+      "source": "0ea4af908fe06688dd3fc02035189b08293c5074",
+      "translation": "8506f9cb910f091e2134ee80e7f2d501f1e18e3e"
+    },
+    "settings.general.releaseNotes.description": {
+      "source": "75f4b2b14c446a50760e1b3401d8b741bf68b15f",
+      "translation": "0e36661636d79fdfc9d8527b5ae5a1bdbc79a487"
+    },
+    "settings.general.releaseNotes.showOnUpdate.name": {
+      "source": "7008fe12e469c7d7d3ab5077b4dccf12974dcb9b",
+      "translation": "ae446792e5fe34a87c8eae472a27d51177c0f01e"
+    },
+    "settings.general.releaseNotes.showOnUpdate.description": {
+      "source": "6e9a7487aa5eabbeb724f274443086ae16c5cd21",
+      "translation": "2b8907d024115a489cab0f1c0d8d1509ca074b5f"
+    },
+    "settings.general.releaseNotes.viewButton.name": {
+      "source": "04c2072af97cf70c22fbf9efa9b62eb2574d23d6",
+      "translation": "524c479f706f46cb1f6e70be920671d9ed610e5c"
+    },
+    "settings.general.releaseNotes.viewButton.description": {
+      "source": "e5e785094008b3d62d776aac0de1c7d590b02616",
+      "translation": "7f4762e37f16b37bb3aec77fd8126bb2a3064058"
+    },
+    "settings.general.releaseNotes.viewButton.buttonText": {
+      "source": "04c2072af97cf70c22fbf9efa9b62eb2574d23d6",
+      "translation": "524c479f706f46cb1f6e70be920671d9ed610e5c"
+    },
     "settings.taskProperties.taskStatuses.header": {
       "source": "849a366260293fbbf551890f279d4a159f207849",
       "translation": "b7d4128dcdbe2875182bbe34053d09f02510bdea"

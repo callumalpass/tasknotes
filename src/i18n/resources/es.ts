@@ -742,6 +742,19 @@ export const es: TranslationTree = {
 					none: "Sin acción",
 				},
 			},
+			releaseNotes: {
+				header: "Notas de la versión",
+				description: "Versión actual: {version}",
+				showOnUpdate: {
+					name: "Mostrar notas de la versión después de actualizar",
+					description: "Abrir automáticamente las notas de la versión cuando TaskNotes se actualiza a una nueva versión",
+				},
+				viewButton: {
+					name: "Ver notas de la versión",
+					description: "Vea las novedades en la última versión de TaskNotes",
+					buttonText: "Ver notas de la versión",
+				},
+			},
 		},
 		taskProperties: {
 			taskStatuses: {
