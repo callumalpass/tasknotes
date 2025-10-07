@@ -1317,15 +1317,13 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 
 					if (hardcodedDate && hardcodedDate.trim()) {
 						// Use hardcoded date
-						console.log('[TaskNotes][Bases][Calendar] Using hardcoded date:', hardcodedDate);
 						try {
 							const targetDate = new Date(hardcodedDate);
 							if (!isNaN(targetDate.getTime())) {
-								console.log('[TaskNotes][Bases][Calendar] Navigating to hardcoded date:', targetDate);
 								calendar.gotoDate(targetDate);
 							}
 						} catch (error) {
-							console.error('[TaskNotes][Bases][Calendar] Invalid hardcoded date:', error);
+							console.debug('[TaskNotes][Bases][Calendar] Invalid hardcoded date:', error);
 						}
 					} else {
 						// Use property-based navigation
@@ -1338,9 +1336,6 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 						}
 
 						const strategy = (viewContext.config.get('initialDateStrategy') as string) || 'first';
-
-						console.log('[TaskNotes][Bases][Calendar] Initial date property:', initialDatePropertyId, 'strategy:', strategy);
-						console.log('[TaskNotes][Bases][Calendar] Data available:', viewContext.data?.data?.length || 0, 'entries');
 
 						if (initialDatePropertyId && viewContext.data?.data && viewContext.data.data.length > 0) {
 							try {
@@ -1369,7 +1364,6 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 									const firstEntry = viewContext.data.data[0];
 									const dateValue = firstEntry.getValue?.(initialDatePropertyId);
 									targetDate = extractDate(dateValue);
-									console.log('[TaskNotes][Bases][Calendar] First result date:', targetDate);
 								} else {
 									// Collect all valid dates
 									const dates: Date[] = [];
@@ -1381,25 +1375,20 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 										}
 									}
 
-									console.log('[TaskNotes][Bases][Calendar] Found', dates.length, 'valid dates');
-
 									if (dates.length > 0) {
 										if (strategy === 'earliest') {
 											targetDate = new Date(Math.min(...dates.map(d => d.getTime())));
-											console.log('[TaskNotes][Bases][Calendar] Earliest date:', targetDate);
 										} else if (strategy === 'latest') {
 											targetDate = new Date(Math.max(...dates.map(d => d.getTime())));
-											console.log('[TaskNotes][Bases][Calendar] Latest date:', targetDate);
 										}
 									}
 								}
 
 								if (targetDate) {
-									console.log('[TaskNotes][Bases][Calendar] Navigating to date:', targetDate);
 									calendar.gotoDate(targetDate);
 								}
 							} catch (error) {
-								console.error('[TaskNotes][Bases][Calendar] Error reading initial date property:', error);
+								console.debug('[TaskNotes][Bases][Calendar] Error reading initial date property:', error);
 							}
 						}
 					}
