@@ -95,7 +95,7 @@ import { AutoExportService } from "./services/AutoExportService";
 import type { HTTPAPIService } from "./services/HTTPAPIService";
 import { createI18nService, I18nService, TranslationKey } from "./i18n";
 import { ReleaseNotesView, RELEASE_NOTES_VIEW_TYPE } from "./views/ReleaseNotesView";
-import { CURRENT_RELEASE_NOTES } from "./releaseNotes";
+import { CURRENT_VERSION, RELEASE_NOTES_BUNDLE } from "./releaseNotes";
 
 interface TranslatedCommandDefinition {
 	id: string;
@@ -474,7 +474,7 @@ export default class TaskNotesPlugin extends Plugin {
 
 			this.registerView(
 				RELEASE_NOTES_VIEW_TYPE,
-				(leaf) => new ReleaseNotesView(leaf, this, CURRENT_RELEASE_NOTES, this.manifest.version)
+				(leaf) => new ReleaseNotesView(leaf, this, RELEASE_NOTES_BUNDLE, CURRENT_VERSION)
 			);
 
 			// Register essential editor extensions (now safe after layout ready)

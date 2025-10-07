@@ -1,5 +1,7 @@
 import { ItemView, WorkspaceLeaf, MarkdownRenderer } from "obsidian";
+import { format, parseISO } from "date-fns";
 import TaskNotesPlugin from "../main";
+import { ReleaseNoteVersion } from "../releaseNotes";
 
 export const RELEASE_NOTES_VIEW_TYPE = "tasknotes-release-notes";
 
@@ -7,13 +9,13 @@ const GITHUB_RELEASES_URL = "https://github.com/callumalpass/tasknotes/releases"
 
 export class ReleaseNotesView extends ItemView {
 	plugin: TaskNotesPlugin;
-	private releaseNotes: string;
+	private releaseNotesBundle: ReleaseNoteVersion[];
 	private version: string;
 
-	constructor(leaf: WorkspaceLeaf, plugin: TaskNotesPlugin, releaseNotes: string, version: string) {
+	constructor(leaf: WorkspaceLeaf, plugin: TaskNotesPlugin, releaseNotesBundle: ReleaseNoteVersion[], version: string) {
 		super(leaf);
 		this.plugin = plugin;
-		this.releaseNotes = releaseNotes;
+		this.releaseNotesBundle = releaseNotesBundle;
 		this.version = version;
 	}
 
@@ -37,6 +39,117 @@ export class ReleaseNotesView extends ItemView {
 		return markdown.replace(/\(#(\d+)\)/g, `([#$1](${repoUrl}/issues/$1))`);
 	}
 
+	/**
+	 * Format date for display
+	 */
+	private formatDate(dateString: string | null): string {
+		if (!dateString) return "";
+		try {
+			const date = parseISO(dateString);
+			return format(date, "MMMM d, yyyy");
+		} catch (error) {
+			return "";
+		}
+	}
+
+	/**
+	 * Create a collapsible section for a release version
+	 */
+	private async createVersionSection(
+		container: HTMLElement,
+		versionData: ReleaseNoteVersion,
+		isExpanded: boolean
+	) {
+		const section = container.createDiv({ cls: "release-notes-version-section" });
+		section.style.marginBottom = "20px";
+		section.style.border = "1px solid var(--background-modifier-border)";
+		section.style.borderRadius = "6px";
+		section.style.overflow = "hidden";
+
+		// Header (clickable to toggle)
+		const header = section.createDiv({ cls: "release-notes-version-header" });
+		header.style.padding = "16px";
+		header.style.cursor = "pointer";
+		header.style.display = "flex";
+		header.style.justifyContent = "space-between";
+		header.style.alignItems = "center";
+		header.style.backgroundColor = versionData.isCurrent
+			? "var(--background-secondary)"
+			: "var(--background-primary)";
+		header.style.transition = "background-color 0.2s";
+
+		header.addEventListener("mouseenter", () => {
+			header.style.backgroundColor = "var(--background-secondary)";
+		});
+		header.addEventListener("mouseleave", () => {
+			header.style.backgroundColor = versionData.isCurrent
+				? "var(--background-secondary)"
+				: "var(--background-primary)";
+		});
+
+		// Left side: version and date
+		const headerLeft = header.createDiv({ cls: "release-notes-version-info" });
+		headerLeft.style.display = "flex";
+		headerLeft.style.alignItems = "baseline";
+		headerLeft.style.gap = "12px";
+
+		const versionTitle = headerLeft.createEl("h2", {
+			text: versionData.version,
+		});
+		versionTitle.style.margin = "0";
+		versionTitle.style.fontSize = "1.2em";
+		versionTitle.style.fontWeight = "600";
+
+		if (versionData.isCurrent) {
+			const currentBadge = headerLeft.createEl("span", {
+				text: "Current",
+			});
+			currentBadge.style.fontSize = "0.75em";
+			currentBadge.style.padding = "2px 8px";
+			currentBadge.style.borderRadius = "4px";
+			currentBadge.style.backgroundColor = "var(--text-accent)";
+			currentBadge.style.color = "var(--text-on-accent)";
+			currentBadge.style.fontWeight = "500";
+		}
+
+		if (versionData.date) {
+			const dateSpan = headerLeft.createEl("span", {
+				text: this.formatDate(versionData.date),
+			});
+			dateSpan.style.color = "var(--text-muted)";
+			dateSpan.style.fontSize = "0.9em";
+		}
+
+		// Right side: chevron icon
+		const chevron = header.createEl("span", {
+			text: isExpanded ? "▼" : "▶",
+		});
+		chevron.style.fontSize = "0.8em";
+		chevron.style.color = "var(--text-muted)";
+
+		// Content (collapsible)
+		const content = section.createDiv({ cls: "release-notes-version-content" });
+		content.style.padding = "0 16px 16px 16px";
+		content.style.display = isExpanded ? "block" : "none";
+
+		// Transform issue references into clickable links and render the markdown
+		const transformedNotes = this.transformIssueLinks(versionData.content);
+		await MarkdownRenderer.render(
+			this.plugin.app,
+			transformedNotes,
+			content,
+			"",
+			this as any
+		);
+
+		// Toggle functionality
+		header.addEventListener("click", () => {
+			const isCurrentlyExpanded = content.style.display !== "none";
+			content.style.display = isCurrentlyExpanded ? "none" : "block";
+			chevron.textContent = isCurrentlyExpanded ? "▶" : "▼";
+		});
+	}
+
 	async onOpen() {
 		const { contentEl } = this;
 		contentEl.empty();
@@ -55,24 +168,20 @@ export class ReleaseNotesView extends ItemView {
 			text: this.plugin.i18n.translate("views.releaseNotes.header", { version: this.version })
 		});
 
-		// Markdown content
-		const markdownContainer = container.createEl("div", { cls: "release-notes-content" });
-		markdownContainer.style.marginBottom = "30px";
-
-		// Transform issue references into clickable links and render the markdown
-		const transformedNotes = this.transformIssueLinks(this.releaseNotes);
-		await MarkdownRenderer.render(
-			this.plugin.app,
-			transformedNotes,
-			markdownContainer,
-			"",
-			this as any
-		);
+		// Render all versions
+		const versionsContainer = container.createEl("div", { cls: "release-notes-versions" });
+		for (let i = 0; i < this.releaseNotesBundle.length; i++) {
+			const versionData = this.releaseNotesBundle[i];
+			// Current version and first patch in minor series expanded, others collapsed
+			const isExpanded = versionData.isCurrent || i === 0;
+			await this.createVersionSection(versionsContainer, versionData, isExpanded);
+		}
 
 		// Footer with link to all releases
 		const footer = container.createEl("div", { cls: "release-notes-footer" });
 		footer.style.borderTop = "1px solid var(--background-modifier-border)";
 		footer.style.paddingTop = "20px";
+		footer.style.marginTop = "30px";
 		footer.style.textAlign = "center";
 
 		const link = footer.createEl("a", {
