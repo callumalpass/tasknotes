@@ -13,6 +13,10 @@ describe('Issue #810 - Overdue tasks disappear in agenda view when clicking "tod
     let mockPlugin: any;
 
     beforeEach(() => {
+        // Mock system date to Oct 6, 2025 for consistent testing
+        jest.useFakeTimers();
+        jest.setSystemTime(new Date(Date.UTC(2025, 9, 6, 12, 0, 0))); // Oct 6, 2025 12:00 UTC
+
         // Setup mock services
         statusManager = new StatusManager([
             { id: 'open', value: ' ', label: 'Open', color: '#000000', isCompleted: false, order: 1 },
@@ -40,6 +44,10 @@ describe('Issue #810 - Overdue tasks disappear in agenda view when clicking "tod
             priorityManager,
             mockPlugin
         );
+    });
+
+    afterEach(() => {
+        jest.useRealTimers();
     });
 
     it('should show overdue tasks when showOverdueSection is enabled', async () => {
