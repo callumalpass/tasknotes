@@ -229,15 +229,25 @@ export function renderGeneralTab(
 	});
 
 	// Release Notes Section
-	createSectionHeader(container, "Release Notes");
-	createHelpText(container, `Current version: ${plugin.manifest.version}`);
+	createSectionHeader(container, translate("settings.general.releaseNotes.header"));
+	createHelpText(container, translate("settings.general.releaseNotes.description", { version: plugin.manifest.version }));
+
+	createToggleSetting(container, {
+		name: translate("settings.general.releaseNotes.showOnUpdate.name"),
+		desc: translate("settings.general.releaseNotes.showOnUpdate.description"),
+		getValue: () => plugin.settings.showReleaseNotesOnUpdate ?? true,
+		setValue: async (value: boolean) => {
+			plugin.settings.showReleaseNotesOnUpdate = value;
+			save();
+		},
+	});
 
 	new Setting(container)
-		.setName("View release notes")
-		.setDesc("See what's new in the latest version of TaskNotes")
+		.setName(translate("settings.general.releaseNotes.viewButton.name"))
+		.setDesc(translate("settings.general.releaseNotes.viewButton.description"))
 		.addButton((button) =>
 			button
-				.setButtonText("View release notes")
+				.setButtonText(translate("settings.general.releaseNotes.viewButton.buttonText"))
 				.setCta()
 				.onClick(async () => {
 					await plugin.activateReleaseNotesView();

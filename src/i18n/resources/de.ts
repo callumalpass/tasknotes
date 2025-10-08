@@ -738,6 +738,19 @@ export const de: TranslationTree = {
 					none: "Keine Aktion",
 				},
 			},
+			releaseNotes: {
+				header: "Versionshinweise",
+				description: "Aktuelle Version: {version}",
+				showOnUpdate: {
+					name: "Versionshinweise nach Update anzeigen",
+					description: "Versionshinweise automatisch öffnen, wenn TaskNotes auf eine neue Version aktualisiert wird",
+				},
+				viewButton: {
+					name: "Versionshinweise anzeigen",
+					description: "Sehen Sie, was in der neuesten Version von TaskNotes neu ist",
+					buttonText: "Versionshinweise anzeigen",
+				},
+			},
 		},
 		taskProperties: {
 			taskStatuses: {

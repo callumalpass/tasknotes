@@ -155,19 +155,55 @@ export function buildTasknotesKanbanViewFactory(plugin: TaskNotesPlugin) {
 					});
 
 					// Try different ways to get groupBy from config
-					// Use cached groupBy if available, otherwise determine it
-					if (cachedGroupByPropertyId === undefined) {
-					// Get the groupBy property from config using public API
-					if (viewContext.config && typeof viewContext.config.getAsPropertyId === "function") {
+					// Only use cache if it has a valid value (not null or undefined)
+					// This ensures we retry detection if it previously failed
+					if (cachedGroupByPropertyId === undefined || cachedGroupByPropertyId === null) {
+					// IMPORTANT: Access groupBy from controller.query.views (internal API)
+					// This is required because the Bases public API does NOT expose groupBy:
+					// - config.get('groupBy') returns undefined
+					// - config.getAsPropertyId('groupBy') returns null
+					// The view configuration is stored in the Bases markdown file and parsed into controller.query
+					if (basesContainer?.controller || controller) {
 						try {
-							groupByPropertyId = viewContext.config.getAsPropertyId("groupBy");
-						} catch (e) {
-							// Fallback to get() method
-							if (typeof viewContext.config.get === "function") {
-								groupByPropertyId = viewContext.config.get("groupBy");
+							const ctrl = basesContainer?.controller || controller;
+							const viewName = ctrl.viewName;
+							const views = ctrl.query?.views;
+
+							if (views && viewName) {
+								// Views are stored as an array, find the one matching current viewName
+								for (let i = 0; i < 20; i++) { // Check first 20 views
+									const view = views[i];
+									if (view && view.name === viewName && view.groupBy) {
+										// In 1.10.0+, groupBy is {property: string, direction: string}
+										if (typeof view.groupBy === 'object' && view.groupBy.property) {
+											groupByPropertyId = view.groupBy.property;
+										} else if (typeof view.groupBy === 'string') {
+											// Fallback for older format
+											groupByPropertyId = view.groupBy;
+										}
+										break;
+									}
+								}
 							}
+						} catch (e) {
+							// Silently fail and try fallback
 						}
 					}
+
+					// Fallback: try getBasesGroupByConfig
+					if (!groupByPropertyId) {
+						const groupByConfig = getBasesGroupByConfig(viewContext, pathToProps);
+						if (groupByConfig) {
+							groupByPropertyId = groupByConfig.normalizedId;
+						}
+					}
+
+					// Cache the determined value (even if null)
+					cachedGroupByPropertyId = groupByPropertyId;
+				} else {
+					// Use cached value
+					groupByPropertyId = cachedGroupByPropertyId;
+				}
 
 					// If still null, infer from the grouped data
 					if (!groupByPropertyId && viewContext.data.groupedData.length > 0) {
@@ -197,12 +233,6 @@ export function buildTasknotesKanbanViewFactory(plugin: TaskNotesPlugin) {
 						// Otherwise leave as null - dont default to status
 					}
 					
-					// Cache the determined value (even if null)
-					cachedGroupByPropertyId = groupByPropertyId;
-				} else {
-					// Use cached value
-					groupByPropertyId = cachedGroupByPropertyId;
-				}
 
 					// Use pre-grouped data from Bases
 					for (const group of viewContext.data.groupedData) {
@@ -434,6 +464,13 @@ export function buildTasknotesKanbanViewFactory(plugin: TaskNotesPlugin) {
 							propertyId === "note.projects" ||
 							propertyId === "note.project"
 						) {
+							// KNOWN LIMITATION: Project grouping uses literal wikilink strings
+							// When drag-and-drop updates the projects property, we preserve the exact
+							// wikilink format to match the target column. However, Bases groups by the
+							// literal string value, not by resolved file path. This means tasks with
+							// different wikilink formats pointing to the same file will appear in
+							// separate columns (e.g., [[Project]], [[path/to/Project]], [[Project|Alias]])
+							// See group-by.ts for more details on this limitation.
 							const projectValue = valueToSet
 								? Array.isArray(valueToSet)
 									? valueToSet

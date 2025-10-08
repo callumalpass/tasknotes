@@ -709,6 +709,19 @@ export const zh: TranslationTree = {
 					none: "无操作",
 				},
 			},
+			releaseNotes: {
+				header: "版本说明",
+				description: "当前版本：{version}",
+				showOnUpdate: {
+					name: "更新后显示版本说明",
+					description: "当TaskNotes更新到新版本时自动打开版本说明",
+				},
+				viewButton: {
+					name: "查看版本说明",
+					description: "查看TaskNotes最新版本的新功能",
+					buttonText: "查看版本说明",
+				},
+			},
 		},
 		taskProperties: {
 			taskStatuses: {
