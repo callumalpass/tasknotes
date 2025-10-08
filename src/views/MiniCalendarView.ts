@@ -1389,7 +1389,10 @@ export class MiniCalendarView extends ItemView {
 	// Helper method to get daily note path for a date
 	private getDailyNotePath(date: Date): string | null {
 		try {
-			const moment = (window as any).moment(date);
+			// Fix for issue #857: Convert UTC-anchored date to local calendar date
+			// before passing to moment() to ensure correct day is used
+			const localDate = convertUTCToLocalCalendarDate(date);
+			const moment = (window as any).moment(localDate);
 			const allDailyNotes = getAllDailyNotes();
 			const dailyNote = getDailyNote(moment, allDailyNotes);
 			return dailyNote ? dailyNote.path : null;

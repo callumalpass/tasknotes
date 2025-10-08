@@ -27,6 +27,12 @@ Example:
 
 ## Fixed
 
+- (#857) Fixed Mini Calendar opening previous day's daily note when clicked
+  - Affects users in negative UTC offset timezones (Americas, Pacific)
+  - Convert UTC-anchored dates to local calendar dates before passing to moment.js
+  - Fixes click, double-click, Ctrl/Cmd+click, Enter key, and hover preview
+  - Thanks to @tsweezy for reporting
+
 - (#871) Fixed Bases Kanban drag-and-drop updating wrong property when grouped by custom fields
   - Fixed groupBy configuration retrieval to access `controller.query.views` internal structure
   - Added support for both Bases 1.10.0+ format (`{property: string, direction: string}`) and legacy string format
@@ -54,4 +60,3 @@ Example:
   - Current version expanded by default with visual badge
   - Previous versions collapsed for easier navigation
   - Added setting to disable automatic release notes display after updates
-
