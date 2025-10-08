@@ -122,14 +122,24 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 				// Create timeblock
 				handleTimeblockCreation(start, end, allDay, plugin);
 			} else {
-				// Create task with pre-populated date
-				const scheduledDate = allDay
-					? format(start, "yyyy-MM-dd")
-					: format(start, "yyyy-MM-dd'T'HH:mm");
+				// Create task with pre-populated date and duration
+				// Parse slot duration from settings (format: "HH:mm:ss")
+				const slotDurationSetting = plugin.settings.calendarViewSettings.slotDuration || "00:30:00";
+				const [hours, minutes] = slotDurationSetting.split(':').map(Number);
+				const slotDurationMinutes = (hours * 60) + minutes;
+
+				// Use shared logic to calculate task creation values
+				const { calculateTaskCreationValues } = require("./calendar-core");
+				const prePopulatedValues = calculateTaskCreationValues(
+					start,
+					end,
+					allDay,
+					slotDurationMinutes
+				);
 
 				const { TaskCreationModal } = require("../modals/TaskCreationModal");
 				const modal = new TaskCreationModal(plugin.app, plugin, {
-					prePopulatedValues: { scheduled: scheduledDate },
+					prePopulatedValues,
 				});
 				modal.open();
 			}
@@ -345,7 +355,21 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 				const end = resizeInfo.event.end;
 
 				if (start && end) {
-					const durationMinutes = Math.round((end.getTime() - start.getTime()) / (1000 * 60));
+					let durationMinutes: number;
+
+					if (resizeInfo.event.allDay) {
+						// For all-day events, FullCalendar's end date is exclusive (next day at midnight)
+						// So we need to subtract 1 day to get the actual duration
+						// Example: Jan 15 to Jan 17 (2 days) gives end = Jan 18 00:00
+						const dayDurationMillis = 24 * 60 * 60 * 1000;
+						const daysDuration = Math.round((end.getTime() - start.getTime()) / dayDurationMillis);
+						const minutesPerDay = 60 * 24;
+						durationMinutes = daysDuration * minutesPerDay;
+					} else {
+						// For timed events, calculate duration directly
+						durationMinutes = Math.round((end.getTime() - start.getTime()) / (1000 * 60));
+					}
+
 					await plugin.taskService.updateProperty(taskInfo, "timeEstimate", durationMinutes);
 				}
 			} catch (error) {
@@ -1065,7 +1089,7 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 						interactionPlugin,
 					],
 					initialView: defaultView,
-					initialDate: new Date(),
+					initialDate: new Date(), // Will be updated during render if property configured
 					headerToolbar: {
 						left: "prev,next today",
 						center: "title",
@@ -1285,6 +1309,87 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 							calendar.changeView(configView);
 						} catch (viewError) {
 							console.debug("[TaskNotes][Bases][Calendar] Error changing view:", viewError);
+						}
+					}
+
+					// Navigate to date - check hardcoded date first, then property-based
+					const hardcodedDate = viewContext.config.get('initialDate') as string;
+
+					if (hardcodedDate && hardcodedDate.trim()) {
+						// Use hardcoded date
+						try {
+							const targetDate = new Date(hardcodedDate);
+							if (!isNaN(targetDate.getTime())) {
+								calendar.gotoDate(targetDate);
+							}
+						} catch (error) {
+							console.debug('[TaskNotes][Bases][Calendar] Invalid hardcoded date:', error);
+						}
+					} else {
+						// Use property-based navigation
+						let initialDatePropertyId = viewContext.config.getAsPropertyId?.('initialDateProperty');
+						if (!initialDatePropertyId) {
+							const rawValue = viewContext.config.get('initialDateProperty') as string;
+							if (rawValue && typeof rawValue === 'string') {
+								initialDatePropertyId = rawValue as any;
+							}
+						}
+
+						const strategy = (viewContext.config.get('initialDateStrategy') as string) || 'first';
+
+						if (initialDatePropertyId && viewContext.data?.data && viewContext.data.data.length > 0) {
+							try {
+								// Helper to extract date from Bases Value object
+								const extractDate = (dateValue: any): Date | null => {
+									if (!dateValue) return null;
+
+									let extracted: Date | null = null;
+									if (dateValue.date instanceof Date) {
+										extracted = dateValue.date;
+									} else if (dateValue.data instanceof Date) {
+										extracted = dateValue.data;
+									} else if (typeof dateValue.data === 'string') {
+										extracted = new Date(dateValue.data);
+									} else if (dateValue instanceof Date) {
+										extracted = dateValue;
+									}
+
+									return (extracted && !isNaN(extracted.getTime())) ? extracted : null;
+								};
+
+								let targetDate: Date | null = null;
+
+								if (strategy === 'first') {
+									// Use first result
+									const firstEntry = viewContext.data.data[0];
+									const dateValue = firstEntry.getValue?.(initialDatePropertyId);
+									targetDate = extractDate(dateValue);
+								} else {
+									// Collect all valid dates
+									const dates: Date[] = [];
+									for (const entry of viewContext.data.data) {
+										const dateValue = entry.getValue?.(initialDatePropertyId);
+										const extracted = extractDate(dateValue);
+										if (extracted) {
+											dates.push(extracted);
+										}
+									}
+
+									if (dates.length > 0) {
+										if (strategy === 'earliest') {
+											targetDate = new Date(Math.min(...dates.map(d => d.getTime())));
+										} else if (strategy === 'latest') {
+											targetDate = new Date(Math.max(...dates.map(d => d.getTime())));
+										}
+									}
+								}
+
+								if (targetDate) {
+									calendar.gotoDate(targetDate);
+								}
+							} catch (error) {
+								console.debug('[TaskNotes][Bases][Calendar] Error reading initial date property:', error);
+							}
 						}
 					}
 				}

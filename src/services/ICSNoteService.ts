@@ -87,7 +87,11 @@ export class ICSNoteService {
 	private computeScheduledFromICSEvent(icsEvent: ICSEvent): string | undefined {
 		try {
 			if (!icsEvent.start) return undefined;
-			const start = new Date(icsEvent.start);
+			// For all-day events with date-only format (YYYY-MM-DD), append T00:00:00 to parse as local midnight
+			const startDateStr = icsEvent.allDay && /^\d{4}-\d{2}-\d{2}$/.test(icsEvent.start)
+				? icsEvent.start + 'T00:00:00'
+				: icsEvent.start;
+			const start = new Date(startDateStr);
 			if (icsEvent.allDay) {
 				return formatDateForStorage(start);
 			}
@@ -116,10 +120,16 @@ export class ICSNoteService {
 				.find((sub) => sub.id === icsEvent.subscriptionId);
 			const subscriptionName = subscription?.name || "Unknown Calendar";
 
+			// For all-day events with date-only format (YYYY-MM-DD), append T00:00:00 to parse as local midnight
+			const startDateStr = icsEvent.allDay && /^\d{4}-\d{2}-\d{2}$/.test(icsEvent.start)
+				? icsEvent.start + 'T00:00:00'
+				: icsEvent.start;
+			const eventStartDate = new Date(startDateStr);
+
 			// Determine note title
 			const noteTitle =
 				overrides?.title ||
-				`${icsEvent.title} - ${format(new Date(icsEvent.start), "PPP")}`;
+				`${icsEvent.title} - ${format(eventStartDate, "PPP")}`;
 
 			// Determine folder (safely handle missing icsIntegration settings)
 			const rawFolder =
@@ -127,7 +137,7 @@ export class ICSNoteService {
 
 			// Process folder template with ICS-specific data
 			const folder = processFolderTemplate(rawFolder, {
-				date: new Date(icsEvent.start),
+				date: eventStartDate,
 				icsData: {
 					title: icsEvent.title,
 					location: icsEvent.location,
@@ -141,7 +151,7 @@ export class ICSNoteService {
 				title: icsEvent.title, // Use clean event title for {title} variable
 				priority: "",
 				status: "",
-				date: new Date(icsEvent.start),
+				date: eventStartDate,
 				dueDate: icsEvent.end,
 				scheduledDate: icsEvent.start,
 				icsEventTitle: icsEvent.title,
@@ -367,12 +377,19 @@ export class ICSNoteService {
 		details.push("");
 
 		if (icsEvent.start) {
-			const startDate = new Date(icsEvent.start);
+			// For all-day events with date-only format (YYYY-MM-DD), append T00:00:00 to parse as local midnight
+			const startDateStr = icsEvent.allDay && /^\d{4}-\d{2}-\d{2}$/.test(icsEvent.start)
+				? icsEvent.start + 'T00:00:00'
+				: icsEvent.start;
+			const startDate = new Date(startDateStr);
 			details.push(`**Start:** ${format(startDate, "PPPp")}`);
 		}
 
 		if (icsEvent.end && !icsEvent.allDay) {
-			const endDate = new Date(icsEvent.end);
+			const endDateStr = /^\d{4}-\d{2}-\d{2}$/.test(icsEvent.end)
+				? icsEvent.end + 'T00:00:00'
+				: icsEvent.end;
+			const endDate = new Date(endDateStr);
 			details.push(`**End:** ${format(endDate, "PPPp")}`);
 		}
 
@@ -427,8 +444,16 @@ export class ICSNoteService {
 		}
 
 		try {
-			const startTime = new Date(icsEvent.start).getTime();
-			const endTime = new Date(icsEvent.end).getTime();
+			// For all-day events with date-only format (YYYY-MM-DD), append T00:00:00 to parse as local midnight
+			const startDateStr = icsEvent.allDay && /^\d{4}-\d{2}-\d{2}$/.test(icsEvent.start)
+				? icsEvent.start + 'T00:00:00'
+				: icsEvent.start;
+			const endDateStr = icsEvent.allDay && /^\d{4}-\d{2}-\d{2}$/.test(icsEvent.end)
+				? icsEvent.end + 'T00:00:00'
+				: icsEvent.end;
+
+			const startTime = new Date(startDateStr).getTime();
+			const endTime = new Date(endDateStr).getTime();
 
 			if (isNaN(startTime) || isNaN(endTime)) {
 				return undefined;

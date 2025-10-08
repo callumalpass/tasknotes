@@ -32,3 +32,12 @@ Example:
   - Convert UTC-anchored dates to local calendar dates before passing to moment.js
   - Fixes click, double-click, Ctrl/Cmd+click, Enter key, and hover preview
   - Thanks to @tsweezy for reporting
+
+## Added
+
+- Added date navigation configuration for Bases calendar views
+  - Hardcoded date option: Set a specific date (YYYY-MM-DD format) for the calendar to display on load
+  - Property-based navigation: Automatically navigate to dates from filtered note properties
+  - Three navigation strategies: First result, Earliest date, or Latest date
+  - Supports both static views and dynamic filtered views
+  - Full i18n support for all settings in French, Spanish, German, Japanese, Russian, and Chinese

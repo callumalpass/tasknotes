@@ -115,15 +115,118 @@ TaskNotes can automatically move tasks to a designated archive folder when archi
 
 The system prevents file overwrites by checking for existing files and showing error messages if conflicts are detected. Archive operations continue even if file moves fail.
 
+## Filename Template Variables
+
+When using the **custom** filename format, you can create templates using variables that are replaced with actual values when tasks are created.
+
+### Available Filename Variables
+
+**Task Properties:**
+
+- `{title}` - Task title (sanitized for filenames)
+- `{priority}` - Task priority (e.g., "high", "medium", "low")
+- `{status}` - Task status (e.g., "todo", "in-progress", "done")
+- `{dueDate}` - Task due date (YYYY-MM-DD format)
+- `{scheduledDate}` - Task scheduled date (YYYY-MM-DD format)
+- `{priorityShort}` - First letter of priority in uppercase (e.g., "H")
+- `{statusShort}` - First letter of status in uppercase (e.g., "T")
+- `{titleLower}` - Task title in lowercase
+- `{titleUpper}` - Task title in uppercase
+- `{titleSnake}` - Task title in snake_case
+- `{titleKebab}` - Task title in kebab-case
+- `{titleCamel}` - Task title in camelCase
+- `{titlePascal}` - Task title in PascalCase
+
+**Date and Time:**
+
+- `{date}` - Full date (YYYY-MM-DD format, e.g., "2025-08-15")
+- `{time}` - Time as HHMMSS (e.g., "143502")
+- `{timestamp}` - Date and time as YYYY-MM-DD-HHMMSS (e.g., "2025-08-15-143502")
+- `{dateTime}` - Date and time as YYYY-MM-DD-HHMM (e.g., "2025-08-15-1435")
+- `{year}` - Year (e.g., "2025")
+- `{month}` - Month with leading zero (e.g., "08")
+- `{day}` - Day with leading zero (e.g., "15")
+- `{hour}` - Hour with leading zero (e.g., "14")
+- `{minute}` - Minute with leading zero (e.g., "35")
+- `{second}` - Second with leading zero (e.g., "02")
+- `{shortDate}` - Short date as YYMMDD (e.g., "250815")
+- `{monthName}` - Full month name (e.g., "August")
+- `{monthNameShort}` - Short month name (e.g., "Aug")
+- `{dayName}` - Full day name (e.g., "Thursday")
+- `{dayNameShort}` - Short day name (e.g., "Thu")
+- `{week}` - Week number (e.g., "33")
+- `{quarter}` - Quarter number (e.g., "3")
+- `{time12}` - 12-hour time with AM/PM (e.g., "02:35 PM")
+- `{time24}` - 24-hour time (e.g., "14:35")
+- `{hourPadded}` - Hour with leading zero (e.g., "14")
+- `{hour12}` - 12-hour format hour with leading zero (e.g., "02")
+- `{ampm}` - AM/PM indicator (e.g., "PM")
+
+**Advanced:**
+
+- `{unix}` - Unix timestamp in seconds (e.g., "1692106502")
+- `{unixMs}` - Unix timestamp in milliseconds (e.g., "1692106502123")
+- `{milliseconds}` - Milliseconds (e.g., "123")
+- `{ms}` - Milliseconds (e.g., "123")
+- `{timezone}` - Timezone offset (e.g., "+10:00")
+- `{timezoneShort}` - Short timezone offset (e.g., "+1000")
+- `{utcOffset}` - UTC offset (e.g., "+10:00")
+- `{utcOffsetShort}` - Short UTC offset (e.g., "+1000")
+- `{utcZ}` - UTC Z indicator (always "Z")
+- `{zettel}` - Zettelkasten ID (e.g., "250815abc")
+- `{nano}` - Nano ID with timestamp and random string
+
+### Filename Template Examples
+
+**Date-based with title:**
+```
+{year}-{month}-{day} {title}
+```
+Result: `2025-08-15 Complete documentation.md`
+
+**Zettelkasten with title:**
+```
+{zettel} {title}
+```
+Result: `250815abc Complete documentation.md`
+
+**Priority and status prefix:**
+```
+[{priorityShort}] {title}
+```
+Result: `[H] Complete documentation.md`
+
+**Custom timestamp:**
+```
+{timestamp}-{titleKebab}
+```
+Result: `2025-08-15-143502-complete-documentation.md`
+
+### ICS Event Filename Variables
+
+For ICS event notes, additional variables are available:
+
+- `{icsEventTitle}` - Event title from ICS calendar
+- `{icsEventLocation}` - Event location
+- `{icsEventDescription}` - Event description (truncated to 50 characters)
+- `{icsEventTitleWithDate}` - Event title with formatted date
+
+### Important Notes
+
+- **Single Braces**: Filename variables use single braces `{variable}` while folder variables use double braces `{{variable}}`
+- **Sanitization**: All variables are automatically sanitized to be safe for filenames (invalid characters removed)
+- **Empty Values**: If a property doesn't have a value, the variable is replaced with an empty string
+- **Character Limits**: Filenames are limited to 255 characters on most systems
+
 ### Store Title Exclusively in Filename
 
 This setting provides an alternative way to manage your task titles. When enabled, the task's title will be used as the filename, and the `title` property will be removed from the frontmatter. This is a significant data storage change that simplifies frontmatter but disables all other filename templating options.
 
 **Important Considerations:**
 
-*   **Backward Compatibility:** This feature is designed to be backward-compatible. Existing tasks with the `title` property in their frontmatter will continue to work as expected. The plugin will always prioritize reading the title from the frontmatter if it exists.
-*   **New Tasks:** New tasks created with this setting enabled will have their title stored exclusively in the filename.
-*   **Migration:** To migrate an existing task to this new system, you will need to manually rename the file to match the task's title and then remove the `title` property from the frontmatter.
+- **Backward Compatibility:** This feature is designed to be backward-compatible. Existing tasks with the `title` property in their frontmatter will continue to work as expected. The plugin will always prioritize reading the title from the frontmatter if it exists.
+- **New Tasks:** New tasks created with this setting enabled will have their title stored exclusively in the filename.
+- **Migration:** To migrate an existing task to this new system, you will need to manually rename the file to match the task's title and then remove the `title` property from the frontmatter.
 
 This feature is recommended for users who prefer a minimalist approach to their frontmatter and want a direct relationship between the filename and the task title.
 

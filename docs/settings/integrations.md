@@ -12,7 +12,7 @@ These settings control the integration with other plugins and services, such as 
 ## Calendar subscriptions
 
 - **Default note template**: Path to template file for notes created from ICS events.
-- **Default note folder**: Folder for notes created from ICS events.
+- **Default note folder**: Folder for notes created from ICS events. Supports template variables (e.g., `Daily/{{year}}/{{month}}/{{day}}`, `Events/{{icsEventTitle}}`). See ICS Integration documentation for full list of supported variables.
 - **ICS note filename format**: How filenames are generated for notes created from ICS events.
 - **Custom ICS filename template**: Template for custom ICS event filenames.
 - **Add Calendar Subscription**: Add a new calendar subscription from ICS/iCal URL or local file.

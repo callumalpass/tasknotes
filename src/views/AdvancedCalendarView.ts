@@ -1180,42 +1180,18 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 	}
 
 	private handleTaskCreation(start: Date, end: Date, allDay: boolean) {
-		// Pre-populate with selected date/time
-		const scheduledDate = allDay
-			? format(start, "yyyy-MM-dd")
-			: format(start, "yyyy-MM-dd'T'HH:mm");
-
-		const durationMinutes = Math.round((end.getTime() - start.getTime()) / (1000 * 60));
-
 		// Convert slot duration setting to minutes for comparison
 		const slotDurationSetting = this.plugin.settings.calendarViewSettings.slotDuration;
 		const slotDurationMinutes = this.parseSlotDurationToMinutes(slotDurationSetting);
 
-		// Determine if this was a drag (intentional time selection) or just a click
-		// If duration is greater than slot duration, it's an intentional drag
-		const isDragOperation = !allDay && durationMinutes > slotDurationMinutes;
-
-		const prePopulatedValues: any = {
-			scheduled: scheduledDate,
-		};
-
-		// Only override time estimate if it's an intentional drag operation
-		if (allDay) {
-			// For all-day events, calculate duration in days if multi-day selection
-			const dayDurationMillis = 24 * 60 * 60 * 1000; // milliseconds in a day
-			const daysDuration = Math.round((end.getTime() - start.getTime()) / dayDurationMillis);
-
-			if (daysDuration > 1) {
-				// Multi-day selection: set time estimate based on days
-				const minutesPerDay = 60 * 24;
-				prePopulatedValues.timeEstimate = daysDuration * minutesPerDay;
-			}
-			// For single-day all-day events, let TaskCreationModal use the default setting
-		} else if (isDragOperation) {
-			// User dragged to select a specific duration, use that
-			prePopulatedValues.timeEstimate = durationMinutes;
-		}
-		// For clicks (not drags), don't set timeEstimate to let default setting apply
+		// Use shared logic to calculate task creation values
+		const { calculateTaskCreationValues } = require("../bases/calendar-core");
+		const prePopulatedValues = calculateTaskCreationValues(
+			start,
+			end,
+			allDay,
+			slotDurationMinutes
+		);
 
 		const modal = new TaskCreationModal(this.app, this.plugin, {
 			prePopulatedValues,
@@ -1471,7 +1447,21 @@ export class AdvancedCalendarView extends ItemView implements OptimizedView {
 			const end = resizeInfo.event.end;
 
 			if (start && end) {
-				const durationMinutes = Math.round((end.getTime() - start.getTime()) / (1000 * 60));
+				let durationMinutes: number;
+
+				if (resizeInfo.event.allDay) {
+					// For all-day events, FullCalendar's end date is exclusive (next day at midnight)
+					// So we need to subtract 1 day to get the actual duration
+					// Example: Jan 15 to Jan 17 (2 days) gives end = Jan 18 00:00
+					const dayDurationMillis = 24 * 60 * 60 * 1000;
+					const daysDuration = Math.round((end.getTime() - start.getTime()) / dayDurationMillis);
+					const minutesPerDay = 60 * 24;
+					durationMinutes = daysDuration * minutesPerDay;
+				} else {
+					// For timed events, calculate duration directly
+					durationMinutes = Math.round((end.getTime() - start.getTime()) / (1000 * 60));
+				}
+
 				await this.plugin.taskService.updateProperty(
 					taskInfo,
 					"timeEstimate",

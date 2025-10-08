@@ -32,13 +32,14 @@ export class ICSSubscriptionService extends EventEmitter {
 	 * - Outlook/Exchange timezone formats
 	 */
 	private icalTimeToISOString(icalTime: ICAL.Time): string {
-		// For all-day events, preserve the date without time
+		// For all-day events, return date-only string (YYYY-MM-DD)
+		// This preserves the calendar date semantics without timezone ambiguity
+		// per iCalendar RFC 5545 specification for VALUE=DATE events
 		if (icalTime.isDate) {
-			return new Date(Date.UTC(
-				icalTime.year,
-				icalTime.month - 1,
-				icalTime.day
-			)).toISOString();
+			const year = icalTime.year.toString().padStart(4, '0');
+			const month = icalTime.month.toString().padStart(2, '0');
+			const day = icalTime.day.toString().padStart(2, '0');
+			return `${year}-${month}-${day}`;
 		}
 
 		// For timed events, use toUnixTime() which correctly converts to UTC

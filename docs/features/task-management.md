@@ -88,7 +88,7 @@ Additionally, you can convert any line type in your notes to TaskNotes using the
 Each task in TaskNotes is a Markdown file with a YAML frontmatter block that stores its properties. The core properties include:
 
 - **Title**: The main description of the task.
-- **Status**: The current state of the task (e.g., "Open," "In Progress," "Done").
+- **Status**: The current state of the task (e.g., "Open," "In Progress," "Done"). Status can also be set to boolean values `true` or `false` for compatibility with Obsidian's checkbox properties.
 - **Priority**: The importance of the task (e.g., "Low," "Normal," "High").
 - **Due Date**: The date by which the task must be completed.
 - **Scheduled Date**: The date on which you plan to work on the task.
