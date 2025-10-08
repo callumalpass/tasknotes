@@ -53,6 +53,7 @@ import { TaskEditModal } from "./modals/TaskEditModal";
 import { TaskSelectorModal } from "./modals/TaskSelectorModal";
 import { PomodoroService } from "./services/PomodoroService";
 import { formatTime, getActiveTimeEntry } from "./utils/helpers";
+import { convertUTCToLocalCalendarDate } from "./utils/dateUtils";
 import { MinimalNativeCache } from "./utils/MinimalNativeCache";
 import { RequestDeduplicator, PredictivePrefetcher } from "./utils/RequestDeduplicator";
 import { DOMReconciler, UIStateManager } from "./utils/DOMReconciler";
@@ -1725,7 +1726,10 @@ export default class TaskNotesPlugin extends Plugin {
 			}
 
 			// Convert date to moment for the API
-			const moment = (window as Window & { moment: (date: Date) => any }).moment(date);
+			// Fix for issue #857: Convert UTC-anchored date to local calendar date
+			// before passing to moment() to ensure correct day is used
+			const localDate = convertUTCToLocalCalendarDate(date);
+			const moment = (window as Window & { moment: (date: Date) => any }).moment(localDate);
 
 			// Get all daily notes to check if one exists for this date
 			const allDailyNotes = getAllDailyNotes();

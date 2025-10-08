@@ -25,3 +25,10 @@ Example:
 
 -->
 
+## Fixed
+
+- (#857) Fixed Mini Calendar opening previous day's daily note when clicked
+  - Affects users in negative UTC offset timezones (Americas, Pacific)
+  - Convert UTC-anchored dates to local calendar dates before passing to moment.js
+  - Fixes click, double-click, Ctrl/Cmd+click, Enter key, and hover preview
+  - Thanks to @tsweezy for reporting
