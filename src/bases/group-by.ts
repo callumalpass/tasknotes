@@ -28,7 +28,20 @@ function toStringTokens(value: unknown): string[] {
  * Read Bases view groupBy config and normalize it against query.properties
  * Returns a config object or null if groupBy is absent.
  *
- * Uses public API (1.10.0+) when available via config.get() and config.getAsPropertyId()
+ * IMPORTANT: GroupBy retrieval is NOT part of the Bases public API (1.10.0+)
+ * - config.get('groupBy') returns undefined
+ * - config.getAsPropertyId('groupBy') returns null
+ *
+ * This function accesses the internal controller.query.views structure to retrieve
+ * the groupBy configuration from the parsed Bases YAML file.
+ *
+ * KNOWN LIMITATION: When grouping by projects (note.projects):
+ * - Bases groups by literal wikilink strings in frontmatter, NOT by resolved file paths
+ * - Tasks linking to the same project file with different wikilink formats will appear
+ *   in separate columns (e.g., [[Project]], [[path/to/Project]], [[Project|Alias]])
+ * - This differs from native TaskNotes Kanban which resolves all wikilinks to absolute
+ *   paths for consistent grouping (see FilterService.resolveProjectToAbsolutePath)
+ * - No workaround exists without modifying Bases internals or post-processing grouped data
  */
 export function getBasesGroupByConfig(
 	basesContainer: any,
