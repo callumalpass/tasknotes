@@ -233,12 +233,6 @@ export function buildTasknotesKanbanViewFactory(plugin: TaskNotesPlugin) {
 						// Otherwise leave as null - dont default to status
 					}
 					
-					// Cache the determined value (even if null)
-					cachedGroupByPropertyId = groupByPropertyId;
-				} else {
-					// Use cached value
-					groupByPropertyId = cachedGroupByPropertyId;
-				}
 
 					// Use pre-grouped data from Bases
 					for (const group of viewContext.data.groupedData) {
