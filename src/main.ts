@@ -95,7 +95,7 @@ import { AutoExportService } from "./services/AutoExportService";
 import type { HTTPAPIService } from "./services/HTTPAPIService";
 import { createI18nService, I18nService, TranslationKey } from "./i18n";
 import { ReleaseNotesView, RELEASE_NOTES_VIEW_TYPE } from "./views/ReleaseNotesView";
-import { CURRENT_RELEASE_NOTES } from "./releaseNotes";
+import { CURRENT_VERSION, RELEASE_NOTES_BUNDLE } from "./releaseNotes";
 
 interface TranslatedCommandDefinition {
 	id: string;
@@ -474,7 +474,7 @@ export default class TaskNotesPlugin extends Plugin {
 
 			this.registerView(
 				RELEASE_NOTES_VIEW_TYPE,
-				(leaf) => new ReleaseNotesView(leaf, this, CURRENT_RELEASE_NOTES, this.manifest.version)
+				(leaf) => new ReleaseNotesView(leaf, this, RELEASE_NOTES_BUNDLE, CURRENT_VERSION)
 			);
 
 			// Register essential editor extensions (now safe after layout ready)
@@ -910,16 +910,23 @@ export default class TaskNotesPlugin extends Plugin {
 			const currentVersion = this.manifest.version;
 			const lastSeenVersion = this.settings.lastSeenVersion;
 
-			// If this is a new install or version has changed, show release notes
+			// If this is a new install or version has changed, show release notes (if enabled)
 			if (lastSeenVersion && lastSeenVersion !== currentVersion) {
-				// Show release notes after a delay to ensure UI is ready
-				setTimeout(async () => {
-					await this.activateReleaseNotesView();
-					// Update lastSeenVersion immediately after showing the release notes
-					// This ensures they only show once per version
+				const showReleaseNotes = this.settings.showReleaseNotesOnUpdate ?? true;
+				if (showReleaseNotes) {
+					// Show release notes after a delay to ensure UI is ready
+					setTimeout(async () => {
+						await this.activateReleaseNotesView();
+						// Update lastSeenVersion immediately after showing the release notes
+						// This ensures they only show once per version
+						this.settings.lastSeenVersion = currentVersion;
+						await this.saveSettings();
+					}, 1500); // Slightly longer delay than migration to avoid conflicts
+				} else {
+					// Still update lastSeenVersion even if not showing release notes
 					this.settings.lastSeenVersion = currentVersion;
 					await this.saveSettings();
-				}, 1500); // Slightly longer delay than migration to avoid conflicts
+				}
 			}
 
 			// Update lastSeenVersion if it hasn't been set yet (new install)

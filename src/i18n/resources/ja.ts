@@ -724,6 +724,19 @@ export const ja: TranslationTree = {
 					none: "アクションなし",
 				},
 			},
+			releaseNotes: {
+				header: "リリースノート",
+				description: "現在のバージョン：{version}",
+				showOnUpdate: {
+					name: "更新後にリリースノートを表示",
+					description: "TaskNotesが新しいバージョンに更新されたときに自動的にリリースノートを開く",
+				},
+				viewButton: {
+					name: "リリースノートを表示",
+					description: "TaskNotesの最新バージョンの新機能を確認する",
+					buttonText: "リリースノートを表示",
+				},
+			},
 		},
 		taskProperties: {
 			taskStatuses: {
