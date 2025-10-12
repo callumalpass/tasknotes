@@ -78,6 +78,145 @@ on:
 
 ---
 
+## PR and Commit Strategy
+
+### For Solo Development (Your Direct Work)
+
+**v4 Development (main branch):**
+- Commit directly to `main` for most work
+- No PR needed - you're the maintainer
+- Use conventional commits: `feat:`, `fix:`, `refactor:`, `docs:`
+- Push frequently to keep branch up-to-date
+
+**v3 Bug Fixes (v3-maintenance branch):**
+- Commit directly to `v3-maintenance` for bug fixes
+- No PR needed for your own fixes
+- Tag and release immediately after fix
+- **Do NOT cherry-pick to main** - codebases will diverge too much
+
+**When to Use PRs (Your Own Work):**
+- Large architectural changes you want documented
+- Changes you want to think about before merging
+- Optional: Create PR for your own review/documentation
+
+### For External Contributors
+
+**Bug Fixes:**
+```markdown
+Please submit PRs to:
+- `v3-maintenance` - for bugs in current release (v3.x)
+- `main` - for bugs that also exist in v4 (during alpha/beta)
+
+We will NOT backport v4 features to v3.
+```
+
+**New Features:**
+```markdown
+Please submit PRs to:
+- `main` only - all new features target v4
+
+v3 is in maintenance mode (bug fixes only).
+```
+
+### Example Workflows
+
+**Scenario 1: You find a bug in v3**
+```bash
+git checkout v3-maintenance
+git pull origin v3-maintenance
+
+# Fix bug
+git add .
+git commit -m "fix: resolve crash when opening calendar view"
+
+# Update version in manifest.json to 3.25.3
+git add manifest.json
+git commit -m "chore: bump version to 3.25.3"
+
+# Create tag and push
+git tag 3.25.3
+git push origin v3-maintenance
+git push origin 3.25.3
+
+# GitHub Actions will build and create draft release
+```
+
+**Scenario 2: You're working on v4 features**
+```bash
+git checkout main
+git pull origin main
+
+# Work on features
+git add .
+git commit -m "feat: add TaskNotes kanban view with Bases integration"
+
+git push origin main
+
+# Continue working, commit frequently
+# No need for PRs unless you want them
+```
+
+**Scenario 3: External contributor submits PR**
+```markdown
+Contributor opens PR targeting `main` with a bug fix.
+
+You review and either:
+1. Merge to main
+2. Ask them to retarget to v3-maintenance (if critical bug)
+3. Manually apply fix to v3-maintenance yourself if urgent
+```
+
+**Scenario 4: Bug exists in BOTH v3 and v4 (rare)**
+```bash
+# If codebases haven't diverged much yet:
+git checkout v3-maintenance
+# Fix bug
+git commit -m "fix: issue with date parsing"
+git tag 3.25.3
+git push origin v3-maintenance --follow-tags
+
+# Then manually apply similar fix to v4
+git checkout main
+# Apply fix (likely different code, so manual)
+git commit -m "fix: issue with date parsing"
+git push origin main
+```
+
+### Branch Protection (Optional)
+
+Consider enabling branch protection on both branches:
+- Require status checks to pass (CI tests)
+- DO NOT require PRs for your own work (too much overhead for solo dev)
+- DO require PRs for external contributors
+
+### Communication
+
+Update your CONTRIBUTING.md to clarify:
+```markdown
+# Contributing to TaskNotes
+
+## Branch Strategy
+
+- `main` - v4 development (breaking changes allowed)
+- `v3-maintenance` - v3 bug fixes only (no new features)
+
+## Where to Submit PRs
+
+### Bug Fixes
+- If bug affects current release (v3.x): PR to `v3-maintenance`
+- If bug affects v4 alpha/beta: PR to `main`
+
+### New Features
+- Always PR to `main` (v3 is in maintenance mode)
+
+## Version Support
+
+- v3.x: Bug fixes only until v4 stable release
+- v4.x: Active development
+```
+
+---
+
 ## Technical Investigation
 
 ### 1. Blocked/Blocking Functionality
