@@ -37,10 +37,34 @@
 ### main Branch (v4 Development)
 - **Purpose**: All v4 development and new features
 - **Breaking changes allowed**
-- **Release process**:
+- **Release process** (using BRAT for testing):
   - Alpha releases: `4.0.0-alpha.1`, `4.0.0-alpha.2`, etc.
-  - Beta releases: `4.0.0-beta.1`, etc.
-  - Final: `4.0.0`
+  - Beta releases: `4.0.0-beta.1`, `4.0.0-beta.2`, etc.
+  - Final: `4.0.1` or `4.1.0` (NOT `4.0.0` - see BRAT gotcha below)
+
+### BRAT Beta Testing Guidelines
+
+**Version Naming Best Practices** (from [BRAT Developer Guide](https://github.com/TfTHacker/obsidian42-brat/blob/main/BRAT-DEVELOPER-GUIDE.md)):
+- Follow semantic versioning: `MAJOR.MINOR.PATCH-prerelease.number`
+- Tag, release name, and `manifest.json` version must match exactly
+- Use formats: `4.0.0-alpha.1`, `4.0.0-beta.1`, `4.0.0-rc.1`, etc.
+
+**⚠️ Critical Gotcha**:
+Obsidian won't auto-update from pre-release to stable release with same minor version!
+- If users install `4.0.0-beta.5`
+- They won't auto-update to `4.0.0`
+- They will auto-update to `4.0.1` or `4.1.0`
+
+**Recommended Strategy**:
+```
+4.0.0-alpha.1  → Early testing
+4.0.0-alpha.2  → ...
+4.0.0-beta.1   → Feature complete, testing
+4.0.0-beta.2   → ...
+4.0.1          → First stable v4 release (skipping 4.0.0)
+```
+
+This ensures BRAT users automatically get the stable release.
 
 ### Test Workflow
 Update `.github/workflows/test.yml` to run on v3-maintenance branch:
