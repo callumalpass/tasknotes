@@ -958,6 +958,18 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 					}
 				}
 
+				// Generate events from Google Calendar (if connected and enabled)
+				const showGoogleCalendar = (ctx?.config?.get('showGoogleCalendar') as boolean) ?? true;
+				if (showGoogleCalendar && plugin.googleCalendarService) {
+					const googleEvents = plugin.googleCalendarService.getAllEvents();
+					for (const icsEvent of googleEvents) {
+						const calendarEvent = createICSEvent(icsEvent, plugin);
+						if (calendarEvent) {
+							events.push(calendarEvent);
+						}
+					}
+				}
+
 				// Validate events
 				return events.filter((event) => {
 					if (!event.extendedProps || !event.id) {

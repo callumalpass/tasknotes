@@ -120,19 +120,6 @@ export function renderIntegrationsTab(
 	googleCalendarHeader.style.marginTop = "1em";
 	googleCalendarHeader.style.marginBottom = "0.5em";
 
-	createTextSetting(container, {
-		name: "Google OAuth Client ID (Optional)",
-		desc: "Leave empty to use the built-in TaskNotes OAuth client. Or, provide your own custom OAuth client ID from Google Cloud Console. See docs/planning/oauth-setup-guide.md for setup instructions.",
-		placeholder: "Uses TaskNotes built-in client ID",
-		getValue: () => plugin.settings.googleOAuthClientId,
-		setValue: async (value: string) => {
-			plugin.settings.googleOAuthClientId = value;
-			save();
-			// Re-render to update connection status
-			renderIntegrationsTab(container, plugin, save);
-		},
-	});
-
 	// Connection status and buttons
 	const googleConnectionContainer = container.createDiv("oauth-connection-container");
 	googleConnectionContainer.style.marginTop = "10px";
@@ -233,11 +220,6 @@ export function renderIntegrationsTab(
 				cls: "mod-cta",
 			});
 			connectBtn.onclick = async () => {
-				if (!plugin.settings.googleOAuthClientId) {
-					new Notice("Please enter your Google OAuth Client ID first");
-					return;
-				}
-
 				try {
 					connectBtn.disabled = true;
 					connectBtn.textContent = "Connecting...";
