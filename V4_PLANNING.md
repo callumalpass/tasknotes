@@ -87,89 +87,37 @@ on:
 - Requires lookups to other notes (dependency tracking)
 - Not natively supported by Bases filter formulas
 
-**Proposed Solution:**
-Use custom view options + client-side filtering:
+**Decision: DEFER TO FUTURE VERSION**
 
+We will NOT implement dependency filtering in v4.0.
+
+**Rationale:**
+- Bases formulas **cannot** query properties from other notes (confirmed from docs)
+- Obsidian docs state: _"In the future, plugins will be able to add functions for use in formulas"_
+- Client-side workarounds would be complex, temporary, and harder to maintain
+- Better to wait for proper API support
+
+**When Obsidian Adds Plugin Formula Support:**
+We can implement clean, declarative dependency filtering:
 ```typescript
-// Example: Register view with custom options
-this.registerBasesView('tasknotes-kanban', {
-  name: "TaskNotes Kanban",
-  icon: "layout-grid",
-  factory: (controller, containerEl) => new TaskNotesKanbanView(controller),
-  options: () => [
-    {
-      type: 'toggle',
-      key: 'showBlocked',
-      displayName: 'Show Blocked Tasks',
-      default: true
-    },
-    {
-      type: 'toggle',
-      key: 'showBlockedBy',
-      displayName: 'Show "Blocked By" Relationships',
-      default: false
-    }
-  ]
+// Future: Register custom formula function
+registerBasesFormula('hasIncompleteBlocker', (context) => {
+  const blockedBy = context.getValue('note.blockedBy');
+  // Query each blocking task and check status
+  return blockedBy.some(task => getTaskStatus(task) !== 'complete');
 });
 
-// In view implementation:
-class TaskNotesKanbanView extends BasesView {
-  type = 'tasknotes-kanban';
-
-  onDataUpdated(): void {
-    const showBlocked = this.config.get('showBlocked');
-
-    // Get all entries from Bases query
-    let entries = this.data.data;
-
-    // Apply client-side filtering for blocked/blocking
-    if (!showBlocked) {
-      entries = entries.filter(entry => {
-        const blockedBy = entry.getValue('note.blockedBy');
-        return !blockedBy || blockedBy.data.length === 0;
-      });
-    }
-
-    // Could also compute blocking relationships by iterating
-    // all entries and building a dependency map
-    const dependencyMap = this.buildDependencyMap(this.data.data);
-
-    this.render(entries, dependencyMap);
-  }
-
-  buildDependencyMap(entries: BasesEntry[]): Map<string, string[]> {
-    const map = new Map();
-    // Iterate all entries and build blocked/blocking relationships
-    entries.forEach(entry => {
-      const blockedBy = entry.getValue('note.blockedBy');
-      if (blockedBy) {
-        // Build map of dependencies
-      }
-    });
-    return map;
-  }
-}
+// Then use in base filters:
+filters:
+  - 'formula.hasIncompleteBlocker == true'
 ```
 
-**Status:** ✅ **CONFIRMED - Must use client-side approach**
+**Status:** ⏸️ **DEFERRED - Waiting for Obsidian plugin formula API**
 
-**Findings from Obsidian Bases Documentation:**
-- ❌ Bases formulas **cannot** query properties from other notes
-- ✅ Bases provides `file.links`, `file.hasLink()`, `file.backlinks`
-- ✅ But NO way to access frontmatter properties of linked notes
-- ✅ Future: Plugins will be able to add custom formula functions (timeline unknown)
-
-**Confirmed Approach:**
-Client-side filtering is the ONLY option. We must:
-1. Access `this.data.data` to get all filtered entries
-2. Build dependency map by iterating and reading `note.blockedBy` / `note.blocking`
-3. Apply additional filtering based on user preferences
-
-**Questions to Answer:**
-- [x] Can Bases formulas do cross-note lookups? **NO** - confirmed impossible
-- [ ] Can we access all entries in the base (not just filtered ones) to build dependency map?
-- [ ] Performance implications of client-side filtering?
-- [ ] Does `getValue('note.blockedBy')` work for custom list properties?
+**Impact:**
+- v4.0 will NOT support blocked/blocking relationship filtering
+- Users who need dependency features should stay on v3.x
+- Will add dependency support in v4.x when API available
 
 ---
 
@@ -304,7 +252,28 @@ this.addCommand({
 **Decision:** Use v3-maintenance for bug fixes, main for v4 development
 **Rationale:** Allows parallel releases, clear separation of concerns, minimal workflow changes
 
-### Decision 2: [Template]
+### Decision 2: Defer Dependency Support Until Bases API Enhancement
+**Date:** 2025-10-12
+**Decision:** Do NOT implement client-side dependency filtering in v4. Wait for Obsidian to add plugin formula functions.
+**Rationale:**
+- Obsidian docs state: "In the future, plugins will be able to add functions for use in formulas"
+- Client-side dependency filtering would be:
+  - Complex to implement and maintain
+  - A workaround for something that will be properly supported
+  - Less performant than formula-based filtering
+  - Harder for users to configure
+- Better to wait for proper API support and implement it right
+
+**Alternatives Considered:**
+- Client-side filtering in `onDataUpdated()` - rejected as too complex/temporary
+- Hybrid approach keeping native dependency views - rejected to reduce maintenance burden
+
+**Impact:**
+- v4 will NOT support blocked/blocking relationship filtering initially
+- Users who rely on dependency features should stay on v3
+- Once Obsidian adds plugin formula support, we can implement via custom formulas
+
+### Decision 3: [Template]
 **Date:** YYYY-MM-DD
 **Decision:** What we decided
 **Rationale:** Why we decided this
@@ -334,17 +303,36 @@ this.addCommand({
 ## What's Changed
 TaskNotes 4.0 replaces native views with Bases-powered views for greater flexibility.
 
+## ⚠️ Important: Feature Removed
+**Blocked/Blocking (Dependency) Filtering is NOT available in v4.0**
+
+If you use dependency tracking features, **stay on v3.x** until:
+1. Obsidian adds plugin formula function support
+2. TaskNotes implements dependency filtering via custom formulas (v4.x)
+
 ## Before Upgrading
-1. Note your current view configurations
-2. Export any custom filters/settings
+1. Check if you use blocked/blocking task filtering
+   - If YES: Stay on v3.x for now
+   - If NO: Safe to upgrade
+2. Note your current view configurations
+3. Export any custom filters/settings
 
 ## After Upgrading
 1. TaskNotes will auto-create base files for standard views
 2. Customize queries in base files instead of view settings
 3. Use Obsidian's Bases filtering instead of TaskNotes filters
 
-## Lost Functionality
-- [TBD based on investigation]
+## Feature Comparison
+
+| Feature | v3.x | v4.0 | Future (v4.x) |
+|---------|------|------|---------------|
+| Task List | ✅ Native | ✅ Bases | ✅ Bases |
+| Kanban | ✅ Native | ✅ Bases | ✅ Bases |
+| Calendar | ✅ Native | ✅ Bases | ✅ Bases |
+| Agenda | ✅ Native | ✅ Bases | ✅ Bases |
+| Dependency Filtering | ✅ | ❌ | ✅ (when API available) |
+| Recurrence (RRULE) | ✅ | ⚠️ Limited | ✅ |
+| OAuth Calendars | ❌ | ✅ | ✅ |
 ```
 
 ---
