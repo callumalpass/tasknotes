@@ -186,8 +186,13 @@ class NLPSuggest extends AbstractInputSuggest<
 				.map((s) => s.trim())
 				.filter(Boolean);
 
-			// Get suggestions using FileSuggestHelper (with multi-word support)
-			const list = await FileSuggestHelper.suggest(this.plugin, queryAfterTrigger);
+			// Get suggestions using FileSuggestHelper with explicit project filter configuration
+			const list = await FileSuggestHelper.suggest(
+				this.plugin,
+				queryAfterTrigger,
+				20,
+				this.plugin.settings.projectAutosuggest
+			);
 
 			// Filter out excluded folders
 			const filteredList = list.filter((item) => {

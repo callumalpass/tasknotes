@@ -11,11 +11,24 @@ export interface FileSuggestionItem {
 	score: number;
 }
 
+/**
+ * Generic file filter configuration.
+ * Can be used for project filters, custom field filters, or any other filtering needs.
+ * If undefined, no filtering is applied (all files are considered).
+ */
+export interface FileFilterConfig {
+	requiredTags?: string[];
+	includeFolders?: string[];
+	propertyKey?: string;
+	propertyValue?: string;
+}
+
 export const FileSuggestHelper = {
 	async suggest(
 		plugin: TaskNotesPlugin,
 		query: string,
-		limit = 20
+		limit = 20,
+		filterConfig?: FileFilterConfig
 	): Promise<FileSuggestionItem[]> {
 		const run = async () => {
 			const files = plugin?.app?.vault?.getMarkdownFiles
@@ -40,15 +53,18 @@ export const FileSuggestHelper = {
 			}
 			const qLower = (query || "").toLowerCase();
 
-			// Get filtering settings
-			const requiredTags = plugin.settings?.projectAutosuggest?.requiredTags ?? [];
-			const includeFolders = plugin.settings?.projectAutosuggest?.includeFolders ?? [];
-			const propertyFilter = getProjectPropertyFilter(plugin.settings?.projectAutosuggest);
+			// Get filtering settings - only apply if filterConfig is provided
+			const requiredTags = filterConfig?.requiredTags ?? [];
+			const includeFolders = filterConfig?.includeFolders ?? [];
+			const propertyFilter =
+				filterConfig?.propertyKey && filterConfig?.propertyValue
+					? { key: filterConfig.propertyKey, value: filterConfig.propertyValue, enabled: true }
+					: { key: "", value: "", enabled: false };
 
 			for (const file of files) {
 				const cache = plugin.app.metadataCache.getFileCache(file);
 
-				// Apply tag filtering - use native Obsidian API
+				// Apply tag filtering if configured
 				if (requiredTags.length > 0) {
 					// Get tags from both native tag detection and frontmatter
 					const nativeTags = cache?.tags?.map((t) => t.tag.replace("#", "")) || [];
@@ -67,7 +83,7 @@ export const FileSuggestHelper = {
 					}
 				}
 
-				// Apply folder filtering
+				// Apply folder filtering if configured
 				if (includeFolders.length > 0) {
 					const isInIncludedFolder = includeFolders.some(
 						(folder) =>
@@ -78,6 +94,7 @@ export const FileSuggestHelper = {
 					}
 				}
 
+				// Apply property filtering if configured
 				if (propertyFilter.enabled) {
 					const frontmatter = cache?.frontmatter;
 					if (!matchesProjectProperty(frontmatter, propertyFilter)) {

@@ -10,6 +10,7 @@ import type TaskNotesPlugin from "../main";
 import { ProjectMetadataResolver } from "../utils/projectMetadataResolver";
 import { parseDisplayFieldsRow } from "../utils/projectAutosuggestDisplayFieldsParser";
 import { getProjectPropertyFilter, matchesProjectProperty } from "../utils/projectFilterUtils";
+import { FilterUtils } from "../utils/FilterUtils";
 
 /**
  * Modal for selecting project notes using fuzzy search
@@ -56,7 +57,7 @@ export class ProjectSelectModal extends FuzzySuggestModal<TAbstractFile> {
 
 			const cache = this.app.metadataCache.getFileCache(file);
 
-			// Apply tag filtering - use native Obsidian API
+			// Apply tag filtering - use FilterUtils for consistent hierarchical tag matching
 			if (requiredTags.length > 0) {
 				// Get tags from both native tag detection and frontmatter
 				const nativeTags = cache?.tags?.map((t) => t.tag.replace("#", "")) || [];
@@ -68,9 +69,8 @@ export class ProjectSelectModal extends FuzzySuggestModal<TAbstractFile> {
 						: [frontmatterTags].filter(Boolean)),
 				];
 
-				// Check if file has ANY of the required tags
-				const hasRequiredTag = requiredTags.some((reqTag) => allTags.includes(reqTag));
-				if (!hasRequiredTag) {
+				// Use FilterUtils.matchesTagConditions for hierarchical matching and exclusion support
+				if (!FilterUtils.matchesTagConditions(allTags, requiredTags)) {
 					return false; // Skip this file
 				}
 			}

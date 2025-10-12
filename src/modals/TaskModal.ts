@@ -1768,6 +1768,7 @@ class UserFieldSuggest extends AbstractInputSuggest<UserFieldSuggestion> {
 		if (wikiMatch) {
 			const partial = wikiMatch[1] || "";
 			const { FileSuggestHelper } = await import("../suggest/FileSuggestHelper");
+			// Custom fields show ALL files (no filterConfig = no filtering)
 			const list = await FileSuggestHelper.suggest(this.plugin, partial);
 			return list.map((item) => ({
 				value: item.insertText,
