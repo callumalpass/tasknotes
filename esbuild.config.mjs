@@ -90,7 +90,9 @@ const context = await esbuild.context({
 		// Inject environment variables at build time
 		// These will be replaced with string literals in the bundle
 		'process.env.GOOGLE_OAUTH_CLIENT_ID': JSON.stringify(env.GOOGLE_OAUTH_CLIENT_ID || ''),
+		'process.env.GOOGLE_OAUTH_CLIENT_SECRET': JSON.stringify(env.GOOGLE_OAUTH_CLIENT_SECRET || ''),
 		'process.env.MICROSOFT_OAUTH_CLIENT_ID': JSON.stringify(env.MICROSOFT_OAUTH_CLIENT_ID || ''),
+		'process.env.MICROSOFT_OAUTH_CLIENT_SECRET': JSON.stringify(env.MICROSOFT_OAUTH_CLIENT_SECRET || ''),
 	},
 });
 

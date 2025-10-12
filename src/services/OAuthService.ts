@@ -59,9 +59,9 @@ export class OAuthService {
 	}
 
 	private loadClientIds(): void {
-		// Priority order for client IDs:
-		// 1. User-configured client ID (allows custom OAuth apps)
-		// 2. Built-in TaskNotes client ID (injected at build time)
+		// Priority order for client IDs and secrets:
+		// 1. User-configured credentials (allows custom OAuth apps)
+		// 2. Built-in TaskNotes credentials (injected at build time)
 		// 3. Empty string (will show error on authenticate)
 
 		// Google Calendar
@@ -69,11 +69,19 @@ export class OAuthService {
 			this.plugin.settings.googleOAuthClientId ||
 			process.env.GOOGLE_OAUTH_CLIENT_ID ||
 			"";
+		this.configs.google.clientSecret =
+			this.plugin.settings.googleOAuthClientSecret ||
+			process.env.GOOGLE_OAUTH_CLIENT_SECRET ||
+			"";
 
 		// Microsoft Calendar
 		this.configs.microsoft.clientId =
 			this.plugin.settings.microsoftOAuthClientId ||
 			process.env.MICROSOFT_OAUTH_CLIENT_ID ||
+			"";
+		this.configs.microsoft.clientSecret =
+			this.plugin.settings.microsoftOAuthClientSecret ||
+			process.env.MICROSOFT_OAUTH_CLIENT_SECRET ||
 			"";
 	}
 
@@ -329,6 +337,7 @@ export class OAuthService {
 	): Promise<OAuthTokens> {
 		const params = new URLSearchParams({
 			client_id: config.clientId,
+			client_secret: config.clientSecret || "",
 			code: code,
 			code_verifier: codeVerifier,
 			redirect_uri: config.redirectUri,
@@ -343,8 +352,18 @@ export class OAuthService {
 					"Content-Type": "application/x-www-form-urlencoded",
 					"Accept": "application/json"
 				},
-				body: params.toString()
+				body: params.toString(),
+				throw: false  // Don't throw on error status, let us handle it
 			});
+
+			// Check if request failed
+			if (response.status !== 200) {
+				console.error("Token exchange failed with status:", response.status);
+				console.error("Response headers:", response.headers);
+				console.error("Response body:", response.text);
+				console.error("Response JSON:", response.json);
+				throw new Error(`Token exchange failed with status ${response.status}: ${response.text || JSON.stringify(response.json)}`);
+			}
 
 			const data = response.json;
 
@@ -363,7 +382,7 @@ export class OAuthService {
 				tokenType: data.token_type || "Bearer"
 			};
 		} catch (error) {
-			console.error("Token exchange failed:", error);
+			console.error("Token exchange error:", error);
 			throw new Error(`Failed to exchange code for tokens: ${error.message}`);
 		}
 	}
@@ -384,6 +403,7 @@ export class OAuthService {
 		const config = this.configs[provider];
 		const params = new URLSearchParams({
 			client_id: config.clientId,
+			client_secret: config.clientSecret || "",
 			refresh_token: connection.tokens.refreshToken,
 			grant_type: "refresh_token"
 		});
