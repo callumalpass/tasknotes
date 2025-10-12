@@ -101,8 +101,8 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 			const tabButton = tabNav.createEl("button", {
 				text: label,
 				cls: isActive
-					? "settings-tab-button settings-view__tab-button active settings-view__tab-button--active"
-					: "settings-tab-button settings-view__tab-button",
+					? "settings-tab-button settings-view__tab-button active settings-view__tab-button--active is-active vertical-tab-nav-item"
+					: "settings-tab-button settings-view__tab-button vertical-tab-nav-item",
 				attr: {
 					role: "tab",
 					"aria-selected": isActive.toString(),
@@ -165,6 +165,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 			const isActive = button.id === `tab-button-${tabId}`;
 			button.classList.toggle("active", isActive);
 			button.classList.toggle("settings-view__tab-button--active", isActive);
+			button.classList.toggle("is-active", isActive);
 			button.setAttribute("aria-selected", isActive.toString());
 			button.setAttribute("tabindex", isActive ? "0" : "-1");
 		});
