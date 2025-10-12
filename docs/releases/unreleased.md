@@ -25,24 +25,3 @@ Example:
 
 -->
 
-## Added
-
-- (#877) Added standard Obsidian CSS classes to settings tab buttons for improved theme compatibility
-  - Active tabs now use `is-active` class for proper button states in button-based themes
-  - All tab buttons now include `vertical-tab-nav-item` class
-  - Fixes issue where themes like Retroma couldn't distinguish active tabs
-  - Thanks to @Bregor for the contribution
-
-## Fixed
-
-- (#899) Fixed "Folder for converted tasks" setting being hidden when convert button is disabled
-  - Setting now always visible since it affects command palette task conversion
-  - Resolves confusion for users who convert tasks via command palette
-  - Thanks to @nnnell for the fix
-
-- (#905), (#907) Fixed project filter incorrectly affecting custom field suggestions
-  - Custom field wikilink suggestions (`[[`) now show all vault files instead of only filtered projects
-  - Task Edit modal now uses consistent hierarchical tag matching with Task Creation modal
-  - Made filtering opt-in via `FileFilterConfig` parameter for better separation of concerns
-  - Thanks to @renatomen for the thorough fix and comprehensive tests
-
