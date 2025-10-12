@@ -130,6 +130,13 @@ export interface TaskNotesSettings {
 	maintainDueDateOffsetInRecurring: boolean;
 	// Frontmatter link format settings
 	useFrontmatterMarkdownLinks: boolean; // Use markdown links in frontmatter (requires obsidian-frontmatter-markdown-links plugin)
+	// OAuth Calendar Integration settings
+	googleOAuthClientId: string;
+	googleOAuthClientSecret: string;
+	microsoftOAuthClientId: string;
+	microsoftOAuthClientSecret: string;
+	enableGoogleCalendar: boolean;
+	enableMicrosoftCalendar: boolean;
 }
 
 export interface DefaultReminder {

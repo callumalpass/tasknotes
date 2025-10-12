@@ -46,6 +46,8 @@ This guide walks you through all the steps needed to set up OAuth for Google Cal
 
 ## Google Calendar Setup
 
+> **⚠️ Important 2025 Update**: Google no longer supports custom URI schemes (like `obsidian://`) for OAuth redirects due to security concerns. You **must use localhost/loopback addresses** (`http://127.0.0.1:PORT/callback`). This means your implementation needs to start a temporary local HTTP server to receive the OAuth callback. See Step 3.4 for details.
+
 ### Phase 1: Create Google Cloud Project
 
 #### Step 1.1: Access Google Cloud Console
@@ -160,7 +162,7 @@ During development (before verification), only test users can use your app:
 #### Step 3.2: Configure OAuth Client
 
 1. **Application type**: Select **"Desktop app"**
-   - ℹ️ Even though Obsidian is Electron-based, "Desktop app" is the correct choice for apps using custom protocol handlers
+   - ℹ️ Desktop app is the correct choice for apps using localhost redirect URIs
 
 2. **Name**: `TaskNotes Desktop Client` (or similar)
 
@@ -187,18 +189,21 @@ A dialog will appear with your credentials:
 
 #### Step 3.4: Add Redirect URI
 
-⚠️ **Important**: Desktop app type may not allow custom protocol URIs in the UI. You'll need to use the **OAuth client configuration**:
+⚠️ **Important**: Google no longer supports custom protocol URIs (like `obsidian://`) due to security concerns. You must use localhost/loopback addresses:
 
 1. Find your newly created OAuth client in the list
 2. Click the **pencil icon** (edit) next to it
 3. Under **"Authorized redirect URIs"**, click **"+ ADD URI"**
-4. Add: `obsidian://tasknotes-oauth`
+4. Add: `http://127.0.0.1:8080/callback`
+   - You can use any available port (e.g., 8080, 3000, etc.)
+   - Use `127.0.0.1` (loopback IP) rather than `localhost` for better compatibility
 5. Click **"SAVE"**
 
-If you get an error about custom protocol URIs:
-- The desktop app type should support this
-- If not, you may need to use `http://localhost` as fallback during development
-- The custom protocol should work once deployed
+**Implementation Note**: Your plugin will need to start a temporary local HTTP server on port 8080 to receive the OAuth callback. The server should:
+- Listen on the specified port
+- Handle the callback request
+- Extract the authorization code
+- Shut down after receiving the callback
 
 ### Phase 4: Test OAuth Flow (Development)
 
@@ -209,8 +214,8 @@ Before submitting for verification, test with your test users:
 3. Verify:
    - ✅ OAuth consent screen appears
    - ✅ Scopes are displayed correctly
-   - ✅ Redirect to Obsidian works
-   - ✅ Tokens are received
+   - ✅ Local HTTP server starts and receives callback
+   - ✅ Tokens are received and stored
    - ✅ Calendar API calls work
    - ✅ Token refresh works
 
@@ -356,7 +361,8 @@ Before submitting for verification, complete these steps:
 
 #### Core OAuth Implementation
 - [ ] Implement OAuthService with PKCE flow
-- [ ] Register Obsidian protocol handler (`obsidian://tasknotes-oauth`)
+- [ ] Implement temporary local HTTP server for OAuth callback (Google: `http://127.0.0.1:8080/callback`)
+- [ ] Register Obsidian protocol handler for Microsoft (`obsidian://tasknotes-oauth` - still supported)
 - [ ] Implement token storage (encrypted)
 - [ ] Implement token refresh logic
 - [ ] Add CSRF protection (state parameter)
@@ -405,7 +411,7 @@ Share this with your test users:
 4. **You'll see "This app isn't verified"** warning - this is expected during development
 5. Click **"Advanced"** → **"Go to TaskNotes (unsafe)"**
 6. Review permissions and click **"Allow"**
-7. You should be redirected back to Obsidian
+7. You'll be redirected to `http://127.0.0.1:8080/callback` (should complete automatically)
 8. **Verify** that your calendar events appear in TaskNotes
 
 ---
@@ -507,8 +513,8 @@ Go to **Google Cloud Console** → **OAuth consent screen**:
    - **Highlight**: OAuth client ID in browser address bar
    - Show the consent screen with scopes listed
    - Click "Allow"
-   - Show redirect back to Obsidian
-   - Show success message
+   - Show redirect to localhost callback (should complete automatically)
+   - Show success message in Obsidian
 
 2. **Scope Usage Demonstration** (3-5 minutes):
    - Show calendar events appearing in TaskNotes
@@ -693,9 +699,11 @@ Stay updated:
 - If it persists, check OAuth consent screen status
 
 **"Redirect URI mismatch" error:**
-- Verify `obsidian://tasknotes-oauth` is in authorized redirect URIs
+- Verify `http://127.0.0.1:8080/callback` is in authorized redirect URIs (for Google)
+- Verify `obsidian://tasknotes-oauth` is in authorized redirect URIs (for Microsoft)
 - Check for typos in your code
-- Ensure protocol handler is registered correctly
+- Ensure the port number matches between your code and Google Console
+- Make sure the local HTTP server is running before initiating OAuth
 
 **"Insufficient permissions" error:**
 - Token may not have correct scopes
@@ -741,7 +749,8 @@ Token URL: https://oauth2.googleapis.com/token
 Scopes:
   - https://www.googleapis.com/auth/calendar (read/write)
   - https://www.googleapis.com/auth/calendar.readonly (read only)
-Redirect URI: obsidian://tasknotes-oauth
+Redirect URI: http://127.0.0.1:8080/callback
+Note: Custom URI schemes (obsidian://) no longer supported by Google
 ```
 
 **Microsoft:**
@@ -790,7 +799,7 @@ Before submitting for verification:
 ### Google Cloud Console Issues
 
 **Problem**: Can't add custom redirect URI (`obsidian://...`)
-- **Solution**: Desktop app type should support it. If not, use manifest editor or use `http://localhost` during development.
+- **Solution**: Google no longer supports custom URI schemes due to security concerns. Use `http://127.0.0.1:PORT/callback` instead. This is not a limitation but the required approach as of 2025.
 
 **Problem**: "App domain" verification required
 - **Solution**: Not typically required for desktop apps. Skip if optional.
@@ -809,13 +818,19 @@ Before submitting for verification:
 **Problem**: Can't find "App registrations"
 - **Solution**: Search for "App registrations" in the top search bar or navigate to Azure Active Directory first.
 
-### Protocol Handler Issues
+### OAuth Redirect Issues
 
-**Problem**: `obsidian://` redirect doesn't work
-- **Solution 1**: Ensure protocol handler is registered in Obsidian plugin
-- **Solution 2**: Test with `http://localhost` first
-- **Solution 3**: Check Obsidian logs for protocol handler errors
-- **Solution 4**: Verify redirect URI exactly matches (including trailing slashes)
+**Problem**: Google OAuth redirect doesn't work
+- **Solution 1**: Ensure your local HTTP server is running on the configured port before initiating OAuth
+- **Solution 2**: Verify the redirect URI in Google Console matches your code exactly (`http://127.0.0.1:8080/callback`)
+- **Solution 3**: Check that no other application is using the port
+- **Solution 4**: Try a different port if 8080 is occupied
+
+**Problem**: Microsoft OAuth `obsidian://` redirect doesn't work
+- **Solution 1**: Ensure protocol handler is registered in your Obsidian plugin
+- **Solution 2**: Check Obsidian logs for protocol handler errors
+- **Solution 3**: Verify redirect URI exactly matches in Azure portal (including no trailing slashes)
+- **Solution 4**: Consider using localhost for Microsoft too if custom protocols cause issues
 
 ### Verification Issues
 

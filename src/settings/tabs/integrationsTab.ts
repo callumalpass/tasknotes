@@ -105,6 +105,157 @@ export function renderIntegrationsTab(
 		},
 	});
 
+	// OAuth Calendar Integration Section
+	createSectionHeader(container, "OAuth Calendar Integration");
+	createHelpText(
+		container,
+		"Connect your Google Calendar or Microsoft Outlook to sync events directly into TaskNotes."
+	);
+
+	// Google Calendar Section
+	const googleCalendarHeader = container.createDiv("tasknotes-settings__subsection-header");
+	googleCalendarHeader.textContent = "Google Calendar";
+	googleCalendarHeader.style.fontSize = "1.1em";
+	googleCalendarHeader.style.fontWeight = "500";
+	googleCalendarHeader.style.marginTop = "1em";
+	googleCalendarHeader.style.marginBottom = "0.5em";
+
+	createTextSetting(container, {
+		name: "Google OAuth Client ID",
+		desc: "Get this from your Google Cloud Console OAuth 2.0 credentials. See the OAuth setup guide in docs/planning/oauth-setup-guide.md for instructions.",
+		placeholder: "123456789-abc123.apps.googleusercontent.com",
+		getValue: () => plugin.settings.googleOAuthClientId,
+		setValue: async (value: string) => {
+			plugin.settings.googleOAuthClientId = value;
+			save();
+			// Re-render to update connection status
+			renderIntegrationsTab(container, plugin, save);
+		},
+	});
+
+	// Connection status and buttons
+	const googleConnectionContainer = container.createDiv("oauth-connection-container");
+	googleConnectionContainer.style.marginTop = "10px";
+	googleConnectionContainer.style.padding = "10px";
+	googleConnectionContainer.style.backgroundColor = "var(--background-secondary)";
+	googleConnectionContainer.style.borderRadius = "4px";
+
+	// Check connection status
+	const renderGoogleConnection = async () => {
+		googleConnectionContainer.empty();
+
+		if (!plugin.oauthService) {
+			const errorDiv = googleConnectionContainer.createDiv();
+			errorDiv.style.color = "var(--text-warning)";
+			errorDiv.textContent = "OAuth service not initialized. Please reload Obsidian.";
+			return;
+		}
+
+		const isConnected = await plugin.oauthService.isConnected("google");
+
+		if (isConnected) {
+			// Show connected status
+			const connection = await plugin.oauthService.getConnection("google");
+
+			const statusDiv = googleConnectionContainer.createDiv();
+			statusDiv.style.display = "flex";
+			statusDiv.style.alignItems = "center";
+			statusDiv.style.gap = "10px";
+			statusDiv.style.marginBottom = "10px";
+
+			const statusIcon = statusDiv.createSpan();
+			statusIcon.textContent = "✓";
+			statusIcon.style.color = "var(--interactive-success)";
+			statusIcon.style.fontSize = "1.2em";
+			statusIcon.style.fontWeight = "bold";
+
+			const statusText = statusDiv.createSpan();
+			statusText.textContent = "Connected to Google Calendar";
+			statusText.style.fontWeight = "500";
+
+			if (connection?.userEmail) {
+				const emailDiv = googleConnectionContainer.createDiv();
+				emailDiv.textContent = `Account: ${connection.userEmail}`;
+				emailDiv.style.fontSize = "0.9em";
+				emailDiv.style.opacity = "0.8";
+				emailDiv.style.marginBottom = "10px";
+			}
+
+			if (connection?.connectedAt) {
+				const connectedDate = new Date(connection.connectedAt);
+				const timeDiv = googleConnectionContainer.createDiv();
+				timeDiv.textContent = `Connected: ${connectedDate.toLocaleString()}`;
+				timeDiv.style.fontSize = "0.9em";
+				timeDiv.style.opacity = "0.8";
+				timeDiv.style.marginBottom = "10px";
+			}
+
+			// Disconnect button
+			const disconnectBtn = googleConnectionContainer.createEl("button", {
+				text: "Disconnect",
+				cls: "mod-warning",
+			});
+			disconnectBtn.style.marginRight = "10px";
+			disconnectBtn.onclick = async () => {
+				try {
+					await plugin.oauthService!.disconnect("google");
+					renderGoogleConnection();
+				} catch (error) {
+					console.error("Failed to disconnect:", error);
+					new Notice("Failed to disconnect from Google Calendar");
+				}
+			};
+
+			// Refresh button
+			const refreshBtn = googleConnectionContainer.createEl("button", {
+				text: "Refresh Now",
+			});
+			refreshBtn.onclick = async () => {
+				try {
+					if (plugin.googleCalendarService) {
+						await plugin.googleCalendarService.refresh();
+						new Notice("Google Calendar refreshed successfully");
+					}
+				} catch (error) {
+					console.error("Failed to refresh:", error);
+					new Notice("Failed to refresh Google Calendar");
+				}
+			};
+		} else {
+			// Show connect button
+			const statusDiv = googleConnectionContainer.createDiv();
+			statusDiv.style.marginBottom = "10px";
+			statusDiv.textContent = "Not connected";
+			statusDiv.style.opacity = "0.8";
+
+			const connectBtn = googleConnectionContainer.createEl("button", {
+				text: "Connect Google Calendar",
+				cls: "mod-cta",
+			});
+			connectBtn.onclick = async () => {
+				if (!plugin.settings.googleOAuthClientId) {
+					new Notice("Please enter your Google OAuth Client ID first");
+					return;
+				}
+
+				try {
+					connectBtn.disabled = true;
+					connectBtn.textContent = "Connecting...";
+					await plugin.oauthService!.authenticate("google");
+					renderGoogleConnection();
+				} catch (error) {
+					console.error("Failed to connect:", error);
+					new Notice(`Failed to connect: ${error.message}`);
+					connectBtn.disabled = false;
+					connectBtn.textContent = "Connect Google Calendar";
+				}
+			};
+		}
+	};
+
+	// Initial render
+	renderGoogleConnection();
+
 	// Calendar Subscriptions Section (ICS)
 	createSectionHeader(container, translate("settings.integrations.calendarSubscriptions.header"));
 	createHelpText(container, translate("settings.integrations.calendarSubscriptions.description"));

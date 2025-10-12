@@ -290,4 +290,11 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	maintainDueDateOffsetInRecurring: false,
 	// Frontmatter link format defaults
 	useFrontmatterMarkdownLinks: false, // Default to wikilinks for compatibility
+	// OAuth Calendar Integration defaults
+	googleOAuthClientId: "",
+	googleOAuthClientSecret: "",
+	microsoftOAuthClientId: "",
+	microsoftOAuthClientSecret: "",
+	enableGoogleCalendar: false,
+	enableMicrosoftCalendar: false,
 };

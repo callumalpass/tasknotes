@@ -839,3 +839,65 @@ export interface PendingAutoArchive {
 export interface IWebhookNotifier {
 	triggerWebhook(event: WebhookEvent, data: any): Promise<void>;
 }
+
+// OAuth types
+export type OAuthProvider = "google" | "microsoft";
+
+export interface OAuthTokens {
+	accessToken: string;
+	refreshToken: string;
+	expiresAt: number; // Unix timestamp in milliseconds
+	scope: string;
+	tokenType: string;
+}
+
+export interface OAuthConnection {
+	provider: OAuthProvider;
+	tokens: OAuthTokens;
+	userEmail?: string; // Optional user identifier
+	connectedAt: string; // ISO timestamp
+	lastRefreshed?: string; // ISO timestamp
+}
+
+export interface OAuthConfig {
+	provider: OAuthProvider;
+	clientId: string;
+	clientSecret?: string; // Not needed for PKCE flow
+	redirectUri: string;
+	scope: string[];
+	authorizationEndpoint: string;
+	tokenEndpoint: string;
+}
+
+// Google Calendar types
+export interface GoogleCalendarEvent {
+	id: string;
+	summary: string;
+	description?: string;
+	start: {
+		dateTime?: string; // ISO timestamp for timed events
+		date?: string; // YYYY-MM-DD for all-day events
+		timeZone?: string;
+	};
+	end: {
+		dateTime?: string;
+		date?: string;
+		timeZone?: string;
+	};
+	location?: string;
+	attendees?: Array<{
+		email: string;
+		displayName?: string;
+		responseStatus?: string;
+	}>;
+	htmlLink?: string;
+	recurrence?: string[]; // RRULE strings
+}
+
+export interface GoogleCalendar {
+	id: string;
+	summary: string;
+	description?: string;
+	backgroundColor?: string;
+	primary?: boolean;
+}

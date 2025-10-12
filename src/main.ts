@@ -97,6 +97,8 @@ import type { HTTPAPIService } from "./services/HTTPAPIService";
 import { createI18nService, I18nService, TranslationKey } from "./i18n";
 import { ReleaseNotesView, RELEASE_NOTES_VIEW_TYPE } from "./views/ReleaseNotesView";
 import { CURRENT_VERSION, RELEASE_NOTES_BUNDLE } from "./releaseNotes";
+import { OAuthService } from "./services/OAuthService";
+import { GoogleCalendarService } from "./services/GoogleCalendarService";
 
 interface TranslatedCommandDefinition {
 	id: string;
@@ -200,6 +202,12 @@ export default class TaskNotesPlugin extends Plugin {
 
 	// HTTP API service
 	apiService?: HTTPAPIService;
+
+	// OAuth service
+	oauthService: OAuthService;
+
+	// Google Calendar service
+	googleCalendarService: GoogleCalendarService;
 
 	// Command localization support
 	private commandDefinitions: TranslatedCommandDefinition[] = [];
@@ -549,6 +557,19 @@ export default class TaskNotesPlugin extends Plugin {
 				// Initialize auto export service
 				this.autoExportService = new AutoExportService(this);
 				this.autoExportService.start();
+
+				// Initialize OAuth service
+				this.oauthService = new OAuthService(this);
+
+				// Initialize Google Calendar service
+				this.googleCalendarService = new GoogleCalendarService(this, this.oauthService);
+				await this.googleCalendarService.initialize();
+
+				// Connect Google Calendar data changes to view refreshes
+				this.googleCalendarService.on("data-changed", () => {
+					// Trigger calendar view refreshes when Google Calendar events change
+					this.notifyDataChanged(undefined, false, true);
+				});
 
 				// Initialize HTTP API service if enabled (desktop only)
 				await this.initializeHTTPAPI();
@@ -1111,6 +1132,16 @@ export default class TaskNotesPlugin extends Plugin {
 		// Stop HTTP API server
 		if (this.apiService) {
 			this.apiService.stop();
+		}
+
+		// Clean up OAuth service
+		if (this.oauthService) {
+			await this.oauthService.destroy();
+		}
+
+		// Clean up Google Calendar service
+		if (this.googleCalendarService) {
+			this.googleCalendarService.destroy();
 		}
 
 		// Clean up ViewStateManager
