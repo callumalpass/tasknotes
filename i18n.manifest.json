@@ -541,6 +541,8 @@
   "settings.taskProperties.customUserFields.defaultNames.unnamedField": "79e874c0dd8787bce649a46a41a600637a38b998",
   "settings.taskProperties.customUserFields.defaultNames.noKey": "576426d52f216a70835ec62c0172ee7f762f8199",
   "settings.taskProperties.customUserFields.deleteTooltip": "5ac477c267332c84ac6f5fe5509d523e08a4af94",
+  "settings.taskProperties.customUserFields.autosuggestFilters.header": "54bbd5ce9872e3040735f334d7a52a22dfd80868",
+  "settings.taskProperties.customUserFields.autosuggestFilters.description": "61290f286c6963dbe266b1b6b20a4c3f29c78d66",
   "settings.appearance.taskCards.header": "08836d307ea5b1614f69962e1b9d36f243baddc5",
   "settings.appearance.taskCards.description": "4554f6f0816fa0c30fb2d11d11b7a4e0e9a610de",
   "settings.appearance.taskCards.defaultVisibleProperties.name": "0aa5efd8c0508868b5a726a4f3890fc3efb71d26",

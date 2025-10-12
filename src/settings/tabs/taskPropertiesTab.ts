@@ -21,6 +21,7 @@ import {
 	createCardNumberInput,
 	createCardSelect,
 } from "../components/CardComponent";
+import { createFilterSettingsInputs } from "../components/FilterSettingsComponent";
 // import { ListEditorComponent, ListEditorItem } from '../components/ListEditorComponent';
 
 // interface StatusItem extends ListEditorItem, StatusConfig {}
@@ -801,6 +802,82 @@ function renderUserFieldsList(
 			renderUserFieldsList(container, plugin, save);
 		});
 
+		// Create collapsible filter settings section
+		const filterSectionWrapper = document.createElement("div");
+		filterSectionWrapper.addClass("tasknotes-settings__collapsible-section");
+		filterSectionWrapper.addClass("tasknotes-settings__collapsible-section--collapsed");
+
+		// Helper to check if any filters are active
+		const hasActiveFilters = (config: typeof field.autosuggestFilter) => {
+			if (!config) return false;
+			return (
+				(config.requiredTags && config.requiredTags.length > 0) ||
+				(config.includeFolders && config.includeFolders.length > 0) ||
+				(config.propertyKey && config.propertyKey.trim() !== "")
+			);
+		};
+
+		// Create header for collapsible section
+		const filterHeader = filterSectionWrapper.createDiv(
+			"tasknotes-settings__collapsible-section-header"
+		);
+
+		const filterHeaderLeft = filterHeader.createDiv(
+			"tasknotes-settings__collapsible-section-header-left"
+		);
+
+		const filterHeaderText = filterHeaderLeft.createSpan(
+			"tasknotes-settings__collapsible-section-title"
+		);
+		filterHeaderText.textContent = translate(
+			"settings.taskProperties.customUserFields.autosuggestFilters.header"
+		);
+
+		// Add "Filters On" badge if filters are active
+		const filterBadge = filterHeaderLeft.createSpan(
+			"tasknotes-settings__filter-badge"
+		);
+		const updateFilterBadge = () => {
+			if (hasActiveFilters(field.autosuggestFilter)) {
+				filterBadge.style.display = "inline-flex";
+				filterBadge.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg><span>Filters On</span>`;
+			} else {
+				filterBadge.style.display = "none";
+			}
+		};
+		updateFilterBadge();
+
+		const chevron = filterHeader.createSpan("tasknotes-settings__collapsible-section-chevron");
+		chevron.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>`;
+
+		// Create content container
+		const filterContent = filterSectionWrapper.createDiv(
+			"tasknotes-settings__collapsible-section-content"
+		);
+
+		createFilterSettingsInputs(
+			filterContent,
+			field.autosuggestFilter,
+			(updated) => {
+				field.autosuggestFilter = updated;
+				updateFilterBadge();
+				save();
+			},
+			translate
+		);
+
+		// Add click handler to toggle collapse
+		filterHeader.addEventListener("click", () => {
+			const isCollapsed = filterSectionWrapper.hasClass(
+				"tasknotes-settings__collapsible-section--collapsed"
+			);
+			if (isCollapsed) {
+				filterSectionWrapper.removeClass("tasknotes-settings__collapsible-section--collapsed");
+			} else {
+				filterSectionWrapper.addClass("tasknotes-settings__collapsible-section--collapsed");
+			}
+		});
+
 		createCard(container, {
 			id: field.id,
 			collapsible: true,
@@ -849,6 +926,15 @@ function renderUserFieldsList(
 									"settings.taskProperties.customUserFields.fields.type"
 								),
 								input: typeSelect,
+							},
+						],
+					},
+					{
+						rows: [
+							{
+								label: "",
+								input: filterSectionWrapper,
+								fullWidth: true,
 							},
 						],
 					},

@@ -903,6 +903,11 @@ export const en: TranslationTree = {
 					noKey: "no-key",
 				},
 				deleteTooltip: "Delete field",
+				autosuggestFilters: {
+					header: "Autosuggestion filters (Advanced)",
+					description:
+						"Filter which files appear in autocomplete suggestions for this field",
+				},
 			},
 		},
 		appearance: {

@@ -47,4 +47,25 @@ Configure which frontmatter properties TaskNotes should use for each field. Task
 
 ## Custom User Fields
 
-Define custom frontmatter properties to appear as type-aware filter options across views. Each row has a Display Name, Property Name, and Type.
+Define custom frontmatter properties to appear as type-aware filter options across views. Each field has:
+
+- **Display Name**: How the field appears in the UI
+- **Property Key**: The frontmatter property name
+- **Type**: Data type (text, number, boolean, date, or list)
+
+### Autosuggestion Filters (Advanced)
+
+Each custom field can optionally configure **autosuggestion filters** to control which files appear when using the `[[` wikilink autocomplete in that field.
+
+![Custom Field Filtering](../assets/CustomFields-Selection-Filter.gif)
+
+**Filter Options:**
+- **Required tags**: Comma-separated list of tags (shows files with ANY of these tags)
+- **Include folders**: Comma-separated list of folder paths (shows files in ANY of these folders)
+- **Required property key**: Frontmatter property that must exist
+- **Required property value**: Expected value for the property (optional)
+
+**Visual Indicator:**
+When filters are configured, a **"Filters On"** badge appears to remind you that suggestions are being filtered.
+
+**See Also:** [User Fields Feature Documentation](../features/user-fields.md#file-suggestion-filtering-advanced) for detailed examples and configuration guide.

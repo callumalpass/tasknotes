@@ -1,4 +1,5 @@
 import { FieldMapping, StatusConfig, PriorityConfig, SavedView, WebhookConfig } from "../types";
+import type { FileFilterConfig } from "../suggest/FileSuggestHelper";
 
 export interface UserFieldMapping {
 	enabled: boolean;
@@ -13,6 +14,7 @@ export interface UserMappedField {
 	displayName: string;
 	key: string; // frontmatter key
 	type: "text" | "number" | "date" | "boolean" | "list";
+	autosuggestFilter?: FileFilterConfig; // Optional filter configuration for file suggestions
 }
 
 export interface ProjectAutosuggestSettings {

@@ -870,6 +870,90 @@ select.tasknotes-settings__card-input {
     transition: all 0.2s ease;
 }
 
+/* Nested collapsible sections (e.g., filter settings within custom fields) */
+.tasknotes-settings__collapsible-section {
+    margin-top: 12px;
+}
+
+.tasknotes-settings__collapsible-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    padding: 8px 12px;
+    margin: 0 -12px 12px -12px;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+    user-select: none;
+}
+
+.tasknotes-settings__collapsible-section-header:hover {
+    background: var(--background-modifier-hover);
+}
+
+.tasknotes-settings__collapsible-section-header-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.tasknotes-settings__collapsible-section-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-muted);
+}
+
+.tasknotes-settings__filter-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    background: var(--interactive-accent);
+    color: var(--text-on-accent);
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+.tasknotes-settings__filter-badge svg {
+    width: 12px;
+    height: 12px;
+    flex-shrink: 0;
+}
+
+.tasknotes-settings__collapsible-section-chevron {
+    display: flex;
+    align-items: center;
+    color: var(--text-muted);
+    transition: transform 0.2s ease;
+}
+
+.tasknotes-settings__collapsible-section-chevron svg {
+    width: 16px;
+    height: 16px;
+}
+
+.tasknotes-settings__collapsible-section-content {
+    max-height: 500px;
+    opacity: 1;
+    overflow: visible;
+    transition: max-height 0.3s ease, opacity 0.2s ease, padding 0.2s ease;
+}
+
+/* Collapsed state */
+.tasknotes-settings__collapsible-section--collapsed .tasknotes-settings__collapsible-section-content {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+.tasknotes-settings__collapsible-section--collapsed .tasknotes-settings__collapsible-section-chevron {
+    transform: rotate(-90deg);
+}
+
 /* ================================================
    ACCESSIBILITY & REDUCED MOTION
    ================================================ */
