@@ -30,7 +30,7 @@ export class OAuthService {
 	private configs: Record<OAuthProvider, OAuthConfig> = {
 		google: {
 			provider: "google",
-			clientId: "", // Will be set from plugin settings
+			clientId: "", // Will be set from built-in or plugin settings
 			redirectUri: "http://127.0.0.1:8080",
 			scope: [
 				"https://www.googleapis.com/auth/calendar.readonly",
@@ -41,7 +41,7 @@ export class OAuthService {
 		},
 		microsoft: {
 			provider: "microsoft",
-			clientId: "", // Will be set from plugin settings
+			clientId: "", // Will be set from built-in or plugin settings
 			redirectUri: "http://127.0.0.1:8080",
 			scope: [
 				"Calendars.Read",
@@ -59,13 +59,22 @@ export class OAuthService {
 	}
 
 	private loadClientIds(): void {
-		// Load client IDs from plugin settings
-		if (this.plugin.settings.googleOAuthClientId) {
-			this.configs.google.clientId = this.plugin.settings.googleOAuthClientId;
-		}
-		if (this.plugin.settings.microsoftOAuthClientId) {
-			this.configs.microsoft.clientId = this.plugin.settings.microsoftOAuthClientId;
-		}
+		// Priority order for client IDs:
+		// 1. User-configured client ID (allows custom OAuth apps)
+		// 2. Built-in TaskNotes client ID (injected at build time)
+		// 3. Empty string (will show error on authenticate)
+
+		// Google Calendar
+		this.configs.google.clientId =
+			this.plugin.settings.googleOAuthClientId ||
+			process.env.GOOGLE_OAUTH_CLIENT_ID ||
+			"";
+
+		// Microsoft Calendar
+		this.configs.microsoft.clientId =
+			this.plugin.settings.microsoftOAuthClientId ||
+			process.env.MICROSOFT_OAUTH_CLIENT_ID ||
+			"";
 	}
 
 	/**

@@ -121,9 +121,9 @@ export function renderIntegrationsTab(
 	googleCalendarHeader.style.marginBottom = "0.5em";
 
 	createTextSetting(container, {
-		name: "Google OAuth Client ID",
-		desc: "Get this from your Google Cloud Console OAuth 2.0 credentials. See the OAuth setup guide in docs/planning/oauth-setup-guide.md for instructions.",
-		placeholder: "123456789-abc123.apps.googleusercontent.com",
+		name: "Google OAuth Client ID (Optional)",
+		desc: "Leave empty to use the built-in TaskNotes OAuth client. Or, provide your own custom OAuth client ID from Google Cloud Console. See docs/planning/oauth-setup-guide.md for setup instructions.",
+		placeholder: "Uses TaskNotes built-in client ID",
 		getValue: () => plugin.settings.googleOAuthClientId,
 		setValue: async (value: string) => {
 			plugin.settings.googleOAuthClientId = value;

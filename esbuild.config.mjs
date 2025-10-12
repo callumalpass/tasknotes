@@ -1,7 +1,38 @@
 import esbuild from "esbuild";
 import process from "process";
 import builtins from "builtin-modules";
-import { readFileSync } from "fs";
+import { readFileSync, existsSync } from "fs";
+import { fileURLToPath } from "url";
+import { dirname, join } from "path";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+// Load environment variables from .env file
+function loadEnv() {
+	const envPath = join(__dirname, '.env');
+	const env = {};
+
+	if (existsSync(envPath)) {
+		const envContent = readFileSync(envPath, 'utf8');
+		const lines = envContent.split('\n');
+
+		for (const line of lines) {
+			const trimmed = line.trim();
+			// Skip comments and empty lines
+			if (!trimmed || trimmed.startsWith('#')) continue;
+
+			const [key, ...valueParts] = trimmed.split('=');
+			if (key && valueParts.length > 0) {
+				env[key.trim()] = valueParts.join('=').trim();
+			}
+		}
+	}
+
+	return env;
+}
+
+const env = loadEnv();
 
 const banner =
 `/*
@@ -55,6 +86,12 @@ const context = await esbuild.context({
 	outfile: "main.js",
 	minify: prod,
 	plugins: [markdownPlugin],
+	define: {
+		// Inject environment variables at build time
+		// These will be replaced with string literals in the bundle
+		'process.env.GOOGLE_OAUTH_CLIENT_ID': JSON.stringify(env.GOOGLE_OAUTH_CLIENT_ID || ''),
+		'process.env.MICROSOFT_OAUTH_CLIENT_ID': JSON.stringify(env.MICROSOFT_OAUTH_CLIENT_ID || ''),
+	},
 });
 
 if (prod) {
