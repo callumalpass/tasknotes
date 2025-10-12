@@ -92,7 +92,7 @@ on:
 - Commit directly to `v3-maintenance` for bug fixes
 - No PR needed for your own fixes
 - Tag and release immediately after fix
-- **Do NOT cherry-pick to main** - codebases will diverge too much
+- **Cherry-pick to main when applicable** - most core code is shared between v3 and v4
 
 **When to Use PRs (Your Own Work):**
 - Large architectural changes you want documented
@@ -166,21 +166,44 @@ You review and either:
 3. Manually apply fix to v3-maintenance yourself if urgent
 ```
 
-**Scenario 4: Bug exists in BOTH v3 and v4 (rare)**
+**Scenario 4: Bug in shared code (common)**
 ```bash
-# If codebases haven't diverged much yet:
+# Fix bug in v3-maintenance first (stable release priority)
 git checkout v3-maintenance
-# Fix bug
-git commit -m "fix: issue with date parsing"
+git pull origin v3-maintenance
+
+# Fix bug in core logic (utils, parsing, properties, etc.)
+git add .
+git commit -m "fix: issue with date parsing in task properties"
 git tag 3.25.3
 git push origin v3-maintenance --follow-tags
 
-# Then manually apply similar fix to v4
+# Cherry-pick to main (will usually apply cleanly for core code)
 git checkout main
-# Apply fix (likely different code, so manual)
-git commit -m "fix: issue with date parsing"
+git pull origin main
+git cherry-pick <commit-hash>
 git push origin main
+
+# If cherry-pick has conflicts (view-specific code), resolve and commit
 ```
+
+**What Code Can Be Cherry-Picked:**
+- ✅ Core utilities and helpers
+- ✅ Task parsing logic
+- ✅ Property definitions and handling
+- ✅ Data models
+- ✅ RRULE/recurrence logic
+- ✅ OAuth integration (new in both)
+- ✅ Settings and configuration
+- ✅ General bug fixes
+
+**What Code Cannot Be Cherry-Picked:**
+- ❌ Native view implementations (being removed in v4)
+- ❌ View-specific rendering code
+- ❌ Bases view implementations (new in v4)
+- ⚠️ View registration/lifecycle code (different APIs)
+
+**Rule of Thumb:** If the bug is in the "view layer", fix separately. If it's in core logic, cherry-pick.
 
 ### Branch Protection (Optional)
 
