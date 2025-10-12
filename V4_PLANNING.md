@@ -151,9 +151,22 @@ class TaskNotesKanbanView extends BasesView {
 }
 ```
 
-**Status:** ✅ Should work - needs verification
+**Status:** ✅ **CONFIRMED - Must use client-side approach**
+
+**Findings from Obsidian Bases Documentation:**
+- ❌ Bases formulas **cannot** query properties from other notes
+- ✅ Bases provides `file.links`, `file.hasLink()`, `file.backlinks`
+- ✅ But NO way to access frontmatter properties of linked notes
+- ✅ Future: Plugins will be able to add custom formula functions (timeline unknown)
+
+**Confirmed Approach:**
+Client-side filtering is the ONLY option. We must:
+1. Access `this.data.data` to get all filtered entries
+2. Build dependency map by iterating and reading `note.blockedBy` / `note.blocking`
+3. Apply additional filtering based on user preferences
 
 **Questions to Answer:**
+- [x] Can Bases formulas do cross-note lookups? **NO** - confirmed impossible
 - [ ] Can we access all entries in the base (not just filtered ones) to build dependency map?
 - [ ] Performance implications of client-side filtering?
 - [ ] Does `getValue('note.blockedBy')` work for custom list properties?
