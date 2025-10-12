@@ -52,18 +52,16 @@ export function renderFeaturesTab(
 		},
 	});
 
-	if (plugin.settings.enableInstantTaskConvert) {
-		createTextSetting(container, {
-			name: translate("settings.features.instantConvert.folder.name"),
-			desc: translate("settings.features.instantConvert.folder.description"),
-			placeholder: "TaskNotes",
-			getValue: () => plugin.settings.inlineTaskConvertFolder,
-			setValue: async (value: string) => {
-				plugin.settings.inlineTaskConvertFolder = value;
-				save();
-			},
-		});
-	}
+	createTextSetting(container, {
+		name: translate("settings.features.instantConvert.folder.name"),
+		desc: translate("settings.features.instantConvert.folder.description"),
+		placeholder: "TaskNotes",
+		getValue: () => plugin.settings.inlineTaskConvertFolder,
+		setValue: async (value: string) => {
+			plugin.settings.inlineTaskConvertFolder = value;
+			save();
+		},
+	});
 
 	// Natural Language Processing Section
 	createSectionHeader(container, translate("settings.features.nlp.header"));
