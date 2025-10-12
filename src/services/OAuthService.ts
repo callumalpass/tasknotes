@@ -243,7 +243,7 @@ export class OAuthService {
 			`);
 
 			const pending = state ? this.pendingOAuthState.get(state) : null;
-			if (pending) {
+			if (pending && state) {
 				pending.reject(new Error(`OAuth error: ${error}`));
 				this.pendingOAuthState.delete(state);
 			}

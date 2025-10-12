@@ -1136,7 +1136,7 @@ export default class TaskNotesPlugin extends Plugin {
 
 		// Clean up OAuth service
 		if (this.oauthService) {
-			await this.oauthService.destroy();
+			this.oauthService.destroy();
 		}
 
 		// Clean up Google Calendar service
