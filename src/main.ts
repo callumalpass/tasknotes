@@ -393,6 +393,11 @@ export default class TaskNotesPlugin extends Plugin {
 		// Start migration check early (before views can be opened)
 		this.migrationPromise = this.performEarlyMigrationCheck();
 
+		// Initialize OAuth and Google Calendar services early (before Bases registration)
+		// This ensures the Google Calendar toggle appears in Bases calendar views
+		this.oauthService = new OAuthService(this);
+		this.googleCalendarService = new GoogleCalendarService(this, this.oauthService);
+
 		// Early registration attempt for Bases integration
 		if (this.settings?.enableBases && !this.basesRegistered) {
 			try {
@@ -558,18 +563,41 @@ export default class TaskNotesPlugin extends Plugin {
 				this.autoExportService = new AutoExportService(this);
 				this.autoExportService.start();
 
-				// Initialize OAuth service
-				this.oauthService = new OAuthService(this);
-
-				// Initialize Google Calendar service
-				this.googleCalendarService = new GoogleCalendarService(this, this.oauthService);
-				await this.googleCalendarService.initialize();
-
-				// Connect Google Calendar data changes to view refreshes
+				// Connect Google Calendar data changes to view refreshes BEFORE initialization
+				// This ensures we catch the initial data-changed event from initialize()
 				this.googleCalendarService.on("data-changed", () => {
 					// Trigger calendar view refreshes when Google Calendar events change
 					this.notifyDataChanged(undefined, false, true);
 				});
+
+				// Initialize Google Calendar service (instance already created in onload)
+				// This triggers the actual data fetching and will emit data-changed
+				await this.googleCalendarService.initialize();
+
+			// Set up automatic task syncing to Google Calendar if enabled
+			this.registerEvent(
+				this.emitter.on(EVENT_TASK_UPDATED, async (data: TaskUpdateEventData) => {
+					// Only sync if task sync is enabled and configured
+					if (
+						this.settings.enableTaskSync &&
+						this.settings.autoSyncTasks &&
+						this.settings.taskSyncCalendarId
+					) {
+						const task = data.updatedTask;
+						if (task && (task.scheduled || task.due)) {
+							try {
+								await this.googleCalendarService.syncTaskToCalendar(
+									task,
+									this.settings.taskSyncCalendarId
+								);
+							} catch (error) {
+								console.error("Failed to auto-sync task to Google Calendar:", error);
+								// Don't show error to user for automatic sync
+							}
+						}
+					}
+				})
+			);
 
 				// Initialize HTTP API service if enabled (desktop only)
 				await this.initializeHTTPAPI();

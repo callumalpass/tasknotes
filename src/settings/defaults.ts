@@ -28,6 +28,7 @@ export const DEFAULT_FIELD_MAPPING: FieldMapping = {
 	pomodoros: "pomodoros",
 	icsEventId: "icsEventId",
 	icsEventTag: "ics_event",
+	googleCalendarEventId: "googleCalendarEventId",
 	reminders: "reminders",
 };
 
@@ -297,4 +298,12 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	microsoftOAuthClientSecret: "",
 	enableGoogleCalendar: false,
 	enableMicrosoftCalendar: false,
+	// Google Calendar selection (empty = show all calendars)
+	enabledGoogleCalendars: [],
+	// Google Calendar sync tokens (for incremental sync)
+	googleCalendarSyncTokens: {},
+	// Google Calendar task sync defaults
+	enableTaskSync: false,
+	taskSyncCalendarId: "",
+	autoSyncTasks: false,
 };

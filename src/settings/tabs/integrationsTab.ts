@@ -112,131 +112,302 @@ export function renderIntegrationsTab(
 		"Connect your Google Calendar or Microsoft Outlook to sync events directly into TaskNotes."
 	);
 
-	// Google Calendar Section
-	const googleCalendarHeader = container.createDiv("tasknotes-settings__subsection-header");
-	googleCalendarHeader.textContent = "Google Calendar";
-	googleCalendarHeader.style.fontSize = "1.1em";
-	googleCalendarHeader.style.fontWeight = "500";
-	googleCalendarHeader.style.marginTop = "1em";
-	googleCalendarHeader.style.marginBottom = "0.5em";
+	// Google Calendar container for card-based UI
+	const googleCalendarContainer = container.createDiv("google-calendar-integration-container");
 
-	// Connection status and buttons
-	const googleConnectionContainer = container.createDiv("oauth-connection-container");
-	googleConnectionContainer.style.marginTop = "10px";
-	googleConnectionContainer.style.padding = "10px";
-	googleConnectionContainer.style.backgroundColor = "var(--background-secondary)";
-	googleConnectionContainer.style.borderRadius = "4px";
-
-	// Check connection status
-	const renderGoogleConnection = async () => {
-		googleConnectionContainer.empty();
+	// Check connection status and render card
+	const renderGoogleCalendarCard = async () => {
+		googleCalendarContainer.empty();
 
 		if (!plugin.oauthService) {
-			const errorDiv = googleConnectionContainer.createDiv();
-			errorDiv.style.color = "var(--text-warning)";
-			errorDiv.textContent = "OAuth service not initialized. Please reload Obsidian.";
+			const errorCard = createCard(googleCalendarContainer, {
+				header: {
+					primaryText: "Google Calendar",
+					secondaryText: "OAuth service not available",
+					meta: [createStatusBadge("Error", "inactive")]
+				}
+			});
 			return;
 		}
 
 		const isConnected = await plugin.oauthService.isConnected("google");
+		const connection = isConnected ? await plugin.oauthService.getConnection("google") : null;
 
-		if (isConnected) {
-			// Show connected status
-			const connection = await plugin.oauthService.getConnection("google");
+		if (isConnected && connection) {
+			// Connected state card
+			const connectedDate = connection.connectedAt ? new Date(connection.connectedAt) : null;
+			const timeAgo = connectedDate ? getRelativeTime(connectedDate, translate) : "";
 
-			const statusDiv = googleConnectionContainer.createDiv();
-			statusDiv.style.display = "flex";
-			statusDiv.style.alignItems = "center";
-			statusDiv.style.gap = "10px";
-			statusDiv.style.marginBottom = "10px";
+			// Create info displays
+			const accountInfo = document.createElement("div");
+			accountInfo.style.fontSize = "0.9em";
+			accountInfo.style.color = "var(--text-muted)";
+			accountInfo.textContent = connection.userEmail || "Unknown account";
 
-			const statusIcon = statusDiv.createSpan();
-			statusIcon.textContent = "✓";
-			statusIcon.style.color = "var(--interactive-success)";
-			statusIcon.style.fontSize = "1.2em";
-			statusIcon.style.fontWeight = "bold";
+			const connectedInfo = document.createElement("div");
+			connectedInfo.style.fontSize = "0.9em";
+			connectedInfo.style.color = "var(--text-muted)";
+			connectedInfo.textContent = connectedDate ? `Connected ${timeAgo}` : "Connected";
 
-			const statusText = statusDiv.createSpan();
-			statusText.textContent = "Connected to Google Calendar";
-			statusText.style.fontWeight = "500";
-
-			if (connection?.userEmail) {
-				const emailDiv = googleConnectionContainer.createDiv();
-				emailDiv.textContent = `Account: ${connection.userEmail}`;
-				emailDiv.style.fontSize = "0.9em";
-				emailDiv.style.opacity = "0.8";
-				emailDiv.style.marginBottom = "10px";
+			const lastRefreshInfo = document.createElement("div");
+			lastRefreshInfo.style.fontSize = "0.9em";
+			lastRefreshInfo.style.color = "var(--text-muted)";
+			if (connection.lastRefreshed) {
+				const lastRefreshDate = new Date(connection.lastRefreshed);
+				lastRefreshInfo.textContent = `Last refreshed ${getRelativeTime(lastRefreshDate, translate)}`;
+			} else {
+				lastRefreshInfo.textContent = "Never refreshed";
 			}
 
-			if (connection?.connectedAt) {
-				const connectedDate = new Date(connection.connectedAt);
-				const timeDiv = googleConnectionContainer.createDiv();
-				timeDiv.textContent = `Connected: ${connectedDate.toLocaleString()}`;
-				timeDiv.style.fontSize = "0.9em";
-				timeDiv.style.opacity = "0.8";
-				timeDiv.style.marginBottom = "10px";
-			}
-
-			// Disconnect button
-			const disconnectBtn = googleConnectionContainer.createEl("button", {
-				text: "Disconnect",
-				cls: "mod-warning",
-			});
-			disconnectBtn.style.marginRight = "10px";
-			disconnectBtn.onclick = async () => {
-				try {
-					await plugin.oauthService!.disconnect("google");
-					renderGoogleConnection();
-				} catch (error) {
-					console.error("Failed to disconnect:", error);
-					new Notice("Failed to disconnect from Google Calendar");
+			createCard(googleCalendarContainer, {
+				collapsible: true,
+				defaultCollapsed: false,
+				colorIndicator: {
+					color: "#4285F4" // Google blue
+				},
+				header: {
+					primaryText: "Google Calendar",
+					secondaryText: "OAuth 2.0 Connection",
+					meta: [createStatusBadge("Connected", "active")]
+				},
+				content: {
+					sections: [{
+						rows: [
+							{ label: "Account:", input: accountInfo },
+							{ label: "Status:", input: connectedInfo },
+							{ label: "Sync:", input: lastRefreshInfo }
+						]
+					}]
+				},
+				actions: {
+					buttons: [
+						{
+							text: "Refresh Now",
+							icon: "refresh-cw",
+							variant: "primary",
+							onClick: async () => {
+								try {
+									if (plugin.googleCalendarService) {
+										await plugin.googleCalendarService.refresh();
+										new Notice("Google Calendar refreshed successfully");
+										renderGoogleCalendarCard(); // Re-render to update timestamp
+									}
+								} catch (error) {
+									console.error("Failed to refresh:", error);
+									new Notice("Failed to refresh Google Calendar");
+								}
+							}
+						},
+						{
+							text: "Disconnect",
+							icon: "log-out",
+							variant: "warning",
+							onClick: async () => {
+								try {
+									await plugin.oauthService!.disconnect("google");
+									new Notice("Disconnected from Google Calendar");
+									renderGoogleCalendarCard(); // Re-render to show disconnected state
+								} catch (error) {
+									console.error("Failed to disconnect:", error);
+									new Notice("Failed to disconnect from Google Calendar");
+								}
+							}
+						}
+					]
 				}
-			};
-
-			// Refresh button
-			const refreshBtn = googleConnectionContainer.createEl("button", {
-				text: "Refresh Now",
 			});
-			refreshBtn.onclick = async () => {
-				try {
-					if (plugin.googleCalendarService) {
-						await plugin.googleCalendarService.refresh();
-						new Notice("Google Calendar refreshed successfully");
-					}
-				} catch (error) {
-					console.error("Failed to refresh:", error);
-					new Notice("Failed to refresh Google Calendar");
-				}
-			};
 		} else {
-			// Show connect button
-			const statusDiv = googleConnectionContainer.createDiv();
-			statusDiv.style.marginBottom = "10px";
-			statusDiv.textContent = "Not connected";
-			statusDiv.style.opacity = "0.8";
+			// Disconnected state card
+			const helpText = document.createElement("div");
+			helpText.style.fontSize = "0.9em";
+			helpText.style.color = "var(--text-muted)";
+			helpText.style.lineHeight = "1.5";
+			helpText.innerHTML = "Connect your Google Calendar account to sync events directly into TaskNotes. Events will automatically refresh every 15 minutes.";
 
-			const connectBtn = googleConnectionContainer.createEl("button", {
-				text: "Connect Google Calendar",
-				cls: "mod-cta",
-			});
-			connectBtn.onclick = async () => {
-				try {
-					connectBtn.disabled = true;
-					connectBtn.textContent = "Connecting...";
-					await plugin.oauthService!.authenticate("google");
-					renderGoogleConnection();
-				} catch (error) {
-					console.error("Failed to connect:", error);
-					new Notice(`Failed to connect: ${error.message}`);
-					connectBtn.disabled = false;
-					connectBtn.textContent = "Connect Google Calendar";
+			createCard(googleCalendarContainer, {
+				collapsible: true,
+				defaultCollapsed: false,
+				colorIndicator: {
+					color: "#9AA0A6" // Google gray
+				},
+				header: {
+					primaryText: "Google Calendar",
+					secondaryText: "OAuth 2.0 Connection",
+					meta: [createStatusBadge("Not Connected", "inactive")]
+				},
+				content: {
+					sections: [{
+						rows: [
+							{ label: "Info:", input: helpText, fullWidth: true }
+						]
+					}]
+				},
+				actions: {
+					buttons: [
+						{
+							text: "Connect Google Calendar",
+							icon: "link",
+							variant: "primary",
+							onClick: async () => {
+								try {
+									await plugin.oauthService!.authenticate("google");
+									new Notice("Google Calendar connected successfully!");
+									renderGoogleCalendarCard(); // Re-render to show connected state
+								} catch (error) {
+									console.error("Failed to connect:", error);
+									new Notice(`Failed to connect: ${error.message}`);
+								}
+							}
+						}
+					]
 				}
-			};
+			});
 		}
 	};
 
 	// Initial render
-	renderGoogleConnection();
+	renderGoogleCalendarCard();
+
+	// Google Calendar Task Sync Section
+	const taskSyncContainer = container.createDiv("google-calendar-task-sync-container");
+
+	const renderTaskSyncSettings = async () => {
+		taskSyncContainer.empty();
+
+		const isConnected = plugin.oauthService ? await plugin.oauthService.isConnected("google") : false;
+
+		if (!isConnected) {
+			return; // Don't show task sync settings if not connected
+		}
+
+		// Task Sync Card
+		createCard(taskSyncContainer, {
+			collapsible: true,
+			defaultCollapsed: !plugin.settings.enableTaskSync,
+			colorIndicator: {
+				color: plugin.settings.enableTaskSync ? "#4285F4" : "#9AA0A6"
+			},
+			header: {
+				primaryText: "Task Sync",
+				secondaryText: "Sync TaskNotes tasks to Google Calendar",
+				meta: [createStatusBadge(
+					plugin.settings.enableTaskSync ? "Enabled" : "Disabled",
+					plugin.settings.enableTaskSync ? "active" : "inactive"
+				)]
+			},
+			content: {
+				sections: [{
+					rows: [
+						{
+							label: "Enable Sync:",
+							input: (() => {
+								const toggle = createCardInput("checkbox");
+								toggle.checked = plugin.settings.enableTaskSync;
+								toggle.addEventListener("change", async () => {
+									plugin.settings.enableTaskSync = toggle.checked;
+									await save();
+									renderTaskSyncSettings(); // Re-render to show/hide calendar selector
+								});
+								return toggle;
+							})()
+						},
+						...(plugin.settings.enableTaskSync ? [{
+							label: "Calendar:",
+							input: (() => {
+								const select = document.createElement("select");
+								select.className = "tasknotes-settings__card-input";
+
+								// Add empty option
+								const emptyOption = document.createElement("option");
+								emptyOption.value = "";
+								emptyOption.textContent = "Select calendar...";
+								select.appendChild(emptyOption);
+
+								// Add calendars
+								const calendars = plugin.googleCalendarService?.getAvailableCalendars() || [];
+								calendars.forEach(cal => {
+									const option = document.createElement("option");
+									option.value = cal.id;
+									option.textContent = cal.summary;
+									option.selected = cal.id === plugin.settings.taskSyncCalendarId;
+									select.appendChild(option);
+								});
+
+								select.addEventListener("change", async () => {
+									plugin.settings.taskSyncCalendarId = select.value;
+									await save();
+								});
+
+								return select;
+							})()
+						},
+						{
+							label: "Auto-sync:",
+							input: (() => {
+								const toggle = createCardInput("checkbox");
+								toggle.checked = plugin.settings.autoSyncTasks;
+								toggle.addEventListener("change", async () => {
+									plugin.settings.autoSyncTasks = toggle.checked;
+									await save();
+								});
+								return toggle;
+							})()
+						}] : [])
+					]
+				}]
+			},
+			...(plugin.settings.enableTaskSync && plugin.settings.taskSyncCalendarId ? {
+				actions: {
+					buttons: [
+						{
+							text: "Create New Calendar",
+							icon: "plus",
+							variant: "secondary",
+							onClick: async () => {
+								const calendarName = prompt("Enter calendar name:", "TaskNotes Tasks");
+								if (calendarName && plugin.googleCalendarService) {
+									try {
+										const calendarId = await plugin.googleCalendarService.createCalendar(
+											calendarName,
+											"Tasks synced from TaskNotes"
+										);
+										plugin.settings.taskSyncCalendarId = calendarId;
+										await save();
+										renderTaskSyncSettings(); // Re-render to show new calendar
+									} catch (error) {
+										console.error("Failed to create calendar:", error);
+										new Notice("Failed to create calendar");
+									}
+								}
+							}
+						},
+						{
+							text: "Sync All Tasks",
+							icon: "refresh-cw",
+							variant: "primary",
+							onClick: async () => {
+								if (!plugin.googleCalendarService || !plugin.settings.taskSyncCalendarId) {
+									new Notice("Please select a calendar first");
+									return;
+								}
+								try {
+									await plugin.googleCalendarService.syncAllTasks(
+										plugin.settings.taskSyncCalendarId
+									);
+								} catch (error) {
+									console.error("Failed to sync tasks:", error);
+									new Notice("Failed to sync tasks");
+								}
+							}
+						}
+					]
+				}
+			} : {})
+		});
+	};
+
+	// Initial render of task sync settings
+	renderTaskSyncSettings();
 
 	// Calendar Subscriptions Section (ICS)
 	createSectionHeader(container, translate("settings.integrations.calendarSubscriptions.header"));

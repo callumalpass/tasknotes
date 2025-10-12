@@ -137,6 +137,14 @@ export interface TaskNotesSettings {
 	microsoftOAuthClientSecret: string;
 	enableGoogleCalendar: boolean;
 	enableMicrosoftCalendar: boolean;
+	// Google Calendar selection
+	enabledGoogleCalendars: string[]; // Array of calendar IDs that should be displayed
+	// Google Calendar sync tokens (for incremental sync)
+	googleCalendarSyncTokens: Record<string, string>; // Maps calendar ID to sync token
+	// Google Calendar task sync settings
+	enableTaskSync: boolean; // Enable syncing TaskNotes tasks to Google Calendar
+	taskSyncCalendarId: string; // Calendar ID to sync tasks to (empty = no sync)
+	autoSyncTasks: boolean; // Automatically sync tasks when they change
 }
 
 export interface DefaultReminder {
