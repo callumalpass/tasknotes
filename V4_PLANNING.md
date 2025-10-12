@@ -1,8 +1,9 @@
 # TaskNotes 4.0.0 Planning
 
-**Status:** Planning Phase
-**Target Release:** After Obsidian 1.10.0 GA (~1 month)
+**Status:** Active Development
+**Target Release:** Shortly after Obsidian 1.10.0 GA
 **Branch Strategy:** v3-maintenance (bug fixes only) | main (v4 development)
+**Strategy:** Bundle all breaking changes in v4.0 to minimize future disruption
 
 ---
 
@@ -92,7 +93,7 @@ on:
 - Commit directly to `v3-maintenance` for bug fixes
 - No PR needed for your own fixes
 - Tag and release immediately after fix
-- **Cherry-pick to main when applicable** - most core code is shared between v3 and v4
+- **Periodically merge v3-maintenance into main** - keeps v4 in sync with bug fixes
 
 **When to Use PRs (Your Own Work):**
 - Large architectural changes you want documented
@@ -166,44 +167,46 @@ You review and either:
 3. Manually apply fix to v3-maintenance yourself if urgent
 ```
 
-**Scenario 4: Bug in shared code (common)**
+**Scenario 4: Syncing bug fixes to v4 (regular maintenance)**
 ```bash
-# Fix bug in v3-maintenance first (stable release priority)
-git checkout v3-maintenance
-git pull origin v3-maintenance
-
-# Fix bug in core logic (utils, parsing, properties, etc.)
-git add .
-git commit -m "fix: issue with date parsing in task properties"
-git tag 3.25.3
-git push origin v3-maintenance --follow-tags
-
-# Cherry-pick to main (will usually apply cleanly for core code)
+# After fixing one or more bugs in v3-maintenance, sync to main
 git checkout main
 git pull origin main
-git cherry-pick <commit-hash>
+
+# Merge v3-maintenance into main
+git merge v3-maintenance
+
+# If no conflicts (most of the time):
 git push origin main
 
-# If cherry-pick has conflicts (view-specific code), resolve and commit
+# If conflicts (usually in view layer):
+# Git will mark conflicts in files
+# Resolve them (usually keep v4's view code, accept v3's core fixes)
+git add .
+git commit
+git push origin main
 ```
 
-**What Code Can Be Cherry-Picked:**
+**When to sync:**
+- After significant bug fixes (every few fixes)
+- Weekly during active v3 maintenance
+- Before releasing v4 alphas/betas
+
+**What merges cleanly:**
 - ✅ Core utilities and helpers
 - ✅ Task parsing logic
 - ✅ Property definitions and handling
 - ✅ Data models
 - ✅ RRULE/recurrence logic
-- ✅ OAuth integration (new in both)
+- ✅ OAuth integration
 - ✅ Settings and configuration
 - ✅ General bug fixes
 
-**What Code Cannot Be Cherry-Picked:**
-- ❌ Native view implementations (being removed in v4)
-- ❌ View-specific rendering code
-- ❌ Bases view implementations (new in v4)
-- ⚠️ View registration/lifecycle code (different APIs)
+**What causes conflicts:**
+- ⚠️ View implementations (keep v4's Bases views, discard v3's native views)
+- ⚠️ View registration code (different APIs)
 
-**Rule of Thumb:** If the bug is in the "view layer", fix separately. If it's in core logic, cherry-pick.
+**Rule of Thumb:** When merging conflicts, keep v4's view code and accept v3's core logic fixes.
 
 ### Branch Protection (Optional)
 
