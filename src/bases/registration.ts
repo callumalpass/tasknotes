@@ -283,25 +283,41 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 							},
 						];
 
-						// Add individual toggle for each ICS calendar subscription
+						// Add individual toggle for each ICS calendar subscription and Google Calendar
+						const calendarToggles: any[] = [];
+
+						// Add Google Calendar toggle if connected
+						if (plugin.googleCalendarService) {
+							calendarToggles.push({
+								type: "toggle",
+								key: "showGoogleCalendar",
+								displayName: "Google Calendar",
+								default: true,
+							});
+						}
+
+						// Add ICS calendar toggles
 						if (plugin.icsSubscriptionService) {
 							const subscriptions = plugin.icsSubscriptionService.getSubscriptions();
 							if (subscriptions.length > 0) {
-								// Create a group for ICS calendars
-								const icsToggles: any[] = subscriptions.map(sub => ({
-									type: "toggle",
-									key: `showICS_${sub.id}`,
-									displayName: sub.name,
-									default: true,
-								}));
-
-								// Add as a group
-								options.push({
-									type: "group",
-									displayName: t("groups.calendarSubscriptions"),
-									items: icsToggles,
+								subscriptions.forEach(sub => {
+									calendarToggles.push({
+										type: "toggle",
+										key: `showICS_${sub.id}`,
+										displayName: sub.name,
+										default: true,
+									});
 								});
 							}
+						}
+
+						// Add calendar toggles group if any calendars are available
+						if (calendarToggles.length > 0) {
+							options.push({
+								type: "group",
+								displayName: t("groups.calendarSubscriptions"),
+								items: calendarToggles,
+							});
 						}
 
 						return options;
