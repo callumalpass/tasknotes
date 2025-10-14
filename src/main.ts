@@ -37,6 +37,7 @@ import {
 	EVENT_DATE_SELECTED,
 	EVENT_DATA_CHANGED,
 	EVENT_TASK_UPDATED,
+	EVENT_TASK_DELETED,
 	EVENT_DATE_CHANGED,
 } from "./types";
 import { MiniCalendarView } from "./views/MiniCalendarView";
@@ -585,6 +586,7 @@ export default class TaskNotesPlugin extends Plugin {
 					) {
 						const task = data.updatedTask;
 						if (task && (task.scheduled || task.due)) {
+							// Task has a date - sync to calendar
 							try {
 								await this.googleCalendarService.syncTaskToCalendar(
 									task,
@@ -592,6 +594,42 @@ export default class TaskNotesPlugin extends Plugin {
 								);
 							} catch (error) {
 								console.error("Failed to auto-sync task to Google Calendar:", error);
+								// Don't show error to user for automatic sync
+							}
+						} else if (task && task.googleCalendarEventId) {
+							// Task no longer has a date but was previously synced - remove from calendar
+							try {
+								await this.googleCalendarService.removeTaskFromCalendar(
+									task,
+									this.settings.taskSyncCalendarId
+								);
+							} catch (error) {
+								console.error("Failed to remove task from Google Calendar:", error);
+								// Don't show error to user for automatic sync
+							}
+						}
+					}
+				})
+			);
+
+			// Handle task deletion - remove from Google Calendar if synced
+			this.registerEvent(
+				this.emitter.on(EVENT_TASK_DELETED, async (data: { path: string; deletedTask: TaskInfo }) => {
+					// Only process if task sync is enabled and configured
+					if (
+						this.settings.enableTaskSync &&
+						this.settings.autoSyncTasks &&
+						this.settings.taskSyncCalendarId
+					) {
+						const task = data.deletedTask;
+						if (task && task.googleCalendarEventId) {
+							try {
+								await this.googleCalendarService.removeTaskFromCalendar(
+									task,
+									this.settings.taskSyncCalendarId
+								);
+							} catch (error) {
+								console.error("Failed to remove deleted task from Google Calendar:", error);
 								// Don't show error to user for automatic sync
 							}
 						}
