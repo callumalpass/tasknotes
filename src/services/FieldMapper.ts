@@ -141,10 +141,6 @@ export class FieldMapper {
 			mapped.icsEventId = Array.isArray(icsEventId) ? icsEventId : [icsEventId];
 		}
 
-		if (frontmatter[this.mapping.googleCalendarEventId] !== undefined) {
-			mapped.googleCalendarEventId = frontmatter[this.mapping.googleCalendarEventId];
-		}
-
 		if (frontmatter[this.mapping.reminders] !== undefined) {
 			const reminders = frontmatter[this.mapping.reminders];
 			// Ensure reminders is always an array and filter out null/undefined values
@@ -263,10 +259,6 @@ export class FieldMapper {
 
 		if (taskData.icsEventId !== undefined && taskData.icsEventId.length > 0) {
 			frontmatter[this.mapping.icsEventId] = taskData.icsEventId;
-		}
-
-		if (taskData.googleCalendarEventId !== undefined) {
-			frontmatter[this.mapping.googleCalendarEventId] = taskData.googleCalendarEventId;
 		}
 
 		if (taskData.reminders !== undefined && taskData.reminders.length > 0) {

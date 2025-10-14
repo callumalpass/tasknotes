@@ -484,7 +484,6 @@ export interface TaskInfo {
 	dateCreated?: string; // Creation date (ISO timestamp)
 	dateModified?: string; // Last modification date (ISO timestamp)
 	icsEventId?: string[]; // Links to ICS calendar event IDs
-	googleCalendarEventId?: string; // Google Calendar event ID for task sync
 	reminders?: Reminder[]; // Task reminders
 	customProperties?: Record<string, any>; // Custom properties from Bases or other sources
 	basesData?: any; // Raw Bases data for formula computation (internal use)
@@ -668,7 +667,6 @@ export interface FieldMapping {
 	pomodoros: string; // For daily note pomodoro tracking
 	icsEventId: string; // For linking to ICS calendar events (stored as array in frontmatter)
 	icsEventTag: string; // Tag used for ICS event-related content
-	googleCalendarEventId: string; // For linking to Google Calendar event (for task sync)
 	reminders: string; // For task reminders
 }
 
