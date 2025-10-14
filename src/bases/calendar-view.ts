@@ -265,19 +265,32 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 
 					const newStart = dropInfo.event.start;
 					const newEnd = dropInfo.event.end;
-					const allDay = dropInfo.event.allDay;
+					const newAllDay = dropInfo.event.allDay;
+					const oldAllDay = icsEvent.allDay;
 
 					// Build update payload for Google Calendar API
 					const updates: any = {};
 
-					if (allDay) {
-						// All-day event
+					// Check if we're converting between all-day and timed events
+					const isConvertingFormat = newAllDay !== oldAllDay;
+
+					if (newAllDay) {
+						// Converting to or staying as all-day event
 						updates.start = { date: format(newStart, "yyyy-MM-dd") };
 						if (newEnd) {
 							updates.end = { date: format(newEnd, "yyyy-MM-dd") };
 						}
+						// If converting from timed to all-day, explicitly remove dateTime fields
+						if (isConvertingFormat) {
+							updates.start.dateTime = undefined;
+							updates.start.timeZone = undefined;
+							if (updates.end) {
+								updates.end.dateTime = undefined;
+								updates.end.timeZone = undefined;
+							}
+						}
 					} else {
-						// Timed event - format with timezone offset
+						// Converting to or staying as timed event
 						const formatWithTimezone = (date: Date): string => {
 							const offset = -date.getTimezoneOffset();
 							const sign = offset >= 0 ? '+' : '-';
@@ -289,6 +302,13 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 						updates.start = { dateTime: formatWithTimezone(newStart) };
 						if (newEnd) {
 							updates.end = { dateTime: formatWithTimezone(newEnd) };
+						}
+						// If converting from all-day to timed, explicitly remove date fields
+						if (isConvertingFormat) {
+							updates.start.date = undefined;
+							if (updates.end) {
+								updates.end.date = undefined;
+							}
 						}
 					}
 
@@ -418,16 +438,28 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 						return;
 					}
 
-					const allDay = resizeInfo.event.allDay;
+					const newAllDay = resizeInfo.event.allDay;
+					const oldAllDay = icsEvent.allDay;
 
 					// Build update payload
 					const updates: any = {};
 
-					if (allDay) {
+					// Check if we're converting between all-day and timed events
+					const isConvertingFormat = newAllDay !== oldAllDay;
+
+					if (newAllDay) {
+						// Converting to or staying as all-day event
 						updates.start = { date: format(newStart, "yyyy-MM-dd") };
 						updates.end = { date: format(newEnd, "yyyy-MM-dd") };
+						// If converting from timed to all-day, explicitly remove dateTime fields
+						if (isConvertingFormat) {
+							updates.start.dateTime = undefined;
+							updates.start.timeZone = undefined;
+							updates.end.dateTime = undefined;
+							updates.end.timeZone = undefined;
+						}
 					} else {
-						// Timed event - format with timezone offset
+						// Converting to or staying as timed event
 						const formatWithTimezone = (date: Date): string => {
 							const offset = -date.getTimezoneOffset();
 							const sign = offset >= 0 ? '+' : '-';
@@ -438,6 +470,11 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 
 						updates.start = { dateTime: formatWithTimezone(newStart) };
 						updates.end = { dateTime: formatWithTimezone(newEnd) };
+						// If converting from all-day to timed, explicitly remove date fields
+						if (isConvertingFormat) {
+							updates.start.date = undefined;
+							updates.end.date = undefined;
+						}
 					}
 
 					// Update via Google Calendar API
