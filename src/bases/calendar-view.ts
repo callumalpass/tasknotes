@@ -1256,7 +1256,7 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 					initialView: defaultView,
 					initialDate: new Date(), // Will be updated during render if property configured
 					headerToolbar: {
-						left: "prev,next today",
+						left: "prev,next today refreshCalendars",
 						center: "title",
 						right: "multiMonthYear,dayGridMonth,timeGridWeek,timeGridCustom,timeGridDay,listWeek",
 					},
@@ -1267,6 +1267,33 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 						day: plugin.i18n.translate("views.basesCalendar.buttonText.day"),
 						year: plugin.i18n.translate("views.basesCalendar.buttonText.year"),
 						list: plugin.i18n.translate("views.basesCalendar.buttonText.list"),
+						refreshCalendars: plugin.i18n.translate("views.basesCalendar.buttonText.refresh") || "Refresh",
+					},
+					customButtons: {
+						refreshCalendars: {
+							text: plugin.i18n.translate("views.basesCalendar.buttonText.refresh") || "Refresh",
+							hint: plugin.i18n.translate("views.basesCalendar.hints.refresh") || "Refresh calendar subscriptions",
+							click: async function() {
+								try {
+									// Refresh ICS subscriptions
+									if (plugin.icsSubscriptionService) {
+										await plugin.icsSubscriptionService.refreshAllSubscriptions();
+									}
+
+									// Refresh Google Calendar events
+									if (plugin.googleCalendarService) {
+										await plugin.googleCalendarService.refreshAllCalendars();
+									}
+
+									// Refetch calendar events to show updated data
+									if (calendar) {
+										calendar.refetchEvents();
+									}
+								} catch (error) {
+									console.error("[TaskNotes][Bases][Calendar] Error refreshing calendars:", error);
+								}
+							},
+						},
 					},
 					views: {
 						timeGridCustom: {
