@@ -48,11 +48,22 @@ export function createICSEventCard(
 	(card as any).dataset.key = icsEvent.id;
 
 	// Determine subscription color and name
-	const subscription = plugin.icsSubscriptionService
-		?.getSubscriptions()
-		.find((s) => s.id === icsEvent.subscriptionId);
-	const color = subscription?.color || "var(--color-accent)";
-	const sourceName = subscription?.name || plugin.i18n.translate("ui.icsCard.calendarFallback");
+	const isGoogleCalendar = icsEvent.subscriptionId.startsWith("google-");
+	let color: string;
+	let sourceName: string;
+
+	if (isGoogleCalendar) {
+		// Use Google Calendar event's color if available
+		color = icsEvent.color || "#4285F4";
+		sourceName = "Google Calendar";
+	} else {
+		// Use ICS subscription settings
+		const subscription = plugin.icsSubscriptionService
+			?.getSubscriptions()
+			.find((s) => s.id === icsEvent.subscriptionId);
+		color = subscription?.color || "var(--color-accent)";
+		sourceName = subscription?.name || plugin.i18n.translate("ui.icsCard.calendarFallback");
+	}
 
 	// Main row
 	const mainRow = card.createEl("div", { cls: "task-card__main-row" });
@@ -135,11 +146,23 @@ export function updateICSEventCard(
 ): void {
 	// const opts = { ...DEFAULT_ICS_CARD_OPTIONS, ...options }; // Currently unused
 
-	const subscription = plugin.icsSubscriptionService
-		?.getSubscriptions()
-		.find((s) => s.id === icsEvent.subscriptionId);
-	const color = subscription?.color || "var(--color-accent)";
-	const sourceName = subscription?.name || plugin.i18n.translate("ui.icsCard.calendarFallback");
+	// Determine subscription color and name
+	const isGoogleCalendar = icsEvent.subscriptionId.startsWith("google-");
+	let color: string;
+	let sourceName: string;
+
+	if (isGoogleCalendar) {
+		// Use Google Calendar event's color if available
+		color = icsEvent.color || "#4285F4";
+		sourceName = "Google Calendar";
+	} else {
+		// Use ICS subscription settings
+		const subscription = plugin.icsSubscriptionService
+			?.getSubscriptions()
+			.find((s) => s.id === icsEvent.subscriptionId);
+		color = subscription?.color || "var(--color-accent)";
+		sourceName = subscription?.name || plugin.i18n.translate("ui.icsCard.calendarFallback");
+	}
 
 	// Update icon color on wrapper to propagate to svg (icons use currentColor)
 	element.style.setProperty("--current-status-color", color);

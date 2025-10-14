@@ -249,7 +249,60 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 				return;
 			}
 
-			// Only allow scheduled and recurring events to be moved
+			// Handle Google Calendar event drops
+			if (eventType === "ics" && dropInfo.event.extendedProps.isGoogleCalendar) {
+				try {
+					const icsEvent = dropInfo.event.extendedProps.icsEvent;
+					if (!icsEvent) {
+						dropInfo.revert();
+						return;
+					}
+
+					// Extract calendar ID from subscriptionId (format: "google-<calendarId>")
+					const calendarId = icsEvent.subscriptionId.replace("google-", "");
+					// Extract event ID from the full ID (format: "google-<calendarId>-<eventId>")
+					const eventId = icsEvent.id.replace(`google-${calendarId}-`, "");
+
+					const newStart = dropInfo.event.start;
+					const newEnd = dropInfo.event.end;
+					const allDay = dropInfo.event.allDay;
+
+					// Build update payload for Google Calendar API
+					const updates: any = {};
+
+					if (allDay) {
+						// All-day event
+						updates.start = { date: format(newStart, "yyyy-MM-dd") };
+						if (newEnd) {
+							updates.end = { date: format(newEnd, "yyyy-MM-dd") };
+						}
+					} else {
+						// Timed event - format with timezone offset
+						const formatWithTimezone = (date: Date): string => {
+							const offset = -date.getTimezoneOffset();
+							const sign = offset >= 0 ? '+' : '-';
+							const hours = String(Math.floor(Math.abs(offset) / 60)).padStart(2, '0');
+							const minutes = String(Math.abs(offset) % 60).padStart(2, '0');
+							return format(date, "yyyy-MM-dd'T'HH:mm:ss") + sign + hours + ':' + minutes;
+						};
+
+						updates.start = { dateTime: formatWithTimezone(newStart) };
+						if (newEnd) {
+							updates.end = { dateTime: formatWithTimezone(newEnd) };
+						}
+					}
+
+					// Update the event via Google Calendar API
+					await plugin.googleCalendarService?.updateEvent(calendarId, eventId, updates);
+
+				} catch (error) {
+					console.error("[TaskNotes][Bases][Calendar] Error updating Google Calendar event:", error);
+					dropInfo.revert();
+				}
+				return;
+			}
+
+			// Only allow scheduled and recurring events to be moved (block ICS subscriptions)
 			if (eventType === "timeEntry" || eventType === "ics" || eventType === "due") {
 				dropInfo.revert();
 				return;
@@ -344,7 +397,60 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 				return;
 			}
 
-			// Only scheduled and recurring events can be resized
+			// Handle Google Calendar event resize
+			if (eventType === "ics" && resizeInfo.event.extendedProps.isGoogleCalendar) {
+				try {
+					const icsEvent = resizeInfo.event.extendedProps.icsEvent;
+					if (!icsEvent) {
+						resizeInfo.revert();
+						return;
+					}
+
+					// Extract calendar ID and event ID
+					const calendarId = icsEvent.subscriptionId.replace("google-", "");
+					const eventId = icsEvent.id.replace(`google-${calendarId}-`, "");
+
+					const newStart = resizeInfo.event.start;
+					const newEnd = resizeInfo.event.end;
+
+					if (!newEnd) {
+						resizeInfo.revert();
+						return;
+					}
+
+					const allDay = resizeInfo.event.allDay;
+
+					// Build update payload
+					const updates: any = {};
+
+					if (allDay) {
+						updates.start = { date: format(newStart, "yyyy-MM-dd") };
+						updates.end = { date: format(newEnd, "yyyy-MM-dd") };
+					} else {
+						// Timed event - format with timezone offset
+						const formatWithTimezone = (date: Date): string => {
+							const offset = -date.getTimezoneOffset();
+							const sign = offset >= 0 ? '+' : '-';
+							const hours = String(Math.floor(Math.abs(offset) / 60)).padStart(2, '0');
+							const minutes = String(Math.abs(offset) % 60).padStart(2, '0');
+							return format(date, "yyyy-MM-dd'T'HH:mm:ss") + sign + hours + ':' + minutes;
+						};
+
+						updates.start = { dateTime: formatWithTimezone(newStart) };
+						updates.end = { dateTime: formatWithTimezone(newEnd) };
+					}
+
+					// Update via Google Calendar API
+					await plugin.googleCalendarService?.updateEvent(calendarId, eventId, updates);
+
+				} catch (error) {
+					console.error("[TaskNotes][Bases][Calendar] Error resizing Google Calendar event:", error);
+					resizeInfo.revert();
+				}
+				return;
+			}
+
+			// Only scheduled and recurring events can be resized (block ICS subscriptions)
 			if (eventType !== "scheduled" && eventType !== "recurring") {
 				resizeInfo.revert();
 				return;
@@ -384,7 +490,33 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 				return;
 			}
 
-			const { taskInfo, timeblock, icsEvent, eventType, isCompleted, basesEntry } = arg.event.extendedProps;
+			const { taskInfo, timeblock, icsEvent, eventType, isCompleted, basesEntry, isGoogleCalendar } = arg.event.extendedProps;
+
+			// Add calendar icon to Google Calendar events in grid views
+			if (isGoogleCalendar && icsEvent && arg.view.type !== 'listWeek') {
+				const titleEl = arg.el.querySelector('.fc-event-title');
+				if (titleEl) {
+					// Create icon container
+					const iconContainer = document.createElement('span');
+					iconContainer.style.marginRight = '4px';
+					iconContainer.style.display = 'inline-flex';
+					iconContainer.style.alignItems = 'center';
+
+					// Add Lucide calendar icon
+					const { setIcon } = require('obsidian');
+					const iconEl = document.createElement('span');
+					iconEl.style.width = '12px';
+					iconEl.style.height = '12px';
+					iconEl.style.display = 'inline-flex';
+					iconEl.style.flexShrink = '0';
+					setIcon(iconEl, 'calendar');
+
+					iconContainer.appendChild(iconEl);
+
+					// Prepend icon to title
+					titleEl.insertBefore(iconContainer, titleEl.firstChild);
+				}
+			}
 
 			// Custom rendering for list view - replace with card components
 			if (arg.view.type === 'listWeek') {
@@ -959,13 +1091,34 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 				}
 
 				// Generate events from Google Calendar (if connected and enabled)
-				const showGoogleCalendar = (ctx?.config?.get('showGoogleCalendar') as boolean) ?? true;
-				if (showGoogleCalendar && plugin.googleCalendarService) {
-					const googleEvents = plugin.googleCalendarService.getAllEvents();
-					for (const icsEvent of googleEvents) {
-						const calendarEvent = createICSEvent(icsEvent, plugin);
-						if (calendarEvent) {
-							events.push(calendarEvent);
+				// Build list of selected Google calendars from individual toggle options
+				const selectedGoogleCalendars: string[] = [];
+				if (plugin.googleCalendarService) {
+					const availableCalendars = plugin.googleCalendarService.getAvailableCalendars();
+					for (const calendar of availableCalendars) {
+						const isEnabled = (ctx?.config?.get(`showGoogleCalendar_${calendar.id}`) as boolean) ?? true;
+						if (isEnabled) {
+							selectedGoogleCalendars.push(calendar.id);
+						}
+					}
+
+					// Save enabled calendar IDs to settings for persistence across sessions
+					plugin.settings.enabledGoogleCalendars = selectedGoogleCalendars;
+					await plugin.saveSettings();
+				}
+
+				// Add events from selected Google calendars
+				if (selectedGoogleCalendars.length > 0 && plugin.googleCalendarService) {
+					const allGoogleEvents = plugin.googleCalendarService.getAllEvents();
+					for (const icsEvent of allGoogleEvents) {
+						// Only include events from selected calendars
+						// The subscriptionId format is "google-<calendarId>"
+						const calendarId = icsEvent.subscriptionId.replace("google-", "");
+						if (selectedGoogleCalendars.includes(calendarId)) {
+							const calendarEvent = createICSEvent(icsEvent, plugin);
+							if (calendarEvent) {
+								events.push(calendarEvent);
+							}
 						}
 					}
 				}

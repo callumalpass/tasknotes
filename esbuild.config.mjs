@@ -8,11 +8,13 @@ import { dirname, join } from "path";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// Load environment variables from .env file
+// Load environment variables from .env file or process.env
+// Priority: process.env > .env file
 function loadEnv() {
 	const envPath = join(__dirname, '.env');
 	const env = {};
 
+	// First, load from .env file if it exists
 	if (existsSync(envPath)) {
 		const envContent = readFileSync(envPath, 'utf8');
 		const lines = envContent.split('\n');
@@ -27,6 +29,20 @@ function loadEnv() {
 				env[key.trim()] = valueParts.join('=').trim();
 			}
 		}
+		console.log('OAuth credentials loaded from .env file');
+	}
+
+	// Override with process.env values if they exist (for CI/CD)
+	const envKeys = ['GOOGLE_OAUTH_CLIENT_ID', 'GOOGLE_OAUTH_CLIENT_SECRET', 'MICROSOFT_OAUTH_CLIENT_ID', 'MICROSOFT_OAUTH_CLIENT_SECRET'];
+	for (const key of envKeys) {
+		if (process.env[key]) {
+			env[key] = process.env[key];
+		}
+	}
+
+	// Log what we have (but not the actual values for security)
+	if (env.GOOGLE_OAUTH_CLIENT_ID || env.GOOGLE_OAUTH_CLIENT_SECRET) {
+		console.log('OAuth credentials configured from environment variables');
 	}
 
 	return env;

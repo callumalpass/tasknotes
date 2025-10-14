@@ -129,6 +129,9 @@ jobs:
     - name: Build plugin
       run: npm run build
       timeout-minutes: 10
+      env:
+        GOOGLE_OAUTH_CLIENT_ID: ${{ secrets.GOOGLE_OAUTH_CLIENT_ID }}
+        GOOGLE_OAUTH_CLIENT_SECRET: ${{ secrets.GOOGLE_OAUTH_CLIENT_SECRET }}
       
     - name: Test built plugin
       run: npm run test:build

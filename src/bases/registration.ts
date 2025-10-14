@@ -283,25 +283,38 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 							},
 						];
 
-						// Add individual toggle for each ICS calendar subscription and Google Calendar
-						const calendarToggles: any[] = [];
-
-						// Add Google Calendar toggle if connected
+						// Add Google Calendar section (separate from ICS subscriptions)
+						const googleCalendarToggles: any[] = [];
 						if (plugin.googleCalendarService) {
-							calendarToggles.push({
-								type: "toggle",
-								key: "showGoogleCalendar",
+							const availableCalendars = plugin.googleCalendarService.getAvailableCalendars();
+							if (availableCalendars.length > 0) {
+								availableCalendars.forEach(calendar => {
+									googleCalendarToggles.push({
+										type: "toggle",
+										key: `showGoogleCalendar_${calendar.id}`,
+										displayName: calendar.summary || calendar.id,
+										default: true,
+									});
+								});
+							}
+						}
+
+						// Add Google Calendar group if any calendars are available
+						if (googleCalendarToggles.length > 0) {
+							options.push({
+								type: "group",
 								displayName: "Google Calendar",
-								default: true,
+								items: googleCalendarToggles,
 							});
 						}
 
-						// Add ICS calendar toggles
+						// Add ICS calendar subscription toggles (separate section)
+						const icsCalendarToggles: any[] = [];
 						if (plugin.icsSubscriptionService) {
 							const subscriptions = plugin.icsSubscriptionService.getSubscriptions();
 							if (subscriptions.length > 0) {
 								subscriptions.forEach(sub => {
-									calendarToggles.push({
+									icsCalendarToggles.push({
 										type: "toggle",
 										key: `showICS_${sub.id}`,
 										displayName: sub.name,
@@ -311,12 +324,12 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 							}
 						}
 
-						// Add calendar toggles group if any calendars are available
-						if (calendarToggles.length > 0) {
+						// Add ICS calendar toggles group if any subscriptions are available
+						if (icsCalendarToggles.length > 0) {
 							options.push({
 								type: "group",
 								displayName: t("groups.calendarSubscriptions"),
-								items: calendarToggles,
+								items: icsCalendarToggles,
 							});
 						}
 
