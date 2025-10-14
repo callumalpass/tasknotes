@@ -269,46 +269,28 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 					const oldAllDay = icsEvent.allDay;
 
 					// Build update payload for Google Calendar API
+					// Construct clean objects without conflicting fields
 					const updates: any = {};
 
-					// Check if we're converting between all-day and timed events
-					const isConvertingFormat = newAllDay !== oldAllDay;
+					const formatWithTimezone = (date: Date): string => {
+						const offset = -date.getTimezoneOffset();
+						const sign = offset >= 0 ? '+' : '-';
+						const hours = String(Math.floor(Math.abs(offset) / 60)).padStart(2, '0');
+						const minutes = String(Math.abs(offset) % 60).padStart(2, '0');
+						return format(date, "yyyy-MM-dd'T'HH:mm:ss") + sign + hours + ':' + minutes;
+					};
 
 					if (newAllDay) {
-						// Converting to or staying as all-day event
+						// All-day event - ONLY include date field
 						updates.start = { date: format(newStart, "yyyy-MM-dd") };
 						if (newEnd) {
 							updates.end = { date: format(newEnd, "yyyy-MM-dd") };
 						}
-						// If converting from timed to all-day, explicitly remove dateTime fields
-						if (isConvertingFormat) {
-							updates.start.dateTime = undefined;
-							updates.start.timeZone = undefined;
-							if (updates.end) {
-								updates.end.dateTime = undefined;
-								updates.end.timeZone = undefined;
-							}
-						}
 					} else {
-						// Converting to or staying as timed event
-						const formatWithTimezone = (date: Date): string => {
-							const offset = -date.getTimezoneOffset();
-							const sign = offset >= 0 ? '+' : '-';
-							const hours = String(Math.floor(Math.abs(offset) / 60)).padStart(2, '0');
-							const minutes = String(Math.abs(offset) % 60).padStart(2, '0');
-							return format(date, "yyyy-MM-dd'T'HH:mm:ss") + sign + hours + ':' + minutes;
-						};
-
+						// Timed event - ONLY include dateTime field
 						updates.start = { dateTime: formatWithTimezone(newStart) };
 						if (newEnd) {
 							updates.end = { dateTime: formatWithTimezone(newEnd) };
-						}
-						// If converting from all-day to timed, explicitly remove date fields
-						if (isConvertingFormat) {
-							updates.start.date = undefined;
-							if (updates.end) {
-								updates.end.date = undefined;
-							}
 						}
 					}
 
@@ -442,39 +424,25 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 					const oldAllDay = icsEvent.allDay;
 
 					// Build update payload
+					// Construct clean objects without conflicting fields
 					const updates: any = {};
 
-					// Check if we're converting between all-day and timed events
-					const isConvertingFormat = newAllDay !== oldAllDay;
+					const formatWithTimezone = (date: Date): string => {
+						const offset = -date.getTimezoneOffset();
+						const sign = offset >= 0 ? '+' : '-';
+						const hours = String(Math.floor(Math.abs(offset) / 60)).padStart(2, '0');
+						const minutes = String(Math.abs(offset) % 60).padStart(2, '0');
+						return format(date, "yyyy-MM-dd'T'HH:mm:ss") + sign + hours + ':' + minutes;
+					};
 
 					if (newAllDay) {
-						// Converting to or staying as all-day event
+						// All-day event - ONLY include date field
 						updates.start = { date: format(newStart, "yyyy-MM-dd") };
 						updates.end = { date: format(newEnd, "yyyy-MM-dd") };
-						// If converting from timed to all-day, explicitly remove dateTime fields
-						if (isConvertingFormat) {
-							updates.start.dateTime = undefined;
-							updates.start.timeZone = undefined;
-							updates.end.dateTime = undefined;
-							updates.end.timeZone = undefined;
-						}
 					} else {
-						// Converting to or staying as timed event
-						const formatWithTimezone = (date: Date): string => {
-							const offset = -date.getTimezoneOffset();
-							const sign = offset >= 0 ? '+' : '-';
-							const hours = String(Math.floor(Math.abs(offset) / 60)).padStart(2, '0');
-							const minutes = String(Math.abs(offset) % 60).padStart(2, '0');
-							return format(date, "yyyy-MM-dd'T'HH:mm:ss") + sign + hours + ':' + minutes;
-						};
-
+						// Timed event - ONLY include dateTime field
 						updates.start = { dateTime: formatWithTimezone(newStart) };
 						updates.end = { dateTime: formatWithTimezone(newEnd) };
-						// If converting from all-day to timed, explicitly remove date fields
-						if (isConvertingFormat) {
-							updates.start.date = undefined;
-							updates.end.date = undefined;
-						}
 					}
 
 					// Update via Google Calendar API
