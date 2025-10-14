@@ -652,21 +652,27 @@ export class GoogleCalendarService extends EventEmitter {
 			end = { date: endDate };
 		}
 
-		// Build description with task metadata
-		let description = task.title;
+		// Build description with task metadata and clear sync messaging
+		let description = `📝 Managed by TaskNotes (one-way sync)`;
+		description += `\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
+		description += `\n\n⚠️  Changes made here will be overwritten by TaskNotes`;
+		description += `\n✏️  Edit in Obsidian: obsidian://open?vault=${encodeURIComponent(this.plugin.app.vault.getName())}&file=${encodeURIComponent(task.path)}`;
+
 		if (task.projects && task.projects.length > 0) {
-			description += `\n\nProjects: ${task.projects.join(", ")}`;
+			description += `\n\n📂 Projects: ${task.projects.join(", ")}`;
 		}
 		if (task.contexts && task.contexts.length > 0) {
-			description += `\nContexts: ${task.contexts.join(", ")}`;
+			description += `\n🏷️  Contexts: ${task.contexts.join(", ")}`;
 		}
 		if (task.priority) {
-			description += `\nPriority: ${task.priority}`;
+			description += `\n⭐ Priority: ${task.priority}`;
 		}
-		description += `\n\nTask note: obsidian://open?vault=${encodeURIComponent(this.plugin.app.vault.getName())}&file=${encodeURIComponent(task.path)}`;
+		if (task.status) {
+			description += `\n📊 Status: ${task.status}`;
+		}
 
 		return {
-			summary: task.title,
+			summary: `📋 ${task.title}`,
 			description,
 			start,
 			end

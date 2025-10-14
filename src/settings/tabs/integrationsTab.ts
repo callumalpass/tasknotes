@@ -288,8 +288,8 @@ export function renderIntegrationsTab(
 				color: plugin.settings.enableTaskSync ? "#4285F4" : "#9AA0A6"
 			},
 			header: {
-				primaryText: "Task Sync",
-				secondaryText: "Sync TaskNotes tasks to Google Calendar",
+				primaryText: "Task Sync (One-Way)",
+				secondaryText: "Push TaskNotes tasks to Google Calendar - edits in Google will be overwritten",
 				meta: [createStatusBadge(
 					plugin.settings.enableTaskSync ? "Enabled" : "Disabled",
 					plugin.settings.enableTaskSync ? "active" : "inactive"
