@@ -264,9 +264,21 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 					const eventId = icsEvent.id.replace(`google-${calendarId}-`, "");
 
 					const newStart = dropInfo.event.start;
-					const newEnd = dropInfo.event.end;
+					let newEnd = dropInfo.event.end;
 					const newAllDay = dropInfo.event.allDay;
 					const oldAllDay = icsEvent.allDay;
+
+					// If no end date provided, calculate a default (required for format conversion)
+					if (!newEnd) {
+						newEnd = new Date(newStart);
+						if (newAllDay) {
+							// All-day event: end is next day
+							newEnd.setDate(newEnd.getDate() + 1);
+						} else {
+							// Timed event: end is 1 hour after start
+							newEnd.setHours(newEnd.getHours() + 1);
+						}
+					}
 
 					// Build update payload for Google Calendar API
 					// Construct clean objects without conflicting fields
@@ -283,15 +295,11 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 					if (newAllDay) {
 						// All-day event - ONLY include date field
 						updates.start = { date: format(newStart, "yyyy-MM-dd") };
-						if (newEnd) {
-							updates.end = { date: format(newEnd, "yyyy-MM-dd") };
-						}
+					updates.end = { date: format(newEnd, "yyyy-MM-dd") };
 					} else {
 						// Timed event - ONLY include dateTime field
 						updates.start = { dateTime: formatWithTimezone(newStart) };
-						if (newEnd) {
-							updates.end = { dateTime: formatWithTimezone(newEnd) };
-						}
+					updates.end = { dateTime: formatWithTimezone(newEnd) };
 					}
 
 					// Update the event via Google Calendar API

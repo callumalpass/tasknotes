@@ -474,6 +474,37 @@ export class GoogleCalendarService extends EventEmitter {
 				...updates
 			};
 
+			// Clean up format conversion: ensure only one date format exists in start/end
+			// If we're setting 'date' (all-day), remove 'dateTime' and 'timeZone'
+			// If we're setting 'dateTime' (timed), remove 'date'
+			if (updatedEvent.start) {
+				if (updatedEvent.start.date) {
+					// All-day format - remove timed fields
+					delete updatedEvent.start.dateTime;
+					delete updatedEvent.start.timeZone;
+				} else if (updatedEvent.start.dateTime) {
+					// Timed format - remove all-day field
+					delete updatedEvent.start.date;
+				}
+			}
+
+			if (updatedEvent.end) {
+				if (updatedEvent.end.date) {
+					// All-day format - remove timed fields
+					delete updatedEvent.end.dateTime;
+					delete updatedEvent.end.timeZone;
+				} else if (updatedEvent.end.dateTime) {
+					// Timed format - remove all-day field
+					delete updatedEvent.end.date;
+				}
+			}
+
+			// Debug: Log the payload being sent
+			console.log("[GoogleCalendar] Updating event:", eventId);
+			console.log("[GoogleCalendar] Updates received:", JSON.stringify(updates, null, 2));
+			console.log("[GoogleCalendar] Final payload start:", JSON.stringify(updatedEvent.start, null, 2));
+			console.log("[GoogleCalendar] Final payload end:", JSON.stringify(updatedEvent.end, null, 2));
+
 			// Update the event
 			await requestUrl({
 				url: `${this.baseUrl}/calendars/${encodeURIComponent(calendarId)}/events/${encodeURIComponent(eventId)}`,
