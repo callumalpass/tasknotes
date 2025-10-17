@@ -19,18 +19,19 @@ jest.mock('../../../src/utils/FilterUtils', () => ({
 describe('MinimalNativeCache.getTaskInfo() - Task Identification Validation', () => {
 	let cache: MinimalNativeCache;
 	let mockApp: any;
-	let mockFile: TFile;
+	let mockFile: any;
 	let mockFieldMapper: any;
 
 	beforeEach(() => {
-		mockFile = {
-			path: 'test/note.md',
-			basename: 'note',
-		} as TFile;
+		// Create a mock file object that will pass instanceof TFile check
+		mockFile = Object.create(TFile.prototype);
+		Object.defineProperty(mockFile, 'path', { value: 'test/note.md', writable: true });
+		Object.defineProperty(mockFile, 'basename', { value: 'note', writable: true });
+		Object.defineProperty(mockFile, 'extension', { value: 'md', writable: true });
 
 		// Mock FieldMapper to return task info
 		mockFieldMapper = {
-			mapFromFrontmatter: jest.fn((frontmatter: any, path: string) => ({
+			mapFromFrontmatter: jest.fn((frontmatter: any, path: string, storeTitleInFilename: boolean) => ({
 				title: frontmatter.title || 'Untitled',
 				status: frontmatter.status || 'open',
 				priority: frontmatter.priority || 'normal',
@@ -52,6 +53,7 @@ describe('MinimalNativeCache.getTaskInfo() - Task Identification Validation', ()
 			},
 			metadataCache: {
 				getFileCache: jest.fn(),
+				getFirstLinkpathDest: jest.fn().mockReturnValue(null), // For dependency resolution
 				on: jest.fn(),
 			},
 		};
