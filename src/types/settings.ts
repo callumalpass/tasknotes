@@ -31,6 +31,7 @@ export interface TaskNotesSettings {
 	archiveFolder: string; // Folder to move archived tasks to, supports template variables
 	taskTag: string; // The tag that identifies tasks
 	taskIdentificationMethod: "tag" | "property"; // Method to identify tasks
+	hideIdentifyingTagsInCards: boolean; // Hide identifying tags in task card displays
 	taskPropertyName: string; // Property name for property-based identification
 	taskPropertyValue: string; // Property value for property-based identification
 	excludedFolders: string; // Comma-separated list of folders to exclude from Notes tab

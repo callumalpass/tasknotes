@@ -415,6 +415,8 @@
   "settings.general.taskIdentification.identifyBy.options.property": "9ae33a7d0ecb82cae8f04aafab20bf90425b7b8c",
   "settings.general.taskIdentification.taskTag.name": "32a1b8fd70fda5c2f285a9a23e59cdd7b2858b30",
   "settings.general.taskIdentification.taskTag.description": "80122e53d8a3a7eb2c2ac8e352efba551330d1c5",
+  "settings.general.taskIdentification.hideIdentifyingTags.name": "446bbfd987521d42035442c4652693d996565cf8",
+  "settings.general.taskIdentification.hideIdentifyingTags.description": "a38be9ef6457fd38857917cbbc387d396cd2e60a",
   "settings.general.taskIdentification.taskProperty.name": "fb00b60c99acd4529404e3ef8bd77017d9332da6",
   "settings.general.taskIdentification.taskProperty.description": "5ba9a14eff27529d0bbb5eb8c793ca728759623b",
   "settings.general.taskIdentification.taskPropertyValue.name": "258b4a08e80f7b9bec1e0ac3c2c5c3008676297d",
