@@ -13,9 +13,35 @@ These settings control the foundational aspects of the plugin, such as task iden
 
 ## Task Identification
 
+TaskNotes can identify task notes using either a tag or a frontmatter property.
+
 - **Identify tasks by**: Choose whether to identify tasks by a tag or by a frontmatter property.
-    - **Tag**: If you choose to identify tasks by tag, you must specify the tag to use.
+    - **Tag**: If you choose to identify tasks by tag, you must specify the tag to use (e.g., `task`).
+        - **Task tag**: The tag that identifies notes as tasks (without the `#` symbol).
+        - **Hide identification tags in task cards**: When enabled, tags matching the task identification tag will be hidden from task card displays. This includes exact matches (e.g., `task`) and hierarchical children (e.g., `task/project`, `task/work/urgent`). This setting only appears when using tag-based identification.
     - **Property**: If you choose to identify tasks by property, you must specify the property name and value.
+        - **Task property name**: The frontmatter property name (e.g., `category`, `isTask`).
+        - **Task property value**: The value that the property must match (e.g., `task`, `true`).
+
+### Hide Identification Tags
+
+When using tag-based identification, you may want to keep your task identification tags in the frontmatter for organizational purposes, but hide them from the visual display in task cards to reduce clutter.
+
+The **Hide identification tags in task cards** setting allows you to do this. When enabled:
+
+- Tags that exactly match your task identification tag (e.g., `#task`) will be hidden
+- Hierarchical child tags (e.g., `#task/project`, `#task/work/urgent`) will also be hidden
+- Other tags that don't match the identification pattern will still be displayed
+- The setting only affects the visual display—tags remain in the frontmatter
+
+![Hide identification tags demo](../assets/demo-hide-identification-tags.gif)
+
+**Example:**
+
+If your task identification tag is `task` and a task has the tags `#task`, `#task/project`, `#important`, and `#review`:
+
+- With the setting **disabled** (default): All tags are shown: `#task`, `#task/project`, `#important`, `#review`
+- With the setting **enabled**: Only non-identifying tags are shown: `#important`, `#review`
 
 ## Folder Management
 
