@@ -24,6 +24,31 @@ export class ProjectSubtasksService {
 	}
 
 	/**
+	 * Initialize the service and set up event listeners for cache invalidation
+	 */
+	initialize(): void {
+		// Listen to cache events to invalidate the project index when files change
+		this.plugin.cacheManager.on("file-updated", () => {
+			this.invalidateIndex();
+		});
+
+		this.plugin.cacheManager.on("file-deleted", () => {
+			this.invalidateIndex();
+		});
+
+		this.plugin.cacheManager.on("file-renamed", () => {
+			this.invalidateIndex();
+		});
+	}
+
+	/**
+	 * Invalidate the project index to force a rebuild on next access
+	 */
+	private invalidateIndex(): void {
+		this.indexLastBuilt = 0;
+	}
+
+	/**
 	 * Get all files that link to a specific project using native resolvedLinks API
 	 * resolvedLinks format: Record<sourcePath, Record<targetPath, linkCount>>
 	 */
@@ -191,9 +216,14 @@ export class ProjectSubtasksService {
 				// Check if source has projects frontmatter
 				const metadata = this.plugin.app.metadataCache.getCache(sourcePath);
 
+				// Validate that the source file is actually a task (issue #953)
+				// Only tasks should be able to create project relationships
+				if (!metadata?.frontmatter) continue;
+				if (!this.plugin.cacheManager.isTaskFile(metadata.frontmatter)) continue;
+
 				// Use the user's configured field mapping for projects
 				const projectsFieldName = this.plugin.fieldMapper.toUserField("projects");
-				const projects = metadata?.frontmatter?.[projectsFieldName];
+				const projects = metadata.frontmatter[projectsFieldName];
 
 				if (
 					Array.isArray(projects) &&
