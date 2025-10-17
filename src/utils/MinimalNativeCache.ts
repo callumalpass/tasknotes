@@ -1656,6 +1656,10 @@ export class MinimalNativeCache extends Events {
 	private extractTaskInfoFromNative(path: string, frontmatter: any): TaskInfo | null {
 		if (!this.fieldMapper) return null;
 
+		// Validate that the file is actually a task based on identification settings
+		// This ensures we return null when a file stops being a task 
+		if (!this.isTaskFile(frontmatter)) return null;
+
 		try {
 			const mappedTask = this.fieldMapper.mapFromFrontmatter(
 				frontmatter,
