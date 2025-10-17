@@ -104,6 +104,16 @@ export function renderGeneralTab(
 			},
 			ariaLabel: "Task identification tag",
 		});
+
+		createToggleSetting(container, {
+			name: translate("settings.general.taskIdentification.hideIdentifyingTags.name"),
+			desc: translate("settings.general.taskIdentification.hideIdentifyingTags.description"),
+			getValue: () => plugin.settings.hideIdentifyingTagsInCards,
+			setValue: async (value: boolean) => {
+				plugin.settings.hideIdentifyingTagsInCards = value;
+				save();
+			},
+		});
 	} else {
 		createTextSetting(container, {
 			name: translate("settings.general.taskIdentification.taskProperty.name"),

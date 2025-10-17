@@ -8,6 +8,7 @@ import {
 	getRecurrenceDisplayText,
 	filterEmptyProjects,
 } from "../utils/helpers";
+import { FilterUtils } from "../utils/FilterUtils";
 import {
 	formatDateTimeForDisplay,
 	isTodayTimeAware,
@@ -310,17 +311,35 @@ const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
 	},
 	tags: (element, value, _, plugin) => {
 		if (Array.isArray(value)) {
-			const tagServices: TagServices = {
-				onTagClick: async (tag, _event) => {
-					// Remove # prefix if present for search
-					const searchTag = tag.startsWith("#") ? tag.slice(1) : tag;
-					const success = await plugin.openTagsPane(`#${searchTag}`);
-					if (!success) {
-						console.log("Could not open search pane, tag clicked:", tag);
-					}
-				},
-			};
-			renderTagsValue(element, value, tagServices);
+			// Filter out identifying tags if setting is enabled and using tag-based identification
+			let tagsToRender = value;
+			if (
+				plugin.settings.taskIdentificationMethod === "tag" &&
+				plugin.settings.hideIdentifyingTagsInCards
+			) {
+				tagsToRender = value.filter(
+					(tag) =>
+						!FilterUtils.matchesHierarchicalTagExact(
+							tag,
+							plugin.settings.taskTag,
+						),
+				);
+			}
+
+			// Only render if there are tags to display
+			if (tagsToRender.length > 0) {
+				const tagServices: TagServices = {
+					onTagClick: async (tag, _event) => {
+						// Remove # prefix if present for search
+						const searchTag = tag.startsWith("#") ? tag.slice(1) : tag;
+						const success = await plugin.openTagsPane(`#${searchTag}`);
+						if (!success) {
+							console.log("Could not open search pane, tag clicked:", tag);
+						}
+					},
+				};
+				renderTagsValue(element, tagsToRender, tagServices);
+			}
 		}
 	},
 	timeEstimate: (element, value, _, plugin) => {

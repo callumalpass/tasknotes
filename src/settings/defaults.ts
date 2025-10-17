@@ -185,6 +185,7 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	archiveFolder: "TaskNotes/Archive",
 	taskTag: "task",
 	taskIdentificationMethod: "tag", // Default to tag-based identification
+	hideIdentifyingTagsInCards: false, // Default to showing all tags (backward compatibility)
 	taskPropertyName: "",
 	taskPropertyValue: "",
 	excludedFolders: "", // Default to no excluded folders

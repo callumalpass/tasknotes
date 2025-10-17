@@ -693,6 +693,11 @@ export const en: TranslationTree = {
 					name: "Task tag",
 					description: "Tag that identifies notes as tasks (without #)",
 				},
+				hideIdentifyingTags: {
+					name: "Hide identification tags in task cards",
+					description:
+						"When enabled, tags matching the task identification tag (including hierarchical matches like 'task/project') will be hidden from task card displays",
+				},
 				taskProperty: {
 					name: "Task property name",
 					description: 'The frontmatter property name (e.g., "category")',

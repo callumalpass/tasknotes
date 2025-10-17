@@ -1664,6 +1664,8 @@
       "source": "80122e53d8a3a7eb2c2ac8e352efba551330d1c5",
       "translation": "26badeb063972db6f4f0d34423fa04602e3a223a"
     },
+    "settings.general.taskIdentification.hideIdentifyingTags.name": null,
+    "settings.general.taskIdentification.hideIdentifyingTags.description": null,
     "settings.general.taskIdentification.taskProperty.name": {
       "source": "fb00b60c99acd4529404e3ef8bd77017d9332da6",
       "translation": "8d7c7b08b22af017050540dc817b845f6edb0a4a"
@@ -7630,6 +7632,8 @@
       "source": "80122e53d8a3a7eb2c2ac8e352efba551330d1c5",
       "translation": "83aae4eddea6aa8212ef9b58e462a682e6a382f9"
     },
+    "settings.general.taskIdentification.hideIdentifyingTags.name": null,
+    "settings.general.taskIdentification.hideIdentifyingTags.description": null,
     "settings.general.taskIdentification.taskProperty.name": {
       "source": "fb00b60c99acd4529404e3ef8bd77017d9332da6",
       "translation": "23c1cedf5122cc274c710d34a3952a277e20d21d"
@@ -13596,6 +13600,8 @@
       "source": "80122e53d8a3a7eb2c2ac8e352efba551330d1c5",
       "translation": "9fc6e104816cb592bbb6bac08c261c3cde696860"
     },
+    "settings.general.taskIdentification.hideIdentifyingTags.name": null,
+    "settings.general.taskIdentification.hideIdentifyingTags.description": null,
     "settings.general.taskIdentification.taskProperty.name": {
       "source": "fb00b60c99acd4529404e3ef8bd77017d9332da6",
       "translation": "06f4bdc41d759b82d6dc63ff17155b7be8edfa69"
@@ -19496,6 +19502,8 @@
       "source": "80122e53d8a3a7eb2c2ac8e352efba551330d1c5",
       "translation": "b64934c6cf4f77ed09796855de0b1298086c5542"
     },
+    "settings.general.taskIdentification.hideIdentifyingTags.name": null,
+    "settings.general.taskIdentification.hideIdentifyingTags.description": null,
     "settings.general.taskIdentification.taskProperty.name": {
       "source": "fb00b60c99acd4529404e3ef8bd77017d9332da6",
       "translation": "6ae7187e00f57eab334c8a458722548b27d302fc"
@@ -25300,6 +25308,8 @@
       "source": "80122e53d8a3a7eb2c2ac8e352efba551330d1c5",
       "translation": "7b3f870af1eabaee59530f9a87ef108bbeb9922c"
     },
+    "settings.general.taskIdentification.hideIdentifyingTags.name": null,
+    "settings.general.taskIdentification.hideIdentifyingTags.description": null,
     "settings.general.taskIdentification.taskProperty.name": {
       "source": "fb00b60c99acd4529404e3ef8bd77017d9332da6",
       "translation": "529e6550b3ee48e9b545e227e3034e37be04dc7f"
@@ -31182,6 +31192,8 @@
       "source": "80122e53d8a3a7eb2c2ac8e352efba551330d1c5",
       "translation": "9ecff4cdf6387ad87f28136c34a5aeca816dcb9e"
     },
+    "settings.general.taskIdentification.hideIdentifyingTags.name": null,
+    "settings.general.taskIdentification.hideIdentifyingTags.description": null,
     "settings.general.taskIdentification.taskProperty.name": {
       "source": "fb00b60c99acd4529404e3ef8bd77017d9332da6",
       "translation": "3ef03311b54be061d87301dc86824007f7c17823"
