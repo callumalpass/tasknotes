@@ -30,6 +30,12 @@ jobs:
 
       - name: Build Plugin
         run: npm run build  # This includes CSS building via npm run build-css
+        env:
+          # OAuth Device Flow credentials (public client_id only, no secrets)
+          GOOGLE_OAUTH_CLIENT_ID: ${{ secrets.GOOGLE_OAUTH_CLIENT_ID }}
+          MICROSOFT_OAUTH_CLIENT_ID: ${{ secrets.MICROSOFT_OAUTH_CLIENT_ID }}
+          # Note: client_secret is NOT bundled (security requirement)
+          # Device Flow (RFC 8628) only needs public client_id
 
       - name: Create Release
         uses: softprops/action-gh-release@v2

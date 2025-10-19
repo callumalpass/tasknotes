@@ -863,11 +863,13 @@ export interface OAuthConnection {
 export interface OAuthConfig {
 	provider: OAuthProvider;
 	clientId: string;
-	clientSecret?: string; // Not needed for PKCE flow
+	clientSecret?: string; // Not needed for Device Flow, optional for standard flow
 	redirectUri: string;
 	scope: string[];
 	authorizationEndpoint: string;
 	tokenEndpoint: string;
+	deviceCodeEndpoint?: string; // For OAuth Device Flow (RFC 8628)
+	revocationEndpoint?: string; // For revoking tokens on disconnect
 }
 
 // Google Calendar types

@@ -118,105 +118,232 @@ export function renderIntegrationsTab(
 	const renderLicenseCard = async () => {
 		licenseContainer.empty();
 
-		const helpText = document.createElement("div");
-		helpText.style.fontSize = "0.9em";
-		helpText.style.color = "var(--text-muted)";
-		helpText.style.lineHeight = "1.5";
-		helpText.innerHTML = "Use TaskNotes' built-in OAuth credentials to connect your calendars instantly. Alternatively, configure your own credentials below (free).";
+		// Setup mode toggle
+		const modeToggleContainer = document.createElement("div");
+		modeToggleContainer.style.cssText = `
+			display: flex;
+			gap: 8px;
+			margin-bottom: 16px;
+			padding: 4px;
+			background: var(--background-secondary);
+			border-radius: 6px;
+			width: fit-content;
+		`;
 
-		// Create license key input field
-		const licenseKeyInput = createCardInput("text", "TN-XXXX-XXXX-XXXX-XXXX", plugin.settings.lemonSqueezyLicenseKey);
-		licenseKeyInput.addEventListener("blur", async () => {
-			const newKey = licenseKeyInput.value.trim();
-			plugin.settings.lemonSqueezyLicenseKey = newKey;
-			save();
+		const createModeButton = (mode: "quick" | "advanced", label: string, icon: string) => {
+			const button = document.createElement("button");
+			button.className = "tasknotes-mode-toggle-button";
+			const isActive = plugin.settings.oauthSetupMode === mode;
 
-			// Validate license
-			if (plugin.licenseService && newKey) {
-				const valid = await plugin.licenseService.validateLicense(newKey);
-				if (valid) {
-					new Notice("License activated successfully!");
-					// Reload OAuth credentials
-					if (plugin.oauthService) {
-						await plugin.oauthService.loadClientIds();
+			button.style.cssText = `
+				padding: 8px 16px;
+				border: none;
+				border-radius: 4px;
+				cursor: pointer;
+				font-size: 0.9em;
+				font-weight: 500;
+				display: flex;
+				align-items: center;
+				gap: 6px;
+				transition: all 0.2s;
+				background: ${isActive ? 'var(--interactive-accent)' : 'transparent'};
+				color: ${isActive ? 'var(--text-on-accent)' : 'var(--text-normal)'};
+			`;
+
+			// Add icon
+			const iconEl = document.createElement("span");
+			iconEl.textContent = icon;
+			button.appendChild(iconEl);
+
+			// Add label
+			const labelEl = document.createElement("span");
+			labelEl.textContent = label;
+			button.appendChild(labelEl);
+
+			button.addEventListener("click", () => {
+				plugin.settings.oauthSetupMode = mode;
+				save();
+				// Reload OAuth credentials when mode changes
+				if (plugin.oauthService) {
+					plugin.oauthService.loadClientIds();
+				}
+				renderLicenseCard(); // Re-render to update UI
+				// Also re-render calendar cards to show/hide credential inputs
+				renderGoogleCalendarCard();
+				renderMicrosoftCalendarCard();
+			});
+
+			button.addEventListener("mouseenter", () => {
+				if (!isActive) {
+					button.style.background = "var(--background-modifier-hover)";
+				}
+			});
+
+			button.addEventListener("mouseleave", () => {
+				if (!isActive) {
+					button.style.background = "transparent";
+				}
+			});
+
+			return button;
+		};
+
+		modeToggleContainer.appendChild(createModeButton("quick", "Quick Setup", ""));
+		modeToggleContainer.appendChild(createModeButton("advanced", "Advanced Setup", ""));
+
+		// Build content based on selected mode
+		const sections: any[] = [];
+		const mode = plugin.settings.oauthSetupMode;
+
+		if (mode === "quick") {
+			// Quick Setup mode - show license key input
+			const helpText = document.createElement("div");
+			helpText.style.cssText = `
+				font-size: 0.9em;
+				color: var(--text-muted);
+				line-height: 1.5;
+				padding: 12px;
+				background: var(--background-secondary);
+				border-radius: 6px;
+				border-left: 3px solid var(--interactive-accent);
+			`;
+			helpText.innerHTML = "<strong>Quick Setup</strong> - Enter your license key to connect calendars using OAuth Device Flow. This method displays a verification code that you enter on the provider's website. No OAuth application configuration is required on your part.";
+
+			const licenseKeyInput = createCardInput("text", "TN-XXXX-XXXX-XXXX-XXXX", plugin.settings.lemonSqueezyLicenseKey);
+			licenseKeyInput.addEventListener("blur", async () => {
+				const newKey = licenseKeyInput.value.trim();
+				plugin.settings.lemonSqueezyLicenseKey = newKey;
+				save();
+
+				// Validate license
+				if (plugin.licenseService && newKey) {
+					const valid = await plugin.licenseService.validateLicense(newKey);
+					if (valid) {
+						new Notice("License activated successfully!");
+						// Reload OAuth credentials
+						if (plugin.oauthService) {
+							await plugin.oauthService.loadClientIds();
+						}
+						// Re-render to update status
+						renderLicenseCard();
+					} else {
+						new Notice("Invalid or expired license key");
+						// Re-render to update status
+						renderLicenseCard();
 					}
-					// Re-render to update status
-					renderLicenseCard();
-				} else {
-					new Notice("Invalid or expired license key");
+				} else if (plugin.oauthService) {
+					// Key was cleared, reload OAuth credentials
+					await plugin.oauthService.loadClientIds();
 					// Re-render to update status
 					renderLicenseCard();
 				}
-			} else if (plugin.oauthService) {
-				// Key was cleared, reload OAuth credentials
-				await plugin.oauthService.loadClientIds();
-				// Re-render to update status
-				renderLicenseCard();
-			}
-		});
+			});
 
-		const getLicenseLink = document.createElement("a");
-		getLicenseLink.href = "https://tasknotes.lemonsqueezy.com"; 
-		getLicenseLink.target = "_blank";
-		getLicenseLink.style.fontSize = "0.9em";
-		getLicenseLink.style.color = "var(--interactive-accent)";
-		getLicenseLink.textContent = "Get License Key ($1/month)";
+			const getLicenseLink = document.createElement("a");
+			getLicenseLink.href = "https://tasknotes.lemonsqueezy.com";
+			getLicenseLink.target = "_blank";
+			getLicenseLink.style.fontSize = "0.9em";
+			getLicenseLink.style.color = "var(--interactive-accent)";
+			getLicenseLink.textContent = "Get License Key ($1/month)";
 
-		// Status indicator
-		const statusDiv = document.createElement("div");
-		statusDiv.style.fontSize = "0.85em";
-		statusDiv.style.marginTop = "0.5rem";
+			// Status indicator
+			const statusDiv = document.createElement("div");
+			statusDiv.style.fontSize = "0.85em";
+			statusDiv.style.marginTop = "0.5rem";
 
-		const currentKey = plugin.settings.lemonSqueezyLicenseKey;
-		if (currentKey && currentKey.trim()) {
-			// Check cached validation status
-			const cachedInfo = plugin.licenseService?.getCachedLicenseInfo();
-			if (cachedInfo && cachedInfo.key === currentKey && Date.now() < cachedInfo.validUntil) {
-				if (cachedInfo.valid) {
-					statusDiv.style.color = "var(--text-success)";
-					statusDiv.textContent = "✓ License active - works on unlimited devices";
+			const currentKey = plugin.settings.lemonSqueezyLicenseKey;
+			if (currentKey && currentKey.trim()) {
+				// Check cached validation status
+				const cachedInfo = plugin.licenseService?.getCachedLicenseInfo();
+				if (cachedInfo && cachedInfo.key === currentKey && Date.now() < cachedInfo.validUntil) {
+					if (cachedInfo.valid) {
+						statusDiv.style.color = "var(--text-success)";
+						statusDiv.textContent = "License active - valid on unlimited devices";
+					} else {
+						statusDiv.style.color = "var(--text-error)";
+						statusDiv.textContent = "Invalid or expired license key";
+					}
 				} else {
-					statusDiv.style.color = "var(--text-error)";
-					statusDiv.textContent = "✗ Invalid or expired license key";
+					statusDiv.style.color = "var(--text-muted)";
+					statusDiv.textContent = "License key entered (validation pending)";
 				}
 			} else {
 				statusDiv.style.color = "var(--text-muted)";
-				statusDiv.textContent = "License key entered (validation pending)";
+				statusDiv.style.fontStyle = "italic";
+				statusDiv.textContent = "Enter your license key to enable instant calendar connection.";
 			}
+
+			sections.push({
+				rows: [
+					{ label: "", input: helpText, fullWidth: true }
+				]
+			});
+
+			sections.push({
+				rows: [
+					{ label: "License Key:", input: licenseKeyInput },
+					{ label: "", input: getLicenseLink, fullWidth: true },
+					{ label: "", input: statusDiv, fullWidth: true }
+				]
+			});
+
 		} else {
-			statusDiv.style.color = "var(--text-muted)";
-			statusDiv.style.fontStyle = "italic";
-			statusDiv.textContent = "No license key entered. You can still use your own OAuth credentials below.";
+			// Advanced Setup mode - show instructions only (credentials are per-calendar now)
+			const helpText = document.createElement("div");
+			helpText.style.cssText = `
+				font-size: 0.9em;
+				color: var(--text-muted);
+				line-height: 1.5;
+				padding: 12px;
+				background: var(--background-secondary);
+				border-radius: 6px;
+				border-left: 3px solid var(--color-orange);
+			`;
+			helpText.innerHTML = "<strong>Advanced Setup</strong> - Configure your own OAuth credentials for calendar integration. This requires creating an OAuth application with the calendar provider and entering the Client ID and Secret in each calendar card below. Initial setup takes approximately 15 minutes.<br><br><strong>Benefits of Advanced Setup:</strong><br>• No license subscription required<br>• Uses your own API quota allocation<br>• Direct connection between Obsidian and calendar provider<br>• Complete data privacy (no intermediary servers)";
+
+			const setupGuideLink = document.createElement("a");
+			setupGuideLink.href = "https://docs.tasknotes.com/oauth-setup"; // TODO: Create this guide
+			setupGuideLink.target = "_blank";
+			setupGuideLink.style.fontSize = "0.9em";
+			setupGuideLink.style.color = "var(--interactive-accent)";
+			setupGuideLink.textContent = "View OAuth Configuration Guide";
+
+			sections.push({
+				rows: [
+					{ label: "", input: helpText, fullWidth: true },
+					{ label: "", input: setupGuideLink, fullWidth: true }
+				]
+			});
 		}
 
-		createCard(licenseContainer, {
+		// Determine status badge
+		let statusBadge;
+		if (mode === "quick") {
+			const hasKey = plugin.settings.lemonSqueezyLicenseKey && plugin.settings.lemonSqueezyLicenseKey.trim();
+			statusBadge = hasKey ? createStatusBadge("License Active", "active") : createStatusBadge("No License", "inactive");
+		} else {
+			statusBadge = createStatusBadge("Advanced Mode", "default");
+		}
+
+		// Create the card
+		const card = createCard(licenseContainer, {
 			collapsible: true,
 			defaultCollapsed: false,
 			colorIndicator: {
-				color: "#4A9EFF" // TaskNotes blue
+				color: mode === "quick" ? "#4A9EFF" : "#FF8C00" // Blue for quick, orange for advanced
 			},
 			header: {
-				primaryText: "TaskNotes OAuth License",
-				secondaryText: "Quick setup for Google & Microsoft calendars",
-				meta: currentKey && currentKey.trim() ? [createStatusBadge("Active", "active")] : [createStatusBadge("Not Configured", "inactive")]
+				primaryText: "OAuth Calendar Setup",
+				secondaryText: mode === "quick" ? "License-based instant setup" : "Bring your own OAuth credentials",
+				meta: [statusBadge]
 			},
 			content: {
-				sections: [
-					{
-						rows: [
-							{ label: "Info:", input: helpText, fullWidth: true }
-						]
-					},
-					{
-						rows: [
-							{ label: "License Key:", input: licenseKeyInput },
-							{ label: "", input: getLicenseLink, fullWidth: true },
-							{ label: "", input: statusDiv, fullWidth: true }
-						]
-					}
-				]
+				sections: sections
 			}
 		});
+
+		// Insert mode toggle before the card
+		licenseContainer.insertBefore(modeToggleContainer, card);
 	};
 
 	// Initial render
@@ -334,32 +461,68 @@ export function renderIntegrationsTab(
 			helpText.style.lineHeight = "1.5";
 			helpText.innerHTML = "Connect your Google Calendar account to sync events directly into TaskNotes. Events will automatically refresh every 15 minutes.";
 
-			// Create credential input fields
-			const clientIdInput = createCardInput("text", "your-client-id.apps.googleusercontent.com", plugin.settings.googleOAuthClientId);
-			clientIdInput.addEventListener("blur", async () => {
-				plugin.settings.googleOAuthClientId = clientIdInput.value.trim();
-				save();
-				if (plugin.oauthService) {
-					await plugin.oauthService.loadClientIds();
+			// Build sections based on setup mode
+			const sections: any[] = [
+				{
+					rows: [
+						{ label: "Info:", input: helpText, fullWidth: true }
+					]
 				}
-			});
+			];
 
-			const clientSecretInput = createCardInput("text", "your-client-secret", plugin.settings.googleOAuthClientSecret);
-			clientSecretInput.setAttribute("type", "password");
-			clientSecretInput.addEventListener("blur", async () => {
-				plugin.settings.googleOAuthClientSecret = clientSecretInput.value.trim();
-				save();
-				if (plugin.oauthService) {
-					await plugin.oauthService.loadClientIds();
-				}
-			});
+			// Only show credential inputs in Advanced mode
+			if (plugin.settings.oauthSetupMode === "advanced") {
+				// Create credential input fields
+				const clientIdInput = createCardInput("text", "your-client-id.apps.googleusercontent.com", plugin.settings.googleOAuthClientId);
+				clientIdInput.addEventListener("blur", async () => {
+					plugin.settings.googleOAuthClientId = clientIdInput.value.trim();
+					save();
+					if (plugin.oauthService) {
+						await plugin.oauthService.loadClientIds();
+					}
+				});
 
-			const credentialNote = document.createElement("div");
-			credentialNote.style.fontSize = "0.85em";
-			credentialNote.style.color = "var(--text-muted)";
-			credentialNote.style.fontStyle = "italic";
-			credentialNote.style.marginTop = "0.5rem";
-			credentialNote.textContent = "Optional: Use your own OAuth credentials from Google Cloud Console (~15 min setup). Leave blank to use TaskNotes license.";
+				const clientSecretInput = createCardInput("text", "your-client-secret", plugin.settings.googleOAuthClientSecret);
+				clientSecretInput.setAttribute("type", "password");
+				clientSecretInput.addEventListener("blur", async () => {
+					plugin.settings.googleOAuthClientSecret = clientSecretInput.value.trim();
+					save();
+					if (plugin.oauthService) {
+						await plugin.oauthService.loadClientIds();
+					}
+				});
+
+				const credentialNote = document.createElement("div");
+				credentialNote.style.fontSize = "0.85em";
+				credentialNote.style.color = "var(--text-muted)";
+				credentialNote.style.fontStyle = "italic";
+				credentialNote.style.marginTop = "0.5rem";
+				credentialNote.textContent = "Enter your OAuth app credentials from Google Cloud Console.";
+
+				sections.push({
+					rows: [
+						{ label: "Client ID:", input: clientIdInput },
+						{ label: "Client Secret:", input: clientSecretInput },
+						{ label: "", input: credentialNote, fullWidth: true }
+					]
+				});
+			} else {
+				// Quick mode - show reminder about license
+				const quickModeNote = document.createElement("div");
+				quickModeNote.style.fontSize = "0.85em";
+				quickModeNote.style.color = "var(--text-accent)";
+				quickModeNote.style.fontStyle = "italic";
+				quickModeNote.style.padding = "8px";
+				quickModeNote.style.background = "var(--background-secondary)";
+				quickModeNote.style.borderRadius = "4px";
+				quickModeNote.textContent = "Note: A valid license key is required above. Click Connect to authenticate using OAuth Device Flow.";
+
+				sections.push({
+					rows: [
+						{ label: "", input: quickModeNote, fullWidth: true }
+					]
+				});
+			}
 
 			createCard(googleCalendarContainer, {
 				collapsible: true,
@@ -373,20 +536,7 @@ export function renderIntegrationsTab(
 					meta: [createStatusBadge("Not Connected", "inactive")]
 				},
 				content: {
-					sections: [
-						{
-							rows: [
-								{ label: "Info:", input: helpText, fullWidth: true }
-							]
-						},
-						{
-							rows: [
-								{ label: "Client ID:", input: clientIdInput },
-								{ label: "Client Secret:", input: clientSecretInput },
-								{ label: "", input: credentialNote, fullWidth: true }
-							]
-						}
-					]
+					sections: sections
 				},
 				actions: {
 					buttons: [
@@ -509,32 +659,68 @@ export function renderIntegrationsTab(
 			helpText.style.lineHeight = "1.5";
 			helpText.innerHTML = "Connect your Microsoft Outlook calendar to sync events directly into TaskNotes.";
 
-			// Create credential input fields
-			const clientIdInput = createCardInput("text", "your-microsoft-client-id", plugin.settings.microsoftOAuthClientId);
-			clientIdInput.addEventListener("blur", async () => {
-				plugin.settings.microsoftOAuthClientId = clientIdInput.value.trim();
-				save();
-				if (plugin.oauthService) {
-					await plugin.oauthService.loadClientIds();
+			// Build sections based on setup mode
+			const sections: any[] = [
+				{
+					rows: [
+						{ label: "Info:", input: helpText, fullWidth: true }
+					]
 				}
-			});
+			];
 
-			const clientSecretInput = createCardInput("text", "your-microsoft-client-secret", plugin.settings.microsoftOAuthClientSecret);
-			clientSecretInput.setAttribute("type", "password");
-			clientSecretInput.addEventListener("blur", async () => {
-				plugin.settings.microsoftOAuthClientSecret = clientSecretInput.value.trim();
-				save();
-				if (plugin.oauthService) {
-					await plugin.oauthService.loadClientIds();
-				}
-			});
+			// Only show credential inputs in Advanced mode
+			if (plugin.settings.oauthSetupMode === "advanced") {
+				// Create credential input fields
+				const clientIdInput = createCardInput("text", "your-microsoft-client-id", plugin.settings.microsoftOAuthClientId);
+				clientIdInput.addEventListener("blur", async () => {
+					plugin.settings.microsoftOAuthClientId = clientIdInput.value.trim();
+					save();
+					if (plugin.oauthService) {
+						await plugin.oauthService.loadClientIds();
+					}
+				});
 
-			const credentialNote = document.createElement("div");
-			credentialNote.style.fontSize = "0.85em";
-			credentialNote.style.color = "var(--text-muted)";
-			credentialNote.style.fontStyle = "italic";
-			credentialNote.style.marginTop = "0.5rem";
-			credentialNote.textContent = "Optional: Use your own OAuth credentials from Azure Portal (~20 min setup). Leave blank to use TaskNotes license.";
+				const clientSecretInput = createCardInput("text", "your-microsoft-client-secret", plugin.settings.microsoftOAuthClientSecret);
+				clientSecretInput.setAttribute("type", "password");
+				clientSecretInput.addEventListener("blur", async () => {
+					plugin.settings.microsoftOAuthClientSecret = clientSecretInput.value.trim();
+					save();
+					if (plugin.oauthService) {
+						await plugin.oauthService.loadClientIds();
+					}
+				});
+
+				const credentialNote = document.createElement("div");
+				credentialNote.style.fontSize = "0.85em";
+				credentialNote.style.color = "var(--text-muted)";
+				credentialNote.style.fontStyle = "italic";
+				credentialNote.style.marginTop = "0.5rem";
+				credentialNote.textContent = "Enter your OAuth app credentials from Azure Portal.";
+
+				sections.push({
+					rows: [
+						{ label: "Client ID:", input: clientIdInput },
+						{ label: "Client Secret:", input: clientSecretInput },
+						{ label: "", input: credentialNote, fullWidth: true }
+					]
+				});
+			} else {
+				// Quick mode - show reminder about license
+				const quickModeNote = document.createElement("div");
+				quickModeNote.style.fontSize = "0.85em";
+				quickModeNote.style.color = "var(--text-accent)";
+				quickModeNote.style.fontStyle = "italic";
+				quickModeNote.style.padding = "8px";
+				quickModeNote.style.background = "var(--background-secondary)";
+				quickModeNote.style.borderRadius = "4px";
+				quickModeNote.textContent = "Note: A valid license key is required above. Click Connect to authenticate using OAuth Device Flow.";
+
+				sections.push({
+					rows: [
+						{ label: "", input: quickModeNote, fullWidth: true }
+					]
+				});
+			}
 
 			createCard(microsoftCalendarContainer, {
 				collapsible: true,
@@ -548,20 +734,7 @@ export function renderIntegrationsTab(
 					meta: [createStatusBadge("Not Connected", "inactive")]
 				},
 				content: {
-					sections: [
-						{
-							rows: [
-								{ label: "Info:", input: helpText, fullWidth: true }
-							]
-						},
-						{
-							rows: [
-								{ label: "Client ID:", input: clientIdInput },
-								{ label: "Client Secret:", input: clientSecretInput },
-								{ label: "", input: credentialNote, fullWidth: true }
-							]
-						}
-					]
+					sections: sections
 				},
 				actions: {
 					buttons: [
@@ -1371,8 +1544,8 @@ function renderWebhookList(
 			webhook.active ? "active" : "inactive"
 		);
 
-		const successBadge = createInfoBadge(`✓ ${webhook.successCount || 0}`);
-		const failureBadge = createInfoBadge(`✗ ${webhook.failureCount || 0}`);
+		const successBadge = createInfoBadge(`Success: ${webhook.successCount || 0}`);
+		const failureBadge = createInfoBadge(`Failed: ${webhook.failureCount || 0}`);
 
 		// Create inputs for inline editing
 		const urlInput = createCardUrlInput("Webhook URL", webhook.url);

@@ -100,6 +100,7 @@ import { CURRENT_VERSION, RELEASE_NOTES_BUNDLE } from "./releaseNotes";
 import { OAuthService } from "./services/OAuthService";
 import { GoogleCalendarService } from "./services/GoogleCalendarService";
 import { LicenseService } from "./services/LicenseService";
+import { CalendarProviderRegistry } from "./services/CalendarProvider";
 
 interface TranslatedCommandDefinition {
 	id: string;
@@ -212,6 +213,9 @@ export default class TaskNotesPlugin extends Plugin {
 
 	// Google Calendar service
 	googleCalendarService: GoogleCalendarService;
+
+	// Calendar provider registry for abstraction
+	calendarProviderRegistry: CalendarProviderRegistry;
 
 	// Command localization support
 	private commandDefinitions: TranslatedCommandDefinition[] = [];
@@ -406,6 +410,10 @@ export default class TaskNotesPlugin extends Plugin {
 		// This ensures the Google Calendar toggle appears in Bases calendar views
 		this.oauthService = new OAuthService(this);
 		this.googleCalendarService = new GoogleCalendarService(this, this.oauthService);
+
+		// Initialize calendar provider registry and register Google Calendar
+		this.calendarProviderRegistry = new CalendarProviderRegistry();
+		this.calendarProviderRegistry.register(this.googleCalendarService);
 
 		// Early registration attempt for Bases integration
 		if (this.settings?.enableBases && !this.basesRegistered) {
@@ -1154,6 +1162,11 @@ export default class TaskNotesPlugin extends Plugin {
 		// Clean up Google Calendar service
 		if (this.googleCalendarService) {
 			this.googleCalendarService.destroy();
+		}
+
+		// Clean up calendar provider registry
+		if (this.calendarProviderRegistry) {
+			this.calendarProviderRegistry.destroyAll();
 		}
 
 		// Clean up ViewStateManager

@@ -26,6 +26,52 @@ import { createICSEventCard } from "../ui/ICSCard";
 import { createPropertyEventCard } from "../ui/PropertyEventCard";
 import { createTimeBlockCard } from "../ui/TimeBlockCard";
 
+/**
+ * Formats a Date object with timezone offset (e.g., "2025-10-19T14:30:00+01:00")
+ * Used for Google Calendar API timed events
+ */
+function formatDateWithTimezone(date: Date): string {
+	const offset = -date.getTimezoneOffset();
+	const sign = offset >= 0 ? '+' : '-';
+	const hours = String(Math.floor(Math.abs(offset) / 60)).padStart(2, '0');
+	const minutes = String(Math.abs(offset) % 60).padStart(2, '0');
+	return format(date, "yyyy-MM-dd'T'HH:mm:ss") + sign + hours + ':' + minutes;
+}
+
+/**
+ * Builds Google Calendar API update payload for event start/end times
+ * Handles conversion between all-day and timed events correctly
+ */
+function buildGoogleCalendarUpdatePayload(start: Date, end: Date, isAllDay: boolean): any {
+	const updates: any = {};
+
+	if (isAllDay) {
+		// All-day event - ONLY include date field (no dateTime)
+		updates.start = { date: format(start, "yyyy-MM-dd") };
+		updates.end = { date: format(end, "yyyy-MM-dd") };
+	} else {
+		// Timed event - ONLY include dateTime field (no date)
+		updates.start = { dateTime: formatDateWithTimezone(start) };
+		updates.end = { dateTime: formatDateWithTimezone(end) };
+	}
+
+	return updates;
+}
+
+/**
+ * Calculates default end date if not provided
+ * All-day: next day | Timed: 1 hour after start
+ */
+function calculateDefaultEndDate(start: Date, isAllDay: boolean): Date {
+	const end = new Date(start);
+	if (isAllDay) {
+		end.setDate(end.getDate() + 1);
+	} else {
+		end.setHours(end.getHours() + 1);
+	}
+	return end;
+}
+
 interface BasesContainerLike {
 	results?: Map<any, any>;
 	query?: {
@@ -249,67 +295,43 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 				return;
 			}
 
-			// Handle Google Calendar event drops
-			if (eventType === "ics" && dropInfo.event.extendedProps.isGoogleCalendar) {
-				try {
-					const icsEvent = dropInfo.event.extendedProps.icsEvent;
-					if (!icsEvent) {
-						dropInfo.revert();
-						return;
-					}
-
-					// Extract calendar ID from subscriptionId (format: "google-<calendarId>")
-					const calendarId = icsEvent.subscriptionId.replace("google-", "");
-					// Extract event ID from the full ID (format: "google-<calendarId>-<eventId>")
-					const eventId = icsEvent.id.replace(`google-${calendarId}-`, "");
-
-					const newStart = dropInfo.event.start;
-					let newEnd = dropInfo.event.end;
-					const newAllDay = dropInfo.event.allDay;
-					const oldAllDay = icsEvent.allDay;
-
-					// If no end date provided, calculate a default (required for format conversion)
-					if (!newEnd) {
-						newEnd = new Date(newStart);
-						if (newAllDay) {
-							// All-day event: end is next day
-							newEnd.setDate(newEnd.getDate() + 1);
-						} else {
-							// Timed event: end is 1 hour after start
-							newEnd.setHours(newEnd.getHours() + 1);
-						}
-					}
-
-					// Build update payload for Google Calendar API
-					// Construct clean objects without conflicting fields
-					const updates: any = {};
-
-					const formatWithTimezone = (date: Date): string => {
-						const offset = -date.getTimezoneOffset();
-						const sign = offset >= 0 ? '+' : '-';
-						const hours = String(Math.floor(Math.abs(offset) / 60)).padStart(2, '0');
-						const minutes = String(Math.abs(offset) % 60).padStart(2, '0');
-						return format(date, "yyyy-MM-dd'T'HH:mm:ss") + sign + hours + ':' + minutes;
-					};
-
-					if (newAllDay) {
-						// All-day event - ONLY include date field
-						updates.start = { date: format(newStart, "yyyy-MM-dd") };
-					updates.end = { date: format(newEnd, "yyyy-MM-dd") };
-					} else {
-						// Timed event - ONLY include dateTime field
-						updates.start = { dateTime: formatWithTimezone(newStart) };
-					updates.end = { dateTime: formatWithTimezone(newEnd) };
-					}
-
-					// Update the event via Google Calendar API
-					await plugin.googleCalendarService?.updateEvent(calendarId, eventId, updates);
-
-				} catch (error) {
-					console.error("[TaskNotes][Bases][Calendar] Error updating Google Calendar event:", error);
+			// Handle calendar provider event drops (Google, Microsoft, etc.)
+			if (eventType === "ics") {
+				const icsEvent = dropInfo.event.extendedProps.icsEvent;
+				if (!icsEvent) {
+					// ICS event without data, block move
 					dropInfo.revert();
+					return;
 				}
-				return;
+
+				// Find the calendar provider that owns this event
+				const provider = plugin.calendarProviderRegistry?.findProviderForEvent(icsEvent);
+				if (provider) {
+					try {
+						// Extract calendar and event IDs using provider-specific logic
+						const { calendarId, eventId } = provider.extractEventIds(icsEvent);
+
+						const newStart = dropInfo.event.start;
+						const newAllDay = dropInfo.event.allDay;
+
+						// Calculate end date if not provided
+						let newEnd = dropInfo.event.end;
+						if (!newEnd) {
+							newEnd = calculateDefaultEndDate(newStart, newAllDay);
+						}
+
+						// Build update payload
+						const updates = buildGoogleCalendarUpdatePayload(newStart, newEnd, newAllDay);
+
+						// Update the event via provider's API
+						await provider.updateEvent(calendarId, eventId, updates);
+
+					} catch (error) {
+						console.error(`[TaskNotes][Bases][Calendar] Error updating ${provider.providerName} event:`, error);
+						dropInfo.revert();
+					}
+					return;
+				}
 			}
 
 			// Only allow scheduled and recurring events to be moved (block ICS subscriptions)
@@ -407,60 +429,44 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 				return;
 			}
 
-			// Handle Google Calendar event resize
-			if (eventType === "ics" && resizeInfo.event.extendedProps.isGoogleCalendar) {
-				try {
-					const icsEvent = resizeInfo.event.extendedProps.icsEvent;
-					if (!icsEvent) {
-						resizeInfo.revert();
-						return;
-					}
-
-					// Extract calendar ID and event ID
-					const calendarId = icsEvent.subscriptionId.replace("google-", "");
-					const eventId = icsEvent.id.replace(`google-${calendarId}-`, "");
-
-					const newStart = resizeInfo.event.start;
-					const newEnd = resizeInfo.event.end;
-
-					if (!newEnd) {
-						resizeInfo.revert();
-						return;
-					}
-
-					const newAllDay = resizeInfo.event.allDay;
-					const oldAllDay = icsEvent.allDay;
-
-					// Build update payload
-					// Construct clean objects without conflicting fields
-					const updates: any = {};
-
-					const formatWithTimezone = (date: Date): string => {
-						const offset = -date.getTimezoneOffset();
-						const sign = offset >= 0 ? '+' : '-';
-						const hours = String(Math.floor(Math.abs(offset) / 60)).padStart(2, '0');
-						const minutes = String(Math.abs(offset) % 60).padStart(2, '0');
-						return format(date, "yyyy-MM-dd'T'HH:mm:ss") + sign + hours + ':' + minutes;
-					};
-
-					if (newAllDay) {
-						// All-day event - ONLY include date field
-						updates.start = { date: format(newStart, "yyyy-MM-dd") };
-						updates.end = { date: format(newEnd, "yyyy-MM-dd") };
-					} else {
-						// Timed event - ONLY include dateTime field
-						updates.start = { dateTime: formatWithTimezone(newStart) };
-						updates.end = { dateTime: formatWithTimezone(newEnd) };
-					}
-
-					// Update via Google Calendar API
-					await plugin.googleCalendarService?.updateEvent(calendarId, eventId, updates);
-
-				} catch (error) {
-					console.error("[TaskNotes][Bases][Calendar] Error resizing Google Calendar event:", error);
+			// Handle calendar provider event resize (Google, Microsoft, etc.)
+			if (eventType === "ics") {
+				const icsEvent = resizeInfo.event.extendedProps.icsEvent;
+				if (!icsEvent) {
+					// ICS event without data, block resize
 					resizeInfo.revert();
+					return;
 				}
-				return;
+
+				// Find the calendar provider that owns this event
+				const provider = plugin.calendarProviderRegistry?.findProviderForEvent(icsEvent);
+				if (provider) {
+					try {
+						// Extract calendar and event IDs using provider-specific logic
+						const { calendarId, eventId } = provider.extractEventIds(icsEvent);
+
+						const newStart = resizeInfo.event.start;
+						const newEnd = resizeInfo.event.end;
+
+						if (!newEnd) {
+							resizeInfo.revert();
+							return;
+						}
+
+						const newAllDay = resizeInfo.event.allDay;
+
+						// Build update payload
+						const updates = buildGoogleCalendarUpdatePayload(newStart, newEnd, newAllDay);
+
+						// Update via provider's API
+						await provider.updateEvent(calendarId, eventId, updates);
+
+					} catch (error) {
+						console.error(`[TaskNotes][Bases][Calendar] Error resizing ${provider.providerName} event:`, error);
+						resizeInfo.revert();
+					}
+					return;
+				}
 			}
 
 			// Only scheduled and recurring events can be resized (block ICS subscriptions)
@@ -503,31 +509,34 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 				return;
 			}
 
-			const { taskInfo, timeblock, icsEvent, eventType, isCompleted, basesEntry, isGoogleCalendar } = arg.event.extendedProps;
+			const { taskInfo, timeblock, icsEvent, eventType, isCompleted, basesEntry } = arg.event.extendedProps;
 
-			// Add calendar icon to Google Calendar events in grid views
-			if (isGoogleCalendar && icsEvent && arg.view.type !== 'listWeek') {
-				const titleEl = arg.el.querySelector('.fc-event-title');
-				if (titleEl) {
-					// Create icon container
-					const iconContainer = document.createElement('span');
-					iconContainer.style.marginRight = '4px';
-					iconContainer.style.display = 'inline-flex';
-					iconContainer.style.alignItems = 'center';
+			// Add calendar icon to provider-managed calendar events in grid views
+			if (icsEvent && arg.view.type !== 'listWeek') {
+				const provider = plugin.calendarProviderRegistry?.findProviderForEvent(icsEvent);
+				if (provider) {
+					const titleEl = arg.el.querySelector('.fc-event-title');
+					if (titleEl) {
+						// Create icon container
+						const iconContainer = document.createElement('span');
+						iconContainer.style.marginRight = '4px';
+						iconContainer.style.display = 'inline-flex';
+						iconContainer.style.alignItems = 'center';
 
-					// Add Lucide calendar icon
-					const { setIcon } = require('obsidian');
-					const iconEl = document.createElement('span');
-					iconEl.style.width = '12px';
-					iconEl.style.height = '12px';
-					iconEl.style.display = 'inline-flex';
-					iconEl.style.flexShrink = '0';
-					setIcon(iconEl, 'calendar');
+						// Add Lucide calendar icon
+						const { setIcon } = require('obsidian');
+						const iconEl = document.createElement('span');
+						iconEl.style.width = '12px';
+						iconEl.style.height = '12px';
+						iconEl.style.display = 'inline-flex';
+						iconEl.style.flexShrink = '0';
+						setIcon(iconEl, 'calendar');
 
-					iconContainer.appendChild(iconEl);
+						iconContainer.appendChild(iconEl);
 
-					// Prepend icon to title
-					titleEl.insertBefore(iconContainer, titleEl.firstChild);
+						// Prepend icon to title
+						titleEl.insertBefore(iconContainer, titleEl.firstChild);
+					}
 				}
 			}
 

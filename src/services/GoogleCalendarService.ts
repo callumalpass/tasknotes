@@ -2,7 +2,10 @@ import { requestUrl, Notice } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { OAuthService } from "./OAuthService";
 import { GoogleCalendar, GoogleCalendarEvent, ICSEvent } from "../types";
-import { EventEmitter } from "../utils/EventEmitter";
+import { GOOGLE_CALENDAR_CONSTANTS } from "./constants";
+import { GoogleCalendarError, EventNotFoundError, CalendarNotFoundError, RateLimitError, NetworkError, TokenExpiredError } from "./errors";
+import { validateCalendarId, validateEventId, validateRequired } from "./validation";
+import { CalendarProvider, ProviderCalendar } from "./CalendarProvider";
 
 /**
  * Google Calendar color palette mapping
@@ -25,14 +28,17 @@ const GOOGLE_CALENDAR_COLORS: Record<string, string> = {
 /**
  * GoogleCalendarService handles Google Calendar API interactions.
  * Uses OAuth for authentication and provides calendar event access.
+ * Implements the CalendarProvider interface for abstraction.
  */
-export class GoogleCalendarService extends EventEmitter {
+export class GoogleCalendarService extends CalendarProvider {
+	readonly providerId = "google";
+	readonly providerName = "Google Calendar";
 	private plugin: TaskNotesPlugin;
 	private oauthService: OAuthService;
 	private baseUrl = "https://www.googleapis.com/calendar/v3";
 	private cache: Map<string, ICSEvent[]> = new Map();
 	private refreshTimer: NodeJS.Timeout | null = null;
-	private availableCalendars: GoogleCalendar[] = [];
+	private availableCalendars: ProviderCalendar[] = [];
 	private calendarColors: Map<string, string> = new Map(); // Map calendar ID to color
 
 	constructor(plugin: TaskNotesPlugin, oauthService: OAuthService) {
@@ -44,7 +50,7 @@ export class GoogleCalendarService extends EventEmitter {
 	/**
 	 * Gets the list of available Google Calendars
 	 */
-	getAvailableCalendars(): GoogleCalendar[] {
+	getAvailableCalendars(): ProviderCalendar[] {
 		return this.availableCalendars;
 	}
 
@@ -109,7 +115,7 @@ export class GoogleCalendarService extends EventEmitter {
 			this.refreshAllCalendars().catch(error => {
 				console.error("Google Calendar refresh failed:", error);
 			});
-		}, 15 * 60 * 1000);
+		}, GOOGLE_CALENDAR_CONSTANTS.REFRESH_INTERVAL_MS);
 	}
 
 	/**
@@ -125,7 +131,7 @@ export class GoogleCalendarService extends EventEmitter {
 	/**
 	 * Fetches list of user's calendars and stores their colors
 	 */
-	async listCalendars(): Promise<GoogleCalendar[]> {
+	async listCalendars(): Promise<ProviderCalendar[]> {
 		try {
 			const token = await this.oauthService.getValidToken("google");
 
@@ -184,7 +190,7 @@ export class GoogleCalendarService extends EventEmitter {
 				try {
 					const params = new URLSearchParams({
 						singleEvents: "true", // Expand recurring events
-						maxResults: "2500" // Maximum allowed by API
+						maxResults: GOOGLE_CALENDAR_CONSTANTS.MAX_RESULTS_PER_REQUEST.toString()
 					});
 
 					if (syncToken && !nextPageToken) {
@@ -411,7 +417,7 @@ export class GoogleCalendarService extends EventEmitter {
 
 			// If it's an auth error, show notice to reconnect
 			if (error.message && error.message.includes("401")) {
-				new Notice("Google Calendar authentication expired. Please reconnect.");
+				console.warn("[GoogleCalendar] Authentication expired - caller should handle re-authentication");
 			}
 		}
 	}
@@ -453,6 +459,11 @@ export class GoogleCalendarService extends EventEmitter {
 			location?: string;
 		}
 	): Promise<void> {
+		// Validate inputs
+		validateCalendarId(calendarId);
+		validateEventId(eventId);
+		validateRequired(updates, "updates");
+
 		try {
 			const token = await this.oauthService.getValidToken("google");
 
@@ -520,11 +531,20 @@ export class GoogleCalendarService extends EventEmitter {
 			// Refresh events after update
 			await this.refreshAllCalendars();
 
-			new Notice("Google Calendar event updated successfully");
 
 		} catch (error) {
 			console.error("Failed to update Google Calendar event:", error);
-			throw new Error(`Failed to update event: ${error.message}`);
+			// Check for specific error types
+			if (error.status === 404) {
+				throw new EventNotFoundError(eventId);
+			}
+			if (error.status === 401 || error.status === 403) {
+				throw new TokenExpiredError("google");
+			}
+			if (error.status === 429) {
+				throw new RateLimitError();
+			}
+			throw new GoogleCalendarError(`Failed to update event: ${error.message}`, error.status);
 		}
 	}
 
@@ -541,6 +561,13 @@ export class GoogleCalendarService extends EventEmitter {
 			location?: string;
 		}
 	): Promise<string> {
+		// Validate inputs
+		validateCalendarId(calendarId);
+		validateRequired(event, "event");
+		validateRequired(event.summary, "event.summary");
+		validateRequired(event.start, "event.start");
+		validateRequired(event.end, "event.end");
+
 		try {
 			const token = await this.oauthService.getValidToken("google");
 
@@ -560,13 +587,21 @@ export class GoogleCalendarService extends EventEmitter {
 			// Refresh events after creation
 			await this.refreshAllCalendars();
 
-			new Notice("Google Calendar event created successfully");
 
 			return createdEvent.id;
 
 		} catch (error) {
 			console.error("Failed to create Google Calendar event:", error);
-			throw new Error(`Failed to create event: ${error.message}`);
+			if (error.status === 404) {
+				throw new CalendarNotFoundError(calendarId);
+			}
+			if (error.status === 401 || error.status === 403) {
+				throw new TokenExpiredError("google");
+			}
+			if (error.status === 429) {
+				throw new RateLimitError();
+			}
+			throw new GoogleCalendarError(`Failed to create event: ${error.message}`, error.status);
 		}
 	}
 
@@ -574,6 +609,10 @@ export class GoogleCalendarService extends EventEmitter {
 	 * Deletes a Google Calendar event
 	 */
 	async deleteEvent(calendarId: string, eventId: string): Promise<void> {
+		// Validate inputs
+		validateCalendarId(calendarId);
+		validateEventId(eventId);
+
 		try {
 			const token = await this.oauthService.getValidToken("google");
 
@@ -588,11 +627,19 @@ export class GoogleCalendarService extends EventEmitter {
 			// Refresh events after deletion
 			await this.refreshAllCalendars();
 
-			new Notice("Google Calendar event deleted successfully");
 
 		} catch (error) {
 			console.error("Failed to delete Google Calendar event:", error);
-			throw new Error(`Failed to delete event: ${error.message}`);
+			if (error.status === 404) {
+				throw new EventNotFoundError(eventId);
+			}
+			if (error.status === 401 || error.status === 403) {
+				throw new TokenExpiredError("google");
+			}
+			if (error.status === 429) {
+				throw new RateLimitError();
+			}
+			throw new GoogleCalendarError(`Failed to delete event: ${error.message}`, error.status);
 		}
 	}
 
@@ -623,13 +670,18 @@ export class GoogleCalendarService extends EventEmitter {
 			// Refresh calendar list
 			this.availableCalendars = await this.listCalendars();
 
-			new Notice(`Calendar "${summary}" created successfully`);
 
 			return calendar.id;
 
 		} catch (error) {
 			console.error("Failed to create calendar:", error);
-			throw new Error(`Failed to create calendar: ${error.message}`);
+			if (error.status === 401 || error.status === 403) {
+				throw new TokenExpiredError("google");
+			}
+			if (error.status === 429) {
+				throw new RateLimitError();
+			}
+			throw new GoogleCalendarError(`Failed to create calendar: ${error.message}`, error.status);
 		}
 	}
 

@@ -33,7 +33,9 @@ function loadEnv() {
 	}
 
 	// Override with process.env values if they exist (for CI/CD)
-	const envKeys = ['GOOGLE_OAUTH_CLIENT_ID', 'GOOGLE_OAUTH_CLIENT_SECRET', 'MICROSOFT_OAUTH_CLIENT_ID', 'MICROSOFT_OAUTH_CLIENT_SECRET'];
+	// Only load client_id (public, safe to bundle)
+	// client_secret is NOT bundled for security reasons
+	const envKeys = ['GOOGLE_OAUTH_CLIENT_ID', 'MICROSOFT_OAUTH_CLIENT_ID'];
 	for (const key of envKeys) {
 		if (process.env[key]) {
 			env[key] = process.env[key];
@@ -41,8 +43,8 @@ function loadEnv() {
 	}
 
 	// Log what we have (but not the actual values for security)
-	if (env.GOOGLE_OAUTH_CLIENT_ID || env.GOOGLE_OAUTH_CLIENT_SECRET) {
-		console.log('OAuth credentials configured from environment variables');
+	if (env.GOOGLE_OAUTH_CLIENT_ID) {
+		console.log('✓ OAuth client IDs configured (Device Flow ready)');
 	}
 
 	return env;
@@ -103,12 +105,16 @@ const context = await esbuild.context({
 	minify: prod,
 	plugins: [markdownPlugin],
 	define: {
-		// Inject environment variables at build time
-		// These will be replaced with string literals in the bundle
+		// Inject OAuth client IDs at build time for Device Flow
+		// These are PUBLIC identifiers (safe to bundle)
+		// client_secret is NOT bundled (security requirement)
+		// Device Flow (RFC 8628) only requires client_id, no secret needed
 		'process.env.GOOGLE_OAUTH_CLIENT_ID': JSON.stringify(env.GOOGLE_OAUTH_CLIENT_ID || ''),
-		'process.env.GOOGLE_OAUTH_CLIENT_SECRET': JSON.stringify(env.GOOGLE_OAUTH_CLIENT_SECRET || ''),
 		'process.env.MICROSOFT_OAUTH_CLIENT_ID': JSON.stringify(env.MICROSOFT_OAUTH_CLIENT_ID || ''),
-		'process.env.MICROSOFT_OAUTH_CLIENT_SECRET': JSON.stringify(env.MICROSOFT_OAUTH_CLIENT_SECRET || ''),
+
+		// DO NOT BUNDLE SECRETS - Security issue documented in OAUTH_CALENDAR_ISSUES.md
+		// Users with licenses use Device Flow (no secret required)
+		// Users without licenses provide their own credentials in settings
 	},
 });
 

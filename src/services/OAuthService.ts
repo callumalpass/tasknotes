@@ -1,8 +1,28 @@
-import { createServer, Server, IncomingMessage, ServerResponse } from "http";
-import { Notice, requestUrl } from "obsidian";
+import type { Server, IncomingMessage, ServerResponse } from "http";
+import { Notice, requestUrl, Platform } from "obsidian";
 import { randomBytes, createHash } from "crypto";
 import TaskNotesPlugin from "../main";
 import { OAuthProvider, OAuthTokens, OAuthConnection, OAuthConfig } from "../types";
+import { DeviceCodeModal } from "../modals/DeviceCodeModal";
+import { OAUTH_CONSTANTS } from "./constants";
+import { OAuthError, OAuthNotConfiguredError, TokenExpiredError, NetworkError } from "./errors";
+
+let cachedHttpModule: typeof import("http") | null = null;
+
+function ensureHttpModule(): typeof import("http") {
+	if (!Platform.isDesktopApp) {
+		throw new Error("OAuth redirect handling is only available on desktop.");
+	}
+
+	if (!cachedHttpModule) {
+		// Lazy-load the Node http module so mobile builds don't crash at load time
+		cachedHttpModule = require("http");
+	}
+
+	// TypeScript doesn't know we always set cachedHttpModule in the if block above
+	// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+	return cachedHttpModule!;
+}
 
 /**
  * OAuthService handles OAuth 2.0 authentication flow with PKCE for Google Calendar and Microsoft Graph.
@@ -37,7 +57,9 @@ export class OAuthService {
 				"https://www.googleapis.com/auth/calendar.events"
 			],
 			authorizationEndpoint: "https://accounts.google.com/o/oauth2/v2/auth",
-			tokenEndpoint: "https://oauth2.googleapis.com/token"
+			tokenEndpoint: "https://oauth2.googleapis.com/token",
+			deviceCodeEndpoint: "https://oauth2.googleapis.com/device/code",
+			revocationEndpoint: "https://oauth2.googleapis.com/revoke"
 		},
 		microsoft: {
 			provider: "microsoft",
@@ -49,7 +71,9 @@ export class OAuthService {
 				"offline_access"
 			],
 			authorizationEndpoint: "https://login.microsoftonline.com/common/oauth2/v2.0/authorize",
-			tokenEndpoint: "https://login.microsoftonline.com/common/oauth2/v2.0/token"
+			tokenEndpoint: "https://login.microsoftonline.com/common/oauth2/v2.0/token",
+			deviceCodeEndpoint: "https://login.microsoftonline.com/common/oauth2/v2.0/devicecode",
+			revocationEndpoint: "https://login.microsoftonline.com/common/oauth2/v2.0/logout"
 		}
 	};
 
@@ -59,47 +83,80 @@ export class OAuthService {
 	}
 
 	/**
-	 * Loads OAuth client IDs and secrets with license validation
+	 * Loads OAuth client IDs
 	 * Priority order:
-	 * 1. User-configured credentials (custom OAuth apps)
-	 * 2. Built-in TaskNotes credentials (requires valid license)
-	 * 3. Empty string (will show error on authenticate)
+	 * 1. User-configured credentials (for standard OAuth flow with client_secret)
+	 * 2. Built-in TaskNotes credentials for Device Flow (public client_id only, no secret)
 	 */
 	async loadClientIds(): Promise<void> {
-		// Check if user has valid license for built-in credentials
-		const hasValidLicense =
-			this.plugin.licenseService && (await this.plugin.licenseService.canUseBuiltInCredentials());
-
 		// Google Calendar
-		this.configs.google.clientId =
-			this.plugin.settings.googleOAuthClientId || // User's own credentials (always allowed)
-			(hasValidLicense ? process.env.GOOGLE_OAUTH_CLIENT_ID : "") || // Built-in (license required)
-			"";
-		this.configs.google.clientSecret =
-			this.plugin.settings.googleOAuthClientSecret ||
-			(hasValidLicense ? process.env.GOOGLE_OAUTH_CLIENT_SECRET : "") ||
-			"";
+		// User credentials take priority (for standard flow)
+		if (this.plugin.settings.googleOAuthClientId) {
+			this.configs.google.clientId = this.plugin.settings.googleOAuthClientId;
+			this.configs.google.clientSecret = this.plugin.settings.googleOAuthClientSecret || "";
+		} else {
+			// Use built-in client_id for Device Flow (public, no secret)
+			this.configs.google.clientId = process.env.GOOGLE_OAUTH_CLIENT_ID || "";
+			this.configs.google.clientSecret = undefined; // Device Flow doesn't use secret
+		}
 
 		// Microsoft Calendar
-		this.configs.microsoft.clientId =
-			this.plugin.settings.microsoftOAuthClientId ||
-			(hasValidLicense ? process.env.MICROSOFT_OAUTH_CLIENT_ID : "") ||
-			"";
-		this.configs.microsoft.clientSecret =
-			this.plugin.settings.microsoftOAuthClientSecret ||
-			(hasValidLicense ? process.env.MICROSOFT_OAUTH_CLIENT_SECRET : "") ||
-			"";
+		if (this.plugin.settings.microsoftOAuthClientId) {
+			this.configs.microsoft.clientId = this.plugin.settings.microsoftOAuthClientId;
+			this.configs.microsoft.clientSecret = this.plugin.settings.microsoftOAuthClientSecret || "";
+		} else {
+			this.configs.microsoft.clientId = process.env.MICROSOFT_OAUTH_CLIENT_ID || "";
+			this.configs.microsoft.clientSecret = undefined; // Device Flow doesn't use secret
+		}
 	}
 
 	/**
 	 * Initiates OAuth flow for a provider
+	 * Chooses between Device Flow (licensed, easy) or Standard Flow (user credentials)
 	 */
 	async authenticate(provider: OAuthProvider): Promise<void> {
+		const config = this.configs[provider];
+
+		if (!config.clientId) {
+			throw new OAuthNotConfiguredError(provider);
+		}
+
+		// Determine which flow to use based on whether user provided their own credentials
+		const hasUserCredentials =
+			(provider === "google" && this.plugin.settings.googleOAuthClientId) ||
+			(provider === "microsoft" && this.plugin.settings.microsoftOAuthClientId);
+
+		if (hasUserCredentials) {
+			// User provided their own OAuth app credentials - use standard flow
+			return await this.authenticateStandard(provider);
+		} else {
+			// Using built-in TaskNotes client_id - use Device Flow
+			// Check license validation
+			const hasValidLicense = await this.plugin.licenseService?.canUseBuiltInCredentials();
+
+			if (!hasValidLicense) {
+				throw new OAuthNotConfiguredError(provider);
+			}
+
+			return await this.authenticateDeviceFlow(provider);
+		}
+	}
+
+	/**
+	 * Standard OAuth flow (requires client_id + client_secret)
+	 * Used when user provides their own OAuth credentials
+	 */
+	private async authenticateStandard(provider: OAuthProvider): Promise<void> {
 		try {
 			const config = this.configs[provider];
 
-			if (!config.clientId) {
-				throw new Error(`${provider} OAuth client ID not configured. Please add it in settings.`);
+			if (!Platform.isDesktopApp) {
+				new Notice("OAuth authentication requires the desktop app.");
+				throw new Error("OAuth authentication requires the desktop app.");
+			}
+
+			if (!config.clientSecret) {
+				throw new Error(`${provider} OAuth client secret not configured. Please add both Client ID and Client Secret in settings.`);
 			}
 
 			// Generate PKCE code verifier and challenge
@@ -107,36 +164,48 @@ export class OAuthService {
 			const codeChallenge = await this.generateCodeChallenge(codeVerifier);
 			const state = this.generateState();
 
-			// Start HTTP server to receive callback
-			const port = 8080; // TODO: Make this configurable or find available port
+			// Find available port
+			const port = await this.findAvailablePort(
+				OAUTH_CONSTANTS.CALLBACK_PORT_START,
+				OAUTH_CONSTANTS.CALLBACK_PORT_END
+			);
 			await this.startCallbackServer(port);
 
-			// Build authorization URL
-			const authUrl = this.buildAuthorizationUrl(config, codeChallenge, state);
+			// Update redirect URI for this session
+			const originalRedirectUri = config.redirectUri;
+			config.redirectUri = `http://127.0.0.1:${port}`;
 
-			// Store pending state
-			this.pendingOAuthState.set(state, {
-				provider,
-				codeVerifier,
-				resolve: () => {}, // Will be set by promise
-				reject: () => {}
-			});
+			try {
+				// Build authorization URL
+				const authUrl = this.buildAuthorizationUrl(config, codeChallenge, state);
 
-			new Notice(`Opening browser for ${provider} authorization...`);
+				// Store pending state
+				this.pendingOAuthState.set(state, {
+					provider,
+					codeVerifier,
+					resolve: () => {}, // Will be set by promise
+					reject: () => {}
+				});
 
-			// Open browser to authorization URL
-			window.open(authUrl, "_blank");
+				new Notice(`Opening browser for ${provider} authorization...`);
 
-			// Wait for callback with timeout
-			const code = await this.waitForCallback(state, 300000); // 5 minute timeout
+				// Open browser to authorization URL
+				window.open(authUrl, "_blank");
 
-			// Exchange code for tokens
-			const tokens = await this.exchangeCodeForTokens(config, code, codeVerifier);
+				// Wait for callback with timeout
+				const code = await this.waitForCallback(state, 300000); // 5 minute timeout
 
-			// Store connection
-			await this.storeConnection(provider, tokens);
+				// Exchange code for tokens
+				const tokens = await this.exchangeCodeForTokens(config, code, codeVerifier);
 
-			new Notice(`Successfully connected to ${provider} Calendar!`);
+				// Store connection
+				await this.storeConnection(provider, tokens);
+
+				new Notice(`Successfully connected to ${provider} Calendar!`);
+			} finally {
+				// Restore original redirect URI
+				config.redirectUri = originalRedirectUri;
+			}
 
 		} catch (error) {
 			console.error(`OAuth authentication failed for ${provider}:`, error);
@@ -145,6 +214,233 @@ export class OAuthService {
 		} finally {
 			await this.stopCallbackServer();
 		}
+	}
+
+	/**
+	 * Device Flow OAuth (no client_secret required)
+	 * Used when user has valid license for built-in TaskNotes credentials
+	 */
+	private async authenticateDeviceFlow(provider: OAuthProvider): Promise<void> {
+		try {
+			const config = this.configs[provider];
+
+			if (!config.deviceCodeEndpoint) {
+				throw new Error(`${provider} does not support Device Flow`);
+			}
+
+			// Step 1: Request device code
+			const deviceResponse = await requestUrl({
+				url: config.deviceCodeEndpoint,
+				method: "POST",
+				headers: {
+					"Content-Type": "application/x-www-form-urlencoded",
+					"Accept": "application/json"
+				},
+				body: new URLSearchParams({
+					client_id: config.clientId,
+					scope: config.scope.join(" ")
+				}).toString(),
+				throw: false
+			});
+
+			if (deviceResponse.status !== 200) {
+				console.error("Device code request failed:", deviceResponse.status, deviceResponse.text);
+				throw new Error(`Failed to request device code: ${deviceResponse.status}`);
+			}
+
+			const deviceData = deviceResponse.json;
+			const {
+				device_code,
+				user_code,
+				verification_uri,
+				verification_uri_complete,
+				expires_in,
+				interval
+			} = deviceData;
+
+			console.log("[OAuth] Device Flow initiated:", {
+				userCode: user_code,
+				verificationUri: verification_uri,
+				expiresIn: expires_in
+			});
+
+			// Step 2: Show modal with code and instructions
+			let cancelled = false;
+			const modal = new DeviceCodeModal(
+				this.plugin.app,
+				{
+					userCode: user_code,
+					verificationUrl: verification_uri,
+					verificationUrlComplete: verification_uri_complete,
+					expiresIn: expires_in || 900 // Default 15 minutes
+				},
+				() => {
+					cancelled = true;
+				}
+			);
+			modal.open();
+
+			// Step 3: Poll for authorization
+			try {
+				const tokens = await this.pollForDeviceToken(
+					config,
+					device_code,
+					interval || 5,
+					() => cancelled
+				);
+
+				// Close modal on success
+				modal.close();
+
+				// Store connection
+				await this.storeConnection(provider, tokens);
+
+				new Notice(`Successfully connected to ${provider} Calendar!`);
+
+			} catch (error) {
+				modal.close();
+				throw error;
+			}
+
+		} catch (error) {
+			console.error(`Device Flow authentication failed for ${provider}:`, error);
+			new Notice(`Failed to connect to ${provider}: ${error.message}`);
+			throw error;
+		}
+	}
+
+	/**
+	 * Polls the token endpoint until user authorizes or timeout
+	 */
+	private async pollForDeviceToken(
+		config: OAuthConfig,
+		deviceCode: string,
+		interval: number,
+		isCancelled: () => boolean
+	): Promise<OAuthTokens> {
+		const maxAttempts = OAUTH_CONSTANTS.DEVICE_FLOW.MAX_ATTEMPTS;
+		let currentInterval = interval;
+
+		for (let attempt = 0; attempt < maxAttempts; attempt++) {
+			// Check if user cancelled
+			if (isCancelled()) {
+				throw new Error("Authorization cancelled by user");
+			}
+
+			// Wait before polling (except first attempt)
+			if (attempt > 0) {
+				await this.sleep(currentInterval * 1000);
+			}
+
+			try {
+				const response = await requestUrl({
+					url: config.tokenEndpoint,
+					method: "POST",
+					headers: {
+						"Content-Type": "application/x-www-form-urlencoded",
+						"Accept": "application/json"
+					},
+					body: new URLSearchParams({
+						client_id: config.clientId,
+						device_code: deviceCode,
+						grant_type: "urn:ietf:params:oauth:grant-type:device_code"
+					}).toString(),
+					throw: false
+				});
+
+				if (response.status === 200) {
+					// Success! Parse and return tokens
+					const data = response.json;
+					const expiresIn = data.expires_in || 3600;
+					const expiresAt = Date.now() + (expiresIn * 1000);
+
+					return {
+						accessToken: data.access_token,
+						refreshToken: data.refresh_token,
+						expiresAt: expiresAt,
+						scope: data.scope || config.scope.join(" "),
+						tokenType: data.token_type || "Bearer"
+					};
+				}
+
+				// Handle error responses
+				const errorData = response.json;
+				const errorCode = errorData.error;
+
+				if (errorCode === "authorization_pending") {
+					// User hasn't authorized yet, keep polling
+					console.log(`[OAuth] Device Flow: Authorization pending (attempt ${attempt + 1}/${maxAttempts})`);
+					continue;
+				} else if (errorCode === "slow_down") {
+					// Server wants us to slow down
+					currentInterval += OAUTH_CONSTANTS.DEVICE_FLOW.SLOW_DOWN_INCREMENT_SECONDS;
+					console.log(`[OAuth] Device Flow: Slow down requested, new interval: ${currentInterval}s`);
+					continue;
+				} else if (errorCode === "expired_token") {
+					// Fatal error - code expired, don't retry
+					throw new Error("Device code expired. Please try again.");
+				} else if (errorCode === "access_denied") {
+					// Fatal error - user denied access, don't retry
+					throw new Error("Authorization denied by user");
+				} else {
+					// Other OAuth errors are also fatal
+					throw new Error(`Authorization failed: ${errorCode || "unknown error"}`);
+				}
+
+			} catch (error) {
+				// Check if this is a fatal OAuth error (thrown by us above)
+				// These should propagate immediately without retry
+				if (error instanceof Error &&
+					(error.message.includes("expired") ||
+					 error.message.includes("denied") ||
+					 error.message.includes("Authorization failed"))) {
+					throw error;
+				}
+
+				// Network errors can be retried - only throw on last attempt
+				if (attempt === maxAttempts - 1) {
+					throw error;
+				}
+				// Otherwise, log and continue polling
+				console.error(`[OAuth] Device Flow polling error:`, error);
+			}
+		}
+
+		throw new Error("Device authorization timed out. Please try again.");
+	}
+
+	/**
+	 * Sleep helper for async polling
+	 */
+	private sleep(ms: number): Promise<void> {
+		return new Promise(resolve => setTimeout(resolve, ms));
+	}
+
+	/**
+	 * Finds an available port in the given range
+	 */
+	private async findAvailablePort(startPort: number, endPort: number): Promise<number> {
+		const http = ensureHttpModule();
+
+		for (let port = startPort; port <= endPort; port++) {
+			try {
+				await new Promise<void>((resolve, reject) => {
+					const server = http.createServer();
+					server.once("error", reject);
+					server.once("listening", () => {
+						server.close();
+						resolve();
+					});
+					server.listen(port, "127.0.0.1");
+				});
+				return port;
+			} catch (error) {
+				// Port in use, try next one
+				continue;
+			}
+		}
+
+		throw new Error(`No available ports found between ${startPort} and ${endPort}`);
 	}
 
 	/**
@@ -206,7 +502,15 @@ export class OAuthService {
 				return;
 			}
 
-			this.callbackServer = createServer((req: IncomingMessage, res: ServerResponse) => {
+			let httpModule: ReturnType<typeof ensureHttpModule>;
+			try {
+				httpModule = ensureHttpModule();
+			} catch (error) {
+				reject(error);
+				return;
+			}
+
+			this.callbackServer = httpModule.createServer((req: IncomingMessage, res: ServerResponse) => {
 				this.handleCallback(req, res);
 			});
 
@@ -458,12 +762,12 @@ export class OAuthService {
 	async getValidToken(provider: OAuthProvider): Promise<string> {
 		const connection = await this.getConnection(provider);
 		if (!connection) {
-			throw new Error(`Not connected to ${provider}`);
+			throw new TokenExpiredError(provider);
 		}
 
 		// Check if token is expired or about to expire (5 minute buffer)
 		const now = Date.now();
-		const bufferMs = 5 * 60 * 1000; // 5 minutes
+		const bufferMs = OAUTH_CONSTANTS.TOKEN_REFRESH_BUFFER_MS;
 
 		if (connection.tokens.expiresAt - bufferMs < now) {
 			console.log(`${provider} token expired or expiring soon, refreshing...`);
@@ -524,9 +828,15 @@ export class OAuthService {
 			return;
 		}
 
-		// TODO: Call revocation endpoint to invalidate tokens
-		// For now, just remove from storage
+		// Revoke tokens on the OAuth provider's server
+		await this.revokeToken(provider, connection.tokens.accessToken);
 
+		// Also revoke refresh token if present (best practice)
+		if (connection.tokens.refreshToken) {
+			await this.revokeToken(provider, connection.tokens.refreshToken);
+		}
+
+		// Remove from local storage
 		const data = await this.plugin.loadData() || {};
 		if (data.oauthConnections) {
 			delete data.oauthConnections[provider];
@@ -534,6 +844,44 @@ export class OAuthService {
 		}
 
 		new Notice(`Disconnected from ${provider} Calendar`);
+	}
+
+	/**
+	 * Revokes an OAuth token on the provider's server
+	 * Note: Revocation failures are logged but don't prevent local disconnection
+	 */
+	private async revokeToken(provider: OAuthProvider, token: string): Promise<void> {
+		const config = this.configs[provider];
+
+		if (!config.revocationEndpoint) {
+			console.warn(`No revocation endpoint configured for ${provider}`);
+			return;
+		}
+
+		try {
+			const response = await requestUrl({
+				url: config.revocationEndpoint,
+				method: "POST",
+				headers: {
+					"Content-Type": "application/x-www-form-urlencoded"
+				},
+				body: new URLSearchParams({
+					token: token,
+					...(config.clientId && { client_id: config.clientId })
+				}).toString(),
+				throw: false
+			});
+
+			if (response.status === 200) {
+				console.log(`[OAuth] Successfully revoked token for ${provider}`);
+			} else {
+				// Token may already be revoked or invalid - this is not critical
+				console.warn(`[OAuth] Token revocation returned status ${response.status} for ${provider}`);
+			}
+		} catch (error) {
+			// Don't throw - revocation failure shouldn't prevent disconnection
+			console.error(`[OAuth] Failed to revoke token for ${provider}:`, error);
+		}
 	}
 
 	/**

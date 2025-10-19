@@ -50,6 +50,10 @@ coverage
 documentation-images-needed.md
 plans
 
+# Technical debt and issue tracking
+OAUTH_CALENDAR_ISSUES.md
+DEVICE_FLOW_IMPLEMENTATION.md
+
 # Project planning files
 project
 webhook*.log
