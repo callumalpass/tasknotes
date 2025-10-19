@@ -21,14 +21,17 @@ export interface ProviderCalendar {
 
 /**
  * Event date/time configuration
- * Supports both all-day events (date) and timed events (dateTime)
+ * Supports both all-day events (date) and timed events (dateTime + timeZone)
+ *
+ * For timed events, use IANA timezone identifiers (e.g., "America/New_York")
+ * in the timeZone field for proper DST handling by calendar providers.
  */
 export interface EventDateTime {
-	/** For all-day events: YYYY-MM-DD format */
+	/** For all-day events: YYYY-MM-DD format (no time or timezone) */
 	date?: string;
-	/** For timed events: ISO 8601 format with timezone */
+	/** For timed events: YYYY-MM-DDTHH:mm:ss format (use with timeZone field) */
 	dateTime?: string;
-	/** Timezone (IANA format, e.g., "America/New_York") */
+	/** IANA timezone identifier (e.g., "America/New_York", "Europe/London") */
 	timeZone?: string;
 }
 

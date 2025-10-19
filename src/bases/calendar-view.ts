@@ -27,32 +27,60 @@ import { createPropertyEventCard } from "../ui/PropertyEventCard";
 import { createTimeBlockCard } from "../ui/TimeBlockCard";
 
 /**
- * Formats a Date object with timezone offset (e.g., "2025-10-19T14:30:00+01:00")
- * Used for Google Calendar API timed events
+ * Gets the user's IANA timezone identifier (e.g., "America/New_York", "Europe/London")
+ * Used for Google Calendar API to properly handle timezone conversions and DST.
+ *
+ * Note: This is for API communication, not user-facing dates. The Google Calendar API
+ * prefers IANA timezone identifiers over manual offset strings for better DST handling.
  */
-function formatDateWithTimezone(date: Date): string {
-	const offset = -date.getTimezoneOffset();
-	const sign = offset >= 0 ? '+' : '-';
-	const hours = String(Math.floor(Math.abs(offset) / 60)).padStart(2, '0');
-	const minutes = String(Math.abs(offset) % 60).padStart(2, '0');
-	return format(date, "yyyy-MM-dd'T'HH:mm:ss") + sign + hours + ':' + minutes;
+function getUserTimezone(): string {
+	try {
+		// Get the IANA timezone from Intl API (widely supported in modern browsers)
+		const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+		// Validate that we got a reasonable timezone string
+		if (timezone && timezone.length > 0 && timezone.includes('/')) {
+			return timezone;
+		}
+
+		// Fallback to UTC if we can't determine timezone
+		console.warn('[Calendar] Could not determine IANA timezone, falling back to UTC');
+		return 'UTC';
+	} catch (error) {
+		console.error('[Calendar] Error getting user timezone:', error);
+		return 'UTC';
+	}
 }
 
 /**
- * Builds Google Calendar API update payload for event start/end times
- * Handles conversion between all-day and timed events correctly
+ * Builds Google Calendar API update payload for event start/end times.
+ * Handles conversion between all-day and timed events correctly.
+ *
+ * For timed events, uses IANA timezone identifier (e.g., "America/New_York")
+ * rather than manual offset strings for robust DST handling.
  */
 function buildGoogleCalendarUpdatePayload(start: Date, end: Date, isAllDay: boolean): any {
 	const updates: any = {};
 
 	if (isAllDay) {
 		// All-day event - ONLY include date field (no dateTime)
+		// Format: YYYY-MM-DD (no time or timezone)
 		updates.start = { date: format(start, "yyyy-MM-dd") };
 		updates.end = { date: format(end, "yyyy-MM-dd") };
 	} else {
-		// Timed event - ONLY include dateTime field (no date)
-		updates.start = { dateTime: formatDateWithTimezone(start) };
-		updates.end = { dateTime: formatDateWithTimezone(end) };
+		// Timed event - include dateTime with timezone
+		// Google Calendar API prefers IANA timezone identifiers for proper DST handling
+		// Format: YYYY-MM-DDTHH:mm:ss with separate timeZone field
+		const timezone = getUserTimezone();
+
+		updates.start = {
+			dateTime: format(start, "yyyy-MM-dd'T'HH:mm:ss"),
+			timeZone: timezone
+		};
+		updates.end = {
+			dateTime: format(end, "yyyy-MM-dd'T'HH:mm:ss"),
+			timeZone: timezone
+		};
 	}
 
 	return updates;
