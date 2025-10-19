@@ -55,7 +55,7 @@ Select one of:
 
 **Redirect URI:**
 - Platform: **"Web"**
-- URL: `http://127.0.0.1:8080`
+- URL: `http://localhost:8080`
 
 > **Note:** TaskNotes uses a local HTTP server on port 8080 for OAuth callbacks. If this port is unavailable, the service will automatically try ports 8081-8090.
 
@@ -165,7 +165,7 @@ TaskNotes requests minimal required permissions:
 **Problem:** You see an error about redirect URI not matching.
 
 **Solution:**
-1. Ensure the redirect URI in Azure matches exactly: `http://127.0.0.1:8080`
+1. Ensure the redirect URI in Azure matches exactly: `http://localhost:8080`
 2. Check that you selected "Web" as the platform type
 3. TaskNotes will try ports 8080-8090 if the first port is busy
 
@@ -287,7 +287,7 @@ If port 8080 is already in use:
 2. Check the console for which port was selected
 3. If you need a specific port, edit the redirect URI in Azure:
    - Go to your app registration → Authentication
-   - Update the redirect URI to `http://127.0.0.1:XXXX` (replace XXXX with your port)
+   - Update the redirect URI to `http://localhost:XXXX` (replace XXXX with your port)
 
 ### Multiple Calendars
 
@@ -355,7 +355,7 @@ If you encounter issues:
 
 ```
 App Name: TaskNotes Calendar Integration
-Redirect URI: http://127.0.0.1:8080
+Redirect URI: http://localhost:8080
 Platform: Web
 
 Permissions:

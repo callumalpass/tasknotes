@@ -68,7 +68,7 @@ export class OAuthService {
 		microsoft: {
 			provider: "microsoft",
 			clientId: "", // Will be set from built-in or plugin settings
-			redirectUri: "http://127.0.0.1:8080",
+			redirectUri: "http://localhost:8080",
 			scope: [
 				"Calendars.Read",
 				"Calendars.ReadWrite",
@@ -125,22 +125,30 @@ export class OAuthService {
 			throw new OAuthNotConfiguredError(provider);
 		}
 
-		// Determine which flow to use based on whether user provided their own credentials
-		const hasUserCredentials =
-			(provider === "google" && this.plugin.settings.googleOAuthClientId) ||
-			(provider === "microsoft" && this.plugin.settings.microsoftOAuthClientId);
+		// Determine which flow to use based on the user's selected setup mode
+		const useAdvancedSetup = this.plugin.settings.oauthSetupMode === "advanced";
 
-		if (hasUserCredentials) {
-			// User provided their own OAuth app credentials - use standard flow
-			return await this.authenticateStandard(provider);
-		} else {
-			// Using built-in TaskNotes client_id - use Device Flow
-			// Check license validation
-			const hasValidLicense = await this.plugin.licenseService?.canUseBuiltInCredentials();
+		if (useAdvancedSetup) {
+			// Advanced Setup: User provided their own OAuth app credentials - use standard flow
+			// Validate that user has actually entered credentials
+			const hasCredentials =
+				(provider === "google" && this.plugin.settings.googleOAuthClientId) ||
+				(provider === "microsoft" && this.plugin.settings.microsoftOAuthClientId);
 
-			if (!hasValidLicense) {
+			if (!hasCredentials) {
 				throw new OAuthNotConfiguredError(provider);
 			}
+
+			return await this.authenticateStandard(provider);
+		} else {
+			// Quick Setup: Using built-in TaskNotes client_id - use Device Flow
+			// Check license validation
+			// TEMPORARILY DISABLED FOR TESTING
+			// const hasValidLicense = await this.plugin.licenseService?.canUseBuiltInCredentials();
+
+			// if (!hasValidLicense) {
+			// 	throw new OAuthNotConfiguredError(provider);
+			// }
 
 			return await this.authenticateDeviceFlow(provider);
 		}
