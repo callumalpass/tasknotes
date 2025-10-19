@@ -46,6 +46,10 @@ export class OAuthService {
 		reject: (error: Error) => void;
 	}> = new Map();
 
+	// Token refresh mutex to prevent race conditions
+	// Maps provider to pending refresh promise
+	private tokenRefreshPromises: Map<OAuthProvider, Promise<OAuthTokens>> = new Map();
+
 	// OAuth configurations for different providers
 	private configs: Record<OAuthProvider, OAuthConfig> = {
 		google: {
@@ -757,7 +761,9 @@ export class OAuthService {
 	}
 
 	/**
-	 * Gets valid access token, refreshing if necessary
+	 * Gets valid access token, refreshing if necessary.
+	 * Uses mutex pattern to prevent race conditions when multiple API calls
+	 * happen simultaneously with an expired token.
 	 */
 	async getValidToken(provider: OAuthProvider): Promise<string> {
 		const connection = await this.getConnection(provider);
@@ -770,8 +776,25 @@ export class OAuthService {
 		const bufferMs = OAUTH_CONSTANTS.TOKEN_REFRESH_BUFFER_MS;
 
 		if (connection.tokens.expiresAt - bufferMs < now) {
+			// Check if a refresh is already in progress
+			const pendingRefresh = this.tokenRefreshPromises.get(provider);
+			if (pendingRefresh) {
+				console.log(`${provider} token refresh already in progress, waiting...`);
+				const newTokens = await pendingRefresh;
+				return newTokens.accessToken;
+			}
+
+			// Start new refresh and store the promise
 			console.log(`${provider} token expired or expiring soon, refreshing...`);
-			const newTokens = await this.refreshToken(provider);
+			const refreshPromise = this.refreshToken(provider)
+				.finally(() => {
+					// Clean up the pending promise when done (success or failure)
+					this.tokenRefreshPromises.delete(provider);
+				});
+
+			this.tokenRefreshPromises.set(provider, refreshPromise);
+
+			const newTokens = await refreshPromise;
 			return newTokens.accessToken;
 		}
 
