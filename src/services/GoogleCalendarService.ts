@@ -40,11 +40,75 @@ export class GoogleCalendarService extends CalendarProvider {
 	private refreshTimer: NodeJS.Timeout | null = null;
 	private availableCalendars: ProviderCalendar[] = [];
 	private calendarColors: Map<string, string> = new Map(); // Map calendar ID to color
+	private lastManualRefresh: number = 0; // Timestamp of last manual refresh for rate limiting
 
 	constructor(plugin: TaskNotesPlugin, oauthService: OAuthService) {
 		super();
 		this.plugin = plugin;
 		this.oauthService = oauthService;
+	}
+
+	/**
+	 * Sleep helper for exponential backoff
+	 */
+	private sleep(ms: number): Promise<void> {
+		return new Promise(resolve => setTimeout(resolve, ms));
+	}
+
+	/**
+	 * Executes an API call with exponential backoff retry on rate limit errors
+	 * Implements retry logic for 429 (rate limit) and 5xx (server) errors
+	 */
+	private async withRetry<T>(
+		fn: () => Promise<T>,
+		context: string
+	): Promise<T> {
+		const { MAX_RETRIES, INITIAL_BACKOFF_MS, MAX_BACKOFF_MS, BACKOFF_MULTIPLIER } =
+			GOOGLE_CALENDAR_CONSTANTS.RATE_LIMIT;
+
+		let lastError: Error | null = null;
+		let backoffMs: number = INITIAL_BACKOFF_MS;
+
+		for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+			try {
+				return await fn();
+			} catch (error) {
+				lastError = error;
+
+				// Check if this is a retryable error
+				const isRateLimitError = error.status === 429;
+				const isServerError = error.status >= 500 && error.status < 600;
+				const isLastAttempt = attempt === MAX_RETRIES;
+
+				if (!isRateLimitError && !isServerError) {
+					// Non-retryable error (4xx except 429) - throw immediately
+					throw error;
+				}
+
+				if (isLastAttempt) {
+					// Max retries exhausted - throw
+					console.error(`[GoogleCalendar] ${context} failed after ${MAX_RETRIES} retries`);
+					throw error;
+				}
+
+				// Apply exponential backoff with jitter
+				const jitter = Math.random() * 0.3 * backoffMs; // 0-30% jitter
+				const delay = Math.min(backoffMs + jitter, MAX_BACKOFF_MS);
+
+				console.warn(
+					`[GoogleCalendar] ${context} failed (${error.status}), ` +
+					`retrying in ${Math.round(delay)}ms (attempt ${attempt + 1}/${MAX_RETRIES})`
+				);
+
+				await this.sleep(delay);
+
+				// Increase backoff for next iteration
+				backoffMs = Math.min(backoffMs * BACKOFF_MULTIPLIER, MAX_BACKOFF_MS);
+			}
+		}
+
+		// Should never reach here, but TypeScript needs it
+		throw lastError;
 	}
 
 	/**
@@ -132,33 +196,35 @@ export class GoogleCalendarService extends CalendarProvider {
 	 * Fetches list of user's calendars and stores their colors
 	 */
 	async listCalendars(): Promise<ProviderCalendar[]> {
-		try {
-			const token = await this.oauthService.getValidToken("google");
+		return this.withRetry(async () => {
+			try {
+				const token = await this.oauthService.getValidToken("google");
 
-			const response = await requestUrl({
-				url: `${this.baseUrl}/users/me/calendarList`,
-				method: "GET",
-				headers: {
-					"Authorization": `Bearer ${token}`,
-					"Accept": "application/json"
+				const response = await requestUrl({
+					url: `${this.baseUrl}/users/me/calendarList`,
+					method: "GET",
+					headers: {
+						"Authorization": `Bearer ${token}`,
+						"Accept": "application/json"
+					}
+				});
+
+				const data = response.json;
+				const calendars = data.items || [];
+
+				// Store calendar colors for later use
+				for (const calendar of calendars) {
+					if (calendar.backgroundColor) {
+						this.calendarColors.set(calendar.id, calendar.backgroundColor);
+					}
 				}
-			});
 
-			const data = response.json;
-			const calendars = data.items || [];
-
-			// Store calendar colors for later use
-			for (const calendar of calendars) {
-				if (calendar.backgroundColor) {
-					this.calendarColors.set(calendar.id, calendar.backgroundColor);
-				}
+				return calendars;
+			} catch (error) {
+				console.error("Failed to list calendars:", error);
+				throw new Error(`Failed to fetch calendar list: ${error.message}`);
 			}
-
-			return calendars;
-		} catch (error) {
-			console.error("Failed to list calendars:", error);
-			throw new Error(`Failed to fetch calendar list: ${error.message}`);
-		}
+		}, "List calendars");
 	}
 
 	/**
@@ -210,14 +276,17 @@ export class GoogleCalendarService extends CalendarProvider {
 						params.set("orderBy", "startTime");
 					}
 
-					const response = await requestUrl({
-						url: `${this.baseUrl}/calendars/${encodeURIComponent(calendarId)}/events?${params.toString()}`,
-						method: "GET",
-						headers: {
-							"Authorization": `Bearer ${token}`,
-							"Accept": "application/json"
-						}
-					});
+					// Wrap the API call with retry logic
+					const response = await this.withRetry(async () => {
+						return await requestUrl({
+							url: `${this.baseUrl}/calendars/${encodeURIComponent(calendarId)}/events?${params.toString()}`,
+							method: "GET",
+							headers: {
+								"Authorization": `Bearer ${token}`,
+								"Accept": "application/json"
+							}
+						});
+					}, `Fetch events for ${calendarId}`);
 
 					const data = response.json;
 					const items = data.items || [];
@@ -433,8 +502,23 @@ export class GoogleCalendarService extends CalendarProvider {
 
 	/**
 	 * Manually triggers a refresh
+	 * Rate-limited to prevent API abuse
 	 */
 	async refresh(): Promise<void> {
+		const now = Date.now();
+		const timeSinceLastRefresh = now - this.lastManualRefresh;
+		const minInterval = GOOGLE_CALENDAR_CONSTANTS.MIN_MANUAL_REFRESH_INTERVAL_MS;
+
+		if (timeSinceLastRefresh < minInterval) {
+			const remainingMs = minInterval - timeSinceLastRefresh;
+			console.log(
+				`[GoogleCalendar] Refresh rate limited, ` +
+				`please wait ${Math.ceil(remainingMs / 1000)}s before refreshing again`
+			);
+			return;
+		}
+
+		this.lastManualRefresh = now;
 		await this.refreshAllCalendars();
 	}
 
@@ -468,14 +552,16 @@ export class GoogleCalendarService extends CalendarProvider {
 			const token = await this.oauthService.getValidToken("google");
 
 			// First, get the current event to merge with updates
-			const getResponse = await requestUrl({
-				url: `${this.baseUrl}/calendars/${encodeURIComponent(calendarId)}/events/${encodeURIComponent(eventId)}`,
-				method: "GET",
-				headers: {
-					"Authorization": `Bearer ${token}`,
-					"Accept": "application/json"
-				}
-			});
+			const getResponse = await this.withRetry(async () => {
+				return await requestUrl({
+					url: `${this.baseUrl}/calendars/${encodeURIComponent(calendarId)}/events/${encodeURIComponent(eventId)}`,
+					method: "GET",
+					headers: {
+						"Authorization": `Bearer ${token}`,
+						"Accept": "application/json"
+					}
+				});
+			}, `Get event ${eventId}`);
 
 			const currentEvent = getResponse.json;
 
@@ -516,17 +602,19 @@ export class GoogleCalendarService extends CalendarProvider {
 			console.log("[GoogleCalendar] Final payload start:", JSON.stringify(updatedEvent.start, null, 2));
 			console.log("[GoogleCalendar] Final payload end:", JSON.stringify(updatedEvent.end, null, 2));
 
-			// Update the event
-			await requestUrl({
-				url: `${this.baseUrl}/calendars/${encodeURIComponent(calendarId)}/events/${encodeURIComponent(eventId)}`,
-				method: "PUT",
-				headers: {
-					"Authorization": `Bearer ${token}`,
-					"Content-Type": "application/json",
-					"Accept": "application/json"
-				},
-				body: JSON.stringify(updatedEvent)
-			});
+			// Update the event with retry logic
+			await this.withRetry(async () => {
+				return await requestUrl({
+					url: `${this.baseUrl}/calendars/${encodeURIComponent(calendarId)}/events/${encodeURIComponent(eventId)}`,
+					method: "PUT",
+					headers: {
+						"Authorization": `Bearer ${token}`,
+						"Content-Type": "application/json",
+						"Accept": "application/json"
+					},
+					body: JSON.stringify(updatedEvent)
+				});
+			}, `Update event ${eventId}`);
 
 			// Refresh events after update
 			await this.refreshAllCalendars();
@@ -571,16 +659,18 @@ export class GoogleCalendarService extends CalendarProvider {
 		try {
 			const token = await this.oauthService.getValidToken("google");
 
-			const response = await requestUrl({
-				url: `${this.baseUrl}/calendars/${encodeURIComponent(calendarId)}/events`,
-				method: "POST",
-				headers: {
-					"Authorization": `Bearer ${token}`,
-					"Content-Type": "application/json",
-					"Accept": "application/json"
-				},
-				body: JSON.stringify(event)
-			});
+			const response = await this.withRetry(async () => {
+				return await requestUrl({
+					url: `${this.baseUrl}/calendars/${encodeURIComponent(calendarId)}/events`,
+					method: "POST",
+					headers: {
+						"Authorization": `Bearer ${token}`,
+						"Content-Type": "application/json",
+						"Accept": "application/json"
+					},
+					body: JSON.stringify(event)
+				});
+			}, `Create event in ${calendarId}`);
 
 			const createdEvent = response.json;
 
@@ -616,13 +706,15 @@ export class GoogleCalendarService extends CalendarProvider {
 		try {
 			const token = await this.oauthService.getValidToken("google");
 
-			await requestUrl({
-				url: `${this.baseUrl}/calendars/${encodeURIComponent(calendarId)}/events/${encodeURIComponent(eventId)}`,
-				method: "DELETE",
-				headers: {
-					"Authorization": `Bearer ${token}`
-				}
-			});
+			await this.withRetry(async () => {
+				return await requestUrl({
+					url: `${this.baseUrl}/calendars/${encodeURIComponent(calendarId)}/events/${encodeURIComponent(eventId)}`,
+					method: "DELETE",
+					headers: {
+						"Authorization": `Bearer ${token}`
+					}
+				});
+			}, `Delete event ${eventId}`);
 
 			// Refresh events after deletion
 			await this.refreshAllCalendars();
@@ -650,20 +742,22 @@ export class GoogleCalendarService extends CalendarProvider {
 		try {
 			const token = await this.oauthService.getValidToken("google");
 
-			const response = await requestUrl({
-				url: `${this.baseUrl}/calendars`,
-				method: "POST",
-				headers: {
-					"Authorization": `Bearer ${token}`,
-					"Content-Type": "application/json",
-					"Accept": "application/json"
-				},
-				body: JSON.stringify({
-					summary,
-					description,
-					timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
-				})
-			});
+			const response = await this.withRetry(async () => {
+				return await requestUrl({
+					url: `${this.baseUrl}/calendars`,
+					method: "POST",
+					headers: {
+						"Authorization": `Bearer ${token}`,
+						"Content-Type": "application/json",
+						"Accept": "application/json"
+					},
+					body: JSON.stringify({
+						summary,
+						description,
+						timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
+					})
+				});
+			}, "Create calendar");
 
 			const calendar = response.json;
 
