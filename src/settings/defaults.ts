@@ -303,4 +303,8 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	enabledGoogleCalendars: [],
 	// Google Calendar sync tokens (for incremental sync)
 	googleCalendarSyncTokens: {},
+	// Microsoft Calendar selection (empty = show all calendars)
+	enabledMicrosoftCalendars: [],
+	// Microsoft Calendar sync tokens (delta links for incremental sync)
+	microsoftCalendarSyncTokens: {},
 };

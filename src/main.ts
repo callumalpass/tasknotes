@@ -99,6 +99,7 @@ import { ReleaseNotesView, RELEASE_NOTES_VIEW_TYPE } from "./views/ReleaseNotesV
 import { CURRENT_VERSION, RELEASE_NOTES_BUNDLE } from "./releaseNotes";
 import { OAuthService } from "./services/OAuthService";
 import { GoogleCalendarService } from "./services/GoogleCalendarService";
+import { MicrosoftCalendarService } from "./services/MicrosoftCalendarService";
 import { LicenseService } from "./services/LicenseService";
 import { CalendarProviderRegistry } from "./services/CalendarProvider";
 
@@ -213,6 +214,9 @@ export default class TaskNotesPlugin extends Plugin {
 
 	// Google Calendar service
 	googleCalendarService: GoogleCalendarService;
+
+	// Microsoft Calendar service
+	microsoftCalendarService: MicrosoftCalendarService;
 
 	// Calendar provider registry for abstraction
 	calendarProviderRegistry: CalendarProviderRegistry;
@@ -406,14 +410,16 @@ export default class TaskNotesPlugin extends Plugin {
 		// Load cached license validation data on startup
 		await this.licenseService.loadCacheFromData();
 
-		// Initialize OAuth and Google Calendar services early (before Bases registration)
-		// This ensures the Google Calendar toggle appears in Bases calendar views
+		// Initialize OAuth and Calendar services early (before Bases registration)
+		// This ensures the calendar toggles appear in Bases calendar views
 		this.oauthService = new OAuthService(this);
 		this.googleCalendarService = new GoogleCalendarService(this, this.oauthService);
+		this.microsoftCalendarService = new MicrosoftCalendarService(this, this.oauthService);
 
-		// Initialize calendar provider registry and register Google Calendar
+		// Initialize calendar provider registry and register calendar providers
 		this.calendarProviderRegistry = new CalendarProviderRegistry();
 		this.calendarProviderRegistry.register(this.googleCalendarService);
+		this.calendarProviderRegistry.register(this.microsoftCalendarService);
 
 		// Early registration attempt for Bases integration
 		if (this.settings?.enableBases && !this.basesRegistered) {
@@ -580,8 +586,10 @@ export default class TaskNotesPlugin extends Plugin {
 				this.autoExportService = new AutoExportService(this);
 				this.autoExportService.start();
 
-				// Connect Google Calendar data changes to view refreshes BEFORE initialization
+				// Connect calendar data changes to view refreshes BEFORE initialization
 				// This ensures we catch the initial data-changed event from initialize()
+
+				// Google Calendar
 				this.googleCalendarService.on("data-changed", () => {
 					// Trigger calendar view refreshes when Google Calendar events change
 					this.notifyDataChanged(undefined, false, true);
@@ -590,6 +598,16 @@ export default class TaskNotesPlugin extends Plugin {
 				// Initialize Google Calendar service (instance already created in onload)
 				// This triggers the actual data fetching and will emit data-changed
 				await this.googleCalendarService.initialize();
+
+				// Microsoft Calendar
+				this.microsoftCalendarService.on("data-changed", () => {
+					// Trigger calendar view refreshes when Microsoft Calendar events change
+					this.notifyDataChanged(undefined, false, true);
+				});
+
+				// Initialize Microsoft Calendar service (instance already created in onload)
+				// This triggers the actual data fetching and will emit data-changed
+				await this.microsoftCalendarService.initialize();
 
 				// Initialize HTTP API service if enabled (desktop only)
 				await this.initializeHTTPAPI();
@@ -1159,9 +1177,13 @@ export default class TaskNotesPlugin extends Plugin {
 			this.oauthService.destroy();
 		}
 
-		// Clean up Google Calendar service
+		// Clean up calendar services
 		if (this.googleCalendarService) {
 			this.googleCalendarService.destroy();
+		}
+
+		if (this.microsoftCalendarService) {
+			this.microsoftCalendarService.destroy();
 		}
 
 		// Clean up calendar provider registry

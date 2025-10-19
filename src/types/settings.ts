@@ -143,6 +143,10 @@ export interface TaskNotesSettings {
 	enabledGoogleCalendars: string[]; // Array of calendar IDs that should be displayed
 	// Google Calendar sync tokens (for incremental sync)
 	googleCalendarSyncTokens: Record<string, string>; // Maps calendar ID to sync token
+	// Microsoft Calendar selection
+	enabledMicrosoftCalendars: string[]; // Array of calendar IDs that should be displayed
+	// Microsoft Calendar sync tokens (delta links for incremental sync)
+	microsoftCalendarSyncTokens: Record<string, string>; // Maps calendar ID to delta link
 }
 
 export interface DefaultReminder {
