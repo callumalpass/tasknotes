@@ -766,16 +766,52 @@ Redirect URI: obsidian://tasknotes-oauth
 
 ### Credentials Storage Format
 
-Store your credentials securely (don't commit to Git):
+You have two options for OAuth credentials:
 
-```typescript
-// .env.local or secure storage
+#### Option 1: Use Built-in TaskNotes Credentials (Recommended for Users)
+
+Leave the OAuth credentials fields empty in settings, and TaskNotes will use the built-in verified OAuth credentials injected at build time.
+
+**Pros:**
+- No setup required
+- Already verified by Google
+- Works out of the box
+
+**Cons:**
+- Uses shared OAuth app (rate limits shared across all users)
+
+#### Option 2: Use Your Own Custom OAuth Credentials
+
+If you're a developer or want dedicated OAuth credentials, you can use your own:
+
+1. **In TaskNotes Settings → Integrations:**
+   - Enter your Google OAuth Client ID
+   - Enter your Google OAuth Client Secret
+   - Enter your Microsoft OAuth Client ID (if using Microsoft)
+   - Enter your Microsoft OAuth Client Secret (if using Microsoft)
+
+2. **For Development/Testing:**
+   Store credentials in `.env` file (don't commit to Git):
+
+```bash
+# .env (for build-time injection)
 GOOGLE_OAUTH_CLIENT_ID=xxx.apps.googleusercontent.com
 GOOGLE_OAUTH_CLIENT_SECRET=GOCSPX-xxx
 
 MICROSOFT_OAUTH_CLIENT_ID=xxx
-MICROSOFT_OAUTH_TENANT_ID=common (or specific tenant)
+MICROSOFT_OAUTH_TENANT_ID=common
 ```
+
+**Priority Order:**
+1. Settings (custom credentials entered by user)
+2. Environment variables (injected at build time)
+3. Empty (shows error)
+
+**When to use custom credentials:**
+- You're developing or testing the plugin
+- You need higher API rate limits
+- You want more control over the OAuth app
+- You're distributing a fork of TaskNotes
 
 ### Testing Checklist
 

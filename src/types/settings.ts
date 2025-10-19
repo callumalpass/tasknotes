@@ -131,6 +131,7 @@ export interface TaskNotesSettings {
 	// Frontmatter link format settings
 	useFrontmatterMarkdownLinks: boolean; // Use markdown links in frontmatter (requires obsidian-frontmatter-markdown-links plugin)
 	// OAuth Calendar Integration settings
+	lemonSqueezyLicenseKey: string; // License key for using TaskNotes' built-in OAuth credentials
 	googleOAuthClientId: string;
 	googleOAuthClientSecret: string;
 	microsoftOAuthClientId: string;

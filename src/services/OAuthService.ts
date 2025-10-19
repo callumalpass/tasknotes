@@ -58,30 +58,36 @@ export class OAuthService {
 		this.loadClientIds();
 	}
 
-	private loadClientIds(): void {
-		// Priority order for client IDs and secrets:
-		// 1. User-configured credentials (allows custom OAuth apps)
-		// 2. Built-in TaskNotes credentials (injected at build time)
-		// 3. Empty string (will show error on authenticate)
+	/**
+	 * Loads OAuth client IDs and secrets with license validation
+	 * Priority order:
+	 * 1. User-configured credentials (custom OAuth apps)
+	 * 2. Built-in TaskNotes credentials (requires valid license)
+	 * 3. Empty string (will show error on authenticate)
+	 */
+	async loadClientIds(): Promise<void> {
+		// Check if user has valid license for built-in credentials
+		const hasValidLicense =
+			this.plugin.licenseService && (await this.plugin.licenseService.canUseBuiltInCredentials());
 
 		// Google Calendar
 		this.configs.google.clientId =
-			this.plugin.settings.googleOAuthClientId ||
-			process.env.GOOGLE_OAUTH_CLIENT_ID ||
+			this.plugin.settings.googleOAuthClientId || // User's own credentials (always allowed)
+			(hasValidLicense ? process.env.GOOGLE_OAUTH_CLIENT_ID : "") || // Built-in (license required)
 			"";
 		this.configs.google.clientSecret =
 			this.plugin.settings.googleOAuthClientSecret ||
-			process.env.GOOGLE_OAUTH_CLIENT_SECRET ||
+			(hasValidLicense ? process.env.GOOGLE_OAUTH_CLIENT_SECRET : "") ||
 			"";
 
 		// Microsoft Calendar
 		this.configs.microsoft.clientId =
 			this.plugin.settings.microsoftOAuthClientId ||
-			process.env.MICROSOFT_OAUTH_CLIENT_ID ||
+			(hasValidLicense ? process.env.MICROSOFT_OAUTH_CLIENT_ID : "") ||
 			"";
 		this.configs.microsoft.clientSecret =
 			this.plugin.settings.microsoftOAuthClientSecret ||
-			process.env.MICROSOFT_OAUTH_CLIENT_SECRET ||
+			(hasValidLicense ? process.env.MICROSOFT_OAUTH_CLIENT_SECRET : "") ||
 			"";
 	}
 

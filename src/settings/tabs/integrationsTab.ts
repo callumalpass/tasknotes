@@ -112,6 +112,116 @@ export function renderIntegrationsTab(
 		"Connect your Google Calendar or Microsoft Outlook to sync events directly into TaskNotes."
 	);
 
+	// TaskNotes License Card (appears before calendar cards)
+	const licenseContainer = container.createDiv("tasknotes-license-container");
+
+	const renderLicenseCard = async () => {
+		licenseContainer.empty();
+
+		const helpText = document.createElement("div");
+		helpText.style.fontSize = "0.9em";
+		helpText.style.color = "var(--text-muted)";
+		helpText.style.lineHeight = "1.5";
+		helpText.innerHTML = "Use TaskNotes' built-in OAuth credentials to connect your calendars instantly. Alternatively, configure your own credentials below (free).";
+
+		// Create license key input field
+		const licenseKeyInput = createCardInput("text", "TN-XXXX-XXXX-XXXX-XXXX", plugin.settings.lemonSqueezyLicenseKey);
+		licenseKeyInput.addEventListener("blur", async () => {
+			const newKey = licenseKeyInput.value.trim();
+			plugin.settings.lemonSqueezyLicenseKey = newKey;
+			save();
+
+			// Validate license
+			if (plugin.licenseService && newKey) {
+				const valid = await plugin.licenseService.validateLicense(newKey);
+				if (valid) {
+					new Notice("License activated successfully!");
+					// Reload OAuth credentials
+					if (plugin.oauthService) {
+						await plugin.oauthService.loadClientIds();
+					}
+					// Re-render to update status
+					renderLicenseCard();
+				} else {
+					new Notice("Invalid or expired license key");
+					// Re-render to update status
+					renderLicenseCard();
+				}
+			} else if (plugin.oauthService) {
+				// Key was cleared, reload OAuth credentials
+				await plugin.oauthService.loadClientIds();
+				// Re-render to update status
+				renderLicenseCard();
+			}
+		});
+
+		const getLicenseLink = document.createElement("a");
+		getLicenseLink.href = "https://tasknotes.lemonsqueezy.com"; 
+		getLicenseLink.target = "_blank";
+		getLicenseLink.style.fontSize = "0.9em";
+		getLicenseLink.style.color = "var(--interactive-accent)";
+		getLicenseLink.textContent = "Get License Key ($1/month)";
+
+		// Status indicator
+		const statusDiv = document.createElement("div");
+		statusDiv.style.fontSize = "0.85em";
+		statusDiv.style.marginTop = "0.5rem";
+
+		const currentKey = plugin.settings.lemonSqueezyLicenseKey;
+		if (currentKey && currentKey.trim()) {
+			// Check cached validation status
+			const cachedInfo = plugin.licenseService?.getCachedLicenseInfo();
+			if (cachedInfo && cachedInfo.key === currentKey && Date.now() < cachedInfo.validUntil) {
+				if (cachedInfo.valid) {
+					statusDiv.style.color = "var(--text-success)";
+					statusDiv.textContent = "✓ License active - works on unlimited devices";
+				} else {
+					statusDiv.style.color = "var(--text-error)";
+					statusDiv.textContent = "✗ Invalid or expired license key";
+				}
+			} else {
+				statusDiv.style.color = "var(--text-muted)";
+				statusDiv.textContent = "License key entered (validation pending)";
+			}
+		} else {
+			statusDiv.style.color = "var(--text-muted)";
+			statusDiv.style.fontStyle = "italic";
+			statusDiv.textContent = "No license key entered. You can still use your own OAuth credentials below.";
+		}
+
+		createCard(licenseContainer, {
+			collapsible: true,
+			defaultCollapsed: false,
+			colorIndicator: {
+				color: "#4A9EFF" // TaskNotes blue
+			},
+			header: {
+				primaryText: "TaskNotes OAuth License",
+				secondaryText: "Quick setup for Google & Microsoft calendars",
+				meta: currentKey && currentKey.trim() ? [createStatusBadge("Active", "active")] : [createStatusBadge("Not Configured", "inactive")]
+			},
+			content: {
+				sections: [
+					{
+						rows: [
+							{ label: "Info:", input: helpText, fullWidth: true }
+						]
+					},
+					{
+						rows: [
+							{ label: "License Key:", input: licenseKeyInput },
+							{ label: "", input: getLicenseLink, fullWidth: true },
+							{ label: "", input: statusDiv, fullWidth: true }
+						]
+					}
+				]
+			}
+		});
+	};
+
+	// Initial render
+	renderLicenseCard();
+
 	// Google Calendar container for card-based UI
 	const googleCalendarContainer = container.createDiv("google-calendar-integration-container");
 
@@ -224,6 +334,33 @@ export function renderIntegrationsTab(
 			helpText.style.lineHeight = "1.5";
 			helpText.innerHTML = "Connect your Google Calendar account to sync events directly into TaskNotes. Events will automatically refresh every 15 minutes.";
 
+			// Create credential input fields
+			const clientIdInput = createCardInput("text", "your-client-id.apps.googleusercontent.com", plugin.settings.googleOAuthClientId);
+			clientIdInput.addEventListener("blur", async () => {
+				plugin.settings.googleOAuthClientId = clientIdInput.value.trim();
+				save();
+				if (plugin.oauthService) {
+					await plugin.oauthService.loadClientIds();
+				}
+			});
+
+			const clientSecretInput = createCardInput("text", "your-client-secret", plugin.settings.googleOAuthClientSecret);
+			clientSecretInput.setAttribute("type", "password");
+			clientSecretInput.addEventListener("blur", async () => {
+				plugin.settings.googleOAuthClientSecret = clientSecretInput.value.trim();
+				save();
+				if (plugin.oauthService) {
+					await plugin.oauthService.loadClientIds();
+				}
+			});
+
+			const credentialNote = document.createElement("div");
+			credentialNote.style.fontSize = "0.85em";
+			credentialNote.style.color = "var(--text-muted)";
+			credentialNote.style.fontStyle = "italic";
+			credentialNote.style.marginTop = "0.5rem";
+			credentialNote.textContent = "Optional: Use your own OAuth credentials from Google Cloud Console (~15 min setup). Leave blank to use TaskNotes license.";
+
 			createCard(googleCalendarContainer, {
 				collapsible: true,
 				defaultCollapsed: false,
@@ -236,11 +373,20 @@ export function renderIntegrationsTab(
 					meta: [createStatusBadge("Not Connected", "inactive")]
 				},
 				content: {
-					sections: [{
-						rows: [
-							{ label: "Info:", input: helpText, fullWidth: true }
-						]
-					}]
+					sections: [
+						{
+							rows: [
+								{ label: "Info:", input: helpText, fullWidth: true }
+							]
+						},
+						{
+							rows: [
+								{ label: "Client ID:", input: clientIdInput },
+								{ label: "Client Secret:", input: clientSecretInput },
+								{ label: "", input: credentialNote, fullWidth: true }
+							]
+						}
+					]
 				},
 				actions: {
 					buttons: [
@@ -267,6 +413,181 @@ export function renderIntegrationsTab(
 
 	// Initial render
 	renderGoogleCalendarCard();
+
+	// Microsoft Calendar container for card-based UI
+	const microsoftCalendarContainer = container.createDiv("microsoft-calendar-integration-container");
+
+	// Check connection status and render card
+	const renderMicrosoftCalendarCard = async () => {
+		microsoftCalendarContainer.empty();
+
+		if (!plugin.oauthService) {
+			createCard(microsoftCalendarContainer, {
+				header: {
+					primaryText: "Microsoft Outlook Calendar",
+					secondaryText: "OAuth service not available",
+					meta: [createStatusBadge("Error", "inactive")]
+				}
+			});
+			return;
+		}
+
+		const isConnected = await plugin.oauthService.isConnected("microsoft");
+		const connection = isConnected ? await plugin.oauthService.getConnection("microsoft") : null;
+
+		if (isConnected && connection) {
+			// Connected state card
+			const connectedDate = connection.connectedAt ? new Date(connection.connectedAt) : null;
+			const timeAgo = connectedDate ? getRelativeTime(connectedDate, translate) : "";
+
+			// Create info displays
+			const accountInfo = document.createElement("div");
+			accountInfo.style.fontSize = "0.9em";
+			accountInfo.style.color = "var(--text-muted)";
+			accountInfo.textContent = connection.userEmail || "Unknown account";
+
+			const connectedInfo = document.createElement("div");
+			connectedInfo.style.fontSize = "0.9em";
+			connectedInfo.style.color = "var(--text-muted)";
+			connectedInfo.textContent = connectedDate ? `Connected ${timeAgo}` : "Connected";
+
+			const lastRefreshInfo = document.createElement("div");
+			lastRefreshInfo.style.fontSize = "0.9em";
+			lastRefreshInfo.style.color = "var(--text-muted)";
+			if (connection.lastRefreshed) {
+				const lastRefreshDate = new Date(connection.lastRefreshed);
+				lastRefreshInfo.textContent = `Last refreshed ${getRelativeTime(lastRefreshDate, translate)}`;
+			} else {
+				lastRefreshInfo.textContent = "Never refreshed";
+			}
+
+			createCard(microsoftCalendarContainer, {
+				collapsible: true,
+				defaultCollapsed: false,
+				colorIndicator: {
+					color: "#0078D4" // Microsoft blue
+				},
+				header: {
+					primaryText: "Microsoft Outlook Calendar",
+					secondaryText: "OAuth 2.0 Connection",
+					meta: [createStatusBadge("Connected", "active")]
+				},
+				content: {
+					sections: [{
+						rows: [
+							{ label: "Account:", input: accountInfo },
+							{ label: "Status:", input: connectedInfo },
+							{ label: "Sync:", input: lastRefreshInfo }
+						]
+					}]
+				},
+				actions: {
+					buttons: [
+						{
+							text: "Disconnect",
+							icon: "log-out",
+							variant: "warning",
+							onClick: async () => {
+								try {
+									await plugin.oauthService!.disconnect("microsoft");
+									new Notice("Disconnected from Microsoft Calendar");
+									renderMicrosoftCalendarCard();
+								} catch (error) {
+									console.error("Failed to disconnect:", error);
+									new Notice("Failed to disconnect from Microsoft Calendar");
+								}
+							}
+						}
+					]
+				}
+			});
+		} else {
+			// Disconnected state card
+			const helpText = document.createElement("div");
+			helpText.style.fontSize = "0.9em";
+			helpText.style.color = "var(--text-muted)";
+			helpText.style.lineHeight = "1.5";
+			helpText.innerHTML = "Connect your Microsoft Outlook calendar to sync events directly into TaskNotes.";
+
+			// Create credential input fields
+			const clientIdInput = createCardInput("text", "your-microsoft-client-id", plugin.settings.microsoftOAuthClientId);
+			clientIdInput.addEventListener("blur", async () => {
+				plugin.settings.microsoftOAuthClientId = clientIdInput.value.trim();
+				save();
+				if (plugin.oauthService) {
+					await plugin.oauthService.loadClientIds();
+				}
+			});
+
+			const clientSecretInput = createCardInput("text", "your-microsoft-client-secret", plugin.settings.microsoftOAuthClientSecret);
+			clientSecretInput.setAttribute("type", "password");
+			clientSecretInput.addEventListener("blur", async () => {
+				plugin.settings.microsoftOAuthClientSecret = clientSecretInput.value.trim();
+				save();
+				if (plugin.oauthService) {
+					await plugin.oauthService.loadClientIds();
+				}
+			});
+
+			const credentialNote = document.createElement("div");
+			credentialNote.style.fontSize = "0.85em";
+			credentialNote.style.color = "var(--text-muted)";
+			credentialNote.style.fontStyle = "italic";
+			credentialNote.style.marginTop = "0.5rem";
+			credentialNote.textContent = "Optional: Use your own OAuth credentials from Azure Portal (~20 min setup). Leave blank to use TaskNotes license.";
+
+			createCard(microsoftCalendarContainer, {
+				collapsible: true,
+				defaultCollapsed: false,
+				colorIndicator: {
+					color: "#737373" // Microsoft gray
+				},
+				header: {
+					primaryText: "Microsoft Outlook Calendar",
+					secondaryText: "OAuth 2.0 Connection",
+					meta: [createStatusBadge("Not Connected", "inactive")]
+				},
+				content: {
+					sections: [
+						{
+							rows: [
+								{ label: "Info:", input: helpText, fullWidth: true }
+							]
+						},
+						{
+							rows: [
+								{ label: "Client ID:", input: clientIdInput },
+								{ label: "Client Secret:", input: clientSecretInput },
+								{ label: "", input: credentialNote, fullWidth: true }
+							]
+						}
+					]
+				},
+				actions: {
+					buttons: [
+						{
+							text: "Connect Microsoft Calendar",
+							icon: "link",
+							variant: "primary",
+							onClick: async () => {
+								try {
+									await plugin.oauthService!.authenticate("microsoft");
+									new Notice("Microsoft Calendar connected successfully!");
+									renderMicrosoftCalendarCard();
+								} catch (error) {
+									console.error("Failed to connect:", error);
+									new Notice(`Failed to connect: ${error.message}`);
+								}
+							}
+						}
+					]
+				}
+			});
+		}
+	};
+
+	// Initial render
+	renderMicrosoftCalendarCard();
 
 	// Calendar Subscriptions Section (ICS)
 	createSectionHeader(container, translate("settings.integrations.calendarSubscriptions.header"));
