@@ -518,7 +518,9 @@ export class OAuthService {
 				this.handleCallback(req, res);
 			});
 
-			this.callbackServer.on("error", (error: Error) => {
+			// Use .once() instead of .on() since we only need to handle the first error
+			// This prevents memory leaks from accumulating error listeners
+			this.callbackServer.once("error", (error: Error) => {
 				console.error("OAuth callback server error:", error);
 				reject(error);
 			});
@@ -909,9 +911,16 @@ export class OAuthService {
 
 	/**
 	 * Cleanup method to be called when plugin unloads
+	 * Ensures all resources are properly released to prevent memory leaks
 	 */
 	async destroy(): Promise<void> {
+		// Stop HTTP callback server
 		await this.stopCallbackServer();
+
+		// Clear pending OAuth state
 		this.pendingOAuthState.clear();
+
+		// Clear token refresh mutex to prevent orphaned promises
+		this.tokenRefreshPromises.clear();
 	}
 }
