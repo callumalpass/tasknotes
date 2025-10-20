@@ -53,13 +53,13 @@ function getUserTimezone(): string {
 }
 
 /**
- * Builds Google Calendar API update payload for event start/end times.
+ * Builds calendar API update payload for event start/end times (Google, Microsoft, etc.).
  * Handles conversion between all-day and timed events correctly.
  *
  * For timed events, uses IANA timezone identifier (e.g., "America/New_York")
  * rather than manual offset strings for robust DST handling.
  */
-function buildGoogleCalendarUpdatePayload(start: Date, end: Date, isAllDay: boolean): any {
+function buildCalendarUpdatePayload(start: Date, end: Date, isAllDay: boolean): any {
 	const updates: any = {};
 
 	if (isAllDay) {
@@ -349,7 +349,7 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 						}
 
 						// Build update payload
-						const updates = buildGoogleCalendarUpdatePayload(newStart, newEnd, newAllDay);
+						const updates = buildCalendarUpdatePayload(newStart, newEnd, newAllDay);
 
 						// Update the event via provider's API
 						await provider.updateEvent(calendarId, eventId, updates);
@@ -484,7 +484,7 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 						const newAllDay = resizeInfo.event.allDay;
 
 						// Build update payload
-						const updates = buildGoogleCalendarUpdatePayload(newStart, newEnd, newAllDay);
+						const updates = buildCalendarUpdatePayload(newStart, newEnd, newAllDay);
 
 						// Update via provider's API
 						await provider.updateEvent(calendarId, eventId, updates);

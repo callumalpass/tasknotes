@@ -595,6 +595,10 @@ export class MicrosoftCalendarService extends CalendarProvider {
 				};
 			}
 
+			// Determine if this is an all-day event based on the date format
+			// If 'date' field is present (not 'dateTime'), it's an all-day event
+			const isAllDay = updates.start?.date !== undefined && !updates.start?.dateTime;
+
 			if (updates.start) {
 				payload.start = {
 					dateTime: updates.start.dateTime || updates.start.date,
@@ -608,6 +612,9 @@ export class MicrosoftCalendarService extends CalendarProvider {
 					timeZone: updates.end.timeZone || "UTC"
 				};
 			}
+
+			// Microsoft Graph requires explicit isAllDay flag when converting between all-day and timed events
+			payload.isAllDay = isAllDay;
 
 			if (updates.location !== undefined) {
 				payload.location = {
