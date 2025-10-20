@@ -28,11 +28,14 @@ export function validateRequired<T>(value: T | undefined | null, fieldName: stri
 export function validateCalendarId(calendarId: string): void {
 	validateNotEmpty(calendarId, "Calendar ID");
 
-	// Google Calendar IDs should match email format or specific patterns
-	const validPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$|^[a-zA-Z0-9_-]+$/;
+	// Calendar IDs can be:
+	// 1. Email format (Google Calendar primary): user@example.com
+	// 2. Alphanumeric with dashes/underscores (Google Calendar secondary): abc123_def-456
+	// 3. Base64 format (Microsoft Calendar): AQMkADAwATY0MDABLWI5YjQtNWIwMy0wMAItMDAKAEYAAAMK...
+	const validPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$|^[a-zA-Z0-9_-]+$|^[a-zA-Z0-9+/]+=*$/;
 	if (!validPattern.test(calendarId)) {
 		throw new ValidationError(
-			"Invalid calendar ID format. Expected email-like format or alphanumeric ID.",
+			"Invalid calendar ID format. Expected email-like, alphanumeric, or Base64 format.",
 			"calendarId"
 		);
 	}
@@ -44,10 +47,13 @@ export function validateCalendarId(calendarId: string): void {
 export function validateEventId(eventId: string): void {
 	validateNotEmpty(eventId, "Event ID");
 
-	// Event IDs should be alphanumeric with underscores
-	if (!/^[a-zA-Z0-9_-]+$/.test(eventId)) {
+	// Event IDs can be:
+	// 1. Alphanumeric with dashes/underscores (Google Calendar): abc123_def-456
+	// 2. Base64 format (Microsoft Calendar): AQMkADAwATY0MDABLWI5YjQtNWIwMy0wMAItMDA...
+	// Allow Base64 characters (A-Za-z0-9+/=) plus common separators (-_)
+	if (!/^[a-zA-Z0-9_+/=-]+$/.test(eventId)) {
 		throw new ValidationError(
-			"Invalid event ID format. Expected alphanumeric characters with hyphens or underscores.",
+			"Invalid event ID format. Expected alphanumeric or Base64 format.",
 			"eventId"
 		);
 	}
