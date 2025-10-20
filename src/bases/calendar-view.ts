@@ -1173,6 +1173,39 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 					}
 				}
 
+				// Generate events from Microsoft Calendar (if connected and enabled)
+				// Build list of selected Microsoft calendars from individual toggle options
+				const selectedMicrosoftCalendars: string[] = [];
+				if (plugin.microsoftCalendarService) {
+					const availableCalendars = plugin.microsoftCalendarService.getAvailableCalendars();
+					for (const calendar of availableCalendars) {
+						const isEnabled = (ctx?.config?.get(`showMicrosoftCalendar_${calendar.id}`) as boolean) ?? true;
+						if (isEnabled) {
+							selectedMicrosoftCalendars.push(calendar.id);
+						}
+					}
+
+					// Save enabled calendar IDs to settings for persistence across sessions
+					plugin.settings.enabledMicrosoftCalendars = selectedMicrosoftCalendars;
+					await plugin.saveSettings();
+				}
+
+				// Add events from selected Microsoft calendars
+				if (selectedMicrosoftCalendars.length > 0 && plugin.microsoftCalendarService) {
+					const allMicrosoftEvents = plugin.microsoftCalendarService.getAllEvents();
+					for (const icsEvent of allMicrosoftEvents) {
+						// Only include events from selected calendars
+						// The subscriptionId format is "microsoft-<calendarId>"
+						const calendarId = icsEvent.subscriptionId.replace("microsoft-", "");
+						if (selectedMicrosoftCalendars.includes(calendarId)) {
+							const calendarEvent = createICSEvent(icsEvent, plugin);
+							if (calendarEvent) {
+								events.push(calendarEvent);
+							}
+						}
+					}
+				}
+
 				// Validate events
 				return events.filter((event) => {
 					if (!event.extendedProps || !event.id) {

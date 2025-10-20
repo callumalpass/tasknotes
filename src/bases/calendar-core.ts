@@ -44,6 +44,7 @@ export interface CalendarEvent {
 		recurringTemplateTime?: string;
 		subscriptionName?: string;
 		isGoogleCalendar?: boolean; // For Google Calendar events
+		isMicrosoftCalendar?: boolean; // For Microsoft Calendar events
 		timeEntryIndex?: number;
 		originalDate?: string; // For timeblock events - tracks original date for move operations
 	};
@@ -470,12 +471,13 @@ export function createTimeEntryEvents(task: TaskInfo, plugin: TaskNotesPlugin): 
 }
 
 /**
- * Create ICS calendar event (supports both ICS subscriptions and Google Calendar)
+ * Create ICS calendar event (supports ICS subscriptions, Google Calendar, and Microsoft Calendar)
  */
 export function createICSEvent(icsEvent: ICSEvent, plugin: TaskNotesPlugin): CalendarEvent | null {
 	try {
-		// Check if this is a Google Calendar event
+		// Check if this is a Google Calendar or Microsoft Calendar event
 		const isGoogleCalendar = icsEvent.subscriptionId.startsWith("google-");
+		const isMicrosoftCalendar = icsEvent.subscriptionId.startsWith("microsoft-");
 
 		let backgroundColor: string;
 		let borderColor: string;
@@ -488,6 +490,12 @@ export function createICSEvent(icsEvent: ICSEvent, plugin: TaskNotesPlugin): Cal
 			backgroundColor = hexToRgba(borderColor, 0.2);
 			textColor = getEventTextColor(true); // Use theme-appropriate text color
 			subscriptionName = "Google Calendar";
+		} else if (isMicrosoftCalendar) {
+			// Microsoft Calendar event - use event's color if available
+			borderColor = icsEvent.color || "#0078D4"; // Default to Microsoft Blue if no color
+			backgroundColor = hexToRgba(borderColor, 0.2);
+			textColor = getEventTextColor(true); // Use theme-appropriate text color
+			subscriptionName = "Microsoft Calendar";
 		} else {
 			// ICS subscription event - use subscription settings
 			const subscription = plugin.icsSubscriptionService
@@ -513,12 +521,13 @@ export function createICSEvent(icsEvent: ICSEvent, plugin: TaskNotesPlugin): Cal
 			backgroundColor: backgroundColor,
 			borderColor: borderColor,
 			textColor: textColor,
-			editable: isGoogleCalendar, // Google Calendar events are editable, ICS subscriptions are not
+			editable: isGoogleCalendar || isMicrosoftCalendar, // Google and Microsoft Calendar events are editable, ICS subscriptions are not
 			extendedProps: {
 				icsEvent: icsEvent,
 				eventType: "ics",
 				subscriptionName: subscriptionName,
 				isGoogleCalendar: isGoogleCalendar,
+				isMicrosoftCalendar: isMicrosoftCalendar,
 			},
 		};
 	} catch (error) {

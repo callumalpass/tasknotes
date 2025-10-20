@@ -289,6 +289,7 @@ export class MicrosoftCalendarService extends CalendarProvider {
 				url = deltaLink;
 			} else {
 				// Full sync with time range
+				// Note: Use regular calendarView endpoint (not /delta) for initial sync with time filtering
 				const now = new Date();
 				const defaultTimeMin = timeMin || new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 				const defaultTimeMax = timeMax || new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000);
@@ -299,7 +300,7 @@ export class MicrosoftCalendarService extends CalendarProvider {
 					$top: MICROSOFT_CALENDAR_CONSTANTS.MAX_RESULTS_PER_REQUEST.toString()
 				});
 
-				url = `${this.baseUrl}/me/calendars/${encodeURIComponent(calendarId)}/calendarView/delta?${params.toString()}`;
+				url = `${this.baseUrl}/me/calendars/${encodeURIComponent(calendarId)}/calendarView?${params.toString()}`;
 			}
 
 			do {
@@ -382,13 +383,29 @@ export class MicrosoftCalendarService extends CalendarProvider {
 			start = format(startDate, "yyyy-MM-dd");
 			end = endDate ? format(endDate, "yyyy-MM-dd") : undefined;
 		} else {
-			// Timed event - convert to local time
-			const startDate = new Date(msEvent.start.dateTime);
-			const endDate = msEvent.end ? new Date(msEvent.end.dateTime) : undefined;
+			// Timed event - Microsoft returns datetime with timezone info
+			// If timezone is UTC, append 'Z' to ensure proper UTC parsing
+			// Otherwise, parse as-is (will be treated as local time by JavaScript)
+			let startDateTimeStr = msEvent.start.dateTime;
+			let endDateTimeStr = msEvent.end.dateTime;
 
+			// Microsoft Graph returns UTC times when timezone is "UTC"
+			// Append 'Z' to make it a valid ISO 8601 UTC timestamp
+			if (msEvent.start.timeZone === "UTC") {
+				// Remove trailing zeros and append Z
+				startDateTimeStr = msEvent.start.dateTime.replace(/\.0+$/, "") + "Z";
+			}
+			if (msEvent.end.timeZone === "UTC") {
+				endDateTimeStr = msEvent.end.dateTime.replace(/\.0+$/, "") + "Z";
+			}
+
+			const startDate = new Date(startDateTimeStr);
+			const endDate = new Date(endDateTimeStr);
+
+			// Convert to local time ISO format (without timezone suffix)
 			const { format } = require("date-fns");
 			start = format(startDate, "yyyy-MM-dd'T'HH:mm:ss");
-			end = endDate ? format(endDate, "yyyy-MM-dd'T'HH:mm:ss") : undefined;
+			end = format(endDate, "yyyy-MM-dd'T'HH:mm:ss");
 		}
 
 		// Microsoft doesn't provide event-level colors in the same way as Google

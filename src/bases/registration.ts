@@ -308,6 +308,31 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 							});
 						}
 
+						// Add Microsoft Calendar section (separate from ICS subscriptions)
+						const microsoftCalendarToggles: any[] = [];
+						if (plugin.microsoftCalendarService) {
+							const availableCalendars = plugin.microsoftCalendarService.getAvailableCalendars();
+							if (availableCalendars.length > 0) {
+								availableCalendars.forEach(calendar => {
+									microsoftCalendarToggles.push({
+										type: "toggle",
+										key: `showMicrosoftCalendar_${calendar.id}`,
+										displayName: calendar.summary || calendar.id,
+										default: true,
+									});
+								});
+							}
+						}
+
+						// Add Microsoft Calendar group if any calendars are available
+						if (microsoftCalendarToggles.length > 0) {
+							options.push({
+								type: "group",
+								displayName: "Microsoft Calendar",
+								items: microsoftCalendarToggles,
+							});
+						}
+
 						// Add ICS calendar subscription toggles (separate section)
 						const icsCalendarToggles: any[] = [];
 						if (plugin.icsSubscriptionService) {
