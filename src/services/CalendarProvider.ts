@@ -89,23 +89,24 @@ export abstract class CalendarProvider extends EventEmitter {
 	 * @param calendarId The calendar containing the event
 	 * @param eventId The event to update
 	 * @param updates Partial event data to update
+	 * @returns The updated event in ICSEvent format
 	 */
 	abstract updateEvent(
 		calendarId: string,
 		eventId: string,
 		updates: Partial<CalendarEventData>
-	): Promise<void>;
+	): Promise<ICSEvent>;
 
 	/**
 	 * Creates a new calendar event
 	 * @param calendarId The calendar to create the event in
 	 * @param event The event data
-	 * @returns The ID of the created event
+	 * @returns The created event in ICSEvent format
 	 */
 	abstract createEvent(
 		calendarId: string,
 		event: CalendarEventData
-	): Promise<string>;
+	): Promise<ICSEvent>;
 
 	/**
 	 * Deletes a calendar event

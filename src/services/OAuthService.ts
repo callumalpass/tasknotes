@@ -143,12 +143,11 @@ export class OAuthService {
 		} else {
 			// Quick Setup: Using built-in TaskNotes client_id - use Device Flow
 			// Check license validation
-			// TEMPORARILY DISABLED FOR TESTING
-			// const hasValidLicense = await this.plugin.licenseService?.canUseBuiltInCredentials();
+			const hasValidLicense = await this.plugin.licenseService?.canUseBuiltInCredentials();
 
-			// if (!hasValidLicense) {
-			// 	throw new OAuthNotConfiguredError(provider);
-			// }
+			if (!hasValidLicense) {
+				throw new OAuthNotConfiguredError(provider);
+			}
 
 			return await this.authenticateDeviceFlow(provider);
 		}
@@ -270,12 +269,6 @@ export class OAuthService {
 				interval
 			} = deviceData;
 
-			console.log("[OAuth] Device Flow initiated:", {
-				userCode: user_code,
-				verificationUri: verification_uri,
-				expiresIn: expires_in
-			});
-
 			// Step 2: Show modal with code and instructions
 			let cancelled = false;
 			const modal = new DeviceCodeModal(
@@ -381,12 +374,10 @@ export class OAuthService {
 
 				if (errorCode === "authorization_pending") {
 					// User hasn't authorized yet, keep polling
-					console.log(`[OAuth] Device Flow: Authorization pending (attempt ${attempt + 1}/${maxAttempts})`);
 					continue;
 				} else if (errorCode === "slow_down") {
 					// Server wants us to slow down
 					currentInterval += OAUTH_CONSTANTS.DEVICE_FLOW.SLOW_DOWN_INCREMENT_SECONDS;
-					console.log(`[OAuth] Device Flow: Slow down requested, new interval: ${currentInterval}s`);
 					continue;
 				} else if (errorCode === "expired_token") {
 					// Fatal error - code expired, don't retry
@@ -534,7 +525,6 @@ export class OAuthService {
 			});
 
 			this.callbackServer.listen(port, "127.0.0.1", () => {
-				console.log(`OAuth callback server listening on http://127.0.0.1:${port}`);
 				resolve();
 			});
 		});
@@ -551,7 +541,6 @@ export class OAuthService {
 			}
 
 			this.callbackServer.close(() => {
-				console.log("OAuth callback server stopped");
 				this.callbackServer = null;
 				resolve();
 			});
@@ -789,13 +778,11 @@ export class OAuthService {
 			// Check if a refresh is already in progress
 			const pendingRefresh = this.tokenRefreshPromises.get(provider);
 			if (pendingRefresh) {
-				console.log(`${provider} token refresh already in progress, waiting...`);
 				const newTokens = await pendingRefresh;
 				return newTokens.accessToken;
 			}
 
 			// Start new refresh and store the promise
-			console.log(`${provider} token expired or expiring soon, refreshing...`);
 			const refreshPromise = this.refreshToken(provider)
 				.finally(() => {
 					// Clean up the pending promise when done (success or failure)
@@ -905,12 +892,7 @@ export class OAuthService {
 				throw: false
 			});
 
-			if (response.status === 200) {
-				console.log(`[OAuth] Successfully revoked token for ${provider}`);
-			} else {
-				// Token may already be revoked or invalid - this is not critical
-				console.warn(`[OAuth] Token revocation returned status ${response.status} for ${provider}`);
-			}
+			// Token revocation completed (status 200 or token already invalid)
 		} catch (error) {
 			// Don't throw - revocation failure shouldn't prevent disconnection
 			console.error(`[OAuth] Failed to revoke token for ${provider}:`, error);

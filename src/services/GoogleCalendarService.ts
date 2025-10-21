@@ -155,11 +155,9 @@ export class GoogleCalendarService extends CalendarProvider {
 	async initialize(): Promise<void> {
 		// Check if connected
 		const isConnected = await this.oauthService.isConnected("google");
-		console.log("[GoogleCalendarService] Initialize - connected:", isConnected);
 		if (isConnected) {
 			// Fetch initial data
 			await this.refreshAllCalendars();
-			console.log("[GoogleCalendarService] Initial refresh complete, cached events:", this.cache.get("all")?.length || 0);
 
 			// Set up periodic refresh (every 15 minutes)
 			this.startRefreshTimer();
@@ -196,8 +194,8 @@ export class GoogleCalendarService extends CalendarProvider {
 	 * Fetches list of user's calendars and stores their colors
 	 */
 	async listCalendars(): Promise<ProviderCalendar[]> {
-		return this.withRetry(async () => {
-			try {
+		try {
+			return await this.withRetry(async () => {
 				const token = await this.oauthService.getValidToken("google");
 
 				const response = await requestUrl({
@@ -212,19 +210,27 @@ export class GoogleCalendarService extends CalendarProvider {
 				const data = response.json;
 				const calendars = data.items || [];
 
-				// Store calendar colors for later use
+				// Store calendar colors for later use and convert to ProviderCalendar format
+				const providerCalendars: ProviderCalendar[] = [];
 				for (const calendar of calendars) {
 					if (calendar.backgroundColor) {
 						this.calendarColors.set(calendar.id, calendar.backgroundColor);
 					}
+					providerCalendars.push({
+						id: calendar.id,
+						summary: calendar.summary,
+						description: calendar.description,
+						backgroundColor: calendar.backgroundColor,
+						primary: calendar.primary || false
+					});
 				}
 
-				return calendars;
-			} catch (error) {
-				console.error("Failed to list calendars:", error);
-				throw new Error(`Failed to fetch calendar list: ${error.message}`);
-			}
-		}, "List calendars");
+				return providerCalendars;
+			}, "List calendars");
+		} catch (error) {
+			console.error("Failed to list calendars:", error);
+			throw new GoogleCalendarError(`Failed to fetch calendar list: ${error.message}`, error.status);
+		}
 	}
 
 	/**
@@ -249,8 +255,6 @@ export class GoogleCalendarService extends CalendarProvider {
 			let nextSyncToken: string | undefined;
 			let isFullSync = !syncToken;
 			let hasDeletes = false;
-
-			console.log(`[GoogleCalendar] Fetching events for ${calendarId}, syncToken: ${syncToken ? "present" : "none"}, mode: ${isFullSync ? "full" : "incremental"}`);
 
 			do {
 				try {
@@ -304,12 +308,9 @@ export class GoogleCalendarService extends CalendarProvider {
 						nextSyncToken = data.nextSyncToken;
 					}
 
-					console.log(`[GoogleCalendar] Fetched ${items.length} events, total: ${allEvents.length}, nextPage: ${!!nextPageToken}, syncToken: ${!!nextSyncToken}`);
-
 				} catch (error) {
 					// Check if syncToken expired (HTTP 410)
 					if (error.status === 410) {
-						console.log(`[GoogleCalendar] Sync token expired for ${calendarId}, performing full resync`);
 						await this.clearSyncToken(calendarId);
 						// Retry with full sync
 						return await this.fetchCalendarEvents(calendarId, timeMin, timeMax);
@@ -321,7 +322,6 @@ export class GoogleCalendarService extends CalendarProvider {
 			// Save the new sync token
 			if (nextSyncToken) {
 				await this.saveSyncToken(calendarId, nextSyncToken);
-				console.log(`[GoogleCalendar] Saved new sync token for ${calendarId}`);
 			}
 
 			return {
@@ -419,7 +419,6 @@ export class GoogleCalendarService extends CalendarProvider {
 				try {
 					const { events: googleEvents, isFullSync, hasDeletes } = await this.fetchCalendarEvents(calendarId);
 
-					console.log(`[GoogleCalendar] Processing ${googleEvents.length} events from ${calendarId}, full sync: ${isFullSync}, has deletes: ${hasDeletes}`);
 
 					if (isFullSync) {
 						// Full sync: Replace all events from this calendar
@@ -434,7 +433,6 @@ export class GoogleCalendarService extends CalendarProvider {
 							.map(event => this.convertToICSEvent(event, calendarId));
 
 						cachedEvents.push(...icsEvents);
-						console.log(`[GoogleCalendar] Full sync: Added ${icsEvents.length} events for ${calendarId}`);
 					} else {
 						// Incremental sync: Update cache with changes
 						let addedCount = 0;
@@ -467,7 +465,6 @@ export class GoogleCalendarService extends CalendarProvider {
 							}
 						}
 
-						console.log(`[GoogleCalendar] Incremental sync for ${calendarId}: +${addedCount}, ~${updatedCount}, -${deletedCount}`);
 					}
 				} catch (error) {
 					console.error(`Failed to fetch events from calendar ${calendarId}:`, error);
@@ -496,8 +493,33 @@ export class GoogleCalendarService extends CalendarProvider {
 	 */
 	getAllEvents(): ICSEvent[] {
 		const events = this.cache.get("all") || [];
-		console.log("[GoogleCalendarService] getAllEvents called, returning:", events.length, "events");
 		return events;
+	}
+
+	/**
+	 * Alias for getAllEvents() - for test compatibility
+	 */
+	getCachedEvents(): ICSEvent[] {
+		return this.getAllEvents();
+	}
+
+	/**
+	 * Gets events for a specific calendar (wrapper for fetchCalendarEvents)
+	 * Returns just the events array for easier consumption
+	 */
+	async getEvents(calendarId: string, timeMin?: Date, timeMax?: Date): Promise<ICSEvent[]> {
+		const { events } = await this.fetchCalendarEvents(calendarId, timeMin, timeMax);
+		// Convert to ICS events
+		return events
+			.filter(event => event.status !== "cancelled")
+			.map(event => this.convertToICSEvent(event, calendarId));
+	}
+
+	/**
+	 * Alias for refresh() - for test compatibility
+	 */
+	async manualRefresh(): Promise<void> {
+		return this.refresh();
 	}
 
 	/**
@@ -511,10 +533,7 @@ export class GoogleCalendarService extends CalendarProvider {
 
 		if (timeSinceLastRefresh < minInterval) {
 			const remainingMs = minInterval - timeSinceLastRefresh;
-			console.log(
-				`[GoogleCalendar] Refresh rate limited, ` +
-				`please wait ${Math.ceil(remainingMs / 1000)}s before refreshing again`
-			);
+			new Notice(`Please wait ${Math.ceil(remainingMs / 1000)}s before refreshing again`);
 			return;
 		}
 
@@ -531,18 +550,21 @@ export class GoogleCalendarService extends CalendarProvider {
 
 	/**
 	 * Updates a Google Calendar event (for moving or resizing events)
+	 * Returns the updated event as ICSEvent for test compatibility
 	 */
 	async updateEvent(
 		calendarId: string,
 		eventId: string,
 		updates: {
+			title?: string;
 			summary?: string;
 			description?: string;
-			start?: { dateTime?: string; date?: string; timeZone?: string };
-			end?: { dateTime?: string; date?: string; timeZone?: string };
+			start?: string | { dateTime?: string; date?: string; timeZone?: string };
+			end?: string | { dateTime?: string; date?: string; timeZone?: string };
 			location?: string;
+			isAllDay?: boolean;
 		}
-	): Promise<void> {
+	): Promise<ICSEvent> {
 		// Validate inputs
 		validateCalendarId(calendarId);
 		validateEventId(eventId);
@@ -565,45 +587,68 @@ export class GoogleCalendarService extends CalendarProvider {
 
 			const currentEvent = getResponse.json;
 
-			// Merge updates with current event
-			const updatedEvent = {
-				...currentEvent,
-				...updates
-			};
+			// Build update payload
+			const payload: any = { ...currentEvent };
+
+			// Support both 'title' and 'summary'
+			if (updates.title !== undefined || updates.summary !== undefined) {
+				payload.summary = updates.summary || updates.title;
+			}
+			if (updates.description !== undefined) {
+				payload.description = updates.description;
+			}
+			if (updates.location !== undefined) {
+				payload.location = updates.location;
+			}
+
+			// Handle start/end updates
+			if (updates.start !== undefined) {
+				if (typeof updates.start === 'string') {
+					const isAllDay = updates.isAllDay || !/T/.test(updates.start);
+					if (isAllDay) {
+						payload.start = { date: updates.start };
+					} else {
+						payload.start = { dateTime: updates.start, timeZone: 'UTC' };
+					}
+				} else {
+					payload.start = updates.start;
+				}
+			}
+
+			if (updates.end !== undefined) {
+				if (typeof updates.end === 'string') {
+					const isAllDay = updates.isAllDay || !/T/.test(updates.end as string);
+					if (isAllDay) {
+						payload.end = { date: updates.end };
+					} else {
+						payload.end = { dateTime: updates.end, timeZone: 'UTC' };
+					}
+				} else {
+					payload.end = updates.end;
+				}
+			}
 
 			// Clean up format conversion: ensure only one date format exists in start/end
-			// If we're setting 'date' (all-day), remove 'dateTime' and 'timeZone'
-			// If we're setting 'dateTime' (timed), remove 'date'
-			if (updatedEvent.start) {
-				if (updatedEvent.start.date) {
-					// All-day format - remove timed fields
-					delete updatedEvent.start.dateTime;
-					delete updatedEvent.start.timeZone;
-				} else if (updatedEvent.start.dateTime) {
-					// Timed format - remove all-day field
-					delete updatedEvent.start.date;
+			if (payload.start) {
+				if (payload.start.date) {
+					delete payload.start.dateTime;
+					delete payload.start.timeZone;
+				} else if (payload.start.dateTime) {
+					delete payload.start.date;
 				}
 			}
 
-			if (updatedEvent.end) {
-				if (updatedEvent.end.date) {
-					// All-day format - remove timed fields
-					delete updatedEvent.end.dateTime;
-					delete updatedEvent.end.timeZone;
-				} else if (updatedEvent.end.dateTime) {
-					// Timed format - remove all-day field
-					delete updatedEvent.end.date;
+			if (payload.end) {
+				if (payload.end.date) {
+					delete payload.end.dateTime;
+					delete payload.end.timeZone;
+				} else if (payload.end.dateTime) {
+					delete payload.end.date;
 				}
 			}
-
-			// Debug: Log the payload being sent
-			console.log("[GoogleCalendar] Updating event:", eventId);
-			console.log("[GoogleCalendar] Updates received:", JSON.stringify(updates, null, 2));
-			console.log("[GoogleCalendar] Final payload start:", JSON.stringify(updatedEvent.start, null, 2));
-			console.log("[GoogleCalendar] Final payload end:", JSON.stringify(updatedEvent.end, null, 2));
 
 			// Update the event with retry logic
-			await this.withRetry(async () => {
+			const updateResponse = await this.withRetry(async () => {
 				return await requestUrl({
 					url: `${this.baseUrl}/calendars/${encodeURIComponent(calendarId)}/events/${encodeURIComponent(eventId)}`,
 					method: "PUT",
@@ -612,13 +657,19 @@ export class GoogleCalendarService extends CalendarProvider {
 						"Content-Type": "application/json",
 						"Accept": "application/json"
 					},
-					body: JSON.stringify(updatedEvent)
+					body: JSON.stringify(payload)
 				});
 			}, `Update event ${eventId}`);
+
+			const updatedEvent = updateResponse.json;
+
+			// Convert to ICSEvent for return
+			const icsEvent = this.convertToICSEvent(updatedEvent, calendarId);
 
 			// Refresh events after update
 			await this.refreshAllCalendars();
 
+			return icsEvent;
 
 		} catch (error) {
 			console.error("Failed to update Google Calendar event:", error);
@@ -638,26 +689,55 @@ export class GoogleCalendarService extends CalendarProvider {
 
 	/**
 	 * Creates a new Google Calendar event
+	 * For tests, accepts simplified event format and returns ICSEvent
 	 */
 	async createEvent(
 		calendarId: string,
 		event: {
-			summary: string;
+			title?: string;
+			summary?: string;
 			description?: string;
-			start: { dateTime?: string; date?: string; timeZone?: string };
-			end: { dateTime?: string; date?: string; timeZone?: string };
+			start: string | { dateTime?: string; date?: string; timeZone?: string };
+			end: string | { dateTime?: string; date?: string; timeZone?: string };
 			location?: string;
+			isAllDay?: boolean;
 		}
-	): Promise<string> {
+	): Promise<ICSEvent> {
 		// Validate inputs
 		validateCalendarId(calendarId);
 		validateRequired(event, "event");
-		validateRequired(event.summary, "event.summary");
+
+		// Support both 'title' and 'summary' for test compatibility
+		const summary = event.summary || event.title;
+		validateRequired(summary, "event.summary");
 		validateRequired(event.start, "event.start");
 		validateRequired(event.end, "event.end");
 
 		try {
 			const token = await this.oauthService.getValidToken("google");
+
+			// Build Google Calendar API payload
+			const payload: any = {
+				summary: summary,
+				description: event.description,
+				location: event.location
+			};
+
+			// Handle start/end - could be string or object
+			if (typeof event.start === 'string') {
+				// Determine if all-day based on format (YYYY-MM-DD vs YYYY-MM-DDTHH:mm:ss)
+				const isAllDay = event.isAllDay || !/T/.test(event.start);
+				if (isAllDay) {
+					payload.start = { date: event.start };
+					payload.end = { date: event.end as string };
+				} else {
+					payload.start = { dateTime: event.start, timeZone: 'UTC' };
+					payload.end = { dateTime: event.end as string, timeZone: 'UTC' };
+				}
+			} else {
+				payload.start = event.start;
+				payload.end = event.end;
+			}
 
 			const response = await this.withRetry(async () => {
 				return await requestUrl({
@@ -668,17 +748,19 @@ export class GoogleCalendarService extends CalendarProvider {
 						"Content-Type": "application/json",
 						"Accept": "application/json"
 					},
-					body: JSON.stringify(event)
+					body: JSON.stringify(payload)
 				});
 			}, `Create event in ${calendarId}`);
 
 			const createdEvent = response.json;
 
+			// Convert to ICSEvent for return
+			const icsEvent = this.convertToICSEvent(createdEvent, calendarId);
+
 			// Refresh events after creation
 			await this.refreshAllCalendars();
 
-
-			return createdEvent.id;
+			return icsEvent;
 
 		} catch (error) {
 			console.error("Failed to create Google Calendar event:", error);
@@ -719,8 +801,12 @@ export class GoogleCalendarService extends CalendarProvider {
 			// Refresh events after deletion
 			await this.refreshAllCalendars();
 
-
 		} catch (error) {
+			// 410 Gone means event was already deleted - treat as success
+			if (error.status === 410) {
+				return;
+			}
+
 			console.error("Failed to delete Google Calendar event:", error);
 			if (error.status === 404) {
 				throw new EventNotFoundError(eventId);
