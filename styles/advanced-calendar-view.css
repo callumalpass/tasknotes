@@ -777,6 +777,10 @@
     background: transparent !important;
 }
 
+.advanced-calendar-view .fc-list-table th {
+    background: var(--background-secondary-alt) !important;
+}
+
 /* Clean event styling */
 .advanced-calendar-view .fc-event {
     border-radius: 6px;
