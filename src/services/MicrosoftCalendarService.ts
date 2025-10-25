@@ -299,7 +299,9 @@ export class MicrosoftCalendarService extends CalendarProvider {
 				url = deltaLink;
 			} else {
 				// Full sync with time range
-				// FIXED: Use /delta endpoint - regular calendarView does not return @odata.deltaLink
+				// NOTE: Use regular /calendarView (NOT /delta) for initial sync with time filtering
+				// The /delta endpoint does NOT support startDateTime/endDateTime parameters
+				// After first sync, we'll get @odata.deltaLink for subsequent incremental syncs
 				const now = new Date();
 				const defaultTimeMin = timeMin || new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 				const defaultTimeMax = timeMax || new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000);
@@ -310,7 +312,7 @@ export class MicrosoftCalendarService extends CalendarProvider {
 					$top: MICROSOFT_CALENDAR_CONSTANTS.MAX_RESULTS_PER_REQUEST.toString()
 				});
 
-				url = `${this.baseUrl}/me/calendars/${encodeURIComponent(calendarId)}/calendarView/delta?${params.toString()}`;
+				url = `${this.baseUrl}/me/calendars/${encodeURIComponent(calendarId)}/calendarView?${params.toString()}`;
 			}
 
 			do {
@@ -320,10 +322,6 @@ export class MicrosoftCalendarService extends CalendarProvider {
 							`odata.maxpagesize=${MICROSOFT_CALENDAR_CONSTANTS.MAX_RESULTS_PER_REQUEST}`,
 							`outlook.timezone="UTC"`
 						];
-
-						if (!deltaLink) {
-							preferValues.push("odata.track-changes");
-						}
 
 						return await requestUrl({
 							url: nextLink || url,
