@@ -41,6 +41,7 @@ Each task being a full note means you can write descriptions, jot down thoughts 
 
 ### Calendar Integration
 
+- OAuth 2.0 integration with Google Calendar and Microsoft Calendar ([setup guide](docs/calendar-setup.md))
 - Month view displaying tasks and notes
 - Mini calendar view for compact layouts
 - ICS/iCal feed subscriptions

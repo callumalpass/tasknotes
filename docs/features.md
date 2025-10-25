@@ -36,6 +36,8 @@ See [Time Management](features/time-management.md) for details.
 
 External ICS feeds from Google Calendar, Outlook, and similar services sync into TaskNotes, while ICS export lets other systems access your task data with automatic updates.
 
+OAuth 2.0 integration enables direct connection to Google Calendar and Microsoft Calendar for two-way sync. See [Calendar Setup Guide](calendar-setup.md) for configuration instructions.
+
 The advanced calendar view supports multiple formats (month, week, day, year, plus configurable custom day ranges) with drag-and-drop task scheduling. Time-blocking creates focused work periods that link directly to specific tasks.
 
 See [Calendar Integration](features/calendar-integration.md) for details.
