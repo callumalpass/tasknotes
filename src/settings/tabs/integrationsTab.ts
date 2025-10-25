@@ -244,7 +244,7 @@ export function renderIntegrationsTab(
 			getLicenseLink.target = "_blank";
 			getLicenseLink.style.fontSize = "0.9em";
 			getLicenseLink.style.color = "var(--interactive-accent)";
-			getLicenseLink.textContent = "Get License Key ($1/month)";
+			getLicenseLink.textContent = "Get License Key ($2/month)";
 
 			// Status indicator
 			const statusDiv = document.createElement("div");
@@ -279,11 +279,21 @@ export function renderIntegrationsTab(
 				]
 			});
 
+			const quickSetupGuideLink = document.createElement("a");
+			quickSetupGuideLink.href = "https://callumalpass.github.io/tasknotes/calendar-setup";
+			quickSetupGuideLink.target = "_blank";
+			quickSetupGuideLink.style.fontSize = "0.9em";
+			quickSetupGuideLink.style.color = "var(--interactive-accent)";
+			quickSetupGuideLink.style.marginTop = "0.5rem";
+			quickSetupGuideLink.style.display = "inline-block";
+			quickSetupGuideLink.textContent = "View Calendar Setup Guide";
+
 			sections.push({
 				rows: [
 					{ label: "License Key:", input: licenseKeyInput },
 					{ label: "", input: getLicenseLink, fullWidth: true },
-					{ label: "", input: statusDiv, fullWidth: true }
+					{ label: "", input: statusDiv, fullWidth: true },
+					{ label: "", input: quickSetupGuideLink, fullWidth: true }
 				]
 			});
 
@@ -302,11 +312,11 @@ export function renderIntegrationsTab(
 			helpText.innerHTML = "<strong>Advanced Setup</strong> - Configure your own OAuth credentials for calendar integration. This requires creating an OAuth application with the calendar provider and entering the Client ID and Secret in each calendar card below. Initial setup takes approximately 15 minutes.<br><br><strong>Benefits of Advanced Setup:</strong><br>• No license subscription required<br>• Uses your own API quota allocation<br>• Direct connection between Obsidian and calendar provider<br>• Complete data privacy (no intermediary servers)";
 
 			const setupGuideLink = document.createElement("a");
-			setupGuideLink.href = "https://docs.tasknotes.com/oauth-setup"; // TODO: Create this guide
+			setupGuideLink.href = "https://callumalpass.github.io/tasknotes/calendar-setup";
 			setupGuideLink.target = "_blank";
 			setupGuideLink.style.fontSize = "0.9em";
 			setupGuideLink.style.color = "var(--interactive-accent)";
-			setupGuideLink.textContent = "View OAuth Configuration Guide";
+			setupGuideLink.textContent = "View Calendar Setup Guide";
 
 			sections.push({
 				rows: [

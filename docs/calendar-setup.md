@@ -69,14 +69,17 @@ If you prefer to use your own OAuth application:
 ## Troubleshooting
 
 **"Failed to connect"**
+
 - Verify Client ID and Secret are correct
 - Check redirect URI is configured: `http://localhost:8080`
 - Ensure required API permissions are granted
 
 **"Failed to fetch events"**
+
 - Disconnect and reconnect to refresh tokens
 - Check calendar permissions in Google/Microsoft settings
 
 **Connection lost after Obsidian restart**
+
 - Tokens are persisted - you should not need to reconnect
 - If you do, there may be a file permissions issue with your vault
