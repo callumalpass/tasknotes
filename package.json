@@ -1,6 +1,6 @@
 {
 	"name": "tasknotes",
-	"version": "3.25.3",
+	"version": "3.25.4",
 	"description": "Note-based task management with calendar, pomodoro and time-tracking integration.",
 	"main": "main.js",
 	"scripts": {
@@ -9,7 +9,7 @@
 		"dev:watch": "npm run build-css && node generate-release-notes-import.mjs && node esbuild.config.mjs",
 		"copy-files": "node copy-files.mjs",
 		"build-css": "node build-css.mjs",
-		"version": "node version-bump.mjs && node generate-release-notes-import.mjs && git add manifest.json versions.json src/releaseNotes.ts",
+		"version": "node version-bump.mjs && node generate-release-notes-import.mjs && git add manifest.json versions.json",
 		"test": "jest",
 		"test:watch": "jest --watch",
 		"test:coverage": "jest --coverage",
