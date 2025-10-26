@@ -97,6 +97,11 @@ import type { HTTPAPIService } from "./services/HTTPAPIService";
 import { createI18nService, I18nService, TranslationKey } from "./i18n";
 import { ReleaseNotesView, RELEASE_NOTES_VIEW_TYPE } from "./views/ReleaseNotesView";
 import { CURRENT_VERSION, RELEASE_NOTES_BUNDLE } from "./releaseNotes";
+import { OAuthService } from "./services/OAuthService";
+import { GoogleCalendarService } from "./services/GoogleCalendarService";
+import { MicrosoftCalendarService } from "./services/MicrosoftCalendarService";
+import { LicenseService } from "./services/LicenseService";
+import { CalendarProviderRegistry } from "./services/CalendarProvider";
 
 interface TranslatedCommandDefinition {
 	id: string;
@@ -200,6 +205,21 @@ export default class TaskNotesPlugin extends Plugin {
 
 	// HTTP API service
 	apiService?: HTTPAPIService;
+
+	// License service for Lemon Squeezy validation
+	licenseService: LicenseService;
+
+	// OAuth service
+	oauthService: OAuthService;
+
+	// Google Calendar service
+	googleCalendarService: GoogleCalendarService;
+
+	// Microsoft Calendar service
+	microsoftCalendarService: MicrosoftCalendarService;
+
+	// Calendar provider registry for abstraction
+	calendarProviderRegistry: CalendarProviderRegistry;
 
 	// Command localization support
 	private commandDefinitions: TranslatedCommandDefinition[] = [];
@@ -385,6 +405,22 @@ export default class TaskNotesPlugin extends Plugin {
 		// Start migration check early (before views can be opened)
 		this.migrationPromise = this.performEarlyMigrationCheck();
 
+		// Initialize License service early (needed by OAuth service)
+		this.licenseService = new LicenseService(this);
+		// Load cached license validation data on startup
+		await this.licenseService.loadCacheFromData();
+
+		// Initialize OAuth and Calendar services early (before Bases registration)
+		// This ensures the calendar toggles appear in Bases calendar views
+		this.oauthService = new OAuthService(this);
+		this.googleCalendarService = new GoogleCalendarService(this, this.oauthService);
+		this.microsoftCalendarService = new MicrosoftCalendarService(this, this.oauthService);
+
+		// Initialize calendar provider registry and register calendar providers
+		this.calendarProviderRegistry = new CalendarProviderRegistry();
+		this.calendarProviderRegistry.register(this.googleCalendarService);
+		this.calendarProviderRegistry.register(this.microsoftCalendarService);
+
 		// Early registration attempt for Bases integration
 		if (this.settings?.enableBases && !this.basesRegistered) {
 			try {
@@ -549,6 +585,29 @@ export default class TaskNotesPlugin extends Plugin {
 				// Initialize auto export service
 				this.autoExportService = new AutoExportService(this);
 				this.autoExportService.start();
+
+				// Connect calendar data changes to view refreshes BEFORE initialization
+				// This ensures we catch the initial data-changed event from initialize()
+
+				// Google Calendar
+				this.googleCalendarService.on("data-changed", () => {
+					// Trigger calendar view refreshes when Google Calendar events change
+					this.notifyDataChanged(undefined, false, true);
+				});
+
+				// Initialize Google Calendar service (instance already created in onload)
+				// This triggers the actual data fetching and will emit data-changed
+				await this.googleCalendarService.initialize();
+
+				// Microsoft Calendar
+				this.microsoftCalendarService.on("data-changed", () => {
+					// Trigger calendar view refreshes when Microsoft Calendar events change
+					this.notifyDataChanged(undefined, false, true);
+				});
+
+				// Initialize Microsoft Calendar service (instance already created in onload)
+				// This triggers the actual data fetching and will emit data-changed
+				await this.microsoftCalendarService.initialize();
 
 				// Initialize HTTP API service if enabled (desktop only)
 				await this.initializeHTTPAPI();
@@ -1111,6 +1170,25 @@ export default class TaskNotesPlugin extends Plugin {
 		// Stop HTTP API server
 		if (this.apiService) {
 			this.apiService.stop();
+		}
+
+		// Clean up OAuth service
+		if (this.oauthService) {
+			this.oauthService.destroy();
+		}
+
+		// Clean up calendar services
+		if (this.googleCalendarService) {
+			this.googleCalendarService.destroy();
+		}
+
+		if (this.microsoftCalendarService) {
+			this.microsoftCalendarService.destroy();
+		}
+
+		// Clean up calendar provider registry
+		if (this.calendarProviderRegistry) {
+			this.calendarProviderRegistry.destroyAll();
 		}
 
 		// Clean up ViewStateManager

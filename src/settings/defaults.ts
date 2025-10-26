@@ -290,4 +290,21 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	maintainDueDateOffsetInRecurring: false,
 	// Frontmatter link format defaults
 	useFrontmatterMarkdownLinks: false, // Default to wikilinks for compatibility
+	// OAuth Calendar Integration defaults
+	oauthSetupMode: "quick" as "quick" | "advanced", // Default to quick setup (license-based)
+	lemonSqueezyLicenseKey: "",
+	googleOAuthClientId: "",
+	googleOAuthClientSecret: "",
+	microsoftOAuthClientId: "",
+	microsoftOAuthClientSecret: "",
+	enableGoogleCalendar: false,
+	enableMicrosoftCalendar: false,
+	// Google Calendar selection (empty = show all calendars)
+	enabledGoogleCalendars: [],
+	// Google Calendar sync tokens (for incremental sync)
+	googleCalendarSyncTokens: {},
+	// Microsoft Calendar selection (empty = show all calendars)
+	enabledMicrosoftCalendars: [],
+	// Microsoft Calendar sync tokens (delta links for incremental sync)
+	microsoftCalendarSyncTokens: {},
 };

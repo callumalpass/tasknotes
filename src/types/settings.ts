@@ -132,6 +132,23 @@ export interface TaskNotesSettings {
 	maintainDueDateOffsetInRecurring: boolean;
 	// Frontmatter link format settings
 	useFrontmatterMarkdownLinks: boolean; // Use markdown links in frontmatter (requires obsidian-frontmatter-markdown-links plugin)
+	// OAuth Calendar Integration settings
+	oauthSetupMode: "quick" | "advanced"; // User's preferred setup mode
+	lemonSqueezyLicenseKey: string; // License key for using TaskNotes' built-in OAuth credentials
+	googleOAuthClientId: string;
+	googleOAuthClientSecret: string;
+	microsoftOAuthClientId: string;
+	microsoftOAuthClientSecret: string;
+	enableGoogleCalendar: boolean;
+	enableMicrosoftCalendar: boolean;
+	// Google Calendar selection
+	enabledGoogleCalendars: string[]; // Array of calendar IDs that should be displayed
+	// Google Calendar sync tokens (for incremental sync)
+	googleCalendarSyncTokens: Record<string, string>; // Maps calendar ID to sync token
+	// Microsoft Calendar selection
+	enabledMicrosoftCalendars: string[]; // Array of calendar IDs that should be displayed
+	// Microsoft Calendar sync tokens (delta links for incremental sync)
+	microsoftCalendarSyncTokens: Record<string, string>; // Maps calendar ID to delta link
 }
 
 export interface DefaultReminder {

@@ -26,6 +26,80 @@ import { createICSEventCard } from "../ui/ICSCard";
 import { createPropertyEventCard } from "../ui/PropertyEventCard";
 import { createTimeBlockCard } from "../ui/TimeBlockCard";
 
+/**
+ * Gets the user's IANA timezone identifier (e.g., "America/New_York", "Europe/London")
+ * Used for Google Calendar API to properly handle timezone conversions and DST.
+ *
+ * Note: This is for API communication, not user-facing dates. The Google Calendar API
+ * prefers IANA timezone identifiers over manual offset strings for better DST handling.
+ */
+function getUserTimezone(): string {
+	try {
+		// Get the IANA timezone from Intl API (widely supported in modern browsers)
+		const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+		// Validate that we got a reasonable timezone string
+		if (timezone && timezone.length > 0 && timezone.includes('/')) {
+			return timezone;
+		}
+
+		// Fallback to UTC if we can't determine timezone
+		console.warn('[Calendar] Could not determine IANA timezone, falling back to UTC');
+		return 'UTC';
+	} catch (error) {
+		console.error('[Calendar] Error getting user timezone:', error);
+		return 'UTC';
+	}
+}
+
+/**
+ * Builds calendar API update payload for event start/end times (Google, Microsoft, etc.).
+ * Handles conversion between all-day and timed events correctly.
+ *
+ * For timed events, uses IANA timezone identifier (e.g., "America/New_York")
+ * rather than manual offset strings for robust DST handling.
+ */
+function buildCalendarUpdatePayload(start: Date, end: Date, isAllDay: boolean): any {
+	const updates: any = {};
+
+	if (isAllDay) {
+		// All-day event - ONLY include date field (no dateTime)
+		// Format: YYYY-MM-DD (no time or timezone)
+		updates.start = { date: format(start, "yyyy-MM-dd") };
+		updates.end = { date: format(end, "yyyy-MM-dd") };
+	} else {
+		// Timed event - include dateTime with timezone
+		// Google Calendar API prefers IANA timezone identifiers for proper DST handling
+		// Format: YYYY-MM-DDTHH:mm:ss with separate timeZone field
+		const timezone = getUserTimezone();
+
+		updates.start = {
+			dateTime: format(start, "yyyy-MM-dd'T'HH:mm:ss"),
+			timeZone: timezone
+		};
+		updates.end = {
+			dateTime: format(end, "yyyy-MM-dd'T'HH:mm:ss"),
+			timeZone: timezone
+		};
+	}
+
+	return updates;
+}
+
+/**
+ * Calculates default end date if not provided
+ * All-day: next day | Timed: 1 hour after start
+ */
+function calculateDefaultEndDate(start: Date, isAllDay: boolean): Date {
+	const end = new Date(start);
+	if (isAllDay) {
+		end.setDate(end.getDate() + 1);
+	} else {
+		end.setHours(end.getHours() + 1);
+	}
+	return end;
+}
+
 interface BasesContainerLike {
 	results?: Map<any, any>;
 	query?: {
@@ -249,7 +323,46 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 				return;
 			}
 
-			// Only allow scheduled and recurring events to be moved
+			// Handle calendar provider event drops (Google, Microsoft, etc.)
+			if (eventType === "ics") {
+				const icsEvent = dropInfo.event.extendedProps.icsEvent;
+				if (!icsEvent) {
+					// ICS event without data, block move
+					dropInfo.revert();
+					return;
+				}
+
+				// Find the calendar provider that owns this event
+				const provider = plugin.calendarProviderRegistry?.findProviderForEvent(icsEvent);
+				if (provider) {
+					try {
+						// Extract calendar and event IDs using provider-specific logic
+						const { calendarId, eventId } = provider.extractEventIds(icsEvent);
+
+						const newStart = dropInfo.event.start;
+						const newAllDay = dropInfo.event.allDay;
+
+						// Calculate end date if not provided
+						let newEnd = dropInfo.event.end;
+						if (!newEnd) {
+							newEnd = calculateDefaultEndDate(newStart, newAllDay);
+						}
+
+						// Build update payload
+						const updates = buildCalendarUpdatePayload(newStart, newEnd, newAllDay);
+
+						// Update the event via provider's API
+						await provider.updateEvent(calendarId, eventId, updates);
+
+					} catch (error) {
+						console.error(`[TaskNotes][Bases][Calendar] Error updating ${provider.providerName} event:`, error);
+						dropInfo.revert();
+					}
+					return;
+				}
+			}
+
+			// Only allow scheduled and recurring events to be moved (block ICS subscriptions)
 			if (eventType === "timeEntry" || eventType === "ics" || eventType === "due") {
 				dropInfo.revert();
 				return;
@@ -344,7 +457,47 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 				return;
 			}
 
-			// Only scheduled and recurring events can be resized
+			// Handle calendar provider event resize (Google, Microsoft, etc.)
+			if (eventType === "ics") {
+				const icsEvent = resizeInfo.event.extendedProps.icsEvent;
+				if (!icsEvent) {
+					// ICS event without data, block resize
+					resizeInfo.revert();
+					return;
+				}
+
+				// Find the calendar provider that owns this event
+				const provider = plugin.calendarProviderRegistry?.findProviderForEvent(icsEvent);
+				if (provider) {
+					try {
+						// Extract calendar and event IDs using provider-specific logic
+						const { calendarId, eventId } = provider.extractEventIds(icsEvent);
+
+						const newStart = resizeInfo.event.start;
+						const newEnd = resizeInfo.event.end;
+
+						if (!newEnd) {
+							resizeInfo.revert();
+							return;
+						}
+
+						const newAllDay = resizeInfo.event.allDay;
+
+						// Build update payload
+						const updates = buildCalendarUpdatePayload(newStart, newEnd, newAllDay);
+
+						// Update via provider's API
+						await provider.updateEvent(calendarId, eventId, updates);
+
+					} catch (error) {
+						console.error(`[TaskNotes][Bases][Calendar] Error resizing ${provider.providerName} event:`, error);
+						resizeInfo.revert();
+					}
+					return;
+				}
+			}
+
+			// Only scheduled and recurring events can be resized (block ICS subscriptions)
 			if (eventType !== "scheduled" && eventType !== "recurring") {
 				resizeInfo.revert();
 				return;
@@ -385,6 +538,35 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 			}
 
 			const { taskInfo, timeblock, icsEvent, eventType, isCompleted, basesEntry } = arg.event.extendedProps;
+
+			// Add calendar icon to provider-managed calendar events in grid views
+			if (icsEvent && arg.view.type !== 'listWeek') {
+				const provider = plugin.calendarProviderRegistry?.findProviderForEvent(icsEvent);
+				if (provider) {
+					const titleEl = arg.el.querySelector('.fc-event-title');
+					if (titleEl) {
+						// Create icon container
+						const iconContainer = document.createElement('span');
+						iconContainer.style.marginRight = '4px';
+						iconContainer.style.display = 'inline-flex';
+						iconContainer.style.alignItems = 'center';
+
+						// Add Lucide calendar icon
+						const { setIcon } = require('obsidian');
+						const iconEl = document.createElement('span');
+						iconEl.style.width = '12px';
+						iconEl.style.height = '12px';
+						iconEl.style.display = 'inline-flex';
+						iconEl.style.flexShrink = '0';
+						setIcon(iconEl, 'calendar');
+
+						iconContainer.appendChild(iconEl);
+
+						// Prepend icon to title
+						titleEl.insertBefore(iconContainer, titleEl.firstChild);
+					}
+				}
+			}
 
 			// Custom rendering for list view - replace with card components
 			if (arg.view.type === 'listWeek') {
@@ -958,6 +1140,72 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 					}
 				}
 
+				// Generate events from Google Calendar (if connected and enabled)
+				// Build list of selected Google calendars from individual toggle options
+				const selectedGoogleCalendars: string[] = [];
+				if (plugin.googleCalendarService) {
+					const availableCalendars = plugin.googleCalendarService.getAvailableCalendars();
+					for (const calendar of availableCalendars) {
+						const isEnabled = (ctx?.config?.get(`showGoogleCalendar_${calendar.id}`) as boolean) ?? true;
+						if (isEnabled) {
+							selectedGoogleCalendars.push(calendar.id);
+						}
+					}
+
+					// Save enabled calendar IDs to settings for persistence across sessions
+					plugin.settings.enabledGoogleCalendars = selectedGoogleCalendars;
+					await plugin.saveSettings();
+				}
+
+				// Add events from selected Google calendars
+				if (selectedGoogleCalendars.length > 0 && plugin.googleCalendarService) {
+					const allGoogleEvents = plugin.googleCalendarService.getAllEvents();
+					for (const icsEvent of allGoogleEvents) {
+						// Only include events from selected calendars
+						// The subscriptionId format is "google-<calendarId>"
+						const calendarId = icsEvent.subscriptionId.replace("google-", "");
+						if (selectedGoogleCalendars.includes(calendarId)) {
+							const calendarEvent = createICSEvent(icsEvent, plugin);
+							if (calendarEvent) {
+								events.push(calendarEvent);
+							}
+						}
+					}
+				}
+
+				// Generate events from Microsoft Calendar (if connected and enabled)
+				// Build list of selected Microsoft calendars from individual toggle options
+				const selectedMicrosoftCalendars: string[] = [];
+				if (plugin.microsoftCalendarService) {
+					const availableCalendars = plugin.microsoftCalendarService.getAvailableCalendars();
+					for (const calendar of availableCalendars) {
+						const isEnabled = (ctx?.config?.get(`showMicrosoftCalendar_${calendar.id}`) as boolean) ?? true;
+						if (isEnabled) {
+							selectedMicrosoftCalendars.push(calendar.id);
+						}
+					}
+
+					// Save enabled calendar IDs to settings for persistence across sessions
+					plugin.settings.enabledMicrosoftCalendars = selectedMicrosoftCalendars;
+					await plugin.saveSettings();
+				}
+
+				// Add events from selected Microsoft calendars
+				if (selectedMicrosoftCalendars.length > 0 && plugin.microsoftCalendarService) {
+					const allMicrosoftEvents = plugin.microsoftCalendarService.getAllEvents();
+					for (const icsEvent of allMicrosoftEvents) {
+						// Only include events from selected calendars
+						// The subscriptionId format is "microsoft-<calendarId>"
+						const calendarId = icsEvent.subscriptionId.replace("microsoft-", "");
+						if (selectedMicrosoftCalendars.includes(calendarId)) {
+							const calendarEvent = createICSEvent(icsEvent, plugin);
+							if (calendarEvent) {
+								events.push(calendarEvent);
+							}
+						}
+					}
+				}
+
 				// Validate events
 				return events.filter((event) => {
 					if (!event.extendedProps || !event.id) {
@@ -1091,7 +1339,7 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 					initialView: defaultView,
 					initialDate: new Date(), // Will be updated during render if property configured
 					headerToolbar: {
-						left: "prev,next today",
+						left: "prev,next today refreshCalendars",
 						center: "title",
 						right: "multiMonthYear,dayGridMonth,timeGridWeek,timeGridCustom,timeGridDay,listWeek",
 					},
@@ -1102,6 +1350,33 @@ export function buildTasknotesCalendarViewFactory(plugin: TaskNotesPlugin) {
 						day: plugin.i18n.translate("views.basesCalendar.buttonText.day"),
 						year: plugin.i18n.translate("views.basesCalendar.buttonText.year"),
 						list: plugin.i18n.translate("views.basesCalendar.buttonText.list"),
+						refreshCalendars: plugin.i18n.translate("views.basesCalendar.buttonText.refresh") || "Refresh",
+					},
+					customButtons: {
+						refreshCalendars: {
+							text: plugin.i18n.translate("views.basesCalendar.buttonText.refresh") || "Refresh",
+							hint: plugin.i18n.translate("views.basesCalendar.hints.refresh") || "Refresh calendar subscriptions",
+							click: async function() {
+								try {
+									// Refresh ICS subscriptions
+									if (plugin.icsSubscriptionService) {
+										await plugin.icsSubscriptionService.refreshAllSubscriptions();
+									}
+
+									// Refresh Google Calendar events
+									if (plugin.googleCalendarService) {
+										await plugin.googleCalendarService.refreshAllCalendars();
+									}
+
+									// Refetch calendar events to show updated data
+									if (calendar) {
+										calendar.refetchEvents();
+									}
+								} catch (error) {
+									console.error("[TaskNotes][Bases][Calendar] Error refreshing calendars:", error);
+								}
+							},
+						},
 					},
 					views: {
 						timeGridCustom: {

@@ -43,6 +43,8 @@ export interface CalendarEvent {
 		instanceDate?: string;
 		recurringTemplateTime?: string;
 		subscriptionName?: string;
+		isGoogleCalendar?: boolean; // For Google Calendar events
+		isMicrosoftCalendar?: boolean; // For Microsoft Calendar events
 		timeEntryIndex?: number;
 		originalDate?: string; // For timeblock events - tracks original date for move operations
 	};
@@ -68,6 +70,25 @@ export function hexToRgba(hex: string, alpha: number): string {
 	const g = parseInt(hex.substring(2, 4), 16);
 	const b = parseInt(hex.substring(4, 6), 16);
 	return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+/**
+ * Check if the app is in dark mode
+ */
+export function isDarkMode(): boolean {
+	return document.body.classList.contains('theme-dark');
+}
+
+/**
+ * Get appropriate text color for event based on theme
+ * Returns dark text for light mode, light text for dark mode
+ */
+export function getEventTextColor(isGoogleCalendar: boolean = false): string {
+	if (isGoogleCalendar) {
+		return isDarkMode() ? '#e8eaed' : '#202124'; // Light text in dark mode, dark text in light mode
+	}
+	// For non-Google Calendar events, use the border color (existing behavior)
+	return '';
 }
 
 /**
@@ -450,20 +471,46 @@ export function createTimeEntryEvents(task: TaskInfo, plugin: TaskNotesPlugin): 
 }
 
 /**
- * Create ICS calendar event
+ * Create ICS calendar event (supports ICS subscriptions, Google Calendar, and Microsoft Calendar)
  */
 export function createICSEvent(icsEvent: ICSEvent, plugin: TaskNotesPlugin): CalendarEvent | null {
 	try {
-		const subscription = plugin.icsSubscriptionService
-			?.getSubscriptions()
-			.find((sub) => sub.id === icsEvent.subscriptionId);
+		// Check if this is a Google Calendar or Microsoft Calendar event
+		const isGoogleCalendar = icsEvent.subscriptionId.startsWith("google-");
+		const isMicrosoftCalendar = icsEvent.subscriptionId.startsWith("microsoft-");
 
-		if (!subscription || !subscription.enabled) {
-			return null;
+		let backgroundColor: string;
+		let borderColor: string;
+		let textColor: string;
+		let subscriptionName: string;
+
+		if (isGoogleCalendar) {
+			// Google Calendar event - use event's color if available
+			borderColor = icsEvent.color || "#4285F4"; // Default to Google Blue if no color
+			backgroundColor = hexToRgba(borderColor, 0.2);
+			textColor = getEventTextColor(true); // Use theme-appropriate text color
+			subscriptionName = "Google Calendar";
+		} else if (isMicrosoftCalendar) {
+			// Microsoft Calendar event - use event's color if available
+			borderColor = icsEvent.color || "#0078D4"; // Default to Microsoft Blue if no color
+			backgroundColor = hexToRgba(borderColor, 0.2);
+			textColor = getEventTextColor(true); // Use theme-appropriate text color
+			subscriptionName = "Microsoft Calendar";
+		} else {
+			// ICS subscription event - use subscription settings
+			const subscription = plugin.icsSubscriptionService
+				?.getSubscriptions()
+				.find((sub) => sub.id === icsEvent.subscriptionId);
+
+			if (!subscription || !subscription.enabled) {
+				return null;
+			}
+
+			backgroundColor = hexToRgba(subscription.color, 0.2);
+			borderColor = subscription.color;
+			textColor = borderColor; // Use border color for ICS subscriptions (existing behavior)
+			subscriptionName = subscription.name;
 		}
-
-		const backgroundColor = hexToRgba(subscription.color, 0.2);
-		const borderColor = subscription.color;
 
 		return {
 			id: icsEvent.id,
@@ -473,12 +520,14 @@ export function createICSEvent(icsEvent: ICSEvent, plugin: TaskNotesPlugin): Cal
 			allDay: icsEvent.allDay,
 			backgroundColor: backgroundColor,
 			borderColor: borderColor,
-			textColor: borderColor,
-			editable: false,
+			textColor: textColor,
+			editable: isGoogleCalendar || isMicrosoftCalendar, // Google and Microsoft Calendar events are editable, ICS subscriptions are not
 			extendedProps: {
 				icsEvent: icsEvent,
 				eventType: "ics",
-				subscriptionName: subscription.name,
+				subscriptionName: subscriptionName,
+				isGoogleCalendar: isGoogleCalendar,
+				isMicrosoftCalendar: isMicrosoftCalendar,
 			},
 		};
 	} catch (error) {
