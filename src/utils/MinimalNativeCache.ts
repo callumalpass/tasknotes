@@ -1348,20 +1348,16 @@ export class MinimalNativeCache extends Events {
 	 * Debounced version of handleFileChanged to prevent excessive updates during typing
 	 */
 	private handleFileChangedDebounced(file: TFile, cache: any): void {
+		// Early exit: Only process files that are potentially task files
 		const metadata = this.app.metadataCache.getFileCache(file);
-		const currentFrontmatter = metadata?.frontmatter;
-		const lastKnownFrontmatter = this.lastKnownFrontmatter.get(file.path);
-
-		// Check if this file was previously a task (even if it's not anymore)
-		const wasTask = this.lastKnownTaskInfo.has(file.path);
-		const isTask = currentFrontmatter && this.isTaskFile(currentFrontmatter);
-
-		// Early exit: Only process if file is currently a task OR was previously a task
-		if (!isTask && !wasTask) {
+		if (!metadata?.frontmatter || !this.isTaskFile(metadata.frontmatter)) {
 			return;
 		}
 
 		// Check if frontmatter actually changed by comparing raw frontmatter objects
+		const currentFrontmatter = metadata.frontmatter;
+		const lastKnownFrontmatter = this.lastKnownFrontmatter.get(file.path);
+
 		if (this.frontmatterEquals(currentFrontmatter, lastKnownFrontmatter)) {
 			// Frontmatter hasn't changed - this was likely just a content change or mtime update
 			return;
@@ -1410,10 +1406,6 @@ export class MinimalNativeCache extends Events {
 		const metadata = this.app.metadataCache.getFileCache(file);
 		if (metadata?.frontmatter && this.isTaskFile(metadata.frontmatter)) {
 			await this.indexTaskFile(file, metadata.frontmatter);
-		} else {
-			// File is no longer a task - clean up cached data (issue #953)
-			this.lastKnownTaskInfo.delete(file.path);
-			this.lastKnownFrontmatter.delete(file.path);
 		}
 
 		this.trigger("file-updated", { path: file.path, file });

@@ -24,31 +24,6 @@ export class ProjectSubtasksService {
 	}
 
 	/**
-	 * Initialize the service and set up event listeners for cache invalidation
-	 */
-	initialize(): void {
-		// Listen to cache events to invalidate the project index when files change
-		this.plugin.cacheManager.on("file-updated", () => {
-			this.invalidateIndex();
-		});
-
-		this.plugin.cacheManager.on("file-deleted", () => {
-			this.invalidateIndex();
-		});
-
-		this.plugin.cacheManager.on("file-renamed", () => {
-			this.invalidateIndex();
-		});
-	}
-
-	/**
-	 * Invalidate the project index to force a rebuild on next access
-	 */
-	private invalidateIndex(): void {
-		this.indexLastBuilt = 0;
-	}
-
-	/**
 	 * Get all files that link to a specific project using native resolvedLinks API
 	 * resolvedLinks format: Record<sourcePath, Record<targetPath, linkCount>>
 	 */

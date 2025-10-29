@@ -493,9 +493,6 @@ export default class TaskNotesPlugin extends Plugin {
 			// Initialize native cache system (lightweight - no index building)
 			this.cacheManager.initialize();
 
-			// Set up cache event bridge to trigger view refreshes
-			this.setupCacheEventBridge();
-
 			// Initialize FilterService and set up event listeners (lightweight)
 			this.filterService.initialize();
 
@@ -504,9 +501,6 @@ export default class TaskNotesPlugin extends Plugin {
 
 			// Initialize notification service
 			await this.notificationService.initialize();
-
-			// Initialize project subtasks service with event listeners
-			this.projectSubtasksService.initialize();
 
 			// Build project status cache for better TaskCard performance
 			await this.projectSubtasksService.buildProjectStatusCache();
@@ -701,40 +695,6 @@ export default class TaskNotesPlugin extends Plugin {
 		}
 
 		await this.readyPromise;
-	}
-
-	/**
-	 * Set up cache event bridge to propagate cache events to plugin emitter
-	 * This ensures views refresh when task identification changes (issue #953)
-	 */
-	private setupCacheEventBridge(): void {
-		// Bridge file-updated events to EVENT_DATA_CHANGED
-		this.registerEvent(
-			this.cacheManager.on("file-updated", () => {
-				// Use requestAnimationFrame for better UI timing
-				requestAnimationFrame(() => {
-					this.emitter.trigger(EVENT_DATA_CHANGED);
-				});
-			})
-		);
-
-		// Bridge file-deleted events to EVENT_DATA_CHANGED
-		this.registerEvent(
-			this.cacheManager.on("file-deleted", () => {
-				requestAnimationFrame(() => {
-					this.emitter.trigger(EVENT_DATA_CHANGED);
-				});
-			})
-		);
-
-		// Bridge file-renamed events to EVENT_DATA_CHANGED
-		this.registerEvent(
-			this.cacheManager.on("file-renamed", () => {
-				requestAnimationFrame(() => {
-					this.emitter.trigger(EVENT_DATA_CHANGED);
-				});
-			})
-		);
 	}
 
 	/**
