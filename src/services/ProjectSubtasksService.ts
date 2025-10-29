@@ -191,9 +191,14 @@ export class ProjectSubtasksService {
 				// Check if source has projects frontmatter
 				const metadata = this.plugin.app.metadataCache.getCache(sourcePath);
 
+				// Validate that the source file is actually a task (issue #953)
+				// Only tasks should be able to create project relationships
+				if (!metadata?.frontmatter) continue;
+				if (!this.plugin.cacheManager.isTaskFile(metadata.frontmatter)) continue;
+
 				// Use the user's configured field mapping for projects
 				const projectsFieldName = this.plugin.fieldMapper.toUserField("projects");
-				const projects = metadata?.frontmatter?.[projectsFieldName];
+				const projects = metadata.frontmatter[projectsFieldName];
 
 				if (
 					Array.isArray(projects) &&

@@ -99,8 +99,9 @@ export class MinimalNativeCache extends Events {
 
 	/**
 	 * Check if a file is a task based on current settings
+	 * Public to allow ProjectSubtasksService to validate task files (issue #953)
 	 */
-	private isTaskFile(frontmatter: any): boolean {
+	isTaskFile(frontmatter: any): boolean {
 		if (!frontmatter) return false;
 
 		if (this.settings.taskIdentificationMethod === "property") {
@@ -261,6 +262,9 @@ export class MinimalNativeCache extends Events {
 
 		const metadata = this.app.metadataCache.getFileCache(file);
 		if (!metadata?.frontmatter) return null;
+
+		// Validate that the file is actually a task based on identification settings
+		if (!this.isTaskFile(metadata.frontmatter)) return null;
 
 		return this.extractTaskInfoFromNative(path, metadata.frontmatter);
 	}
@@ -1643,6 +1647,10 @@ export class MinimalNativeCache extends Events {
 
 	private extractTaskInfoFromNative(path: string, frontmatter: any): TaskInfo | null {
 		if (!this.fieldMapper) return null;
+
+		// Validate that the file is actually a task based on identification settings
+		// This ensures we return null when a file stops being a task 
+		if (!this.isTaskFile(frontmatter)) return null;
 
 		try {
 			const mappedTask = this.fieldMapper.mapFromFrontmatter(
