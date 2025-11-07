@@ -643,6 +643,7 @@
 .tasknotes-plugin .nl-preview-item {
     display: flex;
     align-items: center;
+	word-break: break-all;
     margin-bottom: var(--size-4-1);
     font-size: var(--font-ui-small);
 }
