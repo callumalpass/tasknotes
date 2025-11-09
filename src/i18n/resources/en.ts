@@ -1,4 +1,3 @@
-import { pt } from "chrono-node";
 import { TranslationTree } from "../types";
 
 export const en: TranslationTree = {
