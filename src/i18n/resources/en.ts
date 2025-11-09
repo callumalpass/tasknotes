@@ -1,3 +1,4 @@
+import { pt } from "chrono-node";
 import { TranslationTree } from "../types";
 
 export const en: TranslationTree = {
@@ -18,6 +19,7 @@ export const en: TranslationTree = {
 			de: "German",
 			es: "Spanish",
 			ja: "Japanese",
+			pt: "Portuguese (Brazil)",
 		},
 		weekdays: {
 			sunday: "Sunday",

@@ -18,6 +18,7 @@ export const zh: TranslationTree = {
 			de: "德语",
 			es: "西班牙语",
 			ja: "日语",
+			pt: "葡萄牙语（巴西）",
 		},
 		weekdays: {
 			sunday: "星期日",

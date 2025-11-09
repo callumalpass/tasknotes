@@ -18,6 +18,7 @@ export const fr: TranslationTree = {
 			de: "Allemand",
 			es: "Espagnol",
 			ja: "Japonais",
+			pt: "Portugais (Brésil)",
 		},
 		weekdays: {
 			sunday: "Dimanche",
