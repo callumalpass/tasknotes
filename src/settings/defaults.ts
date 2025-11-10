@@ -336,7 +336,7 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 		'relationships': 'TaskNotes/Views/relationships.base',
 	},
 	// Recurring task behavior defaults
-	maintainDueDateOffsetInRecurring: false,
+	maintainDueDateOffsetInRecurring: true,
 	// Frontmatter link format defaults
 	useFrontmatterMarkdownLinks: false, // Default to wikilinks for compatibility
 	// OAuth Calendar Integration defaults
