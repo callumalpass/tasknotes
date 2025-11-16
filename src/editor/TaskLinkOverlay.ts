@@ -280,10 +280,14 @@ export function buildTaskLinkDecorations(
 						: parseMarkdownLinkSync(link.match);
 				if (!parsed) continue;
 
-				const { linkPath } = parsed;
-
+				const { linkPath, displayText } = parsed;
 				// Validate link path
 				if (!linkPath || typeof linkPath !== "string" || linkPath.trim().length === 0) {
+					continue;
+				}
+
+				// Disable overlay if there's a display text (alias)
+				if (displayText) {
 					continue;
 				}
 
