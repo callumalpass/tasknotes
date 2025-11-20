@@ -102,7 +102,7 @@ export interface TaskNotesSettings {
 	defaultTaskStatus: string; // Changed to string to support custom statuses
 	taskOrgFiltersCollapsed: boolean; // Save collapse state of task organization filters
 	// Task filename settings
-	taskFilenameFormat: "title" | "zettel" | "timestamp" | "custom";
+	taskFilenameFormat: "title" | "zettel" | "timestamp" | "project" | "custom";
 	storeTitleInFilename: boolean;
 	customFilenameTemplate: string; // Template for custom format
 	// Task creation defaults
@@ -269,7 +269,7 @@ export interface ICSIntegrationSettings {
 	// Default folders
 	defaultNoteFolder: string; // Folder for notes created from ICS events
 	// Filename settings for ICS event notes
-	icsNoteFilenameFormat: "title" | "zettel" | "timestamp" | "custom";
+	icsNoteFilenameFormat: "title" | "zettel" | "timestamp" | "project" | "custom";
 	customICSNoteFilenameTemplate: string; // Template for custom format
 	// Automatic export settings
 	enableAutoExport: boolean; // Whether to automatically export tasks to ICS file

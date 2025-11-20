@@ -56,6 +56,9 @@ export function generateICSNoteFilename(
 				case "timestamp":
 					return generateTimestampFilename(now);
 
+				case "project":
+					return generateProjectIdFilename(context.taskData);
+
 				case "custom": {
 					// Create ICS-specific additional variables
 					const icsVariables: Record<string, string> = {
@@ -139,6 +142,9 @@ export function generateTaskFilename(
 			case "timestamp":
 				return generateTimestampFilename(now);
 
+			case "project":
+				return generateProjectIdFilename(context.taskData);
+
 			case "custom":
 				return generateCustomFilename(context, settings.customFilenameTemplate, now);
 
@@ -178,6 +184,22 @@ function generateTimestampFilename(date: Date): string {
 }
 
 /**
+ * Generates a filename based on a project and incrementing number
+ * format: {ProjectId}-{incValue}
+ * @example PROJ-1234
+ */
+function generateProjectIdFilename(taskData:TaskTemplateData | undefined) {
+	if (!taskData) {
+		throw new Error("Invalid Task or Context Data.");
+	}
+	const projectId =
+		(taskData.projects)
+			? taskData.projects[0].trim().substring(2,6).toUpperCase()
+			: "TASK";
+	return `${projectId}`;
+}
+
+/**
  * Generates a filename based on a custom template
  */
 function generateCustomFilename(
@@ -213,6 +235,10 @@ function generateCustomFilename(
 			context.taskData.status && ["open", "in-progress", "done", "scheduled"].includes(context.taskData.status)
 				? context.taskData.status
 				: "open";
+		const sanitizedProject =
+			context.taskData.projects
+				? context.taskData.projects[0].trim().substring(2,6).toUpperCase()
+				: "TASK";
 
 		const variables: Record<string, string> = {
 			title: sanitizedTitle,
@@ -220,9 +246,11 @@ function generateCustomFilename(
 			time: format(date, "HHmmss"),
 			priority: sanitizedPriority,
 			status: sanitizedStatus,
+			project: sanitizedProject,
 			timestamp: format(date, "yyyy-MM-dd-HHmmss"),
 			dateTime: format(date, "yyyy-MM-dd-HHmm"),
 			year: format(date, "yyyy"),
+			shortYear: format(date, "yy"),
 			month: format(date, "MM"),
 			day: format(date, "dd"),
 			hour: format(date, "HH"),
@@ -274,6 +302,7 @@ function generateCustomFilename(
 			// Date-based identifiers
 			zettel: generateZettelId(date),
 			nano: Date.now().toString() + Math.random().toString(36).substring(2, 7),
+			uuid: crypto.randomUUID(),
 
 			// Merge any additional variables
 			...(additionalVariables || {}),
@@ -465,8 +494,8 @@ export async function generateUniqueFilename(
 		}
 
 		// If not, try appending numbers
-		for (let i = 2; i <= 999; i++) {
-			const candidateFilename = `${sanitizedFilename}-${i}`;
+		for (let i = 1; i <= 999; i++) {
+			const candidateFilename = `${sanitizedFilename}-${i.toString().padStart(4,"0")}`;
 			const candidatePath = normalizePath(`${sanitizedFolderPath}/${candidateFilename}.md`);
 
 			// Check path length for each candidate

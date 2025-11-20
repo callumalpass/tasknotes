@@ -206,6 +206,7 @@ export class TaskService {
 					title: title,
 					priority: priority,
 					status: status,
+					projects: projectsArray,
 					due: taskData.due,
 					scheduled: taskData.scheduled,
 				},

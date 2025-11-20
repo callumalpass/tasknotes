@@ -193,6 +193,12 @@ export function renderGeneralTab(
 					),
 				},
 				{
+					value: "project",
+					label: translate(
+						"settings.general.taskFilenames.filenameFormat.options.project"
+					)
+				},
+				{
 					value: "custom",
 					label: translate(
 						"settings.appearance.taskFilenames.filenameFormat.options.custom"
