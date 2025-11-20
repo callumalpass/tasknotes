@@ -202,12 +202,14 @@ export class TaskService {
 
 			// Generate filename
 			const filenameContext: FilenameContext = {
-				title: title,
-				priority: priority,
-				status: status,
+				taskData: {
+					title: title,
+					priority: priority,
+					status: status,
+					due: taskData.due,
+					scheduled: taskData.scheduled,
+				},
 				date: new Date(),
-				dueDate: taskData.due,
-				scheduledDate: taskData.scheduled,
 			};
 
 			const baseFilename = generateTaskFilename(filenameContext, this.plugin.settings);

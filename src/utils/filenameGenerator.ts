@@ -1,14 +1,11 @@
 import { format } from "date-fns";
 import { normalizePath } from "obsidian";
 import { TaskNotesSettings } from "../types/settings";
+import {TaskTemplateData} from "./folderTemplateProcessor";
 
 export interface FilenameContext {
-	title: string;
-	priority: string;
-	status: string;
+	taskData?: TaskTemplateData;
 	date?: Date;
-	dueDate?: string; // YYYY-MM-DD format
-	scheduledDate?: string; // YYYY-MM-DD format
 }
 
 export interface ICSFilenameContext extends FilenameContext {
@@ -25,16 +22,16 @@ export function generateICSNoteFilename(
 	settings: TaskNotesSettings
 ): string {
 	// Validate inputs
-	if (!context || !settings) {
+	if (!context || !settings || !context.taskData) {
 		throw new Error("Invalid context or settings provided");
 	}
 
-	if (!context.title || typeof context.title !== "string") {
+	if (!context.taskData.title) {
 		throw new Error("Context must have a valid title");
 	}
 
 	// Validate title content
-	if (context.title.trim().length === 0) {
+	if (context.taskData.title.trim().length === 0) {
 		throw new Error("Title cannot be empty");
 	}
 
@@ -51,7 +48,7 @@ export function generateICSNoteFilename(
 		if (icsSettings) {
 			switch (icsSettings.icsNoteFilenameFormat) {
 				case "title":
-					return sanitizeForFilename(context.title);
+					return sanitizeForFilename(context.taskData.title);
 
 				case "zettel":
 					return generateZettelId(now);
@@ -64,7 +61,7 @@ export function generateICSNoteFilename(
 					const icsVariables: Record<string, string> = {
 						icsEventTitle: context.icsEventTitle
 							? sanitizeForFilename(context.icsEventTitle)
-							: sanitizeForFilename(context.title),
+							: sanitizeForFilename(context.taskData.title),
 						icsEventLocation: context.icsEventLocation
 							? sanitizeForFilename(context.icsEventLocation)
 							: "",
@@ -73,7 +70,7 @@ export function generateICSNoteFilename(
 							: "",
 						// Add formatted title with date for users who want the full context
 						icsEventTitleWithDate: sanitizeForFilename(
-							`${context.icsEventTitle || context.title} - ${format(now, "PPP")}`
+							`${context.icsEventTitle || context.taskData.title} - ${format(now, "PPP")}`
 						),
 					};
 					return generateCustomFilename(
@@ -86,16 +83,16 @@ export function generateICSNoteFilename(
 
 				default:
 					// Fallback to title format for ICS notes
-					return sanitizeForFilename(context.title);
+					return sanitizeForFilename(context.taskData.title);
 			}
 		}
 
 		// Fallback to title format if no ICS settings
-		return sanitizeForFilename(context.title);
+		return sanitizeForFilename(context.taskData.title);
 	} catch (error) {
 		console.error("Error generating ICS note filename:", error);
 		// Fallback to safe title format
-		return sanitizeForFilename(context.title);
+		return sanitizeForFilename(context.taskData.title);
 	}
 }
 
@@ -107,16 +104,16 @@ export function generateTaskFilename(
 	settings: TaskNotesSettings
 ): string {
 	// Validate inputs
-	if (!context || !settings) {
+	if (!context || !settings || !context.taskData) {
 		throw new Error("Invalid context or settings provided");
 	}
 
-	if (!context.title || typeof context.title !== "string") {
+	if (!context.taskData.title) {
 		throw new Error("Context must have a valid title");
 	}
 
 	// Validate title content
-	if (context.title.trim().length === 0) {
+	if (context.taskData.title.trim().length === 0) {
 		throw new Error("Title cannot be empty");
 	}
 
@@ -128,13 +125,13 @@ export function generateTaskFilename(
 	}
 
 	if (settings.storeTitleInFilename) {
-		return sanitizeForFilename(context.title);
+		return sanitizeForFilename(context.taskData.title);
 	}
 
 	try {
 		switch (settings.taskFilenameFormat) {
 			case "title":
-				return sanitizeForFilename(context.title);
+				return sanitizeForFilename(context.taskData.title);
 
 			case "zettel":
 				return generateZettelId(now);
@@ -190,7 +187,7 @@ function generateCustomFilename(
 	additionalVariables?: Record<string, string>
 ): string {
 	// Validate inputs
-	if (!context || !template || !date) {
+	if (!context || !template || !date || !context.taskData) {
 		throw new Error("Invalid inputs for custom filename generation");
 	}
 
@@ -204,14 +201,17 @@ function generateCustomFilename(
 
 	try {
 		// Validate and sanitize context values
-		const sanitizedTitle = sanitizeForFilename(context.title);
+		const sanitizedTitle =
+			context.taskData.title
+				? sanitizeForFilename(context.taskData.title)
+				: "untitled";
 		const sanitizedPriority =
-			context.priority && ["low", "normal", "medium", "high"].includes(context.priority)
-				? context.priority
+			context.taskData.priority && ["low", "normal", "medium", "high"].includes(context.taskData.priority)
+				? context.taskData.priority
 				: "normal";
 		const sanitizedStatus =
-			context.status && ["open", "in-progress", "done", "scheduled"].includes(context.status)
-				? context.status
+			context.taskData.status && ["open", "in-progress", "done", "scheduled"].includes(context.taskData.status)
+				? context.taskData.status
 				: "open";
 
 		const variables: Record<string, string> = {
@@ -228,8 +228,8 @@ function generateCustomFilename(
 			hour: format(date, "HH"),
 			minute: format(date, "mm"),
 			second: format(date, "ss"),
-			dueDate: context.dueDate || "",
-			scheduledDate: context.scheduledDate || "",
+			dueDate: context.taskData.due || "",
+			scheduledDate: context.taskData.scheduled || "",
 			// New date format variations
 			shortDate: format(date, "yyMMdd"),
 			monthName: format(date, "MMMM"),
@@ -308,7 +308,11 @@ function generateCustomFilename(
 	} catch (error) {
 		console.error("Error generating custom filename:", error);
 		// Fallback to safe title-based filename
-		return sanitizeForFilename(context.title) || generateZettelId(date);
+		return (
+			context.taskData.title
+				? sanitizeForFilename(context.taskData.title)
+				: generateZettelId(date)
+		)
 	}
 }
 
