@@ -153,6 +153,84 @@ export function renderGeneralTab(
 		ariaLabel: "Excluded folder paths",
 	});
 
+	// Task Filenames Section
+	createSectionHeader(container, translate("settings.appearance.taskFilenames.header"));
+	createHelpText(container, translate("settings.appearance.taskFilenames.description"));
+
+	createToggleSetting(container, {
+		name: translate("settings.appearance.taskFilenames.storeTitleInFilename.name"),
+		desc: translate("settings.appearance.taskFilenames.storeTitleInFilename.description"),
+		getValue: () => plugin.settings.storeTitleInFilename,
+		setValue: async (value: boolean) => {
+			plugin.settings.storeTitleInFilename = value;
+			save();
+			// Re-render to show/hide other options
+			renderGeneralTab(container, plugin, save);
+		},
+	});
+
+	if (!plugin.settings.storeTitleInFilename) {
+		createDropdownSetting(container, {
+			name: translate("settings.general.taskFilenames.filenameFormat.name"),
+			desc: translate("settings.general.taskFilenames.filenameFormat.description"),
+			options: [
+				{
+					value: "title",
+					label: translate(
+						"settings.general.taskFilenames.filenameFormat.options.title"
+					),
+				},
+				{
+					value: "zettel",
+					label: translate(
+						"settings.general.taskFilenames.filenameFormat.options.zettel"
+					),
+				},
+				{
+					value: "timestamp",
+					label: translate(
+						"settings.general.taskFilenames.filenameFormat.options.timestamp"
+					),
+				},
+				{
+					value: "custom",
+					label: translate(
+						"settings.appearance.taskFilenames.filenameFormat.options.custom"
+					),
+				},
+			],
+			getValue: () => plugin.settings.taskFilenameFormat,
+			setValue: async (value: string) => {
+				plugin.settings.taskFilenameFormat = value as any;
+				save();
+				// Re-render to update visibility
+				renderGeneralTab(container, plugin, save);
+			},
+			ariaLabel: "Task filename generation format",
+		});
+
+		if (plugin.settings.taskFilenameFormat === "custom") {
+			createTextSetting(container, {
+				name: translate("settings.appearance.taskFilenames.customTemplate.name"),
+				desc: translate("settings.appearance.taskFilenames.customTemplate.description"),
+				placeholder: translate(
+					"settings.appearance.taskFilenames.customTemplate.placeholder"
+				),
+				getValue: () => plugin.settings.customFilenameTemplate,
+				setValue: async (value: string) => {
+					plugin.settings.customFilenameTemplate = value;
+					save();
+				},
+				ariaLabel: "Custom filename template with variables",
+			});
+
+			createHelpText(
+				container,
+				translate("settings.appearance.taskFilenames.customTemplate.helpText")
+			);
+		}
+	}
+
 	// UI Language Section
 	createSectionHeader(container, translate("settings.features.uiLanguage.header"));
 	createHelpText(container, translate("settings.features.uiLanguage.description"));
