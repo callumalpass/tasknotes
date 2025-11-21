@@ -8,6 +8,7 @@ import { zh } from "./resources/zh";
 import { de } from "./resources/de";
 import { es } from "./resources/es";
 import { ja } from "./resources/ja";
+import { pt } from "./resources/pt";
 
 export const translationResources = {
 	en,
@@ -17,6 +18,7 @@ export const translationResources = {
 	de,
 	es,
 	ja,
+	pt,
 } satisfies TranslationResources;
 
 export type TranslationKey = string;

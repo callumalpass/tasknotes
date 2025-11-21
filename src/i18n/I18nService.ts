@@ -66,6 +66,7 @@ export class I18nService extends Events {
 			fr: "Français",
 			de: "Deutsch",
 			es: "Español",
+			pt: "Português",
 			ru: "Русский",
 			zh: "中文",
 			ja: "日本語",
