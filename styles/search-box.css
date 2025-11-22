@@ -1,0 +1,97 @@
+/* Search Box Component - BEM Structure */
+
+.tn-search-container {
+	padding: 0;
+	margin: 0;
+	background: transparent;
+	border: none;
+}
+
+.tn-search-box {
+	padding: 0;
+	padding-top: var(--size-4-3, 12px);
+	background: transparent;
+	border: none;
+}
+
+.tn-search-box__input-wrapper {
+	display: flex;
+	align-items: center;
+	gap: var(--size-4-2, 8px);
+	padding-left: var(--size-4-3, 12px);
+	border: none;
+}
+
+.tn-search-box__icon {
+	color: var(--text-muted);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+	width: 16px;
+	height: 16px;
+}
+
+.tn-search-box__icon svg {
+	width: 16px;
+	height: 16px;
+}
+
+.tn-search-box__input {
+	flex: 1;
+	padding: var(--size-4-2, 8px) var(--size-4-3, 12px);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-m, 8px);
+	background: var(--input-background, var(--background-primary));
+	color: var(--text-normal);
+	font-size: var(--font-ui-small, 13px);
+	outline: none;
+	min-width: 0;
+	transition: border-color 0.2s ease;
+}
+
+.tn-search-box__input::placeholder {
+	color: var(--text-muted);
+	font-style: italic;
+}
+
+.tn-search-box__clear {
+	background: transparent;
+	border: none;
+	color: var(--text-muted);
+	cursor: pointer;
+	padding: 0;
+	font-size: 20px;
+	line-height: 1;
+	width: 20px;
+	height: 20px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: var(--radius-s, 4px);
+	flex-shrink: 0;
+	opacity: 0;
+	visibility: hidden;
+	transition: opacity 0.2s ease, visibility 0.2s ease, background-color 0.2s ease;
+}
+
+.tn-search-box__clear.is-visible {
+	opacity: 1;
+	visibility: visible;
+}
+
+.tn-search-box__clear:hover {
+	color: var(--text-normal);
+	background-color: var(--background-modifier-hover);
+}
+
+.tn-search-box__clear:active {
+	background-color: var(--background-modifier-active-hover);
+}
+
+/* Focus styles for accessibility */
+.tn-search-box__clear:focus-visible {
+	outline: 2px solid var(--interactive-accent);
+	outline-offset: 2px;
+}
+

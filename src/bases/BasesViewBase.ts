@@ -5,6 +5,8 @@ import { PropertyMappingService } from "./PropertyMappingService";
 import { TaskInfo, EVENT_TASK_UPDATED } from "../types";
 import { convertInternalToUserProperties } from "../utils/propertyMapping";
 import { DEFAULT_INTERNAL_VISIBLE_PROPERTIES } from "../settings/defaults";
+import { SearchBox } from "./components/SearchBox";
+import { TaskSearchFilter } from "./TaskSearchFilter";
 
 /**
  * Abstract base class for all TaskNotes Bases views.
@@ -24,6 +26,12 @@ export abstract class BasesViewBase extends Component {
 	protected rootElement: HTMLElement | null = null;
 	protected taskUpdateListener: any = null;
 	protected updateDebounceTimer: number | null = null;
+
+	// Search functionality (opt-in via enableSearch flag)
+	protected enableSearch = false;
+	protected searchBox: SearchBox | null = null;
+	protected searchFilter: TaskSearchFilter | null = null;
+	protected currentSearchTerm = "";
 
 	constructor(controller: any, containerEl: HTMLElement, plugin: TaskNotesPlugin) {
 		// Call Component constructor
@@ -342,6 +350,109 @@ export abstract class BasesViewBase extends Component {
 		}
 
 		return visibleProperties;
+	}
+
+	/**
+	 * Initialize search functionality for this view.
+	 * Call this from render() in subclasses that want search.
+	 * Requires enableSearch to be true and will only create the UI once.
+	 */
+	protected setupSearch(container: HTMLElement): void {
+		// Idempotency: if search UI is already created, do nothing
+		if (this.searchBox) {
+			return;
+		}
+		if (!this.enableSearch) {
+			return;
+		}
+
+		// Create search container
+		const searchContainer = document.createElement("div");
+		searchContainer.className = "tn-search-container";
+
+		// Insert search container at the top of the container so it appears above
+		// the main items/content (e.g., the task list). This keeps the search box
+		// visible while the list itself can scroll independently.
+		if (container.firstChild) {
+			container.insertBefore(searchContainer, container.firstChild);
+		} else {
+			container.appendChild(searchContainer);
+		}
+
+		// Initialize search filter with visible properties (if available)
+		// Config might not be available yet during initial setup
+		let visibleProperties: string[] = [];
+		try {
+			if (this.config) {
+				visibleProperties = this.getVisibleProperties();
+			}
+		} catch (e) {
+			console.debug(`[${this.type}] Could not get visible properties during search setup:`, e);
+		}
+		this.searchFilter = new TaskSearchFilter(visibleProperties);
+
+		// Initialize search box
+		this.searchBox = new SearchBox(
+			searchContainer,
+			(term) => this.handleSearch(term),
+			300 // 300ms debounce
+		);
+		this.searchBox.render();
+
+		// Register cleanup using Component lifecycle
+		this.register(() => {
+			if (this.searchBox) {
+				this.searchBox.destroy();
+				this.searchBox = null;
+			}
+			this.searchFilter = null;
+			this.currentSearchTerm = "";
+		});
+	}
+
+	/**
+	 * Handle search term changes.
+	 * Subclasses can override for custom behavior.
+	 * Includes performance monitoring for search operations.
+	 */
+	protected handleSearch(term: string): void {
+		const startTime = performance.now();
+		this.currentSearchTerm = term;
+
+		// Re-render with filtered tasks
+		this.render();
+
+		const filterTime = performance.now() - startTime;
+
+		// Log slow searches for performance monitoring
+		if (filterTime > 200) {
+			console.warn(
+				`[${this.type}] Slow search: ${filterTime.toFixed(2)}ms for search term "${term}"`
+			);
+		}
+	}
+
+	/**
+	 * Apply search filter to tasks.
+	 * Returns filtered tasks or original if no search term.
+	 */
+	protected applySearchFilter(tasks: TaskInfo[]): TaskInfo[] {
+		if (!this.searchFilter || !this.currentSearchTerm) {
+			return tasks;
+		}
+
+		const startTime = performance.now();
+		const filtered = this.searchFilter.filterTasks(tasks, this.currentSearchTerm);
+		const filterTime = performance.now() - startTime;
+
+		// Log filter performance for monitoring
+		if (filterTime > 100) {
+			console.warn(
+				`[${this.type}] Filter operation took ${filterTime.toFixed(2)}ms for ${tasks.length} tasks`
+			);
+		}
+
+		return filtered;
 	}
 
 	// Abstract methods that subclasses must implement
