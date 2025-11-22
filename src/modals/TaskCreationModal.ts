@@ -1349,11 +1349,14 @@ export class TaskCreationModal extends TaskModal {
 
 	private generateFilename(taskData: TaskCreationData): string {
 		const context: FilenameContext = {
-			title: taskData.title || "",
-			status: taskData.status || "open",
-			priority: taskData.priority || "normal",
-			dueDate: taskData.due,
-			scheduledDate: taskData.scheduled,
+			taskData: {
+				title: taskData.title || "",
+				status: taskData.status || "open",
+				priority: taskData.priority || "normal",
+				due: taskData.due,
+				scheduled: taskData.scheduled,
+			},
+			date: new Date(),
 		};
 
 		return generateTaskFilename(context, this.plugin.settings);
