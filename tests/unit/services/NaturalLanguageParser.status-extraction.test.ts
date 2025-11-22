@@ -223,13 +223,164 @@ describe('NaturalLanguageParser - Status Extraction', () => {
 
     it('should maintain extraction order to prevent conflicts', () => {
       const result = parser.parseInput('Task Active = Now due tomorrow at 2pm @work +project');
-      
+
       expect(result.status).toBe('active');
       expect(result.contexts).toContain('work');
       expect(result.projects).toContain('project');
       expect(result.dueDate).toBeDefined();
       expect(result.dueTime).toBeDefined();
       expect(result.title).toBe('Task'); // "due tomorrow at 2pm" should be parsed as date and removed
+    });
+  });
+
+  describe('Regression Tests - Issue: Status Parsing with Markdown Special Characters', () => {
+    it('should extract status when autocomplete inserts the VALUE instead of LABEL', () => {
+      // CRITICAL: Autocomplete inserts s.value, not s.label!
+      // So if label is "*41🟩Done = Recent" and value is "done-recent",
+      // the autocomplete will insert "done-recent " into the text
+      const statusWithAsterisk: StatusConfig[] = [
+        { id: 'done-recent', value: 'done-recent', label: '*41🟩Done = Recent', color: '#00aa00', isCompleted: true, order: 1 }
+      ];
+      const parserWithAsterisk = new NaturalLanguageParser(statusWithAsterisk, priorityConfigs, false);
+
+      // This is what actually gets inserted by autocomplete
+      const result = parserWithAsterisk.parseInput('Task done-recent ');
+
+      expect(result.status).toBe('done-recent');
+      expect(result.title).toBe('Task');
+    });
+
+    it('should extract status when user types trigger + label manually (FIXED!)', () => {
+      // ROOT CAUSE: User has status with label "41🟩Done = Recent" (no asterisk)
+      // User types "*" (trigger) + "41🟩Done = Recent" manually
+      // Text becomes "Task *41🟩Done = Recent"
+      // FIX: Parser now tries matching both "41🟩Done = Recent" and "*41🟩Done = Recent"
+      const statusWithoutAsterisk: StatusConfig[] = [
+        { id: 'done-recent', value: 'done-recent', label: '41🟩Done = Recent', color: '#00aa00', isCompleted: true, order: 1 }
+      ];
+      const parserWithoutAsterisk = new NaturalLanguageParser(statusWithoutAsterisk, priorityConfigs, false);
+
+      // User types "*41🟩Done = Recent" (trigger + label)
+      const result = parserWithoutAsterisk.parseInput('Task *41🟩Done = Recent');
+
+      // FIXED: Status should now be extracted correctly
+      expect(result.status).toBe('done-recent');
+      expect(result.title).toBe('Task');
+    });
+
+    it('should extract status starting with underscore (markdown bold marker)', () => {
+      const statusWithUnderscore: StatusConfig[] = [
+        { id: 'important', value: 'important', label: '_Important_', color: '#ff0000', isCompleted: false, order: 1 }
+      ];
+      const parserWithUnderscore = new NaturalLanguageParser(statusWithUnderscore, priorityConfigs, false);
+
+      const result = parserWithUnderscore.parseInput('Task _Important_');
+
+      expect(result.status).toBe('important');
+      expect(result.title).toBe('Task');
+    });
+
+    it('should extract status starting with tilde (markdown strikethrough marker)', () => {
+      const statusWithTilde: StatusConfig[] = [
+        { id: 'deprecated', value: 'deprecated', label: '~Deprecated~', color: '#gray', isCompleted: false, order: 1 }
+      ];
+      const parserWithTilde = new NaturalLanguageParser(statusWithTilde, priorityConfigs, false);
+
+      const result = parserWithTilde.parseInput('Task ~Deprecated~');
+
+      expect(result.status).toBe('deprecated');
+      expect(result.title).toBe('Task');
+    });
+
+    it('should extract status with brackets (markdown link markers)', () => {
+      const statusWithBrackets: StatusConfig[] = [
+        { id: 'linked', value: 'linked', label: '[Linked]', color: '#blue', isCompleted: false, order: 1 }
+      ];
+      const parserWithBrackets = new NaturalLanguageParser(statusWithBrackets, priorityConfigs, false);
+
+      const result = parserWithBrackets.parseInput('Task [Linked]');
+
+      expect(result.status).toBe('linked');
+      expect(result.title).toBe('Task');
+    });
+  });
+
+  describe('Regression Tests - Issue: Status with Temporal Keywords', () => {
+    it('should extract status containing "Now" without parsing it as a date', () => {
+      // Regression: Status "10🔥Expedite = Now" had "Now" parsed as due date
+      const statusWithNow: StatusConfig[] = [
+        { id: 'expedite', value: 'expedite', label: '10🔥Expedite = Now', color: '#ff0000', isCompleted: false, order: 1 }
+      ];
+      const parserWithNow = new NaturalLanguageParser(statusWithNow, priorityConfigs, false);
+
+      const result = parserWithNow.parseInput('Task 10🔥Expedite = Now');
+
+      expect(result.status).toBe('expedite');
+      expect(result.title).toBe('Task');
+      // "Now" should NOT be parsed as a date since it's part of the status
+      expect(result.dueDate).toBeUndefined();
+      expect(result.scheduledDate).toBeUndefined();
+    });
+
+    it('should extract status with trigger + temporal keyword without parsing as date', () => {
+      // User types "*10🔥Expedite = Now" (trigger + label with temporal keyword)
+      const statusWithNow: StatusConfig[] = [
+        { id: 'expedite', value: 'expedite', label: '10🔥Expedite = Now', color: '#ff0000', isCompleted: false, order: 1 }
+      ];
+      const parserWithNow = new NaturalLanguageParser(statusWithNow, priorityConfigs, false);
+
+      const result = parserWithNow.parseInput('Task *10🔥Expedite = Now');
+
+      expect(result.status).toBe('expedite');
+      expect(result.title).toBe('Task');
+      // "Now" should NOT be parsed as a date since it's part of the status
+      expect(result.dueDate).toBeUndefined();
+      expect(result.scheduledDate).toBeUndefined();
+    });
+
+    it('should extract status containing "Today" without parsing it as a date', () => {
+      const statusWithToday: StatusConfig[] = [
+        { id: 'today-priority', value: 'today-priority', label: 'Due Today', color: '#ff0000', isCompleted: false, order: 1 }
+      ];
+      const parserWithToday = new NaturalLanguageParser(statusWithToday, priorityConfigs, false);
+
+      const result = parserWithToday.parseInput('Task Due Today');
+
+      expect(result.status).toBe('today-priority');
+      expect(result.title).toBe('Task');
+      // "Today" should NOT be parsed as a date since it's part of the status
+      expect(result.dueDate).toBeUndefined();
+      expect(result.scheduledDate).toBeUndefined();
+    });
+
+    it('should extract status containing "Tomorrow" without parsing it as a date', () => {
+      const statusWithTomorrow: StatusConfig[] = [
+        { id: 'tomorrow-status', value: 'tomorrow-status', label: 'For Tomorrow', color: '#blue', isCompleted: false, order: 1 }
+      ];
+      const parserWithTomorrow = new NaturalLanguageParser(statusWithTomorrow, priorityConfigs, false);
+
+      const result = parserWithTomorrow.parseInput('Task For Tomorrow');
+
+      expect(result.status).toBe('tomorrow-status');
+      expect(result.title).toBe('Task');
+      // "Tomorrow" should NOT be parsed as a date since it's part of the status
+      expect(result.dueDate).toBeUndefined();
+      expect(result.scheduledDate).toBeUndefined();
+    });
+
+    it('should extract status with temporal keyword and still parse separate date', () => {
+      // Status contains "Now" but there's also a separate "tomorrow" that should be parsed
+      const statusWithNow: StatusConfig[] = [
+        { id: 'expedite', value: 'expedite', label: '10🔥Expedite = Now', color: '#ff0000', isCompleted: false, order: 1 }
+      ];
+      const parserWithNow = new NaturalLanguageParser(statusWithNow, priorityConfigs, false);
+
+      const result = parserWithNow.parseInput('Task 10🔥Expedite = Now tomorrow');
+
+      expect(result.status).toBe('expedite');
+      expect(result.title).toBe('Task');
+      // "tomorrow" should be parsed as a date (separate from status)
+      expect(result.dueDate).toBeDefined();
     });
   });
 });

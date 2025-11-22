@@ -541,6 +541,15 @@ export class NaturalLanguageParser {
 				(a, b) => b.label.length - a.label.length
 			);
 
+			// Strip the status trigger from text once before searching
+			const statusTrigger = this.triggerConfig.getTriggerForProperty("status");
+			let textToSearch = text;
+
+			if (statusTrigger && statusTrigger.enabled && statusTrigger.trigger) {
+				const escapedTrigger = this.escapeRegex(statusTrigger.trigger);
+				textToSearch = text.replace(new RegExp(escapedTrigger, 'g'), '');
+			}
+
 			for (const config of sortedConfigs) {
 				// Try both label and value
 				const candidates = [config.label, config.value];
@@ -550,9 +559,19 @@ export class NaturalLanguageParser {
 					if (!candidate || candidate.trim() === "") {
 						continue;
 					}
-					const match = this.findStatusMatch(text, candidate);
+
+					// Try matching the candidate in the cleaned text
+					const match = this.findStatusMatch(textToSearch, candidate);
 					if (match) {
 						result.status = config.value;
+
+						// If we stripped the trigger, remove trigger + match from original text
+						if (textToSearch !== text && statusTrigger) {
+							const triggerPlusMatch = statusTrigger.trigger + match.fullMatch;
+							return this.cleanupWhitespace(text.replace(triggerPlusMatch, ""));
+						}
+
+						// Otherwise just remove the match
 						return this.cleanupWhitespace(text.replace(match.fullMatch, ""));
 					}
 				}
