@@ -24,3 +24,12 @@ Example:
 
 -->
 
+## Fixed
+
+- (#1165) Fixed Kanban view grouping by list properties (contexts, tags, projects) treating multiple values as a single combined column
+  - Tasks with multiple values now appear in each individual column (e.g., a task with `contexts: [work, call]` appears in both "work" and "call" columns)
+  - Added "Show items in multiple columns" option (enabled by default) to control this behavior
+  - Fixed drag-and-drop to properly add/remove individual values instead of replacing the entire list
+  - Fixed swimlane mode to also respect list property explosion
+  - Thanks to @dictionarymouse for reporting
+

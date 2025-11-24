@@ -90,6 +90,12 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 						default: false,
 					},
 					{
+						type: "toggle",
+						key: "explodeListColumns",
+						displayName: "Show items in multiple columns",
+						default: true,
+					},
+					{
 						type: "multitext",
 						key: "columnOrder",
 						displayName: "Column Order (Advanced)",

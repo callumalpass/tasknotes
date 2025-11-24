@@ -16,6 +16,7 @@ export class KanbanView extends BasesViewBase {
 	private basesController: any; // Store controller for accessing query.views
 	private currentTaskElements = new Map<string, HTMLElement>();
 	private draggedTaskPath: string | null = null;
+	private draggedFromColumn: string | null = null; // Track source column for list property handling
 	private taskInfoCache = new Map<string, TaskInfo>();
 	private containerListenersRegistered = false;
 	private columnScrollers = new Map<string, VirtualScroller<TaskInfo>>(); // columnKey -> scroller
@@ -25,6 +26,7 @@ export class KanbanView extends BasesViewBase {
 	private columnWidth = 280;
 	private maxSwimlaneHeight = 600;
 	private hideEmptyColumns = false;
+	private explodeListColumns = true; // Show items with list properties in multiple columns
 	private columnOrders: Record<string, string[]> = {};
 	private configLoaded = false; // Track if we've successfully loaded config
 	/**
@@ -70,6 +72,10 @@ export class KanbanView extends BasesViewBase {
 			this.columnWidth = (this.config.get('columnWidth') as number) || 280;
 			this.maxSwimlaneHeight = (this.config.get('maxSwimlaneHeight') as number) || 600;
 			this.hideEmptyColumns = (this.config.get('hideEmptyColumns') as boolean) || false;
+
+			// Read explodeListColumns option (defaults to true)
+			const explodeValue = this.config.get('explodeListColumns');
+			this.explodeListColumns = explodeValue !== false; // Default to true if not set
 
 			// Read column orders
 			const columnOrderStr = (this.config.get('columnOrder') as string) || '{}';
@@ -181,23 +187,56 @@ export class KanbanView extends BasesViewBase {
 		groupByPropertyId: string,
 		pathToProps: Map<string, Record<string, any>>
 	): Map<string, TaskInfo[]> {
-		// Always use Bases grouped data when groupBy is configured
-		// Note: We can't rely on isGrouped() because it returns false when all items have null values
 		const groups = new Map<string, TaskInfo[]>();
 
-		const basesGroups = this.dataAdapter.getGroupedData();
-		const tasksByPath = new Map(taskNotes.map(t => [t.path, t]));
+		// Check if we should explode list properties into multiple columns
+		const cleanGroupBy = this.stripPropertyPrefix(groupByPropertyId);
+		const shouldExplode = this.explodeListColumns && this.isListTypeProperty(cleanGroupBy);
 
-		for (const group of basesGroups) {
-			const groupKey = this.dataAdapter.convertGroupKeyToString(group.key);
-			const groupTasks: TaskInfo[] = [];
+		if (shouldExplode) {
+			// For list properties (contexts, tags, projects, etc.), "explode" so tasks appear
+			// in each individual column rather than a single combined column.
+			// This matches user expectations: a task with contexts ["work", "call"]
+			// should appear in both the "work" column AND the "call" column.
+			for (const task of taskNotes) {
+				// Get value from TaskInfo directly (already properly mapped) or fall back to pathToProps
+				const value = this.getListPropertyValue(task, cleanGroupBy, pathToProps);
 
-			for (const entry of group.entries) {
-				const task = tasksByPath.get(entry.file.path);
-				if (task) groupTasks.push(task);
+				if (Array.isArray(value) && value.length > 0) {
+					// Add task to each individual value's column
+					for (const item of value) {
+						const columnKey = String(item) || "None";
+						if (!groups.has(columnKey)) {
+							groups.set(columnKey, []);
+						}
+						groups.get(columnKey)!.push(task);
+					}
+				} else {
+					// No values or not an array - put in "None" column
+					const columnKey = "None";
+					if (!groups.has(columnKey)) {
+						groups.set(columnKey, []);
+					}
+					groups.get(columnKey)!.push(task);
+				}
 			}
+		} else {
+			// For non-list properties (or when explode is disabled), use Bases grouped data directly
+			// Note: We can't rely on isGrouped() because it returns false when all items have null values
+			const basesGroups = this.dataAdapter.getGroupedData();
+			const tasksByPath = new Map(taskNotes.map(t => [t.path, t]));
 
-			groups.set(groupKey, groupTasks);
+			for (const group of basesGroups) {
+				const groupKey = this.dataAdapter.convertGroupKeyToString(group.key);
+				const groupTasks: TaskInfo[] = [];
+
+				for (const entry of group.entries) {
+					const task = tasksByPath.get(entry.file.path);
+					if (task) groupTasks.push(task);
+				}
+
+				groups.set(groupKey, groupTasks);
+			}
 		}
 
 		// Augment with empty status columns if grouping by status
@@ -207,6 +246,67 @@ export class KanbanView extends BasesViewBase {
 		this.augmentWithEmptyPriorityColumns(groups, groupByPropertyId);
 
 		return groups;
+	}
+
+	/**
+	 * Check if a property is a list-type that should show tasks in multiple columns.
+	 * Uses Obsidian's metadataTypeManager to dynamically detect property types.
+	 */
+	private isListTypeProperty(propertyName: string): boolean {
+		// Check Obsidian's property type registry
+		const metadataTypeManager = (this.plugin.app as any).metadataTypeManager;
+		if (metadataTypeManager?.properties) {
+			const propertyInfo = metadataTypeManager.properties[propertyName.toLowerCase()];
+			if (propertyInfo?.type) {
+				// Obsidian list types: "multitext", "tags", "aliases"
+				const listTypes = new Set(['multitext', 'tags', 'aliases']);
+				if (listTypes.has(propertyInfo.type)) {
+					return true;
+				}
+			}
+		}
+
+		// Fallback: check against known TaskNotes list properties
+		// (in case metadataTypeManager doesn't have the property registered)
+		const contextsField = this.plugin.fieldMapper.toUserField('contexts');
+		const projectsField = this.plugin.fieldMapper.toUserField('projects');
+
+		const knownListProperties = new Set([
+			'contexts', contextsField,
+			'projects', projectsField,
+			'tags', 'aliases'
+		]);
+
+		return knownListProperties.has(propertyName);
+	}
+
+	/**
+	 * Get the value of a list property from a task.
+	 * Tries TaskInfo properties first (already properly mapped), then falls back to pathToProps.
+	 */
+	private getListPropertyValue(
+		task: TaskInfo,
+		propertyName: string,
+		pathToProps: Map<string, Record<string, any>>
+	): any {
+		// Map user field names to TaskInfo property names
+		const contextsField = this.plugin.fieldMapper.toUserField('contexts');
+		const projectsField = this.plugin.fieldMapper.toUserField('projects');
+
+		// Check if property matches known TaskInfo list properties
+		if (propertyName === 'contexts' || propertyName === contextsField) {
+			return task.contexts;
+		}
+		if (propertyName === 'projects' || propertyName === projectsField) {
+			return task.projects;
+		}
+		if (propertyName === 'tags') {
+			return task.tags;
+		}
+
+		// Fall back to pathToProps for custom list properties
+		const props = pathToProps.get(task.path) || {};
+		return props[propertyName];
 	}
 
 	/**
@@ -352,6 +452,10 @@ export class KanbanView extends BasesViewBase {
 			}
 		}
 
+		// Check if we should explode list properties into multiple columns
+		const cleanGroupBy = this.stripPropertyPrefix(groupByPropertyId);
+		const shouldExplode = this.explodeListColumns && this.isListTypeProperty(cleanGroupBy);
+
 		// Distribute tasks into swimlane + column cells
 		for (const task of allTasks) {
 			const props = pathToProps.get(task.path) || {};
@@ -360,15 +464,33 @@ export class KanbanView extends BasesViewBase {
 			const swimLaneValue = this.getPropertyValue(props, this.swimLanePropertyId);
 			const swimLaneKey = this.valueToString(swimLaneValue);
 
-			// Determine column (groupBy value)
-			const columnValue = this.getPropertyValue(props, groupByPropertyId);
-			const columnKey = this.valueToString(columnValue);
-
 			const swimLane = swimLanes.get(swimLaneKey);
-			if (swimLane && swimLane.has(columnKey)) {
-				const columnTasks = swimLane.get(columnKey);
-				if (columnTasks) {
-					columnTasks.push(task);
+			if (!swimLane) continue;
+
+			if (shouldExplode) {
+				// For list properties, add task to each individual column
+				const value = this.getListPropertyValue(task, cleanGroupBy, pathToProps);
+
+				if (Array.isArray(value) && value.length > 0) {
+					for (const item of value) {
+						const columnKey = String(item) || "None";
+						if (swimLane.has(columnKey)) {
+							swimLane.get(columnKey)!.push(task);
+						}
+					}
+				} else {
+					// No values - put in "None" column
+					if (swimLane.has("None")) {
+						swimLane.get("None")!.push(task);
+					}
+				}
+			} else {
+				// For non-list properties, use single column
+				const columnValue = this.getPropertyValue(props, groupByPropertyId);
+				const columnKey = this.valueToString(columnValue);
+
+				if (swimLane.has(columnKey)) {
+					swimLane.get(columnKey)!.push(task);
 				}
 			}
 		}
@@ -762,6 +884,7 @@ export class KanbanView extends BasesViewBase {
 			await this.handleTaskDrop(this.draggedTaskPath, groupKey, null);
 
 			this.draggedTaskPath = null;
+			this.draggedFromColumn = null;
 		});
 
 		// Drag end handler - cleanup in case drop doesn't fire
@@ -810,6 +933,7 @@ export class KanbanView extends BasesViewBase {
 			await this.handleTaskDrop(this.draggedTaskPath, columnKey, swimLaneKey);
 
 			this.draggedTaskPath = null;
+			this.draggedFromColumn = null;
 		});
 
 		// Drag end handler - cleanup in case drop doesn't fire
@@ -823,6 +947,11 @@ export class KanbanView extends BasesViewBase {
 			this.draggedTaskPath = task.path;
 			cardWrapper.classList.add("kanban-view__card--dragging");
 
+			// Capture the source column for list property handling
+			const column = cardWrapper.closest('[data-group]') as HTMLElement;
+			const swimlaneColumn = cardWrapper.closest('[data-column]') as HTMLElement;
+			this.draggedFromColumn = column?.dataset.group || swimlaneColumn?.dataset.column || null;
+
 			if (e.dataTransfer) {
 				e.dataTransfer.effectAllowed = "move";
 				e.dataTransfer.setData("text/plain", task.path);
@@ -831,6 +960,7 @@ export class KanbanView extends BasesViewBase {
 
 		cardWrapper.addEventListener("dragend", () => {
 			cardWrapper.classList.remove("kanban-view__card--dragging");
+			this.draggedFromColumn = null;
 
 			// Clean up any lingering dragover classes
 			this.boardEl?.querySelectorAll('.kanban-view__column--dragover').forEach(el => {
@@ -852,8 +982,16 @@ export class KanbanView extends BasesViewBase {
 			const groupByPropertyId = this.getGroupByPropertyId();
 			if (!groupByPropertyId) return;
 
-			// Update the groupBy property
-			await this.updateTaskFrontmatterProperty(taskPath, groupByPropertyId, newGroupValue);
+			const cleanGroupBy = this.stripPropertyPrefix(groupByPropertyId);
+			const isListProperty = this.explodeListColumns && this.isListTypeProperty(cleanGroupBy);
+
+			if (isListProperty && this.draggedFromColumn) {
+				// For list properties, we need to remove the source value and add the target value
+				await this.updateListPropertyOnDrop(taskPath, groupByPropertyId, this.draggedFromColumn, newGroupValue);
+			} else {
+				// For non-list properties, simply replace the value
+				await this.updateTaskFrontmatterProperty(taskPath, groupByPropertyId, newGroupValue);
+			}
 
 			// Update swimlane property if applicable
 			if (newSwimLaneValue !== null && this.swimLanePropertyId) {
@@ -865,6 +1003,45 @@ export class KanbanView extends BasesViewBase {
 		} catch (error) {
 			console.error("[TaskNotes][KanbanView] Error updating task:", error);
 		}
+	}
+
+	/**
+	 * Update a list property when dragging between columns.
+	 * Removes the source column's value and adds the target column's value.
+	 */
+	private async updateListPropertyOnDrop(
+		taskPath: string,
+		basesPropertyId: string,
+		sourceValue: string,
+		targetValue: string
+	): Promise<void> {
+		// If dropping on the same column, do nothing
+		if (sourceValue === targetValue) return;
+
+		const file = this.plugin.app.vault.getAbstractFileByPath(taskPath);
+		if (!file || !(file instanceof TFile)) {
+			throw new Error(`Cannot find task file: ${taskPath}`);
+		}
+
+		const frontmatterKey = basesPropertyId.replace(/^(note\.|file\.|task\.)/, '');
+
+		await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
+			let currentValue = frontmatter[frontmatterKey];
+
+			// Ensure we're working with an array
+			if (!Array.isArray(currentValue)) {
+				currentValue = currentValue ? [currentValue] : [];
+			}
+
+			// Create new array: remove source value, add target value (if not already present)
+			const newValue = currentValue.filter((v: string) => v !== sourceValue);
+			if (!newValue.includes(targetValue) && targetValue !== "None") {
+				newValue.push(targetValue);
+			}
+
+			// Update the frontmatter
+			frontmatter[frontmatterKey] = newValue.length > 0 ? newValue : [];
+		});
 	}
 
 	/**
