@@ -555,11 +555,11 @@ export class MiniCalendarView extends BasesViewBase {
 		const today = createUTCDateFromLocalCalendarDate(todayLocal);
 
 		const isToday = isSameDay(dayDate, today);
-		const isSelected = isSameDay(dayDate, this.selectedDate);
+		// const isSelected = isSameDay(dayDate, this.selectedDate);
 
 		let classNames = "mini-calendar-view__day";
 		if (isToday) classNames += " mini-calendar-view__day--today";
-		if (isSelected) classNames += " mini-calendar-view__day--selected";
+		// if (isSelected) classNames += " mini-calendar-view__day--selected";
 		if (isOutsideMonth) classNames += " mini-calendar-view__day--outside-month";
 
 		const dayEl = weekRow.createDiv({
@@ -568,7 +568,7 @@ export class MiniCalendarView extends BasesViewBase {
 			attr: {
 				role: "gridcell",
 				"aria-label": format(convertUTCToLocalCalendarDate(dayDate), "EEEE, MMMM d, yyyy") + (isToday ? " (Today)" : ""),
-				"aria-selected": isSelected ? "true" : "false",
+				// "aria-selected": isSelected ? "true" : "false",
 				"aria-current": isToday ? "date" : null,
 			},
 		});
