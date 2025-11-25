@@ -577,14 +577,22 @@ export abstract class BasesViewBase extends Component {
 		if (!selectionService) return;
 
 		// Find all task cards and update their selection state
+		const primaryPath = selectionService.getPrimarySelectedPath();
+
 		const cards = this.rootElement.querySelectorAll<HTMLElement>(".task-card");
 		for (const card of cards) {
 			const path = card.dataset.taskPath;
 			if (path) {
 				if (selectionService.isSelected(path)) {
 					card.classList.add("task-card--selected");
+					if (path === primaryPath) {
+						card.classList.add("task-card--selected-primary");
+					} else {
+						card.classList.remove("task-card--selected-primary");
+					}
 				} else {
 					card.classList.remove("task-card--selected");
+					card.classList.remove("task-card--selected-primary");
 				}
 			}
 		}
@@ -596,8 +604,14 @@ export abstract class BasesViewBase extends Component {
 			if (path) {
 				if (selectionService.isSelected(path)) {
 					wrapper.classList.add("kanban-view__card-wrapper--selected");
+					if (path === primaryPath) {
+						wrapper.classList.add("kanban-view__card-wrapper--selected-primary");
+					} else {
+						wrapper.classList.remove("kanban-view__card-wrapper--selected-primary");
+					}
 				} else {
 					wrapper.classList.remove("kanban-view__card-wrapper--selected");
+					wrapper.classList.remove("kanban-view__card-wrapper--selected-primary");
 				}
 			}
 		}
@@ -612,11 +626,13 @@ export abstract class BasesViewBase extends Component {
 		const cards = this.rootElement.querySelectorAll<HTMLElement>(".task-card--selected");
 		for (const card of cards) {
 			card.classList.remove("task-card--selected");
+			card.classList.remove("task-card--selected-primary");
 		}
 
 		const cardWrappers = this.rootElement.querySelectorAll<HTMLElement>(".kanban-view__card-wrapper--selected");
 		for (const wrapper of cardWrappers) {
 			wrapper.classList.remove("kanban-view__card-wrapper--selected");
+			wrapper.classList.remove("kanban-view__card-wrapper--selected-primary");
 		}
 	}
 

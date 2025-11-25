@@ -1278,12 +1278,16 @@
 /* Selected task card styling */
 .tasknotes-plugin .task-card--selected {
     background-color: color-mix(in srgb, var(--interactive-accent) 15%, transparent);
-    box-shadow: inset 0 0 0 2px var(--interactive-accent);
     border-radius: var(--tn-radius-sm);
 }
 
 .tasknotes-plugin .task-card--selected:hover {
     background-color: color-mix(in srgb, var(--interactive-accent) 20%, transparent);
+}
+
+/* Primary selected task (first selected) gets a border */
+.tasknotes-plugin .task-card--selected-primary {
+    box-shadow: inset 0 0 0 2px var(--interactive-accent);
 }
 
 
@@ -1323,6 +1327,10 @@
 /* Kanban card wrapper selection state */
 .tasknotes-plugin .kanban-view__card-wrapper--selected {
     background-color: color-mix(in srgb, var(--interactive-accent) 15%, transparent);
-    box-shadow: inset 0 0 0 2px var(--interactive-accent);
     border-radius: var(--tn-radius-sm);
+}
+
+/* Primary selected kanban card wrapper gets a border */
+.tasknotes-plugin .kanban-view__card-wrapper--selected-primary {
+    box-shadow: inset 0 0 0 2px var(--interactive-accent);
 }

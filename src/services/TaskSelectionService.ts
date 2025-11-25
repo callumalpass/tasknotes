@@ -10,6 +10,7 @@ export class TaskSelectionService {
 	private plugin: TaskNotesPlugin;
 	private selectedTaskPaths: Set<string> = new Set();
 	private lastSelectedPath: string | null = null;
+	private primarySelectedPath: string | null = null;
 	private selectionModeActive = false;
 	private selectionModeListeners: Array<(active: boolean) => void> = [];
 	private selectionChangeListeners: Array<(paths: string[]) => void> = [];
@@ -73,7 +74,17 @@ export class TaskSelectionService {
 	toggleSelection(taskPath: string): void {
 		if (this.selectedTaskPaths.has(taskPath)) {
 			this.selectedTaskPaths.delete(taskPath);
+			// If we removed the primary, pick a new one
+			if (this.primarySelectedPath === taskPath) {
+				this.primarySelectedPath = this.selectedTaskPaths.size > 0
+					? Array.from(this.selectedTaskPaths)[0]
+					: null;
+			}
 		} else {
+			// First selected task becomes primary
+			if (this.selectedTaskPaths.size === 0) {
+				this.primarySelectedPath = taskPath;
+			}
 			this.selectedTaskPaths.add(taskPath);
 		}
 		this.lastSelectedPath = taskPath;
@@ -98,6 +109,7 @@ export class TaskSelectionService {
 		this.selectedTaskPaths.clear();
 		this.selectedTaskPaths.add(taskPath);
 		this.lastSelectedPath = taskPath;
+		this.primarySelectedPath = taskPath;
 		this.notifySelectionChange();
 	}
 
@@ -105,6 +117,10 @@ export class TaskSelectionService {
 	 * Add a task to selection without clearing existing selection.
 	 */
 	addToSelection(taskPath: string): void {
+		// First selected task becomes primary
+		if (this.selectedTaskPaths.size === 0) {
+			this.primarySelectedPath = taskPath;
+		}
 		this.selectedTaskPaths.add(taskPath);
 		this.lastSelectedPath = taskPath;
 		this.notifySelectionChange();
@@ -154,6 +170,10 @@ export class TaskSelectionService {
 	 * Select all visible tasks.
 	 */
 	selectAll(allVisiblePaths: string[]): void {
+		// First task becomes primary if none selected yet
+		if (this.selectedTaskPaths.size === 0 && allVisiblePaths.length > 0) {
+			this.primarySelectedPath = allVisiblePaths[0];
+		}
 		for (const path of allVisiblePaths) {
 			this.selectedTaskPaths.add(path);
 		}
@@ -169,6 +189,7 @@ export class TaskSelectionService {
 	clearSelection(): void {
 		this.selectedTaskPaths.clear();
 		this.lastSelectedPath = null;
+		this.primarySelectedPath = null;
 		this.notifySelectionChange();
 	}
 
@@ -177,6 +198,13 @@ export class TaskSelectionService {
 	 */
 	getSelectedPaths(): string[] {
 		return Array.from(this.selectedTaskPaths);
+	}
+
+	/**
+	 * Get the primary (first) selected task path.
+	 */
+	getPrimarySelectedPath(): string | null {
+		return this.primarySelectedPath;
 	}
 
 	/**
