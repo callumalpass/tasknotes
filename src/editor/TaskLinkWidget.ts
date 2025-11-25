@@ -62,9 +62,6 @@ export class TaskLinkWidget extends WidgetType {
 		// Add card to wrapper
 		wrapper.appendChild(card);
 
-		// Add drag functionality to the card
-		this.addDragHandlers(card);
-
 		// Store original text for reference
 		card.dataset.originalText = this.originalText;
 
@@ -79,14 +76,6 @@ export class TaskLinkWidget extends WidgetType {
 		});
 
 		return wrapper;
-	}
-
-	/**
-	 * Add drag handlers to task link widget for dragging to calendar
-	 */
-	private addDragHandlers(container: HTMLElement): void {
-		// Use the centralized drag drop manager for FullCalendar compatibility
-		this.plugin.dragDropManager.makeTaskCardDraggable(container, this.taskInfo.path);
 	}
 
 	/**

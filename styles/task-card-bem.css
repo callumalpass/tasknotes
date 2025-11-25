@@ -1044,6 +1044,18 @@
     background-color: transparent;
 }
 
+/* Disable drag cursor for inline tasks - they're not draggable */
+.tasknotes-plugin .task-card--layout-inline[draggable="true"]:hover {
+    cursor: default;
+    transform: none;
+    box-shadow: none;
+}
+
+.tasknotes-plugin .task-card--layout-inline[draggable="true"]:active {
+    cursor: default;
+    transform: none;
+}
+
 /* Remove chevron gutter padding in inline mode */
 .tasknotes-plugin .task-card--layout-inline,
 .tasknotes-plugin .task-card--layout-inline.task-card--chevron-left {
