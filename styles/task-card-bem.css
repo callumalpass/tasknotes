@@ -1274,10 +1274,6 @@
    SELECTION MODE STYLES
    ================================================================= */
 
-/* Selection mode indicator on container */
-.tasknotes-plugin.tn-selection-mode {
-    cursor: crosshair;
-}
 
 /* Selected task card styling */
 .tasknotes-plugin .task-card--selected {
