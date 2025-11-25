@@ -644,6 +644,10 @@ export abstract class BasesViewBase extends Component {
 			if (!this.selectionIndicatorEl) {
 				this.selectionIndicatorEl = document.createElement("div");
 				this.selectionIndicatorEl.className = "tn-selection-indicator";
+				this.selectionIndicatorEl.addEventListener("click", () => {
+					this.plugin.taskSelectionService?.clearSelection();
+					this.plugin.taskSelectionService?.exitSelectionMode();
+				});
 				this.rootElement.appendChild(this.selectionIndicatorEl);
 			}
 			this.selectionIndicatorEl.textContent = `${count} selected`;
