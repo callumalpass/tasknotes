@@ -26,6 +26,16 @@ Example:
 
 ## Added
 
+- (#1010, #1126) Added batch task selection and editing in Task List and Kanban views
+  - Shift+click to select multiple tasks
+  - Ctrl/Cmd+click to toggle individual task selection
+  - Right-click selected tasks to open batch context menu
+  - Batch operations: change status, priority, due date, scheduled date, archive, delete
+  - Drag multiple selected cards in Kanban to move them together
+  - Click the selection count indicator to clear selection
+  - Press Escape to exit selection mode
+  - Thanks to @jalooc and @solidabstract for the feature requests
+
 - (#1207) Added inline search box to Bases views (Task List, Kanban, Calendar)
   - Enable via "Enable search box" toggle in view settings
   - Searches across title, status, priority, tags, contexts, projects, and visible custom properties
