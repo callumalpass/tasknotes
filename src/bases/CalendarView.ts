@@ -352,6 +352,11 @@ export class CalendarView extends BasesViewBase {
 					this.microsoftCalendarToggles.set(cal.id, this.config.get(key) ?? true);
 				}
 			}
+
+			// Read enableSearch toggle (default: false for backward compatibility)
+			const enableSearchValue = this.config.get('enableSearch');
+			this.enableSearch = (enableSearchValue as boolean) ?? false;
+
 			// Mark config as successfully loaded
 			this.configLoaded = true;
 
@@ -373,11 +378,19 @@ export class CalendarView extends BasesViewBase {
 			this.readViewOptions();
 		}
 
+		// Now that config is loaded, setup search (idempotent: will only create once)
+		if (this.rootElement) {
+			this.setupSearch(this.rootElement);
+		}
+
 		try {
 			// Extract tasks from Bases
 			const dataItems = this.dataAdapter.extractDataItems();
 			const taskNotes = await identifyTaskNotesFromBasesData(dataItems, this.plugin);
-			this.currentTasks = taskNotes;
+
+			// Apply search filter
+			const filteredTasks = this.applySearchFilter(taskNotes);
+			this.currentTasks = filteredTasks;
 
 			// Build Bases entry mapping for task enrichment
 			this.basesEntryByPath.clear();

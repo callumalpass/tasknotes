@@ -13,6 +13,7 @@ const CSS_FILES = [
     'styles/note-card-bem.css',      // NoteCard component with proper BEM scoping
     'styles/filter-bar-bem.css',     // FilterBar component with proper BEM scoping
     'styles/filter-heading.css',     // FilterHeading component with proper BEM scoping
+    'styles/search-box.css',         // SearchBox component with proper BEM scoping
     'styles/modal-bem.css',          // Modal components with proper BEM scoping
     'styles/task-modal.css',         // Task modal components (Google Keep/Todoist style)
     'styles/reminder-modal.css',     // Reminder modal component with proper BEM scoping

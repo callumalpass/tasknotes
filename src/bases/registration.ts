@@ -34,6 +34,12 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 							return prop.startsWith("note.") || prop.startsWith("task.");
 						},
 					},
+					{
+						type: "toggle",
+						key: "enableSearch",
+						displayName: "Enable search box",
+						default: false,
+					},
 				],
 			});
 
@@ -75,6 +81,12 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 						type: "toggle",
 						key: "hideEmptyColumns",
 						displayName: "Hide Empty Columns",
+						default: false,
+					},
+					{
+						type: "toggle",
+						key: "enableSearch",
+						displayName: "Enable search box",
 						default: false,
 					},
 					{
@@ -306,6 +318,12 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 										min: 15,
 										max: 100,
 										step: 5,
+									},
+									{
+										type: "toggle",
+										key: "enableSearch",
+										displayName: "Enable search box",
+										default: false,
 									},
 								],
 							},

@@ -75,6 +75,10 @@ export class KanbanView extends BasesViewBase {
 			const columnOrderStr = (this.config.get('columnOrder') as string) || '{}';
 			this.columnOrders = JSON.parse(columnOrderStr);
 
+			// Read enableSearch toggle (default: false for backward compatibility)
+			const enableSearchValue = this.config.get('enableSearch');
+			this.enableSearch = (enableSearchValue as boolean) ?? false;
+
 			// Mark config as successfully loaded
 			this.configLoaded = true;
 		} catch (e) {
@@ -92,15 +96,23 @@ export class KanbanView extends BasesViewBase {
 			this.readViewOptions();
 		}
 
+		// Now that config is loaded, setup search (idempotent: will only create once)
+		if (this.rootElement) {
+			this.setupSearch(this.rootElement);
+		}
+
 		try {
 			const dataItems = this.dataAdapter.extractDataItems();
 			const taskNotes = await identifyTaskNotesFromBasesData(dataItems, this.plugin);
+
+			// Apply search filter
+			const filteredTasks = this.applySearchFilter(taskNotes);
 
 			// Clear board and cleanup scrollers
 			this.destroyColumnScrollers();
 			this.boardEl.empty();
 
-			if (taskNotes.length === 0) {
+			if (filteredTasks.length === 0) {
 				this.renderEmptyState();
 				return;
 			}
@@ -118,11 +130,11 @@ export class KanbanView extends BasesViewBase {
 			}
 
 			// Group tasks
-			const groups = this.groupTasks(taskNotes, groupByPropertyId, pathToProps);
+			const groups = this.groupTasks(filteredTasks, groupByPropertyId, pathToProps);
 
 			// Render swimlanes if configured
 			if (this.swimLanePropertyId) {
-				await this.renderWithSwimLanes(groups, taskNotes, pathToProps, groupByPropertyId);
+				await this.renderWithSwimLanes(groups, filteredTasks, pathToProps, groupByPropertyId);
 			} else {
 				await this.renderFlat(groups);
 			}
