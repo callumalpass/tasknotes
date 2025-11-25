@@ -18,6 +18,7 @@ export class KanbanView extends BasesViewBase {
 	private draggedTaskPath: string | null = null;
 	private draggedTaskPaths: string[] = []; // For batch drag operations
 	private draggedFromColumn: string | null = null; // Track source column for list property handling
+	private draggedSourceColumns: Map<string, string> = new Map(); // Track source column per task for batch operations
 	private taskInfoCache = new Map<string, TaskInfo>();
 	private containerListenersRegistered = false;
 	private columnScrollers = new Map<string, VirtualScroller<TaskInfo>>(); // columnKey -> scroller
@@ -987,11 +988,19 @@ export class KanbanView extends BasesViewBase {
 				this.draggedTaskPaths = selectionService.getSelectedPaths();
 				this.draggedTaskPath = task.path;
 
-				// Add dragging class to all selected cards
+				// Build source column map for all selected tasks
+				this.draggedSourceColumns.clear();
 				for (const path of this.draggedTaskPaths) {
 					const wrapper = this.currentTaskElements.get(path);
 					if (wrapper) {
 						wrapper.classList.add("kanban-view__card--dragging");
+						// Capture source column for each task
+						const col = wrapper.closest('[data-group]') as HTMLElement;
+						const swimCol = wrapper.closest('[data-column]') as HTMLElement;
+						const sourceCol = col?.dataset.group || swimCol?.dataset.column;
+						if (sourceCol) {
+							this.draggedSourceColumns.set(path, sourceCol);
+						}
 					}
 				}
 
@@ -1012,7 +1021,7 @@ export class KanbanView extends BasesViewBase {
 				}
 			}
 
-			// Capture the source column for list property handling
+			// Capture the source column for list property handling (single drag fallback)
 			const column = cardWrapper.closest('[data-group]') as HTMLElement;
 			const swimlaneColumn = cardWrapper.closest('[data-column]') as HTMLElement;
 			this.draggedFromColumn = column?.dataset.group || swimlaneColumn?.dataset.column || null;
@@ -1029,6 +1038,7 @@ export class KanbanView extends BasesViewBase {
 			cardWrapper.classList.remove("kanban-view__card--dragging");
 			this.draggedFromColumn = null;
 			this.draggedTaskPaths = [];
+			this.draggedSourceColumns.clear();
 
 			// Clean up any lingering dragover classes
 			this.boardEl?.querySelectorAll('.kanban-view__column--dragover').forEach(el => {
@@ -1058,15 +1068,15 @@ export class KanbanView extends BasesViewBase {
 			const isBatchOperation = pathsToUpdate.length > 1;
 
 			for (const path of pathsToUpdate) {
-				if (isListProperty && this.draggedFromColumn && !isBatchOperation) {
-					// For list properties with single-card drag, we need to remove the source value and add the target value
-					// This preserves other values in the list while moving between columns
-					await this.updateListPropertyOnDrop(path, groupByPropertyId, this.draggedFromColumn, newGroupValue);
-				} else if (isListProperty && isBatchOperation) {
-					// For batch operations on list properties, we can't safely do remove-old/add-new
-					// because each task may come from a different column. Instead, just ensure
-					// the target value is in the list (additive approach).
-					await this.addValueToListProperty(path, groupByPropertyId, newGroupValue);
+				// Get the source column for this specific task
+				const sourceColumn = isBatchOperation
+					? this.draggedSourceColumns.get(path)
+					: this.draggedFromColumn;
+
+				if (isListProperty && sourceColumn) {
+					// For list properties, remove the source value and add the target value
+					// This works for both single and batch operations now that we track per-task sources
+					await this.updateListPropertyOnDrop(path, groupByPropertyId, sourceColumn, newGroupValue);
 				} else {
 					// For non-list properties, simply replace the value
 					await this.updateTaskFrontmatterProperty(path, groupByPropertyId, newGroupValue);
@@ -1127,41 +1137,6 @@ export class KanbanView extends BasesViewBase {
 
 			// Update the frontmatter
 			frontmatter[frontmatterKey] = newValue.length > 0 ? newValue : [];
-		});
-	}
-
-	/**
-	 * Add a value to a list property (for batch operations).
-	 * Only adds the value if it's not already present. Does not remove existing values.
-	 */
-	private async addValueToListProperty(
-		taskPath: string,
-		basesPropertyId: string,
-		valueToAdd: string
-	): Promise<void> {
-		if (valueToAdd === "None") return;
-
-		const file = this.plugin.app.vault.getAbstractFileByPath(taskPath);
-		if (!file || !(file instanceof TFile)) {
-			throw new Error(`Cannot find task file: ${taskPath}`);
-		}
-
-		const frontmatterKey = basesPropertyId.replace(/^(note\.|file\.|task\.)/, '');
-
-		await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
-			let currentValue = frontmatter[frontmatterKey];
-
-			// Ensure we're working with an array
-			if (!Array.isArray(currentValue)) {
-				currentValue = currentValue ? [currentValue] : [];
-			}
-
-			// Add value if not already present
-			if (!currentValue.includes(valueToAdd)) {
-				currentValue.push(valueToAdd);
-			}
-
-			frontmatter[frontmatterKey] = currentValue;
 		});
 	}
 
