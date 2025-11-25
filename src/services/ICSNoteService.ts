@@ -148,12 +148,15 @@ export class ICSNoteService {
 			// Generate filename context for ICS events
 			// Use clean event title for filename template variables, not the formatted noteTitle
 			const filenameContext: ICSFilenameContext = {
-				title: icsEvent.title, // Use clean event title for {title} variable
-				priority: "",
-				status: "",
+				taskData: {
+					title: icsEvent.title, // Use clean event title for {title} variable
+					priority: "",
+					status: "",
+					due: icsEvent.end,
+					scheduled: icsEvent.start,
+				},
 				date: eventStartDate,
-				dueDate: icsEvent.end,
-				scheduledDate: icsEvent.start,
+
 				icsEventTitle: icsEvent.title,
 				icsEventLocation: icsEvent.location,
 				icsEventDescription: icsEvent.description,
