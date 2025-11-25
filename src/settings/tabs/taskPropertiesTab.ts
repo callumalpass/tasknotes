@@ -536,9 +536,14 @@ function renderPriorityList(
 							);
 							return;
 						}
-						plugin.settings.customPriorities.splice(index, 1);
-						save();
-						renderPriorityList(container, plugin, save);
+						const priorityIndex = plugin.settings.customPriorities.findIndex(
+							(p) => p.id === priority.id
+						);
+						if (priorityIndex !== -1) {
+							plugin.settings.customPriorities.splice(priorityIndex, 1);
+							save();
+							renderPriorityList(container, plugin, save);
+						}
 					}, translate("settings.taskProperties.taskPriorities.deleteTooltip")),
 				],
 			},

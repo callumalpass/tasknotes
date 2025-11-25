@@ -42,6 +42,9 @@ Example:
 
 ## Fixed
 
+- (#1241) Fixed deleting custom priorities in settings removing the wrong priority when multiple priorities exist
+  - Thanks to @Anthonyhunter100 for reporting
+
 - (#1165) Fixed Kanban view grouping by list properties (contexts, tags, projects) treating multiple values as a single combined column
   - Tasks with multiple values now appear in each individual column (e.g., a task with `contexts: [work, call]` appears in both "work" and "call" columns)
   - Added "Show items in multiple columns" option (enabled by default) to control this behavior
