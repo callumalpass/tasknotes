@@ -709,7 +709,7 @@
 
 .tasknotes-plugin .mini-calendar-view__day--today {
     background: none !important;
-    border: 1px solid var(--tn-interactive-accent) !important;
+    border: 2px solid var(--tn-color-info) !important;
     color: var(--tn-text-on-accent);
 }
 
