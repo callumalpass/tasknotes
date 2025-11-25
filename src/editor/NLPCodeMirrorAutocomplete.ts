@@ -129,6 +129,29 @@ export function createNLPAutocomplete(plugin: TaskNotesPlugin): Extension[] {
 		closeOnBlur: true,
 		// Max options to show
 		maxRenderedOptions: 10,
+		// Custom rendering for project suggestions with metadata
+		addToOptions: [
+			{
+				render: (completion: any, _state: any, _view: any) => {
+					// Only render custom content for project suggestions with metadata
+					if (!completion.projectMetadata) return null;
+
+					const container = document.createElement("div");
+					container.className = "cm-project-suggestion__metadata";
+
+					const metadata = completion.projectMetadata;
+					for (const row of metadata) {
+						const metaRow = document.createElement("div");
+						metaRow.className = "cm-project-suggestion__meta";
+						metaRow.textContent = row;
+						container.appendChild(metaRow);
+					}
+
+					return container;
+				},
+				position: 100, // After label (50) and detail (80)
+			},
+		],
 	});
 
 	// Add explicit keyboard navigation for autocomplete with high priority
@@ -235,6 +258,8 @@ async function getFileSuggestions(
 ): Promise<Completion[]> {
 	try {
 		const { FileSuggestHelper } = await import("../suggest/FileSuggestHelper");
+		const { ProjectMetadataResolver } = await import("../utils/projectMetadataResolver");
+		const { parseDisplayFieldsRow } = await import("../utils/projectAutosuggestDisplayFieldsParser");
 
 		// Get autosuggest config - use projectAutosuggest for projects,
 		// or user field's autosuggestFilter for user fields
@@ -262,6 +287,95 @@ async function getFileSuggestions(
 			return !excluded.some((ex) => file.path.startsWith(ex));
 		});
 
+		// For projects, add rich metadata rendering
+		if (propertyId === "projects") {
+			const resolver = new ProjectMetadataResolver({
+				getFrontmatter: (entry) => entry.frontmatter,
+			});
+			const rowConfigs = (plugin.settings?.projectAutosuggest?.rows ?? []).slice(0, 3);
+
+			return filteredList.map((item) => {
+				const displayText = item.displayText || item.insertText;
+				const insertText = item.insertText;
+
+				// Get file metadata for rendering
+				const file = plugin.app.vault
+					.getMarkdownFiles()
+					.find((f) => f.basename === item.insertText);
+
+				// Build metadata rows
+				const metadataRows: string[] = [];
+				if (file && rowConfigs.length > 0) {
+					const cache = plugin.app.metadataCache.getFileCache(file);
+					const frontmatter: Record<string, any> = cache?.frontmatter || {};
+					const mapped = plugin.fieldMapper.mapFromFrontmatter(
+						frontmatter,
+						file.path,
+						plugin.settings.storeTitleInFilename
+					);
+
+					const title = typeof mapped.title === "string" ? mapped.title : "";
+					const aliases = Array.isArray(frontmatter["aliases"])
+						? (frontmatter["aliases"] as any[]).filter((a: any) => typeof a === "string")
+						: [];
+
+					const fileData = {
+						basename: file.basename,
+						name: file.name,
+						path: file.path,
+						parent: file.parent?.path || "",
+						title,
+						aliases,
+						frontmatter,
+					};
+
+					// Build each configured row
+					for (let i = 0; i < Math.min(rowConfigs.length, 3); i++) {
+						const row = rowConfigs[i];
+						if (!row) continue;
+
+						try {
+							const tokens = parseDisplayFieldsRow(row);
+							const parts: string[] = [];
+
+							for (const token of tokens) {
+								if (token.property.startsWith("literal:")) {
+									const lit = token.property.slice(8);
+									if (lit) parts.push(lit);
+									continue;
+								}
+
+								const value = resolver.resolve(token.property, fileData);
+								if (!value) continue;
+
+								if (token.showName) {
+									parts.push(`${token.displayName ?? token.property}: ${value}`);
+								} else {
+									parts.push(value);
+								}
+							}
+
+							if (parts.length > 0) {
+								metadataRows.push(parts.join(" "));
+							}
+						} catch {
+							// Ignore row parse errors
+						}
+					}
+				}
+
+				return {
+					label: displayText,
+					apply: `[[${insertText}]] `,
+					type: "text",
+					info: "Project",
+					// Add metadata as a custom property for the render function
+					projectMetadata: metadataRows.length > 0 ? metadataRows : undefined,
+				} as any;
+			});
+		}
+
+		// For non-project file suggestions, use simple rendering
 		return filteredList.map((item) => {
 			const displayText = item.displayText || item.insertText;
 			const insertText = item.insertText;

@@ -870,6 +870,61 @@
     color: var(--text-normal);
 }
 
+/* NLP Project Suggestion Styles - Rich Metadata Display (Legacy textarea-based) */
+.tasknotes-plugin .nlp-suggest-project__filename {
+    font-weight: var(--font-weight-medium);
+    color: var(--text-normal);
+    font-size: var(--font-ui-small);
+    margin-bottom: 2px;
+}
+
+.tasknotes-plugin .nlp-suggest-project__meta {
+    font-size: var(--font-ui-smaller);
+    color: var(--text-muted);
+    margin-top: 2px;
+    line-height: 1.4;
+}
+
+.tasknotes-plugin .nlp-suggest-project__meta-label {
+    color: var(--text-muted);
+    font-weight: 500;
+    margin-right: 4px;
+}
+
+.tasknotes-plugin .nlp-suggest-project__meta-value {
+    color: var(--text-normal);
+}
+
+/* CodeMirror Project Suggestion Styles - Rich Metadata Display */
+.tasknotes-plugin .cm-tooltip-autocomplete .cm-project-suggestion {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: var(--size-4-1) 0;
+}
+
+.tasknotes-plugin .cm-tooltip-autocomplete .cm-project-suggestion__name {
+    font-weight: var(--font-weight-medium);
+    color: var(--text-normal);
+    font-size: var(--font-ui-small);
+}
+
+.tasknotes-plugin .cm-tooltip-autocomplete .cm-project-suggestion__meta {
+    font-size: var(--font-ui-smaller);
+    color: var(--text-muted);
+    line-height: 1.4;
+}
+
+.tasknotes-plugin .cm-tooltip-autocomplete .cm-project-suggestion__meta-label {
+    color: var(--text-muted);
+    font-weight: 500;
+    margin-right: 4px;
+}
+
+.tasknotes-plugin .cm-tooltip-autocomplete .cm-project-suggestion__meta-value {
+    color: var(--text-normal);
+}
+
 /* =====================================================================
    PROJECT SELECTION UI
    ===================================================================== */
