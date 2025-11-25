@@ -4,7 +4,6 @@ import { TaskInfo } from "../types";
 import { DateContextMenu } from "./DateContextMenu";
 import { ContextMenu } from "./ContextMenu";
 import { showConfirmationModal } from "../modals/ConfirmationModal";
-import { getDatePart, getTimePart } from "../utils/dateUtils";
 
 export interface BatchContextMenuOptions {
 	plugin: TaskNotesPlugin;
@@ -176,6 +175,16 @@ export class BatchContextMenu {
 				}
 			});
 		}
+
+		// Add option to clear priority
+		submenu.addSeparator();
+		submenu.addItem((item: any) => {
+			item.setTitle(this.t("contextMenus.priority.clearPriority"));
+			item.setIcon("x");
+			item.onClick(async () => {
+				await this.batchUpdateProperty("priority", undefined);
+			});
+		});
 	}
 
 	private addDateOptions(submenu: Menu, dateType: "due" | "scheduled"): void {
@@ -188,7 +197,7 @@ export class BatchContextMenu {
 
 		const dateOptions = dateContextMenu.getDateOptions();
 
-		// Basic date options
+		// Basic date options only (skip increment options as they don't work correctly for batch)
 		const basicOptions = dateOptions.filter((option: any) => option.category === "basic");
 		for (const option of basicOptions) {
 			submenu.addItem((item: any) => {
@@ -198,21 +207,6 @@ export class BatchContextMenu {
 					await this.batchUpdateProperty(dateType, option.value);
 				});
 			});
-		}
-
-		// Increment options
-		const incrementOptions = dateOptions.filter((option: any) => option.category === "increment");
-		if (incrementOptions.length > 0) {
-			submenu.addSeparator();
-			for (const option of incrementOptions) {
-				submenu.addItem((item: any) => {
-					if (option.icon) item.setIcon(option.icon);
-					item.setTitle(option.label);
-					item.onClick(async () => {
-						await this.batchUpdateProperty(dateType, option.value);
-					});
-				});
-			}
 		}
 
 		// Clear date option
