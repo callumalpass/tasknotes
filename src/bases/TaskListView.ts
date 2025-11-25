@@ -225,6 +225,15 @@ export class TaskListView extends BasesViewBase {
 		// Apply search filter
 		const filteredTasks = this.applySearchFilter(taskNotes);
 
+		// Show "no results" if search returned empty but we had tasks
+		if (this.isSearchWithNoResults(filteredTasks, taskNotes.length)) {
+			this.clearAllTaskElements();
+			if (this.itemsContainer) {
+				this.renderSearchNoResults(this.itemsContainer);
+			}
+			return;
+		}
+
 		// Note: taskNotes are already sorted by Bases according to sort configuration
 		// No manual sorting needed - Bases provides pre-sorted data
 
@@ -376,6 +385,10 @@ export class TaskListView extends BasesViewBase {
 			const primaryKey = this.dataAdapter.convertGroupKeyToString(group.key);
 			const groupPaths = new Set(group.entries.map((e: any) => e.file.path));
 			const groupTasks = taskNotes.filter((t) => groupPaths.has(t.path));
+
+			// Skip groups with no matching tasks (e.g., after search filtering)
+			if (groupTasks.length === 0) continue;
+
 			const isPrimaryCollapsed = this.collapsedGroups.has(primaryKey);
 
 			// Add primary header
@@ -440,6 +453,15 @@ export class TaskListView extends BasesViewBase {
 
 		// Apply search filter
 		const filteredTasks = this.applySearchFilter(taskNotes);
+
+		// Show "no results" if search returned empty but we had tasks
+		if (this.isSearchWithNoResults(filteredTasks, taskNotes.length)) {
+			this.clearAllTaskElements();
+			if (this.itemsContainer) {
+				this.renderSearchNoResults(this.itemsContainer);
+			}
+			return;
+		}
 
 		const targetDate = new Date();
 		this.currentTargetDate = targetDate;
@@ -517,6 +539,15 @@ export class TaskListView extends BasesViewBase {
 
 		// Apply search filter
 		const filteredTasks = this.applySearchFilter(taskNotes);
+
+		// Show "no results" if search returned empty but we had tasks
+		if (this.isSearchWithNoResults(filteredTasks, taskNotes.length)) {
+			this.clearAllTaskElements();
+			if (this.itemsContainer) {
+				this.renderSearchNoResults(this.itemsContainer);
+			}
+			return;
+		}
 
 		const targetDate = new Date();
 		this.currentTargetDate = targetDate;

@@ -358,8 +358,12 @@ export abstract class BasesViewBase extends Component {
 	 * Requires enableSearch to be true and will only create the UI once.
 	 */
 	protected setupSearch(container: HTMLElement): void {
-		// Idempotency: if search UI is already created, do nothing
+		// Idempotency: if search UI is already created, restore value and return
 		if (this.searchBox) {
+			// Restore search term if it was cleared during re-render
+			if (this.currentSearchTerm && this.searchBox.getValue() !== this.currentSearchTerm) {
+				this.searchBox.setValue(this.currentSearchTerm);
+			}
 			return;
 		}
 		if (!this.enableSearch) {
@@ -398,6 +402,11 @@ export abstract class BasesViewBase extends Component {
 			300 // 300ms debounce
 		);
 		this.searchBox.render();
+
+		// Restore search term if view is being re-initialized with existing search
+		if (this.currentSearchTerm) {
+			this.searchBox.setValue(this.currentSearchTerm);
+		}
 
 		// Register cleanup using Component lifecycle
 		this.register(() => {
@@ -453,6 +462,35 @@ export abstract class BasesViewBase extends Component {
 		}
 
 		return filtered;
+	}
+
+	/**
+	 * Check if we're currently filtering with no results.
+	 * Returns true if search is active and produced no matches.
+	 */
+	protected isSearchWithNoResults(filteredTasks: TaskInfo[], originalCount: number): boolean {
+		return this.currentSearchTerm.length > 0 && filteredTasks.length === 0 && originalCount > 0;
+	}
+
+	/**
+	 * Render "no results" message for search.
+	 * Call this when search produces no matches.
+	 */
+	protected renderSearchNoResults(container: HTMLElement): void {
+		const noResultsEl = document.createElement("div");
+		noResultsEl.className = "tn-search-no-results";
+
+		const textEl = document.createElement("div");
+		textEl.className = "tn-search-no-results__text";
+		textEl.textContent = `No tasks match "${this.currentSearchTerm}"`;
+
+		const hintEl = document.createElement("div");
+		hintEl.className = "tn-search-no-results__hint";
+		hintEl.textContent = "Try a different search term or clear the search";
+
+		noResultsEl.appendChild(textEl);
+		noResultsEl.appendChild(hintEl);
+		container.appendChild(noResultsEl);
 	}
 
 	// Abstract methods that subclasses must implement

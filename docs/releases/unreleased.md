@@ -24,6 +24,14 @@ Example:
 
 -->
 
+## Added
+
+- (#1207) Added inline search box to Bases views (Task List, Kanban, Calendar)
+  - Enable via "Enable search box" toggle in view settings
+  - Searches across title, status, priority, tags, contexts, projects, and visible custom properties
+  - Press Escape or click × to clear search
+  - Thanks to @renatomen for the PR
+
 ## Fixed
 
 - (#1165) Fixed Kanban view grouping by list properties (contexts, tags, projects) treating multiple values as a single combined column

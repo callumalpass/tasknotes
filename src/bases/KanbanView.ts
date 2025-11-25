@@ -119,7 +119,12 @@ export class KanbanView extends BasesViewBase {
 			this.boardEl.empty();
 
 			if (filteredTasks.length === 0) {
-				this.renderEmptyState();
+				// Show "no results" if search returned empty but we had tasks
+				if (this.isSearchWithNoResults(filteredTasks, taskNotes.length)) {
+					this.renderSearchNoResults(this.boardEl);
+				} else {
+					this.renderEmptyState();
+				}
 				return;
 			}
 

@@ -95,3 +95,25 @@
 	outline-offset: 2px;
 }
 
+/* No results state */
+.tn-search-no-results {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	padding: var(--size-4-8, 32px) var(--size-4-4, 16px);
+	text-align: center;
+	color: var(--text-muted);
+}
+
+.tn-search-no-results__text {
+	font-size: var(--font-ui-medium, 14px);
+	color: var(--text-normal);
+	margin-bottom: var(--size-4-2, 8px);
+}
+
+.tn-search-no-results__hint {
+	font-size: var(--font-ui-small, 13px);
+	color: var(--text-muted);
+}
+
