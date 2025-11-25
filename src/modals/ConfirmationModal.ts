@@ -6,6 +6,7 @@ export interface ConfirmationModalOptions {
 	confirmText?: string;
 	cancelText?: string;
 	isDestructive?: boolean;
+	defaultToConfirm?: boolean;
 }
 
 /**
@@ -67,8 +68,16 @@ export class ConfirmationModal extends Modal {
 			this.close();
 		});
 
-		// Focus the cancel button by default for safety
-		cancelButton.focus();
+		// Focus the appropriate button based on defaultToConfirm option
+		// Use setTimeout to ensure the DOM is fully rendered before focusing
+		setTimeout(() => {
+			if (this.options.defaultToConfirm) {
+				confirmButton.focus();
+			} else {
+				// Focus the cancel button by default for safety
+				cancelButton.focus();
+			}
+		}, 0);
 	}
 
 	onClose() {

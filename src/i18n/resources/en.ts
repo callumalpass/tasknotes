@@ -1945,6 +1945,12 @@ export const en: TranslationTree = {
 			tagsPlaceholder: "tag1, tag2",
 			timeEstimateLabel: "Time estimate (minutes)",
 			timeEstimatePlaceholder: "30",
+			unsavedChanges: {
+				title: "Unsaved Changes",
+				message: "You have unsaved changes. Do you want to save them?",
+				save: "Save Changes",
+				discard: "Discard Changes",
+			},
 			dependencies: {
 				blockedBy: "Blocked by",
 				blocking: "Blocking",
