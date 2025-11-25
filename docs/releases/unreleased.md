@@ -28,7 +28,6 @@ Example:
 
 - (#1010, #1126) Added batch task selection and editing in Task List and Kanban views
   - Shift+click to select multiple tasks
-  - Ctrl/Cmd+click to toggle individual task selection
   - Right-click selected tasks to open batch context menu
   - Batch operations: change status, priority, due date, scheduled date, archive, delete
   - Drag multiple selected cards in Kanban to move them together

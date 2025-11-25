@@ -78,33 +78,23 @@ export function createTaskClickHandler(options: ClickHandlerOptions) {
 			}
 		}
 
-		// Check for selection mode - handle shift/ctrl/cmd clicks for task selection
+		// Check for selection mode - only shift+click triggers selection
 		const selectionService = plugin.taskSelectionService;
 		if (selectionService) {
-			const hasModifier = e.shiftKey || e.ctrlKey || e.metaKey;
-
-			if (hasModifier) {
+			if (e.shiftKey) {
 				e.stopPropagation();
 
-				// Enter selection mode if shift is pressed
-				if (e.shiftKey && !selectionService.isSelectionModeActive()) {
+				// Enter selection mode if not already active
+				if (!selectionService.isSelectionModeActive()) {
 					selectionService.enterSelectionMode();
 				}
 
-				// Handle selection
-				if (e.shiftKey) {
-					// Range selection - need to get visible paths from the view
-					// For now, just toggle since we don't have access to visible paths here
-					selectionService.toggleSelection(task.path);
-				} else {
-					// Toggle individual selection (ctrl/cmd click)
-					selectionService.toggleSelection(task.path);
-				}
-
+				// Toggle selection for this task
+				selectionService.toggleSelection(task.path);
 				return;
 			}
 
-			// Regular click without modifiers exits selection mode
+			// Regular click without shift exits selection mode
 			if (selectionService.isSelectionModeActive()) {
 				selectionService.clearSelection();
 				selectionService.exitSelectionMode();
