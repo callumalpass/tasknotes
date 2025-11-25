@@ -1094,6 +1094,7 @@ export const en: TranslationTree = {
 					description:
 						'Calendar locale for date formatting and calendar system (e.g., "en", "fa" for Farsi/Persian, "de" for German). Leave empty to auto-detect from browser.',
 					placeholder: "Auto-detect",
+					invalidLocale: "Invalid locale. Please enter a valid language tag (e.g., 'en', 'de', 'fr-FR').",
 				},
 			},
 			defaultEventVisibility: {

@@ -2644,6 +2644,10 @@
       "source": "7dbcac72248ee277cf1fb28b3d3aaa2ba5719a89",
       "translation": "3beb884f81da261d2589d79cd4b0a28757d85023"
     },
+    "settings.appearance.calendarView.calendarLocale.invalidLocale": {
+      "source": "eb720e27908982a821908fbcf674db22fc5a64b5",
+      "translation": "657a38c94a8b20915dbeca0bf9ace459af99c256"
+    },
     "settings.appearance.defaultEventVisibility.header": {
       "source": "9fde66ff39a3c531c8e157d066200b5bd7734a27",
       "translation": "1bc8d0a92b0020b9841b021db66f30c987d6a46f"
@@ -9757,6 +9761,10 @@
     "settings.appearance.calendarView.calendarLocale.placeholder": {
       "source": "7dbcac72248ee277cf1fb28b3d3aaa2ba5719a89",
       "translation": "e2404dff9734108b61e08df5e850af13577c8bc9"
+    },
+    "settings.appearance.calendarView.calendarLocale.invalidLocale": {
+      "source": "eb720e27908982a821908fbcf674db22fc5a64b5",
+      "translation": "043ed0f35230909a2eee339400c8fc2b59c49d8b"
     },
     "settings.appearance.defaultEventVisibility.header": {
       "source": "9fde66ff39a3c531c8e157d066200b5bd7734a27",
@@ -16872,6 +16880,10 @@
       "source": "7dbcac72248ee277cf1fb28b3d3aaa2ba5719a89",
       "translation": "bcace74d13008c70b7719d2fd9cdef8559f9aec5"
     },
+    "settings.appearance.calendarView.calendarLocale.invalidLocale": {
+      "source": "eb720e27908982a821908fbcf674db22fc5a64b5",
+      "translation": "d1f23fb54b33aae4ffe26f374712f6a98c940caf"
+    },
     "settings.appearance.defaultEventVisibility.header": {
       "source": "9fde66ff39a3c531c8e157d066200b5bd7734a27",
       "translation": "bf7e0720b0a162865a212740106e88f8bdad7556"
@@ -23985,6 +23997,10 @@
     "settings.appearance.calendarView.calendarLocale.placeholder": {
       "source": "7dbcac72248ee277cf1fb28b3d3aaa2ba5719a89",
       "translation": "a955c28228cb605f23f75f1f3aa230306ab6b321"
+    },
+    "settings.appearance.calendarView.calendarLocale.invalidLocale": {
+      "source": "eb720e27908982a821908fbcf674db22fc5a64b5",
+      "translation": "5c2078c0f0de99235088a06532244c8cc8a0aba0"
     },
     "settings.appearance.defaultEventVisibility.header": {
       "source": "9fde66ff39a3c531c8e157d066200b5bd7734a27",
@@ -31100,6 +31116,10 @@
       "source": "7dbcac72248ee277cf1fb28b3d3aaa2ba5719a89",
       "translation": "27bb514d8f3344a431096be8e21cfb6d6cf6656a"
     },
+    "settings.appearance.calendarView.calendarLocale.invalidLocale": {
+      "source": "eb720e27908982a821908fbcf674db22fc5a64b5",
+      "translation": "7d339e0e0a93b7116f485b6506fa911e68565fe2"
+    },
     "settings.appearance.defaultEventVisibility.header": {
       "source": "9fde66ff39a3c531c8e157d066200b5bd7734a27",
       "translation": "b7ed733041871674859a135775471a3ff5ac9f4f"
@@ -38214,6 +38234,10 @@
       "source": "7dbcac72248ee277cf1fb28b3d3aaa2ba5719a89",
       "translation": "0cb91d715113444f3a1cf5426f580ac8f39fd3b3"
     },
+    "settings.appearance.calendarView.calendarLocale.invalidLocale": {
+      "source": "eb720e27908982a821908fbcf674db22fc5a64b5",
+      "translation": "957c18d380cece02e17907cf6c2de75f2e302ac3"
+    },
     "settings.appearance.defaultEventVisibility.header": {
       "source": "9fde66ff39a3c531c8e157d066200b5bd7734a27",
       "translation": "2d83f11044421fb242c7f01c7f5ca609fb5b02a3"
@@ -45327,6 +45351,10 @@
     "settings.appearance.calendarView.calendarLocale.placeholder": {
       "source": "7dbcac72248ee277cf1fb28b3d3aaa2ba5719a89",
       "translation": "00ab1b88580843bbfc5ec1377cdb268e903a9f63"
+    },
+    "settings.appearance.calendarView.calendarLocale.invalidLocale": {
+      "source": "eb720e27908982a821908fbcf674db22fc5a64b5",
+      "translation": "08c4e52b60960130d582194ae3303992323e43f2"
     },
     "settings.appearance.defaultEventVisibility.header": {
       "source": "9fde66ff39a3c531c8e157d066200b5bd7734a27",

@@ -1061,6 +1061,7 @@ export const de: TranslationTree = {
 					name: "Kalendersprache",
 					description: "Kalendersprache für Datumsformatierung und Kalendersystem (z.B. \"en\", \"fa\" für Farsi/Persisch, \"de\" für Deutsch). Leer lassen für automatische Erkennung vom Browser.",
 					placeholder: "Automatische Erkennung",
+					invalidLocale: "Ungültige Gebietsschema-Einstellung. Bitte geben Sie ein gültiges Sprachkürzel ein (z.B. 'de', 'en', 'fr-FR').",
 				},
 			},
 			defaultEventVisibility: {

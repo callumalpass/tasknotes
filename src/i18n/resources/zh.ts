@@ -1061,6 +1061,7 @@ export const zh: TranslationTree = {
 					name: "日历区域设置",
 					description: "日期格式和日历系统的日历区域设置（例如，\"en\"、\"fa\"表示波斯语/波斯文、\"de\"表示德语）。留空以从浏览器自动检测。",
 					placeholder: "自动检测",
+					invalidLocale: "无效的区域设置。请输入有效的语言标签（例如：'zh'、'en'、'fr-FR'）。",
 				},
 			},
 			defaultEventVisibility: {

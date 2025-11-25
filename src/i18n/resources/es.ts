@@ -1061,6 +1061,7 @@ export const es: TranslationTree = {
 					name: "Configuración regional del calendario",
 					description: "Configuración regional del calendario para formato de fecha y sistema de calendario (ej. \"en\", \"fa\" para Farsi/Persa, \"de\" para Alemán). Dejar vacío para auto-detectar desde el navegador.",
 					placeholder: "Auto-detectar",
+					invalidLocale: "Configuración regional inválida. Por favor, introduzca un código de idioma válido (ej. 'es', 'en', 'fr-FR').",
 				},
 			},
 			defaultEventVisibility: {

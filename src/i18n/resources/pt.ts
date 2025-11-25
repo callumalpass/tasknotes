@@ -1063,7 +1063,8 @@ export const pt: TranslationTree = {
 				calendarLocale: {
 					name: "Localidade do calendário",
 					description: 'Localidade do calendário para formatação de data e sistema de calendário (ex: "pt-br", "en", "fa" para Farsi/Persa, "de" para Alemão). Deixe em branco para detectar automaticamente do navegador.',
-					placeholder: "Autodetectar"
+					placeholder: "Autodetectar",
+					invalidLocale: "Localidade inválida. Por favor, insira um código de idioma válido (ex: 'pt-BR', 'en', 'fr-FR')."
 				}
 			},
 			defaultEventVisibility: {

@@ -294,16 +294,38 @@ export function renderAppearanceTab(
 		},
 	});
 
-	createTextSetting(container, {
-		name: translate("settings.appearance.calendarView.calendarLocale.name"),
-		desc: translate("settings.appearance.calendarView.calendarLocale.description"),
-		placeholder: translate("settings.appearance.calendarView.calendarLocale.placeholder"),
-		getValue: () => plugin.settings.calendarViewSettings.locale || "",
-		setValue: async (value: string) => {
-			plugin.settings.calendarViewSettings.locale = value;
-			save();
-		},
-	});
+	// Calendar locale setting with blur validation (not on every keystroke)
+	new Setting(container)
+		.setName(translate("settings.appearance.calendarView.calendarLocale.name"))
+		.setDesc(translate("settings.appearance.calendarView.calendarLocale.description"))
+		.addText((text) => {
+			text.setPlaceholder(translate("settings.appearance.calendarView.calendarLocale.placeholder"));
+			text.setValue(plugin.settings.calendarViewSettings.locale || "");
+			text.inputEl.addClass("settings-view__input");
+
+			// Validate and save on blur (when user clicks out of field)
+			text.inputEl.addEventListener("blur", () => {
+				const trimmed = text.getValue().trim();
+				if (trimmed) {
+					try {
+						// Use Intl.getCanonicalLocales to validate the locale tag
+						Intl.getCanonicalLocales(trimmed);
+						plugin.settings.calendarViewSettings.locale = trimmed;
+						save();
+					} catch {
+						// Invalid locale - show notice and clear the field
+						new Notice(translate("settings.appearance.calendarView.calendarLocale.invalidLocale"));
+						plugin.settings.calendarViewSettings.locale = "";
+						text.setValue("");
+						save();
+					}
+				} else {
+					// Empty string is valid (means auto-detect)
+					plugin.settings.calendarViewSettings.locale = "";
+					save();
+				}
+			});
+		});
 
 	// Default event visibility section
 	createSectionHeader(container, translate("settings.appearance.defaultEventVisibility.header"));

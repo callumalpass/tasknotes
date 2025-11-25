@@ -1061,6 +1061,7 @@ export const ja: TranslationTree = {
 					name: "カレンダーロケール",
 					description: "日付形式とカレンダーシステムのカレンダーロケール（例：\"en\"、\"fa\"はFarsi/Persian、\"de\"はGerman）。ブラウザーから自動検出するには空白のままにします。",
 					placeholder: "自動検出",
+					invalidLocale: "無効なロケールです。有効な言語タグを入力してください（例：'ja'、'en'、'fr-FR'）。",
 				},
 			},
 			defaultEventVisibility: {

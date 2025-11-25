@@ -660,6 +660,7 @@
   "settings.appearance.calendarView.calendarLocale.name": "8492ed6bc579b0a17f9202b343c2d05643313237",
   "settings.appearance.calendarView.calendarLocale.description": "c1c7d7dffac245a49728bf53c2114a9a57341212",
   "settings.appearance.calendarView.calendarLocale.placeholder": "7dbcac72248ee277cf1fb28b3d3aaa2ba5719a89",
+  "settings.appearance.calendarView.calendarLocale.invalidLocale": "eb720e27908982a821908fbcf674db22fc5a64b5",
   "settings.appearance.defaultEventVisibility.header": "9fde66ff39a3c531c8e157d066200b5bd7734a27",
   "settings.appearance.defaultEventVisibility.description": "f951b58986bd3f42d5e4f4b670c718787a49eb2c",
   "settings.appearance.defaultEventVisibility.showScheduledTasks.name": "0fd520d76ebff53e4708b9034c0a56b86c32d34c",

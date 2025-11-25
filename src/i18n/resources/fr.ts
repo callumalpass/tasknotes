@@ -1061,6 +1061,7 @@ export const fr: TranslationTree = {
 					name: "Locale du calendrier",
 					description: "Locale du calendrier pour le formatage des dates et le système calendaire (ex. \"en\", \"fa\" pour le Farsi/Persan, \"de\" pour l'Allemand). Laisser vide pour détecter automatiquement depuis le navigateur.",
 					placeholder: "Détection automatique",
+					invalidLocale: "Locale invalide. Veuillez entrer un code de langue valide (ex. 'fr', 'en', 'de-DE').",
 				},
 			},
 			defaultEventVisibility: {
