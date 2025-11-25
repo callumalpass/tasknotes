@@ -7,6 +7,7 @@ import { convertInternalToUserProperties } from "../utils/propertyMapping";
 import { DEFAULT_INTERNAL_VISIBLE_PROPERTIES } from "../settings/defaults";
 import { SearchBox } from "./components/SearchBox";
 import { TaskSearchFilter } from "./TaskSearchFilter";
+import { BatchContextMenu } from "../components/BatchContextMenu";
 
 /**
  * Abstract base class for all TaskNotes Bases views.
@@ -33,6 +34,10 @@ export abstract class BasesViewBase extends Component {
 	protected searchFilter: TaskSearchFilter | null = null;
 	protected currentSearchTerm = "";
 
+	// Selection mode state
+	protected selectionModeCleanup: (() => void) | null = null;
+	protected selectionIndicatorEl: HTMLElement | null = null;
+
 	constructor(controller: any, containerEl: HTMLElement, plugin: TaskNotesPlugin) {
 		// Call Component constructor
 		super();
@@ -57,6 +62,7 @@ export abstract class BasesViewBase extends Component {
 	onload(): void {
 		this.setupContainer();
 		this.setupTaskUpdateListener();
+		this.setupSelectionHandling();
 		this.render();
 	}
 
@@ -491,6 +497,235 @@ export abstract class BasesViewBase extends Component {
 		noResultsEl.appendChild(textEl);
 		noResultsEl.appendChild(hintEl);
 		container.appendChild(noResultsEl);
+	}
+
+	// =====================
+	// Selection Mode Methods
+	// =====================
+
+	/**
+	 * Setup selection mode handling (keyboard shortcuts and listeners).
+	 */
+	protected setupSelectionHandling(): void {
+		if (!this.rootElement) return;
+
+		const selectionService = this.plugin.taskSelectionService;
+		if (!selectionService) return;
+
+		// Keyboard event handler for selection mode
+		const handleKeyDown = (e: KeyboardEvent) => {
+			// Shift key enters selection mode
+			if (e.key === "Shift" && !selectionService.isSelectionModeActive()) {
+				selectionService.enterSelectionMode();
+				this.updateSelectionModeUI(true);
+			}
+
+			// Escape exits selection mode and clears selection
+			if (e.key === "Escape" && selectionService.isSelectionModeActive()) {
+				selectionService.exitSelectionMode(true);
+				this.updateSelectionModeUI(false);
+			}
+
+			// Ctrl/Cmd + A to select all visible tasks
+			if ((e.ctrlKey || e.metaKey) && e.key === "a" && selectionService.isSelectionModeActive()) {
+				e.preventDefault();
+				const visiblePaths = this.getVisibleTaskPaths();
+				selectionService.selectAll(visiblePaths);
+				this.updateSelectionVisuals();
+			}
+		};
+
+		const handleKeyUp = (e: KeyboardEvent) => {
+			// Note: We don't exit selection mode on shift release if tasks are selected
+			// This allows the user to release shift and still have tasks selected
+		};
+
+		// Add listeners to the root element
+		this.rootElement.addEventListener("keydown", handleKeyDown);
+		this.rootElement.addEventListener("keyup", handleKeyUp);
+
+		// Listen for selection changes to update UI
+		const unsubscribeSelection = selectionService.onSelectionChange((paths) => {
+			this.updateSelectionVisuals();
+			this.updateSelectionIndicator(paths.length);
+		});
+
+		const unsubscribeMode = selectionService.onSelectionModeChange((active) => {
+			this.updateSelectionModeUI(active);
+		});
+
+		// Register cleanup
+		this.register(() => {
+			this.rootElement?.removeEventListener("keydown", handleKeyDown);
+			this.rootElement?.removeEventListener("keyup", handleKeyUp);
+			unsubscribeSelection();
+			unsubscribeMode();
+		});
+	}
+
+	/**
+	 * Update UI to reflect selection mode state.
+	 */
+	protected updateSelectionModeUI(active: boolean): void {
+		if (!this.rootElement) return;
+
+		if (active) {
+			this.rootElement.classList.add("tn-selection-mode");
+			this.rootElement.setAttribute("data-selection-mode", "true");
+		} else {
+			this.rootElement.classList.remove("tn-selection-mode");
+			this.rootElement.removeAttribute("data-selection-mode");
+			// Also clear visual selection indicators
+			this.clearSelectionVisuals();
+		}
+	}
+
+	/**
+	 * Update visual selection state on task cards.
+	 */
+	protected updateSelectionVisuals(): void {
+		if (!this.rootElement) return;
+
+		const selectionService = this.plugin.taskSelectionService;
+		if (!selectionService) return;
+
+		// Find all task cards and update their selection state
+		const cards = this.rootElement.querySelectorAll<HTMLElement>(".task-card");
+		for (const card of cards) {
+			const path = card.dataset.taskPath;
+			if (path) {
+				if (selectionService.isSelected(path)) {
+					card.classList.add("task-card--selected");
+				} else {
+					card.classList.remove("task-card--selected");
+				}
+			}
+		}
+
+		// Also update kanban card wrappers (for visual consistency)
+		const cardWrappers = this.rootElement.querySelectorAll<HTMLElement>(".kanban-view__card-wrapper");
+		for (const wrapper of cardWrappers) {
+			const path = wrapper.dataset.taskPath;
+			if (path) {
+				if (selectionService.isSelected(path)) {
+					wrapper.classList.add("kanban-view__card-wrapper--selected");
+				} else {
+					wrapper.classList.remove("kanban-view__card-wrapper--selected");
+				}
+			}
+		}
+	}
+
+	/**
+	 * Clear all visual selection indicators.
+	 */
+	protected clearSelectionVisuals(): void {
+		if (!this.rootElement) return;
+
+		const cards = this.rootElement.querySelectorAll<HTMLElement>(".task-card--selected");
+		for (const card of cards) {
+			card.classList.remove("task-card--selected");
+		}
+
+		const cardWrappers = this.rootElement.querySelectorAll<HTMLElement>(".kanban-view__card-wrapper--selected");
+		for (const wrapper of cardWrappers) {
+			wrapper.classList.remove("kanban-view__card-wrapper--selected");
+		}
+	}
+
+	/**
+	 * Update selection count indicator.
+	 */
+	protected updateSelectionIndicator(count: number): void {
+		if (!this.rootElement) return;
+
+		if (count > 0) {
+			// Create or update indicator
+			if (!this.selectionIndicatorEl) {
+				this.selectionIndicatorEl = document.createElement("div");
+				this.selectionIndicatorEl.className = "tn-selection-indicator";
+				this.rootElement.appendChild(this.selectionIndicatorEl);
+			}
+			this.selectionIndicatorEl.textContent = `${count} selected`;
+			this.selectionIndicatorEl.style.display = "block";
+		} else if (this.selectionIndicatorEl) {
+			this.selectionIndicatorEl.style.display = "none";
+		}
+	}
+
+	/**
+	 * Handle task card click in selection mode.
+	 * Returns true if the click was handled as a selection action.
+	 */
+	protected handleSelectionClick(event: MouseEvent, taskPath: string): boolean {
+		const selectionService = this.plugin.taskSelectionService;
+		if (!selectionService) return false;
+
+		// If not in selection mode and no modifier keys, don't handle
+		if (!selectionService.isSelectionModeActive() && !event.shiftKey && !event.ctrlKey && !event.metaKey) {
+			return false;
+		}
+
+		// Enter selection mode if shift is pressed
+		if (event.shiftKey && !selectionService.isSelectionModeActive()) {
+			selectionService.enterSelectionMode();
+		}
+
+		// Handle different click modes
+		if (event.shiftKey) {
+			// Range selection
+			const visiblePaths = this.getVisibleTaskPaths();
+			selectionService.selectRange(taskPath, visiblePaths);
+		} else if (event.ctrlKey || event.metaKey) {
+			// Toggle individual selection
+			selectionService.toggleSelection(taskPath);
+		} else if (selectionService.isSelectionModeActive()) {
+			// In selection mode, regular click toggles selection
+			selectionService.toggleSelection(taskPath);
+		}
+
+		this.updateSelectionVisuals();
+		return true;
+	}
+
+	/**
+	 * Show batch context menu for selected tasks.
+	 */
+	protected showBatchContextMenu(event: MouseEvent): void {
+		const selectionService = this.plugin.taskSelectionService;
+		if (!selectionService) return;
+
+		const selectedPaths = selectionService.getSelectedPaths();
+		if (selectedPaths.length === 0) return;
+
+		const menu = new BatchContextMenu({
+			plugin: this.plugin,
+			selectedPaths,
+			onUpdate: () => {
+				this.render();
+			},
+		});
+
+		menu.show(event);
+	}
+
+	/**
+	 * Get paths of all currently visible tasks.
+	 * Subclasses should override this to return the correct paths based on their rendering.
+	 */
+	protected getVisibleTaskPaths(): string[] {
+		// Default implementation: extract from DOM
+		if (!this.rootElement) return [];
+
+		const cards = this.rootElement.querySelectorAll<HTMLElement>(".task-card[data-task-path]");
+		const paths: string[] = [];
+		for (const card of cards) {
+			const path = card.dataset.taskPath;
+			if (path) {
+				paths.push(path);
+			}
+		}
+		return paths;
 	}
 
 	// Abstract methods that subclasses must implement

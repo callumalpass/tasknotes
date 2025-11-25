@@ -1269,3 +1269,63 @@
     width: 12px;
     height: 12px;
 }
+
+/* =================================================================
+   SELECTION MODE STYLES
+   ================================================================= */
+
+/* Selection mode indicator on container */
+.tasknotes-plugin.tn-selection-mode {
+    cursor: crosshair;
+}
+
+/* Selected task card styling */
+.tasknotes-plugin .task-card--selected {
+    background-color: color-mix(in srgb, var(--interactive-accent) 15%, transparent);
+    box-shadow: inset 0 0 0 2px var(--interactive-accent);
+    border-radius: var(--tn-radius-sm);
+}
+
+.tasknotes-plugin .task-card--selected:hover {
+    background-color: color-mix(in srgb, var(--interactive-accent) 20%, transparent);
+}
+
+/* Selection mode cursor change on cards */
+.tasknotes-plugin.tn-selection-mode .task-card {
+    cursor: pointer;
+}
+
+/* Selection indicator floating badge */
+.tasknotes-plugin .tn-selection-indicator {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: var(--interactive-accent);
+    color: var(--text-on-accent);
+    padding: 8px 16px;
+    border-radius: var(--tn-radius-md);
+    font-size: var(--tn-font-size-sm);
+    font-weight: 500;
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--tn-shadow-color, black) 20%, transparent);
+    z-index: 100;
+    display: none;
+    animation: tn-selection-indicator-appear 0.2s ease-out;
+}
+
+@keyframes tn-selection-indicator-appear {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Kanban card wrapper selection state */
+.tasknotes-plugin .kanban-view__card-wrapper--selected {
+    background-color: color-mix(in srgb, var(--interactive-accent) 15%, transparent);
+    box-shadow: inset 0 0 0 2px var(--interactive-accent);
+    border-radius: var(--tn-radius-sm);
+}

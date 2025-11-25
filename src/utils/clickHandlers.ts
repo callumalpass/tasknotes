@@ -78,6 +78,33 @@ export function createTaskClickHandler(options: ClickHandlerOptions) {
 			}
 		}
 
+		// Check for selection mode - handle shift/ctrl/cmd clicks for task selection
+		const selectionService = plugin.taskSelectionService;
+		if (selectionService) {
+			const isSelectionClick = e.shiftKey || e.ctrlKey || e.metaKey || selectionService.isSelectionModeActive();
+
+			if (isSelectionClick) {
+				e.stopPropagation();
+
+				// Enter selection mode if shift is pressed
+				if (e.shiftKey && !selectionService.isSelectionModeActive()) {
+					selectionService.enterSelectionMode();
+				}
+
+				// Handle selection
+				if (e.shiftKey) {
+					// Range selection - need to get visible paths from the view
+					// For now, just toggle since we don't have access to visible paths here
+					selectionService.toggleSelection(task.path);
+				} else {
+					// Toggle individual selection (ctrl/cmd click or selection mode click)
+					selectionService.toggleSelection(task.path);
+				}
+
+				return;
+			}
+		}
+
 		// Stop propagation to prevent clicks from bubbling to parent cards
 		e.stopPropagation();
 
@@ -105,6 +132,28 @@ export function createTaskClickHandler(options: ClickHandlerOptions) {
 	const contextmenuHandler = async (e: MouseEvent) => {
 		e.preventDefault();
 		e.stopPropagation(); // Prevent event from bubbling to parent cards
+
+		// Check if multiple tasks are selected - show batch context menu
+		const selectionService = plugin.taskSelectionService;
+		if (selectionService && selectionService.getSelectionCount() > 1) {
+			// Ensure the right-clicked task is in the selection
+			if (!selectionService.isSelected(task.path)) {
+				selectionService.addToSelection(task.path);
+			}
+
+			// Import and show batch context menu
+			const { BatchContextMenu } = require("../components/BatchContextMenu");
+			const menu = new BatchContextMenu({
+				plugin,
+				selectedPaths: selectionService.getSelectedPaths(),
+				onUpdate: () => {
+					// Views will refresh via events
+				},
+			});
+			menu.show(e);
+			return;
+		}
+
 		if (contextMenuHandler) {
 			await contextMenuHandler(e);
 		}

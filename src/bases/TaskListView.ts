@@ -959,6 +959,18 @@ export class TaskListView extends BasesViewBase {
 		if (!context) return;
 		event.preventDefault();
 		event.stopPropagation();
+
+		// If multiple tasks are selected, show batch context menu
+		const selectionService = this.plugin.taskSelectionService;
+		if (selectionService && selectionService.getSelectionCount() > 1) {
+			// Ensure the right-clicked task is in the selection
+			if (!selectionService.isSelected(context.task.path)) {
+				selectionService.addToSelection(context.task.path);
+			}
+			this.showBatchContextMenu(event);
+			return;
+		}
+
 		await showTaskContextMenu(event, context.task.path, this.plugin, this.currentTargetDate);
 	};
 
@@ -1157,6 +1169,11 @@ export class TaskListView extends BasesViewBase {
 	}
 
 	private async handleCardClick(task: TaskInfo, event: MouseEvent): Promise<void> {
+		// Check if this is a selection click (shift/ctrl/cmd or in selection mode)
+		if (this.handleSelectionClick(event, task.path)) {
+			return;
+		}
+
 		if (this.plugin.settings.doubleClickAction === "none") {
 			await this.executeSingleClickAction(task, event);
 			return;

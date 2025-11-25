@@ -171,6 +171,9 @@ export default class TaskNotesPlugin extends Plugin {
 	autoArchiveService: AutoArchiveService;
 	viewPerformanceService: ViewPerformanceService;
 
+	// Task selection service for batch operations
+	taskSelectionService: import("./services/TaskSelectionService").TaskSelectionService;
+
 	// Editor services
 	taskLinkDetectionService?: import("./services/TaskLinkDetectionService").TaskLinkDetectionService;
 	instantTaskConvertService?: import("./services/InstantTaskConvertService").InstantTaskConvertService;
@@ -350,6 +353,10 @@ export default class TaskNotesPlugin extends Plugin {
 		this.projectSubtasksService = new ProjectSubtasksService(this);
 		this.expandedProjectsService = new ExpandedProjectsService(this);
 		this.autoArchiveService = new AutoArchiveService(this);
+
+		// Initialize task selection service for batch operations
+		const { TaskSelectionService } = require("./services/TaskSelectionService");
+		this.taskSelectionService = new TaskSelectionService(this);
 		this.dragDropManager = new DragDropManager(this);
 		this.statusBarService = new StatusBarService(this);
 		this.notificationService = new NotificationService(this);

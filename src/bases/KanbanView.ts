@@ -16,6 +16,7 @@ export class KanbanView extends BasesViewBase {
 	private basesController: any; // Store controller for accessing query.views
 	private currentTaskElements = new Map<string, HTMLElement>();
 	private draggedTaskPath: string | null = null;
+	private draggedTaskPaths: string[] = []; // For batch drag operations
 	private draggedFromColumn: string | null = null; // Track source column for list property handling
 	private taskInfoCache = new Map<string, TaskInfo>();
 	private containerListenersRegistered = false;
@@ -948,24 +949,86 @@ export class KanbanView extends BasesViewBase {
 	}
 
 	private setupCardDragHandlers(cardWrapper: HTMLElement, task: TaskInfo): void {
+		// Handle click for selection mode
+		cardWrapper.addEventListener("click", (e: MouseEvent) => {
+			// Check if this is a selection click
+			if (this.handleSelectionClick(e, task.path)) {
+				e.stopPropagation();
+				return;
+			}
+		});
+
+		// Handle right-click for context menu
+		cardWrapper.addEventListener("contextmenu", (e: MouseEvent) => {
+			e.preventDefault();
+			e.stopPropagation();
+
+			// If multiple tasks are selected, show batch context menu
+			const selectionService = this.plugin.taskSelectionService;
+			if (selectionService && selectionService.getSelectionCount() > 1) {
+				// Ensure the right-clicked task is in the selection
+				if (!selectionService.isSelected(task.path)) {
+					selectionService.addToSelection(task.path);
+				}
+				this.showBatchContextMenu(e);
+				return;
+			}
+
+			// Show single task context menu
+			const { showTaskContextMenu } = require("../ui/TaskCard");
+			showTaskContextMenu(e, task.path, this.plugin, new Date());
+		});
+
 		cardWrapper.addEventListener("dragstart", (e: DragEvent) => {
-			this.draggedTaskPath = task.path;
-			cardWrapper.classList.add("kanban-view__card--dragging");
+			// Check if we're dragging selected tasks (batch drag)
+			const selectionService = this.plugin.taskSelectionService;
+			if (selectionService && selectionService.isSelected(task.path) && selectionService.getSelectionCount() > 1) {
+				// Batch drag - drag all selected tasks
+				this.draggedTaskPaths = selectionService.getSelectedPaths();
+				this.draggedTaskPath = task.path;
+
+				// Add dragging class to all selected cards
+				for (const path of this.draggedTaskPaths) {
+					const wrapper = this.currentTaskElements.get(path);
+					if (wrapper) {
+						wrapper.classList.add("kanban-view__card--dragging");
+					}
+				}
+
+				if (e.dataTransfer) {
+					e.dataTransfer.effectAllowed = "move";
+					e.dataTransfer.setData("text/plain", this.draggedTaskPaths.join(","));
+					e.dataTransfer.setData("text/x-batch-drag", "true");
+				}
+			} else {
+				// Single card drag
+				this.draggedTaskPath = task.path;
+				this.draggedTaskPaths = [task.path];
+				cardWrapper.classList.add("kanban-view__card--dragging");
+
+				if (e.dataTransfer) {
+					e.dataTransfer.effectAllowed = "move";
+					e.dataTransfer.setData("text/plain", task.path);
+				}
+			}
 
 			// Capture the source column for list property handling
 			const column = cardWrapper.closest('[data-group]') as HTMLElement;
 			const swimlaneColumn = cardWrapper.closest('[data-column]') as HTMLElement;
 			this.draggedFromColumn = column?.dataset.group || swimlaneColumn?.dataset.column || null;
-
-			if (e.dataTransfer) {
-				e.dataTransfer.effectAllowed = "move";
-				e.dataTransfer.setData("text/plain", task.path);
-			}
 		});
 
 		cardWrapper.addEventListener("dragend", () => {
+			// Remove dragging class from all dragged cards
+			for (const path of this.draggedTaskPaths) {
+				const wrapper = this.currentTaskElements.get(path);
+				if (wrapper) {
+					wrapper.classList.remove("kanban-view__card--dragging");
+				}
+			}
 			cardWrapper.classList.remove("kanban-view__card--dragging");
 			this.draggedFromColumn = null;
+			this.draggedTaskPaths = [];
 
 			// Clean up any lingering dragover classes
 			this.boardEl?.querySelectorAll('.kanban-view__column--dragover').forEach(el => {
@@ -990,17 +1053,35 @@ export class KanbanView extends BasesViewBase {
 			const cleanGroupBy = this.stripPropertyPrefix(groupByPropertyId);
 			const isListProperty = this.explodeListColumns && this.isListTypeProperty(cleanGroupBy);
 
-			if (isListProperty && this.draggedFromColumn) {
-				// For list properties, we need to remove the source value and add the target value
-				await this.updateListPropertyOnDrop(taskPath, groupByPropertyId, this.draggedFromColumn, newGroupValue);
-			} else {
-				// For non-list properties, simply replace the value
-				await this.updateTaskFrontmatterProperty(taskPath, groupByPropertyId, newGroupValue);
+			// Handle batch drag - update all dragged tasks
+			const pathsToUpdate = this.draggedTaskPaths.length > 1 ? this.draggedTaskPaths : [taskPath];
+			const isBatchOperation = pathsToUpdate.length > 1;
+
+			for (const path of pathsToUpdate) {
+				if (isListProperty && this.draggedFromColumn && !isBatchOperation) {
+					// For list properties with single-card drag, we need to remove the source value and add the target value
+					// This preserves other values in the list while moving between columns
+					await this.updateListPropertyOnDrop(path, groupByPropertyId, this.draggedFromColumn, newGroupValue);
+				} else if (isListProperty && isBatchOperation) {
+					// For batch operations on list properties, we can't safely do remove-old/add-new
+					// because each task may come from a different column. Instead, just ensure
+					// the target value is in the list (additive approach).
+					await this.addValueToListProperty(path, groupByPropertyId, newGroupValue);
+				} else {
+					// For non-list properties, simply replace the value
+					await this.updateTaskFrontmatterProperty(path, groupByPropertyId, newGroupValue);
+				}
+
+				// Update swimlane property if applicable
+				if (newSwimLaneValue !== null && this.swimLanePropertyId) {
+					await this.updateTaskFrontmatterProperty(path, this.swimLanePropertyId, newSwimLaneValue);
+				}
 			}
 
-			// Update swimlane property if applicable
-			if (newSwimLaneValue !== null && this.swimLanePropertyId) {
-				await this.updateTaskFrontmatterProperty(taskPath, this.swimLanePropertyId, newSwimLaneValue);
+			// Clear selection after batch move
+			if (isBatchOperation) {
+				this.plugin.taskSelectionService?.clearSelection();
+				this.plugin.taskSelectionService?.exitSelectionMode();
 			}
 
 			// Refresh to show updated position
@@ -1046,6 +1127,41 @@ export class KanbanView extends BasesViewBase {
 
 			// Update the frontmatter
 			frontmatter[frontmatterKey] = newValue.length > 0 ? newValue : [];
+		});
+	}
+
+	/**
+	 * Add a value to a list property (for batch operations).
+	 * Only adds the value if it's not already present. Does not remove existing values.
+	 */
+	private async addValueToListProperty(
+		taskPath: string,
+		basesPropertyId: string,
+		valueToAdd: string
+	): Promise<void> {
+		if (valueToAdd === "None") return;
+
+		const file = this.plugin.app.vault.getAbstractFileByPath(taskPath);
+		if (!file || !(file instanceof TFile)) {
+			throw new Error(`Cannot find task file: ${taskPath}`);
+		}
+
+		const frontmatterKey = basesPropertyId.replace(/^(note\.|file\.|task\.)/, '');
+
+		await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
+			let currentValue = frontmatter[frontmatterKey];
+
+			// Ensure we're working with an array
+			if (!Array.isArray(currentValue)) {
+				currentValue = currentValue ? [currentValue] : [];
+			}
+
+			// Add value if not already present
+			if (!currentValue.includes(valueToAdd)) {
+				currentValue.push(valueToAdd);
+			}
+
+			frontmatter[frontmatterKey] = currentValue;
 		});
 	}
 
