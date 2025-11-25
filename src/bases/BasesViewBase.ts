@@ -514,19 +514,13 @@ export abstract class BasesViewBase extends Component {
 
 		// Keyboard event handler for selection mode
 		const handleKeyDown = (e: KeyboardEvent) => {
-			// Shift key enters selection mode
-			if (e.key === "Shift" && !selectionService.isSelectionModeActive()) {
-				selectionService.enterSelectionMode();
-				this.updateSelectionModeUI(true);
-			}
-
 			// Escape exits selection mode and clears selection
 			if (e.key === "Escape" && selectionService.isSelectionModeActive()) {
 				selectionService.exitSelectionMode(true);
 				this.updateSelectionModeUI(false);
 			}
 
-			// Ctrl/Cmd + A to select all visible tasks
+			// Ctrl/Cmd + A to select all visible tasks (only when in selection mode)
 			if ((e.ctrlKey || e.metaKey) && e.key === "a" && selectionService.isSelectionModeActive()) {
 				e.preventDefault();
 				const visiblePaths = this.getVisibleTaskPaths();
@@ -535,14 +529,8 @@ export abstract class BasesViewBase extends Component {
 			}
 		};
 
-		const handleKeyUp = (e: KeyboardEvent) => {
-			// Note: We don't exit selection mode on shift release if tasks are selected
-			// This allows the user to release shift and still have tasks selected
-		};
-
-		// Add listeners to the root element
+		// Add listener to the root element
 		this.rootElement.addEventListener("keydown", handleKeyDown);
-		this.rootElement.addEventListener("keyup", handleKeyUp);
 
 		// Listen for selection changes to update UI
 		const unsubscribeSelection = selectionService.onSelectionChange((paths) => {
@@ -557,7 +545,6 @@ export abstract class BasesViewBase extends Component {
 		// Register cleanup
 		this.register(() => {
 			this.rootElement?.removeEventListener("keydown", handleKeyDown);
-			this.rootElement?.removeEventListener("keyup", handleKeyUp);
 			unsubscribeSelection();
 			unsubscribeMode();
 		});
