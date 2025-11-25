@@ -62,13 +62,25 @@ const versionsToBundle = [
 	...previousMinorVersions.map(v => v.full)
 ];
 
+// Fetch dates and sort by date (newest first)
+const versionsWithDates = versionsToBundle.map(version => ({
+	version,
+	date: getVersionDate(version)
+})).sort((a, b) => {
+	// Versions without dates go to the end
+	if (!a.date && !b.date) return 0;
+	if (!a.date) return 1;
+	if (!b.date) return -1;
+	// Sort by date descending (newest first)
+	return new Date(b.date).getTime() - new Date(a.date).getTime();
+});
+
 // Generate imports and metadata
-const imports = versionsToBundle.map((version, index) =>
+const imports = versionsWithDates.map(({ version }, index) =>
 	`import releaseNotes${index} from "../docs/releases/${version}.md";`
 ).join('\n');
 
-const releaseNotesArray = versionsToBundle.map((version, index) => {
-	const date = getVersionDate(version);
+const releaseNotesArray = versionsWithDates.map(({ version, date }, index) => {
 	return `	{
 		version: "${version}",
 		content: releaseNotes${index},
