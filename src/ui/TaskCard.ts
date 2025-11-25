@@ -44,6 +44,295 @@ export const DEFAULT_TASK_CARD_OPTIONS: TaskCardOptions = {
 	layout: "default",
 };
 
+/* =================================================================
+   BADGE INDICATOR HELPERS
+   ================================================================= */
+
+interface BadgeIndicatorConfig {
+	container: HTMLElement;
+	className: string;
+	icon: string;
+	tooltip: string;
+	ariaLabel?: string;
+	onClick?: (e: MouseEvent) => void;
+	visible?: boolean;
+}
+
+/**
+ * Creates a badge indicator element with icon, tooltip, and optional click handler.
+ * Returns the element, or null if visible is false.
+ */
+function createBadgeIndicator(config: BadgeIndicatorConfig): HTMLElement | null {
+	const { container, className, icon, tooltip, ariaLabel, onClick, visible = true } = config;
+
+	if (!visible) return null;
+
+	const indicator = container.createEl("div", {
+		cls: className,
+		attr: { "aria-label": ariaLabel || tooltip },
+	});
+
+	setIcon(indicator, icon);
+	setTooltip(indicator, tooltip, { placement: "top" });
+
+	if (onClick) {
+		indicator.addEventListener("click", (e) => {
+			e.stopPropagation();
+			onClick(e);
+		});
+	}
+
+	return indicator;
+}
+
+/**
+ * Updates or creates a badge indicator, returning the element.
+ * If the indicator should not exist, removes any existing one and returns null.
+ */
+function updateBadgeIndicator(
+	container: HTMLElement,
+	selector: string,
+	config: Omit<BadgeIndicatorConfig, "container"> & { shouldExist: boolean }
+): HTMLElement | null {
+	const existing = container.querySelector(selector) as HTMLElement | null;
+
+	if (!config.shouldExist) {
+		existing?.remove();
+		return null;
+	}
+
+	if (existing) {
+		// Update existing indicator
+		existing.setAttribute("aria-label", config.ariaLabel || config.tooltip);
+		setTooltip(existing, config.tooltip, { placement: "top" });
+		return existing;
+	}
+
+	// Create new indicator
+	const badgesContainer = container.querySelector(".task-card__badges") as HTMLElement;
+	const targetContainer = badgesContainer || container.querySelector(".task-card__main-row") as HTMLElement;
+
+	if (!targetContainer) return null;
+
+	return createBadgeIndicator({
+		container: targetContainer,
+		...config,
+	});
+}
+
+/* =================================================================
+   CLICK HANDLER FACTORIES
+   ================================================================= */
+
+/**
+ * Creates a click handler for cycling task status
+ */
+function createStatusCycleHandler(
+	task: TaskInfo,
+	plugin: TaskNotesPlugin,
+	card: HTMLElement,
+	statusDot: HTMLElement,
+	targetDate: Date
+): (e: MouseEvent) => Promise<void> {
+	return async (e: MouseEvent) => {
+		e.stopPropagation();
+		try {
+			if (task.recurrence) {
+				// For recurring tasks, toggle completion for the target date
+				const updatedTask = await plugin.toggleRecurringTaskComplete(task, targetDate);
+				const newEffectiveStatus = getEffectiveTaskStatus(updatedTask, targetDate);
+				const newStatusConfig = plugin.statusManager.getStatusConfig(newEffectiveStatus);
+				const isNowCompleted = plugin.statusManager.isCompletedStatus(newEffectiveStatus);
+
+				if (newStatusConfig) {
+					statusDot.style.borderColor = newStatusConfig.color;
+				}
+
+				// Update card classes
+				updateCardCompletionState(card, task, plugin, isNowCompleted, newEffectiveStatus);
+			} else {
+				// For regular tasks, cycle to next status
+				const freshTask = await plugin.cacheManager.getTaskInfo(task.path);
+				if (!freshTask) {
+					new Notice("Task not found");
+					return;
+				}
+				const currentStatus = freshTask.status || "open";
+				const nextStatus = plugin.statusManager.getNextStatus(currentStatus);
+				await plugin.updateTaskProperty(freshTask, "status", nextStatus);
+			}
+		} catch (error) {
+			const errorMessage = error instanceof Error ? error.message : String(error);
+			console.error("Error cycling task status:", { error: errorMessage, taskPath: task.path });
+			new Notice(`Failed to update task status: ${errorMessage}`);
+		}
+	};
+}
+
+/**
+ * Updates card classes based on completion state
+ */
+function updateCardCompletionState(
+	card: HTMLElement,
+	task: TaskInfo,
+	plugin: TaskNotesPlugin,
+	isCompleted: boolean,
+	effectiveStatus: string
+): void {
+	const cardClasses = ["task-card"];
+	if (isCompleted) cardClasses.push("task-card--completed");
+	if (task.archived) cardClasses.push("task-card--archived");
+	if (plugin.getActiveTimeSession(task)) cardClasses.push("task-card--actively-tracked");
+	if (task.recurrence) cardClasses.push("task-card--recurring");
+	if (task.priority) cardClasses.push(`task-card--priority-${task.priority}`);
+	if (effectiveStatus) cardClasses.push(`task-card--status-${effectiveStatus}`);
+	if (plugin.settings?.subtaskChevronPosition === "left") cardClasses.push("task-card--chevron-left");
+
+	card.className = cardClasses.join(" ");
+	card.dataset.status = effectiveStatus;
+
+	// Update title styling
+	const titleEl = card.querySelector(".task-card__title") as HTMLElement;
+	const titleTextEl = card.querySelector(".task-card__title-text") as HTMLElement;
+	if (titleEl) titleEl.classList.toggle("completed", isCompleted);
+	if (titleTextEl) titleTextEl.classList.toggle("completed", isCompleted);
+}
+
+/**
+ * Creates a click handler for priority dot
+ */
+function createPriorityClickHandler(
+	task: TaskInfo,
+	plugin: TaskNotesPlugin
+): (e: MouseEvent) => void {
+	return (e: MouseEvent) => {
+		e.stopPropagation();
+		const menu = new PriorityContextMenu({
+			currentValue: task.priority,
+			onSelect: async (newPriority) => {
+				try {
+					await plugin.updateTaskProperty(task, "priority", newPriority);
+				} catch (error) {
+					console.error("Error updating priority:", error);
+					new Notice("Failed to update priority");
+				}
+			},
+			plugin: plugin,
+		});
+		menu.show(e);
+	};
+}
+
+/**
+ * Creates a click handler for recurrence indicator
+ */
+function createRecurrenceClickHandler(
+	task: TaskInfo,
+	plugin: TaskNotesPlugin
+): (e: MouseEvent) => void {
+	return (e: MouseEvent) => {
+		e.stopPropagation();
+		const menu = new RecurrenceContextMenu({
+			currentValue: typeof task.recurrence === "string" ? task.recurrence : undefined,
+			currentAnchor: task.recurrence_anchor || "scheduled",
+			onSelect: async (newRecurrence, anchor) => {
+				try {
+					await plugin.updateTaskProperty(task, "recurrence", newRecurrence || undefined);
+					if (anchor !== undefined) {
+						await plugin.updateTaskProperty(task, "recurrence_anchor", anchor);
+					}
+				} catch (error) {
+					console.error("Error updating recurrence:", error);
+					new Notice("Failed to update recurrence");
+				}
+			},
+			app: plugin.app,
+			plugin: plugin,
+		});
+		menu.show(e);
+	};
+}
+
+/**
+ * Creates a click handler for reminder indicator
+ */
+function createReminderClickHandler(
+	task: TaskInfo,
+	plugin: TaskNotesPlugin
+): () => void {
+	return () => {
+		const modal = new ReminderModal(plugin.app, plugin, task, async (reminders) => {
+			try {
+				await plugin.updateTaskProperty(task, "reminders", reminders.length > 0 ? reminders : undefined);
+			} catch (error) {
+				console.error("Error updating reminders:", error);
+				new Notice("Failed to update reminders");
+			}
+		});
+		modal.open();
+	};
+}
+
+/**
+ * Creates a click handler for project indicator
+ */
+function createProjectClickHandler(
+	task: TaskInfo,
+	plugin: TaskNotesPlugin
+): () => Promise<void> {
+	return async () => {
+		try {
+			await plugin.applyProjectSubtaskFilter(task);
+		} catch (error) {
+			console.error("Error filtering project subtasks:", error);
+			new Notice("Failed to filter project subtasks");
+		}
+	};
+}
+
+/**
+ * Creates a click handler for chevron (expand/collapse subtasks)
+ */
+function createChevronClickHandler(
+	task: TaskInfo,
+	plugin: TaskNotesPlugin,
+	card: HTMLElement,
+	chevron: HTMLElement
+): () => Promise<void> {
+	return async () => {
+		try {
+			if (!plugin.expandedProjectsService) {
+				new Notice("Service not available. Please try reloading the plugin.");
+				return;
+			}
+			const newExpanded = plugin.expandedProjectsService.toggle(task.path);
+			chevron.classList.toggle("task-card__chevron--expanded", newExpanded);
+			const newTooltip = newExpanded ? "Collapse subtasks" : "Expand subtasks";
+			chevron.setAttribute("aria-label", newTooltip);
+			setTooltip(chevron, newTooltip, { placement: "top" });
+			await toggleSubtasks(card, task, plugin, newExpanded);
+		} catch (error) {
+			console.error("Error toggling subtasks:", error);
+			new Notice("Failed to toggle subtasks");
+		}
+	};
+}
+
+/**
+ * Creates a click handler for blocking toggle
+ */
+function createBlockingToggleClickHandler(
+	task: TaskInfo,
+	plugin: TaskNotesPlugin,
+	card: HTMLElement,
+	toggle: HTMLElement
+): () => Promise<void> {
+	return async () => {
+		const expanded = toggle.classList.toggle("task-card__blocking-toggle--expanded");
+		await toggleBlockingTasks(card, task, plugin, expanded);
+	};
+}
+
 /**
  * Helper function to attach date context menu click handlers
  */
@@ -1082,68 +1371,7 @@ export function createTaskCard(
 
 	// Add click handler to cycle through statuses
 	if (statusDot) {
-		statusDot.addEventListener("click", async (e) => {
-			e.stopPropagation();
-			try {
-				if (task.recurrence) {
-					// For recurring tasks, toggle completion for the target date
-					const updatedTask = await plugin.toggleRecurringTaskComplete(task, targetDate);
-
-					// Immediately update the visual state of the status dot
-					const newEffectiveStatus = getEffectiveTaskStatus(updatedTask, targetDate);
-					const newStatusConfig =
-						plugin.statusManager.getStatusConfig(newEffectiveStatus);
-					const isNowCompleted =
-						plugin.statusManager.isCompletedStatus(newEffectiveStatus);
-
-					// Update status dot border color
-					if (newStatusConfig) {
-						statusDot.style.borderColor = newStatusConfig.color;
-					}
-
-					// Update the card's completion state and classes
-					const cardClasses = ["task-card"];
-					if (isNowCompleted) {
-						cardClasses.push("task-card--completed");
-					}
-					if (task.archived) cardClasses.push("task-card--archived");
-					if (plugin.getActiveTimeSession(task))
-						cardClasses.push("task-card--actively-tracked");
-					if (task.recurrence) cardClasses.push("task-card--recurring");
-					if (task.priority) cardClasses.push(`task-card--priority-${task.priority}`);
-					if (newEffectiveStatus)
-						cardClasses.push(`task-card--status-${newEffectiveStatus}`);
-
-					card.className = cardClasses.join(" ");
-					card.dataset.status = newEffectiveStatus;
-
-					// Update the title completion styling
-					const titleEl = card.querySelector(".task-card__title") as HTMLElement;
-					if (titleEl) {
-						titleEl.classList.toggle("completed", isNowCompleted);
-					}
-				} else {
-					// For regular tasks, cycle to next status
-					// Get fresh task data to ensure we have the latest status
-					const freshTask = await plugin.cacheManager.getTaskInfo(task.path);
-					if (!freshTask) {
-						new Notice("Task not found");
-						return;
-					}
-
-					const currentStatus = freshTask.status || "open";
-					const nextStatus = plugin.statusManager.getNextStatus(currentStatus);
-					await plugin.updateTaskProperty(freshTask, "status", nextStatus);
-				}
-			} catch (error) {
-				const errorMessage = error instanceof Error ? error.message : String(error);
-				console.error("Error cycling task status:", {
-					error: errorMessage,
-					taskPath: task.path,
-				});
-				new Notice(`Failed to update task status: ${errorMessage}`);
-			}
-		});
+		statusDot.addEventListener("click", createStatusCycleHandler(task, plugin, card, statusDot, targetDate));
 	}
 
 	// Priority indicator dot (conditional based on visible properties)
@@ -1156,250 +1384,98 @@ export function createTaskCard(
 			attr: { "aria-label": `Priority: ${priorityConfig.label}` },
 		});
 		priorityDot.style.borderColor = priorityConfig.color;
-
-		// Add click context menu for priority
-		priorityDot.addEventListener("click", (e) => {
-			e.stopPropagation(); // Don't trigger card click
-			const menu = new PriorityContextMenu({
-				currentValue: task.priority,
-				onSelect: async (newPriority) => {
-					try {
-						await plugin.updateTaskProperty(task, "priority", newPriority);
-					} catch (error) {
-						console.error("Error updating priority:", error);
-						new Notice("Failed to update priority");
-					}
-				},
-				plugin: plugin,
-			});
-			menu.show(e as MouseEvent);
-		});
+		priorityDot.addEventListener("click", createPriorityClickHandler(task, plugin));
 	}
 
-	// Recurring task indicator
-	if (task.recurrence) {
-		const recurringIndicator = mainRow.createEl("div", {
-			cls: "task-card__recurring-indicator",
-			attr: {
-				"aria-label": `Recurring: ${getRecurrenceDisplayText(task.recurrence)} (click to change)`,
-			},
-		});
-		setTooltip(
-			recurringIndicator,
-			`Recurring: ${getRecurrenceDisplayText(task.recurrence)} (click to change)`,
-			{ placement: "top" }
-		);
+	// Content container
+	const contentContainer = mainRow.createEl(layout === "inline" ? "span" : "div", { cls: "task-card__content" });
 
-		// Use Obsidian's built-in rotate-ccw icon for recurring tasks
-		setIcon(recurringIndicator, "rotate-ccw");
+	// Badge area for secondary indicators (only in non-inline mode)
+	const badgesContainer = layout !== "inline" ? mainRow.createEl("div", { cls: "task-card__badges" }) : null;
 
-		// Add click context menu for recurrence
-		recurringIndicator.addEventListener("click", (e) => {
-			e.stopPropagation(); // Don't trigger card click
-			const menu = new RecurrenceContextMenu({
-				currentValue: typeof task.recurrence === "string" ? task.recurrence : undefined,
-				currentAnchor: task.recurrence_anchor || 'scheduled',
-				onSelect: async (newRecurrence: string | null, anchor?: 'scheduled' | 'completion') => {
-					try {
-						await plugin.updateTaskProperty(
-							task,
-							"recurrence",
-							newRecurrence || undefined
-						);
-						if (anchor !== undefined) {
-							await plugin.updateTaskProperty(
-								task,
-								"recurrence_anchor",
-								anchor
-							);
-						}
-					} catch (error) {
-						console.error("Error updating recurrence:", error);
-						new Notice("Failed to update recurrence");
-					}
-				},
-				app: plugin.app,
-				plugin: plugin,
+	if (badgesContainer) {
+		// Recurring indicator
+		if (task.recurrence) {
+			const recurrenceTooltip = `Recurring: ${getRecurrenceDisplayText(task.recurrence)} (click to change)`;
+			createBadgeIndicator({
+				container: badgesContainer,
+				className: "task-card__recurring-indicator",
+				icon: "rotate-ccw",
+				tooltip: recurrenceTooltip,
+				onClick: createRecurrenceClickHandler(task, plugin),
 			});
-			menu.show(e as MouseEvent);
-		});
-	}
+		}
 
-	// Reminder indicator (if task has reminders)
-	if (task.reminders && task.reminders.length > 0) {
-		const reminderIndicator = mainRow.createEl("div", {
-			cls: "task-card__reminder-indicator",
-			attr: {
-				"aria-label": `${task.reminders.length} reminder${task.reminders.length > 1 ? "s" : ""} set (click to manage)`,
-			},
-		});
+		// Reminder indicator
+		if (task.reminders && task.reminders.length > 0) {
+			const count = task.reminders.length;
+			const reminderTooltip = count === 1 ? "1 reminder set (click to manage)" : `${count} reminders set (click to manage)`;
+			createBadgeIndicator({
+				container: badgesContainer,
+				className: "task-card__reminder-indicator",
+				icon: "bell",
+				tooltip: reminderTooltip,
+				onClick: createReminderClickHandler(task, plugin),
+			});
+		}
 
-		const count = task.reminders.length;
-		const tooltip =
-			count === 1
-				? "1 reminder set (click to manage)"
-				: `${count} reminders set (click to manage)`;
-		setTooltip(reminderIndicator, tooltip, { placement: "top" });
+		// Project indicator
+		const isProject = plugin.projectSubtasksService.isTaskUsedAsProjectSync(task.path);
+		if (isProject) {
+			createBadgeIndicator({
+				container: badgesContainer,
+				className: "task-card__project-indicator",
+				icon: "folder",
+				tooltip: "This task is used as a project (click to filter subtasks)",
+				onClick: createProjectClickHandler(task, plugin),
+			});
 
-		// Use Obsidian's built-in bell icon for reminders
-		setIcon(reminderIndicator, "bell");
+			// Chevron for expandable subtasks
+			if (plugin.settings?.showExpandableSubtasks) {
+				const isExpanded = plugin.expandedProjectsService?.isExpanded(task.path) || false;
+				const chevron = createBadgeIndicator({
+					container: badgesContainer,
+					className: `task-card__chevron${isExpanded ? " task-card__chevron--expanded" : ""}`,
+					icon: "chevron-right",
+					tooltip: isExpanded ? "Collapse subtasks" : "Expand subtasks",
+				});
 
-		// Add click handler to open reminder modal
-		reminderIndicator.addEventListener("click", (e) => {
-			e.stopPropagation(); // Don't trigger card click
-			const modal = new ReminderModal(plugin.app, plugin, task, async (reminders) => {
-				try {
-					await plugin.updateTaskProperty(
-						task,
-						"reminders",
-						reminders.length > 0 ? reminders : undefined
-					);
-				} catch (error) {
-					console.error("Error updating reminders:", error);
-					new Notice("Failed to update reminders");
+				// Chevron needs special handler since it updates its own state
+				if (chevron) {
+					chevron.addEventListener("click", (e) => {
+						e.stopPropagation();
+						createChevronClickHandler(task, plugin, card, chevron)();
+					});
 				}
-			});
-			modal.open();
-		});
-	}
 
-	// Project indicator (if task is used as a project) - hide in inline mode
-	let projectIndicatorPlaceholder: HTMLElement | null = null;
-	let chevronPlaceholder: HTMLElement | null = null;
-
-	if (layout !== "inline") {
-		// Create placeholder that will be updated asynchronously
-		projectIndicatorPlaceholder = mainRow.createEl("div", {
-			cls: "task-card__project-indicator-placeholder",
-			attr: { style: "display: none;" },
-		});
-
-		// Chevron for expandable subtasks (if feature is enabled)
-		chevronPlaceholder = mainRow.createEl("div", {
-			cls: "task-card__chevron-placeholder",
-			attr: { style: "display: none;" },
-		});
-	}
-
-	// Use synchronous project status check for better performance
-	const isProject = plugin.projectSubtasksService.isTaskUsedAsProjectSync(task.path);
-
-	if (isProject && projectIndicatorPlaceholder) {
-		projectIndicatorPlaceholder.className = "task-card__project-indicator";
-		projectIndicatorPlaceholder.removeAttribute("style");
-		projectIndicatorPlaceholder.setAttribute(
-			"aria-label",
-			"This task is used as a project (click to filter subtasks)"
-		);
-		setTooltip(
-			projectIndicatorPlaceholder,
-			"This task is used as a project (click to filter subtasks)",
-			{ placement: "top" }
-		);
-
-		// Add click handler to filter subtasks
-		projectIndicatorPlaceholder.addEventListener("click", async (e) => {
-			e.stopPropagation(); // Don't trigger card click
-			try {
-				await plugin.applyProjectSubtaskFilter(task);
-			} catch (error) {
-				console.error("Error filtering project subtasks:", error);
-				new Notice("Failed to filter project subtasks");
-			}
-		});
-
-		// Add chevron for expandable subtasks if feature is enabled
-		if (plugin.settings?.showExpandableSubtasks && chevronPlaceholder) {
-			chevronPlaceholder.className = "task-card__chevron";
-			chevronPlaceholder.removeAttribute("style");
-
-			const isExpanded = plugin.expandedProjectsService?.isExpanded(task.path) || false;
-			if (isExpanded) {
-				chevronPlaceholder.classList.add("task-card__chevron--expanded");
-			}
-
-			chevronPlaceholder.setAttribute(
-				"aria-label",
-				isExpanded ? "Collapse subtasks" : "Expand subtasks"
-			);
-			setTooltip(chevronPlaceholder, isExpanded ? "Collapse subtasks" : "Expand subtasks", {
-				placement: "top",
-			});
-
-			// Use Obsidian's built-in chevron-right icon
-			setIcon(chevronPlaceholder, "chevron-right");
-
-			// Add click handler to toggle expansion
-			chevronPlaceholder.addEventListener("click", async (e) => {
-				e.stopPropagation(); // Don't trigger card click
-				try {
-					if (!plugin.expandedProjectsService) {
-						console.error("ExpandedProjectsService not initialized");
-						new Notice("Service not available. Please try reloading the plugin.");
-						return;
-					}
-
-					const newExpanded = plugin.expandedProjectsService.toggle(task.path);
-					chevronPlaceholder.classList.toggle(
-						"task-card__chevron--expanded",
-						newExpanded
-					);
-					chevronPlaceholder.setAttribute(
-						"aria-label",
-						newExpanded ? "Collapse subtasks" : "Expand subtasks"
-					);
-					setTooltip(
-						chevronPlaceholder,
-						newExpanded ? "Collapse subtasks" : "Expand subtasks",
-						{ placement: "top" }
-					);
-
-					// Toggle subtasks display
-					await toggleSubtasks(card, task, plugin, newExpanded);
-				} catch (error) {
-					console.error("Error toggling subtasks:", error);
-					new Notice("Failed to toggle subtasks");
+				// Show subtasks if already expanded
+				if (isExpanded) {
+					toggleSubtasks(card, task, plugin, true).catch((error) => {
+						console.error("Error showing initial subtasks:", error);
+					});
 				}
+			}
+		}
+
+		// Blocking toggle
+		const hasBlocking = task.blocking && task.blocking.length > 0;
+		if (hasBlocking) {
+			const toggleLabel = plugin.i18n.translate("ui.taskCard.blockingToggle", { count: task.blocking!.length });
+			const toggle = createBadgeIndicator({
+				container: badgesContainer,
+				className: "task-card__blocking-toggle is-visible",
+				icon: "git-branch",
+				tooltip: toggleLabel,
 			});
 
-			// If already expanded, show subtasks
-			if (isExpanded) {
-				toggleSubtasks(card, task, plugin, true).catch((error) => {
-					console.error("Error showing initial subtasks:", error);
+			if (toggle) {
+				toggle.addEventListener("click", (e) => {
+					e.stopPropagation();
+					createBlockingToggleClickHandler(task, plugin, card, toggle)();
 				});
 			}
 		}
-	} else {
-		projectIndicatorPlaceholder?.remove();
-		chevronPlaceholder?.remove();
 	}
-
-	// Blocking toggle sits left of the main content row - hide in inline mode
-	let blockingToggle: HTMLElement | null = null;
-	if (layout !== "inline") {
-		blockingToggle = mainRow.createEl("div", { cls: "task-card__blocking-toggle" });
-		if (task.blocking && task.blocking.length > 0) {
-			blockingToggle.classList.add("is-visible");
-		const toggleLabel = plugin.i18n.translate("ui.taskCard.blockingToggle", {
-			count: task.blocking.length,
-		});
-		blockingToggle.setAttribute("aria-label", toggleLabel);
-		setIcon(blockingToggle, "git-branch");
-		setTooltip(blockingToggle, toggleLabel, { placement: "top" });
-
-			blockingToggle.addEventListener("click", async (e) => {
-				e.stopPropagation();
-				const expanded = blockingToggle!.classList.toggle(
-					"task-card__blocking-toggle--expanded"
-				);
-				await toggleBlockingTasks(card, task, plugin, expanded);
-			});
-		} else {
-			blockingToggle.classList.add("is-hidden");
-		}
-	}
-
-	const contentContainer = mainRow.createEl(layout === "inline" ? "span" : "div", { cls: "task-card__content" });
 
 	// Context menu icon (appears on hover)
 	const contextIcon = mainRow.createEl("div", {
@@ -1859,211 +1935,82 @@ export function updateTaskCard(
 		existingPriorityDot.remove();
 	}
 
+	// Update badge indicators using helper
+	const badgesContainer = element.querySelector(".task-card__badges") as HTMLElement;
+
 	// Update recurring indicator
-	const existingRecurringIndicator = element.querySelector(".task-card__recurring-indicator");
-	if (task.recurrence && !existingRecurringIndicator) {
-		// Add recurring indicator if task is now recurring but didn't have one
-		const recurringIndicator = mainRow.createEl("span", {
-			cls: "task-card__recurring-indicator",
-			attr: { "aria-label": `Recurring: ${getRecurrenceDisplayText(task.recurrence)}` },
-		});
-		setIcon(recurringIndicator, "rotate-ccw");
-		statusDot?.insertAdjacentElement("afterend", recurringIndicator);
-	} else if (!task.recurrence && existingRecurringIndicator) {
-		// Remove recurring indicator if task is no longer recurring
-		existingRecurringIndicator.remove();
-	} else if (task.recurrence && existingRecurringIndicator) {
-		// Update existing recurring indicator
-		const frequencyDisplay = getRecurrenceDisplayText(task.recurrence);
-		existingRecurringIndicator.setAttribute("aria-label", `Recurring: ${frequencyDisplay}`);
-	}
+	const recurrenceTooltip = task.recurrence
+		? `Recurring: ${getRecurrenceDisplayText(task.recurrence)} (click to change)`
+		: "";
+	updateBadgeIndicator(element, ".task-card__recurring-indicator", {
+		shouldExist: !!task.recurrence,
+		className: "task-card__recurring-indicator",
+		icon: "rotate-ccw",
+		tooltip: recurrenceTooltip,
+		onClick: createRecurrenceClickHandler(task, plugin),
+	});
 
 	// Update reminder indicator
-	const existingReminderIndicator = element.querySelector(".task-card__reminder-indicator");
-	if (task.reminders && task.reminders.length > 0 && !existingReminderIndicator) {
-		// Add reminder indicator if task has reminders but didn't have one
-		const reminderIndicator = mainRow.createEl("div", {
-			cls: "task-card__reminder-indicator",
-			attr: {
-				"aria-label": `${task.reminders.length} reminder${task.reminders.length > 1 ? "s" : ""} set (click to manage)`,
-			},
-		});
+	const hasReminders = !!(task.reminders && task.reminders.length > 0);
+	const reminderCount = task.reminders?.length || 0;
+	const reminderTooltip = reminderCount === 1
+		? "1 reminder set (click to manage)"
+		: `${reminderCount} reminders set (click to manage)`;
+	updateBadgeIndicator(element, ".task-card__reminder-indicator", {
+		shouldExist: hasReminders,
+		className: "task-card__reminder-indicator",
+		icon: "bell",
+		tooltip: reminderTooltip,
+		onClick: createReminderClickHandler(task, plugin),
+	});
 
-		const count = task.reminders.length;
-		const tooltip =
-			count === 1
-				? "1 reminder set (click to manage)"
-				: `${count} reminders set (click to manage)`;
-		setTooltip(reminderIndicator, tooltip, { placement: "top" });
-
-		setIcon(reminderIndicator, "bell");
-
-		// Add click handler to open reminder modal
-		reminderIndicator.addEventListener("click", (e) => {
-			e.stopPropagation(); // Don't trigger card click
-			const modal = new ReminderModal(plugin.app, plugin, task, async (reminders) => {
-				try {
-					await plugin.updateTaskProperty(
-						task,
-						"reminders",
-						reminders.length > 0 ? reminders : undefined
-					);
-				} catch (error) {
-					console.error("Error updating reminders:", error);
-					new Notice("Failed to update reminders");
-				}
-			});
-			modal.open();
-		});
-
-		// Insert after the recurring indicator or status dot
-		const insertAfter = existingRecurringIndicator || statusDot;
-		insertAfter?.insertAdjacentElement("afterend", reminderIndicator);
-	} else if ((!task.reminders || task.reminders.length === 0) && existingReminderIndicator) {
-		// Remove reminder indicator if task no longer has reminders
-		existingReminderIndicator.remove();
-	} else if (task.reminders && task.reminders.length > 0 && existingReminderIndicator) {
-		// Update existing reminder indicator
-		const count = task.reminders.length;
-		const tooltip =
-			count === 1
-				? "1 reminder set (click to manage)"
-				: `${count} reminders set (click to manage)`;
-		existingReminderIndicator.setAttribute(
-			"aria-label",
-			`${count} reminder${count > 1 ? "s" : ""} set (click to manage)`
-		);
-		setTooltip(existingReminderIndicator as HTMLElement, tooltip, { placement: "top" });
-	}
-
-	// Update project indicator
-	const existingProjectIndicator = element.querySelector(".task-card__project-indicator");
-	const existingPlaceholder = element.querySelector(".task-card__project-indicator-placeholder");
-
+	// Update project indicator and chevron (async)
 	plugin.projectSubtasksService
 		.isTaskUsedAsProject(task.path)
 		.then((isProject: boolean) => {
+			// Remove old placeholders if they exist
+			element.querySelector(".task-card__project-indicator-placeholder")?.remove();
+			element.querySelector(".task-card__chevron-placeholder")?.remove();
+
 			// Update project indicator
-			if (isProject && !existingProjectIndicator && !existingPlaceholder) {
-				// Add project indicator if task is now used as a project but didn't have one
-				const projectIndicator = mainRow.createEl("div", {
-					cls: "task-card__project-indicator",
-					attr: {
-						"aria-label": "This task is used as a project (click to filter subtasks)",
-						title: "This task is used as a project (click to filter subtasks)",
-					},
-				});
+			updateBadgeIndicator(element, ".task-card__project-indicator", {
+				shouldExist: isProject,
+				className: "task-card__project-indicator",
+				icon: "folder",
+				tooltip: "This task is used as a project (click to filter subtasks)",
+				onClick: createProjectClickHandler(task, plugin),
+			});
 
-				// Add click handler to filter subtasks
-				projectIndicator.addEventListener("click", async (e) => {
-					e.stopPropagation();
-					try {
-						await plugin.applyProjectSubtaskFilter(task);
-					} catch (error) {
-						console.error("Error filtering project subtasks:", error);
-						new Notice("Failed to filter project subtasks");
-					}
-				});
-
-				// Insert after recurring indicator or priority dot
-				const insertAfter =
-					element.querySelector(".task-card__recurring-indicator") ||
-					element.querySelector(".task-card__priority-dot") ||
-					element.querySelector(".task-card__status-dot");
-				insertAfter?.insertAdjacentElement("afterend", projectIndicator);
-			} else if (!isProject && (existingProjectIndicator || existingPlaceholder)) {
-				// Remove project indicator if task is no longer used as a project
-				existingProjectIndicator?.remove();
-				existingPlaceholder?.remove();
-			}
-
-			// Update chevron for expandable subtasks
+			// Update chevron
+			const showChevron = isProject && plugin.settings?.showExpandableSubtasks;
 			const existingChevron = element.querySelector(".task-card__chevron") as HTMLElement;
-			const existingChevronPlaceholder = element.querySelector(
-				".task-card__chevron-placeholder"
-			);
 
-			if (
-				isProject &&
-				plugin.settings?.showExpandableSubtasks &&
-				!existingChevron &&
-				!existingChevronPlaceholder
-			) {
-				// Add chevron if task is now used as a project and feature is enabled
-				const chevron = mainRow.createEl("div", {
-					cls: "task-card__chevron",
-					attr: {
-						"aria-label": "Expand subtasks",
-						title: "Expand subtasks",
-					},
+			if (showChevron && !existingChevron) {
+				const isExpanded = plugin.expandedProjectsService?.isExpanded(task.path) || false;
+				const chevron = createBadgeIndicator({
+					container: badgesContainer || mainRow,
+					className: `task-card__chevron${isExpanded ? " task-card__chevron--expanded" : ""}`,
+					icon: "chevron-right",
+					tooltip: isExpanded ? "Collapse subtasks" : "Expand subtasks",
 				});
 
-				const isExpanded = plugin.expandedProjectsService?.isExpanded(task.path) || false;
-				if (isExpanded) {
-					chevron.classList.add("task-card__chevron--expanded");
-					chevron.setAttribute("aria-label", "Collapse subtasks");
-					setTooltip(chevron, "Collapse subtasks", { placement: "top" });
-				} else {
-					setTooltip(chevron, "Expand subtasks", { placement: "top" });
+				if (chevron) {
+					chevron.addEventListener("click", (e) => {
+						e.stopPropagation();
+						createChevronClickHandler(task, plugin, element, chevron)();
+					});
 				}
 
-				setIcon(chevron, "chevron-right");
-
-				// Add click handler to toggle expansion
-				chevron.addEventListener("click", async (e) => {
-					e.stopPropagation();
-					try {
-						if (!plugin.expandedProjectsService) {
-							console.error("ExpandedProjectsService not initialized in update");
-							new Notice("Service not available. Please try reloading the plugin.");
-							return;
-						}
-
-						const newExpanded = plugin.expandedProjectsService.toggle(task.path);
-						chevron.classList.toggle("task-card__chevron--expanded", newExpanded);
-						chevron.setAttribute(
-							"aria-label",
-							newExpanded ? "Collapse subtasks" : "Expand subtasks"
-						);
-						setTooltip(chevron, newExpanded ? "Collapse subtasks" : "Expand subtasks", {
-							placement: "top",
-						});
-
-						// Toggle subtasks display
-						await toggleSubtasks(element, task, plugin, newExpanded);
-					} catch (error) {
-						console.error("Error toggling subtasks:", error);
-						new Notice("Failed to toggle subtasks");
-					}
-				});
-
-				// Insert after project indicator
-				const projectIndicator = element.querySelector(".task-card__project-indicator");
-				projectIndicator?.insertAdjacentElement("afterend", chevron);
-
-				// If already expanded, show subtasks
 				if (isExpanded) {
-					chevron.classList.add("task-card__chevron--expanded");
-					chevron.setAttribute("aria-label", "Collapse subtasks");
-					setTooltip(chevron, "Collapse subtasks", { placement: "top" });
-
 					toggleSubtasks(element, task, plugin, true).catch((error) => {
 						console.error("Error showing initial subtasks in update:", error);
 					});
 				}
-			} else if (
-				(!isProject || !plugin.settings?.showExpandableSubtasks) &&
-				(existingChevron || existingChevronPlaceholder)
-			) {
-				// Remove chevron if task is no longer used as a project or feature is disabled
-				existingChevron?.remove();
-				existingChevronPlaceholder?.remove();
-				// Also remove any existing subtasks container with proper cleanup
-				const subtasksContainer = element.querySelector(
-					".task-card__subtasks"
-				) as HTMLElement;
+			} else if (!showChevron && existingChevron) {
+				existingChevron.remove();
+				// Clean up subtasks container
+				const subtasksContainer = element.querySelector(".task-card__subtasks") as HTMLElement;
 				if (subtasksContainer) {
-					// Clean up the click handler
 					const clickHandler = (subtasksContainer as any)._clickHandler;
 					if (clickHandler) {
 						subtasksContainer.removeEventListener("click", clickHandler);
