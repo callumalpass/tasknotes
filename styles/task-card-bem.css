@@ -29,8 +29,7 @@
 }
 
 .tasknotes-plugin .task-card:hover {
-    background-color: var(--tn-interactive-hover);
-    box-shadow: 0 1px 3px color-mix(in srgb, var(--tn-shadow-color, black) 5%, transparent);
+    background-color: var(--background-modifier-hover);
 }
 
 /* Prevent parent hover when hovering over subtasks or blocking tasks */
@@ -40,10 +39,9 @@
 }
 
 .tasknotes-plugin .task-card:focus {
-    background-color: var(--tn-interactive-hover);
-    outline: 2px solid color-mix(in srgb, var(--tn-interactive-accent) 30%, transparent);
-    outline-offset: 0px;
-    box-shadow: 0 0 0 3px var(--tn-interactive-hover);
+    background-color: var(--background-modifier-hover);
+    outline: 2px solid var(--background-modifier-border-focus);
+    outline-offset: -2px;
 }
 
 .tasknotes-plugin .task-card:focus:not(:focus-visible) {
@@ -70,6 +68,7 @@
     align-items: center;
     gap: var(--tn-spacing-sm);
     width: 100%;
+    position: relative;
 }
 
 .tasknotes-plugin .task-card__content {
@@ -129,17 +128,15 @@
     font-size: var(--tn-font-size-sm);
     line-height: 1.2;
     font-weight: 500;
-    background: color-mix(in srgb, var(--tn-bg-secondary) 60%, transparent);
-    color: var(--tn-text-muted);
-    border: 1px solid color-mix(in srgb, var(--tn-border-color) 30%, transparent);
-    transition: all var(--tn-transition-fast);
-    backdrop-filter: blur(4px);
+    background: var(--background-secondary);
+    color: var(--text-muted);
+    border: 1px solid var(--background-modifier-border);
+    transition: background var(--tn-transition-fast), border-color var(--tn-transition-fast);
 }
 
 .tasknotes-plugin .task-card__metadata-pill:hover {
-    background: var(--tn-bg-secondary);
-    border-color: var(--tn-border-color);
-    box-shadow: 0 2px 4px color-mix(in srgb, var(--tn-shadow-color, black) 8%, transparent);
+    background: var(--background-modifier-hover);
+    border-color: var(--background-modifier-border-hover);
 }
 
 .tasknotes-plugin .task-card__metadata-pill--blocked {
@@ -421,10 +418,11 @@
 .tasknotes-plugin .task-card.task-card--chevron-left .task-card__chevron {
     opacity: 1;
     position: absolute;
-    left: 10px;
-    top: 14px;
-    width: 20px;
-    height: 20px;
+    left: calc(-1 * var(--tn-spacing-lg) - 14px);
+    top: 50%;
+    transform: translateY(-50%);
+    width: 18px;
+    height: 18px;
 }
 
 .tasknotes-plugin .task-card:hover .task-card__chevron {
@@ -477,13 +475,13 @@
 
 /* Left-position variant for subtask chevron */
 .tasknotes-plugin .task-card.task-card--chevron-left {
-    /* Reserve gutter for a 24x24 chevron plus spacing */
-    padding-left: calc(var(--tn-spacing-lg) + 30px);
+    /* Reserve gutter for chevron plus spacing */
+    padding-left: calc(var(--tn-spacing-lg) + 20px);
 }
 
 /* Ensure nested cards in left mode also reserve chevron gutter */
 .tasknotes-plugin .task-card__subtasks .task-card.task-card--chevron-left {
-    padding-left: calc(var(--tn-spacing-md) + 30px);
+    padding-left: calc(var(--tn-spacing-md) + 20px);
 }
 
 .tasknotes-plugin .task-card__subtasks {

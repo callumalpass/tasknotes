@@ -32,6 +32,14 @@ Example:
   - Press Escape or click × to clear search
   - Thanks to @renatomen for the PR
 
+## Changed
+
+- Polished task card styling for a cleaner, more native Obsidian look
+  - Simplified hover and focus states to use native Obsidian colors
+  - Removed blur filter and shadows from metadata pills
+  - Fixed subtask chevron vertical alignment with status dot
+  - Reduced swimlane label column width in Kanban view
+
 ## Fixed
 
 - (#1165) Fixed Kanban view grouping by list properties (contexts, tags, projects) treating multiple values as a single combined column
