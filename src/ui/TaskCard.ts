@@ -1220,23 +1220,10 @@ function renderScheduledDateProperty(
 }
 
 /**
- * Add separators between metadata elements
+ * Show or hide metadata line based on whether it has content
  */
-function addMetadataSeparators(metadataLine: HTMLElement, metadataElements: HTMLElement[]): void {
-	if (metadataElements.length > 0) {
-		// Insert separators between elements
-		for (let i = 1; i < metadataElements.length; i++) {
-			const separator = metadataLine.createEl("span", {
-				cls: "task-card__metadata-separator",
-				text: " • ",
-			});
-			// Insert separator before each element (except first)
-			metadataElements[i].insertAdjacentElement("beforebegin", separator);
-		}
-		metadataLine.style.display = "";
-	} else {
-		metadataLine.style.display = "none";
-	}
+function updateMetadataVisibility(metadataLine: HTMLElement, metadataElements: HTMLElement[]): void {
+	metadataLine.style.display = metadataElements.length > 0 ? "" : "none";
 }
 
 /**
@@ -1573,8 +1560,8 @@ export function createTaskCard(
 		}
 	}
 
-	// Add separators between metadata elements
-	addMetadataSeparators(metadataLine, metadataElements);
+	// Show/hide metadata line based on content
+	updateMetadataVisibility(metadataLine, metadataElements);
 
 	// Add click handlers with single/double click distinction
 	const { clickHandler, dblclickHandler, contextmenuHandler } = createTaskClickHandler({
@@ -2136,8 +2123,8 @@ export function updateTaskCard(
 			}
 		}
 
-		// Add separators between metadata elements
-		addMetadataSeparators(metadataLine, metadataElements);
+		// Hide metadata line if empty
+		updateMetadataVisibility(metadataLine, metadataElements);
 	}
 
 	// Animation is now handled separately - don't add it here during reconciler updates
