@@ -1365,6 +1365,11 @@ export function createTaskCard(
 
 	// Add click handler to cycle through statuses
 	if (statusDot) {
+		// Prevent mousedown from propagating to editor (fixes inline widget de-rendering)
+		statusDot.addEventListener("mousedown", (e) => {
+			e.preventDefault();
+			e.stopPropagation();
+		});
 		statusDot.addEventListener("click", createStatusCycleHandler(task, plugin, card, statusDot, targetDate));
 	}
 

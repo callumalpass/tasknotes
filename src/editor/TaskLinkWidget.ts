@@ -101,9 +101,15 @@ export class TaskLinkWidget extends WidgetType {
 	}
 
 	/**
-	 * Indicate this widget should be treated as atomic for editing purposes
+	 * Ignore mouse events on the widget to prevent cursor movement
+	 * when clicking interactive elements like status dot
 	 */
-	ignoreEvent(): boolean {
+	ignoreEvent(event: Event): boolean {
+		// Ignore mouse events to prevent cursor from moving into widget
+		// This keeps the widget rendered while interacting with it
+		if (event.type === "mousedown" || event.type === "click") {
+			return true;
+		}
 		return false;
 	}
 
