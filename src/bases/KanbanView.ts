@@ -18,7 +18,9 @@ export class KanbanView extends BasesViewBase {
 	private draggedTaskPath: string | null = null;
 	private draggedTaskPaths: string[] = []; // For batch drag operations
 	private draggedFromColumn: string | null = null; // Track source column for list property handling
+	private draggedFromSwimlane: string | null = null; // Track source swimlane for list property handling
 	private draggedSourceColumns: Map<string, string> = new Map(); // Track source column per task for batch operations
+	private draggedSourceSwimlanes: Map<string, string> = new Map(); // Track source swimlane per task for batch operations
 	private taskInfoCache = new Map<string, TaskInfo>();
 	private containerListenersRegistered = false;
 	private columnScrollers = new Map<string, VirtualScroller<TaskInfo>>(); // columnKey -> scroller
@@ -988,8 +990,9 @@ export class KanbanView extends BasesViewBase {
 				this.draggedTaskPaths = selectionService.getSelectedPaths();
 				this.draggedTaskPath = task.path;
 
-				// Build source column map for all selected tasks
+				// Build source column and swimlane maps for all selected tasks
 				this.draggedSourceColumns.clear();
+				this.draggedSourceSwimlanes.clear();
 				for (const path of this.draggedTaskPaths) {
 					const wrapper = this.currentTaskElements.get(path);
 					if (wrapper) {
@@ -997,9 +1000,14 @@ export class KanbanView extends BasesViewBase {
 						// Capture source column for each task
 						const col = wrapper.closest('[data-group]') as HTMLElement;
 						const swimCol = wrapper.closest('[data-column]') as HTMLElement;
+						const swimlaneRow = wrapper.closest('[data-swimlane]') as HTMLElement;
 						const sourceCol = col?.dataset.group || swimCol?.dataset.column;
+						const sourceSwimlane = swimlaneRow?.dataset.swimlane;
 						if (sourceCol) {
 							this.draggedSourceColumns.set(path, sourceCol);
+						}
+						if (sourceSwimlane) {
+							this.draggedSourceSwimlanes.set(path, sourceSwimlane);
 						}
 					}
 				}
@@ -1021,10 +1029,12 @@ export class KanbanView extends BasesViewBase {
 				}
 			}
 
-			// Capture the source column for list property handling (single drag fallback)
+			// Capture the source column and swimlane for list property handling (single drag fallback)
 			const column = cardWrapper.closest('[data-group]') as HTMLElement;
 			const swimlaneColumn = cardWrapper.closest('[data-column]') as HTMLElement;
+			const swimlaneRow = cardWrapper.closest('[data-swimlane]') as HTMLElement;
 			this.draggedFromColumn = column?.dataset.group || swimlaneColumn?.dataset.column || null;
+			this.draggedFromSwimlane = swimlaneRow?.dataset.swimlane || null;
 		});
 
 		cardWrapper.addEventListener("dragend", () => {
@@ -1037,8 +1047,10 @@ export class KanbanView extends BasesViewBase {
 			}
 			cardWrapper.classList.remove("kanban-view__card--dragging");
 			this.draggedFromColumn = null;
+			this.draggedFromSwimlane = null;
 			this.draggedTaskPaths = [];
 			this.draggedSourceColumns.clear();
+			this.draggedSourceSwimlanes.clear();
 
 			// Clean up any lingering dragover classes
 			this.boardEl?.querySelectorAll('.kanban-view__column--dragover').forEach(el => {
@@ -1061,21 +1073,28 @@ export class KanbanView extends BasesViewBase {
 			if (!groupByPropertyId) return;
 
 			const cleanGroupBy = this.stripPropertyPrefix(groupByPropertyId);
-			const isListProperty = this.explodeListColumns && this.isListTypeProperty(cleanGroupBy);
+			const isGroupByListProperty = this.explodeListColumns && this.isListTypeProperty(cleanGroupBy);
+
+			// Check if swimlane property is also a list type
+			const cleanSwimlane = this.swimLanePropertyId ? this.stripPropertyPrefix(this.swimLanePropertyId) : null;
+			const isSwimlaneListProperty = cleanSwimlane && this.isListTypeProperty(cleanSwimlane);
 
 			// Handle batch drag - update all dragged tasks
 			const pathsToUpdate = this.draggedTaskPaths.length > 1 ? this.draggedTaskPaths : [taskPath];
 			const isBatchOperation = pathsToUpdate.length > 1;
 
 			for (const path of pathsToUpdate) {
-				// Get the source column for this specific task
+				// Get the source column and swimlane for this specific task
 				const sourceColumn = isBatchOperation
 					? this.draggedSourceColumns.get(path)
 					: this.draggedFromColumn;
+				const sourceSwimlane = isBatchOperation
+					? this.draggedSourceSwimlanes.get(path)
+					: this.draggedFromSwimlane;
 
-				if (isListProperty && sourceColumn) {
+				// Update groupBy property
+				if (isGroupByListProperty && sourceColumn) {
 					// For list properties, remove the source value and add the target value
-					// This works for both single and batch operations now that we track per-task sources
 					await this.updateListPropertyOnDrop(path, groupByPropertyId, sourceColumn, newGroupValue);
 				} else {
 					// For non-list properties, simply replace the value
@@ -1084,7 +1103,13 @@ export class KanbanView extends BasesViewBase {
 
 				// Update swimlane property if applicable
 				if (newSwimLaneValue !== null && this.swimLanePropertyId) {
-					await this.updateTaskFrontmatterProperty(path, this.swimLanePropertyId, newSwimLaneValue);
+					if (isSwimlaneListProperty && sourceSwimlane) {
+						// For list swimlane properties, remove source and add target
+						await this.updateListPropertyOnDrop(path, this.swimLanePropertyId, sourceSwimlane, newSwimLaneValue);
+					} else {
+						// For non-list swimlane properties, simply replace the value
+						await this.updateTaskFrontmatterProperty(path, this.swimLanePropertyId, newSwimLaneValue);
+					}
 				}
 			}
 
