@@ -1344,6 +1344,13 @@ export function createTaskCard(
 		card.style.setProperty("--current-status-color", statusConfig.color);
 	}
 
+	// Set next status color for hover preview
+	const nextStatus = plugin.statusManager.getNextStatus(effectiveStatus);
+	const nextStatusConfig = plugin.statusManager.getStatusConfig(nextStatus);
+	if (nextStatusConfig) {
+		card.style.setProperty("--next-status-color", nextStatusConfig.color);
+	}
+
 	// Status indicator dot (conditional based on visible properties)
 	let statusDot: HTMLElement | null = null;
 	const shouldShowStatus =
@@ -1734,6 +1741,13 @@ export function updateTaskCard(
 	const statusConfig = plugin.statusManager.getStatusConfig(effectiveStatus);
 	if (statusConfig) {
 		element.style.setProperty("--current-status-color", statusConfig.color);
+	}
+
+	// Update next status color for hover preview
+	const nextStatus = plugin.statusManager.getNextStatus(effectiveStatus);
+	const nextStatusConfig = plugin.statusManager.getStatusConfig(nextStatus);
+	if (nextStatusConfig) {
+		element.style.setProperty("--next-status-color", nextStatusConfig.color);
 	}
 
 	// Update checkbox if present
