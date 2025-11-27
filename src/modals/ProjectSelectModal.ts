@@ -7,7 +7,7 @@ import {
 	parseFrontMatterAliases,
 } from "obsidian";
 import type TaskNotesPlugin from "../main";
-import { ProjectMetadataResolver } from "../utils/projectMetadataResolver";
+import { ProjectMetadataResolver, ProjectEntry } from "../utils/projectMetadataResolver";
 import { parseDisplayFieldsRow } from "../utils/projectAutosuggestDisplayFieldsParser";
 import { getProjectPropertyFilter, matchesProjectProperty } from "../utils/projectFilterUtils";
 import { FilterUtils } from "../utils/FilterUtils";
@@ -216,7 +216,7 @@ export class ProjectSelectModal extends FuzzySuggestModal<TAbstractFile> {
 				? (aliasesFm.filter((a) => typeof a === "string") as string[])
 				: [];
 
-			const fileData = {
+			const fileData: ProjectEntry = {
 				basename: file.basename,
 				name: file.name,
 				path: file.path,
@@ -233,40 +233,11 @@ export class ProjectSelectModal extends FuzzySuggestModal<TAbstractFile> {
 			// Always show filename first
 			container.createDiv({ cls: "project-name", text: file.basename });
 
-			// Render configured rows
-			for (let i = 0; i < Math.min(rowConfigs.length, 3); i++) {
-				const row = rowConfigs[i];
-				if (!row) continue;
-
-				try {
-					const tokens = parseDisplayFieldsRow(row);
-					const parts: string[] = [];
-
-					for (const token of tokens) {
-						if (token.property.startsWith("literal:")) {
-							parts.push(token.property.slice(8));
-							continue;
-						}
-
-						const value = resolver.resolve(token.property, fileData) || "";
-						if (!value) continue;
-
-						if (token.showName) {
-							const label = token.displayName ?? token.property;
-							parts.push(`${label}: ${value}`);
-						} else {
-							parts.push(value);
-						}
-					}
-
-					const line = parts.join(" ");
-					if (line.trim()) {
-						const metaEl = container.createDiv({ cls: "project-meta" });
-						metaEl.textContent = line;
-					}
-				} catch {
-					// Skip invalid rows
-				}
+			// Render configured rows using shared utility
+			const metadataRows = resolver.buildMetadataRows(rowConfigs, fileData, parseDisplayFieldsRow);
+			for (const line of metadataRows) {
+				const metaEl = container.createDiv({ cls: "project-meta" });
+				metaEl.textContent = line;
 			}
 		} catch (error) {
 			console.error("Error rendering project suggestion:", error);

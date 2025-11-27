@@ -12,6 +12,9 @@ import { keymap } from "@codemirror/view";
 import TaskNotesPlugin from "../main";
 import { NaturalLanguageParser } from "../services/NaturalLanguageParser";
 import { TriggerConfigService } from "../services/TriggerConfigService";
+import { FileSuggestHelper } from "../suggest/FileSuggestHelper";
+import { ProjectMetadataResolver, ProjectEntry } from "../utils/projectMetadataResolver";
+import { parseDisplayFieldsRow } from "../utils/projectAutosuggestDisplayFieldsParser";
 
 /**
  * CodeMirror autocomplete extension for NLP triggers with configurable trigger support
@@ -257,10 +260,6 @@ async function getFileSuggestions(
 	triggerConfig: TriggerConfigService
 ): Promise<Completion[]> {
 	try {
-		const { FileSuggestHelper } = await import("../suggest/FileSuggestHelper");
-		const { ProjectMetadataResolver } = await import("../utils/projectMetadataResolver");
-		const { parseDisplayFieldsRow } = await import("../utils/projectAutosuggestDisplayFieldsParser");
-
 		// Get autosuggest config - use projectAutosuggest for projects,
 		// or user field's autosuggestFilter for user fields
 		let autosuggestConfig;
@@ -303,8 +302,8 @@ async function getFileSuggestions(
 					.getMarkdownFiles()
 					.find((f) => f.basename === item.insertText);
 
-				// Build metadata rows
-				const metadataRows: string[] = [];
+				// Build metadata rows using shared utility
+				let metadataRows: string[] = [];
 				if (file && rowConfigs.length > 0) {
 					const cache = plugin.app.metadataCache.getFileCache(file);
 					const frontmatter: Record<string, any> = cache?.frontmatter || {};
@@ -319,7 +318,7 @@ async function getFileSuggestions(
 						? (frontmatter["aliases"] as any[]).filter((a: any) => typeof a === "string")
 						: [];
 
-					const fileData = {
+					const fileData: ProjectEntry = {
 						basename: file.basename,
 						name: file.name,
 						path: file.path,
@@ -329,39 +328,7 @@ async function getFileSuggestions(
 						frontmatter,
 					};
 
-					// Build each configured row
-					for (let i = 0; i < Math.min(rowConfigs.length, 3); i++) {
-						const row = rowConfigs[i];
-						if (!row) continue;
-
-						try {
-							const tokens = parseDisplayFieldsRow(row);
-							const parts: string[] = [];
-
-							for (const token of tokens) {
-								if (token.property.startsWith("literal:")) {
-									const lit = token.property.slice(8);
-									if (lit) parts.push(lit);
-									continue;
-								}
-
-								const value = resolver.resolve(token.property, fileData);
-								if (!value) continue;
-
-								if (token.showName) {
-									parts.push(`${token.displayName ?? token.property}: ${value}`);
-								} else {
-									parts.push(value);
-								}
-							}
-
-							if (parts.length > 0) {
-								metadataRows.push(parts.join(" "));
-							}
-						} catch {
-							// Ignore row parse errors
-						}
-					}
+					metadataRows = resolver.buildMetadataRows(rowConfigs, fileData, parseDisplayFieldsRow);
 				}
 
 				return {

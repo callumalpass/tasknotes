@@ -870,7 +870,7 @@
     color: var(--text-normal);
 }
 
-/* NLP Project Suggestion Styles - Rich Metadata Display (Legacy textarea-based) */
+/* NLP Project Suggestion Styles - Rich Metadata Display (Textarea-based suggester in TaskCreationModal) */
 .tasknotes-plugin .nlp-suggest-project__filename {
     font-weight: var(--font-weight-medium);
     color: var(--text-normal);

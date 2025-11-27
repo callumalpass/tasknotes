@@ -15,6 +15,60 @@ export interface ResolverDeps {
 export class ProjectMetadataResolver {
 	constructor(private deps: ResolverDeps) {}
 
+	/**
+	 * Build metadata display rows from row configurations.
+	 * Shared utility used by NLP autocomplete, ProjectSelectModal, etc.
+	 */
+	buildMetadataRows(
+		rowConfigs: string[],
+		fileData: ProjectEntry,
+		parseDisplayFieldsRow: (row: string) => Array<{
+			property: string;
+			showName: boolean;
+			displayName?: string;
+		}>
+	): string[] {
+		const metadataRows: string[] = [];
+		const maxRows = Math.min(rowConfigs.length, 3);
+
+		for (let i = 0; i < maxRows; i++) {
+			const row = rowConfigs[i];
+			if (!row) continue;
+
+			try {
+				const tokens = parseDisplayFieldsRow(row);
+				const parts: string[] = [];
+
+				for (const token of tokens) {
+					if (token.property.startsWith("literal:")) {
+						const lit = token.property.slice(8);
+						if (lit) parts.push(lit);
+						continue;
+					}
+
+					const value = this.resolve(token.property, fileData);
+					if (!value) continue;
+
+					if (token.showName) {
+						parts.push(`${token.displayName ?? token.property}: ${value}`);
+					} else {
+						parts.push(value);
+					}
+				}
+
+				if (parts.length > 0) {
+					metadataRows.push(parts.join(" "));
+				}
+			} catch (e) {
+				if (process.env.NODE_ENV === "development") {
+					console.debug("ProjectMetadataResolver: failed to parse row config:", row, e);
+				}
+			}
+		}
+
+		return metadataRows;
+	}
+
 	private stringifyFmValue(value: any): string {
 		if (value == null) return "";
 		if (Array.isArray(value)) {
