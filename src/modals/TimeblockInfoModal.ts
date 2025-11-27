@@ -10,7 +10,7 @@ import {
 	setTooltip,
 } from "obsidian";
 import TaskNotesPlugin from "../main";
-import { AttachmentSelectModal } from "./AttachmentSelectModal";
+import { openFileSelector } from "./FileSelectorModal";
 import {
 	getDailyNote,
 	getAllDailyNotes,
@@ -130,10 +130,12 @@ export class TimeblockInfoModal extends Modal {
 					.setButtonText(this.translate("modals.timeblockInfo.addAttachmentButton"))
 					.setTooltip(this.translate("modals.timeblockInfo.addAttachmentTooltip"))
 					.onClick(() => {
-						const modal = new AttachmentSelectModal(this.app, this.plugin, (file) => {
-							this.addAttachment(file);
+						openFileSelector(this.plugin, (file) => {
+							if (file) this.addAttachment(file);
+						}, {
+							placeholder: "Search files or type to create new...",
+							filter: "all",
 						});
-						modal.open();
 					});
 			});
 

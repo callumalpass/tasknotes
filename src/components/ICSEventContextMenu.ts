@@ -3,7 +3,7 @@ import TaskNotesPlugin from "../main";
 import { ICSEvent } from "../types";
 import { ICSEventInfoModal } from "../modals/ICSEventInfoModal";
 import { ICSNoteCreationModal } from "../modals/ICSNoteCreationModal";
-import { ICSNoteLinkModal } from "../modals/ICSNoteLinkModal";
+import { openFileSelector } from "../modals/FileSelectorModal";
 import { SafeAsync } from "../utils/safeAsync";
 import { ContextMenu } from "./ContextMenu";
 
@@ -205,34 +205,34 @@ export class ICSEventContextMenu {
 	private async linkExistingNote(): Promise<void> {
 		await SafeAsync.execute(
 			async () => {
-				const modal = new ICSNoteLinkModal(
-					this.options.plugin.app,
-					this.options.plugin,
-					async (file) => {
-						await SafeAsync.execute(
-							async () => {
-								await this.options.plugin.icsNoteService.linkNoteToICS(
-									file.path,
-									this.options.icsEvent
-								);
-								new Notice(
-									this.t("contextMenus.ics.notices.linkSuccess", {
-										name: file.name,
-									})
-								);
+				openFileSelector(this.options.plugin, async (file) => {
+					if (!file) return;
 
-								// Trigger update callback if provided
-								if (this.options.onUpdate) {
-									this.options.onUpdate();
-								}
-							},
-							{
-								errorMessage: this.t("contextMenus.ics.notices.linkFailure"),
+					await SafeAsync.execute(
+						async () => {
+							await this.options.plugin.icsNoteService.linkNoteToICS(
+								file.path,
+								this.options.icsEvent
+							);
+							new Notice(
+								this.t("contextMenus.ics.notices.linkSuccess", {
+									name: file.name,
+								})
+							);
+
+							// Trigger update callback if provided
+							if (this.options.onUpdate) {
+								this.options.onUpdate();
 							}
-						);
-					}
-				);
-				modal.open();
+						},
+						{
+							errorMessage: this.t("contextMenus.ics.notices.linkFailure"),
+						}
+					);
+				}, {
+					placeholder: "Search notes to link...",
+					filter: "markdown",
+				});
 			},
 			{
 				errorMessage: this.t("contextMenus.ics.notices.linkSelectionFailure"),

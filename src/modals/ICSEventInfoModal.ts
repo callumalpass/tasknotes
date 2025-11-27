@@ -3,7 +3,7 @@ import { App, Modal, Setting, Notice, TFile } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { ICSEvent, TaskInfo, NoteInfo } from "../types";
 import { ICSNoteCreationModal } from "./ICSNoteCreationModal";
-import { ICSNoteLinkModal } from "./ICSNoteLinkModal";
+import { openFileSelector } from "./FileSelectorModal";
 import { SafeAsync } from "../utils/safeAsync";
 import { TranslationKey } from "../i18n";
 
@@ -185,10 +185,11 @@ export class ICSEventInfoModal extends Modal {
 	}
 
 	private async linkExistingNote(): Promise<void> {
-		console.log("Link existing note button clicked");
 		await SafeAsync.execute(
 			async () => {
-				const modal = new ICSNoteLinkModal(this.app, this.plugin, async (file) => {
+				openFileSelector(this.plugin, async (file) => {
+					if (!file) return;
+
 					await SafeAsync.execute(
 						async () => {
 							await this.plugin.icsNoteService.linkNoteToICS(
@@ -202,8 +203,10 @@ export class ICSEventInfoModal extends Modal {
 							errorMessage: "Failed to link note",
 						}
 					);
+				}, {
+					placeholder: "Search notes to link...",
+					filter: "markdown",
 				});
-				modal.open();
 			},
 			{
 				errorMessage: "Failed to open note selection",

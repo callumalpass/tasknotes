@@ -1,0 +1,92 @@
+/* ================================================
+   FILE SELECTOR MODAL
+   ================================================ */
+
+/* ================================================
+   SUGGESTION STYLING
+   ================================================ */
+
+.file-selector-suggestion {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: var(--tn-spacing-xs) 0;
+}
+
+.file-selector-suggestion__name {
+    font-weight: 500;
+    font-size: var(--tn-font-size-md);
+    color: var(--text-normal);
+}
+
+.file-selector-suggestion__title,
+.file-selector-suggestion__aliases {
+    font-size: var(--tn-font-size-sm);
+    color: var(--text-muted);
+}
+
+.file-selector-suggestion__path {
+    font-size: var(--tn-font-size-xs);
+    color: var(--text-faint);
+}
+
+/* ================================================
+   CREATE FOOTER
+   ================================================ */
+
+.file-selector-create-footer {
+    display: flex;
+    align-items: center;
+    gap: var(--tn-spacing-md);
+    padding: var(--tn-spacing-md) var(--tn-spacing-lg);
+    background: var(--background-secondary);
+    border-top: 1px solid var(--background-modifier-border);
+    margin-top: auto;
+}
+
+.file-selector-create-footer__content {
+    flex: 1;
+    min-width: 0;
+}
+
+.file-selector-create-footer__title-line {
+    display: flex;
+    align-items: center;
+    gap: var(--tn-spacing-xs);
+}
+
+.file-selector-create-footer__shortcut {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2px 6px;
+    border-radius: 3px;
+    background-color: var(--background-modifier-border);
+    color: var(--text-faint);
+    font-size: 10px;
+    font-weight: 500;
+    font-family: var(--font-monospace);
+}
+
+.file-selector-create-footer__hint-text {
+    font-size: var(--tn-font-size-sm);
+    color: var(--text-faint);
+}
+
+.file-selector-create-footer__filename {
+    font-size: var(--tn-font-size-sm);
+    color: var(--text-normal);
+    font-weight: 500;
+}
+
+/* ================================================
+   DARK THEME ADJUSTMENTS
+   ================================================ */
+
+.theme-dark .file-selector-create-footer {
+    background: var(--background-secondary-alt);
+}
+
+.theme-dark .file-selector-create-footer__shortcut {
+    background-color: var(--background-modifier-form-field);
+}

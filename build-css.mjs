@@ -19,6 +19,7 @@ const CSS_FILES = [
     'styles/reminder-modal.css',     // Reminder modal component with proper BEM scoping
     'styles/date-picker.css',        // Enhanced date/time picker styling
     'styles/task-selector-with-create-modal.css', // TaskSelectorWithCreateModal component with proper BEM scoping
+    'styles/file-selector-modal.css', // FileSelectorModal component with proper BEM scoping
     'styles/unscheduled-tasks-selector-modal.css', // UnscheduledTasksSelectorModal component with proper BEM scoping
     'styles/task-action-palette-modal.css', // TaskActionPaletteModal component with proper BEM scoping
     'styles/time-entry-editor-modal.css', // TimeEntryEditorModal component with proper BEM scoping

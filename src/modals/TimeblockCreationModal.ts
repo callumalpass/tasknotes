@@ -11,7 +11,7 @@ import {
 import TaskNotesPlugin from "../main";
 import { TimeBlock, DailyNoteFrontmatter } from "../types";
 import { generateTimeblockId } from "../utils/helpers";
-import { AttachmentSelectModal } from "./AttachmentSelectModal";
+import { openFileSelector } from "./FileSelectorModal";
 import { parseDateAsLocal } from "../utils/dateUtils";
 import {
 	createDailyNote,
@@ -148,10 +148,12 @@ export class TimeblockCreationModal extends Modal {
 					.setButtonText(this.translate("modals.timeblockCreation.addAttachmentButton"))
 					.setTooltip(this.translate("modals.timeblockCreation.addAttachmentTooltip"))
 					.onClick(() => {
-						const modal = new AttachmentSelectModal(this.app, this.plugin, (file) => {
-							this.addAttachment(file);
+						openFileSelector(this.plugin, (file) => {
+							if (file) this.addAttachment(file);
+						}, {
+							placeholder: "Search files or type to create new...",
+							filter: "all",
 						});
-						modal.open();
 					});
 			});
 
