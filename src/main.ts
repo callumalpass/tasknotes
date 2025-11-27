@@ -2142,11 +2142,9 @@ export default class TaskNotesPlugin extends Plugin {
 	async openTaskSelectorWithCreate(): Promise<void> {
 		const { openTaskSelectorWithCreate } = await import("./modals/TaskSelectorWithCreateModal");
 		const result = await openTaskSelectorWithCreate(this);
-		console.log("[TaskSelectorWithCreate] result received", result);
 
 		if (result.type === "selected" || result.type === "created") {
 			// Open the selected/created task
-			console.log("[TaskSelectorWithCreate] opening task", result.task.path);
 			const file = this.app.vault.getAbstractFileByPath(result.task.path);
 			if (file instanceof TFile) {
 				await this.app.workspace.getLeaf(false).openFile(file);
