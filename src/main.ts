@@ -1589,6 +1589,13 @@ export default class TaskNotesPlugin extends Plugin {
 					await this.openTaskSelectorForTimeEntryEditor();
 				},
 			},
+			{
+				id: "create-or-open-task",
+				nameKey: "commands.createOrOpenTask",
+				callback: async () => {
+					await this.openTaskSelectorWithCreate();
+				},
+			},
 		];
 
 		this.registerCommands();
@@ -2126,6 +2133,25 @@ export default class TaskNotesPlugin extends Plugin {
 
 	openTaskCreationModal(prePopulatedValues?: Partial<TaskInfo>) {
 		new TaskCreationModal(this.app, this, { prePopulatedValues }).open();
+	}
+
+	/**
+	 * Open the task selector with create modal.
+	 * This modal allows users to either select an existing task or create a new one via NLP.
+	 */
+	async openTaskSelectorWithCreate(): Promise<void> {
+		const { openTaskSelectorWithCreate } = await import("./modals/TaskSelectorWithCreateModal");
+		const result = await openTaskSelectorWithCreate(this);
+		console.log("[TaskSelectorWithCreate] result received", result);
+
+		if (result.type === "selected" || result.type === "created") {
+			// Open the selected/created task
+			console.log("[TaskSelectorWithCreate] opening task", result.task.path);
+			const file = this.app.vault.getAbstractFileByPath(result.task.path);
+			if (file instanceof TFile) {
+				await this.app.workspace.getLeaf(false).openFile(file);
+			}
+		}
 	}
 
 	/**

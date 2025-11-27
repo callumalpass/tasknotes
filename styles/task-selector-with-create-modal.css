@@ -1,0 +1,323 @@
+/* ================================================
+   TASK SELECTOR WITH CREATE MODAL
+   ================================================ */
+
+/* Modal container adjustments */
+.task-selector-with-create-modal .prompt {
+    display: flex;
+    flex-direction: column;
+}
+
+/* ================================================
+   TASK CARD STYLING WITHIN MODAL
+   ================================================ */
+
+/* Remove task card hover/background styling - let suggestion item handle it */
+.task-selector-with-create-modal .task-card {
+    background: transparent !important;
+    box-shadow: none !important;
+    padding: var(--tn-spacing-sm) 0;
+    margin: 0;
+}
+
+.task-selector-with-create-modal .task-card:hover {
+    background: transparent !important;
+}
+
+/* Hide context menu icon in modal suggestions */
+.task-selector-with-create-modal .task-card__context-menu {
+    display: none;
+}
+
+/* Hide badges container in modal for cleaner look */
+.task-selector-with-create-modal .task-card__badges {
+    display: none;
+}
+
+/* ================================================
+   CREATE FOOTER - Fixed at bottom of modal
+   ================================================ */
+
+.task-selector-create-footer {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--tn-spacing-md);
+    padding: var(--tn-spacing-sm) var(--tn-spacing-md);
+    background: var(--background-secondary);
+    border-top: 1px solid var(--background-modifier-border);
+    margin-top: auto;
+    min-height: 50px;
+}
+
+.task-selector-create-footer__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    color: var(--text-accent);
+    flex-shrink: 0;
+    opacity: 0.8;
+    margin-top: 2px;
+}
+
+.task-selector-create-footer__icon svg {
+    width: 20px;
+    height: 20px;
+}
+
+.task-selector-create-footer__content {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--tn-spacing-xs);
+}
+
+/* ================================================
+   TITLE LINE
+   ================================================ */
+
+.task-selector-create-footer__title-line {
+    display: flex;
+    align-items: center;
+    gap: var(--tn-spacing-xs);
+}
+
+.task-selector-create-footer__title {
+    font-weight: 600;
+    font-size: var(--tn-font-size-md);
+    color: var(--text-normal);
+    line-height: 1.3;
+    /* Allow wrapping for long titles */
+    word-break: break-word;
+}
+
+/* ================================================
+   METADATA CHIPS
+   ================================================ */
+
+.task-selector-create-footer__meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.task-selector-create-footer__chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: var(--tn-font-size-xs);
+    font-weight: 500;
+    white-space: nowrap;
+    max-width: 180px;
+    overflow: hidden;
+}
+
+.task-selector-create-footer__chip-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 12px;
+    height: 12px;
+    flex-shrink: 0;
+}
+
+.task-selector-create-footer__chip-icon svg {
+    width: 12px;
+    height: 12px;
+}
+
+.task-selector-create-footer__chip-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Chip type variants */
+.task-selector-create-footer__chip--due {
+    background-color: hsla(0, 70%, 50%, 0.15);
+    color: hsl(0, 70%, 45%);
+}
+
+.task-selector-create-footer__chip--scheduled {
+    background-color: hsla(200, 70%, 50%, 0.15);
+    color: hsl(200, 70%, 40%);
+}
+
+.task-selector-create-footer__chip--priority {
+    background-color: hsla(35, 90%, 50%, 0.15);
+    color: hsl(35, 90%, 40%);
+}
+
+.task-selector-create-footer__chip--status {
+    background-color: hsla(270, 50%, 50%, 0.15);
+    color: hsl(270, 50%, 45%);
+}
+
+.task-selector-create-footer__chip--context {
+    background-color: hsla(160, 60%, 45%, 0.15);
+    color: hsl(160, 60%, 35%);
+}
+
+.task-selector-create-footer__chip--project {
+    background-color: hsla(220, 70%, 50%, 0.15);
+    color: hsl(220, 70%, 45%);
+}
+
+.task-selector-create-footer__chip--tag {
+    background-color: hsla(280, 60%, 50%, 0.15);
+    color: hsl(280, 60%, 45%);
+}
+
+.task-selector-create-footer__chip--recurrence {
+    background-color: hsla(180, 60%, 45%, 0.15);
+    color: hsl(180, 60%, 35%);
+}
+
+.task-selector-create-footer__chip--estimate {
+    background-color: hsla(45, 80%, 50%, 0.15);
+    color: hsl(45, 80%, 35%);
+}
+
+.task-selector-create-footer__chip--details {
+    background-color: hsla(0, 0%, 50%, 0.15);
+    color: var(--text-muted);
+}
+
+.task-selector-create-footer__chip--userfield {
+    background-color: hsla(300, 40%, 50%, 0.15);
+    color: hsl(300, 40%, 40%);
+}
+
+/* ================================================
+   HINT LINE
+   ================================================ */
+
+.task-selector-create-footer__hint {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 2px;
+}
+
+.task-selector-create-footer__shortcut {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1px 5px;
+    border-radius: 3px;
+    background-color: var(--background-modifier-border);
+    color: var(--text-faint);
+    font-size: 10px;
+    font-weight: 500;
+    font-family: var(--font-monospace);
+}
+
+.task-selector-create-footer__hint-text {
+    font-size: var(--tn-font-size-xs);
+    color: var(--text-faint);
+}
+
+/* ================================================
+   DARK THEME ADJUSTMENTS
+   ================================================ */
+
+.theme-dark .task-selector-create-footer {
+    background: var(--background-secondary-alt);
+}
+
+.theme-dark .task-selector-create-footer__shortcut {
+    background-color: var(--background-modifier-form-field);
+}
+
+/* Dark theme chip adjustments for better visibility */
+.theme-dark .task-selector-create-footer__chip--due {
+    background-color: hsla(0, 70%, 60%, 0.2);
+    color: hsl(0, 70%, 65%);
+}
+
+.theme-dark .task-selector-create-footer__chip--scheduled {
+    background-color: hsla(200, 70%, 60%, 0.2);
+    color: hsl(200, 70%, 65%);
+}
+
+.theme-dark .task-selector-create-footer__chip--priority {
+    background-color: hsla(35, 90%, 60%, 0.2);
+    color: hsl(35, 90%, 65%);
+}
+
+.theme-dark .task-selector-create-footer__chip--status {
+    background-color: hsla(270, 50%, 60%, 0.2);
+    color: hsl(270, 50%, 70%);
+}
+
+.theme-dark .task-selector-create-footer__chip--context {
+    background-color: hsla(160, 60%, 55%, 0.2);
+    color: hsl(160, 60%, 60%);
+}
+
+.theme-dark .task-selector-create-footer__chip--project {
+    background-color: hsla(220, 70%, 60%, 0.2);
+    color: hsl(220, 70%, 70%);
+}
+
+.theme-dark .task-selector-create-footer__chip--tag {
+    background-color: hsla(280, 60%, 60%, 0.2);
+    color: hsl(280, 60%, 70%);
+}
+
+.theme-dark .task-selector-create-footer__chip--recurrence {
+    background-color: hsla(180, 60%, 55%, 0.2);
+    color: hsl(180, 60%, 60%);
+}
+
+.theme-dark .task-selector-create-footer__chip--estimate {
+    background-color: hsla(45, 80%, 60%, 0.2);
+    color: hsl(45, 80%, 65%);
+}
+
+.theme-dark .task-selector-create-footer__chip--details {
+    background-color: hsla(0, 0%, 60%, 0.2);
+    color: var(--text-muted);
+}
+
+.theme-dark .task-selector-create-footer__chip--userfield {
+    background-color: hsla(300, 40%, 60%, 0.2);
+    color: hsl(300, 40%, 70%);
+}
+
+/* ================================================
+   RESPONSIVE ADJUSTMENTS
+   ================================================ */
+
+@media (max-width: 480px) {
+    .task-selector-create-footer {
+        padding: var(--tn-spacing-xs) var(--tn-spacing-sm);
+    }
+
+    .task-selector-create-footer__icon {
+        width: 28px;
+        height: 28px;
+    }
+
+    .task-selector-create-footer__icon svg {
+        width: 16px;
+        height: 16px;
+    }
+
+    .task-selector-create-footer__title {
+        font-size: var(--tn-font-size-sm);
+    }
+
+    .task-selector-create-footer__chip {
+        max-width: 120px;
+        padding: 2px 6px;
+    }
+
+    .task-selector-create-footer__meta {
+        gap: 4px;
+    }
+}

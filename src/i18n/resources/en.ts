@@ -1776,6 +1776,7 @@ export const en: TranslationTree = {
 		viewReleaseNotes: "View release notes",
 		startTimeTrackingWithSelector: "Start time tracking (select task)",
 		editTimeEntries: "Edit time entries (select task)",
+		createOrOpenTask: "Create or open task",
 	},
 	modals: {
 		deviceCode: {
@@ -2039,6 +2040,20 @@ export const en: TranslationTree = {
 			dueDate: {
 				overdue: "Due: {date} (overdue)",
 				today: "Due: Today",
+			},
+		},
+		taskSelectorWithCreate: {
+			title: "Create or open task",
+			placeholder: "Search tasks or type to create new...",
+			instructions: {
+				create: "to create new task",
+			},
+			footer: {
+				createLabel: " to create: ",
+			},
+			notices: {
+				emptyQuery: "Please enter a task description",
+				invalidTitle: "Could not parse a valid task title",
 			},
 		},
 		taskCreation: {
