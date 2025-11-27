@@ -23,7 +23,7 @@ import { generateRecurringInstances, extractTimeblocksFromNote, updateTimeblockI
 import { Notice } from "obsidian";
 import { getAllDailyNotes, getDailyNote, appHasDailyNotesPluginLoaded, createDailyNote } from "obsidian-daily-notes-interface";
 import { TimeblockCreationModal } from "../modals/TimeblockCreationModal";
-import { TaskSelectorModal } from "../modals/TaskSelectorModal";
+import { openTaskSelector } from "../modals/TaskSelectorWithCreateModal";
 import { TimeblockInfoModal } from "../modals/TimeblockInfoModal";
 
 export interface CalendarEvent {
@@ -954,53 +954,46 @@ export async function handleTimeEntryCreation(
 		}
 
 		// Open task selector modal
-		const modal = new TaskSelectorModal(
-			plugin.app,
-			plugin,
-			unarchivedTasks,
-			async (selectedTask: any) => {
-				if (selectedTask) {
-					try {
-						// Calculate duration
-						const durationMinutes = Math.round(
-							(end.getTime() - start.getTime()) / 60000
-						);
+		openTaskSelector(plugin, unarchivedTasks, async (selectedTask: any) => {
+			if (selectedTask) {
+				try {
+					// Calculate duration
+					const durationMinutes = Math.round(
+						(end.getTime() - start.getTime()) / 60000
+					);
 
-						// Create new time entry
-						const newEntry = {
-							startTime: start.toISOString(),
-							endTime: end.toISOString(),
-							description: "",
-							duration: durationMinutes,
-						};
+					// Create new time entry
+					const newEntry = {
+						startTime: start.toISOString(),
+						endTime: end.toISOString(),
+						description: "",
+						duration: durationMinutes,
+					};
 
-						// Add to task's time entries
-						const updatedTimeEntries = [...(selectedTask.timeEntries || []), newEntry];
+					// Add to task's time entries
+					const updatedTimeEntries = [...(selectedTask.timeEntries || []), newEntry];
 
-						// Save to file
-						await plugin.taskService.updateTask(selectedTask, {
-							timeEntries: updatedTimeEntries,
-						});
+					// Save to file
+					await plugin.taskService.updateTask(selectedTask, {
+						timeEntries: updatedTimeEntries,
+					});
 
-						// Note: updateTask in TaskService already triggers EVENT_TASK_UPDATED internally
-						// We just need to trigger EVENT_DATA_CHANGED
-							plugin.emitter.trigger(EVENT_DATA_CHANGED);
+					// Note: updateTask in TaskService already triggers EVENT_TASK_UPDATED internally
+					// We just need to trigger EVENT_DATA_CHANGED
+						plugin.emitter.trigger(EVENT_DATA_CHANGED);
 
-						new Notice(
-							plugin.i18n.translate("modals.timeEntry.created", {
-								taskTitle: selectedTask.title,
-								duration: durationMinutes.toString(),
-							})
-						);
-					} catch (error) {
-						console.error("Error creating time entry:", error);
-						new Notice(plugin.i18n.translate("modals.timeEntry.createFailed"));
-					}
+					new Notice(
+						plugin.i18n.translate("modals.timeEntry.created", {
+							taskTitle: selectedTask.title,
+							duration: durationMinutes.toString(),
+						})
+					);
+				} catch (error) {
+					console.error("Error creating time entry:", error);
+					new Notice(plugin.i18n.translate("modals.timeEntry.createFailed"));
 				}
 			}
-		);
-
-		modal.open();
+		});
 	} catch (error) {
 		console.error("Error opening task selector for time entry:", error);
 		new Notice(plugin.i18n.translate("modals.timeEntry.createFailed"));

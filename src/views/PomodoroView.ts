@@ -12,7 +12,7 @@ import {
 	PomodoroState,
 	TaskInfo,
 } from "../types";
-import { TaskSelectorModal } from "../modals/TaskSelectorModal";
+import { openTaskSelector } from "../modals/TaskSelectorWithCreateModal";
 import { createTaskCard } from "../ui/TaskCard";
 import { convertInternalToUserProperties } from "../utils/propertyMapping";
 
@@ -714,16 +714,9 @@ export class PomodoroView extends ItemView {
 			}
 
 			// Open task selector modal
-			const modal = new TaskSelectorModal(
-				this.app,
-				this.plugin,
-				unarchivedTasks,
-				(selectedTask) => {
-					this.selectTask(selectedTask);
-				}
-			);
-
-			modal.open();
+			openTaskSelector(this.plugin, unarchivedTasks, (selectedTask) => {
+				this.selectTask(selectedTask);
+			});
 		} catch (error) {
 			console.error("Error opening task selector:", error);
 			new Notice(this.t("views.pomodoro.notices.loadFailed"));

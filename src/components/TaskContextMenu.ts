@@ -8,7 +8,7 @@ import { showConfirmationModal } from "../modals/ConfirmationModal";
 import { DateContextMenu } from "./DateContextMenu";
 import { RecurrenceContextMenu } from "./RecurrenceContextMenu";
 import { showTextInputModal } from "../modals/TextInputModal";
-import { TaskSelectorModal } from "../modals/TaskSelectorModal";
+import { openTaskSelector } from "../modals/TaskSelectorWithCreateModal";
 import { ProjectSelectModal } from "../modals/ProjectSelectModal";
 import {
 	DEFAULT_DEPENDENCY_RELTYPE,
@@ -791,11 +791,10 @@ export class TaskContextMenu {
 				return;
 			}
 
-			const selector = new TaskSelectorModal(plugin.app, plugin, candidates, async (task) => {
+			openTaskSelector(plugin, candidates, async (task) => {
 				if (!task) return;
 				await onSelect(task);
 			});
-			selector.open();
 		} catch (error) {
 			console.error("Failed to open task selector for dependencies:", error);
 			new Notice(this.t("contextMenus.task.dependencies.notices.updateFailed"));
@@ -928,11 +927,10 @@ export class TaskContextMenu {
 				return;
 			}
 
-			const selector = new TaskSelectorModal(plugin.app, plugin, candidates, async (subtask) => {
+			openTaskSelector(plugin, candidates, async (subtask) => {
 				if (!subtask) return;
 				await this.assignTaskAsSubtask(task, plugin, subtask);
 			});
-			selector.open();
 		} catch (error) {
 			console.error("Failed to open subtask assignment selector:", error);
 			new Notice(this.t("contextMenus.task.organization.notices.subtaskSelectFailed"));

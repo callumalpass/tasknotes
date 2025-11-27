@@ -22,8 +22,6 @@ export interface TaskSelectorWithCreateOptions {
 	placeholder?: string;
 	/** Optional title override */
 	title?: string;
-	/** Whether to allow task creation (default: true) */
-	allowCreate?: boolean;
 }
 
 /**
@@ -128,9 +126,7 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 	private updateCreateFooter(query: string): void {
 		if (!this.createFooterEl) return;
 
-		const allowCreate = this.options.allowCreate !== false;
-
-		if (!query || !allowCreate) {
+		if (!query) {
 			this.createFooterEl.style.display = "none";
 			this.createFooterEl.empty();
 			return;
@@ -497,4 +493,34 @@ export async function openTaskSelectorWithCreate(
 		});
 		modal.open();
 	});
+}
+
+/**
+ * Helper function to open a task selector with create capability.
+ * This is a drop-in replacement for TaskSelectorModal with a simpler callback pattern.
+ * Users can select an existing task OR create a new one via Shift+Enter.
+ *
+ * @param plugin - The TaskNotes plugin instance
+ * @param tasks - Array of tasks to choose from
+ * @param onChooseTask - Callback when a task is selected or created (null if cancelled)
+ * @param options - Optional configuration (placeholder, title)
+ */
+export function openTaskSelector(
+	plugin: TaskNotesPlugin,
+	tasks: TaskInfo[],
+	onChooseTask: (task: TaskInfo | null) => void,
+	options?: { placeholder?: string; title?: string }
+): void {
+	const modal = new TaskSelectorWithCreateModal(plugin.app, plugin, tasks, {
+		placeholder: options?.placeholder,
+		title: options?.title,
+		onResult: (result) => {
+			if (result.type === "selected" || result.type === "created") {
+				onChooseTask(result.task);
+			} else {
+				onChooseTask(null);
+			}
+		},
+	});
+	modal.open();
 }

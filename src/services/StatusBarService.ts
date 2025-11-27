@@ -1,7 +1,7 @@
 import { TaskInfo } from "../types";
 import { RequestDeduplicator } from "../utils/RequestDeduplicator";
 import { setTooltip, TFile } from "obsidian";
-import { TaskSelectorModal } from "../modals/TaskSelectorModal";
+import { openTaskSelector } from "../modals/TaskSelectorWithCreateModal";
 
 export class StatusBarService {
 	private plugin: import("../main").default;
@@ -150,20 +150,14 @@ export class StatusBarService {
 				}
 			} else {
 				// Multiple tracked tasks - show selector modal
-				const modal = new TaskSelectorModal(
-					this.plugin.app,
-					this.plugin,
-					trackedTasks,
-					async (selectedTask) => {
-						if (selectedTask) {
-							const file = this.plugin.app.vault.getAbstractFileByPath(selectedTask.path);
-							if (file instanceof TFile) {
-								await this.plugin.app.workspace.getLeaf(false).openFile(file);
-							}
+				openTaskSelector(this.plugin, trackedTasks, async (selectedTask) => {
+					if (selectedTask) {
+						const file = this.plugin.app.vault.getAbstractFileByPath(selectedTask.path);
+						if (file instanceof TFile) {
+							await this.plugin.app.workspace.getLeaf(false).openFile(file);
 						}
 					}
-				);
-				modal.open();
+				});
 			}
 		} catch (error) {
 			console.error("Error handling status bar click:", error);

@@ -29,7 +29,7 @@ import {
 	renderProjectLinks,
 	type LinkServices,
 } from "../ui/renderers/linkRenderer";
-import { TaskSelectorModal } from "./TaskSelectorModal";
+import { openTaskSelector } from "./TaskSelectorWithCreateModal";
 import { generateLink, generateLinkWithDisplay } from "../utils/linkUtils";
 import { EmbeddableMarkdownEditor } from "../editor/EmbeddableMarkdownEditor";
 
@@ -369,11 +369,10 @@ export abstract class TaskModal extends Modal {
 				return;
 			}
 
-			const modal = new TaskSelectorModal(this.app, this.plugin, candidates, (task) => {
+			openTaskSelector(this.plugin, candidates, (task) => {
 				if (!task) return;
 				onSelect(task);
 			});
-			modal.open();
 		} catch (error) {
 			console.error("Failed to open task selector for dependencies:", error);
 			new Notice(this.t("contextMenus.task.dependencies.notices.updateFailed"));
@@ -1804,19 +1803,13 @@ export abstract class TaskModal extends Modal {
 				return;
 			}
 
-			const selector = new TaskSelectorModal(
-				this.app,
-				this.plugin,
-				candidates,
-				async (subtask) => {
-					if (!subtask) return;
-					const file = this.app.vault.getAbstractFileByPath(subtask.path);
-					if (file) {
-						this.addSubtask(file);
-					}
+			openTaskSelector(this.plugin, candidates, async (subtask) => {
+				if (!subtask) return;
+				const file = this.app.vault.getAbstractFileByPath(subtask.path);
+				if (file) {
+					this.addSubtask(file);
 				}
-			);
-			selector.open();
+			});
 		} catch (error) {
 			console.error("Failed to open subtask selector:", error);
 			new Notice(this.t("modals.task.organization.notices.subtaskSelectFailed"));

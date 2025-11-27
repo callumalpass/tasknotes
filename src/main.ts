@@ -43,7 +43,7 @@ import { PomodoroStatsView } from "./views/PomodoroStatsView";
 import { StatsView } from "./views/StatsView";
 import { TaskCreationModal } from "./modals/TaskCreationModal";
 import { TaskEditModal } from "./modals/TaskEditModal";
-import { TaskSelectorModal } from "./modals/TaskSelectorModal";
+import { openTaskSelector } from "./modals/TaskSelectorWithCreateModal";
 import { TimeEntryEditorModal } from "./modals/TimeEntryEditorModal";
 import { PomodoroService } from "./services/PomodoroService";
 import { formatTime, getActiveTimeEntry } from "./utils/helpers";
@@ -2439,7 +2439,7 @@ export default class TaskNotesPlugin extends Plugin {
 			const unarchivedTasks = allTasks.filter((task) => !task.archived);
 
 			// Open task selector modal
-			const modal = new TaskSelectorModal(this.app, this, unarchivedTasks, (selectedTask) => {
+			openTaskSelector(this, unarchivedTasks, (selectedTask) => {
 				if (selectedTask) {
 					// Create link using Obsidian's generateMarkdownLink (respects user's link format settings)
 					const file = this.app.vault.getAbstractFileByPath(selectedTask.path);
@@ -2468,8 +2468,6 @@ export default class TaskNotesPlugin extends Plugin {
 					}
 				}
 			});
-
-			modal.open();
 		} catch (error) {
 			console.error("Error inserting tasknote link:", error);
 			new Notice("Failed to insert tasknote link");
@@ -2497,7 +2495,7 @@ export default class TaskNotesPlugin extends Plugin {
 			}
 
 			// Open task selector modal
-			const modal = new TaskSelectorModal(this.app, this, availableTasks, async (selectedTask) => {
+			openTaskSelector(this, availableTasks, async (selectedTask) => {
 				if (selectedTask) {
 					try {
 						await this.startTimeTracking(selectedTask);
@@ -2512,8 +2510,6 @@ export default class TaskNotesPlugin extends Plugin {
 					}
 				}
 			});
-
-			modal.open();
 		} catch (error) {
 			console.error("Error opening task selector for time tracking:", error);
 			new Notice(this.i18n.translate("modals.timeTracking.startFailed"));
@@ -2540,13 +2536,11 @@ export default class TaskNotesPlugin extends Plugin {
 			}
 
 			// Open task selector modal
-			const modal = new TaskSelectorModal(this.app, this, tasksWithEntries, (selectedTask) => {
+			openTaskSelector(this, tasksWithEntries, (selectedTask) => {
 				if (selectedTask) {
 					this.openTimeEntryEditor(selectedTask);
 				}
 			});
-
-			modal.open();
 		} catch (error) {
 			console.error("Error opening task selector for time entry editor:", error);
 			new Notice(this.i18n.translate("modals.timeEntryEditor.openFailed"));

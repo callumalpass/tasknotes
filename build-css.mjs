@@ -18,7 +18,6 @@ const CSS_FILES = [
     'styles/task-modal.css',         // Task modal components (Google Keep/Todoist style)
     'styles/reminder-modal.css',     // Reminder modal component with proper BEM scoping
     'styles/date-picker.css',        // Enhanced date/time picker styling
-    'styles/task-selector-modal.css', // TaskSelectorModal component with proper BEM scoping
     'styles/task-selector-with-create-modal.css', // TaskSelectorWithCreateModal component with proper BEM scoping
     'styles/unscheduled-tasks-selector-modal.css', // UnscheduledTasksSelectorModal component with proper BEM scoping
     'styles/task-action-palette-modal.css', // TaskActionPaletteModal component with proper BEM scoping
