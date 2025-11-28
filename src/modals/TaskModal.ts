@@ -30,7 +30,7 @@ import {
 	type LinkServices,
 } from "../ui/renderers/linkRenderer";
 import { openTaskSelector } from "./TaskSelectorWithCreateModal";
-import { generateLink, generateLinkWithDisplay } from "../utils/linkUtils";
+import { generateLink, generateLinkWithDisplay, parseLinkToPath } from "../utils/linkUtils";
 import { EmbeddableMarkdownEditor } from "../editor/EmbeddableMarkdownEditor";
 
 interface DependencyItem {
@@ -1700,24 +1700,47 @@ export abstract class TaskModal extends Modal {
 					});
 				}
 			} else {
-				// For backwards compatibility, try to find a file with this name
-				const files = this.getMarkdownFiles();
-				const matchingFile = files.find(
-					(f) => f.basename === projectString || f.name === projectString + ".md"
-				);
-				if (matchingFile) {
-					this.selectedProjectItems.push({
-						file: matchingFile,
-						name: matchingFile.basename,
-						link: `[[${matchingFile.basename}]]`,
-					});
+				// Check if it's a markdown link format [text](path)
+				const markdownMatch = projectString.match(/^\[([^\]]*)\]\(([^)]+)\)$/);
+				if (markdownMatch) {
+					const linkPath = parseLinkToPath(projectString);
+					const file = this.resolveLink(linkPath, "");
+					if (file) {
+						// Resolved markdown link
+						this.selectedProjectItems.push({
+							file,
+							name: file.basename,
+							link: projectString,
+						});
+					} else {
+						// Unresolved markdown link
+						const displayName = markdownMatch[1] || linkPath;
+						this.selectedProjectItems.push({
+							name: displayName,
+							link: projectString,
+							unresolved: true,
+						});
+					}
 				} else {
-					// Plain text or other format (e.g., markdown links) - preserve as-is
-					this.selectedProjectItems.push({
-						name: projectString,
-						link: projectString,
-						unresolved: true,
-					});
+					// For backwards compatibility, try to find a file with this name
+					const files = this.getMarkdownFiles();
+					const matchingFile = files.find(
+						(f) => f.basename === projectString || f.name === projectString + ".md"
+					);
+					if (matchingFile) {
+						this.selectedProjectItems.push({
+							file: matchingFile,
+							name: matchingFile.basename,
+							link: `[[${matchingFile.basename}]]`,
+						});
+					} else {
+						// Plain text - preserve as-is
+						this.selectedProjectItems.push({
+							name: projectString,
+							link: projectString,
+							unresolved: true,
+						});
+					}
 				}
 			}
 		}

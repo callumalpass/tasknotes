@@ -88,5 +88,6 @@ Example:
 - (#1265) Fixed task edit modal corrupting markdown-style project links on save
   - Links like `[Project Name](path.md)` were being wrapped in extra brackets: `[[[Project Name](path.md)]]`
   - Plain text project names are now preserved as-is instead of being converted to wikilinks
+  - Markdown-style project links now resolve properly and display as linked (not orange/unresolved)
   - Thanks to @minchinweb for reporting
 
