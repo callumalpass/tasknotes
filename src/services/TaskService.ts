@@ -162,10 +162,24 @@ export class TaskService {
 			  }
 			: undefined;
 
+		// Build fullTaskInfo from TaskCreationData for advanced templating
+		const fullTaskInfo: Partial<TaskInfo> | undefined = taskData
+			? {
+					...taskData,
+					// Ensure required fields are present
+					title: taskData.title || "",
+					status: taskData.status || this.plugin.settings.defaultTaskStatus,
+					priority: taskData.priority || this.plugin.settings.defaultTaskPriority,
+					path: "", // Will be set after folder is determined
+					archived: taskData.archived || false,
+			  }
+			: undefined;
+
 		// Use the shared folder template processor utility
 		return processFolderTemplate(folderTemplate, {
 			date,
 			taskData: templateData,
+			fullTaskInfo: fullTaskInfo as TaskInfo | undefined,
 			extractProjectBasename: (project) => this.extractProjectBasename(project),
 		});
 	}
