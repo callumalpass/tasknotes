@@ -41,6 +41,13 @@ Example:
   - Press Escape or click × to clear search
   - Thanks to @renatomen for the PR
 
+- (#363) Added "Create or open task" command with NLP-based quick task creation
+  - Open via command palette or assign a hotkey
+  - Search existing tasks or type natural language to create new tasks (e.g., "Buy groceries tomorrow #shopping")
+  - Press Enter to select an existing task, Shift+Enter to create a new task
+  - Real-time preview shows parsed title, due date, priority, tags, and other metadata
+  - Thanks to @luciolebrillante for the feature request
+
 ## Changed
 
 - Polished task card styling for a cleaner, more native Obsidian look

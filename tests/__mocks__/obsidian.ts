@@ -676,10 +676,44 @@ export class Modal extends Component {
   onClose(): void {}
 }
 
-// FuzzySuggestModal mock class
-export abstract class FuzzySuggestModal<T> extends Modal {
+// SuggestModal mock class
+export abstract class SuggestModal<T> extends Modal {
+  inputEl: HTMLInputElement;
+  resultContainerEl: HTMLElement;
+  scope: Scope;
+
   constructor(app: App) {
     super(app);
+    this.inputEl = document.createElement('input');
+    this.resultContainerEl = document.createElement('div');
+    this.scope = new Scope();
+  }
+
+  abstract getSuggestions(query: string): T[] | Promise<T[]>;
+  abstract renderSuggestion(value: T, el: HTMLElement): void;
+  abstract onChooseSuggestion(item: T, evt: MouseEvent | KeyboardEvent): void;
+
+  // Mock methods
+  setPlaceholder(placeholder: string): void {
+    this.inputEl.placeholder = placeholder;
+  }
+  setInstructions(instructions: Array<{command: string, purpose: string}>): void {}
+
+  onOpen(): void {}
+  onClose(): void {}
+}
+
+// FuzzySuggestModal mock class
+export abstract class FuzzySuggestModal<T> extends Modal {
+  inputEl: HTMLInputElement;
+  resultContainerEl: HTMLElement;
+  scope: Scope;
+
+  constructor(app: App) {
+    super(app);
+    this.inputEl = document.createElement('input');
+    this.resultContainerEl = document.createElement('div');
+    this.scope = new Scope();
   }
 
   abstract getItems(): T[];
@@ -687,7 +721,9 @@ export abstract class FuzzySuggestModal<T> extends Modal {
   abstract onChooseItem(item: T, evt: MouseEvent | KeyboardEvent): void;
 
   // Mock methods for fuzzy search functionality
-  setPlaceholder(placeholder: string): void {}
+  setPlaceholder(placeholder: string): void {
+    this.inputEl.placeholder = placeholder;
+  }
   setInstructions(instructions: Array<{command: string, purpose: string}>): void {}
 }
 
@@ -930,6 +966,16 @@ export const Menu = jest.fn().mockImplementation(() => ({
   showAtPosition: jest.fn(),
 }));
 
+// Mock parseFrontMatterAliases function
+export function parseFrontMatterAliases(frontmatter: any): string[] | null {
+  if (!frontmatter) return null;
+  const aliases = frontmatter.aliases || frontmatter.alias;
+  if (!aliases) return null;
+  if (Array.isArray(aliases)) return aliases;
+  if (typeof aliases === 'string') return [aliases];
+  return null;
+}
+
 // Mock parseLinktext function based on official Obsidian API
 export function parseLinktext(linktext: string): { path: string; subpath: string } {
   // Handle subpath syntax: [[path#subpath]]
@@ -1058,6 +1104,7 @@ export default {
   Plugin,
   Component,
   Modal,
+  SuggestModal,
   FuzzySuggestModal,
   AbstractInputSuggest,
   ItemView,
@@ -1073,6 +1120,7 @@ export default {
   Events,
   setIcon,
   setTooltip,
+  parseFrontMatterAliases,
   parseLinktext,
   MockObsidian,
   debounce,

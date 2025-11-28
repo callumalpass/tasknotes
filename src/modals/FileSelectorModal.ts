@@ -3,7 +3,6 @@ import {
 	SuggestModal,
 	TAbstractFile,
 	TFile,
-	TFolder,
 	parseFrontMatterAliases,
 	Notice,
 } from "obsidian";
@@ -85,7 +84,8 @@ export class FileSelectorModal extends SuggestModal<TAbstractFile> {
 		// Track input changes for the footer preview
 		this.inputEl.addEventListener("input", this.handleInputChange);
 
-		// Create footer after DOM is ready
+		// Create footer after DOM is ready.
+		// SuggestModal builds its DOM asynchronously, so we defer to the next tick.
 		setTimeout(() => this.createFooter(), 0);
 	}
 
@@ -318,7 +318,8 @@ export class FileSelectorModal extends SuggestModal<TAbstractFile> {
 			this.createFooterEl = null;
 		}
 
-		// Defer cancelled check (same pattern as TaskSelectorWithCreateModal)
+		// Obsidian's SuggestModal calls onClose() BEFORE onChooseSuggestion().
+		// Defer the cancelled check to the next tick so onChooseSuggestion() can set resultHandled first.
 		setTimeout(() => {
 			if (!this.resultHandled) {
 				this.options.onResult({ type: "cancelled" });

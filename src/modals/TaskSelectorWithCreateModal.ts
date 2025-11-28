@@ -102,8 +102,8 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 		// Add input listener for real-time preview updates
 		this.inputEl.addEventListener("input", this.handleInputChange);
 
-		// Create footer after a small delay to ensure DOM is ready
-		// SuggestModal builds its DOM asynchronously
+		// Create footer after DOM is ready.
+		// SuggestModal builds its DOM asynchronously, so we defer to the next tick.
 		setTimeout(() => this.createFooter(), 0);
 	}
 
@@ -465,8 +465,8 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 			this.createFooterEl = null;
 		}
 
-		// Obsidian's SuggestModal calls onClose BEFORE onChooseSuggestion
-		// Use setTimeout to defer the cancelled check until after onChooseSuggestion has a chance to run
+		// Obsidian's SuggestModal calls onClose() BEFORE onChooseSuggestion().
+		// Defer the cancelled check to the next tick so onChooseSuggestion() can set resultHandled first.
 		setTimeout(() => {
 			if (!this.resultHandled) {
 				this.options.onResult({ type: "cancelled" });
