@@ -14,6 +14,7 @@
 
 import {
   ensureFolderExists,
+  resolveRelativePath,
   calculateDuration,
   calculateTotalTimeSpent,
   getActiveTimeEntry,
@@ -131,7 +132,7 @@ describe('Helpers', () => {
         if (!path) return '';
         return path.replace(/\\/g, '/').replace(/\/+/g, '/').replace(/^\/*/, '').replace(/\/*$/, '');
       });
-      
+
       mockVault = {
         getAbstractFileByPath: jest.fn(),
         createFolder: jest.fn().mockResolvedValue(undefined)
@@ -188,6 +189,145 @@ describe('Helpers', () => {
 
       expect(mockVault.createFolder).toHaveBeenCalledWith('Tasks');
       expect(mockVault.createFolder).toHaveBeenCalledWith('Tasks/SubFolder');
+    });
+  });
+
+  describe('resolveRelativePath', () => {
+    describe('Basic parent directory navigation', () => {
+      it('should resolve single parent directory', () => {
+        expect(resolveRelativePath('Project/Meetings/../Tasks')).toBe('Project/Tasks');
+      });
+
+      it('should resolve multiple parent directories', () => {
+        expect(resolveRelativePath('A/B/C/../../D')).toBe('A/D');
+        expect(resolveRelativePath('A/B/C/D/../../../E')).toBe('A/E');
+      });
+
+      it('should resolve complex paths with multiple parent references', () => {
+        expect(resolveRelativePath('Project/Team/Sprint5/../../Archive/Done')).toBe('Project/Archive/Done');
+      });
+    });
+
+    describe('Current directory handling', () => {
+      it('should skip current directory references', () => {
+        expect(resolveRelativePath('./A/B')).toBe('A/B');
+        expect(resolveRelativePath('A/./B')).toBe('A/B');
+        expect(resolveRelativePath('A/B/.')).toBe('A/B');
+      });
+
+      it('should handle mixed current and parent directory references', () => {
+        expect(resolveRelativePath('./A/./B/../C')).toBe('A/C');
+        expect(resolveRelativePath('A/./B/./C/../../D')).toBe('A/D');
+      });
+    });
+
+    describe('Windows path handling', () => {
+      it('should convert backslashes to forward slashes', () => {
+        expect(resolveRelativePath('A\\B\\C')).toBe('A/B/C');
+        expect(resolveRelativePath('A\\B\\..\\C')).toBe('A/C');
+      });
+
+      it('should handle mixed slashes', () => {
+        expect(resolveRelativePath('A\\B/C\\..\\D')).toBe('A/B/D');
+      });
+    });
+
+    describe('Edge cases', () => {
+      it('should handle empty path', () => {
+        expect(resolveRelativePath('')).toBe('');
+      });
+
+      it('should handle path with only relative references', () => {
+        // '..' at root level should throw error
+        expect(() => resolveRelativePath('..')).toThrow(/Attempts to navigate beyond vault root/);
+        // '.' should resolve to empty
+        expect(resolveRelativePath('.')).toBe('');
+        // './..' should also throw error as it goes beyond root
+        expect(() => resolveRelativePath('./..')).toThrow(/Attempts to navigate beyond vault root/);
+      });
+
+      it('should handle paths without relative segments', () => {
+        expect(resolveRelativePath('Tasks/Work')).toBe('Tasks/Work');
+        expect(resolveRelativePath('A/B/C/D/E')).toBe('A/B/C/D/E');
+      });
+
+      it('should handle trailing slashes', () => {
+        expect(resolveRelativePath('A/B/../C/')).toBe('A/C');
+        expect(resolveRelativePath('A/B/C/')).toBe('A/B/C');
+      });
+
+      it('should filter out empty segments', () => {
+        expect(resolveRelativePath('A//B///C')).toBe('A/B/C');
+        expect(resolveRelativePath('A/..//B')).toBe('B');
+      });
+    });
+
+    describe('Vault root boundary protection', () => {
+      it('should throw error when trying to go beyond root', () => {
+        expect(() => resolveRelativePath('../Tasks')).toThrow(
+          'Cannot resolve path "../Tasks": Attempts to navigate beyond vault root'
+        );
+      });
+
+      it('should throw error for multiple parent references beyond root', () => {
+        expect(() => resolveRelativePath('../../Tasks')).toThrow(
+          'Cannot resolve path "../../Tasks": Attempts to navigate beyond vault root'
+        );
+      });
+
+      it('should throw error when path resolves beyond root mid-path', () => {
+        expect(() => resolveRelativePath('A/../../B')).toThrow(
+          'Cannot resolve path "A/../../B": Attempts to navigate beyond vault root'
+        );
+      });
+
+      it('should succeed when staying at root level', () => {
+        expect(resolveRelativePath('A/../B')).toBe('B');
+        expect(resolveRelativePath('A/B/../../C')).toBe('C');
+      });
+    });
+
+    describe('Real-world use cases', () => {
+      it('should resolve meeting to sibling tasks folder', () => {
+        // User's exact use case
+        expect(resolveRelativePath('Project/Meetings/../Tasks/MeetingA')).toBe('Project/Tasks/MeetingA');
+      });
+
+      it('should resolve to company-wide archive', () => {
+        // TeamA/Sprint5/../../Archive/2025 → TeamA → root → Archive/2025
+        expect(resolveRelativePath('TeamA/Sprint5/../../Archive/2025')).toBe('Archive/2025');
+      });
+
+      it('should resolve category-based with parent navigation', () => {
+        expect(resolveRelativePath('Work/2025/Planning/../../Done/2025/11')).toBe('Work/Done/2025/11');
+      });
+
+      it('should handle deeply nested navigation', () => {
+        expect(resolveRelativePath('A/B/C/D/E/../../../F/G')).toBe('A/B/F/G');
+      });
+    });
+
+    describe('Performance', () => {
+      it('should handle long paths efficiently', () => {
+        const longPath = 'A/B/C/D/E/F/G/H/I/J/K/L/M/N/O/P/Q/R/S/T/U/V/W/X/Y/Z';
+        const startTime = Date.now();
+        const result = resolveRelativePath(longPath);
+        const endTime = Date.now();
+
+        expect(result).toBe(longPath);
+        expect(endTime - startTime).toBeLessThan(10); // Should be nearly instant
+      });
+
+      it('should handle many relative references efficiently', () => {
+        const pathWithManyRefs = 'A/B/C/D/E/../../../../F/G/H/I/J/../../../K';
+        const startTime = Date.now();
+        const result = resolveRelativePath(pathWithManyRefs);
+        const endTime = Date.now();
+
+        // A/B/C/D/E → A (after 4x ..) → A/F/G/H/I/J → A/F/G (after 3x ..) → A/F/G/K
+        expect(result).toBe('A/F/G/K');
+        expect(endTime - startTime).toBeLessThan(10);
+      });
     });
   });
 

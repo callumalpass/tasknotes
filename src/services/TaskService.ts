@@ -23,6 +23,7 @@ import {
 	addDTSTARTToRecurrenceRule,
 	updateDTSTARTInRecurrenceRule,
 	ensureFolderExists,
+	resolveRelativePath,
 	updateToNextScheduledOccurrence,
 	splitFrontmatterAndBody,
 } from "../utils/helpers";
@@ -243,15 +244,21 @@ export class TaskService {
 					}
 					// Process task and date variables in the inline folder path
 					folder = this.processFolderTemplate(folder, taskData);
+					// Resolve relative paths after all template substitution
+					folder = resolveRelativePath(folder);
 				} else {
 					// Fallback to default tasks folder when inline folder is empty (#128)
 					const tasksFolder = this.plugin.settings.tasksFolder || "";
 					folder = this.processFolderTemplate(tasksFolder, taskData);
+					// Resolve relative paths after all template substitution
+					folder = resolveRelativePath(folder);
 				}
 			} else {
 				// For manual creation and other contexts, use the general tasks folder
 				const tasksFolder = this.plugin.settings.tasksFolder || "";
 				folder = this.processFolderTemplate(tasksFolder, taskData);
+				// Resolve relative paths after all template substitution
+				folder = resolveRelativePath(folder);
 			}
 
 			// Ensure folder exists
@@ -770,13 +777,15 @@ export class TaskService {
 					// Archiving: Move to archive folder
 					const archiveFolderTemplate = this.plugin.settings.archiveFolder.trim();
 					// Process template variables in archive folder path
-					const archiveFolder = this.processFolderTemplate(archiveFolderTemplate, {
+					let archiveFolder = this.processFolderTemplate(archiveFolderTemplate, {
 						title: updatedTask.title || "",
 						priority: updatedTask.priority,
 						status: updatedTask.status,
 						contexts: updatedTask.contexts,
 						projects: updatedTask.projects,
 					});
+					// Resolve relative paths after all template substitution
+					archiveFolder = resolveRelativePath(archiveFolder);
 
 					// Ensure archive folder exists
 					await ensureFolderExists(this.plugin.app.vault, archiveFolder);
@@ -803,7 +812,9 @@ export class TaskService {
 					this.plugin.cacheManager.clearCacheEntry(task.path);
 				} else if (isCurrentlyArchived && this.plugin.settings.tasksFolder?.trim()) {
 					// Unarchiving: Move to default tasks folder
-					const tasksFolder = this.plugin.settings.tasksFolder.trim();
+					let tasksFolder = this.plugin.settings.tasksFolder.trim();
+					// Resolve relative paths for consistency
+					tasksFolder = resolveRelativePath(tasksFolder);
 
 					// Ensure tasks folder exists
 					await ensureFolderExists(this.plugin.app.vault, tasksFolder);

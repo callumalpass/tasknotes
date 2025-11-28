@@ -74,6 +74,55 @@ export async function ensureFolderExists(vault: Vault, folderPath: string): Prom
 }
 
 /**
+ * Resolves relative path segments (../ and ./) in a path string
+ * Throws an error if the path tries to navigate beyond the vault root
+ *
+ * @param path - Path string potentially containing ../ or ./ segments
+ * @returns Resolved path with relative segments removed
+ * @throws Error if path attempts to navigate beyond vault root
+ *
+ * @example
+ * resolveRelativePath("Project/Meetings/../Tasks") // "Project/Tasks"
+ * resolveRelativePath("A/B/C/../../D") // "A/D"
+ * resolveRelativePath("../Tasks") // throws Error
+ */
+export function resolveRelativePath(path: string): string {
+	if (!path) return path;
+
+	// Normalize slashes first (handle Windows paths)
+	const normalized = path.replace(/\\/g, "/");
+
+	// Split into segments, filtering out empty ones
+	const segments = normalized.split("/").filter((s) => s.length > 0);
+
+	// Process segments, resolving .. and .
+	const resolved: string[] = [];
+	for (const segment of segments) {
+		if (segment === "..") {
+			// Try to go up one level
+			if (resolved.length > 0) {
+				resolved.pop();
+			} else {
+				// Trying to go beyond vault root
+				throw new Error(
+					`Cannot resolve path "${path}": Attempts to navigate beyond vault root. ` +
+						`Check your folder template for too many '../' segments.`
+				);
+			}
+		} else if (segment === ".") {
+			// Skip current directory reference
+			continue;
+		} else {
+			// Normal segment - add to path
+			resolved.push(segment);
+		}
+	}
+
+	// Join back together
+	return resolved.join("/");
+}
+
+/**
  * Calculate duration in minutes between two ISO timestamp strings
  */
 export function calculateDuration(startTime: string, endTime: string): number {
