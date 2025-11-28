@@ -57,7 +57,12 @@ export function appendInternalLink(
 		try {
 			const file = deps.metadataCache.getFirstLinkpathDest(filePath, "");
 			if (file instanceof TFile) {
-				await deps.workspace.getLeaf(false).openFile(file);
+				if (e.ctrlKey || e.metaKey) {
+					// Ctrl/Cmd+Click opens in new tab
+					deps.workspace.openLinkText(filePath, "", true);
+				} else {
+					await deps.workspace.getLeaf(false).openFile(file);
+				}
 			} else if (showErrorNotices) {
 				new Notice(`Note "${displayText}" not found`);
 			}
@@ -65,6 +70,22 @@ export function appendInternalLink(
 			console.error("[TaskNotes] Error opening internal link:", { filePath, error });
 			if (showErrorNotices) {
 				new Notice(`Failed to open note "${displayText}"`);
+			}
+		}
+	});
+
+	// Middle-click opens in new tab
+	linkEl.addEventListener("auxclick", async (e) => {
+		if (e.button === 1) {
+			e.preventDefault();
+			e.stopPropagation();
+			try {
+				const file = deps.metadataCache.getFirstLinkpathDest(filePath, "");
+				if (file instanceof TFile) {
+					deps.workspace.openLinkText(filePath, "", true);
+				}
+			} catch (error) {
+				console.error("[TaskNotes] Error opening internal link:", { filePath, error });
 			}
 		}
 	});

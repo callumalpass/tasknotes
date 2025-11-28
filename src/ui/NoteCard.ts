@@ -120,11 +120,27 @@ export function createNoteCard(
 		});
 	}
 
-	// Add click handler to open note
-	item.addEventListener("click", () => {
+	// Add click handler to open note (Ctrl/Cmd+Click opens in new tab)
+	item.addEventListener("click", (e: MouseEvent) => {
 		const file = plugin.app.vault.getAbstractFileByPath(note.path);
 		if (file instanceof TFile) {
-			plugin.app.workspace.getLeaf(false).openFile(file);
+			if (e.ctrlKey || e.metaKey) {
+				plugin.app.workspace.openLinkText(note.path, "", true);
+			} else {
+				plugin.app.workspace.getLeaf(false).openFile(file);
+			}
+		}
+	});
+
+	// Add middle-click handler to open in new tab
+	item.addEventListener("auxclick", (e: MouseEvent) => {
+		if (e.button === 1) {
+			// Middle click
+			e.preventDefault();
+			const file = plugin.app.vault.getAbstractFileByPath(note.path);
+			if (file instanceof TFile) {
+				plugin.app.workspace.openLinkText(note.path, "", true);
+			}
 		}
 	});
 

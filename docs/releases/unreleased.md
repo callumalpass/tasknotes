@@ -80,3 +80,8 @@ Example:
   - Fixed swimlane mode to also respect list property explosion
   - Thanks to @dictionarymouse for reporting
 
+- (#1217) Fixed inconsistent Ctrl+Click/Cmd+Click behavior for opening notes in new tabs
+  - Note cards and internal links now properly support Ctrl/Cmd+Click to open in new tab
+  - Added middle-click support for opening in new tab
+  - Thanks to @diegomarzaa for reporting
+
