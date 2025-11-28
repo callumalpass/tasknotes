@@ -85,3 +85,8 @@ Example:
   - Added middle-click support for opening in new tab
   - Thanks to @diegomarzaa for reporting
 
+- (#1265) Fixed task edit modal corrupting markdown-style project links on save
+  - Links like `[Project Name](path.md)` were being wrapped in extra brackets: `[[[Project Name](path.md)]]`
+  - Plain text project names are now preserved as-is instead of being converted to wikilinks
+  - Thanks to @minchinweb for reporting
+

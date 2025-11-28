@@ -1712,10 +1712,10 @@ export abstract class TaskModal extends Modal {
 						link: `[[${matchingFile.basename}]]`,
 					});
 				} else {
-					// Plain text that doesn't resolve
+					// Plain text or other format (e.g., markdown links) - preserve as-is
 					this.selectedProjectItems.push({
 						name: projectString,
-						link: `[[${projectString}]]`,
+						link: projectString,
 						unresolved: true,
 					});
 				}
