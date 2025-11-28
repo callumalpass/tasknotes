@@ -12,6 +12,7 @@
 .tasknotes-plugin.tasknotes-inline-widget {
     display: inline !important;
     vertical-align: baseline;
+    line-height: inherit;
     /* Prevent wrapper from causing line breaks */
     white-space: normal;
 }
