@@ -1024,7 +1024,7 @@ describe('InstantTaskConvertService', () => {
 
     it('should filter out invalid reminders', async () => {
       const { convertDefaultRemindersToReminders } = await import('../../../src/utils/settingsUtils');
-      
+
       const defaultReminders = [
         {
           id: 'invalid_relative',
@@ -1041,6 +1041,192 @@ describe('InstantTaskConvertService', () => {
       const converted = convertDefaultRemindersToReminders(defaultReminders as any);
 
       expect(converted).toHaveLength(0);
+    });
+  });
+
+  describe('Merge TasksPlugin and NLP Results', () => {
+    it('should merge NLP date with TasksPlugin tags', () => {
+      // Scenario: "- [ ] Buy milk tomorrow #groceries"
+      // TasksPlugin extracts: tags: ["groceries"], title: "Buy milk tomorrow"
+      // NLP parses "Buy milk tomorrow": dueDate/scheduledDate, title: "Buy milk"
+      // Result should have BOTH the tag AND the date
+
+      const tasksPluginData: ParsedTaskData = {
+        title: 'Buy milk tomorrow',
+        tags: ['groceries'],
+        isCompleted: false,
+      };
+
+      const nlpData: ParsedTaskData = {
+        title: 'Buy milk',
+        scheduledDate: '2025-01-15',
+        isCompleted: false,
+      };
+
+      const merged = service['mergeParseResults'](tasksPluginData, nlpData);
+
+      expect(merged.title).toBe('Buy milk'); // NLP cleaned title
+      expect(merged.tags).toEqual(['groceries']); // TasksPlugin tag preserved
+      expect(merged.scheduledDate).toBe('2025-01-15'); // NLP date extracted
+      expect(merged.isCompleted).toBe(false);
+    });
+
+    it('should prefer TasksPlugin explicit dates over NLP inferred dates', () => {
+      // Scenario: "- [ ] Meeting tomorrow 📅 2025-02-01"
+      // TasksPlugin extracts: dueDate: "2025-02-01", title: "Meeting tomorrow"
+      // NLP parses "Meeting tomorrow": dueDate: "2025-01-15" (tomorrow)
+      // Result should use the explicit emoji date, not NLP
+
+      const tasksPluginData: ParsedTaskData = {
+        title: 'Meeting tomorrow',
+        dueDate: '2025-02-01',
+        isCompleted: false,
+      };
+
+      const nlpData: ParsedTaskData = {
+        title: 'Meeting',
+        dueDate: '2025-01-15', // NLP inferred "tomorrow"
+        isCompleted: false,
+      };
+
+      const merged = service['mergeParseResults'](tasksPluginData, nlpData);
+
+      expect(merged.dueDate).toBe('2025-02-01'); // TasksPlugin explicit date wins
+      expect(merged.title).toBe('Meeting'); // NLP cleaned title
+    });
+
+    it('should combine tags from both sources without duplicates', () => {
+      const tasksPluginData: ParsedTaskData = {
+        title: 'Task with tags',
+        tags: ['work', 'urgent'],
+        isCompleted: false,
+      };
+
+      const nlpData: ParsedTaskData = {
+        title: 'Task with tags',
+        tags: ['urgent', 'project'], // 'urgent' is duplicate
+        isCompleted: false,
+      };
+
+      const merged = service['mergeParseResults'](tasksPluginData, nlpData);
+
+      expect(merged.tags).toEqual(['work', 'urgent', 'project']); // Deduplicated
+    });
+
+    it('should combine contexts from both sources', () => {
+      const tasksPluginData: ParsedTaskData = {
+        title: 'Task',
+        contexts: ['office'],
+        isCompleted: false,
+      };
+
+      const nlpData: ParsedTaskData = {
+        title: 'Task',
+        contexts: ['morning'],
+        isCompleted: false,
+      };
+
+      const merged = service['mergeParseResults'](tasksPluginData, nlpData);
+
+      expect(merged.contexts).toEqual(['office', 'morning']);
+    });
+
+    it('should handle null NLP result gracefully', () => {
+      const tasksPluginData: ParsedTaskData = {
+        title: 'Simple task',
+        tags: ['test'],
+        isCompleted: false,
+      };
+
+      const merged = service['mergeParseResults'](tasksPluginData, null);
+
+      expect(merged).toEqual(tasksPluginData);
+    });
+
+    it('should preserve TasksPlugin-specific fields that NLP does not have', () => {
+      const tasksPluginData: ParsedTaskData = {
+        title: 'Task with emoji metadata',
+        startDate: '2025-01-10',
+        createdDate: '2025-01-01',
+        doneDate: '2025-01-20',
+        recurrenceData: { frequency: 'weekly', days_of_week: ['MO'] },
+        isCompleted: true,
+      };
+
+      const nlpData: ParsedTaskData = {
+        title: 'Task',
+        priority: 'high',
+        isCompleted: false,
+      };
+
+      const merged = service['mergeParseResults'](tasksPluginData, nlpData);
+
+      expect(merged.startDate).toBe('2025-01-10');
+      expect(merged.createdDate).toBe('2025-01-01');
+      expect(merged.doneDate).toBe('2025-01-20');
+      expect(merged.recurrenceData).toEqual({ frequency: 'weekly', days_of_week: ['MO'] });
+      expect(merged.isCompleted).toBe(true); // TasksPlugin completion status preserved
+      expect(merged.priority).toBe('high'); // NLP priority added
+    });
+
+    it('should merge user fields with TasksPlugin taking priority', () => {
+      const tasksPluginData: ParsedTaskData = {
+        title: 'Task with user fields',
+        userFields: { energy: 'high' },
+        isCompleted: false,
+      };
+
+      const nlpData: ParsedTaskData = {
+        title: 'Task',
+        userFields: { energy: 'low', category: 'work' },
+        isCompleted: false,
+      };
+
+      const merged = service['mergeParseResults'](tasksPluginData, nlpData);
+
+      expect(merged.userFields).toEqual({
+        energy: 'high', // TasksPlugin wins for conflicts
+        category: 'work' // NLP value added
+      });
+    });
+
+    it('should use NLP title when it is cleaner (NL phrases removed)', () => {
+      const tasksPluginData: ParsedTaskData = {
+        title: 'Call mom tomorrow at 3pm',
+        tags: ['family'],
+        isCompleted: false,
+      };
+
+      const nlpData: ParsedTaskData = {
+        title: 'Call mom', // NLP stripped "tomorrow at 3pm"
+        scheduledDate: '2025-01-15',
+        scheduledTime: '15:00',
+        isCompleted: false,
+      };
+
+      const merged = service['mergeParseResults'](tasksPluginData, nlpData);
+
+      expect(merged.title).toBe('Call mom'); // Cleaner NLP title
+      expect(merged.scheduledDate).toBe('2025-01-15');
+      expect(merged.scheduledTime).toBe('15:00');
+      expect(merged.tags).toEqual(['family']);
+    });
+
+    it('should fall back to TasksPlugin title if NLP title is empty', () => {
+      const tasksPluginData: ParsedTaskData = {
+        title: 'Valid title',
+        isCompleted: false,
+      };
+
+      const nlpData: ParsedTaskData = {
+        title: '', // Empty NLP title
+        dueDate: '2025-01-15',
+        isCompleted: false,
+      };
+
+      const merged = service['mergeParseResults'](tasksPluginData, nlpData);
+
+      expect(merged.title).toBe('Valid title'); // Falls back to TasksPlugin
     });
   });
 });

@@ -50,6 +50,12 @@ Example:
 
 ## Changed
 
+- Improved inline task conversion to merge TasksPlugin and NLP parsing results
+  - Previously, if a task had hashtags (e.g., `- [ ] Buy milk tomorrow #groceries`), NLP parsing was skipped entirely
+  - Now NLP always parses the clean title to extract dates/times, then merges with TasksPlugin-extracted metadata
+  - TasksPlugin explicit values (emoji dates like 📅) take priority over NLP-inferred values
+  - Tags, contexts, and projects from both sources are combined and deduplicated
+
 - Polished task card styling for a cleaner, more native Obsidian look
   - Simplified hover and focus states to use native Obsidian colors
   - Removed blur filter and shadows from metadata pills
@@ -57,6 +63,12 @@ Example:
   - Reduced swimlane label column width in Kanban view
 
 ## Fixed
+
+- (#1157) Fixed inline task embeds breaking layout when placed in indented bullet lists
+  - Task titles now wrap naturally within line boundaries instead of forcing the entire card to a new line
+  - Metadata (dates, tags, etc.) stays inline when space permits, with horizontal scrolling on hover when needed
+  - Icons now scale with editor font size for consistent appearance
+  - Thanks to @3zra47 for reporting
 
 - (#1241) Fixed deleting custom priorities in settings removing the wrong priority when multiple priorities exist
   - Thanks to @Anthonyhunter100 for reporting

@@ -216,17 +216,33 @@ export class InstantTaskConvertService {
 					return;
 				}
 
-				// Check if Tasks plugin parsing was sufficient (has meaningful metadata)
-				const hasMetadata = this.hasUsefulMetadata(taskLineInfo.parsedData);
+				// Always try NLP on the clean title to extract additional metadata
+				// Then merge results, with TasksPlugin explicit metadata taking priority
+				if (this.plugin.settings.enableNaturalLanguageInput) {
+					// Parse the clean title (with emoji metadata already stripped) using NLP
+					const cleanTitle = taskLineInfo.parsedData.title;
+					const nlpInput = details?.trim() ? `${cleanTitle}\n${details}` : cleanTitle;
+					const nlpResult = this.nlParser.parseInput(nlpInput);
 
-				if (!hasMetadata && this.plugin.settings.enableNaturalLanguageInput) {
-					// Fallback to NLP if Tasks plugin parsing only extracted basic title
-					const nlpResult = this.tryNLPFallback(currentLine, details || "");
-					if (nlpResult) {
-						parsedData = nlpResult;
-					} else {
-						parsedData = taskLineInfo.parsedData;
-					}
+					// Convert NLP result to ParsedTaskData format and merge
+					const nlpParsedData: ParsedTaskData = {
+						title: nlpResult.title?.trim() || cleanTitle,
+						isCompleted: nlpResult.isCompleted || false,
+						status: nlpResult.status,
+						priority: nlpResult.priority,
+						dueDate: nlpResult.dueDate,
+						scheduledDate: nlpResult.scheduledDate,
+						dueTime: nlpResult.dueTime,
+						scheduledTime: nlpResult.scheduledTime,
+						recurrence: nlpResult.recurrence,
+						timeEstimate: nlpResult.estimate,
+						tags: nlpResult.tags?.length > 0 ? nlpResult.tags : undefined,
+						projects: nlpResult.projects?.length > 0 ? nlpResult.projects : undefined,
+						contexts: nlpResult.contexts?.length > 0 ? nlpResult.contexts : undefined,
+						userFields: nlpResult.userFields,
+					};
+
+					parsedData = this.mergeParseResults(taskLineInfo.parsedData, nlpParsedData);
 				} else {
 					parsedData = taskLineInfo.parsedData;
 				}
@@ -877,21 +893,67 @@ export class InstantTaskConvertService {
 	}
 
 	/**
-	 * Check if parsed data contains useful metadata beyond just the title
+	 * Merge TasksPlugin parsed data with NLP parsed data.
+	 * TasksPlugin explicit metadata (emoji-based) takes priority over NLP-inferred values.
+	 * Arrays (tags, contexts, projects) are combined and deduplicated.
 	 */
-	private hasUsefulMetadata(data: ParsedTaskData): boolean {
-		return !!(
-			data.dueDate ||
-			data.scheduledDate ||
-			data.startDate ||
-			data.priority ||
-			data.status ||
-			data.recurrence ||
-			data.createdDate ||
-			data.doneDate ||
-			(data.tags && data.tags.length > 0) ||
-			(data.projects && data.projects.length > 0)
-		);
+	private mergeParseResults(
+		tasksPluginData: ParsedTaskData,
+		nlpData: ParsedTaskData | null
+	): ParsedTaskData {
+		if (!nlpData) {
+			return tasksPluginData;
+		}
+
+		// Helper to merge arrays and deduplicate
+		const mergeArrays = (arr1?: string[], arr2?: string[]): string[] | undefined => {
+			const combined = [...(arr1 || []), ...(arr2 || [])];
+			const unique = [...new Set(combined)];
+			return unique.length > 0 ? unique : undefined;
+		};
+
+		// Helper to merge userFields objects
+		const mergeUserFields = (
+			fields1?: Record<string, string | string[]>,
+			fields2?: Record<string, string | string[]>
+		): Record<string, string | string[]> | undefined => {
+			if (!fields1 && !fields2) return undefined;
+			const merged = { ...(fields2 || {}), ...(fields1 || {}) }; // fields1 (TasksPlugin) takes priority
+			return Object.keys(merged).length > 0 ? merged : undefined;
+		};
+
+		return {
+			// Use NLP title (cleaner, with NL phrases removed) unless it's empty
+			title: nlpData.title?.trim() || tasksPluginData.title,
+
+			// TasksPlugin explicit values take priority, fall back to NLP
+			dueDate: tasksPluginData.dueDate || nlpData.dueDate,
+			scheduledDate: tasksPluginData.scheduledDate || nlpData.scheduledDate,
+			dueTime: tasksPluginData.dueTime || nlpData.dueTime,
+			scheduledTime: tasksPluginData.scheduledTime || nlpData.scheduledTime,
+			startDate: tasksPluginData.startDate, // NLP doesn't have this
+			createdDate: tasksPluginData.createdDate, // NLP doesn't have this
+			doneDate: tasksPluginData.doneDate, // NLP doesn't have this
+			priority: tasksPluginData.priority || nlpData.priority,
+			status: tasksPluginData.status || nlpData.status,
+			recurrence: tasksPluginData.recurrence || nlpData.recurrence,
+			recurrenceData: tasksPluginData.recurrenceData, // NLP doesn't have this structure
+			timeEstimate: tasksPluginData.timeEstimate || nlpData.timeEstimate,
+
+			// Merge arrays - combine both sources
+			tags: mergeArrays(tasksPluginData.tags, nlpData.tags),
+			contexts: mergeArrays(tasksPluginData.contexts, nlpData.contexts),
+			projects: mergeArrays(
+				tasksPluginData.projects,
+				nlpData.projects ? this.resolveProjectLinks(nlpData.projects) : undefined
+			),
+
+			// Merge user fields
+			userFields: mergeUserFields(tasksPluginData.userFields, nlpData.userFields),
+
+			// Preserve completion status from TasksPlugin (it parses [x] checkboxes)
+			isCompleted: tasksPluginData.isCompleted,
+		};
 	}
 
 	/**
@@ -1117,12 +1179,29 @@ export class InstantTaskConvertService {
 					return null;
 				}
 
-				const hasMetadata = this.hasUsefulMetadata(taskLineInfo.parsedData);
-				if (!hasMetadata && this.plugin.settings.enableNaturalLanguageInput) {
-					const nlpResult = this.tryNLPFallback(line, "");
-					if (nlpResult) {
-						return nlpResult;
-					}
+				// Always try NLP on the clean title and merge results
+				if (this.plugin.settings.enableNaturalLanguageInput) {
+					const cleanTitle = taskLineInfo.parsedData.title;
+					const nlpResult = this.nlParser.parseInput(cleanTitle);
+
+					const nlpParsedData: ParsedTaskData = {
+						title: nlpResult.title?.trim() || cleanTitle,
+						isCompleted: nlpResult.isCompleted || false,
+						status: nlpResult.status,
+						priority: nlpResult.priority,
+						dueDate: nlpResult.dueDate,
+						scheduledDate: nlpResult.scheduledDate,
+						dueTime: nlpResult.dueTime,
+						scheduledTime: nlpResult.scheduledTime,
+						recurrence: nlpResult.recurrence,
+						timeEstimate: nlpResult.estimate,
+						tags: nlpResult.tags?.length > 0 ? nlpResult.tags : undefined,
+						projects: nlpResult.projects?.length > 0 ? nlpResult.projects : undefined,
+						contexts: nlpResult.contexts?.length > 0 ? nlpResult.contexts : undefined,
+						userFields: nlpResult.userFields,
+					};
+
+					return this.mergeParseResults(taskLineInfo.parsedData, nlpParsedData);
 				}
 
 				return taskLineInfo.parsedData;
