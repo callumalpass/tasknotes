@@ -10,11 +10,11 @@ When a wikilink to a task note is created, TaskNotes can replace it with an inte
 
 ![Task Link Overlays in Live Preview mode](../assets/2025-07-17_21-03-55.png)
 
-*Task link overlays in Live Preview mode show interactive widgets with status, dates, and quick actions*
+_Task link overlays in Live Preview mode show interactive widgets with status, dates, and quick actions_
 
 ![Task Link Overlays in Source mode](../assets/2025-07-17_21-04-24.png)
 
-*In Source mode, task links appear as standard wikilinks until rendered*
+_In Source mode, task links appear as standard wikilinks until rendered_
 
 ### Widget Features
 
@@ -45,6 +45,8 @@ When you run the command, the current line is used as the title of the new task.
 ## Instant Task Conversion
 
 The **Instant Task Conversion** feature transforms lines in your notes into TaskNotes files. This works with both checkbox tasks and regular lines of text. Turn the feature on or off from **Settings → TaskNotes → General → Instant task convert**. When enabled, a "convert" button appears next to the content in edit mode. Clicking this button creates a new task note using the line's text as the title and replaces the original line with a link to the new task file.
+
+**Configure where converted tasks are saved:** You can use dynamic folder templates to organize converted tasks automatically. See [Inline Task Folder For Converted Tasks](inline-tasks-folder-for-converted-tasks.md) for detailed configuration options, including extracting projects from tags, priority-based routing, and date-based organization.
 
 ### Supported Line Types
 
@@ -194,14 +196,14 @@ The NLP engine supports multiple languages, including English, Spanish, French, 
 
 The NLP engine recognizes:
 
--   **Tags and Contexts**: `#tag` and `@context` syntax (triggers are customizable).
--   **Projects**: `+project` for simple projects or `+[[Project Name]]` for projects with spaces.
--   **Priority Levels**: Keywords like "high," "normal," and "low". Also supports a trigger character (default: `!`).
--   **Status Assignment**: Keywords like "open," "in-progress," and "done". Also supports a trigger character (default: `*`).
--   **Dates and Times**: Phrases like "tomorrow," "next Friday," and "January 15th at 3pm".
--   **Time Estimates**: Formats like "2h," "30min," and "1h30m".
--   **Recurrence Patterns**: Phrases like "daily," "weekly," and "every Monday".
--   **User-Defined Fields**: Custom fields can be assigned using configured triggers (e.g., `effort: high`). Supports quoted values for multi-word entries.
+- **Tags and Contexts**: `#tag` and `@context` syntax (triggers are customizable).
+- **Projects**: `+project` for simple projects or `+[[Project Name]]` for projects with spaces.
+- **Priority Levels**: Keywords like "high," "normal," and "low". Also supports a trigger character (default: `!`).
+- **Status Assignment**: Keywords like "open," "in-progress," and "done". Also supports a trigger character (default: `*`).
+- **Dates and Times**: Phrases like "tomorrow," "next Friday," and "January 15th at 3pm".
+- **Time Estimates**: Formats like "2h," "30min," and "1h30m".
+- **Recurrence Patterns**: Phrases like "daily," "weekly," and "every Monday".
+- **User-Defined Fields**: Custom fields can be assigned using configured triggers (e.g., `effort: high`). Supports quoted values for multi-word entries.
 
 ### Rich Markdown Editor
 
@@ -209,13 +211,13 @@ The NLP engine recognizes:
 
 Features include:
 
--   **Live Preview**: Rendered markdown preview as you type.
--   **Syntax Highlighting**: Code blocks, links, and formatting are highlighted.
--   **Wikilink Support**: Create links to other notes using `[[Note Name]]` syntax.
--   **Keyboard Shortcuts**:
+- **Live Preview**: Rendered markdown preview as you type.
+- **Syntax Highlighting**: Code blocks, links, and formatting are highlighted.
+- **Wikilink Support**: Create links to other notes using `[[Note Name]]` syntax.
+- **Keyboard Shortcuts**:
     - `Ctrl/Cmd+Enter` saves the task
     - `Esc` or `Tab` to navigate out of the editor
--   **Placeholder Text**: Shows an example task (e.g., "Buy groceries tomorrow at 3pm @home #errands") when the editor is empty.
+- **Placeholder Text**: Shows an example task (e.g., "Buy groceries tomorrow at 3pm @home #errands") when the editor is empty.
 
 ### Customizable Triggers
 
@@ -223,12 +225,12 @@ Features include:
 
 You can configure trigger characters or strings for:
 
--   **Tags** (default: `#`) - When set to `#`, Obsidian's native tag suggester is used
--   **Contexts** (default: `@`)
--   **Projects** (default: `+`)
--   **Status** (default: `*`)
--   **Priority** (default: `!`, disabled by default)
--   **User-Defined Fields** (default: `fieldname:`) - Each custom field can have its own trigger
+- **Tags** (default: `#`) - When set to `#`, Obsidian's native tag suggester is used
+- **Contexts** (default: `@`)
+- **Projects** (default: `+`)
+- **Status** (default: `*`)
+- **Priority** (default: `!`, disabled by default)
+- **User-Defined Fields** (default: `fieldname:`) - Each custom field can have its own trigger
 
 Triggers support up to 10 characters and can include trailing spaces (e.g., `"def: "` for a custom field).
 
@@ -236,10 +238,10 @@ Triggers support up to 10 characters and can include trailing spaces (e.g., `"de
 
 **New in v4**: When typing a trigger in the NLP editor, an autocomplete menu appears with available values.
 
--   Navigate suggestions with arrow keys
--   Select with `Enter` or `Tab`
--   Autocomplete works for tags, contexts, projects, status, priority, and user-defined fields
--   Tag autocomplete uses Obsidian's native tag suggester when using the `#` trigger
--   For user fields with multi-word values, wrap the value in quotes (e.g., `effort: "very high"`)
+- Navigate suggestions with arrow keys
+- Select with `Enter` or `Tab`
+- Autocomplete works for tags, contexts, projects, status, priority, and user-defined fields
+- Tag autocomplete uses Obsidian's native tag suggester when using the `#` trigger
+- For user fields with multi-word values, wrap the value in quotes (e.g., `effort: "very high"`)
 
 The NLP engine is integrated with the task creation modal and bulk conversion features. Typing a natural language description populates the corresponding task fields automatically.
