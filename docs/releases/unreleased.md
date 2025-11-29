@@ -26,13 +26,12 @@ Example:
 
 ## Added
 
-- (#1010, #1126) Added batch task selection and editing in Task List and Kanban views
+- (#1010), (#1126) Added batch task selection and editing in Task List and Kanban views
   - Shift+click to select multiple tasks
   - Right-click selected tasks to open batch context menu
   - Batch operations: change status, priority, due date, scheduled date, archive, delete
   - Drag multiple selected cards in Kanban to move them together
   - Click the selection count indicator to clear selection
-  - Press Escape to exit selection mode
   - Thanks to @jalooc and @solidabstract for the feature requests
 
 - (#1207) Added inline search box to Bases views (Task List, Kanban, Calendar)
@@ -56,7 +55,7 @@ Example:
   - TasksPlugin explicit values (emoji dates like 📅) take priority over NLP-inferred values
   - Tags, contexts, and projects from both sources are combined and deduplicated
 
-- Polished task card styling for a cleaner, more native Obsidian look
+- Polished task card styling for a more native Obsidian look
   - Simplified hover and focus states to use native Obsidian colors
   - Removed blur filter and shadows from metadata pills
   - Fixed subtask chevron vertical alignment with status dot
@@ -67,7 +66,6 @@ Example:
 - (#1157) Fixed inline task embeds breaking layout when placed in indented bullet lists
   - Task titles now wrap naturally within line boundaries instead of forcing the entire card to a new line
   - Metadata (dates, tags, etc.) stays inline when space permits, with horizontal scrolling on hover when needed
-  - Icons now scale with editor font size for consistent appearance
   - Thanks to @3zra47 for reporting
 
 - (#1241) Fixed deleting custom priorities in settings removing the wrong priority when multiple priorities exist
