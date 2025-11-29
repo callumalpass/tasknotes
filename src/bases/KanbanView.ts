@@ -63,6 +63,25 @@ export class KanbanView extends BasesViewBase {
 	}
 
 	/**
+	 * BasesView lifecycle: Called when Bases data changes.
+	 * Override to preserve scroll position during re-renders.
+	 */
+	onDataUpdated(): void {
+		// Save scroll state before re-render
+		const savedState = this.getEphemeralState();
+
+		try {
+			this.render();
+		} catch (error) {
+			console.error(`[TaskNotes][${this.type}] Render error:`, error);
+			this.renderError(error as Error);
+		}
+
+		// Restore scroll state after render
+		this.setEphemeralState(savedState);
+	}
+
+	/**
 	 * Read view configuration options from BasesViewConfig.
 	 */
 	private readViewOptions(): void {
@@ -94,6 +113,116 @@ export class KanbanView extends BasesViewBase {
 		} catch (e) {
 			// Use defaults
 			console.warn('[KanbanView] Failed to parse config:', e);
+		}
+	}
+
+	/**
+	 * Save ephemeral state including scroll positions for all columns.
+	 * This preserves scroll position when the view is re-rendered (e.g., after task updates).
+	 */
+	getEphemeralState(): any {
+		const columnScroll: Record<string, number> = {};
+
+		// Save scroll position for virtual scrolling columns (from VirtualScroller)
+		for (const [columnKey, scroller] of this.columnScrollers) {
+			const scrollContainer = (scroller as any).scrollContainer as HTMLElement | undefined;
+			if (scrollContainer) {
+				columnScroll[columnKey] = scrollContainer.scrollTop;
+			}
+		}
+
+		// Save scroll position for non-virtual columns (direct DOM elements)
+		if (this.boardEl) {
+			const columns = this.boardEl.querySelectorAll('.kanban-view__column');
+			columns.forEach((column) => {
+				const groupKey = column.getAttribute('data-group');
+				const cardsContainer = column.querySelector('.kanban-view__cards') as HTMLElement;
+				if (groupKey && cardsContainer && !(groupKey in columnScroll)) {
+					columnScroll[groupKey] = cardsContainer.scrollTop;
+				}
+			});
+
+			// Also save swimlane cell scroll positions (class is kanban-view__swimlane-column)
+			const swimlaneCells = this.boardEl.querySelectorAll('.kanban-view__swimlane-column');
+			swimlaneCells.forEach((cell) => {
+				const columnKey = cell.getAttribute('data-column');
+				const swimlaneKey = cell.getAttribute('data-swimlane');
+				if (columnKey && swimlaneKey) {
+					const cellKey = `${swimlaneKey}:${columnKey}`;
+					const tasksContainer = cell.querySelector('.kanban-view__tasks-container') as HTMLElement;
+					if (tasksContainer && !(cellKey in columnScroll)) {
+						columnScroll[cellKey] = tasksContainer.scrollTop;
+					}
+				}
+			});
+		}
+
+		return {
+			scrollTop: this.rootElement?.scrollTop || 0,
+			columnScroll,
+		};
+	}
+
+	/**
+	 * Restore ephemeral state including scroll positions for all columns.
+	 */
+	setEphemeralState(state: any): void {
+		if (!state) return;
+
+		// Restore board-level horizontal scroll
+		if (state.scrollTop !== undefined && this.rootElement) {
+			requestAnimationFrame(() => {
+				if (this.rootElement && this.rootElement.isConnected) {
+					this.rootElement.scrollTop = state.scrollTop;
+				}
+			});
+		}
+
+		// Restore column scroll positions after render completes
+		if (state.columnScroll && typeof state.columnScroll === 'object') {
+			// Use requestAnimationFrame to ensure DOM and VirtualScrollers are ready
+			requestAnimationFrame(() => {
+				// Restore virtual scroller positions
+				for (const [columnKey, scroller] of this.columnScrollers) {
+					const scrollTop = state.columnScroll[columnKey];
+					if (scrollTop !== undefined) {
+						const scrollContainer = (scroller as any).scrollContainer as HTMLElement | undefined;
+						if (scrollContainer) {
+							scrollContainer.scrollTop = scrollTop;
+						}
+					}
+				}
+
+				// Restore non-virtual column positions
+				if (this.boardEl) {
+					const columns = this.boardEl.querySelectorAll('.kanban-view__column');
+					columns.forEach((column) => {
+						const groupKey = column.getAttribute('data-group');
+						if (groupKey && state.columnScroll[groupKey] !== undefined) {
+							const cardsContainer = column.querySelector('.kanban-view__cards') as HTMLElement;
+							if (cardsContainer && !this.columnScrollers.has(groupKey)) {
+								cardsContainer.scrollTop = state.columnScroll[groupKey];
+							}
+						}
+					});
+
+					// Restore swimlane cell positions (class is kanban-view__swimlane-column)
+					const swimlaneCells = this.boardEl.querySelectorAll('.kanban-view__swimlane-column');
+					swimlaneCells.forEach((cell) => {
+						const columnKey = cell.getAttribute('data-column');
+						const swimlaneKey = cell.getAttribute('data-swimlane');
+						if (columnKey && swimlaneKey) {
+							const cellKey = `${swimlaneKey}:${columnKey}`;
+							if (state.columnScroll[cellKey] !== undefined) {
+								const tasksContainer = cell.querySelector('.kanban-view__tasks-container') as HTMLElement;
+								if (tasksContainer && !this.columnScrollers.has(cellKey)) {
+									tasksContainer.scrollTop = state.columnScroll[cellKey];
+								}
+							}
+						}
+					});
+				}
+			});
 		}
 	}
 
@@ -1209,6 +1338,26 @@ export class KanbanView extends BasesViewBase {
 	protected async handleTaskUpdate(task: TaskInfo): Promise<void> {
 		// For kanban, just do full refresh since cards might move columns
 		this.debouncedRefresh();
+	}
+
+	/**
+	 * Override debouncedRefresh to preserve scroll positions during re-renders.
+	 * Saves ephemeral state before render and restores it after.
+	 */
+	protected debouncedRefresh(): void {
+		if ((this as any).updateDebounceTimer) {
+			clearTimeout((this as any).updateDebounceTimer);
+		}
+
+		// Save current scroll state before the timer fires
+		const savedState = this.getEphemeralState();
+
+		(this as any).updateDebounceTimer = window.setTimeout(async () => {
+			await this.render();
+			(this as any).updateDebounceTimer = null;
+			// Restore scroll state after render completes
+			this.setEphemeralState(savedState);
+		}, 150);
 	}
 
 	private renderEmptyState(): void {

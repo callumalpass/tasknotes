@@ -89,3 +89,8 @@ Example:
   - Markdown-style project links now resolve properly and display as linked (not orange/unresolved)
   - Thanks to @minchinweb for reporting
 
+- (#1266) Fixed Kanban view scroll position resetting to top of column after any change
+  - Clicking status dots, priority, or other task properties no longer jumps the column back to top
+  - Scroll position is now preserved for both regular columns and swimlane cells
+  - Thanks to @essouflenfer for reporting
+
