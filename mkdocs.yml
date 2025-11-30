@@ -60,6 +60,7 @@ nav:
     - General: settings/general.md
     - Features: settings/features.md
     - Task Properties: settings/task-properties.md
+    - Property Types Reference: settings/property-types-reference.md
     - Defaults & Templates: settings/defaults.md
     - Task Defaults: settings/task-defaults.md
     - Appearance & UI: settings/appearance.md

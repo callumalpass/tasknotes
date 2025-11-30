@@ -1,9 +1,11 @@
-
 # Task Properties Settings
 
 These settings allow you to define custom statuses, priorities, and user fields for your tasks.
 
 [← Back to Settings](../settings.md)
+
+!!! tip "Looking for property type documentation?"
+    See the [Property Types Reference](property-types-reference.md) for detailed documentation on the expected data types (text, list, date, etc.) for each frontmatter property.
 
 ## Task Statuses
 

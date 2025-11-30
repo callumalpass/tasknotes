@@ -26,6 +26,12 @@ Example:
 
 ## Added
 
+- (#1259) Added [Property Types Reference](../settings/property-types-reference.md) documentation
+  - Documents expected data types (text, list, date, number) for all frontmatter properties
+  - Includes format specifications, examples, and a complete YAML reference
+  - Helps users create tasks via templates or manual frontmatter editing
+  - Thanks to @Oblique82 for the suggestion
+
 - (#1248) Added formula property support for sub-grouping in Bases Task List view
   - Formula properties (e.g., `formula.myFormula`) now appear in the Sub-group by dropdown
   - Supports all Bases Value types including strings, numbers, booleans, dates, and lists
