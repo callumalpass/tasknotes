@@ -1174,6 +1174,9 @@ export class TaskCreationModal extends TaskModal {
 		if (values.recurrence !== undefined && typeof values.recurrence === "string") {
 			this.recurrenceRule = values.recurrence;
 		}
+		if (values.recurrence_anchor !== undefined) {
+			this.recurrenceAnchor = values.recurrence_anchor;
+		}
 	}
 
 	async handleSave(): Promise<void> {

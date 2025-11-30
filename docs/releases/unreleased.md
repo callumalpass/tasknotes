@@ -116,3 +116,7 @@ Example:
   - New priorities are added at the end (highest priority) instead of with a fixed weight
   - Thanks to @2vzqwz8tvg-png for reporting
 
+- (#1272) Fixed recurrence anchor not being saved when set to "completion" during task creation
+  - Selecting "completion" as the recurrence anchor now correctly persists to the task frontmatter
+  - Thanks to @blaxcky for reporting
+
