@@ -1316,6 +1316,7 @@ export class TaskListView extends BasesViewBase {
 	/**
 	 * Build a map of task path -> properties for fast lookup during grouping.
 	 * Similar to KanbanView's pattern for swimlane grouping.
+	 * Includes both regular properties and formula results.
 	 */
 	private buildPathToPropsMap(): Map<string, Record<string, any>> {
 		const map = new Map<string, Record<string, any>>();
@@ -1324,7 +1325,19 @@ export class TaskListView extends BasesViewBase {
 		const dataItems = this.dataAdapter.extractDataItems();
 		for (const item of dataItems) {
 			if (item.path) {
-				map.set(item.path, item.properties || {});
+				// Merge regular properties with formula results
+				const props = { ...(item.properties || {}) };
+
+				// Add formula results if available
+				const formulaOutputs = item.basesData?.formulaResults?.cachedFormulaOutputs;
+				if (formulaOutputs && typeof formulaOutputs === 'object') {
+					for (const [formulaName, value] of Object.entries(formulaOutputs)) {
+						// Store with formula. prefix for easy lookup
+						props[`formula.${formulaName}`] = value;
+					}
+				}
+
+				map.set(item.path, props);
 			}
 		}
 		return map;
@@ -1332,10 +1345,15 @@ export class TaskListView extends BasesViewBase {
 
 	/**
 	 * Get property value from properties object using property ID.
-	 * Handles both TaskInfo properties and Bases property IDs (note.*, task.*).
+	 * Handles TaskInfo properties, Bases property IDs (note.*, task.*, file.*), and formulas (formula.*).
 	 */
 	private getPropertyValue(props: Record<string, any>, propertyId: string): any {
 		if (!propertyId) return null;
+
+		// Formula properties are stored with their full prefix (formula.NAME)
+		if (propertyId.startsWith('formula.')) {
+			return props[propertyId] ?? null;
+		}
 
 		// Strip prefix (note., task., file.) from property ID
 		const cleanPropertyId = propertyId.replace(/^(note\.|task\.|file\.)/, '');
@@ -1346,11 +1364,33 @@ export class TaskListView extends BasesViewBase {
 
 	/**
 	 * Convert a property value to a display string for grouping.
-	 * Handles null, undefined, arrays, objects, primitives.
+	 * Handles null, undefined, arrays, objects, primitives, and Bases Value objects.
 	 */
 	private valueToString(value: any): string {
 		if (value === null || value === undefined) {
 			return "None";
+		}
+
+		// Handle Bases Value objects (they have a toString() method and often a type property)
+		// Check for Bases Value object by duck-typing (has toString and is an object with constructor)
+		if (typeof value === "object" && value !== null && typeof value.toString === "function") {
+			// Check if it's a Bases NullValue
+			if (value.constructor?.name === "NullValue" || (value.isTruthy && !value.isTruthy())) {
+				return "None";
+			}
+
+			// Check if it's a Bases ListValue (array-like)
+			if (value.constructor?.name === "ListValue" || (Array.isArray(value.value))) {
+				const arr = value.value || [];
+				if (arr.length === 0) return "None";
+				// Recursively convert each item
+				return arr.map((v: any) => this.valueToString(v)).join(", ");
+			}
+
+			// For other Bases Value types (StringValue, NumberValue, BooleanValue, DateValue, etc.)
+			// Use their toString() method
+			const str = value.toString();
+			return str || "None";
 		}
 
 		if (typeof value === "string") {
@@ -1366,7 +1406,7 @@ export class TaskListView extends BasesViewBase {
 		}
 
 		if (Array.isArray(value)) {
-			return value.length > 0 ? value.join(", ") : "None";
+			return value.length > 0 ? value.map((v) => this.valueToString(v)).join(", ") : "None";
 		}
 
 		return String(value);

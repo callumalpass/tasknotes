@@ -30,8 +30,8 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 						displayName: "Sub-group by",
 						placeholder: "Select property for sub-grouping (optional)",
 						filter: (prop: string) => {
-							// Show all note and task properties that could be used for sub-grouping
-							return prop.startsWith("note.") || prop.startsWith("task.");
+							// Show all note, task, and formula properties that could be used for sub-grouping
+							return prop.startsWith("note.") || prop.startsWith("task.") || prop.startsWith("formula.");
 						},
 					},
 					{
@@ -55,8 +55,8 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 						displayName: "Swim Lane",
 						placeholder: "Select property for swim lanes (optional)",
 						filter: (prop: string) => {
-							// Show all note properties that could be used for swimlanes
-							return prop.startsWith("note.") || prop.startsWith("task.");
+							// Show all note, task, and formula properties that could be used for swimlanes
+							return prop.startsWith("note.") || prop.startsWith("task.") || prop.startsWith("formula.");
 						},
 					},
 					{

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { TFile } from "obsidian";
+import { Notice, TFile } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { BasesViewBase } from "./BasesViewBase";
 import { TaskInfo } from "../types";
@@ -1201,6 +1201,24 @@ export class KanbanView extends BasesViewBase {
 			const groupByPropertyId = this.getGroupByPropertyId();
 			if (!groupByPropertyId) return;
 
+			// Check if groupBy is a formula - formulas are read-only
+			if (groupByPropertyId.startsWith('formula.')) {
+				new Notice(
+					this.plugin.i18n.translate("views.kanban.errors.formulaGroupingReadOnly") ||
+					"Cannot move tasks between formula-based columns. Formula values are computed and cannot be directly modified."
+				);
+				return;
+			}
+
+			// Check if swimlane is a formula - formulas are read-only
+			if (newSwimLaneValue !== null && this.swimLanePropertyId?.startsWith('formula.')) {
+				new Notice(
+					this.plugin.i18n.translate("views.kanban.errors.formulaSwimlaneReadOnly") ||
+					"Cannot move tasks between formula-based swimlanes. Formula values are computed and cannot be directly modified."
+				);
+				return;
+			}
+
 			const cleanGroupBy = this.stripPropertyPrefix(groupByPropertyId);
 			const isGroupByListProperty = this.explodeListColumns && this.isListTypeProperty(cleanGroupBy);
 
@@ -1390,14 +1408,35 @@ export class KanbanView extends BasesViewBase {
 
 	private buildPathToPropsMap(): Map<string, Record<string, any>> {
 		const dataItems = this.dataAdapter.extractDataItems();
-		return new Map(
-			dataItems
-				.filter((i) => !!i.path)
-				.map((i) => [i.path || "", i.properties || {}])
-		);
+		const map = new Map<string, Record<string, any>>();
+
+		for (const item of dataItems) {
+			if (!item.path) continue;
+
+			// Merge regular properties with formula results
+			const props = { ...(item.properties || {}) };
+
+			// Add formula results if available
+			const formulaOutputs = item.basesData?.formulaResults?.cachedFormulaOutputs;
+			if (formulaOutputs && typeof formulaOutputs === 'object') {
+				for (const [formulaName, value] of Object.entries(formulaOutputs)) {
+					// Store with formula. prefix for easy lookup
+					props[`formula.${formulaName}`] = value;
+				}
+			}
+
+			map.set(item.path, props);
+		}
+
+		return map;
 	}
 
 	private getPropertyValue(props: Record<string, any>, propertyId: string): any {
+		// Formula properties are stored with their full prefix (formula.NAME)
+		if (propertyId.startsWith('formula.')) {
+			return props[propertyId] ?? null;
+		}
+
 		// Strip prefix from property ID if present
 		const cleanId = this.stripPropertyPrefix(propertyId);
 
@@ -1418,10 +1457,33 @@ export class KanbanView extends BasesViewBase {
 
 	private valueToString(value: any): string {
 		if (value === null || value === undefined) return "None";
+
+		// Handle Bases Value objects (they have a toString() method and often a type property)
+		// Check for Bases Value object by duck-typing (has toString and is an object with constructor)
+		if (typeof value === "object" && value !== null && typeof value.toString === "function") {
+			// Check if it's a Bases NullValue
+			if (value.constructor?.name === "NullValue" || (value.isTruthy && !value.isTruthy())) {
+				return "None";
+			}
+
+			// Check if it's a Bases ListValue (array-like)
+			if (value.constructor?.name === "ListValue" || (Array.isArray(value.value))) {
+				const arr = value.value || [];
+				if (arr.length === 0) return "None";
+				// Recursively convert each item
+				return arr.map((v: any) => this.valueToString(v)).join(", ");
+			}
+
+			// For other Bases Value types (StringValue, NumberValue, BooleanValue, DateValue, etc.)
+			// Use their toString() method
+			const str = value.toString();
+			return str || "None";
+		}
+
 		if (typeof value === "string") return value || "None";
 		if (typeof value === "number") return String(value);
 		if (typeof value === "boolean") return value ? "True" : "False";
-		if (Array.isArray(value)) return value.length > 0 ? value.join(", ") : "None";
+		if (Array.isArray(value)) return value.length > 0 ? value.map((v) => this.valueToString(v)).join(", ") : "None";
 		return String(value);
 	}
 

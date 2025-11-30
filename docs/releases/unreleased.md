@@ -26,6 +26,17 @@ Example:
 
 ## Added
 
+- (#1248) Added formula property support for sub-grouping in Bases Task List view
+  - Formula properties (e.g., `formula.myFormula`) now appear in the Sub-group by dropdown
+  - Supports all Bases Value types including strings, numbers, booleans, dates, and lists
+  - Thanks to @prayidae for the feature request
+
+- (#1070) Added formula property support for swimlanes in Bases Kanban view
+  - Formula properties now appear in the Swim Lane dropdown
+  - Fixed swimlanes displaying empty when grouping by formula properties
+  - Note: Dragging tasks between formula-based columns/swimlanes is disabled (formulas are computed values)
+  - Thanks to @cathywu for reporting
+
 - (#1010), (#1126) Added batch task selection and editing in Task List and Kanban views
   - Shift+click to select multiple tasks
   - Right-click selected tasks to open batch context menu
