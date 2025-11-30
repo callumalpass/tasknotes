@@ -1718,6 +1718,7 @@ export const ja: TranslationTree = {
 		viewReleaseNotes: "リリースノートを表示",
 		startTimeTrackingWithSelector: "時間追跡を開始（タスクを選択）",
 		editTimeEntries: "時間エントリを編集（タスクを選択）",
+		createOrOpenTask: "タスクを作成または開く",
 	},
 	modals: {
 		deviceCode: {
@@ -1888,6 +1889,13 @@ export const ja: TranslationTree = {
 			tagsPlaceholder: "tag1, tag2",
 			timeEstimateLabel: "時間見積もり（分）",
 			timeEstimatePlaceholder: "30",
+			unsavedChanges: {
+				title: "未保存の変更",
+				message: "未保存の変更があります。保存しますか？",
+				save: "変更を保存",
+				discard: "変更を破棄",
+				cancel: "編集を続ける",
+			},
 			dependencies: {
 				blockedBy: "ブロック元",
 				blocking: "ブロックしている",
@@ -1975,6 +1983,20 @@ export const ja: TranslationTree = {
 			dueDate: {
 				overdue: "期限：{date}（期限切れ）",
 				today: "期限：今日",
+			},
+		},
+		taskSelectorWithCreate: {
+			title: "タスクを作成または開く",
+			placeholder: "タスクを検索または入力して新規作成...",
+			instructions: {
+				create: "で新しいタスクを作成",
+			},
+			footer: {
+				createLabel: " で作成: ",
+			},
+			notices: {
+				emptyQuery: "タスクの説明を入力してください",
+				invalidTitle: "有効なタスクタイトルを認識できませんでした",
 			},
 		},
 		taskCreation: {

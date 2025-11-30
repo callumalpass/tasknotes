@@ -1718,6 +1718,7 @@ export const ru: TranslationTree = {
 		viewReleaseNotes: "Посмотреть примечания к выпуску",
 		startTimeTrackingWithSelector: "Начать отслеживание времени (выбрать задачу)",
 		editTimeEntries: "Редактировать временные записи (выбрать задачу)",
+		createOrOpenTask: "Создать или открыть задачу",
 	},
 	modals: {
 		deviceCode: {
@@ -1888,6 +1889,13 @@ export const ru: TranslationTree = {
 			tagsPlaceholder: "тег1, тег2",
 			timeEstimateLabel: "Оценка времени (минуты)",
 			timeEstimatePlaceholder: "30",
+			unsavedChanges: {
+				title: "Несохранённые изменения",
+				message: "У вас есть несохранённые изменения. Хотите сохранить их?",
+				save: "Сохранить изменения",
+				discard: "Отменить изменения",
+				cancel: "Продолжить редактирование",
+			},
 			dependencies: {
 				blockedBy: "Заблокирована",
 				blocking: "Блокирует",
@@ -1975,6 +1983,20 @@ export const ru: TranslationTree = {
 			dueDate: {
 				overdue: "Срок: {date} (просрочено)",
 				today: "Срок: Сегодня",
+			},
+		},
+		taskSelectorWithCreate: {
+			title: "Создать или открыть задачу",
+			placeholder: "Поиск задач или введите для создания новой...",
+			instructions: {
+				create: "чтобы создать новую задачу",
+			},
+			footer: {
+				createLabel: " для создания: ",
+			},
+			notices: {
+				emptyQuery: "Пожалуйста, введите описание задачи",
+				invalidTitle: "Не удалось распознать допустимое название задачи",
 			},
 		},
 		taskCreation: {

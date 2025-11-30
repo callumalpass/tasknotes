@@ -47,6 +47,12 @@ Example:
   - Real-time preview shows parsed title, due date, priority, tags, and other metadata
   - Thanks to @luciolebrillante for the feature request
 
+- (#1044), (#1222) Added unsaved changes confirmation when closing task edit modal
+  - Detects modifications to any field (title, dates, priority, tags, etc.)
+  - Shows confirmation dialog with Save/Discard/Keep Editing options
+  - Prevents accidental data loss from clicking outside the modal or pressing Escape
+  - Thanks to @renatomen for the PR and @0-BSCode for the feature request
+
 ## Changed
 
 - Improved inline task conversion to merge TasksPlugin and NLP parsing results

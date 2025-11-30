@@ -51,7 +51,8 @@ export class TaskEditModal extends TaskModal {
 	} = { added: [], removed: [], raw: {} };
 	private unresolvedBlockingEntries: string[] = [];
 	private markdownEditor: EmbeddableMarkdownEditor | null = null;
-	private shouldSaveOnClose = false;
+	private isShowingConfirmation = false;
+	private pendingClose = false;
 
 	constructor(app: App, plugin: TaskNotesPlugin, options: TaskEditOptions) {
 		super(app, plugin);
@@ -235,8 +236,7 @@ export class TaskEditModal extends TaskModal {
 			if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
 				e.preventDefault();
 				await this.handleSave();
-				this.shouldSaveOnClose = true;
-				this.close();
+				this.forceClose();
 			}
 		};
 		this.containerEl.addEventListener("keydown", this.editModalKeyboardHandler);
@@ -367,11 +367,10 @@ export class TaskEditModal extends TaskModal {
 				onSubmit: async () => {
 					// Ctrl/Cmd+Enter - save the task
 					await this.handleSave();
-					this.shouldSaveOnClose = true;
-					this.close();
+					this.forceClose();
 				},
 				onEscape: () => {
-					// ESC - close the modal
+					// ESC - close the modal (will prompt if unsaved changes)
 					this.close();
 				},
 				onTab: () => {
@@ -387,13 +386,28 @@ export class TaskEditModal extends TaskModal {
 	}
 
 	/**
-	 * Override close() to detect unsaved changes and prompt user
+	 * Force close the modal without checking for unsaved changes.
+	 * Use this after a successful save or when discarding is intentional.
 	 */
-	async close(): Promise<void> {
-		// If we're closing after a save, skip confirmation
-		if (this.shouldSaveOnClose) {
-			this.shouldSaveOnClose = false;
+	forceClose(): void {
+		this.pendingClose = true;
+		super.close();
+	}
+
+	/**
+	 * Override close() to detect unsaved changes and prompt user.
+	 * This method is synchronous to match Obsidian's Modal.close() signature.
+	 */
+	close(): void {
+		// If we're already forcing close or showing confirmation, proceed
+		if (this.pendingClose) {
+			this.pendingClose = false;
 			super.close();
+			return;
+		}
+
+		// Prevent re-entrancy if confirmation is already showing
+		if (this.isShowingConfirmation) {
 			return;
 		}
 
@@ -407,33 +421,64 @@ export class TaskEditModal extends TaskModal {
 			return;
 		}
 
-		// Show confirmation modal
-		const confirmed = await this.showUnsavedChangesConfirmation();
+		// Show confirmation modal asynchronously
+		this.showUnsavedChangesConfirmation();
+	}
 
-		if (confirmed) {
-			// User wants to save
-			await this.handleSave();
-			this.shouldSaveOnClose = true;
-			super.close();
-		} else {
-			// User wants to discard changes
-			super.close();
+	/**
+	 * Show confirmation modal for unsaved changes.
+	 * Handles the async flow separately from the synchronous close() method.
+	 */
+	private async showUnsavedChangesConfirmation(): Promise<void> {
+		this.isShowingConfirmation = true;
+
+		try {
+			const result = await this.showThreeButtonConfirmation();
+
+			if (result === "save") {
+				// User wants to save - attempt save and close on success
+				try {
+					await this.handleSave();
+					this.forceClose();
+				} catch (error) {
+					// Save failed - stay open so user can fix issues
+					// handleSave() already shows a notice with the error
+					console.error("Save failed during close confirmation:", error);
+				}
+			} else if (result === "discard") {
+				// User wants to discard changes
+				this.forceClose();
+			}
+			// result === "cancel" - do nothing, user wants to keep editing
+		} finally {
+			this.isShowingConfirmation = false;
 		}
 	}
 
 	/**
-	 * Show confirmation modal for unsaved changes
+	 * Show a three-button confirmation dialog for unsaved changes.
+	 * Returns: "save" | "discard" | "cancel"
 	 */
-	private async showUnsavedChangesConfirmation(): Promise<boolean> {
-		const modal = new ConfirmationModal(this.app, {
-			title: this.t("modals.task.unsavedChanges.title"),
-			message: this.t("modals.task.unsavedChanges.message"),
-			confirmText: this.t("modals.task.unsavedChanges.save"),
-			cancelText: this.t("modals.task.unsavedChanges.discard"),
-			defaultToConfirm: true,
-		});
+	private showThreeButtonConfirmation(): Promise<"save" | "discard" | "cancel"> {
+		return new Promise((resolve) => {
+			const modal = new ConfirmationModal(this.app, {
+				title: this.t("modals.task.unsavedChanges.title"),
+				message: this.t("modals.task.unsavedChanges.message"),
+				confirmText: this.t("modals.task.unsavedChanges.save"),
+				cancelText: this.t("modals.task.unsavedChanges.discard"),
+				thirdButtonText: this.t("modals.task.unsavedChanges.cancel"),
+				defaultToConfirm: true,
+				onThirdButton: () => resolve("cancel"),
+			});
 
-		return await modal.show();
+			modal.show().then((confirmed) => {
+				if (confirmed) {
+					resolve("save");
+				} else {
+					resolve("discard");
+				}
+			});
+		});
 	}
 
 	onClose(): void {
@@ -1093,8 +1138,7 @@ export class TaskEditModal extends TaskModal {
 			saveButton.disabled = true;
 			try {
 				await this.handleSave();
-				this.shouldSaveOnClose = true;
-				this.close();
+				this.forceClose();
 			} finally {
 				saveButton.disabled = false;
 			}

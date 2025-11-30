@@ -7,6 +7,10 @@ export interface ConfirmationModalOptions {
 	cancelText?: string;
 	isDestructive?: boolean;
 	defaultToConfirm?: boolean;
+	/** Optional third button text (e.g., "Cancel" to go back) */
+	thirdButtonText?: string;
+	/** Callback when third button is clicked */
+	onThirdButton?: () => void;
 }
 
 /**
@@ -46,6 +50,18 @@ export class ConfirmationModal extends Modal {
 		buttonContainer.style.gap = "10px";
 		buttonContainer.style.justifyContent = "flex-end";
 		buttonContainer.style.marginTop = "20px";
+
+		// Optional third button (e.g., "Cancel" to go back to editing)
+		let thirdButton: HTMLButtonElement | null = null;
+		if (this.options.thirdButtonText) {
+			thirdButton = buttonContainer.createEl("button", { text: this.options.thirdButtonText });
+			thirdButton.addEventListener("click", () => {
+				if (this.options.onThirdButton) {
+					this.options.onThirdButton();
+				}
+				this.close();
+			});
+		}
 
 		const cancelButton = buttonContainer.createEl("button", { text: this.options.cancelText });
 		cancelButton.addEventListener("click", () => {

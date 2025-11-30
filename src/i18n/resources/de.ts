@@ -1718,6 +1718,7 @@ export const de: TranslationTree = {
 		viewReleaseNotes: "Versionshinweise anzeigen",
 		startTimeTrackingWithSelector: "Zeiterfassung starten (Aufgabe auswählen)",
 		editTimeEntries: "Zeiteinträge bearbeiten (Aufgabe auswählen)",
+		createOrOpenTask: "Aufgabe erstellen oder öffnen",
 	},
 	modals: {
 		deviceCode: {
@@ -1888,6 +1889,13 @@ export const de: TranslationTree = {
 			tagsPlaceholder: "tag1, tag2",
 			timeEstimateLabel: "Zeitschätzung (Minuten)",
 			timeEstimatePlaceholder: "30",
+			unsavedChanges: {
+				title: "Ungespeicherte Änderungen",
+				message: "Sie haben ungespeicherte Änderungen. Möchten Sie diese speichern?",
+				save: "Änderungen speichern",
+				discard: "Änderungen verwerfen",
+				cancel: "Weiter bearbeiten",
+			},
 			dependencies: {
 				blockedBy: "Blockiert von",
 				blocking: "Blockierend",
@@ -1975,6 +1983,20 @@ export const de: TranslationTree = {
 			dueDate: {
 				overdue: "Fällig: {date} (überfällig)",
 				today: "Fällig: Heute",
+			},
+		},
+		taskSelectorWithCreate: {
+			title: "Aufgabe erstellen oder öffnen",
+			placeholder: "Aufgaben suchen oder eingeben zum Erstellen...",
+			instructions: {
+				create: "um neue Aufgabe zu erstellen",
+			},
+			footer: {
+				createLabel: " zum Erstellen: ",
+			},
+			notices: {
+				emptyQuery: "Bitte geben Sie eine Aufgabenbeschreibung ein",
+				invalidTitle: "Kein gültiger Aufgabentitel erkannt",
 			},
 		},
 		taskCreation: {

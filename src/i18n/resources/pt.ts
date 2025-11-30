@@ -1725,7 +1725,8 @@ export const pt: TranslationTree = {
 		exportAllTasksIcs: "Exportar todas as tarefas como arquivo ICS",
 		viewReleaseNotes: "Ver notas de lançamento",
 		startTimeTrackingWithSelector: "Iniciar registro de tempo (selecionar tarefa)",
-		editTimeEntries: "Editar registros de tempo (selecionar tarefa)"
+		editTimeEntries: "Editar registros de tempo (selecionar tarefa)",
+		createOrOpenTask: "Criar ou abrir tarefa"
 	},
 	modals: {
 		deviceCode: {
@@ -1896,6 +1897,13 @@ export const pt: TranslationTree = {
 			tagsPlaceholder: "tag1, tag2",
 			timeEstimateLabel: "Estimativa de tempo (minutos)",
 			timeEstimatePlaceholder: "30",
+			unsavedChanges: {
+				title: "Alterações não salvas",
+				message: "Você tem alterações não salvas. Deseja salvá-las?",
+				save: "Salvar alterações",
+				discard: "Descartar alterações",
+				cancel: "Continuar editando"
+			},
 			dependencies: {
 				blockedBy: "Bloqueada por",
 				blocking: "Bloqueando",
@@ -1983,6 +1991,20 @@ export const pt: TranslationTree = {
 			dueDate: {
 				overdue: "Vencimento: {date} (atrasada)",
 				today: "Vencimento: Hoje"
+			}
+		},
+		taskSelectorWithCreate: {
+			title: "Criar ou abrir tarefa",
+			placeholder: "Pesquisar tarefas ou digitar para criar nova...",
+			instructions: {
+				create: "para criar nova tarefa"
+			},
+			footer: {
+				createLabel: " para criar: "
+			},
+			notices: {
+				emptyQuery: "Por favor, insira uma descrição da tarefa",
+				invalidTitle: "Não foi possível reconhecer um título de tarefa válido"
 			}
 		},
 		taskCreation: {

@@ -1718,6 +1718,7 @@ export const fr: TranslationTree = {
 		viewReleaseNotes: "Voir les notes de version",
 		startTimeTrackingWithSelector: "Démarrer le suivi du temps (sélectionner une tâche)",
 		editTimeEntries: "Modifier les entrées de temps (sélectionner une tâche)",
+		createOrOpenTask: "Créer ou ouvrir une tâche",
 	},
 	modals: {
 		deviceCode: {
@@ -1888,6 +1889,13 @@ export const fr: TranslationTree = {
 			tagsPlaceholder: "etiquette1, etiquette2",
 			timeEstimateLabel: "Estimation (minutes)",
 			timeEstimatePlaceholder: "30",
+			unsavedChanges: {
+				title: "Modifications non enregistrées",
+				message: "Vous avez des modifications non enregistrées. Voulez-vous les enregistrer ?",
+				save: "Enregistrer les modifications",
+				discard: "Ignorer les modifications",
+				cancel: "Continuer l'édition",
+			},
 			dependencies: {
 				blockedBy: "Bloqué par",
 				blocking: "Bloquant",
@@ -1975,6 +1983,20 @@ export const fr: TranslationTree = {
 			dueDate: {
 				overdue: "Échéance : {date} (en retard)",
 				today: "Échéance : Aujourd'hui",
+			},
+		},
+		taskSelectorWithCreate: {
+			title: "Créer ou ouvrir une tâche",
+			placeholder: "Rechercher des tâches ou taper pour créer...",
+			instructions: {
+				create: "pour créer une nouvelle tâche",
+			},
+			footer: {
+				createLabel: " pour créer : ",
+			},
+			notices: {
+				emptyQuery: "Veuillez entrer une description de tâche",
+				invalidTitle: "Impossible de reconnaître un titre de tâche valide",
 			},
 		},
 		taskCreation: {

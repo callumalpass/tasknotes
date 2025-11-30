@@ -1718,6 +1718,7 @@ export const zh: TranslationTree = {
 		viewReleaseNotes: "查看版本说明",
 		startTimeTrackingWithSelector: "开始时间跟踪（选择任务）",
 		editTimeEntries: "编辑时间条目（选择任务）",
+		createOrOpenTask: "创建或打开任务",
 	},
 	modals: {
 		deviceCode: {
@@ -1888,6 +1889,13 @@ export const zh: TranslationTree = {
 			tagsPlaceholder: "标签1，标签2",
 			timeEstimateLabel: "时间估计（分钟）",
 			timeEstimatePlaceholder: "30",
+			unsavedChanges: {
+				title: "未保存的更改",
+				message: "您有未保存的更改。是否要保存？",
+				save: "保存更改",
+				discard: "放弃更改",
+				cancel: "继续编辑",
+			},
 			dependencies: {
 				blockedBy: "被阻塞",
 				blocking: "阻塞中",
@@ -1975,6 +1983,20 @@ export const zh: TranslationTree = {
 			dueDate: {
 				overdue: "截止日期：{date}（逾期）",
 				today: "截止日期：今天",
+			},
+		},
+		taskSelectorWithCreate: {
+			title: "创建或打开任务",
+			placeholder: "搜索任务或输入以创建新任务...",
+			instructions: {
+				create: "创建新任务",
+			},
+			footer: {
+				createLabel: " 创建：",
+			},
+			notices: {
+				emptyQuery: "请输入任务描述",
+				invalidTitle: "无法识别有效的任务标题",
 			},
 		},
 		taskCreation: {
