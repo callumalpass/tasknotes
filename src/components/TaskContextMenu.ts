@@ -1057,8 +1057,8 @@ export class TaskContextMenu {
 			submenu.addItem((item: any) => {
 				let title = option.label;
 
-				// Use consistent icon for all items
-				item.setIcon("circle");
+				// Use custom icon if configured, otherwise default to circle
+				item.setIcon(option.icon || "circle");
 
 				// Highlight current selection with visual indicator
 				if (option.value === task.status) {
@@ -1369,6 +1369,7 @@ export class TaskContextMenu {
 					label: status.label,
 					value: status.value,
 					color: status.color,
+					icon: status.icon,
 				});
 			});
 		}

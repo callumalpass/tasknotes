@@ -24,3 +24,7 @@ Example:
 
 -->
 
+## Changed
+
+- Custom status icons now display in all context menus (task context menu, batch operations menu, and task creation/edit modals)
+

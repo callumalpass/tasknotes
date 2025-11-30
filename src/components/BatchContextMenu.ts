@@ -129,7 +129,8 @@ export class BatchContextMenu {
 		for (const status of sortedStatuses) {
 			submenu.addItem((item: any) => {
 				item.setTitle(status.label);
-				item.setIcon("circle");
+				// Use custom icon if configured, otherwise default to circle
+				item.setIcon(status.icon || "circle");
 				item.onClick(async () => {
 					await this.batchUpdateProperty("status", status.value);
 				});
