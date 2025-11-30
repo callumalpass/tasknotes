@@ -141,12 +141,17 @@ export function renderTaskPropertiesTab(
 				)
 				.onClick(async () => {
 					const newId = `priority_${Date.now()}`;
+					// Set weight to max + 1 so new priority appears at the end (highest priority)
+					const maxWeight = plugin.settings.customPriorities.reduce(
+						(max, p) => Math.max(max, p.weight),
+						-1
+					);
 					const newPriority = {
 						id: newId,
 						value: "",
 						label: "",
 						color: "#6366f1",
-						weight: 1,
+						weight: maxWeight + 1,
 					};
 					plugin.settings.customPriorities.push(newPriority);
 					save();
@@ -504,8 +509,9 @@ function renderPriorityList(
 		return;
 	}
 
-	const sortedPriorities = [...plugin.settings.customPriorities].sort((a, b) =>
-		a.value.localeCompare(b.value)
+	// Sort by weight (lowest first = lowest priority at top, highest at bottom)
+	const sortedPriorities = [...plugin.settings.customPriorities].sort(
+		(a, b) => a.weight - b.weight
 	);
 
 	sortedPriorities.forEach((priority, index) => {
@@ -523,6 +529,7 @@ function renderPriorityList(
 
 		const card = createCard(container, {
 			id: priority.id,
+			draggable: true,
 			collapsible: true,
 			defaultCollapsed: true,
 			colorIndicator: { color: priority.color },
@@ -541,6 +548,12 @@ function renderPriorityList(
 						);
 						if (priorityIndex !== -1) {
 							plugin.settings.customPriorities.splice(priorityIndex, 1);
+							// Recalculate weights to keep them sequential
+							plugin.settings.customPriorities
+								.sort((a, b) => a.weight - b.weight)
+								.forEach((p, i) => {
+									p.weight = i;
+								});
 							save();
 							renderPriorityList(container, plugin, save);
 						}
@@ -596,6 +609,46 @@ function renderPriorityList(
 				colorIndicator.style.backgroundColor = priority.color;
 			}
 			save();
+		});
+
+		// Setup drag and drop for reordering
+		setupCardDragAndDrop(card, container, (draggedId, targetId, insertBefore) => {
+			const draggedIndex = plugin.settings.customPriorities.findIndex(
+				(p) => p.id === draggedId
+			);
+			const targetIndex = plugin.settings.customPriorities.findIndex(
+				(p) => p.id === targetId
+			);
+
+			if (draggedIndex === -1 || targetIndex === -1) return;
+
+			// Sort by weight first to work with the visual order
+			const reorderedPriorities = [...plugin.settings.customPriorities].sort(
+				(a, b) => a.weight - b.weight
+			);
+			const draggedPriorityIndex = reorderedPriorities.findIndex(
+				(p) => p.id === draggedId
+			);
+			const targetPriorityIndex = reorderedPriorities.findIndex(
+				(p) => p.id === targetId
+			);
+
+			const [draggedPriority] = reorderedPriorities.splice(draggedPriorityIndex, 1);
+
+			let newIndex = targetPriorityIndex;
+			if (draggedPriorityIndex < targetPriorityIndex) newIndex = targetPriorityIndex - 1;
+			if (!insertBefore) newIndex++;
+
+			reorderedPriorities.splice(newIndex, 0, draggedPriority);
+
+			// Update weights based on new order
+			reorderedPriorities.forEach((p, i) => {
+				p.weight = i;
+			});
+
+			plugin.settings.customPriorities = reorderedPriorities;
+			save();
+			renderPriorityList(container, plugin, save);
 		});
 	});
 }

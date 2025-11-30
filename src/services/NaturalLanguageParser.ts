@@ -248,7 +248,8 @@ export class NaturalLanguageParser {
 		if (!trigger) return text; // Tags disabled
 
 		const escapedTrigger = this.escapeRegex(trigger);
-		const tagPattern = new RegExp(`${escapedTrigger}[\\w/-]+`, "g");
+		// Use Unicode-aware pattern to support non-ASCII characters (accented, Cyrillic, CJK, etc.)
+		const tagPattern = new RegExp(`${escapedTrigger}[\\p{L}\\p{N}\\p{M}_/-]+`, "gu");
 		const tagMatches = text.match(tagPattern);
 
 		if (tagMatches) {
@@ -264,7 +265,8 @@ export class NaturalLanguageParser {
 		if (!trigger) return text; // Contexts disabled
 
 		const escapedTrigger = this.escapeRegex(trigger);
-		const contextPattern = new RegExp(`${escapedTrigger}\\w+`, "g");
+		// Use Unicode-aware pattern to support non-ASCII characters (accented, Cyrillic, CJK, etc.)
+		const contextPattern = new RegExp(`${escapedTrigger}[\\p{L}\\p{N}\\p{M}_]+`, "gu");
 		const contextMatches = text.match(contextPattern);
 
 		if (contextMatches) {
@@ -298,7 +300,8 @@ export class NaturalLanguageParser {
 		}
 
 		// Extract simple word projects
-		const projectPattern = new RegExp(`${escapedTrigger}[\\w/-]+`, "g");
+		// Use Unicode-aware pattern to support non-ASCII characters (accented, Cyrillic, CJK, etc.)
+		const projectPattern = new RegExp(`${escapedTrigger}[\\p{L}\\p{N}\\p{M}_/-]+`, "gu");
 		const projectMatches = workingText.match(projectPattern);
 		if (projectMatches) {
 			result.projects.push(...projectMatches.map((project) => project.substring(trigger.length)));
@@ -333,8 +336,8 @@ export class NaturalLanguageParser {
 			if (userField.type === "list") {
 				// Match trigger followed by either:
 				// 1. Quoted string: "anything inside quotes"
-				// 2. Single/double word: word or word-with-dash
-				const pattern = new RegExp(`${escapedTrigger}(?:"([^"]+)"|([\\w/-]+))`, "g");
+				// 2. Single/double word: word or word-with-dash (Unicode-aware)
+				const pattern = new RegExp(`${escapedTrigger}(?:"([^"]+)"|([\\p{L}\\p{N}\\p{M}_/-]+))`, "gu");
 				const values: string[] = [];
 				let match;
 
@@ -354,8 +357,8 @@ export class NaturalLanguageParser {
 			else if (userField.type === "text" || userField.type === "boolean" || userField.type === "number") {
 				// Match trigger followed by either:
 				// 1. Quoted string: "anything inside quotes"
-				// 2. Single word: word or word-with-dash
-				const pattern = new RegExp(`${escapedTrigger}(?:"([^"]+)"|([\\w/-]+))`);
+				// 2. Single word: word or word-with-dash (Unicode-aware)
+				const pattern = new RegExp(`${escapedTrigger}(?:"([^"]+)"|([\\p{L}\\p{N}\\p{M}_/-]+))`, "u");
 				const match = workingText.match(pattern);
 
 				if (match) {
@@ -376,8 +379,8 @@ export class NaturalLanguageParser {
 			}
 			// For date fields, try to parse as date (supports quoted values too)
 			else if (userField.type === "date") {
-				// Match trigger followed by either quoted or unquoted date-like pattern
-				const pattern = new RegExp(`${escapedTrigger}(?:"([^"]+)"|([\\w/-]+))`);
+				// Match trigger followed by either quoted or unquoted date-like pattern (Unicode-aware)
+				const pattern = new RegExp(`${escapedTrigger}(?:"([^"]+)"|([\\p{L}\\p{N}\\p{M}_/-]+))`, "u");
 				const match = workingText.match(pattern);
 
 				if (match) {
@@ -1349,17 +1352,8 @@ export class NaturalLanguageParser {
 				text: `Contexts: ${parsed.contexts.map((c) => "@" + c).join(", ")}`,
 			});
 		if (parsed.projects && parsed.projects.length > 0) {
-			// Display projects with + prefix and determine if they should have wikilink format
-			const projectDisplay = parsed.projects
-				.map((p) => {
-					// If the project name contains spaces or special characters, use wikilink format
-					if (p.includes(" ") || p.includes("-") || p.match(/[A-Z]/)) {
-						return `+[[${p}]]`;
-					} else {
-						return `+${p}`;
-					}
-				})
-				.join(", ");
+			// Display projects with + prefix (no need to wrap in brackets - just show what was parsed)
+			const projectDisplay = parsed.projects.map((p) => `+${p}`).join(", ");
 			parts.push({ icon: "folder", text: `Projects: ${projectDisplay}` });
 		}
 		if (parsed.tags && parsed.tags.length > 0)

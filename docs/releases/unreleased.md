@@ -94,3 +94,19 @@ Example:
   - Scroll position is now preserved for both regular columns and swimlane cells
   - Thanks to @essouflenfer for reporting
 
+- (#485), (#1221), (#1262) Fixed NLP parser not recognizing non-ASCII characters in tags, contexts, and projects
+  - Tags like `#investigación` were being truncated at accented characters (e.g., `#investigaci`)
+  - Non-Latin scripts (Chinese, Cyrillic, Japanese, etc.) were not recognized at all (e.g., `@家`, `#杂事`, `@ознакомиться`)
+  - Parser now uses Unicode-aware regex patterns to support all languages and scripts
+  - Thanks to @Arachnidai, @fidelaznar, and @qian1ing for reporting
+
+- (#1249) Fixed project preview in task creation modal showing quadruple brackets (`[[[[Project]]]]`)
+  - Projects selected from autocomplete were being wrapped in extra wikilink brackets in the preview display
+  - Thanks to @2vzqwz8tvg-png for reporting
+
+- (#1249) Fixed custom priority ordering in settings being unclear and non-intuitive
+  - Priority cards are now draggable to reorder (like statuses)
+  - Priorities are displayed in weight order (lowest to highest priority)
+  - New priorities are added at the end (highest priority) instead of with a fixed weight
+  - Thanks to @2vzqwz8tvg-png for reporting
+
