@@ -11,9 +11,8 @@ import { DateContextMenu } from "../components/DateContextMenu";
 import { PriorityContextMenu } from "../components/PriorityContextMenu";
 import { RecurrenceContextMenu } from "../components/RecurrenceContextMenu";
 import { ReminderModal } from "../modals/ReminderModal";
-import { getDatePart, getTimePart } from "../utils/dateUtils";
+import { getDatePart, getTimePart, parseDateToUTC, createUTCDateFromLocalCalendarDate } from "../utils/dateUtils";
 import { VirtualScroller } from "../utils/VirtualScroller";
-import { parseDateToUTC } from "../utils/dateUtils";
 
 export class TaskListView extends BasesViewBase {
 	type = "tasknoteTaskList";
@@ -25,7 +24,7 @@ export class TaskListView extends BasesViewBase {
 	private lastTaskSignatures = new Map<string, string>();
 	private taskInfoCache = new Map<string, TaskInfo>();
 	private clickTimeouts = new Map<string, number>();
-	private currentTargetDate = new Date();
+	private currentTargetDate = createUTCDateFromLocalCalendarDate(new Date());
 	private containerListenersRegistered = false;
 	private virtualScroller: VirtualScroller<any> | null = null; // Can render TaskInfo or group headers
 	private useVirtualScrolling = false;
@@ -237,7 +236,7 @@ export class TaskListView extends BasesViewBase {
 		// Note: taskNotes are already sorted by Bases according to sort configuration
 		// No manual sorting needed - Bases provides pre-sorted data
 
-		const targetDate = new Date();
+		const targetDate = createUTCDateFromLocalCalendarDate(new Date());
 		this.currentTargetDate = targetDate;
 
 		const cardOptions = this.getCardOptions(targetDate);
@@ -463,7 +462,7 @@ export class TaskListView extends BasesViewBase {
 			return;
 		}
 
-		const targetDate = new Date();
+		const targetDate = createUTCDateFromLocalCalendarDate(new Date());
 		this.currentTargetDate = targetDate;
 		const cardOptions = this.getCardOptions(targetDate);
 
@@ -549,7 +548,7 @@ export class TaskListView extends BasesViewBase {
 			return;
 		}
 
-		const targetDate = new Date();
+		const targetDate = createUTCDateFromLocalCalendarDate(new Date());
 		this.currentTargetDate = targetDate;
 		const cardOptions = this.getCardOptions(targetDate);
 

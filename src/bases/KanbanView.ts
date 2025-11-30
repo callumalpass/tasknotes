@@ -8,7 +8,7 @@ import { createTaskCard } from "../ui/TaskCard";
 import { renderGroupTitle } from "./groupTitleRenderer";
 import { type LinkServices } from "../ui/renderers/linkRenderer";
 import { VirtualScroller } from "../utils/VirtualScroller";
-import { getDatePart, parseDateToUTC } from "../utils/dateUtils";
+import { getDatePart, parseDateToUTC, createUTCDateFromLocalCalendarDate } from "../utils/dateUtils";
 
 export class KanbanView extends BasesViewBase {
 	type = "tasknoteKanban";
@@ -1678,7 +1678,8 @@ export class KanbanView extends BasesViewBase {
 			return parseDateToUTC(dateStr);
 		}
 
-		return new Date();
+		// Fallback to today's date, UTC-anchored to preserve local calendar day
+		return createUTCDateFromLocalCalendarDate(new Date());
 	}
 
 	private showPriorityMenu(task: TaskInfo, event: MouseEvent, PriorityContextMenu: any): void {
