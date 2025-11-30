@@ -65,6 +65,7 @@ All date properties are stored as **text strings** in your frontmatter. TaskNote
 - **Format:** `YYYY-MM-DD` or ISO 8601 timestamp
 - **Description:** The task's due date
 - **Examples:**
+
   ```yaml
   due: "2025-01-15"
   due: "2025-01-15T17:00:00"
@@ -76,6 +77,7 @@ All date properties are stored as **text strings** in your frontmatter. TaskNote
 - **Format:** `YYYY-MM-DD` or ISO 8601 timestamp
 - **Description:** When the task is scheduled to be worked on
 - **Examples:**
+
   ```yaml
   scheduled: "2025-01-10"
   scheduled: "2025-01-10T09:00:00"
@@ -113,6 +115,7 @@ List properties must be arrays, even when containing a single value.
 - **Type:** list (array of strings)
 - **Description:** Tags associated with the task
 - **Examples:**
+
   ```yaml
   tags: ["work", "documentation"]
   tags:
@@ -125,6 +128,7 @@ List properties must be arrays, even when containing a single value.
 - **Type:** list (array of strings)
 - **Description:** Context labels for the task
 - **Examples:**
+
   ```yaml
   contexts: ["office", "computer"]
   contexts:
@@ -137,6 +141,7 @@ List properties must be arrays, even when containing a single value.
 - **Type:** list (array of strings)
 - **Description:** Project references (typically wiki-links)
 - **Examples:**
+
   ```yaml
   projects: ["[[Website Redesign]]", "[[Q1 Planning]]"]
   projects:
@@ -164,6 +169,7 @@ List properties must be arrays, even when containing a single value.
 - **Format:** RFC 5545 RRULE format
 - **Description:** Defines how the task repeats
 - **Examples:**
+
   ```yaml
   recurrence: "FREQ=DAILY"
   recurrence: "FREQ=WEEKLY;BYDAY=MO,WE,FR"
@@ -183,6 +189,7 @@ List properties must be arrays, even when containing a single value.
 - **Format:** `YYYY-MM-DD`
 - **Description:** Dates when recurring task instances were completed
 - **Example:**
+
   ```yaml
   complete_instances:
     - "2025-01-08"
@@ -195,6 +202,7 @@ List properties must be arrays, even when containing a single value.
 - **Format:** `YYYY-MM-DD`
 - **Description:** Dates when recurring task instances were skipped
 - **Example:**
+
   ```yaml
   skipped_instances:
     - "2025-01-22"
@@ -211,6 +219,7 @@ These properties contain structured data with multiple fields.
 - **Type:** list (array of objects)
 - **Description:** Time tracking entries for the task
 - **Structure:**
+
   ```yaml
   timeEntries:
     - startTime: "2025-01-15T10:30:00Z"    # Required: ISO 8601 timestamp
@@ -223,12 +232,14 @@ These properties contain structured data with multiple fields.
 - **Type:** list (array of objects)
 - **Description:** Tasks that must be completed before this task can start
 - **Structure:**
+
   ```yaml
   blockedBy:
     - uid: "path/to/blocking-task.md"    # Required: path to blocking task
       reltype: "FINISHTOSTART"           # Required: relationship type
       gap: "P1D"                         # Optional: ISO 8601 duration offset
   ```
+
 - **Relationship types:** `FINISHTOSTART`, `STARTTOSTART`, `FINISHTOFINISH`, `STARTTOFINISH` 
 	- Note: As of version 4.1.0, only the FINISHTOSTART duration offset is supported
 
@@ -237,6 +248,7 @@ These properties contain structured data with multiple fields.
 - **Type:** list (array of objects)
 - **Description:** Reminder notifications for the task
 - **Structure for relative reminders:**
+
   ```yaml
   reminders:
     - id: "rem_1"                        # Required: unique identifier
@@ -245,7 +257,9 @@ These properties contain structured data with multiple fields.
       offset: "-PT1H"                    # Required for relative: ISO 8601 duration
       description: "1 hour before due"   # Optional: description
   ```
+
 - **Structure for absolute reminders:**
+
   ```yaml
   reminders:
     - id: "rem_2"
@@ -259,11 +273,13 @@ These properties contain structured data with multiple fields.
 - **Type:** list (array of strings)
 - **Description:** ICS calendar event IDs linked to this task
 - **Example:**
+  
   ```yaml
   icsEventId:
     - "event-abc123"
     - "event-def456"
   ```
+
 
 ---
 
@@ -310,6 +326,7 @@ reminders:
 All property names can be customized via **Settings → Task Properties → Field Mapping**. If you change a field mapping, TaskNotes will read and write using your custom property name.
 
 For example, if you map `due` to `dueDate`, TaskNotes will expect:
+
 ```yaml
 dueDate: "2025-01-15"
 ```
