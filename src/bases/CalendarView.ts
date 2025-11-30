@@ -262,7 +262,57 @@ export class CalendarView extends BasesViewBase {
 	}
 
 	/**
+	 * Read event toggle options from config.
+	 * These should be re-read on every render to respond to toggle changes.
+	 */
+	private readEventToggles(): void {
+		// Guard: config may not be set yet if called too early
+		if (!this.config || typeof this.config.get !== 'function') {
+			return;
+		}
+
+		try {
+			this.viewOptions.showScheduled = this.config.get('showScheduled') ?? this.viewOptions.showScheduled;
+			this.viewOptions.showDue = this.config.get('showDue') ?? this.viewOptions.showDue;
+			this.viewOptions.showRecurring = this.config.get('showRecurring') ?? this.viewOptions.showRecurring;
+			this.viewOptions.showTimeEntries = this.config.get('showTimeEntries') ?? this.viewOptions.showTimeEntries;
+			this.viewOptions.showTimeblocks = this.config.get('showTimeblocks') ?? this.viewOptions.showTimeblocks;
+			this.viewOptions.showPropertyBasedEvents = this.config.get('showPropertyBasedEvents') ?? this.viewOptions.showPropertyBasedEvents;
+
+			// ICS calendar toggles
+			if (this.plugin.icsSubscriptionService) {
+				const subscriptions = this.plugin.icsSubscriptionService.getSubscriptions();
+				for (const sub of subscriptions) {
+					const key = `showICS_${sub.id}`;
+					this.icsCalendarToggles.set(sub.id, this.config.get(key) ?? true);
+				}
+			}
+
+			// Google calendar toggles
+			if (this.plugin.googleCalendarService) {
+				const calendars = this.plugin.googleCalendarService.getAvailableCalendars();
+				for (const cal of calendars) {
+					const key = `showGoogleCalendar_${cal.id}`;
+					this.googleCalendarToggles.set(cal.id, this.config.get(key) ?? true);
+				}
+			}
+
+			// Microsoft calendar toggles
+			if (this.plugin.microsoftCalendarService) {
+				const calendars = this.plugin.microsoftCalendarService.getAvailableCalendars();
+				for (const cal of calendars) {
+					const key = `showMicrosoftCalendar_${cal.id}`;
+					this.microsoftCalendarToggles.set(cal.id, this.config.get(key) ?? true);
+				}
+			}
+		} catch (e) {
+			console.error("[TaskNotes][CalendarView] Error reading event toggles:", e);
+		}
+	}
+
+	/**
 	 * Read view configuration options from BasesViewConfig.
+	 * Layout options are only read once to avoid resetting the view on toggle changes.
 	 */
 	private readViewOptions(): void {
 		// Guard: config may not be set yet if called too early
@@ -271,13 +321,8 @@ export class CalendarView extends BasesViewBase {
 		}
 
 		try {
-			// Events
-			this.viewOptions.showScheduled = this.config.get('showScheduled') ?? this.viewOptions.showScheduled;
-			this.viewOptions.showDue = this.config.get('showDue') ?? this.viewOptions.showDue;
-			this.viewOptions.showRecurring = this.config.get('showRecurring') ?? this.viewOptions.showRecurring;
-			this.viewOptions.showTimeEntries = this.config.get('showTimeEntries') ?? this.viewOptions.showTimeEntries;
-			this.viewOptions.showTimeblocks = this.config.get('showTimeblocks') ?? this.viewOptions.showTimeblocks;
-			this.viewOptions.showPropertyBasedEvents = this.config.get('showPropertyBasedEvents') ?? this.viewOptions.showPropertyBasedEvents;
+			// Always read event toggles
+			this.readEventToggles();
 
 			// Date navigation
 			this.viewOptions.initialDate = this.config.get('initialDate') ?? this.viewOptions.initialDate;
@@ -326,33 +371,6 @@ export class CalendarView extends BasesViewBase {
 			this.viewOptions.endDateProperty = this.config.get('endDateProperty') ?? this.viewOptions.endDateProperty;
 			this.viewOptions.titleProperty = this.config.get('titleProperty') ?? this.viewOptions.titleProperty;
 
-			// ICS calendar toggles
-			if (this.plugin.icsSubscriptionService) {
-				const subscriptions = this.plugin.icsSubscriptionService.getSubscriptions();
-				for (const sub of subscriptions) {
-					const key = `showICS_${sub.id}`;
-					this.icsCalendarToggles.set(sub.id, this.config.get(key) ?? true);
-				}
-			}
-
-			// Google calendar toggles
-			if (this.plugin.googleCalendarService) {
-				const calendars = this.plugin.googleCalendarService.getAvailableCalendars();
-				for (const cal of calendars) {
-					const key = `showGoogleCalendar_${cal.id}`;
-					this.googleCalendarToggles.set(cal.id, this.config.get(key) ?? true);
-				}
-			}
-
-			// Microsoft calendar toggles
-			if (this.plugin.microsoftCalendarService) {
-				const calendars = this.plugin.microsoftCalendarService.getAvailableCalendars();
-				for (const cal of calendars) {
-					const key = `showMicrosoftCalendar_${cal.id}`;
-					this.microsoftCalendarToggles.set(cal.id, this.config.get(key) ?? true);
-				}
-			}
-
 			// Read enableSearch toggle (default: false for backward compatibility)
 			const enableSearchValue = this.config.get('enableSearch');
 			this.enableSearch = (enableSearchValue as boolean) ?? false;
@@ -376,6 +394,9 @@ export class CalendarView extends BasesViewBase {
 		// Ensure view options are read (in case config wasn't available in onload)
 		if (!this.configLoaded && this.config) {
 			this.readViewOptions();
+		} else if (this.config) {
+			// Always re-read event toggles to respond to toggle changes
+			this.readEventToggles();
 		}
 
 		// Now that config is loaded, setup search (idempotent: will only create once)

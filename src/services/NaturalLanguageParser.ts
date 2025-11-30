@@ -266,7 +266,7 @@ export class NaturalLanguageParser {
 
 		const escapedTrigger = this.escapeRegex(trigger);
 		// Use Unicode-aware pattern to support non-ASCII characters (accented, Cyrillic, CJK, etc.)
-		const contextPattern = new RegExp(`${escapedTrigger}[\\p{L}\\p{N}\\p{M}_]+`, "gu");
+		const contextPattern = new RegExp(`${escapedTrigger}[\\p{L}\\p{N}\\p{M}_/-]+`, "gu");
 		const contextMatches = text.match(contextPattern);
 
 		if (contextMatches) {

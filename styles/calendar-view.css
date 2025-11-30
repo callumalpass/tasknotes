@@ -1044,19 +1044,19 @@
 }
 
 .tasknotes-plugin .mini-calendar-view__day--intensity-low {
-    background: color-mix(in srgb, var(--tn-interactive-accent) 10%, var(--tn-bg-primary)) !important;
-}
-
-.tasknotes-plugin .mini-calendar-view__day--intensity-medium {
     background: color-mix(in srgb, var(--tn-interactive-accent) 25%, var(--tn-bg-primary)) !important;
 }
 
+.tasknotes-plugin .mini-calendar-view__day--intensity-medium {
+    background: color-mix(in srgb, var(--tn-interactive-accent) 40%, var(--tn-bg-primary)) !important;
+}
+
 .tasknotes-plugin .mini-calendar-view__day--intensity-high {
-    background: color-mix(in srgb, var(--tn-interactive-accent) 45%, var(--tn-bg-primary)) !important;
+    background: color-mix(in srgb, var(--tn-interactive-accent) 55%, var(--tn-bg-primary)) !important;
 }
 
 .tasknotes-plugin .mini-calendar-view__day--intensity-very-high {
-    background: color-mix(in srgb, var(--tn-interactive-accent) 65%, var(--tn-bg-primary)) !important;
+    background: color-mix(in srgb, var(--tn-interactive-accent) 70%, var(--tn-bg-primary)) !important;
     color: var(--tn-text-on-accent);
     font-weight: 600;
 }

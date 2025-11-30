@@ -1645,10 +1645,7 @@ export abstract class TaskModal extends Modal {
 	}
 
 	protected updateProjectsFromFiles(): void {
-		// Convert selected files to markdown links using generateMarkdownLink
-		const currentFile = this.app.workspace.getActiveFile();
-		const sourcePath = currentFile?.path || "";
-
+		// Update the projects string from selected items
 		this.projects = this.selectedProjectItems.map((item) => item.link).join(", ");
 	}
 
@@ -1668,6 +1665,9 @@ export abstract class TaskModal extends Modal {
 		// This handles both old plain string projects and new [[link]] format
 		this.selectedProjectItems = [];
 
+		// Use the task's path as the source for resolving relative links
+		const sourcePath = this.getCurrentTaskPath() || "";
+
 		for (const projectString of projects) {
 			// Skip null, undefined, or empty strings
 			if (
@@ -1682,7 +1682,7 @@ export abstract class TaskModal extends Modal {
 			const linkMatch = projectString.match(/^\[\[([^\]]+)\]\]$/);
 			if (linkMatch) {
 				const linkPath = linkMatch[1];
-				const file = this.resolveLink(linkPath, "");
+				const file = this.resolveLink(linkPath, sourcePath);
 				if (file) {
 					// Resolved link
 					this.selectedProjectItems.push({
@@ -1704,7 +1704,7 @@ export abstract class TaskModal extends Modal {
 				const markdownMatch = projectString.match(/^\[([^\]]*)\]\(([^)]+)\)$/);
 				if (markdownMatch) {
 					const linkPath = parseLinkToPath(projectString);
-					const file = this.resolveLink(linkPath, "");
+					const file = this.resolveLink(linkPath, sourcePath);
 					if (file) {
 						// Resolved markdown link
 						this.selectedProjectItems.push({

@@ -660,6 +660,16 @@
     color: var(--tn-color-info);
 }
 
+/* Overdue due dates - use the hover background color for text */
+.tasknotes-plugin .task-card__metadata-date--overdue {
+    color: var(--tn-color-error);
+}
+
+/* Past scheduled dates - use the hover background color for text */
+.tasknotes-plugin .task-card__metadata-date--past {
+    color: var(--tn-color-info);
+}
+
 /* Project links */
 .tasknotes-plugin .task-card__project-link {
     color: var(--interactive-accent);

@@ -109,6 +109,13 @@ describe('NaturalLanguageParser', () => {
       expect(result.title).toBe('Meeting with team');
     });
 
+    it('should extract nested contexts with forward slashes', () => {
+      const result = parser.parseInput('Buy milk @shopping/groceries @home/kitchen');
+
+      expect(result.contexts).toEqual(['shopping/groceries', 'home/kitchen']);
+      expect(result.title).toBe('Buy milk');
+    });
+
     it('should handle mixed tags and contexts', () => {
       const result = parser.parseInput('Fix #bug @home in #codebase @weekend');
 

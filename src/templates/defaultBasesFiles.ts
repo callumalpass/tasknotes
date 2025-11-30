@@ -171,6 +171,48 @@ function formatOrderArray(orderArray: string[]): string {
 }
 
 /**
+ * Generate a priorityWeight formula based on user's custom priorities.
+ * Creates nested if() statements that map priority values to their weights.
+ * Lower weight = higher priority, so tasks sort correctly in ascending order.
+ *
+ * Example output: if(priority=="high",0,if(priority=="normal",1,if(priority=="low",2,999)))
+ */
+function generatePriorityWeightFormula(plugin: TaskNotesPlugin): string {
+	const settings = plugin.settings;
+	const priorityProperty = getPropertyName(mapPropertyToBasesProperty('priority', plugin));
+
+	// Sort priorities by weight (ascending - lower weight = higher priority)
+	const sortedPriorities = [...settings.customPriorities].sort((a, b) => a.weight - b.weight);
+
+	if (sortedPriorities.length === 0) {
+		// No priorities configured, return a constant
+		return '999';
+	}
+
+	// Build nested if statements from the inside out
+	// Start with the fallback value (for tasks with no priority or unknown priority)
+	let formula = '999';
+
+	// Work backwards through priorities to build nested ifs
+	for (let i = sortedPriorities.length - 1; i >= 0; i--) {
+		const priority = sortedPriorities[i];
+		// Use the index as the weight value (0 = highest priority)
+		formula = `if(${priorityProperty}=="${priority.value}",${i},${formula})`;
+	}
+
+	return formula;
+}
+
+/**
+ * Generate the formulas section YAML including priorityWeight
+ */
+function generateFormulasSection(plugin: TaskNotesPlugin): string {
+	const priorityWeightFormula = generatePriorityWeightFormula(plugin);
+	return `formulas:
+  priorityWeight: '${priorityWeightFormula}'`;
+}
+
+/**
  * Generate a Bases file template for a specific command with user settings
  */
 export function generateBasesFileTemplate(commandId: string, plugin: TaskNotesPlugin): string {
@@ -178,6 +220,7 @@ export function generateBasesFileTemplate(commandId: string, plugin: TaskNotesPl
 	const taskFilterCondition = generateTaskFilterCondition(settings);
 	const orderArray = generateOrderArray(plugin);
 	const orderYaml = formatOrderArray(orderArray);
+	const formulasSection = generateFormulasSection(plugin);
 
 	switch (commandId) {
 		case 'open-calendar-view': {
@@ -187,6 +230,8 @@ export function generateBasesFileTemplate(commandId: string, plugin: TaskNotesPl
 # Generated with your TaskNotes settings
 
 ${formatFilterAsYAML([taskFilterCondition])}
+
+${formulasSection}
 
 views:
   - type: tasknotesMiniCalendar
@@ -214,6 +259,8 @@ ${orderYaml}
 			return `# Kanban Board
 
 ${formatFilterAsYAML([taskFilterCondition])}
+
+${formulasSection}
 
 views:
   - type: tasknotesKanban
@@ -257,6 +304,8 @@ ${orderYaml}
 			return `# All Tasks
 
 ${formatFilterAsYAML([taskFilterCondition])}
+
+${formulasSection}
 
 views:
   - type: tasknotesTaskList
@@ -392,6 +441,8 @@ ${orderYaml}
 
 ${formatFilterAsYAML([taskFilterCondition])}
 
+${formulasSection}
+
 views:
   - type: tasknotesCalendar
     name: "Calendar"
@@ -417,6 +468,8 @@ ${orderYaml}
 
 ${formatFilterAsYAML([taskFilterCondition])}
 
+${formulasSection}
+
 views:
   - type: tasknotesCalendar
     name: "Agenda"
@@ -440,6 +493,8 @@ ${orderYaml}
 # Dynamically shows/hides tabs based on available data
 
 ${formatFilterAsYAML([taskFilterCondition])}
+
+${formulasSection}
 
 views:
   - type: tasknotesKanban

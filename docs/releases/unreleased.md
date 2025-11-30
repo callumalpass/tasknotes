@@ -69,6 +69,17 @@ Example:
   - Prevents accidental data loss from clicking outside the modal or pressing Escape
   - Thanks to @renatomen for the PR and @0-BSCode for the feature request
 
+- (#904) Added visual highlighting for overdue and past dates on task cards
+  - Overdue due dates now display in red text
+  - Past scheduled dates now display in blue text
+  - Thanks to @ras0q for the suggestion
+
+- (#1164) Added `priorityWeight` formula to all default Bases templates for priority-based sorting
+  - Formula maps each priority value to a numeric weight based on your custom priority configuration
+  - Sort by `formula.priorityWeight` in ascending order to get highest priority tasks first
+  - Example: `if(priority=="high",0,if(priority=="normal",1,if(priority=="low",2,999)))`
+  - Thanks to @jhedlund for the suggestion
+
 ## Changed
 
 - Improved inline task conversion to merge TasksPlugin and NLP parsing results
@@ -82,6 +93,11 @@ Example:
   - Removed blur filter and shadows from metadata pills
   - Fixed subtask chevron vertical alignment with status dot
   - Reduced swimlane label column width in Kanban view
+
+- (#1151) Increased mini calendar heatmap color intensity for better visibility
+  - Days with notes now show more noticeable colors, especially with low note counts
+  - Intensity levels increased from 10/25/45/65% to 25/40/55/70%
+  - Thanks to @arreme for the suggestion
 
 ## Fixed
 
@@ -135,4 +151,23 @@ Example:
 - (#1272) Fixed recurrence anchor not being saved when set to "completion" during task creation
   - Selecting "completion" as the recurrence anchor now correctly persists to the task frontmatter
   - Thanks to @blaxcky for reporting
+
+- (#1128) Fixed NLP parser not allowing slashes in context names
+  - Contexts like `@shopping/groceries` were being split into `@shopping` and `/groceries`
+  - Hierarchical context names now work the same as tags and projects
+  - Thanks to @wealthychef1 for reporting
+
+- (#1170) Fixed `dateCreated` and `dateModified` not using custom property names when creating notes from calendar events
+  - Notes created from ICS events now respect the field mapping configured in settings
+  - Thanks to @maddie-m for reporting
+
+- (#1171) Fixed calendar event toggles not responding to changes after initial load
+  - Toggling "Show scheduled tasks", "Show due tasks", and other event filters now correctly updates the calendar
+  - Previously, changing these toggles had no effect until the view was reloaded
+  - Thanks to @hangryscribe3 for reporting
+
+- (#1198) Fixed project links being created relative to the wrong file when editing from Bases views
+  - Relative paths in project links are now correctly resolved relative to the task note file
+  - Previously, editing a task from a Bases view would create project links relative to the `.base` file
+  - Thanks to @minchinweb for reporting
 

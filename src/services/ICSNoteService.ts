@@ -196,10 +196,12 @@ export class ICSNoteService {
 			};
 
 			// Process template if provided
+			const dateCreatedField = this.plugin.fieldMapper.toUserField("dateCreated");
+			const dateModifiedField = this.plugin.fieldMapper.toUserField("dateModified");
 			let frontmatter: Record<string, any> = {
 				title: noteTitle,
-				dateCreated: getCurrentTimestamp(),
-				dateModified: getCurrentTimestamp(),
+				[dateCreatedField]: getCurrentTimestamp(),
+				[dateModifiedField]: getCurrentTimestamp(),
 				tags: [this.plugin.fieldMapper.toUserField("icsEventTag")],
 				[this.plugin.fieldMapper.toUserField("icsEventId")]: [icsEvent.id],
 			};
@@ -350,7 +352,8 @@ export class ICSNoteService {
 				}
 
 				frontmatter[icsEventIdField] = existingIds;
-				frontmatter.dateModified = getCurrentTimestamp();
+				const dateModifiedField = this.plugin.fieldMapper.toUserField("dateModified");
+				frontmatter[dateModifiedField] = getCurrentTimestamp();
 			});
 
 			new Notice(

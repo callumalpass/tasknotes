@@ -1167,6 +1167,9 @@ function renderDueDateProperty(
 
 	element.textContent = dueDateText;
 	element.classList.add("task-card__metadata-date", "task-card__metadata-date--due");
+	if (isDueOverdue) {
+		element.classList.add("task-card__metadata-date--overdue");
+	}
 	element.dataset.tnAction = "edit-date";
 	element.dataset.tnDateType = "due";
 
@@ -1213,6 +1216,9 @@ function renderScheduledDateProperty(
 
 	element.textContent = scheduledDateText;
 	element.classList.add("task-card__metadata-date", "task-card__metadata-date--scheduled");
+	if (isScheduledPast) {
+		element.classList.add("task-card__metadata-date--past");
+	}
 	element.dataset.tnAction = "edit-date";
 	element.dataset.tnDateType = "scheduled";
 
