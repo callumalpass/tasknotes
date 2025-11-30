@@ -108,6 +108,18 @@ Example:
 
 ## Fixed
 
+- (#1271) Fixed custom user fields not appearing in task modals after creation
+  - New custom fields are now automatically added to both creation and edit modals
+  - Deleting a custom field also removes it from modal configuration
+  - Updating a field's display name syncs to the modal configuration
+  - Thanks to @craziedde for reporting
+
+- (#1256) Fixed links in custom properties not rendering as clickable in task cards
+  - Wikilinks (`[[Note]]`) now render correctly in Bases views
+  - Markdown links (`[text](url)`) now render correctly in all views
+  - Links in list-type properties are also properly rendered
+  - Thanks to @3zra47 for reporting
+
 - (#1157) Fixed inline task embeds breaking layout when placed in indented bullet lists
   - Task titles now wrap naturally within line boundaries instead of forcing the entire card to a new line
   - Metadata (dates, tags, etc.) stays inline when space permits, with horizontal scrolling on hover when needed

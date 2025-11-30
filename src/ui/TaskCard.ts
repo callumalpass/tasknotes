@@ -431,6 +431,61 @@ const PROPERTY_EXTRACTORS: Record<string, (task: TaskInfo) => any> = {
 };
 
 /**
+ * Extract raw value from a Bases Value object.
+ * Bases API may return objects like {icon: "...", data: ...} or {icon: "...", link: "..."}
+ * instead of raw primitive values. This function extracts the actual value.
+ *
+ * For link values (icon: "lucide-link"), Bases strips the [[]] from wikilinks,
+ * so we need to restore them to ensure proper rendering.
+ */
+function extractBasesValue(value: unknown): unknown {
+	if (value && typeof value === "object" && "icon" in value) {
+		const v = value as Record<string, unknown>;
+
+		// Handle link results (icon: "lucide-link") - restore wikilink format for internal links
+		// Bases stores the link path in "data" field for links
+		if (v.icon === "lucide-link" && "data" in v && v.data !== null && v.data !== undefined) {
+			const linkPath = String(v.data);
+			// Check if it's an internal link (not a URL) - restore wikilink format
+			if (!linkPath.match(/^[a-z]+:\/\//i)) {
+				// Get display text if available
+				const display = "display" in v && v.display ? String(v.display) : null;
+				if (display && display !== linkPath) {
+					return `[[${linkPath}|${display}]]`;
+				}
+				return `[[${linkPath}]]`;
+			}
+			// External URL - return as markdown link if we have display text
+			const display = "display" in v && v.display ? String(v.display) : null;
+			if (display) {
+				return `[${display}](${linkPath})`;
+			}
+			return linkPath;
+		}
+
+		// Return data value if present (for non-link types)
+		if ("data" in v && v.data !== null && v.data !== undefined) {
+			return v.data;
+		}
+		// Handle date results
+		if (v.icon === "lucide-calendar" && "date" in v) {
+			return v.date;
+		}
+		// Handle text results with display property
+		if ("display" in v && v.display !== null && v.display !== undefined) {
+			return v.display;
+		}
+		// Handle missing/empty data indicators
+		if (v.icon === "lucide-file-question" || v.icon === "lucide-help-circle") {
+			return "";
+		}
+		// Fallback for other icon-only results
+		return v.icon ? String(v.icon).replace("lucide-", "") : "";
+	}
+	return value;
+}
+
+/**
  * Get property value from a task with improved error handling and type safety.
  *
  * @param task - The task to extract the property from
@@ -460,15 +515,16 @@ function getPropertyValue(task: TaskInfo, propertyId: string, plugin: TaskNotesP
 		}
 
 		// Check custom properties from Bases or other sources
+		// Values may be Bases Value objects, so extract the raw value
 		if (task.customProperties && propertyId in task.customProperties) {
-			return task.customProperties[propertyId];
+			return extractBasesValue(task.customProperties[propertyId]);
 		}
 
 		// Check for file properties (stored as "file.name", "file.basename", etc.)
 		if (task.customProperties) {
 			const filePropertyId = `file.${propertyId}`;
 			if (filePropertyId in task.customProperties) {
-				return task.customProperties[filePropertyId];
+				return extractBasesValue(task.customProperties[filePropertyId]);
 			}
 		}
 
@@ -490,37 +546,9 @@ function getPropertyValue(task: TaskInfo, propertyId: string, plugin: TaskNotesP
 					return "";
 				}
 
-				// Handle Bases Value objects (e.g., {icon: "...", data: ...})
-				if (value && typeof value === "object" && "icon" in value) {
-					// Return data value if present (e.g., {icon: "lucide-binary", data: 11})
-					if ("data" in value && value.data !== null && value.data !== undefined) {
-						return value.data;
-					}
-
-					// Handle date results (e.g., {icon: "lucide-calendar", date: "2025-09-01"})
-					if (value.icon === "lucide-calendar" && "date" in value) {
-						return value.date;
-					}
-
-					// Handle missing/empty data indicators
-					if (
-						value.icon === "lucide-file-question" ||
-						value.icon === "lucide-help-circle"
-					) {
-						return ""; // Show empty cell but keep column visible
-					}
-
-					// Handle other icon-only results (status indicators, etc.)
-					return value.icon ? value.icon.replace("lucide-", "") : "";
-				}
-
-				// Handle direct scalar values
-				if (value !== "") {
-					return value;
-				}
-
-				// Return empty string for empty values (maintains column visibility)
-				return "";
+				// Extract raw value from Bases Value object
+				const extracted = extractBasesValue(value);
+				return extracted !== "" ? extracted : "";
 			} catch (error) {
 				console.debug(`[TaskNotes] Error computing formula ${propertyId}:`, error);
 				return "[Formula Error]";
@@ -535,7 +563,7 @@ function getPropertyValue(task: TaskInfo, propertyId: string, plugin: TaskNotesP
 				const notePropertyId = `note.${propertyId}`;
 				const value = task.basesData.getValue(notePropertyId as any);
 				if (value !== null && value !== undefined) {
-					return value;
+					return extractBasesValue(value);
 				}
 			} catch (error) {
 				// Property doesn't exist in Bases, try fallback
@@ -1008,7 +1036,10 @@ function renderGenericProperty(
 
 	if (Array.isArray(value)) {
 		// Handle arrays - render each item separately to detect links
-		const filtered = value.filter((v) => v !== null && v !== undefined && v !== "");
+		// Extract Bases values from array items as they may be wrapped objects
+		const filtered = value
+			.map((v) => extractBasesValue(v))
+			.filter((v) => v !== null && v !== undefined && v !== "");
 		filtered.forEach((item, idx) => {
 			if (idx > 0) valueContainer.appendChild(document.createTextNode(", "));
 			renderPropertyValue(valueContainer, item, plugin);

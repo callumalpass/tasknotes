@@ -22,6 +22,7 @@ import {
 	createCardToggle,
 } from "../components/CardComponent";
 import { createFilterSettingsInputs } from "../components/FilterSettingsComponent";
+import { initializeFieldConfig } from "../../utils/fieldConfigDefaults";
 
 /**
  * Renders the Task Properties tab - custom statuses, priorities, and user fields
@@ -243,6 +244,34 @@ export function renderTaskPropertiesTab(
 						type: "text" as const,
 					};
 					plugin.settings.userFields.push(newField);
+
+					// Also add to modal fields config so it appears in task modals by default
+					if (!plugin.settings.modalFieldsConfig) {
+						plugin.settings.modalFieldsConfig = initializeFieldConfig(
+							undefined,
+							plugin.settings.userFields
+						);
+					} else {
+						// Add the new field to the custom group
+						const customGroupFields = plugin.settings.modalFieldsConfig.fields.filter(
+							(f) => f.group === "custom"
+						);
+						const maxOrder = customGroupFields.length > 0
+							? Math.max(...customGroupFields.map((f) => f.order))
+							: -1;
+
+						plugin.settings.modalFieldsConfig.fields.push({
+							id: newId,
+							fieldType: "user",
+							group: "custom",
+							displayName: newField.displayName || "",
+							visibleInCreation: true,
+							visibleInEdit: true,
+							order: maxOrder + 1,
+							enabled: true,
+						});
+					}
+
 					save();
 					renderUserFieldsList(userFieldsContainer, plugin, save);
 				})
@@ -821,6 +850,17 @@ function renderUserFieldsList(
 
 		nameInput.addEventListener("change", () => {
 			field.displayName = nameInput.value;
+
+			// Also update display name in modal fields config
+			if (plugin.settings.modalFieldsConfig) {
+				const modalField = plugin.settings.modalFieldsConfig.fields.find(
+					(f) => f.id === field.id
+				);
+				if (modalField) {
+					modalField.displayName = field.displayName;
+				}
+			}
+
 			save();
 			renderUserFieldsList(container, plugin, save);
 		});
@@ -933,7 +973,17 @@ function renderUserFieldsList(
 				actions: [
 					createDeleteHeaderButton(() => {
 						if (plugin.settings.userFields) {
+							const fieldId = plugin.settings.userFields[index]?.id;
 							plugin.settings.userFields.splice(index, 1);
+
+							// Also remove from modal fields config
+							if (plugin.settings.modalFieldsConfig && fieldId) {
+								plugin.settings.modalFieldsConfig.fields =
+									plugin.settings.modalFieldsConfig.fields.filter(
+										(f) => f.id !== fieldId
+									);
+							}
+
 							save();
 							renderUserFieldsList(container, plugin, save);
 						}
