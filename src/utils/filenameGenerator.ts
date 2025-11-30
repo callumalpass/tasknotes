@@ -1,14 +1,11 @@
 import { format } from "date-fns";
 import { normalizePath } from "obsidian";
 import { TaskNotesSettings } from "../types/settings";
+import {TaskTemplateData} from "./folderTemplateProcessor";
 
 export interface FilenameContext {
-	title: string;
-	priority: string;
-	status: string;
+	taskData?: TaskTemplateData;
 	date?: Date;
-	dueDate?: string; // YYYY-MM-DD format
-	scheduledDate?: string; // YYYY-MM-DD format
 }
 
 export interface ICSFilenameContext extends FilenameContext {
@@ -25,16 +22,16 @@ export function generateICSNoteFilename(
 	settings: TaskNotesSettings
 ): string {
 	// Validate inputs
-	if (!context || !settings) {
+	if (!context || !settings || !context.taskData) {
 		throw new Error("Invalid context or settings provided");
 	}
 
-	if (!context.title || typeof context.title !== "string") {
+	if (!context.taskData.title) {
 		throw new Error("Context must have a valid title");
 	}
 
 	// Validate title content
-	if (context.title.trim().length === 0) {
+	if (context.taskData.title.trim().length === 0) {
 		throw new Error("Title cannot be empty");
 	}
 
@@ -51,7 +48,7 @@ export function generateICSNoteFilename(
 		if (icsSettings) {
 			switch (icsSettings.icsNoteFilenameFormat) {
 				case "title":
-					return sanitizeForFilename(context.title);
+					return sanitizeForFilename(context.taskData.title);
 
 				case "zettel":
 					return generateZettelId(now);
@@ -59,12 +56,15 @@ export function generateICSNoteFilename(
 				case "timestamp":
 					return generateTimestampFilename(now);
 
+				case "project":
+					return generateProjectIdFilename(context.taskData);
+
 				case "custom": {
 					// Create ICS-specific additional variables
 					const icsVariables: Record<string, string> = {
 						icsEventTitle: context.icsEventTitle
 							? sanitizeForFilename(context.icsEventTitle)
-							: sanitizeForFilename(context.title),
+							: sanitizeForFilename(context.taskData.title),
 						icsEventLocation: context.icsEventLocation
 							? sanitizeForFilename(context.icsEventLocation)
 							: "",
@@ -73,7 +73,7 @@ export function generateICSNoteFilename(
 							: "",
 						// Add formatted title with date for users who want the full context
 						icsEventTitleWithDate: sanitizeForFilename(
-							`${context.icsEventTitle || context.title} - ${format(now, "PPP")}`
+							`${context.icsEventTitle || context.taskData.title} - ${format(now, "PPP")}`
 						),
 					};
 					return generateCustomFilename(
@@ -86,16 +86,16 @@ export function generateICSNoteFilename(
 
 				default:
 					// Fallback to title format for ICS notes
-					return sanitizeForFilename(context.title);
+					return sanitizeForFilename(context.taskData.title);
 			}
 		}
 
 		// Fallback to title format if no ICS settings
-		return sanitizeForFilename(context.title);
+		return sanitizeForFilename(context.taskData.title);
 	} catch (error) {
 		console.error("Error generating ICS note filename:", error);
 		// Fallback to safe title format
-		return sanitizeForFilename(context.title);
+		return sanitizeForFilename(context.taskData.title);
 	}
 }
 
@@ -107,16 +107,16 @@ export function generateTaskFilename(
 	settings: TaskNotesSettings
 ): string {
 	// Validate inputs
-	if (!context || !settings) {
+	if (!context || !settings || !context.taskData) {
 		throw new Error("Invalid context or settings provided");
 	}
 
-	if (!context.title || typeof context.title !== "string") {
+	if (!context.taskData.title) {
 		throw new Error("Context must have a valid title");
 	}
 
 	// Validate title content
-	if (context.title.trim().length === 0) {
+	if (context.taskData.title.trim().length === 0) {
 		throw new Error("Title cannot be empty");
 	}
 
@@ -128,19 +128,22 @@ export function generateTaskFilename(
 	}
 
 	if (settings.storeTitleInFilename) {
-		return sanitizeForFilename(context.title);
+		return sanitizeForFilename(context.taskData.title);
 	}
 
 	try {
 		switch (settings.taskFilenameFormat) {
 			case "title":
-				return sanitizeForFilename(context.title);
+				return sanitizeForFilename(context.taskData.title);
 
 			case "zettel":
 				return generateZettelId(now);
 
 			case "timestamp":
 				return generateTimestampFilename(now);
+
+			case "project":
+				return generateProjectIdFilename(context.taskData);
 
 			case "custom":
 				return generateCustomFilename(context, settings.customFilenameTemplate, now);
@@ -181,6 +184,22 @@ function generateTimestampFilename(date: Date): string {
 }
 
 /**
+ * Generates a filename based on a project and incrementing number
+ * format: {ProjectId}-{incValue}
+ * @example PROJ-1234
+ */
+function generateProjectIdFilename(taskData:TaskTemplateData | undefined) {
+	if (!taskData) {
+		throw new Error("Invalid Task or Context Data.");
+	}
+	const projectId =
+		(taskData.projects)
+			? taskData.projects[0].trim().substring(2,6).toUpperCase()
+			: "TASK";
+	return `${projectId}`;
+}
+
+/**
  * Generates a filename based on a custom template
  */
 function generateCustomFilename(
@@ -190,7 +209,7 @@ function generateCustomFilename(
 	additionalVariables?: Record<string, string>
 ): string {
 	// Validate inputs
-	if (!context || !template || !date) {
+	if (!context || !template || !date || !context.taskData) {
 		throw new Error("Invalid inputs for custom filename generation");
 	}
 
@@ -204,15 +223,22 @@ function generateCustomFilename(
 
 	try {
 		// Validate and sanitize context values
-		const sanitizedTitle = sanitizeForFilename(context.title);
+		const sanitizedTitle =
+			context.taskData.title
+				? sanitizeForFilename(context.taskData.title)
+				: "untitled";
 		const sanitizedPriority =
-			context.priority && ["low", "normal", "medium", "high"].includes(context.priority)
-				? context.priority
+			context.taskData.priority && ["low", "normal", "medium", "high"].includes(context.taskData.priority)
+				? context.taskData.priority
 				: "normal";
 		const sanitizedStatus =
-			context.status && ["open", "in-progress", "done", "scheduled"].includes(context.status)
-				? context.status
+			context.taskData.status && ["open", "in-progress", "done", "scheduled"].includes(context.taskData.status)
+				? context.taskData.status
 				: "open";
+		const sanitizedProject =
+			context.taskData.projects
+				? context.taskData.projects[0].trim().substring(2,6).toUpperCase()
+				: "TASK";
 
 		const variables: Record<string, string> = {
 			title: sanitizedTitle,
@@ -220,16 +246,18 @@ function generateCustomFilename(
 			time: format(date, "HHmmss"),
 			priority: sanitizedPriority,
 			status: sanitizedStatus,
+			project: sanitizedProject,
 			timestamp: format(date, "yyyy-MM-dd-HHmmss"),
 			dateTime: format(date, "yyyy-MM-dd-HHmm"),
 			year: format(date, "yyyy"),
+			shortYear: format(date, "yy"),
 			month: format(date, "MM"),
 			day: format(date, "dd"),
 			hour: format(date, "HH"),
 			minute: format(date, "mm"),
 			second: format(date, "ss"),
-			dueDate: context.dueDate || "",
-			scheduledDate: context.scheduledDate || "",
+			dueDate: context.taskData.due || "",
+			scheduledDate: context.taskData.scheduled || "",
 			// New date format variations
 			shortDate: format(date, "yyMMdd"),
 			monthName: format(date, "MMMM"),
@@ -274,6 +302,7 @@ function generateCustomFilename(
 			// Date-based identifiers
 			zettel: generateZettelId(date),
 			nano: Date.now().toString() + Math.random().toString(36).substring(2, 7),
+			uuid: crypto.randomUUID(),
 
 			// Merge any additional variables
 			...(additionalVariables || {}),
@@ -308,7 +337,11 @@ function generateCustomFilename(
 	} catch (error) {
 		console.error("Error generating custom filename:", error);
 		// Fallback to safe title-based filename
-		return sanitizeForFilename(context.title) || generateZettelId(date);
+		return (
+			context.taskData.title
+				? sanitizeForFilename(context.taskData.title)
+				: generateZettelId(date)
+		)
 	}
 }
 
@@ -461,8 +494,8 @@ export async function generateUniqueFilename(
 		}
 
 		// If not, try appending numbers
-		for (let i = 2; i <= 999; i++) {
-			const candidateFilename = `${sanitizedFilename}-${i}`;
+		for (let i = 1; i <= 999; i++) {
+			const candidateFilename = `${sanitizedFilename}-${i.toString().padStart(4,"0")}`;
 			const candidatePath = normalizePath(`${sanitizedFolderPath}/${candidateFilename}.md`);
 
 			// Check path length for each candidate
