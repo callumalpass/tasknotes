@@ -27,6 +27,7 @@ import { splitListPreservingLinksAndQuotes } from "../utils/stringSplit";
 import { ReminderContextMenu } from "../components/ReminderContextMenu";
 import { generateLinkWithDisplay } from "../utils/linkUtils";
 import { EmbeddableMarkdownEditor } from "../editor/EmbeddableMarkdownEditor";
+import { ConfirmationModal } from "./ConfirmationModal";
 
 export interface TaskEditOptions {
 	task: TaskInfo;
@@ -50,6 +51,7 @@ export class TaskEditModal extends TaskModal {
 	} = { added: [], removed: [], raw: {} };
 	private unresolvedBlockingEntries: string[] = [];
 	private markdownEditor: EmbeddableMarkdownEditor | null = null;
+	private shouldSaveOnClose = false;
 
 	constructor(app: App, plugin: TaskNotesPlugin, options: TaskEditOptions) {
 		super(app, plugin);
@@ -233,6 +235,7 @@ export class TaskEditModal extends TaskModal {
 			if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
 				e.preventDefault();
 				await this.handleSave();
+				this.shouldSaveOnClose = true;
 				this.close();
 			}
 		};
@@ -361,9 +364,11 @@ export class TaskEditModal extends TaskModal {
 				onChange: (value) => {
 					this.details = value;
 				},
-				onSubmit: () => {
+				onSubmit: async () => {
 					// Ctrl/Cmd+Enter - save the task
-					this.handleSave();
+					await this.handleSave();
+					this.shouldSaveOnClose = true;
+					this.close();
 				},
 				onEscape: () => {
 					// ESC - close the modal
@@ -379,6 +384,56 @@ export class TaskEditModal extends TaskModal {
 
 		// Additional form fields (contexts, tags, etc.)
 		this.createAdditionalFields(this.detailsContainer);
+	}
+
+	/**
+	 * Override close() to detect unsaved changes and prompt user
+	 */
+	async close(): Promise<void> {
+		// If we're closing after a save, skip confirmation
+		if (this.shouldSaveOnClose) {
+			this.shouldSaveOnClose = false;
+			super.close();
+			return;
+		}
+
+		// Check for unsaved changes
+		const changes = this.getChanges();
+		const hasChanges = Object.keys(changes).length > 0;
+
+		if (!hasChanges) {
+			// No changes, close immediately
+			super.close();
+			return;
+		}
+
+		// Show confirmation modal
+		const confirmed = await this.showUnsavedChangesConfirmation();
+
+		if (confirmed) {
+			// User wants to save
+			await this.handleSave();
+			this.shouldSaveOnClose = true;
+			super.close();
+		} else {
+			// User wants to discard changes
+			super.close();
+		}
+	}
+
+	/**
+	 * Show confirmation modal for unsaved changes
+	 */
+	private async showUnsavedChangesConfirmation(): Promise<boolean> {
+		const modal = new ConfirmationModal(this.app, {
+			title: this.t("modals.task.unsavedChanges.title"),
+			message: this.t("modals.task.unsavedChanges.message"),
+			confirmText: this.t("modals.task.unsavedChanges.save"),
+			cancelText: this.t("modals.task.unsavedChanges.discard"),
+			defaultToConfirm: true,
+		});
+
+		return await modal.show();
 	}
 
 	onClose(): void {
@@ -1038,6 +1093,7 @@ export class TaskEditModal extends TaskModal {
 			saveButton.disabled = true;
 			try {
 				await this.handleSave();
+				this.shouldSaveOnClose = true;
 				this.close();
 			} finally {
 				saveButton.disabled = false;

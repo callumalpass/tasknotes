@@ -4732,6 +4732,10 @@
       "source": "22d200f8670dbdb3e253a90eee5098477c95c23d",
       "translation": "22d200f8670dbdb3e253a90eee5098477c95c23d"
     },
+    "modals.task.unsavedChanges.title": null,
+    "modals.task.unsavedChanges.message": null,
+    "modals.task.unsavedChanges.save": null,
+    "modals.task.unsavedChanges.discard": null,
     "modals.task.dependencies.blockedBy": {
       "source": "ea05d7701157b2371f01467a3a25cd6e3a5bbefd",
       "translation": "8844c130766dfc1c52cfc70fe0520ae49bb32fd3"
@@ -11842,6 +11846,10 @@
       "source": "22d200f8670dbdb3e253a90eee5098477c95c23d",
       "translation": "22d200f8670dbdb3e253a90eee5098477c95c23d"
     },
+    "modals.task.unsavedChanges.title": null,
+    "modals.task.unsavedChanges.message": null,
+    "modals.task.unsavedChanges.save": null,
+    "modals.task.unsavedChanges.discard": null,
     "modals.task.dependencies.blockedBy": {
       "source": "ea05d7701157b2371f01467a3a25cd6e3a5bbefd",
       "translation": "18bbe617b4a4442112a9742a891c11b52385ba4d"
@@ -18952,6 +18960,10 @@
       "source": "22d200f8670dbdb3e253a90eee5098477c95c23d",
       "translation": "22d200f8670dbdb3e253a90eee5098477c95c23d"
     },
+    "modals.task.unsavedChanges.title": null,
+    "modals.task.unsavedChanges.message": null,
+    "modals.task.unsavedChanges.save": null,
+    "modals.task.unsavedChanges.discard": null,
     "modals.task.dependencies.blockedBy": {
       "source": "ea05d7701157b2371f01467a3a25cd6e3a5bbefd",
       "translation": "7d5eca7a878edfcb982d0f1ef88769c3c2f73442"
@@ -26062,6 +26074,10 @@
       "source": "22d200f8670dbdb3e253a90eee5098477c95c23d",
       "translation": "22d200f8670dbdb3e253a90eee5098477c95c23d"
     },
+    "modals.task.unsavedChanges.title": null,
+    "modals.task.unsavedChanges.message": null,
+    "modals.task.unsavedChanges.save": null,
+    "modals.task.unsavedChanges.discard": null,
     "modals.task.dependencies.blockedBy": {
       "source": "ea05d7701157b2371f01467a3a25cd6e3a5bbefd",
       "translation": "62ab57415c6659f2bbc639631ca37eca062e583b"
@@ -33172,6 +33188,10 @@
       "source": "22d200f8670dbdb3e253a90eee5098477c95c23d",
       "translation": "22d200f8670dbdb3e253a90eee5098477c95c23d"
     },
+    "modals.task.unsavedChanges.title": null,
+    "modals.task.unsavedChanges.message": null,
+    "modals.task.unsavedChanges.save": null,
+    "modals.task.unsavedChanges.discard": null,
     "modals.task.dependencies.blockedBy": {
       "source": "ea05d7701157b2371f01467a3a25cd6e3a5bbefd",
       "translation": "b9a69c08bc722513c2e7a4752f75db0e953b4f96"
@@ -40282,6 +40302,10 @@
       "source": "22d200f8670dbdb3e253a90eee5098477c95c23d",
       "translation": "22d200f8670dbdb3e253a90eee5098477c95c23d"
     },
+    "modals.task.unsavedChanges.title": null,
+    "modals.task.unsavedChanges.message": null,
+    "modals.task.unsavedChanges.save": null,
+    "modals.task.unsavedChanges.discard": null,
     "modals.task.dependencies.blockedBy": {
       "source": "ea05d7701157b2371f01467a3a25cd6e3a5bbefd",
       "translation": "fd718a1c03c5aae256668cfa431df1d1d2f6d05d"
@@ -47392,6 +47416,10 @@
       "source": "22d200f8670dbdb3e253a90eee5098477c95c23d",
       "translation": "22d200f8670dbdb3e253a90eee5098477c95c23d"
     },
+    "modals.task.unsavedChanges.title": null,
+    "modals.task.unsavedChanges.message": null,
+    "modals.task.unsavedChanges.save": null,
+    "modals.task.unsavedChanges.discard": null,
     "modals.task.dependencies.blockedBy": {
       "source": "ea05d7701157b2371f01467a3a25cd6e3a5bbefd",
       "translation": "0b2664618af6ef68bb7f5cbf71c9ab1bcfd465ec"
