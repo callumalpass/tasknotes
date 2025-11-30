@@ -27,4 +27,6 @@ Example:
 ## Changed
 
 - Custom status icons now display in all context menus (task context menu, batch operations menu, and task creation/edit modals)
+- Added embedded video guide for Google Calendar OAuth setup in documentation
+  - Thanks to [@antoneheyward](https://www.youtube.com/@antoneheyward) for the tutorial
 

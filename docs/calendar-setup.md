@@ -21,6 +21,10 @@ To connect your calendars, you'll need to create OAuth applications with Google 
 
 ### Google Calendar
 
+<iframe width="560" height="315" src="https://www.youtube.com/embed/DzMN1Wu2P-g?start=210" title="How to set up Google Calendar OAuth" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+*Video by [@antoneheyward](https://www.youtube.com/@antoneheyward)*
+
 1. **Create OAuth App**
    - Go to [Google Cloud Console](https://console.cloud.google.com)
    - Create a new project or select existing
