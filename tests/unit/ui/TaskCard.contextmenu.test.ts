@@ -42,7 +42,8 @@ describe('TaskCard Context Menu Event Handling', () => {
                 isCompletedStatus: jest.fn().mockReturnValue(false),
                 getStatusConfig: jest.fn().mockReturnValue({ color: '#666666' }),
                 getStatusIcon: jest.fn().mockReturnValue('circle'),
-                getStatusColor: jest.fn().mockReturnValue('#666666')
+                getStatusColor: jest.fn().mockReturnValue('#666666'),
+                getNextStatus: jest.fn().mockReturnValue('done')
             },
             expandedProjectsService: {
                 isExpanded: jest.fn().mockReturnValue(false)
