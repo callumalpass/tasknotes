@@ -61,6 +61,9 @@ export function renderTaskPropertiesTab(
 		text: translate("settings.taskProperties.taskStatuses.howTheyWork.color"),
 	});
 	statusHelpList.createEl("li", {
+		text: translate("settings.taskProperties.taskStatuses.howTheyWork.icon"),
+	});
+	statusHelpList.createEl("li", {
 		text: translate("settings.taskProperties.taskStatuses.howTheyWork.completed"),
 	});
 	statusHelpList.createEl("li", {
@@ -283,6 +286,11 @@ function renderStatusList(container: HTMLElement, plugin: TaskNotesPlugin, save:
 			status.label
 		);
 		const colorInput = createCardInput("color", "", status.color);
+		const iconInput = createCardInput(
+			"text",
+			translate("settings.taskProperties.taskStatuses.placeholders.icon"),
+			status.icon || ""
+		);
 
 		const completedToggle = createCardToggle(status.isCompleted || false, (value) => {
 			status.isCompleted = value;
@@ -395,6 +403,12 @@ function renderStatusList(container: HTMLElement, plugin: TaskNotesPlugin, save:
 							},
 							{
 								label: translate(
+									"settings.taskProperties.taskStatuses.fields.icon"
+								),
+								input: iconInput,
+							},
+							{
+								label: translate(
 									"settings.taskProperties.taskStatuses.fields.completed"
 								),
 								input: completedToggle,
@@ -444,6 +458,11 @@ function renderStatusList(container: HTMLElement, plugin: TaskNotesPlugin, save:
 			if (colorIndicator) {
 				colorIndicator.style.backgroundColor = status.color;
 			}
+			save();
+		});
+
+		iconInput.addEventListener("change", () => {
+			status.icon = iconInput.value.trim() || undefined;
 			save();
 		});
 

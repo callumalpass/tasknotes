@@ -827,6 +827,7 @@ export const en: TranslationTree = {
 					value: 'Value: The internal identifier stored in your task files (e.g., "in-progress")',
 					label: 'Label: The display name shown in the interface (e.g., "In Progress")',
 					color: "Color: Visual indicator color for the status dot and badges",
+					icon: 'Icon: Optional Lucide icon name to display instead of colored dot (e.g., "check", "circle", "clock"). Browse icons at lucide.dev',
 					completed:
 						"Completed: When checked, tasks with this status are considered finished and may be filtered differently",
 					autoArchive:
@@ -847,6 +848,7 @@ export const en: TranslationTree = {
 					value: "Value:",
 					label: "Label:",
 					color: "Color:",
+					icon: "Icon:",
 					completed: "Completed:",
 					autoArchive: "Auto-archive:",
 					delayMinutes: "Delay (minutes):",
@@ -854,6 +856,7 @@ export const en: TranslationTree = {
 				placeholders: {
 					value: "in-progress",
 					label: "In Progress",
+					icon: "check, circle, clock",
 				},
 				badges: {
 					completed: "Completed",

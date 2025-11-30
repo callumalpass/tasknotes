@@ -804,6 +804,7 @@ export const ja: TranslationTree = {
 					value: "値：タスクファイルに保存される内部識別子（例：\"in-progress\"）",
 					label: "ラベル：インターフェースに表示される表示名（例：\"進行中\"）",
 					color: "色：ステータスドットとバッジの視覚的インジケーター色",
+					icon: "アイコン：カラードットの代わりに表示するオプションのLucideアイコン名（例：\"check\"、\"circle\"、\"clock\"）。lucide.devでアイコンを閲覧",
 					completed: "完了：チェックすると、このステータスのタスクは完了と見なされ、異なってフィルタリングされる場合があります",
 					autoArchive: "自動アーカイブ：有効にすると、指定された遅延後にタスクが自動的にアーカイブされます（1-1440分）",
 					orderNote: "以下の順序は、タスクステータスバッジをクリックしてステータスを切り替える際のシーケンスを決定します。",
@@ -820,6 +821,7 @@ export const ja: TranslationTree = {
 					value: "値：",
 					label: "ラベル：",
 					color: "色：",
+					icon: "アイコン：",
 					completed: "完了：",
 					autoArchive: "自動アーカイブ：",
 					delayMinutes: "遅延（分）：",
@@ -827,6 +829,7 @@ export const ja: TranslationTree = {
 				placeholders: {
 					value: "in-progress",
 					label: "進行中",
+					icon: "check, circle, clock",
 				},
 				badges: {
 					completed: "完了",

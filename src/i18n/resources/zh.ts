@@ -804,6 +804,7 @@ export const zh: TranslationTree = {
 					value: "值：存储在任务文件中的内部标识符（例如，\"进行中\"）",
 					label: "标签：在界面中显示的显示名称（例如，\"进行中\"）",
 					color: "颜色：状态点和徽章的视觉指示器颜色",
+					icon: "图标：可选的 Lucide 图标名称，用于替代彩色圆点显示（例如，\"check\"、\"circle\"、\"clock\"）。在 lucide.dev 浏览图标",
 					completed: "已完成：选中时，具有此状态的任务被视为已完成，可能以不同方式过滤",
 					autoArchive: "自动归档：启用时，任务将在指定延迟后自动归档（1-1440分钟）",
 					orderNote: "下面的顺序确定点击任务状态徽章时循环状态的顺序。",
@@ -820,6 +821,7 @@ export const zh: TranslationTree = {
 					value: "值：",
 					label: "标签：",
 					color: "颜色：",
+					icon: "图标：",
 					completed: "已完成：",
 					autoArchive: "自动归档：",
 					delayMinutes: "延迟（分钟）：",
@@ -827,6 +829,7 @@ export const zh: TranslationTree = {
 				placeholders: {
 					value: "进行中",
 					label: "进行中",
+					icon: "check, circle, clock",
 				},
 				badges: {
 					completed: "已完成",

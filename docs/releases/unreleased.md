@@ -26,6 +26,13 @@ Example:
 
 ## Added
 
+- (#1245), (#793) Added custom icon support for task statuses
+  - Configure a Lucide icon name (e.g., `check`, `circle`, `clock`) per status in Settings → Task Properties → Task Statuses
+  - Icons display instead of the colored dot, inheriting the status color
+  - Browse available icons at [lucide.dev](https://lucide.dev)
+  - Improves accessibility by allowing shape-based status differentiation
+  - Thanks to @3Fish for the feature request and @Raonmir2, @aubreyz, @prayidae, and @anareaty for the discussion on accessibility and icon-based indicators
+
 - (#1259) Added [Property Types Reference](../settings/property-types-reference.md) documentation
   - Documents expected data types (text, list, date, number) for all frontmatter properties
   - Includes format specifications, examples, and a complete YAML reference

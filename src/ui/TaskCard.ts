@@ -146,6 +146,15 @@ function createStatusCycleHandler(
 
 				if (newStatusConfig) {
 					statusDot.style.borderColor = newStatusConfig.color;
+					// Update icon if configured
+					if (newStatusConfig.icon) {
+						statusDot.addClass("task-card__status-dot--icon");
+						statusDot.empty();
+						setIcon(statusDot, newStatusConfig.icon);
+					} else {
+						statusDot.removeClass("task-card__status-dot--icon");
+						statusDot.empty();
+					}
 				}
 
 				// Update card classes
@@ -1366,6 +1375,11 @@ export function createTaskCard(
 		statusDot = mainRow.createEl("span", { cls: "task-card__status-dot" });
 		if (statusConfig) {
 			statusDot.style.borderColor = statusConfig.color;
+			// If status has an icon configured, render it instead of colored dot
+			if (statusConfig.icon) {
+				statusDot.addClass("task-card__status-dot--icon");
+				setIcon(statusDot, statusConfig.icon);
+			}
 		}
 	}
 

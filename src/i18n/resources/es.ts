@@ -804,6 +804,7 @@ export const es: TranslationTree = {
 					value: "Valor: El identificador interno almacenado en tus archivos de tarea (ej. \"en-progreso\")",
 					label: "Etiqueta: El nombre mostrado en la interfaz (ej. \"En progreso\")",
 					color: "Color: Color indicador visual para el punto de estado y distintivos",
+					icon: "Icono: Nombre de icono Lucide opcional para mostrar en lugar del punto de color (ej. \"check\", \"circle\", \"clock\"). Explora iconos en lucide.dev",
 					completed: "Completado: Cuando se marca, las tareas con este estado se consideran terminadas y pueden filtrarse de manera diferente",
 					autoArchive: "Auto-archivar: Cuando está habilitado, las tareas se archivarán automáticamente después del retraso especificado (1-1440 minutos)",
 					orderNote: "El orden de abajo determina la secuencia al alternar entre estados haciendo clic en distintivos de estado de tarea.",
@@ -820,6 +821,7 @@ export const es: TranslationTree = {
 					value: "Valor:",
 					label: "Etiqueta:",
 					color: "Color:",
+					icon: "Icono:",
 					completed: "Completado:",
 					autoArchive: "Auto-archivar:",
 					delayMinutes: "Retraso (minutos):",
@@ -827,6 +829,7 @@ export const es: TranslationTree = {
 				placeholders: {
 					value: "en-progreso",
 					label: "En progreso",
+					icon: "check, circle, clock",
 				},
 				badges: {
 					completed: "Completado",

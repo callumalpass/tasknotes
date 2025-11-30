@@ -682,6 +682,7 @@ export interface StatusConfig {
 	value: string; // What gets written to YAML
 	label: string; // What displays in UI
 	color: string; // Hex color for UI elements
+	icon?: string; // Optional Lucide icon name (e.g., "circle", "check", "clock")
 	isCompleted: boolean; // Whether this counts as "done"
 	order: number; // Sort order (for cycling)
 	autoArchive: boolean; // Whether to auto-archive tasks with this status

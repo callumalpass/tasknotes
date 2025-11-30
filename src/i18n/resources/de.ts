@@ -804,6 +804,7 @@ export const de: TranslationTree = {
 					value: "Wert: Der interne Bezeichner, der in deinen Aufgabendateien gespeichert wird (z.B. \"in-progress\")",
 					label: "Label: Der Anzeigename in der Benutzeroberfläche (z.B. \"In Bearbeitung\")",
 					color: "Farbe: Visuelle Indikatorfarbe für Statuspunkt und Abzeichen",
+					icon: "Symbol: Optionaler Lucide-Symbolname zur Anzeige anstelle des farbigen Punktes (z.B. \"check\", \"circle\", \"clock\"). Symbole unter lucide.dev durchsuchen",
 					completed: "Abgeschlossen: Wenn angehakt, werden Aufgaben mit diesem Status als fertig betrachtet und können anders gefiltert werden",
 					autoArchive: "Auto-Archivierung: Wenn aktiviert, werden Aufgaben nach der angegebenen Verzögerung automatisch archiviert (1-1440 Minuten)",
 					orderNote: "Die Reihenfolge unten bestimmt die Sequenz beim Durchschalten der Status durch Klicken auf Aufgabenstatus-Abzeichen.",
@@ -820,6 +821,7 @@ export const de: TranslationTree = {
 					value: "Wert:",
 					label: "Label:",
 					color: "Farbe:",
+					icon: "Symbol:",
 					completed: "Abgeschlossen:",
 					autoArchive: "Auto-Archivierung:",
 					delayMinutes: "Verzögerung (Minuten):",
@@ -827,6 +829,7 @@ export const de: TranslationTree = {
 				placeholders: {
 					value: "in-bearbeitung",
 					label: "In Bearbeitung",
+					icon: "check, circle, clock",
 				},
 				badges: {
 					completed: "Abgeschlossen",

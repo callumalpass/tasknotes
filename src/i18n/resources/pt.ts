@@ -807,6 +807,7 @@ export const pt: TranslationTree = {
 					value: 'Valor: O identificador interno armazenado em seus arquivos de tarefa (ex: "em-progresso")',
 					label: 'Rótulo: O nome de exibição mostrado na interface (ex: "Em Progresso")',
 					color: "Cor: Cor do indicador visual para o ponto de status e emblemas",
+					icon: 'Ícone: Nome de ícone Lucide opcional para exibir em vez do ponto colorido (ex: "check", "circle", "clock"). Navegue pelos ícones em lucide.dev',
 					completed: "Concluído: Quando marcado, tarefas com este status são consideradas finalizadas e podem ser filtradas de forma diferente",
 					autoArchive: "Arquivar automaticamente: Quando ativado, as tarefas serão automaticamente arquivadas após o atraso especificado (1-1440 minutos)",
 					orderNote: "A ordem abaixo determina a sequência ao alternar entre os status clicando nos emblemas de status da tarefa."
@@ -823,13 +824,15 @@ export const pt: TranslationTree = {
 					value: "Valor:",
 					label: "Rótulo:",
 					color: "Cor:",
+					icon: "Ícone:",
 					completed: "Concluído:",
 					autoArchive: "Arquivar auto.:",
 					delayMinutes: "Atraso (minutos):"
 				},
 				placeholders: {
 					value: "em-progresso",
-					label: "Em Progresso"
+					label: "Em Progresso",
+					icon: "check, circle, clock"
 				},
 				badges: {
 					completed: "Concluído"

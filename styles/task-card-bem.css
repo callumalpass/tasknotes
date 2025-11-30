@@ -294,6 +294,39 @@
     animation: status-complete 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* Status dot with icon mode - uses Lucide icons from theme */
+.tasknotes-plugin .task-card__status-dot--icon {
+    border: none;
+    background-color: transparent;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.tasknotes-plugin .task-card__status-dot--icon svg {
+    width: 18px;
+    height: 18px;
+    color: var(--current-status-color, var(--tn-text-muted));
+    stroke-width: 2;
+}
+
+.tasknotes-plugin .task-card__status-dot--icon:hover svg {
+    color: var(--next-status-color, var(--tn-interactive-accent));
+}
+
+/* Completed state for icon mode */
+.tasknotes-plugin .task-card--completed > .task-card__main-row .task-card__status-dot--icon {
+    background-color: transparent;
+}
+
+.tasknotes-plugin .task-card--completed > .task-card__main-row .task-card__status-dot--icon svg {
+    color: var(--current-status-color, var(--tn-color-success));
+}
+
+.tasknotes-plugin .task-card--completed > .task-card__main-row .task-card__status-dot--icon:hover svg {
+    color: var(--next-status-color, var(--tn-interactive-accent));
+}
+
 /* =================================================================
    BADGE AREA - Groups secondary indicators (recurring, reminder, project)
    ================================================================= */

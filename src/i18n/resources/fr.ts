@@ -804,6 +804,7 @@ export const fr: TranslationTree = {
 					value: "Valeur : L'identifiant interne stocké dans vos fichiers de tâches (ex. \"in-progress\")",
 					label: "Label : Le nom affiché dans l'interface (ex. \"En cours\")",
 					color: "Couleur : Couleur d'indicateur visuel pour les points et badges de statut",
+					icon: "Icône : Nom d'icône Lucide optionnel à afficher à la place du point coloré (ex. \"check\", \"circle\", \"clock\"). Parcourir les icônes sur lucide.dev",
 					completed: "Terminé : Quand coché, les tâches avec ce statut sont considérées comme finies et peuvent être filtrées différemment",
 					autoArchive: "Archivage auto : Quand activé, les tâches seront automatiquement archivées après le délai spécifié (1-1440 minutes)",
 					orderNote: "L'ordre ci-dessous détermine la séquence lors du passage d'un statut à l'autre en cliquant sur les badges de statut des tâches.",
@@ -820,6 +821,7 @@ export const fr: TranslationTree = {
 					value: "Valeur :",
 					label: "Label :",
 					color: "Couleur :",
+					icon: "Icône :",
 					completed: "Terminé :",
 					autoArchive: "Archivage auto :",
 					delayMinutes: "Délai (minutes) :",
@@ -827,6 +829,7 @@ export const fr: TranslationTree = {
 				placeholders: {
 					value: "en-cours",
 					label: "En cours",
+					icon: "check, circle, clock",
 				},
 				badges: {
 					completed: "Terminé",
