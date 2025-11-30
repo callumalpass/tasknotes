@@ -1163,7 +1163,7 @@ export class TaskListView extends BasesViewBase {
 				}
 			},
 			plugin: this.plugin,
-			app: this.app,
+			app: this.app || this.plugin.app,
 		});
 		menu.show(event);
 	}

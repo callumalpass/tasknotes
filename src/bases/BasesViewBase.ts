@@ -325,7 +325,9 @@ export abstract class BasesViewBase extends Component {
 		}
 
 		// Open TaskNotes creation modal
-		const modal = new TaskCreationModal(this.app, this.plugin, {
+		// Use this.app if available (set by Bases), otherwise fall back to plugin.app
+		const app = this.app || this.plugin.app;
+		const modal = new TaskCreationModal(app, this.plugin, {
 			prePopulatedValues: taskCreationData,
 			onTaskCreated: (task: TaskInfo) => {
 				// Refresh the view after task creation so it appears immediately
