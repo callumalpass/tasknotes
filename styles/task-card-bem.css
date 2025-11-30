@@ -1132,6 +1132,7 @@
     display: inline-block !important;
     font-size: var(--tn-font-size-sm);
     margin: 0;
+    margin-left: 0.5em; /* Space between title and metadata */
     padding: 0;
     vertical-align: text-bottom;
     position: relative;

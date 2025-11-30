@@ -432,25 +432,16 @@
         gap: var(--tn-spacing-sm);
     }
     
-    .tasknotes-plugin .kanban-view__column {
-        min-width: 240px;
-        max-width: 280px;
-    }
 }
 
 @media (max-width: 480px) {
     .tasknotes-plugin .kanban-view {
         padding: var(--tn-spacing-xs);
     }
-    
+
     .tasknotes-plugin .kanban-view__board {
         padding: var(--tn-spacing-xs);
         gap: var(--tn-spacing-xs);
-    }
-    
-    .tasknotes-plugin .kanban-view__column {
-        min-width: 200px;
-        max-width: 240px;
     }
     
     .tasknotes-plugin .kanban-view__column-header {
