@@ -172,6 +172,11 @@ export const DEFAULT_CALENDAR_VIEW_SETTINGS: CalendarViewSettings = {
 	showTodayHighlight: true,
 	// Event display
 	eventMinHeight: 15, // FullCalendar default
+	// Event overlap and stacking behavior
+	slotEventOverlap: true, // FullCalendar default - events can visually overlap
+	eventMaxStack: null, // No limit on stacked events in timeGrid (null = unlimited)
+	dayMaxEvents: true, // Auto-limit based on cell height in dayGrid
+	dayMaxEventRows: false, // No row limit in dayGrid (false = unlimited)
 };
 
 export const DEFAULT_ICS_INTEGRATION_SETTINGS: ICSIntegrationSettings = {

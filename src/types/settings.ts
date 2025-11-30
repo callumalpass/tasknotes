@@ -317,4 +317,9 @@ export interface CalendarViewSettings {
 	showTodayHighlight: boolean;
 	// Event display
 	eventMinHeight: number; // Minimum height for events (FullCalendar eventMinHeight)
+	// Event overlap and stacking behavior
+	slotEventOverlap: boolean; // Whether timed events should visually overlap (false = side-by-side)
+	eventMaxStack: number | null; // Max events stacked in timeGrid view (null = unlimited)
+	dayMaxEvents: number | boolean; // Max events per day in dayGrid view (true = auto, number = limit, false = unlimited)
+	dayMaxEventRows: number | boolean; // Max event rows per day in dayGrid view (true = auto, number = limit, false = unlimited)
 }

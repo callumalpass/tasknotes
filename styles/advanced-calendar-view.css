@@ -1288,3 +1288,33 @@
     background: var(--background-primary) !important;
     color: var(--text-normal) !important;
 }
+
+/* Dark mode fixes for timeGrid more link (eventMaxStack) */
+.advanced-calendar-view .fc-timegrid-more-link {
+    color: var(--text-normal);
+    background: var(--background-secondary);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-decoration: none;
+    display: inline-block;
+    margin-top: 2px;
+}
+
+.advanced-calendar-view .fc-timegrid-more-link:hover {
+    background: var(--background-modifier-hover);
+    color: var(--text-normal);
+}
+
+.theme-dark .advanced-calendar-view .fc-timegrid-more-link {
+    background: var(--background-secondary);
+    color: var(--text-normal);
+    border-color: var(--background-modifier-border);
+}
+
+.theme-dark .advanced-calendar-view .fc-timegrid-more-link:hover {
+    background: var(--background-modifier-hover);
+    color: var(--text-normal);
+}

@@ -229,6 +229,11 @@ export const ja: TranslationTree = {
 					initialScrollTime: "初期スクロール時刻",
 					initialScrollTimePlaceholder: "HH:mm:ss（例：08:00:00）",
 					minimumEventHeight: "最小イベント高さ（px）",
+					slotEventOverlap: "イベントの重なりを許可",
+					enableSearch: "検索ボックスを有効化",
+					eventMaxStack: "最大スタックイベント数（週/日表示、0 = 無制限）",
+					dayMaxEvents: "1日あたりの最大イベント数（月表示、0 = 自動）",
+					dayMaxEventRows: "1日あたりの最大イベント行数（月表示、0 = 無制限）",
 				},
 				propertyBasedEvents: {
 					startDateProperty: "開始日プロパティ",

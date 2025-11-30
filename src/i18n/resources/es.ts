@@ -229,6 +229,11 @@ export const es: TranslationTree = {
 					initialScrollTime: "Hora de desplazamiento inicial",
 					initialScrollTimePlaceholder: "HH:mm:ss (ej. 08:00:00)",
 					minimumEventHeight: "Altura mínima del evento (px)",
+					slotEventOverlap: "Permitir superposición de eventos",
+					enableSearch: "Habilitar cuadro de búsqueda",
+					eventMaxStack: "Máx. eventos apilados (vista semana/día, 0 = ilimitado)",
+					dayMaxEvents: "Máx. eventos por día (vista mes, 0 = automático)",
+					dayMaxEventRows: "Máx. filas de eventos por día (vista mes, 0 = ilimitado)",
 				},
 				propertyBasedEvents: {
 					startDateProperty: "Propiedad de fecha de inicio",

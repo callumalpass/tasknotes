@@ -68,6 +68,7 @@ Example:
   - Search existing tasks or type natural language to create new tasks (e.g., "Buy groceries tomorrow #shopping")
   - Press Enter to select an existing task, Shift+Enter to create a new task
   - Real-time preview shows parsed title, due date, priority, tags, and other metadata
+  - Can be used when adding sub-tasks to create sub-tasks on-the-fly
   - Thanks to @luciolebrillante for the feature request
 
 - (#1044), (#1222) Added unsaved changes confirmation when closing task edit modal
@@ -86,6 +87,14 @@ Example:
   - Sort by `formula.priorityWeight` in ascending order to get highest priority tasks first
   - Example: `if(priority=="high",0,if(priority=="normal",1,if(priority=="low",2,999)))`
   - Thanks to @jhedlund for the suggestion
+
+- (#1257), (#1064) Added configurable event stacking options for Bases Calendar view
+  - **Allow events to overlap**: Toggle whether timed events visually overlap or display side-by-side in week/day views
+  - **Max stacked events**: Limit horizontal event stacking in week/day views (0 = unlimited)
+  - **Max events per day**: Limit events shown per day cell in month view (0 = auto based on cell height)
+  - **Max event rows per day**: Limit event rows per day cell in month view (0 = unlimited)
+  - Configure per-view in the Bases Calendar view settings under Layout
+  - Thanks to @3zra47 and @hasanyilmaz for the feature requests
 
 ## Changed
 

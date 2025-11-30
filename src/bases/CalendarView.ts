@@ -125,6 +125,10 @@ export class CalendarView extends BasesViewBase {
 		timeFormat: string;
 		scrollTime: string;
 		eventMinHeight: number;
+		slotEventOverlap: boolean;
+		eventMaxStack: number | null;
+		dayMaxEvents: number | boolean;
+		dayMaxEventRows: number | boolean;
 		// Locale (non-configurable per view)
 		locale: string;
 
@@ -181,6 +185,10 @@ export class CalendarView extends BasesViewBase {
 			selectMirror: calendarSettings.selectMirror,
 			timeFormat: calendarSettings.timeFormat,
 			eventMinHeight: calendarSettings.eventMinHeight,
+			slotEventOverlap: calendarSettings.slotEventOverlap,
+			eventMaxStack: calendarSettings.eventMaxStack,
+			dayMaxEvents: calendarSettings.dayMaxEvents,
+			dayMaxEventRows: calendarSettings.dayMaxEventRows,
 			locale: calendarSettings.locale,
 
 			// Property-based events
@@ -365,6 +373,25 @@ export class CalendarView extends BasesViewBase {
 			this.viewOptions.selectMirror = this.config.get('selectMirror') ?? this.viewOptions.selectMirror;
 			this.viewOptions.timeFormat = this.config.get('timeFormat') ?? this.viewOptions.timeFormat;
 			this.viewOptions.eventMinHeight = this.config.get('eventMinHeight') ?? this.viewOptions.eventMinHeight;
+			this.viewOptions.slotEventOverlap = this.config.get('slotEventOverlap') ?? this.viewOptions.slotEventOverlap;
+
+			// Convert slider values: 0 means special behavior (null/true/false)
+			const eventMaxStackValue = this.config.get('eventMaxStack');
+			if (eventMaxStackValue !== undefined) {
+				this.viewOptions.eventMaxStack = eventMaxStackValue === 0 ? null : eventMaxStackValue;
+			}
+
+			const dayMaxEventsValue = this.config.get('dayMaxEvents');
+			if (dayMaxEventsValue !== undefined) {
+				// 0 = auto (true), positive number = limit
+				this.viewOptions.dayMaxEvents = dayMaxEventsValue === 0 ? true : dayMaxEventsValue;
+			}
+
+			const dayMaxEventRowsValue = this.config.get('dayMaxEventRows');
+			if (dayMaxEventRowsValue !== undefined) {
+				// 0 = unlimited (false), positive number = limit
+				this.viewOptions.dayMaxEventRows = dayMaxEventRowsValue === 0 ? false : dayMaxEventRowsValue;
+			}
 
 			// Property-based events
 			this.viewOptions.startDateProperty = this.config.get('startDateProperty') ?? this.viewOptions.startDateProperty;
@@ -531,7 +558,9 @@ export class CalendarView extends BasesViewBase {
 			nowIndicator: this.viewOptions.nowIndicator,
 			weekends: this.viewOptions.showWeekends,
 			allDaySlot: this.viewOptions.showAllDaySlot,
-			dayMaxEvents: true,
+			dayMaxEvents: this.viewOptions.dayMaxEvents,
+			dayMaxEventRows: this.viewOptions.dayMaxEventRows,
+			eventMaxStack: this.viewOptions.eventMaxStack ?? undefined,
 			navLinks: true,
 			navLinkDayClick: (date: Date) => handleDateTitleClick(date, this.plugin),
 			editable: true,
@@ -549,6 +578,7 @@ export class CalendarView extends BasesViewBase {
 			},
 			scrollTime: this.viewOptions.scrollTime,
 			eventMinHeight: this.viewOptions.eventMinHeight,
+			slotEventOverlap: this.viewOptions.slotEventOverlap,
 			eventAllow: () => true, // Allow all drops to proceed visually
 			events: (fetchInfo, successCallback, failureCallback) => {
 				this.fetchEvents(fetchInfo, successCallback, failureCallback);

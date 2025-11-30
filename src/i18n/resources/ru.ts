@@ -229,6 +229,11 @@ export const ru: TranslationTree = {
 					initialScrollTime: "Начальное время прокрутки",
 					initialScrollTimePlaceholder: "ЧЧ:мм:сс (например, 08:00:00)",
 					minimumEventHeight: "Минимальная высота события (px)",
+					slotEventOverlap: "Разрешить наложение событий",
+					enableSearch: "Включить поле поиска",
+					eventMaxStack: "Макс. наложенных событий (неделя/день, 0 = без ограничений)",
+					dayMaxEvents: "Макс. событий в день (месяц, 0 = авто)",
+					dayMaxEventRows: "Макс. строк событий в день (месяц, 0 = без ограничений)",
 				},
 				propertyBasedEvents: {
 					startDateProperty: "Свойство даты начала",

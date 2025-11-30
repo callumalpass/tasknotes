@@ -672,6 +672,26 @@
       "source": "0c7471e72296e1a9ba5487514e4c96c819b4e53a",
       "translation": "9899569d7041013b13d8870aef0d224eac9c84cf"
     },
+    "views.basesCalendar.settings.layout.slotEventOverlap": {
+      "source": "4f268fa7ce2545e141181e81a09d907c293505b7",
+      "translation": "16084bef7221db4e74746881ce7877a90b361ac8"
+    },
+    "views.basesCalendar.settings.layout.enableSearch": {
+      "source": "c814e198f0848e59affefac11f1186ff95464085",
+      "translation": "9752015595a2dbdf8c6dd41b606df87221908e6e"
+    },
+    "views.basesCalendar.settings.layout.eventMaxStack": {
+      "source": "33531c6baf7200666603776e293d9d6ef507fcec",
+      "translation": "d2b82746821b4464282c92cdb153536a75ba4819"
+    },
+    "views.basesCalendar.settings.layout.dayMaxEvents": {
+      "source": "13a7bf6c528f5d52ea1f45a9a37059305351d609",
+      "translation": "029ae1ea3a02b3917a10410bf2f3f7c2d4dbe2a4"
+    },
+    "views.basesCalendar.settings.layout.dayMaxEventRows": {
+      "source": "c36df6fb674736e1999726e4446702c5ab4938fa",
+      "translation": "444746b8d379be2e1a9a6632a99e6acd4c1f7d05"
+    },
     "views.basesCalendar.settings.propertyBasedEvents.startDateProperty": {
       "source": "05c65e1fc55d32dc8aab0c001a11218e4ee4119c",
       "translation": "14ffc61439bc59829f7f6f92e7422158c370036a"
@@ -7845,6 +7865,26 @@
     "views.basesCalendar.settings.layout.minimumEventHeight": {
       "source": "0c7471e72296e1a9ba5487514e4c96c819b4e53a",
       "translation": "7d970abc24a1ea8ff9f516cbe6010c6d7fb9e325"
+    },
+    "views.basesCalendar.settings.layout.slotEventOverlap": {
+      "source": "4f268fa7ce2545e141181e81a09d907c293505b7",
+      "translation": "a7d46bd7e90b4fdfedb596ffc4bfd56fe677a2c1"
+    },
+    "views.basesCalendar.settings.layout.enableSearch": {
+      "source": "c814e198f0848e59affefac11f1186ff95464085",
+      "translation": "389d3ee2dc8b82b244cbc1fc61c68b0e0ae193dd"
+    },
+    "views.basesCalendar.settings.layout.eventMaxStack": {
+      "source": "33531c6baf7200666603776e293d9d6ef507fcec",
+      "translation": "0e125a289ed0a3ac5dc3a8264a5bf11042977b84"
+    },
+    "views.basesCalendar.settings.layout.dayMaxEvents": {
+      "source": "13a7bf6c528f5d52ea1f45a9a37059305351d609",
+      "translation": "246098bff6e068a8f4f7abefedf2e90a10b6266e"
+    },
+    "views.basesCalendar.settings.layout.dayMaxEventRows": {
+      "source": "c36df6fb674736e1999726e4446702c5ab4938fa",
+      "translation": "7807b7c9ab99851eb47727fd6dff0a272e86438c"
     },
     "views.basesCalendar.settings.propertyBasedEvents.startDateProperty": {
       "source": "05c65e1fc55d32dc8aab0c001a11218e4ee4119c",
@@ -15020,6 +15060,26 @@
       "source": "0c7471e72296e1a9ba5487514e4c96c819b4e53a",
       "translation": "69932caff3a7e60d94199f6ab571fa8ac0288e11"
     },
+    "views.basesCalendar.settings.layout.slotEventOverlap": {
+      "source": "4f268fa7ce2545e141181e81a09d907c293505b7",
+      "translation": "5ba447b7b44c99705e62ca37c1b7991892c070bf"
+    },
+    "views.basesCalendar.settings.layout.enableSearch": {
+      "source": "c814e198f0848e59affefac11f1186ff95464085",
+      "translation": "6fad57d0aa365ee05281094b72db7d33be7dc2a4"
+    },
+    "views.basesCalendar.settings.layout.eventMaxStack": {
+      "source": "33531c6baf7200666603776e293d9d6ef507fcec",
+      "translation": "15143c97661ca69add35026a99a0d40b2d374b26"
+    },
+    "views.basesCalendar.settings.layout.dayMaxEvents": {
+      "source": "13a7bf6c528f5d52ea1f45a9a37059305351d609",
+      "translation": "c55ea7bc1fbe2121fe8b0cf757e9e6f41f7e5a8d"
+    },
+    "views.basesCalendar.settings.layout.dayMaxEventRows": {
+      "source": "c36df6fb674736e1999726e4446702c5ab4938fa",
+      "translation": "c682d3eb1fab2c9548adfdea706775950fcf6779"
+    },
     "views.basesCalendar.settings.propertyBasedEvents.startDateProperty": {
       "source": "05c65e1fc55d32dc8aab0c001a11218e4ee4119c",
       "translation": "203d111e33f69228908d5681133ccbe72f17dd99"
@@ -22193,6 +22253,26 @@
     "views.basesCalendar.settings.layout.minimumEventHeight": {
       "source": "0c7471e72296e1a9ba5487514e4c96c819b4e53a",
       "translation": "b29e0df7212084d973911cd7651a9e42e74f2007"
+    },
+    "views.basesCalendar.settings.layout.slotEventOverlap": {
+      "source": "4f268fa7ce2545e141181e81a09d907c293505b7",
+      "translation": "4183339a41f281e72fe3769a25f619d31fbdca54"
+    },
+    "views.basesCalendar.settings.layout.enableSearch": {
+      "source": "c814e198f0848e59affefac11f1186ff95464085",
+      "translation": "79e90c4b5f88e93106da0901176fb530584e30fe"
+    },
+    "views.basesCalendar.settings.layout.eventMaxStack": {
+      "source": "33531c6baf7200666603776e293d9d6ef507fcec",
+      "translation": "130981bc3723501d489432756e1c8c77435c7386"
+    },
+    "views.basesCalendar.settings.layout.dayMaxEvents": {
+      "source": "13a7bf6c528f5d52ea1f45a9a37059305351d609",
+      "translation": "0e8800ad75bb44487ab035267e0c47178b0e0de0"
+    },
+    "views.basesCalendar.settings.layout.dayMaxEventRows": {
+      "source": "c36df6fb674736e1999726e4446702c5ab4938fa",
+      "translation": "1f2e0b32ea67b7bc88bff9979581689412b069ec"
     },
     "views.basesCalendar.settings.propertyBasedEvents.startDateProperty": {
       "source": "05c65e1fc55d32dc8aab0c001a11218e4ee4119c",
@@ -29368,6 +29448,26 @@
       "source": "0c7471e72296e1a9ba5487514e4c96c819b4e53a",
       "translation": "a9e578ac4f64ae08610c9545feb2e9cad0e936dc"
     },
+    "views.basesCalendar.settings.layout.slotEventOverlap": {
+      "source": "4f268fa7ce2545e141181e81a09d907c293505b7",
+      "translation": "9e4092b46fcb4ce354809fdfe597b5ca1a86119d"
+    },
+    "views.basesCalendar.settings.layout.enableSearch": {
+      "source": "c814e198f0848e59affefac11f1186ff95464085",
+      "translation": "36deb7ea2780ffacb186a28284c51666b69e8911"
+    },
+    "views.basesCalendar.settings.layout.eventMaxStack": {
+      "source": "33531c6baf7200666603776e293d9d6ef507fcec",
+      "translation": "51527c04be75e348e2cd9f5b2d62ebb4330878d7"
+    },
+    "views.basesCalendar.settings.layout.dayMaxEvents": {
+      "source": "13a7bf6c528f5d52ea1f45a9a37059305351d609",
+      "translation": "fa0411414300e1604ea0be730d99e522b5738100"
+    },
+    "views.basesCalendar.settings.layout.dayMaxEventRows": {
+      "source": "c36df6fb674736e1999726e4446702c5ab4938fa",
+      "translation": "1aaa140c24f041e9b8584d986efc902a7b80d6ec"
+    },
     "views.basesCalendar.settings.propertyBasedEvents.startDateProperty": {
       "source": "05c65e1fc55d32dc8aab0c001a11218e4ee4119c",
       "translation": "2efd3012d6e8d4c8d8d5e17e010ccbf10c7c4b1a"
@@ -36542,6 +36642,26 @@
       "source": "0c7471e72296e1a9ba5487514e4c96c819b4e53a",
       "translation": "50663327fc5ba67975e8e5fa08adab8449d8d43e"
     },
+    "views.basesCalendar.settings.layout.slotEventOverlap": {
+      "source": "4f268fa7ce2545e141181e81a09d907c293505b7",
+      "translation": "794384386430a0bfbb8aeb13765e26e3470067ef"
+    },
+    "views.basesCalendar.settings.layout.enableSearch": {
+      "source": "c814e198f0848e59affefac11f1186ff95464085",
+      "translation": "04ad3b19e9cda738f16f899f80a056222bb7df78"
+    },
+    "views.basesCalendar.settings.layout.eventMaxStack": {
+      "source": "33531c6baf7200666603776e293d9d6ef507fcec",
+      "translation": "32831b47fd4ae9a90d4486e87c37f77909b574a5"
+    },
+    "views.basesCalendar.settings.layout.dayMaxEvents": {
+      "source": "13a7bf6c528f5d52ea1f45a9a37059305351d609",
+      "translation": "df38ee14c9f43048db482aa2d2dac096e0636108"
+    },
+    "views.basesCalendar.settings.layout.dayMaxEventRows": {
+      "source": "c36df6fb674736e1999726e4446702c5ab4938fa",
+      "translation": "5bce529be6bbe9de882971c455d651564f72ffd2"
+    },
     "views.basesCalendar.settings.propertyBasedEvents.startDateProperty": {
       "source": "05c65e1fc55d32dc8aab0c001a11218e4ee4119c",
       "translation": "76ca7e2d4d189ade6e69c3bbde68bf280ab93da1"
@@ -43715,6 +43835,26 @@
     "views.basesCalendar.settings.layout.minimumEventHeight": {
       "source": "0c7471e72296e1a9ba5487514e4c96c819b4e53a",
       "translation": "1dc77fabfa7166ff86c4d70720c99e1a21d6a072"
+    },
+    "views.basesCalendar.settings.layout.slotEventOverlap": {
+      "source": "4f268fa7ce2545e141181e81a09d907c293505b7",
+      "translation": "c6ac2feea0c7290d03c8171d85d48f877dee9be3"
+    },
+    "views.basesCalendar.settings.layout.enableSearch": {
+      "source": "c814e198f0848e59affefac11f1186ff95464085",
+      "translation": "657b6f387cbe9adf6e84063e19ab492890ff57d0"
+    },
+    "views.basesCalendar.settings.layout.eventMaxStack": {
+      "source": "33531c6baf7200666603776e293d9d6ef507fcec",
+      "translation": "457dfbcd888b94be03d9e3282e8480d943dfd3b6"
+    },
+    "views.basesCalendar.settings.layout.dayMaxEvents": {
+      "source": "13a7bf6c528f5d52ea1f45a9a37059305351d609",
+      "translation": "fbe10e475d188602de8ce62a86574101beb0f24a"
+    },
+    "views.basesCalendar.settings.layout.dayMaxEventRows": {
+      "source": "c36df6fb674736e1999726e4446702c5ab4938fa",
+      "translation": "e1e19ae69d25c529a01b733ba69e1c68dbdc2d84"
     },
     "views.basesCalendar.settings.propertyBasedEvents.startDateProperty": {
       "source": "05c65e1fc55d32dc8aab0c001a11218e4ee4119c",
