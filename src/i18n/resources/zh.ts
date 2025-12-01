@@ -1278,8 +1278,11 @@ export const zh: TranslationTree = {
 					description: "启用TaskNotes视图在Obsidian Bases插件中使用。必须启用Bases插件才能工作。",
 				},
 				viewCommands: {
-					header: "视图命令",
-					description: "配置视图命令打开哪些 .base 文件。这些命令让您在使用 Bases 文件时继续使用熟悉的快捷方式。",
+					header: "视图与 Base 文件",
+					description: "TaskNotes 使用 Obsidian Bases 文件（.base）来呈现视图。这些文件在启动时自动生成（如果不存在），并使用您当前的设置进行配置（任务识别、字段映射、状态等）。",
+					descriptionRegen: "更改设置时，Base 文件不会自动更新。要应用新设置，请删除现有的 .base 文件并重新启动 Obsidian，或使用下方的「创建文件」，或手动编辑它们。",
+					docsLink: "查看可用公式和自定义选项的文档",
+					docsLinkUrl: "https://tasknotes.dev/views/default-base-templates",
 					commands: {
 						miniCalendar: "打开迷你日历视图",
 						kanban: "打开看板视图",

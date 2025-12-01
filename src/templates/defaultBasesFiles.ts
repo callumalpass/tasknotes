@@ -128,17 +128,17 @@ function generateOrderArray(plugin: TaskNotesPlugin): string[] {
 		"tags",
 	];
 
-	// Map to Bases property names
-	const basesProperties = visibleProperties.map(prop =>
-		mapPropertyToBasesProperty(prop, plugin)
-	);
+	// Map to Bases property names, filtering out null/empty values
+	const basesProperties = visibleProperties
+		.map(prop => mapPropertyToBasesProperty(prop, plugin))
+		.filter((prop): prop is string => !!prop);
 
 	// Add essential properties that should always be in the order
 	const essentialProperties = [
 		"file.name", // title
 		mapPropertyToBasesProperty("recurrence", plugin),
 		mapPropertyToBasesProperty("complete_instances", plugin),
-	];
+	].filter((prop): prop is string => !!prop);
 
 	// Combine, removing duplicates while preserving order
 	const allProperties: string[] = [];
@@ -146,7 +146,7 @@ function generateOrderArray(plugin: TaskNotesPlugin): string[] {
 
 	// Add visible properties first
 	for (const prop of basesProperties) {
-		if (!seen.has(prop)) {
+		if (prop && !seen.has(prop)) {
 			allProperties.push(prop);
 			seen.add(prop);
 		}
@@ -154,7 +154,7 @@ function generateOrderArray(plugin: TaskNotesPlugin): string[] {
 
 	// Add essential properties
 	for (const prop of essentialProperties) {
-		if (!seen.has(prop)) {
+		if (prop && !seen.has(prop)) {
 			allProperties.push(prop);
 			seen.add(prop);
 		}
@@ -204,12 +204,196 @@ function generatePriorityWeightFormula(plugin: TaskNotesPlugin): string {
 }
 
 /**
- * Generate the formulas section YAML including priorityWeight
+ * Generate a human-readable priority category formula.
+ * Maps priority values to their display labels for grouping.
+ */
+function generatePriorityCategoryFormula(plugin: TaskNotesPlugin): string {
+	const priorityProperty = getPropertyName(mapPropertyToBasesProperty('priority', plugin));
+	const priorities = plugin.settings.customPriorities;
+
+	if (priorities.length === 0) {
+		return '"No priority"';
+	}
+
+	// Build nested if statements mapping value -> label
+	let formula = '"No priority"';
+	for (let i = priorities.length - 1; i >= 0; i--) {
+		const p = priorities[i];
+		formula = `if(${priorityProperty}=="${p.value}","${p.label}",${formula})`;
+	}
+
+	return formula;
+}
+
+/**
+ * Generate all useful formulas for TaskNotes views.
+ * These formulas provide calculated values that can be used in views, filters, and sorting.
+ */
+function generateAllFormulas(plugin: TaskNotesPlugin): Record<string, string> {
+	const dueProperty = getPropertyName(mapPropertyToBasesProperty('due', plugin));
+	const statusProperty = getPropertyName(mapPropertyToBasesProperty('status', plugin));
+	const timeEstimateProperty = getPropertyName(mapPropertyToBasesProperty('timeEstimate', plugin));
+	const timeEntriesProperty = getPropertyName(mapPropertyToBasesProperty('timeEntries', plugin));
+	const projectsProperty = getPropertyName(mapPropertyToBasesProperty('projects', plugin));
+	const contextsProperty = getPropertyName(mapPropertyToBasesProperty('contexts', plugin));
+
+	// Get all completed status values for isOverdue check
+	const completedStatuses = plugin.settings.customStatuses
+		.filter(s => s.isCompleted)
+		.map(s => s.value);
+	const completedStatusCheck = completedStatuses
+		.map(status => `${statusProperty} != "${status}"`)
+		.join(' && ');
+
+	const scheduledProperty = getPropertyName(mapPropertyToBasesProperty('scheduled', plugin));
+	const recurrenceProperty = getPropertyName(mapPropertyToBasesProperty('recurrence', plugin));
+
+	return {
+		// Priority weight for sorting (lower = higher priority)
+		priorityWeight: generatePriorityWeightFormula(plugin),
+
+		// Days until due (negative = overdue, positive = days remaining)
+		// Convert dates to ms (via number()) before subtracting to get numeric difference
+		daysUntilDue: `if(${dueProperty}, ((number(date(${dueProperty})) - number(today())) / 86400000).floor(), null)`,
+
+		// Days until scheduled (negative = past, positive = days remaining)
+		daysUntilScheduled: `if(${scheduledProperty}, ((number(date(${scheduledProperty})) - number(today())) / 86400000).floor(), null)`,
+
+		// Days since the task was created
+		daysSinceCreated: '((number(now()) - number(file.ctime)) / 86400000).floor()',
+
+		// Days since the task was last modified
+		daysSinceModified: '((number(now()) - number(file.mtime)) / 86400000).floor()',
+
+		// === BOOLEAN FORMULAS ===
+
+		// Boolean: is this task overdue?
+		isOverdue: `${dueProperty} && date(${dueProperty}) < today() && ${completedStatusCheck}`,
+
+		// Boolean: is this task due today?
+		isDueToday: `${dueProperty} && date(${dueProperty}).date() == today()`,
+
+		// Boolean: is this task due within the next 7 days?
+		isDueThisWeek: `${dueProperty} && date(${dueProperty}) >= today() && date(${dueProperty}) <= today() + "7d"`,
+
+		// Boolean: is this task scheduled for today?
+		isScheduledToday: `${scheduledProperty} && date(${scheduledProperty}).date() == today()`,
+
+		// Boolean: is this a recurring task?
+		isRecurring: `${recurrenceProperty} && !${recurrenceProperty}.isEmpty()`,
+
+		// Boolean: does this task have a time estimate?
+		hasTimeEstimate: `${timeEstimateProperty} && ${timeEstimateProperty} > 0`,
+
+		// === TIME TRACKING FORMULAS ===
+
+		// Time remaining (estimate minus tracked) in minutes, null if no estimate
+		timeRemaining: `if(${timeEstimateProperty} && ${timeEstimateProperty} > 0, ${timeEstimateProperty} - if(${timeEntriesProperty}, list(${timeEntriesProperty}).filter(value.endTime).map((number(date(value.endTime)) - number(date(value.startTime))) / 60000).reduce(acc + value, 0), 0), null)`,
+
+		// Efficiency ratio: actual time vs estimated (as percentage)
+		// > 100% means took longer than estimated, < 100% means faster
+		efficiencyRatio: `if(${timeEstimateProperty} && ${timeEstimateProperty} > 0 && ${timeEntriesProperty}, (list(${timeEntriesProperty}).filter(value.endTime).map((number(date(value.endTime)) - number(date(value.startTime))) / 60000).reduce(acc + value, 0) / ${timeEstimateProperty} * 100).round(), null)`,
+
+		// Total time tracked this week (in minutes)
+		timeTrackedThisWeek: `if(${timeEntriesProperty}, list(${timeEntriesProperty}).filter(value.endTime && date(value.startTime) >= today() - "7d").map((number(date(value.endTime)) - number(date(value.startTime))) / 60000).reduce(acc + value, 0).round(), 0)`,
+
+		// Total time tracked today (in minutes)
+		timeTrackedToday: `if(${timeEntriesProperty}, list(${timeEntriesProperty}).filter(value.endTime && date(value.startTime).date() == today()).map((number(date(value.endTime)) - number(date(value.startTime))) / 60000).reduce(acc + value, 0).round(), 0)`,
+
+		// === GROUPING FORMULAS ===
+
+		// Due date formatted as "YYYY-MM" for grouping by month
+		dueMonth: `if(${dueProperty}, date(${dueProperty}).format("YYYY-MM"), "No due date")`,
+
+		// Due date formatted as "YYYY-[W]WW" for grouping by week
+		dueWeek: `if(${dueProperty}, date(${dueProperty}).format("YYYY-[W]WW"), "No due date")`,
+
+		// Scheduled date formatted as "YYYY-MM" for grouping by month
+		scheduledMonth: `if(${scheduledProperty}, date(${scheduledProperty}).format("YYYY-MM"), "Not scheduled")`,
+
+		// Scheduled date formatted as "YYYY-[W]WW" for grouping by week
+		scheduledWeek: `if(${scheduledProperty}, date(${scheduledProperty}).format("YYYY-[W]WW"), "Not scheduled")`,
+
+		// Due date category for grouping: Overdue, Today, Tomorrow, This Week, Later, No Due Date
+		dueDateCategory: `if(!${dueProperty}, "No due date", if(date(${dueProperty}) < today(), "Overdue", if(date(${dueProperty}).date() == today(), "Today", if(date(${dueProperty}).date() == today() + "1d", "Tomorrow", if(date(${dueProperty}) <= today() + "7d", "This week", "Later")))))`,
+
+		// Time estimate category for grouping
+		timeEstimateCategory: `if(!${timeEstimateProperty} || ${timeEstimateProperty} == 0, "No estimate", if(${timeEstimateProperty} < 30, "Quick (<30m)", if(${timeEstimateProperty} <= 120, "Medium (30m-2h)", "Long (>2h)")))`,
+
+		// Age category based on creation date
+		ageCategory: 'if(((number(now()) - number(file.ctime)) / 86400000) < 1, "Today", if(((number(now()) - number(file.ctime)) / 86400000) < 7, "This week", if(((number(now()) - number(file.ctime)) / 86400000) < 30, "This month", "Older")))',
+
+		// Created month for grouping
+		createdMonth: 'file.ctime.format("YYYY-MM")',
+
+		// Modified month for grouping
+		modifiedMonth: 'file.mtime.format("YYYY-MM")',
+
+		// Priority as human-readable category (uses configured priority values)
+		priorityCategory: generatePriorityCategoryFormula(plugin),
+
+		// Project count category for grouping
+		projectCount: `if(!${projectsProperty} || list(${projectsProperty}).length == 0, "No projects", if(list(${projectsProperty}).length == 1, "Single project", "Multiple projects"))`,
+
+		// Context count category for grouping
+		contextCount: `if(!${contextsProperty} || list(${contextsProperty}).length == 0, "No contexts", if(list(${contextsProperty}).length == 1, "Single context", "Multiple contexts"))`,
+
+		// Tracking vs estimate status for grouping
+		trackingStatus: `if(!${timeEstimateProperty} || ${timeEstimateProperty} == 0, "No estimate", if(!${timeEntriesProperty} || list(${timeEntriesProperty}).length == 0, "Not started", if(formula.efficiencyRatio < 100, "Under estimate", "Over estimate")))`,
+
+		// === COMBINED DUE/SCHEDULED FORMULAS ===
+
+		// Next date: the earlier of due or scheduled (useful for "what's coming up")
+		nextDate: `if(${dueProperty} && ${scheduledProperty}, if(date(${dueProperty}) < date(${scheduledProperty}), ${dueProperty}, ${scheduledProperty}), if(${dueProperty}, ${dueProperty}, ${scheduledProperty}))`,
+
+		// Days until next date (due or scheduled, whichever is sooner)
+		daysUntilNext: `if(${dueProperty} && ${scheduledProperty}, min(formula.daysUntilDue, formula.daysUntilScheduled), if(${dueProperty}, formula.daysUntilDue, formula.daysUntilScheduled))`,
+
+		// Boolean: has any date (due or scheduled)
+		hasDate: `${dueProperty} || ${scheduledProperty}`,
+
+		// Boolean: is due or scheduled today
+		isToday: `(${dueProperty} && date(${dueProperty}).date() == today()) || (${scheduledProperty} && date(${scheduledProperty}).date() == today())`,
+
+		// Boolean: is due or scheduled this week
+		isThisWeek: `(${dueProperty} && date(${dueProperty}) >= today() && date(${dueProperty}) <= today() + "7d") || (${scheduledProperty} && date(${scheduledProperty}) >= today() && date(${scheduledProperty}) <= today() + "7d")`,
+
+		// Next date category for grouping (combines due and scheduled)
+		nextDateCategory: `if(!${dueProperty} && !${scheduledProperty}, "No date", if((${dueProperty} && date(${dueProperty}) < today()) || (${scheduledProperty} && date(${scheduledProperty}) < today()), "Overdue/Past", if((${dueProperty} && date(${dueProperty}).date() == today()) || (${scheduledProperty} && date(${scheduledProperty}).date() == today()), "Today", if((${dueProperty} && date(${dueProperty}).date() == today() + "1d") || (${scheduledProperty} && date(${scheduledProperty}).date() == today() + "1d"), "Tomorrow", if((${dueProperty} && date(${dueProperty}) <= today() + "7d") || (${scheduledProperty} && date(${scheduledProperty}) <= today() + "7d"), "This week", "Later")))))`,
+
+		// Next date as month for grouping
+		nextDateMonth: `if(${dueProperty} && ${scheduledProperty}, if(date(${dueProperty}) < date(${scheduledProperty}), date(${dueProperty}).format("YYYY-MM"), date(${scheduledProperty}).format("YYYY-MM")), if(${dueProperty}, date(${dueProperty}).format("YYYY-MM"), if(${scheduledProperty}, date(${scheduledProperty}).format("YYYY-MM"), "No date")))`,
+
+		// Next date as week for grouping
+		nextDateWeek: `if(${dueProperty} && ${scheduledProperty}, if(date(${dueProperty}) < date(${scheduledProperty}), date(${dueProperty}).format("YYYY-[W]WW"), date(${scheduledProperty}).format("YYYY-[W]WW")), if(${dueProperty}, date(${dueProperty}).format("YYYY-[W]WW"), if(${scheduledProperty}, date(${scheduledProperty}).format("YYYY-[W]WW"), "No date")))`,
+
+		// === SORTING/SCORING FORMULAS ===
+
+		// Urgency score: combines priority weight and days until next date (due or scheduled)
+		// Higher score = more urgent. Overdue tasks get bonus, no date gets just priority
+		urgencyScore: `if(!${dueProperty} && !${scheduledProperty}, formula.priorityWeight, formula.priorityWeight + max(0, 10 - formula.daysUntilNext))`,
+
+		// === DISPLAY FORMULAS ===
+
+		// Time tracked formatted as "Xh Ym"
+		timeTrackedFormatted: `if(${timeEntriesProperty}, if(list(${timeEntriesProperty}).filter(value.endTime).map((number(date(value.endTime)) - number(date(value.startTime))) / 60000).reduce(acc + value, 0) >= 60, (list(${timeEntriesProperty}).filter(value.endTime).map((number(date(value.endTime)) - number(date(value.startTime))) / 60000).reduce(acc + value, 0) / 60).floor() + "h " + (list(${timeEntriesProperty}).filter(value.endTime).map((number(date(value.endTime)) - number(date(value.startTime))) / 60000).reduce(acc + value, 0) % 60).round() + "m", list(${timeEntriesProperty}).filter(value.endTime).map((number(date(value.endTime)) - number(date(value.startTime))) / 60000).reduce(acc + value, 0).round() + "m"), "0m")`,
+
+		// Due date as human-readable relative text
+		dueDateDisplay: `if(!${dueProperty}, "", if(date(${dueProperty}).date() == today(), "Today", if(date(${dueProperty}).date() == today() + "1d", "Tomorrow", if(date(${dueProperty}).date() == today() - "1d", "Yesterday", if(date(${dueProperty}) < today(), formula.daysUntilDue * -1 + "d ago", if(date(${dueProperty}) <= today() + "7d", date(${dueProperty}).format("ddd"), date(${dueProperty}).format("MMM D")))))))`,
+	};
+}
+
+/**
+ * Generate the formulas section YAML including all useful formulas
  */
 function generateFormulasSection(plugin: TaskNotesPlugin): string {
-	const priorityWeightFormula = generatePriorityWeightFormula(plugin);
-	return `formulas:
-  priorityWeight: '${priorityWeightFormula}'`;
+	const formulas = generateAllFormulas(plugin);
+
+	const formulaLines = Object.entries(formulas)
+		.map(([name, formula]) => `  ${name}: '${formula}'`)
+		.join('\n');
+
+	return `formulas:\n${formulaLines}`;
 }
 
 /**
@@ -338,8 +522,8 @@ ${orderYaml}
     order:
 ${orderYaml}
     sort:
-      - column: due
-        direction: ASC
+      - column: formula.urgencyScore
+        direction: DESC
   - type: tasknotesTaskList
     name: "Today"
     filters:
@@ -361,8 +545,8 @@ ${orderYaml}
     order:
 ${orderYaml}
     sort:
-      - column: due
-        direction: ASC
+      - column: formula.urgencyScore
+        direction: DESC
   - type: tasknotesTaskList
     name: "Overdue"
     filters:
@@ -382,8 +566,8 @@ ${orderYaml}
     order:
 ${orderYaml}
     sort:
-      - column: due
-        direction: ASC
+      - column: formula.urgencyScore
+        direction: DESC
   - type: tasknotesTaskList
     name: "This Week"
     filters:
@@ -409,8 +593,8 @@ ${orderYaml}
     order:
 ${orderYaml}
     sort:
-      - column: due
-        direction: ASC
+      - column: formula.urgencyScore
+        direction: DESC
   - type: tasknotesTaskList
     name: "Unscheduled"
     filters:

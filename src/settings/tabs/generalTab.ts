@@ -138,73 +138,25 @@ export function renderGeneralTab(
 		});
 	}
 
-	// Folder Management Section
-	createSectionHeader(container, translate("settings.general.folderManagement.header"));
-
-	createTextSetting(container, {
-		name: translate("settings.general.folderManagement.excludedFolders.name"),
-		desc: translate("settings.general.folderManagement.excludedFolders.description"),
-		placeholder: "Templates, Archive",
-		getValue: () => plugin.settings.excludedFolders,
-		setValue: async (value: string) => {
-			plugin.settings.excludedFolders = value;
-			save();
-		},
-		ariaLabel: "Excluded folder paths",
-	});
-
-	// UI Language Section
-	createSectionHeader(container, translate("settings.features.uiLanguage.header"));
-	createHelpText(container, translate("settings.features.uiLanguage.description"));
-
-	const uiLanguageOptions = (() => {
-		const options: Array<{ value: string; label: string }> = [
-			{ value: "system", label: translate("common.systemDefault") },
-		];
-		for (const code of plugin.i18n.getAvailableLocales()) {
-			// Use native language names (endonyms) for better UX
-			const label = plugin.i18n.getNativeLanguageName(code);
-			options.push({ value: code, label });
-		}
-		return options;
-	})();
-
-	createDropdownSetting(container, {
-		name: translate("settings.features.uiLanguage.dropdown.name"),
-		desc: translate("settings.features.uiLanguage.dropdown.description"),
-		options: uiLanguageOptions,
-		getValue: () => plugin.settings.uiLanguage ?? "system",
-		setValue: async (value: string) => {
-			plugin.settings.uiLanguage = value;
-			plugin.i18n.setLocale(value);
-			save();
-			renderGeneralTab(container, plugin, save);
-		},
-	});
-
-	// Frontmatter Section - only show if user has markdown links enabled globally
-	const useMarkdownLinks = plugin.app.vault.getConfig('useMarkdownLinks');
-	if (useMarkdownLinks) {
-		createSectionHeader(container, translate("settings.general.frontmatter.header"));
-		createHelpText(container, translate("settings.general.frontmatter.description"));
-
-		createToggleSetting(container, {
-			name: translate("settings.general.frontmatter.useMarkdownLinks.name"),
-			desc: translate("settings.general.frontmatter.useMarkdownLinks.description"),
-			getValue: () => plugin.settings.useFrontmatterMarkdownLinks,
-			setValue: async (value: boolean) => {
-				plugin.settings.useFrontmatterMarkdownLinks = value;
-				save();
-			},
-		});
-	}
-
-	// View Commands Section
+	// Views & Base Files Section (moved above Folder Management)
 	createSectionHeader(container, translate("settings.integrations.basesIntegration.viewCommands.header"));
 	createHelpText(
 		container,
 		translate("settings.integrations.basesIntegration.viewCommands.description")
 	);
+	createHelpText(
+		container,
+		translate("settings.integrations.basesIntegration.viewCommands.descriptionRegen")
+	);
+
+	// Documentation link
+	const docsLinkContainer = container.createDiv({ cls: "setting-item-description" });
+	const docsLink = docsLinkContainer.createEl("a", {
+		text: translate("settings.integrations.basesIntegration.viewCommands.docsLink"),
+		href: translate("settings.integrations.basesIntegration.viewCommands.docsLinkUrl"),
+	});
+	docsLink.setAttr("target", "_blank");
+	docsLinkContainer.style.marginBottom = "1em";
 
 	// Command file mappings
 	const commandMappings = [
@@ -346,6 +298,67 @@ export function renderGeneralTab(
 				});
 			return button;
 		});
+
+	// Folder Management Section
+	createSectionHeader(container, translate("settings.general.folderManagement.header"));
+
+	createTextSetting(container, {
+		name: translate("settings.general.folderManagement.excludedFolders.name"),
+		desc: translate("settings.general.folderManagement.excludedFolders.description"),
+		placeholder: "Templates, Archive",
+		getValue: () => plugin.settings.excludedFolders,
+		setValue: async (value: string) => {
+			plugin.settings.excludedFolders = value;
+			save();
+		},
+		ariaLabel: "Excluded folder paths",
+	});
+
+	// UI Language Section
+	createSectionHeader(container, translate("settings.features.uiLanguage.header"));
+	createHelpText(container, translate("settings.features.uiLanguage.description"));
+
+	const uiLanguageOptions = (() => {
+		const options: Array<{ value: string; label: string }> = [
+			{ value: "system", label: translate("common.systemDefault") },
+		];
+		for (const code of plugin.i18n.getAvailableLocales()) {
+			// Use native language names (endonyms) for better UX
+			const label = plugin.i18n.getNativeLanguageName(code);
+			options.push({ value: code, label });
+		}
+		return options;
+	})();
+
+	createDropdownSetting(container, {
+		name: translate("settings.features.uiLanguage.dropdown.name"),
+		desc: translate("settings.features.uiLanguage.dropdown.description"),
+		options: uiLanguageOptions,
+		getValue: () => plugin.settings.uiLanguage ?? "system",
+		setValue: async (value: string) => {
+			plugin.settings.uiLanguage = value;
+			plugin.i18n.setLocale(value);
+			save();
+			renderGeneralTab(container, plugin, save);
+		},
+	});
+
+	// Frontmatter Section - only show if user has markdown links enabled globally
+	const useMarkdownLinks = plugin.app.vault.getConfig('useMarkdownLinks');
+	if (useMarkdownLinks) {
+		createSectionHeader(container, translate("settings.general.frontmatter.header"));
+		createHelpText(container, translate("settings.general.frontmatter.description"));
+
+		createToggleSetting(container, {
+			name: translate("settings.general.frontmatter.useMarkdownLinks.name"),
+			desc: translate("settings.general.frontmatter.useMarkdownLinks.description"),
+			getValue: () => plugin.settings.useFrontmatterMarkdownLinks,
+			setValue: async (value: boolean) => {
+				plugin.settings.useFrontmatterMarkdownLinks = value;
+				save();
+			},
+		});
+	}
 
 	// Release Notes Section
 	createSectionHeader(container, translate("settings.general.releaseNotes.header"));

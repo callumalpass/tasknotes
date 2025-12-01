@@ -1278,8 +1278,11 @@ export const fr: TranslationTree = {
 					description: "Permettre l'utilisation des vues TaskNotes dans le plugin Obsidian Bases. Le plugin Bases doit être activé pour que cela fonctionne.",
 				},
 				viewCommands: {
-					header: "Commandes de vue",
-					description: "Configurez quels fichiers .base sont ouverts par les commandes de vue. Ces commandes vous permettent de continuer à utiliser des raccourcis familiers tout en travaillant avec des fichiers Bases.",
+					header: "Vues et fichiers base",
+					description: "TaskNotes utilise les fichiers Obsidian Bases (.base) pour ses vues. Ces fichiers sont générés automatiquement au démarrage s'ils n'existent pas, configurés avec vos paramètres actuels (identification des tâches, correspondance des champs, statuts, etc.).",
+					descriptionRegen: "Les fichiers base ne sont pas mis à jour automatiquement lorsque vous modifiez les paramètres. Pour appliquer les nouveaux paramètres, supprimez les fichiers .base existants et redémarrez Obsidian, utilisez « Créer les fichiers » ci-dessous, ou modifiez-les manuellement.",
+					docsLink: "Voir la documentation pour les formules disponibles et les options de personnalisation",
+					docsLinkUrl: "https://tasknotes.dev/views/default-base-templates",
 					commands: {
 						miniCalendar: "Ouvrir la vue mini calendrier",
 						kanban: "Ouvrir la vue kanban",

@@ -3089,12 +3089,24 @@
       "translation": "f866b6bf61cfa430f5825ba9ec8cad8bbc3cf59b"
     },
     "settings.integrations.basesIntegration.viewCommands.header": {
-      "source": "3504f0479dcb7a1056f93b996703aeb3237f0897",
-      "translation": "a5115904d35dda05c310a08aecaf9a1ee11083f6"
+      "source": "cc933488141ec9c69380bcafd94d9a3a86eaad7a",
+      "translation": "a69408754260d8a95f9e8c8069414b7c49aa4eaf"
     },
     "settings.integrations.basesIntegration.viewCommands.description": {
-      "source": "a7f83e1b15adc169e23caff7842c5b1c65a4ae73",
-      "translation": "fdc197b6869fb22f102db826a7a1c13b2594d9aa"
+      "source": "899cd118147c279ba8d7748367ce693a196a0c9b",
+      "translation": "52bd9eee8246dccbc83fad5e490a1c22e28c2945"
+    },
+    "settings.integrations.basesIntegration.viewCommands.descriptionRegen": {
+      "source": "85bcb1a28e9d268506d3c4e5e4671845d3ae17a9",
+      "translation": "b645c7e4a58905d050ab02df3aba58b516566485"
+    },
+    "settings.integrations.basesIntegration.viewCommands.docsLink": {
+      "source": "600fc012cd270f71115df41a83623c799eecf3b7",
+      "translation": "25fba8c9d8178ec1cdedf0b300c75f3814129d51"
+    },
+    "settings.integrations.basesIntegration.viewCommands.docsLinkUrl": {
+      "source": "825c28125efb1a9a8af127dfe34ed1459dbe88f9",
+      "translation": "825c28125efb1a9a8af127dfe34ed1459dbe88f9"
     },
     "settings.integrations.basesIntegration.viewCommands.commands.miniCalendar": {
       "source": "d7dce352d3bf5b12479770b86495263f84275492",
@@ -10283,12 +10295,24 @@
       "translation": "1655e54d6ab964a0412fc4c31e21567c079c0d4b"
     },
     "settings.integrations.basesIntegration.viewCommands.header": {
-      "source": "3504f0479dcb7a1056f93b996703aeb3237f0897",
-      "translation": "939a5c9c37f6bbcd89f2e2d7f93e290e3c695a4d"
+      "source": "cc933488141ec9c69380bcafd94d9a3a86eaad7a",
+      "translation": "e9001d44b32df242d444c5f1eb0b36a82563dedb"
     },
     "settings.integrations.basesIntegration.viewCommands.description": {
-      "source": "a7f83e1b15adc169e23caff7842c5b1c65a4ae73",
-      "translation": "73ea837e5552f92d89be793a466b3f736ec677a8"
+      "source": "899cd118147c279ba8d7748367ce693a196a0c9b",
+      "translation": "5361c7a60edb9888dadec361bd3ba02c60d33b23"
+    },
+    "settings.integrations.basesIntegration.viewCommands.descriptionRegen": {
+      "source": "85bcb1a28e9d268506d3c4e5e4671845d3ae17a9",
+      "translation": "60d0790d2db04d3a4108bb2a6a19c9540d84d5d5"
+    },
+    "settings.integrations.basesIntegration.viewCommands.docsLink": {
+      "source": "600fc012cd270f71115df41a83623c799eecf3b7",
+      "translation": "edcf4f138233cdee5b3a4093b652d3440ba4f12a"
+    },
+    "settings.integrations.basesIntegration.viewCommands.docsLinkUrl": {
+      "source": "825c28125efb1a9a8af127dfe34ed1459dbe88f9",
+      "translation": "825c28125efb1a9a8af127dfe34ed1459dbe88f9"
     },
     "settings.integrations.basesIntegration.viewCommands.commands.miniCalendar": {
       "source": "d7dce352d3bf5b12479770b86495263f84275492",
@@ -17477,12 +17501,24 @@
       "translation": "9148d8b53827ae49b13035192899fa13fd71cc0e"
     },
     "settings.integrations.basesIntegration.viewCommands.header": {
-      "source": "3504f0479dcb7a1056f93b996703aeb3237f0897",
-      "translation": "9fb93b6924f19b25d52cb7fc799af8568173ebf3"
+      "source": "cc933488141ec9c69380bcafd94d9a3a86eaad7a",
+      "translation": "f8b0895f1b287c6b4f0f1a7cded65bc6d463ab6c"
     },
     "settings.integrations.basesIntegration.viewCommands.description": {
-      "source": "a7f83e1b15adc169e23caff7842c5b1c65a4ae73",
-      "translation": "4c268245e9c6241fc88d0e48caf24293b3c721fa"
+      "source": "899cd118147c279ba8d7748367ce693a196a0c9b",
+      "translation": "021e047d675383a8232de968ff4a37806894cbac"
+    },
+    "settings.integrations.basesIntegration.viewCommands.descriptionRegen": {
+      "source": "85bcb1a28e9d268506d3c4e5e4671845d3ae17a9",
+      "translation": "ca74c8c51d23ae89a7b840b0cfeb3245e556d789"
+    },
+    "settings.integrations.basesIntegration.viewCommands.docsLink": {
+      "source": "600fc012cd270f71115df41a83623c799eecf3b7",
+      "translation": "b1105d15d8360bdc3c191477ea1d0cd1663a6a8b"
+    },
+    "settings.integrations.basesIntegration.viewCommands.docsLinkUrl": {
+      "source": "825c28125efb1a9a8af127dfe34ed1459dbe88f9",
+      "translation": "825c28125efb1a9a8af127dfe34ed1459dbe88f9"
     },
     "settings.integrations.basesIntegration.viewCommands.commands.miniCalendar": {
       "source": "d7dce352d3bf5b12479770b86495263f84275492",
@@ -24671,12 +24707,24 @@
       "translation": "733a787637ae8d700e621e89bb5148033fc4152f"
     },
     "settings.integrations.basesIntegration.viewCommands.header": {
-      "source": "3504f0479dcb7a1056f93b996703aeb3237f0897",
-      "translation": "8f19e9db1821e285f8ac143879ef5aea1cff59b0"
+      "source": "cc933488141ec9c69380bcafd94d9a3a86eaad7a",
+      "translation": "5df22c874ee6e2f30f29ce55dad5e5e5810784c2"
     },
     "settings.integrations.basesIntegration.viewCommands.description": {
-      "source": "a7f83e1b15adc169e23caff7842c5b1c65a4ae73",
-      "translation": "c20e9e674ab8cae04edc359e49f92a4340f1ea45"
+      "source": "899cd118147c279ba8d7748367ce693a196a0c9b",
+      "translation": "211d50d80d419afcb88bb7e51313e0a88a736ebe"
+    },
+    "settings.integrations.basesIntegration.viewCommands.descriptionRegen": {
+      "source": "85bcb1a28e9d268506d3c4e5e4671845d3ae17a9",
+      "translation": "ffcb3ac2f797af66a152a34047dc654cd0beced6"
+    },
+    "settings.integrations.basesIntegration.viewCommands.docsLink": {
+      "source": "600fc012cd270f71115df41a83623c799eecf3b7",
+      "translation": "ceab4f6adab4065a6173bd2fd1e35f89c030eda7"
+    },
+    "settings.integrations.basesIntegration.viewCommands.docsLinkUrl": {
+      "source": "825c28125efb1a9a8af127dfe34ed1459dbe88f9",
+      "translation": "825c28125efb1a9a8af127dfe34ed1459dbe88f9"
     },
     "settings.integrations.basesIntegration.viewCommands.commands.miniCalendar": {
       "source": "d7dce352d3bf5b12479770b86495263f84275492",
@@ -31865,12 +31913,24 @@
       "translation": "91d3cf0a6176d6df40c7a4a3fd8557cd9e35e658"
     },
     "settings.integrations.basesIntegration.viewCommands.header": {
-      "source": "3504f0479dcb7a1056f93b996703aeb3237f0897",
-      "translation": "f145f07382d34a003eec85c9b9bc78829113c148"
+      "source": "cc933488141ec9c69380bcafd94d9a3a86eaad7a",
+      "translation": "461a9b33fbd790327eec5d297a46e8657158b8de"
     },
     "settings.integrations.basesIntegration.viewCommands.description": {
-      "source": "a7f83e1b15adc169e23caff7842c5b1c65a4ae73",
-      "translation": "abf093f5b9a09021dba92f6b08b157856452494c"
+      "source": "899cd118147c279ba8d7748367ce693a196a0c9b",
+      "translation": "87a8d354db1bc5138582654bea2265934ac3f68c"
+    },
+    "settings.integrations.basesIntegration.viewCommands.descriptionRegen": {
+      "source": "85bcb1a28e9d268506d3c4e5e4671845d3ae17a9",
+      "translation": "dd64fea3900160f075d94daf9e67f6c0e4341144"
+    },
+    "settings.integrations.basesIntegration.viewCommands.docsLink": {
+      "source": "600fc012cd270f71115df41a83623c799eecf3b7",
+      "translation": "f954a63919ab287512d8da4fc6eb71a341ca5699"
+    },
+    "settings.integrations.basesIntegration.viewCommands.docsLinkUrl": {
+      "source": "825c28125efb1a9a8af127dfe34ed1459dbe88f9",
+      "translation": "825c28125efb1a9a8af127dfe34ed1459dbe88f9"
     },
     "settings.integrations.basesIntegration.viewCommands.commands.miniCalendar": {
       "source": "d7dce352d3bf5b12479770b86495263f84275492",
@@ -39059,12 +39119,24 @@
       "translation": "b481cceb5deb7b7418aa66f4c0c6b2071a487a52"
     },
     "settings.integrations.basesIntegration.viewCommands.header": {
-      "source": "3504f0479dcb7a1056f93b996703aeb3237f0897",
-      "translation": "da2fadbfd6ec223d5f31855e358fb7406e8ecef4"
+      "source": "cc933488141ec9c69380bcafd94d9a3a86eaad7a",
+      "translation": "f628f3c2ca3d7864835a8448cf40b9f2922329e6"
     },
     "settings.integrations.basesIntegration.viewCommands.description": {
-      "source": "a7f83e1b15adc169e23caff7842c5b1c65a4ae73",
-      "translation": "ae2123cfb0fd216a04356d00eb408e55e8adf718"
+      "source": "899cd118147c279ba8d7748367ce693a196a0c9b",
+      "translation": "9ce017eb7f5c62a51c7c0e28698602c59a5c87c6"
+    },
+    "settings.integrations.basesIntegration.viewCommands.descriptionRegen": {
+      "source": "85bcb1a28e9d268506d3c4e5e4671845d3ae17a9",
+      "translation": "5e746ffce3adbaee19f1205b4cc397c9e8491941"
+    },
+    "settings.integrations.basesIntegration.viewCommands.docsLink": {
+      "source": "600fc012cd270f71115df41a83623c799eecf3b7",
+      "translation": "c748244686f86d508922f301e6e1d640c18425e9"
+    },
+    "settings.integrations.basesIntegration.viewCommands.docsLinkUrl": {
+      "source": "825c28125efb1a9a8af127dfe34ed1459dbe88f9",
+      "translation": "825c28125efb1a9a8af127dfe34ed1459dbe88f9"
     },
     "settings.integrations.basesIntegration.viewCommands.commands.miniCalendar": {
       "source": "d7dce352d3bf5b12479770b86495263f84275492",
@@ -46253,12 +46325,24 @@
       "translation": "294bb3f992b79b37eb0886ff609f79d1d3e8b285"
     },
     "settings.integrations.basesIntegration.viewCommands.header": {
-      "source": "3504f0479dcb7a1056f93b996703aeb3237f0897",
-      "translation": "ce2291b817f69c43296a491e45db247d369b99b4"
+      "source": "cc933488141ec9c69380bcafd94d9a3a86eaad7a",
+      "translation": "dd3ecc1bff9bdd7a8404b0670ca8ad744f881aa4"
     },
     "settings.integrations.basesIntegration.viewCommands.description": {
-      "source": "a7f83e1b15adc169e23caff7842c5b1c65a4ae73",
-      "translation": "c864c97c86cb709ea20245b1e7368d2d886b6275"
+      "source": "899cd118147c279ba8d7748367ce693a196a0c9b",
+      "translation": "e32ba9edfa3e8eb78fb6bf6ac1e8cc863acf1b05"
+    },
+    "settings.integrations.basesIntegration.viewCommands.descriptionRegen": {
+      "source": "85bcb1a28e9d268506d3c4e5e4671845d3ae17a9",
+      "translation": "fec559c44be20a4059f171ced0d0d016b449e749"
+    },
+    "settings.integrations.basesIntegration.viewCommands.docsLink": {
+      "source": "600fc012cd270f71115df41a83623c799eecf3b7",
+      "translation": "eff3d0ad287533091d5438f4ee31b77740b6dd8c"
+    },
+    "settings.integrations.basesIntegration.viewCommands.docsLinkUrl": {
+      "source": "825c28125efb1a9a8af127dfe34ed1459dbe88f9",
+      "translation": "825c28125efb1a9a8af127dfe34ed1459dbe88f9"
     },
     "settings.integrations.basesIntegration.viewCommands.commands.miniCalendar": {
       "source": "d7dce352d3bf5b12479770b86495263f84275492",

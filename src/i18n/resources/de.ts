@@ -1278,8 +1278,11 @@ export const de: TranslationTree = {
 					description: "TaskNotes-Ansichten zur Verwendung im Obsidian Bases Plugin aktivieren. Bases Plugin muss aktiviert sein, damit dies funktioniert.",
 				},
 				viewCommands: {
-					header: "Ansichtsbefehle",
-					description: "Konfiguriere, welche .base-Dateien von Ansichtsbefehlen geöffnet werden. Diese Befehle ermöglichen es dir, vertraute Verknüpfungen zu verwenden, während du mit Bases-Dateien arbeitest.",
+					header: "Ansichten & Base-Dateien",
+					description: "TaskNotes verwendet Obsidian Bases-Dateien (.base) zur Darstellung seiner Ansichten. Diese Dateien werden beim Start automatisch erstellt, falls sie nicht existieren, und mit deinen aktuellen Einstellungen konfiguriert (Aufgabenidentifikation, Feldzuordnungen, Status usw.).",
+					descriptionRegen: "Base-Dateien werden nicht automatisch aktualisiert, wenn du Einstellungen änderst. Um neue Einstellungen anzuwenden, lösche die vorhandenen .base-Dateien und starte Obsidian neu, verwende \"Dateien erstellen\" unten, oder bearbeite sie manuell.",
+					docsLink: "Dokumentation für verfügbare Formeln und Anpassungsoptionen anzeigen",
+					docsLinkUrl: "https://tasknotes.dev/views/default-base-templates",
 					commands: {
 						miniCalendar: "Mini-Kalenderansicht öffnen",
 						kanban: "Kanban-Ansicht öffnen",

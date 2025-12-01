@@ -24,6 +24,20 @@ Example:
 
 -->
 
+## Added
+
+- 30+ new formula properties in default Base templates
+  - **Date calculations**: `daysUntilDue`, `daysUntilScheduled`, `daysSinceCreated`, `daysSinceModified`
+  - **Boolean helpers**: `isOverdue`, `isDueToday`, `isDueThisWeek`, `isScheduledToday`, `isRecurring`, `hasTimeEstimate`
+  - **Time tracking**: `timeRemaining`, `efficiencyRatio`, `timeTrackedThisWeek`, `timeTrackedToday`, `timeTrackedFormatted`
+  - **Grouping**: `dueMonth`, `dueWeek`, `scheduledMonth`, `scheduledWeek`, `dueDateCategory`, `timeEstimateCategory`, `ageCategory`, `createdMonth`, `modifiedMonth`, `priorityCategory`, `projectCount`, `contextCount`, `trackingStatus`
+  - **Combined due/scheduled**: `nextDate`, `daysUntilNext`, `hasDate`, `isToday`, `isThisWeek`, `nextDateCategory`, `nextDateMonth`, `nextDateWeek` - work with whichever date comes first
+  - **Sorting**: `priorityWeight`, `urgencyScore` (combines priority with date proximity)
+  - **Display**: `dueDateDisplay` (relative dates like "Today", "Tomorrow", "3d ago")
+  - Action-oriented views (Not Blocked, Today, Overdue, This Week) now sort by urgency score, showing most important tasks first
+  - See [Default Base Templates documentation](https://tasknotes.dev/views/default-base-templates) for full details
+  - **Note**: To get these new formulas, either copy them from the documentation, or delete your `.base` files in `TaskNotes/Views/` and restart Obsidian to regenerate them
+
 ## Changed
 
 - (#1282) Added spacing between task title and metadata in inline task widgets for improved readability

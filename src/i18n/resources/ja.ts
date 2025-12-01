@@ -1278,8 +1278,11 @@ export const ja: TranslationTree = {
 					description: "TaskNotesビューをObsidian Basesプラグイン内で使用できるようにします。これが機能するにはBasesプラグインが有効である必要があります。",
 				},
 				viewCommands: {
-					header: "ビューコマンド",
-					description: "ビューコマンドで開く.baseファイルを設定します。これらのコマンドを使用すると、Basesファイルで作業しながら使い慣れたショートカットを引き続き使用できます。",
+					header: "ビューとBaseファイル",
+					description: "TaskNotesはObsidian Basesファイル（.base）を使用してビューを表示します。これらのファイルは起動時に存在しない場合に自動的に生成され、現在の設定（タスク識別、フィールドマッピング、ステータスなど）で構成されます。",
+					descriptionRegen: "Baseファイルは設定を変更しても自動的には更新されません。新しい設定を適用するには、既存の.baseファイルを削除してObsidianを再起動するか、下の「ファイルを作成」を使用するか、手動で編集してください。",
+					docsLink: "利用可能な数式とカスタマイズオプションのドキュメントを表示",
+					docsLinkUrl: "https://tasknotes.dev/views/default-base-templates",
 					commands: {
 						miniCalendar: "ミニカレンダービューを開く",
 						kanban: "カンバンビューを開く",
