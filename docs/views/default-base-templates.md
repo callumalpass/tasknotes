@@ -1,7 +1,7 @@
 ---
 title: Default Base Templates
 description: Default base file templates for TaskNotes views
-dateModified: 2025-11-19T21:20:55+1100
+dateModified: 2025-12-01T12:00:00+1100
 ---
 
 # Default Base Templates
@@ -17,7 +17,8 @@ The examples below assume:
 - **Task identification**: Tag-based using `#task`
 - **Field mapping**: Default property names (e.g., `status`, `due`, `scheduled`, `projects`, `contexts`)
 - **Statuses**: `none`, `open`, `in-progress`, `done` (only `done` is completed)
-- **Visible properties**: `status`, `priority`, `due`, `scheduled`, `projects`, `contexts`, `tags`
+- **Priorities**: `none`, `low`, `normal`, `high` (sorted by weight)
+- **Visible properties**: `status`, `priority`, `due`, `scheduled`, `projects`, `contexts`, `tags`, `blocked`, `blocking`
 
 ## Mini Calendar
 
@@ -31,6 +32,9 @@ filters:
   and:
     - file.hasTag("task")
 
+formulas:
+  priorityWeight: 'if(priority=="none",0,if(priority=="low",1,if(priority=="normal",2,if(priority=="high",3,999))))'
+
 views:
   - type: tasknotesMiniCalendar
     name: "Due"
@@ -42,6 +46,7 @@ views:
       - projects
       - contexts
       - tags
+      - blockedBy
       - file.name
       - recurrence
       - complete_instances
@@ -72,6 +77,9 @@ filters:
   and:
     - file.hasTag("task")
 
+formulas:
+  priorityWeight: 'if(priority=="none",0,if(priority=="low",1,if(priority=="normal",2,if(priority=="high",3,999))))'
+
 views:
   - type: tasknotesKanban
     name: "Kanban Board"
@@ -83,6 +91,7 @@ views:
       - projects
       - contexts
       - tags
+      - blockedBy
       - file.name
       - recurrence
       - complete_instances
@@ -107,6 +116,9 @@ filters:
   and:
     - file.hasTag("task")
 
+formulas:
+  priorityWeight: 'if(priority=="none",0,if(priority=="low",1,if(priority=="normal",2,if(priority=="high",3,999))))'
+
 views:
   - type: tasknotesTaskList
     name: "All Tasks"
@@ -118,6 +130,7 @@ views:
       - projects
       - contexts
       - tags
+      - blockedBy
       - file.name
       - recurrence
       - complete_instances
@@ -137,7 +150,7 @@ views:
           # Recurring task where today is not in complete_instances
           - and:
             - recurrence
-            - '!complete_instances.contains(today().format("yyyy-MM-dd"))'
+            - "!complete_instances.contains(today().format(\"yyyy-MM-dd\"))"
         # Not blocked by any incomplete tasks
         - or:
           # No blocking dependencies at all
@@ -152,6 +165,7 @@ views:
       - projects
       - contexts
       - tags
+      - blockedBy
       - file.name
       - recurrence
       - complete_instances
@@ -171,7 +185,7 @@ views:
           # Recurring task where today is not in complete_instances
           - and:
             - recurrence
-            - '!complete_instances.contains(today().format("yyyy-MM-dd"))'
+            - "!complete_instances.contains(today().format(\"yyyy-MM-dd\"))"
         # Due or scheduled today
         - or:
           - date(due) == today()
@@ -184,6 +198,7 @@ views:
       - projects
       - contexts
       - tags
+      - blockedBy
       - file.name
       - recurrence
       - complete_instances
@@ -203,7 +218,7 @@ views:
           # Recurring task where today is not in complete_instances
           - and:
             - recurrence
-            - '!complete_instances.contains(today().format("yyyy-MM-dd"))'
+            - "!complete_instances.contains(today().format(\"yyyy-MM-dd\"))"
         # Due in the past
         - date(due) < today()
     order:
@@ -214,6 +229,7 @@ views:
       - projects
       - contexts
       - tags
+      - blockedBy
       - file.name
       - recurrence
       - complete_instances
@@ -233,7 +249,7 @@ views:
           # Recurring task where today is not in complete_instances
           - and:
             - recurrence
-            - '!complete_instances.contains(today().format("yyyy-MM-dd"))'
+            - "!complete_instances.contains(today().format(\"yyyy-MM-dd\"))"
         # Due or scheduled this week
         - or:
           - and:
@@ -250,6 +266,7 @@ views:
       - projects
       - contexts
       - tags
+      - blockedBy
       - file.name
       - recurrence
       - complete_instances
@@ -269,7 +286,7 @@ views:
           # Recurring task where today is not in complete_instances
           - and:
             - recurrence
-            - '!complete_instances.contains(today().format("yyyy-MM-dd"))'
+            - "!complete_instances.contains(today().format(\"yyyy-MM-dd\"))"
         # No due date and no scheduled date
         - date(due).isEmpty()
         - date(scheduled).isEmpty()
@@ -281,6 +298,7 @@ views:
       - projects
       - contexts
       - tags
+      - blockedBy
       - file.name
       - recurrence
       - complete_instances
@@ -300,6 +318,9 @@ filters:
   and:
     - file.hasTag("task")
 
+formulas:
+  priorityWeight: 'if(priority=="none",0,if(priority=="low",1,if(priority=="normal",2,if(priority=="high",3,999))))'
+
 views:
   - type: tasknotesCalendar
     name: "Calendar"
@@ -311,6 +332,7 @@ views:
       - projects
       - contexts
       - tags
+      - blockedBy
       - file.name
       - recurrence
       - complete_instances
@@ -340,6 +362,9 @@ filters:
   and:
     - file.hasTag("task")
 
+formulas:
+  priorityWeight: 'if(priority=="none",0,if(priority=="low",1,if(priority=="normal",2,if(priority=="high",3,999))))'
+
 views:
   - type: tasknotesCalendar
     name: "Agenda"
@@ -351,6 +376,7 @@ views:
       - projects
       - contexts
       - tags
+      - blockedBy
       - file.name
       - recurrence
       - complete_instances
@@ -375,6 +401,9 @@ filters:
   and:
     - file.hasTag("task")
 
+formulas:
+  priorityWeight: 'if(priority=="none",0,if(priority=="low",1,if(priority=="normal",2,if(priority=="high",3,999))))'
+
 views:
   - type: tasknotesKanban
     name: "Subtasks"
@@ -389,6 +418,7 @@ views:
       - projects
       - contexts
       - tags
+      - blockedBy
       - file.name
       - recurrence
       - complete_instances
@@ -408,6 +438,7 @@ views:
       - projects
       - contexts
       - tags
+      - blockedBy
       - file.name
       - recurrence
       - complete_instances
@@ -424,6 +455,7 @@ views:
       - projects
       - contexts
       - tags
+      - blockedBy
       - file.name
       - recurrence
       - complete_instances
@@ -440,6 +472,7 @@ views:
       - projects
       - contexts
       - tags
+      - blockedBy
       - file.name
       - recurrence
       - complete_instances
@@ -454,6 +487,7 @@ If you've customized your TaskNotes settings (e.g., renamed properties, added cu
 
 - **Custom property names**: If you've renamed `due` to `deadline`, the templates will use `deadline`
 - **Custom statuses**: The incomplete task filters will check against all your configured completed statuses
+- **Custom priorities**: The `priorityWeight` formula will include all your configured priorities with their weights
 - **Property-based identification**: If you identify tasks by a property instead of a tag, the filters will use that property
 - **Custom visible properties**: The `order` arrays will include your configured visible properties
 
