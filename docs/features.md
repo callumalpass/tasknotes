@@ -68,8 +68,8 @@ See [HTTP API](../HTTP_API.md) for details.
 
 ## Settings
 
-[General](../settings/general.md) controls task identification, file storage, and click behavior. [Features](../settings/features.md) manages inline tasks, natural language processing, and the Pomodoro timer. [Defaults & Templates](../settings/defaults.md) sets default properties and templates.
+[General](../settings/general.md) controls task identification, file storage, and click behavior. [Task Properties](../settings/task-properties.md) configures property keys, defaults, and NLP triggers. [Features](../settings/features.md) manages inline tasks, natural language processing, and the Pomodoro timer.
 
-[Appearance & UI](../settings/appearance.md) controls visual elements. [Task Properties](../settings/task-properties.md) defines custom statuses, priorities, and user fields. [Modal Fields](../settings/modal-fields.md) configures field visibility in task modals.
+[Appearance & UI](../settings/appearance.md) controls visual elements. [Modal Fields](../settings/modal-fields.md) configures field visibility in task modals.
 
 [Calendar Settings](../settings/calendar-settings.md) handles calendar appearance and behavior. [Integrations](../settings/integrations.md) manages OAuth calendars, ICS subscriptions, and the HTTP API. [Advanced Settings](../settings/advanced-settings.md) covers field mapping. [Misc Settings](../settings/misc-settings.md) contains additional options.

@@ -520,10 +520,10 @@ TaskNotes supports configuring default reminders that automatically apply to new
 
 Configure default reminders from TaskNotes settings:
 
-1. Navigate to Settings → TaskNotes → Defaults & Templates
-2. Locate the **Default Reminders** section
-3. Use the form to add new default reminders
-4. Specify reminder type, timing, and optional descriptions
+1. Navigate to Settings → TaskNotes → Task Properties
+2. Expand the **Reminders** property card
+3. Locate the **Default Reminders** section
+4. Use the form to add new default reminders
 
 #### Default Reminder Application
 

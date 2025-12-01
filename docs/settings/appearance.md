@@ -1,4 +1,3 @@
-
 # Appearance & UI Settings
 
 These settings control the visual appearance of the plugin, including the calendar, task cards, and other UI elements.
@@ -8,12 +7,6 @@ These settings control the visual appearance of the plugin, including the calend
 ## Task Cards
 
 - **Default visible properties**: Choose which properties appear on task cards by default.
-
-## Task Filenames
-
-- **Store title in filename**: Use the task title as the filename. The filename will update when the task title is changed.
-- **Filename format**: If "Store title in filename" is disabled, you can choose from a variety of filename generation patterns, including title-based, timestamp-based, and Zettelkasten-style.
-- **Custom filename template**: If you choose the "custom" filename format, you can define your own template using a variety of variables.
 
 ## Display Formatting
 
@@ -40,7 +33,6 @@ These settings control the visual appearance of the plugin, including the calend
 - **Show recurring tasks**: Display recurring task instances by default.
 - **Show ICS events**: Display events from ICS subscriptions by default.
 
-
 ## Time Settings
 
 - **Time slot duration**: Duration of each time slot in timeline views.
@@ -57,11 +49,9 @@ These settings control the visual appearance of the plugin, including the calend
 - **Subtask chevron position**: Position of expand/collapse chevrons in task cards.
 - **Views button alignment**: Alignment of the views/filters button in the task interface.
 
-## Project Autosuggest
+## Related Settings
 
-- **Required tags**: Show only notes with any of these tags (comma-separated). Leave empty to show all notes.
-- **Include folders**: Show only notes in these folders (comma-separated paths). Leave empty to show all folders.
-- **Required property key/value**: Filter notes by a frontmatter property. Provide the property name and, optionally, the value it must match (leave the value blank to require only that the property exists).
-- **Customize suggestion display**: Show advanced options to configure how project suggestions appear and what information they display.
-- **Enable fuzzy matching**: Allow typos and partial matches in project search. May be slower in large vaults.
-- **Row 1, 2, 3**: Configure up to 3 lines of information to show for each project suggestion.
+Some appearance-related settings are configured elsewhere:
+
+- **Task filename format**: Configured in [Task Properties](task-properties.md) → Title card
+- **Project autosuggest display**: Configured in [Task Properties](task-properties.md) → Projects card

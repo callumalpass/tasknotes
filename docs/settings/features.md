@@ -9,6 +9,12 @@ These settings allow you to enable, disable, and configure the various features 
 - **Task link overlay**: Replaces links to tasks with an interactive widget in Live Preview mode. The widget is not shown when the cursor is on the link, to allow for editing.
 - **Instant task convert**: Shows a button next to list items and checkboxes to convert them to tasks.
 - **Inline task convert folder**: The folder for inline task conversion. Use `{{currentNotePath}}` for a path relative to the current note.
+- **Use task defaults on instant convert**: Apply default task settings when converting text to tasks instantly.
+
+## Body Template
+
+- **Use body template**: Use a template file for task body content.
+- **Body template file**: Path to template file for task body content. Supports template variables including `{{title}}`, `{{date}}`, `{{time}}`, `{{priority}}`, `{{status}}`, `{{contexts}}`, `{{tags}}`, and `{{projects}}`.
 
 ## Natural Language Processing
 

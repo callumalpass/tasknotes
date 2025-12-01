@@ -1,12 +1,15 @@
 # Task Defaults
 
-These settings control the default properties for new tasks, as well as the file management and template settings.
+This page documents folder management, filename templates, archive settings, and the template system. These settings are found in the **General** tab.
+
+!!! note "Default Property Values"
+    Default values for task properties (status, priority, dates, etc.) are now configured in the [Task Properties](task-properties.md) tab within each property's card.
 
 ## Folder and File Management
 
 You can specify a **Default Tasks Folder** where new tasks will be created. You can also configure the **Task Tag** that identifies notes as TaskNotes, and you can specify a list of **Excluded Folders** that will be ignored by the plugin.
 
-TaskNotes also provides a system for **Filename Generation**. You can choose from a variety of patterns, including title-based, timestamp-based, and Zettelkasten-style, or you can create your own custom filename template.
+Filename generation settings are configured in the **Task Properties** tab within the Title property card. You can choose from title-based, timestamp-based, Zettelkasten-style patterns, or create a custom filename template.
 
 ### Folder Template Variables
 
@@ -218,34 +221,28 @@ For ICS event notes, additional variables are available:
 - **Empty Values**: If a property doesn't have a value, the variable is replaced with an empty string
 - **Character Limits**: Filenames are limited to 255 characters on most systems
 
-### Store Title Exclusively in Filename
+### Store Title in Filename
 
-This setting provides an alternative way to manage your task titles. When enabled, the task's title will be used as the filename, and the `title` property will be removed from the frontmatter. This is a significant data storage change that simplifies frontmatter but disables all other filename templating options.
+This setting is configured in the **Task Properties** tab within the Title property card.
+
+When enabled, the task's title is stored in the filename instead of frontmatter. The `title` property is removed from frontmatter, and the filename updates when the title changes. This disables other filename templating options.
 
 **Important Considerations:**
 
 - **Backward Compatibility:** This feature is designed to be backward-compatible. Existing tasks with the `title` property in their frontmatter will continue to work as expected. The plugin will always prioritize reading the title from the frontmatter if it exists.
 - **New Tasks:** New tasks created with this setting enabled will have their title stored exclusively in the filename.
-- **Migration:** To migrate an existing task to this new system, you will need to manually rename the file to match the task's title and then remove the `title` property from the frontmatter.
-
-This feature is recommended for users who prefer a minimalist approach to their frontmatter and want a direct relationship between the filename and the task title.
-
-## Default Task Properties
-
-You can set the **Default Status** and **Default Priority** for new tasks, as well as the **Default Due Date** and **Default Scheduled Date**. You can also specify default **Contexts** and **Tags** that will be automatically added to new tasks.
+- **Migration:** To migrate an existing task to this system, rename the file to match the task's title and remove the `title` property from frontmatter.
 
 ## Default Reminders
 
-TaskNotes supports configuring default reminders that automatically apply to new tasks. This eliminates the need to manually add common reminders to every task and ensures consistent notification patterns across your task management workflow.
+Default reminders are configured in the **Task Properties** tab within the Reminders property card. Each reminder you configure will be automatically applied to new tasks.
 
 ### Configuring Default Reminders
 
-Default reminders are configured in the TaskNotes settings under the "Task Creation Defaults" section:
-
 1. Open TaskNotes settings (Settings → TaskNotes)
-2. Navigate to the "Task Defaults" tab
-3. Scroll to the "Default Reminders" section
-4. Use the provided form to add new default reminders
+2. Navigate to the "Task Properties" tab
+3. Expand the "Reminders" property card
+4. Use the "Default Reminders" section to add new reminders
 
 ### Default Reminder Types
 
