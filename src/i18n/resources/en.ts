@@ -823,6 +823,145 @@ export const en: TranslationTree = {
 			},
 		},
 		taskProperties: {
+			// Section headers for property card layout
+			sections: {
+				coreProperties: "Core Properties",
+				corePropertiesDesc: "Status and priority are the core properties that define a task's state and importance.",
+				dateProperties: "Date Properties",
+				datePropertiesDesc: "Configure when tasks are due and scheduled.",
+				organizationProperties: "Organization Properties",
+				organizationPropertiesDesc: "Organize tasks with contexts, projects, and tags.",
+				taskDetails: "Task Details",
+				taskDetailsDesc: "Additional details like time estimates, recurrence, and reminders.",
+				metadataProperties: "Metadata Properties",
+				metadataPropertiesDesc: "System-managed properties for tracking task history.",
+				featureProperties: "Feature Properties",
+				featurePropertiesDesc: "Properties used by specific TaskNotes features like Pomodoro timer and calendar sync.",
+			},
+			// Property card common fields
+			propertyCard: {
+				propertyKey: "Property key:",
+				default: "Default:",
+				nlpTrigger: "NLP trigger:",
+				triggerChar: "Trigger character:",
+				triggerEmpty: "Trigger cannot be empty",
+				triggerTooLong: "Trigger is too long (max 10 characters)",
+			},
+			// Individual property names and descriptions
+			properties: {
+				status: {
+					name: "Status",
+					description: "Task status indicating completion state",
+				},
+				priority: {
+					name: "Priority",
+					description: "Task priority level",
+				},
+				due: {
+					name: "Due Date",
+					description: "When the task must be completed",
+				},
+				scheduled: {
+					name: "Scheduled Date",
+					description: "When to work on the task",
+				},
+				contexts: {
+					name: "Contexts",
+					description: "Where or how the task can be done (e.g., @home, @work)",
+				},
+				projects: {
+					name: "Projects",
+					description: "Projects this task belongs to",
+				},
+				tags: {
+					name: "Tags",
+					description: "Obsidian tags for categorization",
+				},
+				timeEstimate: {
+					name: "Time Estimate",
+					description: "Estimated time to complete the task",
+				},
+				recurrence: {
+					name: "Recurrence",
+					description: "Pattern for repeating tasks",
+				},
+				reminders: {
+					name: "Reminders",
+					description: "Notifications before task deadlines",
+				},
+				title: {
+					name: "Title",
+					description: "The task title/name",
+				},
+				dateCreated: {
+					name: "Date Created",
+					description: "When the task was created",
+				},
+				dateModified: {
+					name: "Date Modified",
+					description: "When the task was last modified",
+				},
+				completedDate: {
+					name: "Completed Date",
+					description: "When the task was completed",
+				},
+				archiveTag: {
+					name: "Archive Tag",
+					description: "Tag used to mark archived tasks",
+				},
+				timeEntries: {
+					name: "Time Entries",
+					description: "Time tracking entries for the task",
+				},
+				completeInstances: {
+					name: "Complete Instances",
+					description: "Completion history for recurring tasks",
+				},
+				blockedBy: {
+					name: "Blocked By",
+					description: "Tasks that must be completed first",
+				},
+				pomodoros: {
+					name: "Pomodoros",
+					description: "Pomodoro session count for the task",
+				},
+				icsEventId: {
+					name: "ICS Event ID",
+					description: "Calendar event identifier",
+				},
+				icsEventTag: {
+					name: "ICS Event Tag",
+					description: "Tag for calendar event linking",
+				},
+			},
+			// Card-specific labels
+			statusCard: {
+				valuesHeader: "Status Values",
+			},
+			priorityCard: {
+				valuesHeader: "Priority Values",
+			},
+			projectsCard: {
+				defaultProjects: "Default projects:",
+				useParentNote: "Use parent note as project:",
+				noDefaultProjects: "No default projects selected",
+				autosuggestFilters: "Autosuggest Filters",
+				customizeDisplay: "Customize Display",
+				filtersOn: "Filters On",
+			},
+			titleCard: {
+				storeTitleInFilename: "Store title in filename:",
+				storedInFilename: "Stored in filename",
+				filenameUpdatesWithTitle: "Filename will automatically update when the task title changes.",
+				filenameFormat: "Filename format:",
+				customTemplate: "Custom template:",
+			},
+			tagsCard: {
+				nativeObsidianTags: "Uses native Obsidian tags",
+			},
+			remindersCard: {
+				defaultReminders: "Default Reminders",
+			},
 			taskStatuses: {
 				header: "Task Statuses",
 				description:
