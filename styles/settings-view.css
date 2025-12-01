@@ -955,6 +955,77 @@ select.tasknotes-settings__card-input {
 }
 
 /* ================================================
+   ICON INPUT WITH SUGGESTIONS
+   ================================================ */
+
+/* Icon input container with preview */
+.tasknotes-plugin .icon-input-container {
+    display: flex;
+    align-items: center;
+    gap: var(--tn-spacing-xs);
+    flex: 1;
+}
+
+.tasknotes-plugin .icon-input-preview {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: var(--tn-radius-sm);
+    background: var(--background-modifier-hover);
+    flex-shrink: 0;
+}
+
+.tasknotes-plugin .icon-input-preview svg {
+    width: 16px;
+    height: 16px;
+    color: var(--text-normal);
+}
+
+.tasknotes-plugin .icon-input {
+    flex: 1;
+    min-width: 0;
+}
+
+/* Icon suggestion dropdown items */
+.suggestion-item.icon-suggestion-item {
+    display: flex;
+    align-items: center;
+    gap: var(--size-4-2);
+    padding: var(--size-4-1) var(--size-4-2);
+}
+
+.icon-suggestion-preview {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+}
+
+.icon-suggestion-preview svg {
+    width: 16px;
+    height: 16px;
+    color: var(--text-muted);
+}
+
+.icon-suggestion-text {
+    color: var(--text-normal);
+    font-size: var(--font-ui-small);
+}
+
+/* Highlight matched icon in suggestions */
+.suggestion-item.icon-suggestion-item.is-selected .icon-suggestion-preview svg {
+    color: var(--text-on-accent);
+}
+
+.suggestion-item.icon-suggestion-item.is-selected .icon-suggestion-text {
+    color: var(--text-on-accent);
+}
+
+/* ================================================
    ACCESSIBILITY & REDUCED MOTION
    ================================================ */
 

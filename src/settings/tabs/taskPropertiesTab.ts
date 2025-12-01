@@ -23,6 +23,7 @@ import {
 } from "../components/CardComponent";
 import { createFilterSettingsInputs } from "../components/FilterSettingsComponent";
 import { initializeFieldConfig } from "../../utils/fieldConfigDefaults";
+import { createIconInput } from "../components/IconSuggest";
 
 /**
  * Renders the Task Properties tab - custom statuses, priorities, and user fields
@@ -315,8 +316,8 @@ function renderStatusList(container: HTMLElement, plugin: TaskNotesPlugin, save:
 			status.label
 		);
 		const colorInput = createCardInput("color", "", status.color);
-		const iconInput = createCardInput(
-			"text",
+		const { container: iconInputContainer, input: iconInput } = createIconInput(
+			plugin.app,
 			translate("settings.taskProperties.taskStatuses.placeholders.icon"),
 			status.icon || ""
 		);
@@ -434,7 +435,7 @@ function renderStatusList(container: HTMLElement, plugin: TaskNotesPlugin, save:
 								label: translate(
 									"settings.taskProperties.taskStatuses.fields.icon"
 								),
-								input: iconInput,
+								input: iconInputContainer,
 							},
 							{
 								label: translate(
