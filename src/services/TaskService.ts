@@ -215,18 +215,6 @@ export class TaskService {
 				}
 			}
 
-			// Generate filename
-			const filenameContext: FilenameContext = {
-				title: title,
-				priority: priority,
-				status: status,
-				date: new Date(),
-				dueDate: taskData.due,
-				scheduledDate: taskData.scheduled,
-			};
-
-			const baseFilename = generateTaskFilename(filenameContext, this.plugin.settings);
-
 			// Determine folder based on creation context
 			// Process folder templates with task and date variables for dynamic folder organization
 			let folder = "";
@@ -280,14 +268,6 @@ export class TaskService {
 				await ensureFolderExists(this.plugin.app.vault, folder);
 			}
 
-			// Generate unique filename
-			const uniqueFilename = await generateUniqueFilename(
-				baseFilename,
-				folder,
-				this.plugin.app.vault
-			);
-			const fullPath = folder ? `${folder}/${uniqueFilename}.md` : `${uniqueFilename}.md`;
-
 			// Create complete TaskInfo object with all the data
 			const completeTaskData: Partial<TaskInfo> = {
 				title: title,
@@ -311,11 +291,43 @@ export class TaskService {
 				icsEventId: taskData.icsEventId || undefined,
 			};
 
+			// Generate filename with full task info for advanced templating
+			const filenameContext: FilenameContext = {
+				title: title,
+				priority: priority,
+				status: status,
+				date: new Date(),
+				dueDate: taskData.due,
+				scheduledDate: taskData.scheduled,
+				creationContext: taskData.creationContext, // Pass directly for inline conversion check
+				fullTaskInfo: completeTaskData as TaskInfo, // Full task info for template variables
+			};
+
+			const baseFilename = generateTaskFilename(filenameContext, this.plugin.settings);
+
+			// Generate unique filename
+			const uniqueFilename = await generateUniqueFilename(
+				baseFilename,
+				folder,
+				this.plugin.app.vault
+			);
+			const fullPath = folder ? `${folder}/${uniqueFilename}.md` : `${uniqueFilename}.md`;
+
+			// Determine if we should store title in filename
+			// When using custom filenames for inline conversion, keep title in frontmatter
+			const usingCustomFilename =
+				taskData.creationContext === "inline-conversion" &&
+				this.plugin.settings.toggleCustomFileName &&
+				this.plugin.settings.customFileName &&
+				this.plugin.settings.customFileName.trim();
+			const shouldStoreTitleInFilename =
+				!usingCustomFilename && this.plugin.settings.storeTitleInFilename;
+
 			// Use field mapper to convert to frontmatter with proper field mapping
 			const frontmatter = this.plugin.fieldMapper.mapToFrontmatter(
 				completeTaskData,
 				this.plugin.settings.taskTag,
-				this.plugin.settings.storeTitleInFilename
+				shouldStoreTitleInFilename
 			);
 
 			// Handle task identification based on settings

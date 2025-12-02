@@ -278,6 +278,8 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 
 	// Inline task conversion defaults
 	inlineTaskConvertFolder: "{{currentNotePath}}",
+	toggleCustomFileName: false, // Disabled by default (use existing filename format)
+	customFileName: "{{title}}", // Default to title-based naming when enabled
 	// Performance defaults
 	disableNoteIndexing: false,
 	// Suggestion performance defaults

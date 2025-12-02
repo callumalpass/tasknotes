@@ -48,6 +48,8 @@ The **Instant Task Conversion** feature transforms lines in your notes into Task
 
 **Configure where converted tasks are saved:** You can use dynamic folder templates to organize converted tasks automatically. See [Inline Task Folder For Converted Tasks](inline-tasks-folder-for-converted-tasks.md) for detailed configuration options, including extracting projects from tags, priority-based routing, and date-based organization.
 
+**Configure custom filenames for converted tasks:** You can use custom filename templates to control how converted task files are named. See [Inline Task Filename For Converted Tasks](inline-task-filename-for-converted-tasks.md) for detailed configuration options, including using task properties, date formats, and advanced JavaScript expressions. The task title remains separate from the filename in the frontmatter.
+
 ### Supported Line Types
 
 The conversion feature works with:

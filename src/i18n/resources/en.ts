@@ -433,6 +433,16 @@ export const en: TranslationTree = {
 					description:
 						"Folder where tasks converted from checkboxes will be created. Use {{currentNotePath}} for relative to current note, {{currentNoteTitle}} for current note title",
 				},
+				toggleCustomFileName: {
+					name: "Show custom file name option",
+					description:
+						"Enable option to specify custom file name when converting checkboxes to tasks",
+				},
+				customFileName: {
+					name: "Custom file name for converted tasks",
+					description:
+						"File where tasks converted from checkboxes will be created. Supports template variables like {{title}}, {{date}}, {{time}}, etc.",
+				},
 			},
 			nlp: {
 				header: "Natural Language Processing",

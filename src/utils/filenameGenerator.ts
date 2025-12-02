@@ -1,6 +1,8 @@
 import { format } from "date-fns";
 import { normalizePath } from "obsidian";
 import { TaskNotesSettings } from "../types/settings";
+import { TaskInfo } from "../types";
+import { processFolderTemplate } from "./folderTemplateProcessor";
 
 export interface FilenameContext {
 	title: string;
@@ -9,6 +11,8 @@ export interface FilenameContext {
 	date?: Date;
 	dueDate?: string; // YYYY-MM-DD format
 	scheduledDate?: string; // YYYY-MM-DD format
+	creationContext?: string; // Context for determining filename generation (e.g., "inline-conversion")
+	fullTaskInfo?: TaskInfo; // Full task info for advanced templating
 }
 
 export interface ICSFilenameContext extends FilenameContext {
@@ -127,6 +131,19 @@ export function generateTaskFilename(
 		throw new Error("Invalid date provided in context");
 	}
 
+	// Priority 1: Custom filename for inline conversion
+	if (context.creationContext === "inline-conversion") {
+		const toggleEnabled = settings.toggleCustomFileName;
+		const templateHasContent = settings.customFileName && settings.customFileName.trim();
+
+		// BOTH must be true to use custom filename
+		if (toggleEnabled && templateHasContent) {
+			return generateCustomFilename(context, settings.customFileName, now);
+		}
+		// Otherwise fall through to existing logic
+	}
+
+	// Priority 2: storeTitleInFilename setting
 	if (settings.storeTitleInFilename) {
 		return sanitizeForFilename(context.title);
 	}
@@ -182,6 +199,7 @@ function generateTimestampFilename(date: Date): string {
 
 /**
  * Generates a filename based on a custom template
+ * Supports both legacy {variable} syntax and new {{variable}} and ${...} syntax
  */
 function generateCustomFilename(
 	context: FilenameContext,
@@ -203,6 +221,19 @@ function generateCustomFilename(
 	}
 
 	try {
+		// Check if template uses new {{variable}} or ${...} syntax
+		const usesNewSyntax = template.includes('{{') || template.includes('${');
+
+		if (usesNewSyntax && context.fullTaskInfo) {
+			// Use the advanced folder template processor
+			let result = processFolderTemplate(template, {
+				date,
+				fullTaskInfo: context.fullTaskInfo,
+			});
+
+			// Sanitize the result for filename use
+			return sanitizeForFilename(result);
+		}
 		// Validate and sanitize context values
 		const sanitizedTitle = sanitizeForFilename(context.title);
 		const sanitizedPriority =
