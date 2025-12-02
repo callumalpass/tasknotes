@@ -142,6 +142,8 @@ export interface TaskNotesSettings {
 	doubleClickAction: "edit" | "openNote" | "none";
 	// Inline task conversion settings
 	inlineTaskConvertFolder: string; // Folder for inline task conversion, supports {{currentNotePath}} and {{currentNoteTitle}}
+	toggleCustomFileName: boolean; // Enable custom filename template for instant conversion
+	customFileName: string; // Custom filename template with {{variable}} and ${...} support
 	// Performance settings
 	disableNoteIndexing: boolean;
 	/** Optional debounce in milliseconds for inline file suggestions (0 = disabled) */

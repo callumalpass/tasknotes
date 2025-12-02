@@ -1,4 +1,5 @@
 import { format } from "date-fns";
+import { TaskInfo } from "../types";
 
 /**
  * Data for processing task-specific template variables
@@ -47,10 +48,80 @@ export interface FolderTemplateOptions {
 	 * Used to handle wikilink formatting and path resolution
 	 */
 	extractProjectBasename?: (project: string) => string;
+
+	/**
+	 * Full TaskInfo object for accessing all task properties via {{variable}} syntax
+	 * and making them available in ${...} JavaScript expressions
+	 */
+	fullTaskInfo?: TaskInfo;
+}
+
+/**
+ * Safely evaluate a JavaScript expression in a controlled context
+ * @param expression - The JavaScript code to evaluate
+ * @param context - Variables available to the expression
+ * @returns The result of the expression as a string, or empty string on error
+ */
+function safeEvaluateJS(expression: string, context: Record<string, any>): string {
+	try {
+		// Create a function with the context variables as parameters
+		const contextKeys = Object.keys(context);
+		const contextValues = contextKeys.map(key => context[key]);
+
+		// Create a function that returns the evaluated expression
+		// Using Function constructor instead of eval for better control
+		const func = new Function(...contextKeys, `"use strict"; return (${expression});`);
+
+		// Execute the function with the context values
+		const result = func(...contextValues);
+
+		// Convert result to string, handling various types
+		if (result === null || result === undefined) {
+			return "";
+		}
+		if (Array.isArray(result)) {
+			return result.join("/");
+		}
+		return String(result);
+	} catch (error) {
+		console.warn(`Error evaluating JS expression "${expression}":`, error);
+		return "";
+	}
+}
+
+/**
+ * Replace all {{variable}} references with values from the context
+ * Supports all properties from TaskInfo
+ * @param template - Template string with {{variable}} placeholders
+ * @param context - Object containing variable values
+ * @returns Template with all {{variables}} replaced
+ */
+function replaceTemplateVariables(template: string, context: Record<string, any>): string {
+	return template.replace(/\{\{(\w+)\}\}/g, (match, varName) => {
+		if (varName in context) {
+			const value = context[varName];
+			if (value === null || value === undefined) {
+				return "";
+			}
+			if (Array.isArray(value)) {
+				// Handle empty arrays
+				if (value.length === 0) {
+					return "";
+				}
+				return value.join("/");
+			}
+			return String(value);
+		}
+		return match; // Keep original if not found
+	});
 }
 
 /**
  * Process a folder path template by replacing template variables with actual values
+ *
+ * Supports two template syntaxes:
+ * 1. {{variable}} - Simple variable substitution
+ * 2. ${...} - JavaScript expression evaluation
  *
  * Supported template variables:
  *
@@ -74,10 +145,23 @@ export interface FolderTemplateOptions {
  * - {{title}}, {{titleLower}}, {{titleUpper}}, {{titleSnake}}, {{titleKebab}}, {{titleCamel}}, {{titlePascal}}
  * - {{dueDate}}, {{scheduledDate}}
  *
+ * All TaskInfo variables (when fullTaskInfo is provided):
+ * - All properties from TaskInfo interface accessible via {{propertyName}}
+ * - Examples: {{tags}}, {{archived}}, {{timeEstimate}}, {{dateCreated}}, etc.
+ * - Arrays like {{tags}} and {{contexts}} are joined with /
+ *
  * ICS event variables (when icsData is provided):
  * - {{icsEventTitle}}, {{icsEventTitleLower}}, {{icsEventTitleUpper}}, etc.
  * - {{icsEventLocation}}
  * - {{icsEventDescription}}
+ *
+ * JavaScript expressions (when fullTaskInfo is provided):
+ * - ${...} expressions can contain any JavaScript code
+ * - All TaskInfo properties and date variables are available in scope
+ * - Examples:
+ *   - ${tags.includes('urgent') ? 'urgent' : 'normal'}
+ *   - ${priority === 'high' ? 'important' : 'regular'}
+ *   - ${contexts.length > 0 ? contexts[0] : 'inbox'}
  *
  * @param folderTemplate - The template string containing variables to replace
  * @param options - Options for processing the template
@@ -95,6 +179,18 @@ export interface FolderTemplateOptions {
  * })
  * // => "Projects/MyProject/active"
  *
+ * // Using all TaskInfo variables
+ * processFolderTemplate("Tasks/{{priority}}/{{tags}}", {
+ *   fullTaskInfo: { priority: "high", tags: ["work", "urgent"], ... }
+ * })
+ * // => "Tasks/high/work/urgent"
+ *
+ * // Using JavaScript expressions
+ * processFolderTemplate("Tasks/${tags.includes('urgent') ? 'urgent' : 'normal'}", {
+ *   fullTaskInfo: { tags: ["work", "urgent"], ... }
+ * })
+ * // => "Tasks/urgent"
+ *
  * // ICS event template
  * processFolderTemplate("Events/{{year}}/{{icsEventTitle}}", {
  *   date: new Date(),
@@ -111,9 +207,42 @@ export function processFolderTemplate(
 		return folderTemplate;
 	}
 
-	const { date = new Date(), taskData, icsData, extractProjectBasename } = options;
+	const { date = new Date(), taskData, icsData, extractProjectBasename, fullTaskInfo } = options;
 
 	let processedPath = folderTemplate;
+
+	// Step 1: Build context for JavaScript expressions and {{variable}} replacement
+	const jsContext: Record<string, any> = {
+		// Date utilities
+		date,
+		year: format(date, "yyyy"),
+		month: format(date, "MM"),
+		day: format(date, "dd"),
+	};
+
+	// Add all TaskInfo properties to context if fullTaskInfo is provided
+	if (fullTaskInfo) {
+		// Add all properties from TaskInfo
+		Object.keys(fullTaskInfo).forEach(key => {
+			const value = (fullTaskInfo as any)[key];
+			// Skip internal properties but keep undefined values for replacement
+			if (!key.startsWith('_')) {
+				jsContext[key] = value;
+			}
+		});
+	}
+
+	// Step 2: First pass - replace ${...} JavaScript expressions
+	// This happens before {{variable}} replacement so JS can use the raw template
+	processedPath = processedPath.replace(/\$\{([^}]+)\}/g, (_match, expression) => {
+		const result = safeEvaluateJS(expression.trim(), jsContext);
+		return result;
+	});
+
+	// Step 3: Replace {{variable}} for all TaskInfo properties if fullTaskInfo provided
+	if (fullTaskInfo) {
+		processedPath = replaceTemplateVariables(processedPath, jsContext);
+	}
 
 	// Replace task variables if taskData is provided
 	if (taskData) {

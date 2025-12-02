@@ -108,6 +108,32 @@ export function renderFeaturesTab(
 		},
 	});
 
+	createToggleSetting(container, {
+		name: translate("settings.features.instantConvert.toggleCustomFileName.name"),
+		desc: translate("settings.features.instantConvert.toggleCustomFileName.description"),
+		getValue: () => plugin.settings.toggleCustomFileName,
+		setValue: async (value: boolean) => {
+			plugin.settings.toggleCustomFileName = value;
+			save();
+			// Re-render to show/hide filename input
+			renderFeaturesTab(container, plugin, save);
+		},
+	});
+
+	// Show filename input only when toggle is ON
+	if (plugin.settings.toggleCustomFileName) {
+		createTextSetting(container, {
+			name: translate("settings.features.instantConvert.customFileName.name"),
+			desc: translate("settings.features.instantConvert.customFileName.description"),
+			placeholder: "{{title}}",
+			getValue: () => plugin.settings.customFileName,
+			setValue: async (value: string) => {
+				plugin.settings.customFileName = value;
+				save();
+			},
+		});
+	}
+
 	// Natural Language Processing Section
 	createSectionHeader(container, translate("settings.features.nlp.header"));
 	createHelpText(container, translate("settings.features.nlp.description"));

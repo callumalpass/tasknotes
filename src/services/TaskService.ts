@@ -23,6 +23,7 @@ import {
 	addDTSTARTToRecurrenceRule,
 	updateDTSTARTInRecurrenceRule,
 	ensureFolderExists,
+	resolveRelativePath,
 	updateToNextScheduledOccurrence,
 	splitFrontmatterAndBody,
 } from "../utils/helpers";
@@ -161,10 +162,24 @@ export class TaskService {
 			  }
 			: undefined;
 
+		// Build fullTaskInfo from TaskCreationData for advanced templating
+		const fullTaskInfo: Partial<TaskInfo> | undefined = taskData
+			? {
+					...taskData,
+					// Ensure required fields are present
+					title: taskData.title || "",
+					status: taskData.status || this.plugin.settings.defaultTaskStatus,
+					priority: taskData.priority || this.plugin.settings.defaultTaskPriority,
+					path: "", // Will be set after folder is determined
+					archived: taskData.archived || false,
+			  }
+			: undefined;
+
 		// Use the shared folder template processor utility
 		return processFolderTemplate(folderTemplate, {
 			date,
 			taskData: templateData,
+			fullTaskInfo: fullTaskInfo as TaskInfo | undefined,
 			extractProjectBasename: (project) => this.extractProjectBasename(project),
 		});
 	}
@@ -200,18 +215,6 @@ export class TaskService {
 				}
 			}
 
-			// Generate filename
-			const filenameContext: FilenameContext = {
-				title: title,
-				priority: priority,
-				status: status,
-				date: new Date(),
-				dueDate: taskData.due,
-				scheduledDate: taskData.scheduled,
-			};
-
-			const baseFilename = generateTaskFilename(filenameContext, this.plugin.settings);
-
 			// Determine folder based on creation context
 			// Process folder templates with task and date variables for dynamic folder organization
 			let folder = "";
@@ -243,29 +246,27 @@ export class TaskService {
 					}
 					// Process task and date variables in the inline folder path
 					folder = this.processFolderTemplate(folder, taskData);
+					// Resolve relative paths after all template substitution
+					folder = resolveRelativePath(folder);
 				} else {
 					// Fallback to default tasks folder when inline folder is empty (#128)
 					const tasksFolder = this.plugin.settings.tasksFolder || "";
 					folder = this.processFolderTemplate(tasksFolder, taskData);
+					// Resolve relative paths after all template substitution
+					folder = resolveRelativePath(folder);
 				}
 			} else {
 				// For manual creation and other contexts, use the general tasks folder
 				const tasksFolder = this.plugin.settings.tasksFolder || "";
 				folder = this.processFolderTemplate(tasksFolder, taskData);
+				// Resolve relative paths after all template substitution
+				folder = resolveRelativePath(folder);
 			}
 
 			// Ensure folder exists
 			if (folder) {
 				await ensureFolderExists(this.plugin.app.vault, folder);
 			}
-
-			// Generate unique filename
-			const uniqueFilename = await generateUniqueFilename(
-				baseFilename,
-				folder,
-				this.plugin.app.vault
-			);
-			const fullPath = folder ? `${folder}/${uniqueFilename}.md` : `${uniqueFilename}.md`;
 
 			// Create complete TaskInfo object with all the data
 			const completeTaskData: Partial<TaskInfo> = {
@@ -291,11 +292,43 @@ export class TaskService {
 				icsEventId: taskData.icsEventId || undefined,
 			};
 
+			// Generate filename with full task info for advanced templating
+			const filenameContext: FilenameContext = {
+				title: title,
+				priority: priority,
+				status: status,
+				date: new Date(),
+				dueDate: taskData.due,
+				scheduledDate: taskData.scheduled,
+				creationContext: taskData.creationContext, // Pass directly for inline conversion check
+				fullTaskInfo: completeTaskData as TaskInfo, // Full task info for template variables
+			};
+
+			const baseFilename = generateTaskFilename(filenameContext, this.plugin.settings);
+
+			// Generate unique filename
+			const uniqueFilename = await generateUniqueFilename(
+				baseFilename,
+				folder,
+				this.plugin.app.vault
+			);
+			const fullPath = folder ? `${folder}/${uniqueFilename}.md` : `${uniqueFilename}.md`;
+
+			// Determine if we should store title in filename
+			// When using custom filenames for inline conversion, keep title in frontmatter
+			const usingCustomFilename =
+				taskData.creationContext === "inline-conversion" &&
+				this.plugin.settings.toggleCustomFileName &&
+				this.plugin.settings.customFileName &&
+				this.plugin.settings.customFileName.trim();
+			const shouldStoreTitleInFilename =
+				!usingCustomFilename && this.plugin.settings.storeTitleInFilename;
+
 			// Use field mapper to convert to frontmatter with proper field mapping
 			const frontmatter = this.plugin.fieldMapper.mapToFrontmatter(
 				completeTaskData,
 				this.plugin.settings.taskTag,
-				this.plugin.settings.storeTitleInFilename
+				shouldStoreTitleInFilename
 			);
 
 			// Handle task identification based on settings
@@ -771,13 +804,15 @@ export class TaskService {
 					// Archiving: Move to archive folder
 					const archiveFolderTemplate = this.plugin.settings.archiveFolder.trim();
 					// Process template variables in archive folder path
-					const archiveFolder = this.processFolderTemplate(archiveFolderTemplate, {
+					let archiveFolder = this.processFolderTemplate(archiveFolderTemplate, {
 						title: updatedTask.title || "",
 						priority: updatedTask.priority,
 						status: updatedTask.status,
 						contexts: updatedTask.contexts,
 						projects: updatedTask.projects,
 					});
+					// Resolve relative paths after all template substitution
+					archiveFolder = resolveRelativePath(archiveFolder);
 
 					// Ensure archive folder exists
 					await ensureFolderExists(this.plugin.app.vault, archiveFolder);
@@ -804,7 +839,9 @@ export class TaskService {
 					this.plugin.cacheManager.clearCacheEntry(task.path);
 				} else if (isCurrentlyArchived && this.plugin.settings.tasksFolder?.trim()) {
 					// Unarchiving: Move to default tasks folder
-					const tasksFolder = this.plugin.settings.tasksFolder.trim();
+					let tasksFolder = this.plugin.settings.tasksFolder.trim();
+					// Resolve relative paths for consistency
+					tasksFolder = resolveRelativePath(tasksFolder);
 
 					// Ensure tasks folder exists
 					await ensureFolderExists(this.plugin.app.vault, tasksFolder);

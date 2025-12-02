@@ -1,4 +1,5 @@
 import { processFolderTemplate, TaskTemplateData, ICSTemplateData } from '../../../src/utils/folderTemplateProcessor';
+import { TaskInfo } from '../../../src/types';
 
 describe('processFolderTemplate', () => {
 	const testDate = new Date('2025-10-05T14:30:00');
@@ -289,6 +290,226 @@ describe('processFolderTemplate', () => {
 				icsData,
 			});
 			expect(result).toBe('Daily/2025/10/2025-10-02-Aangifte Omzetbelasting');
+		});
+	});
+
+	describe('fullTaskInfo variable support', () => {
+		const fullTaskInfo: Partial<TaskInfo> = {
+			title: 'My Task',
+			status: 'in-progress',
+			priority: 'high',
+			tags: ['work', 'urgent'],
+			contexts: ['@office', '@computer'],
+			projects: ['ProjectX'],
+			archived: false,
+			due: '2025-11-01',
+			scheduled: '2025-10-28',
+			timeEstimate: 120,
+			path: '/tasks/my-task.md',
+		} as TaskInfo;
+
+		it('should access TaskInfo properties via {{variable}} syntax', () => {
+			const result = processFolderTemplate('Tasks/{{priority}}/{{status}}', {
+				fullTaskInfo: fullTaskInfo as TaskInfo,
+			});
+			expect(result).toBe('Tasks/high/in-progress');
+		});
+
+		it('should handle array properties like {{tags}} by joining with /', () => {
+			const result = processFolderTemplate('Tasks/{{tags}}', {
+				fullTaskInfo: fullTaskInfo as TaskInfo,
+			});
+			expect(result).toBe('Tasks/work/urgent');
+		});
+
+		it('should handle {{contexts}} array property', () => {
+			const result = processFolderTemplate('Tasks/{{contexts}}', {
+				fullTaskInfo: fullTaskInfo as TaskInfo,
+			});
+			expect(result).toBe('Tasks/@office/@computer');
+		});
+
+		it('should handle single value properties like {{timeEstimate}}', () => {
+			const result = processFolderTemplate('Tasks/{{timeEstimate}}min', {
+				fullTaskInfo: fullTaskInfo as TaskInfo,
+			});
+			expect(result).toBe('Tasks/120min');
+		});
+
+		it('should handle boolean properties like {{archived}}', () => {
+			const result = processFolderTemplate('Tasks/archived-{{archived}}', {
+				fullTaskInfo: fullTaskInfo as TaskInfo,
+			});
+			expect(result).toBe('Tasks/archived-false');
+		});
+
+		it('should handle undefined properties by leaving them as-is when not in object', () => {
+			const taskWithMissing: Partial<TaskInfo> = {
+				title: 'Task',
+				status: 'todo',
+				priority: 'low',
+				path: '/task.md',
+				archived: false,
+				// tags and contexts are intentionally not defined
+			} as TaskInfo;
+
+			const result = processFolderTemplate('Tasks/{{tags}}/{{contexts}}', {
+				fullTaskInfo: taskWithMissing as TaskInfo,
+			});
+			// Variables not in the object remain as templates
+			expect(result).toBe('Tasks/{{tags}}/{{contexts}}');
+		});
+
+		it('should handle empty arrays by replacing with empty string', () => {
+			const taskWithEmpty: Partial<TaskInfo> = {
+				title: 'Task',
+				status: 'todo',
+				priority: 'low',
+				tags: [],
+				contexts: [],
+				path: '/task.md',
+				archived: false,
+			} as TaskInfo;
+
+			const result = processFolderTemplate('Tasks/{{tags}}/{{contexts}}', {
+				fullTaskInfo: taskWithEmpty as TaskInfo,
+			});
+			expect(result).toBe('Tasks//');
+		});
+	});
+
+	describe('JavaScript expression evaluation with ${...}', () => {
+		const fullTaskInfo: Partial<TaskInfo> = {
+			title: 'My Task',
+			status: 'in-progress',
+			priority: 'high',
+			tags: ['work', 'urgent', 'important'],
+			contexts: ['@office'],
+			projects: ['ProjectX'],
+			archived: false,
+			path: '/tasks/my-task.md',
+		} as TaskInfo;
+
+		it('should evaluate simple JavaScript expressions', () => {
+			const result = processFolderTemplate('Tasks/${priority === "high" ? "urgent" : "normal"}', {
+				fullTaskInfo: fullTaskInfo as TaskInfo,
+			});
+			expect(result).toBe('Tasks/urgent');
+		});
+
+		it('should use array methods in expressions', () => {
+			const result = processFolderTemplate('Tasks/${tags.includes("urgent") ? "urgent" : "normal"}', {
+				fullTaskInfo: fullTaskInfo as TaskInfo,
+			});
+			expect(result).toBe('Tasks/urgent');
+		});
+
+		it('should access array length in expressions', () => {
+			const result = processFolderTemplate('Tasks/${tags.length > 2 ? "many-tags" : "few-tags"}', {
+				fullTaskInfo: fullTaskInfo as TaskInfo,
+			});
+			expect(result).toBe('Tasks/many-tags');
+		});
+
+		it('should support complex logical expressions', () => {
+			const result = processFolderTemplate('Tasks/${priority === "high" && tags.includes("urgent") ? "critical" : "normal"}', {
+				fullTaskInfo: fullTaskInfo as TaskInfo,
+			});
+			expect(result).toBe('Tasks/critical');
+		});
+
+		it('should handle array indexing', () => {
+			const result = processFolderTemplate('Tasks/${contexts.length > 0 ? contexts[0] : "inbox"}', {
+				fullTaskInfo: fullTaskInfo as TaskInfo,
+			});
+			expect(result).toBe('Tasks/@office');
+		});
+
+		it('should handle tasks without certain properties gracefully', () => {
+			const taskNoContexts: Partial<TaskInfo> = {
+				title: 'Task',
+				status: 'todo',
+				priority: 'low',
+				tags: [],
+				contexts: [], // Explicitly set to empty array
+				path: '/task.md',
+				archived: false,
+			} as TaskInfo;
+
+			const result = processFolderTemplate('Tasks/${contexts && contexts.length > 0 ? contexts[0] : "inbox"}', {
+				fullTaskInfo: taskNoContexts as TaskInfo,
+			});
+			expect(result).toBe('Tasks/inbox');
+		});
+
+		it('should support string manipulation in expressions', () => {
+			const result = processFolderTemplate('Tasks/${priority.toUpperCase()}', {
+				fullTaskInfo: fullTaskInfo as TaskInfo,
+			});
+			expect(result).toBe('Tasks/HIGH');
+		});
+
+		it('should handle errors gracefully and return empty string', () => {
+			const result = processFolderTemplate('Tasks/${nonExistentVariable.method()}', {
+				fullTaskInfo: fullTaskInfo as TaskInfo,
+			});
+			expect(result).toBe('Tasks/');
+		});
+
+		it('should return empty string for null/undefined results', () => {
+			const result = processFolderTemplate('Tasks/${undefined}', {
+				fullTaskInfo: fullTaskInfo as TaskInfo,
+			});
+			expect(result).toBe('Tasks/');
+		});
+
+		it('should join array results with /', () => {
+			const result = processFolderTemplate('Tasks/${tags.filter(t => t.includes("u"))}', {
+				fullTaskInfo: fullTaskInfo as TaskInfo,
+			});
+			expect(result).toBe('Tasks/urgent');
+		});
+
+		it('should handle date variables in expressions', () => {
+			const result = processFolderTemplate('Tasks/${year}-${month}', {
+				date: testDate,
+				fullTaskInfo: fullTaskInfo as TaskInfo,
+			});
+			expect(result).toBe('Tasks/2025-10');
+		});
+	});
+
+	describe('combined {{variable}} and ${...} syntax', () => {
+		const fullTaskInfo: Partial<TaskInfo> = {
+			title: 'My Task',
+			status: 'in-progress',
+			priority: 'high',
+			tags: ['work', 'urgent'],
+			path: '/tasks/my-task.md',
+			archived: false,
+		} as TaskInfo;
+
+		it('should process both syntaxes in the same template', () => {
+			const result = processFolderTemplate('Tasks/{{priority}}/${tags.includes("urgent") ? "critical" : "normal"}', {
+				fullTaskInfo: fullTaskInfo as TaskInfo,
+			});
+			expect(result).toBe('Tasks/high/critical');
+		});
+
+		it('should process ${...} before {{...}}', () => {
+			// This ensures JS expressions are evaluated first
+			const result = processFolderTemplate('${priority}/{{status}}', {
+				fullTaskInfo: fullTaskInfo as TaskInfo,
+			});
+			expect(result).toBe('high/in-progress');
+		});
+
+		it('should combine with date variables', () => {
+			const result = processFolderTemplate('{{year}}/{{month}}/${tags.includes("work") ? "work" : "personal"}', {
+				date: testDate,
+				fullTaskInfo: fullTaskInfo as TaskInfo,
+			});
+			expect(result).toBe('2025/10/work');
 		});
 	});
 });
