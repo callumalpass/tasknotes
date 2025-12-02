@@ -1,4 +1,4 @@
-# Inline Task Filename For Converted Tasks
+# Inline Tasks Filename For Converted Tasks
 
 Configure custom filenames for converted inline tasks using dynamic filename templates.
 
