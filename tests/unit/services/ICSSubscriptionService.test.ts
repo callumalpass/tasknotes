@@ -295,3 +295,145 @@ END:VCALENDAR`;
         });
     });
 });
+
+describe('ICSSubscriptionService - HTTP Basic Authentication', () => {
+    let service: ICSSubscriptionService;
+    let mockPlugin: any;
+    let mockRequestUrl: jest.Mock;
+
+    beforeEach(() => {
+        // Get the mocked requestUrl
+        mockRequestUrl = require('obsidian').requestUrl;
+        mockRequestUrl.mockReset();
+        mockRequestUrl.mockResolvedValue({
+            text: `BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Test//Test Calendar//EN
+BEGIN:VEVENT
+DTSTART:20250106T150000Z
+DTEND:20250106T160000Z
+UID:test-event-123
+SUMMARY:Test Event
+END:VEVENT
+END:VCALENDAR`
+        });
+
+        // Mock plugin with i18n
+        mockPlugin = {
+            loadData: jest.fn().mockResolvedValue({ icsSubscriptions: [] }),
+            saveData: jest.fn().mockResolvedValue(undefined),
+            i18n: {
+                translate: jest.fn((key: string) => key),
+            },
+            app: {
+                vault: {
+                    getAbstractFileByPath: jest.fn(),
+                    cachedRead: jest.fn(),
+                    getFiles: jest.fn().mockReturnValue([]),
+                    on: jest.fn().mockReturnValue({ unload: jest.fn() }),
+                    offref: jest.fn()
+                }
+            }
+        };
+
+        service = new ICSSubscriptionService(mockPlugin);
+    });
+
+    it('should not include Authorization header for public calendars (authType none)', async () => {
+        const subscription = {
+            id: 'test-sub-1',
+            name: 'Public Calendar',
+            url: 'https://example.com/calendar.ics',
+            type: 'remote' as const,
+            color: '#4285F4',
+            enabled: true,
+            refreshInterval: 60,
+            authType: 'none' as const,
+        };
+
+        // Add subscription and trigger fetch
+        mockPlugin.loadData.mockResolvedValue({ icsSubscriptions: [subscription] });
+        await service.initialize();
+
+        // Verify requestUrl was called without Authorization header
+        expect(mockRequestUrl).toHaveBeenCalled();
+        const callArgs = mockRequestUrl.mock.calls[0][0];
+        expect(callArgs.headers).not.toHaveProperty('Authorization');
+    });
+
+    it('should include Basic Auth header when authType is basic with credentials', async () => {
+        const subscription = {
+            id: 'test-sub-2',
+            name: 'Baikal Calendar',
+            url: 'https://baikal.example.com/dav.php/calendars/user/default/?export',
+            type: 'remote' as const,
+            color: '#4285F4',
+            enabled: true,
+            refreshInterval: 60,
+            authType: 'basic' as const,
+            username: 'testuser',
+            password: 'testpass123',
+        };
+
+        // Add subscription and trigger fetch
+        mockPlugin.loadData.mockResolvedValue({ icsSubscriptions: [subscription] });
+        await service.initialize();
+
+        // Verify requestUrl was called with correct Authorization header
+        expect(mockRequestUrl).toHaveBeenCalled();
+        const callArgs = mockRequestUrl.mock.calls[0][0];
+        expect(callArgs.headers).toHaveProperty('Authorization');
+        
+        // Verify the Basic auth header format
+        const expectedAuth = `Basic ${btoa('testuser:testpass123')}`;
+        expect(callArgs.headers.Authorization).toBe(expectedAuth);
+    });
+
+    it('should not include Authorization header when authType is basic but credentials are missing', async () => {
+        const subscription = {
+            id: 'test-sub-3',
+            name: 'Misconfigured Calendar',
+            url: 'https://example.com/calendar.ics',
+            type: 'remote' as const,
+            color: '#4285F4',
+            enabled: true,
+            refreshInterval: 60,
+            authType: 'basic' as const,
+            username: '', // Empty username
+            password: 'somepass',
+        };
+
+        mockPlugin.loadData.mockResolvedValue({ icsSubscriptions: [subscription] });
+        await service.initialize();
+
+        // Should not include Authorization when username is empty
+        expect(mockRequestUrl).toHaveBeenCalled();
+        const callArgs = mockRequestUrl.mock.calls[0][0];
+        expect(callArgs.headers).not.toHaveProperty('Authorization');
+    });
+
+    it('should handle special characters in username and password', async () => {
+        const subscription = {
+            id: 'test-sub-4',
+            name: 'Special Chars Calendar',
+            url: 'https://example.com/calendar.ics',
+            type: 'remote' as const,
+            color: '#4285F4',
+            enabled: true,
+            refreshInterval: 60,
+            authType: 'basic' as const,
+            username: 'user@example.com',
+            password: 'p@ss:word/123!',
+        };
+
+        mockPlugin.loadData.mockResolvedValue({ icsSubscriptions: [subscription] });
+        await service.initialize();
+
+        expect(mockRequestUrl).toHaveBeenCalled();
+        const callArgs = mockRequestUrl.mock.calls[0][0];
+        
+        // Verify special characters are properly encoded
+        const expectedAuth = `Basic ${btoa('user@example.com:p@ss:word/123!')}`;
+        expect(callArgs.headers.Authorization).toBe(expectedAuth);
+    });
+});

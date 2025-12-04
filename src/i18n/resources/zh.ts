@@ -1379,16 +1379,26 @@ export const zh: TranslationTree = {
 					filePath: "文件路径：",
 					color: "颜色：",
 					refreshMinutes: "刷新（分钟）：",
+					authentication: "认证：",
+					username: "用户名：",
+					password: "密码：",
 				},
 				typeOptions: {
 					remote: "远程URL",
 					local: "本地文件",
 				},
+				authOptions: {
+					none: "无（公开）",
+					basic: "HTTP Basic Auth",
+				},
+				authWarning: "凭据以明文存储在插件数据中。请尽可能使用应用程序专用密码。",
 				placeholders: {
 					calendarName: "日历名称",
 					url: "ICS/iCal URL",
 					filePath: "本地文件路径（例如，Calendar.ics）",
 					localFile: "Calendar.ics",
+					username: "用户名",
+					password: "密码",
 				},
 				statusLabels: {
 					enabled: "已启用",
@@ -2390,6 +2400,7 @@ export const zh: TranslationTree = {
 			notices: {
 				calendarNotFound: "找不到日历\"{name}\"（404）。请检查ICS URL是否正确且日历可公开访问。",
 				calendarAccessDenied: "日历\"{name}\"访问被拒绝（500）。这可能是由于Microsoft Outlook服务器限制。尝试从日历设置重新生成ICS URL。",
+				authenticationFailed: "日历\"{name}\"认证失败。请检查您的用户名和密码是否正确。",
 				fetchRemoteFailed: "获取远程日历\"{name}\"失败：{error}",
 				readLocalFailed: "读取本地日历\"{name}\"失败：{error}",
 			},

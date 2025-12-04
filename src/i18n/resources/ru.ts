@@ -1379,16 +1379,26 @@ export const ru: TranslationTree = {
 					filePath: "Путь к файлу:",
 					color: "Цвет:",
 					refreshMinutes: "Обновление (мин):",
+					authentication: "Аутентификация:",
+					username: "Имя пользователя:",
+					password: "Пароль:",
 				},
 				typeOptions: {
 					remote: "Удаленный URL",
 					local: "Локальный файл",
 				},
+				authOptions: {
+					none: "Нет (Публичный)",
+					basic: "HTTP Basic Auth",
+				},
+				authWarning: "Учетные данные хранятся в незашифрованном виде в данных плагина. Используйте пароли приложений, если доступны.",
 				placeholders: {
 					calendarName: "Имя календаря",
 					url: "URL ICS/iCal",
 					filePath: "Путь к локальному файлу (например, Календарь.ics)",
 					localFile: "Календарь.ics",
+					username: "Имя пользователя",
+					password: "Пароль",
 				},
 				statusLabels: {
 					enabled: "Включено",
@@ -2390,6 +2400,7 @@ export const ru: TranslationTree = {
 			notices: {
 				calendarNotFound: "Календарь \"{name}\" не найден (404). Пожалуйста, проверьте, что URL ICS правильный и календарь общедоступен.",
 				calendarAccessDenied: "Доступ к календарю \"{name}\" запрещен (500). Это может быть из-за ограничений сервера Microsoft Outlook. Попробуйте перегенерировать URL ICS из настроек календаря.",
+				authenticationFailed: "Ошибка аутентификации для календаря \"{name}\". Пожалуйста, проверьте правильность имени пользователя и пароля.",
 				fetchRemoteFailed: "Не удалось получить удаленный календарь \"{name}\": {error}",
 				readLocalFailed: "Не удалось прочитать локальный календарь \"{name}\": {error}",
 			},
