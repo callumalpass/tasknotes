@@ -24,6 +24,16 @@ Example:
 
 -->
 
+## Fixed
+
+- (#1317) Fixed project autosuggest filters not working correctly when only "Required Property Key" is configured
+  - NLP `+` trigger now properly filters by property existence when no property value is specified
+  - Modal "Add to project" button now shows consistent results with inline autosuggest
+- (#1287, #1307) The "New" button in Bases views now opens the TaskNotes creation modal
+  - Tasks created from Bases views now respect default properties (status, priority, etc.)
+  - Tasks are now created in the configured default folder instead of the views folder
+  - Thanks to @anareaty and @sylvainfct-dot for reporting
+
 ## Changed
 
 - Reorganized settings panel for improved discoverability

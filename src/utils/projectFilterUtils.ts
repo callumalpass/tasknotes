@@ -1,9 +1,16 @@
-import type { ProjectAutosuggestSettings } from "../types/settings";
-
 export interface ProjectPropertyFilter {
 	key: string;
 	value: string;
 	enabled: boolean;
+}
+
+/**
+ * Common interface for settings that contain property filter configuration.
+ * Both ProjectAutosuggestSettings and FileFilterConfig satisfy this interface.
+ */
+export interface PropertyFilterSettings {
+	propertyKey?: string;
+	propertyValue?: string;
 }
 
 function normalizePropertyValue(value?: string): string {
@@ -15,7 +22,7 @@ export function normalizeProjectPropertyKey(key?: string): string {
 }
 
 export function getProjectPropertyFilter(
-	settings?: ProjectAutosuggestSettings
+	settings?: PropertyFilterSettings
 ): ProjectPropertyFilter {
 	const key = normalizeProjectPropertyKey(settings?.propertyKey);
 	const value = normalizePropertyValue(settings?.propertyValue);

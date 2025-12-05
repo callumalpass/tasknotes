@@ -2,7 +2,7 @@ import type TaskNotesPlugin from "../main";
 import { parseFrontMatterAliases } from "obsidian";
 import { scoreMultiword } from "../utils/fuzzyMatch";
 import { parseDisplayFieldsRow } from "../utils/projectAutosuggestDisplayFieldsParser";
-import { matchesProjectProperty } from "../utils/projectFilterUtils";
+import { getProjectPropertyFilter, matchesProjectProperty } from "../utils/projectFilterUtils";
 import { FilterUtils } from "../utils/FilterUtils";
 
 export interface FileSuggestionItem {
@@ -56,10 +56,7 @@ export const FileSuggestHelper = {
 			// Get filtering settings - only apply if filterConfig is provided
 			const requiredTags = filterConfig?.requiredTags ?? [];
 			const includeFolders = filterConfig?.includeFolders ?? [];
-			const propertyFilter =
-				filterConfig?.propertyKey && filterConfig?.propertyValue
-					? { key: filterConfig.propertyKey, value: filterConfig.propertyValue, enabled: true }
-					: { key: "", value: "", enabled: false };
+			const propertyFilter = getProjectPropertyFilter(filterConfig);
 
 			for (const file of files) {
 				const cache = plugin.app.metadataCache.getFileCache(file);
