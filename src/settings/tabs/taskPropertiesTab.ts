@@ -192,6 +192,11 @@ export function renderTaskPropertiesTab(
 		translate("settings.taskProperties.properties.completeInstances.name"),
 		translate("settings.taskProperties.properties.completeInstances.description"));
 
+	// Skipped Instances Property Card
+	renderMetadataPropertyCard(container, plugin, save, translate, "skippedInstances",
+		translate("settings.taskProperties.properties.skippedInstances.name"),
+		translate("settings.taskProperties.properties.skippedInstances.description"));
+
 	// Blocked By Property Card
 	renderMetadataPropertyCard(container, plugin, save, translate, "blockedBy",
 		translate("settings.taskProperties.properties.blockedBy.name"),

@@ -10,7 +10,7 @@ import {
 import { createFilterSettingsInputs } from "../../components/FilterSettingsComponent";
 import { ProjectSelectModal } from "../../../modals/ProjectSelectModal";
 import { splitListPreservingLinksAndQuotes } from "../../../utils/stringSplit";
-import { createNLPTriggerRows, TranslateFn } from "./helpers";
+import { createNLPTriggerRows, createPropertyDescription, TranslateFn } from "./helpers";
 
 /**
  * Renders the Projects property card with default projects, use parent note toggle, and autosuggest settings
@@ -111,12 +111,18 @@ export function renderProjectsPropertyCard(
 
 		const nlpRows = createNLPTriggerRows(plugin, "projects", "+", save, translate);
 
+		// Create description element
+		const descriptionEl = createPropertyDescription(
+			translate("settings.taskProperties.properties.projects.description")
+		);
+
 		// Create autosuggest settings section
 		const autosuggestSection = document.createElement("div");
 		autosuggestSection.addClass("tasknotes-settings__nested-content");
 		renderProjectAutosuggestSettings(autosuggestSection, plugin, save, translate, renderCard);
 
 		const rows: CardRow[] = [
+			{ label: "", input: descriptionEl, fullWidth: true },
 			{ label: translate("settings.taskProperties.propertyCard.propertyKey"), input: propertyKeyInput },
 			{ label: translate("settings.taskProperties.projectsCard.defaultProjects"), input: nestedContainer, fullWidth: true },
 			{ label: translate("settings.taskProperties.projectsCard.useParentNote"), input: useParentNoteToggle },

@@ -10,7 +10,7 @@ import {
 	createCardSelect,
 	CardRow,
 } from "../../components/CardComponent";
-import { TranslateFn } from "./helpers";
+import { createPropertyDescription, TranslateFn } from "./helpers";
 
 /**
  * Renders the Reminders property card with nested default reminders
@@ -80,7 +80,13 @@ export function renderRemindersPropertyCard(
 			!remindersSection.hasClass("tasknotes-settings__collapsible-section--collapsed"));
 	});
 
+	// Create description element
+	const descriptionEl = createPropertyDescription(
+		translate("settings.taskProperties.properties.reminders.description")
+	);
+
 	const rows: CardRow[] = [
+		{ label: "", input: descriptionEl, fullWidth: true },
 		{ label: translate("settings.taskProperties.propertyCard.propertyKey"), input: propertyKeyInput },
 		{ label: "", input: nestedContainer, fullWidth: true },
 	];

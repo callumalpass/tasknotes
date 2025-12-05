@@ -851,87 +851,113 @@ export const en: TranslationTree = {
 			properties: {
 				status: {
 					name: "Status",
-					description: "Task status indicating completion state",
+					description:
+						"Tracks the current state of a task (e.g., todo, in-progress, done). Status determines whether a task appears as completed and can trigger auto-archiving.",
 				},
 				priority: {
 					name: "Priority",
-					description: "Task priority level",
+					description:
+						"Indicates task importance. Used for sorting and filtering. Values are sorted alphabetically in Bases views, so use prefixes like 1-, 2- to control order.",
 				},
 				due: {
 					name: "Due Date",
-					description: "When the task must be completed",
+					description:
+						"The deadline by which a task must be completed. Tasks past their due date appear as overdue. Stored as a date in frontmatter.",
 				},
 				scheduled: {
 					name: "Scheduled Date",
-					description: "When to work on the task",
+					description:
+						"When you plan to work on a task. Unlike due date, this represents your intended start time. Tasks appear on the calendar at their scheduled date/time.",
 				},
 				contexts: {
 					name: "Contexts",
-					description: "Where or how the task can be done (e.g., @home, @work)",
+					description:
+						"Locations or conditions where a task can be done (e.g., @home, @office, @phone). Useful for filtering tasks by your current situation. Stored as a list.",
 				},
 				projects: {
 					name: "Projects",
-					description: "Projects this task belongs to",
+					description:
+						"Links to project notes this task belongs to. Stored as wikilinks (e.g., [[Project Name]]). Tasks can belong to multiple projects.",
 				},
 				tags: {
 					name: "Tags",
-					description: "Obsidian tags for categorization",
+					description:
+						"Native Obsidian tags for categorizing tasks. These are stored in the tags frontmatter property and work with Obsidian's tag features.",
 				},
 				timeEstimate: {
 					name: "Time Estimate",
-					description: "Estimated time to complete the task",
+					description:
+						"Estimated minutes to complete the task. Used for time-blocking and workload planning. Displayed on task cards and calendar events.",
 				},
 				recurrence: {
 					name: "Recurrence",
-					description: "Pattern for repeating tasks",
+					description:
+						"Pattern for repeating tasks (daily, weekly, monthly, yearly, or custom RRULE). When a recurring task is completed, its scheduled date is automatically updated to the next occurrence.",
 				},
 				reminders: {
 					name: "Reminders",
-					description: "Notifications before task deadlines",
+					description:
+						"Notifications triggered before due or scheduled dates. Stored as a list of reminder objects with timing and optional description.",
 				},
 				title: {
 					name: "Title",
-					description: "The task title/name",
+					description:
+						"The task name. Can be stored in frontmatter or in the filename (when 'Store title in filename' is enabled).",
 				},
 				dateCreated: {
 					name: "Date Created",
-					description: "When the task was created",
+					description:
+						"Timestamp when the task was first created. Automatically set and used for sorting by creation order.",
 				},
 				dateModified: {
 					name: "Date Modified",
-					description: "When the task was last modified",
+					description:
+						"Timestamp of the last change to the task. Automatically updated when any task property changes.",
 				},
 				completedDate: {
 					name: "Completed Date",
-					description: "When the task was completed",
+					description:
+						"Timestamp when the task was marked complete. Set automatically when status changes to a completed state.",
 				},
 				archiveTag: {
 					name: "Archive Tag",
-					description: "Tag used to mark archived tasks",
+					description:
+						"Tag added to tasks when archived. Used to identify archived tasks and can trigger file movement to archive folder.",
 				},
 				timeEntries: {
 					name: "Time Entries",
-					description: "Time tracking entries for the task",
+					description:
+						"Records of time tracking sessions for this task. Each entry stores start and end timestamps. Used to calculate total time spent.",
 				},
 				completeInstances: {
 					name: "Complete Instances",
-					description: "Completion history for recurring tasks",
+					description:
+						"Completion history for recurring tasks. Stores dates when each instance was completed to prevent duplicate completions.",
+				},
+				skippedInstances: {
+					name: "Skipped Instances",
+					description:
+						"Skipped occurrences for recurring tasks. Stores dates of instances that were skipped rather than completed.",
 				},
 				blockedBy: {
 					name: "Blocked By",
-					description: "Tasks that must be completed first",
+					description:
+						"Links to tasks that must be completed before this one. Stored as wikilinks. Blocked tasks display a visual indicator.",
 				},
 				pomodoros: {
 					name: "Pomodoros",
-					description: "Pomodoro session count for the task",
+					description:
+						"Count of completed Pomodoro sessions. When data storage is set to 'Daily notes', this is written to daily notes instead of task files.",
 				},
 				icsEventId: {
 					name: "ICS Event ID",
-					description: "Calendar event identifier",
+					description:
+						"Unique identifier linking a note to an ICS calendar event. Added automatically when creating notes from calendar events.",
 				},
 				icsEventTag: {
 					name: "ICS Event Tag",
-					description: "Tag for calendar event linking",
+					description:
+						"Tag identifying notes created from ICS calendar events. Used to distinguish calendar-generated notes from regular tasks.",
 				},
 			},
 			// Card-specific labels

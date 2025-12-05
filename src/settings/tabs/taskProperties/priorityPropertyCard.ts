@@ -10,7 +10,7 @@ import {
 	createCardSelect,
 	CardRow,
 } from "../../components/CardComponent";
-import { createNLPTriggerRows, TranslateFn } from "./helpers";
+import { createNLPTriggerRows, createPropertyDescription, TranslateFn } from "./helpers";
 
 /**
  * Renders the Priority property card with nested priority value cards
@@ -151,7 +151,13 @@ export function renderPriorityPropertyCard(
 
 	const nlpRows = createNLPTriggerRows(plugin, "priority", "!", save, translate);
 
+	// Create description element
+	const descriptionEl = createPropertyDescription(
+		translate("settings.taskProperties.properties.priority.description")
+	);
+
 	const rows: CardRow[] = [
+		{ label: "", input: descriptionEl, fullWidth: true },
 		{ label: translate("settings.taskProperties.propertyCard.propertyKey"), input: propertyKeyInput },
 		{ label: translate("settings.taskProperties.propertyCard.default"), input: defaultSelect },
 		...nlpRows,

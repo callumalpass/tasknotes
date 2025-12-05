@@ -6,7 +6,7 @@ import {
 	createCardToggle,
 	CardRow,
 } from "../../components/CardComponent";
-import { TranslateFn } from "./helpers";
+import { createPropertyDescription, TranslateFn } from "./helpers";
 
 /**
  * Renders the Title property card with filename settings
@@ -52,7 +52,14 @@ export function renderTitlePropertyCard(
 		nestedContainer.addClass("tasknotes-settings__nested-content");
 		renderFilenameSettingsContent(nestedContainer, plugin, save, translate);
 
-		const rows: CardRow[] = [];
+		// Create description element
+		const descriptionEl = createPropertyDescription(
+			translate("settings.taskProperties.properties.title.description")
+		);
+
+		const rows: CardRow[] = [
+			{ label: "", input: descriptionEl, fullWidth: true },
+		];
 
 		// Only show property key when NOT storing title in filename
 		if (!plugin.settings.storeTitleInFilename) {

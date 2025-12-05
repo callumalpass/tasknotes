@@ -137,6 +137,18 @@ export function createNLPTriggerRows(
 // ===== SIMPLE PROPERTY CARD =====
 
 /**
+ * Creates a description element for property cards
+ */
+export function createPropertyDescription(text: string): HTMLElement {
+	const descEl = document.createElement("p");
+	descEl.className = "setting-item-description";
+	descEl.style.marginTop = "0";
+	descEl.style.marginBottom = "0.75rem";
+	descEl.textContent = text;
+	return descEl;
+}
+
+/**
  * Renders a simple property card (property key + optional default + optional NLP trigger)
  */
 export function renderSimplePropertyCard(
@@ -157,7 +169,11 @@ export function renderSimplePropertyCard(
 		save();
 	});
 
+	// Create description element
+	const descriptionEl = createPropertyDescription(config.description || "");
+
 	const rows: CardRow[] = [
+		{ label: "", input: descriptionEl, fullWidth: true },
 		{ label: translate("settings.taskProperties.propertyCard.propertyKey"), input: propertyKeyInput },
 	];
 
@@ -226,7 +242,7 @@ export function renderMetadataPropertyCard(
 	translate: TranslateFn,
 	propertyId: keyof FieldMapping,
 	displayName: string,
-	_description?: string
+	description?: string
 ): void {
 	const propertyKeyInput = createCardInput(
 		"text",
@@ -239,6 +255,9 @@ export function renderMetadataPropertyCard(
 		save();
 	});
 
+	// Create description element
+	const descriptionEl = createPropertyDescription(description || "");
+
 	createCard(container, {
 		id: `property-${propertyId}`,
 		collapsible: true,
@@ -250,6 +269,7 @@ export function renderMetadataPropertyCard(
 		content: {
 			sections: [{
 				rows: [
+					{ label: "", input: descriptionEl, fullWidth: true },
 					{ label: translate("settings.taskProperties.propertyCard.propertyKey"), input: propertyKeyInput },
 				],
 			}],

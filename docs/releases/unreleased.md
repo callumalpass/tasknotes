@@ -24,3 +24,12 @@ Example:
 
 -->
 
+## Changed
+
+- Reorganized settings panel for improved discoverability
+  - Removed "Defaults" tab - default values are now configured alongside each property in the Task Properties tab
+  - Moved task filename format settings to the Title property section
+  - Moved project autosuggest settings to the Projects property section
+  - Body template setting moved to the Features tab
+  - Added descriptions to each property explaining its purpose
+

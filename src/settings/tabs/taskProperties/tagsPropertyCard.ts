@@ -4,7 +4,7 @@ import {
 	createCardInput,
 	CardRow,
 } from "../../components/CardComponent";
-import { createNLPTriggerRows, TranslateFn } from "./helpers";
+import { createNLPTriggerRows, createPropertyDescription, TranslateFn } from "./helpers";
 
 /**
  * Renders the Tags property card (special - uses native Obsidian tags, no property key)
@@ -28,7 +28,13 @@ export function renderTagsPropertyCard(
 
 	const nlpRows = createNLPTriggerRows(plugin, "tags", "#", save, translate);
 
+	// Create description element
+	const descriptionEl = createPropertyDescription(
+		translate("settings.taskProperties.properties.tags.description")
+	);
+
 	const rows: CardRow[] = [
+		{ label: "", input: descriptionEl, fullWidth: true },
 		{ label: translate("settings.taskProperties.propertyCard.default"), input: defaultInput },
 		...nlpRows,
 	];

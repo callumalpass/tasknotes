@@ -12,6 +12,7 @@ export {
 	renderSimplePropertyCard,
 	renderMetadataPropertyCard,
 	createNLPTriggerRows,
+	createPropertyDescription,
 	type TranslateFn,
 	type SimplePropertyCardConfig,
 } from "./helpers";

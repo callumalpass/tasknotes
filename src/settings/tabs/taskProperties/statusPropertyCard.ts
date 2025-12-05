@@ -14,7 +14,7 @@ import {
 	CardRow,
 } from "../../components/CardComponent";
 import { createIconInput } from "../../components/IconSuggest";
-import { createNLPTriggerRows, TranslateFn } from "./helpers";
+import { createNLPTriggerRows, createPropertyDescription, TranslateFn } from "./helpers";
 
 /**
  * Renders the Status property card with nested status value cards
@@ -151,7 +151,13 @@ export function renderStatusPropertyCard(
 
 	const nlpRows = createNLPTriggerRows(plugin, "status", "*", save, translate);
 
+	// Create description element
+	const descriptionEl = createPropertyDescription(
+		translate("settings.taskProperties.properties.status.description")
+	);
+
 	const rows: CardRow[] = [
+		{ label: "", input: descriptionEl, fullWidth: true },
 		{ label: translate("settings.taskProperties.propertyCard.propertyKey"), input: propertyKeyInput },
 		{ label: translate("settings.taskProperties.propertyCard.default"), input: defaultSelect },
 		...nlpRows,
