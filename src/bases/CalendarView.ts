@@ -1653,23 +1653,21 @@ export class CalendarView extends BasesViewBase {
 	}
 
 	protected setupContainer(): void {
-		// Clear container
-		this.containerEl.empty();
+		super.setupContainer();
 
-		// Root container with proper classes for calendar styling
-		const root = document.createElement("div");
-		root.className = "tn-bases-integration tasknotes-plugin advanced-calendar-view";
-		root.style.cssText = "min-height: 800px; height: 100%; display: flex; flex-direction: column;";
-		root.tabIndex = -1; // Make focusable
-		this.containerEl.appendChild(root);
-		this.rootElement = root;
+		// Add calendar-specific classes and styles to root
+		if (this.rootElement) {
+			// Remove base classes that interfere with calendar layout, keep only what we need
+			this.rootElement.className = "tn-bases-integration tasknotes-plugin advanced-calendar-view";
+			this.rootElement.style.cssText = "min-height: 800px; height: 100%; display: flex; flex-direction: column;";
 
-		// Calendar element
-		const calendarEl = document.createElement("div");
-		calendarEl.id = "bases-calendar";
-		calendarEl.style.cssText = "flex: 1; min-height: 700px; overflow: auto;";
-		root.appendChild(calendarEl);
-		this.calendarEl = calendarEl;
+			// Calendar element for FullCalendar to render into
+			const calendarEl = document.createElement("div");
+			calendarEl.id = "bases-calendar";
+			calendarEl.style.cssText = "flex: 1; min-height: 700px; overflow: auto;";
+			this.rootElement.appendChild(calendarEl);
+			this.calendarEl = calendarEl;
+		}
 	}
 
 	protected async handleTaskUpdate(task: TaskInfo): Promise<void> {

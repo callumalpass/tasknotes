@@ -1,4 +1,4 @@
-import { Component, App } from "obsidian";
+import { Component, App, setIcon } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { BasesDataAdapter } from "./BasesDataAdapter";
 import { PropertyMappingService } from "./PropertyMappingService";
@@ -144,6 +144,102 @@ export abstract class BasesViewBase extends Component {
 		root.tabIndex = -1; // Make focusable without adding to tab order
 		this.containerEl.appendChild(root);
 		this.rootElement = root;
+
+		// Add custom "New Task" button and hide the default Bases "New" button
+		this.setupNewTaskButton();
+	}
+
+	/**
+	 * Setup custom "New Task" button that opens TaskNotes creation modal.
+	 * Injects the button into the Bases toolbar and hides the default "New" button.
+	 */
+	protected setupNewTaskButton(): void {
+		// Defer to allow Bases to render its toolbar first
+		setTimeout(() => this.injectNewTaskButton(), 100);
+
+		// Register cleanup to toggle off the active class when view is unloaded
+		this.register(() => this.cleanupNewTaskButton());
+	}
+
+	/**
+	 * Clean up: just remove the "active" class, keep the button for reuse.
+	 */
+	private cleanupNewTaskButton(): void {
+		const basesViewEl = this.containerEl.closest(".bases-view");
+		const parentEl = basesViewEl?.parentElement;
+
+		// Only remove the "active" class - button stays for potential reuse
+		parentEl?.classList.remove("tasknotes-view-active");
+	}
+
+	/**
+	 * Inject the custom "New Task" button into the Bases toolbar.
+	 */
+	private injectNewTaskButton(): void {
+		// Find the Bases view container
+		const basesViewEl = this.containerEl.closest(".bases-view");
+		if (!basesViewEl) {
+			console.debug("[TaskNotes][Bases] No .bases-view found");
+			return;
+		}
+
+		// The toolbar is a sibling of .bases-view, not a child
+		// Look in the parent container for the toolbar
+		const parentEl = basesViewEl.parentElement;
+		if (!parentEl) {
+			console.debug("[TaskNotes][Bases] No parent element found");
+			return;
+		}
+
+		// Mark parent as having an active TaskNotes view (controls visibility via CSS)
+		parentEl.classList.add("tasknotes-view-active");
+
+		const toolbarEl = parentEl.querySelector(".bases-toolbar");
+		if (!toolbarEl) {
+			console.debug("[TaskNotes][Bases] No .bases-toolbar found in parent");
+			return;
+		}
+
+		// Check if we already added the button (reuse existing)
+		if (toolbarEl.querySelector(".tn-bases-new-task-btn")) return;
+
+		// Create "New Task" button matching Bases' text-icon-button style
+		const newTaskBtn = document.createElement("div");
+		newTaskBtn.className = "bases-toolbar-item tn-bases-new-task-btn";
+
+		const innerBtn = document.createElement("div");
+		innerBtn.className = "text-icon-button";
+		innerBtn.tabIndex = 0;
+
+		// Add icon
+		const iconSpan = document.createElement("span");
+		iconSpan.className = "text-button-icon";
+		setIcon(iconSpan, "plus");
+		innerBtn.appendChild(iconSpan);
+
+		// Add label
+		const labelSpan = document.createElement("span");
+		labelSpan.className = "text-button-label";
+		labelSpan.textContent = this.plugin.i18n.translate("common.new");
+		innerBtn.appendChild(labelSpan);
+
+		newTaskBtn.appendChild(innerBtn);
+
+		newTaskBtn.addEventListener("click", () => {
+			this.createFileForView("New Task");
+		});
+
+		// Find the original "New" button position and insert our button there
+		const originalNewBtn = toolbarEl.querySelector(".bases-toolbar-new-item-menu");
+		if (originalNewBtn) {
+			// Insert before the original (which will be hidden by CSS)
+			originalNewBtn.before(newTaskBtn);
+		} else {
+			// Fallback: append to end of toolbar
+			toolbarEl.appendChild(newTaskBtn);
+		}
+
+		console.debug("[TaskNotes][Bases] Injected New Task button into toolbar");
 	}
 
 	/**

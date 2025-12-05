@@ -2,6 +2,25 @@
    BASES VIEWS - TaskNotes Integration Styles
    ================================================ */
 
+/* ================================================
+   CUSTOM NEW TASK BUTTON
+   Toggle between native and TaskNotes "New" button
+   ================================================ */
+
+/* Hide TaskNotes button by default */
+.tn-bases-new-task-btn {
+	display: none;
+}
+
+/* When a TaskNotes view is active: show our button, hide native */
+.tasknotes-view-active .tn-bases-new-task-btn {
+	display: flex;
+}
+
+.tasknotes-view-active .bases-toolbar-new-item-menu {
+	display: none;
+}
+
 /* Bases TaskNotes List View Container */
 .tn-bases-tasknotes-list {
     display: flex;
