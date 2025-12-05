@@ -3,6 +3,7 @@ import { TranslationTree } from "../types";
 export const ja: TranslationTree = {
 	common: {
 		appName: "TaskNotes",
+		new: "新規",
 		cancel: "キャンセル",
 		confirm: "確認",
 		close: "閉じる",
@@ -801,6 +802,171 @@ export const ja: TranslationTree = {
 			},
 		},
 		taskProperties: {
+			// Section headers for property card layout
+			sections: {
+				coreProperties: "コアプロパティ",
+				corePropertiesDesc: "ステータスと優先度は、タスクの状態と重要度を定義するコアプロパティです。",
+				dateProperties: "日付プロパティ",
+				datePropertiesDesc: "タスクの期限と予定日を設定します。",
+				organizationProperties: "整理プロパティ",
+				organizationPropertiesDesc: "コンテキスト、プロジェクト、タグでタスクを整理します。",
+				taskDetails: "タスク詳細",
+				taskDetailsDesc: "時間見積もり、繰り返し、リマインダーなどの追加詳細。",
+				metadataProperties: "メタデータプロパティ",
+				metadataPropertiesDesc: "タスク履歴を追跡するためのシステム管理プロパティ。",
+				featureProperties: "機能プロパティ",
+				featurePropertiesDesc: "ポモドーロタイマーやカレンダー同期など、特定のTaskNotes機能で使用されるプロパティ。",
+			},
+			// Property card common fields
+			propertyCard: {
+				propertyKey: "プロパティキー:",
+				default: "デフォルト:",
+				nlpTrigger: "NLPトリガー:",
+				triggerChar: "トリガー文字:",
+				triggerEmpty: "トリガーは空にできません",
+				triggerTooLong: "トリガーが長すぎます（最大10文字）",
+			},
+			// Individual property names and descriptions
+			properties: {
+				status: {
+					name: "ステータス",
+					description:
+						"タスクの現在の状態を追跡します（例：todo、進行中、完了）。ステータスはタスクが完了として表示されるかどうかを決定し、自動アーカイブをトリガーできます。",
+				},
+				priority: {
+					name: "優先度",
+					description:
+						"タスクの重要度を示します。ソートとフィルタリングに使用されます。Basesビューでは値がアルファベット順にソートされるため、1-、2-のようなプレフィックスを使用して順序を制御してください。",
+				},
+				due: {
+					name: "期限日",
+					description:
+						"タスクを完了しなければならない締め切り。期限を過ぎたタスクは期限切れとして表示されます。フロントマターに日付として保存されます。",
+				},
+				scheduled: {
+					name: "予定日",
+					description:
+						"タスクに取り組む予定の日時。期限日とは異なり、これは開始予定時刻を表します。タスクは予定日時にカレンダーに表示されます。",
+				},
+				contexts: {
+					name: "コンテキスト",
+					description:
+						"タスクを実行できる場所や条件（例：@自宅、@オフィス、@電話）。現在の状況に応じてタスクをフィルタリングするのに便利です。リストとして保存されます。",
+				},
+				projects: {
+					name: "プロジェクト",
+					description:
+						"このタスクが属するプロジェクトノートへのリンク。ウィキリンクとして保存されます（例：[[プロジェクト名]]）。タスクは複数のプロジェクトに所属できます。",
+				},
+				tags: {
+					name: "タグ",
+					description:
+						"タスクを分類するためのネイティブObsidianタグ。フロントマターのtagsプロパティに保存され、Obsidianのタグ機能と連携します。",
+				},
+				timeEstimate: {
+					name: "時間見積もり",
+					description:
+						"タスク完了までの推定分数。タイムブロッキングとワークロード計画に使用されます。タスクカードとカレンダーイベントに表示されます。",
+				},
+				recurrence: {
+					name: "繰り返し",
+					description:
+						"繰り返しタスクのパターン（毎日、毎週、毎月、毎年、またはカスタムRRULE）。繰り返しタスクが完了すると、予定日は自動的に次の発生日に更新されます。",
+				},
+				reminders: {
+					name: "リマインダー",
+					description:
+						"期限日または予定日の前にトリガーされる通知。タイミングとオプションの説明を含むリマインダーオブジェクトのリストとして保存されます。",
+				},
+				title: {
+					name: "タイトル",
+					description:
+						"タスク名。フロントマターまたはファイル名に保存できます（「タイトルをファイル名に保存」が有効な場合）。",
+				},
+				dateCreated: {
+					name: "作成日",
+					description:
+						"タスクが最初に作成されたタイムスタンプ。自動的に設定され、作成順でのソートに使用されます。",
+				},
+				dateModified: {
+					name: "更新日",
+					description:
+						"タスクへの最後の変更のタイムスタンプ。タスクプロパティが変更されると自動的に更新されます。",
+				},
+				completedDate: {
+					name: "完了日",
+					description:
+						"タスクが完了としてマークされたタイムスタンプ。ステータスが完了状態に変わると自動的に設定されます。",
+				},
+				archiveTag: {
+					name: "アーカイブタグ",
+					description:
+						"アーカイブ時にタスクに追加されるタグ。アーカイブされたタスクを識別するために使用され、アーカイブフォルダへのファイル移動をトリガーできます。",
+				},
+				timeEntries: {
+					name: "時間エントリー",
+					description:
+						"このタスクの時間追跡セッションの記録。各エントリには開始と終了のタイムスタンプが保存されます。合計時間の計算に使用されます。",
+				},
+				completeInstances: {
+					name: "完了インスタンス",
+					description:
+						"繰り返しタスクの完了履歴。各インスタンスが完了した日付を保存して、重複完了を防ぎます。",
+				},
+				skippedInstances: {
+					name: "スキップインスタンス",
+					description:
+						"繰り返しタスクのスキップされた発生。完了ではなくスキップされたインスタンスの日付を保存します。",
+				},
+				blockedBy: {
+					name: "ブロック元",
+					description:
+						"このタスクの前に完了する必要があるタスクへのリンク。ウィキリンクとして保存されます。ブロックされたタスクは視覚的なインジケーターを表示します。",
+				},
+				pomodoros: {
+					name: "ポモドーロ",
+					description:
+						"完了したポモドーロセッションのカウント。データ保存が「デイリーノート」に設定されている場合、これはタスクファイルではなくデイリーノートに書き込まれます。",
+				},
+				icsEventId: {
+					name: "ICSイベントID",
+					description:
+						"ノートをICSカレンダーイベントにリンクする一意の識別子。カレンダーイベントからノートを作成する際に自動的に追加されます。",
+				},
+				icsEventTag: {
+					name: "ICSイベントタグ",
+					description:
+						"ICSカレンダーイベントから作成されたノートを識別するタグ。カレンダー生成ノートを通常のタスクと区別するために使用されます。",
+				},
+			},
+			// Card-specific labels
+			statusCard: {
+				valuesHeader: "ステータス値",
+			},
+			priorityCard: {
+				valuesHeader: "優先度値",
+			},
+			projectsCard: {
+				defaultProjects: "デフォルトプロジェクト:",
+				useParentNote: "親ノートをプロジェクトとして使用:",
+				noDefaultProjects: "デフォルトプロジェクトが選択されていません",
+				autosuggestFilters: "オートサジェストフィルター",
+				customizeDisplay: "表示をカスタマイズ",
+				filtersOn: "フィルター有効",
+			},
+			titleCard: {
+				storeTitleInFilename: "タイトルをファイル名に保存:",
+				storedInFilename: "ファイル名に保存",
+				filenameUpdatesWithTitle: "タスクタイトルが変更されると、ファイル名は自動的に更新されます。",
+				filenameFormat: "ファイル名形式:",
+				customTemplate: "カスタムテンプレート:",
+			},
+			tagsCard: {
+				nativeObsidianTags: "ネイティブObsidianタグを使用",
+			},
+			remindersCard: {
+				defaultReminders: "デフォルトリマインダー",
+			},
 			taskStatuses: {
 				header: "タスクステータス",
 				description: "タスクで利用可能なステータスオプションをカスタマイズします。これらのステータスはタスクライフサイクルを制御し、タスクがいつ完了と見なされるかを決定します。",

@@ -3,6 +3,7 @@ import { TranslationTree } from "../types";
 export const pt: TranslationTree = {
 	common: {
 		appName: "TaskNotes",
+		new: "Novo",
 		cancel: "Cancelar",
 		confirm: "Confirmar",
 		close: "Fechar",
@@ -804,6 +805,171 @@ export const pt: TranslationTree = {
 			}
 		},
 		taskProperties: {
+			// Section headers for property card layout
+			sections: {
+				coreProperties: "Propriedades Principais",
+				corePropertiesDesc: "Status e prioridade são as propriedades principais que definem o estado e importância de uma tarefa.",
+				dateProperties: "Propriedades de Data",
+				datePropertiesDesc: "Configure quando as tarefas vencem e estão agendadas.",
+				organizationProperties: "Propriedades de Organização",
+				organizationPropertiesDesc: "Organize tarefas com contextos, projetos e tags.",
+				taskDetails: "Detalhes da Tarefa",
+				taskDetailsDesc: "Detalhes adicionais como estimativas de tempo, recorrência e lembretes.",
+				metadataProperties: "Propriedades de Metadados",
+				metadataPropertiesDesc: "Propriedades gerenciadas pelo sistema para rastrear o histórico de tarefas.",
+				featureProperties: "Propriedades de Recursos",
+				featurePropertiesDesc: "Propriedades usadas por recursos específicos do TaskNotes como temporizador Pomodoro e sincronização de calendário.",
+			},
+			// Property card common fields
+			propertyCard: {
+				propertyKey: "Chave da propriedade:",
+				default: "Padrão:",
+				nlpTrigger: "Gatilho NLP:",
+				triggerChar: "Caractere gatilho:",
+				triggerEmpty: "O gatilho não pode estar vazio",
+				triggerTooLong: "O gatilho é muito longo (máx. 10 caracteres)",
+			},
+			// Individual property names and descriptions
+			properties: {
+				status: {
+					name: "Status",
+					description:
+						"Rastreia o estado atual de uma tarefa (ex.: a fazer, em progresso, concluído). O status determina se uma tarefa aparece como concluída e pode acionar o arquivamento automático.",
+				},
+				priority: {
+					name: "Prioridade",
+					description:
+						"Indica a importância da tarefa. Usado para ordenação e filtragem. Os valores são ordenados alfabeticamente nas visualizações Bases, então use prefixos como 1-, 2- para controlar a ordem.",
+				},
+				due: {
+					name: "Data de Vencimento",
+					description:
+						"O prazo até o qual uma tarefa deve ser concluída. Tarefas após a data de vencimento aparecem como atrasadas. Armazenado como data no frontmatter.",
+				},
+				scheduled: {
+					name: "Data Agendada",
+					description:
+						"Quando você planeja trabalhar em uma tarefa. Diferente da data de vencimento, isso representa seu horário de início pretendido. As tarefas aparecem no calendário na data/hora agendada.",
+				},
+				contexts: {
+					name: "Contextos",
+					description:
+						"Locais ou condições onde uma tarefa pode ser feita (ex.: @casa, @escritório, @telefone). Útil para filtrar tarefas pela sua situação atual. Armazenado como lista.",
+				},
+				projects: {
+					name: "Projetos",
+					description:
+						"Links para notas de projeto às quais esta tarefa pertence. Armazenado como wikilinks (ex.: [[Nome do Projeto]]). As tarefas podem pertencer a múltiplos projetos.",
+				},
+				tags: {
+					name: "Tags",
+					description:
+						"Tags nativas do Obsidian para categorizar tarefas. São armazenadas na propriedade tags do frontmatter e funcionam com os recursos de tags do Obsidian.",
+				},
+				timeEstimate: {
+					name: "Estimativa de Tempo",
+					description:
+						"Minutos estimados para concluir a tarefa. Usado para planejamento de tempo e carga de trabalho. Exibido em cartões de tarefas e eventos do calendário.",
+				},
+				recurrence: {
+					name: "Recorrência",
+					description:
+						"Padrão para tarefas repetitivas (diário, semanal, mensal, anual ou RRULE personalizado). Quando uma tarefa recorrente é concluída, sua data agendada é automaticamente atualizada para a próxima ocorrência.",
+				},
+				reminders: {
+					name: "Lembretes",
+					description:
+						"Notificações acionadas antes das datas de vencimento ou agendadas. Armazenado como lista de objetos de lembrete com horário e descrição opcional.",
+				},
+				title: {
+					name: "Título",
+					description:
+						"O nome da tarefa. Pode ser armazenado no frontmatter ou no nome do arquivo (quando 'Armazenar título no nome do arquivo' está habilitado).",
+				},
+				dateCreated: {
+					name: "Data de Criação",
+					description:
+						"Timestamp de quando a tarefa foi criada. Definido automaticamente e usado para ordenação por ordem de criação.",
+				},
+				dateModified: {
+					name: "Data de Modificação",
+					description:
+						"Timestamp da última alteração na tarefa. Atualizado automaticamente quando qualquer propriedade da tarefa muda.",
+				},
+				completedDate: {
+					name: "Data de Conclusão",
+					description:
+						"Timestamp de quando a tarefa foi marcada como concluída. Definido automaticamente quando o status muda para um estado concluído.",
+				},
+				archiveTag: {
+					name: "Tag de Arquivo",
+					description:
+						"Tag adicionada às tarefas quando arquivadas. Usada para identificar tarefas arquivadas e pode acionar a movimentação de arquivos para a pasta de arquivo.",
+				},
+				timeEntries: {
+					name: "Entradas de Tempo",
+					description:
+						"Registros de sessões de rastreamento de tempo para esta tarefa. Cada entrada armazena timestamps de início e fim. Usado para calcular o tempo total gasto.",
+				},
+				completeInstances: {
+					name: "Instâncias Concluídas",
+					description:
+						"Histórico de conclusão para tarefas recorrentes. Armazena as datas em que cada instância foi concluída para evitar conclusões duplicadas.",
+				},
+				skippedInstances: {
+					name: "Instâncias Puladas",
+					description:
+						"Ocorrências puladas para tarefas recorrentes. Armazena as datas de instâncias que foram puladas em vez de concluídas.",
+				},
+				blockedBy: {
+					name: "Bloqueada Por",
+					description:
+						"Links para tarefas que devem ser concluídas antes desta. Armazenado como wikilinks. Tarefas bloqueadas exibem um indicador visual.",
+				},
+				pomodoros: {
+					name: "Pomodoros",
+					description:
+						"Contagem de sessões Pomodoro concluídas. Quando o armazenamento de dados está configurado para 'Notas diárias', isso é escrito nas notas diárias em vez dos arquivos de tarefa.",
+				},
+				icsEventId: {
+					name: "ID do Evento ICS",
+					description:
+						"Identificador único vinculando uma nota a um evento de calendário ICS. Adicionado automaticamente ao criar notas a partir de eventos de calendário.",
+				},
+				icsEventTag: {
+					name: "Tag de Evento ICS",
+					description:
+						"Tag identificando notas criadas a partir de eventos de calendário ICS. Usada para distinguir notas geradas pelo calendário de tarefas regulares.",
+				},
+			},
+			// Card-specific labels
+			statusCard: {
+				valuesHeader: "Valores de Status",
+			},
+			priorityCard: {
+				valuesHeader: "Valores de Prioridade",
+			},
+			projectsCard: {
+				defaultProjects: "Projetos padrão:",
+				useParentNote: "Usar nota pai como projeto:",
+				noDefaultProjects: "Nenhum projeto padrão selecionado",
+				autosuggestFilters: "Filtros de Autosugestão",
+				customizeDisplay: "Personalizar Exibição",
+				filtersOn: "Filtros Ativos",
+			},
+			titleCard: {
+				storeTitleInFilename: "Armazenar título no nome do arquivo:",
+				storedInFilename: "Armazenado no nome do arquivo",
+				filenameUpdatesWithTitle: "O nome do arquivo será atualizado automaticamente quando o título da tarefa mudar.",
+				filenameFormat: "Formato do nome do arquivo:",
+				customTemplate: "Modelo personalizado:",
+			},
+			tagsCard: {
+				nativeObsidianTags: "Usa tags nativas do Obsidian",
+			},
+			remindersCard: {
+				defaultReminders: "Lembretes Padrão",
+			},
 			taskStatuses: {
 				header: "Status da Tarefa",
 				description: "Personalize as opções de status disponíveis para suas tarefas. Esses status controlam o ciclo de vida da tarefa e determinam quando as tarefas são consideradas concluídas.",

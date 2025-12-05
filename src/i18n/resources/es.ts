@@ -3,6 +3,7 @@ import { TranslationTree } from "../types";
 export const es: TranslationTree = {
 	common: {
 		appName: "TaskNotes",
+		new: "Nuevo",
 		cancel: "Cancelar",
 		confirm: "Confirmar",
 		close: "Cerrar",
@@ -801,6 +802,171 @@ export const es: TranslationTree = {
 			},
 		},
 		taskProperties: {
+			// Section headers for property card layout
+			sections: {
+				coreProperties: "Propiedades principales",
+				corePropertiesDesc: "Estado y prioridad son las propiedades principales que definen el estado e importancia de una tarea.",
+				dateProperties: "Propiedades de fecha",
+				datePropertiesDesc: "Configura cuándo las tareas vencen y están programadas.",
+				organizationProperties: "Propiedades de organización",
+				organizationPropertiesDesc: "Organiza tareas con contextos, proyectos y etiquetas.",
+				taskDetails: "Detalles de tarea",
+				taskDetailsDesc: "Detalles adicionales como estimaciones de tiempo, recurrencia y recordatorios.",
+				metadataProperties: "Propiedades de metadatos",
+				metadataPropertiesDesc: "Propiedades gestionadas por el sistema para rastrear el historial de tareas.",
+				featureProperties: "Propiedades de funciones",
+				featurePropertiesDesc: "Propiedades utilizadas por funciones específicas de TaskNotes como el temporizador Pomodoro y la sincronización de calendario.",
+			},
+			// Property card common fields
+			propertyCard: {
+				propertyKey: "Clave de propiedad:",
+				default: "Predeterminado:",
+				nlpTrigger: "Activador NLP:",
+				triggerChar: "Carácter activador:",
+				triggerEmpty: "El activador no puede estar vacío",
+				triggerTooLong: "El activador es demasiado largo (máx. 10 caracteres)",
+			},
+			// Individual property names and descriptions
+			properties: {
+				status: {
+					name: "Estado",
+					description:
+						"Rastrea el estado actual de una tarea (ej. pendiente, en-progreso, hecho). El estado determina si una tarea aparece como completada y puede activar el archivado automático.",
+				},
+				priority: {
+					name: "Prioridad",
+					description:
+						"Indica la importancia de la tarea. Se usa para ordenar y filtrar. Los valores se ordenan alfabéticamente en vistas Bases, así que usa prefijos como 1-, 2- para controlar el orden.",
+				},
+				due: {
+					name: "Fecha de vencimiento",
+					description:
+						"La fecha límite para completar una tarea. Las tareas pasadas de su fecha de vencimiento aparecen como atrasadas. Se almacena como fecha en frontmatter.",
+				},
+				scheduled: {
+					name: "Fecha programada",
+					description:
+						"Cuándo planeas trabajar en una tarea. A diferencia de la fecha de vencimiento, esto representa tu hora de inicio prevista. Las tareas aparecen en el calendario en su fecha/hora programada.",
+				},
+				contexts: {
+					name: "Contextos",
+					description:
+						"Lugares o condiciones donde se puede hacer una tarea (ej. @casa, @oficina, @teléfono). Útil para filtrar tareas según tu situación actual. Se almacena como lista.",
+				},
+				projects: {
+					name: "Proyectos",
+					description:
+						"Enlaces a notas de proyecto a las que pertenece esta tarea. Se almacena como wikilinks (ej. [[Nombre del proyecto]]). Las tareas pueden pertenecer a múltiples proyectos.",
+				},
+				tags: {
+					name: "Etiquetas",
+					description:
+						"Etiquetas nativas de Obsidian para categorizar tareas. Se almacenan en la propiedad tags del frontmatter y funcionan con las características de etiquetas de Obsidian.",
+				},
+				timeEstimate: {
+					name: "Estimación de tiempo",
+					description:
+						"Minutos estimados para completar la tarea. Se usa para planificación de tiempo y carga de trabajo. Se muestra en tarjetas de tareas y eventos de calendario.",
+				},
+				recurrence: {
+					name: "Recurrencia",
+					description:
+						"Patrón para tareas repetitivas (diario, semanal, mensual, anual o RRULE personalizada). Cuando se completa una tarea recurrente, su fecha programada se actualiza automáticamente a la siguiente ocurrencia.",
+				},
+				reminders: {
+					name: "Recordatorios",
+					description:
+						"Notificaciones activadas antes de fechas de vencimiento o programadas. Se almacena como lista de objetos de recordatorio con tiempo y descripción opcional.",
+				},
+				title: {
+					name: "Título",
+					description:
+						"El nombre de la tarea. Puede almacenarse en frontmatter o en el nombre del archivo (cuando 'Almacenar título en nombre de archivo' está habilitado).",
+				},
+				dateCreated: {
+					name: "Fecha de creación",
+					description:
+						"Marca de tiempo de cuando se creó la tarea. Se establece automáticamente y se usa para ordenar por orden de creación.",
+				},
+				dateModified: {
+					name: "Fecha de modificación",
+					description:
+						"Marca de tiempo del último cambio en la tarea. Se actualiza automáticamente cuando cambia cualquier propiedad de la tarea.",
+				},
+				completedDate: {
+					name: "Fecha de completado",
+					description:
+						"Marca de tiempo de cuando la tarea fue marcada como completa. Se establece automáticamente cuando el estado cambia a un estado completado.",
+				},
+				archiveTag: {
+					name: "Etiqueta de archivo",
+					description:
+						"Etiqueta añadida a las tareas cuando se archivan. Se usa para identificar tareas archivadas y puede activar el movimiento de archivos a la carpeta de archivo.",
+				},
+				timeEntries: {
+					name: "Entradas de tiempo",
+					description:
+						"Registros de sesiones de seguimiento de tiempo para esta tarea. Cada entrada almacena marcas de tiempo de inicio y fin. Se usa para calcular el tiempo total invertido.",
+				},
+				completeInstances: {
+					name: "Instancias completadas",
+					description:
+						"Historial de completado para tareas recurrentes. Almacena fechas cuando cada instancia fue completada para prevenir completados duplicados.",
+				},
+				skippedInstances: {
+					name: "Instancias omitidas",
+					description:
+						"Ocurrencias omitidas para tareas recurrentes. Almacena fechas de instancias que fueron omitidas en lugar de completadas.",
+				},
+				blockedBy: {
+					name: "Bloqueada por",
+					description:
+						"Enlaces a tareas que deben completarse antes de esta. Se almacena como wikilinks. Las tareas bloqueadas muestran un indicador visual.",
+				},
+				pomodoros: {
+					name: "Pomodoros",
+					description:
+						"Conteo de sesiones Pomodoro completadas. Cuando el almacenamiento de datos está configurado en 'Notas diarias', esto se escribe en notas diarias en lugar de archivos de tarea.",
+				},
+				icsEventId: {
+					name: "ID de evento ICS",
+					description:
+						"Identificador único que enlaza una nota con un evento de calendario ICS. Se añade automáticamente al crear notas desde eventos de calendario.",
+				},
+				icsEventTag: {
+					name: "Etiqueta de evento ICS",
+					description:
+						"Etiqueta que identifica notas creadas desde eventos de calendario ICS. Se usa para distinguir notas generadas por calendario de tareas regulares.",
+				},
+			},
+			// Card-specific labels
+			statusCard: {
+				valuesHeader: "Valores de estado",
+			},
+			priorityCard: {
+				valuesHeader: "Valores de prioridad",
+			},
+			projectsCard: {
+				defaultProjects: "Proyectos predeterminados:",
+				useParentNote: "Usar nota padre como proyecto:",
+				noDefaultProjects: "No hay proyectos predeterminados seleccionados",
+				autosuggestFilters: "Filtros de autosugerencia",
+				customizeDisplay: "Personalizar visualización",
+				filtersOn: "Filtros activos",
+			},
+			titleCard: {
+				storeTitleInFilename: "Almacenar título en nombre de archivo:",
+				storedInFilename: "Almacenado en nombre de archivo",
+				filenameUpdatesWithTitle: "El nombre del archivo se actualizará automáticamente cuando cambie el título de la tarea.",
+				filenameFormat: "Formato de nombre de archivo:",
+				customTemplate: "Plantilla personalizada:",
+			},
+			tagsCard: {
+				nativeObsidianTags: "Usa etiquetas nativas de Obsidian",
+			},
+			remindersCard: {
+				defaultReminders: "Recordatorios predeterminados",
+			},
 			taskStatuses: {
 				header: "Estados de tareas",
 				description: "Personalizar las opciones de estado disponibles para tus tareas. Estos estados controlan el ciclo de vida de la tarea y determinan cuándo las tareas se consideran completas.",

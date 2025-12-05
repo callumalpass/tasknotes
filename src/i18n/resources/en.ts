@@ -3,6 +3,7 @@ import { TranslationTree } from "../types";
 export const en: TranslationTree = {
 	common: {
 		appName: "TaskNotes",
+		new: "New",
 		cancel: "Cancel",
 		confirm: "Confirm",
 		close: "Close",

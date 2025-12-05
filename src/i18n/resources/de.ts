@@ -3,6 +3,7 @@ import { TranslationTree } from "../types";
 export const de: TranslationTree = {
 	common: {
 		appName: "TaskNotes",
+		new: "Neu",
 		cancel: "Abbrechen",
 		confirm: "Bestätigen",
 		close: "Schließen",
@@ -801,6 +802,171 @@ export const de: TranslationTree = {
 			},
 		},
 		taskProperties: {
+			// Section headers for property card layout
+			sections: {
+				coreProperties: "Kerneigenschaften",
+				corePropertiesDesc: "Status und Priorität sind die Kerneigenschaften, die den Zustand und die Wichtigkeit einer Aufgabe definieren.",
+				dateProperties: "Datumseigenschaften",
+				datePropertiesDesc: "Konfiguriere, wann Aufgaben fällig und geplant sind.",
+				organizationProperties: "Organisationseigenschaften",
+				organizationPropertiesDesc: "Organisiere Aufgaben mit Kontexten, Projekten und Tags.",
+				taskDetails: "Aufgabendetails",
+				taskDetailsDesc: "Zusätzliche Details wie Zeitschätzungen, Wiederholungen und Erinnerungen.",
+				metadataProperties: "Metadaten-Eigenschaften",
+				metadataPropertiesDesc: "Vom System verwaltete Eigenschaften zur Verfolgung der Aufgabenhistorie.",
+				featureProperties: "Feature-Eigenschaften",
+				featurePropertiesDesc: "Eigenschaften, die von bestimmten TaskNotes-Funktionen wie Pomodoro-Timer und Kalender-Synchronisation verwendet werden.",
+			},
+			// Property card common fields
+			propertyCard: {
+				propertyKey: "Eigenschaftsschlüssel:",
+				default: "Standard:",
+				nlpTrigger: "NLP-Auslöser:",
+				triggerChar: "Auslöserzeichen:",
+				triggerEmpty: "Auslöser darf nicht leer sein",
+				triggerTooLong: "Auslöser ist zu lang (max. 10 Zeichen)",
+			},
+			// Individual property names and descriptions
+			properties: {
+				status: {
+					name: "Status",
+					description:
+						"Verfolgt den aktuellen Zustand einer Aufgabe (z.B. todo, in-bearbeitung, erledigt). Der Status bestimmt, ob eine Aufgabe als abgeschlossen erscheint und kann die automatische Archivierung auslösen.",
+				},
+				priority: {
+					name: "Priorität",
+					description:
+						"Zeigt die Wichtigkeit der Aufgabe an. Wird zum Sortieren und Filtern verwendet. Werte werden in Bases-Ansichten alphabetisch sortiert, verwende daher Präfixe wie 1-, 2- zur Steuerung der Reihenfolge.",
+				},
+				due: {
+					name: "Fälligkeitsdatum",
+					description:
+						"Der Termin, bis zu dem eine Aufgabe abgeschlossen sein muss. Aufgaben nach ihrem Fälligkeitsdatum erscheinen als überfällig. Wird als Datum im Frontmatter gespeichert.",
+				},
+				scheduled: {
+					name: "Geplantes Datum",
+					description:
+						"Wann du planst, an einer Aufgabe zu arbeiten. Im Gegensatz zum Fälligkeitsdatum repräsentiert dies deine beabsichtigte Startzeit. Aufgaben erscheinen im Kalender zu ihrem geplanten Datum/Uhrzeit.",
+				},
+				contexts: {
+					name: "Kontexte",
+					description:
+						"Orte oder Bedingungen, unter denen eine Aufgabe erledigt werden kann (z.B. @zuhause, @büro, @telefon). Nützlich zum Filtern von Aufgaben nach deiner aktuellen Situation. Wird als Liste gespeichert.",
+				},
+				projects: {
+					name: "Projekte",
+					description:
+						"Links zu Projektnotizen, zu denen diese Aufgabe gehört. Wird als Wikilinks gespeichert (z.B. [[Projektname]]). Aufgaben können zu mehreren Projekten gehören.",
+				},
+				tags: {
+					name: "Tags",
+					description:
+						"Native Obsidian-Tags zur Kategorisierung von Aufgaben. Diese werden in der Tags-Frontmatter-Eigenschaft gespeichert und funktionieren mit Obsidians Tag-Funktionen.",
+				},
+				timeEstimate: {
+					name: "Zeitschätzung",
+					description:
+						"Geschätzte Minuten zur Fertigstellung der Aufgabe. Wird für Zeitplanung und Arbeitsbelastungsplanung verwendet. Wird auf Aufgabenkarten und Kalenderereignissen angezeigt.",
+				},
+				recurrence: {
+					name: "Wiederholung",
+					description:
+						"Muster für wiederholende Aufgaben (täglich, wöchentlich, monatlich, jährlich oder benutzerdefinierte RRULE). Wenn eine wiederkehrende Aufgabe abgeschlossen wird, wird ihr geplantes Datum automatisch auf das nächste Vorkommen aktualisiert.",
+				},
+				reminders: {
+					name: "Erinnerungen",
+					description:
+						"Benachrichtigungen, die vor Fälligkeits- oder geplanten Terminen ausgelöst werden. Wird als Liste von Erinnerungsobjekten mit Timing und optionaler Beschreibung gespeichert.",
+				},
+				title: {
+					name: "Titel",
+					description:
+						"Der Aufgabenname. Kann im Frontmatter oder im Dateinamen gespeichert werden (wenn 'Titel im Dateinamen speichern' aktiviert ist).",
+				},
+				dateCreated: {
+					name: "Erstellungsdatum",
+					description:
+						"Zeitstempel, wann die Aufgabe erstellt wurde. Wird automatisch gesetzt und zum Sortieren nach Erstellungsreihenfolge verwendet.",
+				},
+				dateModified: {
+					name: "Änderungsdatum",
+					description:
+						"Zeitstempel der letzten Änderung an der Aufgabe. Wird automatisch aktualisiert, wenn sich eine Aufgabeneigenschaft ändert.",
+				},
+				completedDate: {
+					name: "Abschlussdatum",
+					description:
+						"Zeitstempel, wann die Aufgabe als erledigt markiert wurde. Wird automatisch gesetzt, wenn der Status auf einen abgeschlossenen Zustand wechselt.",
+				},
+				archiveTag: {
+					name: "Archiv-Tag",
+					description:
+						"Tag, das zu Aufgaben hinzugefügt wird, wenn sie archiviert werden. Wird verwendet, um archivierte Aufgaben zu identifizieren und kann das Verschieben von Dateien in den Archivordner auslösen.",
+				},
+				timeEntries: {
+					name: "Zeiteinträge",
+					description:
+						"Aufzeichnungen von Zeiterfassungssitzungen für diese Aufgabe. Jeder Eintrag speichert Start- und Endzeitstempel. Wird zur Berechnung der Gesamtzeit verwendet.",
+				},
+				completeInstances: {
+					name: "Abgeschlossene Instanzen",
+					description:
+						"Abschlusshistorie für wiederkehrende Aufgaben. Speichert Daten, an denen jede Instanz abgeschlossen wurde, um doppelte Abschlüsse zu verhindern.",
+				},
+				skippedInstances: {
+					name: "Übersprungene Instanzen",
+					description:
+						"Übersprungene Vorkommen für wiederkehrende Aufgaben. Speichert Daten von Instanzen, die übersprungen statt abgeschlossen wurden.",
+				},
+				blockedBy: {
+					name: "Blockiert durch",
+					description:
+						"Links zu Aufgaben, die vor dieser abgeschlossen werden müssen. Wird als Wikilinks gespeichert. Blockierte Aufgaben zeigen einen visuellen Indikator an.",
+				},
+				pomodoros: {
+					name: "Pomodoros",
+					description:
+						"Anzahl abgeschlossener Pomodoro-Sitzungen. Wenn die Datenspeicherung auf 'Tagesnotizen' eingestellt ist, wird dies in Tagesnotizen statt in Aufgabendateien geschrieben.",
+				},
+				icsEventId: {
+					name: "ICS-Ereignis-ID",
+					description:
+						"Eindeutige Kennung, die eine Notiz mit einem ICS-Kalenderereignis verknüpft. Wird automatisch hinzugefügt, wenn Notizen aus Kalenderereignissen erstellt werden.",
+				},
+				icsEventTag: {
+					name: "ICS-Ereignis-Tag",
+					description:
+						"Tag zur Identifizierung von Notizen, die aus ICS-Kalenderereignissen erstellt wurden. Wird verwendet, um kalendergenerierte Notizen von regulären Aufgaben zu unterscheiden.",
+				},
+			},
+			// Card-specific labels
+			statusCard: {
+				valuesHeader: "Statuswerte",
+			},
+			priorityCard: {
+				valuesHeader: "Prioritätswerte",
+			},
+			projectsCard: {
+				defaultProjects: "Standardprojekte:",
+				useParentNote: "Übergeordnete Notiz als Projekt verwenden:",
+				noDefaultProjects: "Keine Standardprojekte ausgewählt",
+				autosuggestFilters: "Autovorschlag-Filter",
+				customizeDisplay: "Anzeige anpassen",
+				filtersOn: "Filter aktiv",
+			},
+			titleCard: {
+				storeTitleInFilename: "Titel im Dateinamen speichern:",
+				storedInFilename: "Im Dateinamen gespeichert",
+				filenameUpdatesWithTitle: "Der Dateiname wird automatisch aktualisiert, wenn sich der Aufgabentitel ändert.",
+				filenameFormat: "Dateinamenformat:",
+				customTemplate: "Benutzerdefinierte Vorlage:",
+			},
+			tagsCard: {
+				nativeObsidianTags: "Verwendet native Obsidian-Tags",
+			},
+			remindersCard: {
+				defaultReminders: "Standarderinnerungen",
+			},
 			taskStatuses: {
 				header: "Aufgabenstatus",
 				description: "Passe die verfügbaren Statusoptionen für deine Aufgaben an. Diese Status steuern den Aufgabenlebenszyklus und bestimmen, wann Aufgaben als abgeschlossen gelten.",

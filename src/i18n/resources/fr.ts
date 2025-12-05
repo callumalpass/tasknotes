@@ -3,6 +3,7 @@ import { TranslationTree } from "../types";
 export const fr: TranslationTree = {
 	common: {
 		appName: "Notes de tâches",
+		new: "Nouveau",
 		cancel: "Annuler",
 		confirm: "Confirmer",
 		close: "Fermer",
@@ -801,6 +802,171 @@ export const fr: TranslationTree = {
 			},
 		},
 		taskProperties: {
+			// Section headers for property card layout
+			sections: {
+				coreProperties: "Propriétés principales",
+				corePropertiesDesc: "Le statut et la priorité sont les propriétés principales qui définissent l'état et l'importance d'une tâche.",
+				dateProperties: "Propriétés de date",
+				datePropertiesDesc: "Configurez les dates d'échéance et de planification des tâches.",
+				organizationProperties: "Propriétés d'organisation",
+				organizationPropertiesDesc: "Organisez les tâches avec des contextes, projets et étiquettes.",
+				taskDetails: "Détails de la tâche",
+				taskDetailsDesc: "Détails supplémentaires comme les estimations de temps, la récurrence et les rappels.",
+				metadataProperties: "Propriétés de métadonnées",
+				metadataPropertiesDesc: "Propriétés gérées par le système pour suivre l'historique des tâches.",
+				featureProperties: "Propriétés de fonctionnalités",
+				featurePropertiesDesc: "Propriétés utilisées par des fonctionnalités TaskNotes spécifiques comme le minuteur Pomodoro et la synchronisation du calendrier.",
+			},
+			// Property card common fields
+			propertyCard: {
+				propertyKey: "Clé de propriété :",
+				default: "Par défaut :",
+				nlpTrigger: "Déclencheur NLP :",
+				triggerChar: "Caractère déclencheur :",
+				triggerEmpty: "Le déclencheur ne peut pas être vide",
+				triggerTooLong: "Le déclencheur est trop long (max 10 caractères)",
+			},
+			// Individual property names and descriptions
+			properties: {
+				status: {
+					name: "Statut",
+					description:
+						"Suit l'état actuel d'une tâche (ex. à faire, en cours, terminé). Le statut détermine si une tâche apparaît comme terminée et peut déclencher l'archivage automatique.",
+				},
+				priority: {
+					name: "Priorité",
+					description:
+						"Indique l'importance de la tâche. Utilisé pour le tri et le filtrage. Les valeurs sont triées alphabétiquement dans les vues Bases, utilisez donc des préfixes comme 1-, 2- pour contrôler l'ordre.",
+				},
+				due: {
+					name: "Date d'échéance",
+					description:
+						"La date limite à laquelle une tâche doit être terminée. Les tâches dépassant leur date d'échéance apparaissent en retard. Stocké comme date dans le frontmatter.",
+				},
+				scheduled: {
+					name: "Date planifiée",
+					description:
+						"Quand vous prévoyez de travailler sur une tâche. Contrairement à la date d'échéance, cela représente votre heure de début prévue. Les tâches apparaissent dans le calendrier à leur date/heure planifiée.",
+				},
+				contexts: {
+					name: "Contextes",
+					description:
+						"Lieux ou conditions où une tâche peut être effectuée (ex. @maison, @bureau, @téléphone). Utile pour filtrer les tâches selon votre situation actuelle. Stocké comme liste.",
+				},
+				projects: {
+					name: "Projets",
+					description:
+						"Liens vers les notes de projet auxquelles cette tâche appartient. Stocké comme wikilinks (ex. [[Nom du projet]]). Les tâches peuvent appartenir à plusieurs projets.",
+				},
+				tags: {
+					name: "Étiquettes",
+					description:
+						"Étiquettes Obsidian natives pour catégoriser les tâches. Stockées dans la propriété tags du frontmatter et fonctionnent avec les fonctionnalités d'étiquettes d'Obsidian.",
+				},
+				timeEstimate: {
+					name: "Estimation de temps",
+					description:
+						"Minutes estimées pour terminer la tâche. Utilisé pour la planification du temps et la gestion de la charge de travail. Affiché sur les cartes de tâches et les événements du calendrier.",
+				},
+				recurrence: {
+					name: "Récurrence",
+					description:
+						"Modèle pour les tâches répétitives (quotidien, hebdomadaire, mensuel, annuel ou RRULE personnalisée). Quand une tâche récurrente est terminée, sa date planifiée est automatiquement mise à jour à la prochaine occurrence.",
+				},
+				reminders: {
+					name: "Rappels",
+					description:
+						"Notifications déclenchées avant les dates d'échéance ou planifiées. Stocké comme liste d'objets de rappel avec le timing et une description optionnelle.",
+				},
+				title: {
+					name: "Titre",
+					description:
+						"Le nom de la tâche. Peut être stocké dans le frontmatter ou dans le nom du fichier (quand 'Stocker le titre dans le nom du fichier' est activé).",
+				},
+				dateCreated: {
+					name: "Date de création",
+					description:
+						"Horodatage de la création de la tâche. Défini automatiquement et utilisé pour le tri par ordre de création.",
+				},
+				dateModified: {
+					name: "Date de modification",
+					description:
+						"Horodatage de la dernière modification de la tâche. Mis à jour automatiquement quand une propriété de tâche change.",
+				},
+				completedDate: {
+					name: "Date de complétion",
+					description:
+						"Horodatage quand la tâche a été marquée comme terminée. Défini automatiquement quand le statut passe à un état terminé.",
+				},
+				archiveTag: {
+					name: "Étiquette d'archive",
+					description:
+						"Étiquette ajoutée aux tâches lors de l'archivage. Utilisée pour identifier les tâches archivées et peut déclencher le déplacement des fichiers vers le dossier d'archive.",
+				},
+				timeEntries: {
+					name: "Entrées de temps",
+					description:
+						"Enregistrements des sessions de suivi du temps pour cette tâche. Chaque entrée stocke les horodatages de début et de fin. Utilisé pour calculer le temps total passé.",
+				},
+				completeInstances: {
+					name: "Instances terminées",
+					description:
+						"Historique de complétion pour les tâches récurrentes. Stocke les dates auxquelles chaque instance a été terminée pour éviter les doublons.",
+				},
+				skippedInstances: {
+					name: "Instances ignorées",
+					description:
+						"Occurrences ignorées pour les tâches récurrentes. Stocke les dates des instances qui ont été ignorées plutôt que terminées.",
+				},
+				blockedBy: {
+					name: "Bloquée par",
+					description:
+						"Liens vers les tâches qui doivent être terminées avant celle-ci. Stocké comme wikilinks. Les tâches bloquées affichent un indicateur visuel.",
+				},
+				pomodoros: {
+					name: "Pomodoros",
+					description:
+						"Nombre de sessions Pomodoro terminées. Quand le stockage de données est configuré sur 'Notes quotidiennes', ceci est écrit dans les notes quotidiennes au lieu des fichiers de tâches.",
+				},
+				icsEventId: {
+					name: "ID d'événement ICS",
+					description:
+						"Identifiant unique liant une note à un événement de calendrier ICS. Ajouté automatiquement lors de la création de notes à partir d'événements de calendrier.",
+				},
+				icsEventTag: {
+					name: "Étiquette d'événement ICS",
+					description:
+						"Étiquette identifiant les notes créées à partir d'événements de calendrier ICS. Utilisée pour distinguer les notes générées par le calendrier des tâches normales.",
+				},
+			},
+			// Card-specific labels
+			statusCard: {
+				valuesHeader: "Valeurs de statut",
+			},
+			priorityCard: {
+				valuesHeader: "Valeurs de priorité",
+			},
+			projectsCard: {
+				defaultProjects: "Projets par défaut :",
+				useParentNote: "Utiliser la note parente comme projet :",
+				noDefaultProjects: "Aucun projet par défaut sélectionné",
+				autosuggestFilters: "Filtres d'auto-suggestion",
+				customizeDisplay: "Personnaliser l'affichage",
+				filtersOn: "Filtres actifs",
+			},
+			titleCard: {
+				storeTitleInFilename: "Stocker le titre dans le nom du fichier :",
+				storedInFilename: "Stocké dans le nom du fichier",
+				filenameUpdatesWithTitle: "Le nom du fichier sera automatiquement mis à jour quand le titre de la tâche change.",
+				filenameFormat: "Format du nom de fichier :",
+				customTemplate: "Modèle personnalisé :",
+			},
+			tagsCard: {
+				nativeObsidianTags: "Utilise les étiquettes Obsidian natives",
+			},
+			remindersCard: {
+				defaultReminders: "Rappels par défaut",
+			},
 			taskStatuses: {
 				header: "Statuts des tâches",
 				description: "Personnalisez les options de statut disponibles pour vos tâches. Ces statuts contrôlent le cycle de vie des tâches et déterminent quand les tâches sont considérées comme terminées.",

@@ -3,6 +3,7 @@ import { TranslationTree } from "../types";
 export const zh: TranslationTree = {
 	common: {
 		appName: "TaskNotes",
+		new: "新建",
 		cancel: "取消",
 		confirm: "确认",
 		close: "关闭",
@@ -801,6 +802,171 @@ export const zh: TranslationTree = {
 			},
 		},
 		taskProperties: {
+			// Section headers for property card layout
+			sections: {
+				coreProperties: "核心属性",
+				corePropertiesDesc: "状态和优先级是定义任务状态和重要性的核心属性。",
+				dateProperties: "日期属性",
+				datePropertiesDesc: "配置任务的到期日期和安排日期。",
+				organizationProperties: "组织属性",
+				organizationPropertiesDesc: "使用上下文、项目和标签组织任务。",
+				taskDetails: "任务详情",
+				taskDetailsDesc: "其他详情，如时间估计、重复和提醒。",
+				metadataProperties: "元数据属性",
+				metadataPropertiesDesc: "用于跟踪任务历史的系统管理属性。",
+				featureProperties: "功能属性",
+				featurePropertiesDesc: "特定TaskNotes功能使用的属性，如番茄钟计时器和日历同步。",
+			},
+			// Property card common fields
+			propertyCard: {
+				propertyKey: "属性键：",
+				default: "默认值：",
+				nlpTrigger: "NLP触发器：",
+				triggerChar: "触发字符：",
+				triggerEmpty: "触发器不能为空",
+				triggerTooLong: "触发器过长（最多10个字符）",
+			},
+			// Individual property names and descriptions
+			properties: {
+				status: {
+					name: "状态",
+					description:
+						"跟踪任务的当前状态（例如，待办、进行中、完成）。状态决定任务是否显示为已完成，并可触发自动归档。",
+				},
+				priority: {
+					name: "优先级",
+					description:
+						"表示任务的重要性。用于排序和过滤。在Bases视图中值按字母顺序排序，因此使用1-、2-等前缀来控制顺序。",
+				},
+				due: {
+					name: "到期日期",
+					description:
+						"任务必须完成的截止日期。超过到期日期的任务显示为逾期。作为日期存储在frontmatter中。",
+				},
+				scheduled: {
+					name: "安排日期",
+					description:
+						"您计划处理任务的时间。与到期日期不同，这表示您预定的开始时间。任务在其安排的日期/时间出现在日历上。",
+				},
+				contexts: {
+					name: "上下文",
+					description:
+						"可以完成任务的地点或条件（例如，@家、@办公室、@电话）。用于根据当前情况过滤任务。作为列表存储。",
+				},
+				projects: {
+					name: "项目",
+					description:
+						"此任务所属的项目笔记链接。存储为wikilinks（例如，[[项目名称]]）。任务可以属于多个项目。",
+				},
+				tags: {
+					name: "标签",
+					description:
+						"用于分类任务的原生Obsidian标签。这些存储在tags frontmatter属性中，与Obsidian的标签功能配合使用。",
+				},
+				timeEstimate: {
+					name: "时间估计",
+					description:
+						"完成任务的预计分钟数。用于时间块和工作量规划。显示在任务卡片和日历事件上。",
+				},
+				recurrence: {
+					name: "重复",
+					description:
+						"重复任务的模式（每日、每周、每月、每年或自定义RRULE）。当重复任务完成时，其安排日期会自动更新到下一次出现。",
+				},
+				reminders: {
+					name: "提醒",
+					description:
+						"在到期或安排日期前触发的通知。存储为带有时间和可选描述的提醒对象列表。",
+				},
+				title: {
+					name: "标题",
+					description:
+						"任务名称。可以存储在frontmatter中或文件名中（启用'在文件名中存储标题'时）。",
+				},
+				dateCreated: {
+					name: "创建日期",
+					description:
+						"任务首次创建的时间戳。自动设置，用于按创建顺序排序。",
+				},
+				dateModified: {
+					name: "修改日期",
+					description:
+						"任务最后更改的时间戳。当任何任务属性更改时自动更新。",
+				},
+				completedDate: {
+					name: "完成日期",
+					description:
+						"任务标记为完成的时间戳。当状态更改为已完成状态时自动设置。",
+				},
+				archiveTag: {
+					name: "归档标签",
+					description:
+						"归档时添加到任务的标签。用于识别已归档的任务，可触发文件移动到归档文件夹。",
+				},
+				timeEntries: {
+					name: "时间条目",
+					description:
+						"此任务的时间跟踪会话记录。每个条目存储开始和结束时间戳。用于计算总花费时间。",
+				},
+				completeInstances: {
+					name: "完成实例",
+					description:
+						"重复任务的完成历史。存储每个实例完成的日期，以防止重复完成。",
+				},
+				skippedInstances: {
+					name: "跳过实例",
+					description:
+						"重复任务的跳过记录。存储被跳过而非完成的实例日期。",
+				},
+				blockedBy: {
+					name: "被阻止",
+					description:
+						"必须在此任务之前完成的任务链接。存储为wikilinks。被阻止的任务显示视觉指示器。",
+				},
+				pomodoros: {
+					name: "番茄钟",
+					description:
+						"已完成的番茄钟会话计数。当数据存储设置为'日记'时，这将写入日记而不是任务文件。",
+				},
+				icsEventId: {
+					name: "ICS事件ID",
+					description:
+						"将笔记链接到ICS日历事件的唯一标识符。从日历事件创建笔记时自动添加。",
+				},
+				icsEventTag: {
+					name: "ICS事件标签",
+					description:
+						"标识从ICS日历事件创建的笔记的标签。用于区分日历生成的笔记和常规任务。",
+				},
+			},
+			// Card-specific labels
+			statusCard: {
+				valuesHeader: "状态值",
+			},
+			priorityCard: {
+				valuesHeader: "优先级值",
+			},
+			projectsCard: {
+				defaultProjects: "默认项目：",
+				useParentNote: "使用父笔记作为项目：",
+				noDefaultProjects: "未选择默认项目",
+				autosuggestFilters: "自动建议过滤器",
+				customizeDisplay: "自定义显示",
+				filtersOn: "过滤器开启",
+			},
+			titleCard: {
+				storeTitleInFilename: "在文件名中存储标题：",
+				storedInFilename: "存储在文件名中",
+				filenameUpdatesWithTitle: "文件名将在任务标题更改时自动更新。",
+				filenameFormat: "文件名格式：",
+				customTemplate: "自定义模板：",
+			},
+			tagsCard: {
+				nativeObsidianTags: "使用原生Obsidian标签",
+			},
+			remindersCard: {
+				defaultReminders: "默认提醒",
+			},
 			taskStatuses: {
 				header: "任务状态",
 				description: "自定义任务可用的状态选项。这些状态控制任务生命周期并确定何时任务被视为完成。",
