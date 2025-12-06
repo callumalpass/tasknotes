@@ -759,7 +759,7 @@ export const fr: TranslationTree = {
 				header: "Gestion des dossiers",
 				excludedFolders: {
 					name: "Dossiers exclus",
-					description: "Liste séparée par des virgules des dossiers à exclure de l'onglet Notes",
+					description: "Liste séparée par des virgules des dossiers à exclure de l'indexation des tâches et des suggestions de projets",
 				},
 			},
 			frontmatter: {
@@ -872,6 +872,11 @@ export const fr: TranslationTree = {
 					name: "Récurrence",
 					description:
 						"Modèle pour les tâches répétitives (quotidien, hebdomadaire, mensuel, annuel ou RRULE personnalisée). Quand une tâche récurrente est terminée, sa date planifiée est automatiquement mise à jour à la prochaine occurrence.",
+				},
+				recurrenceAnchor: {
+					name: "Ancre de récurrence",
+					description:
+						"Contrôle le calcul de la prochaine occurrence : 'scheduled' utilise la date planifiée, 'completion' utilise la date de complétion réelle.",
 				},
 				reminders: {
 					name: "Rappels",

@@ -759,7 +759,7 @@ export const ja: TranslationTree = {
 				header: "フォルダー管理",
 				excludedFolders: {
 					name: "除外フォルダー",
-					description: "ノートタブから除外するフォルダーのカンマ区切りリスト",
+					description: "タスクのインデックス作成とプロジェクト候補から除外するフォルダーのカンマ区切りリスト",
 				},
 			},
 			frontmatter: {
@@ -872,6 +872,11 @@ export const ja: TranslationTree = {
 					name: "繰り返し",
 					description:
 						"繰り返しタスクのパターン（毎日、毎週、毎月、毎年、またはカスタムRRULE）。繰り返しタスクが完了すると、予定日は自動的に次の発生日に更新されます。",
+				},
+				recurrenceAnchor: {
+					name: "繰り返しアンカー",
+					description:
+						"次の発生日の計算方法を制御します：'scheduled'は予定日を使用、'completion'は実際の完了日を使用します。",
 				},
 				reminders: {
 					name: "リマインダー",

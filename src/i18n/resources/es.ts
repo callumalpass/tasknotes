@@ -759,7 +759,7 @@ export const es: TranslationTree = {
 				header: "Gestión de carpetas",
 				excludedFolders: {
 					name: "Carpetas excluidas",
-					description: "Lista separada por comas de carpetas a excluir de la pestaña Notas",
+					description: "Lista separada por comas de carpetas a excluir de la indexación de tareas y sugerencias de proyectos",
 				},
 			},
 			frontmatter: {
@@ -872,6 +872,11 @@ export const es: TranslationTree = {
 					name: "Recurrencia",
 					description:
 						"Patrón para tareas repetitivas (diario, semanal, mensual, anual o RRULE personalizada). Cuando se completa una tarea recurrente, su fecha programada se actualiza automáticamente a la siguiente ocurrencia.",
+				},
+				recurrenceAnchor: {
+					name: "Ancla de recurrencia",
+					description:
+						"Controla cómo se calcula la siguiente ocurrencia: 'scheduled' usa la fecha programada, 'completion' usa la fecha de finalización real.",
 				},
 				reminders: {
 					name: "Recordatorios",

@@ -759,7 +759,7 @@ export const zh: TranslationTree = {
 				header: "文件夹管理",
 				excludedFolders: {
 					name: "排除文件夹",
-					description: "从笔记选项卡中排除的文件夹的逗号分隔列表",
+					description: "从任务索引和项目建议中排除的文件夹的逗号分隔列表",
 				},
 			},
 			frontmatter: {
@@ -872,6 +872,11 @@ export const zh: TranslationTree = {
 					name: "重复",
 					description:
 						"重复任务的模式（每日、每周、每月、每年或自定义RRULE）。当重复任务完成时，其安排日期会自动更新到下一次出现。",
+				},
+				recurrenceAnchor: {
+					name: "重复锚点",
+					description:
+						"控制下一次出现的计算方式：'scheduled'使用安排日期，'completion'使用实际完成日期。",
 				},
 				reminders: {
 					name: "提醒",

@@ -1921,8 +1921,8 @@
       "translation": "0a057256c63d9ebb53634489d9dc3014d3107196"
     },
     "settings.general.folderManagement.excludedFolders.description": {
-      "source": "4ff367979f5bdb70f928733dda339ca81435c4b1",
-      "translation": "f03123a435174cef25cce4330e1d7c9c6ba5993d"
+      "source": "bef8a14860dc486cf46aad464c4c57652fc676d3",
+      "translation": "facc695d9524c62d419485244e6b2d029fca0d4a"
     },
     "settings.general.frontmatter.header": {
       "source": "49415878931e5edbbf6d49465647a990f04b12ae",
@@ -2147,6 +2147,14 @@
     "settings.taskProperties.properties.recurrence.description": {
       "source": "c01bf4b354883bc66dd491c2fe45d0fc9f6694aa",
       "translation": "3cc34de0b4f78b9abddfc6caff308c6ea2474f9b"
+    },
+    "settings.taskProperties.properties.recurrenceAnchor.name": {
+      "source": "037986287526e746049a0844e6616ca01647fdf1",
+      "translation": "0b084151895297cb0045abcd3a0085a74537e2ae"
+    },
+    "settings.taskProperties.properties.recurrenceAnchor.description": {
+      "source": "b4815ac628ef222623405f8632756ff719731885",
+      "translation": "eb0f659480c9ee408b655f86a3a2fbcbc6aaba10"
     },
     "settings.taskProperties.properties.reminders.name": {
       "source": "ae8c3939382fbd2f6a05825c70d474b3c1de2b8d",
@@ -9439,8 +9447,8 @@
       "translation": "c6d530ba3628dbb9d475a163468eecc7136bdfa4"
     },
     "settings.general.folderManagement.excludedFolders.description": {
-      "source": "4ff367979f5bdb70f928733dda339ca81435c4b1",
-      "translation": "d7ff49bfccec1fc23a91f3ba5033c279f8833fea"
+      "source": "bef8a14860dc486cf46aad464c4c57652fc676d3",
+      "translation": "a3817b32d7a6223b790e230ba68a2631e39db18e"
     },
     "settings.general.frontmatter.header": {
       "source": "49415878931e5edbbf6d49465647a990f04b12ae",
@@ -9665,6 +9673,14 @@
     "settings.taskProperties.properties.recurrence.description": {
       "source": "c01bf4b354883bc66dd491c2fe45d0fc9f6694aa",
       "translation": "119889dcf4a125d9e9ceebe58e419afb38228e30"
+    },
+    "settings.taskProperties.properties.recurrenceAnchor.name": {
+      "source": "037986287526e746049a0844e6616ca01647fdf1",
+      "translation": "6c5968f11802301887420b9e825ffe850018bbf3"
+    },
+    "settings.taskProperties.properties.recurrenceAnchor.description": {
+      "source": "b4815ac628ef222623405f8632756ff719731885",
+      "translation": "e9ddf5ddde7867060082149ab8e75bd8efb614ce"
     },
     "settings.taskProperties.properties.reminders.name": {
       "source": "ae8c3939382fbd2f6a05825c70d474b3c1de2b8d",
@@ -16957,8 +16973,8 @@
       "translation": "b33d4de856d037cfeb845910a8e5389457c9f8f4"
     },
     "settings.general.folderManagement.excludedFolders.description": {
-      "source": "4ff367979f5bdb70f928733dda339ca81435c4b1",
-      "translation": "f429284d9f211ecd199f673e8b700b051af4fe51"
+      "source": "bef8a14860dc486cf46aad464c4c57652fc676d3",
+      "translation": "3039179f347929d4f60b145931abbe183ea5d26b"
     },
     "settings.general.frontmatter.header": {
       "source": "49415878931e5edbbf6d49465647a990f04b12ae",
@@ -17183,6 +17199,14 @@
     "settings.taskProperties.properties.recurrence.description": {
       "source": "c01bf4b354883bc66dd491c2fe45d0fc9f6694aa",
       "translation": "7a2d1453465fe8772e7fe0bfed90722066e6ffac"
+    },
+    "settings.taskProperties.properties.recurrenceAnchor.name": {
+      "source": "037986287526e746049a0844e6616ca01647fdf1",
+      "translation": "be25c583b747ba53e5e6f2943875aafa85987aa0"
+    },
+    "settings.taskProperties.properties.recurrenceAnchor.description": {
+      "source": "b4815ac628ef222623405f8632756ff719731885",
+      "translation": "595b78f8200c539bc93eefe2397d214fe4593ca2"
     },
     "settings.taskProperties.properties.reminders.name": {
       "source": "ae8c3939382fbd2f6a05825c70d474b3c1de2b8d",
@@ -24475,8 +24499,8 @@
       "translation": "77590dd1b3a584e290773ff984e5f63f41157ffe"
     },
     "settings.general.folderManagement.excludedFolders.description": {
-      "source": "4ff367979f5bdb70f928733dda339ca81435c4b1",
-      "translation": "2bb6adcc292c5961c3bd4b7039b088a5aef92768"
+      "source": "bef8a14860dc486cf46aad464c4c57652fc676d3",
+      "translation": "3125b2c6e13d80cf1a44b7d156e9d35050ece5f7"
     },
     "settings.general.frontmatter.header": {
       "source": "49415878931e5edbbf6d49465647a990f04b12ae",
@@ -24701,6 +24725,14 @@
     "settings.taskProperties.properties.recurrence.description": {
       "source": "c01bf4b354883bc66dd491c2fe45d0fc9f6694aa",
       "translation": "84171cac8267cfc340a84bd2cdb8efa55162d9f1"
+    },
+    "settings.taskProperties.properties.recurrenceAnchor.name": {
+      "source": "037986287526e746049a0844e6616ca01647fdf1",
+      "translation": "e8d0dc349c430f9a4ea83dc8af1dee4cad9b8e19"
+    },
+    "settings.taskProperties.properties.recurrenceAnchor.description": {
+      "source": "b4815ac628ef222623405f8632756ff719731885",
+      "translation": "fe976efa5be37f4c0e6027d131fa6e86ed4ffff9"
     },
     "settings.taskProperties.properties.reminders.name": {
       "source": "ae8c3939382fbd2f6a05825c70d474b3c1de2b8d",
@@ -31993,8 +32025,8 @@
       "translation": "01f7f18a9622351f9d5ddfd9249c4717e7cd57f9"
     },
     "settings.general.folderManagement.excludedFolders.description": {
-      "source": "4ff367979f5bdb70f928733dda339ca81435c4b1",
-      "translation": "2307b74bd6bc7750e1ab3b751e9ac3b96e6023fb"
+      "source": "bef8a14860dc486cf46aad464c4c57652fc676d3",
+      "translation": "3d695d51c71f7162025fb2bf8a16e7fea14a03db"
     },
     "settings.general.frontmatter.header": {
       "source": "49415878931e5edbbf6d49465647a990f04b12ae",
@@ -32219,6 +32251,14 @@
     "settings.taskProperties.properties.recurrence.description": {
       "source": "c01bf4b354883bc66dd491c2fe45d0fc9f6694aa",
       "translation": "b9452b86a7dbd4c303272521dfc851ccead9af5b"
+    },
+    "settings.taskProperties.properties.recurrenceAnchor.name": {
+      "source": "037986287526e746049a0844e6616ca01647fdf1",
+      "translation": "0654508702ae12e9d6b4507640c74a15e21ffa4e"
+    },
+    "settings.taskProperties.properties.recurrenceAnchor.description": {
+      "source": "b4815ac628ef222623405f8632756ff719731885",
+      "translation": "f713b4b8e3a7905cf92f2dcd3e7c1ac8911eec72"
     },
     "settings.taskProperties.properties.reminders.name": {
       "source": "ae8c3939382fbd2f6a05825c70d474b3c1de2b8d",
@@ -39511,8 +39551,8 @@
       "translation": "a9eed3b508c2eb76890c20fca8c0e571d214504d"
     },
     "settings.general.folderManagement.excludedFolders.description": {
-      "source": "4ff367979f5bdb70f928733dda339ca81435c4b1",
-      "translation": "4a6c60aef4be1329cd69b6137e9bdc046fda96e6"
+      "source": "bef8a14860dc486cf46aad464c4c57652fc676d3",
+      "translation": "9a2458ac28e71b5b8ca3c9193e96d173543208a7"
     },
     "settings.general.frontmatter.header": {
       "source": "49415878931e5edbbf6d49465647a990f04b12ae",
@@ -39737,6 +39777,14 @@
     "settings.taskProperties.properties.recurrence.description": {
       "source": "c01bf4b354883bc66dd491c2fe45d0fc9f6694aa",
       "translation": "ae1b40e0736ef9c1f5ad66253dc81e48e8d8fe6d"
+    },
+    "settings.taskProperties.properties.recurrenceAnchor.name": {
+      "source": "037986287526e746049a0844e6616ca01647fdf1",
+      "translation": "bd56384693c92fb0b9538a4f518da6063ada25dc"
+    },
+    "settings.taskProperties.properties.recurrenceAnchor.description": {
+      "source": "b4815ac628ef222623405f8632756ff719731885",
+      "translation": "381ed8d06c5825bd24070efbe7b7048e80603283"
     },
     "settings.taskProperties.properties.reminders.name": {
       "source": "ae8c3939382fbd2f6a05825c70d474b3c1de2b8d",
@@ -47029,8 +47077,8 @@
       "translation": "6f9efa80f35f30e67865997facce1d4636aa2af2"
     },
     "settings.general.folderManagement.excludedFolders.description": {
-      "source": "4ff367979f5bdb70f928733dda339ca81435c4b1",
-      "translation": "4c9da6382b78df24efdf07f811d8cf02f1cec7fe"
+      "source": "bef8a14860dc486cf46aad464c4c57652fc676d3",
+      "translation": "de1cef8f8d5cac7863f73c434cc94a9f52d8080a"
     },
     "settings.general.frontmatter.header": {
       "source": "49415878931e5edbbf6d49465647a990f04b12ae",
@@ -47255,6 +47303,14 @@
     "settings.taskProperties.properties.recurrence.description": {
       "source": "c01bf4b354883bc66dd491c2fe45d0fc9f6694aa",
       "translation": "bb273addf63ee1ef4b3da0b64b1d96206dd7a11f"
+    },
+    "settings.taskProperties.properties.recurrenceAnchor.name": {
+      "source": "037986287526e746049a0844e6616ca01647fdf1",
+      "translation": "73513dd4ff0f06bcfe3f146c99fc0fb02eb68ca7"
+    },
+    "settings.taskProperties.properties.recurrenceAnchor.description": {
+      "source": "b4815ac628ef222623405f8632756ff719731885",
+      "translation": "a7e5916427e092252f63d4195b9faa357c0b53e4"
     },
     "settings.taskProperties.properties.reminders.name": {
       "source": "ae8c3939382fbd2f6a05825c70d474b3c1de2b8d",

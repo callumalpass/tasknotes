@@ -762,7 +762,7 @@ export const pt: TranslationTree = {
 				header: "Gerenciamento de Pastas",
 				excludedFolders: {
 					name: "Pastas excluídas",
-					description: "Lista de pastas separadas por vírgula para excluir da aba Notas"
+					description: "Lista de pastas separadas por vírgula para excluir da indexação de tarefas e sugestões de projetos"
 				}
 			},
 			frontmatter: {
@@ -875,6 +875,11 @@ export const pt: TranslationTree = {
 					name: "Recorrência",
 					description:
 						"Padrão para tarefas repetitivas (diário, semanal, mensal, anual ou RRULE personalizado). Quando uma tarefa recorrente é concluída, sua data agendada é automaticamente atualizada para a próxima ocorrência.",
+				},
+				recurrenceAnchor: {
+					name: "Âncora de recorrência",
+					description:
+						"Controla como a próxima ocorrência é calculada: 'scheduled' usa a data agendada, 'completion' usa a data de conclusão real.",
 				},
 				reminders: {
 					name: "Lembretes",

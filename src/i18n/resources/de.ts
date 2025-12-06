@@ -759,7 +759,7 @@ export const de: TranslationTree = {
 				header: "Ordnerverwaltung",
 				excludedFolders: {
 					name: "Ausgeschlossene Ordner",
-					description: "Kommagetrennte Liste von Ordnern, die vom Notizen-Tab ausgeschlossen werden",
+					description: "Kommagetrennte Liste von Ordnern, die von der Aufgabenindizierung und Projektvorschlägen ausgeschlossen werden",
 				},
 			},
 			frontmatter: {
@@ -872,6 +872,11 @@ export const de: TranslationTree = {
 					name: "Wiederholung",
 					description:
 						"Muster für wiederholende Aufgaben (täglich, wöchentlich, monatlich, jährlich oder benutzerdefinierte RRULE). Wenn eine wiederkehrende Aufgabe abgeschlossen wird, wird ihr geplantes Datum automatisch auf das nächste Vorkommen aktualisiert.",
+				},
+				recurrenceAnchor: {
+					name: "Wiederholungsanker",
+					description:
+						"Bestimmt, wie das nächste Vorkommen berechnet wird: 'scheduled' verwendet das geplante Datum, 'completion' verwendet das tatsächliche Abschlussdatum.",
 				},
 				reminders: {
 					name: "Erinnerungen",

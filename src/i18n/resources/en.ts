@@ -781,7 +781,7 @@ export const en: TranslationTree = {
 				header: "Folder Management",
 				excludedFolders: {
 					name: "Excluded folders",
-					description: "Comma-separated list of folders to exclude from Notes tab",
+					description: "Comma-separated list of folders to exclude from task indexing and project suggestions",
 				},
 			},
 			frontmatter: {
