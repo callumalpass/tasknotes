@@ -417,7 +417,7 @@ export const ja: TranslationTree = {
 		features: {
 			inlineTasks: {
 				header: "インラインタスク",
-				description: "あらゆるノート内でシームレスなタスク管理のためのインラインタスク機能を設定します。",
+				description: "ノート内のタスクリンクとチェックボックスからタスクへの変換の設定。",
 			},
 			overlays: {
 				taskLinkToggle: {
@@ -437,7 +437,7 @@ export const ja: TranslationTree = {
 			},
 			nlp: {
 				header: "自然言語処理",
-				description: "自然言語入力からタスクの詳細をスマートに解析することを有効にします。",
+				description: "テキスト入力から日付、優先度、その他のプロパティを解析します。",
 				enable: {
 					name: "自然言語タスク入力を有効にする",
 					description: "タスク作成時に自然言語から期限日、優先度、コンテキストを解析",
@@ -457,7 +457,7 @@ export const ja: TranslationTree = {
 			},
 			pomodoro: {
 				header: "ポモドーロタイマー",
-				description: "時間管理と生産性追跡のための組み込みポモドーロタイマー。",
+				description: "ポモドーロタイマーの作業/休憩間隔を設定します。",
 				workDuration: {
 					name: "作業時間",
 					description: "作業間隔の時間（分）",
@@ -2014,7 +2014,7 @@ export const ja: TranslationTree = {
 		},
 		migration: {
 			title: "新しい繰り返しシステムに移行",
-			description: "TaskNotesには、互換性の向上とより強力なスケジューリングオプションのために業界標準のパターンを使用する新しい繰り返しシステムがあります。",
+			description: "TaskNotesは繰り返しに業界標準のRRULEパターンを使用するようになり、より複雑なスケジュールと他のアプリとの互換性が向上しました。",
 			tasksFound: "{count}件の古い繰り返しパターンを持つタスクが検出されました",
 			noMigrationNeeded: "移行が必要なタスクはありません",
 			warnings: {
@@ -2026,7 +2026,7 @@ export const ja: TranslationTree = {
 			},
 			benefits: {
 				title: "新システムの利点：",
-				powerfulPatterns: "より強力な繰り返しパターン（例：「毎月第2火曜日」）",
+				powerfulPatterns: "複雑な繰り返しパターン（例：「毎月第2火曜日」）",
 				performance: "繰り返しタスクのパフォーマンスが向上",
 				compatibility: "他のアプリと互換性のある標準繰り返し形式",
 				nlp: "自然言語処理のサポート強化",

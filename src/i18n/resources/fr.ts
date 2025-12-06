@@ -417,7 +417,7 @@ export const fr: TranslationTree = {
 		features: {
 			inlineTasks: {
 				header: "Tâches dans les notes",
-				description: "Configurez les fonctionnalités de tâches intégrées pour gérer vos tâches directement dans vos notes.",
+				description: "Paramètres des liens de tâches et conversion des cases à cocher en tâches dans les notes.",
 			},
 			overlays: {
 				taskLinkToggle: {
@@ -437,7 +437,7 @@ export const fr: TranslationTree = {
 			},
 			nlp: {
 				header: "Traitement du langage naturel",
-				description: "Activez l'analyse intelligente des détails des tâches depuis le langage naturel.",
+				description: "Analyse les dates, priorités et autres propriétés depuis le texte saisi.",
 				enable: {
 					name: "Activer la saisie en langage naturel",
 					description: "Analyser les dates, priorités et contextes lors de la création de tâches",
@@ -457,7 +457,7 @@ export const fr: TranslationTree = {
 			},
 			pomodoro: {
 				header: "Minuteur Pomodoro",
-				description: "Minuteur Pomodoro intégré pour gérer le temps et suivre votre productivité.",
+				description: "Configure les intervalles travail/pause du minuteur Pomodoro.",
 				workDuration: {
 					name: "Durée de travail",
 					description: "Durée des sessions de travail en minutes",
@@ -2014,7 +2014,7 @@ export const fr: TranslationTree = {
 		},
 		migration: {
 			title: "Migrer vers le nouveau système de récurrence",
-			description: "TaskNotes dispose d'un nouveau système de récurrence qui utilise des modèles standard de l'industrie pour une meilleure compatibilité et des options de planification plus puissantes.",
+			description: "TaskNotes utilise maintenant les modèles RRULE standard pour la récurrence, permettant des planifications plus complexes et une meilleure compatibilité avec d'autres applications.",
 			tasksFound: "{count} tâche(s) avec d'anciens modèles de récurrence détectée(s)",
 			noMigrationNeeded: "Aucune tâche ne nécessite de migration",
 			warnings: {
@@ -2026,7 +2026,7 @@ export const fr: TranslationTree = {
 			},
 			benefits: {
 				title: "Avantages du nouveau système :",
-				powerfulPatterns: "Modèles de récurrence plus puissants (ex. 'tous les 2e mardi')",
+				powerfulPatterns: "Modèles de récurrence complexes (ex. 'tous les 2e mardi')",
 				performance: "Meilleures performances avec les tâches récurrentes",
 				compatibility: "Format de récurrence standard compatible avec d'autres applications",
 				nlp: "Support amélioré du traitement du langage naturel",

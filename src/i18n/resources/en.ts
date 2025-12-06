@@ -420,7 +420,7 @@ export const en: TranslationTree = {
 			inlineTasks: {
 				header: "Inline Tasks",
 				description:
-					"Configure inline task features for seamless task management within any note.",
+					"Settings for task links and checkbox-to-task conversion in notes.",
 			},
 			overlays: {
 				taskLinkToggle: {
@@ -442,7 +442,7 @@ export const en: TranslationTree = {
 			},
 			nlp: {
 				header: "Natural Language Processing",
-				description: "Enable smart parsing of task details from natural language input.",
+				description: "Parse dates, priorities, and other properties from text input.",
 				enable: {
 					name: "Enable natural language task input",
 					description:
@@ -466,7 +466,7 @@ export const en: TranslationTree = {
 			pomodoro: {
 				header: "Pomodoro Timer",
 				description:
-					"Built-in Pomodoro timer for time management and productivity tracking.",
+					"Configure work/break intervals for the Pomodoro timer.",
 				workDuration: {
 					name: "Work duration",
 					description: "Duration of work intervals in minutes",
@@ -2072,7 +2072,7 @@ export const en: TranslationTree = {
 		},
 		migration: {
 			title: "Migrate to New Recurrence System",
-			description: "TaskNotes has a new recurrence system that uses industry-standard patterns for better compatibility and more powerful scheduling options.",
+			description: "TaskNotes now uses industry-standard RRULE patterns for recurrence, which enables more complex schedules and better compatibility with other apps.",
 			tasksFound: "{count} task(s) with old recurrence patterns detected",
 			noMigrationNeeded: "No tasks require migration",
 			warnings: {
@@ -2084,7 +2084,7 @@ export const en: TranslationTree = {
 			},
 			benefits: {
 				title: "Benefits of the new system:",
-				powerfulPatterns: "More powerful recurrence patterns (e.g., 'every 2nd Tuesday')",
+				powerfulPatterns: "Complex recurrence patterns (e.g., 'every 2nd Tuesday')",
 				performance: "Better performance with recurring tasks",
 				compatibility: "Standard recurrence format compatible with other apps",
 				nlp: "Enhanced natural language processing support",

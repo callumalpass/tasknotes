@@ -417,7 +417,7 @@ export const zh: TranslationTree = {
 		features: {
 			inlineTasks: {
 				header: "内联任务",
-				description: "配置内联任务功能，在任何笔记中无缝管理任务。",
+				description: "任务链接和复选框转任务功能的设置。",
 			},
 			overlays: {
 				taskLinkToggle: {
@@ -437,7 +437,7 @@ export const zh: TranslationTree = {
 			},
 			nlp: {
 				header: "自然语言处理",
-				description: "启用从自然语言输入智能解析任务详情。",
+				description: "从文本输入解析日期、优先级和其他属性。",
 				enable: {
 					name: "启用自然语言任务输入",
 					description: "创建任务时从自然语言解析到期日期、优先级和上下文",
@@ -457,7 +457,7 @@ export const zh: TranslationTree = {
 			},
 			pomodoro: {
 				header: "番茄钟计时器",
-				description: "内置番茄钟计时器，用于时间管理和生产力跟踪。",
+				description: "配置番茄钟计时器的工作/休息间隔。",
 				workDuration: {
 					name: "工作时长",
 					description: "工作间隔的持续时间（分钟）",
@@ -2014,7 +2014,7 @@ export const zh: TranslationTree = {
 		},
 		migration: {
 			title: "迁移到新的循环系统",
-			description: "TaskNotes 拥有一个新的循环系统，使用行业标准模式以获得更好的兼容性和更强大的计划选项。",
+			description: "TaskNotes 现在使用行业标准的 RRULE 模式进行循环，可以创建更复杂的计划并与其他应用更好地兼容。",
 			tasksFound: "检测到 {count} 个具有旧循环模式的任务",
 			noMigrationNeeded: "无任务需要迁移",
 			warnings: {
@@ -2026,7 +2026,7 @@ export const zh: TranslationTree = {
 			},
 			benefits: {
 				title: "新系统的好处：",
-				powerfulPatterns: "更强大的循环模式（例如，'每第二个星期二'）",
+				powerfulPatterns: "复杂的循环模式（例如，'每第二个星期二'）",
 				performance: "更好的循环任务性能",
 				compatibility: "与其他应用兼容的标准循环格式",
 				nlp: "增强的自然语言处理支持",

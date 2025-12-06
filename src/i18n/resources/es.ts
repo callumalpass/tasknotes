@@ -417,7 +417,7 @@ export const es: TranslationTree = {
 		features: {
 			inlineTasks: {
 				header: "Tareas en línea",
-				description: "Configura las características de tareas en línea para gestión de tareas sin interrupciones dentro de cualquier nota.",
+				description: "Configuración para enlaces de tareas y conversión de casillas a tareas en notas.",
 			},
 			overlays: {
 				taskLinkToggle: {
@@ -437,7 +437,7 @@ export const es: TranslationTree = {
 			},
 			nlp: {
 				header: "Procesamiento de lenguaje natural",
-				description: "Habilitar análisis inteligente de detalles de tareas desde entrada en lenguaje natural.",
+				description: "Analiza fechas, prioridades y otras propiedades desde texto de entrada.",
 				enable: {
 					name: "Habilitar entrada de tareas en lenguaje natural",
 					description: "Analizar fechas de vencimiento, prioridades y contextos desde lenguaje natural al crear tareas",
@@ -457,7 +457,7 @@ export const es: TranslationTree = {
 			},
 			pomodoro: {
 				header: "Temporizador Pomodoro",
-				description: "Temporizador Pomodoro integrado para gestión de tiempo y seguimiento de productividad.",
+				description: "Configura intervalos de trabajo/descanso para el temporizador Pomodoro.",
 				workDuration: {
 					name: "Duración del trabajo",
 					description: "Duración de intervalos de trabajo en minutos",
@@ -2014,7 +2014,7 @@ export const es: TranslationTree = {
 		},
 		migration: {
 			title: "Migrar al nuevo sistema de recurrencia",
-			description: "TaskNotes tiene un nuevo sistema de recurrencia que utiliza patrones estándar de la industria para una mejor compatibilidad y opciones de programación más potentes.",
+			description: "TaskNotes ahora usa patrones RRULE estándar de la industria para recurrencia, lo que permite horarios más complejos y mejor compatibilidad con otras aplicaciones.",
 			tasksFound: "{count} tarea(s) con patrones de recurrencia antiguos detectados",
 			noMigrationNeeded: "No se requiere migración de tareas",
 			warnings: {
@@ -2026,7 +2026,7 @@ export const es: TranslationTree = {
 			},
 			benefits: {
 				title: "Beneficios del nuevo sistema:",
-				powerfulPatterns: "Patrones de recurrencia más potentes (ej. 'cada segundo martes')",
+				powerfulPatterns: "Patrones de recurrencia complejos (ej. 'cada segundo martes')",
 				performance: "Mejor rendimiento con tareas recurrentes",
 				compatibility: "Formato de recurrencia estándar compatible con otras aplicaciones",
 				nlp: "Soporte mejorado de procesamiento de lenguaje natural",

@@ -417,7 +417,7 @@ export const de: TranslationTree = {
 		features: {
 			inlineTasks: {
 				header: "Inline-Aufgaben",
-				description: "Konfiguriere Inline-Aufgabenfunktionen für nahtloses Aufgabenmanagement innerhalb jeder Notiz.",
+				description: "Einstellungen für Aufgabenlinks und Checkbox-zu-Aufgabe-Konvertierung in Notizen.",
 			},
 			overlays: {
 				taskLinkToggle: {
@@ -437,7 +437,7 @@ export const de: TranslationTree = {
 			},
 			nlp: {
 				header: "Natürliche Sprachverarbeitung",
-				description: "Aktiviere intelligente Analyse von Aufgabendetails aus natürlicher Spracheingabe.",
+				description: "Analysiere Daten, Prioritäten und andere Eigenschaften aus Texteingaben.",
 				enable: {
 					name: "Natürliche Spracheingabe für Aufgaben aktivieren",
 					description: "Parse Fälligkeitsdaten, Prioritäten und Kontexte aus natürlicher Sprache beim Erstellen von Aufgaben",
@@ -457,7 +457,7 @@ export const de: TranslationTree = {
 			},
 			pomodoro: {
 				header: "Pomodoro-Timer",
-				description: "Integrierter Pomodoro-Timer für Zeitmanagement und Produktivitätsverfolgung.",
+				description: "Konfiguriere Arbeits-/Pausenintervalle für den Pomodoro-Timer.",
 				workDuration: {
 					name: "Arbeitsdauer",
 					description: "Dauer der Arbeitsintervalle in Minuten",
@@ -2014,7 +2014,7 @@ export const de: TranslationTree = {
 		},
 		migration: {
 			title: "Zum neuen Wiederholungssystem migrieren",
-			description: "TaskNotes verfügt über ein neues Wiederholungssystem, das branchenübliche Muster für bessere Kompatibilität und leistungsfähigere Planungsoptionen verwendet.",
+			description: "TaskNotes verwendet jetzt branchenübliche RRULE-Muster für Wiederholungen, die komplexere Zeitpläne und bessere Kompatibilität mit anderen Apps ermöglichen.",
 			tasksFound: "{count} Aufgabe(n) mit alten Wiederholungsmustern erkannt",
 			noMigrationNeeded: "Keine Aufgaben erfordern Migration",
 			warnings: {
@@ -2026,7 +2026,7 @@ export const de: TranslationTree = {
 			},
 			benefits: {
 				title: "Vorteile des neuen Systems:",
-				powerfulPatterns: "Leistungsfähigere Wiederholungsmuster (z.B. 'jeden 2. Dienstag')",
+				powerfulPatterns: "Komplexe Wiederholungsmuster (z.B. 'jeden 2. Dienstag')",
 				performance: "Bessere Leistung bei wiederkehrenden Aufgaben",
 				compatibility: "Standard-Wiederholungsformat kompatibel mit anderen Apps",
 				nlp: "Verbesserte Unterstützung für natürliche Sprachverarbeitung",

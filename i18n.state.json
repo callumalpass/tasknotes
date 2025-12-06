@@ -1157,8 +1157,8 @@
       "translation": "f98acefe1cdc9c888903a42f94689b0e6d7bef41"
     },
     "settings.features.inlineTasks.description": {
-      "source": "7e3fa4195c846528e0d06129d4ae4e17f8c790c7",
-      "translation": "ca15a715305718513ec87d953077c731e691de7f"
+      "source": "041baf632682261876d68fdfb557dcb820eeb505",
+      "translation": "e4336c33a2454b6e29c55b8422006546fc310dc3"
     },
     "settings.features.overlays.taskLinkToggle.name": {
       "source": "e0fe20d0993bb1763bc91b38bd3adb779b7981be",
@@ -1189,8 +1189,8 @@
       "translation": "306d0086d726996ee9e2e6f0f9060f7b31dcbbd1"
     },
     "settings.features.nlp.description": {
-      "source": "0ce0a454267c49cd56bc5533873f89e875fcec07",
-      "translation": "a50073216d88a442e4a0275f20ab84f234c13dc9"
+      "source": "632a9af312f20952951f9f58447b064ffa833a08",
+      "translation": "4e610f5b23b004b97ed2e1a11d548a54d5db4fb6"
     },
     "settings.features.nlp.enable.name": {
       "source": "e9b0bfb15d333ee3d894a349ed2a9f9e297be154",
@@ -1229,8 +1229,8 @@
       "translation": "bcca76d156f638b1a85ffdbe81af2dba8c580d04"
     },
     "settings.features.pomodoro.description": {
-      "source": "cbfe4fb87e68e2daddcc6e168d8f6843276786e7",
-      "translation": "051dcb732b67649e1e962854073a8d50727e496c"
+      "source": "083b9e0670ea444b95dc72feb0fdd6dec76d6500",
+      "translation": "3f7d35449ac8fbb17b035154901a6bdfbacbf6f0"
     },
     "settings.features.pomodoro.workDuration.name": {
       "source": "27aaa77f4dc29e68d85264e9cbdb8ecc345c995f",
@@ -4941,8 +4941,8 @@
       "translation": "5c0ffe902ee594dc629f3bb1d1e3760cab92cb03"
     },
     "modals.migration.description": {
-      "source": "e55f6bf53ec59fb0ab8d8fa97dc2e24cdba2d7cc",
-      "translation": "6096ba5281025a85b3b25b5a06aab4ae420e58b8"
+      "source": "4cc57cec8e7e1c7f0b1fab5d7a73517fd01f09fb",
+      "translation": "47a34642e20790f1d0390178910beedb406d533d"
     },
     "modals.migration.tasksFound": {
       "source": "df4f9c8b5382b8d40195bb587d926c750f1d952f",
@@ -4977,8 +4977,8 @@
       "translation": "4765d3a3e2b674ccd17dcba49f23ec42a8fb622f"
     },
     "modals.migration.benefits.powerfulPatterns": {
-      "source": "92048dcf86101098ff226dfe3c94595bdccff6a3",
-      "translation": "b0ec5aa50a330850e2fef43d25de5a54b50bea4e"
+      "source": "919c85dd6d413eacb8d0fa64ac553f9cac59ee1d",
+      "translation": "7d7ee9190502a7ea864b5d22a31f969b8132f0a8"
     },
     "modals.migration.benefits.performance": {
       "source": "a49563001bc7fb56076ab0b99e3ec6fc6f83f2a3",
@@ -8683,8 +8683,8 @@
       "translation": "a7f016a7bf869a4faec082a631841e0f359e46c2"
     },
     "settings.features.inlineTasks.description": {
-      "source": "7e3fa4195c846528e0d06129d4ae4e17f8c790c7",
-      "translation": "e7edef5f87f505d282668205a27ccdcfc0730b47"
+      "source": "041baf632682261876d68fdfb557dcb820eeb505",
+      "translation": "1522982a46dbfd3cfd34bbbf50893e3c077a8a6f"
     },
     "settings.features.overlays.taskLinkToggle.name": {
       "source": "e0fe20d0993bb1763bc91b38bd3adb779b7981be",
@@ -8715,8 +8715,8 @@
       "translation": "b78dcc6aa72d5dfc8097298b453d3c38725676d3"
     },
     "settings.features.nlp.description": {
-      "source": "0ce0a454267c49cd56bc5533873f89e875fcec07",
-      "translation": "64cadfb706695ba8e1c9254c8d5b3e043643db6f"
+      "source": "632a9af312f20952951f9f58447b064ffa833a08",
+      "translation": "ae3df9a7100dcd32af9ccebe666683189316f886"
     },
     "settings.features.nlp.enable.name": {
       "source": "e9b0bfb15d333ee3d894a349ed2a9f9e297be154",
@@ -8755,8 +8755,8 @@
       "translation": "d7603b9d02fc5f6f722c547d89881b67a3f3e82b"
     },
     "settings.features.pomodoro.description": {
-      "source": "cbfe4fb87e68e2daddcc6e168d8f6843276786e7",
-      "translation": "81da344656bf241e7f1fb24058310a8fe70dde8e"
+      "source": "083b9e0670ea444b95dc72feb0fdd6dec76d6500",
+      "translation": "cbb1c1d2257ea848d628c16121169b55761ea564"
     },
     "settings.features.pomodoro.workDuration.name": {
       "source": "27aaa77f4dc29e68d85264e9cbdb8ecc345c995f",
@@ -12467,8 +12467,8 @@
       "translation": "bced49fbe8848d48ee5d4c994f11ce14ce57b217"
     },
     "modals.migration.description": {
-      "source": "e55f6bf53ec59fb0ab8d8fa97dc2e24cdba2d7cc",
-      "translation": "544ccb0f65dfa312ee93ffd68d01c6d2c5b861d7"
+      "source": "4cc57cec8e7e1c7f0b1fab5d7a73517fd01f09fb",
+      "translation": "a2c120b1629156d008859cbc89322d86d5a0f392"
     },
     "modals.migration.tasksFound": {
       "source": "df4f9c8b5382b8d40195bb587d926c750f1d952f",
@@ -12503,8 +12503,8 @@
       "translation": "5422604906d95123bb54429557fad6efed987b46"
     },
     "modals.migration.benefits.powerfulPatterns": {
-      "source": "92048dcf86101098ff226dfe3c94595bdccff6a3",
-      "translation": "e8ab68e8d640d90e27f9c5f163f8110c64adfc67"
+      "source": "919c85dd6d413eacb8d0fa64ac553f9cac59ee1d",
+      "translation": "04bca7f5f0c2df5e04ac786d49ad3afe11b5d21a"
     },
     "modals.migration.benefits.performance": {
       "source": "a49563001bc7fb56076ab0b99e3ec6fc6f83f2a3",
@@ -16209,8 +16209,8 @@
       "translation": "a32a664acc6d5279c6600620c1a3fb0a8bb8cd1b"
     },
     "settings.features.inlineTasks.description": {
-      "source": "7e3fa4195c846528e0d06129d4ae4e17f8c790c7",
-      "translation": "865446e1609cd99b432e2eae61ec289dfc3b1d5d"
+      "source": "041baf632682261876d68fdfb557dcb820eeb505",
+      "translation": "76c741418f4ffee4733f297de90b9b869d198eef"
     },
     "settings.features.overlays.taskLinkToggle.name": {
       "source": "e0fe20d0993bb1763bc91b38bd3adb779b7981be",
@@ -16241,8 +16241,8 @@
       "translation": "b1e8011b64c3e540c76e7200f83e8d4882c3f2b2"
     },
     "settings.features.nlp.description": {
-      "source": "0ce0a454267c49cd56bc5533873f89e875fcec07",
-      "translation": "1818dde75b5aa87dc4a067069c0aa216a4c2a14e"
+      "source": "632a9af312f20952951f9f58447b064ffa833a08",
+      "translation": "92859c20b40a8b39cbdbc0392591da5b989c6adf"
     },
     "settings.features.nlp.enable.name": {
       "source": "e9b0bfb15d333ee3d894a349ed2a9f9e297be154",
@@ -16281,8 +16281,8 @@
       "translation": "f597f0ca15b624337c1249301c16ade13b205489"
     },
     "settings.features.pomodoro.description": {
-      "source": "cbfe4fb87e68e2daddcc6e168d8f6843276786e7",
-      "translation": "ddb28662a66cdf9f2257b56f1be9bdf4046646b1"
+      "source": "083b9e0670ea444b95dc72feb0fdd6dec76d6500",
+      "translation": "ab393d6143c6fedbe42c450f9c82e829a14cf5ea"
     },
     "settings.features.pomodoro.workDuration.name": {
       "source": "27aaa77f4dc29e68d85264e9cbdb8ecc345c995f",
@@ -19993,8 +19993,8 @@
       "translation": "40a950a4e1358b2db71501616f94676130a4dd70"
     },
     "modals.migration.description": {
-      "source": "e55f6bf53ec59fb0ab8d8fa97dc2e24cdba2d7cc",
-      "translation": "467e5df645c5bb9c3e1507aa92046a1710d277b3"
+      "source": "4cc57cec8e7e1c7f0b1fab5d7a73517fd01f09fb",
+      "translation": "ea1d39cbd84d99dada70bd632be04f32da6aa461"
     },
     "modals.migration.tasksFound": {
       "source": "df4f9c8b5382b8d40195bb587d926c750f1d952f",
@@ -20029,8 +20029,8 @@
       "translation": "84772fedaedd16ac289348f52926d04af6c0145c"
     },
     "modals.migration.benefits.powerfulPatterns": {
-      "source": "92048dcf86101098ff226dfe3c94595bdccff6a3",
-      "translation": "84b850fdd370ae24214357115a2f28181c367a77"
+      "source": "919c85dd6d413eacb8d0fa64ac553f9cac59ee1d",
+      "translation": "c7f432fba88c4b71b5a780edcee0120f0c34592d"
     },
     "modals.migration.benefits.performance": {
       "source": "a49563001bc7fb56076ab0b99e3ec6fc6f83f2a3",
@@ -23735,8 +23735,8 @@
       "translation": "7277ee93a6bc575b91eacbff0045075f71fa9b22"
     },
     "settings.features.inlineTasks.description": {
-      "source": "7e3fa4195c846528e0d06129d4ae4e17f8c790c7",
-      "translation": "0659ebe72375abc55f31a69f8c3d6268ffba6e77"
+      "source": "041baf632682261876d68fdfb557dcb820eeb505",
+      "translation": "ccade100d45fae7c2933021f7f209ab018e8b523"
     },
     "settings.features.overlays.taskLinkToggle.name": {
       "source": "e0fe20d0993bb1763bc91b38bd3adb779b7981be",
@@ -23767,8 +23767,8 @@
       "translation": "fc05d42078cafcbbe8df56b1752ab0a541f38dd2"
     },
     "settings.features.nlp.description": {
-      "source": "0ce0a454267c49cd56bc5533873f89e875fcec07",
-      "translation": "05524c76e95ae67ad43214e228fa08ae39f2133c"
+      "source": "632a9af312f20952951f9f58447b064ffa833a08",
+      "translation": "6dfadd6d8d04af08639a421df3f39d34a44a1e77"
     },
     "settings.features.nlp.enable.name": {
       "source": "e9b0bfb15d333ee3d894a349ed2a9f9e297be154",
@@ -23807,8 +23807,8 @@
       "translation": "3af9daa679f3e3ddf08beb24c3326dde34614221"
     },
     "settings.features.pomodoro.description": {
-      "source": "cbfe4fb87e68e2daddcc6e168d8f6843276786e7",
-      "translation": "16fbd68b65fd4b26c6d898262a241720f16c41dc"
+      "source": "083b9e0670ea444b95dc72feb0fdd6dec76d6500",
+      "translation": "3fb38acce965d805b68cf1afc27ea1e18723dc9a"
     },
     "settings.features.pomodoro.workDuration.name": {
       "source": "27aaa77f4dc29e68d85264e9cbdb8ecc345c995f",
@@ -27519,8 +27519,8 @@
       "translation": "14345bda425ef07795c234af29bea079c782a691"
     },
     "modals.migration.description": {
-      "source": "e55f6bf53ec59fb0ab8d8fa97dc2e24cdba2d7cc",
-      "translation": "155d0f3c574702a2917df11ee18a1cd1a61ef3ab"
+      "source": "4cc57cec8e7e1c7f0b1fab5d7a73517fd01f09fb",
+      "translation": "f54ccd78dcf2f444744fae1a675797b3c3cbfba6"
     },
     "modals.migration.tasksFound": {
       "source": "df4f9c8b5382b8d40195bb587d926c750f1d952f",
@@ -27555,8 +27555,8 @@
       "translation": "e5d6907968c7b1051b3e84deed09bc949370d6f8"
     },
     "modals.migration.benefits.powerfulPatterns": {
-      "source": "92048dcf86101098ff226dfe3c94595bdccff6a3",
-      "translation": "83f08a253a4c7e2e20ba41506578cdc6e77214af"
+      "source": "919c85dd6d413eacb8d0fa64ac553f9cac59ee1d",
+      "translation": "ace7b5de7ab833bdd7ba32f233052a7ecbedf39d"
     },
     "modals.migration.benefits.performance": {
       "source": "a49563001bc7fb56076ab0b99e3ec6fc6f83f2a3",
@@ -31261,8 +31261,8 @@
       "translation": "e4840351a15b65cb43b38b53ce73a1b976f8993f"
     },
     "settings.features.inlineTasks.description": {
-      "source": "7e3fa4195c846528e0d06129d4ae4e17f8c790c7",
-      "translation": "3773b758d67f0f73f5384344fdf24e007c78e9a2"
+      "source": "041baf632682261876d68fdfb557dcb820eeb505",
+      "translation": "485bb9265165542744223eee17bc5909727c5cf9"
     },
     "settings.features.overlays.taskLinkToggle.name": {
       "source": "e0fe20d0993bb1763bc91b38bd3adb779b7981be",
@@ -31293,8 +31293,8 @@
       "translation": "bcaadfba464e1d20c30c42a9c52e5c711c40366c"
     },
     "settings.features.nlp.description": {
-      "source": "0ce0a454267c49cd56bc5533873f89e875fcec07",
-      "translation": "ff70d31d6b4341bdc9c04d1c7bf1ddebbf9227a4"
+      "source": "632a9af312f20952951f9f58447b064ffa833a08",
+      "translation": "4a3aa015471ed856e5152dba2e72ae0f9138ba73"
     },
     "settings.features.nlp.enable.name": {
       "source": "e9b0bfb15d333ee3d894a349ed2a9f9e297be154",
@@ -31333,8 +31333,8 @@
       "translation": "d7603b9d02fc5f6f722c547d89881b67a3f3e82b"
     },
     "settings.features.pomodoro.description": {
-      "source": "cbfe4fb87e68e2daddcc6e168d8f6843276786e7",
-      "translation": "df5bdd1aede2d4a9f8ba63532704318df126bb59"
+      "source": "083b9e0670ea444b95dc72feb0fdd6dec76d6500",
+      "translation": "8a61575122c5bc204541ca0dfa959faca3fbda36"
     },
     "settings.features.pomodoro.workDuration.name": {
       "source": "27aaa77f4dc29e68d85264e9cbdb8ecc345c995f",
@@ -35045,8 +35045,8 @@
       "translation": "44b2a8b79a9512c2dbc4054b9ec1fedda6e3dee1"
     },
     "modals.migration.description": {
-      "source": "e55f6bf53ec59fb0ab8d8fa97dc2e24cdba2d7cc",
-      "translation": "0533c5b4dde725f748aad82eae8b318a59a1840f"
+      "source": "4cc57cec8e7e1c7f0b1fab5d7a73517fd01f09fb",
+      "translation": "d59cac60a816360f8dbd92a0958ef4c265af58f5"
     },
     "modals.migration.tasksFound": {
       "source": "df4f9c8b5382b8d40195bb587d926c750f1d952f",
@@ -35081,8 +35081,8 @@
       "translation": "56c0f4b8627950963e07bd93dd78d0b8e08e2a30"
     },
     "modals.migration.benefits.powerfulPatterns": {
-      "source": "92048dcf86101098ff226dfe3c94595bdccff6a3",
-      "translation": "cd48cea09dc36ba938037d5562850650f73b268b"
+      "source": "919c85dd6d413eacb8d0fa64ac553f9cac59ee1d",
+      "translation": "2f63d96bb5ea8af9690e01e9ba7de70f6a979452"
     },
     "modals.migration.benefits.performance": {
       "source": "a49563001bc7fb56076ab0b99e3ec6fc6f83f2a3",
@@ -38787,8 +38787,8 @@
       "translation": "ed325e2a0e049939e66b927ab4ad76ff76319842"
     },
     "settings.features.inlineTasks.description": {
-      "source": "7e3fa4195c846528e0d06129d4ae4e17f8c790c7",
-      "translation": "1155057e8ea80f20202542ab7a24331c526697f3"
+      "source": "041baf632682261876d68fdfb557dcb820eeb505",
+      "translation": "c8d48db25a24810764117be9787b19b9f5bbd086"
     },
     "settings.features.overlays.taskLinkToggle.name": {
       "source": "e0fe20d0993bb1763bc91b38bd3adb779b7981be",
@@ -38819,8 +38819,8 @@
       "translation": "2c59d2dd46678464aad80724320867faf0bee86d"
     },
     "settings.features.nlp.description": {
-      "source": "0ce0a454267c49cd56bc5533873f89e875fcec07",
-      "translation": "0ead7293385236bab9d38ac70e29d83231232fad"
+      "source": "632a9af312f20952951f9f58447b064ffa833a08",
+      "translation": "2c2827732fd353c5641646eb8e1310a26205bc03"
     },
     "settings.features.nlp.enable.name": {
       "source": "e9b0bfb15d333ee3d894a349ed2a9f9e297be154",
@@ -38859,8 +38859,8 @@
       "translation": "08a0995a0a804d4107ab83420e8e57d4bea8fc02"
     },
     "settings.features.pomodoro.description": {
-      "source": "cbfe4fb87e68e2daddcc6e168d8f6843276786e7",
-      "translation": "f4961e73a83901b4727251302ae924867cd372be"
+      "source": "083b9e0670ea444b95dc72feb0fdd6dec76d6500",
+      "translation": "60c44850a4ed17020be15683b4f40874fd30f66f"
     },
     "settings.features.pomodoro.workDuration.name": {
       "source": "27aaa77f4dc29e68d85264e9cbdb8ecc345c995f",
@@ -42571,8 +42571,8 @@
       "translation": "4209ee5d75f863cc936958df0ebbefafa189763e"
     },
     "modals.migration.description": {
-      "source": "e55f6bf53ec59fb0ab8d8fa97dc2e24cdba2d7cc",
-      "translation": "21e6ff6b4a2607240f564945d758f598dc5797bf"
+      "source": "4cc57cec8e7e1c7f0b1fab5d7a73517fd01f09fb",
+      "translation": "b1c7f46118b577ff61f7f31a7791b81b0d2f21a1"
     },
     "modals.migration.tasksFound": {
       "source": "df4f9c8b5382b8d40195bb587d926c750f1d952f",
@@ -42607,8 +42607,8 @@
       "translation": "c4d406b3802303008793c45aeec439a1142d4596"
     },
     "modals.migration.benefits.powerfulPatterns": {
-      "source": "92048dcf86101098ff226dfe3c94595bdccff6a3",
-      "translation": "684c6d9b4f61678fe5635ce9fa6726c8efcf21d2"
+      "source": "919c85dd6d413eacb8d0fa64ac553f9cac59ee1d",
+      "translation": "8a19481a47a2f29512fba21e89eb06dfc9634b4f"
     },
     "modals.migration.benefits.performance": {
       "source": "a49563001bc7fb56076ab0b99e3ec6fc6f83f2a3",
@@ -46313,8 +46313,8 @@
       "translation": "29a6c4edbeac9373f6e112eee10387b97be35a25"
     },
     "settings.features.inlineTasks.description": {
-      "source": "7e3fa4195c846528e0d06129d4ae4e17f8c790c7",
-      "translation": "8cc56c1346c3ff51fa3a64aa01d5690fad3ebae9"
+      "source": "041baf632682261876d68fdfb557dcb820eeb505",
+      "translation": "9f10f8e7e92598ae509eb285886e77c70d1d0d31"
     },
     "settings.features.overlays.taskLinkToggle.name": {
       "source": "e0fe20d0993bb1763bc91b38bd3adb779b7981be",
@@ -46345,8 +46345,8 @@
       "translation": "84a852be5572401ef59a98f04c21d40008aac4a4"
     },
     "settings.features.nlp.description": {
-      "source": "0ce0a454267c49cd56bc5533873f89e875fcec07",
-      "translation": "2dd69f3bbe690a4ace48953b21d988d765d336ee"
+      "source": "632a9af312f20952951f9f58447b064ffa833a08",
+      "translation": "95b78e8545e719f13aaed10afe85dc7bb45d725c"
     },
     "settings.features.nlp.enable.name": {
       "source": "e9b0bfb15d333ee3d894a349ed2a9f9e297be154",
@@ -46385,8 +46385,8 @@
       "translation": "ea5a79f735d9f5bc809fa862b0246f5e3c7903ab"
     },
     "settings.features.pomodoro.description": {
-      "source": "cbfe4fb87e68e2daddcc6e168d8f6843276786e7",
-      "translation": "d7a44c83c94703442cb5b41bbbb25be32fc56999"
+      "source": "083b9e0670ea444b95dc72feb0fdd6dec76d6500",
+      "translation": "2229fc9a2c656f96e384f627e7b84df7a1e733c1"
     },
     "settings.features.pomodoro.workDuration.name": {
       "source": "27aaa77f4dc29e68d85264e9cbdb8ecc345c995f",
@@ -50097,8 +50097,8 @@
       "translation": "e7c703d1df64410d6229492d4a715ed06cd29ed7"
     },
     "modals.migration.description": {
-      "source": "e55f6bf53ec59fb0ab8d8fa97dc2e24cdba2d7cc",
-      "translation": "d4deb0130163d702d64b39ca206f2a98593f1679"
+      "source": "4cc57cec8e7e1c7f0b1fab5d7a73517fd01f09fb",
+      "translation": "4a7c0d0649e900b23c763233750ef92a15608189"
     },
     "modals.migration.tasksFound": {
       "source": "df4f9c8b5382b8d40195bb587d926c750f1d952f",
@@ -50133,8 +50133,8 @@
       "translation": "b8220d4c399b74e97c4cd8ea2e595e3844675ed4"
     },
     "modals.migration.benefits.powerfulPatterns": {
-      "source": "92048dcf86101098ff226dfe3c94595bdccff6a3",
-      "translation": "584bf4212d6653e718856dca9b08b93d059cfe8d"
+      "source": "919c85dd6d413eacb8d0fa64ac553f9cac59ee1d",
+      "translation": "7fb0ef086e5fde2916b4c536cff2851998d867ec"
     },
     "modals.migration.benefits.performance": {
       "source": "a49563001bc7fb56076ab0b99e3ec6fc6f83f2a3",
