@@ -26,6 +26,14 @@ Example:
 
 ## Fixed
 
+- (#1319) Added missing properties to Field Mapping settings
+  - `recurrence_anchor` - now in Settings > Task Properties > Task Details
+  - `skipped_instances` - now in Settings > Task Properties > Metadata Properties
+  - Thanks to @kazerniel for reporting
+- (#1310) Fixed inline task conversion deleting text when task title exceeds filename limits
+  - Text that cannot fit in the filename is now preserved in the task note's body
+  - Truncation respects word boundaries when possible for cleaner titles
+  - Thanks to @prayidae for reporting
 - (#1317) Fixed project autosuggest filters not working correctly when only "Required Property Key" is configured
   - NLP `+` trigger now properly filters by property existence when no property value is specified
   - Modal "Add to project" button now shows consistent results with inline autosuggest

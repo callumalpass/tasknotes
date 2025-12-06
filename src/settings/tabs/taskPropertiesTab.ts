@@ -155,6 +155,11 @@ export function renderTaskPropertiesTab(
 		},
 	});
 
+	// Recurrence Anchor Property Card
+	renderMetadataPropertyCard(container, plugin, save, translate, "recurrenceAnchor",
+		translate("settings.taskProperties.properties.recurrenceAnchor.name"),
+		translate("settings.taskProperties.properties.recurrenceAnchor.description"));
+
 	// Reminders Property Card
 	renderRemindersPropertyCard(container, plugin, save, translate);
 

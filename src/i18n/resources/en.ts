@@ -895,6 +895,11 @@ export const en: TranslationTree = {
 					description:
 						"Pattern for repeating tasks (daily, weekly, monthly, yearly, or custom RRULE). When a recurring task is completed, its scheduled date is automatically updated to the next occurrence.",
 				},
+				recurrenceAnchor: {
+					name: "Recurrence Anchor",
+					description:
+						"Controls how the next occurrence is calculated: 'scheduled' uses the scheduled date, 'completion' uses the actual completion date.",
+				},
 				reminders: {
 					name: "Reminders",
 					description:
