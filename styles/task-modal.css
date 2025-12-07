@@ -78,7 +78,7 @@
     overflow: visible;
     min-height: 80px;
     max-height: 200px;
-    background: var(--background-secondary);
+    background: transparent;
     transition: all 0.2s ease;
 }
 
@@ -92,19 +92,19 @@
     height: 100%;
     min-height: 80px;
     max-height: 200px;
-    background: var(--background-secondary);
+    background: transparent;
 	overflow: visible;
 }
 
 /* Focus state for NLP editor - match old nl-input styling */
 .nl-markdown-editor:focus-within {
     border-color: var(--interactive-accent);
-    background: var(--background-primary);
+    background: transparent;
     box-shadow: 0 0 0 2px rgba(var(--interactive-accent-rgb), 0.2);
 }
 
 .nl-markdown-editor:focus-within .cm-editor {
-    background: var(--background-primary);
+    background: transparent;
 }
 
 .nl-markdown-editor .cm-scroller {
@@ -214,7 +214,7 @@
     color: var(--color-accent);
 }
 
-.tasknotes-plugin .minimalist-task-modal {
+.tasknotes-plugin.minimalist-task-modal {
     /* Modal container adjustments */
 }
 
@@ -274,7 +274,7 @@
     color: var(--text-normal);
 }
 
-.tasknotes-plugin .minimalist-task-modal .modal-content {
+.tasknotes-plugin.minimalist-task-modal .modal-content {
     padding: 0;
     border-radius: var(--radius-l);
     box-shadow: var(--shadow-l);
@@ -284,6 +284,18 @@
 
 .tasknotes-plugin .minimalist-modal-container {
     padding: var(--size-4-4);
+    background: var(--modal-background);
+}
+
+/* Override shadow variable inside the modal, then re-apply outer shadow explicitly */
+.theme-light .tasknotes-plugin.minimalist-task-modal,
+.theme-dark .tasknotes-plugin.minimalist-task-modal {
+    --shadow-l: none;
+}
+
+/* Re-apply outer shadow to the modal element itself */
+.tasknotes-plugin.minimalist-task-modal > .modal {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
 }
 
 /* =====================================================================
@@ -407,7 +419,7 @@
     line-height: 1.4;
     border: 1px solid var(--background-modifier-border);
     border-radius: var(--radius-s);
-    background: var(--background-secondary);
+    background: transparent;
     color: var(--text-normal);
     transition: all 0.2s ease;
 }
@@ -415,7 +427,7 @@
 .tasknotes-plugin .title-input-detailed:focus {
     outline: none;
     border-color: var(--interactive-accent);
-    background: var(--background-primary);
+    background: transparent;
 }
 
 .tasknotes-plugin .title-input-detailed::placeholder {
@@ -430,7 +442,7 @@
     line-height: 1.5;
     border: 1px solid var(--background-modifier-border);
     border-radius: var(--radius-s);
-    background: var(--background-secondary);
+    background: transparent;
     color: var(--text-normal);
     resize: vertical;
     transition: all 0.2s ease;
@@ -439,7 +451,7 @@
 .tasknotes-plugin .details-input:focus {
     outline: none;
     border-color: var(--interactive-accent);
-    background: var(--background-primary);
+    background: transparent;
 }
 
 .tasknotes-plugin .details-input::placeholder {
@@ -465,7 +477,7 @@
 }
 
 .tasknotes-plugin .details-container .setting-item-control input {
-    background: var(--background-secondary);
+    background: transparent;
     border: 1px solid var(--background-modifier-border);
     border-radius: var(--radius-s);
     padding: var(--size-4-1) var(--size-4-2);
@@ -475,7 +487,7 @@
 
 .tasknotes-plugin .details-container .setting-item-control input:focus {
     border-color: var(--interactive-accent);
-    background: var(--background-primary);
+    background: transparent;
     outline: none;
 }
 
@@ -534,11 +546,11 @@ body:not(.is-mobile) .modal.mod-tasknotes .modal-button-container .mod-cta {
    MODAL EXPANSION ANIMATION
    ===================================================================== */
 
-.tasknotes-plugin .minimalist-task-modal .modal-content {
+.tasknotes-plugin.minimalist-task-modal .modal-content {
     transition: all 0.3s ease;
 }
 
-.tasknotes-plugin .minimalist-task-modal.expanded .modal-content {
+.tasknotes-plugin.minimalist-task-modal.expanded .modal-content {
     min-height: 400px;
 }
 
@@ -547,15 +559,15 @@ body:not(.is-mobile) .modal.mod-tasknotes .modal-button-container .mod-cta {
    ===================================================================== */
 
 @media (max-width: 600px) {
-    .tasknotes-plugin .minimalist-task-modal .modal-content {
+    .tasknotes-plugin.minimalist-task-modal .modal-content {
         min-width: 90vw;
         max-width: 90vw;
     }
-    
+
     .tasknotes-plugin .minimalist-modal-container {
         padding: var(--size-4-3);
     }
-    
+
     .tasknotes-plugin .action-bar {
         flex-wrap: wrap;
         gap: var(--size-4-2);
@@ -572,6 +584,146 @@ body:not(.is-mobile) .modal.mod-tasknotes .modal-button-container .mod-cta {
     /* Reset margin for small screens on desktop too */
     .modal.mod-tasknotes .modal-button-container .mod-cta {
         margin-left: 0;
+    }
+}
+
+/* =====================================================================
+   SPLIT LAYOUT - BASE STYLES (mobile/narrow screens)
+   On narrow screens, content flows vertically
+   ===================================================================== */
+
+/* Split content wrapper - stacked by default */
+.tasknotes-plugin.minimalist-task-modal .modal-split-content {
+    display: block;
+}
+
+/* Left and right columns are just block containers by default */
+.tasknotes-plugin.minimalist-task-modal .modal-split-left,
+.tasknotes-plugin.minimalist-task-modal .modal-split-right {
+    display: block;
+}
+
+/* Hide empty right column indicator on narrow screens */
+.tasknotes-plugin.minimalist-task-modal .modal-split-right:empty {
+    display: none;
+}
+
+/* =====================================================================
+   SPLIT LAYOUT - WIDE SCREENS (900px+)
+   Details field appears on the right when modal is expanded
+   Only applies when split-layout-enabled class is present (controlled by setting)
+   ===================================================================== */
+
+@media (min-width: 900px) {
+    /* Widen modal for split layout when expanded */
+    /* Target both .modal (modalEl) and .modal-content for max compatibility */
+    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal,
+    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded.modal {
+        width: 850px;
+        max-width: 90vw;
+    }
+
+    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-content {
+        min-width: 100%;
+        max-width: 100%;
+        padding: 0;
+    }
+
+    /* Main container - no padding on right for edge-to-edge details */
+    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .minimalist-modal-container {
+        display: flex;
+        flex-direction: column;
+        padding-right: 0;
+    }
+
+    /* Split content wrapper - holds left and right columns */
+    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-content {
+        display: flex;
+        flex-direction: row;
+        flex: 1;
+        min-height: 0;
+        gap: 0;
+    }
+
+    /* Left column - fields with padding */
+    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-left {
+        flex: 0 0 380px;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        padding-right: var(--size-4-4);
+        overflow-y: auto;
+        max-height: 70vh;
+    }
+
+    /* Right column - details editor takes full height, edge to edge */
+    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-right {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        border-left: 1px solid var(--background-modifier-border);
+        margin: calc(-1 * var(--size-4-4)) 0;
+        margin-right: calc(-1 * var(--size-4-4));
+        border-radius: 0;
+        max-height: 70vh;
+        overflow: hidden;
+    }
+
+    /* Hide empty right column on wide screens too */
+    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-right:empty {
+        display: none;
+    }
+
+    /* When right column is empty, left column takes full width */
+    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-right:empty ~ .modal-split-left,
+    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-content:has(.modal-split-right:empty) .modal-split-left {
+        flex: 1;
+        padding-right: 0;
+    }
+
+    /* Details label in right column */
+    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-right .detail-label {
+        margin: 0;
+        padding: var(--size-4-3) var(--size-4-4);
+        border-bottom: 1px solid var(--background-modifier-border);
+    }
+
+    /* Make details editor fill the right column completely */
+    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-right .details-markdown-editor {
+        flex: 1;
+        min-height: 0;
+        max-height: none;
+        display: flex;
+        flex-direction: column;
+        border: none;
+        border-radius: 0;
+        margin: 0;
+        overflow: hidden;
+    }
+
+    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-right .details-markdown-editor .cm-editor {
+        flex: 1;
+        max-height: none;
+        border-radius: 0;
+        min-height: 0;
+    }
+
+    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-right .details-markdown-editor .cm-scroller {
+        max-height: none;
+        overflow-y: auto;
+    }
+
+    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-right .details-markdown-editor .task-details-editor {
+        max-height: none;
+        flex: 1;
+        min-height: 0;
+        overflow: hidden;
+    }
+
+    /* Button container needs proper positioning */
+    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-button-container {
+        padding-right: var(--size-4-4);
     }
 }
 
@@ -671,7 +823,7 @@ body:not(.is-mobile) .modal.mod-tasknotes .modal-button-container .mod-cta {
     line-height: 1.5;
     border: 1px solid var(--background-modifier-border);
     border-radius: var(--radius-s);
-    background: var(--background-secondary);
+    background: transparent;
     color: var(--text-normal);
     resize: vertical;
     min-height: 80px;
@@ -681,7 +833,7 @@ body:not(.is-mobile) .modal.mod-tasknotes .modal-button-container .mod-cta {
 .tasknotes-plugin .nl-input:focus {
     outline: none;
     border-color: var(--interactive-accent);
-    background: var(--background-primary);
+    background: transparent;
     box-shadow: 0 0 0 2px rgba(var(--interactive-accent-rgb), 0.2);
 }
 
@@ -849,10 +1001,6 @@ body:not(.is-mobile) .modal.mod-tasknotes .modal-button-container .mod-cta {
 /* =====================================================================
    DARK MODE ADJUSTMENTS
    ===================================================================== */
-
-.theme-dark .tasknotes-plugin .minimalist-task-modal .modal-content {
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-}
 
 .theme-dark .tasknotes-plugin .action-icon.has-value::after {
     border-color: var(--background-primary-alt);

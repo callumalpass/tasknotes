@@ -50,7 +50,6 @@ export class TaskEditModal extends TaskModal {
 		raw: Record<string, TaskDependency>;
 	} = { added: [], removed: [], raw: {} };
 	private unresolvedBlockingEntries: string[] = [];
-	private markdownEditor: EmbeddableMarkdownEditor | null = null;
 	private isShowingConfirmation = false;
 	private pendingClose = false;
 
@@ -225,7 +224,10 @@ export class TaskEditModal extends TaskModal {
 		// Refresh task data from file before opening
 		await this.refreshTaskData();
 
-		this.containerEl.addClass("tasknotes-plugin", "minimalist-task-modal");
+		this.containerEl.addClass("tasknotes-plugin", "minimalist-task-modal", "expanded");
+		if (this.plugin.settings.enableModalSplitLayout) {
+			this.containerEl.addClass("split-layout-enabled");
+		}
 		this.modalEl.addClass("mod-tasknotes");
 
 		// Set the modal title using the standard Obsidian approach (preserves close button)
@@ -290,99 +292,19 @@ export class TaskEditModal extends TaskModal {
 		}
 	}
 
-	protected createModalContent(): void {
-		const { contentEl } = this;
-		contentEl.empty();
-
-		// Create main container
-		const container = contentEl.createDiv("minimalist-modal-container");
-
-		// Create action bar with icons
-		this.createActionBar(container);
-
-		// Create expanded details section (always expanded for editing)
-		this.createDetailsSection(container);
-
-		// Create completions calendar section (for recurring tasks)
-		this.createCompletionsCalendarSection(container);
-
-		// Create metadata section (for edit modal)
-		this.createMetadataSection(container);
-
-		// Create save/cancel buttons
-		this.createActionButtons(container);
+	/**
+	 * Edit modal has no primary input at top - title is in the details section
+	 */
+	protected createPrimaryInput(container: HTMLElement): void {
+		// No-op: Edit modal shows title in the details section, not at top
 	}
 
 	/**
-	 * Override to add markdown editor for details in edit modal
+	 * Add completions calendar and metadata sections after details
 	 */
-	protected createDetailsSection(container: HTMLElement): void {
-		this.detailsContainer = container.createDiv("details-container");
-		if (!this.isExpanded) {
-			this.detailsContainer.style.display = "none";
-		}
-
-		// Check field configuration to determine which fields to show
-		const config = this.plugin.settings.modalFieldsConfig;
-		const shouldShowTitle = this.shouldShowField("title", config);
-		const shouldShowDetails = this.shouldShowField("details", config);
-
-		// Title field for edit modal
-		if (shouldShowTitle) {
-			const titleLabel = this.detailsContainer.createDiv("detail-label");
-			titleLabel.textContent = this.t("modals.task.titleLabel");
-
-			const titleInputDetailed = this.detailsContainer.createEl("input", {
-				type: "text",
-				cls: "title-input-detailed",
-				placeholder: this.t("modals.task.titleDetailedPlaceholder"),
-			});
-
-			titleInputDetailed.value = this.title;
-			titleInputDetailed.addEventListener("input", (e) => {
-				this.title = (e.target as HTMLInputElement).value;
-			});
-
-			// Store reference for title input
-			if (!this.titleInput) {
-				this.titleInput = titleInputDetailed;
-			}
-		}
-
-		// Details section with embedded markdown editor
-		if (shouldShowDetails) {
-			const detailsLabel = this.detailsContainer.createDiv("detail-label");
-			detailsLabel.textContent = this.t("modals.task.detailsLabel");
-
-			const editorContainer = this.detailsContainer.createDiv("details-markdown-editor");
-
-			// Create the embeddable markdown editor using shared method
-			this.markdownEditor = this.createMarkdownEditor(editorContainer, {
-				value: this.details,
-				placeholder: this.t("modals.task.detailsPlaceholder"),
-				cls: "task-details-editor",
-				onChange: (value) => {
-					this.details = value;
-				},
-				onSubmit: async () => {
-					// Ctrl/Cmd+Enter - save the task
-					await this.handleSave();
-					this.forceClose();
-				},
-				onEscape: () => {
-					// ESC - close the modal (will prompt if unsaved changes)
-					this.close();
-				},
-				onTab: () => {
-					// Tab - jump to next input field
-					this.focusNextField();
-					return true; // Prevent default tab behavior
-				},
-			});
-		}
-
-		// Additional form fields (contexts, tags, etc.)
-		this.createAdditionalFields(this.detailsContainer);
+	protected createAdditionalSections(container: HTMLElement): void {
+		this.createCompletionsCalendarSection(container);
+		this.createMetadataSection(container);
 	}
 
 	/**
@@ -488,11 +410,7 @@ export class TaskEditModal extends TaskModal {
 			this.editModalKeyboardHandler = null;
 		}
 
-		// Clean up markdown editor
-		if (this.markdownEditor) {
-			this.markdownEditor.destroy();
-			this.markdownEditor = null;
-		}
+		// Base class handles detailsMarkdownEditor cleanup
 		super.onClose();
 	}
 

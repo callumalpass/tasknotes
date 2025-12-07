@@ -24,3 +24,18 @@ Example:
 
 -->
 
+## Added
+
+- Split layout for task modals on wide screens (900px+)
+  - Details editor appears in a dedicated right column when the modal is expanded
+  - New setting "Split layout on wide screens" in Modal Fields settings tab to toggle this behavior
+  - Improves usability by showing form fields and details side-by-side
+
+## Changed
+
+- Refactored task modal architecture to use template method pattern
+  - `TaskModal` base class now provides shared `createModalContent()` structure
+  - Subclasses (`TaskCreationModal`, `TaskEditModal`) override hook methods for customization
+  - Reduces code duplication and improves maintainability
+- Input fields in task modals now use transparent backgrounds for a cleaner appearance
+

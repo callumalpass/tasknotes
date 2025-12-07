@@ -675,14 +675,10 @@ export class TaskCreationModal extends TaskModal {
 		this.eventListeners = [];
 	}
 
-	protected createModalContent(): void {
-		const { contentEl } = this;
-		contentEl.empty();
-
-		// Create main container
-		const container = contentEl.createDiv("minimalist-modal-container");
-
-		// Create NLP input as primary interface (if enabled)
+	/**
+	 * Override to use NLP input when enabled, otherwise fall back to title input
+	 */
+	protected createPrimaryInput(container: HTMLElement): void {
 		if (this.plugin.settings.enableNaturalLanguageInput) {
 			this.createNaturalLanguageInput(container);
 		} else {
@@ -692,13 +688,12 @@ export class TaskCreationModal extends TaskModal {
 			this.isExpanded = true;
 			this.containerEl.addClass("expanded");
 		}
+	}
 
-		// Create action bar with icons
-		this.createActionBar(container);
-
-		// Create collapsible details section
-		this.createDetailsSection(container);
-
+	/**
+	 * Override to re-render projects list after modal content is created
+	 */
+	protected createAdditionalSections(container: HTMLElement): void {
 		// Re-render projects list if pre-populated values were applied or defaults are set
 		if (
 			(this.options.prePopulatedValues && this.options.prePopulatedValues.projects) ||
@@ -706,9 +701,6 @@ export class TaskCreationModal extends TaskModal {
 		) {
 			this.renderProjectsList();
 		}
-
-		// Create save/cancel buttons
-		this.createActionButtons(container);
 	}
 
 	private createNaturalLanguageInput(container: HTMLElement): void {
