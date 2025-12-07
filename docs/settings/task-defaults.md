@@ -235,232 +235,28 @@ When enabled, the task's title is stored in the filename instead of frontmatter.
 
 ## Default Reminders
 
-Default reminders are configured in the **Task Properties** tab within the Reminders property card. Each reminder you configure will be automatically applied to new tasks.
+Configure default reminders in **Settings → Task Properties → Reminders**. These reminders automatically apply to new tasks.
 
-### Configuring Default Reminders
+### Reminder Types
 
-1. Open TaskNotes settings (Settings → TaskNotes)
-2. Navigate to the "Task Properties" tab
-3. Expand the "Reminders" property card
-4. Use the "Default Reminders" section to add new reminders
+**Relative reminders** trigger based on a task's due or scheduled date:
+- 15 minutes before due date
+- 1 hour before scheduled date
+- 2 days before due date
 
-### Default Reminder Types
+**Absolute reminders** trigger at a specific date and time, regardless of task dates.
 
-You can configure both types of reminders as defaults:
+### Configuration
 
-#### Relative Default Reminders
+1. Navigate to Settings → TaskNotes → Task Properties
+2. Expand the Reminders card
+3. In the Default Reminders section, select type (Relative or Absolute)
+4. Configure timing and optional description
+5. Click "Add Default Reminder"
 
-Relative default reminders are triggered relative to a task's due date or scheduled date:
+Default reminders apply to tasks created via the modal, instant conversion, and natural language parsing. Existing reminders can be viewed, edited, or deleted from the same settings panel.
 
-- **Anchor Date**: Choose between "due date" or "scheduled date"
-- **Timing**: Specify the offset (e.g., 15 minutes, 1 hour, 2 days)
-- **Direction**: Choose "before" or "after" the anchor date
-- **Description**: Optional custom reminder message
-
-**Example Configurations:**
-```
-15 minutes before due date
-1 hour before scheduled date  
-2 days before due date
-30 minutes after scheduled date
-```
-
-#### Absolute Default Reminders
-
-Absolute default reminders are triggered at specific dates and times:
-
-- **Date**: Set the specific date for the reminder
-- **Time**: Set the specific time for the reminder  
-- **Description**: Optional custom reminder message
-
-**Example Configurations:**
-
-```
-Every Monday at 9:00 AM (for weekly planning)
-October 26, 2025 at 2:30 PM (for project deadline)
-Tomorrow at 10:00 AM (for follow-up tasks)
-```
-
-### Default Reminder Application
-
-Default reminders automatically apply to new tasks created through:
-
-#### Manual Task Creation
-
-- Tasks created using the Task Creation Modal
-- Default reminders are added automatically based on available anchor dates
-- Additional reminders can be added during the creation process
-
-#### Instant Conversion
-
-- Tasks created by converting existing content (checkboxes, bullet points, etc.)
-- Default reminders apply based on the converted task's properties
-- Respects existing due and scheduled dates from natural language parsing
-
-#### Natural Language Task Creation
-
-- Tasks created using the natural language parser
-- Default reminders integrate with parsed task properties
-- Applied after natural language processing is complete
-
-### Managing Default Reminders
-
-#### Adding Default Reminders
-
-Use the form interface in settings to add new default reminders:
-
-1. **Select Reminder Type**: Choose between "Relative" or "Absolute"
-2. **Configure Timing**: Set the specific timing parameters
-3. **Add Description**: Optionally add a custom reminder message
-4. **Save Configuration**: Click "Add Default Reminder" to save
-
-#### Editing Default Reminders
-
-Default reminders can be managed through the settings interface:
-
-- **View All Defaults**: See a list of all configured default reminders
-- **Delete Defaults**: Remove unwanted default reminders
-- **Modify Settings**: Edit timing, descriptions, and other parameters
-
-### Default Reminder Examples
-
-#### Common Workflow Patterns
-
-**Getting Things Done (GTD) Setup:**
-
-```
-15 minutes before due date (quick review)
-1 day before due date (preparation time)
-```
-
-**Time-blocking Setup:**
-
-```
-30 minutes before scheduled date (preparation)
-5 minutes before scheduled date (start notification)
-```
-
-**Project Management Setup:**  
-
-```
-1 week before due date (progress check)
-2 days before due date (final review)
-4 hours before due date (completion deadline)
-```
-
-#### Task Type Specific Defaults
-
-**Meeting Tasks:**
-
-```
-30 minutes before scheduled date (preparation)
-5 minutes before scheduled date (join notification)
-```
-
-**Deadline Tasks:**
-
-```
-1 week before due date (progress milestone)
-2 days before due date (completion buffer)
-4 hours before due date (final submission)
-```
-
-**Follow-up Tasks:**
-
-```
-Absolute reminder: Next Monday at 9:00 AM
-Relative reminder: 1 day after due date (if not completed)
-```
-
-### Integration with Existing Settings
-
-#### Field Mapping Compatibility
-
-Default reminders integrate with the Field Mapping system:
-
-- **Custom Property Names**: Map reminders to custom frontmatter property names
-- **Vault Compatibility**: Adapt to existing vault structures
-- **Migration Support**: Maintain compatibility when changing field mappings
-
-#### Template Integration
-
-Default reminders work alongside template systems:
-
-- **Applied After Templates**: Default reminders are added after template processing
-- **Template Variables**: Templates can reference reminder-related variables
-- **Combined Workflows**: Templates and default reminders complement each other
-
-### Data Storage and Format
-
-Default reminders are stored in your TaskNotes settings and converted to task reminders when new tasks are created. They maintain the same data structure as task reminders:
-
-#### Settings Storage Format
-
-```json
-{
-  "defaultReminders": [
-    {
-      "id": "def_rem_1678886400000",
-      "type": "relative",
-      "relatedTo": "due",
-      "offset": 15,
-      "unit": "minutes", 
-      "direction": "before",
-      "description": "Task review reminder"
-    },
-    {
-      "id": "def_rem_1678886400001", 
-      "type": "absolute",
-      "absoluteDate": "2025-10-26",
-      "absoluteTime": "09:00",
-      "description": "Weekly planning session"
-    }
-  ]
-}
-```
-
-#### Task Application Format
-
-When applied to tasks, default reminders are converted to the standard reminder format:
-
-```yaml
-reminders:
-  - id: "rem_1678886400000_abc123xyz"
-    type: "relative"
-    relatedTo: "due" 
-    offset: "-PT15M"
-    description: "Task review reminder"
-  - id: "rem_1678886400001_def456uvw"
-    type: "absolute"
-    absoluteTime: "2025-10-26T09:00:00"
-    description: "Weekly planning session"
-```
-
-### Best Practices
-
-#### Reminder Strategy
-
-**Start Simple:** Begin with one or two common default reminders and add more as needed.
-
-**Consider Context:** Different types of tasks may benefit from different reminder patterns.
-
-**Avoid Overloading:** Too many default reminders can become overwhelming and reduce their effectiveness.
-
-#### Timing Considerations
-
-**Buffer Time:** Include enough lead time for preparation and action.
-
-**Multiple Alerts:** Use multiple reminders for important deadlines (e.g., 1 week, 2 days, 4 hours before).
-
-**Personal Patterns:** Align reminder timing with your personal work patterns and schedule.
-
-#### Maintenance
-
-**Regular Review:** Periodically review and adjust default reminders based on effectiveness.
-
-**Seasonal Adjustments:** Consider adjusting reminder patterns for different seasons or project types.
-
-**Feedback Integration:** Use your experience with reminders to refine default configurations.
+For detailed reminder documentation, see [Task Reminders](../features/task-management.md#task-reminders).
 
 ## Template System
 

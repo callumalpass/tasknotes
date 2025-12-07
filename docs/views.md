@@ -4,20 +4,9 @@ TaskNotes provides multiple views for managing tasks and tracking productivity. 
 
 [← Back to Documentation](index.md)
 
-## Bases Plugin Requirement
-
-All task-focused views in TaskNotes v4 use Obsidian's **Bases core plugin**. This is an official Obsidian plugin built directly into the application, not a community plugin.
-
-**To enable Bases:**
-1. Open Settings → Core Plugins
-2. Enable "Bases"
-3. TaskNotes view commands and ribbon icons will open `.base` files from `TaskNotes/Views/`
-
-Bases views use YAML configuration in `.base` files to define filtering, sorting, and grouping behavior. View configurations from TaskNotes v3 must be manually converted to `.base` file format. See [Default Base Templates](views/default-base-templates.md) for complete template examples.
+For details on Bases integration and how to enable it, see [Core Concepts](core-concepts.md#bases-integration). For view templates and configuration examples, see [Default Base Templates](views/default-base-templates.md).
 
 ## Task-Focused Views
-
-All task-focused views are implemented as Bases views using `.base` files.
 
 - **[Task List View](views/task-list.md)**: Displays tasks in a list format. Supports filtering, sorting, and grouping via YAML configuration in the `.base` file.
 - **[Kanban View](views/kanban-view.md)**: Displays tasks as cards organized by status. Supports optional swimlane layout for additional organization.
