@@ -8,6 +8,7 @@ These settings control the foundational aspects of the plugin, such as task iden
 ## Task Storage
 
 - **Default tasks folder**: The default location for new tasks.
+- **Folder for converted tasks**: The folder where tasks converted from checkboxes (via instant task conversion) will be created. This setting only appears when instant task conversion is enabled in Features. Leave empty to use the default tasks folder. Use `{{currentNotePath}}` to place converted tasks in the same folder as the current note, or `{{currentNoteTitle}}` to create a subfolder named after the current note.
 - **Move archived tasks to folder**: If enabled, tasks with a status of "archived" will be moved to the specified archive folder.
 - **Archive folder**: The folder to move archived tasks to.
 

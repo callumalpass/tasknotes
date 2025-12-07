@@ -167,7 +167,7 @@ export function renderStatusPropertyCard(
 	createCard(container, {
 		id: "property-status",
 		collapsible: true,
-		defaultCollapsed: false,
+		defaultCollapsed: true,
 		header: {
 			primaryText: translate("settings.taskProperties.properties.status.name"),
 			secondaryText: plugin.settings.fieldMapping.status,

@@ -91,19 +91,8 @@ export function renderFeaturesTab(
 		setValue: async (value: boolean) => {
 			plugin.settings.enableInstantTaskConvert = value;
 			save();
-			// Re-render to show additional settings
+			// Re-render to show additional settings (and update General tab folder visibility)
 			renderFeaturesTab(container, plugin, save);
-		},
-	});
-
-	createTextSetting(container, {
-		name: translate("settings.features.instantConvert.folder.name"),
-		desc: translate("settings.features.instantConvert.folder.description"),
-		placeholder: "TaskNotes",
-		getValue: () => plugin.settings.inlineTaskConvertFolder,
-		setValue: async (value: string) => {
-			plugin.settings.inlineTaskConvertFolder = value;
-			save();
 		},
 	});
 

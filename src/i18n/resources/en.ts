@@ -437,7 +437,7 @@ export const en: TranslationTree = {
 				folder: {
 					name: "Folder for converted tasks",
 					description:
-						"Folder where tasks converted from checkboxes will be created. Use {{currentNotePath}} for relative to current note, {{currentNoteTitle}} for current note title",
+						"Folder where tasks converted from checkboxes will be created. Leave empty to use the default tasks folder. Use {{currentNotePath}} for the current note's folder, or {{currentNoteTitle}} for a subfolder named after the current note.",
 				},
 			},
 			nlp: {

@@ -50,10 +50,15 @@ Example:
 - (#1317) Fixed project autosuggest filters not working correctly when only "Required Property Key" is configured
   - NLP `+` trigger now properly filters by property existence when no property value is specified
   - Modal "Add to project" button now shows consistent results with inline autosuggest
+  - Thanks to @JacksonMcDonaldDev for reporting
 - (#1287, #1307) The "New" button in Bases views now opens the TaskNotes creation modal
   - Tasks created from Bases views now respect default properties (status, priority, etc.)
   - Tasks are now created in the configured default folder instead of the views folder
   - Thanks to @anareaty and @sylvainfct-dot for reporting
+- (#1291) Fixed Microsoft Calendar OAuth documentation using wrong redirect URI
+  - Changed from `http://localhost:8080` to `http://127.0.0.1` (Microsoft's recommended loopback address)
+  - Added instructions for configuring via Azure manifest editor
+  - Thanks to @PlecotusAustriacus for reporting
 
 ## Changed
 
@@ -63,4 +68,6 @@ Example:
   - Moved project autosuggest settings to the Projects property section
   - Body template setting moved to the Features tab
   - Added descriptions to each property explaining its purpose
+  - Moved "Folder for converted tasks" setting to General tab under Task Storage for better discoverability
+  - Updated setting description to clarify that leaving empty uses the default tasks folder
 
