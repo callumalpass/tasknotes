@@ -37,6 +37,11 @@ Example:
   - Added date range filtering for calendar events to skip events outside visible range
   - (#1285) Calendar view uses 5-second debounce to prevent flickering while typing
 	  - Thanks to @steven-murray for reporting
+  - Calendar view switching (month/week/day/list) is now much faster
+    - Fixed view type changes triggering expensive Bases view recreation
+    - Added daily notes cache with 5-second TTL to avoid repeated lookups
+    - Added render lock to prevent duplicate concurrent renders
+    - View type is now saved on unload instead of on every change
 - Fixed task edit modal archive button being too narrow on mobile devices
 - (#1319) Added missing properties to Field Mapping settings
   - `recurrence_anchor` - now in Settings > Task Properties > Task Details

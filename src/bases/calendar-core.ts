@@ -817,13 +817,25 @@ function extractTimeblocksFromCache(frontmatter: any, path: string): TimeBlock[]
  * Generate timeblock events from daily notes for a date range
  * Uses metadataCache for performance - no file reads required
  */
+// Cache for daily notes to avoid repeated getAllDailyNotes() calls
+let _dailyNotesCache: Record<string, any> | null = null;
+let _dailyNotesCacheTime = 0;
+const DAILY_NOTES_CACHE_TTL = 5000; // 5 seconds
+
 export async function generateTimeblockEvents(
 	plugin: TaskNotesPlugin,
 	startDate: Date,
 	endDate: Date
 ): Promise<CalendarEvent[]> {
 	try {
-		const allDailyNotes = getAllDailyNotes();
+		// Use cached daily notes if available and fresh
+		const now = Date.now();
+		if (!_dailyNotesCache || (now - _dailyNotesCacheTime) > DAILY_NOTES_CACHE_TTL) {
+			_dailyNotesCache = getAllDailyNotes();
+			_dailyNotesCacheTime = now;
+		}
+		const allDailyNotes = _dailyNotesCache;
+
 		const events: CalendarEvent[] = [];
 
 		// Iterate through date range using cached metadata (no file reads)

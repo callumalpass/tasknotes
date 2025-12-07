@@ -93,6 +93,10 @@ export class CalendarView extends BasesViewBase {
 	private calendarEl: HTMLElement | null = null;
 	private currentTasks: TaskInfo[] = [];
 	private basesEntryByPath: Map<string, any> = new Map(); // Map task path to Bases entry for enrichment
+
+	// Render lock to prevent duplicate renders
+	private _isRendering = false;
+	private _pendingRender = false;
 	
 	private viewOptions: {
 		// Events
@@ -437,8 +441,23 @@ export class CalendarView extends BasesViewBase {
 	}
 
 	async render(): Promise<void> {
-		if (!this.calendarEl || !this.rootElement) return;
-		if (!this.data?.data) return;
+		// Prevent duplicate concurrent renders
+		if (this._isRendering) {
+			this._pendingRender = true;
+			return;
+		}
+
+		this._isRendering = true;
+		this._pendingRender = false;
+
+		if (!this.calendarEl || !this.rootElement) {
+			this._isRendering = false;
+			return;
+		}
+		if (!this.data?.data) {
+			this._isRendering = false;
+			return;
+		}
 
 		// Ensure view options are read (in case config wasn't available in onload)
 		if (!this.configLoaded && this.config) {
@@ -481,6 +500,15 @@ export class CalendarView extends BasesViewBase {
 		} catch (error: any) {
 			console.error("[TaskNotes][CalendarView] Error rendering:", error);
 			this.renderError(error);
+		} finally {
+			this._isRendering = false;
+		}
+
+		// If a render was requested while we were rendering, do it now
+		if (this._pendingRender) {
+			this._pendingRender = false;
+			// Use setTimeout to avoid deep call stack
+			setTimeout(() => this.render(), 0);
 		}
 	}
 
@@ -611,15 +639,13 @@ export class CalendarView extends BasesViewBase {
 			eventResize: (info) => this.handleEventResize(info),
 			select: (info) => this.handleDateSelect(info),
 			viewDidMount: (arg) => {
-				// Save the current view to config when it changes
+				// Track view type changes locally but DON'T save to Bases config
+				// Saving to config triggers Bases to recreate the entire view, which is expensive
+				// The view type will be persisted when the user leaves the view
 				const newViewType = arg.view.type;
 				if (newViewType && newViewType !== this.viewOptions.calendarView) {
 					this.viewOptions.calendarView = newViewType;
-					try {
-						this.config.set('calendarView', newViewType);
-					} catch (error) {
-						console.debug('[TaskNotes][CalendarView] Failed to save view type:', error);
-					}
+					console.debug('[TaskNotes][CalendarView] View type changed to:', newViewType, '(not saving to avoid recreation)');
 				}
 			},
 		};
@@ -731,7 +757,6 @@ export class CalendarView extends BasesViewBase {
 			this.plugin,
 			eventConfig
 		);
-
 		allEvents.push(...taskEvents);
 
 		// Add property-based events from non-TaskNotes items
@@ -1781,6 +1806,22 @@ export class CalendarView extends BasesViewBase {
 	}
 
 	onunload(): void {
+		// Save the current view type to config on unload (safe here, won't trigger recreation)
+		if (this.calendar && this.config) {
+			const currentViewType = this.calendar.view?.type;
+			if (currentViewType) {
+				try {
+					const storedViewType = this.config.get('calendarView');
+					if (storedViewType !== currentViewType) {
+						this.config.set('calendarView', currentViewType);
+						console.debug('[TaskNotes][CalendarView] Saved view type on unload:', currentViewType);
+					}
+				} catch (error) {
+					console.debug('[TaskNotes][CalendarView] Failed to save view type on unload:', error);
+				}
+			}
+		}
+
 		// Component.register() calls will be automatically cleaned up
 
 		if (this.calendar) {
