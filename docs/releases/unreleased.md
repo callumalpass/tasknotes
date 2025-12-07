@@ -26,6 +26,11 @@ Example:
 
 ## Fixed
 
+- Fixed calendar event text being invisible in light mode when using default priority colors (CSS variables)
+  - `hexToRgba()` now handles CSS variables gracefully instead of returning invalid rgba values
+  - Events without custom priority colors now use theme-appropriate text colors
+- Fixed calendar not updating immediately after completing/skipping recurring task instances
+  - Context menu actions now read fresh data from Obsidian's metadata cache instead of Bases' potentially stale cache
 - Fixed task edit modal archive button being too narrow on mobile devices
 - Significant performance improvements for Bases views (TaskList, Kanban, Calendar)
   - Reduced `extractDataItems` time from ~4 seconds to ~5-10ms for large vaults (6000+ tasks)

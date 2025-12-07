@@ -71,10 +71,19 @@ export interface CalendarEventGenerationOptions {
 }
 
 /**
- * Convert hex color to rgba with alpha
+ * Convert hex color to rgba with alpha.
+ * Returns the original value if it's not a valid hex color (e.g., CSS variables).
  */
 export function hexToRgba(hex: string, alpha: number): string {
+	// Handle CSS variables - return them unchanged since they can't be converted
+	if (hex.startsWith("var(")) {
+		return hex;
+	}
 	hex = hex.replace("#", "");
+	// Validate hex format
+	if (!/^[0-9A-Fa-f]{6}$/.test(hex)) {
+		return `rgba(128, 128, 128, ${alpha})`; // Fallback to gray if invalid
+	}
 	const r = parseInt(hex.substring(0, 2), 16);
 	const g = parseInt(hex.substring(2, 4), 16);
 	const b = parseInt(hex.substring(4, 6), 16);
@@ -92,12 +101,19 @@ export function isDarkMode(): boolean {
  * Get appropriate text color for event based on theme
  * Returns dark text for light mode, light text for dark mode
  */
-export function getEventTextColor(isGoogleCalendar = false): string {
-	if (isGoogleCalendar) {
+export function getEventTextColor(useThemeColor = false): string {
+	if (useThemeColor) {
 		return isDarkMode() ? '#e8eaed' : '#202124'; // Light text in dark mode, dark text in light mode
 	}
-	// For non-Google Calendar events, use the border color (existing behavior)
+	// For non-themed events, return empty (use border color)
 	return '';
+}
+
+/**
+ * Check if a color string is a CSS variable
+ */
+export function isCssVariable(color: string): boolean {
+	return color.startsWith("var(");
 }
 
 /**
@@ -386,6 +402,8 @@ export function createScheduledEvent(task: TaskInfo, plugin: TaskNotesPlugin): C
 	const priorityConfig = plugin.priorityManager.getPriorityConfig(task.priority);
 	const borderColor = priorityConfig?.color || "var(--color-accent)";
 	const isCompleted = plugin.statusManager.isCompletedStatus(task.status);
+	// Use theme-appropriate text color when border is a CSS variable
+	const textColor = isCssVariable(borderColor) ? getEventTextColor(true) : borderColor;
 
 	return {
 		id: `scheduled-${task.path}`,
@@ -395,7 +413,7 @@ export function createScheduledEvent(task: TaskInfo, plugin: TaskNotesPlugin): C
 		allDay: !hasTime,
 		backgroundColor: "transparent",
 		borderColor: borderColor,
-		textColor: borderColor,
+		textColor: textColor,
 		editable: true,
 		extendedProps: {
 			taskInfo: task,
@@ -425,6 +443,8 @@ export function createDueEvent(task: TaskInfo, plugin: TaskNotesPlugin): Calenda
 	const borderColor = priorityConfig?.color || "var(--color-orange)";
 	const fadedBackground = hexToRgba(borderColor, 0.15);
 	const isCompleted = plugin.statusManager.isCompletedStatus(task.status);
+	// Use theme-appropriate text color when border is a CSS variable
+	const textColor = isCssVariable(borderColor) ? getEventTextColor(true) : borderColor;
 
 	return {
 		id: `due-${task.path}`,
@@ -434,7 +454,7 @@ export function createDueEvent(task: TaskInfo, plugin: TaskNotesPlugin): Calenda
 		allDay: !hasTime,
 		backgroundColor: fadedBackground,
 		borderColor: borderColor,
-		textColor: borderColor,
+		textColor: textColor,
 		editable: false,
 		extendedProps: {
 			taskInfo: task,
@@ -586,6 +606,8 @@ export function createNextScheduledEvent(
 	const borderColor = priorityConfig?.color || "var(--color-accent)";
 	const isInstanceCompleted = task.complete_instances?.includes(instanceDate) || false;
 	const isInstanceSkipped = task.skipped_instances?.includes(instanceDate) || false;
+	// Use theme-appropriate text color when border is a CSS variable
+	const textColor = isCssVariable(borderColor) ? getEventTextColor(true) : borderColor;
 
 	// Determine background color based on instance state
 	let backgroundColor = "transparent";
@@ -603,7 +625,7 @@ export function createNextScheduledEvent(
 		allDay: !hasTime,
 		backgroundColor: backgroundColor,
 		borderColor: borderColor,
-		textColor: borderColor,
+		textColor: textColor,
 		editable: true,
 		extendedProps: {
 			taskInfo: task,
@@ -644,6 +666,8 @@ export function createRecurringEvent(
 	const isInstanceSkipped = task.skipped_instances?.includes(instanceDate) || false;
 
 	const fadedBorderColor = hexToRgba(borderColor, 0.5);
+	// Use theme-appropriate text color when border is a CSS variable (can't be faded)
+	const textColor = isCssVariable(borderColor) ? getEventTextColor(true) : fadedBorderColor;
 
 	// Determine background color based on instance state
 	let backgroundColor = "transparent";
@@ -661,7 +685,7 @@ export function createRecurringEvent(
 		allDay: !hasTime,
 		backgroundColor: backgroundColor,
 		borderColor: fadedBorderColor,
-		textColor: fadedBorderColor,
+		textColor: textColor,
 		editable: true,
 		extendedProps: {
 			taskInfo: task,

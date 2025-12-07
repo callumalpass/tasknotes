@@ -221,19 +221,11 @@ export class CalendarView extends BasesViewBase {
 
 	/**
 	 * Override onDataUpdated for calendar-specific behavior.
-	 * Instead of full re-render, just update the Bases entry map and refetch events.
-	 * This prevents calendar flickering during rapid data updates.
+	 * Uses a longer debounce to prevent flickering during rapid data updates (e.g., typing).
 	 */
 	onDataUpdated(): void {
 		// Skip if view is not visible
 		if (!this.rootElement?.isConnected) {
-			return;
-		}
-
-		// Skip if calendar isn't initialized yet (will be handled by initial render)
-		if (!this.calendar) {
-			// Fall back to base class behavior for initial render
-			super.onDataUpdated();
 			return;
 		}
 
@@ -245,20 +237,7 @@ export class CalendarView extends BasesViewBase {
 
 		this.dataUpdateDebounceTimer = window.setTimeout(() => {
 			this.dataUpdateDebounceTimer = null;
-
-			// Light update: just refresh the Bases entry map and refetch events
-			if (this.data?.data) {
-				this.basesEntryByPath.clear();
-				for (const entry of this.data.data) {
-					if (entry.file?.path) {
-						this.basesEntryByPath.set(entry.file.path, entry);
-					}
-				}
-			}
-
-			if (this.calendar) {
-				this.calendar.refetchEvents();
-			}
+			this.render();
 		}, 5000);  // 5 second debounce - outlasts Obsidian's save interval
 	}
 
@@ -961,6 +940,32 @@ export class CalendarView extends BasesViewBase {
 
 		// Refetch events from all sources
 		this.calendar.refetchEvents();
+	}
+
+	/**
+	 * Refresh calendar with fresh data from Obsidian's metadata cache.
+	 * Use this when task data has changed and calendar needs to reflect updates immediately.
+	 * Bases' cache may be stale, so we read directly from metadataCache.
+	 */
+	private async refreshCalendarWithFreshData(): Promise<void> {
+		if (!this.calendar) return;
+
+		try {
+			// Refresh each task from Obsidian's metadata cache (bypasses Bases' stale cache)
+			const refreshedTasks: TaskInfo[] = [];
+			for (const task of this.currentTasks) {
+				const freshTask = this.plugin.cacheManager.getCachedTaskInfoSync(task.path);
+				if (freshTask) {
+					// Preserve basesData reference for formula access
+					freshTask.basesData = task.basesData;
+					refreshedTasks.push(freshTask);
+				}
+			}
+			this.currentTasks = refreshedTasks;
+			this.calendar.refetchEvents();
+		} catch (error) {
+			console.error("[TaskNotes][CalendarView] Error refreshing calendar:", error);
+		}
 	}
 
 	private async handleEventClick(info: any): Promise<void> {
@@ -1667,10 +1672,8 @@ export class CalendarView extends BasesViewBase {
 					plugin: this.plugin,
 					targetDate: targetDate,
 					onUpdate: () => {
-						// Refresh calendar events when task is updated
-						if (this.calendar) {
-							this.calendar.refetchEvents();
-						}
+						// Refresh calendar with fresh task data when task is updated
+						this.refreshCalendarWithFreshData();
 					},
 				});
 				contextMenu.show(e);
@@ -1690,10 +1693,8 @@ export class CalendarView extends BasesViewBase {
 					plugin: this.plugin,
 					subscriptionName: subscriptionName,
 					onUpdate: () => {
-						// Refresh calendar events when ICS event is updated
-						if (this.calendar) {
-							this.calendar.refetchEvents();
-						}
+						// Refresh calendar with fresh data when ICS event is updated
+						this.refreshCalendarWithFreshData();
 					},
 				});
 				contextMenu.show(e);
@@ -1757,16 +1758,14 @@ export class CalendarView extends BasesViewBase {
 	}
 
 	protected async handleTaskUpdate(task: TaskInfo): Promise<void> {
-		// Use the same long debounce as onDataUpdated to prevent flickering during typing
+		// Use the same long debounce as onDataUpdated
 		if (this.dataUpdateDebounceTimer) {
 			clearTimeout(this.dataUpdateDebounceTimer);
 		}
 
 		this.dataUpdateDebounceTimer = window.setTimeout(() => {
 			this.dataUpdateDebounceTimer = null;
-			if (this.calendar) {
-				this.calendar.refetchEvents();
-			}
+			this.render();
 		}, 5000);  // 5 second debounce
 	}
 
