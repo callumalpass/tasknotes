@@ -525,9 +525,9 @@
     gap: var(--size-4-2);
 }
 
-/* Push Save/Cancel buttons to the right by adding auto margin after Archive button */
-.modal.mod-tasknotes .modal-button-container .archive-button {
-    margin-right: auto;
+/* Push Save/Cancel buttons to the right on desktop only */
+body:not(.is-mobile) .modal.mod-tasknotes .modal-button-container .mod-cta {
+    margin-left: auto;
 }
 
 /* =====================================================================
@@ -567,6 +567,11 @@
 
     .modal.mod-tasknotes .modal-button-container button {
         width: 100%;
+    }
+
+    /* Reset margin for small screens on desktop too */
+    .modal.mod-tasknotes .modal-button-container .mod-cta {
+        margin-left: 0;
     }
 }
 

@@ -26,6 +26,7 @@ Example:
 
 ## Fixed
 
+- Fixed task edit modal archive button being too narrow on mobile devices
 - Significant performance improvements for Bases views (TaskList, Kanban, Calendar)
   - Reduced `extractDataItems` time from ~4 seconds to ~5-10ms for large vaults (6000+ tasks)
   - Computed file properties (`file.backlinks`, `file.links`, etc.) are now fetched lazily during render instead of upfront
