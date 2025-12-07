@@ -67,7 +67,8 @@ export class ICSNoteService {
 			};
 
 			// Create the task using the existing TaskService
-			return await this.plugin.taskService.createTask(taskData);
+			// Disable defaults since ICS events have their own data
+			return await this.plugin.taskService.createTask(taskData, { applyDefaults: false });
 		} catch (error) {
 			const errorMessage = error instanceof Error ? error.message : String(error);
 			console.error("Error creating task from ICS event:", {

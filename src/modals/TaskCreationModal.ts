@@ -1215,7 +1215,8 @@ export class TaskCreationModal extends TaskModal {
 
 		try {
 			const taskData = this.buildTaskData();
-			const result = await this.plugin.taskService.createTask(taskData);
+			// Disable defaults since they were already applied to form fields in initializeFormData()
+			const result = await this.plugin.taskService.createTask(taskData, { applyDefaults: false });
 			let createdTask = result.taskInfo;
 
 			// Check if filename was changed due to length constraints

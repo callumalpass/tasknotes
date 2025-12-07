@@ -21,6 +21,7 @@ import {
 } from "../utils/templateProcessor";
 import {
 	addDTSTARTToRecurrenceRule,
+	calculateDefaultDate,
 	updateDTSTARTInRecurrenceRule,
 	ensureFolderExists,
 	updateToNextScheduledOccurrence,
@@ -172,9 +173,23 @@ export class TaskService {
 	/**
 	 * Create a new task file with all the necessary setup
 	 * This is the central method for task creation used by all components
+	 *
+	 * @param taskData - The task data to create
+	 * @param options - Optional settings for task creation
+	 * @param options.applyDefaults - Whether to apply task creation defaults. Set to false for imports (e.g., ICS events) that shouldn't have defaults applied. Defaults to true.
 	 */
-	async createTask(taskData: TaskCreationData): Promise<{ file: TFile; taskInfo: TaskInfo }> {
+	async createTask(
+		taskData: TaskCreationData,
+		options: { applyDefaults?: boolean } = {}
+	): Promise<{ file: TFile; taskInfo: TaskInfo }> {
+		const { applyDefaults = true } = options;
+
 		try {
+			// Apply task creation defaults if enabled
+			if (applyDefaults) {
+				taskData = await this.applyTaskCreationDefaults(taskData);
+			}
+
 			// Validate required fields
 			if (!taskData.title || !taskData.title.trim()) {
 				throw new Error("Title is required");
@@ -477,6 +492,98 @@ export class TaskService {
 				body: taskData.details?.trim() || "",
 			};
 		}
+	}
+
+	/**
+	 * Apply task creation defaults from settings to task data
+	 * This includes due date, scheduled date, contexts, projects, tags,
+	 * time estimate, recurrence, reminders, and user field defaults.
+	 */
+	private async applyTaskCreationDefaults(taskData: TaskCreationData): Promise<TaskCreationData> {
+		const defaults = this.plugin.settings.taskCreationDefaults;
+		const result = { ...taskData };
+
+		// Apply default due date if not provided
+		if (!result.due && defaults.defaultDueDate !== "none") {
+			result.due = calculateDefaultDate(defaults.defaultDueDate);
+		}
+
+		// Apply default scheduled date if not provided
+		if (!result.scheduled && defaults.defaultScheduledDate !== "none") {
+			result.scheduled = calculateDefaultDate(defaults.defaultScheduledDate);
+		}
+
+		// Apply default contexts if not provided
+		if (!result.contexts && defaults.defaultContexts) {
+			result.contexts = defaults.defaultContexts
+				.split(",")
+				.map((c) => c.trim())
+				.filter((c) => c);
+		}
+
+		// Apply default projects if not provided
+		if (!result.projects && defaults.defaultProjects) {
+			result.projects = defaults.defaultProjects
+				.split(",")
+				.map((p) => p.trim())
+				.filter((p) => p);
+		}
+
+		// Apply default tags if not provided
+		if (!result.tags && defaults.defaultTags) {
+			result.tags = defaults.defaultTags
+				.split(",")
+				.map((t) => t.trim())
+				.filter((t) => t);
+		}
+
+		// Apply default time estimate if not provided
+		if (!result.timeEstimate && defaults.defaultTimeEstimate > 0) {
+			result.timeEstimate = defaults.defaultTimeEstimate;
+		}
+
+		// Apply default recurrence if not provided
+		if (!result.recurrence && defaults.defaultRecurrence && defaults.defaultRecurrence !== "none") {
+			const freqMap: Record<string, string> = {
+				daily: "FREQ=DAILY",
+				weekly: "FREQ=WEEKLY",
+				monthly: "FREQ=MONTHLY",
+				yearly: "FREQ=YEARLY",
+			};
+			result.recurrence = freqMap[defaults.defaultRecurrence] || undefined;
+		}
+
+		// Apply default reminders if not provided
+		if (!result.reminders && defaults.defaultReminders && defaults.defaultReminders.length > 0) {
+			const { convertDefaultRemindersToReminders } = await import("../utils/settingsUtils");
+			result.reminders = convertDefaultRemindersToReminders(defaults.defaultReminders);
+		}
+
+		// Apply default values for user-defined fields
+		const userFields = this.plugin.settings.userFields;
+		if (userFields && userFields.length > 0) {
+			if (!result.customFrontmatter) {
+				result.customFrontmatter = {};
+			}
+			for (const field of userFields) {
+				// Only apply default if the field isn't already set
+				if (field.defaultValue !== undefined && result.customFrontmatter[field.key] === undefined) {
+					// For date fields, convert preset values (today, tomorrow, next-week) to actual dates
+					if (field.type === "date" && typeof field.defaultValue === "string") {
+						const calculatedDate = calculateDefaultDate(
+							field.defaultValue as "none" | "today" | "tomorrow" | "next-week"
+						);
+						if (calculatedDate) {
+							result.customFrontmatter[field.key] = calculatedDate;
+						}
+					} else {
+						result.customFrontmatter[field.key] = field.defaultValue;
+					}
+				}
+			}
+		}
+
+		return result;
 	}
 
 	/**

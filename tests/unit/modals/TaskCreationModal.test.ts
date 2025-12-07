@@ -380,7 +380,8 @@ describe('TaskCreationModal - Fixed Implementation', () => {
           tags: expect.arrayContaining(['task', 'important']),
           timeEstimate: 60,
           details: 'Task details'
-        })
+        }),
+        { applyDefaults: false }
       );
 
       expect(Notice).toHaveBeenCalledWith('Task "Test Task" created successfully');
@@ -406,7 +407,8 @@ describe('TaskCreationModal - Fixed Implementation', () => {
       expect(mockPlugin.taskService.createTask).toHaveBeenCalledWith(
         expect.objectContaining({
           recurrence: 'FREQ=DAILY;INTERVAL=1'
-        })
+        }),
+        { applyDefaults: false }
       );
     });
 
@@ -422,7 +424,8 @@ describe('TaskCreationModal - Fixed Implementation', () => {
         expect.objectContaining({
           contexts: ['work', 'urgent'],
           tags: expect.arrayContaining(['task', 'important'])
-        })
+        }),
+        { applyDefaults: false }
       );
     });
   });
