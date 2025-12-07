@@ -26,7 +26,7 @@ Example:
 
 ## Fixed
 
-- Significant performance improvements for Bases views (TaskList, Kanban, Calendar)
+- (#1285) Significant performance improvements for Bases views (TaskList, Kanban, Calendar)
   - Reduced `extractDataItems` time from ~4 seconds to ~5-10ms for large vaults (6000+ tasks)
   - Computed file properties (`file.backlinks`, `file.links`, etc.) are now fetched lazily during render instead of upfront
   - Only visible items (with virtualization) trigger expensive property computations
@@ -35,6 +35,8 @@ Example:
   - Debounced metadata change handlers in editor decorations
   - Timeblock generation now uses Obsidian's metadataCache instead of file reads
   - Added date range filtering for calendar events to skip events outside visible range
+  - Calendar view uses 5-second debounce to prevent flickering while typing
+  - Thanks to @steven-murray for reporting
 - (#1319) Added missing properties to Field Mapping settings
   - `recurrence_anchor` - now in Settings > Task Properties > Task Details
   - `skipped_instances` - now in Settings > Task Properties > Metadata Properties

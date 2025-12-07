@@ -220,6 +220,49 @@ export class CalendarView extends BasesViewBase {
 	}
 
 	/**
+	 * Override onDataUpdated for calendar-specific behavior.
+	 * Instead of full re-render, just update the Bases entry map and refetch events.
+	 * This prevents calendar flickering during rapid data updates.
+	 */
+	onDataUpdated(): void {
+		// Skip if view is not visible
+		if (!this.rootElement?.isConnected) {
+			return;
+		}
+
+		// Skip if calendar isn't initialized yet (will be handled by initial render)
+		if (!this.calendar) {
+			// Fall back to base class behavior for initial render
+			super.onDataUpdated();
+			return;
+		}
+
+		// Longer debounce for calendar (5 seconds) - only update after user stops typing
+		// This needs to outlast Obsidian's ~2 second save interval
+		if (this.dataUpdateDebounceTimer) {
+			clearTimeout(this.dataUpdateDebounceTimer);
+		}
+
+		this.dataUpdateDebounceTimer = window.setTimeout(() => {
+			this.dataUpdateDebounceTimer = null;
+
+			// Light update: just refresh the Bases entry map and refetch events
+			if (this.data?.data) {
+				this.basesEntryByPath.clear();
+				for (const entry of this.data.data) {
+					if (entry.file?.path) {
+						this.basesEntryByPath.set(entry.file.path, entry);
+					}
+				}
+			}
+
+			if (this.calendar) {
+				this.calendar.refetchEvents();
+			}
+		}, 5000);  // 5 second debounce - outlasts Obsidian's save interval
+	}
+
+	/**
 	 * Validate and format time string (HH:MM or HH:MM:SS format).
 	 * Returns the validated time in HH:MM:SS format, or the default value if invalid.
 	 */
@@ -1714,8 +1757,17 @@ export class CalendarView extends BasesViewBase {
 	}
 
 	protected async handleTaskUpdate(task: TaskInfo): Promise<void> {
-		// Refresh calendar to show updated events
-		this.debouncedRefresh();
+		// Use the same long debounce as onDataUpdated to prevent flickering during typing
+		if (this.dataUpdateDebounceTimer) {
+			clearTimeout(this.dataUpdateDebounceTimer);
+		}
+
+		this.dataUpdateDebounceTimer = window.setTimeout(() => {
+			this.dataUpdateDebounceTimer = null;
+			if (this.calendar) {
+				this.calendar.refetchEvents();
+			}
+		}, 5000);  // 5 second debounce
 	}
 
 	renderError(error: Error): void {
