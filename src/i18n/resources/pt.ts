@@ -178,6 +178,10 @@ export const pt: TranslationTree = {
 				refresh: "Atualizar inscrições de calendário"
 			},
 			settings: {
+		header: {
+			documentation: "Documentation",
+			documentationUrl: "https://tasknotes.dev",
+		},
 				groups: {
 					dateNavigation: "Navegação de Data",
 					events: "Eventos",
@@ -405,6 +409,10 @@ export const pt: TranslationTree = {
 		}
 	},
 	settings: {
+		header: {
+			documentation: "Documentation",
+			documentationUrl: "https://tasknotes.dev",
+		},
 		tabs: {
 			general: "Geral",
 			taskProperties: "Propriedades da Tarefa",
@@ -432,7 +440,7 @@ export const pt: TranslationTree = {
 				},
 				folder: {
 					name: "Pasta para tarefas convertidas",
-					description: "Pasta onde tarefas convertidas de caixas de seleção serão criadas. Use {{currentNotePath}} para relativo à nota atual, {{currentNoteTitle}} para o título da nota atual"
+					description: "Pasta onde tarefas convertidas de caixas de seleção serão criadas. Deixe vazio para usar a pasta de tarefas padrão. Use {{currentNotePath}} para a pasta da nota atual, ou {{currentNoteTitle}} para uma subpasta com o título da nota."
 				}
 			},
 			nlp: {

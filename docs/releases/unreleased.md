@@ -62,6 +62,7 @@ Example:
 
 ## Changed
 
+- Added documentation link to settings panel (links to tasknotes.dev)
 - Reorganized settings panel for improved discoverability
   - Removed "Defaults" tab - default values are now configured alongside each property in the Task Properties tab
   - Moved task filename format settings to the Title property section

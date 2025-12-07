@@ -407,6 +407,10 @@ export const en: TranslationTree = {
 		},
 	},
 	settings: {
+		header: {
+			documentation: "Documentation",
+			documentationUrl: "https://tasknotes.dev",
+		},
 		tabs: {
 			general: "General",
 			taskProperties: "Task Properties",

@@ -130,6 +130,15 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 			});
 		});
 
+		// Add documentation link after tabs
+		const docsHeader = containerEl.createDiv("settings-header");
+		const docsLink = docsHeader.createEl("a", {
+			text: translate("settings.header.documentation"),
+			href: translate("settings.header.documentationUrl"),
+			cls: "settings-header-link",
+		});
+		docsLink.setAttr("target", "_blank");
+
 		// Create tab content containers
 		const tabContentsEl = containerEl.createDiv(
 			"settings-tab-contents settings-view__tab-contents"

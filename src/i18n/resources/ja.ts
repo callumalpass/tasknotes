@@ -178,6 +178,10 @@ export const ja: TranslationTree = {
 				refresh: "カレンダー購読を更新",
 			},
 			settings: {
+		header: {
+			documentation: "Documentation",
+			documentationUrl: "https://tasknotes.dev",
+		},
 				groups: {
 					dateNavigation: "日付ナビゲーション",
 					events: "イベント",
@@ -405,6 +409,10 @@ export const ja: TranslationTree = {
 		},
 	},
 	settings: {
+		header: {
+			documentation: "Documentation",
+			documentationUrl: "https://tasknotes.dev",
+		},
 		tabs: {
 			general: "一般",
 			taskProperties: "タスクプロパティ",
@@ -432,7 +440,7 @@ export const ja: TranslationTree = {
 				},
 				folder: {
 					name: "変換されたタスクのフォルダー",
-					description: "チェックボックスから変換されたタスクが作成されるフォルダー。現在のノートに相対的にするには{{currentNotePath}}を使用、現在のノートのタイトルには{{currentNoteTitle}}を使用",
+					description: "チェックボックスから変換されたタスクが作成されるフォルダー。空白のままにするとデフォルトのタスクフォルダーが使用されます。{{currentNotePath}}で現在のノートのフォルダー、{{currentNoteTitle}}でノートのタイトルを持つサブフォルダーを指定できます。",
 				},
 			},
 			nlp: {

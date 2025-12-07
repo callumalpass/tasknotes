@@ -178,6 +178,10 @@ export const de: TranslationTree = {
 				refresh: "Kalenderabonnements aktualisieren",
 			},
 			settings: {
+		header: {
+			documentation: "Documentation",
+			documentationUrl: "https://tasknotes.dev",
+		},
 				groups: {
 					dateNavigation: "Datumsnavigation",
 					events: "Ereignisse",
@@ -405,6 +409,10 @@ export const de: TranslationTree = {
 		},
 	},
 	settings: {
+		header: {
+			documentation: "Documentation",
+			documentationUrl: "https://tasknotes.dev",
+		},
 		tabs: {
 			general: "Allgemein",
 			taskProperties: "Aufgabeneigenschaften",
@@ -432,7 +440,7 @@ export const de: TranslationTree = {
 				},
 				folder: {
 					name: "Ordner für konvertierte Aufgaben",
-					description: "Ordner, in dem aus Checkboxen konvertierte Aufgaben erstellt werden. Verwende {{currentNotePath}} für relativ zur aktuellen Notiz, {{currentNoteTitle}} für aktuellen Notiztitel",
+					description: "Ordner, in dem aus Checkboxen konvertierte Aufgaben erstellt werden. Leer lassen, um den Standard-Aufgabenordner zu verwenden. Verwende {{currentNotePath}} für den Ordner der aktuellen Notiz oder {{currentNoteTitle}} für einen Unterordner mit dem Notiztitel.",
 				},
 			},
 			nlp: {

@@ -178,6 +178,10 @@ export const ru: TranslationTree = {
 				refresh: "Обновить calendar subscriptions",
 			},
 			settings: {
+		header: {
+			documentation: "Documentation",
+			documentationUrl: "https://tasknotes.dev",
+		},
 				groups: {
 					dateNavigation: "Навигация по датам",
 					events: "События",
@@ -405,6 +409,10 @@ export const ru: TranslationTree = {
 		},
 	},
 	settings: {
+		header: {
+			documentation: "Documentation",
+			documentationUrl: "https://tasknotes.dev",
+		},
 		tabs: {
 			general: "Общие",
 			taskProperties: "Свойства задач",
@@ -432,7 +440,7 @@ export const ru: TranslationTree = {
 				},
 				folder: {
 					name: "Папка для преобразованных задач",
-					description: "Папка, в которой будут создаваться задачи, преобразованные из флажков. Используйте {{currentNotePath}} для относительного пути к текущей заметке, {{currentNoteTitle}} для заголовка текущей заметки",
+					description: "Папка, в которой будут создаваться задачи, преобразованные из флажков. Оставьте пустым для использования папки задач по умолчанию. Используйте {{currentNotePath}} для папки текущей заметки или {{currentNoteTitle}} для подпапки с названием заметки.",
 				},
 			},
 			nlp: {

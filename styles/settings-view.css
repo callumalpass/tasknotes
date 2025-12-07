@@ -3,6 +3,39 @@
    ================================================ */
 
 /* ================================================
+   SETTINGS HEADER
+   ================================================ */
+
+.tasknotes-plugin .settings-header {
+    display: flex;
+    justify-content: flex-start;
+    margin-bottom: var(--tn-spacing-md);
+    margin-top: calc(-1 * var(--tn-spacing-sm));
+}
+
+.tasknotes-plugin .settings-header-link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--tn-spacing-xs);
+    color: var(--text-accent);
+    text-decoration: none;
+    font-size: var(--font-ui-small);
+    padding: var(--tn-spacing-xs) var(--tn-spacing-sm);
+    border-radius: var(--radius-s);
+    transition: background-color 0.15s ease;
+}
+
+.tasknotes-plugin .settings-header-link:hover {
+    background-color: var(--background-modifier-hover);
+    text-decoration: none;
+}
+
+.tasknotes-plugin .settings-header-link::after {
+    content: "↗";
+    font-size: 0.85em;
+}
+
+/* ================================================
    TAB NAVIGATION
    ================================================ */
 

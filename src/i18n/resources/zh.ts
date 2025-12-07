@@ -178,6 +178,10 @@ export const zh: TranslationTree = {
 				refresh: "刷新日历订阅",
 			},
 			settings: {
+		header: {
+			documentation: "Documentation",
+			documentationUrl: "https://tasknotes.dev",
+		},
 				groups: {
 					dateNavigation: "日期导航",
 					events: "事件",
@@ -405,6 +409,10 @@ export const zh: TranslationTree = {
 		},
 	},
 	settings: {
+		header: {
+			documentation: "Documentation",
+			documentationUrl: "https://tasknotes.dev",
+		},
 		tabs: {
 			general: "常规",
 			taskProperties: "任务属性",
@@ -432,7 +440,7 @@ export const zh: TranslationTree = {
 				},
 				folder: {
 					name: "已转换任务的文件夹",
-					description: "从复选框转换的任务将在其中创建的文件夹。使用{{currentNotePath}}相对于当前笔记，{{currentNoteTitle}}用于当前笔记标题",
+					description: "从复选框转换的任务将在其中创建的文件夹。留空则使用默认任务文件夹。使用{{currentNotePath}}表示当前笔记的文件夹，或使用{{currentNoteTitle}}表示以笔记标题命名的子文件夹。",
 				},
 			},
 			nlp: {

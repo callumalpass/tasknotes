@@ -1124,6 +1124,14 @@
       "source": "de98980ccdae9c93e30d1172d4c15c059ea0508c",
       "translation": "3886f7795b91fd4ed8d6fcdf37424e5e0b59857d"
     },
+    "settings.header.documentation": {
+      "source": "9e9cf3221a30246219863f1d2366e36cb580debc",
+      "translation": "9e9cf3221a30246219863f1d2366e36cb580debc"
+    },
+    "settings.header.documentationUrl": {
+      "source": "da82363e11623a8de821a85a3478909ac7ec4fa1",
+      "translation": "da82363e11623a8de821a85a3478909ac7ec4fa1"
+    },
     "settings.tabs.general": {
       "source": "9239ee2cda84eca4c3440e2a7b50148af67da3d4",
       "translation": "21a7b4ecae6d99d7c9ae0fe00f0cc0a33f1e2b6f"
@@ -1181,8 +1189,8 @@
       "translation": "a541248bdf00311c6909e85ed49f8a60c9ea9491"
     },
     "settings.features.instantConvert.folder.description": {
-      "source": "33e796dabe717d64dd57a6c2291295faf43e9a9d",
-      "translation": "2e0757ba233919acd3ac5ae46f8b168c83cf6f98"
+      "source": "4eb3a6b40716481ba7e89ffebaab20c1e5e89881",
+      "translation": "17486005628baac00ec8c047ea023cb1c42fce50"
     },
     "settings.features.nlp.header": {
       "source": "94d1773bc1b2af94b263c23d3b39694a5bab7e88",
@@ -8650,6 +8658,14 @@
       "source": "de98980ccdae9c93e30d1172d4c15c059ea0508c",
       "translation": "f41b51d65c2637f895c175954e78a9c70d470034"
     },
+    "settings.header.documentation": {
+      "source": "9e9cf3221a30246219863f1d2366e36cb580debc",
+      "translation": "9e9cf3221a30246219863f1d2366e36cb580debc"
+    },
+    "settings.header.documentationUrl": {
+      "source": "da82363e11623a8de821a85a3478909ac7ec4fa1",
+      "translation": "da82363e11623a8de821a85a3478909ac7ec4fa1"
+    },
     "settings.tabs.general": {
       "source": "9239ee2cda84eca4c3440e2a7b50148af67da3d4",
       "translation": "9239ee2cda84eca4c3440e2a7b50148af67da3d4"
@@ -8707,8 +8723,8 @@
       "translation": "5e5eaaf314eee9d7e9c8ff39976fe09a799118d3"
     },
     "settings.features.instantConvert.folder.description": {
-      "source": "33e796dabe717d64dd57a6c2291295faf43e9a9d",
-      "translation": "cb5f4d53c5eb64d1cb28e215aed6661490e9dbdb"
+      "source": "4eb3a6b40716481ba7e89ffebaab20c1e5e89881",
+      "translation": "1fb23ba9dabd5414106abea7f0e36b1e845102a5"
     },
     "settings.features.nlp.header": {
       "source": "94d1773bc1b2af94b263c23d3b39694a5bab7e88",
@@ -16176,6 +16192,14 @@
       "source": "de98980ccdae9c93e30d1172d4c15c059ea0508c",
       "translation": "25d41272c6bff10b1fba1a61f6db2e8f9df40425"
     },
+    "settings.header.documentation": {
+      "source": "9e9cf3221a30246219863f1d2366e36cb580debc",
+      "translation": "9e9cf3221a30246219863f1d2366e36cb580debc"
+    },
+    "settings.header.documentationUrl": {
+      "source": "da82363e11623a8de821a85a3478909ac7ec4fa1",
+      "translation": "da82363e11623a8de821a85a3478909ac7ec4fa1"
+    },
     "settings.tabs.general": {
       "source": "9239ee2cda84eca4c3440e2a7b50148af67da3d4",
       "translation": "5376df989fac86247d5cd9f983d11ece28e75fcd"
@@ -16233,8 +16257,8 @@
       "translation": "72805f98121ccb3c39e45a8f2bc7dd3c56d30990"
     },
     "settings.features.instantConvert.folder.description": {
-      "source": "33e796dabe717d64dd57a6c2291295faf43e9a9d",
-      "translation": "21c71cfc8f0da27d78330fa4fef9d54eb5f30434"
+      "source": "4eb3a6b40716481ba7e89ffebaab20c1e5e89881",
+      "translation": "7b8143d67c72876fb9930fd00b005d09381da471"
     },
     "settings.features.nlp.header": {
       "source": "94d1773bc1b2af94b263c23d3b39694a5bab7e88",
@@ -23702,6 +23726,14 @@
       "source": "de98980ccdae9c93e30d1172d4c15c059ea0508c",
       "translation": "e3b958998079c079c491b83f4f167887d8ba3c01"
     },
+    "settings.header.documentation": {
+      "source": "9e9cf3221a30246219863f1d2366e36cb580debc",
+      "translation": "9e9cf3221a30246219863f1d2366e36cb580debc"
+    },
+    "settings.header.documentationUrl": {
+      "source": "da82363e11623a8de821a85a3478909ac7ec4fa1",
+      "translation": "da82363e11623a8de821a85a3478909ac7ec4fa1"
+    },
     "settings.tabs.general": {
       "source": "9239ee2cda84eca4c3440e2a7b50148af67da3d4",
       "translation": "f0aaccbc0dcda37daa045cb4cda85177bedafdb0"
@@ -23759,8 +23791,8 @@
       "translation": "7cc42907acec2e352c3d2e68c7e2087f6d336d07"
     },
     "settings.features.instantConvert.folder.description": {
-      "source": "33e796dabe717d64dd57a6c2291295faf43e9a9d",
-      "translation": "66186af97aaeb7a2593510cef34025007165767f"
+      "source": "4eb3a6b40716481ba7e89ffebaab20c1e5e89881",
+      "translation": "54963b20aa549d3d17d76b9f7bf70f683ae0017a"
     },
     "settings.features.nlp.header": {
       "source": "94d1773bc1b2af94b263c23d3b39694a5bab7e88",
@@ -31228,6 +31260,14 @@
       "source": "de98980ccdae9c93e30d1172d4c15c059ea0508c",
       "translation": "f347d38134f66ff8ef403261cc2fe0a178bd59ff"
     },
+    "settings.header.documentation": {
+      "source": "9e9cf3221a30246219863f1d2366e36cb580debc",
+      "translation": "9e9cf3221a30246219863f1d2366e36cb580debc"
+    },
+    "settings.header.documentationUrl": {
+      "source": "da82363e11623a8de821a85a3478909ac7ec4fa1",
+      "translation": "da82363e11623a8de821a85a3478909ac7ec4fa1"
+    },
     "settings.tabs.general": {
       "source": "9239ee2cda84eca4c3440e2a7b50148af67da3d4",
       "translation": "b6748d4ef8da162bb20fac1ced933e17c4f2a11b"
@@ -31285,8 +31325,8 @@
       "translation": "2c0358b1aee5525eb8e1f2d7767e3cf1c189efc6"
     },
     "settings.features.instantConvert.folder.description": {
-      "source": "33e796dabe717d64dd57a6c2291295faf43e9a9d",
-      "translation": "dc47dc73d7b892e85e28f2adc94b028e87e8090c"
+      "source": "4eb3a6b40716481ba7e89ffebaab20c1e5e89881",
+      "translation": "74a241bba4f841528a71eee9cdadcf31086c21c2"
     },
     "settings.features.nlp.header": {
       "source": "94d1773bc1b2af94b263c23d3b39694a5bab7e88",
@@ -38754,6 +38794,14 @@
       "source": "de98980ccdae9c93e30d1172d4c15c059ea0508c",
       "translation": "c2f8b36f59bc9f660cf0c1bd566fde7f11490dd6"
     },
+    "settings.header.documentation": {
+      "source": "9e9cf3221a30246219863f1d2366e36cb580debc",
+      "translation": "9e9cf3221a30246219863f1d2366e36cb580debc"
+    },
+    "settings.header.documentationUrl": {
+      "source": "da82363e11623a8de821a85a3478909ac7ec4fa1",
+      "translation": "da82363e11623a8de821a85a3478909ac7ec4fa1"
+    },
     "settings.tabs.general": {
       "source": "9239ee2cda84eca4c3440e2a7b50148af67da3d4",
       "translation": "fdd17d17b54069e4f68253b0af0b1a50d389b199"
@@ -38811,8 +38859,8 @@
       "translation": "5c563bc4cf90c6941d79b8df0d0600142bb7c1a0"
     },
     "settings.features.instantConvert.folder.description": {
-      "source": "33e796dabe717d64dd57a6c2291295faf43e9a9d",
-      "translation": "c38b79923fd4d29eaff9859cdb10c79b240748f9"
+      "source": "4eb3a6b40716481ba7e89ffebaab20c1e5e89881",
+      "translation": "79a9fdc5ec3efd53d942c87a77d1024d8bf00326"
     },
     "settings.features.nlp.header": {
       "source": "94d1773bc1b2af94b263c23d3b39694a5bab7e88",
@@ -46280,6 +46328,14 @@
       "source": "de98980ccdae9c93e30d1172d4c15c059ea0508c",
       "translation": "68e964844caa7bf91e74ffd31d2121483f126d1c"
     },
+    "settings.header.documentation": {
+      "source": "9e9cf3221a30246219863f1d2366e36cb580debc",
+      "translation": "9e9cf3221a30246219863f1d2366e36cb580debc"
+    },
+    "settings.header.documentationUrl": {
+      "source": "da82363e11623a8de821a85a3478909ac7ec4fa1",
+      "translation": "da82363e11623a8de821a85a3478909ac7ec4fa1"
+    },
     "settings.tabs.general": {
       "source": "9239ee2cda84eca4c3440e2a7b50148af67da3d4",
       "translation": "f1484fa78b69777c083f5b19555ee4d232d70163"
@@ -46337,8 +46393,8 @@
       "translation": "45ed959248436133c93867ff84ab12059ede7c27"
     },
     "settings.features.instantConvert.folder.description": {
-      "source": "33e796dabe717d64dd57a6c2291295faf43e9a9d",
-      "translation": "2b77cf1580df101829235ace73aa8c05c28128d2"
+      "source": "4eb3a6b40716481ba7e89ffebaab20c1e5e89881",
+      "translation": "ec72bd6d2d63718c6c9ccfcf1e88e4ce93402840"
     },
     "settings.features.nlp.header": {
       "source": "94d1773bc1b2af94b263c23d3b39694a5bab7e88",

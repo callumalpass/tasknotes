@@ -178,6 +178,10 @@ export const fr: TranslationTree = {
 				refresh: "Actualiser les abonnements calendrier",
 			},
 			settings: {
+		header: {
+			documentation: "Documentation",
+			documentationUrl: "https://tasknotes.dev",
+		},
 				groups: {
 					dateNavigation: "Navigation par date",
 					events: "Événements",
@@ -405,6 +409,10 @@ export const fr: TranslationTree = {
 		},
 	},
 	settings: {
+		header: {
+			documentation: "Documentation",
+			documentationUrl: "https://tasknotes.dev",
+		},
 		tabs: {
 			general: "Général",
 			taskProperties: "Propriétés des tâches",
@@ -432,7 +440,7 @@ export const fr: TranslationTree = {
 				},
 				folder: {
 					name: "Dossier pour les tâches converties",
-					description: "Dossier où les tâches converties depuis les cases à cocher seront créées. Utilisez {{currentNotePath}} pour un chemin relatif à la note actuelle, {{currentNoteTitle}} pour le titre de la note actuelle",
+					description: "Dossier où les tâches converties depuis les cases à cocher seront créées. Laisser vide pour utiliser le dossier de tâches par défaut. Utilisez {{currentNotePath}} pour le dossier de la note actuelle, ou {{currentNoteTitle}} pour un sous-dossier nommé d'après la note.",
 				},
 			},
 			nlp: {

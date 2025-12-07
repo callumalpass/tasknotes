@@ -178,6 +178,10 @@ export const es: TranslationTree = {
 				refresh: "Actualizar suscripciones de calendario",
 			},
 			settings: {
+		header: {
+			documentation: "Documentation",
+			documentationUrl: "https://tasknotes.dev",
+		},
 				groups: {
 					dateNavigation: "Navegación por fecha",
 					events: "Eventos",
@@ -405,6 +409,10 @@ export const es: TranslationTree = {
 		},
 	},
 	settings: {
+		header: {
+			documentation: "Documentation",
+			documentationUrl: "https://tasknotes.dev",
+		},
 		tabs: {
 			general: "General",
 			taskProperties: "Propiedades de tareas",
@@ -432,7 +440,7 @@ export const es: TranslationTree = {
 				},
 				folder: {
 					name: "Carpeta para tareas convertidas",
-					description: "Carpeta donde se crearán las tareas convertidas desde casillas de verificación. Usa {{currentNotePath}} para relativo a la nota actual, {{currentNoteTitle}} para título de nota actual",
+					description: "Carpeta donde se crearán las tareas convertidas desde casillas de verificación. Dejar vacío para usar la carpeta de tareas predeterminada. Usa {{currentNotePath}} para la carpeta de la nota actual, o {{currentNoteTitle}} para una subcarpeta con el título de la nota.",
 				},
 			},
 			nlp: {
