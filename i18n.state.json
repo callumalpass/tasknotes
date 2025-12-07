@@ -4520,9 +4520,25 @@
       "source": "5f80d7a8fe673e68c503e8500f81f243db25ed15",
       "translation": "821ae474d3ce8baf9d668257dc888b36b6e739eb"
     },
+    "commands.convertCurrentNoteToTask.name": {
+      "source": "02209a5a99f472ce93c3d0642ca0a97a49825b87",
+      "translation": "e59dfa1cbe343b2c19bb1444ca8b6860a0bdb7fa"
+    },
+    "commands.convertCurrentNoteToTask.noActiveFile": {
+      "source": "0c9f9f7a1c482dc4b9456d3eceb0d53ecd0d9ff9",
+      "translation": "65771a17593d07c6a69b38efa373b427d4f067ce"
+    },
+    "commands.convertCurrentNoteToTask.alreadyTask": {
+      "source": "b590635fd09b76960a4b8ee673317178896f8a25",
+      "translation": "92dc5efd93d3c2f5b851476aaf95f878d6ab0f93"
+    },
+    "commands.convertCurrentNoteToTask.success": {
+      "source": "ab2344f3b3d23fc0df33c2ebd0249f1029efadd6",
+      "translation": "ba1cc44d312a777d81cf3ff0b8dfe68a28e1b11a"
+    },
     "commands.convertToTaskNote": {
-      "source": "eed084972179de97f6646b6c0f326a8af8dfbbdf",
-      "translation": "0e8c70673f9e718c01e64b8c026d0da806b98bc0"
+      "source": "51eae4426bcd90724f849c674b3ea8839c77c0a7",
+      "translation": "725c1ea08e30a8910270bcab12bfe96cc44c5091"
     },
     "commands.convertAllTasksInNote": {
       "source": "7bdf3e19eba23b184cbcfc5f6ef62b5a54413513",
@@ -12054,9 +12070,25 @@
       "source": "5f80d7a8fe673e68c503e8500f81f243db25ed15",
       "translation": "6b0c6d84aeb65744836ec4bd2fefe6cd6fcd1f50"
     },
+    "commands.convertCurrentNoteToTask.name": {
+      "source": "02209a5a99f472ce93c3d0642ca0a97a49825b87",
+      "translation": "4af55369d287b6ef7461b571e1bef032401418e6"
+    },
+    "commands.convertCurrentNoteToTask.noActiveFile": {
+      "source": "0c9f9f7a1c482dc4b9456d3eceb0d53ecd0d9ff9",
+      "translation": "ec72cbb3f23f215c2dfcdb77c16c05fd235b099e"
+    },
+    "commands.convertCurrentNoteToTask.alreadyTask": {
+      "source": "b590635fd09b76960a4b8ee673317178896f8a25",
+      "translation": "9e94348da9335e98f5c670cb205e187df592496f"
+    },
+    "commands.convertCurrentNoteToTask.success": {
+      "source": "ab2344f3b3d23fc0df33c2ebd0249f1029efadd6",
+      "translation": "ce9d72dd5aef686f7682cdf02a4ee75a3b3bc1d2"
+    },
     "commands.convertToTaskNote": {
-      "source": "eed084972179de97f6646b6c0f326a8af8dfbbdf",
-      "translation": "e86464c0b0612341348d75786a301f121a5d73cd"
+      "source": "51eae4426bcd90724f849c674b3ea8839c77c0a7",
+      "translation": "161d474cd4f04bc48f11bacb983e37aef82c8d0a"
     },
     "commands.convertAllTasksInNote": {
       "source": "7bdf3e19eba23b184cbcfc5f6ef62b5a54413513",
@@ -19588,9 +19620,25 @@
       "source": "5f80d7a8fe673e68c503e8500f81f243db25ed15",
       "translation": "cba0259d3c1b0d8e817dbb924415a19c2106814e"
     },
+    "commands.convertCurrentNoteToTask.name": {
+      "source": "02209a5a99f472ce93c3d0642ca0a97a49825b87",
+      "translation": "a29d2091ff3b1cfe877e5654cc844fde11cea9a0"
+    },
+    "commands.convertCurrentNoteToTask.noActiveFile": {
+      "source": "0c9f9f7a1c482dc4b9456d3eceb0d53ecd0d9ff9",
+      "translation": "4f39a8598897965c06018be73970b7b42b745852"
+    },
+    "commands.convertCurrentNoteToTask.alreadyTask": {
+      "source": "b590635fd09b76960a4b8ee673317178896f8a25",
+      "translation": "7d6bc0b2f922c2b58bdea5c4719422dfda1f7df1"
+    },
+    "commands.convertCurrentNoteToTask.success": {
+      "source": "ab2344f3b3d23fc0df33c2ebd0249f1029efadd6",
+      "translation": "980257b7eff232b1610218b51f030fb879347d14"
+    },
     "commands.convertToTaskNote": {
-      "source": "eed084972179de97f6646b6c0f326a8af8dfbbdf",
-      "translation": "4341010563fcfaa6abbeead0a13d6e7c659dfc43"
+      "source": "51eae4426bcd90724f849c674b3ea8839c77c0a7",
+      "translation": "feac6501bd1e3c9eeda9ee24e6002eefa08c4502"
     },
     "commands.convertAllTasksInNote": {
       "source": "7bdf3e19eba23b184cbcfc5f6ef62b5a54413513",
@@ -27122,9 +27170,25 @@
       "source": "5f80d7a8fe673e68c503e8500f81f243db25ed15",
       "translation": "5d6f39c5555cdfccd0e5cfbb20570dba1888102f"
     },
+    "commands.convertCurrentNoteToTask.name": {
+      "source": "02209a5a99f472ce93c3d0642ca0a97a49825b87",
+      "translation": "434b603266dd844ff3ff013751a4dd2039ada14a"
+    },
+    "commands.convertCurrentNoteToTask.noActiveFile": {
+      "source": "0c9f9f7a1c482dc4b9456d3eceb0d53ecd0d9ff9",
+      "translation": "7fdff42953886a404e5dd108faea404e9a5e6bf0"
+    },
+    "commands.convertCurrentNoteToTask.alreadyTask": {
+      "source": "b590635fd09b76960a4b8ee673317178896f8a25",
+      "translation": "ce9443b05631e0fef32d0981448dfed3aa6c6946"
+    },
+    "commands.convertCurrentNoteToTask.success": {
+      "source": "ab2344f3b3d23fc0df33c2ebd0249f1029efadd6",
+      "translation": "51d51d599c1bec97d6a98ac47b2344a2c1e0782a"
+    },
     "commands.convertToTaskNote": {
-      "source": "eed084972179de97f6646b6c0f326a8af8dfbbdf",
-      "translation": "f9de95b7748e875bfa60da183493004d5437053b"
+      "source": "51eae4426bcd90724f849c674b3ea8839c77c0a7",
+      "translation": "50b4d579438b528e3ebbc85a37c09e7c872185b3"
     },
     "commands.convertAllTasksInNote": {
       "source": "7bdf3e19eba23b184cbcfc5f6ef62b5a54413513",
@@ -34656,9 +34720,25 @@
       "source": "5f80d7a8fe673e68c503e8500f81f243db25ed15",
       "translation": "293c01146ae8a45ba2bcbceec7da1642d57f99aa"
     },
+    "commands.convertCurrentNoteToTask.name": {
+      "source": "02209a5a99f472ce93c3d0642ca0a97a49825b87",
+      "translation": "273d61b0eb0f913f92ca586bd5fcb4398fd4c079"
+    },
+    "commands.convertCurrentNoteToTask.noActiveFile": {
+      "source": "0c9f9f7a1c482dc4b9456d3eceb0d53ecd0d9ff9",
+      "translation": "deedcd048198cd25dbd9eff7f5d88948baa06a7d"
+    },
+    "commands.convertCurrentNoteToTask.alreadyTask": {
+      "source": "b590635fd09b76960a4b8ee673317178896f8a25",
+      "translation": "604b65e20e2f53d64cacbbbff7a3d615ee319ee9"
+    },
+    "commands.convertCurrentNoteToTask.success": {
+      "source": "ab2344f3b3d23fc0df33c2ebd0249f1029efadd6",
+      "translation": "1776241881f690b78a464e854da096628492463c"
+    },
     "commands.convertToTaskNote": {
-      "source": "eed084972179de97f6646b6c0f326a8af8dfbbdf",
-      "translation": "b0dc4083b8de30d8b08e319c224ecf88f2a433a6"
+      "source": "51eae4426bcd90724f849c674b3ea8839c77c0a7",
+      "translation": "ddd582346a6ed6c3d216ea04ea477d59224f6f9b"
     },
     "commands.convertAllTasksInNote": {
       "source": "7bdf3e19eba23b184cbcfc5f6ef62b5a54413513",
@@ -42190,9 +42270,25 @@
       "source": "5f80d7a8fe673e68c503e8500f81f243db25ed15",
       "translation": "86cc4073d7f602b4e07208365b6de10ac773bfda"
     },
+    "commands.convertCurrentNoteToTask.name": {
+      "source": "02209a5a99f472ce93c3d0642ca0a97a49825b87",
+      "translation": "de05864e6df02b5c74d8d426884f9da6eff278f4"
+    },
+    "commands.convertCurrentNoteToTask.noActiveFile": {
+      "source": "0c9f9f7a1c482dc4b9456d3eceb0d53ecd0d9ff9",
+      "translation": "62632e9f84c9399cf0017f82e50a08b99f7712f1"
+    },
+    "commands.convertCurrentNoteToTask.alreadyTask": {
+      "source": "b590635fd09b76960a4b8ee673317178896f8a25",
+      "translation": "c4c175f8b9e98ae985c5a7d7020fd4da55d983d5"
+    },
+    "commands.convertCurrentNoteToTask.success": {
+      "source": "ab2344f3b3d23fc0df33c2ebd0249f1029efadd6",
+      "translation": "e77fd08abc3d2964d4a46cddc87a6ba94cb30bf2"
+    },
     "commands.convertToTaskNote": {
-      "source": "eed084972179de97f6646b6c0f326a8af8dfbbdf",
-      "translation": "ca4b30b971f74f8545a3b92e46ea21a79a1db5cb"
+      "source": "51eae4426bcd90724f849c674b3ea8839c77c0a7",
+      "translation": "cb63d41ceef6102ec000484fdca04ec28482e212"
     },
     "commands.convertAllTasksInNote": {
       "source": "7bdf3e19eba23b184cbcfc5f6ef62b5a54413513",
@@ -49724,9 +49820,25 @@
       "source": "5f80d7a8fe673e68c503e8500f81f243db25ed15",
       "translation": "2d0560824710a590ea53c860af6863ca6764bdfa"
     },
+    "commands.convertCurrentNoteToTask.name": {
+      "source": "02209a5a99f472ce93c3d0642ca0a97a49825b87",
+      "translation": "f595260950ea7ba467ff974af9f0b9d62b0f5c4e"
+    },
+    "commands.convertCurrentNoteToTask.noActiveFile": {
+      "source": "0c9f9f7a1c482dc4b9456d3eceb0d53ecd0d9ff9",
+      "translation": "049172ab444a05790e380e981c7d85be86a9b1e4"
+    },
+    "commands.convertCurrentNoteToTask.alreadyTask": {
+      "source": "b590635fd09b76960a4b8ee673317178896f8a25",
+      "translation": "9e57f8bbfffd3e9ae7a13184d6dd3d9ebfa6044f"
+    },
+    "commands.convertCurrentNoteToTask.success": {
+      "source": "ab2344f3b3d23fc0df33c2ebd0249f1029efadd6",
+      "translation": "85e720ade822422747eb83fed4a1c06eae34bbb4"
+    },
     "commands.convertToTaskNote": {
-      "source": "eed084972179de97f6646b6c0f326a8af8dfbbdf",
-      "translation": "a7e17967973491c199e3ac5b1cf8266a83c751d7"
+      "source": "51eae4426bcd90724f849c674b3ea8839c77c0a7",
+      "translation": "51a411e4de224e8fbb17981bc5838dd430d6a953"
     },
     "commands.convertAllTasksInNote": {
       "source": "7bdf3e19eba23b184cbcfc5f6ef62b5a54413513",

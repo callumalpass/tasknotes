@@ -1134,10 +1134,13 @@ export const en: TranslationTree = {
 					displayName: "Display Name:",
 					propertyKey: "Property Key:",
 					type: "Type:",
+					defaultValue: "Default Value:",
 				},
 				placeholders: {
 					displayName: "Display Name",
 					propertyKey: "property-name",
+					defaultValue: "Default value",
+					defaultValueList: "Default values (comma-separated)",
 				},
 				types: {
 					text: "Text",
@@ -1948,7 +1951,13 @@ export const en: TranslationTree = {
 		openPomodoroStats: "Open pomodoro statistics",
 		openStatisticsView: "Open task & project statistics",
 		createNewTask: "Create new task",
-		convertToTaskNote: "Convert task to TaskNote",
+		convertCurrentNoteToTask: {
+			name: "Convert current note to task",
+			noActiveFile: "No active file to convert",
+			alreadyTask: "This note is already a task",
+			success: "Converted '{title}' to a task",
+		},
+		convertToTaskNote: "Convert checkbox task to TaskNote",
 		convertAllTasksInNote: "Convert all tasks in note",
 		insertTaskNoteLink: "Insert tasknote link",
 		createInlineTask: "Create new inline task",
