@@ -1113,11 +1113,14 @@ export const pt: TranslationTree = {
 				fields: {
 					displayName: "Nome de Exibição:",
 					propertyKey: "Chave da Propriedade:",
-					type: "Tipo:"
+					type: "Tipo:",
+					defaultValue: "Valor Padrão:"
 				},
 				placeholders: {
 					displayName: "Nome de Exibição",
-					propertyKey: "nome-da-propriedade"
+					propertyKey: "nome-da-propriedade",
+					defaultValue: "Valor padrão",
+					defaultValueList: "Valores padrão (separados por vírgula)"
 				},
 				types: {
 					text: "Texto",

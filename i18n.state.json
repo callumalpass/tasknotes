@@ -2680,6 +2680,10 @@
       "source": "ee3fb11d05c90c37311491cf33008925b13b487f",
       "translation": "4cdd30f0454d92bf4e74901274ef866e1418a9e1"
     },
+    "settings.taskProperties.customUserFields.fields.defaultValue": {
+      "source": "4e3c88eed845f1587088c7a7046d1daf86e532a9",
+      "translation": "67e1d906638fa20146b107f9bbc9e58cd055fb66"
+    },
     "settings.taskProperties.customUserFields.placeholders.displayName": {
       "source": "8d6b34815ba43d254716eab5aa768b8c7aa6d3f1",
       "translation": "164d810b4605c6d4a262026b61d80a3c785f017e"
@@ -2687,6 +2691,14 @@
     "settings.taskProperties.customUserFields.placeholders.propertyKey": {
       "source": "52ab656f5995d7d6458361c5531afcee9f3ed69a",
       "translation": "0e40cb3258f8224b7b7f4690d49ff93e4442806e"
+    },
+    "settings.taskProperties.customUserFields.placeholders.defaultValue": {
+      "source": "bdffe654f8554300a98d2acefcbbf1d894339b2b",
+      "translation": "d6d3efb0463b4c88941e8c522fd8d7e5776ba26f"
+    },
+    "settings.taskProperties.customUserFields.placeholders.defaultValueList": {
+      "source": "3f1db169b7a12485d84e7fd99b3975635e0ed35a",
+      "translation": "fd32f413b72e5668bf8cb831c71580c2b3337c4a"
     },
     "settings.taskProperties.customUserFields.types.text": {
       "source": "c3328c39b0e29f78e9ff45db674248b1d245887d",
@@ -10230,6 +10242,10 @@
       "source": "ee3fb11d05c90c37311491cf33008925b13b487f",
       "translation": "99c7d26beaffcae933b4179447f4a2d4517d6174"
     },
+    "settings.taskProperties.customUserFields.fields.defaultValue": {
+      "source": "4e3c88eed845f1587088c7a7046d1daf86e532a9",
+      "translation": "c7e890890ffe89ce5ade098204ebc3f9515cf68f"
+    },
     "settings.taskProperties.customUserFields.placeholders.displayName": {
       "source": "8d6b34815ba43d254716eab5aa768b8c7aa6d3f1",
       "translation": "49256c7d4c9897d6e6e2e74046f7b61cbaab6eea"
@@ -10237,6 +10253,14 @@
     "settings.taskProperties.customUserFields.placeholders.propertyKey": {
       "source": "52ab656f5995d7d6458361c5531afcee9f3ed69a",
       "translation": "ad02969cf7de9f7d8d9fd738b4080b5cf91ace8d"
+    },
+    "settings.taskProperties.customUserFields.placeholders.defaultValue": {
+      "source": "bdffe654f8554300a98d2acefcbbf1d894339b2b",
+      "translation": "21fb3991f7e38b389ebd449a123c89729eeaed5c"
+    },
+    "settings.taskProperties.customUserFields.placeholders.defaultValueList": {
+      "source": "3f1db169b7a12485d84e7fd99b3975635e0ed35a",
+      "translation": "20a509708d196fd09becf9f18cce621ae826fac4"
     },
     "settings.taskProperties.customUserFields.types.text": {
       "source": "c3328c39b0e29f78e9ff45db674248b1d245887d",
@@ -17780,6 +17804,10 @@
       "source": "ee3fb11d05c90c37311491cf33008925b13b487f",
       "translation": "50c8cd8ad0c1a95708e720f64a6b48a50cc41929"
     },
+    "settings.taskProperties.customUserFields.fields.defaultValue": {
+      "source": "4e3c88eed845f1587088c7a7046d1daf86e532a9",
+      "translation": "0c9a70f714613c94ac3b49f3b29d09d3c74a10b3"
+    },
     "settings.taskProperties.customUserFields.placeholders.displayName": {
       "source": "8d6b34815ba43d254716eab5aa768b8c7aa6d3f1",
       "translation": "9e3355003fe4dee8df9bc69443e35b5f4db317b4"
@@ -17787,6 +17815,14 @@
     "settings.taskProperties.customUserFields.placeholders.propertyKey": {
       "source": "52ab656f5995d7d6458361c5531afcee9f3ed69a",
       "translation": "175a1ebebd8ee78402142a428292f94b036160b5"
+    },
+    "settings.taskProperties.customUserFields.placeholders.defaultValue": {
+      "source": "bdffe654f8554300a98d2acefcbbf1d894339b2b",
+      "translation": "5a43baaa19a5b9f570d04ea0b84b047a1c20978f"
+    },
+    "settings.taskProperties.customUserFields.placeholders.defaultValueList": {
+      "source": "3f1db169b7a12485d84e7fd99b3975635e0ed35a",
+      "translation": "1f7bf7c646aeb2e8815b21119565808b99313908"
     },
     "settings.taskProperties.customUserFields.types.text": {
       "source": "c3328c39b0e29f78e9ff45db674248b1d245887d",
@@ -25330,6 +25366,10 @@
       "source": "ee3fb11d05c90c37311491cf33008925b13b487f",
       "translation": "9b0d3c20658a0c4c43d45cfd9dd56a4db935ffce"
     },
+    "settings.taskProperties.customUserFields.fields.defaultValue": {
+      "source": "4e3c88eed845f1587088c7a7046d1daf86e532a9",
+      "translation": "741ca02ffb432ad88c9074be078d17a27962b8ee"
+    },
     "settings.taskProperties.customUserFields.placeholders.displayName": {
       "source": "8d6b34815ba43d254716eab5aa768b8c7aa6d3f1",
       "translation": "67c008e4fd305453593ef2327135570809b8d67c"
@@ -25337,6 +25377,14 @@
     "settings.taskProperties.customUserFields.placeholders.propertyKey": {
       "source": "52ab656f5995d7d6458361c5531afcee9f3ed69a",
       "translation": "52ab656f5995d7d6458361c5531afcee9f3ed69a"
+    },
+    "settings.taskProperties.customUserFields.placeholders.defaultValue": {
+      "source": "bdffe654f8554300a98d2acefcbbf1d894339b2b",
+      "translation": "6cf21ca4198cc396a09b874941fb4c386f94be5d"
+    },
+    "settings.taskProperties.customUserFields.placeholders.defaultValueList": {
+      "source": "3f1db169b7a12485d84e7fd99b3975635e0ed35a",
+      "translation": "fe8f0021fde934c575bb25ac9d2e8689f792f6a6"
     },
     "settings.taskProperties.customUserFields.types.text": {
       "source": "c3328c39b0e29f78e9ff45db674248b1d245887d",
@@ -32880,6 +32928,10 @@
       "source": "ee3fb11d05c90c37311491cf33008925b13b487f",
       "translation": "99c7d26beaffcae933b4179447f4a2d4517d6174"
     },
+    "settings.taskProperties.customUserFields.fields.defaultValue": {
+      "source": "4e3c88eed845f1587088c7a7046d1daf86e532a9",
+      "translation": "66e3d6fc87554aa0fae2f5f792d1c5bcd993c5f2"
+    },
     "settings.taskProperties.customUserFields.placeholders.displayName": {
       "source": "8d6b34815ba43d254716eab5aa768b8c7aa6d3f1",
       "translation": "21dd11ba60484e039078ea24fa544601016b87fd"
@@ -32887,6 +32939,14 @@
     "settings.taskProperties.customUserFields.placeholders.propertyKey": {
       "source": "52ab656f5995d7d6458361c5531afcee9f3ed69a",
       "translation": "6ef6f0f5014753b7c95bedb20a889d1c6a242db8"
+    },
+    "settings.taskProperties.customUserFields.placeholders.defaultValue": {
+      "source": "bdffe654f8554300a98d2acefcbbf1d894339b2b",
+      "translation": "3e13e8a3f568f6a586f751b1430bf3742a791312"
+    },
+    "settings.taskProperties.customUserFields.placeholders.defaultValueList": {
+      "source": "3f1db169b7a12485d84e7fd99b3975635e0ed35a",
+      "translation": "b0114456c769e51450b52491714426a164f1e598"
     },
     "settings.taskProperties.customUserFields.types.text": {
       "source": "c3328c39b0e29f78e9ff45db674248b1d245887d",
@@ -40430,6 +40490,10 @@
       "source": "ee3fb11d05c90c37311491cf33008925b13b487f",
       "translation": "2345ad64ab9ff87e5cf0d8c1319a384be8777aa6"
     },
+    "settings.taskProperties.customUserFields.fields.defaultValue": {
+      "source": "4e3c88eed845f1587088c7a7046d1daf86e532a9",
+      "translation": "425fcd5d69396adeea73ade023fe3f8eb9e37593"
+    },
     "settings.taskProperties.customUserFields.placeholders.displayName": {
       "source": "8d6b34815ba43d254716eab5aa768b8c7aa6d3f1",
       "translation": "403372fc1e9bd9ad41d230490d68f9075763db8d"
@@ -40437,6 +40501,14 @@
     "settings.taskProperties.customUserFields.placeholders.propertyKey": {
       "source": "52ab656f5995d7d6458361c5531afcee9f3ed69a",
       "translation": "633989b28e21bb4db006db2a644d171bb2ec76dc"
+    },
+    "settings.taskProperties.customUserFields.placeholders.defaultValue": {
+      "source": "bdffe654f8554300a98d2acefcbbf1d894339b2b",
+      "translation": "a027b1fa0176085d9581748da102306263ca572d"
+    },
+    "settings.taskProperties.customUserFields.placeholders.defaultValueList": {
+      "source": "3f1db169b7a12485d84e7fd99b3975635e0ed35a",
+      "translation": "41b0b85752853cd24255d43bcc55ac663bfc4cec"
     },
     "settings.taskProperties.customUserFields.types.text": {
       "source": "c3328c39b0e29f78e9ff45db674248b1d245887d",
@@ -47980,6 +48052,10 @@
       "source": "ee3fb11d05c90c37311491cf33008925b13b487f",
       "translation": "8f3e9e1fe7daaa0db4b681fb3bba2855302a12b1"
     },
+    "settings.taskProperties.customUserFields.fields.defaultValue": {
+      "source": "4e3c88eed845f1587088c7a7046d1daf86e532a9",
+      "translation": "fd0b7f3c48c71bc7945f3ac9a6531e705905f5f3"
+    },
     "settings.taskProperties.customUserFields.placeholders.displayName": {
       "source": "8d6b34815ba43d254716eab5aa768b8c7aa6d3f1",
       "translation": "75ae6a8a7dd16eefb1228154be57da9fb63e0841"
@@ -47987,6 +48063,14 @@
     "settings.taskProperties.customUserFields.placeholders.propertyKey": {
       "source": "52ab656f5995d7d6458361c5531afcee9f3ed69a",
       "translation": "604e8442f3e5ee55d29db4e543ba7bad1001ebfa"
+    },
+    "settings.taskProperties.customUserFields.placeholders.defaultValue": {
+      "source": "bdffe654f8554300a98d2acefcbbf1d894339b2b",
+      "translation": "d93919c37b61eb24897c05fc577dee31cba6a1d9"
+    },
+    "settings.taskProperties.customUserFields.placeholders.defaultValueList": {
+      "source": "3f1db169b7a12485d84e7fd99b3975635e0ed35a",
+      "translation": "45f060e416519595411a1d61148b6f9c7d79c77a"
     },
     "settings.taskProperties.customUserFields.types.text": {
       "source": "c3328c39b0e29f78e9ff45db674248b1d245887d",

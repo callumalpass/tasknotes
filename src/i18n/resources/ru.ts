@@ -1111,10 +1111,13 @@ export const ru: TranslationTree = {
 					displayName: "Отображаемое имя:",
 					propertyKey: "Ключ свойства:",
 					type: "Тип:",
+					defaultValue: "Значение по умолчанию:",
 				},
 				placeholders: {
 					displayName: "Отображаемое имя",
 					propertyKey: "имя-свойства",
+					defaultValue: "Значение по умолчанию",
+					defaultValueList: "Значения по умолчанию (через запятую)",
 				},
 				types: {
 					text: "Текст",

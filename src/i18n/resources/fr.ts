@@ -1111,10 +1111,13 @@ export const fr: TranslationTree = {
 					displayName: "Nom d'affichage :",
 					propertyKey: "Clé de propriété :",
 					type: "Type :",
+					defaultValue: "Valeur par défaut :",
 				},
 				placeholders: {
 					displayName: "Nom d'affichage",
 					propertyKey: "nom-propriete",
+					defaultValue: "Valeur par défaut",
+					defaultValueList: "Valeurs par défaut (séparées par des virgules)",
 				},
 				types: {
 					text: "Texte",

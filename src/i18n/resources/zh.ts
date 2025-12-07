@@ -1111,10 +1111,13 @@ export const zh: TranslationTree = {
 					displayName: "显示名称：",
 					propertyKey: "属性键：",
 					type: "类型：",
+					defaultValue: "默认值：",
 				},
 				placeholders: {
 					displayName: "显示名称",
 					propertyKey: "属性名称",
+					defaultValue: "默认值",
+					defaultValueList: "默认值（逗号分隔）",
 				},
 				types: {
 					text: "文本",

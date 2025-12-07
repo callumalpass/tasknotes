@@ -1111,10 +1111,13 @@ export const de: TranslationTree = {
 					displayName: "Anzeigename:",
 					propertyKey: "Eigenschaftsschlüssel:",
 					type: "Typ:",
+					defaultValue: "Standardwert:",
 				},
 				placeholders: {
 					displayName: "Anzeigename",
 					propertyKey: "eigenschafts-name",
+					defaultValue: "Standardwert",
+					defaultValueList: "Standardwerte (kommagetrennt)",
 				},
 				types: {
 					text: "Text",

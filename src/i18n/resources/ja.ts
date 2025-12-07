@@ -1111,10 +1111,13 @@ export const ja: TranslationTree = {
 					displayName: "表示名：",
 					propertyKey: "プロパティキー：",
 					type: "タイプ：",
+					defaultValue: "デフォルト値：",
 				},
 				placeholders: {
 					displayName: "表示名",
 					propertyKey: "property-name",
+					defaultValue: "デフォルト値",
+					defaultValueList: "デフォルト値（カンマ区切り）",
 				},
 				types: {
 					text: "テキスト",
