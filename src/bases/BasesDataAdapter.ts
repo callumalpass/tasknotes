@@ -10,6 +10,10 @@ export class BasesDataAdapter {
 	/**
 	 * Extract all data items from Bases query result.
 	 * Uses public API: basesView.data.data
+	 *
+	 * NOTE: This only extracts frontmatter and basic file properties (cheap).
+	 * Computed file properties (backlinks, links, etc.) are fetched lazily
+	 * via getComputedProperty() during rendering for visible items only.
 	 */
 	extractDataItems(): BasesDataItem[] {
 		const entries = this.basesView.data.data;
@@ -200,7 +204,8 @@ export class BasesDataAdapter {
 
 	/**
 	 * Extract properties from a BasesEntry.
-	 * Handles frontmatter and computed properties.
+	 * Extracts frontmatter and basic file properties only (cheap operations).
+	 * Computed file properties (backlinks, links, etc.) are fetched lazily via getComputedProperty().
 	 */
 	private extractEntryProperties(entry: any): Record<string, any> {
 		// Extract all properties from the entry's frontmatter
@@ -211,7 +216,7 @@ export class BasesDataAdapter {
 		// Start with frontmatter properties
 		const result = { ...frontmatter };
 
-		// Also extract file properties directly from the TFile object
+		// Also extract file properties directly from the TFile object (these are cheap - no getValue calls)
 		const file = entry.file;
 		if (file) {
 			// Add common TFile properties with file. prefix
@@ -228,26 +233,28 @@ export class BasesDataAdapter {
 			}
 		}
 
-		// Extract computed file properties from Bases (links, embeds, backlinks, etc.)
-		// These come from CachedMetadata and are computed by Bases
-		const computedFileProperties = [
-			'links', 'embeds', 'tags', 'backlinks', 'ext', 'aliases', 'folder', 'tasks', 'fullname'
-		];
-
-		for (const prop of computedFileProperties) {
-			const propertyId = `file.${prop}`;
-			try {
-				const value = entry.getValue(propertyId);
-				const nativeValue = this.convertValueToNative(value);
-				if (nativeValue !== null && nativeValue !== undefined) {
-					result[propertyId] = nativeValue;
-				}
-			} catch (e) {
-				// Property not available or error accessing it - skip
-			}
-		}
+		// NOTE: Computed file properties (links, embeds, tags, backlinks, etc.) are NOT extracted here.
+		// They are fetched lazily via getComputedProperty() during rendering to avoid expensive
+		// getValue() calls for all 6756+ entries. With virtualization, only ~20-50 visible items
+		// need these properties computed.
 
 		return result;
+	}
+
+	/**
+	 * Lazily get a computed file property from a BasesEntry.
+	 * Call this during rendering for visible items only - NOT during bulk extraction.
+	 * This is much more efficient for expensive properties like backlinks.
+	 */
+	getComputedProperty(basesEntry: any, propertyId: string): any {
+		if (!basesEntry) return null;
+
+		try {
+			const value = basesEntry.getValue(propertyId);
+			return this.convertValueToNative(value);
+		} catch (e) {
+			return null;
+		}
 	}
 
 	/**

@@ -27,6 +27,8 @@ export abstract class BasesViewBase extends Component {
 	protected rootElement: HTMLElement | null = null;
 	protected taskUpdateListener: any = null;
 	protected updateDebounceTimer: number | null = null;
+	protected dataUpdateDebounceTimer: number | null = null;
+	protected relevantPathsCache: Set<string> = new Set();
 
 	// Search functionality (opt-in via enableSearch flag)
 	protected enableSearch = false;
@@ -63,19 +65,53 @@ export abstract class BasesViewBase extends Component {
 		this.setupContainer();
 		this.setupTaskUpdateListener();
 		this.setupSelectionHandling();
+		this.updateRelevantPathsCache();
 		this.render();
 	}
 
 	/**
 	 * BasesView lifecycle: Called when Bases data changes.
 	 * Required abstract method implementation.
+	 * Debounced to prevent excessive re-renders during rapid file saves.
 	 */
 	onDataUpdated(): void {
+		// Skip if view is not visible
+		if (!this.rootElement?.isConnected) {
+			return;
+		}
+
+		// Debounce data updates to avoid freezing during typing
+		if (this.dataUpdateDebounceTimer) {
+			clearTimeout(this.dataUpdateDebounceTimer);
+		}
+
+		this.dataUpdateDebounceTimer = window.setTimeout(() => {
+			this.dataUpdateDebounceTimer = null;
+			try {
+				this.render();
+			} catch (error) {
+				console.error(`[TaskNotes][${this.type}] Render error:`, error);
+				this.renderError(error as Error);
+			}
+		}, 500);  // 500ms debounce for data updates
+	}
+
+	/**
+	 * Update the cache of relevant paths for efficient update checking.
+	 * Called when data changes to avoid expensive lookups on every task update.
+	 */
+	protected updateRelevantPathsCache(): void {
+		this.relevantPathsCache.clear();
+
 		try {
-			this.render();
-		} catch (error) {
-			console.error(`[TaskNotes][${this.type}] Render error:`, error);
-			this.renderError(error as Error);
+			const dataItems = this.dataAdapter.extractDataItems();
+			for (const item of dataItems) {
+				if (item.path) {
+					this.relevantPathsCache.add(item.path);
+				}
+			}
+		} catch {
+			// Ignore errors - cache will be empty and all updates will be processed
 		}
 	}
 
@@ -254,9 +290,11 @@ export abstract class BasesViewBase extends Component {
 				const updatedTask = eventData?.task || eventData?.taskInfo;
 				if (!updatedTask?.path) return;
 
-				// Check if this task is in our current view
-				const dataItems = this.dataAdapter.extractDataItems();
-				const isRelevant = dataItems.some((item) => item.path === updatedTask.path);
+				// Skip if view is not visible (no point updating hidden views)
+				if (!this.rootElement?.isConnected) return;
+
+				// Use cached Set for O(1) lookup instead of O(n) iteration
+				const isRelevant = this.relevantPathsCache.has(updatedTask.path);
 
 				if (isRelevant) {
 					await this.handleTaskUpdate(updatedTask);
@@ -288,10 +326,10 @@ export abstract class BasesViewBase extends Component {
 		this.updateDebounceTimer = window.setTimeout(() => {
 			this.render();
 			this.updateDebounceTimer = null;
-		}, 150);
+		}, 300);  // Increased from 150ms for better typing performance
 
 		// Note: We don't need to explicitly register cleanup for this timer
-		// because it's short-lived (150ms) and clears itself. If the component
+		// because it's short-lived (300ms) and clears itself. If the component
 		// unloads before the timer fires, the worst case is a no-op render call.
 	}
 

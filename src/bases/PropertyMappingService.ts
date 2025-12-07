@@ -91,13 +91,13 @@ export class PropertyMappingService {
 		}
 
 		if (basesPropertyId.startsWith("file.")) {
-			// Map file properties to TaskInfo equivalents
+			// Map specific file properties to TaskInfo equivalents
 			if (basesPropertyId === "file.ctime") return "dateCreated";
 			if (basesPropertyId === "file.mtime") return "dateModified";
 
-			// For other file properties, strip the prefix and use the property name
-			const stripped = basesPropertyId.substring(5);
-			return this.applySpecialTransformations(stripped);
+			// Keep file.* prefix for computed file properties (backlinks, links, etc.)
+			// This distinguishes them from note.* properties with the same name
+			return basesPropertyId;
 		}
 
 		// Step 3: Keep formula properties unchanged

@@ -517,15 +517,25 @@ export function setupReadingModeHandlers(plugin: TaskNotesPlugin): () => void {
 	});
 	workspaceRefs.push(activeLeafChangeRef);
 
-	// Inject widget when file is modified (metadata changes)
+	// Inject widget when file is modified (metadata changes) - debounced per file
+	const metadataDebounceTimers = new Map<string, number>();
 	const metadataChangeRef = plugin.app.metadataCache.on('changed', (file) => {
-		const leaves = plugin.app.workspace.getLeavesOfType('markdown');
-		leaves.forEach(leaf => {
-			const view = leaf.view;
-			if (view instanceof MarkdownView && view.file === file) {
-				injectReadingModeWidget(leaf, plugin);
-			}
-		});
+		// Clear existing timer for this file
+		const existingTimer = metadataDebounceTimers.get(file.path);
+		if (existingTimer) clearTimeout(existingTimer);
+
+		// Debounce per file to avoid freezing during typing
+		const timer = window.setTimeout(() => {
+			metadataDebounceTimers.delete(file.path);
+			const leaves = plugin.app.workspace.getLeavesOfType('markdown');
+			leaves.forEach(leaf => {
+				const view = leaf.view;
+				if (view instanceof MarkdownView && view.file === file) {
+					injectReadingModeWidget(leaf, plugin);
+				}
+			});
+		}, 500);
+		metadataDebounceTimers.set(file.path, timer);
 	});
 	metadataCacheRefs.push(metadataChangeRef);
 

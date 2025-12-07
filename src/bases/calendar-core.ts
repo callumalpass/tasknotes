@@ -19,7 +19,7 @@ import {
 	parseDateToUTC,
 	getTodayLocal,
 } from "../utils/dateUtils";
-import { generateRecurringInstances, extractTimeblocksFromNote, updateTimeblockInDailyNote, addDTSTARTToRecurrenceRuleWithDraggedTime } from "../utils/helpers";
+import { generateRecurringInstances, updateTimeblockInDailyNote, addDTSTARTToRecurrenceRuleWithDraggedTime } from "../utils/helpers";
 import { Notice } from "obsidian";
 import { getAllDailyNotes, getDailyNote, appHasDailyNotesPluginLoaded, createDailyNote } from "obsidian-daily-notes-interface";
 import { TimeblockCreationModal } from "../modals/TimeblockCreationModal";
@@ -772,21 +772,37 @@ export function createTimeblockEvent(timeblock: TimeBlock, date: string): Calend
 }
 
 /**
+ * Validate and extract timeblocks from cached frontmatter
+ */
+function extractTimeblocksFromCache(frontmatter: any, path: string): TimeBlock[] {
+	if (!frontmatter?.timeblocks || !Array.isArray(frontmatter.timeblocks)) {
+		return [];
+	}
+
+	const validTimeblocks: TimeBlock[] = [];
+	for (const tb of frontmatter.timeblocks) {
+		// Basic validation - must have id, startTime, endTime
+		if (tb && typeof tb.id === "string" && typeof tb.startTime === "string" && typeof tb.endTime === "string") {
+			validTimeblocks.push(tb as TimeBlock);
+		}
+	}
+	return validTimeblocks;
+}
+
+/**
  * Generate timeblock events from daily notes for a date range
+ * Uses metadataCache for performance - no file reads required
  */
 export async function generateTimeblockEvents(
 	plugin: TaskNotesPlugin,
 	startDate: Date,
 	endDate: Date
 ): Promise<CalendarEvent[]> {
-	const events: CalendarEvent[] = [];
-
 	try {
-		// Lazy import daily notes plugin
-
 		const allDailyNotes = getAllDailyNotes();
+		const events: CalendarEvent[] = [];
 
-		// Iterate through date range
+		// Iterate through date range using cached metadata (no file reads)
 		for (
 			let currentUTC = new Date(startDate);
 			currentUTC <= endDate;
@@ -798,24 +814,57 @@ export async function generateTimeblockEvents(
 			const dailyNote = getDailyNote(moment, allDailyNotes);
 
 			if (dailyNote) {
-				try {
-					const content = await plugin.app.vault.read(dailyNote);
-					const timeblocks = extractTimeblocksFromNote(content, dailyNote.path);
-
+				// Use metadataCache instead of reading file
+				const cache = plugin.app.metadataCache.getFileCache(dailyNote);
+				if (cache?.frontmatter) {
+					const timeblocks = extractTimeblocksFromCache(cache.frontmatter, dailyNote.path);
 					for (const timeblock of timeblocks) {
-						const calendarEvent = createTimeblockEvent(timeblock, dateString);
-						events.push(calendarEvent);
+						events.push(createTimeblockEvent(timeblock, dateString));
 					}
-				} catch (error) {
-					console.error(`Error reading daily note ${dailyNote.path}:`, error);
 				}
 			}
 		}
+
+		return events;
 	} catch (error) {
 		console.error("Error getting timeblock events:", error);
+		return [];
 	}
+}
 
-	return events;
+/**
+ * Check if a date string falls within the visible range
+ * Returns true if no range is specified (show all) or if date is within range
+ * Returns true for invalid dates (let FullCalendar handle them)
+ */
+function isDateInVisibleRange(
+	dateString: string,
+	visibleStart?: Date,
+	visibleEnd?: Date,
+	timeEstimate?: number
+): boolean {
+	if (!visibleStart || !visibleEnd) return true;
+
+	try {
+		const date = parseDateToLocal(dateString);
+		const dateTime = date.getTime();
+
+		// Handle invalid dates - include them (let FullCalendar filter)
+		if (isNaN(dateTime)) return true;
+
+		// For events with time estimates, calculate end time
+		let eventEndTime = dateTime;
+		if (timeEstimate) {
+			eventEndTime = dateTime + timeEstimate * 60 * 1000;
+		}
+
+		// Event is visible if it overlaps with visible range
+		// Event starts before visible end AND event ends after visible start
+		return dateTime < visibleEnd.getTime() && eventEndTime >= visibleStart.getTime();
+	} catch {
+		// If date parsing fails, include the event (let FullCalendar handle it)
+		return true;
+	}
 }
 
 /**
@@ -854,33 +903,43 @@ export async function generateCalendarEvents(
 				events.push(...recurringEvents);
 			}
 		} else {
-			// Handle non-recurring tasks
-			// Only add scheduled/due events if they exist
+			// Handle non-recurring tasks with date range filtering
 			if (showScheduled && task.scheduled) {
-				const scheduledEvent = createScheduledEvent(task, plugin);
-				if (scheduledEvent) events.push(scheduledEvent);
+				if (isDateInVisibleRange(task.scheduled, visibleStart, visibleEnd, task.timeEstimate)) {
+					const scheduledEvent = createScheduledEvent(task, plugin);
+					if (scheduledEvent) events.push(scheduledEvent);
+				}
 			}
 
 			if (showDue && task.due) {
-				const dueEvent = createDueEvent(task, plugin);
-				if (dueEvent) events.push(dueEvent);
+				if (isDateInVisibleRange(task.due, visibleStart, visibleEnd)) {
+					const dueEvent = createDueEvent(task, plugin);
+					if (dueEvent) events.push(dueEvent);
+				}
 			}
 		}
 
-		// Add time entry events (regardless of whether task has scheduled/due dates)
+		// Add time entry events with date range filtering
 		if (showTimeEntries && task.timeEntries) {
 			const timeEvents = createTimeEntryEvents(task, plugin);
-			events.push(...timeEvents);
+			// Filter time entries by visible range
+			for (const event of timeEvents) {
+				if (isDateInVisibleRange(event.start, visibleStart, visibleEnd)) {
+					events.push(event);
+				}
+			}
 		}
 	}
 
-	// Add ICS events
+	// Add ICS events with date range filtering
 	if (showICSEvents && plugin.icsSubscriptionService) {
 		const icsEvents = plugin.icsSubscriptionService.getAllEvents();
 		for (const icsEvent of icsEvents) {
-			const calendarEvent = createICSEvent(icsEvent, plugin);
-			if (calendarEvent) {
-				events.push(calendarEvent);
+			if (isDateInVisibleRange(icsEvent.start, visibleStart, visibleEnd)) {
+				const calendarEvent = createICSEvent(icsEvent, plugin);
+				if (calendarEvent) {
+					events.push(calendarEvent);
+				}
 			}
 		}
 	}

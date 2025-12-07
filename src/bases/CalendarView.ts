@@ -688,6 +688,8 @@ export class CalendarView extends BasesViewBase {
 
 	private async buildAllEvents(fetchInfo: any): Promise<any[]> {
 		const allEvents: any[] = [];
+		const visibleStart: Date = fetchInfo.start;
+		const visibleEnd: Date = fetchInfo.end;
 
 		// Build event configuration for generateCalendarEvents
 		const eventConfig = {
@@ -697,8 +699,8 @@ export class CalendarView extends BasesViewBase {
 			showTimeEntries: this.viewOptions.showTimeEntries,
 			showTimeblocks: this.viewOptions.showTimeblocks,
 			showICSEvents: false, // ICS handled separately
-			visibleStart: fetchInfo.start,
-			visibleEnd: fetchInfo.end,
+			visibleStart,
+			visibleEnd,
 		};
 
 		// Use existing calendar-core helper to generate task events
@@ -712,36 +714,38 @@ export class CalendarView extends BasesViewBase {
 
 		// Add property-based events from non-TaskNotes items
 		if (this.viewOptions.showPropertyBasedEvents && this.viewOptions.startDateProperty) {
-			const propertyEvents = await this.buildPropertyBasedEvents();
+			const propertyEvents = await this.buildPropertyBasedEvents(visibleStart, visibleEnd);
 			allEvents.push(...propertyEvents);
 		}
 
 		// Add ICS calendar events
 		if (this.plugin.icsSubscriptionService) {
-			const icsEvents = await this.buildICSEvents();
+			const icsEvents = await this.buildICSEvents(visibleStart, visibleEnd);
 			allEvents.push(...icsEvents);
 		}
 
 		// Add Google Calendar events
 		if (this.plugin.googleCalendarService) {
-			const googleEvents = await this.buildGoogleCalendarEvents();
+			const googleEvents = await this.buildGoogleCalendarEvents(visibleStart, visibleEnd);
 			allEvents.push(...googleEvents);
 		}
 
 		// Add Microsoft Calendar events
 		if (this.plugin.microsoftCalendarService) {
-			const microsoftEvents = await this.buildMicrosoftCalendarEvents();
+			const microsoftEvents = await this.buildMicrosoftCalendarEvents(visibleStart, visibleEnd);
 			allEvents.push(...microsoftEvents);
 		}
 
 		return allEvents;
 	}
 
-	private async buildPropertyBasedEvents(): Promise<any[]> {
+	private async buildPropertyBasedEvents(visibleStart: Date, visibleEnd: Date): Promise<any[]> {
 		if (!this.data?.data) return [];
 		if (!this.viewOptions.startDateProperty) return [];
 
 		const events: any[] = [];
+		const visibleStartTime = visibleStart.getTime();
+		const visibleEndTime = visibleEnd.getTime();
 
 		for (const entry of this.data.data) {
 			try {
@@ -755,16 +759,29 @@ export class CalendarView extends BasesViewBase {
 				const startNormalized = normalizeDateValueForCalendar(startValue);
 				if (!startNormalized) continue;
 
+				// Get start date for range filtering
+				const startDateStr = typeof startNormalized.value === "string" ? startNormalized.value : format(startNormalized.value, "yyyy-MM-dd'T'HH:mm");
+				const startDate = parseDateToLocal(startDateStr);
+				const startDateTime = startDate.getTime();
+
 				// Try to get end date if property is configured
 				let endDateStr: string | undefined;
 				let isEndAllDay = startNormalized.isAllDay;
+				let endDateTime = startDateTime;
 				if (this.viewOptions.endDateProperty) {
 					const endValue = this.dataAdapter.getPropertyValue(entry, this.viewOptions.endDateProperty);
 					const endNormalized = normalizeDateValueForCalendar(endValue);
 					if (endNormalized) {
 						endDateStr = typeof endNormalized.value === "string" ? endNormalized.value : format(endNormalized.value, "yyyy-MM-dd'T'HH:mm");
 						isEndAllDay = endNormalized.isAllDay;
+						endDateTime = parseDateToLocal(endDateStr).getTime();
 					}
+				}
+
+				// Filter by visible range: event overlaps if it starts before visible end AND ends after visible start
+				// Skip filtering if date parsing resulted in NaN
+				if (!isNaN(startDateTime) && (startDateTime >= visibleEndTime || endDateTime < visibleStartTime)) {
+					continue;
 				}
 
 				// Try to get title from configured property
@@ -777,7 +794,6 @@ export class CalendarView extends BasesViewBase {
 				}
 
 				// Create event
-				const startDateStr = typeof startNormalized.value === "string" ? startNormalized.value : format(startNormalized.value, "yyyy-MM-dd'T'HH:mm");
 				const isAllDay = startNormalized.isAllDay && (endDateStr ? isEndAllDay : true);
 				events.push({
 					id: `property-${file.path}`,
@@ -804,15 +820,26 @@ export class CalendarView extends BasesViewBase {
 		return events;
 	}
 
-	private async buildICSEvents(): Promise<any[]> {
+	private async buildICSEvents(visibleStart: Date, visibleEnd: Date): Promise<any[]> {
 		if (!this.plugin.icsSubscriptionService) return [];
 
 		const events: any[] = [];
 		const allICSEvents = this.plugin.icsSubscriptionService.getAllEvents();
+		const visibleStartTime = visibleStart.getTime();
+		const visibleEndTime = visibleEnd.getTime();
 
 		for (const icsEvent of allICSEvents) {
 			// Check if this calendar is enabled
 			if (this.icsCalendarToggles.get(icsEvent.subscriptionId) === false) continue;
+
+			// Filter by visible range (skip filtering if date parsing fails)
+			try {
+				const eventStart = parseDateToLocal(icsEvent.start).getTime();
+				const eventEnd = icsEvent.end ? parseDateToLocal(icsEvent.end).getTime() : eventStart;
+				if (!isNaN(eventStart) && (eventStart >= visibleEndTime || eventEnd < visibleStartTime)) continue;
+			} catch {
+				// If date parsing fails, include the event (let FullCalendar handle it)
+			}
 
 			const calendarEvent = createICSEvent(icsEvent, this.plugin);
 			if (calendarEvent) {
@@ -823,17 +850,28 @@ export class CalendarView extends BasesViewBase {
 		return events;
 	}
 
-	private async buildGoogleCalendarEvents(): Promise<any[]> {
+	private async buildGoogleCalendarEvents(visibleStart: Date, visibleEnd: Date): Promise<any[]> {
 		if (!this.plugin.googleCalendarService) return [];
 
 		const events: any[] = [];
 		const allGoogleEvents = this.plugin.googleCalendarService.getAllEvents();
+		const visibleStartTime = visibleStart.getTime();
+		const visibleEndTime = visibleEnd.getTime();
 
 		for (const icsEvent of allGoogleEvents) {
 			// Check if this calendar is enabled
 			const calendarId = icsEvent.subscriptionId.replace("google-", "");
 			if (this.googleCalendarToggles.get(calendarId) === false) continue;
 
+			// Filter by visible range (skip filtering if date parsing fails)
+			try {
+				const eventStart = parseDateToLocal(icsEvent.start).getTime();
+				const eventEnd = icsEvent.end ? parseDateToLocal(icsEvent.end).getTime() : eventStart;
+				if (!isNaN(eventStart) && (eventStart >= visibleEndTime || eventEnd < visibleStartTime)) continue;
+			} catch {
+				// If date parsing fails, include the event (let FullCalendar handle it)
+			}
+
 			const calendarEvent = createICSEvent(icsEvent, this.plugin);
 			if (calendarEvent) {
 				events.push(calendarEvent);
@@ -843,16 +881,27 @@ export class CalendarView extends BasesViewBase {
 		return events;
 	}
 
-	private async buildMicrosoftCalendarEvents(): Promise<any[]> {
+	private async buildMicrosoftCalendarEvents(visibleStart: Date, visibleEnd: Date): Promise<any[]> {
 		if (!this.plugin.microsoftCalendarService) return [];
 
 		const events: any[] = [];
 		const allMicrosoftEvents = this.plugin.microsoftCalendarService.getAllEvents();
+		const visibleStartTime = visibleStart.getTime();
+		const visibleEndTime = visibleEnd.getTime();
 
 		for (const icsEvent of allMicrosoftEvents) {
 			// Check if this calendar is enabled
 			const calendarId = icsEvent.subscriptionId.replace("microsoft-", "");
 			if (this.microsoftCalendarToggles.get(calendarId) === false) continue;
+
+			// Filter by visible range (skip filtering if date parsing fails)
+			try {
+				const eventStart = parseDateToLocal(icsEvent.start).getTime();
+				const eventEnd = icsEvent.end ? parseDateToLocal(icsEvent.end).getTime() : eventStart;
+				if (!isNaN(eventStart) && (eventStart >= visibleEndTime || eventEnd < visibleStartTime)) continue;
+			} catch {
+				// If date parsing fails, include the event (let FullCalendar handle it)
+			}
 
 			const calendarEvent = createICSEvent(icsEvent, this.plugin);
 			if (calendarEvent) {
@@ -1412,23 +1461,17 @@ export class CalendarView extends BasesViewBase {
 				const basesEntry = this.basesEntryByPath.get(taskInfo.path);
 
 				if (basesEntry) {
-					// Add basesData for formula results
-					enrichedTask.basesData = {
-						formulaResults: {
-							cachedFormulaOutputs: {} as Record<string, any>
-						}
-					};
+					// Store the full basesEntry for lazy file property access (e.g., file.backlinks)
+					// This allows TaskCard.getPropertyValue to call getValue() on demand
+					enrichedTask.basesData = basesEntry;
 
-					// Populate formula results from Bases entry
+					// Pre-populate formula results for performance (formulas are accessed frequently)
 					if (visibleProperties) {
 						for (const propId of visibleProperties) {
 							if (propId.startsWith('formula.')) {
-								const formulaName = propId.substring(8);
 								try {
-									const value = basesEntry.getValue?.(propId);
-									if (value) {
-										enrichedTask.basesData.formulaResults.cachedFormulaOutputs[formulaName] = value;
-									}
+									// Just trigger the getValue to ensure it's cached by Bases
+									basesEntry.getValue?.(propId);
 								} catch (error) {
 									console.debug('[TaskNotes][CalendarView] Error getting formula:', propId, error);
 								}
