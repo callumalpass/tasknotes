@@ -26,12 +26,6 @@ Example:
 
 ## Fixed
 
-- Fixed calendar event text being invisible in light mode when using default priority colors (CSS variables)
-  - `hexToRgba()` now handles CSS variables gracefully instead of returning invalid rgba values
-  - Events without custom priority colors now use theme-appropriate text colors
-- Fixed calendar not updating immediately after completing/skipping recurring task instances
-  - Context menu actions now read fresh data from Obsidian's metadata cache instead of Bases' potentially stale cache
-- Fixed task edit modal archive button being too narrow on mobile devices
 - Significant performance improvements for Bases views (TaskList, Kanban, Calendar)
   - Reduced `extractDataItems` time from ~4 seconds to ~5-10ms for large vaults (6000+ tasks)
   - Computed file properties (`file.backlinks`, `file.links`, etc.) are now fetched lazily during render instead of upfront
@@ -43,6 +37,7 @@ Example:
   - Added date range filtering for calendar events to skip events outside visible range
   - (#1285) Calendar view uses 5-second debounce to prevent flickering while typing
 	  - Thanks to @steven-murray for reporting
+- Fixed task edit modal archive button being too narrow on mobile devices
 - (#1319) Added missing properties to Field Mapping settings
   - `recurrence_anchor` - now in Settings > Task Properties > Task Details
   - `skipped_instances` - now in Settings > Task Properties > Metadata Properties
@@ -57,7 +52,7 @@ Example:
   - NLP `+` trigger now properly filters by property existence when no property value is specified
   - Modal "Add to project" button now shows consistent results with inline autosuggest
   - Thanks to @JacksonMcDonaldDev for reporting
-- (#1287, #1307) The "New" button in Bases views now opens the TaskNotes creation modal
+- (#1287), (#1307) The "New" button in Bases views now opens the TaskNotes creation modal
   - Tasks created from Bases views now respect default properties (status, priority, etc.)
   - Tasks are now created in the configured default folder instead of the views folder
   - Thanks to @anareaty and @sylvainfct-dot for reporting
@@ -65,6 +60,11 @@ Example:
   - Changed from `http://localhost:8080` to `http://127.0.0.1` (Microsoft's recommended loopback address)
   - Added instructions for configuring via Azure manifest editor
   - Thanks to @PlecotusAustriacus for reporting
+
+## Added
+
+- (#803) New command "Convert current note to task" to add task properties to an existing note
+  - Thanks to @GardarikanetS and @diegomarzaa for suggesting
 
 ## Changed
 

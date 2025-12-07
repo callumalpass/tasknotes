@@ -47,7 +47,7 @@ import { openTaskSelector } from "./modals/TaskSelectorWithCreateModal";
 import { TimeEntryEditorModal } from "./modals/TimeEntryEditorModal";
 import { PomodoroService } from "./services/PomodoroService";
 import { formatTime, getActiveTimeEntry } from "./utils/helpers";
-import { convertUTCToLocalCalendarDate } from "./utils/dateUtils";
+import { convertUTCToLocalCalendarDate, getCurrentTimestamp } from "./utils/dateUtils";
 import { TaskManager } from "./utils/TaskManager";
 import { DependencyCache } from "./utils/DependencyCache";
 import { RequestDeduplicator, PredictivePrefetcher } from "./utils/RequestDeduplicator";
@@ -1462,6 +1462,13 @@ export default class TaskNotesPlugin extends Plugin {
 				},
 			},
 			{
+				id: "convert-current-note-to-task",
+				nameKey: "commands.convertCurrentNoteToTask.name",
+				callback: async () => {
+					await this.convertCurrentNoteToTask();
+				},
+			},
+			{
 				id: "convert-to-tasknote",
 				nameKey: "commands.convertToTaskNote",
 				editorCallback: async (editor: Editor) => {
@@ -2133,6 +2140,78 @@ export default class TaskNotesPlugin extends Plugin {
 
 	openTaskCreationModal(prePopulatedValues?: Partial<TaskInfo>) {
 		new TaskCreationModal(this.app, this, { prePopulatedValues }).open();
+	}
+
+	/**
+	 * Convert the current note to a task by adding required task frontmatter.
+	 * Opens the task edit modal pre-populated with the note's existing data.
+	 */
+	async convertCurrentNoteToTask(): Promise<void> {
+		const activeFile = this.app.workspace.getActiveFile();
+		if (!activeFile) {
+			new Notice(this.i18n.translate("commands.convertCurrentNoteToTask.noActiveFile"));
+			return;
+		}
+
+		// Check if this note is already a task
+		const existingTask = await this.cacheManager.getTaskInfo(activeFile.path);
+		if (existingTask) {
+			new Notice(this.i18n.translate("commands.convertCurrentNoteToTask.alreadyTask"));
+			return;
+		}
+
+		// Read existing frontmatter and body from the file
+		const metadata = this.app.metadataCache.getFileCache(activeFile);
+		const frontmatter: Record<string, any> = metadata?.frontmatter || {};
+		const content = await this.app.vault.read(activeFile);
+
+		// Extract body content (everything after frontmatter)
+		let details = "";
+		const frontmatterMatch = content.match(/^---\n[\s\S]*?\n---\n*/);
+		if (frontmatterMatch) {
+			details = content.slice(frontmatterMatch[0].length).trim();
+		} else {
+			details = content.trim();
+		}
+
+		// Build a TaskInfo object from the note's existing data
+		// Use defaults for required fields that don't exist
+		const now = getCurrentTimestamp();
+		const taskInfo: TaskInfo = {
+			path: activeFile.path,
+			title: frontmatter.title || activeFile.basename,
+			status: frontmatter.status || this.settings.defaultTaskStatus,
+			priority: frontmatter.priority || this.settings.defaultTaskPriority,
+			archived: false,
+			due: frontmatter.due || undefined,
+			scheduled: frontmatter.scheduled || undefined,
+			contexts: frontmatter.contexts
+				? (Array.isArray(frontmatter.contexts) ? frontmatter.contexts : [frontmatter.contexts])
+				: undefined,
+			projects: frontmatter.projects
+				? (Array.isArray(frontmatter.projects) ? frontmatter.projects : [frontmatter.projects])
+				: undefined,
+			tags: frontmatter.tags
+				? (Array.isArray(frontmatter.tags) ? frontmatter.tags : [frontmatter.tags])
+				: [],
+			timeEstimate: frontmatter.timeEstimate || undefined,
+			recurrence: frontmatter.recurrence || undefined,
+			dateCreated: frontmatter.dateCreated || now,
+			dateModified: now,
+			details: details,
+		};
+
+		// Open the task edit modal with the constructed TaskInfo
+		new TaskEditModal(this.app, this, {
+			task: taskInfo,
+			onTaskUpdated: (updatedTask) => {
+				new Notice(
+					this.i18n.translate("commands.convertCurrentNoteToTask.success", {
+						title: updatedTask.title,
+					})
+				);
+			},
+		}).open();
 	}
 
 	/**
