@@ -216,8 +216,26 @@ Define custom frontmatter properties to appear as filter options across views. C
 - **Display Name**: How the field appears in the UI
 - **Property Key**: The frontmatter property name
 - **Type**: Data type (text, number, boolean, date, or list)
+- **Default Value**: Pre-fill value for new tasks (format varies by type)
 - **NLP trigger**: Toggle and character for natural language parsing
 - **Autosuggest Filters**: Filter which files appear when using `[[` wikilink autocomplete
+
+### Default Values
+
+Each field type has a different input format for default values:
+
+- **Text**: Enter the default text value
+- **Number**: Enter the default number
+- **Boolean**: Toggle switch to set default checked/unchecked state
+- **Date**: Select from presets (None, Today, Tomorrow, Next Week)
+- **List**: Enter comma-separated default values
+
+Default values are applied when creating tasks via:
+
+- Task creation modal
+- Instant task conversion
+- "Create or open task" command
+- HTTP API (when using task creation defaults)
 
 ### Autosuggestion Filters
 

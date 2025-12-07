@@ -65,6 +65,10 @@ Example:
 
 - (#803) New command "Convert current note to task" to add task properties to an existing note
   - Thanks to @GardarikanetS and @diegomarzaa for suggesting
+- (#1080) Custom user fields now support default values
+  - Each field type has an appropriate input: text field, number input, toggle, date preset dropdown, or comma-separated list
+  - Defaults are applied when creating tasks via modal, instant conversion, "Create or open task" command, or HTTP API
+  - Thanks to @bradyrx for suggesting
 
 ## Changed
 
