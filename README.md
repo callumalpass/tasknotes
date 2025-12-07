@@ -6,7 +6,7 @@ Bases-based task management plugin where each task lives as a separate note with
 
 **NLP Support:** English · Deutsch · Español · Français · Italiano · 日本語 · Nederlands · Português · Русский · Svenska · Українська · 中文
 
-<img src="https://github.com/user-attachments/assets/4f68646e-e3cb-4d0c-86cd-c1574a97fba0" />
+<img src="https://github.com/callumalpass/tasknotes/blob/main/media/2025-12-07T15-43-26.png?raw=true" />
 
 **[Documentation](https://callumalpass.github.io/tasknotes/)**
 
