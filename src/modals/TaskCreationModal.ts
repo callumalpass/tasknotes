@@ -1137,6 +1137,24 @@ export class TaskCreationModal extends TaskModal {
 			this.reminders = convertDefaultRemindersToReminders(defaults.defaultReminders);
 		}
 
+		// Apply default values for user-defined fields
+		if (this.plugin.settings.userFields) {
+			for (const field of this.plugin.settings.userFields) {
+				if (field.defaultValue !== undefined) {
+					// For date fields, convert preset values (today, tomorrow, next-week) to actual dates
+					if (field.type === "date" && typeof field.defaultValue === "string") {
+						const datePreset = field.defaultValue as "none" | "today" | "tomorrow" | "next-week";
+						const calculatedDate = calculateDefaultDate(datePreset);
+						if (calculatedDate) {
+							this.userFields[field.key] = calculatedDate;
+						}
+					} else {
+						this.userFields[field.key] = field.defaultValue;
+					}
+				}
+			}
+		}
+
 		// Apply pre-populated values if provided (overrides defaults)
 		if (this.options.prePopulatedValues) {
 			this.applyPrePopulatedValues(this.options.prePopulatedValues);

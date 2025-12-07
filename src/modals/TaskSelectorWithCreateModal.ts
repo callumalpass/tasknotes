@@ -1,7 +1,7 @@
 import { App, SuggestModal, TFile, Notice, setIcon, debounce } from "obsidian";
 import { TaskInfo, TaskCreationData } from "../types";
 import { combineDateAndTime, getCurrentTimestamp } from "../utils/dateUtils";
-import { filterEmptyProjects, sanitizeTags } from "../utils/helpers";
+import { calculateDefaultDate, filterEmptyProjects, sanitizeTags } from "../utils/helpers";
 import type TaskNotesPlugin from "../main";
 import { TranslationKey } from "../i18n";
 import {
@@ -354,23 +354,40 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 			taskData.timeEstimate = parsed.estimate;
 		}
 
-		// Handle user-defined fields - convert to customFrontmatter using the frontmatter key
-		if (parsed.userFields) {
-			const customFrontmatter: Record<string, any> = {};
-			const userFieldDefs = this.plugin.settings.userFields || [];
+		// Handle user-defined fields - first apply defaults, then override with parsed values
+		const userFieldDefs = this.plugin.settings.userFields || [];
+		const customFrontmatter: Record<string, any> = {};
 
+		// First, apply default values for all user fields that have defaults
+		for (const fieldDef of userFieldDefs) {
+			if (fieldDef.defaultValue !== undefined) {
+				// For date fields, convert preset values (today, tomorrow, next-week) to actual dates
+				if (fieldDef.type === "date" && typeof fieldDef.defaultValue === "string") {
+					const calculatedDate = calculateDefaultDate(
+						fieldDef.defaultValue as "none" | "today" | "tomorrow" | "next-week"
+					);
+					if (calculatedDate) {
+						customFrontmatter[fieldDef.key] = calculatedDate;
+					}
+				} else {
+					customFrontmatter[fieldDef.key] = fieldDef.defaultValue;
+				}
+			}
+		}
+
+		// Then, override with any parsed values from NLP
+		if (parsed.userFields) {
 			for (const [fieldId, value] of Object.entries(parsed.userFields)) {
 				const fieldDef = userFieldDefs.find((f) => f.id === fieldId);
 				if (fieldDef) {
 					// Use the frontmatter key from the field definition
-					const frontmatterKey = fieldDef.key;
-					customFrontmatter[frontmatterKey] = Array.isArray(value) ? value.join(", ") : value;
+					customFrontmatter[fieldDef.key] = Array.isArray(value) ? value.join(", ") : value;
 				}
 			}
+		}
 
-			if (Object.keys(customFrontmatter).length > 0) {
-				taskData.customFrontmatter = customFrontmatter;
-			}
+		if (Object.keys(customFrontmatter).length > 0) {
+			taskData.customFrontmatter = customFrontmatter;
 		}
 
 		return taskData;

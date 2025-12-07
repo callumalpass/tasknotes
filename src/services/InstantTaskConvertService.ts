@@ -643,6 +643,27 @@ export class InstantTaskConvertService {
 
 		// Prepare custom frontmatter from user fields
 		const customFrontmatter: Record<string, any> = {};
+
+		// First, apply default values for all user fields that have defaults
+		if (this.plugin.settings.userFields) {
+			for (const userField of this.plugin.settings.userFields) {
+				if (userField.defaultValue !== undefined) {
+					// For date fields, convert preset values (today, tomorrow, next-week) to actual dates
+					if (userField.type === "date" && typeof userField.defaultValue === "string") {
+						const calculatedDate = calculateDefaultDate(
+							userField.defaultValue as "none" | "today" | "tomorrow" | "next-week"
+						);
+						if (calculatedDate) {
+							customFrontmatter[userField.key] = calculatedDate;
+						}
+					} else {
+						customFrontmatter[userField.key] = userField.defaultValue;
+					}
+				}
+			}
+		}
+
+		// Then, override with any parsed values from NLP (parsed values take priority)
 		if (parsedData.userFields) {
 			for (const [fieldId, value] of Object.entries(parsedData.userFields)) {
 				// Find the user field definition to get the frontmatter key

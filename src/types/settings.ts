@@ -15,6 +15,7 @@ export interface UserMappedField {
 	key: string; // frontmatter key
 	type: "text" | "number" | "date" | "boolean" | "list";
 	autosuggestFilter?: FileFilterConfig; // Optional filter configuration for file suggestions
+	defaultValue?: string | number | boolean | string[]; // Default value for the field
 }
 
 /**

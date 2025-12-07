@@ -512,5 +512,28 @@ export class TasksController extends BaseController {
 			const { convertDefaultRemindersToReminders } = await import("../utils/settingsUtils");
 			taskData.reminders = convertDefaultRemindersToReminders(defaults.defaultReminders);
 		}
+
+		// Apply default values for user-defined fields
+		if (this.plugin.settings.userFields) {
+			if (!taskData.customFrontmatter) {
+				taskData.customFrontmatter = {};
+			}
+			for (const field of this.plugin.settings.userFields) {
+				// Only apply default if the field isn't already set
+				if (field.defaultValue !== undefined && taskData.customFrontmatter[field.key] === undefined) {
+					// For date fields, convert preset values (today, tomorrow, next-week) to actual dates
+					if (field.type === "date" && typeof field.defaultValue === "string") {
+						const calculatedDate = calculateDefaultDate(
+							field.defaultValue as "none" | "today" | "tomorrow" | "next-week"
+						);
+						if (calculatedDate) {
+							taskData.customFrontmatter[field.key] = calculatedDate;
+						}
+					} else {
+						taskData.customFrontmatter[field.key] = field.defaultValue;
+					}
+				}
+			}
+		}
 	}
 }

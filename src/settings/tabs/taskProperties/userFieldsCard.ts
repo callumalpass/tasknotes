@@ -7,11 +7,119 @@ import {
 	createDeleteHeaderButton,
 	showCardEmptyState,
 	createCardSelect,
+	createCardToggle,
 	CardRow,
 } from "../../components/CardComponent";
 import { createFilterSettingsInputs } from "../../components/FilterSettingsComponent";
 import { initializeFieldConfig } from "../../../utils/fieldConfigDefaults";
 import { createNLPTriggerRows, TranslateFn } from "./helpers";
+import { UserMappedField } from "../../../types/settings";
+
+/**
+ * Creates the appropriate default value input based on field type
+ */
+function createDefaultValueInput(
+	field: UserMappedField,
+	translate: TranslateFn,
+	onChange: (value: string | number | boolean | string[] | undefined) => void
+): { element: HTMLElement; row: CardRow } {
+	let inputElement: HTMLElement;
+	let row: CardRow;
+
+	if (field.type === "boolean") {
+		// Boolean field uses a toggle
+		const currentValue = typeof field.defaultValue === "boolean" ? field.defaultValue : false;
+		inputElement = createCardToggle(currentValue, (value) => {
+			onChange(value);
+		});
+		row = {
+			label: translate("settings.taskProperties.customUserFields.fields.defaultValue"),
+			input: inputElement,
+		};
+	} else if (field.type === "number") {
+		// Number field uses number input
+		const input = createCardInput(
+			"number",
+			translate("settings.taskProperties.customUserFields.placeholders.defaultValue"),
+			field.defaultValue !== undefined ? String(field.defaultValue) : ""
+		);
+		input.addEventListener("change", () => {
+			const value = input.value.trim();
+			if (value === "") {
+				onChange(undefined);
+			} else {
+				onChange(parseFloat(value));
+			}
+		});
+		inputElement = input;
+		row = {
+			label: translate("settings.taskProperties.customUserFields.fields.defaultValue"),
+			input: inputElement,
+		};
+	} else if (field.type === "date") {
+		// Date field uses a dropdown with preset options (same as due/scheduled defaults)
+		const currentValue = typeof field.defaultValue === "string" ? field.defaultValue : "none";
+		const select = createCardSelect(
+			[
+				{ value: "none", label: translate("settings.defaults.options.none") },
+				{ value: "today", label: translate("settings.defaults.options.today") },
+				{ value: "tomorrow", label: translate("settings.defaults.options.tomorrow") },
+				{ value: "next-week", label: translate("settings.defaults.options.nextWeek") },
+			],
+			currentValue
+		);
+		select.addEventListener("change", () => {
+			const value = select.value;
+			onChange(value === "none" ? undefined : value);
+		});
+		inputElement = select;
+		row = {
+			label: translate("settings.taskProperties.customUserFields.fields.defaultValue"),
+			input: inputElement,
+		};
+	} else if (field.type === "list") {
+		// List field uses text input with comma-separated values
+		const currentValue = Array.isArray(field.defaultValue)
+			? field.defaultValue.join(", ")
+			: "";
+		const input = createCardInput(
+			"text",
+			translate("settings.taskProperties.customUserFields.placeholders.defaultValueList"),
+			currentValue
+		);
+		input.addEventListener("change", () => {
+			const value = input.value.trim();
+			if (value === "") {
+				onChange(undefined);
+			} else {
+				onChange(value.split(",").map(v => v.trim()).filter(v => v));
+			}
+		});
+		inputElement = input;
+		row = {
+			label: translate("settings.taskProperties.customUserFields.fields.defaultValue"),
+			input: inputElement,
+		};
+	} else {
+		// Text field uses text input
+		const input = createCardInput(
+			"text",
+			translate("settings.taskProperties.customUserFields.placeholders.defaultValue"),
+			typeof field.defaultValue === "string" ? field.defaultValue : ""
+		);
+		input.addEventListener("change", () => {
+			const value = input.value.trim();
+			onChange(value === "" ? undefined : value);
+		});
+		inputElement = input;
+		row = {
+			label: translate("settings.taskProperties.customUserFields.fields.defaultValue"),
+			input: inputElement,
+		};
+	}
+
+	return { element: inputElement, row };
+}
 
 /**
  * Renders the user fields section with add button
@@ -105,12 +213,14 @@ export function renderUserFieldsSection(
 
 /**
  * Renders the list of user field cards with NLP triggers
+ * @param expandedFieldId - Optional field ID to keep expanded after re-render
  */
 function renderUserFieldsList(
 	container: HTMLElement,
 	plugin: TaskNotesPlugin,
 	save: () => void,
-	translate: TranslateFn
+	translate: TranslateFn,
+	expandedFieldId?: string
 ): void {
 	container.empty();
 
@@ -185,21 +295,53 @@ function renderUserFieldsList(
 				}
 			}
 
+			// Update the card header text directly without re-rendering
+			const card = container.querySelector(`[data-card-id="${field.id}"]`);
+			if (card) {
+				const primaryText = card.querySelector(".tasknotes-settings__card-header-primary");
+				if (primaryText) {
+					primaryText.textContent = field.displayName ||
+						translate("settings.taskProperties.customUserFields.defaultNames.unnamedField");
+				}
+			}
+
 			save();
-			renderUserFieldsList(container, plugin, save, translate);
 		});
 
 		keyInput.addEventListener("change", () => {
 			field.key = keyInput.value;
+
+			// Update the card header secondary text directly without re-rendering
+			const card = container.querySelector(`[data-card-id="${field.id}"]`);
+			if (card) {
+				const secondaryText = card.querySelector(".tasknotes-settings__card-header-secondary");
+				if (secondaryText) {
+					secondaryText.textContent = field.key ||
+						translate("settings.taskProperties.customUserFields.defaultNames.noKey");
+				}
+			}
+
 			save();
-			renderUserFieldsList(container, plugin, save, translate);
 		});
 
 		typeSelect.addEventListener("change", () => {
 			field.type = typeSelect.value as "text" | "number" | "boolean" | "date" | "list";
+			// Clear default value when type changes to avoid type mismatches
+			field.defaultValue = undefined;
 			save();
-			renderUserFieldsList(container, plugin, save, translate);
+			// Need to re-render to update the default value input type
+			renderUserFieldsList(container, plugin, save, translate, field.id);
 		});
+
+		// Default value input based on field type
+		const { row: defaultValueRow } = createDefaultValueInput(
+			field,
+			translate,
+			(value) => {
+				field.defaultValue = value;
+				save();
+			}
+		);
 
 		// NLP Trigger for user field
 		const nlpRows = createNLPTriggerRows(
@@ -290,7 +432,7 @@ function renderUserFieldsList(
 		createCard(container, {
 			id: field.id,
 			collapsible: true,
-			defaultCollapsed: true,
+			defaultCollapsed: field.id !== expandedFieldId,
 			header: {
 				primaryText:
 					field.displayName ||
@@ -346,6 +488,7 @@ function renderUserFieldsList(
 								),
 								input: typeSelect,
 							},
+							defaultValueRow,
 							...nlpRows,
 						],
 					},
