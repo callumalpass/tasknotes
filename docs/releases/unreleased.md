@@ -39,3 +39,11 @@ Example:
   - Reduces code duplication and improves maintainability
 - Input fields in task modals now use transparent backgrounds for a cleaner appearance
 
+## Fixed
+
+- (#1330) Fixed calendar view taking 5 seconds to load and respond to user interactions
+  - Initial calendar load is now immediate again
+  - User interactions (drag/drop, creating timeblocks, etc.) respond instantly
+  - Removed redundant date filtering (FullCalendar handles this more efficiently)
+  - Thanks to @ysafonov, @kmaustral, @sunjiawe for reporting, and @Мизгирь, @FiliusIcari for contributing to the discussion
+
