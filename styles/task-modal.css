@@ -333,7 +333,9 @@
     font-weight: 400;
 }
 
-.tasknotes-plugin .title-input:focus {
+.tasknotes-plugin .title-input:focus,
+.tasknotes-plugin .title-input:active,
+.tasknotes-plugin .title-input:focus-visible {
     background: var(--background-modifier-hover);
     border-radius: var(--radius-s);
     outline: none;
@@ -433,8 +435,11 @@
     transition: all 0.2s ease;
 }
 
-.tasknotes-plugin .title-input-detailed:focus {
+.tasknotes-plugin .title-input-detailed:focus,
+.tasknotes-plugin .title-input-detailed:active,
+.tasknotes-plugin .title-input-detailed:focus-visible {
     outline: none;
+    box-shadow: none;
     border-color: var(--interactive-accent);
     background: transparent;
 }
