@@ -97,6 +97,12 @@ export class CalendarView extends BasesViewBase {
 	// Render lock to prevent duplicate renders
 	private _isRendering = false;
 	private _pendingRender = false;
+
+	// Flag to skip debounce for user-initiated actions (timeblock creation, drag/drop, etc.)
+	private _expectingImmediateUpdate = false;
+
+	// Track if this is the first data update after load (should be immediate)
+	private _isFirstDataUpdate = true;
 	
 	private viewOptions: {
 		// Events
@@ -225,7 +231,8 @@ export class CalendarView extends BasesViewBase {
 
 	/**
 	 * Override onDataUpdated for calendar-specific behavior.
-	 * Uses a longer debounce to prevent flickering during rapid data updates (e.g., typing).
+	 * Uses a longer debounce to prevent flickering during rapid data updates (e.g., typing),
+	 * but responds immediately for first load or when expecting an update from user actions.
 	 */
 	onDataUpdated(): void {
 		// Skip if view is not visible
@@ -233,16 +240,43 @@ export class CalendarView extends BasesViewBase {
 			return;
 		}
 
-		// Longer debounce for calendar (5 seconds) - only update after user stops typing
-		// This needs to outlast Obsidian's ~2 second save interval
+		// Clear any existing debounce timer
 		if (this.dataUpdateDebounceTimer) {
 			clearTimeout(this.dataUpdateDebounceTimer);
+			this.dataUpdateDebounceTimer = null;
 		}
 
+		// First data update after load should be immediate (initial data population)
+		if (this._isFirstDataUpdate) {
+			this._isFirstDataUpdate = false;
+			this.render();
+			return;
+		}
+
+		// If expecting an immediate update from user action, render now
+		if (this._expectingImmediateUpdate) {
+			this._expectingImmediateUpdate = false;
+			this.render();
+			return;
+		}
+
+		// Otherwise use longer debounce for external changes (typing in notes)
 		this.dataUpdateDebounceTimer = window.setTimeout(() => {
 			this.dataUpdateDebounceTimer = null;
 			this.render();
 		}, 5000);  // 5 second debounce - outlasts Obsidian's save interval
+	}
+
+	/**
+	 * Signal that we're expecting an immediate update from a user-initiated action.
+	 * Call this before performing calendar actions that will trigger file changes.
+	 */
+	expectImmediateUpdate(): void {
+		this._expectingImmediateUpdate = true;
+		// Auto-reset after a short delay in case the update never comes
+		setTimeout(() => {
+			this._expectingImmediateUpdate = false;
+		}, 2000);
 	}
 
 	/**
@@ -736,10 +770,9 @@ export class CalendarView extends BasesViewBase {
 
 	private async buildAllEvents(fetchInfo: any): Promise<any[]> {
 		const allEvents: any[] = [];
-		const visibleStart: Date = fetchInfo.start;
-		const visibleEnd: Date = fetchInfo.end;
 
 		// Build event configuration for generateCalendarEvents
+		// Let FullCalendar handle date filtering - it's optimized for this
 		const eventConfig = {
 			showScheduled: this.viewOptions.showScheduled,
 			showDue: this.viewOptions.showDue,
@@ -747,8 +780,8 @@ export class CalendarView extends BasesViewBase {
 			showTimeEntries: this.viewOptions.showTimeEntries,
 			showTimeblocks: this.viewOptions.showTimeblocks,
 			showICSEvents: false, // ICS handled separately
-			visibleStart,
-			visibleEnd,
+			visibleStart: fetchInfo.start,
+			visibleEnd: fetchInfo.end,
 		};
 
 		// Use existing calendar-core helper to generate task events
@@ -761,38 +794,36 @@ export class CalendarView extends BasesViewBase {
 
 		// Add property-based events from non-TaskNotes items
 		if (this.viewOptions.showPropertyBasedEvents && this.viewOptions.startDateProperty) {
-			const propertyEvents = await this.buildPropertyBasedEvents(visibleStart, visibleEnd);
+			const propertyEvents = await this.buildPropertyBasedEvents();
 			allEvents.push(...propertyEvents);
 		}
 
 		// Add ICS calendar events
 		if (this.plugin.icsSubscriptionService) {
-			const icsEvents = await this.buildICSEvents(visibleStart, visibleEnd);
+			const icsEvents = await this.buildICSEvents();
 			allEvents.push(...icsEvents);
 		}
 
 		// Add Google Calendar events
 		if (this.plugin.googleCalendarService) {
-			const googleEvents = await this.buildGoogleCalendarEvents(visibleStart, visibleEnd);
+			const googleEvents = await this.buildGoogleCalendarEvents();
 			allEvents.push(...googleEvents);
 		}
 
 		// Add Microsoft Calendar events
 		if (this.plugin.microsoftCalendarService) {
-			const microsoftEvents = await this.buildMicrosoftCalendarEvents(visibleStart, visibleEnd);
+			const microsoftEvents = await this.buildMicrosoftCalendarEvents();
 			allEvents.push(...microsoftEvents);
 		}
 
 		return allEvents;
 	}
 
-	private async buildPropertyBasedEvents(visibleStart: Date, visibleEnd: Date): Promise<any[]> {
+	private async buildPropertyBasedEvents(): Promise<any[]> {
 		if (!this.data?.data) return [];
 		if (!this.viewOptions.startDateProperty) return [];
 
 		const events: any[] = [];
-		const visibleStartTime = visibleStart.getTime();
-		const visibleEndTime = visibleEnd.getTime();
 
 		for (const entry of this.data.data) {
 			try {
@@ -806,29 +837,18 @@ export class CalendarView extends BasesViewBase {
 				const startNormalized = normalizeDateValueForCalendar(startValue);
 				if (!startNormalized) continue;
 
-				// Get start date for range filtering
 				const startDateStr = typeof startNormalized.value === "string" ? startNormalized.value : format(startNormalized.value, "yyyy-MM-dd'T'HH:mm");
-				const startDate = parseDateToLocal(startDateStr);
-				const startDateTime = startDate.getTime();
 
 				// Try to get end date if property is configured
 				let endDateStr: string | undefined;
 				let isEndAllDay = startNormalized.isAllDay;
-				let endDateTime = startDateTime;
 				if (this.viewOptions.endDateProperty) {
 					const endValue = this.dataAdapter.getPropertyValue(entry, this.viewOptions.endDateProperty);
 					const endNormalized = normalizeDateValueForCalendar(endValue);
 					if (endNormalized) {
 						endDateStr = typeof endNormalized.value === "string" ? endNormalized.value : format(endNormalized.value, "yyyy-MM-dd'T'HH:mm");
 						isEndAllDay = endNormalized.isAllDay;
-						endDateTime = parseDateToLocal(endDateStr).getTime();
 					}
-				}
-
-				// Filter by visible range: event overlaps if it starts before visible end AND ends after visible start
-				// Skip filtering if date parsing resulted in NaN
-				if (!isNaN(startDateTime) && (startDateTime >= visibleEndTime || endDateTime < visibleStartTime)) {
-					continue;
 				}
 
 				// Try to get title from configured property
@@ -840,7 +860,7 @@ export class CalendarView extends BasesViewBase {
 					}
 				}
 
-				// Create event
+				// Create event - let FullCalendar handle date filtering
 				const isAllDay = startNormalized.isAllDay && (endDateStr ? isEndAllDay : true);
 				events.push({
 					id: `property-${file.path}`,
@@ -867,27 +887,17 @@ export class CalendarView extends BasesViewBase {
 		return events;
 	}
 
-	private async buildICSEvents(visibleStart: Date, visibleEnd: Date): Promise<any[]> {
+	private async buildICSEvents(): Promise<any[]> {
 		if (!this.plugin.icsSubscriptionService) return [];
 
 		const events: any[] = [];
 		const allICSEvents = this.plugin.icsSubscriptionService.getAllEvents();
-		const visibleStartTime = visibleStart.getTime();
-		const visibleEndTime = visibleEnd.getTime();
 
 		for (const icsEvent of allICSEvents) {
 			// Check if this calendar is enabled
 			if (this.icsCalendarToggles.get(icsEvent.subscriptionId) === false) continue;
 
-			// Filter by visible range (skip filtering if date parsing fails)
-			try {
-				const eventStart = parseDateToLocal(icsEvent.start).getTime();
-				const eventEnd = icsEvent.end ? parseDateToLocal(icsEvent.end).getTime() : eventStart;
-				if (!isNaN(eventStart) && (eventStart >= visibleEndTime || eventEnd < visibleStartTime)) continue;
-			} catch {
-				// If date parsing fails, include the event (let FullCalendar handle it)
-			}
-
+			// Let FullCalendar handle date filtering
 			const calendarEvent = createICSEvent(icsEvent, this.plugin);
 			if (calendarEvent) {
 				events.push(calendarEvent);
@@ -897,28 +907,18 @@ export class CalendarView extends BasesViewBase {
 		return events;
 	}
 
-	private async buildGoogleCalendarEvents(visibleStart: Date, visibleEnd: Date): Promise<any[]> {
+	private async buildGoogleCalendarEvents(): Promise<any[]> {
 		if (!this.plugin.googleCalendarService) return [];
 
 		const events: any[] = [];
 		const allGoogleEvents = this.plugin.googleCalendarService.getAllEvents();
-		const visibleStartTime = visibleStart.getTime();
-		const visibleEndTime = visibleEnd.getTime();
 
 		for (const icsEvent of allGoogleEvents) {
 			// Check if this calendar is enabled
 			const calendarId = icsEvent.subscriptionId.replace("google-", "");
 			if (this.googleCalendarToggles.get(calendarId) === false) continue;
 
-			// Filter by visible range (skip filtering if date parsing fails)
-			try {
-				const eventStart = parseDateToLocal(icsEvent.start).getTime();
-				const eventEnd = icsEvent.end ? parseDateToLocal(icsEvent.end).getTime() : eventStart;
-				if (!isNaN(eventStart) && (eventStart >= visibleEndTime || eventEnd < visibleStartTime)) continue;
-			} catch {
-				// If date parsing fails, include the event (let FullCalendar handle it)
-			}
-
+			// Let FullCalendar handle date filtering
 			const calendarEvent = createICSEvent(icsEvent, this.plugin);
 			if (calendarEvent) {
 				events.push(calendarEvent);
@@ -928,28 +928,18 @@ export class CalendarView extends BasesViewBase {
 		return events;
 	}
 
-	private async buildMicrosoftCalendarEvents(visibleStart: Date, visibleEnd: Date): Promise<any[]> {
+	private async buildMicrosoftCalendarEvents(): Promise<any[]> {
 		if (!this.plugin.microsoftCalendarService) return [];
 
 		const events: any[] = [];
 		const allMicrosoftEvents = this.plugin.microsoftCalendarService.getAllEvents();
-		const visibleStartTime = visibleStart.getTime();
-		const visibleEndTime = visibleEnd.getTime();
 
 		for (const icsEvent of allMicrosoftEvents) {
 			// Check if this calendar is enabled
 			const calendarId = icsEvent.subscriptionId.replace("microsoft-", "");
 			if (this.microsoftCalendarToggles.get(calendarId) === false) continue;
 
-			// Filter by visible range (skip filtering if date parsing fails)
-			try {
-				const eventStart = parseDateToLocal(icsEvent.start).getTime();
-				const eventEnd = icsEvent.end ? parseDateToLocal(icsEvent.end).getTime() : eventStart;
-				if (!isNaN(eventStart) && (eventStart >= visibleEndTime || eventEnd < visibleStartTime)) continue;
-			} catch {
-				// If date parsing fails, include the event (let FullCalendar handle it)
-			}
-
+			// Let FullCalendar handle date filtering
 			const calendarEvent = createICSEvent(icsEvent, this.plugin);
 			if (calendarEvent) {
 				events.push(calendarEvent);
@@ -1035,6 +1025,9 @@ export class CalendarView extends BasesViewBase {
 	}
 
 	private async handleEventDrop(info: any): Promise<void> {
+		// Expect immediate update since user is interacting with calendar
+		this.expectImmediateUpdate();
+
 		if (!info?.event?.extendedProps) {
 			console.warn("[TaskNotes][CalendarView] Event dropped without extendedProps");
 			return;
@@ -1258,6 +1251,9 @@ export class CalendarView extends BasesViewBase {
 	}
 
 	private async handleEventResize(info: any): Promise<void> {
+		// Expect immediate update since user is interacting with calendar
+		this.expectImmediateUpdate();
+
 		if (!info?.event?.extendedProps) {
 			console.warn("[TaskNotes][CalendarView] Event resized without extendedProps");
 			return;
@@ -1467,6 +1463,7 @@ export class CalendarView extends BasesViewBase {
 				item.setTitle("Create timeblock")
 					.setIcon("clock")
 					.onClick(async () => {
+						this.expectImmediateUpdate();
 						await handleTimeblockCreation(info.start, info.end, info.allDay, this.plugin);
 					});
 			});
@@ -1476,6 +1473,7 @@ export class CalendarView extends BasesViewBase {
 			item.setTitle("Create time entry")
 				.setIcon("play")
 				.onClick(async () => {
+					this.expectImmediateUpdate();
 					await handleTimeEntryCreation(info.start, info.end, info.allDay, this.plugin);
 				});
 		});
@@ -1783,15 +1781,9 @@ export class CalendarView extends BasesViewBase {
 	}
 
 	protected async handleTaskUpdate(task: TaskInfo): Promise<void> {
-		// Use the same long debounce as onDataUpdated
-		if (this.dataUpdateDebounceTimer) {
-			clearTimeout(this.dataUpdateDebounceTimer);
-		}
-
-		this.dataUpdateDebounceTimer = window.setTimeout(() => {
-			this.dataUpdateDebounceTimer = null;
-			this.render();
-		}, 5000);  // 5 second debounce
+		// Use shorter debounce for task updates - these are often from user interactions
+		// that expect quicker feedback than external file changes
+		this.debouncedRefresh();
 	}
 
 	renderError(error: Error): void {
