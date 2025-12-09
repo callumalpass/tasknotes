@@ -28,7 +28,19 @@ jest.mock('../../../src/utils/filenameGenerator', () => ({
 }));
 
 jest.mock('../../../src/utils/helpers', () => ({
-  ensureFolderExists: jest.fn().mockResolvedValue(undefined)
+  ensureFolderExists: jest.fn().mockResolvedValue(undefined),
+  calculateDefaultDate: jest.fn().mockImplementation((option: string) => {
+    switch (option) {
+      case 'today': return '2025-01-15';
+      case 'tomorrow': return '2025-01-16';
+      case 'next-week': return '2025-01-22';
+      default: return undefined;
+    }
+  }),
+  addDTSTARTToRecurrenceRule: jest.fn((rule: string) => rule),
+  updateDTSTARTInRecurrenceRule: jest.fn((rule: string) => rule),
+  updateToNextScheduledOccurrence: jest.fn(),
+  splitFrontmatterAndBody: jest.fn(() => ({ frontmatter: {}, body: '' }))
 }));
 
 jest.mock('../../../src/utils/templateProcessor', () => ({

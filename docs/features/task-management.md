@@ -2,7 +2,7 @@
 
 [← Back to Features](../features.md)
 
-TaskNotes provides a system for managing tasks based on the principle of "one note per task." This approach allows you to create, edit, and organize tasks with a set of properties while maintaining the portability and extensibility of plain text files.
+This page covers task creation, properties, projects, dependencies, recurring tasks, and reminders. For the underlying architecture, see [Core Concepts](../core-concepts.md).
 
 ## Creating and Editing Tasks
 
@@ -87,23 +87,9 @@ Additionally, you can convert any line type in your notes to TaskNotes using the
 
 ## Task Properties
 
-Each task in TaskNotes is a Markdown file with a YAML frontmatter block that stores its properties. The core properties include:
+Tasks store their data in YAML frontmatter with properties for status, priority, dates, contexts, projects, tags, time estimates, recurrence, and reminders. Custom fields can extend this structure.
 
-- **Title**: The main description of the task.
-- **Status**: The current state of the task (e.g., "Open," "In Progress," "Done"). Status can also be set to boolean values `true` or `false` for compatibility with Obsidian's checkbox properties.
-- **Priority**: The importance of the task (e.g., "Low," "Normal," "High").
-- **Due Date**: The date by which the task must be completed.
-- **Scheduled Date**: The date on which you plan to work on the task.
-- **Contexts**: Location or tool-based groupings (e.g., "@home", "@work").
-- **Projects**: Links to project notes in your vault that the task belongs to.
-- **Dependencies**: References to other tasks that must complete before this task can proceed, plus the reciprocal list of tasks blocked by the current one.
-- **Tags**: Standard Obsidian tags for categorization.
-- **Time Estimate**: The estimated time required to complete the task, in minutes.
-- **Recurrence**: The pattern for repeating tasks, using the RRule standard.
-- **Time Entries**: An array of recorded work sessions, with start and stop times.
-- **Reminders**: Custom reminders to notify you before or at specific times related to the task.
-
-You can also add your own custom fields to the YAML frontmatter, and use the **Field Mapping** feature to map them to TaskNotes' internal properties.
+For property types and examples, see [Core Concepts](../core-concepts.md#yaml-frontmatter). For configuration options, see [Task Properties Settings](../settings/task-properties.md).
 
 ## Projects
 
@@ -240,22 +226,6 @@ DTSTART:20250801T100000Z;FREQ=MONTHLY;BYDAY=-1FR
 → Last Friday of each month at 10:00 AM, starting August 1, 2025
 ```
 
-### Visual Hierarchy in Calendar Views
-
-The Calendar View displays recurring tasks with distinct visual styling:
-
-#### Next Scheduled Occurrence
-- **Solid border** with full opacity
-- Shows at the date/time specified in the `scheduled` field
-- Can appear on any date, even outside the recurring pattern
-- Dragging updates only the `scheduled` field (manual reschedule)
-
-#### Pattern Instances
-- **Dashed border** with reduced opacity (70%)
-- Shows preview of when future recurring instances will appear
-- Generated from the DTSTART date/time and recurrence rule
-- Dragging updates the DTSTART time (changes all future pattern instances)
-
 ### Dynamic Scheduled Dates
 
 The `scheduled` field automatically updates to show the next uncompleted occurrence:
@@ -294,19 +264,10 @@ complete_instances: ["2025-08-04"]
 
 ### Drag and Drop Behavior
 
-#### Dragging Next Scheduled Occurrence (Solid Border)
+In calendar views, recurring tasks display two types of events:
 
-- **Updates**: Only the `scheduled` field
-- **Effect**: Reschedules just that specific occurrence
-- **Pattern**: Remains unchanged
-- **Use case**: "I need to do today's workout at 2 PM instead of 9 AM"
-
-#### Dragging Pattern Instances (Dashed Border)
-
-- **Updates**: DTSTART time in the recurrence rule
-- **Effect**: Changes when all future pattern instances appear
-- **Next occurrence**: Remains independently scheduled
-- **Use case**: "I want to change my daily workout from 9 AM to 2 PM going forward"
+- **Next occurrence** (solid border): Dragging updates only the `scheduled` field for that specific instance
+- **Pattern instances** (dashed border): Dragging updates DTSTART, changing all future pattern instances
 
 ### Completion Tracking
 
@@ -520,10 +481,10 @@ TaskNotes supports configuring default reminders that automatically apply to new
 
 Configure default reminders from TaskNotes settings:
 
-1. Navigate to Settings → TaskNotes → Defaults & Templates
-2. Locate the **Default Reminders** section
-3. Use the form to add new default reminders
-4. Specify reminder type, timing, and optional descriptions
+1. Navigate to Settings → TaskNotes → Task Properties
+2. Expand the **Reminders** property card
+3. Locate the **Default Reminders** section
+4. Use the form to add new default reminders
 
 #### Default Reminder Application
 
@@ -542,51 +503,6 @@ Common default reminder configurations:
 - 1 day before due date (for project deadlines)
 - Custom absolute reminders for recurring processes
 
-### Integration with Task Workflows
+### Technical Details
 
-#### Task Creation Integration
-
-Reminders integrate with all task creation workflows:
-
-- Default reminders apply automatically during creation
-- Additional reminders can be added during the creation process
-
-#### Task Editing Integration
-
-The task editing process provides full reminder management:
-
-- View all existing reminders
-- Add, edit, or remove individual reminders
-- Quick access through context menus
-- Real-time validation and preview
-
-#### Calendar View Integration
-
-Reminders work alongside calendar features:
-
-- Open reminder actions from calendar event context menus
-- Reminder schedules remain intact when you drag and drop tasks to new dates or times
-
-### Field Mapping Support
-
-The reminder system integrates with TaskNotes' field mapping functionality:
-
-- **Custom Property Names**: Map reminders to custom frontmatter property names
-- **Vault Compatibility**: Adapt to existing vault structures and naming conventions
-- **Migration Support**: Maintain compatibility when changing field mappings
-
-### Technical Implementation
-
-#### iCalendar VALARM Compliance
-
-TaskNotes reminder implementation follows the iCalendar VALARM specification:
-- Standard duration formats (ISO 8601)
-- Proper trigger mechanisms for relative and absolute reminders
-- Compatible data structures for interoperability
-
-#### Performance Considerations
-
-The reminder system is designed for efficiency:
-- Lazy loading of reminder data
-- Minimal impact on task loading performance
-- Efficient storage in YAML frontmatter format
+Reminders use the iCalendar VALARM specification with ISO 8601 duration formats. The reminder property name can be customized through field mapping in settings.

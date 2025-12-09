@@ -3,7 +3,6 @@ import { BaseController } from "./BaseController";
 import { NaturalLanguageParser } from "../services/NaturalLanguageParser";
 import { TaskCreationData, IWebhookNotifier } from "../types";
 import { TaskService } from "../services/TaskService";
-import { calculateDefaultDate } from "../utils/helpers";
 import TaskNotesPlugin from "../main";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { generateOpenAPISpec, Get, Post } from "../utils/OpenAPIDecorators";
@@ -153,10 +152,7 @@ export class SystemController extends BaseController {
 				}
 			}
 
-			// Apply task creation defaults
-			await this.applyTaskCreationDefaults(taskData);
-
-			// Create the task
+			// Create the task - TaskService.createTask() applies defaults automatically
 			const result = await this.taskService.createTask(taskData);
 
 			// Trigger webhook for task creation via NLP
@@ -210,75 +206,6 @@ export class SystemController extends BaseController {
 		} catch (error: any) {
 			console.error("Swagger UI generation error:", error);
 			this.sendResponse(res, 500, this.errorResponse("Failed to generate API documentation"));
-		}
-	}
-
-	private async applyTaskCreationDefaults(taskData: TaskCreationData): Promise<void> {
-		const defaults = this.plugin.settings.taskCreationDefaults;
-
-		// Apply default scheduled date if not provided
-		if (!taskData.scheduled && defaults.defaultScheduledDate !== "none") {
-			taskData.scheduled = calculateDefaultDate(defaults.defaultScheduledDate);
-		}
-
-		// Apply default due date if not provided
-		if (!taskData.due && defaults.defaultDueDate !== "none") {
-			taskData.due = calculateDefaultDate(defaults.defaultDueDate);
-		}
-
-		// Apply default contexts if not provided
-		if (!taskData.contexts && defaults.defaultContexts) {
-			taskData.contexts = defaults.defaultContexts
-				.split(",")
-				.map((c) => c.trim())
-				.filter((c) => c);
-		}
-
-		// Apply default projects if not provided
-		if (!taskData.projects && defaults.defaultProjects) {
-			taskData.projects = defaults.defaultProjects
-				.split(",")
-				.map((p) => p.trim())
-				.filter((p) => p);
-		}
-
-		// Apply default time estimate if not provided
-		if (!taskData.timeEstimate && defaults.defaultTimeEstimate > 0) {
-			taskData.timeEstimate = defaults.defaultTimeEstimate;
-		}
-
-		// Apply default tags if not provided
-		if (!taskData.tags && defaults.defaultTags) {
-			taskData.tags = defaults.defaultTags
-				.split(",")
-				.map((t) => t.trim())
-				.filter((t) => t);
-		}
-
-		// Apply default recurrence if not provided
-		if (
-			!taskData.recurrence &&
-			defaults.defaultRecurrence &&
-			defaults.defaultRecurrence !== "none"
-		) {
-			// Convert default recurrence frequency to rrule string
-			const freqMap: Record<string, string> = {
-				daily: "FREQ=DAILY",
-				weekly: "FREQ=WEEKLY",
-				monthly: "FREQ=MONTHLY",
-				yearly: "FREQ=YEARLY",
-			};
-			taskData.recurrence = freqMap[defaults.defaultRecurrence] || undefined;
-		}
-
-		// Apply default reminders if not provided
-		if (
-			!taskData.reminders &&
-			defaults.defaultReminders &&
-			defaults.defaultReminders.length > 0
-		) {
-			const { convertDefaultRemindersToReminders } = await import("../utils/settingsUtils");
-			taskData.reminders = convertDefaultRemindersToReminders(defaults.defaultReminders);
 		}
 	}
 

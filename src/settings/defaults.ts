@@ -331,6 +331,8 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	userFields: [],
 	// Modal Fields Configuration defaults
 	modalFieldsConfig: undefined, // Initialized on first use via migration
+	// Split layout for task modals on wide screens
+	enableModalSplitLayout: true, // Enabled by default
 	// Default visible properties for task cards
 	defaultVisibleProperties: [
 		"status", // Status dot

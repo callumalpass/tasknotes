@@ -44,7 +44,16 @@ When you run the command, the current line is used as the title of the new task.
 
 ## Instant Task Conversion
 
-The **Instant Task Conversion** feature transforms lines in your notes into TaskNotes files. This works with both checkbox tasks and regular lines of text. Turn the feature on or off from **Settings → TaskNotes → General → Instant task convert**. When enabled, a "convert" button appears next to the content in edit mode. Clicking this button creates a new task note using the line's text as the title and replaces the original line with a link to the new task file.
+The **Instant Task Conversion** feature transforms lines in your notes into TaskNotes files. This works with both checkbox tasks and regular lines of text. Turn the feature on or off from **Settings → TaskNotes → Features → Show convert button next to checkboxes**. When enabled, a "convert" button appears next to the content in edit mode. Clicking this button creates a new task note using the line's text as the title and replaces the original line with a link to the new task file.
+
+### Folder Configuration
+
+By default, converted tasks are placed in the same folder as the current note (`{{currentNotePath}}`). You can change this behavior in **Settings → TaskNotes → General → Folder for converted tasks**:
+
+- **Leave empty**: Uses your default tasks folder (configured in the same section)
+- **`{{currentNotePath}}`**: Places tasks in the same folder as the note you're editing (default)
+- **`{{currentNoteTitle}}`**: Creates a subfolder named after the current note
+- **Custom path**: Specify any folder path (e.g., `TaskNotes/Converted`)
 
 ### Supported Line Types
 

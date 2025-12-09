@@ -3,6 +3,7 @@ import { TranslationTree } from "../types";
 export const ja: TranslationTree = {
 	common: {
 		appName: "TaskNotes",
+		new: "新規",
 		cancel: "キャンセル",
 		confirm: "確認",
 		close: "閉じる",
@@ -177,6 +178,10 @@ export const ja: TranslationTree = {
 				refresh: "カレンダー購読を更新",
 			},
 			settings: {
+		header: {
+			documentation: "Documentation",
+			documentationUrl: "https://tasknotes.dev",
+		},
 				groups: {
 					dateNavigation: "日付ナビゲーション",
 					events: "イベント",
@@ -404,6 +409,10 @@ export const ja: TranslationTree = {
 		},
 	},
 	settings: {
+		header: {
+			documentation: "Documentation",
+			documentationUrl: "https://tasknotes.dev",
+		},
 		tabs: {
 			general: "一般",
 			taskProperties: "タスクプロパティ",
@@ -416,7 +425,7 @@ export const ja: TranslationTree = {
 		features: {
 			inlineTasks: {
 				header: "インラインタスク",
-				description: "あらゆるノート内でシームレスなタスク管理のためのインラインタスク機能を設定します。",
+				description: "ノート内のタスクリンクとチェックボックスからタスクへの変換の設定。",
 			},
 			overlays: {
 				taskLinkToggle: {
@@ -431,12 +440,12 @@ export const ja: TranslationTree = {
 				},
 				folder: {
 					name: "変換されたタスクのフォルダー",
-					description: "チェックボックスから変換されたタスクが作成されるフォルダー。現在のノートに相対的にするには{{currentNotePath}}を使用、現在のノートのタイトルには{{currentNoteTitle}}を使用",
+					description: "チェックボックスから変換されたタスクが作成されるフォルダー。空白のままにするとデフォルトのタスクフォルダーが使用されます。{{currentNotePath}}で現在のノートのフォルダー、{{currentNoteTitle}}でノートのタイトルを持つサブフォルダーを指定できます。",
 				},
 			},
 			nlp: {
 				header: "自然言語処理",
-				description: "自然言語入力からタスクの詳細をスマートに解析することを有効にします。",
+				description: "テキスト入力から日付、優先度、その他のプロパティを解析します。",
 				enable: {
 					name: "自然言語タスク入力を有効にする",
 					description: "タスク作成時に自然言語から期限日、優先度、コンテキストを解析",
@@ -456,7 +465,7 @@ export const ja: TranslationTree = {
 			},
 			pomodoro: {
 				header: "ポモドーロタイマー",
-				description: "時間管理と生産性追跡のための組み込みポモドーロタイマー。",
+				description: "ポモドーロタイマーの作業/休憩間隔を設定します。",
 				workDuration: {
 					name: "作業時間",
 					description: "作業間隔の時間（分）",
@@ -758,7 +767,7 @@ export const ja: TranslationTree = {
 				header: "フォルダー管理",
 				excludedFolders: {
 					name: "除外フォルダー",
-					description: "ノートタブから除外するフォルダーのカンマ区切りリスト",
+					description: "タスクのインデックス作成とプロジェクト候補から除外するフォルダーのカンマ区切りリスト",
 				},
 			},
 			frontmatter: {
@@ -801,6 +810,176 @@ export const ja: TranslationTree = {
 			},
 		},
 		taskProperties: {
+			// Section headers for property card layout
+			sections: {
+				coreProperties: "コアプロパティ",
+				corePropertiesDesc: "ステータスと優先度は、タスクの状態と重要度を定義するコアプロパティです。",
+				dateProperties: "日付プロパティ",
+				datePropertiesDesc: "タスクの期限と予定日を設定します。",
+				organizationProperties: "整理プロパティ",
+				organizationPropertiesDesc: "コンテキスト、プロジェクト、タグでタスクを整理します。",
+				taskDetails: "タスク詳細",
+				taskDetailsDesc: "時間見積もり、繰り返し、リマインダーなどの追加詳細。",
+				metadataProperties: "メタデータプロパティ",
+				metadataPropertiesDesc: "タスク履歴を追跡するためのシステム管理プロパティ。",
+				featureProperties: "機能プロパティ",
+				featurePropertiesDesc: "ポモドーロタイマーやカレンダー同期など、特定のTaskNotes機能で使用されるプロパティ。",
+			},
+			// Property card common fields
+			propertyCard: {
+				propertyKey: "プロパティキー:",
+				default: "デフォルト:",
+				nlpTrigger: "NLPトリガー:",
+				triggerChar: "トリガー文字:",
+				triggerEmpty: "トリガーは空にできません",
+				triggerTooLong: "トリガーが長すぎます（最大10文字）",
+			},
+			// Individual property names and descriptions
+			properties: {
+				status: {
+					name: "ステータス",
+					description:
+						"タスクの現在の状態を追跡します（例：todo、進行中、完了）。ステータスはタスクが完了として表示されるかどうかを決定し、自動アーカイブをトリガーできます。",
+				},
+				priority: {
+					name: "優先度",
+					description:
+						"タスクの重要度を示します。ソートとフィルタリングに使用されます。Basesビューでは値がアルファベット順にソートされるため、1-、2-のようなプレフィックスを使用して順序を制御してください。",
+				},
+				due: {
+					name: "期限日",
+					description:
+						"タスクを完了しなければならない締め切り。期限を過ぎたタスクは期限切れとして表示されます。フロントマターに日付として保存されます。",
+				},
+				scheduled: {
+					name: "予定日",
+					description:
+						"タスクに取り組む予定の日時。期限日とは異なり、これは開始予定時刻を表します。タスクは予定日時にカレンダーに表示されます。",
+				},
+				contexts: {
+					name: "コンテキスト",
+					description:
+						"タスクを実行できる場所や条件（例：@自宅、@オフィス、@電話）。現在の状況に応じてタスクをフィルタリングするのに便利です。リストとして保存されます。",
+				},
+				projects: {
+					name: "プロジェクト",
+					description:
+						"このタスクが属するプロジェクトノートへのリンク。ウィキリンクとして保存されます（例：[[プロジェクト名]]）。タスクは複数のプロジェクトに所属できます。",
+				},
+				tags: {
+					name: "タグ",
+					description:
+						"タスクを分類するためのネイティブObsidianタグ。フロントマターのtagsプロパティに保存され、Obsidianのタグ機能と連携します。",
+				},
+				timeEstimate: {
+					name: "時間見積もり",
+					description:
+						"タスク完了までの推定分数。タイムブロッキングとワークロード計画に使用されます。タスクカードとカレンダーイベントに表示されます。",
+				},
+				recurrence: {
+					name: "繰り返し",
+					description:
+						"繰り返しタスクのパターン（毎日、毎週、毎月、毎年、またはカスタムRRULE）。繰り返しタスクが完了すると、予定日は自動的に次の発生日に更新されます。",
+				},
+				recurrenceAnchor: {
+					name: "繰り返しアンカー",
+					description:
+						"次の発生日の計算方法を制御します：'scheduled'は予定日を使用、'completion'は実際の完了日を使用します。",
+				},
+				reminders: {
+					name: "リマインダー",
+					description:
+						"期限日または予定日の前にトリガーされる通知。タイミングとオプションの説明を含むリマインダーオブジェクトのリストとして保存されます。",
+				},
+				title: {
+					name: "タイトル",
+					description:
+						"タスク名。フロントマターまたはファイル名に保存できます（「タイトルをファイル名に保存」が有効な場合）。",
+				},
+				dateCreated: {
+					name: "作成日",
+					description:
+						"タスクが最初に作成されたタイムスタンプ。自動的に設定され、作成順でのソートに使用されます。",
+				},
+				dateModified: {
+					name: "更新日",
+					description:
+						"タスクへの最後の変更のタイムスタンプ。タスクプロパティが変更されると自動的に更新されます。",
+				},
+				completedDate: {
+					name: "完了日",
+					description:
+						"タスクが完了としてマークされたタイムスタンプ。ステータスが完了状態に変わると自動的に設定されます。",
+				},
+				archiveTag: {
+					name: "アーカイブタグ",
+					description:
+						"アーカイブ時にタスクに追加されるタグ。アーカイブされたタスクを識別するために使用され、アーカイブフォルダへのファイル移動をトリガーできます。",
+				},
+				timeEntries: {
+					name: "時間エントリー",
+					description:
+						"このタスクの時間追跡セッションの記録。各エントリには開始と終了のタイムスタンプが保存されます。合計時間の計算に使用されます。",
+				},
+				completeInstances: {
+					name: "完了インスタンス",
+					description:
+						"繰り返しタスクの完了履歴。各インスタンスが完了した日付を保存して、重複完了を防ぎます。",
+				},
+				skippedInstances: {
+					name: "スキップインスタンス",
+					description:
+						"繰り返しタスクのスキップされた発生。完了ではなくスキップされたインスタンスの日付を保存します。",
+				},
+				blockedBy: {
+					name: "ブロック元",
+					description:
+						"このタスクの前に完了する必要があるタスクへのリンク。ウィキリンクとして保存されます。ブロックされたタスクは視覚的なインジケーターを表示します。",
+				},
+				pomodoros: {
+					name: "ポモドーロ",
+					description:
+						"完了したポモドーロセッションのカウント。データ保存が「デイリーノート」に設定されている場合、これはタスクファイルではなくデイリーノートに書き込まれます。",
+				},
+				icsEventId: {
+					name: "ICSイベントID",
+					description:
+						"ノートをICSカレンダーイベントにリンクする一意の識別子。カレンダーイベントからノートを作成する際に自動的に追加されます。",
+				},
+				icsEventTag: {
+					name: "ICSイベントタグ",
+					description:
+						"ICSカレンダーイベントから作成されたノートを識別するタグ。カレンダー生成ノートを通常のタスクと区別するために使用されます。",
+				},
+			},
+			// Card-specific labels
+			statusCard: {
+				valuesHeader: "ステータス値",
+			},
+			priorityCard: {
+				valuesHeader: "優先度値",
+			},
+			projectsCard: {
+				defaultProjects: "デフォルトプロジェクト:",
+				useParentNote: "親ノートをプロジェクトとして使用:",
+				noDefaultProjects: "デフォルトプロジェクトが選択されていません",
+				autosuggestFilters: "オートサジェストフィルター",
+				customizeDisplay: "表示をカスタマイズ",
+				filtersOn: "フィルター有効",
+			},
+			titleCard: {
+				storeTitleInFilename: "タイトルをファイル名に保存:",
+				storedInFilename: "ファイル名に保存",
+				filenameUpdatesWithTitle: "タスクタイトルが変更されると、ファイル名は自動的に更新されます。",
+				filenameFormat: "ファイル名形式:",
+				customTemplate: "カスタムテンプレート:",
+			},
+			tagsCard: {
+				nativeObsidianTags: "ネイティブObsidianタグを使用",
+			},
+			remindersCard: {
+				defaultReminders: "デフォルトリマインダー",
+			},
 			taskStatuses: {
 				header: "タスクステータス",
 				description: "タスクで利用可能なステータスオプションをカスタマイズします。これらのステータスはタスクライフサイクルを制御し、タスクがいつ完了と見なされるかを決定します。",
@@ -932,10 +1111,13 @@ export const ja: TranslationTree = {
 					displayName: "表示名：",
 					propertyKey: "プロパティキー：",
 					type: "タイプ：",
+					defaultValue: "デフォルト値：",
 				},
 				placeholders: {
 					displayName: "表示名",
 					propertyKey: "property-name",
+					defaultValue: "デフォルト値",
+					defaultValueList: "デフォルト値（カンマ区切り）",
 				},
 				types: {
 					text: "テキスト",
@@ -1725,7 +1907,13 @@ export const ja: TranslationTree = {
 		openPomodoroStats: "ポモドーロ統計を開く",
 		openStatisticsView: "タスクとプロジェクト統計を開く",
 		createNewTask: "新しいタスクを作成",
-		convertToTaskNote: "タスクをTaskNoteに変換",
+		convertCurrentNoteToTask: {
+			name: "現在のノートをタスクに変換",
+			noActiveFile: "変換するアクティブなファイルがありません",
+			alreadyTask: "このノートはすでにタスクです",
+			success: "'{title}'をタスクに変換しました",
+		},
+		convertToTaskNote: "チェックボックスタスクをTaskNoteに変換",
 		convertAllTasksInNote: "ノート内のすべてのタスクを変換",
 		insertTaskNoteLink: "taskNoteリンクを挿入",
 		createInlineTask: "新しいインラインタスクを作成",
@@ -1853,7 +2041,7 @@ export const ja: TranslationTree = {
 		},
 		migration: {
 			title: "新しい繰り返しシステムに移行",
-			description: "TaskNotesには、互換性の向上とより強力なスケジューリングオプションのために業界標準のパターンを使用する新しい繰り返しシステムがあります。",
+			description: "TaskNotesは繰り返しに業界標準のRRULEパターンを使用するようになり、より複雑なスケジュールと他のアプリとの互換性が向上しました。",
 			tasksFound: "{count}件の古い繰り返しパターンを持つタスクが検出されました",
 			noMigrationNeeded: "移行が必要なタスクはありません",
 			warnings: {
@@ -1865,7 +2053,7 @@ export const ja: TranslationTree = {
 			},
 			benefits: {
 				title: "新システムの利点：",
-				powerfulPatterns: "より強力な繰り返しパターン（例：「毎月第2火曜日」）",
+				powerfulPatterns: "複雑な繰り返しパターン（例：「毎月第2火曜日」）",
 				performance: "繰り返しタスクのパフォーマンスが向上",
 				compatibility: "他のアプリと互換性のある標準繰り返し形式",
 				nlp: "自然言語処理のサポート強化",

@@ -19,7 +19,7 @@ import {
 	parseDateToUTC,
 	getTodayLocal,
 } from "../utils/dateUtils";
-import { generateRecurringInstances, extractTimeblocksFromNote, updateTimeblockInDailyNote, addDTSTARTToRecurrenceRuleWithDraggedTime } from "../utils/helpers";
+import { generateRecurringInstances, updateTimeblockInDailyNote, addDTSTARTToRecurrenceRuleWithDraggedTime } from "../utils/helpers";
 import { Notice } from "obsidian";
 import { getAllDailyNotes, getDailyNote, appHasDailyNotesPluginLoaded, createDailyNote } from "obsidian-daily-notes-interface";
 import { TimeblockCreationModal } from "../modals/TimeblockCreationModal";
@@ -71,10 +71,19 @@ export interface CalendarEventGenerationOptions {
 }
 
 /**
- * Convert hex color to rgba with alpha
+ * Convert hex color to rgba with alpha.
+ * Returns the original value if it's not a valid hex color (e.g., CSS variables).
  */
 export function hexToRgba(hex: string, alpha: number): string {
+	// Handle CSS variables - return them unchanged since they can't be converted
+	if (hex.startsWith("var(")) {
+		return hex;
+	}
 	hex = hex.replace("#", "");
+	// Validate hex format
+	if (!/^[0-9A-Fa-f]{6}$/.test(hex)) {
+		return `rgba(128, 128, 128, ${alpha})`; // Fallback to gray if invalid
+	}
 	const r = parseInt(hex.substring(0, 2), 16);
 	const g = parseInt(hex.substring(2, 4), 16);
 	const b = parseInt(hex.substring(4, 6), 16);
@@ -92,12 +101,19 @@ export function isDarkMode(): boolean {
  * Get appropriate text color for event based on theme
  * Returns dark text for light mode, light text for dark mode
  */
-export function getEventTextColor(isGoogleCalendar = false): string {
-	if (isGoogleCalendar) {
+export function getEventTextColor(useThemeColor = false): string {
+	if (useThemeColor) {
 		return isDarkMode() ? '#e8eaed' : '#202124'; // Light text in dark mode, dark text in light mode
 	}
-	// For non-Google Calendar events, use the border color (existing behavior)
+	// For non-themed events, return empty (use border color)
 	return '';
+}
+
+/**
+ * Check if a color string is a CSS variable
+ */
+export function isCssVariable(color: string): boolean {
+	return color.startsWith("var(");
 }
 
 /**
@@ -386,6 +402,8 @@ export function createScheduledEvent(task: TaskInfo, plugin: TaskNotesPlugin): C
 	const priorityConfig = plugin.priorityManager.getPriorityConfig(task.priority);
 	const borderColor = priorityConfig?.color || "var(--color-accent)";
 	const isCompleted = plugin.statusManager.isCompletedStatus(task.status);
+	// Use theme-appropriate text color when border is a CSS variable
+	const textColor = isCssVariable(borderColor) ? getEventTextColor(true) : borderColor;
 
 	return {
 		id: `scheduled-${task.path}`,
@@ -395,7 +413,7 @@ export function createScheduledEvent(task: TaskInfo, plugin: TaskNotesPlugin): C
 		allDay: !hasTime,
 		backgroundColor: "transparent",
 		borderColor: borderColor,
-		textColor: borderColor,
+		textColor: textColor,
 		editable: true,
 		extendedProps: {
 			taskInfo: task,
@@ -425,6 +443,8 @@ export function createDueEvent(task: TaskInfo, plugin: TaskNotesPlugin): Calenda
 	const borderColor = priorityConfig?.color || "var(--color-orange)";
 	const fadedBackground = hexToRgba(borderColor, 0.15);
 	const isCompleted = plugin.statusManager.isCompletedStatus(task.status);
+	// Use theme-appropriate text color when border is a CSS variable
+	const textColor = isCssVariable(borderColor) ? getEventTextColor(true) : borderColor;
 
 	return {
 		id: `due-${task.path}`,
@@ -434,7 +454,7 @@ export function createDueEvent(task: TaskInfo, plugin: TaskNotesPlugin): Calenda
 		allDay: !hasTime,
 		backgroundColor: fadedBackground,
 		borderColor: borderColor,
-		textColor: borderColor,
+		textColor: textColor,
 		editable: false,
 		extendedProps: {
 			taskInfo: task,
@@ -586,6 +606,8 @@ export function createNextScheduledEvent(
 	const borderColor = priorityConfig?.color || "var(--color-accent)";
 	const isInstanceCompleted = task.complete_instances?.includes(instanceDate) || false;
 	const isInstanceSkipped = task.skipped_instances?.includes(instanceDate) || false;
+	// Use theme-appropriate text color when border is a CSS variable
+	const textColor = isCssVariable(borderColor) ? getEventTextColor(true) : borderColor;
 
 	// Determine background color based on instance state
 	let backgroundColor = "transparent";
@@ -603,7 +625,7 @@ export function createNextScheduledEvent(
 		allDay: !hasTime,
 		backgroundColor: backgroundColor,
 		borderColor: borderColor,
-		textColor: borderColor,
+		textColor: textColor,
 		editable: true,
 		extendedProps: {
 			taskInfo: task,
@@ -644,6 +666,8 @@ export function createRecurringEvent(
 	const isInstanceSkipped = task.skipped_instances?.includes(instanceDate) || false;
 
 	const fadedBorderColor = hexToRgba(borderColor, 0.5);
+	// Use theme-appropriate text color when border is a CSS variable (can't be faded)
+	const textColor = isCssVariable(borderColor) ? getEventTextColor(true) : fadedBorderColor;
 
 	// Determine background color based on instance state
 	let backgroundColor = "transparent";
@@ -661,7 +685,7 @@ export function createRecurringEvent(
 		allDay: !hasTime,
 		backgroundColor: backgroundColor,
 		borderColor: fadedBorderColor,
-		textColor: fadedBorderColor,
+		textColor: textColor,
 		editable: true,
 		extendedProps: {
 			taskInfo: task,
@@ -772,21 +796,49 @@ export function createTimeblockEvent(timeblock: TimeBlock, date: string): Calend
 }
 
 /**
- * Generate timeblock events from daily notes for a date range
+ * Validate and extract timeblocks from cached frontmatter
  */
+function extractTimeblocksFromCache(frontmatter: any, path: string): TimeBlock[] {
+	if (!frontmatter?.timeblocks || !Array.isArray(frontmatter.timeblocks)) {
+		return [];
+	}
+
+	const validTimeblocks: TimeBlock[] = [];
+	for (const tb of frontmatter.timeblocks) {
+		// Basic validation - must have id, startTime, endTime
+		if (tb && typeof tb.id === "string" && typeof tb.startTime === "string" && typeof tb.endTime === "string") {
+			validTimeblocks.push(tb as TimeBlock);
+		}
+	}
+	return validTimeblocks;
+}
+
+/**
+ * Generate timeblock events from daily notes for a date range
+ * Uses metadataCache for performance - no file reads required
+ */
+// Cache for daily notes to avoid repeated getAllDailyNotes() calls
+let _dailyNotesCache: Record<string, any> | null = null;
+let _dailyNotesCacheTime = 0;
+const DAILY_NOTES_CACHE_TTL = 5000; // 5 seconds
+
 export async function generateTimeblockEvents(
 	plugin: TaskNotesPlugin,
 	startDate: Date,
 	endDate: Date
 ): Promise<CalendarEvent[]> {
-	const events: CalendarEvent[] = [];
-
 	try {
-		// Lazy import daily notes plugin
+		// Use cached daily notes if available and fresh
+		const now = Date.now();
+		if (!_dailyNotesCache || (now - _dailyNotesCacheTime) > DAILY_NOTES_CACHE_TTL) {
+			_dailyNotesCache = getAllDailyNotes();
+			_dailyNotesCacheTime = now;
+		}
+		const allDailyNotes = _dailyNotesCache;
 
-		const allDailyNotes = getAllDailyNotes();
+		const events: CalendarEvent[] = [];
 
-		// Iterate through date range
+		// Iterate through date range using cached metadata (no file reads)
 		for (
 			let currentUTC = new Date(startDate);
 			currentUTC <= endDate;
@@ -798,24 +850,57 @@ export async function generateTimeblockEvents(
 			const dailyNote = getDailyNote(moment, allDailyNotes);
 
 			if (dailyNote) {
-				try {
-					const content = await plugin.app.vault.read(dailyNote);
-					const timeblocks = extractTimeblocksFromNote(content, dailyNote.path);
-
+				// Use metadataCache instead of reading file
+				const cache = plugin.app.metadataCache.getFileCache(dailyNote);
+				if (cache?.frontmatter) {
+					const timeblocks = extractTimeblocksFromCache(cache.frontmatter, dailyNote.path);
 					for (const timeblock of timeblocks) {
-						const calendarEvent = createTimeblockEvent(timeblock, dateString);
-						events.push(calendarEvent);
+						events.push(createTimeblockEvent(timeblock, dateString));
 					}
-				} catch (error) {
-					console.error(`Error reading daily note ${dailyNote.path}:`, error);
 				}
 			}
 		}
+
+		return events;
 	} catch (error) {
 		console.error("Error getting timeblock events:", error);
+		return [];
 	}
+}
 
-	return events;
+/**
+ * Check if a date string falls within the visible range
+ * Returns true if no range is specified (show all) or if date is within range
+ * Returns true for invalid dates (let FullCalendar handle them)
+ */
+function isDateInVisibleRange(
+	dateString: string,
+	visibleStart?: Date,
+	visibleEnd?: Date,
+	timeEstimate?: number
+): boolean {
+	if (!visibleStart || !visibleEnd) return true;
+
+	try {
+		const date = parseDateToLocal(dateString);
+		const dateTime = date.getTime();
+
+		// Handle invalid dates - include them (let FullCalendar filter)
+		if (isNaN(dateTime)) return true;
+
+		// For events with time estimates, calculate end time
+		let eventEndTime = dateTime;
+		if (timeEstimate) {
+			eventEndTime = dateTime + timeEstimate * 60 * 1000;
+		}
+
+		// Event is visible if it overlaps with visible range
+		// Event starts before visible end AND event ends after visible start
+		return dateTime < visibleEnd.getTime() && eventEndTime >= visibleStart.getTime();
+	} catch {
+		// If date parsing fails, include the event (let FullCalendar handle it)
+		return true;
+	}
 }
 
 /**
@@ -854,33 +939,43 @@ export async function generateCalendarEvents(
 				events.push(...recurringEvents);
 			}
 		} else {
-			// Handle non-recurring tasks
-			// Only add scheduled/due events if they exist
+			// Handle non-recurring tasks with date range filtering
 			if (showScheduled && task.scheduled) {
-				const scheduledEvent = createScheduledEvent(task, plugin);
-				if (scheduledEvent) events.push(scheduledEvent);
+				if (isDateInVisibleRange(task.scheduled, visibleStart, visibleEnd, task.timeEstimate)) {
+					const scheduledEvent = createScheduledEvent(task, plugin);
+					if (scheduledEvent) events.push(scheduledEvent);
+				}
 			}
 
 			if (showDue && task.due) {
-				const dueEvent = createDueEvent(task, plugin);
-				if (dueEvent) events.push(dueEvent);
+				if (isDateInVisibleRange(task.due, visibleStart, visibleEnd)) {
+					const dueEvent = createDueEvent(task, plugin);
+					if (dueEvent) events.push(dueEvent);
+				}
 			}
 		}
 
-		// Add time entry events (regardless of whether task has scheduled/due dates)
+		// Add time entry events with date range filtering
 		if (showTimeEntries && task.timeEntries) {
 			const timeEvents = createTimeEntryEvents(task, plugin);
-			events.push(...timeEvents);
+			// Filter time entries by visible range
+			for (const event of timeEvents) {
+				if (isDateInVisibleRange(event.start, visibleStart, visibleEnd)) {
+					events.push(event);
+				}
+			}
 		}
 	}
 
-	// Add ICS events
+	// Add ICS events with date range filtering
 	if (showICSEvents && plugin.icsSubscriptionService) {
 		const icsEvents = plugin.icsSubscriptionService.getAllEvents();
 		for (const icsEvent of icsEvents) {
-			const calendarEvent = createICSEvent(icsEvent, plugin);
-			if (calendarEvent) {
-				events.push(calendarEvent);
+			if (isDateInVisibleRange(icsEvent.start, visibleStart, visibleEnd)) {
+				const calendarEvent = createICSEvent(icsEvent, plugin);
+				if (calendarEvent) {
+					events.push(calendarEvent);
+				}
 			}
 		}
 	}

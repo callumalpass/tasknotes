@@ -3,6 +3,35 @@
    ================================================ */
 
 /* ================================================
+   SETTINGS HEADER
+   ================================================ */
+
+.tasknotes-plugin .settings-header {
+    display: flex;
+    justify-content: flex-start;
+    margin-bottom: var(--tn-spacing-md);
+    margin-top: calc(-1 * var(--tn-spacing-sm));
+}
+
+.tasknotes-plugin .settings-header-link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--tn-spacing-xs);
+    color: var(--text-accent);
+    text-decoration: none;
+    font-size: var(--font-ui-small);
+}
+
+.tasknotes-plugin .settings-header-link:hover {
+    text-decoration: underline;
+}
+
+.tasknotes-plugin .settings-header-link::after {
+    content: "↗";
+    font-size: 0.85em;
+}
+
+/* ================================================
    TAB NAVIGATION
    ================================================ */
 
@@ -69,7 +98,7 @@
     border: 1px solid var(--background-modifier-border);
     border-radius: 6px;
     margin-bottom: 12px;
-    overflow: hidden;
+    overflow: visible;
 }
 
 .tasknotes-settings__card:hover {
@@ -140,6 +169,7 @@
 .tasknotes-settings__card-config-row {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     margin-bottom: 12px;
 }
 
@@ -178,7 +208,8 @@ select.tasknotes-settings__card-input {
 .tasknotes-settings__card-input[type="text"],
 .tasknotes-settings__card-input[type="url"],
 .tasknotes-settings__card-input[type="email"] {
-    flex: 1;
+    flex: 0 1 auto;
+    min-width: 150px;
 }
 
 .tasknotes-settings__card-input[type="checkbox"] {
@@ -285,7 +316,7 @@ select.tasknotes-settings__card-input {
 .tasknotes-settings__card-header-btn {
     width: 20px;
     height: 20px;
-    border: none;
+    border: none !important;
     background: transparent;
     color: var(--text-muted);
     cursor: var(--cursor);
@@ -293,6 +324,15 @@ select.tasknotes-settings__card-input {
     display: flex;
     align-items: center;
     justify-content: center;
+    box-shadow: none !important;
+    outline: none !important;
+    padding: 0;
+}
+
+.tasknotes-settings__card-header-btn:focus {
+    box-shadow: none !important;
+    outline: none !important;
+    border: none !important;
 }
 
 .tasknotes-settings__card-header-btn:hover {
@@ -333,6 +373,65 @@ select.tasknotes-settings__card-input {
     background: var(--background-modifier-border);
     color: var(--text-muted);
     white-space: nowrap;
+}
+
+/* Selected Project Items (chips) */
+.default-projects-list-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+}
+
+.tasknotes-settings__project-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px 4px 12px;
+    background: var(--background-secondary);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 16px;
+    font-size: 12px;
+    color: var(--text-normal);
+    transition: all 0.15s ease;
+}
+
+.tasknotes-settings__project-item:hover {
+    background: var(--background-modifier-hover);
+    border-color: var(--background-modifier-border-hover);
+}
+
+.tasknotes-settings__project-item span {
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.tasknotes-settings__project-item button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    flex-shrink: 0;
+}
+
+.tasknotes-settings__project-item button:hover {
+    background: var(--background-modifier-error);
+    color: var(--text-on-accent);
+}
+
+.tasknotes-settings__project-item button svg {
+    width: 12px;
+    height: 12px;
 }
 
 /* Drag Handle */
@@ -958,10 +1057,9 @@ select.tasknotes-settings__card-input {
 }
 
 .tasknotes-settings__collapsible-section-content {
-    max-height: 500px;
+    max-height: none;
     opacity: 1;
     overflow: visible;
-    transition: max-height 0.3s ease, opacity 0.2s ease, padding 0.2s ease;
 }
 
 /* Collapsed state */

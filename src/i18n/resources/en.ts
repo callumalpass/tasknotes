@@ -3,6 +3,7 @@ import { TranslationTree } from "../types";
 export const en: TranslationTree = {
 	common: {
 		appName: "TaskNotes",
+		new: "New",
 		cancel: "Cancel",
 		confirm: "Confirm",
 		close: "Close",
@@ -406,6 +407,10 @@ export const en: TranslationTree = {
 		},
 	},
 	settings: {
+		header: {
+			documentation: "Documentation",
+			documentationUrl: "https://tasknotes.dev",
+		},
 		tabs: {
 			general: "General",
 			taskProperties: "Task Properties",
@@ -419,7 +424,7 @@ export const en: TranslationTree = {
 			inlineTasks: {
 				header: "Inline Tasks",
 				description:
-					"Configure inline task features for seamless task management within any note.",
+					"Settings for task links and checkbox-to-task conversion in notes.",
 			},
 			overlays: {
 				taskLinkToggle: {
@@ -436,12 +441,12 @@ export const en: TranslationTree = {
 				folder: {
 					name: "Folder for converted tasks",
 					description:
-						"Folder where tasks converted from checkboxes will be created. Use {{currentNotePath}} for relative to current note, {{currentNoteTitle}} for current note title",
+						"Folder where tasks converted from checkboxes will be created. Leave empty to use the default tasks folder. Use {{currentNotePath}} for the current note's folder, or {{currentNoteTitle}} for a subfolder named after the current note.",
 				},
 			},
 			nlp: {
 				header: "Natural Language Processing",
-				description: "Enable smart parsing of task details from natural language input.",
+				description: "Parse dates, priorities, and other properties from text input.",
 				enable: {
 					name: "Enable natural language task input",
 					description:
@@ -465,7 +470,7 @@ export const en: TranslationTree = {
 			pomodoro: {
 				header: "Pomodoro Timer",
 				description:
-					"Built-in Pomodoro timer for time management and productivity tracking.",
+					"Configure work/break intervals for the Pomodoro timer.",
 				workDuration: {
 					name: "Work duration",
 					description: "Duration of work intervals in minutes",
@@ -780,7 +785,7 @@ export const en: TranslationTree = {
 				header: "Folder Management",
 				excludedFolders: {
 					name: "Excluded folders",
-					description: "Comma-separated list of folders to exclude from Notes tab",
+					description: "Comma-separated list of folders to exclude from task indexing and project suggestions",
 				},
 			},
 			frontmatter: {
@@ -823,6 +828,176 @@ export const en: TranslationTree = {
 			},
 		},
 		taskProperties: {
+			// Section headers for property card layout
+			sections: {
+				coreProperties: "Core Properties",
+				corePropertiesDesc: "Status and priority are the core properties that define a task's state and importance.",
+				dateProperties: "Date Properties",
+				datePropertiesDesc: "Configure when tasks are due and scheduled.",
+				organizationProperties: "Organization Properties",
+				organizationPropertiesDesc: "Organize tasks with contexts, projects, and tags.",
+				taskDetails: "Task Details",
+				taskDetailsDesc: "Additional details like time estimates, recurrence, and reminders.",
+				metadataProperties: "Metadata Properties",
+				metadataPropertiesDesc: "System-managed properties for tracking task history.",
+				featureProperties: "Feature Properties",
+				featurePropertiesDesc: "Properties used by specific TaskNotes features like Pomodoro timer and calendar sync.",
+			},
+			// Property card common fields
+			propertyCard: {
+				propertyKey: "Property key:",
+				default: "Default:",
+				nlpTrigger: "NLP trigger:",
+				triggerChar: "Trigger character:",
+				triggerEmpty: "Trigger cannot be empty",
+				triggerTooLong: "Trigger is too long (max 10 characters)",
+			},
+			// Individual property names and descriptions
+			properties: {
+				status: {
+					name: "Status",
+					description:
+						"Tracks the current state of a task (e.g., todo, in-progress, done). Status determines whether a task appears as completed and can trigger auto-archiving.",
+				},
+				priority: {
+					name: "Priority",
+					description:
+						"Indicates task importance. Used for sorting and filtering. Values are sorted alphabetically in Bases views, so use prefixes like 1-, 2- to control order.",
+				},
+				due: {
+					name: "Due Date",
+					description:
+						"The deadline by which a task must be completed. Tasks past their due date appear as overdue. Stored as a date in frontmatter.",
+				},
+				scheduled: {
+					name: "Scheduled Date",
+					description:
+						"When you plan to work on a task. Unlike due date, this represents your intended start time. Tasks appear on the calendar at their scheduled date/time.",
+				},
+				contexts: {
+					name: "Contexts",
+					description:
+						"Locations or conditions where a task can be done (e.g., @home, @office, @phone). Useful for filtering tasks by your current situation. Stored as a list.",
+				},
+				projects: {
+					name: "Projects",
+					description:
+						"Links to project notes this task belongs to. Stored as wikilinks (e.g., [[Project Name]]). Tasks can belong to multiple projects.",
+				},
+				tags: {
+					name: "Tags",
+					description:
+						"Native Obsidian tags for categorizing tasks. These are stored in the tags frontmatter property and work with Obsidian's tag features.",
+				},
+				timeEstimate: {
+					name: "Time Estimate",
+					description:
+						"Estimated minutes to complete the task. Used for time-blocking and workload planning. Displayed on task cards and calendar events.",
+				},
+				recurrence: {
+					name: "Recurrence",
+					description:
+						"Pattern for repeating tasks (daily, weekly, monthly, yearly, or custom RRULE). When a recurring task is completed, its scheduled date is automatically updated to the next occurrence.",
+				},
+				recurrenceAnchor: {
+					name: "Recurrence Anchor",
+					description:
+						"Controls how the next occurrence is calculated: 'scheduled' uses the scheduled date, 'completion' uses the actual completion date.",
+				},
+				reminders: {
+					name: "Reminders",
+					description:
+						"Notifications triggered before due or scheduled dates. Stored as a list of reminder objects with timing and optional description.",
+				},
+				title: {
+					name: "Title",
+					description:
+						"The task name. Can be stored in frontmatter or in the filename (when 'Store title in filename' is enabled).",
+				},
+				dateCreated: {
+					name: "Date Created",
+					description:
+						"Timestamp when the task was first created. Automatically set and used for sorting by creation order.",
+				},
+				dateModified: {
+					name: "Date Modified",
+					description:
+						"Timestamp of the last change to the task. Automatically updated when any task property changes.",
+				},
+				completedDate: {
+					name: "Completed Date",
+					description:
+						"Timestamp when the task was marked complete. Set automatically when status changes to a completed state.",
+				},
+				archiveTag: {
+					name: "Archive Tag",
+					description:
+						"Tag added to tasks when archived. Used to identify archived tasks and can trigger file movement to archive folder.",
+				},
+				timeEntries: {
+					name: "Time Entries",
+					description:
+						"Records of time tracking sessions for this task. Each entry stores start and end timestamps. Used to calculate total time spent.",
+				},
+				completeInstances: {
+					name: "Complete Instances",
+					description:
+						"Completion history for recurring tasks. Stores dates when each instance was completed to prevent duplicate completions.",
+				},
+				skippedInstances: {
+					name: "Skipped Instances",
+					description:
+						"Skipped occurrences for recurring tasks. Stores dates of instances that were skipped rather than completed.",
+				},
+				blockedBy: {
+					name: "Blocked By",
+					description:
+						"Links to tasks that must be completed before this one. Stored as wikilinks. Blocked tasks display a visual indicator.",
+				},
+				pomodoros: {
+					name: "Pomodoros",
+					description:
+						"Count of completed Pomodoro sessions. When data storage is set to 'Daily notes', this is written to daily notes instead of task files.",
+				},
+				icsEventId: {
+					name: "ICS Event ID",
+					description:
+						"Unique identifier linking a note to an ICS calendar event. Added automatically when creating notes from calendar events.",
+				},
+				icsEventTag: {
+					name: "ICS Event Tag",
+					description:
+						"Tag identifying notes created from ICS calendar events. Used to distinguish calendar-generated notes from regular tasks.",
+				},
+			},
+			// Card-specific labels
+			statusCard: {
+				valuesHeader: "Status Values",
+			},
+			priorityCard: {
+				valuesHeader: "Priority Values",
+			},
+			projectsCard: {
+				defaultProjects: "Default projects:",
+				useParentNote: "Use parent note as project:",
+				noDefaultProjects: "No default projects selected",
+				autosuggestFilters: "Autosuggest Filters",
+				customizeDisplay: "Customize Display",
+				filtersOn: "Filters On",
+			},
+			titleCard: {
+				storeTitleInFilename: "Store title in filename:",
+				storedInFilename: "Stored in filename",
+				filenameUpdatesWithTitle: "Filename will automatically update when the task title changes.",
+				filenameFormat: "Filename format:",
+				customTemplate: "Custom template:",
+			},
+			tagsCard: {
+				nativeObsidianTags: "Uses native Obsidian tags",
+			},
+			remindersCard: {
+				defaultReminders: "Default Reminders",
+			},
 			taskStatuses: {
 				header: "Task Statuses",
 				description:
@@ -959,10 +1134,13 @@ export const en: TranslationTree = {
 					displayName: "Display Name:",
 					propertyKey: "Property Key:",
 					type: "Type:",
+					defaultValue: "Default Value:",
 				},
 				placeholders: {
 					displayName: "Display Name",
 					propertyKey: "property-name",
+					defaultValue: "Default value",
+					defaultValueList: "Default values (comma-separated)",
 				},
 				types: {
 					text: "Text",
@@ -1783,7 +1961,13 @@ export const en: TranslationTree = {
 		openPomodoroStats: "Open pomodoro statistics",
 		openStatisticsView: "Open task & project statistics",
 		createNewTask: "Create new task",
-		convertToTaskNote: "Convert task to TaskNote",
+		convertCurrentNoteToTask: {
+			name: "Convert current note to task",
+			noActiveFile: "No active file to convert",
+			alreadyTask: "This note is already a task",
+			success: "Converted '{title}' to a task",
+		},
+		convertToTaskNote: "Convert checkbox task to TaskNote",
 		convertAllTasksInNote: "Convert all tasks in note",
 		insertTaskNoteLink: "Insert tasknote link",
 		createInlineTask: "Create new inline task",
@@ -1911,7 +2095,7 @@ export const en: TranslationTree = {
 		},
 		migration: {
 			title: "Migrate to New Recurrence System",
-			description: "TaskNotes has a new recurrence system that uses industry-standard patterns for better compatibility and more powerful scheduling options.",
+			description: "TaskNotes now uses industry-standard RRULE patterns for recurrence, which enables more complex schedules and better compatibility with other apps.",
 			tasksFound: "{count} task(s) with old recurrence patterns detected",
 			noMigrationNeeded: "No tasks require migration",
 			warnings: {
@@ -1923,7 +2107,7 @@ export const en: TranslationTree = {
 			},
 			benefits: {
 				title: "Benefits of the new system:",
-				powerfulPatterns: "More powerful recurrence patterns (e.g., 'every 2nd Tuesday')",
+				powerfulPatterns: "Complex recurrence patterns (e.g., 'every 2nd Tuesday')",
 				performance: "Better performance with recurring tasks",
 				compatibility: "Standard recurrence format compatible with other apps",
 				nlp: "Enhanced natural language processing support",

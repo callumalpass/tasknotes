@@ -2,23 +2,11 @@
 
 [← Back to Views](../views.md)
 
-The Kanban View displays tasks as cards organized in columns, where each column represents a distinct value of a grouped property. This view operates within Obsidian's Bases core plugin.
-
-## Bases Architecture
-
-The Kanban view functions as a Bases view type. It reads data from `.base` files located in your vault's `TaskNotes/Views/` directory. These files contain YAML frontmatter that defines the view configuration, including data source, filtering, sorting, and Kanban-specific options.
-
-### Requirements
-
-- Obsidian 1.10.1 or later
-- Bases core plugin enabled
-- A `groupBy` property configured in the view settings
-
-The `groupBy` property determines the column structure. Each unique value of this property becomes a column in the Kanban board.
+The Kanban View displays tasks as cards organized in columns, where each column represents a distinct value of a grouped property.
 
 ## Configuration
 
-Kanban views are configured through the Bases interface. Open a `.base` file and access the view settings panel to configure options.
+Kanban views are stored as `.base` files in `TaskNotes/Views/`. The `groupBy` property determines the column structure—each unique value becomes a column in the board. Open a `.base` file and access the view settings panel to configure options.
 
 ### Core Settings (Bases)
 

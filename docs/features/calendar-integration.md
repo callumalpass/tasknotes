@@ -36,32 +36,9 @@ TaskNotes stores OAuth access tokens and refresh tokens locally. Tokens are refr
 
 ## Calendar Views
 
-TaskNotes provides two calendar views implemented as Bases views. Both views require the **Bases core plugin** to be enabled in Obsidian.
+TaskNotes provides Calendar and Mini Calendar views that display tasks alongside OAuth calendar events and ICS subscriptions. Both views support drag-and-drop scheduling.
 
-### Calendar View
-
-The Calendar View offers multiple display modes—month, week, day, year, and custom days (2-10 days)—and supports:
-
-- Drag-and-drop task scheduling and rescheduling
-- Click dates or time slots to create new tasks
-- Display of scheduled tasks, due tasks, recurring tasks, time entries, and time blocks
-- OAuth calendar events from Google and Microsoft
-- Read-only ICS subscription events
-- Custom day view for flexible screen space utilization
-
-Calendar views are configured through `.base` files in your vault, which define the data source, filters, and view-specific options.
-
-### Mini Calendar
-
-The Mini Calendar is a month-based Bases view that displays notes and tasks organized by date. Features include:
-
-- Heatmap styling to visualize note/task density per day
-- Fuzzy selector modal when clicking on days (allows quick selection from multiple notes)
-- Keyboard navigation for date selection
-- Configurable date property (supports `file.ctime`, `file.mtime`, or any custom date property)
-- Configurable title property for displaying note names
-
-The Mini Calendar operates as a Bases view and is configured through a `.base` file that specifies the date property and display options.
+For detailed view documentation, see [Calendar Views](../views/calendar-views.md).
 
 ## Time Entry Editor
 
@@ -94,40 +71,7 @@ TaskNotes can subscribe to external calendar feeds using the iCalendar (ICS) for
 
 Add and manage ICS subscriptions from **Settings → TaskNotes → Integrations → Calendar subscriptions**.
 
-### Creating Content from Calendar Events
-
-TaskNotes allows you to create notes and tasks directly from calendar events through the event information modal. When you click on a calendar event, you can:
-
-**Create Notes from Events:**
-
-- Generate notes using the event title, date, location, and description
-- Apply custom templates for consistent note formatting
-- Automatically link notes to the original calendar event for reference
-
-**Create Tasks from Events:**
-
-- Convert calendar events into actionable tasks
-- Preserve the event's start time as the task's scheduled date and time
-- Include event duration as the task's time estimate
-- Add event location as a task context
-- Automatically tag tasks with the ICS event identifier
-
-**Link Existing Content:**
-
-- Connect existing notes to calendar events
-- View all notes and tasks related to a specific event
-- Maintain bidirectional references between calendar events and vault content
-
-### Event Information Modal
-
-The event information modal displays details about calendar events and provides action buttons for content creation. The modal shows:
-
-- Event title, date, time, location, and description
-- Source calendar subscription name
-- List of related notes and tasks (if any exist)
-- Options to create new content or link existing notes
-
-Related notes and tasks are automatically identified by their ICS event ID field. Tasks are distinguished from notes based on the presence of the configured task tag in their frontmatter.
+For details on creating notes and tasks from calendar events, see [ICS Integration](ics-integration.md).
 
 ## Time Blocking
 

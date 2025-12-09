@@ -6,6 +6,7 @@ import { ReleaseNoteVersion } from "../releaseNotes";
 export const RELEASE_NOTES_VIEW_TYPE = "tasknotes-release-notes";
 
 const GITHUB_RELEASES_URL = "https://github.com/callumalpass/tasknotes/releases";
+const GITHUB_REPO_URL = "https://github.com/callumalpass/tasknotes";
 
 export class ReleaseNotesView extends ItemView {
 	plugin: TaskNotesPlugin;
@@ -168,6 +169,29 @@ export class ReleaseNotesView extends ItemView {
 			text: this.plugin.i18n.translate("views.releaseNotes.header", { version: this.version })
 		});
 
+		// Star message with GitHub link
+		const starMessage = container.createEl("p");
+		starMessage.style.marginBottom = "20px";
+		starMessage.style.fontSize = "0.9em";
+		starMessage.style.color = "var(--text-muted)";
+		const messageText = this.plugin.i18n.translate("views.releaseNotes.starMessage");
+		const githubIndex = messageText.toLowerCase().lastIndexOf("github");
+		if (githubIndex !== -1) {
+			starMessage.appendText(messageText.substring(0, githubIndex));
+			const starLink = starMessage.createEl("a", {
+				text: messageText.substring(githubIndex, githubIndex + 6),
+				href: GITHUB_REPO_URL,
+			});
+			starLink.style.color = "var(--text-accent)";
+			starLink.addEventListener("click", (e) => {
+				e.preventDefault();
+				window.open(GITHUB_REPO_URL, "_blank");
+			});
+			starMessage.appendText(messageText.substring(githubIndex + 6));
+		} else {
+			starMessage.appendText(messageText);
+		}
+
 		// Render all versions
 		const versionsContainer = container.createEl("div", { cls: "release-notes-versions" });
 		for (let i = 0; i < this.releaseNotesBundle.length; i++) {
@@ -194,14 +218,6 @@ export class ReleaseNotesView extends ItemView {
 			e.preventDefault();
 			window.open(GITHUB_RELEASES_URL, "_blank");
 		});
-
-		// Star message
-		const starMessage = footer.createEl("p", {
-			text: this.plugin.i18n.translate("views.releaseNotes.starMessage"),
-		});
-		starMessage.style.marginTop = "16px";
-		starMessage.style.fontSize = "0.9em";
-		starMessage.style.color = "var(--text-muted)";
 	}
 
 	async onClose() {

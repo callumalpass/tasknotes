@@ -490,6 +490,9 @@ export abstract class TaskModal extends Modal {
 
 	onOpen() {
 		this.containerEl.addClass("tasknotes-plugin", "minimalist-task-modal");
+		if (this.plugin.settings.enableModalSplitLayout) {
+			this.containerEl.addClass("split-layout-enabled");
+		}
 		this.modalEl.addClass("mod-tasknotes");
 
 		// Set the modal title using the standard Obsidian approach (preserves close button)
@@ -515,6 +518,11 @@ export abstract class TaskModal extends Modal {
 		});
 	}
 
+	// Store references to split layout containers for potential reuse
+	protected splitContentWrapper: HTMLElement;
+	protected splitLeftColumn: HTMLElement;
+	protected splitRightColumn: HTMLElement;
+
 	protected createModalContent(): void {
 		const { contentEl } = this;
 		contentEl.empty();
@@ -522,17 +530,41 @@ export abstract class TaskModal extends Modal {
 		// Create main container
 		const container = contentEl.createDiv("minimalist-modal-container");
 
-		// Create title input (prominent)
-		this.createTitleInput(container);
+		// Create split content wrapper at the top level for wide screen layout
+		this.splitContentWrapper = container.createDiv("modal-split-content");
+		this.splitLeftColumn = this.splitContentWrapper.createDiv("modal-split-left");
+		this.splitRightColumn = this.splitContentWrapper.createDiv("modal-split-right");
 
-		// Create action bar with icons
-		this.createActionBar(container);
+		// Create primary input area (title or NLP) - subclasses can override
+		this.createPrimaryInput(this.splitLeftColumn);
 
-		// Create collapsible details section
+		// Create action bar with icons - goes in left column
+		this.createActionBar(this.splitLeftColumn);
+
+		// Create collapsible details section (fields in left, details editor in right)
 		this.createDetailsSection(container);
 
-		// Create save/cancel buttons
+		// Hook for subclasses to add additional sections to left column
+		this.createAdditionalSections(this.splitLeftColumn);
+
+		// Create save/cancel buttons - outside the split, at bottom
 		this.createActionButtons(container);
+	}
+
+	/**
+	 * Creates the primary input area. Override in subclasses for different behavior.
+	 * Default: simple title input
+	 */
+	protected createPrimaryInput(container: HTMLElement): void {
+		this.createTitleInput(container);
+	}
+
+	/**
+	 * Hook for subclasses to add additional sections after the details section.
+	 * Default: no-op
+	 */
+	protected createAdditionalSections(container: HTMLElement): void {
+		// Override in subclasses (e.g., TaskEditModal adds completions calendar and metadata)
 	}
 
 	protected createTitleInput(container: HTMLElement): void {
@@ -662,9 +694,18 @@ export abstract class TaskModal extends Modal {
 	}
 
 	protected createDetailsSection(container: HTMLElement): void {
-		this.detailsContainer = container.createDiv("details-container");
+		// The details container wraps the expandable fields (for hide/show animation)
+		// It goes inside the left column for proper expand/collapse
+		this.detailsContainer = this.splitLeftColumn
+			? this.splitLeftColumn.createDiv("details-container")
+			: container.createDiv("details-container");
+
 		if (!this.isExpanded) {
 			this.detailsContainer.style.display = "none";
+			// Also hide the right column when collapsed
+			if (this.splitRightColumn) {
+				this.splitRightColumn.style.display = "none";
+			}
 		}
 
 		// Check field configuration to determine which fields to show
@@ -700,14 +741,15 @@ export abstract class TaskModal extends Modal {
 			}
 		}
 
-		// Details textarea (only for creation modals, not edit modals)
-		if (shouldShowDetails && !this.isEditMode()) {
-			const detailsLabel = this.detailsContainer.createDiv("detail-label");
+		// Details editor goes in the right column
+		if (shouldShowDetails) {
+			const rightColumn = this.splitRightColumn || this.detailsContainer;
+
+			const detailsLabel = rightColumn.createDiv("detail-label");
 			detailsLabel.textContent = this.t("modals.task.detailsLabel");
 
 			// Create container for the markdown editor
-			const detailsEditorContainer =
-				this.detailsContainer.createDiv("details-markdown-editor");
+			const detailsEditorContainer = rightColumn.createDiv("details-markdown-editor");
 
 			// Create embeddable markdown editor for details using shared method
 			this.detailsMarkdownEditor = this.createMarkdownEditor(detailsEditorContainer, {
@@ -733,7 +775,7 @@ export abstract class TaskModal extends Modal {
 			});
 		}
 
-		// Additional form fields (contexts, tags, etc.) can be added here
+		// Additional form fields (contexts, tags, etc.) go in the details container (left side)
 		this.createAdditionalFields(this.detailsContainer);
 	}
 
@@ -1206,6 +1248,11 @@ export abstract class TaskModal extends Modal {
 		this.isExpanded = true;
 		this.detailsContainer.style.display = "block";
 		this.containerEl.addClass("expanded");
+
+		// Also show the right column (details editor) when expanding
+		if (this.splitRightColumn) {
+			this.splitRightColumn.style.display = "";
+		}
 
 		// Animate the expansion
 		this.detailsContainer.style.opacity = "0";

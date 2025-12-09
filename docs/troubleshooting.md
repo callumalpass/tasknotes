@@ -1,6 +1,29 @@
 # Troubleshooting
 
-This section covers common issues and their solutions when using TaskNotes.
+Common issues and solutions for TaskNotes.
+
+## Bases and Views (v4)
+
+### Views Not Loading
+
+**Symptoms**: TaskNotes views show errors or don't display tasks
+
+**Solutions**:
+
+1. Enable the Bases core plugin: Settings → Core Plugins → Bases
+2. Restart Obsidian after enabling Bases
+3. Check that `.base` files exist in `TaskNotes/Views/`
+4. Use Settings → TaskNotes → Integrations → "Create default files" to regenerate view files
+
+### Commands Open Wrong Files
+
+**Symptoms**: Ribbon icons or commands open unexpected files
+
+**Solutions**:
+
+1. Check view file paths in Settings → TaskNotes → Integrations → View Commands
+2. Click "Reset" next to each command to restore default paths
+3. Verify the `.base` files exist at the configured paths
 
 ## Common Issues
 
@@ -59,35 +82,23 @@ This section covers common issues and their solutions when using TaskNotes.
 
 **Symptoms**: Calendar views are slow or unresponsive
 
-**Possible Causes**:
-
-- Large number of tasks or external calendar events
-- Multiple ICS subscriptions with frequent refresh
-- Complex recurring task patterns
-
 **Solutions**:
 
-1. Disable unused event types in calendar view toggles
+1. Disable unused event types (scheduled, due, recurring, time entries) in view settings
 2. Increase ICS subscription refresh intervals
-3. Consider disabling note indexing in Misc settings if you don't use the Notes view
-4. Reduce the number of external calendar subscriptions
+3. Reduce the date range displayed
+4. See [Performance Troubleshooting](#performance-troubleshooting) for general tips
 
 ### Natural Language Parsing Not Working
 
 **Symptoms**: Natural language input doesn't extract expected task properties
 
-**Possible Causes**:
-
-- Natural language processing is disabled
-- Input format doesn't match supported patterns
-- Custom status/priority words not configured
-
 **Solutions**:
 
-1. Enable "Natural language input" in Task Defaults settings
-2. Review supported syntax in the Natural Language Processing documentation
-3. Configure custom priority and status words if using non-default values
-4. Try simpler input patterns to test basic functionality
+1. Enable "Natural language input" in Settings → TaskNotes → Features
+2. Check trigger characters match your input (default: `@` for contexts, `#` for tags, `!` for priority)
+3. Configure custom status/priority words in Settings → TaskNotes → Task Properties
+4. See [NLP API](nlp-api.md) for supported syntax
 
 ### Time Tracking Issues
 
@@ -147,23 +158,47 @@ This section covers common issues and their solutions when using TaskNotes.
 
 **Solutions**:
 
-1. Disable note indexing in Misc settings if you don't use the Notes view
-2. Reduce the number of external calendar subscriptions
-3. Exclude large folders from note processing
-4. Consider using simpler status and priority configurations
+1. Reduce the number of external calendar subscriptions
+2. Increase ICS refresh intervals (Settings → Integrations → Calendar subscriptions)
+3. Exclude large folders (Settings → General → Excluded folders)
+4. Disable unused calendar event types in view settings
 
 ## External Calendar Issues
 
+### OAuth Calendar Not Connecting
+
+**Symptoms**: Google Calendar or Microsoft Outlook won't connect
+
+**Solutions**:
+
+1. Verify Client ID and Client Secret are correct (no extra spaces)
+2. Check redirect URI matches exactly: `http://localhost:42813/callback`
+3. Ensure the OAuth app is published or you're listed as a test user
+4. Try disconnecting and reconnecting
+5. Check browser popup blockers aren't blocking the auth window
+6. See [Calendar Setup](calendar-setup.md) for detailed OAuth configuration
+
+### OAuth Calendar Not Syncing
+
+**Symptoms**: Connected calendar shows old events or doesn't update
+
+**Solutions**:
+
+1. Click the manual refresh button in Settings → Integrations
+2. Check "Last sync time" to see when data was last fetched
+3. Disconnect and reconnect the calendar
+4. Verify events exist in the source calendar
+
 ### ICS Subscriptions Not Loading
 
-**Symptoms**: External calendar events don't appear in calendar views
+**Symptoms**: ICS calendar events don't appear in calendar views
 
 **Solutions**:
 
 1. Verify ICS URL is correct and accessible
 2. Check network connection and firewall settings
 3. Try manual refresh of the subscription
-4. Validate ICS feed using online ICS validators
+4. Validate ICS feed using an online ICS validator
 5. Check error messages in subscription status
 
 ### Calendar Sync Problems
@@ -175,35 +210,28 @@ This section covers common issues and their solutions when using TaskNotes.
 1. Check refresh interval settings for the subscription
 2. Manually refresh the subscription
 3. Verify the external calendar is actually updated at the source
-4. Clear cached calendar data by removing and re-adding subscription
+4. Remove and re-add the subscription to clear cached data
 
 ## Getting Help
 
-### Diagnostic Information
+### Reporting Issues
 
-When reporting issues, include:
+Report bugs on [GitHub Issues](https://github.com/callumalpass/tasknotes/issues). Include:
 
-1. TaskNotes version number
-2. Obsidian version
-3. Operating system
-4. Specific error messages
-5. Steps to reproduce the issue
-6. Screenshots if relevant
-
-### Community Support
-
-- Check the GitHub repository for existing issues
-- Search community forums for similar problems
-- Review documentation for configuration guidance
+- TaskNotes and Obsidian versions
+- Operating system
+- Steps to reproduce
+- Error messages (open console with `Ctrl/Cmd + Shift + I`)
+- Screenshots if relevant
 
 ### Configuration Reset
 
-If all else fails, you can reset TaskNotes configuration:
+If all else fails, reset TaskNotes configuration:
 
 1. Close Obsidian
 2. Navigate to `.obsidian/plugins/tasknotes/`
 3. Rename or delete `data.json`
-4. Restart Obsidian (this will reset all settings to defaults)
+4. Restart Obsidian
 
-!!! warning "Important"
-    Resetting configuration will lose all custom settings, status configurations, and ICS subscriptions. Export or document your current settings before resetting.
+!!! warning
+    This resets all settings, status configurations, and calendar subscriptions. Document your settings before resetting.

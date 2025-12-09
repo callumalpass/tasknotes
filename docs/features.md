@@ -12,13 +12,9 @@ See [Task Management](features/task-management.md) for details.
 
 ## Filtering and Views
 
-TaskNotes v4 uses the Bases core plugin for filtering, sorting, and grouping tasks. Bases is an official Obsidian plugin built directly into the application. Views are defined through YAML-based `.base` files in your vault, which specify query conditions using AND/OR logic, sort orders, and grouping criteria by task properties such as tags, status, or custom fields.
+TaskNotes uses Obsidian's Bases core plugin for filtering, sorting, and grouping tasks. Views are defined through YAML-based `.base` files that specify query conditions, sort orders, and grouping criteria. Hierarchical subgrouping supports two-level organization.
 
-Saved views are stored as `.base` files rather than in plugin settings. This allows multiple task perspectives that can be switched between. Hierarchical subgrouping supports two-level organization, where tasks are first grouped by one criterion (e.g., status) and then subdivided by another (e.g., priority).
-
-The Bases core plugin must be enabled for TaskNotes main views to function.
-
-For details on Bases syntax, filtering, and views, see the [official Obsidian Bases documentation](https://help.obsidian.md/Bases/Introduction+to+Bases).
+For details on how Bases integration works, see [Core Concepts](core-concepts.md#bases-integration). For Bases syntax documentation, see the [official Obsidian Bases documentation](https://help.obsidian.md/Bases/Introduction+to+Bases).
 
 ## Inline Task Integration
 
@@ -50,7 +46,7 @@ See [User Fields](features/user-fields.md) for details.
 
 ## Integrations
 
-TaskNotes v4 requires the Bases core plugin to be enabled for main task views to function. Bases is an official Obsidian plugin built directly into the application, not a community plugin. This integration allows TaskNotes tasks to function as data sources within Bases databases.
+TaskNotes integrates with external calendars (Google Calendar, Microsoft Outlook) via OAuth, ICS calendar subscriptions, and provides an HTTP API for automation.
 
 See [Integrations](settings/integrations.md) for details.
 
@@ -58,18 +54,4 @@ See [Integrations](settings/integrations.md) for details.
 
 External applications can interact with TaskNotes through its REST API for automation, reporting, and integration with other tools.
 
-See [HTTP API](../HTTP_API.md) for details.
-
-## View Types
-
-[Task List View](../views/task-list.md) handles filtering, sorting, and grouping. [Kanban View](../views/kanban-view.md) organizes tasks as cards across status columns.
-
-[Calendar Views](../views/calendar-views.md) provide visual scheduling with time-blocking. The [Agenda View](../views/agenda-view.md) command opens the calendar's list mode for daily and weekly planning.
-
-## Settings
-
-[General](../settings/general.md) controls task identification, file storage, and click behavior. [Features](../settings/features.md) manages inline tasks, natural language processing, and the Pomodoro timer. [Defaults & Templates](../settings/defaults.md) sets default properties and templates.
-
-[Appearance & UI](../settings/appearance.md) controls visual elements. [Task Properties](../settings/task-properties.md) defines custom statuses, priorities, and user fields. [Modal Fields](../settings/modal-fields.md) configures field visibility in task modals.
-
-[Calendar Settings](../settings/calendar-settings.md) handles calendar appearance and behavior. [Integrations](../settings/integrations.md) manages OAuth calendars, ICS subscriptions, and the HTTP API. [Advanced Settings](../settings/advanced-settings.md) covers field mapping. [Misc Settings](../settings/misc-settings.md) contains additional options.
+See [HTTP API](HTTP_API.md) for details.

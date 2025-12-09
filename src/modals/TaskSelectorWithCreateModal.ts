@@ -354,17 +354,17 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 			taskData.timeEstimate = parsed.estimate;
 		}
 
-		// Handle user-defined fields - convert to customFrontmatter using the frontmatter key
+		// Handle NLP-parsed user fields - convert from fieldId to frontmatter key
+		// Default values for user fields are applied by TaskService.createTask()
 		if (parsed.userFields) {
-			const customFrontmatter: Record<string, any> = {};
 			const userFieldDefs = this.plugin.settings.userFields || [];
+			const customFrontmatter: Record<string, any> = {};
 
 			for (const [fieldId, value] of Object.entries(parsed.userFields)) {
 				const fieldDef = userFieldDefs.find((f) => f.id === fieldId);
 				if (fieldDef) {
 					// Use the frontmatter key from the field definition
-					const frontmatterKey = fieldDef.key;
-					customFrontmatter[frontmatterKey] = Array.isArray(value) ? value.join(", ") : value;
+					customFrontmatter[fieldDef.key] = Array.isArray(value) ? value.join(", ") : value;
 				}
 			}
 

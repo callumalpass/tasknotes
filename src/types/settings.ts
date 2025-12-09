@@ -15,6 +15,7 @@ export interface UserMappedField {
 	key: string; // frontmatter key
 	type: "text" | "number" | "date" | "boolean" | "list";
 	autosuggestFilter?: FileFilterConfig; // Optional filter configuration for file suggestions
+	defaultValue?: string | number | boolean | string[]; // Default value for the field
 }
 
 /**
@@ -192,6 +193,8 @@ export interface TaskNotesSettings {
 	userField?: UserFieldMapping;
 	// Task modal field configuration
 	modalFieldsConfig?: TaskModalFieldsConfig;
+	// Split layout for task modals on wide screens
+	enableModalSplitLayout: boolean;
 	// Default visible properties for task cards (when no saved view is active)
 	defaultVisibleProperties?: string[];
 	// Default visible properties for inline task cards (task link widgets in editor)

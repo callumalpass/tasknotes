@@ -1,4 +1,4 @@
-import { Component, App } from "obsidian";
+import { Component, App, setIcon } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { BasesDataAdapter } from "./BasesDataAdapter";
 import { PropertyMappingService } from "./PropertyMappingService";
@@ -27,6 +27,8 @@ export abstract class BasesViewBase extends Component {
 	protected rootElement: HTMLElement | null = null;
 	protected taskUpdateListener: any = null;
 	protected updateDebounceTimer: number | null = null;
+	protected dataUpdateDebounceTimer: number | null = null;
+	protected relevantPathsCache: Set<string> = new Set();
 
 	// Search functionality (opt-in via enableSearch flag)
 	protected enableSearch = false;
@@ -63,19 +65,53 @@ export abstract class BasesViewBase extends Component {
 		this.setupContainer();
 		this.setupTaskUpdateListener();
 		this.setupSelectionHandling();
+		this.updateRelevantPathsCache();
 		this.render();
 	}
 
 	/**
 	 * BasesView lifecycle: Called when Bases data changes.
 	 * Required abstract method implementation.
+	 * Debounced to prevent excessive re-renders during rapid file saves.
 	 */
 	onDataUpdated(): void {
+		// Skip if view is not visible
+		if (!this.rootElement?.isConnected) {
+			return;
+		}
+
+		// Debounce data updates to avoid freezing during typing
+		if (this.dataUpdateDebounceTimer) {
+			clearTimeout(this.dataUpdateDebounceTimer);
+		}
+
+		this.dataUpdateDebounceTimer = window.setTimeout(() => {
+			this.dataUpdateDebounceTimer = null;
+			try {
+				this.render();
+			} catch (error) {
+				console.error(`[TaskNotes][${this.type}] Render error:`, error);
+				this.renderError(error as Error);
+			}
+		}, 500);  // 500ms debounce for data updates
+	}
+
+	/**
+	 * Update the cache of relevant paths for efficient update checking.
+	 * Called when data changes to avoid expensive lookups on every task update.
+	 */
+	protected updateRelevantPathsCache(): void {
+		this.relevantPathsCache.clear();
+
 		try {
-			this.render();
-		} catch (error) {
-			console.error(`[TaskNotes][${this.type}] Render error:`, error);
-			this.renderError(error as Error);
+			const dataItems = this.dataAdapter.extractDataItems();
+			for (const item of dataItems) {
+				if (item.path) {
+					this.relevantPathsCache.add(item.path);
+				}
+			}
+		} catch {
+			// Ignore errors - cache will be empty and all updates will be processed
 		}
 	}
 
@@ -144,6 +180,102 @@ export abstract class BasesViewBase extends Component {
 		root.tabIndex = -1; // Make focusable without adding to tab order
 		this.containerEl.appendChild(root);
 		this.rootElement = root;
+
+		// Add custom "New Task" button and hide the default Bases "New" button
+		this.setupNewTaskButton();
+	}
+
+	/**
+	 * Setup custom "New Task" button that opens TaskNotes creation modal.
+	 * Injects the button into the Bases toolbar and hides the default "New" button.
+	 */
+	protected setupNewTaskButton(): void {
+		// Defer to allow Bases to render its toolbar first
+		setTimeout(() => this.injectNewTaskButton(), 100);
+
+		// Register cleanup to toggle off the active class when view is unloaded
+		this.register(() => this.cleanupNewTaskButton());
+	}
+
+	/**
+	 * Clean up: just remove the "active" class, keep the button for reuse.
+	 */
+	private cleanupNewTaskButton(): void {
+		const basesViewEl = this.containerEl.closest(".bases-view");
+		const parentEl = basesViewEl?.parentElement;
+
+		// Only remove the "active" class - button stays for potential reuse
+		parentEl?.classList.remove("tasknotes-view-active");
+	}
+
+	/**
+	 * Inject the custom "New Task" button into the Bases toolbar.
+	 */
+	private injectNewTaskButton(): void {
+		// Find the Bases view container
+		const basesViewEl = this.containerEl.closest(".bases-view");
+		if (!basesViewEl) {
+			console.debug("[TaskNotes][Bases] No .bases-view found");
+			return;
+		}
+
+		// The toolbar is a sibling of .bases-view, not a child
+		// Look in the parent container for the toolbar
+		const parentEl = basesViewEl.parentElement;
+		if (!parentEl) {
+			console.debug("[TaskNotes][Bases] No parent element found");
+			return;
+		}
+
+		// Mark parent as having an active TaskNotes view (controls visibility via CSS)
+		parentEl.classList.add("tasknotes-view-active");
+
+		const toolbarEl = parentEl.querySelector(".bases-toolbar");
+		if (!toolbarEl) {
+			console.debug("[TaskNotes][Bases] No .bases-toolbar found in parent");
+			return;
+		}
+
+		// Check if we already added the button (reuse existing)
+		if (toolbarEl.querySelector(".tn-bases-new-task-btn")) return;
+
+		// Create "New Task" button matching Bases' text-icon-button style
+		const newTaskBtn = document.createElement("div");
+		newTaskBtn.className = "bases-toolbar-item tn-bases-new-task-btn";
+
+		const innerBtn = document.createElement("div");
+		innerBtn.className = "text-icon-button";
+		innerBtn.tabIndex = 0;
+
+		// Add icon
+		const iconSpan = document.createElement("span");
+		iconSpan.className = "text-button-icon";
+		setIcon(iconSpan, "plus");
+		innerBtn.appendChild(iconSpan);
+
+		// Add label
+		const labelSpan = document.createElement("span");
+		labelSpan.className = "text-button-label";
+		labelSpan.textContent = this.plugin.i18n.translate("common.new");
+		innerBtn.appendChild(labelSpan);
+
+		newTaskBtn.appendChild(innerBtn);
+
+		newTaskBtn.addEventListener("click", () => {
+			this.createFileForView("New Task");
+		});
+
+		// Find the original "New" button position and insert our button there
+		const originalNewBtn = toolbarEl.querySelector(".bases-toolbar-new-item-menu");
+		if (originalNewBtn) {
+			// Insert before the original (which will be hidden by CSS)
+			originalNewBtn.before(newTaskBtn);
+		} else {
+			// Fallback: append to end of toolbar
+			toolbarEl.appendChild(newTaskBtn);
+		}
+
+		console.debug("[TaskNotes][Bases] Injected New Task button into toolbar");
 	}
 
 	/**
@@ -158,9 +290,11 @@ export abstract class BasesViewBase extends Component {
 				const updatedTask = eventData?.task || eventData?.taskInfo;
 				if (!updatedTask?.path) return;
 
-				// Check if this task is in our current view
-				const dataItems = this.dataAdapter.extractDataItems();
-				const isRelevant = dataItems.some((item) => item.path === updatedTask.path);
+				// Skip if view is not visible (no point updating hidden views)
+				if (!this.rootElement?.isConnected) return;
+
+				// Use cached Set for O(1) lookup instead of O(n) iteration
+				const isRelevant = this.relevantPathsCache.has(updatedTask.path);
 
 				if (isRelevant) {
 					await this.handleTaskUpdate(updatedTask);
@@ -192,10 +326,10 @@ export abstract class BasesViewBase extends Component {
 		this.updateDebounceTimer = window.setTimeout(() => {
 			this.render();
 			this.updateDebounceTimer = null;
-		}, 150);
+		}, 300);  // Increased from 150ms for better typing performance
 
 		// Note: We don't need to explicitly register cleanup for this timer
-		// because it's short-lived (150ms) and clears itself. If the component
+		// because it's short-lived (300ms) and clears itself. If the component
 		// unloads before the timer fires, the worst case is a no-op render call.
 	}
 

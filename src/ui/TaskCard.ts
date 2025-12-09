@@ -528,6 +528,19 @@ function getPropertyValue(task: TaskInfo, propertyId: string, plugin: TaskNotesP
 			}
 		}
 
+		// Lazy fetch for file.* properties (backlinks, links, embeds, etc.)
+		// These are NOT pre-extracted for performance - only computed when visible
+		if (propertyId.startsWith("file.") && task.basesData && typeof task.basesData.getValue === "function") {
+			try {
+				const value = task.basesData.getValue(propertyId as any);
+				if (value !== null && value !== undefined) {
+					return extractBasesValue(value);
+				}
+			} catch (error) {
+				// Property doesn't exist or error fetching
+			}
+		}
+
 		// Handle Bases formula properties
 		if (propertyId.startsWith("formula.")) {
 			try {

@@ -3,9 +3,12 @@ import { TaskNotesSettingTab } from '../../../src/settings/TaskNotesSettingTab';
 import { DEFAULT_SETTINGS } from '../../../src/settings/defaults';
 import { createI18nService } from '../../../src/i18n';
 
-// Obsidian's HTMLElement shim exposes appendText; add minimal polyfill for jsdom
+// Obsidian's HTMLElement shim exposes appendText and setAttr; add minimal polyfill for jsdom
 (HTMLElement.prototype as any).appendText ??= function (text: string) {
   this.appendChild(document.createTextNode(text));
+};
+(HTMLElement.prototype as any).setAttr ??= function (name: string, value: string) {
+  this.setAttribute(name, value);
 };
 
 describe('Settings UI - Tab Button CSS Classes', () => {

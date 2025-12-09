@@ -3,6 +3,7 @@ import { TranslationTree } from "../types";
 export const zh: TranslationTree = {
 	common: {
 		appName: "TaskNotes",
+		new: "新建",
 		cancel: "取消",
 		confirm: "确认",
 		close: "关闭",
@@ -177,6 +178,10 @@ export const zh: TranslationTree = {
 				refresh: "刷新日历订阅",
 			},
 			settings: {
+		header: {
+			documentation: "Documentation",
+			documentationUrl: "https://tasknotes.dev",
+		},
 				groups: {
 					dateNavigation: "日期导航",
 					events: "事件",
@@ -404,6 +409,10 @@ export const zh: TranslationTree = {
 		},
 	},
 	settings: {
+		header: {
+			documentation: "Documentation",
+			documentationUrl: "https://tasknotes.dev",
+		},
 		tabs: {
 			general: "常规",
 			taskProperties: "任务属性",
@@ -416,7 +425,7 @@ export const zh: TranslationTree = {
 		features: {
 			inlineTasks: {
 				header: "内联任务",
-				description: "配置内联任务功能，在任何笔记中无缝管理任务。",
+				description: "任务链接和复选框转任务功能的设置。",
 			},
 			overlays: {
 				taskLinkToggle: {
@@ -431,12 +440,12 @@ export const zh: TranslationTree = {
 				},
 				folder: {
 					name: "已转换任务的文件夹",
-					description: "从复选框转换的任务将在其中创建的文件夹。使用{{currentNotePath}}相对于当前笔记，{{currentNoteTitle}}用于当前笔记标题",
+					description: "从复选框转换的任务将在其中创建的文件夹。留空则使用默认任务文件夹。使用{{currentNotePath}}表示当前笔记的文件夹，或使用{{currentNoteTitle}}表示以笔记标题命名的子文件夹。",
 				},
 			},
 			nlp: {
 				header: "自然语言处理",
-				description: "启用从自然语言输入智能解析任务详情。",
+				description: "从文本输入解析日期、优先级和其他属性。",
 				enable: {
 					name: "启用自然语言任务输入",
 					description: "创建任务时从自然语言解析到期日期、优先级和上下文",
@@ -456,7 +465,7 @@ export const zh: TranslationTree = {
 			},
 			pomodoro: {
 				header: "番茄钟计时器",
-				description: "内置番茄钟计时器，用于时间管理和生产力跟踪。",
+				description: "配置番茄钟计时器的工作/休息间隔。",
 				workDuration: {
 					name: "工作时长",
 					description: "工作间隔的持续时间（分钟）",
@@ -758,7 +767,7 @@ export const zh: TranslationTree = {
 				header: "文件夹管理",
 				excludedFolders: {
 					name: "排除文件夹",
-					description: "从笔记选项卡中排除的文件夹的逗号分隔列表",
+					description: "从任务索引和项目建议中排除的文件夹的逗号分隔列表",
 				},
 			},
 			frontmatter: {
@@ -801,6 +810,176 @@ export const zh: TranslationTree = {
 			},
 		},
 		taskProperties: {
+			// Section headers for property card layout
+			sections: {
+				coreProperties: "核心属性",
+				corePropertiesDesc: "状态和优先级是定义任务状态和重要性的核心属性。",
+				dateProperties: "日期属性",
+				datePropertiesDesc: "配置任务的到期日期和安排日期。",
+				organizationProperties: "组织属性",
+				organizationPropertiesDesc: "使用上下文、项目和标签组织任务。",
+				taskDetails: "任务详情",
+				taskDetailsDesc: "其他详情，如时间估计、重复和提醒。",
+				metadataProperties: "元数据属性",
+				metadataPropertiesDesc: "用于跟踪任务历史的系统管理属性。",
+				featureProperties: "功能属性",
+				featurePropertiesDesc: "特定TaskNotes功能使用的属性，如番茄钟计时器和日历同步。",
+			},
+			// Property card common fields
+			propertyCard: {
+				propertyKey: "属性键：",
+				default: "默认值：",
+				nlpTrigger: "NLP触发器：",
+				triggerChar: "触发字符：",
+				triggerEmpty: "触发器不能为空",
+				triggerTooLong: "触发器过长（最多10个字符）",
+			},
+			// Individual property names and descriptions
+			properties: {
+				status: {
+					name: "状态",
+					description:
+						"跟踪任务的当前状态（例如，待办、进行中、完成）。状态决定任务是否显示为已完成，并可触发自动归档。",
+				},
+				priority: {
+					name: "优先级",
+					description:
+						"表示任务的重要性。用于排序和过滤。在Bases视图中值按字母顺序排序，因此使用1-、2-等前缀来控制顺序。",
+				},
+				due: {
+					name: "到期日期",
+					description:
+						"任务必须完成的截止日期。超过到期日期的任务显示为逾期。作为日期存储在frontmatter中。",
+				},
+				scheduled: {
+					name: "安排日期",
+					description:
+						"您计划处理任务的时间。与到期日期不同，这表示您预定的开始时间。任务在其安排的日期/时间出现在日历上。",
+				},
+				contexts: {
+					name: "上下文",
+					description:
+						"可以完成任务的地点或条件（例如，@家、@办公室、@电话）。用于根据当前情况过滤任务。作为列表存储。",
+				},
+				projects: {
+					name: "项目",
+					description:
+						"此任务所属的项目笔记链接。存储为wikilinks（例如，[[项目名称]]）。任务可以属于多个项目。",
+				},
+				tags: {
+					name: "标签",
+					description:
+						"用于分类任务的原生Obsidian标签。这些存储在tags frontmatter属性中，与Obsidian的标签功能配合使用。",
+				},
+				timeEstimate: {
+					name: "时间估计",
+					description:
+						"完成任务的预计分钟数。用于时间块和工作量规划。显示在任务卡片和日历事件上。",
+				},
+				recurrence: {
+					name: "重复",
+					description:
+						"重复任务的模式（每日、每周、每月、每年或自定义RRULE）。当重复任务完成时，其安排日期会自动更新到下一次出现。",
+				},
+				recurrenceAnchor: {
+					name: "重复锚点",
+					description:
+						"控制下一次出现的计算方式：'scheduled'使用安排日期，'completion'使用实际完成日期。",
+				},
+				reminders: {
+					name: "提醒",
+					description:
+						"在到期或安排日期前触发的通知。存储为带有时间和可选描述的提醒对象列表。",
+				},
+				title: {
+					name: "标题",
+					description:
+						"任务名称。可以存储在frontmatter中或文件名中（启用'在文件名中存储标题'时）。",
+				},
+				dateCreated: {
+					name: "创建日期",
+					description:
+						"任务首次创建的时间戳。自动设置，用于按创建顺序排序。",
+				},
+				dateModified: {
+					name: "修改日期",
+					description:
+						"任务最后更改的时间戳。当任何任务属性更改时自动更新。",
+				},
+				completedDate: {
+					name: "完成日期",
+					description:
+						"任务标记为完成的时间戳。当状态更改为已完成状态时自动设置。",
+				},
+				archiveTag: {
+					name: "归档标签",
+					description:
+						"归档时添加到任务的标签。用于识别已归档的任务，可触发文件移动到归档文件夹。",
+				},
+				timeEntries: {
+					name: "时间条目",
+					description:
+						"此任务的时间跟踪会话记录。每个条目存储开始和结束时间戳。用于计算总花费时间。",
+				},
+				completeInstances: {
+					name: "完成实例",
+					description:
+						"重复任务的完成历史。存储每个实例完成的日期，以防止重复完成。",
+				},
+				skippedInstances: {
+					name: "跳过实例",
+					description:
+						"重复任务的跳过记录。存储被跳过而非完成的实例日期。",
+				},
+				blockedBy: {
+					name: "被阻止",
+					description:
+						"必须在此任务之前完成的任务链接。存储为wikilinks。被阻止的任务显示视觉指示器。",
+				},
+				pomodoros: {
+					name: "番茄钟",
+					description:
+						"已完成的番茄钟会话计数。当数据存储设置为'日记'时，这将写入日记而不是任务文件。",
+				},
+				icsEventId: {
+					name: "ICS事件ID",
+					description:
+						"将笔记链接到ICS日历事件的唯一标识符。从日历事件创建笔记时自动添加。",
+				},
+				icsEventTag: {
+					name: "ICS事件标签",
+					description:
+						"标识从ICS日历事件创建的笔记的标签。用于区分日历生成的笔记和常规任务。",
+				},
+			},
+			// Card-specific labels
+			statusCard: {
+				valuesHeader: "状态值",
+			},
+			priorityCard: {
+				valuesHeader: "优先级值",
+			},
+			projectsCard: {
+				defaultProjects: "默认项目：",
+				useParentNote: "使用父笔记作为项目：",
+				noDefaultProjects: "未选择默认项目",
+				autosuggestFilters: "自动建议过滤器",
+				customizeDisplay: "自定义显示",
+				filtersOn: "过滤器开启",
+			},
+			titleCard: {
+				storeTitleInFilename: "在文件名中存储标题：",
+				storedInFilename: "存储在文件名中",
+				filenameUpdatesWithTitle: "文件名将在任务标题更改时自动更新。",
+				filenameFormat: "文件名格式：",
+				customTemplate: "自定义模板：",
+			},
+			tagsCard: {
+				nativeObsidianTags: "使用原生Obsidian标签",
+			},
+			remindersCard: {
+				defaultReminders: "默认提醒",
+			},
 			taskStatuses: {
 				header: "任务状态",
 				description: "自定义任务可用的状态选项。这些状态控制任务生命周期并确定何时任务被视为完成。",
@@ -932,10 +1111,13 @@ export const zh: TranslationTree = {
 					displayName: "显示名称：",
 					propertyKey: "属性键：",
 					type: "类型：",
+					defaultValue: "默认值：",
 				},
 				placeholders: {
 					displayName: "显示名称",
 					propertyKey: "属性名称",
+					defaultValue: "默认值",
+					defaultValueList: "默认值（逗号分隔）",
 				},
 				types: {
 					text: "文本",
@@ -1725,7 +1907,13 @@ export const zh: TranslationTree = {
 		openPomodoroStats: "打开番茄钟统计",
 		openStatisticsView: "打开任务和项目统计",
 		createNewTask: "创建新任务",
-		convertToTaskNote: "转换任务为TaskNote",
+		convertCurrentNoteToTask: {
+			name: "将当前笔记转换为任务",
+			noActiveFile: "没有可转换的活动文件",
+			alreadyTask: "此笔记已是任务",
+			success: "已将'{title}'转换为任务",
+		},
+		convertToTaskNote: "将复选框任务转换为TaskNote",
 		convertAllTasksInNote: "转换笔记中的所有任务",
 		insertTaskNoteLink: "插入任务笔记链接",
 		createInlineTask: "创建新内联任务",
@@ -1853,7 +2041,7 @@ export const zh: TranslationTree = {
 		},
 		migration: {
 			title: "迁移到新的循环系统",
-			description: "TaskNotes 拥有一个新的循环系统，使用行业标准模式以获得更好的兼容性和更强大的计划选项。",
+			description: "TaskNotes 现在使用行业标准的 RRULE 模式进行循环，可以创建更复杂的计划并与其他应用更好地兼容。",
 			tasksFound: "检测到 {count} 个具有旧循环模式的任务",
 			noMigrationNeeded: "无任务需要迁移",
 			warnings: {
@@ -1865,7 +2053,7 @@ export const zh: TranslationTree = {
 			},
 			benefits: {
 				title: "新系统的好处：",
-				powerfulPatterns: "更强大的循环模式（例如，'每第二个星期二'）",
+				powerfulPatterns: "复杂的循环模式（例如，'每第二个星期二'）",
 				performance: "更好的循环任务性能",
 				compatibility: "与其他应用兼容的标准循环格式",
 				nlp: "增强的自然语言处理支持",

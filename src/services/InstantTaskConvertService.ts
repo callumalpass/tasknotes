@@ -439,7 +439,19 @@ export class InstantTaskConvertService {
 	 */
 	private async createTaskFile(parsedData: ParsedTaskData, details = ""): Promise<TFile> {
 		// Sanitize and validate input data
-		const title = this.sanitizeTitle(parsedData.title) || "Untitled Task";
+		// Check if title will be truncated and preserve overflow text (issue #1310)
+		const originalTitle = parsedData.title?.trim() || "";
+		const title = this.sanitizeTitle(originalTitle) || "Untitled Task";
+
+		// If title was truncated, preserve the overflow in details
+		let enhancedDetails = details;
+		if (originalTitle.length > 200) {
+			const overflowText = this.extractOverflowText(originalTitle, 200);
+			if (overflowText) {
+				// Prepend overflow text to existing details
+				enhancedDetails = overflowText + (details ? "\n\n" + details : "");
+			}
+		}
 
 		// Capture parent note information (current active file)
 		const currentFile = this.plugin.app.workspace.getActiveFile();
@@ -629,7 +641,8 @@ export class InstantTaskConvertService {
 			}
 		}
 
-		// Prepare custom frontmatter from user fields
+		// Prepare custom frontmatter from NLP-parsed user fields
+		// Default values for user fields are applied by TaskService.createTask()
 		const customFrontmatter: Record<string, any> = {};
 		if (parsedData.userFields) {
 			for (const [fieldId, value] of Object.entries(parsedData.userFields)) {
@@ -661,7 +674,7 @@ export class InstantTaskConvertService {
 			timeEstimate: timeEstimate,
 			recurrence: recurrence,
 			reminders: reminders,
-			details: details, // Use provided details from selection
+			details: enhancedDetails, // Use enhanced details with any overflow from title truncation
 			parentNote: parentNote, // Include parent note for template variable
 			creationContext: "inline-conversion", // Mark as inline conversion for folder logic
 			dateCreated: getCurrentTimestamp(),
@@ -681,6 +694,28 @@ export class InstantTaskConvertService {
 	private sanitizeTitle(title: string): string {
 		if (!title) return "";
 		return title.trim().substring(0, 200);
+	}
+
+	/**
+	 * Extract overflow text from a title that exceeds the max length.
+	 * Tries to preserve word boundaries for cleaner truncation.
+	 * (Issue #1310: Preserve truncated text in task body)
+	 */
+	private extractOverflowText(originalTitle: string, maxLength: number): string {
+		if (!originalTitle || originalTitle.length <= maxLength) {
+			return "";
+		}
+
+		// Find the last space before the maxLength to avoid cutting words
+		const truncateAt = originalTitle.lastIndexOf(" ", maxLength);
+
+		if (truncateAt > 0 && truncateAt > maxLength - 50) {
+			// If we found a space and it's not too far back, use word boundary
+			return originalTitle.substring(truncateAt).trim();
+		} else {
+			// Otherwise, just take everything after maxLength
+			return originalTitle.substring(maxLength).trim();
+		}
 	}
 
 	/**

@@ -93,6 +93,16 @@ export class CalendarView extends BasesViewBase {
 	private calendarEl: HTMLElement | null = null;
 	private currentTasks: TaskInfo[] = [];
 	private basesEntryByPath: Map<string, any> = new Map(); // Map task path to Bases entry for enrichment
+
+	// Render lock to prevent duplicate renders
+	private _isRendering = false;
+	private _pendingRender = false;
+
+	// Flag to skip debounce for user-initiated actions (timeblock creation, drag/drop, etc.)
+	private _expectingImmediateUpdate = false;
+
+	// Track if this is the first data update after load (should be immediate)
+	private _isFirstDataUpdate = true;
 	
 	private viewOptions: {
 		// Events
@@ -217,6 +227,56 @@ export class CalendarView extends BasesViewBase {
 		if (this.calendar) {
 			this.calendar.updateSize();
 		}
+	}
+
+	/**
+	 * Override onDataUpdated for calendar-specific behavior.
+	 * Uses a longer debounce to prevent flickering during rapid data updates (e.g., typing),
+	 * but responds immediately for first load or when expecting an update from user actions.
+	 */
+	onDataUpdated(): void {
+		// Skip if view is not visible
+		if (!this.rootElement?.isConnected) {
+			return;
+		}
+
+		// Clear any existing debounce timer
+		if (this.dataUpdateDebounceTimer) {
+			clearTimeout(this.dataUpdateDebounceTimer);
+			this.dataUpdateDebounceTimer = null;
+		}
+
+		// First data update after load should be immediate (initial data population)
+		if (this._isFirstDataUpdate) {
+			this._isFirstDataUpdate = false;
+			this.render();
+			return;
+		}
+
+		// If expecting an immediate update from user action, render now
+		if (this._expectingImmediateUpdate) {
+			this._expectingImmediateUpdate = false;
+			this.render();
+			return;
+		}
+
+		// Otherwise use longer debounce for external changes (typing in notes)
+		this.dataUpdateDebounceTimer = window.setTimeout(() => {
+			this.dataUpdateDebounceTimer = null;
+			this.render();
+		}, 5000);  // 5 second debounce - outlasts Obsidian's save interval
+	}
+
+	/**
+	 * Signal that we're expecting an immediate update from a user-initiated action.
+	 * Call this before performing calendar actions that will trigger file changes.
+	 */
+	expectImmediateUpdate(): void {
+		this._expectingImmediateUpdate = true;
+		// Auto-reset after a short delay in case the update never comes
+		setTimeout(() => {
+			this._expectingImmediateUpdate = false;
+		}, 2000);
 	}
 
 	/**
@@ -415,8 +475,23 @@ export class CalendarView extends BasesViewBase {
 	}
 
 	async render(): Promise<void> {
-		if (!this.calendarEl || !this.rootElement) return;
-		if (!this.data?.data) return;
+		// Prevent duplicate concurrent renders
+		if (this._isRendering) {
+			this._pendingRender = true;
+			return;
+		}
+
+		this._isRendering = true;
+		this._pendingRender = false;
+
+		if (!this.calendarEl || !this.rootElement) {
+			this._isRendering = false;
+			return;
+		}
+		if (!this.data?.data) {
+			this._isRendering = false;
+			return;
+		}
 
 		// Ensure view options are read (in case config wasn't available in onload)
 		if (!this.configLoaded && this.config) {
@@ -459,6 +534,15 @@ export class CalendarView extends BasesViewBase {
 		} catch (error: any) {
 			console.error("[TaskNotes][CalendarView] Error rendering:", error);
 			this.renderError(error);
+		} finally {
+			this._isRendering = false;
+		}
+
+		// If a render was requested while we were rendering, do it now
+		if (this._pendingRender) {
+			this._pendingRender = false;
+			// Use setTimeout to avoid deep call stack
+			setTimeout(() => this.render(), 0);
 		}
 	}
 
@@ -589,15 +673,13 @@ export class CalendarView extends BasesViewBase {
 			eventResize: (info) => this.handleEventResize(info),
 			select: (info) => this.handleDateSelect(info),
 			viewDidMount: (arg) => {
-				// Save the current view to config when it changes
+				// Track view type changes locally but DON'T save to Bases config
+				// Saving to config triggers Bases to recreate the entire view, which is expensive
+				// The view type will be persisted when the user leaves the view
 				const newViewType = arg.view.type;
 				if (newViewType && newViewType !== this.viewOptions.calendarView) {
 					this.viewOptions.calendarView = newViewType;
-					try {
-						this.config.set('calendarView', newViewType);
-					} catch (error) {
-						console.debug('[TaskNotes][CalendarView] Failed to save view type:', error);
-					}
+					console.debug('[TaskNotes][CalendarView] View type changed to:', newViewType, '(not saving to avoid recreation)');
 				}
 			},
 		};
@@ -690,6 +772,7 @@ export class CalendarView extends BasesViewBase {
 		const allEvents: any[] = [];
 
 		// Build event configuration for generateCalendarEvents
+		// Let FullCalendar handle date filtering - it's optimized for this
 		const eventConfig = {
 			showScheduled: this.viewOptions.showScheduled,
 			showDue: this.viewOptions.showDue,
@@ -707,7 +790,6 @@ export class CalendarView extends BasesViewBase {
 			this.plugin,
 			eventConfig
 		);
-
 		allEvents.push(...taskEvents);
 
 		// Add property-based events from non-TaskNotes items
@@ -755,6 +837,8 @@ export class CalendarView extends BasesViewBase {
 				const startNormalized = normalizeDateValueForCalendar(startValue);
 				if (!startNormalized) continue;
 
+				const startDateStr = typeof startNormalized.value === "string" ? startNormalized.value : format(startNormalized.value, "yyyy-MM-dd'T'HH:mm");
+
 				// Try to get end date if property is configured
 				let endDateStr: string | undefined;
 				let isEndAllDay = startNormalized.isAllDay;
@@ -776,8 +860,7 @@ export class CalendarView extends BasesViewBase {
 					}
 				}
 
-				// Create event
-				const startDateStr = typeof startNormalized.value === "string" ? startNormalized.value : format(startNormalized.value, "yyyy-MM-dd'T'HH:mm");
+				// Create event - let FullCalendar handle date filtering
 				const isAllDay = startNormalized.isAllDay && (endDateStr ? isEndAllDay : true);
 				events.push({
 					id: `property-${file.path}`,
@@ -814,6 +897,7 @@ export class CalendarView extends BasesViewBase {
 			// Check if this calendar is enabled
 			if (this.icsCalendarToggles.get(icsEvent.subscriptionId) === false) continue;
 
+			// Let FullCalendar handle date filtering
 			const calendarEvent = createICSEvent(icsEvent, this.plugin);
 			if (calendarEvent) {
 				events.push(calendarEvent);
@@ -834,6 +918,7 @@ export class CalendarView extends BasesViewBase {
 			const calendarId = icsEvent.subscriptionId.replace("google-", "");
 			if (this.googleCalendarToggles.get(calendarId) === false) continue;
 
+			// Let FullCalendar handle date filtering
 			const calendarEvent = createICSEvent(icsEvent, this.plugin);
 			if (calendarEvent) {
 				events.push(calendarEvent);
@@ -854,6 +939,7 @@ export class CalendarView extends BasesViewBase {
 			const calendarId = icsEvent.subscriptionId.replace("microsoft-", "");
 			if (this.microsoftCalendarToggles.get(calendarId) === false) continue;
 
+			// Let FullCalendar handle date filtering
 			const calendarEvent = createICSEvent(icsEvent, this.plugin);
 			if (calendarEvent) {
 				events.push(calendarEvent);
@@ -869,6 +955,32 @@ export class CalendarView extends BasesViewBase {
 
 		// Refetch events from all sources
 		this.calendar.refetchEvents();
+	}
+
+	/**
+	 * Refresh calendar with fresh data from Obsidian's metadata cache.
+	 * Use this when task data has changed and calendar needs to reflect updates immediately.
+	 * Bases' cache may be stale, so we read directly from metadataCache.
+	 */
+	private async refreshCalendarWithFreshData(): Promise<void> {
+		if (!this.calendar) return;
+
+		try {
+			// Refresh each task from Obsidian's metadata cache (bypasses Bases' stale cache)
+			const refreshedTasks: TaskInfo[] = [];
+			for (const task of this.currentTasks) {
+				const freshTask = this.plugin.cacheManager.getCachedTaskInfoSync(task.path);
+				if (freshTask) {
+					// Preserve basesData reference for formula access
+					freshTask.basesData = task.basesData;
+					refreshedTasks.push(freshTask);
+				}
+			}
+			this.currentTasks = refreshedTasks;
+			this.calendar.refetchEvents();
+		} catch (error) {
+			console.error("[TaskNotes][CalendarView] Error refreshing calendar:", error);
+		}
 	}
 
 	private async handleEventClick(info: any): Promise<void> {
@@ -913,6 +1025,9 @@ export class CalendarView extends BasesViewBase {
 	}
 
 	private async handleEventDrop(info: any): Promise<void> {
+		// Expect immediate update since user is interacting with calendar
+		this.expectImmediateUpdate();
+
 		if (!info?.event?.extendedProps) {
 			console.warn("[TaskNotes][CalendarView] Event dropped without extendedProps");
 			return;
@@ -1136,6 +1251,9 @@ export class CalendarView extends BasesViewBase {
 	}
 
 	private async handleEventResize(info: any): Promise<void> {
+		// Expect immediate update since user is interacting with calendar
+		this.expectImmediateUpdate();
+
 		if (!info?.event?.extendedProps) {
 			console.warn("[TaskNotes][CalendarView] Event resized without extendedProps");
 			return;
@@ -1345,6 +1463,7 @@ export class CalendarView extends BasesViewBase {
 				item.setTitle("Create timeblock")
 					.setIcon("clock")
 					.onClick(async () => {
+						this.expectImmediateUpdate();
 						await handleTimeblockCreation(info.start, info.end, info.allDay, this.plugin);
 					});
 			});
@@ -1354,6 +1473,7 @@ export class CalendarView extends BasesViewBase {
 			item.setTitle("Create time entry")
 				.setIcon("play")
 				.onClick(async () => {
+					this.expectImmediateUpdate();
 					await handleTimeEntryCreation(info.start, info.end, info.allDay, this.plugin);
 				});
 		});
@@ -1412,23 +1532,17 @@ export class CalendarView extends BasesViewBase {
 				const basesEntry = this.basesEntryByPath.get(taskInfo.path);
 
 				if (basesEntry) {
-					// Add basesData for formula results
-					enrichedTask.basesData = {
-						formulaResults: {
-							cachedFormulaOutputs: {} as Record<string, any>
-						}
-					};
+					// Store the full basesEntry for lazy file property access (e.g., file.backlinks)
+					// This allows TaskCard.getPropertyValue to call getValue() on demand
+					enrichedTask.basesData = basesEntry;
 
-					// Populate formula results from Bases entry
+					// Pre-populate formula results for performance (formulas are accessed frequently)
 					if (visibleProperties) {
 						for (const propId of visibleProperties) {
 							if (propId.startsWith('formula.')) {
-								const formulaName = propId.substring(8);
 								try {
-									const value = basesEntry.getValue?.(propId);
-									if (value) {
-										enrichedTask.basesData.formulaResults.cachedFormulaOutputs[formulaName] = value;
-									}
+									// Just trigger the getValue to ensure it's cached by Bases
+									basesEntry.getValue?.(propId);
 								} catch (error) {
 									console.debug('[TaskNotes][CalendarView] Error getting formula:', propId, error);
 								}
@@ -1581,10 +1695,8 @@ export class CalendarView extends BasesViewBase {
 					plugin: this.plugin,
 					targetDate: targetDate,
 					onUpdate: () => {
-						// Refresh calendar events when task is updated
-						if (this.calendar) {
-							this.calendar.refetchEvents();
-						}
+						// Refresh calendar with fresh task data when task is updated
+						this.refreshCalendarWithFreshData();
 					},
 				});
 				contextMenu.show(e);
@@ -1604,10 +1716,8 @@ export class CalendarView extends BasesViewBase {
 					plugin: this.plugin,
 					subscriptionName: subscriptionName,
 					onUpdate: () => {
-						// Refresh calendar events when ICS event is updated
-						if (this.calendar) {
-							this.calendar.refetchEvents();
-						}
+						// Refresh calendar with fresh data when ICS event is updated
+						this.refreshCalendarWithFreshData();
 					},
 				});
 				contextMenu.show(e);
@@ -1653,27 +1763,26 @@ export class CalendarView extends BasesViewBase {
 	}
 
 	protected setupContainer(): void {
-		// Clear container
-		this.containerEl.empty();
+		super.setupContainer();
 
-		// Root container with proper classes for calendar styling
-		const root = document.createElement("div");
-		root.className = "tn-bases-integration tasknotes-plugin advanced-calendar-view";
-		root.style.cssText = "min-height: 800px; height: 100%; display: flex; flex-direction: column;";
-		root.tabIndex = -1; // Make focusable
-		this.containerEl.appendChild(root);
-		this.rootElement = root;
+		// Add calendar-specific classes and styles to root
+		if (this.rootElement) {
+			// Remove base classes that interfere with calendar layout, keep only what we need
+			this.rootElement.className = "tn-bases-integration tasknotes-plugin advanced-calendar-view";
+			this.rootElement.style.cssText = "min-height: 800px; height: 100%; display: flex; flex-direction: column;";
 
-		// Calendar element
-		const calendarEl = document.createElement("div");
-		calendarEl.id = "bases-calendar";
-		calendarEl.style.cssText = "flex: 1; min-height: 700px; overflow: auto;";
-		root.appendChild(calendarEl);
-		this.calendarEl = calendarEl;
+			// Calendar element for FullCalendar to render into
+			const calendarEl = document.createElement("div");
+			calendarEl.id = "bases-calendar";
+			calendarEl.style.cssText = "flex: 1; min-height: 700px; overflow: auto;";
+			this.rootElement.appendChild(calendarEl);
+			this.calendarEl = calendarEl;
+		}
 	}
 
 	protected async handleTaskUpdate(task: TaskInfo): Promise<void> {
-		// Refresh calendar to show updated events
+		// Use shorter debounce for task updates - these are often from user interactions
+		// that expect quicker feedback than external file changes
 		this.debouncedRefresh();
 	}
 
@@ -1689,6 +1798,22 @@ export class CalendarView extends BasesViewBase {
 	}
 
 	onunload(): void {
+		// Save the current view type to config on unload (safe here, won't trigger recreation)
+		if (this.calendar && this.config) {
+			const currentViewType = this.calendar.view?.type;
+			if (currentViewType) {
+				try {
+					const storedViewType = this.config.get('calendarView');
+					if (storedViewType !== currentViewType) {
+						this.config.set('calendarView', currentViewType);
+						console.debug('[TaskNotes][CalendarView] Saved view type on unload:', currentViewType);
+					}
+				} catch (error) {
+					console.debug('[TaskNotes][CalendarView] Failed to save view type on unload:', error);
+				}
+			}
+		}
+
 		// Component.register() calls will be automatically cleaned up
 
 		if (this.calendar) {

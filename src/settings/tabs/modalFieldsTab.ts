@@ -1,7 +1,7 @@
 import { Notice } from "obsidian";
 import TaskNotesPlugin from "../../main";
 import { TranslationKey } from "../../i18n";
-import { createSectionHeader, createHelpText } from "../components/settingHelpers";
+import { createSectionHeader, createHelpText, createToggleSetting } from "../components/settingHelpers";
 import { createFieldManager, addFieldManagerStyles } from "../components/FieldManagerComponent";
 import { initializeFieldConfig } from "../../utils/fieldConfigDefaults";
 import type { TaskModalFieldsConfig, UserMappedField } from "../../types/settings";
@@ -42,6 +42,17 @@ export function renderModalFieldsTab(
 		container,
 		"Configure which fields appear in task creation and edit modals. Drag fields to reorder them within each group."
 	);
+
+	// Split layout toggle
+	createToggleSetting(container, {
+		name: "Split layout on wide screens",
+		desc: "When enabled, the details editor appears in a right column on screens 900px or wider. When disabled, the modal uses a stacked layout.",
+		getValue: () => plugin.settings.enableModalSplitLayout,
+		setValue: (value) => {
+			plugin.settings.enableModalSplitLayout = value;
+			save();
+		},
+	});
 
 	// Sync button to update from user fields
 	const syncContainer = container.createDiv({ cls: "modal-fields-sync" });

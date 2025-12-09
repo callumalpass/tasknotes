@@ -5,16 +5,9 @@ These settings control the integration with other plugins and services, such as 
 
 [← Back to Settings](../settings.md)
 
-## Bases integration
+## Bases Integration
 
-TaskNotes v4 requires the Bases core plugin for main task views (Calendar, Kanban, Tasks, Agenda) to function. Bases is an official Obsidian core plugin built directly into Obsidian, not a community plugin.
-
-**To enable Bases:**
-1. Open Settings → Core Plugins
-2. Enable "Bases"
-3. Restart Obsidian
-
-Once enabled, TaskNotes view commands and ribbon icons will open `.base` files from your vault. Default `.base` files are automatically created in the `TaskNotes/Views/` directory on first launch.
+TaskNotes v4 uses Obsidian's Bases core plugin for its main views. For setup instructions, see [Core Concepts](../core-concepts.md#bases-integration).
 
 ### View Commands Configuration
 

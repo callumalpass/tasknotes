@@ -6,9 +6,9 @@ Bases-based task management plugin where each task lives as a separate note with
 
 **NLP Support:** English · Deutsch · Español · Français · Italiano · 日本語 · Nederlands · Português · Русский · Svenska · Українська · 中文
 
-<img src="https://github.com/user-attachments/assets/4f68646e-e3cb-4d0c-86cd-c1574a97fba0" />
+<img src="https://github.com/callumalpass/tasknotes/blob/main/media/2025-12-07T15-43-26.png?raw=true" />
 
-**[📖 Documentation](https://callumalpass.github.io/tasknotes/)**
+**[Documentation](https://callumalpass.github.io/tasknotes/)**
 
 **Requirements:** Obsidian 1.10.1+ with the Bases core plugin enabled for main views (Task List, Kanban, Calendar, Agenda, MiniCalendar).
 
@@ -40,19 +40,21 @@ Each task being a full note means you can write descriptions, jot down thoughts 
 
 - Individual Markdown files with YAML frontmatter
 - Properties: title, status, priority, due date, scheduled date, contexts, projects, tags, time estimates, completion date
+- Custom user fields with configurable types (text, number, boolean, date, list) and default values
 - Project organization using note-based linking
 - Recurring tasks with per-date completion tracking
 - Flexible recurrence: choose between fixed schedule (scheduled-based) or flexible schedule (completion-based) recurrence
 - Time tracking with multiple sessions per task
 - Dependency management with blocked-by and blocking relationships
-- Archive function using tags
-- Filtering and grouping options
+- Batch operations: multi-select tasks with Shift+click for bulk status, priority, and date changes
+- Auto-archiving based on completion status
 
 ### Calendar Integration
 
-- Month view displaying tasks and notes
+- OAuth sync with Google Calendar and Microsoft Outlook
+- ICS/iCal feed subscriptions with 15-minute auto-refresh
+- Month, week, day, and year views with configurable event stacking
 - Mini calendar view for compact layouts
-- ICS/iCal feed subscriptions
 - Direct navigation to daily notes
 
 ### Time Management
@@ -65,15 +67,17 @@ Each task being a full note means you can write descriptions, jot down thoughts 
 
 - Interactive task previews for wikilinks
 - Inline task conversion for `- [ ] Checkbox tasks`
+- Natural language parsing for dates, recurrence, contexts, and more
 - Template support with parent note context
 
 ### Views
 
-- **Calendar**: Month view with agenda
-- **Task List**: Filtering and grouping options
-- **Kanban**: Drag-and-drop task management
+- **Calendar**: Month, week, day, and year views with agenda sidebar
+- **Task List**: Inline search, filtering, and grouping options
+- **Kanban**: Drag-and-drop with multi-select support
 - **Agenda**: Daily task and note overview
 - **Pomodoro**: Timer with statistics (standalone, not a Bases view)
+- Formula properties for advanced Bases queries (due date calculations, time tracking stats, urgency scores)
 
 ![Task creation dialog](media/2025-07-15_21-11-10.png)
 
@@ -96,9 +100,10 @@ Each task being a full note means you can write descriptions, jot down thoughts 
 ### Customization
 
 - **Field Mapping**: Customize YAML property names to match existing workflows
-- **Custom Statuses**: Define task statuses with colors and completion behavior
+- **Custom Statuses**: Define task statuses with colors, icons, and completion behavior
 - **Custom Priorities**: Create priority levels with weight-based sorting
-- **Templates**: Configure daily note templates with Obsidian variables
+- **User Fields**: Add custom properties with types, default values, and autosuggestions
+- **Templates**: Configure task and daily note templates with variables
 
 ## YAML Structure
 
@@ -125,7 +130,7 @@ recurrence: "FREQ=WEEKLY;BYDAY=MO"
 complete_instances: ["2024-01-08"]
 ```
 
-## HTTP API
+## HTTP API & Webhooks
 
 TaskNotes includes an optional HTTP API server for external integrations. This enables creating tasks from browsers, automation tools, mobile apps, and custom scripts.
 
@@ -133,12 +138,16 @@ TaskNotes includes an optional HTTP API server for external integrations. This e
 
 The API enables browser integrations:
 - **Bookmarklets** for one-click task creation from any webpage
-- **Browser extensions**: [for example](https://github.com/callumalpass/tasknotes-browser-extension) 
+- **Browser extensions**: [for example](https://github.com/callumalpass/tasknotes-browser-extension)
 - **Automation** with Zapier, IFTTT, and similar services
+
+### Webhooks
+
+Configure webhooks to notify external services when tasks are created, updated, or completed. Supports custom payloads and authentication headers.
 
 ### Documentation
 
-See [HTTP API Documentation](./docs/HTTP_API.md) for complete endpoint reference and integration examples.
+See [HTTP API Documentation](./docs/HTTP_API.md) and [Webhooks Documentation](./docs/webhooks.md) for complete endpoint reference and integration examples.
 
 ## Credits
 

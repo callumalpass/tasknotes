@@ -3,6 +3,7 @@ import { TranslationTree } from "../types";
 export const es: TranslationTree = {
 	common: {
 		appName: "TaskNotes",
+		new: "Nuevo",
 		cancel: "Cancelar",
 		confirm: "Confirmar",
 		close: "Cerrar",
@@ -177,6 +178,10 @@ export const es: TranslationTree = {
 				refresh: "Actualizar suscripciones de calendario",
 			},
 			settings: {
+		header: {
+			documentation: "Documentation",
+			documentationUrl: "https://tasknotes.dev",
+		},
 				groups: {
 					dateNavigation: "Navegación por fecha",
 					events: "Eventos",
@@ -404,6 +409,10 @@ export const es: TranslationTree = {
 		},
 	},
 	settings: {
+		header: {
+			documentation: "Documentation",
+			documentationUrl: "https://tasknotes.dev",
+		},
 		tabs: {
 			general: "General",
 			taskProperties: "Propiedades de tareas",
@@ -416,7 +425,7 @@ export const es: TranslationTree = {
 		features: {
 			inlineTasks: {
 				header: "Tareas en línea",
-				description: "Configura las características de tareas en línea para gestión de tareas sin interrupciones dentro de cualquier nota.",
+				description: "Configuración para enlaces de tareas y conversión de casillas a tareas en notas.",
 			},
 			overlays: {
 				taskLinkToggle: {
@@ -431,12 +440,12 @@ export const es: TranslationTree = {
 				},
 				folder: {
 					name: "Carpeta para tareas convertidas",
-					description: "Carpeta donde se crearán las tareas convertidas desde casillas de verificación. Usa {{currentNotePath}} para relativo a la nota actual, {{currentNoteTitle}} para título de nota actual",
+					description: "Carpeta donde se crearán las tareas convertidas desde casillas de verificación. Dejar vacío para usar la carpeta de tareas predeterminada. Usa {{currentNotePath}} para la carpeta de la nota actual, o {{currentNoteTitle}} para una subcarpeta con el título de la nota.",
 				},
 			},
 			nlp: {
 				header: "Procesamiento de lenguaje natural",
-				description: "Habilitar análisis inteligente de detalles de tareas desde entrada en lenguaje natural.",
+				description: "Analiza fechas, prioridades y otras propiedades desde texto de entrada.",
 				enable: {
 					name: "Habilitar entrada de tareas en lenguaje natural",
 					description: "Analizar fechas de vencimiento, prioridades y contextos desde lenguaje natural al crear tareas",
@@ -456,7 +465,7 @@ export const es: TranslationTree = {
 			},
 			pomodoro: {
 				header: "Temporizador Pomodoro",
-				description: "Temporizador Pomodoro integrado para gestión de tiempo y seguimiento de productividad.",
+				description: "Configura intervalos de trabajo/descanso para el temporizador Pomodoro.",
 				workDuration: {
 					name: "Duración del trabajo",
 					description: "Duración de intervalos de trabajo en minutos",
@@ -758,7 +767,7 @@ export const es: TranslationTree = {
 				header: "Gestión de carpetas",
 				excludedFolders: {
 					name: "Carpetas excluidas",
-					description: "Lista separada por comas de carpetas a excluir de la pestaña Notas",
+					description: "Lista separada por comas de carpetas a excluir de la indexación de tareas y sugerencias de proyectos",
 				},
 			},
 			frontmatter: {
@@ -801,6 +810,176 @@ export const es: TranslationTree = {
 			},
 		},
 		taskProperties: {
+			// Section headers for property card layout
+			sections: {
+				coreProperties: "Propiedades principales",
+				corePropertiesDesc: "Estado y prioridad son las propiedades principales que definen el estado e importancia de una tarea.",
+				dateProperties: "Propiedades de fecha",
+				datePropertiesDesc: "Configura cuándo las tareas vencen y están programadas.",
+				organizationProperties: "Propiedades de organización",
+				organizationPropertiesDesc: "Organiza tareas con contextos, proyectos y etiquetas.",
+				taskDetails: "Detalles de tarea",
+				taskDetailsDesc: "Detalles adicionales como estimaciones de tiempo, recurrencia y recordatorios.",
+				metadataProperties: "Propiedades de metadatos",
+				metadataPropertiesDesc: "Propiedades gestionadas por el sistema para rastrear el historial de tareas.",
+				featureProperties: "Propiedades de funciones",
+				featurePropertiesDesc: "Propiedades utilizadas por funciones específicas de TaskNotes como el temporizador Pomodoro y la sincronización de calendario.",
+			},
+			// Property card common fields
+			propertyCard: {
+				propertyKey: "Clave de propiedad:",
+				default: "Predeterminado:",
+				nlpTrigger: "Activador NLP:",
+				triggerChar: "Carácter activador:",
+				triggerEmpty: "El activador no puede estar vacío",
+				triggerTooLong: "El activador es demasiado largo (máx. 10 caracteres)",
+			},
+			// Individual property names and descriptions
+			properties: {
+				status: {
+					name: "Estado",
+					description:
+						"Rastrea el estado actual de una tarea (ej. pendiente, en-progreso, hecho). El estado determina si una tarea aparece como completada y puede activar el archivado automático.",
+				},
+				priority: {
+					name: "Prioridad",
+					description:
+						"Indica la importancia de la tarea. Se usa para ordenar y filtrar. Los valores se ordenan alfabéticamente en vistas Bases, así que usa prefijos como 1-, 2- para controlar el orden.",
+				},
+				due: {
+					name: "Fecha de vencimiento",
+					description:
+						"La fecha límite para completar una tarea. Las tareas pasadas de su fecha de vencimiento aparecen como atrasadas. Se almacena como fecha en frontmatter.",
+				},
+				scheduled: {
+					name: "Fecha programada",
+					description:
+						"Cuándo planeas trabajar en una tarea. A diferencia de la fecha de vencimiento, esto representa tu hora de inicio prevista. Las tareas aparecen en el calendario en su fecha/hora programada.",
+				},
+				contexts: {
+					name: "Contextos",
+					description:
+						"Lugares o condiciones donde se puede hacer una tarea (ej. @casa, @oficina, @teléfono). Útil para filtrar tareas según tu situación actual. Se almacena como lista.",
+				},
+				projects: {
+					name: "Proyectos",
+					description:
+						"Enlaces a notas de proyecto a las que pertenece esta tarea. Se almacena como wikilinks (ej. [[Nombre del proyecto]]). Las tareas pueden pertenecer a múltiples proyectos.",
+				},
+				tags: {
+					name: "Etiquetas",
+					description:
+						"Etiquetas nativas de Obsidian para categorizar tareas. Se almacenan en la propiedad tags del frontmatter y funcionan con las características de etiquetas de Obsidian.",
+				},
+				timeEstimate: {
+					name: "Estimación de tiempo",
+					description:
+						"Minutos estimados para completar la tarea. Se usa para planificación de tiempo y carga de trabajo. Se muestra en tarjetas de tareas y eventos de calendario.",
+				},
+				recurrence: {
+					name: "Recurrencia",
+					description:
+						"Patrón para tareas repetitivas (diario, semanal, mensual, anual o RRULE personalizada). Cuando se completa una tarea recurrente, su fecha programada se actualiza automáticamente a la siguiente ocurrencia.",
+				},
+				recurrenceAnchor: {
+					name: "Ancla de recurrencia",
+					description:
+						"Controla cómo se calcula la siguiente ocurrencia: 'scheduled' usa la fecha programada, 'completion' usa la fecha de finalización real.",
+				},
+				reminders: {
+					name: "Recordatorios",
+					description:
+						"Notificaciones activadas antes de fechas de vencimiento o programadas. Se almacena como lista de objetos de recordatorio con tiempo y descripción opcional.",
+				},
+				title: {
+					name: "Título",
+					description:
+						"El nombre de la tarea. Puede almacenarse en frontmatter o en el nombre del archivo (cuando 'Almacenar título en nombre de archivo' está habilitado).",
+				},
+				dateCreated: {
+					name: "Fecha de creación",
+					description:
+						"Marca de tiempo de cuando se creó la tarea. Se establece automáticamente y se usa para ordenar por orden de creación.",
+				},
+				dateModified: {
+					name: "Fecha de modificación",
+					description:
+						"Marca de tiempo del último cambio en la tarea. Se actualiza automáticamente cuando cambia cualquier propiedad de la tarea.",
+				},
+				completedDate: {
+					name: "Fecha de completado",
+					description:
+						"Marca de tiempo de cuando la tarea fue marcada como completa. Se establece automáticamente cuando el estado cambia a un estado completado.",
+				},
+				archiveTag: {
+					name: "Etiqueta de archivo",
+					description:
+						"Etiqueta añadida a las tareas cuando se archivan. Se usa para identificar tareas archivadas y puede activar el movimiento de archivos a la carpeta de archivo.",
+				},
+				timeEntries: {
+					name: "Entradas de tiempo",
+					description:
+						"Registros de sesiones de seguimiento de tiempo para esta tarea. Cada entrada almacena marcas de tiempo de inicio y fin. Se usa para calcular el tiempo total invertido.",
+				},
+				completeInstances: {
+					name: "Instancias completadas",
+					description:
+						"Historial de completado para tareas recurrentes. Almacena fechas cuando cada instancia fue completada para prevenir completados duplicados.",
+				},
+				skippedInstances: {
+					name: "Instancias omitidas",
+					description:
+						"Ocurrencias omitidas para tareas recurrentes. Almacena fechas de instancias que fueron omitidas en lugar de completadas.",
+				},
+				blockedBy: {
+					name: "Bloqueada por",
+					description:
+						"Enlaces a tareas que deben completarse antes de esta. Se almacena como wikilinks. Las tareas bloqueadas muestran un indicador visual.",
+				},
+				pomodoros: {
+					name: "Pomodoros",
+					description:
+						"Conteo de sesiones Pomodoro completadas. Cuando el almacenamiento de datos está configurado en 'Notas diarias', esto se escribe en notas diarias en lugar de archivos de tarea.",
+				},
+				icsEventId: {
+					name: "ID de evento ICS",
+					description:
+						"Identificador único que enlaza una nota con un evento de calendario ICS. Se añade automáticamente al crear notas desde eventos de calendario.",
+				},
+				icsEventTag: {
+					name: "Etiqueta de evento ICS",
+					description:
+						"Etiqueta que identifica notas creadas desde eventos de calendario ICS. Se usa para distinguir notas generadas por calendario de tareas regulares.",
+				},
+			},
+			// Card-specific labels
+			statusCard: {
+				valuesHeader: "Valores de estado",
+			},
+			priorityCard: {
+				valuesHeader: "Valores de prioridad",
+			},
+			projectsCard: {
+				defaultProjects: "Proyectos predeterminados:",
+				useParentNote: "Usar nota padre como proyecto:",
+				noDefaultProjects: "No hay proyectos predeterminados seleccionados",
+				autosuggestFilters: "Filtros de autosugerencia",
+				customizeDisplay: "Personalizar visualización",
+				filtersOn: "Filtros activos",
+			},
+			titleCard: {
+				storeTitleInFilename: "Almacenar título en nombre de archivo:",
+				storedInFilename: "Almacenado en nombre de archivo",
+				filenameUpdatesWithTitle: "El nombre del archivo se actualizará automáticamente cuando cambie el título de la tarea.",
+				filenameFormat: "Formato de nombre de archivo:",
+				customTemplate: "Plantilla personalizada:",
+			},
+			tagsCard: {
+				nativeObsidianTags: "Usa etiquetas nativas de Obsidian",
+			},
+			remindersCard: {
+				defaultReminders: "Recordatorios predeterminados",
+			},
 			taskStatuses: {
 				header: "Estados de tareas",
 				description: "Personalizar las opciones de estado disponibles para tus tareas. Estos estados controlan el ciclo de vida de la tarea y determinan cuándo las tareas se consideran completas.",
@@ -932,10 +1111,13 @@ export const es: TranslationTree = {
 					displayName: "Nombre de visualización:",
 					propertyKey: "Clave de propiedad:",
 					type: "Tipo:",
+					defaultValue: "Valor predeterminado:",
 				},
 				placeholders: {
 					displayName: "Nombre de visualización",
 					propertyKey: "nombre-propiedad",
+					defaultValue: "Valor predeterminado",
+					defaultValueList: "Valores predeterminados (separados por coma)",
 				},
 				types: {
 					text: "Texto",
@@ -1725,7 +1907,13 @@ export const es: TranslationTree = {
 		openPomodoroStats: "Abrir estadísticas de pomodoro",
 		openStatisticsView: "Abrir estadísticas de tareas y proyectos",
 		createNewTask: "Crear nueva tarea",
-		convertToTaskNote: "Convertir tarea a TaskNote",
+		convertCurrentNoteToTask: {
+			name: "Convertir nota actual en tarea",
+			noActiveFile: "No hay archivo activo para convertir",
+			alreadyTask: "Esta nota ya es una tarea",
+			success: "'{title}' convertido en tarea",
+		},
+		convertToTaskNote: "Convertir tarea de casilla a TaskNote",
 		convertAllTasksInNote: "Convertir todas las tareas en nota",
 		insertTaskNoteLink: "Insertar enlace de tasknote",
 		createInlineTask: "Crear nueva tarea en línea",
@@ -1853,7 +2041,7 @@ export const es: TranslationTree = {
 		},
 		migration: {
 			title: "Migrar al nuevo sistema de recurrencia",
-			description: "TaskNotes tiene un nuevo sistema de recurrencia que utiliza patrones estándar de la industria para una mejor compatibilidad y opciones de programación más potentes.",
+			description: "TaskNotes ahora usa patrones RRULE estándar de la industria para recurrencia, lo que permite horarios más complejos y mejor compatibilidad con otras aplicaciones.",
 			tasksFound: "{count} tarea(s) con patrones de recurrencia antiguos detectados",
 			noMigrationNeeded: "No se requiere migración de tareas",
 			warnings: {
@@ -1865,7 +2053,7 @@ export const es: TranslationTree = {
 			},
 			benefits: {
 				title: "Beneficios del nuevo sistema:",
-				powerfulPatterns: "Patrones de recurrencia más potentes (ej. 'cada segundo martes')",
+				powerfulPatterns: "Patrones de recurrencia complejos (ej. 'cada segundo martes')",
 				performance: "Mejor rendimiento con tareas recurrentes",
 				compatibility: "Formato de recurrencia estándar compatible con otras aplicaciones",
 				nlp: "Soporte mejorado de procesamiento de lenguaje natural",

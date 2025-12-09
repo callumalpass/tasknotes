@@ -7,7 +7,6 @@ import {
 	createDropdownSetting,
 	createNumberSetting,
 	createHelpText,
-	// createButtonSetting
 } from "../components/settingHelpers";
 import { showStorageLocationConfirmationModal } from "../../modals/StorageLocationConfirmationModal";
 import { getAvailableLanguages } from "../../locales";
@@ -92,19 +91,8 @@ export function renderFeaturesTab(
 		setValue: async (value: boolean) => {
 			plugin.settings.enableInstantTaskConvert = value;
 			save();
-			// Re-render to show additional settings
+			// Re-render to show additional settings (and update General tab folder visibility)
 			renderFeaturesTab(container, plugin, save);
-		},
-	});
-
-	createTextSetting(container, {
-		name: translate("settings.features.instantConvert.folder.name"),
-		desc: translate("settings.features.instantConvert.folder.description"),
-		placeholder: "TaskNotes",
-		getValue: () => plugin.settings.inlineTaskConvertFolder,
-		setValue: async (value: string) => {
-			plugin.settings.inlineTaskConvertFolder = value;
-			save();
 		},
 	});
 
@@ -146,203 +134,84 @@ export function renderFeaturesTab(
 			},
 		});
 
-		// Deprecated: Old status trigger setting (kept for backward compatibility during migration)
-		// New trigger configuration UI below replaces this
-
-		// NLP Triggers Configuration
-		createSectionHeader(container, "NLP Triggers");
-		createHelpText(
-			container,
-			"Configure trigger characters or strings for each property type. When you type a trigger followed by text, autocomplete suggestions will appear."
-		);
-
-		// Helper function to render a trigger setting
-		const renderTriggerSetting = (
-			propertyId: string,
-			displayName: string,
-			description: string,
-			defaultTrigger: string
-		) => {
-			const triggerConfig = plugin.settings.nlpTriggers.triggers.find(
-				(t) => t.propertyId === propertyId
-			);
-			const currentTrigger = triggerConfig?.trigger || defaultTrigger;
-			const isEnabled = triggerConfig?.enabled ?? true;
-
-			const setting = new Setting(container)
-				.setName(displayName)
-				.setDesc(description)
-				.addToggle((toggle) => {
-					toggle.setValue(isEnabled).onChange(async (enabled) => {
-						// Update or create trigger config
-						const index = plugin.settings.nlpTriggers.triggers.findIndex(
-							(t) => t.propertyId === propertyId
-						);
-						if (index !== -1) {
-							plugin.settings.nlpTriggers.triggers[index].enabled = enabled;
-						} else {
-							plugin.settings.nlpTriggers.triggers.push({
-								propertyId,
-								trigger: defaultTrigger,
-								enabled,
-							});
-						}
-						save();
-						// Re-render to show/hide trigger input
-						renderFeaturesTab(container, plugin, save);
-					});
-				});
-
-			if (isEnabled) {
-				setting.addText((text) => {
-					text.setValue(currentTrigger)
-						.setPlaceholder(defaultTrigger)
-						.onChange(async (value) => {
-							// Validate trigger (allow trailing/leading spaces for triggers like "def: ")
-							if (value.trim().length === 0) {
-								new Notice("Trigger cannot be empty");
-								return;
-							}
-							if (value.length > 10) {
-								new Notice("Trigger is too long (max 10 characters)");
-								return;
-							}
-
-							// Update trigger (use raw value, don't trim)
-							const index = plugin.settings.nlpTriggers.triggers.findIndex(
-								(t) => t.propertyId === propertyId
-							);
-							if (index !== -1) {
-								plugin.settings.nlpTriggers.triggers[index].trigger = value;
-							} else {
-								plugin.settings.nlpTriggers.triggers.push({
-									propertyId,
-									trigger: value,
-									enabled: true,
-								});
-							}
-							save();
-						});
-					text.inputEl.style.width = "100px";
-				});
-
-				// Add special note for tags trigger
-				if (propertyId === "tags" && currentTrigger !== "#") {
-					setting.descEl.createDiv({
-						text: "⚠️ Using custom tag trigger - Obsidian's native tag suggester will be disabled.",
-						cls: "setting-item-description",
-					});
-				}
-			}
-		};
-
-		// Built-in triggers
-		renderTriggerSetting(
-			"tags",
-			"Tags Trigger",
-			"Trigger for #tags. When set to '#', uses Obsidian's native tag suggester.",
-			"#"
-		);
-
-		renderTriggerSetting(
-			"contexts",
-			"Contexts Trigger",
-			"Trigger for @contexts. Type this character followed by a context name.",
-			"@"
-		);
-
-		renderTriggerSetting(
-			"projects",
-			"Projects Trigger",
-			"Trigger for +projects. Supports wikilinks for multi-word projects.",
-			"+"
-		);
-
-		renderTriggerSetting(
-			"status",
-			"Status Trigger",
-			"Trigger for status suggestions. Type this to see available statuses.",
-			"*"
-		);
-
-		renderTriggerSetting(
-			"priority",
-			"Priority Trigger",
-			"Trigger for priority suggestions. Disabled by default (priority uses keyword matching).",
-			"!"
-		);
-
-		// User-defined field triggers
-		if (plugin.settings.userFields && plugin.settings.userFields.length > 0) {
-			createHelpText(
-				container,
-				"User-Defined Fields: Configure triggers for your custom fields below."
-			);
-
-			for (const userField of plugin.settings.userFields) {
-				const triggerConfig = plugin.settings.nlpTriggers.triggers.find(
-					(t) => t.propertyId === userField.id
-				);
-				const isEnabled = triggerConfig?.enabled ?? false;
-				const currentTrigger = triggerConfig?.trigger || `${userField.id}:`;
-
-				const setting = new Setting(container)
-					.setName(`${userField.displayName} Trigger`)
-					.setDesc(`Trigger for custom field "${userField.displayName}" (${userField.type})`)
-					.addToggle((toggle) => {
-						toggle.setValue(isEnabled).onChange(async (enabled) => {
-							const index = plugin.settings.nlpTriggers.triggers.findIndex(
-								(t) => t.propertyId === userField.id
-							);
-							if (index !== -1) {
-								plugin.settings.nlpTriggers.triggers[index].enabled = enabled;
-							} else {
-								plugin.settings.nlpTriggers.triggers.push({
-									propertyId: userField.id,
-									trigger: currentTrigger,
-									enabled,
-								});
-							}
-							save();
-							renderFeaturesTab(container, plugin, save);
-						});
-					});
-
-				if (isEnabled) {
-					setting.addText((text) => {
-						text.setValue(currentTrigger)
-							.setPlaceholder(`${userField.id}:`)
-							.onChange(async (value) => {
-								// Validate trigger (allow trailing/leading spaces)
-								if (value.trim().length === 0) {
-									new Notice("Trigger cannot be empty");
-									return;
-								}
-								if (value.length > 10) {
-									new Notice("Trigger is too long (max 10 characters)");
-									return;
-								}
-
-								const index = plugin.settings.nlpTriggers.triggers.findIndex(
-									(t) => t.propertyId === userField.id
-								);
-								if (index !== -1) {
-									plugin.settings.nlpTriggers.triggers[index].trigger = value;
-								} else {
-									plugin.settings.nlpTriggers.triggers.push({
-										propertyId: userField.id,
-										trigger: value,
-										enabled: true,
-									});
-								}
-								save();
-							});
-						text.inputEl.style.width = "100px";
-					});
-				}
-			}
-		}
+		// Note: NLP triggers are now configured per-property in the Task Properties tab
 	}
+
+	// Task Creation Section (Body Templates)
+	createSectionHeader(container, translate("settings.defaults.header.bodyTemplate"));
+	createHelpText(container, translate("settings.defaults.description.bodyTemplate"));
+
+	createToggleSetting(container, {
+		name: translate("settings.defaults.bodyTemplate.useBodyTemplate.name"),
+		desc: translate("settings.defaults.bodyTemplate.useBodyTemplate.description"),
+		getValue: () => plugin.settings.taskCreationDefaults.useBodyTemplate,
+		setValue: async (value: boolean) => {
+			plugin.settings.taskCreationDefaults.useBodyTemplate = value;
+			save();
+			// Re-render to show/hide template path
+			renderFeaturesTab(container, plugin, save);
+		},
+	});
+
+	if (plugin.settings.taskCreationDefaults.useBodyTemplate) {
+		createTextSetting(container, {
+			name: translate("settings.defaults.bodyTemplate.bodyTemplateFile.name"),
+			desc: translate("settings.defaults.bodyTemplate.bodyTemplateFile.description"),
+			placeholder: translate("settings.defaults.bodyTemplate.bodyTemplateFile.placeholder"),
+			getValue: () => plugin.settings.taskCreationDefaults.bodyTemplate,
+			setValue: async (value: string) => {
+				plugin.settings.taskCreationDefaults.bodyTemplate = value;
+				save();
+			},
+		});
+
+		// Template Variables Help
+		const helpContainer = container.createDiv("tasknotes-settings__help-section");
+		helpContainer.createEl("h4", {
+			text: translate("settings.defaults.bodyTemplate.variablesHeader"),
+		});
+		const helpList = helpContainer.createEl("ul");
+		helpList.createEl("li", {
+			text: translate("settings.defaults.bodyTemplate.variables.title"),
+		});
+		helpList.createEl("li", {
+			text: translate("settings.defaults.bodyTemplate.variables.details"),
+		});
+		helpList.createEl("li", {
+			text: translate("settings.defaults.bodyTemplate.variables.date"),
+		});
+		helpList.createEl("li", {
+			text: translate("settings.defaults.bodyTemplate.variables.time"),
+		});
+		helpList.createEl("li", {
+			text: translate("settings.defaults.bodyTemplate.variables.priority"),
+		});
+		helpList.createEl("li", {
+			text: translate("settings.defaults.bodyTemplate.variables.status"),
+		});
+		helpList.createEl("li", {
+			text: translate("settings.defaults.bodyTemplate.variables.contexts"),
+		});
+		helpList.createEl("li", {
+			text: translate("settings.defaults.bodyTemplate.variables.tags"),
+		});
+		helpList.createEl("li", {
+			text: translate("settings.defaults.bodyTemplate.variables.projects"),
+		});
+	}
+
+	// Instant Conversion Defaults
+	createToggleSetting(container, {
+		name: translate("settings.defaults.instantConversion.useDefaultsOnInstantConvert.name"),
+		desc: translate(
+			"settings.defaults.instantConversion.useDefaultsOnInstantConvert.description"
+		),
+		getValue: () => plugin.settings.useDefaultsOnInstantConvert,
+		setValue: async (value: boolean) => {
+			plugin.settings.useDefaultsOnInstantConvert = value;
+			save();
+		},
+	});
 
 	// Pomodoro Timer Section
 	createSectionHeader(container, translate("settings.features.pomodoro.header"));

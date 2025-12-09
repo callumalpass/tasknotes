@@ -19,6 +19,12 @@ Each user field has the following properties:
     - **Boolean**: A true/false value stored as a checkbox in the task modal.
     - **Date**: A date.
     - **List**: A list of values.
+- **Default Value** (optional): A default value to pre-fill when creating new tasks. The input format depends on the field type:
+    - **Text**: Enter the default text value.
+    - **Number**: Enter the default number.
+    - **Boolean**: Toggle to set the default state (checked/unchecked).
+    - **Date**: Select from presets: None, Today, Tomorrow, or Next Week.
+    - **List**: Enter comma-separated default values.
 
 ## File Suggestion Filtering (Advanced)
 

@@ -45,9 +45,21 @@ To connect your calendars, you'll need to create OAuth applications with Google 
    - Navigate to "App registrations" → "New registration"
    - Name: Choose any name (e.g., "TaskNotes")
    - Supported account types: Select appropriate option for your use case
-   - Redirect URI: Add "http://localhost:8080" (Platform: Web)
+   - Redirect URI: Leave blank for now (we'll add it via manifest)
 
-2. **Configure API Permissions**
+2. **Configure Redirect URI via Manifest**
+   - In your app registration, go to "Manifest"
+   - Find the `replyUrlsWithType` array and add:
+     ```json
+     {
+       "url": "http://127.0.0.1",
+       "type": "Web"
+     }
+     ```
+   - Save the manifest
+   - Note: Azure Portal UI may not allow `http://127.0.0.1` directly, but the manifest editor does. Azure ignores the port for loopback addresses, so any port will work.
+
+3. **Configure API Permissions**
    - In your app registration, go to "API permissions"
    - Add permissions:
      - `Calendars.Read`
@@ -55,12 +67,12 @@ To connect your calendars, you'll need to create OAuth applications with Google 
      - `offline_access`
    - Grant admin consent if required
 
-3. **Get Credentials**
+4. **Get Credentials**
    - In "Overview", copy the Application (client) ID
    - In "Certificates & secrets", create a new client secret
    - Copy the secret value immediately (shown only once)
 
-4. **Configure TaskNotes**
+5. **Configure TaskNotes**
    - In TaskNotes Settings → Integrations → Calendar:
      - Paste your Client ID in the Microsoft Calendar card
      - Paste your Client Secret in the Microsoft Calendar card
@@ -78,9 +90,8 @@ To connect your calendars, you'll need to create OAuth applications with Google 
 **"Failed to connect"**
 
 - Verify Client ID and Secret are correct
-- Check redirect URI is configured: `http://localhost:8080`
-- Check no other services are running on port 8080 
-  - You may need to disable the API integration and restart if it is using port 8080. You will be able to re-enable the API after calendar authorization. 
+- For Microsoft: Check redirect URI `http://127.0.0.1` is configured via the manifest editor (not `localhost`)
+- For Google: Check redirect URI `http://localhost:8080` is configured
 - Ensure required API permissions are granted
 
 **"Failed to fetch events"**

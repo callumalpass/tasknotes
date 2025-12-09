@@ -1132,18 +1132,22 @@
     display: inline-block !important;
     font-size: var(--tn-font-size-sm);
     margin: 0;
-    margin-left: 0.5em; /* Space between title and metadata */
     padding: 0;
     vertical-align: text-bottom;
     position: relative;
     top: -0.15em;
     white-space: nowrap;
     width: fit-content;
-    min-width: min(30%, 300px);
     max-width: 100%;
     overflow-x: auto;
     overflow-y: hidden;
     scrollbar-width: none;
+}
+
+/* Only apply spacing and min-width when metadata has content - prevents blank space when empty */
+.tasknotes-plugin .task-card--layout-inline .task-card__metadata:not(:empty) {
+    margin-left: 0.5em;
+    min-width: min(30%, 300px);
 }
 
 .tasknotes-plugin .task-card--layout-inline .task-card__metadata:hover {

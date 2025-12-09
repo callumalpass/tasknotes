@@ -189,6 +189,8 @@ export interface CardConfig {
 	collapsible?: boolean;
 	/** Whether the card should start collapsed (only applies if collapsible is true) */
 	defaultCollapsed?: boolean;
+	/** Callback when collapse state changes */
+	onCollapseChange?: (collapsed: boolean) => void;
 	/** Color indicator on the left side of the card */
 	colorIndicator?: {
 		color: string;
@@ -364,10 +366,12 @@ export function createCard(container: HTMLElement, config: CardConfig): HTMLElem
 				// Expand
 				card.removeClass("tasknotes-settings__card--collapsed");
 				header.title = "Collapse card";
+				config.onCollapseChange?.(false);
 			} else {
 				// Collapse
 				card.addClass("tasknotes-settings__card--collapsed");
 				header.title = "Expand card";
+				config.onCollapseChange?.(true);
 			}
 		};
 

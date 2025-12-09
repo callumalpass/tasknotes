@@ -4,7 +4,6 @@ import { debounce } from "./components/settingHelpers";
 import { renderGeneralTab } from "./tabs/generalTab";
 import { renderTaskPropertiesTab } from "./tabs/taskPropertiesTab";
 import { renderModalFieldsTab } from "./tabs/modalFieldsTab";
-import { renderDefaultsTab } from "./tabs/defaultsTab";
 import { renderAppearanceTab } from "./tabs/appearanceTab";
 import { renderFeaturesTab } from "./tabs/featuresTab";
 import { renderIntegrationsTab } from "./tabs/integrationsTab";
@@ -47,7 +46,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 		// Create tab navigation
 		const tabNav = containerEl.createDiv("settings-tab-nav settings-view__tab-nav");
 
-		// Define the new 7-tab structure
+		// Define the 6-tab structure (defaults merged into task-properties)
 		const allTabs: TabConfig[] = [
 			{
 				id: "general",
@@ -63,11 +62,6 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 				id: "modal-fields",
 				nameKey: "settings.tabs.modalFields",
 				renderFn: renderModalFieldsTab,
-			},
-			{
-				id: "defaults",
-				nameKey: "settings.tabs.defaults",
-				renderFn: renderDefaultsTab,
 			},
 			{
 				id: "appearance",
@@ -135,6 +129,15 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 				}
 			});
 		});
+
+		// Add documentation link after tabs
+		const docsHeader = containerEl.createDiv("settings-header");
+		const docsLink = docsHeader.createEl("a", {
+			text: translate("settings.header.documentation"),
+			href: translate("settings.header.documentationUrl"),
+			cls: "settings-header-link",
+		});
+		docsLink.setAttr("target", "_blank");
 
 		// Create tab content containers
 		const tabContentsEl = containerEl.createDiv(
@@ -220,11 +223,6 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 				id: "modal-fields",
 				nameKey: "settings.tabs.modalFields",
 				renderFn: renderModalFieldsTab,
-			},
-			{
-				id: "defaults",
-				nameKey: "settings.tabs.defaults",
-				renderFn: renderDefaultsTab,
 			},
 			{
 				id: "appearance",
