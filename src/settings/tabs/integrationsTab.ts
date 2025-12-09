@@ -1260,6 +1260,28 @@ function renderICSSubscriptionsList(
 		const colorInput = createCardInput("color", "", subscription.color);
 		const refreshInput = createCardNumberInput(5, 1440, 5, subscription.refreshInterval || 60);
 
+		// Authentication fields for remote subscriptions (Baikal, Davis, CalDAV)
+		// Create auth type dropdown
+		const authTypeSelect = document.createElement("select");
+		authTypeSelect.className = "tasknotes-settings__card-input";
+
+		const authNoneOption = document.createElement("option");
+		authNoneOption.value = "none";
+		authNoneOption.textContent = translate("settings.integrations.subscriptionsList.authOptions.none");
+		authNoneOption.selected = !subscription.authType || subscription.authType === "none";
+		authTypeSelect.appendChild(authNoneOption);
+
+		const authBasicOption = document.createElement("option");
+		authBasicOption.value = "basic";
+		authBasicOption.textContent = translate("settings.integrations.subscriptionsList.authOptions.basic");
+		authBasicOption.selected = subscription.authType === "basic";
+		authTypeSelect.appendChild(authBasicOption);
+
+		// Username and password inputs
+		const usernameInput = createCardInput("text", translate("settings.integrations.subscriptionsList.placeholders.username"), subscription.username || "");
+		const passwordInput = createCardInput("text", translate("settings.integrations.subscriptionsList.placeholders.password"), subscription.password || "");
+		(passwordInput as HTMLInputElement).type = "password"; // Set to password type after creation
+
 		// Update handlers
 		const updateSubscription = async (updates: Partial<typeof subscription>) => {
 			try {
@@ -1287,6 +1309,25 @@ function renderICSSubscriptionsList(
 			const minutes = parseInt(refreshInput.value) || 60;
 			updateSubscription({ refreshInterval: minutes });
 		});
+
+		// Auth type change handler - re-render to show/hide username/password fields
+		authTypeSelect.addEventListener("change", async () => {
+			const newAuthType = authTypeSelect.value as "none" | "basic";
+			await updateSubscription({
+				authType: newAuthType,
+				// Clear credentials when switching to none
+				username: newAuthType === "none" ? undefined : subscription.username,
+				password: newAuthType === "none" ? undefined : subscription.password,
+			});
+		});
+
+		// Username and password handlers
+		usernameInput.addEventListener("blur", () =>
+			updateSubscription({ username: (usernameInput as HTMLInputElement).value.trim() })
+		);
+		passwordInput.addEventListener("blur", () =>
+			updateSubscription({ password: (passwordInput as HTMLInputElement).value })
+		);
 
 		// Type change handler - re-render the subscription list to update input type
 		typeSelect.addEventListener("change", async () => {
@@ -1411,16 +1452,49 @@ function renderICSSubscriptionsList(
 
 		// Build content rows
 		const contentRows: { label: string; input: HTMLElement; fullWidth?: boolean }[] = [
-			{ label: "Enabled:", input: enabledToggle },
-			{ label: "Name:", input: nameInput },
-			{ label: "Type:", input: typeSelect },
+			{ label: translate("settings.integrations.subscriptionsList.labels.enabled"), input: enabledToggle },
+			{ label: translate("settings.integrations.subscriptionsList.labels.name"), input: nameInput },
+			{ label: translate("settings.integrations.subscriptionsList.labels.type"), input: typeSelect },
 			{
-				label: subscription.type === "remote" ? "URL:" : "File Path:",
+				label: subscription.type === "remote" 
+					? translate("settings.integrations.subscriptionsList.labels.url") 
+					: translate("settings.integrations.subscriptionsList.labels.filePath"),
 				input: sourceInput,
 			},
-			{ label: "Color:", input: colorInput },
-			{ label: "Refresh (min):", input: refreshInput },
 		];
+
+		// Add authentication fields for remote subscriptions
+		if (subscription.type === "remote") {
+			contentRows.push({
+				label: translate("settings.integrations.subscriptionsList.labels.authentication"),
+				input: authTypeSelect,
+			});
+
+			// Show username/password fields only when Basic auth is selected
+			if (subscription.authType === "basic") {
+				contentRows.push({
+					label: translate("settings.integrations.subscriptionsList.labels.username"),
+					input: usernameInput,
+				});
+				contentRows.push({
+					label: translate("settings.integrations.subscriptionsList.labels.password"),
+					input: passwordInput,
+				});
+
+				// Add security warning for credential storage
+				const warningEl = document.createElement("div");
+				warningEl.className = "tasknotes-settings__card-warning";
+				warningEl.innerHTML = `<span class="tasknotes-settings__card-warning-icon">⚠️</span><span class="tasknotes-settings__card-warning-text">${translate("settings.integrations.subscriptionsList.authWarning")}</span>`;
+				contentRows.push({
+					label: "",
+					input: warningEl,
+					fullWidth: true,
+				});
+			}
+		}
+
+		contentRows.push({ label: translate("settings.integrations.subscriptionsList.labels.color"), input: colorInput });
+		contentRows.push({ label: translate("settings.integrations.subscriptionsList.labels.refreshMinutes"), input: refreshInput });
 
 		createCard(container, {
 			id: subscription.id,

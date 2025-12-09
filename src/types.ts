@@ -759,6 +759,10 @@ export interface ICSSubscription {
 	color: string;
 	enabled: boolean;
 	refreshInterval: number; // minutes (for remote) or check interval (for local)
+	// Authentication for remote calendars (e.g., Baikal, Davis, CalDAV servers)
+	authType?: "none" | "basic"; // Authentication type
+	username?: string; // Username for HTTP Basic Auth
+	password?: string; // Password for HTTP Basic Auth
 }
 
 export interface ICSEvent {
