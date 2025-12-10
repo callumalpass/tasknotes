@@ -170,6 +170,11 @@ export class ReadingModeTaskLinkProcessor {
 				displayText = linkContent;
 			}
 
+			if (displayText) {
+				// If there's a display text (alias), do not replace the link
+				return;
+			}
+
 			// Create a task widget instance
 			const widget = new TaskLinkWidget(taskInfo, this.plugin, originalText, displayText);
 
