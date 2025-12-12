@@ -43,6 +43,19 @@ export function renderFeaturesTab(
 		},
 	});
 
+	// Disable overlay for aliased links setting
+	if (plugin.settings.enableTaskLinkOverlay) {
+		createToggleSetting(container, {
+			name: "Disable overlay for aliased links",
+			desc: "Do not show the task widget if the link contains an alias (e.g. [[Task|Alias]].",
+			getValue: () => plugin.settings.disableOverlayOnAlias,
+			setValue: async (value: boolean) => {
+				plugin.settings.disableOverlayOnAlias = value;
+				save();
+			},
+		});
+	}
+
 	// Inline task card visible properties (shown when task link overlay is enabled)
 	if (plugin.settings.enableTaskLinkOverlay) {
 		const availableProperties = getAvailableProperties(plugin);
