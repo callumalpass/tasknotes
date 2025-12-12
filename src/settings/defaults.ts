@@ -265,6 +265,7 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	pomodoroStorageLocation: "plugin",
 	// Editor defaults
 	enableTaskLinkOverlay: true,
+	disableOverlayOnAlias: false,
 	enableInstantTaskConvert: true,
 	useDefaultsOnInstantConvert: true,
 	enableNaturalLanguageInput: true,

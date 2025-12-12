@@ -273,6 +273,14 @@ export function buildTaskLinkDecorations(
 					continue;
 				}
 
+				// Check for alias exclusion
+				if (plugin.settings.disableOverlayOnAlias) {
+					// Skip Wikilinks with pipes [[Path|Alias]]
+					if (link.type === "wikilink" && link.match.includes("|")) {
+						continue;
+					}
+				}
+
 				// Parse the link to get the link path (handle both wikilinks and markdown links)
 				const parsed =
 					link.type === "wikilink"
