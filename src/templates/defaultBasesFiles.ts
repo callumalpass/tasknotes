@@ -318,7 +318,6 @@ function generateAllFormulas(plugin: TaskNotesPlugin): Record<string, string> {
 		dueDateCategory: `if(!${dueProperty}, "No due date", if(date(${dueProperty}) < today(), "Overdue", if(date(${dueProperty}).date() == today(), "Today", if(date(${dueProperty}).date() == today() + "1d", "Tomorrow", if(date(${dueProperty}) <= today() + "7d", "This week", "Later")))))`,
 
 		// Time estimate category for grouping
-		// Fixed time estimate category logic
 		timeEstimateCategory: `if(${timeEstimateProperty} > 0, if(${timeEstimateProperty} < 30, "Quick (<30m)", if(${timeEstimateProperty} <= 120, "Medium (30m-2h)", "Long (>2h)")), "No estimate")`,
 
 		// Age category based on creation date
