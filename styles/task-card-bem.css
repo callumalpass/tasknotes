@@ -462,6 +462,10 @@
     opacity: 1;
 }
 
+.tasknotes-plugin .task-card__project-indicator.task-card__chevron {
+    opacity: 0.7;
+}
+
 .tasknotes-plugin .task-card__chevron svg {
     width: 14px;
     height: 14px;

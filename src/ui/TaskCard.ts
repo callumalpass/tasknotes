@@ -1482,41 +1482,26 @@ export function createTaskCard(
 			});
 		}
 
-		// Project indicator
+		// Project indicator doubles as the subtasks toggle (same behavior as the chevron)
 		const isProject = plugin.projectSubtasksService.isTaskUsedAsProjectSync(task.path);
-		if (isProject) {
-			createBadgeIndicator({
+		if (isProject && plugin.settings?.showExpandableSubtasks) {
+			const isExpanded = plugin.expandedProjectsService?.isExpanded(task.path) || false;
+			const projectToggle = createBadgeIndicator({
 				container: badgesContainer,
-				className: "task-card__project-indicator",
+				className: `task-card__project-indicator task-card__chevron${isExpanded ? " task-card__chevron--expanded" : ""}`,
 				icon: "folder",
-				tooltip: "This task is used as a project (click to filter subtasks)",
-				onClick: createProjectClickHandler(task, plugin),
+				tooltip: isExpanded ? "Collapse subtasks" : "Expand subtasks",
+				onClick: (e) => {
+					e.stopPropagation();
+					createChevronClickHandler(task, plugin, card, projectToggle as HTMLElement)();
+				},
 			});
 
-			// Chevron for expandable subtasks
-			if (plugin.settings?.showExpandableSubtasks) {
-				const isExpanded = plugin.expandedProjectsService?.isExpanded(task.path) || false;
-				const chevron = createBadgeIndicator({
-					container: badgesContainer,
-					className: `task-card__chevron${isExpanded ? " task-card__chevron--expanded" : ""}`,
-					icon: "chevron-right",
-					tooltip: isExpanded ? "Collapse subtasks" : "Expand subtasks",
+			// Show subtasks if already expanded
+			if (isExpanded) {
+				toggleSubtasks(card, task, plugin, true).catch((error) => {
+					console.error("Error showing initial subtasks:", error);
 				});
-
-				// Chevron needs special handler since it updates its own state
-				if (chevron) {
-					chevron.addEventListener("click", (e) => {
-						e.stopPropagation();
-						createChevronClickHandler(task, plugin, card, chevron)();
-					});
-				}
-
-				// Show subtasks if already expanded
-				if (isExpanded) {
-					toggleSubtasks(card, task, plugin, true).catch((error) => {
-						console.error("Error showing initial subtasks:", error);
-					});
-				}
 			}
 		}
 
@@ -2042,43 +2027,12 @@ export function updateTaskCard(
 			element.querySelector(".task-card__project-indicator-placeholder")?.remove();
 			element.querySelector(".task-card__chevron-placeholder")?.remove();
 
-			// Update project indicator
-			updateBadgeIndicator(element, ".task-card__project-indicator", {
-				shouldExist: isProject,
-				className: "task-card__project-indicator",
-				icon: "folder",
-				tooltip: "This task is used as a project (click to filter subtasks)",
-				onClick: createProjectClickHandler(task, plugin),
-			});
+			const showProjectToggle = isProject && plugin.settings?.showExpandableSubtasks;
+			const existingToggle = element.querySelector(".task-card__project-indicator") as HTMLElement | null;
 
-			// Update chevron
-			const showChevron = isProject && plugin.settings?.showExpandableSubtasks;
-			const existingChevron = element.querySelector(".task-card__chevron") as HTMLElement;
-
-			if (showChevron && !existingChevron) {
-				const isExpanded = plugin.expandedProjectsService?.isExpanded(task.path) || false;
-				const chevron = createBadgeIndicator({
-					container: badgesContainer || mainRow,
-					className: `task-card__chevron${isExpanded ? " task-card__chevron--expanded" : ""}`,
-					icon: "chevron-right",
-					tooltip: isExpanded ? "Collapse subtasks" : "Expand subtasks",
-				});
-
-				if (chevron) {
-					chevron.addEventListener("click", (e) => {
-						e.stopPropagation();
-						createChevronClickHandler(task, plugin, element, chevron)();
-					});
-				}
-
-				if (isExpanded) {
-					toggleSubtasks(element, task, plugin, true).catch((error) => {
-						console.error("Error showing initial subtasks in update:", error);
-					});
-				}
-			} else if (!showChevron && existingChevron) {
-				existingChevron.remove();
-				// Clean up subtasks container
+			if (!showProjectToggle) {
+				existingToggle?.remove();
+				// Clean up subtasks container if we remove the toggle
 				const subtasksContainer = element.querySelector(".task-card__subtasks") as HTMLElement;
 				if (subtasksContainer) {
 					const clickHandler = (subtasksContainer as any)._clickHandler;
@@ -2088,6 +2042,31 @@ export function updateTaskCard(
 					}
 					subtasksContainer.remove();
 				}
+				return;
+			}
+
+			const isExpanded = plugin.expandedProjectsService?.isExpanded(task.path) || false;
+			const tooltip = isExpanded ? "Collapse subtasks" : "Expand subtasks";
+
+			if (existingToggle) {
+				existingToggle.remove();
+			}
+
+			const projectToggle = createBadgeIndicator({
+				container: badgesContainer || mainRow,
+				className: `task-card__project-indicator task-card__chevron${isExpanded ? " task-card__chevron--expanded" : ""}`,
+				icon: "folder",
+				tooltip,
+				onClick: (e) => {
+					e.stopPropagation();
+					createChevronClickHandler(task, plugin, element, projectToggle as HTMLElement)();
+				},
+			});
+
+			if (projectToggle && isExpanded) {
+				toggleSubtasks(element, task, plugin, true).catch((error) => {
+					console.error("Error showing initial subtasks in update:", error);
+				});
 			}
 		})
 		.catch((error: any) => {
