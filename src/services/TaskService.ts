@@ -306,10 +306,13 @@ export class TaskService {
 				icsEventId: taskData.icsEventId || undefined,
 			};
 
+			const shouldAddTaskTag = this.plugin.settings.taskIdentificationMethod === "tag";
+			const taskTagForFrontmatter = shouldAddTaskTag ? this.plugin.settings.taskTag : undefined;
+
 			// Use field mapper to convert to frontmatter with proper field mapping
 			const frontmatter = this.plugin.fieldMapper.mapToFrontmatter(
 				completeTaskData,
-				this.plugin.settings.taskTag,
+				taskTagForFrontmatter,
 				this.plugin.settings.storeTitleInFilename
 			);
 
@@ -330,6 +333,8 @@ export class TaskService {
 				);
 				if (filteredTags.length > 0) {
 					frontmatter.tags = filteredTags;
+				} else {
+					delete frontmatter.tags;
 				}
 			} else {
 				// Tags are handled separately (not via field mapper)
