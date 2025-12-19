@@ -1342,23 +1342,28 @@ export class TaskService {
 				}
 
 				if (updates.hasOwnProperty("tags")) {
-					let tagsToSet = updates.tags;
-					// Remove task tag if using property identification
-					if (this.plugin.settings.taskIdentificationMethod === "property" && tagsToSet) {
-						tagsToSet = tagsToSet.filter(
-							(tag: string) => tag !== this.plugin.settings.taskTag
-						);
+					const tagsToSet = Array.isArray(updates.tags) ? [...updates.tags] : [];
+					const filteredTags =
+						this.plugin.settings.taskIdentificationMethod === "property"
+							? tagsToSet.filter((tag) => tag !== this.plugin.settings.taskTag)
+							: tagsToSet;
+
+					if (filteredTags.length > 0) {
+						frontmatter.tags = filteredTags;
+					} else {
+						delete frontmatter.tags;
 					}
-					frontmatter.tags = tagsToSet;
-				} else if (originalTask.tags) {
-					let tagsToSet = originalTask.tags;
-					// Remove task tag if using property identification
-					if (this.plugin.settings.taskIdentificationMethod === "property") {
-						tagsToSet = tagsToSet.filter(
-							(tag: string) => tag !== this.plugin.settings.taskTag
-						);
+				} else if (Array.isArray(originalTask.tags) && originalTask.tags.length > 0) {
+					const filteredTags =
+						this.plugin.settings.taskIdentificationMethod === "property"
+							? originalTask.tags.filter((tag) => tag !== this.plugin.settings.taskTag)
+							: originalTask.tags;
+
+					if (filteredTags.length > 0) {
+						frontmatter.tags = filteredTags;
+					} else {
+						delete frontmatter.tags;
 					}
-					frontmatter.tags = tagsToSet;
 				}
 			});
 
