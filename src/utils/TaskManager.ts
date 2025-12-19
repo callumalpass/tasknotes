@@ -259,6 +259,17 @@ export class TaskManager extends Events {
 				? calculateTotalTimeSpent(mappedTask.timeEntries)
 				: 0;
 
+			// Collect custom properties based on userFields configuration
+			const customProps: Record<string, any> = {};
+			const userFields = this.settings.userFields || [];
+			for (const field of userFields) {
+				const key = field.key || field.id;
+				if (!key) continue;
+				if (frontmatter[key] !== undefined) {
+					customProps[key] = frontmatter[key];
+				}
+			}
+
 			// Get dependency information from DependencyCache
 			let isBlocked = false;
 			let blockingTasks: string[] = [];
@@ -291,6 +302,7 @@ export class TaskManager extends Events {
 				isBlocked,
 				isBlocking,
 				blocking: blockingTasks.length > 0 ? blockingTasks : undefined,
+				customProperties: Object.keys(customProps).length > 0 ? customProps : mappedTask.customProperties,
 			};
 		} catch (error) {
 			console.error(`Error extracting task info from native metadata for ${path}:`, error);
