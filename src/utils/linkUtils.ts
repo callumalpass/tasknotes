@@ -30,6 +30,11 @@ export function parseLinkToPath(linkText: string): string {
 	if (markdownMatch) {
 		let linkPath = markdownMatch[2].trim();
 
+		// Strip angle brackets used to allow special characters/spaces in markdown links
+		if (linkPath.startsWith("<") && linkPath.endsWith(">")) {
+			linkPath = linkPath.slice(1, -1).trim();
+		}
+
 		// URL decode the link path - crucial for paths with spaces like Car%20Maintenance.md
 		try {
 			linkPath = decodeURIComponent(linkPath);

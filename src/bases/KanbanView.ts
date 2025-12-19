@@ -555,7 +555,7 @@ export class KanbanView extends BasesViewBase {
 			}
 
 			// Create column
-			const column = await this.createColumn(groupKey, tasks, visibleProperties);
+			const column = await this.createColumn(groupKey, tasks, visibleProperties, groupByPropertyId);
 			if (this.boardEl) {
 				this.boardEl.appendChild(column);
 			}
@@ -643,13 +643,14 @@ export class KanbanView extends BasesViewBase {
 		const orderedKeys = this.applyColumnOrder(groupByPropertyId, columnKeys);
 
 		// Render swimlane table
-		await this.renderSwimLaneTable(swimLanes, orderedKeys, pathToProps);
+		await this.renderSwimLaneTable(swimLanes, orderedKeys, pathToProps, groupByPropertyId);
 	}
 
 	private async renderSwimLaneTable(
 		swimLanes: Map<string, Map<string, TaskInfo[]>>,
 		columnKeys: string[],
-		pathToProps: Map<string, Record<string, any>>
+		pathToProps: Map<string, Record<string, any>>,
+		groupByPropertyId: string
 	): Promise<void> {
 		if (!this.boardEl) return;
 
@@ -681,7 +682,7 @@ export class KanbanView extends BasesViewBase {
 			dragHandle.textContent = "⋮⋮";
 
 			const titleContainer = headerCell.createSpan({ cls: "kanban-view__column-title" });
-			this.renderGroupTitleWrapper(titleContainer, columnKey);
+			this.renderGroupTitleWrapper(titleContainer, columnKey, groupByPropertyId);
 
 			// Setup column header drag handlers for swimlane mode
 			this.setupColumnHeaderDragHandlers(headerCell);
@@ -702,7 +703,7 @@ export class KanbanView extends BasesViewBase {
 
 			// Add swimlane title and count
 			const titleEl = labelCell.createEl("div", { cls: "kanban-view__swimlane-title" });
-			this.renderGroupTitleWrapper(titleEl, swimLaneKey);
+			this.renderGroupTitleWrapper(titleEl, swimLaneKey, this.swimLanePropertyId);
 
 			// Count total tasks in this swimlane
 			const totalTasks = Array.from(columns.values()).reduce((sum, tasks) => sum + tasks.length, 0);
@@ -763,7 +764,8 @@ export class KanbanView extends BasesViewBase {
 	private async createColumn(
 		groupKey: string,
 		tasks: TaskInfo[],
-		visibleProperties: string[]
+		visibleProperties: string[],
+		groupByPropertyId?: string | null
 	): Promise<HTMLElement> {
 		const column = document.createElement("div");
 		column.className = "kanban-view__column";
@@ -780,7 +782,7 @@ export class KanbanView extends BasesViewBase {
 		dragHandle.textContent = "⋮⋮";
 
 		const titleContainer = header.createSpan({ cls: "kanban-view__column-title" });
-		this.renderGroupTitleWrapper(titleContainer, groupKey);
+		this.renderGroupTitleWrapper(titleContainer, groupKey, groupByPropertyId);
 
 		header.createSpan({
 			cls: "kanban-view__column-count",
@@ -1492,15 +1494,44 @@ export class KanbanView extends BasesViewBase {
 		return String(value);
 	}
 
-	private renderGroupTitleWrapper(container: HTMLElement, title: string): void {
+	private getGroupDisplayTitle(title: string, propertyId?: string | null): string {
+		if (!propertyId) {
+			return title;
+		}
+
+		const cleanProperty = this.stripPropertyPrefix(propertyId);
+
+		// Use labels for status columns
+		const statusField = this.plugin.fieldMapper.toUserField('status');
+		if (cleanProperty === statusField) {
+			const statusConfig = this.plugin.statusManager.getStatusConfig(title);
+			if (statusConfig?.label) {
+				return statusConfig.label;
+			}
+		}
+
+		// Use labels for priority columns
+		const priorityField = this.plugin.fieldMapper.toUserField('priority');
+		if (cleanProperty === priorityField) {
+			const priorityConfig = this.plugin.priorityManager.getPriorityConfig(title);
+			if (priorityConfig?.label) {
+				return priorityConfig.label;
+			}
+		}
+
+		return title;
+	}
+
+	private renderGroupTitleWrapper(container: HTMLElement, title: string, propertyId?: string | null): void {
 		// Use this.app if available (set by Bases), otherwise fall back to plugin.app
 		const app = this.app || this.plugin.app;
+		const displayTitle = this.getGroupDisplayTitle(title, propertyId);
 
 		const linkServices: LinkServices = {
 			metadataCache: app.metadataCache,
 			workspace: app.workspace,
 		};
-		renderGroupTitle(container, title, linkServices);
+		renderGroupTitle(container, displayTitle, linkServices);
 	}
 
 	private applyColumnOrder(groupBy: string, actualKeys: string[]): string[] {
