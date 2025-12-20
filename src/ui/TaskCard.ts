@@ -1439,6 +1439,7 @@ export function createTaskCard(
 	if (statusConfig) {
 		card.style.setProperty("--current-status-color", statusConfig.color);
 	}
+	const statusStripeColor = statusConfig?.color;
 
 	// Set next status color for hover preview
 	const nextStatus = plugin.statusManager.getNextStatus(effectiveStatus);
@@ -1462,8 +1463,12 @@ export function createTaskCard(
 				setIcon(statusDot, statusConfig.icon);
 			}
 		}
+		card.style.removeProperty("box-shadow");
+	} else if (statusStripeColor) {
+		card.style.boxShadow = `inset -2px 0 0 ${statusStripeColor}`;
+	} else {
+		card.style.removeProperty("box-shadow");
 	}
-
 	// Add click handler to cycle through statuses
 	if (statusDot) {
 		// Prevent mousedown from propagating to editor (fixes inline widget de-rendering)
@@ -1953,6 +1958,17 @@ export function updateTaskCard(
 	} else if (statusDot) {
 		// Remove dot if it shouldn't be visible
 		statusDot.remove();
+	}
+
+	// Apply a status stripe when the status property is hidden
+	if (!shouldShowStatus) {
+		if (statusConfig?.color) {
+			element.style.boxShadow = `inset -2px 0 0 ${statusConfig.color}`;
+		} else {
+			element.style.removeProperty("box-shadow");
+		}
+	} else {
+		element.style.removeProperty("box-shadow");
 	}
 
 	// Update priority indicator (conditional based on visible properties)
