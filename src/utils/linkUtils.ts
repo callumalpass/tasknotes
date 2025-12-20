@@ -12,6 +12,19 @@ export function parseLinkToPath(linkText: string): string {
 
 	const trimmed = linkText.trim();
 
+	// Handle plain angle-bracket autolink style: <path/to/note.md>
+	if (trimmed.startsWith("<") && trimmed.endsWith(">")) {
+		let inner = trimmed.slice(1, -1).trim();
+		try {
+			inner = decodeURIComponent(inner);
+		} catch (error) {
+			console.debug("Failed to decode URI component:", inner, error);
+		}
+
+		const parsed = parseLinktext(inner);
+		return parsed.path || inner;
+	}
+
 	// Handle wikilinks: [[path]] or [[path|alias]]
 	if (trimmed.startsWith("[[") && trimmed.endsWith("]]")) {
 		const inner = trimmed.slice(2, -2).trim();

@@ -24,7 +24,7 @@ export function normalizeDependencyEntry(value: unknown): TaskDependency | null 
 	if (typeof value === "string") {
 		const trimmed = value.trim();
 		if (!trimmed) return null;
-		return { uid: trimmed, reltype: DEFAULT_DEPENDENCY_RELTYPE };
+		return { uid: parseLinkToPath(trimmed), reltype: DEFAULT_DEPENDENCY_RELTYPE };
 	}
 
 	if (typeof value === "object" && value !== null) {
@@ -33,12 +33,13 @@ export function normalizeDependencyEntry(value: unknown): TaskDependency | null 
 		if (!rawUid) {
 			return null;
 		}
+		const normalizedUid = parseLinkToPath(rawUid);
 		const reltypeRaw = typeof raw.reltype === "string" ? raw.reltype.trim().toUpperCase() : "";
 		const reltype = isValidDependencyRelType(reltypeRaw)
 			? (reltypeRaw as TaskDependencyRelType)
 			: DEFAULT_DEPENDENCY_RELTYPE;
 		const gap = typeof raw.gap === "string" && raw.gap.trim().length > 0 ? raw.gap.trim() : undefined;
-		return gap ? { uid: rawUid, reltype, gap } : { uid: rawUid, reltype };
+		return gap ? { uid: normalizedUid, reltype, gap } : { uid: normalizedUid, reltype };
 	}
 
 	return null;

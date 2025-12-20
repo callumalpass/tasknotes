@@ -95,6 +95,22 @@ Each task being a full note means you can write descriptions, jot down thoughts 
 
 *Project management with subtasks and hierarchical organization*
 
+## Adjustments by [nemron](https://github.com/normenmueller)
+
+| Version | Description |
+| ------- | ----------- |
+| 4.1.4   | Add angle bracket markdown links handling and adapt Kanban board view to utilize status labels for column headers |
+| 4.1.5   | No autom. "task" tag in case of property based task identification |
+| 4.1.6   | Leave file property `tag:` untouched if not explicitly edited |
+| 4.1.7   | Remove chevron and change project icon behavior to toggle fold/unfold sub-tasks |
+| 4.1.8   | Sub-task sorting utilizes custom fields |
+| 4.1.9   | Project titles bold face |
+| 4.1.10  | Fix for 4.1.8 |
+| 4.1.11  | Custom fields on sub-task cards |
+| 4.1.12  | Status colors |
+| 4.1.13  | Fix for 4.1.9 |
+| 4.1.14  | Follow up on 4.1.4 angle brackets and fix project links on sub-task cards |
+
 ## Configuration
 
 ### Customization

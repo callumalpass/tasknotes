@@ -151,6 +151,7 @@ export abstract class TaskModal extends Modal {
 		return {
 			metadataCache: this.plugin.app.metadataCache,
 			workspace: this.plugin.app.workspace,
+			sourcePath: this.getCurrentTaskPath() || this.plugin.app.workspace.getActiveFile()?.path || "",
 		};
 	}
 
@@ -1951,10 +1952,7 @@ export abstract class TaskModal extends Modal {
 	}
 
 	protected renderProjectLinksWithoutPrefix(container: HTMLElement, links: string[]): void {
-		const linkServices: LinkServices = {
-			metadataCache: this.app.metadataCache,
-			workspace: this.app.workspace,
-		};
+		const linkServices = this.getLinkServices();
 
 		renderProjectLinks(container, links, linkServices);
 

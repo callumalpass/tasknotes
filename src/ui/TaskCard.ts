@@ -697,13 +697,34 @@ const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
 			renderScheduledDateProperty(element, value, task, plugin);
 		}
 	},
-	projects: (element, value, _, plugin) => {
+	projects: (element, value, task, plugin) => {
 		if (Array.isArray(value)) {
 			const linkServices: LinkServices = {
 				metadataCache: plugin.app.metadataCache,
 				workspace: plugin.app.workspace,
+				sourcePath: task.path,
 			};
-			renderProjectLinks(element, value as string[], linkServices);
+			const onPrimaryNavigate = async (normalizedPath: string) => {
+				try {
+					const file =
+						plugin.app.metadataCache.getFirstLinkpathDest(normalizedPath, task.path) ||
+						plugin.app.metadataCache.getFirstLinkpathDest(normalizedPath, "");
+					const resolvedPath = file?.path ?? normalizedPath;
+					const projectTask = await plugin.cacheManager.getTaskInfo(resolvedPath);
+					if (projectTask) {
+						await plugin.openTaskEditModal(projectTask);
+						return true;
+					}
+				} catch (error) {
+					console.error("[TaskNotes] Failed to open project modal:", error);
+				}
+				// Returning false falls back to default open note behavior
+				return false;
+			};
+
+			renderProjectLinks(element, value as string[], linkServices, {
+				onPrimaryNavigate,
+			});
 		}
 	},
 	contexts: (element, value, _, plugin) => {
@@ -1593,7 +1614,13 @@ export function createTaskCard(
 		titleEl.classList.add("completed");
 		titleTextEl.classList.add("completed");
 	}
-	titleTextEl.style.fontWeight = isProjectTask ? "600" : "";
+	if (isProjectTask) {
+		card.dataset.isProject = "true";
+		titleTextEl.style.fontWeight = "600";
+	} else {
+		delete card.dataset.isProject;
+		titleTextEl.style.fontWeight = "";
+	}
 
 	// Second line: Metadata (dynamic based on visible properties)
 	const metadataLine = contentContainer.createEl(layout === "inline" ? "span" : "div", { cls: "task-card__metadata" });
@@ -2165,7 +2192,14 @@ export function updateTaskCard(
 	if (titleText) {
 		titleText.textContent = task.title;
 		titleText.classList.toggle("completed", titleIsCompleted);
-		titleText.style.fontWeight = plugin.projectSubtasksService.isTaskUsedAsProjectSync(task.path) ? "600" : "";
+		const isProject = plugin.projectSubtasksService.isTaskUsedAsProjectSync(task.path);
+		if (isProject) {
+			element.dataset.isProject = "true";
+			titleText.style.fontWeight = "600";
+		} else {
+			delete element.dataset.isProject;
+			titleText.style.fontWeight = "";
+		}
 	}
 	if (titleContainer) {
 		titleContainer.classList.toggle("completed", titleIsCompleted);
