@@ -10,6 +10,7 @@ export class ProjectSubtasksService {
 	// Pre-computed reverse index: taskPath -> isUsedAsProject
 	private projectIndex = new Map<string, boolean>();
 	private indexLastBuilt = 0;
+	private cachedBasesSortRules: { property: string; direction: string }[] = [];
 	private readonly INDEX_TTL = 30000; // Rebuild index every 30 seconds
 
 	// Performance stats (kept for monitoring)
@@ -305,12 +306,16 @@ export class ProjectSubtasksService {
 					const sort = attempt.getter();
 					if (Array.isArray(sort)) {
 						console.debug("[ProjectSubtasksService] Using Bases sort from", attempt.label, sort);
-						return sort
+						const normalized = sort
 							.map((rule: any) => ({
 								property: rule?.property,
 								direction: rule?.direction || "ASC",
 							}))
 							.filter((rule) => !!rule.property);
+						if (normalized.length > 0) {
+							this.cachedBasesSortRules = normalized;
+							return normalized;
+						}
 					}
 				} catch {
 					// ignore and try next
@@ -341,16 +346,26 @@ export class ProjectSubtasksService {
 				scanForSortArray(activeView);
 			if (scanned) {
 				console.debug("[ProjectSubtasksService] Using Bases sort from scanned path", scanned.path, scanned.sort);
-				return scanned.sort
+				const normalized = scanned.sort
 					.map((rule: any) => ({
 						property: rule?.property,
 						direction: rule?.direction || "ASC",
 					}))
 					.filter((rule: any) => !!rule.property);
+				if (normalized.length > 0) {
+					this.cachedBasesSortRules = normalized;
+					return normalized;
+				}
 			}
 
 		} catch (error) {
 			console.warn("[ProjectSubtasksService] Failed to read Bases sort config:", error);
+		}
+
+		// When focus is elsewhere (e.g., editing a note), fall back to the last known Bases sort
+		if (this.cachedBasesSortRules.length > 0) {
+			console.debug("[ProjectSubtasksService] Using cached Bases sort rules", this.cachedBasesSortRules);
+			return this.cachedBasesSortRules;
 		}
 
 		return [];
