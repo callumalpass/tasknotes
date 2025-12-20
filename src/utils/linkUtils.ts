@@ -15,6 +15,7 @@ export function parseLinkToPath(linkText: string): string {
 	// Handle plain angle-bracket autolink style: <path/to/note.md>
 	if (trimmed.startsWith("<") && trimmed.endsWith(">")) {
 		let inner = trimmed.slice(1, -1).trim();
+		const hasMdExt = /\.md$/i.test(inner);
 		try {
 			inner = decodeURIComponent(inner);
 		} catch (error) {
@@ -22,7 +23,7 @@ export function parseLinkToPath(linkText: string): string {
 		}
 
 		const parsed = parseLinktext(inner);
-		return parsed.path || inner;
+		return hasMdExt ? inner : parsed.path || inner;
 	}
 
 	// Handle wikilinks: [[path]] or [[path|alias]]
@@ -48,6 +49,8 @@ export function parseLinkToPath(linkText: string): string {
 			linkPath = linkPath.slice(1, -1).trim();
 		}
 
+		const hasMdExt = /\.md$/i.test(linkPath);
+
 		// URL decode the link path - crucial for paths with spaces like Car%20Maintenance.md
 		try {
 			linkPath = decodeURIComponent(linkPath);
@@ -58,7 +61,7 @@ export function parseLinkToPath(linkText: string): string {
 
 		// Use parseLinktext to handle subpaths/headings
 		const parsed = parseLinktext(linkPath);
-		return parsed.path;
+		return hasMdExt ? linkPath : parsed.path;
 	}
 
 	// Not a link format, return as-is

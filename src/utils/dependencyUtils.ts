@@ -130,14 +130,26 @@ export function resolveDependencyEntry(
 		return null;
 	}
 
-	const resolved = app.metadataCache.getFirstLinkpathDest(target, sourcePath);
-	if (resolved instanceof TFile) {
-		return { path: resolved.path, file: resolved };
+	// Try multiple candidate targets to tolerate .md suffix and parsed linktext variants
+	const candidates = new Set<string>();
+	candidates.add(target);
+	if (target.endsWith(".md")) {
+		candidates.add(target.replace(/\.md$/i, ""));
+	}
+	const parsed = parseLinktext(target);
+	if (parsed.path && parsed.path !== target) {
+		candidates.add(parsed.path);
 	}
 
-	const fallback = app.vault.getAbstractFileByPath(target);
-	if (fallback instanceof TFile) {
-		return { path: fallback.path, file: fallback };
+	for (const candidate of candidates) {
+		const resolved = app.metadataCache.getFirstLinkpathDest(candidate, sourcePath);
+		if (resolved instanceof TFile) {
+			return { path: resolved.path, file: resolved };
+		}
+		const fallback = app.vault.getAbstractFileByPath(candidate);
+		if (fallback instanceof TFile) {
+			return { path: fallback.path, file: fallback };
+		}
 	}
 
 	return null;

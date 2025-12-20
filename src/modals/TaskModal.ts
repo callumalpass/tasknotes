@@ -22,6 +22,7 @@ import { TaskDependency, TaskInfo, Reminder } from "../types";
 import {
 	DEFAULT_DEPENDENCY_RELTYPE,
 	formatDependencyLink,
+	normalizeDependencyEntry,
 	resolveDependencyEntry,
 } from "../utils/dependencyUtils";
 import {
@@ -74,24 +75,37 @@ export abstract class TaskModal extends Modal {
 		dependency: TaskDependency,
 		sourcePath?: string
 	): DependencyItem {
+		const normalized = normalizeDependencyEntry(dependency);
+		if (!normalized) {
+			const fallbackName =
+				(typeof dependency === "object" && dependency && "uid" in dependency && typeof dependency.uid === "string"
+					? dependency.uid
+					: String(dependency));
+			return {
+				dependency: { uid: fallbackName, reltype: DEFAULT_DEPENDENCY_RELTYPE },
+				name: fallbackName,
+				unresolved: true,
+			};
+		}
+
 		const resolution = resolveDependencyEntry(
 			this.plugin.app,
 			sourcePath ?? this.getDependencySourcePath(),
-			dependency
+			normalized
 		);
 		if (resolution) {
 			const name =
-				resolution.file?.basename || resolution.path.split("/").pop() || dependency.uid;
+				resolution.file?.basename || resolution.path.split("/").pop() || normalized.uid;
 			return {
-				dependency,
+				dependency: normalized,
 				path: resolution.path,
 				name,
 			};
 		}
 
-		const cleaned = dependency.uid.replace(/^\[\[/, "").replace(/\]\]$/, "");
+		const cleaned = normalized.uid.replace(/^\[\[/, "").replace(/\]\]$/, "");
 		return {
-			dependency,
+			dependency: normalized,
 			name: cleaned || dependency.uid,
 			unresolved: true,
 		};
@@ -206,7 +220,7 @@ export abstract class TaskModal extends Modal {
 				nameEl.addClass("clickable-dependency");
 				appendInternalLink(
 					nameEl,
-					item.path.replace(/\.md$/i, ""),
+					item.path,
 					item.name,
 					linkServices,
 					{
