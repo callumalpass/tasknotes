@@ -1424,6 +1424,7 @@ export function createTaskCard(
 	card.dataset.taskPath = task.path;
 	card.dataset.key = task.path; // For DOMReconciler compatibility
 	card.dataset.status = effectiveStatus;
+	card.dataset.isProject = isProjectTask ? "true" : "false";
 
 	// Create main row container for horizontal layout
 	// Use span for inline layout to maintain inline flow
@@ -1592,6 +1593,7 @@ export function createTaskCard(
 		titleEl.classList.add("completed");
 		titleTextEl.classList.add("completed");
 	}
+	titleTextEl.style.fontWeight = isProjectTask ? "600" : "";
 
 	// Second line: Metadata (dynamic based on visible properties)
 	const metadataLine = contentContainer.createEl(layout === "inline" ? "span" : "div", { cls: "task-card__metadata" });
@@ -1960,6 +1962,9 @@ export function updateTaskCard(
 		statusDot.remove();
 	}
 
+	// Ensure data attribute stays accurate for project cards (used for styling)
+	element.dataset.isProject = plugin.projectSubtasksService.isTaskUsedAsProjectSync(task.path) ? "true" : "false";
+
 	// Apply a status stripe when the status property is hidden
 	if (!shouldShowStatus) {
 		if (statusConfig?.color) {
@@ -2160,6 +2165,7 @@ export function updateTaskCard(
 	if (titleText) {
 		titleText.textContent = task.title;
 		titleText.classList.toggle("completed", titleIsCompleted);
+		titleText.style.fontWeight = plugin.projectSubtasksService.isTaskUsedAsProjectSync(task.path) ? "600" : "";
 	}
 	if (titleContainer) {
 		titleContainer.classList.toggle("completed", titleIsCompleted);
