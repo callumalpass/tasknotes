@@ -404,6 +404,37 @@ function getDefaultVisibleProperties(plugin: TaskNotesPlugin): string[] {
 	return convertInternalToUserProperties(internalDefaults, plugin);
 }
 
+function resolveVisibleProperties(
+	visibleProperties: string[] | undefined,
+	plugin: TaskNotesPlugin
+): string[] {
+	if (visibleProperties && visibleProperties.length > 0) {
+		return visibleProperties;
+	}
+
+	if (plugin.settings.defaultVisibleProperties) {
+		return convertInternalToUserProperties(plugin.settings.defaultVisibleProperties, plugin);
+	}
+
+	return getDefaultVisibleProperties(plugin);
+}
+
+function getSubtaskVisibleProperties(card: HTMLElement, plugin: TaskNotesPlugin): string[] {
+	const raw = card?.dataset?.visibleProperties;
+	if (raw) {
+		try {
+			const parsed = JSON.parse(raw);
+			if (Array.isArray(parsed) && parsed.length > 0) {
+				return parsed;
+			}
+		} catch (error) {
+			console.warn("Failed to parse visibleProperties from card dataset", error);
+		}
+	}
+
+	return resolveVisibleProperties(undefined, plugin);
+}
+
 /**
  * Property value extractors for better type safety and error handling
  */
@@ -1322,6 +1353,7 @@ export function createTaskCard(
 		const todayLocal = new Date();
 		return new Date(Date.UTC(todayLocal.getFullYear(), todayLocal.getMonth(), todayLocal.getDate()));
 	})();
+	const resolvedVisibleProperties = resolveVisibleProperties(visibleProperties, plugin);
 
 	// Determine effective status for recurring tasks
 	const effectiveStatus = task.recurrence
@@ -1334,6 +1366,7 @@ export function createTaskCard(
 	// Main container with BEM class structure
 	// Use span for inline layout to ensure proper inline flow in CodeMirror
 	const card = document.createElement(layout === "inline" ? "span" : "div");
+	card.dataset.visibleProperties = JSON.stringify(resolvedVisibleProperties);
 
 	// Store task path for circular reference detection
 	(card as any)._taskPath = task.path;
@@ -1736,6 +1769,7 @@ export function updateTaskCard(
 	options: Partial<TaskCardOptions> = {}
 ): void {
 	const opts = { ...DEFAULT_TASK_CARD_OPTIONS, ...options };
+	const resolvedVisibleProperties = resolveVisibleProperties(visibleProperties, plugin);
 	// Use fresh UTC-anchored "today" if no targetDate provided
 	// This ensures recurring tasks show correct completion status for the current day
 	const targetDate = opts.targetDate || (() => {
@@ -1785,6 +1819,7 @@ export function updateTaskCard(
 
 	element.className = cardClasses.join(" ");
 	element.dataset.status = effectiveStatus;
+	element.dataset.visibleProperties = JSON.stringify(resolvedVisibleProperties);
 
 	// Get the main row container
 	const mainRow = element.querySelector(".task-card__main-row") as HTMLElement;
@@ -1815,8 +1850,8 @@ export function updateTaskCard(
 
 	// Update status dot (conditional based on visible properties)
 	const shouldShowStatus =
-		!visibleProperties ||
-		visibleProperties.some((prop) => isPropertyForField(prop, "status", plugin));
+		!resolvedVisibleProperties ||
+		resolvedVisibleProperties.some((prop) => isPropertyForField(prop, "status", plugin));
 	const statusDot = element.querySelector(".task-card__status-dot") as HTMLElement;
 
 	if (shouldShowStatus) {
@@ -1922,8 +1957,8 @@ export function updateTaskCard(
 
 	// Update priority indicator (conditional based on visible properties)
 	const shouldShowPriority =
-		!visibleProperties ||
-		visibleProperties.some((prop) => isPropertyForField(prop, "priority", plugin));
+		!resolvedVisibleProperties ||
+		resolvedVisibleProperties.some((prop) => isPropertyForField(prop, "priority", plugin));
 	const existingPriorityDot = element.querySelector(".task-card__priority-dot") as HTMLElement;
 
 	if (shouldShowPriority && task.priority && priorityConfig) {
@@ -2127,11 +2162,7 @@ export function updateTaskCard(
 		const metadataElements: HTMLElement[] = [];
 
 		// Get properties to display
-		const propertiesToShow =
-			visibleProperties ||
-			(plugin.settings.defaultVisibleProperties
-				? convertInternalToUserProperties(plugin.settings.defaultVisibleProperties, plugin)
-				: getDefaultVisibleProperties(plugin));
+		const propertiesToShow = resolvedVisibleProperties;
 
 		for (const propertyId of propertiesToShow) {
 			// Skip status and priority as they're rendered separately
@@ -2409,7 +2440,8 @@ export async function toggleSubtasks(
 						continue;
 					}
 
-					const subtaskCard = createTaskCard(subtask, plugin, undefined);
+					const subtaskVisibleProps = getSubtaskVisibleProperties(card, plugin);
+					const subtaskCard = createTaskCard(subtask, plugin, subtaskVisibleProps);
 
 					// Add subtask modifier class
 					subtaskCard.classList.add("task-card--subtask");
