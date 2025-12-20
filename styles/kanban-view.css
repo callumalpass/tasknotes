@@ -386,6 +386,10 @@
     min-height: 0; /* Allow container to shrink and enable scrolling */
 }
 
+.tasknotes-plugin .kanban-view__card-wrapper > .task-card--project:not(.task-card--subtask) > .task-card__main-row .task-card__title-text {
+    font-weight: var(--tn-font-weight-semibold);
+}
+
 /* Dragging state for card wrappers */
 .tasknotes-plugin .kanban-view__card-wrapper[draggable="true"]:hover {
     cursor: grab;

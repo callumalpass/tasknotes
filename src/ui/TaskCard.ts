@@ -1346,6 +1346,7 @@ export function createTaskCard(
 		? task.skipped_instances?.includes(formatDateForStorage(targetDate)) || false // Direct check of skipped_instances
 		: false; // Only recurring tasks can have skipped instances
 	const isRecurring = !!task.recurrence;
+	const isProjectTask = plugin.projectSubtasksService.isTaskUsedAsProjectSync(task.path);
 
 	// Build BEM class names
 	const cardClasses = ["task-card"];
@@ -1381,6 +1382,9 @@ export function createTaskCard(
 	const hasProjects = filterEmptyProjects(task.projects || []).length > 0;
 	if (hasProjects) {
 		cardClasses.push("task-card--has-projects");
+	}
+	if (isProjectTask) {
+		cardClasses.push("task-card--project");
 	}
 
 	card.className = cardClasses.join(" ");
@@ -1483,8 +1487,7 @@ export function createTaskCard(
 		}
 
 		// Project indicator doubles as the subtasks toggle (same behavior as the chevron)
-		const isProject = plugin.projectSubtasksService.isTaskUsedAsProjectSync(task.path);
-		if (isProject && plugin.settings?.showExpandableSubtasks) {
+		if (isProjectTask && plugin.settings?.showExpandableSubtasks) {
 			const isExpanded = plugin.expandedProjectsService?.isExpanded(task.path) || false;
 			const projectToggle = createBadgeIndicator({
 				container: badgesContainer,
