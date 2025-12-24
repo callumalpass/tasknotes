@@ -361,6 +361,12 @@
     box-shadow: var(--tn-shadow-medium);
 }
 
+@media (pointer: coarse) {
+    .kanban-view__column-header-cell--dragging {
+        pointer-events: none;
+    }
+}
+
 .kanban-view__column-header-cell .kanban-view__column-title {
     font-size: var(--tn-font-size-md);
     font-weight: var(--tn-font-weight-semibold);
