@@ -1396,6 +1396,31 @@ export default class TaskNotesPlugin extends Plugin {
 		this.emitter.trigger("settings-changed", this.settings);
 	}
 
+	async onExternalSettingsChange(): Promise<void> {
+		await this.loadSettings();
+
+		// Update all services with new settings
+		this.fieldMapper?.updateMapping(this.settings.fieldMapping);
+		this.statusManager?.updateStatuses(this.settings.customStatuses);
+		this.priorityManager?.updatePriorities(this.settings.customPriorities);
+
+		// External changes may include cache settings - update unconditionally
+		this.cacheManager.updateConfig(this.settings);
+		this.updatePreviousCacheSettings();
+
+		// Re-setup time tracking (may have changed)
+		this.setupTimeTrackingEventListeners();
+
+		// Update UI
+		this.injectCustomStyles();
+		this.statusBarService?.updateVisibility();
+		this.filterService?.refreshFilterOptions();
+
+		// Notify views
+		this.notifyDataChanged();
+		this.emitter.trigger("settings-changed", this.settings);
+	}
+
 	addCommands() {
 		this.commandDefinitions = [
 			{
