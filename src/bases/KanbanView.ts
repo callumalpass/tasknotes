@@ -8,7 +8,11 @@ import { createTaskCard } from "../ui/TaskCard";
 import { renderGroupTitle } from "./groupTitleRenderer";
 import { type LinkServices } from "../ui/renderers/linkRenderer";
 import { VirtualScroller } from "../utils/VirtualScroller";
-import { getDatePart, parseDateToUTC, createUTCDateFromLocalCalendarDate } from "../utils/dateUtils";
+import {
+	getDatePart,
+	parseDateToUTC,
+	createUTCDateFromLocalCalendarDate,
+} from "../utils/dateUtils";
 
 export class KanbanView extends BasesViewBase {
 	type = "tasknoteKanban";
@@ -86,33 +90,33 @@ export class KanbanView extends BasesViewBase {
 	 */
 	private readViewOptions(): void {
 		// Guard: config may not be set yet if called too early
-		if (!this.config || typeof this.config.get !== 'function') {
+		if (!this.config || typeof this.config.get !== "function") {
 			return;
 		}
 
 		try {
-			this.swimLanePropertyId = this.config.getAsPropertyId('swimLane');
-			this.columnWidth = (this.config.get('columnWidth') as number) || 280;
-			this.maxSwimlaneHeight = (this.config.get('maxSwimlaneHeight') as number) || 600;
-			this.hideEmptyColumns = (this.config.get('hideEmptyColumns') as boolean) || false;
+			this.swimLanePropertyId = this.config.getAsPropertyId("swimLane");
+			this.columnWidth = (this.config.get("columnWidth") as number) || 280;
+			this.maxSwimlaneHeight = (this.config.get("maxSwimlaneHeight") as number) || 600;
+			this.hideEmptyColumns = (this.config.get("hideEmptyColumns") as boolean) || false;
 
 			// Read explodeListColumns option (defaults to true)
-			const explodeValue = this.config.get('explodeListColumns');
+			const explodeValue = this.config.get("explodeListColumns");
 			this.explodeListColumns = explodeValue !== false; // Default to true if not set
 
 			// Read column orders
-			const columnOrderStr = (this.config.get('columnOrder') as string) || '{}';
+			const columnOrderStr = (this.config.get("columnOrder") as string) || "{}";
 			this.columnOrders = JSON.parse(columnOrderStr);
 
 			// Read enableSearch toggle (default: false for backward compatibility)
-			const enableSearchValue = this.config.get('enableSearch');
+			const enableSearchValue = this.config.get("enableSearch");
 			this.enableSearch = (enableSearchValue as boolean) ?? false;
 
 			// Mark config as successfully loaded
 			this.configLoaded = true;
 		} catch (e) {
 			// Use defaults
-			console.warn('[KanbanView] Failed to parse config:', e);
+			console.warn("[KanbanView] Failed to parse config:", e);
 		}
 	}
 
@@ -133,23 +137,25 @@ export class KanbanView extends BasesViewBase {
 
 		// Save scroll position for non-virtual columns (direct DOM elements)
 		if (this.boardEl) {
-			const columns = this.boardEl.querySelectorAll('.kanban-view__column');
+			const columns = this.boardEl.querySelectorAll(".kanban-view__column");
 			columns.forEach((column) => {
-				const groupKey = column.getAttribute('data-group');
-				const cardsContainer = column.querySelector('.kanban-view__cards') as HTMLElement;
+				const groupKey = column.getAttribute("data-group");
+				const cardsContainer = column.querySelector(".kanban-view__cards") as HTMLElement;
 				if (groupKey && cardsContainer && !(groupKey in columnScroll)) {
 					columnScroll[groupKey] = cardsContainer.scrollTop;
 				}
 			});
 
 			// Also save swimlane cell scroll positions (class is kanban-view__swimlane-column)
-			const swimlaneCells = this.boardEl.querySelectorAll('.kanban-view__swimlane-column');
+			const swimlaneCells = this.boardEl.querySelectorAll(".kanban-view__swimlane-column");
 			swimlaneCells.forEach((cell) => {
-				const columnKey = cell.getAttribute('data-column');
-				const swimlaneKey = cell.getAttribute('data-swimlane');
+				const columnKey = cell.getAttribute("data-column");
+				const swimlaneKey = cell.getAttribute("data-swimlane");
 				if (columnKey && swimlaneKey) {
 					const cellKey = `${swimlaneKey}:${columnKey}`;
-					const tasksContainer = cell.querySelector('.kanban-view__tasks-container') as HTMLElement;
+					const tasksContainer = cell.querySelector(
+						".kanban-view__tasks-container"
+					) as HTMLElement;
 					if (tasksContainer && !(cellKey in columnScroll)) {
 						columnScroll[cellKey] = tasksContainer.scrollTop;
 					}
@@ -179,14 +185,16 @@ export class KanbanView extends BasesViewBase {
 		}
 
 		// Restore column scroll positions after render completes
-		if (state.columnScroll && typeof state.columnScroll === 'object') {
+		if (state.columnScroll && typeof state.columnScroll === "object") {
 			// Use requestAnimationFrame to ensure DOM and VirtualScrollers are ready
 			requestAnimationFrame(() => {
 				// Restore virtual scroller positions
 				for (const [columnKey, scroller] of this.columnScrollers) {
 					const scrollTop = state.columnScroll[columnKey];
 					if (scrollTop !== undefined) {
-						const scrollContainer = (scroller as any).scrollContainer as HTMLElement | undefined;
+						const scrollContainer = (scroller as any).scrollContainer as
+							| HTMLElement
+							| undefined;
 						if (scrollContainer) {
 							scrollContainer.scrollTop = scrollTop;
 						}
@@ -195,11 +203,13 @@ export class KanbanView extends BasesViewBase {
 
 				// Restore non-virtual column positions
 				if (this.boardEl) {
-					const columns = this.boardEl.querySelectorAll('.kanban-view__column');
+					const columns = this.boardEl.querySelectorAll(".kanban-view__column");
 					columns.forEach((column) => {
-						const groupKey = column.getAttribute('data-group');
+						const groupKey = column.getAttribute("data-group");
 						if (groupKey && state.columnScroll[groupKey] !== undefined) {
-							const cardsContainer = column.querySelector('.kanban-view__cards') as HTMLElement;
+							const cardsContainer = column.querySelector(
+								".kanban-view__cards"
+							) as HTMLElement;
 							if (cardsContainer && !this.columnScrollers.has(groupKey)) {
 								cardsContainer.scrollTop = state.columnScroll[groupKey];
 							}
@@ -207,14 +217,18 @@ export class KanbanView extends BasesViewBase {
 					});
 
 					// Restore swimlane cell positions (class is kanban-view__swimlane-column)
-					const swimlaneCells = this.boardEl.querySelectorAll('.kanban-view__swimlane-column');
+					const swimlaneCells = this.boardEl.querySelectorAll(
+						".kanban-view__swimlane-column"
+					);
 					swimlaneCells.forEach((cell) => {
-						const columnKey = cell.getAttribute('data-column');
-						const swimlaneKey = cell.getAttribute('data-swimlane');
+						const columnKey = cell.getAttribute("data-column");
+						const swimlaneKey = cell.getAttribute("data-swimlane");
 						if (columnKey && swimlaneKey) {
 							const cellKey = `${swimlaneKey}:${columnKey}`;
 							if (state.columnScroll[cellKey] !== undefined) {
-								const tasksContainer = cell.querySelector('.kanban-view__tasks-container') as HTMLElement;
+								const tasksContainer = cell.querySelector(
+									".kanban-view__tasks-container"
+								) as HTMLElement;
 								if (tasksContainer && !this.columnScrollers.has(cellKey)) {
 									tasksContainer.scrollTop = state.columnScroll[cellKey];
 								}
@@ -278,7 +292,12 @@ export class KanbanView extends BasesViewBase {
 
 			// Render swimlanes if configured
 			if (this.swimLanePropertyId) {
-				await this.renderWithSwimLanes(groups, filteredTasks, pathToProps, groupByPropertyId);
+				await this.renderWithSwimLanes(
+					groups,
+					filteredTasks,
+					pathToProps,
+					groupByPropertyId
+				);
 			} else {
 				await this.renderFlat(groups);
 			}
@@ -304,9 +323,9 @@ export class KanbanView extends BasesViewBase {
 				const view = views[i];
 				if (view && view.name === viewName) {
 					if (view.groupBy) {
-						if (typeof view.groupBy === 'object' && view.groupBy.property) {
+						if (typeof view.groupBy === "object" && view.groupBy.property) {
 							return view.groupBy.property;
-						} else if (typeof view.groupBy === 'string') {
+						} else if (typeof view.groupBy === "string") {
 							return view.groupBy;
 						}
 					}
@@ -362,7 +381,7 @@ export class KanbanView extends BasesViewBase {
 			// For non-list properties (or when explode is disabled), use Bases grouped data directly
 			// Note: We can't rely on isGrouped() because it returns false when all items have null values
 			const basesGroups = this.dataAdapter.getGroupedData();
-			const tasksByPath = new Map(taskNotes.map(t => [t.path, t]));
+			const tasksByPath = new Map(taskNotes.map((t) => [t.path, t]));
 
 			for (const group of basesGroups) {
 				const groupKey = this.dataAdapter.convertGroupKeyToString(group.key);
@@ -397,7 +416,7 @@ export class KanbanView extends BasesViewBase {
 			const propertyInfo = metadataTypeManager.properties[propertyName.toLowerCase()];
 			if (propertyInfo?.type) {
 				// Obsidian list types: "multitext", "tags", "aliases"
-				const listTypes = new Set(['multitext', 'tags', 'aliases']);
+				const listTypes = new Set(["multitext", "tags", "aliases"]);
 				if (listTypes.has(propertyInfo.type)) {
 					return true;
 				}
@@ -406,13 +425,16 @@ export class KanbanView extends BasesViewBase {
 
 		// Fallback: check against known TaskNotes list properties
 		// (in case metadataTypeManager doesn't have the property registered)
-		const contextsField = this.plugin.fieldMapper.toUserField('contexts');
-		const projectsField = this.plugin.fieldMapper.toUserField('projects');
+		const contextsField = this.plugin.fieldMapper.toUserField("contexts");
+		const projectsField = this.plugin.fieldMapper.toUserField("projects");
 
 		const knownListProperties = new Set([
-			'contexts', contextsField,
-			'projects', projectsField,
-			'tags', 'aliases'
+			"contexts",
+			contextsField,
+			"projects",
+			projectsField,
+			"tags",
+			"aliases",
 		]);
 
 		return knownListProperties.has(propertyName);
@@ -428,17 +450,17 @@ export class KanbanView extends BasesViewBase {
 		pathToProps: Map<string, Record<string, any>>
 	): any {
 		// Map user field names to TaskInfo property names
-		const contextsField = this.plugin.fieldMapper.toUserField('contexts');
-		const projectsField = this.plugin.fieldMapper.toUserField('projects');
+		const contextsField = this.plugin.fieldMapper.toUserField("contexts");
+		const projectsField = this.plugin.fieldMapper.toUserField("projects");
 
 		// Check if property matches known TaskInfo list properties
-		if (propertyName === 'contexts' || propertyName === contextsField) {
+		if (propertyName === "contexts" || propertyName === contextsField) {
 			return task.contexts;
 		}
-		if (propertyName === 'projects' || propertyName === projectsField) {
+		if (propertyName === "projects" || propertyName === projectsField) {
 			return task.projects;
 		}
-		if (propertyName === 'tags') {
+		if (propertyName === "tags") {
 			return task.tags;
 		}
 
@@ -457,11 +479,11 @@ export class KanbanView extends BasesViewBase {
 	): void {
 		// Check if we're grouping by status
 		// Compare the groupBy property against the user's configured status field name
-		const statusPropertyName = this.plugin.fieldMapper.toUserField('status');
+		const statusPropertyName = this.plugin.fieldMapper.toUserField("status");
 
 		// The groupByPropertyId from Bases might have a prefix (e.g., "note.status")
 		// Strip the prefix to compare against the field name
-		const cleanGroupBy = groupByPropertyId.replace(/^(note\.|file\.|task\.)/, '');
+		const cleanGroupBy = groupByPropertyId.replace(/^(note\.|file\.|task\.)/, "");
 
 		if (cleanGroupBy !== statusPropertyName) {
 			return; // Not grouping by status, don't augment
@@ -495,11 +517,11 @@ export class KanbanView extends BasesViewBase {
 	): void {
 		// Check if we're grouping by priority
 		// Compare the groupBy property against the user's configured priority field name
-		const priorityPropertyName = this.plugin.fieldMapper.toUserField('priority');
+		const priorityPropertyName = this.plugin.fieldMapper.toUserField("priority");
 
 		// The groupByPropertyId from Bases might have a prefix (e.g., "note.priority" or "task.priority")
 		// Strip the prefix to compare against the field name
-		const cleanGroupBy = groupByPropertyId.replace(/^(note\.|file\.|task\.)/, '');
+		const cleanGroupBy = groupByPropertyId.replace(/^(note\.|file\.|task\.)/, "");
 
 		if (cleanGroupBy !== priorityPropertyName) {
 			return; // Not grouping by priority, don't augment
@@ -523,13 +545,11 @@ export class KanbanView extends BasesViewBase {
 		}
 	}
 
-	private async renderFlat(
-		groups: Map<string, TaskInfo[]>
-	): Promise<void> {
+	private async renderFlat(groups: Map<string, TaskInfo[]>): Promise<void> {
 		if (!this.boardEl) return;
 
 		// Set CSS variable for column width (allows responsive override)
-		this.boardEl.style.setProperty('--kanban-column-width', `${this.columnWidth}px`);
+		this.boardEl.style.setProperty("--kanban-column-width", `${this.columnWidth}px`);
 
 		// Render columns without swimlanes
 		const visibleProperties = this.getVisibleProperties();
@@ -595,42 +615,23 @@ export class KanbanView extends BasesViewBase {
 			}
 		}
 
-		// Check if we should explode list properties into multiple columns
-		const cleanGroupBy = this.stripPropertyPrefix(groupByPropertyId);
-		const shouldExplode = this.explodeListColumns && this.isListTypeProperty(cleanGroupBy);
+		// Distribute tasks into swimlane + column cells.
+		//
+		// IMPORTANT: Always use the already-built `groups` map for the column assignment.
+		// In swimlane mode we previously re-computed the column key from `pathToProps`
+		// (including `formula.*` cached outputs). After a frontmatter edit, Bases may
+		// update `groupedData` promptly, but cached formula outputs can lag behind, which
+		// caused tasks to temporarily fall into the "None" column until the query re-runs
+		// (e.g., changing sort or reloading Obsidian). Using `groups` keeps swimlane mode
+		// consistent with flat mode and with Bases' computed grouping.
+		for (const [columnKey, columnTasks] of groups) {
+			for (const task of columnTasks) {
+				const props = pathToProps.get(task.path) || {};
+				const swimLaneValue = this.getPropertyValue(props, this.swimLanePropertyId);
+				const swimLaneKey = this.valueToString(swimLaneValue);
 
-		// Distribute tasks into swimlane + column cells
-		for (const task of allTasks) {
-			const props = pathToProps.get(task.path) || {};
-
-			// Determine swimlane
-			const swimLaneValue = this.getPropertyValue(props, this.swimLanePropertyId);
-			const swimLaneKey = this.valueToString(swimLaneValue);
-
-			const swimLane = swimLanes.get(swimLaneKey);
-			if (!swimLane) continue;
-
-			if (shouldExplode) {
-				// For list properties, add task to each individual column
-				const value = this.getListPropertyValue(task, cleanGroupBy, pathToProps);
-
-				if (Array.isArray(value) && value.length > 0) {
-					for (const item of value) {
-						const columnKey = String(item) || "None";
-						if (swimLane.has(columnKey)) {
-							swimLane.get(columnKey)!.push(task);
-						}
-					}
-				} else {
-					// No values - put in "None" column
-					if (swimLane.has("None")) {
-						swimLane.get("None")!.push(task);
-					}
-				}
-			} else {
-				// For non-list properties, use single column
-				const columnValue = this.getPropertyValue(props, groupByPropertyId);
-				const columnKey = this.valueToString(columnValue);
+				const swimLane = swimLanes.get(swimLaneKey);
+				if (!swimLane) continue;
 
 				if (swimLane.has(columnKey)) {
 					swimLane.get(columnKey)!.push(task);
@@ -654,15 +655,18 @@ export class KanbanView extends BasesViewBase {
 		if (!this.boardEl) return;
 
 		// Set CSS variables for column width and swimlane max height
-		this.boardEl.style.setProperty('--kanban-column-width', `${this.columnWidth}px`);
-		this.boardEl.style.setProperty('--kanban-swimlane-max-height', `${this.maxSwimlaneHeight}px`);
+		this.boardEl.style.setProperty("--kanban-column-width", `${this.columnWidth}px`);
+		this.boardEl.style.setProperty(
+			"--kanban-swimlane-max-height",
+			`${this.maxSwimlaneHeight}px`
+		);
 
 		// Add swimlanes class to board
 		this.boardEl.addClass("kanban-view__board--swimlanes");
 
 		// Create header row
 		const headerRow = this.boardEl.createEl("div", {
-			cls: "kanban-view__swimlane-row kanban-view__swimlane-row--header"
+			cls: "kanban-view__swimlane-row kanban-view__swimlane-row--header",
 		});
 
 		// Empty corner cell for swimlane label column
@@ -671,7 +675,7 @@ export class KanbanView extends BasesViewBase {
 		// Column headers
 		for (const columnKey of columnKeys) {
 			const headerCell = headerRow.createEl("div", {
-				cls: "kanban-view__column-header-cell"
+				cls: "kanban-view__column-header-cell",
 			});
 			headerCell.setAttribute("draggable", "true");
 			headerCell.setAttribute("data-column-key", columnKey);
@@ -705,10 +709,13 @@ export class KanbanView extends BasesViewBase {
 			this.renderGroupTitleWrapper(titleEl, swimLaneKey);
 
 			// Count total tasks in this swimlane
-			const totalTasks = Array.from(columns.values()).reduce((sum, tasks) => sum + tasks.length, 0);
+			const totalTasks = Array.from(columns.values()).reduce(
+				(sum, tasks) => sum + tasks.length,
+				0
+			);
 			labelCell.createEl("div", {
 				cls: "kanban-view__swimlane-count",
-				text: `${totalTasks}`
+				text: `${totalTasks}`,
 			});
 
 			// Render columns in this swimlane
@@ -720,8 +727,8 @@ export class KanbanView extends BasesViewBase {
 					cls: "kanban-view__swimlane-column",
 					attr: {
 						"data-column": columnKey,
-						"data-swimlane": swimLaneKey
-					}
+						"data-swimlane": swimLaneKey,
+					},
 				});
 
 				// Setup drop handlers for this cell
@@ -742,11 +749,18 @@ export class KanbanView extends BasesViewBase {
 					// Render tasks normally for smaller cells
 					const cardOptions = this.getCardOptions();
 					for (const task of tasks) {
-						const cardWrapper = tasksContainer.createDiv({ cls: "kanban-view__card-wrapper" });
+						const cardWrapper = tasksContainer.createDiv({
+							cls: "kanban-view__card-wrapper",
+						});
 						cardWrapper.setAttribute("draggable", "true");
 						cardWrapper.setAttribute("data-task-path", task.path);
 
-						const card = createTaskCard(task, this.plugin, visibleProperties, cardOptions);
+						const card = createTaskCard(
+							task,
+							this.plugin,
+							visibleProperties,
+							cardOptions
+						);
 
 						cardWrapper.appendChild(card);
 						this.currentTaskElements.set(task.path, cardWrapper);
@@ -784,7 +798,7 @@ export class KanbanView extends BasesViewBase {
 
 		header.createSpan({
 			cls: "kanban-view__column-count",
-			text: ` (${tasks.length})`
+			text: ` (${tasks.length})`,
 		});
 
 		// Setup column header drag handlers
@@ -800,7 +814,13 @@ export class KanbanView extends BasesViewBase {
 
 		// Use virtual scrolling for columns with many cards
 		if (tasks.length >= this.VIRTUAL_SCROLL_THRESHOLD) {
-			this.createVirtualColumn(cardsContainer, groupKey, tasks, visibleProperties, cardOptions);
+			this.createVirtualColumn(
+				cardsContainer,
+				groupKey,
+				tasks,
+				visibleProperties,
+				cardOptions
+			);
 		} else {
 			this.createNormalColumn(cardsContainer, tasks, visibleProperties, cardOptions);
 		}
@@ -960,7 +980,7 @@ export class KanbanView extends BasesViewBase {
 				? ".kanban-view__column-header-cell"
 				: ".kanban-view__column-header";
 			const currentOrder = Array.from(this.boardEl!.querySelectorAll(selector))
-				.map(el => (el as HTMLElement).dataset.columnKey)
+				.map((el) => (el as HTMLElement).dataset.columnKey)
 				.filter(Boolean) as string[];
 
 			// Calculate new order
@@ -1005,10 +1025,7 @@ export class KanbanView extends BasesViewBase {
 			const x = (e as any).clientX;
 			const y = (e as any).clientY;
 
-			if (
-				x < rect.left || x >= rect.right ||
-				y < rect.top || y >= rect.bottom
-			) {
+			if (x < rect.left || x >= rect.right || y < rect.top || y >= rect.bottom) {
 				column.classList.remove("kanban-view__column--dragover");
 			}
 		});
@@ -1056,10 +1073,7 @@ export class KanbanView extends BasesViewBase {
 			const x = (e as any).clientX;
 			const y = (e as any).clientY;
 
-			if (
-				x < rect.left || x >= rect.right ||
-				y < rect.top || y >= rect.bottom
-			) {
+			if (x < rect.left || x >= rect.right || y < rect.top || y >= rect.bottom) {
 				cell.classList.remove("kanban-view__swimlane-column--dragover");
 			}
 		});
@@ -1119,7 +1133,11 @@ export class KanbanView extends BasesViewBase {
 		cardWrapper.addEventListener("dragstart", (e: DragEvent) => {
 			// Check if we're dragging selected tasks (batch drag)
 			const selectionService = this.plugin.taskSelectionService;
-			if (selectionService && selectionService.isSelected(task.path) && selectionService.getSelectionCount() > 1) {
+			if (
+				selectionService &&
+				selectionService.isSelected(task.path) &&
+				selectionService.getSelectionCount() > 1
+			) {
 				// Batch drag - drag all selected tasks
 				this.draggedTaskPaths = selectionService.getSelectedPaths();
 				this.draggedTaskPath = task.path;
@@ -1132,9 +1150,9 @@ export class KanbanView extends BasesViewBase {
 					if (wrapper) {
 						wrapper.classList.add("kanban-view__card--dragging");
 						// Capture source column for each task
-						const col = wrapper.closest('[data-group]') as HTMLElement;
-						const swimCol = wrapper.closest('[data-column]') as HTMLElement;
-						const swimlaneRow = wrapper.closest('[data-swimlane]') as HTMLElement;
+						const col = wrapper.closest("[data-group]") as HTMLElement;
+						const swimCol = wrapper.closest("[data-column]") as HTMLElement;
+						const swimlaneRow = wrapper.closest("[data-swimlane]") as HTMLElement;
 						const sourceCol = col?.dataset.group || swimCol?.dataset.column;
 						const sourceSwimlane = swimlaneRow?.dataset.swimlane;
 						if (sourceCol) {
@@ -1164,10 +1182,11 @@ export class KanbanView extends BasesViewBase {
 			}
 
 			// Capture the source column and swimlane for list property handling (single drag fallback)
-			const column = cardWrapper.closest('[data-group]') as HTMLElement;
-			const swimlaneColumn = cardWrapper.closest('[data-column]') as HTMLElement;
-			const swimlaneRow = cardWrapper.closest('[data-swimlane]') as HTMLElement;
-			this.draggedFromColumn = column?.dataset.group || swimlaneColumn?.dataset.column || null;
+			const column = cardWrapper.closest("[data-group]") as HTMLElement;
+			const swimlaneColumn = cardWrapper.closest("[data-column]") as HTMLElement;
+			const swimlaneRow = cardWrapper.closest("[data-swimlane]") as HTMLElement;
+			this.draggedFromColumn =
+				column?.dataset.group || swimlaneColumn?.dataset.column || null;
 			this.draggedFromSwimlane = swimlaneRow?.dataset.swimlane || null;
 		});
 
@@ -1187,12 +1206,14 @@ export class KanbanView extends BasesViewBase {
 			this.draggedSourceSwimlanes.clear();
 
 			// Clean up any lingering dragover classes
-			this.boardEl?.querySelectorAll('.kanban-view__column--dragover').forEach(el => {
-				el.classList.remove('kanban-view__column--dragover');
+			this.boardEl?.querySelectorAll(".kanban-view__column--dragover").forEach((el) => {
+				el.classList.remove("kanban-view__column--dragover");
 			});
-			this.boardEl?.querySelectorAll('.kanban-view__swimlane-column--dragover').forEach(el => {
-				el.classList.remove('kanban-view__swimlane-column--dragover');
-			});
+			this.boardEl
+				?.querySelectorAll(".kanban-view__swimlane-column--dragover")
+				.forEach((el) => {
+					el.classList.remove("kanban-view__swimlane-column--dragover");
+				});
 		});
 	}
 
@@ -1207,32 +1228,36 @@ export class KanbanView extends BasesViewBase {
 			if (!groupByPropertyId) return;
 
 			// Check if groupBy is a formula - formulas are read-only
-			if (groupByPropertyId.startsWith('formula.')) {
+			if (groupByPropertyId.startsWith("formula.")) {
 				new Notice(
 					this.plugin.i18n.translate("views.kanban.errors.formulaGroupingReadOnly") ||
-					"Cannot move tasks between formula-based columns. Formula values are computed and cannot be directly modified."
+						"Cannot move tasks between formula-based columns. Formula values are computed and cannot be directly modified."
 				);
 				return;
 			}
 
 			// Check if swimlane is a formula - formulas are read-only
-			if (newSwimLaneValue !== null && this.swimLanePropertyId?.startsWith('formula.')) {
+			if (newSwimLaneValue !== null && this.swimLanePropertyId?.startsWith("formula.")) {
 				new Notice(
 					this.plugin.i18n.translate("views.kanban.errors.formulaSwimlaneReadOnly") ||
-					"Cannot move tasks between formula-based swimlanes. Formula values are computed and cannot be directly modified."
+						"Cannot move tasks between formula-based swimlanes. Formula values are computed and cannot be directly modified."
 				);
 				return;
 			}
 
 			const cleanGroupBy = this.stripPropertyPrefix(groupByPropertyId);
-			const isGroupByListProperty = this.explodeListColumns && this.isListTypeProperty(cleanGroupBy);
+			const isGroupByListProperty =
+				this.explodeListColumns && this.isListTypeProperty(cleanGroupBy);
 
 			// Check if swimlane property is also a list type
-			const cleanSwimlane = this.swimLanePropertyId ? this.stripPropertyPrefix(this.swimLanePropertyId) : null;
+			const cleanSwimlane = this.swimLanePropertyId
+				? this.stripPropertyPrefix(this.swimLanePropertyId)
+				: null;
 			const isSwimlaneListProperty = cleanSwimlane && this.isListTypeProperty(cleanSwimlane);
 
 			// Handle batch drag - update all dragged tasks
-			const pathsToUpdate = this.draggedTaskPaths.length > 1 ? this.draggedTaskPaths : [taskPath];
+			const pathsToUpdate =
+				this.draggedTaskPaths.length > 1 ? this.draggedTaskPaths : [taskPath];
 			const isBatchOperation = pathsToUpdate.length > 1;
 
 			for (const path of pathsToUpdate) {
@@ -1247,20 +1272,38 @@ export class KanbanView extends BasesViewBase {
 				// Update groupBy property
 				if (isGroupByListProperty && sourceColumn) {
 					// For list properties, remove the source value and add the target value
-					await this.updateListPropertyOnDrop(path, groupByPropertyId, sourceColumn, newGroupValue);
+					await this.updateListPropertyOnDrop(
+						path,
+						groupByPropertyId,
+						sourceColumn,
+						newGroupValue
+					);
 				} else {
 					// For non-list properties, simply replace the value
-					await this.updateTaskFrontmatterProperty(path, groupByPropertyId, newGroupValue);
+					await this.updateTaskFrontmatterProperty(
+						path,
+						groupByPropertyId,
+						newGroupValue
+					);
 				}
 
 				// Update swimlane property if applicable
 				if (newSwimLaneValue !== null && this.swimLanePropertyId) {
 					if (isSwimlaneListProperty && sourceSwimlane) {
 						// For list swimlane properties, remove source and add target
-						await this.updateListPropertyOnDrop(path, this.swimLanePropertyId, sourceSwimlane, newSwimLaneValue);
+						await this.updateListPropertyOnDrop(
+							path,
+							this.swimLanePropertyId,
+							sourceSwimlane,
+							newSwimLaneValue
+						);
 					} else {
 						// For non-list swimlane properties, simply replace the value
-						await this.updateTaskFrontmatterProperty(path, this.swimLanePropertyId, newSwimLaneValue);
+						await this.updateTaskFrontmatterProperty(
+							path,
+							this.swimLanePropertyId,
+							newSwimLaneValue
+						);
 					}
 				}
 			}
@@ -1296,7 +1339,7 @@ export class KanbanView extends BasesViewBase {
 			throw new Error(`Cannot find task file: ${taskPath}`);
 		}
 
-		const frontmatterKey = basesPropertyId.replace(/^(note\.|file\.|task\.)/, '');
+		const frontmatterKey = basesPropertyId.replace(/^(note\.|file\.|task\.)/, "");
 
 		await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
 			let currentValue = frontmatter[frontmatterKey];
@@ -1331,7 +1374,7 @@ export class KanbanView extends BasesViewBase {
 		}
 
 		// Strip Bases prefix to get the frontmatter key
-		const frontmatterKey = basesPropertyId.replace(/^(note\.|file\.|task\.)/, '');
+		const frontmatterKey = basesPropertyId.replace(/^(note\.|file\.|task\.)/, "");
 
 		const task = await this.plugin.cacheManager.getTaskInfo(taskPath);
 		const taskProperty = this.plugin.fieldMapper.lookupMappingKey(frontmatterKey);
@@ -1339,7 +1382,11 @@ export class KanbanView extends BasesViewBase {
 		if (task && taskProperty) {
 			// Update the task property using updateProperty to ensure all business logic runs
 			// (e.g., completedDate updates, auto-archive queueing, webhooks, etc.)
-			await this.plugin.taskService.updateProperty(task, taskProperty as keyof TaskInfo, value);
+			await this.plugin.taskService.updateProperty(
+				task,
+				taskProperty as keyof TaskInfo,
+				value
+			);
 		} else {
 			// Update the frontmatter directly for custom/unrecognized properties
 			await this.plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
@@ -1423,7 +1470,7 @@ export class KanbanView extends BasesViewBase {
 
 			// Add formula results if available
 			const formulaOutputs = item.basesData?.formulaResults?.cachedFormulaOutputs;
-			if (formulaOutputs && typeof formulaOutputs === 'object') {
+			if (formulaOutputs && typeof formulaOutputs === "object") {
 				for (const [formulaName, value] of Object.entries(formulaOutputs)) {
 					// Store with formula. prefix for easy lookup
 					props[`formula.${formulaName}`] = value;
@@ -1438,7 +1485,7 @@ export class KanbanView extends BasesViewBase {
 
 	private getPropertyValue(props: Record<string, any>, propertyId: string): any {
 		// Formula properties are stored with their full prefix (formula.NAME)
-		if (propertyId.startsWith('formula.')) {
+		if (propertyId.startsWith("formula.")) {
 			return props[propertyId] ?? null;
 		}
 
@@ -1472,7 +1519,7 @@ export class KanbanView extends BasesViewBase {
 			}
 
 			// Check if it's a Bases ListValue (array-like)
-			if (value.constructor?.name === "ListValue" || (Array.isArray(value.value))) {
+			if (value.constructor?.name === "ListValue" || Array.isArray(value.value)) {
 				const arr = value.value || [];
 				if (arr.length === 0) return "None";
 				// Recursively convert each item
@@ -1488,7 +1535,8 @@ export class KanbanView extends BasesViewBase {
 		if (typeof value === "string") return value || "None";
 		if (typeof value === "number") return String(value);
 		if (typeof value === "boolean") return value ? "True" : "False";
-		if (Array.isArray(value)) return value.length > 0 ? value.map((v) => this.valueToString(v)).join(", ") : "None";
+		if (Array.isArray(value))
+			return value.length > 0 ? value.map((v) => this.valueToString(v)).join(", ") : "None";
 		return String(value);
 	}
 
@@ -1542,9 +1590,9 @@ export class KanbanView extends BasesViewBase {
 			const orderJson = JSON.stringify(this.columnOrders);
 
 			// Save to config using BasesViewConfig API
-			this.config.set('columnOrder', orderJson);
+			this.config.set("columnOrder", orderJson);
 		} catch (error) {
-			console.error('[KanbanView] Failed to save column order:', error);
+			console.error("[KanbanView] Failed to save column order:", error);
 		}
 	}
 
@@ -1608,7 +1656,12 @@ export class KanbanView extends BasesViewBase {
 		event.stopPropagation();
 
 		const { showTaskContextMenu } = await import("../ui/TaskCard");
-		await showTaskContextMenu(event, context.task.path, this.plugin, this.getTaskActionDate(context.task));
+		await showTaskContextMenu(
+			event,
+			context.task.path,
+			this.plugin,
+			this.getTaskActionDate(context.task)
+		);
 	};
 
 	private async handleCardAction(
@@ -1623,13 +1676,13 @@ export class KanbanView extends BasesViewBase {
 			{ PriorityContextMenu },
 			{ RecurrenceContextMenu },
 			{ ReminderModal },
-			{ showTaskContextMenu }
+			{ showTaskContextMenu },
 		] = await Promise.all([
 			import("../components/DateContextMenu"),
 			import("../components/PriorityContextMenu"),
 			import("../components/RecurrenceContextMenu"),
 			import("../modals/ReminderModal"),
-			import("../ui/TaskCard")
+			import("../ui/TaskCard"),
 		]);
 
 		switch (action) {
@@ -1646,10 +1699,20 @@ export class KanbanView extends BasesViewBase {
 				this.showReminderModal(task, ReminderModal);
 				return;
 			case "task-context-menu":
-				await showTaskContextMenu(event, task.path, this.plugin, this.getTaskActionDate(task));
+				await showTaskContextMenu(
+					event,
+					task.path,
+					this.plugin,
+					this.getTaskActionDate(task)
+				);
 				return;
 			case "edit-date":
-				await this.openDateContextMenu(task, target.dataset.tnDateType as "due" | "scheduled" | undefined, event, DateContextMenu);
+				await this.openDateContextMenu(
+					task,
+					target.dataset.tnDateType as "due" | "scheduled" | undefined,
+					event,
+					DateContextMenu
+				);
 				return;
 			case "toggle-subtasks":
 				await this.handleToggleSubtasks(task, target);
@@ -1702,13 +1765,21 @@ export class KanbanView extends BasesViewBase {
 		menu.show(event);
 	}
 
-	private showRecurrenceMenu(task: TaskInfo, event: MouseEvent, RecurrenceContextMenu: any): void {
+	private showRecurrenceMenu(
+		task: TaskInfo,
+		event: MouseEvent,
+		RecurrenceContextMenu: any
+	): void {
 		const menu = new RecurrenceContextMenu({
 			currentValue: typeof task.recurrence === "string" ? task.recurrence : undefined,
-			currentAnchor: task.recurrence_anchor || 'scheduled',
-			onSelect: async (newRecurrence: string | null, anchor?: 'scheduled' | 'completion') => {
+			currentAnchor: task.recurrence_anchor || "scheduled",
+			onSelect: async (newRecurrence: string | null, anchor?: "scheduled" | "completion") => {
 				try {
-					await this.plugin.updateTaskProperty(task, "recurrence", newRecurrence || undefined);
+					await this.plugin.updateTaskProperty(
+						task,
+						"recurrence",
+						newRecurrence || undefined
+					);
 					if (anchor !== undefined) {
 						await this.plugin.updateTaskProperty(task, "recurrence_anchor", anchor);
 					}
@@ -1723,13 +1794,22 @@ export class KanbanView extends BasesViewBase {
 	}
 
 	private showReminderModal(task: TaskInfo, ReminderModal: any): void {
-		const modal = new ReminderModal(this.plugin.app, this.plugin, task, async (reminders: any) => {
-			try {
-				await this.plugin.updateTaskProperty(task, "reminders", reminders.length > 0 ? reminders : undefined);
-			} catch (error) {
-				console.error("[TaskNotes][KanbanView] Failed to update reminders", error);
+		const modal = new ReminderModal(
+			this.plugin.app,
+			this.plugin,
+			task,
+			async (reminders: any) => {
+				try {
+					await this.plugin.updateTaskProperty(
+						task,
+						"reminders",
+						reminders.length > 0 ? reminders : undefined
+					);
+				} catch (error) {
+					console.error("[TaskNotes][KanbanView] Failed to update reminders", error);
+				}
 			}
-		});
+		);
 		modal.open();
 	}
 
@@ -1790,7 +1870,10 @@ export class KanbanView extends BasesViewBase {
 		await toggleSubtasks(card, task, this.plugin, newExpanded);
 	}
 
-	private async handleToggleBlockingTasks(task: TaskInfo, toggleElement: HTMLElement): Promise<void> {
+	private async handleToggleBlockingTasks(
+		task: TaskInfo,
+		toggleElement: HTMLElement
+	): Promise<void> {
 		const { toggleBlockingTasks } = await import("../ui/TaskCard");
 		const card = toggleElement.closest<HTMLElement>(".task-card");
 		if (!card) return;
