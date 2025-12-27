@@ -1477,6 +1477,10 @@ export const fr: TranslationTree = {
 					resetButton: "Réinitialiser",
 					resetTooltip: "Réinitialiser au chemin par défaut",
 				},
+				autoCreateDefaultFiles: {
+					name: "Créer automatiquement les fichiers par défaut",
+					description: "Créer automatiquement les fichiers Base par défaut manquants au démarrage. Désactivez pour empêcher la recréation des fichiers d'exemple supprimés.",
+				},
 				createDefaultFiles: {
 					name: "Créer les fichiers par défaut",
 					description: "Créez les fichiers .base par défaut dans le répertoire TaskNotes/Views/. Les fichiers existants ne seront pas écrasés.",

@@ -1477,6 +1477,10 @@ export const es: TranslationTree = {
 					resetButton: "Restablecer",
 					resetTooltip: "Restablecer a ruta predeterminada",
 				},
+				autoCreateDefaultFiles: {
+					name: "Crear archivos predeterminados automáticamente",
+					description: "Crear automáticamente los archivos Base predeterminados que falten al iniciar. Desactiva para evitar que se recreen los archivos de ejemplo eliminados.",
+				},
 				createDefaultFiles: {
 					name: "Crear archivos predeterminados",
 					description: "Crea los archivos .base predeterminados en el directorio TaskNotes/Views/. Los archivos existentes no se sobrescribirán.",

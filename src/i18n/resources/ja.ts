@@ -1477,6 +1477,10 @@ export const ja: TranslationTree = {
 					resetButton: "リセット",
 					resetTooltip: "デフォルトパスにリセット",
 				},
+				autoCreateDefaultFiles: {
+					name: "デフォルトファイルを自動作成",
+					description: "起動時に不足しているデフォルトのBaseビューファイルを自動的に作成します。削除したサンプルファイルが再作成されないようにするには無効にしてください。",
+				},
 				createDefaultFiles: {
 					name: "デフォルトファイルを作成",
 					description: "TaskNotes/Views/ディレクトリにデフォルトの.baseファイルを作成します。既存のファイルは上書きされません。",

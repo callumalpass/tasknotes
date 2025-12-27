@@ -1477,6 +1477,10 @@ export const de: TranslationTree = {
 					resetButton: "Zurücksetzen",
 					resetTooltip: "Auf Standardpfad zurücksetzen",
 				},
+				autoCreateDefaultFiles: {
+					name: "Standarddateien automatisch erstellen",
+					description: "Fehlende Standard-Base-Ansichtsdateien beim Start automatisch erstellen. Deaktivieren, um zu verhindern, dass gelöschte Beispieldateien neu erstellt werden.",
+				},
 				createDefaultFiles: {
 					name: "Standarddateien erstellen",
 					description: "Erstelle die Standard-.base-Dateien im TaskNotes/Views/-Verzeichnis. Vorhandene Dateien werden nicht überschrieben.",

@@ -201,6 +201,7 @@ export interface TaskNotesSettings {
 	inlineVisibleProperties?: string[];
 	// Bases integration settings
 	enableBases: boolean;
+	autoCreateDefaultBasesFiles: boolean; // Auto-create missing default Base files on startup
 	// Command-to-file mappings for view commands (v4)
 	commandFileMapping: {
 		'open-calendar-view': string;

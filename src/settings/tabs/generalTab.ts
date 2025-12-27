@@ -247,6 +247,19 @@ export function renderGeneralTab(
 		});
 	});
 
+	// Auto-create default files toggle
+	new Setting(container)
+		.setName(translate("settings.integrations.basesIntegration.autoCreateDefaultFiles.name"))
+		.setDesc(translate("settings.integrations.basesIntegration.autoCreateDefaultFiles.description"))
+		.addToggle(toggle => {
+			toggle.setValue(plugin.settings.autoCreateDefaultBasesFiles)
+				.onChange(async (value) => {
+					plugin.settings.autoCreateDefaultBasesFiles = value;
+					await save();
+				});
+			return toggle;
+		});
+
 	// Create Default Files button
 	new Setting(container)
 		.setName(translate("settings.integrations.basesIntegration.createDefaultFiles.name"))

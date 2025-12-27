@@ -24,3 +24,10 @@ Example:
 
 -->
 
+## Added
+
+- (#1393) Option to prevent auto-creation of default Base view files on startup
+  - New "Auto-create default files" toggle in Settings → Integrations → Bases Integration
+  - When disabled, deleted sample Base files will not be recreated on plugin load
+  - The manual "Create Default Files" button remains available for on-demand recreation
+  - Thanks to @LookGoodFeelGood for the feature request

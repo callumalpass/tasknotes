@@ -1511,6 +1511,10 @@ export const en: TranslationTree = {
 					resetButton: "Reset",
 					resetTooltip: "Reset to default path",
 				},
+				autoCreateDefaultFiles: {
+					name: "Auto-create default files",
+					description: "Automatically create missing default Base view files on startup. Disable to prevent deleted sample files from being recreated.",
+				},
 				createDefaultFiles: {
 					name: "Create default files",
 					description: "Create the default .base files in TaskNotes/Views/ directory. Existing files will not be overwritten.",

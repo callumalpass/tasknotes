@@ -1477,6 +1477,10 @@ export const zh: TranslationTree = {
 					resetButton: "重置",
 					resetTooltip: "重置为默认路径",
 				},
+				autoCreateDefaultFiles: {
+					name: "自动创建默认文件",
+					description: "启动时自动创建缺失的默认 Base 视图文件。禁用以防止已删除的示例文件被重新创建。",
+				},
 				createDefaultFiles: {
 					name: "创建默认文件",
 					description: "在 TaskNotes/Views/ 目录中创建默认的 .base 文件。现有文件不会被覆盖。",

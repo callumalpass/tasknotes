@@ -1480,6 +1480,10 @@ export const pt: TranslationTree = {
 					resetButton: "Redefinir",
 					resetTooltip: "Redefinir para caminho padrão"
 				},
+				autoCreateDefaultFiles: {
+					name: "Criar arquivos padrão automaticamente",
+					description: "Criar automaticamente arquivos Base padrão ausentes na inicialização. Desative para evitar que arquivos de exemplo excluídos sejam recriados.",
+				},
 				createDefaultFiles: {
 					name: "Criar arquivos padrão",
 					description: "Crie os arquivos .base padrão no diretório TaskNotes/Views/. Os arquivos existentes não serão sobrescritos.",

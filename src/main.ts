@@ -501,9 +501,11 @@ export default class TaskNotesPlugin extends Plugin {
 		this.initializationComplete = true;
 
 		try {
-			// Ensure default Bases command files exist
+			// Ensure default Bases command files exist (if auto-creation is enabled)
 			// Deferred to here (after layout ready) to avoid race conditions with file explorer cache
-			await this.ensureBasesViewFiles();
+			if (this.settings.autoCreateDefaultBasesFiles) {
+				await this.ensureBasesViewFiles();
+			}
 
 			// Inject dynamic styles for custom statuses and priorities
 			this.injectCustomStyles();
