@@ -58,7 +58,7 @@ export interface FolderTemplateOptions {
  * - {{year}}, {{month}}, {{day}}, {{date}}
  * - {{time}}, {{timestamp}}, {{dateTime}}
  * - {{hour}}, {{minute}}, {{second}}
- * - {{shortDate}}, {{monthName}}, {{monthNameShort}}
+ * - {{shortDate}}, {{shortYear}}, {{monthName}}, {{monthNameShort}}
  * - {{dayName}}, {{dayNameShort}}
  * - {{week}}, {{quarter}}
  * - {{time12}}, {{time24}}, {{hourPadded}}, {{hour12}}, {{ampm}}
@@ -273,6 +273,7 @@ export function processFolderTemplate(
 
 	// New date format variations
 	processedPath = processedPath.replace(/\{\{shortDate\}\}/g, format(date, "yyMMdd"));
+	processedPath = processedPath.replace(/\{\{shortYear\}\}/g, format(date, "yy"));
 	processedPath = processedPath.replace(/\{\{monthName\}\}/g, format(date, "MMMM"));
 	processedPath = processedPath.replace(/\{\{monthNameShort\}\}/g, format(date, "MMM"));
 	processedPath = processedPath.replace(/\{\{dayName\}\}/g, format(date, "EEEE"));

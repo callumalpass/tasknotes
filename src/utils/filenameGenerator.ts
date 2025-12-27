@@ -232,6 +232,7 @@ function generateCustomFilename(
 			scheduledDate: context.scheduledDate || "",
 			// New date format variations
 			shortDate: format(date, "yyMMdd"),
+			shortYear: format(date, "yy"),
 			monthName: format(date, "MMMM"),
 			monthNameShort: format(date, "MMM"),
 			dayName: format(date, "EEEE"),

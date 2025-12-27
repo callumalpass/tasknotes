@@ -61,6 +61,7 @@ The **Default Tasks Folder** setting supports dynamic folder creation using temp
 **Extended Date Variables:**
 
 - `{{shortDate}}` - Short date as YYMMDD (e.g., "250815")
+- `{{shortYear}}` - Short year as YY (e.g., "25")
 - `{{monthName}}` - Full month name (e.g., "August")
 - `{{monthNameShort}}` - Short month name (e.g., "Aug")
 - `{{dayName}}` - Full day name (e.g., "Thursday")
@@ -153,6 +154,7 @@ When using the **custom** filename format, you can create templates using variab
 - `{minute}` - Minute with leading zero (e.g., "35")
 - `{second}` - Second with leading zero (e.g., "02")
 - `{shortDate}` - Short date as YYMMDD (e.g., "250815")
+- `{shortYear}` - Short year as YY (e.g., "25")
 - `{monthName}` - Full month name (e.g., "August")
 - `{monthNameShort}` - Short month name (e.g., "Aug")
 - `{dayName}` - Full day name (e.g., "Thursday")
