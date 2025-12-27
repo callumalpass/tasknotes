@@ -88,7 +88,7 @@ export function normalizeDateValueForCalendar(
 }
 
 export class CalendarView extends BasesViewBase {
-	type = "tasknoteCalendar";
+	type = "tasknotesCalendar";
 	calendar: Calendar | null = null; // Made public for factory access
 	private calendarEl: HTMLElement | null = null;
 	private currentTasks: TaskInfo[] = [];

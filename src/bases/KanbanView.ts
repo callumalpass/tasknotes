@@ -11,7 +11,7 @@ import { VirtualScroller } from "../utils/VirtualScroller";
 import { getDatePart, parseDateToUTC, createUTCDateFromLocalCalendarDate } from "../utils/dateUtils";
 
 export class KanbanView extends BasesViewBase {
-	type = "tasknoteKanban";
+	type = "tasknotesKanban";
 	private boardEl: HTMLElement | null = null;
 	private basesController: any; // Store controller for accessing query.views
 	private currentTaskElements = new Map<string, HTMLElement>();

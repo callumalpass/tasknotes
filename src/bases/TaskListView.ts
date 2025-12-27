@@ -15,7 +15,7 @@ import { getDatePart, getTimePart, parseDateToUTC, createUTCDateFromLocalCalenda
 import { VirtualScroller } from "../utils/VirtualScroller";
 
 export class TaskListView extends BasesViewBase {
-	type = "tasknoteTaskList";
+	type = "tasknotesTaskList";
 
 	private itemsContainer: HTMLElement | null = null;
 	private currentTaskElements = new Map<string, HTMLElement>();

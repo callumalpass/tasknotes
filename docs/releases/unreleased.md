@@ -36,3 +36,10 @@ Example:
   - When disabled, deleted sample Base files will not be recreated on plugin load
   - The manual "Create Default Files" button remains available for on-demand recreation
   - Thanks to @LookGoodFeelGood for the feature request
+
+## Fixed
+
+- (#1397) Fixed Bases views (Kanban, Calendar, Task List) resetting to Calendar view after a few minutes
+  - Views would show "?" in the Views menu due to view type mismatch
+  - Caused by typo in view type properties not matching registration IDs
+  - Thanks to @music-soul1-1 for reporting
