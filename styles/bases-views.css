@@ -326,6 +326,9 @@
     font-weight: var(--tn-font-weight-medium);
     color: var(--tn-text-normal);
     font-size: var(--tn-font-size-md);
+    display: flex;
+    align-items: center;
+    gap: 4px;
 }
 
 /* Swimlane task count */

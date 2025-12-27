@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { Notice, Platform, TFile } from "obsidian";
+import { Notice, Platform, setIcon, TFile } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { BasesViewBase } from "./BasesViewBase";
 import { TaskInfo } from "../types";
@@ -692,12 +692,25 @@ export class KanbanView extends BasesViewBase {
 			headerCell.setAttribute("draggable", "true");
 			headerCell.setAttribute("data-column-key", columnKey);
 
-			// Drag handle icon
+			// Drag handle with optional status icon inside
 			const dragHandle = headerCell.createSpan({ cls: "kanban-view__drag-handle" });
-			dragHandle.textContent = "⋮⋮";
+			if (this.isGroupedByStatus()) {
+				const statusConfig = this.plugin.statusManager.getStatusConfig(columnKey);
+				if (statusConfig?.icon) {
+					dragHandle.createSpan({ cls: "kanban-view__drag-dot", text: "⋮" });
+					const iconEl = dragHandle.createSpan({ cls: "kanban-view__column-icon" });
+					iconEl.style.color = statusConfig.color;
+					setIcon(iconEl, statusConfig.icon);
+					dragHandle.createSpan({ cls: "kanban-view__drag-dot", text: "⋮" });
+				} else {
+					dragHandle.textContent = "⋮⋮";
+				}
+			} else {
+				dragHandle.textContent = "⋮⋮";
+			}
 
 			const titleContainer = headerCell.createSpan({ cls: "kanban-view__column-title" });
-			this.renderGroupTitleWrapper(titleContainer, columnKey);
+			this.renderGroupTitleWrapper(titleContainer, columnKey, false, true);
 
 			// Setup column header drag handlers for swimlane mode
 			this.setupColumnHeaderDragHandlers(headerCell);
@@ -718,7 +731,7 @@ export class KanbanView extends BasesViewBase {
 
 			// Add swimlane title and count
 			const titleEl = labelCell.createEl("div", { cls: "kanban-view__swimlane-title" });
-			this.renderGroupTitleWrapper(titleEl, swimLaneKey);
+			this.renderGroupTitleWrapper(titleEl, swimLaneKey, true);
 
 			// Count total tasks in this swimlane
 			const totalTasks = Array.from(columns.values()).reduce((sum, tasks) => sum + tasks.length, 0);
@@ -791,12 +804,25 @@ export class KanbanView extends BasesViewBase {
 		header.setAttribute("draggable", "true");
 		header.setAttribute("data-column-key", groupKey);
 
-		// Drag handle icon
+		// Drag handle with optional status icon inside
 		const dragHandle = header.createSpan({ cls: "kanban-view__drag-handle" });
-		dragHandle.textContent = "⋮⋮";
+		if (this.isGroupedByStatus()) {
+			const statusConfig = this.plugin.statusManager.getStatusConfig(groupKey);
+			if (statusConfig?.icon) {
+				dragHandle.createSpan({ cls: "kanban-view__drag-dot", text: "⋮" });
+				const iconEl = dragHandle.createSpan({ cls: "kanban-view__column-icon" });
+				iconEl.style.color = statusConfig.color;
+				setIcon(iconEl, statusConfig.icon);
+				dragHandle.createSpan({ cls: "kanban-view__drag-dot", text: "⋮" });
+			} else {
+				dragHandle.textContent = "⋮⋮";
+			}
+		} else {
+			dragHandle.textContent = "⋮⋮";
+		}
 
 		const titleContainer = header.createSpan({ cls: "kanban-view__column-title" });
-		this.renderGroupTitleWrapper(titleContainer, groupKey);
+		this.renderGroupTitleWrapper(titleContainer, groupKey, false, true);
 
 		header.createSpan({
 			cls: "kanban-view__column-count",
@@ -1902,10 +1928,24 @@ export class KanbanView extends BasesViewBase {
 		return String(value);
 	}
 
-	private renderGroupTitleWrapper(container: HTMLElement, title: string): void {
-		// Use this.app if available (set by Bases), otherwise fall back to plugin.app
-		const app = this.app || this.plugin.app;
+	private renderGroupTitleWrapper(container: HTMLElement, title: string, isSwimLane = false, skipIcon = false): void {
+		// When grouped by status (column or swimlane), show icon + label instead of raw value
+		const isStatusGrouping = isSwimLane ? this.isSwimLaneByStatus() : this.isGroupedByStatus();
+		if (isStatusGrouping) {
+			const statusConfig = this.plugin.statusManager.getStatusConfig(title);
+			if (statusConfig) {
+				if (!skipIcon && statusConfig.icon) {
+					const iconEl = container.createSpan({ cls: "kanban-view__column-icon" });
+					iconEl.style.color = statusConfig.color;
+					setIcon(iconEl, statusConfig.icon);
+				}
+				container.createSpan({ text: statusConfig.label });
+				return;
+			}
+		}
 
+		// Default: use link-aware title rendering
+		const app = this.app || this.plugin.app;
 		const linkServices: LinkServices = {
 			metadataCache: app.metadataCache,
 			workspace: app.workspace,
@@ -1965,9 +2005,37 @@ export class KanbanView extends BasesViewBase {
 		// Use UTC-anchored "today" for correct recurring task completion status
 		const now = new Date();
 		const targetDate = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+
+		// Detect if grouped by status to hide redundant status indicators on cards
+		const hideStatusIndicator = this.isGroupedByStatus();
+
 		return {
 			targetDate,
+			hideStatusIndicator,
 		};
+	}
+
+	/**
+	 * Check if the view is currently grouped by the status property
+	 */
+	private isGroupedByStatus(): boolean {
+		const groupByPropertyId = this.getGroupByPropertyId();
+		if (!groupByPropertyId) return false;
+
+		const statusPropertyName = this.plugin.fieldMapper.toUserField('status');
+		const cleanGroupBy = groupByPropertyId.replace(/^(note\.|file\.|task\.)/, '');
+		return cleanGroupBy === statusPropertyName;
+	}
+
+	/**
+	 * Check if swimlanes are grouped by the status property
+	 */
+	private isSwimLaneByStatus(): boolean {
+		if (!this.swimLanePropertyId) return false;
+
+		const statusPropertyName = this.plugin.fieldMapper.toUserField('status');
+		const cleanSwimLane = this.swimLanePropertyId.replace(/^(note\.|file\.|task\.)/, '');
+		return cleanSwimLane === statusPropertyName;
 	}
 
 	private registerBoardListeners(): void {
