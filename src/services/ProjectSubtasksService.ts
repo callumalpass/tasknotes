@@ -240,6 +240,14 @@ export class ProjectSubtasksService {
 	}
 
 	/**
+	 * Invalidate the cached project index so the next lookup rebuilds it.
+	 */
+	invalidateIndex(): void {
+		this.projectIndex.clear();
+		this.indexLastBuilt = 0;
+	}
+
+	/**
 	 * Cleanup when service is destroyed
 	 */
 	destroy(): void {
@@ -280,6 +288,17 @@ export class ProjectSubtasksService {
 		return tasks.sort((a, b) => {
 			return this.compareLegacy(a, b);
 		});
+	}
+
+	/**
+	 * Returns true when Bases sort rules indicate manual column ranking.
+	 */
+	isManualSortEnabled(): boolean {
+		const sortRules = this.getActiveBasesSortRules();
+		if (sortRules.length !== 1) return false;
+		const prop = sortRules[0]?.property;
+		if (typeof prop !== "string") return false;
+		return prop === "rankByColumn" || prop.endsWith(".rankByColumn");
 	}
 
 	/**

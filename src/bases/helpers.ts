@@ -189,12 +189,22 @@ export function createTaskInfoFromBasesData(
 			}
 		});
 
+		// Preserve manual ordering metadata stored in frontmatter
+		const manualOrderProps: Record<string, any> = {};
+		if (props.rankByColumn !== undefined) {
+			manualOrderProps.rankByColumn = props.rankByColumn;
+		}
+		if (props.rankByProject !== undefined) {
+			manualOrderProps.rankByProject = props.rankByProject;
+		}
+
 		// Merge file properties with existing custom properties
 		return {
 			...taskInfo,
 			customProperties: {
 				...mappedTaskInfo.customProperties,
 				...taskInfo.customProperties,
+				...manualOrderProps,
 				...fileProperties,
 			},
 		};

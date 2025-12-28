@@ -425,6 +425,8 @@ export abstract class TaskModal extends Modal {
 	// Subtask storage - tracks tasks that should become subtasks of this task
 	protected selectedSubtaskFiles: TAbstractFile[] = [];
 	protected initialSubtaskFiles: TAbstractFile[] = [];
+	protected initialSubtaskOrder: string[] = [];
+	protected subtaskOrderDirty = false;
 
 	// UI elements
 	protected titleInput: HTMLInputElement;
@@ -1927,10 +1929,108 @@ export abstract class TaskModal extends Modal {
 			return;
 		}
 
+		const manualSortEnabled = this.isManualSortEnabled();
+		let draggedPath: string | null = null;
+		let activeTarget: HTMLElement | null = null;
+		let lastInsertBefore = true;
+
+		const clearDragOver = () => {
+			this.subtasksList.querySelectorAll<HTMLElement>(".task-project-item").forEach((el) => {
+				el.classList.remove("task-project-item--dragover-top");
+				el.classList.remove("task-project-item--dragover-bottom");
+			});
+		};
+
+		const updateDragOver = (target: HTMLElement, insertBefore: boolean) => {
+			clearDragOver();
+			activeTarget = target;
+			lastInsertBefore = insertBefore;
+			target.classList.toggle("task-project-item--dragover-top", insertBefore);
+			target.classList.toggle("task-project-item--dragover-bottom", !insertBefore);
+		};
+
+		const finalizeDrop = () => {
+			if (!draggedPath || !activeTarget) return;
+			const targetPath = activeTarget.dataset.path;
+			if (!targetPath || draggedPath === targetPath) return;
+
+			const ordered = this.selectedSubtaskFiles.map((f) => f.path);
+			const withoutDragged = ordered.filter((p) => p !== draggedPath);
+			const targetIndex = withoutDragged.indexOf(targetPath);
+			const insertIndex = targetIndex === -1
+				? withoutDragged.length
+				: targetIndex + (lastInsertBefore ? 0 : 1);
+			withoutDragged.splice(insertIndex, 0, draggedPath);
+
+			const fileMap = new Map(this.selectedSubtaskFiles.map((f) => [f.path, f]));
+			this.selectedSubtaskFiles = withoutDragged
+				.map((p) => fileMap.get(p))
+				.filter((f): f is TAbstractFile => Boolean(f));
+			this.subtaskOrderDirty = true;
+			this.renderSubtasksList();
+		};
+
 		this.selectedSubtaskFiles.forEach((file) => {
 			if (!(file instanceof TFile)) return;
 
-			const subtaskItem = this.subtasksList.createDiv({ cls: "task-project-item" });
+			const subtaskItem = this.subtasksList.createDiv({
+				cls: "task-project-item",
+				attr: manualSortEnabled ? { draggable: "true" } : undefined,
+			});
+			subtaskItem.dataset.path = file.path;
+
+			if (manualSortEnabled) {
+				const handle = subtaskItem.createDiv({ cls: "task-project-drag-handle" });
+				handle.setAttribute("aria-label", "Drag to reorder");
+				handle.addEventListener("mousedown", (e) => {
+					subtaskItem.dataset.tnDragReorder = "true";
+					e.stopPropagation();
+				});
+			}
+
+			subtaskItem.addEventListener("dragstart", (e) => {
+				if (!manualSortEnabled) return;
+				if (subtaskItem.dataset.tnDragReorder !== "true") {
+					e.preventDefault();
+					return;
+				}
+				delete subtaskItem.dataset.tnDragReorder;
+				draggedPath = file.path;
+				subtaskItem.classList.add("task-project-item--dragging");
+				if (e.dataTransfer) {
+					e.dataTransfer.effectAllowed = "move";
+					e.dataTransfer.setData("text/plain", file.path);
+				}
+			});
+
+			subtaskItem.addEventListener("dragover", (e) => {
+				if (!manualSortEnabled || !draggedPath) return;
+				e.preventDefault();
+				e.stopPropagation();
+				if (e.dataTransfer) e.dataTransfer.dropEffect = "move";
+				const rect = subtaskItem.getBoundingClientRect();
+				const insertBefore = (e as any).clientY < rect.top + rect.height / 2;
+				updateDragOver(subtaskItem, insertBefore);
+			});
+
+			subtaskItem.addEventListener("dragleave", () => {
+				subtaskItem.classList.remove("task-project-item--dragover-top");
+				subtaskItem.classList.remove("task-project-item--dragover-bottom");
+			});
+
+			subtaskItem.addEventListener("drop", (e) => {
+				if (!manualSortEnabled || !draggedPath) return;
+				e.preventDefault();
+				e.stopPropagation();
+				finalizeDrop();
+			});
+
+			subtaskItem.addEventListener("dragend", () => {
+				subtaskItem.classList.remove("task-project-item--dragging");
+				draggedPath = null;
+				activeTarget = null;
+				clearDragOver();
+			});
 			const infoEl = subtaskItem.createDiv({ cls: "task-project-info" });
 			const nameEl = infoEl.createDiv({ cls: "task-project-name clickable-project" });
 
@@ -1958,6 +2058,12 @@ export abstract class TaskModal extends Modal {
 				this.removeSubtask(file);
 			});
 		});
+	}
+
+	protected isManualSortEnabled(): boolean {
+		const view = this.plugin.app.workspace.activeLeaf?.view as any;
+		if (view?.manualSortEnabled) return true;
+		return !!this.plugin.projectSubtasksService?.isManualSortEnabled?.();
 	}
 
 	protected renderOrganizationLists(): void {

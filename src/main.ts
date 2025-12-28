@@ -34,6 +34,7 @@ import {
 	TaskInfo,
 	EVENT_DATA_CHANGED,
 	EVENT_TASK_UPDATED,
+	EVENT_TASK_DELETED,
 	EVENT_DATE_CHANGED,
 } from "./types";
 
@@ -361,6 +362,20 @@ export default class TaskNotesPlugin extends Plugin {
 		this.statusBarService = new StatusBarService(this);
 		this.notificationService = new NotificationService(this);
 		this.viewPerformanceService = new ViewPerformanceService(this);
+
+		// Listen for vault deletes triggered outside TaskNotes to keep caches and views in sync
+		this.registerEvent(
+			this.app.vault.on("delete", (file) => {
+				if (!(file instanceof TFile)) return;
+				const cache = this.app.metadataCache.getCache(file.path);
+				if (!cache?.frontmatter || !this.cacheManager.isTaskFile(cache.frontmatter)) {
+					return;
+				}
+				this.cacheManager.clearCacheEntry(file.path);
+				this.projectSubtasksService?.invalidateIndex();
+				this.emitter.trigger(EVENT_TASK_DELETED, { path: file.path });
+			})
+		);
 
 		// Initialize Bases filter converter for saved view export
 		const { BasesFilterConverter } = await import("./services/BasesFilterConverter");

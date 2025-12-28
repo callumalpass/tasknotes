@@ -386,6 +386,32 @@
     min-height: 0; /* Allow container to shrink and enable scrolling */
 }
 
+/* Drop indicator for manual card reordering */
+.tasknotes-plugin .kanban-view__card-wrapper--dragover-top,
+.tasknotes-plugin .kanban-view__card-wrapper--dragover-bottom {
+    position: relative;
+}
+
+.tasknotes-plugin .kanban-view__card-wrapper--dragover-top::before,
+.tasknotes-plugin .kanban-view__card-wrapper--dragover-bottom::after {
+    content: "";
+    position: absolute;
+    left: 8px;
+    right: 8px;
+    height: 2px;
+    background: color-mix(in srgb, var(--tn-interactive-accent) 70%, transparent);
+    border-radius: 2px;
+    pointer-events: none;
+}
+
+.tasknotes-plugin .kanban-view__card-wrapper--dragover-top::before {
+    top: -2px;
+}
+
+.tasknotes-plugin .kanban-view__card-wrapper--dragover-bottom::after {
+    bottom: -2px;
+}
+
 
 /* Dragging state for card wrappers */
 .tasknotes-plugin .kanban-view__card-wrapper[draggable="true"]:hover {

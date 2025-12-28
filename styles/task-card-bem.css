@@ -197,12 +197,10 @@
 
 /* Drag handle indicator */
 .tasknotes-plugin .task-card__drag-handle {
-    position: absolute;
-    left: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 4px;
-    height: 20px;
+    width: 6px;
+    height: 18px;
+    margin-right: 8px;
+    border-radius: 3px;
     background: repeating-linear-gradient(
         to bottom,
         var(--tn-text-faint) 0px,
@@ -210,17 +208,31 @@
         transparent 2px,
         transparent 4px
     );
-    opacity: 0;
+    opacity: 0.25;
+    cursor: grab;
+    flex: 0 0 auto;
+    align-self: center;
     transition: opacity var(--tn-transition-fast);
-    border-radius: var(--tn-radius-xs);
 }
 
-.tasknotes-plugin .task-card[draggable="true"]:hover .task-card__drag-handle {
-    opacity: 0.5;
+.tasknotes-plugin .task-card--manual-sort .task-card__drag-handle {
+    opacity: 0.6;
 }
 
-.tasknotes-plugin .task-card[draggable="true"]:active .task-card__drag-handle {
-    opacity: 0.8;
+.tasknotes-plugin .task-card--manual-sort .task-card__drag-handle:hover {
+    opacity: 0.9;
+}
+
+/* Subtasks use the same subtle handle color as top-level */
+.tasknotes-plugin .task-card--manual-sort.task-card--subtask .task-card__drag-handle {
+    opacity: 0.6;
+    background: repeating-linear-gradient(
+        to bottom,
+        var(--tn-text-faint) 0px,
+        var(--tn-text-faint) 2px,
+        transparent 2px,
+        transparent 4px
+    );
 }
 
 /* Container queries for adaptive layouts */
@@ -563,6 +575,8 @@
     background: color-mix(in srgb, var(--tn-bg-secondary) 25%, transparent);
     border-radius: var(--tn-radius-sm);
     backdrop-filter: blur(2px);
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
 }
 
 .tasknotes-plugin .task-card__blocking {
@@ -998,6 +1012,32 @@
                 0 0 0 1px color-mix(in srgb, var(--tn-interactive-accent) 50%, transparent);
     transition: none;
     animation: drag-pulse 2s infinite ease-in-out;
+}
+
+/* Drop indicator for subtask reordering */
+.tasknotes-plugin .task-card--dragover-top,
+.tasknotes-plugin .task-card--dragover-bottom {
+    position: relative;
+}
+
+.tasknotes-plugin .task-card--dragover-top::before,
+.tasknotes-plugin .task-card--dragover-bottom::after {
+    content: "";
+    position: absolute;
+    left: 12px;
+    right: 12px;
+    height: 2px;
+    background: color-mix(in srgb, var(--tn-interactive-accent) 70%, transparent);
+    border-radius: 2px;
+    pointer-events: none;
+}
+
+.tasknotes-plugin .task-card--dragover-top::before {
+    top: -2px;
+}
+
+.tasknotes-plugin .task-card--dragover-bottom::after {
+    bottom: -2px;
 }
 
 @keyframes drag-pulse {

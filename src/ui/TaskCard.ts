@@ -38,6 +38,7 @@ import { DEFAULT_INTERNAL_VISIBLE_PROPERTIES } from "../settings/defaults";
 export interface TaskCardOptions {
 	targetDate?: Date;
 	layout?: "default" | "compact" | "inline";
+	manualSortEnabled?: boolean;
 }
 
 export const DEFAULT_TASK_CARD_OPTIONS: TaskCardOptions = {
@@ -1432,6 +1433,11 @@ export function createTaskCard(
 		cardClasses.push("task-card--chevron-left");
 	}
 
+	const manualSortActive = opts.manualSortEnabled ?? isManualSortActive(plugin);
+	if (manualSortActive) {
+		cardClasses.push("task-card--manual-sort");
+	}
+
 	// Add project modifier (for issue #355)
 	const hasProjects = filterEmptyProjects(task.projects || []).length > 0;
 	if (hasProjects) {
@@ -1450,6 +1456,13 @@ export function createTaskCard(
 	// Create main row container for horizontal layout
 	// Use span for inline layout to maintain inline flow
 	const mainRow = card.createEl(layout === "inline" ? "span" : "div", { cls: "task-card__main-row" });
+
+	if (layout === "default" && manualSortActive) {
+		mainRow.createEl("span", {
+			cls: "task-card__drag-handle",
+			attr: { "aria-label": "Drag to reorder", "data-tn-drag-handle": "true" },
+		});
+	}
 
 	// Apply priority and status colors as CSS custom properties
 	const priorityConfig = plugin.priorityManager.getPriorityConfig(task.priority);
@@ -2120,14 +2133,25 @@ export function updateTaskCard(
 				existingToggle?.remove();
 				// Clean up subtasks container if we remove the toggle
 				const subtasksContainer = element.querySelector(".task-card__subtasks") as HTMLElement;
-				if (subtasksContainer) {
-					const clickHandler = (subtasksContainer as any)._clickHandler;
-					if (clickHandler) {
-						subtasksContainer.removeEventListener("click", clickHandler);
-						delete (subtasksContainer as any)._clickHandler;
-					}
-					subtasksContainer.remove();
+			if (subtasksContainer) {
+				const clickHandler = (subtasksContainer as any)._clickHandler;
+				if (clickHandler) {
+					subtasksContainer.removeEventListener("click", clickHandler);
+					delete (subtasksContainer as any)._clickHandler;
 				}
+				const dragStartHandler = (subtasksContainer as any)._dragStartHandler;
+				if (dragStartHandler) {
+					subtasksContainer.removeEventListener("dragstart", dragStartHandler, true);
+					delete (subtasksContainer as any)._dragStartHandler;
+				}
+				const dragEndHandler = (subtasksContainer as any)._dragEndHandler;
+				if (dragEndHandler) {
+					subtasksContainer.removeEventListener("dragend", dragEndHandler, true);
+					subtasksContainer.removeEventListener("drop", dragEndHandler, true);
+					delete (subtasksContainer as any)._dragEndHandler;
+				}
+				subtasksContainer.remove();
+			}
 				return;
 			}
 
@@ -2402,7 +2426,6 @@ export async function toggleSubtasks(
 ): Promise<void> {
 	try {
 		let subtasksContainer = card.querySelector(".task-card__subtasks") as HTMLElement;
-
 		if (expanded) {
 			// Show subtasks
 			if (!subtasksContainer) {
@@ -2463,8 +2486,12 @@ export async function toggleSubtasks(
 					return;
 				}
 
-				// Sort subtasks
-				const sortedSubtasks = plugin.projectSubtasksService.sortTasks(subtasks);
+				// Sort subtasks (manual order only when active)
+				const baseSortedSubtasks = plugin.projectSubtasksService.sortTasks(subtasks);
+				const manualSortActive = card.classList.contains("task-card--manual-sort");
+				const sortedSubtasks = manualSortActive
+					? sortSubtasksByManualRank(baseSortedSubtasks, task.path, plugin)
+					: baseSortedSubtasks;
 
 				// Build parent chain by traversing up the DOM hierarchy
 				const buildParentChain = (element: HTMLElement): string[] => {
@@ -2497,13 +2524,22 @@ export async function toggleSubtasks(
 					}
 
 					const subtaskVisibleProps = getSubtaskVisibleProperties(card, plugin);
-					const subtaskCard = createTaskCard(subtask, plugin, subtaskVisibleProps);
+					const subtaskCard = createTaskCard(subtask, plugin, subtaskVisibleProps, {
+						manualSortEnabled: manualSortActive,
+					});
 
 					// Add subtask modifier class
 					subtaskCard.classList.add("task-card--subtask");
+					subtaskCard.setAttribute("draggable", "true");
+					(subtaskCard as HTMLElement).draggable = true;
+					subtaskCard.dataset.taskPath = subtask.path;
+					// Remove manual-sort handle for subtasks in kanban; ordering happens in edit modal
+					subtaskCard.querySelector(".task-card__drag-handle")?.remove();
 
 					subtasksContainer.appendChild(subtaskCard);
 				}
+
+				// Subtask manual sorting happens in the edit modal, not on the kanban board.
 			} catch (error) {
 				console.error("Error loading subtasks:", error);
 				loadingEl.textContent = plugin.i18n.translate(
@@ -2519,7 +2555,6 @@ export async function toggleSubtasks(
 					subtasksContainer.removeEventListener("click", clickHandler);
 					delete (subtasksContainer as any)._clickHandler;
 				}
-
 				// Remove the container (this will also clean up child elements and their listeners)
 				subtasksContainer.remove();
 			}
@@ -2529,6 +2564,62 @@ export async function toggleSubtasks(
 		throw error;
 	}
 }
+
+function getSubtaskRank(
+	subtask: TaskInfo,
+	parentPath: string,
+	plugin: TaskNotesPlugin
+): number | null {
+	const rankMap = (subtask as any)?.rankByProject ?? subtask.customProperties?.rankByProject;
+	let raw: any = null;
+	if (rankMap && typeof rankMap === "object") {
+		raw = (rankMap as Record<string, any>)[parentPath];
+	}
+	if (raw === null || raw === undefined) {
+		const cache = plugin.app.metadataCache.getCache(subtask.path);
+		const fmRank = cache?.frontmatter?.rankByProject;
+		if (fmRank && typeof fmRank === "object") {
+			raw = (fmRank as Record<string, any>)[parentPath];
+		}
+	}
+	if (raw === null || raw === undefined) return null;
+	const parsed = typeof raw === "number" ? raw : Number(raw);
+	return Number.isFinite(parsed) ? parsed : null;
+}
+
+function isManualSortActive(plugin: TaskNotesPlugin): boolean {
+	const activeView = plugin.app.workspace.activeLeaf?.view as any;
+	return !!activeView?.manualSortEnabled;
+}
+
+function sortSubtasksByManualRank(
+	subtasks: TaskInfo[],
+	parentPath: string,
+	plugin: TaskNotesPlugin
+): TaskInfo[] {
+	if (subtasks.length < 2) return subtasks;
+	const indexed = subtasks.map((task, index) => ({
+		task,
+		index,
+		rank: getSubtaskRank(task, parentPath, plugin),
+	}));
+
+	indexed.sort((a, b) => {
+		const aHasRank = a.rank !== null && a.rank !== undefined;
+		const bHasRank = b.rank !== null && b.rank !== undefined;
+		if (aHasRank && bHasRank) {
+			if (a.rank! === b.rank!) return a.index - b.index;
+			return a.rank! - b.rank!;
+		}
+		if (aHasRank) return -1;
+		if (bHasRank) return 1;
+		return a.index - b.index;
+	});
+
+	return indexed.map((entry) => entry.task);
+}
+
+// Subtask ordering is handled in the edit modal.
 
 export async function toggleBlockingTasks(
 	card: HTMLElement,

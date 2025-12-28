@@ -111,6 +111,8 @@ Each task being a full note means you can write descriptions, jot down thoughts 
 | 4.1.13  | Fix for 4.1.9 |
 | 4.1.14  | Follow up on 4.1.4 angle brackets and fix project links on sub-task cards |
 | 4.1.15  | Angle brackets and "Blocked by" rsp. "Blocking" |
+| 4.1.16  | Kanban project cards refresh after adding sub-tasks in the edit dialog |
+| 4.1.17  | Manual sorting for Kanban columns and project subtasks |
 
 ## Configuration
 
