@@ -38,6 +38,7 @@ import { DEFAULT_INTERNAL_VISIBLE_PROPERTIES } from "../settings/defaults";
 export interface TaskCardOptions {
 	targetDate?: Date;
 	layout?: "default" | "compact" | "inline";
+	manualSortEnabled?: boolean;
 }
 
 export const DEFAULT_TASK_CARD_OPTIONS: TaskCardOptions = {
@@ -404,6 +405,37 @@ function getDefaultVisibleProperties(plugin: TaskNotesPlugin): string[] {
 	return convertInternalToUserProperties(internalDefaults, plugin);
 }
 
+function resolveVisibleProperties(
+	visibleProperties: string[] | undefined,
+	plugin: TaskNotesPlugin
+): string[] {
+	if (visibleProperties && visibleProperties.length > 0) {
+		return visibleProperties;
+	}
+
+	if (plugin.settings.defaultVisibleProperties) {
+		return convertInternalToUserProperties(plugin.settings.defaultVisibleProperties, plugin);
+	}
+
+	return getDefaultVisibleProperties(plugin);
+}
+
+function getSubtaskVisibleProperties(card: HTMLElement, plugin: TaskNotesPlugin): string[] {
+	const raw = card?.dataset?.visibleProperties;
+	if (raw) {
+		try {
+			const parsed = JSON.parse(raw);
+			if (Array.isArray(parsed) && parsed.length > 0) {
+				return parsed;
+			}
+		} catch (error) {
+			console.warn("Failed to parse visibleProperties from card dataset", error);
+		}
+	}
+
+	return resolveVisibleProperties(undefined, plugin);
+}
+
 /**
  * Property value extractors for better type safety and error handling
  */
@@ -666,13 +698,34 @@ const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
 			renderScheduledDateProperty(element, value, task, plugin);
 		}
 	},
-	projects: (element, value, _, plugin) => {
+	projects: (element, value, task, plugin) => {
 		if (Array.isArray(value)) {
 			const linkServices: LinkServices = {
 				metadataCache: plugin.app.metadataCache,
 				workspace: plugin.app.workspace,
+				sourcePath: task.path,
 			};
-			renderProjectLinks(element, value as string[], linkServices);
+			const onPrimaryNavigate = async (normalizedPath: string) => {
+				try {
+					const file =
+						plugin.app.metadataCache.getFirstLinkpathDest(normalizedPath, task.path) ||
+						plugin.app.metadataCache.getFirstLinkpathDest(normalizedPath, "");
+					const resolvedPath = file?.path ?? normalizedPath;
+					const projectTask = await plugin.cacheManager.getTaskInfo(resolvedPath);
+					if (projectTask) {
+						await plugin.openTaskEditModal(projectTask);
+						return true;
+					}
+				} catch (error) {
+					console.error("[TaskNotes] Failed to open project modal:", error);
+				}
+				// Returning false falls back to default open note behavior
+				return false;
+			};
+
+			renderProjectLinks(element, value as string[], linkServices, {
+				onPrimaryNavigate,
+			});
 		}
 	},
 	contexts: (element, value, _, plugin) => {
@@ -1322,6 +1375,7 @@ export function createTaskCard(
 		const todayLocal = new Date();
 		return new Date(Date.UTC(todayLocal.getFullYear(), todayLocal.getMonth(), todayLocal.getDate()));
 	})();
+	const resolvedVisibleProperties = resolveVisibleProperties(visibleProperties, plugin);
 
 	// Determine effective status for recurring tasks
 	const effectiveStatus = task.recurrence
@@ -1334,6 +1388,7 @@ export function createTaskCard(
 	// Main container with BEM class structure
 	// Use span for inline layout to ensure proper inline flow in CodeMirror
 	const card = document.createElement(layout === "inline" ? "span" : "div");
+	card.dataset.visibleProperties = JSON.stringify(resolvedVisibleProperties);
 
 	// Store task path for circular reference detection
 	(card as any)._taskPath = task.path;
@@ -1346,6 +1401,7 @@ export function createTaskCard(
 		? task.skipped_instances?.includes(formatDateForStorage(targetDate)) || false // Direct check of skipped_instances
 		: false; // Only recurring tasks can have skipped instances
 	const isRecurring = !!task.recurrence;
+	const isProjectTask = plugin.projectSubtasksService.isTaskUsedAsProjectSync(task.path);
 
 	// Build BEM class names
 	const cardClasses = ["task-card"];
@@ -1377,20 +1433,36 @@ export function createTaskCard(
 		cardClasses.push("task-card--chevron-left");
 	}
 
+	const manualSortActive = opts.manualSortEnabled ?? isManualSortActive(plugin);
+	if (manualSortActive) {
+		cardClasses.push("task-card--manual-sort");
+	}
+
 	// Add project modifier (for issue #355)
 	const hasProjects = filterEmptyProjects(task.projects || []).length > 0;
 	if (hasProjects) {
 		cardClasses.push("task-card--has-projects");
+	}
+	if (isProjectTask) {
+		cardClasses.push("task-card--project");
 	}
 
 	card.className = cardClasses.join(" ");
 	card.dataset.taskPath = task.path;
 	card.dataset.key = task.path; // For DOMReconciler compatibility
 	card.dataset.status = effectiveStatus;
+	card.dataset.isProject = isProjectTask ? "true" : "false";
 
 	// Create main row container for horizontal layout
 	// Use span for inline layout to maintain inline flow
 	const mainRow = card.createEl(layout === "inline" ? "span" : "div", { cls: "task-card__main-row" });
+
+	if (layout === "default" && manualSortActive) {
+		mainRow.createEl("span", {
+			cls: "task-card__drag-handle",
+			attr: { "aria-label": "Drag to reorder", "data-tn-drag-handle": "true" },
+		});
+	}
 
 	// Apply priority and status colors as CSS custom properties
 	const priorityConfig = plugin.priorityManager.getPriorityConfig(task.priority);
@@ -1402,6 +1474,7 @@ export function createTaskCard(
 	if (statusConfig) {
 		card.style.setProperty("--current-status-color", statusConfig.color);
 	}
+	const statusStripeColor = statusConfig?.color;
 
 	// Set next status color for hover preview
 	const nextStatus = plugin.statusManager.getNextStatus(effectiveStatus);
@@ -1425,8 +1498,12 @@ export function createTaskCard(
 				setIcon(statusDot, statusConfig.icon);
 			}
 		}
+		card.style.removeProperty("box-shadow");
+	} else if (statusStripeColor) {
+		card.style.boxShadow = `inset -2px 0 0 ${statusStripeColor}`;
+	} else {
+		card.style.removeProperty("box-shadow");
 	}
-
 	// Add click handler to cycle through statuses
 	if (statusDot) {
 		// Prevent mousedown from propagating to editor (fixes inline widget de-rendering)
@@ -1482,41 +1559,25 @@ export function createTaskCard(
 			});
 		}
 
-		// Project indicator
-		const isProject = plugin.projectSubtasksService.isTaskUsedAsProjectSync(task.path);
-		if (isProject) {
-			createBadgeIndicator({
+		// Project indicator doubles as the subtasks toggle (same behavior as the chevron)
+		if (isProjectTask && plugin.settings?.showExpandableSubtasks) {
+			const isExpanded = plugin.expandedProjectsService?.isExpanded(task.path) || false;
+			const projectToggle = createBadgeIndicator({
 				container: badgesContainer,
-				className: "task-card__project-indicator",
+				className: `task-card__project-indicator task-card__chevron${isExpanded ? " task-card__chevron--expanded" : ""}`,
 				icon: "folder",
-				tooltip: "This task is used as a project (click to filter subtasks)",
-				onClick: createProjectClickHandler(task, plugin),
+				tooltip: isExpanded ? "Collapse subtasks" : "Expand subtasks",
+				onClick: (e) => {
+					e.stopPropagation();
+					createChevronClickHandler(task, plugin, card, projectToggle as HTMLElement)();
+				},
 			});
 
-			// Chevron for expandable subtasks
-			if (plugin.settings?.showExpandableSubtasks) {
-				const isExpanded = plugin.expandedProjectsService?.isExpanded(task.path) || false;
-				const chevron = createBadgeIndicator({
-					container: badgesContainer,
-					className: `task-card__chevron${isExpanded ? " task-card__chevron--expanded" : ""}`,
-					icon: "chevron-right",
-					tooltip: isExpanded ? "Collapse subtasks" : "Expand subtasks",
+			// Show subtasks if already expanded
+			if (isExpanded) {
+				toggleSubtasks(card, task, plugin, true).catch((error) => {
+					console.error("Error showing initial subtasks:", error);
 				});
-
-				// Chevron needs special handler since it updates its own state
-				if (chevron) {
-					chevron.addEventListener("click", (e) => {
-						e.stopPropagation();
-						createChevronClickHandler(task, plugin, card, chevron)();
-					});
-				}
-
-				// Show subtasks if already expanded
-				if (isExpanded) {
-					toggleSubtasks(card, task, plugin, true).catch((error) => {
-						console.error("Error showing initial subtasks:", error);
-					});
-				}
 			}
 		}
 
@@ -1565,6 +1626,13 @@ export function createTaskCard(
 	if (isCompleted) {
 		titleEl.classList.add("completed");
 		titleTextEl.classList.add("completed");
+	}
+	if (isProjectTask) {
+		card.dataset.isProject = "true";
+		titleTextEl.style.fontWeight = "600";
+	} else {
+		delete card.dataset.isProject;
+		titleTextEl.style.fontWeight = "";
 	}
 
 	// Second line: Metadata (dynamic based on visible properties)
@@ -1748,6 +1816,7 @@ export function updateTaskCard(
 	options: Partial<TaskCardOptions> = {}
 ): void {
 	const opts = { ...DEFAULT_TASK_CARD_OPTIONS, ...options };
+	const resolvedVisibleProperties = resolveVisibleProperties(visibleProperties, plugin);
 	// Use fresh UTC-anchored "today" if no targetDate provided
 	// This ensures recurring tasks show correct completion status for the current day
 	const targetDate = opts.targetDate || (() => {
@@ -1797,6 +1866,7 @@ export function updateTaskCard(
 
 	element.className = cardClasses.join(" ");
 	element.dataset.status = effectiveStatus;
+	element.dataset.visibleProperties = JSON.stringify(resolvedVisibleProperties);
 
 	// Get the main row container
 	const mainRow = element.querySelector(".task-card__main-row") as HTMLElement;
@@ -1827,8 +1897,8 @@ export function updateTaskCard(
 
 	// Update status dot (conditional based on visible properties)
 	const shouldShowStatus =
-		!visibleProperties ||
-		visibleProperties.some((prop) => isPropertyForField(prop, "status", plugin));
+		!resolvedVisibleProperties ||
+		resolvedVisibleProperties.some((prop) => isPropertyForField(prop, "status", plugin));
 	const statusDot = element.querySelector(".task-card__status-dot") as HTMLElement;
 
 	if (shouldShowStatus) {
@@ -1932,10 +2002,24 @@ export function updateTaskCard(
 		statusDot.remove();
 	}
 
+	// Ensure data attribute stays accurate for project cards (used for styling)
+	element.dataset.isProject = plugin.projectSubtasksService.isTaskUsedAsProjectSync(task.path) ? "true" : "false";
+
+	// Apply a status stripe when the status property is hidden
+	if (!shouldShowStatus) {
+		if (statusConfig?.color) {
+			element.style.boxShadow = `inset -2px 0 0 ${statusConfig.color}`;
+		} else {
+			element.style.removeProperty("box-shadow");
+		}
+	} else {
+		element.style.removeProperty("box-shadow");
+	}
+
 	// Update priority indicator (conditional based on visible properties)
 	const shouldShowPriority =
-		!visibleProperties ||
-		visibleProperties.some((prop) => isPropertyForField(prop, "priority", plugin));
+		!resolvedVisibleProperties ||
+		resolvedVisibleProperties.some((prop) => isPropertyForField(prop, "priority", plugin));
 	const existingPriorityDot = element.querySelector(".task-card__priority-dot") as HTMLElement;
 
 	if (shouldShowPriority && task.priority && priorityConfig) {
@@ -2042,52 +2126,57 @@ export function updateTaskCard(
 			element.querySelector(".task-card__project-indicator-placeholder")?.remove();
 			element.querySelector(".task-card__chevron-placeholder")?.remove();
 
-			// Update project indicator
-			updateBadgeIndicator(element, ".task-card__project-indicator", {
-				shouldExist: isProject,
-				className: "task-card__project-indicator",
+			const showProjectToggle = isProject && plugin.settings?.showExpandableSubtasks;
+			const existingToggle = element.querySelector(".task-card__project-indicator") as HTMLElement | null;
+
+			if (!showProjectToggle) {
+				existingToggle?.remove();
+				// Clean up subtasks container if we remove the toggle
+				const subtasksContainer = element.querySelector(".task-card__subtasks") as HTMLElement;
+			if (subtasksContainer) {
+				const clickHandler = (subtasksContainer as any)._clickHandler;
+				if (clickHandler) {
+					subtasksContainer.removeEventListener("click", clickHandler);
+					delete (subtasksContainer as any)._clickHandler;
+				}
+				const dragStartHandler = (subtasksContainer as any)._dragStartHandler;
+				if (dragStartHandler) {
+					subtasksContainer.removeEventListener("dragstart", dragStartHandler, true);
+					delete (subtasksContainer as any)._dragStartHandler;
+				}
+				const dragEndHandler = (subtasksContainer as any)._dragEndHandler;
+				if (dragEndHandler) {
+					subtasksContainer.removeEventListener("dragend", dragEndHandler, true);
+					subtasksContainer.removeEventListener("drop", dragEndHandler, true);
+					delete (subtasksContainer as any)._dragEndHandler;
+				}
+				subtasksContainer.remove();
+			}
+				return;
+			}
+
+			const isExpanded = plugin.expandedProjectsService?.isExpanded(task.path) || false;
+			const tooltip = isExpanded ? "Collapse subtasks" : "Expand subtasks";
+
+			if (existingToggle) {
+				existingToggle.remove();
+			}
+
+			const projectToggle = createBadgeIndicator({
+				container: badgesContainer || mainRow,
+				className: `task-card__project-indicator task-card__chevron${isExpanded ? " task-card__chevron--expanded" : ""}`,
 				icon: "folder",
-				tooltip: "This task is used as a project (click to filter subtasks)",
-				onClick: createProjectClickHandler(task, plugin),
+				tooltip,
+				onClick: (e) => {
+					e.stopPropagation();
+					createChevronClickHandler(task, plugin, element, projectToggle as HTMLElement)();
+				},
 			});
 
-			// Update chevron
-			const showChevron = isProject && plugin.settings?.showExpandableSubtasks;
-			const existingChevron = element.querySelector(".task-card__chevron") as HTMLElement;
-
-			if (showChevron && !existingChevron) {
-				const isExpanded = plugin.expandedProjectsService?.isExpanded(task.path) || false;
-				const chevron = createBadgeIndicator({
-					container: badgesContainer || mainRow,
-					className: `task-card__chevron${isExpanded ? " task-card__chevron--expanded" : ""}`,
-					icon: "chevron-right",
-					tooltip: isExpanded ? "Collapse subtasks" : "Expand subtasks",
+			if (projectToggle && isExpanded) {
+				toggleSubtasks(element, task, plugin, true).catch((error) => {
+					console.error("Error showing initial subtasks in update:", error);
 				});
-
-				if (chevron) {
-					chevron.addEventListener("click", (e) => {
-						e.stopPropagation();
-						createChevronClickHandler(task, plugin, element, chevron)();
-					});
-				}
-
-				if (isExpanded) {
-					toggleSubtasks(element, task, plugin, true).catch((error) => {
-						console.error("Error showing initial subtasks in update:", error);
-					});
-				}
-			} else if (!showChevron && existingChevron) {
-				existingChevron.remove();
-				// Clean up subtasks container
-				const subtasksContainer = element.querySelector(".task-card__subtasks") as HTMLElement;
-				if (subtasksContainer) {
-					const clickHandler = (subtasksContainer as any)._clickHandler;
-					if (clickHandler) {
-						subtasksContainer.removeEventListener("click", clickHandler);
-						delete (subtasksContainer as any)._clickHandler;
-					}
-					subtasksContainer.remove();
-				}
 			}
 		})
 		.catch((error: any) => {
@@ -2127,6 +2216,14 @@ export function updateTaskCard(
 	if (titleText) {
 		titleText.textContent = task.title;
 		titleText.classList.toggle("completed", titleIsCompleted);
+		const isProject = plugin.projectSubtasksService.isTaskUsedAsProjectSync(task.path);
+		if (isProject) {
+			element.dataset.isProject = "true";
+			titleText.style.fontWeight = "600";
+		} else {
+			delete element.dataset.isProject;
+			titleText.style.fontWeight = "";
+		}
 	}
 	if (titleContainer) {
 		titleContainer.classList.toggle("completed", titleIsCompleted);
@@ -2145,11 +2242,7 @@ export function updateTaskCard(
 		const metadataElements: HTMLElement[] = [];
 
 		// Get properties to display
-		const propertiesToShow =
-			visibleProperties ||
-			(plugin.settings.defaultVisibleProperties
-				? convertInternalToUserProperties(plugin.settings.defaultVisibleProperties, plugin)
-				: getDefaultVisibleProperties(plugin));
+		const propertiesToShow = resolvedVisibleProperties;
 
 		for (const propertyId of propertiesToShow) {
 			// Skip status and priority as they're rendered separately
@@ -2333,7 +2426,6 @@ export async function toggleSubtasks(
 ): Promise<void> {
 	try {
 		let subtasksContainer = card.querySelector(".task-card__subtasks") as HTMLElement;
-
 		if (expanded) {
 			// Show subtasks
 			if (!subtasksContainer) {
@@ -2394,8 +2486,12 @@ export async function toggleSubtasks(
 					return;
 				}
 
-				// Sort subtasks
-				const sortedSubtasks = plugin.projectSubtasksService.sortTasks(subtasks);
+				// Sort subtasks (manual order only when active)
+				const baseSortedSubtasks = plugin.projectSubtasksService.sortTasks(subtasks);
+				const manualSortActive = card.classList.contains("task-card--manual-sort");
+				const sortedSubtasks = manualSortActive
+					? sortSubtasksByManualRank(baseSortedSubtasks, task.path, plugin)
+					: baseSortedSubtasks;
 
 				// Build parent chain by traversing up the DOM hierarchy
 				const buildParentChain = (element: HTMLElement): string[] => {
@@ -2427,13 +2523,23 @@ export async function toggleSubtasks(
 						continue;
 					}
 
-					const subtaskCard = createTaskCard(subtask, plugin, undefined);
+					const subtaskVisibleProps = getSubtaskVisibleProperties(card, plugin);
+					const subtaskCard = createTaskCard(subtask, plugin, subtaskVisibleProps, {
+						manualSortEnabled: manualSortActive,
+					});
 
 					// Add subtask modifier class
 					subtaskCard.classList.add("task-card--subtask");
+					subtaskCard.setAttribute("draggable", "true");
+					(subtaskCard as HTMLElement).draggable = true;
+					subtaskCard.dataset.taskPath = subtask.path;
+					// Remove manual-sort handle for subtasks in kanban; ordering happens in edit modal
+					subtaskCard.querySelector(".task-card__drag-handle")?.remove();
 
 					subtasksContainer.appendChild(subtaskCard);
 				}
+
+				// Subtask manual sorting happens in the edit modal, not on the kanban board.
 			} catch (error) {
 				console.error("Error loading subtasks:", error);
 				loadingEl.textContent = plugin.i18n.translate(
@@ -2449,7 +2555,6 @@ export async function toggleSubtasks(
 					subtasksContainer.removeEventListener("click", clickHandler);
 					delete (subtasksContainer as any)._clickHandler;
 				}
-
 				// Remove the container (this will also clean up child elements and their listeners)
 				subtasksContainer.remove();
 			}
@@ -2459,6 +2564,62 @@ export async function toggleSubtasks(
 		throw error;
 	}
 }
+
+function getSubtaskRank(
+	subtask: TaskInfo,
+	parentPath: string,
+	plugin: TaskNotesPlugin
+): number | null {
+	const rankMap = (subtask as any)?.rankByProject ?? subtask.customProperties?.rankByProject;
+	let raw: any = null;
+	if (rankMap && typeof rankMap === "object") {
+		raw = (rankMap as Record<string, any>)[parentPath];
+	}
+	if (raw === null || raw === undefined) {
+		const cache = plugin.app.metadataCache.getCache(subtask.path);
+		const fmRank = cache?.frontmatter?.rankByProject;
+		if (fmRank && typeof fmRank === "object") {
+			raw = (fmRank as Record<string, any>)[parentPath];
+		}
+	}
+	if (raw === null || raw === undefined) return null;
+	const parsed = typeof raw === "number" ? raw : Number(raw);
+	return Number.isFinite(parsed) ? parsed : null;
+}
+
+function isManualSortActive(plugin: TaskNotesPlugin): boolean {
+	const activeView = plugin.app.workspace.activeLeaf?.view as any;
+	return !!activeView?.manualSortEnabled;
+}
+
+function sortSubtasksByManualRank(
+	subtasks: TaskInfo[],
+	parentPath: string,
+	plugin: TaskNotesPlugin
+): TaskInfo[] {
+	if (subtasks.length < 2) return subtasks;
+	const indexed = subtasks.map((task, index) => ({
+		task,
+		index,
+		rank: getSubtaskRank(task, parentPath, plugin),
+	}));
+
+	indexed.sort((a, b) => {
+		const aHasRank = a.rank !== null && a.rank !== undefined;
+		const bHasRank = b.rank !== null && b.rank !== undefined;
+		if (aHasRank && bHasRank) {
+			if (a.rank! === b.rank!) return a.index - b.index;
+			return a.rank! - b.rank!;
+		}
+		if (aHasRank) return -1;
+		if (bHasRank) return 1;
+		return a.index - b.index;
+	});
+
+	return indexed.map((entry) => entry.task);
+}
+
+// Subtask ordering is handled in the edit modal.
 
 export async function toggleBlockingTasks(
 	card: HTMLElement,

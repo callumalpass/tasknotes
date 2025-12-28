@@ -459,6 +459,7 @@ export interface TaskInfo {
 	reminders?: Reminder[]; // Task reminders
 	customProperties?: Record<string, any>; // Custom properties from Bases or other sources
 	basesData?: any; // Raw Bases data for formula computation (internal use)
+	weight?: number; // Optional ordering weight (higher = more important)
 	blockedBy?: TaskDependency[]; // Dependencies that must be satisfied before this task can start
 	blocking?: string[]; // Task paths that this task is blocking
 	isBlocked?: boolean; // True if any blocking dependency is incomplete

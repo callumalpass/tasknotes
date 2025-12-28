@@ -2,7 +2,7 @@
 import { App, Notice, TFile, TAbstractFile, setIcon, setTooltip } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { TaskModal } from "./TaskModal";
-import { TaskDependency, TaskInfo } from "../types";
+import { EVENT_TASK_UPDATED, TaskDependency, TaskInfo } from "../types";
 import {
 	getCurrentTimestamp,
 	formatDateForStorage,
@@ -674,6 +674,12 @@ export class TaskEditModal extends TaskModal {
 
 			if (hasSubtaskChanges) {
 				await this.applySubtaskChanges(updatedTask);
+				this.plugin.projectSubtasksService?.invalidateIndex();
+				this.plugin.emitter.trigger(EVENT_TASK_UPDATED, {
+					path: updatedTask.path,
+					originalTask: updatedTask,
+					updatedTask: updatedTask,
+				});
 			}
 
 			if (this.unresolvedBlockingEntries.length > 0) {
@@ -1078,16 +1084,31 @@ export class TaskEditModal extends TaskModal {
 			if (!(taskFile instanceof TFile)) return;
 
 			const subtasks = await this.plugin.projectSubtasksService.getTasksLinkedToProject(taskFile);
+			const manualSortEnabled = this.isManualSortEnabled();
+			const rankedSubtasks = subtasks.map((subtask, index) => ({
+				subtask,
+				index,
+				rank: this.getProjectRankForSubtask(subtask, taskFile.path),
+			}));
+			if (manualSortEnabled) {
+				rankedSubtasks.sort((a, b) => {
+					const rankA = a.rank ?? Number.MAX_SAFE_INTEGER;
+					const rankB = b.rank ?? Number.MAX_SAFE_INTEGER;
+					if (rankA !== rankB) return rankA - rankB;
+					return a.index - b.index;
+				});
+			}
 			this.selectedSubtaskFiles = [];
 			this.initialSubtaskFiles = [];
 
-			for (const subtask of subtasks) {
-				const subtaskFile = this.app.vault.getAbstractFileByPath(subtask.path);
+			for (const entry of rankedSubtasks) {
+				const subtaskFile = this.app.vault.getAbstractFileByPath(entry.subtask.path);
 				if (subtaskFile) {
 					this.selectedSubtaskFiles.push(subtaskFile);
 					this.initialSubtaskFiles.push(subtaskFile);
 				}
 			}
+			this.initialSubtaskOrder = this.selectedSubtaskFiles.map((file) => file.path);
 		} catch (error) {
 			console.error("Error initializing subtasks:", error);
 		}
@@ -1095,11 +1116,20 @@ export class TaskEditModal extends TaskModal {
 
 	protected hasSubtaskChanges(): boolean {
 		// Check if subtasks have changed
-		const current = this.selectedSubtaskFiles.map(f => f.path).sort();
-		const initial = this.initialSubtaskFiles.map(f => f.path).sort();
+		const currentPaths = this.selectedSubtaskFiles.map((file) => file.path);
+		const initialPaths = this.initialSubtaskFiles.map((file) => file.path);
+		const currentSorted = [...currentPaths].sort();
+		const initialSorted = [...initialPaths].sort();
 
-		return current.length !== initial.length ||
-			   current.some((path, index) => path !== initial[index]);
+		const membershipChanged =
+			currentSorted.length !== initialSorted.length ||
+			currentSorted.some((path, index) => path !== initialSorted[index]);
+
+		if (membershipChanged) return true;
+		if (!this.isManualSortEnabled()) return false;
+		if (this.subtaskOrderDirty) return true;
+		if (currentPaths.length !== this.initialSubtaskOrder.length) return true;
+		return currentPaths.some((path, index) => path !== this.initialSubtaskOrder[index]);
 	}
 
 	protected async applySubtaskChanges(task: TaskInfo): Promise<void> {
@@ -1113,6 +1143,7 @@ export class TaskEditModal extends TaskModal {
 		const toRemove = this.initialSubtaskFiles.filter(f => !currentPaths.has(f.path));
 		for (const file of toRemove) {
 			await this.removeSubtaskRelation(file, currentTaskFile);
+			await this.removeSubtaskOrder(file, currentTaskFile);
 		}
 
 		// Add current task to tasks that should become subtasks
@@ -1121,8 +1152,15 @@ export class TaskEditModal extends TaskModal {
 			await this.addSubtaskRelation(file, currentTaskFile);
 		}
 
+		if (this.isManualSortEnabled()) {
+			this.syncSubtaskOrderFromDom();
+			await this.applySubtaskOrder(currentTaskFile);
+		}
+
 		// Update the initial state to reflect changes
 		this.initialSubtaskFiles = [...this.selectedSubtaskFiles];
+		this.initialSubtaskOrder = this.selectedSubtaskFiles.map((file) => file.path);
+		this.subtaskOrderDirty = false;
 	}
 
 	protected async addSubtaskRelation(subtaskFile: TAbstractFile, parentTaskFile: TFile): Promise<void> {
@@ -1165,6 +1203,75 @@ export class TaskEditModal extends TaskModal {
 		} catch (error) {
 			console.error("Failed to remove subtask relation:", error);
 		}
+	}
+
+	private getProjectRankForSubtask(subtask: TaskInfo, projectPath: string): number | null {
+		const rankMap = (subtask as any)?.rankByProject ?? subtask.customProperties?.rankByProject;
+		let value: any = null;
+		if (rankMap && typeof rankMap === "object" && !Array.isArray(rankMap)) {
+			value = rankMap[projectPath];
+		}
+		if (value === null || value === undefined) {
+			const cache = this.app.metadataCache.getCache(subtask.path);
+			const fmRank = cache?.frontmatter?.rankByProject;
+			if (fmRank && typeof fmRank === "object" && !Array.isArray(fmRank)) {
+				value = (fmRank as Record<string, any>)[projectPath];
+			}
+		}
+		return typeof value === "number" ? value : null;
+	}
+
+	private async applySubtaskOrder(parentTaskFile: TFile): Promise<void> {
+		for (let index = 0; index < this.selectedSubtaskFiles.length; index++) {
+			const subtaskFile = this.selectedSubtaskFiles[index];
+			if (!(subtaskFile instanceof TFile)) continue;
+			const rank = index * 1000;
+			await this.plugin.app.fileManager.processFrontMatter(subtaskFile, (frontmatter) => {
+				const current = frontmatter.rankByProject;
+				const rankMap =
+					current && typeof current === "object" && !Array.isArray(current)
+						? { ...current }
+						: {};
+				if (rankMap[parentTaskFile.path] === rank) return;
+				rankMap[parentTaskFile.path] = rank;
+				frontmatter.rankByProject = rankMap;
+			});
+		}
+	}
+
+	private async removeSubtaskOrder(
+		subtaskFile: TAbstractFile,
+		parentTaskFile: TFile
+	): Promise<void> {
+		if (!(subtaskFile instanceof TFile)) return;
+		await this.plugin.app.fileManager.processFrontMatter(subtaskFile, (frontmatter) => {
+			const current = frontmatter.rankByProject;
+			if (!current || typeof current !== "object" || Array.isArray(current)) return;
+			const rankMap = { ...current };
+			if (!Object.prototype.hasOwnProperty.call(rankMap, parentTaskFile.path)) return;
+			delete rankMap[parentTaskFile.path];
+			if (Object.keys(rankMap).length === 0) {
+				delete frontmatter.rankByProject;
+			} else {
+				frontmatter.rankByProject = rankMap;
+			}
+		});
+	}
+
+	private syncSubtaskOrderFromDom(): void {
+		if (!this.subtasksList) return;
+		const orderedPaths = Array.from(
+			this.subtasksList.querySelectorAll<HTMLElement>(".task-project-item")
+		)
+			.map((el) => el.dataset.path)
+			.filter((path): path is string => typeof path === "string" && path.length > 0);
+		if (orderedPaths.length === 0) return;
+		const fileMap = new Map(this.selectedSubtaskFiles.map((file) => [file.path, file]));
+		const orderedFiles = orderedPaths
+			.map((path) => fileMap.get(path))
+			.filter((file): file is TAbstractFile => Boolean(file));
+		if (orderedFiles.length === 0) return;
+		this.selectedSubtaskFiles = orderedFiles;
 	}
 
 	// Start expanded for edit modal - override parent property

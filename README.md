@@ -156,3 +156,18 @@ This plugin uses [FullCalendar.io](https://fullcalendar.io/) for its calendar co
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## Feature Tweaks & Fixes
+
+- Angle-bracket markdown links resolve correctly across filters, overlays, projects, and dependencies.
+- Kanban column headers show configured status/priority labels.
+- Property-based task identification no longer injects or mutates `task`/`Task` tags unless explicitly set.
+- Project folder icon toggles subtasks (chevron removed on task cards).
+- Project titles are bold on task cards; subtasks remain normal weight.
+- Subtasks inherit visible properties (including custom fields) and use Bases sort rules with caching.
+- Status color shows as dot when visible, or as a right-edge stripe when hidden.
+- Manual sorting for Kanban columns and project subtasks with persisted rank fields.
+- Project cards refresh after subtask changes and deletes.
+

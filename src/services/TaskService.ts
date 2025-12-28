@@ -33,6 +33,7 @@ import {
 	normalizeDependencyEntry,
 	resolveDependencyEntry,
 } from "../utils/dependencyUtils";
+import { getProjectDisplayName } from "../utils/linkUtils";
 import {
 	formatDateForStorage,
 	getCurrentDateString,
@@ -306,10 +307,13 @@ export class TaskService {
 				icsEventId: taskData.icsEventId || undefined,
 			};
 
+			const shouldAddTaskTag = this.plugin.settings.taskIdentificationMethod === "tag";
+			const taskTagForFrontmatter = shouldAddTaskTag ? this.plugin.settings.taskTag : undefined;
+
 			// Use field mapper to convert to frontmatter with proper field mapping
 			const frontmatter = this.plugin.fieldMapper.mapToFrontmatter(
 				completeTaskData,
-				this.plugin.settings.taskTag,
+				taskTagForFrontmatter,
 				this.plugin.settings.storeTitleInFilename
 			);
 
@@ -324,12 +328,10 @@ export class TaskService {
 						lower === "true" || lower === "false" ? lower === "true" : propValue;
 					frontmatter[propName] = coercedValue as any;
 				}
-				// Remove task tag from tags array if using property identification
-				const filteredTags = tagsArray.filter(
-					(tag: string) => tag !== this.plugin.settings.taskTag
-				);
-				if (filteredTags.length > 0) {
-					frontmatter.tags = filteredTags;
+				if (tagsArray.length > 0) {
+					frontmatter.tags = tagsArray;
+				} else {
+					delete frontmatter.tags;
 				}
 			} else {
 				// Tags are handled separately (not via field mapper)
@@ -1337,23 +1339,12 @@ export class TaskService {
 				}
 
 				if (updates.hasOwnProperty("tags")) {
-					let tagsToSet = updates.tags;
-					// Remove task tag if using property identification
-					if (this.plugin.settings.taskIdentificationMethod === "property" && tagsToSet) {
-						tagsToSet = tagsToSet.filter(
-							(tag: string) => tag !== this.plugin.settings.taskTag
-						);
+					const tagsToSet = Array.isArray(updates.tags) ? [...updates.tags] : [];
+					if (tagsToSet.length > 0) {
+						frontmatter.tags = tagsToSet;
+					} else {
+						delete frontmatter.tags;
 					}
-					frontmatter.tags = tagsToSet;
-				} else if (originalTask.tags) {
-					let tagsToSet = originalTask.tags;
-					// Remove task tag if using property identification
-					if (this.plugin.settings.taskIdentificationMethod === "property") {
-						tagsToSet = tagsToSet.filter(
-							(tag: string) => tag !== this.plugin.settings.taskTag
-						);
-					}
-					frontmatter.tags = tagsToSet;
 				}
 			});
 
@@ -2100,41 +2091,6 @@ export class TaskService {
 	 * - "simple string" -> "simple string"
 	 */
 	private extractProjectBasename(project: string): string {
-		if (!project) return "";
-
-		// Check if it's a wikilink format [[...]]
-		const linkMatch = project.match(/^\[\[([^\]]+)\]\]$/);
-		if (linkMatch) {
-			const linkContent = linkMatch[1];
-
-			// Handle pipe syntax: "path|display" -> use "display"
-			if (linkContent.includes("|")) {
-				return linkContent.split("|")[1].trim();
-			}
-
-			// Try to resolve the file using Obsidian's metadata cache
-			if (this.plugin.app?.metadataCache) {
-				try {
-					const file = this.plugin.app.metadataCache.getFirstLinkpathDest(
-						linkContent,
-						""
-					);
-					if (file) {
-						// Return the file's basename (name without extension)
-						return file.basename;
-					}
-				} catch (error) {
-					// File resolution failed, fall back to manual extraction
-					console.debug("Error resolving project file:", error);
-				}
-			}
-
-			// Fallback: extract basename manually from the path
-			const pathParts = linkContent.split("/");
-			return pathParts[pathParts.length - 1] || linkContent;
-		}
-
-		// For non-wikilink strings, return as-is
-		return project;
+		return getProjectDisplayName(project, this.plugin.app);
 	}
 }

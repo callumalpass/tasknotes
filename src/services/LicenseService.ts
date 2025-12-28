@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import { requestUrl } from "obsidian";
 import TaskNotesPlugin from "../main";
 
@@ -30,11 +29,7 @@ export class LicenseService {
 	 * Validates a license key against Lemon Squeezy API
 	 */
 	async validateLicense(licenseKey: string): Promise<boolean> {
-		console.log("=== LICENSE VALIDATION STARTED ===");
-		console.log("License key:", licenseKey);
-
 		if (!licenseKey || !licenseKey.trim()) {
-			console.log("License key is empty");
 			return false;
 		}
 
@@ -43,11 +38,9 @@ export class LicenseService {
 			this.cachedValidation?.key === licenseKey &&
 			Date.now() < this.cachedValidation.validUntil
 		) {
-			console.log("Using cached validation result:", this.cachedValidation.valid);
 			return this.cachedValidation.valid;
 		}
 
-		console.log("Making API request to Lemon Squeezy...");
 		try {
 			const response = await requestUrl({
 				url: "https://api.lemonsqueezy.com/v1/licenses/validate",
@@ -59,9 +52,6 @@ export class LicenseService {
 				body: `license_key=${encodeURIComponent(licenseKey)}`,
 				throw: false,
 			});
-
-			console.log("License validation response status:", response.status);
-			console.log("License validation response body:", JSON.stringify(response.json, null, 2));
 
 			if (response.status !== 200) {
 				console.error("License validation failed with status:", response.status);
@@ -106,7 +96,6 @@ export class LicenseService {
 			this.cachedValidation?.key === licenseKey &&
 			Date.now() < this.cachedValidation.validUntil + this.GRACE_PERIOD
 		) {
-			console.log("Using cached validation result (grace period)");
 			return this.cachedValidation.valid;
 		}
 

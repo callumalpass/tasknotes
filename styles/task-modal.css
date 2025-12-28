@@ -1181,6 +1181,57 @@ body:not(.is-mobile) .modal.mod-tasknotes .modal-button-container .mod-cta {
     background-color: var(--background-modifier-hover);
 }
 
+.tasknotes-plugin .task-project-item[draggable="true"] {
+    cursor: grab;
+}
+
+.tasknotes-plugin .task-project-item--dragging {
+    opacity: 0.8;
+    transform: rotate(1deg);
+}
+
+.tasknotes-plugin .task-project-drag-handle {
+    width: 6px;
+    height: 16px;
+    border-radius: 3px;
+    background: repeating-linear-gradient(
+        to bottom,
+        var(--tn-text-faint) 0px,
+        var(--tn-text-faint) 2px,
+        transparent 2px,
+        transparent 4px
+    );
+    opacity: 0.5;
+    cursor: grab;
+    flex: 0 0 auto;
+    align-self: center;
+}
+
+.tasknotes-plugin .task-project-item--dragover-top,
+.tasknotes-plugin .task-project-item--dragover-bottom {
+    position: relative;
+}
+
+.tasknotes-plugin .task-project-item--dragover-top::before,
+.tasknotes-plugin .task-project-item--dragover-bottom::after {
+    content: "";
+    position: absolute;
+    left: 8px;
+    right: 8px;
+    height: 2px;
+    background: color-mix(in srgb, var(--tn-interactive-accent) 70%, transparent);
+    border-radius: 2px;
+    pointer-events: none;
+}
+
+.tasknotes-plugin .task-project-item--dragover-top::before {
+    top: -2px;
+}
+
+.tasknotes-plugin .task-project-item--dragover-bottom::after {
+    bottom: -2px;
+}
+
 .tasknotes-plugin .task-project-info {
     flex: 1;
     min-width: 0;

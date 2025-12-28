@@ -67,6 +67,9 @@ const versionsWithDates = versionsToBundle.map(version => ({
 	version,
 	date: getVersionDate(version)
 })).sort((a, b) => {
+	// Always show the current version first
+	if (a.version === currentVersion && b.version !== currentVersion) return -1;
+	if (b.version === currentVersion && a.version !== currentVersion) return 1;
 	// Versions without dates go to the end
 	if (!a.date && !b.date) return 0;
 	if (!a.date) return 1;

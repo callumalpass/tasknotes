@@ -2,7 +2,7 @@ import { Component, App, setIcon } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { BasesDataAdapter } from "./BasesDataAdapter";
 import { PropertyMappingService } from "./PropertyMappingService";
-import { TaskInfo, EVENT_TASK_UPDATED } from "../types";
+import { TaskInfo, EVENT_TASK_UPDATED, EVENT_TASK_DELETED } from "../types";
 import { convertInternalToUserProperties } from "../utils/propertyMapping";
 import { DEFAULT_INTERNAL_VISIBLE_PROPERTIES } from "../settings/defaults";
 import { SearchBox } from "./components/SearchBox";
@@ -26,6 +26,7 @@ export abstract class BasesViewBase extends Component {
 	protected containerEl: HTMLElement;
 	protected rootElement: HTMLElement | null = null;
 	protected taskUpdateListener: any = null;
+	protected taskDeleteListener: any = null;
 	protected updateDebounceTimer: number | null = null;
 	protected dataUpdateDebounceTimer: number | null = null;
 	protected relevantPathsCache: Set<string> = new Set();
@@ -311,6 +312,17 @@ export abstract class BasesViewBase extends Component {
 				this.plugin.emitter.offref(this.taskUpdateListener);
 				this.taskUpdateListener = null;
 			}
+			if (this.taskDeleteListener) {
+				this.plugin.emitter.offref(this.taskDeleteListener);
+				this.taskDeleteListener = null;
+			}
+		});
+
+		this.taskDeleteListener = this.plugin.emitter.on(EVENT_TASK_DELETED, () => {
+			if (!this.rootElement?.isConnected) return;
+			// Ensure subtasks/project indices are up to date
+			this.plugin.projectSubtasksService?.invalidateIndex();
+			this.debouncedRefresh();
 		});
 	}
 
