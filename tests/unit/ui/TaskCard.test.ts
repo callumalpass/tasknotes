@@ -123,7 +123,10 @@ describe('TaskCard Component', () => {
       app: mockApp,
       selectedDate: new Date('2025-01-15'),
       fieldMapper: {
-        isPropertyForField: jest.fn(() => false),
+        isPropertyForField: jest.fn((property: string, field: string) => {
+          const mapping = mockPlugin?.fieldMapper?.getMapping?.();
+          return Boolean(mapping && mapping[field] === property);
+        }),
         toUserField: jest.fn((field) => field),
         toInternalField: jest.fn((field) => field),
         getMapping: jest.fn(() => ({
