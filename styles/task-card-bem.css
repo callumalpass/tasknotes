@@ -451,6 +451,7 @@
     border-radius: var(--tn-radius-sm);
     transition: all var(--tn-transition-fast);
     flex-shrink: 0;
+    cursor: pointer;
 }
 
 .tasknotes-plugin .task-card__chevron:hover {
@@ -500,6 +501,7 @@
     transition: color var(--tn-transition-fast), background var(--tn-transition-fast), opacity var(--tn-transition-fast);
     border-radius: var(--tn-radius-sm);
     flex-shrink: 0;
+    cursor: pointer;
 }
 
 .tasknotes-plugin .task-card__blocking-toggle:hover {
@@ -1365,6 +1367,7 @@
 .tasknotes-plugin .task-card--layout-compact .task-card__blocking-toggle {
     width: 12px;
     height: 12px;
+    cursor: pointer;
 }
 
 .tasknotes-plugin .task-card--layout-compact .task-card__context-menu {
