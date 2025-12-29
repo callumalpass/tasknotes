@@ -650,6 +650,7 @@
     border-radius: var(--tn-radius-sm);
     flex-shrink: 0;
     margin-left: auto;
+    cursor: pointer;
 }
 
 .tasknotes-plugin .task-card__context-menu:hover {
@@ -1266,6 +1267,7 @@
     height: 0.9em;
     padding: 0;
     vertical-align: baseline;
+    cursor: pointer;
 }
 
 /* Compact date displays in inline mode */
@@ -1368,6 +1370,7 @@
 .tasknotes-plugin .task-card--layout-compact .task-card__context-menu {
     width: 12px;
     height: 12px;
+    cursor: pointer;
 }
 
 /* =================================================================
