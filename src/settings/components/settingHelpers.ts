@@ -1,4 +1,4 @@
-import { Setting } from "obsidian";
+import { Setting, SettingGroup, requireApiVersion } from "obsidian";
 
 export interface ToggleSettingOptions {
 	name: string;
@@ -46,14 +46,100 @@ export interface ButtonSettingOptions {
 	buttonClass?: string;
 }
 
+export interface SettingGroupOptions {
+	heading: string;
+	description?: string;
+	className?: string;
+}
+
 /**
- * Helper for creating standard toggle settings
+ * Check if the current Obsidian version supports SettingGroup (1.11.0+)
  */
-export function createToggleSetting(
+function supportsSettingGroup(): boolean {
+	return requireApiVersion("1.11.0");
+}
+
+/**
+ * Legacy fallback that mimics SettingGroup API for Obsidian < 1.11.0
+ * Uses the old pattern of section headers and individual settings
+ */
+class LegacySettingGroup {
+	private containerEl: HTMLElement;
+
+	constructor(containerEl: HTMLElement) {
+		this.containerEl = containerEl;
+	}
+
+	setHeading(text: string | DocumentFragment): this {
+		new Setting(this.containerEl).setName(text).setHeading();
+		return this;
+	}
+
+	addClass(_cls: string): this {
+		// No-op for legacy - classes were not applied to groups
+		return this;
+	}
+
+	addSetting(cb: (setting: Setting) => void): this {
+		const setting = new Setting(this.containerEl);
+		cb(setting);
+		return this;
+	}
+}
+
+/**
+ * Helper for creating a setting group with heading
+ * Uses native SettingGroup on Obsidian 1.11.0+, falls back to legacy pattern on older versions
+ */
+export function createSettingGroup(
 	container: HTMLElement,
-	options: ToggleSettingOptions
-): Setting {
-	return new Setting(container)
+	options: SettingGroupOptions,
+	addSettings: (group: SettingGroup | LegacySettingGroup) => void
+): SettingGroup | LegacySettingGroup {
+	if (supportsSettingGroup()) {
+		// Use native SettingGroup on Obsidian 1.11.0+
+		const group = new SettingGroup(container).setHeading(options.heading);
+
+		if (options.className) {
+			group.addClass(options.className);
+		}
+
+		// Add description as help text if provided
+		if (options.description) {
+			group.addSetting((setting) => {
+				setting.setDesc(options.description!);
+				setting.settingEl.addClass("settings-view__group-description");
+			});
+		}
+
+		addSettings(group);
+		return group;
+	} else {
+		// Fall back to legacy pattern on older Obsidian versions
+		const group = new LegacySettingGroup(container).setHeading(options.heading);
+
+		if (options.className) {
+			group.addClass(options.className);
+		}
+
+		// Add description as help text if provided
+		if (options.description) {
+			group.addSetting((setting) => {
+				setting.setDesc(options.description!);
+				setting.settingEl.addClass("settings-view__group-description");
+			});
+		}
+
+		addSettings(group);
+		return group;
+	}
+}
+
+/**
+ * Helper for configuring a toggle setting (works with SettingGroup.addSetting)
+ */
+export function configureToggleSetting(setting: Setting, options: ToggleSettingOptions): Setting {
+	return setting
 		.setName(options.name)
 		.setDesc(options.desc)
 		.addToggle((toggle) => {
@@ -62,10 +148,20 @@ export function createToggleSetting(
 }
 
 /**
- * Helper for creating standard text input settings
+ * Helper for creating standard toggle settings
  */
-export function createTextSetting(container: HTMLElement, options: TextSettingOptions): Setting {
-	return new Setting(container)
+export function createToggleSetting(
+	container: HTMLElement,
+	options: ToggleSettingOptions
+): Setting {
+	return configureToggleSetting(new Setting(container), options);
+}
+
+/**
+ * Helper for configuring a text input setting (works with SettingGroup.addSetting)
+ */
+export function configureTextSetting(setting: Setting, options: TextSettingOptions): Setting {
+	return setting
 		.setName(options.name)
 		.setDesc(options.desc)
 		.addText((text) => {
@@ -95,13 +191,17 @@ export function createTextSetting(container: HTMLElement, options: TextSettingOp
 }
 
 /**
- * Helper for creating standard dropdown settings
+ * Helper for creating standard text input settings
  */
-export function createDropdownSetting(
-	container: HTMLElement,
-	options: DropdownSettingOptions
-): Setting {
-	return new Setting(container)
+export function createTextSetting(container: HTMLElement, options: TextSettingOptions): Setting {
+	return configureTextSetting(new Setting(container), options);
+}
+
+/**
+ * Helper for configuring a dropdown setting (works with SettingGroup.addSetting)
+ */
+export function configureDropdownSetting(setting: Setting, options: DropdownSettingOptions): Setting {
+	return setting
 		.setName(options.name)
 		.setDesc(options.desc)
 		.addDropdown((dropdown) => {
@@ -120,17 +220,24 @@ export function createDropdownSetting(
 }
 
 /**
- * Helper for creating standard number input settings
+ * Helper for creating standard dropdown settings
  */
-export function createNumberSetting(
+export function createDropdownSetting(
 	container: HTMLElement,
-	options: NumberSettingOptions
+	options: DropdownSettingOptions
 ): Setting {
+	return configureDropdownSetting(new Setting(container), options);
+}
+
+/**
+ * Helper for configuring a number input setting (works with SettingGroup.addSetting)
+ */
+export function configureNumberSetting(setting: Setting, options: NumberSettingOptions): Setting {
 	const setValue = options.debounceMs
 		? debounce(options.setValue, options.debounceMs)
 		: options.setValue;
 
-	return new Setting(container)
+	return setting
 		.setName(options.name)
 		.setDesc(options.desc)
 		.addText((text) => {
@@ -169,13 +276,20 @@ export function createNumberSetting(
 }
 
 /**
- * Helper for creating standard button settings
+ * Helper for creating standard number input settings
  */
-export function createButtonSetting(
+export function createNumberSetting(
 	container: HTMLElement,
-	options: ButtonSettingOptions
+	options: NumberSettingOptions
 ): Setting {
-	return new Setting(container)
+	return configureNumberSetting(new Setting(container), options);
+}
+
+/**
+ * Helper for configuring a button setting (works with SettingGroup.addSetting)
+ */
+export function configureButtonSetting(setting: Setting, options: ButtonSettingOptions): Setting {
+	return setting
 		.setName(options.name)
 		.setDesc(options.desc)
 		.addButton((button) => {
@@ -189,6 +303,16 @@ export function createButtonSetting(
 
 			return button;
 		});
+}
+
+/**
+ * Helper for creating standard button settings
+ */
+export function createButtonSetting(
+	container: HTMLElement,
+	options: ButtonSettingOptions
+): Setting {
+	return configureButtonSetting(new Setting(container), options);
 }
 
 /**

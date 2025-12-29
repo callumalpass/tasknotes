@@ -1,4 +1,4 @@
-import { App, PluginSettingTab, Platform } from "obsidian";
+import { App, PluginSettingTab, Platform, requireApiVersion } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { debounce } from "./components/settingHelpers";
 import { renderGeneralTab } from "./tabs/generalTab";
@@ -24,6 +24,11 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 	constructor(app: App, plugin: TaskNotesPlugin) {
 		super(app, plugin);
 		this.plugin = plugin;
+
+		// Set icon for settings sidebar (Obsidian 1.11.0+)
+		if (requireApiVersion("1.11.0")) {
+			this.icon = "tasknotes-simple";
+		}
 
 		this.plugin.registerEvent(
 			this.plugin.i18n.on("locale-changed", () => {

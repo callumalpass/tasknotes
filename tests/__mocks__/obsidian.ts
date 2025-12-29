@@ -1011,6 +1011,45 @@ export function setTooltip(element: HTMLElement, tooltip: string, options?: { pl
   element.classList.add('has-tooltip');
 }
 
+// API version check utilities (added in Obsidian 1.11.0)
+export function requireApiVersion(version: string): boolean {
+  // Mock implementation - returns true for testing purposes
+  // This allows testing code that uses SettingGroup
+  return true;
+}
+
+// SettingGroup mock class (added in Obsidian 1.11.0)
+export class SettingGroup {
+  private containerEl: HTMLElement;
+
+  constructor(containerEl: HTMLElement) {
+    this.containerEl = containerEl;
+  }
+
+  setHeading(text: string | DocumentFragment): this {
+    const heading = document.createElement('div');
+    heading.classList.add('setting-item-heading');
+    if (typeof text === 'string') {
+      heading.textContent = text;
+    } else {
+      heading.appendChild(text);
+    }
+    this.containerEl.appendChild(heading);
+    return this;
+  }
+
+  addClass(cls: string): this {
+    this.containerEl.classList.add(cls);
+    return this;
+  }
+
+  addSetting(cb: (setting: Setting) => void): this {
+    const setting = new Setting(this.containerEl);
+    cb(setting);
+    return this;
+  }
+}
+
 // Keymap mock class
 export class Keymap {
   pushScope = jest.fn();

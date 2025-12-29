@@ -26,6 +26,11 @@ Example:
 
 ## Added
 
+- Adopted Obsidian 1.11.0 API features with backwards compatibility
+  - Settings tab now displays TaskNotes icon in the sidebar (Obsidian 1.11.0+)
+  - Settings sections now use native `SettingGroup` for improved visual grouping (Obsidian 1.11.0+)
+  - Falls back gracefully to traditional section headers on older Obsidian versions
+
 - (#59) Added `shortYear` template variable for custom filename and folder templates
   - Use `{shortYear}` in filename templates (e.g., "25" for 2025)
   - Use `{{shortYear}}` in folder templates
@@ -38,6 +43,11 @@ Example:
   - Thanks to @LookGoodFeelGood for the feature request
 
 ## Fixed
+
+- (#1386) Fixed `timeEstimateCategory` formula showing "Long (>2h)" instead of "No estimate" for new tasks
+  - The condition didn't properly handle null values when `timeEstimate` property is unset
+  - Also fixed the same issue in `trackingStatus` formula
+  - Thanks to @nicou for reporting and suggesting the fix
 
 - (#1397) Fixed Bases views (Kanban, Calendar, Task List) resetting to Calendar view after a few minutes
   - Views would show "?" in the Views menu due to view type mismatch
