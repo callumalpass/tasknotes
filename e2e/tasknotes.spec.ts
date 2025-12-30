@@ -1112,14 +1112,19 @@ test.describe('Year View Details', () => {
     const moreLinks = page.locator('.fc-more-link');
     const count = await moreLinks.count();
 
-    await page.screenshot({ path: 'test-results/screenshots/year-view-overflow.png' });
+    // Only take screenshots if page is still accessible
+    try {
+      await page.screenshot({ path: 'test-results/screenshots/year-view-overflow.png' });
 
-    // Capture any overflow badges for visual review
-    if (count > 0) {
-      // Hover over first more link to see if tooltip appears
-      await moreLinks.first().hover();
-      await page.waitForTimeout(500);
-      await page.screenshot({ path: 'test-results/screenshots/year-view-overflow-hover.png' });
+      // Capture any overflow badges for visual review
+      if (count > 0) {
+        // Hover over first more link to see if tooltip appears
+        await moreLinks.first().hover();
+        await page.waitForTimeout(500);
+        await page.screenshot({ path: 'test-results/screenshots/year-view-overflow-hover.png' });
+      }
+    } catch {
+      console.log('Page closed before screenshot could be taken');
     }
   });
 });
