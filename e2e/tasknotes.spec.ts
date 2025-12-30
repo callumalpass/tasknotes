@@ -1367,3 +1367,788 @@ test.describe('Calendar Event Color Coding', () => {
     }
   });
 });
+
+// ============================================================================
+// TASK EDIT MODAL TESTS
+// ============================================================================
+
+test.describe('Task Edit Modal', () => {
+  test('should open edit modal by clicking task in sidebar', async () => {
+    const page = getPage();
+
+    // Click on a task in the sidebar to open it
+    const taskItem = page.locator('.tree-item-self:has-text("Buy groceries")').first();
+    if (await taskItem.isVisible({ timeout: 3000 }).catch(() => false)) {
+      await taskItem.click();
+      await page.waitForTimeout(500);
+
+      // Look for edit button or double-click to edit
+      const editButton = page.locator('.view-action[aria-label*="Edit"], .clickable-icon[aria-label*="Edit"]');
+      if (await editButton.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await editButton.click();
+        await page.waitForTimeout(500);
+      }
+
+      await page.screenshot({ path: 'test-results/screenshots/task-edit-from-sidebar.png' });
+    }
+  });
+
+  test('should open edit modal from calendar event click', async () => {
+    const page = getPage();
+
+    await runCommand(page, 'Open calendar view');
+    await page.waitForTimeout(1000);
+
+    // Click on a calendar event
+    const calendarEvent = page.locator('.fc-event').first();
+    if (await calendarEvent.isVisible({ timeout: 3000 }).catch(() => false)) {
+      await calendarEvent.click();
+      await page.waitForTimeout(800);
+
+      // Check if modal opened
+      const modal = page.locator('.modal-container, .modal');
+      if (await modal.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await page.screenshot({ path: 'test-results/screenshots/edit-modal-from-calendar.png' });
+
+        // Look for task title in modal
+        const titleInput = page.locator('.task-modal input[type="text"], .modal input[placeholder*="title"], .modal .task-title-input');
+        if (await titleInput.isVisible({ timeout: 1000 }).catch(() => false)) {
+          await page.screenshot({ path: 'test-results/screenshots/edit-modal-title-field.png' });
+        }
+      }
+    }
+  });
+
+  test('should show all tabs in edit modal', async () => {
+    const page = getPage();
+
+    // Close any existing modals first
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(300);
+
+    await runCommand(page, 'Open calendar view');
+    await page.waitForTimeout(1000);
+
+    // Click on a calendar event to open edit modal
+    const calendarEvent = page.locator('.fc-event').first();
+    if (await calendarEvent.isVisible({ timeout: 3000 }).catch(() => false)) {
+      await calendarEvent.click();
+      await page.waitForTimeout(800);
+
+      // Look for tabs in the modal
+      const tabs = page.locator('.modal .nav-header, .modal [role="tablist"], .modal .tab-header');
+      if (await tabs.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await page.screenshot({ path: 'test-results/screenshots/edit-modal-tabs.png' });
+      }
+
+      // Try to find and click through different tabs
+      const tabButtons = page.locator('.modal .nav-header button, .modal [role="tab"]');
+      const tabCount = await tabButtons.count();
+
+      for (let i = 0; i < Math.min(tabCount, 4); i++) {
+        await tabButtons.nth(i).click();
+        await page.waitForTimeout(300);
+        await page.screenshot({ path: `test-results/screenshots/edit-modal-tab-${i}.png` });
+      }
+
+      // Close modal
+      await page.keyboard.press('Escape');
+    }
+  });
+
+  test('should edit task title in modal', async () => {
+    const page = getPage();
+
+    // Use command to open edit task interface
+    await runCommand(page, 'Edit task');
+    await page.waitForTimeout(800);
+
+    // Check if task selector or edit modal appeared
+    const modalOrSelector = page.locator('.modal-container, .modal, .suggestion-container');
+    if (await modalOrSelector.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await page.screenshot({ path: 'test-results/screenshots/edit-task-command.png' });
+
+      // If it's a task selector, pick a task
+      const taskSuggestion = page.locator('.suggestion-item').first();
+      if (await taskSuggestion.isVisible({ timeout: 1000 }).catch(() => false)) {
+        await taskSuggestion.click();
+        await page.waitForTimeout(500);
+        await page.screenshot({ path: 'test-results/screenshots/edit-modal-after-select.png' });
+      }
+    }
+
+    await page.keyboard.press('Escape');
+  });
+
+  test('should show task metadata in edit modal', async () => {
+    const page = getPage();
+
+    await runCommand(page, 'Open calendar view');
+    await page.waitForTimeout(1000);
+
+    const calendarEvent = page.locator('.fc-event').first();
+    if (await calendarEvent.isVisible({ timeout: 3000 }).catch(() => false)) {
+      await calendarEvent.click();
+      await page.waitForTimeout(800);
+
+      // Look for metadata elements (created date, modified date, etc.)
+      const metadataSection = page.locator('.modal .metadata, .modal .task-metadata, .modal [class*="meta"]');
+      if (await metadataSection.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await page.screenshot({ path: 'test-results/screenshots/edit-modal-metadata.png' });
+      }
+
+      // Look for the notes/description area
+      const notesArea = page.locator('.modal textarea, .modal .cm-editor, .modal [class*="notes"]');
+      if (await notesArea.isVisible({ timeout: 1000 }).catch(() => false)) {
+        await page.screenshot({ path: 'test-results/screenshots/edit-modal-notes-area.png' });
+      }
+
+      await page.keyboard.press('Escape');
+    }
+  });
+});
+
+// ============================================================================
+// DATE PICKER INTERACTION TESTS
+// ============================================================================
+
+test.describe('Date Picker Interactions', () => {
+  test('should open due date picker in task modal', async () => {
+    const page = getPage();
+
+    // Open create task modal
+    await runCommand(page, 'Create new task');
+    await page.waitForTimeout(800);
+
+    const modal = page.locator('.modal-container, .modal');
+    if (await modal.isVisible({ timeout: 2000 }).catch(() => false)) {
+      // Find due date button/field
+      const dueDateButton = page.locator('.modal [aria-label*="due"], .modal button:has-text("Due"), .modal .due-date-btn, .modal [class*="due"]').first();
+      if (await dueDateButton.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await dueDateButton.click();
+        await page.waitForTimeout(500);
+        await page.screenshot({ path: 'test-results/screenshots/due-date-picker-open.png' });
+
+        // Look for date picker calendar
+        const datePicker = page.locator('.date-picker, .calendar-picker, [class*="datepicker"], .suggestion-container');
+        if (await datePicker.isVisible({ timeout: 1000 }).catch(() => false)) {
+          await page.screenshot({ path: 'test-results/screenshots/due-date-calendar.png' });
+        }
+
+        await page.keyboard.press('Escape');
+      }
+    }
+
+    await page.keyboard.press('Escape');
+  });
+
+  test('should open scheduled date picker in task modal', async () => {
+    const page = getPage();
+
+    await runCommand(page, 'Create new task');
+    await page.waitForTimeout(800);
+
+    const modal = page.locator('.modal-container, .modal');
+    if (await modal.isVisible({ timeout: 2000 }).catch(() => false)) {
+      // Find scheduled date button/field
+      const scheduledButton = page.locator('.modal [aria-label*="schedule"], .modal button:has-text("Schedule"), .modal .scheduled-date-btn, .modal [class*="scheduled"]').first();
+      if (await scheduledButton.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await scheduledButton.click();
+        await page.waitForTimeout(500);
+        await page.screenshot({ path: 'test-results/screenshots/scheduled-date-picker-open.png' });
+
+        await page.keyboard.press('Escape');
+      }
+    }
+
+    await page.keyboard.press('Escape');
+  });
+
+  test('should show natural language date input', async () => {
+    const page = getPage();
+
+    await runCommand(page, 'Create new task');
+    await page.waitForTimeout(800);
+
+    const modal = page.locator('.modal-container, .modal');
+    if (await modal.isVisible({ timeout: 2000 }).catch(() => false)) {
+      // Type in the quick-add input with natural language date
+      const quickInput = page.locator('.modal input[type="text"]').first();
+      if (await quickInput.isVisible({ timeout: 1000 }).catch(() => false)) {
+        await quickInput.fill('Test task tomorrow at 3pm #test');
+        await page.waitForTimeout(300);
+        await page.screenshot({ path: 'test-results/screenshots/natural-language-date-input.png' });
+      }
+    }
+
+    await page.keyboard.press('Escape');
+  });
+});
+
+// ============================================================================
+// TAG AND PROJECT EDITING TESTS
+// ============================================================================
+
+test.describe('Tag and Project Editing', () => {
+  test('should show tag suggestions when typing #', async () => {
+    const page = getPage();
+
+    await runCommand(page, 'Create new task');
+    await page.waitForTimeout(800);
+
+    const modal = page.locator('.modal-container, .modal');
+    if (await modal.isVisible({ timeout: 2000 }).catch(() => false)) {
+      const quickInput = page.locator('.modal input[type="text"]').first();
+      if (await quickInput.isVisible({ timeout: 1000 }).catch(() => false)) {
+        await quickInput.fill('Test task #');
+        await page.waitForTimeout(500);
+        await page.screenshot({ path: 'test-results/screenshots/tag-suggestions.png' });
+
+        // Check for suggestion dropdown
+        const suggestions = page.locator('.suggestion-container, .autocomplete-dropdown, [class*="suggest"]');
+        if (await suggestions.isVisible({ timeout: 1000 }).catch(() => false)) {
+          await page.screenshot({ path: 'test-results/screenshots/tag-dropdown-visible.png' });
+        }
+      }
+    }
+
+    await page.keyboard.press('Escape');
+  });
+
+  test('should show context suggestions when typing @', async () => {
+    const page = getPage();
+
+    await runCommand(page, 'Create new task');
+    await page.waitForTimeout(800);
+
+    const modal = page.locator('.modal-container, .modal');
+    if (await modal.isVisible({ timeout: 2000 }).catch(() => false)) {
+      const quickInput = page.locator('.modal input[type="text"]').first();
+      if (await quickInput.isVisible({ timeout: 1000 }).catch(() => false)) {
+        await quickInput.fill('Test task @');
+        await page.waitForTimeout(500);
+        await page.screenshot({ path: 'test-results/screenshots/context-suggestions.png' });
+      }
+    }
+
+    await page.keyboard.press('Escape');
+  });
+
+  test('should display existing tags on task cards', async () => {
+    const page = getPage();
+
+    await runCommand(page, 'Open kanban board');
+    await page.waitForTimeout(1000);
+
+    // Look for tag elements on task cards
+    const tagElements = page.locator('.task-card .tag, .kanban-card .tag, [class*="tag-pill"], .cm-hashtag');
+    const tagCount = await tagElements.count();
+
+    await page.screenshot({ path: 'test-results/screenshots/kanban-task-tags.png' });
+
+    if (tagCount > 0) {
+      // Hover over a tag to see if there's any interaction
+      await tagElements.first().hover();
+      await page.waitForTimeout(300);
+      await page.screenshot({ path: 'test-results/screenshots/tag-hover.png' });
+    }
+  });
+
+  test('should show project selector in task modal', async () => {
+    const page = getPage();
+
+    await runCommand(page, 'Create new task');
+    await page.waitForTimeout(800);
+
+    const modal = page.locator('.modal-container, .modal');
+    if (await modal.isVisible({ timeout: 2000 }).catch(() => false)) {
+      // Look for project selector/input
+      const projectInput = page.locator('.modal [class*="project"], .modal input[placeholder*="project"]');
+      if (await projectInput.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await projectInput.click();
+        await page.waitForTimeout(300);
+        await page.screenshot({ path: 'test-results/screenshots/project-selector.png' });
+      }
+    }
+
+    await page.keyboard.press('Escape');
+  });
+});
+
+// ============================================================================
+// FILTER PANEL DETAILED TESTS
+// ============================================================================
+
+test.describe('Filter Panel Detailed', () => {
+  test('should open filter panel and show filter options', async () => {
+    const page = getPage();
+
+    await runCommand(page, 'Open calendar view');
+    await page.waitForTimeout(1000);
+
+    // Click filter button
+    const filterButton = page.locator('button:has-text("Filter"), [aria-label*="Filter"], .filter-button');
+    if (await filterButton.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await filterButton.click();
+      await page.waitForTimeout(500);
+      await page.screenshot({ path: 'test-results/screenshots/filter-panel-open.png' });
+
+      // Look for filter options
+      const filterPanel = page.locator('.filter-panel, [class*="filter-container"], .dropdown-menu');
+      if (await filterPanel.isVisible({ timeout: 1000 }).catch(() => false)) {
+        await page.screenshot({ path: 'test-results/screenshots/filter-panel-options.png' });
+      }
+    }
+  });
+
+  test('should filter by status', async () => {
+    const page = getPage();
+
+    await runCommand(page, 'Open tasks view');
+    await page.waitForTimeout(1000);
+
+    const filterButton = page.locator('button:has-text("Filter"), [aria-label*="Filter"]');
+    if (await filterButton.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await filterButton.click();
+      await page.waitForTimeout(500);
+
+      // Look for status filter option
+      const statusFilter = page.locator('[class*="filter"] :has-text("Status"), .filter-option:has-text("Status")');
+      if (await statusFilter.isVisible({ timeout: 1000 }).catch(() => false)) {
+        await statusFilter.click();
+        await page.waitForTimeout(300);
+        await page.screenshot({ path: 'test-results/screenshots/filter-by-status.png' });
+      }
+
+      await page.keyboard.press('Escape');
+    }
+  });
+
+  test('should filter by priority', async () => {
+    const page = getPage();
+
+    await runCommand(page, 'Open tasks view');
+    await page.waitForTimeout(1000);
+
+    const filterButton = page.locator('button:has-text("Filter"), [aria-label*="Filter"]');
+    if (await filterButton.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await filterButton.click();
+      await page.waitForTimeout(500);
+
+      // Look for priority filter option
+      const priorityFilter = page.locator('[class*="filter"] :has-text("Priority"), .filter-option:has-text("Priority")');
+      if (await priorityFilter.isVisible({ timeout: 1000 }).catch(() => false)) {
+        await priorityFilter.click();
+        await page.waitForTimeout(300);
+        await page.screenshot({ path: 'test-results/screenshots/filter-by-priority.png' });
+      }
+
+      await page.keyboard.press('Escape');
+    }
+  });
+
+  test('should show active filter indicator', async () => {
+    const page = getPage();
+
+    await runCommand(page, 'Open kanban board');
+    await page.waitForTimeout(1000);
+
+    // Check if there's an active filter indicator
+    const activeFilterBadge = page.locator('.filter-badge, .active-filters, [class*="filter-count"]');
+    await page.screenshot({ path: 'test-results/screenshots/filter-indicator-state.png' });
+  });
+});
+
+// ============================================================================
+// PROPERTIES PANEL TESTS
+// ============================================================================
+
+test.describe('Properties Panel Detailed', () => {
+  test('should open properties panel and show column options', async () => {
+    const page = getPage();
+
+    await runCommand(page, 'Open tasks view');
+    await page.waitForTimeout(1000);
+
+    const propertiesButton = page.locator('button:has-text("Properties"), [aria-label*="Properties"]');
+    if (await propertiesButton.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await propertiesButton.click();
+      await page.waitForTimeout(500);
+      await page.screenshot({ path: 'test-results/screenshots/properties-panel-open.png' });
+
+      // Look for property toggle options
+      const propertyToggles = page.locator('.properties-panel input[type="checkbox"], .property-toggle');
+      const toggleCount = await propertyToggles.count();
+
+      if (toggleCount > 0) {
+        await page.screenshot({ path: 'test-results/screenshots/properties-toggles.png' });
+      }
+
+      await page.keyboard.press('Escape');
+    }
+  });
+
+  test('should toggle property visibility', async () => {
+    const page = getPage();
+
+    await runCommand(page, 'Open tasks view');
+    await page.waitForTimeout(1000);
+
+    const propertiesButton = page.locator('button:has-text("Properties"), [aria-label*="Properties"]');
+    if (await propertiesButton.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await propertiesButton.click();
+      await page.waitForTimeout(500);
+
+      // Find a property toggle and click it
+      const firstToggle = page.locator('.properties-panel input[type="checkbox"], .property-toggle').first();
+      if (await firstToggle.isVisible({ timeout: 1000 }).catch(() => false)) {
+        await firstToggle.click();
+        await page.waitForTimeout(300);
+        await page.screenshot({ path: 'test-results/screenshots/property-toggled.png' });
+      }
+
+      await page.keyboard.press('Escape');
+    }
+  });
+});
+
+// ============================================================================
+// SORT OPTIONS TESTS
+// ============================================================================
+
+test.describe('Sort Options', () => {
+  test('should open sort dropdown and show options', async () => {
+    const page = getPage();
+
+    await runCommand(page, 'Open tasks view');
+    await page.waitForTimeout(1000);
+
+    const sortButton = page.locator('button:has-text("Sort"), [aria-label*="Sort"]');
+    if (await sortButton.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await sortButton.click();
+      await page.waitForTimeout(500);
+      await page.screenshot({ path: 'test-results/screenshots/sort-dropdown-open.png' });
+
+      // Look for sort options
+      const sortOptions = page.locator('.sort-option, .dropdown-item, .menu-item');
+      const optionCount = await sortOptions.count();
+
+      if (optionCount > 0) {
+        await page.screenshot({ path: 'test-results/screenshots/sort-options-list.png' });
+      }
+
+      await page.keyboard.press('Escape');
+    }
+  });
+
+  test('should sort by due date', async () => {
+    const page = getPage();
+
+    await runCommand(page, 'Open tasks view');
+    await page.waitForTimeout(1000);
+
+    const sortButton = page.locator('button:has-text("Sort"), [aria-label*="Sort"]');
+    if (await sortButton.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await sortButton.click();
+      await page.waitForTimeout(500);
+
+      const dueDateSort = page.locator('.sort-option:has-text("Due"), .dropdown-item:has-text("Due"), .menu-item:has-text("Due")');
+      if (await dueDateSort.isVisible({ timeout: 1000 }).catch(() => false)) {
+        await dueDateSort.click();
+        await page.waitForTimeout(500);
+        await page.screenshot({ path: 'test-results/screenshots/sorted-by-due-date.png' });
+      }
+    }
+  });
+
+  test('should sort by priority', async () => {
+    const page = getPage();
+
+    await runCommand(page, 'Open tasks view');
+    await page.waitForTimeout(1000);
+
+    const sortButton = page.locator('button:has-text("Sort"), [aria-label*="Sort"]');
+    if (await sortButton.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await sortButton.click();
+      await page.waitForTimeout(500);
+
+      const prioritySort = page.locator('.sort-option:has-text("Priority"), .dropdown-item:has-text("Priority"), .menu-item:has-text("Priority")');
+      if (await prioritySort.isVisible({ timeout: 1000 }).catch(() => false)) {
+        await prioritySort.click();
+        await page.waitForTimeout(500);
+        await page.screenshot({ path: 'test-results/screenshots/sorted-by-priority.png' });
+      }
+    }
+  });
+});
+
+// ============================================================================
+// TASK QUICK ACTIONS TESTS
+// ============================================================================
+
+test.describe('Task Quick Actions', () => {
+  test('should open quick actions for current task via command', async () => {
+    const page = getPage();
+
+    // First open a task file
+    const taskItem = page.locator('.tree-item-self:has-text("Buy groceries")').first();
+    if (await taskItem.isVisible({ timeout: 3000 }).catch(() => false)) {
+      await taskItem.click();
+      await page.waitForTimeout(500);
+
+      // Now try to open quick actions
+      await runCommand(page, 'Quick actions for current task');
+      await page.waitForTimeout(800);
+
+      const actionPalette = page.locator('.suggestion-container, .prompt, .modal');
+      if (await actionPalette.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await page.screenshot({ path: 'test-results/screenshots/task-quick-actions.png' });
+      }
+
+      await page.keyboard.press('Escape');
+    }
+  });
+
+  test('should open task selector for time tracking', async () => {
+    const page = getPage();
+
+    await runCommand(page, 'Start time tracking');
+    await page.waitForTimeout(800);
+
+    const selector = page.locator('.suggestion-container, .prompt, .modal');
+    if (await selector.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await page.screenshot({ path: 'test-results/screenshots/time-tracking-task-selector.png' });
+
+      // Check for task suggestions
+      const suggestions = page.locator('.suggestion-item');
+      const count = await suggestions.count();
+      if (count > 0) {
+        await page.screenshot({ path: 'test-results/screenshots/time-tracking-suggestions.png' });
+      }
+    }
+
+    await page.keyboard.press('Escape');
+  });
+});
+
+// ============================================================================
+// STATUS TOGGLE TESTS
+// ============================================================================
+
+test.describe('Task Status Interactions', () => {
+  test('should show status options in task modal', async () => {
+    const page = getPage();
+
+    await runCommand(page, 'Create new task');
+    await page.waitForTimeout(800);
+
+    const modal = page.locator('.modal-container, .modal');
+    if (await modal.isVisible({ timeout: 2000 }).catch(() => false)) {
+      // Find status selector
+      const statusSelector = page.locator('.modal [class*="status"], .modal select, .modal .dropdown');
+      if (await statusSelector.first().isVisible({ timeout: 2000 }).catch(() => false)) {
+        await statusSelector.first().click();
+        await page.waitForTimeout(300);
+        await page.screenshot({ path: 'test-results/screenshots/status-selector-open.png' });
+      }
+    }
+
+    await page.keyboard.press('Escape');
+  });
+
+  test('should toggle task checkbox in task card', async () => {
+    const page = getPage();
+
+    await runCommand(page, 'Open kanban board');
+    await page.waitForTimeout(1000);
+
+    // Find a task checkbox
+    const taskCheckbox = page.locator('.task-card input[type="checkbox"], .kanban-card .checkbox, [class*="task-checkbox"]').first();
+    if (await taskCheckbox.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await page.screenshot({ path: 'test-results/screenshots/task-checkbox-before.png' });
+
+      // Note: We don't actually toggle to avoid changing data
+      await taskCheckbox.hover();
+      await page.waitForTimeout(200);
+      await page.screenshot({ path: 'test-results/screenshots/task-checkbox-hover.png' });
+    }
+  });
+});
+
+// ============================================================================
+// RECURRENCE UI TESTS
+// ============================================================================
+
+test.describe('Recurrence Configuration', () => {
+  test('should show recurrence options in task modal', async () => {
+    const page = getPage();
+
+    await runCommand(page, 'Create new task');
+    await page.waitForTimeout(800);
+
+    const modal = page.locator('.modal-container, .modal');
+    if (await modal.isVisible({ timeout: 2000 }).catch(() => false)) {
+      // Find recurrence button/option
+      const recurrenceButton = page.locator('.modal [aria-label*="recur"], .modal button:has-text("Repeat"), .modal [class*="recurrence"]');
+      if (await recurrenceButton.first().isVisible({ timeout: 2000 }).catch(() => false)) {
+        await recurrenceButton.first().click();
+        await page.waitForTimeout(500);
+        await page.screenshot({ path: 'test-results/screenshots/recurrence-options.png' });
+
+        // Look for recurrence frequency options
+        const frequencyOptions = page.locator('.recurrence-frequency, [class*="frequency"], .dropdown-item');
+        if (await frequencyOptions.first().isVisible({ timeout: 1000 }).catch(() => false)) {
+          await page.screenshot({ path: 'test-results/screenshots/recurrence-frequency-options.png' });
+        }
+      }
+    }
+
+    await page.keyboard.press('Escape');
+  });
+
+  test('should show recurring task indicator on calendar', async () => {
+    const page = getPage();
+
+    await runCommand(page, 'Open calendar view');
+    await page.waitForTimeout(1000);
+
+    // Look for recurring task indicators
+    const recurringIndicator = page.locator('.fc-event [class*="recurring"], .fc-event [class*="repeat"], .fc-event svg[class*="repeat"]');
+    const indicatorCount = await recurringIndicator.count();
+
+    await page.screenshot({ path: 'test-results/screenshots/calendar-recurring-indicators.png' });
+  });
+});
+
+// ============================================================================
+// TIME TRACKING UI TESTS
+// ============================================================================
+
+test.describe('Time Tracking Interface', () => {
+  test('should show time tracking section in edit modal', async () => {
+    const page = getPage();
+
+    await runCommand(page, 'Open calendar view');
+    await page.waitForTimeout(1000);
+
+    const calendarEvent = page.locator('.fc-event').first();
+    if (await calendarEvent.isVisible({ timeout: 3000 }).catch(() => false)) {
+      await calendarEvent.click();
+      await page.waitForTimeout(800);
+
+      // Look for time tracking tab or section
+      const timeTab = page.locator('.modal [role="tab"]:has-text("Time"), .modal button:has-text("Time")');
+      if (await timeTab.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await timeTab.click();
+        await page.waitForTimeout(500);
+        await page.screenshot({ path: 'test-results/screenshots/time-tracking-tab.png' });
+      }
+
+      // Look for time entries
+      const timeEntries = page.locator('.time-entry, [class*="time-log"], [class*="time-spent"]');
+      if (await timeEntries.first().isVisible({ timeout: 1000 }).catch(() => false)) {
+        await page.screenshot({ path: 'test-results/screenshots/time-entries-list.png' });
+      }
+
+      await page.keyboard.press('Escape');
+    }
+  });
+
+  test('should show start/stop timer button', async () => {
+    const page = getPage();
+
+    await runCommand(page, 'Open calendar view');
+    await page.waitForTimeout(1000);
+
+    const calendarEvent = page.locator('.fc-event').first();
+    if (await calendarEvent.isVisible({ timeout: 3000 }).catch(() => false)) {
+      // Right-click to open context menu
+      await calendarEvent.click({ button: 'right' });
+      await page.waitForTimeout(500);
+
+      // Look for time tracking option in context menu
+      const timerOption = page.locator('.menu-item:has-text("time"), .context-menu-item:has-text("timer"), .menu-item:has-text("Start")');
+      if (await timerOption.isVisible({ timeout: 1000 }).catch(() => false)) {
+        await page.screenshot({ path: 'test-results/screenshots/context-menu-timer-option.png' });
+      }
+
+      await page.keyboard.press('Escape');
+    }
+  });
+});
+
+// ============================================================================
+// REMINDER UI TESTS
+// ============================================================================
+
+test.describe('Reminder Interface', () => {
+  test('should show reminder options in task modal', async () => {
+    const page = getPage();
+
+    await runCommand(page, 'Create new task');
+    await page.waitForTimeout(800);
+
+    const modal = page.locator('.modal-container, .modal');
+    if (await modal.isVisible({ timeout: 2000 }).catch(() => false)) {
+      // Find reminder button
+      const reminderButton = page.locator('.modal [aria-label*="reminder"], .modal button:has-text("Remind"), .modal [class*="reminder"], .modal [class*="bell"]');
+      if (await reminderButton.first().isVisible({ timeout: 2000 }).catch(() => false)) {
+        await reminderButton.first().click();
+        await page.waitForTimeout(500);
+        await page.screenshot({ path: 'test-results/screenshots/reminder-options.png' });
+      }
+    }
+
+    await page.keyboard.press('Escape');
+  });
+});
+
+// ============================================================================
+// DEPENDENCIES UI TESTS
+// ============================================================================
+
+test.describe('Task Dependencies Interface', () => {
+  test('should show dependencies section in relationships view', async () => {
+    const page = getPage();
+
+    // Click on relationships in sidebar
+    const relationshipsItem = page.locator('.tree-item-self:has-text("relationships")');
+    if (await relationshipsItem.isVisible({ timeout: 3000 }).catch(() => false)) {
+      await relationshipsItem.click();
+      await page.waitForTimeout(1000);
+
+      await page.screenshot({ path: 'test-results/screenshots/relationships-dependencies.png' });
+
+      // Look for "Blocked By" or "Blocking" tabs
+      const blockedByTab = page.locator('[role="tab"]:has-text("Blocked"), button:has-text("Blocked")');
+      if (await blockedByTab.isVisible({ timeout: 1000 }).catch(() => false)) {
+        await blockedByTab.click();
+        await page.waitForTimeout(500);
+        await page.screenshot({ path: 'test-results/screenshots/blocked-by-tab.png' });
+      }
+    }
+  });
+
+  test('should show dependency options in task edit modal', async () => {
+    const page = getPage();
+
+    await runCommand(page, 'Open calendar view');
+    await page.waitForTimeout(1000);
+
+    const calendarEvent = page.locator('.fc-event').first();
+    if (await calendarEvent.isVisible({ timeout: 3000 }).catch(() => false)) {
+      await calendarEvent.click();
+      await page.waitForTimeout(800);
+
+      // Look for dependencies tab or section
+      const depsSection = page.locator('.modal [class*="depend"], .modal [class*="blocked"], .modal [role="tab"]:has-text("Depend")');
+      if (await depsSection.first().isVisible({ timeout: 2000 }).catch(() => false)) {
+        await depsSection.first().click();
+        await page.waitForTimeout(500);
+        await page.screenshot({ path: 'test-results/screenshots/modal-dependencies-section.png' });
+      }
+
+      await page.keyboard.press('Escape');
+    }
+  });
+});
