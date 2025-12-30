@@ -47,6 +47,7 @@ export class KanbanView extends BasesViewBase {
 	private maxSwimlaneHeight = 600;
 	private hideEmptyColumns = false;
 	private explodeListColumns = true; // Show items with list properties in multiple columns
+	private consolidateStatusIcon = false; // Show status icon in header only when grouped by status
 	private columnOrders: Record<string, string[]> = {};
 	private configLoaded = false; // Track if we've successfully loaded config
 	/**
@@ -115,6 +116,10 @@ export class KanbanView extends BasesViewBase {
 			// Read explodeListColumns option (defaults to true)
 			const explodeValue = this.config.get('explodeListColumns');
 			this.explodeListColumns = explodeValue !== false; // Default to true if not set
+
+			// Read consolidateStatusIcon option (defaults to false)
+			const consolidateValue = this.config.get('consolidateStatusIcon');
+			this.consolidateStatusIcon = consolidateValue === true; // Default to false if not set
 
 			// Read column orders
 			const columnOrderStr = (this.config.get('columnOrder') as string) || '{}';
@@ -246,8 +251,8 @@ export class KanbanView extends BasesViewBase {
 		if (!this.boardEl || !this.rootElement) return;
 		if (!this.data?.data) return;
 
-		// Ensure view options are read (in case config wasn't available in onload)
-		if (!this.configLoaded && this.config) {
+		// Always re-read view options to catch config changes (e.g., toggling consolidateStatusIcon)
+		if (this.config) {
 			this.readViewOptions();
 		}
 
@@ -692,21 +697,18 @@ export class KanbanView extends BasesViewBase {
 			headerCell.setAttribute("draggable", "true");
 			headerCell.setAttribute("data-column-key", columnKey);
 
-			// Drag handle with optional status icon inside
+			// Drag handle
 			const dragHandle = headerCell.createSpan({ cls: "kanban-view__drag-handle" });
-			if (this.isGroupedByStatus()) {
+			dragHandle.textContent = "⋮⋮";
+
+			// Status icon (when consolidation enabled and grouped by status)
+			if (this.consolidateStatusIcon && this.isGroupedByStatus()) {
 				const statusConfig = this.plugin.statusManager.getStatusConfig(columnKey);
 				if (statusConfig?.icon) {
-					dragHandle.createSpan({ cls: "kanban-view__drag-dot", text: "⋮" });
-					const iconEl = dragHandle.createSpan({ cls: "kanban-view__column-icon" });
+					const iconEl = headerCell.createSpan({ cls: "kanban-view__column-icon" });
 					iconEl.style.color = statusConfig.color;
 					setIcon(iconEl, statusConfig.icon);
-					dragHandle.createSpan({ cls: "kanban-view__drag-dot", text: "⋮" });
-				} else {
-					dragHandle.textContent = "⋮⋮";
 				}
-			} else {
-				dragHandle.textContent = "⋮⋮";
 			}
 
 			const titleContainer = headerCell.createSpan({ cls: "kanban-view__column-title" });
@@ -804,21 +806,18 @@ export class KanbanView extends BasesViewBase {
 		header.setAttribute("draggable", "true");
 		header.setAttribute("data-column-key", groupKey);
 
-		// Drag handle with optional status icon inside
+		// Drag handle
 		const dragHandle = header.createSpan({ cls: "kanban-view__drag-handle" });
-		if (this.isGroupedByStatus()) {
+		dragHandle.textContent = "⋮⋮";
+
+		// Status icon (when consolidation enabled and grouped by status)
+		if (this.consolidateStatusIcon && this.isGroupedByStatus()) {
 			const statusConfig = this.plugin.statusManager.getStatusConfig(groupKey);
 			if (statusConfig?.icon) {
-				dragHandle.createSpan({ cls: "kanban-view__drag-dot", text: "⋮" });
-				const iconEl = dragHandle.createSpan({ cls: "kanban-view__column-icon" });
+				const iconEl = header.createSpan({ cls: "kanban-view__column-icon" });
 				iconEl.style.color = statusConfig.color;
 				setIcon(iconEl, statusConfig.icon);
-				dragHandle.createSpan({ cls: "kanban-view__drag-dot", text: "⋮" });
-			} else {
-				dragHandle.textContent = "⋮⋮";
 			}
-		} else {
-			dragHandle.textContent = "⋮⋮";
 		}
 
 		const titleContainer = header.createSpan({ cls: "kanban-view__column-title" });
@@ -1929,12 +1928,13 @@ export class KanbanView extends BasesViewBase {
 	}
 
 	private renderGroupTitleWrapper(container: HTMLElement, title: string, isSwimLane = false, skipIcon = false): void {
-		// When grouped by status (column or swimlane), show icon + label instead of raw value
+		// When grouped by status (column or swimlane), show label instead of raw value
 		const isStatusGrouping = isSwimLane ? this.isSwimLaneByStatus() : this.isGroupedByStatus();
 		if (isStatusGrouping) {
 			const statusConfig = this.plugin.statusManager.getStatusConfig(title);
 			if (statusConfig) {
-				if (!skipIcon && statusConfig.icon) {
+				// Only show icon in title when consolidation is enabled
+				if (this.consolidateStatusIcon && !skipIcon && statusConfig.icon) {
 					const iconEl = container.createSpan({ cls: "kanban-view__column-icon" });
 					iconEl.style.color = statusConfig.color;
 					setIcon(iconEl, statusConfig.icon);
@@ -2006,8 +2006,8 @@ export class KanbanView extends BasesViewBase {
 		const now = new Date();
 		const targetDate = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
 
-		// Detect if grouped by status to hide redundant status indicators on cards
-		const hideStatusIndicator = this.isGroupedByStatus();
+		// Hide status indicators on cards when consolidation is enabled and grouped by status
+		const hideStatusIndicator = this.consolidateStatusIcon && this.isGroupedByStatus();
 
 		return {
 			targetDate,

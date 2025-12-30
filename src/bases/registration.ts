@@ -96,6 +96,12 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<vo
 						default: true,
 					},
 					{
+						type: "toggle",
+						key: "consolidateStatusIcon",
+						displayName: "Show status icon in column header only",
+						default: false,
+					},
+					{
 						type: "multitext",
 						key: "columnOrder",
 						displayName: "Column Order (Advanced)",

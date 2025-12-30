@@ -55,6 +55,16 @@ Example:
   - Icon buttons for status, date, project, priority, recurrence, and reminder now show tooltips on hover
   - Improves discoverability for new users
 
+- (#503) Settings now sync automatically across devices via Obsidian Sync
+  - Changes to custom statuses, priorities, and other settings apply immediately without restart
+  - Thanks to @jhedlund for the feature request and @l-mb for the implementation
+
+- (#1403) Kanban view option to consolidate status icons in column headers
+  - New "Show status icon in column header only" toggle in Kanban view settings (disabled by default)
+  - When enabled and grouped by status, shows the icon in the column header and hides it on cards
+  - Reduces visual redundancy when the column already indicates the status
+  - Thanks to @l-mb for the feature request and implementation
+
 ## Fixed
 
 - (#1386) Fixed `timeEstimateCategory` formula showing "Long (>2h)" instead of "No estimate" for new tasks
