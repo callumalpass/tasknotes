@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { Notice, TFile } from "obsidian";
+import { Notice, Platform, TFile } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { BasesViewBase } from "./BasesViewBase";
 import { TaskInfo } from "../types";
@@ -24,6 +24,22 @@ export class KanbanView extends BasesViewBase {
 	private taskInfoCache = new Map<string, TaskInfo>();
 	private containerListenersRegistered = false;
 	private columnScrollers = new Map<string, VirtualScroller<TaskInfo>>(); // columnKey -> scroller
+
+	// Touch drag state for mobile
+	private touchDragActive = false;
+	private touchDragGhost: HTMLElement | null = null;
+	private touchStartX = 0;
+	private touchStartY = 0;
+	private longPressTimer: ReturnType<typeof setTimeout> | null = null;
+	private autoScrollTimer: ReturnType<typeof setInterval> | null = null;
+	private autoScrollDirection = 0;
+	private readonly LONG_PRESS_DELAY = 350;
+	private readonly TOUCH_MOVE_THRESHOLD = 10;
+	private readonly AUTO_SCROLL_EDGE = 60;
+	private readonly AUTO_SCROLL_SPEED = 8;
+	private touchDragType: "task" | "column" | null = null;
+	private draggedColumnKey: string | null = null;
+	private boundContextMenuBlocker = (e: Event) => { e.preventDefault(); e.stopPropagation(); };
 
 	// View options (accessed via BasesViewConfig)
 	private swimLanePropertyId: string | null = null;
@@ -981,6 +997,123 @@ export class KanbanView extends BasesViewBase {
 		header.addEventListener("dragend", () => {
 			header.classList.remove(draggingClass);
 		});
+
+		this.setupColumnHeaderTouchHandlers(header, columnKey, isSwimlaneHeader, draggingClass);
+	}
+
+	private setupColumnHeaderTouchHandlers(
+		header: HTMLElement,
+		columnKey: string,
+		isSwimlaneHeader: boolean,
+		draggingClass: string
+	): void {
+		if (!Platform.isMobile) return;
+
+		header.addEventListener("contextmenu", (e: MouseEvent) => {
+			if (this.longPressTimer || this.touchDragActive) {
+				e.preventDefault();
+				e.stopPropagation();
+			}
+		});
+
+		header.addEventListener(
+			"touchstart",
+			(e: TouchEvent) => {
+				if (e.touches.length !== 1) return;
+				const touch = e.touches[0];
+				this.touchStartX = touch.clientX;
+				this.touchStartY = touch.clientY;
+				this.longPressTimer = setTimeout(() => {
+					this.touchDragActive = true;
+					this.touchDragType = "column";
+					this.draggedColumnKey = columnKey;
+					document.addEventListener("contextmenu", this.boundContextMenuBlocker, true);
+					header.classList.add(draggingClass);
+					this.touchDragGhost = this.createTouchDragGhost(header, touch.clientX, touch.clientY);
+					navigator.vibrate?.(50);
+				}, this.LONG_PRESS_DELAY);
+			},
+			{ passive: true }
+		);
+
+		header.addEventListener(
+			"touchmove",
+			(e: TouchEvent) => {
+				if (e.touches.length !== 1) return;
+				const touch = e.touches[0];
+
+				if (!this.touchDragActive && this.longPressTimer) {
+					const dx = Math.abs(touch.clientX - this.touchStartX);
+					const dy = Math.abs(touch.clientY - this.touchStartY);
+					if (dx > this.TOUCH_MOVE_THRESHOLD || dy > this.TOUCH_MOVE_THRESHOLD) {
+						clearTimeout(this.longPressTimer);
+						this.longPressTimer = null;
+					}
+					return;
+				}
+
+				if (this.touchDragActive && this.touchDragType === "column") {
+					e.preventDefault();
+					this.updateTouchDragGhost(touch.clientX, touch.clientY);
+					this.updateDropTargetFeedback(touch.clientX, touch.clientY);
+					this.handleAutoScroll(touch.clientX);
+				}
+			},
+			{ passive: false }
+		);
+
+		header.addEventListener("touchend", async (e: TouchEvent) => {
+			if (this.longPressTimer) {
+				clearTimeout(this.longPressTimer);
+				this.longPressTimer = null;
+			}
+			header.classList.remove(draggingClass);
+
+			if (!this.touchDragActive || this.touchDragType !== "column") return;
+
+			const touch = e.changedTouches[0];
+			if (!touch) {
+				this.clearTouchDragState();
+				return;
+			}
+
+			const target = this.findDropTargetAt(touch.clientX, touch.clientY);
+			if (
+				target.type &&
+				target.groupKey &&
+				this.draggedColumnKey &&
+				target.groupKey !== this.draggedColumnKey
+			) {
+				const groupBy = this.getGroupByPropertyId();
+				if (groupBy) {
+					const selector = isSwimlaneHeader
+						? ".kanban-view__column-header-cell"
+						: ".kanban-view__column-header";
+					const currentOrder = Array.from(this.boardEl!.querySelectorAll(selector))
+						.map((el) => (el as HTMLElement).dataset.columnKey)
+						.filter(Boolean) as string[];
+
+					const dragIndex = currentOrder.indexOf(this.draggedColumnKey);
+					const dropIndex = currentOrder.indexOf(target.groupKey);
+
+					if (dragIndex !== -1 && dropIndex !== -1) {
+						const newOrder = [...currentOrder];
+						newOrder.splice(dragIndex, 1);
+						newOrder.splice(dropIndex, 0, this.draggedColumnKey);
+
+						await this.saveColumnOrder(groupBy, newOrder);
+						await this.render();
+					}
+				}
+			}
+
+			this.clearTouchDragState();
+		});
+
+		header.addEventListener("touchcancel", () => {
+			header.classList.remove(draggingClass);
+			this.clearTouchDragState();
+		});
 	}
 
 	private setupColumnDragDrop(
@@ -1085,6 +1218,168 @@ export class KanbanView extends BasesViewBase {
 		});
 	}
 
+	private createTouchDragGhost(sourceEl: HTMLElement, x: number, y: number): HTMLElement {
+		const ghost = sourceEl.cloneNode(true) as HTMLElement;
+		ghost.classList.add("kanban-view__touch-ghost");
+		ghost.style.cssText = `
+			position: fixed;
+			left: ${x}px;
+			top: ${y}px;
+			width: ${sourceEl.offsetWidth}px;
+			pointer-events: none;
+			z-index: 10000;
+			opacity: 0.8;
+			transform: translate(-50%, -50%) rotate(3deg);
+			box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+		`;
+		document.body.appendChild(ghost);
+		return ghost;
+	}
+
+	private updateTouchDragGhost(x: number, y: number): void {
+		if (this.touchDragGhost) {
+			this.touchDragGhost.style.left = `${x}px`;
+			this.touchDragGhost.style.top = `${y}px`;
+		}
+	}
+
+	private removeTouchDragGhost(): void {
+		if (this.touchDragGhost) {
+			this.touchDragGhost.remove();
+			this.touchDragGhost = null;
+		}
+	}
+
+	private findDropTargetAt(x: number, y: number): {
+		type: "column" | "swimlane" | "columnHeader" | null;
+		groupKey: string | null;
+		swimLaneKey: string | null;
+		element: HTMLElement | null;
+	} {
+		if (this.touchDragGhost) this.touchDragGhost.style.display = "none";
+		const el = document.elementFromPoint(x, y) as HTMLElement | null;
+		if (this.touchDragGhost) this.touchDragGhost.style.display = "";
+
+		if (!el) return { type: null, groupKey: null, swimLaneKey: null, element: null };
+
+		const swimCell = el.closest("[data-column][data-swimlane]") as HTMLElement;
+		if (swimCell) {
+			return {
+				type: "swimlane",
+				groupKey: swimCell.dataset.column || null,
+				swimLaneKey: swimCell.dataset.swimlane || null,
+				element: swimCell,
+			};
+		}
+
+		const column = el.closest("[data-group]") as HTMLElement;
+		if (column) {
+			return {
+				type: "column",
+				groupKey: column.dataset.group || null,
+				swimLaneKey: null,
+				element: column,
+			};
+		}
+
+		const header = el.closest("[data-column-key]") as HTMLElement;
+		if (header) {
+			return {
+				type: "columnHeader",
+				groupKey: header.dataset.columnKey || null,
+				swimLaneKey: null,
+				element: header,
+			};
+		}
+
+		return { type: null, groupKey: null, swimLaneKey: null, element: null };
+	}
+
+	private clearDragoverFeedback(): void {
+		this.boardEl?.querySelectorAll(".kanban-view__column--dragover").forEach((el) => {
+			el.classList.remove("kanban-view__column--dragover");
+		});
+		this.boardEl?.querySelectorAll(".kanban-view__swimlane-column--dragover").forEach((el) => {
+			el.classList.remove("kanban-view__swimlane-column--dragover");
+		});
+		this.boardEl?.querySelectorAll(".kanban-view__column-header--dragover").forEach((el) => {
+			el.classList.remove("kanban-view__column-header--dragover");
+		});
+	}
+
+	private updateDropTargetFeedback(x: number, y: number): void {
+		this.clearDragoverFeedback();
+		const target = this.findDropTargetAt(x, y);
+		if (target.element) {
+			if (target.type === "column") {
+				target.element.classList.add("kanban-view__column--dragover");
+			} else if (target.type === "swimlane") {
+				target.element.classList.add("kanban-view__swimlane-column--dragover");
+			} else if (target.type === "columnHeader" && this.touchDragType === "column") {
+				target.element.classList.add("kanban-view__column-header--dragover");
+			}
+		}
+	}
+
+	private clearTouchDragState(): void {
+		this.touchDragActive = false;
+		document.removeEventListener("contextmenu", this.boundContextMenuBlocker, true);
+		this.removeTouchDragGhost();
+		this.stopAutoScroll();
+
+		if (this.longPressTimer) {
+			clearTimeout(this.longPressTimer);
+			this.longPressTimer = null;
+		}
+
+		this.clearDragoverFeedback();
+
+		for (const path of this.draggedTaskPaths) {
+			this.currentTaskElements.get(path)?.classList.remove("kanban-view__card--dragging");
+		}
+
+		this.draggedTaskPath = null;
+		this.draggedTaskPaths = [];
+		this.draggedFromColumn = null;
+		this.draggedFromSwimlane = null;
+		this.draggedSourceColumns.clear();
+		this.draggedSourceSwimlanes.clear();
+		this.touchDragType = null;
+		this.draggedColumnKey = null;
+	}
+
+	private handleAutoScroll(touchX: number): void {
+		if (!this.boardEl) return;
+
+		const rect = this.boardEl.getBoundingClientRect();
+		const leftEdge = rect.left + this.AUTO_SCROLL_EDGE;
+		const rightEdge = rect.right - this.AUTO_SCROLL_EDGE;
+
+		let newDirection = 0;
+		if (touchX < leftEdge) newDirection = -1;
+		else if (touchX > rightEdge) newDirection = 1;
+
+		if (newDirection !== this.autoScrollDirection) {
+			this.stopAutoScroll();
+			this.autoScrollDirection = newDirection;
+			if (newDirection !== 0) {
+				this.autoScrollTimer = setInterval(() => {
+					if (this.boardEl) {
+						this.boardEl.scrollLeft += this.autoScrollDirection * this.AUTO_SCROLL_SPEED;
+					}
+				}, 16);
+			}
+		}
+	}
+
+	private stopAutoScroll(): void {
+		if (this.autoScrollTimer) {
+			clearInterval(this.autoScrollTimer);
+			this.autoScrollTimer = null;
+		}
+		this.autoScrollDirection = 0;
+	}
+
 	private setupCardDragHandlers(cardWrapper: HTMLElement, task: TaskInfo): void {
 		// Handle click for selection mode
 		cardWrapper.addEventListener("click", (e: MouseEvent) => {
@@ -1095,12 +1390,13 @@ export class KanbanView extends BasesViewBase {
 			}
 		});
 
-		// Handle right-click for context menu
+		// Handle right-click for context menu (skip if touch drag pending/active)
 		cardWrapper.addEventListener("contextmenu", (e: MouseEvent) => {
 			e.preventDefault();
 			e.stopPropagation();
 
-			// If multiple tasks are selected, show batch context menu
+			if (this.longPressTimer || this.touchDragActive) return;
+
 			const selectionService = this.plugin.taskSelectionService;
 			if (selectionService && selectionService.getSelectionCount() > 1) {
 				// Ensure the right-clicked task is in the selection
@@ -1194,6 +1490,120 @@ export class KanbanView extends BasesViewBase {
 				el.classList.remove('kanban-view__swimlane-column--dragover');
 			});
 		});
+
+		this.setupCardTouchHandlers(cardWrapper, task);
+	}
+
+	private setupCardTouchHandlers(cardWrapper: HTMLElement, task: TaskInfo): void {
+		if (!Platform.isMobile) return;
+
+		cardWrapper.addEventListener(
+			"touchstart",
+			(e: TouchEvent) => {
+				if (e.touches.length !== 1) return;
+				const touch = e.touches[0];
+				this.touchStartX = touch.clientX;
+				this.touchStartY = touch.clientY;
+				this.longPressTimer = setTimeout(() => {
+					this.initiateTouchDrag(cardWrapper, task, touch.clientX, touch.clientY);
+				}, this.LONG_PRESS_DELAY);
+			},
+			{ passive: true }
+		);
+
+		cardWrapper.addEventListener(
+			"touchmove",
+			(e: TouchEvent) => {
+				if (e.touches.length !== 1) return;
+				const touch = e.touches[0];
+
+				if (!this.touchDragActive && this.longPressTimer) {
+					const dx = Math.abs(touch.clientX - this.touchStartX);
+					const dy = Math.abs(touch.clientY - this.touchStartY);
+					if (dx > this.TOUCH_MOVE_THRESHOLD || dy > this.TOUCH_MOVE_THRESHOLD) {
+						clearTimeout(this.longPressTimer);
+						this.longPressTimer = null;
+					}
+					return;
+				}
+
+				if (this.touchDragActive && this.touchDragType === "task") {
+					e.preventDefault();
+					this.updateTouchDragGhost(touch.clientX, touch.clientY);
+					this.updateDropTargetFeedback(touch.clientX, touch.clientY);
+					this.handleAutoScroll(touch.clientX);
+				}
+			},
+			{ passive: false }
+		);
+
+		cardWrapper.addEventListener("touchend", async (e: TouchEvent) => {
+			if (this.longPressTimer) {
+				clearTimeout(this.longPressTimer);
+				this.longPressTimer = null;
+			}
+
+			if (!this.touchDragActive || this.touchDragType !== "task") return;
+
+			const touch = e.changedTouches[0];
+			if (!touch) {
+				this.clearTouchDragState();
+				return;
+			}
+
+			const target = this.findDropTargetAt(touch.clientX, touch.clientY);
+			if (target.groupKey && this.draggedTaskPath) {
+				for (const path of this.draggedTaskPaths) {
+					await this.handleTaskDrop(path, target.groupKey, target.swimLaneKey);
+				}
+			}
+
+			this.clearTouchDragState();
+		});
+
+		cardWrapper.addEventListener("touchcancel", () => {
+			this.clearTouchDragState();
+		});
+	}
+
+	private initiateTouchDrag(cardWrapper: HTMLElement, task: TaskInfo, x: number, y: number): void {
+		this.touchDragActive = true;
+		this.touchDragType = "task";
+		document.addEventListener("contextmenu", this.boundContextMenuBlocker, true);
+
+		const selectionService = this.plugin.taskSelectionService;
+		if (selectionService?.isSelected(task.path) && selectionService.getSelectionCount() > 1) {
+			this.draggedTaskPaths = selectionService.getSelectedPaths();
+			this.draggedTaskPath = task.path;
+			this.draggedSourceColumns.clear();
+			this.draggedSourceSwimlanes.clear();
+			for (const path of this.draggedTaskPaths) {
+				const wrapper = this.currentTaskElements.get(path);
+				if (wrapper) {
+					wrapper.classList.add("kanban-view__card--dragging");
+					const col = wrapper.closest("[data-group]") as HTMLElement;
+					const swimCol = wrapper.closest("[data-column]") as HTMLElement;
+					const swimlaneRow = wrapper.closest("[data-swimlane]") as HTMLElement;
+					const sourceCol = col?.dataset.group || swimCol?.dataset.column;
+					const sourceSwimlane = swimlaneRow?.dataset.swimlane;
+					if (sourceCol) this.draggedSourceColumns.set(path, sourceCol);
+					if (sourceSwimlane) this.draggedSourceSwimlanes.set(path, sourceSwimlane);
+				}
+			}
+		} else {
+			this.draggedTaskPath = task.path;
+			this.draggedTaskPaths = [task.path];
+			cardWrapper.classList.add("kanban-view__card--dragging");
+		}
+
+		const column = cardWrapper.closest("[data-group]") as HTMLElement;
+		const swimlaneColumn = cardWrapper.closest("[data-column]") as HTMLElement;
+		const swimlaneRow = cardWrapper.closest("[data-swimlane]") as HTMLElement;
+		this.draggedFromColumn = column?.dataset.group || swimlaneColumn?.dataset.column || null;
+		this.draggedFromSwimlane = swimlaneRow?.dataset.swimlane || null;
+
+		this.touchDragGhost = this.createTouchDragGhost(cardWrapper, x, y);
+		navigator.vibrate?.(50);
 	}
 
 	private async handleTaskDrop(
