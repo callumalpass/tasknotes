@@ -570,10 +570,20 @@ export class CalendarView extends BasesViewBase {
 				year: this.plugin.i18n.translate("views.basesCalendar.buttonText.year"),
 				list: this.plugin.i18n.translate("views.basesCalendar.buttonText.list"),
 			},
+			buttonHints: {
+				today: this.plugin.i18n.translate("views.basesCalendar.hints.today") || "Go to today",
+				prev: this.plugin.i18n.translate("views.basesCalendar.hints.prev") || "Previous",
+				next: this.plugin.i18n.translate("views.basesCalendar.hints.next") || "Next",
+				month: this.plugin.i18n.translate("views.basesCalendar.hints.month") || "Month view",
+				week: this.plugin.i18n.translate("views.basesCalendar.hints.week") || "Week view",
+				day: this.plugin.i18n.translate("views.basesCalendar.hints.day") || "Day view",
+				year: this.plugin.i18n.translate("views.basesCalendar.hints.year") || "Year view",
+				list: this.plugin.i18n.translate("views.basesCalendar.hints.list") || "List view",
+			},
 			customButtons: {
 				listWeekButton: {
 					text: this.plugin.i18n.translate("views.basesCalendar.buttonText.list"),
-					hint: this.plugin.i18n.translate("views.basesCalendar.buttonText.list") || "List",
+					hint: this.plugin.i18n.translate("views.basesCalendar.hints.list") || "List view",
 					click: () => {
 						if (this.calendar) {
 							const currentView = this.calendar.view?.type;
@@ -620,6 +630,7 @@ export class CalendarView extends BasesViewBase {
 					buttonText: this.plugin.i18n.translate("views.basesCalendar.buttonText.customDays", {
 						count: this.viewOptions.customDayCount.toString()
 					}),
+					titleFormat: { year: "numeric", month: "short", day: "numeric" },
 				},
 				listWeek: {
 					type: "list",

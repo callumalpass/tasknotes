@@ -178,6 +178,15 @@ export const en: TranslationTree = {
 			},
 			hints: {
 				refresh: "Refresh calendar subscriptions",
+				today: "Go to today",
+				prev: "Previous",
+				next: "Next",
+				month: "Month view",
+				week: "Week view",
+				day: "Day view",
+				year: "Year view",
+				list: "List view",
+				customDays: "{count}-day view",
 			},
 			settings: {
 				groups: {
