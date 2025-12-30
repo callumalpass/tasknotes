@@ -95,6 +95,29 @@ Each task being a full note means you can write descriptions, jot down thoughts 
 
 *Project management with subtasks and hierarchical organization*
 
+<details>
+<summary><strong>Screenshot Gallery</strong></summary>
+
+### Calendar Views
+
+| Month | Week | Day | Year |
+|-------|------|-----|------|
+| ![Month](media/docs/views-calendar-month.png) | ![Week](media/docs/views-calendar-week.png) | ![Day](media/docs/views-calendar-day.png) | ![Year](media/docs/views-calendar-year.png) |
+
+### Task Views
+
+| Task List | Kanban | Agenda | Mini Calendar |
+|-----------|--------|--------|---------------|
+| ![Tasks](media/docs/views-tasks-list.png) | ![Kanban](media/docs/views-kanban.png) | ![Agenda](media/docs/views-agenda.png) | ![Mini Calendar](media/docs/views-mini-calendar.png) |
+
+### Features
+
+| Task Modal | Pomodoro Timer | Statistics | Settings |
+|------------|----------------|------------|----------|
+| ![Task Modal](media/docs/modal-task-create.png) | ![Pomodoro](media/docs/feature-pomodoro-timer.png) | ![Stats](media/docs/feature-task-statistics.png) | ![Settings](media/docs/ui-settings-panel.png) |
+
+</details>
+
 ## Configuration
 
 ### Customization

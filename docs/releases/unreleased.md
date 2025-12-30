@@ -47,6 +47,14 @@ Example:
   - Shift+click cycles in reverse order
   - Thanks to @JerryLu086 for the feature request
 
+- Added button tooltips to calendar view toolbar
+  - Hovering over navigation and view buttons now shows descriptive hints
+  - Buttons include: Today, Previous, Next, Month, Week, Day, Year, List
+
+- Added tooltips to task modal action icons
+  - Icon buttons for status, date, project, priority, recurrence, and reminder now show tooltips on hover
+  - Improves discoverability for new users
+
 ## Fixed
 
 - (#1386) Fixed `timeEstimateCategory` formula showing "Long (>2h)" instead of "No estimate" for new tasks
@@ -67,3 +75,6 @@ Example:
   - Tasks with malformed dates (e.g., "262025-12-16" instead of "2025-12-16") no longer crash the entire calendar
   - Invalid tasks are now skipped with a console warning, allowing other events to display normally
   - Thanks to @Erelen for reporting
+
+- Fixed today column in week/day calendar views using FullCalendar's default yellow instead of theme accent
+  - Today's column now uses a subtle tint of the theme accent color for consistent styling
